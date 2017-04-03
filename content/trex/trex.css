@@ -1,0 +1,66 @@
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0px;
+  padding: 0px;
+  font-family: -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans",
+    "Droid Sans", "Helvetica Neue", Arial, sans-serif;
+}
+
+*[collapsed=true] {
+  visibility: hidden;
+}
+*[hidden=true] {
+  display: none;
+}
+
+
+fastlist > table {
+  height: 100%;
+  width: 100%;
+}
+fastlist tbody {
+  display: table-row-group;
+}
+fastlist header,
+fastlist tbody > row {
+  display: table-row;
+}
+fastlist header > * {
+  display: table-cell;
+  padding: 2px 8px;
+}
+fastlist tbody > row > * {
+  display: table-cell;
+  padding: 0px 5px; /* TODO vertical padding triggers a bug in the size calculation */
+}
+fastlist {
+  position: relative;
+}
+fastlist > .scrollbar {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  height: 100%;
+  position: absolute;
+  top: 26px;
+  right: 0px;
+  width: 20px;
+}
+fastlist {
+  border: 1px solid #8E8EA1;
+}
+fastlist header > * {
+  border-top: 1px solid white;
+  border-left: 1px solid white;
+  border-right: 1px solid #8E8EA1;
+  border-bottom: 1px solid #8E8EA1;
+  background-color: #D2D2DC;
+}
+fastlist header > *:hover {
+  background-color: #E5E5F7;
+}
+fastlist tbody > row > * {
+  background-color: #EEF3F9;
+}

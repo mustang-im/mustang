@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://corvette/skin/all.css" type="text/css"?>
+<?xml-stylesheet href="chrome://corvette/skin/app.css" type="text/css"?>
+
+<!DOCTYPE window SYSTEM "chrome://corvette/locale/app.dtd">
+
+<window id="xultestApp" title="&title.label;"
+        width="800" height="600"
+        persist="screenX screenY width height sizemode"
+        onload="start();"
+        style="background: white;"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+    <script type="text/javascript" src="chrome://corvette/content/app.js"/>
+    <script type="text/javascript" src="chrome://corvette/content/util/util.js"/>
+
+    <label class="title" value="&title.label;" />
+
+    <hbox pack="start">
+        <button id="testbutton" label="Test" oncommand="test();" />
+    </hbox>
+
+    <description id="debug" flex="1" />
+
+</window>
