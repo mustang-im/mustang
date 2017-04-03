@@ -291,7 +291,7 @@ CollectionObserver.prototype = {
    * @param item {Object} the removed item
    * @param coll {Collection} the observed list. convenience only.
    */
-  added : function(item, list) {
+  added : function(item, coll) {
     throw "implement";
   },
 

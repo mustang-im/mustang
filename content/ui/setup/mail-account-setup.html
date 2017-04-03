@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+<title>Corvette</title>
+<meta charset="utf-8"></meta>
+<link href="../../trex/trex-flexbox.css" rel="stylesheet" type="text/css"></link>
+<link href="../../trex/trex.css" rel="stylesheet" type="text/css"></link>
+<link href="mail-account-setup.css" rel="stylesheet" type="text/css"></link>
+<script src="../../trex/trex.js" type="text/javascript"></script>
+<script src="../../util/uiutil.js" type="text/javascript"></script>
+<script src="mail-account-setup.js" type="text/javascript"></script>
+</head>
+<body>
+
+    <vbox>
+      <label>Your name, as shown to others:</label>
+      <input id="realName" />
+
+      <label>Your existing email address:</label>
+      <input id="emailAddress" placeholder="you@example.net" />
+
+      <label>Password:</label>
+      <input id="password" type="password" />
+
+      <div id="error" class="error"></div>
+      <div id="checking" class="status" hidden="true">Checking...</div>
+
+      <hbox pack="end">
+        <button onclick="ok()">Continue</button>
+      </hbox>
+
+</body>
+</html>

@@ -17,7 +17,7 @@ function Fastlist(element) {
   assert(element && element.localName == "fastlist");
   this._listE = element;
   element.widget = this;
-  this._entries = [];
+  this.showCollection(new ArrayColl());
   this._rowElements = [];
   this._rowTemplate = this._listE.querySelector("row");
   assert(this._rowTemplate);
@@ -79,7 +79,7 @@ Fastlist.prototype = {
   _rowHeight : null,
 
   /**
-   * {Array of {Object}}
+   * {Collection of {Object}}
    */
   _entries : null,
 
@@ -89,14 +89,38 @@ Fastlist.prototype = {
    */
   _scrollPos : 0,
 
+  _observer : null,
+
+  /**
+   * @param coll {Collection} See collection.js
+   */
+  showCollection : function(coll) {
+    if (this._observer) {
+      coll.unregisterObserver(this._observer);
+    }
+
+    this._entries = coll;
+
+    var self = this;
+    this._observer = {
+      added : function(item) {
+        self._updateSize();
+        self._refreshContent();
+      },
+      removed : function(item) {
+        self._updateSize();
+        self._refreshContent();
+      },
+    };
+    coll.registerObserver(this._observer);
+  },
+
   /**
    * Adds a row to the list
    * @param obj {Object} values for one row
    */
   addEntry : function(obj) {
-    this._entries.push(obj);
-    this._updateSize();
-    this._refreshContent();
+    this._entries.add(obj);
   },
 
   /**
@@ -104,9 +128,7 @@ Fastlist.prototype = {
    * @param array {Array of Objects} values for  rows
    */
   addEntriesFromArray : function(array) {
-    this._entries = this._entries.concat(array);
-    this._updateSize();
-    this._refreshContent();
+    this._entries.addAll(array);
   },
 
   /**

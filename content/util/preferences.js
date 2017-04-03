@@ -89,6 +89,7 @@ Preferences.prototype = {
   _getDefaultPref : function(prefName) {
     return this._getPrefFromLocalStorage("defaultPrefs." + this._prefBranch + prefName);
   },
+
   /**
    * Use the stored DType to return a value of the correct type,
    * given that localStorage stores only strings.

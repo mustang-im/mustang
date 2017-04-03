@@ -115,3 +115,32 @@ function assert(test, errorMsg) {
     throw new Error(errorMsg);
   }
 }
+
+
+function openWindow(relativeURL) {
+  var windowName = relativeURL.replace(".*\/", "/").replace("\..*", ""); // basename
+  window.open(relativeURL, windowName, "chrome");
+}
+
+
+function resizeWindow() {
+  var childNodes = document.body.childNodes;
+  var height = 0;
+  for (var i=0; i < childNodes.length; i++) {
+    if ( !childNodes[i].getBoundingClientRect) {
+      // fall back to the old way
+      window.height = document.body.offsetHeight;
+      return;
+    }
+    var rect = childNodes[i].getBoundingClientRect();
+    height += rect.height;
+    // getBoundingClientRect does not include margin
+    var style = window.getComputedStyle(childNodes[i]);
+    height += parseFloat(style.marginTop) + parseFloat(style.marginBottom);
+  }
+  // Add in padding and margin from body;
+  var style = window.getComputedStyle(document.body);
+  height += parseFloat(style.marginTop) + parseFloat(style.marginBottom);
+  height += parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+  window.height = height;
+}

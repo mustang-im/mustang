@@ -48,6 +48,7 @@ const EXPORTED_SYMBOLS = [ "makeNewAccount",
 Components.utils.import("resource://gre/modules/Services.jsm");
 Components.utils.import("resource://corvette/util/util.js");
 importJSM("account.js", this);
+importJSM("account-list.js", this); // add, remove
 importJSM("mail/imap.js", this);
 importJSM("mail/pop3.js", this);
 importJSM("util/fetchhttp.js", this);
@@ -82,7 +83,7 @@ function makeNewAccount(emailAddress, successCallback, errorCallback) {
     account.emailAddress = emailAddress;
     account.setServerConfig(config);
 
-    accounts[accountID] = account;
+    getAllAccounts().set(accountID,  account);
     successCallback(account);
     notifyGlobalObservers("account-added", { account : account });
   }, errorCallback);

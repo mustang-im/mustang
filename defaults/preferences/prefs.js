@@ -1,5 +1,5 @@
-pref("toolkit.defaultChromeURI","chrome://corvette/content/app.xul");
-//pref("browser.hiddenWindowChromeURL", "chrome://corvette/content/hiddenWindow.xul"); // for Mac only
+pref("toolkit.defaultChromeURI","chrome://corvette/content/ui/mainwin/mainwin.html");
+//pref("browser.hiddenWindowChromeURL", "chrome://corvette/content/ui/mainwin/hiddenWindow.xul"); // for Mac only
 
 // Mozilla pref tweaks
 pref("browser.cache.disk.enable", false);

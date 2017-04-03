@@ -39,7 +39,7 @@
  * This keeps the list of all account objects created.
  */
 
-const EXPORTED_SYMBOLS = [ "accounts", "accountsSummary",
+const EXPORTED_SYMBOLS = [ "getAllAccounts", "accountsSummary",
     "getExistingAccountForEmailAddress" ];
 
 Components.utils.import("resource://gre/modules/Services.jsm");
@@ -51,14 +51,15 @@ importJSM("util/preferences.js", this);
  * Contains all Account objected created.
  * {Map accountID -> Account}
  */
-var accounts = {};
+var gAccounts = new Map();
 
 var gHaveReadAll = false;
 
 /**
  * Returns all accounts from prefs and local objects
+ * @returns |Map|
  */
-function getAllExistingAccounts()
+function getAllAccounts()
 {
   if ( !gHaveReadAll)
   {
@@ -66,16 +67,16 @@ function getAllExistingAccounts()
     {
       if ( !accountID)
         return;
-      if (accounts[accountID])
+      if (gAccounts.get(accountID))
         return;
       try {
-        _readExistingAccountFromPrefs(accountID); // adds to accounts
+        _readExistingAccountFromPrefs(accountID); // adds to gAccounts
       } catch (e) { errorInBackend(e); }
     }, this);
     gHaveReadAll = true;
   }
 
-  return accounts;
+  return gAccounts;
 }
 
 function _readExistingAccountFromPrefs(accountID)
@@ -83,8 +84,8 @@ function _readExistingAccountFromPrefs(accountID)
   sanitize.nonemptystring(accountID);
   var type = ourPref.get("account." + accountID + ".type", null);
   assert(type, "account does not exist in prefs");
-  accounts[accountID] = _newAccountOfType(type, accountID, false);
-  return accounts[accountID];
+  gAccounts.set(accountID, _newAccountOfType(type, accountID, false));
+  return gAccounts.get(accountID);
 }
 
 /**
@@ -93,7 +94,7 @@ function _readExistingAccountFromPrefs(accountID)
  */
 function getExistingAccountForEmailAddress(emailAddress) {
   sanitize.nonemptystring(emailAddress);
-  return getAllExistingAccounts().filter(function(acc) {
+  return getAllAccounts().filter(function(acc) {
     return acc.emailAddress == emailAddress;
   })[0];
 }
@@ -112,7 +113,7 @@ function accountsSummary() {
     newMailCount : 0,
     accountCount : 0,
   };
-  var allAccounts = getAllExistingAccounts()
+  var allAccounts = getAllAccounts()
   allAccounts.forEach(function(acc)
   {
     result.accountCount += 1;
