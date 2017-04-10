@@ -52,6 +52,7 @@ importAll(require("/logic/mail/account-list"), this); // add, remove, getExistin
 var IMAPAccount = require("/logic/mail/imap").IMAPAccount;
 var POP3Account = require("/logic/mail/pop3").POP3Account;
 var FetchHTTP = require("/util/fetchhttp").FetchHTTP;
+var JXON = require("/util/JXON");
 var gStringBundle = new require("/util/stringbundle").StringBundle("mail");
 
 /**
