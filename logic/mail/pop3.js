@@ -51,13 +51,13 @@
  *    We checked the number of new mails, and the number changed.
  */
 
-var util = require("/util/util.js");
+var util = require("util/util");
 util.importAll(util, this);
-importAll(require("/logic/mail/account-base"), this);
-importAll(require("/logic/mail/Auth"), this);
-importAll(require("/logic/mail/MIME"), this);
-var Socket = require("/logic/mail/Socket").Socket;
-var gStringBundle = new require("/util/stringbundle").StringBundle("mail");
+importAll(require("logic/account/account-base"), this);
+importAll(require("logic/mail/Auth"), this);
+importAll(require("logic/mail/MIME"), this);
+var Socket = require("logic/mail/Socket").Socket;
+var gStringBundle = new require("util/stringbundle").StringBundle("mail");
 
 /**
  * Holds and manages login state of one POP3 account

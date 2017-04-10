@@ -4,6 +4,7 @@
   "description": "Corvette - Prototype for a successor of Thunderbird",
   "main": "app.js",
   "dependencies": {
+    "app-module-path": "^2.2.0",
     "electron": "^1.6.2"
   },
   "devDependencies": {},

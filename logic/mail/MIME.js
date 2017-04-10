@@ -35,9 +35,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-var util = require("/util/util.js");
+var util = require("util/util");
 util.importAll(util, this);
-var sanitize = require("/util/sanitizeDatatypes").sanitize;
+var sanitize = require("util/sanitizeDatatypes").sanitize;
 
 /**
  * Parses an RFC822 message and gives

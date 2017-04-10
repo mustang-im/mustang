@@ -1,6 +1,7 @@
-var util = require("/util/util.js");
+require("app-module-path").addPath(require("electron").remote.getGlobal("__base"));
+var util = require("util/util");
 util.importAll(util, this);
-importAll(require("/logic/mail/account-setup"), this);
+importAll(require("logic/account/account-setup"), this);
 
 function onLoad() {
   hookupReturnKey(E("realName"), function() {

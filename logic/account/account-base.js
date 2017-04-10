@@ -40,10 +40,10 @@
  * - the |MailAccount| class, from which IMAP and POP3 inherit
  */
 
-var util = require("/util/util");
+var util = require("util/util");
 util.importAll(util, this);
-var ourPref = require("/util/preferences").myPrefs;
-var gStringBundle = new require("/util/stringbundle").StringBundle("mail");
+var ourPref = require("util/preferences").myPrefs;
+var gStringBundle = new require("util/stringbundle").StringBundle("mail");
 
 /**
  * API for all accounts
@@ -306,8 +306,8 @@ MailAccount.prototype =
           null, "mail").forEach(function(login) {
         if (login.username == this.username)
            this._password = sanitize.string(login.password);
-        */
       }, this);
+        */
     } catch (e) {
       if ( !userCancelledMasterPasswordEntry(e)) {
         errorInBackend(e);
@@ -326,8 +326,8 @@ MailAccount.prototype =
           null, "mail").forEach(function(login) {
         if (login.username == this.username)
           Services.logins.removeLogin(login);
-        */
       }, this);
+        */
     } catch (e) {
       if ( !userCancelledMasterPasswordEntry(e)) {
         errorInBackend(e);

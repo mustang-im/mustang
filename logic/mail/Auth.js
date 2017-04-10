@@ -47,10 +47,10 @@
  * @author Ben Bucksch <ben.bucksch beonex.com>
  */
 
-var util = require("/util/util.js");
+var util = require("util/util");
 util.importAll(util, this);
 var dump = ddebug;
-var sanitize = require("/util/sanitizeDatatypes").sanitize;
+var sanitize = require("util/sanitizeDatatypes").sanitize;
 
 //<copied from="thunderbird-source/mailnews/test/fakeserver/auth.js" license="MPL 1.1">
 

@@ -1,6 +1,7 @@
-var util = require("/util/util.js");
+require("app-module-path").addPath(require("electron").remote.getGlobal("__base"));
+var util = require("util/util");
 util.importAll(util, this);
-var getAllAccounts = ("/logic/mail/account-list").getAllAccounts;
+var getAllAccounts = ("logic/mail/account-list").getAllAccounts;
 
 function start() {
   var folderList = new Fastlist(E("folder-list"));

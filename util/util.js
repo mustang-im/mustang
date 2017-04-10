@@ -220,8 +220,7 @@ function getOS()
  */
 function getBrowserVersion()
 {
-  // Chrome provides no API to get the version
-  return /Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1];
+  return process.versions.chrome;
 }
 
 /**

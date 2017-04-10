@@ -39,10 +39,10 @@
  * This keeps the list of all account objects created.
  */
 
-var util = require("/util/util.js");
+var util = require("util/util");
 util.importAll(util, this);
-var ourPref = require("/util/preferences").myPrefs;
-importAll(require("/util/collection"), this);
+var ourPref = require("util/preferences").myPrefs;
+importAll(require("util/collection"), this);
 
 /**
  * Contains all Account objected created.

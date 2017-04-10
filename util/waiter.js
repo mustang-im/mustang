@@ -1,4 +1,4 @@
-var assert = require("/util/util").assert;
+var assert = require("util/util").assert;
 
 /**
  * Allows to call many async functions,

@@ -35,10 +35,10 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-var util = require("/util/util.js");
+var util = require("util/util");
 util.importAll(util, this);
-var sanitize = require("/util/sanitizeDatatypes").sanitize;
-var gStringBundle = new require("/util/stringbundle").StringBundle("util");
+var sanitize = require("util/sanitizeDatatypes").sanitize;
+var gStringBundle = new require("util/stringbundle").StringBundle("util");
 
 /**
  * Generic socket implementation based on XPCOM Sockets.

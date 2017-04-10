@@ -41,19 +41,15 @@
  */
 
 
-var EXPORTED_SYMBOLS = [ "makeNewAccount",
-    "verifyEmailAddressDomain", "_removeAccount",
-    "InvalidDomainError" ];
-
-var util = require("/util/util.js");
+var util = require("util/util");
 util.importAll(util, this);
-importAll(require("/logic/mail/account-base"), this);
-importAll(require("/logic/mail/account-list"), this); // add, remove, getExisting
-var IMAPAccount = require("/logic/mail/imap").IMAPAccount;
-var POP3Account = require("/logic/mail/pop3").POP3Account;
-var FetchHTTP = require("/util/fetchhttp").FetchHTTP;
-var JXON = require("/util/JXON");
-var gStringBundle = new require("/util/stringbundle").StringBundle("mail");
+importAll(require("logic/account/account-base"), this);
+importAll(require("logic/account/account-list"), this); // add, remove, getExisting
+var IMAPAccount = require("logic/mail/imap").IMAPAccount;
+var POP3Account = require("logic/mail/pop3").POP3Account;
+var FetchHTTP = require("util/fetchhttp").FetchHTTP;
+var JXON = require("util/JXON");
+var gStringBundle = new require("util/stringbundle").StringBundle("mail");
 
 /**
  * Create a new |Account| object for |emailAddress|.
