@@ -1,6 +1,6 @@
 Corvette
 
-This is a successor of the Thunderbird email client.
+This is a prototype for a successor of the Thunderbird email client.
 It is a desktop email client written entirely in JavaScript and HTML.
 It should later run on smartphones as app as well, using a different UI.
 
@@ -14,3 +14,5 @@ XUL extensions for Thunderbird, thanks to the easier API.
 
 The target user group is primarily the Thunderbird users, but also
 all those people who use webmail or the standard system email app today.
+
+For now, this is just a modest prototype.
