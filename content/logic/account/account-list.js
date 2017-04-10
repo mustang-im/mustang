@@ -39,14 +39,10 @@
  * This keeps the list of all account objects created.
  */
 
-var EXPORTED_SYMBOLS = [ "getAllAccounts", "accountsSummary",
-    "getExistingAccountForEmailAddress" ];
-
-Components.utils.import("resource://corvette/util/preferences-xpcom.js");
-//loadJS("util/preferences.js", this);
-loadJS("util/collection.js", this);
-loadJS("logic/mail/imap.js", this);
-loadJS("logic/mail/pop3.js", this);
+var util = require("/util/util.js");
+util.importAll(util, this);
+var ourPref = require("/util/preferences").myPrefs;
+importAll(require("/util/collection"), this);
 
 /**
  * Contains all Account objected created.
@@ -125,3 +121,27 @@ function accountsSummary() {
   });
   return result;
 }
+
+/**
+ * Our IMAP connection is persistent.
+ *
+ * This means that when we shutdown, we need to kill the connection.
+ *
+ * The profile-change-net-teardown notification happens before the network
+ * connection is dropped, so it is the correct time to do this.
+ */
+var netTeardownListener =
+{
+  observe : function() {
+    getAllAccounts().forEach(account => account.logout());
+  }
+}
+// TODO Port
+//Services.obs.addObserver(netTeardownListener, "profile-change-net-teardown", false);
+
+
+module.exports = {
+  getAllAccounts : getAllAccounts,
+  accountsSummary : accountsSummary,
+  getExistingAccountForEmailAddress : getExistingAccountForEmailAddress,
+};

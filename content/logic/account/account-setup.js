@@ -45,15 +45,14 @@ var EXPORTED_SYMBOLS = [ "makeNewAccount",
     "verifyEmailAddressDomain", "_removeAccount",
     "InvalidDomainError" ];
 
-Components.utils.import("resource://gre/modules/Services.jsm");
-//Components.utils.import("resource://corvette/util/util.js");
-loadJS("logic/account/account-base.js", this);
-loadJS("logic/account/account-list.js", this); // add, remove
-loadJS("logic/mail/imap.js", this);
-loadJS("logic/mail/pop3.js", this);
-loadJS("util/fetchhttp.js", this);
-loadJS("util/stringbundle.js", this);
-var gStringBundle = new StringBundle("mail");
+var util = require("/util/util.js");
+util.importAll(util, this);
+importAll(require("/logic/mail/account-base"), this);
+importAll(require("/logic/mail/account-list"), this); // add, remove, getExisting
+var IMAPAccount = require("/logic/mail/imap").IMAPAccount;
+var POP3Account = require("/logic/mail/pop3").POP3Account;
+var FetchHTTP = require("/util/fetchhttp").FetchHTTP;
+var gStringBundle = new require("/util/stringbundle").StringBundle("mail");
 
 /**
  * Create a new |Account| object for |emailAddress|.
@@ -189,7 +188,7 @@ function getAccountProviderWithNet(domain, emailAddress,
     var providerDomains = [];
     for (var i = 0; i < mxHostnames.length; i++) {
       try {
-        providerDomains.push(Services.eTLD.getBaseDomainFromHost(mxHostnames[i]));
+        providerDomains.push(getBaseDomainFromHost(mxHostnames[i]));
       } catch (e) {
         // Some domains (e.g. ar.com, foo.com) return IP address,
         // which causes getBaseDomainFromHost() to throw.
@@ -229,6 +228,25 @@ function getAccountProviderWithNet(domain, emailAddress,
 function convertMozillaConfigToOurs(ac, emailAddress) {
   replaceVariables(ac, emailAddress);
   return ac.incoming; // all the properties match, luckily
+}
+
+/**
+ * Returns the base domain of hostname.
+ * E.g. for "www2.static.amazon.com" returns "amazon.com"
+ * and for "www2.static.amazon.co.uk" returns "amazon.co.uk"
+ *
+ * Like EffectiveTLD.getBaseDomainFromHost() on Firefox.
+ * Since GChrome has no native support for this, we have to
+ * guess at it.
+ */
+function getBaseDomainFromHost(aHostname) {
+  var domainparts = aHostname.split(".");
+  if (domainparts[domainparts.length - 1] == "uk") {
+    // HACK Handle .co.uk
+    return domainparts.slice(domainparts.length - 3).join(".");
+  } else {
+    return domainparts.slice(domainparts.length - 2).join(".");
+  }
 }
 
 /**
@@ -795,3 +813,10 @@ function InvalidDomainError(msg) {
 InvalidDomainError.prototype = {
 }
 extend(InvalidDomainError, UserError);
+
+module.exports =  {
+  makeNewAccount : makeNewAccount,
+  verifyEmailAddressDomain : verifyEmailAddressDomain,
+  _removeAccount : _removeAccount, // TODO
+  InvalidDomainError : InvalidDomainError,
+};

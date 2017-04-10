@@ -289,11 +289,11 @@ function getLocale() {
 
 var StringBundleUtils = {
   /**
-  * Reads UTF8 data from a URL.
-  *
-  * @param url {String}   what you want to read
-  * @return {String}   the contents of the file, as one long string
-  */
+   * Reads UTF8 data from a URL.
+   *
+   * @param url {String}   what you want to read
+   * @return {String}   the contents of the file, as one long string
+   */
   readURLasUTF8 : function (url) {
     StringBundleUtils.assert(url && typeof(url) == "string", "uri must be a string");
     var req = new XMLHttpRequest();
@@ -305,18 +305,17 @@ var StringBundleUtils = {
     return req.responseText;
   },
 
-
   /**
-  * Takes a string (which is typically the content of a file,
-  * e.g. the result returned from readURLUTF8() ), and splits
-  * it into lines, and returns an array with one string per line
-  *
-  * Linebreaks are not contained in the result,,
-  * and all of \r\n, (Windows) \r (Mac) and \n (Unix) counts as linebreak.
-  *
-  * @param content {String} one long string with the whole file
-  * @return {Array of String} one string per line (no linebreaks)
-  */
+   * Takes a string (which is typically the content of a file,
+   * e.g. the result returned from readURLUTF8() ), and splits
+   * it into lines, and returns an array with one string per line
+   *
+   * Linebreaks are not contained in the result,,
+   * and all of \r\n, (Windows) \r (Mac) and \n (Unix) counts as linebreak.
+   *
+   * @param content {String} one long string with the whole file
+   * @return {Array of String} one string per line (no linebreaks)
+   */
   splitLines : function(content) {
     content = content.replace("\r\n", "\n");
     content = content.replace("\r", "\n");
@@ -330,3 +329,5 @@ var StringBundleUtils = {
       throw new Error(errorMsg ? errorMsg : "Bug: assertion failed");
   },
 }
+
+exports.StringBundle = StringBundle;

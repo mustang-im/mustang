@@ -35,11 +35,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-var EXPORTED_SYMBOLS = [ "RFC822Mail", "decodeMIMEHeader" ];
-
-Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
-//Components.utils.import("resource://corvette/util/util.js");
-loadJS("util/sanitizeDatatypes.js", this);
+var util = require("/util/util.js");
+util.importAll(util, this);
+var sanitize = require("/util/sanitizeDatatypes").sanitize;
 
 /**
  * Parses an RFC822 message and gives
@@ -197,9 +195,6 @@ function decodeMIMEHeader(encoded)
   return encoded.replace(/=\?.*?\?=/g, _decodeMIMEHeaderWord);
 }
 
-XPCOMUtils.defineLazyServiceGetter(this, "utf8converterservice",
-    "@mozilla.org/intl/utf8converterservice;1", "nsIUTF8ConverterService");
-
 function _decodeMIMEHeaderWord(encoded)
 {
   sanitize.label(encoded);
@@ -225,11 +220,12 @@ function _decodeMIMEHeaderWord(encoded)
     return encodedText;
   }
 
-  //return decodedText; // sufficient for Latin-1
+  return decodedText; // sufficient for Latin-1
   // convert from charset to unicode
+  /* TODO PORT
   var unicodeStr = utf8converterservice.convertStringToUTF8(
       decodedText, charset, true);
-  return unicodeStr;
+  return unicodeStr;*/
 }
 
 function _decodeMIMEQCoding(encodedText)
@@ -249,3 +245,6 @@ ddebug(org + " -> " + decodeMIMEHeader(org));
 org = "=?ISO-8859-1?q?Yahoo!_=E4ndert_Gesch=E4ftsbedingungen?=";
 ddebug(org + " -> " + decodeMIMEHeader(org));
 */
+
+exports.RFC822Mail = RFC822Mail;
+exports.decodeMIMEHeader = decodeMIMEHeader;

@@ -1,3 +1,5 @@
+// For XULRunner
+
 pref("toolkit.defaultChromeURI","chrome://corvette/content/ui/mainwin/mainwin.html");
 //pref("browser.hiddenWindowChromeURL", "chrome://corvette/content/ui/mainwin/hiddenWindow.xul"); // for Mac only
 

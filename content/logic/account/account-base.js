@@ -40,12 +40,10 @@
  * - the |MailAccount| class, from which IMAP and POP3 inherit
  */
 
-var EXPORTED_SYMBOLS = [ "Account", "MailAccount" ];
-
-Components.utils.import("resource://gre/modules/Services.jsm"); // for password manager
-Components.utils.import("resource://corvette/util/preferences-xpcom.js");
-loadJS("util/stringbundle.js", this);
-var gStringBundle = new StringBundle("mail");
+var util = require("/util/util");
+util.importAll(util, this);
+var ourPref = require("/util/preferences").myPrefs;
+var gStringBundle = new require("/util/stringbundle").StringBundle("mail");
 
 /**
  * API for all accounts
@@ -290,21 +288,25 @@ MailAccount.prototype =
     if ( !this._wantStoredLogin)
       return;
     // nsILoginManager (same below)
-    Services.logins.addLogin(new LoginInfo(
+    /* TODO PORT Password manager
+       Services.logins.addLogin(new LoginInfo(
         this.kType + "://" + this.hostname, null, "mail",
         this.username, password,
         "", "")); // username and password field name
+        */
   },
 
   _getPasswordFromStore : function()
   {
     this._password = null;
     try {
+    /* TODO PORT Password manager
       Services.logins.findLogins({},
           this.kType + "://" + this.hostname,
           null, "mail").forEach(function(login) {
         if (login.username == this.username)
            this._password = sanitize.string(login.password);
+        */
       }, this);
     } catch (e) {
       if ( !userCancelledMasterPasswordEntry(e)) {
@@ -318,11 +320,13 @@ MailAccount.prototype =
   {
     this._password = null;
     try {
+    /* TODO PORT Password manager
       Services.logins.findLogins({},
           this.kType + "://" + this.hostname,
           null, "mail").forEach(function(login) {
         if (login.username == this.username)
           Services.logins.removeLogin(login);
+        */
       }, this);
     } catch (e) {
       if ( !userCancelledMasterPasswordEntry(e)) {
@@ -431,5 +435,5 @@ MailAccount.prototype =
 }
 extend(MailAccount, Account);
 
-var LoginInfo = new Components.Constructor(
-    "@mozilla.org/login-manager/loginInfo;1", Ci.nsILoginInfo, "init");
+exports.Account = Account;
+exports.MailAccount = MailAccount;

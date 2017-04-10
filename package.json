@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "description": "Corvette - A successor for Thunderbird",
   "main": "app.js",
-  "dependencies": {},
+  "dependencies": {
+    "require": "^2.4.20"
+  },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

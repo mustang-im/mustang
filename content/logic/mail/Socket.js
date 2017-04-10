@@ -35,14 +35,14 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-var EXPORTED_SYMBOLS = [ "Socket", "LineSocket", "RejectBadCert", ];
-
-Components.utils.import("resource://corvette/util/util.js");
-loadJS("util/sanitizeDatatypes.js", this);
-var gStringBundle = new StringBundle("util");
+var util = require("/util/util.js");
+util.importAll(util, this);
+var sanitize = require("/util/sanitizeDatatypes").sanitize;
+var gStringBundle = new require("/util/stringbundle").StringBundle("util");
 
 /**
- * Generic socket implementation
+ * Generic socket implementation based on XPCOM Sockets.
+ * TODO PORT
  * Wrapper for the network communication.
  * You send data with send(), and receive data by passing a function to
  * receive() or calling sendAndReceive() with a function.
@@ -433,4 +433,10 @@ RejectBadCert.prototype =
       return this;
     throw Components.results.NS_ERROR_NO_INTERFACE;
   },
+};
+
+module.exports = {
+  Socket : Socket,
+  LineSocket : LineSocket,
+  RejectBadCert : RejectBadCert,
 };

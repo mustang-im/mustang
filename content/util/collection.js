@@ -1181,3 +1181,37 @@ DelegateCollection.prototype = {
   },
 }
 extend(DelegateCollection, Collection);
+
+
+// Util functions
+
+/**
+ * Create a subtype.
+ */
+function extend(child, supertype)
+{
+  child.prototype.__proto__ = supertype.prototype;
+}
+
+function assert(test, errorMsg)
+{
+  if (!test)
+    throw new NotReached(errorMsg ? errorMsg : "Bug: assertion failed");
+}
+
+module.exports = {
+  CollectionObserver : CollectionObserver,
+  Collection : Collection,
+  KeyValueCollection : KeyValueCollection,
+  DelegateCollection : DelegateCollection,
+  ArrayColl : ArrayColl,
+  SetColl : Set,
+  MapColl : Map,
+  DOMList : DOMList,
+  mergeColl : mergeColl,
+  concatColl : concatColl,
+  subtractColl : subtractColl,
+  inCommonColl : inCommonColl,
+  notInCommonColl : notInCommonColl,
+  sortColl : sortColl,
+};

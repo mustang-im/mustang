@@ -51,6 +51,10 @@
  * You can also observe whole pref branches for changes, which allows
  * you to update your UI everywhere automatically
  * (subject/observer design pattern).
+ *
+ * This implementation stores the preferences in localStorage.
+ * There are other implementations with the same API, but
+ * using the Mozilla XPCOM preferences system for storage.
  */
 
 
@@ -466,3 +470,9 @@ function isObject(val) {
 }
 
 var myPrefs = new Preferences("");
+
+
+module.exports = {
+  Preferences : Preferences,
+  myPrefs : myPrefs,
+};

@@ -56,16 +56,14 @@
  *    We checked the number of new mails, and the number changed.
  */
 
-var EXPORTED_SYMBOLS = [ "IMAPAccount" ];
-
-Components.utils.import("resource://gre/modules/Services.jsm");
-loadJS("logic/mail/Socket.js", this);
-loadJS("logic/mail/Auth.js", this);
-loadJS("logic/mail/MIME.js", this);
-loadJS("logic/account/account-base.js", this);
-loadJS("logic/account/account-list.js", this); // for getAllAccounts
-loadJS("util/stringbundle.js");
-var gStringBundle = new StringBundle("email");
+var util = require("/util/util.js");
+util.importAll(util, this);
+importAll(require("/logic/mail/account-base"), this);
+importAll(require("/logic/mail/Auth"), this);
+importAll(require("/logic/mail/MIME"), this);
+var Socket = require("/logic/mail/Socket").Socket;
+var sanitize = require("/util/sanitizeDatatypes").sanitize;
+var gStringBundle = new require("/util/stringbundle").StringBundle("mail");
 
 
 /**
@@ -820,23 +818,4 @@ function IMAPSyntaxErrorResponse(serverErrorMsg, hostname)
 }
 extend(IMAPSyntaxErrorResponse, Exception);
 
-/**
- * Our IMAP connection is persistent.
- *
- * This means that when we shutdown, we need to kill the connection.
- *
- * The profile-change-net-teardown notification happens before the network
- * connection is dropped, so it is the correct time to do this.
- */
-var netTeardownListener =
-{
-  observe : function (subject, topic, data) {
-    getAllAccounts().forEach(function (account) {
-      if (account instanceof IMAPAccount)
-        account._connections.slice(0).forEach(function(conn) { // logout modifies _conns
-          conn.logout();
-        });
-    }, this);
-  }
-}
-Services.obs.addObserver(netTeardownListener, "profile-change-net-teardown", false);
+exports.IMAPAccount = IMAPAccount;

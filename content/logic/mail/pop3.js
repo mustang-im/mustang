@@ -51,14 +51,13 @@
  *    We checked the number of new mails, and the number changed.
  */
 
-var EXPORTED_SYMBOLS = [ "POP3Account" ];
-
-loadJS("logic/mail/Socket.js", this);
-loadJS("logic/mail/Auth.js", this);
-loadJS("logic/mail/MIME.js", this);
-loadJS("logic/account/account-base.js", this);
-loadJS("util/stringbundle.js");
-var gStringBundle = new StringBundle("email/email");
+var util = require("/util/util.js");
+util.importAll(util, this);
+importAll(require("/logic/mail/account-base"), this);
+importAll(require("/logic/mail/Auth"), this);
+importAll(require("/logic/mail/MIME"), this);
+var Socket = require("/logic/mail/Socket").Socket;
+var gStringBundle = new require("/util/stringbundle").StringBundle("mail");
 
 /**
  * Holds and manages login state of one POP3 account
@@ -452,3 +451,5 @@ pingTest("localhost", 4000, function()
   ddebug("ping test succeeded");
 }, errorInBackend);
 */
+
+exports.POP3Account = POP3Account;

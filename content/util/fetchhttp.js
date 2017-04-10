@@ -47,13 +47,10 @@
  * but not for bigger file downloads.
  */
 
-const EXPORTED_SYMBOLS = [ "FetchHTTP", "FakeFetchHTTP",
-  "ServerException", "UserCancelledException" ];
-
-Components.utils.import("resource://corvette/util/util.js");
-Components.utils.import("resource://corvette/util/sanitizeDatatypes.js");
-Components.utils.import("resource://gre/modules/Services.jsm");
-const kBundleURL = "chrome://corvette/locale/util.properties";
+var util = require("/util/util");
+util.importAll(util, this);
+var sanitize = require("/util/sanitizeDatatypes").sanitize;
+var gStringBundle = new require("/util/stringbundle").StringBundle("util");
 
 /**
  * Set up a fetch.
@@ -257,8 +254,7 @@ FetchHTTP.prototype =
       {
         success = false;
         errorCode = -4;
-        var stringBundle = Services.strings.createBundle(kBundleURL);
-        errorStr = stringBundle.GetStringFromName("bad_response_content.error") + ": " + e;
+        errorStr = gStringBundle.GetStringFromName("bad_response_content.error") + ": " + e;
       }
     }
     else
@@ -270,8 +266,7 @@ FetchHTTP.prototype =
       {
         // If we can't resolve the hostname in DNS etc.,
         errorCode = -2;
-        var stringBundle = Services.strings.createBundle(kBundleURL);
-        errorStr = stringBundle.GetStringFromName("cannot_contact_server.error");
+        errorStr = gStringBundle.GetStringFromName("cannot_contact_server.error");
         try {
           // try to get a more precise error from nsIHttpChannel / nsIRequest
           errorCode = this._request.channel.status; // gives an nsresult
@@ -454,3 +449,11 @@ ServerException.prototype =
 {
 }
 extend(ServerException, Exception);
+
+
+module.exports = {
+  FetchHTTP : FetchHTTP,
+  FakeFetchHTTP : FakeFetchHTTP,
+  ServerException : ServerException,
+  UserCancelledException : UserCancelledException,
+};

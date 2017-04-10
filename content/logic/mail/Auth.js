@@ -42,16 +42,15 @@
  * - AUTH CRAM-MD5
  * in a generic way.
  *
+ * TODO PORT MD5 and SHA1 without XPCOM
+ *
  * @author Ben Bucksch <ben.bucksch beonex.com>
  */
 
-var EXPORTED_SYMBOLS = [ "AuthPLAIN", "AuthLOGIN",
-    "AuthCRAMMD5", "AuthDIGESTMD5", "sha1"];
-
-Components.utils.import("resource://corvette/util/util.js");
-loadJS("util/sanitizeDatatypes.js", this);
-
+var util = require("/util/util.js");
+util.importAll(util, this);
 var dump = ddebug;
+var sanitize = require("/util/sanitizeDatatypes").sanitize;
 
 //<copied from="thunderbird-source/mailnews/test/fakeserver/auth.js" license="MPL 1.1">
 
@@ -223,6 +222,7 @@ var AuthCRAMMD5 = {
    */
   md5raw : function(binary)
   {
+    // TODO PORT
     var md5 = Cc["@mozilla.org/security/hash;1"]
         .createInstance(Ci.nsICryptoHash);
     md5.init(Ci.nsICryptoHash.MD5);
@@ -426,6 +426,7 @@ AUTHDIGESTMD5 = Object.create(AuthCRAMMD5, properties);
 
 // Copied from https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsICryptoHash#Computing_the_Hash_of_a_String
 function sha1(text) {
+  // TODO PORT
   var converter = Cc['@mozilla.org/intl/scriptableunicodeconverter']
       .createInstance(Ci.nsIScriptableUnicodeConverter);
   converter.charset = 'UTF-8';
@@ -441,3 +442,11 @@ function sha1(text) {
   }
   return hash.split("").map(toCodeHexString).join("");
 }
+
+module.exports = {
+  AuthPLAIN : AuthPLAIN,
+  AuthLOGIN : AuthLOGIN,
+  AuthCRAMMD5 : AuthCRAMMD5,
+  AuthDIGESTMD5 : AuthDIGESTMD5,
+  sha1 : sha1,
+};
