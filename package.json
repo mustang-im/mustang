@@ -1,0 +1,26 @@
+{
+  "name": "corvette",
+  "version": "0.1.0",
+  "description": "Corvette - A successor for Thunderbird",
+  "main": "app.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benbucksch/corvette.git"
+  },
+  "keywords": [
+    "email",
+    "imap",
+    "desktop"
+  ],
+  "author": "Ben Bucksch",
+  "license": "MPL-1.1",
+  "bugs": {
+    "url": "https://github.com/benbucksch/corvette/issues"
+  },
+  "homepage": "https://github.com/benbucksch/corvette#readme"
+}
