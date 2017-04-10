@@ -35,11 +35,11 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-const EXPORTED_SYMBOLS = [ "RFC822Mail", "decodeMIMEHeader" ];
+var EXPORTED_SYMBOLS = [ "RFC822Mail", "decodeMIMEHeader" ];
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
-Components.utils.import("resource://corvette/util/util.js");
-importJSM("util/sanitizeDatatypes.js", this);
+//Components.utils.import("resource://corvette/util/util.js");
+loadJS("util/sanitizeDatatypes.js", this);
 
 /**
  * Parses an RFC822 message and gives

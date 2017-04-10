@@ -1,6 +1,4 @@
-Components.utils.import("resource://corvette/util/util.js");
-importJSM("logic/account/account-setup.js", this);
-alert("started");
+loadJS("../../logic/account/account-setup.js");
 
 function onLoad() {
   hookupReturnKey(E("realName"), function() {

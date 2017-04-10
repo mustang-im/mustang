@@ -39,13 +39,14 @@
  * This keeps the list of all account objects created.
  */
 
-const EXPORTED_SYMBOLS = [ "getAllAccounts", "accountsSummary",
+var EXPORTED_SYMBOLS = [ "getAllAccounts", "accountsSummary",
     "getExistingAccountForEmailAddress" ];
 
-Components.utils.import("resource://gre/modules/Services.jsm");
-Components.utils.import("resource://corvette/util/util.js");
-importJSM("util/collection.js", this);
-importJSM("util/preferences.js", this);
+Components.utils.import("resource://corvette/util/preferences-xpcom.js");
+//loadJS("util/preferences.js", this);
+loadJS("util/collection.js", this);
+loadJS("logic/mail/imap.js", this);
+loadJS("logic/mail/pop3.js", this);
 
 /**
  * Contains all Account objected created.

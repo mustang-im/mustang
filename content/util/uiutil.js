@@ -110,13 +110,6 @@ function hookupReturnKey(element, onReturnKeypressCallback) {
 }
 
 
-function assert(test, errorMsg) {
-  if (!test) {
-    throw new Error(errorMsg);
-  }
-}
-
-
 function openWindow(relativeURL) {
   var windowName = relativeURL.replace(".*\/", "/").replace("\..*", ""); // basename
   window.open(relativeURL, windowName, "chrome");
@@ -143,4 +136,11 @@ function resizeWindow() {
   height += parseFloat(style.marginTop) + parseFloat(style.marginBottom);
   height += parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
   window.height = height;
+}
+
+function loadJS(url) {
+  if (url.indexOf("://") == -1) {
+    url = "chrome://corvette/content/" + url;
+  }
+  cE(document.head, "script", null, { src: url, type: "text/javascript" });
 }

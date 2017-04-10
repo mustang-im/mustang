@@ -51,13 +51,13 @@
  *    We checked the number of new mails, and the number changed.
  */
 
-const EXPORTED_SYMBOLS = [ "POP3Account" ];
+var EXPORTED_SYMBOLS = [ "POP3Account" ];
 
-Components.utils.import("resource://corvette/util/util.js");
-importJSM("mail/Socket.js", this);
-importJSM("mail/Auth.js", this);
-importJSM("mail/MIME.js", this);
-importJSM("account.js", this);
+loadJS("logic/mail/Socket.js", this);
+loadJS("logic/mail/Auth.js", this);
+loadJS("logic/mail/MIME.js", this);
+loadJS("logic/account/account-base.js", this);
+loadJS("util/stringbundle.js");
 var gStringBundle = new StringBundle("email/email");
 
 /**

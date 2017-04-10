@@ -40,10 +40,11 @@
  * - the |MailAccount| class, from which IMAP and POP3 inherit
  */
 
-const EXPORTED_SYMBOLS = [ "Account", "MailAccount" ];
+var EXPORTED_SYMBOLS = [ "Account", "MailAccount" ];
 
-Components.utils.import("resource://gre/modules/Services.jsm");
-Components.utils.import("resource://corvette/util/util.js");
+Components.utils.import("resource://gre/modules/Services.jsm"); // for password manager
+Components.utils.import("resource://corvette/util/preferences-xpcom.js");
+loadJS("util/stringbundle.js", this);
 var gStringBundle = new StringBundle("mail");
 
 /**
@@ -430,5 +431,5 @@ MailAccount.prototype =
 }
 extend(MailAccount, Account);
 
-const LoginInfo = new Components.Constructor(
+var LoginInfo = new Components.Constructor(
     "@mozilla.org/login-manager/loginInfo;1", Ci.nsILoginInfo, "init");

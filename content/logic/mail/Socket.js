@@ -35,10 +35,10 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-const EXPORTED_SYMBOLS = [ "Socket", "LineSocket", "RejectBadCert", ];
+var EXPORTED_SYMBOLS = [ "Socket", "LineSocket", "RejectBadCert", ];
 
 Components.utils.import("resource://corvette/util/util.js");
-importJSM("util/sanitizeDatatypes.js", this);
+loadJS("util/sanitizeDatatypes.js", this);
 var gStringBundle = new StringBundle("util");
 
 /**

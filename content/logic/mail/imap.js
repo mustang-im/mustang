@@ -56,16 +56,16 @@
  *    We checked the number of new mails, and the number changed.
  */
 
-const EXPORTED_SYMBOLS = [ "IMAPAccount" ];
+var EXPORTED_SYMBOLS = [ "IMAPAccount" ];
 
 Components.utils.import("resource://gre/modules/Services.jsm");
-Components.utils.import("resource://corvette/util/util.js");
-importJSM("mail/Socket.js", this);
-importJSM("mail/Auth.js", this);
-importJSM("mail/MIME.js", this);
-importJSM("account.js", this);
-importJSM("account-list.js", this); // For getAllExistingAccounts
-var gStringBundle = new StringBundle("email/email");
+loadJS("logic/mail/Socket.js", this);
+loadJS("logic/mail/Auth.js", this);
+loadJS("logic/mail/MIME.js", this);
+loadJS("logic/account/account-base.js", this);
+loadJS("logic/account/account-list.js", this); // for getAllAccounts
+loadJS("util/stringbundle.js");
+var gStringBundle = new StringBundle("email");
 
 
 /**
@@ -831,8 +831,7 @@ extend(IMAPSyntaxErrorResponse, Exception);
 var netTeardownListener =
 {
   observe : function (subject, topic, data) {
-    var accounts = getAllExistingAccounts();
-    accounts.forEach(function (account) {
+    getAllAccounts().forEach(function (account) {
       if (account instanceof IMAPAccount)
         account._connections.slice(0).forEach(function(conn) { // logout modifies _conns
           conn.logout();

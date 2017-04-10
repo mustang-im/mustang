@@ -41,17 +41,18 @@
  */
 
 
-const EXPORTED_SYMBOLS = [ "makeNewAccount",
+var EXPORTED_SYMBOLS = [ "makeNewAccount",
     "verifyEmailAddressDomain", "_removeAccount",
     "InvalidDomainError" ];
 
 Components.utils.import("resource://gre/modules/Services.jsm");
-Components.utils.import("resource://corvette/util/util.js");
-importJSM("account.js", this);
-importJSM("account-list.js", this); // add, remove
-importJSM("mail/imap.js", this);
-importJSM("mail/pop3.js", this);
-importJSM("util/fetchhttp.js", this);
+//Components.utils.import("resource://corvette/util/util.js");
+loadJS("logic/account/account-base.js", this);
+loadJS("logic/account/account-list.js", this); // add, remove
+loadJS("logic/mail/imap.js", this);
+loadJS("logic/mail/pop3.js", this);
+loadJS("util/fetchhttp.js", this);
+loadJS("util/stringbundle.js", this);
 var gStringBundle = new StringBundle("mail");
 
 /**

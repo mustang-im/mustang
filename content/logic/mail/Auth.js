@@ -45,11 +45,11 @@
  * @author Ben Bucksch <ben.bucksch beonex.com>
  */
 
-const EXPORTED_SYMBOLS = [ "AuthPLAIN", "AuthLOGIN",
+var EXPORTED_SYMBOLS = [ "AuthPLAIN", "AuthLOGIN",
     "AuthCRAMMD5", "AuthDIGESTMD5", "sha1"];
 
 Components.utils.import("resource://corvette/util/util.js");
-importJSM("util/sanitizeDatatypes.js", this);
+loadJS("util/sanitizeDatatypes.js", this);
 
 var dump = ddebug;
 
