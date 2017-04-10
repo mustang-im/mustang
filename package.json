@@ -1,10 +1,9 @@
 {
   "name": "corvette",
   "version": "0.1.0",
-  "description": "Corvette - A successor for Thunderbird",
-  "main": "app.js",
+  "description": "Corvette - Prototype for a successor of Thunderbird",
+  "main": "ui/mainwin/mainwin.js",
   "dependencies": {
-    "require": "^2.4.20"
   },
   "devDependencies": {},
   "scripts": {
@@ -16,6 +15,7 @@
   },
   "keywords": [
     "email",
+    "mail",
     "imap",
     "desktop"
   ],
