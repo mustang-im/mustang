@@ -1,4 +1,6 @@
-loadJS("../../logic/account/account-setup.js");
+var util = require("/util/util.js");
+util.importAll(util, this);
+importAll(require("/logic/mail/account-setup"), this);
 
 function onLoad() {
   hookupReturnKey(E("realName"), function() {

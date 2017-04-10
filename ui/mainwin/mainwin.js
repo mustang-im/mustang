@@ -1,3 +1,7 @@
+var util = require("/util/util.js");
+util.importAll(util, this);
+var getAllAccounts = ("/logic/mail/account-list").getAllAccounts;
+
 function start() {
   var folderList = new Fastlist(E("folder-list"));
   var messageList = new Fastlist(E("message-list"));
