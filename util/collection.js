@@ -116,33 +116,35 @@ Collection.prototype = {
     throw "implement";
   },
 
+
+
   forEach : function(callback, self) {
     this.contents.forEach(callback, self);
   },
 
   /**
-   * @param filterCallback {Function(item)}
-   * @returns {Array of items} where |filterCallback| returned |true|
+   * @param filterFunc {Function(item)}
+   * @returns {Array of items} where |filterFunc| returned |true|
    */
-  filter : function(filterCallback, self) {
-    return new FilteredCollection(this, filterCallback, self);
+  filter : function(filterFunc, self) {
+    return new FilteredCollection(this, filterFunc, self);
   },
 
   /**
    * @returns first matching item or |undefined|
    */
-  find : function(filterCallback, self) {
+  find : function(filterFunc, self) {
     var result = undefined;
     this.forEach(function(item) {
-      if ( !result && filterCallback.call(self, item)) {
+      if ( !result && filterFunc.call(self, item)) {
         result = item;
       }
     }, this);
     return result;
   },
 
-  map : function(mapCallback, self) {
-    return new MapToCollection(this, mapCallback, self);
+  map : function(mapFunc, self) {
+    return new MapToCollection(this, mapFunc, self);
   },
 
   /**
@@ -162,6 +164,76 @@ Collection.prototype = {
     }
   },
   */
+
+
+
+  // Convenience methods for operators
+
+  /**
+   * operator +
+   * Returns a collection that contains all values from both collections.
+   * If the same item is in both collections, it will be added twice.
+   * The result is simply |otherColl| appended to |this|.
+   * @param otherColl {Collection}
+   * @returns {Collection} Preserves order.
+   */
+  concat : function(otherColl) {
+    concatColl(this, otherColl);
+  },
+
+  /**
+   * operator +
+   * [Union](http://en.wikipedia.org/wiki/Union_(set_theory))
+   * Returns a collection that contains all values from both collections.
+   * If the same item is in both collections, it will be added only once.
+   * @param otherColl {Collection}
+   * @returns {Collection} Does not preserve order.
+   */
+  merge : function(otherColl) {
+    mergeColl(this, otherColl);
+  },
+
+  /**
+   * operator -
+   * [Set difference](http://en.wikipedia.org/wiki/Set_difference)
+   * Returns a collection that contains all values from |this|, apart from those in collSubtract.
+   * @param collSubtract {Collection}
+   * @returns {Collection} Preserves order of collBase.
+   */
+  subtract : function(collSubtract) {
+    subtractColl(this, collSubtract);
+  },
+
+  /**
+   * operator &
+   * [Intersection](http://en.wikipedia.org/wiki/Intersection_(set_theory))
+   * Returns a collection that contains the values that are contained
+   * in *both* collections, and only those.
+   * @param otherColl {Collection}
+   * @returns {Collection} Does not preserve order.
+   */
+  inCommon : function(otherColl) {
+    inCommonColl(this, otherColl);
+  },
+
+  /**
+   * operator xor
+   * [Symmetric difference](http://en.wikipedia.org/wiki/Symmetric_difference)
+   * Returns a collection that contains all values that are contained only in |this| or in |otherColl|, but not in both.
+   * @param otherColl {Collection}
+   * @returns {Collection} Does not preserve order.
+   */
+  notInCommon : function(otherColl) {
+    notInCommonColl(this, otherColl);
+  },
+
+  /**
+   * @param sortFunc {Function(item)} like Array.sort()
+   * @returns {Array of items} sorted by |sortFunc|
+   */
+  sort : function(sortFunc) {
+    sortColl(this, sortFunc);
+  },
 
 
 
@@ -372,8 +444,8 @@ function subtractColl(collBase, collSubtract) {
 }
 
 /**
- * Returns a collection that contains all values that are contained
- * in *both* coll1 and coll1.
+ * Returns a collection that contains the values that are contained
+ * in *both* coll1 and coll1, and only those.
  *
  * Intersection @see <http://en.wikipedia.org/wiki/Intersection_(set_theory)>
  *
@@ -1196,7 +1268,7 @@ function extend(child, supertype)
 function assert(test, errorMsg)
 {
   if (!test)
-    throw new NotReached(errorMsg ? errorMsg : "Bug: assertion failed");
+    throw new Error(errorMsg ? errorMsg : "Bug: assertion failed");
 }
 
 module.exports = {
