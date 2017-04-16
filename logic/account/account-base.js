@@ -45,7 +45,7 @@ util.importAll(util, global);
 var ourPref = require("util/preferences").myPrefs;
 var getAllAccounts = require("logic/account/account-list").getAllAccounts; // for delete account
 var sanitize = new require("util/sanitizeDatatypes").sanitize;
-var gStringBundle = new require("trex/stringbundle").StringBundle("mail");
+var gStringBundle = new (require("trex/stringbundle").StringBundle)("mail");
 
 /**
  * API for all accounts

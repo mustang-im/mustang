@@ -57,7 +57,7 @@ util.importAll(require("logic/mail/Auth"), global);
 importAll(require("logic/mail/MIME"), global);
 var MailAccount = require("logic/account/account-base").MailAccount;
 var LineSocket = require("logic/mail/Socket").LineSocket;
-var gStringBundle = new require("trex/stringbundle").StringBundle("mail");
+var gStringBundle = new (require("trex/stringbundle").StringBundle)("mail");
 
 /**
  * Holds and manages login state of one POP3 account

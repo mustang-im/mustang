@@ -63,7 +63,7 @@ util.importAll(require("logic/mail/MIME"), global);
 var MailAccount = require("logic/account/account-base").MailAccount;
 var LineSocket = require("logic/mail/Socket").LineSocket;
 var sanitize = require("util/sanitizeDatatypes").sanitize;
-var gStringBundle = new require("trex/stringbundle").StringBundle("mail");
+var gStringBundle = new (require("trex/stringbundle").StringBundle)("mail");
 
 /**
  * Holds and manages login state of one IMAP account

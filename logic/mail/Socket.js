@@ -38,7 +38,7 @@
 var util = require("util/util");
 util.importAll(util, global);
 var sanitize = require("util/sanitizeDatatypes").sanitize;
-var gStringBundle = new require("trex/stringbundle").StringBundle("util");
+var gStringBundle = new (require("trex/stringbundle").StringBundle)("util");
 
 /**
  * Generic socket implementation based on XPCOM Sockets.
