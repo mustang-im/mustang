@@ -490,13 +490,15 @@ var xorColl = notInCommonColl;
  * - can hold the same item several times
  * - fast
  *
- * @param copyFromArray {Array} init the collection with these values
+ * @param copyFrom {Array or Collection} init the collection with these values
  */
-function ArrayColl(copyFromArray) {
+function ArrayColl(copyFrom) {
   KeyValueCollection.call(this);
   this._array = [];
-  if (copyFromArray && copyFromArray.length) {
-    this._array = copyFromArray.slice(0);
+  if (copyFrom instanceof Collection) {
+    this._array = copyFrom.contents;
+  } else if (copyFrom && copyFrom.length) {
+    this._array = copyFrom.slice(0);
   }
 }
 ArrayColl.prototype = {

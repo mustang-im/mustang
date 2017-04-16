@@ -70,8 +70,10 @@ var gStringBundle = new (require("trex/stringbundle").StringBundle)("mail");
  */
 function IMAPAccount(accountID, isNew)
 {
-  this._folders = {};
-  this._connections = [];
+  this._folders = new MapColl();
+  this._inbox = new MsgFolder("INBOX", "INBOX");
+  this._folders.add("INBOX", this._inbox);
+  this._connections = new ArrayColl();
   this._pollingErrorLoopCounter = 0;
   MailAccount.call(this, accountID, isNew);
 }
@@ -80,13 +82,14 @@ IMAPAccount.prototype =
   kType : "imap",
 
   /**
-   * {Map of foldername -> {
-   *   mailCount {Integer}
-   *   newMailCount {Integer}
-   *   emails {Array of RFC822Mail}
-   * }}
+   * {MapColl of foldername -> MsgFolder}
    */
   _folders : null,
+
+  /**
+   * {MsgFolder}
+   */
+  _inbox : null,
 
   /**
    * Lists |IMAPConnection|s for this account,
@@ -106,29 +109,49 @@ IMAPAccount.prototype =
    * It's NOT the unread mails (called "UNSEEN" in IMAP).
    * {Integer} -1 = not checked
    */
-  get newMailCount()
+  get newMessageCount()
   {
     var sum = 0;
-    objForEach(this._folders, function(folder) {
-      if (folder.newMailCount)
-        sum += folder.newMailCount;
-    }, this);
+    this._folders.forEach(folder => {
+      if (folder.newMessageCount) {
+        sum += folder.newMessageCount;
+      }
+    });
     return sum;
   },
 
   /**
    * Some of the unchecked mails (headers) in all folders.
    * Count depends on |peekMails|.
-   * {Array of RFC822Mail}
+   * {Collection of RFC822Mail}
    */
-  get emails()
+  get messages()
   {
-    var coll = [];
-    objForEach(this._folders, function(folderInfo) {
-      if (folderInfo.emails && folderInfo.emails.length)
-        coll = coll.concat(folderInfo.emails);
-    }, this);
+    var coll = null;
+    this._folders.forEach(folder => {
+      if (!coll) {
+        coll = folder.messages;
+      } else {
+        coll = coll.concat(folder.messages);
+      }
+    });
     return coll;
+  },
+
+  /**
+   * {Collection of MsgFolder}
+   */
+  get folders()
+  {
+    return this._folders;
+  },
+
+  /**
+   * {MsgFolder}
+   */
+  get inbox()
+  {
+    return this._inbox;
   },
 
   /**
@@ -136,10 +159,8 @@ IMAPAccount.prototype =
    *    if false, check only once. Logs out afterward.
    *    if true, keeps the connection open via IDLE and waits for the server
    *        to tell us about new mail arrivals.
-   * @param successCallback {Function(newMailCount {Integer}),
-   *    emails {Array of RFC822Mail})}
+   * @param successCallback {Function()}
    *    Will be called only once, even if the checks continue.
-   *    |emails| count depends on |peekMails|.
    */
   login : function(continuously, successCallback, errorCallback)
   {
@@ -165,13 +186,13 @@ IMAPAccount.prototype =
      * for several folders.
      */
     var pollingSucceededOnce = false;
-    var pollingErrorCallback = function(e) {
+    var pollingErrorCallback = e => {
       // Error happened before the first poll succeeded
       if ( !pollingSucceededOnce) {
-        errorCallback(e);
+        errorCallback(ex);
         return;
       }
-      errorInBackend(e);
+      errorInBackend(ex);
       if (self._pollingErrorLoopCounter++ > 2) {
         // Loop happened when _started = true in Socket._createSocket().
         // Not anymore, but loops are bad, so add some extra protection.
@@ -179,8 +200,8 @@ IMAPAccount.prototype =
         return;
       }
       //conn.logout(); done in checkMailsFolder() pollingErrorCallback
-      self.login(continuously, function() {}, function(e) {
-        errorInBackend(e);
+      self.login(continuously, function() {}, ex => {
+        errorInBackend(ex);
         // Give up
         self.logoutButKeepCredentials(function() {}, errorInBackend);
       });
@@ -188,37 +209,33 @@ IMAPAccount.prototype =
 
     var conn = new IMAPConnection(this, pollingErrorCallback);
     // IMAPConnection adds itself to this._connections
-    conn.login(function()
+    conn.login(() =>
     {
       notifyGlobalObservers("logged-in", { account: self });
       // TODO NAMESPACE
       // TODO LIST folders
-      conn.checkMailsFolder("INBOX", self._peekMails, continuously,
-      function(newMailCount, previousNewMailCount, emails)
+      conn.checkMailsFolder(this._inbox, self._peekMails, continuously,
+      msgFolder =>
       {
         pollingSucceededOnce = true;
-        successCallback(newMailCount, emails);
-        if (newMailCount != previousNewMailCount) {
-          notifyGlobalObservers("mail-check", { account: self });
-        }
+        successCallback();
         if (!continuously)
           conn.logout();
       }, errorCallback, pollingErrorCallback);
     }, errorCallback);
   },
 
-  _getFolderInfo : function(foldername)
+  /*
+  _getFolderByName : function(foldername)
   {
-    if ( !this._folders[foldername])
+    if ( !this._folders.containsKey(foldername))
     {
-      this._folders[foldername] = {
-        newMailCount : 0,
-        mailCount : 0,
-        emails : [],
-      };
+      var fullPath = foldername; // TODO
+      this._folders.set(foldername, new MsgFolder(foldername, fullPath));
     }
-    return this._folders[foldername];
+    return this._folders.get(foldername);
   },
+  */
 
   /**
    * Closes open connections with the server,
@@ -241,10 +258,8 @@ IMAPAccount.prototype =
     assert(typeof(errorCallback) == "function", "need errorCallback");
 
     // logout modifies _conns, but forEach() copies
-    this._connections.forEach(function(conn) {
-      conn.logout();
-    }, this);
-    this._folders = {};
+    this._connections.forEach(conn => conn.logout());
+    this._folders.clear();
     successCallback();
     var self = this;
     notifyGlobalObservers("mail-check", { account: self });
@@ -283,6 +298,12 @@ IMAPConnection.prototype =
   _loggedIn : false,
 
   /**
+   * The folder that this collection has currently open.
+   * {MsgFolder}
+   */
+  folder : null,
+
+  /**
    * Opens a new connection to the server.
    */
   login : function(successCallback, errorCallback)
@@ -293,19 +314,19 @@ IMAPConnection.prototype =
     assert(this._account._password, "need password before trying to log in");
     var self = this;
     var callerErrorCallback = errorCallback;
-    errorCallback = function(e)
+    errorCallback = ex =>
     {
       self.logout();
-      callerErrorCallback(e);
+      callerErrorCallback(ex);
     };
 
     var socket = this._socket;
-    this._openConnection(function()
+    this._openConnection(() =>
     {
-      var done = function()
+      var done = () =>
       {
         self._loggedIn = true;
-        self._account._connections.push(self);
+        self._account._connections.add(self);
         successCallback();
       };
       var username = self._account.username;
@@ -313,7 +334,7 @@ IMAPConnection.prototype =
       if (self._capability["AUTH=CRAM-MD5"])
       {
         socket.sendAndReceiveIMAP("AUTHENTICATE CRAM-MD5",
-        function(line)
+        line =>
         {
           var challenge = sanitize.nonemptystring(line);
           var cred = AuthCRAMMD5.encodeLine(username, password, challenge);
@@ -323,7 +344,7 @@ IMAPConnection.prototype =
       else if (self._capability["AUTH=PLAIN"])
       {
         socket.sendAndReceiveIMAP("AUTHENTICATE PLAIN",
-        function()
+        () =>
         {
           var cred = AuthPLAIN.encodeLine(username, password);
           socket.sendLines([ cred ]);
@@ -344,18 +365,19 @@ IMAPConnection.prototype =
   _openConnection : function(successCallback, errorCallback)
   {
     var self = this;
-    this._socket.openSocket(function()
+    this._socket.openSocket(() =>
     {
       // Wait for server response
-      self._socket.receiveIMAP(null, null, function(line)
+      self._socket.receiveIMAP(null, null,
+      line =>
       {
         // Got "* OK servername" response
-        self._doSTARTTLSIfNecessary(function()
+        self._doSTARTTLSIfNecessary(() =>
         {
           self._getCAPs(successCallback, errorCallback);
         }, errorCallback);
       },
-      function(okMsg)
+      okMsg =>
       {
         // command success: there was no command, so this never comes
       }, errorCallback);
@@ -376,8 +398,7 @@ IMAPConnection.prototype =
     if (!(sslControl instanceof Ci.nsISSLSocketControl)) // implicitly does QI
       throw new Exception("nsISSLSocketControl not found");
 
-    this._socket.sendAndReceiveIMAP("STARTTLS", null, null, null,
-    function()
+    this._socket.sendAndReceiveIMAP("STARTTLS", null, null, null, () =>
     {
       // |Socket| implements SSL notification callbacks
       sslControl.StartTLS(); // apparently sync, blocks UI :-(
@@ -389,12 +410,12 @@ IMAPConnection.prototype =
   {
     var self = this;
     this._socket.sendAndReceiveIMAP("CAPABILITY", null, null,
-    function(line)
+    line =>
     {
       if (line.substr(0, 11) != "CAPABILITY ")
         return;
       line = line.substr(11);
-      line.split(" ").forEach(function(cap)
+      line.split(" ").forEach(cap =>
       {
         cap = sanitize.nonemptystring(cap);
         if (!/^[a-zA-Z0-9\-\_=\+]*$/.test(cap))
@@ -406,28 +427,26 @@ IMAPConnection.prototype =
   },
 
   /**
+   * @param folder {MsgFolder}
    * @param peekMails {Integer}  Also fetch the email headers.
    *   Fetch this many mails maximum. Pass 0 to only get the number of mails.
    * @param continuously {Boolean}
    *    if false, check only once. Logs out afterward.
    *    if true, keeps the connection open via IDLE and waits for the server
    *        to tell us about new mail arrivals.
-   * @param successCallback {Function(newMailCount {Integer},
-   *        previousNewMailCount {Integer}),
-   *    emails {Array of RFC822Mail})}
+   * @param successCallback {Function(folder {MsgFolder})}
    *    Will be called only once, even if the checks continue.
-   *    |emails| count depends on |peekMails|.
-   * @param firstErrorCallback {Function(e)}   When the first
+   * @param firstErrorCallback {Function(ex)}   When the first
    *     opening of the folder fails
-   * @param pollingErrorCallback {Function(e)}   Later errors when
+   * @param pollingErrorCallback {Function(ex)}   Later errors when
    *     the polling or IDLE call fails or the connection drops.
    *     You need to handle conn.logout(), possibly reconnect etc.
    */
-  checkMailsFolder : function(foldername, peekMails, continuously,
+  checkMailsFolder : function(folder, peekMails, continuously,
                               successCallback, firstErrorCallback, pollingErrorCallback)
   {
     assert(this._loggedIn, "Please login() first");
-    sanitize.nonemptystring(foldername);
+    sanitize.nonemptystring(folder.name);
     sanitize.integer(peekMails);
     sanitize.boolean(continuously);
     assert(typeof(successCallback) == "function");
@@ -435,37 +454,36 @@ IMAPConnection.prototype =
     assert(typeof(pollingErrorCallback) == "function");
     var self = this;
     var callerFirstErrorCallback = firstErrorCallback;
-    firstErrorCallback = function(e) {
+    firstErrorCallback = ex => {
       self.logout();
-      callerFirstErrorCallback(e);
+      callerFirstErrorCallback(ex);
     };
     var callerPollingErrorCallback = pollingErrorCallback;
-    pollingErrorCallback = function(e) {
+    pollingErrorCallback = ex => {
       self.logout();
-      callerPollingErrorCallback(e);
+      callerPollingErrorCallback(ex);
     };
 
-    var folderInfo = this._account._getFolderInfo(foldername);
+    this.folder = folder;
 
     var socket = this._socket;
-    socket.sendAndReceiveIMAP("EXAMINE " + socket.quoteArg(foldername), null, null,
-    function(line)
+    socket.sendAndReceiveIMAP("EXAMINE " + socket.quoteArg(folder.name), null, null,
+    line =>
     {
-      self._folderInfoReponse(folderInfo, line);
+      self._folderInfoReponse(self.folder, line);
     },
-    function(okMsg)
+    okMsg =>
     {
       // Note: Must run _haveNewMail() only after we have one full statement
       // EXISTS and RECENT, because we'll otherwise consider the
       // increate of EXISTS from 0 (start) to the real number as new mail
 
-      self._fetchMessages(folderInfo, peekMails, function(emails) {
+      self._fetchMessages(self.folder, peekMails, () => {
 
         // successCallback (or errorCallback) must be called once
-        successCallback(folderInfo.newMailCount, folderInfo.previousNewMailCount, emails);
-        folderInfo.previousNewMailCount = folderInfo.newMailCount;
-        folderInfo.previousMailCount = folderInfo.mailCount;
-        folderInfo.emails = emails;
+        successCallback(self.folder);
+        self.folder._previousNewMessageCount = self.folder.newMessageCount;
+        self.folder._previousMessageCount = self.folder.messageCount;
         if (!continuously)
           return;
 
@@ -478,29 +496,29 @@ IMAPConnection.prototype =
           const PR_UINT32_MAX = Math.pow(2, 32) - 1;
           socket._socket.setTimeout(Ci.nsISocketTransport.TIMEOUT_READ_WRITE, PR_UINT32_MAX);
 
-          var idle = function()
+          var idle = () =>
           {
             socket.sendAndReceiveIMAP("IDLE",
-            function(line) {
+            line =>
+            {
               // server says "* idling"
             }, null,
-            function(line)
+            line =>
             {
-              self._folderInfoReponse(folderInfo, line);
-              self._haveNewMail(folderInfo, function(newMailCount, previousNewMailCount) {
+              self._folderInfoReponse(self.folder, line);
+              self._haveNewMail(self.folder, () => {
                 notifyGlobalObservers("mail-check", { account: self._account });
               });
             },
-            function(okMsg) // server response to "DONE" received
+            okMsg => // server response to "DONE" received
             {
-              self._fetchMessages(folderInfo, peekMails, function(emails) {
-                folderInfo.emails = emails;
+              self._fetchMessages(self.folder, peekMails, () => {
 
                 idle(); // loop
 
               }, pollingErrorCallback);
             }, pollingErrorCallback);
-            self._poller = runAsync(function()
+            self._poller = runAsync(() =>
             {
               socket.sendLines(["DONE"]);
             }, pollingErrorCallback, 28 * 60 * 1000); // 28min
@@ -512,21 +530,20 @@ IMAPConnection.prototype =
         }
         else
         {
-          self._poller = runPeriodically(function()
+          self._poller = runPeriodically(() =>
           {
-            //socket.sendAndReceiveIMAP("EXAMINE " + socket.quoteArg(foldername), null, null,
+            //socket.sendAndReceiveIMAP("EXAMINE " + socket.quoteArg(folder.name), null, null,
             socket.sendAndReceiveIMAP("NOOP", function() {}, null,
-            function(line)
+            line =>
             {
-              self._folderInfoReponse(folderInfo, line);
-              self._haveNewMail(folderInfo, function(newMailCount, previousNewMailCount) {
+              self._folderInfoReponse(self.folder, line);
+              self._haveNewMail(self.folder, () => {
                 notifyGlobalObservers("mail-check", { account: self._account });
               });
             },
-            function(okMsg)
+            okMsg =>
             {
-              self._fetchMessages(folderInfo, peekMails, function(emails) {
-                folderInfo.emails = emails;
+              self._fetchMessages(self.folder, peekMails, () => {
               }, pollingErrorCallback);
             }, pollingErrorCallback);
           }, pollingErrorCallback, self._account._interval * 1000);
@@ -538,92 +555,97 @@ IMAPConnection.prototype =
   /**
    * Parses "* 4 RECENT" response to EXAMIME or IDLE
    */
-  _folderInfoReponse : function(folderInfo, line)
+  _folderInfoReponse : function(folder, line)
   {
     var spl = line.split(" ");
     if (spl.length < 2)
       return;
     if (spl[1] == "RECENT")
     {
-      folderInfo.newMailCount = sanitize.integer(spl[0]);
+      folder.newMessageCount = sanitize.integer(spl[0]);
     }
     else if (spl[1] == "EXISTS")
     {
-      folderInfo.mailCount = sanitize.integer(spl[0]);
+      folder.messageCount = sanitize.integer(spl[0]);
     }
   },
 
-  _haveNewMail : function(folderInfo, successCallback)
+  _haveNewMail : function(folder, successCallback)
   {
     //ddebug("have new mail?");
-    //debugObject(folderInfo, "folderInfo");
-    if (folderInfo.newMailCount != folderInfo.previousNewMailCount)
+    //debugObject(folder, "folder");
+    if (folder.newMessageCount != folder._previousNewMessageCount)
     {
       //ddebug("RECENT changed");
-      successCallback(folderInfo.newMailCount, folderInfo.previousNewMailCount);
+      successCallback(folder.newMessageCount, folder._previousNewMessageCount);
     }
     /*
     // When another mail client is active, it gets the RECENT instead of us.
     // Also, imap.web.de server is broken and never reports RECENT (imap.gmx.net works).
     // So, watch changes in EXISTS.
-    else if ( !folderInfo.newMailCount && !folderInfo.previousNewMailCount &&
-        typeof(folderInfo.previousMailCount) == "number" &&
-        folderInfo.mailCount != folderInfo.previousMailCount)
+    else if ( !folder.newMessageCount && !folder._previousNewMessageCount &&
+        typeof(folder._previousMessageCount) == "number" &&
+        folder.messageCount != folder._previousMessageCount)
     {
       //ddebug("EXISTS changed");
       // TODO issue "SEARCH UNSEEN", but we might be in the middle
       // of IDLE, so we'd have to close and restart that. Bad IMAP protocol!
       // So, for now, accept that the new mail will be shown only for |interval| time.
-      successCallback(folderInfo.mailCount - folderInfo.previousMailCount);
+      successCallback(folder.messageCount - folder._previousMessageCount);
     }
     */
-    folderInfo.previousNewMailCount = folderInfo.newMailCount;
-    folderInfo.previousMailCount = folderInfo.mailCount;
+    folder._previousNewMessageCount = folder.newMessageCount;
+    folder._previousMessageCount = folder.messageCount;
   },
 
-  _fetchMessages : function(folderInfo, peekMails, successCallback, errorCallback) {
+  _fetchMessages : function(folder, peekMails, successCallback, errorCallback) {
     if (peekMails == 0) {
-      successCallback([]);
+      successCallback();
       return;
     }
     var self = this;
     var messageIDs = [];
     self._socket.sendAndReceiveIMAP("SEARCH NEW", null, null,
-    function(line)
+    line =>
     {
       var spl = line.trim().split(" ");
       assert(spl.length > 0);
       assert(spl.shift() == "SEARCH");
-      spl.forEach(function(msgID) {
+      spl.forEach(msgID => {
         messageIDs.push(sanitize.alphanumdash(msgID));
       });
     },
-    function(okMsg)
+    okMsg =>
     {
       if (messageIDs.length == 0) {
-        successCallback([]);
+        successCallback();
         return;
       }
-      var emails = [];
 
       // last n messages only
       messageIDs = messageIDs.slice(0 - peekMails);
+
+      var previousMessages = new ArrayColl(folder.messages);
 
       // recursive function doing async I/O
       function fetchNextMessage(msgID) {
         var currentEmailLines = [];
         self._socket.sendAndReceiveIMAP("FETCH " + msgID + " (BODY[HEADER.FIELDS (FROM SUBJECT DATE)])", null,
-        function(line) { // raw line
+        line => // raw line
+        {
           if (line == ")") {
             // Parse email
-            emails.push(new RFC822Mail(currentEmailLines));
+            var email = new RFC822Mail(currentEmailLines);
+            if ( !folder.messages.containsKey(email.msgID)) {
+              folder.messages.add(email);
+            }
             currentEmailLines = [];
-            ddebug(JSON.stringify(emails[emails.length - 1], null, " "));
+            //ddebug(JSON.stringify(email, null, " "));
             return;
           }
           currentEmailLines.push(line);
         },
-        function(line) // info line
+        line => // info line
         {
           var spl = line.split(" ");
           assert(spl.length > 2);
@@ -633,13 +655,16 @@ IMAPConnection.prototype =
           }
           assert(spl.shift() == "FETCH");
         },
-        function(okMsg)
+        okMsg =>
         {
           self._socket._rawLineResponseCallback = null;
           if (messageIDs.length) {
             fetchNextMessage(messageIDs.shift());
           } else {
-            successCallback(emails);
+            // remove emails that are no longer returned by server
+            folder.messages.removeAll(previousMessages.substract(folder.messages));
+
+            successCallback();
           }
         }, errorCallback);
       };
@@ -653,7 +678,7 @@ IMAPConnection.prototype =
     if (this._poller)
       this._poller.cancel();
     this._socket.close();
-    arrayRemove(this._account._connections, this);
+    this._account._connections.remove(this);
   },
 
 }
@@ -735,7 +760,7 @@ IMAPClientSocket.prototype =
   _receiveLinesToIMAP : function(inLines)
   {
     var expectedTagSpace = this._currentLineTag + " ";
-    inLines.forEach(function(line)
+    inLines.forEach(line =>
     {
       if (line == "")
         return;
@@ -755,7 +780,7 @@ IMAPClientSocket.prototype =
 
           // ensure that the successCallback is called only once
           /* TODO is called when it shouldn't be
-          this._successResponseCallback = function(line)
+          this._successResponseCallback = line =>
           {
             this._errorResponseCallback(new UnexpectedIMAPResponse(
                 line, this.hostname));

@@ -65,25 +65,37 @@ var gStringBundle = new (require("trex/stringbundle").StringBundle)("mail");
 function POP3Account(accountID, isNew)
 {
   MailAccount.call(this, accountID, isNew);
-  this._emails = [];
+  var inbox = new MsgFolder("INBOX", "INBOX");
+  this._emails = inbox.messages;
+  this._folders = new MapColl();
+  this._folders.set("INBOX", inbox);
 }
 POP3Account.prototype =
 {
   kType : "pop3",
 
-  _newMailCount : -1, // {Integer} -1 = not checked
-  _previousNewMailCount : -1, // {Integer} avoids excessive notifications
-  _emails : null, // {Array of RFC822Mail} Some of the unchecked mails (headers)
+  _newMessageCount : -1, // {Integer} -1 = not checked
+  _previousNewMessageCount : -1, // {Integer} avoids excessive notifications
+  _emails : null, // {MapColl of MessageID -> RFC822Mail} Some of the unchecked mails (headers)
+  _folders : null, // {MapColl of foldername -> MsgFolder}
   _timer : null, // {Abortable} for start/stopCheckingInterval()
 
-  get newMailCount()
+  get newMessageCount()
   {
-    return this._newMailCount;
+    return this._newMessageCount;
   },
 
-  get emails()
+  get messages()
   {
     return this._emails;
+  },
+
+  /**
+   * {Collection of MsgFolder}
+   */
+  get folders()
+  {
+    return this._folders;
   },
 
   get isLoggedIn()
@@ -114,9 +126,9 @@ POP3Account.prototype =
 
     this._stopCheckingInterval();
 
-    this._newMailCount = -1;
-    this._emails = [];
-    this._previousNewMailCount = -1;
+    this._newMessageCount = -1;
+    this._emails.clear();
+    this._previousNewMessageCount = -1;
 
     successCallback();
     var self = this;
@@ -125,8 +137,7 @@ POP3Account.prototype =
   },
 
   /**
-   * @param successCallback {Function(newMailCount {Integer}),
-   *    emails {Array of RFC822Mail})}
+   * @param successCallback {Function()}
    */
   _checkWithServerOnce : function(successCallback, errorCallback)
   {
@@ -141,23 +152,23 @@ POP3Account.prototype =
       username : self.username,
       password : self._password,
       peekMaxMails : self._peekMails,
+      emails : self._emails,
     },
-    function(newMailCount, emails)
+    (newMessageCount) =>
     {
-      self._newMailCount = newMailCount;
-      self._emails = emails;
+      self._newMessageCount = newMessageCount;
       //debugObject(emails, "emails", 2);
-      successCallback(newMailCount, emails);
-      if (self._previousNewMailCount == self._newMailCount)
+      successCallback();
+      if (self._previousNewMessageCount == self._newMessageCount)
         return;
       notifyGlobalObservers("mail-check", { account: self });
-      self._previousNewMailCount = self._newMailCount;
+      self._previousNewMessageCount = self._newMessageCount;
     },
-    function(e)
+    ex =>
     {
-      self._newMailCount = -1;
-      self._emails = [];
-      errorCallback(e);
+      self._newMessageCount = -1;
+      self._emails.clear();
+      errorCallback(ex);
     });
   },
 
@@ -168,9 +179,9 @@ POP3Account.prototype =
    * will be called, so they will be called many times.
    * To stop it, call stopCheckingInterval().
    *
-   * @param successCallback @see login()
-   * @param firstErrorCallback {Function(e)} error during first mail check
-   * @param pollingErrorCallback {Function(e)} (Optional)
+   * @param successCallback {Function()}
+   * @param firstErrorCallback {Function(ex)} error during first mail check
+   * @param pollingErrorCallback {Function(ex)} (Optional)
    *     Error later during polling or a connection drop
    *     If not passed, will try to re-login once.
    */
@@ -196,26 +207,28 @@ POP3Account.prototype =
      * Consider multiple checkMailsFolder() running at the same time
      * for several folders.
      */
-    pollingErrorCallback = pollingErrorCallback || function(e) {
-      errorInBackend(e);
-      // Give up
-      self._logoutButKeepCredentials(function() {}, errorInBackend);
-      // If polling fails again, stop checking
-      self._stopCheckingInterval();
-    };
-    this._checkWithServerOnce(function(newMailCount, emails)
+    if (!pollingErrorCallback) {
+      pollingErrorCallback = ex => {
+        errorInBackend(ex);
+        // Give up
+        self._logoutButKeepCredentials(function() {}, errorInBackend);
+        // If polling fails again, stop checking
+        self._stopCheckingInterval();
+      };
+    }
+    this._checkWithServerOnce(newMessageCount =>
     {
       notifyGlobalObservers("logged-in", { account: self });
-      successCallback(newMailCount, emails);
-    }, function(e) {
+      successCallback();
+    }, ex => {
       // We shouldn't call logout, because we were never logged in.
       // But we need to delete the password, otherwise the next attempt
       // to login won't show a dialog.
       self._deleteStoredPassword();
       self._stopCheckingInterval();
-      firstErrorCallback(e);
+      firstErrorCallback(ex);
     });
-    this._timer = runPeriodically(function()
+    this._timer = runPeriodically(() =>
     {
       self._checkWithServerOnce(function() {}, pollingErrorCallback);
     }, pollingErrorCallback, this._interval * 1000);
@@ -225,8 +238,8 @@ POP3Account.prototype =
     if (this._timer)
       this._timer.cancel();
     this._timer = null;
-    this._newMailCount = -1;
-    this._emails = [];
+    this._newMessageCount = -1;
+    this._emails.clear();
     var self = this;
     notifyGlobalObservers("logged-out", { account: self });
   },
@@ -318,10 +331,10 @@ extend(POP3ClientSocket, LineSocket);
  *     Not necessarily the same as email address. Depends on ISP and user.
  * @param password {String}
  * @param peekMaxMails {Integer} if > 0, get subject and author of the first n mails
+ * @param emails {Collection of RFC822Mail}
  *
  * (direct params):
- * @param successCallback {Function(newMailCount {Integer},
- *     emails {Array of RFC822Mail})}
+ * @param successCallback {Function(newMessageCount {Integer})}
  * @param errorCallback
  */
 function mailCheck(p, successCallback, errorCallback)
@@ -329,40 +342,43 @@ function mailCheck(p, successCallback, errorCallback)
   sanitize.label(p.username);
   sanitize.nonemptystring(p.password);
   sanitize.integer(p.peekMaxMails);
-  p.errorCallback = function(e)
+  p.errorCallback = ex =>
   {
     socket.close();
-    errorCallback(e);
+    errorCallback(ex);
   };
 
   var socket = new POP3ClientSocket(p);
   //socket.protocolDebug = true;
-  socket.openSocket(function()
+  socket.openSocket(() =>
   {
-    socket.registerReceivePOP3Callback(function(msg, fullResp) // wait for server hello
+    socket.registerReceivePOP3Callback((msg, fullResp) => // wait for server hello
     {
-      socket.sendAndReceivePOP3("USER " + p.username, function(msg, fullResp)
+      socket.sendAndReceivePOP3("USER " + p.username, (msg, fullResp) =>
       {
-        socket.sendAndReceivePOP3("PASS " + p.password, function(msg, fullResp)
+        socket.sendAndReceivePOP3("PASS " + p.password, (msg, fullResp) =>
         {
-          socket.sendAndReceivePOP3("STAT", function(msg, fullResp)
+          socket.sendAndReceivePOP3("STAT", (msg, fullResp) =>
           {
             var words = msg.split(" ");
-            var newMailCount = sanitize.integer(words[0]);
-            var emails = [];
+            var newMessageCount = sanitize.integer(words[0]);
+
             // async |for| loop. TODO use new JS |yield|?
-            var i = Math.max(0, newMailCount - p.peekMaxMails);
-            var l = newMailCount;
-            var sendTOP = function()
+            var i = Math.max(0, newMessageCount - p.peekMaxMails);
+            var l = newMessageCount;
+            var sendTOP = () =>
             {
               if (i < l) // loop condition
               {
-                socket.sendAndReceivePOP3("TOP " + (i + 1) + " 0", function(msg, firstResp)
+                socket.sendAndReceivePOP3("TOP " + (i + 1) + " 0", (msg, firstResp) =>
                 {
-                  var finish = function(fullText)
+                  var finish = (fullText) =>
                   {
                     try {
-                      emails.push(new RFC822Mail(fullText));
+                      var email = new RFC822Mail(fullText);
+                      if ( !p.emails.containsKey(email.msgID)) {
+                        p.emails.add(email);
+                      }
                     } catch (e) { errorInBackend(e); }
 
                     sendTOP(); // loop
@@ -371,7 +387,7 @@ function mailCheck(p, successCallback, errorCallback)
                   var fullText = firstResp.splice(1); // Remove "+OK" line
 
                   // potentially modifes |fullText|. @returns {Boolean}
-                  var checkEnd = function()
+                  var checkEnd = () =>
                   {
                     var last = fullText.length - 1;
                     if (fullText[last] == "")
@@ -392,7 +408,7 @@ function mailCheck(p, successCallback, errorCallback)
                   if (checkEnd())
                     finish(fullText);
                   else
-                    socket.registerReceivePOP3ContinuationCallback(function(moreResp)
+                    socket.registerReceivePOP3ContinuationCallback((moreResp) =>
                     {
                       fullText = fullText.concat(moreResp);
                       if (checkEnd())
@@ -404,7 +420,7 @@ function mailCheck(p, successCallback, errorCallback)
               else // after loop end
               {
                 ddebug("closing socket");
-                successCallback(newMailCount, emails);
+                successCallback(newMessageCount);
                 socket.close();
               }
               i++; // loop iteration
@@ -429,7 +445,7 @@ function pingTest(hostname, port, successCallback, errorCallback)
     errorCallback : errorCallback,
   });
   socket.protocolDebug = true;
-  socket.sendAndReceive("ping", function(inData)
+  socket.sendAndReceive("ping", inData =>
   {
     if (inData[0] == "pong")
     {

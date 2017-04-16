@@ -141,10 +141,8 @@ Account.prototype =
    *    if false, check only once. Logs out afterward.
    *    if true, keeps the connection open via IDLE and waits for the server
    *        to tell us about new mail arrivals.
-   * @param successCallback {Function(newMailCount {Integer}),
-   *    emails {Array of RFC822Mail})}
+   * @param successCallback {Function()}
    *    Will be called only once, even if the checks continue.
-   *    |emails| is null, if peekMails == false.
    */
   login : function(continuously, successCallback, errorCallback)
   {
@@ -205,22 +203,32 @@ MailAccount.prototype =
    * Amount of new mails in all known folders.
    * New here means mails not seen by any IMAP client (called "RECENT" in IMAP).
    * It's NOT the unread mails (called "UNSEEN" in IMAP).
-   * {Integer} -1 = not checked
+   * {Integer}
+   * -1 = not checked
    */
-  get newMailCount()
+  get newMessageCount()
   {
     throw new NotReached("implement");
   },
 
   /**
    * Some of the unchecked mails (headers) in all folders
-   * {Array of RFC822Mail}
+   * {Collection of MsgFolder}
    * may be null or an empty array when this is not implemented.
    */
-  get emails()
+  get folders()
   {
-    return [];
-    //throw new NotReached("implement");
+    throw new NotReached("implement");
+  },
+
+  /**
+   * The primary, default folder to open when the user opens the account
+   * {MsgFolder}
+   * -1 = not checked
+   */
+  get inbox()
+  {
+    throw new NotReached("implement");
   },
 
   /**
@@ -437,6 +445,70 @@ MailAccount.prototype =
 }
 extend(MailAccount, Account);
 
+
+/**
+ * This contains a list of messages.
+ * It represents e.g.
+ * - IMAP folder
+ * - POP3 inbox
+ * - local mbox
+ * - NNTP newsgroup
+ * - RSS news feed
+ *
+ * @param name {String}   Folder name
+ *     This is not the full path, but just the name of this one folder.
+ * @param fulPath {String}   folder name within the account
+ *     This is the full path, including delimiters.
+ *     The delimiter depends on the account and server, it may be "/" or "."
+ *     or backslash or something else.
+ *     Not including the account.
+ */
+function MsgFolder(name)
+{
+  this.name = sanitize.nonemptystring(name);
+  this.fullPath = sanitize.nonemptystring(fullPath);
+  this._messages = new MapColl();
+}
+MsgFolder.prototype =
+{
+  /**
+   * @see ctor
+   * {String}
+   */
+  name : null,
+
+  /**
+   * @see ctor
+   * {String}
+   */
+  fullPath : null,
+
+  /**
+   * {MapColl of MessageID -> RFC822Mail}
+   */
+  _messages : null,
+
+  /**
+   * Total number of messages in this folder
+   * {Integer}
+   */
+  messageCount : 0,
+
+  /**
+   * Number of new (unseen) messages in this folder
+   * {Integer}
+   */
+  newMessageCount : 0,
+
+  /**
+   * The messages in this folder.
+   * {Collection of RFC822Mail}
+   */
+  get messages() {
+  },
+}
+
 exports.Account = Account;
 exports.MailAccount = MailAccount;
+exports.MsgFolder = MsgFolder;
 exports.getDomainForEmailAddress = getDomainForEmailAddress;
