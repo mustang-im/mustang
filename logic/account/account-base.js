@@ -43,8 +43,9 @@
 var util = require("util/util");
 util.importAll(util, global);
 var ourPref = require("util/preferences").myPrefs;
-var gStringBundle = new require("trex/stringbundle").StringBundle("mail");
 var getAllAccounts = require("logic/account/account-list").getAllAccounts; // for delete account
+var sanitize = new require("util/sanitizeDatatypes").sanitize;
+var gStringBundle = new require("trex/stringbundle").StringBundle("mail");
 
 /**
  * API for all accounts
@@ -177,7 +178,7 @@ Account.prototype =
   },
 }
 
-Account.getDomainForEmailAddress = function(emailAddress)
+function getDomainForEmailAddress(emailAddress)
 {
   var spl = emailAddress.split("@");
   assert(spl.length == 2, gStringBundle.get("error.syntax"));
@@ -338,7 +339,7 @@ MailAccount.prototype =
 
   get domain()
   {
-    return Account.getDomainForEmailAddress(this.emailAddress);
+    return getDomainForEmailAddress(this.emailAddress);
   },
 
   setServerConfig : function(config)
@@ -366,7 +367,7 @@ MailAccount.prototype =
   {
     sanitize.nonemptystring(this.accountID);
     sanitize.nonemptystring(this.emailAddress);
-    Account.getDomainForEmailAddress(this.emailAddress); // checks
+    getDomainForEmailAddress(this.emailAddress); // checks
     sanitize.hostname(this.hostname);
     sanitize.integerRange(this.port, 0, 65535);
     sanitize.nonemptystring(this.username);
@@ -438,3 +439,4 @@ extend(MailAccount, Account);
 
 exports.Account = Account;
 exports.MailAccount = MailAccount;
+exports.getDomainForEmailAddress = getDomainForEmailAddress;

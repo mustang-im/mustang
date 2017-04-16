@@ -234,7 +234,7 @@ function MalformedException(msgID, uncheckedBadValue)
     msg = gSanitizeBundle.get(msgID);
   } catch (ex) {}
   ddebug(msg += " (bad value: " + new String(uncheckedBadValue) + ")");
-  //Error.call(this, msg);
+  Exception.call(this, msg);
   this.msg = msg;
 }
 MalformedException.prototype = {

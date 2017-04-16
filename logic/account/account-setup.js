@@ -44,9 +44,9 @@
 var util = require("util/util");
 util.importAll(util, global);
 var accounts = require("logic/account/account-list"); // add, remove, getExisting
-var Account = require("logic/account/account-base").Account;
 var IMAPAccount = require("logic/mail/imap").IMAPAccount;
 var POP3Account = require("logic/mail/pop3").POP3Account;
+var getDomainForEmailAddress = require("logic/account/account-base").getDomainForEmailAddress;
 var FetchHTTP = require("util/fetchhttp").FetchHTTP;
 var JXON = require("logic/account/JXON");
 var dns = require("dns");
@@ -74,19 +74,19 @@ function makeNewAccount(emailAddress, successCallback, errorCallback) {
             "account already exists");
     //var accountID = emailAddress;
     var accountID = generateNewAccountID();
-    var domain = Account.getDomainForEmailAddress(emailAddress);
+    var domain = getDomainForEmailAddress(emailAddress);
+
+    return getAccountProviderWithNet(domain, emailAddress, function(config)
+    {
+      var account = _newAccountOfType(config.subtype || config.type, accountID, true);
+      account.emailAddress = emailAddress;
+      account.setServerConfig(config);
+
+      accounts.getAllAccounts().set(accountID,  account);
+      successCallback(account);
+      notifyGlobalObservers("account-added", { account : account });
+    }, errorCallback);
   } catch (e) { errorCallback(e); }
-
-  return getAccountProviderWithNet(domain, emailAddress, function(config)
-  {
-    var account = _newAccountOfType(config.subtype || config.type, accountID, true);
-    account.emailAddress = emailAddress;
-    account.setServerConfig(config);
-
-    accounts.getAllAccounts().set(accountID,  account);
-    successCallback(account);
-    notifyGlobalObservers("account-added", { account : account });
-  }, errorCallback);
 }
 
 function generateNewAccountID() {
@@ -120,7 +120,7 @@ function _newAccountOfType(type, accountID, isNew)
  */
 function verifyEmailAddressDomain(emailAddress, successCallback, errorCallback)
 {
-  var domain = Account.getDomainForEmailAddress(emailAddress);
+  var domain = getDomainForEmailAddress(emailAddress);
   return getAccountProviderWithNet(domain, emailAddress,
       successCallback, errorCallback);
 }
@@ -280,6 +280,7 @@ function getMX(domain, successCallback, errorCallback)
       return;
     }
     ddebug("MX query result: \n" + hostnames.join(", "));
+    hostnames.forEach(hostname => sanitize.hostname(hostname));
     successCallback(hostnames);
   });
 }
