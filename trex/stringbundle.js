@@ -201,22 +201,6 @@ StringBundle.prototype = {
 }
 
 
-/**
-* Get the language of the browser, as sent to webpages.
-* Only the locales for which our ext has translations.
-*
-* You need to configure |supportedLanguages| with the languages
-* for which you have translations for your app.
-*
-* @returns {String} e.g. "en"
-* @see also getUILocale()
-*/
-function getLocale() {
-  var browserLanguage = window.navigator.language.substr(0, 2)
-  return supportedLanguages.filter(function(lang) {
-      return lang == browserLanguage;
-    })[0] || fallbackLanguage;
-}
 
 var StringBundleUtils = {
   /**
@@ -260,5 +244,57 @@ var StringBundleUtils = {
       throw new Error(errorMsg ? errorMsg : "Bug: assertion failed");
   },
 }
+
+if (typeof(window) == "object" && "navigator" in window) {
+
+/**
+* Get the language of the browser, as sent to webpages.
+* Only the locales for which our ext has translations.
+*
+* You need to configure |supportedLanguages| with the languages
+* for which you have translations for your app.
+*
+* @returns {String} e.g. "en"
+* @see also getUILocale()
+*/
+function getLocale() {
+  // Which language to use when the browser has a lang you do not support
+  var browserLanguage = window.navigator.language.substr(0, 2);
+  return supportedLanguages.filter(function(lang) {
+      return lang == browserLanguage;
+    })[0] || fallbackLanguage;
+}
+
+} else { // not browser
+
+StringBundleUtils.readURLasUTF8 = function (filename) {
+  StringBundleUtils.assert(filename && typeof(filename) == "string", "uri must be a string");
+  StringBundleUtils.assert(filename.substr(5) != "http:", "cannot load stringbundles from network in Node");
+  var fs = require("fs");
+  return fs.readFileSync(filename, "utf8");
+};
+
+var i18n = require("i18n");
+i18n.configure({
+  locales : supportedLanguages,
+  defaultLocale : fallbackLanguage,
+});
+
+/**
+* Get the language of the browser, as sent to webpages.
+* Only the locales for which our ext has translations.
+*
+* You need to configure |supportedLanguages| with the languages
+* for which you have translations for your app.
+*
+* @returns {String} e.g. "en"
+* @see also getUILocale()
+*/
+function getLocale() {
+  return i18n.getLocale();
+}
+
+} // if browser
+
 
 exports.StringBundle = StringBundle;
