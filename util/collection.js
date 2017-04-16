@@ -1,6 +1,6 @@
 /*************************
  * name: Collection classes
- * description: List classes like Array, Set, Map, with observers and operators
+ * description: List classes like ArrayColl, SetColl, MapColl, with observers and operators
  * copyright: Ben Bucksch of Beonex
  * license: MIT
  * version: 0.1
@@ -149,7 +149,7 @@ Collection.prototype = {
 
   /**
    * Provides an iterator, i.e. allows to write:
-   * var coll = new Set();
+   * var coll = new SetColl();
    * for each (var item in coll)
    *   debug(item);
    *
@@ -178,7 +178,7 @@ Collection.prototype = {
    * @returns {Collection} Preserves order.
    */
   concat : function(otherColl) {
-    concatColl(this, otherColl);
+    return new AdditionCollection(this, otherColl);
   },
 
   /**
@@ -190,7 +190,7 @@ Collection.prototype = {
    * @returns {Collection} Does not preserve order.
    */
   merge : function(otherColl) {
-    mergeColl(this, otherColl);
+    return new AdditionCollectionWithDups(this, otherColl);
   },
 
   /**
@@ -201,7 +201,7 @@ Collection.prototype = {
    * @returns {Collection} Preserves order of collBase.
    */
   subtract : function(collSubtract) {
-    subtractColl(this, collSubtract);
+    return new SubtractCollection(this, collSubtract);
   },
 
   /**
@@ -213,7 +213,7 @@ Collection.prototype = {
    * @returns {Collection} Does not preserve order.
    */
   inCommon : function(otherColl) {
-    inCommonColl(this, otherColl);
+  return new IntersectionCollection(this, otherColl);
   },
 
   /**
@@ -291,7 +291,7 @@ Collection.prototype = {
 
 /**
  * A collection where entries have a key or label or index.
- * Examples of subclasses: Array (key = index), Map
+ * Examples of subclasses: ArrayColl (key = index), MapColl
  */
 function KeyValueCollection() {
   Collection.call(this);
@@ -483,7 +483,7 @@ var xorColl = notInCommonColl;
 
 
 /**
- * A |Collection| based on a JS Array.
+ * A |KeyValueCollection| based on a JS Array.
  * Properties:
  * - ordered
  * - indexed: every item has an integer key
@@ -655,11 +655,11 @@ function _coll_sanitizeString(str) {
  * - can *not* hold the same item several times
  * - fast
  */
-function Set() {
+function SetColl() {
   Collection.call(this);
   this._array = [];
 }
-Set.prototype = {
+SetColl.prototype = {
 
   /**
    * Adds this item.
@@ -711,26 +711,26 @@ Set.prototype = {
     this._array.forEach(callback, self);
   },
 }
-extend(Set, Collection);
+extend(SetColl, Collection);
 
 
 
 /**
- * A |Collection| which can hold each object only once.
+ * A |KeyValueCollection| which can hold each object only once.
  * Properties:
  * - not ordered
  * - can *not* hold the same item several times
  * - fast
  */
-function Map() {
+function MapColl() {
   Collection.call(this);
   this._obj = {};
 }
-Map.prototype = {
+MapColl.prototype = {
   _nextFree : 0, // Hack to support add() somehow
 
   /**
-   * This doesn't make much sense for Map.
+   * This doesn't make much sense for MapColl.
    * Please use set() instead.
    */
   add : function(value) {
@@ -850,14 +850,14 @@ Map.prototype = {
   },
 
 }
-extend(Map, KeyValueCollection);
+extend(MapColl, KeyValueCollection);
 
 
 /**
  * A |Collection| which wraps a DOMNodeList.
  * It is static, i.e. changes in the DOM are not reflected here.
  */
-function DOMList(domlist) {
+function DOMColl(domlist) {
   assert(typeof(domlist.item) == "function", "Not a DOMNodeList");
   var array = [];
   for (var i = 0, l = domlist.length; i < l; i++) {
@@ -865,7 +865,7 @@ function DOMList(domlist) {
   }
   ArrayColl.call(this, array);
 }
-DOMList.prototype = {
+DOMColl.prototype = {
   add : function(value) {
     throw "immutable";
   },
@@ -878,7 +878,7 @@ DOMList.prototype = {
     throw "immutable";
   },
 }
-extend(DOMList, ArrayColl);
+extend(DOMColl, ArrayColl);
 
 /**
  * A |Collection| which wraps a DOMNodeList.
@@ -886,12 +886,12 @@ extend(DOMList, ArrayColl);
  * be sent to the observers.
  * TODO Not yet implemented
  *
-function DynamicDOMList(domlist) {
+function DynamicDOMColl(domlist) {
   Collection.call(this);
   assert(typeof(domlist.item) == "function", "Not a DOMNodeList");
   this._domlist = domlist;
 }
-DynamicDOMList.prototype = {
+DynamicDOMColl.prototype = {
   /**
    * Adds this element to the DOM, at the end
    *
@@ -935,7 +935,7 @@ DynamicDOMList.prototype = {
     }
   },
 }
-extend(DynamicDOMList, Collection);
+extend(DynamicDOMColl, Collection);
 */
 
 
@@ -971,7 +971,7 @@ function initAddition(self, coll1, coll2) {
  * E.g. A = abcd, B = bdef, then with addition = abcdef.
  */
 function AdditionCollection(coll1, coll2) {
-  Set.call(this);
+  SetColl.call(this);
   initAddition(this, coll1, coll2);
 }
 AdditionCollection.prototype = {
@@ -982,7 +982,7 @@ AdditionCollection.prototype = {
   removed : function(item, coll) {
      // if the item was in both colls, but now is in only one,
      // we need to keep it in the result.
-     // Set.remove() would not keep it at all anymore.
+     // SetColl.remove() would not keep it at all anymore.
     //var otherColl = coll == this._coll1 ? this._coll2 : this._coll1;
     //if (otherColl.contains(item))
     //  return;
@@ -991,7 +991,7 @@ AdditionCollection.prototype = {
     this.remove(item);
   },
 }
-extend(AdditionCollection, Set);
+extend(AdditionCollection, SetColl);
 
 /**
  * Superset
@@ -1163,7 +1163,7 @@ extend(MapToCollection, ArrayColl);
  * E.g. A = abcd, B = bdef, then intersection = bd.
  */
 function IntersectionCollection(coll1, coll2) {
-  Set.call(this);
+  SetColl.call(this);
   assert(coll1 instanceof Collection, "must be a Collection");
   assert(coll2 instanceof Collection, "must be a Collection");
   this._coll1 = coll1;
@@ -1193,7 +1193,7 @@ IntersectionCollection.prototype = {
     this.remove(item);
   },
 }
-extend(IntersectionCollection, Set);
+extend(IntersectionCollection, SetColl);
 
 
 /**
@@ -1277,9 +1277,9 @@ module.exports = {
   KeyValueCollection : KeyValueCollection,
   DelegateCollection : DelegateCollection,
   ArrayColl : ArrayColl,
-  SetColl : Set,
-  MapColl : Map,
-  DOMList : DOMList,
+  SetColl : SetColl,
+  MapColl : MapColl,
+  DOMColl : DOMColl,
   mergeColl : mergeColl,
   concatColl : concatColl,
   subtractColl : subtractColl,
