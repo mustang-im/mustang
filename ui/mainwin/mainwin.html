@@ -18,10 +18,17 @@
       </hbox>
       <hbox id="toolbar">
         <button onclick="addAccount()" />Add account</button>
+        <button onclick="newEmail()" />Write</button>
+        <button onclick="openAddressBook()" />Address book</button>
       </hbox>
       <hbox>
-        <vbox id="folder-pane">
-          <fastlist id="folder-list" />
+        <vbox id="left-pane">
+          <vbox id="account-pane">
+            <fastlist id="account-list" />
+          </vbox>
+          <vbox id="folder-pane">
+            <fastlist id="folder-list" />
+          </vbox>
         </vbox>
         <vbox>
           <vbox id="thread-pane">

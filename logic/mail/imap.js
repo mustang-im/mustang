@@ -63,7 +63,7 @@ importAll(require("logic/mail/Auth"), this);
 importAll(require("logic/mail/MIME"), this);
 var Socket = require("logic/mail/Socket").Socket;
 var sanitize = require("util/sanitizeDatatypes").sanitize;
-var gStringBundle = new require("util/stringbundle").StringBundle("mail");
+var gStringBundle = new require("trex/stringbundle").StringBundle("mail");
 
 
 /**

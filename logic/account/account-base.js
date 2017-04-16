@@ -43,7 +43,7 @@
 var util = require("util/util");
 util.importAll(util, this);
 var ourPref = require("util/preferences").myPrefs;
-var gStringBundle = new require("util/stringbundle").StringBundle("mail");
+var gStringBundle = new require("trex/stringbundle").StringBundle("mail");
 
 /**
  * API for all accounts

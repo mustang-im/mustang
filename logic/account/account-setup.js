@@ -49,7 +49,7 @@ var IMAPAccount = require("logic/mail/imap").IMAPAccount;
 var POP3Account = require("logic/mail/pop3").POP3Account;
 var FetchHTTP = require("util/fetchhttp").FetchHTTP;
 var JXON = require("util/JXON");
-var gStringBundle = new require("util/stringbundle").StringBundle("mail");
+var gStringBundle = new require("trex/stringbundle").StringBundle("mail");
 
 /**
  * Create a new |Account| object for |emailAddress|.

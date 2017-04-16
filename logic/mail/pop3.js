@@ -57,7 +57,7 @@ importAll(require("logic/account/account-base"), this);
 importAll(require("logic/mail/Auth"), this);
 importAll(require("logic/mail/MIME"), this);
 var Socket = require("logic/mail/Socket").Socket;
-var gStringBundle = new require("util/stringbundle").StringBundle("mail");
+var gStringBundle = new require("trex/stringbundle").StringBundle("mail");
 
 /**
  * Holds and manages login state of one POP3 account
