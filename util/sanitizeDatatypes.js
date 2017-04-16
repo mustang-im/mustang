@@ -228,7 +228,11 @@ var sanitize =
 
 function MalformedException(msgID, uncheckedBadValue)
 {
-  var msg = gSanitizeBundle.get(msgID);
+  var msg = msgID;
+  try {
+    var gSanitizeBundle = new (require("../trex/stringbundle.js")).StringBundle("util");
+    msg = gSanitizeBundle.get(msgID);
+  } catch (ex) {}
   ddebug(msg += " (bad value: " + new String(uncheckedBadValue) + ")");
   //Error.call(this, msg);
   this.msg = msg;

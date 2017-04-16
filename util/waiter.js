@@ -42,9 +42,9 @@ Waiter.prototype = {
     var self = this;
     return function(e) {
       if ( !self.hadError || !self.reportOnlyFirstError) {
-        self.hadError = true;
         self.errorCallback(e);
       }
+      self.hadError = true;
       if (--self.waiting == 0 &&
           self.successAfterError) {
         self.successCallback();
