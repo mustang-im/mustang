@@ -48,7 +48,7 @@
  */
 
 var util = require("util/util");
-util.importAll(util, this);
+util.importAll(util, global);
 var dump = ddebug;
 var sanitize = require("util/sanitizeDatatypes").sanitize;
 

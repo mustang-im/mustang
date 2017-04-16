@@ -57,9 +57,9 @@
  */
 
 var util = require("util/util");
-util.importAll(util, this);
-importAll(require("logic/mail/Auth"), this);
-importAll(require("logic/mail/MIME"), this);
+util.importAll(util, global);
+util.importAll(require("logic/mail/Auth"), global);
+util.importAll(require("logic/mail/MIME"), global);
 var MailAccount = require("logic/account/account-base").MailAccount;
 var LineSocket = require("logic/mail/Socket").LineSocket;
 var sanitize = require("util/sanitizeDatatypes").sanitize;

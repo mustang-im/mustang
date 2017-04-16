@@ -41,7 +41,7 @@
  */
 
 var util = require("util/util");
-util.importAll(util, this);
+util.importAll(util, global);
 var ourPref = require("util/preferences").myPrefs;
 var gStringBundle = new require("trex/stringbundle").StringBundle("mail");
 var getAllAccounts = require("logic/account/account-list").getAllAccounts; // for delete account

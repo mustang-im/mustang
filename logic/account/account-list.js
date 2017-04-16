@@ -40,9 +40,9 @@
  */
 
 var util = require("util/util");
-util.importAll(util, this);
+util.importAll(util, global);
+util.importAll(require("util/collection"), global);
 var ourPref = require("util/preferences").myPrefs;
-importAll(require("util/collection"), this);
 
 /**
  * Contains all Account objected created.

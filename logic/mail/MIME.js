@@ -36,7 +36,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 var util = require("util/util");
-util.importAll(util, this);
+util.importAll(util, global);
 var sanitize = require("util/sanitizeDatatypes").sanitize;
 
 /**

@@ -42,13 +42,14 @@
 
 
 var util = require("util/util");
-util.importAll(util, this);
-importAll(require("logic/account/account-base"), this);
-importAll(require("logic/account/account-list"), this); // add, remove, getExisting
+util.importAll(util, global);
+var accounts = require("logic/account/account-list"); // add, remove, getExisting
+var Account = require("logic/account/account-base").Account;
 var IMAPAccount = require("logic/mail/imap").IMAPAccount;
 var POP3Account = require("logic/mail/pop3").POP3Account;
 var FetchHTTP = require("util/fetchhttp").FetchHTTP;
 var JXON = require("logic/account/JXON");
+var sanitize = require("util/sanitizeDatatypes").sanitize;
 var gStringBundle = new (require("trex/stringbundle")).StringBundle("mail");
 var mozillaISPDBURL = "https://autoconfig.thunderbird.net/v1.1/";
 
@@ -68,7 +69,7 @@ function makeNewAccount(emailAddress, successCallback, errorCallback) {
     sanitize.nonemptystring(emailAddress);
     assert(emailAddress == emailAddress.toLowerCase(),
             "email addresses must be lowercase");
-    assert( !getExistingAccountForEmailAddress(emailAddress),
+    assert( !accounts.getExistingAccountForEmailAddress(emailAddress),
             "account already exists");
     //var accountID = emailAddress;
     var accountID = generateNewAccountID();
@@ -81,7 +82,7 @@ function makeNewAccount(emailAddress, successCallback, errorCallback) {
     account.emailAddress = emailAddress;
     account.setServerConfig(config);
 
-    getAllAccounts().set(accountID,  account);
+    accounts.getAllAccounts().set(accountID,  account);
     successCallback(account);
     notifyGlobalObservers("account-added", { account : account });
   }, errorCallback);

@@ -1,6 +1,6 @@
 require("app-module-path").addPath(require("electron").remote.getGlobal("__base"));
 var util = require("util/util");
-util.importAll(util, this);
+util.importAll(util, global);
 var getAllAccounts = ("logic/mail/account-list").getAllAccounts;
 
 function start() {
