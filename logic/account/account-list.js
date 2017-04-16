@@ -42,13 +42,14 @@
 var util = require("util/util");
 util.importAll(util, global);
 util.importAll(require("util/collection"), global);
+var sanitize = require("util/sanitizeDatatypes").sanitize;
 var ourPref = require("util/preferences").myPrefs;
 
 /**
  * Contains all Account objected created.
  * {Map accountID -> Account}
  */
-var gAccounts = new Map();
+var gAccounts = new MapColl();
 
 var gHaveReadAll = false;
 
@@ -110,8 +111,7 @@ function accountsSummary() {
     newMailCount : 0,
     accountCount : 0,
   };
-  var allAccounts = getAllAccounts()
-  allAccounts.forEach(function(acc)
+  getAllAccounts().forEach(function(acc)
   {
     result.accountCount += 1;
     if (acc.newMailCount > 0)

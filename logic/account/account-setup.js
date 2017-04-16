@@ -51,6 +51,7 @@ var FetchHTTP = require("util/fetchhttp").FetchHTTP;
 var JXON = require("logic/account/JXON");
 var dns = require("dns");
 var sanitize = require("util/sanitizeDatatypes").sanitize;
+var ourPref = require("util/preferences").myPrefs;
 var gStringBundle = new (require("trex/stringbundle")).StringBundle("mail");
 var mozillaISPDBURL = "https://autoconfig.thunderbird.net/v1.1/";
 
@@ -90,12 +91,12 @@ function makeNewAccount(emailAddress, successCallback, errorCallback) {
 }
 
 function generateNewAccountID() {
-  var existingAccountIDs = ourPref.get("accountsList", "").split(",");
+  var existingAccountIDs = accounts.getAllAccounts().map(account => account.accountID);
   var newAccountID;
   var i = 1;
   do {
     newAccountID = "account" + i++;
-  } while (existingAccountIDs.indexOf(newAccountID) != -1 &&
+  } while (existingAccountIDs.contains(newAccountID) ||
       ourPref.get("account." + newAccountID + ".type", null))
   return newAccountID;
 }

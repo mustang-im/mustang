@@ -35,7 +35,8 @@ function errorShow(e) {
   var errorE = E("error");
   if (e) {
     errorE.removeAttribute("hidden");
-    errorE.textContent = e + "";
+    errorE.textContent = e + "\n";
+    console.error(e);
   } else {
     errorE.setAttribute("hidden", "true");
   }
