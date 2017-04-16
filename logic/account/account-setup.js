@@ -49,6 +49,7 @@ var IMAPAccount = require("logic/mail/imap").IMAPAccount;
 var POP3Account = require("logic/mail/pop3").POP3Account;
 var FetchHTTP = require("util/fetchhttp").FetchHTTP;
 var JXON = require("logic/account/JXON");
+var dns = require("dns");
 var sanitize = require("util/sanitizeDatatypes").sanitize;
 var gStringBundle = new (require("trex/stringbundle")).StringBundle("mail");
 var mozillaISPDBURL = "https://autoconfig.thunderbird.net/v1.1/";
@@ -268,31 +269,19 @@ function getBaseDomainFromHost(aHostname) {
  */
 function getMX(domain, successCallback, errorCallback)
 {
-  // TODO rewrite using var dns = require("dns");
   domain = sanitize.hostname(domain);
-  var url = "https://mx.thunderbird.net/" + domain;
-  var fetch = new FetchHTTP({ url : url }, function(result)
-  {
-    // result is plain text, with one line per server.
-    ddebug("MX query result: \n" + result + "(end)");
-    assert(typeof(result) == "string");
-    var results = result.split("\n");
-    var hostnames = [];
-    results.forEach(function(result) {
-      if (result.toLowerCase().replace(/[^a-z0-9\-_\.]*/g, "").length == 0) {
-        return;
-      }
-      hostnames.push(result);
-    }, this);
-    if (hostnames.length == 0)
-    {
+  dns.resolve(domain, "MX", (err, hostnames) => {
+    if (err) {
+      errorCallback(new Exception(err));
+      return;
+    }
+    if (hostnames.length == 0) {
       errorCallback("no MX found");
       return;
     }
+    ddebug("MX query result: \n" + hostnames.join(", "));
     successCallback(hostnames);
-  }, errorCallback);
-  fetch.start();
-  return fetch;
+  });
 }
 
 
