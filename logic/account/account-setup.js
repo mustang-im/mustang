@@ -48,8 +48,9 @@ importAll(require("logic/account/account-list"), this); // add, remove, getExist
 var IMAPAccount = require("logic/mail/imap").IMAPAccount;
 var POP3Account = require("logic/mail/pop3").POP3Account;
 var FetchHTTP = require("util/fetchhttp").FetchHTTP;
-var JXON = require("util/JXON");
-var gStringBundle = new require("trex/stringbundle").StringBundle("mail");
+var JXON = require("logic/account/JXON");
+var gStringBundle = new (require("trex/stringbundle")).StringBundle("mail");
+var mozillaISPDBURL = "https://autoconfig.thunderbird.net/v1.1/";
 
 /**
  * Create a new |Account| object for |emailAddress|.
@@ -141,9 +142,7 @@ var gCachedConfigs = {};
 
 /**
  * Finds the provider that hosts this email address.
- * Uses both the internal list of domains in brand.js,
- * as well as MX lookups over the network to determine
- * the provider.
+ * Uses MX lookups over the network to determine the provider.
  *
  * @see Disclaimers at fetchConfigForMX()
  * <http://mxr.mozilla.org/comm-central/source/
@@ -170,8 +169,7 @@ function getAccountProviderWithNet(domain, emailAddress,
   }
 
   var config;
-  var errorMsg = gStringBundle.get("error.domain",
-      [ brand.login.providerName ]);
+  var errorMsg = gStringBundle.get("error.domain");
 
   // Now fetch the MX record for the domain and check whether
   // the SLD of it matches one of our known domains.
@@ -220,7 +218,7 @@ function getAccountProviderWithNet(domain, emailAddress,
 
 /**
  * @param ac {AccountConfig}
- * @returns {Object} like config in brand.js
+ * @returns {Object} provider config
  */
 function convertMozillaConfigToOurs(ac, emailAddress) {
   replaceVariables(ac, emailAddress);
@@ -269,8 +267,9 @@ function getBaseDomainFromHost(aHostname) {
  */
 function getMX(domain, successCallback, errorCallback)
 {
+  // TODO rewrite using var dns = require("dns");
   domain = sanitize.hostname(domain);
-  var url = brand.login.mozillaMXURL + domain;
+  var url = "https://mx.thunderbird.net/" + domain;
   var fetch = new FetchHTTP({ url : url }, function(result)
   {
     // result is plain text, with one line per server.
@@ -316,7 +315,7 @@ function getMX(domain, successCallback, errorCallback)
  */
 function fetchConfigFromMozillaDB(domain, successCallback, errorCallback)
 {
-  var url = brand.login.mozillaISPDBURL + domain;
+  var url = mozillaISPDBURL + domain;
   domain = sanitize.hostname(domain);
 
   if (!url.length)
@@ -814,6 +813,5 @@ extend(InvalidDomainError, UserError);
 module.exports =  {
   makeNewAccount : makeNewAccount,
   verifyEmailAddressDomain : verifyEmailAddressDomain,
-  _removeAccount : _removeAccount, // TODO
   InvalidDomainError : InvalidDomainError,
 };

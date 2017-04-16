@@ -155,7 +155,7 @@
    }
   };
 
-  this.build = function(oXMLParent, nVerbosity /* optional */, bFreeze /* optional */, bNesteAttributes /* optional */) {
+function build(oXMLParent, nVerbosity /* optional */, bFreeze /* optional */, bNesteAttributes /* optional */) {
     if ( !oXMLParent.documentElement) {
       throw "JXON: Not an XML Document";
     }
@@ -164,13 +164,13 @@
         /* put here the default verbosity level: */ 1;
     return createObjTree(oXMLParent, _nVerb, bFreeze || false,
         arguments.length > 3 ? bNesteAttributes : _nVerb === 3);
-  };
+};
 
-  unbuild = function(oObjTree) {
+function unbuild(oObjTree) {
     const oNewDoc = document.implementation.createDocument("", "", null);
     loadObjTree(oNewDoc, oNewDoc, oObjTree);
     return oNewDoc;
-  };
+};
 
 exports.build = build;
 exports.unbuild = unbuild;

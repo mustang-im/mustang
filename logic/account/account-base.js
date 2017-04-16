@@ -44,6 +44,7 @@ var util = require("util/util");
 util.importAll(util, this);
 var ourPref = require("util/preferences").myPrefs;
 var gStringBundle = new require("trex/stringbundle").StringBundle("mail");
+var getAllAccounts = require("logic/account/account-list").getAllAccounts; // for delete account
 
 /**
  * API for all accounts
@@ -172,7 +173,7 @@ Account.prototype =
     arrayRemove(accounts, this.accountID, true);
     ourPref.set("accountsList", accounts.join(","));
 
-    _removeAccount(this); // from account-list.js
+    getAllAccounts.remove(this); // update account-list.js
   },
 }
 

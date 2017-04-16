@@ -47,10 +47,10 @@
  * but not for bigger file downloads.
  */
 
-var util = require("/util/util");
+var util = require("util/util");
 util.importAll(util, this);
-var sanitize = require("/util/sanitizeDatatypes").sanitize;
-var gStringBundle = new require("/util/stringbundle").StringBundle("util");
+var sanitize = require("util/sanitizeDatatypes").sanitize;
+var gStringBundle = new require("trex/stringbundle").StringBundle("util");
 
 /**
  * Set up a fetch.

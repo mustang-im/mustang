@@ -53,10 +53,10 @@
 
 var util = require("util/util");
 util.importAll(util, this);
-importAll(require("logic/account/account-base"), this);
 importAll(require("logic/mail/Auth"), this);
 importAll(require("logic/mail/MIME"), this);
-var Socket = require("logic/mail/Socket").Socket;
+var MailAccount = require("logic/account/account-base").MailAccount;
+var LineSocket = require("logic/mail/Socket").LineSocket;
 var gStringBundle = new require("trex/stringbundle").StringBundle("mail");
 
 /**
