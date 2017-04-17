@@ -257,7 +257,7 @@ Fastlist.prototype = {
     // TODO be lazy, avoid unnecessary refreshs
     var renderRow = this._scrollPos;
     this._rowElements.forEach(rowE => {
-      var obj = this._entries[renderRow++];
+      var obj = this._entries.get(renderRow++);
       if (!obj) {
         return;
       }
