@@ -13,7 +13,7 @@
 </head>
 <body>
 
-    <vbox>
+    <vbox  id="entire-window">
       <hbox id="menubar">
       </hbox>
       <hbox id="toolbar">
@@ -21,20 +21,35 @@
         <button onclick="newEmail()" />Write</button>
         <button onclick="openAddressBook()" />Address book</button>
       </hbox>
-      <hbox>
-        <vbox id="left-pane">
-          <vbox id="account-pane">
-            <fastlist id="account-list" />
+      <hbox id="window-content-pane" flex="1">
+        <vbox id="left-pane" flex="1">
+          <vbox id="account-pane" flex="1">
+            <fastlist id="account-list">
+              <header>
+                <div>Accounts</div>
+              </header>
+            </fastlist>
           </vbox>
-          <vbox id="folder-pane">
-            <fastlist id="folder-list" />
+          <vbox id="folder-pane" flex="4">
+            <fastlist id="folder-list">
+              <header>
+                <div>Folders</div>
+              </header>
+            </fastlist>
           </vbox>
         </vbox>
-        <vbox>
-          <vbox id="thread-pane">
-            <fastlist id="message-list" />
+        <vbox id="right-pane" flex="4">
+          <vbox id="thread-pane" flex="1">
+            <fastlist id="message-list">
+              <header>
+                <div>From</div>
+                <div>To</div>
+                <div>Subject</div>
+                <div>Date</div>
+              </header>
+            </fastlist>
           </vbox>
-          <vbox id="message-pane">
+          <vbox id="message-pane" flex="2">
           </vbox>
         </vbox>
       </hbox>

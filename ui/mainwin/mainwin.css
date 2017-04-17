@@ -1,3 +1,30 @@
 body {
   background-color: white;
 }
+#entire-window {
+  flex: 1;
+  min-height: 500px; /* TODO */
+}
+#window-content-pane {
+  flex: 1;
+}
+#left-pane {
+  flex: 1;
+  min-width: 200px;
+}
+#right-pane {
+  flex: 4;
+  min-width: 300px;
+}
+#account-pane {
+  flex: 1;
+}
+#folder-pane {
+  flex: 4;
+}
+#thread-pane {
+  flex: 1;
+}
+#message-pane {
+  flex: 2;
+}

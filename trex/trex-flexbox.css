@@ -3,20 +3,26 @@ hbox {
   display: -webkit-flex;
   display: -ms-flex;
   display: flex;
+
   -moz-flex-direction: row;
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+
+  flex: attr(flex);
 }
 vbox {
   display: -moz-flex;
   display: -webkit-flex;
   display: -ms-flex;
   display: flex;
+
   -moz-flex-direction: column;
   -webkit-flex-direction: column;
   -ms-flex-direction: column;
   flex-direction: column;
+
+  flex: attr(flex);
 }
 
 vbox[align=start],
