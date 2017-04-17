@@ -31,12 +31,12 @@ function ok() {
   }, errorShow);
 }
 
-function errorShow(e) {
+function errorShow(ex) {
   var errorE = E("error");
-  if (e) {
+  if (ex) {
     errorE.removeAttribute("hidden");
-    errorE.textContent = e + "\n";
-    console.error(e);
+    errorE.textContent = ex + "\n";
+    console.error(ex);
   } else {
     errorE.setAttribute("hidden", "true");
   }
