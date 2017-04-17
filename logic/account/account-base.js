@@ -463,7 +463,7 @@ extend(MailAccount, Account);
  *     or backslash or something else.
  *     Not including the account.
  */
-function MsgFolder(name)
+function MsgFolder(name, fullPath)
 {
   this.name = sanitize.nonemptystring(name);
   this.fullPath = sanitize.nonemptystring(fullPath);

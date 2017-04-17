@@ -112,7 +112,7 @@ Collection.prototype = {
    *
    * @returns {Array} new JS array with all items
    */
-  contents : function() {
+  get contents() {
     throw "implement";
   },
 
@@ -167,7 +167,7 @@ Collection.prototype = {
    * a remove() during the iteration doesn't confuse it.
    *
   iterator : function() {
-    var items = this.contents();
+    var items = this.contents;
     for (var i = 0; i < items.length; i++) {
       yield items[i];
     }
@@ -587,7 +587,7 @@ ArrayColl.prototype = {
 
   // containsKey : defined in KeyValueCollection
 
-  contents : function() {
+  get contents() {
     return this._array.slice(); // return copy of array
   },
 
@@ -673,7 +673,7 @@ function _coll_arrayRemove(array, element, all)
   return found;
 }
 
-function _coll_sanitizeString(str) {
+function _coll_sanitizeString(unchecked) {
   return String(unchecked);
 };
 
@@ -754,7 +754,7 @@ SetColl.prototype = {
     return this._array.indexOf(item) != -1;
   },
 
-  contents : function() {
+  get contents() {
     return this._array.slice(); // return copy of array
   },
 
@@ -814,7 +814,7 @@ MapColl.prototype = {
     return length;
   },
 
-  contents : function() {
+  get contents() {
     var array = [];
     for (var prop in this._obj) {
       var value = this._obj[prop];
@@ -973,7 +973,7 @@ DynamicDOMColl.prototype = {
     return this._domlist.length;
   },
 
-  contents : function() {
+  get contents() {
     var array = [];
     for (var i = 0, l = this._domlist.length; i < l; i++) {
       var item = this._domlist.item(i);
@@ -1213,11 +1213,11 @@ MapToCollection.prototype = {
     }, this));
   },
   removed : function(items, coll) {
-    var mappedItems = items.map(function(item) {
+    var mappedRemovedItems = items.map(function(item) {
       return this._mapFunc.call(self, item);
     }, this);
     this.removeAll(this.filter(function(mappedItem) {
-      return mappedRemovedItems.contains(mappedItem);  // TODO Will not work with |Object|s
+      return mappedRemovedItems.indexOf(mappedItem) != -1;  // TODO Will not work with |Object|s
     }, this));
   },
 }
@@ -1305,8 +1305,8 @@ DelegateCollection.prototype = {
   contains : function(item) {
     return this._base.contains(item);
   },
-  contents : function() {
-    return this._base.contents();
+  get contents() {
+    return this._base.contents;
   },
   get first() {
     return this._base.first;

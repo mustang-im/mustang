@@ -212,7 +212,7 @@ var sanitize =
    *       no |defaultValue| is passed.
    * @throws MalformedException
    */
-  map : function(unchecked, mapping, defaultValue)
+  translate : function(unchecked, mapping, defaultValue)
   {
     for (var inputValue in mapping)
     {

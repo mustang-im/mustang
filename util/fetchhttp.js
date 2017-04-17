@@ -170,8 +170,7 @@ FetchHTTP.prototype =
     }
 
     // Fire
-    this._request = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
-        .createInstance(Ci.nsIXMLHttpRequest);
+    this._request = new XMLHttpRequest();
     var request = this._request;
     try {
       // prevents dialogs like "bad cert" and makes the request fail instead
@@ -179,9 +178,9 @@ FetchHTTP.prototype =
     } catch (e) { errorNonCritical(e); }
     ddebug("contacting <" + url + ">");
     request.open(this._method, url);
-    request.channel.loadGroup = null;
+    //request.channel.loadGroup = null;
     // Disable Mozilla HTTP cache, causes bugs, see #305 and #459
-    request.channel.loadFlags |= Ci.nsIRequest.LOAD_BYPASS_CACHE;
+    //request.channel.loadFlags |= Ci.nsIRequest.LOAD_BYPASS_CACHE;
 
     // Headers
     if (mimetype)
@@ -189,14 +188,6 @@ FetchHTTP.prototype =
     for (var name in this._headers)
     {
       request.setRequestHeader(name, this._headers[name]);
-      if (name == "Cookie")
-      {
-        // Websites are not allowed to set this, but chrome is, so no problem.
-        // Nevertheless, the cookie lib later overwrites our header.
-        // request.channel.setCookie(this._headers[name]); -- crashes
-        // So, deactivate that Firefox cookie lib.
-        request.channel.loadFlags |= Ci.nsIRequest.LOAD_ANONYMOUS;
-      }
     }
     //if (this._headers || mimetype) {
     //  request.getRequestHeaders().forEach(...);

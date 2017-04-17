@@ -209,15 +209,11 @@ var StringBundleUtils = {
    * @param url {String}   what you want to read
    * @return {String}   the contents of the file, as one long string
    */
-  readURLasUTF8 : function (url) {
-    StringBundleUtils.assert(url && typeof(url) == "string", "uri must be a string");
-    var req = new XMLHttpRequest();
-    console.log("trying to open " + url);
-    req.onerror = function (e) { console.error(e); }
-    req.onload = function () {}
-    req.open("GET", url, false); // sync
-    req.send(); // blocks
-    return req.responseText;
+  readURLasUTF8 : function (filename) {
+    StringBundleUtils.assert(filename && typeof(filename) == "string", "uri must be a string");
+    StringBundleUtils.assert(filename.substr(5) != "http:", "cannot load stringbundles from network in Node");
+    var fs = require("fs");
+    return fs.readFileSync(filename, "utf8");
   },
 
   /**
@@ -266,13 +262,6 @@ function getLocale() {
 }
 
 } else { // not browser
-
-StringBundleUtils.readURLasUTF8 = function (filename) {
-  StringBundleUtils.assert(filename && typeof(filename) == "string", "uri must be a string");
-  StringBundleUtils.assert(filename.substr(5) != "http:", "cannot load stringbundles from network in Node");
-  var fs = require("fs");
-  return fs.readFileSync(filename, "utf8");
-};
 
 var i18n = require("i18n");
 i18n.configure({

@@ -435,8 +435,6 @@ RejectBadCert.prototype =
   },
 };
 
-module.exports = {
-  Socket : Socket,
-  LineSocket : LineSocket,
-  RejectBadCert : RejectBadCert,
-};
+exports.Socket = Socket;
+exports.LineSocket = LineSocket;
+exports.RejectBadCert = RejectBadCert;

@@ -60,7 +60,7 @@ var util = require("util/util");
 util.importAll(util, global);
 util.importAll(require("logic/mail/Auth"), global);
 util.importAll(require("logic/mail/MIME"), global);
-var MailAccount = require("logic/account/account-base").MailAccount;
+var { MailAccount, MsgFolder } = require("logic/account/account-base");
 var LineSocket = require("logic/mail/Socket").LineSocket;
 var sanitize = require("util/sanitizeDatatypes").sanitize;
 var gStringBundle = new (require("trex/stringbundle").StringBundle)("mail");
@@ -72,7 +72,7 @@ function IMAPAccount(accountID, isNew)
 {
   this._folders = new MapColl();
   this._inbox = new MsgFolder("INBOX", "INBOX");
-  this._folders.add("INBOX", this._inbox);
+  this._folders.set("INBOX", this._inbox);
   this._connections = new ArrayColl();
   this._pollingErrorLoopCounter = 0;
   MailAccount.call(this, accountID, isNew);

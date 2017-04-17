@@ -55,7 +55,7 @@ var util = require("util/util");
 util.importAll(util, global);
 util.importAll(require("logic/mail/Auth"), global);
 importAll(require("logic/mail/MIME"), global);
-var MailAccount = require("logic/account/account-base").MailAccount;
+var { MailAccount, MsgFolder } = require("logic/account/account-base");
 var LineSocket = require("logic/mail/Socket").LineSocket;
 var gStringBundle = new (require("trex/stringbundle").StringBundle)("mail");
 

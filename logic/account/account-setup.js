@@ -271,17 +271,17 @@ function getBaseDomainFromHost(aHostname) {
 function getMX(domain, successCallback, errorCallback)
 {
   domain = sanitize.hostname(domain);
-  dns.resolve(domain, "MX", (err, hostnames) => {
+  dns.resolveMx(domain, (err, results) => {
     if (err) {
       errorCallback(new Exception(err));
       return;
     }
-    if (hostnames.length == 0) {
+    if (results.length == 0) {
       errorCallback("no MX found");
       return;
     }
+    var hostnames = results.map(result => sanitize.hostname(result.exchange));
     ddebug("MX query result: \n" + hostnames.join(", "));
-    hostnames.forEach(hostname => sanitize.hostname(hostname));
     successCallback(hostnames);
   });
 }
