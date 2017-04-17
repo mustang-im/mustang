@@ -18,7 +18,7 @@ function Fastlist(element) {
   this._listE = element;
   element.widget = this;
   this._selectedEntries = new ArrayColl();
-  this.showCollection(new ArrayColl());
+  this._entries = new ArrayColl(); // just for init. will be overwritten below.
   this._rowElements = [];
   this._rowTemplate = this._listE.querySelector("row");
   assert(this._rowTemplate);
@@ -33,9 +33,11 @@ function Fastlist(element) {
 
   this._scrollbarE = cE(this._listE, "div", "scrollbar");
   this._scrollbarContentE = cE(this._scrollbarE, "div", "scrollbar-content");
-  this._scrollbarE.addEventListener("scroll", event => this._scrollBar(event), false);
-  this._listE.addEventListener("wheel", event => this._scrollWheel(event), false);
-  this._listE.addEventListener("click", event => this._click(event), false);
+  this._scrollbarE.addEventListener("scroll", event => this._onScrollBar(event), false);
+  this._listE.addEventListener("wheel", event => this._onScrollWheel(event), false);
+  this._listE.addEventListener("click", event => this._onClick(event), false);
+
+  this.showCollection(new ArrayColl());
 }
 Fastlist.prototype = {
   /**
@@ -115,14 +117,16 @@ Fastlist.prototype = {
     }
 
     this._entries = coll;
+    this._updateSize();
+    this._refreshContent();
 
     var self = this;
     this._observer = {
-      added : function(item) {
+      added : function(items) {
         self._updateSize();
         self._refreshContent();
       },
-      removed : function(item) {
+      removed : function(items) {
         self._updateSize();
         self._refreshContent();
       },
@@ -262,7 +266,7 @@ Fastlist.prototype = {
     });
   },
 
-  _scrollWheel : function(event) {
+  _onScrollWheel : function(event) {
     var scrollRows = 3; // How many rows to scroll each time
     if (event.deltaY > 0) {
       this._scrollPos = Math.min(this._scrollPos + scrollRows, this._entries.length - this._rowElements.length);
@@ -274,7 +278,7 @@ Fastlist.prototype = {
     this._refreshContent();
   },
 
-  _scrollBar : function(event) {
+  _onScrollBar : function(event) {
     this._scrollPos = Math.round(this._scrollbarE.scrollTop / this._rowHeight); // TODO ceil()?
     console.log("scrollTop = " + this._scrollbarE.scrollTop);
     console.log("entries size = " + this._entries.length);
@@ -282,18 +286,18 @@ Fastlist.prototype = {
     this._refreshContent();
   },
 
-  _click : function(event) {
+  _onClick : function(event) {
     // Walk up the DOM tree, until we find the row element
     for (var e = event.target; e != this._listE; e = e.parentNode) {
       if (e.nodeName == this._rowTemplate.nodeName &&
           e._item) {
-        this.selectElement(e._item, event);
+        this._onSelectElement(e._item, event);
         return;
       }
     }
   },
 
-  _selectElement(selectedItem, event) {
+  _onSelectElement(selectedItem, event) {
     if (event.shiftKey) { // select whole range
       var firstItem = this.selectedCollection.first;
       var inRange = false;
