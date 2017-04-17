@@ -17,6 +17,7 @@ function Fastlist(element) {
   assert(element && element.localName == "fastlist");
   this._listE = element;
   element.widget = this;
+  this._selectedEntries = new ArrayColl();
   this.showCollection(new ArrayColl());
   this._rowElements = [];
   this._rowTemplate = this._listE.querySelector("row");
@@ -32,8 +33,9 @@ function Fastlist(element) {
 
   this._scrollbarE = cE(this._listE, "div", "scrollbar");
   this._scrollbarContentE = cE(this._scrollbarE, "div", "scrollbar-content");
-  this._scrollbarE.addEventListener("scroll", event => this.scrollBar(event), false);
-  this._listE.addEventListener("wheel", event => this.scrollWheel(event), false);
+  this._scrollbarE.addEventListener("scroll", event => this._scrollBar(event), false);
+  this._listE.addEventListener("wheel", event => this._scrollWheel(event), false);
+  this._listE.addEventListener("click", event => this._click(event), false);
 }
 Fastlist.prototype = {
   /**
@@ -79,9 +81,17 @@ Fastlist.prototype = {
   _rowHeight : null,
 
   /**
+   * All items shown in the list.
    * {Collection of {Object}}
    */
   _entries : null,
+
+  /**
+   * Items currently selected by the user.
+   * @See selectedCollection()
+   * {Collection of {Object}}
+   */
+  _selectedEntries : null,
 
   /**
    * First visible row
@@ -92,7 +102,12 @@ Fastlist.prototype = {
   _observer : null,
 
   /**
-   * @param coll {Collection} See collection.js
+   * The items that should be shown in the list.
+   *
+   * @see entries
+   * |coll| will be |this.entries|.
+   *
+   * @param coll {Collection} @see collection.js
    */
   showCollection : function(coll) {
     if (this._observer) {
@@ -116,6 +131,21 @@ Fastlist.prototype = {
   },
 
   /**
+   * The items that should be shown in the list.
+   *
+   * This is a dynamic list. As you add or remove items
+   * to/from this collection, the UI will be updated.
+   *
+   * This is the same collection that was set in showCollection().
+   * If you didn't call showCollection(), this is a default collection.
+   *
+   * @returns {Collection} @see collection.js
+   */
+  get entries() {
+    return this._entries;
+  },
+
+  /**
    * Adds a row to the list
    * @param obj {Object} values for one row
    */
@@ -129,6 +159,22 @@ Fastlist.prototype = {
    */
   addEntriesFromArray : function(array) {
     this._entries.addAll(array);
+  },
+
+  /**
+   * The list items that the user selected,
+   * e.g. by clicking on them.
+   * This is usually just one element,
+   * unless the user used multiple selection, e.g. using the SHIFT key.
+   *
+   * This collection object is always the same.
+   * You can be notified of changes in the selection using
+   * the normal collection observers.
+   *
+   * @returns {Collection} @see collection.js
+   */
+  get selectedCollection() {
+    return this._selectedEntries;
   },
 
   /**
@@ -212,10 +258,11 @@ Fastlist.prototype = {
         return;
       }
       this.fillRow(rowE, obj);
+      rowE._item = obj;
     });
   },
 
-  scrollWheel : function(event) {
+  _scrollWheel : function(event) {
     var scrollRows = 3; // How many rows to scroll each time
     if (event.deltaY > 0) {
       this._scrollPos = Math.min(this._scrollPos + scrollRows, this._entries.length - this._rowElements.length);
@@ -227,11 +274,46 @@ Fastlist.prototype = {
     this._refreshContent();
   },
 
-  scrollBar : function(event) {
+  _scrollBar : function(event) {
     this._scrollPos = Math.round(this._scrollbarE.scrollTop / this._rowHeight); // TODO ceil()?
     console.log("scrollTop = " + this._scrollbarE.scrollTop);
     console.log("entries size = " + this._entries.length);
     console.log("scroll pos = " + this._scrollPos);
     this._refreshContent();
+  },
+
+  _click : function(event) {
+    // Walk up the DOM tree, until we find the row element
+    for (var e = event.target; e != this._listE; e = e.parentNode) {
+      if (e.nodeName == this._rowTemplate.nodeName &&
+          e._item) {
+        this.selectElement(e._item, event);
+        return;
+      }
+    }
+  },
+
+  _selectElement(selectedItem, event) {
+    if (event.shiftKey) { // select whole range
+      var firstItem = this.selectedCollection.first;
+      var inRange = false;
+      this._entries.forEach(item => {
+        if (inRange) {
+          this.selectedCollection.add(item);
+        }
+        if (item == firstItem) {
+          inRange = true;
+          // firstItem is already in selectedCollection, so don't re-add it in this loop
+        }
+        if (item == selectedItem) {
+          inRange = false;
+        }
+      });
+    } else if (event.ctrlKey) { // add to current selection
+      this.selectedCollection.add(selectedItem);
+    } else { // no modifier, i.e. a simple single-selection click
+      this.selectedCollection.clear();
+      this.selectedCollection.add(selectedItem);
+    }
   },
 }

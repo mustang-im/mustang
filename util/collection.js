@@ -116,6 +116,15 @@ Collection.prototype = {
     throw "implement";
   },
 
+  /**
+   * The first item in the list
+   * @returns {Object}
+   * null, if the list is empty
+   */
+  get first() {
+    throw "implement";
+  },
+
 
 
   forEach : function(callback, self) {
@@ -567,6 +576,10 @@ ArrayColl.prototype = {
     return this._array.slice(); // return copy of array
   },
 
+  get first() {
+    return this._array[0];
+  },
+
   forEach : function(callback, self) {
     this._array.forEach(callback, self);
   },
@@ -709,6 +722,10 @@ SetColl.prototype = {
     return this._array.slice(); // return copy of array
   },
 
+  get first() {
+    return this._array[0];
+  },
+
   forEach : function(callback, self) {
     this._array.forEach(callback, self);
   },
@@ -771,6 +788,10 @@ MapColl.prototype = {
       array.push(value);
     }
     return array;
+  },
+
+  get first() {
+    return this.contents[0]; // is there a more efficient impl?
   },
 
   contentKeys : function() {
@@ -1244,6 +1265,9 @@ DelegateCollection.prototype = {
   contents : function() {
     return this._base.contents();
   },
+  get first() {
+    return this._base.first;
+  },
   forEach : function(callback, self) {
     this._base.forEach(callback, self);
   },
@@ -1273,19 +1297,17 @@ function assert(test, errorMsg)
     throw new Error(errorMsg ? errorMsg : "Bug: assertion failed");
 }
 
-module.exports = {
-  CollectionObserver : CollectionObserver,
-  Collection : Collection,
-  KeyValueCollection : KeyValueCollection,
-  DelegateCollection : DelegateCollection,
-  ArrayColl : ArrayColl,
-  SetColl : SetColl,
-  MapColl : MapColl,
-  DOMColl : DOMColl,
-  mergeColl : mergeColl,
-  concatColl : concatColl,
-  subtractColl : subtractColl,
-  inCommonColl : inCommonColl,
-  notInCommonColl : notInCommonColl,
-  sortColl : sortColl,
-};
+exports.CollectionObserver = CollectionObserver;
+exports.Collection = Collection;
+exports.KeyValueCollection = KeyValueCollection;
+exports.DelegateCollection = DelegateCollection;
+exports.ArrayColl = ArrayColl;
+exports.SetColl = SetColl;
+exports.MapColl = MapColl;
+exports.DOMColl = DOMColl;
+exports.mergeColl = mergeColl;
+exports.concatColl = concatColl;
+exports.subtractColl = subtractColl;
+exports.inCommonColl = inCommonColl;
+exports.notInCommonColl = notInCommonColl;
+exports.sortColl = sortColl;
