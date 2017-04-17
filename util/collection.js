@@ -276,20 +276,20 @@ Collection.prototype = {
     _coll_arrayRemove(this._observers, observer, true);
   },
 
-  _notifyAdded : function(item) {
+  _notifyAdded : function(items) {
     this._observers.forEach(function(observer) {
       try {
-        observer.added(item, this);
+        observer.added(items, this);
       } catch (e) {
         console.error(e);
       }
     }, this);
   },
 
-  _notifyRemoved : function(item) {
+  _notifyRemoved : function(items) {
     this._observers.forEach(function(observer) {
       try {
-        observer.removed(item, this);
+        observer.removed(items, this);
       } catch (e) {
         console.error(e);
       }
@@ -369,23 +369,20 @@ CollectionObserver.prototype = {
   /**
    * Called after an item has been added to the list.
    *
-   * @param item {Object} the removed item
+   * @param items {Array of Object} the added item
    * @param coll {Collection} the observed list. convenience only.
    */
-  added : function(item, coll) {
+  added : function(items, coll) {
     throw "implement";
   },
 
   /**
    * Called after an item has been removed from the list
    *
-   * TODO should clear() call removed() for each item?
-   * Currently: yes.
-   *
-   * @param item {Object} the removed item
+   * @param items {Array of Object} the removed item
    * @param coll {Collection} the observed list. convenience only.
    */
-  removed : function(item, coll) {
+  removed : function(items, coll) {
     throw "implement";
   },
 }
@@ -519,7 +516,7 @@ ArrayColl.prototype = {
    */
   add : function(item) {
     this._array.push(item);
-    this._notifyAdded(item, this);
+    this._notifyAdded([item], this);
   },
 
   _addWithoutObserver : function(item) {
@@ -535,11 +532,31 @@ ArrayColl.prototype = {
    */
   remove : function(item) {
     _coll_arrayRemove(this._array, item, false);
-    this._notifyRemoved(item, this);
+    this._notifyRemoved([item], this);
   },
 
   _removeWithoutObserver : function(item) {
     _coll_arrayRemove(this._array, item, false);
+  },
+
+  addAll : function(items) {
+    if (items instanceof Collection) {
+      items = items.contents;
+    }
+    items.forEach(function(item) {
+      this._addWithoutObserver(item);
+    }, this);
+    this._notifyAdded(items, this);
+  },
+
+  removeAll : function(items) {
+    if (items instanceof Collection) {
+      items = items.contents;
+    }
+    items.forEach(function(item) {
+      this._removeWithoutObserver(item);
+    }, this);
+    this._notifyRemoved(items, this);
   },
 
   /**
@@ -556,9 +573,7 @@ ArrayColl.prototype = {
   },
 
   clear : function() {
-    this._array.forEach(function(item) {
-      this._notifyRemoved(item, this);
-    }, this);
+    this._notifyRemoved(this.contents, this);
     this._array = [];
   },
 
@@ -597,9 +612,9 @@ ArrayColl.prototype = {
     var oldItem = this._array[i];
     this._array[i] = item;
     if (oldItem !== undefined)
-      this._notifyRemoved(oldItem, this);
+      this._notifyRemoved([oldItem], this);
     if (item !== undefined)
-      this._notifyAdded(item, this);
+      this._notifyAdded([item], this);
   },
 
   /**
@@ -618,7 +633,7 @@ ArrayColl.prototype = {
     if (item == undefined)
       return;
     delete this._array[i];
-    this._notifyRemoved(item, this);
+    this._notifyRemoved([item], this);
   },
 
   getKeyForValue : function(value) {
@@ -682,31 +697,52 @@ SetColl.prototype = {
    * @param item {Object}
    */
   add : function(item) {
-    this._addWithoutObserver(item);
-    this._notifyAdded(item, this);
+    var added = _addWithoutObserver(item);
+    if (added) {
+      this._notifyAdded([item], this);
+    }
   },
 
   _addWithoutObserver : function(item) {
     if ( !item && item !== 0)
       throw "null objects are not allowed";
     if (this.contains(item))
-      return;
+      return false;
     this._array.push(item);
+    return true;
   },
 
   remove : function(item) {
     _coll_arrayRemove(this._array, item, true);
-    this._notifyRemoved(item, this);
+    this._notifyRemoved([item], this);
   },
 
   _removeWithoutObserver : function(item) {
     _coll_arrayRemove(this._array, item, true);
   },
 
-  clear : function() {
-    this._array.forEach(function(item) {
-      this._notifyRemoved(item, this);
+  addAll : function(items) {
+    if (items instanceof Collection) {
+      items = items.contents;
+    }
+    items.forEach(function(item) {
+      this._addWithoutObserver(item);
     }, this);
+    this._notifyAdded(items, this);
+  },
+
+  removeAll : function(items) {
+    if (items instanceof Collection) {
+      items = items.contents;
+    }
+    items.forEach(function(item) {
+      this._removeWithoutObserver(item);
+    }, this);
+    this._notifyRemoved(items, this);
+  },
+
+  clear : function() {
+    this._notifyRemoved(this.contents, this);
     this._array = [];
   },
 
@@ -766,10 +802,7 @@ MapColl.prototype = {
   },
 
   clear : function() {
-    for (var prop in this._obj) {
-      var value = this._obj[prop];
-      this._notifyRemoved(value, this);
-    }
+    this._notifyRemoved(this.contents, this);
     this._obj = {};
   },
 
@@ -839,9 +872,9 @@ MapColl.prototype = {
     var oldValue = this._obj[key];
     this._obj[key] = value;
     if (oldValue !== undefined)
-      this._notifyRemoved(oldValue, this);
+      this._notifyRemoved([oldValue], this);
     if (value !== undefined)
-      this._notifyAdded(value, this);
+      this._notifyAdded([value], this);
   },
 
   /**
@@ -861,7 +894,7 @@ MapColl.prototype = {
     if (value == undefined)
       return;
     delete this._obj[key];
-    this._notifyRemoved(value, this);
+    this._notifyRemoved([value], this);
   },
 
   getKeyForValue : function(value) {
@@ -932,9 +965,7 @@ DynamicDOMColl.prototype = {
    * Removes all child elements from the DOM
    *
   clear : function() {
-    this.contents.forEach(function(item) {
-      this._notifyRemoved(item, this);
-    }, this);
+    this._notifyRemoved(this.contents, this);
     this._domlist = [];
   },
 
@@ -999,19 +1030,22 @@ function AdditionCollection(coll1, coll2) {
 }
 AdditionCollection.prototype = {
   // Implement CollectionObserver
-  added : function(item) {
-    this.add(item);
+  added : function(items) {
+    //this.addAll(items); -- also works, but leaves de-duping to SetColl
+    this.addAll(items.filter(function(item) {
+      return !this.contains(item);
+    }, this));
   },
-  removed : function(item, coll) {
+  removed : function(items, coll) {
      // if the item was in both colls, but now is in only one,
      // we need to keep it in the result.
      // SetColl.remove() would not keep it at all anymore.
     //var otherColl = coll == this._coll1 ? this._coll2 : this._coll1;
     //if (otherColl.contains(item))
     //  return;
-    if (this._coll1.contains(item) || this._coll2.contains(item))
-      return;
-    this.remove(item);
+    this.removeAll(items.filter(function(item) {
+      return !(this._coll1.contains(item) || this._coll2.contains(item));
+    }, this));
   },
 }
 extend(AdditionCollection, SetColl);
@@ -1027,11 +1061,11 @@ function AdditionCollectionWithDups(coll1, coll2) {
 }
 AdditionCollection.prototype = {
   // Implement CollectionObserver
-  added : function(item) {
-    this.add(item);
+  added : function(items) {
+    this.addAll(items);
   },
-  removed : function(item, coll) {
-    this.remove(item);
+  removed : function(items, coll) {
+    this.removeAll(items);
   },
 }
 extend(AdditionCollection, ArrayColl);
@@ -1053,29 +1087,37 @@ function SubtractCollection(collBase, collSubtract) {
   var self = this;
   collBase.registerObserver({
     // Implement CollectionObserver
-    added : function(item, coll) {
-      if (self._collSubtract.contains(item))
-        return;
-      // this.add(this); -- doesn't preserve original order
-      self._reconstruct();
-      self._notifyAdded(item);
+    added : function(items, coll) {
+      var addItems = items.filter(function(item) {
+        // this.add(this); -- doesn't preserve original order
+        return !self._collSubtract.contains(item);
+      }, this);
+      if (addItems.length) {
+        self._reconstruct();
+        self._notifyAdded(addItems);
+      }
     },
-    removed : function(item, coll) {
-      if (self._collSubtract.contains(item))
-        return;
-      self.removeEach(item);
+    removed : function(items, coll) {
+      items.forEach(function(item) {
+        if (self._collSubtract.contains(item))
+          return;
+        self.removeEach(item);
+      }, this);
     },
   });
   collSubtract.registerObserver({
     // Implement CollectionObserver
-    added : function(item, coll) {
-      self.removeEach(item);
+    added : function(items, coll) {
+      self.removeAll(items);
     },
-    removed : function(item, coll) {
-      if (self._collBase.contains(item)) {
+    removed : function(items, coll) {
+      var addItems = items.filter(function(item) {
         // this.add(this); -- doesn't preserve original order
+        return self._collBase.contains(item);
+      }, this);
+      if (addItems.length) {
         self._reconstruct();
-        self._notifyAdded(item);
+        self._notifyAdded(addItems);
       }
     },
   });
@@ -1123,16 +1165,15 @@ function FilteredCollection(source, filterFunc, self) {
 }
 FilteredCollection.prototype = {
   // Implement CollectionObserver
-  added : function(item) {
-    if (this._filterFunc.call(self, item)) {
-      this.add(item);
-    }
+  added : function(items) {
+    this.addAll(items.filter(function(item) {
+      return this._filterFunc.call(self, item);
+    }, this));
   },
-  removed : function(item, coll) {
-    if ( !this.contains(item)) {
-      return;
-    }
-    this.remove(item);
+  removed : function(items, coll) {
+    this.removeAll(items.filter(function(item) {
+      return this.contains(item);
+    }, this));
   },
 }
 extend(FilteredCollection, ArrayColl);
@@ -1166,16 +1207,18 @@ function MapToCollection(source, mapFunc, self) {
 }
 MapToCollection.prototype = {
   // Implement CollectionObserver
-  added : function(item) {
-    this.add(this._mapFunc.call(self, item));
+  added : function(items) {
+    this.addAll(items.map(function(item) {
+      return this._mapFunc.call(self, item);
+    }, this));
   },
-  removed : function(item, coll) {
-    var mappedItem = this._mapFunc.call(self, item);
-    this.forEach(function(curItem) {
-      if (curItem == mappedItem) { // TODO Will not work with |Object|s
-        this.remove(curItem);
-      }
+  removed : function(items, coll) {
+    var mappedItems = items.map(function(item) {
+      return this._mapFunc.call(self, item);
     }, this);
+    this.removeAll(this.filter(function(mappedItem) {
+      return mappedRemovedItems.contains(mappedItem);  // TODO Will not work with |Object|s
+    }, this));
   },
 }
 extend(MapToCollection, ArrayColl);
@@ -1203,17 +1246,17 @@ function IntersectionCollection(coll1, coll2) {
 }
 IntersectionCollection.prototype = {
   // Implement CollectionObserver
-  added : function(item) {
-    if (this._coll1.contains(item) &&
-        this._coll2.contains(item) &&
-        !this.contains(item)) {
-      this.add(item);
-    }
+  added : function(items) {
+    this.addAll(items.filter(function(item) {
+       return this._coll1.contains(item) &&
+          this._coll2.contains(item) &&
+          !this.contains(item);
+    }, this));
   },
-  removed : function(item, coll) {
-    if ( !this.contains(item))
-      return;
-    this.remove(item);
+  removed : function(items, coll) {
+    this.removeAll(items.filter(function(item) {
+       return this.contains(item);
+    }, this));
   },
 }
 extend(IntersectionCollection, SetColl);

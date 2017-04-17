@@ -20,14 +20,14 @@ function addAccount() {
 }
 
 var accountSelectionObserver = {
-  added : function(account, selectedCollection) {
-    this.showAccount(selectedCollection.first);
+  added : function(accounts, selectedAccounts) {
+    this.showAccount(selectedAccounts.first);
   },
-  removed : function(account, selectedCollection) {
-    if (selectedCollection.length > 0) {
-      this.showAccount(selectedCollection.first);
-    } else {
+  removed : function(accounts, selectedAccounts) {
+    if (selectedAccounts.isEmpty) {
       this.noAccount();
+    } else {
+      this.showAccount(selectedAccounts.first);
     }
   },
   showAccount : function(account) {
