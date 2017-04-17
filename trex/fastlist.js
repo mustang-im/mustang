@@ -321,3 +321,26 @@ Fastlist.prototype = {
     }
   },
 }
+
+/**
+ * Convenience class which returns just the first selected item
+ */
+function SingleSelectionObserver() {
+}
+SingleSelectionObserver.prototype = {
+  added : function(items, selectedItems) {
+    this.showItem(selectedItems.first);
+  },
+  removed : function(items, selectedItems) {
+    this.showItem(selectedItems.isEmpty ? null : selectedFolders.first);
+  },
+  /**
+   * Called when the selected item changed
+   * @param selectedItem {Object}
+   *      null, if no item is selected
+   */
+  selectedItem : function(selectedItem) {
+    throw "implement this";
+  },
+}
+//extend(SingleSelectionObserver, CollectionObserver);
