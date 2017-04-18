@@ -50,6 +50,15 @@
             </fastlist>
           </vbox>
           <vbox id="message-pane" flex="2">
+            <!-- TODO: Move to separate source file, using overlay. -->
+            <!-- TODO: Use CSS grid -->
+            <vbox id="header-pane">
+              <hbox><label>Subject:</label><label id="msg-subject"></label></hbox>
+              <hbox><label>From:</label><label id="msg-from"></label></hbox>
+              <hbox><label>Date:</label><label id="msg-date"></label></hbox>
+            </vbox>
+            <iframe id="msg-body" flex="1">
+            </iframe>
           </vbox>
         </vbox>
       </hbox>
