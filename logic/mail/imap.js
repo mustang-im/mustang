@@ -139,8 +139,10 @@ IMAPAccount.prototype =
       //notifyGlobalObservers("logged-in", { account: self });
       conn.listMailboxes().then(mailboxes => {
         assert(mailboxes.root);
-        mailboxes.forEach(mailbox => {
-          var folder = new MsgFolder(sanitize.label(mailbox.name), sanitize.label(mailbox.path));
+        mailboxes.children.forEach(mailbox => {
+          var folder = new MsgFolder(
+              sanitize.label(sanitize.nonemptystring(mailbox.name)),
+              sanitize.label(sanitize.nonemptystring(mailbox.path)));
           folder.flags = mailbox.flags.map(flag => sanitize.nonemptystring(flag).substr(1));
           folder.isNoSelect = folder.flags.indexOf("Noselect") != -1;
           if (mailbox.specialUse) {
@@ -148,9 +150,10 @@ IMAPAccount.prototype =
           }
           folder.subscribed = sanitize.boolean(mailbox.subscribed);
           this._folders.set(sanitize.nonemptystring(mailbox.path), folder);
-          if (mailbox.name.toUpperCase() == "INBOX") {
+          if (folder.name.toUpperCase() == "INBOX") {
             this._inbox = folder;
           }
+          // TODO recurse into mailbox.children
         });
         assert(this._inbox, "No INBOX found");
         this.openFolderUsingConnection(this._inbox, conn, successCallback, errorCallback);
@@ -168,10 +171,10 @@ IMAPAccount.prototype =
     var conn = new ImapClient(this.hostname, this.port, {
       auth : {
         user: self.username,
-        user: self._password,
+        pass: self._password,
       },
-      useSecureTransport : self.ssl == 1,
-      requireTLS : self.ssl == 2,
+      useSecureTransport : self.socketType == 2, // SSL
+      requireTLS : self.socketType == 3, // STARTTLS
       //enableCompression : true,
     });
     conn.connect().then(() => {
@@ -203,7 +206,7 @@ IMAPAccount.prototype =
       folder.messageCount = sanitize.integer(mailbox.exists);
       if (this.peekMails) {
         // TODO keep existing mails, get all unknown. For now, just peek the first n = |peekMails|.
-        client.listMessages("1:" + this.peekMails, ["uid", "flags", "envelope", "body[]"]).then(messages => {
+        conn.listMessages("1:" + this.peekMails, ["uid", "flags", "envelope", "body[]"]).then(messages => {
           messages.forEach(message => {
             var msg = new RFC822Mail();
             msg.imapUID = sanitize.integer(message.uid);

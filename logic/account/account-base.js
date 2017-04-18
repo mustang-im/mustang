@@ -374,7 +374,7 @@ MailAccount.prototype =
     this.username = config.username || this.emailAddress;
     this.hostname = config.hostname;
     this.port = config.port;
-    this.ssl = config.socketType;
+    this.socketType = config.socketType;
     this._verifyAccountSettings();
   },
 
@@ -386,7 +386,7 @@ MailAccount.prototype =
     sanitize.hostname(this.hostname);
     sanitize.integerRange(this.port, 0, 65535);
     sanitize.nonemptystring(this.username);
-    sanitize.enum(this.ssl, [ 1, 2, 3 ]);
+    sanitize.enum(this.socketType, [ 1, 2, 3 ]); // 1 = plain, 2 = SSL, 3 = STARTTLS
     sanitize.integer(this._peekMails);
     sanitize.integer(this._interval);
     assert(this._interval > 0, "check interval is not set");
@@ -401,7 +401,7 @@ MailAccount.prototype =
     this.emailAddress = this._pref.get("emailAddress").toLowerCase();
     this.hostname = this._pref.get("hostname");
     this.port = this._pref.get("port");
-    this.ssl = this._pref.get("socketType");
+    this.socketType = this._pref.get("socketType");
     this.username = this._pref.get("username");
     this._peekMails = this._pref.get("peekMails", this._peekMails);
     this._interval = this._pref.get("interval", this._interval);
@@ -419,7 +419,7 @@ MailAccount.prototype =
     this._pref.set("emailAddress", this.emailAddress);
     this._pref.set("hostname", this.hostname);
     this._pref.set("port", this.port);
-    this._pref.set("socketType", this.ssl);
+    this._pref.set("socketType", this.socketType);
     this._pref.set("username", this.username);
     //this._pref.set("peekMails", this._peekMails);
     this._pref.set("interval", this._interval);
