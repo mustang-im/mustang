@@ -45,7 +45,6 @@ var util = require("util/util");
 util.importAll(util, global);
 var accounts = require("logic/account/account-list"); // add, remove, getExisting
 var IMAPAccount = require("logic/mail/imap").IMAPAccount;
-var POP3Account = require("logic/mail/pop3").POP3Account;
 var getDomainForEmailAddress = require("logic/account/account-base").getDomainForEmailAddress;
 var FetchHTTP = require("util/fetchhttp").FetchHTTP;
 var JXON = require("logic/account/JXON");
@@ -73,19 +72,18 @@ function makeNewAccount(emailAddress, successCallback, errorCallback) {
             "email addresses must be lowercase");
     assert( !accounts.getExistingAccountForEmailAddress(emailAddress),
             "account already exists");
-    //var accountID = emailAddress;
-    var accountID = generateNewAccountID();
     var domain = getDomainForEmailAddress(emailAddress);
 
     return getAccountProviderWithNet(domain, emailAddress, function(config)
     {
+      var accountID = generateNewAccountID();
       var account = _newAccountOfType(config.subtype || config.type, accountID, true);
       account.emailAddress = emailAddress;
       account.setServerConfig(config);
 
       accounts.getAllAccounts().set(accountID,  account);
       successCallback(account);
-      notifyGlobalObservers("account-added", { account : account });
+      //notifyGlobalObservers("account-added", { account : account });
     }, errorCallback);
   } catch (e) { errorCallback(e); }
 }
@@ -105,8 +103,8 @@ function _newAccountOfType(type, accountID, isNew)
 {
   if (type == "imap")
     return new IMAPAccount(accountID, isNew);
-  else if (type == "pop3")
-    return new POP3Account(accountID, isNew);
+  //else if (type == "pop3")
+  //  return new POP3Account(accountID, isNew);
   else
     throw new NotReached("unknown account type requested to be created: " + type);
 }

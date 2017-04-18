@@ -44,6 +44,7 @@ var util = require("util/util");
 util.importAll(util, global);
 var ourPref = require("util/preferences").myPrefs;
 var getAllAccounts = require("logic/account/account-list").getAllAccounts; // for delete account
+var RFC822Mail = new require("logic/mail/MIME").RFC822Mail;
 var sanitize = new require("util/sanitizeDatatypes").sanitize;
 var gStringBundle = new (require("trex/stringbundle").StringBundle)("mail");
 
@@ -189,6 +190,7 @@ function getDomainForEmailAddress(emailAddress)
 function MailAccount(accountID, isNew)
 {
   Account.call(this, accountID, isNew);
+  this._folders = new MapColl();
   if ( !isNew)
     this._readFromPrefs();
 }
@@ -198,6 +200,11 @@ MailAccount.prototype =
   _password : null, // {String}
   _wantStoredLogin : true, // {Boolean} pref says "remember me"
   _peekMails : 10, // {Integer} number of mail headers to fetch. Compare email-panel.js kShowNumberOfMails
+
+  /**
+   * {MapColl of foldername -> MsgFolder}
+   */
+  _folders : null,
 
   /**
    * Amount of new mails in all known folders.
@@ -212,13 +219,13 @@ MailAccount.prototype =
   },
 
   /**
-   * Some of the unchecked mails (headers) in all folders
+   * Top-level folders, including INBOX
    * {Collection of MsgFolder}
-   * may be null or an empty array when this is not implemented.
+   * may be an empty array when this is not implemented.
    */
   get folders()
   {
-    throw new NotReached("implement");
+    this._folders;
   },
 
   /**
@@ -468,6 +475,7 @@ function MsgFolder(name, fullPath)
   this.name = sanitize.nonemptystring(name);
   this.fullPath = sanitize.nonemptystring(fullPath);
   this._messages = new MapColl();
+  this._subfolders = new MapColl();
 }
 MsgFolder.prototype =
 {
@@ -505,6 +513,17 @@ MsgFolder.prototype =
    * {Collection of RFC822Mail}
    */
   get messages() {
+    return this._messages;
+  },
+
+  /**
+   * Subfolders folders of this folder.
+   * {Collection of MsgFolder}
+   * Empty list, if there are no subfolders.
+   */
+  get folders()
+  {
+    return this._subfolders;
   },
 }
 
