@@ -14,14 +14,14 @@ The coolest thing is that we're no longer limited to a single line per row, and 
  */
 
 function Fastlist(element) {
-  assert(element && element.localName == "fastlist");
+  assert(element && element.localName == "fastlist", "need <fastlist> element");
   this._listE = element;
   element.widget = this;
   this._selectedEntries = new ArrayColl();
   this._entries = new ArrayColl(); // just for init. will be overwritten below.
   this._rowElements = [];
   this._rowTemplate = this._listE.querySelector("row");
-  assert(this._rowTemplate);
+  assert(this._rowTemplate, "Fastlist needs a row template");
   this._rowHeight = this._getHeight(this._rowTemplate); // TODO consider vertical padding
   removeElement(this._rowTemplate);
   var tableE = cE(this._listE, "table", null, { cellspacing: 0 });

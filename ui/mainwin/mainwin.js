@@ -7,20 +7,23 @@ var gFolderListE;
 var gMessageListE;
 
 function start() {
-  var gAccountListE = new Fastlist(E("account-list"));
-  var gFolderListE = new Fastlist(E("folder-list"));
-  var gMessageListE = new Fastlist(E("message-list"));
+  try {
+    gAccountListE = new Fastlist(E("account-list"));
+    gFolderListE = new Fastlist(E("folder-list"));
+    gMessageListE = new Fastlist(E("message-list"));
 
-  gAccountSelectionObserver.selectedItem(null);
-  gFolderSelectionObserver.selectedItem(null);
-  gAccountListE.showCollection(getAllAccounts());
-  gAccountListE.selectedCollection.registerObserver(gAccountSelectionObserver);
-  gFolderListE.selectedCollection.registerObserver(gFolderSelectionObserver);
-  gMessageListE.selectedCollection.registerObserver(gMessageSelectionObserver);
+    gAccountSelectionObserver.selectedItem(null);
+    gFolderSelectionObserver.selectedItem(null);
+    gAccountListE.showCollection(getAllAccounts());
+    gAccountListE.selectedCollection.registerObserver(gAccountSelectionObserver);
+    gFolderListE.selectedCollection.registerObserver(gFolderSelectionObserver);
+    gMessageListE.selectedCollection.registerObserver(gMessageSelectionObserver);
+  } catch (e) { console.error(e); alert(e.message); }
 }
+window.addEventListener("load", start, false);
 
 var gAccountSelectionObserver = new SingleSelectionObserver();
-gAccountSelectionObserver.selectedItem = function(folder) {
+gAccountSelectionObserver.selectedItem = function(account) {
   gFolderListE.showCollection(account ? account.folders : new ArrayColl());
 };
 
@@ -34,7 +37,7 @@ gMessageSelectionObserver.selectedItem = function(message) {
   if (message) {
     showMessage(message);
   } else {
-    // show account central
+    // show start page
   }
 };
 

@@ -140,8 +140,6 @@ var netTeardownListener =
 //Services.obs.addObserver(netTeardownListener, "profile-change-net-teardown", false);
 
 
-module.exports = {
-  getAllAccounts : getAllAccounts,
-  accountsSummary : accountsSummary,
-  getExistingAccountForEmailAddress : getExistingAccountForEmailAddress,
-};
+exports.getAllAccounts = getAllAccounts;
+exports.accountsSummary = accountsSummary;
+exports.getExistingAccountForEmailAddress = getExistingAccountForEmailAddress;
