@@ -1,7 +1,8 @@
 require("app-module-path").addPath(require("electron").remote.getGlobal("__base"));
 var util = require("util/util");
 util.importAll(util, global);
-var getAllAccounts = require("logic/account/account-list").getAllAccounts;
+util.importAll(require("util/collection"), global);
+var gAccounts = require("electron").remote.getGlobal("accounts");
 var gAccountListE;
 var gFolderListE;
 var gMessageListE;
@@ -14,11 +15,18 @@ function start() {
 
     gAccountSelectionObserver.selectedItem(null);
     gFolderSelectionObserver.selectedItem(null);
-    gAccountListE.showCollection(getAllAccounts());
+    gAccountListE.showCollection(gAccounts);
     gAccountListE.selectedCollection.registerObserver(gAccountSelectionObserver);
     gFolderListE.selectedCollection.registerObserver(gFolderSelectionObserver);
     gMessageListE.selectedCollection.registerObserver(gMessageSelectionObserver);
-  } catch (e) { console.error(e); alert(e.message); }
+    gAccounts.registerObserver({
+      added : function(items) {
+        alert(items.map(account => account.emailAddress).join(", "));
+      },
+      removed : function(items) {
+      },
+    });
+  } catch (e) { showError(e); }
 }
 window.addEventListener("load", start, false);
 
@@ -42,7 +50,14 @@ gMessageSelectionObserver.selectedItem = function(message) {
 };
 
 function addAccount() {
-  openWindow("../setup/mail-account-setup.html");
+  try {
+    openWindow("../setup/mail-account-setup.html");
+  } catch (e) { showError(e); }
+}
+
+function showError(e) {
+  console.error(e);
+  alert(e.message);
 }
 
 /**

@@ -42,7 +42,9 @@
 var ImapClient = require("emailjs-imap-client");
 var util = require("util/util");
 util.importAll(util, global);
-var { MailAccount, MsgFolder } = require("logic/account/account-base");
+var accountbase = require("logic/account/account-base");
+var MailAccount = accountbase.MailAccount;
+var MsgFolder = accountbase.MsgFolder;
 var RFC822Mail = new require("logic/mail/MIME").RFC822Mail;
 var sanitize = require("util/sanitizeDatatypes").sanitize;
 var gStringBundle = new (require("trex/stringbundle").StringBundle)("mail");

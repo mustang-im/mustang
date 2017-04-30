@@ -1156,7 +1156,7 @@ function FilteredCollection(source, filterFunc, self) {
 
   // add initial contents
   source.forEach(function(item) {
-    if (filterFunc.call(self, item)) {
+    if (filterFunc.call(this.self, item)) {
       this._addWithoutObserver(item);
     }
   }, this);
@@ -1167,7 +1167,7 @@ FilteredCollection.prototype = {
   // Implement CollectionObserver
   added : function(items) {
     this.addAll(items.filter(function(item) {
-      return this._filterFunc.call(self, item);
+      return this._filterFunc.call(this.self, item);
     }, this));
   },
   removed : function(items, coll) {
@@ -1200,7 +1200,7 @@ function MapToCollection(source, mapFunc, self) {
 
   // add initial contents
   source.forEach(function(item) {
-    this._addWithoutObserver(mapFunc.call(self, item));
+    this._addWithoutObserver(mapFunc.call(this.self, item));
   }, this);
 
   source.registerObserver(this);
@@ -1209,12 +1209,12 @@ MapToCollection.prototype = {
   // Implement CollectionObserver
   added : function(items) {
     this.addAll(items.map(function(item) {
-      return this._mapFunc.call(self, item);
+      return this._mapFunc.call(this.self, item);
     }, this));
   },
   removed : function(items, coll) {
     var mappedRemovedItems = items.map(function(item) {
-      return this._mapFunc.call(self, item);
+      return this._mapFunc.call(this.self, item);
     }, this);
     this.removeAll(this.filter(function(mappedItem) {
       return mappedRemovedItems.indexOf(mappedItem) != -1;  // TODO Will not work with |Object|s

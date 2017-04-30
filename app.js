@@ -9,7 +9,9 @@ const path = require("path");
 const url = require("url");
 require("app-module-path").addPath(__dirname + "/");
 global.__base = __dirname + "/";
-//require("logic/account/account-list");
+
+var getAllAccounts = require("logic/account/account-list").getAllAccounts;
+global.accounts = getAllAccounts();
 
 // Window will be closed once this object is garbage collected, so keep it
 var mainWindow;

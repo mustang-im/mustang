@@ -8,6 +8,7 @@
 <link href="mail-account-setup.css" rel="stylesheet" type="text/css"></link>
 <script src="../../trex/trex.js" type="text/javascript"></script>
 <script src="../../util/uiutil.js" type="text/javascript"></script>
+<script src="../../trex/fastlist.js" type="text/javascript"></script>
 <script src="mail-account-setup.js" type="text/javascript"></script>
 </head>
 <body>
@@ -28,6 +29,17 @@
       <hbox pack="end">
         <button onclick="ok()">Continue</button>
       </hbox>
+
+      <fastlist id="account-list">
+        <header>
+          <div>Accounts</div>
+        </header>
+        <row>
+          <div field="emailAddress"></div>
+        </row>
+      </fastlist>
+
+    </vbox>
 
 </body>
 </html>

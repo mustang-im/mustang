@@ -2,33 +2,52 @@ require("app-module-path").addPath(require("electron").remote.getGlobal("__base"
 var util = require("util/util");
 util.importAll(util, global);
 importAll(require("logic/account/account-setup"), global);
+var gAccounts = require("electron").remote.getGlobal("accounts");
 
 function onLoad() {
-  hookupReturnKey(E("realName"), function() {
-    E("emailAddress").focus();
-  });
-  hookupReturnKey(E("emailAddress"), function() {
-    E("password").focus();
-  });
-  hookupReturnKey(E("password"), function() {
-    ok();
-  });
+  try {
+    hookupReturnKey(E("realName"), function() {
+      E("emailAddress").focus();
+    });
+    hookupReturnKey(E("emailAddress"), function() {
+      E("password").focus();
+    });
+    hookupReturnKey(E("password"), function() {
+      ok();
+    });
+
+    assert(gAccounts);
+    var accountListE = new Fastlist(E("account-list"));
+    accountListE.showCollection(gAccounts);
+    gAccounts.registerObserver({
+      added : function(items) {
+        //alert(items.map(account => account.emailAddress).join(", "));
+        alert(gAccounts.map(account => account.emailAddress).contents.join(", "));
+      },
+      removed : function(items) {
+      },
+    });
+  } catch(e) { errorShow(e); }
 }
+window.addEventListener("load", onLoad, false);
 
 function ok() {
-  errorShow(false);
-  var checkingE = E("checking");
-  checkingE.removeAttribute("hidden");
-  resizeWindow();
-  var emailAddress = E("emailAddress").value;
-  var password = E("password").value;
+  try {
+    errorShow(false);
+    var checkingE = E("checking");
+    checkingE.removeAttribute("hidden");
+    resizeWindow();
+    var emailAddress = E("emailAddress").value;
+    var password = E("password").value;
 
-  makeNewAccount(emailAddress, function(account) {
-    account.setPassword(password);
-    account.login(true, function() {
-      window.close();
+    assert(gAccounts);
+    makeNewAccount(emailAddress, gAccounts, function(account) {
+      account.setPassword(password);
+      account.login(true, function() {
+        window.close();
+      }, errorShow);
     }, errorShow);
-  }, errorShow);
+  } catch (e) { errorShow(e); }
 }
 
 function errorShow(ex) {
