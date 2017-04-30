@@ -1,8 +1,10 @@
 require("app-module-path").addPath(require("electron").remote.getGlobal("__base"));
 var util = require("util/util");
 util.importAll(util, global);
-importAll(require("logic/account/account-setup"), global);
-var gAccounts = require("electron").remote.getGlobal("accounts");
+util.importAll(require("util/collection"), global);
+var remote = require('electron').remote;
+var makeNewAccount = remote.require("logic/account/account-setup").makeNewAccount;
+var gAccounts = remote.getGlobal("accounts");
 
 function onLoad() {
   try {
@@ -41,7 +43,7 @@ function ok() {
     var password = E("password").value;
 
     assert(gAccounts);
-    makeNewAccount(emailAddress, gAccounts, function(account) {
+    makeNewAccount(emailAddress, function(account) {
       account.setPassword(password);
       account.login(true, function() {
         window.close();

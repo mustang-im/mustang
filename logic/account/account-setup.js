@@ -65,9 +65,8 @@ var mozillaISPDBURL = "https://autoconfig.thunderbird.net/v1.1/";
  *     Called, if we cannot configure that email address.
  * @returns {Abortable}
  */
-function makeNewAccount(emailAddress, allAccounts, successCallback, errorCallback) {
+function makeNewAccount(emailAddress, successCallback, errorCallback) {
   try {
-    assert(allAccounts);
     sanitize.nonemptystring(emailAddress);
     assert(emailAddress == emailAddress.toLowerCase(),
             "email addresses must be lowercase");
@@ -82,8 +81,7 @@ function makeNewAccount(emailAddress, allAccounts, successCallback, errorCallbac
       account.emailAddress = emailAddress;
       account.setServerConfig(config);
 
-      assert(allAccounts);
-      allAccounts.set(accountID,  account);
+      accounts.getAllAccounts().set(accountID,  account);
       successCallback(account);
       //notifyGlobalObservers("account-added", { account : account });
     }, errorCallback);

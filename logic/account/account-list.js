@@ -37,6 +37,8 @@
 
 /**
  * This keeps the list of all account objects created.
+ *
+ * It runs in the global app context.
  */
 
 var util = require("util/util");
