@@ -1,3 +1,7 @@
+html {
+  width: 100%;
+  height: 100%;
+}
 body {
   width: 100%;
   height: 100%;
@@ -18,7 +22,6 @@ body {
 
 
 fastlist > table {
-  height: 100%;
   width: 100%;
 }
 fastlist tbody {
@@ -50,6 +53,7 @@ fastlist > .scrollbar {
 }
 fastlist {
   border: 1px solid #8E8EA1;
+  background-color: #EEF3F9;
 }
 fastlist header > * {
   border-top: 1px solid white;
@@ -62,5 +66,4 @@ fastlist header > *:hover {
   background-color: #E5E5F7;
 }
 fastlist tbody > row > * {
-  background-color: #EEF3F9;
 }

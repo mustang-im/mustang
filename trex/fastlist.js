@@ -22,7 +22,9 @@ function Fastlist(element) {
   this._rowElements = [];
   this._rowTemplate = this._listE.querySelector("row");
   assert(this._rowTemplate, "Fastlist needs a row template");
-  this._rowHeight = this._getHeight(this._rowTemplate); // TODO consider vertical padding
+  //this._rowHeight = this._getHeight(this._rowTemplate); // TODO consider vertical padding
+  this._rowHeight = parseInt(this._rowTemplate.getAttribute("rowheight")); // TODO automatic sizing
+  this._rowTemplate.removeAttribute("rowheight");
   removeElement(this._rowTemplate);
   var tableE = cE(this._listE, "table", null, { cellspacing: 0 });
   var headerRowE = this._listE.querySelector("header");
@@ -36,6 +38,11 @@ function Fastlist(element) {
   this._scrollbarE.addEventListener("scroll", event => this._onScrollBar(event), false);
   this._listE.addEventListener("wheel", event => this._onScrollWheel(event), false);
   this._listE.addEventListener("click", event => this._onClick(event), false);
+
+  /*window.addEventListener("throttledResize", () => { // throttledResize from trex.js
+    this._updateSize();
+    this._refreshContent();
+  });*/
 
   this.showCollection(new ArrayColl());
 }

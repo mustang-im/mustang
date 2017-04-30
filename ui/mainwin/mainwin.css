@@ -3,7 +3,7 @@ body {
 }
 #entire-window {
   flex: 1;
-  min-height: 500px; /* TODO */
+  height: 100%;
 }
 #window-content-pane {
   flex: 1;
@@ -27,4 +27,7 @@ body {
 }
 #message-pane {
   flex: 2;
+}
+#account-list, #folder-list, #message-list, #msg-body {
+  flex: 1;
 }
