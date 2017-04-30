@@ -99,8 +99,8 @@ Preferences.prototype = {
    * given that localStorage stores only strings.
    */
   _getPrefFromLocalStorage : function(id) {
-    var value = localStorage[id];
-    var datatype = localStorage[id + ".DType"];
+    var value = undefined;
+    var datatype = undefined;
     //debug("pref " + id + " [" + datatype + "] has value " + value + " type " + typeof value);
     if (datatype == "boolean" || datatype == "number")
       // JSON.parse() will autoconvert booleans and numbers
@@ -111,16 +111,10 @@ Preferences.prototype = {
   },
 
   _setPref : function(prefName, value) {
-    localStorage["prefs." + this._prefBranch + prefName] = value;
-    localStorage["prefs." + this._prefBranch + prefName + ".DType"] = typeof value;
   },
   _setDefaultPref : function(prefName, value) {
-    localStorage["defaultPrefs." + this._prefBranch + prefName] = value;
-    localStorage["defaultPrefs." + this._prefBranch + prefName + ".DType"] = typeof value;
   },
   _removePref : function(prefName) {
-    localStorage.removeItem("prefs." + this._prefBranch + prefName);
-    localStorage.removeItem("prefs." + this._prefBranch + prefName + ".DType");
   },
 
   /**
@@ -419,7 +413,7 @@ Preferences.prototype = {
     var result = [];
     var prefBranch = "prefs." + this._prefBranch;
     var defaultBranch = "defaultPrefs." + this._prefBranch;
-    for (var fullname in localStorage) {
+    for (var fullname in {}) {
       if (fullname.substr(0, prefBranch.length) == prefBranch) {
         result.push(fullname.substr(prefBranch.length));
       } else if (fullname.substr(0, defaultBranch.length) == defaultBranch) {
