@@ -13,8 +13,8 @@ function start() {
     gFolderListE = new Fastlist(E("folder-list"));
     gMessageListE = new Fastlist(E("message-list"));
 
-    gAccountSelectionObserver.selectedItem(null);
-    gFolderSelectionObserver.selectedItem(null);
+    gAccountSelectionObserver.onSelectedItem(null);
+    gFolderSelectionObserver.onSelectedItem(null);
     gAccountListE.showCollection(gAccounts);
     gAccountListE.selectedCollection.registerObserver(gAccountSelectionObserver);
     gFolderListE.selectedCollection.registerObserver(gFolderSelectionObserver);
@@ -31,17 +31,17 @@ function start() {
 window.addEventListener("load", start, false);
 
 var gAccountSelectionObserver = new SingleSelectionObserver();
-gAccountSelectionObserver.selectedItem = function(account) {
+gAccountSelectionObserver.onSelectedItem = function(account) {
   gFolderListE.showCollection(account ? account.folders : new ArrayColl());
 };
 
 var gFolderSelectionObserver = new SingleSelectionObserver();
-gFolderSelectionObserver.selectedItem = function(folder) {
+gFolderSelectionObserver.onSelectedItem = function(folder) {
   gMessageListE.showCollection(folder ? folder.messages : new ArrayColl());
 };
 
 var gMessageSelectionObserver = new SingleSelectionObserver();
-gMessageSelectionObserver.selectedItem = function(message) {
+gMessageSelectionObserver.onSelectedItem = function(message) {
   if (message) {
     showMessage(message);
   } else {
