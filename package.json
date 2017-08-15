@@ -9,8 +9,7 @@
     "emailjs-imap-client": "^2.0.5",
     "emailjs-mime-parser": "^1.0.0",
     "emailjs-smtp-client": "^1.0.0",
-    "mailbuild": "^0.3.7",
-    "xmlhttprequest": "^1.8.0"
+    "mailbuild": "^0.3.7"
   },
   "devDependencies": {},
   "scripts": {

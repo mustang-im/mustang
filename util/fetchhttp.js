@@ -49,7 +49,6 @@
 
 var util = require("util/util");
 util.importAll(util, global);
-var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 var sanitize = require("util/sanitizeDatatypes").sanitize;
 var gStringBundle = new (require("trex/stringbundle").StringBundle)("util");
 
@@ -235,11 +234,7 @@ FetchHTTP.prototype =
             // Match text/foo+xml
             /^text\/[a-z0-9]+\+xml$/.test(mimetype))
         {
-          if (this._request.responseXML) {
-            this.result = this._request.responseXML;
-          } else {
-            this.result = require("xmldom").parseFromString(this._request.responseText);
-          }
+          this.result = this._request.responseXML;
         }
         else
         {
