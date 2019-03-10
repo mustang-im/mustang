@@ -223,7 +223,7 @@ IMAPAccount.prototype =
                 : msg.authorEmailAddress;
             msg.flags = message.flags.map(flag => sanitize.nonemptystring(flag).substr(1));
             msg.seen = msg.flags.indexOf("Seen") != -1;
-            this._messages.set(msg.msgID, msg);
+            folder._messages.set(msg.msgID, msg);
           });
           successCallback();
         }).catch(errorCallback);
