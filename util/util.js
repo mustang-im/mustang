@@ -615,6 +615,9 @@ function createQueryString(queryObject)
   return queryString;
 }
 
+if (typeof(exports) == "undefined") {
+  exports = {};
+}
 exports.importAll = importAll;
 exports.extend = extend;
 exports.mixInto = mixInto;

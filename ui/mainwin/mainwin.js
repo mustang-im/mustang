@@ -1,8 +1,9 @@
-require("app-module-path").addPath(require("electron").remote.getGlobal("__base"));
+var remote = require("electron").remote;
+require("app-module-path").addPath(remote.getGlobal("__base"));
 var util = require("util/util");
 util.importAll(util, global);
 util.importAll(require("util/collection"), global);
-var gAccounts = require("electron").remote.getGlobal("accounts");
+var gAccounts = remote.getGlobal("accounts");
 var gAccountListE;
 var gFolderListE;
 var gMessageListE;

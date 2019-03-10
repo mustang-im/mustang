@@ -1,8 +1,9 @@
 require("app-module-path").addPath(require("electron").remote.getGlobal("__base"));
+var remote = require("electron").remote;
 var util = require("util/util");
 util.importAll(util, global);
-importAll(require("logic/account/account-setup"), global);
-var gAccounts = require("electron").remote.getGlobal("accounts");
+var gAccounts = remote.getGlobal("accounts");
+var makeNewAccount = remote.getGlobal("makeNewAccount");
 
 function onLoad() {
   try {

@@ -11,6 +11,7 @@ require("app-module-path").addPath(__dirname + "/");
 global.__base = __dirname + "/";
 
 global.accounts = require("logic/account/account-list").getAllAccounts();
+global.makeNewAccount = require("logic/account/account-setup").makeNewAccount;
 
 // Window will be closed once this object is garbage collected, so keep it
 var mainWindow;

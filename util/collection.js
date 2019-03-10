@@ -1340,6 +1340,9 @@ function assert(test, errorMsg)
     throw new Error(errorMsg ? errorMsg : "Bug: assertion failed");
 }
 
+if (typeof(exports) == "undefined") {
+  exports = {};
+}
 exports.CollectionObserver = CollectionObserver;
 exports.Collection = Collection;
 exports.KeyValueCollection = KeyValueCollection;
