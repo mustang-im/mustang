@@ -46,13 +46,14 @@ util.importAll(util, global);
 var accounts = require("logic/account/account-list"); // add, remove, getExisting
 var IMAPAccount = require("logic/mail/imap").IMAPAccount;
 var getDomainForEmailAddress = require("logic/account/account-base").getDomainForEmailAddress;
-var FetchHTTP = require("util/fetchhttp").FetchHTTP;
 var JXON = require("logic/account/JXON");
 var dns = require("dns");
 var sanitize = require("util/sanitizeDatatypes").sanitize;
 var ourPref = require("util/preferences").myPrefs;
 var gStringBundle = new (require("trex/stringbundle")).StringBundle("mail");
 var mozillaISPDBURL = "https://autoconfig.thunderbird.net/v1.1/";
+var r2 = require("r2")
+var DOMParser = require("xmldom").DOMParser;
 
 /**
  * Create a new |Account| object for |emailAddress|.
@@ -305,18 +306,14 @@ function getMX(domain, successCallback, errorCallback)
  *         so do not unconditionally show this to the user.
  *         The first paramter will be an exception object or error string.
  */
-function fetchConfigFromMozillaDB(domain, successCallback, errorCallback)
+async function fetchConfigFromMozillaDB(domain, successCallback, errorCallback)
 {
-  var url = mozillaISPDBURL + domain;
   domain = sanitize.hostname(domain);
-
-  if (!url.length)
-    return errorCallback("no fetch url set");
-  var fetch = new FetchHTTP({ url: url }, function(result) {
-    successCallback(readFromXML(JXON.build(result)));
-  }, errorCallback);
-  fetch.start();
-  return fetch;
+  var url = mozillaISPDBURL + domain;
+  var xmlText = await r2(url).text;
+  var xmlDoc = new DOMParser().parseFromString(xmlText);
+  successCallback(readFromXML(JXON.build(xmlDoc)));
+  return new Abortable(); // TODO turn Promise into Abortable
 }
 
 /**
