@@ -208,7 +208,7 @@ IMAPAccount.prototype =
       folder.messageCount = sanitize.integer(mailbox.exists);
       if (this.peekMails) {
         // TODO keep existing mails, get all unknown. For now, just peek the first n = |peekMails|.
-        conn.listMessages("1:" + this.peekMails, ["uid", "flags", "envelope", "body[]"]).then(messages => {
+        conn.listMessages(folder.name, "1:" + this.peekMails, ["uid", "flags", "envelope", "body[]"]).then(messages => {
           messages.forEach(message => {
             var msg = new RFC822Mail();
             msg.imapUID = sanitize.integer(message.uid);
