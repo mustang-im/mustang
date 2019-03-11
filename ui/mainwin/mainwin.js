@@ -62,10 +62,13 @@ function showError(e) {
 function showMessage(message) {
   E("msg-from").textContent = message.authorRealname;
   E("msg-subject").textContent = message.subject;
+  E("msg-date").textContent = getDateString(message.date);
+}
 
-  var dateStr = message.date.toLocaleTimeString();
-  if (message.date < Date.now().setHours(0, 0, 0, 0)) { // doesn't consider wrong dates in future, but this is a prototype, so...
-    dateStr = message.date.toLocaleDateString(); + " " + dateStr;
+function getDateString(date) {
+  var dateDetails = { weekday: "short", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" };
+  if (date.toDateString() == Date.now().toDateString()) { // today
+    dateDetails = { hour: "numeric", minute: "numeric" };
   }
-  E("msg-date").textContent = dateStr;
+  return date.toLocaleString(navigator.language, dateDetails);
 }
