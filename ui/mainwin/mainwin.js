@@ -20,6 +20,8 @@ function start() {
     gAccountListE.selectedCollection.registerObserver(gAccountSelectionObserver);
     gFolderListE.selectedCollection.registerObserver(gFolderSelectionObserver);
     gMessageListE.selectedCollection.registerObserver(gMessageSelectionObserver);
+
+    gMessageListE.filldate = getDateString;
   } catch (e) { showError(e); }
 }
 window.addEventListener("load", start, false);

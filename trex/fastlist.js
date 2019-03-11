@@ -200,7 +200,19 @@ Fastlist.prototype = {
     nodeListToArray(rowE.querySelectorAll("*[field]")).forEach(fieldE => {
       var fieldName = fieldE.getAttribute("field");
       var value = obj[fieldName];
-      fieldE.textContent = value;
+
+      var fillFunc = this["fill" + fieldName];
+      if (fillFunc && typeof(fillFunc) == "function") {
+        var display = fillFunc(value);
+        if (typeof(display) == "object" && "nodeName" in display) { // fill function returned DOM node
+          cleanElement(fieldE);
+          fieldE.appendChild(display);
+        } else { // fill function returned string
+          fieldE.textContent = String(display);
+        }
+      } else {
+        fieldE.textContent = value;
+      }
     });
   },
 
