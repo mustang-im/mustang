@@ -263,10 +263,8 @@ Fastlist.prototype = {
   _refreshContent : function() {
     // TODO be lazy, avoid unnecessary refreshs
     var renderRow = this._scrollPos;
-    // TODO copies, that's slow
-    var entries = this._entries.contents;
     this._rowElements.forEach(rowE => {
-      var obj = entries[renderRow++];
+      var obj = this._entries.getIndex(renderRow++);
       if (!obj) {
         return;
       }

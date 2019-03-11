@@ -125,6 +125,24 @@ Collection.prototype = {
     throw "implement";
   },
 
+  /**
+   * The item at the nth position in the list
+   * @returns {Object}
+   * null, if the list is empty
+   */
+  getIndex : function(i) {
+    throw "implement";
+  },
+
+  /**
+   * |len| number of items, starting from the nth position in the list
+   * @returns {Object}
+   * null, if the list is empty
+   */
+  getIndexRange : function(i, length) {
+    throw "implement";
+  },
+
 
 
   forEach : function(callback, self) {
@@ -595,6 +613,17 @@ ArrayColl.prototype = {
     return this._array[0];
   },
 
+  getIndex : function(i) {
+    return this._array[i];
+  },
+
+  getIndexRange : function(i, length) {
+    if (!i) {
+      return [];
+    }
+    return this._array.slice(i, i + length);
+  },
+
   forEach : function(callback, self) {
     this._array.forEach(callback, self);
   },
@@ -762,6 +791,17 @@ SetColl.prototype = {
     return this._array[0];
   },
 
+  getIndex : function(i) {
+    return this._array[i];
+  },
+
+  getIndexRange : function(i, length) {
+    if (!i) {
+      return [];
+    }
+    return this._array.slice(i, i + length);
+  },
+
   forEach : function(callback, self) {
     this._array.forEach(callback, self);
   },
@@ -825,6 +865,17 @@ MapColl.prototype = {
 
   get first() {
     return this.contents[0]; // is there a more efficient impl?
+  },
+
+  getIndex : function(i) {
+    return this.contents[i];
+  },
+
+  getIndexRange : function(i, length) {
+    if (!i) {
+      return [];
+    }
+    return this.contents.slice(i, i + length);
   },
 
   contentKeys : function() {
@@ -1310,6 +1361,12 @@ DelegateCollection.prototype = {
   },
   get first() {
     return this._base.first;
+  },
+  getIndex : function(i) {
+    return this._base.getIndex(i);
+  },
+  getIndexRange : function(i, length) {
+    return this._base.getIndexRange(i, length);
   },
   forEach : function(callback, self) {
     this._base.forEach(callback, self);
