@@ -3,7 +3,6 @@ require("app-module-path").addPath(remote.getGlobal("__base"));
 var util = require("util/util");
 util.importAll(util, global);
 util.importAll(require("util/collection"), global);
-var gAccounts = remote.getGlobal("accounts");
 var gAccountListE;
 var gFolderListE;
 var gMessageListE;
@@ -16,17 +15,11 @@ function start() {
 
     gAccountSelectionObserver.onSelectedItem(null);
     gFolderSelectionObserver.onSelectedItem(null);
+    var gAccounts = remote.getGlobal("accounts");
     gAccountListE.showCollection(gAccounts);
     gAccountListE.selectedCollection.registerObserver(gAccountSelectionObserver);
     gFolderListE.selectedCollection.registerObserver(gFolderSelectionObserver);
     gMessageListE.selectedCollection.registerObserver(gMessageSelectionObserver);
-    gAccounts.registerObserver({
-      added : function(items) {
-        alert(items.map(account => account.emailAddress).join(", "));
-      },
-      removed : function(items) {
-      },
-    });
   } catch (e) { showError(e); }
 }
 window.addEventListener("load", start, false);

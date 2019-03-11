@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  *  Ben Bucksch <ben.bucksch beonex.com>
- * Portions created by the Initial Developer are Copyright (C) 2010 - 2017
+ * Portions created by the Initial Developer are Copyright (C) 2010 - 2019
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -249,17 +249,7 @@ function getBaseDomainFromHost(aHostname) {
 }
 
 /**
- * <copied from="mailnews/base/prefs/content/accountcreation/fetchConfig.js"
- * license="MPL" />
- *
  * Queries the DNS MX for the domain
- *
- * The current implementation goes to a web service to do the
- * DNS resolve for us, because Mozilla unfortunately has no implementation
- * to do it. That's just a workaround. Once bug 545866 is fixed, we make
- * the DNS query directly on the client. The API of this function should not
- * change then.
- *
  * Returns (in successCallback) the hostnames of the MX servers.
  *
  * @param domain {String}

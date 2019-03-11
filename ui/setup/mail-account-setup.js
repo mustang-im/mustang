@@ -22,8 +22,7 @@ function onLoad() {
     accountListE.showCollection(gAccounts);
     gAccounts.registerObserver({
       added : function(items) {
-        //alert(items.map(account => account.emailAddress).join(", "));
-        alert(gAccounts.map(account => account.emailAddress).contents.join(", "));
+        alert("Added " + items.map(account => account.emailAddress).join(", "));
       },
       removed : function(items) {
       },
