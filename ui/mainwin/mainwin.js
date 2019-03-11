@@ -69,7 +69,7 @@ function showMessage(message) {
 
 function getDateString(date) {
   var dateDetails = { weekday: "short", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" };
-  if (date.toDateString() == Date.now().toDateString()) { // today
+  if (date.toDateString() == new Date().toDateString()) { // today
     dateDetails = { hour: "numeric", minute: "numeric" };
   }
   return date.toLocaleString(navigator.language, dateDetails);
