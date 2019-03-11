@@ -306,14 +306,16 @@ function getMX(domain, successCallback, errorCallback)
  *         so do not unconditionally show this to the user.
  *         The first paramter will be an exception object or error string.
  */
-async function fetchConfigFromMozillaDB(domain, successCallback, errorCallback)
+function fetchConfigFromMozillaDB(domain, successCallback, errorCallback)
 {
   domain = sanitize.hostname(domain);
   var url = mozillaISPDBURL + domain;
-  var xmlText = await r2(url).text;
-  var xmlDoc = new DOMParser().parseFromString(xmlText);
-  successCallback(readFromXML(JXON.build(xmlDoc)));
-  return new Abortable(); // TODO turn Promise into Abortable
+  var fetchFunc = async function() {
+    var xmlText = await r2(url).text;
+    var xmlDoc = new DOMParser().parseFromString(xmlText);
+    return readFromXML(JXON.build(xmlDoc));
+  };
+  return new PromiseAbortable(fetchFunc(), successCallback, errorCallback);
 }
 
 /**

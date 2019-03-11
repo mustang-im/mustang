@@ -365,6 +365,37 @@ SuccessiveAbortable.prototype =
 }
 extend(SuccessiveAbortable, Abortable);
 
+// Turns a JS Promise into an Abortable (which you can't abort)
+function PromiseAbortable(promise, successCallback, errorCallback)
+{
+  promise.then(successCallback).catch(errorCallback);
+}
+PromiseAbortable.prototype =
+{
+  cancel : function()
+  {
+  },
+}
+extend(PromiseAbortable, Abortable);
+
+// For Fetch API. It has inverse thinking again, as usual.
+function ControllerAbortable()
+{
+  this._controller = new AbortController();
+}
+ControllerAbortable.prototype =
+{
+  get signal() {
+    return this._controller.signal;
+  },
+  cancel : function()
+  {
+    this._controller.abort();
+  },
+}
+extend(ControllerAbortable, Abortable);
+
+
 
 /**
  * Guarantee that passed in item is an array.
@@ -628,6 +659,8 @@ exports.NotReached = NotReached;
 exports.UserError = UserError;
 exports.Abortable = Abortable;
 exports.SuccessiveAbortable = SuccessiveAbortable;
+exports.PromiseAbortable = PromiseAbortable;
+exports.ControllerAbortable = ControllerAbortable;
 exports.runAsync = runAsync;
 exports.runPeriodically = runPeriodically;
 exports.readURLasUTF8 = readURLasUTF8;
