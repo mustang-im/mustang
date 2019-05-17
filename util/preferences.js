@@ -1,40 +1,10 @@
-/* ***** BEGIN LICENSE BLOCK *****
- * Version: MPL 1.1/GPL 2.0/LGPL 2.1
- *
- * The contents of this file are subject to the Mozilla Public License Version
- * 1.1 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
- *
- * Software distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
- *
- * The Original Code is Preferences.
- *
- * The Initial Developer of the Original Code is Mozilla.
- * Portions created by the Initial Developer are Copyright (C) 2008
- * the Initial Developer. All Rights Reserved.
- *
- * Contributor(s):
- *   Myk Melez <myk@mozilla.org> (API)
- *   Ben Bucksch <ben.bucksch  beonex> <http://business.beonex.com>
- *       (HTML5 implementation based on localStorage)
- *
- * Alternatively, the contents of this file may be used under the terms of
- * either the GNU General Public License Version 2 or later (the "GPL"), or
- * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
- * in which case the provisions of the GPL or the LGPL are applicable instead
- * of those above. If you wish to allow use of your version of this file only
- * under the terms of either the GPL or the LGPL, and not to allow others to
- * use your version of this file under the terms of the MPL, indicate your
- * decision by deleting the provisions above and replace them with the notice
- * and other provisions required by the GPL or the LGPL. If you do not delete
- * the provisions above, a recipient may use your version of this file under
- * the terms of any one of the MPL, the GPL or the LGPL.
- *
- * ***** END LICENSE BLOCK ***** */
+/*************************
+ * name: Preferences
+ * description: Preferences system for node.js, saving the prefs in a JSON file
+ * copyright: Ben Bucksch of Beonex
+ * license: MIT
+ * version: 0.7
+ ****************************/
 
 /**
  * This implements a way to store user preferences, settings, configuration.
@@ -52,9 +22,10 @@
  * you to update your UI everywhere automatically
  * (subject/observer design pattern).
  *
- * This implementation stores the preferences in localStorage.
- * There are other implementations with the same API, but
- * using the Mozilla XPCOM preferences system for storage.
+ * This implementation stores the preferences in a local JSON file
+ * using node.js functions.
+ * There are other implementations with the same API, but using
+ * HTML5 localStorage.
  */
 
 
@@ -72,7 +43,6 @@
  * {Array of {
  *   prefName {String}
  *   callback {function()}
- *   thisObject {Object}
  * } }
  */
 var gPrefObservers = [];
@@ -88,56 +58,71 @@ Preferences.prototype = {
   _prefBranch : "",
 
   _getPref : function(prefName) {
-    return this._getPrefFromLocalStorage("prefs." + this._prefBranch + prefName);
-  },
-  _getDefaultPref : function(prefName) {
-    return this._getPrefFromLocalStorage("defaultPrefs." + this._prefBranch + prefName);
-  },
-
-  /**
-   * Use the stored DType to return a value of the correct type,
-   * given that localStorage stores only strings.
-   */
-  _getPrefFromLocalStorage : function(id) {
-    var value = undefined;
-    var datatype = undefined;
-    //debug("pref " + id + " [" + datatype + "] has value " + value + " type " + typeof value);
-    if (datatype == "boolean" || datatype == "number")
-      // JSON.parse() will autoconvert booleans and numbers
-      value = JSON.parse(value);
-    else if (datatype == "undefined")
-      value = undefined;
-    return value;
+    prefName = this._prefBranch + prefName;
+    let path = prefName.split(".");
+    let leaf = path.pop();
+    let branch = gPrefs;
+    for (let dir of path) {
+      if (typeof(branch[dir]) == "undefined") {
+        return undefined;
+      }
+      branch = branch[dir];
+    }
+    return branch[leaf];
   },
 
   _setPref : function(prefName, value) {
-  },
-  _setDefaultPref : function(prefName, value) {
+    prefName = this._prefBranch + prefName;
+    let path = prefName.split(".");
+    let leaf = path.pop();
+    let branch = gPrefs;
+    for (let dir of path) {
+      if (typeof(branch[dir]) == "undefined") {
+        branch[dir] = {};
+      }
+      branch = branch[dir];
+    }
+    branch[leaf] = value;
   },
   _removePref : function(prefName) {
+    prefName = this._prefBranch + prefName;
+    let path = prefName.split(".");
+    let leaf = path.pop();
+    let branch = gPrefs;
+    for (let dir of path) {
+      if (typeof(branch[dir]) == "undefined") {
+        return;
+      }
+    }
+    branch[leaf] = undefined;
+  },
+
+  _getDefaultPref : function(prefName) {
+    return this._getPref("default." + prefName);
+  },
+  _setDefaultPref : function(prefName, value) {
+    this._setPref("default." + prefName, value);
   },
 
   /**
    * Get the value of a pref, if any; otherwise return the default value.
    *
-   * @param   prefName  {String|Array}
-   *          the pref to get, or an array of prefs to get
+   * @param   prefName {String}   E.g. "foo.bar.baz"
    *
-   * @param   defaultValue
-   *          the default value, if any, for prefs that don't have one
+   * @param   defaultValue   the hardcoded default value,
+   *     for prefs that have neither a user pref nor a default pref set
    *
    * @returns the value of the pref, if any; otherwise the default value
    */
   get: function(prefName, defaultValue) {
-    if (isArray(prefName))
-      return prefName.map(function(v) { return this.get(v, defaultValue); }, this);
-
     var value = this._getPref(prefName);
-    if (value !== undefined)
+    if (value !== undefined) {
       return value;
+    }
     value = this._getDefaultPref(prefName);
-    if (value !== undefined)
+    if (value !== undefined) {
       return value;
+    }
     return defaultValue;
   },
 
@@ -149,9 +134,7 @@ Preferences.prototype = {
    * as preferences to set, where each property name is the name of a pref
    * and its corresponding property value is the value of the pref.
    *
-   * @param   prefName  {String|Object}
-   *          the name of the pref to set; or an object containing a set
-   *          of prefs to set
+   * @param   prefName {String}   E.g. "foo.bar.baz"
    *
    * @param   prefValue {String|Number|Boolean}
    *          the value to which to set the pref
@@ -164,12 +147,6 @@ Preferences.prototype = {
    *   Preferences.set("big", Math.pow(2, 31).toString()).
    */
   set: function(prefName, prefValue) {
-    if (isObject(prefName)) {
-      for (var name in prefName)
-        this.set(name, prefName[name]);
-      return;
-    }
-
     this._setPref(prefName, prefValue);
   },
 
@@ -179,18 +156,11 @@ Preferences.prototype = {
    * or a user-set value, while isSet only returns true if the value
    * is a user-set value.
    *
-   * @param   prefName  {String|Array}
-   *          the pref to check, or an array of prefs to check
+   * @param   prefName {String}   E.g. "foo.bar.baz"
    *
-   * @returns {Boolean|Array}
-   *          whether or not the pref has a value; or, if the caller provided
-   *          an array of pref names, an array of booleans indicating whether
-   *          or not the prefs have values
+   * @returns {Boolean} whether the pref has a value
    */
   has: function(prefName) {
-    if (isArray(prefName))
-      return prefName.map(this.has, this);
-
     return this._getPref(prefName) !== undefined &&
         this._getDefaultPref(prefName) !== undefined;
   },
@@ -201,34 +171,15 @@ Preferences.prototype = {
    * set value, while |has| returns true if the value of the pref is a default
    * value or a user-set value.
    *
-   * @param   prefName  {String|Array}
-   *          the pref to check, or an array of prefs to check
+   * @param   prefName {String}   E.g. "foo.bar.baz"
    *
-   * @returns {Boolean|Array}
-   *          whether or not the pref has a user-set value; or, if the caller
-   *          provided an array of pref names, an array of booleans indicating
-   *          whether or not the prefs have user-set values
+   * @returns {Boolean} whether the pref has a user-set value
    */
-  isSet: function(prefName) {
-    if (isArray(prefName))
-      return prefName.map(this.isSet, this);
-
+  hasUser: function(prefName) {
     return this._getPref(prefName) !== undefined;
   },
 
-  /**
-   * Whether or not the given pref has a user-set value. Use isSet instead,
-   * which is equivalent.
-   * @deprecated
-   */
-  modified: function(prefName) { return this.isSet(prefName) },
-
   reset: function(prefName) {
-    if (isArray(prefName)) {
-      prefName.map(function(v) { return this.reset(v); }, this);
-      return;
-    }
-
     this._removePref(prefName);
   },
 
@@ -249,66 +200,25 @@ Preferences.prototype = {
   },
 
   /**
-   * Lock a pref so it can't be changed.
-   *
-   * @param   prefName  {String|Array}
-   *          the pref to lock, or an array of prefs to lock
-   */
-  lock: function(prefName) {
-    throw "not implemented";
-  },
-
-  /**
-   * Unlock a pref so it can be changed.
-   *
-   * @param   prefName  {String|Array}
-   *          the pref to lock, or an array of prefs to lock
-   */
-  unlock: function(prefName) {
-    throw "not implemented";
-  },
-
-  /**
-   * Whether or not the given pref is locked against changes.
-   *
-   * @param   prefName  {String|Array}
-   *          the pref to check, or an array of prefs to check
-   *
-   * @returns {Boolean|Array}
-   *          whether or not the pref has a user-set value; or, if the caller
-   *          provided an array of pref names, an array of booleans indicating
-   *          whether or not the prefs have user-set values
-   */
-  locked: function(prefName) {
-    throw "not implemented";
-  },
-
-  /**
    * Start observing a pref.
    *
    * The callback can be a function or any object that implements nsIObserver.
-   * When the callback is a function and thisObject is provided, it gets called
-   * as a method of thisObject.
    *
    * @param   prefName    {String}
-   *          the name of the pref to observe
+   *          the name of the pref to observe. E.g. "foo.bar.baz"
    *
-   * @param   callback    {Function|Object}
+   * @param   callback    {Function}
    *          the code to notify when the pref changes;
-   *
-   * @param   thisObject  {Object}  [optional]
-   *          the object to use as |this| when calling a Function callback;
    *
    * @returns the wrapped observer
    */
-  observe: function(prefName, callback, thisObject) {
+  observe: function(prefName, callback) {
     var fullPrefName = this._prefBranch + (prefName || "");
 
-    this.ignore(prefName, callback, thisObject); // prevent double-add
+    this.ignore(prefName, callback); // prevent double-add
     var observer = {
       prefName : fullPrefName,
       callback : callback,
-      thisObject : thisObject,
     };
     gPrefObservers.push(observer);
 
@@ -318,7 +228,7 @@ Preferences.prototype = {
   /**
    * Stop observing a pref.
    *
-   * You must call this method with the same prefName, callback, and thisObject
+   * You must call this method with the same prefName and callback
    * with which you originally registered the observer.  However, you don't have
    * to call this method on the same exact instance of Preferences; you can call
    * it on any instance.  For example, the following code first starts and then
@@ -331,21 +241,18 @@ Preferences.prototype = {
    * @param   prefName    {String}
    *          the name of the pref being observed
    *
-   * @param   callback    {Function|Object}
+   * @param   callback    {Function}
    *          the code being notified when the pref changes
-   *
-   * @param   thisObject  {Object}  [optional]
-   *          the object being used as |this| when calling a Function callback
    */
-  ignore: function(prefName, callback, thisObject) {
+  ignore: function(prefName, callback) {
     var fullPrefName = this._prefBranch + (prefName || "");
 
-    var removes = gPrefObservers.filter(function(v) { return
+    var removes = gPrefObservers.filter(v =>
         v.prefName == fullPrefName &&
-        v.callback == callback &&
-        v.thisObject == thisObject; });
-    for (var i in removes)
+        v.callback == callback);
+    for (var i in removes) {
       gPrefObservers.splice(gPrefObservers.indexOf(removes[i]), 1);
+    }
   },
 
   /**
@@ -354,7 +261,7 @@ Preferences.prototype = {
    * calling ignore().
    * @param win {nsIDOMWindow} your |window|
    */
-  observeAuto: function(win, prefName, callback, thisObject) {
+  observeAuto: function(win, prefName, callback) {
     throw "not yet implemented";
   },
 
@@ -374,13 +281,11 @@ Preferences.prototype = {
       if ( !(observer.prefName == fullPrefName ||
             observer.prefName.substr(-1) == "*" &&
             observer.prefName.substr(0, observer.prefName.length - 1) ==
-                fullPrefName.substr(0, observer.prefName.length - 1)))
+                fullPrefName.substr(0, observer.prefName.length - 1))) {
         continue;
+      }
       try {
-        if (observer.thisObject)
-          observer.callback.call(observer.thisObject, newValue);
-        else
-          observer.callback(newValue);
+        observer.callback(newValue);
       } catch (e) { console.error(e); }
     }
   },
@@ -463,10 +368,80 @@ function isObject(val) {
           val.constructor.name == "Object");
 }
 
-var myPrefs = new Preferences("");
 
+const os = require("os");
+const util = require("util");
+const fs = require("fs");
+fs.readFileAsync = util.promisify(fs.readFile);
+fs.writeFileAsync = util.promisify(fs.writeFile);
+fs.mkdirAsync = util.promisify(fs.mkdir);
+fs.existsAsync = util.promisify(fs.exists);
+
+function _getPrefsFileName() {
+  // TODO change app name
+  // TODO Windows, Mac
+  return os.homedir() + "/.mustang/prefs.json";
+}
+
+async function _ensureDirectoryExists(filename) {
+  if (!filename.includes("/")) {
+    return;
+  }
+  var dirname = filename.substr(0, filename.lastIndexOf("/"));
+  if (await fs.existsAsync(dirname)) {
+    return;
+  }
+  await fs.mkdirAsync(dirname, { recursive: true });
+}
+
+/**
+ * Save the in-memory preferences in a JSON file on disk.
+ */
+async function savePrefs() {
+  var content = JSON.stringify(gPrefs, null, "  ");
+  var filename = _getPrefsFileName();
+  await _ensureDirectoryExists(filename);
+  console.log("writing prefs file");
+  await fs.writeFileAsync(filename, content);
+}
+
+/**
+ * Read the preferences from a JSON file on disk into memory.
+ */
+function readPrefsSync() {
+  try {
+    var content = fs.readFileSync(_getPrefsFileName(), { encoding: "utf8" });
+    gPrefs = JSON.parse(content);
+  } catch (ex) {
+    if (ex.code == "ENOENT") { // file not found
+      gPrefs = {};
+    } else {
+      console.error(ex);
+      throw ex;
+    }
+  }
+}
+
+var gPrefs = null;
+var gUserPrefs = new Preferences("");
+
+/**
+ * TODO implement as a getter
+ * @returns {gPrefs}
+ */
+function getPrefs() {
+  if (!gPrefs) {
+    gPrefs = readPrefs();
+  }
+  return gPrefs;
+}
+
+// TODO make on-demand, see getPrefs()
+readPrefsSync();
 
 module.exports = {
-  Preferences : Preferences,
-  myPrefs : myPrefs,
+  myPrefs : gUserPrefs, // legacy
+  pref : gUserPrefs,
+  obj : gPrefs,
+  savePrefs : savePrefs,
 };
