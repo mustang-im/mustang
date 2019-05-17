@@ -177,14 +177,15 @@ Collection.prototype = {
   /**
    * Provides an iterator, i.e. allows to write:
    * var coll = new SetColl();
-   * for each (var item in coll)
+   * for (let item of coll) {
    *   debug(item);
+   * }
    *
    * Subclasses may override this with a more
    * efficient implementation. But take care that
    * a remove() during the iteration doesn't confuse it.
    *
-  iterator : function() {
+  iterator : function*() {
     var items = this.contents;
     for (var i = 0; i < items.length; i++) {
       yield items[i];
