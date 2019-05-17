@@ -43,7 +43,9 @@ var util = require("util/util");
 util.importAll(util, global);
 util.importAll(require("util/collection"), global);
 var sanitize = require("util/sanitizeDatatypes").sanitize;
-var ourPref = require("util/preferences").myPrefs;
+var preferences = require("util/preferences");
+var ourPref = preferences.myPrefs;
+var IMAPAccount = require("logic/mail/imap").IMAPAccount;
 
 /**
  * Contains all Account objected created.
@@ -84,6 +86,16 @@ function _readExistingAccountFromPrefs(accountID)
   assert(type, "account does not exist in prefs");
   gAccounts.set(accountID, _newAccountOfType(type, accountID, false));
   return gAccounts.get(accountID);
+}
+
+function _newAccountOfType(type, accountID, isNew)
+{
+  if (type == "imap")
+    return new IMAPAccount(accountID, isNew);
+  //else if (type == "pop3")
+  //  return new POP3Account(accountID, isNew);
+  else
+    throw new NotReached("unknown account type requested to be created: " + type);
 }
 
 /**
@@ -143,3 +155,4 @@ var netTeardownListener =
 exports.getAllAccounts = getAllAccounts;
 exports.accountsSummary = accountsSummary;
 exports.getExistingAccountForEmailAddress = getExistingAccountForEmailAddress;
+exports._newAccountOfType = _newAccountOfType; // for account-setup.js only

@@ -42,7 +42,8 @@
 
 var util = require("util/util");
 util.importAll(util, global);
-var ourPref = require("util/preferences").myPrefs;
+var preferences = require("util/preferences");
+var ourPref = preferences.myPrefs;
 var getAllAccounts = require("logic/account/account-list").getAllAccounts; // for delete account
 var RFC822Mail = new require("logic/mail/MIME").RFC822Mail;
 var sanitize = new require("util/sanitizeDatatypes").sanitize;
@@ -432,6 +433,8 @@ MailAccount.prototype =
       accounts.push(this.accountID);
       ourPref.set("accountsList", accounts.join(","));
     }
+
+    preferences.savePrefs();
   },
 
   logout : function()

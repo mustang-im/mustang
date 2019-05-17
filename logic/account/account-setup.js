@@ -44,12 +44,12 @@
 var util = require("util/util");
 util.importAll(util, global);
 var accounts = require("logic/account/account-list"); // add, remove, getExisting
-var IMAPAccount = require("logic/mail/imap").IMAPAccount;
 var getDomainForEmailAddress = require("logic/account/account-base").getDomainForEmailAddress;
 var JXON = require("logic/account/JXON");
 var dns = require("dns");
 var sanitize = require("util/sanitizeDatatypes").sanitize;
-var ourPref = require("util/preferences").myPrefs;
+var preferences = require("util/preferences");
+var ourPref = preferences.myPrefs;
 var gStringBundle = new (require("trex/stringbundle")).StringBundle("mail");
 var mozillaISPDBURL = "https://autoconfig.thunderbird.net/v1.1/";
 var r2 = require("r2")
@@ -57,8 +57,6 @@ var DOMParser = require("xmldom").DOMParser;
 
 /**
  * Create a new |Account| object for |emailAddress|.
- *
- * Note: You need to call account.saveToPrefs() yourself.
  *
  * @param successCallback {Function(account {Account})}
  *     Called, if the email address is supported and could be configured.
@@ -79,9 +77,10 @@ function makeNewAccount(emailAddress, allAccounts, successCallback, errorCallbac
     return getAccountProviderWithNet(domain, emailAddress, function(config)
     {
       var accountID = generateNewAccountID();
-      var account = _newAccountOfType(config.subtype || config.type, accountID, true);
+      var account = accounts._newAccountOfType(config.subtype || config.type, accountID, true);
       account.emailAddress = emailAddress;
       account.setServerConfig(config);
+      account.saveToPrefs();
 
       assert(allAccounts);
       allAccounts.set(accountID,  account);
@@ -100,16 +99,6 @@ function generateNewAccountID() {
   } while (existingAccountIDs.contains(newAccountID) ||
       ourPref.get("account." + newAccountID + ".type", null))
   return newAccountID;
-}
-
-function _newAccountOfType(type, accountID, isNew)
-{
-  if (type == "imap")
-    return new IMAPAccount(accountID, isNew);
-  //else if (type == "pop3")
-  //  return new POP3Account(accountID, isNew);
-  else
-    throw new NotReached("unknown account type requested to be created: " + type);
 }
 
 /**
