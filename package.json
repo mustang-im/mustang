@@ -4,12 +4,15 @@
   "description": "Corvette - Prototype for a successor of Thunderbird",
   "main": "app.js",
   "dependencies": {
+    "@buttercup/credentials": "^1.2.0",
     "app-module-path": "^2.2.0",
     "electron": "^4.0.8",
     "emailjs-imap-client": "^2.1.0",
     "emailjs-mime-parser": "^1.0.0",
     "emailjs-smtp-client": "^1.0.0",
+    "generate-password": "^1.4.1",
     "i18n": "^0.8.3",
+    "iocane": "^1.0.2",
     "mailbuild": "^0.3.7",
     "r2": "^2.0.1",
     "xmldom": "^0.1.27"

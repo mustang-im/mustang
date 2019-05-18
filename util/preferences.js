@@ -378,20 +378,22 @@ fs.mkdirAsync = util.promisify(fs.mkdir);
 fs.existsAsync = util.promisify(fs.exists);
 
 function _getPrefsFileName() {
-  // TODO change app name
-  // TODO Windows, Mac
-  return os.homedir() + "/.mustang/prefs.json";
+  return _prefsDir() + "prefs.json";
 }
 
-async function _ensureDirectoryExists(filename) {
-  if (!filename.includes("/")) {
-    return;
+function _prefsDir() {
+  // TODO change app name
+  // TODO Windows, Mac
+  var dirname = os.homedir() + "/.mustang/";
+  return dirname;
+}
+
+async function prefsDir() {
+  var dirname = _prefsDir();
+  if (!await fs.existsAsync(dirname)) {
+    await fs.mkdirAsync(dirname, { recursive: true });
   }
-  var dirname = filename.substr(0, filename.lastIndexOf("/"));
-  if (await fs.existsAsync(dirname)) {
-    return;
-  }
-  await fs.mkdirAsync(dirname, { recursive: true });
+  return dirname;
 }
 
 /**
@@ -399,10 +401,9 @@ async function _ensureDirectoryExists(filename) {
  */
 async function savePrefs() {
   var content = JSON.stringify(gPrefs, null, "  ");
-  var filename = _getPrefsFileName();
-  await _ensureDirectoryExists(filename);
   console.log("writing prefs file");
-  await fs.writeFileAsync(filename, content);
+  await prefsDir();
+  await fs.writeFileAsync(_getPrefsFileName(), content);
 }
 
 /**
@@ -444,4 +445,5 @@ module.exports = {
   pref : gUserPrefs,
   obj : gPrefs,
   savePrefs : savePrefs,
+  prefsDir : prefsDir,
 };

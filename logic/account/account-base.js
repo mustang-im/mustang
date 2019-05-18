@@ -48,6 +48,7 @@ var getAllAccounts = require("logic/account/account-list").getAllAccounts; // fo
 var RFC822Mail = new require("logic/mail/MIME").RFC822Mail;
 var sanitize = new require("util/sanitizeDatatypes").sanitize;
 var gStringBundle = new (require("trex/stringbundle").StringBundle)("mail");
+var passwordEncryption = new require("util/password");
 
 /**
  * API for all accounts
@@ -97,7 +98,7 @@ Account.prototype =
    * without having to query the user for password or similar.
    * @returns {Boolean}
    */
-  get haveStoredLogin()
+  haveStoredLogin : async function()
   {
     throw new NotReached("implement");
   },
@@ -264,12 +265,12 @@ MailAccount.prototype =
    * with long or short expiry.
    * @returns {Boolean}
    */
-  get haveStoredLogin()
+  haveStoredLogin : async function()
   {
     if (!!this._password) {
       return true;
     }
-    this._getPasswordFromStore();
+    await this._getPasswordFromStore();
     return !!this._password;
   },
 
@@ -299,58 +300,32 @@ MailAccount.prototype =
    *
    * @param password {String}
    */
-  setPassword : function(password)
+  setPassword : async function(password)
   {
     this._deleteStoredPassword(); // otherwise loginManager throws when already exists
     this._password = sanitize.string(password);
-    if ( !this._wantStoredLogin)
+    if ( !this._wantStoredLogin) {
       return;
-    // nsILoginManager (same below)
-    /* TODO PORT Password manager
-       Services.logins.addLogin(new LoginInfo(
-        this.kType + "://" + this.hostname, null, "mail",
-        this.username, password,
-        "", "")); // username and password field name
-        */
+    }
+    var encrypted = await passwordEncryption.encryptPassword(this._password);
+    this._pref.set("encryptedPassword", encrypted);
+    preferences.savePrefs();
   },
 
-  _getPasswordFromStore : function()
+  _getPasswordFromStore : async function()
   {
-    this._password = null;
-    try {
-    /* TODO PORT Password manager
-      Services.logins.findLogins({},
-          this.kType + "://" + this.hostname,
-          null, "mail").forEach(function(login) {
-        if (login.username == this.username)
-           this._password = sanitize.string(login.password);
-      }, this);
-        */
-    } catch (e) {
-      if ( !userCancelledMasterPasswordEntry(e)) {
-        errorInBackend(e);
-      }
+    var encrypted = this._pref.get("encryptedPassword", null);
+    if (!encrypted) {
+      return false;
     }
+    this._password = await passwordEncryption.decryptPassword(encrypted);
     return !!this._password;
   },
 
   _deleteStoredPassword : function()
   {
     this._password = null;
-    try {
-    /* TODO PORT Password manager
-      Services.logins.findLogins({},
-          this.kType + "://" + this.hostname,
-          null, "mail").forEach(function(login) {
-        if (login.username == this.username)
-          Services.logins.removeLogin(login);
-      }, this);
-        */
-    } catch (e) {
-      if ( !userCancelledMasterPasswordEntry(e)) {
-        errorInBackend(e);
-      }
-    }
+    this._pref.reset("encryptedPassword");
   },
 
   get domain()
@@ -409,6 +384,8 @@ MailAccount.prototype =
     this._wantStoredLogin = this._pref.get("storeLogin", this._wantStoredLogin);
 
     this._verifyAccountSettings();
+
+    this._getPasswordFromStore();
   },
 
   saveToPrefs : function()

@@ -7,7 +7,7 @@ var gAccountListE;
 var gFolderListE;
 var gMessageListE;
 
-function start() {
+async function start() {
   try {
     gAccountListE = new Fastlist(E("account-list"));
     gFolderListE = new Fastlist(E("folder-list"));
@@ -22,6 +22,12 @@ function start() {
     gMessageListE.selectedCollection.registerObserver(gMessageSelectionObserver);
 
     gMessageListE.filldate = getDateString;
+
+    for (let account of gAccounts.contents) {
+      if (await account.haveStoredLogin()) {
+        account.login(() => {}, pollError);
+      }
+    }
   } catch (e) { showError(e); }
 }
 window.addEventListener("load", start, false);
@@ -54,6 +60,10 @@ function addAccount() {
 function showError(e) {
   console.error(e);
   alert(e.message);
+}
+
+function pollError(e) {
+  console.error(e);
 }
 
 /**
