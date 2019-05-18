@@ -57,11 +57,10 @@ Preferences.prototype = {
    */
   _prefBranch : "",
 
-  _getPref : function(prefName) {
-    prefName = this._prefBranch + prefName;
+  _getPrefObj : function(prefs, prefName) {
     let path = prefName.split(".");
     let leaf = path.pop();
-    let branch = gPrefs;
+    let branch = prefs;
     for (let dir of path) {
       if (typeof(branch[dir]) == "undefined") {
         return undefined;
@@ -71,11 +70,10 @@ Preferences.prototype = {
     return branch[leaf];
   },
 
-  _setPref : function(prefName, value) {
-    prefName = this._prefBranch + prefName;
+  _setPrefObj : function(prefs, prefName, value) {
     let path = prefName.split(".");
     let leaf = path.pop();
-    let branch = gPrefs;
+    let branch = prefs;
     for (let dir of path) {
       if (typeof(branch[dir]) == "undefined") {
         branch[dir] = {};
@@ -84,11 +82,11 @@ Preferences.prototype = {
     }
     branch[leaf] = value;
   },
-  _removePref : function(prefName) {
-    prefName = this._prefBranch + prefName;
+
+  _removePrefObj : function(prefs, prefName) {
     let path = prefName.split(".");
     let leaf = path.pop();
-    let branch = gPrefs;
+    let branch = prefs;
     for (let dir of path) {
       if (typeof(branch[dir]) == "undefined") {
         return;
@@ -97,11 +95,20 @@ Preferences.prototype = {
     branch[leaf] = undefined;
   },
 
+  _getPref : function(prefName) {
+    return this._getPrefObj(gPrefs, prefName);
+  },
+  _setPref : function(prefName, value) {
+    this._setPrefObj(gPrefs, prefName, value);
+  },
+  _removePref : function(prefName) {
+    this._removePrefObj(gPrefs, prefName);
+  },
   _getDefaultPref : function(prefName) {
-    return this._getPref("default." + prefName);
+    return this._getPrefObj(gDefaultPrefs, prefName);
   },
   _setDefaultPref : function(prefName, value) {
-    this._setPref("default." + prefName, value);
+    this._setPrefObj(gDefaultPrefs, prefName, value);
   },
 
   /**
@@ -115,11 +122,11 @@ Preferences.prototype = {
    * @returns the value of the pref, if any; otherwise the default value
    */
   get: function(prefName, defaultValue) {
-    var value = this._getPref(prefName);
+    var value = this._getPref(this._prefBranch + prefName);
     if (value !== undefined) {
       return value;
     }
-    value = this._getDefaultPref(prefName);
+    value = this._getDefaultPref(this._prefBranch + prefName);
     if (value !== undefined) {
       return value;
     }
@@ -147,7 +154,7 @@ Preferences.prototype = {
    *   Preferences.set("big", Math.pow(2, 31).toString()).
    */
   set: function(prefName, prefValue) {
-    this._setPref(prefName, prefValue);
+    this._setPref(this._prefBranch + prefName, prefValue);
   },
 
   /**
@@ -161,8 +168,8 @@ Preferences.prototype = {
    * @returns {Boolean} whether the pref has a value
    */
   has: function(prefName) {
-    return this._getPref(prefName) !== undefined &&
-        this._getDefaultPref(prefName) !== undefined;
+    return this._getPref(this._prefBranch + prefName) !== undefined &&
+        this._getDefaultPref(this._prefBranch + prefName) !== undefined;
   },
 
   /**
@@ -176,11 +183,11 @@ Preferences.prototype = {
    * @returns {Boolean} whether the pref has a user-set value
    */
   hasUser: function(prefName) {
-    return this._getPref(prefName) !== undefined;
+    return this._getPref(this._prefBranch + prefName) !== undefined;
   },
 
   reset: function(prefName) {
-    this._removePref(prefName);
+    this._removePref(this._prefBranch + prefName);
   },
 
   /**
@@ -413,6 +420,7 @@ function readPrefsSync() {
   try {
     var content = fs.readFileSync(_getPrefsFileName(), { encoding: "utf8" });
     gPrefs = JSON.parse(content);
+    gDefaultPrefs = {};
   } catch (ex) {
     if (ex.code == "ENOENT") { // file not found
       gPrefs = {};
@@ -424,6 +432,7 @@ function readPrefsSync() {
 }
 
 var gPrefs = null;
+var gDefaultPrefs = null;
 var gUserPrefs = new Preferences("");
 
 /**
