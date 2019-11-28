@@ -1,0 +1,47 @@
+import MailStore from "./mail-store";
+import { MsgFolder } from "../account/account-base";
+import { assert } from "../../util/util";
+import fs from "fs";
+import util from "util";
+fs.readFileAsync = util.promisify(fs.readFile);
+fs.writeFileAsync = util.promisify(fs.writeFile);
+fs.mkdirAsync = util.promisify(fs.mkdir);
+fs.existsAsync = util.promisify(fs.exists);
+
+/**
+ * Implements a mail store that uses one file per message.
+ */
+export default class MailFiles extends MailStore {
+  /**
+   * Reads an email from disk.
+   *
+   * @param msgFolder {MsgFolder}
+   * @param msgID {string}
+   * @returns {String}
+   */
+  async getMessage(msgFolder, msgID) {
+    assert(account instanceof MsgFolder);
+    assert(typeof(msgID) == "string");
+    let filename = this._getFilePath(msgFolder, msgID);
+    return await fs.readFileAsync(filename, { encoding: "utf8" });
+  }
+
+  /**
+   * Saves an email to disk.
+   *
+   * @param msgFolder {MsgFolder}
+   * @param msgID {string}
+   * @param content {String}
+   */
+  async saveMessage(msgFolder, msgID, content) {
+    assert(account instanceof MsgFolder);
+    assert(typeof(msgID) == "string");
+    let filename = this._getFilePath(msgFolder, msgID);
+    return await fs.writeFileAsync(filename, { encoding: "utf8", mode: MailStore._kFileMode });
+  }
+
+  _getFilePath(msgFolder, msgID) {
+    return this._getDir(msgFolder) +
+        this._sanitizeFilename(msgID) + ".eml";
+  }
+}

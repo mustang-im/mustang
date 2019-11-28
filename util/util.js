@@ -272,6 +272,12 @@ function NotReached(msg)
 }
 extend(NotReached, Exception);
 
+function ImplementThis(msg)
+{
+  Exception.call(this, msg);
+}
+extend(ImplementThis, Exception);
+
 /**
  * Error caused by the user, so it should never be sent to the server.
  * Things like bad passwords, or email domains.
@@ -656,6 +662,7 @@ exports.assert = assert;
 exports.makeCallback = makeCallback;
 exports.Exception = Exception;
 exports.NotReached = NotReached;
+exports.ImplementThis = ImplementThis;
 exports.UserError = UserError;
 exports.Abortable = Abortable;
 exports.SuccessiveAbortable = SuccessiveAbortable;

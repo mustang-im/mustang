@@ -8,8 +8,9 @@ TODO Port
 
 Components
 * Cache
-* mail content
-* IMAP folders and msg lists
+* Database
+* IMAP
+* Mail content
 * React
 * Msg window
 * List

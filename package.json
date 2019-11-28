@@ -5,6 +5,7 @@
   "main": "app.js",
   "dependencies": {
     "@buttercup/credentials": "^1.2.0",
+    "adm-zip": "^0.4.13",
     "app-module-path": "^2.2.0",
     "electron": "^4.0.8",
     "emailjs-imap-client": "^2.1.0",
