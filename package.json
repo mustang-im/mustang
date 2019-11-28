@@ -15,11 +15,12 @@
     "iocane": "^1.0.2",
     "mailbuild": "^0.3.7",
     "r2": "^2.0.1",
-    "xmldom": "^0.1.27"
+    "xmldom": "^0.1.27",
+    "yarn": "^1.19.2"
   },
   "devDependencies": {},
   "scripts": {
-    "start": "electron .",
+    "start": "./node_modules/electron/dist/electron .",
     "test": "node test.js"
   },
   "repository": {

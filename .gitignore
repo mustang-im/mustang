@@ -1,3 +1,6 @@
 *~
 *.sh
 node_modules/
+.project
+.settings/
+

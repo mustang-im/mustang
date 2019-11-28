@@ -444,7 +444,7 @@ extend(MailAccount, Account);
  *
  * @param name {String}   Folder name
  *     This is not the full path, but just the name of this one folder.
- * @param fulPath {String}   folder name within the account
+ * @param fullPath {String}   folder name within the account
  *     This is the full path, including delimiters.
  *     The delimiter depends on the account and server, it may be "/" or "."
  *     or backslash or something else.

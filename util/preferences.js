@@ -28,6 +28,13 @@
  * HTML5 localStorage.
  */
 
+const os = require("os");
+const util = require("util");
+const fs = require("fs");
+fs.readFileAsync = util.promisify(fs.readFile);
+fs.writeFileAsync = util.promisify(fs.writeFile);
+fs.mkdirAsync = util.promisify(fs.mkdir);
+fs.existsAsync = util.promisify(fs.exists);
 
 /**
  * A cache of pref observers.
@@ -375,14 +382,6 @@ function isObject(val) {
           val.constructor.name == "Object");
 }
 
-
-const os = require("os");
-const util = require("util");
-const fs = require("fs");
-fs.readFileAsync = util.promisify(fs.readFile);
-fs.writeFileAsync = util.promisify(fs.writeFile);
-fs.mkdirAsync = util.promisify(fs.mkdir);
-fs.existsAsync = util.promisify(fs.exists);
 
 function _getPrefsFileName() {
   return _prefsDir() + "prefs.json";
