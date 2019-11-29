@@ -16,6 +16,8 @@
     "iocane": "^1.0.2",
     "mailbuild": "^0.3.7",
     "r2": "^2.0.1",
+    "sql-template-strings": "^2.2.2",
+    "sqlite": "^3.0.3",
     "xmldom": "^0.1.27",
     "yarn": "^1.19.2"
   },

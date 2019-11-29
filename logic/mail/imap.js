@@ -55,7 +55,7 @@ var gStringBundle = new (require("trex/stringbundle").StringBundle)("mail");
 function IMAPAccount(accountID, isNew)
 {
   MailAccount.call(this, accountID, isNew);
-  this._inbox = new MsgFolder("INBOX", "INBOX");
+  this._inbox = new MsgFolder("INBOX", "INBOX", this);
   this._folders.set("INBOX", this._inbox);
   this._connections = new ArrayColl();
 }
@@ -144,7 +144,8 @@ IMAPAccount.prototype =
         mailboxes.children.forEach(mailbox => {
           var folder = new MsgFolder(
               sanitize.label(sanitize.nonemptystring(mailbox.name)),
-              sanitize.label(sanitize.nonemptystring(mailbox.path)));
+              sanitize.label(sanitize.nonemptystring(mailbox.path)),
+              this);
           folder.flags = mailbox.flags.map(flag => sanitize.nonemptystring(flag).substr(1));
           folder.isNoSelect = folder.flags.indexOf("Noselect") != -1;
           if (mailbox.specialUse) {

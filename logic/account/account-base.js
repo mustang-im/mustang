@@ -449,11 +449,14 @@ extend(MailAccount, Account);
  *     The delimiter depends on the account and server, it may be "/" or "."
  *     or backslash or something else.
  *     Not including the account.
+ * @param account {Account}
  */
-function MsgFolder(name, fullPath)
+function MsgFolder(name, fullPath, account)
 {
+  assert(account instanceof Account);
   this.name = sanitize.nonemptystring(name);
   this.fullPath = sanitize.nonemptystring(fullPath);
+  this.account = account;
   this._messages = new MapColl();
   this._subfolders = new MapColl();
 }
