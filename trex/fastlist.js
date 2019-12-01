@@ -351,7 +351,7 @@ SingleSelectionObserver.prototype = {
     this.onSelectedItem(selectedItems.first);
   },
   removed : function(items, selectedItems) {
-    this.onSelectedItem(selectedItems.isEmpty ? null : selectedFolders.first);
+    this.onSelectedItem(selectedItems.isEmpty ? null : selectedItems.first);
   },
   /**
    * Called when the selected item changed
