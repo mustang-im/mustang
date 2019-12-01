@@ -1,8 +1,18 @@
+/*
+import { remote } from "electron";
+import appModulePath from "app-module-path";
+appModulePath.addPath(remote.getGlobal("__base"));
+import util from "../../util/util";
+util.importAll(util, global);
+import collection from "../../util/collection";
+util.importAll(collection, global);
+*/
 var remote = require("electron").remote;
 require("app-module-path").addPath(remote.getGlobal("__base"));
 var util = require("util/util");
 util.importAll(util, global);
 util.importAll(require("util/collection"), global);
+
 var gAccountListE;
 var gFolderListE;
 var gMessageListE;
@@ -25,7 +35,9 @@ async function start() {
 
     for (let account of gAccounts.contents) {
       if (await account.haveStoredLogin()) {
-        account.login(() => {}, pollError);
+        try {
+          await account.login();
+        } catch (e) { pollError(e); }
       }
     }
   } catch (e) { showError(e); }

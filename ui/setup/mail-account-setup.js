@@ -1,9 +1,19 @@
-require("app-module-path").addPath(require("electron").remote.getGlobal("__base"));
+/*
+import { remote } from "electron";
+import appModulePath from "app-module-path";
+appModulePath.addPath(remote.getGlobal("__base"));
+import util from "../../util/util";
+util.importAll(util, global);
+const gAccounts = remote.getGlobal("accounts");
+const makeNewAccount = remote.getGlobal("makeNewAccount");
+*/
 var remote = require("electron").remote;
+require("app-module-path").addPath(remote.getGlobal("__base"));
 var util = require("util/util");
 util.importAll(util, global);
 var gAccounts = remote.getGlobal("accounts");
 var makeNewAccount = remote.getGlobal("makeNewAccount");
+
 
 function onLoad() {
   try {
