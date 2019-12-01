@@ -93,28 +93,10 @@ export class IMAPAccount extends MailAccount {
   async login(continuously) {
     try {
     let conn = await this._openConnection();
+    if (this._folders.length == 1) {
+      await this.listFolders();
+    }
     //notifyGlobalObservers("logged-in", { account: self });
-    let mailboxes = await conn.listMailboxes();
-    assert(mailboxes.root);
-    for (let mailbox of mailboxes.children) {
-      let folder = new MsgFolder(
-          sanitize.label(sanitize.nonemptystring(mailbox.name)),
-          sanitize.label(sanitize.nonemptystring(mailbox.path)),
-          this);
-      folder.flags = mailbox.flags.map(flag => sanitize.nonemptystring(flag).substr(1));
-      folder.isNoSelect = folder.flags.indexOf("Noselect") != -1;
-      if (mailbox.specialUse) {
-        folder.specialUse = sanitize.nonemptystring(mailbox.specialUse).substr(1);
-      }
-      folder.subscribed = sanitize.boolean(mailbox.subscribed);
-      this._folders.set(sanitize.nonemptystring(mailbox.path), folder);
-      if (folder.name.toUpperCase() == "INBOX") {
-        this._inbox = folder;
-      }
-      // TODO recurse into mailbox.children
-    };
-    assert(this._inbox, "No INBOX found");
-    await this.openFolderUsingConnection(this._inbox, conn);
     } catch (ex) { console.error(ex); throw ex; }
   }
 
@@ -137,6 +119,33 @@ export class IMAPAccount extends MailAccount {
     await conn.connect();
     this._connections.add(conn);
     return conn;
+  }
+
+  async listFolders() {
+    try {
+    let conn = this._connections.first;
+    let mailboxes = await conn.listMailboxes();
+    assert(mailboxes.root);
+    for (let mailbox of mailboxes.children) {
+      let folder = new MsgFolder(
+          sanitize.label(sanitize.nonemptystring(mailbox.name)),
+          sanitize.label(sanitize.nonemptystring(mailbox.path)),
+          this);
+      folder.flags = mailbox.flags.map(flag => sanitize.nonemptystring(flag).substr(1));
+      folder.isNoSelect = folder.flags.indexOf("Noselect") != -1;
+      if (mailbox.specialUse) {
+        folder.specialUse = sanitize.nonemptystring(mailbox.specialUse).substr(1);
+      }
+      folder.subscribed = sanitize.boolean(mailbox.subscribed);
+      this._folders.set(sanitize.nonemptystring(mailbox.path), folder);
+      if (folder.name.toUpperCase() == "INBOX") {
+        this._inbox = folder;
+      }
+      // TODO recurse into mailbox.children
+    };
+    assert(this._inbox, "No INBOX found");
+    await this.openFolderUsingConnection(this._inbox, conn);
+    } catch (ex) { console.error(ex); throw ex; }
   }
 
   /**
