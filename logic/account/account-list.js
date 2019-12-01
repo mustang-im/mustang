@@ -2,23 +2,14 @@
  * This keeps the list of all account objects created.
  */
 
-/*
 import * as util from "../../util/util";
 util.importAll(util, global);
 import * as collection from "../../util/collection";
 util.importAll(collection, global);
-import { preferences } from "../../util/preferences";
+import preferences from "../../util/preferences";
 const ourPref = preferences.myPrefs;
 import { sanitize } from "../../util/sanitizeDatatypes";
 import { IMAPAccount } from "../mail/imap";
-*/
-var util = require("util/util");
-util.importAll(util, global);
-util.importAll(require("util/collection"), global);
-var sanitize = require("util/sanitizeDatatypes").sanitize;
-var preferences = require("util/preferences");
-var ourPref = preferences.myPrefs;
-var IMAPAccount = require("logic/mail/imap").IMAPAccount;
 
 /**
  * Contains all Account objected created.

@@ -9,7 +9,7 @@
  *
  * @param fullText (optional) @see parse()
  */
-class RFC822Mail {
+export default class RFC822Mail {
   constructor(fullText) {
     this.date = new Date();
 

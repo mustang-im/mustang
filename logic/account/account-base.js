@@ -4,27 +4,16 @@
  * - the |MailAccount| class, from which IMAP and POP3 inherit
  */
 
-/*
 import util from "../../util/util";
 util.importAll(util, global);
-import { preferences } from "../../util/preferences";
+import preferences from "../../util/preferences";
 const ourPref = preferences.myPrefs;
 import { getAllAccounts } from "./account-list"; // for delete account
-import RFC822Mail from ("../mail/MIME";
+import RFC822Mail from "../mail/MIME";
 import { sanitize } from "../../util/sanitizeDatatypes";
-import { passwordEncryption } from "../../util/password";
+import passwordEncryption from "../../util/password";
 import { StringBundle } from "../../trex/stringbundle";
-const gStringBundle = StringBundle("mail");
-*/
-var util = require("util/util");
-util.importAll(util, global);
-var preferences = require("util/preferences");
-var ourPref = preferences.myPrefs;
-var getAllAccounts = require("logic/account/account-list").getAllAccounts; // for delete account
-var RFC822Mail = new require("logic/mail/MIME").RFC822Mail;
-var sanitize = new require("util/sanitizeDatatypes").sanitize;
-var gStringBundle = new (require("trex/stringbundle").StringBundle)("mail");
-var passwordEncryption = new require("util/password");
+const gStringBundle = new StringBundle("mail");
 
 
 /**
@@ -33,7 +22,7 @@ var passwordEncryption = new require("util/password");
  * @param accountID {String}   unique ID for this account
  *      used as pref branch name
  */
-class Account {
+export class Account {
   constructor(accountID) {
     /**
      * {String}
@@ -157,7 +146,7 @@ class Account {
   }
 }
 
-function getDomainForEmailAddress(emailAddress) {
+export function getDomainForEmailAddress(emailAddress) {
   var spl = emailAddress.split("@");
   assert(spl.length == 2, gStringBundle.get("error.syntax"));
   return sanitize.hostname(spl[1]);
@@ -166,7 +155,7 @@ function getDomainForEmailAddress(emailAddress) {
 /**
  * Base class for IMAPAccount and POP3Account
  */
-class MailAccount extends Account {
+export class MailAccount extends Account {
   constructor(accountID) {
     super(accountID);
 
@@ -439,7 +428,7 @@ class MailAccount extends Account {
  *     Not including the account.
  * @param account {Account}
  */
-class MsgFolder {
+export class MsgFolder {
   constructor(name, fullPath, account) {
     assert(account instanceof Account);
     this.account = account;
@@ -496,8 +485,3 @@ class MsgFolder {
     return this._subfolders;
   }
 }
-
-exports.Account = Account;
-exports.MailAccount = MailAccount;
-exports.MsgFolder = MsgFolder;
-exports.getDomainForEmailAddress = getDomainForEmailAddress;

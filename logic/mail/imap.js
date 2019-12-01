@@ -3,30 +3,19 @@
  * and the emailjs.org JS library.
  */
 
-/*
 import ImapClient from "emailjs-imap-client";
 import util from "../../util/util";
 util.importAll(util, global);
 import { MailAccount, MsgFolder } from "../account/account-base";
-import RFC822Mail from"./MIME";
+import RFC822Mail from "./MIME";
 import { sanitize } from "../../util/sanitizeDatatypes";
 import { StringBundle } from "../../trex/stringbundle";
-const gStringBundle = StringBundle("mail");
-*/
-var ImapClient = require("emailjs-imap-client");
-var util = require("util/util");
-util.importAll(util, global);
-var accountbase = require("logic/account/account-base");
-var MailAccount = accountbase.MailAccount;
-var MsgFolder = accountbase.MsgFolder;
-var RFC822Mail = new require("logic/mail/MIME").RFC822Mail;
-var sanitize = require("util/sanitizeDatatypes").sanitize;
-var gStringBundle = new (require("trex/stringbundle").StringBundle)("mail");
+const gStringBundle = new StringBundle("mail");
 
 /**
  * Holds and manages login state of one IMAP account
  */
- class IMAPAccount extends MailAccount {
+export class IMAPAccount extends MailAccount {
   constructor(accountID) {
     super(accountID);
     this.kType = "imap";
@@ -102,6 +91,7 @@ var gStringBundle = new (require("trex/stringbundle").StringBundle)("mail");
    *    If true, return after login, but continue polling after returning.
    */
   async login(continuously) {
+    try {
     let conn = await this._openConnection();
     //notifyGlobalObservers("logged-in", { account: self });
     let mailboxes = await conn.listMailboxes();
@@ -125,6 +115,7 @@ var gStringBundle = new (require("trex/stringbundle").StringBundle)("mail");
     };
     assert(this._inbox, "No INBOX found");
     await this.openFolderUsingConnection(this._inbox, conn);
+    } catch (ex) { console.error(ex); throw ex; }
   }
 
   /**
@@ -221,5 +212,3 @@ var gStringBundle = new (require("trex/stringbundle").StringBundle)("mail");
     //notifyGlobalObservers("logged-out", { account: self });
   }
 }
-
-exports.IMAPAccount = IMAPAccount;

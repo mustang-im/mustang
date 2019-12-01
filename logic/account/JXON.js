@@ -172,5 +172,7 @@ function unbuild(oObjTree) {
     return oNewDoc;
 };
 
-exports.build = build;
-exports.unbuild = unbuild;
+export default {
+  build,
+  unbuild,
+}

@@ -3,33 +3,19 @@
  * which gets the account class of an appropriate type.
  */
 
-/*
 import util from "../../util/util";
 util.importAll(util, global);
-import accounts from "./account-list"; // add, remove, getExisting
+import * as accounts from "./account-list"; // add, remove, getExisting
 import { getDomainForEmailAddress } from "./account-base";
 import JXON from "./JXON";
 import dns from "dns";
 import { sanitize } from "../../util/sanitizeDatatypes";
-import { preferences } from "../../util/preferences";
+import preferences from "../../util/preferences";
 const ourPref = preferences.myPrefs;
 import { StringBundle } from "../../trex/stringbundle";
-const gStringBundle = StringBundle("mail");
+const gStringBundle = new StringBundle("mail");
 import r2 from "r2";
 import { DOMParser } from "xmldom";
-*/
-var util = require("util/util");
-util.importAll(util, global);
-var accounts = require("logic/account/account-list"); // add, remove, getExisting
-var getDomainForEmailAddress = require("logic/account/account-base").getDomainForEmailAddress;
-var JXON = require("logic/account/JXON");
-var dns = require("dns");
-var sanitize = require("util/sanitizeDatatypes").sanitize;
-var preferences = require("util/preferences");
-var ourPref = preferences.myPrefs;
-var gStringBundle = new (require("trex/stringbundle")).StringBundle("mail");
-var r2 = require("r2")
-var DOMParser = require("xmldom").DOMParser;
 
 const mozillaISPDBURL = "https://autoconfig.thunderbird.net/v1.1/";
 
