@@ -437,7 +437,7 @@ export class MsgFolder {
      * @see ctor
      * {String}
      */
-    this.name = sanitize.nonemptystring(name);
+    this.name = sanitize.label(sanitize.nonemptystring(name));
 
     /**
      * @see ctor
@@ -470,6 +470,11 @@ export class MsgFolder {
 
   /**
    * The messages in this folder.
+   *
+   * To sync the locally cached list with the server,
+   * call sync(). The collection here will then be
+   * updated using the listeners.
+   *
    * {Collection of RFC822Mail}
    */
   get messages() {
@@ -483,5 +488,13 @@ export class MsgFolder {
    */
   get folders() {
     return this._subfolders;
+  }
+
+  /**
+   * Checks for new mail on the server,
+   * and downloads the mails.
+   */
+  async fetch() {
+    throw new ImplementThis();
   }
 }

@@ -37,6 +37,7 @@ async function start() {
       if (await account.haveStoredLogin()) {
         try {
           await account.login();
+          await account.inbox.fetch();
         } catch (e) { pollError(e); }
       }
     }
@@ -50,8 +51,11 @@ gAccountSelectionObserver.onSelectedItem = function(account) {
 };
 
 var gFolderSelectionObserver = new SingleSelectionObserver();
-gFolderSelectionObserver.onSelectedItem = function(folder) {
+gFolderSelectionObserver.onSelectedItem = async function(folder) {
   gMessageListE.showCollection(folder ? folder.messages : new ArrayColl());
+  if (folder) {
+    await folder.fetch();
+  }
 };
 
 var gMessageSelectionObserver = new SingleSelectionObserver();

@@ -21,7 +21,7 @@ export class IMAPAccount extends MailAccount {
     this.kType = "imap";
 
     /**
-     * {MsgFolder}
+     * {IMAPFolder}
      */
     this._inbox = new MsgFolder("INBOX", "INBOX", this);
 
@@ -72,14 +72,14 @@ export class IMAPAccount extends MailAccount {
   }
 
   /**
-   * {Collection of MsgFolder}
+   * {Collection of IMAPFolder}
    */
   get folders() {
     return this._folders;
   }
 
   /**
-   * {MsgFolder}
+   * {IMAPFolder}
    */
   get inbox() {
     return this._inbox;
@@ -121,79 +121,34 @@ export class IMAPAccount extends MailAccount {
     return conn;
   }
 
+  /**
+   * Gets any free server connection.
+   */
+  get connection() {
+    // Implement with pool or
+    // record which connections are busy.
+    return this._connections.first;
+  }
+
   async listFolders() {
     try {
-    let conn = this._connections.first;
-    let mailboxes = await conn.listMailboxes();
-    assert(mailboxes.root);
-    for (let mailbox of mailboxes.children) {
-      let folder = new MsgFolder(
-          sanitize.label(sanitize.nonemptystring(mailbox.name)),
-          sanitize.label(sanitize.nonemptystring(mailbox.path)),
-          this);
-      folder.flags = mailbox.flags.map(flag => sanitize.nonemptystring(flag).substr(1));
-      folder.isNoSelect = folder.flags.indexOf("Noselect") != -1;
-      if (mailbox.specialUse) {
-        folder.specialUse = sanitize.nonemptystring(mailbox.specialUse).substr(1);
+    let rootMailboxes = await this.connection.listMailboxes();
+    assert(rootMailboxes.root);
+    let iterateMailboxes = (mailboxes, parent) => {
+      if (!mailboxes || !mailboxes.length) {
+        return;
       }
-      folder.subscribed = sanitize.boolean(mailbox.subscribed);
-      this._folders.set(sanitize.nonemptystring(mailbox.path), folder);
-      if (folder.name.toUpperCase() == "INBOX") {
-        this._inbox = folder;
-      }
-      // TODO recurse into mailbox.children
-    };
-    assert(this._inbox, "No INBOX found");
-    await this.openFolderUsingConnection(this._inbox, conn);
-    } catch (ex) { console.error(ex); throw ex; }
-  }
-
-  /**
-   * @param folder {MsgFolder}
-   */
-  async openFolder(folder) {
-    assert(folder instanceof MsgFolder);
-    let conn = await this._openConnection();
-    await this.openFolderUsingConnection(folder, conn);
-  }
-
-  /**
-   * @param folder {MsgFolder}
-   * @param conn {ImapClient}
-   *    If you have an open connection that you want to re-use, pass this.
-   *    Required.
-   */
-  async openFolderUsingConnection(folder, conn) {
-    assert(folder instanceof MsgFolder);
-    assert(conn instanceof ImapClient);
-    conn.onupdate = (path, type, value) => {
-      if (type == "exists") {
-        assert(path == folder.fullPath, "Wrong mailbox selected");
-        folder.messageCount = sanitize.integer(mailbox.exists);
-      }
-    };
-    let mailbox = await conn.selectMailbox(folder.name);
-    folder.messageCount = sanitize.integer(mailbox.exists);
-    if (this.peekMails) {
-      // TODO keep existing mails, get all unknown. For now, just peek the first n = |peekMails|.
-      let messages = await conn.listMessages(folder.name, "1:" + this.peekMails, ["uid", "flags", "envelope", "body[]"]);
-      messages.forEach(message => {
-        var msg = new RFC822Mail();
-        msg.imapUID = sanitize.integer(message.uid);
-        msg.msgID = sanitize.nonemptystring(message.envelope["message-id"]);
-        msg.subject = sanitize.label(message.envelope.subject);
-        msg.date = new Date(message.envelope.date);
-        var from = message.envelope.from[0];
-        msg.authorRealname = sanitize.label(from.name);
-        msg.authorEmailAddress = sanitize.emailAddress(from.address);
-        msg.authorFull = msg.authorRealname
-            ? msg.authorRealname + " <" + msg.authorEmailAddress + ">"
-            : msg.authorEmailAddress;
-        msg.flags = message.flags.map(flag => sanitize.nonemptystring(flag).substr(1));
-        msg.seen = msg.flags.indexOf("Seen") != -1;
-        folder._messages.set(msg.msgID, msg);
-      });
+      for (let mailbox of mailboxes) {
+        let folder = IMAPFolder.fromLibJSON(mailbox, parent);
+        iterateMailboxes(mailbox.children, folder);
+        if (folder.name.toUpperCase() == "INBOX") {
+          parent._inbox = folder;
+        }
+      };
     }
+    iterateMailboxes(rootMailboxes.children, this);
+    assert(this._inbox, "No INBOX found");
+    } catch (ex) { console.error(ex); throw ex; }
   }
 
   /**
@@ -219,5 +174,80 @@ export class IMAPAccount extends MailAccount {
     this._folders.clear();
     //notifyGlobalObservers("mail-check", { account: self });
     //notifyGlobalObservers("logged-out", { account: self });
+  }
+}
+
+export class IMAPFolder extends MsgFolder {
+
+  static fromLibJSON(mailbox, parent) {
+    let account = parent instanceof IMAPAccount ? parent : parent.account;
+
+    let folder = new IMAPFolder(
+        sanitize.label(sanitize.nonemptystring(mailbox.name)),
+        sanitize.label(sanitize.nonemptystring(mailbox.path)),
+        account);
+    folder.flags = mailbox.flags.map(flag => sanitize.nonemptystring(flag).substr(1));
+    folder.isNoSelect = folder.flags.indexOf("Noselect") != -1;
+    if (mailbox.specialUse) {
+      folder.specialUse = sanitize.nonemptystring(mailbox.specialUse).substr(1);
+    }
+    folder.subscribed = sanitize.boolean(mailbox.subscribed);
+
+    parent._folders.set(folder.fullPath, folder);
+    if (account != parent) {
+      account._folders.set(folder.fullPath, folder);
+    }
+    return folder;
+  }
+
+  async fetch() {
+    try {
+    let conn = await this.account.connection;
+    await this._openUsingConnection(conn);
+    } catch (ex) { console.error(ex); throw ex; }
+  }
+
+  async fetchWithDedicatedConnection() {
+    try {
+    let conn = await this.account._openConnection();
+    await this._openUsingConnection(conn);
+    } catch (ex) { console.error(ex); throw ex; }
+  }
+
+  /**
+   * @param conn {ImapClient}
+   *    If you have an open connection that you want to re-use, pass this.
+   *    Required.
+   */
+  async _openUsingConnection(conn) {
+    assert(conn instanceof ImapClient);
+    conn.onupdate = (path, type, value) => {
+      if (type == "exists") {
+        assert(path == this.fullPath, "Wrong mailbox selected");
+        this.messageCount = sanitize.integer(mailbox.exists);
+      }
+    };
+    let mailbox = await conn.selectMailbox(this.fullPath);
+    this.messageCount = sanitize.integer(mailbox.exists);
+    if (this.account.peekMails) {
+      // TODO keep existing mails, get all unknown. For now, just peek the first n = |peekMails|.
+      let messages = await conn.listMessages(this.name, "1:" + this.account.peekMails, ["uid", "flags", "envelope", "body[]"]);
+      messages.forEach(message => {
+        var msg = new RFC822Mail();
+        msg.imapUID = sanitize.integer(message.uid);
+        msg.msgID = sanitize.nonemptystring(message.envelope["message-id"]);
+        msg.subject = sanitize.label(message.envelope.subject);
+        msg.date = new Date(message.envelope.date);
+        var from = message.envelope.from[0];
+        msg.authorRealname = sanitize.label(from.name);
+        msg.authorEmailAddress = sanitize.emailAddress(from.address);
+        msg.authorFull = msg.authorRealname
+            ? msg.authorRealname + " <" + msg.authorEmailAddress + ">"
+            : msg.authorEmailAddress;
+        msg.flags = message.flags.map(flag => sanitize.nonemptystring(flag).substr(1));
+        msg.seen = msg.flags.indexOf("Seen") != -1;
+        this._messages.set(msg.msgID, msg);
+      });
+    }
   }
 }
