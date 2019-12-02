@@ -7,7 +7,7 @@
     "@buttercup/credentials": "^1.2.0",
     "adm-zip": "^0.4.13",
     "app-module-path": "^2.2.0",
-    "electron": "^4.2.12",
+    "electron": "^7.1.2",
     "emailjs-imap-client": "^3.0.7",
     "emailjs-mime-builder": "^2.0.5",
     "emailjs-mime-parser": "^2.0.7",
@@ -19,11 +19,15 @@
     "r2": "^2.0.1",
     "sql-template-strings": "^2.2.2",
     "sqlite": "^3.0.3",
+    "sqlite3": "^4.1.0",
     "xmldom": "^0.1.27"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "electron-builder": "^21.2.0"
+  },
   "scripts": {
     "start": "./node_modules/electron/dist/electron -r esm .",
+    "postinstall": "install-app-deps",
     "test": "node test.js"
   },
   "repository": {
