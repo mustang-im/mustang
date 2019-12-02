@@ -1,4 +1,5 @@
-import { MailAccount, MsgFolder } from "../account/account-base";
+import MailAccount from "../account/MailAccount";
+import MsgFolder from "../account/MsgFolder";
 import { assert, ImplementThis } from "../../util/util";
 import fs from "fs";
 import util from "util";

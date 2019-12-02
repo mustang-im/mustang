@@ -1,0 +1,137 @@
+import util from "../../util/util";
+util.importAll(util, global);
+import preferences from "../../util/preferences";
+const ourPref = preferences.myPrefs;
+import { getAllAccounts } from "./account-list"; // for delete account
+import { sanitize } from "../../util/sanitizeDatatypes";
+
+
+/**
+ * API for all accounts
+ *
+ * @param accountID {String}   unique ID for this account
+ *      used as pref branch name
+ */
+export default class Account {
+  constructor(accountID) {
+    /**
+     * {String}
+     */
+    this.accountID = sanitize.nonemptystring(accountID);
+
+    /**
+     * for prefs .type and password manager
+     * {String-enum}
+     */
+    this.kType = "overwriteme";
+
+    /**
+     * prefs branch for this account. null, if not saved yet.
+     * {Preferences}
+     */
+    this._pref = null;
+
+    /**
+     * Poll frequency
+     * {Integer} in s
+     */
+    this._interval = 300;
+  }
+
+  get prefs() {
+    return this._pref;
+  }
+
+  get interval() {
+    return this._interval;
+  }
+
+  set interval(val) {
+    this._interval = val;
+    if (this._pref) {
+      this._pref.set("interval", this._interval);
+    }
+  }
+
+  get type() {
+    return this.kType;
+  }
+
+  /**
+   * We have credentials that we can probably use for login
+   * without having to query the user for password or similar.
+   * @returns {Boolean}
+   */
+  async haveStoredLogin() {
+    throw new implementThis();
+  }
+
+  /**
+   * user says he wants to stay logged in / "remember me"
+   * @returns {Boolean}
+   */
+  get wantStoredLogin() {
+    throw new implementThis();
+  }
+
+  /**
+   * Setter also saves to prefs.
+   */
+  set wantStoredLogin(val) {
+    throw new implementThis();
+  }
+
+  /**
+   * Store password to use in lext login attempt.
+   * If wantStoredLogin is true, it may be saved, too,
+   * otherwise not.
+   */
+  setPassword(password) {
+    throw new implementThis();
+  }
+
+  /**
+   * We are currently logged into the account,
+   * or (in the case of POP3) doing periodical mail checks.
+   */
+  get isLoggedIn() {
+    throw new implementThis();
+  }
+
+  /**
+   * @param continuously {Boolean}
+   *    if false, check only once. Logs out afterward.
+   *    if true, keeps the connection open via IDLE and waits for the server
+   *        to tell us about new mail arrivals.
+   * @param successCallback {Function()}
+   *    Will be called only once, even if the checks continue.
+   */
+  async login(continuously) {
+    throw new implementThis();
+  }
+
+  /**
+   * Closes open connections with the server,
+   * and stops any possible ongoing periodic checks.
+   */
+  async logout() {
+    throw new implementThis();
+  }
+
+  /**
+   * remove this account from prefs and here in backend
+   */
+  deleteAccount() {
+    if (this.isLoggedIn) {
+      this.logout().catch(errorInBackend);
+    }
+
+    ourPref.resetBranch("account." + this.accountID + ".");
+    // delete from accounts list pref
+    var accounts = ourPref.get("accountsList", "").split(",");
+    arrayRemove(accounts, this.accountID, true);
+    ourPref.set("accountsList", accounts.join(","));
+
+    getAllAccounts.remove(this); // update account-list.js
+  }
+}

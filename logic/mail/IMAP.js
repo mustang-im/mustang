@@ -6,7 +6,8 @@
 import ImapClient from "emailjs-imap-client";
 import util from "../../util/util";
 util.importAll(util, global);
-import { MailAccount, MsgFolder } from "../account/account-base";
+import MailAccount from "../account/MailAccount";
+import MsgFolder from "../account/MsgFolder";
 import RFC822Mail from "./MIME";
 import { sanitize } from "../../util/sanitizeDatatypes";
 import { StringBundle } from "../../trex/stringbundle";

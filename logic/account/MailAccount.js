@@ -1,15 +1,8 @@
-/**
- * This contains
- * - the |Account| class API, which all account types implement
- * - the |MailAccount| class, from which IMAP and POP3 inherit
- */
-
 import util from "../../util/util";
 util.importAll(util, global);
+import Account from "../account/Account";
 import preferences from "../../util/preferences";
 const ourPref = preferences.myPrefs;
-import { getAllAccounts } from "./account-list"; // for delete account
-import RFC822Mail from "../mail/MIME";
 import { sanitize } from "../../util/sanitizeDatatypes";
 import passwordEncryption from "../../util/password";
 import { StringBundle } from "../../trex/stringbundle";
@@ -17,145 +10,9 @@ const gStringBundle = new StringBundle("mail");
 
 
 /**
- * API for all accounts
- *
- * @param accountID {String}   unique ID for this account
- *      used as pref branch name
- */
-export class Account {
-  constructor(accountID) {
-    /**
-     * {String}
-     */
-    this.accountID = sanitize.nonemptystring(accountID);
-
-    /**
-     * for prefs .type and password manager
-     * {String-enum}
-     */
-    this.kType = "overwriteme";
-
-    /**
-     * prefs branch for this account. null, if not saved yet.
-     * {Preferences}
-     */
-    this._pref = null;
-
-    /**
-     * Poll frequency
-     * {Integer} in s
-     */
-    this._interval = 300;
-  }
-
-  get prefs() {
-    return this._pref;
-  }
-
-  get interval() {
-    return this._interval;
-  }
-
-  set interval(val) {
-    this._interval = val;
-    if (this._pref) {
-      this._pref.set("interval", this._interval);
-    }
-  }
-
-  get type() {
-    return this.kType;
-  }
-
-  /**
-   * We have credentials that we can probably use for login
-   * without having to query the user for password or similar.
-   * @returns {Boolean}
-   */
-  async haveStoredLogin() {
-    throw new implementThis();
-  }
-
-  /**
-   * user says he wants to stay logged in / "remember me"
-   * @returns {Boolean}
-   */
-  get wantStoredLogin() {
-    throw new implementThis();
-  }
-
-  /**
-   * Setter also saves to prefs.
-   */
-  set wantStoredLogin(val) {
-    throw new implementThis();
-  }
-
-  /**
-   * Store password to use in lext login attempt.
-   * If wantStoredLogin is true, it may be saved, too,
-   * otherwise not.
-   */
-  setPassword(password) {
-    throw new implementThis();
-  }
-
-  /**
-   * We are currently logged into the account,
-   * or (in the case of POP3) doing periodical mail checks.
-   */
-  get isLoggedIn() {
-    throw new implementThis();
-  }
-
-  /**
-   * @param continuously {Boolean}
-   *    if false, check only once. Logs out afterward.
-   *    if true, keeps the connection open via IDLE and waits for the server
-   *        to tell us about new mail arrivals.
-   * @param successCallback {Function()}
-   *    Will be called only once, even if the checks continue.
-   */
-  async login(continuously) {
-    throw new implementThis();
-  }
-
-  /**
-   * Closes open connections with the server,
-   * and stops any possible ongoing periodic checks.
-   */
-  async logout() {
-    throw new implementThis();
-  }
-
-  /**
-   * remove this account from prefs and here in backend
-   */
-  deleteAccount() {
-    if (this.isLoggedIn) {
-      this.logout().catch(errorInBackend);
-    }
-
-    ourPref.resetBranch("account." + this.accountID + ".");
-    // delete from accounts list pref
-    var accounts = ourPref.get("accountsList", "").split(",");
-    arrayRemove(accounts, this.accountID, true);
-    ourPref.set("accountsList", accounts.join(","));
-
-    getAllAccounts.remove(this); // update account-list.js
-  }
-}
-
-export function getDomainForEmailAddress(emailAddress) {
-  var spl = emailAddress.split("@");
-  assert(spl.length == 2, gStringBundle.get("error.syntax"));
-  return sanitize.hostname(spl[1]);
-}
-
-/**
  * Base class for IMAPAccount and POP3Account
  */
-export class MailAccount extends Account {
+export default class MailAccount extends Account {
   constructor(accountID) {
     super(accountID);
 
@@ -409,92 +266,8 @@ export class MailAccount extends Account {
   }
 }
 
-
-/**
- * This contains a list of messages.
- * It represents e.g.
- * - IMAP folder
- * - POP3 inbox
- * - local mbox
- * - NNTP newsgroup
- * - RSS news feed
- *
- * @param name {String}   Folder name
- *     This is not the full path, but just the name of this one folder.
- * @param fullPath {String}   folder name within the account
- *     This is the full path, including delimiters.
- *     The delimiter depends on the account and server, it may be "/" or "."
- *     or backslash or something else.
- *     Not including the account.
- * @param account {Account}
- */
-export class MsgFolder {
-  constructor(name, fullPath, account) {
-    assert(account instanceof Account);
-    this.account = account;
-
-    /**
-     * @see ctor
-     * {String}
-     */
-    this.name = sanitize.label(sanitize.nonemptystring(name));
-
-    /**
-     * @see ctor
-     * {String}
-     */
-    this.fullPath = sanitize.nonemptystring(fullPath);
-
-    /**
-     * {MapColl of MessageID -> RFC822Mail}
-     */
-    this._messages = new MapColl();
-
-    /**
-     * {MapColl of name -> MsgFolder}
-     */
-    this._subfolders = new MapColl();
-
-    /**
-    * Total number of messages in this folder
-     * {Integer}
-     */
-    this.messageCount = 0;
-
-    /**
-     * Number of new (unseen) messages in this folder
-     * {Integer}
-     */
-    this.newMessageCount = 0;
-  }
-
-  /**
-   * The messages in this folder.
-   *
-   * To sync the locally cached list with the server,
-   * call sync(). The collection here will then be
-   * updated using the listeners.
-   *
-   * {Collection of RFC822Mail}
-   */
-  get messages() {
-    return this._messages;
-  }
-
-  /**
-   * Subfolders folders of this folder.
-   * {Collection of MsgFolder}
-   * Empty list, if there are no subfolders.
-   */
-  get folders() {
-    return this._subfolders;
-  }
-
-  /**
-   * Checks for new mail on the server,
-   * and downloads the mails.
-   */
-  async fetch() {
-    throw new ImplementThis();
-  }
+export function getDomainForEmailAddress(emailAddress) {
+  var spl = emailAddress.split("@");
+  assert(spl.length == 2, gStringBundle.get("error.syntax"));
+  return sanitize.hostname(spl[1]);
 }

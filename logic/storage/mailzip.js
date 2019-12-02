@@ -1,5 +1,5 @@
 import MailStore from "./mail-store";
-import { MsgFolder } from "../account/account-base";
+import MsgFolder from "../account/MsgFolder";
 import { assert } from "../../util/util";
 import fs from "fs";
 import util from "util";

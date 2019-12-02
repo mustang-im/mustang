@@ -9,7 +9,7 @@ util.importAll(collection, global);
 import preferences from "../../util/preferences";
 const ourPref = preferences.myPrefs;
 import { sanitize } from "../../util/sanitizeDatatypes";
-import { IMAPAccount } from "../mail/imap";
+import { IMAPAccount } from "../mail/IMAP";
 
 /**
  * Contains all Account objected created.

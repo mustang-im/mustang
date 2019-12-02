@@ -6,7 +6,7 @@
 import util from "../../util/util";
 util.importAll(util, global);
 import * as accounts from "./account-list"; // add, remove, getExisting
-import { getDomainForEmailAddress } from "./account-base";
+import { getDomainForEmailAddress } from "./MailAccount";
 import JXON from "./JXON";
 import dns from "dns";
 import { sanitize } from "../../util/sanitizeDatatypes";
