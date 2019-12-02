@@ -8,6 +8,7 @@ import util from "../../util/util";
 util.importAll(util, global);
 import MailAccount from "../account/MailAccount";
 import MsgFolder from "../account/MsgFolder";
+import SQLFolder, { openDatabase } from "../storage/SQLFolder";
 import RFC822Mail from "./MIME";
 import { sanitize } from "../../util/sanitizeDatatypes";
 import { StringBundle } from "../../trex/stringbundle";
@@ -93,6 +94,7 @@ export class IMAPAccount extends MailAccount {
    */
   async login(continuously) {
     try {
+    await IMAPFolder.init();
     let conn = await this._openConnection();
     if (this._folders.length == 1) {
       await this.listFolders();
@@ -179,6 +181,19 @@ export class IMAPAccount extends MailAccount {
 }
 
 export class IMAPFolder extends MsgFolder {
+  constructor(name, fullPath, account) {
+    super(name, fullPath, account);
+
+    this.cache = new SQLFolder(this);
+    this._messages = this.cache.messages;
+    this._subfolders = this.cache.folders;
+    this.cache.watch(this._messages, this._subfolders);
+    this.cache.fetch().catch(console.error);
+  }
+
+  static async init() {
+    await openDatabase();
+  }
 
   static fromLibJSON(mailbox, parent) {
     let account = parent instanceof IMAPAccount ? parent : parent.account;
@@ -234,17 +249,24 @@ export class IMAPFolder extends MsgFolder {
       // TODO keep existing mails, get all unknown. For now, just peek the first n = |peekMails|.
       let messages = await conn.listMessages(this.name, "1:" + this.account.peekMails, ["uid", "flags", "envelope", "body[]"]);
       messages.forEach(message => {
+        //console.log(JSON.stringify(message, null, " ").substr(0, 1000));
         var msg = new RFC822Mail();
         msg.imapUID = sanitize.integer(message.uid);
         msg.msgID = sanitize.nonemptystring(message.envelope["message-id"]);
+        if (msg.msgID[0] == "<") {
+          msg.msgID = msg.msgID.substring(1, msg.msgID.length - 1);
+        }
         msg.subject = sanitize.label(message.envelope.subject);
         msg.date = new Date(message.envelope.date);
-        var from = message.envelope.from[0];
-        msg.authorRealname = sanitize.label(from.name);
-        msg.authorEmailAddress = sanitize.emailAddress(from.address);
+        var firstFrom = message.envelope.from[0];
+        msg.authorEmailAddress = sanitize.emailAddress(firstFrom.address);
+        msg.authorRealname = sanitize.label(firstFrom.name);
         msg.authorFull = msg.authorRealname
             ? msg.authorRealname + " <" + msg.authorEmailAddress + ">"
             : msg.authorEmailAddress;
+        var firstTo = message.envelope.to[0];
+        msg.recipientEmailAddress = sanitize.emailAddress(firstTo.address);
+        msg.recipientRealname = sanitize.label(firstTo.name);
         msg.flags = message.flags.map(flag => sanitize.nonemptystring(flag).substr(1));
         msg.seen = msg.flags.indexOf("Seen") != -1;
         this._messages.set(msg.msgID, msg);

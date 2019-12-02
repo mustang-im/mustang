@@ -1,4 +1,7 @@
-import { RFC822Mail } from "../mail/MIME";
+import RFC822Mail from "../mail/MIME";
+import fs from "fs";
+import { promisify } from "util";
+fs.mkdirAsync = promisify(fs.mkdir);
 
 /**
  * Keeps metadata about emails.
@@ -49,5 +52,5 @@ export default class MailDatabase {
   }
 }
 
-MailDatabase._kDirMode = 0700; // Only the user can read and write
-MailDatabase._kFileMode = 0600; // Ditto
+MailDatabase._kDirMode = 448; // = 0700 = Only the user can read and write
+MailDatabase._kFileMode = 384; // = 0600 = ditto

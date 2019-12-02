@@ -1,11 +1,13 @@
 import MailDatabase from "./mail-database";
+import MsgFolder from "../account/MsgFolder";
+import RFC822Mail from "../mail/MIME";
 import sqlite from "sqlite";
 import SQL from "sql-template-strings";
 
 /**
  * Keeps metadata about emails in a SQLite database.
  */
-export default class MailSQLDatabase {
+export default class MailSQLDatabase extends MailDatabase {
   constructor() {
     super();
     this._db = null;
@@ -24,36 +26,82 @@ export default class MailSQLDatabase {
    */
   async init(account, baseDir, options) {
     super.init(account, baseDir, options);
-    let filename =  this.baseDir + "email-database.sqlite";
+    let filename =  baseDir + "email-database.sqlite";
     this._db = await sqlite.open(filename);
-    await this._db.migrate();
+    await this._db.migrate({
+      migrationsPath: "./logic/storage/mail-sql/",
+    });
+  }
+
+  /**
+   * Saves a folder to the database.
+   *
+   * @param folder {MsgFolder}
+   */
+  async addFolder(folder) {
+    assert(folder instanceof MsgFolder);
+    await this._db.run(SQL`INSERT OR IGNORE INTO folder (name, fullPath, accountID) VALUES (${folder.name}, ${folder.fullPath}, ${folder.account.accountID})`);
+  }
+
+  /**
+   * Deletes a folder from the database.
+   *
+   * @param folder {MsgFolder}
+   */
+  async deleteFolder(folder) {
+    assert(folder instanceof MsgFolder);
+    await this._db.run(SQL`DELETE FROM folder WHERE name = ${folder.name} AND fullPath = ${folder.fullPath} AND accountID = ${folder.account.accountID})`);
+    // TODO body
   }
 
   /**
    * Saves an email to the database.
    *
-   * @param msgFolder {MsgFolder}
+   * @param folder {MsgFolder}
    * @param msg {RFC822Mail}
    */
-  async saveMessage(msgFolder, msg) {
-    assert(msgFolder instanceof MsgFolder);
+  async saveMessage(folder, msg) {
+    assert(folder instanceof MsgFolder);
     assert(msg instanceof RFC822Mail);
-    this._db.run(SQL`INSERT OR IGNORE INTO person (emailAddress, name) VALUES (${msg.authorEmailAddress}, ${msg.authorRealname})`); // TODO update realname, if it was empty
-    let fromID = this._db.get(SQL`SELECT id FROM person WHERE emailAddress = ${msg.authorEmailAddress}`);
-    this._db.run(SQL`INSERT INTO emails (folder, msgID, firstFrom, subject, dateSent, dateReceived) VALUES ((SELECT id FROM folder WHERE fullPath = ${msgFolder.fullPath} AND accountID = ${ msgFolder.account.accountID} LIMIT 1), ${msg.msgID}, ${fromID}, ${msg.subject}, ${msg.date}, NOW())`);
+    let fromID;
+    await this._db.run(SQL`INSERT OR IGNORE INTO person (emailAddress, name) VALUES (${msg.authorEmailAddress}, ${msg.authorRealname})`); // TODO update realname, if it was empty
+    let fromResult = await this._db.get(SQL`SELECT id FROM person WHERE emailAddress = ${msg.authorEmailAddress}`);
+    if (fromResult) {
+      fromID = fromResult.id;
+    }
+    let toID;
+    await this._db.run(SQL`INSERT OR IGNORE INTO person (emailAddress, name) VALUES (${msg.recipientEmailAddress}, ${msg.recipientRealname})`);
+    let toResult = await this._db.get(SQL`SELECT id FROM person WHERE emailAddress = ${msg.recipientEmailAddress}`);
+    if (toResult) {
+      toID = toResult.id;
+    }
+    await this._db.run(SQL`INSERT OR IGNORE INTO email (folder, msgID, firstFrom, firstTo, subject, dateSent, dateReceived) VALUES ((SELECT id FROM folder WHERE fullPath = ${folder.fullPath} AND accountID = ${folder.account.accountID} LIMIT 1), ${msg.msgID}, ${fromID}, ${toID}, ${msg.subject}, ${msg.date}, ${Date.now()})`);
     // TODO to
+    // TODO body
+  }
+
+  /**
+   * Deletes an old email from the database.
+   *
+   * @param folder {MsgFolder}
+   * @param msg {RFC822Mail}
+   */
+  async deleteMessage(folder, msg) {
+    assert(folder instanceof MsgFolder);
+    assert(msg instanceof RFC822Mail);
+    await this._db.run(SQL`DELETE FROM email WHERE msgID = ${msg.msgID} AND folder = (SELECT id FROM folder WHERE fullPath = ${folder.fullPath} AND accountID = ${ folder.account.accountID} LIMIT 1)`);
     // TODO body
   }
 
   /**
    * Returns all known emails in a folder.
    *
-   * @param msgFolder {MsgFolder}
+   * @param folder {MsgFolder}
    * @returns {Array of RFC822Mail}
    */
-  async listMessagesInFolder(msgFolder) {
-    assert(msgFolder instanceof MsgFolder);
-    let resuls = this._db.all(SQL`SELECT *, fromT.emailAddress as fromEmailAddress, fromT.name as fromName  FROM emails LEFT JOIN person AS fromT ON firstFrom = fromT.id WHERE folder = (SELECT id FROM folder WHERE fullPath = ${msgFolder.fullPath} AND accountID = ${ msgFolder.account.accountID} LIMIT 1)`);
+  async listMessagesInFolder(folder) {
+    assert(folder instanceof MsgFolder);
+    let results = await this._db.all(SQL`SELECT *, fromT.emailAddress as fromEmailAddress, fromT.name as fromName  FROM email LEFT JOIN person AS fromT ON firstFrom = fromT.id WHERE folder = (SELECT id FROM folder WHERE fullPath = ${folder.fullPath} AND accountID = ${ folder.account.accountID} LIMIT 1)`);
     return results.map(result => {
       let email = new RFC822Mail();
       email.msgID = result.msgID;

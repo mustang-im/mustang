@@ -20,17 +20,27 @@ export default class RFC822Mail {
     this.subject = null;
 
     /**
+     * From:
+     */
+    this.authorEmailAddress = null;
+
+    /**
      * Only the realname portion of From:
      * As set by author. If not given, this is the email address.
      */
     this.authorRealname = null;
 
-    this.authorEmailAddress = null;
-
     /**
      * Complete From: header content
      */
     this.authorFull = null;
+
+    /**
+     * To:
+     */
+    this.recipientEmailAddress = null;
+
+    this.recipientRealname = null;
 
     this.contentType = null;
 

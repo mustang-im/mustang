@@ -922,6 +922,9 @@ MapColl.prototype = {
   set : function(key, value) {
     key = _coll_sanitizeString(key);
     var oldValue = this._obj[key];
+    if (oldValue == value) {
+      return;
+    }
     this._obj[key] = value;
     if (oldValue !== undefined)
       this._notifyRemoved([oldValue], this);

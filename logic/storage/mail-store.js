@@ -4,6 +4,7 @@ import { assert, ImplementThis } from "../../util/util";
 import fs from "fs";
 import { promisify } from "util";
 fs.mkdirAsync = promisify(fs.mkdir);
+fs.existsAsync = promisify(fs.exists);
 
 
 /**
@@ -90,5 +91,5 @@ export default class MailStore {
   }
 }
 
-MailStore._kDirMode = 0700; // Only the user can read and write
-MailStore._kFileMode = 0600; // Ditto
+MailStore._kDirMode = 448; // = 0700 = Only the user can read and write
+MailStore._kFileMode = 384; // = 0600 = ditto
