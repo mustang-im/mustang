@@ -2,13 +2,13 @@ import MailStore from "./mail-store";
 import MsgFolder from "../account/MsgFolder";
 import { assert } from "../../util/util";
 import fs from "fs";
-import util from "util";
+import { promisify } from "util";
+fs.existsAsync = promisify(fs.exists);
 // <https://github.com/cthackers/adm-zip/wiki/API-Documentation>
 // Alternative: <https://www.archiverjs.com/>
 import AdmZip from "adm-zip";
-fs.existsAsync = util.promisify(fs.exists);
-AdmZip.readAsTextAsync2 = util.promisify(AdmZip.readAsTextAsync);
-AdmZip.writeFileAsync2 = util.promisify(AdmZip.writeFile);
+AdmZip.readAsTextAsync2 = promisify(AdmZip.readAsTextAsync);
+AdmZip.writeFileAsync2 = promisify(AdmZip.writeFile);
 
 /**
  * Implements a mail store that stores emails in a ZIP file.

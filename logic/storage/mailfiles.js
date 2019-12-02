@@ -2,11 +2,11 @@ import MailStore from "./mail-store";
 import MsgFolder from "../account/MsgFolder";
 import { assert } from "../../util/util";
 import fs from "fs";
-import util from "util";
-fs.readFileAsync = util.promisify(fs.readFile);
-fs.writeFileAsync = util.promisify(fs.writeFile);
-fs.mkdirAsync = util.promisify(fs.mkdir);
-fs.existsAsync = util.promisify(fs.exists);
+import { promisify } from "util";
+fs.readFileAsync = promisify(fs.readFile);
+fs.writeFileAsync = promisify(fs.writeFile);
+fs.mkdirAsync = promisify(fs.mkdir);
+fs.existsAsync = promisify(fs.exists);
 
 /**
  * Implements a mail store that uses one file per message.

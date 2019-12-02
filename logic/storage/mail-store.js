@@ -2,8 +2,8 @@ import MailAccount from "../account/MailAccount";
 import MsgFolder from "../account/MsgFolder";
 import { assert, ImplementThis } from "../../util/util";
 import fs from "fs";
-import util from "util";
-fs.mkdirAsync = util.promisify(fs.mkdir);
+import { promisify } from "util";
+fs.mkdirAsync = promisify(fs.mkdir);
 
 
 /**
