@@ -28,13 +28,13 @@
  * HTML5 localStorage.
  */
 
-const os = require("os");
-const util = require("util");
+const { promisify } = require("util");
 const fs = require("fs");
-fs.readFileAsync = util.promisify(fs.readFile);
-fs.writeFileAsync = util.promisify(fs.writeFile);
-fs.mkdirAsync = util.promisify(fs.mkdir);
-fs.existsAsync = util.promisify(fs.exists);
+fs.readFileAsync = promisify(fs.readFile);
+fs.writeFileAsync = promisify(fs.writeFile);
+fs.mkdirAsync = promisify(fs.mkdir);
+fs.existsAsync = promisify(fs.exists);
+const { getAppDir } = require("../util/util");
 
 /**
  * A cache of pref observers.
@@ -384,18 +384,11 @@ function isObject(val) {
 
 
 function _getPrefsFileName() {
-  return _prefsDir() + "prefs.json";
-}
-
-function _prefsDir() {
-  // TODO change app name
-  // TODO Windows, Mac
-  var dirname = os.homedir() + "/.mustang/";
-  return dirname;
+  return getAppDir() + "prefs.json";
 }
 
 async function prefsDir() {
-  var dirname = _prefsDir();
+  var dirname = getAppDir();
   if (!await fs.existsAsync(dirname)) {
     await fs.mkdirAsync(dirname, { recursive: true });
   }

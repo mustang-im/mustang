@@ -10,6 +10,8 @@
  * Some common, generic functions
  */
 
+const os = require("os");
+
 /**
  * Takes all functions/objects from |sourceScope|
  * and adds them to |targetScope|.
@@ -156,6 +158,12 @@ function splitLines(content)
   content = content.replace("\r\n", "\n");
   content = content.replace("\r", "\n");
   return content.split("\n");
+}
+
+function getAppDir() {
+  // TODO change app name
+  // TODO Windows, Mac
+  return os.homedir() + "/.mustang/";
 }
 
 /**
@@ -672,6 +680,7 @@ exports.runAsync = runAsync;
 exports.runPeriodically = runPeriodically;
 exports.readURLasUTF8 = readURLasUTF8;
 exports.splitLines = splitLines;
+exports.getAppDir = getAppDir;
 exports.pluralform = pluralform;
 exports.getUILocale = getUILocale;
 exports.getOS = getOS;
