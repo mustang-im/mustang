@@ -1,7 +1,7 @@
 import { assert } from "../../util/util";
 import MsgFolder from "../account/MsgFolder";
 import RFC822Mail from "../mail/MIME";
-import MailSQLDatabase from "../storage/mail-sql";
+import MailSQLDatabase, { getDatabase } from "../storage/mail-sql";
 
 
 /**
@@ -116,31 +116,4 @@ export default class SQLFolder extends MsgFolder {
       console.error(ex);
     }
   }
-}
-
-// for getDatabase() and openDatabase() only
-var gDatabase;
-
-/**
- * @param account {Account} (Optional)
- *     if null, use global databse.
- * @returns {MailSQLDatabase}
- */
-function getDatabase(account) {
-  assert(gDatabase, "You need to call openDatabase() first and wait for it");
-  return gDatabase;
-}
-
-/**
- * @param account {Account} (Optional)
- *     if null, use global databse.
- * @returns {MailSQLDatabase}
- */
-export async function openDatabase(account) {
-  if (gDatabase) {
-    return gDatabase;
-  }
-  let baseDir = getAppDir()
-  gDatabase = new MailSQLDatabase();
-  await gDatabase.init(account, baseDir);
 }

@@ -136,7 +136,7 @@ Collection.prototype = {
 
   /**
    * |len| number of items, starting from the nth position in the list
-   * @returns {Object}
+   * @returns {Array of Object}
    * null, if the list is empty
    */
   getIndexRange : function(i, length) {
@@ -241,7 +241,7 @@ Collection.prototype = {
    * @returns {Collection} Does not preserve order.
    */
   inCommon : function(otherColl) {
-  return new IntersectionCollection(this, otherColl);
+    return new IntersectionCollection(this, otherColl);
   },
 
   /**
@@ -252,7 +252,7 @@ Collection.prototype = {
    * @returns {Collection} Does not preserve order.
    */
   notInCommon : function(otherColl) {
-    notInCommonColl(this, otherColl);
+    return notInCommonColl(this, otherColl);
   },
 
   /**
@@ -260,7 +260,7 @@ Collection.prototype = {
    * @returns {Array of items} sorted by |sortFunc|
    */
   sort : function(sortFunc) {
-    sortColl(this, sortFunc);
+    return sortColl(this, sortFunc);
   },
 
 

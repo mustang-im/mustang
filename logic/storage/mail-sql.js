@@ -89,7 +89,7 @@ export default class MailSQLDatabase extends MailDatabase {
   async deleteMessage(folder, msg) {
     assert(folder instanceof MsgFolder);
     assert(msg instanceof RFC822Mail);
-    await this._db.run(SQL`DELETE FROM email WHERE msgID = ${msg.msgID} AND folder = (SELECT id FROM folder WHERE fullPath = ${folder.fullPath} AND accountID = ${ folder.account.accountID} LIMIT 1)`);
+    await this._db.run(SQL`DELETE FROM email WHERE msgID = ${msg.msgID} AND folder = (SELECT id FROM folder WHERE fullPath = ${folder.fullPath} AND accountID = ${folder.account.accountID} LIMIT 1)`);
     // TODO body
   }
 
@@ -101,16 +101,47 @@ export default class MailSQLDatabase extends MailDatabase {
    */
   async listMessagesInFolder(folder) {
     assert(folder instanceof MsgFolder);
-    let results = await this._db.all(SQL`SELECT *, fromT.emailAddress as fromEmailAddress, fromT.name as fromName  FROM email LEFT JOIN person AS fromT ON firstFrom = fromT.id WHERE folder = (SELECT id FROM folder WHERE fullPath = ${folder.fullPath} AND accountID = ${ folder.account.accountID} LIMIT 1)`);
+    let results = await this._db.all(SQL`SELECT msgID, subject, dateSent, dateReceived, fromT.emailAddress as fromEmailAddress, fromT.name as fromName, toT.emailAddress as toEmailAddress, toT.name as toName FROM email LEFT JOIN person AS fromT ON firstFrom = fromT.id LEFT JOIN person AS toT ON firstTo = toT.id WHERE folder = (SELECT id FROM folder WHERE fullPath = ${folder.fullPath} AND accountID = ${folder.account.accountID} LIMIT 1)`);
     return results.map(result => {
       let email = new RFC822Mail();
       email.msgID = result.msgID;
       email.subject = result.subject;
       email.date = new Date(result.dateSent);
       email.dateReceived = new Date(result.dateReceived);
-      email.authorEmailAddress = result.fromemailAddress;
+      email.authorEmailAddress = result.fromEmailAddress;
       email.authorRealname = result.fromName;
+      email.recipientEmailAddress = result.toEmailAddress;
+      email.recipientRealname = result.toName;
       return email;
     });
   }
+}
+
+
+// for getDatabase() and openDatabase() only
+var gDatabase;
+
+/**
+ * @param account {Account} (Optional)
+ *     if null, use global databse.
+ * @returns {MailSQLDatabase}
+ */
+export function getDatabase(account) {
+  assert(gDatabase, "You need to call openDatabase() first and wait for it");
+  return gDatabase;
+}
+
+/**
+ * @param account {Account} (Optional)
+ *     if null, use global databse.
+ * @returns {MailSQLDatabase}
+ */
+export async function openDatabase(account) {
+  if (gDatabase) {
+    return gDatabase;
+  }
+  let baseDir = getAppDir()
+  gDatabase = new MailSQLDatabase();
+  await gDatabase.init(account, baseDir);
+  return gDatabase;
 }
