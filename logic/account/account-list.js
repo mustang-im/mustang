@@ -2,6 +2,7 @@
  * This keeps the list of all account objects created.
  */
 
+import IMAPAccount from "../mail/imap/IMAPAccount";
 import * as util from "../../util/util";
 util.importAll(util, global);
 import * as collection from "../../util/collection";
@@ -9,7 +10,6 @@ util.importAll(collection, global);
 import preferences from "../../util/preferences";
 const ourPref = preferences.myPrefs;
 import { sanitize } from "../../util/sanitizeDatatypes";
-import { IMAPAccount } from "../mail/IMAP";
 
 /**
  * Contains all Account objected created.

@@ -1,10 +1,10 @@
+import Account from "../account/Account";
+import passwordEncryption from "../../util/password";
 import util from "../../util/util";
 util.importAll(util, global);
-import Account from "../account/Account";
+import { sanitize } from "../../util/sanitizeDatatypes";
 import preferences from "../../util/preferences";
 const ourPref = preferences.myPrefs;
-import { sanitize } from "../../util/sanitizeDatatypes";
-import passwordEncryption from "../../util/password";
 import { StringBundle } from "../../trex/stringbundle";
 const gStringBundle = new StringBundle("mail");
 

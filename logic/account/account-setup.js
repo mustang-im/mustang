@@ -3,12 +3,12 @@
  * which gets the account class of an appropriate type.
  */
 
+import * as accounts from "../account/account-list"; // add, remove, getExisting
+import { getDomainForEmailAddress } from "../mail/MailAccount";
+import dns from "dns";
+import JXON from "../../util/JXON";
 import util from "../../util/util";
 util.importAll(util, global);
-import * as accounts from "./account-list"; // add, remove, getExisting
-import { getDomainForEmailAddress } from "./MailAccount";
-import JXON from "./JXON";
-import dns from "dns";
 import { sanitize } from "../../util/sanitizeDatatypes";
 import preferences from "../../util/preferences";
 const ourPref = preferences.myPrefs;
