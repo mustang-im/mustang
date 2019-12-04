@@ -54,14 +54,14 @@ export default class IMAPFolder extends MsgFolder {
 
   async fetch() {
     try {
-    let conn = await this.account.connection;
+    let conn = await this.account._connection;
     await this._openUsingConnection(conn);
     } catch (ex) { console.error(ex); throw ex; }
   }
 
   async fetchWithDedicatedConnection() {
     try {
-    let conn = await this.account._openConnection();
+    let conn = await this.account._newConnection();
     await this._openUsingConnection(conn);
     } catch (ex) { console.error(ex); throw ex; }
   }

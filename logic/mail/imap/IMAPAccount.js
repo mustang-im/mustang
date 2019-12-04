@@ -41,22 +41,6 @@ export default class IMAPAccount extends MailAccount {
   }
 
   /**
-    * Amount of new mails in all known folders.
-    * New here means mails not seen by any IMAP client (called "RECENT" in IMAP).
-    * It's NOT the unread mails (called "UNSEEN" in IMAP).
-    * {Integer} -1 = not checked
-    */
-  get newMessageCount() {
-    let sum = 0;
-    this._folders.forEach(folder => {
-      if (folder.newMessageCount) {
-        sum += folder.newMessageCount;
-      }
-    });
-    return sum;
-  }
-
-  /**
    * Some of the unchecked mails (headers) in all folders.
    * Count depends on |peekMails|.
    * {Collection of EMail}
@@ -95,7 +79,7 @@ export default class IMAPAccount extends MailAccount {
   async login(continuously) {
     try {
     await IMAPFolder.init();
-    let conn = await this._openConnection();
+    let conn = await this._newConnection();
     if (this._folders.length <= 1 || !this._inbox) {
       await this.listFolders();
     }
@@ -106,7 +90,7 @@ export default class IMAPAccount extends MailAccount {
   /**
    * @returns connection from ImapClient
    */
-  async _openConnection() {
+  async _newConnection() {
     assert(this.hostname, "Need to configure");
     assert(this._password, "Need password");
     var self = this;
@@ -127,7 +111,7 @@ export default class IMAPAccount extends MailAccount {
   /**
    * Gets any free server connection.
    */
-  get connection() {
+  get _connection() {
     // Implement with pool or
     // record which connections are busy.
     return this._connections.first;
@@ -135,7 +119,7 @@ export default class IMAPAccount extends MailAccount {
 
   async listFolders() {
     try {
-    let rootMailboxes = await this.connection.listMailboxes();
+    let rootMailboxes = await this._connection.listMailboxes();
     assert(rootMailboxes.root);
     let iterateMailboxes = (mailboxes, parent) => {
       if (!mailboxes || !mailboxes.length) {

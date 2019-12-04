@@ -45,5 +45,27 @@ export default class EMail {
     this.contentType = null;
 
     this.body = null;
+
+
+    // mutable meta data
+
+    this.isRead = false;
+  }
+
+  /**
+   * Wheather the message has been read or not
+   * @param read {Boolean}
+   *   true: mark as read
+   *   false: mark as unread
+   *   not passed (undefined): mark as read
+   */
+  async markAsRead(read) {
+    if (read === undefined) {
+      read = true;
+    }
+    this.isRead = read;
+    console.log("Marking message " + this.subject + " " + this.msgID + " as read");
+    //throw new ImplementThis();
+    return read;
   }
 }

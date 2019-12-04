@@ -67,7 +67,13 @@ export default class MailAccount extends Account {
    * -1 = not checked
    */
   get newMessageCount() {
-    throw new ImplementThis();
+    let sum = 0;
+    this._folders.forEach(folder => {
+      if (folder.newMessageCount) {
+        sum += folder.newMessageCount;
+      }
+    });
+    return sum;
   }
 
   /**
@@ -86,23 +92,6 @@ export default class MailAccount extends Account {
    */
   get inbox() {
     throw new ImplementThis();
-  }
-
-  /**
-   * @param email {EMail}
-   */
-  markAsRead(email) {
-    //throw new ImplementThis();
-  }
-
-  get peekMails() {
-    return this._peekMails;
-  }
-
-  set peekMails(val) {
-    this._peekMails = val;
-    //if (this._pref)
-      //this._pref.set("peekMails", this._peekMails);
   }
 
   /**

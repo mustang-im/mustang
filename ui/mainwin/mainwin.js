@@ -82,15 +82,20 @@ function pollError(e) {
   console.error(e);
 }
 
+function backgroundError(e) {
+  console.error(e);
+}
+
 /**
  * This is an overly simplistic function to show the basic contents of
  * an email.
- * @param message {RFC822Mail} @see MIME.js
+ * @param message {EMail}
  */
 function showMessage(message) {
   E("msg-from").textContent = message.authorRealname;
   E("msg-subject").textContent = message.subject;
   E("msg-date").textContent = getDateString(message.date);
+  message.markAsRead(true).catch(backgroundError);
 }
 
 /**
