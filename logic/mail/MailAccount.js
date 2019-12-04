@@ -245,13 +245,26 @@ export default class MailAccount extends Account {
 
     // Subclasses still need to implement the actual logout,
     // and copy the above code.
-    throw new implementThis();
+    throw new ImplementThis();
   }
 
   deleteAccount() {
     this._deleteStoredPassword(); // should be done by logout(), but be sure.
 
     Account.prototype.deleteAccount.apply(this, arguments);
+  }
+
+  /**
+   * @param parent {MsgFolder or null} The parent folder.
+   *     null means root folder
+   * @param name {string}   The user-visible name of the folder.
+   *     Note: The fullPath will be created by implicitly.
+   * @returns {MsgFolder}
+   */
+  async createFolder(parent, name) {
+    assert(!parent || parent instanceof MsgFolder);
+    assert(typeof(name) == "string");
+    throw new ImplementThis();
   }
 }
 

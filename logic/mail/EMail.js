@@ -1,3 +1,5 @@
+import MsgFolder from "../account/MsgFolder";
+
 /**
  * An RFC822 message with
  * - Subject
@@ -6,11 +8,16 @@
  * - Author (full From: line)
  * - First part of plaintext body
  * - Message ID
- *
- * @param fullText (optional) @see parse()
  */
 export default class EMail {
-  constructor(fullText) {
+  /**
+   * @param folder {MsgFolder}   The folder where the message is stored.
+   *     May be null for new messages. Certain function will then throw.
+   */
+  constructor(folder) {
+    assert(!folder || folder instanceof MsgFolder);
+    this.folder = folder;
+
     this.date = new Date();
 
     // Message-ID header
@@ -50,6 +57,8 @@ export default class EMail {
     // mutable meta data
 
     this.isRead = false;
+
+    this.isStarred = false;
   }
 
   /**
@@ -65,7 +74,73 @@ export default class EMail {
     }
     this.isRead = read;
     console.log("Marking message " + this.subject + " " + this.msgID + " as read");
-    //throw new ImplementThis();
+    await this.folder.updateMessagesMetadata([ this ], { read: read } );
     return read;
+  }
+
+  /**
+   * Wheather the message has been marked as flagged or not
+   * @param starred {Boolean}
+   *   true: flagged
+   *   false: not flagged
+   *   not passed (undefined): flagged
+   */
+  async star(starred) {
+    if (starred === undefined) {
+      starred = true;
+    }
+    this.isStarred = starred;
+    console.log("Marking message " + this.subject + " " + this.msgID + " as starred");
+    await this.folder.updateMessagesMetadata([ this ], { starred: starred } );
+    return starred;
+  }
+
+  async deleteMessage(toTrash) {
+    await this.folder.deleteMessages([ this ], toTrash);
+  }
+
+  async copy(targetFolder) {
+    await this.folder.copyMessages([ this ], targetFolder);
+  }
+
+  async move(targetFolder) {
+    await this.folder.moveMessages([ this ], targetFolder);
+  }
+
+  /**
+   * @param attachmentID {string}
+   */
+  async getAttachment(attachmentID) {
+    throw new ImplementThis();
+  }
+
+  /**
+   * Add an attachment to a newly created message
+   *
+   * @param contentType {String}  The content type of the attachment
+   * @param content {String}  The binary content of the attachment
+   * @param size {Integer}  The length of content
+   * @param name {String}  The name of the attachment
+   * @param contentID {String}  For inline attachments, its content ID
+  */
+  async addAttachment(contentType, content, size, name, contentID) {
+    throw new ImplementThis();
+  }
+
+  /**
+   * Send the newly created message to its recipients.
+   *
+   * A copy will be stored in the |folder|.
+   */
+  async send() {
+    throw new ImplementThis();
+  }
+
+  /**
+   * Parse a MIME message.
+   * @returns {EMail}
+   */
+  static fromMIME(fullMIME) {
+    throw new ImplementThis();
   }
 }

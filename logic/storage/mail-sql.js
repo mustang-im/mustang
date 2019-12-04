@@ -103,7 +103,7 @@ export default class MailSQLDatabase extends MailDatabase {
     assert(folder instanceof MsgFolder);
     let results = await this._db.all(SQL`SELECT msgID, subject, dateSent, dateReceived, fromT.emailAddress as fromEmailAddress, fromT.name as fromName, toT.emailAddress as toEmailAddress, toT.name as toName FROM email LEFT JOIN person AS fromT ON firstFrom = fromT.id LEFT JOIN person AS toT ON firstTo = toT.id WHERE folder = (SELECT id FROM folder WHERE fullPath = ${folder.fullPath} AND accountID = ${folder.account.accountID} LIMIT 1)`);
     return results.map(result => {
-      let email = new EMail();
+      let email = new EMail(folder);
       email.msgID = result.msgID;
       email.subject = result.subject;
       email.date = new Date(result.dateSent);

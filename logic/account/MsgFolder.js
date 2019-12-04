@@ -92,4 +92,120 @@ export default class MsgFolder {
   async fetch() {
     throw new ImplementThis();
   }
+
+  /**
+   * Gets selected headers for a number of messages at once.
+   *
+   * Results appear in this.messages.
+   */
+  async getMessagesMetadata(offset, limit) {
+    throw new ImplementThis();
+  }
+
+  /**
+   * Gets the body for a number of messages at once.
+   */
+  async getMessagesBodies(offset, limit) {
+    throw new ImplementThis();
+  }
+
+  /**
+   * Gets the entire message including attachments
+   * for a number of messages at once.
+   * Gets the raw MIME source, if possible.
+   */
+  async getMessagesComplete(offset, limit) {
+    throw new ImplementThis();
+  }
+
+  /**
+   * Creates a new message and appends it to this folder.
+   * @returns {EMail}
+   */
+  async createMessage() {
+    throw new ImplementThis();
+    return new EMail(this);
+  }
+
+  /**
+   * Bulk delete multiple messages.
+   * @param messages {Array of EMail}
+   * @param toTrash {boolean}
+   *      true: Move to trash
+   *      false: Immedaite permanent delete
+   */
+  async deleteMessages(messages, toTrash) {
+    assert(messages.every(msg => msg.folder == this));
+    throw new ImplementThis();
+  }
+
+  /**
+   * Bulk copy multiple messages to another folder.
+   * @param messages {Array of EMail}
+   * @param targetFolder {MsgFolder}   Where to move them
+   */
+  async copyMessages(messages, targetFolder) {
+    assert(targetFolder instanceof MsgFolder);
+    assert(messages.every(msg => msg.folder == this));
+    throw new ImplementThis();
+  }
+
+  /**
+   * Bulk move multiple messages to another folder.
+   * @param messages {Array of EMail}
+   * @param targetFolder {MsgFolder}   Where to move them
+   */
+  async moveMessages(messages, targetFolder) {
+    assert(targetFolder instanceof MsgFolder);
+    assert(messages.every(msg => msg.folder == this));
+    throw new ImplementThis();
+  }
+
+  /**
+   * Bulk update the flags of multiple messages.
+   * @param messages {Array of EMail}
+   * @param flags {
+   *    read {boolean}
+   *    starred {boolean}
+   * }
+   *     If a property is undefined, it won't be changed.
+   *     if a property is a boolean, all messages will be changed to this value.
+   */
+  async updateMessagesMetadata(messages, flags) {
+    assert(messages.every(msg => msg.folder == this));
+    throw new ImplementThis();
+  }
+
+  /**
+   * Delete this folder from server and locally.
+   * Also deletes all messages in it.
+   *
+   * @param toTrash {boolean}   Just move it to Trash
+   */
+  async deleteFolder(toTrash) {
+    throw new ImplementThis();
+  }
+
+  /**
+   * Move this folder.
+   *
+   * @param newParent {MsgFolder}
+   */
+  async moveFolder(newParent) {
+    throw new ImplementThis();
+  }
+
+  /**
+   * Give a new user-visible name.
+   *
+   * Note: This may also implicitly change the fullPath.
+   *
+   * @param newName {string}
+   */
+  async renameFolder(newName) {
+    throw new ImplementThis();
+  }
+
+  async emptyTrash() {
+  }
 }

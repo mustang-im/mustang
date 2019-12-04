@@ -126,7 +126,7 @@ export default class IMAPAccount extends MailAccount {
         return;
       }
       for (let mailbox of mailboxes) {
-        let folder = IMAPFolder.fromLibJSON(mailbox, parent);
+        let folder = IMAPFolder.fromLib(mailbox, parent);
         iterateMailboxes(mailbox.children, folder);
         if (folder.name.toUpperCase() == "INBOX" &&
             this == parent) {

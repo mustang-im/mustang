@@ -31,7 +31,11 @@ export default class IMAPFolder extends MsgFolder {
     await openDatabase();
   }
 
-  static fromLibJSON(mailbox, parent) {
+  /**
+   * @param mailbox {Folder object from the emailjs IMAP library}
+   * @param parent {IMAPAccount or IMAPFolder}
+   */
+  static fromLib(mailbox, parent) {
     let account = parent instanceof IMAPAccount ? parent : parent.account;
 
     let folder = new IMAPFolder(
@@ -86,7 +90,7 @@ export default class IMAPFolder extends MsgFolder {
       let messages = await conn.listMessages(this.name, "1:" + this.account.peekMails, ["uid", "flags", "envelope", "body[]"]);
       messages.forEach(message => {
         //console.log(JSON.stringify(message, null, " ").substr(0, 1000));
-        var msg = new EMail();
+        var msg = new EMail(this);
         msg.imapUID = sanitize.integer(message.uid);
         msg.msgID = sanitize.nonemptystring(message.envelope["message-id"]);
         if (msg.msgID[0] == "<") {
