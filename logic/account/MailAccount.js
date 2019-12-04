@@ -85,14 +85,14 @@ export default class MailAccount extends Account {
    * -1 = not checked
    */
   get inbox() {
-    throw new implementThis();
+    throw new ImplementThis();
   }
 
   /**
-   * @param email {RFC822Mail}
+   * @param email {EMail}
    */
   markAsRead(email) {
-    //throw new NotReached("implement");
+    //throw new ImplementThis();
   }
 
   get peekMails() {

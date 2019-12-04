@@ -1,6 +1,6 @@
 import { assert } from "../../util/util";
 import MsgFolder from "../account/MsgFolder";
-import RFC822Mail from "../mail/MIME";
+import EMail from "../mail/EMail";
 import MailSQLDatabase, { getDatabase } from "../storage/mail-sql";
 
 
@@ -51,7 +51,7 @@ export default class SQLFolder extends MsgFolder {
   }
 
   /**
-   * @param msgs {Array of RFC822Mail}
+   * @param msgs {Array of EMail}
    */
   async addMessages(msgs) {
     try {
@@ -70,7 +70,7 @@ export default class SQLFolder extends MsgFolder {
   }
 
   /**
-   * @param msgs {Array of RFC822Mail}
+   * @param msgs {Array of EMail}
    */
   async removeMessages(msgs) {
     try {
@@ -102,7 +102,7 @@ export default class SQLFolder extends MsgFolder {
   }
 
   /**
-   * @param folders {Array of RFC822Mail}
+   * @param folders {Array of EMail}
    */
   async removeFolders(folders) {
     try {

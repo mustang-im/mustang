@@ -1,4 +1,4 @@
-import RFC822Mail from "../mail/MIME";
+import EMail from "../mail/EMail";
 import fs from "fs";
 import { promisify } from "util";
 fs.mkdirAsync = promisify(fs.mkdir);
@@ -32,11 +32,11 @@ export default class MailDatabase {
    * Saves an email to the database.
    *
    * @param msgFolder {MsgFolder}
-   * @param msg {RFC822Mail}
+   * @param msg {EMail}
    */
   async saveMessage(msgFolder, msg) {
     assert(msgFolder instanceof MsgFolder);
-    assert(msg instanceof RFC822Mail);
+    assert(msg instanceof EMail);
     throw new ImplementThis();
   }
 
@@ -44,7 +44,7 @@ export default class MailDatabase {
    * Returns all known emails in a folder.
    *
    * @param msgFolder {MsgFolder}
-   * @returns {Array of RFC822Mail}
+   * @returns {Array of EMail}
    */
   async listMessagesInFolder(msgFolder) {
     assert(msgFolder instanceof MsgFolder);

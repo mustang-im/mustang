@@ -1,6 +1,6 @@
 import MailDatabase from "./mail-database";
 import MsgFolder from "../account/MsgFolder";
-import RFC822Mail from "../mail/MIME";
+import EMail from "../mail/EMail";
 import sqlite from "sqlite";
 import SQL from "sql-template-strings";
 
@@ -58,11 +58,11 @@ export default class MailSQLDatabase extends MailDatabase {
    * Saves an email to the database.
    *
    * @param folder {MsgFolder}
-   * @param msg {RFC822Mail}
+   * @param msg {EMail}
    */
   async saveMessage(folder, msg) {
     assert(folder instanceof MsgFolder);
-    assert(msg instanceof RFC822Mail);
+    assert(msg instanceof EMail);
     let fromID;
     await this._db.run(SQL`INSERT OR IGNORE INTO person (emailAddress, name) VALUES (${msg.authorEmailAddress}, ${msg.authorRealname})`); // TODO update realname, if it was empty
     let fromResult = await this._db.get(SQL`SELECT id FROM person WHERE emailAddress = ${msg.authorEmailAddress}`);
@@ -84,11 +84,11 @@ export default class MailSQLDatabase extends MailDatabase {
    * Deletes an old email from the database.
    *
    * @param folder {MsgFolder}
-   * @param msg {RFC822Mail}
+   * @param msg {EMail}
    */
   async deleteMessage(folder, msg) {
     assert(folder instanceof MsgFolder);
-    assert(msg instanceof RFC822Mail);
+    assert(msg instanceof EMail);
     await this._db.run(SQL`DELETE FROM email WHERE msgID = ${msg.msgID} AND folder = (SELECT id FROM folder WHERE fullPath = ${folder.fullPath} AND accountID = ${folder.account.accountID} LIMIT 1)`);
     // TODO body
   }
@@ -97,13 +97,13 @@ export default class MailSQLDatabase extends MailDatabase {
    * Returns all known emails in a folder.
    *
    * @param folder {MsgFolder}
-   * @returns {Array of RFC822Mail}
+   * @returns {Array of EMail}
    */
   async listMessagesInFolder(folder) {
     assert(folder instanceof MsgFolder);
     let results = await this._db.all(SQL`SELECT msgID, subject, dateSent, dateReceived, fromT.emailAddress as fromEmailAddress, fromT.name as fromName, toT.emailAddress as toEmailAddress, toT.name as toName FROM email LEFT JOIN person AS fromT ON firstFrom = fromT.id LEFT JOIN person AS toT ON firstTo = toT.id WHERE folder = (SELECT id FROM folder WHERE fullPath = ${folder.fullPath} AND accountID = ${folder.account.accountID} LIMIT 1)`);
     return results.map(result => {
-      let email = new RFC822Mail();
+      let email = new EMail();
       email.msgID = result.msgID;
       email.subject = result.subject;
       email.date = new Date(result.dateSent);

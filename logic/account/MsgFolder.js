@@ -1,7 +1,7 @@
 import util from "../../util/util";
 util.importAll(util, global);
 import Account from "../account/Account";
-import RFC822Mail from "../mail/MIME";
+import EMail from "../mail/EMail";
 import { sanitize } from "../../util/sanitizeDatatypes";
 
 
@@ -41,7 +41,7 @@ export default class MsgFolder {
     this.fullPath = sanitize.nonemptystring(fullPath);
 
     /**
-     * {MapColl of MessageID -> RFC822Mail}
+     * {MapColl of MessageID -> EMail}
      */
     this._messages = new MapColl();
 
@@ -70,7 +70,7 @@ export default class MsgFolder {
    * call sync(). The collection here will then be
    * updated using the listeners.
    *
-   * {Collection of RFC822Mail}
+   * {Collection of EMail}
    */
   get messages() {
     return this._messages;

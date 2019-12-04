@@ -9,7 +9,7 @@ util.importAll(util, global);
 import MailAccount from "../account/MailAccount";
 import MsgFolder from "../account/MsgFolder";
 import SQLFolder from "../storage/SQLFolder";
-import RFC822Mail from "./MIME";
+import EMail from "../mail/EMail";
 import { openDatabase }  from "../storage/mail-sql";
 import { sanitize } from "../../util/sanitizeDatatypes";
 import { StringBundle } from "../../trex/stringbundle";
@@ -60,7 +60,7 @@ export class IMAPAccount extends MailAccount {
   /**
    * Some of the unchecked mails (headers) in all folders.
    * Count depends on |peekMails|.
-   * {Collection of RFC822Mail}
+   * {Collection of EMail}
    */
   get messages() {
     let coll = null;
@@ -251,7 +251,7 @@ export class IMAPFolder extends MsgFolder {
       let messages = await conn.listMessages(this.name, "1:" + this.account.peekMails, ["uid", "flags", "envelope", "body[]"]);
       messages.forEach(message => {
         //console.log(JSON.stringify(message, null, " ").substr(0, 1000));
-        var msg = new RFC822Mail();
+        var msg = new EMail();
         msg.imapUID = sanitize.integer(message.uid);
         msg.msgID = sanitize.nonemptystring(message.envelope["message-id"]);
         if (msg.msgID[0] == "<") {
