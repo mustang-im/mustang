@@ -126,10 +126,15 @@ export default class IMAPAccount extends MailAccount {
         return;
       }
       for (let mailbox of mailboxes) {
-        let folder = IMAPFolder.fromLib(mailbox, this, parentFolder);
-        iterateMailboxes(mailbox.children, folder);
-        if (folder.name.toUpperCase() == "INBOX" && !parentFolder) {
-          this._inbox = folder;
+        try {
+          let folder = IMAPFolder.fromLib(mailbox, this, parentFolder);
+          iterateMailboxes(mailbox.children, folder);
+          if (folder.name.toUpperCase() == "INBOX" && !parentFolder) {
+            this._inbox = folder;
+          }
+        } catch (e) {
+          console.error(e); // TODO
+          console.log(mailbox);
         }
       };
     }

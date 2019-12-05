@@ -66,6 +66,14 @@ function makeCallback(obj, func)
   }
 }
 
+/**
+ * Wait a bit and then continue.
+ * e.g. await wait(1000);
+ * @param ms {Integer}   Time to wait in milliseconds
+ */
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 /**
  * Runs the given function sometime later.
@@ -676,6 +684,7 @@ exports.Abortable = Abortable;
 exports.SuccessiveAbortable = SuccessiveAbortable;
 exports.PromiseAbortable = PromiseAbortable;
 exports.ControllerAbortable = ControllerAbortable;
+exports.wait = wait;
 exports.runAsync = runAsync;
 exports.runPeriodically = runPeriodically;
 exports.readURLasUTF8 = readURLasUTF8;

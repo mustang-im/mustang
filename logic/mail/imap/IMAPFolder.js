@@ -58,7 +58,7 @@ export default class IMAPFolder extends MsgFolder {
     if (mailbox.specialUse) {
       folder.specialUse = sanitize.nonemptystring(mailbox.specialUse).substr(1);
     }
-    folder.subscribed = sanitize.boolean(mailbox.subscribed);
+    folder.subscribed = sanitize.boolean(mailbox.subscribed || true);
 
     parent._folders.set(folder.fullPath, folder);
     if (account != parent) {
@@ -158,6 +158,7 @@ export default class IMAPFolder extends MsgFolder {
       try {
         let msg = IMAPMessage.fromLib(message, this);
         this._messages.set(msg.msgID, msg);
+        await wait(0);
       } catch (ex) {
         console.error(ex); // TODO
       }
@@ -281,7 +282,7 @@ export default class IMAPFolder extends MsgFolder {
         mod.set.push("\\Flagged");
       }
       console.log(mod);
-      conn.setFlags(this.fullPath, UIDs, mod);
+      await conn.setFlags(this.fullPath, UIDs, mod);
     }
 
     if (flags.read === false || flags.starred === false) {
@@ -295,7 +296,7 @@ export default class IMAPFolder extends MsgFolder {
         mod.remove.push("\\Flagged");
       }
       console.log(mod);
-      conn.setFlags(this.fullPath, UIDs, mod);
+      await conn.setFlags(this.fullPath, UIDs, mod);
     }
   }
 

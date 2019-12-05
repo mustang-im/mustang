@@ -253,6 +253,7 @@ function fetchConfigFromMozillaDB(domain, successCallback, errorCallback)
 {
   domain = sanitize.hostname(domain);
   var url = mozillaISPDBURL + domain;
+  //var url = "https://" + domain + "/.well-known/mail/config-v1.1.xml";
   var fetchFunc = async function() {
     var xmlText = await r2(url).text;
     var xmlDoc = new DOMParser().parseFromString(xmlText);
