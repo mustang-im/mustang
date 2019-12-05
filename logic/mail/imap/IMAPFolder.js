@@ -1,11 +1,6 @@
-/**
- * This module checks for new mail, using the IMAP standard protocol
- * and the emailjs.org JS library.
- */
-
 import ImapClient from "emailjs-imap-client";
 import IMAPAccount from "../../mail/imap/IMAPAccount";
-import EMail from "../../mail/EMail";
+import IMAPMessage from "../../mail/imap/IMAPMessage";
 import MsgFolder from "../../account/MsgFolder";
 import SQLFolder from "../../storage/SQLFolder";
 import { openDatabase }  from "../../storage/mail-sql";
@@ -15,9 +10,14 @@ import { sanitize } from "../../../util/sanitizeDatatypes";
 import { StringBundle } from "../../../trex/stringbundle";
 const gStringBundle = new StringBundle("mail");
 
+/**
+ * @see <https://github.com/emailjs/emailjs-imap-client>
+ * for API documentation of `ImapClient` = `conn`.
+ */
 export default class IMAPFolder extends MsgFolder {
-  constructor(name, fullPath, account) {
+  constructor(name, fullPath, account, parentFolder) {
     assert(account instanceof IMAPAccount);
+    assert(!parentFolder || parentFolder instanceof IMAPFolder);
     super(name, fullPath, account);
 
     this.cache = new SQLFolder(this);
@@ -25,6 +25,13 @@ export default class IMAPFolder extends MsgFolder {
     this._subfolders = this.cache.folders;
     this.cache.watch(this._messages, this._subfolders);
     this.cache.fetch().catch(console.error);
+
+    /**
+     * Server connection to use for this folder.
+     * Use await this._connection() to get it.
+     * {IMAPClient}
+     */
+    this._conn = null;
   }
 
   static async init() {
@@ -33,15 +40,19 @@ export default class IMAPFolder extends MsgFolder {
 
   /**
    * @param mailbox {Folder object from the emailjs IMAP library}
-   * @param parent {IMAPAccount or IMAPFolder}
+   * @param account {IMAPAccount}
+   * @param parent {IMAPFolder} if null: root
    */
-  static fromLib(mailbox, parent) {
-    let account = parent instanceof IMAPAccount ? parent : parent.account;
+  static fromLib(mailbox, account, parentFolder) {
+    assert(account instanceof IMAPAccount);
+    assert(!parentFolder || parentFolder instanceof IMAPFolder);
+    let parent = parentFolder || account;
 
     let folder = new IMAPFolder(
         sanitize.label(sanitize.nonemptystring(mailbox.name)),
         sanitize.label(sanitize.nonemptystring(mailbox.path)),
-        account);
+        account,
+        parentFolder);
     folder.flags = mailbox.flags.map(flag => sanitize.nonemptystring(flag).substr(1));
     folder.isNoSelect = folder.flags.indexOf("Noselect") != -1;
     if (mailbox.specialUse) {
@@ -51,22 +62,29 @@ export default class IMAPFolder extends MsgFolder {
 
     parent._folders.set(folder.fullPath, folder);
     if (account != parent) {
-      account._folders.set(folder.fullPath, folder);
+      account._folders.set(folder.fullPath, folder); // TODO flat hierarchy good idea?
     }
     return folder;
   }
 
+  async _connection() {
+    if (!this._conn) {
+      this._conn = await this.account._connection;
+      assert(this._conn instanceof ImapClient);
+    }
+    return this._conn;
+  }
+
   async fetch() {
     try {
-    let conn = await this.account._connection;
-    await this._openUsingConnection(conn);
+    await this._open();
     } catch (ex) { console.error(ex); throw ex; }
   }
 
   async fetchWithDedicatedConnection() {
     try {
-    let conn = await this.account._newConnection();
-    await this._openUsingConnection(conn);
+    await this.account._newConnection();
+    await this._open();
     } catch (ex) { console.error(ex); throw ex; }
   }
 
@@ -75,8 +93,8 @@ export default class IMAPFolder extends MsgFolder {
    *    If you have an open connection that you want to re-use, pass this.
    *    Required.
    */
-  async _openUsingConnection(conn) {
-    assert(conn instanceof ImapClient);
+  async _open() {
+    let conn = await this._connection();
     conn.onupdate = (path, type, value) => {
       if (type == "exists") {
         assert(path == this.fullPath, "Wrong mailbox selected");
@@ -85,32 +103,210 @@ export default class IMAPFolder extends MsgFolder {
     };
     let mailbox = await conn.selectMailbox(this.fullPath);
     this.messageCount = sanitize.integer(mailbox.exists);
-    if (this.account.peekMails) {
-      // TODO keep existing mails, get all unknown. For now, just peek the first n = |peekMails|.
-      let messages = await conn.listMessages(this.name, "1:" + this.account.peekMails, ["uid", "flags", "envelope", "body[]"]);
-      messages.forEach(message => {
-        //console.log(JSON.stringify(message, null, " ").substr(0, 1000));
-        var msg = new EMail(this);
-        msg.imapUID = sanitize.integer(message.uid);
-        msg.msgID = sanitize.nonemptystring(message.envelope["message-id"]);
-        if (msg.msgID[0] == "<") {
-          msg.msgID = msg.msgID.substring(1, msg.msgID.length - 1);
-        }
-        msg.subject = sanitize.label(message.envelope.subject);
-        msg.date = new Date(message.envelope.date);
-        var firstFrom = message.envelope.from[0];
-        msg.authorEmailAddress = sanitize.emailAddress(firstFrom.address);
-        msg.authorRealname = sanitize.label(firstFrom.name);
-        msg.authorFull = msg.authorRealname
-            ? msg.authorRealname + " <" + msg.authorEmailAddress + ">"
-            : msg.authorEmailAddress;
-        var firstTo = message.envelope.to[0];
-        msg.recipientEmailAddress = sanitize.emailAddress(firstTo.address);
-        msg.recipientRealname = sanitize.label(firstTo.name);
-        msg.flags = message.flags.map(flag => sanitize.nonemptystring(flag).substr(1));
-        msg.seen = msg.flags.indexOf("Seen") != -1;
-        this._messages.set(msg.msgID, msg);
-      });
+
+    this.getMessagesMetadata();
+  }
+
+  /**
+   * Gets selected headers for a number of messages at once.
+   *
+   * Results appear in this.messages.
+   *
+   * @param offset {Integer}   Skip `offset` messages at the start
+   *     if null: from start
+   * @param limit {Integer}   Read maximal `limit` messages
+   *     if null: to end
+   */
+  async getMessagesMetadata(offset, limit) {
+    await this._getMessages(this._offsetLimit(offset, limit), ["uid", "flags", "envelope"]);
+  }
+
+  /**
+   * Gets the body for a number of messages at once.
+   */
+  async getMessagesBodies(offset, limit) {
+    await this._getMessages(this._offsetLimit(offset, limit), ["uid", "flags", "envelope", "body[]"]);
+  }
+
+  /**
+   * Gets the entire message including attachments
+   * for a number of messages at once.
+   * Gets the raw MIME source, if possible.
+   */
+  async getMessagesComplete(offset, limit) {
+    throw new ImplementThis();
+  }
+
+  _offsetLimit(offset, limit) {
+    assert(!offset || typeof(offset) == "number");
+    assert(!limit || typeof(limit) == "number");
+    if (!offset) {
+      offset = 1;
     }
+    return offset + ":" + (limit ? String(offset + limit) : "*");
+  }
+
+  /**
+   * @param queryProperties {string}   which results you need, e.g. ["uid", "envelope"]
+   * @param messageList {string}   UID list, e.g. "1,4:10,45"
+   */
+  async _getMessages(messageList, queryProperties) {
+    let conn = await this._connection();
+    let messages = await conn.listMessages(
+        this.fullPath, messageList, queryProperties, { byUid: true });
+    for (let message of messages) {
+      try {
+        let msg = IMAPMessage.fromLib(message, this);
+        this._messages.set(msg.msgID, msg);
+      } catch (ex) {
+        console.error(ex); // TODO
+      }
+    }
+  }
+
+  /**
+   * Creates a new message and appends it to this folder.
+   * @returns {EMail}
+   */
+  async createMessage() {
+    return new IMAPMessage(this);
+  }
+
+  /**
+   * Returns a UID list for the IMAP server.
+   * Example:
+   * - "4" = a single message
+   * - "1,3,5" = selected messages
+   * - "1,3:10,45" = selected messages (not yet implemented)
+   * - "1:*" = all messages (not needed here)
+   * @returns {string}
+   */
+  _UIDs(messages) {
+    // Later: Could merge consecutive UIDs to "1,3:10,45"
+    return messages.map(msg => msg.UID).join(",");
+  }
+
+  /**
+   * Bulk delete multiple messages.
+   * @param messages {Array of EMail}
+   * @param toTrash {boolean}
+   *      true: Move to trash
+   *      false: Immedaite permanent delete
+   */
+  async deleteMessages(messages, toTrash) {
+    assert(messages.every(msg => msg.folder == this));
+    let conn = await this._connection();
+    // Delete from server
+    await conn.deleteMessages(this.fullPath, UIDs);
+
+    // Delete in our lists
+    // This will also delete form the DB
+    this._messages.removeAll(messages);
+  }
+
+  /**
+   * Bulk copy multiple messages to another folder.
+   * @param messages {Array of EMail}
+   * @param targetFolder {MsgFolder}   Where to move them
+   */
+  async copyMessages(messages, targetFolder) {
+    assert(targetFolder instanceof MsgFolder);
+    assert(messages.every(msg => msg.folder == this));
+    let conn = await this._connection();
+    // Delete from server
+    await conn.copyMessages(this.fullPath, UIDs, { byUid: true });
+
+    // Delete in our lists
+    // This will also delete form the DB
+    this._messages.removeAll(messages);
+
+    // TODO Get new UIDs
+    for (let message in messages) {
+      message.folder = targetFolder;
+      message.UID = null;
+    }
+    this.targetFolder.messages.addAll(messages);
+  }
+
+  /**
+   * Bulk move multiple messages to another folder.
+   * @param messages {Array of EMail}
+   * @param targetFolder {MsgFolder}   Where to move them
+   */
+  async moveMessages(messages, targetFolder) {
+    assert(targetFolder instanceof MsgFolder);
+    assert(messages.every(msg => msg.folder == this));
+    let conn = await this._connection();
+    // Delete from server
+    await conn.copyMessages(this.fullPath, UIDs, { byUid: true });
+
+    // TODO Get new UIDs
+    for (let message in messages) {
+      message.folder = targetFolder;
+      message.UID = null;
+    }
+    this.targetFolder.messages.addAll(messages);
+  }
+
+  /**
+   * Bulk update the flags of multiple messages.
+   * @param messages {Array of EMail}
+   * @param flags {
+   *    read {boolean}
+   *    starred {boolean}
+   * }
+   *     If a property is undefined, it won't be changed.
+   *     if a property is a boolean, all messages will be changed to this value.
+   */
+  async updateMessagesMetadata(messages, flags) {
+    assert(messages.every(msg => msg.folder == this));
+    let conn = await this._connection();
+    throw new ImplementThis();
+  }
+
+  /**
+   * Delete this folder from server and locally.
+   * Also deletes all messages in it.
+   *
+   * @param toTrash {boolean}   Just move it to Trash
+   */
+  async deleteFolder(toTrash) {
+    let conn = await this._connection();
+
+    // Delete on server
+    await conn.deleteMailbox(this.fullPath);
+
+    // Delete in our lists
+    // This will also delete from the DB
+    if (this.parentFolder) {
+      this.parentFolder.folders.remove(this);
+    }
+    this.account.folders.remove(this);
+  }
+
+  /**
+   * Move this folder.
+   *
+   * @param newParent {MsgFolder}
+   */
+  async moveFolder(newParent) {
+    let conn = await this._connection();
+    throw new ImplementThis();
+  }
+
+  /**
+   * Give a new user-visible name.
+   *
+   * Note: This may also implicitly change the fullPath.
+   *
+   * @param newName {string}
+   */
+  async renameFolder(newName) {
+    let conn = await this._connection();
+    throw new ImplementThis();
+  }
+
+  async emptyTrash() {
+    throw new ImplementThis();
   }
 }

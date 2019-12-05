@@ -23,6 +23,17 @@ export default class EMail {
     // Message-ID header
     this.msgID = null;
 
+    // In-Reply-To header
+    this.parentMsgID = null;
+
+    /**
+     * IMAP UID
+     * Unique stable ID of the message within a folder.
+     * Set by IMAP server.
+     * {Integer}
+     */
+    this.UID = null;
+
     // Title of the email, set by author
     this.subject = null;
 
@@ -51,7 +62,7 @@ export default class EMail {
 
     this.contentType = null;
 
-    this.body = null;
+    this._body = null;
 
 
     // mutable meta data
@@ -59,6 +70,10 @@ export default class EMail {
     this.isRead = false;
 
     this.isStarred = false;
+  }
+
+  async body() {
+    return this._body;
   }
 
   /**

@@ -6,11 +6,13 @@ TODO Port
 * UTF8 Converter in MIME.js
 * Shutdown observer in imap.js
 
-Components
-* Cache
+DONE
 * Database
+
+Components
 * IMAP
 * Mail content
+* Cache
 * React
 * Msg window
 * List
@@ -24,3 +26,18 @@ Components
 * Composer
 * HTML<->text conversion
 * Theme
+
+Message and folder actions
+* Collection add/remove
+* Listeners
+* Progress
+* Cancel
+* Undo
+* Postpone shutdown until finished
+* Causes:
+  * load from server
+  * load from disk
+  * user
+  * filter
+  * addon
+  * undo

@@ -22,10 +22,13 @@ import { sanitize } from "../../util/sanitizeDatatypes";
  *     or backslash or something else.
  *     Not including the account.
  * @param account {Account}
+ * @param parentFolder {MsgFolder}
+ *     if null: root folder
  */
 export default class MsgFolder {
-  constructor(name, fullPath, account) {
+  constructor(name, fullPath, account, parentFolder) {
     assert(account instanceof Account);
+    assert(!parentFolder || parentFolder instanceof MsgFolder);
     this.account = account;
 
     /**
@@ -39,6 +42,12 @@ export default class MsgFolder {
      * {String}
      */
     this.fullPath = sanitize.nonemptystring(fullPath);
+
+    /**
+      * if null: root folder
+      * {MsgFolder}
+      */
+    this.parentFolder = parentFolder;
 
     /**
      * {MapColl of MessageID -> EMail}
@@ -207,5 +216,6 @@ export default class MsgFolder {
   }
 
   async emptyTrash() {
+    throw new ImplementThis();
   }
 }

@@ -81,7 +81,7 @@ export default class IMAPAccount extends MailAccount {
     await IMAPFolder.init();
     let conn = await this._newConnection();
     if (this._folders.length <= 1 || !this._inbox) {
-      await this.listFolders();
+      await this.findFolders();
     }
     //notifyGlobalObservers("logged-in", { account: self });
     } catch (ex) { console.error(ex); throw ex; }
@@ -117,24 +117,23 @@ export default class IMAPAccount extends MailAccount {
     return this._connections.first;
   }
 
-  async listFolders() {
+  async findFolders() {
     try {
     let rootMailboxes = await this._connection.listMailboxes();
     assert(rootMailboxes.root);
-    let iterateMailboxes = (mailboxes, parent) => {
+    let iterateMailboxes = (mailboxes, parentFolder) => {
       if (!mailboxes || !mailboxes.length) {
         return;
       }
       for (let mailbox of mailboxes) {
-        let folder = IMAPFolder.fromLib(mailbox, parent);
+        let folder = IMAPFolder.fromLib(mailbox, this, parentFolder);
         iterateMailboxes(mailbox.children, folder);
-        if (folder.name.toUpperCase() == "INBOX" &&
-            this == parent) {
+        if (folder.name.toUpperCase() == "INBOX" && !parentFolder) {
           this._inbox = folder;
         }
       };
     }
-    iterateMailboxes(rootMailboxes.children, this);
+    iterateMailboxes(rootMailboxes.children, null);
     assert(this._inbox, "No INBOX found");
     } catch (ex) { console.error(ex); throw ex; }
   }

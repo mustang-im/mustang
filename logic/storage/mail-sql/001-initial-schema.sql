@@ -1,14 +1,16 @@
 -- Up
 CREATE TABLE email (
   folder INTEGER not null,
+  UID INTEGER default null,
   msgID TEXT not null,
   -- metadata
+  parentMsgID TEXT default null,
+  subject TEXT not null,
   firstFrom INTEGER not null,
   firstTo INTEGER not null,
   meTo INTEGER default null,
-  dateSent TEXT not null,
-  dateReceived TEXT not null,
-  subject TEXT not null,
+  dateSent INTEGER not null,
+  dateReceived INTEGER not null,
   PRIMARY KEY (folder, msgID),
   FOREIGN KEY (folder)
     REFERENCES folder (id)
