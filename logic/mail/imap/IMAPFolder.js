@@ -196,6 +196,8 @@ export default class IMAPFolder extends MsgFolder {
   async deleteMessages(messages, toTrash) {
     assert(messages.every(msg => msg.folder == this));
     let conn = await this._connection();
+    let UIDs = this._UIDs(messages);
+
     // Delete from server
     await conn.deleteMessages(this.fullPath, UIDs);
 
@@ -213,6 +215,8 @@ export default class IMAPFolder extends MsgFolder {
     assert(targetFolder instanceof MsgFolder);
     assert(messages.every(msg => msg.folder == this));
     let conn = await this._connection();
+    let UIDs = this._UIDs(messages);
+
     // Delete from server
     await conn.copyMessages(this.fullPath, UIDs, { byUid: true });
 
@@ -237,6 +241,8 @@ export default class IMAPFolder extends MsgFolder {
     assert(targetFolder instanceof MsgFolder);
     assert(messages.every(msg => msg.folder == this));
     let conn = await this._connection();
+    let UIDs = this._UIDs(messages);
+
     // Delete from server
     await conn.copyMessages(this.fullPath, UIDs, { byUid: true });
 
@@ -256,12 +262,41 @@ export default class IMAPFolder extends MsgFolder {
    *    starred {boolean}
    * }
    *     If a property is undefined, it won't be changed.
-   *     if a property is a boolean, all messages will be changed to this value.
+   *     If a property is a boolean, all messages will be changed to this value.
    */
   async updateMessagesMetadata(messages, flags) {
     assert(messages.every(msg => msg.folder == this));
     let conn = await this._connection();
-    throw new ImplementThis();
+    let UIDs = this._UIDs(messages);+
+    console.log(flags);
+
+    if (flags.read === true || flags.starred === true) {
+      let mod = {
+        set: [],
+      };
+      if (flags.read === true) {
+        mod.set.push("\\Seen");
+      }
+      if (flags.starred === true) {
+        mod.set.push("\\Flagged");
+      }
+      console.log(mod);
+      conn.setFlags(this.fullPath, UIDs, mod);
+    }
+
+    if (flags.read === false || flags.starred === false) {
+      let mod = {
+        remove: [],
+      };
+      if (flags.read === false) {
+        mod.remove.push("\\Seen");
+      }
+      if (flags.starred === false) {
+        mod.remove.push("\\Flagged");
+      }
+      console.log(mod);
+      conn.setFlags(this.fullPath, UIDs, mod);
+    }
   }
 
   /**
