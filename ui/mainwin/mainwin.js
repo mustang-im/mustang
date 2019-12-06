@@ -37,8 +37,9 @@ async function start() {
       if (await account.haveStoredLogin()) {
         try {
           await account.login();
-          await account.inbox.fetch();
+          //await account.inbox.fetch();
         } catch (e) { pollError(e); }
+        break; // TODO
       }
     }
   } catch (e) { showError(e); }
