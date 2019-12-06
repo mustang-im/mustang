@@ -47,72 +47,65 @@
  * the expected datatype in JS types. If the value is not as expected,
  * they throw exceptions.
  */
-var sanitize =
-{
-  integer : function(unchecked)
-  {
-    if (typeof(unchecked) == "number")
+class Sanitize {
+  integer(unchecked) {
+    if (typeof(unchecked) == "number") {
       return unchecked;
-
+    }
     var r = parseInt(unchecked);
-    if (isNaN(r))
+    if (isNaN(r)) {
       throw new MalformedException("no_number.error", unchecked);
-
+    }
     return r;
-  },
+  }
 
-  integerRange : function(unchecked, min, max)
-  {
+  integerRange(unchecked, min, max) {
     var i = this.integer(unchecked);
-    if (i < min)
+    if (i < min) {
       throw new MalformedException("number_too_small.error", unchecked);
-
-    if (i > max)
+    }
+    if (i > max) {
       throw new MalformedException("number_too_large.error", unchecked);
-
+    }
     return i;
-  },
+  }
 
-  boolean : function(unchecked)
-  {
-    if (typeof(unchecked) == "boolean")
+  boolean(unchecked) {
+    if (typeof(unchecked) == "boolean") {
       return unchecked;
-
-    if (unchecked == "true")
+    }
+    if (unchecked == "true") {
       return true;
-
-    if (unchecked == "false")
+    }
+    if (unchecked == "false") {
       return false;
-
+    }
     throw new MalformedException("boolean.error", unchecked);
-  },
+  }
 
-  string : function(unchecked)
-  {
+  string(unchecked) {
     return String(unchecked);
-  },
+  }
 
-  nonemptystring : function(unchecked)
-  {
-    if (!unchecked)
+  nonemptystring(unchecked) {
+    if (!unchecked) {
       throw new MalformedException("string_empty.error", unchecked);
-
+    }
     return this.string(unchecked);
-  },
+  }
 
   /**
    * Allow only letters, numbers, "-" and "_".
    *
    * Empty strings not allowed (good idea?).
    */
-  alphanumdash : function(unchecked)
-  {
+  alphanumdash(unchecked) {
     var str = this.nonemptystring(unchecked);
-    if (!/^[a-zA-Z0-9\-\_]*$/.test(str))
+    if (!/^[a-zA-Z0-9\-\_]*$/.test(str)) {
       throw new MalformedException("alphanumdash.error", unchecked);
-
+    }
     return str;
-  },
+  }
 
   /**
    * DNS hostnames like foo.bar.example.com
@@ -122,35 +115,31 @@ var sanitize =
    * HACK: "%" is allowed, because we allow placeholders in hostnames in the
    * config file.
    */
-  hostname : function(unchecked)
-  {
+  hostname(unchecked) {
     var str = this.nonemptystring(unchecked);
-    if (!/^[a-zA-Z0-9\-\.%]*$/.test(unchecked))
+    if (!/^[a-zA-Z0-9\-\.%]*$/.test(unchecked)) {
       throw new MalformedException("hostname_syntax.error", unchecked);
-
+    }
     return str.toLowerCase();
-  },
+  }
 
   /**
    * A non-chrome URL that's safe to request.
    */
-  url : function (unchecked)
-  {
+  url(unchecked) {
     var str =  this.string(unchecked);
     if (str.substr(0, 5) != "http:" && str.substr(0, 6) != "https:" &&
-        str.substr(0, 4) != "ftp:")
+        str.substr(0, 4) != "ftp:") {
       throw new MalformedException("url_scheme.error", unchecked);
-
+    }
     //TODO security-check URL
-
     return str;
-  },
+  }
 
   /**
    * Email address foo@bar.com
    */
-  emailAddress : function(unchecked)
-  {
+  emailAddress(unchecked) {
     var str = this.nonemptystring(unchecked);
     var sp = str.split("@");
     if (sp.length != 2) {
@@ -159,15 +148,14 @@ var sanitize =
     var user = this.nonemptystring(sp[0]); // TODO check further?
     var domain = this.hostname(sp[1]);
     return str.toLowerCase();
-  },
+  }
 
   /**
    * A value which should be shown to the user in the UI as label
    */
-  label : function(unchecked)
-  {
+  label(unchecked) {
     return this.string(unchecked);
-  },
+  }
 
   /**
    * Allows only certain values as input, otherwise throw.
@@ -180,19 +168,17 @@ var sanitize =
    *       no |defaultValue| is passed.
    * @throws MalformedException
    */
-  enum : function(unchecked, allowedValues, defaultValue)
-  {
-    var checkedValue = allowedValues.filter(function(allowedValue) {
-      return allowedValue == unchecked;
-    })[0];
+  enum(unchecked, allowedValues, defaultValue) {
+    var checkedValue = allowedValues.find(allowedValue => allowedValue == unchecked);
     if (checkedValue) {
       return checkedValue;
     }
     // value is bad
-    if (typeof(defaultValue) == "undefined")
+    if (typeof(defaultValue) == "undefined") {
       throw new MalformedException("allowed_value.error", unchecked);
+    }
     return defaultValue;
-  },
+  }
 
   /**
    * Like enum, allows only certain (string) values as input, but allows the
@@ -211,19 +197,19 @@ var sanitize =
    *       no |defaultValue| is passed.
    * @throws MalformedException
    */
-  translate : function(unchecked, mapping, defaultValue)
-  {
-    for (var inputValue in mapping)
-    {
-      if (inputValue == unchecked)
+  translate(unchecked, mapping, defaultValue) {
+    for (let inputValue in mapping) {
+      if (inputValue == unchecked) {
         return mapping[inputValue];
+      }
     }
     // value is bad
-    if (typeof(defaultValue) == "undefined")
+    if (typeof(defaultValue) == "undefined") {
       throw new MalformedException("allowed_value.error", unchecked);
+    }
     return defaultValue;
   }
-};
+}
 
 class MalformedException {
   constructor(msgID, uncheckedBadValue) {
@@ -249,4 +235,4 @@ class MalformedException {
   }
 }
 
-exports.sanitize = sanitize;
+exports.sanitize = new Sanitize();
