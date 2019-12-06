@@ -21,26 +21,26 @@
  * @param brand {String} brand to use for substitution in strings
  */
 function translateElements(container, stringbundle, placeholders) {
-  [].forEach.call(container.querySelectorAll("*[translate]"), function(el) {
-    var label = stringbundle.get(el.getAttribute("translate"));
-    for (var placeholder in placeholders) {
+  for (let el of [...container.querySelectorAll("*[translate]")]) {
+    let label = stringbundle.get(el.getAttribute("translate"));
+    for (let placeholder in placeholders) {
       label = label.replace("%" + placeholder + "%", placeholders[placeholder]);
     }
     el.appendChild(document.createTextNode(label));
-  });
+  }
 
-  [].forEach.call(container.querySelectorAll("*[translate-attr]"), function(el) {
-    el.getAttribute("translate-attr").split(",").forEach(function(attrNameValue) {
+  for (let el of [...container.querySelectorAll("*[translate-attr]")]) {
+    for (let attrNameValue of el.getAttribute("translate-attr").split(",")) {
       var attrSplit = attrNameValue.split("=");
       var attrName = attrSplit[0].trim();
       var attrValue = attrSplit[1].trim();
       var label = stringbundle.get(attrValue);
-      for (var placeholder in placeholders) {
+      for (let placeholder in placeholders) {
         label = label.replace("%" + placeholder + "%", placeholders[placeholder]);
       }
       el.setAttribute(attrName, label);
-    });
-  });
+    }
+  }
 }
 
 
@@ -59,12 +59,13 @@ function pluralform(count, str) {
   var sp = str.split(";");
   StringBundleUtils.assert(sp.length == 3, "pluralform: expected 3 parts in str: " + str);
   var index;
-  if (count == 0)
+  if (count == 0) {
     index = 0;
-  else if (count == 1)
+  } else if (count == 1) {
     index = 1;
-  else
+  } else {
     index = 2;
+  }
   return sp[index].replace("%COUNT%", count);
 }
 
