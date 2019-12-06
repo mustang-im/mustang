@@ -7,8 +7,6 @@ import { openDatabase }  from "../../storage/mail-sql";
 import util from "../../../util/util";
 util.importAll(util, global);
 import { sanitize } from "../../../util/sanitizeDatatypes";
-import { StringBundle } from "../../../trex/stringbundle";
-const gStringBundle = new StringBundle("mail");
 
 /**
  * @see <https://github.com/emailjs/emailjs-imap-client>

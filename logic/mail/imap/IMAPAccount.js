@@ -11,8 +11,6 @@ import EMail from "../../mail/EMail";
 import util from "../../../util/util";
 util.importAll(util, global);
 import { sanitize } from "../../../util/sanitizeDatatypes";
-import { StringBundle } from "../../../trex/stringbundle";
-const gStringBundle = new StringBundle("mail");
 
 /**
  * Holds and manages login state of one IMAP account

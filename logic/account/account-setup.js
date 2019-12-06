@@ -12,8 +12,9 @@ util.importAll(util, global);
 import { sanitize } from "../../util/sanitizeDatatypes";
 import preferences from "../../util/preferences";
 const ourPref = preferences.myPrefs;
-import { StringBundle } from "../../trex/stringbundle";
+import { StringBundle } from "../../util/stringbundle";
 const gStringBundle = new StringBundle("mail");
+const gACStringBundle = new StringBundle("email/accountCreationModel");
 import r2 from "r2";
 import { DOMParser } from "xmldom";
 
@@ -291,8 +292,7 @@ function readFromXML(clientConfigXML)
       !("emailProvider" in clientConfigXML.clientConfig))
   {
     console.log("client config xml = " + JSON.stringify(clientConfigXML));
-    var stringBundle = new StringBundle("email/accountCreationModel");
-    throw stringBundle.get("no_emailProvider.error");
+    throw gACStringBundle.get("no_emailProvider.error");
   }
   var xml = clientConfigXML.clientConfig.emailProvider;
 
@@ -405,8 +405,7 @@ function readFromXML(clientConfigXML)
     try {
       if (oX["@type"] != "smtp")
       {
-        var stringBundle = new StringBundle("email/accountCreationModel");
-        throw stringBundle.get("outgoing_not_smtp.error");
+        throw gACStringBundle.get("outgoing_not_smtp.error");
       }
       oO.hostname = sanitize.hostname(oX.hostname);
       oO.port = sanitize.integerRange(oX.port, 1, 65535);

@@ -5,7 +5,7 @@ util.importAll(util, global);
 import { sanitize } from "../../util/sanitizeDatatypes";
 import preferences from "../../util/preferences";
 const ourPref = preferences.myPrefs;
-import { StringBundle } from "../../trex/stringbundle";
+import { StringBundle } from "../../util/stringbundle";
 const gStringBundle = new StringBundle("mail");
 
 

@@ -215,7 +215,7 @@ class MalformedException {
   constructor(msgID, uncheckedBadValue) {
     var msg = msgID;
     try {
-      var gSanitizeBundle = new (require("../trex/stringbundle.js")).StringBundle("util");
+      let gSanitizeBundle = new (require("./stringbundle.js")).StringBundle("util");
       msg = gSanitizeBundle.get(msgID);
     } catch (ex) {}
     console.log(msg += " (bad value: " + new String(uncheckedBadValue) + ")");
