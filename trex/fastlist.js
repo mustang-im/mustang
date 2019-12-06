@@ -13,102 +13,98 @@ From what I understand, that is the basic principle that XUL <tree>s also work w
 The coolest thing is that we're no longer limited to a single line per row, and we can have rich HTML content in each cell. XUL <tree>s can do neither, and that's a major limitation. We've always wanted to make the message list prettier, but we couldn't. Now we can.
  */
 
-function Fastlist(element) {
-  assert(element && element.localName == "fastlist", "need <fastlist> element");
-  this._listE = element;
-  element.widget = this;
-  this._selectedEntries = new ArrayColl();
-  this._entries = new ArrayColl(); // just for init. will be overwritten below.
-  this._rowElements = [];
-  this._rowTemplate = this._listE.querySelector("row");
-  assert(this._rowTemplate, "Fastlist needs a row template");
-  //this._rowHeight = this._getHeight(this._rowTemplate); // TODO consider vertical padding
-  this._rowHeight = parseInt(this._rowTemplate.getAttribute("rowheight")); // TODO automatic sizing
-  this._rowTemplate.removeAttribute("rowheight");
-  removeElement(this._rowTemplate);
-  var tableE = cE(this._listE, "table", null, { cellspacing: 0 });
-  var headerRowE = this._listE.querySelector("header");
-  removeElement(headerRowE );
-  var theadE = cE(tableE, "thead");
-  theadE.appendChild(headerRowE);
-  this._contentE = cE(tableE, "tbody", "content", { flex : 1 });
+class Fastlist {
+  constructor(element) {
+    assert(element && element.localName == "fastlist", "need <fastlist> element");
+    element.widget = this;
 
-  this._scrollbarE = cE(this._listE, "div", "scrollbar");
-  this._scrollbarContentE = cE(this._scrollbarE, "div", "scrollbar-content");
-  this._scrollbarE.addEventListener("scroll", event => this._onScrollBar(event), false);
-  this._listE.addEventListener("wheel", event => this._onScrollWheel(event), false);
-  this._listE.addEventListener("click", event => this._onClick(event), false);
+    /**
+     * {<fastlist> DOMElement}
+     */
+    this._listE = element;
 
-  /*window.addEventListener("throttledResize", () => { // throttledResize from trex.js
-    this._updateSize();
-    this._refreshContent();
-  });*/
+    this._listE.addEventListener("wheel", event => this._onScrollWheel(event), false);
+    this._listE.addEventListener("click", event => this._onClick(event), false);
 
-  this.showCollection(new ArrayColl());
-}
-Fastlist.prototype = {
-  /**
-   * {<fastlist> DOMElement}
-   */
-  _listE : null,
+    var tableE = cE(this._listE, "table", null, { cellspacing: 0 });
+    var headerRowE = this._listE.querySelector("header");
+    removeElement(headerRowE );
+    var theadE = cE(tableE, "thead");
+    theadE.appendChild(headerRowE);
 
-  /**
-   * Where the actual rows are added.
-   * {<vbox> DOMElement}
-   */
-  _contentE : null,
+    /**
+     * Where the actual rows are added.
+     * {<vbox> DOMElement}
+     */
+    this._contentE = cE(tableE, "tbody", "content", { flex : 1 });
 
-  /**
-   * A dummy element that displays a scrollbar.
-   * {<vbox> DOMElement}
-   */
-  _scrollbarE : null,
+    /**
+     * A dummy element that displays a scrollbar.
+     * {<vbox> DOMElement}
+     */
+    this._scrollbarE = cE(this._listE, "div", "scrollbar");
 
-  /**
-   * The dummy content of the scrollbar, to set the right height.
-   * {<vbox> DOMElement}
-   */
-  _scrollbarContentE : null,
+    this._scrollbarE.addEventListener("scroll", event => this._onScrollBar(event), false);
 
-  /**
-   * Original, empty template for a row.
-   * Not visible.
-   * {<row> DOMElement}
-   */
-  _rowTemplate : null,
+    /**
+     * The dummy content of the scrollbar, to set the right height.
+     * {<vbox> DOMElement}
+     */
+    this._scrollbarContentE = cE(this._scrollbarE, "div", "scrollbar-content");
 
-  /**
-   * Currently displayed rows.
-   * {Array of <row> DOMElement}
-   */
-  _rowElements : null,
+    /**
+     * Original, empty template for a row.
+     * Not visible.
+     * {<row> DOMElement}
+     */
+    this._rowTemplate = this._listE.querySelector("row");
 
-  /**
-   * Height of the DOM elements for a single row
-   * {integer} in px
-   */
-  _rowHeight : null,
+    assert(this._rowTemplate, "Fastlist needs a row template");
 
-  /**
-   * All items shown in the list.
-   * {Collection of {Object}}
-   */
-  _entries : null,
+    /**
+     * Currently displayed rows.
+     * {Array of <row> DOMElement}
+     */
+    this._rowElements = [];
 
-  /**
-   * Items currently selected by the user.
-   * @See selectedCollection()
-   * {Collection of {Object}}
-   */
-  _selectedEntries : null,
+    /**
+      * Height of the DOM elements for a single row
+      * {integer} in px
+      */
+    this._rowHeight = parseInt(this._rowTemplate.getAttribute("rowheight")); // TODO automatic sizing
+    //this._rowHeight = this._getHeight(this._rowTemplate); // TODO consider vertical padding
 
-  /**
-   * First visible row
-   * {integer} index position in this._entries
-   */
-  _scrollPos : 0,
+    this._rowTemplate.removeAttribute("rowheight");
+    removeElement(this._rowTemplate);
 
-  _observer : null,
+    /**
+     * All items shown in the list.
+     * {Collection of {Object}}
+     */
+    this._entries = new ArrayColl(); // just for init. will be overwritten below.
+
+    /**
+     * Items currently selected by the user.
+     * @See selectedCollection()
+     * {Collection of {Object}}
+     */
+    this._selectedEntries = new ArrayColl();
+
+    /**
+     * First visible row
+     * {integer} index position in this._entries
+     */
+    this._scrollPos = 0;
+
+    this._observer = null;
+
+    /*window.addEventListener("throttledResize", () => { // throttledResize from trex.js
+      this._updateSize();
+      this._refreshContent();
+    });*/
+
+    this.showCollection(new ArrayColl());
+  }
 
   /**
    * The items that should be shown in the list.
@@ -118,7 +114,7 @@ Fastlist.prototype = {
    *
    * @param coll {Collection} @see collection.js
    */
-  showCollection : function(coll) {
+  showCollection(coll) {
     if (this._observer) {
       coll.unregisterObserver(this._observer);
     }
@@ -139,7 +135,7 @@ Fastlist.prototype = {
       },
     };
     coll.registerObserver(this._observer);
-  },
+  }
 
   /**
    * The items that should be shown in the list.
@@ -154,23 +150,23 @@ Fastlist.prototype = {
    */
   get entries() {
     return this._entries;
-  },
+  }
 
   /**
    * Adds a row to the list
    * @param obj {Object} values for one row
    */
-  addEntry : function(obj) {
+  addEntry(obj) {
     this._entries.add(obj);
-  },
+  }
 
   /**
    * Adds a number of rows to the list. Each array element is one row.
    * @param array {Array of Objects} values for  rows
    */
-  addEntriesFromArray : function(array) {
+  addEntriesFromArray(array) {
     this._entries.addAll(array);
-  },
+  }
 
   /**
    * The list items that the user selected,
@@ -186,7 +182,7 @@ Fastlist.prototype = {
    */
   get selectedCollection() {
     return this._selectedEntries;
-  },
+  }
 
   /**
    * Populates DOM entries with the values from an object
@@ -196,7 +192,7 @@ Fastlist.prototype = {
    * @param obj {Object} values for this row
    * @param rowE {<row> DOMElement}
    */
-  fillRow : function(rowE, obj) {
+  fillRow(rowE, obj) {
     nodeListToArray(rowE.querySelectorAll("*[field]")).forEach(fieldE => {
       var fieldName = fieldE.getAttribute("field");
       var value = obj[fieldName];
@@ -214,14 +210,14 @@ Fastlist.prototype = {
         fieldE.textContent = value;
       }
     });
-  },
+  }
 
   /**
    * Call this when either the number of entries changes,
    * or the DOM size of <fastlist> changes.
    * Updates the DOM elements with the rows.
    */
-  _updateSize : function() {
+  _updateSize() {
     var scrollHeight = this._entries.length * this._rowHeight;
     //var availableHeight = this._getHeight(this._contentE);
     var availableHeight = this._listE.offsetHeight - this._rowHeight - 6; // TODO
@@ -249,9 +245,9 @@ Fastlist.prototype = {
     } else {
       this._scrollbarE.setAttribute("hidden", true);
     }
-  },
+  }
 
-  _getHeight : function(el) {
+  _getHeight(el) {
     // https://developer.mozilla.org/en-US/docs/Web/API/CSS_Object_Model/Determining_the_dimensions_of_elements
     return el.offsetHeight;
     /*
@@ -264,7 +260,7 @@ Fastlist.prototype = {
           childNode => height += childNode.nodeType == 1 ? this._getHeight(childNode) : 0);
     return height;
     */
-  },
+  }
 
   /**
    * Displays the values at the current scroll position.
@@ -272,7 +268,7 @@ Fastlist.prototype = {
    * - scrolling
    * - adding or removing entries
    */
-  _refreshContent : function() {
+  _refreshContent() {
     // TODO be lazy, avoid unnecessary refreshs
     var renderRow = this._scrollPos;
     this._rowElements.forEach(rowE => {
@@ -283,9 +279,9 @@ Fastlist.prototype = {
       this.fillRow(rowE, obj);
       rowE._item = obj;
     });
-  },
+  }
 
-  _onScrollWheel : function(event) {
+  _onScrollWheel(event) {
     var scrollRows = 3; // How many rows to scroll each time
     if (event.deltaY > 0) {
       this._scrollPos = Math.min(this._scrollPos + scrollRows, this._entries.length - this._rowElements.length);
@@ -295,17 +291,17 @@ Fastlist.prototype = {
       //this._scrollbarE.scrollTop = Math.max(this._scrollbarE.scrollTop - this._rowHeight, 0);
     }
     this._refreshContent();
-  },
+  }
 
-  _onScrollBar : function(event) {
+  _onScrollBar(event) {
     this._scrollPos = Math.round(this._scrollbarE.scrollTop / this._rowHeight); // TODO ceil()?
     console.log("scrollTop = " + this._scrollbarE.scrollTop);
     console.log("entries size = " + this._entries.length);
     console.log("scroll pos = " + this._scrollPos);
     this._refreshContent();
-  },
+  }
 
-  _onClick : function(event) {
+  _onClick(event) {
     // Walk up the DOM tree, until we find the row element
     for (var e = event.target; e != this._listE; e = e.parentNode) {
       if (e.nodeName == this._rowTemplate.nodeName &&
@@ -314,7 +310,7 @@ Fastlist.prototype = {
         return;
       }
     }
-  },
+  }
 
   _onSelectElement(selectedItem, event) {
     if (event.shiftKey) { // select whole range
@@ -338,28 +334,26 @@ Fastlist.prototype = {
       this.selectedCollection.clear();
       this.selectedCollection.add(selectedItem);
     }
-  },
+  }
 }
 
 /**
  * Convenience class which returns just the first selected item
  */
-function SingleSelectionObserver() {
-}
-SingleSelectionObserver.prototype = {
-  added : function(items, selectedItems) {
+class SingleSelectionObserver {
+//class SingleSelectionObserver extends CollectionObserver {
+  added(items, selectedItems) {
     this.onSelectedItem(selectedItems.first);
-  },
-  removed : function(items, selectedItems) {
+  }
+  removed(items, selectedItems) {
     this.onSelectedItem(selectedItems.isEmpty ? null : selectedItems.first);
-  },
+  }
   /**
    * Called when the selected item changed
    * @param selectedItem {Object}
    *      null, if no item is selected
    */
-  onSelectedItem : function(selectedItem) {
+  onSelectedItem(selectedItem) {
     throw "implement this";
-  },
+  }
 }
-//extend(SingleSelectionObserver, CollectionObserver);
