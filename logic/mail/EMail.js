@@ -1,4 +1,6 @@
 import MsgFolder from "../account/MsgFolder";
+import parseMIME from "emailjs-mime-parser";
+import htmlToText from "html-to-text";
 
 /**
  * An RFC822 message with
@@ -62,7 +64,20 @@ export default class EMail {
 
     this.contentType = null;
 
-    this._body = null;
+
+    // content
+
+    /**
+     * Raw RFC2822 MIME message,
+     * with full headers and all body parts.
+     * {string}
+     */
+    this._mime = null;
+
+    /**
+     * {MimeNode} <https://github.com/emailjs/emailjs-mime-parser>
+     */
+    this._bodyParts = null;
 
 
     // mutable meta data
@@ -72,8 +87,77 @@ export default class EMail {
     this.isStarred = false;
   }
 
-  async body() {
-    return this._body;
+  async MIME() {
+    return this._mime;
+  }
+
+  async bodyParts() {
+    if (this._bodyParts) {
+      return this._bodyParts;
+    }
+
+    // Parse raw MIME into body structure
+    this._bodyParts = parseMIME(await this.MIME());
+
+    // Decode Uint8Array
+    this.walkTree(this._bodyParts, part => {
+      if (part.content) {
+        let charset = part.contentType &&
+            part.contentType.params &&
+            part.contentType.params.charset &&
+            part.contentType.params.charset.toLowerCase() ||
+            "utf-8";
+        part.content = convertUint8ArrayToString(part.content, charset);
+      }
+    });
+
+    return this._bodyParts;
+  }
+
+  /**
+   * Walks the tree hierarchy.
+   * Calls |func| on each |childNodes| and self.
+   * @param func {Function(part)}
+   */
+  walkTree(part, func) {
+    func(part);
+    if (part.childNodes) {
+      for (let child of part.childNodes) {
+        this.walkTree(child, func);
+      }
+    }
+  }
+
+  async bodyPlaintext() {
+    let text = null;
+    function process(part) {
+      if (text) {
+        return;
+      }
+      console.log("Content-Type: " + part.contentType.value);
+      if (part.contentType.value == "multipart/alternative") {
+        // last is the most preferred
+        let ordered = arrayReverse(part.childNodes);
+        // but we want plaintext
+        let plaintextPart = ordered.find(part => part.contentType.value == "text/plain");
+        if (plaintextPart) {
+          process(plaintextPart);
+          return;
+        }
+        let htmlPart = ordered.find(part => part.contentType.value == "text/html");
+        if (htmlPart) {
+          process(htmlPart);
+          return;
+        }
+        process(ordered.childNodes[0]);
+      } else if (part.contentType.value == "text/plain") {
+        text = part.content;
+      } else if (part.contentType.value == "text/html") {
+        text = convertHTMLtoPlaintext(part.content);
+      }
+    }
+    this.walkTree(await this.bodyParts(), process);
+    return text;
   }
 
   /**
@@ -158,4 +242,62 @@ export default class EMail {
   static fromMIME(fullMIME) {
     throw new ImplementThis();
   }
+}
+
+
+
+function arrayReverse(array) {
+  let result = [];
+  for (let m of array) {
+    result.unshift(m);
+  }
+  return result;
+}
+
+function convertHTMLtoPlaintext(plaintext) {
+  return htmlToText.fromString(plaintext, {
+    ignoreImage: true,
+  });
+}
+
+// TODO charsets other than UTF-8
+function convertUint8ArrayToString(uint8Array, charset) {
+  //return String.fromCharCode.apply(null, uint8Array);
+  //return uint8Array.toString(charset);
+  return Utf8ArrayToString(uint8Array);
+}
+
+/* utf.js - UTF-8 <=> UTF-16 convertion
+ * Copyright (C) 1999 Masanao Izumo <iz@onicos.co.jp>
+ * Version: 1.0
+ * LastModified: Dec 25 1999
+ * This library is free.  You can redistribute it and/or modify it.
+ */
+function Utf8ArrayToString(array) {
+    var out = "";
+    var len = array.length;
+    for (let i = 0; i < len; ) {
+      let c = array[i++];
+      let char2, char3;
+      switch (c >> 4) {
+        case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:
+          // 0xxxxxxx
+          out += String.fromCharCode(c);
+          break;
+        case 12: case 13:
+          // 110x xxxx   10xx xxxx
+          char2 = array[i++];
+          out += String.fromCharCode(((c & 0x1F) << 6) | (char2 & 0x3F));
+          break;
+        case 14:
+          // 1110 xxxx  10xx xxxx  10xx xxxx
+          char2 = array[i++];
+          char3 = array[i++];
+          out += String.fromCharCode(((c & 0x0F) << 12) |
+                        ((char2 & 0x3F) << 6) |
+                        ((char3 & 0x3F) << 0));
+          break;
+      }
+    }
+    return out;
 }

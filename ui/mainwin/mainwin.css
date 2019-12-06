@@ -31,3 +31,14 @@ body {
 #account-list, #folder-list, #message-list, #msg-body {
   flex: 1;
 }
+#header-pane {
+  border: 1px solid #8E8EA1;
+  background-color: #EEF3F9;
+  padding: 3px;
+}
+#msg-body-box {
+  margin-top: 5px;
+}
+#msg-body-plaintext {
+  white-space: pre-wrap;
+}

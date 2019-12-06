@@ -92,9 +92,18 @@ function backgroundError(e) {
  * @param message {EMail}
  */
 function showMessage(message) {
+  // Header
   E("msg-from").textContent = message.authorRealname;
   E("msg-subject").textContent = message.subject;
   E("msg-date").textContent = getDateString(message.date);
+
+  // Body
+  E("msg-body-plaintext").textContent = "";
+  (async () => {
+    E("msg-body-plaintext").textContent = await message.bodyPlaintext();
+  })();
+
+  // Mark as read
   message.markAsRead(true).catch(backgroundError);
 }
 

@@ -102,7 +102,7 @@ export default class IMAPFolder extends MsgFolder {
     let mailbox = await conn.selectMailbox(this.fullPath);
     this.messageCount = sanitize.integer(mailbox.exists);
 
-    this.getMessagesMetadata();
+    this.getMessagesComplete();
   }
 
   /**
@@ -123,7 +123,7 @@ export default class IMAPFolder extends MsgFolder {
    * Gets the body for a number of messages at once.
    */
   async getMessagesBodies(offset, limit) {
-    await this._getMessages(this._offsetLimit(offset, limit), ["uid", "flags", "envelope", "body[]"]);
+    await this._getMessages(this._offsetLimit(offset, limit), ["uid", "flags", "envelope", "bodystructure"]);
   }
 
   /**
@@ -132,7 +132,7 @@ export default class IMAPFolder extends MsgFolder {
    * Gets the raw MIME source, if possible.
    */
   async getMessagesComplete(offset, limit) {
-    throw new ImplementThis();
+    await this._getMessages(this._offsetLimit(offset, limit), ["uid", "flags", "envelope", "body.peek[]"]);
   }
 
   _offsetLimit(offset, limit) {

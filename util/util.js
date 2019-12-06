@@ -450,18 +450,16 @@ function dumpObject(obj, name, maxDepth, curDepth)
   var i = 0;
   for (var prop in obj) {
     i++;
-    if (typeof(obj[prop]) == "xml") {
-      result += name + "." + prop + "=[object]" + "\n";
-      result += dumpObject(obj[prop], name + "." + prop, maxDepth, curDepth+1);
+    if (Array.isArray(obj[prop])) {
+      result += name + "." + prop + "=[array, length " + obj[prop].length + "]" + "\n";
+      result += dumpObject(obj[prop], name + "." + prop, maxDepth, curDepth + 1);
     } else if (typeof(obj[prop]) == "object") {
-      if (obj[prop] && typeof(obj[prop].length) != "undefined") {
-        result += name + "." + prop + "=[probably array, length " + obj[prop].length + "]" + "\n";
-      } else {
-        result += name + "." + prop + "=[object]" + "\n";
-      }
-      result += dumpObject(obj[prop], name + "." + prop, maxDepth, curDepth+1);
+      result += name + "." + prop + "=[object]" + "\n";
+      result += dumpObject(obj[prop], name + "." + prop, maxDepth, curDepth + 1);
     } else if (typeof(obj[prop]) == "function") {
       result += name + "." + prop + "=[function]" + "\n";
+    } else if (typeof(obj[prop]) == "string") {
+      result += name + "." + prop + "=" + obj[prop].substr(0, 200) + "\n";
     } else {
       result += name + "." + prop + "=" + obj[prop] + "\n";
     }

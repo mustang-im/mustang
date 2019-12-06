@@ -71,8 +71,12 @@
               <hbox><label>From:</label><label id="msg-from"></label></hbox>
               <hbox><label>Date:</label><label id="msg-date"></label></hbox>
             </vbox>
-            <iframe id="msg-body" flex="1">
-            </iframe>
+            <vbox id="msg-body-box" flex="1">
+              <div id="msg-body-plaintext">
+              </div>
+              <iframe id="msg-body-frame" flex="1">
+              </iframe>
+            </vbox>
           </vbox>
         </vbox>
       </hbox>
