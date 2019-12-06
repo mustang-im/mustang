@@ -134,10 +134,3 @@ function resizeWindow() {
   height += parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
   window.height = height;
 }
-
-function loadJS(url) {
-  if (url.indexOf("://") == -1) {
-    url = "chrome://corvette/content/" + url;
-  }
-  cE(document.head, "script", null, { src: url, type: "text/javascript" });
-}
