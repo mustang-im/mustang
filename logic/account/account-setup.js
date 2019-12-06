@@ -158,12 +158,12 @@ function getAccountProviderWithNet(domain, emailAddress,
 
     // First, try the domain directly, then via MX domain
     sab.current = fetchConfigFromMozillaDB(domain, function(ac) {
-      ddebug("found config for " + domain);
+      console.log("found config for " + domain);
       successCallback(convertMozillaConfigToOurs(ac, emailAddress));
     }, function(e) {
       errorInBackend(e);
       sab.current = fetchConfigFromMozillaDB(providerDomain, function(ac) {
-        ddebug("found config for " + providerDomain);
+        console.log("found config for " + providerDomain);
         successCallback(convertMozillaConfigToOurs(ac, emailAddress));
       }, function(e) { errorCallback(new InvalidDomainError(errorMsg)); });
     });
@@ -225,7 +225,7 @@ function getMX(domain, successCallback, errorCallback)
       return;
     }
     var hostnames = results.map(result => sanitize.hostname(result.exchange));
-    ddebug("MX query result: \n" + hostnames.join(", "));
+    console.log("MX query result: \n" + hostnames.join(", "));
     successCallback(hostnames);
   });
 }
@@ -290,7 +290,7 @@ function readFromXML(clientConfigXML)
       !("clientConfig" in clientConfigXML) ||
       !("emailProvider" in clientConfigXML.clientConfig))
   {
-    ddebug("client config xml = " + JSON.stringify(clientConfigXML));
+    console.log("client config xml = " + JSON.stringify(clientConfigXML));
     var stringBundle = new StringBundle("email/accountCreationModel");
     throw stringBundle.get("no_emailProvider.error");
   }

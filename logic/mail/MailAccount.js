@@ -232,7 +232,7 @@ export default class MailAccount extends Account {
 
     // add to accounts list pref
     var accounts = ourPref.get("accountsList", "").split(",");
-    if ( !arrayContains(accounts, this.accountID)) {
+    if ( !accounts.includes(this.accountID)) {
       accounts.push(this.accountID);
       ourPref.set("accountsList", accounts.join(","));
     }

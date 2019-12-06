@@ -129,7 +129,7 @@ export default class Account {
     ourPref.resetBranch("account." + this.accountID + ".");
     // delete from accounts list pref
     var accounts = ourPref.get("accountsList", "").split(",");
-    arrayRemove(accounts, this.accountID, true);
+    accounts = accounts.filter(id => id != this.accountID);
     ourPref.set("accountsList", accounts.join(","));
 
     getAllAccounts.remove(this); // update account-list.js

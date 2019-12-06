@@ -47,7 +47,6 @@
  * the expected datatype in JS types. If the value is not as expected,
  * they throw exceptions.
  */
-
 var sanitize =
 {
   integer : function(unchecked)
@@ -226,21 +225,19 @@ var sanitize =
   }
 };
 
-function MalformedException(msgID, uncheckedBadValue)
-{
-  var msg = msgID;
-  try {
-    var gSanitizeBundle = new (require("../trex/stringbundle.js")).StringBundle("util");
-    msg = gSanitizeBundle.get(msgID);
-  } catch (ex) {}
-  ddebug(msg += " (bad value: " + new String(uncheckedBadValue) + ")");
-  Exception.call(this, msg);
-  this.msg = msg;
-}
-MalformedException.prototype = {
-  toString : function() {
+class MalformedException {
+  constructor(msgID, uncheckedBadValue) {
+    var msg = msgID;
+    try {
+      var gSanitizeBundle = new (require("../trex/stringbundle.js")).StringBundle("util");
+      msg = gSanitizeBundle.get(msgID);
+    } catch (ex) {}
+    console.log(msg += " (bad value: " + new String(uncheckedBadValue) + ")");
+    this.msg = msg;
+  }
+  toString() {
     return this.msg;
-  },
+  }
   translate() {
     if ( !MalformedException._stringBundle && StringBundle) {
       MalformedException._stringBundle = new StringBundle("tappkit");
@@ -249,7 +246,7 @@ MalformedException.prototype = {
       return MalformedException._stringBundle.get(msgID);
     }
     return "Input validation failed: " + msgID.replace(/_/g, " ").replace(".error", "");
-  },
+  }
 }
 
 exports.sanitize = sanitize;

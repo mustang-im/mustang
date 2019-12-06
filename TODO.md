@@ -8,9 +8,9 @@ TODO Port
 
 DONE
 * Database
+* IMAP
 
 Components
-* IMAP
 * Mail content
 * Cache
 * React
