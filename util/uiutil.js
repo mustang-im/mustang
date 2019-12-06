@@ -73,8 +73,7 @@ function insertAfter(parentElement, newElement, insertAfterInfo) {
  * - convenience
  * - makes a copy, which is needed when you remove the elements
  */
-function nodeListToArray(nodeList)
-{
+function nodeListToArray(nodeList) {
   var result = [];
   for (var i = 0, l = nodeList.length; i < l; i++) {
     result.push(nodeList.item(i));
@@ -82,15 +81,13 @@ function nodeListToArray(nodeList)
   return result;
 }
 
-function cleanElement(el)
-{
+function cleanElement(el) {
   while (el.hasChildNodes()) {
     el.removeChild(el.firstChild);
   }
 }
 
-function removeElement(el)
-{
+function removeElement(el) {
   if (el && el.parentNode) {
     el.parentNode.removeChild(el);
   }

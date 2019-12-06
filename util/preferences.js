@@ -54,17 +54,17 @@ const { getAppDir } = require("../util/util");
  */
 var gPrefObservers = [];
 
-function Preferences(branch) {
-  this._prefBranch = branch;
-}
-Preferences.prototype = {
-  /**
-   * The branch of the preferences tree to which this instance provides access.
-   * @private
-   */
-  _prefBranch : "",
+class Preferences {
+  constructor(branch) {
+    /**
+     * The branch of the preferences tree to which this instance provides access.
+     * @private
+     * {string}
+     */
+    this._prefBranch = branch;
+  }
 
-  _getPrefObj : function(prefs, prefName) {
+  _getPrefObj(prefs, prefName) {
     let path = prefName.split(".");
     let leaf = path.pop();
     let branch = prefs;
@@ -75,9 +75,9 @@ Preferences.prototype = {
       branch = branch[dir];
     }
     return branch[leaf];
-  },
+  }
 
-  _setPrefObj : function(prefs, prefName, value) {
+  _setPrefObj(prefs, prefName, value) {
     let path = prefName.split(".");
     let leaf = path.pop();
     let branch = prefs;
@@ -88,9 +88,9 @@ Preferences.prototype = {
       branch = branch[dir];
     }
     branch[leaf] = value;
-  },
+  }
 
-  _removePrefObj : function(prefs, prefName) {
+  _removePrefObj(prefs, prefName) {
     let path = prefName.split(".");
     let leaf = path.pop();
     let branch = prefs;
@@ -100,23 +100,23 @@ Preferences.prototype = {
       }
     }
     branch[leaf] = undefined;
-  },
+  }
 
-  _getPref : function(prefName) {
+  _getPref(prefName) {
     return this._getPrefObj(gPrefs, prefName);
-  },
-  _setPref : function(prefName, value) {
+  }
+  _setPref(prefName, value) {
     this._setPrefObj(gPrefs, prefName, value);
-  },
-  _removePref : function(prefName) {
+  }
+  _removePref(prefName) {
     this._removePrefObj(gPrefs, prefName);
-  },
-  _getDefaultPref : function(prefName) {
+  }
+  _getDefaultPref(prefName) {
     return this._getPrefObj(gDefaultPrefs, prefName);
-  },
-  _setDefaultPref : function(prefName, value) {
+  }
+  _setDefaultPref(prefName, value) {
     this._setPrefObj(gDefaultPrefs, prefName, value);
-  },
+  }
 
   /**
    * Get the value of a pref, if any; otherwise return the default value.
@@ -128,7 +128,7 @@ Preferences.prototype = {
    *
    * @returns the value of the pref, if any; otherwise the default value
    */
-  get: function(prefName, defaultValue) {
+  get(prefName, defaultValue) {
     var value = this._getPref(this._prefBranch + prefName);
     if (value !== undefined) {
       return value;
@@ -138,7 +138,7 @@ Preferences.prototype = {
       return value;
     }
     return defaultValue;
-  },
+  }
 
   /**
    * Set a preference to a value.
@@ -160,9 +160,9 @@ Preferences.prototype = {
    *   Preferences.set("pi", 3.14159.toString())
    *   Preferences.set("big", Math.pow(2, 31).toString()).
    */
-  set: function(prefName, prefValue) {
+  set(prefName, prefValue) {
     this._setPref(this._prefBranch + prefName, prefValue);
-  },
+  }
 
   /**
    * Whether or not the given pref has a value.  This is different from isSet
@@ -174,10 +174,10 @@ Preferences.prototype = {
    *
    * @returns {Boolean} whether the pref has a value
    */
-  has: function(prefName) {
+  has(prefName) {
     return this._getPref(this._prefBranch + prefName) !== undefined &&
         this._getDefaultPref(this._prefBranch + prefName) !== undefined;
-  },
+  }
 
   /**
    * Whether or not the given pref has a user-set value.  This is different
@@ -189,13 +189,13 @@ Preferences.prototype = {
    *
    * @returns {Boolean} whether the pref has a user-set value
    */
-  hasUser: function(prefName) {
+  hasUser(prefName) {
     return this._getPref(this._prefBranch + prefName) !== undefined;
-  },
+  }
 
-  reset: function(prefName) {
+  reset(prefName) {
     this._removePref(this._prefBranch + prefName);
-  },
+  }
 
   /**
    * If you need to know the default values, without resetting the actual
@@ -205,13 +205,13 @@ Preferences.prototype = {
    * *Only* call get() on this.
    * If you call set(), you will modify the defaults, so don't do that!
    */
-  defaults : function() {
+  defaults() {
     throw "not yet implemented";
     var prefs = new Preferences(this._prefBranch);
     // override. nasty, but this is internal, so OK.
     prefs.__defineGetter__("_prefSvc", function() { return defaultBranch; });
     return prefs;
-  },
+  }
 
   /**
    * Start observing a pref.
@@ -226,7 +226,7 @@ Preferences.prototype = {
    *
    * @returns the wrapped observer
    */
-  observe: function(prefName, callback) {
+  observe(prefName, callback) {
     var fullPrefName = this._prefBranch + (prefName || "");
 
     this.ignore(prefName, callback); // prevent double-add
@@ -237,7 +237,7 @@ Preferences.prototype = {
     gPrefObservers.push(observer);
 
     return observer;
-  },
+  }
 
   /**
    * Stop observing a pref.
@@ -258,16 +258,16 @@ Preferences.prototype = {
    * @param   callback    {Function}
    *          the code being notified when the pref changes
    */
-  ignore: function(prefName, callback) {
+  ignore(prefName, callback) {
     var fullPrefName = this._prefBranch + (prefName || "");
 
     var removes = gPrefObservers.filter(v =>
         v.prefName == fullPrefName &&
         v.callback == callback);
-    for (var i in removes) {
+    for (let i in removes) {
       gPrefObservers.splice(gPrefObservers.indexOf(removes[i]), 1);
     }
-  },
+  }
 
   /**
    * Same as observe(), but automatically unregisters itself when
@@ -275,9 +275,9 @@ Preferences.prototype = {
    * calling ignore().
    * @param win {nsIDOMWindow} your |window|
    */
-  observeAuto: function(win, prefName, callback) {
+  observeAuto(win, prefName, callback) {
     throw "not yet implemented";
-  },
+  }
 
   /**
    * This must be called whenever a pref has changed via any means.
@@ -286,11 +286,10 @@ Preferences.prototype = {
    * If the change is done via other means, the observers are not called
    * and things break.
    */
-  _notifyObservers: function(prefName, newValue) {
+  _notifyObservers(prefName, newValue) {
     var fullPrefName = this._prefBranch + (prefName || "");
 
-    for (var i in gPrefObservers)
-    {
+    for (let i in gPrefObservers) {
       var observer = observers[i];
       if ( !(observer.prefName == fullPrefName ||
             observer.prefName.substr(-1) == "*" &&
@@ -300,21 +299,23 @@ Preferences.prototype = {
       }
       try {
         observer.callback(newValue);
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error(e);
+      }
     }
-  },
+  }
 
   /**
    * Resets the passed in pref subbranch or if nothing is passed
    * in, the associated branch.
    */
-  resetBranch: function(prefBranch) {
+  resetBranch(prefBranch) {
     if (prefBranch) {
       this.branch(prefBranch).resetBranch();
     } else {
       this.reset(this.childPrefNames());
     }
-  },
+  }
 
   /**
    * Returns all child prefs of this pref branch.
@@ -328,11 +329,11 @@ Preferences.prototype = {
    * @returns {Array of String} The names of the children,
    *     without the base pref branch, but with subbranch.
    */
-  childPrefNames : function() {
+  childPrefNames() {
     var result = [];
     var prefBranch = "prefs." + this._prefBranch;
     var defaultBranch = "defaultPrefs." + this._prefBranch;
-    for (var fullname in {}) {
+    for (let fullname in {}) { // TODO
       if (fullname.substr(0, prefBranch.length) == prefBranch) {
         result.push(fullname.substr(prefBranch.length));
       } else if (fullname.substr(0, defaultBranch.length) == defaultBranch) {
@@ -340,7 +341,7 @@ Preferences.prototype = {
       }
     }
     return result;
-  },
+  }
 
   /**
    * Returns the base pref name that this object stands for.
@@ -349,7 +350,7 @@ Preferences.prototype = {
    */
   get prefBranchName() {
     return this._prefBranch;
-  },
+  }
 
   /**
    * Returns an Preferences object for an sub pref branch
@@ -360,11 +361,10 @@ Preferences.prototype = {
    *     E.g. "contents."
    * @returns {Preferences}
    */
-  branch : function(subbranch) {
+  branch(subbranch) {
     return new Preferences(this._prefBranch + subbranch);
-  },
-
-};
+  }
+}
 
 function isArray(val) {
   // We can't check for |val.constructor == Array| here, since the value
