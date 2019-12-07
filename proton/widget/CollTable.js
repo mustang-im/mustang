@@ -31,6 +31,7 @@ export default class CollTable extends Component {
             <Button
               row={ iRow + 1 }
               column={ iColumn }
+              align={{ v: true, h: false }}
               onClick={ () => this.props.onClick(rowData) }
               >
               { String(rowData[propName]) }
