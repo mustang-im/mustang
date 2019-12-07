@@ -361,6 +361,7 @@ class SuccessiveAbortable extends Abortable {
  */
 class PromiseAbortable extends Abortable {
   constructor(promise, successCallback, errorCallback) {
+    super();
     promise.then(successCallback).catch(errorCallback);
   }
   cancel() {
