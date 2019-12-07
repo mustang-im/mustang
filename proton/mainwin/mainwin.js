@@ -1,23 +1,20 @@
 import React, { Component } from "react";
-import { render, Window, App, Box, Button, TextInput } from "proton-native";
+import { render, Window, App, Box, Button, Text, TextInput } from "proton-native";
 
 import { getAllAccounts } from "../../logic/account/account-list.js";
 
-class MainWin extends Component {
+export default class MailApp extends Component {
   render() {
     return (
-      <App>
-        <Window title="Example" size={{ w: 800, h: 500 }}>
-          <Box>
-            <Button>Hello</Button>
-            <TextInput />
-          </Box>
-        </Window>
-      </App>
+      <Window title="Example" size={{ w: 800, h: 500 }}>
+        <Box>
+          <Button>Hello</Button>
+          { getAllAccounts().contents.map(account =>
+            <Text>{ account.emailAddress }</Text>
+          ) }
+          <TextInput />
+        </Box>
+      </Window>
     );
   }
 }
-
-render(<MainWin />);
-
-console.log(getAllAccounts().contents);

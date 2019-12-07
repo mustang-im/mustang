@@ -34,8 +34,8 @@
     "electron-start": "./node_modules/electron/dist/electron -r esm simple-ui/app.js",
     "postinstall": "install-app-deps",
     "test": "node test.js",
-    "proton-start": "node_modules/.bin/babel-node proton/mainwin/mainwin.js",
-    "proton-build": "node_modules/.bin/babel mainwin.js -d bin/",
+    "proton-start": "node_modules/.bin/babel-node proton/app.js",
+    "proton-build": "node_modules/.bin/babel proton/app.js -d bin/",
     "proton-pack": "electron-builder --dir",
     "proton-dist": "electron-builder"
   },
