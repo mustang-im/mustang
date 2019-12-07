@@ -9,11 +9,12 @@ TODO Port
 DONE
 * Database
 * IMAP
+* Mail content
 
 Components
-* Mail content
-* Cache
+* Electron-remote
 * React
+* Cache content
 * Msg window
 * List
   * Display selection
