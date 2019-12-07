@@ -21,7 +21,7 @@ function createWindow () {
       webPreferences: { nodeIntegration: true }});
 
   mainWindow.loadURL(url.format({
-    pathname : path.join(__dirname, "ui/mainwin/mainwin.html"),
+    pathname : path.join(__dirname, "simple-ui/mainwin/mainwin.html"),
     protocol : 'file:',
     slashes : true,
   }));
