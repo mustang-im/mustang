@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { render, Window, App, Grid, Text } from "proton-native";
+import { render, Grid, Text, Button } from "proton-native";
 
 export default class CollTable extends Component {
   /**
@@ -12,6 +12,7 @@ export default class CollTable extends Component {
   constructor(props) {
     assert(typeof(props.collection) == "object", "Need Collection object");
     assert(typeof(props.columns) == "object", "Need columns");
+    assert(typeof(props.onClick) == "function", "Need onClick handler");
     super(props);
     props.collection.registerObserver({
       added: async rows => this.forceUpdate(),
@@ -20,15 +21,20 @@ export default class CollTable extends Component {
   }
 
   render() {
-    console.log(this.props.columns);
     return (
       <Grid>
         { Object.values(this.props.columns).map((label, i) =>
-          <Text row="0" column={ i }>{ label }</Text>
+          <Text row="0" column={ i }>{ String(label) }</Text>
         )}
         { this.props.collection.contents.map((rowData, iRow) =>
           Object.keys(this.props.columns).map((propName, iColumn) =>
-            <Text row={ iRow + 1 } column={ iColumn }>{ rowData[propName] }</Text>
+            <Button
+              row={ iRow + 1 }
+              column={ iColumn }
+              onClick={ () => this.props.onClick(rowData) }
+              >
+              { String(rowData[propName]) }
+            </Button>
           )
         )}
       </Grid>
