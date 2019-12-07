@@ -7,6 +7,8 @@
     "@buttercup/credentials": "^1.2.0",
     "adm-zip": "^0.4.13",
     "app-module-path": "^2.2.0",
+    "babel-env": "^2.4.1",
+    "create-proton-app": "^1.1.6",
     "electron": "^7.1.2",
     "emailjs-imap-client": "^3.0.7",
     "emailjs-mime-builder": "^2.0.5",
@@ -17,6 +19,7 @@
     "html-to-text": "^5.1.1",
     "i18n": "^0.8.3",
     "iocane": "^1.0.2",
+    "proton-native": "^1.1.11",
     "r2": "^2.0.1",
     "sql-template-strings": "^2.2.2",
     "sqlite": "^3.0.3",
@@ -24,12 +27,17 @@
     "xmldom": "^0.1.27"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
     "electron-builder": "^21.2.0"
   },
   "scripts": {
-    "start": "./node_modules/electron/dist/electron -r esm .",
+    "electron-start": "./node_modules/electron/dist/electron -r esm simple-ui/app.js",
     "postinstall": "install-app-deps",
-    "test": "node test.js"
+    "test": "node test.js",
+    "proton-start": "node_modules/.bin/babel-node proton/mainwin/mainwin.js",
+    "proton-build": "node_modules/.bin/babel mainwin.js -d bin/",
+    "proton-pack": "electron-builder --dir",
+    "proton-dist": "electron-builder"
   },
   "repository": {
     "type": "git",
