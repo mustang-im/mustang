@@ -241,6 +241,7 @@ var StringBundleUtils = {
   },
 }
 
+/*
 if (typeof(window) == "object" && "navigator" in window) {
 
 /**
@@ -252,7 +253,7 @@ if (typeof(window) == "object" && "navigator" in window) {
 *
 * @returns {String} e.g. "en"
 * @see also getUILocale()
-*/
+*
 function getLocale() {
   // Which language to use when the browser has a lang you do not support
   var browserLanguage = window.navigator.language.substr(0, 2);
@@ -262,6 +263,7 @@ function getLocale() {
 }
 
 } else { // not browser
+*/
 
 var i18n = require("i18n");
 i18n.configure({
@@ -283,7 +285,7 @@ function getLocale() {
   return i18n.getLocale();
 }
 
-} // if browser
+//} // if browser
 
 
 exports.StringBundle = StringBundle;

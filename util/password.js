@@ -36,7 +36,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 const Credentials = require("@buttercup/credentials");
-const preferences = require("util/preferences");
+const preferences = require("./preferences");
 const generatePassword = require('generate-password');
 
 async function getKey() {
