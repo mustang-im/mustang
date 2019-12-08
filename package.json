@@ -27,7 +27,7 @@
     "electron-builder": "^21.2.0"
   },
   "scripts": {
-    "start": "./node_modules/electron/dist/electron -r esm .",
+    "electron-start": "./node_modules/electron/dist/electron -r esm simple-ui/app.js",
     "postinstall": "install-app-deps",
     "test": "node test.js"
   },
