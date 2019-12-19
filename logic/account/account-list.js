@@ -23,28 +23,23 @@ var gHaveReadAll = false;
  * Returns all accounts from prefs and local objects
  * @returns |Map|
  */
-function getAllAccounts()
-{
-  if ( !gHaveReadAll)
-  {
-    ourPref.get("accountsList", "").split(",").forEach(function(accountID)
-    {
-      if ( !accountID)
+function getAllAccounts() {
+  if ( !gHaveReadAll) {
+    ourPref.get("accountsList", "").split(",").forEach(accountID => {
+      if ( !accountID || gAccounts.get(accountID)) {
         return;
-      if (gAccounts.get(accountID))
-        return;
+      }
       try {
         _readExistingAccountFromPrefs(accountID); // adds to gAccounts
       } catch (e) { errorInBackend(e); }
-    }, this);
+    });
     gHaveReadAll = true;
   }
 
   return gAccounts;
 }
 
-function _readExistingAccountFromPrefs(accountID)
-{
+function _readExistingAccountFromPrefs(accountID) {
   sanitize.nonemptystring(accountID);
   var type = ourPref.get("account." + accountID + ".type", null);
   assert(type, "account does not exist in prefs");
@@ -53,8 +48,7 @@ function _readExistingAccountFromPrefs(accountID)
 }
 
 // exported only for account-setup.js
-function _newAccountOfType(type, accountID, isNew)
-{
+function _newAccountOfType(type, accountID, isNew) {
   let account;
   if (type == "imap") {
     account = new IMAPAccount(accountID);
@@ -73,9 +67,7 @@ function _newAccountOfType(type, accountID, isNew)
  */
 function getExistingAccountForEmailAddress(emailAddress) {
   sanitize.nonemptystring(emailAddress);
-  return getAllAccounts().filter(function(acc) {
-    return acc.emailAddress == emailAddress;
-  })[0];
+  return getAllAccounts().find(acc => acc.emailAddress == emailAddress);
 }
 
 /**
@@ -92,13 +84,14 @@ function accountsSummary() {
     newMailCount : 0,
     accountCount : 0,
   };
-  getAllAccounts().forEach(function(acc)
-  {
+  getAllAccounts().forEach(acc => {
     result.accountCount += 1;
-    if (acc.newMailCount > 0)
+    if (acc.newMailCount > 0) {
       result.newMailCount += acc.newMailCount;
-    if (acc.isLoggedIn)
+    }
+    if (acc.isLoggedIn) {
       result.isLoggedIn = true;
+    }
   });
   return result;
 }
@@ -111,8 +104,7 @@ function accountsSummary() {
  * The profile-change-net-teardown notification happens before the network
  * connection is dropped, so it is the correct time to do this.
  */
-var netTeardownListener =
-{
+var netTeardownListener = {
   observe : function() {
     getAllAccounts().forEach(account => account.logout());
   }

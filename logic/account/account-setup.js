@@ -39,8 +39,7 @@ function makeNewAccount(emailAddress, allAccounts, successCallback, errorCallbac
             "account already exists");
     var domain = getDomainForEmailAddress(emailAddress);
 
-    return getAccountProviderWithNet(domain, emailAddress, function(config)
-    {
+    return getAccountProviderWithNet(domain, emailAddress, config => {
       var accountID = generateNewAccountID();
       var account = accounts._newAccountOfType(config.subtype || config.type, accountID, true);
       account.emailAddress = emailAddress;
@@ -52,7 +51,9 @@ function makeNewAccount(emailAddress, allAccounts, successCallback, errorCallbac
       successCallback(account);
       //notifyGlobalObservers("account-added", { account : account });
     }, errorCallback);
-  } catch (e) { errorCallback(e); }
+  } catch (e) {
+    errorCallback(e);
+  }
 }
 
 function generateNewAccountID() {
@@ -74,8 +75,7 @@ function generateNewAccountID() {
  * @param errorCallback check failed, with reason
  * @returns {Abortable}
  */
-function verifyEmailAddressDomain(emailAddress, successCallback, errorCallback)
-{
+function verifyEmailAddressDomain(emailAddress, successCallback, errorCallback) {
   var domain = getDomainForEmailAddress(emailAddress);
   return getAccountProviderWithNet(domain, emailAddress,
       successCallback, errorCallback);
@@ -114,9 +114,8 @@ var gCachedConfigs = {};
  * @returns {Abortable}
  */
 function getAccountProviderWithNet(domain, emailAddress,
-                                   inSuccessCallback, errorCallback)
-{
-  var successCallback = function(config) {
+                                   inSuccessCallback, errorCallback) {
+  var successCallback = config => {
     gCachedConfigs[domain] = config;
     inSuccessCallback(config);
   };
@@ -137,11 +136,11 @@ function getAccountProviderWithNet(domain, emailAddress,
   // <http://mxr.mozilla.org/comm-central/source/
   // mailnews/base/prefs/content/accountcreation/fetchConfig.js#136>
   var sab = new SuccessiveAbortable();
-  sab.current = getMX(domain, function(mxHostnames) {
+  sab.current = getMX(domain, mxHostnames => {
     var providerDomains = [];
-    for (var i = 0; i < mxHostnames.length; i++) {
+    for (let mx of mxHostnames) {
       try {
-        providerDomains.push(getBaseDomainFromHost(mxHostnames[i]));
+        providerDomains.push(getBaseDomainFromHost(mx));
       } catch (e) {
         // Some domains (e.g. ar.com, foo.com) return IP address,
         // which causes getBaseDomainFromHost() to throw.
@@ -158,17 +157,19 @@ function getAccountProviderWithNet(domain, emailAddress,
     // IMAP server information there.
 
     // First, try the domain directly, then via MX domain
-    sab.current = fetchConfigFromMozillaDB(domain, function(ac) {
+    sab.current = fetchConfigFromMozillaDB(domain, ac => {
       console.log("found config for " + domain);
       successCallback(convertMozillaConfigToOurs(ac, emailAddress));
-    }, function(e) {
+    }, e => {
       errorInBackend(e);
-      sab.current = fetchConfigFromMozillaDB(providerDomain, function(ac) {
+      sab.current = fetchConfigFromMozillaDB(providerDomain, ac => {
         console.log("found config for " + providerDomain);
         successCallback(convertMozillaConfigToOurs(ac, emailAddress));
-      }, function(e) { errorCallback(new InvalidDomainError(errorMsg)); });
+      }, e => {
+        errorCallback(new InvalidDomainError(errorMsg));
+      });
     });
-  }, function(e) {
+  }, e => {
     errorCallback(e == "no MX found" || e.code == 404 ? new InvalidDomainError(errorMsg) : e);
   });
   return sab;
@@ -213,8 +214,7 @@ function getBaseDomainFromHost(aHostname) {
  * @param errorCallback
  * @returns {Abortable}
  */
-function getMX(domain, successCallback, errorCallback)
-{
+function getMX(domain, successCallback, errorCallback) {
   domain = sanitize.hostname(domain);
   dns.resolveMx(domain, (err, results) => {
     if (err) {
@@ -250,12 +250,11 @@ function getMX(domain, successCallback, errorCallback)
  *         so do not unconditionally show this to the user.
  *         The first paramter will be an exception object or error string.
  */
-function fetchConfigFromMozillaDB(domain, successCallback, errorCallback)
-{
+function fetchConfigFromMozillaDB(domain, successCallback, errorCallback) {
   domain = sanitize.hostname(domain);
   var url = mozillaISPDBURL + domain;
   //var url = "https://" + domain + "/.well-known/mail/config-v1.1.xml";
-  var fetchFunc = async function() {
+  var fetchFunc = async () =>{
     var xmlText = await r2(url).text;
     var xmlDoc = new DOMParser().parseFromString(xmlText);
     return readFromXML(JXON.build(xmlDoc));
@@ -280,8 +279,7 @@ function fetchConfigFromMozillaDB(domain, successCallback, errorCallback)
  * @param clientConfigXML {JXON}  The <clientConfig> node.
  * @return AccountConfig   object filled with the data from XML
  */
-function readFromXML(clientConfigXML)
-{
+function readFromXML(clientConfigXML) {
   function array_or_undef(value) {
     return value === undefined ? [] : value;
   }
@@ -289,8 +287,7 @@ function readFromXML(clientConfigXML)
   var exception;
   if (typeof(clientConfigXML) != "object" ||
       !("clientConfig" in clientConfigXML) ||
-      !("emailProvider" in clientConfigXML.clientConfig))
-  {
+      !("emailProvider" in clientConfigXML.clientConfig)) {
     console.log("client config xml = " + JSON.stringify(clientConfigXML));
     throw gACStringBundle.get("no_emailProvider.error");
   }
@@ -304,22 +301,19 @@ function readFromXML(clientConfigXML)
   try {
     d.displayName = sanitize.label(xml.displayName);
   } catch (e) { errorInBackend(e); }
-  xml.$domain.forEach(function(domain)
-  {
+  xml.$domain.forEach(domain => {
     try {
       d.domains.push(sanitize.hostname(domain));
     } catch (e) { errorInBackend(e); exception = e; }
-  }, this);
-  if (d.domains.length == 0)
+  });
+  if (d.domains.length == 0) {
     throw exception ? exception : "need proper <domain> in XML";
+  }
   exception = null;
 
   // incoming server
-  var incomingServer = array_or_undef(xml.$incomingServer); // input (XML)
-  for (i=0; i < incomingServer.length; i++)
-  {
-    var iX = incomingServer[i];
-    var iO = d.createNewIncoming(); // output (object)
+  for (let iX of array_or_undef(xml.$incomingServer)) {
+    let iO = d.createNewIncoming(); // output (object)
     try {
       // throws if not supported
       iO.type = sanitize.enum(iX["@type"], ["pop3", "imap", "nntp"]);
@@ -333,24 +327,19 @@ function readFromXML(clientConfigXML)
         iO.password = sanitize.string(iX.password);
       }
 
-      var socketType = array_or_undef(iX.$socketType);
-      for (j=0; j < socketType.length; j++)
-      {
-        var iXsocketType = socketType[j];
+      for (let iXsocketType of array_or_undef(iX.$socketType)) {
         try {
           iO.socketType = sanitize.translate(iXsocketType,
               { plain : 1, SSL: 2, STARTTLS: 3 });
           break; // take first that we support
         } catch (e) { exception = e; }
       }
-      if (!iO.socketType)
+      if (!iO.socketType) {
         throw exception ? exception : "need proper <socketType> in XML";
+      }
       exception = null;
 
-      var authentication = array_or_undef(iX.$authentication);
-      for (j=0; j < authentication.length; j++)
-      {
-        var iXauth = authentication[j];
+      for (let iXauth of array_or_undef(iX.$authentication)) {
         try {
           iO.auth = sanitize.translate(iXauth,
               { "password-cleartext" : "password-cleartext",
@@ -363,20 +352,21 @@ function readFromXML(clientConfigXML)
           break; // take first that we support
         } catch (e) { exception = e; }
       }
-      if (!iO.auth)
+      if (!iO.auth) {
         throw exception ? exception : "need proper <authentication> in XML";
+      }
       exception = null;
 
       // defaults are in accountConfig.js
-      if (iO.type == "pop3" && "pop3" in iX)
-      {
+      if (iO.type == "pop3" && "pop3" in iX) {
         try {
           if ("leaveMessagesOnServer" in iX.pop3)
             iO.leaveMessagesOnServer =
                 sanitize.boolean(iX.pop3.leaveMessagesOnServer);
-          if ("daysToLeaveMessagesOnServer" in iX.pop3)
+          if ("daysToLeaveMessagesOnServer" in iX.pop3) {
             iO.daysToLeaveMessagesOnServer =
                 sanitize.integer(iX.pop3.daysToLeaveMessagesOnServer);
+          }
         } catch (e) { errorInBackend(e); }
         try {
           if ("downloadOnBiff" in iX.pop3)
@@ -385,10 +375,11 @@ function readFromXML(clientConfigXML)
       }
 
       // processed successfully, now add to result object
-      if (!d.incoming.hostname) // first valid
+      if (!d.incoming.hostname) { // first valid
         d.incoming = iO;
-      else
+      } else {
         d.incomingAlternatives.push(iO);
+      }
     } catch (e) { exception = e; }
   }
   if (!d.incoming.hostname)
@@ -397,37 +388,30 @@ function readFromXML(clientConfigXML)
   exception = null;
 
   // outgoing server
-  var outgoingServer = array_or_undef(xml.$outgoingServer); // input (XML)
-  for (i=0; i < outgoingServer.length; i++)
+  for (let oX of array_or_undef(xml.$outgoingServer))
   {
-    var oX = outgoingServer[i];
-    var oO = d.createNewOutgoing(); // output (object)
+    let oO = d.createNewOutgoing(); // output (object)
     try {
-      if (oX["@type"] != "smtp")
-      {
+      if (oX["@type"] != "smtp") {
         throw gACStringBundle.get("outgoing_not_smtp.error");
       }
       oO.hostname = sanitize.hostname(oX.hostname);
       oO.port = sanitize.integerRange(oX.port, 1, 65535);
 
-      var socketType = array_or_undef(oX.$socketType);
-      for (j=0; j < socketType.length; j++)
-      {
-        var oXsocketType = socketType[j];
+      for (let oXsocketType of array_or_undef(oX.$socketType)) {
         try {
           oO.socketType = sanitize.translate(oXsocketType,
               { plain : 1, SSL: 2, STARTTLS: 3 });
           break; // take first that we support
         } catch (e) { exception = e; }
       }
-      if (!oO.socketType)
+      if (!oO.socketType) {
         throw exception ? exception : "need proper <socketType> in XML";
+      }
       exception = null;
 
-      var authentication = array_or_undef(oX.$authentication);
-      for (j=0; j < authentication.length; j++)
+      for (let oXauth of array_or_undef(oX.$authentication))
       {
-        var oXauth = authentication[j];
         try {
           oO.auth = sanitize.translate(oXauth,
               {
@@ -447,16 +431,18 @@ function readFromXML(clientConfigXML)
           break; // take first that we support
         } catch (e) { exception = e; }
       }
-      if (!oO.auth)
+      if (!oO.auth) {
         throw exception ? exception : "need proper <authentication> in XML";
+      }
       exception = null;
 
       if ("username" in oX ||
           // if password-based auth, we need a username,
           // so go there anyways and throw.
           oO.auth == "password-cleartext" ||
-          oO.auth == "password-encrypted")
+          oO.auth == "password-encrypted") {
         oO.username = sanitize.string(oX.username);
+      }
 
       if ("password" in oX) {
         d.rememberPassword = true;
@@ -465,39 +451,40 @@ function readFromXML(clientConfigXML)
 
       try {
         // defaults are in accountConfig.js
-        if ("addThisServer" in oX)
+        if ("addThisServer" in oX) {
           oO.addThisServer = sanitize.boolean(oX.addThisServer);
-        if ("useGlobalPreferredServer" in oX)
+        }
+        if ("useGlobalPreferredServer" in oX) {
           oO.useGlobalPreferredServer =
               sanitize.boolean(oX.useGlobalPreferredServer);
+        }
       } catch (e) { errorInBackend(e); }
 
       // processed successfully, now add to result object
-      if (!d.outgoing.hostname) // first valid
+      if (!d.outgoing.hostname) { // first valid
         d.outgoing = oO;
-      else
+      } else {
         d.outgoingAlternatives.push(oO);
+      }
     } catch (e) { errorInBackend(e); exception = e; }
   }
-  if (!d.outgoing.hostname)
+  if (!d.outgoing.hostname) {
     // throw exception for last server
     throw exception ? exception : "Need proper <outgoingServer> in XML file";
+  }
   exception = null;
 
   d.inputFields = new Array();
-  array_or_undef(xml.$inputField).forEach(function(inputField)
-  {
+  array_or_undef(xml.$inputField).forEach(inputField => {
     try {
-      var fieldset =
-      {
+      d.inputFields.push({
         varname : sanitize.alphanumdash(inputField["@key"]).toUpperCase(),
         displayName : sanitize.label(inputField["@label"]),
         exampleValue : sanitize.label(inputField.value)
-      };
-      d.inputFields.push(fieldset);
+      });
     } catch (e) { errorInBackend(e); } // for now, don't throw,
         // because we don't support custom fields yet anyways.
-  }, this);
+  });
 
   return d;
 }
@@ -521,53 +508,51 @@ function readFromXML(clientConfigXML)
  * <https://wiki.mozilla.org/Thunderbird:Autoconfiguration:ConfigFileFormat>
  * for values stored.
  */
-function AccountConfig()
-{
-  this.incoming = this.createNewIncoming();
-  this.incomingAlternatives = [];
-  this.outgoing = this.createNewOutgoing();
-  this.outgoingAlternatives = [];
-  this.identity =
-  {
-    // displayed real name of user
-    realname : "%REALNAME%",
-    // email address of user, as shown in From of outgoing mails
-    emailAddress : "%EMAILADDRESS%",
-  };
-  this.inputFields = [];
-  this.domains = [];
-};
-AccountConfig.prototype =
-{
-  // @see createNewIncoming()
-  incoming : null,
-  // @see createNewOutgoing()
-  outgoing : null,
-  /**
-   * Other servers which can be used instead of |incoming|,
-   * in order of decreasing preference.
-   * (|incoming| itself should not be included here.)
-   * { Array of incoming/createNewIncoming() }
-   */
-  incomingAlternatives : null,
-  outgoingAlternatives : null,
-  // just an internal string to refer to this. Do not show to user.
-  id : null,
-  // who created the config.
-  // { one of kSource* }
-  source : 0,
-  displayName : null,
-  // { Array of { varname (value without %), displayName, exampleValue } }
-  inputFields : null,
-  // email address domains for which this config is applicable
-  // { Array of Strings }
-  domains : null,
+class AccountConfig {
+  constructor() {
+    this.incoming = this.createNewIncoming();
+    /**
+     * Other servers which can be used instead of |incoming|,
+     * in order of decreasing preference.
+     * (|incoming| itself should not be included here.)
+     * { Array of incoming/createNewIncoming() }
+     */
+    this.incomingAlternatives = [];
+    this.outgoing = this.createNewOutgoing();
+    this.outgoingAlternatives = [];
+
+    this.identity = {
+      // displayed real name of user
+      realname : "%REALNAME%",
+      // email address of user, as shown in From of outgoing mails
+      emailAddress : "%EMAILADDRESS%",
+    };
+
+    /**
+     * just an internal string to refer to this. Do not show to user.
+     * {string}
+     */
+    this.id = null;
+    /**
+     * who created the config.
+     * { one of kSource* }
+     */
+    this.source = 0;
+    this.displayName = null;
+    /**
+     * Email address domains for which this config is applicable
+     * { Array of Strings }
+     */
+    this.domains = [];
+
+    // { Array of { varname (value without %), displayName, exampleValue } }
+    this.inputFields = [];
+  }
 
   /**
    * Factory function for incoming and incomingAlternatives
    */
-  createNewIncoming : function()
-  {
+  createNewIncoming() {
     return {
       // { String-enum: "pop3", "imap", "nntp" }
       type : null,
@@ -613,12 +598,11 @@ AccountConfig.prototype =
       deleteOnServerWhenLocalDelete : true,
       downloadOnBiff : true,
     };
-  },
+  }
   /**
    * Factory function for outgoing and outgoingAlternatives
    */
-  createNewOutgoing : function()
-  {
+  createNewOutgoing() {
     return {
       type : "smtp",
       hostname : null,
@@ -638,23 +622,22 @@ AccountConfig.prototype =
       // user display value for existingServerKey
       existingServerLabel : null,
     };
-  },
+  }
 
   /**
    * Returns a deep copy of this object,
    * i.e. modifying the copy will not affect the original object.
    */
-  copy : function()
-  {
+  copy() {
     // Workaround: deepCopy() fails to preserve base obj (instanceof)
     var result = new AccountConfig();
     for (var prop in this)
       result[prop] = deepCopy(this[prop]);
 
     return result;
-  },
-  isComplete : function()
-  {
+  }
+
+  isComplete() {
     return (!!this.incoming.hostname && !!this.incoming.port &&
          !!this.incoming.socketType && !!this.incoming.auth &&
          !!this.incoming.username &&
@@ -662,8 +645,8 @@ AccountConfig.prototype =
           (!!this.outgoing.hostname && !!this.outgoing.port &&
            !!this.outgoing.socketType && !!this.outgoing.auth &&
            !!this.outgoing.username)));
-  },
-};
+  }
+}
 
 
 // enum consts
@@ -705,8 +688,7 @@ AccountConfig.kSourceGuess = 3; // guessConfig()
  * Full email address of this account, e.g. "joe@example.com".
  * Empty of incomplete email addresses will/may be rejected.
  */
-function replaceVariables(account, emailfull)
-{
+function replaceVariables(account, emailfull){
   var emailsplit = emailfull.split("@");
   var emaillocal = sanitize.nonemptystring(emailsplit[0]);
   var emaildomain = sanitize.nonemptystring(emailsplit[1]);
@@ -722,14 +704,15 @@ function replaceVariables(account, emailfull)
       _replaceVariable(account.incoming.hostname, otherVariables);
 }
 
-function _replaceVariable(variable, values)
-{
+function _replaceVariable(variable, values) {
   var str = variable;
-  if (typeof(str) != "string")
+  if (typeof(str) != "string") {
     return str;
+  }
 
-  for (var varname in values)
-      str = str.replace("%" + varname + "%", values[varname]);
+  for (var varname in values) {
+    str = str.replace("%" + varname + "%", values[varname]);
+  }
 
   return str;
 }
