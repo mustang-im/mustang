@@ -1,0 +1,24 @@
+{
+  "name": "mustang-simple",
+  "version": "0.1.0",
+  "description": "Prototype for an email application",
+  "main": "app.js",
+  "dependencies": {
+    "app-module-path": "^2.2.0",
+    "electron": "^7.1.2",
+    "esm": "^3.2.25"
+  },
+  "devDependencies": {
+    "electron-builder": "^21.2.0"
+  },
+  "scripts": {
+    "start": "../node_modules/electron/dist/electron -r esm app.js",
+    "test": "node test.js"
+  },
+  "author": "Ben Bucksch",
+  "license": "MPL-1.1",
+  "bugs": {
+    "url": "https://github.com/benbucksch/corvette/issues"
+  },
+  "homepage": "https://github.com/benbucksch/corvette#readme"
+}

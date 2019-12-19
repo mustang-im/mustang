@@ -65,7 +65,7 @@ var fallbackLanguage = "en-US";
  * You MUST also configure |supportedLanguages| below.
  */
 function StringBundle(path) {
-  this._url = "locale/" + getLocale() + "/" + path;
+  this._url = "../locale/" + getLocale() + "/" + path;
   if (path.indexOf(".") == -1) {
     this._url += ".properties"; // default file extension
   }

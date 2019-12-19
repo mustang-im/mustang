@@ -1,18 +1,14 @@
 {
-  "name": "corvette",
+  "name": "mustang",
   "version": "0.1.0",
-  "description": "Corvette - Prototype for a successor of Thunderbird",
-  "main": "app.js",
+  "description": "Mustang - User-friendly email applications",
   "dependencies": {
     "@buttercup/credentials": "^1.2.0",
     "adm-zip": "^0.4.13",
-    "app-module-path": "^2.2.0",
-    "electron": "^7.1.2",
     "emailjs-imap-client": "^3.0.7",
     "emailjs-mime-builder": "^2.0.5",
     "emailjs-mime-parser": "^2.0.7",
     "emailjs-smtp-client": "^2.0.1",
-    "esm": "^3.2.25",
     "generate-password": "^1.4.1",
     "html-to-text": "^5.1.1",
     "i18n": "^0.8.3",
@@ -23,15 +19,16 @@
     "sqlite3": "^4.1.0",
     "xmldom": "^0.1.27"
   },
-  "devDependencies": {
-    "electron-builder": "^21.2.0"
-  },
   "scripts": {
-    "simple-electron": "./node_modules/electron/dist/electron -r esm simple-ui/app.js",
-    "react-electron": "./node_modules/electron/dist/electron -r esm react-electron/app.js",
+    "simple-electron": "cd simple-electron && npm start",
+    "react-electron": "cd react-electron && npm start",
     "postinstall": "install-app-deps",
     "test": "node test.js"
   },
+  "workspaces": [
+    "react-electron",
+    "simple-electron"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/benbucksch/corvette.git"

@@ -29,7 +29,7 @@ export default class MailSQLDatabase extends MailDatabase {
     let filename =  baseDir + "email-database.sqlite";
     this._db = await sqlite.open(filename);
     await this._db.migrate({
-      migrationsPath: "./logic/storage/mail-sql/",
+      migrationsPath: "../logic/storage/mail-sql/",
     });
   }
 
