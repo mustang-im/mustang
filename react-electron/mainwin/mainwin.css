@@ -1,0 +1,44 @@
+body {
+  background-color: white;
+}
+#entire-window {
+  flex: 1;
+  height: 100%;
+}
+#window-content-pane {
+  flex: 1;
+}
+#left-pane {
+  flex: 1;
+  min-width: 200px;
+}
+#right-pane {
+  flex: 4;
+  min-width: 300px;
+}
+#account-pane {
+  flex: 1;
+}
+#folder-pane {
+  flex: 4;
+}
+#thread-pane {
+  flex: 1;
+}
+#message-pane {
+  flex: 2;
+}
+#account-list, #folder-list, #message-list, #msg-body {
+  flex: 1;
+}
+#header-pane {
+  border: 1px solid #8E8EA1;
+  background-color: #EEF3F9;
+  padding: 3px;
+}
+#msg-body-box {
+  margin-top: 5px;
+}
+#msg-body-plaintext {
+  white-space: pre-wrap;
+}
