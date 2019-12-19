@@ -6,40 +6,36 @@
  * version: 0.1
  ****************************/
 
-// util functions needed:
-// extend(), assert()
-
 /**
  * This defines the common base API for all collections and operators
  */
-function Collection() {
-  this._observers = [];
-}
-Collection.prototype = {
-  _observers : null,
+class Collection {
+  constructor() {
+    this._observers = [];
+  }
 
   /**
    * Adds one item to the list
    * @param item {Object} any JS object
    */
-  add : function(item) {
+  add(item) {
     throw "implement";
-  },
+  }
 
   /**
    * Compat with JS |Array|
    */
-  push : function(item) {
+  push(item) {
     this.add(item);
-  },
+  }
 
   /**
    * Removes one item from the list
    * @param item {Object} any JS object
    */
-  remove : function(item) {
+  remove(item) {
     throw "implement";
-  },
+  }
 
   /**
    * Add all items in |coll| to this list.
@@ -50,29 +46,25 @@ Collection.prototype = {
    * Note: This is intentionally not overloading |add|.
    * @param coll {Collection or JS Array}
    */
-  addAll : function(coll) {
-    coll.forEach(function(item) {
-      this.add(item);
-    }, this);
-  },
+  addAll(coll) {
+    coll.forEach(item => this.add(item));
+  }
 
   /**
    * Removes all items in |coll| from this list
    * @see addAll()
    * @param coll {Collection or JS Array}
    */
-  removeAll : function(coll) {
-    coll.forEach(function(item) {
-      this.remove(item);
-    }, this);
-  },
+  removeAll(coll) {
+    coll.forEach(item => this.remove(item));
+  }
 
   /**
    * Removes all items from the list.
    */
-  clear : function() {
+  clear() {
     throw "implement";
-  },
+  }
 
   /**
    * The number of items in this list
@@ -80,7 +72,7 @@ Collection.prototype = {
    */
   get length() {
     throw "implement";
-  },
+  }
 
   /**
    * Whether there are items in this list
@@ -88,15 +80,15 @@ Collection.prototype = {
    */
   get isEmpty() {
     return this.length == 0;
-  },
+  }
 
   /**
    * Checks whether this item is in the list.
    * @returns {Boolean}
    */
-  contains : function(item) {
+  contains(item) {
     return this.contents.indexOf(item) != -1;
-  },
+  }
 
   /**
    * Returns all items contained in this list,
@@ -114,7 +106,7 @@ Collection.prototype = {
    */
   get contents() {
     throw "implement";
-  },
+  }
 
   /**
    * The first item in the list
@@ -123,56 +115,56 @@ Collection.prototype = {
    */
   get first() {
     throw "implement";
-  },
+  }
 
   /**
    * The item at the nth position in the list
    * @returns {Object}
    * null, if the list is empty
    */
-  getIndex : function(i) {
+  getIndex(i) {
     throw "implement";
-  },
+  }
 
   /**
    * |len| number of items, starting from the nth position in the list
    * @returns {Array of Object}
    * null, if the list is empty
    */
-  getIndexRange : function(i, length) {
+  getIndexRange(i, length) {
     throw "implement";
-  },
+  }
 
 
 
-  forEach : function(callback, self) {
-    this.contents.forEach(callback, self);
-  },
+  forEach(callback) {
+    this.contents.forEach(callback);
+  }
 
   /**
    * @param filterFunc {Function(item)}
    * @returns {Array of items} where |filterFunc| returned |true|
    */
-  filter : function(filterFunc, self) {
-    return new FilteredCollection(this, filterFunc, self);
-  },
+  filter(filterFunc) {
+    return new FilteredCollection(this, filterFunc);
+  }
 
   /**
    * @returns first matching item or |undefined|
    */
-  find : function(filterFunc, self) {
+  find(filterFunc) {
     var result = undefined;
-    this.forEach(function(item) {
-      if ( !result && filterFunc.call(self, item)) {
+    this.forEach(item => {
+      if ( !result && filterFunc(item)) {
         result = item;
       }
-    }, this);
+    });
     return result;
-  },
+  }
 
-  map : function(mapFunc, self) {
-    return new MapToCollection(this, mapFunc, self);
-  },
+  map(mapFunc) {
+    return new MapToCollection(this, mapFunc);
+  }
 
   /**
    * Provides an iterator, i.e. allows to write:
@@ -190,7 +182,7 @@ Collection.prototype = {
     for (var i = 0; i < items.length; i++) {
       yield items[i];
     }
-  },
+  }
   */
 
 
@@ -205,9 +197,9 @@ Collection.prototype = {
    * @param otherColl {Collection}
    * @returns {Collection} Preserves order.
    */
-  concat : function(otherColl) {
+  concat(otherColl) {
     return new AdditionCollection(this, otherColl);
-  },
+  }
 
   /**
    * operator +
@@ -217,9 +209,9 @@ Collection.prototype = {
    * @param otherColl {Collection}
    * @returns {Collection} Does not preserve order.
    */
-  merge : function(otherColl) {
+  merge(otherColl) {
     return new AdditionCollectionWithDups(this, otherColl);
-  },
+  }
 
   /**
    * operator -
@@ -228,9 +220,9 @@ Collection.prototype = {
    * @param collSubtract {Collection}
    * @returns {Collection} Preserves order of collBase.
    */
-  subtract : function(collSubtract) {
+  subtract(collSubtract) {
     return new SubtractCollection(this, collSubtract);
-  },
+  }
 
   /**
    * operator &
@@ -240,9 +232,9 @@ Collection.prototype = {
    * @param otherColl {Collection}
    * @returns {Collection} Does not preserve order.
    */
-  inCommon : function(otherColl) {
+  inCommon(otherColl) {
     return new IntersectionCollection(this, otherColl);
-  },
+  }
 
   /**
    * operator xor
@@ -251,17 +243,17 @@ Collection.prototype = {
    * @param otherColl {Collection}
    * @returns {Collection} Does not preserve order.
    */
-  notInCommon : function(otherColl) {
+  notInCommon(otherColl) {
     return notInCommonColl(this, otherColl);
-  },
+  }
 
   /**
    * @param sortFunc {Function(item)} like Array.sort()
    * @returns {Array of items} sorted by |sortFunc|
    */
-  sort : function(sortFunc) {
+  sort(sortFunc) {
     return sortColl(this, sortFunc);
-  },
+  }
 
 
 
@@ -274,46 +266,47 @@ Collection.prototype = {
    * If you call this twice for the same observer, the second is a no-op.
    * @param observer {CollectionObserver}
    */
-  registerObserver : function(observer) {
+  registerObserver(observer) {
     assert(observer);
     assert(typeof(observer.added) == "function",
         "must implement CollectionObserver");
-    if (this._observers.indexOf(observer) != -1) // already contains it
+    if (this._observers.indexOf(observer) != -1) { // already contains it
       return;
+    }
     this._observers.push(observer);
-  },
+  }
 
   /**
    * undo |registerObserver|
    * @param observer {CollectionObserver}
    */
-  unregisterObserver : function(observer) {
+  unregisterObserver(observer) {
     assert(observer);
     assert(typeof(observer.added) == "function" &&
            typeof(observer.removed) == "function",
         "must implement CollectionObserver");
     _coll_arrayRemove(this._observers, observer, true);
-  },
+  }
 
-  _notifyAdded : function(items) {
-    this._observers.forEach(function(observer) {
+  _notifyAdded(items) {
+    this._observers.forEach(observer => {
       try {
         observer.added(items, this);
       } catch (e) {
         console.error(e);
       }
-    }, this);
-  },
+    });
+  }
 
-  _notifyRemoved : function(items) {
-    this._observers.forEach(function(observer) {
+  _notifyRemoved(items) {
+    this._observers.forEach(observer => {
       try {
         observer.removed(items, this);
       } catch (e) {
         console.error(e);
       }
-    }, this);
-  },
+    });
+  }
 }
 
 
@@ -321,18 +314,18 @@ Collection.prototype = {
  * A collection where entries have a key or label or index.
  * Examples of subclasses: ArrayColl (key = index), MapColl
  */
-function KeyValueCollection() {
-  Collection.call(this);
-}
-KeyValueCollection.prototype = {
+class KeyValueCollection extends Collection {
+  constructor() {
+    super();
+  }
 
   /**
    * Sets the value for |key|
    *
    * @param key
    */
-  set : function(key, item) {
-  },
+  set(key, item) {
+  }
 
   /**
    * Gets the value for |key|
@@ -340,25 +333,25 @@ KeyValueCollection.prototype = {
    * If the key doesn't exist, returns |undefined|.
    * @param key
    */
-  get : function(key) {
+  get(key) {
     throw "implement";
-  },
+  }
 
   /**
    * Remove the key and its corresponding value item.
    *
    * undo set(key, item)
    */
-  removeKey : function(key) {
+  removeKey(key) {
     throw "implement";
-  },
+  }
 
   /**
    * @returns {Boolean}
    */
-  containsKey : function(key) {
+  containsKey(key) {
     return this.get(key) != undefined;
-  },
+  }
 
   /**
    * Searches the whole list for this |value|.
@@ -367,11 +360,9 @@ KeyValueCollection.prototype = {
    * If not found, returns undefined.
    * @returns key
    */
-  getKeyForValue : function(value) {
-  },
-
+  getKeyForValue(value) {
+  }
 }
-extend(KeyValueCollection, Collection);
 
 
 /**
@@ -379,11 +370,12 @@ extend(KeyValueCollection, Collection);
  *
  * This is can be implemented by application code
  * and passed to Collection.registerObserver().
+ *
+ * Abstract class
  */
-function CollectionObserver() {
-  throw "abstract class";
-}
-CollectionObserver.prototype = {
+class CollectionObserver {
+  constructor() {
+  }
 
   /**
    * Called after an item has been added to the list.
@@ -391,9 +383,9 @@ CollectionObserver.prototype = {
    * @param items {Array of Object} the added item
    * @param coll {Collection} the observed list. convenience only.
    */
-  added : function(items, coll) {
+  added(items, coll) {
     throw "implement";
-  },
+  }
 
   /**
    * Called after an item has been removed from the list
@@ -401,10 +393,13 @@ CollectionObserver.prototype = {
    * @param items {Array of Object} the removed item
    * @param coll {Collection} the observed list. convenience only.
    */
-  removed : function(items, coll) {
+  removed(items, coll) {
     throw "implement";
-  },
+  }
 }
+
+
+
 
 
 
@@ -502,6 +497,8 @@ function notInCommonColl(coll1, coll2) {
 }
 var xorColl = notInCommonColl;
 
+
+
 /*******************************************************
  * Collection implementations
  ******************************************************/
@@ -514,33 +511,34 @@ var xorColl = notInCommonColl;
  * - indexed: every item has an integer key
  * - can hold the same item several times
  * - fast
- *
- * @param copyFrom {Array or Collection} init the collection with these values
  */
-function ArrayColl(copyFrom) {
-  KeyValueCollection.call(this);
-  this._array = [];
-  if (copyFrom instanceof Collection) {
-    this._array = copyFrom.contents;
-  } else if (copyFrom && copyFrom.length) {
-    this._array = copyFrom.slice(0);
+class ArrayColl extends KeyValueCollection {
+  /**
+   * @param copyFrom {Array or Collection} init the collection with these values
+   */
+  constructor(copyFrom) {
+    super();
+    this._array = [];
+    if (copyFrom instanceof Collection) {
+      this._array = copyFrom.contents;
+    } else if (copyFrom && copyFrom.length) {
+      this._array = copyFrom.slice(0);
+    }
   }
-}
-ArrayColl.prototype = {
 
   /**
    * Adds this item to the end of the array.
    *
    * You can add them same object several times.
    */
-  add : function(item) {
+  add(item) {
     this._array.push(item);
     this._notifyAdded([item], this);
-  },
+  }
 
-  _addWithoutObserver : function(item) {
+  _addWithoutObserver(item) {
     this._array.push(item);
-  },
+  }
 
   /**
    * Removes first instance of this item.
@@ -549,34 +547,30 @@ ArrayColl.prototype = {
    * you need to call remove() 5 times, or removeEach() once,
    * to remove them all.
    */
-  remove : function(item) {
+  remove(item) {
     _coll_arrayRemove(this._array, item, false);
     this._notifyRemoved([item], this);
-  },
+  }
 
-  _removeWithoutObserver : function(item) {
+  _removeWithoutObserver(item) {
     _coll_arrayRemove(this._array, item, false);
-  },
+  }
 
-  addAll : function(items) {
+  addAll(items) {
     if (items instanceof Collection) {
       items = items.contents;
     }
-    items.forEach(function(item) {
-      this._addWithoutObserver(item);
-    }, this);
+    items.forEach(item => this._addWithoutObserver(item));
     this._notifyAdded(items, this);
-  },
+  }
 
-  removeAll : function(items) {
+  removeAll(items) {
     if (items instanceof Collection) {
       items = items.contents;
     }
-    items.forEach(function(item) {
-      this._removeWithoutObserver(item);
-    }, this);
+    items.forEach(item => this._removeWithoutObserver(item));
     this._notifyRemoved(items, this);
-  },
+  }
 
   /**
    * Removes all instances of this item.
@@ -585,49 +579,49 @@ ArrayColl.prototype = {
    * you need to call remove() 5 times, or removeEach() once,
    * to remove them all.
    */
-  removeEach : function(item) {
+  removeEach(item) {
     while (this.contains(item)) {
       this.remove(item);
     }
-  },
+  }
 
-  clear : function() {
+  clear() {
     this._notifyRemoved(this.contents, this);
     this._array = [];
-  },
+  }
 
   get length() {
     return this._array.length;
-  },
+  }
 
-  contains : function(item) {
+  contains(item) {
     return this._array.indexOf(item) != -1;
-  },
+  }
 
   // containsKey : defined in KeyValueCollection
 
   get contents() {
     return this._array.slice(); // return copy of array
-  },
+  }
 
   get first() {
     return this._array[0];
-  },
+  }
 
-  getIndex : function(i) {
+  getIndex(i) {
     return this._array[i];
-  },
+  }
 
-  getIndexRange : function(i, length) {
+  getIndexRange(i, length) {
     if (!i) {
       return [];
     }
     return this._array.slice(i, i + length);
-  },
+  }
 
-  forEach : function(callback, self) {
-    this._array.forEach(callback, self);
-  },
+  forEach(callback) {
+    this._array.forEach(callback);
+  }
 
   /**
    * Sets the value at index |i|
@@ -635,17 +629,20 @@ ArrayColl.prototype = {
    *
    * @param key {Integer}
    */
-  set : function(i, item) {
+  set(i, item) {
     assert(typeof(i) == "number");
-    if (this._array.length > i && this._array[i] == item)
+    if (this._array.length > i && this._array[i] == item) {
       return;
+    }
     var oldItem = this._array[i];
     this._array[i] = item;
-    if (oldItem !== undefined)
+    if (oldItem !== undefined) {
       this._notifyRemoved([oldItem], this);
-    if (item !== undefined)
+    }
+    if (item !== undefined) {
       this._notifyAdded([item], this);
-  },
+    }
+  }
 
   /**
    * Gets the value at index |i|
@@ -653,29 +650,29 @@ ArrayColl.prototype = {
    * If the key doesn't exist, returns null.
    * @param key {Integer}
    */
-  get : function(i) {
+  get(i) {
     assert(typeof(i) == "number");
     return this._array[i];
-  },
+  }
 
-  removeKey : function(i) {
+  removeKey(i) {
     var item = this._array[i];
-    if (item == undefined)
+    if (item == undefined) {
       return;
+    }
     delete this._array[i];
     this._notifyRemoved([item], this);
-  },
+  }
 
-  getKeyForValue : function(value) {
+  getKeyForValue(value) {
     for (var i in this._array) {
-      if (this._array[i] == value)
+      if (this._array[i] == value) {
         return i;
+      }
     }
     return undefined;
-  },
-
+  }
 }
-extend(ArrayColl, KeyValueCollection);
 
 
 
@@ -689,16 +686,15 @@ extend(ArrayColl, KeyValueCollection);
  *     if false: remove only the first hit
  * @returns {Integer} number of hits removed (0, 1 or more)
  */
-function _coll_arrayRemove(array, element, all)
-{
+function _coll_arrayRemove(array, element, all) {
   var found = 0;
   var pos = 0;
-  while ((pos = array.indexOf(element, pos)) != -1)
-  {
+  while ((pos = array.indexOf(element, pos)) != -1) {
     array.splice(pos, 1);
     found++
-    if ( ! all)
+    if ( ! all) {
       return found;
+    }
   }
   return found;
 }
@@ -715,99 +711,96 @@ function _coll_sanitizeString(unchecked) {
  * - can *not* hold the same item several times
  * - fast
  */
-function SetColl() {
-  Collection.call(this);
-  this._array = [];
-}
-SetColl.prototype = {
+class SetColl extends Collection {
+  constructor() {
+    super();
+    this._array = [];
+  }
 
   /**
    * Adds this item.
    * If the item already exists, this is a no-op.
    * @param item {Object}
    */
-  add : function(item) {
+  add(item) {
     var added = _addWithoutObserver(item);
     if (added) {
       this._notifyAdded([item], this);
     }
-  },
+  }
 
-  _addWithoutObserver : function(item) {
-    if ( !item && item !== 0)
+  _addWithoutObserver(item) {
+    if ( !item && item !== 0) {
       throw "null objects are not allowed";
-    if (this.contains(item))
+    }
+    if (this.contains(item)) {
       return false;
+    }
     this._array.push(item);
     return true;
-  },
+  }
 
-  remove : function(item) {
+  remove(item) {
     _coll_arrayRemove(this._array, item, true);
     this._notifyRemoved([item], this);
-  },
+  }
 
-  _removeWithoutObserver : function(item) {
+  _removeWithoutObserver(item) {
     _coll_arrayRemove(this._array, item, true);
-  },
+  }
 
-  addAll : function(items) {
+  addAll(items) {
     if (items instanceof Collection) {
       items = items.contents;
     }
-    items.forEach(function(item) {
-      this._addWithoutObserver(item);
-    }, this);
+    items.forEach(item => this._addWithoutObserver(item));
     this._notifyAdded(items, this);
-  },
+  }
 
-  removeAll : function(items) {
+  removeAll(items) {
     if (items instanceof Collection) {
       items = items.contents;
     }
-    items.forEach(function(item) {
-      this._removeWithoutObserver(item);
-    }, this);
+    items.forEach(item => this._removeWithoutObserver(item));
     this._notifyRemoved(items, this);
-  },
+  }
 
-  clear : function() {
+  clear() {
     this._notifyRemoved(this.contents, this);
     this._array = [];
-  },
+  }
 
   get length() {
     return this._array.length;
-  },
+  }
 
-  contains : function(item) {
+  contains(item) {
     return this._array.indexOf(item) != -1;
-  },
+  }
 
   get contents() {
     return this._array.slice(); // return copy of array
-  },
+  }
 
   get first() {
     return this._array[0];
-  },
+  }
 
-  getIndex : function(i) {
+  getIndex(i) {
     return this._array[i];
-  },
+  }
 
-  getIndexRange : function(i, length) {
+  getIndexRange(i, length) {
     if (!i) {
       return [];
     }
     return this._array.slice(i, i + length);
-  },
+  }
 
-  forEach : function(callback, self) {
-    this._array.forEach(callback, self);
-  },
+  forEach(callback) {
+    this._array.forEach(callback);
+  }
 }
-extend(SetColl, Collection);
 
 
 
@@ -818,99 +811,103 @@ extend(SetColl, Collection);
  * - can *not* hold the same item several times
  * - fast
  */
-function MapColl() {
-  Collection.call(this);
-  this._obj = {};
-}
-MapColl.prototype = {
-  _nextFree : 0, // Hack to support add() somehow
+class MapColl extends KeyValueCollection {
+  constructor() {
+    super();
+    this._obj = {};
+    this._nextFree = 0; // Hack to support add() somehow
+  }
 
   /**
    * This doesn't make much sense for MapColl.
    * Please use set() instead.
    */
-  add : function(value) {
-    while (this.contains(this._nextFree))
+  add(value) {
+    while (this.contains(this._nextFree)) {
       this._nextFree++;
+    }
     this.set(this._nextFree++, value);
-  },
+  }
 
-  remove : function(value) {
+  remove(value) {
     var key = this.getKeyForValue(value);
-    if (!key)
-      throw "item doesn't exist";
+    if (!key) {
+      throw "Item doesn't exist";
+    }
     this.removeKey(key);
-  },
+  }
 
-  clear : function() {
+  clear() {
     this._notifyRemoved(this.contents, this);
     this._obj = {};
-  },
+  }
 
   get length() {
     var length = 0;
-    for (var prop in this._obj) {
+    for (let prop in this._obj) {
       length++;
     }
     return length;
-  },
+  }
 
   get contents() {
     var array = [];
-    for (var prop in this._obj) {
-      var value = this._obj[prop];
+    for (let prop in this._obj) {
+      let value = this._obj[prop];
       array.push(value);
     }
     return array;
-  },
+  }
 
   get first() {
     return this.contents[0]; // is there a more efficient impl?
-  },
+  }
 
-  getIndex : function(i) {
+  getIndex(i) {
     return this.contents[i];
-  },
+  }
 
-  getIndexRange : function(i, length) {
+  getIndexRange(i, length) {
     if (!i) {
       return [];
     }
     return this.contents.slice(i, i + length);
-  },
+  }
 
-  contentKeys : function() {
+  contentKeys() {
     var array = [];
-    for (var key in this._obj)
+    for (let key in this._obj) {
       array.push(key);
-    return array;
-  },
-
-  contentKeyValues : function() {
-    var obj = {};
-    for (var key in this._obj)
-      obj[key] = value
-    return obj;
-  },
-
-  forEach : function(callback, self) {
-    for (var prop in this._obj) {
-      var value = this._obj[prop];
-      callback.call(self, value);
     }
-  },
+    return array;
+  }
+
+  contentKeyValues() {
+    var obj = {};
+    for (let key in this._obj) {
+      obj[key] = value
+    }
+    return obj;
+  }
+
+  forEach(callback) {
+    for (let prop in this._obj) {
+      let value = this._obj[prop];
+      callback(value);
+    }
+  }
 
   /*
-  iterator : function() {
+  iterator*() {
     for (var prop in this._obj) {
       var value = this._obj[prop];
       yield value[i];
     }
-  },*/
+  }*/
 
-  contains : function(value) {
+  contains(value) {
     return this.getKeyForValue(value) != undefined;
-  },
+  }
 
   // containsKey : defined in KeyValueCollection
 
@@ -919,18 +916,20 @@ MapColl.prototype = {
    *
    * @param key {String}
    */
-  set : function(key, value) {
+  set(key, value) {
     key = _coll_sanitizeString(key);
     var oldValue = this._obj[key];
     if (oldValue == value) {
       return;
     }
     this._obj[key] = value;
-    if (oldValue !== undefined)
+    if (oldValue !== undefined) {
       this._notifyRemoved([oldValue], this);
-    if (value !== undefined)
+    }
+    if (value !== undefined) {
       this._notifyAdded([value], this);
-  },
+    }
+  }
 
   /**
    * Gets the value for |key|
@@ -938,58 +937,61 @@ MapColl.prototype = {
    * If the key doesn't exist, returns null.
    * @param key {String}
    */
-  get : function(key) {
+  get(key) {
     key = _coll_sanitizeString(key);
     return this._obj[key];
-  },
+  }
 
-  removeKey : function(key) {
+  removeKey(key) {
     key = _coll_sanitizeString(key);
     var value = this._obj[key];
-    if (value == undefined)
+    if (value == undefined) {
       return;
+    }
     delete this._obj[key];
     this._notifyRemoved([value], this);
-  },
+  }
 
-  getKeyForValue : function(value) {
+  getKeyForValue(value) {
     for (var key in this._obj) {
-      if (this._obj[key] == value)
+      if (this._obj[key] == value) {
         return key;
+      }
     }
     return undefined;
-  },
-
+  }
 }
-extend(MapColl, KeyValueCollection);
 
 
 /**
  * A |Collection| which wraps a DOMNodeList.
  * It is static, i.e. changes in the DOM are not reflected here.
  */
-function DOMColl(domlist) {
-  assert(typeof(domlist.item) == "function", "Not a DOMNodeList");
-  var array = [];
-  for (var i = 0, l = domlist.length; i < l; i++) {
-    array.push(domlist[i]);
+class DOMColl extends ArrayColl {
+  /**
+   * @param domlist {DOM NodeList}
+   */
+  constructor(domlist) {
+    super();
+    assert(typeof(domlist.item) == "function", "Not a DOMNodeList");
+    var array = [];
+    for (let i = 0, l = domlist.length; i < l; i++) {
+      array.push(domlist[i]);
+    }
   }
-  ArrayColl.call(this, array);
-}
-DOMColl.prototype = {
-  add : function(value) {
-    throw "immutable";
-  },
 
-  remove : function(value) {
+  add(value) {
     throw "immutable";
-  },
+  }
 
-  clear : function() {
+  remove(value) {
     throw "immutable";
-  },
+  }
+
+  clear() {
+    throw "immutable";
+  }
 }
-extend(DOMColl, ArrayColl);
 
 /**
  * A |Collection| which wraps a DOMNodeList.
@@ -997,54 +999,46 @@ extend(DOMColl, ArrayColl);
  * be sent to the observers.
  * TODO Not yet implemented
  *
-function DynamicDOMColl(domlist) {
-  Collection.call(this);
-  assert(typeof(domlist.item) == "function", "Not a DOMNodeList");
-  this._domlist = domlist;
-}
-DynamicDOMColl.prototype = {
-  /**
-   * Adds this element to the DOM, at the end
-   *
-  add : function(el) {
-    throw "immutable";
-  },
-  /**
-   * Removes this element from the DOM
-   *
-  remove : function(el) {
-    throw "immutable";
-  },
+class DynamicDOMColl extends Collection {
+  constructor(domlist) {
+    super();
+    assert(typeof(domlist.item) == "function", "Not a DOMNodeList");
+    this._domlist = domlist;
+  }
 
-  /**
-   * Removes all child elements from the DOM
-   *
-  clear : function() {
+  add(el) {
+    throw "immutable";
+  }
+
+  remove(el) {
+    throw "immutable";
+  }
+
+  clear() {
     this._notifyRemoved(this.contents, this);
     this._domlist = [];
   },
 
   get length() {
     return this._domlist.length;
-  },
+  }
 
   get contents() {
     var array = [];
-    for (var i = 0, l = this._domlist.length; i < l; i++) {
-      var item = this._domlist.item(i);
+    for (let i = 0, l = this._domlist.length; i < l; i++) {
+      let item = this._domlist.item(i);
       array.push(item);
     }
     return array;
-  },
+  }
 
-  forEach : function(callback, self) {
-    for (var i = 0, l = this._domlist.length; i < l; i++) {
-      var item = this._domlist[i];
-      callback.call(self, item);
+  forEach(callback) {
+    for (let i = 0, l = this._domlist.length; i < l; i++) {
+      let item = this._domlist[i];
+      callback(item);
     }
-  },
+  }
 }
-extend(DynamicDOMColl, Collection);
 */
 
 
@@ -1056,19 +1050,15 @@ extend(DynamicDOMColl, Collection);
 /**
  * Shared ctor code for |AdditionCollection*|
  */
-function initAddition(self, coll1, coll2) {
+function _initAddition(self, coll1, coll2) {
   assert(coll1 instanceof Collection, "must be a Collection");
   assert(coll2 instanceof Collection, "must be a Collection");
   self._coll1 = coll1;
   self._coll2 = coll2;
 
   // add initial contents
-  coll1.forEach(function(item) {
-    self.add(item);
-  }, self);
-  coll2.forEach(function(item) {
-    self.add(item);
-  }, self);
+  coll1.forEach(item => self.add(item));
+  coll2.forEach(item => self.add(item));
 
   coll1.registerObserver(self);
   coll2.registerObserver(self);
@@ -1079,115 +1069,112 @@ function initAddition(self, coll1, coll2) {
  * Does not allow duplicates
  * E.g. A = abcd, B = bdef, then with addition = abcdef.
  */
-function AdditionCollection(coll1, coll2) {
-  SetColl.call(this);
-  initAddition(this, coll1, coll2);
-}
-AdditionCollection.prototype = {
+class AdditionCollection extends SetColl {
+  constructor(coll1, coll2) {
+    super();
+    _initAddition(this, coll1, coll2);
+  }
+
   // Implement CollectionObserver
-  added : function(items) {
+  added(items) {
     //this.addAll(items); -- also works, but leaves de-duping to SetColl
-    this.addAll(items.filter(function(item) {
-      return !this.contains(item);
-    }, this));
-  },
-  removed : function(items, coll) {
+    this.addAll(items.filter(item => !this.contains(item)));
+  }
+
+  removed(items, coll) {
      // if the item was in both colls, but now is in only one,
      // we need to keep it in the result.
      // SetColl.remove() would not keep it at all anymore.
     //var otherColl = coll == this._coll1 ? this._coll2 : this._coll1;
     //if (otherColl.contains(item))
     //  return;
-    this.removeAll(items.filter(function(item) {
-      return !(this._coll1.contains(item) || this._coll2.contains(item));
-    }, this));
-  },
+    this.removeAll(items.filter(item =>
+      !(this._coll1.contains(item) || this._coll2.contains(item))
+    ));
+  }
 }
-extend(AdditionCollection, SetColl);
 
 /**
  * Superset
  * Allows duplicates
  * E.g. A = abcd, B = bdef, then addition with dups = abcdbdef.
  */
-function AdditionCollectionWithDups(coll1, coll2) {
-  ArrayColl.call(this);
-  initAddition(this, coll1, coll2);
-}
-AdditionCollection.prototype = {
+class AdditionCollectionWithDups extends ArrayColl {
+  constructor(coll1, coll2) {
+    super();
+    _initAddition(this, coll1, coll2);
+  }
+
   // Implement CollectionObserver
-  added : function(items) {
+  added(items) {
     this.addAll(items);
-  },
-  removed : function(items, coll) {
+  }
+
+  removed(items, coll) {
     this.removeAll(items);
-  },
+  }
 }
-extend(AdditionCollection, ArrayColl);
 
 /**
  * Removes the second coll from the first.
  * E.g. A = abcd, B = bdef, then substract = ac
  */
-function SubtractCollection(collBase, collSubtract) {
-  ArrayColl.call(this);
-  assert(collBase instanceof Collection, "must be a Collection");
-  assert(collSubtract instanceof Collection, "must be a Collection");
-  this._collBase = collBase;
-  this._collSubtract = collSubtract;
+class SubtractCollection extends ArrayColl {
+  constructor(collBase, collSubtract) {
+    super();
+    assert(collBase instanceof Collection, "must be a Collection");
+    assert(collSubtract instanceof Collection, "must be a Collection");
+    this._collBase = collBase;
+    this._collSubtract = collSubtract;
 
-  // add initial contents
-  this._reconstruct();
+    // add initial contents
+    this._reconstruct();
 
-  var self = this;
-  collBase.registerObserver({
-    // Implement CollectionObserver
-    added : function(items, coll) {
-      var addItems = items.filter(function(item) {
-        // this.add(this); -- doesn't preserve original order
-        return !self._collSubtract.contains(item);
-      }, this);
-      if (addItems.length) {
-        self._reconstruct();
-        self._notifyAdded(addItems);
-      }
-    },
-    removed : function(items, coll) {
-      items.forEach(function(item) {
-        if (self._collSubtract.contains(item))
-          return;
-        self.removeEach(item);
-      }, this);
-    },
-  });
-  collSubtract.registerObserver({
-    // Implement CollectionObserver
-    added : function(items, coll) {
-      self.removeAll(items);
-    },
-    removed : function(items, coll) {
-      var addItems = items.filter(function(item) {
-        // this.add(this); -- doesn't preserve original order
-        return self._collBase.contains(item);
-      }, this);
-      if (addItems.length) {
-        self._reconstruct();
-        self._notifyAdded(addItems);
-      }
-    },
-  });
-}
-SubtractCollection.prototype = {
-  _reconstruct : function() {
+    var self = this;
+    collBase.registerObserver({
+      // Implement CollectionObserver
+      added : function(items, coll) {
+        // add(this) doesn't preserve original order
+        var addItems = items.filter(item => !self._collSubtract.contains(item));
+        if (addItems.length) {
+          self._reconstruct();
+          self._notifyAdded(addItems);
+        }
+      },
+      removed : function(items, coll) {
+        items.forEach(item => {
+          if (self._collSubtract.contains(item)) {
+            return;
+          }
+          self.removeEach(item);
+        });
+      },
+    });
+    collSubtract.registerObserver({
+      // Implement CollectionObserver
+      added : function(items, coll) {
+        self.removeAll(items);
+      },
+      removed : function(items, coll) {
+        // add(this) -- doesn't preserve original order
+        var addItems = items.filter(item => self._collBase.contains(item));
+        if (addItems.length) {
+          self._reconstruct();
+          self._notifyAdded(addItems);
+        }
+      },
+    });
+  }
+
+  _reconstruct() {
     var sub = this._collSubtract;
-    this._collBase.forEach(function(item) {
+    this._collBase.forEach(item => {
       if ( !sub.contains(item)) {
         this._addWithoutObserver(item);
       }
-    }, this);
-  },
+    });
+  }
 }
-extend(SubtractCollection, ArrayColl);
 
 /**
  * Returns a subset of |source|.
@@ -1200,38 +1187,34 @@ extend(SubtractCollection, ArrayColl);
  * @param source {Collection}   Another collection that is to be filtered
  * @param filterFunc {Function(item)}
  *     |item| will be included in FilteredCollection, (only) if |true| is returned
- * @param self {Objecŧ}   Will be passed as |this| to filterFunc
  */
-function FilteredCollection(source, filterFunc, self) {
-  ArrayColl.call(this);
-  assert(source instanceof Collection, "must be a Collection");
-  this._source = source;
-  this._filterFunc = filterFunc;
-  this._self = self;
+class FilteredCollection extends ArrayColl {
+  constructor(source, filterFunc) {
+    super();
+    assert(typeof(filterFunc) == "function", "must be a function");
+    assert(source instanceof Collection, "must be a Collection");
+    //this._source = source;
+    this._filterFunc = filterFunc;
 
-  // add initial contents
-  source.forEach(function(item) {
-    if (filterFunc.call(this.self, item)) {
-      this._addWithoutObserver(item);
-    }
-  }, this);
+    // add initial contents
+    source.forEach(item => {
+      if (filterFunc(item)) {
+        this._addWithoutObserver(item);
+      }
+    });
 
-  source.registerObserver(this);
-}
-FilteredCollection.prototype = {
+    source.registerObserver(this);
+  }
+
   // Implement CollectionObserver
-  added : function(items) {
-    this.addAll(items.filter(function(item) {
-      return this._filterFunc.call(this.self, item);
-    }, this));
-  },
-  removed : function(items, coll) {
-    this.removeAll(items.filter(function(item) {
-      return this.contains(item);
-    }, this));
-  },
+  added(items) {
+    this.addAll(items.filter(item => this._filterFunc(item)));
+  }
+
+  removed(items, coll) {
+    this.removeAll(items.filter(item => this.contains(item)));
+  }
 }
-extend(FilteredCollection, ArrayColl);
 
 /**
  * For each item in |source|, returns another item defined by |mapFunc()|.
@@ -1244,77 +1227,71 @@ extend(FilteredCollection, ArrayColl);
  * @param source {Collection}   Another collection that is to be filtered
  * @param mapFunc {Function(item)}
  *     The result will be included in MapToCollection
- * @param self {Objecŧ}   Will be passed as |this| to mapFunc
  */
-function MapToCollection(source, mapFunc, self) {
-  ArrayColl.call(this);
-  assert(source instanceof Collection, "must be a Collection");
-  this._source = source;
-  this._mapFunc = mapFunc;
-  this._self = self;
+class MapToCollection extends ArrayColl {
+  constructor(source, mapFunc) {
+    super();
+    assert(typeof(mapFunc) == "function", "must be a function");
+    assert(source instanceof Collection, "must be a Collection");
+    //this._source = source;
+    this._mapFunc = mapFunc;
 
-  // add initial contents
-  source.forEach(function(item) {
-    this._addWithoutObserver(mapFunc.call(this.self, item));
-  }, this);
+    // add initial contents
+    source.forEach(item => this._addWithoutObserver(mapFunc(item)));
 
-  source.registerObserver(this);
-}
-MapToCollection.prototype = {
+    source.registerObserver(this);
+  }
+
   // Implement CollectionObserver
-  added : function(items) {
-    this.addAll(items.map(function(item) {
-      return this._mapFunc.call(this.self, item);
-    }, this));
-  },
-  removed : function(items, coll) {
-    var mappedRemovedItems = items.map(function(item) {
-      return this._mapFunc.call(this.self, item);
-    }, this);
-    this.removeAll(this.filter(function(mappedItem) {
-      return mappedRemovedItems.indexOf(mappedItem) != -1;  // TODO Will not work with |Object|s
-    }, this));
-  },
+  added(items) {
+    this.addAll(items.map(item => this._mapFunc(item)));
+  }
+
+  removed(items, coll) {
+    var mappedRemovedItems = items.map(item => this._mapFunc(item));
+    this.removeAll(this.filter(mappedItem =>
+      mappedRemovedItems.indexOf(mappedItem) != -1  // TODO Will not work with |Object|s
+    ));
+  }
 }
-extend(MapToCollection, ArrayColl);
 
 
 /**
  * Has only those items that are in both coll1 and in coll2.
  * E.g. A = abcd, B = bdef, then intersection = bd.
  */
-function IntersectionCollection(coll1, coll2) {
-  SetColl.call(this);
-  assert(coll1 instanceof Collection, "must be a Collection");
-  assert(coll2 instanceof Collection, "must be a Collection");
-  this._coll1 = coll1;
-  this._coll2 = coll2;
+class IntersectionCollection extends SetColl {
+  constructor(coll1, coll2) {
+    super();
+    assert(coll1 instanceof Collection, "must be a Collection");
+    assert(coll2 instanceof Collection, "must be a Collection");
+    this._coll1 = coll1;
+    this._coll2 = coll2;
 
-  // add initial contents
-  coll1.forEach(function(item) {
-    if (coll2.contains(item))
-      this._addWithoutObserver(item);
-  }, this);
+    // add initial contents
+    coll1.forEach(item => {
+      if (coll2.contains(item)) {
+        this._addWithoutObserver(item);
+      }
+    });
 
-  coll1.registerObserver(this);
-  coll2.registerObserver(this);
-}
-IntersectionCollection.prototype = {
+    coll1.registerObserver(this);
+    coll2.registerObserver(this);
+  }
+
   // Implement CollectionObserver
-  added : function(items) {
-    this.addAll(items.filter(function(item) {
-       return this._coll1.contains(item) &&
-          this._coll2.contains(item) &&
-          !this.contains(item);
-    }, this));
-  },
-  removed : function(items, coll) {
-    this.removeAll(items.filter(function(item) {
-       return this.contains(item);
-    }, this));
-  },
+  added(items) {
+    this.addAll(items.filter(item =>
+      this._coll1.contains(item) &&
+      this._coll2.contains(item) &&
+      !this.contains(item)
+    ));
+  }
+
+  removed(items, coll) {
+    this.removeAll(items.filter(item => this.contains(item)));
+  }
 }
-extend(IntersectionCollection, SetColl);
 
 
 /**
@@ -1337,68 +1314,62 @@ function sortColl(coll, sortFunc) {
  * Implements the |Collection| API, but forwards
  * all function calls to a another |Collection| implementation.
  */
-function DelegateCollection(base) {
-  assert(base instanceof Collection);
-  this._base = base;
-}
-DelegateCollection.prototype = {
-  add : function(item) {
+class DelegateCollection extends Collection {
+  constructor(base) {
+    super();
+    this._observers = null;
+    assert(base instanceof Collection);
+    this._base = base;
+  }
+
+  add(item) {
     this._base.add(item);
-  },
-  remove : function(item) {
+  }
+  remove(item) {
     this._base.remove(item);
-  },
-  clear : function() {
+  }
+  clear() {
     this._base.clear();
-  },
+  }
   get length() {
     return this._base.length;
-  },
+  }
   get isEmpty() {
     return this._base.isEmpty;
-  },
-  contains : function(item) {
+  }
+  contains(item) {
     return this._base.contains(item);
-  },
+  }
   get contents() {
     return this._base.contents;
-  },
+  }
   get first() {
     return this._base.first;
-  },
-  getIndex : function(i) {
+  }
+  getIndex(i) {
     return this._base.getIndex(i);
-  },
-  getIndexRange : function(i, length) {
+  }
+  getIndexRange(i, length) {
     return this._base.getIndexRange(i, length);
-  },
-  forEach : function(callback, self) {
-    this._base.forEach(callback, self);
-  },
-  registerObserver : function(observer) {
+  }
+  forEach(callback) {
+    this._base.forEach(callback);
+  }
+  registerObserver(observer) {
     this._base.registerObserver(observer);
-  },
-  unregisterObserver : function(observer) {
+  }
+  unregisterObserver(observer) {
     this._base.unregisterObserver(observer);
-  },
+  }
 }
-extend(DelegateCollection, Collection);
 
 
 // Util functions
 
-/**
- * Create a subtype.
- */
-function extend(child, supertype)
-{
-  child.prototype.__proto__ = supertype.prototype;
-}
-
-function assert(test, errorMsg)
-{
-  if (!test)
+function assert(test, errorMsg) {
+  if (!test) {
     throw new Error(errorMsg ? errorMsg : "Bug: assertion failed");
+  }
 }
 
 if (typeof(exports) == "undefined") {
