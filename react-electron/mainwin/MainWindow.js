@@ -1,17 +1,90 @@
-/*
 import { remote } from "electron";
 import appModulePath from "app-module-path";
 appModulePath.addPath(remote.getGlobal("__base"));
-import util from "../../util/util";
+
+import util from "../../../util/util";
 util.importAll(util, global);
-import collection from "../../util/collection";
+import collection from "../../../util/collection";
 util.importAll(collection, global);
-*/
-var remote = require("electron").remote;
+
+import AccountPane from "./AccountPane";
+import FolderPane from "./FolderPane";
+import ThreadPane from "./ThreadPane";
+import MessagePane from "./MessagePane";
+
+import React, { Component } from "react";
+import ReactDOM from "react-dom";
+/*
+const remote = require("electron").remote;
 require("app-module-path").addPath(remote.getGlobal("__base"));
-var util = require("util/util");
+
+const util = require("util/util");
 util.importAll(util, global);
 util.importAll(require("util/collection"), global);
+
+const React = require("react");
+const Component = React.Component;
+const ReactDOM = require("react-dom");
+*/
+
+class MainWindow extends Component {
+  render() {
+    return (
+      <MenuBar />
+      <Toolbar>
+        <button onclick={ () => this.addAccount() }>Add account</button>
+        <button onclick={ () => this.newEmail() }>Write</button>
+        <button onclick={ () => this.openAddressBook() }>Address book</button>
+      </Toolbar>
+      <hbox id="window-content-pane" flex="1">
+        <vbox id="left-pane" flex="1">
+          <AccountPane />
+          <FolderPane />
+        </vbox>
+        <vbox id="right-pane" flex="4">
+          <ThreadPane />
+        </vbox>
+      </hbox>
+      <StatusBar />
+    );
+  }
+
+  addAccount() {
+    try {
+      openWindow("../setup/mail-account-setup.html");
+    } catch (e) { showError(e); }
+  }
+
+  newEmail() {
+    try {
+      throw "Not implemented";
+    } catch (e) { showError(e); }
+  }
+
+  openAddressBook() {
+    try {
+      throw "Not implemented";
+    } catch (e) { showError(e); }
+  }
+}
+
+ReactDOM.render(<MainWindow />, document.body);
+
+function MenuBar(props) {
+  return null;
+}
+
+function StatusBar(props) {
+  return null;
+}
+
+function Toolbar(props) {
+  return (
+    <hbox className="toolbar">
+      { props.children }
+    </hbox>
+  );
+}
 
 var gAccountListE;
 var gFolderListE;
@@ -44,7 +117,7 @@ async function start() {
     }
   } catch (e) { showError(e); }
 }
-window.addEventListener("load", start, false);
+//window.addEventListener("load", start, false);
 
 var gAccountSelectionObserver = new SingleSelectionObserver();
 gAccountSelectionObserver.onSelectedItem = function(account) {
@@ -68,12 +141,6 @@ gMessageSelectionObserver.onSelectedItem = function(message) {
   }
 };
 
-function addAccount() {
-  try {
-    openWindow("../setup/mail-account-setup.html");
-  } catch (e) { showError(e); }
-}
-
 function showError(e) {
   console.error(e);
   alert(e.message);
@@ -85,59 +152,4 @@ function pollError(e) {
 
 function backgroundError(e) {
   console.error(e);
-}
-
-/**
- * This is an overly simplistic function to show the basic contents of
- * an email.
- * @param message {EMail}
- */
-function showMessage(message) {
-  // Header
-  E("msg-from").textContent = message.authorRealname;
-  E("msg-subject").textContent = message.subject;
-  E("msg-date").textContent = getDateString(message.date);
-
-  // Body
-  E("msg-body-plaintext").textContent = "";
-  (async () => {
-    E("msg-body-plaintext").textContent = await message.bodyPlaintext();
-  })();
-
-  // Mark as read
-  message.markAsRead(true).catch(backgroundError);
-}
-
-/**
- * Returns:
- * For today: Time, e.g. "15:23"
- * This week: Weekday, Time, e.g. "Wed 15:23"
- * Other this year: Date without year and time, e.g. "23.11. 15:23"
- * Other: Date and time, e.g. "23.11.2018 15:23"
- * Each in locale
- * See also <https://momentjs.com> for relative time
- */
-function getDateString(date) {
-  let day = getDay(date);
-  var dateDetails = null;
-  let today = getDay();
-  if (day == today) {
-    dateDetails = { hour: "numeric", minute: "numeric" };
-  } else if (today - day < 7 * 24 * 60 * 60 * 1000) { // this week
-    dateDetails = { weekday: "narrow", hour: "numeric", minute: "numeric" };
-  } else if (day.getFullYear() == today.getFullYear()) { // this year
-    dateDetails = { month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" };
-  } else {
-    dateDetails = { year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" };
-  }
-  return date.toLocaleString(navigator.language, dateDetails);
-}
-
-function getDay(date) {
-  let day = new Date(date);
-  day.setHours(0);
-  day.setMinutes(0);
-  day.setSeconds(0);
-  day.setMilliseconds(0);
-  return day;
 }
