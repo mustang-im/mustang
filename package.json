@@ -19,6 +19,9 @@
     "sqlite3": "^4.1.0",
     "xmldom": "^0.1.27"
   },
+  "devDependencies": {
+    "electron-rebuild": "^1.8.8"
+  },
   "scripts": {
     "simple-electron": "cd simple-electron && npm start",
     "react-electron": "cd react-electron && npm start",
