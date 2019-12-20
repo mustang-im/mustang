@@ -3,9 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@babel/core": "^7.7.7",
+    "@babel/plugin-transform-runtime": "^7.7.6",
+    "@babel/preset-env": "^7.7.7",
+    "@babel/preset-react": "^7.7.4",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.4.0",
     "@testing-library/user-event": "^7.2.1",
+    "babel-loader": "^8.0.6",
+    "babel-register": "^6.26.0",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "resolve": "1.12.2",
@@ -25,10 +31,12 @@
   "scripts": {
     "start": "../node_modules/electron/dist/electron -r esm app.js",
     "start-webpack": "node ./node_modules/webpack-cli/bin/cli.js --mode production app.js",
-    "build": "node scripts/build.js",
+    "build": "./node_modules/.bin/webpack --config webpack.config.js  --mode=development",
+    "postinstall": "(cd .. && npm run postinstall)",
     "test": "node scripts/test.js"
   },
   "main": "app.js",
+  "homepage": "./",
   "eslintConfig": {
     "extends": "react-app"
   },

@@ -19,9 +19,9 @@ export default class MessagePane extends Component {
 
 class MessageHeaderPane extends Component {
   render() {
-    let msg = this.props.message:
+    let msg = this.props.message;
+    // TODO: Use CSS grid
     return (
-      <!-- TODO: Use CSS grid -->
       <vbox id="header-pane">
         <hbox><label>Subject:</label> <label id="msg-subject">{ msg.subject }</label></hbox>
         <hbox><label>From:</label> <label id="msg-from">{ msg.authorRealname }</label></hbox>
@@ -33,7 +33,7 @@ class MessageHeaderPane extends Component {
 
 class MessageBodyPane extends Component {
   render() {
-    let message = this.props.message:
+    let message = this.props.message;
     if ( !message) {
       return <vbox id="msg-body-box" flex="1"></vbox>;
     }

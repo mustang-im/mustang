@@ -2,9 +2,9 @@ import { remote } from "electron";
 import appModulePath from "app-module-path";
 appModulePath.addPath(remote.getGlobal("__base"));
 
-import util from "../../../util/util";
+import util from "../../util/util";
 util.importAll(util, global);
-import collection from "../../../util/collection";
+import collection from "../../util/collection";
 util.importAll(collection, global);
 
 import AccountPane from "./AccountPane";
@@ -30,22 +30,24 @@ const ReactDOM = require("react-dom");
 class MainWindow extends Component {
   render() {
     return (
-      <MenuBar />
-      <Toolbar>
-        <button onclick={ () => this.addAccount() }>Add account</button>
-        <button onclick={ () => this.newEmail() }>Write</button>
-        <button onclick={ () => this.openAddressBook() }>Address book</button>
-      </Toolbar>
-      <hbox id="window-content-pane" flex="1">
-        <vbox id="left-pane" flex="1">
-          <AccountPane />
-          <FolderPane />
-        </vbox>
-        <vbox id="right-pane" flex="4">
-          <ThreadPane />
-        </vbox>
-      </hbox>
-      <StatusBar />
+      <vbox>
+        <MenuBar />
+        <Toolbar>
+          <button onclick={ () => this.addAccount() }>Add account</button>
+          <button onclick={ () => this.newEmail() }>Write</button>
+          <button onclick={ () => this.openAddressBook() }>Address book</button>
+        </Toolbar>
+        <hbox id="window-content-pane" flex="1">
+          <vbox id="left-pane" flex="1">
+            <AccountPane />
+            <FolderPane />
+          </vbox>
+          <vbox id="right-pane" flex="4">
+            <ThreadPane />
+          </vbox>
+        </hbox>
+        <StatusBar />
+      </vbox>
     );
   }
 

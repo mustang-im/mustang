@@ -1,4 +1,4 @@
-import { assert, Exception, tr, runLater, removeChildElements } from "../util/util";
+import { assert, Exception, tr, runLater, removeChildElements } from "../../util/util";
 import gApp from "../app-global.js";
 import React, { Component } from 'react';
 

@@ -2,10 +2,11 @@
 
 ## Install
 1. `yarn install`
-2. `$(npm bin)/electron-rebuild`
+2. `npm run postinstall`
 
 ## Run
 1. `cd react-electron`
+3. `npm run build`
 2. `npm start`
 or from main dir:
 1. `npm run react-electron`

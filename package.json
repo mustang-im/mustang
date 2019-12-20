@@ -28,6 +28,7 @@
     "postinstall": "install-app-deps",
     "test": "node test.js"
   },
+  "private": true,
   "workspaces": [
     "react-electron",
     "simple-electron"
