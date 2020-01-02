@@ -9,29 +9,29 @@ vbox {
   flex: attr(flex);
 }
 
-vbox[align=start],
-hbox[align=start] {
+vbox[pack=start],
+hbox[pack=start] {
   justify-content: flex-start;
 }
-vbox[align=end],
-hbox[align=end] {
+vbox[pack=end],
+hbox[pack=end] {
   justify-content: flex-end;
 }
-vbox[align=center],
-hbox[align=center] {
+vbox[pack=center],
+hbox[pack=center] {
   justify-content: center;
 }
 /* TODO there's no align=stretch */
 
-vbox[pack=start],
-hbox[pack=start] {
+vbox[align=start],
+hbox[align=start] {
   align-items: flex-start;
 }
-vbox[pack=end],
-hbox[pack=end] {
+vbox[align=end],
+hbox[align=end] {
   align-items: flex-end;
 }
-vbox[pack=center],
-hbox[pack=center] {
+vbox[align=center],
+hbox[align=center] {
   align-items: center;
 }
