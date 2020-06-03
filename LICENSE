@@ -1,4 +1,5 @@
-This application is licensed under the GPL v2, unless specific subdirectories or files specify another license. Some libraries are under the LGPL v2.1.
+This application is licensed under the GPL v2, unless specific subdirectories
+or files specify another license. Some libraries are under the LGPL v2.1.
 Some additional clarifications and terms apply, please see the end.
 
 ---------------------------------------------------
@@ -747,10 +748,69 @@ DAMAGES.
 
 ---------------------------------------------------
 
-Additional clarifications on what we mean with some specific license terms:
-* "The source code for a work means the preferred form of the work for making modifications to it." Given that git and version control is today an essential part of the software development process, and you received the full version history as source code from us, we consider the full version history the "preferred form of the work for making modifications to it". That includes the commits and commit granularity your team used as the basis for its work and source code modifications. The version history contains essential information. You may strip files not covered by the license from the repository, as long as you adhere to the other requirements. That includes stable commit IDs across releases, so that merges between your changes and ours can work correctly and automatically over time and releases. Archive source drops do not count as workable "source code" in 2020 anymore!
-* Copyright notices: Any copyright notices must be at least as prominent as your own copyright and origin notices. You cannot claim "(c) Gnomovision" and then hide the open source authors 3 levels down in a menu. See e.g. LGPL v2.1 Section 6 "Prominent notice" and GPL v2 Section 3 "when started, display an announcement". We would like it to be clearly evident to your end users that your program is based on this program and our work.
-* Addons: Addons that use only offical APIs (that are officially sactioned by the original authors of the program) are not considered part of the program and such addons are not subject to the license. Compare the Linux kernel, which makes a similar distinction between EXPORT_SYMBOL_GPL and EXPORT_SYMBOL, where the latter may be used by non-GPL modules. Obviously, Addon APIs that you added yourself are not subject to this license exception, and addons that use such APIs are part of the program and must comply with the license, otherwise you could circumvent the entire license. Compare GPL 2.0 Section 10.
 
-Additional terms:
-* You give Ben Bucksch (the original author) the right to additionally license the modified work including your modifications under different terms. Compare MPL 1.1 Section 6.1. In any case, your rights under this license for this work remain in effect forever. You may continue to use the work under this license. Any license change gives you additional rights to the work, not less.
+# Clarifications
+
+Additional clarifications on what we mean with some specific license terms:
+
+### Preferred form
+
+"The source code for a work means the preferred form of the work for making
+modifications to it."
+
+Given that git and version control today have become an essential part of the
+software development process, and you received the full version history as
+source code from us, we consider the full version history the
+"preferred form of the work for making modifications to it". That includes the
+commits and commit granularity your team used as the basis for its work and
+source code modifications. The version history contains essential information.
+This project defines "source code" to include the commit history.
+
+You may strip files not covered by the license from the repository,
+as long as you adhere to the other requirements. In any case, the resulting
+commits must match the commits that your own developers work with,
+and the commit IDs for these commits need to stay stable and unchanged
+across releases, so that merges between your changes and ours can work
+correctly and automatically over time and releases.
+
+Archive source drops do not count as workable "source code" in 2020 anymore!
+At least not as far as this project is concerned.
+
+### Copyright notices
+
+Any copyright notices for our contributions must be at least as prominent
+as your own copyright and origin notices. You cannot claim "(c) Gnomovision"
+and then hide the open source authors behind extra clicks.
+See e.g. LGPL v2.1 Section 6 "Prominent notice" and GPL v2 Section 3
+"when started, display an announcement".
+
+We would like it to be clearly evident to your end users that your program
+is based on this program and our work.
+
+### Addons
+
+Addons that use only offical APIs (that are officially sactioned by the
+original authors of the program) are not considered part of the program
+and such addons are not subject to the license.
+
+Compare the Linux kernel, which makes a similar distinction between
+EXPORT_SYMBOL_GPL and EXPORT_SYMBOL, where the latter may be
+used by non-GPL modules. Obviously, Addon APIs that you added yourself
+are not subject to this license exception, and addons that use such APIs
+are part of the program and must comply with the license, otherwise you
+could circumvent the entire license. Compare GPL 2.0 Section 10.
+
+### Additional licenses
+
+When you make modifications and you keep this paragraph,
+you additionally give Ben Bucksch (the original author) the right to
+additionally license the modified work including your modifications
+under different terms. Compare MPL 1.1 Section 6.1. This allows
+license changes without contacting all authors individually.
+
+If you do not wish to do so, please remove the last paragraph,
+starting with the heading "Additional licenses".
+
+In any case, your rights under this license for this work remain in effect forever.
+You may continue to use the work under this license. Any license change
+gives additional rights to the work, not less.
