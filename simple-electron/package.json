@@ -5,7 +5,7 @@
   "main": "app.js",
   "dependencies": {
     "app-module-path": "^2.2.0",
-    "electron": "^7.1.2",
+    "electron": "^7.2.4",
     "esm": "^3.2.25"
   },
   "devDependencies": {
