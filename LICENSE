@@ -768,7 +768,7 @@ This project defines "source code" to include the commit history.
 
 You may strip files not covered by the license from the repository,
 as long as you adhere to the other requirements. In any case, the resulting
-commits must match the commits that your own developers work with,
+commits must match the commit contents that your own developers work with,
 and the commit IDs for these commits need to stay stable and unchanged
 across releases, so that merges between your changes and ours can work
 correctly and automatically over time and releases.
@@ -797,7 +797,7 @@ Compare the Linux kernel, which makes a similar distinction between
 EXPORT_SYMBOL_GPL and EXPORT_SYMBOL, where the latter may be
 used by non-GPL modules. Obviously, Addon APIs that you added yourself
 are not subject to this license exception, and addons that use such APIs
-are part of the program and must comply with the license, otherwise you
+are part of the program and must comply with the license -- otherwise you
 could circumvent the entire license. Compare GPL 2.0 Section 10.
 
 ### Additional licenses
@@ -805,7 +805,7 @@ could circumvent the entire license. Compare GPL 2.0 Section 10.
 When you make modifications and you keep this paragraph,
 you additionally give Ben Bucksch (the original author) the right to
 additionally license the modified work including your modifications
-under different terms. Compare MPL 1.1 Section 6.1. This allows
+under different terms. This is similar to MPL 1.1 Section 6.1. This allows
 license changes without contacting all authors individually.
 
 If you do not wish to do so, please remove the last paragraph,

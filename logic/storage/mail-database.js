@@ -5,6 +5,8 @@ fs.mkdirAsync = promisify(fs.mkdir);
 
 /**
  * Keeps metadata about emails.
+ *
+ * Abstract base class
  */
 export default class MailDatabase {
   /**

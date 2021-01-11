@@ -10,6 +10,8 @@ fs.existsAsync = promisify(fs.exists);
 /**
  * Allows to store entire RFC822 messages on disk, and read them back.
  * Does not implement a meta-data store, just the raw messages.
+ *
+ * Abstract base class
  */
 export default class MailStore {
 

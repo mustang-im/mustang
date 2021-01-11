@@ -1,7 +1,7 @@
 {
   "name": "mustang",
   "version": "0.1.0",
-  "description": "Mustang - User-friendly email applications",
+  "description": "Mustang - User-friendly full-featured email application for everybody",
   "dependencies": {
     "@buttercup/credentials": "^1.2.0",
     "adm-zip": "^0.4.13",
@@ -44,7 +44,7 @@
     "desktop"
   ],
   "author": "Ben Bucksch",
-  "license": "MPL-1.1",
+  "license": "GPL-2.0",
   "bugs": {
     "url": "https://github.com/benbucksch/corvette/issues"
   },
