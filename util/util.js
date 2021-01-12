@@ -249,14 +249,7 @@ function getBrowserVersion() {
 class Exception {
   constructor(msg) {
     this._message = msg;
-
-    // get stack
-    try {
-      dummy.to.provoke.a.native.exception += 1; // force a native exception ...
-    } catch (e) {
-      this.stack = e.stack; // ... to get the current stack
-    }
-    //console.log("ERROR (exception): " + msg + "\nStack:\n" + this.stack);
+    this.stack = new Error().stack;
   }
   get message() {
     return this._message;
