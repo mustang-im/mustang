@@ -20,8 +20,8 @@
     "xmldom": "^0.1.27"
   },
   "scripts": {
-    "simple-electron": "electron -r esm simple-electron/",
-    "react-electron": "electron -r esm react-electron/",
+    "simple-electron": "cd simple-electron/ && yarn run start",
+    "react-electron": "cd react-electron/ && yarn run start",
     "postinstall": "install-app-deps",
     "test": "node test.js"
   },
