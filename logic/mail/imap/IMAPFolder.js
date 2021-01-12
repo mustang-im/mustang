@@ -76,6 +76,15 @@ export default class IMAPFolder extends MsgFolder {
   async fetch() {
     try {
     await this._open();
+
+    let newestKnownMessageUID = 0;
+    this.cache.messages.forEach(msg => {
+      if (newestKnownMessageUID < msg.UID) {
+        newestKnownMessageUID = msg.UID;
+      }
+    });
+    console.log("newestKnownMessageUID", newestKnownMessageUID);
+    this.getMessagesComplete(newestKnownMessageUID + 1);
     } catch (ex) { console.error(ex); throw ex; }
   }
 
@@ -101,8 +110,6 @@ export default class IMAPFolder extends MsgFolder {
     };
     let mailbox = await conn.selectMailbox(this.fullPath);
     this.messageCount = sanitize.integer(mailbox.exists);
-
-    this.getMessagesComplete();
   }
 
   /**
