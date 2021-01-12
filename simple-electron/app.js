@@ -8,6 +8,7 @@ import url from "url";
 import appModulePath from "app-module-path";
 import { getAllAccounts } from "../logic/account/account-list";
 import { makeNewAccount } from "../logic/account/account-setup";
+import SQLAccount from "../logic/storage/SQLAccount";
 appModulePath.addPath(__dirname + "/../");
 global.__base = __dirname + "/../";
 
@@ -17,6 +18,7 @@ global.makeNewAccount = makeNewAccount;
 
 async function start() {
   try {
+    await SQLAccount.init();
     global.accounts = getAllAccounts();
     createWindow();
   } catch (ex) {

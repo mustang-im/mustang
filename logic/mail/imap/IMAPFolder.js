@@ -3,7 +3,6 @@ import IMAPAccount from "../../mail/imap/IMAPAccount";
 import IMAPMessage from "../../mail/imap/IMAPMessage";
 import MsgFolder from "../../account/MsgFolder";
 import SQLFolder from "../../storage/SQLFolder";
-import { openDatabase }  from "../../storage/mail-sql";
 import util from "../../../util/util";
 util.importAll(util, global);
 import { sanitize } from "../../../util/sanitizeDatatypes";
@@ -30,10 +29,6 @@ export default class IMAPFolder extends MsgFolder {
      * {IMAPClient}
      */
     this._conn = null;
-  }
-
-  static async init() {
-    await openDatabase();
   }
 
   /**

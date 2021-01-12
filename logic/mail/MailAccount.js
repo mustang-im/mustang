@@ -39,7 +39,7 @@ export default class MailAccount extends Account {
     this._peekMails = 10;
 
     /**
-     * {MapColl of foldername -> MsgFolder}
+     * {MapColl of fullPath -> MsgFolder}
      */
     this._folders = new MapColl();
   }
@@ -82,7 +82,7 @@ export default class MailAccount extends Account {
    * may be an empty array when this is not implemented.
    */
   get folders() {
-    this._folders;
+    return this._folders;
   }
 
   /**

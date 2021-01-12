@@ -8,6 +8,7 @@ import IMAPFolder from "../../mail/imap/IMAPFolder";
 import MsgFolder from "../../account/MsgFolder";
 import MailAccount from "../../mail/MailAccount";
 import EMail from "../../mail/EMail";
+import SQLAccount from "../../storage/SQLAccount";
 import util from "../../../util/util";
 util.importAll(util, global);
 import { sanitize } from "../../../util/sanitizeDatatypes";
@@ -26,6 +27,11 @@ export default class IMAPAccount extends MailAccount {
     //this._inbox = null;
     this._inbox = new MsgFolder("INBOX", "INBOX", this);
     this._folders.set("INBOX", this._inbox);
+
+    this.cache = new SQLAccount(this, IMAPFolder);
+    this._folders = this.cache.folders;
+    this.cache.watch(this._folders);
+    this.cache.findFolders().catch(console.error);
 
     /**
      * Lists |ImapClient|s for this account
@@ -76,7 +82,7 @@ export default class IMAPAccount extends MailAccount {
    */
   async login(continuously) {
     try {
-    await IMAPFolder.init();
+    await SQLAccount.init();
     let conn = await this._newConnection();
     if (this._folders.length <= 1 || !this._inbox) {
       await this.findFolders();

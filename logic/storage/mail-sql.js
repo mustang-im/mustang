@@ -40,7 +40,7 @@ export default class MailSQLDatabase extends MailDatabase {
    */
   async addFolder(folder) {
     assert(folder instanceof MsgFolder);
-    await this._db.run(SQL`INSERT OR IGNORE INTO folder (name, fullPath, accountID) VALUES (${folder.name}, ${folder.fullPath}, ${folder.account.accountID})`);
+    await this._db.run(SQL`INSERT OR IGNORE INTO folder (name, fullPath, parentPath, accountID) VALUES (${folder.name}, ${folder.fullPath}, ${folder.parentFolder ? folder.parentFolder.fullPath : null}, ${folder.account.accountID})`);
   }
 
   /**
@@ -101,16 +101,45 @@ export default class MailSQLDatabase extends MailDatabase {
   }
 
   /**
+   * Returns all known folder.
+   *
+   * @param account {Account} e.g. IMAPAccount
+   * @param FolderSubclass {Subtype of MsgFolder} corresponding to account, e.g. IMAPFolder
+   * @returns {Array of FolderSubclass}
+   */
+  async listFolders(account, FolderSubclass) {
+    let results = await this._db.all(SQL`SELECT id, name, fullPath, parentPath, accountID FROM folder WHERE accountID = ${account.accountID}`);
+    let folders = results.map(result => {
+      let folder = new FolderSubclass(result.name, result.fullPath, account, null);
+      folder._parentPath = result.parentPath;
+      return folder;
+    });
+    // create hierarchy
+    for (let folder of folders) {
+      if (folder._parentPath) {
+        folder.parentFolder = folders.find(f => f.fullPath == folder._parentPath);
+        folder.parentFolder.folders.add(folder);
+      }
+      delete folder._parentPath;
+    }
+    return folders;
+  }
+  /**
    * Returns all known emails in a folder.
    *
    * @param folder {MsgFolder}
    * @param EMailSubclass {Subtype of EMail} e.g. IMAPMessage
-   * @returns {Array of EMail}
+   * @returns {Array of EMailSubclass}
    */
   async listMessagesInFolder(folder, EMailSubclass) {
     assert(folder instanceof MsgFolder);
     if (!folder._dbID) {
-      folder._dbID = (await this._db.get(SQL`SELECT id FROM folder WHERE fullPath = ${folder.fullPath} AND accountID = ${folder.account.accountID} LIMIT 1`)).id;
+       let result = await this._db.get(SQL`SELECT id FROM folder WHERE fullPath = ${folder.fullPath} AND accountID = ${folder.account.accountID} LIMIT 1`);
+       if (result) {
+         folder._dbID = result.id;
+       } else {
+         return [];
+       };
     }
     let results = await this._db.all(SQL`SELECT UID, msgID, parentMsgID, subject, dateSent, dateReceived, fromT.emailAddress as fromEmailAddress, fromT.name as fromName, toT.emailAddress as toEmailAddress, toT.name as toName FROM email LEFT JOIN person AS fromT ON firstFrom = fromT.id LEFT JOIN person AS toT ON firstTo = toT.id WHERE folder = ${folder._dbID}`);
     return results.map(result => {

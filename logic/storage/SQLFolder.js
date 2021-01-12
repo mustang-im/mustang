@@ -25,7 +25,7 @@ export default class SQLFolder extends MsgFolder {
 
   async _addToDB() {
     if ( !this._addedFolder) {
-      await this._database.addFolder(this);
+      await this._database.addFolder(this.baseFolder);
       this._addedFolder = true;
     }
   }

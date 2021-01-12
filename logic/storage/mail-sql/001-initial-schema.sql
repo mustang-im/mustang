@@ -33,6 +33,7 @@ CREATE TABLE folder (
   accountID TEXT not null,
   fullPath TEXT not null,
   name TEXT not null,
+  parentPath TEXT default null, -- full path of the parent folder
   UNIQUE (accountID, fullPath)
 );
 CREATE TABLE person (
