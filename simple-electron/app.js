@@ -13,8 +13,16 @@ global.__base = __dirname + "/../";
 
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
-global.accounts = getAllAccounts();
 global.makeNewAccount = makeNewAccount;
+
+async function start() {
+  try {
+    global.accounts = getAllAccounts();
+    createWindow();
+  } catch (ex) {
+    console.error(ex);
+  }
+}
 
 // Window will be closed once this object is garbage collected, so keep it
 var mainWindow;
@@ -37,7 +45,7 @@ function createWindow () {
   });
 }
 
-app.on("ready", createWindow);
+app.on("ready", start);
 
 app.on("window-all-closed", function () {
   if (process.platform !== "darwin") {
