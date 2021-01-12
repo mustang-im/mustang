@@ -87,7 +87,15 @@ export default class IMAPFolder extends MsgFolder {
       }
     });
     console.log("newestKnownMessageUID", newestKnownMessageUID);
-    this.getMessagesComplete(newestKnownMessageUID + 1);
+    await this.getMessagesComplete(newestKnownMessageUID + 1);
+
+    // Download bodies of previous messages
+    let toDownload = this.cache.messages.contents.filter(msg => !msg.haveBody);
+    while (toDownload.length) {
+      let batch = toDownload.splice(0, 100);
+      let rangeSpec = batch.map(msg => msg.UID).join(",");
+      await this.getMessagesComplete(rangeSpec);
+    }
   }
 
   async fetchWithDedicatedConnection() {
@@ -143,6 +151,9 @@ export default class IMAPFolder extends MsgFolder {
   }
 
   _offsetLimit(offset, limit) {
+    if (typeof(offset) == "string" && (offset.includes(",") || offset.includes(":"))) {
+      return offset; // range spec like "1,2,5" or "1,4,50:60,100:"
+    }
     assert(!offset || typeof(offset) == "number");
     assert(!limit || typeof(limit) == "number");
     if (!offset) {
