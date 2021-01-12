@@ -177,24 +177,16 @@ export default class EMail {
       if (text) {
         return;
       }
-      //console.log("Content-Type: " + part.contentType.value);
+      if (part.contentType.value == mimeType) {
+        text = part.content;
+        return;
+      }
       if (part.contentType.value == "multipart/alternative") {
         // last is the most preferred
         let ordered = arrayReverse(part.childNodes);
-        // but we want plaintext
-        let plaintextPart = ordered.find(part => part.contentType.value == mimeType);
-        if (plaintextPart) {
-          process(plaintextPart);
-          return;
+        for (let alt of ordered) {
+          process(alt);
         }
-        let htmlPart = ordered.find(part => part.contentType.value == mimeType);
-        if (htmlPart) {
-          process(htmlPart);
-          return;
-        }
-        process(ordered.childNodes[0]);
-      } else if (part.contentType.value == mimeType) {
-        text = part.content;
       }
     }
     this._walkTree(await this.bodyParts(), process);
