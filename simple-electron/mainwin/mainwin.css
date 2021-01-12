@@ -7,6 +7,7 @@ body {
 }
 #window-content-pane {
   flex: 1;
+  overflow: hidden;
 }
 #left-pane {
   flex: 1;
@@ -24,9 +25,14 @@ body {
 }
 #thread-pane {
   flex: 1;
+  overflow: hidden;
+}
+#message-list {
+  overflow: hidden;
 }
 #message-pane {
   flex: 2;
+  overflow: auto;
 }
 #account-list, #folder-list, #message-list, #msg-body {
   flex: 1;
@@ -41,4 +47,8 @@ body {
 }
 #msg-body-plaintext {
   white-space: pre-wrap;
+  padding: 1em;
+}
+#msg-body-frame {
+  display: none;
 }
