@@ -40,7 +40,6 @@
     "build": "./node_modules/.bin/webpack --config webpack.config.js  --mode=development",
     "test": "node scripts/test.js"
   },
-  "homepage": "./",
   "eslintConfig": {
     "extends": "react-app"
   },

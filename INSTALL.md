@@ -2,8 +2,13 @@
 
 ```
 $ yarn install
+$ (cd react-electron && yarn run build)
 ```
-(Please use yarn, due to the workspaces that we use in this project.)
+(not `yarn build`)
+
+Please use yarn, due to the workspaces that we use in this project.
+
+Do *not* run `yarn install` in the subdirs.
 
 # Run
 
