@@ -97,10 +97,11 @@ export default class EMail {
     }
 
     // Parse raw MIME into body structure
+    // using <https://github.com/emailjs/emailjs-mime-parser>
     this._bodyParts = parseMIME(await this.MIME());
 
     // Decode Uint8Array
-    this.walkTree(this._bodyParts, part => {
+    this._walkTree(this._bodyParts, part => {
       if (part.content) {
         let charset = part.contentType &&
             part.contentType.params &&
@@ -115,15 +116,15 @@ export default class EMail {
   }
 
   /**
-   * Walks the tree hierarchy.
+   * Walks the body part tree hierarchy.
    * Calls |func| on each |childNodes| and self.
    * @param func {Function(part)}
    */
-  walkTree(part, func) {
+  _walkTree(part, func) {
     func(part);
     if (part.childNodes) {
       for (let child of part.childNodes) {
-        this.walkTree(child, func);
+        this._walkTree(child, func);
       }
     }
   }
@@ -156,7 +157,7 @@ export default class EMail {
         text = convertHTMLtoPlaintext(part.content);
       }
     }
-    this.walkTree(await this.bodyParts(), process);
+    this._walkTree(await this.bodyParts(), process);
     return text;
   }
 
@@ -168,13 +169,7 @@ export default class EMail {
    *   not passed (undefined): mark as read
    */
   async markAsRead(read) {
-    if (read === undefined) {
-      read = true;
-    }
-    this.isRead = read;
-    console.log("Marking message " + this.subject + " " + this.msgID + " as read");
-    await this.folder.updateMessagesMetadata([ this ], { read: read } );
-    return read;
+    throw new ImplementThis();
   }
 
   /**
@@ -185,25 +180,19 @@ export default class EMail {
    *   not passed (undefined): flagged
    */
   async star(starred) {
-    if (starred === undefined) {
-      starred = true;
-    }
-    this.isStarred = starred;
-    console.log("Marking message " + this.subject + " " + this.msgID + " as starred");
-    await this.folder.updateMessagesMetadata([ this ], { starred: starred } );
-    return starred;
+    throw new ImplementThis();
   }
 
   async deleteMessage(toTrash) {
-    await this.folder.deleteMessages([ this ], toTrash);
+    throw new ImplementThis();
   }
 
   async copy(targetFolder) {
-    await this.folder.copyMessages([ this ], targetFolder);
+    throw new ImplementThis();
   }
 
   async move(targetFolder) {
-    await this.folder.moveMessages([ this ], targetFolder);
+    throw new ImplementThis();
   }
 
   /**
@@ -241,10 +230,24 @@ export default class EMail {
    */
   static fromMIME(fullMIME) {
     throw new ImplementThis();
+    let msg = new EMail();
+    msg._mime = fullMIME;
+    // TODO parse headers
+    return msg;
   }
 }
 
 
+
+
+////////////////////////
+// Helper functions
+
+function convertHTMLtoPlaintext(plaintext) {
+  return htmlToText.fromString(plaintext, {
+    ignoreImage: true,
+  });
+}
 
 function arrayReverse(array) {
   let result = [];
@@ -252,12 +255,6 @@ function arrayReverse(array) {
     result.unshift(m);
   }
   return result;
-}
-
-function convertHTMLtoPlaintext(plaintext) {
-  return htmlToText.fromString(plaintext, {
-    ignoreImage: true,
-  });
 }
 
 // TODO charsets other than UTF-8

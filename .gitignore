@@ -3,4 +3,6 @@
 node_modules/
 .project
 .settings/
-
+yarn.lock
+package-lock.json
+react-electron/build/
