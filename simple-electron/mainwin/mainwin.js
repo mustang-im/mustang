@@ -73,6 +73,7 @@ function addAccount() {
     openWindow("../setup/mail-account-setup.html");
   } catch (e) { showError(e); }
 }
+window.addAccount = addAccount;
 
 function showError(e) {
   console.error(e);
