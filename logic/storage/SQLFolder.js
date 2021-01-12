@@ -8,11 +8,16 @@ import MailSQLDatabase, { getDatabase } from "../storage/mail-sql";
  * Caches a MsgFolder in MailSQLDatabase
  */
 export default class SQLFolder extends MsgFolder {
-  constructor(baseFolder) {
+  /**
+   * @param baseFolder {MsgFolder} The corresponding folder that this one caches, e.g. IMAPFolder
+   * @param EMailSubtype {Subclass of Email} The EMail class corresponding to baseFolder, e.g. IMAPMessage
+   */
+  constructor(baseFolder, EMailSubtype) {
     assert(baseFolder instanceof MsgFolder);
     super(baseFolder.name, baseFolder.fullPath, baseFolder.account);
 
     this.baseFolder = baseFolder;
+    this._EMailSubtype = EMailSubtype;
     this._listenerSourceUs = false;
     this._database = getDatabase(null);
     this._addToDB().catch(console.error);
@@ -49,7 +54,7 @@ export default class SQLFolder extends MsgFolder {
    */
   async fetch() {
     // TODO get subfolder list
-    let msgs = await this._database.listMessagesInFolder(this.baseFolder);
+    let msgs = await this._database.listMessagesInFolder(this.baseFolder, this._EMailSubtype);
     this._listenerSourceUs = true;
     for (let msg of msgs) {
       this._messages.set(msg.msgID, msg);

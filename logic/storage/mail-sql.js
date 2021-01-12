@@ -104,13 +104,17 @@ export default class MailSQLDatabase extends MailDatabase {
    * Returns all known emails in a folder.
    *
    * @param folder {MsgFolder}
+   * @param EMailSubclass {Subtype of EMail} e.g. IMAPMessage
    * @returns {Array of EMail}
    */
-  async listMessagesInFolder(folder) {
+  async listMessagesInFolder(folder, EMailSubclass) {
     assert(folder instanceof MsgFolder);
-    let results = await this._db.all(SQL`SELECT UID, msgID, parentMsgID, subject, dateSent, dateReceived, fromT.emailAddress as fromEmailAddress, fromT.name as fromName, toT.emailAddress as toEmailAddress, toT.name as toName FROM email LEFT JOIN person AS fromT ON firstFrom = fromT.id LEFT JOIN person AS toT ON firstTo = toT.id WHERE folder = (SELECT id FROM folder WHERE fullPath = ${folder.fullPath} AND accountID = ${folder.account.accountID} LIMIT 1)`);
+    if (!folder._dbID) {
+      folder._dbID = (await this._db.get(SQL`SELECT id FROM folder WHERE fullPath = ${folder.fullPath} AND accountID = ${folder.account.accountID} LIMIT 1`)).id;
+    }
+    let results = await this._db.all(SQL`SELECT UID, msgID, parentMsgID, subject, dateSent, dateReceived, fromT.emailAddress as fromEmailAddress, fromT.name as fromName, toT.emailAddress as toEmailAddress, toT.name as toName FROM email LEFT JOIN person AS fromT ON firstFrom = fromT.id LEFT JOIN person AS toT ON firstTo = toT.id WHERE folder = ${folder._dbID}`);
     return results.map(result => {
-      let email = new EMail(folder);
+      let email = new EMailSubclass(folder);
       email.UID = result.UID;
       email.msgID = result.msgID;
       email.subject = result.subject;
@@ -120,6 +124,17 @@ export default class MailSQLDatabase extends MailDatabase {
       email.authorRealname = result.fromName;
       email.recipientEmailAddress = result.toEmailAddress;
       email.recipientRealname = result.toName;
+      (async () => {
+        try {
+          let body = await this._db.get(SQL`SELECT plaintext, html FROM emailBody WHERE folder = ${folder._dbID} and UID = ${email.UID} LIMIT 1`);
+          if (body) {
+            email._bodyPlaintext = body.plaintext;
+            email._bodyHTML = body.html;
+          }
+        } catch (ex) {
+          console.error(ex);
+        }
+      })();
       return email;
     });
   }

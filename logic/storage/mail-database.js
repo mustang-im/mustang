@@ -48,9 +48,10 @@ export default class MailDatabase {
    * Returns all known emails in a folder.
    *
    * @param msgFolder {MsgFolder}
+   * @param EMailSubclass {Subtype of EMail} e.g. IMAPMessage
    * @returns {Array of EMail}
    */
-  async listMessagesInFolder(msgFolder) {
+  async listMessagesInFolder(folder, EMailSubclass) {
     assert(msgFolder instanceof MsgFolder);
     throw new ImplementThis();
   }

@@ -79,6 +79,16 @@ export default class EMail {
      */
     this._bodyParts = null;
 
+    /**
+     * {string}
+     */
+    this._bodyPlaintext = null;
+
+    /**
+     * {string}
+     */
+    this._bodyHTML = null;
+
 
     // mutable meta data
 
@@ -134,6 +144,9 @@ export default class EMail {
    * @return {string} plain text
    */
   async bodyPlaintext() {
+    if (this._bodyPlaintext) {
+      return this._bodyPlaintext;
+    }
     let text = this.bodyByType("text/plain");
     if (text) {
       // TODO strip quotes
@@ -152,6 +165,9 @@ export default class EMail {
    * @return {string} HTML
    */
   async bodyHTML() {
+    if (this._bodyHTML) {
+      return this._bodyHTML;
+    }
     let html = this.bodyByType("text/html");
     if (html) {
       // TODO strip quotes
@@ -199,7 +215,7 @@ export default class EMail {
    *   False: We need to make additional calls to get it.
    */
   get haveBody() {
-    return !!(this._bodyParts || this._mime);
+    return !!(this._bodyParts || this._mime || this._bodyPlaintext || this._bodyHTML);
   }
 
   /**

@@ -18,7 +18,7 @@ export default class IMAPFolder extends MsgFolder {
     assert(!parentFolder || parentFolder instanceof IMAPFolder);
     super(name, fullPath, account);
 
-    this.cache = new SQLFolder(this);
+    this.cache = new SQLFolder(this, IMAPMessage);
     this._messages = this.cache.messages;
     this._subfolders = this.cache.folders;
     this.cache.watch(this._messages, this._subfolders);
@@ -73,10 +73,13 @@ export default class IMAPFolder extends MsgFolder {
     return this._conn;
   }
 
+  /**
+   * Called by UI [Get Messages] and implicitly when opening a folder
+   */
   async fetch() {
-    try {
     await this._open();
 
+    // Get the new messages
     let newestKnownMessageUID = 0;
     this.cache.messages.forEach(msg => {
       if (newestKnownMessageUID < msg.UID) {
@@ -85,14 +88,11 @@ export default class IMAPFolder extends MsgFolder {
     });
     console.log("newestKnownMessageUID", newestKnownMessageUID);
     this.getMessagesComplete(newestKnownMessageUID + 1);
-    } catch (ex) { console.error(ex); throw ex; }
   }
 
   async fetchWithDedicatedConnection() {
-    try {
     await this.account._newConnection();
     await this._open();
-    } catch (ex) { console.error(ex); throw ex; }
   }
 
   /**
