@@ -9,7 +9,7 @@ util.importAll(collection, global);
 */
 var remote = require("electron").remote;
 require("app-module-path").addPath(remote.getGlobal("__base"));
-var util = require("util/util");
+var util = require("../../util/util");
 util.importAll(util, global);
 util.importAll(require("util/collection"), global);
 
