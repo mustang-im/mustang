@@ -35,7 +35,7 @@
   },
   "main": "app.js",
   "scripts": {
-    "start": "electron .",
+    "start": "electron -r esm .",
     "start-webpack": "node ./node_modules/webpack-cli/bin/cli.js --mode production app.js",
     "build": "./node_modules/.bin/webpack --config webpack.config.js  --mode=development",
     "test": "node scripts/test.js"
