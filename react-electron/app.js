@@ -2,16 +2,19 @@
  * This is the Electron main process.
  */
 
-const electron = require("electron");
-const app = electron.app;
-const BrowserWindow = electron.BrowserWindow;
-const path = require("path");
-const url = require("url");
-require("app-module-path").addPath(__dirname + "/../");
+import electron from "electron";
+import path from "path";
+import url from "url";
+import appModulePath from "app-module-path";
+import accountList from "../logic/account/account-list";
+import accountSetup from "../logic/account/account-setup";
+appModulePath.addPath(__dirname + "/../");
 global.__base = __dirname + "/../";
 
-global.accounts = require("../logic/account/account-list").getAllAccounts();
-global.makeNewAccount = require("../logic/account/account-setup").makeNewAccount;
+const app = electron.app;
+const BrowserWindow = electron.BrowserWindow;
+global.accounts = accountList.getAllAccounts();
+global.makeNewAccount = accountSetup.makeNewAccount;
 
 // Window will be closed once this object is garbage collected, so keep it
 var mainWindow;
