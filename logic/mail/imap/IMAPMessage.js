@@ -46,6 +46,7 @@ export default class IMAPMessage extends EMail {
     msg.flags = message.flags.map(flag => sanitize.nonemptystring(flag).substr(1));
     msg.seen = msg.flags.indexOf("Seen") != -1;
     msg._mime = message["body[]"];
+    msg._bodyParts = message.bodystructure;
     return msg;
   }
 
