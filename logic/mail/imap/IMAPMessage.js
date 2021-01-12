@@ -40,7 +40,7 @@ export default class IMAPMessage extends EMail {
     msg.authorFull = msg.authorRealname
         ? msg.authorRealname + " <" + msg.authorEmailAddress + ">"
         : msg.authorEmailAddress;
-    var firstTo = header.to[0];
+    var firstTo = header.to && header.to.length ? header.to[0] : null;
     msg.recipientEmailAddress = sanitize.emailAddress(firstTo.address);
     msg.recipientRealname = sanitize.label(firstTo.name);
     msg.flags = message.flags.map(flag => sanitize.nonemptystring(flag).substr(1));

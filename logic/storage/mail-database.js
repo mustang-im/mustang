@@ -4,7 +4,9 @@ import { promisify } from "util";
 fs.mkdirAsync = promisify(fs.mkdir);
 
 /**
- * Keeps metadata about emails.
+ * Keeps meta-data about emails.
+ *
+ * `MailStore` keeps the raw messages.
  *
  * Abstract base class
  */

@@ -135,7 +135,7 @@ export default class EMail {
       if (text) {
         return;
       }
-      console.log("Content-Type: " + part.contentType.value);
+      //console.log("Content-Type: " + part.contentType.value);
       if (part.contentType.value == "multipart/alternative") {
         // last is the most preferred
         let ordered = arrayReverse(part.childNodes);
