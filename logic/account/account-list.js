@@ -23,7 +23,7 @@ var gHaveReadAll = false;
  * Returns all accounts from prefs and local objects
  * @returns |Map|
  */
-function getAllAccounts() {
+export function getAllAccounts() {
   if ( !gHaveReadAll) {
     ourPref.get("accountsList", "").split(",").forEach(accountID => {
       if ( !accountID || gAccounts.get(accountID)) {
@@ -48,7 +48,7 @@ function _readExistingAccountFromPrefs(accountID) {
 }
 
 // exported only for account-setup.js
-function _newAccountOfType(type, accountID, isNew) {
+export function _newAccountOfType(type, accountID, isNew) {
   let account;
   if (type == "imap") {
     account = new IMAPAccount(accountID);
@@ -65,7 +65,7 @@ function _newAccountOfType(type, accountID, isNew) {
  * Returns the |Account| object for |emailAddress|.
  * If the account does not exist yet, returns null;
  */
-function getExistingAccountForEmailAddress(emailAddress) {
+export function getExistingAccountForEmailAddress(emailAddress) {
   sanitize.nonemptystring(emailAddress);
   return getAllAccounts().find(acc => acc.emailAddress == emailAddress);
 }
@@ -78,7 +78,7 @@ function getExistingAccountForEmailAddress(emailAddress) {
  *   accountCount {Integer}   number of accounts
  * }
  */
-function accountsSummary() {
+export function accountsSummary() {
   var result = {
     isLoggedIn : false,
     newMailCount : 0,
@@ -111,9 +111,3 @@ var netTeardownListener = {
 }
 // TODO Port
 //Services.obs.addObserver(netTeardownListener, "profile-change-net-teardown", false);
-
-
-exports.getAllAccounts = getAllAccounts;
-exports.accountsSummary = accountsSummary;
-exports.getExistingAccountForEmailAddress = getExistingAccountForEmailAddress;
-exports._newAccountOfType = _newAccountOfType; // for account-setup.js only

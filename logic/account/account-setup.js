@@ -29,7 +29,7 @@ const mozillaISPDBURL = "https://autoconfig.thunderbird.net/v1.1/";
  *     Called, if we cannot configure that email address.
  * @returns {Abortable}
  */
-function makeNewAccount(emailAddress, allAccounts, successCallback, errorCallback) {
+export function makeNewAccount(emailAddress, allAccounts, successCallback, errorCallback) {
   try {
     assert(allAccounts);
     sanitize.nonemptystring(emailAddress);
@@ -75,7 +75,7 @@ function generateNewAccountID() {
  * @param errorCallback check failed, with reason
  * @returns {Abortable}
  */
-function verifyEmailAddressDomain(emailAddress, successCallback, errorCallback) {
+export function verifyEmailAddressDomain(emailAddress, successCallback, errorCallback) {
   var domain = getDomainForEmailAddress(emailAddress);
   return getAccountProviderWithNet(domain, emailAddress,
       successCallback, errorCallback);
@@ -720,14 +720,8 @@ function _replaceVariable(variable, values) {
 /**
  * User tried to configure an email address from a domain we don't support
  */
-class InvalidDomainError extends UserError {
+export class InvalidDomainError extends UserError {
   constructor(msg) {
     super(msg);
   }
 }
-
-module.exports =  {
-  makeNewAccount : makeNewAccount,
-  verifyEmailAddressDomain : verifyEmailAddressDomain,
-  InvalidDomainError : InvalidDomainError,
-};
