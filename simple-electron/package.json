@@ -2,17 +2,17 @@
   "name": "mustang-simple",
   "version": "0.1.0",
   "description": "Prototype for an email application",
-  "main": "app.js",
   "dependencies": {
     "app-module-path": "^2.2.0",
-    "electron": "^7.2.4",
+    "electron": "^11.1.1",
     "esm": "^3.2.25"
   },
   "devDependencies": {
-    "electron-builder": "^21.2.0"
+    "electron-builder": "^22.9.1"
   },
+  "main": "app.js",
   "scripts": {
-    "start": "../node_modules/electron/dist/electron -r esm app.js",
+    "start": "electron -r esm .",
     "test": "node test.js"
   },
   "author": "Ben Bucksch",

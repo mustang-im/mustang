@@ -16,15 +16,12 @@
     "r2": "^2.0.1",
     "sql-template-strings": "^2.2.2",
     "sqlite": "^3.0.3",
-    "sqlite3": "^4.1.0",
+    "sqlite3": "^5.0.1",
     "xmldom": "^0.1.27"
   },
-  "devDependencies": {
-    "electron-rebuild": "^1.8.8"
-  },
   "scripts": {
-    "simple-electron": "cd simple-electron && npm start",
-    "react-electron": "cd react-electron && npm start",
+    "simple-electron": "electron -r esm simple-electron/",
+    "react-electron": "electron -r esm react-electron/",
     "postinstall": "install-app-deps",
     "test": "node test.js"
   },
