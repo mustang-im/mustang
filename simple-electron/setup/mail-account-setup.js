@@ -9,7 +9,7 @@ const makeNewAccount = remote.getGlobal("makeNewAccount");
 */
 var remote = require("electron").remote;
 require("app-module-path").addPath(remote.getGlobal("__base"));
-var util = require("util/util");
+var util = require("../../util/util");
 util.importAll(util, global);
 var gAccounts = remote.getGlobal("accounts");
 var makeNewAccount = remote.getGlobal("makeNewAccount");
@@ -17,13 +17,13 @@ var makeNewAccount = remote.getGlobal("makeNewAccount");
 
 function onLoad() {
   try {
-    hookupReturnKey(E("realName"), function() {
+    hookupReturnKey(E("realName"), () => {
       E("emailAddress").focus();
     });
-    hookupReturnKey(E("emailAddress"), function() {
+    hookupReturnKey(E("emailAddress"), () => {
       E("password").focus();
     });
-    hookupReturnKey(E("password"), function() {
+    hookupReturnKey(E("password"), () => {
       ok();
     });
 
@@ -31,10 +31,10 @@ function onLoad() {
     var accountListE = new Fastlist(E("account-list"));
     accountListE.showCollection(gAccounts);
     gAccounts.registerObserver({
-      added : function(items) {
+      added: items => {
         alert("Added " + items.map(account => account.emailAddress).join(", "));
       },
-      removed : function(items) {
+      removed: items => {
       },
     });
   } catch(e) { errorShow(e); }
@@ -51,9 +51,9 @@ function ok() {
     var password = E("password").value;
 
     assert(gAccounts);
-    makeNewAccount(emailAddress, gAccounts, function(account) {
+    makeNewAccount(emailAddress, gAccounts, account => {
       account.setPassword(password);
-      account.login(true, function() {
+      account.login(true, () => {
         window.close();
       }, errorShow);
     }, errorShow);

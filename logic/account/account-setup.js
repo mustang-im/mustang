@@ -14,7 +14,6 @@ import preferences from "../../util/preferences";
 const ourPref = preferences.myPrefs;
 import { StringBundle } from "../../util/stringbundle";
 const gStringBundle = new StringBundle("mail");
-const gACStringBundle = new StringBundle("email/accountCreationModel");
 import r2 from "r2";
 import { DOMParser } from "xmldom";
 
@@ -152,25 +151,28 @@ function getAccountProviderWithNet(domain, emailAddress,
     }
     var providerDomain = providerDomains[0];
 
-    // At this point, it's definitely not one of our accounts.
-    // Try to query the Mozilla ISP database and see whether we can find
-    // IMAP server information there.
-
-    // First, try the domain directly, then via MX domain
-    sab.current = fetchConfigFromMozillaDB(domain, ac => {
+    // First, try to get the config from the ISP directly
+    sab.current = fetchConfigFromISP(domain, ac => {
       console.log("found config for " + domain);
       successCallback(convertMozillaConfigToOurs(ac, emailAddress));
     }, e => {
-      errorInBackend(e);
-      sab.current = fetchConfigFromMozillaDB(providerDomain, ac => {
-        console.log("found config for " + providerDomain);
+      // Try to query the Mozilla ISP database
+      // First, try the domain directly, then via MX domain
+      sab.current = fetchConfigFromMozillaDB(domain, ac => {
+        console.log("found config for " + domain);
         successCallback(convertMozillaConfigToOurs(ac, emailAddress));
       }, e => {
-        errorCallback(new InvalidDomainError(errorMsg));
+        errorInBackend(e);
+        sab.current = fetchConfigFromMozillaDB(providerDomain, ac => {
+          console.log("found config for " + providerDomain);
+          successCallback(convertMozillaConfigToOurs(ac, emailAddress));
+        }, e => {
+          errorCallback(new InvalidDomainError(errorMsg));
+        });
       });
+    }, e => {
+      errorCallback(e == "no MX found" || e.code == 404 ? new InvalidDomainError(errorMsg) : e);
     });
-  }, e => {
-    errorCallback(e == "no MX found" || e.code == 404 ? new InvalidDomainError(errorMsg) : e);
   });
   return sab;
 }
@@ -254,9 +256,20 @@ function fetchConfigFromMozillaDB(domain, successCallback, errorCallback) {
   domain = sanitize.hostname(domain);
   var url = mozillaISPDBURL + domain;
   //var url = "https://" + domain + "/.well-known/mail/config-v1.1.xml";
-  var fetchFunc = async () =>{
-    var xmlText = await r2(url).text;
-    var xmlDoc = new DOMParser().parseFromString(xmlText);
+  var fetchFunc = async () => {
+    let xmlText = await r2(url).text;
+    let xmlDoc = new DOMParser().parseFromString(xmlText);
+    return readFromXML(JXON.build(xmlDoc));
+  };
+  return new PromiseAbortable(fetchFunc(), successCallback, errorCallback);
+}
+
+function fetchConfigFromISP(domain, successCallback, errorCallback) {
+  domain = sanitize.hostname(domain);
+  var url = "https://" + domain + "/.well-known/mail/config-v1.1.xml";
+  var fetchFunc = async () => {
+    let xmlText = await r2(url).text;
+    let xmlDoc = new DOMParser().parseFromString(xmlText);
     return readFromXML(JXON.build(xmlDoc));
   };
   return new PromiseAbortable(fetchFunc(), successCallback, errorCallback);
@@ -289,7 +302,7 @@ function readFromXML(clientConfigXML) {
       !("clientConfig" in clientConfigXML) ||
       !("emailProvider" in clientConfigXML.clientConfig)) {
     console.log("client config xml = " + JSON.stringify(clientConfigXML));
-    throw gACStringBundle.get("no_emailProvider.error");
+    throw gStringBundle.get("config.syntax.error");
   }
   var xml = clientConfigXML.clientConfig.emailProvider;
 
@@ -393,7 +406,7 @@ function readFromXML(clientConfigXML) {
     let oO = d.createNewOutgoing(); // output (object)
     try {
       if (oX["@type"] != "smtp") {
-        throw gACStringBundle.get("outgoing_not_smtp.error");
+        throw gStringBundle.get("config.syntax.error");
       }
       oO.hostname = sanitize.hostname(oX.hostname);
       oO.port = sanitize.integerRange(oX.port, 1, 65535);
