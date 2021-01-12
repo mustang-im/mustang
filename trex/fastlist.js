@@ -135,6 +135,7 @@ class Fastlist {
       },
     };
     coll.registerObserver(this._observer);
+    this.selectedCollection.clear();
   }
 
   /**
