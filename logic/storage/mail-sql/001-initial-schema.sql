@@ -29,7 +29,8 @@ CREATE TABLE folder (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   accountID TEXT not null,
   fullPath TEXT not null,
-  name TEXT not null
+  name TEXT not null,
+  UNIQUE (accountID, fullPath)
 );
 CREATE TABLE person (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
