@@ -15,7 +15,14 @@ export default class SQLFolder extends MsgFolder {
     this.baseFolder = baseFolder;
     this._listenerSourceUs = false;
     this._database = getDatabase(null);
-    this._addedFolder = false;
+    this._addToDB().catch(console.error);
+  }
+
+  async _addToDB() {
+    if ( !this._addedFolder) {
+      await this._database.addFolder(this);
+      this._addedFolder = true;
+    }
   }
 
   /**
@@ -55,11 +62,11 @@ export default class SQLFolder extends MsgFolder {
    */
   async addMessages(msgs) {
     try {
-      if (!this._addedFolder) { // HACK
-        await this._database.addFolder(this);
-      }
       if (this._listenerSourceUs) {
         return;
+      }
+      if ( !this._addedFolder) {
+        await this._addToDB();
       }
       for (let msg of msgs) {
         await this._database.saveMessage(this.baseFolder, msg);

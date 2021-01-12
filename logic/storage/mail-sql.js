@@ -63,6 +63,9 @@ export default class MailSQLDatabase extends MailDatabase {
   async saveMessage(folder, msg) {
     assert(folder instanceof MsgFolder);
     assert(msg instanceof EMail);
+    if (!folder._dbID) {
+      folder._dbID = (await this._db.get(SQL`SELECT id FROM folder WHERE fullPath = ${folder.fullPath} AND accountID = ${folder.account.accountID} LIMIT 1`)).id;
+    }
     let fromID;
     await this._db.run(SQL`INSERT OR IGNORE INTO person (emailAddress, name) VALUES (${msg.authorEmailAddress}, ${msg.authorRealname})`); // TODO update realname, if it was empty
     let fromResult = await this._db.get(SQL`SELECT id FROM person WHERE emailAddress = ${msg.authorEmailAddress}`);
@@ -75,8 +78,13 @@ export default class MailSQLDatabase extends MailDatabase {
     if (toResult) {
       toID = toResult.id;
     }
-    await this._db.run(SQL`INSERT OR IGNORE INTO email (folder, msgID, parentMsgID, UID, firstFrom, firstTo, subject, dateSent, dateReceived) VALUES ((SELECT id FROM folder WHERE fullPath = ${folder.fullPath} AND accountID = ${folder.account.accountID} LIMIT 1), ${msg.msgID}, ${msg.parentMsgID}, ${msg.UID}, ${fromID}, ${toID}, ${msg.subject}, ${msg.date}, ${Date.now()})`);
-    // TODO body
+    await this._db.run(SQL`INSERT OR IGNORE INTO email (folder, msgID, parentMsgID, UID, firstFrom, firstTo, subject, dateSent, dateReceived) VALUES (${folder._dbID}, ${msg.msgID}, ${msg.parentMsgID}, ${msg.UID}, ${fromID}, ${toID}, ${msg.subject}, ${msg.date}, ${Date.now()})`);
+
+    // Body
+    if (msg.haveBody) {
+      let plaintext = await msg.bodyPlaintext();
+      await this._db.run(SQL`INSERT OR IGNORE INTO emailBody (folder, UID, plaintext) VALUES (${folder._dbID}, ${msg.UID}, ${plaintext})`);
+    }
   }
 
   /**

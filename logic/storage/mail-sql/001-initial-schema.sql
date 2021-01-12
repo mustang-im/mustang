@@ -19,11 +19,14 @@ CREATE TABLE email (
 );
 -- Separated out to reduce the size of the primary table.
 CREATE TABLE emailBody (
-  id INTEGER PRIMARY KEY,
+  folder INTEGER not null,
+  UID INTEGER not null,
   -- contains the primary body of the email.
   -- Uses plaintext part or the down-converted HTML.
   -- Does not contain any quotes, nor attachments.
-  plaintext TEXT not null
+  plaintext TEXT not null,
+  html TEXT default null,
+  PRIMARY KEY (folder, UID)
 );
 CREATE TABLE folder (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -129,7 +129,49 @@ export default class EMail {
     }
   }
 
+  /**
+   * Primary body text of the message
+   * @return {string} plain text
+   */
   async bodyPlaintext() {
+    let text = this.bodyByType("text/plain");
+    if (text) {
+      // TODO strip quotes
+      return text;
+    }
+    let html = this.bodyByType("text/html");
+    if (html) {
+      // TODO strip quotes
+      return convertHTMLtoPlaintext(html);
+    }
+    return null;
+  }
+
+  /**
+   * Primary body text of the message
+   * @return {string} HTML
+   */
+  async bodyHTML() {
+    let html = this.bodyByType("text/html");
+    if (html) {
+      // TODO strip quotes
+      return html;
+    }
+    let text = this.bodyByType("text/plain");
+    if (text) {
+      // TODO upconvert plaintext to HTML
+      // TODO strip quotes
+      return "<html><body><pre>" + escapeHTML(text) + "</pre></body></html>";
+    }
+    return null;
+  }
+
+  /**
+   * Finds the first body part that matches this MIME type.
+   * Or, if multipart/alternative, finds the most preferred.
+   * @returns {string}
+   */
+  async bodyByType(mimeType) {
     let text = null;
     function process(part) {
       if (text) {
@@ -140,21 +182,19 @@ export default class EMail {
         // last is the most preferred
         let ordered = arrayReverse(part.childNodes);
         // but we want plaintext
-        let plaintextPart = ordered.find(part => part.contentType.value == "text/plain");
+        let plaintextPart = ordered.find(part => part.contentType.value == mimeType);
         if (plaintextPart) {
           process(plaintextPart);
           return;
         }
-        let htmlPart = ordered.find(part => part.contentType.value == "text/html");
+        let htmlPart = ordered.find(part => part.contentType.value == mimeType);
         if (htmlPart) {
           process(htmlPart);
           return;
         }
         process(ordered.childNodes[0]);
-      } else if (part.contentType.value == "text/plain") {
+      } else if (part.contentType.value == mimeType) {
         text = part.content;
-      } else if (part.contentType.value == "text/html") {
-        text = convertHTMLtoPlaintext(part.content);
       }
     }
     this._walkTree(await this.bodyParts(), process);
@@ -162,7 +202,16 @@ export default class EMail {
   }
 
   /**
-   * Wheather the message has been read or not
+   * @param read {Boolean}
+   *   True: We already have the body parts stored here.
+   *   False: We need to make additional calls to get it.
+   */
+  get haveBody() {
+    return !!(this._bodyParts || this._mime);
+  }
+
+  /**
+   * Whether the message has been read or not
    * @param read {Boolean}
    *   true: mark as read
    *   false: mark as unread
@@ -173,7 +222,7 @@ export default class EMail {
   }
 
   /**
-   * Wheather the message has been marked as flagged or not
+   * Whether the message has been marked as flagged or not
    * @param starred {Boolean}
    *   true: flagged
    *   false: not flagged
@@ -248,6 +297,15 @@ function convertHTMLtoPlaintext(plaintext) {
     ignoreImage: true,
   });
 }
+
+function escapeHTML(text) {
+  return text
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;");
+}
+
 
 function arrayReverse(array) {
   let result = [];
