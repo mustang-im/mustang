@@ -57,7 +57,7 @@ export default class MsgFolder {
     /**
      * {MapColl of name -> MsgFolder}
      */
-    this._subfolders = new MapColl();
+    this._folders = new MapColl();
 
     /**
     * Total number of messages in this folder
@@ -91,14 +91,17 @@ export default class MsgFolder {
    * Empty list, if there are no subfolders.
    */
   get folders() {
-    return this._subfolders;
+    return this._folders;
   }
 
   /**
    * Checks for new mail on the server,
    * and downloads the mails.
+   *
+   * @param state {JSON} the return value from the last invokation of `fetch`
+   * @return state {JSON} pass this as `state` to the next invokation of `fetch`
    */
-  async fetch() {
+  async fetch(state) {
     throw new ImplementThis();
   }
 
@@ -141,7 +144,7 @@ export default class MsgFolder {
    * @param messages {Array of EMail}
    * @param toTrash {boolean}
    *      true: Move to trash
-   *      false: Immedaite permanent delete
+   *      false: Immediate permanent delete
    */
   async deleteMessages(messages, toTrash) {
     assert(messages.every(msg => msg.folder == this));

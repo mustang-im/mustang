@@ -3,7 +3,7 @@
  * and the emailjs.org JS library.
  */
 
-import ImapClient from "emailjs-imap-client";
+import ImapClient, { LOG_LEVEL_NONE, LOG_LEVEL_ERROR, LOG_LEVEL_WARN, LOG_LEVEL_INFO, LOG_LEVEL_DEBUG, LOG_LEVEL_ALL } from "emailjs-imap-client";
 import IMAPFolder from "../../mail/imap/IMAPFolder";
 import MsgFolder from "../../account/MsgFolder";
 import MailAccount from "../../mail/MailAccount";
@@ -24,14 +24,9 @@ export default class IMAPAccount extends MailAccount {
     /**
      * {IMAPFolder}
      */
-    //this._inbox = null;
-    this._inbox = new MsgFolder("INBOX", "INBOX", this);
-    this._folders.set("INBOX", this._inbox);
-
-    this.cache = new SQLAccount(this, IMAPFolder);
-    this._folders = this.cache.folders;
-    this.cache.watch(this._folders);
-    this.cache.findFolders().catch(console.error);
+    this._inbox = null;
+    //this._inbox = new MsgFolder("INBOX", "INBOX", this);
+    //this._folders.set("INBOX", this._inbox);
 
     /**
      * Lists |ImapClient|s for this account
@@ -82,7 +77,6 @@ export default class IMAPAccount extends MailAccount {
    */
   async login(continuously) {
     try {
-    await SQLAccount.init();
     let conn = await this._newConnection();
     if (this._folders.length <= 1 || !this._inbox) {
       await this.findFolders();
@@ -106,6 +100,7 @@ export default class IMAPAccount extends MailAccount {
       useSecureTransport : self.socketType == 2, // SSL
       requireTLS : self.socketType == 3, // STARTTLS
       //enableCompression : true,
+      logLevel: LOG_LEVEL_WARN,
     });
     await conn.connect();
     this._connections.add(conn);

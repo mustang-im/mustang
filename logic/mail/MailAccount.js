@@ -19,7 +19,7 @@ export default class MailAccount extends Account {
     /**
      * {String}
      */
-    this.emailAddress = null;
+    this._emailAddress = null;
 
     /**
      * {String}
@@ -53,10 +53,19 @@ export default class MailAccount extends Account {
    *       You must set the required properties (depending on account type),
    *       and then call saveToPrefs().
    */
-  init(isNew) {
+  async init(isNew) {
     if ( !isNew) {
       this._readFromPrefs();
     }
+  }
+
+  get emailAddress() {
+    return this._emailAddress;
+  }
+
+  set emailAddress(val) {
+    assert(typeof(val) == "string" && val.includes("@"));
+    this._emailAddress = val;
   }
 
   /**
@@ -68,7 +77,7 @@ export default class MailAccount extends Account {
    */
   get newMessageCount() {
     let sum = 0;
-    this._folders.forEach(folder => {
+    this.folders.forEach(folder => {
       if (folder.newMessageCount) {
         sum += folder.newMessageCount;
       }
@@ -248,7 +257,7 @@ export default class MailAccount extends Account {
     throw new ImplementThis();
   }
 
-  deleteAccount() {
+  async deleteAccount() {
     this._deleteStoredPassword(); // should be done by logout(), but be sure.
 
     Account.prototype.deleteAccount.apply(this, arguments);

@@ -38,6 +38,13 @@ export default class Account {
     this._interval = 300;
   }
 
+  /**
+   * Call after constructor
+   * @param isNew {Boolean}
+   */
+  async init(isNew) {
+  }
+
   get prefs() {
     return this._pref;
   }
@@ -121,7 +128,7 @@ export default class Account {
   /**
    * remove this account from prefs and here in backend
    */
-  deleteAccount() {
+  async deleteAccount() {
     if (this.isLoggedIn) {
       this.logout().catch(errorInBackend);
     }

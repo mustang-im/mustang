@@ -3,6 +3,12 @@
  */
 
 import IMAPAccount from "../mail/imap/IMAPAccount";
+import IMAPFolder from "../mail/imap/IMAPFolder";
+import IMAPMessage from "../mail/imap/IMAPMessage";
+import CachedMailAccount from "../storage/CachedMailAccount";
+import CachedFolder from "../storage/CachedFolder";
+import SQLAccount from "../storage/SQLAccount";
+import SQLFolder from "../storage/SQLFolder";
 import * as util from "../../util/util";
 util.importAll(util, global);
 import * as collection from "../../util/collection";
@@ -20,44 +26,69 @@ var gAccounts = new MapColl();
 var gHaveReadAll = false;
 
 /**
- * Returns all accounts from prefs and local objects
+ * Returns all configured accounts
  * @returns |Map|
  */
 export function getAllAccounts() {
   if ( !gHaveReadAll) {
-    ourPref.get("accountsList", "").split(",").forEach(accountID => {
+    throw new Error("Call await readAccounts() first");
+  }
+  return gAccounts;
+}
+
+/**
+ * Reads all accounts from prefs and initializes them.
+ */
+export async function readAccounts() {
+  if ( !gHaveReadAll) {
+    for (let accountID of ourPref.get("accountsList", "").split(",")) {
       if ( !accountID || gAccounts.get(accountID)) {
         return;
       }
       try {
-        _readExistingAccountFromPrefs(accountID); // adds to gAccounts
+        let account = await _readExistingAccountFromPrefs(accountID);
+        gAccounts.set(accountID, account);
       } catch (e) { errorInBackend(e); }
-    });
+    }
     gHaveReadAll = true;
   }
-
   return gAccounts;
 }
 
-function _readExistingAccountFromPrefs(accountID) {
+async function _readExistingAccountFromPrefs(accountID) {
   sanitize.nonemptystring(accountID);
   var type = ourPref.get("account." + accountID + ".type", null);
   assert(type, "account does not exist in prefs");
-  gAccounts.set(accountID, _newAccountOfType(type, accountID, false));
-  return gAccounts.get(accountID);
+  return await _newAccountOfType(type, accountID, false);
 }
 
 // exported only for account-setup.js
-export function _newAccountOfType(type, accountID, isNew) {
-  let account;
+export async function _newAccountOfType(type, accountID, isNew) {
+  let baseAccount;
+  let baseFolderClass;
+  let baseEMailClass;
   if (type == "imap") {
-    account = new IMAPAccount(accountID);
+    baseAccount = new IMAPAccount(accountID);
+    baseFolderClass = IMAPFolder;
+    baseEMailClass = IMAPMessage;
   //} else if (type == "pop3") {
-  //  account = new POP3Account(accountID);
+  //  baseAccount = new POP3Account(accountID);
   } else {
     throw new NotReached("unknown account type requested to be created: " + type);
   }
-  account.init(isNew);
+
+  // Wire base account with local caches
+  let newEmail = folder => {
+    return new baseEMailClass(folder);
+  }
+  let newFolder = (name, fullPath, account, parentFolder) => {
+    let baseFolder = new baseFolderClass(name, fullPath, account, parentFolder);
+    let cacheFolder = new SQLFolder(baseFolder, newEmail);
+    return new CachedFolder(baseFolder, cacheFolder);
+  }
+  let cacheAccount = new SQLAccount(baseAccount, newFolder);
+  let account = new CachedMailAccount(baseAccount, cacheAccount);
+  await account.init(isNew);
   return account;
 }
 

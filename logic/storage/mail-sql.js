@@ -25,7 +25,7 @@ export default class MailSQLDatabase extends MailDatabase {
    * @param options {object} other store-specific options
    */
   async init(account, baseDir, options) {
-    super.init(account, baseDir, options);
+    await super.init(account, baseDir, options);
     let filename =  baseDir + "email-database.sqlite";
     this._db = await sqlite.open(filename);
     await this._db.migrate({
@@ -50,7 +50,7 @@ export default class MailSQLDatabase extends MailDatabase {
    */
   async deleteFolder(folder) {
     assert(folder instanceof MsgFolder);
-    await this._db.run(SQL`DELETE FROM folder WHERE name = ${folder.name} AND fullPath = ${folder.fullPath} AND accountID = ${folder.account.accountID})`);
+    await this._db.run(SQL`DELETE FROM folder WHERE name = ${folder.name} AND fullPath = ${folder.fullPath} AND accountID = ${folder.account.accountID}`);
     // TODO body
   }
 
@@ -104,13 +104,13 @@ export default class MailSQLDatabase extends MailDatabase {
    * Returns all known folder.
    *
    * @param account {Account} e.g. IMAPAccount
-   * @param FolderSubclass {Subtype of MsgFolder} corresponding to account, e.g. IMAPFolder
-   * @returns {Array of FolderSubclass}
+   * @param newFolder {Function(name, fullPath, account, parentFolder)} creates a folder object corresponding to the account
+   * @returns {Array of MsgFolder}
    */
-  async listFolders(account, FolderSubclass) {
+  async listFolders(account, newFolder) {
     let results = await this._db.all(SQL`SELECT id, name, fullPath, parentPath, accountID FROM folder WHERE accountID = ${account.accountID}`);
     let folders = results.map(result => {
-      let folder = new FolderSubclass(result.name, result.fullPath, account, null);
+      let folder = newFolder(result.name, result.fullPath, account, null);
       folder._parentPath = result.parentPath;
       return folder;
     });
@@ -128,10 +128,10 @@ export default class MailSQLDatabase extends MailDatabase {
    * Returns all known emails in a folder.
    *
    * @param folder {MsgFolder}
-   * @param EMailSubclass {Subtype of EMail} e.g. IMAPMessage
-   * @returns {Array of EMailSubclass}
+   * @param newEMail {Function(folder)} creates an email object corresponding to the account
+   * @returns {Array of EMail}
    */
-  async listMessagesInFolder(folder, EMailSubclass) {
+  async listMessagesInFolder(folder, newEMail) {
     assert(folder instanceof MsgFolder);
     if (!folder._dbID) {
        let result = await this._db.get(SQL`SELECT id FROM folder WHERE fullPath = ${folder.fullPath} AND accountID = ${folder.account.accountID} LIMIT 1`);
@@ -143,7 +143,7 @@ export default class MailSQLDatabase extends MailDatabase {
     }
     let results = await this._db.all(SQL`SELECT UID, msgID, parentMsgID, subject, dateSent, dateReceived, fromT.emailAddress as fromEmailAddress, fromT.name as fromName, toT.emailAddress as toEmailAddress, toT.name as toName FROM email LEFT JOIN person AS fromT ON firstFrom = fromT.id LEFT JOIN person AS toT ON firstTo = toT.id WHERE folder = ${folder._dbID}`);
     return results.map(result => {
-      let email = new EMailSubclass(folder);
+      let email = newEMail(folder);
       email.UID = result.UID;
       email.msgID = result.msgID;
       email.subject = result.subject;

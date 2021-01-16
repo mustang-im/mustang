@@ -9,37 +9,47 @@ import MailSQLDatabase, { getDatabase, openDatabase } from "../storage/mail-sql"
 export default class SQLAccount extends MailAccount {
   /**
    * @param baseAccount {MailAccount} The account which this SQLAccount is caching
-   * @param FolderSubtype {Subclass of MsgFolder} The MsgFolder class corresponding to baseAccount, e.g. IMAPFolder
+   * @param newFolder {Function(name, fullPath, account, parentFolder)} creates a folder object corresponding to the account
    */
-  constructor(baseAccount, FolderSubtype) {
+  constructor(baseAccount, newFolder) {
+    assert(baseAccount instanceof MailAccount)
+    assert(typeof(newFolder) == "function");
     super(baseAccount.accountID);
-    this.baseAccount = baseAccount;
-    this._FolderSubtype = FolderSubtype;
+    this._baseAccount = baseAccount;
+    this._newFolder = newFolder;
+
+    this._inbox = null;
     this._listenerSourceUs = false;
-    this._database = getDatabase(null);
   }
 
-  static async init() {
-    await openDatabase();
+  async init() {
+    this._database = await openDatabase(); // from mail-sql.js
+    await this.findFolders();
+  }
+
+  get emailAddress() {
+    return this._baseAccount.emailAddress;
   }
 
   /**
-   * Listen to changes in folder and write them to the DB.
+   * {SQLFolder}
    */
-  watch(folders) {
-    folders.registerObserver({
-      added: async folders => this.addFolders(folders),
-      removed: async folders => this.removeFolders(folders),
-    });
+  get inbox() {
+    return this._inbox;
   }
 
   async findFolders() {
-    let folders = await this._database.listFolders(this.baseAccount, this._FolderSubtype);
+    let folders = await this._database.listFolders(this._baseAccount, this._newFolder);
     this._listenerSourceUs = true;
     for (let folder of folders) {
       this._folders.set(folder.fullPath, folder);
+      if (folder.name.toUpperCase() == "INBOX" && !folder.parentFolder) {
+        this._inbox = folder;
+      }
     }
     this._listenerSourceUs = false;
+
+    // TODO check new folders on server
   }
 
   /**

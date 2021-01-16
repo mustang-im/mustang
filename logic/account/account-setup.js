@@ -40,15 +40,17 @@ export function makeNewAccount(emailAddress, allAccounts, successCallback, error
 
     return getAccountProviderWithNet(domain, emailAddress, config => {
       var accountID = generateNewAccountID();
-      var account = accounts._newAccountOfType(config.subtype || config.type, accountID, true);
-      account.emailAddress = emailAddress;
-      account.setServerConfig(config);
-      account.saveToPrefs();
+      (async () => {
+        let account = await accounts._newAccountOfType(config.subtype || config.type, accountID, true);
+        account.emailAddress = emailAddress;
+        account.setServerConfig(config);
+        account.saveToPrefs();
 
-      assert(allAccounts);
-      allAccounts.set(accountID,  account);
-      successCallback(account);
-      //notifyGlobalObservers("account-added", { account : account });
+        assert(allAccounts);
+        allAccounts.set(accountID,  account);
+        successCallback(account);
+        //notifyGlobalObservers("account-added", { account : account });
+      })();
     }, errorCallback);
   } catch (e) {
     errorCallback(e);

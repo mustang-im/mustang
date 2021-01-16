@@ -17,12 +17,6 @@ export default class IMAPFolder extends MsgFolder {
     assert(!parentFolder || parentFolder instanceof IMAPFolder);
     super(name, fullPath, account);
 
-    this.cache = new SQLFolder(this, IMAPMessage);
-    this._messages = this.cache.messages;
-    this._subfolders = this.cache.folders;
-    this.cache.watch(this._messages, this._subfolders);
-    this.cache.fetch().catch(console.error);
-
     /**
      * Server connection to use for this folder.
      * Use await this._connection() to get it.
@@ -69,14 +63,36 @@ export default class IMAPFolder extends MsgFolder {
   }
 
   /**
-   * Called by UI [Get Messages] and implicitly when opening a folder
+   * Checks for new mail on the server,
+   * and downloads the mails.
+   *
+   * @param state {JSON} the return value from the last invokation of `fetch`
+   * @return state {JSON} pass this as `state` to the next invokation of `fetch`
    */
-  async fetch() {
+  async fetch(state) {
+    await this._open();
+    await this.getMessagesComplete();
+    return state;
+  }
+
+  async fetchWithDedicatedConnection() {
+    await this.account._newConnection();
+    await this._open();
+  }
+
+  /**
+   * Get the messages that the other folder doesn't have yet.
+   * TODO merge with `fetch()`?
+   *
+   * @param otherFolder {MsgFolder} the cache
+   */
+  async sync(otherFolder) {
+    assert(otherFolder instanceof MsgFolder);
     await this._open();
 
     // Get the new messages
     let newestKnownMessageUID = 0;
-    this.cache.messages.forEach(msg => {
+    otherFolder.messages.forEach(msg => {
       if (newestKnownMessageUID < msg.UID) {
         newestKnownMessageUID = msg.UID;
       }
@@ -85,17 +101,12 @@ export default class IMAPFolder extends MsgFolder {
     await this.getMessagesComplete(newestKnownMessageUID + 1);
 
     // Download bodies of previous messages
-    let toDownload = this.cache.messages.contents.filter(msg => !msg.haveBody);
+    let toDownload = otherFolder.messages.contents.filter(msg => !msg.haveBody);
     while (toDownload.length) {
       let batch = toDownload.splice(0, 100);
       let rangeSpec = batch.map(msg => msg.UID).join(",");
       await this.getMessagesComplete(rangeSpec);
     }
-  }
-
-  async fetchWithDedicatedConnection() {
-    await this.account._newConnection();
-    await this._open();
   }
 
   /**
@@ -203,7 +214,7 @@ export default class IMAPFolder extends MsgFolder {
    * @param messages {Array of EMail}
    * @param toTrash {boolean}
    *      true: Move to trash
-   *      false: Immedaite permanent delete
+   *      false: Immediate permanent delete
    */
   async deleteMessages(messages, toTrash) {
     assert(messages.every(msg => msg.folder == this));
@@ -214,7 +225,7 @@ export default class IMAPFolder extends MsgFolder {
     await conn.deleteMessages(this.fullPath, UIDs);
 
     // Delete in our lists
-    // This will also delete form the DB
+    // This will also delete from the DB
     this._messages.removeAll(messages);
   }
 
