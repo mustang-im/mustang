@@ -762,7 +762,7 @@ Given that git and version control today have become an essential part of the
 software development process, and you received the full version history as
 source code from us, we consider the full version history the
 "preferred form of the work for making modifications to it". That includes the
-commits and commit granularity your team used as the basis for its work and
+commits and commit granularity your team used during its own work process and
 source code modifications. The version history contains essential information.
 This project defines "source code" to include the commit history.
 
@@ -789,13 +789,13 @@ is based on this program and our work.
 
 ### Addons
 
-Addons that use only offical APIs (that are officially sactioned by the
-original authors of the program) are not considered part of the program
-and such addons are not subject to the license.
+Addons that use only offical addon APIs are not considered part of the
+program and such addons are not subject to the license.
 
-Compare the Linux kernel, which makes a similar distinction between
-EXPORT_SYMBOL_GPL and EXPORT_SYMBOL, where the latter may be
-used by non-GPL modules. Obviously, Addon APIs that you added yourself
+Official addon APIs are only those officially sactioned by the original author
+of the program. Compare the Linux kernel, which makes a distinction
+between EXPORT_SYMBOL_GPL and EXPORT_SYMBOL, where only the latter may be
+used by non-GPL modules. Obviously, addon APIs that you added yourself
 are not subject to this license exception, and addons that use such APIs
 are part of the program and must comply with the license -- otherwise you
 could circumvent the entire license. Compare GPL 2.0 Section 10.
@@ -812,5 +812,4 @@ If you do not wish to do so, please remove the last paragraph,
 starting with the heading "Additional licenses".
 
 In any case, your rights under this license for this work remain in effect forever.
-You may continue to use the work under this license. Any license change
-gives additional rights to the work, not less.
+You may continue to use the work under this license.
