@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+<title>Corvette</title>
+<meta charset="utf-8"></meta>
+<link href="../../trex/trex-flexbox.css" rel="stylesheet" type="text/css"></link>
+<link href="../../trex/trex.css" rel="stylesheet" type="text/css"></link>
+<link href="mainwin.css" rel="stylesheet" type="text/css"></link>
+<script src="../../util/util.js" type="text/javascript"></script>
+<script src="../../util/uiutil.js" type="text/javascript"></script>
+<script src="../../util/collection.js" type="text/javascript"></script>
+<script src="../../trex/trex.js" type="text/javascript"></script>
+<script src="../../trex/fastlist.js" type="text/javascript"></script>
+<script src="mainwin.js" type="module"></script>
+</head>
+<body>
+
+    <vbox  id="entire-window">
+      <hbox id="menubar">
+      </hbox>
+      <hbox id="toolbar">
+        <button onclick="addAccount()" />Add account</button>
+        <button onclick="newEmail()" />Write</button>
+        <button onclick="openAddressBook()" />Address book</button>
+      </hbox>
+      <hbox id="window-content-pane" flex="1">
+        <vbox id="left-pane" flex="1">
+          <vbox id="account-pane" flex="1">
+            <fastlist id="account-list">
+              <header>
+                <div>Accounts</div>
+              </header>
+              <row rowheight="20">
+                <div field="emailAddress"></div>
+              </row>
+            </fastlist>
+          </vbox>
+          <vbox id="folder-pane" flex="4">
+            <fastlist id="folder-list">
+              <header>
+                <div>Folders</div>
+              </header>
+              <row rowheight="20">
+                <div field="name"></div>
+              </row>
+            </fastlist>
+          </vbox>
+        </vbox>
+        <vbox id="right-pane" flex="4">
+          <vbox id="thread-pane" flex="1">
+            <fastlist id="message-list">
+              <header>
+                <div>From</div>
+                <div>To</div>
+                <div>Subject</div>
+                <div>Date</div>
+              </header>
+              <row rowheight="20">
+                <div field="authorRealname"></div>
+                <div field="to"></div>
+                <div field="subject"></div>
+                <div field="date"></div>
+              </row>
+            </fastlist>
+          </vbox>
+          <vbox id="message-pane" flex="2">
+            <!-- TODO: Move to separate source file, using overlay. -->
+            <!-- TODO: Use CSS grid -->
+            <vbox id="header-pane">
+              <hbox><label>Subject:</label><span id="msg-subject"></span></hbox>
+              <hbox><label>From:</label><span id="msg-from"></span></hbox>
+              <hbox><label>Date:</label><span id="msg-date"></span></hbox>
+            </vbox>
+            <vbox id="msg-body-box" flex="1">
+              <div id="msg-body-plaintext">
+              </div>
+              <iframe id="msg-body-frame" flex="1">
+              </iframe>
+            </vbox>
+          </vbox>
+        </vbox>
+      </hbox>
+      <hbox id="statusbar">
+      </hbox>
+    </vbox>
+
+</body>
+</html>

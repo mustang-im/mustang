@@ -27,6 +27,7 @@
   },
   "private": true,
   "workspaces": [
+    "svelte-electron",
     "react-electron",
     "simple-electron"
   ],

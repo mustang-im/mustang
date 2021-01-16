@@ -8,7 +8,7 @@ $ (cd react-electron && yarn run build)
 
 Please use yarn, due to the workspaces that we use in this project.
 
-Do *not* run `yarn install` in the subdirs.
+**ATTENTION**: Do *not* run `yarn install` in the subdirs. If you did that, delete `node_modules/` in the subdir where you ran it, go back to the root dir, and run `yarn install` there again.
 
 # Run
 

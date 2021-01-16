@@ -1,9 +1,11 @@
 *~
 *.kate-swp
 *.sh
+.DS_Store
 node_modules/
 .project
 .settings/
 yarn.lock
 package-lock.json
 react-electron/build/
+svelte-electron/public/build/
