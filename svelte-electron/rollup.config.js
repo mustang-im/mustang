@@ -30,7 +30,7 @@ function serve() {
 }
 
 export default {
-  input: 'frontend/MainWindow/start.js',
+  input: 'frontend/setup/account/start.js',
   output: {
     sourcemap: true,
     format: 'iife',

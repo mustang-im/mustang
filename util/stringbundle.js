@@ -241,8 +241,13 @@ var StringBundleUtils = {
   },
 }
 
-/*
-if (typeof(window) == "object" && "navigator" in window) {
+if (true) {
+
+function getLocale() {
+  return fallbackLanguage;
+}
+
+} else if (typeof(window) == "object" && "navigator" in window) {
 
 /**
 * Get the language of the browser, as sent to webpages.
@@ -253,7 +258,7 @@ if (typeof(window) == "object" && "navigator" in window) {
 *
 * @returns {String} e.g. "en"
 * @see also getUILocale()
-*
+*/
 function getLocale() {
   // Which language to use when the browser has a lang you do not support
   var browserLanguage = window.navigator.language.substr(0, 2);
@@ -263,29 +268,18 @@ function getLocale() {
 }
 
 } else { // not browser
-*/
 
-var i18n = require("i18n");
+//var i18n = require("i18n");
+var i18n = null;
 i18n.configure({
   locales : supportedLanguages,
   defaultLocale : fallbackLanguage,
 });
 
-/**
-* Get the language of the browser, as sent to webpages.
-* Only the locales for which our ext has translations.
-*
-* You need to configure |supportedLanguages| with the languages
-* for which you have translations for your app.
-*
-* @returns {String} e.g. "en"
-* @see also getUILocale()
-*/
 function getLocale() {
   return i18n.getLocale();
 }
 
-//} // if browser
-
+} // if browser
 
 exports.StringBundle = StringBundle;
