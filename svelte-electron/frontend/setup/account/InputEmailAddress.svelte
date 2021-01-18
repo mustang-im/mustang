@@ -1,8 +1,9 @@
 <script>
   export let config;
+  export let canContinue;
 
   function onEmailAddressChanged() {
-    config.password = "";
+    //config.password = "";
   }
 
   let passwordVisible = false;
@@ -12,13 +13,29 @@
 </script>
 
 <grid id="input" class="inputs">
-  <label for="realName">Your name:</label><input id="realName" type="text" bind:value={config.realName} placeholder="Fred Flintstone" required /><span class="explanation">Your name, as shown to others</span>
-  <label for="emailAddress">Email address:</label><input id="emailAddress" type="email" bind:value={config.emailAddress} required pattern="[a-z0-9\-%+_\.\*]+@[a-z0-9\-\.]+\.[a-z]+" x-moz-errormessage="Please specify a valid email address" on:keypress={onEmailAddressChanged} /><span class="explanation">Your existing email address</span>
+  <label for="realName">Your name:</label>
+  <input type="text"
+    id="realName"
+    bind:value={config.realName}
+    placeholder="Fred Flintstone"
+    required />
+  <span class="explanation">Your name, as shown to others</span>
+
+  <label for="emailAddress">Email address:</label>
+  <input type="email"
+    id="emailAddress"
+    bind:value={config.emailAddress}
+    required
+    pattern="[a-z0-9\-%+_\.\*]+@[a-z0-9\-\.]+\.[a-z]+"
+    x-moz-errormessage="Please specify a valid email address"
+    on:keypress={onEmailAddressChanged} />
+  <span class="explanation">Your existing email address</span>
+
   <label for="password">Password:</label>
   {#if passwordVisible }
-  <input id="password" type="text" bind:value={config.password} required />
+  <input type="text" bind:value={config.password} required />
   {:else}
-  <input id="password" type="password" bind:value={config.password} required />
+  <input type="password" bind:value={config.password} required />
   {/if}
   <span on:click={togglePasswordView}>Eye</span>
 </grid>
@@ -37,6 +54,6 @@
     color: darkgrey;
   }
   input:invalid {
-    border: 1px solid red;
+    border: 2px solid red;
   }
 </style>
