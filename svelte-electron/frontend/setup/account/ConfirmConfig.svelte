@@ -34,16 +34,16 @@
   <span class="header">Authentication</span>
 
   <label for="realName">Incoming mail server:</label>
-  <span class="protocol">{ protocolDisplay(config.incoming.protocol) }</span>
+  <span class="protocol">{ protocolDisplay(config.incoming.type) }</span>
   <span class="hostname">{ hostnameDisplay(config.incoming.hostname) }</span>
-  <span class="port">{ portDisplay(config.incoming.port, config.incoming.protocol) }</span>
+  <span class="port">{ portDisplay(config.incoming.port, config.incoming.type) }</span>
   <span class="ssl">{ sslDisplay(config.incoming.socketType) }</span>
   <span class="auth">{ authDisplay(config.incoming.auth) }</span>
 
   <label for="realName">Outgoing mail server:</label>
-  <span class="protocol">{ protocolDisplay(config.outgoing.protocol) }</span>
+  <span class="protocol">{ protocolDisplay(config.outgoing.type) }</span>
   <span class="hostname">{ hostnameDisplay(config.outgoing.hostname) }</span>
-  <span class="port">{ portDisplay(config.outgoing.port, config.outgoing.protocol) }</span>
+  <span class="port">{ portDisplay(config.outgoing.port, config.outgoing.type) }</span>
   <span class="ssl">{ sslDisplay(config.outgoing.socketType) }</span>
   <span class="auth">{ authDisplay(config.outgoing.auth) }</span>
 </grid>
@@ -64,5 +64,11 @@
   span.header {
     margin: 0.5em;
     color: darkgrey;
+  }
+  grid label {
+    margin-right: 1em;
+  }
+  .hostname {
+    font-weight: bold;
   }
 </style>

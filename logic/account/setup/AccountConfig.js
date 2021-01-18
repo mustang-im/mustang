@@ -1,5 +1,5 @@
-import sanitize from "../../../../util/sanitizeDatatypes.js";
-import { deepCopy } from "../../../../util/util.js";
+import { sanitize } from "../../../util/sanitizeDatatypes.js";
+import { deepCopy } from "../../../util/util.js";
 
 /**
  * This file creates the class AccountConfig, which is a JS object that holds
@@ -196,6 +196,7 @@ export default class AccountConfig {
 
   isComplete() {
     return (
+      !!this.incoming.type &&
       !!this.incoming.hostname &&
       !!this.incoming.port &&
       !!this.incoming.socketType &&
@@ -210,6 +211,76 @@ export default class AccountConfig {
           !!this.outgoing.username))
     );
   }
+
+  /**
+   * Some fields on the account config accept placeholders (when coming from XML).
+   *
+   * These are the predefined ones
+   * * %EMAILADDRESS% (full email address of the user, usually entered by user)
+   * * %EMAILLOCALPART% (email address, part before @)
+   * * %EMAILDOMAIN% (email address, part after @)
+   * * %REALNAME%
+   * as well as those defined in account.inputFields.*.varname, with % added
+   * before and after.
+   *
+   * These must replaced with real values, supplied by the user or app,
+   * before the account is created. This is done here. You call this function once
+   * you have all the data - gathered the standard vars mentioned above as well as
+   * all listed in account.inputFields, and pass them in here. This function will
+   * insert them in the fields, returning a fully filled-out account ready to be
+   * created.
+   *
+   * @param c {AccountConfig}
+   * The account data to be modified. It may or may not contain placeholders.
+   * After this function, it should not contain placeholders anymore.
+   * This object will be modified in-place.
+   *
+   * @param realName {String}
+   * Real name of user, as will appear in From of outgoing messages
+   *
+   * @param emailAddress {String}
+   * Full email address of this account, e.g. "joe@example.com".
+   * Empty of incomplete email addresses will/may be rejected.
+   *
+   * @param password {String}
+   * The password for the incoming server and (if necessary) the outgoing server
+   */
+  replaceVariables(realName, emailAddress, password) {
+    realName = realName || this.realName;
+    emailAddress = emailAddress || this.emailAddress;
+    password = password || this.password;
+    sanitize.label(realName);
+    sanitize.nonemptystring(realName);
+    sanitize.nonemptystring(emailAddress);
+
+    let emailSplit = emailAddress.split("@");
+    assert(
+      emailSplit.length == 2,
+      "email address not in expected format: must contain exactly one @"
+    );
+    let emailLocal = sanitize.nonemptystring(emailSplit[0]);
+    let emailDomain = sanitize.hostname(emailSplit[1]);
+
+    let otherVars = {};
+    otherVars.EMAILADDRESS = emailAddress;
+    otherVars.EMAILLOCALPART = emailLocal;
+    otherVars.EMAILDOMAIN = emailDomain;
+    otherVars.REALNAME = realName;
+
+    if (password) {
+      this.incoming.password = password;
+      this.outgoing.password = password; // set member only if auth required?
+    }
+    this.incoming.username = _replaceVariable(this.incoming.username, otherVars);
+    this.outgoing.username = _replaceVariable(this.outgoing.username, otherVars);
+    this.incoming.hostname = _replaceVariable(this.incoming.hostname, otherVars);
+    if (this.outgoing.hostname) { // will be null, if user picked an existing server
+      this.outgoing.hostname = _replaceVariable(this.outgoing.hostname, otherVars);
+    }
+    this.realName = _replaceVariable(this.realName, otherVars);
+    this.emailAddress = _replaceVariable(this.emailAddress, otherVars);
+    this.displayName = _replaceVariable(this.displayName, otherVars);
+  }
 };
 
 // enum consts
@@ -219,76 +290,6 @@ AccountConfig.kSourceUser = "user"; // user manually entered the config
 AccountConfig.kSourceXML = "xml"; // config from XML from ISP or Mozilla DB
 AccountConfig.kSourceGuess = "guess"; // guessConfig()
 AccountConfig.kSourceExchange = "exchange"; // from Microsoft Exchange AutoDiscover
-
-/**
- * Some fields on the account config accept placeholders (when coming from XML).
- *
- * These are the predefined ones
- * * %EMAILADDRESS% (full email address of the user, usually entered by user)
- * * %EMAILLOCALPART% (email address, part before @)
- * * %EMAILDOMAIN% (email address, part after @)
- * * %REALNAME%
- * as well as those defined in account.inputFields.*.varname, with % added
- * before and after.
- *
- * These must replaced with real values, supplied by the user or app,
- * before the account is created. This is done here. You call this function once
- * you have all the data - gathered the standard vars mentioned above as well as
- * all listed in account.inputFields, and pass them in here. This function will
- * insert them in the fields, returning a fully filled-out account ready to be
- * created.
- *
- * @param c {AccountConfig}
- * The account data to be modified. It may or may not contain placeholders.
- * After this function, it should not contain placeholders anymore.
- * This object will be modified in-place.
- *
- * @param realName {String}
- * Real name of user, as will appear in From of outgoing messages
- *
- * @param emailAddress {String}
- * Full email address of this account, e.g. "joe@example.com".
- * Empty of incomplete email addresses will/may be rejected.
- *
- * @param password {String}
- * The password for the incoming server and (if necessary) the outgoing server
- */
-function replaceVariables(c, realName, emailAddress, password) {
-  realName = realName || c.realName;
-  emailAddress = emailAddress || c.emailAddress;
-  password = password || c.password;
-  sanitize.label(realName);
-  sanitize.nonemptystring(realName);
-  sanitize.nonemptystring(emailAddress);
-
-  let emailSplit = emailAddress.split("@");
-  assert(
-    emailSplit.length == 2,
-    "email address not in expected format: must contain exactly one @"
-  );
-  let emailLocal = sanitize.nonemptystring(emailSplit[0]);
-  let emailDomain = sanitize.hostname(emailSplit[1]);
-
-  let otherVars = {};
-  otherVars.EMAILADDRESS = emailAddress;
-  otherVars.EMAILLOCALPART = emailLocal;
-  otherVars.EMAILDOMAIN = emailDomain;
-  otherVars.REALNAME = realName;
-
-  if (password) {
-    c.incoming.password = password;
-    c.outgoing.password = password; // set member only if auth required?
-  }
-  c.incoming.username = _replaceVariable(c.incoming.username, otherVars);
-  c.outgoing.username = _replaceVariable(c.outgoing.username, otherVars);
-  c.incoming.hostname = _replaceVariable(c.incoming.hostname, otherVars);
-  if (c.outgoing.hostname) { // will be null, if user picked an existing server
-    c.outgoing.hostname = _replaceVariable(c.outgoing.hostname, otherVars);
-  }
-  c.realName = _replaceVariable(c.realName, otherVars);
-  c.emailAddress = _replaceVariable(c.emailAddress, otherVars);
-  c.displayName = _replaceVariable(c.displayName, otherVars);
-}
 
 function _replaceVariable(variable, values) {
   let str = variable;

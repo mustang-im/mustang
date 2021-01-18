@@ -7,7 +7,8 @@ import path from "path";
 import url from "url";
 import appModulePath from "app-module-path";
 import { readAccounts } from "../logic/account/account-list";
-import { makeNewAccount } from "../logic/account/account-setup";
+import { makeNewAccount, getAccountProviderWithNet } from "../logic/account/setup/setup";
+import AccountConfig from "../logic/account/setup/AccountConfig";
 import SQLAccount from "../logic/storage/SQLAccount";
 appModulePath.addPath(__dirname + "/../");
 global.__base = __dirname + "/../";
@@ -15,6 +16,8 @@ global.__base = __dirname + "/../";
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 global.makeNewAccount = makeNewAccount;
+global.getAccountProviderWithNet = getAccountProviderWithNet;
+global.AccountConfig = AccountConfig;
 
 async function start() {
   try {

@@ -7,7 +7,7 @@ import path from "path";
 import url from "url";
 import appModulePath from "app-module-path";
 import { readAccounts } from "../logic/account/account-list";
-import { makeNewAccount } from "../logic/account/account-setup";
+import { makeNewAccount } from "../logic/account/setup/setup";
 import SQLAccount from "../logic/storage/SQLAccount";
 appModulePath.addPath(__dirname + "/../");
 global.__base = __dirname + "/../";

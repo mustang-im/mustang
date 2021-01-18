@@ -1,12 +1,15 @@
 <script>
+  import AccountConfig from "../../../../logic/account/setup/AccountConfig.js";
+  //import { remote } from "electron";
+  import { onMount, onDestroy } from "svelte";
+  //const AccountConfig = remote.getGlobal("AccountConfig");
+
+  // Dialog pages
   import InputEmailAddress from "./InputEmailAddress.svelte";
   import AutoConfig from "./AutoConfig.svelte";
   import ManualConfig from "./ManualConfig.svelte";
   import ConfirmConfig from "./ConfirmConfig.svelte";
   import TestConfig from "./TestConfig.svelte";
-  import AccountConfig from "./AccountConfig.js";
-  export let name; // dummy for app name
-
   let allSteps = [ InputEmailAddress, AutoConfig, ManualConfig, ConfirmConfig, TestConfig ];
   let currentStep = InputEmailAddress;
 
@@ -14,6 +17,8 @@
   config.realName = "You";
   config.emailAddress = "";
   config.password = "";
+
+  export let name; // dummy for app name
 
   function continueStep() {
     let nextStep = allSteps[allSteps.indexOf(currentStep) + 1];
@@ -83,5 +88,6 @@
   }
   #buttons {
     align: end;
+    margin-top: 3em;
   }
 </style>

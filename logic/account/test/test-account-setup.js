@@ -1,5 +1,5 @@
 require("app-module-path").addPath(__dirname + "/");
-var makeNewAccount = require("logic/account/account-setup").makeNewAccount;
+var makeNewAccount = require("logic/account/setup/setup").makeNewAccount;
 
 function startTest(errorCallback, successCallback) {
   var emailAddress = "fred@yahoo.com";
