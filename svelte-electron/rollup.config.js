@@ -1,6 +1,7 @@
 import svelte from 'rollup-plugin-svelte';
 import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
+import builtins from 'rollup-plugin-node-builtins';
 import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
 import css from 'rollup-plugin-css-only';
@@ -29,7 +30,7 @@ function serve() {
 }
 
 export default {
-  input: 'frontend/test/test.js',
+  input: 'frontend/MainWindow/start.js',
   output: {
     sourcemap: true,
     format: 'iife',
@@ -47,13 +48,14 @@ export default {
     // a separate file - better for performance
     css({ output: 'bundle.css' }),
 
+    builtins(),
+
     // If you have external dependencies installed from
     // npm, you'll most likely need these plugins. In
     // some cases you'll need additional configuration -
     // consult the documentation for details:
     // https://github.com/rollup/plugins/tree/master/packages/commonjs
     resolve({
-      browser: true,
       dedupe: ['svelte']
     }),
     commonjs(),
