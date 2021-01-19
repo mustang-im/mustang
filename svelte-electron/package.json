@@ -3,10 +3,9 @@
   "version": "0.1.0",
   "description": "Prototype for an email application",
   "dependencies": {
-    "app-module-path": "^2.2.0",
-    "concurrently": "^5.3.0",
     "electron": "^11.1.1",
     "esm": "^3.2.25",
+    "mustang-lib": "../lib/",
     "sirv-cli": "^1.0.0"
   },
   "devDependencies": {
@@ -16,9 +15,9 @@
     "rollup": "^2.3.4",
     "rollup-plugin-css-only": "^3.1.0",
     "rollup-plugin-livereload": "^2.0.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-svelte": "^7.0.0",
     "rollup-plugin-terser": "^7.0.0",
-    "rollup-plugin-node-builtins": "^2.1.2",
     "svelte": "^3.0.0"
   },
   "main": "app.js",
@@ -27,6 +26,7 @@
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "svelte-start": "sirv public",
+    "postinstall": "install-app-deps",
     "test": "node test.js"
   },
   "author": "Ben Bucksch",

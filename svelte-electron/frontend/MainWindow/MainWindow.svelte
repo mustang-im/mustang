@@ -1,7 +1,12 @@
 <script>
+  import util from "mustang-lib/util/util";
+  import collection from "mustang-lib/util/collection";
+  util.importAll(util, global);
+  util.importAll(collection, global);
+  import { translateElements, pluralform } from "mustang-lib/trex/translate";
+  import { Fastlist, SingleSelectionObserver } from "mustang-lib/trex/fastlist";
+
   import { remote } from "electron";
-  import appModulePath from "app-module-path";
-  appModulePath.addPath(remote.getGlobal("__base"));
   import { onMount } from "electron";
 
   var gAccountListE;

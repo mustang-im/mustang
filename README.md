@@ -1,4 +1,4 @@
-Corvette
+Mustang
 
 This is a prototype for new full-featured email client.
 It is a desktop email client written entirely in JavaScript and HTML.

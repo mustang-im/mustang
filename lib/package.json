@@ -1,10 +1,11 @@
 {
-  "name": "mustang",
+  "name": "mustang-lib",
   "version": "0.1.0",
-  "description": "Mustang - User-friendly full-featured email application for everybody",
+  "description": "Mustang - User-friendly full-featured email application for everybody - Logic",
   "dependencies": {
     "@buttercup/credentials": "^1.2.0",
     "adm-zip": "^0.4.13",
+    "electron": "^11.1.1",
     "emailjs-imap-client": "^3.0.7",
     "emailjs-mime-builder": "^2.0.5",
     "emailjs-mime-parser": "^2.0.7",
@@ -19,32 +20,29 @@
     "sqlite3": "^5.0.1",
     "xmldom": "^0.1.27"
   },
+  "devDependencies": {
+    "electron-builder": "^22.9.1"
+  },
   "scripts": {
-    "simple-electron": "cd simple-electron/ && yarn run start",
-    "react-electron": "cd react-electron/ && yarn run start",
     "postinstall": "install-app-deps",
     "test": "node test.js"
   },
   "private": true,
-  "workspaces": [
-    "svelte-electron",
-    "react-electron",
-    "simple-electron"
-  ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/benbucksch/corvette.git"
+    "url": "git+https://github.com/benbucksch/mustang-lib.git"
   },
   "keywords": [
     "email",
     "mail",
     "imap",
-    "desktop"
+    "desktop",
+    "mobile"
   ],
   "author": "Ben Bucksch",
   "license": "GPL-2.0",
   "bugs": {
-    "url": "https://github.com/benbucksch/corvette/issues"
+    "url": "https://github.com/benbucksch/mustang/issues"
   },
-  "homepage": "https://github.com/benbucksch/corvette#readme"
+  "homepage": "https://github.com/benbucksch/mustang#readme"
 }

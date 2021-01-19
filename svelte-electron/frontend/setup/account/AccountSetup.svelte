@@ -1,5 +1,10 @@
 <script>
-  import AccountConfig from "../../../../logic/account/setup/AccountConfig.js";
+  import util from "mustang-lib/util/util";
+  import collection from "mustang-lib/util/collection";
+  util.importAll(util, global);
+  import { translateElements, pluralform } from "mustang-lib/trex/translate";
+
+  import AccountConfig from "mustang-lib/logic/account/setup/AccountConfig.js";
   //import { remote } from "electron";
   import { onMount, onDestroy } from "svelte";
   //const AccountConfig = remote.getGlobal("AccountConfig");

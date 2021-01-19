@@ -1,5 +1,5 @@
 <script>
-  //import { getAccountProviderWithNet } from "../../../../logic/account/setup/setup.js";
+  //import { getAccountProviderWithNet } from "mustang-lib/logic/account/setup/setup.js";
   //import { remote } from "electron";
   import { onMount, onDestroy, createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
