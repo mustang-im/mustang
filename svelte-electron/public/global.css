@@ -23,6 +23,7 @@ a:visited {
 
 label {
   display: block;
+  user-select: none;
 }
 
 input, button, select, textarea {

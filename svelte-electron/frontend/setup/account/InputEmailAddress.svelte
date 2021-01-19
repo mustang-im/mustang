@@ -54,7 +54,7 @@
     required />
   {/if}
   <span class="validity"/>
-  <span on:click={togglePasswordView}>Eye</span>
+  <span on:click={togglePasswordView} alt="Show/Hide password" title="Show/Hide password">{#if passwordVisible }<del>👁</del>{:else}👁{/if}</span>
 </grid>
 </form>
 
@@ -70,6 +70,7 @@
   grid.inputs span {
     margin-left: 1em;
     color: darkgrey;
+    user-select: none;
   }
   input.entered:invalid {
     border: 2px solid red;
