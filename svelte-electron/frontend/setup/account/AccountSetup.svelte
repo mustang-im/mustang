@@ -76,7 +76,7 @@
 -->
 
 <hbox id="buttons">
-  {#if canContinue && config && config.emailAddress && config.password && config.realName }
+  {#if currentStep == ConfirmConfig && config && config.emailAddress && config.password && config.realName }
   <button id="manual" on:click={manualConfig}>Manual config</button>
   {/if}
   <button id="cancel" on:click={cancel}>Cancel</button>
