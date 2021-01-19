@@ -1,0 +1,48 @@
+{
+  "name": "mustang-lib",
+  "version": "0.1.0",
+  "description": "Mustang - User-friendly full-featured email application for everybody - Logic",
+  "dependencies": {
+    "@buttercup/credentials": "^1.2.0",
+    "adm-zip": "^0.4.13",
+    "electron": "^11.1.1",
+    "emailjs-imap-client": "^3.0.7",
+    "emailjs-mime-builder": "^2.0.5",
+    "emailjs-mime-parser": "^2.0.7",
+    "emailjs-smtp-client": "^2.0.1",
+    "generate-password": "^1.4.1",
+    "html-to-text": "^5.1.1",
+    "i18n": "^0.8.3",
+    "iocane": "^1.0.2",
+    "r2": "^2.0.1",
+    "sql-template-strings": "^2.2.2",
+    "sqlite": "^3.0.3",
+    "sqlite3": "^5.0.1",
+    "xmldom": "^0.1.27"
+  },
+  "devDependencies": {
+    "electron-builder": "^22.9.1"
+  },
+  "scripts": {
+    "postinstall": "install-app-deps",
+    "test": "node test.js"
+  },
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benbucksch/mustang-lib.git"
+  },
+  "keywords": [
+    "email",
+    "mail",
+    "imap",
+    "desktop",
+    "mobile"
+  ],
+  "author": "Ben Bucksch",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/benbucksch/mustang/issues"
+  },
+  "homepage": "https://github.com/benbucksch/mustang#readme"
+}
