@@ -1,6 +1,8 @@
 <script>
   export let config = {};
+  export let canContinue;
 
+  canContinue = config.isComplete();
   config.forceManual = true; // Make [Back] button work
 
   function protocolDisplay(protocol) {

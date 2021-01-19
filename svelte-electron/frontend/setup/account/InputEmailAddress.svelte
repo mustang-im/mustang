@@ -1,9 +1,10 @@
 <script>
   export let config;
   export let canContinue;
+  let form;
 
-  function onEmailAddressChanged() {
-    //config.password = "";
+  function checkValid() {
+    canContinue = form.checkValidity();
   }
 
   let enteredRealName = false;
@@ -15,6 +16,7 @@
   }
 </script>
 
+<form bind:this={form}>
 <grid id="input" class="inputs">
   <label for="realName">Your name:</label>
   <input type="text"
@@ -22,6 +24,7 @@
     bind:value={config.realName}
     placeholder="Fred Flintstone"
     class:entered={enteredRealName} on:blur={() => enteredRealName = true }
+    on:keypress={checkValid}
     required />
   <span class="validity"/>
   <span class="explanation">Your name, as shown to others</span>
@@ -30,25 +33,30 @@
   <input type="email"
     id="emailAddress"
     bind:value={config.emailAddress}
-    required
     pattern="[a-z0-9\-%+_\.\*]+@[a-z0-9\-\.]+\.[a-z]+"
     x-moz-errormessage="Please specify a valid email address"
     class:entered={enteredEmailAddress} on:blur={() => enteredEmailAddress = true }
-    on:keypress={onEmailAddressChanged} />
+    on:keypress={checkValid}
+    required />
   <span class="validity"/>
   <span class="explanation">Your existing email address</span>
 
   <label for="password">Password:</label>
   {#if passwordVisible }
-  <input type="text" bind:value={config.password} required
-    class:entered={enteredPassword} on:blur={() => enteredPassword = true } />
+  <input type="text" bind:value={config.password}
+    class:entered={enteredPassword} on:blur={() => enteredPassword = true }
+    on:keypress={checkValid}
+    required />
   {:else}
-  <input type="password" bind:value={config.password} required
-    class:entered={enteredPassword} on:blur={() => enteredPassword = true } />
+  <input type="password" bind:value={config.password}
+    class:entered={enteredPassword} on:blur={() => enteredPassword = true }
+    on:keypress={checkValid}
+    required />
   {/if}
   <span class="validity"/>
   <span on:click={togglePasswordView}>Eye</span>
 </grid>
+</form>
 
 <style>
   grid.inputs {

@@ -12,6 +12,7 @@
   import TestConfig from "./TestConfig.svelte";
   let allSteps = [ InputEmailAddress, AutoConfig, ManualConfig, ConfirmConfig, TestConfig ];
   let currentStep = InputEmailAddress;
+  let canContinue = false;
 
   let config = new AccountConfig();
   config.realName = "You";
@@ -53,7 +54,7 @@
 
 {#each allSteps as step}
   {#if currentStep == step }
-    <svelte:component this={step} bind:config on:continue={continueStep} />
+    <svelte:component this={step} bind:config bind:canContinue on:continue={continueStep} />
   {/if}
 {/each}
 
@@ -75,14 +76,14 @@
 -->
 
 <hbox id="buttons">
-  {#if config && config.emailAddress && config.password && config.realName }
+  {#if canContinue && config && config.emailAddress && config.password && config.realName }
   <button id="manual" on:click={manualConfig}>Manual config</button>
   {/if}
   <button id="cancel" on:click={cancel}>Cancel</button>
   {#if currentStep != allSteps[0]}
   <button id="back" on:click={backStep}>Back</button>
   {/if}
-  <button id="continue" on:click={continueStep}>
+  <button id="continue"  disabled={ !canContinue } on:click={continueStep}>
     {#if currentStep == allSteps[allSteps.length - 1]}
       Done
     {:else}

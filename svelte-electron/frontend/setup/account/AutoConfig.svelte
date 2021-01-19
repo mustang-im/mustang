@@ -24,6 +24,8 @@
   }
 
   export let config = {};
+  export let canContinue;
+  canContinue = false;
 
   let abortable;
   let errorMessage;

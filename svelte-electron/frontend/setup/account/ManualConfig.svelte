@@ -3,12 +3,20 @@
   const dispatch = createEventDispatcher();
 
   export let config = {};
+  export let canContinue;
+  canContinue = config.isComplete();
+  let form;
 
   onMount(() => {
-    if (config.isComplete() && !config.forceManual) {
+    if (canContinue && config.isComplete() && !config.forceManual) {
       dispatch("continue");
     }
   });
+
+  function checkValid() {
+    canContinue = form.checkValidity();
+    console.log(canContinue ? "valid" : "invalid");
+  }
 
   const sslOptions = {
     "ssl": "Normal SSL / TLS",
@@ -40,6 +48,7 @@
 
 <h2>Please enter the configuration for {config.emailAddress}</h2>
 
+<form bind:this={form}>
 <grid id="display">
   <span class="header"/>
   <span class="header">Protocol</span>
@@ -50,51 +59,65 @@
   <span class="header">Username</span>
 
   <label for="realName">Incoming mail server:</label>
-  <select bind:value={config.incoming.type}>
+  <select bind:value={config.incoming.type}
+    on:blur={checkValid} on:change={checkValid}>
     {#each propToArray(incomingProtocols) as protocol }
       <option value={protocol.name}>
         {protocol.label}
       </option>
     {/each}
   </select>
-  <input type="text" bind:value={config.incoming.hostname} required />
-  <input type="number" bind:value={config.incoming.port} required min="1" max="65536" />
-  <select bind:value={config.incoming.auth}>
+  <input type="text" bind:value={config.incoming.hostname}
+    on:keypress={checkValid} required />
+  <input type="number" bind:value={config.incoming.port}
+    on:keypress={checkValid}
+    min="1" max="65536" required />
+  <select bind:value={config.incoming.auth}
+    on:blur={checkValid} on:change={checkValid}>
     {#each propToArray(sslOptions) as option }
       <option value={option.name}>
         {option.label}
       </option>
     {/each}
   </select>
-  <select bind:value={config.incoming.auth}>
+  <select bind:value={config.incoming.auth}
+    on:blur={checkValid} on:change={checkValid}>
     {#each propToArray(authOptions) as option }
       <option value={option.name}>
         {option.label}
       </option>
     {/each}
   </select>
-  <input type="text" bind:value={config.incoming.username} required />
+  <input type="text" bind:value={config.incoming.username}
+    on:keypress={checkValid} required />
 
   <label for="realName">Outgoing mail server:</label>
   <span class="protocol">SMTP</span>
-  <input type="text" bind:value={config.outgoing.hostname} required />
-  <input type="number" bind:value={config.outgoing.port} required min="1" max="65536" />
-  <select bind:value={config.outgoing.auth}>
+  <input type="text" bind:value={config.outgoing.hostname}
+    on:keypress={checkValid} required />
+  <input type="number" bind:value={config.outgoing.port}
+    on:keypress={checkValid}
+    min="1" max="65536" required />
+  <select bind:value={config.outgoing.auth}
+    on:blur={checkValid} on:change={checkValid}>
     {#each propToArray(sslOptions) as option }
       <option value={option.name}>
         {option.label}
       </option>
     {/each}
   </select>
-  <select bind:value={config.outgoing.auth}>
+  <select bind:value={config.outgoing.auth}
+    on:blur={checkValid} on:change={checkValid}>
     {#each propToArray(authOptions) as option }
       <option value={option.name}>
         {option.label}
       </option>
     {/each}
   </select>
-  <input type="text" bind:value={config.incoming.username} required />
+  <input type="text" bind:value={config.incoming.username}
+    on:keypress={checkValid} required />
 </grid>
+</form>
 
 <style>
   h2 {
