@@ -1,7 +1,8 @@
 <script>
   //import { getAccountProviderWithNet } from "../../../../logic/account/setup/setup.js";
   //import { remote } from "electron";
-  import { onMount, onDestroy } from "svelte";
+  import { onMount, onDestroy, createEventDispatcher } from "svelte";
+  const dispatch = createEventDispatcher();
   //const getAccountProviderWithNet = remote.getGlobal("getAccountProviderWithNet");
   function getAccountProviderWithNet(domain, emailAddress, successCallback, errorCallback) {
     setTimeout(() => {
@@ -30,8 +31,11 @@
   function findConfig() {
     config.domain = config.emailAddress.split("@")[1];
     abortable = getAccountProviderWithNet(config.domain, config.emailAddress, foundConfig => {
-      config = foundConfig;
       abortable = null;
+      config = foundConfig;
+      if (config.isComplete()) {
+        dispatch("continue");
+      }
     }, showError);
   }
   onMount(findConfig);

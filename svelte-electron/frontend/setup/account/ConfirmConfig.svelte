@@ -1,6 +1,8 @@
 <script>
   export let config = {};
 
+  config.forceManual = true; // Make [Back] button work
+
   function protocolDisplay(protocol) {
     return protocol.toUpperCase();
   }

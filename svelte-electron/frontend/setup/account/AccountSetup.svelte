@@ -40,6 +40,13 @@
   function cancel() {
     window.close();
   }
+
+  function manualConfig() {
+    if (config) {
+      config.forceManual = true;
+    }
+    currentStep = ManualConfig;
+  }
 </script>
 
 <h1>Set up your email address</h1>
@@ -68,6 +75,9 @@
 -->
 
 <hbox id="buttons">
+  {#if config && config.emailAddress && config.password && config.realName }
+  <button id="manual" on:click={manualConfig}>Manual config</button>
+  {/if}
   <button id="cancel" on:click={cancel}>Cancel</button>
   {#if currentStep != allSteps[0]}
   <button id="back" on:click={backStep}>Back</button>
