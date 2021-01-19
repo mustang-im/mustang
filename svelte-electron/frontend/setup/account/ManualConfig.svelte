@@ -51,14 +51,10 @@
 <form bind:this={form}>
 <grid id="display">
   <span class="header"/>
-  <span class="header">Protocol</span>
-  <span class="header">Server hostname</span>
-  <span class="header">Port</span>
-  <span class="header">SSL</span>
-  <span class="header">Authentication</span>
-  <span class="header">Username</span>
+  <span class="header">Incoming mail server</span>
+  <span class="header">Outgoing mail server</span>
 
-  <label for="realName">Incoming mail server:</label>
+  <span class="header">Protocol</span>
   <select bind:value={config.incoming.type}
     on:blur={checkValid} on:change={checkValid}>
     {#each propToArray(incomingProtocols) as protocol }
@@ -67,40 +63,44 @@
       </option>
     {/each}
   </select>
+  <span class="protocol">SMTP</span>
+
+  <span class="header">Server hostname</span>
   <input type="text" bind:value={config.incoming.hostname}
     on:keypress={checkValid} required />
+  <input type="text" bind:value={config.outgoing.hostname}
+    on:keypress={checkValid} required />
+
+  <span class="header">Port</span>
   <input type="number" bind:value={config.incoming.port}
     on:keypress={checkValid}
     min="1" max="65536" required />
-  <select bind:value={config.incoming.auth}
-    on:blur={checkValid} on:change={checkValid}>
-    {#each propToArray(sslOptions) as option }
-      <option value={option.name}>
-        {option.label}
-      </option>
-    {/each}
-  </select>
-  <select bind:value={config.incoming.auth}
-    on:blur={checkValid} on:change={checkValid}>
-    {#each propToArray(authOptions) as option }
-      <option value={option.name}>
-        {option.label}
-      </option>
-    {/each}
-  </select>
-  <input type="text" bind:value={config.incoming.username}
-    on:keypress={checkValid} required />
-
-  <label for="realName">Outgoing mail server:</label>
-  <span class="protocol">SMTP</span>
-  <input type="text" bind:value={config.outgoing.hostname}
-    on:keypress={checkValid} required />
   <input type="number" bind:value={config.outgoing.port}
     on:keypress={checkValid}
     min="1" max="65536" required />
-  <select bind:value={config.outgoing.auth}
+
+  <span class="header">SSL</span>
+  <select bind:value={config.incoming.socketType}
     on:blur={checkValid} on:change={checkValid}>
     {#each propToArray(sslOptions) as option }
+      <option value={option.name}>
+        {option.label}
+      </option>
+    {/each}
+  </select>
+  <select bind:value={config.outgoing.socketType}
+    on:blur={checkValid} on:change={checkValid}>
+    {#each propToArray(sslOptions) as option }
+      <option value={option.name}>
+        {option.label}
+      </option>
+    {/each}
+  </select>
+
+  <span class="header">Authentication</span>
+  <select bind:value={config.incoming.auth}
+    on:blur={checkValid} on:change={checkValid}>
+    {#each propToArray(authOptions) as option }
       <option value={option.name}>
         {option.label}
       </option>
@@ -114,8 +114,13 @@
       </option>
     {/each}
   </select>
+
+  <span class="header">Username</span>
   <input type="text" bind:value={config.incoming.username}
     on:keypress={checkValid} required />
+  <input type="text" bind:value={config.incoming.username}
+    on:keypress={checkValid} required />
+
 </grid>
 </form>
 
@@ -126,7 +131,7 @@
   }
   #display {
     display: grid;
-    grid-template-columns: repeat(7, max-content);
+    grid-template-columns: repeat(3, max-content);
   }
   span.header {
     color: darkgrey;
