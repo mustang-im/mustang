@@ -8,7 +8,6 @@ import path from "path";
 import { readAccounts, addNewAccountFromConfig } from "mustang-lib/logic/account/account-list";
 import { findAccountConfig } from "mustang-lib/logic/account/setup/setup";
 import AccountConfig from "mustang-lib/logic/account/setup/AccountConfig";
-import SQLAccount from "mustang-lib/logic/storage/SQLAccount";
 
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;

@@ -22,6 +22,7 @@
   onMount(findConfig);
 
   function showError(ex) {
+    console.error(ex);
     errorMessage = ex && ex.message ? ex.message : ex + "";
     abortable = null;
   }
