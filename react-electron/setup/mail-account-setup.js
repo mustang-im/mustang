@@ -5,14 +5,14 @@ appModulePath.addPath(remote.getGlobal("__base"));
 import util from "../../util/util";
 util.importAll(util, global);
 const gAccounts = remote.getGlobal("accounts");
-const makeNewAccount = remote.getGlobal("makeNewAccount");
 */
 var remote = require("electron").remote;
 require("app-module-path").addPath(remote.getGlobal("__base"));
 var util = require("util/util");
 util.importAll(util, global);
 var gAccounts = remote.getGlobal("accounts");
-var makeNewAccount = remote.getGlobal("makeNewAccount");
+const addNewAccountFromConfig = remote.getGlobal("addNewAccountFromConfig");
+const findAccountConfig = remote.getGlobal("findAccountConfig");
 
 
 function onLoad() {
@@ -51,7 +51,8 @@ function ok() {
     var password = E("password").value;
 
     assert(gAccounts);
-    makeNewAccount(emailAddress, gAccounts, function(account) {
+    findAccountConfig(emailAddress, gAccounts, async config => {
+      let account = await addNewAccountFromConfig(config);
       account.setPassword(password);
       account.login(true, function() {
         window.close();

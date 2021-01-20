@@ -1,27 +1,7 @@
 <script>
-  //import { getAccountProviderWithNet } from "mustang-lib/logic/account/setup/setup.js";
-  //import { remote } from "electron";
+  import { findAccountConfig } from "mustang-lib/logic/account/setup/setup.js";
   import { onMount, onDestroy, createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
-  //const getAccountProviderWithNet = remote.getGlobal("getAccountProviderWithNet");
-  function getAccountProviderWithNet(domain, emailAddress, successCallback, errorCallback) {
-    setTimeout(() => {
-      config.incoming.type = "imap";
-      config.incoming.hostname = "imap.%EMAILDOMAIN%";
-      config.outgoing.hostname = "smtp.%EMAILDOMAIN%";
-      config.incoming.socketType = "ssl";
-      config.outgoing.socketType = "ssl";
-      config.incoming.port = 993;
-      config.outgoing.port = 465;
-      config.incoming.auth = "passwordCleartext";
-      config.outgoing.auth = "passwordCleartext";
-      config.incoming.username = "%EMAILADDRESS%";
-      config.outgoing.username = "%EMAILADDRESS%";
-      config.replaceVariables();
-      successCallback(config);
-    }, 1000);
-    return { cancel() {} };
-  }
 
   export let config = {};
   export let canContinue;
@@ -31,8 +11,7 @@
   let errorMessage;
 
   function findConfig() {
-    config.domain = config.emailAddress.split("@")[1];
-    abortable = getAccountProviderWithNet(config.domain, config.emailAddress, foundConfig => {
+    abortable = findAccountConfig(config.emailAddress, foundConfig => {
       abortable = null;
       config = foundConfig;
       if (config.isComplete()) {

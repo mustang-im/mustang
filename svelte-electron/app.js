@@ -5,15 +5,15 @@
 import electron from "electron";
 import url from "url";
 import path from "path";
-import { readAccounts } from "mustang-lib/logic/account/account-list";
-import { makeNewAccount, getAccountProviderWithNet } from "mustang-lib/logic/account/setup/setup";
+import { readAccounts, addNewAccountFromConfig } from "mustang-lib/logic/account/account-list";
+import { findAccountConfig } from "mustang-lib/logic/account/setup/setup";
 import AccountConfig from "mustang-lib/logic/account/setup/AccountConfig";
 import SQLAccount from "mustang-lib/logic/storage/SQLAccount";
 
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
-global.makeNewAccount = makeNewAccount;
-global.getAccountProviderWithNet = getAccountProviderWithNet;
+global.addNewAccountFromConfig = addNewAccountFromConfig;
+global.findAccountConfig = findAccountConfig;
 global.AccountConfig = AccountConfig;
 
 async function start() {

@@ -5,9 +5,7 @@
   import { translateElements, pluralform } from "mustang-lib/trex/translate";
 
   import AccountConfig from "mustang-lib/logic/account/setup/AccountConfig.js";
-  //import { remote } from "electron";
   import { onMount, onDestroy } from "svelte";
-  //const AccountConfig = remote.getGlobal("AccountConfig");
 
   // Dialog pages
   import InputEmailAddress from "./InputEmailAddress.svelte";

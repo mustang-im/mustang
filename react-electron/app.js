@@ -5,15 +5,13 @@
 import electron from "electron";
 import path from "path";
 import url from "url";
-import appModulePath from "app-module-path";
-import { readAccounts } from "../logic/account/account-list";
-import { makeNewAccount } from "../logic/account/setup/setup";
-appModulePath.addPath(__dirname + "/../");
-global.__base = __dirname + "/../";
+import { readAccounts, addNewAccountFromConfig } from "mustang-lib/logic/account/account-list";
+import { findAccountConfig } from "mustang-lib/logic/account/setup/setup";
 
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
-global.makeNewAccount = makeNewAccount;
+global.addNewAccountFromConfig = addNewAccountFromConfig;
+global.findAccountConfig = findAccountConfig;
 
 // Window will be closed once this object is garbage collected, so keep it
 var mainWindow;
