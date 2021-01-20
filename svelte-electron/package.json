@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Prototype for an email application",
   "dependencies": {
+    "@rollup/plugin-json": "^4.1.0",
     "electron": "^11.1.1",
     "esm": "^3.2.25",
     "mustang-lib": "../lib/",
