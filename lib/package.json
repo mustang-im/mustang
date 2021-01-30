@@ -14,6 +14,7 @@
     "html-to-text": "^5.1.1",
     "i18n": "^0.8.3",
     "iocane": "^1.0.2",
+    "jscollections": "https://github.com/benbucksch/jscollection/",
     "r2": "^2.0.1",
     "sql-template-strings": "^2.2.2",
     "sqlite": "^3.0.3",
@@ -27,11 +28,6 @@
     "postinstall": "install-app-deps",
     "test": "node test.js"
   },
-  "private": true,
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/benbucksch/mustang-lib.git"
-  },
   "keywords": [
     "email",
     "mail",
@@ -41,6 +37,10 @@
   ],
   "author": "Ben Bucksch",
   "license": "GPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benbucksch/mustang.git"
+  },
   "bugs": {
     "url": "https://github.com/benbucksch/mustang/issues"
   },
