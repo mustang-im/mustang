@@ -5,7 +5,6 @@
   import { translateElements, pluralform } from "mustang-lib/trex/translate";
   import { Fastlist, SingleSelectionObserver } from "mustang-lib/trex/fastlist";
 
-//  import { remote } from "electron";
   import { onMount } from "svelte";
 
   var gAccountListE;

@@ -24,7 +24,8 @@
   },
   "main": "app.js",
   "scripts": {
-    "start": "electron -r esm .",
+    "start": "rollup -c && electron -r esm .",
+    "plain-start": "electron -r esm .",
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "svelte-start": "sirv public",

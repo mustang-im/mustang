@@ -1,7 +1,8 @@
 <script>
-  import util from "mustang-lib/util/util";
-  import collection from "mustang-lib/util/collection";
+  import * as util from "mustang-lib/util/util";
   util.importAll(util, global);
+  import * as collection from "jscollections";
+  util.importAll(collection, global);
   import { translateElements, pluralform } from "mustang-lib/trex/translate";
 
   import AccountConfig from "mustang-lib/logic/account/setup/AccountConfig.js";
