@@ -5,7 +5,6 @@
   "dependencies": {
     "@buttercup/credentials": "^1.2.0",
     "adm-zip": "^0.4.13",
-    "electron": "^11.1.1",
     "emailjs-imap-client": "^3.0.7",
     "emailjs-mime-builder": "^2.0.5",
     "emailjs-mime-parser": "^2.0.7",
@@ -21,11 +20,7 @@
     "sqlite3": "^5.0.1",
     "xmldom": "^0.1.27"
   },
-  "devDependencies": {
-    "electron-builder": "^22.9.1"
-  },
   "scripts": {
-    "postinstall": "install-app-deps",
     "test": "node test.js"
   },
   "keywords": [
