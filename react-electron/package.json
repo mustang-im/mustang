@@ -55,5 +55,15 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "author": "Ben Bucksch",
+  "license": "GPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benbucksch/mustang.git"
+  },
+  "bugs": {
+    "url": "https://github.com/benbucksch/mustang/issues"
+  },
+  "homepage": "https://github.com/benbucksch/mustang#readme"
 }

@@ -1,10 +1,8 @@
 import { remote } from "electron";
-import appModulePath from "app-module-path";
-appModulePath.addPath(remote.getGlobal("__base"));
 
-import util from "../../util/util";
+import util from "mustang-lib/util/util";
 util.importAll(util, global);
-import collection from "../../util/collection";
+import * as collection from "jscollections";
 util.importAll(collection, global);
 
 import AccountPane from "./AccountPane";
@@ -16,11 +14,10 @@ import React, { Component } from "react";
 import ReactDOM from "react-dom";
 /*
 const remote = require("electron").remote;
-require("app-module-path").addPath(remote.getGlobal("__base"));
 
-const util = require("util/util");
+const util = require("mustang-lib/util/util");
 util.importAll(util, global);
-util.importAll(require("util/collection"), global);
+util.importAll(require("jscollections"), global);
 
 const React = require("react");
 const Component = React.Component;

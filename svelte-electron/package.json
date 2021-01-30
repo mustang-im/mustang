@@ -6,6 +6,7 @@
     "@rollup/plugin-json": "^4.1.0",
     "electron": "^11.1.1",
     "esm": "^3.2.25",
+    "jscollections": "https://github.com/benbucksch/jscollection/",
     "mustang-lib": "../lib/",
     "sirv-cli": "^1.0.0"
   },
@@ -31,9 +32,13 @@
     "test": "node test.js"
   },
   "author": "Ben Bucksch",
-  "license": "MPL-1.1",
-  "bugs": {
-    "url": "https://github.com/benbucksch/corvette/issues"
+  "license": "GPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benbucksch/mustang.git"
   },
-  "homepage": "https://github.com/benbucksch/corvette#readme"
+  "bugs": {
+    "url": "https://github.com/benbucksch/mustang/issues"
+  },
+  "homepage": "https://github.com/benbucksch/mustang#readme"
 }

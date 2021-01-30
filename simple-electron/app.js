@@ -5,12 +5,9 @@
 import electron from "electron";
 import path from "path";
 import url from "url";
-import appModulePath from "app-module-path";
 import { readAccounts, addNewAccountFromConfig } from "mustang-lib/logic/account/account-list";
 import { findAccountConfig } from "mustang-lib/logic/account/setup/setup";
-import SQLAccount from "../logic/storage/SQLAccount";
-appModulePath.addPath(__dirname + "/../");
-global.__base = __dirname + "/../";
+import SQLAccount from "mustang-lib/logic/storage/SQLAccount";
 
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;

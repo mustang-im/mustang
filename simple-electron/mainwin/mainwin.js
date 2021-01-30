@@ -1,17 +1,15 @@
 /*
 import { remote } from "electron";
-import appModulePath from "app-module-path";
-appModulePath.addPath(remote.getGlobal("__base"));
-import util from "../../util/util";
+import util from "mustang-lib/util/util";
 util.importAll(util, global);
-import collection from "../../util/collection";
+import collection from "mustang-lib/util/collection";
 util.importAll(collection, global);
 */
 var remote = require("electron").remote;
-require("app-module-path").addPath(remote.getGlobal("__base"));
-var util = require("../../util/util");
+var util = require("mustang-lib/util/util");
 util.importAll(util, global);
-util.importAll(require("util/collection"), global);
+//var { Fastlist, SingleSelectionObserver } = require("mustang-lib/trex/fastlist.js");
+import { Fastlist, SingleSelectionObserver } from "mustang-lib/trex/fastlist.js"
 
 var gAccountListE;
 var gFolderListE;

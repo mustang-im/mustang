@@ -1,12 +1,11 @@
 <script>
   import util from "mustang-lib/util/util";
-  import collection from "mustang-lib/util/collection";
   util.importAll(util, global);
-  util.importAll(collection, global);
+  import * from "jscollections";
   import { translateElements, pluralform } from "mustang-lib/trex/translate";
   import { Fastlist, SingleSelectionObserver } from "mustang-lib/trex/fastlist";
 
-  import { remote } from "electron";
+//  import { remote } from "electron";
   import { onMount } from "svelte";
 
   var gAccountListE;
