@@ -1,11 +1,11 @@
 <vbox class="folder-list">
   <FastList items={folders} selectedItem={selectedFolder} rowHeight={20}>
-    <header slot="header">
-      <th>Folders</th>
-    </header>
-    <row slot="row" let:item>
-      <hbox>{item.name}</hbox>
-    </row>
+    <svelte:fragment slot="header">
+      <hbox>Folders</hbox>
+    </svelte:fragment>
+    <svelte:fragment slot="row" let:item={folder}>
+      <hbox>{folder.name}</hbox>
+    </svelte:fragment>
   </FastList>
 </vbox>
 
