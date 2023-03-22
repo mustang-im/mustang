@@ -28,6 +28,7 @@ body {
   margin: 0;
   padding: 0;
   height: 100vh;
+  width: 100vw;
 }
 
 vbox {
@@ -40,6 +41,11 @@ hbox {
   flex-direction: row;
 }
 
+value {
+  display: flex;
+  flex-direction: row;
+}
+
 * {
   user-select: none;
 }
@@ -47,7 +53,8 @@ hbox {
 label,
 input,
 textarea,
-value {
+value,
+.value {
   user-select: unset;
 }
 

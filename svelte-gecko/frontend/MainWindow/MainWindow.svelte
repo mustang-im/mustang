@@ -34,4 +34,7 @@
   .main-window {
     flex: 1 0 0;
   }
+  .app-frame {
+    flex: 1 0 0;
+  }
 </style>
