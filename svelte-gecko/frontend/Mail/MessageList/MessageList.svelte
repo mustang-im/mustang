@@ -8,9 +8,9 @@
     </svelte:fragment>
     <svelte:fragment slot="row" let:item={msg}>
       <hbox>{msg.authorRealname}</hbox>
-      <hbox>{msg.to}</hbox>
+      <hbox>{msg.recipientRealname}</hbox>
       <hbox>{msg.subject}</hbox>
-      <hbox>{getDateString(msg.authorRealname)}</hbox>
+      <hbox>{getDateString(msg.date)}</hbox>
     </svelte:fragment>
   </FastList>
 </vbox>
@@ -23,6 +23,7 @@
 
   class EMail {
     msgID: string;
+    date: Date;
     subject: string;
     authorRealname: string;
     authorEmailAddress: string;
@@ -36,9 +37,10 @@
   export let selectedMessage: EMail; /* in/out */
 
   let testMessages: Collection<EMail> = new ArrayColl<EMail>();
-  for (let i = 1; i < 10; i++) {
+  for (let i = 1; i < 10000; i++) {
     let msg = new EMail();
     msg.msgID = i + '';
+    msg.date = new Date();
     msg.subject = "Talk about " + i;
     msg.authorRealname = "Some guy " + i;
     msg.authorEmailAddress = "guy" + i + "@example.com";
@@ -46,7 +48,7 @@
     msg.recipientRealname = "Ben";
     msg.contentType = "text/plain";
     msg._bodyPlaintext = "Some message " + i;
-    messages.add(msg);
+    testMessages.add(msg);
   }
 </script>
 
