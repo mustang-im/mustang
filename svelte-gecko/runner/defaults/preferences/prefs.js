@@ -1,4 +1,4 @@
-pref("toolkit.defaultChromeURI", "chrome://mustang/content/app.html");
+pref("toolkit.defaultChromeURI", "chrome://mustang/content/app.xhtml");
 
 // Mozilla pref tweaks
 pref("browser.cache.disk.enable", false);

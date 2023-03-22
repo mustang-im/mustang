@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet href="app.css" type="text/css"?>
+
+<xul:window id="xultestApp" title="Mustang" width="1024" height="768" persist="width height screenX screenY"
+  xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" xmlns:html="http://www.w3.org/1999/xhtml">
+
+  <!-- content-primary is important for security -->
+  <!-- TODO src="chrome://mustang/content/app.html" for testing only -->
+  <xul:iframe id="app-frame" type="content-primary" src="chrome://mustang/content/app.html" flex="1" />
+  <!-- Replace the URL above with your start page.
+       You can either use a http: URL or
+       "chrome://minbrowser/content/startpage.html"
+       and put the startpage.html file in the same directory as this app.xul
+       or, if you use localStorage <https://bugzilla.mozilla.org/show_bug.cgi?id=562646#c8>,
+       "resource://myapp/index.html"
+       and add e.g. "resource myapp ../myapp" to chrome.manifest
+       -->
+
+</xul:window>
