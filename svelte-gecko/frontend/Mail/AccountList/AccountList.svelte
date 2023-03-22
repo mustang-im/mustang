@@ -1,7 +1,7 @@
 <vbox class="account-list">
   <FastList list={accounts} selectedItem={selectedAccount}>
     <header slot="header">
-      <hbox>Accounts</hbox>
+      <th>Accounts</th>
     </header>
     <row rowheight="20" slot="row">
       <hbox field="emailAddress"></hbox>
@@ -12,7 +12,7 @@
 <script lang="ts">
   import type { Account } from "mustang-lib";
   import type { Collection } from 'jscollections';
-  import FastList from "../../Util/FastList.svelte";
+  import FastList from "../../Shared/FastList.svelte";
 
   export let accounts: Collection<Account>;
   export let selectedAccount: Account; /* in/out */

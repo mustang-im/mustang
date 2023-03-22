@@ -7,3 +7,11 @@ export function showError(e) {
 export function backgroundError(e) {
   console.error(e);
 }
+
+export async function showErrors(func: Function, errorFunc = showError) {
+  try {
+    await func();
+  } catch (ex) {
+    errorFunc(ex);
+  }
+}
