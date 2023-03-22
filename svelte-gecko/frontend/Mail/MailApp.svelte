@@ -2,10 +2,10 @@
   <vbox class="folder-pane">
     <ProjectList />
     <AccountList {accounts} bind:selectedAccount />
-    <FolderList folders={selectedAccount ? selectedAccount.folders : null} bind:selectedFolder />
+    <FolderList folders={selectedAccount ? selectedAccount.folders : new ArrayColl()} bind:selectedFolder />
   </vbox>
   <vbox class="message-list-pane">
-    <MessageList messages={selectedFolder ? selectedFolder.messages : null} bind:selectedMessage />
+    <MessageList messages={selectedFolder ? selectedFolder.messages : new ArrayColl()} bind:selectedMessage />
   </vbox>
   <vbox class="message-display-pane">
     {#if selectedMessage}
@@ -27,9 +27,10 @@
   import ProjectList from "./ProjectList/ProjectList.svelte";
   import StartPage from "./StartPage.svelte";
   import { backgroundError, showError } from "../Util/error";
+  import { ArrayColl } from 'jscollections';
   import { onMount } from "svelte";
 
-  let accounts: Account[] = [];
+  let accounts = new ArrayColl<Account>();
   let selectedAccount: Account;
   let selectedFolder: MsgFolder;
   let selectedMessage: Email;

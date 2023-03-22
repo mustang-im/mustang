@@ -4,10 +4,13 @@
   on:wheel={onScrollWheel}
   bind:this={listE}>
   <table bind:this={tableE} cellspacing="0">
-    <thead bind:this={theadE} use:getHeaderRow>
+    <thead bind:this={theadE}>
       <slot name="header" />
     </thead>
     <tbody bind:this={contentE}>
+      {#each showItems as item}
+        <slot name="row" {item} />
+      {/each}
     </tbody>
   </table>
   <div class="scrollbar"
@@ -16,9 +19,6 @@
     bind:this={scrollbarE}>
     <div class="scrollbar-content" bind:this={scrollbarContentE} />
   </div>
-  <hbox class="row-template-container" use:getRowTemplate>
-    <slot name="row" />
-  </hbox>
 </hbox>
 
 <script lang="ts">
@@ -64,11 +64,41 @@
   import { showErrors } from "../Util/error";
 
   type T = $$Generic;
+
+  /**
+   * The items to display in the list.
+   */
+  export let items: Collection<T> = new ArrayColl<T>();
+
+  /**
+   * The list items that the user selected,
+   * e.g. by clicking on them.
+   * This is usually just one element,
+   * unless the user used multiple selection, e.g. using the SHIFT key.
+   *
+   * This collection object is always the same.
+   * You can be notified of changes in the selection using
+   * the normal collection observers.
+   * 
+   * @see also selectedItem
+   *
+   * out only
+   */
+  export const selectedItems = new ArrayColl<T>();
+
+  /**
+   * The list item that the user selected,
+   * e.g. by clicking on it.
+   * Unlike selecteditems, this is always returns just one element.
+   *
+   * out only
+   */
+  export let selectedItem: T = null;
+
+  type T = $$Generic;
   let listE: HTMLDivElement;
   let tableE: HTMLTableElement;
   let theadE: HTMLTableSectionElement;
-  /** The template that the caller gave us for the header */
-  let headerRowE: HTMLHeadingElement;
   /** Where the actual rows are added. */
   let contentE: HTMLTableSectionElement;
   /** A dummy element that displays only a scrollbar. */
@@ -85,122 +115,10 @@
 
   /**
    * Height of the DOM elements for a single row.
+   * TODO calculate this
    * {integer} in px
    */
-  let rowHeight = 10; // set in getRowTemplate()
-
-  /**
-   * All items shown in the list.
-   */
-  let entries = new ArrayColl<Object>(); // just for init. will be overwritten below.
-
-  /**
-   * The list items that the user selected,
-   * e.g. by clicking on them.
-   * This is usually just one element,
-   * unless the user used multiple selection, e.g. using the SHIFT key.
-   *
-   * This collection object is always the same.
-   * You can be notified of changes in the selection using
-   * the normal collection observers.
-   * 
-   * @see also selectedItem
-   *
-   * out only
-   */
-  export const selectedItems = new ArrayColl<Object>();
-
-  /**
-   * The list item that the user selected,
-   * e.g. by clicking on it.
-   * Unlike selecteditems, this is always returns just one element.
-   *
-   * out only
-   */
-  export let selectedItem: Object = null;
-
-  /**
-   * Convenience class which returns just the first selected item
-   */
-  //export class SingleSelectionObserver<T> {
-  class SingleSelectionObserver<T> extends CollectionObserver<T> {
-    added(_items: T[], selectedItems: Collection<T>) {
-      this.onSelectedItem(selectedItems.first);
-    }
-    removed(_items: T[], selectedItems: Collection<T>) {
-      this.onSelectedItem(selectedItems.isEmpty ? null : selectedItems.first);
-    }
-    /**
-     * Called when the selected item changed
-     * @param selectedItem
-     *      null, if no item is selected
-     */
-    onSelectedItem(selectedItem?: T) {
-      throw "implement this";
-    }
-  }
-
-  const singleSelectionObserver = new SingleSelectionObserver<Object>();
-  singleSelectionObserver.onSelectedItem = item => {
-    selectedItem = item;
-  };
-
-  /**
-   * First visible row
-   * {integer} index position in entries
-   */
-  let scrollPos = 0;
-
-  let observer: CollectionObserver = {
-    added: items => {
-      updateSize();
-      refreshContent();
-    },
-    removed: items => {
-      updateSize();
-      refreshContent();
-    },
-  };
-
-  /*window.addEventListener("throttledResize", () => { // throttledResize from trex.js
-    updateSize();
-    refreshContent();
-  });*/
-
-  /** We cannot use `<slot name="header" bind:this={headerRowE} />`
-   * so use this trick <https://svelte.dev/repl/e3ad270dc3cf494e8b7b9d446c437c63?version=3.46.4> */
-  function getHeaderRow(node: HTMLDivElement) {
-    headerRowE = node.firstChild as HTMLHeadingElement;
-  }
-
-  /** @see getHeaderRow() */
-  function getRowTemplate(node: HTMLDivElement) {
-    rowTemplateE = node.firstChild as HTMLTableRowElement;
-    rowHeight = parseInt(rowTemplateE.getAttribute("rowheight")); // TODO automatic sizing
-    //_rowHeight = getHeight(rowTemplate); // TODO consider vertical padding
-    rowTemplateE.removeAttribute("rowheight");
-  }
-
-  $: listE && showErrors(() => showCollection(entries))
-
-  /**
-   * The items that should be shown in the list.
-   *
-   * @see entries
-   * |coll| will be |entries|.
-   */
-  function showCollection(coll: Collection<Object>) {
-    if (observer) {
-      coll.unregisterObserver(observer);
-    }
-
-    entries = coll;
-    updateSize();
-    refreshContent();
-
-    coll.registerObserver(observer);
-    selectedItems.clear();
-  }
+  export let rowHeight = 10;
 
   /**
    * The items that should be shown in the list.
@@ -210,60 +128,61 @@
    *
    * This is the same collection that was set in showCollection().
    * If you didn't call showCollection(), this is a default collection.
-   */
-  export function getEntries(): Collection<Object> {
-    return entries;
+   *
+  export function getItems(): Collection<T> {
+    return items;
   }
 
   /**
    * Adds a row to the list
    * @param obj values for one row
-   */
-  export function addEntry(obj: Object) {
-    entries.add(obj);
+   *
+  export function addItem(obj: T) {
+    items.add(obj);
   }
 
   /**
    * Adds a number of rows to the list. Each array element is one row.
    * @param array values for  rows
-   */
-  export function addEntriesFromArray(array: Object[]) {
-    entries.addAll(array);
+   *
+  export function addEntriesFromArray(array: T[]) {
+    items.addAll(array);
   }
-
-  type FillFunc = (value: any) => string | number | HTMLElement;
+  */
 
   /**
-   * Populates DOM entries with the values from an object
-   * By default, for each element with a field="foo" attribute,
-   * it reads the corresponding obj.foo property and
-   * writes it as text node into the element.
-   *
-   * @param obj values for this row
+   * First visible row
+   * {integer} index position in entries
    */
-  function fillRow(rowE: HTMLTableRowElement, obj: Object) {
-    for (let fieldE of rowE.querySelectorAll("*[field]")) {
-      let fieldName = fieldE.getAttribute("field");
-      let value = obj[fieldName];
+  let scrollPos = 0;
 
-      let fillFunc = fieldE.fillFunc as FillFunc;
-      if (fillFunc && typeof(fillFunc) == "function") {
-        let display = fillFunc(value);
-        if (typeof(display) == "string") {
-          fieldE.textContent = display;
-        } else if (typeof(display) == "number") {
-          fieldE.textContent = display.toFixed(0);
-        } else if (display instanceof HTMLElement) {
-          cleanElement(fieldE);
-          fieldE.appendChild(display);
-        } else {
-          fieldE.textContent = display;
-        }
-      } else {
-        fieldE.textContent = value;
-      }
-    };
+  /** How many rows are actually visible on the screen, without scroll */
+  let showRows = 1;
+  $: showItems = items.getIndexRange(scrollPos, showRows) as T[];
+  $: console.log("showItems", showRows, showItems, showItems)
+
+  $: listE && items && showErrors(() => showCollection())
+  let previousItemsColl: Collection<T>;
+
+  /**
+   * Shown the `items` in the UI.
+   */
+  function showCollection() {
+    if (previousItemsColl) {
+      previousItemsColl.unregisterObserver(observer);
+      previousItemsColl.unregisterObserver(singleSelectionObserver);
+    }
+    previousItemsColl = items;
+    selectedItems.clear();
+
+    updateSize();
+    items.registerObserver(observer);
+    items.registerObserver(singleSelectionObserver);
   }
+
+  /*window.addEventListener("throttledResize", () => { // throttledResize from trex.js
+    updateSize();
+  });*/
 
   /**
    * Call this when either the number of entries changes,
@@ -271,24 +190,11 @@
    * Updates the DOM elements with the rows.
    */
   function updateSize() {
-    let scrollHeight = entries.length * rowHeight;
+    let scrollHeight = items.length * rowHeight;
     //let availableHeight = getHeight(contentE);
     let availableHeight = listE.offsetHeight - rowHeight - 6; // TODO
 
-    let needRows = Math.min(entries.length, Math.round(availableHeight / rowHeight));
-    let newRows = needRows - rowElements.length;
-    if (newRows > 0) {
-      for (let i = 0; i < newRows; i++) {
-        let newRowE = rowTemplateE.cloneNode(true) as HTMLTableRowElement;
-        contentE.appendChild(newRowE);
-        rowElements.push(newRowE);
-      }
-    } else if (newRows < 0) {
-      for (let i = 0; i < -newRows; i++) {
-        let oldRowE = rowElements.pop();
-        contentE.removeChild(oldRowE);
-      }
-    }
+    showRows = Math.min(items.length, Math.round(availableHeight / rowHeight));
 
     scrollbarContentE.width = 1;
     //_scrollbarContentE.style.height = scrollHeight;
@@ -316,42 +222,56 @@
   }
 
   /**
-   * Displays the values at the current scroll position.
-   * Call this after
-   * - scrolling
-   * - adding or removing entries
+   * Convenience class which returns just the first selected item
    */
-  function refreshContent() {
-    // TODO be lazy, avoid unnecessary refreshs
-    let renderRow = scrollPos;
-    for (let rowE of rowElements) {
-      let obj = entries.getIndex(renderRow++);
-      if (!obj) {
-        return;
-      }
-      fillRow(rowE, obj);
-      rowE._item = obj;
-    };
+  //export class SingleSelectionObserver<T> {
+  class SingleSelectionObserver<T> extends CollectionObserver<T> {
+    added(_items: T[], selectedItems: Collection<T>) {
+      this.onSelectedItem(selectedItems.first);
+    }
+    removed(_items: T[], selectedItems: Collection<T>) {
+      this.onSelectedItem(selectedItems.isEmpty ? null : selectedItems.first);
+    }
+    /**
+     * Called when the selected item changed
+     * @param selectedItem
+     *      null, if no item is selected
+     */
+    onSelectedItem(selectedItem?: T) {
+      throw "implement this";
+    }
   }
+
+  const singleSelectionObserver = new SingleSelectionObserver<T>();
+  singleSelectionObserver.onSelectedItem = item => {
+    selectedItem = item;
+  };
+
+  let observer: CollectionObserver = {
+    added: items => {
+      updateSize();
+    },
+    removed: items => {
+      updateSize();
+    },
+  };
 
   function onScrollWheel(event: WheelEvent) {
     let scrollRows = 3; // How many rows to scroll each time
     if (event.deltaY > 0) {
-      scrollPos = Math.min(scrollPos + scrollRows, entries.length - rowElements.length);
+      scrollPos = Math.min(scrollPos + scrollRows, items.length - rowElements.length);
       //_scrollbarE.scrollTop = Math.min(scrollbarE.scrollTop + rowHeight, scrollbarE.scrollHeight);
     } else if (event.deltaY < 0) {
       scrollPos = Math.max(scrollPos - scrollRows, 0);
       //_scrollbarE.scrollTop = Math.max(scrollbarE.scrollTop - rowHeight, 0);
     }
-    refreshContent();
   }
 
   function onScrollBar(_event: Event) {
     scrollPos = Math.round(scrollbarE.scrollTop / rowHeight); // TODO ceil()?
     console.log("scrollTop = " + scrollbarE.scrollTop);
-    console.log("entries size = " + entries.length);
+    console.log("entries size = " + items.length);
     console.log("scroll pos = " + scrollPos);
-    refreshContent();
   }
 
   function onClick(event: MouseEvent) {
@@ -369,7 +289,7 @@
     if (event.shiftKey) { // select whole range
       let firstItem = selectedItems.first;
       let inRange = false;
-      for (let item of entries) {
+      for (let item of items) {
         if (inRange) {
           selectedItems.add(item);
         }
@@ -388,20 +308,9 @@
       selectedItems.add(selectedItem);
     }
   }
-
-  // <copied from="uiutil.js" />
-  function cleanElement(el) {
-    while (el.hasChildNodes()) {
-      el.removeChild(el.firstChild);
-    }
-  }
 </script>
 
 <style>
-  .row-template-container {
-    display: none;
-  }
-
   .fast-list {
     position: relative;
     border: 1px solid #8E8EA1;
@@ -413,26 +322,26 @@
   tbody {
     display: table-row-group;
   }
-  header,
-  tbody > row {
+  thead :global(header),
+  tbody :global(> row) {
     display: table-row;
   }
-  header > * {
+  thead :global(header > *) {
     display: table-cell;
     padding: 2px 8px;
   }
-  tbody > row > * {
+  tbody :global(> row > *) {
     display: table-cell;
     padding: 0px 5px; /* TODO vertical padding triggers a bug in the size calculation */
   }
-  header > * {
+  thead :global(header > *) {
     border-top: 1px solid white;
     border-left: 1px solid white;
     border-right: 1px solid #8E8EA1;
     border-bottom: 1px solid #8E8EA1;
     background-color: #D2D2DC;
   }
-  header > *:hover {
+  thead :global(header > *:hover) {
     background-color: #E5E5F7;
   }
   .scrollbar {

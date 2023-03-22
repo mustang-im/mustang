@@ -1,10 +1,10 @@
 <vbox class="folder-list">
-  <FastList list={folders} selectedItem={selectedFolder}>
+  <FastList items={folders} selectedItem={selectedFolder} rowHeight={20}>
     <header slot="header">
       <th>Folders</th>
     </header>
-    <row rowheight="20" slot="row">
-      <hbox field="name"></hbox>
+    <row slot="row" let:item>
+      <hbox>{item.name}</hbox>
     </row>
   </FastList>
 </vbox>
