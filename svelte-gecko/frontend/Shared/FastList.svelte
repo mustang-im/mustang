@@ -3,7 +3,7 @@
   on:wheel={onScrollWheel}
   bind:this={listE}>
   <table cellspacing="0">
-    <thead>
+    <thead bind:this={theadE}>
       <tr>
         <slot name="header" />
       </tr>
@@ -99,7 +99,7 @@
 
   type T = $$Generic;
   let listE: HTMLDivElement;
-  /** Where the actual rows are added. */
+  let theadE: HTMLTableSectionElement;
   let contentE: HTMLTableSectionElement;
   /** A dummy element that displays only a scrollbar. */
   let scrollbarE: HTMLDivElement;
@@ -141,9 +141,7 @@
    */
   function updateSize() {
     let scrollHeight = items.length * rowHeight;
-    //let availableHeight = getHeight(contentE);
-    //let availableHeight = contentE.offsetHeight;
-    let availableHeight = listE.offsetHeight - rowHeight - 6; // TODO
+    let availableHeight = listE.offsetHeight - theadE.offsetHeight;
 
     showRows = Math.min(items.length, Math.round(availableHeight / rowHeight));
     console.log("updateSize()", showRows, availableHeight, scrollHeight);
@@ -237,6 +235,7 @@
   }
   table {
     width: 100%;
+    height: min-content;
   }
   thead > tr :global(> *) {
     display: table-cell;
