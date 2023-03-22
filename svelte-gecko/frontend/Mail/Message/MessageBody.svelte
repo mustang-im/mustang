@@ -8,6 +8,7 @@
 </vbox>
 
 <script lang="ts">
+  import type { Email } from "mustang-lib";
   import { backgroundError } from "../../Util/error";
 
   export let message: Email;

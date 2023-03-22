@@ -16,6 +16,8 @@
 </vbox>
 
 <script lang="ts">
+  import type { Email } from "mustang-lib";
+  import type { Collection } from 'jscollections';
   import FastList from "../../Util/FastList.svelte";
 
   export let messages: Collection<Email>;

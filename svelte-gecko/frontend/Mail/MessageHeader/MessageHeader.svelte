@@ -14,6 +14,7 @@
 </vbox>
 
 <script lang="ts">
+  import type { Email } from "mustang-lib";
   import { getDateString } from "../../Util/date";
 
   export let message: Email;

@@ -10,6 +10,8 @@
 </vbox>
 
 <script lang="ts">
+  import type { Account } from "mustang-lib";
+  import type { Collection } from 'jscollections';
   import FastList from "../../Util/FastList.svelte";
 
   export let accounts: Collection<Account>;

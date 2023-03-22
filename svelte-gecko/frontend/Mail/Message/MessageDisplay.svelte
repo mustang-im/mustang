@@ -4,6 +4,7 @@
 </vbox>
 
 <script lang="ts">
+  import type { Email } from "mustang-lib";
   import MessageHeader from "../MessageHeader/MessageHeader.svelte";
   import MessageBody from "./MessageBody.svelte";
 

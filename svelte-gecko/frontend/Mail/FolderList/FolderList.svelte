@@ -10,10 +10,12 @@
 </vbox>
 
 <script lang="ts">
+  import type { MsgFolder } from "mustang-lib";
+  import type { Collection } from 'jscollections';
   import FastList from "../../Util/FastList.svelte";
 
-  export let folders: Collection<Folder>;
-  export let selectedFolder: Folder; /* in/out */
+  export let folders: Collection<MsgFolder>;
+  export let selectedFolder: MsgFolder; /* in/out */
 </script>
 
 <style>
