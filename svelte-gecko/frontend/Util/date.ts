@@ -12,10 +12,10 @@ export function getDateString(date: Date): string {
   let day = getDay(date);
   var dateDetails = null;
   let today = getDay(null);
-  if (day == today) {
+  if (day.getMilliseconds() == today.getMilliseconds()) {
     dateDetails = { hour: "numeric", minute: "numeric" };
   } else if (today.getMilliseconds() - day.getMilliseconds() < 7 * 24 * 60 * 60 * 1000) { // this week
-    dateDetails = { weekday: "narrow", hour: "numeric", minute: "numeric" };
+    dateDetails = { weekday: "short", hour: "numeric", minute: "numeric" };
   } else if (day.getFullYear() == today.getFullYear()) { // this year
     dateDetails = { month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" };
   } else {
