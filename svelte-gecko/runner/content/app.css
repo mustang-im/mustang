@@ -3,4 +3,17 @@ html {
   font-family: Arial, Helvetica, sans-serif;
   min-width: 1024px;
   min-height: 768px;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+#app-frame {
+  height: 100%;
+  width: 100%;
+  border: none;
 }
