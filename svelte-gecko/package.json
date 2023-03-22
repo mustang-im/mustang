@@ -1,5 +1,6 @@
 {
-  "name": "mustang",
+  "name": "mustang-svelte-gecko",
+  "description": "Prototype for an email application",
   "private": true,
   "version": "0.1.0",
   "scripts": {
@@ -8,7 +9,10 @@
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
-  "dependencies": {},
+  "dependencies": {
+    "mustang-lib": "../lib/",
+    "jscollections": "https://github.com/benbucksch/jscollection/"
+  },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.3",
     "@tsconfig/svelte": "^3.0.0",
@@ -19,5 +23,15 @@
     "typescript": "^4.9.3",
     "vite": "^4.2.0"
   },
+  "author": "Ben Bucksch",
+  "license": "GPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benbucksch/mustang.git"
+  },
+  "bugs": {
+    "url": "https://github.com/benbucksch/mustang/issues"
+  },
+  "homepage": "https://github.com/benbucksch/mustang#readme",
   "type": "module"
 }

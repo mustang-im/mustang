@@ -39,5 +39,6 @@
   "bugs": {
     "url": "https://github.com/benbucksch/mustang/issues"
   },
-  "homepage": "https://github.com/benbucksch/mustang#readme"
+  "homepage": "https://github.com/benbucksch/mustang#readme",
+  "type": "module"
 }

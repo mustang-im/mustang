@@ -1,5 +1,5 @@
 {
-  "name": "mustang-svelte",
+  "name": "mustang-svelte-electron",
   "version": "0.1.0",
   "description": "Prototype for an email application",
   "dependencies": {
