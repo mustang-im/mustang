@@ -15,6 +15,15 @@
     "checkJs": true,
     "isolatedModules": true
   },
-  "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.js", "src/**/*.svelte"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": [
+    "frontend/**/*.d.ts",
+    "frontend/**/*.ts",
+    "frontend/**/*.js",
+    "frontend/**/*.svelte"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
 }
