@@ -18,7 +18,7 @@
 
 <script lang="ts">
   import type { Account, MsgFolder, Email } from "mustang-lib";
-  import { translateElements, pluralform } from "mustang-lib/trex/translate";
+  //import { translateElements, pluralform } from "mustang-lib/trex/translate";
 
   import AccountList from "./AccountList/AccountList.svelte";
   import FolderList from "./FolderList/FolderList.svelte";
@@ -26,9 +26,8 @@
   import MessageList from "./MessageList/MessageList.svelte";
   import ProjectList from "./ProjectList/ProjectList.svelte";
   import StartPage from "./StartPage.svelte";
-  import { backgroundError, showError } from "../Util/error";
-  import { ArrayColl } from 'jscollections';
-  import { onMount } from "svelte";
+  import { showError } from "../Util/error";
+  import { ArrayColl } from 'svelte-collections';
 
   let accounts = new ArrayColl<Account>();
   let selectedAccount: Account;

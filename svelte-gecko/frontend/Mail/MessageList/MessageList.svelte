@@ -17,7 +17,7 @@
 
 <script lang="ts">
   //import type { EMail } from "mustang-lib";
-  import { Collection, ArrayColl } from 'jscollections';
+  import { Collection, ArrayColl } from 'svelte-collections';
   import FastList from "../../Shared/FastList.svelte";
   import { getDateString } from "../../Util/date";
 

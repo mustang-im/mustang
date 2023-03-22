@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "mustang-lib": "../lib/",
-    "jscollections": "https://github.com/benbucksch/jscollection/"
+    "svelte-collections": "^0.1.13"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.3",
