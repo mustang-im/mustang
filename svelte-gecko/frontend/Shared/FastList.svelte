@@ -2,8 +2,8 @@
 <hbox class="fast-list"
   on:wheel={onScrollWheel}
   bind:this={listE}>
-  <table bind:this={tableE} cellspacing="0">
-    <thead bind:this={theadE}>
+  <table cellspacing="0">
+    <thead>
       <tr>
         <slot name="header" />
       </tr>
@@ -44,7 +44,7 @@
   More importantly, scrolling is very fast. Scrolling should work both using the scroll bar and
   using the mouse wheel.
 
-  Try it out at http://benbucksch.github.io/trex/fastlist-test.html
+  Try it out at http://benbucksch.github.io/trex/fastlist-test.html (non-Svelte DOM version)
 
   The basic trick is that I don't create DOM nodes for every rows, but only for the 10 or so
   visible rows. The data is in a pure data array. When the user scrolls, we do not move or
@@ -63,8 +63,7 @@
   We've always wanted to make the message list prettier, but we couldn't. Now we can.
   */
 
-  import { Collection, CollectionObserver, ArrayColl } from "jscollections"
-  import { showErrors } from "../Util/error";
+  import { Collection, CollectionObserver, ArrayColl } from "svelte-collections"
 
   type T = $$Generic;
 
@@ -100,8 +99,6 @@
 
   type T = $$Generic;
   let listE: HTMLDivElement;
-  let tableE: HTMLTableElement;
-  let theadE: HTMLTableSectionElement;
   /** Where the actual rows are added. */
   let contentE: HTMLTableSectionElement;
   /** A dummy element that displays only a scrollbar. */
@@ -128,25 +125,10 @@
 
   /** How many rows are actually visible on the screen, without scroll */
   let showRows = 1;
-  $: showItems = items.getIndexRange(scrollPos, showRows) as T[];
-  $: console.log("showItems", showRows, showItems, items)
+  $: showItems = $items.getIndexRange(scrollPos, showRows) as T[];
+  $: console.log("showItems", showRows, showItems, $items)
 
-  $: listE && items && showErrors(() => showCollection())
-  let previousItemsColl: Collection<T>;
-
-  /**
-   * Shown the `items` in the UI.
-   */
-  function showCollection() {
-    if (previousItemsColl) {
-      previousItemsColl.unregisterObserver(observer);
-    }
-    previousItemsColl = items;
-    selectedItems.clear();
-
-    updateSize();
-    items.registerObserver(observer);
-  }
+  $: $items && listE && updateSize();
 
   /*window.addEventListener("throttledResize", () => { // throttledResize from trex.js
     updateSize();
@@ -160,9 +142,11 @@
   function updateSize() {
     let scrollHeight = items.length * rowHeight;
     //let availableHeight = getHeight(contentE);
+    //let availableHeight = contentE.offsetHeight;
     let availableHeight = listE.offsetHeight - rowHeight - 6; // TODO
 
     showRows = Math.min(items.length, Math.round(availableHeight / rowHeight));
+    console.log("updateSize()", showRows, availableHeight, scrollHeight);
 
     scrollbarContentE.width = 1;
     //_scrollbarContentE.style.height = scrollHeight;
@@ -171,6 +155,48 @@
       scrollbarHidden = false;
     } else {
       scrollbarHidden = true;
+    }
+  }
+
+  function onScrollWheel(event: WheelEvent) {
+    let scrollRows = 3; // How many rows to scroll each time
+    if (event.deltaY > 0) {
+      scrollPos = Math.min(scrollPos + scrollRows, items.length - rowElements.length);
+      //_scrollbarE.scrollTop = Math.min(scrollbarE.scrollTop + rowHeight, scrollbarE.scrollHeight);
+    } else if (event.deltaY < 0) {
+      scrollPos = Math.max(scrollPos - scrollRows, 0);
+      //_scrollbarE.scrollTop = Math.max(scrollbarE.scrollTop - rowHeight, 0);
+    }
+  }
+
+  function onScrollBar(_event: Event) {
+    scrollPos = Math.round(scrollbarE.scrollTop / rowHeight); // TODO ceil()?
+    console.log("scrollTop = " + scrollbarE.scrollTop);
+    console.log("entries size = " + items.length);
+    console.log("scroll pos = " + scrollPos);
+  }
+
+  function onSelectElement(selectedItem, event: MouseEvent) {
+    if (event.shiftKey) { // select whole range
+      let firstItem = selectedItems.first;
+      let inRange = false;
+      for (let item of items) {
+        if (inRange) {
+          selectedItems.add(item);
+        }
+        if (item == firstItem) {
+          inRange = true;
+          // firstItem is already in selectedItems, so don't re-add it in this loop
+        }
+        if (item == selectedItem) {
+          inRange = false;
+        }
+      };
+    } else if (event.ctrlKey) { // add to current selection
+      selectedItems.add(selectedItem);
+    } else { // no modifier, i.e. a simple single-selection click
+      selectedItems.clear();
+      selectedItems.add(selectedItem);
     }
   }
 
@@ -200,57 +226,6 @@
     selectedItem = item;
   };
   selectedItems.registerObserver(singleSelectionObserver);
-
-  let observer: CollectionObserver = {
-    added: items => {
-      updateSize();
-    },
-    removed: items => {
-      updateSize();
-    },
-  };
-
-  function onScrollWheel(event: WheelEvent) {
-    let scrollRows = 3; // How many rows to scroll each time
-    if (event.deltaY > 0) {
-      scrollPos = Math.min(scrollPos + scrollRows, items.length - rowElements.length);
-      //_scrollbarE.scrollTop = Math.min(scrollbarE.scrollTop + rowHeight, scrollbarE.scrollHeight);
-    } else if (event.deltaY < 0) {
-      scrollPos = Math.max(scrollPos - scrollRows, 0);
-      //_scrollbarE.scrollTop = Math.max(scrollbarE.scrollTop - rowHeight, 0);
-    }
-  }
-
-  function onScrollBar(_event: Event) {
-    scrollPos = Math.round(scrollbarE.scrollTop / rowHeight); // TODO ceil()?
-    console.log("scrollTop = " + scrollbarE.scrollTop);
-    console.log("entries size = " + items.length);
-    console.log("scroll pos = " + scrollPos);
-  }
-
-  function onSelectElement(selectedItem, event: KeyboardEvent | MouseEvent) {
-    if (event.shiftKey) { // select whole range
-      let firstItem = selectedItems.first;
-      let inRange = false;
-      for (let item of items) {
-        if (inRange) {
-          selectedItems.add(item);
-        }
-        if (item == firstItem) {
-          inRange = true;
-          // firstItem is already in selectedItems, so don't re-add it in this loop
-        }
-        if (item == selectedItem) {
-          inRange = false;
-        }
-      };
-    } else if (event.ctrlKey) { // add to current selection
-      selectedItems.add(selectedItem);
-    } else { // no modifier, i.e. a simple single-selection click
-      selectedItems.clear();
-      selectedItems.add(selectedItem);
-    }
-  }
 </script>
 
 <style>
@@ -258,12 +233,10 @@
     position: relative;
     border: 1px solid #8E8EA1;
     background-color: #EEF3F9;
+    flex: 1 0 0;
   }
   table {
     width: 100%;
-  }
-  tbody {
-    display: table-row-group;
   }
   thead > tr :global(> *) {
     display: table-cell;
@@ -276,6 +249,9 @@
   }
   thead > tr :global(> *:hover) {
     background-color: #E5E5F7;
+  }
+  tbody {
+    display: table-row-group;
   }
   tbody > tr :global(> *) {
     display: table-cell;

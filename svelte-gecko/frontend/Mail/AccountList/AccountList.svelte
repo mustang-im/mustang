@@ -11,7 +11,7 @@
 
 <script lang="ts">
   import type { Account } from "mustang-lib";
-  import type { Collection } from 'jscollections';
+  import type { Collection } from 'svelte-collections';
   import FastList from "../../Shared/FastList.svelte";
 
   export let accounts: Collection<Account>;
