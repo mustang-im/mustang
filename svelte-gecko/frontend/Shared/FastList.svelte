@@ -140,14 +140,12 @@
   function showCollection() {
     if (previousItemsColl) {
       previousItemsColl.unregisterObserver(observer);
-      previousItemsColl.unregisterObserver(singleSelectionObserver);
     }
     previousItemsColl = items;
     selectedItems.clear();
 
     updateSize();
     items.registerObserver(observer);
-    items.registerObserver(singleSelectionObserver);
   }
 
   /*window.addEventListener("throttledResize", () => { // throttledResize from trex.js
@@ -201,6 +199,7 @@
   singleSelectionObserver.onSelectedItem = item => {
     selectedItem = item;
   };
+  selectedItems.registerObserver(singleSelectionObserver);
 
   let observer: CollectionObserver = {
     added: items => {
