@@ -1,10 +1,10 @@
 <vbox class="account-list">
-  <FastList list={accounts} selectedItem={selectedAccount}>
+  <FastList items={accounts} selectedItem={selectedAccount} rowHeight={20}>
     <header slot="header">
       <th>Accounts</th>
     </header>
-    <row rowheight="20" slot="row">
-      <hbox field="emailAddress"></hbox>
+    <row slot="row" let:item>
+      <hbox>{item.emailAddress}</hbox>
     </row>
   </FastList>
 </vbox>
