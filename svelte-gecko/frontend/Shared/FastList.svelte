@@ -1,15 +1,18 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <hbox class="fast-list"
-  on:click={onClick}
   on:wheel={onScrollWheel}
   bind:this={listE}>
   <table bind:this={tableE} cellspacing="0">
     <thead bind:this={theadE}>
-      <slot name="header" />
+      <tr>
+        <slot name="header" />
+      </tr>
     </thead>
     <tbody bind:this={contentE}>
       {#each showItems as item}
-        <slot name="row" {item} />
+        <tr on:click={ev => onSelectElement(item, ev)}>
+          <slot name="row" {item} />
+        </tr>
       {/each}
     </tbody>
   </table>
@@ -106,9 +109,6 @@
   /** The dummy content of the scrollbar, to set the right height. */
   let scrollbarContentE: HTMLDivElement;
   let scrollbarHidden = true;
-  /** Original, empty template for a row.
-   * Not visible itself, but will be copied and filled in for each row. */
-  let rowTemplateE: HTMLTableRowElement;
 
   /** Currently displayed rows. */
   let rowElements: HTMLTableRowElement[] = [];
@@ -121,36 +121,6 @@
   export let rowHeight = 10;
 
   /**
-   * The items that should be shown in the list.
-   *
-   * This is a dynamic list. As you add or remove items
-   * to/from this collection, the UI will be updated.
-   *
-   * This is the same collection that was set in showCollection().
-   * If you didn't call showCollection(), this is a default collection.
-   *
-  export function getItems(): Collection<T> {
-    return items;
-  }
-
-  /**
-   * Adds a row to the list
-   * @param obj values for one row
-   *
-  export function addItem(obj: T) {
-    items.add(obj);
-  }
-
-  /**
-   * Adds a number of rows to the list. Each array element is one row.
-   * @param array values for  rows
-   *
-  export function addEntriesFromArray(array: T[]) {
-    items.addAll(array);
-  }
-  */
-
-  /**
    * First visible row
    * {integer} index position in entries
    */
@@ -159,7 +129,7 @@
   /** How many rows are actually visible on the screen, without scroll */
   let showRows = 1;
   $: showItems = items.getIndexRange(scrollPos, showRows) as T[];
-  $: console.log("showItems", showRows, showItems, showItems)
+  $: console.log("showItems", showRows, showItems, items)
 
   $: listE && items && showErrors(() => showCollection())
   let previousItemsColl: Collection<T>;
@@ -204,21 +174,6 @@
     } else {
       scrollbarHidden = true;
     }
-  }
-
-  function getHeight(el: HTMLDivElement) {
-    // https://developer.mozilla.org/en-US/docs/Web/API/CSS_Object_Model/Determining_the_dimensions_of_elements
-    return el.offsetHeight;
-    /*
-    let height = el.getBoundingClientRect().height;
-    // getBoundingClientRect does not include margin
-    let style = window.getComputedStyle(el);
-    height += parseFloat(style.marginTop) + parseFloat(style.marginBottom);
-
-    nodeListToArray(el.childNodes).forEach(
-          childNode => height += childNode.nodeType == 1 ? getHeight(childNode) : 0);
-    return height;
-    */
   }
 
   /**
@@ -274,17 +229,6 @@
     console.log("scroll pos = " + scrollPos);
   }
 
-  function onClick(event: MouseEvent) {
-    // Walk up the DOM tree, until we find the row element
-    for (let el = event.target as HTMLElement; el != listE; el = el.parentNode as HTMLElement) {
-      if (el.nodeName == rowTemplateE.nodeName &&
-          el._item) {
-        onSelectElement(el._item, event);
-        return;
-      }
-    }
-  }
-
   function onSelectElement(selectedItem, event: KeyboardEvent | MouseEvent) {
     if (event.shiftKey) { // select whole range
       let firstItem = selectedItems.first;
@@ -322,27 +266,21 @@
   tbody {
     display: table-row-group;
   }
-  thead :global(header),
-  tbody :global(> row) {
-    display: table-row;
-  }
-  thead :global(header > *) {
+  thead > tr :global(> *) {
     display: table-cell;
     padding: 2px 8px;
-  }
-  tbody :global(> row > *) {
-    display: table-cell;
-    padding: 0px 5px; /* TODO vertical padding triggers a bug in the size calculation */
-  }
-  thead :global(header > *) {
     border-top: 1px solid white;
     border-left: 1px solid white;
     border-right: 1px solid #8E8EA1;
     border-bottom: 1px solid #8E8EA1;
     background-color: #D2D2DC;
   }
-  thead :global(header > *:hover) {
+  thead > tr :global(> *:hover) {
     background-color: #E5E5F7;
+  }
+  tbody > tr :global(> *) {
+    display: table-cell;
+    padding: 0px 5px; /* TODO vertical padding triggers a bug in the size calculation */
   }
   .scrollbar {
     overflow-y: scroll;

@@ -1,17 +1,17 @@
 <vbox class="message-list">
   <FastList items={testMessages} selectedItem={selectedMessage} rowHeight={20}>
-    <header slot="header">
-      <th>From</th>
-      <th>To</th>
-      <th>Subject</th>
-      <th>Date</th>
-    </header>
-    <row slot="row" let:item>
-      <hbox>{item.authorRealname}</hbox>
-      <hbox>{item.to}</hbox>
-      <hbox>{item.subject}</hbox>
-      <hbox>{getDateString(item.authorRealname)}</hbox>
-    </row>
+    <svelte:fragment slot="header">
+      <hbox>From</hbox>
+      <hbox>To</hbox>
+      <hbox>Subject</hbox>
+      <hbox>Date</hbox>
+    </svelte:fragment>
+    <svelte:fragment slot="row" let:item={msg}>
+      <hbox>{msg.authorRealname}</hbox>
+      <hbox>{msg.to}</hbox>
+      <hbox>{msg.subject}</hbox>
+      <hbox>{getDateString(msg.authorRealname)}</hbox>
+    </svelte:fragment>
   </FastList>
 </vbox>
 

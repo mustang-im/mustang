@@ -1,11 +1,11 @@
 <vbox class="account-list">
   <FastList items={accounts} selectedItem={selectedAccount} rowHeight={20}>
-    <header slot="header">
-      <th>Accounts</th>
-    </header>
-    <row slot="row" let:item>
-      <hbox>{item.emailAddress}</hbox>
-    </row>
+    <svelte:fragment slot="header">
+      <hbox>Accounts</hbox>
+    </svelte:fragment>
+    <svelte:fragment slot="row" let:item={account}>
+      <hbox>{account.emailAddress}</hbox>
+    </svelte:fragment>
   </FastList>
 </vbox>
 
