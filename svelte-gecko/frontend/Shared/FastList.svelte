@@ -112,10 +112,9 @@
 
   /**
    * Height of the DOM elements for a single row.
-   * TODO calculate this
    * {integer} in px
    */
-  export let rowHeight = 10;
+  let rowHeight = 0;
 
   /**
    * First visible row
@@ -140,6 +139,13 @@
    * Updates the DOM elements with the rows.
    */
   function updateSize() {
+    let contentRow = contentE.firstChild as HTMLElement;
+    if (contentRow) {
+      rowHeight = contentRow.offsetHeight;
+    } else if (!rowHeight) {
+      rowHeight = 10;
+      setTimeout(updateSize, 100);
+    }
     let scrollHeight = items.length * rowHeight;
     let availableHeight = listE.offsetHeight - theadE.offsetHeight;
 
