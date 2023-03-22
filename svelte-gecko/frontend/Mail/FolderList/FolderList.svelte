@@ -1,7 +1,7 @@
 <vbox class="folder-list">
   <FastList list={folders} selectedItem={selectedFolder}>
     <header slot="header">
-      <hbox>Folders</hbox>
+      <th>Folders</th>
     </header>
     <row rowheight="20" slot="row">
       <hbox field="name"></hbox>
@@ -12,7 +12,7 @@
 <script lang="ts">
   import type { MsgFolder } from "mustang-lib";
   import type { Collection } from 'jscollections';
-  import FastList from "../../Util/FastList.svelte";
+  import FastList from "../../Shared/FastList.svelte";
 
   export let folders: Collection<MsgFolder>;
   export let selectedFolder: MsgFolder; /* in/out */
