@@ -1,7 +1,7 @@
 import './app.css';
-import App from './App.svelte';
+import MainWindow from './MainWindow/MainWindow.svelte';
 
-const app = new App({
+const app = new MainWindow({
   target: document.getElementById('app'),
 });
 
