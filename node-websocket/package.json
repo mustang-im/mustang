@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Mustang - Logic like mail protocols and email storage in a node.js server using WebSocket protocol",
   "dependencies": {
+    "mustang-lib": "../lib/",
     "jpc-ws": "https://github.com/benbucksch/jpc-ws/"
   },
   "scripts": {
