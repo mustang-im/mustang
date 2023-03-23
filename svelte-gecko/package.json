@@ -10,6 +10,7 @@
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
+    "jpc-ws": "../../lib/jpc-ws/",
     "mustang-lib": "../lib/",
     "svelte-collections": "^1.1.15"
   },
