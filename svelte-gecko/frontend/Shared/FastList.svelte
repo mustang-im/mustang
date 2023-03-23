@@ -19,10 +19,12 @@
   <div class="scrollbar"
     on:scroll={onScrollBar}
     class:hidden={scrollbarHidden}
+    style="top: {headerHeight}px; height: calc(100% - {headerHeight}px);"
     bind:this={scrollbarE}>
     <div class="scrollbar-content" bind:this={scrollbarContentE} />
   </div>
 </hbox>
+<svelte:window on:resize={updateSize} />
 
 <script lang="ts">
   /**
@@ -110,6 +112,8 @@
   /** Currently displayed rows. */
   let rowElements: HTMLTableRowElement[] = [];
 
+  $: headerHeight = theadE ? theadE.offsetHeight : 26;
+
   /**
    * Height of the DOM elements for a single row.
    * {integer} in px
@@ -127,10 +131,6 @@
   $: showItems = $items.getIndexRange(scrollPos, showRows) as T[];
 
   $: $items && listE && updateSize();
-
-  /*window.addEventListener("throttledResize", () => { // throttledResize from trex.js
-    updateSize();
-  });*/
 
   /**
    * Call this when either the number of entries changes,
@@ -262,11 +262,10 @@
   .scrollbar {
     overflow-y: scroll;
     overflow-x: hidden;
-    height: 100%;
     position: absolute;
-    top: 26px;
     right: 0px;
     width: 20px;
+    /* top: and height: set in style="" */
   }
   .hidden {
     display: none;
