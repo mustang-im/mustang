@@ -125,7 +125,6 @@
   /** How many rows are actually visible on the screen, without scroll */
   let showRows = 1;
   $: showItems = $items.getIndexRange(scrollPos, showRows) as T[];
-  $: console.log("showItems", showRows, showItems, $items)
 
   $: $items && listE && updateSize();
 
@@ -150,7 +149,8 @@
     let availableHeight = listE.offsetHeight - theadE.offsetHeight;
 
     showRows = Math.min(items.length, Math.round(availableHeight / rowHeight));
-    console.log("updateSize()", showRows, availableHeight, scrollHeight);
+    // Workaround: the following line should be triggered automatically in the $: above, but it doesn't.
+    showItems = $items.getIndexRange(scrollPos, showRows) as T[];
 
     scrollbarContentE.width = 1;
     //_scrollbarContentE.style.height = scrollHeight;
@@ -175,9 +175,6 @@
 
   function onScrollBar(_event: Event) {
     scrollPos = Math.round(scrollbarE.scrollTop / rowHeight); // TODO ceil()?
-    console.log("scrollTop = " + scrollbarE.scrollTop);
-    console.log("entries size = " + items.length);
-    console.log("scroll pos = " + scrollPos);
   }
 
   function onSelectElement(selectedItem, event: MouseEvent) {
