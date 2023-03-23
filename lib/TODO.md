@@ -12,14 +12,11 @@ DONE
 * Mail content
 
 Components
-* Electron-remote
-* React
 * Cache content
 * Msg window
 * List
   * Display selection
   * no wrap
-  * Scrollbar
 * Main window fixes
   * Save last selection
   * Window size
