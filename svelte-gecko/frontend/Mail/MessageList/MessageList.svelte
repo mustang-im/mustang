@@ -1,5 +1,5 @@
 <vbox class="message-list">
-  <FastList items={testMessages} selectedItem={selectedMessage} rowHeight={20}>
+  <FastList items={testMessages} selectedItem={selectedMessage}>
     <svelte:fragment slot="header">
       <hbox>From</hbox>
       <hbox>To</hbox>

@@ -1,5 +1,5 @@
 <vbox class="account-list">
-  <FastList items={accounts} selectedItem={selectedAccount} rowHeight={20}>
+  <FastList items={accounts} selectedItem={selectedAccount}>
     <svelte:fragment slot="header">
       <hbox>Accounts</hbox>
     </svelte:fragment>

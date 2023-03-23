@@ -1,5 +1,5 @@
 <vbox class="folder-list">
-  <FastList items={folders} selectedItem={selectedFolder} rowHeight={20}>
+  <FastList items={folders} selectedItem={selectedFolder}>
     <svelte:fragment slot="header">
       <hbox>Folders</hbox>
     </svelte:fragment>
