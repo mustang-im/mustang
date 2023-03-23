@@ -24,7 +24,7 @@
     <div class="scrollbar-content" bind:this={scrollbarContentE} />
   </div>
 </hbox>
-<svelte:window on:resize={updateSize} />
+<!--svelte:window on:resize={debounce(updateSize, 300)} /-->
 
 <script lang="ts">
   /**
@@ -66,6 +66,7 @@
   */
 
   import { Collection, CollectionObserver, ArrayColl } from "svelte-collections"
+  //import debounce from "lodash.debounce";
 
   type T = $$Generic;
 
