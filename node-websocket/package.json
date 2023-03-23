@@ -1,0 +1,30 @@
+{
+  "name": "mustang-node-websocket",
+  "version": "0.1.0",
+  "description": "Mustang - Logic like mail protocols and email storage in a node.js server using WebSocket protocol",
+  "dependencies": {
+    "jpc-ws": "https://github.com/benbucksch/jpc-ws/"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node test.js"
+  },
+  "keywords": [
+    "email",
+    "mail",
+    "imap",
+    "desktop"
+  ],
+  "author": "Ben Bucksch",
+  "license": "GPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benbucksch/mustang.git"
+  },
+  "bugs": {
+    "url": "https://github.com/benbucksch/mustang/issues"
+  },
+  "homepage": "https://github.com/benbucksch/mustang#readme",
+  "type": "module"
+}
