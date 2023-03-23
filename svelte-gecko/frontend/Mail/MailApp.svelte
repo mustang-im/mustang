@@ -20,24 +20,27 @@
   import type { Account, MsgFolder, Email } from "mustang-lib";
   //import { translateElements, pluralform } from "mustang-lib/trex/translate";
 
+  import { getStartObjects } from "../../logic/app";
   import AccountList from "./AccountList/AccountList.svelte";
   import FolderList from "./FolderList/FolderList.svelte";
   import MessageDisplay from "./Message/MessageDisplay.svelte";
   import MessageList from "./MessageList/MessageList.svelte";
   import ProjectList from "./ProjectList/ProjectList.svelte";
   import StartPage from "./StartPage.svelte";
-  import { showError } from "../Util/error";
+  import { backgroundError, showError } from "../Util/error";
   import { ArrayColl } from 'svelte-collections';
+  import { onMount } from "svelte";
 
   let accounts = new ArrayColl<Account>();
   let selectedAccount: Account;
   let selectedFolder: MsgFolder;
   let selectedMessage: Email;
 
-  /*onMount(onLoad);
+  onMount(onLoad);
   async function onLoad() {
     try {
-      accounts = remote.getGlobal("accounts");
+      let appGlobal = await getStartObjects();
+      accounts.addAll(appGlobal.accounts.contents);
 
       for (let account of accounts.contents) {
         if (await account.haveStoredLogin()) {
@@ -50,7 +53,7 @@
     } catch (ex) {
       showError(ex);
     }
-  }*/
+  }
 
   $: loadFolder(selectedFolder);
   async function loadFolder(folder: MsgFolder) {

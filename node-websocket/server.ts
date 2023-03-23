@@ -18,9 +18,9 @@ start();
 
 async function createGlobalAppObject() {
   return {
-    addNewAccountFromConfig,
-    findAccountConfig,
-    AccountConfig,
+    //addNewAccountFromConfig,
+    //findAccountConfig,
+    //AccountConfig,
     accounts: await readAccounts(),
   };
 }
