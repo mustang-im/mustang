@@ -2,7 +2,7 @@ import { AppGlobal } from './app';
 import { ChatAccount } from './Chat/Account';
 import { ArrayColl, MapColl } from 'svelte-collections';
 import { ChatMessage } from './Chat/Message';
-import { Person } from './Person/Person';
+import { ChatPerson } from './Chat/Person';
 import type { MailAccount } from './Mail/Account';
 import { faker } from '@faker-js/faker';
 
@@ -14,7 +14,7 @@ export async function getTestObjects(): Promise<AppGlobal> {
   appGlobal.chatAccounts.set("Test chat 1", chatAccount);
 
   for (let i = 1; i < 50; i++) {
-    let person = new Person();
+    let person = new ChatPerson();
     person.firstName = faker.name.firstName();
     person.lastName = faker.name.lastName();
     person.name = person.firstName + " " + person.lastName;
@@ -31,7 +31,7 @@ export async function getTestObjects(): Promise<AppGlobal> {
       let msg = new ChatMessage();
       msg.contact = person;
       msg.outgoing = Math.random() < 0.4;
-      msg.sent = faker.date.past(0.01);
+      msg.sent = faker.date.past(0.1);
       msg.received = new Date(msg.sent.getMilliseconds() + 500);
       msg.text = faker.hacker.phrase();
       msg.html = msg.text;

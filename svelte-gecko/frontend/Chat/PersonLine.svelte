@@ -13,10 +13,10 @@
 </hbox>
 
 <script lang="ts">
-  import type { Person } from "../../logic/Person/Person";
+  import type { ChatPerson } from "../../logic/Chat/Person";
   import { appGlobal } from "../../logic/app";
 
-  export let person: Person;
+  export let person: ChatPerson;
 
   $: lastMessage = appGlobal?.chatAccounts.first?.messagesByPerson.get(person)?.sortBy(msg => msg.sent).reverse().first;
   $: console.log("last message", lastMessage);

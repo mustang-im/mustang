@@ -1,4 +1,4 @@
-import type { Person } from "./Person/Person";
+import type { Person } from "./Person";
 
 export class Message {
   outgoing = false;
