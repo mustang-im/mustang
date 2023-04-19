@@ -1,5 +1,5 @@
 <hbox class="msg-editor">
-  <textarea bind:value={text} placeholder="Write a message to {to.name}..." />
+  <textarea bind:value={to.draftMessage} placeholder="Write a message to {to.name}..." />
   <vbox class="send-buttons">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <hbox class="send-button" on:click={send}>
@@ -11,11 +11,11 @@
 <script lang="ts">
   import type { ChatAccount } from "../../logic/Chat/Account";
   import { ChatMessage } from "../../logic/Chat/Message";
-  import type { Person } from "../../logic/Person/Person";
+  import type { ChatPerson } from "../../logic/Chat/Person";
   import Icon from 'svelte-awesome';
   import sendIcon from 'svelte-awesome/icons/send';
 
-  export let to: Person;
+  export let to: ChatPerson;
   export let from: ChatAccount;
 
   let text: string;

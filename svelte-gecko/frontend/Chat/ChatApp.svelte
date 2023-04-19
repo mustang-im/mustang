@@ -1,6 +1,6 @@
 <hbox class="chat app">
   <vbox class="left-pane">
-    <PersonsList persons={account.persons} bind:selected={selectedPerson}/>
+    <PersonsList persons={personsSorted} bind:selected={selectedPerson}/>
   </vbox>
   <vbox class="right-pane">
     {#if messages && selectedPerson }
@@ -15,7 +15,7 @@
 </hbox>
 
 <script lang="ts">
-  import type { Person } from "../../logic/Person/Person";
+  import type { ChatPerson } from "../../logic/Chat/Person";
   import MessageList from "./MessageView/MessageList.svelte";
   import PersonsList from "./PersonsList.svelte";
   import type { ChatAccount } from "../../logic/Chat/Account";
@@ -23,8 +23,9 @@
 
   export let account: ChatAccount;
 
-  let selectedPerson: Person;
-  $: messages = account.messagesByPerson.get(selectedPerson);
+  let selectedPerson: ChatPerson;
+  $: messages = account.messagesByPerson.get(selectedPerson)?.sortBy(msg => msg.sent);
+  $: personsSorted = account.persons.sortBy(person => account.messagesByPerson.get(person)?.sortBy(msg => msg.sent).reverse().first.sent);
   $: console.log(selectedPerson?.name, selectedPerson, messages?.first.text);
 </script>
 

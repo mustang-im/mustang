@@ -25,7 +25,7 @@
 </vbox>
 
 <script lang="ts">
-  import type { Person } from "../../logic/Person/Person";
+  import type { Person } from "../../logic/Abstract/Person";
 
   export let person: Person;
   $: person.name = person.firstName + " " + person.lastName;

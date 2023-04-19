@@ -3,9 +3,9 @@
 </vbox>
 
 <script lang="ts">
-  import type { Message } from "../../../logic/Message";
+  import type { ChatMessage } from "../../../logic/Chat/Message";
 
-  export let message: Message;
+  export let message: ChatMessage;
 </script>
 
 <style>

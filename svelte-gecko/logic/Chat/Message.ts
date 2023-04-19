@@ -1,4 +1,4 @@
-import { Message } from "../Message";
+import { Message } from "../Abstract/Message";
 
 export class ChatMessage extends Message {
 }

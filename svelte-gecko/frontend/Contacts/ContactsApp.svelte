@@ -10,8 +10,8 @@
 </hbox>
 
 <script lang="ts">
-  import type { Person } from "../../logic/Person/Person";
-  import PersonsList from "../Chat/PersonsList.svelte";
+  import type { Person } from "../../logic/Abstract/Person";
+  import PersonsList from "./PersonsList.svelte";
   import PersonDetails from "./PersonDetails.svelte";
   import type { Collection } from "svelte-collections";
 
