@@ -1,4 +1,4 @@
-{#if message.sent.getDay() != previousMessage?.sent.getDay() }
+{#if message.sent.getDate() != previousMessage?.sent.getDate() }
   <hbox class="date-separator">
     {longDayFormat.format(message.sent)}
   </hbox>

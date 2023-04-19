@@ -25,7 +25,7 @@
 
   let selectedPerson: ChatPerson;
   $: messages = account.messagesByPerson.get(selectedPerson);
-  $: personsSorted = account.persons.sortBy(person => account.messagesByPerson.get(person)?.map(msg => msg.sent).sortBy(sent => sent).reverse().first);
+  $: personsSorted = account.persons.sortBy(person => person.lastMessage.sent).reverse();
 </script>
 
 <style>

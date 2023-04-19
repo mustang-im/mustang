@@ -37,6 +37,7 @@ export async function getTestObjects(): Promise<AppGlobal> {
       msg.html = msg.text;
       messages.add(msg);
     }
+    person.lastMessage = messages.sortBy(msg => msg.sent).reverse().first;
   }
   return appGlobal;
 }
