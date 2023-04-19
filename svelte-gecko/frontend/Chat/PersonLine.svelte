@@ -7,20 +7,37 @@
       alt="Picture of {person.name}" />
   </vbox>
   <vbox class="right">
-    <hbox class="name">{person.name}</hbox>
-    {#if lastMessage}
-      <hbox class="last-msg">{lastMessage.text.substring(0, 30)}</hbox>
+    <hbox class="right-top">
+      <hbox class="name">{person.name}</hbox>
+      {#if person.lastMessage}
+        <hbox class="last-time">{timeFormat.format(person.lastMessage.sent)}</hbox>
+      {/if}
+    </hbox>
+    {#if person.lastMessage}
+      <hbox class="last-msg">{person.lastMessage.text.substring(0, 50)}</hbox>
     {/if}
   </vbox>
 </hbox>
 
 <script lang="ts">
   import type { ChatPerson } from "../../logic/Chat/Person";
-  import { appGlobal } from "../../logic/app";
 
   export let person: ChatPerson;
 
-  $: lastMessage = appGlobal?.chatAccounts.first?.messagesByPerson.get(person)?.sortBy(msg => msg.sent).reverse().first;
+  $: timeFormat = person.lastMessage?.sent.getDate() == new Date().getDate()
+      ? timeOnlyFormat
+      : timeAndDateFormat;
+  const timeOnlyFormat = Intl.DateTimeFormat(undefined, {
+    hour: "numeric",
+    minute: "numeric",
+  });
+  const timeAndDateFormat = Intl.DateTimeFormat(undefined, {
+    weekday: "short",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+  });
 </script>
 
 <style>
@@ -34,10 +51,21 @@
     clip-path: circle();
   }
   .right {
+    margin-top: 5px;
     padding: 10px;
     border-bottom: 1px dotted lightgray;
   }
+  .name {
+  }
+  .last-time {
+    opacity: 50%;
+    font-size: smaller;
+  }
   .last-msg {
     opacity: 50%;
+    font-size: smaller;
+    max-height: 1.8em;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 </style>
