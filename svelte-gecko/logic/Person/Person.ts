@@ -7,4 +7,5 @@ export class Person {
   emailAddresses = new ArrayColl<string>();
   phoneNumbers = new ArrayColl<string>();
   notes: string;
+  picture: string; // URL
 }
