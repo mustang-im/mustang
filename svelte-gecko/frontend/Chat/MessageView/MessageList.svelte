@@ -1,7 +1,7 @@
 <vbox class="messages">
   <Scroll bind:this={scroller}>
-    {#each $sortedMessages.each as message}
-      <Message {message} />
+    {#each $sortedMessages.each as message, i}
+      <Message {message} previousMessage={sortedMessages.getIndex(i - 1)} />
     {/each}
   </Scroll>
 </vbox>

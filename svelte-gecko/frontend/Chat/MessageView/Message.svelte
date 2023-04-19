@@ -1,5 +1,11 @@
-<hbox class="message" class:incoming={!message.outgoing} class:outgoing={message.outgoing}>
-  {#if !message.outgoing}
+{#if message.sent.getDay() != previousMessage?.sent.getDay() }
+  <hbox class="date-separator">
+    {longDayFormat.format(message.sent)}
+  </hbox>
+{/if}
+
+<hbox class="message" class:incoming={!message.outgoing} class:outgoing={message.outgoing} class:followup={followup}>
+  {#if !message.outgoing && !followup}
     <vbox class="avatar">
       <img
         src={message.contact.picture}
@@ -9,12 +15,14 @@
     </vbox>
   {/if}
   <vbox class="right">
-    <hbox class="meta">
-      {#if !message.outgoing}
-        <hbox class="from">{message.contact.name}</hbox>
-      {/if}
-      <hbox class="time">{timeFormat.format(message.sent)}</hbox>
-    </hbox>
+    {#if !followup}
+      <hbox class="meta">
+        {#if !message.outgoing}
+          <hbox class="from">{message.contact.name}</hbox>
+        {/if}
+        <hbox class="time">{timeFormat.format(message.sent)}</hbox>
+      </hbox>
+    {/if}
     <hbox class="text">{@html message.html }</hbox>
   </vbox>
 </hbox>
@@ -23,6 +31,10 @@
   import type { ChatMessage } from "../../../logic/Chat/Message";
 
   export let message: ChatMessage;
+  export let previousMessage: ChatMessage = null;
+  $: followup = message.contact == previousMessage?.contact && // same author
+    message.outgoing == previousMessage?.outgoing && // same author
+    message.sent.getMilliseconds() - previousMessage.sent.getMilliseconds() < 5 * 60 * 1000; // < 5 mins apart
 
   const timeFormat = Intl.DateTimeFormat(undefined, {
     year: "numeric",
@@ -31,13 +43,18 @@
     hour: "numeric",
     minute: "numeric",
   });
+  const longDayFormat = Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 </script>
 
 <style>
   /** Speech bubble */
   .message {
     flex: 1 0 0;
-    margin: 3px 30px;
+    margin: 15px 30px 0 30px;
     padding: 3px 10px;
     max-width: 70%;
     border: 1px outset white;
@@ -53,6 +70,14 @@
   .outgoing {
     align-self: flex-end;
     background-color: papayawhip;
+  }
+  .message.followup {
+    margin-top: -3px;
+    border-top: none;
+    border-top-left-radius: 0px;
+  }
+  .message.followup.incoming {
+    padding-left: 56px;
   }
 
   /** Speech bubble arrow */
@@ -96,5 +121,16 @@
   }
   .text {
     font-size: smaller;
+  }
+
+  .date-separator {
+    width: 50%;
+    align-self: center;
+    justify-content: center;
+    margin: 20px 20px 0px 20px;
+    padding: 5px;
+    font-size: smaller;
+    color: gray;
+    border-top: 1px dotted lightgray;
   }
 </style>
