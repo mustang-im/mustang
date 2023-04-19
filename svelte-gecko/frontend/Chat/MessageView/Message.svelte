@@ -3,6 +3,7 @@
 </vbox>
 
 <script lang="ts">
+  import { onMount } from "svelte";
   import type { ChatMessage } from "../../../logic/Chat/Message";
 
   export let message: ChatMessage;

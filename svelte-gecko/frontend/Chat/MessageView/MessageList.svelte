@@ -1,5 +1,5 @@
 <vbox class="messages">
-  <Scroll>
+  <Scroll bind:this={scroller}>
     {#each $sortedMessages.each as message}
       <Message {message} />
     {/each}
@@ -11,10 +11,18 @@
   import type { ChatMessage } from "../../../logic/Chat/Message";
   import Message from "./Message.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
+  import { tick } from "svelte";
 
   export let messages: Collection<ChatMessage>;
 
   $: sortedMessages = messages.sortBy(msg => msg.sent);
+
+  let scroller: Scroll;
+  $: $messages && scroller && scrollDown();
+  async function scrollDown() {
+    await tick(); // wait for message to be added to HTML
+    scroller.scrollDown();
+  }
 </script>
 
 <style>
