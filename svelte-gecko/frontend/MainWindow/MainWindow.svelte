@@ -4,11 +4,11 @@
     {#if selectedApp == AppArea.Mail}
       <MailApp />
     {:else if selectedApp == AppArea.Chat}
-      <ChatApp />
+      <ChatApp account={appGlobal.chatAccounts.first} />
     {:else if selectedApp == AppArea.Meet}
       <MeetApp />
     {:else if selectedApp == AppArea.Contacts}
-      <ContactsApp />
+      <ContactsApp persons={appGlobal.chatAccounts.first.persons} />
     {:else if selectedApp == AppArea.Calendar}
       <CalendarApp />
     {:else if selectedApp == AppArea.Apps}
@@ -24,10 +24,18 @@
   import ContactsApp from "../Contacts/ContactsApp.svelte";
   import MailApp from "../Mail/MailApp.svelte";
   import MeetApp from "../Meet/MeetApp.svelte";
-  import { AppArea } from "./app";
   import AppBar from "./AppBar.svelte";
+  import { AppArea } from "./app";
+  import { getTestObjects } from "../../logic/testData";
+  import type { AppGlobal } from "../../logic/app";
+  import { onMount } from "svelte";
 
   let selectedApp = AppArea.Mail;
+
+  let appGlobal: AppGlobal;
+  onMount(async () => {
+    appGlobal = await getTestObjects();
+  })
 </script>
 
 <style>
