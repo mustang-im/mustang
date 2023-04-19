@@ -8,7 +8,9 @@
   </vbox>
   <vbox class="right">
     <hbox class="name">{person.name}</hbox>
-    <hbox class="last-msg">{lastMessage?.text.substring(0, 30)}</hbox>
+    {#if lastMessage}
+      <hbox class="last-msg">{lastMessage.text.substring(0, 30)}</hbox>
+    {/if}
   </vbox>
 </hbox>
 
@@ -19,8 +21,6 @@
   export let person: ChatPerson;
 
   $: lastMessage = appGlobal?.chatAccounts.first?.messagesByPerson.get(person)?.sortBy(msg => msg.sent).reverse().first;
-  $: console.log("last message", lastMessage);
-  $: console.log("messages", appGlobal?.chatAccounts.first?.messagesByPerson.get(person)?.contents);
 </script>
 
 <style>
