@@ -40,7 +40,8 @@
   async function onLoad() {
     try {
       let appGlobal = await getStartObjects();
-      accounts.addAll(appGlobal.accounts.contents);
+      console.log("App Global", appGlobal, appGlobal?.emailAccounts?.contents);
+      accounts.addAll(await appGlobal.emailAccounts.contents);
 
       for (let account of accounts.contents) {
         if (await account.haveStoredLogin()) {

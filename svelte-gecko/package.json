@@ -10,9 +10,10 @@
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
+    "@faker-js/faker": "^7.6.0",
     "jpc-ws": "https://github.com/benbucksch/jpc-ws/",
     "mustang-lib": "../lib/",
-    "svelte-collections": "^1.1.15"
+    "svelte-collections": "^1.1.16"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.3",
