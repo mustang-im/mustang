@@ -24,9 +24,8 @@
   export let account: ChatAccount;
 
   let selectedPerson: ChatPerson;
-  $: messages = account.messagesByPerson.get(selectedPerson)?.sortBy(msg => msg.sent);
-  $: personsSorted = account.persons.sortBy(person => account.messagesByPerson.get(person)?.sortBy(msg => msg.sent).reverse().first.sent);
-  $: console.log(selectedPerson?.name, selectedPerson, messages?.first.text);
+  $: messages = account.messagesByPerson.get(selectedPerson);
+  $: personsSorted = account.persons.sortBy(person => account.messagesByPerson.get(person)?.map(msg => msg.sent).sortBy(sent => sent).reverse().first);
 </script>
 
 <style>
