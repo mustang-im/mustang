@@ -26,6 +26,8 @@
     <hbox slot="icon"><Icon data={apps} scale={2} /></hbox>
     <hbox slot="label">Apps</hbox>
   </AppButton>
+  <vbox class="bottom">
+  </vbox>
 </vbox>
 
 <script lang="ts">
@@ -50,7 +52,6 @@
 <style>
   .app-bar {
     width: 80px;
-    border-right: 1px solid grey;
     /*background-color: darkblue;
     color: white;*/
   }
@@ -58,5 +59,16 @@
     align-items: center;
     padding-top: 16px;
     padding-bottom: 32px;
+  }
+  .bottom {
+    flex: 1 0 0;
+  }
+  .app-logo, .app-bar :global(.app-button), .bottom {
+    border-right: 1px solid grey;
+  }
+  .app-bar :global(.app-button.selected) {
+    border-right: none;
+    border-top: 1px solid grey;
+    border-bottom: 1px solid grey;
   }
 </style>

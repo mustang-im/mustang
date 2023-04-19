@@ -34,7 +34,7 @@
     clip-path: circle();
   }
   .right {
-    margin: 10px;
+    padding: 10px;
     border-bottom: 1px dotted lightgray;
   }
   .last-msg {
