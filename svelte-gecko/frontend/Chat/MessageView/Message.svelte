@@ -20,7 +20,7 @@
         {#if !message.outgoing}
           <hbox class="from">{message.contact.name}</hbox>
         {/if}
-        <hbox class="time">{timeFormat.format(message.sent)}</hbox>
+        <hbox class="time">{getDateString(message.sent)}</hbox>
       </hbox>
     {/if}
     <hbox class="text">{@html message.html }</hbox>
@@ -29,6 +29,7 @@
 
 <script lang="ts">
   import type { ChatMessage } from "../../../logic/Chat/Message";
+  import { getDateString } from "../../Util/date";
 
   export let message: ChatMessage;
   export let previousMessage: ChatMessage = null;
@@ -36,13 +37,6 @@
     message.outgoing == previousMessage?.outgoing && // same author
     message.sent.getMilliseconds() - previousMessage.sent.getMilliseconds() < 5 * 60 * 1000; // < 5 mins apart
 
-  const timeFormat = Intl.DateTimeFormat(undefined, {
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-  });
   const longDayFormat = Intl.DateTimeFormat(undefined, {
     year: "numeric",
     month: "long",

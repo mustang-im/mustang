@@ -10,7 +10,7 @@
     <hbox class="right-top">
       <hbox class="name">{person.name}</hbox>
       {#if person.lastMessage}
-        <hbox class="last-time">{timeFormat.format(person.lastMessage.sent)}</hbox>
+        <hbox class="last-time">{getDateString(person.lastMessage.sent)}</hbox>
       {/if}
     </hbox>
     {#if person.lastMessage}
@@ -21,23 +21,9 @@
 
 <script lang="ts">
   import type { ChatPerson } from "../../logic/Chat/Person";
+  import { getDateString } from "../Util/date";
 
   export let person: ChatPerson;
-
-  $: timeFormat = person.lastMessage?.sent.getDate() == new Date().getDate()
-      ? timeOnlyFormat
-      : timeAndDateFormat;
-  const timeOnlyFormat = Intl.DateTimeFormat(undefined, {
-    hour: "numeric",
-    minute: "numeric",
-  });
-  const timeAndDateFormat = Intl.DateTimeFormat(undefined, {
-    weekday: "short",
-    month: "numeric",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-  });
 </script>
 
 <style>
