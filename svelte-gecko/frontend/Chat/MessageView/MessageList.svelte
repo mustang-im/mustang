@@ -1,11 +1,7 @@
 <vbox class="messages">
   <Scroll>
     {#each $sortedMessages.each as message}
-      {#if message.outgoing}
-        <MessageMine {message} />
-      {:else}
-      <MessageIncoming {message} />
-      {/if}
+      <Message {message} />
     {/each}
   </Scroll>
 </vbox>
@@ -13,8 +9,7 @@
 <script lang="ts">
   import type { Collection } from "svelte-collections";
   import type { ChatMessage } from "../../../logic/Chat/Message";
-  import MessageIncoming from "./MessageIncoming.svelte";
-  import MessageMine from "./MessageMine.svelte";
+  import Message from "./Message.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
 
   export let messages: Collection<ChatMessage>;
@@ -25,5 +20,6 @@
 <style>
   .messages {
     flex: 1 0 0;
+    background-color: #F3F3F3;
   }
 </style>

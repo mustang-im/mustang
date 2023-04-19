@@ -21,15 +21,15 @@
   let text: string;
 
   function send() {
-    console.log("sending " + text + " to " + to.name);
+    console.log("sending " + to.draftMessage + " to " + to.name);
     let msg = new ChatMessage();
     msg.outgoing = true;
-    msg.text = text;
-    msg.html = text;
+    msg.text = to.draftMessage;
+    msg.html = msg.text;
     msg.contact = to;
     msg.sent = new Date();
     from.messagesByPerson.get(to).add(msg);
-    text = "";
+    to.draftMessage = "";
   }
 </script>
 
