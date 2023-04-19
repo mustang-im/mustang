@@ -1,15 +1,43 @@
-<vbox class="person">
-  {person.name}
-</vbox>
+<hbox class="person">
+  <vbox class="image">
+    <img
+      src={person.picture}
+      width="64" height="64"
+      title="Picture of {person.name}"
+      alt="Picture of {person.name}" />
+  </vbox>
+  <vbox class="right">
+    <hbox class="name">{person.name}</hbox>
+    <hbox class="last-msg">{lastMessage?.text.substring(0, 30)}</hbox>
+  </vbox>
+</hbox>
 
 <script lang="ts">
   import type { Person } from "../../logic/Person/Person";
+  import { appGlobal } from "../../logic/app";
 
   export let person: Person;
+
+  $: lastMessage = appGlobal?.chatAccounts.first?.messagesByPerson.get(person)?.sortBy(msg => msg.sent).reverse().first;
+  $: console.log("last message", lastMessage);
+  $: console.log("messages", appGlobal?.chatAccounts.first?.messagesByPerson.get(person)?.contents);
 </script>
 
 <style>
-  .person {
+  .person, .right, .name, .last-msg {
     flex: 1 0 0;
+  }
+  .image {
+    width: 64px;
+    height: 64px;
+    margin: 10px;
+    clip-path: circle();
+  }
+  .right {
+    margin: 10px;
+    border-bottom: 1px dotted lightgray;
+  }
+  .last-msg {
+    opacity: 50%;
   }
 </style>

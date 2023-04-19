@@ -3,8 +3,13 @@
     <PersonsList persons={account.persons} bind:selected={selectedPerson}/>
   </vbox>
   <vbox class="right-pane">
-    {#if messages }
-      <MessageList {messages} />
+    {#if messages && selectedPerson }
+      <vbox class="messages">
+          <MessageList {messages} />
+      </vbox>
+      <vbox class="editor">
+        <MsgEditor to={selectedPerson} from={account} />
+      </vbox>
     {/if}
   </vbox>
 </hbox>
@@ -14,6 +19,7 @@
   import MessageList from "./MessageView/MessageList.svelte";
   import PersonsList from "./PersonsList.svelte";
   import type { ChatAccount } from "../../logic/Chat/Account";
+  import MsgEditor from "./MsgEditor.svelte";
 
   export let account: ChatAccount;
 
@@ -31,5 +37,11 @@
   }
   .right-pane {
     flex: 2 0 0;
+  }
+  .messages {
+    flex: 1 0 0;
+  }
+  .editor {
+    height: 96px;
   }
 </style>

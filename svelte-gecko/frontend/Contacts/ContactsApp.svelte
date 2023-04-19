@@ -3,13 +3,16 @@
     <PersonsList {persons} bind:selected={selectedPerson}/>
   </vbox>
   <vbox class="right-pane">
-    <PersonDetails person={selectedPerson} />
+    {#if selectedPerson}
+      <PersonDetails person={selectedPerson} />
+    {/if}
   </vbox>
 </hbox>
 
 <script lang="ts">
   import type { Person } from "../../logic/Person/Person";
   import PersonsList from "../Chat/PersonsList.svelte";
+  import PersonDetails from "./PersonDetails.svelte";
   import type { Collection } from "svelte-collections";
 
   export let persons: Collection<Person>;
