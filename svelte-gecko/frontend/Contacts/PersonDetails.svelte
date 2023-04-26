@@ -16,6 +16,9 @@
           <ContactEntryUI {entry}>
             <PhoneNumberDisplay slot="display" value={entry.value} />
             <PhoneNumberEdit slot="edit" bind:value={entry.value} />
+            <svelte:fragment slot="actions">
+              <a href="tel:{entry.value}">📞</a>
+            </svelte:fragment>
           </ContactEntryUI>
         {/each}
       </grid>
@@ -28,6 +31,9 @@
           <ContactEntryUI {entry}>
             <EmailAddressDisplay slot="display" value={entry.value} />
             <EmailAddressEdit slot="edit" bind:value={entry.value} />
+            <svelte:fragment slot="actions">
+              <a href="mailto:{entry.value}">✉</a>
+            </svelte:fragment>
           </ContactEntryUI>
         {/each}
       </grid>

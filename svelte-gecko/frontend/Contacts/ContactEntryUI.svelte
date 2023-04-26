@@ -15,7 +15,8 @@
 {:else}
   <hbox class="purpose display">{displayPurpose(entry.purpose)}</hbox>
   <slot name="display" />
-  <hbox>
+  <hbox class="actions">
+    <slot name="actions" />
     <button on:click={startEditing} class="simple">✎</button>
   </hbox>
 {/if}
@@ -52,11 +53,8 @@
     margin-right: 20px;
   }
 
-  button.simple {
-    border: none;
-    padding: 2px;
-    font-size: unset;
-    background: unset;
+  .actions {
+    margin-left: 12px;
   }
 
   button {
