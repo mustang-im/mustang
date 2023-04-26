@@ -1,14 +1,23 @@
 <vbox class="person-page">
-  <vbox class="person-info">
-    <h1>{person.name}</h1>
-    <grid class="name">
-      <hbox class="label">First name</hbox>
-      <hbox class="field name">{person.firstName}</hbox>
+  <h1 class="name">{person.name}</h1>
+  <hbox class="person-info">
+    <vbox class="image">
+      <img
+        src={person.picture}
+        width="128" height="128"
+        title="Picture of {person.name}"
+        alt="Picture of {person.name}" />
+    </vbox>
+    <vbox class="names">
+      <grid>
+        <hbox class="label">First name</hbox>
+        <hbox class="field name">{person.firstName}</hbox>
 
-      <hbox class="label">Last name</hbox>
-      <hbox class="field name">{person.lastName}</hbox>
-    </grid>
-  </vbox>
+        <hbox class="label">Last name</hbox>
+        <hbox class="field name">{person.lastName}</hbox>
+      </grid>
+    </vbox>
+  </hbox>
 
   <hbox class="contact-info">
     <vbox class="contact-list">
@@ -85,6 +94,7 @@
 
 <style>
   .person-page,
+  .names,
   .recent-messages,
   .chat,
   .chat-messages,
@@ -92,9 +102,23 @@
     flex: 1 0 0;
   }
   .person-info,
+  h1.name,
   .contact-info,
   .recent-messages h3 {
     margin: 0 32px;
+  }
+  h1.name {
+    margin-top: 32px;
+    margin-bottom: 16px;
+  }
+  .names {
+    margin: 0 48px;
+  }
+  .image {
+    width: 128px;
+    height: 128px;
+    margin: 10px;
+    clip-path: circle();
   }
   .recent-messages h3 {
     margin-bottom: 16px;
