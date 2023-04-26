@@ -7,14 +7,14 @@
     </select>
   </hbox>
   <hbox class="value edit">
-    <PhoneNumberEdit bind:value={entry.value} />
+    <slot name="edit" />
   </hbox>
   <hbox>
     <button on:click={stopEditing} class="simple">✓</button>
   </hbox>
 {:else}
   <hbox class="purpose display">{displayPurpose(entry.purpose)}</hbox>
-  <PhoneNumberDisplay value={entry.value} />
+  <slot name="display" />
   <hbox>
     <button on:click={startEditing} class="simple">✎</button>
   </hbox>
@@ -22,8 +22,6 @@
 
 <script lang="ts">
   import type { ContactEntry } from "../../logic/Abstract/Person";
-  import PhoneNumberDisplay from "./PhoneNumberDisplay.svelte";
-  import PhoneNumberEdit from "./PhoneNumberEdit.svelte";
 
   export let entry: ContactEntry;
 
