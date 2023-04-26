@@ -60,6 +60,11 @@
         </grid>
       </vbox>
     </hbox>
+
+    <vbox class="notes">
+      <h3>Notes</h3>
+      <textarea bind:value={person.notes} />
+    </vbox>
   </vbox>
 
   <vbox class="recent-messages">
@@ -113,6 +118,7 @@
   .person-page,
   .person-info,
   .names,
+  .notes,
   .recent-messages,
   .chat,
   .chat-messages,
@@ -121,11 +127,16 @@
   }
   .person-info,
   .recent-messages h3 {
-    margin: 0 32px;
+    margin-left: 32px;
+    margin-right: 32px;
   }
   h1.name {
     margin-top: 32px;
     margin-bottom: 16px;
+  }
+  h3 {
+    margin-top: 16px;
+    margin-bottom: 8px;
   }
   .names {
     margin: 0 48px;
@@ -145,24 +156,26 @@
   .contact-buttons button {
     padding: 12px;
   }
-  .recent-messages h3 {
-    margin-bottom: 16px;
+  .notes {
+    margin-bottom: 32px;
+  }
+  .notes textarea {
+    height: 100%;
+    width: 100%;
+    border: none;
+    font-family: sans-serif;
   }
   grid {
     display: grid;
     grid-template-columns: 1fr 2fr;
   }
-  h3 {
-    margin-bottom: 0;
-  }
   .contact-list {
     flex: 1 0 0;
-    margin: 16px 24px 32px 0;
+    margin: 16px 24px 24px 0;
   }
   .contact-list grid {
     display: grid;
     grid-template-columns: 1fr 2fr 1fr;
-    margin-top: 16px;
   }
 
 </style>

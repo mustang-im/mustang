@@ -7,7 +7,7 @@ export class Person {
   lastName: string;
   emailAddresses = new ArrayColl<ContactEntry>();
   phoneNumbers = new ArrayColl<ContactEntry>();
-  notes: string;
+  notes = "";
   picture: string; // URL
 }
 
