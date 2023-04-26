@@ -20,6 +20,15 @@
       </vbox>
     </hbox>
 
+    <hbox class="contact-buttons">
+      {#if preferredPhoneNumber}
+        <a href="tel:{preferredPhoneNumber}"><button class="big">📞</button></a>
+      {/if}
+      {#if preferredEmailAddress}
+        <a href="mailto:{preferredEmailAddress}"><button class="big">✉</button></a>
+      {/if}
+    </hbox>
+
     <hbox class="contact-info">
       <vbox class="contact-list">
         <h3>Phone numbers</h3>
@@ -87,6 +96,13 @@
   export let person: Person;
   $: person.name = person.firstName + " " + person.lastName;
 
+  $: preferredPhoneNumber = person.phoneNumbers.isEmpty ? null :
+    person.phoneNumbers.find(p => p.preferred)?.value ||
+    person.phoneNumbers.first.value;
+    $: preferredEmailAddress = person.emailAddresses.isEmpty ? null :
+    person.emailAddresses.find(p => p.preferred)?.value ||
+    person.emailAddresses.first.value;
+
   $: chatAccount = appGlobal.chatAccounts?.first;
   $: chatPerson = chatAccount?.persons.find(p => p.id == person.id);
   $: chatMessages = chatAccount?.messagesByPerson.get(chatPerson);
@@ -120,6 +136,15 @@
     height: 128px;
     margin: 10px;
     clip-path: circle();
+  }
+  .contact-buttons {
+    margin-top: 32px;
+  }
+  .contact-buttons a {
+    margin-right: 12px;
+  }
+  .contact-buttons button {
+    padding: 12px;
   }
   .recent-messages h3 {
     margin-bottom: 16px;
