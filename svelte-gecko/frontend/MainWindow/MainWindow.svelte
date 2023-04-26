@@ -27,14 +27,16 @@
   import AppBar from "./AppBar.svelte";
   import { AppArea } from "./app";
   import { getTestObjects } from "../../logic/testData";
-  import type { AppGlobal } from "../../logic/app";
+  import { appGlobal } from "../../logic/app";
   import { onMount } from "svelte";
 
   let selectedApp = AppArea.Mail;
 
-  let appGlobal: AppGlobal;
-  onMount(async () => {
-    appGlobal = await getTestObjects();
+  onMount(async() => {
+    let app = await getTestObjects();
+    for (let prop in app) {
+      appGlobal[prop] = app[prop];
+    }
   })
 </script>
 

@@ -16,6 +16,7 @@ export async function getTestObjects(): Promise<AppGlobal> {
 
   for (let i = 1; i < 50; i++) {
     let person = new ChatPerson();
+    person.id = "p-c-" + i;
     person.firstName = faker.name.firstName();
     person.lastName = faker.name.lastName();
     person.name = person.firstName + " " + person.lastName;

@@ -1,6 +1,7 @@
 import { ArrayColl } from 'svelte-collections';
 
 export class Person {
+  id: string;
   name: string;
   firstName: string;
   lastName: string;

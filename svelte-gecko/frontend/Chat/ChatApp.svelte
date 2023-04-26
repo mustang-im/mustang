@@ -15,10 +15,10 @@
 </hbox>
 
 <script lang="ts">
-  import type { ChatPerson } from "../../logic/Chat/Person";
-  import MessageList from "./MessageView/MessageList.svelte";
-  import PersonsList from "./PersonsList.svelte";
   import type { ChatAccount } from "../../logic/Chat/Account";
+  import type { ChatPerson } from "../../logic/Chat/Person";
+  import PersonsList from "./PersonsList.svelte";
+  import MessageList from "./MessageView/MessageList.svelte";
   import MsgEditor from "./MsgEditor.svelte";
 
   export let account: ChatAccount;
