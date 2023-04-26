@@ -42,7 +42,12 @@
               </svelte:fragment>
             </ContactEntryUI>
           {/each}
-        </grid>
+          <hbox></hbox>
+          <hbox></hbox>
+          <hbox class="actions">
+            <button class="simple">+</button>
+          </hbox>
+      </grid>
       </vbox>
     
       <vbox class="contact-list">
@@ -57,6 +62,11 @@
               </svelte:fragment>
             </ContactEntryUI>
           {/each}
+          <hbox></hbox>
+          <hbox></hbox>
+          <hbox class="actions">
+            <button class="simple">+</button>
+          </hbox>
         </grid>
       </vbox>
     </hbox>
@@ -118,6 +128,7 @@
   .person-page,
   .person-info,
   .names,
+  .contact-list .actions,
   .notes,
   .recent-messages,
   .chat,
@@ -177,5 +188,7 @@
     display: grid;
     grid-template-columns: 1fr 2fr 1fr;
   }
-
+  .contact-list .actions {
+    justify-content: center;
+  }
 </style>
