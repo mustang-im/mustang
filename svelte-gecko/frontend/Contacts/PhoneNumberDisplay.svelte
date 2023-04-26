@@ -1,4 +1,8 @@
-<hbox class="value"><a href="tel:{value}">{value}</a></hbox>
+<hbox class="value">
+  <a href="tel:{value}">
+    {value}
+  </a>
+</hbox>
 
 <script lang="ts">
   export let value: string;
