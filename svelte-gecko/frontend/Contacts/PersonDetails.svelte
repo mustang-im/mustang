@@ -1,55 +1,57 @@
 <vbox class="person-page">
-  <h1 class="name">{person.name}</h1>
-  <hbox class="person-info">
-    <vbox class="image">
-      <img
-        src={person.picture}
-        width="128" height="128"
-        title="Picture of {person.name}"
-        alt="Picture of {person.name}" />
-    </vbox>
-    <vbox class="names">
-      <grid>
-        <hbox class="label">First name</hbox>
-        <hbox class="field name">{person.firstName}</hbox>
+  <vbox class="person-info">
+    <h1 class="name">{person.name}</h1>
+    <hbox class="main-info">
+      <vbox class="image">
+        <img
+          src={person.picture}
+          width="128" height="128"
+          title="Picture of {person.name}"
+          alt="Picture of {person.name}" />
+      </vbox>
+      <vbox class="names">
+        <grid>
+          <hbox class="label">First name</hbox>
+          <hbox class="field name">{person.firstName}</hbox>
 
-        <hbox class="label">Last name</hbox>
-        <hbox class="field name">{person.lastName}</hbox>
-      </grid>
-    </vbox>
-  </hbox>
+          <hbox class="label">Last name</hbox>
+          <hbox class="field name">{person.lastName}</hbox>
+        </grid>
+      </vbox>
+    </hbox>
 
-  <hbox class="contact-info">
-    <vbox class="contact-list">
-      <h3>Phone numbers</h3>
-      <grid>
-        {#each person.phoneNumbers.each as entry}
-          <ContactEntryUI {entry}>
-            <PhoneNumberDisplay slot="display" value={entry.value} />
-            <PhoneNumberEdit slot="edit" bind:value={entry.value} />
-            <svelte:fragment slot="actions">
-              <a href="tel:{entry.value}">📞</a>
-            </svelte:fragment>
-          </ContactEntryUI>
-        {/each}
-      </grid>
-    </vbox>
-  
-    <vbox class="contact-list">
-      <h3>Email addresses</h3>
-      <grid>
-        {#each person.emailAddresses.each as entry}
-          <ContactEntryUI {entry}>
-            <EmailAddressDisplay slot="display" value={entry.value} />
-            <EmailAddressEdit slot="edit" bind:value={entry.value} />
-            <svelte:fragment slot="actions">
-              <a href="mailto:{entry.value}">✉</a>
-            </svelte:fragment>
-          </ContactEntryUI>
-        {/each}
-      </grid>
-    </vbox>
-  </hbox>
+    <hbox class="contact-info">
+      <vbox class="contact-list">
+        <h3>Phone numbers</h3>
+        <grid>
+          {#each person.phoneNumbers.each as entry}
+            <ContactEntryUI {entry}>
+              <PhoneNumberDisplay slot="display" value={entry.value} />
+              <PhoneNumberEdit slot="edit" bind:value={entry.value} />
+              <svelte:fragment slot="actions">
+                <a href="tel:{entry.value}">📞</a>
+              </svelte:fragment>
+            </ContactEntryUI>
+          {/each}
+        </grid>
+      </vbox>
+    
+      <vbox class="contact-list">
+        <h3>Email addresses</h3>
+        <grid>
+          {#each person.emailAddresses.each as entry}
+            <ContactEntryUI {entry}>
+              <EmailAddressDisplay slot="display" value={entry.value} />
+              <EmailAddressEdit slot="edit" bind:value={entry.value} />
+              <svelte:fragment slot="actions">
+                <a href="mailto:{entry.value}">✉</a>
+              </svelte:fragment>
+            </ContactEntryUI>
+          {/each}
+        </grid>
+      </vbox>
+    </hbox>
+  </vbox>
 
   <vbox class="recent-messages">
     {#if mailMessages }
@@ -94,6 +96,7 @@
 
 <style>
   .person-page,
+  .person-info,
   .names,
   .recent-messages,
   .chat,
@@ -102,8 +105,6 @@
     flex: 1 0 0;
   }
   .person-info,
-  h1.name,
-  .contact-info,
   .recent-messages h3 {
     margin: 0 32px;
   }
