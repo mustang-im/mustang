@@ -11,7 +11,7 @@ export class AppGlobal {
   emailAccounts: MapColl<string, MailAccount>;
   chatAccounts: MapColl<string, ChatAccount>;
 }
-export let appGlobal: AppGlobal;
+export let appGlobal = new AppGlobal();
 
 const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
 

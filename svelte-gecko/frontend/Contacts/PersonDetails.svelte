@@ -1,14 +1,16 @@
-<vbox class="person-details">
-  <h1>{person.name}</h1>
-  <grid>
-    <hbox class="label">First name</hbox>
-    <hbox class="field name">{person.firstName}</hbox>
+<vbox class="person-page">
+  <vbox class="person-info">
+    <h1>{person.name}</h1>
+    <grid class="name">
+      <hbox class="label">First name</hbox>
+      <hbox class="field name">{person.firstName}</hbox>
 
-    <hbox class="label">Last name</hbox>
-    <hbox class="field name">{person.lastName}</hbox>
-  </grid>
+      <hbox class="label">Last name</hbox>
+      <hbox class="field name">{person.lastName}</hbox>
+    </grid>
+  </vbox>
 
-  <hbox>
+  <hbox class="contact-info">
     <vbox class="contact-list">
       <h3>Phone numbers</h3>
       <grid>
@@ -38,7 +40,26 @@
         {/each}
       </grid>
     </vbox>
- </hbox>
+  </hbox>
+
+  <vbox class="recent-messages">
+    {#if mailMessages }
+      <vbox class="mails">
+        <h3>Mails</h3>
+      </vbox>
+    {/if}
+    {#if chatMessages }
+      <vbox class="chat">
+        <h3>Chat</h3>
+        <vbox class="chat-messages">
+            <MessageList messages={chatMessages} />
+        </vbox>
+        <vbox class="editor">
+          <MsgEditor to={chatPerson} from={chatAccount} />
+        </vbox>
+      </vbox>
+    {/if}
+  </vbox>
 </vbox>
 
 <script lang="ts">
@@ -48,15 +69,35 @@
   import EmailAddressEdit from "./EmailAddressEdit.svelte";
   import PhoneNumberDisplay from "./PhoneNumberDisplay.svelte";
   import PhoneNumberEdit from "./PhoneNumberEdit.svelte";
+  import MessageList from "../Chat/MessageView/MessageList.svelte";
+  import MsgEditor from "../Chat/MsgEditor.svelte";
+  import { appGlobal } from "../../logic/app";
 
   export let person: Person;
   $: person.name = person.firstName + " " + person.lastName;
+
+  $: chatAccount = appGlobal.chatAccounts?.first;
+  $: chatPerson = chatAccount?.persons.find(p => p.id == person.id);
+  $: chatMessages = chatAccount?.messagesByPerson.get(chatPerson);
+  $: console.log("person", chatPerson?.name, "messages", chatMessages);
+  $: mailMessages = null;
 </script>
 
 <style>
-  .person-details {
+  .person-page,
+  .recent-messages,
+  .chat,
+  .chat-messages,
+  .mails {
     flex: 1 0 0;
-    margin: 30px;
+  }
+  .person-info,
+  .contact-info,
+  .recent-messages h3 {
+    margin: 0 32px;
+  }
+  .recent-messages h3 {
+    margin-bottom: 16px;
   }
   grid {
     display: grid;
@@ -74,4 +115,5 @@
     grid-template-columns: 1fr 2fr 1fr;
     margin-top: 16px;
   }
+
 </style>
