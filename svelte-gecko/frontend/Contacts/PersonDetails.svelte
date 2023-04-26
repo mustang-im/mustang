@@ -7,25 +7,21 @@
 
     <hbox class="label">Last name</hbox>
     <hbox class="field name">{person.lastName}</hbox>
-
-    <hbox class="label">E-Mail addresses</hbox>
-    <vbox>
-      {#each person.emailAddresses.each as emailAddress}
-        <hbox class="field email-address">{emailAddress}</hbox>
-      {/each}
-    </vbox>
-
-    <hbox class="label">Phone numbers</hbox>
-    <vbox>
-      {#each person.phoneNumbers.each as phoneNumber}
-        <hbox class="field phone-number">{phoneNumber}</hbox>
-      {/each}
-    </vbox>
   </grid>
+
+  <hbox>
+    <ContactList entries={person.phoneNumbers}>
+      <h3 slot="title">Phone numbers</h3>
+    </ContactList>
+    <ContactList entries={person.emailAddresses}>
+      <h3 slot="title">Email addresses</h3>
+    </ContactList>
+  </hbox>
 </vbox>
 
 <script lang="ts">
   import type { Person } from "../../logic/Abstract/Person";
+  import ContactList from "./ContactList.svelte";
 
   export let person: Person;
   $: person.name = person.firstName + " " + person.lastName;
@@ -39,5 +35,8 @@
   grid {
     display: grid;
     grid-template-columns: 1fr 2fr;
+  }
+  h3 {
+    margin-bottom: 0;
   }
 </style>
