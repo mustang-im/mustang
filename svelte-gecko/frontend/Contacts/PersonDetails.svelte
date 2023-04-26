@@ -106,7 +106,6 @@
   $: chatAccount = appGlobal.chatAccounts?.first;
   $: chatPerson = chatAccount?.persons.find(p => p.id == person.id);
   $: chatMessages = chatAccount?.messagesByPerson.get(chatPerson);
-  $: console.log("person", chatPerson?.name, "messages", chatMessages);
   $: mailMessages = null;
 </script>
 

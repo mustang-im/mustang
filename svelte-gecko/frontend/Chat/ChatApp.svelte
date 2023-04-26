@@ -40,6 +40,7 @@
   }
   .messages {
     flex: 1 0 0;
+    background-color: #F3F3F3;
   }
   .editor {
     height: 96px;
