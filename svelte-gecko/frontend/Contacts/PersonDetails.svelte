@@ -120,7 +120,7 @@
 
   $: chatAccount = appGlobal.chatAccounts?.first;
   $: chatPerson = chatAccount?.persons.find(p => p.id == person.id);
-  $: chatMessages = chatAccount?.messagesByPerson.get(chatPerson);
+  $: chatMessages = chatAccount?.chats.get(chatPerson)?.messages;
   $: mailMessages = null;
 </script>
 
