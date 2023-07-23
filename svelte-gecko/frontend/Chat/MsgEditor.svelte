@@ -36,7 +36,6 @@
 <style>
   .msg-editor {
     flex: 1 0 0;
-    border: 1px solid grey;
     background-color: #EEEEEE;
     padding: 10px;
   }

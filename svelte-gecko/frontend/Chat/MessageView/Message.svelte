@@ -51,8 +51,9 @@
     margin: 15px 30px 0 30px;
     padding: 3px 10px;
     max-width: 70%;
-    border: 1px outset white;
+    border: 1px solid white;
     border-radius: 10px;
+    box-shadow: 2px 2px 5px 0px rgba(0, 0, 0, 15%);
     padding: 10px 15px;
     position: relative;
     color: black;
