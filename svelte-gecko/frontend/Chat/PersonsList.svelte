@@ -24,12 +24,10 @@
     flex: 1 0 0;
   }
   .person {
-    border-right: 1px solid grey;
+    border-right: 1px dotted lightgray;
   }
   .person.selected {
     background-color: #F3F3F3;
-    border-right: none;
-    border-top: 1px solid grey;
-    border-bottom: 1px solid grey;
+    box-shadow: 1px 1px 5px 0px rgba(0, 0, 0, 15%);
   }
 </style>
