@@ -24,7 +24,7 @@
   export let account: ChatAccount;
 
   let selectedPerson: ChatPerson;
-  $: messages = account.messagesByPerson.get(selectedPerson);
+  $: messages = account.chats.get(selectedPerson)?.messages;
   $: personsSorted = account.persons.sortBy(person => person.lastMessage.sent).reverse();
 </script>
 

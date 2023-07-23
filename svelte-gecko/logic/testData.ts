@@ -6,6 +6,7 @@ import { ChatPerson } from './Chat/Person';
 import type { MailAccount } from './Mail/Account';
 import { faker } from '@faker-js/faker';
 import { ContactEntry } from './Abstract/Person';
+import { Chat } from './Chat/Chat';
 
 export async function getTestObjects(): Promise<AppGlobal> {
   let appGlobal = new AppGlobal();
@@ -26,9 +27,10 @@ export async function getTestObjects(): Promise<AppGlobal> {
     person.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-###-######'), "work"));
     person.picture = faker.image.avatar();
 
-    let messages = new ArrayColl<ChatMessage>();
-    chatAccount.messagesByPerson.set(person, messages);
+    let chat = new Chat();
+    chatAccount.chats.set(person, chat);
     chatAccount.persons.add(person);
+    let messages = chat.messages;
     for (let i = 1; i < 300; i++) {
       let msg = new ChatMessage();
       msg.contact = person;

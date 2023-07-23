@@ -28,7 +28,7 @@
     msg.html = msg.text;
     msg.contact = to;
     msg.sent = new Date();
-    from.messagesByPerson.get(to).add(msg);
+    from.chats.get(to)?.messages.add(msg);
     to.draftMessage = "";
   }
 </script>
