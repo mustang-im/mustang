@@ -1,5 +1,5 @@
-import { Group } from './Group';
-import { Person } from './Person';
+import type { Group } from './Group';
+import type { Person } from './Person';
 
 export class Contact {
   isGroup = false;
