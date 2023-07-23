@@ -9,6 +9,7 @@
 <style>
   .stack {
     position: relative;
+    flex: 1 0 0;
   }
   .stack :global(> *) {
     position: absolute;
