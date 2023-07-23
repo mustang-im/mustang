@@ -1,8 +1,9 @@
 import type { MailAccount } from './Mail/Account';
 import type { ChatAccount } from './Chat/Account';
-import JPCWebSocket from 'jpc-ws';
+import type { VideoConfMeeting } from './Meet/VideoConfMeeting';
 import type { MapColl } from 'svelte-collections';
 import { getTestObjects } from './testData';
+import JPCWebSocket from 'jpc-ws';
 
 export class AppGlobal {
   addNewAccountFromConfig: Function;
@@ -10,6 +11,7 @@ export class AppGlobal {
   AccountConfig: Object;
   emailAccounts: MapColl<string, MailAccount>;
   chatAccounts: MapColl<string, ChatAccount>;
+  meeting: VideoConfMeeting;
 }
 export let appGlobal = new AppGlobal();
 

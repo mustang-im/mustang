@@ -7,6 +7,7 @@ import type { MailAccount } from './Mail/Account';
 import { faker } from '@faker-js/faker';
 import { ContactEntry } from './Abstract/Person';
 import { Chat } from './Chat/Chat';
+import { VideoConfMeeting } from './Meet/VideoConfMeeting';
 
 export async function getTestObjects(): Promise<AppGlobal> {
   let appGlobal = new AppGlobal();
@@ -43,6 +44,17 @@ export async function getTestObjects(): Promise<AppGlobal> {
     }
     person.lastMessage = messages.sortBy(msg => msg.sent).reverse().first;
   }
+
+  let meet = new VideoConfMeeting();
+  meet.ongoing = true;
+  meet.started = new Date();
+  let number = 5;
+  //let number = Math.random() * 10;
+  for (let i = 0; i < number; i++) {
+    meet.participants.add(chatAccount.persons.at(Math.floor(chatAccount.persons.length) * Math.random()));
+  }
+  appGlobal.meeting = meet;
+
   return appGlobal;
 }
 

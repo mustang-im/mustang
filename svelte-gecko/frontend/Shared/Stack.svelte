@@ -1,0 +1,18 @@
+<vbox class="stack">
+  <slot />
+</vbox>
+
+<script lang="ts">
+  /* Size not working */
+</script>
+
+<style>
+  .stack {
+    position: relative;
+  }
+  .stack :global(> *) {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+</style>
