@@ -55,9 +55,9 @@
 <style>
   .month-view {
     display: grid;
-    grid-template-columns: auto auto auto auto auto auto auto;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     grid-template-rows: max-content;
-    grid-auto-rows: auto;
+    grid-auto-rows: 1fr;
     flex: 1 0 0;
     margin: 32px;
     border-bottom: 1px dotted grey;
