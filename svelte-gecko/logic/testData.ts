@@ -1,14 +1,14 @@
 import { AppGlobal } from './app';
 import { ChatAccount } from './Chat/Account';
-import { ArrayColl, MapColl } from 'svelte-collections';
 import { ChatMessage } from './Chat/Message';
 import { ChatPerson } from './Chat/Person';
-import type { MailAccount } from './Mail/Account';
 import { faker } from '@faker-js/faker';
 import { ContactEntry } from './Abstract/Person';
 import { Chat } from './Chat/Chat';
 import { VideoConfMeeting } from './Meet/VideoConfMeeting';
 import { Directory, File } from './Files/File';
+import { Calendar } from './Calendar/Calendar';
+import { Event } from './Calendar/Event';
 
 export async function getTestObjects(): Promise<AppGlobal> {
   let appGlobal = new AppGlobal();
@@ -59,6 +59,22 @@ export async function getTestObjects(): Promise<AppGlobal> {
     meet.participants.add(chatAccount.persons.at(Math.floor(chatAccount.persons.length) * Math.random()));
   }
   appGlobal.meeting = meet;
+
+  /* Calendar */
+  let calendar = new Calendar();
+  appGlobal.calendars.add(calendar);
+  for (let i = 1; i < 50; i++) {
+    let event = new Event();
+    event.startTime = i < 5 ? faker.date.recent() : faker.date.future(0.2);
+    let endTimeMax = new Date(event.startTime);
+    endTimeMax.setMinutes(endTimeMax.getMinutes() + 120);
+    event.endTime = faker.date.between(event.startTime, endTimeMax);
+    event.title = faker.random.words();
+    event.descriptionText = faker.random.words() + "\n" + faker.random.words();
+    event.descriptionHTML = event.descriptionText.replace("\n", "<br>");
+    event.location = faker.datatype.boolean ? faker.address.streetAddress() : faker.address.nearbyGPSCoordinate().join(", ");
+    calendar.events.add(event);
+  }
 
   /* Files */
   let sharedDirectory = new Directory();
