@@ -69,6 +69,7 @@ export async function getTestObjects(): Promise<AppGlobal> {
     let personDirectory = new Directory();
     personDirectory.name = person.name;
     personDirectory.sentToFrom = person;
+    personDirectory.lastMod = faker.date.past();
     personDirectory.setParent(sharedDirectory);
     appGlobal.files.add(personDirectory);
     let dirCount = 2 + Math.random() * 10;
@@ -82,7 +83,8 @@ export async function getTestObjects(): Promise<AppGlobal> {
 
 function fakeDir(parentDir: Directory): Directory {
   let directory = new Directory();
-  directory.name = faker.system.fileName({ extensionCount: 0 });
+  directory.name = faker.helpers.unique(() => faker.system.fileName({ extensionCount: 0 }));
+  directory.lastMod = faker.date.past();
   directory.setParent(parentDir);
   let dirCount = Math.random() * 6;
   dirCount -= 4;
@@ -98,11 +100,12 @@ function fakeDir(parentDir: Directory): Directory {
 
 function fakeFile(parentDir: Directory): File {
   let file = new File();
-  file.name = faker.system.commonFileName();
+  file.name = faker.helpers.unique(() => faker.system.commonFileName());
   let parts = file.name.split(".");
   file.ext = parts.pop();
   file.nameWithoutExt = parts.join(".");
   file.length = faker.datatype.number(40000000);
+  file.lastMod = faker.date.past();
   file.setParent(parentDir);
   return file;
 }
