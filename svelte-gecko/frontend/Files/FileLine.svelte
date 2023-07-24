@@ -2,9 +2,9 @@
   {#each {length: indent} as _}
     <hbox class="indention" />
   {/each}
-  <hbox class="icon">
+  <button class="icon" >
     <Icon data={fileO} scale={1} />
-  </hbox>
+  </button>
   <hbox class="name">
     {file.nameWithoutExt}
   </hbox>
@@ -32,6 +32,7 @@
   .icon {
     margin-left: 16px;
     align-self: center;
+    border: none;
   }
   .indention {
     margin-left: 16px;

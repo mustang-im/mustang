@@ -73,24 +73,38 @@ export async function getTestObjects(): Promise<AppGlobal> {
     appGlobal.files.add(personDirectory);
     let dirCount = 2 + Math.random() * 10;
     for (let i = 0; i < dirCount; i++) {
-      let directory = new Directory();
-      directory.name = faker.system.fileName({ extensionCount: 0 });
-      directory.sentToFrom = person;
-      directory.setParent(personDirectory);
-      let fileCount = 2 + Math.random() * 20;
-      for (let i = 0; i < fileCount; i++) {
-        let file = new File();
-        file.name = faker.system.commonFileName();
-        let parts = file.name.split(".");
-        file.ext = parts.pop();
-        file.nameWithoutExt = parts.join(".");
-        file.length = faker.datatype.number(40000000);
-        file.setParent(directory);
-      }
+      fakeDir(personDirectory).sentToFrom = person;
     }
   }
 
   return appGlobal;
+}
+
+function fakeDir(parentDir: Directory): Directory {
+  let directory = new Directory();
+  directory.name = faker.system.fileName({ extensionCount: 0 });
+  directory.setParent(parentDir);
+  let dirCount = Math.random() * 6;
+  dirCount -= 4;
+  for (let i = 0; i < dirCount; i++) {
+    fakeDir(directory);
+  }
+  let fileCount = 2 + Math.random() * 20;
+  for (let i = 0; i < fileCount; i++) {
+    fakeFile(directory);
+  }
+  return directory;
+}
+
+function fakeFile(parentDir: Directory): File {
+  let file = new File();
+  file.name = faker.system.commonFileName();
+  let parts = file.name.split(".");
+  file.ext = parts.pop();
+  file.nameWithoutExt = parts.join(".");
+  file.length = faker.datatype.number(40000000);
+  file.setParent(parentDir);
+  return file;
 }
 
 /*
