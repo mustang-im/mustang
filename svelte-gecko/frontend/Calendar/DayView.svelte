@@ -39,10 +39,14 @@
     display: grid;
     grid-template-columns: max-content auto;
     flex: 1 0 0;
+    margin: 32px;
+    border-bottom: 1px dotted grey;
+    border-right: 1px dotted grey;
   }
   .day-header {
-    border: 1px dotted grey;
     padding: 16px;
+    border-top: 1px dotted grey;
+    border-left: 1px dotted grey;
   }
   .day-header .date {
     font-size: 200%;

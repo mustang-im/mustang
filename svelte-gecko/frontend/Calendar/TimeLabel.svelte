@@ -8,6 +8,6 @@
 
 <style>
   .time {
-    margin: -0.8em 8px 0 32px;
+    margin: -0.8em 8px 0 0;
   }
 </style>

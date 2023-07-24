@@ -27,7 +27,7 @@
 
 <style>
   .events {
-    border-bottom: 1px dotted grey;
+    border-top: 1px dotted grey;
     border-left: 1px dotted grey;
   }
 </style>
