@@ -17,10 +17,11 @@
       bind:value={dateIntervalSelected}
   />
   <hbox class="date-interval">of</hbox>
-  <hbox class="date-range">{dateRangeString(dateRange)}</hbox>
+  <hbox class="date-range">{simpleDateString(showDate)}</hbox>
 </hbox>
 
 <script lang="ts">
+  import type { DateInterval } from "./selected";
   import { NativeSelect } from '@svelteuidev/core';
   import Icon from 'svelte-awesome';
   import calendarAdd from 'svelte-awesome/icons/calendarPlusO';
@@ -29,22 +30,23 @@
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
 
-  export let dateRange = new Date(); /* in/out */
-  export let dateInterval: 1 | 7 | 31 | 28 = 7; /* in/out */
+  export let showDate = new Date(); /* in/out */
+  export let dateInterval: DateInterval = 7; /* in/out */
 
   function addEvent() {
     dispatch('addEvent');
   }
   function pageNext() {
-    dateRange.setDate(dateRange.getDate() + dateInterval);
-    dateRange = dateRange;
+    showDate.setDate(showDate.getDate() + dateInterval);
+    showDate = showDate;
   }
   function pagePrevious() {
-    dateRange.setDate(dateRange.getDate() - dateInterval);
-    dateRange = dateRange;
+    showDate.setDate(showDate.getDate() - dateInterval);
+    showDate = showDate;
   }
 
   function dateIntervalLabel(interval: number) {
+    // TODO l10n
     if (interval == 1) {
       return "Day";
     } else if (interval == 7) {
@@ -59,7 +61,7 @@
   }
 
   let dateIntervalSelected = dateInterval.toString();
-  $: dateInterval = parseInt(dateIntervalSelected) as 1 | 7 | 31 | 28;
+  $: dateInterval = parseInt(dateIntervalSelected) as DateInterval;
   const dateIntervalOptions = [
     { value: "1", label: dateIntervalLabel(1) },
     { value: "7", label: dateIntervalLabel(7) },
@@ -67,7 +69,7 @@
     { value: "31", label: dateIntervalLabel(31) },
   ];
 
-  function dateRangeString(date) {
+  function simpleDateString(date) {
     return date.toLocaleDateString(undefined, {
       year: "numeric",
       month: "long",
