@@ -20,6 +20,9 @@
 <hbox class="size">
   {directory.files.length} entries
 </hbox>
+<hbox class="time">
+  {getDateString(directory.lastMod)}
+</hbox>
 
 {#if open}
   {#each directory.files.each as file (file.id) }
@@ -28,11 +31,12 @@
 {/if}
 
 <script lang="ts">
-  import type { Directory, File, FileOrDirectory } from "../../logic/Files/File";
+  import type { Directory } from "../../logic/Files/File";
   import FileOrDirectoryLine from "./FileOrDirectoryLine.svelte";
   import Icon from 'svelte-awesome';
   import folderClosed from 'svelte-awesome/icons/folder';
   import folderOpen from 'svelte-awesome/icons/folderOpen';
+  import { getDateString } from "../Util/date";
 
   export let directory: Directory;
   export let indent = 0;
@@ -45,11 +49,17 @@
 </script>
 
 <style>
-  .icon, .name, .type, .size {
-    margin-right: 16px;
+  .icon, .name, .type, .size, .time {
+    padding-left: 8px;
+    padding-right: 8px;
   }
   .icon {
-    margin-left: 16px;
+    padding-left: 16px;
+  }
+  .time {
+    padding-right: 16px;
+  }
+  .icon {
     border: none;
   }
   .indention {
@@ -61,5 +71,9 @@
   .size {
     justify-content: end;
     min-width: 8em;
+  }
+  .time {
+    justify-content: end;
+    min-width: 5em;
   }
 </style>

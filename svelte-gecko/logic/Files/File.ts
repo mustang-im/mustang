@@ -5,6 +5,7 @@ import { assert } from "../util/util";
 export class FileOrDirectory {
   id: string; /** Full file path and name */
   name: string; /** Excluding directory. For files, including file ext. */
+  lastMod = new Date();
 
   setParent(directory: Directory) {
     assert(this.name, "Please set the name first");

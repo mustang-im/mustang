@@ -15,22 +15,32 @@
 <hbox class="size">
   {file.length} bytes
 </hbox>
+<hbox class="time">
+  {getDateString(file.lastMod)}
+</hbox>
 
 <script lang="ts">
   import type { File } from "../../logic/Files/File";
   import Icon from 'svelte-awesome';
   import fileO from 'svelte-awesome/icons/fileO';
+  import { getDateString } from "../Util/date";
 
   export let file: File;
   export let indent = 0;
 </script>
 
 <style>
-  .icon, .name, .type, .size {
-    margin-right: 16px;
+  .icon, .name, .type, .size, .time {
+    padding-left: 8px;
+    padding-right: 8px;
   }
   .icon {
-    margin-left: 16px;
+    padding-left: 16px;
+  }
+  .time {
+    padding-right: 16px;
+  }
+  .icon {
     align-self: center;
     border: none;
   }
@@ -43,5 +53,9 @@
   .size {
     justify-content: end;
     min-width: 8em;
+  }
+  .time {
+    justify-content: end;
+    min-width: 5em;
   }
 </style>
