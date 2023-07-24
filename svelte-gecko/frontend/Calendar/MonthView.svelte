@@ -28,6 +28,7 @@
   function setDays() {
     weekDays = getWeekDays();
     let startTime = weekDays[0]; // Always start with Monday
+    days = [];
     for (let i = 0; i < showDays; i++) {
       days.push(new Date(startTime));
       startTime.setDate(startTime.getDate() + 1)
@@ -35,7 +36,7 @@
   }
 
   function getWeekDays() {
-    let startTime = new Date();
+    let startTime = new Date(start);
     // Always start with Monday
     startTime.setDate(startTime.getDate() - startTime.getDay() + 1);
     startTime.setHours(0);
