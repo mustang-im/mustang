@@ -60,7 +60,7 @@
   .week-view {
     display: grid;
     grid-template-rows: max-content;
-    grid-auto-rows: auto;
+    grid-auto-rows: 1fr;
     flex: 1 0 0;
     margin: 32px;
     border-bottom: 1px dotted grey;
