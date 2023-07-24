@@ -1,4 +1,4 @@
-<grid class="week-view">
+<grid class="week-view" columns={showDays}>
   <hbox />
   {#each days as day}
     <vbox class="day-header">
@@ -20,6 +20,8 @@
   
   export let start: Date;
   export let events: Collection<Event>;
+  export let showDays: 1 | 7 = 7;
+  export let showHours = 8;
 
   let startTimes: Date[] = [];
   $: start, setStartTimes();
@@ -29,7 +31,7 @@
     startTime.setSeconds(0);
     startTime.setMilliseconds(0);
     startTimes = [];
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < showHours; i++) {
       startTimes.push(new Date(startTime));
       startTime.setHours(startTime.getHours() + 1)
     }
@@ -39,13 +41,15 @@
   $: start, setDays();
   function setDays() {
     let startTime = new Date(start);
-    startTime.setDate(startTime.getDate() - 1);
+    if (showDays > 3) {
+      startTime.setDate(startTime.getDate() - 1);
+    }
     startTime.setHours(0);
     startTime.setMinutes(0);
     startTime.setSeconds(0);
     startTime.setMilliseconds(0);
     days = [];
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < showDays; i++) {
       days.push(new Date(startTime));
       startTime.setDate(startTime.getDate() + 1)
     }
@@ -55,11 +59,18 @@
 <style>
   .week-view {
     display: grid;
-    grid-template-columns: max-content 0.33fr 3fr 2fr 1fr 1fr 1fr 1fr;
+    grid-template-rows: max-content;
+    grid-auto-rows: auto;
     flex: 1 0 0;
     margin: 32px;
     border-bottom: 1px dotted grey;
     border-right: 1px dotted grey;
+  }
+  .week-view[columns="1"] {
+    grid-template-columns: max-content auto;
+  }
+  .week-view[columns="7"] {
+    grid-template-columns: max-content 0.33fr 3fr 2fr 1fr 1fr 1fr 1fr;
   }
   .day-header {
     padding: 16px;
