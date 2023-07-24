@@ -1,7 +1,8 @@
 import type { MailAccount } from './Mail/Account';
 import type { ChatAccount } from './Chat/Account';
-import type { VideoConfMeeting } from './Meet/VideoConfMeeting';
 import type { Person } from './Abstract/Person';
+import type { VideoConfMeeting } from './Meet/VideoConfMeeting';
+import type { Calendar } from './Calendar/Calendar';
 import type { Directory } from './Files/File';
 import { ArrayColl } from 'svelte-collections';
 import { getTestObjects } from './testData';
@@ -13,6 +14,7 @@ export class AppGlobal {
   AccountConfig: Object;
   emailAccounts = new ArrayColl<MailAccount>();
   chatAccounts = new ArrayColl<ChatAccount>();
+  calendars = new ArrayColl<Calendar>();
   meeting: VideoConfMeeting;
   persons = new ArrayColl<Person>();
   files = new ArrayColl<Directory>();
@@ -23,10 +25,12 @@ const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save
 
 export async function getStartObjects(): Promise<AppGlobal> {
   return getTestObjects();
+  /*
   let jpc = new JPCWebSocket(null);
   await jpc.connect(kSecret, "localhost", 5455);
   console.log("connected to server");
   appGlobal = await jpc.getRemoteStartObject();
   console.log("appGlobal", appGlobal);
   return appGlobal;
+  */
 }
