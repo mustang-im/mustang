@@ -15,7 +15,7 @@
   $: days, time, setStartTimes();
   function setStartTimes() {
     startTimes = [];
-    for (let day in days) {
+    for (let day of days) {
       let startTime = new Date(day);
       startTime.setHours(time.getHours());
       startTime.setMinutes(0);
