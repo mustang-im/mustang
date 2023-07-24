@@ -8,13 +8,15 @@ import { faker } from '@faker-js/faker';
 import { ContactEntry } from './Abstract/Person';
 import { Chat } from './Chat/Chat';
 import { VideoConfMeeting } from './Meet/VideoConfMeeting';
+import { Directory, File } from './Files/File';
 
 export async function getTestObjects(): Promise<AppGlobal> {
   let appGlobal = new AppGlobal();
+
+  /* Chat */
   let chatAccount = new ChatAccount();
-  appGlobal.emailAccounts = new MapColl<string, MailAccount>();
-  appGlobal.chatAccounts = new MapColl<string, ChatAccount>();
-  appGlobal.chatAccounts.set("Test chat 1", chatAccount);
+  chatAccount.name = "Test chat 1";
+  appGlobal.chatAccounts.add(chatAccount);
 
   for (let i = 1; i < 50; i++) {
     let person = new ChatPerson();
@@ -31,6 +33,8 @@ export async function getTestObjects(): Promise<AppGlobal> {
     let chat = new Chat();
     chatAccount.chats.set(person, chat);
     chatAccount.persons.add(person);
+    appGlobal.persons.add(person);
+
     let messages = chat.messages;
     for (let i = 1; i < 300; i++) {
       let msg = new ChatMessage();
@@ -45,6 +49,7 @@ export async function getTestObjects(): Promise<AppGlobal> {
     person.lastMessage = messages.sortBy(msg => msg.sent).reverse().first;
   }
 
+  /* Meet */
   let meet = new VideoConfMeeting();
   meet.ongoing = true;
   meet.started = new Date();
@@ -54,6 +59,36 @@ export async function getTestObjects(): Promise<AppGlobal> {
     meet.participants.add(chatAccount.persons.at(Math.floor(chatAccount.persons.length) * Math.random()));
   }
   appGlobal.meeting = meet;
+
+  /* Files */
+  let sharedDirectory = new Directory();
+  sharedDirectory.name = "shared";
+  sharedDirectory.id = "/shared";
+  appGlobal.files.add(sharedDirectory);
+  for (let person of appGlobal.persons) {
+    let personDirectory = new Directory();
+    personDirectory.name = person.name;
+    personDirectory.sentToFrom = person;
+    personDirectory.setParent(sharedDirectory);
+    appGlobal.files.add(personDirectory);
+    let dirCount = 2 + Math.random() * 10;
+    for (let i = 0; i < dirCount; i++) {
+      let directory = new Directory();
+      directory.name = faker.system.fileName({ extensionCount: 0 });
+      directory.sentToFrom = person;
+      directory.setParent(personDirectory);
+      let fileCount = 2 + Math.random() * 20;
+      for (let i = 0; i < fileCount; i++) {
+        let file = new File();
+        file.name = faker.system.commonFileName();
+        let parts = file.name.split(".");
+        file.ext = parts.pop();
+        file.nameWithoutExt = parts.join(".");
+        file.length = faker.datatype.number(40000000);
+        file.setParent(directory);
+      }
+    }
+  }
 
   return appGlobal;
 }
