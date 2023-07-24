@@ -1,30 +1,30 @@
 <vbox class="app">
-  <TitleBar bind:dateRange bind:dateInterval on:addEvent={addEvent} />
+  <TitleBar bind:showDate bind:dateInterval on:addEvent={addEvent} />
   <Scroll>
     {#if dateInterval == 1}
-      <WeekView start={dateRange} {events} showDays={1}/>
+      <WeekView start={showDate} {events} showDays={1}/>
     {:else if dateInterval == 7}
-      <WeekView start={dateRange} {events} />
+      <WeekView start={showDate} {events} />
     {:else if dateInterval == 28}
-      <MonthView start={dateRange} {events} showDays={28} />
+      <MonthView start={showDate} {events} showDays={28} />
     {:else if dateInterval == 31}
-      <MonthView start={dateRange} {events} />
+      <MonthView start={showDate} {events} />
     {:else}
-      <WeekView start={dateRange} {events} />
+      <WeekView start={showDate} {events} />
     {/if}
   </Scroll>
 </vbox>
 
 <script lang="ts">
+  import { appGlobal } from "../../logic/app";
+  import { selectedShowDate, selectedDateInterval } from "./selected";
   import TitleBar from "./TitleBar.svelte";
   import WeekView from "./WeekView.svelte";
   import MonthView from "./MonthView.svelte";
   import Scroll from "../Shared/Scroll.svelte";
-  import { appGlobal } from "../../logic/app";
-  
-  export let dateRange = new Date();
-  export let dateInterval: 1 | 7 | 31 | 28 = 7;
 
+  $: showDate = $selectedShowDate;
+  $: dateInterval = $selectedDateInterval;
   $: events = appGlobal.calendars.first.events.sortBy(ev => ev.startTime);
 
   function addEvent() {

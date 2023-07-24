@@ -27,6 +27,7 @@
   $: start, setStartTimes();
   function setStartTimes() {
     let startTime = new Date(start);
+    startTime.setHours(new Date().getHours()); // start with current hour
     startTime.setMinutes(0);
     startTime.setSeconds(0);
     startTime.setMilliseconds(0);
