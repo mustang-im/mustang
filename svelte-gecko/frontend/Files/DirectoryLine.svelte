@@ -1,8 +1,9 @@
-<hbox class="firstColumn">
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<hbox class="firstColumn" on:click={toggleOpen}>
   {#each {length: indent} as _}
     <hbox class="indention" />
   {/each}
-  <button class="expander icon" on:click={toggleOpen}>
+  <button class="expander icon" >
     {#if open}
       <Icon data={folderOpen} scale={1} />
     {:else}
@@ -49,8 +50,6 @@
   }
   .icon {
     margin-left: 16px;
-  }
-  button {
     border: none;
   }
   .indention {
