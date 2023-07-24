@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@faker-js/faker": "^7.6.0",
+    "@svelteuidev/composables": "^0.14.0",
+    "@svelteuidev/core": "^0.14.0",
     "jpc-ws": "https://github.com/benbucksch/jpc-ws/",
     "mustang-lib": "../lib/",
     "svelte-collections": "^1.1.16"
