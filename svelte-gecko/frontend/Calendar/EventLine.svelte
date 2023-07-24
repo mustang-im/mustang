@@ -11,9 +11,17 @@
 
 <style>
   .event {
-    background-color: yellow;
+    background-color: #ff7c0e;
+    color: black;
     border-bottom: 1px solid rgba(0, 0, 0, 15%);
     /*box-shadow: 1px 1px 4px 0px grey;*/
     padding: 4px;
+  }
+
+  @media (prefers-color-scheme: light) {
+    .event {
+      background-color: yellowgreen;
+      color: black;
+    }
   }
 </style>
