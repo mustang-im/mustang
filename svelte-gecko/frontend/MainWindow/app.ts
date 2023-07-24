@@ -6,7 +6,8 @@ export enum AppArea {
   Contacts = 3,
   Calendar = 4,
   Meet = 5,
-  Apps = 6,
+  Files = 6,
+  Apps = 7,
 }
 
 export const selectedApp = writable(AppArea.Mail);

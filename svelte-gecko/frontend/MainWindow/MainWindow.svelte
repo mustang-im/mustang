@@ -8,9 +8,11 @@
     {:else if selectedApp == AppArea.Meet}
       <MeetApp />
     {:else if selectedApp == AppArea.Contacts}
-      <ContactsApp persons={appGlobal.chatAccounts.first.persons} />
+      <ContactsApp persons={appGlobal.persons} />
     {:else if selectedApp == AppArea.Calendar}
       <CalendarApp />
+    {:else if selectedApp == AppArea.Files}
+      <FilesApp persons={appGlobal.persons} />
     {:else if selectedApp == AppArea.Apps}
       <AppsLauncher />
     {/if}
@@ -19,11 +21,12 @@
 
 <script lang="ts">
   import AppsLauncher from "../Apps/AppsLauncher.svelte";
-  import CalendarApp from "../Calendar/CalendarApp.svelte";
-  import ChatApp from "../Chat/ChatApp.svelte";
   import ContactsApp from "../Contacts/ContactsApp.svelte";
   import MailApp from "../Mail/MailApp.svelte";
+  import ChatApp from "../Chat/ChatApp.svelte";
   import MeetApp from "../Meet/MeetApp.svelte";
+  import CalendarApp from "../Calendar/CalendarApp.svelte";
+  import FilesApp from "../Files/FilesApp.svelte";
   import AppBar from "./AppBar.svelte";
   import { AppArea } from "./app";
   import { getTestObjects } from "../../logic/testData";

@@ -1,7 +1,9 @@
 import type { MailAccount } from './Mail/Account';
 import type { ChatAccount } from './Chat/Account';
 import type { VideoConfMeeting } from './Meet/VideoConfMeeting';
-import type { MapColl } from 'svelte-collections';
+import type { Person } from './Abstract/Person';
+import type { Directory } from './Files/File';
+import { ArrayColl } from 'svelte-collections';
 import { getTestObjects } from './testData';
 import JPCWebSocket from 'jpc-ws';
 
@@ -9,9 +11,11 @@ export class AppGlobal {
   addNewAccountFromConfig: Function;
   findAccountConfig: Function;
   AccountConfig: Object;
-  emailAccounts: MapColl<string, MailAccount>;
-  chatAccounts: MapColl<string, ChatAccount>;
+  emailAccounts = new ArrayColl<MailAccount>();
+  chatAccounts = new ArrayColl<ChatAccount>();
   meeting: VideoConfMeeting;
+  persons = new ArrayColl<Person>();
+  files = new ArrayColl<Directory>();
 }
 export let appGlobal = new AppGlobal();
 
