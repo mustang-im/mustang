@@ -1,4 +1,4 @@
-<grid class="week-view" columns={showDays}>
+<grid flex class="week-view" columns={showDays}>
   <hbox />
   {#each days as day}
     <vbox class="day-header">
@@ -20,7 +20,7 @@
   
   export let start: Date;
   export let events: Collection<Event>;
-  export let showDays: 1 | 7 = 7;
+  export let showDays: 1 | 2 | 7 = 7; // If you add new options, adapt styles below
   export let showHours = 8;
 
   let startTimes: Date[] = [];
@@ -62,13 +62,14 @@
     display: grid;
     grid-template-rows: max-content;
     grid-auto-rows: 1fr;
-    flex: 1 0 0;
-    margin: 32px;
     border-bottom: 1px dotted grey;
     border-right: 1px dotted grey;
   }
   .week-view[columns="1"] {
     grid-template-columns: max-content auto;
+  }
+  .week-view[columns="2"] {
+    grid-template-columns: max-content 3fr 1fr;
   }
   .week-view[columns="7"] {
     grid-template-columns: max-content 0.33fr 3fr 2fr 1fr 1fr 1fr 1fr;
