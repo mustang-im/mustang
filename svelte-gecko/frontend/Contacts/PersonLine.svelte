@@ -1,4 +1,4 @@
-<hbox class="person">
+<hbox flex class="person">
   <vbox class="image">
     <img
       src={person.picture}
@@ -6,8 +6,8 @@
       title="Picture of {person.name}"
       alt="Picture of {person.name}" />
   </vbox>
-  <vbox class="right">
-    <hbox class="name">{person.name}</hbox>
+  <vbox flex class="right">
+    <hbox flex class="name">{person.name}</hbox>
   </vbox>
 </hbox>
 
@@ -18,9 +18,6 @@
 </script>
 
 <style>
-  .person, .right, .name {
-    flex: 1 0 0;
-  }
   .image {
     width: 64px;
     height: 64px;

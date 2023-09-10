@@ -1,4 +1,4 @@
-<hbox class="contacts app">
+<hbox flex class="contacts app">
   <vbox class="left-pane">
     <PersonsList {persons} bind:selected={selectedPerson}/>
   </vbox>
@@ -24,9 +24,6 @@
 </script>
 
 <style>
-  .app {
-    flex: 1 0 0;
-  }
   .left-pane {
     flex: 1 0 0;
   }

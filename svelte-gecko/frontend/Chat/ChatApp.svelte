@@ -1,10 +1,10 @@
-<hbox class="chat app">
+<hbox flex class="chat app">
   <vbox class="left-pane">
     <PersonsList persons={personsSorted} bind:selected={selectedPerson}/>
   </vbox>
   <vbox class="right-pane">
     {#if messages && selectedPerson }
-      <vbox class="messages">
+      <vbox flex class="messages">
           <MessageList {messages} />
       </vbox>
       <vbox class="editor">
@@ -29,9 +29,6 @@
 </script>
 
 <style>
-  .app {
-    flex: 1 0 0;
-  }
   .left-pane {
     flex: 1 0 0;
   }
@@ -39,7 +36,6 @@
     flex: 2 0 0;
   }
   .messages {
-    flex: 1 0 0;
     background-color: #F3F3F3;
   }
   .editor {

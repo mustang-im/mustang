@@ -1,6 +1,6 @@
-<hbox class="main-window">
+<hbox flex class="main-window">
   <AppBar bind:selectedApp />
-  <vbox class="app-frame">
+  <vbox flex class="app-frame">
     {#if selectedApp == AppArea.Mail}
       <MailApp />
     {:else if selectedApp == AppArea.Chat}
@@ -44,10 +44,4 @@
 </script>
 
 <style>
-  .main-window {
-    flex: 1 0 0;
-  }
-  .app-frame {
-    flex: 1 0 0;
-  }
 </style>

@@ -30,7 +30,7 @@
     <hbox slot="icon"><Icon data={apps} scale={2} /></hbox>
     <hbox slot="label">Apps</hbox>
   </AppButton>
-  <vbox class="bottom">
+  <vbox flex class="bottom">
   </vbox>
 </vbox>
 
@@ -65,10 +65,9 @@
     padding-top: 16px;
     padding-bottom: 32px;
   }
+  .app-logo,
+  .app-bar :global(.app-button),
   .bottom {
-    flex: 1 0 0;
-  }
-  .app-logo, .app-bar :global(.app-button), .bottom {
     border-right: 1px solid grey;
   }
   .app-bar :global(.app-button.selected) {

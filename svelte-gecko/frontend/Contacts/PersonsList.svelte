@@ -1,4 +1,4 @@
-<vbox class="persons">
+<vbox flex class="persons">
   <Scroll>
     {#each persons.each as person}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -20,9 +20,6 @@
 </script>
 
 <style>
-  .persons {
-    flex: 1 0 0;
-  }
   .person {
     border-right: 1px solid grey;
   }

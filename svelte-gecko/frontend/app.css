@@ -42,7 +42,11 @@ hbox {
 }
 
 hbox.flex,
-vbox.flex {
+vbox.flex,
+grid.flex,
+hbox[flex],
+vbox[flex],
+grid[flex] {
   flex: 1 0 0;
 }
 

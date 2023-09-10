@@ -1,4 +1,4 @@
-<vbox class="messages">
+<vbox flex class="messages">
   <Scroll bind:this={scroller}>
     {#each $sortedMessages.each as message, i}
       <Message {message} previousMessage={sortedMessages.getIndex(i - 1)} />
@@ -26,7 +26,4 @@
 </script>
 
 <style>
-  .messages {
-    flex: 1 0 0;
-  }
 </style>

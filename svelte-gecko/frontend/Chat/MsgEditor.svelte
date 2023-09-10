@@ -1,8 +1,8 @@
-<hbox class="msg-editor">
+<hbox flex class="msg-editor">
   <textarea bind:value={to.draftMessage} placeholder="Write a message to {to.name}..." />
   <vbox class="send-buttons">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <hbox class="send-button" on:click={send}>
+    <hbox flex class="send-button" on:click={send}>
       <Icon data={sendIcon} scale={1.5} />
     </hbox>
   </vbox>
@@ -35,7 +35,6 @@
 
 <style>
   .msg-editor {
-    flex: 1 0 0;
     background-color: #EEEEEE;
     padding: 10px;
   }
@@ -49,8 +48,5 @@
   .send-buttons {
     align-self: center;
     margin-left: 10px;
-  }
-  .send-button {
-    flex: 1 0 0;
   }
 </style>

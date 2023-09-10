@@ -1,4 +1,4 @@
-<vbox class="message-display">
+<vbox flex class="message-display">
   <MessageHeader {message} />
   <MessageBody {message} />
 </vbox>
@@ -12,7 +12,4 @@
 </script>
 
 <style>
-  .message-display {
-    flex: 1 0 0;
-  }
 </style>

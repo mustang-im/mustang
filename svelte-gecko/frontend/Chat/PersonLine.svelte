@@ -1,4 +1,4 @@
-<hbox class="person">
+<hbox flex class="person">
   <vbox class="image">
     <img
       src={person.picture}
@@ -6,15 +6,15 @@
       title="Picture of {person.name}"
       alt="Picture of {person.name}" />
   </vbox>
-  <vbox class="right">
+  <vbox flex class="right">
     <hbox class="right-top">
-      <hbox class="name">{person.name}</hbox>
+      <hbox flex class="name">{person.name}</hbox>
       {#if person.lastMessage}
         <hbox class="last-time">{getDateString(person.lastMessage.sent)}</hbox>
       {/if}
     </hbox>
     {#if person.lastMessage}
-      <hbox class="last-msg">{person.lastMessage.text.substring(0, 50)}</hbox>
+      <hbox flex class="last-msg">{person.lastMessage.text.substring(0, 50)}</hbox>
     {/if}
   </vbox>
 </hbox>
@@ -27,9 +27,6 @@
 </script>
 
 <style>
-  .person, .right, .name, .last-msg {
-    flex: 1 0 0;
-  }
   .image {
     width: 64px;
     height: 64px;
@@ -40,8 +37,6 @@
     margin-top: 5px;
     padding: 10px;
     border-bottom: 1px dotted lightgray;
-  }
-  .name {
   }
   .last-time {
     opacity: 50%;

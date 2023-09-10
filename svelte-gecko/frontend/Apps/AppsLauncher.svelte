@@ -1,4 +1,4 @@
-<vbox class="app">
+<vbox flex class="app">
   Various web apps, configurable by the user
 </vbox>
 
@@ -6,7 +6,4 @@
 </script>
 
 <style>
-  .app {
-    flex: 1 0 0;
-  }
 </style>
