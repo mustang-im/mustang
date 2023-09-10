@@ -1,4 +1,4 @@
-<vbox class="folder-list">
+<vbox flex class="folder-list">
   <FastList items={folders} selectedItem={selectedFolder}>
     <svelte:fragment slot="header">
       <hbox>Folders</hbox>
@@ -19,7 +19,4 @@
 </script>
 
 <style>
-  .folder-list {
-    flex: 1 0 0;
-  }
 </style>

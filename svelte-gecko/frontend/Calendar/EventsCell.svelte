@@ -1,4 +1,4 @@
-<vbox class="events">
+<vbox flex class="events">
   {#if displayEvents && !displayEvents.isEmpty}
     <Scroll>
       {#each displayEvents.each as event (event.id)}
@@ -32,6 +32,5 @@
   .events {
     border-top: 1px dotted grey;
     border-left: 1px dotted grey;
-    flex: 1 0 0;
   }
 </style>

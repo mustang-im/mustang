@@ -4,7 +4,7 @@
   </hbox>
 {/if}
 
-<hbox class="message" class:incoming={!message.outgoing} class:outgoing={message.outgoing} class:followup={followup}>
+<hbox flex class="message" class:incoming={!message.outgoing} class:outgoing={message.outgoing} class:followup={followup}>
   {#if !message.outgoing && !followup}
     <vbox class="avatar">
       <img
@@ -47,7 +47,6 @@
 <style>
   /** Speech bubble */
   .message {
-    flex: 1 0 0;
     margin: 15px 30px 0 30px;
     padding: 3px 10px;
     max-width: 70%;

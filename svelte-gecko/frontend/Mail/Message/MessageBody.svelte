@@ -1,5 +1,5 @@
-<vbox class="message-body">
-  <div class="msg-body-plaintext value">
+<vbox flex class="message-body">
+  <div flex class="msg-body-plaintext value">
     {plaintext || ''}
   </div>
   <!-- svelte-ignore a11y-missing-attribute -->
@@ -25,11 +25,9 @@
 
 <style>
   .message-body {
-    flex: 1 0 0;
     overflow: auto;
   }
   .msg-body-plaintext {
-    flex: 1 0 0;
   }
   .msg-body-frame {
     display: none;

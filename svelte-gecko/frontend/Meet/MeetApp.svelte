@@ -1,4 +1,4 @@
-<vbox class="app">
+<vbox flex class="app">
   {#if appGlobal.meeting }
     <vbox class="participants">
       {#each appGlobal.meeting.participants.each as participant (participant.id)}
@@ -16,9 +16,6 @@
 </script>
 
 <style>
-  .app {
-    flex: 1 0 0;
-  }
   .participants {
     display: grid;
     grid-template-columns: auto auto auto;

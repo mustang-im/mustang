@@ -1,4 +1,4 @@
-<vbox class="message-list">
+<vbox flex class="message-list">
   <FastList items={testMessages} selectedItem={selectedMessage}>
     <svelte:fragment slot="header">
       <hbox>From</hbox>
@@ -54,7 +54,6 @@
 
 <style>
   .message-list {
-    flex: 1 0 0;
     border-left: 1px solid grey;
     border-right: 1px solid grey;
   }

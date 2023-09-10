@@ -1,9 +1,9 @@
-<vbox class="participant">
+<vbox flex class="participant">
   <Stack>
     <vbox class="video">
       <img src={participant.picture} alt={participant.name} />
     </vbox>
-    <vbox class="name-container">
+    <vbox flex class="name-container">
       <hbox class="name">{participant.name}</hbox>
     </vbox>
   </Stack>
@@ -18,12 +18,10 @@ export let participant: Person;
 
 <style>
   .participant {
-    flex: 1 0 0;
     width: 33%;
     height: 50%;
   }
   .name-container {
-    flex: 1 0 0;
     align-items: end;
     justify-content: end;
     align-self: end;

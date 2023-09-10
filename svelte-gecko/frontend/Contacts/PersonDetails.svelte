@@ -1,5 +1,5 @@
-<vbox class="person-page">
-  <vbox class="person-info">
+<vbox flex class="person-page">
+  <vbox flex class="person-info">
     <h1 class="name">{person.name}</h1>
     <hbox class="main-info">
       <vbox class="image">
@@ -9,7 +9,7 @@
           title="Picture of {person.name}"
           alt="Picture of {person.name}" />
       </vbox>
-      <vbox class="names">
+      <vbox flex class="names">
         <grid>
           <hbox class="label">First name</hbox>
           <hbox class="field name">{person.firstName}</hbox>
@@ -44,13 +44,13 @@
           {/each}
           <hbox></hbox>
           <hbox></hbox>
-          <hbox class="actions">
+          <hbox flex class="actions">
             <button class="simple">+</button>
           </hbox>
       </grid>
       </vbox>
     
-      <vbox class="contact-list">
+      <vbox flex class="contact-list">
         <h3>Email addresses</h3>
         <grid>
           {#each person.emailAddresses.each as entry}
@@ -64,29 +64,29 @@
           {/each}
           <hbox></hbox>
           <hbox></hbox>
-          <hbox class="actions">
+          <hbox flex class="actions">
             <button class="simple">+</button>
           </hbox>
         </grid>
       </vbox>
     </hbox>
 
-    <vbox class="notes">
+    <vbox flex class="notes">
       <h3>Notes</h3>
       <textarea bind:value={person.notes} />
     </vbox>
   </vbox>
 
-  <vbox class="recent-messages">
+  <vbox flex class="recent-messages">
     {#if mailMessages }
-      <vbox class="mails">
+      <vbox flex class="mails">
         <h3>Mails</h3>
       </vbox>
     {/if}
     {#if chatMessages }
-      <vbox class="chat">
+      <vbox flex class="chat">
         <h3>Chat</h3>
-        <vbox class="chat-messages">
+        <vbox flex class="chat-messages">
             <MessageList messages={chatMessages} />
         </vbox>
         <vbox class="editor">
@@ -125,17 +125,6 @@
 </script>
 
 <style>
-  .person-page,
-  .person-info,
-  .names,
-  .contact-list .actions,
-  .notes,
-  .recent-messages,
-  .chat,
-  .chat-messages,
-  .mails {
-    flex: 1 0 0;
-  }
   .person-info,
   .recent-messages h3 {
     margin-left: 32px;
@@ -181,7 +170,6 @@
     grid-template-columns: 1fr 2fr;
   }
   .contact-list {
-    flex: 1 0 0;
     margin: 16px 24px 24px 0;
   }
   .contact-list grid {

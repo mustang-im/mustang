@@ -1,4 +1,4 @@
-<hbox class="mail-app">
+<hbox flex class="mail-app">
   <vbox class="folder-pane">
     <ProjectList />
     <AccountList {accounts} bind:selectedAccount />
@@ -70,9 +70,6 @@
 </script>
 
 <style>
-  .mail-app {
-    flex: 1 0 0;
-  }
   .folder-pane {
     flex: 1 0 0;
     max-width: 15em;
