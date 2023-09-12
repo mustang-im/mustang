@@ -1,12 +1,23 @@
-<hbox class="event">
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<hbox class="event" on:click={onSelect} on:dblclick={onOpen}>
   {event.startTime.toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric" })}
   {event.title}
 </hbox>
 
 <script lang="ts">
   import type { Event } from "../../logic/Calendar/Event";
+  import { editingEvent, selectedEvent } from "./selected";
 
   export let event: Event;
+
+  function onSelect() {
+    $selectedEvent = event;
+  }
+
+  function onOpen() {
+    $selectedEvent = event;
+    $editingEvent = event;
+  }
 </script>
 
 <style>
