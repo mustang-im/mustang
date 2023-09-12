@@ -41,6 +41,10 @@ hbox {
   flex-direction: row;
 }
 
+grid {
+  display: grid;
+}
+
 hbox.flex,
 vbox.flex,
 grid.flex,
