@@ -9,6 +9,10 @@ export class Person {
   phoneNumbers = new ArrayColl<ContactEntry>();
   notes = "";
   picture: string; // URL
+
+  toString() {
+    return this.name;
+  }
 }
 
 export class ContactEntry {
