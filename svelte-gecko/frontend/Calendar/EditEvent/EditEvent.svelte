@@ -11,7 +11,7 @@
         <input placeholder="Title - Enter the topic of the meeting" bind:value={event.title} />
       </hbox>
       <vbox class="participants">
-        <input placeholder="Add a participant or group" />
+        <ParticipantAutocomplete />
         <grid class="participants-list">
           {#each event.participants as participant (participant.id)}
             <ParticipantDisplay {participant} />
@@ -33,7 +33,7 @@
 
         <label for="duration">Duration</label>
         <hbox>
-          <input type="number" bind:value={durationInUnit} on:change={durationUnit.onChange} min={0} id="duration" />
+          <input type="number" bind:value={durationInUnit} on:input={durationUnit.onChange} min={0} id="duration" />
           <DurationUnit bind:durationInSeconds={event.duration} bind:durationInUnit bind:this={durationUnit} />
         </hbox>
       </grid>
@@ -56,6 +56,7 @@
   import TimeInput from "./TimeInput.svelte";
   import DurationUnit from "./DurationUnit.svelte";
   import { Button, Checkbox } from "@svelteuidev/core";
+  import ParticipantAutocomplete from "./ParticipantAutocomplete.svelte";
 
   export let event: Event;
 
