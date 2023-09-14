@@ -18,6 +18,20 @@
           {/each}
         </grid>
       </vbox>
+      <vbox class="location">
+        <hbox class="online">
+          <Checkbox bind:checked={event.isOnline} label="Online" />
+          <input type="url" bind:value={event.onlineMeetingURL} disabled={!event.isOnline} placeholder="Meeting URL" />
+          <Button on:click={onCopyMeetingURL} disabled={!event.isOnline || !event.onlineMeetingURL}>Copy</Button>
+        </hbox>
+        <hbox class="presence">
+          <Checkbox checked={!!event.location} disabled={!event.location} label="In Presence" />
+          <input type="url" bind:value={event.location} placeholder="Location" />
+        </hbox>
+      </vbox>
+      <vbox class="description">
+        <textarea class="descriptionText" bind:value={event.descriptionText} />
+      </vbox>
     </vbox>
     <vbox flex class="right-pane">
       <hbox>When</hbox>
@@ -74,6 +88,10 @@
     console.log("added " + person, person);
   }
 
+  function onCopyMeetingURL() {
+    new Clipboard().writeText(event.onlineMeetingURL);
+  }
+
   function onClose() {
     $editingEvent = null;
   }
@@ -105,11 +123,13 @@
   .participants {
     margin-top: 32px;
   }
-  .participants input {
-    font-size: 120%;
-  }
   .participants-list {
-    min-height: 256px;
+    min-height: 128px;
+  }
+  .descriptionText {
+    min-height: 10em;
+    border: 1px solid lightgrey;
+    margin-top: 32px;
   }
   grid.time {
     grid-template-columns: max-content 1fr;

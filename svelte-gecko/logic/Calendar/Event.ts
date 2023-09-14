@@ -15,6 +15,8 @@ export class Event {
   alarm: Date = null;
 
   location: string;
+  isOnline = false;
+  isPresence = false;
   onlineMeetingURL: string;
   participants = new ArrayColl<Person>();
   lastMod = new Date();
