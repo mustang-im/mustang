@@ -1,7 +1,7 @@
 <hbox class="participant-autocomplete">
   <Autocomplete
     search={search}
-    bind:value
+    bind:value={person}
     showMenuWithNoInput={false}
     >
     <hbox slot="loading">Loading...</hbox>
@@ -17,10 +17,11 @@
   import ParticipantDisplay from "./ParticipantDisplay.svelte";
   import Autocomplete from '@smui-extra/autocomplete';
 
-  let inputE: HTMLInputElement;
-  let value: Person;
-
-  $: console.log("new value", value);
+  /**
+   * out
+   * The person that the user selected.
+   * null, if nothing selected. */
+  export let person: Person;
 
   export async function search(inputStr: string): Promise<Person[]> {
     try {
@@ -31,7 +32,10 @@
       console.log("Got", results.length, "results for", inputStr);
       return results.contents;
     } catch (ex) {
-      inputE.setCustomValidity(ex.message);
+      console.error(ex);
+      alert(ex.message);
+      //inputE.setCustomValidity(ex.message ?? ex + "");
+      //inputE.reportValidity();
     }
   }
 </script>

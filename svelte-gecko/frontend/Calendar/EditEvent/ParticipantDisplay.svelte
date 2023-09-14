@@ -17,7 +17,7 @@
 </hbox>
 
 <script lang="ts">
-  import type { Person } from "../../logic/Abstract/Person";
+  import type { Person } from "../../../logic/Abstract/Person";
 
   export let participant: Person;
 </script>

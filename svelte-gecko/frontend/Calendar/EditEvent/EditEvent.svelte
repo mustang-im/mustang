@@ -11,7 +11,7 @@
         <input placeholder="Title - Enter the topic of the meeting" bind:value={event.title} />
       </hbox>
       <vbox class="participants">
-        <ParticipantAutocomplete />
+        <ParticipantAutocomplete bind:person={personToAdd} />
         <grid class="participants-list">
           {#each event.participants as participant (participant.id)}
             <ParticipantDisplay {participant} />
@@ -52,6 +52,7 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { editingEvent } from "../selected";
+  import type { Person } from "../../../logic/Abstract/Person";
   import ParticipantDisplay from "./ParticipantDisplay.svelte";
   import TimeInput from "./TimeInput.svelte";
   import DurationUnit from "./DurationUnit.svelte";
@@ -62,6 +63,16 @@
 
   let durationUnit: DurationUnit;
   let durationInUnit: number;
+  let personToAdd: Person;
+
+  $: personToAdd && onAddPerson(personToAdd);
+  function onAddPerson(person: Person) {
+    if (!person || event.participants.includes(person)) {
+      return;
+    }
+    event.participants.add(person);
+    console.log("added " + person, person);
+  }
 
   function onClose() {
     $editingEvent = null;
