@@ -2,6 +2,7 @@
   <Autocomplete
     search={search}
     bind:value={person}
+    placeholder="Add participants"
     showMenuWithNoInput={false}
     >
     <hbox slot="loading">Loading...</hbox>
