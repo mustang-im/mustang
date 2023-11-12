@@ -14,7 +14,7 @@
         alt="Picture of {message.contact.name}" />
     </vbox>
   {/if}
-  <vbox class="bubble">
+  <vbox class="right">
     {#if !followup}
       <hbox class="meta">
         {#if !message.outgoing}
@@ -23,7 +23,9 @@
         <hbox class="time">{getDateString(message.sent)}</hbox>
       </hbox>
     {/if}
-    <hbox class="text">{@html message.html }</hbox>
+    <vbox class="bubble">
+      <hbox class="text">{@html message.html }</hbox>
+    </vbox>
   </vbox>
 </hbox>
 
@@ -47,11 +49,11 @@
 <style>
   .message {
     margin: 15px 30px 0 20px;
-    position: relative;
     color: black;
   }
   /** Speech bubble */
   .bubble {
+    position: relative; /* arrows are relative to this */
     border-bottom-right-radius: 12px;
     border-bottom-left-radius: 12px;
     box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 15%);
@@ -60,48 +62,44 @@
   .incoming {
     align-self: flex-start;
   }
-  .incoming > .bubble {
-    background-color: white;
+  .incoming .bubble {
+    background-color: rgba(255, 255, 255, 90%);
     border-top-right-radius: 12px;
   }
   .outgoing {
     align-self: flex-end;
   }
-  .outgoing > .bubble {
+  .outgoing .bubble {
     background-color: #d6d5dc;
     border-top-left-radius: 12px;
   }
   .message.followup {
-    border-top: none;
-    border-top-left-radius: 0px;
+    margin-top: 3px;
   }
 
   /** Speech bubble arrow */
-  .message:not(.followup) > .bubble::before {
+  .message:not(.followup) .bubble::before {
     content: '';
-    position: absolute;
+    position: absolute; /* relative to .bubble position: relative */
     border-style: solid;
   }
-  .incoming > .bubble::before {
+  .incoming .bubble::before {
     top: 0;
-    left: 42px;
+    left: -10px;
     border-width: 10px 0 0 10px;
     border-color: white transparent transparent transparent;
   }
-  .outgoing > .bubble::before {
+  .outgoing .bubble::before {
     top: 0;
     left: 100%;
     border-width: 10px 10px 0 0;
     border-color: #d6d5dc transparent transparent transparent;
   }
-  .outgoing > .bubble::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 100%;
-    border-width: 10px 10px 0 0;
-    border-style: solid;
-    border-color: #d6d5dc transparent transparent transparent;
+  .incoming.followup .bubble {
+    border-top-left-radius: 12px;
+  }
+  .outgoing.followup .bubble {
+    border-top-right-radius: 12px;
   }
 
   .avatar {
@@ -117,15 +115,18 @@
   }
   .meta {
     margin-bottom: 2px;
+    font-size: x-small;
+    color: #999999;
+  }
+  .incoming .meta {
+    margin-left: 10px;
+  }
+  .outgoing .meta {
+    justify-content: end;
+    margin-right: 10px;
   }
   .from {
-    font-size: x-small;
-    font-weight: bold;
     margin-right: 16px;
-  }
-  .time {
-    font-size: x-small;
-    color: gray;
   }
   .text {
     font-size: smaller;
@@ -138,7 +139,7 @@
     margin: 20px 20px 0px 20px;
     padding: 5px;
     font-size: smaller;
-    color: gray;
+    color: #999999;
     border-top: 1px dotted lightgray;
   }
 </style>
