@@ -6,7 +6,7 @@
 
 <hbox flex class="message" class:incoming={!message.outgoing} class:outgoing={message.outgoing} class:followup>
   {#if !message.outgoing && !followup}
-    <vbox class="avatar">
+    <vbox hidden class="avatar">
       <img
         src={message.contact.picture}
         width="32" height="32"
@@ -14,7 +14,7 @@
         alt="Picture of {message.contact.name}" />
     </vbox>
   {/if}
-  <vbox class="right">
+  <vbox class="bubble">
     {#if !followup}
       <hbox class="meta">
         {#if !message.outgoing}
@@ -45,25 +45,29 @@
 </script>
 
 <style>
-  /** Speech bubble */
   .message {
-    margin: 15px 30px 0 30px;
-    padding: 3px 10px;
-    max-width: 70%;
+    margin: 15px 30px 0 20px;
+    position: relative;
+    color: black;
+  }
+  /** Speech bubble */
+  .bubble {
     border-bottom-right-radius: 12px;
     border-bottom-left-radius: 12px;
     box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 15%);
     padding: 10px 15px;
-    position: relative;
-    color: black;
   }
   .incoming {
     align-self: flex-start;
+  }
+  .incoming > .bubble {
     background-color: white;
     border-top-right-radius: 12px;
   }
   .outgoing {
     align-self: flex-end;
+  }
+  .outgoing > .bubble {
     background-color: #d6d5dc;
     border-top-left-radius: 12px;
   }
@@ -71,21 +75,26 @@
     border-top: none;
     border-top-left-radius: 0px;
   }
-  .message.followup.incoming {
-    padding-left: 56px;
-  }
 
   /** Speech bubble arrow */
-  .incoming::before {
+  .message:not(.followup) > .bubble::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: -10px;
-    border-width: 10px 0 0 10px;
     border-style: solid;
+  }
+  .incoming > .bubble::before {
+    top: 0;
+    left: 42px;
+    border-width: 10px 0 0 10px;
     border-color: white transparent transparent transparent;
   }
-  .outgoing::before {
+  .outgoing > .bubble::before {
+    top: 0;
+    left: 100%;
+    border-width: 10px 10px 0 0;
+    border-color: #d6d5dc transparent transparent transparent;
+  }
+  .outgoing > .bubble::before {
     content: '';
     position: absolute;
     top: 0;
@@ -99,8 +108,12 @@
     width: 32px;
     height: 32px;
     margin-top: 3px;
-    margin-right: 10px;
+    margin-right: 20px;
     clip-path: circle();
+  }
+  .message.followup.incoming {
+    /* no avatar */
+    padding-left: 52px;
   }
   .meta {
     margin-bottom: 2px;
