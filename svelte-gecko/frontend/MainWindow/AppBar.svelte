@@ -67,6 +67,6 @@
   .app-logo,
   .app-bar :global(.app-button),
   .bottom {
-    border-right: 1px solid grey;
+    border-right: 1px dotted grey;
   }
 </style>

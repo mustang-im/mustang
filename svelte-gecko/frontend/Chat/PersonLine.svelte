@@ -37,7 +37,6 @@
   .right {
     margin-top: 0px;
     padding: 10px;
-    border-bottom: 1px dotted lightgray;
   }
   .last-time {
     opacity: 50%;
