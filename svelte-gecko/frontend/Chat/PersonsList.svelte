@@ -24,7 +24,8 @@
     border-right: 1px dotted lightgray;
   }
   .person.selected {
-    background-color: #F3F3F3;
+    background-color: #20AE9E;
+    color: white;
     box-shadow: 1px 1px 5px 0px rgba(0, 0, 0, 15%);
   }
 </style>
