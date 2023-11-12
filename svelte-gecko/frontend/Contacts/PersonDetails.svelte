@@ -77,24 +77,6 @@
     </vbox>
   </vbox>
 
-  <vbox flex class="recent-messages">
-    {#if mailMessages }
-      <vbox flex class="mails">
-        <h3>Mails</h3>
-      </vbox>
-    {/if}
-    {#if chatMessages }
-      <vbox flex class="chat">
-        <h3>Chat</h3>
-        <vbox flex class="chat-messages">
-            <MessageList messages={chatMessages} />
-        </vbox>
-        <vbox class="editor">
-          <MsgEditor to={chatPerson} from={chatAccount} />
-        </vbox>
-      </vbox>
-    {/if}
-  </vbox>
 </vbox>
 
 <script lang="ts">
@@ -104,9 +86,6 @@
   import EmailAddressEdit from "./EmailAddressEdit.svelte";
   import PhoneNumberDisplay from "./PhoneNumberDisplay.svelte";
   import PhoneNumberEdit from "./PhoneNumberEdit.svelte";
-  import MessageList from "../Chat/MessageView/MessageList.svelte";
-  import MsgEditor from "../Chat/MsgEditor.svelte";
-  import { appGlobal } from "../../logic/app";
 
   export let person: Person;
   $: person.name = person.firstName + " " + person.lastName;
@@ -117,16 +96,10 @@
     $: preferredEmailAddress = person.emailAddresses.isEmpty ? null :
     person.emailAddresses.find(p => p.preferred)?.value ||
     person.emailAddresses.first.value;
-
-  $: chatAccount = appGlobal.chatAccounts?.first;
-  $: chatPerson = chatAccount?.persons.find(p => p.id == person.id);
-  $: chatMessages = chatAccount?.chats.get(chatPerson)?.messages;
-  $: mailMessages = null;
 </script>
 
 <style>
-  .person-info,
-  .recent-messages h3 {
+  .person-info {
     margin-left: 32px;
     margin-right: 32px;
   }
