@@ -62,7 +62,7 @@
     position: relative; /* arrows are relative to this */
     border-bottom-right-radius: 12px;
     border-bottom-left-radius: 12px;
-    padding: 10px 15px;
+    padding: 7px 15px;
   }
   .incoming .bubble {
     background-color: rgba(255, 255, 255, 90%);
@@ -139,7 +139,7 @@
     justify-content: center;
     margin: 20px 20px 0px 20px;
     padding: 5px;
-    font-size: smaller;
+    font-size: small;
     color: #999999;
     border-top: 1px dotted lightgray;
   }
