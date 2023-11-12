@@ -73,8 +73,9 @@ label,
 input,
 textarea,
 value,
-.value {
-  user-select: unset;
+.value,
+.selectable {
+  user-select: text;
 }
 
 a[href] {
