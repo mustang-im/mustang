@@ -4,6 +4,7 @@
   </vbox>
   <vbox class="right-pane">
     {#if messages && selectedPerson }
+      <Header person={selectedPerson} />
       <vbox flex class="messages">
           <MessageList {messages} />
       </vbox>
@@ -18,6 +19,7 @@
   import type { ChatAccount } from "../../logic/Chat/Account";
   import type { ChatPerson } from "../../logic/Chat/Person";
   import PersonsList from "./PersonsList.svelte";
+  import Header from "./PersonHeader.svelte";
   import MessageList from "./MessageView/MessageList.svelte";
   import MsgEditor from "./MsgEditor.svelte";
 
