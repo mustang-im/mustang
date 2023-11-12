@@ -26,4 +26,8 @@
 </script>
 
 <style>
+.messages {
+  background: url(background-repeat.png) repeat;
+  background-color: #EEEEEE;
+}
 </style>
