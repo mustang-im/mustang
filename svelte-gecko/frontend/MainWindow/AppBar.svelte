@@ -3,32 +3,32 @@
     <Icon data={logo} scale={2} />
   </vbox>
   <AppButton on:click={() => openApp(AppArea.Contacts)} selected={selectedApp == AppArea.Contacts}>
-    <hbox slot="icon"><Icon data={contacts} scale={2} /></hbox>
-    <hbox slot="label">Contacts</hbox>
+    <hbox slot="icon" class="icon"><Icon data={contacts} scale={2} /></hbox>
+    <hbox slot="label" class="label">Contacts</hbox>
   </AppButton>
   <AppButton on:click={() => openApp(AppArea.Mail)} selected={selectedApp == AppArea.Mail}>
-    <hbox slot="icon"><Icon data={mail} scale={2} /></hbox>
-    <hbox slot="label">Mail</hbox>
+    <hbox slot="icon" class="icon"><Icon data={mail} scale={2} /></hbox>
+    <hbox slot="label" class="label">Mail</hbox>
   </AppButton>
   <AppButton on:click={() => openApp(AppArea.Chat)} selected={selectedApp == AppArea.Chat}>
-    <hbox slot="icon"><Icon data={chat} scale={2} /></hbox>
-    <hbox slot="label">Chat</hbox>
+    <hbox slot="icon" class="icon"><Icon data={chat} scale={2} /></hbox>
+    <hbox slot="label" class="label">Chat</hbox>
   </AppButton>
   <AppButton on:click={() => openApp(AppArea.Meet)} selected={selectedApp == AppArea.Meet}>
-    <hbox slot="icon"><Icon data={meet} scale={2} /></hbox>
-    <hbox slot="label">Meet</hbox>
+    <hbox slot="icon" class="icon"><Icon data={meet} scale={2} /></hbox>
+    <hbox slot="label" class="label">Meet</hbox>
   </AppButton>
   <AppButton on:click={() => openApp(AppArea.Calendar)} selected={selectedApp == AppArea.Calendar}>
-    <hbox slot="icon"><Icon data={calendar} scale={2} /></hbox>
-    <hbox slot="label">Calendar</hbox>
+    <hbox slot="icon" class="icon"><Icon data={calendar} scale={2} /></hbox>
+    <hbox slot="label" class="label">Calendar</hbox>
   </AppButton>
   <AppButton on:click={() => openApp(AppArea.Files)} selected={selectedApp == AppArea.Files}>
-    <hbox slot="icon"><Icon data={files} scale={2} /></hbox>
-    <hbox slot="label">Files</hbox>
+    <hbox slot="icon" class="icon"><Icon data={files} scale={2} /></hbox>
+    <hbox slot="label" class="label">Files</hbox>
   </AppButton>
   <AppButton on:click={() => openApp(AppArea.Apps)} selected={selectedApp == AppArea.Apps}>
-    <hbox slot="icon"><Icon data={apps} scale={2} /></hbox>
-    <hbox slot="label">Apps</hbox>
+    <hbox slot="icon" class="icon"><Icon data={apps} scale={2} /></hbox>
+    <hbox slot="label" class="label">Apps</hbox>
   </AppButton>
   <vbox flex class="bottom">
   </vbox>
@@ -57,8 +57,7 @@
 <style>
   .app-bar {
     width: 80px;
-    /*background-color: darkblue;
-    color: white;*/
+    background-color: #ccc7d2;
   }
   .app-logo {
     align-items: center;
@@ -69,10 +68,5 @@
   .app-bar :global(.app-button),
   .bottom {
     border-right: 1px solid grey;
-  }
-  .app-bar :global(.app-button.selected) {
-    border-right: none;
-    border-top: 1px solid grey;
-    border-bottom: 1px solid grey;
   }
 </style>

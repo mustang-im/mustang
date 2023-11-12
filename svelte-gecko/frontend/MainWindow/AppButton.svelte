@@ -18,10 +18,17 @@
     padding: 8px;
   }
   .app-button:hover {
-    background-color: rgba(0, 0, 0, 20%);
+    background-color: rgba(255, 255, 255, 25%);
+  }
+  .app-button.selected {
+    background-color: rgba(255, 255, 255, 50%);
   }
   .label {
     margin-top: 4px;
-    opacity: 70%;
+    font-size: 10px;
+    color: #999999;
+  }
+  .selected .label {
+    color: black;
   }
 </style>
