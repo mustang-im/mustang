@@ -1,33 +1,33 @@
 <vbox class="app-bar">
   <vbox class="app-logo">
-    <Icon data={logo} scale={2} />
+    <Icon data={logo} size="48px" />
   </vbox>
   <AppButton on:click={() => openApp(AppArea.Contacts)} selected={selectedApp == AppArea.Contacts}>
-    <hbox slot="icon" class="icon"><Icon data={contacts} scale={2} /></hbox>
+    <hbox slot="icon" class="icon"><Icon data={contacts} size="32px" /></hbox>
     <hbox slot="label" class="label">Contacts</hbox>
   </AppButton>
   <AppButton on:click={() => openApp(AppArea.Mail)} selected={selectedApp == AppArea.Mail}>
-    <hbox slot="icon" class="icon"><Icon data={mail} scale={2} /></hbox>
+    <hbox slot="icon" class="icon"><Icon data={mail} size="32px" /></hbox>
     <hbox slot="label" class="label">Mail</hbox>
   </AppButton>
   <AppButton on:click={() => openApp(AppArea.Chat)} selected={selectedApp == AppArea.Chat}>
-    <hbox slot="icon" class="icon"><Icon data={chat} scale={2} /></hbox>
+    <hbox slot="icon" class="icon"><Icon data={chat} size="32px" /></hbox>
     <hbox slot="label" class="label">Chat</hbox>
   </AppButton>
   <AppButton on:click={() => openApp(AppArea.Meet)} selected={selectedApp == AppArea.Meet}>
-    <hbox slot="icon" class="icon"><Icon data={meet} scale={2} /></hbox>
+    <hbox slot="icon" class="icon"><Icon data={meet} size="32px" /></hbox>
     <hbox slot="label" class="label">Meet</hbox>
   </AppButton>
   <AppButton on:click={() => openApp(AppArea.Calendar)} selected={selectedApp == AppArea.Calendar}>
-    <hbox slot="icon" class="icon"><Icon data={calendar} scale={2} /></hbox>
+    <hbox slot="icon" class="icon"><Icon data={calendar} size="32px" /></hbox>
     <hbox slot="label" class="label">Calendar</hbox>
   </AppButton>
   <AppButton on:click={() => openApp(AppArea.Files)} selected={selectedApp == AppArea.Files}>
-    <hbox slot="icon" class="icon"><Icon data={files} scale={2} /></hbox>
+    <hbox slot="icon" class="icon"><Icon data={fileShare} size="32px" /></hbox>
     <hbox slot="label" class="label">Files</hbox>
   </AppButton>
   <AppButton on:click={() => openApp(AppArea.Apps)} selected={selectedApp == AppArea.Apps}>
-    <hbox slot="icon" class="icon"><Icon data={apps} scale={2} /></hbox>
+    <hbox slot="icon" class="icon"><Icon data={appsLauncher} size="32px" /></hbox>
     <hbox slot="label" class="label">Apps</hbox>
   </AppButton>
   <vbox flex class="bottom">
@@ -37,15 +37,15 @@
 <script lang="ts">
   import { AppArea } from "./app";
   import AppButton from "./AppButton.svelte";
-  import Icon from 'svelte-awesome';
-  import mail from 'svelte-awesome/icons/envelopeO';
-  import chat from 'svelte-awesome/icons/commentO';
-  import contacts from 'svelte-awesome/icons/userO';
-  import calendar from 'svelte-awesome/icons/calendarCheckO';
-  import meet from 'svelte-awesome/icons/videoCamera';
-  import files from 'svelte-awesome/icons/filesO';
-  import apps from 'svelte-awesome/icons/cubes';
-  import logo from 'svelte-awesome/icons/plane';
+  import Icon from 'svelte-icon/Icon.svelte';
+  import logo from '../asset/icon/general/logo.svg?raw';
+  import mail from '../asset/icon/appBar/mail.svg?raw';
+  import chat from '../asset/icon/appBar/chat.svg?raw';
+  import contacts from '../asset/icon/appBar/contacts.svg?raw';
+  import calendar from '../asset/icon/appBar/calendar.svg?raw';
+  import meet from '../asset/icon/appBar/meet.svg?raw';
+  import fileShare from '../asset/icon/appBar/fileShare.svg?raw';
+  import appsLauncher from '../asset/icon/appBar/appsLauncher.svg?raw';
 
   export let selectedApp: AppArea;
 

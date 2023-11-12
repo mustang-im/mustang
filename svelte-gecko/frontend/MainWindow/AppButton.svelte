@@ -23,6 +23,9 @@
   .app-button.selected {
     background-color: rgba(255, 255, 255, 50%);
   }
+  .icon {
+    color: transparent;
+  }
   .label {
     margin-top: 4px;
     font-size: 10px;
