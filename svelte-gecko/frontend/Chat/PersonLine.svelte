@@ -28,23 +28,25 @@
 
 <style>
   .image {
-    width: 64px;
-    height: 64px;
-    margin: 10px;
+    width: 56px;
+    height: 56px;
+    margin: 7px;
+    margin-left: 12px;
     clip-path: circle();
   }
   .right {
-    margin-top: 5px;
+    margin-top: 0px;
     padding: 10px;
     border-bottom: 1px dotted lightgray;
   }
   .last-time {
     opacity: 50%;
-    font-size: smaller;
+    font-size: x-small;
+    margin-top: 3px;
   }
   .last-msg {
     opacity: 50%;
-    font-size: smaller;
+    font-size: small;
     max-height: 1.8em;
     overflow: hidden;
     text-overflow: ellipsis;
