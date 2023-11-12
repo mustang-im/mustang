@@ -50,10 +50,9 @@
     margin: 15px 30px 0 30px;
     padding: 3px 10px;
     max-width: 70%;
-    border: 1px solid white;
-    border-bottom-right-radius: 10px;
-    border-bottom-left-radius: 10px;
-    box-shadow: 2px 2px 5px 0px rgba(0, 0, 0, 15%);
+    border-bottom-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+    box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 15%);
     padding: 10px 15px;
     position: relative;
     color: black;
@@ -61,12 +60,12 @@
   .incoming {
     align-self: flex-start;
     background-color: white;
-    border-top-right-radius: 10px;
+    border-top-right-radius: 12px;
   }
   .outgoing {
     align-self: flex-end;
-    background-color: papayawhip;
-    border-top-left-radius: 10px;
+    background-color: #d6d5dc;
+    border-top-left-radius: 12px;
   }
   .message.followup {
     border-top: none;
@@ -93,7 +92,7 @@
     left: 100%;
     border-width: 10px 10px 0 0;
     border-style: solid;
-    border-color: papayawhip transparent transparent transparent;
+    border-color: #d6d5dc transparent transparent transparent;
   }
 
   .avatar {
