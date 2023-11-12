@@ -4,7 +4,7 @@
   </hbox>
 {/if}
 
-<hbox flex class="message" class:incoming={!message.outgoing} class:outgoing={message.outgoing} class:followup={followup}>
+<hbox flex class="message" class:incoming={!message.outgoing} class:outgoing={message.outgoing} class:followup>
   {#if !message.outgoing && !followup}
     <vbox class="avatar">
       <img
@@ -51,7 +51,8 @@
     padding: 3px 10px;
     max-width: 70%;
     border: 1px solid white;
-    border-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
     box-shadow: 2px 2px 5px 0px rgba(0, 0, 0, 15%);
     padding: 10px 15px;
     position: relative;
@@ -60,13 +61,14 @@
   .incoming {
     align-self: flex-start;
     background-color: white;
+    border-top-right-radius: 10px;
   }
   .outgoing {
     align-self: flex-end;
     background-color: papayawhip;
+    border-top-left-radius: 10px;
   }
   .message.followup {
-    margin-top: -3px;
     border-top: none;
     border-top-left-radius: 0px;
   }
@@ -78,18 +80,18 @@
   .incoming::before {
     content: '';
     position: absolute;
-    top: 100%;
-    left: 10px;
-    border-width: 10px 10px 0 0;
+    top: 0;
+    left: -10px;
+    border-width: 10px 0 0 10px;
     border-style: solid;
     border-color: white transparent transparent transparent;
   }
   .outgoing::before {
     content: '';
     position: absolute;
-    top: 100%;
-    right: 10px;
-    border-width: 10px 0 0 10px;
+    top: 0;
+    left: 100%;
+    border-width: 10px 10px 0 0;
     border-style: solid;
     border-color: papayawhip transparent transparent transparent;
   }
