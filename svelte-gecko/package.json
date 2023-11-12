@@ -16,7 +16,8 @@
     "@svelteuidev/core": "^0.14.0",
     "jpc-ws": "https://github.com/benbucksch/jpc-ws/",
     "mustang-lib": "../lib/",
-    "svelte-collections": "^1.1.16"
+    "svelte-collections": "^1.1.16",
+    "svelte-icon": "^2.0.0"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.3",
