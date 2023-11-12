@@ -3,31 +3,31 @@
     <Icon data={logo} size="48px" />
   </vbox>
   <AppButton on:click={() => openApp(AppArea.Contacts)} selected={selectedApp == AppArea.Contacts}>
-    <hbox slot="icon" class="icon"><Icon data={contacts} size="32px" /></hbox>
+    <hbox slot="icon" class="icon"><Icon data={contacts} size="24px" /></hbox>
     <hbox slot="label" class="label">Contacts</hbox>
   </AppButton>
   <AppButton on:click={() => openApp(AppArea.Mail)} selected={selectedApp == AppArea.Mail}>
-    <hbox slot="icon" class="icon"><Icon data={mail} size="32px" /></hbox>
+    <hbox slot="icon" class="icon"><Icon data={mail} size="24px" /></hbox>
     <hbox slot="label" class="label">Mail</hbox>
   </AppButton>
   <AppButton on:click={() => openApp(AppArea.Chat)} selected={selectedApp == AppArea.Chat}>
-    <hbox slot="icon" class="icon"><Icon data={chat} size="32px" /></hbox>
+    <hbox slot="icon" class="icon"><Icon data={chat} size="24px" /></hbox>
     <hbox slot="label" class="label">Chat</hbox>
   </AppButton>
   <AppButton on:click={() => openApp(AppArea.Meet)} selected={selectedApp == AppArea.Meet}>
-    <hbox slot="icon" class="icon"><Icon data={meet} size="32px" /></hbox>
+    <hbox slot="icon" class="icon"><Icon data={meet} size="24px" /></hbox>
     <hbox slot="label" class="label">Meet</hbox>
   </AppButton>
   <AppButton on:click={() => openApp(AppArea.Calendar)} selected={selectedApp == AppArea.Calendar}>
-    <hbox slot="icon" class="icon"><Icon data={calendar} size="32px" /></hbox>
+    <hbox slot="icon" class="icon"><Icon data={calendar} size="24px" /></hbox>
     <hbox slot="label" class="label">Calendar</hbox>
   </AppButton>
   <AppButton on:click={() => openApp(AppArea.Files)} selected={selectedApp == AppArea.Files}>
-    <hbox slot="icon" class="icon"><Icon data={fileShare} size="32px" /></hbox>
+    <hbox slot="icon" class="icon"><Icon data={fileShare} size="24px" /></hbox>
     <hbox slot="label" class="label">Files</hbox>
   </AppButton>
   <AppButton on:click={() => openApp(AppArea.Apps)} selected={selectedApp == AppArea.Apps}>
-    <hbox slot="icon" class="icon"><Icon data={appsLauncher} size="32px" /></hbox>
+    <hbox slot="icon" class="icon"><Icon data={appsLauncher} size="24px" /></hbox>
     <hbox slot="label" class="label">Apps</hbox>
   </AppButton>
   <vbox flex class="bottom">
