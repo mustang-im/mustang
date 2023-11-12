@@ -24,7 +24,7 @@
       </hbox>
     {/if}
     <vbox class="bubble">
-      <hbox class="text">{@html message.html }</hbox>
+      <hbox class="text selectable">{@html message.html }</hbox>
     </vbox>
   </vbox>
 </hbox>
