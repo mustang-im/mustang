@@ -1,23 +1,14 @@
-<vbox flex class="app">
-  {#if appGlobal.meeting }
-    <vbox class="participants">
-      {#each appGlobal.meeting.participants.each as participant (participant.id)}
-        <Participant {participant} />
-      {/each}
-    </vbox>
-  {:else}
-    Start meeting with somebody
-  {/if}
-</vbox>
+{#if appGlobal.meeting && false}
+  <InMeeting />
+{:else}
+  <StartScreen />
+{/if}
 
 <script lang="ts">
   import { appGlobal } from "../../logic/app";
-  import Participant from "./Participant.svelte";
+  import InMeeting from "./InMeeting.svelte";
+  import StartScreen from "./Start/StartScreen.svelte";
 </script>
 
 <style>
-  .participants {
-    display: grid;
-    grid-template-columns: auto auto auto;
-  }
 </style>
