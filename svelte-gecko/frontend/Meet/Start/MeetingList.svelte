@@ -1,6 +1,6 @@
-{#if meetings.length > 1}
+{#if $meetings.length > 1}
   <grid>
-    {#each meetings.each as meeting}
+    {#each $meetings.each as meeting}
       <hbox>{meeting.startTime.toLocaleTimeString()} - {meeting.endTime.toLocaleTimeString()}</hbox>
       <hbox>{meeting.title}</hbox>
     {/each}

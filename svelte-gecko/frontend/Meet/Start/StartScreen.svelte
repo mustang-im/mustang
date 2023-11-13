@@ -2,7 +2,7 @@
   <vbox flex class="actions-container">
     <vbox class="actions">
       <Button label="Plan a meeting" icon={add} />
-      <Button label="Start an ad-hoc meeting" icon={camera} />
+      <Button label="Start an ad-hoc meeting" icon={camera} on:click={startAdHocMeeting}/>
       <hbox>
         <input id="meeting-link" type="url" placeholder="Enter meeting link to join" />
         <Button label="Join" />
@@ -35,12 +35,18 @@
   import camera from '../../asset/icon/meet/videoCall.svg?raw';
   import add from '../../asset/icon/calendar/addToCalendar.svg?raw';
   import settings from '../../asset/icon/general/settings.svg?raw';
+  import { VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
 
   const now = new Date();
   const maxUpcoming = new Date(); // TODO now + 8 hours
   const maxPrevious = new Date(); // TODO now - 14 days
   const upcomingMeetings = appGlobal.calendars.map(calendar => calendar.events.filter(event => event.startTime > now && event.startTime < maxUpcoming));
   const previousMeetings = appGlobal.calendars.map(calendar => calendar.events.filter(event => event.startTime < now && event.startTime > maxPrevious));
+
+  function startAdHocMeeting() {
+    let meeting = VideoConfMeeting.createAdhoc();
+    appGlobal.meetings.add(meeting);
+  }
 </script>
 
 <style>

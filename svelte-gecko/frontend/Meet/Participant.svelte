@@ -17,10 +17,6 @@ export let participant: Person;
 </script>
 
 <style>
-  .participant {
-    width: 33%;
-    height: 50%;
-  }
   .name-container {
     align-items: end;
     justify-content: end;

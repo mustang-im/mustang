@@ -6,4 +6,11 @@ export class VideoConfMeeting {
   started: Date;
   ended: Date;
   participants = new SetColl<Person>();
+
+  static createAdhoc() {
+    let meet = new VideoConfMeeting();
+    meet.ongoing = true;
+    meet.started = new Date();
+    return meet;
+  }
 }
