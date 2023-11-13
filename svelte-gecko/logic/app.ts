@@ -15,7 +15,7 @@ export class AppGlobal {
   emailAccounts = new ArrayColl<MailAccount>();
   chatAccounts = new ArrayColl<ChatAccount>();
   calendars = new ArrayColl<Calendar>();
-  meeting: VideoConfMeeting;
+  meetings = new ArrayColl<VideoConfMeeting>();
   persons = new ArrayColl<Person>();
   files = new ArrayColl<Directory>();
 }

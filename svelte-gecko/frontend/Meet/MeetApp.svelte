@@ -1,5 +1,5 @@
-{#if appGlobal.meeting && false}
-  <InMeeting />
+{#if meeting}
+  <InMeeting {meeting}/>
 {:else}
   <StartScreen />
 {/if}
@@ -8,6 +8,9 @@
   import { appGlobal } from "../../logic/app";
   import InMeeting from "./InMeeting.svelte";
   import StartScreen from "./Start/StartScreen.svelte";
+
+  $: meetings = appGlobal.meetings;
+  $: meeting = $meetings.first;
 </script>
 
 <style>
