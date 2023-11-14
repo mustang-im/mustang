@@ -58,7 +58,7 @@
   .app-bar {
     width: 80px;
     background-color: #ccc7d2;
-    /* box-shadow: inset 2px 3px 20px 0px rgba(22, 12, 39, 21%); /* #160C27 */
+    box-shadow: 1px 0px 3px 0px rgba(22, 12, 39, 20%); /* #160C27 */
     padding-top: 8px;
   }
   .app-logo {

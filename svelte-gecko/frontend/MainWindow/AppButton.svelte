@@ -20,6 +20,9 @@
   .app-button:hover {
     background-color: rgba(255, 255, 255, 25%);
   }
+  .app-button:hover .label {
+    color: black;
+  }
   .app-button.selected {
     background-color: rgba(255, 255, 255, 50%);
   }
