@@ -7,6 +7,9 @@
 </vbox>
 <hbox class="actions">
   <hbox flex />
+  <Button label="Mute" classes="toggle-mic" iconOnly on:click={toggleMic} />
+  <Button label="Camera" classes="toggle-camera" iconOnly on:click={toggleCamera} />
+  <Button label="Hand" classes="raise-hand" iconOnly on:click={toggleHand} />
   <Button label="Add participant" classes="add-participant" on:click={addParticipant} />
   <hbox flex />
   <Button label="Leave" classes="leave" on:click={leave} />
@@ -21,6 +24,9 @@
   export let meeting: VideoConfMeeting;
 
   $: participants = meeting.participants;
+  let micOn = false;
+  let cameraOn = false;
+  let handRaised = false;
 
   $: columns = calculateColumns($participants.length);
   function calculateColumns(count: number) {
@@ -49,6 +55,18 @@
   function leave() {
     appGlobal.meetings.remove(meeting);
   }
+
+  function toggleMic() {
+    micOn = !micOn;
+  }
+
+  function toggleCamera() {
+    cameraOn = !cameraOn;
+  }
+
+  function toggleHand() {
+    handRaised = !handRaised;
+  }
 </script>
 
 <style>
@@ -58,6 +76,9 @@
   }
   .actions {
     margin: 8px;
+  }
+  .actions :global(> *) {
+    margin-right: 4px;
   }
   .actions :global(.leave) {
     background-color: #FF7777;
