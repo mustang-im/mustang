@@ -15,11 +15,6 @@
         </vbox>
       </hbox>
       <vbox flex class="main-right">
-        <vbox class="preferred">
-          <hbox>Preferred communication tool</hbox>
-          <hbox>WhatsApp</hbox>
-          <hbox>[o] Notifications</hbox>
-        </vbox>
         <hbox class="main-call">
           <Button label="Video call" iconOnly>
             <Icon data={camera} slot="icon" size="24px" />
@@ -156,6 +151,18 @@
         </hbox>
       </grid>
     </GroupBox>
+
+    <GroupBox classes="preferences">
+      <hbox class="subtitle">
+        <Icon data={chat} size="16px" />
+        <h3>Preferences</h3>
+      </hbox>
+      <vbox class="preferred">
+        <hbox>Preferred communication tool</hbox>
+        <hbox>WhatsApp</hbox>
+        <hbox>[o] Notifications</hbox>
+      </vbox>
+  </GroupBox>
 
   </grid>
 
