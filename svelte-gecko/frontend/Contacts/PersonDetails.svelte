@@ -59,7 +59,10 @@
 
   <grid class="boxes">
     <GroupBox classes="phone">
-      <h3>📞 Phone numbers</h3>
+      <hbox class="subtitle">
+        <hbox>📞</hbox>
+        <h3>Phone numbers</h3>
+      </hbox>
       <grid class="items">
         {#each person.phoneNumbers.each as entry}
           <ContactEntryUI {entry}>
@@ -76,7 +79,10 @@
     </GroupBox>
 
     <GroupBox classes="email">
-      <h3><Icon data={mail} size="16px" /> Mail</h3>
+      <hbox class="subtitle">
+        <Icon data={mail} size="16px" />
+        <h3>Mail</h3>
+      </hbox>
       <grid class="items">
         {#each person.emailAddresses.each as entry}
           <ContactEntryUI {entry}>
@@ -93,7 +99,10 @@
     </GroupBox>
 
     <GroupBox classes="chat">
-      <h3><Icon data={chat} size="16px" />Chat</h3>
+      <hbox class="subtitle">
+        <Icon data={chat} size="16px" />
+        <h3>Chat</h3>
+      </hbox>
       <grid class="items">
         {#each person.chatAccount.each as entry}
           <ContactEntryUI {entry}>
@@ -110,7 +119,10 @@
     </GroupBox>
 
     <GroupBox classes="categories">
-      <h3><Icon data={contacts} size="16px" />Groups</h3>
+      <hbox class="subtitle">
+        <Icon data={contacts} size="16px" />
+        <h3>Groups</h3>
+      </hbox>
       <grid class="items">
         {#each person.groups.each as entry}
           <ContactEntryUI {entry}>
@@ -126,7 +138,10 @@
     </GroupBox>
 
     <GroupBox classes="street-addresses">
-      <h3>Street addresses</h3>
+      <hbox class="subtitle">
+        <Icon data={mail} size="16px" />
+        <h3>Street addresses</h3>
+      </hbox>
       <grid class="items">
         {#each person.streetAddresses.each as entry}
           <ContactEntryUI {entry}>
@@ -219,12 +234,14 @@
   grid.boxes {
     grid-template-columns: 1fr 1fr;
   }
+  .subtitle {
+    align-items: center;
+  }
   h3 {
-    margin: 0 0 4px 0;
+    margin-left: 10px;
     font-size: 14px;
   }
   h3 > :global(svg) {
-    margin-right: 8px;
     color: transparent;
   }
   .notes {
