@@ -28,11 +28,13 @@ export async function getTestObjects(): Promise<AppGlobal> {
     person.emailAddresses.add(new ContactEntry(faker.internet.email(person.firstName, person.lastName), "home"));
     person.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-170-### ####'), "mobile"));
     person.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-###-######'), "work"));
-    person.chatAccount.add(new ContactEntry("WhatsApp", person.phoneNumbers.first.value));
-    person.chatAccount.add(new ContactEntry("Teams", person.emailAddresses.first.value));
-    person.groups.add(new ContactEntry("Mustang", faker.company.name()));
-    person.groups.add(new ContactEntry("WhatsApp", faker.company.name()));
-    person.groups.add(new ContactEntry("Teams", faker.company.name()));
+    person.chatAccount.add(new ContactEntry(person.phoneNumbers.first.value, "WhatsApp"));
+    person.chatAccount.add(new ContactEntry(person.emailAddresses.first.value, "Teams"));
+    person.groups.add(new ContactEntry(faker.company.name(), "Mustang"));
+    person.groups.add(new ContactEntry(faker.company.name(), "WhatsApp"));
+    person.groups.add(new ContactEntry(faker.company.name(), "Teams"));
+    let address = faker.address.streetAddress() + "\n" + faker.address.zipCode() + " " + faker.address.cityName();
+    person.streetAddresses.add(new ContactEntry(address, "home"));
     person.picture = faker.image.avatar();
 
     let chat = new Chat();

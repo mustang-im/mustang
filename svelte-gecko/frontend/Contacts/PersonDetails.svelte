@@ -87,7 +87,7 @@
     <GroupBox classes="chat">
       <h3><Icon data={chat} size="16px" />Chat</h3>
       <grid class="items">
-        {#each person.emailAddresses.each as entry}
+        {#each person.chatAccount.each as entry}
           <ContactEntryUI {entry}>
             <EmailAddressDisplay slot="display" value={entry.value} />
             <EmailAddressEdit slot="edit" bind:value={entry.value} />
@@ -104,7 +104,22 @@
       <grid class="items">
         {#each person.groups.each as entry}
           <ContactEntryUI {entry}>
-            <hbox slot="display" value={entry.value} />
+            <hbox slot="display">{entry.value}</hbox>
+          </ContactEntryUI>
+        {/each}
+        <hbox flex class="actions">
+          <button class="simple">+</button>
+        </hbox>
+      </grid>
+    </GroupBox>
+
+    <GroupBox classes="street-addresses">
+      <h3>Street addresses</h3>
+      <grid class="items">
+        {#each person.streetAddresses.each as entry}
+          <ContactEntryUI {entry}>
+            <StreetAddressDisplay slot="display" value={entry.value} />
+            <StreetAddressEdit slot="edit" bind:value={entry.value} />
           </ContactEntryUI>
         {/each}
         <hbox flex class="actions">
@@ -133,6 +148,8 @@
   import mail from '../asset/icon/appBar/mail.svg?raw';
   import chat from '../asset/icon/appBar/chat.svg?raw';
   import contacts from '../asset/icon/appBar/contacts.svg?raw';
+  import StreetAddressDisplay from "./StreetAddressDisplay.svelte";
+  import StreetAddressEdit from "./StreetAddressEdit.svelte";
 
   export let person: Person;
   $: person.name = person.firstName + " " + person.lastName;
@@ -198,6 +215,7 @@
   }
   .notes textarea {
     height: 100%;
+    min-height: 10em;
     width: 100%;
     border: none;
     font-family: sans-serif;
