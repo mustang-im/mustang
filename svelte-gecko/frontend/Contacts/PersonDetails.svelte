@@ -21,19 +21,23 @@
           <hbox>[o] Notifications</hbox>
         </vbox>
         <hbox class="main-call">
+          <Button label="Video call" iconOnly>
+            <Icon data={camera} slot="icon" size="24px" />
+          </Button>
           {#if preferredPhoneNumber}
             <a href="tel:{preferredPhoneNumber}">
               <Button label="Call" iconOnly>
-                <hbox slot="icon">📞</hbox>
+                <hbox slot="icon" style="font-size: 20px; width: 24px; height: 24px; align-items: center; justify-content: center;">📞</hbox>
               </Button>
             </a>
           {/if}
-          <Button label="Video call" />
-          <Button label="Message" />
+          <Button label="Message" iconOnly>
+            <Icon data={chat} slot="icon" size="24px" />
+          </Button>
           {#if preferredEmailAddress}
             <a href="tel:{preferredEmailAddress}">
-              <Button label="Send Mail" iconOnly>
-                <hbox slot="icon">✉</hbox>
+              <Button label="Send mail" iconOnly>
+                <Icon data={mail} slot="icon" size="24px" />
               </Button>
             </a>
           {/if}
@@ -64,7 +68,7 @@
           </ContactEntryUI>
         {/each}
         <hbox flex class="actions">
-          <Button on:click={addEmail} iconOnly plain>
+          <Button on:click={addEmail} iconOnly plain classes="add">
             <hbox slot="icon">+</hbox>
           </Button>
         </hbox>
@@ -81,7 +85,7 @@
           </ContactEntryUI>
         {/each}
         <hbox flex class="actions">
-          <Button on:click={addEmail} iconOnly plain>
+          <Button on:click={addEmail} iconOnly plain classes="add">
             <hbox slot="icon">+</hbox>
           </Button>
         </hbox>
@@ -98,7 +102,7 @@
           </ContactEntryUI>
         {/each}
         <hbox flex class="actions">
-          <Button on:click={addEmail} iconOnly plain>
+          <Button on:click={addEmail} iconOnly plain classes="add">
             <hbox slot="icon">+</hbox>
           </Button>
         </hbox>
@@ -114,7 +118,7 @@
           </ContactEntryUI>
         {/each}
         <hbox flex class="actions">
-          <Button on:click={addEmail} iconOnly plain>
+          <Button on:click={addEmail} iconOnly plain classes="add">
             <hbox slot="icon">+</hbox>
           </Button>
         </hbox>
@@ -131,7 +135,7 @@
           </ContactEntryUI>
         {/each}
         <hbox flex class="actions">
-          <Button on:click={addEmail} iconOnly plain>
+          <Button on:click={addEmail} iconOnly plain classes="add">
             <hbox slot="icon">+</hbox>
           </Button>
         </hbox>
@@ -158,6 +162,7 @@
   import mail from '../asset/icon/appBar/mail.svg?raw';
   import chat from '../asset/icon/appBar/chat.svg?raw';
   import contacts from '../asset/icon/appBar/contacts.svg?raw';
+  import camera from '../asset/icon/appBar/meet.svg?raw';
   import StreetAddressDisplay from "./StreetAddressDisplay.svelte";
   import StreetAddressEdit from "./StreetAddressEdit.svelte";
 
@@ -254,8 +259,15 @@
   .actions {
     margin-top: 8px;
   }
-  .preferred,
-  .actions button.simple {
+  .person-page :global(.group button) {
+    color: #333333;
+  }
+  .person-page :global(.group button.add),
+  .preferred {
     color: grey;
+  }
+
+  .person-page :global(svg) { /* TODO fix icons */
+    color: transparent;
   }
 </style>

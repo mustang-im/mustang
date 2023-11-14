@@ -1,5 +1,5 @@
-<button on:click on:dblclick class="button {classes}" class:plain>
-  <hbox class="icon" title={label}>
+<button on:click on:dblclick class="button {classes}" class:plain title={label}>
+  <hbox class="icon">
     {#if icon}
       <Icon data={icon} size={iconSize} />
     {:else}
@@ -46,7 +46,7 @@
     background-color: rgba(32, 174, 158, 50%); /* #20AE9E */
   }
   .icon {
-    margin-right: 8px;
+    margin-right: 0px;
   }
   button.plain .icon {
     margin-right: 0;
