@@ -149,6 +149,10 @@
   .person-page {
     margin: 8px;
     font-size: 14px;
+    background: url(../asset/chat/background-repeat.jpg) repeat;
+  }
+  .person-page :global(.group) {
+    background-color: white;
   }
   .image {
     width: 128px;
