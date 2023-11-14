@@ -9,7 +9,7 @@
   <hbox class="value edit">
     <slot name="edit" />
   </hbox>
-  <hbox>
+  <hbox class="actions">
     <button on:click={stopEditing} class="simple">✓</button>
     <button on:click={remove} class="simple">x</button>
   </hbox>
@@ -80,5 +80,11 @@
 
   button {
     margin-left: 5px;
+  }
+
+  .value.edit :global(input) { /* TODO does not apply */
+    border: none;
+    border-bottom: 2px solid #20AE9E;
+    /* background-color: rgba(32, 174, 158, 20%); /* #20AE9E */
   }
 </style>
