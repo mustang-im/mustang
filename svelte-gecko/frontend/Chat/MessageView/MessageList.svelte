@@ -27,7 +27,7 @@
 
 <style>
 .messages {
-  background: url(background-repeat.png) repeat;
+  background: url(../../asset/chat/background-repeat.jpg) repeat;
   background-color: #EEEEEE;
 }
 </style>
