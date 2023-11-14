@@ -10,19 +10,21 @@
     <hbox flex class="name">{person.name}</hbox>
   </vbox>
   <hbox class="actions">
-    <Icon data={videoCall} size="32px" />
+    <RoundButton label="Video call" icon={meet} iconSize="24px" filled />
   </hbox>
   <vbox flex />
   <hbox class="right">
-    <Icon data={settings} size="32px" />
+    <Button label="Settings" icon={settings} iconSize="32px" plain iconOnly/>
   </hbox>
 </hbox>
 
 <script lang="ts">
   import type { ChatPerson } from "../../logic/Chat/Person";
   import Icon from 'svelte-icon/Icon.svelte';
-  import videoCall from '../asset/icon/meet/videoCall.svg?raw';
+  import meet from '../asset/icon/appBar/meet.svg?raw';
   import settings from '../asset/icon/general/settings.svg?raw';
+  import RoundButton from "../Shared/RoundButton.svelte";
+  import Button from "../Shared/Button.svelte";
 
   export let person: ChatPerson;
 </script>

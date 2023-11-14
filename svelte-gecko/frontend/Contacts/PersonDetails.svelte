@@ -16,24 +16,18 @@
       </hbox>
       <vbox flex class="main-right">
         <hbox class="main-call">
-          <Button label="Video call" iconOnly>
-            <Icon data={camera} slot="icon" size="24px" />
-          </Button>
+          <RoundButton label="Video call" icon={camera} iconSize="24px" />
           {#if preferredPhoneNumber}
             <a href="tel:{preferredPhoneNumber}">
-              <Button label="Call" iconOnly>
+              <RoundButton label="Call">
                 <hbox slot="icon" style="font-size: 20px; width: 24px; height: 24px; align-items: center; justify-content: center;">📞</hbox>
-              </Button>
+              </RoundButton>
             </a>
           {/if}
-          <Button label="Message" iconOnly>
-            <Icon data={chat} slot="icon" size="24px" />
-          </Button>
+          <RoundButton label="Message" icon={chat} iconSize="24px" />
           {#if preferredEmailAddress}
             <a href="mailto:{preferredEmailAddress}">
-              <Button label="Send mail" iconOnly>
-                <Icon data={mail} slot="icon" size="24px" />
-              </Button>
+              <RoundButton label="Send mail" icon={mail} iconSize="24px" />
             </a>
           {/if}
         </hbox>
@@ -187,6 +181,7 @@
   import camera from '../asset/icon/appBar/meet.svg?raw';
   import StreetAddressDisplay from "./StreetAddressDisplay.svelte";
   import StreetAddressEdit from "./StreetAddressEdit.svelte";
+  import RoundButton from "../Shared/RoundButton.svelte";
 
   export let person: Person;
   $: person.name = person.firstName + " " + person.lastName;
