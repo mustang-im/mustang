@@ -1,23 +1,26 @@
-<hbox flex class="main-window">
-  <AppBar bind:selectedApp />
-  <vbox flex class="app-frame">
-    {#if selectedApp == AppArea.Mail}
-      <MailApp />
-    {:else if selectedApp == AppArea.Chat}
-      <ChatApp account={appGlobal.chatAccounts.first} />
-    {:else if selectedApp == AppArea.Meet}
-      <MeetApp />
-    {:else if selectedApp == AppArea.Contacts}
-      <ContactsApp persons={appGlobal.persons} />
-    {:else if selectedApp == AppArea.Calendar}
-      <CalendarApp />
-    {:else if selectedApp == AppArea.Files}
-      <FilesApp persons={appGlobal.persons} />
-    {:else if selectedApp == AppArea.Apps}
-      <AppsLauncher />
-    {/if}
-  </vbox>
-</hbox>
+<vbox flex>
+  <WindowHeader {selectedApp} />
+  <hbox flex class="main-window">
+    <AppBar bind:selectedApp />
+    <vbox flex class="app-frame">
+      {#if selectedApp == AppArea.Mail}
+        <MailApp />
+      {:else if selectedApp == AppArea.Chat}
+        <ChatApp account={appGlobal.chatAccounts.first} />
+      {:else if selectedApp == AppArea.Meet}
+        <MeetApp />
+      {:else if selectedApp == AppArea.Contacts}
+        <ContactsApp persons={appGlobal.persons} />
+      {:else if selectedApp == AppArea.Calendar}
+        <CalendarApp />
+      {:else if selectedApp == AppArea.Files}
+        <FilesApp persons={appGlobal.persons} />
+      {:else if selectedApp == AppArea.Apps}
+        <AppsLauncher />
+      {/if}
+    </vbox>
+  </hbox>
+</vbox>
 
 <script lang="ts">
   import AppsLauncher from "../Apps/AppsLauncher.svelte";
@@ -32,6 +35,7 @@
   import { getTestObjects } from "../../logic/testData";
   import { appGlobal } from "../../logic/app";
   import { onMount } from "svelte";
+  import WindowHeader from "./WindowHeader.svelte";
 
   let selectedApp = AppArea.Mail;
 

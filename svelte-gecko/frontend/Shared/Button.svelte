@@ -1,15 +1,17 @@
 <button on:click on:dblclick class="button {classes}" class:plain>
-  <hbox class="icon">
+  <hbox class="icon" title={label}>
     {#if icon}
       <Icon data={icon} size={iconSize} />
     {:else}
       <slot name="icon" />
     {/if}
   </hbox>
-  {#if label}
-    <hbox class="label">{label}</hbox>
-  {:else}
-    <slot name="label" />
+  {#if !iconOnly}
+    {#if label}
+      <hbox class="label">{label}</hbox>
+    {:else}
+      <slot name="label" />
+    {/if}
   {/if}
 </button>
 
@@ -21,6 +23,7 @@
   export let classes = "";
   export let plain = false;
   export let iconSize = "16px";
+  export let iconOnly = false;
 </script>
 
 <style>

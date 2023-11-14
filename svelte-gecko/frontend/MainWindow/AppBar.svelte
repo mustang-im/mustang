@@ -1,7 +1,7 @@
 <vbox class="app-bar">
-  <vbox class="app-logo">
+  <!-- vbox class="app-logo">
     <Icon data={logo} size="48px" />
-  </vbox>
+  </vbox -->
   <AppButton on:click={() => openApp(AppArea.Contacts)} selected={selectedApp == AppArea.Contacts}>
     <hbox slot="icon" class="icon"><Icon data={contacts} size="24px" /></hbox>
     <hbox slot="label" class="label">Contacts</hbox>
@@ -58,6 +58,8 @@
   .app-bar {
     width: 80px;
     background-color: #ccc7d2;
+    /* box-shadow: inset 2px 3px 20px 0px rgba(22, 12, 39, 21%); /* #160C27 */
+    padding-top: 8px;
   }
   .app-logo {
     align-items: center;
