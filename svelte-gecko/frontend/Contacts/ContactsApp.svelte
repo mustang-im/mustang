@@ -4,7 +4,9 @@
   </vbox>
   <vbox class="right-pane">
     {#if selectedPerson}
-      <PersonDetails person={selectedPerson} />
+      <Scroll>
+        <PersonDetails person={selectedPerson} />
+      </Scroll>
     {/if}
   </vbox>
 </hbox>
@@ -14,6 +16,7 @@
   import PersonsList from "./PersonsList.svelte";
   import PersonDetails from "./PersonDetails.svelte";
   import type { Collection } from "svelte-collections";
+  import Scroll from "../Shared/Scroll.svelte";
 
   export let persons: Collection<Person>;
 
