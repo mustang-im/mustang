@@ -38,6 +38,9 @@
     margin-top: 0px;
     padding: 10px;
   }
+  .name {
+    font-size: 14px;
+  }
   .last-time {
     opacity: 50%;
     font-size: x-small;
@@ -45,7 +48,8 @@
   }
   .last-msg {
     opacity: 50%;
-    font-size: small;
+    margin-top: 0px;
+    font-size: 11.5px;
     max-height: 1.8em;
     overflow: hidden;
     text-overflow: ellipsis;

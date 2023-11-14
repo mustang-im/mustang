@@ -11,13 +11,17 @@
   </hbox>
   <hbox>
     <button on:click={stopEditing} class="simple">✓</button>
+    <button on:click={remove} class="simple">x</button>
   </hbox>
 {:else}
   <hbox class="purpose display">{displayPurpose(entry.purpose)}</hbox>
-  <slot name="display" />
+  <hbox class="value">
+    <slot name="display" />
+  </hbox>
   <hbox class="actions">
-    <slot name="actions" />
+    <button on:click={copyValue} class="simple">©</button>
     <button on:click={startEditing} class="simple">✎</button>
+    <slot name="actions" />
   </hbox>
 {/if}
 
@@ -36,6 +40,12 @@
     isEditing = false;
   }
 
+  function copyValue() {
+  }
+
+  function remove() {
+  }
+
   const purposes = {
     "work": "Work",
     "home": "Home",
@@ -49,8 +59,19 @@
 </script>
 
 <style>
+  .purpose, .value, .actions {
+    margin-top: 12px;
+    font-size: 13px;
+  }
+
   .purpose {
     margin-right: 20px;
+    color: grey;
+    font-style: italic;
+  }
+
+  .value :global(a[href]) {
+    color: darkblue;
   }
 
   .actions {

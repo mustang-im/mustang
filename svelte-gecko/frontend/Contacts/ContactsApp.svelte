@@ -25,6 +25,6 @@
     flex: 1 0 0;
   }
   .right-pane {
-    flex: 2 0 0;
+    flex: 3 0 0;
   }
 </style>
