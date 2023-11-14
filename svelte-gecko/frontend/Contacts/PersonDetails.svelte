@@ -116,8 +116,7 @@
   </grid>
 
   <vbox flex class="notes">
-    <h3>Notes</h3>
-    <textarea bind:value={person.notes} />
+    <textarea bind:value={person.notes} placeholder="Personal notes" />
   </vbox>
 </vbox>
 
@@ -190,13 +189,24 @@
     color: transparent;
   }
   .notes {
-    margin: 16px 16px 32px 16px;
+    margin: 8px;
+    margin-right: 26px;
   }
   .notes textarea {
     height: 100%;
     width: 100%;
     border: none;
     font-family: sans-serif;
+    font-size: 14px;
+    color: #555555;
+    border: 1px dotted lightgray;
+    padding: 8px;
+  }
+  .notes textarea::placeholder {
+    color: grey;
+  }
+  .notes textarea:focus {
+    outline: 2px solid #20AE9E;
   }
   grid {
     display: grid;
