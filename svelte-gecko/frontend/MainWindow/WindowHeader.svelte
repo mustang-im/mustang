@@ -1,6 +1,6 @@
 <hbox class="window-header">
   <vbox class="app-logo">
-    <Icon data={logo} size="24px" />
+    <Icon data={logo} size="20px" />
   </vbox>
   <hbox class="app-title">
     {#if selectedApp == AppArea.Mail}
@@ -10,7 +10,7 @@
     {:else if selectedApp == AppArea.Meet}
       Meet
     {:else if selectedApp == AppArea.Contacts}
-      Contact
+      Contacts
     {:else if selectedApp == AppArea.Calendar}
       Calendar
     {:else if selectedApp == AppArea.Files}
@@ -36,13 +36,14 @@
   }
   .app-logo {
     margin: 8px;
-    width: 64px;
-    align-items: center;
+    margin-left: 12px;
+    width: 60px;
+    align-items: start;
     justify-content: center;
   }
   .app-title {
-    font-size: 20px;
+    font-size: 18px;
     align-items: center;
-    margin-left: 16px;
+    margin-left: 12px;
   }
 </style>
