@@ -10,8 +10,12 @@
     <slot name="edit" />
   </hbox>
   <hbox class="actions">
-    <button on:click={stopEditing} class="simple">✓</button>
-    <button on:click={remove} class="simple">x</button>
+    <Button on:click={stopEditing} iconOnly plain>
+      <hbox slot="icon">✓</hbox>
+    </Button>
+    <Button on:click={remove} iconOnly plain>
+      <hbox slot="icon">x</hbox>
+    </Button>
   </hbox>
 {:else}
   <hbox class="purpose display">{displayPurpose(entry.purpose)}</hbox>
@@ -19,11 +23,15 @@
     <slot name="display" />
   </hbox>
   <hbox class="actions">
-    <button on:click={startEditing} class="simple">✎</button>
+    <Button on:click={startEditing} iconOnly plain>
+      <hbox slot="icon">✎</hbox>
+    </Button>
     {#if copied}
-      <hbox>Copied to clipboard</hbox>
+      <hbox>Copied to clipboard ✓</hbox>
     {:else}
-      <button on:click={copyValue} class="simple">©</button>
+      <Button on:click={copyValue} iconOnly plain>
+        <hbox slot="icon">©</hbox>
+      </Button>
     {/if}
     <slot name="actions" />
   </hbox>
@@ -32,6 +40,7 @@
 <script lang="ts">
   import type { ContactEntry } from "../../logic/Abstract/Person";
   import { sleep } from "../../logic/util/util";
+  import Button from "../Shared/Button.svelte";
 
   export let entry: ContactEntry;
 
@@ -90,9 +99,8 @@
   .actions {
     margin-left: 12px;
   }
-
-  button {
-    margin-left: 5px;
+  .actions > :global(*) {
+    min-width: 20px;
   }
 
   .value.edit :global(input) { /* TODO does not apply */

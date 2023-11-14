@@ -40,6 +40,7 @@
   button.plain {
     border: none;
     padding: 0 0;
+    min-width: 20px;
   }
   button:hover {
     background-color: rgba(32, 174, 158, 50%); /* #20AE9E */

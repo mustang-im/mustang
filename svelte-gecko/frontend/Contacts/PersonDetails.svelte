@@ -64,7 +64,9 @@
           </ContactEntryUI>
         {/each}
         <hbox flex class="actions">
-          <button class="simple">+</button>
+          <Button on:click={addEmail} iconOnly plain>
+            <hbox slot="icon">+</hbox>
+          </Button>
         </hbox>
       </grid>
     </GroupBox>
@@ -79,7 +81,9 @@
           </ContactEntryUI>
         {/each}
         <hbox flex class="actions">
-          <button class="simple">+</button>
+          <Button on:click={addEmail} iconOnly plain>
+            <hbox slot="icon">+</hbox>
+          </Button>
         </hbox>
       </grid>
     </GroupBox>
@@ -94,7 +98,9 @@
           </ContactEntryUI>
         {/each}
         <hbox flex class="actions">
-          <button class="simple">+</button>
+          <Button on:click={addEmail} iconOnly plain>
+            <hbox slot="icon">+</hbox>
+          </Button>
         </hbox>
       </grid>
     </GroupBox>
@@ -108,7 +114,9 @@
           </ContactEntryUI>
         {/each}
         <hbox flex class="actions">
-          <button class="simple">+</button>
+          <Button on:click={addEmail} iconOnly plain>
+            <hbox slot="icon">+</hbox>
+          </Button>
         </hbox>
       </grid>
     </GroupBox>
@@ -123,7 +131,9 @@
           </ContactEntryUI>
         {/each}
         <hbox flex class="actions">
-          <button class="simple">+</button>
+          <Button on:click={addEmail} iconOnly plain>
+            <hbox slot="icon">+</hbox>
+          </Button>
         </hbox>
       </grid>
     </GroupBox>
@@ -160,6 +170,9 @@
     $: preferredEmailAddress = person.emailAddresses.isEmpty ? null :
     person.emailAddresses.find(p => p.preferred)?.value ||
     person.emailAddresses.first.value;
+
+    function addEmail() {
+    }
 </script>
 
 <style>
