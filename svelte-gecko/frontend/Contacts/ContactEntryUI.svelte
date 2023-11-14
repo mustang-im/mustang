@@ -19,18 +19,24 @@
     <slot name="display" />
   </hbox>
   <hbox class="actions">
-    <button on:click={copyValue} class="simple">©</button>
     <button on:click={startEditing} class="simple">✎</button>
+    {#if copied}
+      <hbox>Copied to clipboard</hbox>
+    {:else}
+      <button on:click={copyValue} class="simple">©</button>
+    {/if}
     <slot name="actions" />
   </hbox>
 {/if}
 
 <script lang="ts">
   import type { ContactEntry } from "../../logic/Abstract/Person";
+  import { sleep } from "../../logic/util/util";
 
   export let entry: ContactEntry;
 
   let isEditing = false;
+  let copied = false;
 
   function startEditing() {
     isEditing = true;
@@ -40,7 +46,11 @@
     isEditing = false;
   }
 
-  function copyValue() {
+  async function copyValue() {
+    navigator.clipboard.writeText(entry.value);
+    copied = true;
+    await sleep(2);
+    copied = false;
   }
 
   function remove() {
@@ -50,6 +60,9 @@
     "work": "Work",
     "home": "Home",
     "mobile": "Mobile",
+    "WhatsApp": "WhatsApp",
+    "Teams": "Teams",
+    "Matrix": "Matrix",
     "other": "Other",
   }
 

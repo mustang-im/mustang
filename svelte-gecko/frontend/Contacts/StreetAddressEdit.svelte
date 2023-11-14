@@ -1,4 +1,4 @@
-<input type="email" bind:value maxlength={100} />
+<textarea bind:value rows={5} cols={40} />
 
 <script lang="ts">
   export let value: string; /* in/out */
