@@ -223,4 +223,8 @@
   .actions {
     margin-top: 8px;
   }
+  .preferred,
+  .actions button.simple {
+    color: grey;
+  }
 </style>
