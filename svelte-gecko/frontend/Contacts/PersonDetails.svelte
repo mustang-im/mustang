@@ -30,7 +30,7 @@
             <Icon data={chat} slot="icon" size="24px" />
           </Button>
           {#if preferredEmailAddress}
-            <a href="tel:{preferredEmailAddress}">
+            <a href="mailto:{preferredEmailAddress}">
               <Button label="Send mail" iconOnly>
                 <Icon data={mail} slot="icon" size="24px" />
               </Button>
@@ -101,8 +101,8 @@
       <grid class="items">
         {#each person.chatAccount.each as entry}
           <ContactEntryUI {entry}>
-            <EmailAddressDisplay slot="display" value={entry.value} />
-            <EmailAddressEdit slot="edit" bind:value={entry.value} />
+            <EmailAddressDisplay slot="display" value={entry.value} /><!-- TODO chat link -->
+            <EmailAddressEdit slot="edit" bind:value={entry.value} /><!-- TODO chat editor -->
           </ContactEntryUI>
         {/each}
         <hbox flex class="actions">
@@ -247,9 +247,6 @@
   h3 {
     margin-left: 10px;
     font-size: 14px;
-  }
-  h3 > :global(svg) {
-    color: transparent;
   }
   .notes {
     margin: 8px;

@@ -103,9 +103,12 @@
     min-width: 20px;
   }
 
-  .value.edit :global(input) { /* TODO does not apply */
+  .value.edit :global(input) {
     border: none;
     border-bottom: 2px solid #20AE9E;
     /* background-color: rgba(32, 174, 158, 20%); /* #20AE9E */
+  }
+  .value.edit :global(input:focus) {
+    outline: none;
   }
 </style>
