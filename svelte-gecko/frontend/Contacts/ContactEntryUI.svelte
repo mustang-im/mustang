@@ -14,7 +14,7 @@
       <hbox slot="icon">✓</hbox>
     </Button>
     <Button on:click={remove} iconOnly plain>
-      <hbox slot="icon">x</hbox>
+      <hbox slot="icon">🗑</hbox>
     </Button>
   </hbox>
 {:else}
