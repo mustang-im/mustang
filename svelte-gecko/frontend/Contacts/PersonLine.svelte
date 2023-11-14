@@ -19,13 +19,17 @@
 
 <style>
   .image {
-    width: 64px;
-    height: 64px;
-    margin: 10px;
+    width: 56px;
+    height: 56px;
+    margin: 7px;
+    margin-left: 12px;
     clip-path: circle();
   }
   .right {
+    margin-top: 0px;
     padding: 10px;
-    border-bottom: 1px dotted lightgray;
+  }
+  .name {
+    font-size: 14px;
   }
 </style>

@@ -1,91 +1,139 @@
 <vbox flex class="person-page">
-  <vbox flex class="person-info">
-    <h1 class="name">{person.name}</h1>
-    <hbox class="main-info">
-      <vbox class="image">
-        <img
-          src={person.picture}
-          width="128" height="128"
-          title="Picture of {person.name}"
-          alt="Picture of {person.name}" />
+  <GroupBox classes="person">
+    <hbox flex class="main-left">
+      <hbox flex>
+        <vbox class="image">
+          <img
+            src={person.picture}
+            width="128" height="128"
+            title="Picture of {person.name}"
+            alt="Picture of {person.name}" />
+        </vbox>
+        <vbox flex class="main-info">
+          <h1 class="name">{person.name}</h1>
+          <div class="position">Designer</div>
+        </vbox>
+      </hbox>
+      <vbox flex class="main-right">
+        <vbox class="preferred">
+          <hbox>Preferred communication tool</hbox>
+          <hbox>WhatsApp</hbox>
+          <hbox>[o] Notifications</hbox>
+        </vbox>
+        <hbox class="main-call">
+          {#if preferredPhoneNumber}
+            <a href="tel:{preferredPhoneNumber}">
+              <Button label="Call" iconOnly>
+                <hbox slot="icon">📞</hbox>
+              </Button>
+            </a>
+          {/if}
+          <Button label="Video call" />
+          <Button label="Message" />
+          {#if preferredEmailAddress}
+            <a href="tel:{preferredEmailAddress}">
+              <Button label="Send Mail" iconOnly>
+                <hbox slot="icon">✉</hbox>
+              </Button>
+            </a>
+          {/if}
+        </hbox>
       </vbox>
-      <vbox flex class="names">
-        <grid>
-          <hbox class="label">First name</hbox>
-          <hbox class="field name">{person.firstName}</hbox>
+      <!--
+        <vbox flex class="names">
+          <grid>
+            <hbox class="label">First name</hbox>
+            <hbox class="field name">{person.firstName}</hbox>
 
-          <hbox class="label">Last name</hbox>
-          <hbox class="field name">{person.lastName}</hbox>
-        </grid>
-      </vbox>
+            <hbox class="label">Last name</hbox>
+            <hbox class="field name">{person.lastName}</hbox>
+          </grid>
+        </vbox>
+      -->
     </hbox>
+  </GroupBox>
 
-    <hbox class="contact-buttons">
-      {#if preferredPhoneNumber}
-        <a href="tel:{preferredPhoneNumber}"><button class="big">📞</button></a>
-      {/if}
-      {#if preferredEmailAddress}
-        <a href="mailto:{preferredEmailAddress}"><button class="big">✉</button></a>
-      {/if}
-    </hbox>
-
-    <hbox class="contact-info">
-      <vbox class="contact-list">
-        <h3>Phone numbers</h3>
-        <grid>
-          {#each person.phoneNumbers.each as entry}
-            <ContactEntryUI {entry}>
-              <PhoneNumberDisplay slot="display" value={entry.value} />
-              <PhoneNumberEdit slot="edit" bind:value={entry.value} />
-              <svelte:fragment slot="actions">
-                <a href="tel:{entry.value}">📞</a>
-              </svelte:fragment>
-            </ContactEntryUI>
-          {/each}
-          <hbox></hbox>
-          <hbox></hbox>
-          <hbox flex class="actions">
-            <button class="simple">+</button>
-          </hbox>
+  <grid class="boxes">
+    <GroupBox classes="phone">
+      <h3>📞 Phone numbers</h3>
+      <grid class="items">
+        {#each person.phoneNumbers.each as entry}
+          <ContactEntryUI {entry}>
+            <PhoneNumberDisplay slot="display" value={entry.value} />
+            <PhoneNumberEdit slot="edit" bind:value={entry.value} />
+          </ContactEntryUI>
+        {/each}
+        <hbox flex class="actions">
+          <button class="simple">+</button>
+        </hbox>
       </grid>
-      </vbox>
-    
-      <vbox flex class="contact-list">
-        <h3>Email addresses</h3>
-        <grid>
-          {#each person.emailAddresses.each as entry}
-            <ContactEntryUI {entry}>
-              <EmailAddressDisplay slot="display" value={entry.value} />
-              <EmailAddressEdit slot="edit" bind:value={entry.value} />
-              <svelte:fragment slot="actions">
-                <a href="mailto:{entry.value}">✉</a>
-              </svelte:fragment>
-            </ContactEntryUI>
-          {/each}
-          <hbox></hbox>
-          <hbox></hbox>
-          <hbox flex class="actions">
-            <button class="simple">+</button>
-          </hbox>
-        </grid>
-      </vbox>
-    </hbox>
+    </GroupBox>
 
-    <vbox flex class="notes">
-      <h3>Notes</h3>
-      <textarea bind:value={person.notes} />
-    </vbox>
+    <GroupBox classes="email">
+      <h3><Icon data={mail} size="16px" /> Mail</h3>
+      <grid class="items">
+        {#each person.emailAddresses.each as entry}
+          <ContactEntryUI {entry}>
+            <EmailAddressDisplay slot="display" value={entry.value} />
+            <EmailAddressEdit slot="edit" bind:value={entry.value} />
+          </ContactEntryUI>
+        {/each}
+        <hbox flex class="actions">
+          <button class="simple">+</button>
+        </hbox>
+      </grid>
+    </GroupBox>
+
+    <GroupBox classes="chat">
+      <h3><Icon data={chat} size="16px" />Chat</h3>
+      <grid class="items">
+        {#each person.emailAddresses.each as entry}
+          <ContactEntryUI {entry}>
+            <EmailAddressDisplay slot="display" value={entry.value} />
+            <EmailAddressEdit slot="edit" bind:value={entry.value} />
+          </ContactEntryUI>
+        {/each}
+        <hbox flex class="actions">
+          <button class="simple">+</button>
+        </hbox>
+      </grid>
+    </GroupBox>
+
+    <GroupBox classes="categories">
+      <h3><Icon data={contacts} size="16px" />Groups</h3>
+      <grid class="items">
+        {#each person.groups.each as entry}
+          <ContactEntryUI {entry}>
+            <hbox slot="display" value={entry.value} />
+          </ContactEntryUI>
+        {/each}
+        <hbox flex class="actions">
+          <button class="simple">+</button>
+        </hbox>
+      </grid>
+    </GroupBox>
+
+  </grid>
+
+  <vbox flex class="notes">
+    <h3>Notes</h3>
+    <textarea bind:value={person.notes} />
   </vbox>
-
 </vbox>
 
 <script lang="ts">
   import type { Person } from "../../logic/Abstract/Person";
+  import Button from "../Shared/Button.svelte";
   import ContactEntryUI from "./ContactEntryUI.svelte";
   import EmailAddressDisplay from "./EmailAddressDisplay.svelte";
   import EmailAddressEdit from "./EmailAddressEdit.svelte";
+  import GroupBox from "./GroupBox.svelte";
   import PhoneNumberDisplay from "./PhoneNumberDisplay.svelte";
   import PhoneNumberEdit from "./PhoneNumberEdit.svelte";
+  import Icon from 'svelte-icon/Icon.svelte';
+  import mail from '../asset/icon/appBar/mail.svg?raw';
+  import chat from '../asset/icon/appBar/chat.svg?raw';
+  import contacts from '../asset/icon/appBar/contacts.svg?raw';
 
   export let person: Person;
   $: person.name = person.firstName + " " + person.lastName;
@@ -99,38 +147,50 @@
 </script>
 
 <style>
-  .person-info {
-    margin-left: 32px;
-    margin-right: 32px;
-  }
-  h1.name {
-    margin-top: 32px;
-    margin-bottom: 16px;
-  }
-  h3 {
-    margin-top: 16px;
-    margin-bottom: 8px;
-  }
-  .names {
-    margin: 0 48px;
+  .person-page {
+    margin: 8px;
+    font-size: 14px;
   }
   .image {
     width: 128px;
     height: 128px;
-    margin: 10px;
     clip-path: circle();
   }
-  .contact-buttons {
-    margin-top: 32px;
+  .main-info {
+    margin-left: 24px;
+    margin-top: 8px;
+    margin-bottom: 16px;
   }
-  .contact-buttons a {
-    margin-right: 12px;
+  h1.name {
+    font-size: 18px;
+    margin-bottom: 8px;
   }
-  .contact-buttons button {
-    padding: 12px;
+  .position {
+    color: grey;
+  }
+  .main-right {
+    margin: 16px;
+  }
+  .preferred {
+    margin-top: 16px;
+    margin-bottom: 24px;
+  }
+  .main-call :global(> *) {
+    margin-right: 4px;
+  }
+  grid.boxes {
+    grid-template-columns: 1fr 1fr;
+  }
+  h3 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+  }
+  h3 > :global(svg) {
+    margin-right: 8px;
+    color: transparent;
   }
   .notes {
-    margin-bottom: 32px;
+    margin: 16px 16px 32px 16px;
   }
   .notes textarea {
     height: 100%;
@@ -142,14 +202,11 @@
     display: grid;
     grid-template-columns: 1fr 2fr;
   }
-  .contact-list {
-    margin: 16px 24px 24px 0;
-  }
-  .contact-list grid {
+  grid.items {
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
+    grid-template-columns: auto 1fr auto;
   }
-  .contact-list .actions {
-    justify-content: center;
+  .actions {
+    margin-top: 8px;
   }
 </style>

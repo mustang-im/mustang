@@ -21,11 +21,12 @@
 
 <style>
   .person {
-    border-right: 1px solid grey;
+    border-right: 1px dotted lightgray;
+    background-color: #f8f8fa;
   }
   .person.selected {
-    border-right: none;
-    border-top: 1px solid grey;
-    border-bottom: 1px solid grey;
+    background-color: #20AE9E;
+    color: white;
+    box-shadow: 1px 1px 5px 0px rgba(0, 0, 0, 15%);
   }
 </style>
