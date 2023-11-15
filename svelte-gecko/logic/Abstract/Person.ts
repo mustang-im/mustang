@@ -12,11 +12,10 @@ export class Person {
   streetAddresses = new ArrayColl<ContactEntry>();
   notes = "";
   picture: string; // URL
-  work: {
-    company: string;
-    department: string;
-    position: string;
-  }
+
+  company: string;
+  department: string;
+  position: string;
 
   toString() {
     return this.name;
