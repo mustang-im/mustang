@@ -11,7 +11,9 @@
         </vbox>
         <vbox flex class="main-info">
           <h1 class="name">{person.name}</h1>
-          <div class="position">Designer</div>
+          <div class="position">{person.position}</div>
+          <div class="department">{person.department}</div>
+          <div class="company">{person.company}</div>
         </vbox>
       </hbox>
       <vbox flex class="main-right">
@@ -219,8 +221,11 @@
   h1.name {
     font-size: 18px;
     margin-bottom: 8px;
+    color: inherit;
   }
-  .position {
+  .position,
+  .department,
+  .company {
     color: grey;
   }
   .main-right {

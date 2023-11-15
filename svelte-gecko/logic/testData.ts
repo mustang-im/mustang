@@ -36,6 +36,9 @@ export async function getTestObjects(): Promise<AppGlobal> {
     let address = faker.address.streetAddress() + "\n" + faker.address.zipCode() + " " + faker.address.cityName();
     person.streetAddresses.add(new ContactEntry(address, "home"));
     person.picture = faker.image.avatar();
+    person.company = faker.company.name();
+    person.department = faker.commerce.department();
+    person.position = faker.company.bsNoun();
 
     let chat = new Chat();
     chatAccount.chats.set(person, chat);
