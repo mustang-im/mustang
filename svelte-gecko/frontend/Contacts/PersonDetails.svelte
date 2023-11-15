@@ -56,7 +56,7 @@
       </hbox>
       <grid class="items">
         {#each $phoneNumbers.each as entry}
-          <ContactEntryUI {entry}>
+          <ContactEntryUI {entry} coll={phoneNumbers}>
             <PhoneNumberDisplay slot="display" value={entry.value} />
             <PhoneNumberEdit slot="edit" bind:value={entry.value} />
           </ContactEntryUI>
@@ -76,7 +76,7 @@
       </hbox>
       <grid class="items">
         {#each $emailAddresses.each as entry}
-          <ContactEntryUI {entry}>
+          <ContactEntryUI {entry} coll={emailAddresses}>
             <EmailAddressDisplay slot="display" value={entry.value} />
             <EmailAddressEdit slot="edit" bind:value={entry.value} />
           </ContactEntryUI>
@@ -96,7 +96,7 @@
       </hbox>
       <grid class="items">
         {#each $chatAccounts.each as entry}
-          <ContactEntryUI {entry}>
+          <ContactEntryUI {entry} coll={chatAccounts}>
             <EmailAddressDisplay slot="display" value={entry.value} /><!-- TODO chat link -->
             <EmailAddressEdit slot="edit" bind:value={entry.value} /><!-- TODO chat editor -->
           </ContactEntryUI>
@@ -116,7 +116,7 @@
       </hbox>
       <grid class="items">
         {#each $groups.each as entry}
-          <ContactEntryUI {entry}>
+          <ContactEntryUI {entry} coll={groups}>
             <hbox slot="display">{entry.value}</hbox>
           </ContactEntryUI>
         {/each}
@@ -137,7 +137,7 @@
       </hbox>
       <grid class="items">
         {#each $streetAddresses.each as entry}
-          <ContactEntryUI {entry}>
+          <ContactEntryUI {entry} coll={streetAddresses}>
             <StreetAddressDisplay slot="display" value={entry.value} />
             <StreetAddressEdit slot="edit" bind:value={entry.value} />
           </ContactEntryUI>

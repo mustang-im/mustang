@@ -39,11 +39,13 @@
 {/if}
 
 <script lang="ts">
+  import type { Collection } from "svelte-collections";
   import type { ContactEntry } from "../../logic/Abstract/Person";
   import { sleep } from "../../logic/util/util";
   import Button from "../Shared/Button.svelte";
 
   export let entry: ContactEntry;
+  export let coll: Collection<ContactEntry>;
 
   let isEditing = false;
   let copied = false;
@@ -64,6 +66,8 @@
   }
 
   function remove() {
+    stopEditing();
+    coll.remove(entry);
   }
 
   const purposes = {
