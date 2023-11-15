@@ -7,7 +7,7 @@ export class Person {
   lastName: string;
   emailAddresses = new ArrayColl<ContactEntry>();
   phoneNumbers = new ArrayColl<ContactEntry>();
-  chatAccount = new ArrayColl<ContactEntry>();
+  chatAccounts = new ArrayColl<ContactEntry>();
   groups = new ArrayColl<ContactEntry>();
   streetAddresses = new ArrayColl<ContactEntry>();
   notes = "";
