@@ -218,9 +218,10 @@
 
 <style>
   .person-page {
-    margin: 8px;
+    padding: 8px;
     font-size: 14px;
     background: url(../asset/background-repeat.png) repeat;
+    background-color: #EEEEEE;
   }
   .person-page :global(.group) {
     background-color: white;
