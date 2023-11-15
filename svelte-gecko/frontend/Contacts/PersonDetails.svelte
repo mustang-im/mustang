@@ -55,14 +55,14 @@
         <h3>Phone numbers</h3>
       </hbox>
       <grid class="items">
-        {#each person.phoneNumbers.each as entry}
+        {#each $phoneNumbers.each as entry}
           <ContactEntryUI {entry}>
             <PhoneNumberDisplay slot="display" value={entry.value} />
             <PhoneNumberEdit slot="edit" bind:value={entry.value} />
           </ContactEntryUI>
         {/each}
         <hbox flex class="actions">
-          <Button on:click={addEmail} iconOnly plain classes="add">
+          <Button on:click={addPhoneNumber} iconOnly plain classes="add">
             <hbox slot="icon">+</hbox>
           </Button>
         </hbox>
@@ -75,7 +75,7 @@
         <h3>Mail</h3>
       </hbox>
       <grid class="items">
-        {#each person.emailAddresses.each as entry}
+        {#each $emailAddresses.each as entry}
           <ContactEntryUI {entry}>
             <EmailAddressDisplay slot="display" value={entry.value} />
             <EmailAddressEdit slot="edit" bind:value={entry.value} />
@@ -95,14 +95,14 @@
         <h3>Chat</h3>
       </hbox>
       <grid class="items">
-        {#each person.chatAccount.each as entry}
+        {#each $chatAccounts.each as entry}
           <ContactEntryUI {entry}>
             <EmailAddressDisplay slot="display" value={entry.value} /><!-- TODO chat link -->
             <EmailAddressEdit slot="edit" bind:value={entry.value} /><!-- TODO chat editor -->
           </ContactEntryUI>
         {/each}
         <hbox flex class="actions">
-          <Button on:click={addEmail} iconOnly plain classes="add">
+          <Button on:click={addChatAccount} iconOnly plain classes="add">
             <hbox slot="icon">+</hbox>
           </Button>
         </hbox>
@@ -115,15 +115,17 @@
         <h3>Groups</h3>
       </hbox>
       <grid class="items">
-        {#each person.groups.each as entry}
+        {#each $groups.each as entry}
           <ContactEntryUI {entry}>
             <hbox slot="display">{entry.value}</hbox>
           </ContactEntryUI>
         {/each}
         <hbox flex class="actions">
+          <!--
           <Button on:click={addEmail} iconOnly plain classes="add">
             <hbox slot="icon">+</hbox>
           </Button>
+          -->
         </hbox>
       </grid>
     </GroupBox>
@@ -134,14 +136,14 @@
         <h3>Street addresses</h3>
       </hbox>
       <grid class="items">
-        {#each person.streetAddresses.each as entry}
+        {#each $streetAddresses.each as entry}
           <ContactEntryUI {entry}>
             <StreetAddressDisplay slot="display" value={entry.value} />
             <StreetAddressEdit slot="edit" bind:value={entry.value} />
           </ContactEntryUI>
         {/each}
         <hbox flex class="actions">
-          <Button on:click={addEmail} iconOnly plain classes="add">
+          <Button on:click={addStreetAddress} iconOnly plain classes="add">
             <hbox slot="icon">+</hbox>
           </Button>
         </hbox>
@@ -168,7 +170,7 @@
 </vbox>
 
 <script lang="ts">
-  import type { Person } from "../../logic/Abstract/Person";
+  import { ContactEntry, type Person } from "../../logic/Abstract/Person";
   import Button from "../Shared/Button.svelte";
   import ContactEntryUI from "./ContactEntryUI.svelte";
   import EmailAddressDisplay from "./EmailAddressDisplay.svelte";
@@ -188,6 +190,11 @@
   export let person: Person;
   $: person.name = person.firstName + " " + person.lastName;
 
+  $: emailAddresses = person.emailAddresses;
+  $: phoneNumbers = person.phoneNumbers;
+  $: chatAccounts = person.chatAccounts;
+  $: streetAddresses = person.streetAddresses;
+  $: groups = person.groups;
   $: preferredPhoneNumber = person.phoneNumbers.isEmpty ? null :
     person.phoneNumbers.find(p => p.preferred)?.value ||
     person.phoneNumbers.first.value;
@@ -196,6 +203,16 @@
     person.emailAddresses.first.value;
 
     function addEmail() {
+      person.emailAddresses.push(new ContactEntry("", "work"));
+    }
+    function addChatAccount() {
+      person.chatAccounts.push(new ContactEntry("", "matrix"));
+    }
+    function addPhoneNumber() {
+      person.phoneNumbers.push(new ContactEntry("", "work"));
+    }
+    function addStreetAddress() {
+      person.streetAddresses.push(new ContactEntry("", "work"));
     }
 </script>
 

@@ -28,8 +28,8 @@ export async function getTestObjects(): Promise<AppGlobal> {
     person.emailAddresses.add(new ContactEntry(faker.internet.email(person.firstName, person.lastName), "home"));
     person.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-170-### ####'), "mobile"));
     person.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-###-######'), "work"));
-    person.chatAccount.add(new ContactEntry(person.phoneNumbers.first.value, "WhatsApp"));
-    person.chatAccount.add(new ContactEntry(person.emailAddresses.first.value, "Teams"));
+    person.chatAccounts.add(new ContactEntry(person.phoneNumbers.first.value, "WhatsApp"));
+    person.chatAccounts.add(new ContactEntry(person.emailAddresses.first.value, "Teams"));
     person.groups.add(new ContactEntry(faker.company.name(), "Mustang"));
     person.groups.add(new ContactEntry(faker.company.name(), "WhatsApp"));
     person.groups.add(new ContactEntry(faker.company.name(), "Teams"));

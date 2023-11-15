@@ -18,7 +18,8 @@
     </Button>
   </hbox>
 {:else}
-  <hbox class="purpose display">{displayPurpose(entry.purpose)}</hbox>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <hbox class="purpose display" on:click={startEditing}>{displayPurpose(entry.purpose)}</hbox>
   <hbox class="value">
     <slot name="display" />
   </hbox>
@@ -69,9 +70,9 @@
     "work": "Work",
     "home": "Home",
     "mobile": "Mobile",
-    "WhatsApp": "WhatsApp",
-    "Teams": "Teams",
-    "Matrix": "Matrix",
+    "whatsapp": "WhatsApp",
+    "teams": "Teams",
+    "matrix": "Matrix",
     "other": "Other",
   }
 
