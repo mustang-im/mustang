@@ -78,6 +78,10 @@ value,
   user-select: text;
 }
 
+input:focus {
+  outline: 2px solid #20AE9E;
+}
+
 a[href] {
   text-decoration: none;
 }

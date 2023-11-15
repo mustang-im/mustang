@@ -20,7 +20,6 @@
 
 <script lang="ts">
   import type { ChatPerson } from "../../logic/Chat/Person";
-  import Icon from 'svelte-icon/Icon.svelte';
   import meet from '../asset/icon/appBar/meet.svg?raw';
   import settings from '../asset/icon/general/settings.svg?raw';
   import RoundButton from "../Shared/RoundButton.svelte";
