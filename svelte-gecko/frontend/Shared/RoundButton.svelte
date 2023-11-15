@@ -31,6 +31,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
+
+    color: transparent; /* TODO fix icons */
   }
   .filled:not(:hover) {
     background-color: #160C27; /* 142862 */

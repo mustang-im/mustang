@@ -20,10 +20,6 @@
 </script>
 
 <style>
-  .person {
-    border-right: 1px dotted lightgray;
-    background-color: #f8f8fa;
-  }
   .person.selected {
     background-color: #20AE9E;
     color: white;
