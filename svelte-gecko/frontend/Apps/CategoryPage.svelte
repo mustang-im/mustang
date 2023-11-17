@@ -18,7 +18,6 @@
   import type { Collection } from "svelte-collections";
   import AppShopButton from "./AppShopButton.svelte";
 
-  $: console.log("category page", category);
   export let category: AppCategory;
   export let allApps: Collection<AppListed>;
   export let selectedApp: AppListed; /* in/out */

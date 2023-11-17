@@ -2,8 +2,8 @@
   <iframe class="app-runner" src={runningApp.start} title={runningApp.nameTranslated} />
 {:else if showStore}
   <AppStore bind:showStore />
-{:else if selectedApps}
-  <AppsLauncher bind:showStore apps={selectedApps} bind:runningApp />
+{:else if myApps}
+  <AppsLauncher bind:showStore apps={myApps} bind:runningApp />
 {:else}
   Loading...
 {/if}
@@ -18,13 +18,12 @@
 
   let showStore = false;
   let runningApp: AppListed;
-  let selectedApps: Collection<AppListed>;
+  let myApps: Collection<AppListed>;
 
   onMount(async () => {
-    let appStore = appGlobal.appStore;
+    let appStore = appGlobal.apps;
     await appStore.load();
-    let allApps = appStore.apps;
-    selectedApps = allApps.filter(app => app.categoryFullIDs.includes("recommended"));
+    myApps = appStore.myApps;
   });
 
   $: console.log("running app", runningApp?.nameTranslated);
