@@ -24,7 +24,7 @@
     let appStore = appGlobal.appStore;
     await appStore.load();
     let allApps = appStore.apps;
-    selectedApps = allApps.filter(app => app.categoryFullID == "recommended");
+    selectedApps = allApps.filter(app => app.categoryFullIDs.includes("recommended"));
   });
 
   $: console.log("running app", runningApp?.nameTranslated);

@@ -2,9 +2,13 @@
   <vbox flex />
 
   <vbox class="center">
-    {#each apps.each as app}
-      <AppLaunchButton {app} bind:runningApp />
-    {/each}
+    <div class="apps">
+      {#each apps.each as app}
+        <span class="app">
+          <AppLaunchButton {app} bind:runningApp />
+        </span>
+      {/each}
+    </div>
 
     <hbox class="actions">
       <hbox flex />
@@ -33,7 +37,13 @@
   .center {
     align-self: center;
   }
+  div.apps {
+    flex: 1 0 0;
+  }
+  span.app {
+    display: inline-flex;
+  }
   .actions {
-    margin-top: 32px;
+    margin: 32px;
   }
 </style>

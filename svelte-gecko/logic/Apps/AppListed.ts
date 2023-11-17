@@ -5,8 +5,9 @@
 export default class AppListed {
   /** e.g. "microsoft-word" */
   id: string;
-  /** e.g. `"productivity|word-processing"` */
-  categoryFullID: string;
+  /** Categories to which this app belongs.
+   * E.g. `[ "productivity|word-processing" ]` */
+  categoryFullIDs: string[];
   /** Human-readable name,
    * translated into the user's language.
    * Must be short, i.e. 1-2 words.
@@ -51,7 +52,7 @@ export default class AppListed {
 
   static fromJSON(json: any): AppListed {
     let result = new AppListed();
-    const props = ['id', 'categoryFullID', 'name', 'description', 'icon', 'homepage', 'pricePage', 'start',];
+    const props = ['id', 'categoryFullIDs', 'name', 'description', 'icon', 'homepage', 'pricePage', 'start',];
     for (let name in json) {
       if (!props.includes(name)) {
         continue;
