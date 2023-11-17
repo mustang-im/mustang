@@ -29,7 +29,8 @@
 
 <style>
   button {
-    border: 2px solid grey;
+    background-color: #f9f9f9;
+    border: 1px solid #B2ADB8;
     border-radius: 5px;
     padding: 6px 8px;
 
@@ -50,9 +51,12 @@
     opacity: 50%;
   }
   .icon {
+    /** margin-right: 6px; TODO only if both icon and label */
     margin-right: 0px;
   }
   .plain .icon {
     margin-right: 0;
   }
+
+  /* @media (prefers-color-scheme: light) { */
 </style>

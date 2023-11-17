@@ -21,7 +21,6 @@
 
 <style>
   .app {
-    border: 1px dotted lightgray;
     border-radius: 3px;
     margin: 4px;
     padding: 12px;
@@ -38,6 +37,6 @@
   .name {
     font-size: 16px;
     margin: 0px;
-    margin-top: 16px;
+    text-align: center;
   }
 </style>

@@ -23,7 +23,7 @@
 
 <style>
   button {
-    border: 2px solid grey;
+    border: 1px solid #B2ADB8;
     border-radius: 1000px;
     padding: 8px;
 
@@ -31,8 +31,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-
-    color: transparent; /* TODO fix icons */
   }
   .filled:not(:hover) {
     background-color: #160C27; /* 142862 */
