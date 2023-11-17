@@ -5,7 +5,7 @@
   <vbox flex class="apps">
     <hbox class="toolbar">
       <hbox flex />
-      <RoundButton on:click={closeStore} icon={close} iconOnly label="Close" />
+      <RoundButton on:click={closeStore} icon={close} label="Close" />
     </hbox>
     {#if selectedCategory}
       <CategoryPage category={selectedCategory} bind:selectedApp allApps={apps} />
@@ -25,7 +25,7 @@
 
   export let showStore = true; /* in/out */
 
-  let appStore = appGlobal.appStore;
+  let appStore = appGlobal.apps;
   let categories = appStore.categories;
   let apps = appStore.apps;
   let selectedCategory: AppCategory;
