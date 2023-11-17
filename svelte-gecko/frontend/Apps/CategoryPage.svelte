@@ -23,7 +23,7 @@
   export let allApps: Collection<AppListed>;
   export let selectedApp: AppListed; /* in/out */
 
-  $: apps = allApps.filter(app => app.categoryFullID == category.fullID);
+  $: apps = allApps.filter(app => app.categoryFullIDs.includes(category.fullID));
 </script>
 
 <style>

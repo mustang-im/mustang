@@ -131,7 +131,10 @@
   "apps": [
     {
       "id": "miro",
-      "categoryFullID": "graphics/diagram",
+      "categoryFullIDs": [
+        "graphics/diagram",
+        "recommended"
+      ],
       "name": {
         "en": "Miro"
       },
@@ -144,7 +147,9 @@
     },
     {
       "id": "figma",
-      "categoryFullID": "graphics/ui",
+      "categoryFullIDs": [
+        "graphics/ui"
+      ],
       "name": {
         "en": "Figma"
       },
@@ -157,7 +162,9 @@
     },
     {
       "id": "collabora",
-      "categoryFullID": "productivity/office-suite",
+      "categoryFullIDs": [
+        "productivity/office-suite"
+      ],
       "name": {
         "en": "Collabora"
       },
@@ -171,7 +178,10 @@
     },
     {
       "id": "ox-docs",
-      "categoryFullID": "productivity/office-suite",
+      "categoryFullIDs": [
+        "productivity/office-suite",
+        "recommended"
+      ],
       "name": {
         "en": "OX Docs"
       },
@@ -183,7 +193,9 @@
     },
     {
       "id": "google-docs",
-      "categoryFullID": "productivity/office-suite",
+      "categoryFullIDs": [
+        "productivity/office-suite"
+      ],
       "name": {
         "en": "Google Docs"
       },
@@ -196,7 +208,9 @@
     },
     {
       "id": "microsoft-office",
-      "categoryFullID": "productivity/office-suite",
+      "categoryFullIDs": [
+        "productivity/office-suite"
+      ],
       "name": {
         "en": "Microsoft Office 365"
       },
@@ -209,21 +223,10 @@
     },
     {
       "id": "cryptpad",
-      "categoryFullID": "productivity/office-suite",
-      "name": {
-        "en": "CryptPad"
-      },
-      "description": {
-        "en": "The end-to-end encrypted and open-source collaboration suite",
-        "de": "Die durchgängig verschlüsselte und quelloffene Collaboration-Suite"
-      },
-      "homepage": "https://cryptpad.fr",
-      "start": "https://cryptpad.fr/pad/",
-      "icon": "https://cryptpad.fr/customize/CryptPad_logo_hero.svg"
-    },
-    {
-      "id": "cryptpad",
-      "categoryFullID": "recommended",
+      "categoryFullIDs": [
+        "productivity/office-suite",
+        "recommended"
+      ],
       "name": {
         "en": "CryptPad"
       },
