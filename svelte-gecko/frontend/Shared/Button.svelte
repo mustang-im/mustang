@@ -1,4 +1,4 @@
-<button on:click on:dblclick class="button {classes}" class:plain title={label}>
+<button on:click on:dblclick class="button {classes}" class:plain title={label} class:disabled>
   <hbox class="icon">
     {#if icon}
       <Icon data={icon} size={iconSize} />
@@ -24,6 +24,7 @@
   export let plain = false;
   export let iconSize = "16px";
   export let iconOnly = false;
+  export let disabled = false;
 </script>
 
 <style>
@@ -37,18 +38,21 @@
     align-items: center;
     justify-content: center;
   }
-  button.plain {
+  .plain {
     border: none;
     padding: 0 0;
     min-width: 20px;
   }
-  button:hover {
+  button:hover:not(.disabled) {
     background-color: rgba(32, 174, 158, 50%); /* #20AE9E */
+  }
+  .disabled {
+    opacity: 50%;
   }
   .icon {
     margin-right: 0px;
   }
-  button.plain .icon {
+  .plain .icon {
     margin-right: 0;
   }
 </style>

@@ -1,8 +1,7 @@
-<vbox flex class="app">
-  Various web apps, configurable by the user
-</vbox>
+<AppStore />
 
 <script lang="ts">
+  import AppStore from "./AppStore.svelte";
 </script>
 
 <style>
