@@ -3,6 +3,10 @@
     <Categories showCategories={topLevelCategories} allCategories={categories} bind:selected={selectedCategory} />
   </vbox>
   <vbox flex class="apps">
+    <hbox class="toolbar">
+      <hbox flex />
+      <Button on:click={closeStore} label="Close"></Button>
+    </hbox>
     {#if selectedCategory}
       <CategoryPage category={selectedCategory} bind:selectedApp allApps={apps} />
     {/if}
@@ -13,9 +17,12 @@
   import type AppCategory from "../../logic/Apps/AppCategory";
   import type AppListed from "../../logic/Apps/AppListed";
   import { appGlobal } from "../../logic/app";
+  import Button from "../Shared/Button.svelte";
   import Categories from "./Categories.svelte";
   import CategoryPage from "./CategoryPage.svelte";
   import { onMount } from "svelte";
+
+  export let showStore = true; /* in/out */
 
   let appStore = appGlobal.appStore;
   let categories = appStore.categories;
@@ -27,8 +34,12 @@
 
   onMount(async () => {
     await appStore.load();
-    topLevelCategories = $categories.filter(cat => !cat.parentID); // TODO observers not firing
+    selectedCategory = categories.find(cat => cat.fullID == "recommended");
   });
+
+  function closeStore() {
+    showStore = false;
+  }
 </script>
 
 <style>
@@ -37,10 +48,10 @@
     padding: 24px;
     padding-top: 64px;
     font-size: 14px;
+    box-shadow: 3px 1px 8px 0px rgba(22, 12, 39, 8%); /* #160C27 */
   }
   .apps {
-    flex: 3 0 0;
-    box-shadow: inset 3px 1px 8px 0px rgba(22, 12, 39, 8%); /* #160C27 */
+    flex: 4 0 0;
   }
   .categories > :global(.categories > .category > .name) {
     font-weight: bold;

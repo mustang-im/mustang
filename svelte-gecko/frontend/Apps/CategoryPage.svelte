@@ -6,7 +6,7 @@
   <div class="apps">
     {#each $apps.each as app}
       <span class="app">
-        <AppButton {app} bind:selectedApp />
+        <AppShopButton {app} bind:selectedApp />
       </span>
     {/each}
   </div>
@@ -16,7 +16,7 @@
   import type AppCategory from "../../logic/Apps/AppCategory";
   import type AppListed from "../../logic/Apps/AppListed";
   import type { Collection } from "svelte-collections";
-  import AppButton from "./AppButton.svelte";
+  import AppShopButton from "./AppShopButton.svelte";
 
   $: console.log("category page", category);
   export let category: AppCategory;

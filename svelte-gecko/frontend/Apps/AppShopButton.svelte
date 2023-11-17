@@ -1,7 +1,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <vbox class="app" class:selected={app == selectedApp} on:click={onSelect}>
   <vbox class="icon">
-    <img src={app.icon} width="128" height="128" alt="" />
+    <img src={app.icon} width="96" height="96" alt="" />
   </vbox>
   <vbox class="nameDescr">
     <h2 class="name">{app.nameTranslated}</h2>
@@ -36,6 +36,7 @@
 <style>
   .app {
     border: 1px dotted lightgray;
+    border-radius: 3px;
     margin: 4px;
     padding: 12px;
   }
