@@ -2,13 +2,7 @@
 <hbox class="category">
   <hbox flex class="name" on:click={onSelect}>{category.nameTranslated}</hbox>
   {#if hasChildCategories}
-    <hbox class="openClose" on:click={toggleOpenClose}>
-      {#if isOpen}
-        ^
-      {:else}
-        v
-      {/if}
-    </hbox>
+    <Button plain classes="openClose" on:click={toggleOpenClose} icon={isOpen ? collapse : expand} />
   {/if}
 </hbox>
 {#if isOpen}
@@ -21,6 +15,9 @@
   import type AppCategory from "../../logic/Apps/AppCategory";
   import type { MapColl } from "svelte-collections";
   import Categories from "./Categories.svelte";
+  import Button from "../Shared/Button.svelte";
+  import expand from '../asset/icon/general/expand.svg?raw';
+  import collapse from '../asset/icon/general/collapse.svg?raw';
 
   export let allCategories: MapColl<string, AppCategory>;
   export let category: AppCategory;

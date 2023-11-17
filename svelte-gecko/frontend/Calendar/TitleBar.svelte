@@ -1,15 +1,15 @@
 <hbox class="title-bar">
   <hbox class="app-title">Calendar</hbox>
-  <button class="add-button round large" on:click={addEvent}>
-    <Icon data={calendarAdd} scale={1} />
-  </button>
+  <RoundButton classes="add-button" on:click={addEvent}>
+    <Icon slot="icon" data={calendarAdd} scale={1} />
+  </RoundButton>
   <hbox class="date-paging">
-    <button class="previous-button round large" on:click={pagePrevious}>
-      <Icon data={arrowPrevious} scale={1} />
-    </button>        
-    <button class="next-button round large" on:click={pageNext}>
-      <Icon data={arrowNext} scale={1} />
-    </button>        
+    <RoundButton classes="previous-button" on:click={pagePrevious}>
+        <Icon slot="icon" data={arrowPrevious} scale={1} />
+    </RoundButton>
+    <RoundButton classes="next-button" on:click={pageNext}>
+        <Icon slot="icon" data={arrowNext} scale={1} />
+    </RoundButton>
   </hbox>
   <hbox class="spacer" />
   <ViewSelector bind:dateInterval />
@@ -20,6 +20,7 @@
 <script lang="ts">
   import type { DateInterval } from "./selected";
   import ViewSelector from "./ViewSelector.svelte";
+  import RoundButton from "../Shared/RoundButton.svelte";
   import Icon from 'svelte-awesome';
   import calendarAdd from 'svelte-awesome/icons/calendarPlusO';
   import arrowPrevious from 'svelte-awesome/icons/chevronLeft';
@@ -67,13 +68,14 @@
   .date-range {
     font-size: 200%;
   }
-  button {
-    margin: 8px;
-  }
-  .next-button, .previous-button {
-    margin: 8px;
-    background-color: inherit;
+  .title-bar :global(.add-button),
+  .title-bar :global(.next-button),
+  .title-bar :global(.previous-button) {
+    margin: 4px;
+    width: 48px;
+    height: 48px;
     color: inherit;
-    border: 1px solid black;
+    align-items: center;
+    justify-content: center;
   }
 </style>

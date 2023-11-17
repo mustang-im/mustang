@@ -5,7 +5,7 @@
   <vbox flex class="apps">
     <hbox class="toolbar">
       <hbox flex />
-      <Button on:click={closeStore} label="Close"></Button>
+      <RoundButton on:click={closeStore} icon={close} iconOnly label="Close" />
     </hbox>
     {#if selectedCategory}
       <CategoryPage category={selectedCategory} bind:selectedApp allApps={apps} />
@@ -17,9 +17,10 @@
   import type AppCategory from "../../logic/Apps/AppCategory";
   import type AppListed from "../../logic/Apps/AppListed";
   import { appGlobal } from "../../logic/app";
-  import Button from "../Shared/Button.svelte";
+  import RoundButton from "../Shared/RoundButton.svelte";
   import Categories from "./Categories.svelte";
   import CategoryPage from "./CategoryPage.svelte";
+  import close from '../asset/icon/general/close.svg?raw';
   import { onMount } from "svelte";
 
   export let showStore = true; /* in/out */
@@ -52,6 +53,9 @@
   }
   .apps {
     flex: 4 0 0;
+  }
+  .toolbar {
+    margin: 16px 16px 0px 16px;
   }
   .categories > :global(.categories > .category > .name) {
     font-weight: bold;

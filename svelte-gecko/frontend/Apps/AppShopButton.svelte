@@ -60,4 +60,7 @@
   .actions {
     align-items: center;
   }
+  .homepage {
+    font-size: 12px;
+  }
 </style>
