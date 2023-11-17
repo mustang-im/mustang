@@ -1,0 +1,212 @@
+{
+  "categories": [
+    {
+      "id": "productivity",
+      "parentID": null,
+      "fullID": "productivity",
+      "name": {
+        "en": "Productivity",
+        "de": "Büro und Produktivität"
+      },
+      "description": {
+        "en": "Apps for the daily office work, which are used by many different industries and jobs.",
+        "de": "Anwendungen für den Büro-Alltag, die von vielen verschiendenen Branchen und Jobs benutzt werden."
+      }
+    },
+    {
+      "id": "office-suite",
+      "parentID": "productivity",
+      "fullID": "productivity/office-suite",
+      "name": {
+        "en": "Office suite",
+        "de": "Büro-Paket"
+      },
+      "description": {
+        "en": "Word processor, spread sheet etc. in one package",
+        "de": "Text-Verarbeitung, Tabellen-Kalkulation usw. in einem Paket."
+      }
+    },
+    {
+      "id": "word-processing",
+      "parentID": "productivity",
+      "fullID": "productivity/word-processing",
+      "name": {
+        "en": "Word processing",
+        "de": "Text-Verarbeitung"
+      },
+      "description": {}
+    },
+    {
+      "id": "text-editor",
+      "parentID": "productivity",
+      "fullID": "productivity/text-editor",
+      "name": {
+        "en": "Text editor",
+        "de": "Einfacher Text-Editor"
+      },
+      "description": {
+        "en": "Edit simple text files without formatting, or markup as used in Wikipedia and Markdown",
+        "de": "Bearbeiten von einfachen Text-Dateien ohne Formattierung, oder ähnlich Markdown und Wikipedia-Texten"
+      }
+    },
+    {
+      "id": "graphics",
+      "parentID": null,
+      "fullID": "graphics",
+      "name": {
+        "en": "Graphics",
+        "de": "Graphik"
+      },
+      "description": {
+        "en": "Drawing, painting and modelling.",
+        "de": "Zeichnen, malen, und modellieren."
+      }
+    },
+    {
+      "id": "vector",
+      "parentID": "graphics",
+      "fullID": "graphics/vector",
+      "name": {
+        "en": "Drawing and vector graphics",
+        "de": "Zeichnen und Vektor-Graphik"
+      },
+      "description": {
+        "en": "Draw lines, curves, shapes and text on a canvas",
+        "de": "Linen, Kurven, Formen und Text auf eine Leinwnd zeichnen."
+      }
+    },
+    {
+      "id": "bitmap",
+      "parentID": "graphics",
+      "fullID": "graphics/bitmap",
+      "name": {
+        "en": "Paint",
+        "de": "Malen"
+      },
+      "description": {
+        "en": "Paint and modify images and photos based on pixels",
+        "de": "Malen, und Bilder und Photos mittels Pixeln bearbeiten."
+      }
+    },
+    {
+      "id": "diagram",
+      "parentID": "graphics",
+      "fullID": "graphics/diagram",
+      "name": {
+        "en": "Diagram",
+        "de": "Diagramme"
+      },
+      "description": {
+        "en": "Create diagrams to illustrate and work on concepts",
+        "de": "Diagramme zur Illustration erstellen und an Konzepten arbeiten."
+      }
+    },
+    {
+      "id": "ui",
+      "parentID": "graphics",
+      "fullID": "graphics/ui",
+      "name": {
+        "en": "UI and UX",
+        "de": "UI"
+      },
+      "description": {
+        "en": "Mockups and prototypes for user interfaces",
+        "de": "Gestaltung von Benutzeroberflächen"
+      }
+    }
+  ],
+  "apps": [
+    {
+      "id": "miro",
+      "categoryFullID": "graphics/diagram",
+      "name": {
+        "en": "Miro"
+      },
+      "description": {
+        "en": "Visual infinite-zoom workspace for mind maps, illustrations, diagrams, flowcharts, and business models.",
+        "de": "Visuelles Arbeitsblatt mit unbegrenztem Zoom für Mind Maps, Illustrationen, Diagramme, Fluss-Diagramme, und Geschäftsmodelle."
+      },
+      "homepage": "https://www.miro.com",
+      "icon": "https://miro.com/blog/wp-content/uploads/2019/10/icon.svg"
+    },
+    {
+      "id": "figma",
+      "categoryFullID": "graphics/ui",
+      "name": {
+        "en": "Figma"
+      },
+      "description": {
+        "en": "Create mockups for user interfaces, websites and design icons",
+        "de": "Gestalte Benutzeroberflächen, Websites und Icons"
+      },
+      "homepage": "https://www.figma.com",
+      "icon": "https://s3-alpha.figma.com/hub/file/1481185752/fa4cd070-6a79-4e1b-b079-8b9b76408595-cover.png"
+    },
+    {
+      "id": "collabora",
+      "categoryFullID": "productivity/office-suite",
+      "name": {
+        "en": "Collabora"
+      },
+      "description": {
+        "en": "Your own private office suite in the Cloud that supports all major document, spreadsheet and presentation file formats"
+      },
+      "homepage": "https://www.collaboraoffice.com/collabora-online/",
+      "pricePage": "https://www.collaboraoffice.com/subscriptions/",
+      "start": "https://www.collaboraoffice.com",
+      "icon": "https://wiki.calculate-linux.org/download_images/original/xcollabora-logo.png.pagespeed.ic.acN5E7XQKT.png"
+    },
+    {
+      "id": "ox-docs",
+      "categoryFullID": "productivity/office-suite",
+      "name": {
+        "en": "OX Docs"
+      },
+      "description": {
+        "en": "Create and edit text documents, spreadsheets and presentations with OX Documents, which power up office capabilities for private and small business users."
+      },
+      "homepage": "https://www.open-xchange.com/products/ox-documents/",
+      "icon": "https://avatars.githubusercontent.com/u/5494836?s=200&v=4"
+    },
+    {
+      "id": "google-docs",
+      "categoryFullID": "productivity/office-suite",
+      "name": {
+        "en": "Google Docs"
+      },
+      "description": {
+        "en": " Seamless collaboration, from anywhere. Edit together in real-time with easy sharing, and use comments, suggestions, and action items to keep things moving.",
+        "de": "Nahtlos zusammenarbeiten – von überall aus. Sie können Dokumente ganz einfach freigeben und in Echtzeit gemeinsam bearbeiten, mit Kommentaren, Vorschlägen und zugewiesenen Aufgaben."
+      },
+      "homepage": "https://www.google.com/docs/about/",
+      "icon": "https://upload.wikimedia.org/wikipedia/commons/0/01/Google_Docs_logo_%282014-2020%29.svg"
+    },
+    {
+      "id": "microsoft-office",
+      "categoryFullID": "productivity/office-suite",
+      "name": {
+        "en": "Microsoft Office 365"
+      },
+      "description": {
+        "en": "The well-known Microsoft Office-Suite is now running on the Web",
+        "de": "Die bekannte Microsoft Office-Suite läuft jetzt im Web"
+      },
+      "homepage": "https://www.microsoft.com/microsoft-365/free-office-online-for-the-web",
+      "icon": "https://vstpatch.net/wp-content/uploads/2021/07/Microsoft_Office_logo_2013%E2%80%932019.svg_.png"
+    },
+    {
+      "id": "cryptpad",
+      "categoryFullID": "productivity/office-suite",
+      "name": {
+        "en": "CryptPad"
+      },
+      "description": {
+        "en": "The end-to-end encrypted and open-source collaboration suite",
+        "de": "Die durchgängig verschlüsselte und quelloffene Collaboration-Suite"
+      },
+      "homepage": "https://cryptpad.fr",
+      "start": "https://cryptpad.fr/pad/",
+      "icon": "https://cryptpad.fr/customize/CryptPad_logo_hero.svg"
+    }
+  ]
+}
