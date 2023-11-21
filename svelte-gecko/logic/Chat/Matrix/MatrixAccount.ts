@@ -16,6 +16,7 @@ export class MatrixAccount extends ChatAccount {
   username: string;
   password: string;
   deviceID: string;
+  globalUserID: string;
   /** Login to this account on the server. Opens network connection.
    * You must call this after creating the object and having set its properties.
    * This will populate `persons` and `chats`. */
@@ -31,6 +32,7 @@ export class MatrixAccount extends ChatAccount {
     await this.client.loginWithPassword(this.username, this.password);
     await this.client.startClient();
     await this.waitForEvent("sync"); // Sync finished
+    await this.getOwnUserInfo();
 
     this.getRooms();
     this.listenToRoomMessages();
@@ -39,6 +41,10 @@ export class MatrixAccount extends ChatAccount {
     await new Promise((resolve, reject) => {
       this.client.once(eventName, (...results) => resolve(results));
     });
+  }
+  async getOwnUserInfo() {
+    let userInfo = await this.client.whoami();
+    this.globalUserID = userInfo.user_id;
   }
   async getRooms() {
     let allRooms = await this.client.getRooms();
@@ -87,10 +93,13 @@ export class MatrixAccount extends ChatAccount {
     let sender = appGlobal.persons.find(person => person.chatAccounts.find(acc => acc.value == senderUserID));
     let msg = new Message();
     let content = event.getContent().body;
-    content = JSON.stringify(event.event?.content ?? event, null, 2); // TODO
+    if (!content) { // TODO
+      content = JSON.stringify(event.event?.content ?? event, null, 2);
+    }
     msg.text = content;
+    msg.html = content;
     msg.contact = sender;
-    msg.outgoing = false;
+    msg.outgoing = senderUserID == this.globalUserID;
     let sent = new Date();
     sent.setTime(Date.now() - (event.unsigned?.age ?? 0));
     msg.sent = msg.received = sent;
