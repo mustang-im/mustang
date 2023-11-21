@@ -19,13 +19,13 @@
 </hbox>
 
 <script lang="ts">
-  import type { ChatPerson } from "../../logic/Chat/Person";
+  import type { Contact } from "../../logic/Abstract/Contact";
   import meet from '../asset/icon/appBar/meet.svg?raw';
   import settings from '../asset/icon/general/settings.svg?raw';
   import RoundButton from "../Shared/RoundButton.svelte";
   import Button from "../Shared/Button.svelte";
 
-  export let person: ChatPerson;
+  export let person: Contact;
 </script>
 
 <style>

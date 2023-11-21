@@ -1,29 +1,30 @@
 <hbox flex class="person">
   <vbox class="image">
     <img
-      src={person.picture}
+      src={chatRoom.contact.picture}
       width="64" height="64"
-      title="Picture of {person.name}"
-      alt="Picture of {person.name}" />
+      title="Picture of {chatRoom.contact.name}"
+      alt="" />
   </vbox>
   <vbox flex class="right">
     <hbox class="right-top">
-      <hbox flex class="name">{person.name}</hbox>
-      {#if person.lastMessage}
-        <hbox class="last-time">{getDateString(person.lastMessage.sent)}</hbox>
+      <hbox flex class="name">{chatRoom.name}</hbox>
+      {#if lastMessage}
+        <hbox class="last-time">{getDateString(lastMessage.sent)}</hbox>
       {/if}
     </hbox>
-    {#if person.lastMessage}
-      <hbox flex class="last-msg">{person.lastMessage.text.substring(0, 50)}</hbox>
+    {#if lastMessage}
+      <hbox flex class="last-msg">{lastMessage.text.substring(0, 50)}</hbox>
     {/if}
   </vbox>
 </hbox>
 
 <script lang="ts">
-  import type { ChatPerson } from "../../logic/Chat/Person";
+  import type { Chat } from "../../logic/Chat/Chat";
   import { getDateString } from "../Util/date";
 
-  export let person: ChatPerson;
+  export let chatRoom: Chat;
+  $: lastMessage = chatRoom.lastMessage;
 </script>
 
 <style>

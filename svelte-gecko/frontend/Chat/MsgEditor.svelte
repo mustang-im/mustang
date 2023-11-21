@@ -9,16 +9,12 @@
 </hbox>
 
 <script lang="ts">
-  import type { ChatAccount } from "../../logic/Chat/Account";
+  import type { Chat } from "../../logic/Chat/Chat";
   import { ChatMessage } from "../../logic/Chat/Message";
-  import type { ChatPerson } from "../../logic/Chat/Person";
   import Icon from 'svelte-awesome';
   import sendIcon from 'svelte-awesome/icons/send';
 
-  export let to: ChatPerson;
-  export let from: ChatAccount;
-
-  let text: string;
+  export let to: Chat;
 
   function send() {
     console.log("sending " + to.draftMessage + " to " + to.name);
@@ -26,9 +22,10 @@
     msg.outgoing = true;
     msg.text = to.draftMessage;
     msg.html = msg.text;
-    msg.contact = to;
+    msg.to = to;
+    msg.contact = to.contact;
     msg.sent = new Date();
-    from.chats.get(to)?.messages.add(msg);
+    to.messages.add(msg);
     to.draftMessage = "";
   }
 </script>

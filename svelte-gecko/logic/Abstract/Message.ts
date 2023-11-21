@@ -1,4 +1,4 @@
-import type { Person } from "./Person";
+import type { Contact } from "./Contact";
 
 export class Message {
   outgoing = false;
@@ -6,7 +6,7 @@ export class Message {
    * Who this message was exchanged with.
    * if outgoing = true, this is the recipient, otherwise the sender
    */
-  contact: Person;
+  contact: Contact;
   /** When the message was sent */
   sent: Date;
   /** When the message was received */
