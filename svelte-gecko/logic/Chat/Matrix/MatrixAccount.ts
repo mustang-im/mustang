@@ -27,7 +27,7 @@ export class MatrixAccount extends ChatAccount {
       deviceId: this.deviceID,
     });
     //(window as any).olm = olm;
-    //await this.client.initCrypto();
+    await this.client.initCrypto();
     await this.client.loginWithPassword(this.username, this.password);
     await this.client.startClient();
     await this.waitForEvent("sync"); // Sync finished
