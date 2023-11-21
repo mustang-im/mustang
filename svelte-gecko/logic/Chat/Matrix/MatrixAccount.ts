@@ -1,5 +1,7 @@
 import { ChatAccount } from '../Account';
 import { Chat } from '../Chat';
+import { UserChatMessage } from '../Message';
+import { ChatRoomEvent } from '../ChatRoomEvent';
 import { Group } from '../../Abstract/Group';
 import { appGlobal } from '../../app';
 import { ChatPerson } from '../Person';
@@ -27,7 +29,7 @@ export class MatrixAccount extends ChatAccount {
       deviceId: this.deviceID,
     });
     //(window as any).olm = olm;
-    await this.client.initCrypto();
+    //await this.client.initCrypto();
     await this.client.loginWithPassword(this.username, this.password);
     await this.client.startClient();
     await this.waitForEvent("sync"); // Sync finished
@@ -58,12 +60,15 @@ export class MatrixAccount extends ChatAccount {
     for (let member of room.getJoinedMembers()) {
       group.participants.add(this.getPerson(member));
     }
-    chatRoom.contact = group.participants.length <= 2
+    chatRoom.contact = group.participants.length <= 2 && group.participants.find(person => person.id == this.globalUserID)
       ? (group.participants.find(person => person.id != this.globalUserID) ?? group.participants.first)
       : group;
     //let init = await this.client.roomInitialSync(room.roomId);
     for (let event of room.getLiveTimeline().getEvents()) {
-      chatRoom.messages.add(this.createMessage(event));
+      let msg = this.getEvent(event)
+      if (msg instanceof UserChatMessage) { // when joining, we add only user messages
+        chatRoom.messages.add(this.getUserMessage(event));
+      }
     }
     chatRoom.lastMessage = chatRoom.messages.get(chatRoom.messages.length - 1);
     this.chats.set(chatRoom.contact, chatRoom);
@@ -86,22 +91,40 @@ export class MatrixAccount extends ChatAccount {
     appGlobal.persons.add(person);
     return person;
   }
-  createMessage(event): Message {
-    let senderUserID = event.getSender();
-    let sender = appGlobal.persons.find(person => person.chatAccounts.find(acc => acc.value == senderUserID));
-    let msg = new Message();
+  getEvent(event): Message {
+    let type = event.getType();
+    if (type == "m.room.message") {
+      return this.getUserMessage(event);
+    } else {
+      return this.getChatRoomMessage(event);
+    }
+  }
+  getUserMessage(event): Message {
+    let msg = new UserChatMessage();
+    this.fillMessage(event, msg);
     let content = event.getContent().body;
     msg.text = content;
     msg.html = content;
-    if (!content) { // TODO
-      let json = JSON.stringify(event.event?.content ?? event, null, 2);
-      msg.text = json.substring(2, json.length - 2);
-      msg.html = `<pre>${msg.text}</pre>`;
-    }
+    return msg;
+  }
+  getChatRoomMessage(event): Message {
+    let msg = new ChatRoomEvent();
+    this.fillMessage(event, msg);
+    let json = JSON.stringify(event.event?.content ?? event, null, 2);
+    msg.text = json.substring(2, json.length - 2);
+    msg.html =
+      `<div>
+        <h4>${event.getType()}</h4>
+        <pre>${msg.text}</pre>
+      </div>`;
+    return msg;
+  }
+  fillMessage(event, msg: Message): void {
+    msg.sent = msg.received = new Date(event.getTs());
+    let senderUserID = event.getSender();
+    let sender = appGlobal.persons.find(person => person.chatAccounts.find(acc => acc.value == senderUserID));
     msg.contact = sender;
     msg.outgoing = senderUserID == this.globalUserID;
-    msg.sent = msg.received = new Date(event.getTs());
-    return msg;
   }
   /** Listen to messages for all rooms */
   listenToRoomMessages() {
@@ -110,11 +133,8 @@ export class MatrixAccount extends ChatAccount {
         if (toStartOfTimeline) {
           return; // no paginated results
         }
-        if (event.getType() !== "m.room.message") {
-          return; // only messages
-        }
         let chatRoom = this.getExistingRoom(room.id);
-        let message = this.createMessage(event);
+        let message = this.getEvent(event);
         chatRoom.messages.add(message);
         chatRoom.lastMessage = message;
       } catch (ex) {
