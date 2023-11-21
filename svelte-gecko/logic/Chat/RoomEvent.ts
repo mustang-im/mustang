@@ -13,6 +13,10 @@ export class JoinLeave extends ChatRoomEvent {
   /** true = the contact joined the chat room.
    * false = the contact left the chat room. */
   join: boolean;
+  invite: boolean;
+}
+
+export class Invite extends ChatRoomEvent {
 }
 
 export class RoomNameChange extends ChatRoomEvent {
