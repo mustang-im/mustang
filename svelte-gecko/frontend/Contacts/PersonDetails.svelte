@@ -11,9 +11,15 @@
         </vbox>
         <vbox flex class="main-info">
           <h1 class="name">{person.name}</h1>
-          <div class="position">{person.position}</div>
-          <div class="department">{person.department}</div>
-          <div class="company">{person.company}</div>
+          {#if person.position}
+            <div class="position">{person.position}</div>
+          {/if}
+          {#if person.department}
+            <div class="department">{person.department}</div>
+          {/if}
+          {#if person.company}
+            <div class="company">{person.company}</div>
+          {/if}
         </vbox>
       </hbox>
       <vbox flex class="main-right">
@@ -188,7 +194,7 @@
   import RoundButton from "../Shared/RoundButton.svelte";
 
   export let person: Person;
-  $: person.name = person.firstName + " " + person.lastName;
+  $: person.name = person.name ?? person.firstName + " " + person.lastName;
 
   $: emailAddresses = person.emailAddresses;
   $: phoneNumbers = person.phoneNumbers;

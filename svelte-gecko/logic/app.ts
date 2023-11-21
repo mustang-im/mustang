@@ -5,8 +5,9 @@ import type { VideoConfMeeting } from './Meet/VideoConfMeeting';
 import type { Calendar } from './Calendar/Calendar';
 import type { Directory } from './Files/File';
 import Apps from './Apps/Apps';
-import { ArrayColl } from 'svelte-collections';
+import { readChatAccounts } from './Chat/Accounts';
 import { getTestObjects } from './testData';
+import { ArrayColl, Collection } from 'svelte-collections';
 import JPCWebSocket from 'jpc-ws';
 
 export class AppGlobal {
@@ -26,6 +27,10 @@ export let appGlobal = new AppGlobal();
 const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
 
 export async function getStartObjects(): Promise<AppGlobal> {
+  appGlobal.chatAccounts.addAll(await readChatAccounts());
+  for (let chatAccount of appGlobal.chatAccounts) {
+    await chatAccount.login();
+  }
   return getTestObjects();
   /*
   let jpc = new JPCWebSocket(null);

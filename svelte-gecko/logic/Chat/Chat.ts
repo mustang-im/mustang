@@ -3,6 +3,7 @@ import type { ChatMessage } from "./Message";
 import { ArrayColl } from 'svelte-collections';
 
 export class Chat {
+  id: string; // Protocol-specific
   contact: Contact;
   messages = new ArrayColl<ChatMessage>();
   lastMessage = null; // Calculating this would be very slow
