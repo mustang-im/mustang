@@ -3,22 +3,26 @@ import { ChatAccount } from './Chat/Account';
 import { ChatMessage } from './Chat/Message';
 import { ChatPerson } from './Chat/Person';
 import { faker } from '@faker-js/faker';
-import { ContactEntry } from './Abstract/Person';
+import { ContactEntry, Person } from './Abstract/Person';
 import { Chat } from './Chat/Chat';
 import { VideoConfMeeting } from './Meet/VideoConfMeeting';
 import { Directory, File } from './Files/File';
 import { Calendar } from './Calendar/Calendar';
 import { Event } from './Calendar/Event';
 import { Contact } from './Abstract/Contact';
+import { ArrayColl, type Collection } from 'svelte-collections';
 
 export async function getTestObjects(): Promise<AppGlobal> {
   let appGlobal = new AppGlobal();
+  appGlobal.persons.addAll(fakePersons());
+  appGlobal.chatAccounts.add(fakeChatAccount(appGlobal.persons));
+  appGlobal.calendars.add(fakeCalendar());
+  appGlobal.files.addAll(fakeSharedDir(appGlobal.persons));
+  return appGlobal;
+}
 
-  /* Chat */
-  let chatAccount = new ChatAccount();
-  chatAccount.name = "Test chat 1";
-  appGlobal.chatAccounts.add(chatAccount);
-
+function fakePersons(): Collection<Person> {
+  let persons = new ArrayColl<Person>();
   for (let i = 1; i < 50; i++) {
     let person = new ChatPerson();
     person.id = "p-c-" + i;
@@ -40,13 +44,21 @@ export async function getTestObjects(): Promise<AppGlobal> {
     person.company = faker.company.name();
     person.department = faker.commerce.department();
     person.position = faker.company.bsNoun();
+    persons.add(person);
+  }
+  return persons;
+}
 
+function fakeChatAccount(persons: Collection<Person>): ChatAccount {
+  let chatAccount = new ChatAccount();
+  chatAccount.name = "Test chat 1";
+
+  for (let person of persons) {
     let chat = new Chat();
     chat.contact = new Contact();
     chat.contact.person = person;
     chatAccount.chats.set(person, chat);
     chatAccount.persons.add(person);
-    appGlobal.persons.add(person);
 
     let messages = chat.messages;
     for (let i = 1; i < 300; i++) {
@@ -62,10 +74,11 @@ export async function getTestObjects(): Promise<AppGlobal> {
     }
     chat.lastMessage = messages.sortBy(msg => -msg.sent).first;
   }
+  return chatAccount;
+}
 
-  /* Calendar */
+function fakeCalendar(): Calendar {
   let calendar = new Calendar();
-  appGlobal.calendars.add(calendar);
   for (let i = 1; i < 50; i++) {
     let event = new Event();
     event.startTime = i < 5 ? faker.date.recent() : faker.date.future(0.2);
@@ -78,26 +91,27 @@ export async function getTestObjects(): Promise<AppGlobal> {
     event.location = faker.datatype.boolean ? faker.address.streetAddress() : faker.address.nearbyGPSCoordinate().join(", ");
     calendar.events.add(event);
   }
+  return calendar;
+}
 
-  /* Files */
+function fakeSharedDir(persons: Collection<Person>): Collection<Directory> {
+  let directories = new ArrayColl<Directory>();
   let sharedDirectory = new Directory();
   sharedDirectory.name = "shared";
   sharedDirectory.id = "/shared";
-  appGlobal.files.add(sharedDirectory);
-  for (let person of appGlobal.persons) {
+  for (let person of persons) {
     let personDirectory = new Directory();
     personDirectory.name = person.name;
     personDirectory.sentToFrom = person;
     personDirectory.lastMod = faker.date.past();
     personDirectory.setParent(sharedDirectory);
-    appGlobal.files.add(personDirectory);
+    directories.add(personDirectory);
     let dirCount = 2 + Math.random() * 10;
     for (let i = 0; i < dirCount; i++) {
       fakeDir(personDirectory).sentToFrom = person;
     }
   }
-
-  return appGlobal;
+  return directories;
 }
 
 function fakeDir(parentDir: Directory): Directory {
