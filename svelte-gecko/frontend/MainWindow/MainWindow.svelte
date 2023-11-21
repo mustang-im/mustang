@@ -6,7 +6,7 @@
       {#if selectedApp == AppArea.Mail}
         <MailApp />
       {:else if selectedApp == AppArea.Chat}
-        <ChatApp account={appGlobal.chatAccounts.first} />
+        <ChatApp {chatRooms} />
       {:else if selectedApp == AppArea.Meet}
         <MeetApp />
       {:else if selectedApp == AppArea.Contacts}
@@ -36,14 +36,19 @@
   import { appGlobal } from "../../logic/app";
   import { onMount } from "svelte";
   import WindowHeader from "./WindowHeader.svelte";
+  import { type Collection, mergeColls } from "svelte-collections";
+  import type { Chat } from "../../logic/Chat/Chat";
 
   let selectedApp = AppArea.Mail;
+  let chatRooms: Collection<Chat>;
 
   onMount(async() => {
     let app = await getTestObjects();
     for (let prop in app) {
       appGlobal[prop] = app[prop];
     }
+
+    chatRooms = mergeColls(appGlobal.chatAccounts.map(a => a.chats));
   })
 </script>
 

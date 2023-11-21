@@ -1,9 +1,9 @@
 <vbox flex class="persons">
   <Scroll>
-    {#each persons.each as person}
+    {#each chatRoomsSorted.each as chatRoom}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <vbox class="person" class:selected={person == selected} on:click={() => selected = person}>
-        <PersonLine {person} />
+      <vbox class="person" class:selected={chatRoom == selected} on:click={() => selected = chatRoom}>
+        <PersonLine chatRoom={chatRoom} />
       </vbox>
     {/each}
   </Scroll>
@@ -11,12 +11,14 @@
 
 <script lang="ts">
   import type { Collection } from "svelte-collections";
-  import type { Person } from "../../logic/Abstract/Person";
+  import type { Chat } from "../../logic/Chat/Chat";
   import PersonLine from "./PersonLine.svelte";
   import Scroll from "../Shared/Scroll.svelte";
 
-  export let persons: Collection<Person>;
-  export let selected: Person = null;
+  export let chatRooms: Collection<Chat>;
+  export let selected: Chat = null;
+
+  $: chatRoomsSorted = chatRooms.sortBy(chat => -chat.lastMessage?.sent);
 </script>
 
 <style>

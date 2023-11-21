@@ -9,6 +9,7 @@ import { VideoConfMeeting } from './Meet/VideoConfMeeting';
 import { Directory, File } from './Files/File';
 import { Calendar } from './Calendar/Calendar';
 import { Event } from './Calendar/Event';
+import { Contact } from './Abstract/Contact';
 
 export async function getTestObjects(): Promise<AppGlobal> {
   let appGlobal = new AppGlobal();
@@ -41,6 +42,8 @@ export async function getTestObjects(): Promise<AppGlobal> {
     person.position = faker.company.bsNoun();
 
     let chat = new Chat();
+    chat.contact = new Contact();
+    chat.contact.person = person;
     chatAccount.chats.set(person, chat);
     chatAccount.persons.add(person);
     appGlobal.persons.add(person);
@@ -48,7 +51,8 @@ export async function getTestObjects(): Promise<AppGlobal> {
     let messages = chat.messages;
     for (let i = 1; i < 300; i++) {
       let msg = new ChatMessage();
-      msg.contact = person;
+      msg.to = chat;
+      msg.contact = chat.contact;
       msg.outgoing = Math.random() < 0.4;
       msg.sent = faker.date.past(0.1);
       msg.received = new Date(msg.sent.getMilliseconds() + 500);
@@ -56,7 +60,7 @@ export async function getTestObjects(): Promise<AppGlobal> {
       msg.html = msg.text;
       messages.add(msg);
     }
-    person.lastMessage = messages.sortBy(msg => msg.sent).reverse().first;
+    chat.lastMessage = messages.sortBy(msg => -msg.sent).first;
   }
 
   /* Calendar */
