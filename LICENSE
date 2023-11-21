@@ -763,17 +763,21 @@ software development process, and you received the full version history as
 source code from us, we consider the full version history the
 "preferred form of the work for making modifications to it". That includes the
 commits and commit granularity your team used during its own work process and
-source code modifications. The version history contains essential information.
+source code modifications.
+We do not require you to use git or any specific software, but whatever
+change management system and granularity you use in your own development, you need to share.
+This is what 'preferred form for making modifications' means for us.
+The version history contains essential information.
 This project defines "source code" to include the commit history.
 
 You may strip files not covered by the license from the repository,
 as long as you adhere to the other requirements. In any case, the resulting
 commits must match the commit contents that your own developers work with,
 and the commit IDs for these commits need to stay stable and unchanged
-across releases, so that merges between your changes and ours can work
+across all releases, so that merges between your changes and ours can work
 correctly and automatically over time and releases.
 
-Archive source drops do not count as workable "source code" in 2020 anymore!
+Archive source drops do not count as workable "source code" in 2020 anymore.
 At least not as far as this project is concerned.
 
 ### Copyright notices
@@ -783,8 +787,9 @@ as your own copyright and origin notices. You cannot claim "(c) Gnomovision"
 and then hide the open source authors behind extra clicks.
 See e.g. LGPL v2.1 Section 6 "Prominent notice" and GPL v2 Section 3
 "when started, display an announcement".
+That includes for example typical splash screens or similar, if your application has one.
 
-We would like it to be clearly evident to your end users that your program
+We would like it to be clearly evident to your *end users* that your program
 is based on this program and our work.
 
 ### Addons
@@ -805,11 +810,12 @@ could circumvent the entire license. Compare GPL 2.0 Section 10.
 When you make modifications and you keep this paragraph,
 you additionally give Ben Bucksch (the original author) the right to
 additionally license the modified work including your modifications
-under different terms. This is similar to MPL 1.1 Section 6.1. This allows
+under different terms. This is similar to MPL 1.1 Section 6.1. This allows for example
 license changes without contacting all authors individually.
 
 If you do not wish to do so, please remove the last paragraph,
 starting with the heading "Additional licenses".
+You must not remove the previous sections.
 
-In any case, your rights under this license for this work remain in effect forever.
+Either way, your rights under this license for this work remain in effect forever.
 You may continue to use the work under this license.
