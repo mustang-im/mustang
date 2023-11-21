@@ -1,8 +1,7 @@
+import { Contact } from './Contact';
 import { ArrayColl } from 'svelte-collections';
 
-export class Person {
-  id: string;
-  name: string;
+export class Person extends Contact {
   firstName: string;
   lastName: string;
   emailAddresses = new ArrayColl<ContactEntry>();
@@ -11,7 +10,6 @@ export class Person {
   groups = new ArrayColl<ContactEntry>();
   streetAddresses = new ArrayColl<ContactEntry>();
   notes = "";
-  picture: string; // URL
 
   company: string;
   department: string;

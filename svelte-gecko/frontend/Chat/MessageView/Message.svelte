@@ -11,7 +11,7 @@
         src={message.contact.picture}
         width="32" height="32"
         title="Picture of {message.contact.name}"
-        alt="Picture of {message.contact.name}" />
+        alt="" />
     </vbox>
   {/if}
   <vbox class="right">
