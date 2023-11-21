@@ -36,15 +36,29 @@
   import { appGlobal } from "../../logic/app";
   import { onMount } from "svelte";
   import WindowHeader from "./WindowHeader.svelte";
-  import { type Collection, mergeColls } from "svelte-collections";
+  import { mergeColls, type Collection } from "svelte-collections";
   import type { Chat } from "../../logic/Chat/Chat";
-  import { DebugObserver } from "../../logic/util/DebugObserver";
 
   let selectedApp = AppArea.Mail;
   let chatRooms: Collection<Chat>;
 
+  /*
+  import { DebugObserver } from "../../logic/util/DebugObserver";
+  import { Contact } from "../../logic/Abstract/Contact";
+  import { ChatPerson } from "../../logic/Chat/Person";
+
   $: chatRooms?.registerObserver(new DebugObserver());
   $: console.log("main window: chat room", $chatRooms?.contents);
+  setTimeout(() => {
+    let chatRoom = new Chat();
+    chatRoom.contact = new Contact();
+    chatRoom.contact.person = new ChatPerson();
+    chatRoom.contact.person.name = "Dummy";
+    //chatRooms.add(chatRoom);
+    console.log("chat account after 3s", appGlobal.chatAccounts.first);
+    appGlobal.chatAccounts.first?.chats.add(chatRoom);
+  }, 3000);
+  */
 
   onMount(async() => {
     let app = await getTestObjects();
