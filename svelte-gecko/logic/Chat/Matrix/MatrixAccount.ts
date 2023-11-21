@@ -32,7 +32,6 @@ export class MatrixAccount extends ChatAccount {
     await this.client.loginWithPassword(this.username, this.password);
     await this.client.startClient();
     await this.waitForEvent("sync"); // Sync finished
-    await this.getOwnUserInfo();
 
     this.getRooms();
     this.listenToRoomMessages();
@@ -41,10 +40,6 @@ export class MatrixAccount extends ChatAccount {
     await new Promise((resolve, reject) => {
       this.client.once(eventName, (...results) => resolve(results));
     });
-  }
-  async getOwnUserInfo() {
-    let userInfo = await this.client.whoami();
-    this.globalUserID = userInfo.user_id;
   }
   async getRooms() {
     let allRooms = await this.client.getRooms();
@@ -55,20 +50,23 @@ export class MatrixAccount extends ChatAccount {
   getNewRoom(room: Room) {
     let chatRoom = new Chat();
     chatRoom.id = room.roomId;
-    let contact = new Contact();
+    console.log("Added room", room.name);
+    if (!this.globalUserID) {
+      this.globalUserID = room.myUserId;
+    }
     let group = new Group();
     group.name = room.name;
-    console.log("Added room", room.name, room.roomId);
-    contact.group = group;
-    chatRoom.contact = contact;
     for (let member of room.getJoinedMembers()) {
       group.participants.add(this.getPerson(member));
     }
+    chatRoom.contact = group.participants.length <= 2
+      ? (group.participants.find(person => person.id != this.globalUserID) ?? group.participants.first)
+      : group;
     for (let event of room.getLiveTimeline().getEvents()) {
       chatRoom.messages.add(this.createMessage(event));
     }
     chatRoom.lastMessage = chatRoom.messages.get(chatRoom.messages.length - 1);
-    this.chats.set(group, chatRoom);
+    this.chats.set(chatRoom.contact, chatRoom);
   }
   getExistingRoom(roomID: string): Chat {
     return this.chats.find(chat => chat.id == roomID);
@@ -81,7 +79,7 @@ export class MatrixAccount extends ChatAccount {
     let person = new ChatPerson();
     person.name = member.name;
     person.chatAccounts.add(new ContactEntry(member.userId, "matrix"));
-    let picURL = member.getAvatarUrl(this.baseURL, 64, 64, "scale", true, true);
+    let picURL = member.getAvatarUrl(this.baseURL, 64, 64, "scale", true, false);
     // let picMXC = member.getMxcAvatarUrl();
     // let picURL = getHttpUriForMxc(this.baseURL, picMXC, 64, 64, "scale", true);
     person.picture = picURL;

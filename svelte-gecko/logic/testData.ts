@@ -55,8 +55,7 @@ function fakeChatAccount(persons: Collection<Person>): ChatAccount {
 
   for (let person of persons) {
     let chat = new Chat();
-    chat.contact = new Contact();
-    chat.contact.person = person;
+    chat.contact = person;
     chatAccount.chats.set(person, chat);
     chatAccount.persons.add(person);
 
