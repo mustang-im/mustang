@@ -4,6 +4,7 @@
     "target": "ESNext",
     "useDefineForClassFields": false,
     "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "module": "ESNext",
     "resolveJsonModule": true,
     /**
