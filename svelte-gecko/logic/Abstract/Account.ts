@@ -5,4 +5,7 @@ export class Account {
   constructor() {
     this.id = crypto.randomUUID();
   }
+
+  async login() {
+  }
 }

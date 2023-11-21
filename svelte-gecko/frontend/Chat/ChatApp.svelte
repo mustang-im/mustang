@@ -18,6 +18,7 @@
 <script lang="ts">
   import type { Chat } from "../../logic/Chat/Chat";
   import type { Collection } from "svelte-collections";
+  import { DebugObserver } from "../../logic/util/DebugObserver";
   import PersonsList from "./PersonsList.svelte";
   import Header from "./PersonHeader.svelte";
   import MessageList from "./MessageView/MessageList.svelte";
@@ -25,7 +26,10 @@
 
   export let chatRooms: Collection<Chat>;
 
-  let  selectedChat: Chat;
+  $: chatRooms.registerObserver(new DebugObserver());
+  $: console.log("chat room", $chatRooms);
+
+  let selectedChat: Chat;
   $: messages = selectedChat?.messages;
 </script>
 

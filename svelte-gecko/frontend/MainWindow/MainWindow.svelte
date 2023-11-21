@@ -38,15 +38,21 @@
   import WindowHeader from "./WindowHeader.svelte";
   import { type Collection, mergeColls } from "svelte-collections";
   import type { Chat } from "../../logic/Chat/Chat";
+  import { DebugObserver } from "../../logic/util/DebugObserver";
 
   let selectedApp = AppArea.Mail;
   let chatRooms: Collection<Chat>;
+
+  $: chatRooms?.registerObserver(new DebugObserver());
+  $: console.log("main window: chat room", $chatRooms?.contents);
 
   onMount(async() => {
     let app = await getTestObjects();
     for (let prop in app) {
       appGlobal[prop] = app[prop];
     }
+
+    appGlobal.chatAccounts.first?.chats.registerObserver(new DebugObserver());
 
     chatRooms = mergeColls(appGlobal.chatAccounts.map(a => a.chats));
   })

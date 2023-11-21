@@ -1,6 +1,6 @@
 <vbox flex class="persons">
   <Scroll>
-    {#each chatRoomsSorted.each as chatRoom}
+    {#each $chatRooms.each as chatRoom}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <vbox class="person" class:selected={chatRoom == selected} on:click={() => selected = chatRoom}>
         <PersonLine chatRoom={chatRoom} />
@@ -18,7 +18,7 @@
   export let chatRooms: Collection<Chat>;
   export let selected: Chat = null;
 
-  $: chatRoomsSorted = chatRooms.sortBy(chat => -chat.lastMessage?.sent);
+  $: chatRoomsSorted = $chatRooms.sortBy(chat => -chat.lastMessage?.sent);
 </script>
 
 <style>
