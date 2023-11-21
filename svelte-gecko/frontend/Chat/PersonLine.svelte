@@ -14,7 +14,7 @@
       {/if}
     </hbox>
     {#if lastMessage}
-      <hbox flex class="last-msg">{lastMessage.text.substring(0, 50)}</hbox>
+      <hbox flex class="last-msg">{lastMessage.text?.substring(0, 50)}</hbox>
     {/if}
   </vbox>
 </hbox>
