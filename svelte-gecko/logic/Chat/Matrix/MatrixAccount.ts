@@ -1,7 +1,7 @@
 import { ChatAccount } from '../Account';
 import { Chat } from '../Chat';
-import { UserChatMessage } from '../Message';
-import { ChatRoomEvent } from '../ChatRoomEvent';
+import { ChatMessage, UserChatMessage } from '../Message';
+import { ChatRoomEvent, Invite, JoinLeave } from '../RoomEvent';
 import { Group } from '../../Abstract/Group';
 import { appGlobal } from '../../app';
 import { ChatPerson } from '../Person';
@@ -10,6 +10,7 @@ import { Message } from '../../Abstract/Message';
 import * as matrix from 'matrix-js-sdk';
 import type { Room, RoomMember, IContent } from '../../../node_modules/matrix-js-sdk/lib/matrix';
 import olm from 'olm'; // Needed for initCrypto(). Do not remove.
+import { assert } from '../../util/util';
 
 export class MatrixAccount extends ChatAccount {
   client: matrix.MatrixClient;
@@ -34,7 +35,7 @@ export class MatrixAccount extends ChatAccount {
     await this.client.startClient();
     await this.waitForEvent("sync"); // Sync finished
 
-    this.getRooms();
+    await this.getRooms();
     this.listenToRoomMessages();
   };
   async waitForEvent(eventName: string) {
@@ -65,9 +66,9 @@ export class MatrixAccount extends ChatAccount {
       : group;
     //let init = await this.client.roomInitialSync(room.roomId);
     for (let event of room.getLiveTimeline().getEvents()) {
-      let msg = this.getEvent(event)
-      if (msg instanceof UserChatMessage) { // when joining, we add only user messages
-        chatRoom.messages.add(this.getUserMessage(event));
+      let msg = this.getEvent(event, chatRoom); // process system events
+      if (msg && true || msg instanceof UserChatMessage) { // when joining, we add only user messages
+        chatRoom.messages.add(msg);
       }
     }
     chatRoom.lastMessage = chatRoom.messages.get(chatRoom.messages.length - 1);
@@ -76,8 +77,11 @@ export class MatrixAccount extends ChatAccount {
   getExistingRoom(roomID: string): Chat {
     return this.chats.find(chat => chat.id == roomID);
   }
+  getExistingPerson(userId: string) {
+    return appGlobal.persons.find(person => person.chatAccounts.find(acc => acc.value == userId));
+  }
   getPerson(member: RoomMember) {
-    let existing = appGlobal.persons.find(person => person.chatAccounts.find(acc => acc.value == member.userId));
+    let existing = this.getExistingPerson(member.userId);
     if (existing) {
       return existing;
     }
@@ -91,12 +95,20 @@ export class MatrixAccount extends ChatAccount {
     appGlobal.persons.add(person);
     return person;
   }
-  getEvent(event): Message {
+  getEvent(event, chatRoom: Chat): Message | null {
     let type = event.getType();
+    console.log(chatRoom.name, type, event);
     if (type == "m.room.message") {
       return this.getUserMessage(event);
+    } else if (type == "m.room.member") {
+      return this.getJoinLeaveInviteEvent(event, chatRoom);
+    } else if (type == "m.room.power_levels" ||
+      type == "m.room.join_rules" ||
+      type == "m.room.history_visibility" ||
+      type == "m.room.guest_access") {
+      return null;
     } else {
-      return this.getChatRoomMessage(event);
+      return this.getGenericChatRoomEvent(event);
     }
   }
   getUserMessage(event): Message {
@@ -107,7 +119,7 @@ export class MatrixAccount extends ChatAccount {
     msg.html = content;
     return msg;
   }
-  getChatRoomMessage(event): Message {
+  getGenericChatRoomEvent(event): Message {
     let msg = new ChatRoomEvent();
     this.fillMessage(event, msg);
     let json = JSON.stringify(event.event?.content ?? event, null, 2);
@@ -119,11 +131,58 @@ export class MatrixAccount extends ChatAccount {
       </div>`;
     return msg;
   }
+  getJoinLeaveInviteEvent(event, chatRoom: Chat): Message {
+    let data = event.event.content;
+    console.log("join leave", data);
+    let senderUserID = event.getSender();
+    let person = this.getExistingPerson(senderUserID);
+    if (!person) {
+      person = new ChatPerson();
+      person.name = event.displayname;
+      person.picture = event.avatar_url; // may be null
+      appGlobal.persons.add(person);
+    }
+
+    if (data.membership == "join" || data.membership == "leave") {
+      let msg = new JoinLeave();
+      msg.join = data.membership == "join";
+      let group = chatRoom.contact;
+      if (group instanceof Group) {
+        if (msg.join) {
+          group.participants.add(person);
+        } else {
+          group.participants.remove(person);
+        }
+      } else {
+        // TODO change to group
+      }
+      this.fillMessage(event, msg);
+      msg.text = (msg.join ? "%person% joined" : "%person% left the room")
+        .replace("%person%", person.name);
+      msg.html = `<span class="joinleave">` +
+        (msg.join ? "%person% joined" : "%person% left the room")
+          .replace("%person%", `<span class="person">${person.name}</span>`) +
+        `</span>`;
+      return msg;
+    } else if (data.membership == "invite") {
+      let msg = new Invite();
+      this.fillMessage(event, msg);
+      msg.text = "%person% is invited to this room"
+        .replace("%person%", person.name);
+      msg.html = `<span class="invite">` +
+        "%person% is invited to this room"
+          .replace("%person%", `<span class="person">${person.name}</span>`) +
+        `</span>`;
+      return msg;
+    } else {
+      return this.getGenericChatRoomEvent(event);
+    }
+  }
   fillMessage(event, msg: Message): void {
+    msg.id = event.event?.event_id;
     msg.sent = msg.received = new Date(event.getTs());
     let senderUserID = event.getSender();
-    let sender = appGlobal.persons.find(person => person.chatAccounts.find(acc => acc.value == senderUserID));
-    msg.contact = sender;
+    msg.contact = this.getExistingPerson(senderUserID);
     msg.outgoing = senderUserID == this.globalUserID;
   }
   /** Listen to messages for all rooms */
@@ -134,7 +193,7 @@ export class MatrixAccount extends ChatAccount {
           return; // no paginated results
         }
         let chatRoom = this.getExistingRoom(room.id);
-        let message = this.getEvent(event);
+        let message = this.getEvent(event, chatRoom);
         chatRoom.messages.add(message);
         chatRoom.lastMessage = message;
       } catch (ex) {

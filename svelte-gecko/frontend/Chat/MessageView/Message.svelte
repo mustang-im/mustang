@@ -4,7 +4,13 @@
   </hbox>
 {/if}
 
-<hbox flex class="message" class:incoming={!message.outgoing} class:outgoing={message.outgoing} class:followup>
+<hbox flex
+  class="message"
+  class:incoming={!message.outgoing}
+  class:outgoing={message.outgoing}
+  class:followup
+  class:system={message instanceof ChatRoomEvent}
+  >
   {#if !message.outgoing && !followup}
     <vbox hidden class="avatar">
       <img
@@ -31,6 +37,7 @@
 
 <script lang="ts">
   import type { ChatMessage } from "../../../logic/Chat/Message";
+  import { ChatRoomEvent } from "../../../logic/Chat/RoomEvent";
   import { getDateString } from "../../Util/date";
 
   export let message: ChatMessage;
@@ -48,8 +55,11 @@
 
 <style>
   .message {
-    margin: 15px 30px 0 20px;
+    margin: 16px 32px 0 20px;
     color: black;
+  }
+  .message.system {
+    margin: 8px 32px 0 20px;
   }
   .incoming {
     align-self: flex-start;
@@ -58,18 +68,18 @@
     align-self: flex-end;
   }
   /** Speech bubble */
-  .bubble {
+  .message:not(.system) .bubble {
     position: relative; /* arrows are relative to this */
     border-bottom-right-radius: 12px;
     border-bottom-left-radius: 12px;
     padding: 7px 15px;
   }
-  .incoming .bubble {
+  .incoming:not(.system) .bubble {
     background-color: rgba(255, 255, 255, 90%);
     border-top-right-radius: 12px;
     box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 7%);
   }
-  .outgoing .bubble {
+  .outgoing:not(.system) .bubble {
     background-color: #d6d5dc;
     border-top-left-radius: 12px;
     box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 15%);
@@ -79,7 +89,7 @@
   }
 
   /** Speech bubble arrow */
-  .message:not(.followup) .bubble::before {
+  .message:not(.followup):not(.system) .bubble::before {
     content: '';
     position: absolute; /* relative to .bubble position: relative */
     border-style: solid;
@@ -130,7 +140,7 @@
     margin-right: 16px;
   }
   .text {
-    font-size: smaller;
+    font-size: 13.3px;
   }
 
   .date-separator {
@@ -142,5 +152,12 @@
     font-size: small;
     color: #999999;
     border-top: 1px dotted lightgray;
+  }
+
+  .system .text {
+    font-size: 9px;
+  }
+  .system .text :global(.person) {
+    color: blue;
   }
 </style>

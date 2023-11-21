@@ -1,6 +1,9 @@
 import type { Contact } from "./Contact";
 
 export class Message {
+  /** protocol-specific ID for this message.
+   * Allows for reactions, corrections etc. */
+  id: string;
   outgoing = false;
   /**
    * Who this message was exchanged with.
