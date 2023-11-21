@@ -26,7 +26,7 @@ export class MatrixAccount extends ChatAccount {
       userId: this.username,
       deviceId: this.deviceID,
     });
-    (window as any).olm = olm;
+    //(window as any).olm = olm;
     //await this.client.initCrypto();
     await this.client.loginWithPassword(this.username, this.password);
     await this.client.startClient();
@@ -54,19 +54,15 @@ export class MatrixAccount extends ChatAccount {
     group.name = room.name;
     console.log("Added room", room.name, room.roomId);
     contact.group = group;
-    contact.isGroup;
     chatRoom.contact = contact;
     for (let member of room.getJoinedMembers()) {
       group.participants.add(this.getPerson(member));
-      console.log("added person", member, this.getPerson(member));
     }
     for (let event of room.getLiveTimeline().getEvents()) {
-      let content = event?.event?.content;
-      chatRoom.messages.add(this.createMessage(content));
-      console.log("Message", room.name, content);
+      chatRoom.messages.add(this.createMessage(event));
     }
     chatRoom.lastMessage = chatRoom.messages.get(chatRoom.messages.length - 1);
-    this.chats.add(chatRoom);
+    this.chats.set(group, chatRoom);
   }
   getExistingRoom(roomID: string): Chat {
     return this.chats.find(chat => chat.id == roomID);
@@ -86,9 +82,18 @@ export class MatrixAccount extends ChatAccount {
     appGlobal.persons.add(person);
     return person;
   }
-  createMessage(content: IContent): Message {
+  createMessage(event): Message {
+    let senderUserID = event.getSender();
+    let sender = appGlobal.persons.find(person => person.chatAccounts.find(acc => acc.value == senderUserID));
     let msg = new Message();
-    msg.text = JSON.stringify(content, null, 2);
+    let content = event.getContent().body;
+    content = JSON.stringify(event.event?.content ?? event, null, 2); // TODO
+    msg.text = content;
+    msg.contact = sender;
+    msg.outgoing = false;
+    let sent = new Date();
+    sent.setTime(Date.now() - (event.unsigned?.age ?? 0));
+    msg.sent = msg.received = sent;
     return msg;
   }
   /** Listen to messages for all rooms */
@@ -101,13 +106,10 @@ export class MatrixAccount extends ChatAccount {
         if (event.getType() !== "m.room.message") {
           return; // only messages
         }
-        console.log(
-          // the room name will update with m.room.name events automatically
-          "(%s) %s :: %s",
-          room.name,
-          event.getSender(),
-          event.getContent().body,
-        );
+        let chatRoom = this.getExistingRoom(room.id);
+        let message = this.createMessage(event);
+        chatRoom.messages.add(message);
+        chatRoom.lastMessage = message;
       } catch (ex) {
         console.error(ex);
       }
