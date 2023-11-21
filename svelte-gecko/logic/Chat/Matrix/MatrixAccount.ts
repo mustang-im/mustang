@@ -1,6 +1,5 @@
 import { ChatAccount } from '../Account';
 import { Chat } from '../Chat';
-import { Contact } from '../../Abstract/Contact';
 import { Group } from '../../Abstract/Group';
 import { appGlobal } from '../../app';
 import { ChatPerson } from '../Person';
@@ -62,6 +61,7 @@ export class MatrixAccount extends ChatAccount {
     chatRoom.contact = group.participants.length <= 2
       ? (group.participants.find(person => person.id != this.globalUserID) ?? group.participants.first)
       : group;
+    //let init = await this.client.roomInitialSync(room.roomId);
     for (let event of room.getLiveTimeline().getEvents()) {
       chatRoom.messages.add(this.createMessage(event));
     }
@@ -91,16 +91,16 @@ export class MatrixAccount extends ChatAccount {
     let sender = appGlobal.persons.find(person => person.chatAccounts.find(acc => acc.value == senderUserID));
     let msg = new Message();
     let content = event.getContent().body;
-    if (!content) { // TODO
-      content = JSON.stringify(event.event?.content ?? event, null, 2);
-    }
     msg.text = content;
     msg.html = content;
+    if (!content) { // TODO
+      let json = JSON.stringify(event.event?.content ?? event, null, 2);
+      msg.text = json.substring(2, json.length - 2);
+      msg.html = `<pre>${msg.text}</pre>`;
+    }
     msg.contact = sender;
     msg.outgoing = senderUserID == this.globalUserID;
-    let sent = new Date();
-    sent.setTime(Date.now() - (event.unsigned?.age ?? 0));
-    msg.sent = msg.received = sent;
+    msg.sent = msg.received = new Date(event.getTs());
     return msg;
   }
   /** Listen to messages for all rooms */

@@ -1,6 +1,6 @@
 <vbox flex class="persons">
   <Scroll>
-    {#each $chatRooms.each as chatRoom}
+    {#each $chatRoomsSorted.each as chatRoom}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <vbox class="person" class:selected={chatRoom == selected} on:click={() => selected = chatRoom}>
         <PersonLine chatRoom={chatRoom} />
