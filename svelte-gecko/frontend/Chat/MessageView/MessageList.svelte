@@ -1,13 +1,15 @@
-<vbox flex class="messages">
+<vbox flex class="background">
   <Scroll bind:this={scroller}>
-    {#each $sortedMessages.each as message, i}
-      <DateSeparator {message} previousMessage={sortedMessages.getIndex(i - 1)} />
-      {#if message instanceof UserChatMessage}
-        <Message {message} previousMessage={sortedMessages.getIndex(i - 1)} />
-      {:else if message instanceof ChatRoomEvent}
-        <ChatRoomEventUI {message} />
-      {/if}
-    {/each}
+    <vbox class="messages">
+      {#each $sortedMessages.each as message, i}
+        <DateSeparator {message} previousMessage={sortedMessages.getIndex(i - 1)} />
+        {#if message instanceof UserChatMessage}
+          <Message {message} previousMessage={sortedMessages.getIndex(i - 1)} />
+        {:else if message instanceof ChatRoomEvent}
+          <ChatRoomEventUI {message} />
+        {/if}
+      {/each}
+    </vbox>
   </Scroll>
 </vbox>
 
@@ -34,8 +36,11 @@
 </script>
 
 <style>
-.messages {
+.background {
   background: url(../../asset/background-repeat.png) repeat;
   background-color: #EEEEEE;
+}
+.background > :global(vbox.scroll) {
+  justify-content: end;
 }
 </style>
