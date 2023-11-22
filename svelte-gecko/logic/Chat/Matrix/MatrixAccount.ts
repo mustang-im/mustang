@@ -53,7 +53,7 @@ export class MatrixAccount extends ChatAccount {
   async getNewRoom(room: Room) {
     let chatRoom = new MatrixChatRoom(this);
     chatRoom.id = room.roomId;
-    console.log("Added room", room.name);
+    //console.log("Added room", room.name);
     if (!this.globalUserID) {
       this.globalUserID = room.myUserId;
     }
@@ -199,7 +199,7 @@ export class MatrixAccount extends ChatAccount {
         if (toStartOfTimeline) {
           return; // no paginated results
         }
-        let chatRoom = this.getExistingRoom(room.id);
+        let chatRoom = this.getExistingRoom(room.roomId);
         let message = await this.getEvent(event, chatRoom);
         chatRoom.messages.add(message);
         chatRoom.lastMessage = message;
