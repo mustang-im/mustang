@@ -29,8 +29,8 @@
     </vbox>
     {#if $reactions.length > 0}
       <hbox class="reactions">
-        {#each $reactions.contents as emoji}
-          {emoji}
+        {#each $reactions.entries().each as [sender, emoji]}
+          <hbox class="reaction" title={emoji + " " + sender?.name}>{emoji}</hbox>
         {/each}
       </hbox>
     {/if}
