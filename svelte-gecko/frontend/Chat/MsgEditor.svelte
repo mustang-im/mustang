@@ -17,7 +17,6 @@
   export let to: Chat;
 
   function send() {
-    console.log("sending " + to.draftMessage + " to " + to.name);
     let msg = new ChatMessage();
     msg.outgoing = true;
     msg.text = to.draftMessage;
@@ -25,7 +24,7 @@
     msg.to = to;
     msg.contact = to.contact;
     msg.sent = new Date();
-    to.messages.add(msg);
+    to.sendMessage(msg);
     to.draftMessage = "";
   }
 </script>

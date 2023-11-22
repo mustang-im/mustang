@@ -10,6 +10,7 @@
   class:outgoing={message.outgoing}
   class:followup
   class:system={message instanceof ChatRoomEvent}
+  deliveryStatus={message.deliveryStatus}
   >
   {#if !message.outgoing && !followup}
     <vbox hidden class="avatar">
@@ -36,7 +37,7 @@
 </hbox>
 
 <script lang="ts">
-  import type { ChatMessage } from "../../../logic/Chat/Message";
+  import type { ChatMessage, DeliveryStatus } from "../../../logic/Chat/Message";
   import { ChatRoomEvent } from "../../../logic/Chat/RoomEvent";
   import { getDateString } from "../../Util/date";
 
@@ -152,6 +153,10 @@
     font-size: small;
     color: #999999;
     border-top: 1px dotted lightgray;
+  }
+
+  .outgoing[deliveryStatus=sending] {
+    opacity: 70%;
   }
 
   .system .text {
