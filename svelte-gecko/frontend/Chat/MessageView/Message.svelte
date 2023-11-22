@@ -24,7 +24,8 @@
       </hbox>
     {/if}
     <vbox class="bubble">
-      <hbox class="text selectable">{@html message.html }</hbox>
+      <!-- TODO Sanitize HTML. It comes from untrusted sources. Dangerous! -->
+      <div class="text selectable">{@html message.html }</div>
     </vbox>
     {#if $reactions.length > 0}
       <hbox class="reactions">
@@ -134,6 +135,13 @@
   .text {
     font-size: 13.3px;
   }
+
+  .text :global(blockquote) {
+    border-left: 3px solid grey;
+    padding-left: 16px;
+    margin-left: 0px;
+  }
+
   .reactions {
     z-index: 1;
     align-self: flex-end;
@@ -148,7 +156,6 @@
   .outgoing .reactions {
     background-color: white;
   }
-
 
   .outgoing[deliveryStatus=sending] {
     opacity: 70%;

@@ -124,9 +124,10 @@ export class MatrixAccount extends ChatAccount {
     let msg = new UserChatMessage();
     this.fillMessage(event, msg);
     msg.deliveryStatus = msg.outgoing ? DeliveryStatus.User : DeliveryStatus.Server;
-    let content = event.getContent().body;
-    msg.text = content;
-    msg.html = content;
+    let content = event.getContent();
+    msg.text = content.body;
+    msg.html = content.formatted_body ?? content.body.replace("\n", "<br>");
+    //console.log("message", msg.text, msg.html, content.formatted_body);
     return msg;
   }
   async getEncryptedUserMessage(event): Promise<ChatMessage> {
