@@ -3,7 +3,8 @@ import { ChatMessage, DeliveryStatus, UserChatMessage } from "./Message";
 import { ArrayColl } from 'svelte-collections';
 
 export class Chat {
-  id: string; // Protocol-specific
+  /** Protocol-specific ID. For Matrix, it's the event_id */
+  id: string;
   contact: Contact;
   messages = new ArrayColl<ChatMessage>();
   lastMessage = null; // Calculating this would be very slow

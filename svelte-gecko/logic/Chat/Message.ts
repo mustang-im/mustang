@@ -1,5 +1,7 @@
 import { Message } from "../Abstract/Message";
 import type { Chat } from "./Chat";
+import type { ChatPerson } from "./Person";
+import { MapColl } from "svelte-collections";
 
 export class ChatMessage extends Message {
   to: Chat;
@@ -10,6 +12,7 @@ export class ChatMessage extends Message {
  * A human-language message from a human to other humans.
  */
 export class UserChatMessage extends ChatMessage {
+  reactions = new MapColl<ChatPerson, string>();
 }
 
 export enum DeliveryStatus {
