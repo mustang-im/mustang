@@ -1,18 +1,19 @@
 import { ChatAccount } from '../Account';
-import { Chat } from '../Chat';
-import { ChatMessage, UserChatMessage } from '../Message';
+import { MatrixChatRoom } from './MatrixChatRoom';
+import { DeliveryStatus, UserChatMessage } from '../Message';
 import { ChatRoomEvent, Invite, JoinLeave } from '../RoomEvent';
 import { Group } from '../../Abstract/Group';
 import { appGlobal } from '../../app';
 import { ChatPerson } from '../Person';
 import { ContactEntry } from '../../Abstract/Person';
 import { Message } from '../../Abstract/Message';
+import { MapColl } from 'svelte-collections';
 import * as matrix from 'matrix-js-sdk';
-import type { Room, RoomMember, IContent } from '../../../node_modules/matrix-js-sdk/lib/matrix';
+import type { Room, RoomMember } from 'matrix-js-sdk/lib/matrix';
 import olm from 'olm'; // Needed for initCrypto(). Do not remove.
-import { assert } from '../../util/util';
 
 export class MatrixAccount extends ChatAccount {
+  chats = new MapColl<ChatPerson | Group, MatrixChatRoom>;
   client: matrix.MatrixClient;
   baseURL = "https://matrix.org";
   username: string;
@@ -50,7 +51,7 @@ export class MatrixAccount extends ChatAccount {
     }
   }
   async getNewRoom(room: Room) {
-    let chatRoom = new Chat();
+    let chatRoom = new MatrixChatRoom(this);
     chatRoom.id = room.roomId;
     console.log("Added room", room.name);
     if (!this.globalUserID) {
@@ -74,7 +75,7 @@ export class MatrixAccount extends ChatAccount {
     chatRoom.lastMessage = chatRoom.messages.get(chatRoom.messages.length - 1);
     this.chats.set(chatRoom.contact, chatRoom);
   }
-  getExistingRoom(roomID: string): Chat {
+  getExistingRoom(roomID: string): MatrixChatRoom {
     return this.chats.find(chat => chat.id == roomID);
   }
   getExistingPerson(userId: string) {
@@ -95,7 +96,7 @@ export class MatrixAccount extends ChatAccount {
     appGlobal.persons.add(person);
     return person;
   }
-  async getEvent(event, chatRoom: Chat): Promise<Message | null> {
+  async getEvent(event, chatRoom: MatrixChatRoom): Promise<Message | null> {
     let type = event.getType();
     //console.log(chatRoom.name, type, event);
     if (type == "m.room.message") {
@@ -116,15 +117,14 @@ export class MatrixAccount extends ChatAccount {
   getUserMessage(event): Message {
     let msg = new UserChatMessage();
     this.fillMessage(event, msg);
+    msg.deliveryStatus = msg.outgoing ? DeliveryStatus.User : DeliveryStatus.Server;
     let content = event.getContent().body;
     msg.text = content;
     msg.html = content;
     return msg;
   }
   async getEncryptedUserMessage(event): Promise<Message> {
-    console.log("Encrypted msg", event);
     await this.client.decryptEventIfNeeded(event);
-    console.log("Decrypted msg", event);
     return this.getUserMessage(event);
   }
   getGenericChatRoomEvent(event): Message {
@@ -139,7 +139,7 @@ export class MatrixAccount extends ChatAccount {
       </div>`;
     return msg;
   }
-  getJoinLeaveInviteEvent(event, chatRoom: Chat): Message {
+  getJoinLeaveInviteEvent(event, chatRoom: MatrixChatRoom): Message {
     let data = event.event.content;
     let senderUserID = event.getSender();
     let person = this.getExistingPerson(senderUserID);
