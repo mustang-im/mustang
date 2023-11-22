@@ -1,16 +1,24 @@
 <vbox flex class="messages">
   <Scroll bind:this={scroller}>
     {#each $sortedMessages.each as message, i}
-      <Message {message} previousMessage={sortedMessages.getIndex(i - 1)} />
+      <DateSeparator {message} previousMessage={sortedMessages.getIndex(i - 1)} />
+      {#if message instanceof UserChatMessage}
+        <Message {message} previousMessage={sortedMessages.getIndex(i - 1)} />
+      {:else if message instanceof ChatRoomEvent}
+        <ChatRoomEventUI {message} />
+      {/if}
     {/each}
   </Scroll>
 </vbox>
 
 <script lang="ts">
-  import type { Collection } from "svelte-collections";
-  import type { ChatMessage } from "../../../logic/Chat/Message";
+  import { UserChatMessage, type ChatMessage } from "../../../logic/Chat/Message";
   import Message from "./Message.svelte";
+  import { ChatRoomEvent } from "../../../logic/Chat/RoomEvent";
+  import ChatRoomEventUI from "./ChatRoomEventUI.svelte";
+  import DateSeparator from "./DateSeparator.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
+  import type { Collection } from "svelte-collections";
   import { tick } from "svelte";
 
   export let messages: Collection<ChatMessage>;

@@ -1,9 +1,3 @@
-{#if message.sent.getDate() != previousMessage?.sent.getDate() }
-  <hbox class="date-separator">
-    {longDayFormat.format(message.sent)}
-  </hbox>
-{/if}
-
 <hbox flex
   class="message"
   class:incoming={!message.outgoing}
@@ -37,21 +31,15 @@
 </hbox>
 
 <script lang="ts">
-  import type { ChatMessage, DeliveryStatus } from "../../../logic/Chat/Message";
+  import type { UserChatMessage, ChatMessage } from "../../../logic/Chat/Message";
   import { ChatRoomEvent } from "../../../logic/Chat/RoomEvent";
   import { getDateString } from "../../Util/date";
 
-  export let message: ChatMessage;
+  export let message: UserChatMessage;
   export let previousMessage: ChatMessage = null;
   $: followup = message.contact == previousMessage?.contact && // same author
     message.outgoing == previousMessage?.outgoing && // same author
     message.sent.getMilliseconds() - previousMessage.sent.getMilliseconds() < 5 * 60 * 1000; // < 5 mins apart
-
-  const longDayFormat = Intl.DateTimeFormat(undefined, {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
 </script>
 
 <style>
@@ -142,17 +130,6 @@
   }
   .text {
     font-size: 13.3px;
-  }
-
-  .date-separator {
-    width: 50%;
-    align-self: center;
-    justify-content: center;
-    margin: 20px 20px 0px 20px;
-    padding: 5px;
-    font-size: small;
-    color: #999999;
-    border-top: 1px dotted lightgray;
   }
 
   .outgoing[deliveryStatus=sending] {
