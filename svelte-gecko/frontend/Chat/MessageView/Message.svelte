@@ -3,7 +3,6 @@
   class:incoming={!message.outgoing}
   class:outgoing={message.outgoing}
   class:followup
-  class:system={message instanceof ChatRoomEvent}
   deliveryStatus={message.deliveryStatus}
   >
   {#if !message.outgoing && !followup}
@@ -27,12 +26,18 @@
     <vbox class="bubble">
       <hbox class="text selectable">{@html message.html }</hbox>
     </vbox>
+    {#if $reactions.length > 0}
+      <hbox class="reactions">
+        {#each $reactions.contents as emoji}
+          {emoji}
+        {/each}
+      </hbox>
+    {/if}
   </vbox>
 </hbox>
 
 <script lang="ts">
   import type { UserChatMessage, ChatMessage } from "../../../logic/Chat/Message";
-  import { ChatRoomEvent } from "../../../logic/Chat/RoomEvent";
   import { getDateString } from "../../Util/date";
 
   export let message: UserChatMessage;
@@ -40,15 +45,13 @@
   $: followup = message.contact == previousMessage?.contact && // same author
     message.outgoing == previousMessage?.outgoing && // same author
     message.sent.getMilliseconds() - previousMessage.sent.getMilliseconds() < 5 * 60 * 1000; // < 5 mins apart
+  $: reactions = message.reactions;
 </script>
 
 <style>
   .message {
     margin: 16px 32px 0 20px;
     color: black;
-  }
-  .message.system {
-    margin: 8px 32px 0 20px;
   }
   .incoming {
     align-self: flex-start;
@@ -57,18 +60,18 @@
     align-self: flex-end;
   }
   /** Speech bubble */
-  .message:not(.system) .bubble {
+  .message .bubble {
     position: relative; /* arrows are relative to this */
     border-bottom-right-radius: 12px;
     border-bottom-left-radius: 12px;
     padding: 7px 15px;
   }
-  .incoming:not(.system) .bubble {
+  .incoming .bubble {
     background-color: rgba(255, 255, 255, 90%);
     border-top-right-radius: 12px;
     box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 7%);
   }
-  .outgoing:not(.system) .bubble {
+  .outgoing .bubble {
     background-color: #d6d5dc;
     border-top-left-radius: 12px;
     box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 15%);
@@ -78,7 +81,7 @@
   }
 
   /** Speech bubble arrow */
-  .message:not(.followup):not(.system) .bubble::before {
+  .message:not(.followup) .bubble::before {
     content: '';
     position: absolute; /* relative to .bubble position: relative */
     border-style: solid;
@@ -131,15 +134,23 @@
   .text {
     font-size: 13.3px;
   }
+  .reactions {
+    z-index: 1;
+    align-self: flex-end;
+    margin-top: -6px;
+    margin-right: 16px;
+    padding: 0px 4px;
+    border: 2px solid transparent;
+    border-radius: 20px;
+    background-color: white;
+    box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 10%);
+  }
+  .outgoing .reactions {
+    background-color: white;
+  }
+
 
   .outgoing[deliveryStatus=sending] {
     opacity: 70%;
-  }
-
-  .system .text {
-    font-size: 9px;
-  }
-  .system .text :global(.person) {
-    color: blue;
   }
 </style>

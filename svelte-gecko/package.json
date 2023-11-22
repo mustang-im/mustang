@@ -18,7 +18,7 @@
     "matrix-js-sdk": "^30.0.1",
     "mustang-lib": "../lib/",
     "olm": "https://packages.matrix.org/npm/olm/olm-3.2.1.tgz",
-    "svelte-collections": "^1.1.18",
+    "svelte-collections": "^1.1.20",
     "svelte-icon": "^2.0.0"
   },
   "devDependencies": {
