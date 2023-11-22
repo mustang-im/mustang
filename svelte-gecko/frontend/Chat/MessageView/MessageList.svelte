@@ -40,7 +40,4 @@
   background: url(../../asset/background-repeat.png) repeat;
   background-color: #EEEEEE;
 }
-.background > :global(vbox.scroll) {
-  justify-content: end;
-}
 </style>
