@@ -46,10 +46,7 @@ export class MatrixAccount extends ChatAccount {
   }
   async getRooms() {
     let allRooms = await this.client.getRooms();
-    //Promise.all(allRooms.map(room => this.getNewRoom(room));
-    for (let room of allRooms) {
-      await this.getNewRoom(room);
-    }
+    Promise.all(allRooms.map(room => this.getNewRoom(room)));
   }
   async getNewRoom(room: Room) {
     let chatRoom = new MatrixChatRoom(this);
@@ -66,8 +63,9 @@ export class MatrixAccount extends ChatAccount {
     chatRoom.contact = group.participants.length <= 2 && group.participants.find(person => person.id == this.globalUserID)
       ? (group.participants.find(person => person.id != this.globalUserID) ?? group.participants.first)
       : group;
+    this.chats.set(chatRoom.contact as Group | ChatPerson, chatRoom);
 
-    //let init = await this.client.roomInitialSync(room.roomId);
+    //let init = await this.client.roomInitialSync(room.roomId, 300);
     for (let event of room.getLiveTimeline().getEvents()) {
       try {
         let msg = await this.getEvent(event, chatRoom); // process system events
@@ -79,7 +77,6 @@ export class MatrixAccount extends ChatAccount {
       }
     }
     chatRoom.lastMessage = chatRoom.messages.get(chatRoom.messages.length - 1);
-    this.chats.set(chatRoom.contact as Group | ChatPerson, chatRoom);
   }
   getExistingRoom(roomID: string): MatrixChatRoom {
     return this.chats.find(chat => chat.id == roomID);
