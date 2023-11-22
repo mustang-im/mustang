@@ -30,7 +30,7 @@ export class MatrixAccount extends ChatAccount {
       deviceId: this.deviceID,
     });
     //(window as any).olm = olm;
-    //await this.client.initCrypto();
+    await this.client.initCrypto();
     await this.client.loginWithPassword(this.username, this.password);
     await this.client.startClient();
     await this.waitForEvent("sync"); // Sync finished
@@ -46,10 +46,10 @@ export class MatrixAccount extends ChatAccount {
   async getRooms() {
     let allRooms = await this.client.getRooms();
     for (let room of allRooms) {
-      this.getNewRoom(room);
+      await this.getNewRoom(room);
     }
   }
-  getNewRoom(room: Room) {
+  async getNewRoom(room: Room) {
     let chatRoom = new Chat();
     chatRoom.id = room.roomId;
     console.log("Added room", room.name);
@@ -66,7 +66,7 @@ export class MatrixAccount extends ChatAccount {
       : group;
     //let init = await this.client.roomInitialSync(room.roomId);
     for (let event of room.getLiveTimeline().getEvents()) {
-      let msg = this.getEvent(event, chatRoom); // process system events
+      let msg = await this.getEvent(event, chatRoom); // process system events
       if (msg && true || msg instanceof UserChatMessage) { // when joining, we add only user messages
         chatRoom.messages.add(msg);
       }
@@ -95,11 +95,13 @@ export class MatrixAccount extends ChatAccount {
     appGlobal.persons.add(person);
     return person;
   }
-  getEvent(event, chatRoom: Chat): Message | null {
+  async getEvent(event, chatRoom: Chat): Promise<Message | null> {
     let type = event.getType();
-    console.log(chatRoom.name, type, event);
+    //console.log(chatRoom.name, type, event);
     if (type == "m.room.message") {
       return this.getUserMessage(event);
+    } else if (type == "m.room.encrypted") {
+      return await this.getEncryptedUserMessage(event);
     } else if (type == "m.room.member") {
       return this.getJoinLeaveInviteEvent(event, chatRoom);
     } else if (type == "m.room.power_levels" ||
@@ -119,6 +121,12 @@ export class MatrixAccount extends ChatAccount {
     msg.html = content;
     return msg;
   }
+  async getEncryptedUserMessage(event): Promise<Message> {
+    console.log("Encrypted msg", event);
+    await this.client.decryptEventIfNeeded(event);
+    console.log("Decrypted msg", event);
+    return this.getUserMessage(event);
+  }
   getGenericChatRoomEvent(event): Message {
     let msg = new ChatRoomEvent();
     this.fillMessage(event, msg);
@@ -133,7 +141,6 @@ export class MatrixAccount extends ChatAccount {
   }
   getJoinLeaveInviteEvent(event, chatRoom: Chat): Message {
     let data = event.event.content;
-    console.log("join leave", data);
     let senderUserID = event.getSender();
     let person = this.getExistingPerson(senderUserID);
     if (!person) {
@@ -187,13 +194,13 @@ export class MatrixAccount extends ChatAccount {
   }
   /** Listen to messages for all rooms */
   listenToRoomMessages() {
-    this.client.on("Room.timeline", (event, room, toStartOfTimeline) => {
+    this.client.on("Room.timeline", async (event, room, toStartOfTimeline) => {
       try {
         if (toStartOfTimeline) {
           return; // no paginated results
         }
         let chatRoom = this.getExistingRoom(room.id);
-        let message = this.getEvent(event, chatRoom);
+        let message = await this.getEvent(event, chatRoom);
         chatRoom.messages.add(message);
         chatRoom.lastMessage = message;
       } catch (ex) {
