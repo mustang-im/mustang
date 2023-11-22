@@ -53,6 +53,7 @@
   .message {
     margin: 16px 32px 0 20px;
     color: black;
+    max-width: 85%;
   }
   .incoming {
     align-self: flex-start;
