@@ -112,6 +112,7 @@ export class MatrixAccount extends ChatAccount {
       this.getReaction(event, chatRoom);
       return null;
     } else if (type == "m.room.power_levels" ||
+      type == "m.room.encryption" ||
       type == "m.room.join_rules" ||
       type == "m.room.history_visibility" ||
       type == "m.room.guest_access") {
@@ -224,6 +225,9 @@ export class MatrixAccount extends ChatAccount {
         }
         let chatRoom = this.getExistingRoom(room.roomId);
         let message = await this.getEvent(event, chatRoom);
+        if (!message) {
+          return;
+        }
         chatRoom.messages.add(message);
         chatRoom.lastMessage = message;
       } catch (ex) {
