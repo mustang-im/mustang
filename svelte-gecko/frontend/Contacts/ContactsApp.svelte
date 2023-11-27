@@ -27,9 +27,11 @@
 
 <style>
   .left-pane {
+    flex: 1 0 0;
     border-right: 1px dotted lightgray;
     background-color: #f8f8fa;
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on PersonDetails */
+    max-width: 20em;
   }
   .right-pane {
     flex: 3 0 0;

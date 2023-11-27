@@ -26,6 +26,7 @@
 <style>
   .left-pane {
     flex: 1 0 0;
+    max-width: 20em;
   }
   .right-pane {
     flex: 2 0 0;
