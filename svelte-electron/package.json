@@ -4,7 +4,7 @@
   "description": "Prototype for an email application",
   "dependencies": {
     "@rollup/plugin-json": "^4.1.0",
-    "electron": "^11.1.1",
+    "electron": "^27.1.2",
     "esm": "^3.2.25",
     "jscollections": "https://github.com/benbucksch/jscollection/",
     "mustang-lib": "../lib/",
