@@ -1,8 +1,8 @@
 <hbox flex>
   <vbox flex class="actions-container">
     <vbox class="actions">
-      <Button label="Plan a meeting" icon={add} />
-      <Button label="Start an ad-hoc meeting" icon={camera} on:click={startAdHocMeeting}/>
+      <Button label="Plan a meeting" icon={AddToCalendarIcon} />
+      <Button label="Start an ad-hoc meeting" icon={VideoIcon} on:click={startAdHocMeeting}/>
       <hbox>
         <input id="meeting-link" type="url" placeholder="Enter meeting link to join" />
         <Button label="Join" />
@@ -24,18 +24,18 @@
     </vbox>
   </vbox>
   <vbox class="end">
-    <Button icon={settings} plain iconSize="32px" classes="settings" />
+    <Button icon={SettingsIcon} plain iconSize="24px" classes="settings" />
   </vbox>
 </hbox>
 
 <script lang="ts">
+  import { VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
   import { appGlobal } from "../../../logic/app";
   import MeetingList from "./MeetingList.svelte";
   import Button from "../../Shared/Button.svelte";
-  import camera from '../../asset/icon/meet/videoCall.svg?raw';
-  import add from '../../asset/icon/calendar/addToCalendar.svg?raw';
-  import settings from '../../asset/icon/general/settings.svg?raw';
-  import { VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
+  import VideoIcon from 'lucide-svelte/icons/video';
+  import AddToCalendarIcon from "lucide-svelte/icons/calendar-plus";
+  import SettingsIcon from 'lucide-svelte/icons/settings';
 
   const now = new Date();
   const maxUpcoming = new Date(); // TODO now + 8 hours

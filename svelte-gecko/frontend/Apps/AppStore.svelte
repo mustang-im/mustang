@@ -5,7 +5,7 @@
   <vbox flex class="apps">
     <hbox class="toolbar">
       <hbox flex />
-      <RoundButton on:click={closeStore} icon={close} label="Close" />
+      <RoundButton on:click={closeStore} icon={XIcon} label="Close" />
     </hbox>
     {#if selectedCategory}
       <CategoryPage category={selectedCategory} bind:selectedApp allApps={apps} />
@@ -20,7 +20,7 @@
   import RoundButton from "../Shared/RoundButton.svelte";
   import Categories from "./Categories.svelte";
   import CategoryPage from "./CategoryPage.svelte";
-  import close from '../asset/icon/general/close.svg?raw';
+  import XIcon from "lucide-svelte/icons/x";
   import { onMount } from "svelte";
 
   export let showStore = true; /* in/out */

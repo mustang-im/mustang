@@ -3,7 +3,7 @@
     <hbox class="indention" />
   {/each}
   <button class="icon" >
-    <Icon data={fileO} scale={1} />
+    <FileIcon {file} />
   </button>
   <hbox class="name">
     {file.nameWithoutExt}
@@ -21,9 +21,8 @@
 
 <script lang="ts">
   import type { File } from "../../logic/Files/File";
-  import Icon from 'svelte-awesome';
-  import fileO from 'svelte-awesome/icons/fileO';
   import { getDateString } from "../Util/date";
+  import FileIcon from "./FileIcon.svelte";
 
   export let file: File;
   export let indent = 0;
@@ -43,6 +42,7 @@
   .icon {
     align-self: center;
     border: none;
+    background-color: transparent;
   }
   .indention {
     margin-left: 16px;

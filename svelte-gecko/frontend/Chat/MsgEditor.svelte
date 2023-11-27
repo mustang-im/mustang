@@ -2,17 +2,15 @@
   <textarea bind:value={to.draftMessage} placeholder="Write a message to {to.name}..." />
   <vbox class="send-buttons">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <hbox flex class="send-button" on:click={send}>
-      <Icon data={sendIcon} scale={1.5} />
-    </hbox>
+    <Button classes="send-button" on:click={send} icon={SendIcon} iconSize="24px" plain />
   </vbox>
 </hbox>
 
 <script lang="ts">
   import type { Chat } from "../../logic/Chat/Chat";
   import { ChatMessage } from "../../logic/Chat/Message";
-  import Icon from 'svelte-awesome';
-  import sendIcon from 'svelte-awesome/icons/send';
+  import Button from "../Shared/Button.svelte";
+  import SendIcon from "lucide-svelte/icons/send";
 
   export let to: Chat;
 
@@ -42,7 +40,8 @@
     border-radius: 8px;
   }
   .send-buttons {
-    align-self: center;
-    margin-left: 10px;
+    align-self: flex-end;
+    margin-left: 8px;
+    margin-bottom: 8px;
   }
 </style>

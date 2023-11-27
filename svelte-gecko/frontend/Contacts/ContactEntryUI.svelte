@@ -10,12 +10,8 @@
     <slot name="edit" />
   </hbox>
   <hbox class="actions">
-    <Button on:click={stopEditing} iconOnly plain>
-      <hbox slot="icon">✓</hbox>
-    </Button>
-    <Button on:click={remove} iconOnly plain>
-      <hbox slot="icon">🗑</hbox>
-    </Button>
+    <Button on:click={stopEditing} icon={OKIcon} iconOnly plain />
+    <Button on:click={remove} icon={DeleteIcon} iconOnly plain />
   </hbox>
 {:else}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -24,15 +20,10 @@
     <slot name="display" />
   </hbox>
   <hbox class="actions">
-    <Button on:click={startEditing} iconOnly plain>
-      <hbox slot="icon">✎</hbox>
-    </Button>
+    <Button on:click={startEditing} icon={PencilIcon} iconOnly plain />
+    <Button on:click={copyValue} icon={CopyIcon} iconOnly plain />
     {#if copied}
       <hbox>Copied to clipboard ✓</hbox>
-    {:else}
-      <Button on:click={copyValue} iconOnly plain>
-        <hbox slot="icon">©</hbox>
-      </Button>
     {/if}
     <slot name="actions" />
   </hbox>
@@ -43,6 +34,10 @@
   import type { ContactEntry } from "../../logic/Abstract/Person";
   import { sleep } from "../../logic/util/util";
   import Button from "../Shared/Button.svelte";
+  import PencilIcon from "lucide-svelte/icons/pencil";
+  import CopyIcon from "lucide-svelte/icons/copy";
+  import OKIcon from "lucide-svelte/icons/check";
+  import DeleteIcon from "lucide-svelte/icons/trash-2";
 
   export let entry: ContactEntry;
   export let coll: Collection<ContactEntry>;
@@ -89,6 +84,7 @@
   .purpose, .value, .actions {
     margin-top: 12px;
     font-size: 13px;
+    color: black;
   }
 
   .purpose {

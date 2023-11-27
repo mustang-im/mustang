@@ -7,12 +7,12 @@
 </vbox>
 <hbox class="actions">
   <hbox flex />
-  <Button label="Mute" classes="toggle-mic" iconOnly on:click={toggleMic} />
-  <Button label="Camera" classes="toggle-camera" iconOnly on:click={toggleCamera} />
-  <Button label="Hand" classes="raise-hand" iconOnly on:click={toggleHand} />
-  <Button label="Add participant" classes="add-participant" on:click={addParticipant} />
+  <Button label="Mute" classes="toggle-mic" on:click={toggleMic} icon={micOn ? MicrophoneOffIcon : MicrophoneIcon} iconOnly />
+  <Button label="Camera" classes="toggle-camera" on:click={toggleCamera} icon={cameraOn ? CameraOffIcon : CameraIcon} iconOnly />
+  <Button label="Hand" classes="raise-hand" on:click={toggleHand} icon={handRaised ? HandOffIcon : HandIcon} iconOnly />
+  <Button label="Add participant" classes="add-participant" on:click={addParticipant} icon={AddUserIcon} iconOnly />
   <hbox flex />
-  <Button label="Leave" classes="leave" on:click={leave} />
+  <Button label="Leave" classes="leave" on:click={leave} icon={LeaveIcon} iconOnly />
 </hbox>
 
 <script lang="ts">
@@ -20,6 +20,14 @@
   import { appGlobal } from "../../logic/app";
   import Button from "../Shared/Button.svelte";
   import Participant from "./Participant.svelte";
+  import HandIcon from '../asset/icon/meet/hand.svg?raw';
+  import HandOffIcon from '../asset/icon/meet/handOff.svg?raw';
+  import CameraIcon from "lucide-svelte/icons/video";
+  import CameraOffIcon from "lucide-svelte/icons/video-off";
+  import MicrophoneIcon from "lucide-svelte/icons/mic";
+  import MicrophoneOffIcon from "lucide-svelte/icons/mic-off";
+  import AddUserIcon from "lucide-svelte/icons/user-round-plus";
+  import LeaveIcon from "lucide-svelte/icons/phone-outgoing";
 
   export let meeting: VideoConfMeeting;
 
@@ -82,5 +90,11 @@
   }
   .actions :global(.leave) {
     background-color: #FF7777;
+  }
+  .actions :global(.raise-hand svg) {
+    fill: none;
+  }
+  .actions :global(.leave svg) {
+    transform: rotate(135deg);
   }
 </style>

@@ -24,18 +24,16 @@
       </hbox>
       <vbox flex class="main-right">
         <hbox class="main-call">
-          <RoundButton label="Video call" icon={camera} iconSize="24px" />
+          <RoundButton label="Video call" icon={CameraIcon} iconSize="24px" />
           {#if preferredPhoneNumber}
             <a href="tel:{preferredPhoneNumber}">
-              <RoundButton label="Call">
-                <hbox slot="icon" style="font-size: 20px; width: 24px; height: 24px; align-items: center; justify-content: center;">📞</hbox>
-              </RoundButton>
+              <RoundButton label="Call" icon={CallIcon} iconSize="24px" />
             </a>
           {/if}
-          <RoundButton label="Message" icon={chat} iconSize="24px" />
+          <RoundButton label="Message" icon={ChatIcon} iconSize="24px" />
           {#if preferredEmailAddress}
             <a href="mailto:{preferredEmailAddress}">
-              <RoundButton label="Send mail" icon={mail} iconSize="24px" />
+              <RoundButton label="Send mail" icon={MailIcon} iconSize="24px" />
             </a>
           {/if}
         </hbox>
@@ -68,16 +66,14 @@
           </ContactEntryUI>
         {/each}
         <hbox flex class="actions">
-          <Button on:click={addPhoneNumber} iconOnly plain classes="add">
-            <hbox slot="icon">+</hbox>
-          </Button>
+          <Button on:click={addPhoneNumber} icon={AddIcon} iconOnly plain classes="add" />
         </hbox>
       </grid>
     </GroupBox>
 
     <GroupBox classes="email">
       <hbox class="subtitle">
-        <Icon data={mail} size="16px" />
+        <Icon data={MailIcon} size="16px" />
         <h3>Mail</h3>
       </hbox>
       <grid class="items">
@@ -88,16 +84,14 @@
           </ContactEntryUI>
         {/each}
         <hbox flex class="actions">
-          <Button on:click={addEmail} iconOnly plain classes="add">
-            <hbox slot="icon">+</hbox>
-          </Button>
+          <Button on:click={addEmail} icon={AddIcon} iconOnly plain classes="add" />
         </hbox>
       </grid>
     </GroupBox>
 
     <GroupBox classes="chat">
       <hbox class="subtitle">
-        <Icon data={chat} size="16px" />
+        <Icon data={ChatIcon} size="16px" />
         <h3>Chat</h3>
       </hbox>
       <grid class="items">
@@ -108,16 +102,14 @@
           </ContactEntryUI>
         {/each}
         <hbox flex class="actions">
-          <Button on:click={addChatAccount} iconOnly plain classes="add">
-            <hbox slot="icon">+</hbox>
-          </Button>
+          <Button on:click={addChatAccount} icon={AddIcon} iconOnly plain classes="add" />
         </hbox>
       </grid>
     </GroupBox>
 
     <GroupBox classes="categories">
       <hbox class="subtitle">
-        <Icon data={contacts} size="16px" />
+        <Icon data={ContactsIcon} size="16px" />
         <h3>Groups</h3>
       </hbox>
       <grid class="items">
@@ -128,9 +120,7 @@
         {/each}
         <hbox flex class="actions">
           <!--
-          <Button on:click={addEmail} iconOnly plain classes="add">
-            <hbox slot="icon">+</hbox>
-          </Button>
+          <Button on:click={addEmail} icon={AddIcon} iconOnly plain classes="add" />
           -->
         </hbox>
       </grid>
@@ -138,7 +128,7 @@
 
     <GroupBox classes="street-addresses">
       <hbox class="subtitle">
-        <Icon data={mail} size="16px" />
+        <Icon data={MailIcon} size="16px" />
         <h3>Street addresses</h3>
       </hbox>
       <grid class="items">
@@ -149,16 +139,14 @@
           </ContactEntryUI>
         {/each}
         <hbox flex class="actions">
-          <Button on:click={addStreetAddress} iconOnly plain classes="add">
-            <hbox slot="icon">+</hbox>
-          </Button>
+          <Button on:click={addStreetAddress} icon={AddIcon} iconOnly plain classes="add" />
         </hbox>
       </grid>
     </GroupBox>
 
     <GroupBox classes="preferences">
       <hbox class="subtitle">
-        <Icon data={chat} size="16px" />
+        <Icon data={ChatIcon} size="16px" />
         <h3>Preferences</h3>
       </hbox>
       <vbox class="preferred">
@@ -184,14 +172,16 @@
   import GroupBox from "./GroupBox.svelte";
   import PhoneNumberDisplay from "./PhoneNumberDisplay.svelte";
   import PhoneNumberEdit from "./PhoneNumberEdit.svelte";
-  import Icon from 'svelte-icon/Icon.svelte';
-  import mail from '../asset/icon/appBar/mail.svg?raw';
-  import chat from '../asset/icon/appBar/chat.svg?raw';
-  import contacts from '../asset/icon/appBar/contacts.svg?raw';
-  import camera from '../asset/icon/appBar/meet.svg?raw';
   import StreetAddressDisplay from "./StreetAddressDisplay.svelte";
   import StreetAddressEdit from "./StreetAddressEdit.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
+  import Icon from 'svelte-icon/Icon.svelte';
+  import MailIcon from '../asset/icon/appBar/mail.svg?raw';
+  import ChatIcon from '../asset/icon/appBar/chat.svg?raw';
+  import ContactsIcon from '../asset/icon/appBar/contacts.svg?raw';
+  import CameraIcon from '../asset/icon/appBar/meet.svg?raw';
+  import CallIcon from '../asset/icon/meet/callVoice.svg?raw';
+  import AddIcon from "lucide-svelte/icons/plus";
 
   export let person: Person;
   $: person.name = person.name ?? person.firstName + " " + person.lastName;
@@ -311,9 +301,5 @@
   .person-page :global(.group button.add),
   .preferred {
     color: grey;
-  }
-
-  .person-page :global(svg) { /* TODO fix icons */
-    color: transparent;
   }
 </style>

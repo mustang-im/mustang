@@ -1,16 +1,8 @@
 <hbox class="title-bar">
   <hbox class="app-title">Calendar</hbox>
-  <RoundButton classes="add-button" on:click={addEvent}>
-    <Icon slot="icon" data={calendarAdd} scale={1} />
-  </RoundButton>
-  <hbox class="date-paging">
-    <RoundButton classes="previous-button" on:click={pagePrevious}>
-        <Icon slot="icon" data={arrowPrevious} scale={1} />
-    </RoundButton>
-    <RoundButton classes="next-button" on:click={pageNext}>
-        <Icon slot="icon" data={arrowNext} scale={1} />
-    </RoundButton>
-  </hbox>
+  <RoundButton classes="add-button" icon={AddToCalendarIcon} on:click={addEvent} iconSize="24px" filled />
+  <RoundButton classes="previous-button" icon={ChevronLeftIcon} on:click={pagePrevious} iconSize="24px" />
+  <RoundButton classes="next-button" icon={ChevronRightIcon} on:click={pageNext} iconSize="24px" />
   <hbox class="spacer" />
   <ViewSelector bind:dateInterval />
   <hbox class="date-interval">of</hbox>
@@ -21,10 +13,9 @@
   import type { DateInterval } from "./selected";
   import ViewSelector from "./ViewSelector.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
-  import Icon from 'svelte-awesome';
-  import calendarAdd from 'svelte-awesome/icons/calendarPlusO';
-  import arrowPrevious from 'svelte-awesome/icons/chevronLeft';
-  import arrowNext from 'svelte-awesome/icons/chevronRight';
+  import ChevronLeftIcon from "lucide-svelte/icons/chevron-left";
+  import ChevronRightIcon from "lucide-svelte/icons/chevron-right";
+  import AddToCalendarIcon from "lucide-svelte/icons/calendar-plus";
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
 
@@ -74,8 +65,8 @@
     margin: 4px;
     width: 48px;
     height: 48px;
-    color: inherit;
     align-items: center;
     justify-content: center;
+    position: relative;
   }
 </style>
