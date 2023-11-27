@@ -54,9 +54,12 @@
 
   <grid class="boxes">
     <GroupBox classes="phone">
-      <hbox class="subtitle">
-        <hbox>📞</hbox>
+      <hbox class="subtitle phone">
+        <Icon data={PhoneIcon} size="16px" />
         <h3>Phone numbers</h3>
+        <hbox flex class="actions">
+          <Button on:click={addPhoneNumber} icon={AddIcon} iconOnly plain classes="add" />
+        </hbox>
       </hbox>
       <grid class="items">
         {#each $phoneNumbers.each as entry}
@@ -65,9 +68,6 @@
             <PhoneNumberEdit slot="edit" bind:value={entry.value} />
           </ContactEntryUI>
         {/each}
-        <hbox flex class="actions">
-          <Button on:click={addPhoneNumber} icon={AddIcon} iconOnly plain classes="add" />
-        </hbox>
       </grid>
     </GroupBox>
 
@@ -75,6 +75,9 @@
       <hbox class="subtitle">
         <Icon data={MailIcon} size="16px" />
         <h3>Mail</h3>
+        <hbox flex class="actions">
+          <Button on:click={addEmail} icon={AddIcon} iconOnly plain classes="add" />
+        </hbox>
       </hbox>
       <grid class="items">
         {#each $emailAddresses.each as entry}
@@ -83,9 +86,6 @@
             <EmailAddressEdit slot="edit" bind:value={entry.value} />
           </ContactEntryUI>
         {/each}
-        <hbox flex class="actions">
-          <Button on:click={addEmail} icon={AddIcon} iconOnly plain classes="add" />
-        </hbox>
       </grid>
     </GroupBox>
 
@@ -93,6 +93,9 @@
       <hbox class="subtitle">
         <Icon data={ChatIcon} size="16px" />
         <h3>Chat</h3>
+        <hbox flex class="actions">
+          <Button on:click={addChatAccount} icon={AddIcon} iconOnly plain classes="add" />
+        </hbox>
       </hbox>
       <grid class="items">
         {#each $chatAccounts.each as entry}
@@ -101,9 +104,6 @@
             <EmailAddressEdit slot="edit" bind:value={entry.value} /><!-- TODO chat editor -->
           </ContactEntryUI>
         {/each}
-        <hbox flex class="actions">
-          <Button on:click={addChatAccount} icon={AddIcon} iconOnly plain classes="add" />
-        </hbox>
       </grid>
     </GroupBox>
 
@@ -111,6 +111,11 @@
       <hbox class="subtitle">
         <Icon data={ContactsIcon} size="16px" />
         <h3>Groups</h3>
+        <hbox flex class="actions">
+          <!--
+          <Button on:click={addEmail} icon={AddIcon} iconOnly plain classes="add" />
+          -->
+        </hbox>
       </hbox>
       <grid class="items">
         {#each $groups.each as entry}
@@ -118,11 +123,6 @@
             <hbox slot="display">{entry.value}</hbox>
           </ContactEntryUI>
         {/each}
-        <hbox flex class="actions">
-          <!--
-          <Button on:click={addEmail} icon={AddIcon} iconOnly plain classes="add" />
-          -->
-        </hbox>
       </grid>
     </GroupBox>
 
@@ -130,6 +130,9 @@
       <hbox class="subtitle">
         <Icon data={MailIcon} size="16px" />
         <h3>Street addresses</h3>
+        <hbox flex class="actions">
+          <Button on:click={addStreetAddress} icon={AddIcon} iconOnly plain classes="add" />
+        </hbox>
       </hbox>
       <grid class="items">
         {#each $streetAddresses.each as entry}
@@ -138,9 +141,6 @@
             <StreetAddressEdit slot="edit" bind:value={entry.value} />
           </ContactEntryUI>
         {/each}
-        <hbox flex class="actions">
-          <Button on:click={addStreetAddress} icon={AddIcon} iconOnly plain classes="add" />
-        </hbox>
       </grid>
     </GroupBox>
 
@@ -181,6 +181,7 @@
   import ContactsIcon from '../asset/icon/appBar/contacts.svg?raw';
   import CameraIcon from '../asset/icon/appBar/meet.svg?raw';
   import CallIcon from '../asset/icon/meet/callVoice.svg?raw';
+  import PhoneIcon from '../asset/icon/meet/call.svg?raw';
   import AddIcon from "lucide-svelte/icons/plus";
 
   export let person: Person;
@@ -293,7 +294,7 @@
     grid-template-columns: auto 1fr auto;
   }
   .actions {
-    margin-top: 8px;
+    justify-content: end;
   }
   .person-page :global(.group button) {
     color: #333333;
@@ -301,5 +302,8 @@
   .person-page :global(.group button.add),
   .preferred {
     color: grey;
+  }
+  .phone :global(path) {
+    fill: transparent;
   }
 </style>
