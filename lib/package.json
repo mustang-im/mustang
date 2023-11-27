@@ -18,7 +18,7 @@
     "sql-template-strings": "^2.2.2",
     "sqlite": "^3.0.3",
     "sqlite3": "^5.1.6",
-    "xmldom": "^0.6.0"
+    "@xmldom/xmldom": "^0.8.10"
   },
   "scripts": {
     "test": "node test.js"
