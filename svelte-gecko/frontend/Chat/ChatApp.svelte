@@ -37,6 +37,7 @@
   .left-pane {
     flex: 1 0 0;
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on MessageList */
+    max-width: 20em;
   }
   .right-pane {
     flex: 2 0 0;
