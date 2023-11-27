@@ -38,7 +38,7 @@
 <style>
 .background {
   background: url(../../asset/background-repeat.png) repeat;
-  background-color: #EEEEEE;
+  background-color: #E6F2F1;
   box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%) inset;
 }
 </style>

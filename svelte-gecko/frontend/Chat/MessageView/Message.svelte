@@ -74,7 +74,7 @@
     box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 7%);
   }
   .outgoing .bubble {
-    background-color: #d6d5dc;
+    background-color: #CDECE1;
     border-top-left-radius: 12px;
     box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 15%);
   }
