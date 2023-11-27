@@ -15,10 +15,11 @@
     "@svelteuidev/composables": "^0.14.0",
     "@svelteuidev/core": "^0.14.0",
     "jpc-ws": "https://github.com/benbucksch/jpc-ws/",
-    "matrix-js-sdk": "^30.0.1",
     "lucide-svelte": "^0.293.0",
+    "matrix-js-sdk": "^30.0.1",
     "mustang-lib": "../lib/",
     "olm": "https://packages.matrix.org/npm/olm/olm-3.2.1.tgz",
+    "pretty-bytes": "^6.1.1",
     "svelte-collections": "^1.1.20",
     "svelte-icon": "^2.0.0"
   },

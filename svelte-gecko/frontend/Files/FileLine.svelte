@@ -13,7 +13,7 @@
   {file.ext}
 </hbox>
 <hbox class="size">
-  {file.length} bytes
+  {fileSize(file.length)}
 </hbox>
 <hbox class="time">
   {getDateString(file.lastMod)}
@@ -23,9 +23,19 @@
   import type { File } from "../../logic/Files/File";
   import { getDateString } from "../Util/date";
   import FileIcon from "./FileIcon.svelte";
+  import prettyBytes from 'pretty-bytes';
 
   export let file: File;
   export let indent = 0;
+
+  function fileSize(sizeInBytes: number) {
+    return prettyBytes(sizeInBytes, {
+      binary: true,
+      locale: navigator.language,
+      maximumFractionDigits: 0,
+    })
+    .replace("i", "");
+  }
 </script>
 
 <style>
