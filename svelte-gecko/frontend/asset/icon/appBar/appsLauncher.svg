@@ -1,18 +1,31 @@
-<svg width="26" height="24" viewBox="0 0 26 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<mask id="path-1-inside-1_9_10685" fill="white">
-<rect width="10.6139" height="10.0379" rx="1.85102"/>
-</mask>
-<rect width="10.6139" height="10.0379" rx="1.85102" stroke="#160C27" stroke-width="3.70602" mask="url(#path-1-inside-1_9_10685)"/>
-<mask id="path-2-inside-2_9_10685" fill="white">
-<rect x="14.8747" width="10.6139" height="10.0379" rx="1.85102"/>
-</mask>
-<rect x="14.8747" width="10.6139" height="10.0379" rx="1.85102" stroke="#383838" stroke-width="3.70602" mask="url(#path-2-inside-2_9_10685)"/>
-<mask id="path-3-inside-3_9_10685" fill="white">
-<rect y="13.3848" width="10.6139" height="10.0379" rx="1.85102"/>
-</mask>
-<rect y="13.3848" width="10.6139" height="10.0379" rx="1.85102" stroke="#160C27" stroke-width="3.70602" mask="url(#path-3-inside-3_9_10685)"/>
-<mask id="path-4-inside-4_9_10685" fill="white">
-<rect x="14.8747" y="13.3848" width="10.6139" height="10.0379" rx="1.85102"/>
-</mask>
-<rect x="14.8747" y="13.3848" width="10.6139" height="10.0379" rx="1.85102" stroke="#383838" stroke-width="3.70602" mask="url(#path-4-inside-4_9_10685)"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <style>
+      .cls-1 {
+        stroke: #000;
+      }
+
+      .cls-1, .cls-2 {
+        fill: none;
+        stroke-linecap: round;
+        stroke-width: 8.25px;
+      }
+
+      .cls-3 {
+        fill: #fff;
+        opacity: 0;
+        stroke-width: 0px;
+      }
+
+      .cls-2 {
+        stroke: #27c1aa;
+      }
+    </style>
+  </defs>
+  <rect class="cls-3" x="0" width="128" height="128"/>
+  <path class="cls-2" d="m52.93,9.73v38.13c0,2.95-2,5.35-4.47,5.35H8.93c-2.47,0-4.47-2.4-4.47-5.35V9.73c0-2.95,2-5.35,4.47-5.35h39.54c2.47,0,4.47,2.4,4.47,5.35Z"/>
+  <path class="cls-1" d="m124.35,9.73v38.13c0,2.95-2,5.35-4.47,5.35h-39.54c-2.47,0-4.47-2.4-4.47-5.35V9.73c0-2.95,2-5.35,4.47-5.35h39.54c2.47,0,4.47,2.4,4.47,5.35Z"/>
+  <path class="cls-2" d="m52.93,79.95v38.13c0,2.95-2,5.35-4.47,5.35H8.93c-2.47,0-4.47-2.4-4.47-5.35v-38.13c0-2.95,2-5.35,4.47-5.35h39.54c2.47,0,4.47,2.4,4.47,5.35Z"/>
+  <path class="cls-2" d="m124.35,79.95v38.13c0,2.95-2,5.35-4.47,5.35h-39.54c-2.47,0-4.47-2.4-4.47-5.35v-38.13c0-2.95,2-5.35,4.47-5.35h39.54c2.47,0,4.47,2.4,4.47,5.35Z"/>
 </svg>
