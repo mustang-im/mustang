@@ -5,9 +5,9 @@
   {/each}
   <button class="expander icon" >
     {#if open}
-      <Icon data={folderOpen} scale={1} />
+      <FolderOpenIcon size="16" />
     {:else}
-      <Icon data={folderClosed} scale={1} />
+    <FolderClosedIcon size="16" />
     {/if}
   </button>
   <hbox class="name">
@@ -32,11 +32,10 @@
 
 <script lang="ts">
   import type { Directory } from "../../logic/Files/File";
-  import FileOrDirectoryLine from "./FileOrDirectoryLine.svelte";
-  import Icon from 'svelte-awesome';
-  import folderClosed from 'svelte-awesome/icons/folder';
-  import folderOpen from 'svelte-awesome/icons/folderOpen';
   import { getDateString } from "../Util/date";
+  import FileOrDirectoryLine from "./FileOrDirectoryLine.svelte";
+  import FolderClosedIcon from "lucide-svelte/icons/folder";
+  import FolderOpenIcon from "lucide-svelte/icons/folder-open";
 
   export let directory: Directory;
   export let indent = 0;
@@ -61,6 +60,7 @@
   }
   .icon {
     border: none;
+    background-color: transparent;
   }
   .indention {
     margin-left: 16px;

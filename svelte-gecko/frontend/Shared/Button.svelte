@@ -1,7 +1,9 @@
 <button on:click on:dblclick class="button {classes}" class:plain title={label} class:disabled>
   <hbox class="icon">
-    {#if icon}
+    {#if typeof(icon) == "string"}
       <Icon data={icon} size={iconSize} />
+    {:else if icon}
+      <svelte:component this={icon} size={iconSize} />
     {:else}
       <slot name="icon" />
     {/if}
@@ -17,9 +19,10 @@
 
 <script lang="ts">
   import Icon from 'svelte-icon/Icon.svelte';
+  import type { ComponentType } from 'svelte';
 
   export let label: string = null;
-  export let icon = null;
+  export let icon: ComponentType | string = null;
   export let classes = "";
   export let plain = false;
   export let iconSize = "16px";
@@ -40,6 +43,7 @@
     justify-content: center;
   }
   .plain {
+    background-color: transparent;
     border: none;
     padding: 0 0;
     min-width: 20px;

@@ -1,10 +1,11 @@
 <button on:click on:dblclick
   title={label} class="button {classes}" class:filled
-  style="borsder-radius: calc({iconSize}*2)"
   >
   <hbox class="icon">
-    {#if icon}
+    {#if typeof(icon) == "string"}
       <Icon data={icon} size={iconSize} />
+    {:else if icon}
+      <svelte:component this={icon} size={iconSize} />
     {:else}
       <slot name="icon" />
     {/if}
@@ -13,9 +14,10 @@
 
 <script lang="ts">
   import Icon from 'svelte-icon/Icon.svelte';
+  import type { ComponentType } from 'svelte';
 
   export let label: string = null;
-  export let icon = null;
+  export let icon: ComponentType | string = null;
   export let classes = "";
   export let iconSize = "16px";
   export let filled = false;
@@ -34,10 +36,13 @@
   }
   .filled:not(:hover) {
     background-color: #160C27; /* 142862 */
-    padding: 10px;
     border: none;
+    padding: 9px;
     color: white;
     stroke-width: 2px;
+  }
+  .filled:not(:hover) :global(path) {
+    stroke: currentColor;
   }
   button:hover {
     background-color: rgba(32, 174, 158, 50%); /* #20AE9E */

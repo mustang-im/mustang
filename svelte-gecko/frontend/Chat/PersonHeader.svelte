@@ -10,20 +10,22 @@
     <hbox flex class="name">{person.name}</hbox>
   </vbox>
   <hbox class="actions">
-    <RoundButton label="Video call" icon={meet} iconSize="24px" filled />
+    <RoundButton label="Video call" icon={VideoCallIcon} iconSize="24px" filled />
+    <RoundButton label="Audio call" icon={VoiceCallIcon} iconSize="24px" filled />
   </hbox>
   <vbox flex />
   <hbox class="right">
-    <Button label="Settings" icon={settings} iconSize="32px" plain iconOnly/>
+    <Button label="Settings" icon={SettingsIcon} iconSize="24px" plain iconOnly/>
   </hbox>
 </hbox>
 
 <script lang="ts">
   import type { Contact } from "../../logic/Abstract/Contact";
-  import meet from '../asset/icon/appBar/meet.svg?raw';
-  import settings from '../asset/icon/general/settings.svg?raw';
   import RoundButton from "../Shared/RoundButton.svelte";
   import Button from "../Shared/Button.svelte";
+  import VideoCallIcon from '../asset/icon/appBar/meet.svg?raw';
+  import VoiceCallIcon from '../asset/icon/meet/callVoice.svg?raw';
+  import SettingsIcon from 'lucide-svelte/icons/settings';
 
   export let person: Contact;
 </script>
@@ -42,6 +44,9 @@
   }
   .actions {
     align-items: center;
+  }
+  .actions :global(button) {
+    margin-right: 8px;
   }
   .right {
     align-items: center;

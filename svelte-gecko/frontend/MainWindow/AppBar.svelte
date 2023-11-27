@@ -1,7 +1,4 @@
 <vbox class="app-bar">
-  <!-- vbox class="app-logo">
-    <Icon data={logo} size="48px" />
-  </vbox -->
   <AppButton on:click={() => openApp(AppArea.Contacts)} selected={selectedApp == AppArea.Contacts}>
     <hbox slot="icon" class="icon"><Icon data={contacts} size="24px" /></hbox>
     <hbox slot="label" class="label">Contacts</hbox>
@@ -38,7 +35,6 @@
   import { AppArea } from "./app";
   import AppButton from "./AppButton.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
-  import logo from '../asset/icon/general/logo.svg?raw';
   import mail from '../asset/icon/appBar/mail.svg?raw';
   import chat from '../asset/icon/appBar/chat.svg?raw';
   import contacts from '../asset/icon/appBar/contacts.svg?raw';
@@ -61,12 +57,6 @@
     box-shadow: 1px 0px 3px 0px rgba(22, 12, 39, 20%); /* #160C27 */
     padding-top: 8px;
   }
-  .app-logo {
-    align-items: center;
-    padding-top: 16px;
-    padding-bottom: 32px;
-  }
-  .app-logo,
   .app-bar :global(.app-button),
   .bottom {
     border-right: 1px dotted grey;
