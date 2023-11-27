@@ -1,5 +1,50 @@
-<svg width="26" height="28" viewBox="0 0 26 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M24.2277 12.6468V24.923C24.2277 26.0219 23.3369 26.9128 22.2379 26.9128H21.0624H2.98981C1.89087 26.9128 1 26.0219 1 24.923V4.04058C1 2.94165 1.89087 2.05078 2.9898 2.05078H22.2379C23.3369 2.05078 24.2277 2.94165 24.2277 4.04059V8.26629" stroke="#160C27" stroke-width="1.85301"/>
-<rect x="6.68212" y="12.9333" width="3.67694" height="7.1887" stroke="#160C27" stroke-width="1.85301"/>
-<path d="M6.11029 0V5.45193M19.448 0V5.45193" stroke="#160C27" stroke-width="1.85301"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <style>
+      .cls-1 {
+        stroke-width: 8px;
+      }
+
+      .cls-1, .cls-2 {
+        stroke: #27c1aa;
+      }
+
+      .cls-1, .cls-2, .cls-3, .cls-4 {
+        fill: none;
+        stroke-linecap: round;
+      }
+
+      .cls-2 {
+        stroke-width: 8.06px;
+      }
+
+      .cls-3 {
+        stroke-width: 7.76px;
+      }
+
+      .cls-3, .cls-4 {
+        stroke: #000;
+      }
+
+      .cls-4 {
+        stroke-linejoin: round;
+        stroke-width: 7px;
+      }
+
+      .cls-5 {
+        fill: #fff;
+        opacity: 0;
+        stroke-width: 0px;
+      }
+    </style>
+  </defs>
+  <rect class="cls-5" x="0" width="128" height="128"/>
+  <rect class="cls-5" x=".31" width="128" height="128"/>
+  <path class="cls-3" d="m16.65,37.67h95.33"/>
+  <path class="cls-2" d="m59.89,14.22c.56,0,1.38,0,3.1,0,39.56.07,46.1,1.56,50.27,7.24,1.55,2.11,3.49,5.76,4.13,12.16v78.36c0,6.62-4.41,11.99-9.84,11.99H20.45c-5.44,0-9.84-5.37-9.84-11.99V33.62c.63-6.47,2.6-10.11,4.13-12.16,2.83-3.78,7.87-7.14,45.14-7.24Z"/>
+  <path class="cls-1" d="m36.4,12V4"/>
+  <path class="cls-1" d="m89.74,12V4"/>
+  <path class="cls-4" d="m46.07,75l8-8v21.33"/>
+  <path class="cls-4" d="m67.4,83v-10.67c0-2.95,2.39-5.33,5.33-5.33s5.33,2.39,5.33,5.33v10.67c0,2.95-2.39,5.33-5.33,5.33s-5.33-2.39-5.33-5.33Z"/>
 </svg>
