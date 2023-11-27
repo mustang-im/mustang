@@ -26,6 +26,19 @@
   * Need: Router, for: Click on name -> Contacts
   * Show list of participants?
   * Show number of participants
+* Contact person
+* Join group
+  * Via group name or URL
+  * Search
+* Create group
+* User is typing
+* Link URLs
+* Detect MarkDown in plaintext messages
+
+# Editor
+* Send HTML
+* Formatting toolbar
+* Detect MarkDown and convert to HTML while sending
 
 ## Matrix
 * Message impl
