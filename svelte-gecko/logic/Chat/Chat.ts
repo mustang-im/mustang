@@ -7,7 +7,7 @@ export class Chat {
   id: string;
   contact: Contact;
   messages = new ArrayColl<ChatMessage>();
-  lastMessage = null; // Calculating this would be very slow
+  lastMessage: ChatMessage = null; // Calculating this would be very slow
   /** Message that our user is currently composing, to this chat room */
   draftMessage: string;
 
