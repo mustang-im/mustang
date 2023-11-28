@@ -1,6 +1,7 @@
-import { ChatAccount } from './Account';
+import type { ChatAccount } from './Account';
 import { ArrayColl } from 'svelte-collections';
 import { MatrixAccount } from './Matrix/MatrixAccount';
+import { XMPPAccount } from './XMPP/XMPPAccount';
 
 /**
  * Reads settings for chat accounts,
@@ -19,8 +20,10 @@ export async function readChatAccounts(): Promise<ArrayColl<ChatAccount>> {
         break;
       } else if (protocol == "matrix") {
         accounts.add(readMatrixAccount(prefBranch));
+      } else if (protocol == "xmpp") {
+        accounts.add(readXMPPAccount(prefBranch));
       } else {
-        console.error(`Unknown chat account ${protocol} in localStorage ${prefBranch}protocol`);
+        console.error(`Unknown chat protocol ${protocol} in localStorage ${prefBranch}protocol`);
       }
     } catch (ex) {
       console.log("Could not load account", prefBranch);
@@ -36,6 +39,19 @@ export async function readChatAccounts(): Promise<ArrayColl<ChatAccount>> {
 function readMatrixAccount(prefBranch: string): MatrixAccount {
   let account = new MatrixAccount();
   account.baseURL = localStorage.getItem(prefBranch + "server") ?? "https://matrix.org";
+  account.username = localStorage.getItem(prefBranch + "username");
+  account.password = localStorage.getItem(prefBranch + "password");
+  account.deviceID = localStorage.getItem(prefBranch + "deviceID");
+  if (!account.deviceID) {
+    account.deviceID = crypto.randomUUID();
+    localStorage.setItem(prefBranch + "deviceID", account.deviceID);
+  }
+  return account;
+}
+
+function readXMPPAccount(prefBranch: string): XMPPAccount {
+  let account = new XMPPAccount();
+  account.serverDomain = localStorage.getItem(prefBranch + "server");
   account.username = localStorage.getItem(prefBranch + "username");
   account.password = localStorage.getItem(prefBranch + "password");
   account.deviceID = localStorage.getItem(prefBranch + "deviceID");

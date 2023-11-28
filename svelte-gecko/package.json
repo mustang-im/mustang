@@ -20,6 +20,7 @@
     "mustang-lib": "../lib/",
     "olm": "https://packages.matrix.org/npm/olm/olm-3.2.1.tgz",
     "pretty-bytes": "^6.1.1",
+    "stanza": "^12.19.0",
     "svelte-collections": "^1.1.20",
     "svelte-icon": "^2.0.0"
   },

@@ -32,7 +32,9 @@ export async function getStartObjects(): Promise<AppGlobal> {
   for (let chatAccount of appGlobal.chatAccounts) {
     await chatAccount.login();
   }
-  appGlobal.chatAccounts.addAll(chatAccountsSaved.contents); // no idea why MatrixAccount.login() overwrites `appGlobal.chatAccounts`. Maybe because of `.global = window`?
+  // no idea why MatrixAccount.login() overwrites `appGlobal.chatAccounts`. Maybe because of `.global = window`?
+  appGlobal.chatAccounts.clear();
+  appGlobal.chatAccounts.addAll(chatAccountsSaved.contents);
   return getTestObjects();
   /*
   let jpc = new JPCWebSocket(null);
