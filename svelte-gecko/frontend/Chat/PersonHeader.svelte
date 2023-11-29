@@ -13,19 +13,13 @@
     <RoundButton label="Video call" icon={VideoCallIcon} iconSize="24px" filled />
     <RoundButton label="Audio call" icon={VoiceCallIcon} iconSize="24px" filled />
   </hbox>
-  <vbox flex />
-  <hbox class="right">
-    <Button label="Settings" icon={SettingsIcon} iconSize="24px" plain iconOnly/>
-  </hbox>
 </hbox>
 
 <script lang="ts">
   import type { Contact } from "../../logic/Abstract/Contact";
   import RoundButton from "../Shared/RoundButton.svelte";
-  import Button from "../Shared/Button.svelte";
   import VideoCallIcon from '../asset/icon/appBar/meet.svg?raw';
   import VoiceCallIcon from '../asset/icon/meet/callVoice.svg?raw';
-  import SettingsIcon from 'lucide-svelte/icons/settings';
 
   export let person: Contact;
 </script>

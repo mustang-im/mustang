@@ -23,9 +23,6 @@
       </MeetingList>
     </vbox>
   </vbox>
-  <vbox class="end">
-    <Button icon={SettingsIcon} plain iconSize="24px" classes="settings" />
-  </vbox>
 </hbox>
 
 <script lang="ts">
@@ -35,7 +32,6 @@
   import Button from "../../Shared/Button.svelte";
   import VideoIcon from 'lucide-svelte/icons/video';
   import AddToCalendarIcon from "lucide-svelte/icons/calendar-plus";
-  import SettingsIcon from 'lucide-svelte/icons/settings';
 
   const now = new Date();
   const maxUpcoming = new Date(); // TODO now + 8 hours

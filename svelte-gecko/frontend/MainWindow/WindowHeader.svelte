@@ -19,12 +19,18 @@
       Apps
     {/if}
   </hbox>
+  <vbox flex />
+  <hbox class="right">
+    <Button label="Settings" icon={SettingsIcon} iconSize="24px" plain iconOnly classes="settings"/>
+  </hbox>
 </hbox>
 
 <script lang="ts">
   import { AppArea } from "./app";
+  import Button from "../Shared/Button.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
   import logo from '../asset/icon/general/logo.svg?raw';
+  import SettingsIcon from 'lucide-svelte/icons/settings-2';
 
   export let selectedApp: AppArea;
 </script>
@@ -45,5 +51,9 @@
     font-size: 18px;
     align-items: center;
     margin-left: 12px;
+  }
+  .right :global(.settings) {
+    color: white;
+    margin-right: 8px;
   }
 </style>
