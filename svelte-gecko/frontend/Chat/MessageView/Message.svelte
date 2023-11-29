@@ -7,11 +7,13 @@
   >
   {#if !message.outgoing && !followup}
     <vbox hidden class="avatar">
-      <img
-        src={message.contact.picture}
-        width="32" height="32"
-        title="Picture of {message.contact.name}"
-        alt="" />
+      {#if message.contact.picture}
+        <img
+          src={message.contact.picture}
+          width="32" height="32"
+          title="Picture of {message.contact.name}"
+          alt="" />
+      {/if}
     </vbox>
   {/if}
   <vbox class="right">
@@ -110,6 +112,8 @@
   .avatar {
     width: 32px;
     height: 32px;
+    min-width: 32px;
+    min-height: 32px;
     margin-top: 3px;
     margin-right: 20px;
     clip-path: circle();
