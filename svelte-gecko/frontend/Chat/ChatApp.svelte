@@ -38,12 +38,13 @@
     flex: 1 0 0;
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on MessageList */
     max-width: 20em;
+    background-color: #F9F9FD;
   }
   .right-pane {
     flex: 2 0 0;
   }
   .messages {
-    background-color: #F3F3F3;
+    background-color: #F9F9FD;
   }
   .editor {
     height: 96px;
