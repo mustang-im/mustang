@@ -1,4 +1,4 @@
-<hbox flex class="person">
+<hbox flex class="person" class:selected>
   <vbox class="image">
     <img
       src={person.picture}
@@ -15,9 +15,17 @@
   import type { Person } from "../../logic/Abstract/Person";
 
   export let person: Person;
+  export let selected = false;
 </script>
 
 <style>
+  .person.selected {
+    background-color: #20AE9E;
+    color: white;
+  }
+  .person:not(.selected):hover {
+    background-color: #A9DAD4;
+  }
   .image {
     width: 56px;
     height: 56px;

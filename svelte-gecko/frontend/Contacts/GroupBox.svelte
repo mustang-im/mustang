@@ -8,8 +8,10 @@
 
 <style>
   .group {
-    margin: 8px;
+    margin: 5px;
     padding: 16px;
-    border: 1px dotted lightgray;
+    padding-left: 20px;
+    border: 1px dashed #A8AEB5;
+    border-radius: 2px;
   }
 </style>

@@ -2,8 +2,8 @@
   <Scroll>
     {#each persons.each as person}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <vbox class="person" class:selected={person == selected} on:click={() => selected = person}>
-        <PersonLine {person} />
+      <vbox class="person" on:click={() => selected = person}>
+        <PersonLine {person} selected={person == selected}/>
       </vbox>
     {/each}
   </Scroll>
@@ -20,8 +20,4 @@
 </script>
 
 <style>
-  .person.selected {
-    background-color: #20AE9E;
-    color: white;
-  }
 </style>
