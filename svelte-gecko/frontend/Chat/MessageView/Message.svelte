@@ -100,7 +100,7 @@
     top: 0;
     left: 100%;
     border-width: 10px 10px 0 0;
-    border-color: #d6d5dc transparent transparent transparent;
+    border-color: #CDECE1 transparent transparent transparent;
   }
   .incoming.followup .bubble {
     border-top-left-radius: 12px;
