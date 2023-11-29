@@ -53,12 +53,18 @@
 <style>
   .app-bar {
     width: 64px;
-    background-color: #ccc7d2;
+    background-color: #5C5C71;
     box-shadow: 1px 0px 3px 0px rgba(22, 12, 39, 20%); /* #160C27 */
     padding-top: 8px;
   }
   .app-bar :global(.app-button),
   .bottom {
     border-right: 1px dotted grey;
+  }
+  .label {
+    color: white;
+  }
+  .icon :global(.cls-1) {
+    stroke: white;
   }
 </style>

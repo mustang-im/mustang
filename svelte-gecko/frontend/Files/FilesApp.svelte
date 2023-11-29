@@ -27,8 +27,10 @@
   .left-pane {
     flex: 1 0 0;
     max-width: 20em;
+    background-color: #F9F9FD;
   }
   .right-pane {
     flex: 2 0 0;
+    background-color: #F9F9FD;
   }
 </style>
