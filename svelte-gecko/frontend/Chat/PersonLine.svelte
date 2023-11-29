@@ -1,10 +1,12 @@
 <hbox flex class="person">
   <vbox class="image">
-    <img
-      src={chatRoom.contact.picture}
-      width="64" height="64"
-      title="Picture of {chatRoom.contact.name}"
-      alt="" />
+    {#if chatRoom.contact.picture}
+      <img
+        src={chatRoom.contact.picture}
+        width="64" height="64"
+        title="Picture of {chatRoom.contact.name}"
+        alt="" />
+    {/if}
   </vbox>
   <vbox flex class="right">
     <hbox class="right-top">
@@ -49,7 +51,7 @@
   }
   .last-msg {
     opacity: 50%;
-    margin-top: 0px;
+    margin-top: 5px;
     font-size: 11.5px;
     max-height: 1.8em;
     overflow: hidden;

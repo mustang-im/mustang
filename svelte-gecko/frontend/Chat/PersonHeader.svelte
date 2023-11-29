@@ -1,10 +1,12 @@
 <hbox class="person">
   <vbox class="image">
-    <img
-      src={person.picture}
-      width="64" height="64"
-      title="Picture of {person.name}"
-      alt="" />
+    {#if person.picture}
+      <img
+        src={person.picture}
+        width="64" height="64"
+        title="Picture of {person.name}"
+        alt="" />
+    {/if}
   </vbox>
   <vbox class="name-box">
     <hbox flex class="name">{person.name}</hbox>

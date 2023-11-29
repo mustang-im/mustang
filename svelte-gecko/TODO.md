@@ -16,7 +16,6 @@
 
 # Chat
 ## UI
-* Color for my text bubble
 * Editor
   * HTML edit, to send HTML messages
   * Button toolbar
@@ -50,7 +49,7 @@
 * XMPP
 * Signal?
 * DIM <https://www.dim.chat>
-* Find a suitable Open-Source protocol
+* Find a suitable open protocol
 
 # Contacts
 * Placeholder when we have no image for a person
