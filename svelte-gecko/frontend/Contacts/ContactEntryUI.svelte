@@ -10,8 +10,8 @@
     <slot name="edit" />
   </hbox>
   <hbox class="actions">
-    <Button on:click={stopEditing} icon={OKIcon} iconOnly plain />
-    <Button on:click={remove} icon={DeleteIcon} iconOnly plain />
+    <Button on:click={stopEditing} icon={OKIcon} iconOnly plain iconSize="14px" label="Finish editing and save" />
+    <Button on:click={remove} icon={DeleteIcon} iconOnly plain iconSize="14px" label="Delete this information" />
   </hbox>
 {:else}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -20,8 +20,8 @@
     <slot name="display" />
   </hbox>
   <hbox class="actions">
-    <Button on:click={startEditing} icon={PencilIcon} iconOnly plain />
-    <Button on:click={copyValue} icon={CopyIcon} iconOnly plain />
+    <Button on:click={startEditing} icon={PencilIcon} iconOnly plain iconSize="12px" label="Edit" />
+    <Button on:click={copyValue} icon={CopyIcon} iconOnly plain iconSize="12px" label="Copy info to clipboard" />
     {#if copied}
       <hbox>Copied to clipboard ✓</hbox>
     {/if}
@@ -82,9 +82,8 @@
 
 <style>
   .purpose, .value, .actions {
-    margin-top: 12px;
+    margin-top: 8px;
     font-size: 13px;
-    color: black;
   }
 
   .purpose {

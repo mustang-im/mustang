@@ -1,7 +1,9 @@
 <hbox class="persons-toolbar">
-  <input type="search" bind:value={searchText} placeholder="Search for a name" />
+  <input type="search" bind:value={searchText} placeholder="Search for a person or group" />
   <hbox flex />
-  <RoundButton label="New contact" icon={NewContactIcon} iconSize="32px" filled on:click={addPerson} />
+  <hbox class="new">
+    <RoundButton label="New contact" icon={NewContactIcon} iconSize="24px" filled on:click={addPerson} />
+  </hbox>
 </hbox>
 
 <script lang="ts">
@@ -9,7 +11,7 @@
   import type { Person } from "../../logic/Abstract/Person";
   import type { Collection } from "svelte-collections";
   import RoundButton from "../Shared/RoundButton.svelte";
-  import NewContactIcon from "lucide-svelte/icons/user-round-plus";
+  import NewContactIcon from "lucide-svelte/icons/plus";
 
   export let persons: Collection<Person>;
   export let selected: Person = null;
@@ -30,9 +32,13 @@
   }
   input[type="search"] {
     width: 100%;
-    border: none;
     margin-right: 24px;
-    height: 2em;
+    height: 32px;
     padding: 0px 8px;
+    border: 1px solid #BAB7BF;
+    border-radius: 4px;
+  }
+  input::placeholder {
+    color: #808080;
   }
 </style>

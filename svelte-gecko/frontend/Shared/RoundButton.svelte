@@ -44,10 +44,14 @@
   .filled:not(:hover) :global(path) {
     stroke: currentColor;
   }
-  button:hover {
-    background-color: rgba(32, 174, 158, 50%); /* #20AE9E */
-  }
   .icon {
     margin-right: 0px;
+  }
+  button:hover {
+    background-color: rgba(32, 174, 158, 100%); /* #20AE9E */
+    border: 1px solid transparent !important;
+  }
+  .button:hover .icon :global(path) {
+    stroke: white;
   }
 </style>

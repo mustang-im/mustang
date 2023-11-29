@@ -26,8 +26,8 @@
         <hbox class="main-call">
           <RoundButton label="Video call" icon={CameraIcon} iconSize="24px" />
           {#if preferredPhoneNumber}
-            <a href="tel:{preferredPhoneNumber}">
-              <RoundButton label="Call" icon={CallIcon} iconSize="24px" />
+            <a href="tel:{preferredPhoneNumber}" class="phone-call">
+              <RoundButton label="Call" icon={CallIcon} iconSize="22px" />
             </a>
           {/if}
           <RoundButton label="Message" icon={ChatIcon} iconSize="24px" />
@@ -248,30 +248,43 @@
     margin: 16px;
   }
   .preferred {
-    margin-top: 16px;
-    margin-bottom: 24px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    font-size: 13px;
   }
   .main-call :global(> *) {
-    margin-right: 4px;
+    margin-right: 8px;
+    border-color: #DCDBDF;
+  }
+  .main-call :global(button) {
+    border-color: #DCDBDF;
+  }
+  .phone-call :global(.icon) {
+    /* because the icon is only 22px */
+    margin: 1px;
   }
   grid.boxes {
     grid-template-columns: 1fr 1fr;
   }
   .subtitle {
     align-items: center;
+    margin-bottom: 8px;
   }
-  h3 {
+  .subtitle h3 {
     margin-left: 10px;
+    margin-top: 0px;
+    margin-bottom: 0px;
     font-size: 14px;
+    vertical-align: middle;
   }
   .notes {
-    margin: 8px;
-    margin-right: 26px;
+    margin: 4px;
+    border: 1px dashed #A8AEB5;
+    border-radius: 2px;
   }
   .notes textarea {
     height: 100%;
     min-height: 10em;
-    width: 100%;
     border: none;
     font-family: sans-serif;
     font-size: 14px;
@@ -297,7 +310,7 @@
     justify-content: end;
   }
   .person-page :global(.group button) {
-    color: #333333;
+    color: #9894A0;
   }
   .person-page :global(.group button.add),
   .preferred {
@@ -305,5 +318,6 @@
   }
   .phone :global(path) {
     fill: transparent;
+    stroke: #27c1aa;
   }
 </style>
