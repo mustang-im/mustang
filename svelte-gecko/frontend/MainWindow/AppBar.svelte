@@ -16,7 +16,7 @@
     <hbox slot="label" class="label">Meet</hbox>
   </AppButton>
   <AppButton on:click={() => openApp(AppArea.Calendar)} selected={selectedApp == AppArea.Calendar}>
-    <hbox slot="icon" class="icon"><Icon data={calendar} size="24px" /></hbox>
+    <hbox slot="icon" class="icon"><CalendarIcon size="24px" /></hbox>
     <hbox slot="label" class="label">Calendar</hbox>
   </AppButton>
   <AppButton on:click={() => openApp(AppArea.Files)} selected={selectedApp == AppArea.Files}>
@@ -34,6 +34,7 @@
 <script lang="ts">
   import { AppArea } from "./app";
   import AppButton from "./AppButton.svelte";
+  import CalendarIcon from "../Calendar/CalendarIcon.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
   import mail from '../asset/icon/appBar/mail.svg?raw';
   import chat from '../asset/icon/appBar/chat.svg?raw';
