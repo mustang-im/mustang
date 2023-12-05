@@ -17,6 +17,13 @@
     align-items: center;
     padding: 8px;
   }
+  .label :global(.label){
+    color: white;
+  }
+  .icon :global(.cls-1) {
+    stroke: white;
+    /** AppButton overrides this for .selected */
+  }
   .app-button:hover {
     background-color: rgba(255, 255, 255, 25%);
   }
@@ -24,7 +31,16 @@
     color: black;
   }
   .app-button.selected {
-    background-color: rgba(255, 255, 255, 50%);
+    background-color: rgba(255, 255, 255, 95%);
+  }
+  .app-button.selected .label :global(> .label) {
+    color: black;
+  }
+  .app-button.selected .icon :global(.cls-1) {
+    stroke: #5C5C71;
+  }
+  .app-button.selected .icon :global(.date-calendar-icon) {
+    fill: #5C5C71;
   }
   .icon {
     color: transparent;
