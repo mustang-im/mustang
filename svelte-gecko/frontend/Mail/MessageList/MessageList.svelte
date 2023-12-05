@@ -1,5 +1,5 @@
 <vbox flex class="message-list">
-  <FastList items={messages} selectedItem={selectedMessage}>
+  <FastList items={messages} bind:selectedItem={selectedMessage}>
     <svelte:fragment slot="header">
       <hbox>Correspondent</hbox>
       <hbox>Subject</hbox>

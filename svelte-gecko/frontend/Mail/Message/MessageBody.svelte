@@ -1,6 +1,6 @@
 <vbox flex class="message-body">
-  <div flex class="msg-body-plaintext value">
-    {plaintext || ''}
+  <div class="msg-body-plaintext value">
+    {message.text || ''}
   </div>
   <!-- svelte-ignore a11y-missing-attribute -->
   <iframe class="msg-body-frame">
@@ -13,6 +13,7 @@
 
   export let message: Email;
 
+  /*
   $: showMessage(message);
   let plaintext: string = null;
   async function showMessage(_dummy) {
@@ -21,6 +22,7 @@
     message.markAsRead(true)
       .catch(backgroundError);
   }
+  */
 </script>
 
 <style>
@@ -28,6 +30,7 @@
     overflow: auto;
   }
   .msg-body-plaintext {
+    flex: 1 0 0;
   }
   .msg-body-frame {
     display: none;
