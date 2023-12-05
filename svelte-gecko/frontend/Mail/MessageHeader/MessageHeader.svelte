@@ -5,11 +5,15 @@
   </hbox>
   <hbox>
     <label control="msg-from">From</label>
-    <value id="msg-from">{message.authorRealname}</value>
+    <value id="msg-from">{from}</value>
+  </hbox>
+  <hbox>
+    <label control="msg-from">To</label>
+    <value id="msg-from">{to}</value>
   </hbox>
   <hbox>
     <label control="msg-date">Date</label>
-    <value id="msg-date">{getDateString(message.date)}</value>
+    <value id="msg-date">{getDateString(message.received)}</value>
   </hbox>
 </vbox>
 
@@ -18,6 +22,15 @@
   import { getDateString } from "../../Util/date";
 
   export let message: Email;
+
+  $: from = message.outgoing
+    ? message.authorEmailAddress
+    : message.contact?.name
+      ?? message.authorEmailAddress;
+  $: to = message.outgoing
+    ? message.contact?.name
+      ?? message.recipientEmailAddress
+    : message.recipientEmailAddress;
 </script>
 
 <style>
