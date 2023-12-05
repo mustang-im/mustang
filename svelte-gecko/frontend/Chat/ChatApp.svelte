@@ -26,9 +26,6 @@
 
   export let chatRooms: Collection<Chat>;
 
-  $: chatRooms.registerObserver(new DebugObserver());
-  $: console.log("chat room", $chatRooms);
-
   let selectedChat: Chat;
   $: messages = selectedChat?.messages;
 </script>
