@@ -12,7 +12,7 @@ import { Directory, File } from './Files/File';
 import { Calendar } from './Calendar/Calendar';
 import { Event } from './Calendar/Event';
 import { ArrayColl, type Collection } from 'svelte-collections';
-import { Folder } from './Mail/Folder';
+import { Folder, SpecialFolder } from './Mail/Folder';
 
 export async function getTestObjects(): Promise<AppGlobal> {
   let appGlobal = new AppGlobal();
@@ -60,6 +60,7 @@ function fakeMailAccount(persons: Collection<Person>): MailAccount {
   for (let name of ['Inbox', 'Sent', 'Drafts', 'Trash', 'Spam']) {
     let folder = new Folder();
     folder.name = name;
+    folder.specialFolder = folder.name.toLowerCase() as SpecialFolder;
     account.rootFolders.push(folder);
   }
   account.inbox = account.rootFolders.first;

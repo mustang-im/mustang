@@ -1,6 +1,6 @@
 <hbox flex class="mail-app">
   <vbox flex class="folder-pane">
-    <ProjectList />
+    <!--<ProjectList />-->
     <AccountList accounts={$accounts} bind:selectedAccount />
     <FolderList folders={selectedAccount ? selectedAccount.rootFolders : new ArrayColl()} bind:selectedFolder />
   </vbox>
@@ -100,7 +100,7 @@
   .mail-app :global(.fast-list thead) {
     height: 32px;
   }
-  .mail-app :global(.fast-list tbody tr hbox) {
+  .mail-app :global(.fast-list tbody hbox) {
     font-size: 13px;
   }
 </style>
