@@ -47,6 +47,7 @@
   import { Contact } from "../../logic/Abstract/Contact";
   import { ChatPerson } from "../../logic/Chat/Person";
 
+  appGlobal.chatAccounts.first?.chats.registerObserver(new DebugObserver());
   $: chatRooms?.registerObserver(new DebugObserver());
   $: console.log("main window: chat room", $chatRooms?.contents);
   setTimeout(() => {
@@ -65,8 +66,6 @@
     for (let prop in app) {
       appGlobal[prop] = app[prop];
     }
-
-    appGlobal.chatAccounts.first?.chats.registerObserver(new DebugObserver());
 
     chatRooms = mergeColls(appGlobal.chatAccounts.map(a => a.chats));
   })
