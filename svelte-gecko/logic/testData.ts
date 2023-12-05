@@ -83,6 +83,10 @@ function fakeMailAccount(persons: Collection<Person>): MailAccount {
       msg.authorEmailAddress = msg.outgoing ? meEmail : otherEmail;
       msg.recipientEmailAddress = msg.outgoing ? otherEmail : meEmail;
       msg.text = faker.hacker.phrase();
+      let paragraphs = Math.floor(Math.random() * 10 + 1);
+      for (let i = 0; i < paragraphs; i++) {
+        msg.text += faker.hacker.phrase() + " " + faker.hacker.phrase() + " " + faker.hacker.phrase() + "\n\n";
+      }
       msg.html = msg.text;
       msg.contentType = "text/plain";
       account.inbox.messages.add(msg);
