@@ -1,14 +1,16 @@
 <vbox flex class="message-display">
-  <MessageHeader {message} />
-  <MessageBody {message} />
+  <MessageHeader {message} {account} />
+  <MessageBody {message} {account} />
 </vbox>
 
 <script lang="ts">
   import type { Email } from "mustang-lib";
+  import type { MailAccount } from "../../../logic/Mail/Account";
   import MessageHeader from "../MessageHeader/MessageHeader.svelte";
   import MessageBody from "./MessageBody.svelte";
 
   export let message: Email;
+  export let account: MailAccount;
 </script>
 
 <style>

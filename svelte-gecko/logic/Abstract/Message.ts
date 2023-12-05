@@ -14,6 +14,8 @@ export class Message {
   sent: Date;
   /** When the message was received */
   received: Date;
+  read = false;
+  starred = false;
 
   /** Plaintext version of the message */
   text: string;

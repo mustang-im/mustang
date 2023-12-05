@@ -28,10 +28,13 @@
 <style>
   .message-body {
     overflow: auto;
+    background-color: white;
+    padding: 16px 32px;
   }
   .msg-body-plaintext {
     flex: 1 0 0;
     white-space: pre-wrap;
+    max-width: 50em;
   }
   .msg-body-frame {
     display: none;

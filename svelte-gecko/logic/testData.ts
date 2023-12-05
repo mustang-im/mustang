@@ -56,6 +56,7 @@ function fakeMailAccount(persons: Collection<Person>): MailAccount {
   let account = new MailAccount();
   account.name = "Yahoo";
   account.emailAddress = "ben.bucksch@yahoo.de";
+  account.userRealname = "Ben Bucksch";
 
   for (let name of ['Inbox', 'Sent', 'Drafts', 'Trash', 'Spam']) {
     let folder = new Folder();
@@ -99,6 +100,7 @@ function fakeMailAccount(persons: Collection<Person>): MailAccount {
 function fakeChatAccount(persons: Collection<Person>): ChatAccount {
   let chatAccount = new ChatAccount();
   chatAccount.name = "Test chat 1";
+  chatAccount.userRealname = "Ben Bucksch";
 
   for (let person of persons) {
     let chat = new Chat();

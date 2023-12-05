@@ -10,7 +10,7 @@
     </vbox>
     <vbox flex class="message-display-pane">
       {#if selectedMessage}
-        <MessageDisplay message={selectedMessage} />
+        <MessageDisplay message={selectedMessage} account={selectedAccount} />
       {:else}
         <StartPage />
       {/if}
@@ -87,9 +87,6 @@
   .mail-app :global(.fast-list) {
     background-color: transparent;
     border: none;
-  }
-  .message-display-pane {
-    background-color: white;
   }
   .mail-app :global(.fast-list thead tr > hbox) {
     vertical-align: middle;
