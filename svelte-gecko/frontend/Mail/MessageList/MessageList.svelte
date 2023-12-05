@@ -27,11 +27,7 @@
   .message-list :global(.fast-list thead tr hbox) {
     background-color: white;
   }
-  .message-list :global(.fast-list tbody tr.selected hbox) {
-    background-color: #20AE9E;
-    color: white;
-  }
-  .message-list :global(.fast-list tbody tr:hover) {
-    background-color: #A9DAD4;
+  .message-list :global(.fast-list table) {
+    padding-left: 4px;
   }
 </style>

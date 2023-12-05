@@ -87,9 +87,6 @@
     background-color: #F9F9FD;
     border: none;
   }
-  .mail-app :global(.fast-list table) {
-    padding-left: 4px;
-  }
   .mail-app :global(.fast-list thead tr hbox) {
     vertical-align: middle;
     border: none;
@@ -102,5 +99,12 @@
   }
   .mail-app :global(.fast-list tbody hbox) {
     font-size: 13px;
+  }
+  .mail-app :global(.fast-list tbody tr.selected) {
+    background-color: #20AE9E;
+    color: white;
+  }
+  .mail-app :global(.fast-list tbody tr:not(.selected):hover) {
+    background-color: #A9DAD4;
   }
 </style>
