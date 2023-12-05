@@ -17,16 +17,15 @@
 
 <script lang="ts">
   import type { Chat } from "../../logic/Chat/Chat";
-  import type { Collection } from "svelte-collections";
-  import { DebugObserver } from "../../logic/util/DebugObserver";
+  import { appGlobal } from "../../logic/app";
+  import { mergeColls } from "svelte-collections";
   import PersonsList from "./PersonsList.svelte";
   import Header from "./PersonHeader.svelte";
   import MessageList from "./MessageView/MessageList.svelte";
   import MsgEditor from "./MsgEditor.svelte";
 
-  export let chatRooms: Collection<Chat>;
-
   let selectedChat: Chat;
+  let chatRooms = mergeColls(appGlobal.chatAccounts.map(a => a.chats));
   $: messages = selectedChat?.messages;
 </script>
 
