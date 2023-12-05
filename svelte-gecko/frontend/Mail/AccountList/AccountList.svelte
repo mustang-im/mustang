@@ -19,7 +19,7 @@
 </script>
 
 <style>
-  .account-list {
-    border-bottom: 1px solid grey;
+  .account-list :global(.fast-list thead tr hbox) {
+    background-color: transparent;
   }
 </style>

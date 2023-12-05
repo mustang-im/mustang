@@ -1,14 +1,12 @@
 <vbox flex class="message-list">
   <FastList items={testMessages} selectedItem={selectedMessage}>
     <svelte:fragment slot="header">
-      <hbox>From</hbox>
-      <hbox>To</hbox>
+      <hbox>Correspondent</hbox>
       <hbox>Subject</hbox>
       <hbox>Date</hbox>
     </svelte:fragment>
     <svelte:fragment slot="row" let:item={msg}>
-      <hbox>{msg.authorRealname}</hbox>
-      <hbox>{msg.recipientRealname}</hbox>
+      <hbox>{msg.outgoing ? msg.recipientRealname : msg.authorRealname}</hbox>
       <hbox>{msg.subject}</hbox>
       <hbox>{getDateString(msg.date)}</hbox>
     </svelte:fragment>
@@ -25,6 +23,7 @@
     msgID: string;
     date: Date;
     subject: string;
+    outgoing: boolean;
     authorRealname: string;
     authorEmailAddress: string;
     recipientEmailAddress: string;
@@ -42,6 +41,7 @@
     msg.msgID = i + '';
     msg.date = new Date();
     msg.subject = "Talk about " + i;
+    msg.outgoing = Math.random() > 0.5;
     msg.authorRealname = "Some guy " + i;
     msg.authorEmailAddress = "guy" + i + "@example.com";
     msg.recipientEmailAddress = "me@example.org";
@@ -53,8 +53,14 @@
 </script>
 
 <style>
-  .message-list {
-    border-left: 1px solid grey;
-    border-right: 1px solid grey;
+  .message-list :global(.fast-list thead tr hbox) {
+    background-color: white;
+  }
+  .message-list :global(.fast-list tbody tr.selected hbox) {
+    background-color: #20AE9E;
+    color: white;
+  }
+  .message-list :global(.fast-list tbody tr:hover) {
+    background-color: #A9DAD4;
   }
 </style>

@@ -1,18 +1,20 @@
 <hbox flex class="mail-app">
-  <vbox class="folder-pane">
+  <vbox flex class="folder-pane">
     <ProjectList />
     <AccountList {accounts} bind:selectedAccount />
     <FolderList folders={selectedAccount ? selectedAccount.folders : new ArrayColl()} bind:selectedFolder />
   </vbox>
-  <vbox class="message-list-pane">
-    <MessageList messages={selectedFolder ? selectedFolder.messages : new ArrayColl()} bind:selectedMessage />
-  </vbox>
-  <vbox class="message-display-pane">
-    {#if selectedMessage}
-      <MessageDisplay message={selectedMessage} />
-    {:else}
-      <StartPage />
-    {/if}
+  <vbox flex class="left-pane">
+    <vbox flex class="message-list-pane">
+      <MessageList messages={selectedFolder ? selectedFolder.messages : new ArrayColl()} bind:selectedMessage />
+    </vbox>
+    <vbox flex class="message-display-pane">
+      {#if selectedMessage}
+        <MessageDisplay message={selectedMessage} />
+      {:else}
+        <StartPage />
+      {/if}
+    </vbox>
   </vbox>
 </hbox>
 
@@ -73,11 +75,30 @@
   .folder-pane {
     flex: 1 0 0;
     max-width: 15em;
+    box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on MessageList */
+    z-index: 1;
   }
-  .message-list-pane {
-    flex: 1 0 0;
+  .left-pane {
+    flex: 3 0 0;
   }
-  .message-display-pane {
-    flex: 2 0 0;
+  .mail-app :global(.fast-list) {
+    background-color: #F9F9FD;
+    border: none;
+  }
+  .mail-app :global(.fast-list table) {
+    padding-left: 4px;
+  }
+  .mail-app :global(.fast-list thead tr hbox) {
+    vertical-align: middle;
+    border: none;
+    color: grey;
+    font-size: 12px;
+    padding: 0px 6px;
+  }
+  .mail-app :global(.fast-list thead) {
+    height: 32px;
+  }
+  .mail-app :global(.fast-list tbody tr hbox) {
+    font-size: 13px;
   }
 </style>
