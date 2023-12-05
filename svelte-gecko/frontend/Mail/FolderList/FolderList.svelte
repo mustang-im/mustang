@@ -61,6 +61,6 @@
     stroke: black;
   }
   .label {
-    margin-left: 8px;
+    padding-left: 8px;
   }
 </style>
