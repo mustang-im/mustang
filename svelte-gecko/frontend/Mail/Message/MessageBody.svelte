@@ -31,6 +31,7 @@
   }
   .msg-body-plaintext {
     flex: 1 0 0;
+    white-space: pre-wrap;
   }
   .msg-body-frame {
     display: none;
