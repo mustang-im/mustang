@@ -10,7 +10,7 @@
     </thead>
     <tbody bind:this={contentE}>
       {#each showItems as item}
-        <tr on:click={ev => onSelectElement(item, ev)}>
+        <tr on:click={ev => onSelectElement(item, ev)} class:selected={selectedItem == item}>
           <slot name="row" {item} />
         </tr>
       {/each}

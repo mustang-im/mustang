@@ -19,4 +19,7 @@
 </script>
 
 <style>
+  .folder-list :global(.fast-list thead tr hbox) {
+    background-color: transparent;
+  }
 </style>
