@@ -37,7 +37,7 @@
   import { onMount } from "svelte";
   import WindowHeader from "./WindowHeader.svelte";
 
-  let selectedApp = AppArea.Mail;
+  let selectedApp = AppArea.Contacts;
 
   /*
   import { DebugObserver } from "../../logic/util/DebugObserver";
