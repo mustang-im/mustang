@@ -1,7 +1,7 @@
 <vbox flex class="folder-list">
   <FastList items={folders} bind:selectedItem={selectedFolder}>
     <svelte:fragment slot="header">
-      <hbox>Folders</hbox>
+      <hbox class="header">Folders</hbox>
     </svelte:fragment>
     <svelte:fragment slot="row" let:item={folder}>
       <td>
@@ -54,8 +54,14 @@
   .folder-list :global(.fast-list tbody tr hbox) {
     font-size: 14px;
   }
+  .header {
+    padding-left: 10px !important;
+  }
   .folder {
     align-items: baseline;
+    margin-left: 6px;
+    margin-top: 2px;
+    margin-bottom: 2px;
   }
   .icon :global(.cls-2) {
     stroke: black;
