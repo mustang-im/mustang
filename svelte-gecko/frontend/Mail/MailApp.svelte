@@ -79,20 +79,23 @@
     max-width: 15em;
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on MessageList */
     z-index: 1;
+    background-color: #F9F9FD;
   }
   .left-pane {
     flex: 3 0 0;
   }
   .mail-app :global(.fast-list) {
-    background-color: #F9F9FD;
+    background-color: transparent;
     border: none;
   }
-  .mail-app :global(.fast-list thead tr hbox) {
+  .message-display-pane {
+    background-color: white;
+  }
+  .mail-app :global(.fast-list thead tr > hbox) {
     vertical-align: middle;
     border: none;
     color: grey;
     font-size: 12px;
-    padding: 0px 6px;
   }
   .mail-app :global(.fast-list thead) {
     height: 32px;
