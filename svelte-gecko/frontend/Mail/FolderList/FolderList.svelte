@@ -1,5 +1,5 @@
 <vbox flex class="folder-list">
-  <FastList items={folders} selectedItem={selectedFolder}>
+  <FastList items={folders} bind:selectedItem={selectedFolder}>
     <svelte:fragment slot="header">
       <hbox>Folders</hbox>
     </svelte:fragment>

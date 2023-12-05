@@ -1,4 +1,6 @@
 import { AppGlobal } from './app';
+import { MailAccount } from './Mail/Account';
+import { EMail } from './Mail/Message';
 import { ChatAccount } from './Chat/Account';
 import { ChatMessage } from './Chat/Message';
 import { ChatPerson } from './Chat/Person';
@@ -9,12 +11,13 @@ import { VideoConfMeeting } from './Meet/VideoConfMeeting';
 import { Directory, File } from './Files/File';
 import { Calendar } from './Calendar/Calendar';
 import { Event } from './Calendar/Event';
-import { Contact } from './Abstract/Contact';
 import { ArrayColl, type Collection } from 'svelte-collections';
+import { Folder } from './Mail/Folder';
 
 export async function getTestObjects(): Promise<AppGlobal> {
   let appGlobal = new AppGlobal();
   appGlobal.persons.addAll(fakePersons());
+  appGlobal.emailAccounts.add(fakeMailAccount(appGlobal.persons));
   appGlobal.chatAccounts.add(fakeChatAccount(appGlobal.persons));
   appGlobal.calendars.add(fakeCalendar());
   appGlobal.files.addAll(fakeSharedDir(appGlobal.persons));
@@ -47,6 +50,45 @@ function fakePersons(): Collection<Person> {
     persons.add(person);
   }
   return persons;
+}
+
+function fakeMailAccount(persons: Collection<Person>): MailAccount {
+  let account = new MailAccount();
+  account.name = "Yahoo";
+  account.emailAddress = "ben.bucksch@yahoo.de";
+
+  for (let name of ['Inbox', 'Sent', 'Drafts', 'Trash', 'Spam']) {
+    let folder = new Folder();
+    folder.name = name;
+    account.rootFolders.push(folder);
+  }
+  account.inbox = account.rootFolders.first;
+
+  let emailNr = 0;
+  for (let person of persons) {
+    for (let i = 1; i < 300; i++) {
+      emailNr++;
+      let msg = new EMail();
+      msg.id = emailNr + '';
+      msg.sent = faker.date.past(0.1);
+      msg.received = new Date(msg.sent.getMilliseconds() + 500);
+      msg.subject = "Talk about " + emailNr;
+      msg.outgoing = Math.random() < 0.4;
+      msg.contact = person;
+      let randomIndex = Math.floor(Math.random() * person.emailAddresses.length);
+      let otherEmail = person.emailAddresses.getIndex(randomIndex)?.value
+        ?? `${person.firstName}@fallback.com`;
+      let meEmail = account.emailAddress;
+      msg.authorEmailAddress = msg.outgoing ? meEmail : otherEmail;
+      msg.recipientEmailAddress = msg.outgoing ? otherEmail : meEmail;
+      msg.text = faker.hacker.phrase();
+      msg.html = msg.text;
+      msg.contentType = "text/plain";
+      account.inbox.messages.add(msg);
+      account.messages.set(person, msg);
+    }
+  }
+  return account;
 }
 
 function fakeChatAccount(persons: Collection<Person>): ChatAccount {
