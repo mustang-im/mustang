@@ -2,12 +2,6 @@
   <text text-anchor="middle" x="65" y="95" class="date-calendar-icon">
     {day}
   </text>
-  <style>
-    .date-calendar-icon {
-      font: bold 48px sans-serif;
-      fill: white;
-    }
-  </style>
 </Icon>
 
 <script lang="ts">
@@ -20,4 +14,8 @@ let day = new Date().getDate();
 </script>
 
 <style>
+  .date-calendar-icon {
+    font: bold 48px sans-serif;
+    fill: white;
+  }
 </style>

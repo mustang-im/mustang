@@ -62,10 +62,4 @@
   .bottom {
     border-right: 1px dotted grey;
   }
-  .label {
-    color: white;
-  }
-  .icon :global(.cls-1) {
-    stroke: white;
-  }
 </style>
