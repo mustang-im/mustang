@@ -1,13 +1,7 @@
 <hbox class="person">
-  <vbox class="image">
-    {#if person.picture}
-      <img
-        src={person.picture}
-        width="64" height="64"
-        title="Picture of {person.name}"
-        alt="" />
-    {/if}
-  </vbox>
+  {#if person instanceof Person}
+    <PersonPicture {person} />
+  {/if}
   <vbox class="name-box">
     <hbox flex class="name">{person.name}</hbox>
   </vbox>
@@ -19,6 +13,8 @@
 
 <script lang="ts">
   import type { Contact } from "../../logic/Abstract/Contact";
+  import { Person } from "../../logic/Abstract/Person";
+  import PersonPicture from "../Shared/PersonPicture.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import VideoCallIcon from '../asset/icon/appBar/meet.svg?raw';
   import VoiceCallIcon from '../asset/icon/meet/callVoice.svg?raw';
@@ -27,12 +23,6 @@
 </script>
 
 <style>
-  .image {
-    width: 56px;
-    height: 56px;
-    margin: 7px 12px;
-    clip-path: circle();
-  }
   .name-box {
     font-weight: bold;
     margin: 15px;
@@ -43,9 +33,5 @@
   }
   .actions :global(button) {
     margin-right: 8px;
-  }
-  .right {
-    align-items: center;
-    margin: 0 15px;
   }
 </style>

@@ -1,13 +1,7 @@
 <hbox flex class="person">
-  <vbox class="image">
-    {#if chatRoom.contact.picture}
-      <img
-        src={chatRoom.contact.picture}
-        width="64" height="64"
-        title="Picture of {chatRoom.contact.name}"
-        alt="" />
-    {/if}
-  </vbox>
+  {#if chatRoom.contact instanceof Person}
+    <PersonPicture person={chatRoom.contact} />
+  {/if}
   <vbox flex class="right">
     <hbox class="right-top">
       <hbox flex class="name">{chatRoom.name}</hbox>
@@ -22,7 +16,9 @@
 </hbox>
 
 <script lang="ts">
+  import { Person } from "../../logic/Abstract/Person";
   import type { Chat } from "../../logic/Chat/Chat";
+  import PersonPicture from "../Shared/PersonPicture.svelte";
   import { getDateString } from "../Util/date";
 
   export let chatRoom: Chat;
@@ -30,13 +26,6 @@
 </script>
 
 <style>
-  .image {
-    width: 56px;
-    height: 56px;
-    margin: 7px;
-    margin-left: 12px;
-    clip-path: circle();
-  }
   .right {
     margin-top: 0px;
     padding: 10px;
