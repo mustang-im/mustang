@@ -1,11 +1,5 @@
 <hbox flex class="participant">
-  <vbox class="image">
-    <img
-      src={participant.picture}
-      width="64" height="64"
-      title="Picture of {participant.name}"
-      alt="Picture of {participant.name}" />
-  </vbox>
+  <PersonPicture person={participant} />
   <vbox flex class="right">
     <hbox class="right-top">
       <hbox flex class="name">{participant.name}</hbox>
@@ -18,6 +12,7 @@
 
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
+  import PersonPicture from "../../Shared/PersonPicture.svelte";
 
   export let participant: Person;
 </script>

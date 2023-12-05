@@ -1,11 +1,5 @@
 <hbox flex class="person" class:selected>
-  <vbox class="image">
-    <img
-      src={person.picture}
-      width="64" height="64"
-      title="Picture of {person.name}"
-      alt="Picture of {person.name}" />
-  </vbox>
+  <PersonPicture {person} />
   <vbox flex class="right">
     <hbox flex class="name">{person.name}</hbox>
   </vbox>
@@ -13,6 +7,7 @@
 
 <script lang="ts">
   import type { Person } from "../../logic/Abstract/Person";
+  import PersonPicture from "../Shared/PersonPicture.svelte";
 
   export let person: Person;
   export let selected = false;
@@ -25,13 +20,6 @@
   }
   .person:not(.selected):hover {
     background-color: #A9DAD4;
-  }
-  .image {
-    width: 56px;
-    height: 56px;
-    margin: 7px;
-    margin-left: 12px;
-    clip-path: circle();
   }
   .right {
     margin-top: 0px;

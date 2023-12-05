@@ -6,13 +6,9 @@
   deliveryStatus={message.deliveryStatus}
   >
   {#if !message.outgoing && !followup}
-    <vbox hidden class="avatar">
-      {#if message.contact.picture}
-        <img
-          src={message.contact.picture}
-          width="32" height="32"
-          title="Picture of {message.contact.name}"
-          alt="" />
+    <vbox class="avatar">
+      {#if message.contact instanceof Person}
+        <PersonPicture person={message.contact} size={32} />
       {/if}
     </vbox>
   {/if}
@@ -41,6 +37,8 @@
 
 <script lang="ts">
   import type { UserChatMessage, ChatMessage } from "../../../logic/Chat/Message";
+  import { Person } from "../../../logic/Abstract/Person";
+  import PersonPicture from "../../Shared/PersonPicture.svelte";
   import { getDateString } from "../../Util/date";
 
   export let message: UserChatMessage;
@@ -110,13 +108,8 @@
   }
 
   .avatar {
-    width: 32px;
-    height: 32px;
-    min-width: 32px;
-    min-height: 32px;
     margin-top: 3px;
     margin-right: 20px;
-    clip-path: circle();
   }
   .message.followup.incoming {
     /* no avatar */

@@ -2,13 +2,7 @@
   <GroupBox classes="person">
     <hbox flex class="main-left">
       <hbox flex>
-        <vbox class="image">
-          <img
-            src={person.picture}
-            width="128" height="128"
-            title="Picture of {person.name}"
-            alt="Picture of {person.name}" />
-        </vbox>
+        <PersonPicture {person} size={128} />
         <vbox flex class="main-info">
           <h1 class="name">{person.name}</h1>
           {#if person.position}
@@ -174,6 +168,7 @@
   import PhoneNumberEdit from "./PhoneNumberEdit.svelte";
   import StreetAddressDisplay from "./StreetAddressDisplay.svelte";
   import StreetAddressEdit from "./StreetAddressEdit.svelte";
+  import PersonPicture from "../Shared/PersonPicture.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
   import MailIcon from '../asset/icon/appBar/mail.svg?raw';
@@ -223,11 +218,6 @@
   }
   .person-page :global(.group) {
     background-color: white;
-  }
-  .image {
-    width: 128px;
-    height: 128px;
-    clip-path: circle();
   }
   .main-info {
     margin-left: 24px;
