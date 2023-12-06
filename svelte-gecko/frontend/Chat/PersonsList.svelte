@@ -1,0 +1,40 @@
+<PersonsList persons={chatRoomsSorted} bind:selected={selectedChat}>
+  <hbox slot="top-right" class="last-time" let:person={chatRoom}>
+    {#if chatRoom instanceof Chat && chatRoom.lastMessage}
+      {getDateString(chatRoom.lastMessage.sent)}
+    {/if}
+  </hbox>
+  <hbox slot="second-row" flex class="last-msg" let:person={chatRoom}>
+    {#if chatRoom instanceof Chat && chatRoom.lastMessage}
+      {chatRoom.lastMessage.text?.substring(0, 50)}
+    {/if}
+  </hbox>
+</PersonsList>
+
+<script lang="ts">
+  import { Chat } from "../../logic/Chat/Chat";
+  import type { Collection } from "svelte-collections";
+  import PersonsList from "../Shared/Person/PersonsList.svelte";
+  import { getDateString } from "../Util/date";
+
+  export let chatRooms: Collection<Chat>;
+  export let selectedChat: Chat;
+
+  $: chatRoomsSorted = $chatRooms.sortBy(chat => -chat.lastMessage?.sent);
+</script>
+
+<style>
+  .last-time {
+    opacity: 50%;
+    font-size: x-small;
+    margin-top: 3px;
+  }
+  .last-msg {
+    opacity: 50%;
+    margin-top: 5px;
+    font-size: 11.5px;
+    max-height: 1.8em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+</style>
