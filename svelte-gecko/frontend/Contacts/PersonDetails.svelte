@@ -299,6 +299,9 @@
   .actions {
     justify-content: end;
   }
+  :global(.group:not(:hover)) .actions {
+    visibility: hidden;
+  }
   .person-page :global(.group button) {
     color: #9894A0;
   }

@@ -102,6 +102,9 @@
   .actions > :global(*) {
     min-width: 20px;
   }
+  :global(.group:not(:hover)) .actions {
+    visibility: hidden;
+  }
 
   .value.edit :global(input) {
     border: none;

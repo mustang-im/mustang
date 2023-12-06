@@ -11,6 +11,7 @@
   * Write mail
 
 # UI
+* PersonList component
 * flex independent from content
 * Window header
 
