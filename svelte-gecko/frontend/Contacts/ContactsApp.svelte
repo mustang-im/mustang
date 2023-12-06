@@ -1,6 +1,6 @@
 <hbox flex class="contacts app">
   <vbox flex class="left-pane">
-    <PersonsToolbar {persons} bind:selected={selectedPerson} />
+    <PersonsToolbar {persons} selected={selectedPerson} />
     <PersonsList {persons} bind:selected={selectedPerson} />
   </vbox>
   <vbox flex class="right-pane">
