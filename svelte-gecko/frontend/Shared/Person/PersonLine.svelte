@@ -1,7 +1,11 @@
-<hbox flex class="person" class:selected>
+<hbox flex class="person" class:isSelected>
   <PersonPicture {person} />
-  <vbox flex class="right">
-    <hbox flex class="name">{person.name}</hbox>
+  <vbox flex class="main">
+    <hbox class="first-row">
+      <hbox flex class="name">{person.name}</hbox>
+      <slot name="top-right" {person} />
+    </hbox>
+    <slot name="second-row" {person} />
   </vbox>
 </hbox>
 
@@ -10,18 +14,18 @@
   import PersonPicture from "./PersonPicture.svelte";
 
   export let person: PersonOrGroup;
-  export let selected = false;
+  export let isSelected = false;
 </script>
 
 <style>
-  .person.selected {
+  .person.isSelected {
     background-color: #20AE9E;
     color: white;
   }
   .person:not(.selected):hover {
     background-color: #A9DAD4;
   }
-  .right {
+  .main {
     margin-top: 0px;
     padding: 10px;
   }

@@ -3,7 +3,10 @@
     {#each persons.each as person}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <vbox class="person" on:click={() => selected = person}>
-        <PersonLine {person} selected={person == selected}/>
+        <PersonLine {person} isSelected={person == selected}>
+          <slot name="top-right" slot="top-right" {person} />
+          <slot name="second-row" slot="second-row" {person} />
+        </PersonLine>
       </vbox>
     {/each}
   </Scroll>

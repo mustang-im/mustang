@@ -1,6 +1,6 @@
 <hbox flex class="chat app">
   <vbox class="left-pane">
-    <PersonsList persons={chatRoomsSorted} bind:selected={selectedChat} />
+    <PersonsList {chatRooms} bind:selectedChat />
   </vbox>
   <vbox class="right-pane">
     {#if messages && selectedChat }
@@ -19,14 +19,13 @@
   import type { Chat } from "../../logic/Chat/Chat";
   import { appGlobal } from "../../logic/app";
   import { mergeColls } from "svelte-collections";
-  import PersonsList from "../Shared/Person/PersonsList.svelte";
+  import PersonsList from "./PersonsList.svelte";
   import Header from "./PersonHeader.svelte";
   import MessageList from "./MessageView/MessageList.svelte";
   import MsgEditor from "./MsgEditor.svelte";
 
   let selectedChat: Chat;
   let chatRooms = mergeColls(appGlobal.chatAccounts.map(a => a.chats));
-  $: chatRoomsSorted = $chatRooms.sortBy(chat => -chat.lastMessage?.sent);
   $: messages = selectedChat?.messages;
 </script>
 
