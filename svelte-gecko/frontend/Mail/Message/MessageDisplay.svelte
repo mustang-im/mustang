@@ -1,6 +1,6 @@
 <vbox flex class="message-display">
   <MessageHeader {message} {account} />
-  <MessageBody {message} {account} />
+  <MessageBody {message} />
 </vbox>
 
 <script lang="ts">
