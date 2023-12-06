@@ -1,4 +1,5 @@
 # App logic
+* Observable base classes
 * Errors
   * Notification bar
   * Accounts have .errors array for background errors, which UI subscribes to, and catch handlers add to.
