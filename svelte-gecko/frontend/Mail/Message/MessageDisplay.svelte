@@ -6,7 +6,7 @@
 <script lang="ts">
   import type { Email } from "mustang-lib";
   import type { MailAccount } from "../../../logic/Mail/Account";
-  import MessageHeader from "../MessageHeader/MessageHeader.svelte";
+  import MessageHeader from "./MessageHeader.svelte";
   import MessageBody from "./MessageBody.svelte";
 
   export let message: Email;

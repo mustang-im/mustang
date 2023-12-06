@@ -26,11 +26,11 @@
   import { appGlobal } from "../../logic/app";
   //import { translateElements, pluralform } from "mustang-lib/trex/translate";
 
-  import AccountList from "./AccountList/AccountList.svelte";
-  import FolderList from "./FolderList/FolderList.svelte";
+  import AccountList from "./LeftPane/AccountList.svelte";
+  import FolderList from "./LeftPane/FolderList.svelte";
   import MessageDisplay from "./Message/MessageDisplay.svelte";
   import MessageList from "./MessageList/MessageList.svelte";
-  import ProjectList from "./ProjectList/ProjectList.svelte";
+  import ProjectList from "./LeftPane/ProjectList.svelte";
   import StartPage from "./StartPage.svelte";
   import { backgroundError, showError } from "../Util/error";
   import { ArrayColl } from 'svelte-collections';
