@@ -13,13 +13,17 @@
 </vbox>
 
 <script lang="ts">
-  import type { PersonOrGroup } from "./PersonOrGroup";
+  import {type PersonOrGroup,  selectedPerson } from "./PersonOrGroup";
   import type { Collection } from "svelte-collections";
   import PersonLine from "./PersonLine.svelte";
   import Scroll from "../Scroll.svelte";
+  import { Person } from "../../../logic/Abstract/Person";
 
   export let persons: Collection<PersonOrGroup>;
-  export let selected: PersonOrGroup = null;
+  export let selected: PersonOrGroup = $selectedPerson;
+  $: if (selected instanceof Person) {
+    $selectedPerson = selected
+  };
 </script>
 
 <style>
