@@ -5,10 +5,14 @@
       <PersonPicture person={message.contact} />
     {/if}
     <vbox>
-      <value class="from">{from}</value>
+      <value class="from" title={message.authorEmailAddress}>
+        {from}
+      </value>
       <hbox class="to">
         to&nbsp;
-        <value>{to}</value>
+        <value title={message.recipientEmailAddress}>
+          {to}
+        </value>
       </hbox>
     </vbox>
     <hbox flex />
@@ -34,7 +38,9 @@
             />
         </hbox>
       </hbox>
-      <value class="date">{getDateString(message.received)}</value>
+      <value class="date" title={message.received?.toLocaleString()}>
+        {getDateString(message.received)}
+      </value>
     </vbox>
   </hbox>
 </vbox>
@@ -55,16 +61,12 @@
 
   $: from = message.outgoing
     ? "me"
-      ?? account.userRealname
-      ?? message.authorEmailAddress
     : message.contact?.name
       ?? message.authorEmailAddress;
   $: to = message.outgoing
     ? message.contact?.name
       ?? message.recipientEmailAddress
-    : "me"
-      ?? account.userRealname
-      ?? message.recipientEmailAddress;
+    : "me";
 
   function toggleStar() {
     message.starred = !message.starred;
