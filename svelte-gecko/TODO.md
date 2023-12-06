@@ -11,7 +11,7 @@
   * Write mail
 
 # UI
-* Change icons
+* flex independent from content
 * Window header
 
 # Chat

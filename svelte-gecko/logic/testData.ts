@@ -73,7 +73,7 @@ function fakeMailAccount(persons: Collection<Person>): MailAccount {
       let msg = new EMail();
       msg.id = emailNr + '';
       msg.sent = faker.date.past(0.1);
-      msg.received = new Date(msg.sent.getMilliseconds() + 500);
+      msg.received = new Date(msg.sent.getTime() + 500);
       msg.subject = "Talk about " + emailNr;
       msg.outgoing = Math.random() < 0.4;
       msg.contact = person;
@@ -115,7 +115,7 @@ function fakeChatAccount(persons: Collection<Person>): ChatAccount {
       msg.contact = chat.contact;
       msg.outgoing = Math.random() < 0.4;
       msg.sent = faker.date.past(0.1);
-      msg.received = new Date(msg.sent.getMilliseconds() + 500);
+      msg.received = new Date(msg.sent.getTime() + 500);
       msg.text = faker.hacker.phrase();
       msg.html = msg.text;
       messages.add(msg);
