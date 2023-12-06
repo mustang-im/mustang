@@ -2,7 +2,7 @@ import { AppGlobal } from './app';
 import { MailAccount } from './Mail/Account';
 import { EMail } from './Mail/Message';
 import { ChatAccount } from './Chat/Account';
-import { ChatMessage } from './Chat/Message';
+import { UserChatMessage } from './Chat/Message';
 import { ChatPerson } from './Chat/Person';
 import { faker } from '@faker-js/faker';
 import { ContactEntry, Person } from './Abstract/Person';
@@ -110,7 +110,7 @@ function fakeChatAccount(persons: Collection<Person>): ChatAccount {
 
     let messages = chat.messages;
     for (let i = 1; i < 300; i++) {
-      let msg = new ChatMessage();
+      let msg = new UserChatMessage();
       msg.to = chat;
       msg.contact = chat.contact;
       msg.outgoing = Math.random() < 0.4;
@@ -120,7 +120,7 @@ function fakeChatAccount(persons: Collection<Person>): ChatAccount {
       msg.html = msg.text;
       messages.add(msg);
     }
-    chat.lastMessage = messages.sortBy(msg => -msg.sent).first;
+    chat.lastMessage = messages.sortBy(msg => msg.sent).last;
   }
   return chatAccount;
 }
