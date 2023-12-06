@@ -1,5 +1,5 @@
 <vbox flex class="message-list">
-  <FastList items={messages} bind:selectedItem={selectedMessage}>
+  <FastList items={sortedMessages} bind:selectedItem={selectedMessage}>
     <svelte:fragment slot="header">
       <hbox>Correspondent</hbox>
       <hbox>Subject</hbox>
@@ -44,6 +44,8 @@
 
   export let messages: Collection<EMail>;
   export let selectedMessage: EMail;
+
+  $: sortedMessages = messages.sortBy(email => -email.received.getTime());
 
   function toggleRead(message: EMail) {
     message.read = !message.read;
