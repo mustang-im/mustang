@@ -101,6 +101,7 @@
     font-weight: bold;
   }
   .outgoing .from {
+    font-weight: normal;
     color: grey;
   }
   .to {

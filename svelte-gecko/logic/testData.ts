@@ -66,6 +66,8 @@ function fakeMailAccount(persons: Collection<Person>): MailAccount {
   }
   account.inbox = account.rootFolders.first;
 
+  let lastReadTime = new Date();
+  lastReadTime.setHours(lastReadTime.getHours() - 1);
   let emailNr = 0;
   for (let person of persons) {
     for (let i = 1; i < 300; i++) {
@@ -74,6 +76,7 @@ function fakeMailAccount(persons: Collection<Person>): MailAccount {
       msg.id = emailNr + '';
       msg.sent = faker.date.past(0.1);
       msg.received = new Date(msg.sent.getTime() + 500);
+      msg.read = msg.received < lastReadTime;
       msg.subject = "Talk about " + emailNr;
       msg.outgoing = Math.random() < 0.4;
       msg.contact = person;
