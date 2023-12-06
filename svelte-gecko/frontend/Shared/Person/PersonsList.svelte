@@ -10,13 +10,13 @@
 </vbox>
 
 <script lang="ts">
+  import type { PersonOrGroup } from "./PersonOrGroup";
   import type { Collection } from "svelte-collections";
-  import type { Person } from "../../logic/Abstract/Person";
   import PersonLine from "./PersonLine.svelte";
-  import Scroll from "../Shared/Scroll.svelte";
+  import Scroll from "../Scroll.svelte";
 
-  export let persons: Collection<Person>;
-  export let selected: Person = null;
+  export let persons: Collection<PersonOrGroup>;
+  export let selected: PersonOrGroup = null;
 </script>
 
 <style>

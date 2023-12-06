@@ -12,7 +12,7 @@
 <script lang="ts">
   import type { Person } from "../../logic/Abstract/Person";
   import { appGlobal } from "../../logic/app";
-  import PersonsList from "../Contacts/PersonsList.svelte";
+  import PersonsList from "../Shared/Person/PersonsList.svelte";
   import FilesList from "./FilesList.svelte";
   import type { Collection } from "svelte-collections";
 

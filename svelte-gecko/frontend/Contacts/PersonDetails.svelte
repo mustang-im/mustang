@@ -168,7 +168,7 @@
   import PhoneNumberEdit from "./PhoneNumberEdit.svelte";
   import StreetAddressDisplay from "./StreetAddressDisplay.svelte";
   import StreetAddressEdit from "./StreetAddressEdit.svelte";
-  import PersonPicture from "../Shared/PersonPicture.svelte";
+  import PersonPicture from "../Shared/Person/PersonPicture.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
   import MailIcon from '../asset/icon/appBar/mail.svg?raw';

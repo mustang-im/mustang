@@ -60,7 +60,7 @@
   import type { EMail } from "../../../logic/Mail/Message";
   import type { MailAccount } from "../../../logic/Mail/Account";
   import { Person } from "../../../logic/Abstract/Person";
-  import PersonPicture from "../../Shared/PersonPicture.svelte";
+  import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
   import Button from "../../Shared/Button.svelte";
   import { getDateString } from "../../Util/date";
   import StarIcon from "lucide-svelte/icons/star";
