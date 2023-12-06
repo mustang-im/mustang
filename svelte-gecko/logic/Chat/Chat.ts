@@ -14,6 +14,9 @@ export class Chat {
   get name(): string {
     return this.contact.name;
   }
+  get picture(): string {
+    return this.contact.picture;
+  }
 
   /** Our user wants to send this message out.
    * Data like recipient etc. is in the message object. */

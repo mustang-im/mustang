@@ -38,7 +38,7 @@
 <script lang="ts">
   import type { UserChatMessage, ChatMessage } from "../../../logic/Chat/Message";
   import { Person } from "../../../logic/Abstract/Person";
-  import PersonPicture from "../../Shared/PersonPicture.svelte";
+  import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
   import { getDateString } from "../../Util/date";
 
   export let message: UserChatMessage;

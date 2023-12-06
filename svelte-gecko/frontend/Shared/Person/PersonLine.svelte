@@ -6,10 +6,10 @@
 </hbox>
 
 <script lang="ts">
-  import type { Person } from "../../logic/Abstract/Person";
-  import PersonPicture from "../Shared/PersonPicture.svelte";
+  import type { PersonOrGroup } from "./PersonOrGroup";
+  import PersonPicture from "./PersonPicture.svelte";
 
-  export let person: Person;
+  export let person: PersonOrGroup;
   export let selected = false;
 </script>
 

@@ -9,9 +9,9 @@
 {/if}
 
 <script lang="ts">
-  import type { Person } from "../../logic/Abstract/Person";
+  import type { PersonOrGroup } from "./PersonOrGroup";
 
-  export let person: Person;
+  export let person: PersonOrGroup;
   export let size = 56;
 </script>
 

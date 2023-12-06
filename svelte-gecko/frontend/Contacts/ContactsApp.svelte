@@ -14,7 +14,7 @@
 
 <script lang="ts">
   import type { Person } from "../../logic/Abstract/Person";
-  import PersonsList from "./PersonsList.svelte";
+  import PersonsList from "../Shared/Person/PersonsList.svelte";
   import PersonDetails from "./PersonDetails.svelte";
   import type { Collection } from "svelte-collections";
   import Scroll from "../Shared/Scroll.svelte";

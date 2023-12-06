@@ -12,7 +12,7 @@
 
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
-  import PersonPicture from "../../Shared/PersonPicture.svelte";
+  import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
 
   export let participant: Person;
 </script>

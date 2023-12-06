@@ -14,7 +14,7 @@
 <script lang="ts">
   import type { Contact } from "../../logic/Abstract/Contact";
   import { Person } from "../../logic/Abstract/Person";
-  import PersonPicture from "../Shared/PersonPicture.svelte";
+  import PersonPicture from "../Shared/Person/PersonPicture.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import VideoCallIcon from '../asset/icon/appBar/meet.svg?raw';
   import VoiceCallIcon from '../asset/icon/meet/callVoice.svg?raw';
