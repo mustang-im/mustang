@@ -77,8 +77,8 @@ function fakeMailAccount(persons: Collection<Person>): MailAccount {
       msg.subject = "Talk about " + emailNr;
       msg.outgoing = Math.random() < 0.4;
       msg.contact = person;
-      let randomIndex = Math.floor(Math.random() * person.emailAddresses.length);
-      let otherEmail = person.emailAddresses.getIndex(randomIndex)?.value
+      let emailIndex = Math.floor(Math.random() * person.emailAddresses.length);
+      let otherEmail = person.emailAddresses.getIndex(emailIndex)?.value
         ?? `${person.firstName}@fallback.com`;
       let meEmail = account.emailAddress;
       msg.authorEmailAddress = msg.outgoing ? meEmail : otherEmail;
@@ -90,7 +90,14 @@ function fakeMailAccount(persons: Collection<Person>): MailAccount {
       }
       msg.html = msg.text;
       msg.contentType = "text/plain";
-      account.inbox.messages.add(msg);
+      let folder: Folder;
+      if (Math.random() < 0.99) {
+        folder = account.inbox;
+      } else {
+        let folderIndex = Math.floor(Math.random() * account.rootFolders.length);
+        folder = account.rootFolders.getIndex(folderIndex) ?? account.inbox;
+      }
+      folder.messages.add(msg);
       account.messages.set(person, msg);
     }
   }
