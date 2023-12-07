@@ -32,34 +32,17 @@
   import AppBar from "./AppBar.svelte";
   import AppsApp from "../Apps/AppsApp.svelte";
   import { AppArea } from "./app";
-  import { getTestObjects } from "../../logic/testData";
-  import { appGlobal } from "../../logic/app";
+  import { appGlobal, getStartObjects } from "../../logic/app";
   import { onMount } from "svelte";
   import WindowHeader from "./WindowHeader.svelte";
 
   let selectedApp = AppArea.Contacts;
 
-  /*
-  import { DebugObserver } from "../../logic/util/DebugObserver";
-  import { Contact } from "../../logic/Abstract/Contact";
-  import { ChatPerson } from "../../logic/Chat/Person";
-
-  appGlobal.chatAccounts.first?.chats.registerObserver(new DebugObserver());
-  $: chatRooms?.registerObserver(new DebugObserver());
-  $: console.log("main window: chat room", $chatRooms?.contents);
-  setTimeout(() => {
-    let chatRoom = new Chat();
-    chatRoom.contact = new Contact();
-    chatRoom.contact.person = new ChatPerson();
-    chatRoom.contact.person.name = "Dummy";
-    //chatRooms.add(chatRoom);
-    console.log("chat account after 3s", appGlobal.chatAccounts.first);
-    appGlobal.chatAccounts.first?.chats.add(chatRoom);
-  }, 3000);
-  */
-
   onMount(async() => {
-    let app = await getTestObjects();
+    if (appGlobal.persons.hasItems) {
+      return;
+    }
+    let app = await getStartObjects();
     for (let prop in app) {
       appGlobal[prop] = app[prop];
     }
