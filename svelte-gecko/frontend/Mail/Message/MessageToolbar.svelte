@@ -4,7 +4,7 @@
       icon={ReplyIcon}
       iconSize="24px"
       iconOnly
-      label={"Reply to author only"}
+      label={"Reply to author"}
       on:click={() => catchErrors(() => reply())}
       plain
       />
