@@ -2,8 +2,8 @@
   {#if person instanceof Person}
     <PersonPicture {person} />
   {/if}
-  <vbox class="name-box">
-    <hbox flex class="name">{person.name}</hbox>
+  <vbox flex class="name-box">
+    <hbox class="name">{person.name}</hbox>
   </vbox>
   <hbox class="actions">
     <RoundButton label="Video call" icon={VideoCallIcon} iconSize="24px" filled
@@ -11,6 +11,7 @@
     <RoundButton label="Audio call" icon={VoiceCallIcon} iconSize="24px" filled
       on:click={() => catchErrors(() => startAudioCall(person))} />
   </hbox>
+  <hbox flex />
 </hbox>
 
 <script lang="ts">
@@ -30,7 +31,6 @@
   .name-box {
     font-weight: bold;
     margin: 15px;
-    margin-right: 64px;
   }
   .actions {
     align-items: center;
