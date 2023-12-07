@@ -1,19 +1,21 @@
 <vbox flex class="participant">
   <Stack>
     <vbox class="video">
-      <img src={participant.picture} alt={participant.name} />
+      <Video {video} />
     </vbox>
     <vbox flex class="name-container">
-      <hbox class="name">{participant.name}</hbox>
+      <hbox class="name">{label}</hbox>
     </vbox>
   </Stack>
 </vbox>
 
 <script lang="ts">
-import type { Person } from "../../logic/Abstract/Person";
-import Stack from "../Shared/Stack.svelte";
+  import type { VideoStream } from "../../logic/Meet/VideoStream";
+  import Video from "./Video.svelte";
+  import Stack from "../Shared/Stack.svelte";
 
-export let participant: Person;
+  export let video: VideoStream;
+  export let label: string;
 </script>
 
 <style>
@@ -30,9 +32,5 @@ export let participant: Person;
     justify-content: end;
     align-self: end;
     justify-items: end;
-  }
-  img {
-    width: 500px;
-    height: 500px;
   }
 </style>

@@ -25,14 +25,16 @@ export class MatrixAccount extends ChatAccount {
    * This will populate `persons` and `chats`. */
   async login() {
     (window as any).global = window; // Fix Matrix
+    let serverID = this.baseURL.replace("https://", "");
+    let userID = `@${this.username}:${serverID}`;
     this.client = matrix.createClient({
       baseUrl: this.baseURL,
-      userId: this.username,
+      userId: userID,
       deviceId: this.deviceID,
     });
     //(window as any).olm = olm;
     await this.client.initCrypto();
-    await this.client.loginWithPassword(this.username, this.password);
+    await this.client.loginWithPassword(userID, this.password);
     await this.client.startClient();
     await this.waitForEvent("sync"); // Sync finished
 

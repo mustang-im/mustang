@@ -1,7 +1,7 @@
 <vbox flex>
   <grid class="participants" style="grid-template-columns: {columns}">
-    {#each $participants.each as participant (participant.id)}
-      <Participant {participant} />
+    {#each $videos.each as video (video.id)}
+      <ParticipatingVideo {video} {showSelf} />
     {/each}
   </grid>
 </vbox>
@@ -11,15 +11,15 @@
   <Button label="Camera" classes="toggle-camera" on:click={toggleCamera} icon={cameraOn ? CameraOffIcon : CameraIcon} iconOnly />
   <Button label="Hand" classes="raise-hand" on:click={toggleHand} icon={handRaised ? HandOffIcon : HandIcon} iconOnly />
   <Button label="Add participant" classes="add-participant" on:click={addParticipant} icon={AddUserIcon} iconOnly />
-  <hbox flex />
   <Button label="Leave" classes="leave" on:click={leave} icon={LeaveIcon} iconOnly />
+  <hbox flex />
 </hbox>
 
 <script lang="ts">
   import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
   import { appGlobal } from "../../logic/app";
+  import ParticipatingVideo from "./ParticipatingVideo.svelte";
   import Button from "../Shared/Button.svelte";
-  import Participant from "./Participant.svelte";
   import HandIcon from '../asset/icon/meet/hand.svg?raw';
   import HandOffIcon from '../asset/icon/meet/handOff.svg?raw';
   import CameraIcon from "lucide-svelte/icons/video";
@@ -31,12 +31,13 @@
 
   export let meeting: VideoConfMeeting;
 
-  $: participants = meeting.participants;
+  $: videos = meeting.videos;
   let micOn = false;
   let cameraOn = false;
   let handRaised = false;
+  let showSelf = true;
 
-  $: columns = calculateColumns($participants.length);
+  $: columns = calculateColumns($videos.length);
   function calculateColumns(count: number) {
     if (count == 1) {
       return "auto";
@@ -60,7 +61,8 @@
     meeting.participants.add(participant);
   }
 
-  function leave() {
+  async function leave() {
+    await meeting.hangup();
     appGlobal.meetings.remove(meeting);
   }
 
