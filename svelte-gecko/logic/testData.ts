@@ -57,6 +57,11 @@ function fakeMailAccount(persons: Collection<Person>): MailAccount {
   account.name = "Yahoo";
   account.emailAddress = "ben.bucksch@yahoo.de";
   account.userRealname = "Ben Bucksch";
+  account.id = faker.datatype.uuid();
+  let mePerson = new Person();
+  mePerson.id = account.id;
+  mePerson.name = "me";
+  mePerson.emailAddresses.add(new ContactEntry(account.emailAddress, "Primary"));
 
   for (let name of ['Inbox', 'Sent', 'Drafts', 'Trash', 'Spam']) {
     let folder = new Folder();
@@ -80,12 +85,18 @@ function fakeMailAccount(persons: Collection<Person>): MailAccount {
       msg.subject = "Talk about " + emailNr;
       msg.outgoing = Math.random() < 0.4;
       msg.contact = person;
-      let emailIndex = Math.floor(Math.random() * person.emailAddresses.length);
-      let otherEmail = person.emailAddresses.getIndex(emailIndex)?.value
-        ?? `${person.firstName}@fallback.com`;
       let meEmail = account.emailAddress;
-      msg.authorEmailAddress = msg.outgoing ? meEmail : otherEmail;
-      msg.recipientEmailAddress = msg.outgoing ? otherEmail : meEmail;
+      msg.authorEmailAddress = msg.outgoing ? meEmail : person.emailAddresses.first.value;
+      msg.to.add(msg.outgoing ? person : mePerson);
+      for (let i = Math.floor(Math.random() * 3); i > 0; i--) {
+        msg.to.add(fakeMailPerson());
+      }
+      for (let i = Math.floor(Math.random() * 10); i > 0; i--) {
+        msg.cc.add(fakeMailPerson());
+      }
+      if (Math.random() < 0.2) {
+        msg.bcc.add(fakeMailPerson());
+      }
       msg.text = faker.hacker.phrase();
       let paragraphs = Math.floor(Math.random() * 10 + 1);
       for (let i = 0; i < paragraphs; i++) {
@@ -105,6 +116,14 @@ function fakeMailAccount(persons: Collection<Person>): MailAccount {
     }
   }
   return account;
+}
+
+function fakeMailPerson(): Person {
+  let person = new Person();
+  person.id = faker.datatype.uuid();
+  person.name = faker.name.fullName();
+  person.emailAddresses.add(new ContactEntry(faker.internet.email(), "Other"));
+  return person;
 }
 
 function fakeChatAccount(persons: Collection<Person>): ChatAccount {

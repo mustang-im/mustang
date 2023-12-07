@@ -109,3 +109,17 @@
 * SIP
   * Voice call to phone system
   * Incoming calls
+
+# Security
+* Unknown senders
+  * Shorten name to 30 chars
+  * Remove email address and domain names from name
+  * Make email domain bold, userpart in grey and not bold
+  * Score emails:
+    * Email address or domain name in name
+    * Link text doesn't match link target
+* Promos
+    * Link text doesn't match link target
+
+# Filters
+* Move mail into folder -> Ask whether to keep doing that -> create filter based on From address
