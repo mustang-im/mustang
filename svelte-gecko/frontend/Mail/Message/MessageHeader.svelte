@@ -14,7 +14,7 @@
           <RecipientList recipients={message.to} />
         </hbox>
       {/if}
-      {#if message.bcc.hasItems}
+      {#if message.cc.hasItems}
         <hbox class="cc">
           cc&nbsp;
           <RecipientList recipients={message.cc} />
