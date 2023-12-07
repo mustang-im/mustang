@@ -39,8 +39,8 @@
   const upcomingMeetings = appGlobal.calendars.map(calendar => calendar.events.filter(event => event.startTime > now && event.startTime < maxUpcoming));
   const previousMeetings = appGlobal.calendars.map(calendar => calendar.events.filter(event => event.startTime < now && event.startTime > maxPrevious));
 
-  function startAdHocMeeting() {
-    let meeting = VideoConfMeeting.createAdhoc();
+  async function startAdHocMeeting() {
+    let meeting = await VideoConfMeeting.createAdhoc(null);
     appGlobal.meetings.add(meeting);
   }
 </script>

@@ -3,10 +3,11 @@ import type { Person } from "../Abstract/Person";
 /** One incoming or outgoing video in a video conference */
 export class VideoStream {
   stream: MediaStream;
-  id: string;
   constructor(stream: MediaStream) {
     this.stream = stream;
-    this.id = stream.id;
+  }
+  get id(): string {
+    return this.stream.id;
   }
 }
 
