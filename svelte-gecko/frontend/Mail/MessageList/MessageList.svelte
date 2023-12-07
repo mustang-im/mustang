@@ -1,14 +1,13 @@
 <vbox flex class="message-list">
   <FastList items={sortedMessages} bind:selectedItem={selectedMessage}>
     <svelte:fragment slot="header">
+      <hbox></hbox>
+      <hbox></hbox>
       <hbox>Correspondent</hbox>
       <hbox>Subject</hbox>
       <hbox>Date</hbox>
     </svelte:fragment>
     <svelte:fragment slot="row" let:item={msg}>
-      <hbox class="correspondent">{msg.contact.name}</hbox>
-      <hbox class="subject" class:read={msg.read}>{msg.subject}</hbox>
-      <hbox class="date">{getDateString(msg.received)}</hbox>
       <hbox class="unread button" class:read={msg.read}>
         <Button
           icon={CircleIcon}
@@ -29,6 +28,9 @@
           plain
           />
       </hbox>
+      <hbox class="correspondent">{msg.contact.name}</hbox>
+      <hbox class="subject" class:read={msg.read}>{msg.subject}</hbox>
+      <hbox class="date">{getDateString(msg.received)}</hbox>
     </svelte:fragment>
   </FastList>
 </vbox>
@@ -72,8 +74,14 @@
   .button :global(svg) {
     stroke-width: 1px;
   }
+  :global(tr:not(:hover)) .star:not(.starred) {
+    opacity: 0;
+  }
   .star.starred :global(svg) {
     fill: orange;
+  }
+  :global(tr:not(:hover)) .unread.read :global(svg) {
+    opacity: 0;
   }
   .unread:not(.read) :global(svg) {
     fill: green;
