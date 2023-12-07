@@ -27,7 +27,7 @@ export let appGlobal = new AppGlobal();
 const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
 
 export async function getStartObjects(): Promise<AppGlobal> {
-  appGlobal.chatAccounts.addAll(await readChatAccounts());
+  //appGlobal.chatAccounts.addAll(await readChatAccounts());
   let chatAccountsSaved = appGlobal.chatAccounts;
   for (let chatAccount of appGlobal.chatAccounts) {
     await chatAccount.login();
