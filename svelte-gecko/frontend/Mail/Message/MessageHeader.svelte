@@ -8,12 +8,24 @@
       <value class="from" title={message.authorEmailAddress}>
         {from}
       </value>
-      <hbox class="to">
-        to&nbsp;
-        <value title={message.recipientEmailAddress}>
-          {to}
-        </value>
-      </hbox>
+      {#if message.to.hasItems}
+        <hbox class="to">
+          to&nbsp;
+          <RecipientList recipients={message.to} />
+        </hbox>
+      {/if}
+      {#if message.bcc.hasItems}
+        <hbox class="cc">
+          cc&nbsp;
+          <RecipientList recipients={message.cc} />
+        </hbox>
+      {/if}
+      {#if message.bcc.hasItems}
+        <hbox class="bcc">
+          bcc&nbsp;
+          <RecipientList recipients={message.bcc} />
+        </hbox>
+      {/if}
     </vbox>
     <hbox flex />
     <vbox>
@@ -31,6 +43,7 @@
   import type { MailAccount } from "../../../logic/Mail/Account";
   import { Person } from "../../../logic/Abstract/Person";
   import MessageToolbar from "./MessageToolbar.svelte";
+  import RecipientList from "./RecipientList.svelte";
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
   import { getDateString } from "../../Util/date";
 
@@ -41,10 +54,6 @@
     ? "me"
     : message.contact?.name
       ?? message.authorEmailAddress;
-  $: to = message.outgoing
-    ? message.contact?.name
-      ?? message.recipientEmailAddress
-    : "me";
 </script>
 
 <style>
@@ -65,6 +74,10 @@
     color: grey;
   }
   .to {
+    font-size: 13px;
+    color: grey;
+  }
+  .cc, .bcc {
     font-size: 13px;
     color: grey;
   }
