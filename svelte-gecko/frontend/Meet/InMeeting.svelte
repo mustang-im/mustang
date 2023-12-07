@@ -39,7 +39,7 @@
 
   $: columns = calculateColumns($videos.length);
   function calculateColumns(count: number) {
-    if (count == 1) {
+    if (count <= 1) {
       return "auto";
     }
     if (count <= 4) {
