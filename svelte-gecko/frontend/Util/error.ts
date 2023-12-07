@@ -15,3 +15,4 @@ export async function showErrors(func: Function, errorFunc = showError) {
     errorFunc(ex);
   }
 }
+export const catchErrors = showErrors;

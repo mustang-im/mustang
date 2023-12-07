@@ -37,7 +37,6 @@
   $: if (selectedChat?.contact instanceof Person) {
     $selectedPerson = selectedChat.contact;
   }
-
 </script>
 
 <style>

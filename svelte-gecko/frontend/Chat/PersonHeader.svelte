@@ -6,14 +6,18 @@
     <hbox flex class="name">{person.name}</hbox>
   </vbox>
   <hbox class="actions">
-    <RoundButton label="Video call" icon={VideoCallIcon} iconSize="24px" filled />
-    <RoundButton label="Audio call" icon={VoiceCallIcon} iconSize="24px" filled />
+    <RoundButton label="Video call" icon={VideoCallIcon} iconSize="24px" filled
+      on:click={() => catchErrors(() => startVideoCall(person))} />
+    <RoundButton label="Audio call" icon={VoiceCallIcon} iconSize="24px" filled
+      on:click={() => catchErrors(() => startAudioCall(person))} />
   </hbox>
 </hbox>
 
 <script lang="ts">
   import type { Contact } from "../../logic/Abstract/Contact";
   import { Person } from "../../logic/Abstract/Person";
+  import { startVideoCall, startAudioCall } from "../../logic/Meet/StartCall";
+  import { catchErrors } from "../Util/error";
   import PersonPicture from "../Shared/Person/PersonPicture.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import VideoCallIcon from '../asset/icon/appBar/meet.svg?raw';

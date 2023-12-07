@@ -1,7 +1,7 @@
-import { Contact } from './Contact';
+import { ContactBase } from './Contact';
 import { ArrayColl } from 'svelte-collections';
 
-export class Person extends Contact {
+export class Person extends ContactBase {
   firstName: string;
   lastName: string;
   emailAddresses = new ArrayColl<ContactEntry>();
