@@ -8,6 +8,9 @@
       <slot name="icon" />
     {/if}
   </hbox>
+  {#if hasIcon && hasLabel}
+    <hbox class="gap" />
+  {/if}
   {#if !iconOnly}
     {#if label}
       <hbox class="label">{label}</hbox>
@@ -29,6 +32,9 @@
   export let iconOnly = false;
   export let disabled = false;
   export let selected = false;
+
+  $: hasIcon = !!icon || $$slots.icon;
+  $: hasLabel = (!!label || $$slots.label) && !iconOnly;
 </script>
 
 <style>
@@ -58,9 +64,8 @@
   .selected {
     background-color: #00000033;
   }
-  .icon {
-    /** margin-right: 6px; TODO only if both icon and label */
-    margin-right: 0px;
+  .gap {
+    width: 8px;
   }
   .plain .icon {
     margin-right: 0;
