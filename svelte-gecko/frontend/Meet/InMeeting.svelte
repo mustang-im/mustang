@@ -1,9 +1,5 @@
 <vbox flex>
-  <grid class="participants" style="grid-template-columns: {columns}">
-    {#each $videos.each as video (video.id)}
-      <ParticipatingVideo {video} {showSelf} />
-    {/each}
-  </grid>
+  <Gallery videos={meeting.videos} {showSelf}  />
 </vbox>
 <hbox class="actions">
   <hbox flex />
@@ -19,7 +15,7 @@
   import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
   import { ParticipantVideo } from "../../logic/Meet/VideoStream";
   import { appGlobal } from "../../logic/app";
-  import ParticipatingVideo from "./ParticipatingVideo.svelte";
+  import Gallery from "./Gallery.svelte";
   import Button from "../Shared/Button.svelte";
   import HandIcon from '../asset/icon/meet/hand.svg?raw';
   import HandOffIcon from '../asset/icon/meet/handOff.svg?raw';
@@ -32,28 +28,10 @@
 
   export let meeting: VideoConfMeeting;
 
-  $: videos = meeting.videos;
   let micOn = false;
   let cameraOn = false;
   let handRaised = false;
   let showSelf = true;
-
-  $: columns = calculateColumns($videos.length);
-  function calculateColumns(count: number) {
-    if (count <= 1) {
-      return "auto";
-    }
-    if (count <= 4) {
-      return "auto auto";
-    }
-    if (count <= 9) {
-      return "auto auto auto";
-    }
-    if (count <= 16) {
-      return "auto auto auto auto";
-    }
-    return "auto auto auto auto auto";
-  }
 
   function addParticipant() {
     // TODO remove test data
@@ -82,10 +60,6 @@
 </script>
 
 <style>
-  .participants {
-    display: grid;
-    /* grid-template-columns/rows: see code */
-  }
   .actions {
     margin: 8px;
   }

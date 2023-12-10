@@ -7,7 +7,7 @@
 {/if}
 
 <script lang="ts">
-  import { VideoStream, ParticipantVideo, ScreenShare, SelfVideo } from "../../logic/Meet/VideoStream";
+  import { VideoStream, ParticipantVideo, ScreenShare, SelfVideo } from "../../../logic/Meet/VideoStream";
   import VideoWithLabel from "./VideoWithLabel.svelte";
 
   export let video: VideoStream;
