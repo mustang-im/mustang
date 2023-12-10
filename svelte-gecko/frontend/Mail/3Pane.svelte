@@ -3,6 +3,7 @@
     <!--<ProjectList />-->
     <AccountList accounts={$accounts} bind:selectedAccount />
     <FolderList folders={selectedAccount ? selectedAccount.rootFolders : new ArrayColl()} bind:selectedFolder />
+    <ViewSwitcher />
   </vbox>
   <vbox flex class="left-pane">
     <vbox flex class="message-list-pane">
@@ -27,7 +28,7 @@
   import MessageDisplay from "./Message/MessageDisplay.svelte";
   import MessageList from "./MessageList/MessageList.svelte";
   import ProjectList from "./LeftPane/ProjectList.svelte";
-  import StartPage from "./StartPage.svelte";
+  import ViewSwitcher from "./LeftPane/ViewSwitcher.svelte";
   import { ArrayColl, Collection } from 'svelte-collections';
 
   export let accounts: Collection<MailAccount>; /** in */
