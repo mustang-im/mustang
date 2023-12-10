@@ -9,6 +9,15 @@
     selected={view == "chat"}
     />
   <Button
+    label="Vertical view"
+    icon={VerticalIcon}
+    iconOnly
+    iconSize="16px"
+    plain
+    on:click={() => catchErrors(() => switchTo('vertical'))}
+    selected={view == "vertical"}
+    />
+  <Button
     label="Classic 3-pane view"
     icon={ThreePaneIcon}
     iconOnly
@@ -24,6 +33,7 @@
   import { catchErrors } from "../../Util/error";
   import Button from "../../Shared/Button.svelte";
   import ChatIcon from "lucide-svelte/icons/message-square";
+  import VerticalIcon from "lucide-svelte/icons/columns";
   import ThreePaneIcon from "lucide-svelte/icons/layout-panel-left";
 
   let viewSetting = getLocalStorage("mail.view", "3pane");
