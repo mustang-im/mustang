@@ -17,6 +17,7 @@
 
 <script lang="ts">
   import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
+  import { ParticipantVideo } from "../../logic/Meet/VideoStream";
   import { appGlobal } from "../../logic/app";
   import ParticipatingVideo from "./ParticipatingVideo.svelte";
   import Button from "../Shared/Button.svelte";
@@ -59,6 +60,7 @@
     let chatAccount = appGlobal.chatAccounts.first;
     let participant = chatAccount.persons.at(Math.floor(chatAccount.persons.length) * Math.random());
     meeting.participants.add(participant);
+    meeting.videos.add(new ParticipantVideo(new MediaStream(), participant));
   }
 
   async function leave() {
