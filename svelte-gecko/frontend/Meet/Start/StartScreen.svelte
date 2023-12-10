@@ -68,7 +68,7 @@
     margin-top: 12px;
   }
   .actions :global(.call-person .image) {
-    margin: -4px 8px -4px 0;
+    margin: -4px 0px;
   }
   #meeting-link {
     margin-right: 4px;
