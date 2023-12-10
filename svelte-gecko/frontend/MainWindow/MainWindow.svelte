@@ -44,7 +44,8 @@
   import { onMount } from "svelte";
   import WindowHeader from "./WindowHeader.svelte";
 
-  $: $sidebarApp = appGlobal.meetings.hasItems && $selectedApp != AppArea.Meet ? AppArea.Meet : null; // TODO move into app, see MeetApp.svelte
+  $: meetings = appGlobal.meetings;
+  $: $sidebarApp = $meetings.hasItems && $selectedApp != AppArea.Meet ? AppArea.Meet : null; // TODO move into app, see MeetApp.svelte
 
   onMount(async() => {
     if (appGlobal.persons.hasItems) {
