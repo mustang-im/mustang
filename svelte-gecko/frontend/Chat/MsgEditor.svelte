@@ -8,14 +8,14 @@
 
 <script lang="ts">
   import type { Chat } from "../../logic/Chat/Chat";
-  import { ChatMessage } from "../../logic/Chat/Message";
+  import { UserChatMessage } from "../../logic/Chat/Message";
   import Button from "../Shared/Button.svelte";
   import SendIcon from "lucide-svelte/icons/send";
 
   export let to: Chat;
 
   function send() {
-    let msg = new ChatMessage();
+    let msg = new UserChatMessage();
     msg.outgoing = true;
     msg.text = to.draftMessage;
     msg.html = msg.text;
