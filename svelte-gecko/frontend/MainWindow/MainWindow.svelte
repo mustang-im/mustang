@@ -1,24 +1,31 @@
 <vbox flex>
-  <WindowHeader {selectedApp} />
+  <WindowHeader selectedApp={$selectedApp} />
   <hbox flex class="main-window">
-    <AppBar bind:selectedApp />
+    <AppBar bind:selectedApp={$selectedApp} />
     <vbox flex class="app-frame">
-      {#if selectedApp == AppArea.Mail}
+      {#if $selectedApp == AppArea.Mail}
         <MailApp />
-      {:else if selectedApp == AppArea.Chat}
+      {:else if $selectedApp == AppArea.Chat}
         <ChatApp />
-      {:else if selectedApp == AppArea.Meet}
+      {:else if $selectedApp == AppArea.Meet}
         <MeetApp />
-      {:else if selectedApp == AppArea.Contacts}
+      {:else if $selectedApp == AppArea.Contacts}
         <ContactsApp persons={appGlobal.persons} />
-      {:else if selectedApp == AppArea.Calendar}
+      {:else if $selectedApp == AppArea.Calendar}
         <CalendarApp />
-      {:else if selectedApp == AppArea.Files}
+      {:else if $selectedApp == AppArea.Files}
         <FilesApp persons={appGlobal.persons} />
-      {:else if selectedApp == AppArea.Apps}
+      {:else if $selectedApp == AppArea.Apps}
         <AppsApp />
       {/if}
     </vbox>
+    {#if $sidebarApp}
+      <vbox flex class="sidebar">
+        {#if $sidebarApp == AppArea.Meet}
+          <MeetSidebar />
+        {/if}
+      </vbox>
+    {/if}
   </hbox>
 </vbox>
 
@@ -29,14 +36,15 @@
   import MeetApp from "../Meet/MeetApp.svelte";
   import CalendarApp from "../Calendar/CalendarApp.svelte";
   import FilesApp from "../Files/FilesApp.svelte";
+  import MeetSidebar from "../Meet/MeetSidebar.svelte";
   import AppBar from "./AppBar.svelte";
   import AppsApp from "../Apps/AppsApp.svelte";
-  import { AppArea } from "./app";
+  import { AppArea, selectedApp, sidebarApp } from "./app";
   import { appGlobal, getStartObjects } from "../../logic/app";
   import { onMount } from "svelte";
   import WindowHeader from "./WindowHeader.svelte";
 
-  let selectedApp = AppArea.Contacts;
+  $: $sidebarApp = appGlobal.meetings.hasItems && $selectedApp != AppArea.Meet ? AppArea.Meet : null; // TODO move into app, see MeetApp.svelte
 
   onMount(async() => {
     if (appGlobal.persons.hasItems) {
@@ -50,4 +58,7 @@
 </script>
 
 <style>
+  .app-frame {
+    flex: 4 0 0;
+  }
 </style>
