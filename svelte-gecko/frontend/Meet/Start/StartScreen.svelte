@@ -1,6 +1,9 @@
 <hbox flex>
   <vbox flex class="actions-container">
     <vbox class="actions">
+      {#if $selectedPerson}
+        <Button label="Call {$selectedPerson.name}" icon={VideoIcon} on:click={callSelected}/>
+      {/if}
       <Button label="Plan a meeting" icon={AddToCalendarIcon} />
       <Button label="Start an ad-hoc meeting" icon={VideoIcon} on:click={startAdHocMeeting}/>
       <hbox>
@@ -27,6 +30,7 @@
 
 <script lang="ts">
   import { VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
+  import { selectedPerson } from "../../Shared/Person/PersonOrGroup";
   import { appGlobal } from "../../../logic/app";
   import MeetingList from "./MeetingList.svelte";
   import Button from "../../Shared/Button.svelte";
@@ -41,6 +45,12 @@
 
   async function startAdHocMeeting() {
     let meeting = await VideoConfMeeting.createAdhoc(null);
+    appGlobal.meetings.add(meeting);
+  }
+
+  async function callSelected() {
+    let meeting = await VideoConfMeeting.createAdhoc(null);
+    meeting.participants.add($selectedPerson);
     appGlobal.meetings.add(meeting);
   }
 </script>
