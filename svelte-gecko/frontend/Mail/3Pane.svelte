@@ -11,8 +11,6 @@
     <vbox flex class="message-display-pane">
       {#if selectedMessage}
         <MessageDisplay message={selectedMessage} account={selectedAccount} />
-      {:else}
-        <StartPage />
       {/if}
     </vbox>
   </vbox>
