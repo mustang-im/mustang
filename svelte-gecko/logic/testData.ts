@@ -82,7 +82,7 @@ function fakeMailAccount(persons: Collection<Person>): MailAccount {
       msg.sent = faker.date.past(0.1);
       msg.received = new Date(msg.sent.getTime() + 500);
       msg.read = msg.received < lastReadTime;
-      msg.subject = "Talk about " + emailNr;
+      msg.subject = faker.hacker.phrase().replace("!", "").replace(/,.*/, "");
       msg.outgoing = Math.random() < 0.4;
       msg.contact = person;
       let meEmail = account.emailAddress;
@@ -97,12 +97,18 @@ function fakeMailAccount(persons: Collection<Person>): MailAccount {
       if (Math.random() < 0.2) {
         msg.bcc.add(fakeMailPerson());
       }
-      msg.text = faker.hacker.phrase();
-      let paragraphs = Math.floor(Math.random() * 10 + 1);
-      for (let i = 0; i < paragraphs; i++) {
-        msg.text += faker.hacker.phrase() + " " + faker.hacker.phrase() + " " + faker.hacker.phrase() + "\n\n";
+      let paragraphs = [];
+      for (let iP = Math.floor(Math.random() * 7) + 1; iP > 0; iP--) {
+        let paragraph = faker.hacker.phrase().replace("!", ".");
+        for (let iS = Math.floor(Math.random() * 5); iS > 0; iS--) {
+          paragraph += " " + faker.hacker.phrase().replace("!", ".");
+        }
+        paragraphs.push(paragraph);
       }
-      msg.html = msg.text;
+      msg.text = paragraphs.join("\n\n");
+      if (Math.random() > 0.3) {
+        msg.html = `<p>${paragraphs.join("</p><p>")}</p>`;
+      }
       msg.contentType = "text/plain";
       let folder: Folder;
       if (Math.random() < 0.99) {
@@ -145,7 +151,7 @@ function fakeChatAccount(persons: Collection<Person>): ChatAccount {
       msg.outgoing = Math.random() < 0.4;
       msg.sent = faker.date.past(0.1);
       msg.received = new Date(msg.sent.getTime() + 500);
-      msg.text = faker.hacker.phrase();
+      msg.text = faker.hacker.phrase().replace("!", "");
       msg.html = msg.text;
       messages.add(msg);
     }
