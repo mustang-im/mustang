@@ -2,7 +2,9 @@
   <vbox flex class="actions-container">
     <vbox class="actions">
       {#if $selectedPerson}
-        <Button label="Call {$selectedPerson.name}" icon={VideoIcon} on:click={callSelected}/>
+        <Button label="Call {$selectedPerson.name}" on:click={callSelected} classes="call-person">
+          <PersonPicture slot="icon" person={$selectedPerson} size={24} />
+        </Button>
       {/if}
       <Button label="Plan a meeting" icon={AddToCalendarIcon} />
       <Button label="Start an ad-hoc meeting" icon={VideoIcon} on:click={startAdHocMeeting}/>
@@ -36,6 +38,7 @@
   import Button from "../../Shared/Button.svelte";
   import VideoIcon from 'lucide-svelte/icons/video';
   import AddToCalendarIcon from "lucide-svelte/icons/calendar-plus";
+  import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
 
   const now = new Date();
   const maxUpcoming = new Date(); // TODO now + 8 hours
@@ -64,6 +67,9 @@
   .actions :global(> *) {
     margin-top: 12px;
   }
+  .actions :global(.call-person .image) {
+    margin: -4px 8px -4px 0;
+  }
   #meeting-link {
     margin-right: 4px;
   }
@@ -82,8 +88,5 @@
   .emptyMsg {
     font-size: 12px;
     color: grey;
-  }
-  .end :global(.settings) {
-    margin: 24px;
   }
 </style>
