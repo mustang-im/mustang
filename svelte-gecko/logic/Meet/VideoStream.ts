@@ -13,6 +13,11 @@ export class VideoStream {
 
 export class ParticipantVideo extends VideoStream {
   participant: Person;
+
+  constructor(stream: MediaStream, participant: Person) {
+    super(stream);
+    this.participant = participant;
+  }
 }
 
 export class SelfVideo extends VideoStream {
@@ -22,4 +27,9 @@ export class ScreenShare extends VideoStream {
   /** Origin of the screen, the user who is sharing it.
    * Not set, if our user is sharing the screen. */
   participant?: Person;
+
+  constructor(stream: MediaStream, participant: Person) {
+    super(stream);
+    this.participant = participant;
+  }
 }
