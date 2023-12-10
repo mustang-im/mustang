@@ -55,6 +55,6 @@
     }
   }
 
-  let viewSetting = getLocalStorage("mail.view", "3pane");
+  let viewSetting = getLocalStorage("mail.view", "chat");
   $: view = $viewSetting.value;
 </script>
