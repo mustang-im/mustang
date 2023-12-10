@@ -1,4 +1,4 @@
-{#if true}
+{#if false}
   <MailChat {accounts} />
 {:else}
   <ThreePane {accounts} bind:selectedAccount bind:selectedFolder bind:selectedMessage />

@@ -1,10 +1,18 @@
 <vbox flex class="message-body">
-  <div class="msg-body-plaintext value">
-    {message.text || ''}
-  </div>
-  <!-- svelte-ignore a11y-missing-attribute -->
-  <iframe class="msg-body-frame">
-  </iframe>
+  {#if message.html}
+    <div class="msg-body-html value">
+      <!-- TODO Sanitize HTML. It comes from untrusted sources. Dangerous! @see also Chat Message.svelte -->
+      {@html message.html}
+      <!--
+      <iframe class="msg-body-frame">
+      </iframe>
+      -->
+    </div>
+  {:else}
+    <div class="msg-body-plaintext value">
+      {message.text || ''}
+    </div>
+  {/if}
 </vbox>
 
 <script lang="ts">
