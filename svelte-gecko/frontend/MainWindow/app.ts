@@ -10,4 +10,5 @@ export enum AppArea {
   Apps = 7,
 }
 
-export const selectedApp = writable(AppArea.Mail);
+export const selectedApp = writable(AppArea.Contacts);
+export const sidebarApp = writable(null);
