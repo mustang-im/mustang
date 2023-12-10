@@ -22,8 +22,14 @@
       </hbox>
     {/if}
     <vbox class="bubble">
-      <!-- TODO Sanitize HTML. It comes from untrusted sources. Dangerous! -->
-      <div class="text selectable">{@html message.html }</div>
+      <div class="text selectable">
+        {#if message.html}
+          <!-- TODO Sanitize HTML. It comes from untrusted sources. Dangerous! @see also Mail MessageBody.svelte -->
+          {@html message.html }
+        {:else}
+          {message.text || '' }
+        {/if}
+      </div>
     </vbox>
     {#if $reactions.length > 0}
       <hbox class="reactions">
@@ -109,11 +115,11 @@
 
   .avatar {
     margin-top: 3px;
-    margin-right: 20px;
+    margin-right: 4px;
   }
   .message.followup.incoming {
     /* no avatar */
-    padding-left: 52px;
+    padding-left: 60px;
   }
   .meta {
     margin-bottom: 2px;
