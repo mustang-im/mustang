@@ -1,4 +1,4 @@
-<button on:click on:dblclick class="button {classes}" class:plain title={label} class:disabled>
+<button on:click on:dblclick class="button {classes}" class:plain title={label} class:disabled class:selected>
   <hbox class="icon">
     {#if typeof(icon) == "string"}
       <Icon data={icon} size={iconSize} />
@@ -28,10 +28,11 @@
   export let iconSize = "16px";
   export let iconOnly = false;
   export let disabled = false;
+  export let selected = false;
 </script>
 
 <style>
-  button {
+  button:not(.plain) {
     background-color: #f9f9f9;
     border: 1px solid #B2ADB8;
     border-radius: 5px;
@@ -44,8 +45,8 @@
   }
   .plain {
     background-color: transparent;
+    border-radius: 3px;
     border: none;
-    padding: 0 0;
     min-width: 20px;
   }
   button:hover:not(.disabled) {
@@ -53,6 +54,9 @@
   }
   .disabled {
     opacity: 50%;
+  }
+  .selected {
+    background-color: #00000033;
   }
   .icon {
     /** margin-right: 6px; TODO only if both icon and label */
@@ -62,5 +66,9 @@
     margin-right: 0;
   }
 
-  /* @media (prefers-color-scheme: light) { */
+  @media (prefers-color-scheme: light) {
+    button {
+      background-color: #f9f9f9;
+    }
+  }
 </style>

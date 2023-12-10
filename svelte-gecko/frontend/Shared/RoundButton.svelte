@@ -54,4 +54,10 @@
   .button:hover .icon :global(path) {
     stroke: white;
   }
+
+  @media (prefers-color-scheme: light) {
+    button {
+      background-color: #f9f9f9;
+    }
+  }
 </style>
