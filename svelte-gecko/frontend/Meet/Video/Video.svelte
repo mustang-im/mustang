@@ -2,8 +2,8 @@
 <video bind:this={videoEl} />
 
 <script lang="ts">
+  import { VideoStream, SelfVideo } from "../../../logic/Meet/VideoStream";
   import { onDestroy } from "svelte";
-  import { VideoStream, SelfVideo } from "../../logic/Meet/VideoStream";
 
   export let video: VideoStream;
 
