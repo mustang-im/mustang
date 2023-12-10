@@ -1,4 +1,6 @@
+import { MapColl } from "svelte-collections";
 import type { Contact } from "./Contact";
+import type { Person } from "./Person";
 
 export class Message {
   /** protocol-specific ID for this message.
@@ -21,4 +23,6 @@ export class Message {
   text: string;
   /** HTML version of the message */
   html: string;
+
+  reactions = new MapColl<Person, string>();
 }

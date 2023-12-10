@@ -12,7 +12,6 @@ export class ChatMessage extends Message {
  * A human-language message from a human to other humans.
  */
 export class UserChatMessage extends ChatMessage {
-  reactions = new MapColl<ChatPerson, string>();
 }
 
 export enum DeliveryStatus {
