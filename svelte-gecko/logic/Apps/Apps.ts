@@ -11,7 +11,7 @@ export default class Apps {
   runningApps = new ArrayColl<AppListed>();
 
   async load() {
-    if (!this.apps.isEmpty) {
+    if (this.apps.hasItems) {
       return;
     }
     for (let json of appStore.categories) {
@@ -19,9 +19,17 @@ export default class Apps {
       this.categories.set(cat.fullID, cat);
     }
     this.apps.addAll(appStore.apps.map(json => AppListed.fromJSON(json)));
-    // TODO store selected apps
-    this.myApps = this.apps.filter(app => app.categoryFullIDs.includes("recommended"));
+    for (let category of this.categories) {
+      let apps = this.apps.contents.filter(app => app.categoryFullIDs.includes(category.fullID));
+      category.apps.addAll(apps);
+    }
+
+    let myAppIDs = JSON.parse(localStorage.getItem("apps.selected"));
+    this.myApps.addAll(this.apps.contents.filter(app => myAppIDs.includes(app.id)));
+    this.categories.get("selected").apps = this.myApps;
     this.myApps.subscribe(() => {
+      let myAppIDs = this.myApps.map(app => app.id).contents;
+      localStorage.setItem("apps.selected", JSON.stringify(myAppIDs));
     });
   }
 }

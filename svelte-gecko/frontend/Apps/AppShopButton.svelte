@@ -12,13 +12,23 @@
       <a class="homepage" href={app.homepage} target="_blank">Website</a>
     {/if}
     <hbox flex />
-    <Button classes="add" label="Add" on:click={add} disabled={isAdded} />
+    {#if $myApps.includes(app)}
+      <Button classes="remove" label="Remove"
+        on:click={() => catchErrors(remove)}
+        />
+    {:else}
+      <Button classes="add" label="Add"
+        on:click={() => catchErrors(add)}
+        />
+  {/if}
   </hbox>
 </vbox>
 
 <script lang="ts">
   import type AppListed from "../../logic/Apps/AppListed";
+  import { appGlobal } from "../../logic/app";
   import Button from "../Shared/Button.svelte";
+  import { catchErrors } from "../Util/error";
 
   export let app: AppListed;
   export let selectedApp: AppListed; /* in/out */
@@ -27,9 +37,13 @@
     selectedApp = app;
   }
 
-  let isAdded = false;
+  $: myApps = appGlobal.apps.myApps;
+
   function add() {
-    isAdded = true;
+    myApps.add(app);
+  }
+  function remove() {
+    myApps.remove(app);
   }
 </script>
 

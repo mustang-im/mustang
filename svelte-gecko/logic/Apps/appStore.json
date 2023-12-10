@@ -1,6 +1,19 @@
 {
   "categories": [
     {
+      "id": "selected",
+      "parentID": null,
+      "fullID": "selected",
+      "name": {
+        "en": "Your apps",
+        "de": "Deine Apps"
+      },
+      "description": {
+        "en": "The apps that you selected as your preferred apps.",
+        "de": "Die Apps, die Sie ausgewählt haben."
+      }
+    },
+    {
       "id": "recommended",
       "parentID": null,
       "fullID": "recommended",
