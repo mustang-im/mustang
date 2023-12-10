@@ -15,14 +15,12 @@
 <script lang="ts">
   import type AppCategory from "../../logic/Apps/AppCategory";
   import type AppListed from "../../logic/Apps/AppListed";
-  import type { Collection } from "svelte-collections";
   import AppShopButton from "./AppShopButton.svelte";
 
   export let category: AppCategory;
-  export let allApps: Collection<AppListed>;
   export let selectedApp: AppListed; /* in/out */
 
-  $: apps = allApps.filter(app => app.categoryFullIDs.includes(category.fullID));
+  $: apps = category.apps;
 </script>
 
 <style>

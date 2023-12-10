@@ -1,3 +1,6 @@
+import type AppListed from "./AppListed";
+import { ArrayColl } from "svelte-collections";
+
 export default class AppCategory {
   /** Internal ID, without parent categories.
    * E.g. `"word-processing"` */
@@ -27,6 +30,8 @@ export default class AppCategory {
   /** URL path to an icon for this category.
    * Either absolute, or relative to the UI path. */
   icon: string;
+
+  apps = new ArrayColl<AppListed>();
 
   /** The name in the user's language, or a fallback when not available */
   get nameTranslated(): string {
