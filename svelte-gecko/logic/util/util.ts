@@ -13,3 +13,17 @@ export async function sleep(seconds: number): Promise<void> {
     setTimeout(resolve, seconds * 1000);
   });
 }
+
+export function arrayRemove(array, item) {
+  let pos = array.indexOf(item);
+  if (pos > -1) {
+    array.splice(pos, 1);
+  }
+}
+
+export function arrayRemoveAll(array, item) {
+  let pos = -1;
+  while ((pos = array.indexOf(item, pos)) != -1) {
+    array.splice(pos, 1);
+  }
+}
