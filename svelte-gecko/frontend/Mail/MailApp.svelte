@@ -1,7 +1,7 @@
 {#if view == "chat"}
   <MailChat {accounts} />
 {:else if view == "vertical"}
- <Vertical {accounts} bind:selectedAccount bind:selectedFolder bind:selectedMessage />
+ <VerticalLayout {accounts} bind:selectedAccount bind:selectedFolder bind:selectedMessage />
 {:else}
   <ThreePane {accounts} bind:selectedAccount bind:selectedFolder bind:selectedMessage />
 {/if}
@@ -14,11 +14,11 @@
   import { appGlobal } from "../../logic/app";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { showError } from "../Util/error";
-  import ThreePane from "./3Pane.svelte";
-  import MailChat from "./MailChat/MailChat.svelte";
+  import ThreePane from "./3pane/3Pane.svelte";
+  import VerticalLayout from "./Vertical/VerticalLayout.svelte";
+ import MailChat from "./MailChat/MailChat.svelte";
   import { onMount } from "svelte";
-  import Vertical from "./Vertical.svelte";
-
+ 
   let selectedAccount: MailAccount;
   let selectedFolder: Folder;
   let selectedMessage: EMail;
