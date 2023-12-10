@@ -1,5 +1,7 @@
 {#if view == "chat"}
   <MailChat {accounts} />
+{:else if view == "vertical"}
+ <Vertical {accounts} bind:selectedAccount bind:selectedFolder bind:selectedMessage />
 {:else}
   <ThreePane {accounts} bind:selectedAccount bind:selectedFolder bind:selectedMessage />
 {/if}
@@ -15,6 +17,7 @@
   import ThreePane from "./3Pane.svelte";
   import MailChat from "./MailChat/MailChat.svelte";
   import { onMount } from "svelte";
+  import Vertical from "./Vertical.svelte";
 
   let selectedAccount: MailAccount;
   let selectedFolder: Folder;

@@ -1,19 +1,18 @@
 <hbox flex class="mail-app">
   <vbox flex class="folder-pane">
-    <!--<ProjectList />-->
     <AccountList accounts={$accounts} bind:selectedAccount />
     <FolderList folders={selectedAccount ? selectedAccount.rootFolders : new ArrayColl()} bind:selectedFolder />
     <ViewSwitcher />
   </vbox>
-  <vbox flex class="left-pane">
-    <vbox flex class="message-list-pane">
-      <TableMessageList messages={selectedFolder ? selectedFolder.messages : new ArrayColl()} bind:selectedMessage />
-    </vbox>
-    <vbox flex class="message-display-pane">
-      {#if selectedMessage}
-        <MessageDisplay message={selectedMessage} account={selectedAccount} />
-      {/if}
-    </vbox>
+  <vbox flex class="message-list-pane">
+    <VerticalMessageList messages={selectedFolder ? selectedFolder.messages : new ArrayColl()} bind:selectedMessage />
+  </vbox>
+  <vbox flex class="message-display-pane">
+    {#if selectedMessage}
+      <MessageDisplay message={selectedMessage} account={selectedAccount} />
+    {:else}
+      <StartPage />
+    {/if}
   </vbox>
 </hbox>
 
@@ -25,9 +24,9 @@
 
   import AccountList from "./LeftPane/AccountList.svelte";
   import FolderList from "./LeftPane/FolderList.svelte";
-  import ProjectList from "./LeftPane/ProjectList.svelte";
-  import TableMessageList from "./MessageList/TableMessageList.svelte";
+  import VerticalMessageList from "./VerticalList/VerticalMessageList.svelte";
   import MessageDisplay from "./Message/MessageDisplay.svelte";
+  import StartPage from "./StartPage.svelte";
   import ViewSwitcher from "./LeftPane/ViewSwitcher.svelte";
   import { ArrayColl, Collection } from 'svelte-collections';
 
@@ -45,8 +44,8 @@
     z-index: 1;
     background-color: #F9F9FD;
   }
-  .left-pane {
-    flex: 3 0 0;
+  .message-display-pane {
+    flex: 2 0 0;
   }
   .mail-app :global(.fast-list) {
     background-color: transparent;
