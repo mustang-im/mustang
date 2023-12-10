@@ -1,6 +1,7 @@
 <hbox flex class="chat app">
   <vbox class="left-pane">
     <PersonsList persons={appGlobal.persons} bind:selected={selectedPerson} />
+    <ViewSwitcher />
   </vbox>
   <vbox class="right-pane">
     {#if personMessages && selectedPerson }
@@ -28,6 +29,7 @@
   import Header from "../../Chat/PersonHeader.svelte";
   import MessageList from "../../Chat/MessageView/MessageList.svelte";
   import MsgEditor from "../../Chat/MsgEditor.svelte";
+  import ViewSwitcher from "../LeftPane/ViewSwitcher.svelte";
   import { faker } from "@faker-js/faker";
 
   export let accounts: Collection<MailAccount>; /** in */

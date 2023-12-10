@@ -1,4 +1,4 @@
-{#if false}
+{#if view == "chat"}
   <MailChat {accounts} />
 {:else}
   <ThreePane {accounts} bind:selectedAccount bind:selectedFolder bind:selectedMessage />
@@ -10,6 +10,7 @@
   import type { Folder } from "../../logic/Mail/Folder";
   import type { EMail } from "../../logic/Mail/Message";
   import { appGlobal } from "../../logic/app";
+  import { getLocalStorage } from "../Util/LocalStorage";
   import { showError } from "../Util/error";
   import ThreePane from "./3Pane.svelte";
   import MailChat from "./MailChat/MailChat.svelte";
@@ -50,4 +51,7 @@
       showError(ex);
     }
   }
+
+  let viewSetting = getLocalStorage("mail.view", "3pane");
+  $: view = $viewSetting.value;
 </script>
