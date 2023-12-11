@@ -6,7 +6,15 @@
     {#if messages && selectedChat }
       <Header person={selectedChat.contact} />
       <vbox flex class="messages">
-          <MessageList {messages} />
+        <MessageList {messages}>
+          <svelte:fragment slot="message" let:message let:previousMessage>
+            {#if message instanceof UserChatMessage }
+              <Message {message} {previousMessage} />
+            {:else if message instanceof ChatRoomEvent}
+              <ChatRoomEventUI {message} />
+            {/if}
+            </svelte:fragment>
+        </MessageList>
       </vbox>
       <vbox class="editor">
         <MsgEditor to={selectedChat} />
@@ -19,9 +27,13 @@
   import type { Chat } from "../../logic/Chat/Chat";
   import { appGlobal } from "../../logic/app";
   import { mergeColls } from "svelte-collections";
+  import { UserChatMessage } from "../../logic/Chat/Message";
+  import { ChatRoomEvent } from "../../logic/Chat/RoomEvent";
   import PersonsList from "./PersonsList.svelte";
   import Header from "./PersonHeader.svelte";
   import MessageList from "./MessageView/MessageList.svelte";
+  import Message from "./MessageView/Message.svelte";
+  import ChatRoomEventUI from "./MessageView/ChatRoomEventUI.svelte";
   import MsgEditor from "./MsgEditor.svelte";
   import { selectedPerson } from "../Shared/Person/PersonOrGroup";
   import { onMount } from "svelte";
