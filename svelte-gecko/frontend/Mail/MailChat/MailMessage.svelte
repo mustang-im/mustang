@@ -37,5 +37,6 @@
     overflow: hidden;
     max-width: 75%;
     margin: 0 12px;
+    max-height: 1.5em;
   }
 </style>
