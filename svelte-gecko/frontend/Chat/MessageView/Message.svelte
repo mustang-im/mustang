@@ -18,10 +18,14 @@
         {#if !message.outgoing}
           <hbox class="from">{message.contact.name}</hbox>
         {/if}
+        <hbox flex>
+          <slot name="above-center" />
+        </hbox>
         <hbox class="time">{getDateString(message.sent)}</hbox>
       </hbox>
     {/if}
     <vbox class="bubble">
+      <slot name="inner-top" />
       <div class="text selectable">
         {#if message.html}
           <!-- TODO Sanitize HTML. It comes from untrusted sources. Dangerous! @see also Mail MessageBody.svelte -->
@@ -30,6 +34,7 @@
           {message.text || '' }
         {/if}
       </div>
+      <slot name="inner-bottom" />
     </vbox>
     {#if $reactions.length > 0}
       <hbox class="reactions">

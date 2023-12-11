@@ -3,22 +3,14 @@
     <vbox class="messages">
       {#each $sortedMessages.each as message, i}
         <DateSeparator {message} previousMessage={sortedMessages.getIndex(i - 1)} />
-        {#if message instanceof UserChatMessage || message instanceof EMail}
-          <Message {message} previousMessage={sortedMessages.getIndex(i - 1)} />
-        {:else if message instanceof ChatRoomEvent}
-          <ChatRoomEventUI {message} />
-        {/if}
+        <slot name="message" {message} previousMessage={sortedMessages.getIndex(i - 1)} />
       {/each}
     </vbox>
   </Scroll>
 </vbox>
 
 <script lang="ts">
-  import { UserChatMessage, type ChatMessage } from "../../../logic/Chat/Message";
-  import { ChatRoomEvent } from "../../../logic/Chat/RoomEvent";
-  import { EMail } from "../../../logic/Mail/Message";
-  import Message from "./Message.svelte";
-  import ChatRoomEventUI from "./ChatRoomEventUI.svelte";
+  import type { ChatMessage } from "../../../logic/Chat/Message";
   import DateSeparator from "./DateSeparator.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import type { Collection } from "svelte-collections";

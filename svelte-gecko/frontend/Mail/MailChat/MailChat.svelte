@@ -7,7 +7,13 @@
     {#if personMessages && selectedPerson }
       <Header person={selectedPerson} />
       <vbox flex class="messages">
-        <MessageList messages={personMessages} />
+        <MessageList messages={personMessages}>
+          <svelte:fragment slot="message" let:message let:previousMessage>
+            {#if message instanceof EMail }
+              <Message {message} {previousMessage} />
+            {/if}
+          </svelte:fragment>
+        </MessageList>
       </vbox>
       <vbox class="editor">
         <MsgEditor to={dummyChat} />
@@ -18,9 +24,9 @@
 
 <script lang="ts">
   //import type { Account, MsgFolder, Email } from "mustang-lib";
-  import type { MailAccount } from "../../logic/Mail/Account";
-  import type { Folder } from "../../logic/Mail/Folder";
-  import type { EMail } from "../../logic/Mail/Message";
+  import type { MailAccount } from "../../../logic/Mail/Account";
+  import type { Folder } from "../../../logic/Mail/Folder";
+  import { EMail } from "../../../logic/Mail/Message";
   import type { Person } from "../../../logic/Abstract/Person";
   import { Chat } from "../../../logic/Chat/Chat";
   import { appGlobal } from "../../../logic/app";
@@ -31,6 +37,7 @@
   import MsgEditor from "../../Chat/MsgEditor.svelte";
   import ViewSwitcher from "../LeftPane/ViewSwitcher.svelte";
   import { faker } from "@faker-js/faker";
+  import Message from "../../Chat/MessageView/Message.svelte";
 
   export let accounts: Collection<MailAccount>; /** in */
 
