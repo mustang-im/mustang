@@ -1,4 +1,4 @@
-import { AppGlobal } from './app';
+import { appGlobal, AppGlobal } from './app';
 import { MailAccount } from './Mail/Account';
 import { EMail } from './Mail/Message';
 import { ChatAccount } from './Chat/Account';
@@ -7,7 +7,6 @@ import { ChatPerson } from './Chat/Person';
 import { faker } from '@faker-js/faker';
 import { ContactEntry, Person } from './Abstract/Person';
 import { Chat } from './Chat/Chat';
-import { VideoConfMeeting } from './Meet/VideoConfMeeting';
 import { Directory, File } from './Files/File';
 import { Calendar } from './Calendar/Calendar';
 import { Event } from './Calendar/Event';
@@ -16,8 +15,9 @@ import { Folder, SpecialFolder } from './Mail/Folder';
 
 export async function getTestObjects(): Promise<AppGlobal> {
   let appGlobal = new AppGlobal();
+  appGlobal.me = fakeChatPerson();
   appGlobal.persons.addAll(fakePersons());
-  appGlobal.emailAccounts.add(fakeMailAccount(appGlobal.persons));
+  appGlobal.emailAccounts.add(fakeMailAccount(appGlobal.persons, appGlobal.me));
   appGlobal.chatAccounts.add(fakeChatAccount(appGlobal.persons));
   appGlobal.calendars.add(fakeCalendar());
   appGlobal.files.addAll(fakeSharedDir(appGlobal.persons));
@@ -27,41 +27,44 @@ export async function getTestObjects(): Promise<AppGlobal> {
 function fakePersons(): Collection<Person> {
   let persons = new ArrayColl<Person>();
   for (let i = 1; i < 50; i++) {
-    let person = new ChatPerson();
-    person.id = "p-c-" + i;
-    person.firstName = faker.name.firstName();
-    person.lastName = faker.name.lastName();
-    person.name = person.firstName + " " + person.lastName;
-    person.emailAddresses.add(new ContactEntry(faker.internet.email(person.firstName, person.lastName), "work"));
-    person.emailAddresses.add(new ContactEntry(faker.internet.email(person.firstName, person.lastName), "home"));
-    person.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-170-### ####'), "mobile"));
-    person.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-###-######'), "work"));
-    person.chatAccounts.add(new ContactEntry(person.phoneNumbers.first.value, "WhatsApp"));
-    person.chatAccounts.add(new ContactEntry(person.emailAddresses.first.value, "Teams"));
-    person.groups.add(new ContactEntry(faker.company.name(), "Mustang"));
-    person.groups.add(new ContactEntry(faker.company.name(), "WhatsApp"));
-    person.groups.add(new ContactEntry(faker.company.name(), "Teams"));
-    let address = faker.address.streetAddress() + "\n" + faker.address.zipCode() + " " + faker.address.cityName();
-    person.streetAddresses.add(new ContactEntry(address, "home"));
-    person.picture = faker.image.avatar();
-    person.company = faker.company.name();
-    person.department = faker.commerce.department();
-    person.position = faker.company.bsNoun();
-    persons.add(person);
+    persons.add(fakeChatPerson());
   }
   return persons;
 }
 
-function fakeMailAccount(persons: Collection<Person>): MailAccount {
+function fakeChatPerson(): Person {
+  let person = new ChatPerson();
+  person.id = faker.datatype.uuid();
+  person.firstName = faker.name.firstName();
+  person.lastName = faker.name.lastName();
+  person.name = person.firstName + " " + person.lastName;
+  person.emailAddresses.add(new ContactEntry(faker.internet.email(person.firstName, person.lastName), "work"));
+  person.emailAddresses.add(new ContactEntry(faker.internet.email(person.firstName, person.lastName), "home"));
+  person.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-170-### ####'), "mobile"));
+  person.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-###-######'), "work"));
+  person.chatAccounts.add(new ContactEntry(person.phoneNumbers.first.value, "WhatsApp"));
+  person.chatAccounts.add(new ContactEntry(person.emailAddresses.first.value, "Teams"));
+  person.groups.add(new ContactEntry(faker.company.name(), "Mustang"));
+  person.groups.add(new ContactEntry(faker.company.name(), "WhatsApp"));
+  person.groups.add(new ContactEntry(faker.company.name(), "Teams"));
+  let address = faker.address.streetAddress() + "\n" +
+    faker.address.zipCode() + " " +
+    faker.address.cityName();
+  person.streetAddresses.add(new ContactEntry(address, "home"));
+  person.picture = faker.image.avatar();
+  person.company = faker.company.name();
+  person.department = faker.commerce.department();
+  person.position = faker.company.bsNoun();
+  return person;
+}
+
+function fakeMailAccount(persons: Collection<Person>, me: Person): MailAccount {
   let account = new MailAccount();
   account.name = "Yahoo";
   account.emailAddress = "ben.bucksch@yahoo.de";
   account.userRealname = "Ben Bucksch";
   account.id = faker.datatype.uuid();
-  let mePerson = new Person();
-  mePerson.id = account.id;
-  mePerson.name = "me";
-  mePerson.emailAddresses.add(new ContactEntry(account.emailAddress, "Primary"));
+  me.emailAddresses.add(new ContactEntry(account.emailAddress, "Primary"));
 
   for (let name of ['Inbox', 'Sent', 'Drafts', 'Trash', 'Spam']) {
     let folder = new Folder();
@@ -87,7 +90,7 @@ function fakeMailAccount(persons: Collection<Person>): MailAccount {
       msg.contact = person;
       let meEmail = account.emailAddress;
       msg.authorEmailAddress = msg.outgoing ? meEmail : person.emailAddresses.first.value;
-      msg.to.add(msg.outgoing ? person : mePerson);
+      msg.to.add(msg.outgoing ? person : me);
       for (let i = Math.floor(Math.random() * 3); i > 0; i--) {
         msg.to.add(fakeMailPerson());
       }
