@@ -13,9 +13,9 @@
     </vbox>
   {/if}
   <vbox class="right">
-    {#if !(followup && hideHeaderFollowup)}
+    {#if !(fastFollowup && hideHeaderFollowup)}
       <hbox class="meta">
-        {#if !message.outgoing}
+        {#if !message.outgoing && !followup}
           <hbox class="from">{message.contact.name}</hbox>
         {/if}
         <hbox flex>
@@ -58,8 +58,9 @@
   export let hideHeaderFollowup = false;
 
   $: followup = message.contact == previousMessage?.contact && // same author
-    message.outgoing == previousMessage?.outgoing && // same author
-    message.sent.getMilliseconds() - previousMessage.sent.getMilliseconds() < 5 * 60 * 1000; // < 5 mins apart
+    message.outgoing == previousMessage?.outgoing;
+  $: fastFollowup = followup &&
+    message.sent.getTime() - previousMessage.sent.getTime() < 5 * 60 * 1000; // < 5 mins apart
   $: reactions = message.reactions;
 </script>
 
