@@ -10,13 +10,13 @@
 </vbox>
 
 <script lang="ts">
-  import type { ChatMessage } from "../../../logic/Chat/Message";
+  import type { Message } from "../../../logic/Abstract/Message";
   import DateSeparator from "./DateSeparator.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import type { Collection } from "svelte-collections";
   import { tick } from "svelte";
 
-  export let messages: Collection<ChatMessage>;
+  export let messages: Collection<Message>;
 
   $: sortedMessages = messages.sortBy(msg => msg.sent);
 

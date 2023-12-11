@@ -1,6 +1,6 @@
-import { MapColl } from "svelte-collections";
 import type { Contact } from "./Contact";
 import type { Person } from "./Person";
+import { MapColl } from "svelte-collections";
 
 export class Message {
   /** protocol-specific ID for this message.
