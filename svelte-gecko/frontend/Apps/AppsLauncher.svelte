@@ -3,7 +3,7 @@
 
   <vbox class="center">
     <div class="apps">
-      {#each apps.each as app}
+      {#each $apps.each as app}
         <span class="app">
           <AppLaunchButton {app} bind:runningApp />
         </span>
