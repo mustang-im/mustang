@@ -1,5 +1,9 @@
 <Scroll>
-  <grid class="participants" style="grid-template-columns: {columns}" bind:clientWidth={width}>
+  <grid class="participants"
+    style="grid-template-columns: {columns}"
+    bind:clientWidth={width}
+    class:one-to-one={$videos.length <= 2}
+    >
     {#each $videos.each as video (video.id)}
       <ParticipatingVideo {video} {showSelf} />
     {/each}
@@ -23,7 +27,7 @@
       return "";
     }
     const min = 256; /** minimum width per video */
-    if (count <= 1 || width < min * 2) {
+    if (count <= 2 || width < min * 2) {
       return "auto";
     }
     if (count <= 4 || width < min * 3) {
@@ -43,6 +47,9 @@
   .participants {
     display: grid;
     /* grid-template-columns/rows: see code above */
-    overfslow-y: scroll;
+  }
+  .one-to-one :global(.participant.self) {
+    width: 256px;
+    justify-self: end;
   }
 </style>

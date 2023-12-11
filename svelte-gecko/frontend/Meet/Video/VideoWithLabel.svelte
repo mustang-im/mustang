@@ -1,4 +1,4 @@
-<vbox flex class="participant">
+<vbox flex class="participant {classes}">
   <!-- <Stack> size not working
   <Stack>
     <vbox class="video" title={label}>
@@ -24,6 +24,7 @@
 
   export let video: VideoStream;
   export let label: string;
+  export let classes = "";
 </script>
 
 <style>

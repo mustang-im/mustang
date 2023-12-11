@@ -1,9 +1,15 @@
 {#if video instanceof ParticipantVideo}
-  <VideoWithLabel label={video.participant?.name} {video} />
+  <VideoWithLabel {video}
+    label={video.participant?.name}
+    classes="participant" />
 {:else if video instanceof SelfVideo && showSelf}
-  <VideoWithLabel label="You" {video} />
+  <VideoWithLabel {video}
+    label="You"
+    classes="self" />
 {:else if video instanceof ScreenShare}
-  <VideoWithLabel label={video.participant ? `Screen of ${video.participant.name}` : "Screen"} {video} />
+  <VideoWithLabel {video}
+    label={video.participant ? `Screen of ${video.participant.name}` : "Screen"}
+    classes="screen" />
 {/if}
 
 <script lang="ts">
