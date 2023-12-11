@@ -14,6 +14,7 @@
     year: "numeric",
     month: "long",
     day: "numeric",
+    weekday: "long",
   });
 </script>
 

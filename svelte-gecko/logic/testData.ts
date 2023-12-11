@@ -1,4 +1,4 @@
-import { appGlobal, AppGlobal } from './app';
+import { AppGlobal } from './app';
 import { MailAccount } from './Mail/Account';
 import { EMail } from './Mail/Message';
 import { ChatAccount } from './Chat/Account';
@@ -18,7 +18,7 @@ export async function getTestObjects(): Promise<AppGlobal> {
   appGlobal.me = fakeChatPerson();
   appGlobal.persons.addAll(fakePersons());
   appGlobal.emailAccounts.add(fakeMailAccount(appGlobal.persons, appGlobal.me));
-  appGlobal.chatAccounts.add(fakeChatAccount(appGlobal.persons));
+  appGlobal.chatAccounts.add(fakeChatAccount(appGlobal.persons, appGlobal.me));
   appGlobal.calendars.add(fakeCalendar());
   appGlobal.files.addAll(fakeSharedDir(appGlobal.persons));
   return appGlobal;
@@ -61,8 +61,8 @@ function fakeChatPerson(): Person {
 function fakeMailAccount(persons: Collection<Person>, me: Person): MailAccount {
   let account = new MailAccount();
   account.name = "Yahoo";
-  account.emailAddress = "ben.bucksch@yahoo.de";
-  account.userRealname = "Ben Bucksch";
+  account.emailAddress = me.emailAddresses.first.value;
+  account.userRealname = me.name;
   account.id = faker.datatype.uuid();
   me.emailAddresses.add(new ContactEntry(account.emailAddress, "Primary"));
 
@@ -135,10 +135,10 @@ function fakeMailPerson(): Person {
   return person;
 }
 
-function fakeChatAccount(persons: Collection<Person>): ChatAccount {
+function fakeChatAccount(persons: Collection<Person>, me: Person): ChatAccount {
   let chatAccount = new ChatAccount();
   chatAccount.name = "Test chat 1";
-  chatAccount.userRealname = "Ben Bucksch";
+  chatAccount.userRealname = me.name;
 
   for (let person of persons) {
     let chat = new Chat();
@@ -147,16 +147,22 @@ function fakeChatAccount(persons: Collection<Person>): ChatAccount {
     chatAccount.persons.add(person);
 
     let messages = chat.messages;
+    let lastTime = faker.date.past(0.1);
     for (let i = 1; i < 300; i++) {
       let msg = new UserChatMessage();
       msg.to = chat;
       msg.contact = chat.contact;
       msg.outgoing = Math.random() < 0.4;
-      msg.sent = faker.date.past(0.1);
+      if (Math.random() < 0.5) {
+        msg.sent = faker.date.future(0.000001, lastTime); // followup
+      } else {
+        msg.sent = faker.date.past(0.1);
+      }
       msg.received = new Date(msg.sent.getTime() + 500);
       msg.text = faker.hacker.phrase().replace("!", "");
       msg.html = msg.text;
       messages.add(msg);
+      lastTime = msg.sent;
     }
     chat.lastMessage = messages.sortBy(msg => msg.sent).last;
   }
