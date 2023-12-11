@@ -3,7 +3,7 @@
   class:incoming={!message.outgoing}
   class:outgoing={message.outgoing}
   class:followup
-  deliveryStatus={message.deliveryStatus}
+  deliveryStatus={message instanceof ChatMessage ? message.deliveryStatus : DeliveryStatus.Unknown}
   >
   {#if !message.outgoing && !followup}
     <vbox class="avatar">
@@ -47,13 +47,14 @@
 </hbox>
 
 <script lang="ts">
-  import type { UserChatMessage, ChatMessage } from "../../../logic/Chat/Message";
+  import type { Message } from "../../../logic/Abstract/Message";
+  import { ChatMessage, DeliveryStatus } from "../../../logic/Chat/Message";
   import { Person } from "../../../logic/Abstract/Person";
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
   import { getDateString } from "../../Util/date";
 
-  export let message: UserChatMessage;
-  export let previousMessage: ChatMessage = null;
+  export let message: Message;
+  export let previousMessage: Message = null;
   $: followup = message.contact == previousMessage?.contact && // same author
     message.outgoing == previousMessage?.outgoing && // same author
     message.sent.getMilliseconds() - previousMessage.sent.getMilliseconds() < 5 * 60 * 1000; // < 5 mins apart

@@ -5,10 +5,10 @@
 {/if}
 
 <script lang="ts">
-  import type { ChatMessage } from "../../../logic/Chat/Message";
+  import type { Message } from "../../../logic/Abstract/Message";
 
-  export let message: ChatMessage;
-  export let previousMessage: ChatMessage = null;
+  export let message: Message;
+  export let previousMessage: Message = null;
 
   const longDayFormat = Intl.DateTimeFormat(undefined, {
     year: "numeric",

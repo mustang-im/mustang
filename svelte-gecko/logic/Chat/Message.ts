@@ -1,7 +1,5 @@
 import { Message } from "../Abstract/Message";
 import type { Chat } from "./Chat";
-import type { ChatPerson } from "./Person";
-import { MapColl } from "svelte-collections";
 
 export class ChatMessage extends Message {
   to: Chat;
