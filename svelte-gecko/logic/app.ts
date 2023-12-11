@@ -21,6 +21,7 @@ export class AppGlobal {
   persons = new ArrayColl<Person>();
   files = new ArrayColl<Directory>();
   apps = new Apps();
+  me: Person;
 }
 export let appGlobal = new AppGlobal();
 
