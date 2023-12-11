@@ -8,7 +8,7 @@
       <RoundButton on:click={closeStore} icon={XIcon} label="Close" />
     </hbox>
     {#if selectedCategory}
-      <CategoryPage category={selectedCategory} bind:selectedApp allApps={apps} />
+      <CategoryPage category={selectedCategory} bind:selectedApp />
     {/if}
   </vbox>
 </hbox>
@@ -27,7 +27,6 @@
 
   let appStore = appGlobal.apps;
   let categories = appStore.categories;
-  let apps = appStore.apps;
   let selectedCategory: AppCategory;
   let selectedApp: AppListed;
 

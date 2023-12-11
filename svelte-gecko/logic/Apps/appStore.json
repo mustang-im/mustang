@@ -1,9 +1,9 @@
 {
   "categories": [
     {
-      "id": "selected",
+      "id": "selectedApps",
       "parentID": null,
-      "fullID": "selected",
+      "fullID": "selectedApps",
       "name": {
         "en": "Your apps",
         "de": "Deine Apps"
