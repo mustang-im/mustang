@@ -10,7 +10,7 @@
         <MessageList messages={personMessages}>
           <svelte:fragment slot="message" let:message let:previousMessage>
             {#if message instanceof EMail }
-              <Message {message} {previousMessage} />
+              <MailMessage {message} {previousMessage} />
             {/if}
           </svelte:fragment>
         </MessageList>
@@ -34,10 +34,10 @@
   import PersonsList from "../../Shared/Person/PersonsList.svelte";
   import Header from "../../Chat/PersonHeader.svelte";
   import MessageList from "../../Chat/MessageView/MessageList.svelte";
+  import MailMessage from "./MailMessage.svelte";
   import MsgEditor from "../../Chat/MsgEditor.svelte";
   import ViewSwitcher from "../LeftPane/ViewSwitcher.svelte";
   import { faker } from "@faker-js/faker";
-  import Message from "../../Chat/MessageView/Message.svelte";
 
   export let accounts: Collection<MailAccount>; /** in */
 
