@@ -6,14 +6,17 @@
   <Button label="Mute" classes="toggle-mic" on:click={toggleMic} icon={micOn ? MicrophoneOffIcon : MicrophoneIcon} iconOnly />
   <Button label="Camera" classes="toggle-camera" on:click={toggleCamera} icon={cameraOn ? CameraOffIcon : CameraIcon} iconOnly />
   <Button label="Hand" classes="raise-hand" on:click={toggleHand} icon={handRaised ? HandOffIcon : HandIcon} iconOnly />
-  <Button label="Add participant" classes="add-participant" on:click={addParticipant} icon={AddUserIcon} iconOnly />
-  <Button label="Leave" classes="leave" on:click={leave} icon={LeaveIcon} iconOnly />
+  {#if $selectedApp == AppArea.Meet}
+    <Button label="Add participant" classes="add-participant" on:click={addParticipant} icon={AddUserIcon} iconOnly />
+    <Button label="Leave" classes="leave" on:click={leave} icon={LeaveIcon} iconOnly />
+  {/if}
   <hbox flex />
 </hbox>
 
 <script lang="ts">
   import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
   import { ParticipantVideo } from "../../logic/Meet/VideoStream";
+  import { AppArea, selectedApp } from "../MainWindow/app";
   import { appGlobal } from "../../logic/app";
   import Gallery from "./Gallery.svelte";
   import Button from "../Shared/Button.svelte";
