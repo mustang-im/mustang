@@ -32,6 +32,7 @@
 
 <script lang="ts">
   import { VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
+  import { ParticipantVideo, SelfVideo } from "../../../logic/Meet/VideoStream";
   import { selectedPerson } from "../../Shared/Person/PersonOrGroup";
   import { appGlobal } from "../../../logic/app";
   import MeetingList from "./MeetingList.svelte";
@@ -49,12 +50,15 @@
   async function startAdHocMeeting() {
     let meeting = await VideoConfMeeting.createAdhoc(null);
     appGlobal.meetings.add(meeting);
+    meeting.videos.add(new SelfVideo(new MediaStream()));
   }
 
   async function callSelected() {
     let meeting = await VideoConfMeeting.createAdhoc(null);
     meeting.participants.add($selectedPerson);
     appGlobal.meetings.add(meeting);
+    meeting.videos.add(new ParticipantVideo(new MediaStream(), $selectedPerson));
+    meeting.videos.add(new SelfVideo(new MediaStream()));
   }
 </script>
 
