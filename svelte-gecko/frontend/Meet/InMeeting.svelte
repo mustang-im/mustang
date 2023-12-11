@@ -5,7 +5,7 @@
   <hbox flex />
   <Button label="Mute" classes="toggle-mic" on:click={toggleMic} icon={micOn ? MicrophoneOffIcon : MicrophoneIcon} iconOnly />
   <Button label="Camera" classes="toggle-camera" on:click={toggleCamera} icon={cameraOn ? CameraOffIcon : CameraIcon} iconOnly />
-  <Button label="Hand" classes="raise-hand" on:click={toggleHand} icon={handRaised ? HandOffIcon : HandIcon} iconOnly />
+  <Button label={handRaised ? "Hand raised" : "Raise hand"} classes={handRaised ? "raised-hand" : "raise-hand"} on:click={toggleHand} icon={handRaised ? HandIcon : HandDownIcon} iconOnly />
   {#if $selectedApp == AppArea.Meet}
     <Button label="Add participant" classes="add-participant" on:click={addParticipant} icon={AddUserIcon} iconOnly />
     <Button label="Leave" classes="leave" on:click={leave} icon={LeaveIcon} iconOnly />
@@ -21,7 +21,7 @@
   import Gallery from "./Gallery.svelte";
   import Button from "../Shared/Button.svelte";
   import HandIcon from '../asset/icon/meet/hand.svg?raw';
-  import HandOffIcon from '../asset/icon/meet/handOff.svg?raw';
+  import HandDownIcon from "lucide-svelte/icons/grab";
   import CameraIcon from "lucide-svelte/icons/video";
   import CameraOffIcon from "lucide-svelte/icons/video-off";
   import MicrophoneIcon from "lucide-svelte/icons/mic";
@@ -74,6 +74,22 @@
   }
   .actions :global(.raise-hand svg) {
     fill: none;
+  }
+  .actions :global(.raised-hand svg) {
+    fill: tan;
+  }
+  .actions :global(button.raised-hand) {
+    background-color: yellowgreen;
+    animation-name: color;
+        animation-duration: 1s;
+        animation-iteration-count: infinite;
+        animation-direction: alternate-reverse;
+        animation-timing-function: ease;
+  }
+  @keyframes color {
+    to {
+      background-color: transparent;
+    }
   }
   .actions :global(.leave svg) {
     transform: rotate(135deg);
