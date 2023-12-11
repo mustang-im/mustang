@@ -13,7 +13,7 @@
     </vbox>
   {/if}
   <vbox class="right">
-    {#if !followup}
+    {#if !(followup && hideHeaderFollowup)}
       <hbox class="meta">
         {#if !message.outgoing}
           <hbox class="from">{message.contact.name}</hbox>
@@ -55,6 +55,8 @@
 
   export let message: Message;
   export let previousMessage: Message = null;
+  export let hideHeaderFollowup = false;
+
   $: followup = message.contact == previousMessage?.contact && // same author
     message.outgoing == previousMessage?.outgoing && // same author
     message.sent.getMilliseconds() - previousMessage.sent.getMilliseconds() < 5 * 60 * 1000; // < 5 mins apart

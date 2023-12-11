@@ -9,7 +9,7 @@
         <MessageList {messages}>
           <svelte:fragment slot="message" let:message let:previousMessage>
             {#if message instanceof UserChatMessage }
-              <Message {message} {previousMessage} />
+              <Message {message} {previousMessage} hideHeaderFollowup={true} />
             {:else if message instanceof ChatRoomEvent}
               <ChatRoomEventUI {message} />
             {/if}
