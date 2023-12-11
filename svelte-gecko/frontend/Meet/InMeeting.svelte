@@ -66,7 +66,7 @@
   .actions :global(> *) {
     margin-right: 4px;
   }
-  .actions :global(.leave) {
+  .actions :global(button.leave) {
     background-color: #FF7777;
   }
   .actions :global(.raise-hand svg) {
