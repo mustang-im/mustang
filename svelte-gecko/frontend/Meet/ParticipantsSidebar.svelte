@@ -4,13 +4,21 @@
   </vbox>
   <PersonsList persons={$participantsSorted} bind:selected>
     <hbox slot="top-right" class="actions" let:person={participant}>
-      {#if isModerator && participant instanceof MeetingParticipant}
+      {#if participant instanceof MeetingParticipant}
+        {#if participant.screenSharing}
+          <Button plain
+            classes="screen-sharing"
+            icon={ScreenSharingIcon}
+            disabled={true}
+            iconOnly />
+        {/if}
         {#if participant.handUp}
           <Button plain
             classes={participant.handUp ? "hand-up" : "hand-down"}
             label={participant.handUp ? "Take hand down" : ""}
             on:click={() => catchErrors(() => toggleHand(participant))}
             icon={participant.handUp ? HandIcon : HandDownIcon}
+            disabled={!isModerator}
             iconOnly />
         {/if}
         <hbox class="more-actions">
@@ -19,12 +27,14 @@
             label="Mute"
             on:click={() => catchErrors(() => toggleMic(participant))}
             icon={participant.micOn ? MicrophoneOffIcon : MicrophoneIcon}
+            disabled={!isModerator}
             iconOnly />
           <Button plain
             classes="toggle-camera"
             label="Camera"
             on:click={() => catchErrors(() => toggleCamera(participant))}
             icon={participant.cameraOn ? CameraOffIcon : CameraIcon}
+            disabled={!isModerator}
             iconOnly />
           <Menu>
             <Menu.Item
@@ -53,6 +63,7 @@
   import MicrophoneIcon from "lucide-svelte/icons/mic";
   import MicrophoneOffIcon from "lucide-svelte/icons/mic-off";
   import ChatIcon from "lucide-svelte/icons/message-square";
+  import ScreenSharingIcon from "lucide-svelte/icons/monitor";
   import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
 
@@ -108,13 +119,22 @@
     align-items: center;
   }
   .participants-sidebar :global(.person .image) {
-    margin: 2px 8px 2px 24px;
+    margin: 2px 4px 2px 24px;
   }
   .participants-sidebar :global(.person img) {
     width: 24px;
     height: 24px;
   }
-  :global(.person:not(:hover)) .more-actions :global(svg){
+  .actions :global(button.plain) {
+    border-radius: 0px;
+  }
+  .actions :global(button.disabled) {
+    opacity: inherit;
+  }
+  .actions :global(button:hover:not(.disabled)) {
+    background-color: #57BDB3;
+  }
+  :global(.person:not(:hover)) .actions :global(svg) {
     stroke: black;
     stroke-width: 1px;
   }
@@ -123,7 +143,7 @@
     stroke: white;
     stroke-width: 2px;
   }
-  .more-actions :global(.svelteui-ActionIcon-root) {
+  .actions :global(.svelteui-ActionIcon-root) {
     color: white;
     background-color: transparent;
   }
