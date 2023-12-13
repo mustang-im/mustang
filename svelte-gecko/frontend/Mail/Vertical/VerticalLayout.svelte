@@ -40,11 +40,11 @@
   .folder-pane {
     flex: 1 0 0;
     max-width: 15em;
-    box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on MessageList */
+    box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 8%); /* Also on MessageList */
     background-color: #F9F9FD;
   }
   .message-list-pane {
-    box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on MessageList */
+    box-shadow: 1px 0px 6px 0px rgba(0, 0, 0, 8%); /* Also on MessageList */
     z-index: 2;
   }
   .message-display-pane {
