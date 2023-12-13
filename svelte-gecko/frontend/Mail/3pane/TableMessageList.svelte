@@ -29,8 +29,8 @@
           />
       </hbox>
       <hbox class="correspondent">{msg.contact.name}</hbox>
-      <hbox class="subject" class:read={msg.read}>{msg.subject}</hbox>
-      <hbox class="date">{getDateString(msg.received)}</hbox>
+      <hbox class="subject" class:unread={!msg.read}>{msg.subject}</hbox>
+      <hbox class="date" class:unread={!msg.read}>{getDateString(msg.received)}</hbox>
     </svelte:fragment>
   </FastList>
 </vbox>
@@ -64,7 +64,10 @@
   .message-list :global(.fast-list table) {
     padding-left: 4px;
   }
-  .subject:not(.read) {
+  .subject.unread {
+    font-weight: bold;
+  }
+  .date.unread {
     font-weight: bold;
   }
   .button {
