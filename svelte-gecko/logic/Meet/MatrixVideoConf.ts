@@ -4,6 +4,7 @@ import { ParticipantVideo, SelfVideo } from "./VideoStream";
 import { MatrixCall, MatrixClient } from "matrix-js-sdk";
 import { CallErrorCode, createNewMatrixCall } from "matrix-js-sdk/lib/webrtc/call";
 import { assert } from "../util/util";
+import { MeetingParticipant } from "./Participant";
 
 export class MatrixVideoConf extends VideoConfMeeting {
   call: MatrixCall;
@@ -30,7 +31,8 @@ export class MatrixVideoConf extends VideoConfMeeting {
         if (feed.isLocal()) {
           this.videos.add(new SelfVideo(feed.stream));
         } else {
-          this.videos.add(new ParticipantVideo(feed.stream));
+          let participant = new MeetingParticipant(); // TODO
+          this.videos.add(new ParticipantVideo(feed.stream, participant));
         }
       }
     });
