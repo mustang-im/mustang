@@ -1,4 +1,4 @@
-<hbox flex class="person" class:isSelected>
+<hbox flex class="person" class:selected={isSelected}>
   <PersonPicture {person} />
   <vbox flex class="main">
     <hbox class="first-row">
@@ -18,11 +18,11 @@
 </script>
 
 <style>
-  .person.isSelected {
+  .person.selected {
     background-color: #20AE9E;
     color: white;
   }
-  .person:not(.isSelected):hover {
+  .person:not(.selected):hover {
     background-color: #A9DAD4;
   }
   .main {

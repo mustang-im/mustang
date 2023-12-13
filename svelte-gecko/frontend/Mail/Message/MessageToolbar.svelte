@@ -60,8 +60,8 @@
       />
   </hbox>
   <hbox>
-      <MessageMenu {message} {account} />
-    </hbox>
+    <MessageMenu {message} {account} />
+  </hbox>
 </hbox>
 
 <script lang="ts">

@@ -1,7 +1,6 @@
 import { VideoConfMeeting } from "./VideoConfMeeting";
 import { Person, ContactEntry } from "../Abstract/Person";
 import { Group } from "../Abstract/Group";
-import { Contact } from "../Abstract/Contact";
 import { ChatAccount } from "../Chat/Account";
 import { Chat } from "../Chat/Chat";
 import { MatrixAccount } from "../Chat/Matrix/MatrixAccount";
@@ -31,7 +30,7 @@ export async function startVideoCall(to: Person | Group): Promise<VideoConfMeeti
   return conf;
 }
 
-function getExistingChat(person: Contact): { chat: Chat, account: ChatAccount } | null {
+function getExistingChat(person: Person | Group): { chat: Chat, account: ChatAccount } | null {
   for (let account of appGlobal.chatAccounts) {
     if (!accountSuitableForCall(account)) {
       continue;
@@ -101,6 +100,6 @@ function entryIsMatrix(contact: ContactEntry) {
   return contact.purpose.toLowerCase() == "matrix";
 }
 
-export async function startAudioCall(to: Contact): Promise<VideoConfMeeting> {
+export async function startAudioCall(to: Person | Group): Promise<VideoConfMeeting> {
   throw new Error("Not yet implemented. Try a video call.");
 }
