@@ -14,6 +14,7 @@
     "@smui-extra/autocomplete": "^7.0.0-beta.15",
     "@svelteuidev/composables": "^0.14.0",
     "@svelteuidev/core": "^0.14.0",
+    "axios": "^1.6.2",
     "jpc-ws": "https://github.com/benbucksch/jpc-ws/",
     "lucide-svelte": "^0.293.0",
     "matrix-js-sdk": "^30.0.1",

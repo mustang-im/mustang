@@ -27,3 +27,5 @@ export function arrayRemoveAll(array, item) {
     array.splice(pos, 1);
   }
 }
+
+export type URLString = string;

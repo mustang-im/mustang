@@ -68,8 +68,10 @@ export class MatrixVideoConf extends VideoConfMeeting {
   }
 
   /**
-   * Be informed of incoming calls.
+   * The phone is ringing!
+   * Be informed of incoming calls from other users.
    *
+   * This is before a conference.
    * Once somebody calls our users, the `incomingCallCallback` will be called
    * with a `MatrixVideoConf` object as parameter.
    * You then need to call `conf.answer()` on that object.
