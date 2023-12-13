@@ -38,6 +38,7 @@
     overflow: auto;
     background-color: white;
     padding: 16px 32px;
+    z-index: 0;
   }
   .msg-body-plaintext {
     flex: 1 0 0;

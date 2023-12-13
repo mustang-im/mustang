@@ -61,6 +61,8 @@
     min-height: 5em;
     padding: 16px 20px 8px 20px;
     background-color: #F9F9FD;
+    box-shadow: 0px 1px 5px 0px rgba(0, 0, 0, 5%), 0px -1px 5px 0px rgba(0, 0, 0, 8%);
+    z-index: 1;
   }
   .subject {
     font-weight: 700;

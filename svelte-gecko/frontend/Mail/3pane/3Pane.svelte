@@ -42,7 +42,7 @@
     flex: 1 0 0;
     max-width: 15em;
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on MessageList */
-    z-index: 1;
+    z-index: 2;
     background-color: #F9F9FD;
   }
   .left-pane {
