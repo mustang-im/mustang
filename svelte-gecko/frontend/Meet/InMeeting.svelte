@@ -3,12 +3,13 @@
 </vbox>
 <hbox class="actions">
   <hbox flex />
-  <Button label="Mute" classes="toggle-mic" on:click={toggleMic} icon={micOn ? MicrophoneOffIcon : MicrophoneIcon} iconOnly />
-  <Button label="Camera" classes="toggle-camera" on:click={toggleCamera} icon={cameraOn ? CameraOffIcon : CameraIcon} iconOnly />
-  <Button label={handRaised ? "Hand raised" : "Raise hand"} classes={handRaised ? "raised-hand" : "raise-hand"} on:click={toggleHand} icon={handRaised ? HandIcon : HandDownIcon} iconOnly />
+  <Button label="Mute" classes="toggle-mic" on:click={() => catchErrors(toggleMic)} icon={micOn ? MicrophoneOffIcon : MicrophoneIcon} iconOnly />
+  <Button label="Camera" classes="toggle-camera" on:click={() => catchErrors(toggleCamera)} icon={cameraOn ? CameraOffIcon : CameraIcon} iconOnly />
+  <Button label={handRaised ? "Hand raised" : "Raise hand"} classes={handRaised ? "raised-hand" : "raise-hand"} on:click={() => catchErrors(toggleHand)} icon={handRaised ? HandIcon : HandDownIcon} iconOnly />
   {#if $selectedApp == AppArea.Meet}
-    <Button label="Add participant" classes="add-participant" on:click={addParticipant} icon={AddUserIcon} iconOnly />
-    <Button label="Leave" classes="leave" on:click={leave} icon={LeaveIcon} iconOnly />
+    <Button label="Add participant" classes="add-participant" on:click={() => catchErrors(addParticipant)} icon={AddUserIcon} iconOnly />
+    <Button label="Copy invitation link" classes="invite-participant" on:click={() => catchErrors(inviteParticipant)} icon={InviteUserIcon} iconOnly />
+    <Button label="Leave" classes="leave" on:click={() => catchErrors(leave)} icon={LeaveIcon} iconOnly />
   {/if}
   <hbox flex />
 </hbox>
@@ -27,7 +28,10 @@
   import MicrophoneIcon from "lucide-svelte/icons/mic";
   import MicrophoneOffIcon from "lucide-svelte/icons/mic-off";
   import AddUserIcon from "lucide-svelte/icons/user-round-plus";
+  import InviteUserIcon from "lucide-svelte/icons/link";
   import LeaveIcon from "lucide-svelte/icons/phone-outgoing";
+  import { catchErrors } from "../Util/error";
+  import { OTalkConf } from "../../logic/Meet/OTalkConf";
 
   export let meeting: VideoConfMeeting;
 
@@ -35,6 +39,7 @@
   let cameraOn = false;
   let handRaised = false;
   let showSelf = true;
+  let cameraStream: MediaStream = null;
 
   function addParticipant() {
     // TODO remove test data
@@ -42,6 +47,13 @@
     let participant = chatAccount.persons.at(Math.floor(chatAccount.persons.length) * Math.random());
     meeting.participants.add(participant);
     meeting.videos.add(new ParticipantVideo(new MediaStream(), participant));
+  }
+
+  async function inviteParticipant() {
+    if (meeting instanceof OTalkConf) {
+      let invitationURL = await meeting.getInvitationURL();
+      navigator.clipboard.writeText(invitationURL);
+    }
   }
 
   async function leave() {
@@ -53,12 +65,21 @@
     micOn = !micOn;
   }
 
-  function toggleCamera() {
+  async function toggleCamera() {
     cameraOn = !cameraOn;
+
+    if (cameraOn && !cameraStream) {
+      await startCamera();
+    }
   }
 
   function toggleHand() {
     handRaised = !handRaised;
+  }
+
+  async function startCamera() {
+    cameraStream = await navigator.mediaDevices.getUserMedia();
+    meeting.setCamera(cameraStream);
   }
 </script>
 

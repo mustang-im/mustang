@@ -1,7 +1,7 @@
 import { VideoConfMeeting } from "./VideoConfMeeting";
 import { ParticipantVideo, ScreenShare, SelfVideo, VideoStream } from "./VideoStream";
 import { Person } from "../Abstract/Person";
-import { assert, sleep, URLString } from "../util/util";
+import { assert, sleep } from "../util/util";
 import axios from "axios";
 
 export class OTalkConf extends VideoConfMeeting {
@@ -38,6 +38,9 @@ export class OTalkConf extends VideoConfMeeting {
     if (this.authToken && !relogin) {
       return;
     }
+    // TODO config
+    this.controllerHost = "controller.mustang.im";
+    this.webFrontendHost = "mustang.im";
     let authToken = localStorage.getItem("conf.otalk.authToken") as string;
     assert(authToken, "OTalk: Need authentication. Need conf.otalk.authToken in localStorage");
     this.authToken = authToken;
@@ -67,7 +70,7 @@ export class OTalkConf extends VideoConfMeeting {
       }
     });
     let event = response.data;
-    console.log("new event", event);
+    console.log("new conference", event);
     this.eventID = event.id;
     this.roomID = event.room.id;
     console.log(await this.getInvitationURL());
@@ -446,3 +449,5 @@ class ParticipantInfoJSON {
   avatar_url: URLString;
   role: "moderator" | "guest";
 }
+
+type URLString = string;
