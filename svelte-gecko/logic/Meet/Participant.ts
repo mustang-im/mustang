@@ -5,6 +5,7 @@ export class MeetingParticipant extends Person {
   handUp = false;
   micOn = true;
   cameraOn = true;
+  screenSharing = false;
 }
 
 export enum ParticipantRole {
