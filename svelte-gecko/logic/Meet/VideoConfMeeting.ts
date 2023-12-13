@@ -21,6 +21,20 @@ export class VideoConfMeeting {
     this.started = new Date();
   }
 
+  /**
+   * After opening our user's camera and microphone
+   * using `getUserMedia()`, pass the stream here.
+   *
+   * You should preferably do that before `start()`ing the conference,
+   * but you can do it at any time.
+   *
+   * @param MediaStream from getUserMedia()
+   *   If null, the current stream will be removed.
+   */
+  async setCamera(mediaStream: MediaStream | null) {
+    throw new Error("not implemented");
+  }
+
   /** If a listener tells you that somebody calls us,
    * and the listener passes the VideoConfMeeting object,
    * you can accept the call with this method.
@@ -36,7 +50,7 @@ export class VideoConfMeeting {
     this.ended = new Date();
   }
 
-  static async createAdhoc(opts: any): Promise<VideoConfMeeting> {
+  static async createAdhoc(opts?: any): Promise<VideoConfMeeting> {
     let meet = new VideoConfMeeting();
     meet.start();
     return meet;

@@ -2,12 +2,12 @@
   <vbox flex class="actions-container">
     <vbox class="actions">
       {#if $selectedPerson}
-        <Button label="Call {$selectedPerson.name}" on:click={callSelected} classes="call-person">
+        <Button label="Call {$selectedPerson.name}" on:click={() => catchErrors(callSelected)} classes="call-person">
           <PersonPicture slot="icon" person={$selectedPerson} size={24} />
         </Button>
       {/if}
       <Button label="Plan a meeting" icon={AddToCalendarIcon} />
-      <Button label="Start an ad-hoc meeting" icon={VideoIcon} on:click={startAdHocMeeting}/>
+      <Button label="Start an ad-hoc meeting" icon={VideoIcon} on:click={() => catchErrors(startAdHocMeeting)}/>
       <hbox>
         <input id="meeting-link" type="url" placeholder="Enter meeting link to join" />
         <Button label="Join" />
@@ -40,6 +40,8 @@
   import VideoIcon from 'lucide-svelte/icons/video';
   import AddToCalendarIcon from "lucide-svelte/icons/calendar-plus";
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
+  import { OTalkConf } from "../../../logic/Meet/OTalkConf";
+  import { catchErrors } from "../../Util/error";
 
   const now = new Date();
   const maxUpcoming = new Date(); // TODO now + 8 hours
@@ -48,13 +50,12 @@
   const previousMeetings = appGlobal.calendars.map(calendar => calendar.events.filter(event => event.startTime < now && event.startTime > maxPrevious));
 
   async function startAdHocMeeting() {
-    let meeting = await VideoConfMeeting.createAdhoc(null);
+    let meeting = await OTalkConf.createAdhoc();
     appGlobal.meetings.add(meeting);
-    meeting.videos.add(new SelfVideo(new MediaStream()));
   }
 
   async function callSelected() {
-    let meeting = await VideoConfMeeting.createAdhoc(null);
+    let meeting = await VideoConfMeeting.createAdhoc();
     meeting.participants.add($selectedPerson);
     appGlobal.meetings.add(meeting);
     meeting.videos.add(new ParticipantVideo(new MediaStream(), $selectedPerson));
