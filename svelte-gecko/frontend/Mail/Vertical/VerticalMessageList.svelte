@@ -2,7 +2,7 @@
   <FastList items={sortedMessages} bind:selectedItem={selectedMessage}>
     <svelte:fragment slot="header">
     </svelte:fragment>
-    <vbox slot="row" class="message" let:item={msg}>
+    <vbox slot="row" class="message" let:item={msg} class:read={msg.read} class:unread={!msg.read}>
       <hbox class="top-row">
         <hbox class="contact">{msg.contact.name}</hbox>
         <hbox flex />
@@ -16,10 +16,10 @@
             plain
             />
         </hbox>
-        <hbox class="unread button" class:read={msg.read}>
+        <hbox class="unread button">
           <Button
             icon={CircleIcon}
-            iconSize="10px"
+            iconSize="8px"
             iconOnly
             label={msg.read ? "Mark this message as unread" : "Mark this message as read"}
             on:click={() => toggleRead(msg)}
@@ -29,7 +29,7 @@
         <hbox class="date">{getDateString(msg.received)}</hbox>
       </hbox>
       <hbox class="bottom-row">
-        <hbox class="subject" class:read={msg.read}>{msg.subject}</hbox>
+        <hbox class="subject">{msg.subject}</hbox>
       </hbox>
     </vbox>
   </FastList>
@@ -60,12 +60,16 @@
 <style>
   .message-list :global(.fast-list) {
     margin-top: 8px;
+    padding-left: 4px;
   }
   .message-list :global(.fast-list thead) {
     display: none;
   }
   .message {
-    padding: 2px 8px !important;
+    padding: 4px 8px !important;
+  }
+  .top-row {
+    margin-bottom: -1px;
   }
   .contact {
     font-weight: bold;
@@ -73,8 +77,11 @@
   .date {
     min-width: 2.5em
   }
-  .subject:not(.read) {
+  .message.unread .date {
     font-weight: bold;
+  }
+  .subject {
+    line-height: 1.3;
   }
   .button {
     width: 20px;
@@ -89,10 +96,10 @@
   .star.starred :global(svg) {
     fill: orange;
   }
-  :global(tr:not(:hover)) .unread.read :global(svg) {
+  :global(tr:not(:hover)) .message.read .unread :global(svg) {
     opacity: 0;
   }
-  .unread:not(.read) :global(svg) {
+  .message.unread .unread :global(svg) {
     fill: green;
   }
 </style>
