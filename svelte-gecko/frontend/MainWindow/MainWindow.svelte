@@ -62,4 +62,8 @@
   .app-frame {
     flex: 4 0 0;
   }
+  .sidebar {
+    box-shadow: inset 1px 0px 5px 0px rgba(0, 0, 0, 10%);
+    z-index: 2;
+  }
 </style>
