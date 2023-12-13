@@ -39,7 +39,6 @@
   import mail from '../asset/icon/appBar/mail.svg?raw';
   import chat from '../asset/icon/appBar/chat.svg?raw';
   import contacts from '../asset/icon/appBar/contacts.svg?raw';
-  import calendar from '../asset/icon/appBar/calendar.svg?raw';
   import meet from '../asset/icon/appBar/meet.svg?raw';
   import fileShare from '../asset/icon/appBar/fileShare.svg?raw';
   import appsLauncher from '../asset/icon/appBar/appsLauncher.svg?raw';
