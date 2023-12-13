@@ -29,11 +29,20 @@ export class OTalkConf extends VideoConfMeeting {
     return this.videos.find(v => v instanceof SelfVideo) ?? null;
   }
 
-  async login() {
-    // TODO login
+  /**
+   * Login using OAuth2
+   * If already logged in, does nothing.
+   * @param relogin if true: Force a new login in any case.
+   */
+  async login(relogin = false) {
+    if (this.authToken && !relogin) {
+      return;
+    }
     let authToken = localStorage.getItem("conf.otalk.authToken") as string;
     assert(authToken, "OTalk: Need authentication. Need conf.otalk.authToken in localStorage");
     this.authToken = authToken;
+
+    // TODO OAuth2 login
 
     this.axios = axios.create({
       baseURL: `https://${this.controllerHost}/v1/`,
@@ -45,6 +54,7 @@ export class OTalkConf extends VideoConfMeeting {
   }
 
   async createNewConference() {
+    await this.login();
     let time = new Date().toLocaleString(navigator.language, { hour: "numeric", minute: "numeric" });
     let response = await this.axios.post("events", {
       body: {
@@ -64,7 +74,8 @@ export class OTalkConf extends VideoConfMeeting {
   }
 
   async getInvitationURL(): Promise<URLString> {
-    let response = await this.axios.post(``, {
+    assert(this.roomID, "Need to create the conference first");
+    let response = await this.axios.post(`rooms/${this.roomID}/invites`, {
       body: {},
     });
     let invitation = await response.data;
@@ -90,7 +101,7 @@ export class OTalkConf extends VideoConfMeeting {
    *
    * You should preferably do that before `start()`ing the conference,
    * but you can do it at any time.
-   * 
+   *
    * @param MediaStream from getUserMedia()
    *   If null, the current stream will be removed.
    */
@@ -115,6 +126,7 @@ export class OTalkConf extends VideoConfMeeting {
   }
 
   async start() {
+    assert(this.roomID, "Need to create the conference first");
     await super.start();
     await this.axios.get(`rooms/${this.roomID}/start`);
     await this.axios.get(`turn`);
@@ -184,7 +196,6 @@ export class OTalkConf extends VideoConfMeeting {
 
   static async createAdhoc(): Promise<OTalkConf> {
     let meet = new OTalkConf();
-    await meet.login();
     await meet.createNewConference();
     await meet.start();
     return meet;
