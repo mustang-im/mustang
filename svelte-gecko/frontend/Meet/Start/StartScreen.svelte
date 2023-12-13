@@ -33,6 +33,7 @@
 <script lang="ts">
   import { VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
   import { ParticipantVideo, SelfVideo } from "../../../logic/Meet/VideoStream";
+  import { MeetingParticipant, ParticipantRole } from "../../../logic/Meet/Participant";
   import { selectedPerson } from "../../Shared/Person/PersonOrGroup";
   import { appGlobal } from "../../../logic/app";
   import MeetingList from "./MeetingList.svelte";
@@ -42,12 +43,14 @@
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
   import { OTalkConf } from "../../../logic/Meet/OTalkConf";
   import { catchErrors } from "../../Util/error";
+  import { mergeColls } from "svelte-collections";
 
+  const allEvents = mergeColls(appGlobal.calendars.map(calendar => calendar.events).values());
   const now = new Date();
   const maxUpcoming = new Date(); // TODO now + 8 hours
   const maxPrevious = new Date(); // TODO now - 14 days
-  const upcomingMeetings = appGlobal.calendars.map(calendar => calendar.events.filter(event => event.startTime > now && event.startTime < maxUpcoming));
-  const previousMeetings = appGlobal.calendars.map(calendar => calendar.events.filter(event => event.startTime < now && event.startTime > maxPrevious));
+  const upcomingMeetings = allEvents.filter(event => event.startTime > now && event.startTime < maxUpcoming);
+  const previousMeetings = allEvents.filter(event => event.startTime < now && event.startTime > maxPrevious);
 
   async function startAdHocMeeting() {
     let meeting = await OTalkConf.createAdhoc();
@@ -55,11 +58,16 @@
   }
 
   async function callSelected() {
+    let callee = new MeetingParticipant();
+    callee.name = $selectedPerson.name;
+    callee.picture = $selectedPerson.picture;
+
     let meeting = await VideoConfMeeting.createAdhoc();
-    meeting.participants.add($selectedPerson);
+    meeting.participants.add(callee);
     appGlobal.meetings.add(meeting);
-    meeting.videos.add(new ParticipantVideo(new MediaStream(), $selectedPerson));
+    meeting.videos.add(new ParticipantVideo(new MediaStream(), callee));
     meeting.videos.add(new SelfVideo(new MediaStream()));
+    meeting.myRole = ParticipantRole.Moderator;
   }
 </script>
 

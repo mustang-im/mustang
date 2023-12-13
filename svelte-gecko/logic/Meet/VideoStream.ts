@@ -1,4 +1,4 @@
-import type { Person } from "../Abstract/Person";
+import type { MeetingParticipant } from "./Participant";
 
 /** One incoming or outgoing video in a video conference */
 export class VideoStream {
@@ -12,9 +12,9 @@ export class VideoStream {
 }
 
 export class ParticipantVideo extends VideoStream {
-  participant: Person;
+  participant: MeetingParticipant;
 
-  constructor(stream: MediaStream, participant: Person) {
+  constructor(stream: MediaStream, participant: MeetingParticipant) {
     super(stream);
     this.participant = participant;
   }
@@ -26,9 +26,9 @@ export class SelfVideo extends VideoStream {
 export class ScreenShare extends VideoStream {
   /** Origin of the screen, the user who is sharing it.
    * Not set, if our user is sharing the screen. */
-  participant?: Person;
+  participant?: MeetingParticipant;
 
-  constructor(stream: MediaStream, participant: Person) {
+  constructor(stream: MediaStream, participant: MeetingParticipant) {
     super(stream);
     this.participant = participant;
   }

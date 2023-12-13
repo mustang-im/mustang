@@ -1,6 +1,6 @@
 import { VideoConfMeeting } from "./VideoConfMeeting";
-import { ParticipantVideo, ScreenShare, SelfVideo, VideoStream } from "./VideoStream";
-import { Person } from "../Abstract/Person";
+import { ParticipantVideo, ScreenShare, SelfVideo } from "./VideoStream";
+import { MeetingParticipant as Participant, ParticipantRole } from "./Participant";
 import { assert, sleep } from "../util/util";
 import axios from "axios";
 
@@ -148,6 +148,7 @@ export class OTalkConf extends VideoConfMeeting {
     let myParticipantInfo = await this.waitForMessage("control", "join_success") as
       ParticipantInfoJSON;
     this.myParticipantID = myParticipantInfo.id;
+    this.myRole = myParticipantInfo.role;
     if (this.camera && this.camera.active) {
       await this.sendVideo(this.camera);
     }
@@ -158,7 +159,7 @@ export class OTalkConf extends VideoConfMeeting {
    * Called when other participants join the conference.
    */
   protected async participantJoined(json: any) {
-    let participant = new Person();
+    let participant = new Participant();
     participant.id = json.id;
     participant.name = json.control.display_name;
     this.participants.add(participant);
@@ -235,7 +236,7 @@ export class OTalkConf extends VideoConfMeeting {
   }
   // TODO re-subscribe to other participant's video, if it dropped
 
-  async getVideoFromParticipant(participant: Person) {
+  async getVideoFromParticipant(participant: Participant) {
     this.send("media", "subscribe", {
       target: participant.id,
       media_session_type: "video",
@@ -447,7 +448,7 @@ class ParticipantInfoJSON {
   id: string;
   display_name: string;
   avatar_url: URLString;
-  role: "moderator" | "guest";
+  role: ParticipantRole;
 }
 
 type URLString = string;

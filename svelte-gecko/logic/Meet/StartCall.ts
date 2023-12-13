@@ -1,6 +1,7 @@
 import { VideoConfMeeting } from "./VideoConfMeeting";
 import { Person, ContactEntry } from "../Abstract/Person";
 import { Group } from "../Abstract/Group";
+import { Contact } from "../Abstract/Contact";
 import { ChatAccount } from "../Chat/Account";
 import { Chat } from "../Chat/Chat";
 import { MatrixAccount } from "../Chat/Matrix/MatrixAccount";

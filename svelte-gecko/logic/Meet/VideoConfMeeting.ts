@@ -1,13 +1,15 @@
 import type { VideoStream } from "./VideoStream";
-import type { Person } from "../Abstract/Person";
+import type { MeetingParticipant, ParticipantRole } from "./Participant";
 import { SetColl } from 'svelte-collections';
 
 export class VideoConfMeeting {
   ongoing = false;
   started: Date;
   ended: Date;
-  participants = new SetColl<Person>();
+  participants = new SetColl<MeetingParticipant>();
   videos = new SetColl<VideoStream>();
+  /** If I'm a moderator, I can manage other users */
+  myRole: ParticipantRole;
 
   errorCallback = (ex) => {
     console.error(ex);

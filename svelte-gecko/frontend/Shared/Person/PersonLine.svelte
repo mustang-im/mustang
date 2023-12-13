@@ -22,7 +22,7 @@
     background-color: #20AE9E;
     color: white;
   }
-  .person:not(.selected):hover {
+  .person:not(.isSelected):hover {
     background-color: #A9DAD4;
   }
   .main {
