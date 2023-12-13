@@ -57,6 +57,7 @@
     background-color: #5C5C71;
     box-shadow: 1px 0px 3px 0px rgba(22, 12, 39, 20%); /* #160C27 */
     padding-top: 8px;
+    z-index: 4;
   }
   .app-bar :global(.app-button),
   .bottom {
