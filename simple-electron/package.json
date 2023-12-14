@@ -3,14 +3,16 @@
   "version": "0.1.0",
   "description": "Prototype for an email application",
   "dependencies": {
-    "electron": "^27.1.2",
+    "electron": "^28.0.0",
     "esm": "^3.2.25",
-    "jscollections": "https://github.com/benbucksch/jscollection/"
+    "jscollections": "https://github.com/benbucksch/jscollection/",
+    "mustang-lib": "../lib/"
   },
   "devDependencies": {
     "electron-builder": "^22.9.1"
   },
   "main": "app.js",
+  "type": "module",
   "scripts": {
     "start": "electron -r esm .",
     "test": "node test.js"
