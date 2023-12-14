@@ -1,9 +1,4 @@
-<vbox flex class="participants-sidebar">
-  <Time {meeting} />
-  <!--MeetingNotes {meeting} /-->
-  <vbox class="participants-header">
-    <hbox class="number">{$participants.length} Participants</hbox>
-  </vbox>
+<vbox flex class="participants-list">
   <PersonsList persons={$participantsSorted} bind:selected>
     <hbox slot="top-right" class="actions" let:person={participant}>
       {#if participant instanceof MeetingParticipant}
@@ -50,18 +45,11 @@
       {/if}
     </hbox>
   </PersonsList>
-  <ParticipantSearch {meeting} bind:selected />
-  <hbox class="participant-search">
-  </hbox>
 </vbox>
 
 <script lang="ts">
   import { MeetingParticipant } from "../../logic/Meet/Participant";
-  import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
   import type { Collection } from "svelte-collections";
-  import ParticipantSearch from "./ParticipantSearch.svelte";
-  import Time from "./Time.svelte";
-  import MeetingNotes from "./MeetingNotes.svelte";
   import PersonsList from "../Shared/Person/PersonsList.svelte";
   import Button from "../Shared/Button.svelte";
   import { Menu } from "@svelteuidev/core";
@@ -76,7 +64,6 @@
   import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
 
-  export let meeting: VideoConfMeeting;
   export let participants: Collection<MeetingParticipant>;
   export let selected: MeetingParticipant;
   export let isModerator = false;
@@ -116,22 +103,21 @@
 </script>
 
 <style>
-  .participants-header {
+  .participants-list {
     margin: 8px 0;
-    align-items: center;
     font-size: 15px;
   }
-  .participants-sidebar :global(.person .main) {
+  .participants-list :global(.person .main) {
     justify-content: center;
     padding: 0 12px 0 8px;
   }
-  .participants-sidebar :global(.person .name) {
+  .participants-list :global(.person .name) {
     align-items: center;
   }
-  .participants-sidebar :global(.person .image) {
+  .participants-list :global(.person .image) {
     margin: 2px 4px 2px 24px;
   }
-  .participants-sidebar :global(.person img) {
+  .participants-list :global(.person img) {
     width: 24px;
     height: 24px;
   }
