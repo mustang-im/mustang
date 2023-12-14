@@ -10,16 +10,25 @@
         <Button label="Leave" classes="leave" on:click={() => catchErrors(leave)} icon={LeaveIcon} iconOnly />
       {/if}
       <hbox flex />
+      <Button
+        label={showSidebar ? "Close participants list" : "Open participants list"}
+        classes="sidebar"
+        on:click={() => showSidebar = !showSidebar}
+        icon={showSidebar ? CloseSidebarIcon : OpenSidebarIcon}
+        iconOnly
+        />
     </hbox>
   </vbox>
-  <vbox flex class="sidebar">
-    <ParticipantsSidebar
-      {meeting}
-      participants={meeting.participants}
-      bind:selected={selectedParticipant}
-      isModerator={meeting.myRole == "moderator"}
-      />
-  </vbox>
+  {#if showSidebar}
+    <vbox flex class="sidebar">
+      <ParticipantsSidebar
+        {meeting}
+        participants={meeting.participants}
+        bind:selected={selectedParticipant}
+        isModerator={meeting.myRole == "moderator"}
+        />
+    </vbox>
+  {/if}
 </hbox>
 
 <script lang="ts">
@@ -28,7 +37,7 @@
   import { AppArea, selectedApp } from "../MainWindow/app";
   import { appGlobal } from "../../logic/app";
   import Gallery from "./Gallery.svelte";
-  import ParticipantsSidebar from "./ParticipantsSidebar.svelte";
+  import ParticipantsSidebar from "./Sidebar.svelte";
   import Button from "../Shared/Button.svelte";
   import HandIcon from '../asset/icon/meet/hand.svg?raw';
   import HandDownIcon from "lucide-svelte/icons/grab";
@@ -36,8 +45,9 @@
   import CameraOffIcon from "lucide-svelte/icons/video-off";
   import MicrophoneIcon from "lucide-svelte/icons/mic";
   import MicrophoneOffIcon from "lucide-svelte/icons/mic-off";
-  import AddUserIcon from "lucide-svelte/icons/user-round-plus";
   import LeaveIcon from "lucide-svelte/icons/phone-outgoing";
+  import OpenSidebarIcon from "lucide-svelte/icons/users-round";
+  import CloseSidebarIcon from "lucide-svelte/icons/arrow-right-from-line";
   import { catchErrors } from "../Util/error";
 
   export let meeting: VideoConfMeeting;
@@ -49,6 +59,7 @@
   let cameraStream: MediaStream = null;
 
   let selectedParticipant: MeetingParticipant = null;
+  let showSidebar = false;
 
   async function leave() {
     await meeting.hangup();
@@ -81,7 +92,11 @@
 </script>
 
 <style>
+  .main {
+    flex: 3 0 0;
+  }
   .sidebar {
+    min-width: 250px;
     max-width: 350px;
   }
   .actions {
@@ -92,6 +107,13 @@
   }
   .actions :global(button.leave) {
     background-color: #FF7777;
+  }
+  /*.actions :global(.toggle-camera svg),
+  .actions :global(.toggle-mic svg) {
+    fill: black;
+  }*/
+  .actions :global(.raised-hand svg) {
+    fill: tan;
   }
   .actions :global(.raise-hand svg) {
     fill: none;
