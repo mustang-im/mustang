@@ -3,11 +3,35 @@
     <Gallery videos={meeting.videos} {showSelf}  />
     <hbox class="actions">
       <hbox flex />
-      <Button label="Mute" classes="toggle-mic" on:click={() => catchErrors(toggleMic)} icon={micOn ? MicrophoneOffIcon : MicrophoneIcon} iconOnly />
-      <Button label="Camera" classes="toggle-camera" on:click={() => catchErrors(toggleCamera)} icon={cameraOn ? CameraOffIcon : CameraIcon} iconOnly />
-      <Button label={handRaised ? "Hand raised" : "Raise hand"} classes={handRaised ? "raised-hand" : "raise-hand"} on:click={() => catchErrors(toggleHand)} icon={handRaised ? HandIcon : HandDownIcon} iconOnly />
+      <Button
+        label="Mute"
+        classes="toggle-mic"
+        on:click={() => catchErrors(toggleMic)}
+        icon={micOn ? MicrophoneOffIcon : MicrophoneIcon}
+        iconSize="24px"
+        iconOnly />
+      <Button
+        label="Camera"
+        classes="toggle-camera"
+        on:click={() => catchErrors(toggleCamera)}
+        icon={cameraOn ? CameraOffIcon : CameraIcon}
+        iconSize="24px"
+        iconOnly />
+      <Button
+        label={handRaised ? "Hand raised" : "Raise hand"}
+        classes={handRaised ? "raised-hand" : "raise-hand"}
+        on:click={() => catchErrors(toggleHand)}
+        icon={handRaised ? HandIcon : HandDownIcon}
+        iconSize="24px"
+        iconOnly />
       {#if $selectedApp == AppArea.Meet}
-        <Button label="Leave" classes="leave" on:click={() => catchErrors(leave)} icon={LeaveIcon} iconOnly />
+        <Button
+          label="Leave"
+          classes="leave"
+          on:click={() => catchErrors(leave)}
+          icon={LeaveIcon}
+          iconSize="24px"
+          iconOnly />
       {/if}
       <hbox flex />
       <Button
@@ -15,8 +39,8 @@
         classes="sidebar"
         on:click={() => showSidebar = !showSidebar}
         icon={showSidebar ? CloseSidebarIcon : OpenSidebarIcon}
-        iconOnly
-        />
+        iconSize="24px"
+        iconOnly />
     </hbox>
   </vbox>
   {#if showSidebar}
@@ -136,5 +160,6 @@
   }
   .actions :global(.leave svg) {
     transform: rotate(135deg);
+    margin-top: -2px;
   }
 </style>
