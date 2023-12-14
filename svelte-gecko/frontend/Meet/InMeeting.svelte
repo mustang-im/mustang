@@ -2,6 +2,15 @@
   <vbox flex class="main">
     <Gallery videos={meeting.videos} {showSelf}  />
     <hbox class="actions">
+      {#if $selectedApp != AppArea.Meet}
+        <Button plain
+          label="Go back to meeting"
+          classes="back-to-meet"
+          on:click={() => $selectedApp = AppArea.Meet}
+          icon={OpenToLeftIcon}
+          iconSize="16px"
+          iconOnly />
+      {/if}
       <hbox flex />
       <Button
         label="Mute"
@@ -73,6 +82,7 @@
   import MicrophoneOffIcon from "lucide-svelte/icons/mic-off";
   import LeaveIcon from "lucide-svelte/icons/phone-outgoing";
   import OpenSidebarIcon from "lucide-svelte/icons/users-round";
+  import OpenToLeftIcon from "lucide-svelte/icons/arrow-left-from-line";
   import CloseSidebarIcon from "lucide-svelte/icons/arrow-right-from-line";
   import { catchErrors } from "../Util/error";
 
