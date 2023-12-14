@@ -34,13 +34,15 @@
           iconOnly />
       {/if}
       <hbox flex />
-      <Button
-        label={showSidebar ? "Close participants list" : "Open participants list"}
-        classes="sidebar"
-        on:click={() => showSidebar = !showSidebar}
-        icon={showSidebar ? CloseSidebarIcon : OpenSidebarIcon}
-        iconSize="24px"
-        iconOnly />
+      {#if $selectedApp == AppArea.Meet}
+        <Button plain
+          label={showSidebar ? "Close participants list" : "Open participants list"}
+          classes="sidebar"
+          on:click={() => showSidebar = !showSidebar}
+          icon={showSidebar ? CloseSidebarIcon : OpenSidebarIcon}
+          iconSize="24px"
+          iconOnly />
+      {/if}
     </hbox>
   </vbox>
   {#if showSidebar}

@@ -70,7 +70,8 @@
 
   $: participantsSorted = $participants
     .sortBy(person => person.role)
-    .sortBy(person => person.handUp);
+    .sortBy(person => person.handUp)
+    .sortBy(person => person.screenSharing);
 
   function startPrivateChat(participant: MeetingParticipant) {
   }
