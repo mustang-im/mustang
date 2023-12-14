@@ -44,6 +44,8 @@
   import { OTalkConf } from "../../../logic/Meet/OTalkConf";
   import { catchErrors } from "../../Util/error";
   import { mergeColls } from "svelte-collections";
+  import { Event } from "../../../logic/Calendar/Event";
+  import { faker } from "@faker-js/faker";
 
   const allEvents = mergeColls(appGlobal.calendars.map(calendar => calendar.events).values());
   const now = new Date();
@@ -62,7 +64,22 @@
     callee.name = $selectedPerson.name;
     callee.picture = $selectedPerson.picture;
 
+    let event = new Event();
+    event.startTime = faker.date.past(0.001);
+    event.endTime = faker.date.future(0.001);
+    event.title = "Final Approval UX Meet";
+    event.descriptionHTML = `<p>
+      Objectives of the meeting are:
+      <ol>
+        <li>Review of the UX specs for Meet app</li>
+        <li>Discussion of feedback</li>
+        <li>Decision whether to proceed</li>
+        <li>Next steps</li>
+      </ol>
+    </p>`;
+
     let meeting = await VideoConfMeeting.createAdhoc();
+    meeting.event = event;
     meeting.participants.add(callee);
     appGlobal.meetings.add(meeting);
     meeting.videos.add(new ParticipantVideo(new MediaStream(), callee));
