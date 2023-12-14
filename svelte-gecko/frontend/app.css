@@ -76,6 +76,7 @@ input,
 textarea,
 value,
 .value,
+.value *,
 .selectable {
   user-select: text;
 }

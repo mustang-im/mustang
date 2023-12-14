@@ -1,8 +1,10 @@
 import type { VideoStream } from "./VideoStream";
 import type { MeetingParticipant, ParticipantRole } from "./Participant";
+import type { Event } from "../Calendar/Event";
 import { SetColl } from 'svelte-collections';
 
 export class VideoConfMeeting {
+  event: Event;
   ongoing = false;
   started: Date;
   ended: Date;

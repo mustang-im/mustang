@@ -1,0 +1,69 @@
+{#if event}
+  <vbox class="meeting-header" class:showDescription>
+    <hbox class="title-row">
+      <hbox class="title-container">
+        <div class="title value">
+          {event.title}
+        </div>
+      </hbox>
+      <Button plain
+        classes="description-collapse"
+        label={showDescription ? "Collapse description" : "Show meeting description"}
+        on:click={() => showDescription = !showDescription}
+        icon={showDescription ? CollapseIcon : ExpandIcon}
+        iconOnly
+        iconSize="16px"
+        />
+    </hbox>
+    {#if showDescription}
+      <Scroll>
+        <div class="description value">
+          {#if event.descriptionHTML}
+            {@html event.descriptionHTML}
+          {:else}
+            {event.descriptionText}
+          {/if}
+        </div>
+      </Scroll>
+    {/if}
+  </vbox>
+{/if}
+
+<script lang="ts">
+  import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
+  import Scroll from "../Shared/Scroll.svelte";
+  import Button from "../Shared/Button.svelte";
+  import ExpandIcon from "lucide-svelte/icons/chevron-down";
+  import CollapseIcon from "lucide-svelte/icons/chevron-up";
+
+  export let meeting: VideoConfMeeting;
+
+  $: event = meeting?.event;
+  let showDescription = !!meeting?.event?.descriptionHTML;
+</script>
+
+<style>
+  .meeting-header.showDescription {
+    flex: 2 0 0;
+  }
+  .meeting-header {
+    align-items: center;
+    font-size: 15px;
+  }
+  .title-row {
+    margin-top: 8px;
+    margin-bottom: 16px;
+    /*padding-right: 16px;*/
+  }
+  .title-container {
+    justify-content: center;
+    width: 100%;
+  }
+  .title {
+    font-weight: bold;
+    font-size: 16px;
+  }
+  .description {
+    font-size: 14px;
+  }
+</style>

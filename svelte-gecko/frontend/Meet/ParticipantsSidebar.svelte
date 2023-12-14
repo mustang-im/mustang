@@ -1,4 +1,6 @@
 <vbox flex class="participants-sidebar">
+  <Time {meeting} />
+  <!--MeetingNotes {meeting} /-->
   <vbox class="participants-header">
     <hbox class="number">{$participants.length} Participants</hbox>
   </vbox>
@@ -48,11 +50,18 @@
       {/if}
     </hbox>
   </PersonsList>
+  <ParticipantSearch {meeting} bind:selected />
+  <hbox class="participant-search">
+  </hbox>
 </vbox>
 
 <script lang="ts">
   import { MeetingParticipant } from "../../logic/Meet/Participant";
+  import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
   import type { Collection } from "svelte-collections";
+  import ParticipantSearch from "./ParticipantSearch.svelte";
+  import Time from "./Time.svelte";
+  import MeetingNotes from "./MeetingNotes.svelte";
   import PersonsList from "../Shared/Person/PersonsList.svelte";
   import Button from "../Shared/Button.svelte";
   import { Menu } from "@svelteuidev/core";
@@ -67,6 +76,7 @@
   import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
 
+  export let meeting: VideoConfMeeting;
   export let participants: Collection<MeetingParticipant>;
   export let selected: MeetingParticipant;
   export let isModerator = false;
@@ -134,12 +144,11 @@
   .actions :global(button:hover:not(.disabled)) {
     background-color: #57BDB3;
   }
-  :global(.person:not(:hover)) .actions :global(svg) {
+  :global(.person) .actions :global(svg) {
     stroke: black;
     stroke-width: 1px;
   }
-  :global(.person.selected) .actions :global(svg),
-  :global(.person:hover) .actions :global(svg) {
+  :global(.person.selected) .actions :global(svg) {
     stroke: white;
     stroke-width: 2px;
   }
