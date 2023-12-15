@@ -14,4 +14,6 @@ It will also support extensions, using a high-level API.
 The target user group is primarily existing desktop users, but also
 all those people who use webmail today.
 
-For now, this is just a modest prototype.
+For now, this is just a modest start.
+
+For docs, see project/, esp. project/INSTALL.md
