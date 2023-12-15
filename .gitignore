@@ -2,10 +2,11 @@
 *.kate-swp
 *.sh
 .DS_Store
-node_modules/
 .project
 .settings/
+node_modules/
 yarn.lock
 package-lock.json
-react-electron/build/
-svelte-electron/public/build/
+app/dist/
+old/react-electron/build/
+old/svelte-electron/public/build/
