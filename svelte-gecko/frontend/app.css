@@ -1,3 +1,5 @@
+@import url('./asset/font/Karla.css');
+
 :root {
   height: 100%;
 
@@ -15,8 +17,6 @@
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
 }
-
-@import url('./asset/font/Karla.css');
 
 body {
   margin: 0;
