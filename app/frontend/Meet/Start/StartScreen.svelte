@@ -97,7 +97,7 @@
   .actions :global(> *) {
     margin-top: 12px;
   }
-  .actions :global(.call-person .image) {
+  .actions :global(.call-person .avatar) {
     margin: -4px 0px;
   }
   #meeting-link {
