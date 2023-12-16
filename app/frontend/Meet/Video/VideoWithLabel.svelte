@@ -10,17 +10,13 @@
   </Stack>
   -->
   <vbox class="video" title={label}>
-    {#if video instanceof ParticipantVideo}
-      <img src={video.participant.picture} alt={video.participant.name} />
-    {:else if video instanceof SelfVideo}
-      <img src={appGlobal.me.picture} alt="You" />
-    {/if}
+    <Video {video} />
   </vbox>
 </vbox>
 
 <script lang="ts">
-  import { type VideoStream, ParticipantVideo, SelfVideo } from "../../../logic/Meet/VideoStream";
-  import { appGlobal } from "../../../logic/app";
+  import type { VideoStream } from "../../../logic/Meet/VideoStream";
+  import Video from "./Video.svelte";
 
   export let video: VideoStream;
   export let label: string;
@@ -28,10 +24,6 @@
 </script>
 
 <style>
-  img {
-    aspect-ratio: 16/9;
-    object-fit: cover;
-  }
   .name-container {
     align-items: end;
     justify-content: end;
