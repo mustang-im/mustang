@@ -1,15 +1,13 @@
-{#if person?.picture}
-  <vbox class="avatar image">
+<vbox class="avatar" style="width: {size}px; height: {size}px;">
+  {#if person?.picture}
     <img
       src={person.picture}
       width={size} height={size}
       title="Picture of {person.name}"
       alt=""
       />
-  </vbox>
-{:else}
-  <vbox class="avatar dummy" style="width: {size}px; height: {size}px;" />
-{/if}
+  {/if}
+</vbox>
 
 <script lang="ts">
   import type { PersonOrGroup } from "./PersonOrGroup";
@@ -21,8 +19,6 @@
 <style>
   .avatar {
     margin: 7px 12px;
-  }
-  .image {
     clip-path: circle();
   }
 </style>
