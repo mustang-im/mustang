@@ -7,7 +7,7 @@ import type { Directory } from './Files/File';
 import Apps from './Apps/Apps';
 import { readChatAccounts } from './Chat/Accounts';
 import { getTestObjects } from './testData';
-import { ArrayColl, Collection } from 'svelte-collections';
+import { ArrayColl } from 'svelte-collections';
 import JPCWebSocket from 'jpc-ws';
 
 export class AppGlobal {
@@ -27,13 +27,12 @@ export let appGlobal = new AppGlobal();
 
 const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
 
-export async function getStartObjects(): Promise<AppGlobal> {
-  appGlobal = await getTestObjects();
+export async function getStartObjects(): Promise<void> {
+  await getTestObjects(appGlobal);
   appGlobal.chatAccounts.addAll(await readChatAccounts());
   for (let chatAccount of appGlobal.chatAccounts) {
     await chatAccount.login();
   }
-  return appGlobal;
   /*
   let jpc = new JPCWebSocket(null);
   await jpc.connect(kSecret, "localhost", 5455);

@@ -51,10 +51,7 @@
     if (appGlobal.persons.hasItems) {
       return;
     }
-    let app = await getStartObjects();
-    for (let prop in app) {
-      appGlobal[prop] = app[prop];
-    }
+    await getStartObjects();
   })
 </script>
 
