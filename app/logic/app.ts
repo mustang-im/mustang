@@ -28,15 +28,12 @@ export let appGlobal = new AppGlobal();
 const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
 
 export async function getStartObjects(): Promise<AppGlobal> {
-  //appGlobal.chatAccounts.addAll(await readChatAccounts());
-  let chatAccountsSaved = appGlobal.chatAccounts;
+  appGlobal = await getTestObjects();
+  appGlobal.chatAccounts.addAll(await readChatAccounts());
   for (let chatAccount of appGlobal.chatAccounts) {
     await chatAccount.login();
   }
-  // no idea why MatrixAccount.login() overwrites `appGlobal.chatAccounts`. Maybe because of `.global = window`?
-  appGlobal.chatAccounts.clear();
-  appGlobal.chatAccounts.addAll(chatAccountsSaved.contents);
-  return getTestObjects();
+  return appGlobal;
   /*
   let jpc = new JPCWebSocket(null);
   await jpc.connect(kSecret, "localhost", 5455);
