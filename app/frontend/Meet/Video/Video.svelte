@@ -1,32 +1,40 @@
 <!-- svelte-ignore a11y-media-has-caption -->
-<video bind:this={videoEl} />
+{#if video.stream}
+  <video bind:this={videoEl} muted={video instanceof SelfVideo} />
+{:else if video instanceof ParticipantVideo}
+  <img src={video.participant.picture} alt={video.participant.name} />
+{:else if video instanceof SelfVideo}
+  <img src={appGlobal.me.picture} alt="me" />
+{/if}
 
 <script lang="ts">
-  import { VideoStream, SelfVideo } from "../../../logic/Meet/VideoStream";
+  import { VideoStream, SelfVideo, ParticipantVideo } from "../../../logic/Meet/VideoStream";
+  import { appGlobal } from "../../../logic/app";
   import { onDestroy } from "svelte";
 
   export let video: VideoStream;
 
-  $: video && video.stream && videoEl && connectStream();
-  function connectStream() {
+  let videoEl: HTMLVideoElement;
+  $: videoEl && video.stream ? startVideo() : stopVideo();
+  function startVideo() {
     videoEl.srcObject = video.stream;
     videoEl.play();
-    if (video instanceof SelfVideo) {
-      videoEl.muted = true;
-    }
   }
-
-  onDestroy(() => {
+  function stopVideo() {
+    if (!videoEl) {
+      return;
+    }
     videoEl.pause();
     videoEl.srcObject = null;
-  });
+  }
 
-  let videoEl: HTMLVideoElement;
+  onDestroy(stopVideo);
 </script>
 
 <style>
+  img,
   video {
-    width: 100%;
-    height: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
   }
 </style>
