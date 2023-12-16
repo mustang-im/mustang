@@ -53,7 +53,6 @@ export class MatrixAccount extends ChatAccount {
   async getNewRoom(room: Room) {
     let chatRoom = new MatrixChatRoom(this);
     chatRoom.id = room.roomId;
-    //console.log("Added room", room.name);
     if (!this.globalUserID) {
       this.globalUserID = room.myUserId;
     }
@@ -84,7 +83,7 @@ export class MatrixAccount extends ChatAccount {
     return this.chats.find(chat => chat.id == roomID);
   }
   getExistingPerson(userId: string) {
-    return appGlobal.persons.find(person => person.chatAccounts.some(acc => acc.value == userId));
+    return appGlobal.persons.find(person => person.chatAccounts.some(acc => acc.value == userId && acc.purpose == "matrix"));
   }
   getPerson(member: RoomMember) {
     let existing = this.getExistingPerson(member.userId);
@@ -93,6 +92,7 @@ export class MatrixAccount extends ChatAccount {
     }
     let person = new ChatPerson();
     person.name = member.name;
+    person.id = member.userId;
     person.chatAccounts.add(new ContactEntry(member.userId, "matrix"));
     let picURL = member.getAvatarUrl(this.baseURL, 64, 64, "scale", true, false);
     // let picMXC = member.getMxcAvatarUrl();
@@ -103,7 +103,6 @@ export class MatrixAccount extends ChatAccount {
   }
   async getEvent(event, chatRoom: MatrixChatRoom): Promise<ChatMessage | null> {
     let type = event.getType();
-    //console.log(chatRoom.name, type, event);
     if (type == "m.room.message") {
       return this.getUserMessage(event);
     } else if (type == "m.room.encrypted") {
@@ -130,7 +129,6 @@ export class MatrixAccount extends ChatAccount {
     let content = event.getContent();
     msg.text = content.body;
     msg.html = content.formatted_body ?? content.body.replace("\n", "<br>");
-    //console.log("message", msg.text, msg.html, content.formatted_body);
     return msg;
   }
   async getEncryptedUserMessage(event): Promise<ChatMessage> {
@@ -150,7 +148,6 @@ export class MatrixAccount extends ChatAccount {
       return;
     }
     assert(reactTo instanceof UserChatMessage, "Reacting to something that is not a message");
-    //console.log("Found reaction", emoji, "to message", reactTo.text, "by", reactTo.contact.name, "in room", chatRoom.name);
     reactTo.reactions.set(person, emoji);
   }
   getGenericChatRoomEvent(event): ChatMessage {
