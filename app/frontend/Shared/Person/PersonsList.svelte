@@ -1,6 +1,6 @@
 <vbox flex class="persons">
   <Scroll>
-    {#each persons.each as person}
+    {#each $persons.each as person}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <vbox class="person" on:click={() => selected = person}>
         <PersonLine {person} isSelected={person == selected}>

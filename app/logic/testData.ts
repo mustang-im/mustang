@@ -1,4 +1,4 @@
-import { AppGlobal } from './app';
+import type { AppGlobal } from './app';
 import { MailAccount } from './Mail/Account';
 import { EMail } from './Mail/Message';
 import { ChatAccount } from './Chat/Account';
@@ -13,15 +13,13 @@ import { Event } from './Calendar/Event';
 import { ArrayColl, type Collection } from 'svelte-collections';
 import { Folder, SpecialFolder } from './Mail/Folder';
 
-export async function getTestObjects(): Promise<AppGlobal> {
-  let appGlobal = new AppGlobal();
+export async function getTestObjects(appGlobal: AppGlobal): Promise<void> {
   appGlobal.me = fakeChatPerson();
   appGlobal.persons.addAll(fakePersons());
   appGlobal.emailAccounts.add(fakeMailAccount(appGlobal.persons, appGlobal.me));
   //appGlobal.chatAccounts.add(fakeChatAccount(appGlobal.persons, appGlobal.me));
   appGlobal.calendars.add(fakeCalendar());
   appGlobal.files.addAll(fakeSharedDir(appGlobal.persons));
-  return appGlobal;
 }
 
 function fakePersons(): Collection<Person> {
