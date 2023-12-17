@@ -33,6 +33,7 @@
         {:else}
           {message.text || '' }
         {/if}
+        <slot name="bubble" />
       </div>
       <slot name="inner-bottom" />
     </vbox>
@@ -153,6 +154,9 @@
     border-left: 3px solid grey;
     padding-left: 16px;
     margin-left: 0px;
+  }
+  .text :global(pre) {
+    white-space: pre-wrap;
   }
 
   .reactions {

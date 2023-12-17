@@ -1,7 +1,7 @@
 import { ChatAccount } from '../Account';
 import { MatrixChatRoom } from './MatrixChatRoom';
 import { ChatMessage, DeliveryStatus, UserChatMessage } from '../Message';
-import { ChatRoomEvent, Invite, JoinLeave } from '../RoomEvent';
+import { ChatRoomEvent, IncomingCall, Invite, JoinLeave } from '../RoomEvent';
 import { Group } from '../../Abstract/Group';
 import { appGlobal } from '../../app';
 import { ChatPerson } from '../Person';
@@ -11,6 +11,7 @@ import { MapColl } from 'svelte-collections';
 import * as matrix from 'matrix-js-sdk';
 import type { Room, RoomMember } from 'matrix-js-sdk/lib/matrix';
 import olm from 'olm'; // Needed for initCrypto(). Do not remove.
+import { MatrixVideoConf } from '../../Meet/MatrixVideoConf';
 
 export class MatrixAccount extends ChatAccount {
   chats = new MapColl<ChatPerson | Group, MatrixChatRoom>;
@@ -20,6 +21,7 @@ export class MatrixAccount extends ChatAccount {
   password: string;
   deviceID: string;
   globalUserID: string;
+  errorCallback = (ex) => console.error(ex);
   /** Login to this account on the server. Opens network connection.
    * You must call this after creating the object and having set its properties.
    * This will populate `persons` and `chats`. */
@@ -40,6 +42,7 @@ export class MatrixAccount extends ChatAccount {
 
     await this.getRooms();
     this.listenToRoomMessages();
+    MatrixVideoConf.listenForCalls(this.client, (conf) => this.incomingCall(conf));
   };
   async waitForEvent(eventName: string) {
     await new Promise((resolve, reject) => {
@@ -74,7 +77,7 @@ export class MatrixAccount extends ChatAccount {
           chatRoom.messages.add(msg);
         }
       } catch (ex) {
-        console.error(ex);
+        this.errorCallback(ex);
       }
     }
     chatRoom.lastMessage = chatRoom.messages.get(chatRoom.messages.length - 1);
@@ -215,6 +218,20 @@ export class MatrixAccount extends ChatAccount {
     msg.contact = this.getExistingPerson(senderUserID);
     msg.outgoing = senderUserID == this.globalUserID;
   }
+  async incomingCall(conf: MatrixVideoConf) {
+    try {
+      let room = this.getExistingRoom(conf.call.roomId);
+      let msg = new IncomingCall();
+      msg.contact = room.contact;
+      msg.text = msg.html = `${msg.contact.name} is calling`;
+      msg.outgoing = false;
+      msg.sent = msg.received = new Date();
+      msg.conf = conf;
+      room.messages.add(msg);
+    } catch (ex) {
+      this.errorCallback(ex);
+    }
+  }
   /** Listen to messages for all rooms */
   listenToRoomMessages() {
     this.client.on("Room.timeline", async (event, room, toStartOfTimeline) => {
@@ -230,7 +247,7 @@ export class MatrixAccount extends ChatAccount {
         chatRoom.messages.add(message);
         chatRoom.lastMessage = message;
       } catch (ex) {
-        console.error(ex);
+        this.errorCallback(ex);
       }
     });
   }
