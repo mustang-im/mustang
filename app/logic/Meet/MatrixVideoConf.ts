@@ -82,6 +82,7 @@ export class MatrixVideoConf extends VideoConfMeeting {
    */
   static listenForCalls(client: MatrixClient, incomingCallCallback: (MatrixVideoConf) => Promise<void>) {
     client.on("Call.incoming", (call: MatrixCall) => {
+      console.log("Incoming call", call.roomId, call);
       let conf = new MatrixVideoConf(client, call);
       incomingCallCallback(conf);
     });

@@ -1,3 +1,4 @@
+import type { VideoConfMeeting } from "../Meet/VideoConfMeeting";
 import { ChatMessage } from "./Message";
 
 /**
@@ -22,4 +23,10 @@ export class Invite extends ChatRoomEvent {
 export class RoomNameChange extends ChatRoomEvent {
   /** The new name of the room. */
   name: string;
+}
+
+export class IncomingCall extends ChatRoomEvent {
+  conf: VideoConfMeeting;
+  video = true;
+  audio = true;
 }
