@@ -69,8 +69,6 @@
   */
 
   import { Collection, CollectionObserver, ArrayColl } from "svelte-collections"
-  import { sleep } from "../../logic/util/util";
-  import { tick } from "svelte"
   //import debounce from "lodash.debounce";
 
   type T = $$Generic;
@@ -207,10 +205,8 @@
     let scrollRows = 3; // How many rows to scroll each time
     if (event.deltaY > 0) {
       scrollPos = Math.min(scrollPos + scrollRows, items.length - showRows);
-      //_scrollbarE.scrollTop = Math.min(scrollbarE.scrollTop + rowHeight, scrollbarE.scrollHeight);
     } else if (event.deltaY < 0) {
       scrollPos = Math.max(scrollPos - scrollRows, 0);
-      //_scrollbarE.scrollTop = Math.max(scrollbarE.scrollTop - rowHeight, 0);
     }
   }
 
@@ -286,8 +282,6 @@
 <style>
   .fast-list {
     position: relative;
-    border: 1px solid #8E8EA1;
-    background-color: #EEF3F9;
     flex: 1 0 0;
   }
   table {
@@ -296,7 +290,7 @@
   }
   thead > tr :global(> *) {
     display: table-cell;
-    padding: 2px 8px;
+    padding: 2px 5px;
     border-top: 1px solid white;
     border-left: 1px solid white;
     border-right: 1px solid #8E8EA1;
