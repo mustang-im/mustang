@@ -1,6 +1,9 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <hbox class="fast-list"
-  on:wheel={onScrollWheel}
+  on:wheel={event => onScrollWheel(event)}
+  on:keydown={event => onKey(event)}
+  tabindex={0}
   bind:this={listE}>
   <table cellspacing="0">
     <thead bind:this={theadE}>
@@ -10,7 +13,7 @@
     </thead>
     <tbody bind:this={contentE}>
       {#each showItems as item}
-        <tr on:click={ev => onSelectElement(item, ev)} class:selected={selectedItem == item}>
+        <tr on:click={ev => onSelectElement(item, ev)} class:selected={$selectedItems.includes(item)}>
           <slot name="row" {item} />
         </tr>
       {/each}
@@ -21,7 +24,7 @@
     class:hidden={scrollbarHidden}
     style="top: {headerHeight}px; height: calc(100% - {headerHeight}px);"
     bind:this={scrollbarE}>
-    <div class="scrollbar-content" bind:this={scrollbarContentE} />
+    <div class="scrollbar-content" style="height: {$items.length * rowHeight}px" />
   </div>
 </hbox>
 <!--svelte:window on:resize={debounce(updateSize, 300)} /-->
@@ -66,6 +69,8 @@
   */
 
   import { Collection, CollectionObserver, ArrayColl } from "svelte-collections"
+  import { sleep } from "../../logic/util/util";
+  import { tick } from "svelte"
   //import debounce from "lodash.debounce";
 
   type T = $$Generic;
@@ -100,18 +105,12 @@
    */
   export let selectedItem: T = null;
 
-  type T = $$Generic;
   let listE: HTMLDivElement;
   let theadE: HTMLTableSectionElement;
   let contentE: HTMLTableSectionElement;
   /** A dummy element that displays only a scrollbar. */
   let scrollbarE: HTMLDivElement;
-  /** The dummy content of the scrollbar, to set the right height. */
-  let scrollbarContentE: HTMLDivElement;
   let scrollbarHidden = true;
-
-  /** Currently displayed rows. */
-  let rowElements: HTMLTableRowElement[] = [];
 
   $: headerHeight = theadE ? theadE.offsetHeight : 26;
 
@@ -146,27 +145,68 @@
       rowHeight = 10;
       setTimeout(updateSize, 100);
     }
-    let scrollHeight = items.length * rowHeight;
     let availableHeight = listE.offsetHeight - theadE.offsetHeight;
 
     showRows = Math.min(items.length, Math.round(availableHeight / rowHeight));
     // Workaround: the following line should be triggered automatically in the $: above, but it doesn't.
     showItems = $items.getIndexRange(scrollPos, showRows) as T[];
 
-    scrollbarContentE.width = 1;
-    //_scrollbarContentE.style.height = scrollHeight;
-    scrollbarContentE.setAttribute("style", "height: " +  scrollHeight + "px");
-    if (scrollHeight > availableHeight) {
-      scrollbarHidden = false;
-    } else {
-      scrollbarHidden = true;
+    let scrollHeight = items.length * rowHeight;
+    scrollbarHidden = scrollHeight <= availableHeight;
+  }
+
+  function onKey(event: KeyboardEvent) {
+    // https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
+    if (event.key == "ArrowDown" || event.key == "ArrowUp" ||
+        event.key == "PageDown" || event.key == "PageUp") {
+      let lastItem = selectedItems.last || selectedItem;
+      let oldIndex = lastItem ? items.contents.findIndex(item => item == lastItem) : 0;
+      let newIndex = oldIndex;
+      if (event.key == "ArrowDown") {
+        newIndex++;
+      } else if (event.key == "PageDown") {
+        newIndex += showRows;
+      } else if (event.key == "ArrowUp") {
+        newIndex--;
+      } else if (event.key == "PageUp") {
+        newIndex -= showRows;
+      }
+      if (newIndex < 0) {
+        newIndex += items.length;
+      } else if (newIndex >= items.length) {
+        newIndex -= items.length;
+      }
+      let newElement = items.getIndex(newIndex);
+      if (!newElement) {
+        return;
+      }
+      if (event.ctrlKey || event.shiftKey) {
+        selectedItems.add(newElement);
+      /*} else if (event.shiftKey) {
+        let startIndex = oldIndex < newIndex ? oldIndex : newIndex;
+        let length = Math.abs(newIndex - oldIndex);
+        console.log("from", startIndex, "len", length);
+        selectedItems.addAll(items.getIndexRange(startIndex, length));*/
+      } else {
+        selectedItems.clear();
+        selectedItems.add(newElement);
+      }
+      scrollIntoView(newIndex);
+      event.stopPropagation();
     }
+  }
+
+  function scrollIntoView(index: number) {
+    if (index >= scrollPos && index < scrollPos + showRows - 1) {
+      return;
+    }
+    scrollPos = Math.min(index, Math.max(0, items.length - showRows));
   }
 
   function onScrollWheel(event: WheelEvent) {
     let scrollRows = 3; // How many rows to scroll each time
     if (event.deltaY > 0) {
-      scrollPos = Math.min(scrollPos + scrollRows, items.length - rowElements.length);
+      scrollPos = Math.min(scrollPos + scrollRows, items.length - showRows);
       //_scrollbarE.scrollTop = Math.min(scrollbarE.scrollTop + rowHeight, scrollbarE.scrollHeight);
     } else if (event.deltaY < 0) {
       scrollPos = Math.max(scrollPos - scrollRows, 0);
@@ -174,7 +214,16 @@
     }
   }
 
-  function onScrollBar(_event: Event) {
+  let scrollPosByScrollBar: NodeJS.Timeout = null;
+  $: scrollbarE && !scrollPosByScrollBar ? scrollbarE.scrollTop = scrollPos * rowHeight : null;
+
+  async function onScrollBar(_event: Event) {
+    clearTimeout(scrollPosByScrollBar);
+    scrollPosByScrollBar = setTimeout(() => {
+      scrollPosByScrollBar = null;
+      clearTimeout(scrollPosByScrollBar);
+    }, 200);
+
     scrollPos = Math.round(scrollbarE.scrollTop / rowHeight); // TODO ceil()?
   }
 
@@ -195,7 +244,11 @@
         }
       };
     } else if (event.ctrlKey) { // add to current selection
-      selectedItems.add(selectedItem);
+      if (selectedItems.contains(selectedItem)) {
+        selectedItems.remove(selectedItem);
+      } else {
+        selectedItems.add(selectedItem);
+      }
     } else { // no modifier, i.e. a simple single-selection click
       selectedItems.clear();
       selectedItems.add(selectedItem);
