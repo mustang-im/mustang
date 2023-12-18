@@ -91,9 +91,11 @@
   }
   function replyAll() {
   }
-  function deleteMessage() {
+  async function deleteMessage() {
+    await message.deleteMessage();
   }
-  function markAsSpam() {
+  async function markAsSpam() {
+    await message.deleteMessage();
   }
 </script>
 

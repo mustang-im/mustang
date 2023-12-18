@@ -15,4 +15,8 @@ export class EMail extends Message {
   contentType: string;
   @notifyChangedProperty
   _bodyPlaintext: string;
+
+  async deleteMessage() {
+    console.log("Delete Email", this.subject);
+  }
 }

@@ -33,4 +33,8 @@ export class Message extends Observable {
   html: string;
 
   readonly reactions = new MapColl<Person, string>();
+
+  async deleteMessage() {
+    console.log("Delete message");
+  }
 }

@@ -32,7 +32,7 @@
   <Menu.Item
     on:click={() => catchErrors(() => markAsSpam())}
     color="red"
-    title="Delete the message, and train the spam filter. Send a complaint to the sender's provider."
+    title="Delete the message, and train the spam filter"
     icon={SpamIcon}>
     Mark as spam
   </Menu.Item>
@@ -83,9 +83,11 @@
   }
   function redirect() {
   }
-  function deleteMessage() {
+  async function deleteMessage() {
+    await message.deleteMessage();
   }
-  function markAsSpam() {
+  async function markAsSpam() {
+    await message.deleteMessage();
   }
   function print() {
   }
