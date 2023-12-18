@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import { Observable, notifyChangedProperty, notifyChangedAccessor } from '../../../logic/util/Observable';
 
-class Test extends Observable<Test> {
+class Test extends Observable {
   @notifyChangedProperty
   a = "a";
   _b = "b";

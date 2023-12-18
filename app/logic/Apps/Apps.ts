@@ -5,10 +5,10 @@ import { MapColl, ArrayColl } from 'svelte-collections';
 
 export default class Apps {
   /** fullID -> AppCategory */
-  categories = new MapColl<string, AppCategory>();
-  apps = new MapColl<string, AppListed>();
-  myApps = new ArrayColl<AppListed>();
-  runningApps = new ArrayColl<AppListed>();
+  readonly categories = new MapColl<string, AppCategory>();
+  readonly apps = new MapColl<string, AppListed>();
+  readonly myApps = new ArrayColl<AppListed>();
+  readonly runningApps = new ArrayColl<AppListed>();
 
   async load() {
     if (this.apps.hasItems) {

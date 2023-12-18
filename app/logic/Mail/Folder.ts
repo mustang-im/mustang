@@ -1,10 +1,13 @@
 import type { EMail } from "./Message";
+import { Observable, notifyChangedProperty } from "../util/Observable";
 import { ArrayColl } from 'svelte-collections';
 
-export class Folder {
+export class Folder extends Observable {
+  @notifyChangedProperty
   name: string;
+  @notifyChangedProperty
   specialFolder: SpecialFolder;
-  messages = new ArrayColl<EMail>();
+  readonly messages = new ArrayColl<EMail>();
 }
 
 export enum SpecialFolder {

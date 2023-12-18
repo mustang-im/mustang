@@ -1,37 +1,41 @@
 import { arrayRemove, assert } from "./util";
 
-export class Observable<T extends Observable<T>> {
-  _observers: Array<observerFunc<T>> = [];
+export class Observable {
+  _observers: Array<observerFunc<this>> = [];
   _properties = {};
-  subscribe(observer: observerFunc<T>): () => void {
-    this.callObserver(observer);
+  subscribe(observer: observerFunc<this>): () => void {
+    this.callObserver(observer, null);
     this._observers.push(observer);
     let unsubscribe = () => {
       arrayRemove(this._observers, observer);
     }
     return unsubscribe;
   }
-  notifyObservers(propertyName?: string) {
+  notifyObservers(propertyName?: string): void {
     for (let observer of this._observers) {
-      this.callObserver(observer);
+      this.callObserver(observer, propertyName);
     }
   }
-  private callObserver<T>(observer: observerFunc<T>): void {
+  private callObserver(observer: observerFunc<this>, propertyName: string | null): void {
     try {
-      observer(this as any as T);
+      observer(this, propertyName);
     } catch (ex) {
       console.error(ex);
     }
   }
 }
 
-type observerFunc<T> = (value: T) => void;
+export interface IObservable {
+  subscribe(observer: observerFunc<this>): () => void;
+  notifyObservers(propertyName?: string): void;
+}
+type observerFunc<T> = (value: T, propertyName: string | null) => void;
 
 /** Decorator for getters/setters.
  * Lets changes call `notifyObservers()`.
  * Setting the already current value is a no-op.
  */
-export function notifyChangedAccessor<T extends Observable<T>>(obj: T, propertyName: string, descriptor: PropertyDescriptor) {
+export function notifyChangedAccessor<T extends Observable>(obj: T, propertyName: string, descriptor: PropertyDescriptor) {
   let original = descriptor.set;
   descriptor.set = function (this: T, val: any) {
     if (this[propertyName] === val) {
@@ -44,7 +48,7 @@ export function notifyChangedAccessor<T extends Observable<T>>(obj: T, propertyN
 
 /** Decorator for object properties.
  * Lets changes call `notifyObservers()`. */
-export function notifyChangedProperty<T extends Observable<T>>(obj: T, propertyName: string) {
+export function notifyChangedProperty<T extends Observable>(obj: T, propertyName: string) {
   if (!obj._properties) {
     obj._properties = {};
   }

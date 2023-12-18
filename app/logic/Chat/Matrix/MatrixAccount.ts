@@ -1,5 +1,6 @@
 import { ChatAccount } from '../Account';
 import { MatrixChatRoom } from './MatrixChatRoom';
+import { MatrixVideoConf } from '../../Meet/MatrixVideoConf';
 import { ChatMessage, DeliveryStatus, UserChatMessage } from '../Message';
 import { ChatRoomEvent, IncomingCall, Invite, JoinLeave } from '../RoomEvent';
 import { Group } from '../../Abstract/Group';
@@ -11,7 +12,6 @@ import { MapColl } from 'svelte-collections';
 import * as matrix from 'matrix-js-sdk';
 import type { Room, RoomMember } from 'matrix-js-sdk/lib/matrix';
 import olm from 'olm'; // Needed for initCrypto(). Do not remove.
-import { MatrixVideoConf } from '../../Meet/MatrixVideoConf';
 
 export class MatrixAccount extends ChatAccount {
   chats = new MapColl<ChatPerson | Group, MatrixChatRoom>;

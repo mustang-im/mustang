@@ -5,6 +5,6 @@ import type { Chat } from "../Chat/Chat";
 import { ArrayColl, MapColl } from 'svelte-collections';
 
 export class ChatAccount extends Account {
-  persons = new ArrayColl<ChatPerson>();
-  chats = new MapColl<ChatPerson | Group, Chat>;
+  readonly persons = new ArrayColl<ChatPerson>();
+  readonly chats = new MapColl<ChatPerson | Group, Chat>;
 }

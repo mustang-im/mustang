@@ -9,7 +9,7 @@ import { MapColl } from 'svelte-collections';
 import * as XMPP from 'stanza';
 
 export class XMPPAccount extends ChatAccount {
-  chats = new MapColl<ChatPerson | Group, XMPPChatRoom>;
+  readonly chats = new MapColl<ChatPerson | Group, XMPPChatRoom>;
   client: XMPP.Agent;
   serverDomain: string;
   username: string;

@@ -1,8 +1,11 @@
 import { Message } from "../Abstract/Message";
+import { notifyChangedProperty } from "../util/Observable";
 import type { Chat } from "./Chat";
 
 export class ChatMessage extends Message {
+  @notifyChangedProperty
   to: Chat;
+  @notifyChangedProperty
   deliveryStatus = DeliveryStatus.Unknown;
 }
 

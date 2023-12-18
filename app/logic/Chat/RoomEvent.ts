@@ -1,4 +1,5 @@
 import type { VideoConfMeeting } from "../Meet/VideoConfMeeting";
+import { notifyChangedProperty } from "../util/Observable";
 import { ChatMessage } from "./Message";
 
 /**
@@ -13,7 +14,9 @@ export class ChatRoomEvent extends ChatMessage {
 export class JoinLeave extends ChatRoomEvent {
   /** true = the contact joined the chat room.
    * false = the contact left the chat room. */
+  @notifyChangedProperty
   join: boolean;
+  @notifyChangedProperty
   invite: boolean;
 }
 
@@ -22,11 +25,15 @@ export class Invite extends ChatRoomEvent {
 
 export class RoomNameChange extends ChatRoomEvent {
   /** The new name of the room. */
+  @notifyChangedProperty
   name: string;
 }
 
 export class IncomingCall extends ChatRoomEvent {
+  @notifyChangedProperty
   conf: VideoConfMeeting;
+  @notifyChangedProperty
   video = true;
+  @notifyChangedProperty
   audio = true;
 }

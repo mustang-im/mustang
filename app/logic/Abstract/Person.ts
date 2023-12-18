@@ -1,18 +1,25 @@
 import { ContactBase } from './Contact';
+import { notifyChangedProperty } from '../util/Observable';
 import { ArrayColl } from 'svelte-collections';
 
 export class Person extends ContactBase {
+  @notifyChangedProperty
   firstName: string;
+  @notifyChangedProperty
   lastName: string;
-  emailAddresses = new ArrayColl<ContactEntry>();
-  phoneNumbers = new ArrayColl<ContactEntry>();
-  chatAccounts = new ArrayColl<ContactEntry>();
-  groups = new ArrayColl<ContactEntry>();
-  streetAddresses = new ArrayColl<ContactEntry>();
+  readonly emailAddresses = new ArrayColl<ContactEntry>();
+  readonly phoneNumbers = new ArrayColl<ContactEntry>();
+  readonly chatAccounts = new ArrayColl<ContactEntry>();
+  readonly groups = new ArrayColl<ContactEntry>();
+  readonly streetAddresses = new ArrayColl<ContactEntry>();
+  @notifyChangedProperty
   notes = "";
 
+  @notifyChangedProperty
   company: string;
+  @notifyChangedProperty
   department: string;
+  @notifyChangedProperty
   position: string;
 
   toString() {
