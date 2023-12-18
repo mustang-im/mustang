@@ -1,37 +1,37 @@
-<vbox class="message-header" class:outgoing={message.outgoing}>
-  <value class="subject">{message.subject}</value>
+<vbox class="message-header" class:outgoing={$message.outgoing}>
+  <value class="subject">{$message.subject}</value>
   <hbox>
     {#if message.contact instanceof Person}
-      <PersonPicture person={message.contact} />
+      <PersonPicture person={$message.contact} />
     {/if}
     <vbox>
-      <value class="from" title={message.authorEmailAddress}>
+      <value class="from" title={$message.authorEmailAddress}>
         {from}
       </value>
-      {#if message.to.hasItems}
+      {#if $message.to.hasItems}
         <hbox class="to">
           to&nbsp;
-          <RecipientList recipients={message.to} />
+          <RecipientList recipients={$message.to} />
         </hbox>
       {/if}
-      {#if message.cc.hasItems}
+      {#if $message.cc.hasItems}
         <hbox class="cc">
           cc&nbsp;
-          <RecipientList recipients={message.cc} />
+          <RecipientList recipients={$message.cc} />
         </hbox>
       {/if}
-      {#if message.bcc.hasItems}
+      {#if $message.bcc.hasItems}
         <hbox class="bcc">
           bcc&nbsp;
-          <RecipientList recipients={message.bcc} />
+          <RecipientList recipients={$message.bcc} />
         </hbox>
       {/if}
     </vbox>
     <hbox flex />
     <vbox>
       <MessageToolbar {message} {account} />
-      <value class="date" title={message.received?.toLocaleString()}>
-        {getDateString(message.received)}
+      <value class="date" title={$message.received?.toLocaleString()}>
+        {getDateString($message.received)}
       </value>
     </vbox>
   </hbox>
