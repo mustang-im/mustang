@@ -1,5 +1,4 @@
 <vbox class="message-header" class:outgoing={$message.outgoing}>
-  <value class="subject">{$message.subject}</value>
   <hbox>
     {#if message.contact instanceof Person}
       <PersonPicture person={$message.contact} />
@@ -35,6 +34,7 @@
       </value>
     </vbox>
   </hbox>
+  <value class="subject">{$message.subject}</value>
 </vbox>
 
 <script lang="ts">
@@ -73,14 +73,14 @@
 <style>
   .message-header {
     min-height: 5em;
-    padding: 16px 20px 8px 20px;
+    padding: 12px 20px 8px 20px;
     background-color: #F9F9FD;
     box-shadow: 0px 1px 5px 0px rgba(0, 0, 0, 5%), 0px -1px 5px 0px rgba(0, 0, 0, 8%);
     z-index: 1;
   }
   .subject {
     font-weight: 700;
-    margin-bottom: 8px;
+    margin-top: 12px;
   }
   .from {
     font-weight: bold;
