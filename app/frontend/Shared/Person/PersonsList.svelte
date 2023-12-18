@@ -3,7 +3,7 @@
     {#each $persons.each as person}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <vbox class="person" on:click={() => selected = person}>
-        <PersonLine {person} isSelected={person == selected}>
+        <PersonLine {person} isSelected={person == selected} {pictureSize}>
           <slot name="top-right" slot="top-right" {person} />
           <slot name="second-row" slot="second-row" {person} />
         </PersonLine>
@@ -21,6 +21,8 @@
 
   export let persons: Collection<PersonOrGroup>;
   export let selected: PersonOrGroup = $selectedPerson;
+  export let pictureSize = 56;
+
   $: if (selected instanceof Person) {
     $selectedPerson = selected
   };

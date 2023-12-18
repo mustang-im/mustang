@@ -1,5 +1,5 @@
 <hbox flex class="person" class:selected={isSelected}>
-  <PersonPicture {person} />
+  <PersonPicture {person} size={pictureSize} />
   <vbox flex class="main">
     <hbox class="first-row">
       <hbox flex class="name">{person.name}</hbox>
@@ -15,6 +15,7 @@
 
   export let person: PersonOrGroup;
   export let isSelected = false;
+  export let pictureSize: number;
 </script>
 
 <style>
