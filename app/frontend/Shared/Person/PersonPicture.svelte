@@ -13,7 +13,7 @@
   import type { PersonOrGroup } from "./PersonOrGroup";
 
   export let person: PersonOrGroup;
-  export let size = 56;
+  export let size = 48;
 </script>
 
 <style>

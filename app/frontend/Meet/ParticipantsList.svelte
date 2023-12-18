@@ -1,5 +1,5 @@
 <vbox flex class="participants-list">
-  <PersonsList persons={$participantsSorted} bind:selected>
+  <PersonsList persons={$participantsSorted} bind:selected pictureSize={24}>
     <ParticipantListItem
       slot="top-right"
       let:person participant={person instanceof MeetingParticipant ? person : null}
@@ -36,11 +36,7 @@
   .participants-list :global(.person .name) {
     align-items: center;
   }
-  .participants-list :global(.person .image) {
+  .participants-list :global(.person .avatar) {
     margin: 2px 4px 2px 24px;
-  }
-  .participants-list :global(.person img) {
-    width: 24px;
-    height: 24px;
   }
 </style>

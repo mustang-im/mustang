@@ -6,7 +6,7 @@
         icon={ScreenSharingIcon}
         disabled={true}
         iconOnly />
-    {/if}und
+    {/if}
     {#if participant.handUp}
       <Button plain
         classes={$participant.handUp ? "hand-up" : "hand-down"}
