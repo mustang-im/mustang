@@ -39,7 +39,7 @@
       plain
       />
   </hbox>
-  <hbox class="unread" class:read={message.read}>
+  <hbox class="unread" class:read={$message.read}>
     <Button
       icon={CircleIcon}
       iconSize="16px"
@@ -49,7 +49,7 @@
       plain
       />
   </hbox>
-  <hbox class="star" class:starred={message.starred}>
+  <hbox class="star" class:starred={$message.starred}>
     <Button
       icon={StarIcon}
       iconSize="20px"
