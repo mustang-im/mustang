@@ -37,7 +37,6 @@ test("Property change calls observer", () => {
   step++;
   test.b = "b2";
 
-  let numberOfPropertyWrites = 2;
   let numberOfAssertionsInSubscriber = 3;
-  expect.assertions((numberOfPropertyWrites + 1) * numberOfAssertionsInSubscriber);
+  expect.assertions(step * numberOfAssertionsInSubscriber);
 });
