@@ -1,4 +1,4 @@
-import { Observable } from "./Observable";
+import { Observable } from "../../logic/util/Observable";
 
 class ObservableLocalStorageSetting<T> extends Observable<ObservableLocalStorageSetting<T>> {
   readonly key: string;

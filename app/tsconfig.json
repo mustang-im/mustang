@@ -21,7 +21,8 @@
     "frontend/**/*.d.ts",
     "frontend/**/*.ts",
     "frontend/**/*.js",
-    "frontend/**/*.svelte"
+    "frontend/**/*.svelte",
+    "logic/util/Observable.ts"
   ],
   "references": [
     {
