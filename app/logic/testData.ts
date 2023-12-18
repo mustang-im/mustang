@@ -17,7 +17,7 @@ export async function getTestObjects(appGlobal: AppGlobal): Promise<void> {
   appGlobal.me = fakeChatPerson();
   appGlobal.persons.addAll(fakePersons());
   appGlobal.emailAccounts.add(fakeMailAccount(appGlobal.persons, appGlobal.me));
-  //appGlobal.chatAccounts.add(fakeChatAccount(appGlobal.persons, appGlobal.me));
+  appGlobal.chatAccounts.add(fakeChatAccount(appGlobal.persons, appGlobal.me));
   appGlobal.calendars.add(fakeCalendar());
   appGlobal.files.addAll(fakeSharedDir(appGlobal.persons));
 }

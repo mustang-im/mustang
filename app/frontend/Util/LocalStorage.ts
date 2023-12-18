@@ -1,6 +1,6 @@
 import { Observable } from "../../logic/util/Observable";
 
-class ObservableLocalStorageSetting<T> extends Observable<ObservableLocalStorageSetting<T>> {
+class ObservableLocalStorageSetting<T> extends Observable {
   readonly key: string;
   defaultValue: T = undefined;
   constructor(key: string, defaultValue?: T) {

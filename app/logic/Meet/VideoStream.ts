@@ -2,7 +2,7 @@ import type { MeetingParticipant } from "./Participant";
 
 /** One incoming or outgoing video in a video conference */
 export class VideoStream {
-  stream: MediaStream;
+  readonly stream: MediaStream;
   constructor(stream: MediaStream) {
     this.stream = stream;
   }
@@ -12,7 +12,7 @@ export class VideoStream {
 }
 
 export class ParticipantVideo extends VideoStream {
-  participant: MeetingParticipant;
+  readonly participant: MeetingParticipant;
 
   constructor(stream: MediaStream, participant: MeetingParticipant) {
     super(stream);

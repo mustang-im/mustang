@@ -1,16 +1,23 @@
-import type { VideoStream } from "./VideoStream";
+import { SelfVideo, type VideoStream } from "./VideoStream";
 import type { MeetingParticipant, ParticipantRole } from "./Participant";
 import type { Event } from "../Calendar/Event";
 import { SetColl } from 'svelte-collections';
+import { Observable, notifyChangedProperty } from "../util/Observable";
 
-export class VideoConfMeeting {
+export class VideoConfMeeting extends Observable {
+  id: string;
+  @notifyChangedProperty
   event: Event;
+  @notifyChangedProperty
   ongoing = false;
+  @notifyChangedProperty
   started: Date;
+  @notifyChangedProperty
   ended: Date;
-  participants = new SetColl<MeetingParticipant>();
-  videos = new SetColl<VideoStream>();
+  readonly participants = new SetColl<MeetingParticipant>();
+  readonly videos = new SetColl<VideoStream>();
   /** If I'm a moderator, I can manage other users */
+  @notifyChangedProperty
   myRole: ParticipantRole;
 
   errorCallback = (ex) => {
@@ -52,6 +59,10 @@ export class VideoConfMeeting {
   async hangup() {
     this.ongoing = false;
     this.ended = new Date();
+  }
+
+  get selfVideo(): SelfVideo | null {
+    return this.videos.find(v => v instanceof SelfVideo) ?? null;
   }
 
   static async createAdhoc(opts?: any): Promise<VideoConfMeeting> {

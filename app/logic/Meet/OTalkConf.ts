@@ -3,6 +3,7 @@ import { ParticipantVideo, ScreenShare, SelfVideo } from "./VideoStream";
 import { MeetingParticipant as Participant, ParticipantRole } from "./Participant";
 import { assert, sleep } from "../util/util";
 import axios from "axios";
+import { notifyChangedProperty } from "../util/Observable";
 
 export class OTalkConf extends VideoConfMeeting {
   /** OTalk controller server hostname */
@@ -20,14 +21,11 @@ export class OTalkConf extends VideoConfMeeting {
   eventID: string;
   roomID: string;
   myParticipantID: string;
-  errorCallback = (ex) => { console.error(ex); };
+
   /** Our camera and mic.
    * Set this using setCamera() */
+  @notifyChangedProperty
   protected camera: MediaStream | null = null;
-
-  get selfVideo(): SelfVideo | null {
-    return this.videos.find(v => v instanceof SelfVideo) ?? null;
-  }
 
   /**
    * Login using OAuth2

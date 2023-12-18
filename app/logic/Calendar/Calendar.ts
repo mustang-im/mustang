@@ -1,13 +1,16 @@
 import type { Event } from "./Event";
 import { ArrayColl } from "svelte-collections";
+import { Observable, notifyChangedProperty } from "../util/Observable";
 
-export class Calendar {
-  id: string;
+export class Calendar extends Observable {
+  readonly id: string;
+  @notifyChangedProperty
   name: string;
 
-  events = new ArrayColl<Event>();
+  readonly events = new ArrayColl<Event>();
 
   constructor() {
+    super();
     this.id = crypto.randomUUID();
   }
 }
