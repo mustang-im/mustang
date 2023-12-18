@@ -60,7 +60,7 @@
         {meeting}
         participants={meeting.participants}
         bind:selected={selectedParticipant}
-        isModerator={meeting.myRole == "moderator"}
+        userIsModerator={meeting.myRole == "moderator"}
         />
     </vbox>
   {/if}

@@ -3,7 +3,7 @@
   <hbox class="buttons">
     <RoundButton
       label="New contact"
-      on:click={addPerson}
+      on:click={() => catchErrors(addPerson)}
       icon={NewContactIcon}
       iconSize="16px"
       />
@@ -27,6 +27,7 @@
   import NewContactIcon from "lucide-svelte/icons/plus";
   import InviteUserIcon from "lucide-svelte/icons/link";
   import { catchErrors } from "../Util/error";
+  import { assert } from "../../logic/util/util";
 
   export let meeting: VideoConfMeeting;
   export let selected: MeetingParticipant;
@@ -58,6 +59,7 @@
   function addTestParticipant() {
     // TODO remove test data
     let chatAccount = appGlobal.chatAccounts.first;
+    assert(chatAccount.persons.hasItems, "No persons in this chat account");
     let person = chatAccount.persons.at(Math.floor(chatAccount.persons.length) * Math.random());
     let participant = new MeetingParticipant();
     participant.name = person.name;

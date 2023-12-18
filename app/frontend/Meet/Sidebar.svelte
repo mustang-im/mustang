@@ -4,7 +4,7 @@
   <vbox class="participants-header">
     <hbox class="number">{$participants.length} Participants</hbox>
   </vbox>
-  <ParticipantsList {participants} bind:selected {isModerator} />
+  <ParticipantsList {participants} bind:selected {userIsModerator} />
   <ParticipantSearch {meeting} bind:selected />
 </vbox>
 
@@ -19,7 +19,7 @@
   export let meeting: VideoConfMeeting;
   export let participants: Collection<MeetingParticipant>;
   export let selected: MeetingParticipant;
-  export let isModerator = false;
+  export let userIsModerator = false;
 </script>
 
 <style>
