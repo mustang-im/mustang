@@ -46,6 +46,7 @@
   import RecipientList from "./RecipientList.svelte";
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
   import { getDateString } from "../../Util/date";
+  import { onDestroy } from "svelte";
 
   export let message: EMail;
   export let account: MailAccount;
@@ -54,6 +55,19 @@
     ? "me"
     : message.contact?.name
       ?? message.authorEmailAddress;
+
+  $: markMessageAsRead(message);
+  let readTimeout: NodeJS.Timeout;
+  const readDelay = 3; // seconds, 0 to 30
+  function markMessageAsRead(message: EMail) {
+    clearTimeout(readTimeout);
+    readTimeout = setTimeout(() => {
+      message.read = true;
+    }, readDelay * 1000);
+  }
+  onDestroy(() => {
+    clearTimeout(readTimeout);
+  });
 </script>
 
 <style>
