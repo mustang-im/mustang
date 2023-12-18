@@ -1,4 +1,4 @@
-<vbox flex>
+<vbox flex class="window">
   <WindowHeader selectedApp={$selectedApp} />
   <hbox flex class="main-window">
     <AppBar bind:selectedApp={$selectedApp} />
@@ -56,6 +56,9 @@
 </script>
 
 <style>
+  .window {
+    border: 1px solid gray;
+  }
   .app-frame {
     flex: 4 0 0;
   }
