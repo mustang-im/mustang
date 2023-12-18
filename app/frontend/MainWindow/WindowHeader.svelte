@@ -19,7 +19,7 @@
       Apps
     {/if}
   </hbox>
-  <vbox flex />
+  <vbox flex class="free" />
   <hbox class="right">
     <Button label="Settings" icon={SettingsIcon} iconSize="24px" plain iconOnly classes="settings"/>
   </hbox>
@@ -55,5 +55,8 @@
   .right :global(.settings) {
     color: white;
     margin-right: 8px;
+  }
+  .free {
+    app-region: drag;
   }
 </style>
