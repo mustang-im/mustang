@@ -1,12 +1,7 @@
 <script>
-  import * as util from "mustang-lib/util/util";
-  util.importAll(util, global);
-  import * as collection from "jscollections";
-  util.importAll(collection, global);
-  import { translateElements, pluralform } from "mustang-lib/trex/translate";
-
   import AccountConfig from "mustang-lib/logic/account/setup/AccountConfig.js";
-  import { onMount, onDestroy } from "svelte";
+  //import { translateElements, pluralform } from "mustang-lib/trex/translate";
+  //import { ... } from "mustang-lib/util/util";
 
   // Dialog pages
   import InputEmailAddress from "./InputEmailAddress.svelte";
