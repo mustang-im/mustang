@@ -4,6 +4,7 @@
   "description": "Mustang - User-friendly full-featured email application for everybody - Logic",
   "dependencies": {
     "@buttercup/credentials": "^1.2.0",
+    "@xmldom/xmldom": "^0.8.10",
     "adm-zip": "^0.4.13",
     "emailjs-imap-client": "^3.0.7",
     "emailjs-mime-builder": "^2.0.5",
@@ -18,7 +19,7 @@
     "sql-template-strings": "^2.2.2",
     "sqlite": "^3.0.3",
     "sqlite3": "^5.1.6",
-    "@xmldom/xmldom": "^0.8.10"
+    "svelte-collections": "^1.1.20"
   },
   "scripts": {
     "test": "node test.js"
@@ -31,7 +32,7 @@
     "mobile"
   ],
   "author": "Ben Bucksch",
-  "license": "GPL-2.0",
+  "license": "AGPL-3.0-only",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/benbucksch/mustang.git"
