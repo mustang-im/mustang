@@ -12,5 +12,9 @@
     "plugin:import/electron",
     "plugin:import/typescript"
   ],
+  "rules": {
+     "no-var": "warn",
+     "prefer-const": "off"
+  },
   "parser": "@typescript-eslint/parser"
 }
