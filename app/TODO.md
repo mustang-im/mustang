@@ -97,6 +97,14 @@
 * Refactor IMAP orcastration: Separate IMAP protocol folder object and IMAP orcestration folder object. The latter does folder cache, IMAP poll/refresh, offline cache etc.
 * JMAP
 
+# Login
+* OAuth2 UI
+
+# Setup
+* Chat & Video conf
+* Mail Autoconfig
+* Combined: Mail, chat, fileshare, calendar, contacts with single login/setup
+
 # Later
 * mailto handler
 * WhatsApp
