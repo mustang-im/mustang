@@ -35,6 +35,9 @@
   },
   "dependencies": {
     "@electron/packager": "18.1.1",
-    "electron-squirrel-startup": "^1.0.0"
+    "bufferutil": "^4.0.8",
+    "electron-squirrel-startup": "^1.0.0",
+    "utf-8-validate": "^6.0.3",
+    "ws": "^8.15.1"
   }
 }
