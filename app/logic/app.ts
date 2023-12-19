@@ -1,4 +1,5 @@
-import type { MailAccount } from './Mail/Account';
+import type MailAccount from "mustang-lib/logic/mail/MailAccount";
+//import type { MailAccount } from "mustang-lib";
 import type { ChatAccount } from './Chat/Account';
 import type { Person } from './Abstract/Person';
 import type { VideoConfMeeting } from './Meet/VideoConfMeeting';
@@ -28,17 +29,39 @@ export let appGlobal = new AppGlobal();
 const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
 
 export async function getStartObjects(): Promise<void> {
-  await getTestObjects(appGlobal);
-  appGlobal.chatAccounts.addAll(await readChatAccounts());
-  for (let chatAccount of appGlobal.chatAccounts) {
-    await chatAccount.login();
-  }
-  /*
   let jpc = new JPCWebSocket(null);
   await jpc.connect(kSecret, "localhost", 5455);
   console.log("connected to server");
-  appGlobal = await jpc.getRemoteStartObject();
-  console.log("appGlobal", appGlobal);
-  return appGlobal;
-  */
+  let remoteApp = await jpc.getRemoteStartObject();
+  appGlobal.emailAccounts = await remoteApp.accounts;
+  appGlobal.chatAccounts.addAll(await readChatAccounts());
+  console.log("appGlobal", appGlobal, "email accounts", appGlobal.emailAccounts);
+}
+
+/**
+ * Logs in to all accounts for which we have the credentials stored.
+ *
+ * @param errorCallback Called for login errors.
+ * May be called multiple times, e.g. once per account.
+ */
+export async function login(errorCallback = (ex) => console.error(ex)): Promise<void> {
+  for (let account of appGlobal.chatAccounts) {
+    try {
+      await account.login();
+    } catch (e) {
+      errorCallback(e);
+    }
+  }
+
+  for (let account of appGlobal.emailAccounts) {
+    if (!(await account.isLoggedIn()) && await account.haveLogin()) {
+      try {
+        console.log("Logging in mail account", await account.name);
+        await account.login();
+        await account.inbox.fetch();
+      } catch (e) {
+        errorCallback(e);
+      }
+    }
+  }
 }
