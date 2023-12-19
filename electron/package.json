@@ -36,6 +36,7 @@
   "dependencies": {
     "@electron/packager": "^18.1.3",
     "bufferutil": "^4.0.8",
+    "core-js": "2.6.12",
     "electron-squirrel-startup": "^1.0.0",
     "jpc-ws": "^0.2.2",
     "mustang-lib": "../lib/",
