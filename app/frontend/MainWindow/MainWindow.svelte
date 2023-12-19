@@ -30,6 +30,8 @@
 </vbox>
 
 <script lang="ts">
+  import { AppArea, selectedApp, sidebarApp } from "./app";
+  import { appGlobal, getStartObjects, login } from "../../logic/app";
   import ContactsApp from "../Contacts/ContactsApp.svelte";
   import MailApp from "../Mail/MailApp.svelte";
   import ChatApp from "../Chat/ChatApp.svelte";
@@ -39,20 +41,24 @@
   import MeetSidebar from "../Meet/MeetSidebar.svelte";
   import AppBar from "./AppBar.svelte";
   import AppsApp from "../Apps/AppsApp.svelte";
-  import { AppArea, selectedApp, sidebarApp } from "./app";
-  import { appGlobal, getStartObjects } from "../../logic/app";
-  import { onMount } from "svelte";
   import WindowHeader from "./WindowHeader.svelte";
+  import { showError } from "../Util/error";
+  import { onMount } from "svelte";
 
   $: meetings = appGlobal.meetings;
   $: $sidebarApp = $meetings.hasItems && $selectedApp != AppArea.Meet ? AppArea.Meet : null; // TODO move into app, see MeetApp.svelte
 
-  onMount(async() => {
+  onMount(async () => {
     if (appGlobal.persons.hasItems) {
       return;
     }
-    await getStartObjects();
-  })
+    try {
+      await getStartObjects();
+      await login(showError); // TODO Show as background error
+    } catch (ex) {
+      showError(ex);
+    }
+  });
 </script>
 
 <style>

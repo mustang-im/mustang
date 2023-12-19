@@ -7,10 +7,7 @@
 {/if}
 
 <script lang="ts">
-  //import type { Account, MsgFolder, Email } from "mustang-lib";
-  import type { MailAccount } from "../../logic/Mail/Account";
-  import type { Folder } from "../../logic/Mail/Folder";
-  import type { EMail } from "../../logic/Mail/Message";
+  import type { MailAccount, MsgFolder as Folder, Email as EMail } from "mustang-lib";
   import { appGlobal } from "../../logic/app";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { showError } from "../Util/error";
@@ -28,16 +25,16 @@
   onMount(onLoad);
   async function onLoad() {
     try {
-      /*
-      for (let account of accounts.contents) {
-        if (await account.haveStoredLogin()) {
+      for (let account of accounts) {
+        if (!(await account.isLoggedIn()) && await account.haveStoredLogin()) {
           try {
             await account.login();
             await account.inbox.fetch();
-          } catch (e) { backgroundError(e); }
+          } catch (e) {
+            showError(e); // TODO background error
+          }
         }
       }
-      */
     } catch (ex) {
       showError(ex);
     }
@@ -49,7 +46,7 @@
       if (!folder) {
         return;
       }
-      // await folder.fetch();
+      await folder.fetch();
     } catch (ex) {
       showError(ex);
     }
