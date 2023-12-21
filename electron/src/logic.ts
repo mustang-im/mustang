@@ -1,7 +1,7 @@
-import { readAccounts, addNewAccountFromConfig, findAccountConfig } from "mustang-lib";
-//import { readAccounts, addNewAccountFromConfig } from "./logic/account/account-list";
-//import { findAccountConfig } from "./logic/account/setup/setup";
-//import SQLAccount from "mustang-lib/logic/storage/SQLAccount";
+//import { readAccounts, addNewAccountFromConfig, findAccountConfig } from "../../lib/index";
+import { readAccounts, addNewAccountFromConfig } from "../../lib/logic/account/account-list";
+import { findAccountConfig } from "../../lib/logic/account/setup/setup";
+//import SQLAccount from "../../lib/logic/storage/SQLAccount";
 //import JPCWebSocket from 'jpc-ws'
 
 export async function startupLogic() {
