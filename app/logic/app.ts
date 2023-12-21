@@ -1,5 +1,4 @@
-import type MailAccount from "mustang-lib/logic/mail/MailAccount";
-//import type { MailAccount } from "mustang-lib";
+import type { MailAccount } from "mustang-lib";
 import type { ChatAccount } from './Chat/Account';
 import type { Person } from './Abstract/Person';
 import type { VideoConfMeeting } from './Meet/VideoConfMeeting';
