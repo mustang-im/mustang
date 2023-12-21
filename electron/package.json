@@ -38,6 +38,7 @@
     "bufferutil": "^4.0.8",
     "core-js": "2.6.12",
     "electron-squirrel-startup": "^1.0.0",
+    "jpc-ws": "^0.2.2",
     "mustang-lib": "../lib/",
     "svelte-collections": "^1.1.20",
     "utf-8-validate": "^6.0.3",
