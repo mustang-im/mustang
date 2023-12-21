@@ -49,10 +49,10 @@
   $: $sidebarApp = $meetings.hasItems && $selectedApp != AppArea.Meet ? AppArea.Meet : null; // TODO move into app, see MeetApp.svelte
 
   onMount(async () => {
-    if (appGlobal.persons.hasItems) {
-      return;
-    }
     try {
+      if (appGlobal.persons.hasItems) {
+        return;
+      }
       await getStartObjects();
       await login(showError); // TODO Show as background error
     } catch (ex) {
