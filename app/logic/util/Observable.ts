@@ -54,11 +54,10 @@ export function notifyChangedProperty<T extends Observable>(obj: T, propertyName
   }
   let descriptor = Object.getOwnPropertyDescriptor(obj, propertyName);
   if (descriptor) {
-    assert(descriptor, `Property descriptor for property .${propertyName} doesn't exist`);
     assert(descriptor.configurable, `Cannot attach property decorator to .${propertyName}, it's not configurable.`);
     assert(!descriptor.set && !descriptor.get, `.${propertyName} has a getter/setter. Use notifyChangedAccessor() instead.`);
     descriptor.enumerable = true;
-    this._properties[propertyName] === descriptor?.value;
+    this._properties[propertyName] = descriptor?.value;
     delete descriptor.value;
     delete descriptor.writable;
   } else {
