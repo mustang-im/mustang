@@ -7,9 +7,10 @@ import { notifyChangedProperty } from "../util/Observable";
 
 export class OTalkConf extends VideoConfMeeting {
   /** OTalk controller server hostname */
-  controllerHost: string;
+  controllerBaseURL: string = "https://controller.mustang.im";
+  controllerWebSocketURL: string = "https://mustang.im";
   /** Where guests would go to join the meeting without Mustang app */
-  webFrontendHost: string;
+  webFrontendBaseURL: string = "wss://controller.mustang.im/signaling";
   /* Authentication */
   password: string;
   private authToken: string;
@@ -36,9 +37,7 @@ export class OTalkConf extends VideoConfMeeting {
     if (this.authToken && !relogin) {
       return;
     }
-    // TODO config
-    this.controllerHost = "controller.mustang.im";
-    this.webFrontendHost = "mustang.im";
+
     let authToken = localStorage.getItem("conf.otalk.authToken") as string;
     assert(authToken, "OTalk: Need authentication. Need conf.otalk.authToken in localStorage");
     this.authToken = authToken;
@@ -46,7 +45,7 @@ export class OTalkConf extends VideoConfMeeting {
     // TODO OAuth2 login
 
     this.axios = axios.create({
-      baseURL: `https://${this.controllerHost}/v1/`,
+      baseURL: `${this.controllerBaseURL}/v1/`,
       timeout: 3000,
       headers: {
         authentication: `Bearer ${this.authToken}`,
@@ -80,7 +79,7 @@ export class OTalkConf extends VideoConfMeeting {
       body: {},
     });
     let invitation = await response.data;
-    return `https://${this.webFrontendHost}/invite/${invitation.invite_code}`;
+    return `${this.webFrontendBaseURL}/invite/${invitation.invite_code}`;
   }
 
   async aboutMe(): Promise<{ name: string, picture: URLString, email: string, id: string }> {
@@ -321,7 +320,7 @@ export class OTalkConf extends VideoConfMeeting {
   // WebSocket handling
 
   protected async createWebSocket() {
-    this.webSocket = new WebSocket(`wss://${this.controllerHost}/signaling`);
+    this.webSocket = new WebSocket(this.controllerWebSocketURL);
     await new Promise(resolve => { // wait for connection to be established
       this.webSocket.onopen = resolve;
     });
