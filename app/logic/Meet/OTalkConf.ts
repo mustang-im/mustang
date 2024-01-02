@@ -7,10 +7,10 @@ import { notifyChangedProperty } from "../util/Observable";
 
 export class OTalkConf extends VideoConfMeeting {
   /** OTalk controller server hostname */
-  controllerBaseURL: string = "https://controller.mustang.im";
+  controllerBaseURL: string = "http://localhost:5454/conf/controller";
   controllerWebSocketURL: string = "https://mustang.im";
   /** Where guests would go to join the meeting without Mustang app */
-  webFrontendBaseURL: string = "wss://controller.mustang.im/signaling";
+  webFrontendBaseURL: string = "wss://localhost:5454/conf/signaling";
   /* Authentication */
   password: string;
   private authToken: string;
