@@ -27,3 +27,15 @@ export function arrayRemoveAll(array, item) {
     array.splice(pos, 1);
   }
 }
+
+export class NotImplemented extends Error {
+  constructor() {
+    super("Not yet implemented");
+  }
+}
+
+export class AbstractFunction extends Error {
+  constructor() {
+    super("Not yet implemented in the subclass");
+  }
+}
