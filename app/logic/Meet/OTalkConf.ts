@@ -1,9 +1,10 @@
 import { VideoConfMeeting } from "./VideoConfMeeting";
 import { ParticipantVideo, ScreenShare, SelfVideo } from "./VideoStream";
 import { MeetingParticipant as Participant, ParticipantRole } from "./Participant";
+import { OAuth2 } from "./OAuth2";
+import { notifyChangedProperty } from "../util/Observable";
 import { assert, sleep } from "../util/util";
 import axios from "axios";
-import { notifyChangedProperty } from "../util/Observable";
 
 export class OTalkConf extends VideoConfMeeting {
   /** OTalk controller server hostname */
@@ -11,10 +12,9 @@ export class OTalkConf extends VideoConfMeeting {
   controllerWebSocketURL: string = "https://mustang.im";
   /** Where guests would go to join the meeting without Mustang app */
   webFrontendBaseURL: string = "wss://localhost:5454/conf/signaling";
+  oauthBaseURL: string = "http://localhost:5454/conf/auth";
   /* Authentication */
-  password: string;
-  private authToken: string;
-  private refreshToken: string;
+  private oauth2: OAuth2;
   /* Live connection with the controller, during a conference */
   protected webSocket: WebSocket;
   protected axios: any;
@@ -32,23 +32,31 @@ export class OTalkConf extends VideoConfMeeting {
    * Login using OAuth2
    * If already logged in, does nothing.
    * @param relogin if true: Force a new login in any case.
+   * @throws OAuth2Error
    */
-  async login(relogin = false) {
-    if (this.authToken && !relogin) {
+  async login(relogin = false): Promise<void> {
+    if (this.oauth2 && this.oauth2.accessToken && !relogin) {
       return;
     }
 
-    let authToken = localStorage.getItem("conf.otalk.authToken") as string;
-    assert(authToken, "OTalk: Need authentication. Need conf.otalk.authToken in localStorage");
-    this.authToken = authToken;
+    let username = localStorage.getItem("conf.otalk.username") as string;
+    let password = localStorage.getItem("conf.otalk.password") as string;
+    assert(username && password, "OTalk: Need authentication. Please set conf.otalk.username and conf.otalk.password in localStorage");
 
-    // TODO OAuth2 login
+    if (this.oauth2) {
+      this.oauth2.stop();
+    }
+    const kScope = "openid phone profile email";
+    const kClientID = "mustang"; // Configured in KeyCloak <https://accounts.mustang.im/auth/admin/master/console/#/mustang/clients/>
+    this.oauth2 = new OAuth2(this.oauthBaseURL, kScope, kClientID);
+    await this.oauth2.loginWithPassword(username, password);
 
     this.axios = axios.create({
       baseURL: `${this.controllerBaseURL}/v1/`,
       timeout: 3000,
       headers: {
-        authentication: `Bearer ${this.authToken}`,
+        Authentication: this.oauth2.authenticationHeader,
+        'Content-Type': 'text/json',
       }
     });
   }
