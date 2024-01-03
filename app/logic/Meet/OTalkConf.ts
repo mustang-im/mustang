@@ -8,13 +8,13 @@ import axios from "axios";
 
 export class OTalkConf extends VideoConfMeeting {
   /** OTalk controller server hostname */
-  controllerBaseURL: string = "http://localhost:5454/conf/controller";
+  controllerBaseURL: string = "http://localhost:5454/meet/controller";
   controllerWebSocketURL: string = "wss://controller.mustang.im/signaling";
-  //controllerWebSocketURL: string = "ws://localhost:5454/conf/signaling";
+  //controllerWebSocketURL: string = "ws://localhost:5454/meet/signaling";
   /** Where guests would go to join the meeting without Mustang app */
   webFrontendBaseURL: string = "https://mustang.im";
   /* Authentication */
-  oauthBaseURL: string = "http://localhost:5454/conf/auth";
+  oauthBaseURL: string = "http://localhost:5454/meet/auth/realms/mustang/protocol/openid-connect/";
   private oauth2: OAuth2;
   /* Live connection with the controller, during a conference */
   protected webSocket: WebSocket;
