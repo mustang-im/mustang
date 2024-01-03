@@ -38,7 +38,7 @@
 
 <style>
   .progressbar {
-    border-top: 5px solid green;
+    border-top: 2px solid green;
     align-self: flex-start;
   }
   .time {
