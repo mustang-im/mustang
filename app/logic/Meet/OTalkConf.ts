@@ -55,9 +55,13 @@ export class OTalkConf extends VideoConfMeeting {
       baseURL: `${this.controllerBaseURL}/v1/`,
       timeout: 3000,
       headers: {
-        Authentication: this.oauth2.authenticationHeader,
+        Authorization: this.oauth2.authorizationHeader,
         'Content-Type': 'text/json',
-      }
+      },
+    });
+
+    await this.axios.post('auth/login', {
+      id_token: this.oauth2.idToken,
     });
   }
 
@@ -65,14 +69,12 @@ export class OTalkConf extends VideoConfMeeting {
     await this.login();
     let time = new Date().toLocaleString(navigator.language, { hour: "numeric", minute: "numeric" });
     let response = await this.axios.post("events", {
-      body: {
-        title: `Meeting ${time}`,
-        description: "",
-        is_time_independent: true,
-        waiting_room: false,
-        recurrence_pattern: [],
-        is_adhoc: true
-      }
+      title: `Meeting ${time}`,
+      description: "",
+      is_time_independent: true,
+      waiting_room: false,
+      recurrence_pattern: [],
+      is_adhoc: true,
     });
     let event = response.data;
     console.log("new conference", event);
@@ -83,9 +85,7 @@ export class OTalkConf extends VideoConfMeeting {
 
   async getInvitationURL(): Promise<URLString> {
     assert(this.roomID, "Need to create the conference first");
-    let response = await this.axios.post(`rooms/${this.roomID}/invites`, {
-      body: {},
-    });
+    let response = await this.axios.post(`rooms/${this.roomID}/invites`, {});
     let invitation = await response.data;
     return `${this.webFrontendBaseURL}/invite/${invitation.invite_code}`;
   }
