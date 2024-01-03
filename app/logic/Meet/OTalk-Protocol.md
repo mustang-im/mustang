@@ -125,7 +125,10 @@ Response:
 2. Start conference
 https://<controller-host>/v1/rooms/<room.id>/start
 e.g. https://controller.mustang.im/v1/rooms/1fe81f50-c619-4106-86a2-2c3d0c96cee1/start
-GET
+POST
+{
+  "breakout_room": null
+}
 Response:
 {
   "ticket": "ItZHj8uhFVREG1Mh1si6asVWljTk0VKCMFHoy9rCXbJvSD10MWMJunqwJvDkqEe6",

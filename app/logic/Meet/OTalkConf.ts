@@ -9,11 +9,11 @@ import axios from "axios";
 export class OTalkConf extends VideoConfMeeting {
   /** OTalk controller server hostname */
   controllerBaseURL: string = "http://localhost:5454/conf/controller";
-  controllerWebSocketURL: string = "https://mustang.im";
+  controllerWebSocketURL: string = "ws://localhost:5454/conf/signaling";
   /** Where guests would go to join the meeting without Mustang app */
-  webFrontendBaseURL: string = "wss://localhost:5454/conf/signaling";
-  oauthBaseURL: string = "http://localhost:5454/conf/auth";
+  webFrontendBaseURL: string = "https://mustang.im";
   /* Authentication */
+  oauthBaseURL: string = "http://localhost:5454/conf/auth";
   private oauth2: OAuth2;
   /* Live connection with the controller, during a conference */
   protected webSocket: WebSocket;
@@ -136,7 +136,9 @@ export class OTalkConf extends VideoConfMeeting {
   async start() {
     assert(this.roomID, "Need to create the conference first");
     await super.start();
-    await this.axios.get(`rooms/${this.roomID}/start`);
+    await this.axios.post(`rooms/${this.roomID}/start`, {
+      breakout_room: null,
+    });
     await this.axios.get(`turn`);
     await this.createWebSocket();
     await this.join();
