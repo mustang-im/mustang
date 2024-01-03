@@ -11,7 +11,7 @@
     margin: 5px;
     padding: 16px;
     padding-left: 20px;
-    border: 1px dashed #A8AEB5;
+    border: 1px solid #E6E4E8;
     border-radius: 2px;
   }
 </style>
