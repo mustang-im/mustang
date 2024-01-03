@@ -343,12 +343,12 @@ export class OTalkConf extends VideoConfMeeting {
   protected async handleIncomingMsg(event) {
     try {
       let eventData = JSON.parse(event.data);
+      console.log("incoming message", eventData);
       let module = eventData.namespace;
       let payload = eventData.payload;
       for (let listener of this.msgListeners.slice().reverse()) {
         if (listener.module != module ||
-          !(listener.module == "control" || listener.module == "media") ||
-          listener.msg != payload[messageProp[listener.module]]) {
+          payload.message != listener.msg) {
           continue;
         }
         try {
@@ -372,12 +372,8 @@ export class OTalkConf extends VideoConfMeeting {
     /** JSON namespace */
     module: JSONNamespaces,
     /**
-     * The listener will be triggered, if the namespace matches and
-     * the property JSON .payload.message (or .action) has this value,
-     * e.g. payload.action == msg;
-     *
-     * For control: `message`
-     * For media: `action`
+     * The listener will be triggered, if json.namespace == module and
+     * json.payload.message == msg;
      */
     msg: string,
     /** Do not call earlier handlers for the same message */
@@ -424,8 +420,12 @@ export class OTalkConf extends VideoConfMeeting {
     });
   }
 
-  send(module: JSONNamespaces, msg: string, json: any) {
-    json[messageProp[module]] = msg;
+  send(module: JSONNamespaces, action: string, payload: any) {
+    let json = {
+      namespace: module,
+      payload: payload,
+    };
+    payload.action = action;
     this.webSocket.send(JSON.stringify(json));
   }
 
@@ -450,8 +450,8 @@ export function arrayRemoveLast(array, item) {
 
 type JSONNamespaces = "control" | "media";
 const messageProp = {
-  control: "message",
-  media: "action",
+  control: "action",
+  media: "message",
 }
 
 class ParticipantInfoJSON {
