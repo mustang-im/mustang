@@ -12,35 +12,35 @@
           iconOnly />
       {/if}
       <hbox flex />
-      <Button
+      <RoundButton
         label="Mute"
         classes="toggle-mic"
         on:click={() => catchErrors(toggleMic)}
         icon={micOn ? MicrophoneIcon : MicrophoneOffIcon}
         iconSize="24px"
-        iconOnly />
-      <Button
+        />
+      <RoundButton
         label="Camera"
         classes="toggle-camera"
         on:click={() => catchErrors(toggleCamera)}
         icon={cameraOn ? CameraIcon : CameraOffIcon}
         iconSize="24px"
-        iconOnly />
-      <Button
+        />
+      <RoundButton
         label={handRaised ? "Hand raised" : "Raise hand"}
         classes={handRaised ? "raised-hand" : "raise-hand"}
         on:click={() => catchErrors(toggleHand)}
         icon={handRaised ? HandIcon : HandDownIcon}
         iconSize="24px"
-        iconOnly />
+        />
       {#if $selectedApp == AppArea.Meet}
-        <Button
+        <RoundButton
           label="Leave"
           classes="leave"
           on:click={() => catchErrors(leave)}
           icon={LeaveIcon}
           iconSize="24px"
-          iconOnly />
+          />
       {/if}
       <hbox flex />
       {#if $selectedApp == AppArea.Meet}
@@ -74,6 +74,7 @@
   import Gallery from "./Gallery.svelte";
   import ParticipantsSidebar from "./Sidebar.svelte";
   import Button from "../Shared/Button.svelte";
+  import RoundButton from "../Shared/RoundButton.svelte";
   import HandIcon from '../asset/icon/meet/hand.svg?raw';
   import HandDownIcon from "lucide-svelte/icons/grab";
   import CameraIcon from "lucide-svelte/icons/video";
@@ -150,7 +151,7 @@
     margin: 8px;
   }
   .actions :global(> *) {
-    margin-right: 4px;
+    margin-right: 8px;
   }
   .actions :global(button.leave) {
     background-color: #FF7777;
