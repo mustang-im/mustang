@@ -9,7 +9,8 @@ import axios from "axios";
 export class OTalkConf extends VideoConfMeeting {
   /** OTalk controller server hostname */
   controllerBaseURL: string = "http://localhost:5454/conf/controller";
-  controllerWebSocketURL: string = "ws://localhost:5454/conf/signaling";
+  controllerWebSocketURL: string = "wss://controller.mustang.im/signaling";
+  //controllerWebSocketURL: string = "ws://localhost:5454/conf/signaling";
   /** Where guests would go to join the meeting without Mustang app */
   webFrontendBaseURL: string = "https://mustang.im";
   /* Authentication */
@@ -136,11 +137,13 @@ export class OTalkConf extends VideoConfMeeting {
   async start() {
     assert(this.roomID, "Need to create the conference first");
     await super.start();
-    await this.axios.post(`rooms/${this.roomID}/start`, {
+    let request = await this.axios.post(`rooms/${this.roomID}/start`, {
       breakout_room: null,
     });
+    let roomTicket = request.data.ticket;
+    assert(roomTicket, "Failed to get authentication for the conference room");
     await this.axios.get(`turn`);
-    await this.createWebSocket();
+    await this.createWebSocket(roomTicket);
     await this.join();
     this.addMsgListener("control", "joined", false, false, (json) => this.participantJoined(json));
     this.addMsgListener("control", "left", false, false, (json) => this.participantLeft(json));
@@ -329,8 +332,8 @@ export class OTalkConf extends VideoConfMeeting {
   ////////////////////////
   // WebSocket handling
 
-  protected async createWebSocket() {
-    this.webSocket = new WebSocket(this.controllerWebSocketURL);
+  protected async createWebSocket(ticket: string) {
+    this.webSocket = new WebSocket(this.controllerWebSocketURL, [`ticket#${ticket}`, "k3k-signaling-json-v1.0"]);
     await new Promise(resolve => { // wait for connection to be established
       this.webSocket.onopen = resolve;
     });

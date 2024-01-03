@@ -18,12 +18,12 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/conf\/controller/, ''),
       },
-      '/conf/signaling': {
+      /*'/conf/signaling': {
         target: 'wss://controller.mustang.im',
         changeOrigin: true,
         ws: true,
         rewrite: (path) => path.replace(/^\/conf\//, ''),
-      },
+      },*/
     },
   },
   plugins: [svelte()],
