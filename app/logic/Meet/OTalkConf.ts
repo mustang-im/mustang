@@ -228,6 +228,7 @@ export class OTalkConf extends VideoConfMeeting {
       peerConnection.addTrack(track);
     }
     let offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
     this.send("media", "publish", {
       target: this.myParticipantID,
       media_session_type: "video",
@@ -271,6 +272,7 @@ export class OTalkConf extends VideoConfMeeting {
       sdp: offer.sdp,
     });
     let answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer);
     this.send("media", "sdp_answer", {
       target: participant.id,
       media_session_type: "video",
