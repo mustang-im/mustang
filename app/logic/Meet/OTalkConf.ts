@@ -236,7 +236,10 @@ export class OTalkConf extends VideoConfMeeting {
     await this.sendICECandidates(peerConnection, this.myParticipantID);
     let answer = await this.waitForMessage("media", "sdp_answer");
     assert(answer.source == this.myParticipantID, "Videos of participants got mixed up in their order");
-    await peerConnection.setRemoteDescription(answer.sdp);
+    await peerConnection.setRemoteDescription({
+      type: "answer",
+      sdp: answer.sdp,
+    });
     let up = await this.waitForMessage("media", "webrtc_up");
     assert(up.source == this.myParticipantID, "WebRTC up of participants got mixed up in their order");
   }
@@ -263,7 +266,10 @@ export class OTalkConf extends VideoConfMeeting {
     // TODO peerConnection.addEventListener("removetrack")?
     let offer = await this.waitForMessage("media", "sdp_offer");
     assert(offer.source == participant.id, "Videos of participants got mixed up in their order");
-    await peerConnection.setRemoteDescription(offer.sdp);
+    await peerConnection.setRemoteDescription({
+      type: "offer",
+      sdp: offer.sdp,
+    });
     let answer = await peerConnection.createAnswer();
     this.send("media", "sdp_answer", {
       target: participant.id,
