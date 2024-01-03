@@ -19,8 +19,9 @@
   export let meeting: VideoConfMeeting;
 
   $: event = meeting?.event;
-  $: progress = meeting.started && event.startTime && event.endTime && event.endTime.getTime() - event.startTime.getTime() > 0
-    ? (new Date().getTime() - event.startTime.getTime()) / (event.endTime.getTime() - event.startTime.getTime())
+  $: progress = event ? meeting.started && event.startTime && event.endTime && event.endTime.getTime() - event.startTime.getTime() > 0
+      ? (new Date().getTime() - event.startTime.getTime()) / (event.endTime.getTime() - event.startTime.getTime())
+      : 0
     : 0;
   $: duration = calculateDuration(meeting.started);
   function calculateDuration(started: Date): string {
