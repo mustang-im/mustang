@@ -16,14 +16,14 @@
         label="Mute"
         classes="toggle-mic"
         on:click={() => catchErrors(toggleMic)}
-        icon={micOn ? MicrophoneOffIcon : MicrophoneIcon}
+        icon={micOn ? MicrophoneIcon : MicrophoneOffIcon}
         iconSize="24px"
         iconOnly />
       <Button
         label="Camera"
         classes="toggle-camera"
         on:click={() => catchErrors(toggleCamera)}
-        icon={cameraOn ? CameraOffIcon : CameraIcon}
+        icon={cameraOn ? CameraIcon : CameraOffIcon}
         iconSize="24px"
         iconOnly />
       <Button
@@ -119,7 +119,7 @@
   }
 
   async function startCamera() {
-    cameraStream = await navigator.mediaDevices.getUserMedia();
+    cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     if (!cameraStream) {
       return;
     }
