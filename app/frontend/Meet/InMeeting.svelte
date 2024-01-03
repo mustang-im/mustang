@@ -112,6 +112,9 @@
     if (cameraOn && !cameraStream) {
       await startCamera();
     }
+    if (!cameraOn && cameraStream) {
+      await stopCamera();
+    }
   }
 
   function toggleHand() {
@@ -123,7 +126,15 @@
     if (!cameraStream) {
       return;
     }
-    meeting.setCamera(cameraStream);
+    await meeting.setCamera(cameraStream);
+  }
+
+  async function stopCamera() {
+    for (let track of cameraStream.getTracks()) {
+      track.stop();
+    }
+    await meeting.setCamera(null);
+    cameraStream = null;
   }
 </script>
 
