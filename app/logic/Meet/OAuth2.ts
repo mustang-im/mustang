@@ -22,6 +22,7 @@ export class OAuth2 {
   clientID: string;
   accessToken?: string;
   protected refreshToken?: string;
+  idToken: string;
 
   protected username: string;
   protected password: string;
@@ -50,7 +51,7 @@ export class OAuth2 {
   /**
    * @returns the value for the 'Authentication' HTTP header
    */
-  get authenticationHeader(): string {
+  get authorizationHeader(): string {
     return `Bearer ${this.accessToken}`;
   }
 
@@ -124,8 +125,11 @@ export class OAuth2 {
       throw new OAuth2Error(data);
     }
     this.accessToken = data.access_token;
-    if (data.refreshToken) {
+    if (data.refresh_token) {
       this.refreshToken = data.refresh_token;
+    }
+    if (data.id_token) {
+      this.idToken = data.id_token;
     }
     if (data.expires_in) {
       let seconds = parseInt(data.expires_in);
