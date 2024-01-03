@@ -8,21 +8,21 @@ export default defineConfig({
     strictPort: true,
     // https://vitejs.dev/config/server-options.html#server-proxy
     proxy: {
-      '/conf/auth/': {
-        target: 'https://accounts.mustang.im/auth/realms/mustang/protocol/openid-connect/',
+      '/meet/auth/': {
+        target: 'https://accounts.mustang.im/',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/conf\/auth\//, ''),
+        rewrite: (path) => path.replace(/^\/meet\//, ''),
       },
-      '/conf/controller/': {
+      '/meet/controller/': {
         target: 'https://controller.mustang.im',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/conf\/controller/, ''),
+        rewrite: (path) => path.replace(/^\/meet\/controller/, ''),
       },
-      /*'/conf/signaling': {
+      /*'/meet/signaling': {
         target: 'wss://controller.mustang.im',
         changeOrigin: true,
         ws: true,
-        rewrite: (path) => path.replace(/^\/conf\//, ''),
+        rewrite: (path) => path.replace(/^\/meet\//, ''),
       },*/
     },
   },
