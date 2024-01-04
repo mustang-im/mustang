@@ -1,5 +1,8 @@
 pref("toolkit.defaultChromeURI", "chrome://mustang/content/app.xhtml");
 
+// This helps us bypass CORS without being chrome.
+pref("network.http.sendOriginHeader", 0);
+
 // Mozilla pref tweaks
 pref("browser.cache.disk.enable", false);
 pref("network.cookie.lifetimePolicy", 2);  // Cookie policy; 2 = allow session cookies only
