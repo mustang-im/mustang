@@ -88,7 +88,7 @@
   * Participant opening cam
   * Participant closing cam
   * Mute/unmute
-  * Raise hand
+  * TURN server
 * XMPP 1:1
 * XMPP group?
 * Video streaming

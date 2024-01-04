@@ -9,7 +9,7 @@
         {meeting}
         participants={meeting.participants}
         bind:selected={selectedParticipant}
-        userIsModerator={meeting.myRole == "moderator"}
+        userIsModerator={$myParticipant.role == ParticipantRole.Moderator}
         />
     </vbox>
   {/if}
@@ -17,7 +17,7 @@
 
 <script lang="ts">
   import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
-  import type { MeetingParticipant } from "../../logic/Meet/Participant";
+  import { ParticipantRole, type MeetingParticipant } from "../../logic/Meet/Participant";
   import Gallery from "./Gallery.svelte";
   import InMeetingToolbar from "./InMeetingToolbar.svelte";
   import ParticipantsSidebar from "./Sidebar.svelte";
@@ -28,6 +28,7 @@
   let showSelf = true;
   let selectedParticipant: MeetingParticipant = null;
   let showSidebar = false;
+  $: myParticipant = meeting.myParticipant;
 </script>
 
 <style>

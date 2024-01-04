@@ -1,13 +1,13 @@
 <hbox class="actions">
   {#if participant instanceof MeetingParticipant}
-    {#if participant.screenSharing}
+    {#if $participant.screenSharing}
       <Button plain
         classes="screen-sharing"
         icon={ScreenSharingIcon}
         disabled={true}
         iconOnly />
     {/if}
-    {#if participant.handUp}
+    {#if $participant.handUp}
       <Button plain
         classes={$participant.handUp ? "hand-up" : "hand-down"}
         label={$participant.handUp ? "Take hand down" : ""}
@@ -77,11 +77,7 @@
   }
   function toggleCamera(participant: MeetingParticipant) {
     assert(userIsModerator, "You are not a moderator");
-    if (participant.cameraOn) {
-      // TODO Turn camera off on server
-    } else {
-      // TODO Request user to turn on camera
-    }
+    // TODO Turn camera off on server
     participant.cameraOn = !participant.cameraOn;
   }
   function toggleMic(participant: MeetingParticipant) {

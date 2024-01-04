@@ -1,5 +1,5 @@
 import { SelfVideo, type VideoStream } from "./VideoStream";
-import type { MeetingParticipant, ParticipantRole } from "./Participant";
+import type { MeetingParticipant as Participant } from "./Participant";
 import type { Event } from "../Calendar/Event";
 import { SetColl } from 'svelte-collections';
 import { Observable, notifyChangedProperty } from "../util/Observable";
@@ -14,11 +14,11 @@ export class VideoConfMeeting extends Observable {
   started: Date;
   @notifyChangedProperty
   ended: Date;
-  readonly participants = new SetColl<MeetingParticipant>();
+  readonly participants = new SetColl<Participant>();
   readonly videos = new SetColl<VideoStream>();
-  /** If I'm a moderator, I can manage other users */
+  /** myParticipant.role: If I'm a moderator, I can manage other users */
   @notifyChangedProperty
-  myRole: ParticipantRole;
+  myParticipant: Participant;
 
   errorCallback = (ex) => {
     console.error(ex);

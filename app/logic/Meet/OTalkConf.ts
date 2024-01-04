@@ -5,7 +5,6 @@ import { OAuth2 } from "./OAuth2";
 import { notifyChangedProperty } from "../util/Observable";
 import { assert, sleep } from "../util/util";
 import axios from "axios";
-import { View } from "lucide-svelte";
 
 export class OTalkConf extends VideoConfMeeting {
   /** OTalk controller server hostname */
@@ -23,7 +22,7 @@ export class OTalkConf extends VideoConfMeeting {
   /* Current meeting */
   eventID: string;
   roomID: string;
-  myParticipantID: string;
+  myParticipant: Participant;
 
   /** Our camera and mic.
    * Set this using setCamera() */
@@ -82,7 +81,6 @@ export class OTalkConf extends VideoConfMeeting {
     console.log("new conference", event);
     this.eventID = event.id;
     this.roomID = event.room.id;
-    console.log(await this.getInvitationURL());
   }
 
   async getInvitationURL(): Promise<URLString> {
@@ -122,7 +120,7 @@ export class OTalkConf extends VideoConfMeeting {
     }
     this.camera = mediaStream;
     this.videos.add(new SelfVideo(mediaStream));
-    if (this.myParticipantID) {
+    if (this.myParticipant) {
       await this.sendVideo(this.camera);
     }
   }
@@ -151,8 +149,10 @@ export class OTalkConf extends VideoConfMeeting {
     });
     let myParticipantInfo = await this.waitForMessage("control", "join_success") as
       ParticipantInfoJSON;
-    this.myParticipantID = myParticipantInfo.id;
-    this.myRole = myParticipantInfo.role;
+    this.myParticipant = new Participant();
+    this.myParticipant.id = myParticipantInfo.id;
+    this.myParticipant.name = me.name;
+    this.myParticipant.role = myParticipantInfo.role;
     if (this.camera && this.camera.active) {
       await this.sendVideo(this.camera);
     }
@@ -166,8 +166,9 @@ export class OTalkConf extends VideoConfMeeting {
     let participant = new Participant();
     participant.id = json.id;
     participant.name = json.control.display_name;
+    this.setParticipateInfo(participant, json);
     this.participants.add(participant);
-    if (json.media?.video?.video || json.media?.video?.audio) {
+    if (participant.cameraOn || participant.micOn) {
       await this.getVideoFromParticipant(participant);
     }
   }
@@ -187,13 +188,9 @@ export class OTalkConf extends VideoConfMeeting {
     let participantID = json.id;
     let participant = this.participants.find(p => p.id == participantID);
     assert(participant, "Got participant update before joined");
-    participant.handUp = !!json.hand_raised;
-    if (json.media?.video) {
-      participant.cameraOn = json.media?.video?.video;
-      participant.micOn = json.media?.video?.audio;
-    }
+    this.setParticipateInfo(participant, json);
 
-    let incomingMedia = json.media?.video?.video || json.media?.video?.audio;
+    let incomingMedia = participant.cameraOn || participant.micOn;
     let video = this.videos.find(v => (v instanceof ParticipantVideo || v instanceof ScreenShare) &&
       v.participant?.id == participantID);
     if (!video && incomingMedia) {
@@ -203,14 +200,42 @@ export class OTalkConf extends VideoConfMeeting {
     }
   }
 
+  protected setParticipateInfo(participant: Participant, json: any) {
+    participant.handUp = !!json.control?.hand_is_up;
+    if (json.media?.video) {
+      participant.cameraOn = json.media?.video?.video;
+      participant.micOn = json.media?.video?.audio;
+    }
+  }
+
   /** Handles control.left */
   protected participantLeft(json: any) {
     let participantId = json.id;
     let participant = this.participants.find(p => p.id == participantId);
+    assert(participant, "Participant left, but we didn't know about him.");
     this.participants.remove(participant);
     let video = this.videos.find(v => (v instanceof ParticipantVideo || v instanceof ScreenShare) &&
       v.participant == participant);
     this.videos.remove(video);
+  }
+
+  /** Called when our metadata changes, e.g. hand up or cam/mic on/off */
+  protected selfUpdate(self: Participant, propertyName?: string) {
+    if (!propertyName) {
+      return;
+    }
+    if (propertyName == "handUp") {
+      this.send("control", self.handUp ? "raise_hand" : "lower_hand", {});
+    } else if (propertyName == "cameraOn" || propertyName == "micOn") {
+      this.send("media", "update_media_session", {
+        media_session_type: "video",
+        media_session_state: {
+          video: self.cameraOn,
+          audio: self.micOn,
+          video_settings: 2,
+        }
+      });
+    }
   }
 
   async answer() {
@@ -241,25 +266,25 @@ export class OTalkConf extends VideoConfMeeting {
     for (let track of mediaStream.getTracks()) {
       peerConnection.addTrack(track, mediaStream);
     }
-    await this.sendICECandidates(peerConnection, this.myParticipantID);
+    await this.sendICECandidates(peerConnection, this.myParticipant.id);
     let offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);
     this.send("media", "publish", {
-      target: this.myParticipantID,
+      target: this.myParticipant.id,
       media_session_type: "video",
       sdp: offer.sdp,
     });
     let answer = await this.waitForMessage("media", "sdp_answer");
-    assert(answer.source == this.myParticipantID, "Videos of participants got mixed up in their order");
+    assert(answer.source == this.myParticipant.id, "Videos of participants got mixed up in their order");
     await peerConnection.setRemoteDescription({
       type: "answer",
       sdp: answer.sdp,
     });
     let up = await this.waitForMessage("media", "webrtc_up");
-    assert(up.source == this.myParticipantID, "WebRTC up of participants got mixed up in their order");
+    assert(up.source == this.myParticipant.id, "WebRTC up of participants got mixed up in their order");
     let status = await this.waitForMessage("media", "media_status");
     // This arrives at least twice, one for audio and once for video, but we'll wait only for one of them.
-    assert(status.source == this.myParticipantID, "media status of participants got mixed up in their order");
+    assert(status.source == this.myParticipant.id, "media status of participants got mixed up in their order");
     assert(status.receiving, "media status not receiving");
     this.send("media", "publish_complete", {
       media_session_type: "video",
@@ -272,8 +297,16 @@ export class OTalkConf extends VideoConfMeeting {
   }
 
   protected async removeMyVideo(mediaStream: MediaStream) {
-    // TODO Tell controller to remove our video
+    this.send("media", "update_media_session", {
+      media_session_type: "video",
+      media_session_state: {
+        audio: false,
+        video: false,
+        video_settings: 2,
+      }
+    });
   }
+
   // TODO re-subscribe to other participant's video, if it dropped
 
   async getVideoFromParticipant(participant: Participant) {

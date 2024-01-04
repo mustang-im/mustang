@@ -7,9 +7,9 @@ export class MeetingParticipant extends Person {
   @notifyChangedProperty
   handUp = false;
   @notifyChangedProperty
-  micOn = true;
+  micOn = false;
   @notifyChangedProperty
-  cameraOn = true;
+  cameraOn = false;
   @notifyChangedProperty
   screenSharing = false;
 }
