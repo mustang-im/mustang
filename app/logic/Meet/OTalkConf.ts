@@ -104,16 +104,6 @@ export class OTalkConf extends VideoConfMeeting {
     };
   }
 
-  /**
-   * After opening our user's camera and microphone
-   * using `getUserMedia()`, pass the stream here.
-   *
-   * You should preferably do that before `start()`ing the conference,
-   * but you can do it at any time.
-   *
-   * @param MediaStream from getUserMedia()
-   *   If null, the current stream will be removed.
-   */
   async setCamera(mediaStream: MediaStream | null) {
     if (!mediaStream) {
       if (!this.camera) {
@@ -121,6 +111,7 @@ export class OTalkConf extends VideoConfMeeting {
       }
       let old = this.camera;
       this.camera = null;
+      this.videos.remove(this.videos.find(v => v instanceof SelfVideo && v.stream == old));
       await this.removeMyVideo(old);
       return;
     }
@@ -129,8 +120,9 @@ export class OTalkConf extends VideoConfMeeting {
       await this.setCamera(null); // Remove previous
     }
     this.camera = mediaStream;
+    this.videos.add(new SelfVideo(mediaStream));
     if (this.myParticipantID) {
-      this.sendVideo(this.camera);
+      await this.sendVideo(this.camera);
     }
   }
 
@@ -220,13 +212,11 @@ export class OTalkConf extends VideoConfMeeting {
 
   protected async sendVideo(mediaStream: MediaStream) {
     assert(mediaStream.active, "MediaStream needs to be active");
-    let videoStream = new SelfVideo(mediaStream);
-    this.videos.add(videoStream);
-
     let peerConnection = new RTCPeerConnection(this.getPeerConnectionConfig());
     for (let track of mediaStream.getTracks()) {
-      peerConnection.addTrack(track);
+      peerConnection.addTrack(track, mediaStream);
     }
+    await this.sendICECandidates(peerConnection, this.myParticipantID);
     let offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);
     this.send("media", "publish", {
@@ -234,7 +224,6 @@ export class OTalkConf extends VideoConfMeeting {
       media_session_type: "video",
       sdp: offer.sdp,
     });
-    await this.sendICECandidates(peerConnection, this.myParticipantID);
     let answer = await this.waitForMessage("media", "sdp_answer");
     assert(answer.source == this.myParticipantID, "Videos of participants got mixed up in their order");
     await peerConnection.setRemoteDescription({
@@ -243,6 +232,18 @@ export class OTalkConf extends VideoConfMeeting {
     });
     let up = await this.waitForMessage("media", "webrtc_up");
     assert(up.source == this.myParticipantID, "WebRTC up of participants got mixed up in their order");
+    let status = await this.waitForMessage("media", "media_status");
+    // This arrives at least twice, one for audio and once for video, but we'll wait only for one of them.
+    assert(status.source == this.myParticipantID, "media status of participants got mixed up in their order");
+    assert(status.receiving, "media status not receiving");
+    this.send("media", "publish_complete", {
+      media_session_type: "video",
+      media_session_state: {
+        audio: true,
+        video: true,
+        video_settings: 2,
+      }
+    });
   }
 
   protected async removeMyVideo(mediaStream: MediaStream) {
@@ -271,6 +272,7 @@ export class OTalkConf extends VideoConfMeeting {
       type: "offer",
       sdp: offer.sdp,
     });
+    await this.sendICECandidates(peerConnection, participant.id);
     let answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
     this.send("media", "sdp_answer", {
@@ -278,7 +280,6 @@ export class OTalkConf extends VideoConfMeeting {
       media_session_type: "video",
       sdp: answer.sdp,
     });
-    await this.sendICECandidates(peerConnection, participant.id);
     let up = await this.waitForMessage("media", "webrtc_up");
     assert(up.source == participant.id, "WebRTC up of participants got mixed up in their order");
     this.send("media", "configure", {
@@ -457,10 +458,6 @@ export function arrayRemoveLast(array, item) {
 }
 
 type JSONNamespaces = "control" | "media";
-const messageProp = {
-  control: "action",
-  media: "message",
-}
 
 class ParticipantInfoJSON {
   id: string;
