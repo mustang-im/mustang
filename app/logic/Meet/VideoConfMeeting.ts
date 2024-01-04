@@ -39,6 +39,9 @@ export class VideoConfMeeting extends Observable {
    * You should preferably do that before `start()`ing the conference,
    * but you can do it at any time.
    *
+   * This function will also add or remove the `SelfVideo` instance
+   * in `.videos`, so showing all `.videos` is enough to show self.
+   *
    * @param MediaStream from getUserMedia()
    *   If null, the current stream will be removed.
    */

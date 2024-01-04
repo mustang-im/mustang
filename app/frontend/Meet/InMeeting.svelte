@@ -128,6 +128,7 @@
       return;
     }
     await meeting.setCamera(cameraStream);
+    // setCamera() also creates `SelfVideo` in `meeting.videos`
   }
 
   async function stopCamera() {
@@ -135,6 +136,7 @@
       track.stop();
     }
     await meeting.setCamera(null);
+    // setCamera(null) also removes `SelfVideo` from `meeting.videos`
     cameraStream = null;
   }
 </script>
