@@ -473,6 +473,32 @@ Receive
 }
 or "focus": null
 
+## Open/close cam/mic
+
+Send:
+{
+  "namespace": "media",
+  "payload": {
+    "action": "update_media_session",
+    "media_session_type": "video",
+    "media_session_state": {
+      "audio": true,
+      "video": true,
+      "video_settings": 2
+    }
+  }
+}
+
+## Raise hand
+
+Send:
+{
+  "namespace": "control",
+  "payload": {
+    "action": "raise_hand"
+  }
+}
+
 ## New participant with video
 
 On Conference WebSocket:
