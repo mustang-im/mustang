@@ -498,6 +498,7 @@ Send:
     "action": "raise_hand"
   }
 }
+or "lower_hand"
 
 ## New participant with video
 
