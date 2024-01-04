@@ -69,12 +69,28 @@
 
 # Meet
 ## UI
-* Meeting screen
 * Start cam screen
-* Need: Router, for: Showing incoming calls
+* Select camera
+  * Start screen
+  * In meeting
+* Open/close cam and mic
+* Show incoming calls
+  * Switch to Meet app
+* UI for incoming or outgoing call
+  * Before joining conference
+  * Before calling people/group
+  * While calling
+  * When receiving call
 
 ## Protocol
 * OpenTalk server
+  * Stop own video
+  * Participant opening cam
+  * Participant closing cam
+  * Mute/unmute
+  * Raise hand
+* XMPP 1:1
+* XMPP group?
 * Video streaming
 * Jitsi server
 
