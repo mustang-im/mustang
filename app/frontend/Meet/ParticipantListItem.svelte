@@ -21,14 +21,14 @@
         classes="toggle-mic"
         label="Mute"
         on:click={() => catchErrors(() => toggleMic(participant))}
-        icon={participant.micOn ? MicrophoneOffIcon : MicrophoneIcon}
+        icon={$participant.micOn ? MicrophoneIcon : MicrophoneOffIcon}
         disabled={!userIsModerator}
         iconOnly />
       <Button plain
         classes="toggle-camera"
         label="Camera"
         on:click={() => catchErrors(() => toggleCamera(participant))}
-        icon={participant.cameraOn ? CameraOffIcon : CameraIcon}
+        icon={$participant.cameraOn ? CameraIcon : CameraOffIcon}
         disabled={!userIsModerator}
         iconOnly />
       <Menu>
