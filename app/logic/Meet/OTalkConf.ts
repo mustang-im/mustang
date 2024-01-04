@@ -5,6 +5,7 @@ import { OAuth2 } from "./OAuth2";
 import { notifyChangedProperty } from "../util/Observable";
 import { assert, sleep } from "../util/util";
 import axios from "axios";
+import { View } from "lucide-svelte";
 
 export class OTalkConf extends VideoConfMeeting {
   /** OTalk controller server hostname */
@@ -139,6 +140,7 @@ export class OTalkConf extends VideoConfMeeting {
     await this.join();
     this.addMsgListener("control", "joined", false, false, (json) => this.participantJoined(json));
     this.addMsgListener("control", "left", false, false, (json) => this.participantLeft(json));
+    this.addMsgListener("control", "update", false, false, (json) => this.participantUpdate(json));
     this.addMsgListener("media", "webrtc_down", false, false, (json) => this.participantVideoStopped(json));
   }
 
@@ -157,7 +159,7 @@ export class OTalkConf extends VideoConfMeeting {
   }
 
   /**
-   * Handles control joined
+   * Handles control.joined
    * Called when other participants join the conference.
    */
   protected async participantJoined(json: any) {
@@ -175,10 +177,33 @@ export class OTalkConf extends VideoConfMeeting {
     let participantId = json.source;
     let video = this.videos.find(v => (v instanceof ParticipantVideo || v instanceof ScreenShare) &&
       v.participant?.id == participantId);
-    this.videos.remove(video);
+    if (video) {
+      this.videos.remove(video);
+    }
   }
 
-  /** Handles control/left */
+  /** Handles control.update */
+  protected async participantUpdate(json: any) {
+    let participantID = json.id;
+    let participant = this.participants.find(p => p.id == participantID);
+    assert(participant, "Got participant update before joined");
+    participant.handUp = !!json.hand_raised;
+    if (json.media?.video) {
+      participant.cameraOn = json.media?.video?.video;
+      participant.micOn = json.media?.video?.audio;
+    }
+
+    let incomingMedia = json.media?.video?.video || json.media?.video?.audio;
+    let video = this.videos.find(v => (v instanceof ParticipantVideo || v instanceof ScreenShare) &&
+      v.participant?.id == participantID);
+    if (!video && incomingMedia) {
+      await this.getVideoFromParticipant(participant);
+    } else if (video && !incomingMedia) {
+      this.videos.remove(video);
+    }
+  }
+
+  /** Handles control.left */
   protected participantLeft(json: any) {
     let participantId = json.id;
     let participant = this.participants.find(p => p.id == participantId);
@@ -352,7 +377,6 @@ export class OTalkConf extends VideoConfMeeting {
   protected async handleIncomingMsg(event) {
     try {
       let eventData = JSON.parse(event.data);
-      console.log("incoming message", eventData);
       let module = eventData.namespace;
       let payload = eventData.payload;
       for (let listener of this.msgListeners.slice().reverse()) {
