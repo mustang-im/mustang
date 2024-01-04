@@ -4,21 +4,21 @@ export class Observable {
   _observers: Array<observerFunc<this>> = [];
   _properties = {};
   subscribe(observer: observerFunc<this>): () => void {
-    this.callObserver(observer, null);
+    this.callObserver(observer, null, null);
     this._observers.push(observer);
     let unsubscribe = () => {
       arrayRemove(this._observers, observer);
     }
     return unsubscribe;
   }
-  notifyObservers(propertyName?: string): void {
+  notifyObservers(propertyName?: string, oldValue?: any): void {
     for (let observer of this._observers) {
-      this.callObserver(observer, propertyName);
+      this.callObserver(observer, propertyName, oldValue);
     }
   }
-  private callObserver(observer: observerFunc<this>, propertyName: string | null): void {
+  private callObserver(observer: observerFunc<this>, propertyName: string | null, oldValue: any): void {
     try {
-      observer(this, propertyName);
+      observer(this, propertyName, oldValue);
     } catch (ex) {
       console.error(ex);
     }
@@ -27,9 +27,9 @@ export class Observable {
 
 export interface IObservable {
   subscribe(observer: observerFunc<this>): () => void;
-  notifyObservers(propertyName?: string): void;
+  notifyObservers(propertyName?: string, oldValue?: any): void;
 }
-type observerFunc<T> = (value: T, propertyName: string | null) => void;
+type observerFunc<T> = (object: T, propertyName: string | null, oldValue: any) => void;
 
 /** Decorator for getters/setters.
  * Lets changes call `notifyObservers()`.
@@ -38,11 +38,12 @@ type observerFunc<T> = (value: T, propertyName: string | null) => void;
 export function notifyChangedAccessor<T extends Observable>(obj: T, propertyName: string, descriptor: PropertyDescriptor) {
   let original = descriptor.set;
   descriptor.set = function (this: T, val: any) {
-    if (this[propertyName] === val) {
+    let oldValue = this[propertyName];
+    if (oldValue === val) {
       return;
     }
     original.call(this, val);
-    this.notifyObservers(propertyName);
+    this.notifyObservers(propertyName, oldValue);
   }
 }
 
@@ -67,11 +68,12 @@ export function notifyChangedProperty<T extends Observable>(obj: T, propertyName
     };
   }
   descriptor.set = function (this: T, val: any): void {
-    if (this._properties[propertyName] === val) {
+    let oldValue = this._properties[propertyName];
+    if (oldValue === val) {
       return;
     }
     this._properties[propertyName] = val;
-    this.notifyObservers(propertyName);
+    this.notifyObservers(propertyName, oldValue);
   }
   descriptor.get = function (this: T) {
     return this._properties[propertyName];
