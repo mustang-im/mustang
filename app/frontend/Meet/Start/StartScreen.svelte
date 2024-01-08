@@ -5,6 +5,7 @@
         <Button label="Call {$selectedPerson.name}" on:click={() => catchErrors(callSelected)} classes="call-person">
           <PersonPicture slot="icon" person={$selectedPerson} size={24} />
         </Button>
+        <Button label="Test incoming call" icon={VideoIcon} on:click={() => catchErrors(testIncoming)}/>
       {/if}
       <Button label="Plan a meeting" icon={AddToCalendarIcon} />
       <Button label="Start an ad-hoc meeting" icon={VideoIcon} on:click={() => catchErrors(startAdHocMeeting)}/>
@@ -31,7 +32,7 @@
 </hbox>
 
 <script lang="ts">
-  import { VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
+  import { MeetingState, VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
   import { ParticipantVideo, SelfVideo } from "../../../logic/Meet/VideoStream";
   import { MeetingParticipant, ParticipantRole } from "../../../logic/Meet/Participant";
   import { selectedPerson } from "../../Shared/Person/PersonOrGroup";
@@ -59,6 +60,16 @@
     appGlobal.meetings.add(meeting);
   }
 
+  async function testIncoming() {
+    let caller = new MeetingParticipant();
+    caller.name = $selectedPerson.name;
+    caller.picture = $selectedPerson.picture;
+    let meeting = await VideoConfMeeting.createAdhoc();
+    meeting.state = MeetingState.IncomingCall;
+    meeting.participants.add(caller);
+    appGlobal.meetings.add(meeting);
+  }
+
   async function callSelected() {
     let callee = new MeetingParticipant();
     callee.name = $selectedPerson.name;
@@ -79,12 +90,13 @@
     </p>`;
 
     let meeting = await VideoConfMeeting.createAdhoc();
+    meeting.state = MeetingState.OutgoingCallPrepare;
     meeting.event = event;
     meeting.participants.add(callee);
     appGlobal.meetings.add(meeting);
     meeting.videos.add(new ParticipantVideo(new MediaStream(), callee));
     meeting.videos.add(new SelfVideo(new MediaStream()));
-    meeting.myRole = ParticipantRole.Moderator;
+    // meeting.myParticipant.role = ParticipantRole.Moderator;
   }
 </script>
 
