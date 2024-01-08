@@ -37,10 +37,10 @@
     color: black;
   }
   .app-button.selected .icon :global(.cls-1) {
-    stroke: #5C5C71;
+    stroke: #494558;
   }
   .app-button.selected .icon :global(.date-calendar-icon) {
-    fill: #5C5C71;
+    fill: #494558;
   }
   .icon {
     color: transparent;
