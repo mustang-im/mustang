@@ -34,6 +34,7 @@
 <style>
   .main {
     flex: 3 0 0;
+    background-color: #494558;
   }
   .sidebar {
     min-width: 250px;
