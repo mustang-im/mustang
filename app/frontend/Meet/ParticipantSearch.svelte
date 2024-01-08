@@ -78,14 +78,20 @@
     width: 100%;
     margin-right: 12px;
     height: 32px;
-    padding: 0px 8px;
-    border: 1px solid #BAB7BF;
-    border-radius: 4px;
+    padding: 0px 16px;
+    border: 1px solid #8D8995;
+    border-radius: 16px;
+    background-color: #5C5768;
+    color: white;
   }
   input::placeholder {
-    color: #808080;
+    color: white;
   }
   .buttons :global(button) {
     margin-right: 4px;
+  }
+  .buttons :global(button.invite-participant) {
+    background-color: transparent;
+    color: white;
   }
 </style>

@@ -1,12 +1,12 @@
 <hbox class="actions">
   {#if isSidebar}
-    <Button plain
+    <RoundButton
       label="Go back to meeting"
-      classes="back-to-meet"
+      classes="back-to-meet secondary"
       on:click={() => $selectedApp = AppArea.Meet}
       icon={OpenToLeftIcon}
       iconSize="16px"
-      iconOnly
+      border={false}
       />
   {/if}
   <hbox flex />
@@ -46,13 +46,13 @@
   {/if}
   <hbox flex />
   {#if !isSidebar}
-    <Button plain
+    <RoundButton
       label={showSidebar ? "Close participants list" : "Open participants list"}
-      classes="sidebar"
+      classes="sidebar secondary"
       on:click={() => showSidebar = !showSidebar}
       icon={showSidebar ? CloseSidebarIcon : OpenSidebarIcon}
       iconSize="24px"
-      iconOnly
+      border={false}
       />
   {/if}
 </hbox>
@@ -167,7 +167,8 @@
     transform: rotate(135deg);
     stroke: white;
   }
-  .actions :global(button.plain) {
+  .actions :global(button.secondary) {
+    background-color: transparent;
     color: white;
   }
 </style>
