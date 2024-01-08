@@ -112,7 +112,7 @@ a:hover {
 
 /* Fix svelte-ui menu */
 
-.svelteui-Paper-root {
+div.svelteui-Menu-root div.svelteui-Paper-root {
   padding: 4px 0px;
 }
 
