@@ -6,7 +6,8 @@
       on:click={() => $selectedApp = AppArea.Meet}
       icon={OpenToLeftIcon}
       iconSize="16px"
-      iconOnly />
+      iconOnly
+      />
   {/if}
   <hbox flex />
   <RoundButton
@@ -15,6 +16,7 @@
     on:click={() => catchErrors(toggleMic)}
     icon={micOn ? MicrophoneIcon : MicrophoneOffIcon}
     iconSize="24px"
+    border={false}
     />
   <RoundButton
     label="Camera"
@@ -22,6 +24,7 @@
     on:click={() => catchErrors(toggleCamera)}
     icon={cameraOn ? CameraIcon : CameraOffIcon}
     iconSize="24px"
+    border={false}
     />
   <RoundButton
     label={handRaised ? "Hand raised" : "Raise hand"}
@@ -29,6 +32,7 @@
     on:click={() => catchErrors(toggleHand)}
     icon={handRaised ? HandIcon : HandDownIcon}
     iconSize="24px"
+    border={false}
     />
   {#if !isSidebar}
     <RoundButton
@@ -37,6 +41,7 @@
       on:click={() => catchErrors(leave)}
       icon={LeaveIcon}
       iconSize="24px"
+      border={false}
       />
   {/if}
   <hbox flex />
@@ -47,7 +52,8 @@
       on:click={() => showSidebar = !showSidebar}
       icon={showSidebar ? CloseSidebarIcon : OpenSidebarIcon}
       iconSize="24px"
-      iconOnly />
+      iconOnly
+      />
   {/if}
 </hbox>
 
@@ -63,7 +69,7 @@
   import CameraOffIcon from "lucide-svelte/icons/video-off";
   import MicrophoneIcon from "lucide-svelte/icons/mic";
   import MicrophoneOffIcon from "lucide-svelte/icons/mic-off";
-  import LeaveIcon from "lucide-svelte/icons/phone-outgoing";
+  import LeaveIcon from "lucide-svelte/icons/phone";
   import OpenSidebarIcon from "lucide-svelte/icons/users-round";
   import OpenToLeftIcon from "lucide-svelte/icons/arrow-left-from-line";
   import CloseSidebarIcon from "lucide-svelte/icons/arrow-right-from-line";
@@ -129,7 +135,7 @@
     margin-right: 8px;
   }
   .actions :global(button.leave) {
-    background-color: #FF7777;
+    background-color: #F34949;
   }
   /*.actions :global(.toggle-camera svg),
   .actions :global(.toggle-mic svg) {
@@ -159,6 +165,6 @@
   }
   .actions :global(.leave svg) {
     transform: rotate(135deg);
-    margin-top: -2px;
+    stroke: white;
   }
 </style>
