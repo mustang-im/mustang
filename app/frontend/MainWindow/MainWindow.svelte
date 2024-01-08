@@ -28,6 +28,7 @@
     {/if}
   </hbox>
 </vbox>
+<OpenMeet />
 
 <script lang="ts">
   import { AppArea, selectedApp, sidebarApp } from "./app";
@@ -42,6 +43,7 @@
   import AppBar from "./AppBar.svelte";
   import AppsApp from "../Apps/AppsApp.svelte";
   import WindowHeader from "./WindowHeader.svelte";
+  import OpenMeet from "../Meet/Start/OpenMeet.svelte";
   import { showError } from "../Util/error";
   import { onMount } from "svelte";
 
