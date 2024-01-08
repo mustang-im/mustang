@@ -1,5 +1,5 @@
 {#if meeting}
-  <InMeeting {meeting} sidebar={true} />
+  <InMeeting {meeting} isSidebar={true} />
 {/if}
 
 <script lang="ts">
