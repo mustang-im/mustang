@@ -27,7 +27,7 @@
 
   let showSelf = true;
   let selectedParticipant: MeetingParticipant = null;
-  let showSidebar = false;
+  let showSidebar = meeting.participants.length != 1;
   $: myParticipant = meeting.myParticipant;
 </script>
 
