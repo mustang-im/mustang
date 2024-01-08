@@ -25,7 +25,9 @@
         {#each devices.filter(d => d.kind == "audioinput") as device (device.deviceId)}
           <Menu.Item
             on:click={() => catchErrors(() => selectMic(device))}
-            icon={MicrophoneIcon}>
+            icon={MicrophoneIcon}
+            className={device.deviceId == $selectedMic ? "selected" : ""}
+            >
             {device.label}
           </Menu.Item>
         {/each}
@@ -52,7 +54,9 @@
         {#each devices.filter(d => d.kind == "videoinput") as device (device.deviceId)}
           <Menu.Item
             on:click={() => catchErrors(() => selectCamera(device))}
-            icon={CameraIcon}>
+            icon={CameraIcon}
+            className={device.deviceId == $selectedCamera ? "selected" : ""}
+            >
             {device.label}
           </Menu.Item>
         {/each}
@@ -62,7 +66,7 @@
 </vbox>
 
 <script lang="ts">
-  import { cameraOn, micOn, selectedCamera } from "./devices";
+  import { cameraOn, micOn, selectedCamera, selectedMic } from "./selectedDevices";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import { Menu } from "@svelteuidev/core";
   import CameraIcon from "lucide-svelte/icons/video";
@@ -97,7 +101,14 @@
     if (!$cameraOn && !$micOn) {
       return;
     }
-    cameraStream = await navigator.mediaDevices.getUserMedia({ video: $cameraOn, audio: $micOn });
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: $cameraOn ? {
+        deviceId: $selectedCamera,
+      } : null,
+      audio: $micOn ? {
+        deviceId: $selectedMic,
+      } : null,
+    });
     if (!cameraStream || !videoEl) {
       return;
     }
@@ -127,14 +138,15 @@
     devices = allDevices.filter(d => !d.label.startsWith("Monitor of"));
   }
 
-  function selectCamera(device: MediaDeviceInfo) {
+  async function selectCamera(device: MediaDeviceInfo) {
     assert(device?.kind == "videoinput", "Need camera");
     $selectedCamera = device.deviceId;
   }
 
-  function selectMic(device: MediaDeviceInfo) {
+  async function selectMic(device: MediaDeviceInfo) {
     assert(device?.kind == "audioinput", "Need microphone");
-    $selectedCamera = device.deviceId;
+    $selectedMic = device.deviceId;
+    await restartCamMic();
   }
 
   onMount(async () => catchErrors(startCamMic));
@@ -164,4 +176,8 @@
     margin-top: 20px;
     padding: 2px;
   }
+  .buttons :global(.svelteui-Paper-root) {
+    width: 20em;
+  }
+  /* Other overrides for svelte-ui menu in app.css */
 </style>

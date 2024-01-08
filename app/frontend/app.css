@@ -109,3 +109,22 @@ a:hover {
     color: #747bff;
   }
 }
+
+/* Fix svelte-ui menu */
+
+.svelteui-Paper-root {
+  padding: 4px 0px;
+}
+
+button.svelteui-MenuItem-root {
+  border-radius: 0px;
+}
+
+button.svelteui-MenuItem-root[classname="selected"] {
+  background-color: #20AF9E;
+  color: white;
+}
+
+button.svelteui-MenuItem-root:hover:not([classname="selected"]) {
+  background-color: #A9DAD4;
+}

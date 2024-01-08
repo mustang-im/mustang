@@ -14,7 +14,7 @@
     label="Mute"
     classes="toggle-mic"
     on:click={() => catchErrors(toggleMic)}
-    icon={micOn ? MicrophoneIcon : MicrophoneOffIcon}
+    icon={$micOn ? MicrophoneIcon : MicrophoneOffIcon}
     iconSize="24px"
     border={false}
     />
@@ -22,7 +22,7 @@
     label="Camera"
     classes="toggle-camera"
     on:click={() => catchErrors(toggleCamera)}
-    icon={cameraOn ? CameraIcon : CameraOffIcon}
+    icon={$cameraOn ? CameraIcon : CameraOffIcon}
     iconSize="24px"
     border={false}
     />
@@ -60,8 +60,8 @@
 <script lang="ts">
   import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
   import { AppArea, selectedApp } from "../MainWindow/app";
+  import { cameraOn, micOn } from "./Setup/selectedDevices";
   import { appGlobal } from "../../logic/app";
-  import Button from "../Shared/Button.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import HandIcon from '../asset/icon/meet/hand.svg?raw';
   import HandDownIcon from "lucide-svelte/icons/grab";
@@ -79,8 +79,6 @@
   export let isSidebar = false;
   export let showSidebar = false; /* in/out */
 
-  let micOn = false;
-  let cameraOn = false;
   let handRaised = false;
   let cameraStream: MediaStream = null;
 
@@ -90,16 +88,16 @@
   }
 
   function toggleMic() {
-    micOn = !micOn;
+    $micOn = !$micOn;
   }
 
   async function toggleCamera() {
-    cameraOn = !cameraOn;
+    $cameraOn = !$cameraOn;
 
-    if (cameraOn && !cameraStream) {
+    if ($cameraOn && !cameraStream) {
       await startCamera();
     }
-    if (!cameraOn && cameraStream) {
+    if (!$cameraOn && cameraStream) {
       await stopCamera();
     }
   }
