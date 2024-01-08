@@ -2,6 +2,14 @@
   <hbox flex />
   <vbox class="box">
     <vbox class="text">
+      <hbox class="what">
+        {#if $meeting.state == MeetingState.OutgoingCallPrepare}
+          Do you want to call?
+        {:else if $meeting.state == MeetingState.OutgoingCall}
+          You're calling...
+        {:else if $meeting.state == MeetingState.IncomingCall}
+        {/if}
+      </hbox>
       <hbox class="who">
         {#if $participants.length == 1}
           {participants.first.name}
@@ -16,9 +24,7 @@
       </hbox>
       <hbox class="what">
         {#if $meeting.state == MeetingState.OutgoingCallPrepare}
-          Do you want to call?
         {:else if $meeting.state == MeetingState.OutgoingCall}
-          Calling...
         {:else if $meeting.state == MeetingState.IncomingCall}
           is calling you...
         {/if}
@@ -158,7 +164,7 @@
   }
   .actions :global(button.hangup) {
     transform: rotate(135deg);
-    background-color: #F34949;
+    background-color: #F34949 !important;
   }
 
   .setup-bar {
