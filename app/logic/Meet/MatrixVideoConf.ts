@@ -1,4 +1,4 @@
-import { VideoConfMeeting } from "./VideoConfMeeting";
+import { MeetingState, VideoConfMeeting } from "./VideoConfMeeting";
 import { ParticipantVideo, SelfVideo } from "./VideoStream";
 import { MeetingParticipant } from "./Participant";
 import { Chat } from "../Chat/Chat";
@@ -7,7 +7,7 @@ import type { MatrixCall, MatrixClient } from "matrix-js-sdk";
 import { CallErrorCode, createNewMatrixCall } from "matrix-js-sdk/lib/webrtc/call";
 
 export class MatrixVideoConf extends VideoConfMeeting {
-  call: MatrixCall;
+  protected _call: MatrixCall;
   client: MatrixClient;
 
   /**
@@ -19,14 +19,14 @@ export class MatrixVideoConf extends VideoConfMeeting {
   protected constructor(client: MatrixClient, call: MatrixCall) {
     super();
     this.client = client;
-    this.call = call;
-    this.call.on("error", ex => this.errorCallback(ex));
-    this.call.on("hangup", () => this.endCallback());
+    this._call = call;
+    this._call.on("error", ex => this.errorCallback(ex));
+    this._call.on("hangup", () => this.endCallback());
   }
 
   async start() {
     await super.start();
-    this.call.on("feeds_changed", (feeds) => {
+    this._call.on("feeds_changed", (feeds) => {
       for (let feed of feeds) {
         if (feed.isLocal()) {
           this.videos.add(new SelfVideo(feed.stream));
@@ -36,16 +36,16 @@ export class MatrixVideoConf extends VideoConfMeeting {
         }
       }
     });
-    this.call.placeVideoCall();
+    this._call.placeVideoCall();
   }
 
   async answer() {
-    this.call.answer();
+    this._call.answer();
     super.answer();
   }
 
   async hangup() {
-    this.call.hangup(CallErrorCode.UserHangup, false);
+    this._call.hangup(CallErrorCode.UserHangup, false);
     super.hangup();
   }
 
@@ -56,7 +56,7 @@ export class MatrixVideoConf extends VideoConfMeeting {
     let call = createNewMatrixCall(client, chatRoom.id);
     assert(call, "Matrix failed to start the call");
     let meet = new MatrixVideoConf(client, call);
-    await meet.start();
+    meet.state = MeetingState.OutgoingCallPrepare;
     return meet;
   }
 

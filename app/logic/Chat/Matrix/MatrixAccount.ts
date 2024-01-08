@@ -220,7 +220,7 @@ export class MatrixAccount extends ChatAccount {
   }
   async incomingCall(conf: MatrixVideoConf) {
     try {
-      let room = this.getExistingRoom(conf.call.roomId);
+      let room = this.getExistingRoom(conf._call.roomId);
       let msg = new IncomingCall();
       msg.contact = room.contact;
       msg.text = msg.html = `${msg.contact.name} is calling`;
