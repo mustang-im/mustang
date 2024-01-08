@@ -1,4 +1,5 @@
 <vbox flex class="calling" state={$meeting.state}>
+  <hbox flex />
   <vbox class="box">
     <vbox class="text">
       <hbox class="who">
@@ -57,6 +58,11 @@
       {/if}
     </hbox>
   </vbox>
+  <hbox class="setup-bar" flex>
+    <vbox class="device-setup">
+      <DeviceSetup />
+    </vbox>
+  </hbox>
 </vbox>
 
 <script lang="ts">
@@ -65,6 +71,7 @@
   import RoundButton from "../../Shared/RoundButton.svelte";
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
   import GroupPicture from "../../Shared/Person/GroupPicture.svelte";
+  import DeviceSetup from "../Setup/DeviceSetup.svelte";
   import CallIcon from "lucide-svelte/icons/phone-call";
   import HangUpIcon from "lucide-svelte/icons/phone";
   import XIcon from "lucide-svelte/icons/x";
@@ -133,7 +140,7 @@
     align-items: center;
     justify-content: center;
   }
-  .actions :global(> *) {
+  .actions {
     margin-top: 12px;
   }
   .actions :global(button) {
@@ -153,6 +160,18 @@
     transform: rotate(135deg);
     background-color: #F34949;
   }
+
+  .setup-bar {
+    justify-content: end;
+    align-items: end;
+    width: 100%;
+  }
+  .device-setup {
+    height: 25vh;
+    aspect-ratio: 1.2/1;
+    margin: 8px 0;
+  }
+
   .calling[state="incoming"] .what,
   .calling[state="outgoing"] .what,
   .actions :global(button.hangup:hover),
