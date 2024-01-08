@@ -1,5 +1,6 @@
 <button on:click on:dblclick
   title={label} class="button {classes}" class:filled class:border
+  {disabled} class:disabled class:selected
   >
   <hbox class="icon">
     {#if typeof(icon) == "string"}
@@ -18,10 +19,12 @@
 
   export let label: string = null;
   export let icon: ComponentType | string = null;
-  export let classes = "";
   export let iconSize = "16px";
+  export let classes = "";
   export let filled = false;
   export let border = true;
+  export let disabled = false;
+  export let selected = false;
 </script>
 
 <style>
@@ -51,12 +54,18 @@
   .icon {
     margin-right: 0px;
   }
-  button:hover {
+  button:hover:not(.disabled) {
     background-color: rgba(32, 174, 158, 100%); /* #20AE9E */
     border: 1px solid transparent !important;
   }
-  .button:hover .icon :global(path) {
+  .button:hover:not(.disabled) .icon :global(path) {
     stroke: white;
+  }
+  .disabled {
+    opacity: 50%;
+  }
+  .selected {
+    background-color: #00000033; /* TODO adapt style */
   }
 
   @media (prefers-color-scheme: light) {

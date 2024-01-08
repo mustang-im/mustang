@@ -1,4 +1,7 @@
-<button on:click on:dblclick class="button {classes}" class:plain title={label} class:disabled class:selected>
+<button on:click on:dblclick
+  title={label} class="button {classes}" class:plain
+  {disabled} class:disabled class:selected
+  >
   <hbox class="icon">
     {#if typeof(icon) == "string"}
       <Icon data={icon} size={iconSize} />
