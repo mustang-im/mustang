@@ -1,13 +1,24 @@
-import { VideoConfMeeting } from "./VideoConfMeeting";
+import { MeetingState, VideoConfMeeting } from "./VideoConfMeeting";
 import { Person, ContactEntry } from "../Abstract/Person";
 import { Group } from "../Abstract/Group";
-import { ChatAccount } from "../Chat/Account";
-import { Chat } from "../Chat/Chat";
+import { MeetingParticipant } from "./Participant";
+import type { ChatAccount } from "../Chat/Account";
+import type { Chat } from "../Chat/Chat";
 import { MatrixAccount } from "../Chat/Matrix/MatrixAccount";
 import { MatrixVideoConf } from "./MatrixVideoConf";
 import { appGlobal } from "../app";
 
 export async function startVideoCall(to: Person | Group): Promise<VideoConfMeeting> {
+  // TODO test code
+  let call = new VideoConfMeeting();
+  let callee = new MeetingParticipant();
+  callee.name = to.name;
+  callee.picture = to.picture;
+  call.participants.add(callee);
+  call.state = MeetingState.OutgoingCallPrepare;
+  appGlobal.meetings.add(call);
+  return;
+
   let haveChat = getExistingChat(to);
   if (!haveChat) {
     if (to instanceof Person) {

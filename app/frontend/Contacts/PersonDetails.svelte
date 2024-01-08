@@ -18,7 +18,8 @@
       </hbox>
       <vbox flex class="main-right">
         <hbox class="main-call">
-          <RoundButton label="Video call" icon={CameraIcon} iconSize="24px" />
+          <RoundButton label="Video call" icon={CameraIcon} iconSize="24px"
+            on:click={() => catchErrors(() => startVideoCall(person))} />
           {#if preferredPhoneNumber}
             <a href="tel:{preferredPhoneNumber}" class="phone-call">
               <RoundButton label="Call" icon={CallIcon} iconSize="22px" />
@@ -159,6 +160,7 @@
 
 <script lang="ts">
   import { ContactEntry, type Person } from "../../logic/Abstract/Person";
+  import { startVideoCall } from "../../logic/Meet/StartCall";
   import Button from "../Shared/Button.svelte";
   import ContactEntryUI from "./ContactEntryUI.svelte";
   import EmailAddressDisplay from "./EmailAddressDisplay.svelte";
@@ -178,6 +180,7 @@
   import CallIcon from '../asset/icon/meet/callVoice.svg?raw';
   import PhoneIcon from '../asset/icon/meet/call.svg?raw';
   import AddIcon from "lucide-svelte/icons/plus";
+  import { catchErrors } from "../Util/error";
 
   export let person: Person;
   $: person.name = person.name ?? person.firstName + " " + person.lastName;

@@ -14,7 +14,7 @@
 <script lang="ts">
   import { cameraOn, micOn, selectedCamera, selectedMic } from "./selectedDevices";
   import { catchErrors } from "../../Util/error";
-  import { onMount, tick } from "svelte";
+  import { onDestroy, onMount, tick } from "svelte";
   import DeviceButton from "./DeviceButton.svelte";
 
   let cameraStream: MediaStream;
@@ -73,6 +73,7 @@
   }
 
   onMount(async () => catchErrors(startCamMic));
+  onDestroy(async () => catchErrors(stopCamMic));
 </script>
 
 <style>
