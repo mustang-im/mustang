@@ -65,6 +65,19 @@
     </hbox>
   </vbox>
   <hbox class="setup-bar" flex>
+    <vbox class="info" flex>
+      {#if upcomingMeeting}
+        <vbox class="upcoming-meeting">
+          <hbox class="when">
+            <HourglassIcon size="16px" />
+            You have a meeting in {upcomingMeetingInMin} minutes:
+          </hbox>
+          <hbox class="title">
+            {upcomingMeeting.title}
+          </hbox>
+        </vbox>
+      {/if}
+    </vbox>
     <vbox class="device-setup">
       <DeviceSetup />
     </vbox>
@@ -82,6 +95,7 @@
   import HangUpIcon from "lucide-svelte/icons/phone";
   import XIcon from "lucide-svelte/icons/x";
   import OpenIcon from "lucide-svelte/icons/door-open";
+  import HourglassIcon from "lucide-svelte/icons/hourglass";
   import { mergeColls } from "svelte-collections";
   import { catchErrors } from "../../Util/error";
 
@@ -92,7 +106,10 @@
   const allEvents = mergeColls(appGlobal.calendars.map(calendar => calendar.events).values());
   const now = new Date();
   const maxUpcoming = new Date(); // TODO now + 15 min
+  maxUpcoming.setMinutes(maxUpcoming.getMinutes() + 15);
   const upcomingMeetings = allEvents.filter(event => event.startTime > now && event.startTime < maxUpcoming);
+  $: upcomingMeeting = $upcomingMeetings.first;
+  $: upcomingMeetingInMin = upcomingMeeting ? Math.floor((upcomingMeeting.startTime.getTime() - new Date().getTime()) / 1000 / 60) : 0;
 
   async function cancel() {
     meeting.state = MeetingState.Ended;
@@ -171,6 +188,19 @@
     justify-content: end;
     align-items: end;
     width: 100%;
+  }
+  .info {
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+  }
+  .upcoming-meeting .when {
+    justify-content: center;
+    align-items: center;
+  }
+  .upcoming-meeting .title {
+    justify-content: center;
+    align-items: center;
   }
   .device-setup {
     height: 25vh;
