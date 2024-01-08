@@ -104,10 +104,10 @@
     cameraStream = await navigator.mediaDevices.getUserMedia({
       video: $cameraOn ? {
         deviceId: $selectedCamera,
-      } : null,
+      } : undefined,
       audio: $micOn ? {
         deviceId: $selectedMic,
-      } : null,
+      } : undefined,
     });
     if (!cameraStream || !videoEl) {
       return;
