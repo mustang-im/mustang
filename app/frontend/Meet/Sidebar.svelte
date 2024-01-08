@@ -23,7 +23,13 @@
 </script>
 
 <style>
+  .participants-sidebar {
+    background-color: #494558;
+    color: white;
+    box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 46%);
+  }
   .participants-header {
     align-items: center;
+    margin-top: 12px;
   }
 </style>

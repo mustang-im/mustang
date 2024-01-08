@@ -98,8 +98,8 @@
     background-color: #57BDB3;
   }
   :global(.person) .actions :global(svg) {
-    stroke: black;
-    stroke-width: 1px;
+    stroke: white;
+    stroke-width: 1.5px;
   }
   :global(.person.selected) .actions :global(svg) {
     stroke: white;
@@ -108,6 +108,9 @@
   .actions :global(.svelteui-ActionIcon-root) {
     color: white;
     background-color: transparent;
+  }
+  .actions :global(.svelteui-ActionIcon-root svg) {
+    stroke-width: 1px;
   }
   .more-actions :global(.svelteui-ActionIcon-root:hover) {
     background-color: rgba(32, 174, 158, 50%); /* #20AE9E */
