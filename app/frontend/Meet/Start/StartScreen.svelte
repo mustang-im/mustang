@@ -61,6 +61,13 @@
   }
 
   async function testIncoming() {
+    let fakeMeeting = new Event();
+    fakeMeeting.startTime = faker.date.soon(1/24/4);
+    fakeMeeting.endTime = faker.date.soon(1/24);
+    fakeMeeting.title = faker.random.words();
+    fakeMeeting.descriptionText = faker.random.words();
+    appGlobal.calendars.first.events.add(fakeMeeting);
+
     let caller = new MeetingParticipant();
     caller.name = $selectedPerson.name;
     caller.picture = $selectedPerson.picture;
