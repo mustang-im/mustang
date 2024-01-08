@@ -167,4 +167,7 @@
     transform: rotate(135deg);
     stroke: white;
   }
+  .actions :global(button.plain) {
+    color: white;
+  }
 </style>
