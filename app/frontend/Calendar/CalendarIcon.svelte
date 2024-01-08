@@ -1,5 +1,5 @@
 <Icon data={calendar} {size}>
-  <text text-anchor="middle" x="65" y="95" class="date-calendar-icon">
+  <text text-anchor="middle" x="64" y="100" class="date-calendar-icon">
     {day}
   </text>
 </Icon>
@@ -32,7 +32,7 @@
 
 <style>
   .date-calendar-icon {
-    font: bold 48px sans-serif;
+    font: bold 52px sans-serif;
     fill: white;
   }
 </style>
