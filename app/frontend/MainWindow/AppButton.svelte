@@ -47,7 +47,7 @@
   }
   .label {
     margin-top: 4px;
-    font-size: 10px;
+    font-size: 11px;
     color: #999999;
   }
   .selected .label {
