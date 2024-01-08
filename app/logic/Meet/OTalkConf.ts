@@ -253,7 +253,6 @@ export class OTalkConf extends VideoConfMeeting {
   static async createAdhoc(): Promise<OTalkConf> {
     let meet = new OTalkConf();
     await meet.createNewConference();
-    await meet.start();
     return meet;
   }
 

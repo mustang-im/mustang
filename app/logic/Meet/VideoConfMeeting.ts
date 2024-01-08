@@ -1,15 +1,17 @@
 import { SelfVideo, type VideoStream } from "./VideoStream";
 import type { MeetingParticipant as Participant } from "./Participant";
 import type { Event } from "../Calendar/Event";
+import { appGlobal } from "../app";
 import { SetColl } from 'svelte-collections';
 import { Observable, notifyChangedProperty } from "../util/Observable";
+import { assert } from "../util/util";
 
 export class VideoConfMeeting extends Observable {
   id: string;
   @notifyChangedProperty
   event: Event;
   @notifyChangedProperty
-  ongoing = false;
+  state: MeetingState = MeetingState.Init;
   @notifyChangedProperty
   started: Date;
   @notifyChangedProperty
@@ -27,8 +29,8 @@ export class VideoConfMeeting extends Observable {
     console.log("Call ended");
   };
 
-  protected async start() {
-    this.ongoing = true;
+  async start() {
+    this.state = MeetingState.Ongoing;
     this.started = new Date();
   }
 
@@ -49,28 +51,43 @@ export class VideoConfMeeting extends Observable {
     throw new Error("not implemented");
   }
 
+  async call() {
+    assert(this.state == MeetingState.OutgoingCallPrepare, "Must be an outgoing call");
+    this.state = MeetingState.OutgoingCall;
+  }
+
   /** If a listener tells you that somebody calls us,
    * and the listener passes the VideoConfMeeting object,
    * you can accept the call with this method.
    *
    * The function will return once the conference room is established. */
   async answer() {
-    this.start();
+    await this.start();
   }
 
   /** Leave this conference. */
   async hangup() {
-    this.ongoing = false;
+    this.state = MeetingState.Ended;
     this.ended = new Date();
+    appGlobal.meetings.remove(this);
   }
 
   get selfVideo(): SelfVideo | null {
     return this.videos.find(v => v instanceof SelfVideo) ?? null;
   }
 
+  /** You still need to `.start()` the conference */
   static async createAdhoc(opts?: any): Promise<VideoConfMeeting> {
     let meet = new VideoConfMeeting();
-    meet.start();
     return meet;
   }
+}
+
+export enum MeetingState {
+  Init = "init",
+  OutgoingCallPrepare = "outgoing-prepare",
+  OutgoingCall = "outgoing",
+  IncomingCall = "incoming",
+  Ongoing = "ongoing",
+  Ended = "ended",
 }

@@ -1,5 +1,5 @@
 <button on:click on:dblclick
-  title={label} class="button {classes}" class:filled
+  title={label} class="button {classes}" class:filled class:border
   >
   <hbox class="icon">
     {#if typeof(icon) == "string"}
@@ -21,11 +21,12 @@
   export let classes = "";
   export let iconSize = "16px";
   export let filled = false;
+  export let border = true;
 </script>
 
 <style>
   button {
-    border: 1px solid #B2ADB8;
+    border: 1px solid transparent;
     border-radius: 1000px;
     padding: 8px;
 
@@ -33,6 +34,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+  button.border {
+    border: 1px solid #B2ADB8;
   }
   .filled:not(:hover) {
     background-color: #160C27; /* 142862 */
