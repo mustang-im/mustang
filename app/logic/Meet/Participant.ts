@@ -12,6 +12,8 @@ export class MeetingParticipant extends Person {
   cameraOn = false;
   @notifyChangedProperty
   screenSharing = false;
+
+  peerConnection: RTCPeerConnection;  // prevent garbage collection
 }
 
 export enum ParticipantRole {
