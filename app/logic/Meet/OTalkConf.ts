@@ -262,6 +262,7 @@ export class OTalkConf extends VideoConfMeeting {
   protected async sendVideo(mediaStream: MediaStream) {
     assert(mediaStream.active, "MediaStream needs to be active");
     let peerConnection = new RTCPeerConnection(this.getPeerConnectionConfig());
+    this.myParticipant.peerConnection = peerConnection;
     for (let track of mediaStream.getTracks()) {
       peerConnection.addTrack(track, mediaStream);
     }
@@ -317,6 +318,7 @@ export class OTalkConf extends VideoConfMeeting {
     // https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling
     // https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Perfect_negotiation
     let peerConnection = new RTCPeerConnection(this.getPeerConnectionConfig());
+    participant.peerConnection = peerConnection;
     peerConnection.ontrack = (event) => {
       let track = event.track;
       assert(track instanceof MediaStreamTrack, "Didn't get a track");
