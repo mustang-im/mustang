@@ -217,12 +217,20 @@ export class OTalkConf extends VideoConfMeeting {
     this.setParticipateInfo(participant, json);
 
     let incomingMedia = participant.cameraOn || participant.micOn;
-    let video = this.videos.find(v => (v instanceof ParticipantVideo || v instanceof ScreenShare) &&
-      v.participant?.id == participantID);
+    let video = this.videos.find(v => v instanceof ParticipantVideo && v.participant?.id == participantID);
     if (!video && incomingMedia) {
-      await this.getVideoFromParticipant(participant);
+      await this.getVideoFromParticipant(participant, false);
     } else if (video && !incomingMedia) {
+      await this.stopVideoFromParticipant(video, false);
       this.videos.remove(video);
+    }
+
+    let screen = this.videos.find(v => v instanceof ScreenShare && v.participant?.id == participantID);
+    if (!screen && participant.screenSharing) {
+      await this.getVideoFromParticipant(participant, true);
+    } else if (screen && !participant.screenSharing) {
+      await this.stopVideoFromParticipant(screen, true);
+      this.videos.remove(screen);
     }
   }
 
@@ -232,6 +240,7 @@ export class OTalkConf extends VideoConfMeeting {
       participant.cameraOn = json.media?.video?.video;
       participant.micOn = json.media?.video?.audio;
     }
+    participant.screenSharing = json.media?.screen?.video;
   }
 
   /** Handles control.left */
@@ -345,26 +354,26 @@ export class OTalkConf extends VideoConfMeeting {
       }
     });
     */
-    let prop = isScreen ? "screenPeerConnection" : "peerConnection";
-    let peerConnection = this.myParticipant[prop];
-    this.myParticipant[prop] = null;
-    if (peerConnection) {
-      peerConnection.close();
-    }
+    this.closePeerConnection(this.myParticipant, isScreen);
   }
 
   // TODO re-subscribe to other participant's video, if it dropped
 
-  async getVideoFromParticipant(participant: Participant) {
+  async getVideoFromParticipant(participant: Participant, isScreen = false) {
+    let sessionType = isScreen ? "screen" : "video";
     this.send("media", "subscribe", {
       target: participant.id,
-      media_session_type: "video",
+      media_session_type: sessionType,
     });
     let videoStream = new ParticipantVideo(new MediaStream(), participant);
     // https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling
     // https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Perfect_negotiation
     let peerConnection = new RTCPeerConnection(this.getPeerConnectionConfig());
-    participant.peerConnection = peerConnection;
+    if (isScreen) {
+      participant.screenPeerConnection = peerConnection;
+    } else {
+      participant.peerConnection = peerConnection;
+    }
     peerConnection.ontrack = (event) => {
       let track = event.track;
       assert(track instanceof MediaStreamTrack, "Didn't get a track");
@@ -373,6 +382,7 @@ export class OTalkConf extends VideoConfMeeting {
     // TODO peerConnection.addEventListener("removetrack")?
     let offer = await this.waitForMessage("media", "sdp_offer");
     assert(offer.source == participant.id, "Videos of participants got mixed up in their order");
+    assert(offer.media_session_type == sessionType, "Type of offer doesn't match");
     await peerConnection.setRemoteDescription({
       type: "offer",
       sdp: offer.sdp,
@@ -382,14 +392,15 @@ export class OTalkConf extends VideoConfMeeting {
     await peerConnection.setLocalDescription(answer);
     this.send("media", "sdp_answer", {
       target: participant.id,
-      media_session_type: "video",
+      media_session_type: sessionType,
       sdp: answer.sdp,
     });
     let up = await this.waitForMessage("media", "webrtc_up");
     assert(up.source == participant.id, "WebRTC up of participants got mixed up in their order");
+    assert(up.media_session_type == sessionType, "Type of answer doesn't match offer");
     this.send("media", "configure", {
       target: participant.id,
-      media_session_type: "video",
+      media_session_type: sessionType,
       configuration: {
         video: true, // ?
       }
@@ -397,12 +408,28 @@ export class OTalkConf extends VideoConfMeeting {
     this.videos.add(videoStream);
   }
 
+  async stopVideoFromParticipant(video: ParticipantVideo | ScreenShare, isScreen = false): Promise<void> {
+    assert(!isScreen && video instanceof ParticipantVideo || isScreen && video instanceof ScreenShare, "VideoStream has wrong type");
+    this.closePeerConnection(video.participant, isScreen);
+  }
+
+  protected closePeerConnection(participant: Participant, isScreen: boolean) {
+    if (!participant) {
+      return;
+    }
+    let prop = isScreen ? "screenPeerConnection" : "peerConnection";
+    let peerConnection = participant[prop];
+    participant[prop] = null;
+    if (peerConnection) {
+      peerConnection.close();
+    }
+  }
+
   async sendICECandidates(peerConnection: RTCPeerConnection, participantID: string) {
     peerConnection.onicecandidate = (event) => {
       // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/icecandidate_event
       let candidateObj = event.candidate;
       if (candidateObj == null) {
-        console.info("ICE candidates complete");
         return;
       } else if (candidateObj.candidate == "") {
         this.send("media", "sdp_end_of_candidates", {
@@ -421,10 +448,11 @@ export class OTalkConf extends VideoConfMeeting {
         });
       }
     }
+    /*
     peerConnection.onicegatheringstatechange = (event) => {
       console.log("ICE gathering state", peerConnection.iceGatheringState);
     }
-    /*await new Promise(resolve => {
+    await new Promise(resolve => {
       peerConnection.onicegatheringstatechange = (event) => {
         if (peerConnection.iceGatheringState == "complete") {
           resolve(null);
