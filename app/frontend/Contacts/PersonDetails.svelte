@@ -1,6 +1,6 @@
 <vbox flex class="person-page">
   <GroupBox classes="person">
-    <hbox flex class="main-left">
+    <hbox flex class="main-left" slot="content">
       <hbox flex>
         <PersonPicture {person} size={128} />
         <vbox flex class="main-info">
@@ -49,14 +49,16 @@
 
   <grid class="boxes">
     <GroupBox classes="phone">
-      <hbox class="subtitle phone">
-        <Icon data={PhoneIcon} size="16px" />
+      <svelte:fragment slot="header">
+        <hbox class="phone">
+          <Icon data={PhoneIcon} size="16px" />
+        </hbox>
         <h3>Phone numbers</h3>
         <hbox flex class="actions">
           <Button on:click={addPhoneNumber} icon={AddIcon} iconOnly plain classes="add" />
         </hbox>
-      </hbox>
-      <grid class="items">
+      </svelte:fragment>
+      <grid class="items" slot="content">
         {#each $phoneNumbers.each as entry}
           <ContactEntryUI {entry} coll={phoneNumbers}>
             <PhoneNumberDisplay slot="display" value={entry.value} />
@@ -67,14 +69,14 @@
     </GroupBox>
 
     <GroupBox classes="email">
-      <hbox class="subtitle">
+      <svelte:fragment slot="header">
         <Icon data={MailIcon} size="16px" />
         <h3>Mail</h3>
         <hbox flex class="actions">
           <Button on:click={addEmail} icon={AddIcon} iconOnly plain classes="add" />
         </hbox>
-      </hbox>
-      <grid class="items">
+      </svelte:fragment>
+      <grid class="items" slot="content">
         {#each $emailAddresses.each as entry}
           <ContactEntryUI {entry} coll={emailAddresses}>
             <EmailAddressDisplay slot="display" value={entry.value} />
@@ -85,14 +87,14 @@
     </GroupBox>
 
     <GroupBox classes="chat">
-      <hbox class="subtitle">
+      <svelte:fragment slot="header">
         <Icon data={ChatIcon} size="16px" />
         <h3>Chat</h3>
         <hbox flex class="actions">
           <Button on:click={addChatAccount} icon={AddIcon} iconOnly plain classes="add" />
         </hbox>
-      </hbox>
-      <grid class="items">
+      </svelte:fragment>
+      <grid class="items" slot="content">
         {#each $chatAccounts.each as entry}
           <ContactEntryUI {entry} coll={chatAccounts}>
             <EmailAddressDisplay slot="display" value={entry.value} /><!-- TODO chat link -->
@@ -103,7 +105,7 @@
     </GroupBox>
 
     <GroupBox classes="categories">
-      <hbox class="subtitle">
+      <svelte:fragment slot="header">
         <Icon data={ContactsIcon} size="16px" />
         <h3>Groups</h3>
         <hbox flex class="actions">
@@ -111,8 +113,8 @@
           <Button on:click={addEmail} icon={AddIcon} iconOnly plain classes="add" />
           -->
         </hbox>
-      </hbox>
-      <grid class="items">
+      </svelte:fragment>
+      <grid class="items" slot="content">
         {#each $groups.each as entry}
           <ContactEntryUI {entry} coll={groups}>
             <hbox slot="display">{entry.value}</hbox>
@@ -122,14 +124,14 @@
     </GroupBox>
 
     <GroupBox classes="street-addresses">
-      <hbox class="subtitle">
+      <svelte:fragment slot="header">
         <Icon data={MailIcon} size="16px" />
         <h3>Street addresses</h3>
         <hbox flex class="actions">
           <Button on:click={addStreetAddress} icon={AddIcon} iconOnly plain classes="add" />
         </hbox>
-      </hbox>
-      <grid class="items">
+      </svelte:fragment>
+      <grid class="items" slot="content">
         {#each $streetAddresses.each as entry}
           <ContactEntryUI {entry} coll={streetAddresses}>
             <StreetAddressDisplay slot="display" value={entry.value} />
@@ -140,11 +142,11 @@
     </GroupBox>
 
     <GroupBox classes="preferences">
-      <hbox class="subtitle">
+      <svelte:fragment slot="header">
         <Icon data={ChatIcon} size="16px" />
         <h3>Preferences</h3>
-      </hbox>
-      <vbox class="preferred">
+      </svelte:fragment>
+      <vbox class="preferred" slot="content">
         <hbox>Preferred communication tool</hbox>
         <hbox>WhatsApp</hbox>
         <hbox>[o] Notifications</hbox>
@@ -219,7 +221,7 @@
     background-color: #E6F2F1;
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%) inset;
   }
-  .person-page :global(.group) {
+  .person-page :global(.group .content) {
     background-color: white;
   }
   .main-info {
@@ -259,11 +261,7 @@
   grid.boxes {
     grid-template-columns: 1fr 1fr;
   }
-  .subtitle {
-    align-items: center;
-    margin-bottom: 8px;
-  }
-  .subtitle h3 {
+  h3 {
     margin-left: 10px;
     margin-top: 0px;
     margin-bottom: 0px;
