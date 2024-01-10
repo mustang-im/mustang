@@ -663,6 +663,16 @@ Received:
   }
 }
 
+## Stop sharing my screen
+
+Send:
+{
+  "namespace": "media",
+  "payload": {
+    "action": "unpublish",
+    "media_session_type": "screen"
+  }
+}
 
 ## Open/close cam/mic
 
@@ -965,6 +975,148 @@ Received 3:
   "payload": {
     "message": "left",
     "id": "34589bb4-25e3-45b3-afc6-2925d1beaf70"
+  }
+}
+
+## Participant shares screen
+
+Receive:
+{
+  "namespace": "control",
+  "timestamp":"2024-01-10T22:23:38Z",
+  "payload": {
+    "message": "update",
+    "id": "9dbc692d-f745-4032-b1e8-1f4935f221c5",
+    "control": {
+      "avatar_url": "https://seccdn.libravatar.org/avatar/1a31769c00192ed0a23c3142d6deace0",
+      "display_name": "Ben Bucksch",
+      "hand_is_up": false,
+      "hand_updated_at": "2024-01-10T22:22:03Z",
+      "joined_at":"2024-01-10T22:22:03Z",
+      "left_at":null,
+      "participation_kind":"user",
+      "role":"moderator"
+    },
+    "media": {
+      "is_presenter": true,
+      "screen": {
+        "audio": false,
+        "video": true
+      }
+    }
+  }
+}
+Send:
+{
+  "namespace": "media",
+  "payload": {
+    "action": "subscribe",
+    "target": "9dbc692d-f745-4032-b1e8-1f4935f221c5",
+    "media_session_type": "screen"
+  }
+}
+Receive:
+{
+  "namespace": "media",
+  "timestamp": "2024-01-10T22:23:38.451862834Z",
+  "payload": {
+    "message": "sdp_offer",
+    "source": "9dbc692d-f745-4032-b1e8-1f4935f221c5",
+    "media_session_type": "screen",
+    "sdp": "v=0
+o=- 1704925418041281 1 IN IP4 168.119.249.127
+s=VideoRoom 1946829638001542
+t=0 0
+a=group:BUNDLE v
+a=extmap-allow-mixed
+a=msid-semantic: WMS janus
+a=ice-lite
+m=video 9 UDP/TLS/RTP/SAVPF 96 97
+c=IN IP4 168.119.249.127
+a=sendonly
+a=mid:v
+a=rtcp-mux
+a=ice-ufrag:eIuz
+a=ice-pwd:8IjW3gS0yrOElNdPIfo5CJ
+a=ice-options:trickle
+a=fingerprint:sha-256 44:70:B6:2C:76:FA:1F:C8:AF:D1:33:F4:A1:7A:B3:DB:58:A2:75:34:20:58:6A:AB:3A:AE:67:4C:74:86:91:6D
+a=setup:actpass
+a=rtpmap:96 VP8/90000
+a=rtcp-fb:96 ccm fir
+a=rtcp-fb:96 nack
+a=rtcp-fb:96 nack pli
+a=rtcp-fb:96 goog-remb
+a=rtcp-fb:96 transport-cc
+a=extmap:1 urn:ietf:params:rtp-hdrext:sdes:mid
+a=extmap:2 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time
+a=extmap:6 http://www.webrtc.org/experiments/rtp-hdrext/playout-delay
+a=fmtp:96 max-fs=12288;max-fr=60
+a=rtpmap:97 rtx/90000
+a=fmtp:97 apt=96
+a=ssrc-group:FID 658326470 3314428704
+a=msid:janus janusv0
+a=ssrc:658326470 cname:janus
+a=ssrc:658326470 msid:janus janusv0
+a=ssrc:658326470 mslabel:janus
+a=ssrc:658326470 label:janusv0
+a=ssrc:3314428704 cname:janus
+a=ssrc:3314428704 msid:janus janusv0
+a=ssrc:3314428704 mslabel:janus
+a=ssrc:3314428704 label:janusv0
+a=candidate:1 1 udp 2015363583 168.119.249.127 23016 typ host
+a=candidate:2 1 udp 2015363327 2a01:4f8:c012:195f::1 24906 typ host
+a=end-of-candidates
+"
+  }
+}
+Send:
+{
+  "namespace": "media",
+  "payload": {
+    "action": "sdp_answer",
+    "target": "9dbc692d-f745-4032-b1e8-1f4935f221c5",
+    "media_session_type": "screen",
+    "sdp": "v=0
+o=mozilla...THIS_IS_SDPARTA-99.0 978254878022545875 0 IN IP4 0.0.0.0
+s=-
+t=0 0
+a=fingerprint:sha-256 E7:F8:33:D0:16:F6:C1:57:17:0A:94:A1:C8:65:38:57:C4:8F:AE:0B:72:6F:2B:AB:E3:42:6E:04:63:74:58:86
+a=group:BUNDLE v
+a=ice-options:trickle
+a=msid-semantic:WMS *
+m=video 9 UDP/TLS/RTP/SAVPF 96 97
+c=IN IP4 0.0.0.0
+a=recvonly
+a=extmap:1 urn:ietf:params:rtp-hdrext:sdes:mid
+a=extmap:2 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time
+a=extmap:6/recvonly http://www.webrtc.org/experiments/rtp-hdrext/playout-delay
+a=fmtp:96 max-fs=12288;max-fr=60
+a=fmtp:97 apt=96
+a=ice-pwd:b357f8fc7684cc346a1c5069f356dacb
+a=ice-ufrag:bcb1c6c4
+a=mid:v
+a=rtcp-fb:96 nack
+a=rtcp-fb:96 nack pli
+a=rtcp-fb:96 ccm fir
+a=rtcp-fb:96 goog-remb
+a=rtcp-fb:96 transport-cc
+a=rtcp-mux
+a=rtpmap:96 VP8/90000
+a=rtpmap:97 rtx/90000
+a=setup:active
+a=ssrc:435758065 cname:{fecb954e-7b7f-456c-bc56-fff295f3773f}
+"
+  }
+}
+Send: ICE candidates
+Receive:
+{
+  "namespace": "media",
+  "timestamp": "2024-01-10T22:23:38.586408226Z",
+  "payload": {
+    "message": "webrtc_up",
+    "source": "9dbc692d-f745-4032-b1e8-1f4935f221c5",
+    "media_session_type": "screen"
   }
 }
 
