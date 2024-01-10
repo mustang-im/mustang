@@ -28,7 +28,7 @@ export class ScreenShare extends VideoStream {
    * Not set, if our user is sharing the screen. */
   participant?: MeetingParticipant;
 
-  constructor(stream: MediaStream, participant: MeetingParticipant) {
+  constructor(stream: MediaStream, participant?: MeetingParticipant) {
     super(stream);
     this.participant = participant;
   }

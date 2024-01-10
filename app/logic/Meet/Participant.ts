@@ -14,6 +14,7 @@ export class MeetingParticipant extends Person {
   screenSharing = false;
 
   peerConnection: RTCPeerConnection;  // prevent garbage collection
+  screenPeerConnection: RTCPeerConnection; // ditto
 }
 
 export enum ParticipantRole {

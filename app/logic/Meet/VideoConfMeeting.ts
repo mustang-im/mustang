@@ -51,6 +51,11 @@ export class VideoConfMeeting extends Observable {
     throw new Error("not implemented");
   }
 
+  /** Same as `setCamera()`, but for sharing screen */
+  async setScreenShare(mediaStream: MediaStream | null) {
+    throw new Error("not implemented");
+  }
+
   async call() {
     assert(this.state == MeetingState.OutgoingCallPrepare, "Must be an outgoing call");
     this.state = MeetingState.OutgoingCall;
