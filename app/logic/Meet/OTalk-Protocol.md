@@ -211,8 +211,8 @@ Send:
   "namespace": "media",
   "payload": {
     "action": "publish",
-    "target": "35b94009-38db-453f-8e38-fb2635236e59",
     "media_session_type": "video",
+    "target": "35b94009-38db-453f-8e38-fb2635236e59",
     "sdp": "v=0
 o=mozilla...THIS_IS_SDPARTA-99.0 3716088884621913920 0 IN IP4 0.0.0.0
 s=-
@@ -472,6 +472,197 @@ Receive
   }
 }
 or "focus": null
+
+## Share my screen
+
+Send:
+{
+  "namespace": "media",
+  "payload": {
+    "action": "publish",
+    "media_session_type": "screen",
+    "target": "<participant ID>",
+    "sdp": "v=0o=mozilla...THIS_IS_SDPARTA-99.0 5844649763247960872 0 IN IP4 0.0.0.0
+s=-
+t=0 0
+a=fingerprint:sha-256 EA:F2:E3:45:74:CB:CB:E7:A6:25:79:BB:04:4B:A1:A7:8A:EE:5E:90:00:31:04:1C:C2:63:00:AF:9C:E9:7F:A0
+a=group:BUNDLE 0
+a=ice-options:trickle
+a=msid-semantic:WMS *
+m=video 9 UDP/TLS/RTP/SAVPF 120 124 121 125 126 127 97 98
+c=IN IP4 0.0.0.0
+a=sendonly
+a=extmap:3 urn:ietf:params:rtp-hdrext:sdes:mid
+a=extmap:4 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time
+a=extmap:5 urn:ietf:params:rtp-hdrext:toffset
+a=extmap:6/recvonly http://www.webrtc.org/experiments/rtp-hdrext/playout-delay
+a=extmap:7 http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01
+a=extmap:8/sendonly urn:ietf:params:rtp-hdrext:sdes:rtp-stream-id
+a=extmap:9/sendonly urn:ietf:params:rtp-hdrext:sdes:repaired-rtp-stream-id
+a=fmtp:126 profile-level-id=42e01f;level-asymmetry-allowed=1;packetization-mode=1
+a=fmtp:97 profile-level-id=42e01f;level-asymmetry-allowed=1
+a=fmtp:120 max-fs=12288;max-fr=60
+a=fmtp:124 apt=120
+a=fmtp:121 max-fs=12288;max-fr=60
+a=fmtp:125 apt=121
+a=fmtp:127 apt=126
+a=fmtp:98 apt=97
+a=ice-pwd:4090af78c2da63583d517d296db5c728
+a=ice-ufrag:e1718ec8
+a=mid:0
+a=msid:{6cff529a-1155-4354-8f47-10b43ab70bd9} {9547d315-7924-4154-9e41-4dd992df13dd}
+a=rid:high send
+a=rid:medium send
+a=rid:low send
+a=rtcp-fb:120 nack
+a=rtcp-fb:120 nack pli
+a=rtcp-fb:120 ccm fir
+a=rtcp-fb:120 goog-remb
+a=rtcp-fb:120 transport-cc
+a=rtcp-fb:121 nack
+a=rtcp-fb:121 nack pli
+a=rtcp-fb:121 ccm fir
+a=rtcp-fb:121 goog-remb
+a=rtcp-fb:121 transport-cc
+a=rtcp-fb:126 nack
+a=rtcp-fb:126 nack pli
+a=rtcp-fb:126 ccm fir
+a=rtcp-fb:126 goog-remb
+a=rtcp-fb:126 transport-cc
+a=rtcp-fb:97 nack
+a=rtcp-fb:97 nack pli
+a=rtcp-fb:97 ccm fir
+a=rtcp-fb:97 goog-remb
+a=rtcp-fb:97 transport-cc
+a=rtcp-mux
+a=rtcp-rsize
+a=rtpmap:120 VP8/90000
+a=rtpmap:124 rtx/90000
+a=rtpmap:121 VP9/90000
+a=rtpmap:125 rtx/90000
+a=rtpmap:126 H264/90000
+a=rtpmap:127 rtx/90000
+a=rtpmap:97 H264/90000
+a=rtpmap:98 rtx/90000
+a=setup:actpass
+a=simulcast:send high;medium;low
+a=ssrc:1834408214 cname:{b8ed5455-6e6a-4a53-8f1c-c38e4de6d830}
+a=ssrc:3154509049 cname:{b8ed5455-6e6a-4a53-8f1c-c38e4de6d830}
+a=ssrc:1351143671 cname:{b8ed5455-6e6a-4a53-8f1c-c38e4de6d830}
+a=ssrc:3907003787 cname:{b8ed5455-6e6a-4a53-8f1c-c38e4de6d830}
+a=ssrc:2748267265 cname:{b8ed5455-6e6a-4a53-8f1c-c38e4de6d830}
+a=ssrc:2373546068 cname:{b8ed5455-6e6a-4a53-8f1c-c38e4de6d830}
+a=ssrc-group:FID 1834408214 3154509049
+a=ssrc-group:FID 1351143671 3907003787
+a=ssrc-group:FID 2748267265 2373546068
+"
+  }
+}
+Send: ICE candidates
+Received 1:
+{
+  "namespace": "media",
+  "timestamp": "2024-01-10T13:11:18.737053384Z",
+  "payload": {
+    "message": "sdp_answer",
+    "media_session_type": "screen",
+    "source": "<participant ID>",
+    "sdp": "v=0
+o=mozilla...THIS_IS_SDPARTA-99.0 1704892278747730 1 IN IP4 <server-ipv4>
+s=VideoRoom 6641754593197169
+t=0 0
+a=group:BUNDLE 0
+a=extmap-allow-mixed
+a=msid-semantic: WMS janus
+a=ice-lite
+m=video 9 UDP/TLS/RTP/SAVPF 120 124
+c=IN IP4 <server-ipv4>
+b=TIAS:8000000
+a=recvonly
+a=mid:0
+a=rtcp-mux
+a=ice-ufrag:nvy2
+a=ice-pwd:laUSRget3/AmjfCpM3zcTF
+a=ice-options:trickle
+a=fingerprint:sha-256 44:70:B6:2C:76:FA:1F:C8:AF:D1:33:F4:A1:7A:B3:DB:58:A2:75:34:20:58:6A:AB:3A:AE:67:4C:74:86:91:6D
+a=setup:active
+a=rtpmap:120 VP8/90000
+a=rtcp-fb:120 ccm fir
+a=rtcp-fb:120 nack
+a=rtcp-fb:120 nack pli
+a=rtcp-fb:120 goog-remb
+a=rtcp-fb:120 transport-cc
+a=extmap:3 urn:ietf:params:rtp-hdrext:sdes:mid
+a=extmap:6/sendonly http://www.webrtc.org/experiments/rtp-hdrext/playout-delay
+a=extmap:7 http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01
+a=extmap:8/recvonly urn:ietf:params:rtp-hdrext:sdes:rtp-stream-id
+a=extmap:9/recvonly urn:ietf:params:rtp-hdrext:sdes:repaired-rtp-stream-id
+a=fmtp:120 max-fs=12288;max-fr=60
+a=rtpmap:124 rtx/90000
+a=fmtp:124 apt=120
+a=msid:janus janusv0
+a=ssrc:3281693362 cname:janus
+a=ssrc:3281693362 msid:janus janusv0
+a=ssrc:3281693362 mslabel:janus
+a=ssrc:3281693362 label:janusv0
+a=rid:high recv
+a=rid:medium recv
+a=rid:low recv
+a=simulcast:recv high;medium;low
+a=candidate:1 1 udp 2015363583 <server-ipv4> 21837 typ host
+a=candidate:2 1 udp 2015363327 <server-ipv6> 23368 typ host
+a=end-of-candidates
+"
+  }
+}
+Recieve 2:
+{
+  "namespace": "media",
+  "timestamp": "2024-01-10T13:11:18.851358130Z",
+  "payload": {
+    "message": "webrtc_up",
+    "source":"fabcf123-884b-4420-a96e-4e4a51f17f8e",
+    "media_session_type": "screen"
+  }
+}
+Receive 3:
+{
+  "namespace": "media",
+  "timestamp": "2024-01-10T13:11:18.882869836Z",
+  "payload": {
+    "message": "media_status",
+    "source": "fabcf123-884b-4420-a96e-4e4a51f17f8e",
+    "media_session_type": "screen",
+    "kind": "video",
+    "receiving": true
+  }
+}
+Send:
+{
+  "namespace": "media",
+  "payload": {
+    "action": "publish_complete",
+    "media_session_type": "screen",
+    "media_session_state": {
+      "audio": false,
+      "video": true,
+      "video_settings": 2
+    }
+  }
+}
+Received:
+{
+  "namespace": "media",
+  "timestamp": "2024-01-10T13:11:54.545949596Z",
+  "payload": {
+    "message": "media_status",
+    "source": "fabcf123-884b-4420-a96e-4e4a51f17f8e",
+    "media_session_type": "screen",
+    "kind": "video",
+    "receiving": false
+  }
+}
+
 
 ## Open/close cam/mic
 

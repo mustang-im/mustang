@@ -28,6 +28,10 @@ export class OTalkConf extends VideoConfMeeting {
    * Set this using setCamera() */
   @notifyChangedProperty
   protected camera: MediaStream | null = null;
+  /** Our screen
+   * Set this using setScreenShare() */
+  @notifyChangedProperty
+  protected screenShare: MediaStream | null = null;
 
   /**
    * Login using OAuth2
@@ -103,7 +107,7 @@ export class OTalkConf extends VideoConfMeeting {
     };
   }
 
-  async setCamera(mediaStream: MediaStream | null) {
+  async setCamera(mediaStream: MediaStream | null): Promise<void> {
     if (!mediaStream) {
       if (!this.camera) {
         return;
@@ -111,7 +115,7 @@ export class OTalkConf extends VideoConfMeeting {
       let old = this.camera;
       this.camera = null;
       this.videos.remove(this.videos.find(v => v instanceof SelfVideo && v.stream == old));
-      await this.removeMyVideo(old);
+      await this.removeMyVideo(old, false);
       return;
     }
     assert(mediaStream instanceof MediaStream, "Need a media stream for the camera");
@@ -121,7 +125,29 @@ export class OTalkConf extends VideoConfMeeting {
     this.camera = mediaStream;
     this.videos.add(new SelfVideo(mediaStream));
     if (this.myParticipant) {
-      await this.sendVideo(this.camera);
+      await this.sendVideo(this.camera, false);
+    }
+  }
+
+  async setScreenShare(mediaStream: MediaStream | null): Promise<void> {
+    if (!mediaStream) {
+      if (!this.screenShare) {
+        return;
+      }
+      let old = this.screenShare;
+      this.screenShare = null;
+      this.videos.remove(this.videos.find(v => v instanceof ScreenShare && v.stream == old));
+      await this.removeMyVideo(old, true);
+      return;
+    }
+    assert(mediaStream instanceof MediaStream, "Need a media stream for the screen");
+    if (this.screenShare) {
+      await this.setScreenShare(null); // Remove previous
+    }
+    this.screenShare = mediaStream;
+    this.videos.add(new ScreenShare(mediaStream, this.myParticipant));
+    if (this.myParticipant) {
+      await this.sendVideo(this.screenShare, true);
     }
   }
 
@@ -259,52 +285,66 @@ export class OTalkConf extends VideoConfMeeting {
   ///////////////////////
   // WebRTC handling
 
-  protected async sendVideo(mediaStream: MediaStream) {
+  protected async sendVideo(mediaStream: MediaStream, isScreen = false) {
     assert(mediaStream.active, "MediaStream needs to be active");
     let peerConnection = new RTCPeerConnection(this.getPeerConnectionConfig());
-    this.myParticipant.peerConnection = peerConnection;
+    if (isScreen) {
+      this.myParticipant.peerConnection = peerConnection;
+    } else {
+      this.myParticipant.screenPeerConnection = peerConnection;
+    }
     for (let track of mediaStream.getTracks()) {
       peerConnection.addTrack(track, mediaStream);
     }
     await this.sendICECandidates(peerConnection, this.myParticipant.id);
     let offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);
+    const sessionType = isScreen ? "screen" : "video";
     this.send("media", "publish", {
       target: this.myParticipant.id,
-      media_session_type: "video",
+      media_session_type: sessionType,
       sdp: offer.sdp,
     });
     let answer = await this.waitForMessage("media", "sdp_answer");
     assert(answer.source == this.myParticipant.id, "Videos of participants got mixed up in their order");
+    assert(answer.media_session_type == sessionType, "Type of answer doesn't match offer");
     await peerConnection.setRemoteDescription({
       type: "answer",
       sdp: answer.sdp,
     });
     let up = await this.waitForMessage("media", "webrtc_up");
     assert(up.source == this.myParticipant.id, "WebRTC up of participants got mixed up in their order");
+    assert(up.media_session_type == sessionType, "Type of answer doesn't match offer");
     let status = await this.waitForMessage("media", "media_status");
     // This arrives at least twice, one for audio and once for video, but we'll wait only for one of them.
     assert(status.source == this.myParticipant.id, "media status of participants got mixed up in their order");
-    assert(status.receiving, "media status not receiving");
+    assert(status.media_session_type == sessionType, "Type of answer doesn't match offer");
+    assert(status.receiving, "Server didn't receive our stream");
     this.send("media", "publish_complete", {
-      media_session_type: "video",
+      media_session_type: sessionType,
       media_session_state: {
-        audio: true,
         video: true,
+        audio: isScreen ? false : true,
         video_settings: 2,
       }
     });
   }
 
-  protected async removeMyVideo(mediaStream: MediaStream) {
+  protected async removeMyVideo(mediaStream: MediaStream, isScreen = false) {
+    const sessionType = isScreen ? "screen" : "video";
+    this.send("media", "unpublish", {
+      media_session_type: sessionType,
+    });
+    /*
     this.send("media", "update_media_session", {
-      media_session_type: "video",
+      media_session_type: sessionType,
       media_session_state: {
         audio: false,
         video: false,
         video_settings: 2,
       }
     });
+    */
   }
 
   // TODO re-subscribe to other participant's video, if it dropped
