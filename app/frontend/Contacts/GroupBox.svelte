@@ -1,5 +1,10 @@
 <vbox class="group {classes}">
-  <slot />
+  <hbox class="header">
+    <slot name="header" />
+  </hbox>
+  <vbox class="content" flex>
+    <slot name="content" />
+  </vbox>
 </vbox>
 
 <script lang="ts">
@@ -9,9 +14,15 @@
 <style>
   .group {
     margin: 5px;
-    padding: 16px;
-    padding-left: 20px;
     border: 1px solid #E6E4E8;
     border-radius: 2px;
+  }
+  .header {
+    align-items: center;
+    padding: 8px 16px 8px 20px;
+    background-color: rgba(32, 174, 158, 5%); /* #20AE9E */
+  }
+  .content {
+    padding: 8px 16px 16px 20px;
   }
 </style>
