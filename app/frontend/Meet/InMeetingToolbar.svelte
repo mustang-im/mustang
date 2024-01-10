@@ -11,26 +11,26 @@
       <hbox flex />
   {/if}
   <RoundButton
-    label="Mute"
-    classes="toggle-mic"
-    on:click={() => catchErrors(toggleMic)}
-    icon={$micOn ? MicrophoneIcon : MicrophoneOffIcon}
+    label="Screen share"
+    classes="screen-share {$screenShareOn ? "on" : "off"}"
+    on:click={() => catchErrors(toggleScreenShare)}
+    icon={$screenShareOn ? ScreenShareIcon : ScreenShareOffIcon}
     iconSize="24px"
     border={false}
     />
   <RoundButton
     label="Camera"
-    classes="toggle-camera"
+    classes="camera {$cameraOn ? "on" : "off"}"
     on:click={() => catchErrors(toggleCamera)}
     icon={$cameraOn ? CameraIcon : CameraOffIcon}
     iconSize="24px"
     border={false}
     />
-  <RoundButton
-    label="Screen share"
-    classes="toggle-screen-share"
-    on:click={() => catchErrors(toggleScreenShare)}
-    icon={$screenShareOn ? ScreenShareIcon : ScreenShareOffIcon}
+    <RoundButton
+    label="Mute"
+    classes="mic {$micOn ? "on" : "off"}"
+    on:click={() => catchErrors(toggleMic)}
+    icon={$micOn ? MicrophoneIcon : MicrophoneOffIcon}
     iconSize="24px"
     border={false}
     />
@@ -185,10 +185,13 @@
   .actions :global(button.leave) {
     background-color: #F34949;
   }
-  /*.actions :global(.toggle-camera svg),
-  .actions :global(.toggle-mic svg) {
+  /*.actions :global(.camera svg),
+  .actions :global(.mic svg) {
     fill: black;
   }*/
+  .actions :global(.on) {
+    background-color: lightgoldenrodyellow;
+  }
   .actions :global(.raised-hand svg) {
     fill: tan;
   }
