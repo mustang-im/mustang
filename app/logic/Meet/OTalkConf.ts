@@ -345,6 +345,12 @@ export class OTalkConf extends VideoConfMeeting {
       }
     });
     */
+    let prop = isScreen ? "screenPeerConnection" : "peerConnection";
+    let peerConnection = this.myParticipant[prop];
+    this.myParticipant[prop] = null;
+    if (peerConnection) {
+      peerConnection.close();
+    }
   }
 
   // TODO re-subscribe to other participant's video, if it dropped
