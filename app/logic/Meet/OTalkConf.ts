@@ -278,9 +278,12 @@ export class OTalkConf extends VideoConfMeeting {
   }
 
   async hangup() {
-    this.send("media", "unpublish", {
-      media_session_type: "video",
-    });
+    if (this.myParticipant.peerConnection) {
+      await this.removeMyVideo(this.camera, false);
+    }
+    if (this.myParticipant.screenPeerConnection) {
+      await this.removeMyVideo(this.screenShare, true);
+    }
     await this.closeWebSocket();
     super.hangup();
   }
@@ -294,7 +297,7 @@ export class OTalkConf extends VideoConfMeeting {
   ///////////////////////
   // WebRTC handling
 
-  protected async sendVideo(mediaStream: MediaStream, isScreen = false) {
+  protected async sendVideo(mediaStream: MediaStream, isScreen: boolean) {
     assert(mediaStream.active, "MediaStream needs to be active");
     let peerConnection = new RTCPeerConnection(this.getPeerConnectionConfig());
     if (isScreen) {
@@ -305,7 +308,7 @@ export class OTalkConf extends VideoConfMeeting {
     for (let track of mediaStream.getTracks()) {
       peerConnection.addTrack(track, mediaStream);
     }
-    await this.sendICECandidates(peerConnection, this.myParticipant.id);
+    await this.sendICECandidates(peerConnection, this.myParticipant.id, isScreen);
     let offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);
     const sessionType = isScreen ? "screen" : "video";
@@ -339,7 +342,7 @@ export class OTalkConf extends VideoConfMeeting {
     });
   }
 
-  protected async removeMyVideo(mediaStream: MediaStream, isScreen = false) {
+  protected async removeMyVideo(mediaStream: MediaStream, isScreen: boolean) {
     const sessionType = isScreen ? "screen" : "video";
     this.send("media", "unpublish", {
       media_session_type: sessionType,
@@ -359,7 +362,7 @@ export class OTalkConf extends VideoConfMeeting {
 
   // TODO re-subscribe to other participant's video, if it dropped
 
-  async getVideoFromParticipant(participant: Participant, isScreen = false) {
+  async getVideoFromParticipant(participant: Participant, isScreen: boolean) {
     let sessionType = isScreen ? "screen" : "video";
     this.send("media", "subscribe", {
       target: participant.id,
@@ -387,7 +390,7 @@ export class OTalkConf extends VideoConfMeeting {
       type: "offer",
       sdp: offer.sdp,
     });
-    await this.sendICECandidates(peerConnection, participant.id);
+    await this.sendICECandidates(peerConnection, participant.id, isScreen);
     let answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
     this.send("media", "sdp_answer", {
@@ -408,7 +411,7 @@ export class OTalkConf extends VideoConfMeeting {
     this.videos.add(videoStream);
   }
 
-  async stopVideoFromParticipant(video: ParticipantVideo | ScreenShare, isScreen = false): Promise<void> {
+  async stopVideoFromParticipant(video: ParticipantVideo | ScreenShare, isScreen: boolean): Promise<void> {
     assert(!isScreen && video instanceof ParticipantVideo || isScreen && video instanceof ScreenShare, "VideoStream has wrong type");
     this.closePeerConnection(video.participant, isScreen);
   }
@@ -425,7 +428,8 @@ export class OTalkConf extends VideoConfMeeting {
     }
   }
 
-  async sendICECandidates(peerConnection: RTCPeerConnection, participantID: string) {
+  async sendICECandidates(peerConnection: RTCPeerConnection, participantID: string, isScreen: boolean) {
+    let sessionType = isScreen ? "screen" : "video";
     peerConnection.onicecandidate = (event) => {
       // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/icecandidate_event
       let candidateObj = event.candidate;
@@ -434,12 +438,12 @@ export class OTalkConf extends VideoConfMeeting {
       } else if (candidateObj.candidate == "") {
         this.send("media", "sdp_end_of_candidates", {
           target: participantID,
-          media_session_type: "video",
+          media_session_type: sessionType,
         });
       } else if (candidateObj.candidate) {
         this.send("media", "sdp_candidate", {
           target: participantID,
-          media_session_type: "video",
+          media_session_type: sessionType,
           candidate: {
             sdpMid: candidateObj.sdpMid,
             sdpMLineIndex: candidateObj.sdpMLineIndex,
