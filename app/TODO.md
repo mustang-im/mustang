@@ -69,24 +69,14 @@
 
 # Meet
 ## UI
-* Start cam screen
-* Select camera
-  * Start screen
-  * In meeting
+* Gallery: Video too large
 * Open/close cam and mic
-* Show incoming calls
-  * Switch to Meet app
 * UI for incoming or outgoing call
   * Before joining conference
-  * Before calling people/group
-  * While calling
-  * When receiving call
 
 ## Protocol
 * OpenTalk server
-  * Stop own video
-  * Participant opening cam
-  * Participant closing cam
+  * Participant opening/closing cam is delayed
   * Mute/unmute
   * TURN server
 * XMPP 1:1

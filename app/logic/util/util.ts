@@ -39,3 +39,5 @@ export class AbstractFunction extends Error {
     super("Not yet implemented in the subclass");
   }
 }
+
+export type URLString = string;

@@ -5,13 +5,14 @@
         <Button label="Call {$selectedPerson.name}" on:click={() => catchErrors(callSelected)} classes="call-person">
           <PersonPicture slot="icon" person={$selectedPerson} size={24} />
         </Button>
-        <Button label="Test incoming call" icon={VideoIcon} on:click={() => catchErrors(testIncoming)}/>
+        <Button label="Test incoming call" icon={VideoIcon} on:click={() => catchErrors(testIncoming)} />
       {/if}
       <Button label="Plan a meeting" icon={AddToCalendarIcon} />
-      <Button label="Start an ad-hoc meeting" icon={VideoIcon} on:click={() => catchErrors(startAdHocMeeting)}/>
+      <Button label="Start an ad-hoc meeting" icon={VideoIcon} on:click={() => catchErrors(startAdHocMeeting)} />
       <hbox>
-        <input id="meeting-link" type="url" placeholder="Enter meeting link to join" />
-        <Button label="Join" />
+        <input id="meeting-link" type="url" bind:value={conferenceURL} placeholder="Enter meeting link to join" />
+        <Button label="Join"
+          on:click={() => catchErrors(joinByURL)}/>
       </hbox>
     </vbox>
   </vbox>
@@ -36,6 +37,7 @@
   import { ParticipantVideo, SelfVideo } from "../../../logic/Meet/VideoStream";
   import { MeetingParticipant, ParticipantRole } from "../../../logic/Meet/Participant";
   import { selectedPerson } from "../../Shared/Person/PersonOrGroup";
+  import { joinConferenceByURL } from "../../../logic/Meet/StartCall";
   import { appGlobal } from "../../../logic/app";
   import MeetingList from "./MeetingList.svelte";
   import Button from "../../Shared/Button.svelte";
@@ -104,6 +106,13 @@
     meeting.videos.add(new ParticipantVideo(new MediaStream(), callee));
     meeting.videos.add(new SelfVideo(new MediaStream()));
     // meeting.myParticipant.role = ParticipantRole.Moderator;
+  }
+
+  let conferenceURL: string;
+
+  async function joinByURL() {
+    let meeting = await joinConferenceByURL(conferenceURL);
+    appGlobal.meetings.add(meeting);
   }
 </script>
 

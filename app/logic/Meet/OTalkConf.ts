@@ -1,9 +1,10 @@
-import { VideoConfMeeting } from "./VideoConfMeeting";
+import { VideoConfMeeting, MeetingState } from "./VideoConfMeeting";
 import { ParticipantVideo, ScreenShare, SelfVideo } from "./VideoStream";
 import { MeetingParticipant as Participant, ParticipantRole } from "./Participant";
 import { OAuth2 } from "./OAuth2";
+import { appGlobal } from "../app";
 import { notifyChangedProperty } from "../util/Observable";
-import { assert, sleep } from "../util/util";
+import { assert, sleep, type URLString } from "../util/util";
 import axios from "axios";
 
 export class OTalkConf extends VideoConfMeeting {
@@ -18,10 +19,11 @@ export class OTalkConf extends VideoConfMeeting {
   private oauth2: OAuth2;
   /* Live connection with the controller, during a conference */
   protected webSocket: WebSocket;
-  protected axios: any;
   /* Current meeting */
   eventID: string;
   roomID: string;
+  inviteCode: string; // only when guest
+  resumptionTicket: string;
   myParticipant: Participant;
 
   /** Our camera and mic.
@@ -56,17 +58,22 @@ export class OTalkConf extends VideoConfMeeting {
     this.oauth2 = new OAuth2(this.oauthBaseURL, kScope, kClientID);
     await this.oauth2.loginWithPassword(username, password);
 
-    this.axios = axios.create({
-      baseURL: `${this.controllerBaseURL}/v1/`,
-      timeout: 3000,
-      headers: {
-        Authorization: this.oauth2.authorizationHeader,
-        'Content-Type': 'text/json',
-      },
-    });
-
     await this.axios.post('auth/login', {
       id_token: this.oauth2.idToken,
+    });
+  }
+
+  protected get axios() {
+    const headers: any = {
+      'Content-Type': 'text/json',
+    };
+    if (this.oauth2?.authorizationHeader) {
+      headers.Authorization = this.oauth2.authorizationHeader;
+    }
+    return axios.create({
+      baseURL: `${this.controllerBaseURL}/v1/`,
+      timeout: 3000,
+      headers: headers,
     });
   }
 
@@ -87,24 +94,63 @@ export class OTalkConf extends VideoConfMeeting {
     this.roomID = event.room.id;
   }
 
+  /**
+   * Received invite URL out-of-band (using other communication methods)
+   * from conference owner, who did `getInvitationURL()`.
+   * URL form: https://<web-frontend-host>/invite/<invite-code>
+   */
+  async join(url: URLString) {
+    let urlParsed = new URL(url);
+    // Data comes from user. All error messages in this function are user visible. TODO Translate error messages.
+    assert(urlParsed.pathname.startsWith("/invite/"), "Protocol not supported");
+    let inviteCode = urlParsed.pathname.replace("/invite/", "");
+    assert(inviteCode.match(/^[a-f0-9\-]*$/), "Not a valid invitation URL");
+    let roomID: string;
+    try {
+      let response = await this.axios.post(`invite/verify`, {
+        invite_code: inviteCode,
+      });
+      roomID = response.data.room_id;
+      assert(roomID, "Room ID missing");
+    } catch (ex) {
+      ex.message = "This invitation is not valid anymore. Please request a new invitation from the organizer of the meeting.";
+      throw ex;
+    }
+    this.inviteCode = inviteCode;
+    this.roomID = roomID;
+    // uh... OTalk protocol doesn't give any way to find the controller (e.g. of a third-party server)
+    urlParsed.hostname = "controller." + urlParsed.hostname.replace("www.", "");
+    this.controllerBaseURL = urlParsed.origin;
+    this.state = MeetingState.JoinConference;
+  }
+
   async getInvitationURL(): Promise<URLString> {
     assert(this.roomID, "Need to create the conference first");
     let response = await this.axios.post(`rooms/${this.roomID}/invites`, {});
-    let invitation = await response.data;
-    return `${this.webFrontendBaseURL}/invite/${invitation.invite_code}`;
+    return `${this.webFrontendBaseURL}/invite/${response.data.invite_code}`;
   }
 
   async aboutMe(): Promise<{ name: string, picture: URLString, email: string, id: string }> {
-    let response = await this.axios.get("users/me");
-    let me = await response.data;
-    me.name = me.display_name;
-    me.picture
-    return {
-      name: me.display_name,
-      email: me.email,
-      picture: me.avatar_url,
-      id: me.id,
-    };
+    if (this.oauth2) {
+      let response = await this.axios.get("users/me");
+      let me = await response.data;
+      me.name = me.display_name;
+      me.picture
+      return {
+        name: me.display_name,
+        email: me.email,
+        picture: me.avatar_url,
+        id: me.id,
+      };
+    } else {
+      let me = appGlobal.me;
+      return {
+        name: me.name,
+        email: me.emailAddresses.first?.value,
+        picture: me.picture,
+        id: me.id,
+      };
+    }
   }
 
   async setCamera(mediaStream: MediaStream | null): Promise<void> {
@@ -154,33 +200,48 @@ export class OTalkConf extends VideoConfMeeting {
   async start() {
     assert(this.roomID, "Need to create the conference first");
     await super.start();
-    let request = await this.axios.post(`rooms/${this.roomID}/start`, {
-      breakout_room: null,
-    });
-    let roomTicket = request.data.ticket;
+    let roomTicket: string;
+    if (this.inviteCode) {
+      let request = await this.axios.post(`rooms/${this.roomID}/start_invited`, {
+        invite_code: this.inviteCode,
+        breakout_room: null,
+      });
+      roomTicket = request.data.ticket;
+      this.resumptionTicket = request.data.resumption;
+    } else {
+      await this.axios.get(`turn`);
+      let request = await this.axios.post(`rooms/${this.roomID}/start`, {
+        breakout_room: null,
+      });
+      roomTicket = request.data.ticket;
+      this.resumptionTicket = request.data.resumption;
+    }
     assert(roomTicket, "Failed to get authentication for the conference room");
-    await this.axios.get(`turn`);
+
     await this.createWebSocket(roomTicket);
-    await this.join();
     this.addMsgListener("control", "joined", false, false, (json) => this.participantJoined(json));
     this.addMsgListener("control", "left", false, false, (json) => this.participantLeft(json));
     this.addMsgListener("control", "update", false, false, (json) => this.participantUpdate(json));
     this.addMsgListener("media", "webrtc_down", false, false, (json) => this.participantVideoStopped(json));
+
+    await this.joinAfterStart();
   }
 
-  protected async join() {
+  protected async joinAfterStart() {
     let me = await this.aboutMe();
+    let name = me.name;
+
     this.send("control", "join", {
-      display_name: me.name,
+      display_name: name,
     });
     let myParticipantInfo = await this.waitForMessage("control", "join_success") as
       ParticipantInfoJSON;
     this.myParticipant = new Participant();
     this.myParticipant.id = myParticipantInfo.id;
-    this.myParticipant.name = me.name;
+    this.myParticipant.name = name;
     this.myParticipant.role = myParticipantInfo.role;
     if (this.camera && this.camera.active) {
-      await this.sendVideo(this.camera);
+      await this.sendVideo(this.camera, false);
     }
   }
 
@@ -195,7 +256,7 @@ export class OTalkConf extends VideoConfMeeting {
     this.setParticipateInfo(participant, json);
     this.participants.add(participant);
     if (participant.cameraOn || participant.micOn) {
-      await this.getVideoFromParticipant(participant);
+      await this.getVideoFromParticipant(participant, false);
     }
   }
 
@@ -278,13 +339,16 @@ export class OTalkConf extends VideoConfMeeting {
   }
 
   async hangup() {
-    if (this.myParticipant.peerConnection) {
+    if (this.myParticipant?.peerConnection) {
       await this.removeMyVideo(this.camera, false);
     }
-    if (this.myParticipant.screenPeerConnection) {
+    if (this.myParticipant?.screenPeerConnection) {
       await this.removeMyVideo(this.screenShare, true);
     }
     await this.closeWebSocket();
+    if (this.oauth2) {
+      this.oauth2.stop();
+    }
     super.hangup();
   }
 
@@ -601,5 +665,3 @@ class ParticipantInfoJSON {
   avatar_url: URLString;
   role: ParticipantRole;
 }
-
-type URLString = string;

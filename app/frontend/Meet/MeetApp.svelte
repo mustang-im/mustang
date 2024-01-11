@@ -1,6 +1,6 @@
-{#if meeting && $meeting?.state == MeetingState.Ongoing}
+{#if meeting && $meeting.state == MeetingState.Ongoing}
   <InMeeting {meeting} />
-{:else if meeting && $meeting?.state != MeetingState.Ended}
+{:else if meeting && $meeting.state != MeetingState.Ended}
   <Calling {meeting} />
 {:else}
   <StartScreen />
