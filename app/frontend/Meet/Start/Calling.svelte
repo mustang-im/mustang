@@ -121,8 +121,10 @@
       await meeting.answer();
     } else if (meeting.state == MeetingState.OutgoingCallPrepare) {
       await meeting.call();
-    } else if (meeting.state == MeetingState.Init) {
+    } else if (meeting.state == MeetingState.Init || meeting.state == MeetingState.JoinConference) {
       await meeting.start();
+    } else {
+      throw new Error("Unknown state. Cannot start the call.");
     }
   }
 

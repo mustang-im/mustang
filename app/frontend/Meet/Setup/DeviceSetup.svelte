@@ -1,7 +1,7 @@
 <vbox flex class="device-setup">
   <vbox class="self-video" flex>
     <!-- svelte-ignore a11y-media-has-caption -->
-    <video bind:this={videoEl} />
+    <video bind:this={videoEl} muted />
   </vbox>
   <hbox class="buttons">
     <DeviceButton video={false} {devices}

@@ -4,9 +4,11 @@ import { Group } from "../Abstract/Group";
 import { MeetingParticipant } from "./Participant";
 import type { ChatAccount } from "../Chat/Account";
 import type { Chat } from "../Chat/Chat";
+import { OTalkConf } from "./OTalkConf";
 import { MatrixAccount } from "../Chat/Matrix/MatrixAccount";
 import { MatrixVideoConf } from "./MatrixVideoConf";
 import { appGlobal } from "../app";
+import type { URLString } from "../util/util";
 
 export async function startVideoCall(to: Person | Group): Promise<VideoConfMeeting> {
   // TODO test code
@@ -113,4 +115,33 @@ function entryIsMatrix(contact: ContactEntry) {
 
 export async function startAudioCall(to: Person | Group): Promise<VideoConfMeeting> {
   throw new Error("Not yet implemented. Try a video call.");
+}
+
+/**
+ * Whether this is a conference invitation URL that we support and can join.
+ * Does only cheap syntax checks.
+ * @see joinConferenceByURL();
+ */
+export function isConferenceURL(url: URLString): boolean {
+  let urlParsed = new URL(url);
+  return urlParsed.pathname.startsWith("/invite/");
+}
+
+/**
+ * The user received invitation URL out-of-band (using other communication methods)
+ * from the conference organizer.
+ * The URL should contain both the room and the ticket to permit joining.
+ * @returns meeting
+ *   `meeting.join()` was already called. You still need to `meeting.start()`.
+ * @throws if the URL is not supported
+ * @see isConferenceURL();
+ */
+export async function joinConferenceByURL(url: URLString): Promise<VideoConfMeeting> {
+  let urlParsed = new URL(url);
+  if (urlParsed.pathname.startsWith("/invite/")) {
+    let conf = new OTalkConf();
+    await conf.join(url);
+    return conf;
+  }
+  throw new Error("This meeting URL is not supported");
 }

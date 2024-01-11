@@ -39,7 +39,7 @@ Sec-Fetch-Dest: empty
 Sec-Fetch-Mode: cors
 Sec-Fetch-Site: same-site
 
-## Create conference
+## Create conference event
 
 1. Create event
 
@@ -102,7 +102,40 @@ becomes:
 https://<web-frontend-host>/invite/<invite_code>
 e.g. https://mustang.im/invite/95e00679-12b5-4e8a-9eaa-b0b3d2423798
 
-## Join conference
+## Join conference as guest using invite code
+
+1. Invitation URL
+https://<controller-host>/invite/<invite-code>
+e.g. https://mustang.im/invite/8709c31e-ff01-43da-abfc-c09c817a1b5c
+Received out-of-band (using other communication methods) from conference owner,
+who did "Get invitation URL" (see above).
+
+2. Get room ID
+https://<controller-host>/v1/invite/verify
+e.g. https://controller.mustang.im/v1/invite/verify
+POST Request:
+{
+  "invite_code": "8709c31e-ff01-43da-abfc-c09c817a1b5c"
+}
+Response:
+{
+  "room_id": "671206b3-a445-4a81-9efe-bfa3e11356ba"
+}
+
+3. Start conference (for me)
+https://<controller-host>/v1/rooms/<room.id>/start_invited
+e.g. https://controller.mustang.im/v1/rooms/671206b3-a445-4a81-9efe-bfa3e11356ba/start_invited
+POST Request:
+{
+  "breakout_room": null,
+  "invite_code": "8709c31e-ff01-43da-abfc-c09c817a1b5c"
+}
+Response:
+{
+  "ticket": "tnjG1SCou7qCMMVwPTSdTDt2vOSirou8ULxchR8RrILILnsnhbDihoWTUpbkjFG7","resumption": "xHRDKwzCwTykATMQS2IEVndt6LAXsQE01z0lIAkjfScJ300aKXpI236vofdzjY6R"
+}
+
+## Start conference as owner
 
 1. Who am I? (optional)
 https://<controller-host>/v1/users/me
@@ -158,7 +191,12 @@ Response:
 Starts after 2., before 3.
 wss://<controller-host>/signaling
 e.g. wss://controller.mustang.im/signaling
-See next section
+Header:
+{
+  Sec-WebSocket-Protocol: "ticket#<ticket-from-start>, k3k-signaling-json-v1.0"
+}
+WebSocket content:
+See next section "Receive and send video"
 
 ## Receive and send video
 
