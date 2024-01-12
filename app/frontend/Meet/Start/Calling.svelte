@@ -1,6 +1,6 @@
 <vbox flex class="calling" state={$meeting.state}>
   <hbox flex />
-  <hbox flex>
+  <hbox class="boxes" flex>
     <hbox flex />
     <vbox class="box">
       <vbox class="text">
@@ -142,6 +142,13 @@
   .calling {
     background-color: #494558;
   }
+  @media (max-width: 800px) {
+    .boxes {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+  }
   .box {
     max-width: 400px;
     max-height: 400px;
@@ -194,7 +201,8 @@
   }
 
   .gap {
-    width: 10%;
+    min-width: 10%;
+    min-height: 10%;
   }
   .device-setup :global(button.button),
   .device-setup :global(button.button:hover:not(.disabled)) {
@@ -202,6 +210,9 @@
   }
   .device-setup :global(button.border svg path) {
     stroke-width: 1.5px;
+  }
+  .device-setup :global(button.button) {
+    background-color: #CBCACA;
   }
 
   .bottom-bar {
