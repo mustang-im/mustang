@@ -1,70 +1,78 @@
 <vbox flex class="calling" state={$meeting.state}>
   <hbox flex />
-  <vbox class="box">
-    <vbox class="text">
-      <hbox class="what">
-        {#if $meeting.state == MeetingState.OutgoingCallPrepare}
-          Do you want to call?
-        {:else if $meeting.state == MeetingState.OutgoingCall}
-          You're calling...
-        {:else if $meeting.state == MeetingState.IncomingCall}
-        {/if}
-      </hbox>
-      <hbox class="who">
+  <hbox flex>
+    <hbox flex />
+    <vbox class="box">
+      <vbox class="text">
+        <hbox class="what">
+          {#if $meeting.state == MeetingState.OutgoingCallPrepare}
+            Do you want to call?
+          {:else if $meeting.state == MeetingState.OutgoingCall}
+            You're calling...
+          {:else if $meeting.state == MeetingState.IncomingCall}
+          {/if}
+        </hbox>
+        <hbox class="who">
+          {#if $participants.length == 1}
+            {participants.first.name}
+          {:else if $participants.length > 1}
+            {meeting.event?.title}
+          {/if}
+        </hbox>
+        <hbox class="who-count">
+          {#if $participants.length > 1}
+            ({participants.length} participants)
+          {/if}
+        </hbox>
+        <hbox class="what">
+          {#if $meeting.state == MeetingState.OutgoingCallPrepare}
+          {:else if $meeting.state == MeetingState.OutgoingCall}
+          {:else if $meeting.state == MeetingState.IncomingCall}
+            is calling you...
+          {/if}
+        </hbox>
+      </vbox>
+      <vbox class="participants" flex>
         {#if $participants.length == 1}
-          {participants.first.name}
+          <PersonPicture person={participants.first} size={196} />
         {:else if $participants.length > 1}
-          {meeting.event?.title}
+          <GroupPicture persons={participants} size={196} />
         {/if}
-      </hbox>
-      <hbox class="who-count">
-        {#if $participants.length > 1}
-          ({participants.length} participants)
+      </vbox>
+      <hbox class="actions">
+        {#if $meeting.state == MeetingState.Init || $meeting.state == MeetingState.OutgoingCallPrepare}
+          <RoundButton classes="cancel"
+            label="Cancel"
+            icon={XIcon}
+            iconSize="24px"
+            on:click={() => catchErrors(cancel)}
+            />
+        {:else}
+          <RoundButton classes="hangup"
+            label={$meeting.state == MeetingState.IncomingCall ? "Decline call" : "Hang up"}
+            icon={HangUpIcon}
+            on:click={() => catchErrors(hangup)}
+            iconSize="24px"
+            border={false} />
         {/if}
-      </hbox>
-      <hbox class="what">
-        {#if $meeting.state == MeetingState.OutgoingCallPrepare}
-        {:else if $meeting.state == MeetingState.OutgoingCall}
-        {:else if $meeting.state == MeetingState.IncomingCall}
-          is calling you...
+        <hbox flex />
+        {#if $meeting.state != MeetingState.OutgoingCall}
+          <RoundButton classes="accept"
+            label={$meeting.state == MeetingState.Init ? "Start conference" : $meeting.state == MeetingState.OutgoingCallPrepare ? "Call" : "Accept call"}
+            icon={$meeting.state == MeetingState.Init ? OpenIcon : CallIcon}
+            iconSize="24px"
+            on:click={() => catchErrors(accept)}
+            border={false} />
         {/if}
       </hbox>
     </vbox>
-    <vbox class="participants" flex>
-      {#if $participants.length == 1}
-        <PersonPicture person={participants.first} size={196} />
-      {:else if $participants.length > 1}
-        <GroupPicture persons={participants} size={196} />
-      {/if}
+    <hbox class="gap" />
+    <vbox class="device-setup">
+      <DeviceSetup />
     </vbox>
-    <hbox class="actions">
-      {#if $meeting.state == MeetingState.Init || $meeting.state == MeetingState.OutgoingCallPrepare}
-        <RoundButton classes="cancel"
-          label="Cancel"
-          icon={XIcon}
-          iconSize="24px"
-          on:click={() => catchErrors(cancel)}
-          />
-      {:else}
-        <RoundButton classes="hangup"
-          label={$meeting.state == MeetingState.IncomingCall ? "Decline call" : "Hang up"}
-          icon={HangUpIcon}
-          on:click={() => catchErrors(hangup)}
-          iconSize="24px"
-          border={false} />
-      {/if}
-      <hbox flex />
-      {#if $meeting.state != MeetingState.OutgoingCall}
-        <RoundButton classes="accept"
-          label={$meeting.state == MeetingState.Init ? "Start conference" : $meeting.state == MeetingState.OutgoingCallPrepare ? "Call" : "Accept call"}
-          icon={$meeting.state == MeetingState.Init ? OpenIcon : CallIcon}
-          iconSize="24px"
-          on:click={() => catchErrors(accept)}
-          border={false} />
-      {/if}
-    </hbox>
-  </vbox>
-  <hbox class="setup-bar" flex>
+    <hbox flex />
+  </hbox>
+  <hbox class="bottom-bar" flex>
     <vbox class="info" flex>
       {#if upcomingMeeting}
         <vbox class="upcoming-meeting">
@@ -77,9 +85,6 @@
           </hbox>
         </vbox>
       {/if}
-    </vbox>
-    <vbox class="device-setup">
-      <DeviceSetup />
     </vbox>
   </hbox>
 </vbox>
@@ -135,21 +140,23 @@
 
 <style>
   .calling {
-    align-items: center;
-    justify-content: center;
-  }
-  :global(body[theme="dark"]) .calling {
     background-color: #494558;
   }
   .box {
     max-width: 400px;
     max-height: 400px;
-    width: 25%;
-    height: 50%;
     aspect-ratio: 8/10;
     background-color: #160C27;
     border-radius: 4px;
     padding: 40px;
+  }
+  .device-setup {
+    max-width: 400px;
+    max-height: 440px;
+    aspect-ratio: 8/10;
+    background-color: #160C27;
+    border-radius: 4px;
+    padding: 20px 0px;
   }
   .text {
     color: white;
@@ -186,7 +193,18 @@
     background-color: #F34949 !important;
   }
 
-  .setup-bar {
+  .gap {
+    width: 10%;
+  }
+  .device-setup :global(button.button),
+  .device-setup :global(button.button:hover:not(.disabled)) {
+    border: 2px solid #160C27 !important;
+  }
+  .device-setup :global(button.border svg path) {
+    stroke-width: 1.5px;
+  }
+
+  .bottom-bar {
     justify-content: end;
     align-items: end;
     width: 100%;
@@ -203,11 +221,6 @@
   .upcoming-meeting .title {
     justify-content: center;
     align-items: center;
-  }
-  .device-setup {
-    height: 25vh;
-    aspect-ratio: 1.2/1;
-    margin: 8px 0;
   }
 
   .calling[state="incoming"] .what,
