@@ -15,6 +15,7 @@
 * PersonList component
 * flex independent from content
 * Window header
+* Splitter
 
 # Chat
 ## UI
