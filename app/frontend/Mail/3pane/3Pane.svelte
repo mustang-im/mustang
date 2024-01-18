@@ -50,4 +50,7 @@
   .left-pane {
     flex: 3 0 0;
   }
+  .message-display-pane {
+    flex: 2 0 0;
+  }
 </style>
