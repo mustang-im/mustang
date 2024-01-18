@@ -41,6 +41,7 @@
 
 <style>
   .message-list :global(grid) {
+    padding-top: 8px;
     padding-left: 4px;
   }
   .message-list :global(.header) {

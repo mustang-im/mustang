@@ -52,12 +52,17 @@
     justify-content: baseline;
     align-items: baseline;
   }
-  .top-row {
-    margin-bottom: -1px;
-    width: 100%;
-  }
+  .top-row,
   .bottom-row {
     width: 100%;
+    overflow: hidden;
+  }
+  .top-row {
+    height: 1.5em;
+    margin-bottom: -1px;
+  }
+  .bottom-row {
+    height: 1.3em;
   }
   .contact {
     font-weight: bold;
@@ -70,8 +75,6 @@
   }
   .subject {
     line-height: 1.3;
-    height: 1.2em;
-    /* 2 rows for subject: height: 2.5em; */
   }
   .button {
     width: 20px;

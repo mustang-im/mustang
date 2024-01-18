@@ -14,6 +14,9 @@
 </script>
 
 <style>
+  .workspace-list :global(.fast-list) {
+    overflow: inherit;
+  }
   .header {
     color: grey;
     font-size: 12px;
