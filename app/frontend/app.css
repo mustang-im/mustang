@@ -110,6 +110,17 @@ a:hover {
   }
 }
 
+/* Fastlist */
+
+.fast-list .row.selected>* {
+  background-color: #20AE9E;
+  color: white;
+}
+
+.fast-list .row:not(.selected):hover>* {
+  background-color: #A9DAD4;
+}
+
 /* Fix svelte-ui menu */
 
 div.svelteui-Menu-root div.svelteui-Paper-root {

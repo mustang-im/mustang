@@ -40,9 +40,15 @@
 </script>
 
 <style>
-  .subject.unread {
-    font-weight: bold;
+  .correspondent,
+  .subject {
+    white-space: nowrap;
   }
+  .date {
+    min-width: 8em;
+    justify-content: center;
+  }
+  .subject.unread,
   .date.unread {
     font-weight: bold;
   }
@@ -53,13 +59,13 @@
   .button :global(svg) {
     stroke-width: 1px;
   }
-  :global(tr:not(:hover)) .star:not(.starred) {
+  :global(.row:not(:hover)) .star:not(.starred) :global(svg) {
     opacity: 0;
   }
   .star.starred :global(svg) {
     fill: orange;
   }
-  :global(tr:not(:hover)) .unread.read :global(svg) {
+  :global(.row:not(:hover)) .unread.read :global(svg) {
     opacity: 0;
   }
   .unread:not(.read) :global(svg) {

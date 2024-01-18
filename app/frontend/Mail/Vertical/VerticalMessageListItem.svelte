@@ -54,6 +54,10 @@
   }
   .top-row {
     margin-bottom: -1px;
+    width: 100%;
+  }
+  .bottom-row {
+    width: 100%;
   }
   .contact {
     font-weight: bold;
@@ -66,6 +70,8 @@
   }
   .subject {
     line-height: 1.3;
+    height: 1.2em;
+    /* 2 rows for subject: height: 2.5em; */
   }
   .button {
     width: 20px;
@@ -74,13 +80,13 @@
   .button :global(svg) {
     stroke-width: 1px;
   }
-  :global(tr:not(:hover)) .star:not(.starred) {
+  :global(.row:not(:hover)) .star:not(.starred) :global(svg) {
     opacity: 0;
   }
   .star.starred :global(svg) {
     fill: orange;
   }
-  :global(tr:not(:hover)) .message.read .unread :global(svg) {
+  :global(.row:not(:hover)) .message.read .unread :global(svg) {
     opacity: 0;
   }
   .message.unread .unread :global(svg) {

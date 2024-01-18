@@ -1,31 +1,29 @@
 <vbox flex class="folder-list">
-  <FastList items={folders} bind:selectedItem={selectedFolder}>
+  <FastList items={folders} bind:selectedItem={selectedFolder} columns="auto">
     <svelte:fragment slot="header">
       <hbox class="header">Folders</hbox>
     </svelte:fragment>
     <svelte:fragment slot="row" let:item={folder}>
-      <td>
-        <hbox class="folder">
-          <hbox class="icon">
-            {#if folder.specialFolder == "inbox"}
-              <InboxIcon size="14px" />
-            {:else if folder.specialFolder == "sent"}
-              <SentIcon size="14px" />
-            {:else if folder.specialFolder == "drafts"}
-              <DraftsIcon size="14px" />
-            {:else if folder.specialFolder == "trash"}
-              <TrashIcon size="14px" />
-            {:else if folder.specialFolder == "spam"}
-              <SpamIcon size="14px" />
-            {:else if folder.specialFolder == "archive"}
-              <ArchiveIcon size="14px" />
-            {:else}
-              <FolderIcon size="14px" />
-            {/if}
-          </hbox>
-          <hbox class="label">{folder.name}</hbox>          
+      <hbox class="folder">
+        <hbox class="icon">
+          {#if folder.specialFolder == "inbox"}
+            <InboxIcon size="14px" />
+          {:else if folder.specialFolder == "sent"}
+            <SentIcon size="14px" />
+          {:else if folder.specialFolder == "drafts"}
+            <DraftsIcon size="14px" />
+          {:else if folder.specialFolder == "trash"}
+            <TrashIcon size="14px" />
+          {:else if folder.specialFolder == "spam"}
+            <SpamIcon size="14px" />
+          {:else if folder.specialFolder == "archive"}
+            <ArchiveIcon size="14px" />
+          {:else}
+            <FolderIcon size="14px" />
+          {/if}
         </hbox>
-      </td>
+        <hbox class="label">{folder.name}</hbox>
+      </hbox>
     </svelte:fragment>
   </FastList>
 </vbox>
@@ -48,20 +46,19 @@
 </script>
 
 <style>
-  .folder-list :global(.fast-list thead tr hbox) {
-    background-color: transparent;
-  }
-  .folder-list :global(.fast-list tbody tr hbox) {
+  .folder-list :global(.row hbox) {
     font-size: 14px;
   }
   .header {
     padding-left: 10px !important;
+    color: grey;
+    font-size: 12px;
   }
   .folder {
-    align-items: baseline;
-    margin-left: 6px;
-    margin-top: 2px;
-    margin-bottom: 2px;
+    align-items: center;
+    padding-left: 12px;
+    padding-top: 2px;
+    padding-bottom: 2px;
   }
   .icon :global(.cls-2) {
     stroke: black;

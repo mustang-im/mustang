@@ -1,7 +1,7 @@
 <vbox class="workspace-list">
-  <FastList>
+  <FastList columns="auto">
     <svelte:fragment slot="header">
-      <hbox>Workspaces</hbox>
+      <hbox class="header">Workspaces</hbox>
     </svelte:fragment>
     <svelte:fragment slot="row">
       <hbox>All</hbox>
@@ -14,7 +14,8 @@
 </script>
 
 <style>
-  .workspace-list :global(.fast-list thead tr hbox) {
-    background-color: transparent;
+  .header {
+    color: grey;
+    font-size: 12px;
   }
 </style>
