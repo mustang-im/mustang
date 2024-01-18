@@ -11,9 +11,9 @@
 export function getDateString(date: Date): string {
   var dateDetails = null;
   let today = new Date();
-  if (date.getDate() == today.getDate()) {
+  if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < 24 * 60 * 60 * 1000) {
     dateDetails = { hour: "numeric", minute: "numeric" };
-  } else if (today.getMilliseconds() - date.getMilliseconds() < 7 * 24 * 60 * 60 * 1000) { // this week
+  } else if (today.getTime() - date.getTime() < 7 * 24 * 60 * 60 * 1000) { // this week
     dateDetails = { weekday: "short", hour: "numeric", minute: "numeric" };
   } else if (date.getFullYear() == today.getFullYear()) { // this year
     dateDetails = { month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" };
