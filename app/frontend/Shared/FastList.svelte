@@ -25,7 +25,7 @@
     <div class="scrollbar-content" style="height: {$items.length * rowHeight}px" />
   </div>
 </hbox>
-<!--svelte:window on:resize={debounce(updateSize, 300)} /-->
+<svelte:window on:resize={debounce(updateSize, 30)} />
 
 <script lang="ts">
   /**
@@ -61,7 +61,8 @@
   */
 
   import { Collection, CollectionObserver, ArrayColl } from "svelte-collections"
-  //import debounce from "lodash.debounce";
+  import { tick } from "svelte";
+  import debounce from "lodash/debounce";
 
   type T = $$Generic;
 
@@ -123,25 +124,20 @@
   let showRows = 1;
   $: showItems = $items.getIndexRange(scrollPos, showRows) as T[];
 
-  $: listHeight = listE?.offsetHeight;
-  $: listE && updateSize();
+  $: $items.hasItems && listE && !rowHeight && updateSize();
 
   /**
    * Call this when either the number of entries changes,
    * or the DOM size of <fastlist> changes.
    * Updates the DOM elements with the rows.
    */
-  function updateSize() {
+  async function updateSize() {
+    await tick();
     let contentRow = contentE.firstChild?.firstChild as HTMLElement;
-    if (contentRow) {
-      rowHeight = contentRow.offsetHeight;
-    } else if (!rowHeight) {
-      rowHeight = 10;
-      setTimeout(updateSize, 100);
-    }
-    let availableHeight = listHeight - headerE.offsetHeight;
+    rowHeight = contentRow.offsetHeight;
+    let availableHeight = listE.offsetHeight - headerE.offsetHeight;
 
-    showRows = Math.min(items.length, Math.round(availableHeight / rowHeight));
+    showRows = Math.min(items.length, Math.floor(availableHeight / rowHeight));
     // Workaround: the following line should be triggered automatically in the $: above, but it doesn't.
     showItems = $items.getIndexRange(scrollPos, showRows) as T[];
 
@@ -279,6 +275,7 @@
   .fast-list {
     position: relative;
     flex: 1 0 0;
+    overflow: hidden;
   }
   grid {
     width: 100%;

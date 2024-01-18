@@ -32,6 +32,9 @@
 </script>
 
 <style>
+  .account-list :global(.fast-list) {
+    overflow: inherit;
+  }
   .account-list :global(.row hbox) {
     font-size: 14px;
   }
