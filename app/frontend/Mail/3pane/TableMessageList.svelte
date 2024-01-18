@@ -2,13 +2,14 @@
   on:keydown={event => catchErrors(() => onKey(event))}>
   <FastList items={sortedMessages}
     bind:selectedItem={selectedMessage}
-    bind:selectedItems={selectedMessages}>
+    bind:selectedItems={selectedMessages}
+    columns="auto auto 1fr 3fr auto">
     <svelte:fragment slot="header">
       <hbox></hbox>
       <hbox></hbox>
       <hbox>Correspondent</hbox>
       <hbox>Subject</hbox>
-      <hbox>Date</hbox>
+      <hbox class="date">Date</hbox>
     </svelte:fragment>
     <TableMessageListItem slot="row" let:item message={item} />
   </FastList>
@@ -39,10 +40,25 @@
 </script>
 
 <style>
-  .message-list :global(.fast-list thead tr hbox) {
-    background-color: white;
-  }
-  .message-list :global(.fast-list table) {
+  .message-list :global(grid) {
     padding-left: 4px;
+  }
+  .message-list :global(.header) {
+    display: none;
+  }
+  .date {
+    justify-content: center;
+  }
+  .message-list :global(.header hbox) {
+    vertical-align: middle;
+    border: none;
+    color: grey;
+    font-size: 12px;
+  }
+  .message-list :global(.header) {
+    height: 32px;
+  }
+  .message-list :global(.row hbox) {
+    font-size: 13px;
   }
 </style>

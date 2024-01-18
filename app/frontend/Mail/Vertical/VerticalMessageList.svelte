@@ -2,7 +2,8 @@
   on:keydown={event => catchErrors(() => onKey(event))}>
   <FastList items={sortedMessages}
     bind:selectedItem={selectedMessage}
-    bind:selectedItems={selectedMessages}>
+    bind:selectedItems={selectedMessages}
+    columns="auto">
     <svelte:fragment slot="header">
     </svelte:fragment>
     <VerticalMessageListItem slot="row" let:item message={item} />
@@ -35,10 +36,21 @@
 
 <style>
   .message-list :global(.fast-list) {
-    margin-top: 8px;
     padding-left: 4px;
   }
-  .message-list :global(.fast-list thead) {
+  .message-list :global(.header) {
     display: none;
+  }
+  .message-list :global(.header hbox) {
+    vertical-align: middle;
+    border: none;
+    color: grey;
+    font-size: 12px;
+  }
+  .message-list :global(.header) {
+    height: 32px;
+  }
+  .message-list :global(.row hbox) {
+    font-size: 13px;
   }
 </style>

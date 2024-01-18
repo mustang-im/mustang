@@ -1,5 +1,5 @@
 <vbox flex class="persons">
-  <FastList items={persons}>
+  <FastList items={persons} columns="auto">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <vbox class="person" slot="row" let:item={person} on:click={() => selected = person}>
       <PersonLine {person} isSelected={person == selected} {pictureSize}>
@@ -27,7 +27,7 @@
 </script>
 
 <style>
-  .persons :global(tbody > tr > *) {
+  .persons :global(.row > *) {
     padding: 0;
   }
 </style>

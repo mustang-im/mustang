@@ -5,20 +5,18 @@
   on:keydown={event => onKey(event)}
   tabindex={0}
   bind:this={listE}>
-  <table cellspacing="0">
-    <thead bind:this={theadE}>
-      <tr>
-        <slot name="header" />
-      </tr>
-    </thead>
-    <tbody bind:this={contentE}>
+  <grid style="grid-template-columns: {columns};">
+    <div class="header" bind:this={headerE}>
+      <slot name="header" />
+    </div>
+    <div class="content" bind:this={contentE}>
       {#each showItems as item}
-        <tr on:click={ev => onSelectElement(item, ev)} class:selected={$selectedItems.includes(item)}>
+        <div class="row" on:click={event => onSelectElement(item, event)} class:selected={$selectedItems.includes(item)}>
           <slot name="row" {item} />
-        </tr>
+        </div>
       {/each}
-    </tbody>
-  </table>
+    </div>
+  </grid>
   <div class="scrollbar"
     on:scroll={onScrollBar}
     class:hidden={scrollbarHidden}
@@ -72,6 +70,9 @@
    */
   export let items: Collection<T> = new ArrayColl<T>();
 
+  /** grid-template-columns: */
+  export let columns: string = "auto";
+
   /**
    * The list items that the user selected,
    * e.g. by clicking on them.
@@ -98,13 +99,13 @@
   export let selectedItem: T = null;
 
   let listE: HTMLDivElement;
-  let theadE: HTMLTableSectionElement;
-  let contentE: HTMLTableSectionElement;
+  let headerE: HTMLDivElement;
+  let contentE: HTMLDivElement;
   /** A dummy element that displays only a scrollbar. */
   let scrollbarE: HTMLDivElement;
   let scrollbarHidden = true;
 
-  $: headerHeight = theadE ? theadE.offsetHeight : 26;
+  $: headerHeight = headerE?.firstChild?.offsetHeight ?? 0;
 
   /**
    * Height of the DOM elements for a single row.
@@ -122,7 +123,8 @@
   let showRows = 1;
   $: showItems = $items.getIndexRange(scrollPos, showRows) as T[];
 
-  $: $items && listE && updateSize();
+  $: listHeight = listE?.offsetHeight;
+  $: listE && updateSize();
 
   /**
    * Call this when either the number of entries changes,
@@ -130,14 +132,14 @@
    * Updates the DOM elements with the rows.
    */
   function updateSize() {
-    let contentRow = contentE.firstChild as HTMLElement;
+    let contentRow = contentE.firstChild?.firstChild as HTMLElement;
     if (contentRow) {
       rowHeight = contentRow.offsetHeight;
     } else if (!rowHeight) {
       rowHeight = 10;
       setTimeout(updateSize, 100);
     }
-    let availableHeight = listE.offsetHeight - theadE.offsetHeight;
+    let availableHeight = listHeight - headerE.offsetHeight;
 
     showRows = Math.min(items.length, Math.round(availableHeight / rowHeight));
     // Workaround: the following line should be triggered automatically in the $: above, but it doesn't.
@@ -278,27 +280,24 @@
     position: relative;
     flex: 1 0 0;
   }
-  table {
+  grid {
     width: 100%;
     height: min-content;
   }
-  thead > tr :global(> *) {
-    display: table-cell;
+  .header {
+    display: contents;
+  }
+  .header :global(> *) {
     padding: 2px 5px;
-    border-top: 1px solid white;
-    border-left: 1px solid white;
-    border-right: 1px solid #8E8EA1;
-    border-bottom: 1px solid #8E8EA1;
-    background-color: #D2D2DC;
   }
-  thead > tr :global(> *:hover) {
-    background-color: #E5E5F7;
+  .content {
+    display: contents;
   }
-  tbody {
-    display: table-row-group;
+  .row {
+    display: contents;
   }
-  tbody > tr :global(> *) {
-    display: table-cell;
+  .row :global(> *) {
+    overflow: hidden;
     padding: 0px 5px; /* TODO vertical padding triggers a bug in the size calculation */
   }
   .scrollbar {
@@ -312,4 +311,16 @@
   .hidden {
     display: none;
   }
+  /* 3D style
+  .header :global(> *) {
+    border-top: 1px solid white;
+    border-left: 1px solid white;
+    border-right: 1px solid #8E8EA1;
+    border-bottom: 1px solid #8E8EA1;
+    background-color: #D2D2DC;
+  }
+  .header :global(> *:hover) {
+    background-color: #E5E5F7;
+  }
+  */
 </style>
