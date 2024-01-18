@@ -1,0 +1,20 @@
+{
+  "name": "mustang-svelte-gecko-server",
+  "description": "Server for Mustang backend",
+  "private": true,
+  "version": "0.1.0",
+  "author": "Ben Bucksch",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benbucksch/mustang.git"
+  },
+  "bugs": {
+    "url": "https://github.com/benbucksch/mustang/issues"
+  },
+  "homepage": "https://github.com/benbucksch/mustang#readme",
+  "type": "module",
+  "dependencies": {
+    "express": "^4.18.2",
+    "http-proxy": "^1.18.1"
+  }
+}
