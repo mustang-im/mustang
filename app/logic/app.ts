@@ -30,12 +30,17 @@ export let appGlobal = new AppGlobal();
 const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
 
 export async function getStartObjects(): Promise<void> {
+  console.log("getStartObjects");
+  console.trace();
+  console.log("getting test objects");
   await getTestObjects(appGlobal);
-  /*
+  console.log("creating websocket");
   let jpc = new JPCWebSocket(null);
   await jpc.connect(kSecret, "localhost", 5455);
   console.log("connected to server");
   let remoteApp = await jpc.getRemoteStartObject();
+  console.log(remoteApp, "got remote start object");
+  /*
   appGlobal.emailAccounts = await remoteApp.accounts;
   */
   appGlobal.chatAccounts.addAll(await readChatAccounts());

@@ -2,6 +2,7 @@ import process from 'node:process';
 import path from 'node:path';
 import url from 'node:url';
 import express from 'express';
+import JPCWebSocket from 'jpc-ws';
 import httpProxy from 'http-proxy';
 
 const proxies = {
@@ -36,16 +37,26 @@ for (let route in proxies) {
 // Serve the statically built application.
 app.use(express.static(path.join(path.dirname(path.dirname(url.fileURLToPath(import.meta.url))), 'app', 'dist')));
 
-// Start the server.
+// Try to start the server. (This will fail in developer mode.)
 var server = app.listen(PORT, 'localhost');
-server.on('listening', () => {
-  // Let our calling process know that we're running.
+server.on('error', console.error);
+
+// Start a separate JPC WebSocket server.
+// (It should be possible to serve the websocket and app on the same server,
+// but I have no idea how you're supposed to do that during development.)
+const startObject = {};
+const jpcws = new JPCWebSocket(startObject);
+const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
+jpcws.listen(kSecret, PORT + 1, false).then(() => {
+  // Let the client know that the server has started.
+  // (This would be a possible point to communicate the secret to the client.)
   console.log("Server started");
-});
+}).catch(console.error);
 
 // Close the server when STDIN closes.
 // This means that the Gecko process launching this server exited.
 process.stdin.resume();
 process.stdin.on('end', () => {
+  jpcws.stopListening();
   server.close();
 });
