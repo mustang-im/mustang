@@ -1,16 +1,15 @@
 {#if view == "chat"}
   <MailChat {accounts} />
 {:else if view == "vertical"}
- <VerticalLayout {accounts} bind:selectedAccount bind:selectedFolder bind:selectedMessage />
+ <VerticalLayout {accounts} bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} />
 {:else}
-  <ThreePane {accounts} bind:selectedAccount bind:selectedFolder bind:selectedMessage />
+  <ThreePane {accounts} bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} />
 {/if}
 
 <script lang="ts">
   //import type { MailAccount, MsgFolder as Folder, Email as EMail } from "mustang-lib";
-  import type { MailAccount } from "../../logic/Mail/Account";
   import type { Folder } from "../../logic/Mail/Folder";
-  import type { EMail } from "../../logic/Mail/Message";
+  import { selectedAccount, selectedFolder, selectedMessage } from "./Selected";
   import { appGlobal } from "../../logic/app";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { showError } from "../Util/error";
@@ -18,13 +17,9 @@
   import VerticalLayout from "./Vertical/VerticalLayout.svelte";
   import MailChat from "./MailChat/MailChat.svelte";
  
-  let selectedAccount: MailAccount;
-  let selectedFolder: Folder;
-  let selectedMessage: EMail;
-
   $: accounts = appGlobal.emailAccounts;
 
-  $: loadFolder(selectedFolder);
+  $: loadFolder($selectedFolder);
   async function loadFolder(folder: Folder) {
     try {
       if (!folder) {
