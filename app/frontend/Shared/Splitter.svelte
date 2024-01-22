@@ -21,7 +21,7 @@
 <svelte:window 
 	on:pointermove={onMouseMove} 
 	on:pointerup={onMouseUp}
-/>
+  />
 
 <script lang="ts">
 	/** Left pane cannot be made smaller than this
@@ -76,6 +76,8 @@
 	function onMouseUp() {
 		isMouseDown = false;
 	}
+
+	/** Copied to <SplitterHorizontal> */
 </script>
 
 <style>

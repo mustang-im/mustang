@@ -5,16 +5,16 @@
     <FolderList folders={selectedAccount ? selectedAccount.rootFolders : new ArrayColl()} bind:selectedFolder />
     <ViewSwitcher />
   </vbox>
-  <vbox flex class="right-pane" slot="right">
-    <vbox flex class="message-list-pane">
+  <SplitterHorizontal slot="right" name="mail.3pane.msgs" initialBottomRatio={2}>
+    <vbox flex class="message-list-pane" slot="top">
       <TableMessageList messages={selectedFolder?.messages ?? new ArrayColl()} bind:selectedMessage bind:selectedMessages />
     </vbox>
-    <vbox flex class="message-display-pane">
+    <vbox flex class="message-display-pane" slot="bottom">
       {#if selectedMessage}
         <MessageDisplay message={selectedMessage} account={selectedAccount} />
       {/if}
     </vbox>
-  </vbox>
+  </SplitterHorizontal>
 </Splitter>
 
 <script lang="ts">
@@ -30,6 +30,7 @@
   import MessageDisplay from "../Message/MessageDisplay.svelte";
   import ViewSwitcher from "../LeftPane/ViewSwitcher.svelte";
   import Splitter from "../../Shared/Splitter.svelte";
+  import SplitterHorizontal from "../../Shared/SplitterHorizontal.svelte";
   import { ArrayColl, Collection } from 'svelte-collections';
 
   export let accounts: Collection<MailAccount>; /** in */
