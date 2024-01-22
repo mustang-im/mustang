@@ -1,19 +1,20 @@
-<hbox flex class="contacts app">
-  <vbox class="left-pane">
+<Splitter name="persons-list" initialRightRatio={4}>
+  <vbox class="left-pane" slot="left">
     <PersonsList {persons} bind:selected={selectedPerson}/>
   </vbox>
-  <vbox class="right-pane">
+  <vbox class="right-pane" slot="right">
     {#if displayFiles}
       <FilesList files={displayFiles} />
     {/if}
   </vbox>
-</hbox>
+</Splitter>
 
 <script lang="ts">
   import type { Person } from "../../logic/Abstract/Person";
   import { appGlobal } from "../../logic/app";
-  import PersonsList from "../Shared/Person/PersonsList.svelte";
   import FilesList from "./FilesList.svelte";
+  import PersonsList from "../Shared/Person/PersonsList.svelte";
+  import Splitter from "../Shared/Splitter.svelte";
   import type { Collection } from "svelte-collections";
 
   export let persons: Collection<Person>;
@@ -25,12 +26,9 @@
 
 <style>
   .left-pane {
-    flex: 1 0 0;
-    max-width: 20em;
     background-color: #F9F9FD;
   }
   .right-pane {
-    flex: 2 0 0;
     background-color: #F9F9FD;
   }
 </style>

@@ -1,5 +1,4 @@
 # App logic
-* Observable base classes
 * Errors
   * Notification bar
   * Accounts have .errors array for background errors, which UI subscribes to, and catch handlers add to.
@@ -15,7 +14,6 @@
 * PersonList component
 * flex independent from content
 * Window header
-* Splitter
 
 # Chat
 ## UI
@@ -103,6 +101,7 @@
 * Sqlite
 * Refactor IMAP orcastration: Separate IMAP protocol folder object and IMAP orcestration folder object. The latter does folder cache, IMAP poll/refresh, offline cache etc.
 * JMAP
+* Editor
 
 # Login
 * OAuth2 UI

@@ -1,11 +1,11 @@
-<hbox flex class="mail-app">
-  <vbox flex class="folder-pane">
+<Splitter name="mail.3pane.folders" initialRightRatio={4}>
+  <vbox flex class="folder-pane" slot="left">
     <!--<ProjectList />-->
     <AccountList accounts={$accounts} bind:selectedAccount />
     <FolderList folders={selectedAccount ? selectedAccount.rootFolders : new ArrayColl()} bind:selectedFolder />
     <ViewSwitcher />
   </vbox>
-  <vbox flex class="left-pane">
+  <vbox flex class="right-pane" slot="right">
     <vbox flex class="message-list-pane">
       <TableMessageList messages={selectedFolder?.messages ?? new ArrayColl()} bind:selectedMessage bind:selectedMessages />
     </vbox>
@@ -15,7 +15,7 @@
       {/if}
     </vbox>
   </vbox>
-</hbox>
+</Splitter>
 
 <script lang="ts">
   //import type { Account, MsgFolder, Email } from "mustang-lib";
@@ -29,6 +29,7 @@
   import TableMessageList from "./TableMessageList.svelte";
   import MessageDisplay from "../Message/MessageDisplay.svelte";
   import ViewSwitcher from "../LeftPane/ViewSwitcher.svelte";
+  import Splitter from "../../Shared/Splitter.svelte";
   import { ArrayColl, Collection } from 'svelte-collections';
 
   export let accounts: Collection<MailAccount>; /** in */
@@ -41,14 +42,9 @@
 
 <style>
   .folder-pane {
-    flex: 1 0 0;
-    max-width: 15em;
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on MessageList */
     z-index: 2;
     background-color: #F9F9FD;
-  }
-  .left-pane {
-    flex: 3 0 0;
   }
   .message-display-pane {
     flex: 2 0 0;

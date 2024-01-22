@@ -1,9 +1,9 @@
-<hbox flex class="chat app">
-  <vbox class="left-pane">
+<Splitter name="persons-list" initialRightRatio={4}>
+  <vbox class="left-pane" slot="left">
     <PersonsList persons={appGlobal.persons} bind:selected={selectedPerson} />
     <ViewSwitcher />
   </vbox>
-  <vbox class="right-pane">
+  <vbox class="right-pane" slot="right">
     {#if personMessages && selectedPerson }
       <Header person={selectedPerson} />
       <vbox flex class="messages">
@@ -20,7 +20,7 @@
       </vbox>
     {/if}
   </vbox>
-</hbox>
+</Splitter>
 
 <script lang="ts">
   //import type { Account, MsgFolder, Email } from "mustang-lib";
@@ -37,6 +37,7 @@
   import MailMessage from "./MailMessage.svelte";
   import MsgEditor from "../../Chat/MsgEditor.svelte";
   import ViewSwitcher from "../LeftPane/ViewSwitcher.svelte";
+  import Splitter from "../../Shared/Splitter.svelte";
   import { faker } from "@faker-js/faker";
 
   export let accounts: Collection<MailAccount>; /** in */
@@ -58,13 +59,8 @@
 
 <style>
   .left-pane {
-    flex: 1 0 0;
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on MessageList */
-    max-width: 20em;
     background-color: #F9F9FD;
-  }
-  .right-pane {
-    flex: 2 0 0;
   }
   .messages {
     background-color: #F9F9FD;
