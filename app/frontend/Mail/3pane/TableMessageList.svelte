@@ -40,9 +40,9 @@
 </script>
 
 <style>
-  .message-list :global(grid) {
+  .message-list :global(.fast-list) {
     padding-top: 8px;
-    padding-left: 4px;
+    margin-left: -2px;
   }
   .message-list :global(.header) {
     display: none;
