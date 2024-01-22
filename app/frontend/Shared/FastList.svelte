@@ -94,7 +94,7 @@
    * e.g. by clicking on it.
    * Unlike selecteditems, this is always returns just one element.
    *
-   * out only
+   * in/out
    */
   export let selectedItem: T = null;
 
@@ -145,6 +145,10 @@
   }
 
   onMount(() => {
+    if (selectedItem) {
+      selectedItems.add(selectedItem);
+    }
+
     const updateSizeDebounced = debounce(updateSize, 30);
     const resizeObserver = new ResizeObserver(updateSizeDebounced);
     resizeObserver.observe(listE);
