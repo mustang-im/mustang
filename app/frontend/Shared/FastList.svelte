@@ -25,7 +25,6 @@
     <div class="scrollbar-content" style="height: {$items.length * rowHeight}px" />
   </div>
 </hbox>
-<svelte:window on:resize={debounce(updateSize, 30)} />
 
 <script lang="ts">
   /**
@@ -61,7 +60,7 @@
   */
 
   import { Collection, CollectionObserver, ArrayColl } from "svelte-collections"
-  import { tick } from "svelte";
+  import { onMount, tick } from "svelte";
   import debounce from "lodash/debounce";
 
   type T = $$Generic;
@@ -144,6 +143,13 @@
     let scrollHeight = items.length * rowHeight;
     scrollbarHidden = scrollHeight <= availableHeight;
   }
+
+  onMount(() => {
+    const updateSizeDebounced = debounce(updateSize, 30);
+    const resizeObserver = new ResizeObserver(updateSizeDebounced);
+    resizeObserver.observe(listE);
+    return () => resizeObserver.unobserve(listE);
+  });
 
   function onKey(event: KeyboardEvent) {
     // https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
