@@ -42,6 +42,7 @@
   import type { EMail } from "../../../logic/Mail/Message";
   import type { MailAccount } from "../../../logic/Mail/Account";
   import { Person } from "../../../logic/Abstract/Person";
+  import { selectedPerson, type PersonOrGroup } from "../../Shared/Person/PersonOrGroup";
   import MessageToolbar from "./MessageToolbar.svelte";
   import RecipientList from "./RecipientList.svelte";
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
@@ -68,6 +69,14 @@
   onDestroy(() => {
     clearTimeout(readTimeout);
   });
+
+  $: selectPerson(message?.contact);
+  function selectPerson(contact: PersonOrGroup) {
+    if (!(contact instanceof Person)) {
+      return;
+    }
+    $selectedPerson = contact;
+  }
 </script>
 
 <style>
