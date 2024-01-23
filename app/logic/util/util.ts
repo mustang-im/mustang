@@ -29,8 +29,8 @@ export function arrayRemoveAll(array, item) {
 }
 
 export class NotImplemented extends Error {
-  constructor() {
-    super("Not yet implemented");
+  constructor(msg?: string) {
+    super(msg ?? "Not yet implemented");
   }
 }
 
