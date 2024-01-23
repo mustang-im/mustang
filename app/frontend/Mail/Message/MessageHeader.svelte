@@ -48,6 +48,7 @@
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
   import { getDateString } from "../../Util/date";
   import { onDestroy } from "svelte";
+  import { catchErrors, backgroundError } from "../../Util/error";
 
   export let message: EMail;
   export let account: MailAccount;
@@ -57,7 +58,7 @@
     : message.contact?.name
       ?? message.authorEmailAddress;
 
-  $: markMessageAsRead(message);
+  $: catchErrors(() => markMessageAsRead(message), backgroundError);
   let readTimeout: NodeJS.Timeout;
   const readDelay = 3; // seconds, 0 to 30
   function markMessageAsRead(message: EMail) {
