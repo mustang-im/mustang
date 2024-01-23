@@ -26,7 +26,8 @@
     "core-js": "2.6.12",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
-    "utf-8-validate": "^6.0.3"
+    "utf-8-validate": "^6.0.3",
+    "vite-plugin-static-copy": "^1.0.0"
   },
   "devDependencies": {
     "@buttercup/credentials": "^1.2.0",

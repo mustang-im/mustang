@@ -6,6 +6,8 @@ import icon from '../../resources/icon.png?asset'
 
 async function createWindow(): Promise<void> {
   try {
+    process.chdir("out/main");
+
     await startupLogic();
 
     // Create the browser window.
