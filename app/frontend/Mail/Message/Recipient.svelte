@@ -1,23 +1,13 @@
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<value title={recipient.emailAddresses.first.value} on:click={selectPerson}>
-  {recipient.name}
-</value>
+<AppObject obj={recipient}>
+  <value title={recipient.emailAddresses.first.value}>
+    {recipient.name}
+  </value>
+</AppObject>
 
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
-  import { selectedPerson } from "../../Shared/Person/PersonOrGroup";
-  import { AppArea, selectedApp } from "../../MainWindow/app";
+  import AppObject from "../../MainWindow/AppObject.svelte";
 
   export let recipient: Person;
-
-  function selectPerson() {
-    $selectedPerson = recipient;
-    $selectedApp = AppArea.Contacts;
-  }
+  export let emailAddress: string;
 </script>
-
-<style>
-  value {
-    cursor: pointer;
-  }
-</style>
