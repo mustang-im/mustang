@@ -22,9 +22,10 @@
   "dependencies": {
     "@electron-toolkit/preload": "^2.0.0",
     "@electron-toolkit/utils": "^2.0.0",
-    "better-sqlite3": "^9.2.2",
     "bufferutil": "^4.0.8",
     "core-js": "2.6.12",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7",
     "utf-8-validate": "^6.0.3"
   },
   "devDependencies": {
