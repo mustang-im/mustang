@@ -18,7 +18,6 @@
   .message-body {
     overflow: auto;
     background-color: white;
-    padding: 16px 32px;
     z-index: 0;
   }
 </style>
