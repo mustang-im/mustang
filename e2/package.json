@@ -42,7 +42,7 @@
     "eslint": "^8.47.0",
     "eslint-plugin-svelte": "^2.32.4",
     "i18n": "^0.8.3",
-    "jpc-ws": "^0.2.2",
+    "jpc-ws": "^0.2.3",
     "prettier": "^3.0.2",
     "prettier-plugin-svelte": "^3.0.3",
     "sql-template-strings": "^2.2.2",
