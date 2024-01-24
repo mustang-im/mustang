@@ -3,7 +3,7 @@
     <Gallery videos={meeting.videos} {showSelf}  />
     <InMeetingToolbar {meeting} {isSidebar} bind:showSidebar />
   </vbox>
-  {#if showSidebar}
+  {#if showSidebar && !isSidebar}
     <vbox flex class="sidebar">
       <ParticipantsSidebar
         {meeting}
