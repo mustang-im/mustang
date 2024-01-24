@@ -1,30 +1,18 @@
-<vbox flex class="window">
+<vbox flex class="main-window">
   <WindowHeader selectedApp={$selectedApp} />
-  <hbox flex class="main-window">
+  <hbox flex>
     <AppBar bind:selectedApp={$selectedApp} />
-    <vbox flex class="app-frame">
-      {#if $selectedApp == AppArea.Mail}
-        <MailApp />
-      {:else if $selectedApp == AppArea.Chat}
-        <ChatApp />
-      {:else if $selectedApp == AppArea.Meet}
-        <MeetApp />
-      {:else if $selectedApp == AppArea.Contacts}
-        <ContactsApp persons={appGlobal.persons} />
-      {:else if $selectedApp == AppArea.Calendar}
-        <CalendarApp />
-      {:else if $selectedApp == AppArea.Files}
-        <FilesApp persons={appGlobal.persons} />
-      {:else if $selectedApp == AppArea.Apps}
-        <AppsApp />
-      {/if}
-    </vbox>
     {#if $sidebarApp}
-      <vbox flex class="sidebar">
-        {#if $sidebarApp == AppArea.Meet}
-          <MeetSidebar />
-        {/if}
-      </vbox>
+      <Splitter name="sidebar" initialRightRatio={0.25}>
+        <AppContent app={$selectedApp} slot="left"/>
+        <vbox flex class="sidebar" slot="right">
+          {#if $sidebarApp == AppArea.Meet}
+            <MeetSidebar />
+          {/if}
+        </vbox>
+      </Splitter>
+    {:else}
+      <AppContent app={$selectedApp} />
     {/if}
   </hbox>
 </vbox>
@@ -33,17 +21,12 @@
 <script lang="ts">
   import { AppArea, selectedApp, sidebarApp } from "./app";
   import { appGlobal, getStartObjects, login } from "../../logic/app";
-  import ContactsApp from "../Contacts/ContactsApp.svelte";
-  import MailApp from "../Mail/MailApp.svelte";
-  import ChatApp from "../Chat/ChatApp.svelte";
-  import MeetApp from "../Meet/MeetApp.svelte";
-  import CalendarApp from "../Calendar/CalendarApp.svelte";
-  import FilesApp from "../Files/FilesApp.svelte";
-  import MeetSidebar from "../Meet/MeetSidebar.svelte";
   import AppBar from "./AppBar.svelte";
-  import AppsApp from "../Apps/AppsApp.svelte";
+  import AppContent from "./AppContent.svelte";
   import WindowHeader from "./WindowHeader.svelte";
+  import MeetSidebar from "../Meet/MeetSidebar.svelte";
   import OpenMeet from "../Meet/Start/OpenMeet.svelte";
+  import Splitter from "../Shared/Splitter.svelte";
   import { showError } from "../Util/error";
   import { onMount } from "svelte";
 
@@ -64,7 +47,7 @@
 </script>
 
 <style>
-  .window {
+  .main-window {
     border: 1px solid gray;
   }
   .sidebar {
