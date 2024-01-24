@@ -1,7 +1,7 @@
 <iframe class="html-display" srcdoc={displayHTML} title="Text" />
 
 <script lang="ts">
-  import css from "./content.css";
+  import css from "./content.css?inline";
 
   // TODO Check (using both docs and testing) that iframe doc cannot access the app UI
   // TODO Sanitize HTML. It comes from untrusted sources. Dangerous! @see also Chat Message.svelte
