@@ -12,10 +12,12 @@ async function createWindow(): Promise<void> {
 
     // Create the browser window.
     const mainWindow = new BrowserWindow({
-      width: 900,
-      height: 670,
+      width: 1280,
+      height: 700,
       show: false,
       autoHideMenuBar: true,
+      titleBarStyle: 'customButtonsOnHover',
+      titleBarOverlay: true,
       ...(process.platform === 'linux' ? { icon } : {}),
       webPreferences: {
         preload: join(__dirname, '../preload/index.js'),
@@ -36,8 +38,7 @@ async function createWindow(): Promise<void> {
     // Load the remote URL for development or the local html file for production.
     if (is.dev && true) {
       mainWindow.loadURL('http://localhost:5454');
-    }
-    if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    } else if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
       mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
     } else {
       mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
