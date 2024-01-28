@@ -28,6 +28,7 @@
   import EventsCell from "./EventsCell.svelte";
   import DateRange from "./DateRange.svelte";
   import { selectedDate } from "./selected";
+  import { getWeekDays } from "../Util/date";
   import type { Collection } from "svelte-collections";
   
   export let start: Date;
@@ -38,29 +39,13 @@
   let weekDays: Date[] = [];
   $: start, setDays();
   function setDays() {
-    weekDays = getWeekDays();
+    weekDays = getWeekDays(start);
     let startTime = weekDays[0]; // Always start with Monday
     days = [];
     for (let i = 0; i < showDays; i++) {
       days.push(new Date(startTime));
       startTime.setDate(startTime.getDate() + 1)
     }
-  }
-
-  function getWeekDays() {
-    let startTime = new Date(start);
-    // Always start with Monday
-    startTime.setDate(startTime.getDate() - startTime.getDay() + 1);
-    startTime.setHours(0);
-    startTime.setMinutes(0);
-    startTime.setSeconds(0);
-    startTime.setMilliseconds(0);
-    let weekDays = [];
-    for (let i = 0; i < 7; i++) {
-      weekDays.push(new Date(startTime));
-      startTime.setDate(startTime.getDate() + 1)
-    }
-    return weekDays;
   }
 
   function selectDay(day: Date) {

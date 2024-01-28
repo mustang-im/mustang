@@ -31,3 +31,20 @@ export function getToday() {
   today.setMilliseconds(0);
   return today;
 }
+
+/** @returns Mon-Sun */
+export function getWeekDays(start: Date): Date[] {
+  let startTime = new Date(start);
+  // Always start with Monday
+  startTime.setDate(startTime.getDate() - startTime.getDay() + 1);
+  startTime.setHours(0);
+  startTime.setMinutes(0);
+  startTime.setSeconds(0);
+  startTime.setMilliseconds(0);
+  let weekDays = [];
+  for (let i = 0; i < 7; i++) {
+    weekDays.push(new Date(startTime));
+    startTime.setDate(startTime.getDate() + 1)
+  }
+  return weekDays;
+}
