@@ -1,7 +1,7 @@
 <vbox class="week-view" flex>
   <hbox class="range-header">
     <DateRange bind:date={start} dateInterval={showDays == 2 ? 1 : showDays} />
-    <Button classes="today-button" icon={TodayIcon} on:click={goToToday} iconSize="16px" plain />
+    <Button classes="today-button" label="Go back to today" icon={TodayIcon} on:click={goToToday} iconSize="16px" plain iconOnly />
   </hbox>
   <grid flex class="week" columns={showDays}>
     <hbox />

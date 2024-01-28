@@ -1,6 +1,6 @@
 <hbox class="title-bar">
   <CalendarSelector calendar={$selectedCalendar}/>
-  <RoundButton classes="add-button" icon={AddToCalendarIcon} on:click={addEvent} iconSize="20px" filled />
+  <RoundButton classes="add-button" label="New event" icon={AddToCalendarIcon} on:click={addEvent} iconSize="20px" filled />
   <hbox class="spacer" />
   <ViewSelector bind:dateInterval />
 </hbox>

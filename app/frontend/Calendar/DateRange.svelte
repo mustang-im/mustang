@@ -1,7 +1,7 @@
 <hbox class="range-header">
   <hbox class="date-range">{simpleDateString(date)}</hbox>
-  <Button classes="previous-button" icon={ChevronLeftIcon} on:click={pagePrevious} iconSize="16px" plain />
-  <Button classes="next-button" icon={ChevronRightIcon} on:click={pageNext} iconSize="16px" plain />
+  <Button classes="previous-button" label="Previous {dateInterval} days" icon={ChevronLeftIcon} on:click={pagePrevious} iconSize="16px" plain iconOnly />
+  <Button classes="next-button" label="Next {dateInterval} days" icon={ChevronRightIcon} on:click={pageNext} iconSize="16px" plain iconOnly />
 </hbox>
 
 <script lang="ts">
