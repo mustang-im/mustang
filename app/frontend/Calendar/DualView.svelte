@@ -1,6 +1,6 @@
 <hbox flex class="dual-view">
-  <WeekView {start} {events} showDays={2}/>
-  <MonthView start={start} {events} showDays={28} />
+  <WeekView bind:start {events} showDays={2}/>
+  <MonthView start={monthStart} {events} showDays={28} />
 </hbox>
 
 <script lang="ts">
@@ -11,6 +11,8 @@
   
   export let start: Date;
   export let events: Collection<Event>;
+
+  let monthStart: Date;
 </script>
 
 <style>

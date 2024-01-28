@@ -2,21 +2,21 @@
   {#if $editingEvent}
     <EditEvent event={$editingEvent} />
   {:else}
-    <TitleBar bind:dateInterval on:addEvent={addEvent} />
+    <TitleBar bind:dateInterval={$selectedDateInterval} on:addEvent={addEvent} />
     <Scroll>
       <vbox flex class="main">
         {#if dateInterval == 1}
-          <WeekView start={showDate} {events} showDays={1}/>
+          <WeekView bind:start={$selectedDate} {events} showDays={1}/>
         {:else if dateInterval == 7}
-          <WeekView start={showDate} {events} />
+          <WeekView bind:start={$selectedDate} {events} />
         {:else if dateInterval == 28}
-          <MonthView start={showDate} {events} showDays={28} />
+          <MonthView bind:start={$selectedDate} {events} showDays={28} />
         {:else if dateInterval == 31}
-          <MonthView start={showDate} {events} />
+          <MonthView bind:start={$selectedDate} {events} />
         {:else if dateInterval == 2}
-          <DualView start={showDate} {events} />
+          <DualView bind:start={$selectedDate} {events} />
         {:else}
-          <WeekView start={showDate} {events} />
+          <WeekView bind:start={$selectedDate} {events} />
         {/if}
       </vbox>
     </Scroll>
@@ -33,7 +33,6 @@
   import EditEvent from "./EditEvent/EditEvent.svelte";
   import Scroll from "../Shared/Scroll.svelte";
 
-  $: showDate = $selectedDate;
   $: dateInterval = $selectedDateInterval;
   $: events = appGlobal.calendars.first.events.sortBy(ev => ev.startTime);
 
