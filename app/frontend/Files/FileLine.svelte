@@ -39,12 +39,14 @@
 </script>
 
 <style>
-  .icon, .name, .type, .size, .time {
+  .name, .type, .size, .time {
     padding-left: 8px;
     padding-right: 8px;
   }
   .icon {
     padding-left: 16px;
+    padding-right: 0px;
+    margin-top: 2px;
   }
   .time {
     padding-right: 16px;
@@ -67,5 +69,10 @@
   .time {
     justify-content: end;
     min-width: 5em;
+  }
+  .type, .size, .time {
+    opacity: 70%;
+    font-size: 90%;
+    font-weight: 300;
   }
 </style>
