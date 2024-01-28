@@ -5,13 +5,13 @@
         <EventLine {event} />
       {/each}
     </Scroll>
-{/if}
-{#if withMonthOnFirst && start.getDate() == 1 ||
-  withMonthOnMonday && start.getDay() == 1 }
-  <hbox class="month">
-    {start.toLocaleDateString(undefined, { month: "long" })}
-  </hbox>
-{/if}
+  {/if}
+  {#if withMonthOnFirst && start.getDate() == 1 ||
+    withMonthOnMonday && start.getDay() == 1 }
+    <hbox class="month-name">
+      {start.toLocaleDateString(undefined, { month: "long" })}
+    </hbox>
+  {/if}
 </vbox>
 
 <script lang="ts">
@@ -42,10 +42,11 @@
     border-left: 1px dashed #E1E2E5;
     border-bottom: 1px dashed #E1E2E5;
   }
-  .month {
+  .month-name {
     position: absolute;
     bottom: 0px;
     left: 0px;
+    overflow: hidden;
 
     width: 100%;
     aspect-ratio: 1/1;
