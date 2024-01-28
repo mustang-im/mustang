@@ -29,8 +29,4 @@
 </script>
 
 <style>
-  .events {
-    border-top: 1px dotted grey;
-    border-left: 1px dotted grey;
-  }
 </style>

@@ -1,5 +1,4 @@
 <hbox class="title-bar">
-  <hbox class="app-title">Calendar</hbox>
   <RoundButton classes="add-button" icon={AddToCalendarIcon} on:click={addEvent} iconSize="24px" filled />
   <RoundButton classes="previous-button" icon={ChevronLeftIcon} on:click={pagePrevious} iconSize="24px" />
   <RoundButton classes="next-button" icon={ChevronRightIcon} on:click={pageNext} iconSize="24px" />
