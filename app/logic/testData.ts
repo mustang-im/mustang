@@ -18,7 +18,7 @@ export async function getTestObjects(appGlobal: AppGlobal): Promise<void> {
   appGlobal.persons.addAll(fakePersons());
   appGlobal.emailAccounts.add(fakeMailAccount(appGlobal.persons, appGlobal.me));
   appGlobal.chatAccounts.add(fakeChatAccount(appGlobal.persons, appGlobal.me));
-  appGlobal.calendars.add(fakeCalendar());
+  appGlobal.calendars.add(fakeCalendar(appGlobal.persons));
   appGlobal.files.addAll(fakeSharedDir(appGlobal.persons));
 }
 
@@ -167,7 +167,7 @@ function fakeChatAccount(persons: Collection<Person>, me: Person): ChatAccount {
   return chatAccount;
 }
 
-function fakeCalendar(): Calendar {
+function fakeCalendar(persons: Collection<Person>): Calendar {
   let calendar = new Calendar();
   calendar.name = faker.company.name();
   for (let i = 1; i < 50; i++) {
@@ -180,6 +180,10 @@ function fakeCalendar(): Calendar {
     event.descriptionText = faker.random.words() + "\n" + faker.random.words();
     event.descriptionHTML = event.descriptionText.replace("\n", "<br>");
     event.location = faker.datatype.boolean ? faker.address.streetAddress() : faker.address.nearbyGPSCoordinate().join(", ");
+    let participantsCount = Math.random() * 5;
+    for (let i = 1; i < participantsCount; i++) {
+      event.participants.add(persons.getIndex(Math.floor(Math.random() * persons.length)));
+    }
     calendar.events.add(event);
   }
   return calendar;
