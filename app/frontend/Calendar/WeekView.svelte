@@ -73,12 +73,16 @@
     grid-template-columns: max-content 0.33fr 3fr 2fr 1fr 1fr 1fr 1fr;
   }
   .day-header {
-    padding: 16px;
+    padding: 8px 16px;
     border-top: 1px dashed #E1E2E5;
     border-left: 1px dashed #E1E2E5;
     border-bottom: 1px dashed #E1E2E5;
   }
   .day-header .date {
-    font-size: 200%;
+    font-size: 180%;
+  }
+  .weekday {
+    margin-top: -4px;
+    margin-bottom: 4px;
   }
 </style>

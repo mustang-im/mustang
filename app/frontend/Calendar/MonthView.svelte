@@ -70,6 +70,7 @@
     opacity: 70%;
     letter-spacing: 0.378px;
     text-transform: uppercase;
+    font-weight: 300;
   }
   .day {
   }

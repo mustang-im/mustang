@@ -53,9 +53,10 @@
     transform: rotate(270deg);
 
     color: #8B8B8B;
-    opacity: 40%;
+    opacity: 50%;
     letter-spacing: 0.378px;
     font-size: 16px;
     text-transform: uppercase;
+    font-weight: 300;
   }
 </style>
