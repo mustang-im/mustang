@@ -11,7 +11,7 @@
     {#each days as day}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <vbox class="day"
-        class:selected={day.getTime() == $selectedShowDate.getTime()}
+        class:selected={day.getTime() == $selectedDate.getTime()}
         on:click={selectDay(day)}
         >
         <DayLabel {day} />
@@ -27,7 +27,7 @@
   import DayLabel from "./DayLabel.svelte";
   import EventsCell from "./EventsCell.svelte";
   import DateRange from "./DateRange.svelte";
-  import { selectedShowDate } from "./selected";
+  import { selectedDate } from "./selected";
   import type { Collection } from "svelte-collections";
   
   export let start: Date;
@@ -64,7 +64,7 @@
   }
 
   function selectDay(day: Date) {
-    $selectedShowDate = day;
+    $selectedDate = day;
   }
 </script>
 

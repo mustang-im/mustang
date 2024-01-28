@@ -14,7 +14,7 @@
 </hbox>
 
 <script lang="ts">
-  import { selectedShowDate, selectedDateInterval } from "./selected";
+  import { selectedDate, selectedDateInterval } from "./selected";
   import { getToday } from "../Util/date";
   import TodayIcon from "lucide-svelte/icons/home";
 
@@ -25,7 +25,7 @@
   const today = getToday();
 
   function changeToDay() {
-    $selectedShowDate = day;
+    $selectedDate = day;
     $selectedDateInterval = 1;
   }
 </script>

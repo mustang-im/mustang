@@ -25,7 +25,7 @@
 
 <script lang="ts">
   import { appGlobal } from "../../logic/app";
-  import { selectedShowDate, selectedDateInterval, editingEvent } from "./selected";
+  import { selectedDate, selectedDateInterval, editingEvent } from "./selected";
   import TitleBar from "./TitleBar.svelte";
   import WeekView from "./WeekView.svelte";
   import MonthView from "./MonthView.svelte";
@@ -33,7 +33,7 @@
   import EditEvent from "./EditEvent/EditEvent.svelte";
   import Scroll from "../Shared/Scroll.svelte";
 
-  $: showDate = $selectedShowDate;
+  $: showDate = $selectedDate;
   $: dateInterval = $selectedDateInterval;
   $: events = appGlobal.calendars.first.events.sortBy(ev => ev.startTime);
 
