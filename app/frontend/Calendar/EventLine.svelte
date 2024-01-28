@@ -1,5 +1,5 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<hbox class="event" on:click={onSelect} on:dblclick={onOpen}>
+<hbox class="event" on:click={onSelect} on:dblclick={onOpen} title={eventAsText}>
   <!--{event.startTime.toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric" })}-->
   {event.title}
 </hbox>
@@ -9,6 +9,10 @@
   import { editingEvent, selectedEvent } from "./selected";
 
   export let event: Event;
+
+  $: eventAsText = `${event.startTime.toLocaleString(navigator.language, { hour: "2-digit", minute: "2-digit" })} – ${Math.ceil((event.endTime.getTime() - event.startTime.getTime()) / 1000 / 60)} min
+${event.title}
+${event.participants.hasItems ? event.participants.getIndexRange(0, 4).map(person => person.name).join(", "): ""}`;
 
   function onSelect() {
     $selectedEvent = event;
