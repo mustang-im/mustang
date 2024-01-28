@@ -22,19 +22,22 @@
 
 <style>
   .event {
-    background-color: #ff7c0e;
-    color: black;
     margin-bottom: 1px;
-    /*box-shadow: 1px 1px 4px 0px grey;*/
     padding: 4px;
     overflow: hidden;
     max-height: 1.4em;
     font-size: 13px;
+
+    background-color: #20AF9E50;
+    color: black;
+  }
+  .event:hover {
+    background-color: #20AF9E70;
   }
 
-  @media (prefers-color-scheme: light) {
+  @media (prefers-color-scheme: dark) {
     .event {
-      background-color: #20AF9E50;
+      background-color: #ff7c0e;
       color: black;
     }
   }

@@ -5,7 +5,11 @@
     </hbox>
   {/each}
   {#each days as day}
-    <vbox class="day">
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <vbox class="day"
+      class:selected={day.getTime() == $selectedShowDate.getTime()}
+      on:click={selectDay(day)}
+      >
       <DayLabel {day} />
       <EventsCell start={day} {events} intervalInHours={24}
         withMonthOnFirst={true} withMonthOnMonday={true} />
@@ -18,6 +22,7 @@
   import DayLabel from "./DayLabel.svelte";
   import EventsCell from "./EventsCell.svelte";
   import type { Collection } from "svelte-collections";
+  import { selectedShowDate } from "./selected";
   
   export let start: Date;
   export let events: Collection<Event>;
@@ -51,6 +56,10 @@
     }
     return weekDays;
   }
+
+  function selectDay(day: Date) {
+    $selectedShowDate = day;
+  }
 </script>
 
 <style>
@@ -72,6 +81,10 @@
     text-transform: uppercase;
     font-weight: 300;
   }
-  .day {
+  .day.selected {
+    background-color: #E9F5F4;
+  }
+  .day:hover:not(.selected) {
+    background-color: #F1F9F8;
   }
 </style>
