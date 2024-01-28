@@ -8,10 +8,14 @@
       {day.toLocaleDateString(undefined, { month: "short" })}
     </hbox>
   {/if}
+  <hbox class="today-icon" flex>
+    <TodayIcon size={14} />
+  </hbox>
 </hbox>
 
 <script lang="ts">
   import { selectedShowDate, selectedDateInterval } from "./selected";
+  import TodayIcon from "lucide-svelte/icons/home";
 
   export let day: Date
   export let withMonthOnMonday = true;
@@ -48,5 +52,17 @@
     font-size: 90%;
     align-self: end;
     margin-left: 8px;
+  }
+  .today-icon {
+    display: none;
+  }
+  .day.today .today-icon {
+    display: flex;
+    margin-left: 8px;
+    justify-content: start;
+    align-items: center;
+  }
+  .today-icon :global(svg) {
+    stroke-width: 1px;
   }
 </style>
