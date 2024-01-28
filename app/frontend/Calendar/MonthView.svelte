@@ -72,6 +72,9 @@
     text-transform: uppercase;
     font-weight: 300;
   }
+  .day {
+    overflow: hidden;
+  }
   .day.selected {
     background-color: #E9F5F4;
   }
