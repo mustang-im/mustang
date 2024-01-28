@@ -1,9 +1,11 @@
 <Scroll>
   <grid class="files-list">
+    <!--
     <hbox class="name">Name</hbox>
     <hbox class="type">Type</hbox>
     <hbox class="size">Size</hbox>
     <hbox class="time">Last Mod</hbox>
+    -->
 
     {#each files.each as file (file.id) }
       <FileOrDirectoryLine {file} />
@@ -24,7 +26,9 @@
   .files-list {
     display: grid;
     grid-template-columns: auto max-content max-content max-content;
+    margin-top: 8px;
   }
+  /*
   .name, .type, .size, .time {
     padding-left: 8px;
     padding-right: 8px;
@@ -37,4 +41,5 @@
   .time {
     padding-right: 16px;
   }
+  */
 </style>
