@@ -25,7 +25,7 @@
     return date.toLocaleDateString(undefined, {
       year: "numeric",
       month: "long",
-      day: dateInterval < 28 ? "numeric" : undefined,
+      // day: dateInterval < 28 ? "numeric" : undefined,
     });
   }
 </script>
