@@ -7,7 +7,8 @@
   {#each days as day}
     <vbox class="day">
       <DayLabel {day} />
-      <EventsCell start={day} {events} intervalInHours={24} />
+      <EventsCell start={day} {events} intervalInHours={24}
+        withMonthOnFirst={true} withMonthOnMonday={true} />
     </vbox>
   {/each}
 </grid>
@@ -66,7 +67,9 @@
     border-left: 1px dashed #E1E2E5;
     padding: 4px 8px;
     color: #8B8B8B;
+    opacity: 70%;
     letter-spacing: 0.378px;
+    text-transform: uppercase;
   }
   .day {
     border-top: 1px dashed #E1E2E5;
