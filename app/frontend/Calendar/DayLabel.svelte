@@ -15,17 +15,14 @@
 
 <script lang="ts">
   import { selectedShowDate, selectedDateInterval } from "./selected";
+  import { getToday } from "../Util/date";
   import TodayIcon from "lucide-svelte/icons/home";
 
   export let day: Date
   export let withMonthOnMonday = true;
   export let withMonthOnFirst = true;
 
-  const today = new Date();
-  today.setHours(0);
-  today.setMinutes(0);
-  today.setSeconds(0);
-  today.setMilliseconds(0);
+  const today = getToday();
 
   function changeToDay() {
     $selectedShowDate = day;
