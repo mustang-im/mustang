@@ -17,7 +17,7 @@ export default defineConfig({
             dest: '.'
           }
         ]
-      })
+      }),
     ]
   },
   preload: {
