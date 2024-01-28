@@ -1,28 +1,34 @@
-<grid flex class="month-view">
-  {#each weekDays as day}
-    <hbox class="weekday">
-      {day.toLocaleDateString(undefined, { weekday: "short" })}
-    </hbox>
-  {/each}
-  {#each days as day}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <vbox class="day"
-      class:selected={day.getTime() == $selectedShowDate.getTime()}
-      on:click={selectDay(day)}
-      >
-      <DayLabel {day} />
-      <EventsCell start={day} {events} intervalInHours={24}
-        withMonthOnFirst={true} withMonthOnMonday={true} />
-    </vbox>
-  {/each}
-</grid>
+<vbox class="month-view" flex>
+  <hbox class="range-header">
+    <DateRange bind:date={start} dateInterval={showDays} />
+  </hbox>
+  <grid flex class="month">
+    {#each weekDays as day}
+      <hbox class="weekday">
+        {day.toLocaleDateString(undefined, { weekday: "short" })}
+      </hbox>
+    {/each}
+    {#each days as day}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <vbox class="day"
+        class:selected={day.getTime() == $selectedShowDate.getTime()}
+        on:click={selectDay(day)}
+        >
+        <DayLabel {day} />
+        <EventsCell start={day} {events} intervalInHours={24}
+          withMonthOnFirst={true} withMonthOnMonday={true} />
+      </vbox>
+    {/each}
+  </grid>
+</vbox>
 
 <script lang="ts">
   import type { Event } from "../../logic/Calendar/Event";
   import DayLabel from "./DayLabel.svelte";
   import EventsCell from "./EventsCell.svelte";
-  import type { Collection } from "svelte-collections";
+  import DateRange from "./DateRange.svelte";
   import { selectedShowDate } from "./selected";
+  import type { Collection } from "svelte-collections";
   
   export let start: Date;
   export let events: Collection<Event>;
@@ -63,7 +69,7 @@
 </script>
 
 <style>
-  .month-view {
+  grid.month {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     grid-template-rows: max-content;
@@ -86,5 +92,8 @@
   }
   .day:hover:not(.selected) {
     background-color: #F1F9F8;
+  }
+  .month-view :global(.date-range) {
+    font-weight: bold;
   }
 </style>

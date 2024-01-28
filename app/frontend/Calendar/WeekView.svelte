@@ -1,23 +1,33 @@
-<grid flex class="week-view" columns={showDays}>
-  <hbox />
-  {#each days as day}
-    <vbox class="day-header">
-      <hbox class="date">{day.toLocaleDateString(undefined, { day: "numeric" })}</hbox>
-      <hbox class="weekday">{day.toLocaleDateString(undefined, { weekday: "long" })}</hbox>
-    </vbox>
-  {/each}
-  {#each startTimes as start}
-    <TimeLabel time={start} />
-    <TimeDayRow {days} time={start} {events} />
-  {/each}
-</grid>
+<vbox class="week-view" flex>
+  <hbox class="range-header">
+    <DateRange bind:date={start} dateInterval={showDays == 2 ? 1 : showDays} />
+    <Button classes="today-button" icon={TodayIcon} on:click={goToToday} iconSize="16px" plain />
+  </hbox>
+  <grid flex class="week" columns={showDays}>
+    <hbox />
+    {#each days as day}
+      <vbox class="day-header">
+        <hbox class="date">{day.toLocaleDateString(undefined, { day: "numeric" })}</hbox>
+        <hbox class="weekday">{day.toLocaleDateString(undefined, { weekday: "long" })}</hbox>
+      </vbox>
+    {/each}
+    {#each startTimes as start}
+      <TimeLabel time={start} />
+      <TimeDayRow {days} time={start} {events} />
+    {/each}
+  </grid>
+</vbox>
 
 <script lang="ts">
   import type { Event } from "../../logic/Calendar/Event";
+  import { getToday } from "../Util/date";
   import TimeLabel from "./TimeLabel.svelte";
   import TimeDayRow from "./TimeDayRow.svelte";
+  import DateRange from "./DateRange.svelte";
+  import Button from "../Shared/Button.svelte";
+  import TodayIcon from "lucide-svelte/icons/home";
   import type { Collection } from "svelte-collections";
-  
+
   export let start: Date;
   export let events: Collection<Event>;
   export let showDays: 1 | 2 | 7 = 7; // If you add new options, adapt styles below
@@ -55,21 +65,25 @@
       startTime.setDate(startTime.getDate() + 1)
     }
   }
+
+  function goToToday() {
+    start = getToday();
+  }
 </script>
 
 <style>
-  .week-view {
+  .week {
     display: grid;
     grid-template-rows: max-content;
     grid-auto-rows: 1fr;
   }
-  .week-view[columns="1"] {
+  .week[columns="1"] {
     grid-template-columns: max-content auto;
   }
-  .week-view[columns="2"] {
+  .week[columns="2"] {
     grid-template-columns: max-content 3fr 1fr;
   }
-  .week-view[columns="7"] {
+  .week[columns="7"] {
     grid-template-columns: max-content 0.33fr 3fr 2fr 1fr 1fr 1fr 1fr;
   }
   .day-header {
@@ -83,6 +97,14 @@
   }
   .weekday {
     margin-top: -4px;
+    margin-bottom: 4px;
+  }
+  .range-header {
+    align-items: center;
+    margin-left: 4em;
+  }
+  .range-header :global(.today-button) {
+    height: 100%;
     margin-bottom: 4px;
   }
 </style>

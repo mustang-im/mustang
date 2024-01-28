@@ -22,3 +22,12 @@ export function getDateString(date: Date): string {
   }
   return date.toLocaleString(navigator.language, dateDetails);
 }
+
+export function getToday() {
+  const today = new Date();
+  today.setHours(0);
+  today.setMinutes(0);
+  today.setSeconds(0);
+  today.setMilliseconds(0);
+  return today;
+}
