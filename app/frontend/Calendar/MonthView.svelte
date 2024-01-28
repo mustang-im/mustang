@@ -1,7 +1,7 @@
 <grid flex class="month-view">
   {#each weekDays as day}
     <hbox class="weekday">
-      {day.toLocaleDateString(undefined, { weekday: "long" })}
+      {day.toLocaleDateString(undefined, { weekday: "short" })}
     </hbox>
   {/each}
   {#each days as day}
@@ -58,18 +58,18 @@
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     grid-template-rows: max-content;
     grid-auto-rows: 1fr;
-    border-bottom: 1px dotted grey;
-    border-right: 1px dotted grey;
+    border-bottom: 1px dashed #E1E2E5;
+    border-right: 1px dashed #E1E2E5;
   }
   .weekday {
-    border-top: 1px dotted grey;
-    border-left: 1px dotted grey;
+    border-top: 1px dashed #E1E2E5;
+    border-left: 1px dashed #E1E2E5;
     padding: 4px 8px;
-    background-color: blue;
-    color: white;
+    color: #8B8B8B;
+    letter-spacing: 0.378px;
   }
   .day {
-    border-top: 1px dotted grey;
-    border-left: 1px dotted grey;
+    border-top: 1px dashed #E1E2E5;
+    border-left: 1px dashed #E1E2E5;
   }
 </style>
