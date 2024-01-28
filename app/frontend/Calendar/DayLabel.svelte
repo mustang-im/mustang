@@ -1,4 +1,4 @@
-<hbox class="day" on:dblclick={changeToDay}>
+<hbox class="day" on:dblclick={changeToDay} class:today={day.getTime() == today.getTime()}>
   {day.toLocaleDateString(undefined, { day: "numeric" })}
   {#if withMonthOnFirst && day.getDate() == 1 ||
           withMonthOnMonday && day.getDay() == 1 }
@@ -15,6 +15,12 @@
   export let withMonthOnMonday = true;
   export let withMonthOnFirst = true;
 
+  const today = new Date();
+  today.setHours(0);
+  today.setMinutes(0);
+  today.setSeconds(0);
+  today.setMilliseconds(0);
+
   function changeToDay() {
     $selectedShowDate = day;
     $selectedDateInterval = 1;
@@ -26,6 +32,10 @@
     padding: 4px 8px;
     border-left: 1px dashed #E1E2E5;
     font-size: 13px;
+  }
+  .today {
+    background-color: black;
+    color: white;
   }
   .month {
     font-size: 90%;
