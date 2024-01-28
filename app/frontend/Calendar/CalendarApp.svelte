@@ -2,7 +2,7 @@
   {#if $editingEvent}
     <EditEvent event={$editingEvent} />
   {:else}
-    <TitleBar bind:showDate bind:dateInterval on:addEvent={addEvent} />
+    <TitleBar bind:dateInterval on:addEvent={addEvent} />
     <Scroll>
       <vbox flex class="main">
         {#if dateInterval == 1}
