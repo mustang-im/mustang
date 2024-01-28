@@ -24,6 +24,7 @@
 <style>
   .day {
     padding: 4px 8px;
+    border-left: 1px dashed #E1E2E5;
   }
   .month {
     font-size: 80%;
