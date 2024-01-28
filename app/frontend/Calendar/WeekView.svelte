@@ -62,8 +62,6 @@
     display: grid;
     grid-template-rows: max-content;
     grid-auto-rows: 1fr;
-    border-bottom: 1px dotted grey;
-    border-right: 1px dotted grey;
   }
   .week-view[columns="1"] {
     grid-template-columns: max-content auto;
@@ -76,8 +74,9 @@
   }
   .day-header {
     padding: 16px;
-    border-top: 1px dotted grey;
-    border-left: 1px dotted grey;
+    border-top: 1px dashed #E1E2E5;
+    border-left: 1px dashed #E1E2E5;
+    border-bottom: 1px dashed #E1E2E5;
   }
   .day-header .date {
     font-size: 200%;

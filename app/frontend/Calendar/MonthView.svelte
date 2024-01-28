@@ -59,12 +59,12 @@
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     grid-template-rows: max-content;
     grid-auto-rows: 1fr;
-    border-bottom: 1px dashed #E1E2E5;
     border-right: 1px dashed #E1E2E5;
   }
   .weekday {
     border-top: 1px dashed #E1E2E5;
     border-left: 1px dashed #E1E2E5;
+    border-bottom: 1px dashed #E1E2E5;
     padding: 4px 8px;
     color: #8B8B8B;
     opacity: 70%;
@@ -72,7 +72,5 @@
     text-transform: uppercase;
   }
   .day {
-    border-top: 1px dashed #E1E2E5;
-    border-left: 1px dashed #E1E2E5;
   }
 </style>
