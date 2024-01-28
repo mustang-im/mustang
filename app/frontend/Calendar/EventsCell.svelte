@@ -5,7 +5,13 @@
         <EventLine {event} />
       {/each}
     </Scroll>
-  {/if}
+{/if}
+{#if withMonthOnFirst && start.getDate() == 1 ||
+  withMonthOnMonday && start.getDay() == 1 }
+  <hbox class="month">
+    {start.toLocaleDateString(undefined, { month: "long" })}
+  </hbox>
+{/if}
 </vbox>
 
 <script lang="ts">
@@ -17,6 +23,8 @@
   export let start: Date;
   export let intervalInHours: number;
   export let events: Collection<Event>;
+  export let withMonthOnFirst = false;
+  export let withMonthOnMonday = false;
 
   let displayEvents: Collection<Event>;
   let end: Date;
@@ -29,4 +37,23 @@
 </script>
 
 <style>
+  .events {
+    position: relative;
+  }
+  .month {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+
+    width: 100%;
+    aspect-ratio: 1/1;
+    margin-bottom: 8px;
+    transform: rotate(270deg);
+
+    color: #8B8B8B;
+    opacity: 40%;
+    letter-spacing: 0.378px;
+    font-size: 16px;
+    text-transform: uppercase;
+  }
 </style>
