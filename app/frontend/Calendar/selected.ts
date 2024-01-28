@@ -9,5 +9,5 @@ export let editingEvent: Writable<Event> = writable(null);
 
 // TODO Move into observable prefs?
 export let selectedShowDate = writable(new Date());
-export type DateInterval = 1 | 7 | 31 | 28;
-export let selectedDateInterval = writable(7 as DateInterval);
+export type DateInterval = 1 | 2 | 7 | 31 | 28;
+export let selectedDateInterval = writable(2 as DateInterval);
