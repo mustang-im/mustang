@@ -44,7 +44,7 @@
   button:not(.plain) {
     background-color: #f9f9f9;
     border: 1px solid #B2ADB8;
-    border-radius: 5px;
+    border-radius: 1000px;
     padding: 6px 8px;
 
     flex-direction: row;
