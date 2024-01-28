@@ -10,7 +10,7 @@
       <Button label="Plan a meeting" icon={AddToCalendarIcon} />
       <Button label="Start an ad-hoc meeting" icon={VideoIcon} on:click={() => catchErrors(startAdHocMeeting)} />
       <hbox>
-        <input id="meeting-link" type="url" bind:value={conferenceURL} placeholder="Enter meeting link to join" />
+        <input class="meeting-link" type="url" bind:value={conferenceURL} placeholder="Enter meeting link to join" />
         <Button label="Join"
           on:click={() => catchErrors(joinByURL)}/>
       </hbox>
@@ -128,7 +128,7 @@
   .actions :global(.call-person .avatar) {
     margin: -4px 0px;
   }
-  #meeting-link {
+  .meeting-link {
     margin-right: 4px;
   }
   .meetings {
