@@ -169,6 +169,7 @@ function fakeChatAccount(persons: Collection<Person>, me: Person): ChatAccount {
 
 function fakeCalendar(): Calendar {
   let calendar = new Calendar();
+  calendar.name = faker.company.name();
   for (let i = 1; i < 50; i++) {
     let event = new Event();
     event.startTime = i < 5 ? faker.date.recent() : faker.date.future(0.2);

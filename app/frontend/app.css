@@ -149,3 +149,10 @@ button.svelteui-MenuItem-root[classname="selected"] {
 button.svelteui-MenuItem-root:hover:not([classname="selected"]) {
   background-color: #A9DAD4;
 }
+
+/* Fix svelte-ui dropdown */
+
+.svelteui-NativeSelect-root select option:hover {
+  /* TODO not the right selector */
+  background-color: #A9DAD4;
+}
