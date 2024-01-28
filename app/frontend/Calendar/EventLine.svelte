@@ -1,6 +1,6 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <hbox class="event" on:click={onSelect} on:dblclick={onOpen}>
-  {event.startTime.toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric" })}
+  <!--{event.startTime.toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric" })}-->
   {event.title}
 </hbox>
 
@@ -24,14 +24,17 @@
   .event {
     background-color: #ff7c0e;
     color: black;
-    border-bottom: 1px solid rgba(0, 0, 0, 15%);
+    margin-bottom: 1px;
     /*box-shadow: 1px 1px 4px 0px grey;*/
     padding: 4px;
+    overflow: hidden;
+    max-height: 1.4em;
+    font-size: 13px;
   }
 
   @media (prefers-color-scheme: light) {
     .event {
-      background-color: yellowgreen;
+      background-color: #20AF9E50;
       color: black;
     }
   }

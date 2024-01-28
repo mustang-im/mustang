@@ -9,5 +9,7 @@
 <style>
   .time {
     margin: -0.8em 8px 0 0;
+    color: #AAABB4;
+    font-weight: 300;
   }
 </style>
