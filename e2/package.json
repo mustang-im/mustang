@@ -24,6 +24,7 @@
     "@electron-toolkit/utils": "^2.0.0",
     "bufferutil": "^4.0.8",
     "core-js": "2.6.12",
+    "jpc-core": "^0.2.3",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
     "utf-8-validate": "^6.0.3",
