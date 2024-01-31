@@ -88,6 +88,10 @@
     </vbox>
   </hbox>
 </vbox>
+{#if $meeting.state == MeetingState.IncomingCall || $meeting.state == MeetingState.OutgoingCall }
+  <audio src="/sound/ringtone1.mp3" loop autoplay />
+{/if}
+
 
 <script lang="ts">
   import { MeetingState, type VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
@@ -252,25 +256,35 @@
   .calling[state="incoming"] .participants,
   .calling[state="outgoing"] .participants {
     animation-name: shake;
-      animation-duration: 1s;
+      animation-delay: 0.3s;
+      animation-duration: 2s;
       animation-iteration-count: infinite;
       animation-direction: alternate;
       animation-timing-function: ease;
   }
   @keyframes shake {
     from {
-      margin-left: -2px;
+      margin-left: 3px;
     }
-    5% {
-      margin-left: 2px;
+    2% {
+      margin-left: -3px;
+    }
+    4% {
+      margin-left: 3px;
+    }
+    6% {
+      margin-left: -3px;
+    }
+    8% {
+      margin-left: 3px;
     }
     10% {
-      margin-left: -2px;
+      margin-left: -3px;
     }
-    15% {
-      margin-left: 2px;
+    12% {
+      margin-left: 3px;
     }
-    20% {
+    14% {
       margin-left: 0px;
     }
   }
