@@ -17,6 +17,7 @@
     "@svelteuidev/core": "^0.14.0",
     "axios": "^1.6.2",
     "jpc-ws": "https://github.com/benbucksch/jpc-ws/",
+    "lodash": "^4.17.21",
     "lucide-svelte": "^0.293.0",
     "matrix-js-sdk": "^30.0.1",
     "mustang-lib": "../lib/",
