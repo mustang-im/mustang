@@ -817,6 +817,9 @@ Send:
   "payload": {
     "action": "subscribe",
     "target": "34589bb4-25e3-45b3-afc6-2925d1beaf70",
+    "configuration": {
+      "video": true
+    }
     "media_session_type": "video"
   }
 }
@@ -990,7 +993,7 @@ Send:
     "target": "34589bb4-25e3-45b3-afc6-2925d1beaf70",
     "media_session_type": "video",
     "configuration": {
-      "video": false
+      "video": true
     }
   }
 }
