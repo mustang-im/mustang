@@ -15,6 +15,8 @@
     "@smui-extra/autocomplete": "^7.0.0-beta.15",
     "@svelteuidev/composables": "^0.14.0",
     "@svelteuidev/core": "^0.14.0",
+    "@xmpp-plugins/roster": "^1.2.0",
+    "@xmpp/client": "^0.13.1",
     "axios": "^1.6.2",
     "jpc-ws": "https://github.com/benbucksch/jpc-ws/",
     "lodash": "^4.17.21",
@@ -23,7 +25,6 @@
     "mustang-lib": "../lib/",
     "olm": "https://packages.matrix.org/npm/olm/olm-3.2.1.tgz",
     "pretty-bytes": "^6.1.1",
-    "stanza": "^12.19.0",
     "svelte-collections": "^1.1.20",
     "svelte-icon": "^2.0.0"
   },
