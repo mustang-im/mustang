@@ -1,7 +1,6 @@
 # App logic
 * Errors
   * Notification bar
-  * Accounts have .errors array for background errors, which UI subscribes to, and catch handlers add to.
 * init
   * Create global init function, which inits appGlobal and then inits each app
   * Move chat account load into Chat app ini.
@@ -11,8 +10,6 @@
   * Write mail
 
 # UI
-* PersonList component
-* flex independent from content
 * Window header
 
 # Chat
@@ -35,20 +32,26 @@
 * Link URLs
 * Detect MarkDown in plaintext messages
 
-# Editor
+## Editor
 * Send HTML
 * Formatting toolbar
 * Detect MarkDown and convert to HTML while sending
 
+## XMPP
+* Finish implementatoin
+
 ## Matrix
+* Fix impl
+* Key sync doesn't work right
 * Message impl
   * Room title change
   * Person name chage
 * Bug: Re-logins by itself
 
 ## Other protocols
-* XMPP
-* Signal?
+* Teams
+* Signal
+* WhatsApp
 * DIM <https://www.dim.chat>
 * Find a suitable open protocol
 
@@ -80,12 +83,17 @@
   * TURN server
 * XMPP 1:1
 * XMPP group?
-* Video streaming
+* Matrix 1:1
+* Matrix group?
 * Jitsi server
+* Video streaming
 
-## Later
+## Proprietary protocols
 * Teams
+* WebEx
+* Amazon conf
 * WhatsApp
+* Zoom
 
 # Infra
 * App shell: XULrunner, Electron etc.
