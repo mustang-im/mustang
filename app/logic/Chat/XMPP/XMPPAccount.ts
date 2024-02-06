@@ -6,49 +6,78 @@ import { appGlobal } from '../../app';
 import { ChatPerson } from '../Person';
 import { ContactEntry } from '../../Abstract/Person';
 import { MapColl } from 'svelte-collections';
-import * as XMPP from 'stanza';
+import { client, xml } from '@xmpp/client';
+import setupRoster from '@xmpp-plugins/roster';
 
 export class XMPPAccount extends ChatAccount {
   readonly chats = new MapColl<ChatPerson | Group, XMPPChatRoom>;
-  client: XMPP.Agent;
+  client: any;
   serverDomain: string;
   username: string;
   password: string;
   deviceID: string;
   globalUserID: string;
+  rosterService: any;
   /** Login to this account on the server. Opens network connection.
    * You must call this after creating the object and having set its properties.
    * This will populate `persons` and `chats`. */
   async login() {
     this.globalUserID = `${this.username}@${this.serverDomain}`;
-    this.client = XMPP.createClient({
-      jid: this.globalUserID,
+    this.client = client({
+      username: this.globalUserID,
       password: this.password,
+      service: this.serverDomain,
+    });
+    this.client.on("error", this.errorCallback);
+    await this.client.start();
+    await this.waitForEvent("status", status => status == "online");
+    await this.afterConnect();
 
-      // If you have a .well-known/host-meta.json file for your
-      // domain, the connection transport config can be skipped.
-      transports: {
-        websocket: `wss://${this.serverDomain}:5281/xmpp-websocket`,
-        bosh: `https://${this.serverDomain}:5281/http-bind`,
+    this.client.on("status", async status => {
+      this.isOnline = status == "online";
+      if (this.isOnline) {
+        try {
+          await this.afterConnect();
+        } catch (ex) {
+          this.errorCallback(ex);
+        }
       }
     });
-    await this.client.connect();
-    this.waitForEvent("session:started");
-    await this.getRoster();
-    let presence = await this.client.sendPresence();
-
-    await this.getRooms();
-    this.client.enableKeepAlive();
-    this.listenToChatMessages();
   };
-  async waitForEvent(eventName: keyof XMPP.AgentEvents) {
-    await new Promise(resolve => {
-      this.client.on(eventName, (...results) => resolve(results));
-    });
+  protected async afterConnect() {
+    this.client.on("stanza", stanza => this.onStanza(stanza));
+    await this.client.send(xml("presence"));
+    this.rosterService = setupRoster(this.client);
+    this.rosterService.on("set", ({ person }) => this.onRosterPersonAdded(person));
+    this.rosterService.on("remove", ({ jid }) => this.onRosterPersonRemoved(jid));
+    await this.getRoster();
+    await this.getRooms();
   }
   async getRoster() {
-    let roster = await this.client.getRoster();
-    Promise.all(roster.items.map(p => this.getPerson(p.jid, p.name ?? '')));
+    // <https://github.com/xmppjs/xmpp.js/tree/main/packages/xml>
+    let rosterXML = await this.client.iqCaller.get(xml('query', 'jabber:iq:roster'))
+    let personsXML = rosterXML.getChildren('item', 'jabber:iq:roster');
+    console.log("raw roster", personsXML);
+    let roster = await this.rosterService.get();
+    console.log("roster from plugin", roster);
+    // Promise.all(personsXML.map(p => this.getPerson(p.jid, p.name ?? '')));
+  }
+  async addPersonToRoster(newFriend: ChatPerson) {
+    await this.rosterService.set({ jid: newFriend.id, name: newFriend.name });
+    return;
+    // ?
+    await this.client.send(xml('presence', {
+      type: 'subscribe',
+      to: newFriend.id,
+    }));
+  }
+  async removePersonFromRoster(oldFriend: ChatPerson) {
+    await this.rosterService.remove(oldFriend.id);
+  }
+  onRosterPersonAdded(personXML: any) {
+  }
+  onRosterPersonRemoved(jid: any) {
+
   }
   async getRooms() {
     // TODO Get list of rooms
@@ -56,6 +85,7 @@ export class XMPPAccount extends ChatAccount {
     //Promise.all(allRooms.map(room => this.getNewRoom(room)));
   }
   async getNewRoom(room: string) {
+    return;
     let chatRoom = new XMPPChatRoom(this);
     chatRoom.id = room;
     console.log("Added room", room);
@@ -87,6 +117,7 @@ export class XMPPAccount extends ChatAccount {
     return appGlobal.persons.find(person => person.chatAccounts.some(acc => acc.value == userId));
   }
   async getPerson(jid: string, name: string) {
+    return;
     let existing = this.getExistingPerson(jid);
     if (existing) {
       return existing;
@@ -113,10 +144,18 @@ export class XMPPAccount extends ChatAccount {
     }
     return person;
   }
-  listenToChatMessages() {
-    this.client.on("chat", msg => this.processChatMessage(msg));
+  protected onStanza(stanza: any) {
+    try {
+      if (stanza.is("message")) {
+        this.onChatMessage(stanza);
+      } else {
+        console.log("Unknown XMPP message", stanza);
+      }
+    } catch (ex) {
+      this.errorCallback(ex);
+    }
   }
-  processChatMessage(xmppMsg: XMPP.Stanzas.ReceivedMessage): void {
+  onChatMessage(xmppMsg: any): void {
     let chatRoom = this.getExistingRoom(xmppMsg.to);
     let message = this.getUserMessage(xmppMsg);
     message.to = chatRoom;
@@ -126,7 +165,7 @@ export class XMPPAccount extends ChatAccount {
     chatRoom.messages.add(message);
     chatRoom.lastMessage = message;
   }
-  getUserMessage(xmppMsg: XMPP.Stanzas.ReceivedMessage): ChatMessage {
+  getUserMessage(xmppMsg: any): ChatMessage {
     let msg = new UserChatMessage();
     msg.contact = this.getExistingPerson(xmppMsg.from);
     msg.outgoing = false;
@@ -143,5 +182,14 @@ export class XMPPAccount extends ChatAccount {
     }
     //console.log("message", msg.text, msg.html, content.formatted_body);
     return msg;
+  }
+  async waitForEvent(eventName: string, condition = (...results: any) => true) {
+    await new Promise(resolve => {
+      this.client.on(eventName, (...results) => {
+        if (condition(...results)) {
+          resolve(results);
+        }
+      });
+    });
   }
 }

@@ -21,7 +21,6 @@ export class MatrixAccount extends ChatAccount {
   password: string;
   deviceID: string;
   globalUserID: string;
-  errorCallback = (ex) => console.error(ex);
   /** Login to this account on the server. Opens network connection.
    * You must call this after creating the object and having set its properties.
    * This will populate `persons` and `chats`. */
