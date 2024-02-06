@@ -238,7 +238,28 @@ Response:
       "waiting_room_participants": []
     },
     "recording": null,
-    "participants": []
+    "participants": [
+      {
+        id: "...",
+        media: {
+          is_presenter: true,
+          video: {
+            audio: true,
+            video: true
+          }
+        },
+        control: {
+          display_name: "Somebody else",
+          avatar_url: "https://libavatar.org/...",
+          role: "moderator",
+          hand_is_up: false,
+          participation_kind: "user"
+        },
+        chat: {
+          groups: []
+        },
+      }
+    ]
   }
 }
 

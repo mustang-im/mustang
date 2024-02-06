@@ -234,12 +234,13 @@ export class OTalkConf extends VideoConfMeeting {
     this.send("control", "join", {
       display_name: name,
     });
-    let myParticipantInfo = await this.waitForMessage("control", "join_success") as
-      ParticipantInfoJSON;
+    let info = await this.waitForMessage("control", "join_success") as JoinInfoJSON;
     this.myParticipant = new Participant();
-    this.myParticipant.id = myParticipantInfo.id;
+    this.myParticipant.id = info.id;
     this.myParticipant.name = name;
-    this.myParticipant.role = myParticipantInfo.role;
+    this.myParticipant.role = info.role;
+    await Promise.all(info.participants.map(p => this.participantJoined(p)));
+
     if (this.camera && this.camera.active) {
       await this.sendVideo(this.camera, false);
     }
@@ -249,7 +250,7 @@ export class OTalkConf extends VideoConfMeeting {
    * Handles control.joined
    * Called when other participants join the conference.
    */
-  protected async participantJoined(json: any) {
+  protected async participantJoined(json: ParticipantJSON): Promise<void> {
     let participant = new Participant();
     participant.id = json.id;
     participant.name = json.control.display_name;
@@ -659,9 +660,31 @@ export function arrayRemoveLast(array, item) {
 
 type JSONNamespaces = "control" | "media";
 
-class ParticipantInfoJSON {
+class JoinInfoJSON {
   id: string;
   display_name: string;
   avatar_url: URLString;
   role: ParticipantRole;
+  participants: ParticipantJSON[];
+}
+
+class ParticipantJSON {
+  id: string;
+  media: {
+    is_presenter: boolean;
+    video: {
+      audio: boolean;
+      video: boolean;
+    },
+  };
+  control: {
+    display_name: string,
+    avatar_url: URLString,
+    role: ParticipantRole,
+    hand_is_up: boolean,
+    participation_kind: "user",
+  };
+  chat: {
+    groups: []
+  };
 }
