@@ -435,6 +435,9 @@ export class OTalkConf extends VideoConfMeeting {
     this.send("media", "subscribe", {
       target: participant.id,
       media_session_type: sessionType,
+      configuration: {
+        video: true, // ?
+      }
     });
     let videoStream = new ParticipantVideo(new MediaStream(), participant);
     // https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling
