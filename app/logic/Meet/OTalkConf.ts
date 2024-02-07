@@ -251,6 +251,9 @@ export class OTalkConf extends VideoConfMeeting {
    * Called when other participants join the conference.
    */
   protected async participantJoined(json: ParticipantJSON): Promise<void> {
+    if (json.control.left_at) {
+      return
+    }
     let participant = new Participant();
     participant.id = json.id;
     participant.name = json.control.display_name;
@@ -682,6 +685,7 @@ class ParticipantJSON {
     avatar_url: URLString,
     role: ParticipantRole,
     hand_is_up: boolean,
+    left_at: Date,
     participation_kind: "user",
   };
   chat: {
