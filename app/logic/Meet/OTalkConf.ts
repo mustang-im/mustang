@@ -252,7 +252,7 @@ export class OTalkConf extends VideoConfMeeting {
    */
   protected async participantJoined(json: ParticipantJSON): Promise<void> {
     if (json.control.left_at) {
-      return
+      return;
     }
     let participant = new Participant();
     participant.id = json.id;
