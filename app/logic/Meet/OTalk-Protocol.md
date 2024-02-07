@@ -252,29 +252,8 @@ Response:
           display_name: "Somebody else",
           avatar_url: "https://libavatar.org/...",
           role: "moderator",
-          hand_is_up: false,
-          left_at: null,
-          participation_kind: "user"
-        },
-        chat: {
-          groups: []
-        },
-      },
-      {
-        id: "...",
-        media: {
-          is_presenter: true,
-          video: {
-            audio: true,
-            video: true
-          }
-        },
-        control: {
-          display_name: "Somebody else",
-          avatar_url: "https://libavatar.org/...",
-          role: "moderator",
-          hand_is_up: false,
-          left_at: "2024-02-06T23:22:36Z",
+          hand_is_up: false, 
+          left_at: "2024-02-07T00:41:37Z", // or null if participating
           participation_kind: "user"
         },
         chat: {

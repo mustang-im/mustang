@@ -685,7 +685,7 @@ class ParticipantJSON {
     avatar_url: URLString,
     role: ParticipantRole,
     hand_is_up: boolean,
-    left_at: Date,
+    left_at: string,
     participation_kind: "user",
   };
   chat: {
