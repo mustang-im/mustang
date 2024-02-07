@@ -433,7 +433,7 @@ export class OTalkConf extends VideoConfMeeting {
       target: participant.id,
       media_session_type: sessionType,
       configuration: {
-        video: true, // ?
+        video: true,
       }
     });
     let videoStream = new ParticipantVideo(new MediaStream(), participant);
