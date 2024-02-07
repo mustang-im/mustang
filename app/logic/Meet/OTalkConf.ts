@@ -385,20 +385,17 @@ export class OTalkConf extends VideoConfMeeting {
       media_session_type: sessionType,
       sdp: offer.sdp,
     });
-    let answer = await this.waitForMessage("media", "sdp_answer");
-    assert(answer.source == this.myParticipant.id, "Videos of participants got mixed up in their order");
-    assert(answer.media_session_type == sessionType, "Type of answer doesn't match offer");
+    let answer = await this.waitForMessage("media", "sdp_answer", answer =>
+      answer.source == this.myParticipant.id && answer.media_session_type == sessionType);
     await peerConnection.setRemoteDescription({
       type: "answer",
       sdp: answer.sdp,
     });
-    let up = await this.waitForMessage("media", "webrtc_up");
-    assert(up.source == this.myParticipant.id, "WebRTC up of participants got mixed up in their order");
-    assert(up.media_session_type == sessionType, "Type of answer doesn't match offer");
-    let status = await this.waitForMessage("media", "media_status");
+    await this.waitForMessage("media", "webrtc_up", up =>
+      up.source == this.myParticipant.id && up.media_session_type == sessionType);
     // This arrives at least twice, one for audio and once for video, but we'll wait only for one of them.
-    assert(status.source == this.myParticipant.id, "media status of participants got mixed up in their order");
-    assert(status.media_session_type == sessionType, "Type of answer doesn't match offer");
+    let status = await this.waitForMessage("media", "media_status", status =>
+      status.source == this.myParticipant.id && status.media_session_type == sessionType);
     assert(status.receiving, "Server didn't receive our stream");
     this.send("media", "publish_complete", {
       media_session_type: sessionType,
@@ -451,9 +448,8 @@ export class OTalkConf extends VideoConfMeeting {
       videoStream.stream.addTrack(track);
     };
     // TODO peerConnection.addEventListener("removetrack")?
-    let offer = await this.waitForMessage("media", "sdp_offer");
-    assert(offer.source == participant.id, "Videos of participants got mixed up in their order");
-    assert(offer.media_session_type == sessionType, "Type of offer doesn't match");
+    let offer = await this.waitForMessage("media", "sdp_offer", offer =>
+      offer.source == participant.id && offer.media_session_type == sessionType);
     await peerConnection.setRemoteDescription({
       type: "offer",
       sdp: offer.sdp,
@@ -466,14 +462,13 @@ export class OTalkConf extends VideoConfMeeting {
       media_session_type: sessionType,
       sdp: answer.sdp,
     });
-    let up = await this.waitForMessage("media", "webrtc_up");
-    assert(up.source == participant.id, "WebRTC up of participants got mixed up in their order");
-    assert(up.media_session_type == sessionType, "Type of answer doesn't match offer");
+    await this.waitForMessage("media", "webrtc_up", up =>
+      up.source == participant.id && up.media_session_type == sessionType);
     this.send("media", "configure", {
       target: participant.id,
       media_session_type: sessionType,
       configuration: {
-        video: true, // ?
+        video: true,
       }
     });
     this.videos.add(videoStream);
@@ -627,9 +622,14 @@ export class OTalkConf extends VideoConfMeeting {
    * Waits until the given message arrives on the controller web socket
    * @returns the JSON payload of that msg
    */
-  async waitForMessage(module: JSONNamespaces, msg: string): Promise<any> {
+  async waitForMessage(module: JSONNamespaces, msg: string, condition = (json: any) => true): Promise<any> {
     return await new Promise(resolve => {
-      this.addMsgListener(module, msg, true, false, resolve);
+      this.addMsgListener(module, msg, true, false, (json: any) => {
+        if (!condition(json)) {
+          return;
+        }
+        resolve(json);
+      });
     });
   }
 
