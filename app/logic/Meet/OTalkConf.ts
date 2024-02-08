@@ -24,6 +24,7 @@ export class OTalkConf extends VideoConfMeeting {
   roomID: string;
   inviteCode: string; // only when guest
   resumptionTicket: string;
+  iceServers: ICEServer[];
   myParticipant: Participant;
 
   /** Our camera and mic.
@@ -100,6 +101,8 @@ export class OTalkConf extends VideoConfMeeting {
    * URL form: https://<web-frontend-host>/invite/<invite-code>
    */
   async join(url: URLString) {
+    this.iceServers = await this.axios.post(`turn`, {});
+
     let urlParsed = new URL(url);
     // Data comes from user. All error messages in this function are user visible. TODO Translate error messages.
     assert(urlParsed.pathname.startsWith("/invite/"), "Protocol not supported");
@@ -529,10 +532,15 @@ export class OTalkConf extends VideoConfMeeting {
   }
 
   getPeerConnectionConfig() {
+    let urls = this.iceServers?.map(s => s.uris).flat();
+    if (!urls?.length) {
+      urls = ["stun:stun.sipgate.net:10000"]; // TODO
+    }
+    console.log("ice servers", this.iceServers, "urls", urls);
     return {
       iceServers: [
         {
-          urls: "stun:stun.sipgate.net:10000", // TODO Get our TURN server
+          urls: urls,
         },
       ],
     };
@@ -691,4 +699,8 @@ class ParticipantJSON {
   chat: {
     groups: []
   };
+}
+
+class ICEServer {
+  uris: string[];
 }
