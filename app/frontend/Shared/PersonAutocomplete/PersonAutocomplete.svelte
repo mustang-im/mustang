@@ -1,13 +1,16 @@
-<hbox class="participant-autocomplete">
+<hbox class="person-autocomplete">
   <Autocomplete
-    search={search}
+    {search}
     bind:value={person}
-    placeholder="Add participants"
+    {placeholder}
     showMenuWithNoInput={false}
+    noMatchesActionDisabled={true}
     >
     <hbox slot="loading">Loading...</hbox>
-    <svelte:fragment slot="match" let:match={participant}>
-      <ParticipantDisplay {participant} />
+    <svelte:fragment slot="match" let:match={person}>
+      <PersonAutocompleteResult {person}>
+        <slot name="result-bottom-row" slot="bottom-row" {person} />
+      </PersonAutocompleteResult>
     </svelte:fragment>
   </Autocomplete>
 </hbox>
@@ -15,7 +18,7 @@
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
   import { appGlobal } from "../../../logic/app";
-  import ParticipantDisplay from "./ParticipantDisplay.svelte";
+  import PersonAutocompleteResult from "./PersonAutocompleteResult.svelte";
   import Autocomplete from '@smui-extra/autocomplete';
 
   /**
@@ -23,6 +26,7 @@
    * The person that the user selected.
    * null, if nothing selected. */
   export let person: Person;
+  export let placeholder = "Add person";
 
   export async function search(inputStr: string): Promise<Person[]> {
     try {
@@ -42,26 +46,26 @@
 </script>
 
 <style>
-.participant-autocomplete :global(input) {
+.person-autocomplete :global(input) {
   border-top: none;
   border-left: none;
   border-right: none;
   width: 100%;
 }
 
-.participant-autocomplete :global(.mdc-deprecated-list-item--activated) {
+.person-autocomplete :global(.mdc-deprecated-list-item--activated) {
   border: 1px solid red;
   background-color: green;
 }
 
-.participant-autocomplete :global(div) {
+.person-autocomplete :global(div) {
   width: 100%;
 }
-.participant-autocomplete :global(ul) {
+.person-autocomplete :global(ul) {
   display: flex;
   flex-direction: column;
 }
-.participant-autocomplete :global(ul li) {
+.person-autocomplete :global(ul li) {
   display: flex;
 }
 </style>

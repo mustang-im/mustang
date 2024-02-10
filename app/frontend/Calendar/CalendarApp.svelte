@@ -32,12 +32,16 @@
   import DualView from "./DualView.svelte";
   import EditEvent from "./EditEvent/EditEvent.svelte";
   import Scroll from "../Shared/Scroll.svelte";
+  import { Event } from "../../logic/Calendar/Event";
 
   $: dateInterval = $selectedDateInterval;
   $: events = appGlobal.calendars.first.events.sortBy(ev => ev.startTime);
 
   function addEvent() {
-    alert("add event");
+    let event = new Event();
+    event.startTime = new Date();
+    event.endTime = new Date();
+    $editingEvent = event;
   }
 </script>
 

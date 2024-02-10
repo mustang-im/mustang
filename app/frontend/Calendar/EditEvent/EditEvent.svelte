@@ -11,12 +11,14 @@
         <input placeholder="Title - Enter the topic of the meeting" bind:value={event.title} />
       </hbox>
       <vbox class="participants">
-        <ParticipantAutocomplete bind:person={personToAdd} />
-        <grid class="participants-list">
-          {#each event.participants as participant (participant.id)}
-            <ParticipantDisplay {participant} />
-          {/each}
-        </grid>
+        <PersonsAutocomplete persons={event.participants} placeholder="Add participants">
+          <slot slot="display-bottom-row" let:person>
+            <PersonAvailability {person} />
+          </slot>
+          <slot slot="result-bottom-row" let:person>
+            <PersonAvailability {person} />
+          </slot>
+        </PersonsAutocomplete>
       </vbox>
       <vbox class="location">
         <hbox class="online">
@@ -66,27 +68,16 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { editingEvent } from "../selected";
-  import type { Person } from "../../../logic/Abstract/Person";
-  import ParticipantDisplay from "./ParticipantDisplay.svelte";
+  import PersonsAutocomplete from "../../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
+  import PersonAvailability from "./PersonAvailability.svelte";
   import TimeInput from "./TimeInput.svelte";
   import DurationUnit from "./DurationUnit.svelte";
   import { Button, Checkbox } from "@svelteuidev/core";
-  import ParticipantAutocomplete from "./ParticipantAutocomplete.svelte";
 
   export let event: Event;
 
   let durationUnit: DurationUnit;
   let durationInUnit: number;
-  let personToAdd: Person;
-
-  $: personToAdd && onAddPerson(personToAdd);
-  function onAddPerson(person: Person) {
-    if (!person || event.participants.includes(person)) {
-      return;
-    }
-    event.participants.add(person);
-    console.log("added " + person, person);
-  }
 
   function onCopyMeetingURL() {
     new Clipboard().writeText(event.onlineMeetingURL);
@@ -123,8 +114,8 @@
   .participants {
     margin-top: 32px;
   }
-  .participants-list {
-    min-height: 128px;
+  .availability {
+    font-size: 12px;
   }
   .descriptionText {
     min-height: 10em;
