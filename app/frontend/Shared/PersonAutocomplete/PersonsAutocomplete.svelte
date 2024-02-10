@@ -4,8 +4,8 @@
       <slot name="display-bottom-row" slot="bottom-row" {person} />
     </PersonEntry>
   {/each}
-  <PersonAutocomplete bind:person={personToAdd} {placeholder}>
-    <slot name="result-bottom-row" slot="bottom-row" person={personToAdd} />
+  <PersonAutocomplete on:personSelected={(event) => onAddPerson(event.detail.person)} {placeholder}>
+    <slot name="result-bottom-row" slot="bottom-row" {person} />
   </PersonAutocomplete>
 </div>
 
@@ -21,14 +21,11 @@
   export let persons: Collection<Person>;
   export let placeholder: string = null;
 
-  let personToAdd: Person;
-  $: personToAdd && onAddPerson(personToAdd);
   function onAddPerson(person: Person) {
     if (!person || persons.contains(person)) {
       return;
     }
     persons.add(person);
-    personToAdd = null;
     console.log("added " + person, person);
   }
 </script>

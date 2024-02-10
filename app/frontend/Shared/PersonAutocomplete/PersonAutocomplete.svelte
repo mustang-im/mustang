@@ -1,7 +1,8 @@
 <hbox class="person-autocomplete">
   <Autocomplete
     {search}
-    bind:value={person}
+    bind:value={personToAdd}
+    bind:text
     {placeholder}
     showMenuWithNoInput={false}
     noMatchesActionDisabled={true}
@@ -20,12 +21,13 @@
   import { appGlobal } from "../../../logic/app";
   import PersonAutocompleteResult from "./PersonAutocompleteResult.svelte";
   import Autocomplete from '@smui-extra/autocomplete';
+	import { createEventDispatcher } from 'svelte';
+	const dispatchEvent = createEventDispatcher();
 
   /**
    * out
    * The person that the user selected.
    * null, if nothing selected. */
-  export let person: Person;
   export let placeholder = "Add person";
 
   export async function search(inputStr: string): Promise<Person[]> {
@@ -42,6 +44,15 @@
       //inputE.setCustomValidity(ex.message ?? ex + "");
       //inputE.reportValidity();
     }
+  }
+
+  let text: string;
+  let personToAdd: Person;
+  $: personToAdd && onAddPerson(personToAdd);
+  function onAddPerson(person: Person) {
+    dispatchEvent('personSelected', { person });
+    personToAdd = null;
+    text = "";
   }
 </script>
 
