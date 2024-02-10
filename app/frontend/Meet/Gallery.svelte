@@ -11,7 +11,7 @@
 </Scroll>
 
 <script lang="ts">
-  import type { VideoStream } from "../../logic/Meet/VideoStream";
+  import { SelfVideo, videoStreamClassName, type VideoStream } from "../../logic/Meet/VideoStream";
   import type { Collection } from "svelte-collections";
   import ParticipatingVideo from "./Video/ParticipatingVideo.svelte";
   import Scroll from "../Shared/Scroll.svelte";
@@ -27,7 +27,8 @@
       return "";
     }
     const min = 256; /** minimum width per video */
-    if (count <= 2 || width < min * 2) {
+    if (count <= 2 && $videos.find(video => video instanceof SelfVideo) ||
+        width < min * 2) {
       return "auto";
     }
     if (count <= 4 || width < min * 3) {

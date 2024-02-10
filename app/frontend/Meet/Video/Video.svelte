@@ -1,6 +1,7 @@
 <!-- svelte-ignore a11y-media-has-caption -->
 {#if video.stream}
-  <video bind:this={videoEl} muted={video instanceof SelfVideo} />
+  <video bind:this={videoEl} muted={video instanceof SelfVideo}
+    class={videoStreamClassName(video)} />
 {:else if video instanceof ParticipantVideo}
   <img src={video.participant.picture} alt={video.participant.name} />
 {:else if video instanceof SelfVideo}
@@ -8,7 +9,7 @@
 {/if}
 
 <script lang="ts">
-  import { VideoStream, SelfVideo, ParticipantVideo } from "../../../logic/Meet/VideoStream";
+  import { VideoStream, SelfVideo, ParticipantVideo, videoStreamClassName } from "../../../logic/Meet/VideoStream";
   import { appGlobal } from "../../../logic/app";
   import { onDestroy } from "svelte";
 
@@ -36,5 +37,12 @@
   video {
     aspect-ratio: 16/9;
     object-fit: cover;
+    max-width: 100%;
+    max-height: 100%;
+    width: 100%;
+    height: 100%;
+  }
+  video.screen {
+    object-fit: contain;
   }
 </style>
