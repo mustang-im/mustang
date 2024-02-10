@@ -3,7 +3,7 @@
     {search}
     bind:value={personToAdd}
     bind:text
-    {placeholder}
+    textfield$placeholder={placeholder}
     showMenuWithNoInput={false}
     noMatchesActionDisabled={true}
     >
@@ -62,6 +62,11 @@
   border-left: none;
   border-right: none;
   width: 100%;
+}
+
+.person-autocomplete :global(.mdc-deprecated-list-item--disabled) {
+  /** Hack to remove "No matches found." */
+  display: none;
 }
 
 .person-autocomplete :global(.mdc-deprecated-list-item--activated) {
