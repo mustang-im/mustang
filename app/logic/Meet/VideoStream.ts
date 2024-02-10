@@ -1,3 +1,4 @@
+import { NotReached } from "../util/util";
 import type { MeetingParticipant } from "./Participant";
 
 /** One incoming or outgoing video in a video conference */
@@ -31,5 +32,17 @@ export class ScreenShare extends VideoStream {
   constructor(stream: MediaStream, participant?: MeetingParticipant) {
     super(stream);
     this.participant = participant;
+  }
+}
+
+export function videoStreamClassName(video: VideoStream): string {
+  if (video instanceof SelfVideo) {
+    return "self";
+  } else if (video instanceof ParticipantVideo) {
+    return "participant";
+  } else if (video instanceof ScreenShare) {
+    return "screen";
+  } else {
+    throw new NotReached();
   }
 }

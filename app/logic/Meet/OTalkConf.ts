@@ -436,7 +436,9 @@ export class OTalkConf extends VideoConfMeeting {
       target: participant.id,
       media_session_type: sessionType,
     });
-    let videoStream = new ParticipantVideo(new MediaStream(), participant);
+    let videoStream = isScreen
+      ? new ScreenShare(new MediaStream(), participant)
+      : new ParticipantVideo(new MediaStream(), participant);
     // https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling
     // https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Perfect_negotiation
     let peerConnection = new RTCPeerConnection(this.getPeerConnectionConfig());

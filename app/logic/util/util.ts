@@ -28,6 +28,14 @@ export function arrayRemoveAll(array, item) {
   }
 }
 
+/** Used for if/else and switch statements
+ * when they run into a case that should not happen */
+export class NotReached extends Error {
+  constructor(msg?: string) {
+    super(msg ?? "Not reached: Unhandled case in code");
+  }
+}
+
 export class NotImplemented extends Error {
   constructor(msg?: string) {
     super(msg ?? "Not yet implemented");
