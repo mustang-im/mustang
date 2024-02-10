@@ -1,11 +1,15 @@
-<hbox class="person-autocomplete">
+<hbox class="person-autocomplete" bind:this={topEl}>
   <Autocomplete
-    {search}
-    bind:value={personToAdd}
-    bind:text
-    textfield$placeholder={placeholder}
-    showMenuWithNoInput={false}
-    noMatchesActionDisabled={true}
+    onChange={onAddPerson}
+    searchFunction={search}
+    delay={100}
+    minCharactersToSearch={2}
+    localFiltering={false}
+    localSorting={false}
+    closeOnBlur={true}
+    hideArrow={true}
+    noResultsText="No person found"
+    {placeholder}
     >
     <hbox slot="loading">Loading...</hbox>
     <svelte:fragment slot="match" let:match={person}>
@@ -20,8 +24,10 @@
   import type { Person } from "../../../logic/Abstract/Person";
   import { appGlobal } from "../../../logic/app";
   import PersonAutocompleteResult from "./PersonAutocompleteResult.svelte";
-  import Autocomplete from '@smui-extra/autocomplete';
-	import { createEventDispatcher } from 'svelte';
+  // <https://github.com/pstanoev/simple-svelte-autocomplete>
+  // <http://simple-svelte-autocomplete.surge.sh>
+  import Autocomplete from 'simple-svelte-autocomplete';
+	import { createEventDispatcher, tick } from 'svelte';
 	const dispatchEvent = createEventDispatcher();
 
   /**
@@ -46,42 +52,35 @@
     }
   }
 
-  let text: string;
-  let personToAdd: Person;
-  $: personToAdd && onAddPerson(personToAdd);
-  function onAddPerson(person: Person) {
+  let topEl: HTMLDivElement;
+  async function onAddPerson(person: Person) {
     dispatchEvent('personSelected', { person });
-    personToAdd = null;
-    text = "";
+
+    // Clear, to allow user to enter the next person
+    await tick();
+    // Hack, because component doesn't allow me to clear the text field value
+    topEl.querySelector("input").value = "";
   }
 </script>
 
 <style>
-.person-autocomplete :global(input) {
-  border-top: none;
-  border-left: none;
-  border-right: none;
-  width: 100%;
+.person-autocomplete {
+  height: 2em;
 }
 
-.person-autocomplete :global(.mdc-deprecated-list-item--disabled) {
-  /** Hack to remove "No matches found." */
-  display: none;
+.person-autocomplete :global(.autocomplete) {
+  height: 100% !important;
+  width: 100%;
+}
+.person-autocomplete :global(.input-container) {
+  height: 100%;
+}
+.person-autocomplete :global(input) {
+  padding: 0px !important;
 }
 
 .person-autocomplete :global(.mdc-deprecated-list-item--activated) {
   border: 1px solid red;
   background-color: green;
-}
-
-.person-autocomplete :global(div) {
-  width: 100%;
-}
-.person-autocomplete :global(ul) {
-  display: flex;
-  flex-direction: column;
-}
-.person-autocomplete :global(ul li) {
-  display: flex;
 }
 </style>

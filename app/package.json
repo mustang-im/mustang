@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@faker-js/faker": "^7.6.0",
-    "@smui-extra/autocomplete": "^7.0.0-beta.15",
     "@svelteuidev/composables": "^0.14.0",
     "@svelteuidev/core": "^0.14.0",
     "@xmpp-plugins/roster": "^1.2.0",
