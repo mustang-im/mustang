@@ -269,8 +269,13 @@ export class OTalkConf extends VideoConfMeeting {
 
   /** Handles media.webrtc_down */
   protected participantVideoStopped(json: any) {
+    // normally, we have already removed the video from participantUpdate(),
+    // but just in case...
     let participantId = json.source;
-    let video = this.videos.find(v => (v instanceof ParticipantVideo || v instanceof ScreenShare) &&
+    let isScreen = json.media_session_type == "screen";
+    let video = this.videos.find(v =>
+      (!isScreen && v instanceof ParticipantVideo ||
+        isScreen && v instanceof ScreenShare) &&
       v.participant?.id == participantId);
     if (video) {
       this.videos.remove(video);
@@ -290,7 +295,6 @@ export class OTalkConf extends VideoConfMeeting {
       await this.getVideoFromParticipant(participant, false);
     } else if (video && !incomingMedia) {
       await this.stopVideoFromParticipant(video, false);
-      this.videos.remove(video);
     }
 
     let screen = this.videos.find(v => v instanceof ScreenShare && v.participant?.id == participantID);
@@ -298,7 +302,6 @@ export class OTalkConf extends VideoConfMeeting {
       await this.getVideoFromParticipant(participant, true);
     } else if (screen && !participant.screenSharing) {
       await this.stopVideoFromParticipant(screen, true);
-      this.videos.remove(screen);
     }
   }
 
@@ -482,6 +485,7 @@ export class OTalkConf extends VideoConfMeeting {
   async stopVideoFromParticipant(video: ParticipantVideo | ScreenShare, isScreen: boolean): Promise<void> {
     assert(!isScreen && video instanceof ParticipantVideo || isScreen && video instanceof ScreenShare, "VideoStream has wrong type");
     this.closePeerConnection(video.participant, isScreen);
+    this.videos.remove(video);
   }
 
   protected closePeerConnection(participant: Participant, isScreen: boolean) {
