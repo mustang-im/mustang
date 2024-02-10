@@ -12,7 +12,7 @@
     {placeholder}
     >
     <hbox slot="loading">Loading...</hbox>
-    <svelte:fragment slot="match" let:match={person}>
+    <svelte:fragment slot="item" let:item={person}>
       <PersonAutocompleteResult {person}>
         <slot name="result-bottom-row" slot="bottom-row" {person} />
       </PersonAutocompleteResult>
