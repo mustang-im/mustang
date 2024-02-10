@@ -294,14 +294,14 @@ export class OTalkConf extends VideoConfMeeting {
     if (!video && incomingMedia) {
       await this.getVideoFromParticipant(participant, false);
     } else if (video && !incomingMedia) {
-      await this.stopVideoFromParticipant(video, false);
+      await this.stopVideoFromParticipant(video);
     }
 
     let screen = this.videos.find(v => v instanceof ScreenShare && v.participant?.id == participantID);
     if (!screen && participant.screenSharing) {
       await this.getVideoFromParticipant(participant, true);
     } else if (screen && !participant.screenSharing) {
-      await this.stopVideoFromParticipant(screen, true);
+      await this.stopVideoFromParticipant(screen);
     }
   }
 
@@ -315,14 +315,17 @@ export class OTalkConf extends VideoConfMeeting {
   }
 
   /** Handles control.left */
-  protected participantLeft(json: any) {
+  protected async participantLeft(json: any) {
     let participantId = json.id;
     let participant = this.participants.find(p => p.id == participantId);
     assert(participant, "Participant left, but we didn't know about him.");
     this.participants.remove(participant);
-    let video = this.videos.find(v => (v instanceof ParticipantVideo || v instanceof ScreenShare) &&
+    let videos = this.videos.filter(v =>
+      (v instanceof ParticipantVideo || v instanceof ScreenShare) &&
       v.participant == participant);
-    this.videos.remove(video);
+    for (let video of videos) {
+      await this.stopVideoFromParticipant(video);
+    }
   }
 
   /** Called when our metadata changes, e.g. hand up or cam/mic on/off */
@@ -482,9 +485,8 @@ export class OTalkConf extends VideoConfMeeting {
     this.videos.add(videoStream);
   }
 
-  async stopVideoFromParticipant(video: ParticipantVideo | ScreenShare, isScreen: boolean): Promise<void> {
-    assert(!isScreen && video instanceof ParticipantVideo || isScreen && video instanceof ScreenShare, "VideoStream has wrong type");
-    this.closePeerConnection(video.participant, isScreen);
+  async stopVideoFromParticipant(video: ParticipantVideo | ScreenShare): Promise<void> {
+    this.closePeerConnection(video.participant, video instanceof ScreenShare);
     this.videos.remove(video);
   }
 
