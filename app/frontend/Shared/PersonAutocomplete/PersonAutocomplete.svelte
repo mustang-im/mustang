@@ -21,6 +21,7 @@
 </hbox>
 
 <script lang="ts">
+  import { ArrayColl, type Collection } from "svelte-collections";
   import type { Person } from "../../../logic/Abstract/Person";
   import { appGlobal } from "../../../logic/app";
   import PersonAutocompleteResult from "./PersonAutocompleteResult.svelte";
@@ -30,10 +31,7 @@
 	import { createEventDispatcher, tick } from 'svelte';
 	const dispatchEvent = createEventDispatcher();
 
-  /**
-   * out
-   * The person that the user selected.
-   * null, if nothing selected. */
+  export let skipPersons: Collection<Person> = new ArrayColl<Person>();
   export let placeholder = "Add person";
 
   export async function search(inputStr: string): Promise<Person[]> {
@@ -41,7 +39,9 @@
       if (inputStr.length < 2) {
         return [];
       }
-      let results = appGlobal.persons.filter(person => person.name.includes(inputStr));
+      let results = appGlobal.persons
+        .filter(person => person.name.includes(inputStr) &&
+          !skipPersons.contains(person));
       console.log("Got", results.length, "results for", inputStr);
       return results.contents;
     } catch (ex) {
