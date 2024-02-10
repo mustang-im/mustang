@@ -20,6 +20,5 @@
     justify-content: center;
     padding-right: 12px;
     margin-right: 4px;
-    margin-top: 4px;
   }
 </style>
