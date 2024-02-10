@@ -13,12 +13,10 @@
 
 <style>
   .person {
-    display: inline-flex;
     border: 1px solid lightgray;
     border-radius: 1000px;
     align-items: center;
     justify-content: center;
     padding-right: 12px;
-    margin-right: 4px;
   }
 </style>

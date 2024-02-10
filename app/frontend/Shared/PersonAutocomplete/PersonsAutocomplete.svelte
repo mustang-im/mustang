@@ -1,13 +1,17 @@
-<div class="persons-autocomplete">
+<hbox class="persons-autocomplete">
   {#each $persons.each as person}
     <PersonEntry {person}>
       <slot name="display-bottom-row" slot="bottom-row" {person} />
     </PersonEntry>
   {/each}
-  <PersonAutocomplete on:personSelected={(event) => onAddPerson(event.detail.person)} {placeholder}>
+  <PersonAutocomplete
+    on:personSelected={(event) => onAddPerson(event.detail.person)}
+    skipPersons={$persons}
+    {placeholder}
+    >
     <slot name="result-bottom-row" slot="bottom-row" {person} />
   </PersonAutocomplete>
-</div>
+</hbox>
 
 <script lang="ts">
   import type { Collection } from "svelte-collections";
@@ -34,6 +38,11 @@
   .persons-autocomplete {
     flex-wrap: wrap;
     border-bottom: 1px solid green;
+    align-items: center;
+  }
+  .persons-autocomplete > :global(*) {
+    margin-right: 6px;
+    margin-bottom: 4px;
   }
   .persons-autocomplete :global(input) {
     border: none;
