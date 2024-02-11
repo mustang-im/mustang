@@ -68,7 +68,7 @@
 
 <script lang="ts">
   import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
-  import { AppArea, selectedApp } from "../MainWindow/app";
+  import { AppArea, selectedApp } from "../AppsBar/app";
   import { cameraOn, micOn, screenShareOn } from "./Setup/selectedDevices";
   import { appGlobal } from "../../logic/app";
   import RoundButton from "../Shared/RoundButton.svelte";

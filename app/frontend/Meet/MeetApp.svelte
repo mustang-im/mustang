@@ -9,7 +9,7 @@
 <script lang="ts">
   import { MeetingState } from "../../logic/Meet/VideoConfMeeting";
   import { appGlobal } from "../../logic/app";
-  import { sidebarApp, selectedApp, AppArea } from "../MainWindow/app";
+  import { sidebarApp, selectedApp, AppArea } from "../AppsBar/app";
   import InMeeting from "./InMeeting.svelte";
   import Calling from "./Start/Calling.svelte";
   import StartScreen from "./Start/StartScreen.svelte";

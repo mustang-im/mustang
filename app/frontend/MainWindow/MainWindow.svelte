@@ -19,10 +19,10 @@
 <OpenMeet />
 
 <script lang="ts">
-  import { AppArea, selectedApp, sidebarApp } from "./app";
+  import { AppArea, selectedApp, sidebarApp } from "../AppsBar/app";
   import { appGlobal, getStartObjects, login } from "../../logic/app";
-  import AppBar from "./AppBar.svelte";
-  import AppContent from "./AppContent.svelte";
+  import AppBar from "../AppsBar/AppBar.svelte";
+  import AppContent from "../AppsBar/AppContent.svelte";
   import WindowHeader from "./WindowHeader.svelte";
   import MeetSidebar from "../Meet/MeetSidebar.svelte";
   import OpenMeet from "../Meet/Start/OpenMeet.svelte";

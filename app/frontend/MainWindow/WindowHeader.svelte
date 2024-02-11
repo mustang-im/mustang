@@ -26,7 +26,7 @@
 </hbox>
 
 <script lang="ts">
-  import { AppArea } from "./app";
+  import { AppArea } from "../AppsBar/app";
   import Button from "../Shared/Button.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
   import logo from '../asset/icon/general/logo.svg?raw';

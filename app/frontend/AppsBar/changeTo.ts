@@ -1,4 +1,4 @@
-import { AppArea, selectedApp } from "./app";
+import { AppArea, selectedApp } from "../AppsBar/app";
 import type { Observable } from "../../logic/util/Observable";
 import { Person } from "../../logic/Abstract/Person";
 import { selectedPerson } from "../Shared/Person/PersonOrGroup";
