@@ -1,6 +1,6 @@
 <script lang="ts">
   import { MeetingState } from "../../../logic/Meet/VideoConfMeeting";
-  import { AppArea, selectedApp } from "../../MainWindow/app";
+  import { AppArea, selectedApp } from "../../AppsBar/app";
   import { appGlobal } from "../../../logic/app";
 
   /** When a call comes in or is placed, open the meet app,
