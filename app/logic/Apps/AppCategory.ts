@@ -31,7 +31,7 @@ export default class AppCategory {
    * Either absolute, or relative to the UI path. */
   icon: string;
 
-  apps = new ArrayColl<AppListed>();
+  readonly apps = new ArrayColl<AppListed>();
 
   /** The name in the user's language, or a fallback when not available */
   get nameTranslated(): string {

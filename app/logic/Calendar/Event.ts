@@ -32,7 +32,7 @@ export class Event extends Observable {
   @notifyChangedProperty
   onlineMeetingURL: string;
   @notifyChangedProperty
-  participants = new ArrayColl<Person>();
+  readonly participants = new ArrayColl<Person>();
   @notifyChangedProperty
   lastMod = new Date();
 

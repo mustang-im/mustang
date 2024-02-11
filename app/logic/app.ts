@@ -16,13 +16,13 @@ export class AppGlobal {
   addNewAccountFromConfig: Function;
   findAccountConfig: Function;
   AccountConfig: Object;
-  emailAccounts = new ArrayColl<MailAccount>();
-  chatAccounts = new ArrayColl<ChatAccount>();
-  calendars = new ArrayColl<Calendar>();
-  meetings = new ArrayColl<VideoConfMeeting>();
-  persons = new ArrayColl<Person>();
-  files = new ArrayColl<Directory>();
-  apps = new Apps();
+  readonly emailAccounts = new ArrayColl<MailAccount>();
+  readonly chatAccounts = new ArrayColl<ChatAccount>();
+  readonly calendars = new ArrayColl<Calendar>();
+  readonly meetings = new ArrayColl<VideoConfMeeting>();
+  readonly persons = new ArrayColl<Person>();
+  readonly files = new ArrayColl<Directory>();
+  readonly apps = new Apps();
   me: Person;
 }
 export let appGlobal = new AppGlobal();

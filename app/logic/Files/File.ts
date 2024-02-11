@@ -24,5 +24,5 @@ export class File extends FileOrDirectory {
 
 export class Directory extends FileOrDirectory {
   sentToFrom: Person;
-  files = new ArrayColl<FileOrDirectory>();
+  readonly files = new ArrayColl<FileOrDirectory>();
 }
