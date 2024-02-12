@@ -1,5 +1,5 @@
 import { Observable, notifyChangedProperty } from "../../logic/util/Observable";
-import { ArrayColl } from "svelte-collections";
+import { ArrayColl, Collection } from "svelte-collections";
 
 export class MustangApp extends Observable {
   id: string;
@@ -30,5 +30,6 @@ export class MustangApp extends Observable {
    * Should be a very small number (0, 1 up to max 3-5),
    * due to UI space constaints.
    */
-  readonly subApps = new ArrayColl<MustangApp>;
+  @notifyChangedProperty
+  subApps: Collection<MustangApp> = new ArrayColl<MustangApp>;
 }
