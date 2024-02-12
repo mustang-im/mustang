@@ -2,8 +2,13 @@
 <vbox flex class="event-edit-window">
   <hbox class="window-title-bar">
     {event.title ? 'Edit event' : 'New event'}
-    <hbox class="spacer" />
-    <Button compact color="gray" on:click={onClose}>X</Button>
+    <hbox flex class="spacer" />
+    <RoundButton
+      label="Close"
+      icon={CloseIcon}
+      iconSize="16px"
+      on:click={onClose}
+      />
   </hbox>
   <hbox flex class="left-right">
     <vbox flex class="left-pane">
@@ -24,7 +29,13 @@
         <hbox class="online">
           <Checkbox bind:checked={event.isOnline} label="Online" />
           <input type="url" bind:value={event.onlineMeetingURL} disabled={!event.isOnline} placeholder="Meeting URL" />
-          <Button on:click={onCopyMeetingURL} disabled={!event.isOnline || !event.onlineMeetingURL}>Copy</Button>
+          <Button
+            label="Copy"
+            icon={CopyIcon}
+            iconSize="16px"
+            disabled={!event.isOnline || !event.onlineMeetingURL}
+            on:click={onCopyMeetingURL}
+            />
         </hbox>
         <hbox class="presence">
           <Checkbox checked={!!event.location} disabled={!event.location} label="In Presence" />
@@ -59,7 +70,12 @@
       <hbox class="spacer" />
       <hbox class="buttons">
         <hbox class="spacer" />
-        <Button on:click={onClose}>OK</Button>
+        <Button
+          label="Save"
+          icon={SaveIcon}
+          iconSize="16px"
+          on:click={onSave}
+          />
       </hbox>
     </vbox>
   </hbox>
@@ -72,7 +88,12 @@
   import PersonAvailability from "./PersonAvailability.svelte";
   import TimeInput from "./TimeInput.svelte";
   import DurationUnit from "./DurationUnit.svelte";
-  import { Button, Checkbox } from "@svelteuidev/core";
+  import Button from "../../Shared/Button.svelte";
+  import RoundButton from "../../Shared/RoundButton.svelte";
+  import { Checkbox } from "@svelteuidev/core";
+  import SaveIcon from "lucide-svelte/icons/check";
+  import CloseIcon from "lucide-svelte/icons/x";
+  import CopyIcon from "lucide-svelte/icons/copy";
 
   export let event: Event;
 
@@ -81,6 +102,10 @@
 
   function onCopyMeetingURL() {
     new Clipboard().writeText(event.onlineMeetingURL);
+  }
+
+  function onSave() {
+    onClose();
   }
 
   function onClose() {

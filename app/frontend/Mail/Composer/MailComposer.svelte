@@ -2,8 +2,13 @@
 <vbox flex class="mail-composer-window">
   <hbox class="window-title-bar">
     {appGlobal.emailAccounts.first.emailAddress}
-    <hbox class="spacer" />
-    <Button compact color="gray" on:click={onClose}>X</Button>
+    <hbox flex class="spacer" />
+    <RoundButton
+      label="Close"
+      icon={CloseIcon}
+      iconSize="16px"
+      on:click={onClose}
+      />
   </hbox>
   <grid class="recipients">
     <hbox class="label">to</hbox>
@@ -28,16 +33,40 @@
   <vbox flex>
     <textarea class="descriptionText" bind:value={mail.html} />
   </vbox>
+  <hbox>
+    <hbox class="label">Subject</hbox>
+    <hbox class="subject" flex>
+      <input type="text" bind:value={mail.subject} />
+    </hbox>
+    <hbox flex class="spacer" />
+    <RoundButton
+      label="Send"
+      icon={SendIcon}
+      iconSize="24px"
+      filled
+      disabled={!mail.subject || $to.isEmpty}
+      on:click={onSend}
+      />
+  </hbox>
 </vbox>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/Message";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
-  import PersonsAutocomplete from "../../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
-  import { Button } from "@svelteuidev/core";
   import { appGlobal } from "../../../logic/app";
+  import PersonsAutocomplete from "../../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
+  import RoundButton from "../../Shared/RoundButton.svelte";
+  import SendIcon from "lucide-svelte/icons/send";
+  import CloseIcon from "lucide-svelte/icons/x";
 
   export let mail: EMail;
+
+  $: to = mail.to;
+
+  async function onSend() {
+    await mail.send();
+    onClose();
+  }
 
   function onClose() {
     let me = mailMustangApp.subApps.find(app => app instanceof WriteMailMustangApp && app.mainWindowProperties.mail == mail);
@@ -67,5 +96,8 @@
   }
   .show-recipients {
     margin-left: 8px;
+  }
+  .subject input {
+    width: 100%;
   }
 </style>
