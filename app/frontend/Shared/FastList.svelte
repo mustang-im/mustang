@@ -131,6 +131,9 @@
    * Updates the DOM elements with the rows.
    */
   async function updateSize() {
+    if (items.isEmpty) {
+      return;
+    }
     await tick();
     let contentRow = contentE.firstChild?.firstChild as HTMLElement;
     rowHeight = contentRow.offsetHeight;
