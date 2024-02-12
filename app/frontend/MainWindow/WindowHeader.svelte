@@ -3,21 +3,7 @@
     <Icon data={logo} size="20px" />
   </vbox>
   <hbox class="app-title">
-    {#if selectedApp == AppArea.Mail}
-      Mail
-    {:else if selectedApp == AppArea.Chat}
-      Chat
-    {:else if selectedApp == AppArea.Meet}
-      Meet
-    {:else if selectedApp == AppArea.Contacts}
-      Contacts
-    {:else if selectedApp == AppArea.Calendar}
-      Calendar
-    {:else if selectedApp == AppArea.Files}
-      Files
-    {:else if selectedApp == AppArea.Apps}
-      Apps
-    {/if}
+    {selectedApp?.name ?? "Mustang"}
   </hbox>
   <vbox flex class="free" />
   <hbox class="right">
@@ -26,13 +12,13 @@
 </hbox>
 
 <script lang="ts">
-  import { AppArea } from "../AppsBar/app";
+  import type { MustangApp } from "../AppsBar/MustangApp";
   import Button from "../Shared/Button.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
   import logo from '../asset/icon/general/logo.svg?raw';
   import SettingsIcon from 'lucide-svelte/icons/settings-2';
 
-  export let selectedApp: AppArea;
+  export let selectedApp: MustangApp;
 </script>
 
 <style>
