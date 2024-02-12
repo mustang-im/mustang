@@ -6,6 +6,7 @@
         {app.name}
       </hbox>
     </AppButton>
+    <SubAppsList mainApp={app} bind:selectedApp />
   {/each}
   <vbox flex class="bottom">
   </vbox>
@@ -16,6 +17,7 @@
   import type { Collection } from "svelte-collections";
   import AppButton from "./AppButton.svelte";
   import AppIcon from "./AppIcon.svelte";
+  import SubAppsList from "./SubAppsList.svelte";
 
   /* in/out */
   export let selectedApp: MustangApp;
