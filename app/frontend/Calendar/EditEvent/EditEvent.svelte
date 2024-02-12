@@ -17,12 +17,12 @@
       </hbox>
       <vbox class="participants">
         <PersonsAutocomplete persons={event.participants} placeholder="Add participants">
-          <slot slot="display-bottom-row" let:person>
+          <hbox slot="display-bottom-row" let:person>
             <PersonAvailability {person} />
-          </slot>
-          <slot slot="result-bottom-row" let:person>
+          </hbox>
+          <hbox slot="result-bottom-row" let:person>
             <PersonAvailability {person} />
-          </slot>
+          </hbox>
         </PersonsAutocomplete>
       </vbox>
       <vbox class="location">

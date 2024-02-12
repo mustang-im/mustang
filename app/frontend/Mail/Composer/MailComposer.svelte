@@ -13,7 +13,7 @@
   <grid class="recipients">
     <hbox class="label">to</hbox>
     <hbox flex>
-      <PersonsAutocomplete persons={mail.to} placeholder="Add recipients" />
+      <MailAutocomplete persons={mail.to} />
       {#if !showCC}
         <hbox class="show-recipients cc" on:click={() => {showCCForce = true}}>cc</hbox>
       {/if}
@@ -23,11 +23,11 @@
     </hbox>
   {#if showCC}
     <hbox class="label">cc</hbox>
-    <PersonsAutocomplete persons={mail.cc} placeholder="Add CC recipients" />
+    <MailAutocomplete persons={mail.cc} placeholder="Add CC recipients" />
   {/if}
   {#if showBCC}
     <hbox class="label">bcc</hbox>
-    <PersonsAutocomplete persons={mail.bcc} placeholder="Add BCC recipients" />
+    <MailAutocomplete persons={mail.bcc} placeholder="Add BCC recipients" />
   {/if}
   </grid>
   <vbox flex>
@@ -55,7 +55,7 @@
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { appGlobal } from "../../../logic/app";
   import HTMLEditor from "./HTMLEditor.svelte";
-  import PersonsAutocomplete from "../../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
+  import MailAutocomplete from "./MailAutocomplete.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import type { Editor } from '@tiptap/core';
   import SendIcon from "lucide-svelte/icons/send";
