@@ -41,6 +41,10 @@
 </script>
 
 <style>
+  /** Fix app.css, see .value */
+  .html-editor :global(*) {
+    user-select: text;
+  }
   .html-editor {
     height: 100%;
   }

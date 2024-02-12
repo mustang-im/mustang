@@ -70,6 +70,6 @@ export class EMail extends Message {
   }
 
   async send(): Promise<void> {
-    alert("Sending email\n(not really yet)");
+    alert("Sending email\n(not really yet)\n\n" + this.html?.substring(0, 200));
   }
 }
