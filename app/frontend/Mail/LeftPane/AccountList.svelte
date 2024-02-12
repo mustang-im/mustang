@@ -8,6 +8,7 @@
           <RoundButton
             label="Write new email"
             icon={WriteIcon} iconSize="16px" filled
+            disabled={!selectedAccount}
             on:click={() => catchErrors(newMail)}
             />
         </hbox>

@@ -18,7 +18,7 @@
   import type { EMail } from "../../../logic/Mail/Message";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import PersonsAutocomplete from "../../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
-  import { Button, Checkbox } from "@svelteuidev/core";
+  import { Button } from "@svelteuidev/core";
   import { appGlobal } from "../../../logic/app";
 
   export let mail: EMail;
