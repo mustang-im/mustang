@@ -7,7 +7,8 @@
 
 <script lang="ts">
   import type { Event } from "../../logic/Calendar/Event";
-  import { editingEvent, selectedEvent } from "./selected";
+  import { calendarMustangApp } from "./CalendarMustangApp";
+  import { selectedEvent } from "./selected";
 
   export let event: Event;
 
@@ -22,7 +23,7 @@ ${event.participants.hasItems ? event.participants.getIndexRange(0, 4).map(perso
 
   function onOpen() {
     $selectedEvent = event;
-    $editingEvent = event;
+    calendarMustangApp.editEvent(event);
   }
 </script>
 

@@ -17,12 +17,34 @@
   import type { MustangApp } from "./MustangApp";
   import AppButton from "./AppButton.svelte";
   import AppIcon from "./AppIcon.svelte";
+  import { CollectionObserver } from "svelte-collections";
+  import { catchErrors } from "../Util/error";
+  import { onDestroy, onMount } from "svelte";
 
   export let mainApp: MustangApp;
   /* in/out */
   export let selectedApp: MustangApp | null;
 
   $: subApps = $mainApp.subApps;
+
+  // Unselect sub-app that has been removed
+  class RemovalObserver extends CollectionObserver<MustangApp> {
+    added(apps: MustangApp[]) {}
+    removed(apps: MustangApp[]) {
+      for (let app of apps) {
+        if (selectedApp == app) {
+          selectedApp = mainApp;
+        }
+      }
+    }
+  }
+  let removalObserver = new RemovalObserver();
+  onMount(() => catchErrors(() => {
+    subApps.registerObserver(removalObserver);
+  }));
+  onDestroy(() => catchErrors(() => {
+    subApps.unregisterObserver(removalObserver);
+  }));
 </script>
 
 <style>

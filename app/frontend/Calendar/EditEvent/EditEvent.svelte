@@ -67,7 +67,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { editingEvent } from "../selected";
+  import { EventEditMustangApp, calendarMustangApp } from "../CalendarMustangApp";
   import PersonsAutocomplete from "../../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
   import PersonAvailability from "./PersonAvailability.svelte";
   import TimeInput from "./TimeInput.svelte";
@@ -84,7 +84,8 @@
   }
 
   function onClose() {
-    $editingEvent = null;
+    let me = calendarMustangApp.subApps.find(app => app instanceof EventEditMustangApp && app.mainWindowProperties.event == event);
+    calendarMustangApp.subApps.remove(me);
   }
 </script>
 
