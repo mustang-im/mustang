@@ -17,6 +17,10 @@ export class EMail extends Message {
   @notifyChangedProperty
   _bodyPlaintext: string;
 
+  get baseSubject(): string {
+    return this.subject.replace(/^([Re|RE|AW|Aw]: ?)+/, "");
+  }
+
   async deleteMessage() {
     console.log("Delete Email", this.subject);
   }
@@ -30,6 +34,7 @@ export class EMail extends Message {
 
   _reply(): EMail {
     let reply = new EMail();
+    reply.subject = "Re: " + this.baseSubject; // Do *not* localize "Re: "
     reply.text = "";
     reply.html = `<p></p>
     <p></p>
@@ -62,5 +67,9 @@ export class EMail extends Message {
       reply.cc.set(emailAddress, person);
     }
     return reply;
+  }
+
+  async send(): Promise<void> {
+    alert("Sending email\n(not really yet)");
   }
 }
