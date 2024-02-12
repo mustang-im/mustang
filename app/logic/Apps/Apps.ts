@@ -25,7 +25,9 @@ export default class Apps {
     }
 
     let myAppIDs = JSON.parse(localStorage.getItem("apps.selected"));
-    this.myApps.addAll(this.apps.contents.filter(app => myAppIDs.includes(app.id)));
+    if (myAppIDs) {
+      this.myApps.addAll(this.apps.contents.filter(app => myAppIDs.includes(app.id)));
+    }
     this.myApps.subscribe(() => {
       let myAppIDs = this.myApps.map(app => app.id).contents;
       localStorage.setItem("apps.selected", JSON.stringify(myAppIDs));
