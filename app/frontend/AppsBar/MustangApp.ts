@@ -9,6 +9,9 @@ export class MustangApp extends Observable {
   icon: string | ConstructorOfATypedSvelteComponent;
   /** Main window content that shows when the user selected this app */
   mainWindow: ConstructorOfATypedSvelteComponent;
+  /** Parameters that will be passed to `mainWindow`
+   * as Svelte component properties */
+  mainWindowProperties: Record<string, any>;
   /** Window header content that shows when the user selected this app */
   windowHeader: ConstructorOfATypedSvelteComponent | null;
   /** Sidebar content that shows `showSidebar` is true.
