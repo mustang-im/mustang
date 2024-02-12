@@ -15,10 +15,8 @@
   import FilesList from "./FilesList.svelte";
   import PersonsList from "../Shared/Person/PersonsList.svelte";
   import Splitter from "../Shared/Splitter.svelte";
-  import type { Collection } from "svelte-collections";
 
-  export let persons: Collection<Person>;
-
+  let persons = appGlobal.persons;
   let selectedPerson: Person;
   $: personFolders = appGlobal.files.filter(file => file.sentToFrom == selectedPerson);
   $: displayFiles = personFolders?.first?.files;

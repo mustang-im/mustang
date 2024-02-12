@@ -14,15 +14,14 @@
 
 <script lang="ts">
   import type { Person } from "../../logic/Abstract/Person";
+  import { appGlobal } from "../../logic/app";
   import PersonsList from "../Shared/Person/PersonsList.svelte";
   import PersonDetails from "./PersonDetails.svelte";
   import PersonsToolbar from "./PersonsToolbar.svelte";
   import Scroll from "../Shared/Scroll.svelte";
   import Splitter from "../Shared/Splitter.svelte";
-  import type { Collection } from "svelte-collections";
 
-  export let persons: Collection<Person>;
-
+  let persons = appGlobal.persons;
   let selectedPerson: Person;
 </script>
 

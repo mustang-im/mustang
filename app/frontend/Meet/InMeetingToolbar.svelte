@@ -3,7 +3,7 @@
     <RoundButton
       label="Go back to meeting"
       classes="back-to-meet secondary"
-      on:click={() => $selectedApp = AppArea.Meet}
+      on:click={() => openApp(meetMustangApp)}
       icon={OpenToLeftIcon}
       iconSize="16px"
       border={false}
@@ -68,8 +68,9 @@
 
 <script lang="ts">
   import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
-  import { AppArea, selectedApp } from "../AppsBar/app";
   import { cameraOn, micOn, screenShareOn } from "./Setup/selectedDevices";
+  import { meetMustangApp } from "./MeetMustangApp";
+  import { openApp } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import RoundButton from "../Shared/RoundButton.svelte";
   import HandIcon from '../asset/icon/meet/hand.svg?raw';
