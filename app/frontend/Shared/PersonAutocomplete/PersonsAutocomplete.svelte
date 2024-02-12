@@ -1,4 +1,4 @@
-<hbox class="persons-autocomplete">
+<hbox flex class="persons-autocomplete">
   {#each $persons.each as person}
     <PersonEntry {person}>
       <slot name="display-bottom-row" slot="bottom-row" {person} />

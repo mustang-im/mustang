@@ -1,4 +1,4 @@
-<hbox class="person-autocomplete" bind:this={topEl}>
+<hbox flex class="person-autocomplete" bind:this={topEl}>
   <Autocomplete
     onChange={onAddPerson}
     searchFunction={search}
@@ -59,7 +59,9 @@
     // Clear, to allow user to enter the next person
     await tick();
     // Hack, because component doesn't allow me to clear the text field value
-    topEl.querySelector("input").value = "";
+    if (topEl) {
+      topEl.querySelector("input").value = "";
+    }
   }
 </script>
 
