@@ -5,7 +5,7 @@
     <hbox class="spacer" />
     <Button compact color="gray" on:click={onClose}>X</Button>
   </hbox>
-  <hbox flex ="left-right">
+  <hbox flex class="left-right">
     <vbox flex class="left-pane">
       <hbox class="title">
         <input placeholder="Title - Enter the topic of the meeting" bind:value={event.title} />
@@ -91,7 +91,7 @@
 
 <style>
   .event-edit-window {
-    margin: 15%;
+    margin: 30px 40px;
   }
   .window-title-bar {
     margin-bottom: 32px;
