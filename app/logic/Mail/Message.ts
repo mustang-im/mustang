@@ -1,5 +1,6 @@
 import { Message } from "../Abstract/Message";
 import type { Person } from "../Abstract/Person";
+import { appGlobal } from "../app";
 import { notifyChangedProperty } from "../util/Observable";
 import { MapColl } from "svelte-collections";
 
@@ -18,5 +19,48 @@ export class EMail extends Message {
 
   async deleteMessage() {
     console.log("Delete Email", this.subject);
+  }
+
+  quotePrefixLine(): string {
+    function getDate(date: Date) {
+      return date.toLocaleString(navigator.language, { year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" });
+    }
+    return `${this.contact.name} wrote on ${getDate(this.sent)}:`;
+  }
+
+  _reply(): EMail {
+    let reply = new EMail();
+    reply.text = "";
+    reply.html = `<p></p>
+    <p></p>
+    <p class="quote-header">${this.quotePrefixLine()}</p>
+    <blockquote cite="mid:${this.id}">
+      ${this.html}
+    </blockquote>`;
+    return reply;
+  }
+
+  replyToAuthor(): EMail {
+    let reply = this._reply();
+    let toPerson = null; // appGlobal.persons.find(person => person.emailAddresses.some(em => em.value == this.authorEmailAddress)) ?? new Person();
+    reply.to.set(this.authorEmailAddress, toPerson);
+    return reply;
+  }
+
+  replyAll(): EMail {
+    let reply = this.replyToAuthor();
+    for (let [emailAddress, person] of this.to.entries()) {
+      if (appGlobal.me.emailAddresses.some(em => em.value == emailAddress)) {
+        continue;
+      }
+      reply.to.set(emailAddress, person);
+    }
+    for (let [emailAddress, person] of this.cc.entries()) {
+      if (appGlobal.me.emailAddresses.some(em => em.value == emailAddress)) {
+        continue;
+      }
+      reply.cc.set(emailAddress, person);
+    }
+    return reply;
   }
 }

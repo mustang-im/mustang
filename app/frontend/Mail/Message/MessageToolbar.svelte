@@ -68,6 +68,7 @@
   //import type { Email } from "mustang-lib";
   import type { EMail } from "../../../logic/Mail/Message";
   import type { MailAccount } from "../../../logic/Mail/Account";
+  import { mailMustangApp } from "../MailMustangApp";
   import MessageMenu from "./MessageMenu.svelte";
   import Button from "../../Shared/Button.svelte";
   import StarIcon from "lucide-svelte/icons/star";
@@ -88,8 +89,12 @@
     message.starred = !message.starred;
   }
   function reply() {
+    let reply = message.replyToAuthor();
+    mailMustangApp.writeMail(reply);
   }
   function replyAll() {
+    let reply = message.replyAll();
+    mailMustangApp.writeMail(reply);
   }
   async function deleteMessage() {
     await message.deleteMessage();
