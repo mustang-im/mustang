@@ -31,7 +31,7 @@
   {/if}
   </grid>
   <vbox flex>
-    <textarea class="descriptionText" bind:value={mail.html} />
+    <HTMLEditor bind:html={mail.html} {editor} />
   </vbox>
   <hbox>
     <hbox class="label">Subject</hbox>
@@ -54,13 +54,16 @@
   import type { EMail } from "../../../logic/Mail/Message";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { appGlobal } from "../../../logic/app";
+  import HTMLEditor from "./HTMLEditor.svelte";
   import PersonsAutocomplete from "../../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
+  import type { Editor } from '@tiptap/core';
   import SendIcon from "lucide-svelte/icons/send";
   import CloseIcon from "lucide-svelte/icons/x";
 
   export let mail: EMail;
 
+  let editor: Editor;
   $: to = mail.to;
 
   async function onSend() {
@@ -85,11 +88,6 @@
   }
   .window-title-bar {
     margin-bottom: 32px;
-  }
-  .descriptionText {
-    min-height: 10em;
-    border: 1px solid lightgrey;
-    margin-top: 32px;
   }
   grid.recipients {
     grid-template-columns: max-content 1fr;
