@@ -39,8 +39,9 @@
       if (inputStr.length < 2) {
         return [];
       }
+      inputStr = inputStr.toLowerCase();
       let results = appGlobal.persons
-        .filter(person => person.name.includes(inputStr) &&
+        .filter(person => person.name.toLowerCase().includes(inputStr) &&
           !skipPersons.contains(person));
       console.log("Got", results.length, "results for", inputStr);
       return results.contents;
