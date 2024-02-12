@@ -5,7 +5,11 @@
         <hbox class="header-label">Accounts</hbox>
         <hbox flex />
         <hbox class="button">
-          <RoundButton label="Write new email" icon={WriteIcon} iconSize="16px" filled />
+          <RoundButton
+            label="Write new email"
+            icon={WriteIcon} iconSize="16px" filled
+            on:click={() => catchErrors(newMail)}
+            />
         </hbox>
       </hbox>
     </svelte:fragment>
@@ -26,9 +30,18 @@
   import Icon from 'svelte-icon/Icon.svelte';
   import AccountIcon from '../../asset/icon/appBar/mail.svg?raw';
   import WriteIcon from "lucide-svelte/icons/pencil";
+  import { catchErrors } from "../../Util/error";
+  import { EMail } from "../../../logic/Mail/Message";
+  import { mailMustangApp } from "../MailMustangApp";
 
   export let accounts: Collection<Account>;
   export let selectedAccount: Account; /* in/out */
+
+  function newMail() {
+    let mail = new EMail();
+    mail.authorEmailAddress = selectedAccount.emailAddress;
+    mailMustangApp.writeMail(mail);
+  }
 </script>
 
 <style>
