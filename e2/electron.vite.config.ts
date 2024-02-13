@@ -5,7 +5,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 export default defineConfig({
   main: {
     plugins: [
-      externalizeDepsPlugin(),
+      externalizeDepsPlugin({ exclude: ["jpc-core", "jpc-ws"] }),
       viteStaticCopy({
         targets: [
           {
