@@ -125,6 +125,15 @@
       >
       <hbox slot="icon" class="header-icon">H3</hbox>
     </Button>
+    <!--
+    <Button
+      label="Clear formatting"
+      on:click={() => editor.commands.clearNodes()}
+      icon={ClearIcon}
+      iconSize="16px"
+      iconOnly
+      />
+    -->
 
     <Button
       label="Undo the last change"
@@ -155,6 +164,7 @@
   import LinkRemoveIcon from "lucide-svelte/icons/unlink";
   import ListBulletedIcon from "lucide-svelte/icons/list";
   import ListNumberedIcon from "lucide-svelte/icons/list-ordered";
+  import ClearIcon from "lucide-svelte/icons/remove-formatting";
   import UndoIcon from "lucide-svelte/icons/undo";
   import RedoIcon from "lucide-svelte/icons/redo";
   import type { Editor } from '@tiptap/core';

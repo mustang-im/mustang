@@ -109,7 +109,14 @@
 * Sqlite
 * Refactor IMAP orcastration: Separate IMAP protocol folder object and IMAP orcestration folder object. The latter does folder cache, IMAP poll/refresh, offline cache etc.
 * JMAP
-* Editor
+
+## Editor
+* first enter: newline, second enter: paragraph
+* blockquote cite vs. third party
+* Insert link
+* Insert image
+* Clear formatting
+* Emojis
 
 # Login
 * OAuth2 UI
