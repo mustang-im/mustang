@@ -61,6 +61,9 @@
   button:hover:not(.disabled) {
     background-color: rgba(32, 174, 158, 50%); /* #20AE9E */
   }
+  button.selected:hover:not(.disabled) {
+    background-color: rgba(32, 174, 158, 100%); /* #20AE9E */
+  }
   .disabled {
     opacity: 50%;
   }
