@@ -30,8 +30,9 @@
     <MailAutocomplete persons={mail.bcc} placeholder="Add BCC recipients" />
   {/if}
   </grid>
-  <vbox flex>
-    <HTMLEditor bind:html={mail.html} {editor} />
+  <HTMLEditorToolbar {editor} />
+  <vbox flex class="editor">
+    <HTMLEditor bind:html={mail.html} bind:editor />
   </vbox>
   <hbox>
     <hbox class="label">Subject</hbox>
@@ -55,6 +56,7 @@
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { appGlobal } from "../../../logic/app";
   import HTMLEditor from "./HTMLEditor.svelte";
+  import HTMLEditorToolbar from "./HTMLEditorToolbar.svelte";
   import MailAutocomplete from "./MailAutocomplete.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import type { Editor } from '@tiptap/core';
@@ -84,16 +86,23 @@
 
 <style>
   .mail-composer-window {
-    margin: 20px;
+    padding: 20px;
+    background-color: #F5F5F5;
   }
   .window-title-bar {
     margin-bottom: 32px;
   }
   grid.recipients {
     grid-template-columns: max-content 1fr;
+    margin-bottom: 16px;
   }
   .show-recipients {
     margin-left: 8px;
+  }
+  .editor {
+    background-color: white;
+    padding: 8px 12px;
+    margin-bottom: 8px;
   }
   .subject input {
     width: 100%;

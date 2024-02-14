@@ -3,8 +3,11 @@
 <script lang="ts">
   import { Editor } from '@tiptap/core';
   import StarterKit from '@tiptap/starter-kit';
-  import Link from '@tiptap/extension-link';
-  import Highlight from '@tiptap/extension-highlight';
+  import LinkFeature from '@tiptap/extension-link';
+  import CodeWordFeature from '@tiptap/extension-code';
+  // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
+  // import { common as lowlightCommon, createLowlight } from 'lowlight'
+
   import { onMount, onDestroy } from 'svelte';
 
   /* in/out */
@@ -19,10 +22,11 @@
       element: divEl,
       extensions: [
         StarterKit,
-        Link,
-        Highlight.configure({
-          multicolor: true,
-        }),
+        LinkFeature,
+        CodeWordFeature,
+        // CodeBlockLowlightFeature.configure({
+        //  lowlight: createLowlight(lowlightCommon),
+        // }),
       ],
       content: html,
       onTransaction: () => {
