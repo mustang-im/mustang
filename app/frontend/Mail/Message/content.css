@@ -2,6 +2,8 @@ p {
   margin: 0px;
 }
 
-blockquote[cite] {
+blockquote {
   border-left: 3px solid blue;
+  padding-left: 20px;
+  margin-left: 0px;
 }

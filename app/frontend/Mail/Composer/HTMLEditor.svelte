@@ -68,7 +68,9 @@
   .html-editor :global(p) {
     margin: 0px;
   }
-  .html-editor :global(blockquote[cite]) {
+  .html-editor :global(blockquote) {
     border-left: 3px solid blue;
+    padding-left: 20px;
+    margin-left: 0px;
   }
 </style>
