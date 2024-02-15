@@ -38,6 +38,7 @@ export class EMail extends Message {
     reply.text = "";
     reply.html = `<p></p>
     <p></p>
+    <p></p>
     <p class="quote-header">${this.quotePrefixLine()}</p>
     <blockquote cite="mid:${this.id}">
       ${this.html}
