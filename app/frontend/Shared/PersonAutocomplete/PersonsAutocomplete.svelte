@@ -39,10 +39,8 @@
     flex-wrap: wrap;
     border-bottom: 1px solid green;
     align-items: center;
-  }
-  .persons-autocomplete > :global(*) {
-    margin-right: 6px;
-    margin-bottom: 4px;
+    background-color: white;
+    padding: 2px 4px;
   }
   .persons-autocomplete :global(input) {
     border: none;
