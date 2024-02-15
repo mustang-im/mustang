@@ -31,10 +31,12 @@
   {/if}
   </grid>
   <HTMLEditorToolbar {editor} />
-  <vbox flex class="editor">
-    <HTMLEditor bind:html={mail.html} bind:editor />
-  </vbox>
-  <hbox>
+  <Scroll>
+    <vbox flex class="editor">
+      <HTMLEditor bind:html={mail.html} bind:editor />
+    </vbox>
+  </Scroll>
+  <hbox class="footer">
     <hbox class="label">Subject</hbox>
     <hbox class="subject" flex>
       <input type="text" bind:value={mail.subject} />
@@ -63,6 +65,7 @@
   import type { Editor } from '@tiptap/core';
   import SendIcon from "lucide-svelte/icons/send";
   import CloseIcon from "lucide-svelte/icons/x";
+  import Scroll from "../../Shared/Scroll.svelte";
 
   export let mail: EMail;
 
@@ -103,7 +106,9 @@
   .editor {
     background-color: white;
     padding: 8px 12px;
-    margin-bottom: 8px;
+  }
+  .footer {
+    margin-top: 8px;
   }
   .subject input {
     width: 100%;
