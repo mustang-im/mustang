@@ -55,6 +55,7 @@
   import type { EMail } from "../../../logic/Mail/Message";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { appGlobal } from "../../../logic/app";
+  import cssContent from "../Message/content.css?inline";
   import HTMLEditor from "./HTMLEditor.svelte";
   import HTMLEditorToolbar from "./HTMLEditorToolbar.svelte";
   import MailAutocomplete from "./MailAutocomplete.svelte";

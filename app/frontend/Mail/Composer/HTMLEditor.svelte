@@ -1,3 +1,5 @@
+<!-- TODO Jail content into an iframe -->
+
 <div bind:this={divEl} class="html-editor" />
 
 <script lang="ts">
@@ -7,7 +9,6 @@
   import CodeWordFeature from '@tiptap/extension-code';
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
   // import { common as lowlightCommon, createLowlight } from 'lowlight'
-
   import { onMount, onDestroy } from 'svelte';
 
   /* in/out */
@@ -58,5 +59,16 @@
   }
   .html-editor :global(.ProseMirror:focus-visible) {
     outline: none;
+  }
+
+
+  /* Content styles
+     TODO @import url(../Message/content.css); into iframe */
+
+  .html-editor :global(p) {
+    margin: 0px;
+  }
+  .html-editor :global(blockquote[cite]) {
+    border-left: 3px solid blue;
   }
 </style>
