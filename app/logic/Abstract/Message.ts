@@ -55,7 +55,7 @@ export class Message extends Observable {
     return null;
   }
   set html(val: string) {
-    this._html = val;
+    this._html = sanitizeHTML(val);
   }
 
   readonly reactions = new MapColl<Person, string>();
