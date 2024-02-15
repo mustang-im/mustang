@@ -35,7 +35,6 @@ export class EMail extends Message {
   _reply(): EMail {
     let reply = new EMail();
     reply.subject = "Re: " + this.baseSubject; // Do *not* localize "Re: "
-    reply.text = "";
     reply.html = `<p></p>
     <p></p>
     <p></p>
