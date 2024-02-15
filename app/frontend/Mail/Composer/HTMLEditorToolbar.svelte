@@ -125,15 +125,13 @@
       >
       <hbox slot="icon" class="header-icon">H3</hbox>
     </Button>
-    <!--
     <Button
       label="Clear formatting"
-      on:click={() => editor.commands.clearNodes()}
+      on:click={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}
       icon={ClearIcon}
       iconSize="16px"
       iconOnly
       />
-    -->
 
     <Button
       label="Undo the last change"
