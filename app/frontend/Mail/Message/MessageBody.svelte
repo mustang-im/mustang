@@ -7,11 +7,11 @@
 </vbox>
 
 <script lang="ts">
-  import type { Email } from "mustang-lib";
+  import type EMail from "../../../../lib/logic/mail/EMail";
   import HTMLDisplay from "./HTMLDisplay.svelte";
   import PlaintextDisplay from "./PlaintextDisplay.svelte";
 
-  export let message: Email;
+  export let message: EMail;
 </script>
 
 <style>

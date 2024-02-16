@@ -4,12 +4,12 @@
 </vbox>
 
 <script lang="ts">
-  import type { Email } from "mustang-lib";
-  import type { MailAccount } from "../../../logic/Mail/Account";
+  import type MailAccount from "../../../../lib/logic/mail/MailAccount";
+  import type EMail from "../../../../lib/logic/mail/EMail";
   import MessageHeader from "./MessageHeader.svelte";
   import MessageBody from "./MessageBody.svelte";
 
-  export let message: Email;
+  export let message: EMail;
   export let account: MailAccount;
 </script>
 

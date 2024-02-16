@@ -65,9 +65,8 @@
 </hbox>
 
 <script lang="ts">
-  //import type { Email } from "mustang-lib";
-  import type { EMail } from "../../../logic/Mail/Message";
-  import type { MailAccount } from "../../../logic/Mail/Account";
+  import type MailAccount from "../../../../lib/logic/mail/MailAccount";
+  import type EMail from "../../../../lib/logic/mail/EMail";
   import { mailMustangApp } from "../MailMustangApp";
   import MessageMenu from "./MessageMenu.svelte";
   import Button from "../../Shared/Button.svelte";

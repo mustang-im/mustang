@@ -7,8 +7,8 @@
 {/if}
 
 <script lang="ts">
-  //import type { MailAccount, MsgFolder as Folder, Email as EMail } from "mustang-lib";
-  import type { Folder } from "../../logic/Mail/Folder";
+  import type Account from "../../../lib/logic/mail/MailAccount";
+  import type Folder from "../../../lib/logic/account/MsgFolder";
   import { selectedAccount, selectedFolder, selectedMessage } from "./Selected";
   import { appGlobal } from "../../logic/app";
   import { getLocalStorage } from "../Util/LocalStorage";
@@ -25,7 +25,7 @@
       if (!folder) {
         return;
       }
-      //await folder.fetch();
+      await folder.fetch();
     } catch (ex) {
       showError(ex);
     }
