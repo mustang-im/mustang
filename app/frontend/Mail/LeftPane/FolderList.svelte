@@ -22,15 +22,14 @@
             <FolderIcon size="14px" />
           {/if}
         </hbox>
-        <hbox class="label">{folder.name}</hbox>
+        <hbox class="label">{#await folder.name then n}{n}{/await}</hbox>
       </hbox>
     </svelte:fragment>
   </FastList>
 </vbox>
 
 <script lang="ts">
-  //import type { MsgFolder } from "mustang-lib";
-  import type { Folder } from '../../../logic/Mail/Folder';
+  import type Folder from "../../../../lib/logic/account/MsgFolder";
   import type { Collection } from 'svelte-collections';
   import FastList from "../../Shared/FastList.svelte";
   import FolderIcon from "lucide-svelte/icons/folder";
@@ -43,6 +42,8 @@
 
   export let folders: Collection<Folder>;
   export let selectedFolder: Folder; /* in/out */
+
+  $: console.log("folders", folders, "selected folder", selectedFolder);
 </script>
 
 <style>

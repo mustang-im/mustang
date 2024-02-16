@@ -54,7 +54,7 @@
 </vbox>
 
 <script lang="ts">
-  import type { EMail } from "../../../logic/Mail/Message";
+  import type EMail from "../../../../lib/logic/mail/EMail";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { appGlobal } from "../../../logic/app";
   import cssContent from "../Message/content.css?inline";

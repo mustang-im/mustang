@@ -30,7 +30,7 @@
 </vbox>
 
 <script lang="ts">
-  import type { EMail } from "../../../logic/Mail/Message";
+  import type EMail from "../../../../lib/logic/mail/EMail";
   import Button from "../../Shared/Button.svelte";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";

@@ -23,10 +23,9 @@
 </Splitter>
 
 <script lang="ts">
-  //import type { Account, MsgFolder, Email } from "mustang-lib";
-  import type { MailAccount } from "../../../logic/Mail/Account";
-  import type { Folder } from "../../../logic/Mail/Folder";
-  import { EMail } from "../../../logic/Mail/Message";
+  import type MailAccount from "../../../../lib/logic/mail/MailAccount";
+  import type Folder from "../../../../lib/logic/account/MsgFolder";
+  import type EMail from "../../../../lib/logic/mail/EMail";
   import type { Person } from "../../../logic/Abstract/Person";
   import { Chat } from "../../../logic/Chat/Chat";
   import { appGlobal } from "../../../logic/app";
