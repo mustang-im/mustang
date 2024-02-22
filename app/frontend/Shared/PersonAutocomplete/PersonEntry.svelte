@@ -13,7 +13,8 @@
 
 <style>
   .person {
-    border: 1px solid lightgray;
+    background-color: #F4FFF4;
+    border: 1px solid #BBFFBB;
     border-radius: 1000px;
     align-items: center;
     justify-content: center;

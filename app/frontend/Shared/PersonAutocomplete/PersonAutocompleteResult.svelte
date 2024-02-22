@@ -6,6 +6,7 @@
     </hbox>
     <hbox class="bottom-row">
       <slot name="bottom-row" />
+    </hbox>
   </vbox>
 </hbox>
 
