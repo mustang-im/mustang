@@ -7,7 +7,7 @@
   import StarterKit from '@tiptap/starter-kit';
   import LinkFeature from '@tiptap/extension-link';
   import CodeWordFeature from '@tiptap/extension-code';
-  import Blockquote from '@tiptap/extension-blockquote';
+  import { SplitBlockquote } from './SplitBlockquote';
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
   // import { common as lowlightCommon, createLowlight } from 'lowlight'
   import { onMount, onDestroy } from 'svelte';
@@ -26,7 +26,7 @@
         StarterKit,
         LinkFeature,
         CodeWordFeature,
-				CustomBlockquote,
+        SplitBlockquote,
         // CodeBlockLowlightFeature.configure({
         //  lowlight: createLowlight(lowlightCommon),
         // }),
@@ -44,38 +44,6 @@
     if (editor) {
       editor.destroy();
     }
-  });
-
-  const CustomBlockquote = Blockquote.extend({
-		addKeyboardShortcuts() {
-			return {
-				Enter: () => {
-					return editor.commands.splitBlockquote();
-				},
-			}
-		},
-		addCommands() {
-			return {
-				splitBlockquote: () => ({ commands, chain, state }) => {
-					let {$cursor} = state.selection;
-					let parent = editor.$pos($cursor.before()).node;
-					// if not in blockquote
-					if (parent.type.name != 'blockquote') {
-						return;
-					}
-					// if at start of blockquote
-					if ($cursor.parentOffset == 0) {
-						return chain().createParagraphNear().selectNodeBackward().run();
-					}
-					// if at end of blockquote
-					if ($cursor.parentOffset == $cursor.parent.content.size) {
-						return chain().createParagraphNear().splitListItem('blockquote').run();
-					}
-					// if in middle of blockquote
-					return chain().splitListItem(this.name).selectNodeBackward().liftEmptyBlock().run();
-				},
-			}
-		},
   });
 </script>
 
