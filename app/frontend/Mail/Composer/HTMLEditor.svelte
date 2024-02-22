@@ -11,6 +11,7 @@
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
   // import { common as lowlightCommon, createLowlight } from 'lowlight'
   import { onMount, onDestroy } from 'svelte';
+  import { canSplit } from '@tiptap/pm/transform';
 
   /* in/out */
   export let html: string;
@@ -50,7 +51,33 @@
 		addKeyboardShortcuts() {
 			return {
 				Enter: () => {
-					return editor.chain().splitListItem(this.name).selectNodeBackward().liftEmptyBlock().run();
+					return editor.commands.splitBlockquote();
+				},
+			}
+		},
+		addCommands() {
+			return {
+				splitBlockquote: () => ({ commands, chain, state }) => {
+					let {$cursor} = state.selection;
+					console.log($cursor.parentOffset);
+					console.log($cursor.parent.content.size);
+					console.log($cursor.before());
+					let parent = editor.$pos($cursor.parentOffset).node;
+					console.log(parent);
+					if (parent.type.name != 'blockquote') {
+						console.log('-1');
+						return commands.splitListItem();
+					}
+					if ($cursor.parentOffset == 0) {
+						console.log('1');
+						return chain().createParagraphNear().selectNodeBackward().run();
+					}
+					if ($cursor.parentOffset == $cursor.parent.content.size) {
+						console.log('2');
+						return chain().createParagraphNear().splitListItem('blockquote').run();
+					}
+					console.log('3');					
+					return chain().splitListItem(this.name).selectNodeBackward().liftEmptyBlock().run();
 				},
 			}
 		},
