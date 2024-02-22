@@ -4,13 +4,15 @@
       <slot name="display-bottom-row" slot="bottom-row" {person} />
     </PersonEntry>
   {/each}
-  <PersonAutocomplete
-    on:personSelected={(event) => onAddPerson(event.detail.person)}
-    skipPersons={$persons}
-    {placeholder}
-    >
-    <slot name="result-bottom-row" slot="result-bottom-row" let:person {person} />
-  </PersonAutocomplete>
+  <hbox class="input">
+    <PersonAutocomplete
+      on:personSelected={(event) => onAddPerson(event.detail.person)}
+      skipPersons={$persons}
+      {placeholder}
+      >
+      <slot name="result-bottom-row" slot="result-bottom-row" let:person {person} />
+    </PersonAutocomplete>
+  </hbox>
 </hbox>
 
 <script lang="ts">
@@ -37,10 +39,13 @@
 <style>
   .persons-autocomplete {
     flex-wrap: wrap;
-    border-bottom: 1px solid green;
+    border-bottom: 1px solid lightgray;
     align-items: center;
     background-color: white;
     padding: 2px 4px;
+  }
+  .input {
+    margin-left: 8px;
   }
   .persons-autocomplete :global(input) {
     border: none;

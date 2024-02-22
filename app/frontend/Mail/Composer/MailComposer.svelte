@@ -11,8 +11,14 @@
       />
   </hbox>
   <grid class="recipients">
-    <hbox class="label">to</hbox>
-    <hbox flex>
+    <hbox>
+      {#if showCC || showBCC}
+        <hbox class="label">
+            to
+        </hbox>
+        {/if}
+      </hbox>
+      <hbox flex>
       <MailAutocomplete persons={mail.to} />
       {#if !showCC}
         <hbox class="show-recipients cc" on:click={() => {showCCForce = true}}>cc</hbox>
@@ -94,13 +100,19 @@
     background-color: #F5F5F5;
   }
   .window-title-bar {
-    margin-bottom: 32px;
+    margin-bottom: 8px;
   }
   grid.recipients {
     grid-template-columns: max-content 1fr;
     margin-bottom: 16px;
   }
+  .label {
+    align-items: center;
+    margin-right: 8px;
+    min-width: 1.7em;
+  }
   .show-recipients {
+    align-items: center;
     margin-left: 8px;
   }
   .editor {
