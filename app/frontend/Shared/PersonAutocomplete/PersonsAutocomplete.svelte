@@ -9,7 +9,7 @@
     skipPersons={$persons}
     {placeholder}
     >
-    <slot name="result-bottom-row" slot="result-bottom-row" />
+    <slot name="result-bottom-row" slot="result-bottom-row" let:person {person} />
   </PersonAutocomplete>
 </hbox>
 
