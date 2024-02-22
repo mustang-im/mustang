@@ -7,6 +7,7 @@
   import StarterKit from '@tiptap/starter-kit';
   import LinkFeature from '@tiptap/extension-link';
   import CodeWordFeature from '@tiptap/extension-code';
+  import Blockquote from '@tiptap/extension-blockquote';
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
   // import { common as lowlightCommon, createLowlight } from 'lowlight'
   import { onMount, onDestroy } from 'svelte';
@@ -25,6 +26,7 @@
         StarterKit,
         LinkFeature,
         CodeWordFeature,
+				CustomBlockquote,
         // CodeBlockLowlightFeature.configure({
         //  lowlight: createLowlight(lowlightCommon),
         // }),
@@ -42,6 +44,16 @@
     if (editor) {
       editor.destroy();
     }
+  });
+
+  const CustomBlockquote = Blockquote.extend({
+		addKeyboardShortcuts() {
+			return {
+				Enter: () => {
+					return editor.chain().splitListItem(this.name).selectNodeBackward().liftEmptyBlock().run();
+				},
+			}
+		},
   });
 </script>
 
