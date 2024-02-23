@@ -236,10 +236,18 @@ export class OTalkConf extends VideoConfMeeting {
     let response = await this.axios.get('turn', { headers: { Authorization: `Bearer ${bearerToken}`}});
     let data = response.data;
     this.iceServers = data.map(credential => {
+      // if TURN
       if (credential.username !== undefined) {
-        return { username: credential.username, credential: credential.password, urls: credential.uris } as RTCIceServer;
+        return { 
+          username: credential.username,
+          credential: credential.password,
+          urls: credential.uris 
+        } as RTCIceServer;
       }
-      return { urls: credential.uris } as RTCIceServer;
+      // if STUN
+      return { 
+        urls: credential.uris
+      } as RTCIceServer;
     });
   }
 
