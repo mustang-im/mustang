@@ -7,6 +7,7 @@
   import StarterKit from '@tiptap/starter-kit';
   import LinkFeature from '@tiptap/extension-link';
   import CodeWordFeature from '@tiptap/extension-code';
+  import { SplitBlockquote } from './SplitBlockquote';
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
   // import { common as lowlightCommon, createLowlight } from 'lowlight'
   import { onMount, onDestroy } from 'svelte';
@@ -25,6 +26,7 @@
         StarterKit,
         LinkFeature,
         CodeWordFeature,
+        SplitBlockquote,
         // CodeBlockLowlightFeature.configure({
         //  lowlight: createLowlight(lowlightCommon),
         // }),
