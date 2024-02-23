@@ -135,6 +135,29 @@ Response:
   "ticket": "tnjG1SCou7qCMMVwPTSdTDt2vOSirou8ULxchR8RrILILnsnhbDihoWTUpbkjFG7","resumption": "xHRDKwzCwTykATMQS2IEVndt6LAXsQE01z0lIAkjfScJ300aKXpI236vofdzjY6R"
 }
 
+4. TURN
+https://<controller-host>/v1/turn
+e.g. https://controller.mustang.im/v1/turn
+GET
+Request Headers:
+authorization: Bearer <inviteCode>
+Response:
+[
+  {
+    "username":"1708729302:turn_random_for_privacy_4O9bybvo5+cbKB5YsRC6Dg==",
+    "password":"4Db2ueopoJZ18IR0Agkg4GvUouc=",
+    "ttl":"1708729302",
+    "uris":[
+      "turn:168.119.249.127:3478?transport=udp",
+      ]
+  },
+  {
+    "uris":[
+      "stun:168.119.249.127:3478"
+      ]
+  }
+]
+
 ## Start conference as owner
 
 1. Who am I? (optional)
@@ -172,8 +195,24 @@ Response:
 https://<controller-host>/v1/turn
 e.g. https://controller.mustang.im/v1/turn
 GET
+Request Headers:
+authorization: Bearer <access_token>
 Response:
-empty
+[
+  {
+    "username":"1708729302:turn_random_for_privacy_4O9bybvo5+cbKB5YsRC6Dg==",
+    "password":"4Db2ueopoJZ18IR0Agkg4GvUouc=",
+    "ttl":"1708729302",
+    "uris":[
+      "turn:168.119.249.127:3478?transport=udp",
+      ]
+  },
+  {
+    "uris":[
+      "stun:168.119.249.127:3478"
+      ]
+  }
+]
 
 4. Get room
 https://<controller-host>/v1/rooms/<room-id>
