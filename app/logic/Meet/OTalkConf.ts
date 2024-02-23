@@ -101,8 +101,6 @@ export class OTalkConf extends VideoConfMeeting {
    * URL form: https://<web-frontend-host>/invite/<invite-code>
    */
   async join(url: URLString) {
-    this.iceServers = await this.axios.post(`turn`, {});
-
     let urlParsed = new URL(url);
     // Data comes from user. All error messages in this function are user visible. TODO Translate error messages.
     assert(urlParsed.pathname.startsWith("/invite/"), "Protocol not supported");
@@ -204,6 +202,7 @@ export class OTalkConf extends VideoConfMeeting {
     assert(this.roomID, "Need to create the conference first");
     await super.start();
     let roomTicket: string;
+    let bearerToken: string;
     if (this.inviteCode) {
       let request = await this.axios.post(`rooms/${this.roomID}/start_invited`, {
         invite_code: this.inviteCode,
@@ -211,15 +210,18 @@ export class OTalkConf extends VideoConfMeeting {
       });
       roomTicket = request.data.ticket;
       this.resumptionTicket = request.data.resumption;
+      bearerToken = this.inviteCode;
     } else {
-      await this.axios.get(`turn`);
       let request = await this.axios.post(`rooms/${this.roomID}/start`, {
         breakout_room: null,
       });
       roomTicket = request.data.ticket;
       this.resumptionTicket = request.data.resumption;
+      bearerToken = this.oauth2.accessToken;
     }
     assert(roomTicket, "Failed to get authentication for the conference room");
+
+    await this.fetchICEServers(bearerToken);
 
     await this.createWebSocket(roomTicket);
     this.addMsgListener("control", "joined", false, false, (json) => this.participantJoined(json));
@@ -228,6 +230,17 @@ export class OTalkConf extends VideoConfMeeting {
     this.addMsgListener("media", "webrtc_down", false, false, (json) => this.participantVideoStopped(json));
 
     await this.joinAfterStart();
+  }
+
+  protected async fetchICEServers(bearerToken: string) {
+    let response = await this.axios.get('turn', { headers: { Authorization: `Bearer ${bearerToken}`}});
+    let data = response.data;
+    this.iceServers = data.map(credential => {
+      if (credential.username !== undefined) {
+        return { username: credential.username, credential: credential.password, urls: credential.uris } as RTCIceServer;
+      }
+      return { urls: credential.uris } as RTCIceServer;
+    });
   }
 
   protected async joinAfterStart() {
@@ -540,18 +553,11 @@ export class OTalkConf extends VideoConfMeeting {
   }
 
   getPeerConnectionConfig(): RTCConfiguration {
-    let urls = this.iceServers?.map(s => s.uris).flat();
-    if (!urls?.length) {
-      urls = ["stun:stun.sipgate.net:10000"]; // TODO
+    if (!this.iceServers?.length) {
+      this.iceServers.push({ urls: "stun:stun.sipgate.net:10000" });
     }
-    console.log("ice servers", this.iceServers, "urls", urls);
-    return {
-      iceServers: [
-        {
-          urls: urls,
-        },
-      ],
-    };
+    console.log("ice servers", this.iceServers);
+    return { iceServers: this.iceServers };
   }
 
   ////////////////////////
