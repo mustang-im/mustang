@@ -24,7 +24,7 @@ export class OTalkConf extends VideoConfMeeting {
   roomID: string;
   inviteCode: string; // only when guest
   resumptionTicket: string;
-  iceServers: ICEServer[];
+  iceServers: RTCIceServer[];
   myParticipant: Participant;
 
   /** Our camera and mic.
@@ -539,7 +539,7 @@ export class OTalkConf extends VideoConfMeeting {
     });*/
   }
 
-  getPeerConnectionConfig() {
+  getPeerConnectionConfig(): RTCConfiguration {
     let urls = this.iceServers?.map(s => s.uris).flat();
     if (!urls?.length) {
       urls = ["stun:stun.sipgate.net:10000"]; // TODO
@@ -707,8 +707,4 @@ class ParticipantJSON {
   chat: {
     groups: []
   };
-}
-
-class ICEServer {
-  uris: string[];
 }
