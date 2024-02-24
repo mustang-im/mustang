@@ -562,7 +562,7 @@ export class OTalkConf extends VideoConfMeeting {
 
   getPeerConnectionConfig(): RTCConfiguration {
     if (!this.iceServers?.length) {
-      this.iceServers.push({ urls: "stun:stun.sipgate.net:10000" });
+      this.iceServers = [{ urls: "stun:stun.sipgate.net:10000" }];
     }
     console.log("ice servers", this.iceServers);
     return { iceServers: this.iceServers };
