@@ -29,5 +29,7 @@
   .top-row,
   .bottom-row {
     height: 16px;
+    overflow: hidden;
+    white-space: nowrap;
   }
 </style>
