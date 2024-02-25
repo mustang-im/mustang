@@ -13,11 +13,3 @@
 
   export let message: Email;
 </script>
-
-<style>
-  .message-body {
-    overflow: auto;
-    background-color: white;
-    z-index: 0;
-  }
-</style>
