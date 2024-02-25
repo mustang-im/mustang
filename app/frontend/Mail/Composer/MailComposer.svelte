@@ -79,15 +79,15 @@
   import type { EMail } from "../../../logic/Mail/Message";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { appGlobal } from "../../../logic/app";
-  import HTMLEditor from "./HTMLEditor.svelte";
-  import HTMLEditorToolbar from "./HTMLEditorToolbar.svelte";
   import MailAutocomplete from "./MailAutocomplete.svelte";
+  import HTMLEditor from "../../Shared/Editor/HTMLEditor.svelte";
+  import HTMLEditorToolbar from "../../Shared/Editor/HTMLEditorToolbar.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
+  import Scroll from "../../Shared/Scroll.svelte";
   import type { Editor } from '@tiptap/core';
   import SendIcon from "lucide-svelte/icons/send";
   import TrashIcon from "lucide-svelte/icons/trash";
   import CloseIcon from "lucide-svelte/icons/x";
-  import Scroll from "../../Shared/Scroll.svelte";
 
   export let mail: EMail;
 
