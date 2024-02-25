@@ -1,20 +1,45 @@
 <hbox flex class="msg-editor">
-  <textarea bind:value={to.draftMessage} placeholder="Write a message to {to.name}..." />
+  <vbox flex>
+    <HTMLEditorToolbar {editor} />
+    <vbox flex class="editor-wrapper">
+      <Scroll>
+        <vbox flex class="editor">
+          <HTMLEditor bind:html={to.draftMessage} bind:editor />
+        </vbox>
+      </Scroll>
+    </vbox>
+  </vbox>
   <vbox class="send-buttons">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <Button classes="send-button" on:click={send} icon={SendIcon} iconSize="24px" plain />
+    <RoundButton classes="send-button"
+      on:click={send}
+      icon={SendIcon}
+      iconSize="24px"
+      padding="6px"
+      border={false}
+      disabled={!to.draftMessage}
+      />
   </vbox>
 </hbox>
 
 <script lang="ts">
   import type { Chat } from "../../logic/Chat/Chat";
   import { UserChatMessage } from "../../logic/Chat/Message";
-  import Button from "../Shared/Button.svelte";
+  import HTMLEditorToolbar from "../Shared/Editor/HTMLEditorToolbar.svelte";
+  import HTMLEditor from "../Shared/Editor/HTMLEditor.svelte";
+  import RoundButton from "../Shared/RoundButton.svelte";
+  import Scroll from "../Shared/Scroll.svelte";
   import SendIcon from "lucide-svelte/icons/send";
+  import type { Editor } from '@tiptap/core';
 
   export let to: Chat;
 
+  let editor: Editor;
+
   function send() {
+    if (!to.draftMessage) {
+      return;
+    }
     let msg = new UserChatMessage();
     msg.outgoing = true;
     msg.text = to.draftMessage;
@@ -24,24 +49,30 @@
     msg.sent = new Date();
     to.sendMessage(msg);
     to.draftMessage = "";
+    editor.commands.setContent(""); // TODO fix HTMLEditor to listen to `html`
   }
 </script>
 
 <style>
   .msg-editor {
     background-color: #EEEEEE;
-    padding: 10px;
+    padding: 4px 4px 10px 10px;
   }
-  textarea {
-    flex: 1 0 0;
-    font-family: unset;
-    padding: 10px 15px;
+  .editor-wrapper {
     border: 1px solid lightgray;
     border-radius: 8px;
+    background-color: white;
+  }
+  .editor {
+    font-family: unset;
+    padding: 8px 12px;
   }
   .send-buttons {
     align-self: flex-end;
-    margin-left: 8px;
-    margin-bottom: 8px;
+    margin-left: 2px;
+    margin-bottom: 2px;
+  }
+  .send-buttons :global(.button) {
+    background-color: unset;
   }
 </style>

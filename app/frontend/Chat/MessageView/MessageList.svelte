@@ -34,4 +34,7 @@
   background-color: #E6F2F1;
   box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%) inset;
 }
+.messages {
+  margin-bottom: 16px;
+}
 </style>
