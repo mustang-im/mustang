@@ -35,7 +35,7 @@
    * button for ca. 2+ seconds.
    * Defaults to `label` and `shortCutInfo`. */
   export let tooltip: string = label +
-    (shortCutInfo ? "\nShortcut: " + shortCutInfo : '');
+    (shortCutInfo ? "\n\nShortcut: " + shortCutInfo : '');
   export let icon: ComponentType | string = null;
   export let classes = "";
   export let plain = false;
