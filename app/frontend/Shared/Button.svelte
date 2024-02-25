@@ -1,5 +1,5 @@
 <button on:click on:dblclick
-  title={label} class="button {classes}" class:plain
+  title={tooltip} class="button {classes}" class:plain
   {disabled} class:disabled class:selected
   >
   <hbox class="icon">
@@ -27,7 +27,15 @@
   import Icon from 'svelte-icon/Icon.svelte';
   import type { ComponentType } from 'svelte';
 
+  /** Show this label below the icon (unless `iconOnly` or label slot).
+   * If iconOnly and no explicit `tooltip`: Show it as tooltip. */
   export let label: string = null;
+  export let shortCutInfo: string = null;
+  /** What to show when the user hovers with the mouse over the
+   * button for ca. 2+ seconds.
+   * Defaults to `label` and `shortCutInfo`. */
+  export let tooltip: string = label +
+    (shortCutInfo ? "\nShortcut: " + shortCutInfo : '');
   export let icon: ComponentType | string = null;
   export let classes = "";
   export let plain = false;

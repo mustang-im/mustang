@@ -1,7 +1,8 @@
 {#if editor}
   <Toolbar>
     <Button
-      label="Heading, top level"
+      label="Bold"
+      shortCutInfo="**bold**"
       on:click={() => editor.chain().focus().toggleBold().run()}
       disabled={!editor.can().chain().focus().toggleBold().run()}
       selected={editor.isActive('bold')}
@@ -11,6 +12,7 @@
     </Button>
     <Button
       label="Italic"
+      shortCutInfo="_italic_"
       on:click={() => editor.chain().focus().toggleItalic().run()}
       disabled={!editor.can().chain().focus().toggleItalic().run()}
       selected={editor.isActive('italic')}
@@ -29,6 +31,7 @@
     </Button>
     <Button
       label="Code word, within a phrase"
+      shortCutInfo="`code`"
       on:click={() => editor.chain().focus().toggleCode().run()}
       disabled={!editor.can().chain().focus().toggleCode().run()}
       selected={editor.isActive('code')}
@@ -39,6 +42,11 @@
     <!--
     <Button
       label="Code block with multiple lines"
+      shortCutInfo="
+```
+code
+block
+```"
       on:click={() => editor.chain().focus().toggleCode().run()}
       disabled={!editor.can().chain().focus().toggleCode().run()}
       selected={editor.isActive('code')}
@@ -49,6 +57,7 @@
     -->
     <Button
       label="Quote of the original email"
+      shortCutInfo="> Quote"
       on:click={() => editor.chain().focus().toggleBlockquote().run()}
       disabled={!editor.can().chain().focus().toggleBlockquote().run()}
       selected={editor.isActive('blockquote')}
@@ -83,6 +92,7 @@
       />
     <Button
       label="Bulleted list"
+      shortCutInfo="* Item"
       on:click={() => editor.chain().focus().toggleBulletList().run()}
       disabled={!editor.can().chain().focus().toggleBulletList().run()}
       selected={editor.isActive('bulletList')}
@@ -90,7 +100,8 @@
       iconOnly
       />
     <Button
-      label="Numbered list"
+      label="Ordered list"
+      shortCutInfo="1. Item"
       on:click={() => editor.chain().focus().toggleOrderedList().run()}
       disabled={!editor.can().chain().focus().toggleOrderedList().run()}
       selected={editor.isActive('orderedList')}
@@ -99,7 +110,8 @@
       />
 
     <Button
-      label="Heading, top level"
+      label="Title"
+      shortCutInfo="# Big title"
       on:click={() => editor.chain().focus().toggleHeading({ level: 1}).run()}
       disabled={!editor.can().chain().focus().toggleHeading({ level: 1}).run()}
       selected={editor.isActive('heading', { level: 1 })}
@@ -109,6 +121,7 @@
     </Button>
     <Button
       label="Heading, hierarchy level 2"
+      shortCutInfo="## Sub header"
       on:click={() => editor.chain().focus().toggleHeading({ level: 2}).run()}
       disabled={!editor.can().chain().focus().toggleHeading({ level: 2}).run()}
       selected={editor.isActive('heading', { level: 2 })}
@@ -118,6 +131,7 @@
     </Button>
     <Button
       label="Heading, hierarchy level 3"
+      shortCutInfo="### Sub sub header"
       on:click={() => editor.chain().focus().toggleHeading({ level: 3}).run()}
       disabled={!editor.can().chain().focus().toggleHeading({ level: 3}).run()}
       selected={editor.isActive('heading', { level: 3 })}
@@ -135,6 +149,7 @@
 
     <Button
       label="Undo the last change"
+      shortCutInfo="Ctrl-Z"
       on:click={() => editor.chain().focus().undo().run()}
       disabled={!editor.can().chain().focus().undo().run()}
       icon={UndoIcon}
@@ -142,6 +157,7 @@
       />
     <Button
       label="Redo the change that was undone before"
+      shortCutInfo="Ctrl-Y"
       on:click={() => editor.chain().focus().redo().run()}
       disabled={!editor.can().chain().focus().redo().run()}
       icon={RedoIcon}
