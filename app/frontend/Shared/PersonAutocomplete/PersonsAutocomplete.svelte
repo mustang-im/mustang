@@ -1,7 +1,7 @@
 <hbox flex class="persons-autocomplete">
   {#each $persons.each as person}
     <PersonEntry {person}>
-      <slot name="display-bottom-row" slot="bottom-row" {person} />
+      <slot name="person-context-menu" slot="context-menu" {person} />
     </PersonEntry>
   {/each}
   <hbox class="input">
@@ -12,6 +12,7 @@
       >
       <slot name="result-bottom-row" slot="result-bottom-row" let:person {person} />
     </PersonAutocomplete>
+    <slot name="end" />
   </hbox>
 </hbox>
 
@@ -39,13 +40,15 @@
 <style>
   .persons-autocomplete {
     flex-wrap: wrap;
-    border-bottom: 1px solid lightgray;
+    /* border-bottom: 1px solid lightgray; */
     align-items: center;
-    background-color: white;
     padding: 2px 4px;
   }
   .input {
-    margin-left: 8px;
+    margin-left: 4px;
+  }
+  .persons-autocomplete > :global(*) {
+    margin: 2px 3px;
   }
   .persons-autocomplete :global(input) {
     border: none;

@@ -7,8 +7,8 @@
 
 <style>
   .toolbar {
-    background-color: #DDDDDD;
-    border: 1px solid #B2ADB8;
+    /* background-color: #DDDDDD;
+    border: 1px solid #B2ADB8; */
     padding: 0px 4px;
   }
   .toolbar :global(button.button) {
