@@ -25,25 +25,42 @@
           </hbox>
         </PersonsAutocomplete>
       </vbox>
-      <vbox class="location">
-        <hbox class="online">
-          <Checkbox bind:checked={event.isOnline} label="Online" />
-          <input type="url" bind:value={event.onlineMeetingURL} disabled={!event.isOnline} placeholder="Meeting URL" />
+      <grid class="location">
+        <Checkbox bind:checked={event.isOnline} label="Online" />
+        <input type="url" bind:value={event.onlineMeetingURL} disabled={!event.isOnline} placeholder="Meeting URL" />
+        <hbox class="buttons">
           <Button
             label="Copy"
             icon={CopyIcon}
             iconSize="16px"
+            iconOnly
+            plain
             disabled={!event.isOnline || !event.onlineMeetingURL}
             on:click={onCopyMeetingURL}
             />
+          <Button
+            label="Open"
+            icon={BrowserIcon}
+            iconSize="16px"
+            iconOnly
+            plain
+            disabled={!event.isOnline || !event.onlineMeetingURL}
+            on:click={onOpenMeetingURL}
+            />
         </hbox>
-        <hbox class="presence">
-          <Checkbox checked={!!event.location} disabled={!event.location} label="In Presence" />
-          <input type="url" bind:value={event.location} placeholder="Location" />
-        </hbox>
-      </vbox>
-      <vbox class="description">
-        <textarea class="descriptionText" bind:value={event.descriptionText} />
+        <Checkbox checked={!!event.location} disabled={!event.location} label="In Presence" />
+        <input type="url" bind:value={event.location} placeholder="Location" />
+        <hbox class="buttons" />
+      </grid>
+      <vbox class="description" flex>
+        <HTMLEditorToolbar {editor} />
+        <vbox flex class="editor-wrapper">
+          <Scroll>
+            <vbox flex class="editor">
+              <HTMLEditor bind:html={event.descriptionHTML} bind:editor />
+            </vbox>
+          </Scroll>
+        </vbox>
       </vbox>
     </vbox>
     <vbox flex class="right-pane">
@@ -60,7 +77,7 @@
 
         <label for="duration">Duration</label>
         <hbox>
-          <input type="number" bind:value={durationInUnit} on:input={durationUnit.onChange} min={0} id="duration" />
+          <input class="duration" type="number" bind:value={durationInUnit} on:input={durationUnit.onChange} min={0} />
           <DurationUnit bind:durationInSeconds={event.duration} bind:durationInUnit bind:this={durationUnit} />
         </hbox>
       </grid>
@@ -88,20 +105,30 @@
   import PersonAvailability from "./PersonAvailability.svelte";
   import TimeInput from "./TimeInput.svelte";
   import DurationUnit from "./DurationUnit.svelte";
-  import Button from "../../Shared/Button.svelte";
+  import HTMLEditorToolbar from "../../Shared/Editor/HTMLEditorToolbar.svelte";
+  import HTMLEditor from "../../Shared/Editor/HTMLEditor.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
+  import Button from "../../Shared/Button.svelte";
+  import Scroll from "../../Shared/Scroll.svelte";
   import { Checkbox } from "@svelteuidev/core";
   import SaveIcon from "lucide-svelte/icons/check";
   import CloseIcon from "lucide-svelte/icons/x";
   import CopyIcon from "lucide-svelte/icons/copy";
+  import BrowserIcon from "lucide-svelte/icons/globe";
+  import type { Editor } from '@tiptap/core';
 
   export let event: Event;
 
   let durationUnit: DurationUnit;
   let durationInUnit: number;
+  let editor: Editor;
 
   function onCopyMeetingURL() {
     new Clipboard().writeText(event.onlineMeetingURL);
+  }
+
+  function onOpenMeetingURL() {
+    // event.onlineMeetingURL
   }
 
   function onSave() {
@@ -116,10 +143,11 @@
 
 <style>
   .event-edit-window {
-    margin: 30px 40px;
+    padding: 20px 32px;
+    background-color: #EEEEEE;
   }
   .window-title-bar {
-    margin-bottom: 32px;
+    margin-bottom: 8px;
     font-weight: bold;
   }
   .left-pane {
@@ -127,6 +155,7 @@
   }
   .right-pane {
     flex: 1 0 0;
+    margin-left: 32px;
   }
   input {
     border-top: none;
@@ -136,24 +165,60 @@
   }
   .title input {
     font-size: 200%;
+    padding: 6px 12px;
   }
   .participants {
-    margin-top: 32px;
+    margin-top: 24px;
+    margin-bottom: 16px;
+  }
+  grid.location {
+    grid-template-columns: max-content 1fr max-content;
+  }
+  grid.location :global(.svelteui-Checkbox-root) {
+    margin: 4px 12px 4px 0px;
+  }
+  grid.location .buttons {
+    margin-left: 24px;
   }
   .availability {
     font-size: 12px;
   }
-  .descriptionText {
+  .description {
     min-height: 10em;
-    border: 1px solid lightgrey;
-    margin-top: 32px;
+    margin-top: 16px;
+  }
+  .editor-wrapper {
+    border: 1px solid lightgray;
+    background-color: white;
+  }
+  .editor {
+    font-family: unset;
+    padding: 8px 12px;
   }
   grid.time {
     grid-template-columns: max-content 1fr;
     justify-content: center;
     align-items: center;
+    margin-bottom: 12px;
   }
-  grid input {
-    margin: 8px;
+  grid.time label {
+    margin-right: 8px;
+  }
+  .right-pane :global(.svelteui-Checkbox-root) {
+    margin: 2px;
+  }
+  grid.time :global(input) {
+    max-width: 5em;
+    text-align: right;
+  }
+  .duration {
+    margin-right: 6px;
+  }
+  grid :global(input) {
+    padding: 4px 8px;
+    margin-top: 2px;
+  }
+  .event-edit-window :global(.svelteui-Checkbox-label) {
+    padding-left: 8px;
   }
 </style>
