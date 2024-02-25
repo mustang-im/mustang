@@ -49,16 +49,17 @@
 </script>
 
 <style>
+  button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+  }
   button:not(.plain) {
     background-color: #f9f9f9;
     border: 1px solid #B2ADB8;
     border-radius: 1000px;
     padding: 6px 8px;
-
-    flex-direction: row;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
   .plain {
     background-color: transparent;
