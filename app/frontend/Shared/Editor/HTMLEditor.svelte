@@ -12,9 +12,12 @@
   // import { common as lowlightCommon, createLowlight } from 'lowlight'
   import { onMount, onDestroy } from 'svelte';
 
-  /* in/out */
+  /**
+   * TODO Bug: Only accepts `html` on component creation.
+   * After that, it's out-only.
+   * in/out */
   export let html: string;
-  /* out only */
+  /** out only */
   export let editor: Editor;
 
   let divEl: HTMLDivElement;
@@ -35,10 +38,15 @@
       onTransaction: () => {
         // force re-render so `editor.isActive` works as expected
         editor = editor;
+      },
+      onUpdate: () => {
         html = editor.getHTML();
       },
     });
   });
+
+  // TODO Listen to html. But removes all whitespace.
+  //$: editor && editor.commands.setContent(html);
 
   onDestroy(() => {
     if (editor) {
