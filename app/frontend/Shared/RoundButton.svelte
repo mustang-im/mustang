@@ -1,6 +1,7 @@
 <button on:click on:dblclick
   title={label} class="button {classes}" class:filled class:border
   {disabled} class:disabled class:selected
+  style="--padding: {padding}"
   >
   <hbox class="icon">
     {#if typeof(icon) == "string"}
@@ -20,6 +21,7 @@
   export let label: string = null;
   export let icon: ComponentType | string = null;
   export let iconSize = "16px";
+  export let padding = "8px";
   export let classes = "";
   export let filled = false;
   export let border = true;
@@ -31,7 +33,7 @@
   button {
     border: 1px solid transparent;
     border-radius: 1000px;
-    padding: 8px;
+    padding: var(--padding);
 
     flex-direction: row;
     display: flex;
@@ -44,7 +46,7 @@
   .filled:not(:hover) {
     background-color: #160C27; /* 142862 */
     border: none;
-    padding: 9px;
+    padding: calc(var(--padding) + 1px);
     color: white;
     stroke-width: 2px;
   }

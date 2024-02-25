@@ -57,7 +57,6 @@
   }
   .html-editor :global(.ProseMirror) {
     height: 100%;
-    margin-top: -16px; /* the content was shifted down, for some reason */
   }
   .html-editor :global(.ProseMirror:focus-visible) {
     outline: none;

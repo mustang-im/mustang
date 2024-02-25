@@ -3,7 +3,7 @@
   <hbox class="window-title-bar">
     {appGlobal.emailAccounts.first.emailAddress}
     <hbox flex class="spacer" />
-    <hbox class="secondary-buttons">
+    <hbox class="secondary buttons">
       {#if !showCC}
         <hbox class="show-recipients cc" on:click={() => {showCCForce = true}}>CC</hbox>
       {/if}
@@ -11,17 +11,19 @@
         <hbox class="show-recipients bcc" on:click={() => {showBCCForce = true}}>BCC</hbox>
       {/if}
     </hbox>
-    <hbox class="close-buttons">
+    <hbox class="close buttons">
       <RoundButton
         label="Discard and close"
         icon={TrashIcon}
         iconSize="16px"
+        padding="6px"
         on:click={onDelete}
         />
       <RoundButton
         label="Save and close"
         icon={CloseIcon}
         iconSize="16px"
+        padding="6px"
         on:click={onSave}
         />
     </hbox>
@@ -47,26 +49,30 @@
   {/if}
   </grid>
   <HTMLEditorToolbar {editor} />
-  <Scroll>
-    <vbox flex class="editor">
-      <HTMLEditor bind:html={mail.html} bind:editor />
-    </vbox>
-  </Scroll>
-  <hbox class="footer">
-    <hbox class="label">Subject</hbox>
-    <hbox class="subject" flex>
-      <input type="text" bind:value={mail.subject} />
+  <vbox flex class="paper">
+    <Scroll>
+      <vbox flex class="editor">
+        <HTMLEditor bind:html={mail.html} bind:editor />
+      </vbox>
+    </Scroll>
+    <hbox class="footer">
+      <hbox class="label">Subject</hbox>
+      <hbox class="subject" flex>
+        <input type="text" bind:value={mail.subject} />
+      </hbox>
+      <hbox class="buttons">
+        <RoundButton
+          label="Send"
+          icon={SendIcon}
+          iconSize="20px"
+          padding="6px"
+          filled
+          disabled={!mail.subject || $to.isEmpty}
+          on:click={onSend}
+          />
+      </hbox>
     </hbox>
-    <hbox flex class="spacer" />
-    <RoundButton
-      label="Send"
-      icon={SendIcon}
-      iconSize="24px"
-      filled
-      disabled={!mail.subject || $to.isEmpty}
-      on:click={onSend}
-      />
-  </hbox>
+  </vbox>
 </vbox>
 
 <script lang="ts">
@@ -116,18 +122,19 @@
     padding: 12px 16px;
     background-color: #F5F5F5;
   }
-  .window-title-bar .secondary-buttons {
+  .window-title-bar .secondary.buttons {
     margin: 0px 16px;
   }
-  .window-title-bar .secondary-buttons > :global(*){
+  .window-title-bar .secondary.buttons > :global(*){
     margin-left: 16px;
   }
-  .window-title-bar .close-buttons > :global(*){
+  .window-title-bar .close.buttons > :global(*){
     margin-left: 8px;
   }
   grid.recipients {
     grid-template-columns: max-content 1fr;
-    margin-bottom: 16px;
+    margin-top: 4px;
+    margin-bottom: 12px;
     /* background-color: #FFFFFF55; */
   }
   .label {
@@ -141,14 +148,27 @@
     align-items: center;
     margin-left: 8px;
   }
-  .editor {
+  .paper {
     background-color: white;
-    padding: 8px 12px;
+    border-radius: 5px;
+    box-shadow: -1px 0px 5px 0.5px rgb(0, 0, 0, 10%);
+    margin-top: 4px;
+  }
+  .editor {
+    margin: 12px 12px;
   }
   .footer {
     margin-top: 8px;
+    margin-bottom: 6px;
+  }
+  .footer .label {
+    margin: 0px 12px;
+    align-items: center;
   }
   .subject input {
     width: 100%;
+  }
+  .footer .buttons {
+    margin: 0px 8px;
   }
 </style>
