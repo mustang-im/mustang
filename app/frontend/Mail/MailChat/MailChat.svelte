@@ -26,7 +26,7 @@
   //import type { Account, MsgFolder, Email } from "mustang-lib";
   import type { MailAccount } from "../../../logic/Mail/Account";
   import type { Folder } from "../../../logic/Mail/Folder";
-  import { EMail } from "../../../logic/Mail/Message";
+  import { EMail } from "../../../logic/Mail/EMail";
   import type { Person } from "../../../logic/Abstract/Person";
   import { Chat } from "../../../logic/Chat/Chat";
   import { appGlobal } from "../../../logic/app";

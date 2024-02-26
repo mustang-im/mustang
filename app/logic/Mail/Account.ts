@@ -1,6 +1,6 @@
 import { Account } from "../Abstract/Account";
 import type { Folder } from "./Folder";
-import type { EMail } from "./Message";
+import type { EMail } from "./EMail";
 import type { Person } from "../Abstract/Person";
 import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, MapColl } from 'svelte-collections';
