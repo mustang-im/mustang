@@ -16,7 +16,7 @@
 
 <script lang="ts">
   import type { Message } from "../../../logic/Abstract/Message";
-  import { EMail } from "../../../logic/Mail/Message";
+  import { EMail } from "../../../logic/Mail/EMail";
   import MessageBubble from "../../Chat/MessageView/Message.svelte";
 
   export let message: EMail;

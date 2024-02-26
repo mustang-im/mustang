@@ -1,4 +1,4 @@
-import type { EMail } from "../../logic/Mail/Message";
+import type { EMail } from "../../logic/Mail/EMail";
 import { MustangApp } from "../AppsBar/MustangApp";
 import { openApp } from "../AppsBar/selectedApp";
 import MailApp from "./MailApp.svelte";

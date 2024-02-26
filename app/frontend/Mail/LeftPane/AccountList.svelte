@@ -24,16 +24,17 @@
 </vbox>
 
 <script lang="ts">
-  import type { Account } from "mustang-lib";
-  import type { Collection } from 'svelte-collections';
+  //import type { Account } from "mustang-lib";
+  import type { Account } from '../../../logic/Abstract/Account';
+  import { EMail } from "../../../logic/Mail/EMail";
+  import { mailMustangApp } from "../MailMustangApp";
   import FastList from "../../Shared/FastList.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
   import AccountIcon from '../../asset/icon/appBar/mail.svg?raw';
   import WriteIcon from "lucide-svelte/icons/pencil";
   import { catchErrors } from "../../Util/error";
-  import { EMail } from "../../../logic/Mail/Message";
-  import { mailMustangApp } from "../MailMustangApp";
+  import type { Collection } from 'svelte-collections';
 
   export let accounts: Collection<Account>;
   export let selectedAccount: Account; /* in/out */

@@ -1,6 +1,6 @@
 import type { MailAccount } from "../../logic/Mail/Account";
 import type { Folder } from "../../logic/Mail/Folder";
-import type { EMail } from "../../logic/Mail/Message";
+import type { EMail } from "../../logic/Mail/EMail";
 import { writable } from "svelte/store";
 
 export const selectedAccount = writable<MailAccount>();

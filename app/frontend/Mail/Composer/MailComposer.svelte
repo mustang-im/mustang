@@ -76,7 +76,7 @@
 </vbox>
 
 <script lang="ts">
-  import type { EMail } from "../../../logic/Mail/Message";
+  import type { EMail } from "../../../logic/Mail/EMail";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { appGlobal } from "../../../logic/app";
   import MailAutocomplete from "./MailAutocomplete.svelte";

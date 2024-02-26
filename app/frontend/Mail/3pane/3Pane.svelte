@@ -21,7 +21,7 @@
   //import type { Account, MsgFolder, Email } from "mustang-lib";
   import type { MailAccount } from "../../../logic/Mail/Account";
   import type { Folder } from "../../../logic/Mail/Folder";
-  import type { EMail } from "../../../logic/Mail/Message";
+  import type { EMail } from "../../../logic/Mail/EMail";
 
   import AccountList from "../LeftPane/AccountList.svelte";
   import FolderList from "../LeftPane/FolderList.svelte";

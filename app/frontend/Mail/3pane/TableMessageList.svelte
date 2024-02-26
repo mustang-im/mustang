@@ -16,7 +16,7 @@
 </vbox>
 
 <script lang="ts">
-  import type { EMail } from "../../../logic/Mail/Message";
+  import type { EMail } from "../../../logic/Mail/EMail";
   import type { Collection, ArrayColl } from "svelte-collections";
   import FastList from "../../Shared/FastList.svelte";
   import TableMessageListItem from "./TableMessageListItem.svelte";

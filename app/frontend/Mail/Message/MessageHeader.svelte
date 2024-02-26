@@ -39,7 +39,7 @@
 
 <script lang="ts">
   //import type { Email } from "mustang-lib";
-  import type { EMail } from "../../../logic/Mail/Message";
+  import type { EMail } from "../../../logic/Mail/EMail";
   import type { MailAccount } from "../../../logic/Mail/Account";
   import { Person } from "../../../logic/Abstract/Person";
   import { selectedPerson, type PersonOrGroup } from "../../Shared/Person/PersonOrGroup";
