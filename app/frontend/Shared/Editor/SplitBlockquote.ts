@@ -23,12 +23,12 @@ export const SplitBlockquote = Blockquote.extend({
         commands.deleteSelection();
         // if at start of blockquote
         if ($from.before(1) + $from.depth === $from.pos) {
-          return chain().insertContentAt($from.before(1), '<p></p>').run();
+          return commands.insertContentAt($from.before(1), '<p></p>');
         }
         // if at end of blockquote
         if ($to.after(1) - $to.depth === $to.pos) {
           let deletedRange = $to.pos - $from.pos;
-          return chain().insertContentAt($to.after(1) - deletedRange, '<p></p>').run();
+          return commands.insertContentAt($to.after(1) - deletedRange, '<p></p>');
         }
         // if in middle of blockquote
         tr.split($from.pos, $from.depth);
