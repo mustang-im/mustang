@@ -14,22 +14,24 @@ export const SplitBlockquote = Blockquote.extend({
   },
   addCommands() {
     return {
-      splitBlockquote: () => ({ tr, chain, state }) => {
-        let {$cursor} = state.selection;
+      splitBlockquote: () => ({ tr, commands, chain, state }) => {
+        let {$from, $to} = state.selection;
         // if not in blockquote
-        if ($cursor.node(1).type.name !== 'blockquote') {
+        if ($from.node(1).type.name !== 'blockquote') {
           return;
         }
+        commands.deleteSelection();
         // if at start of blockquote
-        if ($cursor.before(1) + $cursor.depth === $cursor.pos) {
-          return chain().insertContentAt($cursor.before(1), '<p></p>').run();
+        if ($from.before(1) + $from.depth === $from.pos) {
+          return chain().insertContentAt($from.before(1), '<p></p>').run();
         }
         // if at end of blockquote
-        if ($cursor.after(1) - $cursor.depth === $cursor.pos) {
-          return chain().insertContentAt($cursor.after(1), '<p></p>').run();
+        if ($to.after(1) - $to.depth === $to.pos) {
+          let deletedRange = $to.pos - $from.pos;
+          return chain().insertContentAt($to.after(1) - deletedRange, '<p></p>').run();
         }
         // if in middle of blockquote
-        tr.split($cursor.pos, $cursor.depth);
+        tr.split($from.pos, $from.depth);
         return chain().createParagraphNear().selectNodeBackward().run();
       },
     }
