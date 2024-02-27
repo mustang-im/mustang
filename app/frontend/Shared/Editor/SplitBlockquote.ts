@@ -13,23 +13,19 @@ export const SplitBlockquote = Blockquote.extend({
   },
   addCommands() {
     return {
-      splitBlockquote: () => ({ chain, state }) => {
+      splitBlockquote: () => ({ tr, chain, state }) => {
         let {$cursor} = state.selection;
-        let parent = this.editor.$pos($cursor.before()).node;
-        // if not in blockquote
-        if (parent.type.name != 'blockquote') {
+        if ($cursor.node(1).type.name !== 'blockquote') {
           return;
         }
-        // if at start of blockquote
-        if ($cursor.parentOffset == 0) {
+        if ($cursor.before(1) + $cursor.depth === $cursor.pos) {
           return chain().createParagraphNear().selectNodeBackward().run();
         }
-        // if at end of blockquote
-        if ($cursor.parentOffset == $cursor.parent.content.size) {
-          return chain().createParagraphNear().splitListItem('blockquote').run();
+        if ($cursor.after(1) - $cursor.depth === $cursor.pos) {
+          return chain().insertContentAt($cursor.after(1), '<p></p>');
         }
-        // if in middle of blockquote
-        return chain().splitListItem('blockquote').selectNodeBackward().liftEmptyBlock().run();
+        tr.split($cursor.pos, $cursor.depth);
+        return chain().createParagraphNear().selectNodeBackward().run();
       },
     }
   },
