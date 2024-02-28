@@ -32,7 +32,7 @@ export const SplitBlockquote = Blockquote.extend({
         return chain().setNodeSelection($to.pos).splitFirstParent($to.pos)
         .insertContentAt($to.pos + $to.depth, '<p></p>').run();
       },
-      splitFirstParent: (pos :number) => ({ tr }) => {
+      splitFirstParent: (pos: number) => ({ tr }) => {
         let node = this.editor.$pos(pos);
         tr.split(node.pos, node.depth);
         return true;
