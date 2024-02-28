@@ -30,7 +30,7 @@ export const SplitBlockquote = Blockquote.extend({
         }
         // if text is selected/highlighted
         if ($from.pos !== $to.pos) {
-          chain().setNodeSelection($from.pos).run();
+          chain().setNodeSelection($to.pos).run();
         }
         // default split in middle of blockquote
         tr.split($from.pos, $from.depth);
