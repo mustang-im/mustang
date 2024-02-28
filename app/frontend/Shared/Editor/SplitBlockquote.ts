@@ -29,13 +29,14 @@ export const SplitBlockquote = Blockquote.extend({
           return chain().insertContentAt($to.after(1), '<p></p>').run();
         }
         // default split in middle of blockquote
-        const split = ({tr}) => {
-          tr.split($to.pos, $to.depth);
-          return true;
-        };
-        return chain().setNodeSelection($to.pos).command(split)
+        return chain().setNodeSelection($to.pos).splitFirstParent($to.pos)
         .insertContentAt($to.pos + $to.depth, '<p></p>').run();
       },
+      splitFirstParent: (pos :number) => ({ tr }) => {
+        let node = this.editor.$pos(pos);
+        tr.split(node.pos, node.depth);
+        return true;
+      }
     }
   },
 });
