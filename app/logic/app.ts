@@ -8,7 +8,7 @@ import Apps from './Apps/Apps';
 import { readChatAccounts } from './Chat/Accounts';
 import { getTestObjects } from './testData';
 import { ArrayColl } from 'svelte-collections';
-import JPCWebSocket from 'jpc-ws';
+import JPCWebSocket from '../../lib/jpc-ws';
 
 export class AppGlobal {
   addNewAccountFromConfig: Function;
