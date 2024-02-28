@@ -14,25 +14,27 @@ export const SplitBlockquote = Blockquote.extend({
   },
   addCommands() {
     return {
-      splitBlockquote: () => ({ tr, commands, chain, state }) => {
+      splitBlockquote: () => ({ tr, chain, state }) => {
         let {$from, $to} = state.selection;
         // if not in blockquote
         if ($from.node(1).type.name !== 'blockquote') {
-          return;
+          return false;
         }
-        commands.deleteSelection();
         // if at start of blockquote
         if ($from.before(1) + $from.depth === $from.pos) {
-          return commands.insertContentAt($from.before(1), '<p></p>');
+          return chain().insertContentAt($from.before(1), '<p></p>').run();
         }
         // if at end of blockquote
         if ($to.after(1) - $to.depth === $to.pos) {
-          let deletedRange = $to.pos - $from.pos;
-          return commands.insertContentAt($to.after(1) - deletedRange, '<p></p>');
+          return chain().insertContentAt($to.after(1), '<p></p>').run();
         }
-        // if in middle of blockquote
+        // if text is selected/highlighted
+        if ($from.pos !== $to.pos) {
+          chain().setNodeSelection($from.pos).run();
+        }
+        // default split in middle of blockquote
         tr.split($from.pos, $from.depth);
-        return chain().createParagraphNear().selectNodeBackward().run();
+        return chain().insertContentAt($from.pos + $from.depth, '<p></p>').run();
       },
     }
   },
