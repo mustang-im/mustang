@@ -6,7 +6,7 @@
     minCharactersToSearch={2}
     localFiltering={false}
     localSorting={false}
-    closeOnBlur={true}
+    closeOnBlur={false}
     hideArrow={true}
     noResultsText="No person found"
     {placeholder}
