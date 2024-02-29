@@ -2,7 +2,9 @@
   <vbox flex class="folder-pane" slot="left">
     <!--<ProjectList />-->
     <AccountList accounts={$accounts} bind:selectedAccount />
-    <FolderList folders={selectedAccount ? selectedAccount.rootFolders : new ArrayColl()} bind:selectedFolder />
+    {#await selectedAccount?.rootFolders then rootFolders}
+    <FolderList folders={rootFolders ?? new ArrayColl()} bind:selectedFolder />
+    {/await}
     <ViewSwitcher />
   </vbox>
   <SplitterHorizontal slot="right" name="mail.3pane.msgs" initialBottomRatio={2}>
