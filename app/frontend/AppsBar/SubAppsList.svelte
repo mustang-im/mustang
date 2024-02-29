@@ -30,7 +30,7 @@
     removed(apps: MustangApp[]) {
       for (let app of apps) {
         if (selectedApp == app) {
-          selectedApp = mainApp;
+          selectedApp = mainApp.subApps.last ?? mainApp;
         }
       }
     }
