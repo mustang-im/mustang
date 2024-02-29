@@ -21,14 +21,14 @@ export const EnterNewline = Extension.create({
         }
         // if previous node is not `<br>`
         if (!$from.nodeBefore || $from.nodeBefore.type.name !== 'hardBreak') {
-          return chain().setHardBreak().run();
+          return chain().setHardBreak().scrollIntoView().run();
         }
         // default if previous node is `<br>`
         let newlineRange = { 
           from: $from.pos - $from.nodeBefore.nodeSize,
           to: $from.pos
         };
-        return chain().deleteRange(newlineRange).createParagraphNear().run();
+        return chain().deleteRange(newlineRange).createParagraphNear().scrollIntoView().run();
       },
     }
   },
