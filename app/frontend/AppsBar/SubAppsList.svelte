@@ -1,7 +1,7 @@
 {#if $subApps.hasItems}
   <!-- A list of parts of the app,
     shown in the AppBar underneath the app button -->
-  <hbox class="sub-app-bar">
+  <hbox class="sub-app-bar" app={mainApp.id}>
     {#each $subApps.each as app}
       <SubAppButton on:click={() => selectedApp = app} selected={selectedApp == app} {app}>
         <AppIcon slot="icon" icon={app.icon} size="16px" />
@@ -48,6 +48,9 @@
   .sub-app-bar {
     justify-content: end;
     flex-wrap: wrap;
-    margin: 0px 4px 2px 0px;
+    margin: 0px 12px 2px 6px;
+  }
+  .sub-app-bar[app="webapps"] {
+    margin-top: 128px;
   }
 </style>
