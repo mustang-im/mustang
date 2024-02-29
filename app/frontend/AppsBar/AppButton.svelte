@@ -22,7 +22,6 @@
   }
   .icon :global(.cls-1) {
     stroke: white;
-    /** AppButton overrides this for .selected */
   }
   .app-button:hover {
     background-color: rgba(255, 255, 255, 25%);
@@ -36,14 +35,17 @@
   .app-button.selected .label :global(> .label) {
     color: black;
   }
+  .icon {
+    color: rgba(255, 255, 255, 80%);
+  }
+  .app-button.selected .icon {
+    color: #494558;
+  }
   .app-button.selected .icon :global(.cls-1) {
     stroke: #494558;
   }
   .app-button.selected .icon :global(.date-calendar-icon) {
     fill: #494558;
-  }
-  .icon {
-    color: transparent;
   }
   .label {
     font-size: 11px;

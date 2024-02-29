@@ -1,21 +1,18 @@
 {#if $subApps.hasItems}
   <!-- A list of parts of the app,
     shown in the AppBar underneath the app button -->
-  <vbox class="sub-app-bar">
+  <hbox class="sub-app-bar">
     {#each $subApps.each as app}
-      <AppButton on:click={() => selectedApp = app} selected={selectedApp == app}>
-        <AppIcon slot="icon" icon={app.icon} size="8px" />
-        <hbox slot="label" class="label">
-          {app.name}
-        </hbox>
-      </AppButton>
+      <SubAppButton on:click={() => selectedApp = app} selected={selectedApp == app} {app}>
+        <AppIcon slot="icon" icon={app.icon} size="16px" />
+      </SubAppButton>
     {/each}
-  </vbox>
+  </hbox>
 {/if}
 
 <script lang="ts">
   import type { MustangApp } from "./MustangApp";
-  import AppButton from "./AppButton.svelte";
+  import SubAppButton from "./SubAppButton.svelte";
   import AppIcon from "./AppIcon.svelte";
   import { CollectionObserver } from "svelte-collections";
   import { catchErrors } from "../Util/error";
@@ -48,9 +45,9 @@
 </script>
 
 <style>
-  .sub-app-bar :global(.app-button) {
-    flex-direction: row;
-    padding: 0px;
-    padding-left: 16px;
+  .sub-app-bar {
+    justify-content: end;
+    flex-wrap: wrap;
+    margin: 0px 4px 2px 0px;
   }
 </style>

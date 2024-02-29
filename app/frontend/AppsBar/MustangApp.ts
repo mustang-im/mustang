@@ -1,10 +1,13 @@
 import { Observable, notifyChangedProperty } from "../../logic/util/Observable";
 import { ArrayColl, Collection } from "svelte-collections";
+import { derived, type Readable } from "svelte/store";
 
 export class MustangApp extends Observable {
   id: string;
   /** User-visible name of the app */
   name: string;
+  /** Reflects content of the app. Used for sub-apps. */
+  title: Readable<string> = derived(this, () => this.name);
   /** App icon, either as SVG string or as Svelte component */
   icon: string | ConstructorOfATypedSvelteComponent;
   /** Main window content that shows when the user selected this app */

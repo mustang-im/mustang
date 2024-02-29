@@ -5,6 +5,7 @@ import CalendarApp from "../Calendar/CalendarApp.svelte";
 import EditEvent from "./EditEvent/EditEvent.svelte";
 import CalendarIcon from "../Calendar/CalendarIcon.svelte";
 import EditIcon from "lucide-svelte/icons/pencil";
+import { derived } from "svelte/store";
 
 export class CalendarMustangApp extends MustangApp {
   id = "calendar";
@@ -14,6 +15,7 @@ export class CalendarMustangApp extends MustangApp {
 
   editEvent(event: Event) {
     let edit = new EventEditMustangApp();
+    edit.title = derived(event, event => event.title ?? edit.name);
     edit.mainWindowProperties = {
       event: event,
     };
