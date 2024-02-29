@@ -1,7 +1,9 @@
 <Splitter name="mail.vertical.folders" initialRightRatio={4}>
   <vbox flex class="folder-pane" slot="left">
     <AccountList accounts={$accounts} bind:selectedAccount />
-    <FolderList folders={selectedAccount?.folders ?? new ArrayColl()} bind:selectedFolder />
+    {#await selectedAccount?.rootFolders then rootFolders}
+    <FolderList folders={rootFolders ?? new ArrayColl()} bind:selectedFolder />
+    {/await}
     <ViewSwitcher />
   </vbox>
   <Splitter slot="right" name="mail.vertical.msgs" initialRightRatio={2}>
