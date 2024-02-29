@@ -1,5 +1,5 @@
 import { MustangApp } from "../AppsBar/MustangApp";
-import AppsApp from "../Apps/AppsApp.svelte";
+import AppsApp from "./WebAppsApp.svelte";
 import appsLauncherIcon from '../asset/icon/appBar/appsLauncher.svg?raw';
 
 export class WebAppsMustangApp extends MustangApp {
