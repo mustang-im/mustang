@@ -43,4 +43,8 @@
   .sub-app-button.selected .icon :global(.date-calendar-icon) {
     fill: #494558;
   }
+
+  :global(.sub-app-bar[app="webapps"]) .icon {
+    filter: grayscale(0.7);
+  }
 </style>
