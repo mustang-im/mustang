@@ -15,7 +15,7 @@
 <style>
   .app-button {
     align-items: center;
-    padding: 8px;
+    padding: 10px 0px 6px 0px;
   }
   .label :global(.label){
     color: white;
