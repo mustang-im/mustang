@@ -12,12 +12,12 @@
 {/if}
 
 <script lang="ts">
-  import type AppCategory from "../../logic/Apps/AppCategory";
-  import type { MapColl } from "svelte-collections";
+  import type AppCategory from "../../../logic/Apps/AppCategory";
   import Categories from "./Categories.svelte";
-  import Button from "../Shared/Button.svelte";
+  import Button from "../../Shared/Button.svelte";
   import ChevronUpIcon from "lucide-svelte/icons/chevron-up";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
+  import type { MapColl } from "svelte-collections";
 
   export let allCategories: MapColl<string, AppCategory>;
   export let category: AppCategory;

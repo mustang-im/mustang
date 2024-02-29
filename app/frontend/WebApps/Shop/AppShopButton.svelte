@@ -25,10 +25,10 @@
 </vbox>
 
 <script lang="ts">
-  import type AppListed from "../../logic/Apps/AppListed";
-  import { appGlobal } from "../../logic/app";
-  import Button from "../Shared/Button.svelte";
-  import { catchErrors } from "../Util/error";
+  import type AppListed from "../../../logic/Apps/AppListed";
+  import { appGlobal } from "../../../logic/app";
+  import Button from "../../Shared/Button.svelte";
+  import { catchErrors } from "../../Util/error";
 
   export let app: AppListed;
   export let selectedApp: AppListed; /* in/out */

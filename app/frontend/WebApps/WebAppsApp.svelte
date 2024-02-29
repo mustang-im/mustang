@@ -10,13 +10,13 @@
 
 <script lang="ts">
   import type AppListed from "../../logic/Apps/AppListed";
-  import { appGlobal } from "../../logic/app";
-  import type { Collection } from "svelte-collections";
-  import AppStore from "./AppStore.svelte";
-  import AppsLauncher from "./AppsLauncher.svelte";
-  import { onMount } from "svelte";
   import { webAppsMustangApp } from "./WebAppsMustangApp";
   import { MustangApp } from "../AppsBar/MustangApp";
+  import { appGlobal } from "../../logic/app";
+  import AppStore from "./Shop/AppStore.svelte";
+  import AppsLauncher from "./Launcher/AppsLauncher.svelte";
+  import { onMount } from "svelte";
+  import type { Collection } from "svelte-collections";
 
   let showStore = false;
   let runningApp: AppListed;
