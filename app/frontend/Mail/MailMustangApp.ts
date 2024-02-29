@@ -5,6 +5,7 @@ import MailApp from "./MailApp.svelte";
 import MailComposer from "./Composer/MailComposer.svelte";
 import mailIcon from '../asset/icon/appBar/mail.svg?raw';
 import EditIcon from "lucide-svelte/icons/pencil";
+import { derived } from "svelte/store";
 
 export class MailMustangApp extends MustangApp {
   id = "mail";
@@ -14,6 +15,7 @@ export class MailMustangApp extends MustangApp {
 
   writeMail(mail: EMail) {
     let edit = new WriteMailMustangApp();
+    edit.title = derived(mail, () => mail.subject ?? edit.name);
     edit.mainWindowProperties = {
       mail: mail,
     };
