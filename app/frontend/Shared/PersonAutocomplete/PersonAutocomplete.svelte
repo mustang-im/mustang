@@ -74,14 +74,14 @@
 
 .person-autocomplete :global(.autocomplete) {
   height: 100% !important;
-  width: 100%;
 }
 .person-autocomplete :global(.input-container) {
   height: 100%;
 }
 .person-autocomplete :global(input) {
   padding: 0px 12px !important;
-  background-color: transparent;
+  background-color: #FCFCFF;
+  box-shadow: -1px 0px 5px 0.5px rgb(0, 0, 0, 3%);
   border-radius: 100px;
   align-items: center;
 }
