@@ -8,6 +8,7 @@
   import LinkFeature from '@tiptap/extension-link';
   import CodeWordFeature from '@tiptap/extension-code';
   import { SplitBlockquote } from './SplitBlockquote';
+  import { Footer } from './Footer';
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
   // import { common as lowlightCommon, createLowlight } from 'lowlight'
   import { onMount, onDestroy } from 'svelte';
@@ -30,6 +31,7 @@
         LinkFeature,
         CodeWordFeature,
         SplitBlockquote,
+        Footer
         // CodeBlockLowlightFeature.configure({
         //  lowlight: createLowlight(lowlightCommon),
         // }),
