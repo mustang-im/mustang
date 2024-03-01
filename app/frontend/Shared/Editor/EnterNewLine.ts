@@ -1,10 +1,20 @@
-import { Extension } from "@tiptap/core";
+import { Extension, type Range } from "@tiptap/core";
 
-/* 1. On `Enter` keypress, inserts newline `<br>` instead of creating
- * new paragraph.
- * 2. On two consecutive `Enter` keypresses, it deletes the previous 
- * `<br>` and creates a new paragraph.
- */
+declare module '@tiptap/core' {
+  interface Commands<ReturnType> {
+    enterNewLine: {
+      /**
+       * One enter inserts `<br>`, two enters creates `<p>`
+       */
+      enterLineBreak: () => ReturnType,
+    }
+  }
+}
+
+/** 1. On `Enter` keypress, inserts newline `<br>` instead of creating
+  * new paragraph.
+  * 2. On two consecutive `Enter` keypresses, it deletes the previous 
+  * `<br>` and creates a new paragraph. */
 export const EnterNewline = Extension.create({
   addKeyboardShortcuts() {
     return {
@@ -24,7 +34,7 @@ export const EnterNewline = Extension.create({
           return chain().setHardBreak().scrollIntoView().run();
         }
         // default if previous node is `<br>`
-        let newlineRange = { 
+        let newlineRange: Range = { 
           from: $from.pos - $from.nodeBefore.nodeSize,
           to: $from.pos
         };
