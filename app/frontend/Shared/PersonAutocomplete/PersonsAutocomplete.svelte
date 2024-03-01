@@ -4,7 +4,7 @@
       <slot name="person-context-menu" slot="context-menu" {person} />
     </PersonEntry>
   {/each}
-  <hbox class="input">
+  <hbox flex class="input">
     <PersonAutocomplete
       on:personSelected={(event) => onAddPerson(event.detail.person)}
       skipPersons={$persons}
@@ -40,15 +40,15 @@
 <style>
   .persons-autocomplete {
     flex-wrap: wrap;
-    /* border-bottom: 1px solid lightgray; */
+    border-bottom: 1px solid rgb(0, 0, 0, 7%);
     align-items: center;
-    padding: 0px 4px;
+    padding: 3px 4px;
   }
   .input {
     margin-left: 4px;
   }
   .persons-autocomplete > :global(*) {
-    margin: 3px 3px;
+    margin: 3.5px 3px;
   }
   .persons-autocomplete :global(input) {
     border: none;
