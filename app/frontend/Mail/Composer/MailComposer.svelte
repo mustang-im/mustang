@@ -170,7 +170,7 @@
 <style>
   .mail-composer-window {
     padding: 8px 16px;
-    background-color: #F9F9FD;
+    background-color: #FCFCFC;
   }
   .window-title-bar .spacer {
     flex: 3 0 0;
@@ -196,8 +196,10 @@
     margin-bottom: 12px;
     /* background-color: #FFFFFF55; */
   }
-  .recipients .label {
+  .label {
     color: #B3B3B3;
+  }
+  .recipients .label {
     align-items: top;
     margin-top: 3px;
     margin-right: 2px;
@@ -219,6 +221,7 @@
   .attachments {
     min-width: 120px;
     max-width: 350px;
+    margin-right: -12px;
   }
   .footer {
     margin-top: 8px;

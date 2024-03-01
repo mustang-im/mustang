@@ -27,7 +27,7 @@
   .person {
     background-color: white;
     border-radius: 100px;
-    box-shadow: -1px 0px 5px 0.5px rgb(0, 0, 0, 10%);
+    box-shadow: -1px 0px 5px 0.5px rgb(0, 0, 0, 7%);
     align-items: center;
     padding-right: 12px;
     height: 24px;
