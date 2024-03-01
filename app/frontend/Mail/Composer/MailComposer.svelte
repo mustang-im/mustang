@@ -56,17 +56,17 @@
     <MailAutocomplete persons={mail.bcc} placeholder="Add BCC recipient" />
   {/if}
   </grid>
+  <HTMLEditorToolbar {editor}>
+    <Button
+      label="Attachments"
+      icon={AttachmentIcon}
+      iconOnly
+      on:click={onAddAttachment}
+      slot="end"
+      />
+  </HTMLEditorToolbar>
   <hbox flex class="editor-and-attachments">
     <vbox flex class="editor-wrapper">
-      <HTMLEditorToolbar {editor}>
-        <Button
-          label="Attachments"
-          icon={AttachmentIcon}
-          iconOnly
-          on:click={onAddAttachment}
-          slot="end"
-          />
-      </HTMLEditorToolbar>
       <vbox flex class="paper">
         <Scroll>
           <vbox flex class="editor">
