@@ -40,9 +40,6 @@
 </script>
 
 <style>
-  .attachments-pane {
-    margin-top: 28px;
-  }
   .buttons {
     justify-content: center;
     margin-top: 12px;

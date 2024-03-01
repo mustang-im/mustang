@@ -10,6 +10,7 @@
     /* background-color: #DDDDDD;
     border: 1px solid #B2ADB8; */
     padding: 0px 4px;
+    flex-wrap: wrap;
   }
   .toolbar :global(button.button) {
     border: none;
