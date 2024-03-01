@@ -17,6 +17,7 @@
 <style>
     .account-dropdown {
     font-size: 14px;
+    font-weight: 200;
     align-items: center;
   }
   .account-dropdown,

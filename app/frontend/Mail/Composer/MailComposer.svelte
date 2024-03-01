@@ -133,7 +133,7 @@
 
 <style>
   .mail-composer-window {
-    padding: 12px 16px;
+    padding: 8px 16px;
     background-color: #F5F5F5;
   }
   .window-title-bar .spacer {
@@ -162,10 +162,8 @@
   }
   .recipients .label {
     color: #B3B3B3;
-  }
-  .label {
     align-items: top;
-    margin-top: 4px;
+    margin-top: 3px;
     margin-right: 2px;
     margin-left: 2px;
     min-width: 1.7em;

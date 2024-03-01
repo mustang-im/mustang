@@ -16,5 +16,9 @@
     border-radius: 0px;
     background-color: transparent;
     padding: 6px 6px;
+    color: #595065;
+  }
+  .toolbar :global(button.button.disabled) {
+    opacity: 20%;
   }
 </style>
