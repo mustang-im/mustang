@@ -3,17 +3,19 @@
   <hbox class="window-title-bar">
     <AccountDropDown bind:selectedAccount={from} />
     <hbox flex class="spacer" />
-    <hbox flex class="secondary buttons">
+    <hbox flex class="cc buttons">
       <Button
         label="Cc"
-        on:click={() => {showCCForce = true}}
-        disabled={showCC}
+        on:click={() => {showCCForce = !showCCForce}}
+        disabled={hasCC}
+        selected={showCCForce}
         plain
         />
       <Button
         label="Bcc"
-        on:click={() => {showBCCForce = true}}
-        disabled={showBCC}
+        on:click={() => {showBCCForce = !showBCCForce}}
+        disabled={hasBCC}
+        selected={showBCCForce}
         plain
         />
     </hbox>
@@ -123,8 +125,12 @@
 
   let showCCForce = false;
   let showBCCForce = false;
-  $: showCC = showCCForce || mail.cc.hasItems;
-  $: showBCC = showBCCForce || mail.bcc.hasItems;
+  $: ccList = mail.cc;
+  $: bccList = mail.bcc;
+  $: hasCC = $ccList.hasItems;
+  $: hasBCC = $bccList.hasItems;
+  $: showCC = showCCForce || hasCC;
+  $: showBCC = showBCCForce || hasBCC;
 </script>
 
 <style>
@@ -135,8 +141,11 @@
   .window-title-bar .spacer {
     flex: 3 0 0;
   }
-  .window-title-bar .secondary.buttons > :global(*){
+  .window-title-bar .cc.buttons > :global(*){
     margin-left: 16px;
+  }
+  .window-title-bar .cc.buttons > :global(button.selected) {
+    background-color: rgb(0, 0, 0, 5%);
   }
   .window-title-bar .close.buttons > :global(*){
     margin-left: 8px;
