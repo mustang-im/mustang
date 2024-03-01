@@ -42,13 +42,13 @@
     flex-wrap: wrap;
     /* border-bottom: 1px solid lightgray; */
     align-items: center;
-    padding: 2px 4px;
+    padding: 0px 4px;
   }
   .input {
     margin-left: 4px;
   }
   .persons-autocomplete > :global(*) {
-    margin: 2px 3px;
+    margin: 3px 3px;
   }
   .persons-autocomplete :global(input) {
     border: none;
