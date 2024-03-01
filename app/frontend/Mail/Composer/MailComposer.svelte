@@ -3,20 +3,6 @@
   <hbox class="window-title-bar">
     <AccountDropDown bind:selectedAccount={from} />
     <hbox flex class="spacer" />
-    <hbox flex class="cc buttons">
-      <Button
-        label="Cc"
-        on:click={() => {showCCForce = !showCCForce}}
-        disabled={hasCC}
-        selected={showCC}
-        />
-      <Button
-        label="Bcc"
-        on:click={() => {showBCCForce = !showBCCForce}}
-        disabled={hasBCC}
-        selected={showBCC}
-        />
-    </hbox>
     <hbox class="close buttons">
       <RoundButton
         label="Discard and close"
@@ -40,10 +26,26 @@
         <hbox class="label">
             To
         </hbox>
-        {/if}
-      </hbox>
+      {/if}
+    </hbox>
+    <hbox flex>
       <hbox flex>
-      <MailAutocomplete persons={mail.to} placeholder="Add recipient" />
+        <MailAutocomplete persons={mail.to} placeholder="Add recipient" />
+      </hbox>
+      <hbox class="cc buttons">
+        <Button
+          label="Cc"
+          on:click={() => {showCCForce = !showCCForce}}
+          disabled={hasCC}
+          selected={showCC}
+          />
+        <Button
+          label="Bcc"
+          on:click={() => {showBCCForce = !showBCCForce}}
+          disabled={hasBCC}
+          selected={showBCC}
+          />
+      </hbox>
     </hbox>
   {#if showCC}
     <hbox class="label">Cc</hbox>
@@ -172,19 +174,16 @@
     padding: 8px 16px;
     background-color: #FCFCFC;
   }
-  .window-title-bar .spacer {
-    flex: 3 0 0;
+  .cc.buttons {
+    border-bottom: 1px solid rgb(0, 0, 0, 7%);
   }
-  .window-title-bar .cc.buttons > :global(*){
-    margin-left: 16px;
-  }
-  .window-title-bar .cc.buttons > :global(button){
+  .cc.buttons > :global(button){
     border: none;
   }
-  .window-title-bar .cc.buttons > :global(button:not(.selected)){
+  .cc.buttons > :global(button:not(.selected)){
     background-color: inherit;
   }
-  .window-title-bar .cc.buttons > :global(button.selected) {
+  .cc.buttons > :global(button.selected) {
     background-color: rgb(0, 0, 0, 5%);
   }
   .window-title-bar .close.buttons > :global(*){
