@@ -8,15 +8,13 @@
         label="Cc"
         on:click={() => {showCCForce = !showCCForce}}
         disabled={hasCC}
-        selected={showCCForce}
-        plain
+        selected={showCC}
         />
       <Button
         label="Bcc"
         on:click={() => {showBCCForce = !showBCCForce}}
         disabled={hasBCC}
-        selected={showBCCForce}
-        plain
+        selected={showBCC}
         />
     </hbox>
     <hbox class="close buttons">
@@ -143,6 +141,12 @@
   }
   .window-title-bar .cc.buttons > :global(*){
     margin-left: 16px;
+  }
+  .window-title-bar .cc.buttons > :global(button){
+    border: none;
+  }
+  .window-title-bar .cc.buttons > :global(button:not(.selected)){
+    background-color: inherit;
   }
   .window-title-bar .cc.buttons > :global(button.selected) {
     background-color: rgb(0, 0, 0, 5%);
