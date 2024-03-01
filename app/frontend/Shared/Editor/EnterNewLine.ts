@@ -8,7 +8,7 @@ import { Extension } from "@tiptap/core";
 export const EnterNewline = Extension.create({
   addKeyboardShortcuts() {
     return {
-      Enter: ({editor}) =>  editor.commands.enterLineBreak(),
+      Enter: () => this.editor.commands.enterLineBreak(),
     }
   },
   addCommands() {
