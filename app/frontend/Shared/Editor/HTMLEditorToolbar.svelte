@@ -3,7 +3,7 @@
     <Button
       label="Bold"
       shortCutInfo="**bold**"
-      on:click={() => editor.chain().focus().setBlockquoteCite('123').run()}
+      on:click={() => editor.chain().focus().toggleBold().run()}
       disabled={!editor.can().chain().focus().toggleBold().run()}
       selected={editor.isActive('bold')}
       iconOnly
@@ -13,7 +13,7 @@
     <Button
       label="Italic"
       shortCutInfo="_italic_"
-      on:click={() => editor.chain().focus().unsetBlockquoteCite().run()}
+      on:click={() => editor.chain().focus().toggleItalic().run()}
       disabled={!editor.can().chain().focus().toggleItalic().run()}
       selected={editor.isActive('italic')}
       icon={ItalicIcon}
