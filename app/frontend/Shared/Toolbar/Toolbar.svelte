@@ -17,7 +17,4 @@
     background-color: transparent;
     padding: 6px 6px;
   }
-  .toolbar :global(button.selected:not(.disabled)) {
-    background-color: #AAAAAA;
-  }
 </style>

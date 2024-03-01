@@ -70,14 +70,14 @@
   button:hover:not(.disabled) {
     background-color: rgba(32, 174, 158, 50%); /* #20AE9E */
   }
-  button.selected:hover:not(.disabled) {
+  button.selected:not(.disabled) {
     background-color: rgba(32, 174, 158, 100%); /* #20AE9E */
+  }
+  button.selected:hover {
+    background-color: rgba(32, 174, 158, 75%); /* #20AE9E */
   }
   .disabled {
     opacity: 50%;
-  }
-  .selected {
-    background-color: #00000033;
   }
   .gap {
     width: 8px;
