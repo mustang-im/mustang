@@ -69,6 +69,7 @@
 <style>
 .person-autocomplete {
   height: 24px;
+  margin-bottom: -1px;
 }
 
 .person-autocomplete :global(.autocomplete) {
@@ -80,8 +81,7 @@
 }
 .person-autocomplete :global(input) {
   padding: 0px 12px !important;
-  background-color: #FCFCFF;
-  box-shadow: -1px 0px 5px 0.5px rgb(0, 0, 0, 3%);
+  background-color: transparent;
   border-radius: 100px;
   align-items: center;
 }
