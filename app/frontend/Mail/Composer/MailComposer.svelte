@@ -134,7 +134,7 @@
 <style>
   .mail-composer-window {
     padding: 8px 16px;
-    background-color: #F5F5F5;
+    background-color: #F9F9FD;
   }
   .window-title-bar .spacer {
     flex: 3 0 0;

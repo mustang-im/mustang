@@ -80,13 +80,13 @@
 }
 .person-autocomplete :global(input) {
   padding: 0px 12px !important;
-  background-color: #F9F9F9;
+  background-color: #FCFCFF;
   box-shadow: -1px 0px 5px 0.5px rgb(0, 0, 0, 3%);
   border-radius: 100px;
   align-items: center;
 }
 .person-autocomplete :global(input::placeholder) {
-  color: #888888;
+  color: #7D7886;
 }
 .person-autocomplete :global(.autocomplete-list) {
   padding: 0px !important;
