@@ -1,5 +1,7 @@
 {#if editor}
   <Toolbar>
+    <slot name="start" />
+
     <Button
       label="Bold"
       shortCutInfo="**bold**"
@@ -163,6 +165,10 @@ block
       icon={RedoIcon}
       iconOnly
       />
+      <slot name="last" />
+
+      <hbox flex />
+      <slot name="end" />
   </Toolbar>
 {/if}
 

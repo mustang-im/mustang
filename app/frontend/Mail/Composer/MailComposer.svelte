@@ -33,7 +33,7 @@
         on:click={onSave}
         />
     </hbox>
-</hbox>
+  </hbox>
   <grid class="recipients">
     <hbox>
       {#if showCC || showBCC}
@@ -54,38 +54,60 @@
     <MailAutocomplete persons={mail.bcc} placeholder="Add BCC recipient" />
   {/if}
   </grid>
-  <HTMLEditorToolbar {editor} />
-  <vbox flex class="paper">
-    <Scroll>
-      <vbox flex class="editor">
-        <HTMLEditor bind:html={mail.html} bind:editor />
-      </vbox>
-    </Scroll>
-    <hbox class="footer">
-      <hbox class="label">Subject</hbox>
-      <hbox class="subject" flex>
-        <input type="text" bind:value={mail.subject} />
-      </hbox>
-      <hbox class="buttons">
-        <RoundButton
-          label="Send"
-          icon={SendIcon}
-          iconSize="20px"
-          padding="6px"
-          filled
-          disabled={!mail.subject || $to.isEmpty}
-          on:click={onSend}
+  <hbox flex class="editor-and-attachments">
+    <vbox flex class="editor-wrapper">
+      <HTMLEditorToolbar {editor}>
+        <Button
+          label="Attachments"
+          icon={AttachmentIcon}
+          iconOnly
+          on:click={onAddAttachment}
+          slot="end"
           />
-      </hbox>
-    </hbox>
-  </vbox>
+      </HTMLEditorToolbar>
+      <vbox flex class="paper">
+        <Scroll>
+          <vbox flex class="editor">
+            <HTMLEditor bind:html={mail.html} bind:editor />
+          </vbox>
+        </Scroll>
+        <hbox class="footer">
+          <hbox class="label">Subject</hbox>
+          <hbox class="subject" flex>
+            <input type="text" bind:value={mail.subject} />
+          </hbox>
+          <hbox class="buttons">
+            <RoundButton
+              label="Send"
+              icon={SendIcon}
+              iconSize="20px"
+              padding="6px"
+              filled
+              disabled={!mail.subject || $to.isEmpty}
+              on:click={onSend}
+              />
+          </hbox>
+        </hbox>
+      </vbox>
+    </vbox>
+    {#if showAttachments}
+      <vbox class="attachments">
+        <AttachmentsPane {mail} />
+      </vbox>
+    {/if}
+  </hbox>
 </vbox>
+
+<FileSelector bind:this={fileSelector} />
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { MailAccount } from "../../../logic/Mail/Account";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import MailAutocomplete from "./MailAutocomplete.svelte";
+  import AttachmentsPane from "./Attachments/AttachmentsPane.svelte";
+  import FileSelector from "./Attachments/FileSelector.svelte";
+  import AccountDropDown from "../AccountDropDown.svelte";
   import HTMLEditor from "../../Shared/Editor/HTMLEditor.svelte";
   import HTMLEditorToolbar from "../../Shared/Editor/HTMLEditorToolbar.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
@@ -95,7 +117,7 @@
   import SendIcon from "lucide-svelte/icons/send";
   import TrashIcon from "lucide-svelte/icons/trash";
   import CloseIcon from "lucide-svelte/icons/x";
-  import AccountDropDown from "../AccountDropDown.svelte";
+  import AttachmentIcon from "lucide-svelte/icons/paperclip";
 
   export let mail: EMail;
 
@@ -103,6 +125,16 @@
   $: to = mail.to;
 
   let from: MailAccount;
+  let fileSelector: FileSelector;
+  export async function onAddAttachment() {
+    let file = await fileSelector.selectFile();
+    if (!file) {
+      console.log("no file selected");
+      return;
+    }
+    console.log("selected file", file);
+    mail.attachments.add(file);
+  }
 
   async function onSend() {
     await mail.send();
@@ -123,12 +155,16 @@
 
   let showCCForce = false;
   let showBCCForce = false;
+  let showAttachmentsForce = false;
   $: ccList = mail.cc;
   $: bccList = mail.bcc;
+  $: attachmentsList = mail.attachments;
   $: hasCC = $ccList.hasItems;
   $: hasBCC = $bccList.hasItems;
+  $: hasAttachments = $attachmentsList.hasItems;
   $: showCC = showCCForce || hasCC;
   $: showBCC = showBCCForce || hasBCC;
+  $: showAttachments = showAttachmentsForce || hasAttachments;
 </script>
 
 <style>
@@ -176,6 +212,13 @@
   }
   .editor {
     margin: 12px 12px;
+  }
+  .editor-wrapper {
+    flex: 3 0 0;
+  }
+  .attachments {
+    min-width: 120px;
+    max-width: 350px;
   }
   .footer {
     margin-top: 8px;
