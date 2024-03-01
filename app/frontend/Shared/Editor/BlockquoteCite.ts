@@ -19,7 +19,7 @@ declare module '@tiptap/core' {
   }
 }
 
-/* Adds support for `cite` attribute for `blockquote` */
+/** Adds support for `cite` attribute for `<blockquote>` */
 export const BlockquoteCite = Blockquote.extend<BlockquoteCiteOptions>({
   addAttributes() {
     return {
