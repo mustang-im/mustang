@@ -9,6 +9,9 @@ export class MailAccount extends Account {
   @notifyChangedProperty
   emailAddress: string;
   readonly rootFolders = new ArrayColl<Folder>();
+  /** List of all messages in all folders,
+   * filtered based on the person.
+   * TODO move up, across all accounts? */
   readonly messages = new MapColl<Person, EMail>();
   @notifyChangedProperty
   inbox: Folder;
