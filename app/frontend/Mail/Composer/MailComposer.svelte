@@ -108,6 +108,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { MailAccount } from "../../../logic/Mail/Account";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
+  import { insertImage } from "../../Shared/Editor/InsertImage";
   import MailAutocomplete from "./MailAutocomplete.svelte";
   import AttachmentsPane from "./Attachments/AttachmentsPane.svelte";
   import FileSelector from "./Attachments/FileSelector.svelte";
@@ -148,7 +149,9 @@
 
   function onFileInlineDrop(event: CustomEvent) {
     let files = event.detail.files as File[];
-    alert("insert inline " + files[0].name);
+    for (let file of files) {
+      insertImage(editor, file);
+    }
   }
 
   async function onSend() {

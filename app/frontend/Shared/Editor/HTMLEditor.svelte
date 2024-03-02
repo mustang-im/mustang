@@ -6,6 +6,7 @@
   import { Editor } from '@tiptap/core';
   import StarterKit from '@tiptap/starter-kit';
   import LinkFeature from '@tiptap/extension-link';
+  import ImageFeature from '@tiptap/extension-image';
   import CodeWordFeature from '@tiptap/extension-code';
   import { SplitBlockquote } from './SplitBlockquote';
   import { Footer } from './Footer';
@@ -31,7 +32,11 @@
         LinkFeature,
         CodeWordFeature,
         SplitBlockquote,
-        Footer
+        Footer,
+        ImageFeature.configure({
+          allowBase64: true,
+          inline: true,
+        }),
         // CodeBlockLowlightFeature.configure({
         //  lowlight: createLowlight(lowlightCommon),
         // }),

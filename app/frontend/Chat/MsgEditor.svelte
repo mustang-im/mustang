@@ -30,6 +30,7 @@
 <script lang="ts">
   import type { Chat } from "../../logic/Chat/Chat";
   import { UserChatMessage } from "../../logic/Chat/Message";
+  import { insertImage } from "../Shared/Editor/InsertImage";
   import HTMLEditorToolbar from "../Shared/Editor/HTMLEditorToolbar.svelte";
   import HTMLEditor from "../Shared/Editor/HTMLEditor.svelte";
   import FileDropTarget from "../Mail/Composer/Attachments/FileDropTarget.svelte";
@@ -75,7 +76,9 @@
 
   function onAddInline(event: CustomEvent) {
     let files = event.detail.files as File[];
-    alert("insert inline " + files[0].name);
+    for (let file of files) {
+      insertImage(editor, file);
+    }
   }
 </script>
 
