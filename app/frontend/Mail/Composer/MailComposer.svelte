@@ -1,104 +1,106 @@
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<vbox flex class="mail-composer-window">
-  <hbox class="window-title-bar">
-    <AccountDropDown bind:selectedAccount={from} />
-    <hbox flex class="spacer" />
-    <hbox class="close buttons">
-      <RoundButton
-        label="Discard and close"
-        icon={TrashIcon}
-        iconSize="16px"
-        padding="6px"
-        on:click={onDelete}
-        />
-      <RoundButton
-        label="Save and close"
-        icon={CloseIcon}
-        iconSize="16px"
-        padding="6px"
-        on:click={onSave}
-        />
+<FileDropTarget on:add-files={onFilesDrop} on:inline-files={onFileInlineDrop} allowInline={true}>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <vbox flex class="mail-composer-window">
+    <hbox class="window-title-bar">
+      <AccountDropDown bind:selectedAccount={from} />
+      <hbox flex class="spacer" />
+      <hbox class="close buttons">
+        <RoundButton
+          label="Discard and close"
+          icon={TrashIcon}
+          iconSize="16px"
+          padding="6px"
+          on:click={onDelete}
+          />
+        <RoundButton
+          label="Save and close"
+          icon={CloseIcon}
+          iconSize="16px"
+          padding="6px"
+          on:click={onSave}
+          />
+      </hbox>
     </hbox>
-  </hbox>
-  <grid class="recipients">
-    <hbox>
-      {#if showCC || showBCC}
-        <hbox class="label">
-            To
+    <grid class="recipients">
+      <hbox>
+        {#if showCC || showBCC}
+          <hbox class="label">
+              To
+          </hbox>
+        {/if}
+      </hbox>
+      <hbox flex>
+        <hbox flex>
+          <MailAutocomplete persons={mail.to} placeholder="Add recipient" />
         </hbox>
+        <hbox class="cc buttons">
+          <Button
+            label="Cc"
+            on:click={() => {showCCForce = !showCCForce}}
+            disabled={hasCC}
+            selected={showCC}
+            />
+          <Button
+            label="Bcc"
+            on:click={() => {showBCCForce = !showBCCForce}}
+            disabled={hasBCC}
+            selected={showBCC}
+            />
+        </hbox>
+      </hbox>
+    {#if showCC}
+      <hbox class="label">Cc</hbox>
+      <MailAutocomplete persons={mail.cc} placeholder="Add CC recipient" />
+    {/if}
+    {#if showBCC}
+      <hbox class="label">Bcc</hbox>
+      <MailAutocomplete persons={mail.bcc} placeholder="Add BCC recipient" />
+    {/if}
+    </grid>
+    <HTMLEditorToolbar {editor}>
+      <Button
+        label="Attachments"
+        icon={AttachmentIcon}
+        iconOnly
+        on:click={onAddAttachment}
+        slot="end"
+        />
+    </HTMLEditorToolbar>
+    <hbox flex class="editor-and-attachments">
+      <vbox flex class="editor-wrapper">
+        <vbox flex class="paper">
+          <Scroll>
+            <vbox flex class="editor">
+              <HTMLEditor bind:html={mail.html} bind:editor />
+            </vbox>
+          </Scroll>
+          <hbox class="footer">
+            <hbox class="label">Subject</hbox>
+            <hbox class="subject" flex>
+              <input type="text" bind:value={mail.subject} />
+            </hbox>
+            <hbox class="buttons">
+              <RoundButton
+                label="Send"
+                icon={SendIcon}
+                iconSize="20px"
+                padding="6px"
+                filled
+                disabled={!mail.subject || $to.isEmpty}
+                on:click={onSend}
+                />
+            </hbox>
+          </hbox>
+        </vbox>
+      </vbox>
+      {#if showAttachments}
+        <vbox class="attachments">
+          <AttachmentsPane attachments={mail.attachments} />
+        </vbox>
       {/if}
     </hbox>
-    <hbox flex>
-      <hbox flex>
-        <MailAutocomplete persons={mail.to} placeholder="Add recipient" />
-      </hbox>
-      <hbox class="cc buttons">
-        <Button
-          label="Cc"
-          on:click={() => {showCCForce = !showCCForce}}
-          disabled={hasCC}
-          selected={showCC}
-          />
-        <Button
-          label="Bcc"
-          on:click={() => {showBCCForce = !showBCCForce}}
-          disabled={hasBCC}
-          selected={showBCC}
-          />
-      </hbox>
-    </hbox>
-  {#if showCC}
-    <hbox class="label">Cc</hbox>
-    <MailAutocomplete persons={mail.cc} placeholder="Add CC recipient" />
-  {/if}
-  {#if showBCC}
-    <hbox class="label">Bcc</hbox>
-    <MailAutocomplete persons={mail.bcc} placeholder="Add BCC recipient" />
-  {/if}
-  </grid>
-  <HTMLEditorToolbar {editor}>
-    <Button
-      label="Attachments"
-      icon={AttachmentIcon}
-      iconOnly
-      on:click={onAddAttachment}
-      slot="end"
-      />
-  </HTMLEditorToolbar>
-  <hbox flex class="editor-and-attachments">
-    <vbox flex class="editor-wrapper">
-      <vbox flex class="paper">
-        <Scroll>
-          <vbox flex class="editor">
-            <HTMLEditor bind:html={mail.html} bind:editor />
-          </vbox>
-        </Scroll>
-        <hbox class="footer">
-          <hbox class="label">Subject</hbox>
-          <hbox class="subject" flex>
-            <input type="text" bind:value={mail.subject} />
-          </hbox>
-          <hbox class="buttons">
-            <RoundButton
-              label="Send"
-              icon={SendIcon}
-              iconSize="20px"
-              padding="6px"
-              filled
-              disabled={!mail.subject || $to.isEmpty}
-              on:click={onSend}
-              />
-          </hbox>
-        </hbox>
-      </vbox>
-    </vbox>
-    {#if showAttachments}
-      <vbox class="attachments">
-        <AttachmentsPane {mail} />
-      </vbox>
-    {/if}
-  </hbox>
-</vbox>
+  </vbox>
+</FileDropTarget>
 
 <FileSelector bind:this={fileSelector} />
 
@@ -109,6 +111,7 @@
   import MailAutocomplete from "./MailAutocomplete.svelte";
   import AttachmentsPane from "./Attachments/AttachmentsPane.svelte";
   import FileSelector from "./Attachments/FileSelector.svelte";
+  import FileDropTarget from "./Attachments/FileDropTarget.svelte";
   import AccountDropDown from "../AccountDropDown.svelte";
   import HTMLEditor from "../../Shared/Editor/HTMLEditor.svelte";
   import HTMLEditorToolbar from "../../Shared/Editor/HTMLEditorToolbar.svelte";
@@ -128,7 +131,7 @@
 
   let from: MailAccount;
   let fileSelector: FileSelector;
-  export async function onAddAttachment() {
+  async function onAddAttachment() {
     let file = await fileSelector.selectFile();
     if (!file) {
       console.log("no file selected");
@@ -136,6 +139,16 @@
     }
     console.log("selected file", file);
     mail.attachments.add(file);
+  }
+
+  function onFilesDrop(event: CustomEvent) {
+    let files = event.detail.files as File[];
+    mail.attachments.addAll(files);
+  }
+
+  function onFileInlineDrop(event: CustomEvent) {
+    let files = event.detail.files as File[];
+    alert("insert inline " + files[0].name);
   }
 
   async function onSend() {
