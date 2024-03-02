@@ -16,16 +16,14 @@
 <FileSelector bind:this={fileSelector} />
 
 <script lang="ts">
-  import type { EMail } from "../../../logic/Mail/EMail";
   import AttachmentEntry from "./AttachmentEntry.svelte";
   import FileSelector from "./FileSelector.svelte";
   import RoundButton from "../../../Shared/RoundButton.svelte";
   import Scroll from "../../../Shared/Scroll.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
+  import type { Collection } from "svelte-collections";
 
-  export let mail: EMail;
-
-  $: attachments = mail.attachments;
+  export let attachments: Collection<File>;
 
   let fileSelector: FileSelector;
   export async function onAdd() {
@@ -35,7 +33,7 @@
       return;
     }
     console.log("selected file", file);
-    mail.attachments.add(file);
+    attachments.add(file);
   }
 </script>
 
