@@ -142,6 +142,12 @@ block
       iconOnly
       />
     <Button
+      label="Insert image"
+      on:click={createImage}
+      icon={ImageIcon}
+      iconOnly
+      />
+    <Button
       label="Clear formatting"
       on:click={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}
       icon={ClearIcon}
@@ -182,6 +188,7 @@ block
   import QuoteIcon from "lucide-svelte/icons/quote";
   import LinkIcon from "lucide-svelte/icons/link";
   import LinkRemoveIcon from "lucide-svelte/icons/unlink";
+  import ImageIcon from "lucide-svelte/icons/image-plus";
   import ListBulletedIcon from "lucide-svelte/icons/list";
   import ListNumberedIcon from "lucide-svelte/icons/list-ordered";
   import ClearIcon from "lucide-svelte/icons/remove-formatting";
@@ -195,6 +202,11 @@ block
   function createLink() {
     let url = window.prompt("Location");
     editor.chain().focus().setLink({ href: url }).run();
+  }
+
+  function createImage() {
+    let url = window.prompt("Image URL");
+    editor.chain().focus().setImage({ src: url }).run();
   }
 </script>
 
