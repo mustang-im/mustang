@@ -79,20 +79,6 @@ block
       />
     -->
     <Button
-      label="Link to webpage"
-      on:click={createLink}
-      selected={editor.isActive('link')}
-      icon={LinkIcon}
-      iconOnly
-      />
-    <Button
-      label="Remove link"
-      on:click={() => editor.chain().focus().unsetLink().run()}
-      disabled={!editor.can().chain().focus().unsetLink().run()}
-      icon={LinkRemoveIcon}
-      iconOnly
-      />
-    <Button
       label="Bulleted list"
       shortCutInfo="* Item"
       on:click={() => editor.chain().focus().toggleBulletList().run()}
@@ -141,6 +127,20 @@ block
       >
       <hbox slot="icon" class="header-icon">H3</hbox>
     </Button>
+    <Button
+      label="Link to webpage"
+      on:click={createLink}
+      selected={editor.isActive('link')}
+      icon={LinkIcon}
+      iconOnly
+      />
+    <Button
+      label="Remove link"
+      on:click={() => editor.chain().focus().unsetLink().run()}
+      disabled={!editor.can().chain().focus().unsetLink().run()}
+      icon={LinkRemoveIcon}
+      iconOnly
+      />
     <Button
       label="Clear formatting"
       on:click={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}
@@ -193,6 +193,8 @@ block
   export let editor: Editor;
 
   function createLink() {
+    let url = window.prompt("Location");
+    editor.chain().focus().setLink({ href: url }).run();
   }
 </script>
 
