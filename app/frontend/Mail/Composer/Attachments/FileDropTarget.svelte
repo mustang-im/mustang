@@ -5,7 +5,7 @@
   on:dragover={onDragOver}
   >
   {#if dragging}
-    {#if allowInline}
+    {#if isImage && allowInline}
       <hbox flex class="drop-target inline" on:drop={event => onDrop(event, true)}>
         Insert inline into text
       </hbox>
@@ -19,14 +19,15 @@
 </hbox>
 
 <script lang="ts">
+  import { isImageMimetype } from "../../../Shared/Editor/InsertImage";
   import { createEventDispatcher } from "svelte";
 
   export let allowInline = false;
 
   let dragging = 0;
+  let isImage = false;
   let dispatch = createEventDispatcher();
   function onDrop(event: DragEvent, inline = false) {
-    console.log("on drop");
     event.preventDefault(); // Don't load file into browser
     dragging = 0;
     if (!event.dataTransfer.items) {
@@ -40,20 +41,29 @@
       let file = item.getAsFile();
       files.push(file);
     }
-    dispatch(inline ? "inline-files" : "add-files", { files });
+    isImage = files.every(file => isImageMimetype(file.type));
+    dispatch(isImage && inline ? "inline-files" : "add-files", { files });
   }
 
   function onDragOver(event: DragEvent) {
-    console.log("on drag over");
     event.preventDefault();
   }
   function onDragEnter(event: DragEvent) {
-    console.log("on drag enter");
     event.preventDefault();
+    if (!event.dataTransfer.items) {
+      return;
+    }
+    let mimetypes: string[] = [];
+    for (let item of event.dataTransfer.items) {
+      if (item.kind != "file") {
+        continue;
+      }
+      mimetypes.push(item.type);
+    }
+    isImage = mimetypes.every(isImageMimetype);
     dragging++;
   }
   function onDragLeave() {
-    console.log("on drag leave");
     dragging--;
   }
 </script>
