@@ -10,6 +10,7 @@ export class Folder extends Observable {
   readonly messages = new ArrayColl<EMail>();
 
   async fetch() {
+    console.log("fetch folder", name);
   }
 }
 
