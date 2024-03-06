@@ -12,10 +12,16 @@ export class IMAPFolder extends Folder {
     this._account = account;
   }
 
-  async fetch() {
+  fromFlow(folderInfo: any) {
+    this.name = folderInfo.name;
+    this.path = folderInfo.path;
+    this._account.specialUse(this, folderInfo.specialUse);
+  }
+
+  async listMessages() {
     let lock;
     try {
-      console.log("fetch folder", this.name);
+      console.log("list messages in folder", this.name);
       let newMessages = new ArrayColl<IMAPEMail>();
       let conn = this._account._connection;
       lock = await conn.getMailboxLock(this.path);
@@ -24,13 +30,53 @@ export class IMAPFolder extends Folder {
         threadId: true,
         envelope: true,
       })) {
-        let msg = new IMAPEMail(this._account);
-        msg.fromFlow(msgInfo);
-        newMessages.add(msg);
+        let msg = this.getEMailByUID(msgInfo.uid);
+        if (!msg) {
+          msg = new IMAPEMail(this);
+          msg.fromFlow(msgInfo);
+          newMessages.add(msg);
+        }
       }
-      this.messages.addAll(newMessages); // TODO add only the new ones
+      this.messages.addAll(newMessages); // notify only once
     } finally {
       lock.release();
     }
   }
+
+  async downloadMessagesComplete() {
+    let lock;
+    try {
+      console.log("download complete messages in folder", this.name);
+      let newMessages = new ArrayColl<IMAPEMail>();
+      let conn = this._account._connection;
+      lock = await conn.getMailboxLock(this.path);
+      for await (let msgInfo of await conn.downloadMany("1:*", {
+        size: true,
+        threadId: true,
+        envelope: true,
+      })) {
+        let msg = this.getEMailByUID(msgInfo.uid);
+        if (msg?.downloadComplete) {
+          continue;
+        } else if (msg) {
+          msg.fromFlow(msgInfo);
+        } else {
+          msg = new IMAPEMail(this);
+          msg.fromFlow(msgInfo);
+          newMessages.add(msg);
+        }
+      }
+      this.messages.addAll(newMessages); // notify only once
+    } finally {
+      lock.release();
+    }
+  }
+
+  getEMailByUID(uid: number): IMAPEMail {
+    return this.messages.find((m: IMAPEMail) => m.uid == uid) as IMAPEMail;
+  }
+
+  /* getEMailByUIDOrCreate(uid: number): IMAPEMail {
+    return this.getEMailByUID(uid) ?? new IMAPEMail(this);
+  }*/
 }

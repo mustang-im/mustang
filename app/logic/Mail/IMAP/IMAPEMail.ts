@@ -6,14 +6,18 @@ import type { MapColl } from "svelte-collections";
 
 export class IMAPEMail extends EMail {
   _folder: IMAPFolder;
+  /** From IMAP server */
   uid: number;
+  /** This message has been downloaded completely,
+   * with header, body, and all attachments. */
+  downloadComplete: boolean;
 
   constructor(folder: IMAPFolder) {
     super();
     this._folder = folder;
   }
 
-  async fetch() {
+  async download() {
     let lock;
     try {
       console.log("fetch msg", this.subject);

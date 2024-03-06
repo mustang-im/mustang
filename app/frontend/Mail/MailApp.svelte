@@ -24,7 +24,7 @@
       if (!folder) {
         return;
       }
-      await folder.fetch();
+      await folder.listMessages();
     } catch (ex) {
       showError(ex);
     }
