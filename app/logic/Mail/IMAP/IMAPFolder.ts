@@ -25,11 +25,12 @@ export class IMAPFolder extends Folder {
       let newMessages = new ArrayColl<IMAPEMail>();
       let conn = this._account._connection;
       lock = await conn.getMailboxLock(this.path);
-      for await (let msgInfo of await conn.fetch("1:*", {
+      let msgsFetch = conn.fetch("1:*", {
         size: true,
         threadId: true,
         envelope: true,
-      })) {
+      });
+      for await (let msgInfo of msgsFetch) {
         let msg = this.getEMailByUID(msgInfo.uid);
         if (!msg) {
           msg = new IMAPEMail(this);
