@@ -1,4 +1,4 @@
-import type { ChatAccount } from './Account';
+import type { ChatAccount } from './ChatAccount';
 import { ArrayColl } from 'svelte-collections';
 import { MatrixAccount } from './Matrix/MatrixAccount';
 import { XMPPAccount } from './XMPP/XMPPAccount';

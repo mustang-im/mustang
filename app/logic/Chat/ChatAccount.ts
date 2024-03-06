@@ -1,7 +1,7 @@
 import { Account } from "../Abstract/Account";
-import type { ChatPerson } from "../Chat/Person";
+import type { ChatPerson } from "./Person";
 import type { Group } from "../Abstract/Group";
-import type { Chat } from "../Chat/Chat";
+import type { Chat } from "./Chat";
 import { ArrayColl, MapColl } from 'svelte-collections';
 import { notifyChangedProperty } from "../util/Observable";
 

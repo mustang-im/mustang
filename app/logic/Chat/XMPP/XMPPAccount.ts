@@ -1,4 +1,4 @@
-import { ChatAccount } from '../Account';
+import { ChatAccount } from '../ChatAccount';
 import { XMPPChatRoom } from './XMPPChatRoom';
 import { ChatMessage, DeliveryStatus, UserChatMessage } from '../Message';
 import { Group } from '../../Abstract/Group';
