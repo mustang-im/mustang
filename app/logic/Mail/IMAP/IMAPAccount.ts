@@ -78,29 +78,6 @@ export class IMAPAccount extends MailAccount {
     return folders;
   }
 
-  specialUse(folder: IMAPFolder, specialUse: string): void {
-    switch (specialUse) {
-      case "\Inbox":
-        this.inbox = folder;
-        break;
-      case "\Trash":
-        this.trash = folder;
-        break;
-      case "\Junk":
-        this.spam = folder;
-        break;
-      case "\Sent":
-        this.sent = folder;
-        break;
-      case "\Drafts":
-        this.drafts = folder;
-        break;
-      case "\Archive":
-        this.archive = folder;
-        break;
-    }
-  }
-
   async logout(): Promise<void> {
     await this._connection.logout();
   }

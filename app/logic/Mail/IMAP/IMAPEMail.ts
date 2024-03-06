@@ -35,6 +35,7 @@ export class IMAPEMail extends EMail {
     this.id = env.messageId;
     this.subject = env.subject;
     this.sent = env.date;
+    this.received = env.date ?? new Date();
     this.inReplyTo = env.inReplyTo;
     let firstFrom = env.from[0];
     if (firstFrom) {
@@ -44,7 +45,6 @@ export class IMAPEMail extends EMail {
     addPersons(this.to, env.to);
     addPersons(this.cc, env.cc);
     addPersons(this.bcc, env.bcc);
-    addPersons(this.replyTo, env.replyTo);
   }
 }
 
