@@ -1,7 +1,7 @@
 import type { AppGlobal } from './app';
-import { MailAccount } from './Mail/Account';
+import { MailAccount } from './Mail/MailAccount';
 import { EMail } from './Mail/EMail';
-import { ChatAccount } from './Chat/Account';
+import { ChatAccount } from './Chat/ChatAccount';
 import { UserChatMessage } from './Chat/Message';
 import { ChatPerson } from './Chat/Person';
 import { faker } from '@faker-js/faker';

@@ -2,7 +2,7 @@ import { MeetingState, VideoConfMeeting } from "./VideoConfMeeting";
 import { Person, ContactEntry } from "../Abstract/Person";
 import { Group } from "../Abstract/Group";
 import { MeetingParticipant } from "./Participant";
-import type { ChatAccount } from "../Chat/Account";
+import type { ChatAccount } from "../Chat/ChatAccount";
 import type { Chat } from "../Chat/Chat";
 import { OTalkConf } from "./OTalkConf";
 import { MatrixAccount } from "../Chat/Matrix/MatrixAccount";
