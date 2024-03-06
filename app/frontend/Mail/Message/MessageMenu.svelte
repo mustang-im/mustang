@@ -57,8 +57,8 @@
 </Menu>
 
 <script lang="ts">
-  import type MailAccount from "../../../../lib/logic/mail/MailAccount";
-  import type EMail from "../../../../lib/logic/mail/EMail";
+  import type { EMail } from "../../../logic/Mail/EMail";
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { Menu } from "@svelteuidev/core";
   import ReplyIcon from "lucide-svelte/icons/reply";
   import ReplyAllIcon from "lucide-svelte/icons/reply-all";

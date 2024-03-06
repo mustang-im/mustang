@@ -8,6 +8,9 @@ export class Folder extends Observable {
   @notifyChangedProperty
   specialFolder: SpecialFolder;
   readonly messages = new ArrayColl<EMail>();
+
+  async fetch() {
+  }
 }
 
 export enum SpecialFolder {

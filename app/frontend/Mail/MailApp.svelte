@@ -7,8 +7,7 @@
 {/if}
 
 <script lang="ts">
-  import type Account from "../../../lib/logic/mail/MailAccount";
-  import type Folder from "../../../lib/logic/account/MsgFolder";
+  import type { Folder } from "../../logic/Mail/Folder";
   import { selectedAccount, selectedFolder, selectedMessage } from "./Selected";
   import { appGlobal } from "../../logic/app";
   import { getLocalStorage } from "../Util/LocalStorage";

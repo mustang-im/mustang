@@ -16,10 +16,10 @@
 </vbox>
 
 <script lang="ts">
-  import type EMail from "../../../../lib/logic/mail/EMail";
-  import type { Collection, ArrayColl } from "svelte-collections";
+  import type { EMail } from "../../../logic/Mail/EMail";
   import FastList from "../../Shared/FastList.svelte";
   import TableMessageListItem from "./TableMessageListItem.svelte";
+  import type { Collection, ArrayColl } from "svelte-collections";
   import { catchErrors } from "../../Util/error";
 
   export let messages: Collection<EMail>;

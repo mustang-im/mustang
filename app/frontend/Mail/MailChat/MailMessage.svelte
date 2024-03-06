@@ -15,13 +15,12 @@
 </MessageBubble>
 
 <script lang="ts">
-  import type MailAccount from "../../../../lib/logic/mail/MailAccount";
-  import type Folder from "../../../../lib/logic/account/MsgFolder";
-  import type EMail from "../../../../lib/logic/mail/EMail";
+  import type { Message } from "../../../logic/Abstract/Message";
+  import { EMail } from "../../../logic/Mail/EMail";
   import MessageBubble from "../../Chat/MessageView/Message.svelte";
 
   export let message: EMail;
-  export let previousMessage: EMail;
+  export let previousMessage: Message;
 
   $: allRecipients = message.to.concat(message.cc).concat(message.bcc);
   $: recipientsLine = allRecipients.contents.map(person => person.name).join(", ");
