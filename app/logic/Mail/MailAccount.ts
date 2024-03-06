@@ -21,9 +21,14 @@ export class MailAccount extends Account {
   readonly messages = new MapColl<Person, EMail>();
   @notifyChangedProperty
   inbox: Folder;
+  trash: Folder;
+  spam: Folder;
+  sent: Folder;
+  drafts: Folder;
+  archive: Folder;
 }
 
-enum TLSSocketType {
+export enum TLSSocketType {
   Unknown = 0,
   Plain = 1,
   TLS = 2,

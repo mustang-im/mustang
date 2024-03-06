@@ -11,7 +11,7 @@ import { ArrayColl } from 'svelte-collections';
  *
  * You still need to call `await account.login()` on each of them.
  */
-export async function readMailAccounts(remoteApp: any): Promise<ArrayColl<MailAccount>> {
+export async function readMailAccounts(): Promise<ArrayColl<MailAccount>> {
   let accounts = new ArrayColl<MailAccount>();
   for (let i = 1; true; i++) {
     let prefBranch = `mail.account${i}.`;

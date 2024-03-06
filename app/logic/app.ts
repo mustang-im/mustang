@@ -11,9 +11,6 @@ import { ArrayColl } from 'svelte-collections';
 import JPCWebSocket from '../../lib/jpc-ws';
 
 export class AppGlobal {
-  addNewAccountFromConfig: Function;
-  findAccountConfig: Function;
-  AccountConfig: Object;
   readonly emailAccounts = new ArrayColl<MailAccount>();
   readonly chatAccounts = new ArrayColl<ChatAccount>();
   readonly calendars = new ArrayColl<Calendar>();
@@ -21,6 +18,7 @@ export class AppGlobal {
   readonly persons = new ArrayColl<Person>();
   readonly files = new ArrayColl<Directory>();
   readonly apps = new Apps();
+  remoteApp: any;
   me: Person;
 }
 export let appGlobal = new AppGlobal();
@@ -31,8 +29,8 @@ export async function getStartObjects(): Promise<void> {
   let jpc = new JPCWebSocket(null);
   await jpc.connect(kSecret, "localhost", 5455);
   console.log("connected to server");
-  let remoteApp = await jpc.getRemoteStartObject();
-  appGlobal.emailAccounts.addAll(await readMailAccounts(remoteApp));
+  appGlobal.remoteApp = await jpc.getRemoteStartObject();
+  appGlobal.emailAccounts.addAll(await readMailAccounts());
   appGlobal.chatAccounts.addAll(await readChatAccounts());
 }
 
@@ -40,9 +38,9 @@ export async function getStartObjects(): Promise<void> {
  * Logs in to all accounts for which we have the credentials stored.
  *
  * @param errorCallback Called for login errors.
- * May be called multiple times, e.g. once per account.
+ *   May be called multiple times, e.g. once per account.
  */
-export async function login(errorCallback = (ex) => console.error(ex)): Promise<void> {
+export async function loginOnStartup(errorCallback: (ex) => void): Promise<void> {
   for (let account of appGlobal.chatAccounts) {
     try {
       await account.login(false);

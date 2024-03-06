@@ -17,6 +17,10 @@ export class Account extends Observable {
     this.id = crypto.randomUUID();
   }
 
+  get isLoggedIn(): boolean {
+    return false;
+  }
+
   /**
    * @param interactive
    *   true: If needed, open UI to ask user to log in manually,
@@ -30,6 +34,9 @@ export class Account extends Observable {
    *     but the server refused to accept them.
    *     (Typically for reasons other than expiry.)
    */
-  async login(interactive: boolean) {
+  async login(interactive: boolean): Promise<void> {
+  }
+
+  async logout(): Promise<void> {
   }
 }
