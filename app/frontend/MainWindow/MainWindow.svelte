@@ -20,7 +20,7 @@
 
 <script lang="ts">
   import { mustangApps, selectedApp, sidebarApp } from "../AppsBar/selectedApp";
-  import { appGlobal, getStartObjects, login } from "../../logic/app";
+  import { appGlobal, getStartObjects, loginOnStartup } from "../../logic/app";
   import { loadMustangApps } from "../AppsBar/loadMustangApps";
   import AppBar from "../AppsBar/AppBar.svelte";
   import AppContent from "../AppsBar/AppContent.svelte";
@@ -41,7 +41,7 @@
       return;
     }
     await getStartObjects();
-    await login(showError); // TODO Show as background error
+    await loginOnStartup(showError); // TODO Show as background error
   }));
 </script>
 

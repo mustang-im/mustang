@@ -8,9 +8,10 @@ export class Folder extends Observable {
   @notifyChangedProperty
   specialFolder: SpecialFolder;
   readonly messages = new ArrayColl<EMail>();
+  readonly subFolders = new ArrayColl<Folder>();
 
   async fetch() {
-    console.log("fetch folder", name);
+    console.log("fetch folder", this.name);
   }
 }
 
