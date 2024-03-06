@@ -6,7 +6,7 @@
     minCharactersToSearch={2}
     localFiltering={false}
     localSorting={false}
-    closeOnBlur={true}
+    closeOnBlur={false}
     hideArrow={true}
     noResultsText="No person found"
     {placeholder}
@@ -68,17 +68,27 @@
 
 <style>
 .person-autocomplete {
-  height: 2em;
+  height: 24px;
+  margin-bottom: -1px;
 }
 
 .person-autocomplete :global(.autocomplete) {
   height: 100% !important;
-  width: 100%;
 }
 .person-autocomplete :global(.input-container) {
   height: 100%;
 }
 .person-autocomplete :global(input) {
+  padding: 0px 12px !important;
+  background-color: #FCFCFF;
+  box-shadow: -1px 0px 5px 0.5px rgb(0, 0, 0, 3%);
+  border-radius: 100px;
+  align-items: center;
+}
+.person-autocomplete :global(input::placeholder) {
+  color: #7D7886;
+}
+.person-autocomplete :global(.autocomplete-list) {
   padding: 0px !important;
 }
 

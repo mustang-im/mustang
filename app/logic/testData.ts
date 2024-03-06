@@ -1,6 +1,6 @@
 import type { AppGlobal } from './app';
 import { MailAccount } from './Mail/Account';
-import { EMail } from './Mail/Message';
+import { EMail } from './Mail/EMail';
 import { ChatAccount } from './Chat/Account';
 import { UserChatMessage } from './Chat/Message';
 import { ChatPerson } from './Chat/Person';

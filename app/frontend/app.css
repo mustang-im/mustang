@@ -24,6 +24,7 @@ body {
   place-items: center;
   min-width: 640px;
   min-height: 100vh;
+  scrollbar-color: #22222325 transparent;
 }
 
 #app {
@@ -86,13 +87,13 @@ input {
   border-bottom: 1px solid #DFDFDF;
 }
 
-input::placeholder {
-  color: #0C0F27BB;
-}
-
 input:focus {
   outline: none;
-  border-bottom: 2px solid #20AE9E;
+  border-bottom: 1px solid #20AE9E;
+}
+
+input::placeholder {
+  color: #0C0F27BB;
 }
 
 a[href] {

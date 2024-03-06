@@ -19,10 +19,10 @@
 </vbox>
 
 <script lang="ts">
-  import type AppListed from "../../logic/Apps/AppListed";
-  import type { Collection } from "svelte-collections";
+  import type AppListed from "../../../logic/Apps/AppListed";
   import AppLaunchButton from "./AppLaunchButton.svelte";
-  import Button from "../Shared/Button.svelte";
+  import Button from "../../Shared/Button.svelte";
+  import type { Collection } from "svelte-collections";
 
   export let apps: Collection<AppListed>;
   export let runningApp: AppListed; /* in/out */

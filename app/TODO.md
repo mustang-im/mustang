@@ -14,11 +14,10 @@
 
 # Chat
 ## UI
-* Editor
-  * HTML edit, to send HTML messages
-  * Button toolbar
-  * Emojis
-  * Giffy
+* Message menu
+  * Emoji reaction
+  * Reply
+* User is typing
 * Group chat
   * Need: Router, for: Click on name -> Contacts
   * Show list of participants?
@@ -28,14 +27,13 @@
   * Via group name or URL
   * Search
 * Create group
-* User is typing
 * Link URLs
 * Detect MarkDown in plaintext messages
 
 ## Editor
-* Send HTML
-* Formatting toolbar
-* Detect MarkDown and convert to HTML while sending
+* Emojis
+* Attachments
+* Giffy
 
 ## XMPP
 * Finish implementatoin
@@ -61,9 +59,10 @@
 # Calendar
 * New event dialog
 * Protocol implementation
+  * CalDav
+  * ical
   * JMAP
   * JSCalendar
-  * ical
 * Store locally
 * Invitation send
 * Invitation receive
@@ -71,7 +70,6 @@
 
 # Meet
 ## UI
-* Gallery: Video too large
 * Open/close cam and mic
 * UI for incoming or outgoing call
   * Before joining conference
@@ -115,7 +113,6 @@
 * blockquote cite vs. third party
 * Insert link
 * Insert image
-* Clear formatting
 * Emojis
 
 # Login

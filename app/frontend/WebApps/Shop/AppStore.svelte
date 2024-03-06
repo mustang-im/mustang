@@ -14,10 +14,10 @@
 </hbox>
 
 <script lang="ts">
-  import type AppCategory from "../../logic/Apps/AppCategory";
-  import type AppListed from "../../logic/Apps/AppListed";
-  import { appGlobal } from "../../logic/app";
-  import RoundButton from "../Shared/RoundButton.svelte";
+  import type AppCategory from "../../../logic/Apps/AppCategory";
+  import type AppListed from "../../../logic/Apps/AppListed";
+  import { appGlobal } from "../../../logic/app";
+  import RoundButton from "../../Shared/RoundButton.svelte";
   import Categories from "./Categories.svelte";
   import CategoryPage from "./CategoryPage.svelte";
   import XIcon from "lucide-svelte/icons/x";
