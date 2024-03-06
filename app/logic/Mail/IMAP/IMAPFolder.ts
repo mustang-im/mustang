@@ -28,6 +28,7 @@ export class IMAPFolder extends Folder {
       let msgsAsyncIterator = await conn.fetch("1:*", {
         size: true,
         threadId: true,
+        internalDate: true,
         envelope: true,
       });
       for await (let msgInfo of msgsAsyncIterator) {
@@ -35,7 +36,7 @@ export class IMAPFolder extends Folder {
         if (!msg) {
           msg = new IMAPEMail(this);
           msg.fromFlow(msgInfo);
-          // console.log("Message", msg, msgInfo);
+          console.log("Message", msg, msgInfo);
           newMessages.add(msg);
         }
       }
@@ -43,6 +44,7 @@ export class IMAPFolder extends Folder {
     } finally {
       lock.release();
     }
+    await this.downloadMessagesComplete();
   }
 
   async downloadMessagesComplete() {
@@ -52,10 +54,12 @@ export class IMAPFolder extends Folder {
       let newMessages = new ArrayColl<IMAPEMail>();
       let conn = this._account._connection;
       lock = await conn.getMailboxLock(this.path);
-      for await (let msgInfo of await conn.downloadMany("1:*", {
+      for await (let msgInfo of await conn.fetch("1:*", {
         size: true,
         threadId: true,
         envelope: true,
+        source: true,
+        headers: true,
       })) {
         let msg = this.getEMailByUID(msgInfo.uid);
         if (msg?.downloadComplete) {
@@ -65,8 +69,10 @@ export class IMAPFolder extends Folder {
         } else {
           msg = new IMAPEMail(this);
           msg.fromFlow(msgInfo);
+          msg.downloadComplete = true;
           newMessages.add(msg);
         }
+        console.log("Message complete", msg, msgInfo);
       }
       this.messages.addAll(newMessages); // notify only once
     } finally {

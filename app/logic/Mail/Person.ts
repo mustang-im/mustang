@@ -5,7 +5,7 @@ import { appGlobal } from "../app";
 export class MailPerson extends Person {
   constructor(emailAddress: string, realname: string) {
     super();
-    this.name = realname;
+    this.name = realname || emailAddress;
     if (realname.includes(" ")) {
       let names = realname.split(" ");
       this.firstName = names.shift() ?? "";
