@@ -9,6 +9,9 @@ export class Folder extends Observable {
   specialFolder: SpecialFolder;
   readonly messages = new ArrayColl<EMail>();
   readonly subFolders = new ArrayColl<Folder>();
+  countTotal = 0;
+  countUnread = 0;
+  countUnseen = 0;
 
   async fetch() {
     console.log("fetch folder", this.name);

@@ -25,6 +25,8 @@ export class Message extends Observable {
   read = false;
   @notifyChangedProperty
   starred = false;
+  /** Msg ID of another message that this one is a reply of */
+  inReplyTo: string | undefined;
 
   /** Plaintext version of the message */
   @notifyChangedProperty
