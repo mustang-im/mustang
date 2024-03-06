@@ -1,37 +1,61 @@
-<hbox class="person" class:no-pic={!person?.picture}>
-  <PersonAutocompleteResult {person}>
-    <slot name="bottom-row" slot="bottom-row" />
-  </PersonAutocompleteResult>
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<hbox class="person" class:selected={open} class:no-pic={!person?.picture} on:click={onClick}>
+  <PersonPicture person={person} size={24} />
+  <vbox flex class="right">
+    <hbox flex class="name">{person.name}</hbox>
+  </vbox>
 </hbox>
+<!-- TODO proper dropdown menu -->
+<vbox class="context-menu" class:open>
+  <slot name="context-menu" {person} />
+</vbox>
 
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
-  import PersonAutocompleteResult from "./PersonAutocompleteResult.svelte";
+  import PersonPicture from "../Person/PersonPicture.svelte";
 
   export let person: Person;
+
+  let open = false;
+
+  function onClick() {
+    open = !open;
+  }
 </script>
 
 <style>
   .person {
-    border: 1px solid lightgray;
-    border-radius: 1000px;
+    background-color: white;
+    border-radius: 100px;
+    box-shadow: -1px 0px 5px 0.5px rgb(0, 0, 0, 7%);
     align-items: center;
-    justify-content: center;
     padding-right: 12px;
-    margin: 2px 3px;
+    height: 24px;
   }
-  .person :global(.top-row) {
-    padding-top: 2px;
-    height: 14px;
+  .person:not(.selected):hover {
+    background-color: #A9DAD4;
   }
-  .person :global(.bottom-row) {
-    padding-top: 1px;
-    height: 15px;
+  .person.selected {
+    background-color: #20AE9E;
+    color: white;
   }
+  .person :global(.avatar) {
+    margin: 0px;
+    margin-right: 6px;
+  }
+  .name {
+    align-items: center;
+    white-space: nowrap;
+  }
+
   .no-pic {
     padding-left: 14px;
   }
   .no-pic :global(.avatar) {
+    display: none;
+  }
+
+  .context-menu:not(.open) {
     display: none;
   }
 </style>

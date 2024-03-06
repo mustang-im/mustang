@@ -61,6 +61,6 @@
     background-color: #F9F9FD;
   }
   .editor {
-    height: 96px;
+    height: 112px;
   }
 </style>

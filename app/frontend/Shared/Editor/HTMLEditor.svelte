@@ -6,14 +6,20 @@
   import { Editor } from '@tiptap/core';
   import StarterKit from '@tiptap/starter-kit';
   import LinkFeature from '@tiptap/extension-link';
+  import ImageFeature from '@tiptap/extension-image';
   import CodeWordFeature from '@tiptap/extension-code';
+  import { SplitBlockquote } from './SplitBlockquote';
+  import { Footer } from './Footer';
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
   // import { common as lowlightCommon, createLowlight } from 'lowlight'
   import { onMount, onDestroy } from 'svelte';
 
-  /* in/out */
+  /**
+   * TODO Bug: Only accepts `html` on component creation.
+   * After that, it's out-only.
+   * in/out */
   export let html: string;
-  /* out only */
+  /** out only */
   export let editor: Editor;
 
   let divEl: HTMLDivElement;
@@ -25,6 +31,12 @@
         StarterKit,
         LinkFeature,
         CodeWordFeature,
+        SplitBlockquote,
+        Footer,
+        ImageFeature.configure({
+          allowBase64: true,
+          inline: true,
+        }),
         // CodeBlockLowlightFeature.configure({
         //  lowlight: createLowlight(lowlightCommon),
         // }),
@@ -33,10 +45,15 @@
       onTransaction: () => {
         // force re-render so `editor.isActive` works as expected
         editor = editor;
+      },
+      onUpdate: () => {
         html = editor.getHTML();
       },
     });
   });
+
+  // TODO Listen to html. But removes all whitespace.
+  //$: editor && editor.commands.setContent(html);
 
   onDestroy(() => {
     if (editor) {
@@ -55,7 +72,6 @@
   }
   .html-editor :global(.ProseMirror) {
     height: 100%;
-    margin-top: -16px; /* the content was shifted down, for some reason */
   }
   .html-editor :global(.ProseMirror:focus-visible) {
     outline: none;

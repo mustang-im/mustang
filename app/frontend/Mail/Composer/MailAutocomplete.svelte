@@ -1,10 +1,11 @@
 <PersonsAutocomplete {persons} {placeholder}>
-  <hbox slot="display-bottom-row" class="recipient-email-address" let:person>
-    {person.emailAddresses.first?.value}
-  </hbox>
   <hbox slot="result-bottom-row" class="recipient-email-address" let:person>
     {person.emailAddresses.first?.value}
   </hbox>
+  <vbox slot="person-context-menu" class="context-menu" let:person>
+    {person.name}
+  </vbox>
+  <slot name="end" slot="end" />
 </PersonsAutocomplete>
 
 <script lang="ts">
@@ -15,14 +16,14 @@
   /** E.g. to, cc or bcc list
    * in/out */
   export let persons: MapColl<string, Person>;
-  export let placeholder = "Add recipients";
+  export let placeholder;
 </script>
 
 <style>
   .recipient-email-address {
     font-size: 10px;
-    margin-top: -1px;
     opacity: 50%;
     overflow: hidden;
+    align-items: center;
   }
 </style>

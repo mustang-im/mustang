@@ -1,21 +1,20 @@
-{#if file.ext == "doc" || file.ext == "docx" || file.ext == "odt" || file.ext == "pdf"}
-  <DocIcon size="16" />
-{:else if file.ext == "html" || file.ext == "htm" || file.ext == "shtml"}
-  <HTMLIcon size="16" />
-{:else if file.ext == "xls" || file.ext == "xlsx" || file.ext == "ods"}
-  <SpreadsheetIcon size="16" />
-{:else if file.ext == "mp3" || file.ext == "mp2" || file.ext == "mp2a" || file.ext == "m2a" || file.ext == "m3a" || file.ext == "mpga" || file.ext == "wav"}
-  <MusicIcon size="16" />
-{:else if file.ext == "mpg" || file.ext == "mpeg" || file.ext == "mp4v" || file.ext == "mp4" || file.ext == "mp2" || file.ext == "m2v" || file.ext == "mpg4" || file.ext == "m1v" || file.ext == "mpe"}
-  <VideoIcon size="16" />
-{:else if file.ext == "png" || file.ext == "gif" || file.ext == "jpg" || file.ext == "jpeg" || file.ext == "svg" || file.ext == "jpe"}
-  <ImageIcon size="16" />
+{#if ext == "doc" || ext == "docx" || ext == "odt" || ext == "pdf"}
+  <DocIcon {size} />
+{:else if ext == "html" || ext == "htm" || ext == "shtml"}
+  <HTMLIcon {size} />
+{:else if ext == "xls" || ext == "xlsx" || ext == "ods"}
+  <SpreadsheetIcon {size} />
+{:else if ext == "mp3" || ext == "mp2" || ext == "mp2a" || ext == "m2a" || ext == "m3a" || ext == "mpga" || ext == "wav"}
+  <MusicIcon {size} />
+{:else if ext == "mpg" || ext == "mpeg" || ext == "mp4v" || ext == "mp4" || ext == "mp2" || ext == "m2v" || ext == "mpg4" || ext == "m1v" || ext == "mpe"}
+  <VideoIcon {size} />
+{:else if ext == "png" || ext == "gif" || ext == "jpg" || ext == "jpeg" || ext == "svg" || ext == "jpe"}
+  <ImageIcon {size} />
 {:else}
-  <FileIcon size="16" />
+  <FileIcon {size} />
 {/if}
 
 <script lang="ts">
-  import type { File } from "../../logic/Files/File";
   import FileIcon from "lucide-svelte/icons/file";
   import DocIcon from "lucide-svelte/icons/file-text";
   import HTMLIcon from "lucide-svelte/icons/code-2";
@@ -24,22 +23,24 @@
   import ImageIcon from "lucide-svelte/icons/image";
   import VideoIcon from "lucide-svelte/icons/film";
 
-  export let file: File;
+  /** TODO use mimetype */
+  export let ext: string;
+  export let size = 16;
 
   /*
-  <svelte:component this={getIcon(file)} size="16" />
+  <svelte:component this={getIcon(file)} {size} />
   function getIcon(file: File) {
-    if (file.ext == "doc" || file.ext == "docx" || file.ext == "odt" || file.ext == "pdf") {
+    if (ext == "doc" || ext == "docx" || ext == "odt" || ext == "pdf") {
       return DocIcon;
-    } else if (file.ext == "html" || file.ext == "htm" || file.ext == "shtml") {
+    } else if (ext == "html" || ext == "htm" || ext == "shtml") {
       return HTMLIcon;
-    } else if (file.ext == "xls" || file.ext == "xlsx" || file.ext == "ods") {
+    } else if (ext == "xls" || ext == "xlsx" || ext == "ods") {
       return SpreadsheetIcon;
-    } else if (file.ext == "mp3" || file.ext == "mp2" || file.ext == "mp2a" || file.ext == "m2a" || file.ext == "m3a" || file.ext == "mpga" || file.ext == "wav") {
+    } else if (ext == "mp3" || ext == "mp2" || ext == "mp2a" || ext == "m2a" || ext == "m3a" || ext == "mpga" || ext == "wav") {
       return MusicIcon;
-    } else if (file.ext == "mpg" || file.ext == "mpeg" || file.ext == "mp4v" || file.ext == "mp4" || file.ext == "mp2" || file.ext == "m2v" || file.ext == "mpg4" || file.ext == "m1v" || file.ext == "mpe") {
+    } else if (ext == "mpg" || ext == "mpeg" || ext == "mp4v" || ext == "mp4" || ext == "mp2" || ext == "m2v" || ext == "mpg4" || ext == "m1v" || ext == "mpe") {
       return VideoIcon;
-    } else if (file.ext == "png" || file.ext == "gif" || file.ext == "jpg" || file.ext == "jpeg" || file.ext == "svg" || file.ext == "jpe") {
+    } else if (ext == "png" || ext == "gif" || ext == "jpg" || ext == "jpeg" || ext == "svg" || ext == "jpe") {
       return ImageIcon;
     } else {
       return FileIcon;

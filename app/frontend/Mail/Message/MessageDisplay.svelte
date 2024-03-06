@@ -1,6 +1,8 @@
 <vbox flex class="message-display">
   <MessageHeader {message} {account} />
-  <MessageBody {message} />
+  <vbox flex class="paper">
+    <MessageBody {message} />
+  </vbox>
 </vbox>
 
 <script lang="ts">
@@ -14,4 +16,13 @@
 </script>
 
 <style>
+.message-display {
+  background-color: #F9F9FD;
+}
+.paper {
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: -1px 0px 5px 0.5px rgb(0, 0, 0, 10%);
+  margin: 0px 0px 2px 8px;
+}
 </style>

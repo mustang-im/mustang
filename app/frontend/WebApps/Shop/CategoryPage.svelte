@@ -13,8 +13,8 @@
 </vbox>
 
 <script lang="ts">
-  import type AppCategory from "../../logic/Apps/AppCategory";
-  import type AppListed from "../../logic/Apps/AppListed";
+  import type AppCategory from "../../../logic/Apps/AppCategory";
+  import type AppListed from "../../../logic/Apps/AppListed";
   import AppShopButton from "./AppShopButton.svelte";
 
   export let category: AppCategory;

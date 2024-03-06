@@ -9,7 +9,7 @@
 </vbox>
 
 <script lang="ts">
-  import type AppListed from "../../logic/Apps/AppListed";
+  import type AppListed from "../../../logic/Apps/AppListed";
 
   export let app: AppListed;
   export let runningApp: AppListed; /* in/out */

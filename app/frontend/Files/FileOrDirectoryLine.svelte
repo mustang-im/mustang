@@ -8,7 +8,7 @@
     {/each}
     <button class="icon" >
       {#if file instanceof File}
-        <FileIcon {file} />
+        <FileIcon ext={file.ext} />
       {:else if file instanceof Directory}
         {#if open}
           <FolderOpenIcon size="16" />

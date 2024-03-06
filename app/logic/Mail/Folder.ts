@@ -1,4 +1,4 @@
-import type { EMail } from "./Message";
+import type { EMail } from "./EMail";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { ArrayColl } from 'svelte-collections';
 

@@ -7,17 +7,19 @@
 
 <style>
   .toolbar {
-    background-color: #DDDDDD;
-    border: 1px solid #B2ADB8;
+    /* background-color: #DDDDDD;
+    border: 1px solid #B2ADB8; */
     padding: 0px 4px;
+    flex-wrap: wrap;
   }
   .toolbar :global(button.button) {
     border: none;
     border-radius: 0px;
     background-color: transparent;
     padding: 6px 6px;
+    color: #595065;
   }
-  .toolbar :global(button.selected:not(.disabled)) {
-    background-color: #AAAAAA;
+  .toolbar :global(button.button.disabled) {
+    opacity: 20%;
   }
 </style>

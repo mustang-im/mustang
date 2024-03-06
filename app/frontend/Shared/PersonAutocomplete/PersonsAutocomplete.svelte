@@ -1,16 +1,19 @@
 <hbox flex class="persons-autocomplete">
   {#each $persons.each as person}
     <PersonEntry {person}>
-      <slot name="display-bottom-row" slot="bottom-row" {person} />
+      <slot name="person-context-menu" slot="context-menu" {person} />
     </PersonEntry>
   {/each}
-  <PersonAutocomplete
-    on:personSelected={(event) => onAddPerson(event.detail.person)}
-    skipPersons={$persons}
-    {placeholder}
-    >
-    <slot name="result-bottom-row" slot="result-bottom-row" />
-  </PersonAutocomplete>
+  <hbox flex class="input">
+    <PersonAutocomplete
+      on:personSelected={(event) => onAddPerson(event.detail.person)}
+      skipPersons={$persons}
+      {placeholder}
+      >
+      <slot name="result-bottom-row" slot="result-bottom-row" let:person {person} />
+    </PersonAutocomplete>
+    <slot name="end" />
+  </hbox>
 </hbox>
 
 <script lang="ts">
@@ -37,10 +40,15 @@
 <style>
   .persons-autocomplete {
     flex-wrap: wrap;
-    border-bottom: 1px solid green;
+    border-bottom: 1px solid rgb(0, 0, 0, 7%);
     align-items: center;
-    background-color: white;
-    padding: 2px 4px;
+    padding: 3px 4px;
+  }
+  .input {
+    margin-left: 4px;
+  }
+  .persons-autocomplete > :global(*) {
+    margin: 3.5px 3px;
   }
   .persons-autocomplete :global(input) {
     border: none;

@@ -38,6 +38,7 @@
   .message-list :global(.fast-list) {
     padding-left: 4px;
     margin-left: -5px;
+    padding-right: 9px;
   }
   .message-list :global(.header) {
     display: none;

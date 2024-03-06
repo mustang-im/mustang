@@ -1,20 +1,57 @@
-<hbox flex class="msg-editor">
-  <textarea bind:value={to.draftMessage} placeholder="Write a message to {to.name}..." />
-  <vbox class="send-buttons">
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <Button classes="send-button" on:click={send} icon={SendIcon} iconSize="24px" plain />
-  </vbox>
-</hbox>
+<FileDropTarget on:add-files={onAddAttachment} on:inline-files={onAddInline} allowInline={true}>
+  <hbox flex class="msg-editor">
+    <vbox flex class="editor-wrapper">
+      <HTMLEditorToolbar {editor} />
+      <vbox flex class="editor-scroll-wrapper">
+        <Scroll>
+          <vbox flex class="editor">
+            <HTMLEditor bind:html={to.draftMessage} bind:editor />
+          </vbox>
+        </Scroll>
+      </vbox>
+    </vbox>
+    {#if $attachments.hasItems}
+      <AttachmentsPane {attachments} />
+    {/if}
+    <vbox class="send-buttons">
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <RoundButton classes="send-button"
+        on:click={send}
+        icon={SendIcon}
+        iconSize="24px"
+        padding="6px"
+        border={false}
+        disabled={!to.draftMessage}
+        />
+    </vbox>
+  </hbox>
+</FileDropTarget>
 
 <script lang="ts">
   import type { Chat } from "../../logic/Chat/Chat";
   import { UserChatMessage } from "../../logic/Chat/Message";
-  import Button from "../Shared/Button.svelte";
+  import { insertImage } from "../Shared/Editor/InsertImage";
+  import HTMLEditorToolbar from "../Shared/Editor/HTMLEditorToolbar.svelte";
+  import HTMLEditor from "../Shared/Editor/HTMLEditor.svelte";
+  import FileDropTarget from "../Mail/Composer/Attachments/FileDropTarget.svelte";
+  import AttachmentsPane from "../Mail/Composer/Attachments/AttachmentsPane.svelte";
+  import RoundButton from "../Shared/RoundButton.svelte";
+  import Scroll from "../Shared/Scroll.svelte";
   import SendIcon from "lucide-svelte/icons/send";
+  import type { Editor } from '@tiptap/core';
+  import { ArrayColl } from "svelte-collections";
 
   export let to: Chat;
 
+  let editor: Editor;
+
+  let attachments = new ArrayColl<File>();
+  $: to && attachments.clear(); // TODO save as draft
+
   function send() {
+    if (!to.draftMessage) {
+      return;
+    }
     let msg = new UserChatMessage();
     msg.outgoing = true;
     msg.text = to.draftMessage;
@@ -23,25 +60,51 @@
     msg.contact = to.contact;
     msg.sent = new Date();
     to.sendMessage(msg);
+    reset();
+  }
+
+  function reset() {
     to.draftMessage = "";
+    editor.commands.setContent(""); // TODO fix HTMLEditor to listen to `html`
+    attachments.clear();
+  }
+
+  function onAddAttachment(event: CustomEvent) {
+    let files = event.detail.files as File[];
+    attachments.addAll(files);
+  }
+
+  function onAddInline(event: CustomEvent) {
+    let files = event.detail.files as File[];
+    for (let file of files) {
+      insertImage(editor, file);
+    }
   }
 </script>
 
 <style>
   .msg-editor {
     background-color: #EEEEEE;
-    padding: 10px;
+    padding: 4px 4px 10px 10px;
   }
-  textarea {
-    flex: 1 0 0;
-    font-family: unset;
-    padding: 10px 15px;
+  .editor-wrapper {
+    flex: 3 0 0;
+  }
+  .editor-scroll-wrapper {
     border: 1px solid lightgray;
     border-radius: 8px;
+    background-color: white;
+  }
+  .editor {
+    font-family: unset;
+    padding: 8px 12px;
   }
   .send-buttons {
     align-self: flex-end;
-    margin-left: 8px;
-    margin-bottom: 8px;
+    margin-left: 2px;
+    margin-bottom: 2px;
+  }
+  .send-buttons :global(.button) {
+    background-color: unset;
   }
 </style>
