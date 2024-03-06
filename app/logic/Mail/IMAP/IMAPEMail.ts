@@ -34,7 +34,7 @@ export class IMAPEMail extends EMail {
     let env = msgInfo.envelope;
     this.id = env.messageId;
     this.subject = env.subject;
-    this.sent = env.date;
+    this.sent = env.date ?? new Date(); // TODO
     this.received = env.date ?? new Date();
     this.inReplyTo = env.inReplyTo;
     let firstFrom = env.from[0];
