@@ -13,8 +13,8 @@ export class Folder extends Observable {
   countUnread = 0;
   countUnseen = 0;
 
-  async fetch() {
-    console.log("fetch folder", this.name);
+  async listMessages() {
+    console.log("list messages in folder", this.name);
   }
 }
 

@@ -69,9 +69,7 @@ export class IMAPAccount extends MailAccount {
     let folders = new ArrayColl<IMAPFolder>();
     for (let folderInfo of foldersInfo) {
       let folder = new IMAPFolder(this);
-      folder.name = folderInfo.name;
-      folder.path = folderInfo.path;
-      this.specialUse(folder, folderInfo.specialUse);
+      folder.fromFlow(folderInfo);
       folders.add(folder);
       folder.subFolders.addAll(this.readFolders(folderInfo.folders));
     }
