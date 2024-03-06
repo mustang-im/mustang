@@ -1,5 +1,5 @@
 <hbox class="account-dropdown">
-  <hbox class="selected-label">{selectedAccount.emailAddress}
+  <hbox class="selected-label">{selectedAccount.name}
   </hbox>
   <Button plain icon={ChevronDownIcon} iconSize="16px" iconOnly />
 </hbox>

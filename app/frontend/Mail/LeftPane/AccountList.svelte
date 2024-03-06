@@ -17,7 +17,7 @@
     <svelte:fragment slot="row" let:item={account}>
       <hbox class="account">
         <hbox class="icon"><Icon data={AccountIcon} size="16px" /></hbox>
-        <hbox class="label">{account.emailAddress}</hbox>
+        <hbox class="label">{account.name}</hbox>
       </hbox>
     </svelte:fragment>
   </FastList>
