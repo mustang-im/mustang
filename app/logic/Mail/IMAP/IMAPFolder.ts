@@ -15,7 +15,7 @@ export class IMAPFolder extends Folder {
   fromFlow(folderInfo: any) {
     this.name = folderInfo.name;
     this.path = folderInfo.path;
-    this._account.specialUse(this, folderInfo.specialUse);
+    this.specialUse(folderInfo.specialUse);
   }
 
   async listMessages() {
@@ -25,16 +25,17 @@ export class IMAPFolder extends Folder {
       let newMessages = new ArrayColl<IMAPEMail>();
       let conn = this._account._connection;
       lock = await conn.getMailboxLock(this.path);
-      let msgsFetch = conn.fetch("1:*", {
+      let msgsAsyncIterator = await conn.fetch("1:*", {
         size: true,
         threadId: true,
         envelope: true,
       });
-      for await (let msgInfo of msgsFetch) {
+      for await (let msgInfo of msgsAsyncIterator) {
         let msg = this.getEMailByUID(msgInfo.uid);
         if (!msg) {
           msg = new IMAPEMail(this);
           msg.fromFlow(msgInfo);
+          // console.log("Message", msg, msgInfo);
           newMessages.add(msg);
         }
       }
@@ -80,4 +81,27 @@ export class IMAPFolder extends Folder {
   /* getEMailByUIDOrCreate(uid: number): IMAPEMail {
     return this.getEMailByUID(uid) ?? new IMAPEMail(this);
   }*/
+
+  specialUse(specialUse: string): void {
+    switch (specialUse) {
+      case "\Inbox":
+        this._account.inbox = this;
+        break;
+      case "\Trash":
+        this._account.trash = this;
+        break;
+      case "\Junk":
+        this._account.spam = this;
+        break;
+      case "\Sent":
+        this._account.sent = this;
+        break;
+      case "\Drafts":
+        this._account.drafts = this;
+        break;
+      case "\Archive":
+        this._account.archive = this;
+        break;
+    }
+  }
 }
