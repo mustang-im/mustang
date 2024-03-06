@@ -17,15 +17,15 @@
     <svelte:fragment slot="row" let:item={account}>
       <hbox class="account">
         <hbox class="icon"><Icon data={AccountIcon} size="16px" /></hbox>
-        <hbox class="label">{#await account.emailAddress then e}{e}{/await}</hbox>
+        <hbox class="label">{account.emailAddress}</hbox>
       </hbox>
     </svelte:fragment>
   </FastList>
 </vbox>
 
 <script lang="ts">
-  import type Account from "../../../../lib/logic/mail/MailAccount";
-  import type EMail from "../../../../lib/logic/mail/EMail";
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { EMail } from "../../../logic/Mail/EMail";
   import FastList from "../../Shared/FastList.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
@@ -35,8 +35,8 @@
   import { mailMustangApp } from "../MailMustangApp";
   import type { Collection } from 'svelte-collections';
 
-  export let accounts: Collection<Account>;
-  export let selectedAccount: Account; /* in/out */
+  export let accounts: Collection<MailAccount>;
+  export let selectedAccount: MailAccount; /* in/out */
 
   function newMail() {
     let mail = new EMail();

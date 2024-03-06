@@ -105,7 +105,7 @@
 <FileSelector bind:this={fileSelector} />
 
 <script lang="ts">
-  import type EMail from "../../../../lib/logic/mail/EMail";
+  import type { EMail } from "../../../logic/Mail/EMail";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { insertImage } from "../../Shared/Editor/InsertImage";
   import MailAutocomplete from "./MailAutocomplete.svelte";

@@ -1,9 +1,7 @@
 <Splitter name="mail.vertical.folders" initialRightRatio={4}>
   <vbox flex class="folder-pane" slot="left">
     <AccountList accounts={$accounts} bind:selectedAccount />
-    {#await selectedAccount?.rootFolders then rootFolders}
-    <FolderList folders={rootFolders ?? new ArrayColl()} bind:selectedFolder />
-    {/await}
+    <FolderList folders={selectedAccount?.rootFolders ?? new ArrayColl()} bind:selectedFolder />
     <ViewSwitcher />
   </vbox>
   <Splitter slot="right" name="mail.vertical.msgs" initialRightRatio={2}>
@@ -21,9 +19,9 @@
 </Splitter>
 
 <script lang="ts">
-  import type MailAccount from "../../../../lib/logic/mail/MailAccount";
-  import type Folder from "../../../../lib/logic/account/MsgFolder";
-  import type EMail from "../../../../lib/logic/mail/EMail";
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import type { Folder } from "../../../logic/Mail/Folder";
+  import type { EMail } from "../../../logic/Mail/EMail";
 
   import AccountList from "../LeftPane/AccountList.svelte";
   import FolderList from "../LeftPane/FolderList.svelte";
@@ -40,8 +38,6 @@
   export let selectedMessage: EMail; /** in/out */
 
   let selectedMessages: ArrayColl<EMail>;
-
-  let folders: Folder;
 </script>
 
 <style>

@@ -29,7 +29,6 @@
     "lowlight": "^3.1.0",
     "lucide-svelte": "^0.293.0",
     "matrix-js-sdk": "^30.0.1",
-    "mustang-lib": "../lib/",
     "olm": "https://packages.matrix.org/npm/olm/olm-3.2.1.tgz",
     "pretty-bytes": "^6.1.1",
     "svelte-collections": "^1.1.20",

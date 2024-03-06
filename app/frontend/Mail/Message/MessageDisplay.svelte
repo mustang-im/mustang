@@ -6,8 +6,8 @@
 </vbox>
 
 <script lang="ts">
-  import type MailAccount from "../../../../lib/logic/mail/MailAccount";
-  import type EMail from "../../../../lib/logic/mail/EMail";
+  import type { EMail } from "../../../logic/Mail/EMail";
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import MessageHeader from "./MessageHeader.svelte";
   import MessageBody from "./MessageBody.svelte";
 

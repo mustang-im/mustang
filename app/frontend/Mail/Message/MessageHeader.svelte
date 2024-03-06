@@ -38,16 +38,16 @@
 </vbox>
 
 <script lang="ts">
-  import type MailAccount from "../../../../lib/logic/mail/MailAccount";
-  import type EMail from "../../../../lib/logic/mail/EMail";
+  import type { EMail } from "../../../logic/Mail/EMail";
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { Person } from "../../../logic/Abstract/Person";
   import { selectedPerson, type PersonOrGroup } from "../../Shared/Person/PersonOrGroup";
   import MessageToolbar from "./MessageToolbar.svelte";
   import RecipientList from "./RecipientList.svelte";
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
+  import { catchErrors, backgroundError } from "../../Util/error";
   import { getDateString } from "../../Util/date";
   import { onDestroy } from "svelte";
-  import { catchErrors, backgroundError } from "../../Util/error";
 
   export let message: EMail;
   export let account: MailAccount;

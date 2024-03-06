@@ -1,11 +1,11 @@
-import type MailAccount from "../../lib/logic/mail/MailAccount";
+import type { MailAccount } from './Mail/MailAccount';
 import type { ChatAccount } from './Chat/ChatAccount';
 import type { Person } from './Abstract/Person';
 import type { VideoConfMeeting } from './Meet/VideoConfMeeting';
 import type { Calendar } from './Calendar/Calendar';
 import type { Directory } from './Files/File';
 import Apps from './Apps/Apps';
-import { readMailAccounts } from './Mail/MailAccounts';
+// import { readMailAccounts } from './Mail/MailAccounts';
 import { readChatAccounts } from './Chat/ChatAccounts';
 import { ArrayColl } from 'svelte-collections';
 import JPCWebSocket from '../../lib/jpc-ws';

@@ -20,9 +20,9 @@
 </Splitter>
 
 <script lang="ts">
-  import type MailAccount from "../../../../lib/logic/mail/MailAccount";
-  import type Folder from "../../../../lib/logic/account/MsgFolder";
-  import type EMail from "../../../../lib/logic/mail/EMail";
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import type { Folder } from "../../../logic/Mail/Folder";
+  import type { EMail } from "../../../logic/Mail/EMail";
 
   import AccountList from "../LeftPane/AccountList.svelte";
   import FolderList from "../LeftPane/FolderList.svelte";
