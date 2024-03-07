@@ -49,6 +49,9 @@ export const SplitBlockquote = Blockquote.extend({
       },
       splitFirstParent: (pos: number) => ({ tr }) => {
         let node = this.editor.$pos(pos);
+        if (!node) {
+          return false;
+        }
         tr.split(node.pos, node.depth);
         return true;
       }
