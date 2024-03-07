@@ -32,7 +32,7 @@ export const SplitBlockquote = Blockquote.extend({
       splitBlockquote: () => ({ chain, state }) => {
         let {$from, $to} = state.selection;
         // if not in blockquote
-        if ($from.node(1).type.name !== 'blockquote') {
+        if (!$from || !$to || $from.node(1).type.name !== 'blockquote') {
           return false;
         }
         // if at start of blockquote
@@ -44,7 +44,7 @@ export const SplitBlockquote = Blockquote.extend({
           return chain().insertContentAt($to.after(1), '<p></p>').run();
         }
         // default split in middle of blockquote
-        return chain().setNodeSelection($to.pos).splitFirstParent($to.pos)
+        return chain().setTextSelection($to.pos).splitFirstParent($to.pos)
         .insertContentAt($to.pos + $to.depth, '<p></p>').run();
       },
       splitFirstParent: (pos: number) => ({ tr }) => {
