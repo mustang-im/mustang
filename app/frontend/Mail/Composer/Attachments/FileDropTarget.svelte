@@ -80,7 +80,6 @@
     z-index: 10;
     height: 100%;
     width: 100%;
-    background-color: white;
   }
   .drop-target {
     align-items: center;
