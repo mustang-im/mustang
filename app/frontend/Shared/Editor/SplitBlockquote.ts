@@ -32,7 +32,7 @@ export const SplitBlockquote = Blockquote.extend({
       splitBlockquote: () => ({ chain, state }) => {
         let {$from, $to} = state.selection;
         // if not in blockquote
-        if (!$from || !$to || $from.node(1).type.name !== 'blockquote') {
+        if ($from.node(1).type.name !== 'blockquote') {
           return false;
         }
         // if at start of blockquote
@@ -49,9 +49,6 @@ export const SplitBlockquote = Blockquote.extend({
       },
       splitFirstParent: (pos: number) => ({ tr }) => {
         let node = this.editor.$pos(pos);
-        if (!node) {
-          return false;
-        }
         tr.split(node.pos, node.depth);
         return true;
       }
