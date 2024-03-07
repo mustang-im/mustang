@@ -1,5 +1,20 @@
 import Blockquote from '@tiptap/extension-blockquote';
 
+declare module '@tiptap/core' {
+  interface Commands<ReturnType> {
+    splitBlockquote: {
+      /**
+       * Split a blockquote node
+       */
+      splitBlockquote: () => ReturnType,
+      /**
+       * Split first parent node at the given position
+       */
+      splitFirstParent: (pos: number) => ReturnType,
+    }
+  }
+}
+
 /** On Enter key, the blockquote is split into 2 blockquotes, at the place where the cursor was.
  * New text appears in the middle of the 2 blockquotes. It is not part of any blockquote. */
 export const SplitBlockquote = Blockquote.extend({
