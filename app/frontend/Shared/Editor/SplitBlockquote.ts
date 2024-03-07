@@ -29,8 +29,8 @@ export const SplitBlockquote = Blockquote.extend({
   },
   addCommands() {
     return {
-      splitBlockquote: () => ({ chain, tr }) => {
-        let {$from, $to} = tr.selection;
+      splitBlockquote: () => ({ chain, state }) => {
+        let {$from, $to} = state.selection;
         // if not in blockquote
         if ($from.node(1).type.name !== 'blockquote') {
           return false;
