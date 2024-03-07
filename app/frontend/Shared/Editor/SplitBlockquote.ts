@@ -37,15 +37,15 @@ export const SplitBlockquote = Blockquote.extend({
         }
         // if at start of blockquote
         if ($from.before(1) + $from.depth === $from.pos) {
-          return chain().insertContentAt($from.before(1), '<p></p>').run();
+          return chain().insertContentAt($from.before(1), '<p></p>').scrollIntoView().run();
         }
         // if at end of blockquote
         if ($to.after(1) - $to.depth === $to.pos) {
-          return chain().insertContentAt($to.after(1), '<p></p>').run();
+          return chain().insertContentAt($to.after(1), '<p></p>').scrollIntoView().run();
         }
         // default split in middle of blockquote
         return chain().setTextSelection($to.pos).splitFirstParent($to.pos)
-        .insertContentAt($to.pos + $to.depth, '<p></p>').run();
+        .insertContentAt($to.pos + $to.depth, '<p></p>').scrollIntoView().run();
       },
       splitFirstParent: (pos: number) => ({ tr }) => {
         let node = this.editor.$pos(pos);
