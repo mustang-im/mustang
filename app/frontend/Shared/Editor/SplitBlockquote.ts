@@ -47,10 +47,13 @@ export const SplitBlockquote = Blockquote.extend({
         return chain().setTextSelection($to.pos).splitFirstParent($to.pos)
         .insertContentAt($to.pos + $to.depth, '<p></p>').scrollIntoView().run();
       },
-      splitFirstParent: (pos: number) => ({ tr }) => {
+      splitFirstParent: (pos: number) => ({ tr, dispatch }) => {
         let node = this.editor.$pos(pos);
-        tr.split(node.pos, node.depth);
-        return true;
+        if (dispatch && node) {
+          tr.split(node.pos, node.depth);
+          return true;
+        }
+        return false;
       }
     }
   },
