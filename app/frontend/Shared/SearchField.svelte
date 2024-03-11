@@ -1,6 +1,6 @@
 <hbox class="search">
   <SearchIcon size="16px" />
-  <input type="search" bind:value={searchInput} placeholder="Search for a person or group" />
+  <input type="search" bind:value={searchInput} {placeholder} />
   {#if searchInput}
     <RoundButton icon={XIcon} iconSize="16px" padding="4px" border={false}
       on:click={() => searchInput = undefined} />
@@ -12,6 +12,7 @@
   import SearchIcon from "lucide-svelte/icons/search";
   import XIcon from "lucide-svelte/icons/x";
 
+  export let placeholder = "Search";
   /** out only */
   export let searchTerm: string;
 
@@ -34,12 +35,16 @@
   }
   input[type="search"] {
     width: 100%;
-    height: 32px;
+    height: 24px;
     border: none;
     margin-left: 4px;
     border-radius: 100px;
   }
   input::placeholder {
     color: #808080;
+  }
+
+  .search :global(.button) {
+    background-color: transparent;
   }
 </style>
