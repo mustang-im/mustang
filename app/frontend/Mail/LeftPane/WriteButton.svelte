@@ -1,6 +1,6 @@
 <RoundButton
   label="Write new email"
-  icon={WriteIcon} iconSize="16px" filled
+  icon={WriteIcon} classes="create"
   disabled={!selectedAccount}
   on:click={() => catchErrors(newMail)}
   />
