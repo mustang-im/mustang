@@ -1,5 +1,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<hbox class="event" on:click={onSelect} on:dblclick={onOpen} title={eventAsText}>
+<hbox class="event" on:click={onSelect} on:click on:dblclick={onOpen}
+  title={eventAsText}
+  class:selected={$selectedEvent == event}>
   <!--{event.startTime.toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric" })}-->
   <hbox class="time">{startTime}</hbox>
   <hbox class="title">{event.title}</hbox>
