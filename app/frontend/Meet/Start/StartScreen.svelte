@@ -2,17 +2,17 @@
   <vbox flex class="actions-container">
     <vbox class="actions">
       {#if $selectedPerson}
-        <Button label="Call {$selectedPerson.name}" on:click={() => catchErrors(callSelected)} classes="call-person">
+        <Button label="Call {$selectedPerson.name}" on:click={() => catchErrors(callSelected)} classes="call-person secondary">
           <PersonPicture slot="icon" person={$selectedPerson} size={24} />
         </Button>
-        <Button label="Test incoming call" icon={VideoIcon} on:click={() => catchErrors(testIncoming)} />
+        <Button label="Test incoming call" icon={VideoIcon} on:click={() => catchErrors(testIncoming)} classes="secondary" />
       {/if}
-      <Button label="Plan a meeting" icon={AddToCalendarIcon} />
-      <Button label="Start an ad-hoc meeting" icon={VideoIcon} on:click={() => catchErrors(startAdHocMeeting)} />
+      <Button label="Plan a meeting" icon={AddToCalendarIcon} classes="secondary" iconSize="14px" />
+      <Button label="Start an ad-hoc meeting" icon={VideoIcon} on:click={() => catchErrors(startAdHocMeeting)} classes="secondary" />
       <hbox>
         <input class="meeting-link" type="url" bind:value={conferenceURL} placeholder="Enter meeting link to join" />
-        <Button label="Join"
-          on:click={() => catchErrors(joinByURL)}/>
+        <Button label="Join" classes="secondary"
+          on:click={() => catchErrors(joinByURL)} />
       </hbox>
     </vbox>
   </vbox>
