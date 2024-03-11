@@ -21,9 +21,15 @@
   export let label: string = null;
   export let icon: ComponentType | string = null;
   export let classes = "";
-  export let iconSize = classes?.includes("large") ? "20px" : "16px";
-  export let padding = classes?.includes("large") ? "10px" : "8px";
-  export let filled = false;
+  export let iconSize =
+    classes?.includes("create") ? "18px" :
+    classes?.includes("large") ? "20px" :
+    "16px";
+  export let padding =
+    classes?.includes("create") ? "8px" :
+    classes?.includes("large") ? "10px" :
+    "8px";
+  export let filled = classes?.includes("create");
   export let border = true;
   export let disabled = false;
   export let selected = false;
@@ -50,8 +56,11 @@
     color: white;
     stroke-width: 2px;
   }
-  .filled:not(:hover) :global(path) {
+  .filled:not(:hover) :global(svg) {
     stroke: currentColor;
+  }
+  .button:hover:not(.disabled) .icon :global(svg) {
+    stroke: white;
   }
   .icon {
     margin-right: 0px;
@@ -59,9 +68,6 @@
   button:hover:not(.disabled) {
     background-color: rgba(32, 174, 158, 100%); /* #20AE9E */
     border: 1px solid transparent !important;
-  }
-  .button:hover:not(.disabled) .icon :global(path) {
-    stroke: white;
   }
   .disabled {
     opacity: 50%;

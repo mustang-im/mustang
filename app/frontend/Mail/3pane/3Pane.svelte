@@ -55,4 +55,11 @@
   .message-display-pane {
     flex: 2 0 0;
   }
+
+  .buttons {
+    margin: 8px 8px 0 8px;
+  }
+  .buttons :global(svg) {
+    margin: 4px;
+  }
 </style>

@@ -1,8 +1,8 @@
 <hbox class="persons-toolbar">
   <input type="search" bind:value={searchText} placeholder="Search for a person or group" />
   <hbox flex />
-  <hbox class="new">
-    <RoundButton label="New contact" icon={NewContactIcon} iconSize="24px" filled on:click={addPerson} />
+  <hbox class="buttons">
+    <RoundButton label="New contact" icon={NewContactIcon} iconSize="22px" padding="9px" classes="large create" on:click={addPerson} />
   </hbox>
 </hbox>
 
@@ -27,7 +27,7 @@
 
 <style>
   .persons-toolbar {
-    margin: 16px;
+    margin: 10px 12px;
     align-items: center;
   }
   input[type="search"] {
