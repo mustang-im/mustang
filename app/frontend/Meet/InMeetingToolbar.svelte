@@ -12,7 +12,7 @@
   {/if}
   <RoundButton
     label="Screen share"
-    classes="screen-share"
+    classes="screen-share large"
     selected={$screenShareOn}
     on:click={() => catchErrors(toggleScreenShare)}
     icon={$screenShareOn ? ScreenShareIcon : ScreenShareOffIcon}
@@ -21,7 +21,7 @@
     />
   <RoundButton
     label="Camera"
-    classes="camera"
+    classes="camera large"
     selected={$cameraOn}
     on:click={() => catchErrors(toggleCamera)}
     icon={$cameraOn ? CameraIcon : CameraOffIcon}
@@ -30,7 +30,7 @@
     />
     <RoundButton
     label="Mute"
-    classes="mic"
+    classes="mic large"
     selected={$micOn}
     on:click={() => catchErrors(toggleMic)}
     icon={$micOn ? MicrophoneIcon : MicrophoneOffIcon}
@@ -40,7 +40,8 @@
   <hbox flex />
   <RoundButton
     label={handRaised ? "Hand raised" : "Raise hand"}
-    classes={handRaised ? "raised-hand" : "raise-hand"}
+    classes="hand large"
+    selected={handRaised}
     on:click={() => catchErrors(toggleHand)}
     icon={handRaised ? HandIcon : HandDownIcon}
     iconSize="24px"
@@ -49,7 +50,7 @@
   {#if !isSidebar}
     <RoundButton
       label="Leave"
-      classes="leave"
+      classes="leave large"
       on:click={() => catchErrors(leave)}
       icon={LeaveIcon}
       iconSize="24px"
@@ -60,7 +61,7 @@
   {#if !isSidebar}
     <RoundButton
       label={showSidebar ? "Close participants list" : "Open participants list"}
-      classes="sidebar secondary"
+      classes="sidebar secondary large"
       on:click={() => showSidebar = !showSidebar}
       icon={showSidebar ? CloseSidebarIcon : OpenSidebarIcon}
       iconSize="24px"
@@ -186,16 +187,19 @@
   .actions :global(> *) {
     margin-right: 8px;
   }
-  .actions :global(button.leave) {
+  .actions :global(.leave svg) {
+    transform: rotate(135deg);
+  }
+  .actions :global(.leave:hover) {
     background-color: #F34949;
   }
-  .actions :global(.raised-hand svg) {
-    fill: tan;
-  }
-  .actions :global(.raise-hand svg) {
+  .actions :global(.hand svg) {
     fill: none;
   }
-  .actions :global(button.raised-hand) {
+  .actions :global(.hand.selected svg) {
+    fill: tan;
+  }
+  .actions :global(.hand.selected) {
     background-color: #20AE9E;
     animation-name: color;
         animation-duration: 1s;
@@ -208,11 +212,7 @@
       background-color: #A3E5DD;
     }
   }
-  .actions :global(.leave svg) {
-    transform: rotate(135deg);
-    stroke: white;
-  }
-  .actions :global(button.secondary) {
+  .actions :global(button.secondary:not(:hover)) {
     background-color: transparent;
     color: white;
   }
