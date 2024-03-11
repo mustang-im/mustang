@@ -1,7 +1,7 @@
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox flex class="left-pane" slot="left">
     <PersonsToolbar {persons} selected={selectedPerson} />
-    <PersonsList {persons} bind:selected={selectedPerson} />
+    <PersonsList persons={filteredPersons} bind:selected={selectedPerson} />
   </vbox>
   <vbox flex class="right-pane" slot="right">
     {#if selectedPerson}
@@ -20,9 +20,27 @@
   import PersonsToolbar from "./PersonsToolbar.svelte";
   import Scroll from "../Shared/Scroll.svelte";
   import Splitter from "../Shared/Splitter.svelte";
+  import { globalSearchTerm } from "../AppsBar/selectedApp";
+  import type { Collection } from "svelte-collections";
 
   let persons = appGlobal.persons;
   let selectedPerson: Person;
+
+  $: filteredPersons = $globalSearchTerm
+    ? persons.filter(p =>
+      p.name.toLowerCase().includes($globalSearchTerm) ||
+      p.emailAddresses.some(e => e.value.toLowerCase().includes($globalSearchTerm)) ||
+      p.phoneNumbers.some(e => e.value.toLowerCase().includes($globalSearchTerm)) ||
+      p.chatAccounts.some(e => e.value.toLowerCase().includes($globalSearchTerm)) ||
+      p.streetAddresses.some(e => e.value.toLowerCase().includes($globalSearchTerm)) ||
+      p.notes.toLowerCase().includes($globalSearchTerm))
+    : persons;
+  $: clearSelected(filteredPersons);
+  function clearSelected(filteredPersons: Collection<Person>) {
+    if (!filteredPersons.contains(selectedPerson)) {
+      selectedPerson = filteredPersons.first;
+    }
+  }
 </script>
 
 <style>
