@@ -9,7 +9,7 @@
   import ImageFeature from '@tiptap/extension-image';
   import CodeWordFeature from '@tiptap/extension-code';
   import { SplitBlockquote } from './SplitBlockquote';
-  import { ToggleSendButton } from './ToggleSendButton';
+  import { ToggleSendKey } from './ToggleSendKey';
   import { Footer } from './Footer';
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
   // import { common as lowlightCommon, createLowlight } from 'lowlight'
@@ -23,7 +23,7 @@
   /** out only */
   export let editor: Editor;
   /** Set send button */
-  export let sendButton: 'Enter' | 'Ctrl-Enter' = 'Enter';
+  export let sendKey: 'Enter' | 'Ctrl-Enter' = 'Enter';
 
   let divEl: HTMLDivElement;
 
@@ -40,8 +40,8 @@
           allowBase64: true,
           inline: true,
         }),
-        ToggleSendButton.configure({
-          sendButton: sendButton,
+        ToggleSendKey.configure({
+          sendKey: sendKey,
         }),
         // CodeBlockLowlightFeature.configure({
         //  lowlight: createLowlight(lowlightCommon),

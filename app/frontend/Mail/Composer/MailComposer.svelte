@@ -71,7 +71,7 @@
         <vbox flex class="paper">
           <Scroll>
             <vbox flex class="editor">
-              <HTMLEditor bind:html={mail.html} bind:editor on:send={onSend} sendButton='Ctrl-Enter'/>
+              <HTMLEditor bind:html={mail.html} bind:editor on:send={onSend} sendKey='Ctrl-Enter'/>
             </vbox>
           </Scroll>
           <hbox class="footer">

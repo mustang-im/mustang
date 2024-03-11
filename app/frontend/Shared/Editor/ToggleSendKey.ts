@@ -1,18 +1,18 @@
 import { Extension } from "@tiptap/core";
 
-export interface ToggleSendButtonOptions {
+export interface ToggleSendKeyOptions {
   /** `Enter` | `Ctrl-Enter` */
-  sendButton: string;
-  buttonOptions: string[];
+  sendKey: string;
+  keyOptions: string[];
 }
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
-    toggleSendButton: {
+    toggleSendKey: {
       /**
        * Toggle send button
        */
-      toggleSendButton: () => ReturnType,
+      toggleSendKey: () => ReturnType,
       /**
        * Emit `send` event
        */
@@ -24,12 +24,12 @@ declare module '@tiptap/core' {
 /** Extension for emitting `send` event from `Ctrl-Enter` or 
  * `Enter`. 
  */
-export const ToggleSendButton = Extension.create<ToggleSendButtonOptions>({
-  name: 'toggle-send-button',
+export const ToggleSendKey = Extension.create<ToggleSendKeyOptions>({
+  name: 'toggle-send-key',
   addOptions() {
     return {
-      sendButton: 'Ctrl-Enter',
-      buttonOptions: [
+      sendKey: 'Ctrl-Enter',
+      keyOptions: [
         'Ctrl-Enter',
         'Enter'
       ],
@@ -38,19 +38,19 @@ export const ToggleSendButton = Extension.create<ToggleSendButtonOptions>({
   addKeyboardShortcuts() {
     return {
       Enter: ({editor}) => {
-        if (this.options.sendButton === 'Enter') {
+        if (this.options.sendKey === 'Enter') {
           return editor.commands.send();
         }
         return false;
       },
       'Ctrl-Enter': ({editor}) => {
-        let sendButton = this.options.sendButton;
-        let buttonOptions = this.options.buttonOptions;
-        if (!sendButton || !buttonOptions.includes(sendButton)) {
-          this.options.sendButton = 'Ctrl-Enter';
+        let sendKey = this.options.sendKey;
+        let keyOptions = this.options.keyOptions;
+        if (!sendKey || !keyOptions.includes(sendKey)) {
+          this.options.sendKey = 'Ctrl-Enter';
           return editor.commands.send();
         }
-        if (sendButton === 'Ctrl-Enter') {
+        if (sendKey === 'Ctrl-Enter') {
           return editor.commands.send();
         }
         return false;
@@ -59,11 +59,11 @@ export const ToggleSendButton = Extension.create<ToggleSendButtonOptions>({
   },
   addCommands() {
     return {
-      toggleSendButton: () => () => {
-        if (this.options.sendButton === 'Enter') {
-          this.options.sendButton = 'Ctrl-Enter';
+      toggleSendKey: () => () => {
+        if (this.options.sendKey === 'Enter') {
+          this.options.sendKey = 'Ctrl-Enter';
         } else {
-          this.options.sendButton = 'Enter';
+          this.options.sendKey = 'Enter';
         }
         return true;
       },
