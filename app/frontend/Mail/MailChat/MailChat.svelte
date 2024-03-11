@@ -9,10 +9,10 @@
     <ViewSwitcher />
   </vbox>
   <vbox class="right-pane" slot="right">
-    {#if personMessages && selectedPerson }
+    {#if filteredMessages && selectedPerson }
       <Header person={selectedPerson} />
       <vbox flex class="messages">
-        <MessageList messages={personMessages}>
+        <MessageList messages={filteredMessages}>
           <svelte:fragment slot="message" let:message let:previousMessage>
             {#if message instanceof EMail }
               <MailMessage {message} {previousMessage} />
@@ -47,6 +47,7 @@
   import { Collection, mergeColls } from 'svelte-collections';
   import { faker } from "@faker-js/faker";
   import AccountDropDown from "../AccountDropDown.svelte";
+  import { globalSearchTerm } from "../../AppsBar/selectedApp";
 
   export let accounts: Collection<MailAccount>; /** in */
 
@@ -54,6 +55,9 @@
   $: rootFolders = mergeColls<Folder>(accounts.map(account => account.rootFolders).values());
   $: allMessages = mergeColls<EMail>(rootFolders.map(folder => folder.messages).values());
   $: personMessages = allMessages.filter(msg => msg.contact == selectedPerson).sortBy(msg => msg.received);
+  $: filteredMessages = $globalSearchTerm
+    ? personMessages.filter(msg => msg.text.toLowerCase().includes($globalSearchTerm))
+    : personMessages;
   $: dummyChat = createDummyChat(selectedPerson);
   function createDummyChat(person: Person): Chat {
     let chat = new Chat();
