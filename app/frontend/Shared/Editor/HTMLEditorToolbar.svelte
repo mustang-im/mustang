@@ -173,7 +173,7 @@ block
       />
       <Button
       label="Toggle send button"
-      on:click={() => editor.chain().focus().toggleSendButton().run()}
+      on:click={() => editor.chain().focus().toggleSendKey().run()}
       icon={ForwardIcon}
       iconOnly
       />

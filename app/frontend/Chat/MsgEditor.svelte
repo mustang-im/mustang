@@ -5,7 +5,7 @@
       <vbox flex class="editor-scroll-wrapper">
         <Scroll>
           <vbox flex class="editor">
-            <HTMLEditor bind:html={to.draftMessage} bind:editor on:send={send} sendButton='Enter'/>
+            <HTMLEditor bind:html={to.draftMessage} bind:editor on:send={send} sendKey='Enter'/>
           </vbox>
         </Scroll>
       </vbox>
