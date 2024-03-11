@@ -25,7 +25,7 @@ export class IMAPFolder extends Folder {
       let newMessages = new ArrayColl<IMAPEMail>();
       let conn = this._account._connection;
       lock = await conn.getMailboxLock(this.path);
-      let msgsAsyncIterator = await conn.fetch("1:*", {
+      let msgsAsyncIterator = await conn.fetch({ all: true }, {
         size: true,
         threadId: true,
         internalDate: true,
@@ -54,7 +54,7 @@ export class IMAPFolder extends Folder {
       let newMessages = new ArrayColl<IMAPEMail>();
       let conn = this._account._connection;
       lock = await conn.getMailboxLock(this.path);
-      for await (let msgInfo of await conn.fetch("1:*", {
+      for await (let msgInfo of await conn.fetch({ all: true }, {
         size: true,
         threadId: true,
         envelope: true,
