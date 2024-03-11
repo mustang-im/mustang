@@ -4,14 +4,7 @@
       <hbox class="header">
         <hbox class="header-label">Accounts</hbox>
         <hbox flex />
-        <hbox class="button">
-          <RoundButton
-            label="Write new email"
-            icon={WriteIcon} iconSize="16px" filled
-            disabled={!selectedAccount}
-            on:click={() => catchErrors(newMail)}
-            />
-        </hbox>
+        <slot name="top-right" />
       </hbox>
     </svelte:fragment>
     <svelte:fragment slot="row" let:item={account}>
@@ -25,25 +18,14 @@
 
 <script lang="ts">
   //import type { Account } from "mustang-lib";
-  import type { Account } from '../../../logic/Abstract/Account';
-  import { EMail } from "../../../logic/Mail/EMail";
-  import { mailMustangApp } from "../MailMustangApp";
+  import type { MailAccount } from '../../../logic/Mail/Account';
   import FastList from "../../Shared/FastList.svelte";
-  import RoundButton from "../../Shared/RoundButton.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
   import AccountIcon from '../../asset/icon/appBar/mail.svg?raw';
-  import WriteIcon from "lucide-svelte/icons/pencil";
-  import { catchErrors } from "../../Util/error";
   import type { Collection } from 'svelte-collections';
 
-  export let accounts: Collection<Account>;
-  export let selectedAccount: Account; /* in/out */
-
-  function newMail() {
-    let mail = new EMail();
-    mail.authorEmailAddress = selectedAccount.emailAddress;
-    mailMustangApp.writeMail(mail);
-  }
+  export let accounts: Collection<MailAccount>;
+  export let selectedAccount: MailAccount; /* in/out */
 </script>
 
 <style>
@@ -61,12 +43,6 @@
   .header-label {
     color: grey;
     font-size: 12px;
-  }
-  .button {
-    margin: 8px 8px 0 8px;
-  }
-  .button :global(svg) {
-    margin: 4px;
   }
   .account {
     align-items: center;

@@ -1,5 +1,6 @@
 <hbox class="account-dropdown">
-  <hbox class="selected-label">{selectedAccount.emailAddress}
+  <hbox class="selected-label">
+    {selectedAccount.emailAddress}
   </hbox>
   <Button plain icon={ChevronDownIcon} iconSize="16px" iconOnly />
 </hbox>
@@ -15,7 +16,7 @@
 </script>
 
 <style>
-    .account-dropdown {
+  .account-dropdown {
     font-size: 14px;
     font-weight: 200;
     align-items: center;
@@ -23,5 +24,10 @@
   .account-dropdown,
   .account-dropdown :global(button .icon) {
     color: grey;
+  }
+  .selected-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 8em;
   }
 </style>
