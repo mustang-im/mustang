@@ -30,6 +30,7 @@
   import { UserChatMessage } from "../../logic/Chat/Message";
   import { ChatRoomEvent } from "../../logic/Chat/RoomEvent";
   import { selectedPerson } from "../Shared/Person/PersonOrGroup";
+  import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import MessageList from "./MessageView/MessageList.svelte";
   import Message from "./MessageView/Message.svelte";
@@ -44,7 +45,9 @@
 
   let selectedChat: Chat;
   let chatRooms = mergeColls(appGlobal.chatAccounts.map(a => a.chats));
-  $: messages = selectedChat?.messages;
+  $: messages = $globalSearchTerm
+    ? selectedChat?.messages.filter(msg => msg.text.toLowerCase().includes($globalSearchTerm))
+    : selectedChat?.messages;
 
   onMount(() => {
     selectedChat = $selectedPerson && chatRooms.find(chat => chat.contact == $selectedPerson);
