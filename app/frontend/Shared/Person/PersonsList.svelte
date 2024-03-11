@@ -1,5 +1,5 @@
 <vbox flex class="persons">
-  <SearchField bind:searchTerm />
+  <SearchField bind:searchTerm placeholder="Search for a person or group" />
   <FastList items={personsFiltered} columns="auto">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <vbox class="person" slot="row" let:item={person} on:click={() => selected = person}>

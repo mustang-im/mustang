@@ -6,6 +6,7 @@
     {selectedApp?.name ?? "Mustang"}
   </hbox>
   <vbox flex class="free" />
+  <SearchField bind:searchTerm={$globalSearchTerm} />
   <hbox class="right">
     <Button label="Settings" icon={SettingsIcon} iconSize="24px" plain iconOnly classes="settings"/>
   </hbox>
@@ -13,10 +14,12 @@
 
 <script lang="ts">
   import type { MustangApp } from "../AppsBar/MustangApp";
+  import SearchField from "../Shared/SearchField.svelte";
   import Button from "../Shared/Button.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
   import logo from '../asset/icon/general/logo.svg?raw';
   import SettingsIcon from 'lucide-svelte/icons/settings-2';
+  import { globalSearchTerm } from "../AppsBar/selectedApp";
 
   export let selectedApp: MustangApp;
 </script>
@@ -44,5 +47,18 @@
   }
   .free {
     app-region: drag;
+  }
+
+  .window-header :global(.search) {
+    margin: 6px 12px;
+    background-color: rgb(255, 255, 255, 10%);
+    border: none;
+  }
+  .window-header :global(.search input) {
+    background-color: transparent;
+    color: white;
+  }
+  .window-header :global(.search input::placeholder) {
+    color: white;
   }
 </style>
