@@ -1,10 +1,11 @@
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox class="left-pane" slot="left">
+    <Header />
     <PersonsList {chatRooms} bind:selectedChat />
   </vbox>
   <vbox class="right-pane" slot="right">
     {#if messages && selectedChat }
-      <Header person={selectedChat.contact} />
+      <PersonHeader person={selectedChat.contact} />
       <vbox flex class="messages">
         <MessageList {messages}>
           <svelte:fragment slot="message" let:message let:previousMessage>
@@ -25,20 +26,21 @@
 
 <script lang="ts">
   import type { Chat } from "../../logic/Chat/Chat";
-  import { appGlobal } from "../../logic/app";
-  import { mergeColls } from "svelte-collections";
+  import { Person } from "../../logic/Abstract/Person";
   import { UserChatMessage } from "../../logic/Chat/Message";
   import { ChatRoomEvent } from "../../logic/Chat/RoomEvent";
   import { selectedPerson } from "../Shared/Person/PersonOrGroup";
-  import PersonsList from "./PersonsList.svelte";
-  import Header from "./PersonHeader.svelte";
+  import { appGlobal } from "../../logic/app";
   import MessageList from "./MessageView/MessageList.svelte";
   import Message from "./MessageView/Message.svelte";
   import ChatRoomEventUI from "./MessageView/ChatRoomEventUI.svelte";
   import MsgEditor from "./MsgEditor.svelte";
+  import Header from "./Header.svelte";
+  import PersonHeader from "./PersonHeader.svelte";
+  import PersonsList from "./PersonsList.svelte";
   import Splitter from "../Shared/Splitter.svelte";
+  import { mergeColls } from "svelte-collections";
   import { onMount } from "svelte";
-  import { Person } from "../../logic/Abstract/Person";
 
   let selectedChat: Chat;
   let chatRooms = mergeColls(appGlobal.chatAccounts.map(a => a.chats));
