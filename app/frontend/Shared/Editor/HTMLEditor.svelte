@@ -1,6 +1,6 @@
 <!-- TODO Jail content into an iframe -->
 
-<div bind:this={divEl} class="html-editor" />
+<div bind:this={divEl} class="html-editor" on:send/>
 
 <script lang="ts">
   import { Editor } from '@tiptap/core';
@@ -9,6 +9,7 @@
   import ImageFeature from '@tiptap/extension-image';
   import CodeWordFeature from '@tiptap/extension-code';
   import { SplitBlockquote } from './SplitBlockquote';
+  import { ToggleSendButton } from './ToggleSendButton';
   import { Footer } from './Footer';
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
   // import { common as lowlightCommon, createLowlight } from 'lowlight'
@@ -21,6 +22,8 @@
   export let html: string;
   /** out only */
   export let editor: Editor;
+  /** Set send button */
+  export let sendButton: 'Enter' | 'Ctrl-Enter' = 'Enter';
 
   let divEl: HTMLDivElement;
 
@@ -36,6 +39,9 @@
         ImageFeature.configure({
           allowBase64: true,
           inline: true,
+        }),
+        ToggleSendButton.configure({
+          sendButton: sendButton,
         }),
         // CodeBlockLowlightFeature.configure({
         //  lowlight: createLowlight(lowlightCommon),

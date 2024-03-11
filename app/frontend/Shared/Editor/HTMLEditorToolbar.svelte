@@ -171,6 +171,12 @@ block
       icon={RedoIcon}
       iconOnly
       />
+      <Button
+      label="Toggle send button"
+      on:click={() => editor.chain().focus().toggleSendButton().run()}
+      icon={ForwardIcon}
+      iconOnly
+      />
       <slot name="last" />
 
       <hbox flex />
@@ -194,6 +200,7 @@ block
   import ClearIcon from "lucide-svelte/icons/remove-formatting";
   import UndoIcon from "lucide-svelte/icons/undo";
   import RedoIcon from "lucide-svelte/icons/redo";
+  import ForwardIcon from 'lucide-svelte/icons/forward';
   import type { Editor } from '@tiptap/core';
 
   /* in only */
