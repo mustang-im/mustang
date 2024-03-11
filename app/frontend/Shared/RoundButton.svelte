@@ -74,15 +74,15 @@
     border: 1px solid transparent !important;
   }
   .selected:not(.disabled) {
-    background-color: #20AE9E;
+    background-color: #20AE9E; /* or #27C1AA */
     color: white;
   }
   .selected:hover:not(.disabled) {
     background-color: #1C998B;
     color: white;
   }
-  .secondary.action {
-    border-color: #E2E6E6;
+  button.secondary {
+    border-color: #A1E4DA;
   }
 
   @media (prefers-color-scheme: light) {
