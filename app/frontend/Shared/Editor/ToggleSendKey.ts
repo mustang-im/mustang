@@ -10,7 +10,7 @@ declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     toggleSendKey: {
       /**
-       * Toggle send button
+       * Toggle send key between `Ctrl-Enter` or `Enter`
        */
       toggleSendKey: () => ReturnType,
       /**
