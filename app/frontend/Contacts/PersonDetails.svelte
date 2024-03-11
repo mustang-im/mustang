@@ -18,17 +18,17 @@
       </hbox>
       <vbox flex class="main-right">
         <hbox class="main-call">
-          <RoundButton label="Video call" icon={CameraIcon} iconSize="24px"
+          <RoundButton label="Video call" icon={CameraIcon} classes="large secondary action"
             on:click={() => catchErrors(() => startVideoCall(person))} />
           {#if preferredPhoneNumber}
             <a href="tel:{preferredPhoneNumber}" class="phone-call">
-              <RoundButton label="Call" icon={CallIcon} iconSize="22px" />
+              <RoundButton label="Call" icon={CallIcon} iconSize="19px" classes="large secondary action" />
             </a>
           {/if}
-          <RoundButton label="Message" icon={ChatIcon} iconSize="24px" />
+          <RoundButton label="Message" icon={ChatIcon} classes="large secondary action" />
           {#if preferredEmailAddress}
             <a href="mailto:{preferredEmailAddress}">
-              <RoundButton label="Send mail" icon={MailIcon} iconSize="24px" />
+              <RoundButton label="Send mail" icon={MailIcon} classes="large secondary action" />
             </a>
           {/if}
         </hbox>
@@ -248,14 +248,10 @@
     font-size: 13px;
   }
   .main-call :global(> *) {
-    margin-right: 8px;
-    border-color: #DCDBDF;
-  }
-  .main-call :global(button) {
-    border-color: #DCDBDF;
+    margin-right: 10px;
   }
   .phone-call :global(.icon) {
-    /* because the icon is only 22px */
+    /* because the icon is 1px smaller */
     margin: 1px;
   }
   grid.boxes {
