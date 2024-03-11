@@ -7,6 +7,10 @@ declare module '@tiptap/core' {
        * One enter inserts `<br>`, two enters creates `<p>`
        */
       enterLineBreak: () => ReturnType,
+      /**
+       * Split where there is a `<br>`
+       */
+      splitNewLine: () => ReturnType,
     }
   }
 }
@@ -39,6 +43,21 @@ export const EnterNewline = Extension.create({
           to: $from.pos
         };
         return chain().deleteRange(newlineRange).createParagraphNear().scrollIntoView().run();
+      },
+      splitNewLine: () => ({tr, dispatch}) => {
+        let {$from, $to} = tr.selection;
+        let shift = 0;
+        if (!dispatch || !$from) {
+          return false;
+        }
+        tr.doc.nodesBetween($from.pos, $to.pos, (node, pos) => {
+          let shiftPos = pos + shift;
+          if (node.type.name === 'hardBreak') {
+            tr.delete(shiftPos, shiftPos + node.nodeSize).split(shiftPos);
+            shift++;
+          }
+        })
+        return true;
       },
     }
   },
