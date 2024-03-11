@@ -23,8 +23,8 @@ export const EnterNewline = Extension.create({
   },
   addCommands() {
     return {
-      enterLineBreak: () => ({ state, chain }) => {
-        let {$from} = state.selection;
+      enterLineBreak: () => ({ tr, chain }) => {
+        let {$from} = tr.selection;
         // if node wrap is not `paragraph` e.g. wrapping is `list`
         if (!$from || $from.node(1).type.name !== 'paragraph') {
           return false;
