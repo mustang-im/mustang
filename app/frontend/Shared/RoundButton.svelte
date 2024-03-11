@@ -20,9 +20,9 @@
 
   export let label: string = null;
   export let icon: ComponentType | string = null;
-  export let iconSize = "16px";
-  export let padding = "8px";
   export let classes = "";
+  export let iconSize = classes?.includes("large") ? "20px" : "16px";
+  export let padding = classes?.includes("large") ? "10px" : "8px";
   export let filled = false;
   export let border = true;
   export let disabled = false;
@@ -68,6 +68,10 @@
   }
   .selected {
     background-color: #00000033; /* TODO adapt style */
+  }
+
+  .secondary.action {
+    border-color: #E2E6E6;
   }
 
   @media (prefers-color-scheme: light) {
