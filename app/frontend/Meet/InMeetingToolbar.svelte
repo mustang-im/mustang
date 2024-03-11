@@ -12,7 +12,8 @@
   {/if}
   <RoundButton
     label="Screen share"
-    classes="screen-share {$screenShareOn ? "on" : "off"}"
+    classes="screen-share"
+    selected={$screenShareOn}
     on:click={() => catchErrors(toggleScreenShare)}
     icon={$screenShareOn ? ScreenShareIcon : ScreenShareOffIcon}
     iconSize="24px"
@@ -20,7 +21,8 @@
     />
   <RoundButton
     label="Camera"
-    classes="camera {$cameraOn ? "on" : "off"}"
+    classes="camera"
+    selected={$cameraOn}
     on:click={() => catchErrors(toggleCamera)}
     icon={$cameraOn ? CameraIcon : CameraOffIcon}
     iconSize="24px"
@@ -28,7 +30,8 @@
     />
     <RoundButton
     label="Mute"
-    classes="mic {$micOn ? "on" : "off"}"
+    classes="mic"
+    selected={$micOn}
     on:click={() => catchErrors(toggleMic)}
     icon={$micOn ? MicrophoneIcon : MicrophoneOffIcon}
     iconSize="24px"
@@ -186,24 +189,14 @@
   .actions :global(button.leave) {
     background-color: #F34949;
   }
-  /*.actions :global(.camera svg),
-  .actions :global(.mic svg) {
-    fill: black;
-  }*/
-  .actions :global(.on) {
-    background-color: lightgoldenrodyellow;
-  }
   .actions :global(.raised-hand svg) {
     fill: tan;
   }
   .actions :global(.raise-hand svg) {
     fill: none;
   }
-  .actions :global(.raised-hand svg) {
-    fill: tan;
-  }
   .actions :global(button.raised-hand) {
-    background-color: yellowgreen;
+    background-color: #20AE9E;
     animation-name: color;
         animation-duration: 1s;
         animation-iteration-count: infinite;
@@ -212,7 +205,7 @@
   }
   @keyframes color {
     to {
-      background-color: transparent;
+      background-color: #A3E5DD;
     }
   }
   .actions :global(.leave svg) {
