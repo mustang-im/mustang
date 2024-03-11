@@ -1,5 +1,10 @@
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox class="left-pane" slot="left">
+    <hbox class="buttons">
+      <AccountDropDown />
+      <hbox flex class="spacer" />
+      <WriteButton selectedAccount={$selectedAccount} />
+    </hbox>
     <PersonsList persons={appGlobal.persons} bind:selected={selectedPerson} />
     <ViewSwitcher />
   </vbox>
@@ -30,15 +35,18 @@
   import type { Person } from "../../../logic/Abstract/Person";
   import { Chat } from "../../../logic/Chat/Chat";
   import { appGlobal } from "../../../logic/app";
-  import { Collection, mergeColls } from 'svelte-collections';
+  import { selectedAccount } from "../Selected";
   import PersonsList from "../../Shared/Person/PersonsList.svelte";
   import Header from "../../Chat/PersonHeader.svelte";
   import MessageList from "../../Chat/MessageView/MessageList.svelte";
   import MailMessage from "./MailMessage.svelte";
   import MsgEditor from "../../Chat/MsgEditor.svelte";
   import ViewSwitcher from "../LeftPane/ViewSwitcher.svelte";
+  import WriteButton from "../LeftPane/WriteButton.svelte";
   import Splitter from "../../Shared/Splitter.svelte";
+  import { Collection, mergeColls } from 'svelte-collections';
   import { faker } from "@faker-js/faker";
+  import AccountDropDown from "../AccountDropDown.svelte";
 
   export let accounts: Collection<MailAccount>; /** in */
 
@@ -67,5 +75,15 @@
   }
   .editor {
     height: 96px;
+  }
+  .buttons {
+    margin: 10px 16px;
+    justify-content: end;
+  }
+  .buttons :global(svg) {
+    margin: 4px;
+  }
+  .spacer {
+    min-width: 8px;
   }
 </style>
