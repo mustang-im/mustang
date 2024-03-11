@@ -1,6 +1,6 @@
 import { Extension } from "@tiptap/core";
 
-export interface ToggleOptions {
+export interface ToggleSendButtonOptions {
   /** `Enter` | `Ctrl-Enter` */
   sendButton: string;
   buttonOptions: string[];
@@ -24,7 +24,7 @@ declare module '@tiptap/core' {
 /** Extension for emitting `send` event from `Ctrl-Enter` or 
  * `Enter`. 
  */
-export const ToggleSendButton = Extension.create<ToggleOptions>({
+export const ToggleSendButton = Extension.create<ToggleSendButtonOptions>({
   name: 'toggle-send-button',
   addOptions() {
     return {
