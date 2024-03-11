@@ -56,26 +56,31 @@
     color: white;
     stroke-width: 2px;
   }
-  .filled:not(:hover) :global(svg) {
+  :global(svg) {
     stroke: currentColor;
   }
-  .button:hover:not(.disabled) .icon :global(svg) {
-    stroke: white;
+  .filled:not(:hover) :global(svg) {
+    stroke: currentColor;
   }
   .icon {
     margin-right: 0px;
   }
-  button:hover:not(.disabled) {
-    background-color: rgba(32, 174, 158, 100%); /* #20AE9E */
-    border: 1px solid transparent !important;
-  }
   .disabled {
     opacity: 50%;
   }
-  .selected {
-    background-color: #00000033; /* TODO adapt style */
+  button:hover:not(.disabled) {
+    background-color: #A9DAD4;
+    color: black;
+    border: 1px solid transparent !important;
   }
-
+  .selected:not(.disabled) {
+    background-color: #20AE9E;
+    color: white;
+  }
+  .selected:hover:not(.disabled) {
+    background-color: #1C998B;
+    color: white;
+  }
   .secondary.action {
     border-color: #E2E6E6;
   }
