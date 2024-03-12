@@ -6,9 +6,9 @@
     <hbox class="name">{person.name}</hbox>
   </vbox>
   <hbox class="actions">
-    <RoundButton label="Video call" icon={VideoCallIcon} iconSize="24px" filled
+    <RoundButton label="Video call" icon={VideoCallIcon} classes="secondary large"
       on:click={() => catchErrors(() => startVideoCall(person))} />
-    <RoundButton label="Audio call" icon={VoiceCallIcon} iconSize="24px" filled
+    <RoundButton label="Audio call" icon={VoiceCallIcon} classes="secondary large"
       on:click={() => catchErrors(() => startAudioCall(person))} />
   </hbox>
   <hbox flex />

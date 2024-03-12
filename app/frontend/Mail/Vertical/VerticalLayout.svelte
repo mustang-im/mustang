@@ -1,6 +1,10 @@
 <Splitter name="mail.vertical.folders" initialRightRatio={4}>
   <vbox flex class="folder-pane" slot="left">
-    <AccountList accounts={$accounts} bind:selectedAccount />
+    <AccountList accounts={$accounts} bind:selectedAccount>
+      <hbox class="buttons" slot="top-right">
+        <WriteButton {selectedAccount} />
+      </hbox>
+    </AccountList>
     <FolderList folders={selectedAccount?.rootFolders ?? new ArrayColl()} bind:selectedFolder />
     <ViewSwitcher />
   </vbox>
@@ -29,6 +33,7 @@
   import MessageDisplay from "../Message/MessageDisplay.svelte";
   import StartPage from "../StartPage.svelte";
   import ViewSwitcher from "../LeftPane/ViewSwitcher.svelte";
+  import WriteButton from "../LeftPane/WriteButton.svelte";
   import Splitter from "../../Shared/Splitter.svelte";
   import { ArrayColl, Collection } from 'svelte-collections';
 
@@ -48,5 +53,12 @@
   .message-list-pane {
     box-shadow: 1px 0px 6px 0px rgba(0, 0, 0, 8%); /* Also on MessageList */
     z-index: 2;
+  }
+
+  .buttons {
+    margin: 8px 8px 0 8px;
+  }
+  .buttons :global(svg) {
+    margin: 4px;
   }
 </style>

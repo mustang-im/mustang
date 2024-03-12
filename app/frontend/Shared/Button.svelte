@@ -67,17 +67,24 @@
     border: none;
     min-width: 20px;
   }
-  button:hover:not(.disabled) {
-    background-color: rgba(32, 174, 158, 50%); /* #20AE9E */
-  }
-  button.selected:not(.disabled) {
-    background-color: rgba(32, 174, 158, 100%); /* #20AE9E */
-  }
-  button.selected:hover {
-    background-color: rgba(32, 174, 158, 75%); /* #20AE9E */
-  }
   .disabled {
     opacity: 50%;
+  }
+  button:hover:not(.disabled) {
+    background-color: #A9DAD4;
+    color: black;
+    border: 1px solid transparent !important;
+  }
+  .selected:not(.disabled) {
+    background-color: #20AE9E; /* or #27C1AA */
+    color: white;
+  }
+  .selected:hover:not(.disabled) {
+    background-color: #1C998B;
+    color: white;
+  }
+  button.secondary {
+    border-color: #A1E4DA;
   }
   .gap {
     width: 8px;

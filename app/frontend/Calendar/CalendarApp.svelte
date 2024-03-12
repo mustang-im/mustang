@@ -2,8 +2,10 @@
   <TitleBar bind:dateInterval={$selectedDateInterval} on:addEvent={addEvent} />
   <Scroll>
     <vbox flex class="main">
-      {#if dateInterval == 1}
-        <WeekView bind:start={$selectedDate} {events} showDays={1}/>
+      {#if dateInterval == 0 || $globalSearchTerm}
+        <ListView {events} />
+      {:else if dateInterval == 1}
+        <WeekView bind:start={$selectedDate} {events} showDays={1} />
       {:else if dateInterval == 7}
         <WeekView bind:start={$selectedDate} {events} />
       {:else if dateInterval == 28}
@@ -23,11 +25,13 @@
   import { Event } from "../../logic/Calendar/Event";
   import { selectedDate, selectedDateInterval } from "./selected";
   import { calendarMustangApp } from "./CalendarMustangApp";
+  import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import TitleBar from "./TitleBar.svelte";
   import WeekView from "./WeekView.svelte";
   import MonthView from "./MonthView.svelte";
   import DualView from "./DualView.svelte";
+  import ListView from "./ListView.svelte";
   import Scroll from "../Shared/Scroll.svelte";
   import { ArrayColl } from "svelte-collections";
 

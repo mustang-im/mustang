@@ -1,10 +1,12 @@
 <Splitter name="mail.3pane.folders" initialRightRatio={4}>
   <vbox flex class="folder-pane" slot="left">
     <!--<ProjectList />-->
-    <AccountList accounts={$accounts} bind:selectedAccount />
-    {#await selectedAccount?.rootFolders then rootFolders}
-    <FolderList folders={rootFolders ?? new ArrayColl()} bind:selectedFolder />
-    {/await}
+    <AccountList accounts={$accounts} bind:selectedAccount>
+      <hbox class="buttons" slot="top-right">
+        <WriteButton {selectedAccount} />
+      </hbox>
+    </AccountList>
+    <FolderList folders={selectedAccount ? selectedAccount.rootFolders : new ArrayColl()} bind:selectedFolder />
     <ViewSwitcher />
   </vbox>
   <SplitterHorizontal slot="right" name="mail.3pane.msgs" initialBottomRatio={2}>
@@ -30,6 +32,7 @@
   import TableMessageList from "./TableMessageList.svelte";
   import MessageDisplay from "../Message/MessageDisplay.svelte";
   import ViewSwitcher from "../LeftPane/ViewSwitcher.svelte";
+  import WriteButton from "../LeftPane/WriteButton.svelte";
   import Splitter from "../../Shared/Splitter.svelte";
   import SplitterHorizontal from "../../Shared/SplitterHorizontal.svelte";
   import { ArrayColl, Collection } from 'svelte-collections';
@@ -50,5 +53,12 @@
   }
   .message-display-pane {
     flex: 2 0 0;
+  }
+
+  .buttons {
+    margin: 8px 8px 0 8px;
+  }
+  .buttons :global(svg) {
+    margin: 4px;
   }
 </style>
