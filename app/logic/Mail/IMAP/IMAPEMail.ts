@@ -118,6 +118,13 @@ export class IMAPEMail extends EMail {
       }
     });
   }
+
+  async deleteMessage() {
+    await super.deleteMessage();
+    this._folder.runCommand(async (conn) => {
+      conn.messageDelete(this.uid, { uid: true });
+    });
+  }
 }
 
 function addPersons(targetList: MapColl<string, Person>, personList: any[]): void {
