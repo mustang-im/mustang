@@ -1,4 +1,5 @@
 import { Message } from "../Abstract/Message";
+import type { Attachment } from "./Attachment";
 import type { Person } from "../Abstract/Person";
 import { appGlobal } from "../app";
 import { notifyChangedProperty } from "../util/Observable";
@@ -13,7 +14,10 @@ export class EMail extends Message {
   readonly cc = new MapColl<string, Person>(); /** format like `to` */
   readonly bcc = new MapColl<string, Person>(); /** format like `to` */
   readonly replyTo: { emailAddress: string, name: string };
-  readonly attachments = new ArrayColl<File>();
+  readonly attachments = new ArrayColl<Attachment>();
+  readonly headers = new MapColl<string, string>();
+  /** Complete MIME source of the email */
+  mime: Uint8Array | undefined;
   @notifyChangedProperty
   contentType: string;
   @notifyChangedProperty

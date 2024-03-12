@@ -73,10 +73,13 @@ export class IMAPFolder extends Folder {
           continue;
         } else if (msg) {
           msg.fromFlow(msgInfo);
+          msg.downloadComplete = true;
+          await msg.parseMIME();
         } else {
           msg = new IMAPEMail(this);
           msg.fromFlow(msgInfo);
           msg.downloadComplete = true;
+          await msg.parseMIME();
           newMessages.add(msg);
         }
         console.log("Message complete", msg, msgInfo);

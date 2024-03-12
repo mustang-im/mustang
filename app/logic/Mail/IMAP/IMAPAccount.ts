@@ -1,7 +1,7 @@
 import { MailAccount, TLSSocketType } from "../MailAccount";
 import { IMAPFolder } from "./IMAPFolder";
 import { appGlobal } from "../../app";
-import { ArrayColl, Collection } from "svelte-collections";
+import type { ArrayColl, Collection } from "svelte-collections";
 import { assert } from "../../util/util";
 import type { ImapFlow } from "../../../../e2/node_modules/imapflow";
 
