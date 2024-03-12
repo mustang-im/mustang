@@ -1,30 +1,29 @@
-import { Folder } from "../Folder";
+import { Folder, SpecialFolder } from "../Folder";
 import { IMAPEMail } from "./IMAPEMail";
 import type { IMAPAccount } from "./IMAPAccount";
-import { ArrayColl } from "svelte-collections";
+import { ArrayColl, Collection } from "svelte-collections";
 
 export class IMAPFolder extends Folder {
-  _account: IMAPAccount;
+  account: IMAPAccount;
   path: string;
 
   constructor(account: IMAPAccount) {
-    super();
-    this._account = account;
+    super(account);
   }
 
   fromFlow(folderInfo: any) {
     this.name = folderInfo.name;
     this.path = folderInfo.path;
     this.countTotal = folderInfo.status.messages;
-    this.countUnread = folderInfo.status.recent;
-    this.countUnseen = folderInfo.status.unseen;
+    this.countUnread = folderInfo.status.unseen;
+    this.countNewArrived = folderInfo.status.recent;
     this.specialUse(folderInfo.specialUse);
   }
 
   async runCommand(imapFunc: (conn: any) => Promise<void>) {
     let lock;
     try {
-      let conn = this._account._connection;
+      let conn = this.account._connection;
       lock = await conn.getMailboxLock(this.path);
       await imapFunc(conn);
     } finally {
@@ -96,25 +95,55 @@ export class IMAPFolder extends Folder {
     return this.getEMailByUID(uid) ?? new IMAPEMail(this);
   }*/
 
+
+  async moveMessagesHere(messages: Collection<IMAPEMail>) {
+    super.moveMessagesHere(messages);
+    alert("Messages moved");
+  }
+
+  async copyMessagesHere(messages: Collection<IMAPEMail>) {
+    super.copyMessagesHere(messages);
+    alert("Messages copied");
+  }
+
+  async moveFolderHere(folder: Folder) {
+    super.moveFolderHere(folder);
+    alert("Folder moved");
+  }
+
+  async createSubFolder(name: string) {
+    let folder = new IMAPFolder(this.account);
+    folder.name = name;
+    folder.parent = this;
+    this.subFolders.add(folder);
+    alert("Folder created");
+  }
+
   specialUse(specialUse: string): void {
     switch (specialUse) {
       case "\Inbox":
-        this._account.inbox = this;
+        this.account.inbox = this;
+        this.specialFolder = SpecialFolder.Inbox;
         break;
       case "\Trash":
-        this._account.trash = this;
+        this.account.trash = this;
+        this.specialFolder = SpecialFolder.Trash;
         break;
       case "\Junk":
-        this._account.spam = this;
+        this.account.spam = this;
+        this.specialFolder = SpecialFolder.Spam;
         break;
       case "\Sent":
-        this._account.sent = this;
+        this.account.sent = this;
+        this.specialFolder = SpecialFolder.Sent;
         break;
       case "\Drafts":
-        this._account.drafts = this;
+        this.account.drafts = this;
+        this.specialFolder = SpecialFolder.Drafts;
         break;
       case "\Archive":
-        this._account.archive = this;
+        this.account.archive = this;
+        this.specialFolder = SpecialFolder.Archive;
         break;
     }
   }

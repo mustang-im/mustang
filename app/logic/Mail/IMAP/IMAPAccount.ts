@@ -71,11 +71,11 @@ export class IMAPAccount extends MailAccount {
       },
     });
     // console.log("folders", foldersFlat);
-    this.readFolders(folders, "", this.rootFolders as ArrayColl<IMAPFolder>);
+    this.readFolders(folders, null, this.rootFolders as ArrayColl<IMAPFolder>);
   }
 
-  readFolders(allFoldersInfo: any[], parentPath: string, subFolders: Collection<IMAPFolder>): void {
-    let subFoldersInfo = allFoldersInfo.filter(folderInfo => folderInfo.parentPath == parentPath);
+  readFolders(allFoldersInfo: any[], parent: IMAPFolder, subFolders: Collection<IMAPFolder>): void {
+    let subFoldersInfo = allFoldersInfo.filter(folderInfo => folderInfo.parentPath == (parent?.path ?? ""));
     for (let folderInfo of subFoldersInfo) {
       let subFolder = subFolders.find(folder => folder.path == folderInfo.path);
       if (subFolder) {
@@ -86,8 +86,9 @@ export class IMAPAccount extends MailAccount {
         subFolder = new IMAPFolder(this);
         subFolder.fromFlow(folderInfo);
         subFolders.add(subFolder);
+        subFolder.parent = parent;
       }
-      this.readFolders(allFoldersInfo, subFolder.path, subFolder.subFolders as ArrayColl<IMAPFolder>);
+      this.readFolders(allFoldersInfo, subFolder, subFolder.subFolders as ArrayColl<IMAPFolder>);
     }
   }
 
