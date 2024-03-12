@@ -29,8 +29,8 @@
     <hbox flex />
     <vbox>
       <MessageToolbar {message} {account} />
-      <value class="date" title={$message.received?.toLocaleString()}>
-        {getDateString($message.received)}
+      <value class="date" title={$message.sent?.toLocaleString()}>
+        {getDateString($message.sent)}
       </value>
     </vbox>
   </hbox>
