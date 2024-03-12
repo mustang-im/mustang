@@ -38,7 +38,7 @@
           allowBase64: true,
           inline: true,
         }),
-        StdConventions
+        StdConventions,
         // CodeBlockLowlightFeature.configure({
         //  lowlight: createLowlight(lowlightCommon),
         // }),
