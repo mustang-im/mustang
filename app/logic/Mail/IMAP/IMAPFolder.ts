@@ -35,6 +35,7 @@ export class IMAPFolder extends Folder {
         threadId: true,
         internalDate: true,
         envelope: true,
+        flags: true,
       });
       for await (let msgInfo of msgsAsyncIterator) {
         let msg = this.getEMailByUID(msgInfo.uid);
@@ -62,7 +63,8 @@ export class IMAPFolder extends Folder {
         threadId: true,
         envelope: true,
         source: true,
-        headers: true,
+        flags: true,
+        // headers: true,
       })) {
         let msg = this.getEMailByUID(msgInfo.uid);
         if (msg?.downloadComplete) {

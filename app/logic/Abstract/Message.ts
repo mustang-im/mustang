@@ -21,8 +21,14 @@ export class Message extends Observable {
   /** When the message was received */
   @notifyChangedProperty
   received: Date;
+  /** This message just arrived in the inbox and this is the first
+   * session to see this message */
+  @notifyChangedProperty
+  newArrived = false;
+  /** User has read the contents of the message */
   @notifyChangedProperty
   read = false;
+  /** User marked this message as special to remember */
   @notifyChangedProperty
   starred = false;
   /** Msg ID of another message that this one is a reply of */
