@@ -1,7 +1,7 @@
 import { MailAccount, TLSSocketType } from "../MailAccount";
 import { IMAPFolder } from "./IMAPFolder";
 import { appGlobal } from "../../app";
-import { ArrayColl } from "svelte-collections";
+import { ArrayColl, Collection } from "svelte-collections";
 import { assert } from "../../util/util";
 import type { ImapFlow } from "../../../../e2/node_modules/imapflow";
 
@@ -55,28 +55,33 @@ export class IMAPAccount extends MailAccount {
   }
 
   async listFolders(): Promise<void> {
-    /* let folders = await this.connection().list({
-      messages: true, // Total msg count
-      recent: true, // \Recent msg count
-      unseen: true // Unseen msg count
-    }); */
-    let root = await this._connection.listTree();
-    assert(root.root, "Not root");
-    this.rootFolders.clear(); // TODO add and remove selectively
-    this.rootFolders.addAll(this.readFolders(root.folders));
+    // listTree() doesn't return the message count and is not well-implemented
+    let foldersFlat = await this._connection.list({
+      statusQuery: {
+        messages: true, // Total msg count
+        recent: true, // \Recent msg count
+        unseen: true, // Unseen msg count
+      },
+    });
+    console.log("folders flat", foldersFlat);
+    this.readFolders(foldersFlat, "", this.rootFolders as ArrayColl<IMAPFolder>);
   }
 
-  readFolders(foldersInfo: any[]): ArrayColl<IMAPFolder> {
-    let folders = new ArrayColl<IMAPFolder>();
-    for (let folderInfo of foldersInfo) {
-      let folder = new IMAPFolder(this);
-      folder.fromFlow(folderInfo);
-      folders.add(folder);
-      if (folderInfo.folders?.length) {
-        folder.subFolders.addAll(this.readFolders(folderInfo.folders));
+  readFolders(allFoldersInfo: any[], parentPath: string, subFolders: Collection<IMAPFolder>): void {
+    let subFoldersInfo = allFoldersInfo.filter(folderInfo => folderInfo.parentPath == parentPath);
+    for (let folderInfo of subFoldersInfo) {
+      let subFolder = subFolders.find(folder => folder.path == folderInfo.path);
+      if (subFolder) {
+        if (folderInfo.status) {
+          subFolder.fromFlow(folderInfo); // update with new info
+        }
+      } else {
+        subFolder = new IMAPFolder(this);
+        subFolder.fromFlow(folderInfo);
+        subFolders.add(subFolder);
       }
+      this.readFolders(allFoldersInfo, subFolder.path, subFolder.subFolders as ArrayColl<IMAPFolder>);
     }
-    return folders;
   }
 
   async logout(): Promise<void> {
