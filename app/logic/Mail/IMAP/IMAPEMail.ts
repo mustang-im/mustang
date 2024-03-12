@@ -1,8 +1,11 @@
 import { EMail } from "../EMail";
+import { Attachment, ContentDisposition } from "../Attachment";
 import type { IMAPFolder } from "./IMAPFolder";
 import type { Person } from "../../Abstract/Person";
 import { findOrCreatePerson } from "../Person";
+import { assert } from "../../util/util";
 import type { MapColl } from "svelte-collections";
+import PostalMIME from "postal-mime";
 
 export class IMAPEMail extends EMail {
   _folder: IMAPFolder;
@@ -10,7 +13,7 @@ export class IMAPEMail extends EMail {
   uid: number;
   /** This message has been downloaded completely,
    * with header, body, and all attachments. */
-  downloadComplete: boolean;
+  downloadComplete = false;
 
   constructor(folder: IMAPFolder) {
     super();
@@ -24,8 +27,9 @@ export class IMAPEMail extends EMail {
       let conn = this._folder._account._connection;
       lock = await conn.getMailboxLock(this._folder.path);
       let msgInfo = await conn.fetchOne(this.id);
+      this.fromFlow(msgInfo);
     } finally {
-      lock.release();
+      lock?.release();
     }
   }
 
@@ -45,6 +49,31 @@ export class IMAPEMail extends EMail {
     addPersons(this.to, env.to);
     addPersons(this.cc, env.cc);
     addPersons(this.bcc, env.bcc);
+    this.mime = msgInfo.source;
+  }
+
+  async parseMIME() {
+    //console.log("MIME source", this.mime, new TextDecoder("utf-8").decode(this.mime));
+    assert(this.mime?.length, "MIME source not yet downloaded");
+    //console.log("MIME source", new TextDecoder("utf-8").decode(this.mime));
+    let mail = await new PostalMIME().parse(this.mime);
+    console.log("mail", mail);
+    for (let header of mail.headers) {
+      this.headers.set(header.key, header.value);
+    }
+    this.text = mail.text;
+    this.html = mail.html;
+    this.attachments.addAll(mail.attachments.map(a => {
+      let attachment = new Attachment();
+      attachment.filename = a.filename;
+      attachment.mimeType = a.mimeType;
+      attachment.disposition = a.disposition as ContentDisposition;
+      attachment.related = a.related;
+      attachment.contentID = a.contentId;
+      attachment.content = new File([ a.content ], a.filename, { type: a.mimeType });
+      return attachment;
+    }));
+    console.log("IMAPEMail", this);
   }
 }
 
