@@ -21,6 +21,7 @@
 
   $: loadFolder($selectedFolder);
   async function loadFolder(folder: Folder) {
+    $selectedMessage = null;
     try {
       if (!folder) {
         return;
