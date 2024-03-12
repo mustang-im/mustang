@@ -13,7 +13,6 @@ export class IMAPFolder extends Folder {
   }
 
   fromFlow(folderInfo: any) {
-    console.log("folder", folderInfo.name, folderInfo, folderInfo.status);
     this.name = folderInfo.name;
     this.path = folderInfo.path;
     this.countTotal = folderInfo.status.messages;
@@ -28,7 +27,6 @@ export class IMAPFolder extends Folder {
     }
     let lock;
     try {
-      console.log("list messages in folder", this.name);
       let newMessages = new ArrayColl<IMAPEMail>();
       let conn = this._account._connection;
       lock = await conn.getMailboxLock(this.path);
@@ -43,7 +41,6 @@ export class IMAPFolder extends Folder {
         if (!msg) {
           msg = new IMAPEMail(this);
           msg.fromFlow(msgInfo);
-          console.log("Message", msg, msgInfo);
           newMessages.add(msg);
         }
       }
@@ -57,7 +54,6 @@ export class IMAPFolder extends Folder {
   async downloadMessagesComplete() {
     let lock;
     try {
-      console.log("download complete messages in folder", this.name);
       let newMessages = new ArrayColl<IMAPEMail>();
       let conn = this._account._connection;
       lock = await conn.getMailboxLock(this.path);
@@ -82,7 +78,6 @@ export class IMAPFolder extends Folder {
           await msg.parseMIME();
           newMessages.add(msg);
         }
-        console.log("Message complete", msg, msgInfo);
       }
       this.messages.addAll(newMessages); // notify only once
     } finally {
