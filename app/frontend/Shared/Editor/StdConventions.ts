@@ -9,17 +9,17 @@ import { Italic } from '@tiptap/extension-italic';
 export const StdConventions = Extension.create({
   addExtensions() {
     return [
-      BoldRule,
-      ItalicRule
+      BoldStar,
+      ItalicSlash,
     ]
   },
-}) 
+});
 
 export const starInputRegex = /(?:^|\s)((?:\*)((?:[^*]+))(?:\*))$/
 export const starPasteRegex = /(?:^|\s)((?:\*)((?:[^*]+))(?:\*))/g
 
 /** Makes `*abc*` **bold** instead of _italic_ */
-export const BoldRule = Bold.extend({
+export const BoldStar = Bold.extend({
   addInputRules() {
     return [
       markInputRule({
@@ -42,7 +42,7 @@ export const slashInputRegex = /(?:^|\s)((?:\/)((?:[^*]+))(?:\/))$/
 export const slashPasteRegex = /(?:^|\s)((?:\/)((?:[^*]+))(?:\/))/g
 
 /** Makes `/abc/` _italic_ */
-export const ItalicRule = Italic.extend({
+export const ItalicSlash = Italic.extend({
   addInputRules() {
     return [
       markInputRule({
