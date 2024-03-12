@@ -20,10 +20,16 @@
 
   export let label: string = null;
   export let icon: ComponentType | string = null;
-  export let iconSize = "16px";
-  export let padding = "8px";
   export let classes = "";
-  export let filled = false;
+  export let iconSize =
+    classes?.includes("create") ? "18px" :
+    classes?.includes("large") ? "20px" :
+    "16px";
+  export let padding =
+    classes?.includes("create") ? "8px" :
+    classes?.includes("large") ? "10px" :
+    "8px";
+  export let filled = classes?.includes("create");
   export let border = true;
   export let disabled = false;
   export let selected = false;
@@ -50,24 +56,33 @@
     color: white;
     stroke-width: 2px;
   }
-  .filled:not(:hover) :global(path) {
+  :global(svg) {
+    stroke: currentColor;
+  }
+  .filled:not(:hover) :global(svg) {
     stroke: currentColor;
   }
   .icon {
     margin-right: 0px;
   }
-  button:hover:not(.disabled) {
-    background-color: rgba(32, 174, 158, 100%); /* #20AE9E */
-    border: 1px solid transparent !important;
-  }
-  .button:hover:not(.disabled) .icon :global(path) {
-    stroke: white;
-  }
   .disabled {
     opacity: 50%;
   }
-  .selected {
-    background-color: #00000033; /* TODO adapt style */
+  button:hover:not(.disabled) {
+    background-color: #A9DAD4;
+    color: black;
+    border: 1px solid transparent !important;
+  }
+  .selected:not(.disabled) {
+    background-color: #20AE9E; /* or #27C1AA */
+    color: white;
+  }
+  .selected:hover:not(.disabled) {
+    background-color: #1C998B;
+    color: white;
+  }
+  button.secondary {
+    border-color: #A1E4DA;
   }
 
   @media (prefers-color-scheme: light) {
