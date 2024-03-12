@@ -58,7 +58,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { mailMustangApp } from "../MailMustangApp";
   import { Menu } from "@svelteuidev/core";
   import ReplyIcon from "lucide-svelte/icons/reply";
   import ReplyAllIcon from "lucide-svelte/icons/reply-all";
@@ -72,22 +72,28 @@
   import { catchErrors } from "../../Util/error";
 
   export let message: EMail;
-  export let account: MailAccount;
 
   function reply() {
+    let reply = message.replyToAuthor();
+    mailMustangApp.writeMail(reply);
   }
   function replyAll() {
+    let reply = message.replyAll();
+    mailMustangApp.writeMail(reply);
   }
   function forward() {
   }
   function redirect() {
   }
+
   async function deleteMessage() {
     await message.deleteMessage();
   }
   async function markAsSpam() {
+    await message.markSpam(true);
     await message.deleteMessage();
   }
+
   function print() {
   }
   function showSource() {

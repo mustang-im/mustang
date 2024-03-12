@@ -60,13 +60,12 @@
       />
   </hbox>
   <hbox>
-    <MessageMenu {message} {account} />
+    <MessageMenu {message} />
   </hbox>
 </hbox>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { mailMustangApp } from "../MailMustangApp";
   import MessageMenu from "./MessageMenu.svelte";
   import Button from "../../Shared/Button.svelte";
@@ -79,13 +78,12 @@
   import { catchErrors } from "../../Util/error";
 
   export let message: EMail;
-  export let account: MailAccount;
 
-  function toggleRead() {
-    message.read = !message.read;
+  async function toggleRead() {
+    await message.markRead(!message.read);
   }
-  function toggleStar() {
-    message.starred = !message.starred;
+  async function toggleStar() {
+    await message.markStarred(!message.starred);
   }
   function reply() {
     let reply = message.replyToAuthor();
@@ -99,6 +97,7 @@
     await message.deleteMessage();
   }
   async function markAsSpam() {
+    await message.markSpam(true);
     await message.deleteMessage();
   }
 </script>

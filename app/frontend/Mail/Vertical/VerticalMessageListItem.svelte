@@ -8,7 +8,7 @@
         iconSize="14px"
         iconOnly
         label="Remember this message"
-        on:click={() => toggleStar(message)}
+        on:click={() => catchErrors(toggleStar)}
         plain
         />
     </hbox>
@@ -18,7 +18,7 @@
         iconSize="8px"
         iconOnly
         label={message.read ? "Mark this message as unread" : "Mark this message as read"}
-        on:click={() => toggleRead(message)}
+        on:click={() => catchErrors(toggleRead)}
         plain
         />
     </hbox>
@@ -35,14 +35,15 @@
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
   import { getDateString } from "../../Util/date";
+  import { catchErrors } from "../../Util/error";
 
   export let message: EMail;
 
   function toggleRead(message: EMail) {
-    message.read = !message.read;
+    message.markRead(!message.read);
   }
   function toggleStar(message: EMail) {
-    message.starred = !message.starred;
+    message.markRead(!message.starred);
   }
 </script>
 

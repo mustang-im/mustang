@@ -21,15 +21,10 @@ export class IMAPEMail extends EMail {
   }
 
   async download() {
-    let lock;
-    try {
-      let conn = this._folder._account._connection;
-      lock = await conn.getMailboxLock(this._folder.path);
+    this._folder.runCommand(async (conn) => {
       let msgInfo = await conn.fetchOne(this.id);
       this.fromFlow(msgInfo);
-    } finally {
-      lock?.release();
-    }
+    });
   }
 
   fromFlow(msgInfo: any) {
@@ -81,6 +76,47 @@ export class IMAPEMail extends EMail {
     }));
     //console.log("imapflow mail", mail, "text", mail.text, "html", mail.html);
     //console.log("IMAPEMail", this, "text", this.text, "html", this.html);
+  }
+
+  async markRead(read = true) {
+    super.markRead(read);
+    this.setFlag("\\Seen", read);
+  }
+
+  async markStarred(read = true) {
+    super.markStarred(read);
+    this.setFlag("\\Flagged", read);
+  }
+
+  async markSpam(spam = true) {
+    super.markSpam(spam);
+    this.setFlag("\\Junk", spam);
+  }
+
+  async markReplied(replied = true) {
+    super.markReplied(replied);
+    this.setFlag("\\Answered", replied);
+  }
+
+  async markDraft() {
+    super.markDraft();
+    this.setFlag("\\Draft", true);
+  }
+
+  /**
+   * Set read/starred etc. flag on the message
+   *
+   * @param name -- the flag, e.g. "\Seen", "\Recent", "\Junk" etc.
+   * @param set -- true = add the flag, false = remove the flag
+   */
+  async setFlag(name: string, set = true) {
+    this._folder.runCommand(async (conn) => {
+      if (set) {
+        await conn.messageFlagsAdd(this.uid, [name], { uid: true });
+      } else {
+        await conn.messageFlagsRemove(this.uid, [name], { uid: true });
+      }
+    });
   }
 }
 
