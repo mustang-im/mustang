@@ -1,7 +1,7 @@
 import insane from "insane";
 
 export function convertHTMLToText(html: string): string {
-  return html;
+  return html; // TODO
 }
 
 export function convertTextToHTML(plaintext: string): string {
