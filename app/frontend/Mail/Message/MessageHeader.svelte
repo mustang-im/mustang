@@ -1,6 +1,6 @@
 <vbox class="message-header" class:outgoing={$message.outgoing}>
   <hbox>
-    {#if message.contact instanceof Person}
+    {#if message.contact instanceof Person && message.contact.picture}
       <PersonPicture person={$message.contact} />
     {/if}
     <vbox>
