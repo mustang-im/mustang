@@ -7,6 +7,7 @@ import type { ImapFlow } from "../../../../e2/node_modules/imapflow";
 
 export class IMAPAccount extends MailAccount {
   _connection: ImapFlow;
+  accessToken: string | undefined;
   acceptOldTLS = false;
   acceptBrokenTLSCerts = false;
 
@@ -44,12 +45,19 @@ export class IMAPAccount extends MailAccount {
         minVersion: this.acceptOldTLS ? 'TLSv1.0' : undefined,
         rejectUnauthorized: !this.acceptBrokenTLSCerts,
       },
+      maxIdleTime: 30 * 1000, // 30 s, refresh IDLE
       connectionTimeout: 5 * 1000, // 5 s connection timeout
       greetingTimeout: 5 * 1000, // 5 s greeting timeout
       socketTimeout: 30 * 60 * 1000, // 30 min of inactivity
       logger: false,
     }
     this._connection = await appGlobal.remoteApp.createIMAPFlowConnection(options);
+    this._connection.on("close", () => {
+      if (!(this.password || this.accessToken)) {
+        return;
+      }
+      this.connection();
+    });
     return this._connection;
   }
 
