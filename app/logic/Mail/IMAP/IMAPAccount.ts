@@ -52,12 +52,12 @@ export class IMAPAccount extends MailAccount {
       logger: false,
     }
     this._connection = await appGlobal.remoteApp.createIMAPFlowConnection(options);
-    this._connection.on("close", () => {
+    /*this._connection.on("close", () => {
       if (!(this.password || this.accessToken)) {
         return;
       }
       this.connection();
-    });
+    });*/
     return this._connection;
   }
 
