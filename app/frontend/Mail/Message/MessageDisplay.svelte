@@ -1,5 +1,5 @@
 <vbox flex class="message-display">
-  <MessageHeader {message} {account} />
+  <MessageHeader {message} />
   <vbox flex class="paper">
     <MessageBody {message} />
   </vbox>
@@ -7,12 +7,10 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import MessageHeader from "./MessageHeader.svelte";
   import MessageBody from "./MessageBody.svelte";
 
   export let message: EMail;
-  export let account: MailAccount;
 </script>
 
 <style>

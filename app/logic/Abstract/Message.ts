@@ -68,6 +68,13 @@ export class Message extends Observable {
 
   readonly reactions = new MapColl<Person, string>();
 
+  async markRead(read = true) {
+    this.read = read;
+  }
+  async markStarred(starred = true) {
+    this.starred = starred;
+  }
+
   async deleteMessage() {
     console.log("Delete message");
   }

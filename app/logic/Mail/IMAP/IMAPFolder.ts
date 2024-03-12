@@ -21,15 +21,23 @@ export class IMAPFolder extends Folder {
     this.specialUse(folderInfo.specialUse);
   }
 
+  async runCommand(imapFunc: (conn: any) => Promise<void>) {
+    let lock;
+    try {
+      let conn = this._account._connection;
+      lock = await conn.getMailboxLock(this.path);
+      await imapFunc(conn);
+    } finally {
+      lock?.release();
+    }
+  }
+
   async listMessages() {
     if (this.countTotal === 0) {
       return;
     }
-    let lock;
-    try {
+    await this.runCommand(async (conn) => {
       let newMessages = new ArrayColl<IMAPEMail>();
-      let conn = this._account._connection;
-      lock = await conn.getMailboxLock(this.path);
       let msgsAsyncIterator = await conn.fetch({ all: true }, {
         size: true,
         threadId: true,
@@ -46,18 +54,13 @@ export class IMAPFolder extends Folder {
         }
       }
       this.messages.addAll(newMessages); // notify only once
-    } finally {
-      lock?.release();
-    }
+    });
     await this.downloadMessagesComplete();
   }
 
   async downloadMessagesComplete() {
-    let lock;
-    try {
+    await this.runCommand(async (conn) => {
       let newMessages = new ArrayColl<IMAPEMail>();
-      let conn = this._account._connection;
-      lock = await conn.getMailboxLock(this.path);
       for await (let msgInfo of await conn.fetch({ all: true }, {
         size: true,
         threadId: true,
@@ -82,9 +85,7 @@ export class IMAPFolder extends Folder {
         }
       }
       this.messages.addAll(newMessages); // notify only once
-    } finally {
-      lock?.release();
-    }
+    });
   }
 
   getEMailByUID(uid: number): IMAPEMail {

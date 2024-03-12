@@ -28,7 +28,7 @@
     </vbox>
     <hbox flex />
     <vbox>
-      <MessageToolbar {message} {account} />
+      <MessageToolbar {message} />
       <value class="date" title={$message.sent?.toLocaleString()}>
         {getDateString($message.sent)}
       </value>
@@ -39,7 +39,6 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { Person } from "../../../logic/Abstract/Person";
   import { selectedPerson, type PersonOrGroup } from "../../Shared/Person/PersonOrGroup";
   import MessageToolbar from "./MessageToolbar.svelte";
@@ -50,7 +49,6 @@
   import { onDestroy } from "svelte";
 
   export let message: EMail;
-  export let account: MailAccount;
 
   $: from = message.outgoing
     ? "me"
@@ -63,7 +61,7 @@
   function markMessageAsRead(message: EMail) {
     clearTimeout(readTimeout);
     readTimeout = setTimeout(() => {
-      message.read = true;
+      message.markRead(true).catch(backgroundError);
     }, readDelay * 1000);
   }
   onDestroy(() => {
