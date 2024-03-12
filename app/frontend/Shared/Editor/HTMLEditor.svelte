@@ -13,6 +13,7 @@
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
   // import { common as lowlightCommon, createLowlight } from 'lowlight'
   import { onMount, onDestroy } from 'svelte';
+  import { StdConventions } from './StdConventions';
 
   /**
    * TODO Bug: Only accepts `html` on component creation.
@@ -37,6 +38,7 @@
           allowBase64: true,
           inline: true,
         }),
+        StdConventions
         // CodeBlockLowlightFeature.configure({
         //  lowlight: createLowlight(lowlightCommon),
         // }),
