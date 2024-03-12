@@ -18,6 +18,11 @@
     plain
     />
 </hbox>
+<hbox class="attachment button">
+  {#if $message.attachments.hasItems}
+    <AttachmentIcon size="12px" />
+  {/if}
+</hbox>
 <hbox class="correspondent">{$message.contact.name}</hbox>
 <hbox class="subject" class:unread={!$message.read}>{$message.subject}</hbox>
 <hbox class="date" class:unread={!$message.read}>{getDateString($message.sent)}</hbox>
@@ -27,6 +32,7 @@
   import Button from "../../Shared/Button.svelte";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
+  import AttachmentIcon from "lucide-svelte/icons/paperclip";
   import { getDateString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
 
@@ -55,7 +61,7 @@
   }
   .button {
     width: 20px;
-    vertical-align: middle;
+    align-items: center;
   }
   .button :global(svg) {
     stroke-width: 1px;
