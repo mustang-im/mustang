@@ -22,7 +22,7 @@
         plain
         />
     </hbox>
-    <hbox class="date">{getDateString($message.received)}</hbox>
+    <hbox class="date">{getDateString($message.sent)}</hbox>
   </hbox>
   <hbox class="bottom-row">
     <hbox class="subject">{$message.subject}</hbox>

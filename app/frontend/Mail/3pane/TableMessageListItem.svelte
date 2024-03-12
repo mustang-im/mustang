@@ -20,7 +20,7 @@
 </hbox>
 <hbox class="correspondent">{$message.contact.name}</hbox>
 <hbox class="subject" class:unread={!$message.read}>{$message.subject}</hbox>
-<hbox class="date" class:unread={!$message.read}>{getDateString($message.received)}</hbox>
+<hbox class="date" class:unread={!$message.read}>{getDateString($message.sent)}</hbox>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
