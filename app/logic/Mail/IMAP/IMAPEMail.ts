@@ -39,6 +39,18 @@ export class IMAPEMail extends EMail {
     this.subject = env.subject;
     this.sent = env.date ?? new Date();
     this.received = new Date();
+    let flags = msgInfo.flags;
+    if (flags) {
+      (async () => {
+        this.read = await flags.has("\\Seen");
+        this.newArrived = await flags.has("\\Recent");
+        /*let flagsArray = [];
+        for await (let flag of await flags.values()) {
+          flagsArray.push(flag);
+        }
+        console.log("msg flags", env.subject, "read", this.read, flagsArray.join(", "));*/
+      })();
+    }
     this.inReplyTo = env.inReplyTo;
     let firstFrom = env.from && env.from[0];
     if (firstFrom) {
