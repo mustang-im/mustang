@@ -13,12 +13,19 @@ export class IMAPFolder extends Folder {
   }
 
   fromFlow(folderInfo: any) {
+    console.log("folder", folderInfo.name, folderInfo, folderInfo.status);
     this.name = folderInfo.name;
     this.path = folderInfo.path;
+    this.countTotal = folderInfo.status.messages;
+    this.countUnread = folderInfo.status.recent;
+    this.countUnseen = folderInfo.status.unseen;
     this.specialUse(folderInfo.specialUse);
   }
 
   async listMessages() {
+    if (this.countTotal === 0) {
+      return;
+    }
     let lock;
     try {
       console.log("list messages in folder", this.name);
@@ -42,7 +49,7 @@ export class IMAPFolder extends Folder {
       }
       this.messages.addAll(newMessages); // notify only once
     } finally {
-      lock.release();
+      lock?.release();
     }
     await this.downloadMessagesComplete();
   }
@@ -76,7 +83,7 @@ export class IMAPFolder extends Folder {
       }
       this.messages.addAll(newMessages); // notify only once
     } finally {
-      lock.release();
+      lock?.release();
     }
   }
 
