@@ -8,7 +8,7 @@ import type { MapColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
 
 export class IMAPEMail extends EMail {
-  _folder: IMAPFolder;
+  folder: IMAPFolder;
   /** From IMAP server */
   uid: number;
   /** This message has been downloaded completely,
@@ -16,12 +16,11 @@ export class IMAPEMail extends EMail {
   downloadComplete = false;
 
   constructor(folder: IMAPFolder) {
-    super();
-    this._folder = folder;
+    super(folder);
   }
 
   async download() {
-    this._folder.runCommand(async (conn) => {
+    this.folder.runCommand(async (conn) => {
       let msgInfo = await conn.fetchOne(this.id);
       this.fromFlow(msgInfo);
     });
@@ -93,9 +92,9 @@ export class IMAPEMail extends EMail {
     this.setFlag("\\Junk", spam);
   }
 
-  async markReplied(replied = true) {
-    super.markReplied(replied);
-    this.setFlag("\\Answered", replied);
+  async markReplied() {
+    super.markReplied();
+    this.setFlag("\\Answered", true);
   }
 
   async markDraft() {
@@ -110,7 +109,7 @@ export class IMAPEMail extends EMail {
    * @param set -- true = add the flag, false = remove the flag
    */
   async setFlag(name: string, set = true) {
-    this._folder.runCommand(async (conn) => {
+    this.folder.runCommand(async (conn) => {
       if (set) {
         await conn.messageFlagsAdd(this.uid, [name], { uid: true });
       } else {
@@ -121,7 +120,7 @@ export class IMAPEMail extends EMail {
 
   async deleteMessage() {
     await super.deleteMessage();
-    this._folder.runCommand(async (conn) => {
+    this.folder.runCommand(async (conn) => {
       conn.messageDelete(this.uid, { uid: true });
     });
   }

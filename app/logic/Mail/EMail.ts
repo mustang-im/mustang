@@ -12,6 +12,12 @@ export class EMail extends Message {
   authorEmailAddress: string;
   @notifyChangedProperty
   subject: string;
+  readonly to = new MapColl<string, Person>(); /** email address -> Person (not necessarily in address book) */
+  readonly cc = new MapColl<string, Person>(); /** format like `to` */
+  readonly bcc = new MapColl<string, Person>(); /** format like `to` */
+  readonly replyTo: { emailAddress: string, name: string };
+  readonly attachments = new ArrayColl<Attachment>();
+  readonly headers = new MapColl<string, string>();
   /** This is a Junk message */
   @notifyChangedProperty
   spam = false;
@@ -21,19 +27,16 @@ export class EMail extends Message {
   /** The user started writing this message, but didn't send it yet */
   @notifyChangedProperty
   draft = false;
-  readonly to = new MapColl<string, Person>(); /** email address -> Person (not necessarily in address book) */
-  readonly cc = new MapColl<string, Person>(); /** format like `to` */
-  readonly bcc = new MapColl<string, Person>(); /** format like `to` */
-  readonly replyTo: { emailAddress: string, name: string };
-  readonly attachments = new ArrayColl<Attachment>();
-  readonly headers = new MapColl<string, string>();
   /** Complete MIME source of the email */
   mime: Uint8Array | undefined;
-  @notifyChangedProperty
-  contentType: string;
-  @notifyChangedProperty
-  _bodyPlaintext: string;
-  _folder: Folder;
+  //@notifyChangedProperty
+  //contentType: string;
+  folder: Folder;
+
+  constructor(folder: Folder) {
+    super();
+    this.folder = folder;
+  }
 
   get baseSubject(): string {
     return this.subject.replace(/^([Re|RE|AW|Aw]: ?)+/, "");
@@ -52,7 +55,7 @@ export class EMail extends Message {
   }
 
   async deleteMessage() {
-    this._folder.messages.remove(this);
+    this.folder.messages.remove(this);
   }
 
   quotePrefixLine(): string {
@@ -63,7 +66,8 @@ export class EMail extends Message {
   }
 
   _reply(): EMail {
-    let reply = new EMail();
+    this.markReplied().catch(backgroundError);
+    let reply = new EMail(this.folder.account.drafts ?? this.folder.account.sent ?? this.folder);
     reply.subject = "Re: " + this.baseSubject; // Do *not* localize "Re: "
     reply.html = `<p></p>
     <p></p>
@@ -76,7 +80,6 @@ export class EMail extends Message {
   }
 
   replyToAuthor(): EMail {
-    this.markReplied().catch(backgroundError);
     let reply = this._reply();
     let toPerson = null; // appGlobal.persons.find(person => person.emailAddresses.some(em => em.value == this.authorEmailAddress)) ?? new Person();
     reply.to.set(this.authorEmailAddress, toPerson);
@@ -84,7 +87,6 @@ export class EMail extends Message {
   }
 
   replyAll(): EMail {
-    this.markReplied().catch(backgroundError);
     let reply = this.replyToAuthor();
     for (let [emailAddress, person] of this.to.entries()) {
       if (appGlobal.me.emailAddresses.some(em => em.value == emailAddress)) {
