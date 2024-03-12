@@ -26,6 +26,12 @@
   </hbox>
   <hbox class="bottom-row">
     <hbox class="subject">{$message.subject}</hbox>
+    <hbox flex />
+    <hbox class="attachments">
+      {#if $message.attachments.hasItems}
+        <AttachmentIcon size="14px" />
+      {/if}
+    </hbox>
   </hbox>
 </vbox>
 
@@ -34,6 +40,7 @@
   import Button from "../../Shared/Button.svelte";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
+  import AttachmentIcon from "lucide-svelte/icons/paperclip";
   import { getDateString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
 

@@ -3,10 +3,11 @@
   <FastList items={sortedMessages}
     bind:selectedItem={selectedMessage}
     bind:selectedItems={selectedMessages}
-    columns="auto auto 1fr 3fr auto">
+    columns="auto auto auto 1fr 3fr auto">
     <svelte:fragment slot="header">
-      <hbox></hbox>
-      <hbox></hbox>
+      <hbox>R</hbox>
+      <hbox>S</hbox>
+      <hbox>A</hbox>
       <hbox>Correspondent</hbox>
       <hbox>Subject</hbox>
       <hbox class="date">Date</hbox>
