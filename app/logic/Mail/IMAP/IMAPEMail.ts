@@ -23,7 +23,6 @@ export class IMAPEMail extends EMail {
   async download() {
     let lock;
     try {
-      console.log("fetch msg", this.subject);
       let conn = this._folder._account._connection;
       lock = await conn.getMailboxLock(this._folder.path);
       let msgInfo = await conn.fetchOne(this.id);
@@ -38,8 +37,8 @@ export class IMAPEMail extends EMail {
     let env = msgInfo.envelope;
     this.id = env.messageId;
     this.subject = env.subject;
-    this.sent = env.date ?? new Date(); // TODO
-    this.received = env.date ?? new Date();
+    this.sent = env.date ?? new Date();
+    this.received = new Date();
     this.inReplyTo = env.inReplyTo;
     let firstFrom = env.from[0];
     if (firstFrom) {
@@ -55,9 +54,7 @@ export class IMAPEMail extends EMail {
   async parseMIME() {
     //console.log("MIME source", this.mime, new TextDecoder("utf-8").decode(this.mime));
     assert(this.mime?.length, "MIME source not yet downloaded");
-    //console.log("MIME source", new TextDecoder("utf-8").decode(this.mime));
     let mail = await new PostalMIME().parse(this.mime);
-    console.log("mail", mail);
     for (let header of mail.headers) {
       this.headers.set(header.key, header.value);
     }
@@ -73,7 +70,8 @@ export class IMAPEMail extends EMail {
       attachment.content = new File([ a.content ], a.filename, { type: a.mimeType });
       return attachment;
     }));
-    console.log("IMAPEMail", this);
+    //console.log("imapflow mail", mail, "text", mail.text, "html", mail.html);
+    //console.log("IMAPEMail", this, "text", this.text, "html", this.html);
   }
 }
 

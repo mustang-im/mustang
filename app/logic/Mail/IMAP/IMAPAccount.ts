@@ -12,7 +12,6 @@ export class IMAPAccount extends MailAccount {
 
   constructor() {
     super();
-    console.log("remoteApp", appGlobal.remoteApp, appGlobal.remoteApp.createIMAPFlowConnection);
     assert(appGlobal.remoteApp.createIMAPFlowConnection, "IMAP: Need backend");
   }
 
@@ -56,15 +55,15 @@ export class IMAPAccount extends MailAccount {
 
   async listFolders(): Promise<void> {
     // listTree() doesn't return the message count and is not well-implemented
-    let foldersFlat = await this._connection.list({
+    let folders = await this._connection.list({
       statusQuery: {
         messages: true, // Total msg count
         recent: true, // \Recent msg count
         unseen: true, // Unseen msg count
       },
     });
-    console.log("folders flat", foldersFlat);
-    this.readFolders(foldersFlat, "", this.rootFolders as ArrayColl<IMAPFolder>);
+    // console.log("folders", foldersFlat);
+    this.readFolders(folders, "", this.rootFolders as ArrayColl<IMAPFolder>);
   }
 
   readFolders(allFoldersInfo: any[], parentPath: string, subFolders: Collection<IMAPFolder>): void {
