@@ -16,6 +16,8 @@
     <vbox flex class="message-display-pane" slot="bottom">
       {#if selectedMessage}
         <MessageDisplay message={selectedMessage} account={selectedAccount} />
+      {:else}
+        <StartPage />
       {/if}
     </vbox>
   </SplitterHorizontal>
@@ -31,6 +33,7 @@
   import ProjectList from "../LeftPane/ProjectList.svelte";
   import TableMessageList from "./TableMessageList.svelte";
   import MessageDisplay from "../Message/MessageDisplay.svelte";
+  import StartPage from "../StartPage.svelte";
   import ViewSwitcher from "../LeftPane/ViewSwitcher.svelte";
   import WriteButton from "../LeftPane/WriteButton.svelte";
   import Splitter from "../../Shared/Splitter.svelte";
