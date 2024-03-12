@@ -40,10 +40,13 @@ export class IMAPEMail extends EMail {
     this.sent = env.date ?? new Date();
     this.received = new Date();
     this.inReplyTo = env.inReplyTo;
-    let firstFrom = env.from[0];
+    let firstFrom = env.from && env.from[0];
     if (firstFrom) {
       this.authorEmailAddress = firstFrom.address;
       this.contact = findOrCreatePerson(firstFrom.address, firstFrom.name);
+    } else {
+      this.authorEmailAddress = "unknown@example.com";
+      this.contact = findOrCreatePerson("unknown@example.com", "Unknown");
     }
     addPersons(this.to, env.to);
     addPersons(this.cc, env.cc);
