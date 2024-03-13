@@ -55,23 +55,14 @@
 <script lang="ts">
   import { File, Directory, FileOrDirectory } from "../../logic/Files/File";
   import { selectedFile } from "./selected";
-  import { getDateString } from "../Util/date";
   import FileIcon from "./FileIcon.svelte";
   import FolderClosedIcon from "lucide-svelte/icons/folder";
   import FolderOpenIcon from "lucide-svelte/icons/folder-open";
-  import prettyBytes from 'pretty-bytes';
+  import { getDateString } from "../Util/date";
+  import { fileSize } from "./fileSize";
 
   export let file: FileOrDirectory;
   export let indent = 0;
-
-  function fileSize(sizeInBytes: number) {
-    return prettyBytes(sizeInBytes, {
-      binary: true,
-      locale: navigator.language,
-      maximumFractionDigits: 0,
-    })
-    .replace("i", "");
-  }
 
   function selectThis() {
     $selectedFile = file;
