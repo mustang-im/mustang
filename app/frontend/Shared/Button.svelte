@@ -73,7 +73,6 @@
   button:hover:not(.disabled) {
     background-color: #A9DAD4;
     color: black;
-    border: 1px solid transparent !important;
   }
   .selected:not(.disabled) {
     background-color: #20AE9E; /* or #27C1AA */
