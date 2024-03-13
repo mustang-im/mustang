@@ -39,11 +39,11 @@
 
   export let message: EMail;
 
-  async function toggleRead(message: EMail) {
-    message.markRead(!message.read);
+  async function toggleRead() {
+    await message.markRead(!message.read);
   }
-  async function toggleStar(message: EMail) {
-    message.markStarred(!message.starred);
+  async function toggleStar() {
+    await message.markStarred(!message.starred);
   }
 </script>
 
