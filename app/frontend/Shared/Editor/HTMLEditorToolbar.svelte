@@ -171,12 +171,14 @@ block
       icon={RedoIcon}
       iconOnly
       />
+    {#if containsExtension('toggle-send-key')}
       <Button
       label="Toggle send button"
       on:click={() => editor.chain().focus().toggleSendKey().run()}
       icon={ForwardIcon}
       iconOnly
-      />
+      />    
+    {/if}
       <slot name="last" />
 
       <hbox flex />
@@ -205,6 +207,16 @@ block
 
   /* in only */
   export let editor: Editor;
+
+  function containsExtension(name: string): boolean {
+    let extensionList = editor.extensionManager.extensions;
+    for (const extension of extensionList) {
+      if (extension.name === name) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   function createLink() {
     let url = window.prompt("Location");
