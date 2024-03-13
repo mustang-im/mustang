@@ -5,7 +5,7 @@
       <vbox flex class="editor-scroll-wrapper">
         <Scroll>
           <vbox flex class="editor">
-            <HTMLEditor bind:html={to.draftMessage} bind:editor on:send={send} sendKey='Enter'/>
+            <HTMLEditor bind:html={to.draftMessage} bind:editor {extensions}/>
           </vbox>
         </Scroll>
       </vbox>
@@ -32,6 +32,7 @@
   import { UserChatMessage } from "../../logic/Chat/Message";
   import { insertImage } from "../Shared/Editor/InsertImage";
   import HTMLEditorToolbar from "../Shared/Editor/HTMLEditorToolbar.svelte";
+  import { ToggleSendKey } from "../Shared/Editor/ToggleSendKey";
   import HTMLEditor from "../Shared/Editor/HTMLEditor.svelte";
   import FileDropTarget from "../Mail/Composer/Attachments/FileDropTarget.svelte";
   import AttachmentsPane from "../Mail/Composer/Attachments/AttachmentsPane.svelte";
@@ -44,6 +45,13 @@
   export let to: Chat;
 
   let editor: Editor;
+
+  const extensions = [
+    ToggleSendKey.configure({
+      sendKey: 'Enter',
+      sendFunc: send,
+    }),
+  ];
 
   let attachments = new ArrayColl<File>();
   $: to && attachments.clear(); // TODO save as draft

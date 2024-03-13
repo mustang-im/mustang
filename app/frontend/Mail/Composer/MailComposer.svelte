@@ -71,7 +71,7 @@
         <vbox flex class="paper">
           <Scroll>
             <vbox flex class="editor">
-              <HTMLEditor bind:html={mail.html} bind:editor on:send={onSend} sendKey='Ctrl-Enter'/>
+              <HTMLEditor bind:html={mail.html} bind:editor {extensions}/>
             </vbox>
           </Scroll>
           <hbox class="footer">
@@ -116,6 +116,7 @@
   import AccountDropDown from "../AccountDropDown.svelte";
   import HTMLEditor from "../../Shared/Editor/HTMLEditor.svelte";
   import HTMLEditorToolbar from "../../Shared/Editor/HTMLEditorToolbar.svelte";
+  import { ToggleSendKey } from "../../Shared/Editor/ToggleSendKey";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
@@ -129,6 +130,13 @@
 
   let editor: Editor;
   $: to = mail.to;
+
+  const extensions = [
+    ToggleSendKey.configure({
+      sendKey: 'Ctrl-Enter',
+      sendFunc: onSend,
+    }),
+  ];
 
   let from: MailAccount;
   let fileSelector: FileSelector;

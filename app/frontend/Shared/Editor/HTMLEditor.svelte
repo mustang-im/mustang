@@ -3,7 +3,7 @@
 <div bind:this={divEl} class="html-editor" on:send/>
 
 <script lang="ts">
-  import { Editor } from '@tiptap/core';
+  import { Editor, type AnyExtension } from '@tiptap/core';
   import StarterKit from '@tiptap/starter-kit';
   import LinkFeature from '@tiptap/extension-link';
   import ImageFeature from '@tiptap/extension-image';
@@ -22,8 +22,9 @@
   export let html: string;
   /** out only */
   export let editor: Editor;
-  /** Set send button */
-  export let sendKey: 'Enter' | 'Ctrl-Enter' = 'Enter';
+  /** Additional custom TipTap extensions
+   * in */
+  export let extensions: AnyExtension[] = [];
 
   let divEl: HTMLDivElement;
 
@@ -40,9 +41,7 @@
           allowBase64: true,
           inline: true,
         }),
-        ToggleSendKey.configure({
-          sendKey: sendKey,
-        }),
+        ...extensions,
         // CodeBlockLowlightFeature.configure({
         //  lowlight: createLowlight(lowlightCommon),
         // }),

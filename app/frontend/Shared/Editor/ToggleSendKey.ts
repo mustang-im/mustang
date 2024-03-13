@@ -3,7 +3,8 @@ import { Extension } from "@tiptap/core";
 export interface ToggleSendKeyOptions {
   /** `Enter` | `Ctrl-Enter` */
   sendKey: string;
-  keyOptions: string[];
+  /** Callback for sending */
+  sendFunc: Function;
 }
 
 declare module '@tiptap/core' {
@@ -14,25 +15,22 @@ declare module '@tiptap/core' {
        */
       toggleSendKey: () => ReturnType,
       /**
-       * Emit `send` event
+       * Call callback for sending
        */
       send: () => ReturnType,
     }
   }
 }
 
-/** Extension for emitting `send` event from `Ctrl-Enter` or 
- * `Enter`. 
+/** Extension for calling a callback on `Ctrl-Enter` or `Enter`
+ * to send message.
  */
 export const ToggleSendKey = Extension.create<ToggleSendKeyOptions>({
   name: 'toggle-send-key',
   addOptions() {
     return {
       sendKey: 'Ctrl-Enter',
-      keyOptions: [
-        'Ctrl-Enter',
-        'Enter'
-      ],
+      sendFunc: () => {},
     }
   },
   addKeyboardShortcuts() {
@@ -45,9 +43,8 @@ export const ToggleSendKey = Extension.create<ToggleSendKeyOptions>({
       },
       'Ctrl-Enter': ({editor}) => {
         let sendKey = this.options.sendKey;
-        let keyOptions = this.options.keyOptions;
-        if (!sendKey || !keyOptions.includes(sendKey)) {
-          this.options.sendKey = 'Ctrl-Enter';
+        if (!sendKey || sendKey !== 'Enter' && sendKey !== 'Ctrl-Enter') {
+          sendKey = 'Ctrl-Enter';
           return editor.commands.send();
         }
         if (sendKey === 'Ctrl-Enter') {
@@ -67,9 +64,12 @@ export const ToggleSendKey = Extension.create<ToggleSendKeyOptions>({
         }
         return true;
       },
-      send: () => ({view}) =>  {
-        const SendEvent = new Event('send');
-        return view.dom.parentNode.dispatchEvent(SendEvent);
+      send: () => () =>  {
+        if (typeof(this.options.sendFunc) == "function") {
+          this.options.sendFunc();
+          return true;
+        }
+        return false;
       }
     }
   },
