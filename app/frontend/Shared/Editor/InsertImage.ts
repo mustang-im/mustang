@@ -2,8 +2,7 @@ import type { Editor } from "@tiptap/core";
 
 export function insertImage(editor: Editor, file: File) {
   let url = URL.createObjectURL(file);
-  console.log("insert image", url);
-  editor.chain().focus().setImage({ src: url }).run(); // TODO not working
+  editor.chain().focus().setImage({ src: url }).run();
 }
 
 export function isImageMimetype(type: string) {

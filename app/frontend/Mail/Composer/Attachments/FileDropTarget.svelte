@@ -1,10 +1,11 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<hbox flex
+<hbox flex class="container"
   on:dragenter={onDragEnter}
   on:dragleave={onDragLeave}
   on:dragover={onDragOver}
   >
   {#if dragging}
+  <hbox class="overlay">
     {#if isImage && allowInline}
       <hbox flex class="drop-target inline" on:drop={event => onDrop(event, true)}>
         Insert inline into text
@@ -13,9 +14,11 @@
     <hbox flex class="drop-target attachment" on:drop={event => onDrop(event, false)}>
       Attach file
     </hbox>
-  {:else}
-    <slot />
+  </hbox>
   {/if}
+  <vbox flex class="content">
+    <slot />
+  </vbox>
 </hbox>
 
 <script lang="ts">
@@ -69,6 +72,15 @@
 </script>
 
 <style>
+  .container {
+    position: relative;
+  }
+  .overlay {
+    position: absolute;
+    z-index: 10;
+    height: 100%;
+    width: 100%;
+  }
   .drop-target {
     align-items: center;
     justify-content: center;
@@ -76,5 +88,8 @@
     border: 2px solid gray;
     border-radius: 10px;
     margin: 32px;
+  }
+  .content {
+    z-index: 0;
   }
 </style>
