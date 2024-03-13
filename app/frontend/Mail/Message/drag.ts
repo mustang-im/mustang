@@ -1,12 +1,18 @@
 import type { EMail } from "../../../logic/Mail/EMail";
 import type { Folder } from "../../../logic/Mail/Folder";
-import { selectedMessage } from "../Selected";
+import { selectedMessage, selectedMessages } from "../Selected";
 import { ArrayColl } from "svelte-collections";
 import { get } from "svelte/store";
+import { assert } from "../../../logic/util/util";
 
 export function onDragStartMail(event: DragEvent, message: EMail) {
   selectedMessage.set(message);
-  event.dataTransfer.setData("message/drag-id", message.id);
+  let messages = get(selectedMessages);
+  if (messages.contains(message)) {
+    event.dataTransfer.setData("message/drag-ids", messages.contents.map(msg => msg.id).join(","));
+  } else {
+    event.dataTransfer.setData("message/drag-ids", message.id);
+  }
   event.dataTransfer.effectAllowed = "copyMove";
   let icon = new Image();
   icon.src = "icon/mails.png"; // TODO Loads too late
@@ -15,17 +21,25 @@ export function onDragStartMail(event: DragEvent, message: EMail) {
 
 export async function onDropMail(event: DragEvent, folder: Folder) {
   event.preventDefault();
-  let msg = get(selectedMessage);
-  let msgID = event.dataTransfer.getData("message/drag-id");
-  if (!msg || msg.id != msgID) {
+  let message = get(selectedMessage);
+  let msgIDsStr = event.dataTransfer.getData("message/drag-ids");
+  if (!message || !msgIDsStr) {
     return;
   }
-  let msgs = new ArrayColl<EMail>();
-  msgs.add(msg);
-  if (event.ctrlKey || event.metaKey) {
-    await folder.copyMessagesHere(msgs);
+  let msgIDs = msgIDsStr.split(",");
+  let messages = get(selectedMessages);
+  if (msgIDs.length == 0) {
+    return;
+  } else if (msgIDs.length == 1) {
+    assert(msgIDs[0] == message.id, "Drag&drop failed: Selected message ID doesn't match the drag data");
+    messages = new ArrayColl<EMail>([ message ]);
   } else {
-    await folder.moveMessagesHere(msgs);
+    assert(messages.every(msg => msgIDs.includes(msg.id)), "Drag&drop failed: Selected message IDs don't match the drag data");
+  }
+  if (event.ctrlKey || event.metaKey) {
+    await folder.copyMessagesHere(messages);
+  } else {
+    await folder.moveMessagesHere(messages);
   }
 }
 
