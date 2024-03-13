@@ -4,7 +4,7 @@
       <hbox class="header">Folders</hbox>
     </svelte:fragment>
     <svelte:fragment slot="row" let:item={folder}>
-      <hbox class="folder">
+      <hbox class="folder" on:drop={(event) => catchErrors(() => onDropMail(event, folder))} on:dragover={(event) => catchErrors(() => onDragOverMail(event, folder))}>
         <hbox class="icon">
           {#if folder.specialFolder == "inbox"}
             <InboxIcon size="14px" />
@@ -29,7 +29,6 @@
 </vbox>
 
 <script lang="ts">
-  //import type { MsgFolder } from "mustang-lib";
   import type { Folder } from '../../../logic/Mail/Folder';
   import type { Collection } from 'svelte-collections';
   import FastList from "../../Shared/FastList.svelte";
@@ -40,6 +39,8 @@
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
   import ArchiveIcon from "lucide-svelte/icons/archive";
+  import { catchErrors } from '../../Util/error';
+  import { onDropMail, onDragOverMail } from '../Message/drag';
 
   export let folders: Collection<Folder>;
   export let selectedFolder: Folder; /* in/out */

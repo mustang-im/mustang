@@ -12,10 +12,10 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import type { Collection, ArrayColl } from "svelte-collections";
   import FastList from "../../Shared/FastList.svelte";
   import VerticalMessageListItem from "./VerticalMessageListItem.svelte";
   import { catchErrors } from "../../Util/error";
+  import type { Collection, ArrayColl } from "svelte-collections";
 
   export let messages: Collection<EMail>;
   export let selectedMessage: EMail;

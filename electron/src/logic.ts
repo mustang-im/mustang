@@ -1,7 +1,7 @@
 //import { readAccounts, addNewAccountFromConfig, findAccountConfig } from "../../lib/index";
 import { readAccounts, addNewAccountFromConfig } from "../../lib/logic/account/account-list";
 import { findAccountConfig } from "../../lib/logic/account/setup/setup";
-import JPCWebSocket from 'jpc-ws';
+import JPCWebSocket from '../../lib/jpc-ws';
 
 export async function startupLogic() {
   let appGlobal = await createSharedAppObject();

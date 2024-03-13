@@ -1,4 +1,7 @@
-<vbox class="message" class:read={$message.read} class:unread={!$message.read}>
+<vbox class="message"
+  class:read={$message.read} class:unread={!$message.read}
+  draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
+  >
   <hbox class="top-row">
     <hbox class="contact">{message.contact.name}</hbox>
     <hbox flex />
@@ -8,7 +11,7 @@
         iconSize="14px"
         iconOnly
         label="Remember this message"
-        on:click={() => toggleStar(message)}
+        on:click={() => catchErrors(toggleStar)}
         plain
         />
     </hbox>
@@ -18,31 +21,40 @@
         iconSize="8px"
         iconOnly
         label={message.read ? "Mark this message as unread" : "Mark this message as read"}
-        on:click={() => toggleRead(message)}
+        on:click={() => catchErrors(toggleRead)}
         plain
         />
     </hbox>
-    <hbox class="date">{getDateString($message.received)}</hbox>
+    <hbox class="date">{getDateString($message.sent)}</hbox>
   </hbox>
   <hbox class="bottom-row">
     <hbox class="subject">{$message.subject}</hbox>
+    <hbox flex />
+    <hbox class="attachments">
+      {#if $message.attachments.hasItems}
+        <AttachmentIcon size="14px" />
+      {/if}
+    </hbox>
   </hbox>
 </vbox>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
+  import { onDragStartMail } from "../Message/drag";
   import Button from "../../Shared/Button.svelte";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
+  import AttachmentIcon from "lucide-svelte/icons/paperclip";
   import { getDateString } from "../../Util/date";
+  import { catchErrors } from "../../Util/error";
 
   export let message: EMail;
 
-  function toggleRead(message: EMail) {
-    message.read = !message.read;
+  async function toggleRead() {
+    await message.markRead(!message.read);
   }
-  function toggleStar(message: EMail) {
-    message.starred = !message.starred;
+  async function toggleStar() {
+    await message.markStarred(!message.starred);
   }
 </script>
 

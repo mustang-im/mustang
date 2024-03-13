@@ -21,10 +21,18 @@ export class Message extends Observable {
   /** When the message was received */
   @notifyChangedProperty
   received: Date;
+  /** This message just arrived in the inbox and this is the first
+   * session to see this message */
+  @notifyChangedProperty
+  newArrived = false;
+  /** User has read the contents of the message */
   @notifyChangedProperty
   read = false;
+  /** User marked this message as special to remember */
   @notifyChangedProperty
   starred = false;
+  /** Msg ID of another message that this one is a reply of */
+  inReplyTo: string | undefined;
 
   /** Plaintext version of the message */
   @notifyChangedProperty
@@ -59,6 +67,13 @@ export class Message extends Observable {
   }
 
   readonly reactions = new MapColl<Person, string>();
+
+  async markRead(read = true) {
+    this.read = read;
+  }
+  async markStarred(starred = true) {
+    this.starred = starred;
+  }
 
   async deleteMessage() {
     console.log("Delete message");
