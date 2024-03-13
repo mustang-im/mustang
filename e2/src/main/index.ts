@@ -1,4 +1,4 @@
-import { startupBackend } from '../../../backend/backend';
+import { startupBackend } from './backend/backend';
 import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
