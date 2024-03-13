@@ -1,14 +1,14 @@
 {#if view == "chat"}
   <MailChat {accounts} />
 {:else if view == "vertical"}
- <VerticalLayout {accounts} bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} />
+ <VerticalLayout {accounts} bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} />
 {:else}
-  <ThreePane {accounts} bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} />
+  <ThreePane {accounts} bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} />
 {/if}
 
 <script lang="ts">
   import type { Folder } from "../../logic/Mail/Folder";
-  import { selectedAccount, selectedFolder, selectedMessage } from "./Selected";
+  import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "./Selected";
   import { appGlobal } from "../../logic/app";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { showError } from "../Util/error";

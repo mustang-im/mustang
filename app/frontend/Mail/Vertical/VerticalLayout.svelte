@@ -14,7 +14,7 @@
     </vbox>
     <vbox flex class="message-display-pane" slot="right">
       {#if selectedMessage}
-        <MessageDisplay message={selectedMessage} account={selectedAccount} />
+        <MessageDisplay message={selectedMessage} />
       {:else}
         <StartPage />
       {/if}
@@ -41,8 +41,7 @@
   export let selectedAccount: MailAccount; /** in/out */
   export let selectedFolder: Folder; /** in/out */
   export let selectedMessage: EMail; /** in/out */
-
-  let selectedMessages: ArrayColl<EMail>;
+  export let selectedMessages: ArrayColl<EMail>; /** in/out */
 </script>
 
 <style>
