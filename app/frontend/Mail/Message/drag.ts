@@ -22,8 +22,7 @@ export async function onDropMail(event: DragEvent, folder: Folder) {
   }
   let msgs = new ArrayColl<EMail>();
   msgs.add(msg);
-  let action = event.dataTransfer.dropEffect;
-  if (action == "copy") {
+  if (event.ctrlKey || event.metaKey) {
     await folder.copyMessagesHere(msgs);
   } else {
     await folder.moveMessagesHere(msgs);
@@ -32,4 +31,7 @@ export async function onDropMail(event: DragEvent, folder: Folder) {
 
 export async function onDragOverMail(event: DragEvent, folder: Folder) {
   event.preventDefault();
+  if (event.ctrlKey || event.metaKey) {
+    event.dataTransfer.dropEffect = "copy";
+  }
 }
