@@ -8,7 +8,7 @@
       <FileIcon {ext} size={24} />
     </hbox>
     <vbox class="info">
-      <hbox class="filename top-row">
+      <hbox title={attachment.filename} class="filename top-row">
         {attachment.filename}
       </hbox>
       <hbox class="bottom-row">
@@ -32,8 +32,6 @@
 
   export let attachment: Attachment;
   export let message: EMail;
-
-  $:console.log("attachment", attachment);
 
   $: ext = attachment.filename.split(".").pop();
 
@@ -59,7 +57,7 @@
 <style>
   .attachment {
     height: 48px;
-    margin: 8px;
+    margin: 4px;
   }
   .icon {
     aspect-ratio: 1/1;
@@ -88,6 +86,7 @@
   .size {
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .top-row {
     font-size: 16px;

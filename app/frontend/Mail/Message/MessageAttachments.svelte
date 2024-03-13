@@ -1,8 +1,10 @@
 {#if $message.attachments.hasItems}
   <vbox class="attachments">
-    {#each $message.attachments.each as attachment}
-      <MessageAttachment {message} {attachment} />
-    {/each}
+    <hbox class="attachments-list">
+      {#each $message.attachments.each as attachment}
+        <MessageAttachment {message} {attachment} />
+      {/each}
+    </hbox>
   </vbox>
 {/if}
 
@@ -11,12 +13,17 @@
   import MessageAttachment from "./MessageAttachment.svelte";
 
   export let message: EMail;
-
-  $: console.log("attachmnets", message.attachments);
 </script>
 
 <style>
   .attachments {
+    min-height: 64px;
+    max-height: 120px;
+    position: relative;
+  }
+  .attachments-list {
     flex-wrap: wrap;
+    padding: 4px;
+    overflow-y: auto;
   }
 </style>
