@@ -1,24 +1,31 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<hbox class="attachment">
-  <hbox class="icon" on:click={() => catchErrors(onOpen)}>
-    <FileIcon {ext} size={24} />
-  </hbox>
-  <vbox class="info">
-    <hbox class="filename top-row">
-      {attachment.filename}
+<hbox class="attachment"
+  draggable="true"
+  on:dragstart={onDragStart}
+  >
+  <hbox bind:this={iconEl}>
+    <hbox class="icon" on:click={() => catchErrors(onOpen)}>
+      <FileIcon {ext} size={24} />
     </hbox>
-    <hbox class="bottom-row">
-      <hbox class="size">
-        {fileSize(attachment.content?.size)}
+    <vbox class="info">
+      <hbox class="filename top-row">
+        {attachment.filename}
       </hbox>
-      <hbox flex />
-      <hbox class="menu">...</hbox>
-    </hbox>
+      <hbox class="bottom-row">
+        <hbox class="size">
+          {fileSize(attachment.content?.size)}
+        </hbox>
+        <hbox flex />
+        <hbox class="menu">...</hbox>
+      </hbox>
+    </vbox>
+  </hbox>
 </hbox>
 
 <script lang="ts">
   import type { Attachment } from "../../../logic/Mail/Attachment";
   import type { EMail } from "../../../logic/Mail/EMail";
+  import { assert } from "../../../logic/util/util";
   import FileIcon from "../../Files/FileIcon.svelte";
   import { fileSize } from "../../Files/fileSize";
   import { catchErrors } from "../../Util/error";
@@ -32,6 +39,20 @@
 
   async function onOpen() {
     alert("Open not yet implemented");
+  }
+
+  let iconEl: HTMLDivElement;
+
+  function onDragStart(event: DragEvent) {
+    assert(attachment.content instanceof File, "Attachment file is missing");
+    event.dataTransfer.items.clear();
+    event.dataTransfer.items.add(attachment.content);
+    event.dataTransfer.setDragImage(iconEl as HTMLElement, 0, 0);
+    event.dataTransfer.effectAllowed = "copy";
+    for (let item of event.dataTransfer.items) {
+      console.log("dragging attachment file", item, item.kind, item.type);
+    }
+    // TODO doesn't work for me: Creates a .txt file with the filename as content
   }
 </script>
 
