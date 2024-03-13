@@ -1,4 +1,3 @@
-// import { startupLogic } from './logic';
 import { startupBackend } from '../../../backend/backend';
 import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
@@ -9,7 +8,6 @@ async function createWindow(): Promise<void> {
   try {
     process.chdir("out/main");
 
-    // await startupLogic();
     startupBackend();
 
     // Create the browser window.
