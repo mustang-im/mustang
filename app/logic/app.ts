@@ -7,6 +7,7 @@ import type { Directory } from './Files/File';
 import Apps from './Apps/Apps';
 import { readMailAccounts } from './Mail/MailAccounts';
 import { readChatAccounts } from './Chat/ChatAccounts';
+import { getTestObjects } from './testData';
 import { ArrayColl } from 'svelte-collections';
 import JPCWebSocket from '../../lib/jpc-ws';
 
@@ -32,6 +33,9 @@ export async function getStartObjects(): Promise<void> {
   appGlobal.remoteApp = await jpc.getRemoteStartObject();
   appGlobal.emailAccounts.addAll(await readMailAccounts());
   appGlobal.chatAccounts.addAll(await readChatAccounts());
+  if (appGlobal.emailAccounts.isEmpty && appGlobal.chatAccounts.isEmpty) {
+    await getTestObjects(appGlobal);
+  }
 }
 
 /**
