@@ -171,7 +171,7 @@ block
       icon={RedoIcon}
       iconOnly
       />
-    {#if containsExtension('toggle-send-key')}
+    {#if hasExtension('toggle-send-key')}
       <Button
       label="Toggle send button"
       on:click={() => editor.chain().focus().toggleSendKey().run()}
@@ -208,9 +208,9 @@ block
   /* in only */
   export let editor: Editor;
 
-  function containsExtension(name: string): boolean {
-    let extensionList = editor.extensionManager.extensions;
-    for (const extension of extensionList) {
+  function hasExtension(name: string): boolean {
+    let extensions = editor.extensionManager.extensions;
+    for (const extension of extensions) {
       if (extension.name === name) {
         return true;
       }
