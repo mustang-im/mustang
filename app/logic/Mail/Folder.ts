@@ -31,18 +31,14 @@ export class Folder extends Observable {
     assert(sourceFolder, "Need source folder");
     assert(messages.contents.every(msg => msg.folder === sourceFolder), "All messages must be from the same folder");
     sourceFolder.messages.removeAll(messages);
-    this.messages.addAll(messages);
-    for (let message of messages) {
-      message.folder = this;
-    }
+    // Both folders need refresh
   }
 
   async copyMessagesHere(messages: Collection<EMail>) {
     let sourceFolder = messages.first.folder;
     assert(sourceFolder, "Need source folder");
     assert(messages.contents.every(msg => msg.folder === sourceFolder), "All messages must be from the same folder");
-    // TODO Copy msgs? Or wait for sync from server?
-    this.messages.addAll(messages);
+    // Both folders need refresh
   }
 
   async moveFolderHere(folder: Folder) {
