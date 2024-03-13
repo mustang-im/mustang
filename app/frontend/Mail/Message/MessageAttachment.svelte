@@ -56,12 +56,12 @@
 
 <style>
   .attachment {
-    height: 48px;
+    height: 40px;
     margin: 4px;
   }
   .icon {
     aspect-ratio: 1/1;
-    background-color: black;
+    background-color: #00000070;
     color: white;
     align-items: center;
     justify-content: center;
@@ -75,6 +75,12 @@
     border-bottom-right-radius: 3px;
     background-color: #FFFFFF50;
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%);
+  }
+  .attachment:hover .icon {
+    background-color: black;
+  }
+  .attachment:hover .info {
+    background-color: white;
   }
   .top-row,
   .bottom-row,
