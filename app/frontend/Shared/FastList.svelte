@@ -123,7 +123,7 @@
   let showRows = 1;
   $: showItems = $items.getIndexRange(scrollPos, showRows) as T[];
 
-  $: $items.hasItems && listE && !rowHeight && updateSize();
+  $: $items.hasItems && listE && updateSize();
 
   /**
    * Call this when either the number of entries changes,
