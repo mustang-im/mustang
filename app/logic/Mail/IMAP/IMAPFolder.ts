@@ -97,18 +97,18 @@ export class IMAPFolder extends Folder {
 
 
   async moveMessagesHere(messages: Collection<IMAPEMail>) {
-    super.moveMessagesHere(messages);
-    alert("Messages moved");
+    await super.moveMessagesHere(messages);
+    console.log("Messages moved");
   }
 
   async copyMessagesHere(messages: Collection<IMAPEMail>) {
-    super.copyMessagesHere(messages);
-    alert("Messages copied");
+    await super.copyMessagesHere(messages);
+    console.log("Messages copied");
   }
 
   async moveFolderHere(folder: Folder) {
-    super.moveFolderHere(folder);
-    alert("Folder moved");
+    await super.moveFolderHere(folder);
+    console.log("Folder moved");
   }
 
   async createSubFolder(name: string) {
@@ -116,7 +116,7 @@ export class IMAPFolder extends Folder {
     folder.name = name;
     folder.parent = this;
     this.subFolders.add(folder);
-    alert("Folder created");
+    console.log("Folder created");
   }
 
   specialUse(specialUse: string): void {

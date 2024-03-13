@@ -27,9 +27,11 @@ export class IMAPEMail extends EMail {
   }
 
   fromFlow(msgInfo: any) {
+    // <https://imapflow.com/global.html#FetchMessageObject>
     this.uid = msgInfo.uid;
+    // <https://imapflow.com/global.html#MessageEnvelopeObject>
     let env = msgInfo.envelope;
-    this.id = env.messageId;
+    this.id = env?.messageId ?? this.uid;
     this.subject = env.subject;
     this.sent = env.date ?? new Date();
     this.received = new Date();
