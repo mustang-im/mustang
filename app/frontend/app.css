@@ -123,12 +123,12 @@ a:hover {
 
 /* Fastlist */
 
-.fast-list .row.selected>* {
+.fast-list .row.selected * {
   background-color: #20AE9E;
   color: white;
 }
 
-.fast-list .row:not(.selected):hover>* {
+.fast-list .row:not(.selected):hover * {
   background-color: #A9DAD4;
 }
 
