@@ -30,7 +30,7 @@ export const ToggleSendKey = Extension.create<ToggleSendKeyOptions>({
   addOptions() {
     return {
       sendKey: 'Ctrl-Enter',
-      sendFunc: () => {},
+      sendFunc: null,
     }
   },
   addKeyboardShortcuts() {
