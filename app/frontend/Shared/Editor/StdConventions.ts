@@ -1,19 +1,6 @@
-import { markInputRule, markPasteRule, Extension } from '@tiptap/core';
+import { markInputRule, markPasteRule } from '@tiptap/core';
 import { Bold } from '@tiptap/extension-bold';
 import { Italic } from '@tiptap/extension-italic';
-
-/** Replaces Markdown conventions with Standard conventions
- * 1. `*abc*` is for **bold** not _italic_
- * 2. `/abc/` is for _italic_
- */
-export const StdConventions = Extension.create({
-  addExtensions() {
-    return [
-      BoldStar,
-      ItalicSlash,
-    ]
-  },
-});
 
 export const starInputRegex = /(?:^|\s)((?:\*)((?:[^*]+))(?:\*))$/
 export const starPasteRegex = /(?:^|\s)((?:\*)((?:[^*]+))(?:\*))/g

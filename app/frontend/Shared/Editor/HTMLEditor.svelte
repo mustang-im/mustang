@@ -10,10 +10,10 @@
   import CodeWordFeature from '@tiptap/extension-code';
   import { SplitBlockquote } from './SplitBlockquote';
   import { Footer } from './Footer';
+  import { BoldStar, ItalicSlash } from './StdConventions';
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
   // import { common as lowlightCommon, createLowlight } from 'lowlight'
   import { onMount, onDestroy } from 'svelte';
-  import { StdConventions } from './StdConventions';
 
   /**
    * TODO Bug: Only accepts `html` on component creation.
@@ -38,7 +38,8 @@
           allowBase64: true,
           inline: true,
         }),
-        StdConventions,
+        BoldStar,
+        ItalicSlash,
         // CodeBlockLowlightFeature.configure({
         //  lowlight: createLowlight(lowlightCommon),
         // }),
