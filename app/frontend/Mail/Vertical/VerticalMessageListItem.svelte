@@ -1,4 +1,7 @@
-<vbox class="message" class:read={$message.read} class:unread={!$message.read}>
+<vbox class="message"
+  class:read={$message.read} class:unread={!$message.read}
+  draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
+  >
   <hbox class="top-row">
     <hbox class="contact">{message.contact.name}</hbox>
     <hbox flex />
@@ -37,6 +40,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
+  import { onDragStartMail } from "../Message/drag";
   import Button from "../../Shared/Button.svelte";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";

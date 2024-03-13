@@ -23,9 +23,9 @@
     <AttachmentIcon size="12px" />
   {/if}
 </hbox>
-<hbox class="correspondent">{$message.contact.name}</hbox>
-<hbox class="subject" class:unread={!$message.read}>{$message.subject}</hbox>
-<hbox class="date" class:unread={!$message.read}>{getDateString($message.sent)}</hbox>
+<hbox class="correspondent" draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}>{$message.contact.name}</hbox>
+<hbox class="subject" class:unread={!$message.read} draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}>{$message.subject}</hbox>
+<hbox class="date" class:unread={!$message.read} draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}>{getDateString($message.sent)}</hbox>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
@@ -35,6 +35,7 @@
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
   import { getDateString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
+  import { onDragStartMail } from "../Message/drag";
 
   export let message: EMail;
 
