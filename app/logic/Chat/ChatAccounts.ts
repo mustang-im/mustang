@@ -1,7 +1,8 @@
-import type { ChatAccount } from './Account';
+import type { ChatAccount } from './ChatAccount';
 import { ArrayColl } from 'svelte-collections';
 import { MatrixAccount } from './Matrix/MatrixAccount';
 import { XMPPAccount } from './XMPP/XMPPAccount';
+import { sanitize } from '../../../lib/util/sanitizeDatatypes';
 
 /**
  * Reads settings for chat accounts,
@@ -38,10 +39,10 @@ export async function readChatAccounts(): Promise<ArrayColl<ChatAccount>> {
 
 function readMatrixAccount(prefBranch: string): MatrixAccount {
   let account = new MatrixAccount();
-  account.baseURL = localStorage.getItem(prefBranch + "server") ?? "https://matrix.org";
-  account.username = localStorage.getItem(prefBranch + "username");
-  account.password = localStorage.getItem(prefBranch + "password");
-  account.deviceID = localStorage.getItem(prefBranch + "deviceID");
+  account.baseURL = sanitize.url(localStorage.getItem(prefBranch + "server") ?? "https://matrix.org");
+  account.username = sanitize.nonemptystring(localStorage.getItem(prefBranch + "username"));
+  account.password = sanitize.nonemptystring(localStorage.getItem(prefBranch + "password"));
+  account.deviceID = sanitize.alphanumdash(localStorage.getItem(prefBranch + "deviceID"));
   if (!account.deviceID) {
     account.deviceID = crypto.randomUUID();
     localStorage.setItem(prefBranch + "deviceID", account.deviceID);
@@ -51,10 +52,10 @@ function readMatrixAccount(prefBranch: string): MatrixAccount {
 
 function readXMPPAccount(prefBranch: string): XMPPAccount {
   let account = new XMPPAccount();
-  account.serverDomain = localStorage.getItem(prefBranch + "server");
-  account.username = localStorage.getItem(prefBranch + "username");
-  account.password = localStorage.getItem(prefBranch + "password");
-  account.deviceID = localStorage.getItem(prefBranch + "deviceID");
+  account.serverDomain = sanitize.hostname(localStorage.getItem(prefBranch + "server"));
+  account.username = sanitize.nonemptystring(localStorage.getItem(prefBranch + "username"));
+  account.password = sanitize.nonemptystring(localStorage.getItem(prefBranch + "password"));
+  account.deviceID = sanitize.alphanumdash(localStorage.getItem(prefBranch + "deviceID"));
   if (!account.deviceID) {
     account.deviceID = crypto.randomUUID();
     localStorage.setItem(prefBranch + "deviceID", account.deviceID);

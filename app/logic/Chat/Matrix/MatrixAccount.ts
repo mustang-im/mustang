@@ -1,4 +1,4 @@
-import { ChatAccount } from '../Account';
+import { ChatAccount } from '../ChatAccount';
 import { MatrixChatRoom } from './MatrixChatRoom';
 import { MatrixVideoConf } from '../../Meet/MatrixVideoConf';
 import { ChatMessage, DeliveryStatus, UserChatMessage } from '../Message';

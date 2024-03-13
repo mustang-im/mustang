@@ -33,9 +33,10 @@
   import DualView from "./DualView.svelte";
   import ListView from "./ListView.svelte";
   import Scroll from "../Shared/Scroll.svelte";
+  import { ArrayColl } from "svelte-collections";
 
   $: dateInterval = $selectedDateInterval;
-  $: events = appGlobal.calendars.first.events.sortBy(ev => ev.startTime);
+  $: events = appGlobal.calendars.first?.events.sortBy(ev => ev.startTime) ?? new ArrayColl<Event>();
 
   function addEvent() {
     let event = new Event();

@@ -10,15 +10,14 @@
     <svelte:fragment slot="row" let:item={account}>
       <hbox class="account">
         <hbox class="icon"><Icon data={AccountIcon} size="16px" /></hbox>
-        <hbox class="label">{account.emailAddress}</hbox>
+        <hbox class="label">{account.name}</hbox>
       </hbox>
     </svelte:fragment>
   </FastList>
 </vbox>
 
 <script lang="ts">
-  //import type { Account } from "mustang-lib";
-  import type { MailAccount } from '../../../logic/Mail/Account';
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import FastList from "../../Shared/FastList.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
   import AccountIcon from '../../asset/icon/appBar/mail.svg?raw';

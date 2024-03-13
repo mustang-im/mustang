@@ -6,7 +6,7 @@
 </hbox>
 
 <script lang="ts">
-  import type { MailAccount } from "../../logic/Mail/Account";
+  import type { MailAccount } from "../../logic/Mail/MailAccount";
   import { appGlobal } from "../../logic/app";
   import Button from "../Shared/Button.svelte";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";

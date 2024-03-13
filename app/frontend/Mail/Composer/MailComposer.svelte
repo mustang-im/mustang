@@ -106,7 +106,6 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import type { MailAccount } from "../../../logic/Mail/Account";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { insertImage } from "../../Shared/Editor/InsertImage";
   import MailAutocomplete from "./MailAutocomplete.svelte";

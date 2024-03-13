@@ -1,8 +1,11 @@
 import { Message } from "../Abstract/Message";
+import type { Attachment } from "./Attachment";
 import type { Person } from "../Abstract/Person";
 import { appGlobal } from "../app";
+import { backgroundError } from "../../frontend/Util/error";
 import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, MapColl } from "svelte-collections";
+import type { Folder } from "./Folder";
 
 export class EMail extends Message {
   @notifyChangedProperty
@@ -12,18 +15,47 @@ export class EMail extends Message {
   readonly to = new MapColl<string, Person>(); /** email address -> Person (not necessarily in address book) */
   readonly cc = new MapColl<string, Person>(); /** format like `to` */
   readonly bcc = new MapColl<string, Person>(); /** format like `to` */
-  readonly attachments = new ArrayColl<File>();
+  readonly replyTo: { emailAddress: string, name: string };
+  readonly attachments = new ArrayColl<Attachment>();
+  readonly headers = new MapColl<string, string>();
+  /** This is a Junk message */
   @notifyChangedProperty
-  contentType: string;
+  spam = false;
+  /** The user has answered this message, by clicking "Reply" */
   @notifyChangedProperty
-  _bodyPlaintext: string;
+  replied = false;
+  /** The user started writing this message, but didn't send it yet */
+  @notifyChangedProperty
+  draft = false;
+  /** Complete MIME source of the email */
+  mime: Uint8Array | undefined;
+  //@notifyChangedProperty
+  //contentType: string;
+  folder: Folder;
+
+  constructor(folder: Folder) {
+    super();
+    this.folder = folder;
+  }
 
   get baseSubject(): string {
     return this.subject.replace(/^([Re|RE|AW|Aw]: ?)+/, "");
   }
 
+  async markSpam(spam = true) {
+    this.spam = spam;
+  }
+
+  async markReplied() {
+    this.replied = true;
+  }
+
+  async markDraft() {
+    this.draft = true;
+  }
+
   async deleteMessage() {
-    console.log("Delete Email", this.subject);
+    this.folder.messages.remove(this);
   }
 
   quotePrefixLine(): string {
@@ -34,7 +66,8 @@ export class EMail extends Message {
   }
 
   _reply(): EMail {
-    let reply = new EMail();
+    this.markReplied().catch(backgroundError);
+    let reply = new EMail(this.folder.account.drafts ?? this.folder.account.sent ?? this.folder);
     reply.subject = "Re: " + this.baseSubject; // Do *not* localize "Re: "
     reply.html = `<p></p>
     <p></p>

@@ -1,5 +1,5 @@
 <hbox class="list">
-  {#each recipients.each as to, i (to.id)}
+  {#each recipients.each as to, i}
     {#if i > 0}
       <hbox class="comma">,</hbox>
     {/if}

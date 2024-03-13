@@ -6,7 +6,7 @@
   />
 
 <script lang="ts">
-  import type { MailAccount } from "../../../logic/Mail/Account";
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { EMail } from "../../../logic/Mail/EMail";
   import { mailMustangApp } from "../MailMustangApp";
   import RoundButton from "../../Shared/RoundButton.svelte";

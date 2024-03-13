@@ -15,7 +15,7 @@
     </vbox>
     <vbox flex class="message-display-pane" slot="bottom">
       {#if selectedMessage}
-        <MessageDisplay message={selectedMessage} account={selectedAccount} />
+        <MessageDisplay message={selectedMessage} />
       {:else}
         <StartPage />
       {/if}
@@ -24,8 +24,7 @@
 </Splitter>
 
 <script lang="ts">
-  //import type { Account, MsgFolder, Email } from "mustang-lib";
-  import type { MailAccount } from "../../../logic/Mail/Account";
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { EMail } from "../../../logic/Mail/EMail";
 
@@ -45,8 +44,7 @@
   export let selectedAccount: MailAccount; /** in/out */
   export let selectedFolder: Folder; /** in/out */
   export let selectedMessage: EMail; /** in/out */
-
-  let selectedMessages: ArrayColl<EMail>;
+  export let selectedMessages: ArrayColl<EMail>; /** in/out */
 </script>
 
 <style>
