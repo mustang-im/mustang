@@ -10,6 +10,7 @@
   import CodeWordFeature from '@tiptap/extension-code';
   import { SplitBlockquote } from './SplitBlockquote';
   import { Footer } from './Footer';
+  import { Whitelist } from './Whitelist';
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
   // import { common as lowlightCommon, createLowlight } from 'lowlight'
   import { onMount, onDestroy } from 'svelte';
@@ -37,6 +38,7 @@
           allowBase64: true,
           inline: true,
         }),
+        Whitelist,
         // CodeBlockLowlightFeature.configure({
         //  lowlight: createLowlight(lowlightCommon),
         // }),
