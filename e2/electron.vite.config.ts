@@ -1,12 +1,12 @@
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
-import { viteStaticCopy } from 'vite-plugin-static-copy';
+//import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig({
   main: {
     plugins: [
       externalizeDepsPlugin({ exclude: ["jpc-core", "jpc-ws"] }),
-      viteStaticCopy({
+      /*viteStaticCopy({
         targets: [
           {
             src: '../lib/logic/storage/mail-sql/',
@@ -17,7 +17,7 @@ export default defineConfig({
             dest: '.'
           }
         ]
-      }),
+      }),*/
     ]
   },
   preload: {
