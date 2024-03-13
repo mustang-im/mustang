@@ -50,11 +50,11 @@
 
   export let message: EMail;
 
-  function toggleRead(message: EMail) {
-    message.markRead(!message.read);
+  async function toggleRead() {
+    await message.markRead(!message.read);
   }
-  function toggleStar(message: EMail) {
-    message.markRead(!message.starred);
+  async function toggleStar() {
+    await message.markStarred(!message.starred);
   }
 </script>
 
