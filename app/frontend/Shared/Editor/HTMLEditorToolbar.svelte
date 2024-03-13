@@ -4,7 +4,7 @@
 
     <Button
       label="Bold"
-      shortCutInfo="**bold**"
+      shortCutInfo="*bold* or **bold**"
       on:click={() => editor.chain().focus().toggleBold().run()}
       disabled={!editor.can().chain().focus().toggleBold().run()}
       selected={editor.isActive('bold')}
@@ -14,7 +14,7 @@
     </Button>
     <Button
       label="Italic"
-      shortCutInfo="_italic_"
+      shortCutInfo="/italic/ or _italic_"
       on:click={() => editor.chain().focus().toggleItalic().run()}
       disabled={!editor.can().chain().focus().toggleItalic().run()}
       selected={editor.isActive('italic')}
