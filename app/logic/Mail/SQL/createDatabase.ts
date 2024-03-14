@@ -1,4 +1,4 @@
-import sql from "@radically-straightforward/sqlite";
+import sql from "../../../../lib/rs-sqlite/index";
 
 export const mailDatabaseSchema = sql`
   --- personal address books
