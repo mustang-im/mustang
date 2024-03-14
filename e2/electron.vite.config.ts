@@ -4,7 +4,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 export default defineConfig({
   main: {
     plugins: [
-      externalizeDepsPlugin({ exclude: ["jpc-core", "jpc-ws"] }),
+      externalizeDepsPlugin({ exclude: ["@radically-straightforward/sqlite"] }),
     ]
   },
   preload: {
