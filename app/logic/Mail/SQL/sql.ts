@@ -1,11 +1,11 @@
 import { appGlobal } from "../../app";
-import sql, { type Database } from "@radically-straightforward/sqlite";
+import sql, { type Database } from "../../../../lib/rs-sqlite/index";
 import { mailDatabaseSchema } from "./createDatabase";
 
 export async function testDatabase() {
   let result;
-  const Database = appGlobal.remoteApp.getSQLiteDatabase() as Database;
-  const mailDatabase = new Database("mail.db");
+  const getDatabase = appGlobal.remoteApp.getSQLiteDatabase;
+  const mailDatabase: Database = await getDatabase("mail.db");
   try {
     await mailDatabase.migrate(mailDatabaseSchema);
 
