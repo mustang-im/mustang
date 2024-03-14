@@ -18,12 +18,16 @@ export async function testDatabase() {
     await mailDatabase.pragma('foreign_keys = true');
     await mailDatabase.pragma('journal_mode = DELETE');
 
-    await mailDatabase.run(sql`
-      INSERT INTO "emailPersons" ("name", "emailAddress") VALUES (${"Fred"}, ${"fred@example.com"})
-    `);
+    try {
+      await mailDatabase.run(sql`
+        INSERT INTO "emailPersons" ("name", "emailAddress") VALUES (${"Fred"}, ${"fred@example.com"})
+      `);
+    } catch (ex) {
+      console.log(ex);
+    }
 
     result = await mailDatabase.get(sql`
-      SELECT "id", "name", "emailAddress" FROM "emailPersons" WHERE "name" LIKE ${"%@example.com"}
+      SELECT "id", "name", "emailAddress" FROM "emailPersons" WHERE "emailAddress" LIKE ${"%@example.com"}
     `); // => { id: 1, name: 'Fred', emailAddress: 'fred@example.com' }
   } finally {
     await mailDatabase.close();
