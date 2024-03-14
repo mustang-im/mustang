@@ -34,7 +34,7 @@ export async function getStartObjects(): Promise<void> {
   appGlobal.remoteApp = await jpc.getRemoteStartObject();
   appGlobal.emailAccounts.addAll(await readMailAccounts());
   appGlobal.chatAccounts.addAll(await readChatAccounts());
-  console.log(await testDatabase());
+  await testDatabase();
   if (appGlobal.emailAccounts.isEmpty && appGlobal.chatAccounts.isEmpty) {
     await getTestObjects(appGlobal);
   }

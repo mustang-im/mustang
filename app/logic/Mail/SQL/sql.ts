@@ -7,17 +7,19 @@ export async function testDatabase() {
   const getDatabase = appGlobal.remoteApp.getSQLiteDatabase;
   const mailDatabase: Database = await getDatabase("mail.db");
   try {
+    mailDatabase.pragma('foreign_keys');
     await mailDatabase.migrate(mailDatabaseSchema);
 
-    mailDatabase.run(sql`
+    await mailDatabase.run(sql`
       INSERT INTO "emailPersons" ("name", "emailAddress") VALUES (${"Fred"}, ${"fred@example.com"})
     `);
 
-    result = mailDatabase.get(sql`
-        SELECT "id", "name", "emailAddress" FROM "users" WHERE "name" LIKE ${"%@example.com"}
-      `); // => { id: 1, name: 'Fred', emailAddress: 'fred@example.com' }
+    result = await mailDatabase.get(sql`
+      SELECT "id", "name", "emailAddress" FROM "emailPersons" WHERE "name" LIKE ${"%@example.com"}
+    `); // => { id: 1, name: 'Fred', emailAddress: 'fred@example.com' }
   } finally {
-    mailDatabase.close();
+    await mailDatabase.close();
   }
+  console.log("db result", result);
   return result;
 }

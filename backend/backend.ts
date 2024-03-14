@@ -22,6 +22,5 @@ function createIMAPFlowConnection(...args): ImapFlow {
 }
 
 function getSQLiteDatabase(filename: string): Database {
-  // PRAGMA foreign_keys;
   return new Database(filename);
 }
