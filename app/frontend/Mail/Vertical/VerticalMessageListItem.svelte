@@ -1,11 +1,11 @@
 <vbox class="message"
-  class:read={$message.read} class:unread={!$message.read}
+  class:read={$message.isRead} class:unread={!$message.isRead}
   draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
   >
   <hbox class="top-row">
     <hbox class="contact">{message.contact.name}</hbox>
     <hbox flex />
-    <hbox class="star button" class:starred={$message.starred}>
+    <hbox class="star button" class:starred={$message.isStarred}>
       <Button
         icon={StarIcon}
         iconSize="14px"
@@ -20,7 +20,7 @@
         icon={CircleIcon}
         iconSize="8px"
         iconOnly
-        label={message.read ? "Mark this message as unread" : "Mark this message as read"}
+        label={message.isRead ? "Mark this message as unread" : "Mark this message as read"}
         on:click={() => catchErrors(toggleRead)}
         plain
         />
@@ -51,10 +51,10 @@
   export let message: EMail;
 
   async function toggleRead() {
-    await message.markRead(!message.read);
+    await message.markRead(!message.isRead);
   }
   async function toggleStar() {
-    await message.markStarred(!message.starred);
+    await message.markStarred(!message.isStarred);
   }
 </script>
 

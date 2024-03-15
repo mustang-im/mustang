@@ -82,7 +82,7 @@ function fakeMailAccount(persons: Collection<Person>, me: Person): MailAccount {
       msg.id = emailNr + '';
       msg.sent = faker.date.past(0.1);
       msg.received = new Date(msg.sent.getTime() + 500);
-      msg.read = msg.received < lastReadTime;
+      msg.isRead = msg.received < lastReadTime;
       msg.subject = faker.hacker.phrase().replace("!", "").replace(/,.*/, "");
       msg.outgoing = Math.random() < 0.4;
       msg.contact = person;

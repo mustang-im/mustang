@@ -24,13 +24,13 @@ export class Message extends Observable {
   /** This message just arrived in the inbox and this is the first
    * session to see this message */
   @notifyChangedProperty
-  newArrived = false;
+  isNewArrived = false;
   /** User has read the contents of the message */
   @notifyChangedProperty
-  read = false;
+  isRead = false;
   /** User marked this message as special to remember */
   @notifyChangedProperty
-  starred = false;
+  isStarred = false;
   /** Msg ID of another message that this one is a reply of */
   inReplyTo: string | undefined;
 
@@ -69,10 +69,10 @@ export class Message extends Observable {
   readonly reactions = new MapColl<Person, string>();
 
   async markRead(read = true) {
-    this.read = read;
+    this.isRead = read;
   }
   async markStarred(starred = true) {
-    this.starred = starred;
+    this.isStarred = starred;
   }
 
   async deleteMessage() {

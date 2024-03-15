@@ -37,8 +37,8 @@ export class IMAPEMail extends EMail {
     this.received = new Date();
     let flags = msgInfo.flags;
     if (flags) {
-      this.read = flags.has("\\Seen");
-      this.newArrived = flags.has("\\Recent");
+      this.isRead = flags.has("\\Seen");
+      this.isNewArrived = flags.has("\\Recent");
     }
     this.inReplyTo = env.inReplyTo;
     let firstFrom = env.from && env.from[0];

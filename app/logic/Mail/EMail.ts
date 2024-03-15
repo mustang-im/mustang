@@ -8,6 +8,7 @@ import { ArrayColl, MapColl } from "svelte-collections";
 import type { Folder } from "./Folder";
 
 export class EMail extends Message {
+  /** this.id = RFC822 header */
   @notifyChangedProperty
   authorEmailAddress: string;
   @notifyChangedProperty
@@ -18,15 +19,18 @@ export class EMail extends Message {
   readonly replyTo: { emailAddress: string, name: string };
   readonly attachments = new ArrayColl<Attachment>();
   readonly headers = new MapColl<string, string>();
+  /** Size of full RFC822 MIME message, in bytes */
+  @notifyChangedProperty
+  size: number;
   /** This is a Junk message */
   @notifyChangedProperty
-  spam = false;
+  isSpam = false;
   /** The user has answered this message, by clicking "Reply" */
   @notifyChangedProperty
-  replied = false;
+  isReplied = false;
   /** The user started writing this message, but didn't send it yet */
   @notifyChangedProperty
-  draft = false;
+  isDraft = false;
   /** Complete MIME source of the email */
   mime: Uint8Array | undefined;
   //@notifyChangedProperty
@@ -43,15 +47,15 @@ export class EMail extends Message {
   }
 
   async markSpam(spam = true) {
-    this.spam = spam;
+    this.isSpam = spam;
   }
 
   async markReplied() {
-    this.replied = true;
+    this.isReplied = true;
   }
 
   async markDraft() {
-    this.draft = true;
+    this.isDraft = true;
   }
 
   async deleteMessage() {
