@@ -1,4 +1,5 @@
-import { Extension, Node, type Editor } from '@tiptap/core';
+import { Editor, Extension, Node, getExtensionField, getSchema, mergeAttributes } from '@tiptap/core';
+import { Paragraph } from '@tiptap/extension-paragraph';
 
 export interface WhitelistOptions {
   allowedTags: string[],
@@ -10,14 +11,16 @@ export interface allowedAttributes {
 }
 
 export interface WhitelistStorage {
-  editorExtensions: string[],
+  extensions: string[],
 }
 
 /** Extension which allows arbitrary HTML elements and attributes */
 export const Whitelist = Extension.create<WhitelistOptions, WhitelistStorage>({
+  name: 'whitelist',
+  priority: 50,
   addStorage() {
     return {
-      editorExtensions: [],
+      extensions: [],
     }
   },
   addOptions() {
@@ -41,31 +44,6 @@ export const Whitelist = Extension.create<WhitelistOptions, WhitelistStorage>({
       },
     }
   },
-  addExtensions() {
-    const Tags: Node[] = [];
-    this.options.allowedTags.forEach(tag => {
-      if (!this.storage.editorExtensions.includes(tag)) {
-        let Tag = Node.create({
-          name: tag,
-          content: 'block*',
-          parseHTML() {
-            return [
-              {
-                tag: tag,
-              },
-            ]
-          },
-          renderHTML() {
-            return [
-              tag,
-            ]
-          }
-        })
-        Tags.push(Tag);
-      }
-    });
-    return Tags;
-  },
   // addGlobalAttributes() {
   //   let allowedAttributes = this.options.allowedAttributes;
   //   let attributesList: GlobalAttributes;
@@ -83,7 +61,45 @@ export const Whitelist = Extension.create<WhitelistOptions, WhitelistStorage>({
   // },
   onBeforeCreate() {
     this.editor.extensionManager.extensions.forEach(extension => {
-      this.storage.editorExtensions.push(extension.name);
+      if (extension.name) {
+        this.storage.extensions.push(extension.name);
+      }
     });
+    let Tags: Node[] = [];
+    this.options.allowedTags.forEach(tag => {
+      if (this.storage.extensions.includes(tag)) {
+        return;
+      }
+      const Tag: Node = Node.create({
+        name: tag,
+        content: 'block+',
+        group: 'block',
+        parseHTML() {
+          return [
+            {
+              tag: tag,
+            },
+          ]
+        },
+        renderHTML({HTMLAttributes}) {
+          return [
+            tag,
+            mergeAttributes(HTMLAttributes),
+            0,
+          ]
+        },
+      });
+      console.log(tag);
+      Tags.push(Tag);
+    });
+    this.editor.extensionManager.extensions.push(...Tags);
+    // this.editor.setOptions({
+    //   extensions: [
+    //     ...Tags,
+    //   ]
+    // });
+    this.editor = this.editor;
+    let schema = this.editor.schema;
+    console.log(schema)
   },
 });
