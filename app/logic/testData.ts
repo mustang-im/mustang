@@ -1,4 +1,4 @@
-import type { AppGlobal } from './app';
+import { appGlobal } from './app';
 import { MailAccount } from './Mail/MailAccount';
 import { EMail } from './Mail/EMail';
 import { ChatAccount } from './Chat/ChatAccount';
@@ -13,7 +13,7 @@ import { Event } from './Calendar/Event';
 import { ArrayColl, type Collection } from 'svelte-collections';
 import { Folder, SpecialFolder } from './Mail/Folder';
 
-export async function getTestObjects(appGlobal: AppGlobal): Promise<void> {
+export async function getTestObjects(): Promise<void> {
   appGlobal.me = fakeChatPerson();
   appGlobal.persons.addAll(fakePersons());
   appGlobal.emailAccounts.add(fakeMailAccount(appGlobal.persons, appGlobal.me));
@@ -22,15 +22,15 @@ export async function getTestObjects(appGlobal: AppGlobal): Promise<void> {
   appGlobal.files.addAll(fakeSharedDir(appGlobal.persons));
 }
 
-function fakePersons(): Collection<Person> {
+export function fakePersons(count = 50): Collection<Person> {
   let persons = new ArrayColl<Person>();
-  for (let i = 1; i < 50; i++) {
+  for (let i = 1; i <= count; i++) {
     persons.add(fakeChatPerson());
   }
   return persons;
 }
 
-function fakeChatPerson(): Person {
+export function fakeChatPerson(): Person {
   let person = new ChatPerson();
   person.id = faker.datatype.uuid();
   person.firstName = faker.name.firstName();
@@ -56,7 +56,7 @@ function fakeChatPerson(): Person {
   return person;
 }
 
-function fakeMailAccount(persons: Collection<Person>, me: Person): MailAccount {
+export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCount = 300): MailAccount {
   let account = new MailAccount();
   account.name = "Yahoo";
   account.emailAddress = me.emailAddresses.first.value;
@@ -65,7 +65,7 @@ function fakeMailAccount(persons: Collection<Person>, me: Person): MailAccount {
   me.emailAddresses.add(new ContactEntry(account.emailAddress, "Primary"));
 
   for (let name of ['Inbox', 'Sent', 'Drafts', 'Trash', 'Spam']) {
-    let folder = new Folder();
+    let folder = new Folder(account);
     folder.name = name;
     folder.specialFolder = folder.name.toLowerCase() as SpecialFolder;
     account.rootFolders.push(folder);
@@ -76,9 +76,16 @@ function fakeMailAccount(persons: Collection<Person>, me: Person): MailAccount {
   lastReadTime.setHours(lastReadTime.getHours() - 1);
   let emailNr = 0;
   for (let person of persons) {
-    for (let i = 1; i < 300; i++) {
+    for (let i = 1; i <= msgCount; i++) {
       emailNr++;
-      let msg = new EMail();
+      let folder: Folder;
+      if (Math.random() < 0.99) {
+        folder = account.inbox;
+      } else {
+        let folderIndex = Math.floor(Math.random() * account.rootFolders.length);
+        folder = account.rootFolders.getIndex(folderIndex) ?? account.inbox;
+      }
+      let msg = new EMail(folder);
       msg.id = emailNr + '';
       msg.sent = faker.date.past(0.1);
       msg.received = new Date(msg.sent.getTime() + 500);
@@ -110,14 +117,6 @@ function fakeMailAccount(persons: Collection<Person>, me: Person): MailAccount {
       if (Math.random() > 0.3) {
         msg.html = `<p>${paragraphs.join("</p><p>")}</p>`;
       }
-      msg.contentType = "text/plain";
-      let folder: Folder;
-      if (Math.random() < 0.99) {
-        folder = account.inbox;
-      } else {
-        let folderIndex = Math.floor(Math.random() * account.rootFolders.length);
-        folder = account.rootFolders.getIndex(folderIndex) ?? account.inbox;
-      }
       folder.messages.add(msg);
       account.messages.set(person, msg);
     }
@@ -125,7 +124,7 @@ function fakeMailAccount(persons: Collection<Person>, me: Person): MailAccount {
   return account;
 }
 
-function fakeMailPerson(): Person {
+export function fakeMailPerson(): Person {
   let person = new Person();
   person.id = faker.datatype.uuid();
   person.name = faker.name.fullName();
@@ -133,7 +132,7 @@ function fakeMailPerson(): Person {
   return person;
 }
 
-function fakeChatAccount(persons: Collection<Person>, me: Person): ChatAccount {
+export function fakeChatAccount(persons: Collection<Person>, me: Person, msgCount = 300): ChatAccount {
   let chatAccount = new ChatAccount();
   chatAccount.name = "Test chat 1";
   chatAccount.userRealname = me.name;
@@ -146,7 +145,7 @@ function fakeChatAccount(persons: Collection<Person>, me: Person): ChatAccount {
 
     let messages = chat.messages;
     let lastTime = faker.date.past(0.1);
-    for (let i = 1; i < 300; i++) {
+    for (let i = 1; i <= msgCount; i++) {
       let msg = new UserChatMessage();
       msg.to = chat;
       msg.contact = chat.contact;
@@ -167,10 +166,10 @@ function fakeChatAccount(persons: Collection<Person>, me: Person): ChatAccount {
   return chatAccount;
 }
 
-function fakeCalendar(persons: Collection<Person>): Calendar {
+export function fakeCalendar(persons: Collection<Person>, eventCount = 50): Calendar {
   let calendar = new Calendar();
   calendar.name = faker.company.name();
-  for (let i = 1; i < 50; i++) {
+  for (let i = 1; i <= eventCount; i++) {
     let event = new Event();
     event.startTime = i < 5 ? faker.date.recent() : faker.date.future(0.2);
     let endTimeMax = new Date(event.startTime);
@@ -189,7 +188,7 @@ function fakeCalendar(persons: Collection<Person>): Calendar {
   return calendar;
 }
 
-function fakeSharedDir(persons: Collection<Person>): Collection<Directory> {
+export function fakeSharedDir(persons: Collection<Person>): Collection<Directory> {
   let directories = new ArrayColl<Directory>();
   let sharedDirectory = new Directory();
   sharedDirectory.name = "shared";
@@ -209,7 +208,7 @@ function fakeSharedDir(persons: Collection<Person>): Collection<Directory> {
   return directories;
 }
 
-function fakeDir(parentDir: Directory): Directory {
+export function fakeDir(parentDir: Directory): Directory {
   let directory = new Directory();
   directory.name = faker.helpers.unique(() => faker.system.fileName({ extensionCount: 0 }));
   directory.lastMod = faker.date.past();
@@ -226,7 +225,7 @@ function fakeDir(parentDir: Directory): Directory {
   return directory;
 }
 
-function fakeFile(parentDir: Directory): File {
+export function fakeFile(parentDir: Directory): File {
   let file = new File();
   file.name = faker.helpers.unique(() => faker.system.commonFileName());
   let parts = file.name.split(".");
@@ -237,21 +236,3 @@ function fakeFile(parentDir: Directory): File {
   file.setParent(parentDir);
   return file;
 }
-
-/*
-let testMessages: Collection<EMail> = new ArrayColl<EMail>();
-for (let i = 1; i < 10000; i++) {
-  let msg = new EMail();
-  msg.msgID = i + '';
-  msg.date = new Date();
-  msg.subject = "Talk about " + i;
-  msg.authorRealname = "Some guy " + i;
-  msg.authorEmailAddress = "guy" + i + "@example.com";
-  msg.recipientEmailAddress = "me@example.org";
-  msg.recipientRealname = "Ben";
-  msg.contentType = "text/plain";
-  msg._bodyPlaintext = "Some message " + i;
-  testMessages.add(msg);
-}
-*/
-
