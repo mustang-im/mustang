@@ -39,17 +39,17 @@
       plain
       />
   </hbox>
-  <hbox class="unread" class:read={$message.read}>
+  <hbox class="unread" class:read={$message.isRead}>
     <Button
       icon={CircleIcon}
       iconSize="16px"
       iconOnly
-      label={message.read ? "Mark this message as unread" : "Mark this message as read"}
+      label={message.isRead ? "Mark this message as unread" : "Mark this message as read"}
       on:click={() => catchErrors(() => toggleRead())}
       plain
       />
   </hbox>
-  <hbox class="star" class:starred={$message.starred}>
+  <hbox class="star" class:starred={$message.isStarred}>
     <Button
       icon={StarIcon}
       iconSize="20px"
@@ -80,10 +80,10 @@
   export let message: EMail;
 
   async function toggleRead() {
-    await message.markRead(!message.read);
+    await message.markRead(!message.isRead);
   }
   async function toggleStar() {
-    await message.markStarred(!message.starred);
+    await message.markStarred(!message.isStarred);
   }
   function reply() {
     let reply = message.replyToAuthor();
