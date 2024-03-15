@@ -33,12 +33,21 @@
         LinkFeature,
         CodeWordFeature,
         SplitBlockquote,
-        Footer,
+        // Footer,
         ImageFeature.configure({
           allowBase64: true,
           inline: true,
         }),
-        Whitelist,
+        Whitelist.configure({
+          editorExtensions: [
+            StarterKit,
+            LinkFeature,
+            CodeWordFeature,
+            SplitBlockquote,
+            // Footer,
+            ImageFeature,
+          ],
+        }),
         // CodeBlockLowlightFeature.configure({
         //  lowlight: createLowlight(lowlightCommon),
         // }),
@@ -53,7 +62,7 @@
         console.log(editor.schema);
       },
     });
-    console.log(editor.extensionManager.extensions);
+    // console.log(editor.extensionManager.extensions);
   });
 
   // TODO Listen to html. But removes all whitespace.

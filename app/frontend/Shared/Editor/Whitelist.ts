@@ -1,7 +1,8 @@
-import { Editor, Extension, Node, getExtensionField, getSchema, mergeAttributes } from '@tiptap/core';
-import { Paragraph } from '@tiptap/extension-paragraph';
+import { Extension, type Extensions, getSchema, Node } from '@tiptap/core';
+import type { Schema } from '@tiptap/pm/model';
 
 export interface WhitelistOptions {
+  editorExtensions: Extensions,
   allowedTags: string[],
   allowedAttributes: allowedAttributes,
 }
@@ -25,13 +26,14 @@ export const Whitelist = Extension.create<WhitelistOptions, WhitelistStorage>({
   },
   addOptions() {
     return {
+      editorExtensions: [],
       allowedTags: [
         "html", "head", "title", "body",  "style",
         "a", "article", "b", "blockquote", "br", "caption", "code", "del", "details", "div", "em",
         "h1", "h2", "h3", "h4", "h5", "h6", "hr", "i", "img", "ins", "kbd", "li", "main", "ol",
         "p", "pre", "section", "span", "strike", "strong", "sub", "summary", "sup", "table",
         "tbody", "td", "th", "thead", "tr", "u", "ul",
-        "font",
+        "font", 'footer',
       ],
       allowedAttributes: {
         "a": ["href", "name", "target"],
@@ -43,6 +45,36 @@ export const Whitelist = Extension.create<WhitelistOptions, WhitelistStorage>({
         "*": ["class", "name", "id", "title", "style", "border"],
       },
     }
+  },
+  addExtensions() {
+    let tags: Extensions = [];
+    let schema = getSchema(this.options.editorExtensions);
+    let editorTags: string[] = getTags(schema);
+    this.options.allowedTags.forEach(tag => {
+      if (!editorTags.includes(tag)) {
+        console.log(tag);
+        const node: Node = Node.create({
+          name: tag,
+          content: 'block+',
+          group: 'block',
+          parseHTML() {
+            return [
+              {
+                tag: tag,
+              }
+            ]
+          },
+          renderHTML() {
+            return [
+              tag,
+              0
+            ]
+          }
+        });
+        tags.push(node);
+      }
+    });
+    return tags;
   },
   // addGlobalAttributes() {
   //   let allowedAttributes = this.options.allowedAttributes;
@@ -59,47 +91,31 @@ export const Whitelist = Extension.create<WhitelistOptions, WhitelistStorage>({
   //   console.log(attributesList);
   //   return [];
   // },
-  onBeforeCreate() {
-    this.editor.extensionManager.extensions.forEach(extension => {
-      if (extension.name) {
-        this.storage.extensions.push(extension.name);
-      }
-    });
-    let Tags: Node[] = [];
-    this.options.allowedTags.forEach(tag => {
-      if (this.storage.extensions.includes(tag)) {
-        return;
-      }
-      const Tag: Node = Node.create({
-        name: tag,
-        content: 'block+',
-        group: 'block',
-        parseHTML() {
-          return [
-            {
-              tag: tag,
-            },
-          ]
-        },
-        renderHTML({HTMLAttributes}) {
-          return [
-            tag,
-            mergeAttributes(HTMLAttributes),
-            0,
-          ]
-        },
-      });
-      console.log(tag);
-      Tags.push(Tag);
-    });
-    this.editor.extensionManager.extensions.push(...Tags);
-    // this.editor.setOptions({
-    //   extensions: [
-    //     ...Tags,
-    //   ]
-    // });
-    this.editor = this.editor;
-    let schema = this.editor.schema;
-    console.log(schema)
-  },
 });
+
+function getTags(schema: Schema): string[] {
+  let tags: string[] = [];
+  for (const node in schema.nodes) {
+    if (schema.nodes[node].spec.parseDOM) {
+      schema.nodes[node].spec.parseDOM.forEach(rule => {
+        const regexp: RegExp = /\w+/;
+        if (rule.tag) {
+          let tag = rule.tag.match(regexp)[0];
+          tags.push(tag);  
+        }
+      });
+    }
+  }
+  for (const mark in schema.marks) {
+    if (schema.marks[mark].spec.parseDOM) {
+      schema.marks[mark].spec.parseDOM.forEach(rule => {
+        const regexp: RegExp = /\w+/;
+        if (rule.tag) {
+          let tag = rule.tag.match(regexp)[0];
+          tags.push(tag);  
+        }
+      });
+    }
+  }
+  return tags;
+}
