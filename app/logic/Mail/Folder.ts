@@ -5,17 +5,24 @@ import { ArrayColl, Collection } from 'svelte-collections';
 import { assert, AbstractFunction } from "../util/util";
 
 export class Folder extends Observable {
+  /** IMAP: folder path */
+  id: string;
   @notifyChangedProperty
   name: string;
+  @notifyChangedProperty
+  parent: Folder | null;
+  account: MailAccount;
   @notifyChangedProperty
   specialFolder: SpecialFolder;
   readonly messages = new ArrayColl<EMail>();
   readonly subFolders = new ArrayColl<Folder>();
+  @notifyChangedProperty
   countTotal = 0;
+  @notifyChangedProperty
   countUnread = 0;
+  @notifyChangedProperty
   countNewArrived = 0;
-  parent: Folder;
-  account: MailAccount;
+  dbID: number;
 
   constructor(account: MailAccount) {
     super();

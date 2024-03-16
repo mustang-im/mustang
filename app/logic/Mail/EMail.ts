@@ -1,22 +1,22 @@
 import { Message } from "../Abstract/Message";
 import type { Attachment } from "./Attachment";
+import type { Folder } from "./Folder";
 import type { Person } from "../Abstract/Person";
 import { appGlobal } from "../app";
 import { backgroundError } from "../../frontend/Util/error";
 import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, MapColl } from "svelte-collections";
-import type { Folder } from "./Folder";
 
 export class EMail extends Message {
-  /** this.id = RFC822 header */
   @notifyChangedProperty
   authorEmailAddress: string;
   @notifyChangedProperty
   subject: string;
+  readonly from: { emailAddress: string, name: string };
+  readonly replyTo: { emailAddress: string, name: string };
   readonly to = new MapColl<string, Person>(); /** email address -> Person (not necessarily in address book) */
   readonly cc = new MapColl<string, Person>(); /** format like `to` */
   readonly bcc = new MapColl<string, Person>(); /** format like `to` */
-  readonly replyTo: { emailAddress: string, name: string };
   readonly attachments = new ArrayColl<Attachment>();
   readonly headers = new MapColl<string, string>();
   /** Size of full RFC822 MIME message, in bytes */
@@ -33,13 +33,19 @@ export class EMail extends Message {
   isDraft = false;
   /** Complete MIME source of the email */
   mime: Uint8Array | undefined;
-  //@notifyChangedProperty
-  //contentType: string;
   folder: Folder;
+  dbID: number;
 
   constructor(folder: Folder) {
     super();
     this.folder = folder;
+  }
+
+  get messageID(): string {
+    return this.id;
+  }
+  set messageID(val: string) {
+    this.id = val;
   }
 
   get baseSubject(): string {

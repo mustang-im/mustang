@@ -5,10 +5,19 @@ import { ArrayColl, Collection } from "svelte-collections";
 
 export class IMAPFolder extends Folder {
   account: IMAPAccount;
-  path: string;
+  uidvalidity: number;
+  /** Last sequence number seen */
+  lastSeen: number;
 
   constructor(account: IMAPAccount) {
     super(account);
+  }
+
+  get path(): string {
+    return this.id;
+  }
+  set path(val: string) {
+    this.id = val;
   }
 
   fromFlow(folderInfo: any) {

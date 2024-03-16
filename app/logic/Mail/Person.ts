@@ -18,6 +18,8 @@ export class MailPerson extends Person {
 let mailPersons = new MapColl<string, MailPerson>();
 
 export function findOrCreatePerson(emailAddress: string, realname: string): Person {
+  /* TODO what if the person or email address is later added to the personal address book?
+    How to replace the existing Person object references? */
   let existing = appGlobal.persons.find(p => p.emailAddresses.some(e => e.value == emailAddress));
   if (existing) {
     return existing;
