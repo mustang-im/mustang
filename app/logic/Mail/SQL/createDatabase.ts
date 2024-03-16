@@ -3,13 +3,13 @@ import sql from "../../../../lib/rs-sqlite/index";
 export const mailDatabaseSchema = sql`
   --- personal address books
   CREATE TABLE "contactAccount" (
-    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "id" INTEGER PRIMARY KEY,
     "name" TEXT UNIQUE
   );
 
   --- persons in the personal address books
   CREATE TABLE "persons" (
-    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "id" INTEGER PRIMARY KEY,
     "contactAccountID" INTEGER,
     "name" TEXT not null,
     "firstName" TEXT,
@@ -43,7 +43,7 @@ export const mailDatabaseSchema = sql`
   -- Email addresses, as found in received emails.
   -- They are not necessarily in the personal address book.
   CREATE TABLE "emailPersons" (
-    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "id" INTEGER PRIMARY KEY,
     "emailAddress" TEXT UNIQUE,
     -- Display name, as found in the email
     "name" TEXT,
@@ -59,7 +59,7 @@ export const mailDatabaseSchema = sql`
   CREATE TABLE "emailPersonsRel" (
     "emailID" INTEGER not null,
     "emailPersonID" INTEGER not null,
-    "fromToCC" INTEGER not null, -- 1 = from, 2 = to, 3 = cc, 4 = bcc, 5 = replyto, 6 = sender
+    "recipientType" INTEGER not null, -- 1 = from, 2 = to, 3 = cc, 4 = bcc, 5 = replyto, 6 = sender
     FOREIGN KEY (emailID)
       REFERENCES email (id)
       ON DELETE SET NULL,
@@ -71,15 +71,17 @@ export const mailDatabaseSchema = sql`
   CREATE INDEX index_emailPersonsRel_emailPersonID ON emailPersonsRel (emailPersonID);
 
   CREATE TABLE "email" (
-    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-    -- From RFC822 header
-    "messageID" TEXT default null,
-    "parentMsgID" TEXT default null,
+    "id" INTEGER PRIMARY KEY,
+    -- We're explicity designing that an email can only be in one folder at a time. Greetings to Gmail.
+    "folderID" INTEGER not null,
     -- IMAP UID number. This is relative to the folder.
     -- See also folder.uidvalidity
     -- <https://www.rfc-editor.org/rfc/rfc3501#section-2.3.1.1>
     -- And yes, we're explicity designing that an email can only be in one folder at a time. Greetings to Gmail.
     "uid" INTEGER default null,
+    -- RFC822 header
+    "messageID" TEXT default null,
+    "parentMsgID" TEXT default null,
     -- How many attachments this message has. TODO including m/related ?
     "attachmentsCount" INTEGER default 0,
     -- in Bytes, of RFC822 MIME message with everything
@@ -88,30 +90,35 @@ export const mailDatabaseSchema = sql`
     "dateSent" INTEGER not null,
     -- When this email arrived here with us in the local mailbox
     "dateReceived" INTEGER not null,
+    -- (The following fields are a copies of emailPersonsRel, for speed of access.)
     -- true = our user sent this; false = incoming = our user received it
     "outgoing" BOOLEAN default false,
-    -- (The following 5 fields are a copies of emailPersonsRel, for speed of access.)
     -- Email address of our user that was used, either as From (outgoing) or To/CC (incoming).
     "myEmail", TEXT default null,
-    "fromEmail" TEXT default null,
-    "fromName" TEXT default null,
-    -- First To: of this email
-    "firstToEmail" TEXT default null,
-    "firstToName" TEXT default null,
+    -- If outgoing: First To: ; if incoming: (First) From:
+    "contactEmail" TEXT default null,
+    "contactName" TEXT default null,
     -- RFC822 header Subject:
     "subject" TEXT not null,
     -- plaintext content of the email body. May be converted or post-processed.
     "plaintext" TEXT default null,
     -- HTML content of the email body. May be converted or post-processed.
     "html" TEXT default null,
+    "isRead" BOOLEAN default false,
+    "isStarred" BOOLEAN default false,
+    "isReplied" BOOLEAN default false,
+    "isSpam" BOOLEAN default false,
     FOREIGN KEY (parentMsgID)
       REFERENCES email (id)
-      ON DELETE SET NULL
+      ON DELETE SET NULL,
+    FOREIGN KEY (folderID)
+      REFERENCES folder (ID)
+      ON DELETE CASCADE
   );
 
   -- Email folders, e.g. Inbox, sent, and user-custom folders
   CREATE TABLE "folder" (
-    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "id" INTEGER PRIMARY KEY,
     -- Which email account this folder is in
     "accountID" INTEGER not null,
     -- User-visible name
@@ -144,6 +151,7 @@ export const mailDatabaseSchema = sql`
   CREATE TABLE "emailAccount" (
     -- Same ID as in the preferences file
     "id" INTEGER PRIMARY KEY,
+    "accountID" TEXT not null,
     "emailAddress" TEXT not null,
     "name" TEXT not null UNIQUE,
     -- "imap", "pop3", "jmap", "ews", "owa", "activesync"

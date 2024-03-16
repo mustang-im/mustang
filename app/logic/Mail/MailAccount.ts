@@ -6,11 +6,19 @@ import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, MapColl } from 'svelte-collections';
 
 export class MailAccount extends Account {
-  hostname: string;
+  @notifyChangedProperty
+  url: string; /** only for some account types */
+  @notifyChangedProperty
+  hostname: string; /** only for some account types */
+  @notifyChangedProperty
   port: number;
+  @notifyChangedProperty
   tls = TLSSocketType.Unknown;
+  @notifyChangedProperty
   username: string;
+  @notifyChangedProperty
   password: string;
+  dbID: number;
 
   @notifyChangedProperty
   emailAddress: string;
@@ -26,6 +34,34 @@ export class MailAccount extends Account {
   sent: Folder;
   drafts: Folder;
   archive: Folder;
+
+  getAllFolders() {
+    let allFolders = new ArrayColl<Folder>();
+    function iterateFolders(folders: ArrayColl<Folder>) {
+      allFolders.addAll(folders);
+      for (let folder of folders) {
+        iterateFolders(folder.subFolders);
+      }
+    }
+    iterateFolders(this.rootFolders);
+    return allFolders;
+  }
+  findFolder(findFunc: (folder: Folder) => boolean): Folder | null {
+    return findFolderFromList(this.rootFolders, findFunc);
+  }
+}
+
+function findFolderFromList(folders: ArrayColl<Folder>, findFunc: (folder: Folder) => boolean): Folder | null {
+  for (let folder of folders) {
+    if (findFunc(folder)) {
+      return folder;
+    }
+    let sub = findFolderFromList(folder.subFolders, findFunc);
+    if (sub) {
+      return sub;
+    }
+  }
+  return null;
 }
 
 export enum TLSSocketType {
