@@ -1,3 +1,4 @@
+import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 
 export class Account extends Observable {
@@ -14,7 +15,7 @@ export class Account extends Observable {
 
   constructor() {
     super();
-    this.id = crypto.randomUUID();
+    this.id = findFreeAccountID() + "";
   }
 
   get isLoggedIn(): boolean {
@@ -38,5 +39,15 @@ export class Account extends Observable {
   }
 
   async logout(): Promise<void> {
+  }
+}
+
+function findFreeAccountID(): string {
+  for (let i = 1; true; i++) {
+    let id = "account" + i;
+    if (appGlobal.allAccounts.contents.some(acc => acc.id == id)) {
+      continue;
+    }
+    return id;
   }
 }
