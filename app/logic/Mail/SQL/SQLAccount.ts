@@ -11,7 +11,7 @@ export class SQLAccount {
       INSERT OR REPLACE INTO emailAccount (
         id, name, emailAddress,
         hostname, port, tls, url,
-        username, password
+        username, passwordButter
       ) VALUES (
         ${acc.id}, ${acc.name}, ${acc.emailAddress},
         ${acc.hostname}, ${acc.port}, ${acc.tls}, ${acc.url},
@@ -35,7 +35,7 @@ export class SQLAccount {
     acc.tls = sanitize.enum(row.tls, [1, 2, 3], 2);
     acc.url = sanitize.url(row.url);
     acc.username = sanitize.string(row.username);
-    acc.password = sanitize.string(row.password);
+    acc.password = sanitize.string(row.passwordButter);
     return acc;
   }
 
@@ -49,6 +49,7 @@ export class SQLAccount {
     for (let row of rows) {
       let account = new MailAccount();
       this.read(row.id, account);
+      accounts.add(account);
     }
     return accounts;
   }
