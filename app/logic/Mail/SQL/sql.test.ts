@@ -7,14 +7,21 @@ import { fakeChatPerson, fakeMailAccount, fakePersons } from '../../testData';
 import { appGlobal } from '../../app';
 import { ArrayColl } from 'svelte-collections';
 import { expect, test } from 'vitest';
+import JPCWebSocket from '../../../../lib/jpc-ws/protocol';
+import { makeTestDatabase } from './SQLDatabase';
 
 test("Save and read from SQL database", async () => {
+  await connectToBackend();
+  await cleanDatabase();
+
   // Fake data
   appGlobal.me = fakeChatPerson();
   appGlobal.persons.addAll(fakePersons(50));
   appGlobal.emailAccounts.add(fakeMailAccount(appGlobal.persons, appGlobal.me, 300));
-  let originalAccount = appGlobal.emailAccounts[0];
+  let originalAccount = appGlobal.emailAccounts.first;
+  expect(originalAccount).toBeDefined();
   let originalFolders = originalAccount.getAllFolders();
+  expect(originalFolders.length).toBeGreaterThan(2);
   let originalMessages = new ArrayColl<EMail>();
 
   // Save
@@ -26,6 +33,7 @@ test("Save and read from SQL database", async () => {
       await SQLEMail.save(msg);
     }
   }
+  expect(originalMessages.length).toBeGreaterThan(100);
 
   // Clear
   appGlobal.persons.clear();
@@ -58,3 +66,14 @@ test("Save and read from SQL database", async () => {
   }
   expect(readMessages).toEqual(originalMessages);
 });
+
+async function connectToBackend() {
+  let jpc = new JPCWebSocket(null);
+  const kSecret = 'eyache5C';
+  await jpc.connect(kSecret, "localhost", 5455);
+  appGlobal.remoteApp = await jpc.getRemoteStartObject();
+}
+
+async function cleanDatabase() {
+  makeTestDatabase(); // Let SQLFoo classes use the test database
+}

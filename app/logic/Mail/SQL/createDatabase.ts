@@ -158,6 +158,7 @@ export const mailDatabaseSchema = sql`
     "type" TEXT not null,
     "hostname" TEXT default null,
     "port" INTEGER default null,
+    "tls" INTEGER default 0,
     "url" TEXT default null,
     "username" TEXT default null,
     "passwordButter" TEXT default null
