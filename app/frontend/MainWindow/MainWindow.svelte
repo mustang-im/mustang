@@ -20,7 +20,8 @@
 
 <script lang="ts">
   import { mustangApps, selectedApp, sidebarApp } from "../AppsBar/selectedApp";
-  import { appGlobal, getStartObjects, loginOnStartup } from "../../logic/app";
+  import { appGlobal } from "../../logic/app";
+  import { getStartObjects, loginOnStartup } from "../../logic/startup";
   import { loadMustangApps } from "../AppsBar/loadMustangApps";
   import AppBar from "../AppsBar/AppBar.svelte";
   import AppContent from "../AppsBar/AppContent.svelte";
