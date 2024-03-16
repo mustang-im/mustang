@@ -2,7 +2,6 @@ import { appGlobal } from './app';
 import { readMailAccounts } from './Mail/MailAccounts';
 import { readChatAccounts } from './Chat/ChatAccounts';
 import { getTestObjects } from './testData';
-// import { testDatabase } from './Mail/SQL/test';
 import JPCWebSocket from '../../lib/jpc-ws';
 
 const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
@@ -14,7 +13,6 @@ export async function getStartObjects(): Promise<void> {
   appGlobal.remoteApp = await jpc.getRemoteStartObject();
   appGlobal.emailAccounts.addAll(await readMailAccounts());
   appGlobal.chatAccounts.addAll(await readChatAccounts());
-  // await testDatabase();
   if (appGlobal.emailAccounts.isEmpty && appGlobal.chatAccounts.isEmpty) {
     await getTestObjects();
   }
