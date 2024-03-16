@@ -2,7 +2,7 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <vbox flex class="mail-composer-window">
     <hbox class="window-title-bar">
-      <AccountDropDown bind:selectedAccount={from} />
+      <AccountDropDown bind:selectedAccount={from} accounts={appGlobal.emailAccounts} />
       <hbox flex class="spacer" />
       <hbox class="close buttons">
         <RoundButton
@@ -106,13 +106,14 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { insertImage } from "../../Shared/Editor/InsertImage";
+  import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
+  import { appGlobal } from "../../../logic/app";
   import MailAutocomplete from "./MailAutocomplete.svelte";
   import AttachmentsPane from "./Attachments/AttachmentsPane.svelte";
   import FileSelector from "./Attachments/FileSelector.svelte";
   import FileDropTarget from "./Attachments/FileDropTarget.svelte";
-  import AccountDropDown from "../AccountDropDown.svelte";
+  import AccountDropDown from "../../Shared/AccountDropDown.svelte";
   import HTMLEditor from "../../Shared/Editor/HTMLEditor.svelte";
   import HTMLEditorToolbar from "../../Shared/Editor/HTMLEditorToolbar.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";

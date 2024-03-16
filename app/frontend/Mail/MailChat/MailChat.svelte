@@ -1,7 +1,7 @@
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox class="left-pane" slot="left">
     <hbox class="buttons">
-      <AccountDropDown />
+      <AccountDropDown bind:selectedAccount={$selectedAccount} accounts={accounts} />
       <hbox flex class="spacer" />
       <WriteButton selectedAccount={$selectedAccount} />
     </hbox>
@@ -35,6 +35,7 @@
   import { Chat } from "../../../logic/Chat/Chat";
   import { appGlobal } from "../../../logic/app";
   import { selectedAccount } from "../Selected";
+  import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import PersonsList from "../../Shared/Person/PersonsList.svelte";
   import Header from "../../Chat/PersonHeader.svelte";
   import MessageList from "../../Chat/MessageView/MessageList.svelte";
@@ -42,11 +43,10 @@
   import MsgEditor from "../../Chat/MsgEditor.svelte";
   import ViewSwitcher from "../LeftPane/ViewSwitcher.svelte";
   import WriteButton from "../LeftPane/WriteButton.svelte";
+  import AccountDropDown from "../../Shared/AccountDropDown.svelte";
   import Splitter from "../../Shared/Splitter.svelte";
   import { Collection, mergeColls } from 'svelte-collections';
   import { faker } from "@faker-js/faker";
-  import AccountDropDown from "../AccountDropDown.svelte";
-  import { globalSearchTerm } from "../../AppsBar/selectedApp";
 
   export let accounts: Collection<MailAccount>; /** in */
 
