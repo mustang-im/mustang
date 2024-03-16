@@ -1,4 +1,4 @@
-import { Extension, type Extensions, getSchema, Node } from '@tiptap/core';
+import { Extension, type Extensions, getSchema, Node, type GlobalAttributes, type Attribute } from '@tiptap/core';
 import type { Schema } from '@tiptap/pm/model';
 
 export interface WhitelistOptions {
@@ -13,6 +13,10 @@ export interface allowedAttributes {
 
 export interface WhitelistStorage {
   extensions: string[],
+}
+
+interface extensionsTags {
+  [key: string]: string,
 }
 
 /** Extension which allows arbitrary HTML elements and attributes */
@@ -76,23 +80,48 @@ export const Whitelist = Extension.create<WhitelistOptions, WhitelistStorage>({
     });
     return tags;
   },
-  // addGlobalAttributes() {
-  //   let allowedAttributes = this.options.allowedAttributes;
-  //   let attributesList: GlobalAttributes;
-  //   for (const attribute in allowedAttributes) {
-  //     let newAttribute = {
-  //       type: [ attribute ],
-  //       attribute: allowedAttributes[attribute],
-  //     };
-  //     let attribute: Attribute = [
-
-  //     ]
-  //   }
-  //   console.log(attributesList);
-  //   return [];
-  // },
+  addGlobalAttributes() {
+    let allowedAttributes = this.options.allowedAttributes;
+    let schema = getSchema(this.options.editorExtensions);
+    let extensionTags = getExtensitonFromTags(schema);
+    console.log(extensionTags);
+    let attributesList: GlobalAttributes = [];
+    for (const type in allowedAttributes) {
+      let attributes = {};
+      allowedAttributes[type].forEach(a => {
+        attributes[a] = {
+          default: null,
+        } as Attribute;
+      });
+      let newAttribute = {
+        types: [ type ],
+        attributes: attributes,
+      };
+      attributesList.push(newAttribute);
+    };
+    console.log(attributesList);
+    return attributesList;
+  },
 });
 
+function getExtensitonFromTags(schema: Schema): extensionsTags {
+  let extensionsTags: extensionsTags = {};
+  for (const node in schema.nodes) {
+    if (schema.nodes[node].spec.parseDOM) {
+      schema.nodes[node].spec.parseDOM.forEach(rule => {
+        const regexp: RegExp = /\w+/;
+        if (rule.tag) {
+          let tag = rule.tag.match(regexp)[0];
+          extensionsTags[node] = tag;
+        }
+      });
+    }
+  }
+  console.log(extensionsTags);
+  return extensionsTags;
+}
+
+/** Gets Tags from schema */
 function getTags(schema: Schema): string[] {
   let tags: string[] = [];
   for (const node in schema.nodes) {
