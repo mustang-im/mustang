@@ -1,5 +1,5 @@
 <hbox class="persons-toolbar">
-  <AccountDropDown />
+  <AccountDropDown bind:selectedAccount accounts={appGlobal.chatAccounts} />
   <hbox flex />
   <hbox class="buttons">
     <RoundButton label="New contact" icon={NewContactIcon} iconSize="22px" padding="9px" classes="large create" on:click={addPerson} />
@@ -9,13 +9,17 @@
 <script lang="ts">
   import { ChatPerson } from "../../logic/Chat/Person";
   import type { Person } from "../../logic/Abstract/Person";
-  import AccountDropDown from "../Mail/AccountDropDown.svelte";
+  import type { ChatAccount } from "../../logic/Chat/ChatAccount";
+  import { appGlobal } from "../../logic/app";
+  import AccountDropDown from "../Shared/AccountDropDown.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import NewContactIcon from "lucide-svelte/icons/plus";
   import type { Collection } from "svelte-collections";
 
   export let persons: Collection<Person>;
   export let selected: Person = null;
+
+  let selectedAccount: ChatAccount; // TODO contacts account, and email and chat accounts, or all
 
   function addPerson() {
     let person = new ChatPerson();
