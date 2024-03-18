@@ -8,11 +8,11 @@ import { ArrayColl, MapColl } from 'svelte-collections';
 export class MailAccount extends Account {
   readonly protocol = "mail";
   @notifyChangedProperty
-  url: string; /** only for some account types */
+  url: string | undefined; /** only for some account types */
   @notifyChangedProperty
-  hostname: string; /** only for some account types */
+  hostname: string | undefined; /** only for some account types */
   @notifyChangedProperty
-  port: number;
+  port: number | undefined;
   @notifyChangedProperty
   tls = TLSSocketType.Unknown;
   @notifyChangedProperty

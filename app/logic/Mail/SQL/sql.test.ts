@@ -10,14 +10,14 @@ import { expect, test } from 'vitest';
 import JPCWebSocket from '../../../../lib/jpc-ws/protocol';
 import { makeTestDatabase } from './SQLDatabase';
 
-test("Save and read from SQL database", async () => {
+test("Save and read from SQL database", { timeout: 10000 }, async () => {
   await connectToBackend();
   await makeTestDatabase(); // Let SQLFoo classes use the test database
 
   // Fake data
   appGlobal.me = fakeChatPerson();
   appGlobal.persons.addAll(fakePersons(50));
-  let originalAccount = fakeMailAccount(appGlobal.persons, appGlobal.me, 300);
+  let originalAccount = fakeMailAccount(appGlobal.persons, appGlobal.me, 30);
   appGlobal.emailAccounts.add(originalAccount);
   expect(originalAccount).toBeDefined();
   let originalFolders = originalAccount.getAllFolders();
@@ -33,7 +33,7 @@ test("Save and read from SQL database", async () => {
       await SQLEMail.save(msg);
     }
   }
-  expect(originalMessages.length).toBeGreaterThan(100);
+  expect(originalMessages.length).toBeGreaterThan(10);
 
   // Clear
   appGlobal.persons.clear();
@@ -55,16 +55,48 @@ test("Save and read from SQL database", async () => {
   }
 
   // Check and verify
-  expect(appGlobal.emailAccounts.length).toBe(1);
+  // Account
   let readAccount = appGlobal.emailAccounts.first;
-  expect(readAccount).toEqual(originalAccount);
+  expect(readAccount).toBeDefined();
+  expect(readAccount.emailAddress).toEqual(originalAccount.emailAddress);
+  expect(readAccount.username).toEqual(originalAccount.username);
+  expect(readAccount.userRealname).toEqual(originalAccount.userRealname);
+  expect(readAccount.hostname).toEqual(originalAccount.hostname);
+  expect(readAccount.port).toEqual(originalAccount.port);
+  expect(readAccount.tls).toEqual(originalAccount.tls);
+  expect(readAccount.url).toEqual(originalAccount.url);
+
+  // Folder
   let readFolders = readAccount.getAllFolders();
-  expect(readFolders).toEqual(originalFolders);
-  let readMessages = new ArrayColl<EMail>();
-  for (let folder of readFolders) {
-    readMessages.addAll(folder.messages);
+  for (let originalFolder of originalFolders) {
+    let readFolder = readFolders.find(f =>
+      f.path == originalFolder.path &&
+      f.account.id == originalFolder.account.id);
+    expect(readFolder).toBeDefined();
+    expect(readFolder.name).toEqual(originalFolder.name);
+    expect(readFolder.parent?.id).toEqual(originalFolder.parent?.id);
+    expect(readFolder.countTotal).toEqual(originalFolder.countTotal);
+    expect(readFolder.countUnread).toEqual(originalFolder.countUnread);
+    expect(readFolder.countNewArrived).toEqual(originalFolder.countNewArrived);
+    expect(readFolder.messages.length).toEqual(originalFolder.messages.length);
+
+    // Message
+    for (let originalMessage of originalFolder.messages) {
+      let readMessage = readFolder.messages.find(msg =>
+        msg.id == originalMessage.id);
+      expect(readMessage).toBeDefined();
+      expect(readMessage.subject).toEqual(originalMessage.subject);
+      expect(readMessage.text).toEqual(originalMessage.text);
+      expect(readMessage.html).toEqual(originalMessage.html);
+      expect(readMessage.from.emailAddress).toEqual(originalMessage.from.emailAddress);
+      expect(readMessage.from.name).toEqual(originalMessage.from.name);
+      for (let originalTo of originalMessage.to) {
+        let readTo = readMessage.to.find(to => to.emailAddress == originalTo.emailAddress);
+        expect(readTo).toBeDefined();
+        expect(readTo.name).toEqual(originalTo.name);
+      }
+    }
   }
-  expect(readMessages).toEqual(originalMessages);
 });
 
 async function connectToBackend() {

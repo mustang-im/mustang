@@ -6,16 +6,19 @@ import sql from "../../../../lib/rs-sqlite";
 
 export class SQLAccount {
   static async save(acc: MailAccount) {
+    // TODO encrypt password
     // `INSERT id = null` will fill the `id` with a new ID value. `id` is a an alias for `rowid`.
     let insert = await (await getDatabase()).run(sql`
       INSERT OR REPLACE INTO emailAccount (
-        id, idStr, protocol, name, emailAddress,
+        id, idStr, name, protocol, emailAddress,
+        username, passwordButter,
         hostname, port, tls, url,
-        username, passwordButter
+        userRealname
       ) VALUES (
         ${acc.dbID}, ${acc.id}, ${acc.name}, ${acc.protocol}, ${acc.emailAddress},
+        ${acc.username}, ${acc.password},
         ${acc.hostname}, ${acc.port}, ${acc.tls}, ${acc.url},
-        ${acc.username}, ${acc.password}
+        ${acc.userRealname}
       )`);
     acc.dbID = insert.lastInsertRowid;
   }
@@ -23,22 +26,24 @@ export class SQLAccount {
   static async read(dbID: number, acc: MailAccount) {
     let row = await (await getDatabase()).get(sql`
       SELECT
-        protocol, idStr, name, emailAddress,
+        idStr, name, protocol, emailAddress,
+        username, passwordButter,
         hostname, port, tls, url,
-        username, password
+        userRealname
       FROM emailAccount
-      WHERE accountID = ${dbID}
+      WHERE id = ${dbID}
       `) as any;
     (acc.id as any) = sanitize.alphanumdash(row.idStr);
     acc.name = sanitize.label(row.name);
     (acc.protocol as any) = sanitize.alphanumdash(row.protocol);
     acc.emailAddress = sanitize.emailAddress(row.emailAddress);
-    acc.hostname = sanitize.hostname(row.hostname);
-    acc.port = sanitize.portTCP(row.port);
-    acc.tls = sanitize.enum(row.tls, [1, 2, 3], 2);
-    acc.url = sanitize.url(row.url);
     acc.username = sanitize.string(row.username);
     acc.password = sanitize.string(row.passwordButter);
+    acc.hostname = row.hostname ? sanitize.hostname(row.hostname) : undefined;
+    acc.port = row.port ? sanitize.portTCP(row.port): undefined;
+    acc.tls = sanitize.enum(row.tls, [1, 2, 3], 2);
+    acc.url = row.url ? sanitize.url(row.url) : undefined;
+    acc.userRealname = sanitize.label(row.userRealname);
     return acc;
   }
 
