@@ -1,4 +1,5 @@
 import { Folder, type SpecialFolder } from "../Folder";
+import type { IMAPFolder } from "../IMAP/IMAPFolder";
 import type { MailAccount } from "../MailAccount";
 import { getDatabase } from "./SQLDatabase";
 import { appGlobal } from "../../app";
@@ -12,13 +13,15 @@ export class SQLFolder extends Folder {
     // `INSERT id = null` will fill the `id` with a new ID value. `id` is a an alias for `rowid`.
     let insert = await (await getDatabase()).run(sql`
       INSERT OR REPLACE INTO folder (
-        id, accountID, name, path, parent, specialUse,
+        id, accountID, name, path,
+        parent, specialUse,
         countTotal, countUnread, countNewArrived,
         uidvalidity, lastSeen
       ) VALUES (
-        ${folder.dbID}, ${folder.account.dbID}, ${folder.name}, ${folder.path}, ${folder.parent?.dbID},
+        ${folder.dbID}, ${folder.account.dbID}, ${folder.name}, ${folder.path},
+        ${folder.parent?.dbID}, ${folder.specialFolder},
         ${folder.countTotal}, ${folder.countUnread}, ${folder.countNewArrived},
-        ${folder.specialFolder}, ${folder.uidvalidity}, ${folder.lastSeen}
+        ${folder.uidvalidity}, ${folder.lastSeen}
       )`);
     folder.dbID = insert.lastInsertRowid;
     await (await getDatabase()).run(sql`
@@ -28,7 +31,7 @@ export class SQLFolder extends Folder {
         countNewArrived = ${folder.countNewArrived},
         uidvalidity = ${folder.uidvalidity},
         lastSeen = ${folder.lastSeen}
-      WHERE id = ${this.dbID}
+      WHERE id = ${folder.dbID}
       `);
   }
 
@@ -47,13 +50,13 @@ export class SQLFolder extends Folder {
     folder.countUnread = sanitize.integer(row.countUnread);
     folder.countNewArrived = sanitize.integer(row.countNewArrived);
     folder.specialFolder = sanitize.alphanumdash(row.specialUse) as SpecialFolder;
-    folder.uidvalidity = sanitize.integer(row.uidvalidity);
-    folder.lastSeen = sanitize.integer(row.lastSeen);
+    (folder as any as IMAPFolder).uidvalidity = sanitize.integer(row.uidvalidity ?? 0);
+    (folder as any as IMAPFolder).lastSeen = sanitize.integer(row.lastSeen ?? 0);
     let accountID = sanitize.integer(row.accountID);
     folder.account = appGlobal.emailAccounts.find(acc => acc.dbID == accountID);
     assert(folder.account, `Account ${accountID} not yet loaded`);
-    let parentFolderID = sanitize.integer(row.parent);
-    if (parentFolderID) {
+    if (row.parent) {
+      let parentFolderID = sanitize.integer(row.parent);
       folder.parent = folder.account.findFolder(folder => folder.dbID == parentFolderID);
       assert(folder.parent, `Parent folder ${parentFolderID} not found`);
     }

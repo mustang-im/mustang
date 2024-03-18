@@ -9,7 +9,7 @@ import PostalMIME from "postal-mime";
 export class IMAPEMail extends EMail {
   folder: IMAPFolder;
   /** From IMAP server */
-  uid: number;
+  uid: number | null = null;
   /** This message has been downloaded completely,
    * with header, body, and all attachments. */
   downloadComplete = false;

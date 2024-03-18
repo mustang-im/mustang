@@ -96,21 +96,28 @@ export class SQLEMail {
         uid, messageID, parentMsgID,
         attachmentsCount, size, dateSent, dateReceived,
         outgoing, -- contactEmail, contactName, myEmail
-        subject, plaintext, html
+        subject, plaintext, html,
+        isRead, isStarred, isReplied, isDraft, isSpam
       FROM email
       WHERE id = ${dbID}
       `) as any;
     email.dbID = sanitize.integer(dbID);
-    (email as any as IMAPEMail).uid = sanitize.integer(row.uid);
+    (email as any as IMAPEMail).uid = row.uid ? sanitize.integer(row.uid) : null;
     email.id = sanitize.nonemptystring(row.messageID);
     email.inReplyTo = sanitize.string(row.parentMsgID);
     email.size = sanitize.integer(row.size);
     email.sent = sanitize.date(row.dateSent);
     email.received = sanitize.date(row.dateReceived);
-    email.outgoing = sanitize.boolean(row.outgoing);
+    email.outgoing = sanitize.boolean(!!row.outgoing);
     email.subject = sanitize.string(row.subject);
     email.text = sanitize.string(row.plaintext);
     email.html = sanitize.string(row.html);
+
+    email.isRead = sanitize.boolean(!!row.isRead);
+    email.isStarred = sanitize.boolean(!!row.isStarred);
+    email.isReplied = sanitize.boolean(!!row.isReplied);
+    email.isDraft = sanitize.boolean(!!row.isDraft);
+    email.isSpam = sanitize.boolean(!!row.isSpam);
 
     let recipientRows = await (await getDatabase()).all(sql`
       SELECT
