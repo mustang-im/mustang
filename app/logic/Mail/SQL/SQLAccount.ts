@@ -9,11 +9,11 @@ export class SQLAccount {
     // `INSERT id = null` will fill the `id` with a new ID value. `id` is a an alias for `rowid`.
     await (await getDatabase()).run(sql`
       INSERT OR REPLACE INTO emailAccount (
-        id, name, emailAddress,
+        id, idStr, name, emailAddress,
         hostname, port, tls, url,
         username, passwordButter
       ) VALUES (
-        ${acc.id}, ${acc.name}, ${acc.emailAddress},
+        ${acc.dbID}, ${acc.id}, ${acc.name}, ${acc.emailAddress},
         ${acc.hostname}, ${acc.port}, ${acc.tls}, ${acc.url},
         ${acc.username}, ${acc.password}
       )`);
@@ -22,12 +22,13 @@ export class SQLAccount {
   static async read(dbID: number, acc: MailAccount) {
     let row = await (await getDatabase()).get(sql`
       SELECT
-        name, emailAddress,
+        idStr, name, emailAddress,
         hostname, port, tls, url,
         username, password
       FROM emailAccount
       WHERE accountID = ${dbID}
       `) as any;
+    (acc.id as any) = sanitize.alphanumdash(row.idStr);
     acc.name = sanitize.label(row.name);
     acc.emailAddress = sanitize.emailAddress(row.emailAddress);
     acc.hostname = sanitize.hostname(row.hostname);
