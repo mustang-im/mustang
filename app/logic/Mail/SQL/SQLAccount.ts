@@ -7,7 +7,7 @@ import sql from "../../../../lib/rs-sqlite";
 export class SQLAccount {
   static async save(acc: MailAccount) {
     // `INSERT id = null` will fill the `id` with a new ID value. `id` is a an alias for `rowid`.
-    await (await getDatabase()).run(sql`
+    let insert = await (await getDatabase()).run(sql`
       INSERT OR REPLACE INTO emailAccount (
         id, idStr, protocol, name, emailAddress,
         hostname, port, tls, url,
@@ -17,6 +17,7 @@ export class SQLAccount {
         ${acc.hostname}, ${acc.port}, ${acc.tls}, ${acc.url},
         ${acc.username}, ${acc.password}
       )`);
+    acc.dbID = insert.lastInsertRowid;
   }
 
   static async read(dbID: number, acc: MailAccount) {

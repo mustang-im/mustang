@@ -24,7 +24,7 @@ export class SQLEMail {
           folderID = ${email.folder.dbID}
         `);
       if (!exists) {
-        await (await getDatabase()).run(sql`
+        let insert = await (await getDatabase()).run(sql`
           INSERT INTO email (
             messageID, folderID, uid, parentMsgID,
             attachmentsCount, size, dateSent, dateReceived,
@@ -36,6 +36,7 @@ export class SQLEMail {
             ${email.outgoing},
             ${email.subject}, ${email.text}, ${email.html}
           )`);
+        email.dbID = insert.lastInsertRowid;
         await this.saveRecipient(email, email.from.name, email.from.emailAddress, 1);
         await this.saveRecipients(email, email.to, 2);
         await this.saveRecipients(email, email.cc, 3);
@@ -63,14 +64,13 @@ export class SQLEMail {
   }
 
   static async saveRecipient(email: EMail, name: string, emailAddress: string, recipientsType: number) {
-    let personID = await (await getDatabase()).run(sql`
+    let insert = await (await getDatabase()).run(sql`
       INSERT OR IGNORE INTO emailPerson (
         name, emailAddress,
       ) VALUES (
         ${name}, ${emailAddress}
-      ) RETURNING id
-      `);
-    console.log("emailPerson id", personID);
+      )`);
+    let personID = insert.lastInsertRowid;
     await (await getDatabase()).run(sql`INSERT INTO emailPersonRel (
         emailID, emailPersonID, recipientType
       ) VALUES (
