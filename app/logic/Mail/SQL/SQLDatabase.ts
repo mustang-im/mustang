@@ -1,5 +1,5 @@
 import { appGlobal } from "../../app";
-import { type Database } from "../../../../lib/rs-sqlite/index";
+import sql, { type Database } from "../../../../lib/rs-sqlite/index";
 import { mailDatabaseSchema } from "./createDatabase";
 
 let mailDatabase: Database;
@@ -16,7 +16,6 @@ export async function getDatabase(): Promise<Database> {
   const getDatabase = appGlobal.remoteApp.getSQLiteDatabase;
   mailDatabase = await getDatabase("mail.db");
   let dbVersion = (await mailDatabase.pragma('user_version') as any)[0].user_version;
-  console.log("database version", dbVersion);
   await mailDatabase.migrate(mailDatabaseSchema);
   await mailDatabase.pragma('foreign_keys = true');
   await mailDatabase.pragma('journal_mode = DELETE');
@@ -31,9 +30,12 @@ export async function getDatabase(): Promise<Database> {
 export async function makeTestDatabase(): Promise<Database> {
   const getDatabase = appGlobal.remoteApp.getSQLiteDatabase;
   mailDatabase = await getDatabase("test.db");
-  await mailDatabase.pragma('user_version = 0');
-  let dbVersion = (await mailDatabase.pragma('user_version') as any)[0].user_version;
-  console.log("database version", dbVersion);
+  let tables = await mailDatabase.all(sql`SELECT name FROM sqlite_schema WHERE type='table'`) as any[];
+  for (let row of tables) {
+    let table = row.name;
+    console.log("deleting table", table);
+    await mailDatabase.run(sql`DROP TABLE ${table}`);
+  }
   await mailDatabase.migrate(mailDatabaseSchema);
   await mailDatabase.pragma('foreign_keys = true');
   await mailDatabase.pragma('journal_mode = DELETE');

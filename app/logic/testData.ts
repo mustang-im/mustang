@@ -61,7 +61,6 @@ export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCoun
   account.name = "Yahoo";
   account.emailAddress = me.emailAddresses.first.value;
   account.userRealname = me.name;
-  account.id = faker.datatype.uuid();
   me.emailAddresses.add(new ContactEntry(account.emailAddress, "Primary"));
 
   for (let name of ['Inbox', 'Sent', 'Drafts', 'Trash', 'Spam']) {

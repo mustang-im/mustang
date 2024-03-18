@@ -15,7 +15,7 @@ export class Account extends Observable {
 
   constructor() {
     super();
-    this.id = findFreeAccountID() + "";
+    this.id = findFreeAccountID();
   }
 
   get isLoggedIn(): boolean {
