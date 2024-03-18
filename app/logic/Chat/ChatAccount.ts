@@ -6,6 +6,7 @@ import { ArrayColl, MapColl } from 'svelte-collections';
 import { notifyChangedProperty } from "../util/Observable";
 
 export class ChatAccount extends Account {
+  readonly protocol = "chat";
   readonly persons = new ArrayColl<ChatPerson>();
   readonly chats = new MapColl<ChatPerson | Group, Chat>;
 

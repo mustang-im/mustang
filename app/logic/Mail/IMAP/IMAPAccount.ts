@@ -6,6 +6,7 @@ import { assert } from "../../util/util";
 import type { ImapFlow } from "../../../../e2/node_modules/imapflow";
 
 export class IMAPAccount extends MailAccount {
+  protocol = "imap";
   _connection: ImapFlow;
   accessToken: string | undefined;
   acceptOldTLS = false;

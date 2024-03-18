@@ -7,6 +7,8 @@ export class Account extends Observable {
   name: string;
   @notifyChangedProperty
   userRealname: string;
+  /** Class ID. Must be overwritten by subclasses. Written to account prefs. */
+  readonly protocol: string = null;
 
   /** Will be called, when there are errors on the connection
    * which cannot be attributed directly to an API function called,
