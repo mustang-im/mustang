@@ -33,7 +33,6 @@
         LinkFeature,
         CodeWordFeature,
         SplitBlockquote,
-        // Footer,
         ImageFeature.configure({
           allowBase64: true,
           inline: true,
@@ -44,7 +43,6 @@
             LinkFeature,
             CodeWordFeature,
             SplitBlockquote,
-            // Footer,
             ImageFeature,
           ],
         }),

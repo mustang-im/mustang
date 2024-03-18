@@ -2,8 +2,12 @@ import { Extension, type Extensions, getSchema, Node, type GlobalAttributes, typ
 import type { Schema } from '@tiptap/pm/model';
 
 export interface WhitelistOptions {
+  /** **MUST** add all extension that'll be in the editor */
   editorExtensions: Extensions,
   allowedTags: string[],
+  /**
+   * `[tagname | '*' for all elements] : [...attributes]`
+   */
   allowedAttributes: allowedAttributes,
 }
 
@@ -15,14 +19,10 @@ export interface WhitelistStorage {
   extensions: string[],
 }
 
-interface extensionsTags {
-  [key: string]: string,
-}
-
 /** Extension which allows arbitrary HTML elements and attributes */
 export const Whitelist = Extension.create<WhitelistOptions, WhitelistStorage>({
   name: 'whitelist',
-  priority: 50,
+  priority: 50, // Load later
   addStorage() {
     return {
       extensions: [],
@@ -82,44 +82,55 @@ export const Whitelist = Extension.create<WhitelistOptions, WhitelistStorage>({
   },
   addGlobalAttributes() {
     let allowedAttributes = this.options.allowedAttributes;
-    let schema = getSchema(this.options.editorExtensions);
-    let extensionTags = getExtensitonFromTags(schema);
-    console.log(extensionTags);
     let attributesList: GlobalAttributes = [];
-    for (const type in allowedAttributes) {
+    for (const tag in allowedAttributes) {
+      let tags: string[] =  [tag];
       let attributes = {};
-      allowedAttributes[type].forEach(a => {
+      allowedAttributes[tag].forEach(a => {
         attributes[a] = {
           default: null,
         } as Attribute;
       });
+
+      // Some extra processing for all HTML elements
+      if (tag === '*') {
+        tags = [];
+        let schema: Schema = getSchema(this.options.editorExtensions);
+        
+        // Get add to all node types
+        let nodes: string[] = [];
+        for (const node in schema.nodes) {
+          if (schema.nodes[node].name !== 'text' && schema.nodes[node].name !== 'doc') {
+            nodes.push(schema.nodes[node].name);
+          }
+        }
+        tags.push(...nodes);
+
+        // Get all mark types
+        let marks: string[] = [];
+        for (const mark in schema.marks) {
+          marks.push(schema.marks[mark].name);
+        }
+        tags.push(...marks);
+
+        // Get all tags already in the editor
+        let editorTags: string[] = getTags(schema);
+        this.options.allowedTags.forEach(tag => {
+          if (!editorTags.includes(tag)) {
+            tags.push(tag);
+          }
+        });
+      }
+
       let newAttribute = {
-        types: [ type ],
+        types: [ ...tags ],
         attributes: attributes,
-      };
+      };      
       attributesList.push(newAttribute);
     };
-    console.log(attributesList);
     return attributesList;
   },
 });
-
-function getExtensitonFromTags(schema: Schema): extensionsTags {
-  let extensionsTags: extensionsTags = {};
-  for (const node in schema.nodes) {
-    if (schema.nodes[node].spec.parseDOM) {
-      schema.nodes[node].spec.parseDOM.forEach(rule => {
-        const regexp: RegExp = /\w+/;
-        if (rule.tag) {
-          let tag = rule.tag.match(regexp)[0];
-          extensionsTags[node] = tag;
-        }
-      });
-    }
-  }
-  console.log(extensionsTags);
-  return extensionsTags;
-}
 
 /** Gets Tags from schema */
 function getTags(schema: Schema): string[] {
