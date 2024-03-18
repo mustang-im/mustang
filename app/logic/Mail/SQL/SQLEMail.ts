@@ -17,6 +17,7 @@ export class SQLEMail {
       let exists = await (await getDatabase()).get(sql`
         SELECT
           id
+        FROM email
         WHERE
           messageID = ${email.id} AND
           uid = ${email.uid} AND
@@ -24,7 +25,7 @@ export class SQLEMail {
         `);
       if (!exists) {
         await (await getDatabase()).run(sql`
-          INSERT INTO emails (
+          INSERT INTO email (
             messageID, folderID, uid, parentMsgID,
             attachmentsCount, size, dateSent, dateReceived,
             outgoing, contactEmail, contactName, -- myEmail
@@ -45,7 +46,7 @@ export class SQLEMail {
       }
     }
     await (await getDatabase()).run(sql`
-      UPDATE emails SET
+      UPDATE email SET
         isRead = ${email.isRead},
         isStarred = ${email.isStarred},
         isReplied = ${email.isReplied},
@@ -63,14 +64,14 @@ export class SQLEMail {
 
   static async saveRecipient(email: EMail, name: string, emailAddress: string, recipientsType: number) {
     let personID = await (await getDatabase()).run(sql`
-      INSERT OR IGNORE INTO emailsPersons (
+      INSERT OR IGNORE INTO emailPerson (
         name, emailAddress,
       ) VALUES (
         ${name}, ${emailAddress}
       ) RETURNING id
       `);
     console.log("emailPerson id", personID);
-    await (await getDatabase()).run(sql`INSERT INTO emailPersonsRel (
+    await (await getDatabase()).run(sql`INSERT INTO emailPersonRel (
         emailID, emailPersonID, recipientType
       ) VALUES (
         ${email.dbID}, ${personID}, ${recipientsType}
@@ -84,7 +85,7 @@ export class SQLEMail {
         attachmentsCount, size, dateSent, dateReceived,
         outgoing, -- contactEmail, contactName, myEmail
         subject, plaintext, html
-      FROM emails
+      FROM email
       WHERE id = ${dbID}
       `) as any;
     email.dbID = sanitize.integer(dbID);
@@ -102,7 +103,7 @@ export class SQLEMail {
     let recipientRows = await (await getDatabase()).all(sql`
       SELECT
         name, emailAddress, recipientType
-      FROM emailsPersonsRel LEFT JOIN emailPersons ON (emailPersonsRel.emailPersonID = emailPersons.id)
+      FROM emailPersonRel LEFT JOIN emailPerson ON (emailPersonRel.emailPersonID = emailPerson.id)
       WHERE emailID = ${email.dbID}
       `) as any;
     for (let row of recipientRows) {
@@ -144,7 +145,7 @@ export class SQLEMail {
     let rows = await (await getDatabase()).all(sql`
       SELECT
         id
-      FROM emails
+      FROM email
       WHERE folderID = ${folder.dbID}
       `) as any;
     let emails = new ArrayColl<EMail>();

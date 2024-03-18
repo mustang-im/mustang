@@ -11,7 +11,7 @@ export class SQLFolder extends Folder {
   static async save(folder: Folder) {
     // `INSERT id = null` will fill the `id` with a new ID value. `id` is a an alias for `rowid`.
     await (await getDatabase()).run(sql`
-      INSERT OR REPLACE INTO emailAccount (
+      INSERT OR REPLACE INTO folder (
         id, accountID, name, path, parent, specialUse,
         countTotal, countUnread, countNewArrived,
         uidvalidity, lastSeen
@@ -21,7 +21,7 @@ export class SQLFolder extends Folder {
         ${folder.specialFolder}, ${folder.uidvalidity}, ${folder.lastSeen}
       )`);
     await (await getDatabase()).run(sql`
-      UPDATE emails SET
+      UPDATE folder SET
         countTotal = ${folder.countTotal},
         countUnread = ${folder.countUnread},
         countNewArrived = ${folder.countNewArrived},
@@ -37,7 +37,7 @@ export class SQLFolder extends Folder {
         accountID, name, path, parent,
         countTotal, countUnread, countNewArrived,
         specialUse, uidvalidity, lastSeen
-      FROM emailAccount
+      FROM folder
       WHERE id = ${dbID}
       `) as any;
     folder.dbID = sanitize.integer(dbID);
@@ -64,7 +64,7 @@ export class SQLFolder extends Folder {
     let rows = await (await getDatabase()).all(sql`
       SELECT
         id, parentFolderID
-      FROM folders
+      FROM folder
       WHERE accountID = ${account.dbID}
       `) as any;
     function readSubFolders(parentFolderID: number | null, resultFolders: ArrayColl<Folder>) {
