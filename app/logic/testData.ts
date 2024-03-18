@@ -36,8 +36,8 @@ export function fakeChatPerson(): Person {
   person.firstName = faker.name.firstName();
   person.lastName = faker.name.lastName();
   person.name = person.firstName + " " + person.lastName;
-  person.emailAddresses.add(new ContactEntry(faker.internet.email(person.firstName, person.lastName), "work"));
-  person.emailAddresses.add(new ContactEntry(faker.internet.email(person.firstName, person.lastName), "home"));
+  person.emailAddresses.add(new ContactEntry(faker.internet.email(person.firstName, person.lastName).toLowerCase(), "work"));
+  person.emailAddresses.add(new ContactEntry(faker.internet.email(person.firstName, person.lastName).toLowerCase(), "home"));
   person.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-170-### ####'), "mobile"));
   person.phoneNumbers.add(new ContactEntry(faker.phone.number('+49-###-######'), "work"));
   person.chatAccounts.add(new ContactEntry(person.phoneNumbers.first.value, "WhatsApp"));
@@ -61,6 +61,11 @@ export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCoun
   account.name = "Yahoo";
   account.emailAddress = me.emailAddresses.first.value;
   account.userRealname = me.name;
+  account.username = account.emailAddress;
+  account.password = faker.internet.password();
+  account.hostname = "imap." + faker.internet.domainName();
+  account.port = 993;
+  account.tls = 2;
   me.emailAddresses.add(new ContactEntry(account.emailAddress, "Primary"));
   let mePE = new PersonEmailAddress();
   mePE.name = account.userRealname;
@@ -131,7 +136,7 @@ export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCoun
 export function fakeMailPerson(): PersonEmailAddress {
   let person = new PersonEmailAddress();
   person.name = faker.name.fullName();
-  person.emailAddress = faker.internet.email();
+  person.emailAddress = faker.internet.email().toLowerCase();
   return person;
 }
 

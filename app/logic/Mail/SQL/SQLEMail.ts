@@ -1,6 +1,6 @@
 import { EMail, PersonEmailAddress } from "../EMail";
 import type { Folder } from "../Folder";
-import { findOrCreatePerson } from "../Person";
+import { findOrCreatePerson, findOrCreatePersonEmailAddress } from "../Person";
 import { getDatabase } from "./SQLDatabase";
 import type { IMAPEMail } from "../IMAP/IMAPEMail";
 import { backgroundError } from "../../../frontend/Util/error";
@@ -64,14 +64,25 @@ export class SQLEMail {
   }
 
   static async saveRecipient(email: EMail, pe: PersonEmailAddress, recipientType: number) {
-    let insert = await (await getDatabase()).run(sql`
+    //console.log("  recipient", pe.emailAddress, pe.name, "recipient type", recipientType);
+    let exists = await (await getDatabase()).get(sql`
+        SELECT
+          id
+        FROM emailPerson
+        WHERE
+          emailAddress = ${pe.emailAddress}
+        `) as any;
+    let personID = exists?.id;
+    if (!personID) {
+      let insert = await (await getDatabase()).run(sql`
       INSERT OR IGNORE INTO emailPerson (
-        name, emailAddress
+        name, emailAddress, personID
       ) VALUES (
-        ${pe.name}, ${pe.emailAddress}
+        ${pe.name}, ${pe.emailAddress}, ${pe.person?.dbID}
       )`);
-    let personID = insert.lastInsertRowid;
-    console.log("  person ID", personID, "email ID", email.dbID, "recipient type", recipientType);
+      personID = insert.lastInsertRowid;
+    }
+    //console.log("  person ID", personID, "email ID", email.dbID, "recipient type", recipientType);
     await (await getDatabase()).run(sql`INSERT INTO emailPersonRel (
         emailID, emailPersonID, recipientType
       ) VALUES (
@@ -111,11 +122,11 @@ export class SQLEMail {
       try {
         let addr = sanitize.emailAddress(row.emailAddress);
         let name = sanitize.label(row.name);
-        let person = findOrCreatePerson(addr, name);
+        let pe = findOrCreatePersonEmailAddress(addr, name);
         if (row.recipientsType == 1) {
-          email.from = person;
+          email.from = pe;
           if (!email.outgoing) {
-            email.contact = person;
+            email.contact = findOrCreatePerson(addr, name);
           }
           continue;
         } else if (row.recipientsType == 5) {
@@ -124,14 +135,14 @@ export class SQLEMail {
           continue;
         }
         if (row.recipientsType == 2) {
-          email.to.add(person);
+          email.to.add(pe);
           if (email.outgoing && !email.contact) {
-            email.contact = person;
+            email.contact = findOrCreatePerson(addr, name);
           }
         } else if (row.recipientsType == 3) {
-          email.cc.add(person);
+          email.cc.add(pe);
         } else if (row.recipientsType == 4) {
-          email.bcc.add(person);
+          email.bcc.add(pe);
         }
       } catch (ex) {
         backgroundError(ex);

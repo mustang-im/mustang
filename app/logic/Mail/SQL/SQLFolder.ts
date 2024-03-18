@@ -64,12 +64,12 @@ export class SQLFolder extends Folder {
   static async readAllHierarchy(account: MailAccount): Promise<ArrayColl<Folder>> {
     let rows = await (await getDatabase()).all(sql`
       SELECT
-        id, parentFolderID
+        id, parent
       FROM folder
       WHERE accountID = ${account.dbID}
       `) as any;
     function readSubFolders(parentFolderID: number | null, resultFolders: ArrayColl<Folder>) {
-      for (let row of rows.filter(r => r.parentFolderID = parentFolderID)) {
+      for (let row of rows.filter(r => r.parent = parentFolderID)) {
         let folder = new Folder(account);
         this.read(row.id, folder);
         resultFolders.add(folder);
