@@ -1,13 +1,23 @@
-<AppObject obj={recipient}>
-  <value title={recipient.emailAddresses.first.value}>
+<AppObject obj={recipient.person}>
+  <value title={recipient.emailAddress}>
     {recipient.name}
   </value>
 </AppObject>
 
 <script lang="ts">
-  import type { Person } from "../../../logic/Abstract/Person";
+  import type { PersonEmailAddress } from "../../../logic/Mail/EMail";
+  import { Person, ContactEntry } from "../../../logic/Abstract/Person";
   import AppObject from "../../AppsBar/AppObject.svelte";
 
-  export let recipient: Person;
-  export let emailAddress: string;
+  export let recipient: PersonEmailAddress;
+
+  $: recipient && createPersonOnDemand()
+  /** Allow to click on a person and see it in the Contacts page. */
+  function createPersonOnDemand() {
+    if (!recipient.person) {
+      recipient.person = new Person();
+      recipient.person.name = recipient.name;
+      recipient.person.emailAddresses.add(new ContactEntry(recipient.emailAddress, "Primary"));
+    }
+  }
 </script>

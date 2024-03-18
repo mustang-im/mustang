@@ -4,7 +4,7 @@ import type { Folder } from "./Folder";
 import type { Person } from "../Abstract/Person";
 import { appGlobal } from "../app";
 import { backgroundError } from "../../frontend/Util/error";
-import { notifyChangedProperty } from "../util/Observable";
+import { notifyChangedProperty, Observable } from "../util/Observable";
 import { ArrayColl, MapColl } from "svelte-collections";
 
 export class EMail extends Message {
@@ -12,11 +12,13 @@ export class EMail extends Message {
   authorEmailAddress: string;
   @notifyChangedProperty
   subject: string;
-  readonly from: { emailAddress: string, name: string };
-  readonly replyTo: { emailAddress: string, name: string };
-  readonly to = new MapColl<string, Person>(); /** email address -> Person (not necessarily in address book) */
-  readonly cc = new MapColl<string, Person>(); /** format like `to` */
-  readonly bcc = new MapColl<string, Person>(); /** format like `to` */
+  @notifyChangedProperty
+  from = new PersonEmailAddress();
+  @notifyChangedProperty
+  replyTo = new PersonEmailAddress();
+  readonly to = new ArrayColl<PersonEmailAddress>();
+  readonly cc = new ArrayColl<PersonEmailAddress>();
+  readonly bcc = new ArrayColl<PersonEmailAddress>();
   readonly attachments = new ArrayColl<Attachment>();
   readonly headers = new MapColl<string, string>();
   /** Size of full RFC822 MIME message, in bytes */
@@ -91,29 +93,32 @@ export class EMail extends Message {
 
   replyToAuthor(): EMail {
     let reply = this._reply();
-    let toPerson = null; // appGlobal.persons.find(person => person.emailAddresses.some(em => em.value == this.authorEmailAddress)) ?? new Person();
-    reply.to.set(this.authorEmailAddress, toPerson);
+    reply.to.add(this.from);
     return reply;
   }
 
   replyAll(): EMail {
     let reply = this.replyToAuthor();
-    for (let [emailAddress, person] of this.to.entries()) {
-      if (appGlobal.me.emailAddresses.some(em => em.value == emailAddress)) {
-        continue;
-      }
-      reply.to.set(emailAddress, person);
-    }
-    for (let [emailAddress, person] of this.cc.entries()) {
-      if (appGlobal.me.emailAddresses.some(em => em.value == emailAddress)) {
-        continue;
-      }
-      reply.cc.set(emailAddress, person);
-    }
+    reply.to.addAll(this.to.contents.filter(pe => !appGlobal.me.emailAddresses.some(em => em.value == pe.emailAddress)));
+    reply.cc.addAll(this.cc.contents.filter(pe => !appGlobal.me.emailAddresses.some(em => em.value == pe.emailAddress)));
     return reply;
   }
 
   async send(): Promise<void> {
     alert("Sending email\n(not really yet)\n\n" + this.html?.substring(0, 200));
+  }
+}
+
+export class PersonEmailAddress {
+  name: string;
+  emailAddress: string;
+  person?: Person;
+
+  static fromPerson(person: Person) {
+    let pe = new PersonEmailAddress();
+    pe.name = person.name;
+    pe.emailAddress = person.emailAddresses.first?.value;
+    pe.person = person;
+    return pe;
   }
 }
