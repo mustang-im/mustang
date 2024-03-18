@@ -48,11 +48,11 @@ export class SQLEMail {
     }
     await (await getDatabase()).run(sql`
       UPDATE email SET
-        isRead = ${email.isRead},
-        isStarred = ${email.isStarred},
-        isReplied = ${email.isReplied},
-        isSpam = ${email.isSpam},
-        isDraft = ${email.isDraft}
+        isRead = ${email.isRead ? 1 : 0},
+        isStarred = ${email.isStarred ? 1 : 0},
+        isReplied = ${email.isReplied ? 1 : 0},
+        isSpam = ${email.isSpam ? 1 : 0},
+        isDraft = ${email.isDraft ? 1 : 0}
       WHERE id = ${email.dbID}
       `);
   }

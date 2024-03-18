@@ -107,6 +107,7 @@ export const mailDatabaseSchema = sql`
     "isRead" BOOLEAN default false,
     "isStarred" BOOLEAN default false,
     "isReplied" BOOLEAN default false,
+    "isDraft" BOOLEAN default false,
     "isSpam" BOOLEAN default false,
     FOREIGN KEY (parentMsgID)
       REFERENCES email (id)
