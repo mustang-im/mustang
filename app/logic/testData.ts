@@ -1,17 +1,17 @@
 import { appGlobal } from './app';
 import { MailAccount } from './Mail/MailAccount';
-import { EMail } from './Mail/EMail';
+import { EMail, PersonEmailAddress } from './Mail/EMail';
+import { Folder, SpecialFolder } from './Mail/Folder';
 import { ChatAccount } from './Chat/ChatAccount';
 import { UserChatMessage } from './Chat/Message';
 import { ChatPerson } from './Chat/Person';
-import { faker } from '@faker-js/faker';
 import { ContactEntry, Person } from './Abstract/Person';
 import { Chat } from './Chat/Chat';
 import { Directory, File } from './Files/File';
 import { Calendar } from './Calendar/Calendar';
 import { Event } from './Calendar/Event';
 import { ArrayColl, type Collection } from 'svelte-collections';
-import { Folder, SpecialFolder } from './Mail/Folder';
+import { faker } from '@faker-js/faker';
 
 export async function getTestObjects(): Promise<void> {
   appGlobal.me = fakeChatPerson();
@@ -62,10 +62,14 @@ export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCoun
   account.emailAddress = me.emailAddresses.first.value;
   account.userRealname = me.name;
   me.emailAddresses.add(new ContactEntry(account.emailAddress, "Primary"));
+  let mePE = new PersonEmailAddress();
+  mePE.name = account.userRealname;
+  mePE.emailAddress = account.emailAddress;
 
   for (let name of ['Inbox', 'Sent', 'Drafts', 'Trash', 'Spam']) {
     let folder = new Folder(account);
     folder.name = name;
+    folder.path = name.toLowerCase();
     folder.specialFolder = folder.name.toLowerCase() as SpecialFolder;
     account.rootFolders.push(folder);
   }
@@ -75,6 +79,7 @@ export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCoun
   lastReadTime.setHours(lastReadTime.getHours() - 1);
   let emailNr = 0;
   for (let person of persons) {
+    let personPE = PersonEmailAddress.fromPerson(person);
     for (let i = 1; i <= msgCount; i++) {
       emailNr++;
       let folder: Folder;
@@ -85,16 +90,16 @@ export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCoun
         folder = account.rootFolders.getIndex(folderIndex) ?? account.inbox;
       }
       let msg = new EMail(folder);
-      msg.id = emailNr + '';
+      msg.id = emailNr + '@' + account.emailAddress;
       msg.sent = faker.date.past(0.1);
       msg.received = new Date(msg.sent.getTime() + 500);
+      msg.size = Math.ceil(Math.random() * 2048 + 200);
       msg.isRead = msg.received < lastReadTime;
       msg.subject = faker.hacker.phrase().replace("!", "").replace(/,.*/, "");
       msg.outgoing = Math.random() < 0.4;
       msg.contact = person;
-      let meEmail = account.emailAddress;
-      msg.authorEmailAddress = msg.outgoing ? meEmail : person.emailAddresses.first.value;
-      msg.to.add(msg.outgoing ? person : me);
+      msg.from = msg.outgoing ? mePE : personPE;
+      msg.to.add(msg.outgoing ? personPE : mePE);
       for (let i = Math.floor(Math.random() * 3); i > 0; i--) {
         msg.to.add(fakeMailPerson());
       }
@@ -123,11 +128,10 @@ export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCoun
   return account;
 }
 
-export function fakeMailPerson(): Person {
-  let person = new Person();
-  person.id = faker.datatype.uuid();
+export function fakeMailPerson(): PersonEmailAddress {
+  let person = new PersonEmailAddress();
   person.name = faker.name.fullName();
-  person.emailAddresses.add(new ContactEntry(faker.internet.email(), "Other"));
+  person.emailAddress = faker.internet.email();
   return person;
 }
 

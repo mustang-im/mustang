@@ -9,10 +9,10 @@
 
 <script lang="ts">
   import type { Collection } from "svelte-collections";
-  import type { Person } from "../../../logic/Abstract/Person";
+  import type { PersonEmailAddress } from "../../../logic/Mail/EMail";
   import Recipient from "./Recipient.svelte";
 
-  export let recipients: Collection<Person>;
+  export let recipients: Collection<PersonEmailAddress>;
 </script>
 
 <style>

@@ -1,10 +1,9 @@
-import { EMail } from "../EMail";
+import { EMail, PersonEmailAddress } from "../EMail";
+import { findOrCreatePerson, findOrCreatePersonEmailAddress } from "../Person";
 import { Attachment, ContentDisposition } from "../Attachment";
 import type { IMAPFolder } from "./IMAPFolder";
-import type { Person } from "../../Abstract/Person";
-import { findOrCreatePerson } from "../Person";
 import { assert } from "../../util/util";
-import type { MapColl } from "svelte-collections";
+import type { ArrayColl, MapColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
 
 export class IMAPEMail extends EMail {
@@ -127,11 +126,10 @@ export class IMAPEMail extends EMail {
   }
 }
 
-function addPersons(targetList: MapColl<string, Person>, personList: any[]): void {
+function addPersons(targetList: ArrayColl<PersonEmailAddress>, personList: any[]): void {
   if (!personList?.length) {
     return;
   }
-  for (let personInfo of personList) {
-    targetList.set(personInfo.address, findOrCreatePerson(personInfo.address, personInfo.name));
-  }
+  targetList.addAll(personList.map(p =>
+      findOrCreatePersonEmailAddress(p.address, p.name)));
 }

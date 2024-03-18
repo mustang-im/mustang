@@ -1,10 +1,10 @@
-import { EMail } from "../EMail";
+import { EMail, PersonEmailAddress } from "../EMail";
 import type { Folder } from "../Folder";
-import type { Person } from "../../Abstract/Person";
 import { findOrCreatePerson } from "../Person";
 import { getDatabase } from "./SQLDatabase";
+import type { IMAPEMail } from "../IMAP/IMAPEMail";
 import { backgroundError } from "../../../frontend/Util/error";
-import { ArrayColl, MapColl } from "svelte-collections";
+import { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import sql from "../../../../lib/rs-sqlite";
 
@@ -20,24 +20,24 @@ export class SQLEMail {
         FROM email
         WHERE
           messageID = ${email.id} AND
-          uid = ${email.uid} AND
+          uid = ${(email as any as IMAPEMail).uid} AND
           folderID = ${email.folder.dbID}
         `);
       if (!exists) {
         let insert = await (await getDatabase()).run(sql`
           INSERT INTO email (
-            messageID, folderID, uid, parentMsgID,
+            id, messageID, folderID, uid, parentMsgID,
             attachmentsCount, size, dateSent, dateReceived,
-            outgoing, contactEmail, contactName, -- myEmail
+            outgoing, -- contactEmail, contactName, myEmail
             subject, plaintext, html
           ) VALUES (
-            ${email.dbID}, ${email.id}, ${email.folder.dbID}, ${email.uid}, ${email.inReplyTo},
+            ${email.dbID}, ${email.id}, ${email.folder.dbID}, ${(email as any as IMAPEMail).uid}, ${email.inReplyTo},
             ${email.attachments.length}, ${email.size}, ${email.sent.getTime()}, ${email.received.getTime()},
-            ${email.outgoing},
+            ${email.outgoing ? 1 : 0},
             ${email.subject}, ${email.text}, ${email.html}
           )`);
         email.dbID = insert.lastInsertRowid;
-        await this.saveRecipient(email, email.from.name, email.from.emailAddress, 1);
+        await this.saveRecipient(email, email.from, 1);
         await this.saveRecipients(email, email.to, 2);
         await this.saveRecipients(email, email.cc, 3);
         await this.saveRecipients(email, email.bcc, 4);
@@ -57,24 +57,25 @@ export class SQLEMail {
       `);
   }
 
-  static async saveRecipients(email: EMail, recipients: MapColl<string, Person>, recipientsType: number) {
-    for (let [ emailAddress, person ] of recipients.entries()) {
-      await this.saveRecipient(email, person.name, emailAddress, recipientsType);
+  static async saveRecipients(email: EMail, recipients: ArrayColl<PersonEmailAddress>, recipientsType: number) {
+    for (let recipient of recipients) {
+      await this.saveRecipient(email, recipient, recipientsType);
     }
   }
 
-  static async saveRecipient(email: EMail, name: string, emailAddress: string, recipientsType: number) {
+  static async saveRecipient(email: EMail, pe: PersonEmailAddress, recipientType: number) {
     let insert = await (await getDatabase()).run(sql`
       INSERT OR IGNORE INTO emailPerson (
-        name, emailAddress,
+        name, emailAddress
       ) VALUES (
-        ${name}, ${emailAddress}
+        ${pe.name}, ${pe.emailAddress}
       )`);
     let personID = insert.lastInsertRowid;
+    console.log("  person ID", personID, "email ID", email.dbID, "recipient type", recipientType);
     await (await getDatabase()).run(sql`INSERT INTO emailPersonRel (
         emailID, emailPersonID, recipientType
       ) VALUES (
-        ${email.dbID}, ${personID}, ${recipientsType}
+        ${email.dbID}, ${personID}, ${recipientType}
       )`);
   }
 
@@ -89,7 +90,7 @@ export class SQLEMail {
       WHERE id = ${dbID}
       `) as any;
     email.dbID = sanitize.integer(dbID);
-    email.uid = sanitize.integer(row.uid);
+    (email as any as IMAPEMail).uid = sanitize.integer(row.uid);
     email.id = sanitize.nonemptystring(row.messageID);
     email.inReplyTo = sanitize.string(row.parentMsgID);
     email.size = sanitize.integer(row.size);
@@ -112,8 +113,7 @@ export class SQLEMail {
         let name = sanitize.label(row.name);
         let person = findOrCreatePerson(addr, name);
         if (row.recipientsType == 1) {
-          email.from.emailAddress = addr;
-          email.from.name = name;
+          email.from = person;
           if (!email.outgoing) {
             email.contact = person;
           }

@@ -31,7 +31,7 @@
       </hbox>
       <hbox flex>
         <hbox flex>
-          <MailAutocomplete persons={mail.to} placeholder="Add recipient" />
+          <MailAutocomplete addresses={mail.to} placeholder="Add recipient" />
         </hbox>
         <hbox class="cc buttons">
           <Button
@@ -50,11 +50,11 @@
       </hbox>
     {#if showCC}
       <hbox class="label">Cc</hbox>
-      <MailAutocomplete persons={mail.cc} placeholder="Add CC recipient" />
+      <MailAutocomplete addresses={mail.cc} placeholder="Add CC recipient" />
     {/if}
     {#if showBCC}
       <hbox class="label">Bcc</hbox>
-      <MailAutocomplete persons={mail.bcc} placeholder="Add BCC recipient" />
+      <MailAutocomplete addresses={mail.bcc} placeholder="Add BCC recipient" />
     {/if}
     </grid>
     <HTMLEditorToolbar {editor}>
