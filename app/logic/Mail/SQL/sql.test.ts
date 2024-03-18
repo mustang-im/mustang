@@ -12,7 +12,7 @@ import { makeTestDatabase } from './SQLDatabase';
 
 test("Save and read from SQL database", async () => {
   await connectToBackend();
-  await cleanDatabase();
+  await makeTestDatabase(); // Let SQLFoo classes use the test database
 
   // Fake data
   appGlobal.me = fakeChatPerson();
@@ -72,8 +72,4 @@ async function connectToBackend() {
   const kSecret = 'eyache5C';
   await jpc.connect(kSecret, "localhost", 5455);
   appGlobal.remoteApp = await jpc.getRemoteStartObject();
-}
-
-async function cleanDatabase() {
-  makeTestDatabase(); // Let SQLFoo classes use the test database
 }
