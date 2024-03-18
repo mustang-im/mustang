@@ -17,8 +17,8 @@ test("Save and read from SQL database", async () => {
   // Fake data
   appGlobal.me = fakeChatPerson();
   appGlobal.persons.addAll(fakePersons(50));
-  appGlobal.emailAccounts.add(fakeMailAccount(appGlobal.persons, appGlobal.me, 300));
-  let originalAccount = appGlobal.emailAccounts.first;
+  let originalAccount = fakeMailAccount(appGlobal.persons, appGlobal.me, 300);
+  appGlobal.emailAccounts.add(originalAccount);
   expect(originalAccount).toBeDefined();
   let originalFolders = originalAccount.getAllFolders();
   expect(originalFolders.length).toBeGreaterThan(2);

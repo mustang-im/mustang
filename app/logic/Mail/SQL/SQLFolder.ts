@@ -10,7 +10,7 @@ import sql from "../../../../lib/rs-sqlite";
 export class SQLFolder extends Folder {
   static async save(folder: Folder) {
     // `INSERT id = null` will fill the `id` with a new ID value. `id` is a an alias for `rowid`.
-    await (await getDatabase()).run(sql`
+    let insert = await (await getDatabase()).run(sql`
       INSERT OR REPLACE INTO folder (
         id, accountID, name, path, parent, specialUse,
         countTotal, countUnread, countNewArrived,
@@ -20,6 +20,7 @@ export class SQLFolder extends Folder {
         ${folder.countTotal}, ${folder.countUnread}, ${folder.countNewArrived},
         ${folder.specialFolder}, ${folder.uidvalidity}, ${folder.lastSeen}
       )`);
+    folder.dbID = insert.lastInsertRowid;
     await (await getDatabase()).run(sql`
       UPDATE folder SET
         countTotal = ${folder.countTotal},
