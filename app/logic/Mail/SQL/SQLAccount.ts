@@ -39,11 +39,11 @@ export class SQLAccount {
     (acc.protocol as any) = sanitize.alphanumdash(row.protocol);
     acc.emailAddress = sanitize.emailAddress(row.emailAddress);
     acc.username = sanitize.string(row.username);
-    acc.password = sanitize.string(row.passwordButter);
-    acc.hostname = row.hostname ? sanitize.hostname(row.hostname) : undefined;
-    acc.port = row.port ? sanitize.portTCP(row.port): undefined;
+    acc.password = row.passwordButter ? sanitize.string(row.passwordButter) : null;
+    acc.hostname = row.hostname ? sanitize.hostname(row.hostname) : null;
+    acc.port = row.port ? sanitize.portTCP(row.port) : null;
     acc.tls = sanitize.enum(row.tls, [1, 2, 3], 2);
-    acc.url = row.url ? sanitize.url(row.url) : undefined;
+    acc.url = row.url ? sanitize.url(row.url) : null;
     acc.userRealname = sanitize.label(row.userRealname);
     return acc;
   }

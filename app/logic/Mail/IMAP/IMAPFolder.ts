@@ -5,9 +5,9 @@ import { ArrayColl, Collection } from "svelte-collections";
 
 export class IMAPFolder extends Folder {
   account: IMAPAccount;
-  uidvalidity: number;
+  uidvalidity: number = 0;
   /** Last sequence number seen */
-  lastSeen: number;
+  lastSeen: number = 0;
 
   constructor(account: IMAPAccount) {
     super(account);
