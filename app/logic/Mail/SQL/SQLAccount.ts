@@ -33,6 +33,7 @@ export class SQLAccount {
       FROM emailAccount
       WHERE id = ${dbID}
       `) as any;
+    acc.dbID = dbID;
     (acc.id as any) = sanitize.alphanumdash(row.idStr);
     acc.name = sanitize.label(row.name);
     (acc.protocol as any) = sanitize.alphanumdash(row.protocol);
@@ -56,7 +57,7 @@ export class SQLAccount {
     let accounts = new ArrayColl<MailAccount>();
     for (let row of rows) {
       let account = new MailAccount();
-      this.read(row.id, account);
+      await SQLAccount.read(row.id, account);
       accounts.add(account);
     }
     return accounts;

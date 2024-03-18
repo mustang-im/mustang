@@ -65,6 +65,7 @@ test("Save and read from SQL database", { timeout: 10000 }, async () => {
   expect(readAccount.port).toEqual(originalAccount.port);
   expect(readAccount.tls).toEqual(originalAccount.tls);
   expect(readAccount.url).toEqual(originalAccount.url);
+  expect(readAccount.dbID).toEqual(originalAccount.dbID);
 
   // Folder
   let readFolders = readAccount.getAllFolders();

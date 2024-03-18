@@ -68,16 +68,16 @@ export class SQLFolder extends Folder {
       FROM folder
       WHERE accountID = ${account.dbID}
       `) as any;
-    function readSubFolders(parentFolderID: number | null, resultFolders: ArrayColl<Folder>) {
-      for (let row of rows.filter(r => r.parent = parentFolderID)) {
+    async function readSubFolders(parentFolderID: number | null, resultFolders: ArrayColl<Folder>) {
+      for (let row of rows.filter(r => r.parent == parentFolderID)) {
         let folder = new Folder(account);
-        this.read(row.id, folder);
+        await SQLFolder.read(row.id, folder);
         resultFolders.add(folder);
-        readSubFolders(folder.dbID, folder.subFolders);
+        await readSubFolders(folder.dbID, folder.subFolders);
       }
     }
     let rootFolders = new ArrayColl<Folder>();
-    readSubFolders(null, rootFolders);
+    await readSubFolders(null, rootFolders);
     return rootFolders;
   }
 }
