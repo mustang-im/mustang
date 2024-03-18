@@ -8,7 +8,7 @@ export const mailDatabaseSchema = sql`
   );
 
   --- persons in the personal address books
-  CREATE TABLE "persons" (
+  CREATE TABLE "person" (
     "id" INTEGER PRIMARY KEY,
     "contactAccountID" INTEGER,
     "name" TEXT not null,
@@ -20,7 +20,7 @@ export const mailDatabaseSchema = sql`
   );
 
   --- Way to contact a person in the personal address book
-  CREATE TABLE "personContacts" (
+  CREATE TABLE "personContact" (
     "personID" INTEGER,
     "value" TEXT not null,
     -- 1 = email address, 2 = chat account, 3 = phone number, 4 = street address
@@ -37,12 +37,12 @@ export const mailDatabaseSchema = sql`
       REFERENCES person (id)
       ON DELETE CASCADE
   );
-  CREATE INDEX index_personContacts_value ON personContacts (value);
-  CREATE INDEX index_personContacts_personID ON personContacts (personID);
+  CREATE INDEX index_personContact_value ON personContact (value);
+  CREATE INDEX index_personContact_personID ON personContact (personID);
 
   -- Email addresses, as found in received emails.
   -- They are not necessarily in the personal address book.
-  CREATE TABLE "emailPersons" (
+  CREATE TABLE "emailPerson" (
     "id" INTEGER PRIMARY KEY,
     "emailAddress" TEXT UNIQUE,
     -- Display name, as found in the email
@@ -50,13 +50,13 @@ export const mailDatabaseSchema = sql`
     -- Optional. Should be set, if this contact is also in table persons / personContacts.
     "personID" INTEGER default null,
     FOREIGN KEY (personID)
-      REFERENCES persons (id)
+      REFERENCES person (id)
       ON DELETE SET NULL
   );
 
   -- n:n table for email to emailPersons
   -- TODO Should we merge emailPersons into this table? + Less JOINs, - more duplication, + allows the name to change between emails.
-  CREATE TABLE "emailPersonsRel" (
+  CREATE TABLE "emailPersonRel" (
     "emailID" INTEGER not null,
     "emailPersonID" INTEGER not null,
     "recipientType" INTEGER not null, -- 1 = from, 2 = to, 3 = cc, 4 = bcc, 5 = replyto, 6 = sender
@@ -67,8 +67,8 @@ export const mailDatabaseSchema = sql`
       REFERENCES emailPerson (id)
       ON DELETE CASCADE
   );
-  CREATE INDEX index_emailPersonsRel_emailID ON emailPersonsRel (emailID);
-  CREATE INDEX index_emailPersonsRel_emailPersonID ON emailPersonsRel (emailPersonID);
+  CREATE INDEX index_emailPersonRel_emailID ON emailPersonRel (emailID);
+  CREATE INDEX index_emailPersonRel_emailPersonID ON emailPersonRel (emailPersonID);
 
   CREATE TABLE "email" (
     "id" INTEGER PRIMARY KEY,
