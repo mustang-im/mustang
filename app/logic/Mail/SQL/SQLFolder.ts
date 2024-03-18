@@ -16,8 +16,8 @@ export class SQLFolder extends Folder {
         countTotal, countUnread, countNewArrived,
         uidvalidity, lastSeen
       ) VALUES (
-        ${folder.dbID}, ${folder.account.dbID}, ${folder.name}, ${folder.path}, ${folder.parent.dbID},
-        , ${folder.countUnread}, ${folder.countNewArrived},
+        ${folder.dbID}, ${folder.account.dbID}, ${folder.name}, ${folder.path}, ${folder.parent?.dbID},
+        ${folder.countTotal}, ${folder.countUnread}, ${folder.countNewArrived},
         ${folder.specialFolder}, ${folder.uidvalidity}, ${folder.lastSeen}
       )`);
     await (await getDatabase()).run(sql`

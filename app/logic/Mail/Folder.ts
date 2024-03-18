@@ -7,6 +7,7 @@ import { assert, AbstractFunction } from "../util/util";
 export class Folder extends Observable {
   /** IMAP: folder path */
   id: string;
+  dbID: number;
   @notifyChangedProperty
   name: string;
   @notifyChangedProperty
@@ -27,6 +28,13 @@ export class Folder extends Observable {
   constructor(account: MailAccount) {
     super();
     this.account = account;
+  }
+
+  get path(): string {
+    return this.id;
+  }
+  set path(val: string) {
+    this.id = val;
   }
 
   async listMessages() {
