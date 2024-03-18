@@ -155,7 +155,7 @@ export const mailDatabaseSchema = sql`
     "emailAddress" TEXT not null,
     "name" TEXT not null UNIQUE,
     -- "imap", "pop3", "jmap", "ews", "owa", "activesync"
-    "type" TEXT not null,
+    "protocol" TEXT not null,
     "hostname" TEXT default null,
     "port" INTEGER default null,
     "tls" INTEGER default 0,

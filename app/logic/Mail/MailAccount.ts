@@ -6,6 +6,7 @@ import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, MapColl } from 'svelte-collections';
 
 export class MailAccount extends Account {
+  readonly protocol = "mail";
   @notifyChangedProperty
   url: string; /** only for some account types */
   @notifyChangedProperty
