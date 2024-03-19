@@ -10,9 +10,6 @@ export class IMAPEMail extends EMail {
   folder: IMAPFolder;
   /** From IMAP server */
   uid: number | null = null;
-  /** This message has been downloaded completely,
-   * with header, body, and all attachments. */
-  downloadComplete = false;
 
   constructor(folder: IMAPFolder) {
     super(folder);
