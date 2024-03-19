@@ -5,6 +5,7 @@ import { mailMustangApp } from "../Mail/MailMustangApp";
 import { calendarMustangApp } from "../Calendar/CalendarMustangApp";
 import { filesMustangApp } from "../Files/FilesMustangApp";
 import { webAppsMustangApp } from "../WebApps/WebAppsMustangApp";
+import { setupMailMustangApp } from "../Setup/Mail/SetupMailMustangApp";
 import { mustangApps, selectedApp } from "./selectedApp";
 
 export function loadMustangApps() {
@@ -16,6 +17,7 @@ export function loadMustangApps() {
     meetMustangApp,
     filesMustangApp,
     webAppsMustangApp,
+    setupMailMustangApp,
   ]);
   selectedApp.set(contactsMustangApp);
 }

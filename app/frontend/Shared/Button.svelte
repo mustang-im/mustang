@@ -85,6 +85,15 @@
   button.secondary {
     border-color: #A1E4DA;
   }
+  button.filled {
+    background-color: #160C27;
+    color: white;
+  }
+  button.large {
+    padding: 8px 24px;
+    font-size: 16px;
+    font-weight: bold;
+  }
   .gap {
     width: 8px;
   }

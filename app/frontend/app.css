@@ -27,6 +27,11 @@ body {
   scrollbar-color: #22222325 transparent;
 }
 
+input,
+button {
+  font-family: inherit;
+}
+
 #app {
   margin: 0;
   padding: 0;
@@ -85,6 +90,7 @@ value,
 input {
   border: none;
   border-bottom: 1px solid #DFDFDF;
+  width: 100%;
 }
 
 input:focus {
