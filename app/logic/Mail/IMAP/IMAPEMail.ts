@@ -3,7 +3,7 @@ import { findOrCreatePerson, findOrCreatePersonEmailAddress } from "../Person";
 import { Attachment, ContentDisposition } from "../Attachment";
 import type { IMAPFolder } from "./IMAPFolder";
 import { assert } from "../../util/util";
-import type { ArrayColl, MapColl } from "svelte-collections";
+import type { ArrayColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
 
 export class IMAPEMail extends EMail {
@@ -82,9 +82,9 @@ export class IMAPEMail extends EMail {
     this.setFlag("\\Seen", read);
   }
 
-  async markStarred(read = true) {
-    super.markStarred(read);
-    this.setFlag("\\Flagged", read);
+  async markStarred(starred = true) {
+    super.markStarred(starred);
+    this.setFlag("\\Flagged", starred);
   }
 
   async markSpam(spam = true) {

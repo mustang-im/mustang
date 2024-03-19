@@ -2,6 +2,7 @@ import { Account } from "../Abstract/Account";
 import { Folder } from "./Folder";
 import type { EMail } from "./EMail";
 import type { Person } from "../Abstract/Person";
+import { AbstractFunction } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, MapColl } from 'svelte-collections';
 
@@ -35,6 +36,10 @@ export class MailAccount extends Account {
   sent: Folder;
   drafts: Folder;
   archive: Folder;
+
+  async listFolders(): Promise<void> {
+    throw new AbstractFunction();
+  }
 
   getAllFolders() {
     let allFolders = new ArrayColl<Folder>();

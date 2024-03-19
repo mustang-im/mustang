@@ -23,7 +23,6 @@ export class Folder extends Observable {
   countUnread = 0;
   @notifyChangedProperty
   countNewArrived = 0;
-  dbID: number;
 
   constructor(account: MailAccount) {
     super();
