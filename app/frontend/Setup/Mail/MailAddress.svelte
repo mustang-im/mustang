@@ -1,5 +1,10 @@
 <hbox class="mail-address">
-  <input type="email" bind:value={emailAddress} bind:this={inputEl} placeholder="you@example.com" />
+  <input type="email"
+    placeholder="you@example.com"
+    bind:value={emailAddress}
+    bind:this={inputEl}
+    on:keydown={onKey}
+    />
   <hbox class="icon" class:valid>
     {#if !emailAddress}
       <Icon data={GMailIcon} size="16px" />
@@ -25,12 +30,27 @@
   import GMailIcon from '../../asset/icon/brand/gmail.svg?raw';
   import Microsoft365Icon from '../../asset/icon/brand/microsoft365.svg?raw';
   import YahooIcon from '../../asset/icon/brand/yahoo.svg?raw';
+  import { createEventDispatcher } from 'svelte';
+  const dispatchEvent = createEventDispatcher();
 
   /** in/out */
   export let emailAddress: string;
 
   let inputEl: HTMLInputElement;
   $: valid = emailAddress && emailAddress.includes(".") && inputEl?.validity.valid;
+
+  function onKey(event: KeyboardEvent) {
+    if (event.key == "Enter") {
+      if (valid) {
+        dispatchEvent("continue");
+        event.preventDefault();
+      }
+    }
+  }
+
+  export function focus() {
+    inputEl.focus();
+  }
 </script>
 
 <style>

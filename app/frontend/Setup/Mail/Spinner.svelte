@@ -1,7 +1,7 @@
-<grid class="loader" style="width: {size}" />
+<grid class="loader" style="width: {size}; height: {size}" />
 
 <script lang="ts">
-  export let size: string = "32px";
+  export let size: string = "100%";
 </script>
 <style>
   .loader {
@@ -25,8 +25,10 @@
     margin: 8px;
     animation-duration: 3s;
   }
-  @keyframes l15{ 
-    100%{transform: rotate(1turn)}
+  @keyframes l15 {
+    100% {
+      transform: rotate(1turn);
+    }
   }
 
   /*
