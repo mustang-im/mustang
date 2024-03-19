@@ -1,4 +1,4 @@
-import type { MailAccount } from './MailAccount';
+import { MailAccount } from './MailAccount';
 import { IMAPAccount } from './IMAP/IMAPAccount';
 import { POP3Account } from './POP3/POP3Account';
 import { sanitize } from '../../../lib/util/sanitizeDatatypes';
@@ -71,5 +71,8 @@ export function newAccountForProtocol(protocol: string): MailAccount {
   if (protocol == "pop3") {
     return new POP3Account();
   }
-  throw new NotReached("Unknown account type ${protocol}");
+  if (protocol == "mail") {
+    return new MailAccount();
+  }
+  throw new NotReached(`Unknown account type ${protocol}`);
 }
