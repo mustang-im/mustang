@@ -16,7 +16,8 @@
   export let selectedAccount: MailAccount; /* in/out */
 
   function newMail() {
-    let mail = new EMail();
+    let folder = selectedAccount.drafts ?? selectedAccount.sent ?? selectedAccount.inbox;
+    let mail = folder.newEMail();
     mail.authorEmailAddress = selectedAccount.emailAddress;
     mailMustangApp.writeMail(mail);
   }

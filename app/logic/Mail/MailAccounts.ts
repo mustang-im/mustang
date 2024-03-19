@@ -2,6 +2,7 @@ import type { MailAccount } from './MailAccount';
 import { IMAPAccount } from './IMAP/IMAPAccount';
 import { POP3Account } from './POP3/POP3Account';
 import { sanitize } from '../../../lib/util/sanitizeDatatypes';
+import { NotReached } from '../util/util';
 import { ArrayColl } from 'svelte-collections';
 
 /**
@@ -61,4 +62,14 @@ function readStandardAccount(account: MailAccount, prefBranch: string): void {
     STARTTLS: 3,
   }, 2);
   account.name = account.emailAddress;
+}
+
+export function newAccountForProtocol(protocol: string): MailAccount {
+  if (protocol == "imap") {
+    return new IMAPAccount();
+  }
+  if (protocol == "pop3") {
+    return new POP3Account();
+  }
+  throw new NotReached("Unknown account type ${protocol}");
 }

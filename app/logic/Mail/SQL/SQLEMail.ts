@@ -168,7 +168,7 @@ export class SQLEMail {
       `) as any;
     let emails = new ArrayColl<EMail>();
     for (let row of rows) {
-      let email = new EMail(folder);
+      let email = folder.newEMail();
       await SQLEMail.read(row.id, email);
       emails.add(email);
     }

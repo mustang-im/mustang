@@ -1,4 +1,4 @@
-import type { EMail } from "./EMail";
+import { EMail } from "./EMail";
 import type { MailAccount } from "./MailAccount";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, Collection } from 'svelte-collections';
@@ -67,8 +67,12 @@ export class Folder extends Observable {
     this.subFolders.add(folder);
   }
 
-  async createSubFolder(name: string) {
+  async createSubFolder(name: string): Promise<Folder> {
     throw new AbstractFunction();
+  }
+
+  newEMail(): EMail {
+    return new EMail(this);
   }
 }
 

@@ -1,5 +1,7 @@
 import { MailAccount } from "../MailAccount";
 import { getDatabase } from "./SQLDatabase";
+import { newAccountForProtocol } from "../MailAccounts";
+import { backgroundError } from "../../../frontend/Util/error";
 import { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import sql from "../../../../lib/rs-sqlite";
@@ -51,14 +53,18 @@ export class SQLAccount {
   static async readAll(): Promise<ArrayColl<MailAccount>> {
     let rows = await (await getDatabase()).all(sql`
       SELECT
-        id
+        id, protocol
       FROM emailAccount
       `) as any;
     let accounts = new ArrayColl<MailAccount>();
     for (let row of rows) {
-      let account = new MailAccount();
-      await SQLAccount.read(row.id, account);
-      accounts.add(account);
+      try {
+        let account = newAccountForProtocol(row.protocol);
+        await SQLAccount.read(row.id, account);
+        accounts.add(account);
+      } catch (ex) {
+        backgroundError(ex);
+      }
     }
     return accounts;
   }
