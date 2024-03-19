@@ -4,8 +4,13 @@
     <Header title="Set up existing email address" subtitle="You can use Mustang with your existing email address or you can make a new email address." />
     <MailAddress bind:emailAddress />
     <Password bind:password />
-    {#if step > 1}
-      Checking....
+    {#if step == 2}
+      <hbox flex class="checking">
+        <Spinner size="24px" />
+        <hbox flex class="message">
+          We are looking for the configuration of your email account...
+        </hbox>
+      </hbox>
     {/if}
     <hbox class="buttons">
       <Button label="Manual setup" on:click={onManualSetup} classes="secondary" />
@@ -30,21 +35,22 @@
   import Footer from "./Footer.svelte";
   import Button from "../../Shared/Button.svelte";
   import BackgroundVideo from "./BackgroundVideo.svelte";
+  import Spinner from "./Spinner.svelte";
 
   let emailAddress: string;
   let password: string;
 
   $: canContinue = step == 1 && emailAddress && password;
-  let step = 1;
+  let step = 2;
 
   function onFindConfig() {
     step = 2;
   }
   function onManualSetup() {
-    step = 2;
+    step = 3;
   }
   function onNewEmailAddress() {
-    step = 2;
+    step = 4;
   }
 </script>
 
@@ -57,6 +63,21 @@
     max-width: 32em;
     padding: 24px 48px 20px 48px;
     background-color: white;
+  }
+  .checking {
+    margin-top: 32px;
+    margin-bottom: 20px;
+  }
+  .checking .message {
+    background-color: #F0F9F8;
+    color: #455468;
+    margin-left: 12px;
+    padding: 4px 16px;
+    border-radius: 100px;
+  }
+  .warning {
+    background-color: #FFFAEC;
+    color: #FFC83A;
   }
   .buttons {
     align-items: end;

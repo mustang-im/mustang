@@ -1,7 +1,11 @@
 <hbox class="mail-address">
   <input type="email" bind:value={emailAddress} bind:this={inputEl} placeholder="you@example.com" />
   <hbox class="icon" class:valid>
-    {#if valid}
+    {#if !emailAddress}
+      <Icon data={GMailIcon} size="16px" />
+      <Icon data={Microsoft365Icon} size="16px" />
+      <Icon data={YahooIcon} size="16px" />
+    {:else if valid}
       {#if emailAddress.endsWith("@gmail.com")}
         <Icon data={GMailIcon} size="16px" />
       {:else if emailAddress.includes("@yahoo.")}
@@ -11,11 +15,6 @@
       {:else}
         <CheckIcon />
       {/if}
-    {:else if emailAddress}
-    {:else}
-      <Icon data={GMailIcon} size="16px" />    
-      <Icon data={Microsoft365Icon} size="16px" />
-      <Icon data={YahooIcon} size="16px" />
     {/if}
   </hbox>
 </hbox>
