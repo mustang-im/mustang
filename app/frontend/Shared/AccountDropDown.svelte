@@ -18,7 +18,6 @@
     value: account.id,
     label: account.name,
   }));
-  $: console.log("accounts", $accounts.contents, accountOptions);
 
   $: accountID = selectedAccount?.id ?? $accounts.first?.id;
 

@@ -96,7 +96,6 @@ export class EMail extends Message {
   replyToAuthor(): EMail {
     let reply = this._reply();
     reply.to.add(this.from);
-    console.log(reply);
     return reply;
   }
 
