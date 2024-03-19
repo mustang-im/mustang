@@ -9,6 +9,7 @@ export class DelegateMailAccount extends MailAccount {
   constructor(base: MailAccount) {
     super();
     this.base = base;
+
     let self = this;
     this.base.rootFolders.registerObserver({
       added(baseFolders) {
@@ -34,6 +35,13 @@ export class DelegateMailAccount extends MailAccount {
 
   async logout(): Promise<void> {
     await this.base.logout();
+  }
+
+  get name(): string {
+    return this.base.name;
+  }
+  set name(val: string) {
+    this.base.name = val;
   }
 
   newFolder(): DelegateFolder {

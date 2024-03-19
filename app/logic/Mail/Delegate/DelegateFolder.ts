@@ -1,15 +1,17 @@
-import { Folder } from "../Folder";
+import { Folder, SpecialFolder } from "../Folder";
 import { DelegateEMail } from "./DelegateEMail";
 import type { DelegateMailAccount } from "./DelegateMailAccount";
-import { Collection } from "svelte-collections";
+import { ArrayColl, Collection } from "svelte-collections";
 
 export class DelegateFolder extends Folder {
   base: Folder;
   account: DelegateMailAccount;
+  parent: DelegateFolder;
 
   constructor(account: DelegateMailAccount, base: Folder) {
     super(account);
     this.base = base;
+
     let self = this;
     this.base.messages.registerObserver({
       added(baseMsgs) {
@@ -27,20 +29,6 @@ export class DelegateFolder extends Folder {
         self.subFolders.removeAll(baseFolders.map(baseFolder => new DelegateFolder(this, baseFolder)) as any as Folder[]);
       },
     });
-  }
-
-  get name(): string {
-    return this.base.name;
-  }
-  set name(val: string) {
-    this.base.name = val;
-  }
-
-  get path(): string {
-    return this.base.path;
-  }
-  set path(val: string) {
-    this.base.path = val;
   }
 
   async listMessages() {
@@ -72,5 +60,62 @@ export class DelegateFolder extends Folder {
 
   newEMail(): DelegateEMail {
     return new DelegateEMail(this);
+  }
+
+  get parent(): DelegateFolder {
+    return this.parent;
+  }
+  set parent(val: DelegateFolder) {
+    this.parent = val;
+    this.base.parent = val.base;
+  }
+
+  get id(): string {
+    return this.base.id;
+  }
+  set id(val: string) {
+    this.base.id = val;
+  }
+
+  get path(): string {
+    return this.base.path;
+  }
+  set path(val: string) {
+    this.base.path = val;
+  }
+
+  get name(): string {
+    return this.base.name;
+  }
+  set name(val: string) {
+    this.base.name = val;
+  }
+
+  get specialFolder(): SpecialFolder {
+    return this.base.specialFolder;
+  }
+  set specialFolder(val: SpecialFolder) {
+    this.base.specialFolder = val;
+  }
+
+  get countTotal(): number {
+    return this.base.countTotal;
+  }
+  set countTotal(val: number) {
+    this.base.countTotal = val;
+  }
+
+  get countUnread(): number {
+    return this.base.countUnread;
+  }
+  set countUnread(val: number) {
+    this.base.countUnread = val;
+  }
+
+  get countNewArrived(): number {
+    return this.base.countNewArrived;
+  }
+  set countNewArrived(val: number) {
+    this.base.countNewArrived = val;
   }
 }
