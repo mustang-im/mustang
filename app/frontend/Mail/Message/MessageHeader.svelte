@@ -4,7 +4,7 @@
       <PersonPicture person={$message.contact} />
     {/if}
     <vbox>
-      <value class="from" title={$message.authorEmailAddress}>
+      <value class="from" title={$message.from.emailAddress}>
         {from}
       </value>
       {#if $message.to.hasItems}
@@ -53,7 +53,7 @@
   $: from = message.outgoing
     ? "me"
     : message.contact?.name
-      ?? message.authorEmailAddress;
+      ?? message.from.emailAddress;
 
   $: catchErrors(() => markMessageAsRead(message), backgroundError);
   let readTimeout: NodeJS.Timeout;

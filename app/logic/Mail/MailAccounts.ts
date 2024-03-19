@@ -4,6 +4,8 @@ import { POP3Account } from './POP3/POP3Account';
 import { sanitize } from '../../../lib/util/sanitizeDatatypes';
 import { NotReached } from '../util/util';
 import { ArrayColl } from 'svelte-collections';
+import { appGlobal } from '../app';
+import { ContactEntry } from '../Abstract/Person';
 
 /**
  * Reads settings for mail accounts,
@@ -35,6 +37,9 @@ export async function readMailAccounts(): Promise<ArrayColl<MailAccount>> {
   if (accounts.isEmpty) {
     console.log("No mail accounts configured. Please set up mail.account1.*");
   }
+  for (let account of accounts) {
+    readMe(account);
+  }
   return accounts;
 }
 
@@ -56,6 +61,8 @@ function readStandardAccount(account: MailAccount, prefBranch: string): void {
   account.emailAddress = sanitize.nonemptystring(localStorage.getItem(prefBranch + "emailAddress"));
   account.username = sanitize.nonemptystring(localStorage.getItem(prefBranch + "username"));
   account.password = sanitize.string(localStorage.getItem(prefBranch + "password"));
+  account.userRealname = sanitize.nonemptystring(localStorage.getItem(prefBranch + "userRealname") ??
+      appGlobal.me.name ?? localStorage.getItem("me.realname"));
   account.tls = sanitize.translate(localStorage.getItem(prefBranch + "tls"), {
     plain: 1,
     TLS: 2,
@@ -75,4 +82,11 @@ export function newAccountForProtocol(protocol: string): MailAccount {
     return new MailAccount();
   }
   throw new NotReached(`Unknown account type ${protocol}`);
+}
+
+function readMe(account: MailAccount) {
+  if (!appGlobal.me.name && account.userRealname) {
+    appGlobal.me.name = account.userRealname;
+  }
+  appGlobal.me.emailAddresses.add(new ContactEntry(account.emailAddress, "account"));
 }

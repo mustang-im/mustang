@@ -18,7 +18,8 @@
   function newMail() {
     let folder = selectedAccount.drafts ?? selectedAccount.sent ?? selectedAccount.inbox;
     let mail = folder.newEMail();
-    mail.authorEmailAddress = selectedAccount.emailAddress;
+    mail.from.emailAddress = selectedAccount.emailAddress;
+    mail.from.name = selectedAccount.userRealname;
     mailMustangApp.writeMail(mail);
   }
 </script>

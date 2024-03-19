@@ -9,8 +9,6 @@ import { ArrayColl, MapColl } from "svelte-collections";
 
 export class EMail extends Message {
   @notifyChangedProperty
-  authorEmailAddress: string;
-  @notifyChangedProperty
   subject: string;
   @notifyChangedProperty
   from = new PersonEmailAddress();
@@ -79,8 +77,11 @@ export class EMail extends Message {
 
   _reply(): EMail {
     this.markReplied().catch(backgroundError);
-    let folder = this.folder.account.drafts ?? this.folder.account.sent ?? this.folder;
+    let account = this.folder.account;
+    let folder = account.drafts ?? account.sent ?? this.folder;
     let reply = folder.newEMail();
+    reply.from.emailAddress = account.emailAddress;
+    reply.from.name = account.userRealname;
     reply.subject = "Re: " + this.baseSubject; // Do *not* localize "Re: "
     reply.html = `<p></p>
     <p></p>
@@ -95,6 +96,7 @@ export class EMail extends Message {
   replyToAuthor(): EMail {
     let reply = this._reply();
     reply.to.add(this.from);
+    console.log(reply);
     return reply;
   }
 
