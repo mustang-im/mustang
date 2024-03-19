@@ -1,10 +1,10 @@
 import { appGlobal } from './app';
 import { MailAccount } from './Mail/MailAccount';
-import { EMail, PersonEmailAddress } from './Mail/EMail';
-import { Folder, SpecialFolder } from './Mail/Folder';
+import type { Folder, SpecialFolder } from './Mail/Folder';
 import { ChatAccount } from './Chat/ChatAccount';
 import { UserChatMessage } from './Chat/Message';
 import { ChatPerson } from './Chat/Person';
+import { PersonEmailAddress } from './Mail/EMail';
 import { ContactEntry, Person } from './Abstract/Person';
 import { Chat } from './Chat/Chat';
 import { Directory, File } from './Files/File';

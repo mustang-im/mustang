@@ -46,6 +46,7 @@ export class SQLFolder extends Folder {
       `) as any;
     folder.dbID = sanitize.integer(dbID);
     folder.name = sanitize.label(row.name);
+    folder.path = sanitize.label(row.path);
     folder.countTotal = sanitize.integer(row.countTotal);
     folder.countUnread = sanitize.integer(row.countUnread);
     folder.countNewArrived = sanitize.integer(row.countNewArrived);
