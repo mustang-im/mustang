@@ -70,7 +70,8 @@ export class SQLEMail {
           id
         FROM emailPerson
         WHERE
-          emailAddress = ${pe.emailAddress}
+          emailAddress = ${pe.emailAddress} AND
+          name = ${pe.name}
         `) as any;
     let personID = exists?.id;
     if (!personID) {
@@ -130,25 +131,25 @@ export class SQLEMail {
         let addr = sanitize.emailAddress(row.emailAddress);
         let name = sanitize.label(row.name);
         let pe = findOrCreatePersonEmailAddress(addr, name);
-        if (row.recipientsType == 1) {
+        if (row.recipientType == 1) {
           email.from = pe;
           if (!email.outgoing) {
             email.contact = findOrCreatePerson(addr, name);
           }
           continue;
-        } else if (row.recipientsType == 5) {
+        } else if (row.recipientType == 5) {
           email.replyTo.emailAddress = addr;
           email.replyTo.name = name;
           continue;
         }
-        if (row.recipientsType == 2) {
+        if (row.recipientType == 2) {
           email.to.add(pe);
           if (email.outgoing && !email.contact) {
             email.contact = findOrCreatePerson(addr, name);
           }
-        } else if (row.recipientsType == 3) {
+        } else if (row.recipientType == 3) {
           email.cc.add(pe);
-        } else if (row.recipientsType == 4) {
+        } else if (row.recipientType == 4) {
           email.bcc.add(pe);
         }
       } catch (ex) {

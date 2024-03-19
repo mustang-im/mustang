@@ -44,11 +44,12 @@ export const mailDatabaseSchema = sql`
   -- They are not necessarily in the personal address book.
   CREATE TABLE "emailPerson" (
     "id" INTEGER PRIMARY KEY,
-    "emailAddress" TEXT UNIQUE,
+    "emailAddress" TEXT,
     -- Display name, as found in the email
     "name" TEXT,
     -- Optional. Should be set, if this contact is also in table persons / personContacts.
     "personID" INTEGER default null,
+    UNIQUE("emailAddress", "name"),
     FOREIGN KEY (personID)
       REFERENCES person (id)
       ON DELETE SET NULL
