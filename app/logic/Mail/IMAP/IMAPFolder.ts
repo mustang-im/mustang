@@ -131,12 +131,13 @@ export class IMAPFolder extends Folder {
     console.log("Folder moved");
   }
 
-  async createSubFolder(name: string) {
+  async createSubFolder(name: string): Promise<IMAPFolder> {
     let folder = new IMAPFolder(this.account);
     folder.name = name;
     folder.parent = this;
     this.subFolders.add(folder);
     console.log("Folder created");
+    return folder;
   }
 
   specialUse(specialUse: string): void {
