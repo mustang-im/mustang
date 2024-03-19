@@ -73,7 +73,7 @@ export class SQLFolder extends Folder {
       `) as any;
     async function readSubFolders(parentFolderID: number | null, resultFolders: ArrayColl<Folder>) {
       for (let row of rows.filter(r => r.parent == parentFolderID)) {
-        let folder = new Folder(account);
+        let folder = account.newFolder();
         await SQLFolder.read(row.id, folder);
         resultFolders.add(folder);
         await readSubFolders(folder.dbID, folder.subFolders);

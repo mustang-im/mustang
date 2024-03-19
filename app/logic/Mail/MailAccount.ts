@@ -1,12 +1,12 @@
 import { Account } from "../Abstract/Account";
-import type { Folder } from "./Folder";
+import { Folder } from "./Folder";
 import type { EMail } from "./EMail";
 import type { Person } from "../Abstract/Person";
 import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, MapColl } from 'svelte-collections';
 
 export class MailAccount extends Account {
-  readonly protocol = "mail";
+  readonly protocol: string = "mail";
   @notifyChangedProperty
   url: string | null = null; /** only for some account types */
   @notifyChangedProperty
@@ -49,6 +49,10 @@ export class MailAccount extends Account {
   }
   findFolder(findFunc: (folder: Folder) => boolean): Folder | null {
     return findFolderFromList(this.rootFolders, findFunc);
+  }
+
+  newFolder(): Folder {
+    return new Folder(this);
   }
 }
 

@@ -79,7 +79,8 @@ export class EMail extends Message {
 
   _reply(): EMail {
     this.markReplied().catch(backgroundError);
-    let reply = new EMail(this.folder.account.drafts ?? this.folder.account.sent ?? this.folder);
+    let folder = this.folder.account.drafts ?? this.folder.account.sent ?? this.folder;
+    let reply = folder.newEMail();
     reply.subject = "Re: " + this.baseSubject; // Do *not* localize "Re: "
     reply.html = `<p></p>
     <p></p>

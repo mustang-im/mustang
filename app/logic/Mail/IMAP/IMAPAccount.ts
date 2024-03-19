@@ -6,7 +6,7 @@ import { assert } from "../../util/util";
 import type { ImapFlow } from "../../../../e2/node_modules/imapflow";
 
 export class IMAPAccount extends MailAccount {
-  protocol = "imap";
+  readonly protocol: string = "imap";
   _connection: ImapFlow;
   accessToken: string | undefined;
   acceptOldTLS = false;
@@ -95,6 +95,10 @@ export class IMAPAccount extends MailAccount {
 
   async logout(): Promise<void> {
     await this._connection.logout();
+  }
+
+  newFolder(): IMAPFolder {
+    return new IMAPFolder(this);
   }
 }
 

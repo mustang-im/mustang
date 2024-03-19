@@ -167,4 +167,8 @@ export class IMAPFolder extends Folder {
         break;
     }
   }
+
+  newEMail(): IMAPEMail {
+    return new IMAPEMail(this);
+  }
 }

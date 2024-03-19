@@ -72,7 +72,7 @@ export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCoun
   mePE.emailAddress = account.emailAddress;
 
   for (let name of ['Inbox', 'Sent', 'Drafts', 'Trash', 'Spam']) {
-    let folder = new Folder(account);
+    let folder = account.newFolder();
     folder.name = name;
     folder.path = name.toLowerCase();
     folder.specialFolder = folder.name.toLowerCase() as SpecialFolder;
@@ -94,7 +94,7 @@ export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCoun
         let folderIndex = Math.floor(Math.random() * account.rootFolders.length);
         folder = account.rootFolders.getIndex(folderIndex) ?? account.inbox;
       }
-      let msg = new EMail(folder);
+      let msg = folder.newEMail();
       msg.id = emailNr + '@' + account.emailAddress;
       msg.sent = faker.date.past(0.1);
       msg.received = new Date(msg.sent.getTime() + 500);
