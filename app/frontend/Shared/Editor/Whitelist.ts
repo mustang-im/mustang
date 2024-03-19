@@ -57,15 +57,15 @@ export const Whitelist = Extension.create<WhitelistOptions>({
     let editorTags: string[] = getTags(schema); // Gets list of existing tags in editor
 
     // Create a Node Type for each tag
-    for (const tag in this.options.allowedTags) {
-      if (!editorTags.includes(tag)) {
+    for (const tag of this.options.allowedTags) {
+      if (editorTags.includes(tag)) {
         continue;
       }
 
       const node: Node = Node.create<TagOptions>({
         name: tag,
-        priority: 50, // Load after all defaults
-        content: 'block+',
+        priority: 50, // Load after other extensions
+        content: 'block*',
         group: 'block',
         addOptions() {
           return {
@@ -87,19 +87,18 @@ export const Whitelist = Extension.create<WhitelistOptions>({
           ]
         }
       });
-
       tags.push(node);
     }
-
     return tags;
   },
   addGlobalAttributes() {
     let allowedAttributes = this.options.allowedAttributes;
-    let attributesList: GlobalAttributes = [];
+    let attributes: GlobalAttributes = [];
     let schema: Schema = getSchema(this.options.editorExtensions);
     let tagExtension: Object = getTagExtension(schema);
     let extensionAttribute: Object = getExtensionAttribute(schema);
 
+    // Add the new extensions in the whitelist options
     this.options.allowedTags.forEach(tag => {
       if (!tagExtension.hasOwnProperty(tag)) {
         tagExtension[tag] = tag;
@@ -108,17 +107,7 @@ export const Whitelist = Extension.create<WhitelistOptions>({
         extensionAttribute[tag] = null;
       }
     });
-    /**
-     * TODO
-     * 1. Check and validate tag is the schema
-     * 2. Search for the tag in the schema
-     * 3. Check if tag already has the attribute
-     */
 
-    /**
-     * 1. List of tag: extension
-     * 2. List of extension: attribute
-     */
     // Create attribute for each attribute
     for (const tag in allowedAttributes) {
       if (!tagExtension.hasOwnProperty(tag) && tag !== '*') {
@@ -126,10 +115,12 @@ export const Whitelist = Extension.create<WhitelistOptions>({
       }
 
       let tags: string[] =  [tag];
+      // Adds all the existing tag extensions
       if (tag === '*') {
         tags = [];
         for (const tag in tagExtension) {
           let extension = tagExtension[tag];
+          // Check if the tag has already been added
           if (!tags.includes(extension)) {
             tags.push(extension);
           }
@@ -141,29 +132,29 @@ export const Whitelist = Extension.create<WhitelistOptions>({
       }
 
       // Create a attribute for each attribute
-      let attributes = {};
+      let attrs = {};
       allowedAttributes[tag].forEach(a => {
-        if (tag === '*' || extensionAttribute[tags[0]] && !extensionAttribute[tags[0]].includes(a)) {
-          attributes[a] = {
+        // Check if another extension has the attribute so it doesn't change the default value
+        if (tag === '*' || (extensionAttribute[tags[0]] && !extensionAttribute[tags[0]].includes(a))) {
+          attrs[a] = {
             default: null,
           } as Attribute;
         }
       });
 
-      if (Object.keys(attributes).length === 0) {
+      // If there are no attributes don't add it
+      if (Object.keys(attrs).length === 0) {
         continue;
       }
 
       let newAttribute = {
         types: [ ...tags ],
-        attributes: attributes,
+        attributes: attrs,
       }; 
 
-      console.log(newAttribute);
-
-      attributesList.push(newAttribute);
+      attributes.push(newAttribute);
     };
-    return attributesList;
+    return attributes;
   },
 });
 
@@ -204,7 +195,10 @@ function getTags(schema: Schema): string[] {
   return tags;
 }
 
-/** Get a map of `[tag]:[extension]` */
+/** Get a map of `[tag]:[extension]`
+ * The tag and the name of the extension are different
+ * so this function maps it out.
+ */
 function getTagExtension(schema: Schema): Object {
   let tagExtension: Object = {};
 

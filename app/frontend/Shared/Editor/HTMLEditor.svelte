@@ -57,10 +57,8 @@
       },
       onUpdate: () => {
         html = editor.getHTML();
-        console.log(editor.schema);
       },
     });
-    // console.log(editor.extensionManager.extensions);
   });
 
   // TODO Listen to html. But removes all whitespace.
