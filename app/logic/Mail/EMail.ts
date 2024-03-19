@@ -35,6 +35,12 @@ export class EMail extends Message {
   mime: Uint8Array | undefined;
   folder: Folder;
   dbID: number;
+  /** This message has been downloaded completely,
+   * with header, body, and all attachments. */
+  downloadComplete = false;
+  /** Was just downloaded, but wasn't saved to local disk yet.
+   * Set only temporarily. */
+  needSave = false;
 
   constructor(folder: Folder) {
     super();

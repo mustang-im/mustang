@@ -46,6 +46,10 @@ export class SQLEMail {
         }
       }
     }
+    await this.saveWritableProps(email);
+  }
+
+  static async saveWritableProps(email: EMail) {
     await (await getDatabase()).run(sql`
       UPDATE email SET
         isRead = ${email.isRead ? 1 : 0},
@@ -113,13 +117,30 @@ export class SQLEMail {
     email.subject = sanitize.string(row.subject);
     email.text = sanitize.string(row.plaintext);
     email.html = sanitize.string(row.html);
+    this.readWritablePropsFromResult(email, row);
+    await this.readRecipients(email);
+    return email;
+  }
 
+  static async readWritableProps(email: EMail) {
+    let row = await (await getDatabase()).get(sql`
+      SELECT
+        isRead, isStarred, isReplied, isDraft, isSpam
+      FROM email
+      WHERE id = ${email.dbID}
+      `) as any;
+    this.readWritablePropsFromResult(email, row);
+  }
+
+  protected static readWritablePropsFromResult(email: EMail, row) {
     email.isRead = sanitize.boolean(!!row.isRead);
     email.isStarred = sanitize.boolean(!!row.isStarred);
     email.isReplied = sanitize.boolean(!!row.isReplied);
     email.isDraft = sanitize.boolean(!!row.isDraft);
     email.isSpam = sanitize.boolean(!!row.isSpam);
+  }
 
+  protected static async readRecipients(email: EMail) {
     let recipientRows = await (await getDatabase()).all(sql`
       SELECT
         name, emailAddress, recipientType
@@ -156,8 +177,6 @@ export class SQLEMail {
         backgroundError(ex);
       }
     }
-
-    return email;
   }
 
   static async readAll(folder: Folder): Promise<ArrayColl<EMail>> {
@@ -170,6 +189,10 @@ export class SQLEMail {
     let emails = new ArrayColl<EMail>();
     for (let row of rows) {
       let email = folder.newEMail();
+      if (folder.messages.find(email => email.dbID == row.id)) {
+        await SQLEMail.readWritableProps(email);
+        continue;
+      }
       await SQLEMail.read(row.id, email);
       emails.add(email);
     }
