@@ -148,6 +148,8 @@
   }
   .text {
     font-size: 13.3px;
+    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
 
   .text :global(blockquote) {
