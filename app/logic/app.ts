@@ -1,7 +1,7 @@
 import type { MailAccount } from './Mail/MailAccount';
 import type { ChatAccount } from './Chat/ChatAccount';
 import type { Account } from './Abstract/Account';
-import type { Person } from './Abstract/Person';
+import { Person } from './Abstract/Person';
 import type { VideoConfMeeting } from './Meet/VideoConfMeeting';
 import type { Calendar } from './Calendar/Calendar';
 import type { Directory } from './Files/File';
@@ -19,7 +19,7 @@ class AppGlobal {
   readonly allAccounts: Collection<Account> = mergeColls(new ArrayColl([
     this.emailAccounts, this.chatAccounts, this.calendars ]));
   remoteApp: any;
-  me: Person;
+  me = new Person();
 }
 
 export const appGlobal = new AppGlobal();

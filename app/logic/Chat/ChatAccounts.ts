@@ -3,6 +3,8 @@ import { ArrayColl } from 'svelte-collections';
 import { MatrixAccount } from './Matrix/MatrixAccount';
 import { XMPPAccount } from './XMPP/XMPPAccount';
 import { sanitize } from '../../../lib/util/sanitizeDatatypes';
+import { appGlobal } from '../app';
+import { ContactEntry } from '../Abstract/Person';
 
 /**
  * Reads settings for chat accounts,
@@ -34,6 +36,9 @@ export async function readChatAccounts(): Promise<ArrayColl<ChatAccount>> {
   if (accounts.isEmpty) {
     console.log("No chat accounts configured. Please set up chat.account1.*");
   }
+  for (let account of accounts) {
+    readMe(account);
+  }
   return accounts;
 }
 
@@ -61,4 +66,11 @@ function readXMPPAccount(prefBranch: string): XMPPAccount {
     localStorage.setItem(prefBranch + "deviceID", account.deviceID);
   }
   return account;
+}
+
+function readMe(account: ChatAccount) {
+  if (!appGlobal.me.name && account.userRealname) {
+    appGlobal.me.name = account.userRealname;
+  }
+  appGlobal.me.chatAccounts.add(new ContactEntry(account.id, "account"));
 }
