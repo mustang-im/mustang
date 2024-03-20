@@ -39,7 +39,10 @@ export async function fetchConfig(domain: string, emailAddress: string): Promise
   throw new Error(`Could not find a config for ${emailAddress}`);
 }
 
-const kISPDBURL = "https://v1.ispdb.net/";
+// const kISPDBURL = "https://v1.ispdb.net/";
+const kISPDBURL = "/ispdb/";
+// const kMXService = "https://mx.thunderbird.net/dns/mx/";
+const kMXService = "/mx/";
 
 /**
  * Tries to get a configuration for this ISP from our central database.
@@ -99,7 +102,7 @@ async function getMX_node(domain: string): Promise<string> {
  * @returns hostname of the first MX server
  */
 async function getMX(domain: string): Promise<string> {
-  let mxStr = await fetchText("https://live.thunderbird.net/dns/mx/" + domain);
+  let mxStr = await fetchText(kMXService + domain);
   let mxs = mxStr.split("\n");
   assert(mxs.length, `No MX found for domain ${domain}`);
   mxs = mxs.map(mx => sanitize.hostname(mx));
@@ -121,7 +124,7 @@ async function fetchText_axios(url: string) {
 async function fetchText(url: string) {
   try {
     let response = await fetch(url, { mode: 'no-cors' });
-    let text = await response.text;
+    let text = await response.text();
     assert(text && typeof (text) == "string", "Did not receive text");
     return text;
   } catch (ex) {
