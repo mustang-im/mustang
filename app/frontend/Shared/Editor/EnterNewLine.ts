@@ -75,6 +75,11 @@ const ToggleBulletList = BulletList.extend({
   addCommands() {
     return {
       toggleBulletList: () => ({ chain }) => {
+        /* Uncomment if using textStyle
+          if (this.options.keepAttributes) {
+            return chain().toggleList(this.name, this.options.itemTypeName, this.options.keepMarks).updateAttributes(ListItem.name, this.editor.getAttributes(TextStyle.name)).run()
+          }
+        */
         return chain().splitNewLine().toggleList(this.name, this.options.itemTypeName, this.options.keepMarks).run();
       },
     }
@@ -85,6 +90,11 @@ const ToggleOrderedList = OrderedList.extend({
   addCommands() {
     return {
       toggleOrderedList: () => ({ chain }) => {
+        /* Uncomment if using textStyle
+          if (this.options.keepAttributes) {
+            return chain().toggleList(this.name, this.options.itemTypeName, this.options.keepMarks).updateAttributes(ListItem.name, this.editor.getAttributes(TextStyle.name)).run()
+          }
+        */
         return chain().splitNewLine().toggleList(this.name, this.options.itemTypeName, this.options.keepMarks).run();
       },
     }
