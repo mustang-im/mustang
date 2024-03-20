@@ -5,43 +5,42 @@
 
 <vbox>
   <h2>Manual configuration</h2>
-  <grid class="manual-config">
+  <hbox class="header">
     <hbox class="direction"><ArrowRightIcon /></hbox>
-    <hbox class="protocol">{config.protocol}</hbox>
-    <hbox class="hostname">{config.hostname}{portLabel(config)}</hbox>
-    <hbox class="tls-icon">
-      {#if noEncryption(config.tls)}
-        <ShieldAlertIcon />
-      {:else}
-        <ShieldOKIcon />
-      {/if}
-    </hbox>
-    <hbox class="tls" class:noencryption={noEncryption(config.tls)}>
-      {socketLabel(config.tls)}
-    </hbox>
+    Incoming server
+  </hbox>
+  <ManualConfigServer {config} />
+
+  <hbox class="header">
+    <hbox class="direction"><ArrowLeftIcon /></hbox>
+    Outgoing server
+  </hbox>
+  <ManualConfigServer config={config.outgoing} />
 </vbox>
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import ManualConfigServer from "./ManualConfigServer.svelte";
   import StatusMessage from "./StatusMessage.svelte";
   import ManualConfigIcon from "lucide-svelte/icons/router";
-  import ShieldOKIcon from "lucide-svelte/icons/shield-check";
-  import ShieldAlertIcon from "lucide-svelte/icons/shield-alert";
   import ArrowLeftIcon from "lucide-svelte/icons/arrow-big-left";
   import ArrowRightIcon from "lucide-svelte/icons/arrow-big-right";
-  import { noEncryption, portLabel, socketLabel } from "./DisplayConfig";
 
   /** in */
   export let config: MailAccount;
-
-  $: console.log("manual config", config);
 </script>
 
 <style>
-  .protocol {
-    text-transform: uppercase;
+  h2 {
+    margin-bottom: 0px;
   }
-  .tls {
-    text-transform: uppercase;
+  .header {
+    font-weight: bold;
+    font-size: 18px;
+    margin-top: 24px;
+    margin-bottom: 8px;
+  }
+  .header .direction {
+    margin-right: 6px;
   }
 </style>

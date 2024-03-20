@@ -22,6 +22,10 @@ export class MailAccount extends Account {
   password: string | null = null;
   @notifyChangedProperty
   authMethod = AuthMethod.Unknown;
+  /** SMTP server
+   * Null for JMAP, Exchange etc. */
+  @notifyChangedProperty
+  outgoing: MailAccount = null;
   /** Where we got the config from, during setup */
   source: "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | null = null;
 
