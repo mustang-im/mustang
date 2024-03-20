@@ -20,6 +20,11 @@ export class MailAccount extends Account {
   username: string;
   @notifyChangedProperty
   password: string | null = null;
+  @notifyChangedProperty
+  authMethod = AuthMethod.Unknown;
+  /** Where we got the config from, during setup */
+  source: "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | null = null;
+
   dbID: number | null = null;
 
   @notifyChangedProperty
@@ -79,4 +84,13 @@ export enum TLSSocketType {
   Plain = 1,
   TLS = 2,
   STARTTLS = 3,
+}
+
+export enum AuthMethod {
+  Unknown = 0,
+  Password = 1,
+  OAuth2 = 2,
+  GSSAPI = 3,
+  CRAMMD5 = 5,
+  NTLM = 6,
 }
