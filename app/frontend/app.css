@@ -87,7 +87,10 @@ value,
   user-select: text;
 }
 
-input {
+input[type="password"],
+input[type="email"],
+input[type="url"],
+input[type="text"] {
   border: none;
   border-bottom: 1px solid #DFDFDF;
   width: 100%;

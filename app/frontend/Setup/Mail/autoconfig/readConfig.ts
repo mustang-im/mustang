@@ -66,21 +66,21 @@ function readServer(xml: any, displayName: string): MailAccount {
   }
 
   // Take first supported
-  account.tls = ensureArray(xml.$socketType).find(socketType => sanitize.translate(socketType, {
+  account.tls = ensureArray(xml.$socketType).map(socketType => sanitize.translate(socketType, {
     plain: TLSSocketType.Plain,
     SSL: TLSSocketType.TLS,
     STARTTLS: TLSSocketType.STARTTLS
-  }, null));
+  }, null)).find(v => v !== null);
   assert(account.tls, "No supported <socketType> in autoconfig");
 
   // Take first supported auth method
-  account.authMethod = ensureArray(xml.$authentication).find(auth => sanitize.translate(auth, {
+  account.authMethod = ensureArray(xml.$authentication).map(auth => sanitize.translate(auth, {
     "password-cleartext": AuthMethod.Password,
     "OAuth2": AuthMethod.OAuth2,
     "password-encrypted": AuthMethod.CRAMMD5,
     "GSSAPI": AuthMethod.GSSAPI,
     "NTLM": AuthMethod.NTLM,
-  }, null));
+  }, null)).find(v => v !== null);
   assert(account.authMethod, "No supported <authentication> method in autoconfig");
   return account;
 }
