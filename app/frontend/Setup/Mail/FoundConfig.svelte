@@ -3,14 +3,26 @@
   <CheckIcon slot="icon" />
 </StatusMessage>
 
-<hbox class="display">
-  <DisplayConfig {config} />
-</hbox>
-
-{#if $alternativeConfigs.hasItems}
-  {#each $alternativeConfigs.each as altConfig}
-    <hbox>(o) Alternative</hbox>
-    <DisplayConfig config={altConfig} />
+{#if altConfigs.length == 1}
+  <hbox class="display">
+    <DisplayConfig {config} />
+  </hbox>
+{:else}
+  {#each $altConfigs.each as altConfig}
+    <hbox>
+      <input type="radio"
+        checked={altConfig == config}
+        value={altConfig.protocol}
+        name="protocol"
+        on:change={() => onChange(altConfig)}
+        />
+      <hbox class="protocol">{altConfig.protocol}</hbox>
+    </hbox>
+    {#if altConfig == config}
+      <hbox class="display">
+        <DisplayConfig config={altConfig} />
+      </hbox>
+    {/if}
   {/each}
 {/if}
 
@@ -24,7 +36,9 @@
   export let config: MailAccount;
   export let altConfigs: ArrayColl<MailAccount>;
 
-  $: alternativeConfigs = altConfigs?.filter(c => c != config);
+  function onChange(newConfig: MailAccount) {
+    config = newConfig;
+  }
 </script>
 
 <style>
@@ -32,5 +46,9 @@
     justify-content: center;
     margin-top: 24px;
     margin-bottom: 24px;
+  }
+  .protocol {
+    text-transform: uppercase;
+    margin-left: 8px;
   }
 </style>
