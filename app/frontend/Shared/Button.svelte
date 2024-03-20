@@ -1,4 +1,4 @@
-<button on:click on:dblclick
+<button on:click on:dblclick bind:this={buttonEl}
   title={tooltip} class="button {classes}" class:plain
   {disabled} class:disabled class:selected
   >
@@ -43,9 +43,13 @@
   export let iconOnly = false;
   export let disabled = false;
   export let selected = false;
+  /** e.g. to `.focus()`
+   * out */
+  export let buttonEl: HTMLButtonElement = null;
 
   $: hasIcon = !!icon || $$slots.icon;
   $: hasLabel = (!!label || $$slots.label) && !iconOnly;
+
 </script>
 
 <style>
