@@ -1,22 +1,36 @@
-<hbox flex class="results middle">
+<vbox flex class="results">
   <hbox flex class="message">
     <CheckIcon />
     <vbox>
-      <hbox>Congratulations!</hbox>
       <hbox>We found the configuration in our ISP database.</hbox>
     </vbox>
   </hbox>
-</hbox>
+
+  <hbox class="display">
+    <DisplayConfig {config} />
+  </hbox>
+
+  {#if $alternativeConfigs.hasItems}
+    {#each $alternativeConfigs.each as altConfig}
+      <hbox>(o) Alternative</hbox>
+      <DisplayConfig config={altConfig} />
+    {/each}
+  {/if}
+</vbox>
 
 <script lang="ts">
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import type { ArrayColl } from "svelte-collections";
+  import DisplayConfig from "./DisplayConfig.svelte";
   import CheckIcon from "lucide-svelte/icons/check";
+
+  export let config: MailAccount;
+  export let altConfigs: ArrayColl<MailAccount>;
+
+  $: alternativeConfigs = altConfigs?.filter(c => c != config);
 </script>
 
 <style>
-  .middle {
-    margin-top: 24px;
-    margin-bottom: 20px;
-  }
   .message {
     margin-left: 8px;
     margin-right: 24px;
@@ -32,5 +46,10 @@
   }
   .results .message :global(svg) {
     margin-right: 6px;
+  }
+  .display {
+    justify-content: center;
+    margin-top: 24px;
+    margin-bottom: 24px;
   }
 </style>
