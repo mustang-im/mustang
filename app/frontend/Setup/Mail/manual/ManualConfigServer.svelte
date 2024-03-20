@@ -46,7 +46,7 @@
 </grid>
 
 <script lang="ts">
-  import { TLSSocketType, type MailAccount, AuthMethod } from "../../../logic/Mail/MailAccount";
+  import { TLSSocketType, type MailAccount, AuthMethod } from "../../../../logic/Mail/MailAccount";
   import ShieldOKIcon from "lucide-svelte/icons/shield-check";
   import ShieldAlertIcon from "lucide-svelte/icons/shield-alert";
   import { noEncryption, socketLabel } from "./DisplayConfig";
