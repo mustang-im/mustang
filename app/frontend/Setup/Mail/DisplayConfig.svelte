@@ -40,8 +40,6 @@
   /** in */
   export let config: MailAccount;
 
-  $: console.log("display config", config);
-
   $: noEncIn = noEncryption(config.tls);
   $: noEncOut = noEncryption(config.tls);
 </script>

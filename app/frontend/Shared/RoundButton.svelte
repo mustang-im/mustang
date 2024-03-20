@@ -28,6 +28,7 @@
   export let padding =
     classes?.includes("create") ? "8px" :
     classes?.includes("large") ? "10px" :
+    classes?.includes("small") ? "4px" :
     "8px";
   export let filled = classes?.includes("create");
   export let border = true;
@@ -83,6 +84,9 @@
   }
   button.secondary {
     border-color: #A1E4DA;
+  }
+  button.plain {
+    background-color: transparent;
   }
 
   @media (prefers-color-scheme: light) {

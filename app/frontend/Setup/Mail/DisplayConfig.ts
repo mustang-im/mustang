@@ -38,4 +38,8 @@ export const kStandardPorts = [
   { protocol: "smtp", tls: TLSSocketType.Plain, port: 587 },
   { protocol: "smtp", tls: TLSSocketType.STARTTLS, port: 25 },
   { protocol: "smtp", tls: TLSSocketType.Plain, port: 25 },
+  { protocol: "jmap", tls: TLSSocketType.TLS, port: 443 },
+  { protocol: "ews", tls: TLSSocketType.TLS, port: 443 },
+  { protocol: "activesync", tls: TLSSocketType.TLS, port: 443 },
+  { protocol: "owa", tls: TLSSocketType.TLS, port: 443 },
 ];

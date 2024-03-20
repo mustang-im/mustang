@@ -1,17 +1,16 @@
-<hbox flex class="middle"
-  class:error={errorGravity == ErrorGravity.Error}
-  class:warning={errorGravity == ErrorGravity.Warning}
-  >
-  <hbox flex class="message">
+<StatusMessage status={statusGravity(errorGravity)}
+  message={errorMessage}>
+  <hbox slot="icon">
     {#if errorGravity == ErrorGravity.Error}
       <ErrorIcon />
     {:else if errorGravity == ErrorGravity.Warning}
       <WarningIcon />
     {/if}
-    <hbox>{errorMessage}</hbox>
-    <RoundButton icon={CloseIcon} on:click={onClose} />
   </hbox>
-</hbox>
+  <hbox flex />
+  <RoundButton icon={CloseIcon} iconSize="16px" classes="plain small" border={false}
+    on:click={onClose} />
+</StatusMessage>
 
 <script lang="ts" context="module">
   export enum ErrorGravity {
@@ -22,6 +21,7 @@
 </script>
 
 <script lang="ts">
+  import StatusMessage from "./StatusMessage.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import ErrorIcon from "lucide-svelte/icons/alert-triangle";
   import WarningIcon from "lucide-svelte/icons/alert-circle";
@@ -37,28 +37,16 @@
   function onClose() {
     dispatchEvent("continue");
   }
+
+  function statusGravity(errorGravity: ErrorGravity) {
+    if (errorGravity == ErrorGravity.Error) {
+      return "error";
+    } else if (errorGravity == ErrorGravity.Warning) {
+      return "warning";
+    }
+    return "";
+  }
 </script>
 
 <style>
-  .middle {
-    margin-top: 24px;
-    margin-bottom: 20px;
-  }
-  .message {
-    margin-left: 8px;
-    margin-right: 24px;
-    padding: 4px 24px;
-    border-radius: 16px;
-  }
-  .error .message {
-    background-color: #FFFAEC;
-    color: #FFC83A;
-  }
-  .warning .message {
-    background-color: #FFFAEC;
-    color: #FFC83A;
-  }
-  .middle .message :global(svg) {
-    margin-right: 6px;
-  }
 </style>
