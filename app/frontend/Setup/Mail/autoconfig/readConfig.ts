@@ -5,11 +5,8 @@ import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../../../logic/util/util";
 import { ArrayColl } from "svelte-collections";
 
-export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string, unimportantError = (ex) => console.error(ex)): ArrayColl<MailAccount> {
+export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string): ArrayColl<MailAccount> {
   let autoconfigXML = JXON.parse(autoconfigXMLStr);
-  function ensureArray(value) {
-    return value === undefined ? [] : value;
-  }
   if (typeof (autoconfigXML) != "object" ||
     !autoconfigXML?.clientConfig?.emailProvider) {
     console.log("autoconfig xml", JSON.stringify(autoconfigXML, null, 2), autoconfigXML);
@@ -27,37 +24,7 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string, u
   // Incoming server
   for (let iX of ensureArray(xml.$incomingServer)) {
     try {
-      let protocol = sanitize.enum(iX["@type"], ["pop3", "imap"], null);
-      assert(protocol, "Need type for <incomingServer>");
-      let account = newAccountForProtocol(protocol);
-
-      account.name = displayName;
-      account.hostname = sanitize.hostname(iX.hostname);
-      account.port = sanitize.portTCP(iX.port);
-      account.username = sanitize.string(iX.username); // may be a %VARIABLE%
-      if (iX.password) {
-        account.password = sanitize.string(iX.password);
-      }
-
-      // Take first supported
-      account.tls = ensureArray(iX.$socketType).find(socketType => sanitize.translate(socketType, {
-        plain: TLSSocketType.Plain,
-        SSL: TLSSocketType.TLS,
-        STARTTLS: TLSSocketType.STARTTLS
-      }, null));
-      assert(account.tls, "No supported <socketType> in autoconfig");
-
-      // Take first supported auth method
-      account.authMethod = ensureArray(iX.$authentication).find(auth => sanitize.translate(auth, {
-        "password-cleartext": AuthMethod.Password,
-        "OAuth2": AuthMethod.OAuth2,
-        "password-encrypted": AuthMethod.CRAMMD5,
-        "GSSAPI": AuthMethod.GSSAPI,
-        "NTLM": AuthMethod.NTLM,
-      }, null));
-      assert(account.authMethod, "No supported <authentication> method in autoconfig");
-
-      configs.push(account);
+      configs.push(readServer(iX, displayName));
     } catch (ex) {
       firstError = ex;
     }
@@ -67,7 +34,57 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string, u
   }
   firstError = null;
 
-  // Outgoing server TODO
+  // Outgoing server
+  for (let oX of ensureArray(xml.$outgoingServer)) {
+    try {
+      configs.push(readServer(oX, displayName));
+    } catch (ex) {
+      firstError = ex;
+    }
+  }
+  if (!configs.length) {
+    throw firstError ?? new Error("No working <outgoingServer> in autoconfig XML found");
+  }
 
   return configs;
+}
+
+/**
+ * @param {JXON} xml <incomingServer> or <outgoingServer>
+ */
+function readServer(xml: any, displayName: string): MailAccount {
+  let protocol = sanitize.enum(xml["@type"], ["pop3", "imap", "jmap", "smtp", "exchange"], null);
+  assert(protocol, "Need type for <incomingServer>");
+  let account = newAccountForProtocol(protocol);
+
+  account.name = displayName;
+  account.hostname = sanitize.hostname(xml.hostname);
+  account.port = sanitize.portTCP(xml.port);
+  account.username = sanitize.string(xml.username); // may be a %VARIABLE%
+  if (xml.password) {
+    account.password = sanitize.string(xml.password);
+  }
+
+  // Take first supported
+  account.tls = ensureArray(xml.$socketType).find(socketType => sanitize.translate(socketType, {
+    plain: TLSSocketType.Plain,
+    SSL: TLSSocketType.TLS,
+    STARTTLS: TLSSocketType.STARTTLS
+  }, null));
+  assert(account.tls, "No supported <socketType> in autoconfig");
+
+  // Take first supported auth method
+  account.authMethod = ensureArray(xml.$authentication).find(auth => sanitize.translate(auth, {
+    "password-cleartext": AuthMethod.Password,
+    "OAuth2": AuthMethod.OAuth2,
+    "password-encrypted": AuthMethod.CRAMMD5,
+    "GSSAPI": AuthMethod.GSSAPI,
+    "NTLM": AuthMethod.NTLM,
+  }, null));
+  assert(account.authMethod, "No supported <authentication> method in autoconfig");
+  return account;
+}
+
+function ensureArray(value) {
+  return Array.isArray(value) ? value : [];
 }
