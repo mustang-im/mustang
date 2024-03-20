@@ -2,11 +2,10 @@
   message="We are looking for the configuration of your email account..." />
 
 <script lang="ts">
-  import { TLSSocketType, type MailAccount } from "../../../logic/Mail/MailAccount";
-  import { IMAPAccount } from "../../../logic/Mail/IMAP/IMAPAccount";
+  import { findConfig } from "./autoconfig/findConfig";
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import StatusMessage from "./StatusMessage.svelte";
-  import { sleep } from "../../../logic/util/util";
-  import { ArrayColl } from "svelte-collections";
+  import type { ArrayColl } from "svelte-collections";
   import { createEventDispatcher, onMount } from 'svelte';
   const dispatchEvent = createEventDispatcher();
 
@@ -21,19 +20,8 @@
 
   onMount(async () => {
     try {
-      let domain = emailAddress.split("@")[1];
-      if (!domain.includes(".")) {
-        throw new Error("Need dot in the domain");
-      }
-      await sleep(3);
-      config = new IMAPAccount();
-      config.hostname = "imap." + domain;
-      config.port = 993;
-      config.tls = TLSSocketType.TLS;
-      config.username = emailAddress;
-      config.password = password;
-      altConfigs = new ArrayColl<MailAccount>();
-      altConfigs.add(config);
+      altConfigs = await findConfig(emailAddress, password);
+      config = altConfigs.slice().shift();
       dispatchEvent("continue");
     } catch (ex) {
       dispatchEvent("fail", ex);
