@@ -3,23 +3,18 @@
   <CheckIcon slot="icon"/>
 </StatusMessage>
 
-<vbox class="workspace">
-  <hbox>Is it a work or private account?</hbox>
-  <hbox>(o) Work</hbox>
-  <hbox>(  ) Private</hbox>
-  <hbox>(  ) Other</hbox>
-</vbox>
+<WorkspaceSelector selectedWorkspace={workspace} />
 
 <script lang="ts">
-  import CheckIcon from "lucide-svelte/icons/check";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import WorkspaceSelector from "./WorkspaceSelector.svelte";
   import StatusMessage from "./StatusMessage.svelte";
+  import CheckIcon from "lucide-svelte/icons/check";
 
   export let config: MailAccount;
+
+  let workspace: string;
 </script>
 
 <style>
-  .workspace {
-    margin-top: 32px;
-  }
 </style>
