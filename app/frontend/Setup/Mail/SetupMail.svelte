@@ -3,6 +3,10 @@
   <vbox class="page-box">
     <EmailAddressPassword bind:emailAddress bind:password
       on:continue={onEmailAddressSucceeded} />
+    {#if errorMessage}
+      <ErrorMessage {errorMessage} {errorGravity}
+        on:continue={clearError} />
+    {/if}
     {#if step == Step.FindConfig}
       <FindConfig bind:config bind:altConfigs {emailAddress} {password}
         on:continue={onFindConfigSucceeded} on:fail={onFindConfigFailed} />
@@ -13,9 +17,6 @@
         on:continue={onCheckConfigSucceeded} on:fail={onError} />
     {:else if step == Step.FinalizeConfig}
       <FinalizeConfig {config} />
-    {:else if step == Step.Error}
-      <ErrorMessage {errorMessage} {errorGravity}
-        on:continue={clearError} />
     {/if}
     <hbox class="buttons">
       {#if step != Step.ManualConfig && step != Step.CheckConfig && step != Step.FinalizeConfig}
@@ -24,7 +25,7 @@
           on:click={onManualSetup}
           />
       {/if}
-      {#if step == 1}
+      {#if step == Step.EmailAddress}
         <Button label="Get new email address" classes="secondary"
           on:click={onNewEmailAddress}
           />
@@ -36,7 +37,7 @@
         bind:buttonEl={nextButtonEl}
         />
     </hbox>
-    {#if step == 1}
+    {#if step == Step.EmailAddress}
       <Footer />
     {/if}
   </vbox>
@@ -66,8 +67,6 @@
   let config: MailAccount;
   let altConfigs: ArrayColl<MailAccount>;
 
-  $: console.log("main config", config);
-
   enum Step {
     EmailAddress = 1,
     FindConfig = 2,
@@ -87,13 +86,12 @@
     step = Step.FindConfig;
   }
   function onFindConfigSucceeded() {
-    console.log("find config succeeded", config);
     step = Step.FoundConfig;
   }
   function onFindConfigFailed(event: CustomEvent) {
     let ex = event.detail;
+    console.log("find config error", ex, event);
     showError(ex);
-    console.log("find config failed", event, event.detail);
     step = Step.ManualConfig;
   }
   function onCheckConfigSucceeded() {
@@ -112,7 +110,6 @@
     step == Step.FinalizeConfig;
 
   function onContinue() {
-    console.log("old step", step);
     if (step == Step.EmailAddress) {
       step = Step.FindConfig;
     } else if (step == Step.FindConfig) {
@@ -126,7 +123,6 @@
     } else {
       throw new NotReached();
     }
-    console.log("new step", step);
   }
 
   $: emailAddress, password, resetMaybe();
@@ -139,6 +135,7 @@
     // TODO abort ongoing jobs
     config = null;
     altConfigs?.clear();
+    errorMessage = null;
     step = Step.EmailAddress;
   }
 
@@ -146,6 +143,7 @@
 
   function onError(event: CustomEvent) {
     let ex = event.detail;
+    console.log("error", ex, event);
     showError(ex);
   }
 

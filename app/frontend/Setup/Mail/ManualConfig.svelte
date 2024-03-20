@@ -1,3 +1,8 @@
+<StatusMessage status="warning"
+  message="Please enter the configuration. Your email provider or company can tell you these details.">
+  <ManualConfigIcon slot="icon" />
+</StatusMessage>
+
 <vbox>
   <h2>Manual configuration</h2>
   <grid class="manual-config">
@@ -18,6 +23,8 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import StatusMessage from "./StatusMessage.svelte";
+  import ManualConfigIcon from "lucide-svelte/icons/router";
   import ShieldOKIcon from "lucide-svelte/icons/shield-check";
   import ShieldAlertIcon from "lucide-svelte/icons/shield-alert";
   import ArrowLeftIcon from "lucide-svelte/icons/arrow-big-left";
