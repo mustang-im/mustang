@@ -14,9 +14,11 @@
 
   <hbox class="label">Connection encryption</hbox>
   <hbox>
-    <hbox class="tls" class:noencryption={noEncryption(config.tls)}>
-      {socketLabel(config.tls)}
-    </hbox>
+    <select bind:value={config.tls}>
+      <option value={TLSSocketType.TLS}>TLS</option>
+      <option value={TLSSocketType.STARTTLS}>STARTTLS</option>
+      <option value={TLSSocketType.Plain}>Plain</option>
+    </select>
     <hbox class="tls-icon">
       {#if noEncryption(config.tls)}
         <ShieldAlertIcon />
@@ -28,9 +30,13 @@
 
   <hbox class="label">Authentication method</hbox>
   <hbox>
-    <hbox class="tls" class:noencryption={noEncryption(config.tls)}>
-      {socketLabel(config.tls)}
-    </hbox>
+    <select bind:value={config.authMethod}>
+      <option value={AuthMethod.Password}>Password</option>
+      <option value={AuthMethod.OAuth2}>OAuth2 / Multi-factor authentication</option>
+      <option value={AuthMethod.GSSAPI}>Kerberos / GSSAPI</option>
+      <option value={AuthMethod.CRAMMD5}>CRAM MD5</option>
+      <option value={AuthMethod.NTLM}>NTLM</option>
+    </select>
   </hbox>
 
   <hbox class="label">Username</hbox>
@@ -40,7 +46,7 @@
 </grid>
 
 <script lang="ts">
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { TLSSocketType, type MailAccount, AuthMethod } from "../../../logic/Mail/MailAccount";
   import ShieldOKIcon from "lucide-svelte/icons/shield-check";
   import ShieldAlertIcon from "lucide-svelte/icons/shield-alert";
   import { noEncryption, socketLabel } from "./DisplayConfig";

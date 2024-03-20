@@ -18,7 +18,7 @@
     {:else if step == Step.FinalizeConfig}
       <FinalizeConfig {config} />
     {:else if step == Step.ManualConfig}
-      <ManualConfig {config} />
+      <ManualConfig bind:config />
     {/if}
     <hbox class="buttons">
       {#if step != Step.ManualConfig && step != Step.CheckConfig && step != Step.FinalizeConfig}
@@ -49,6 +49,8 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { createConfig } from "./autoconfig/createConfig";
+  import { makeManualConfig } from "./autoconfig/findConfig";
   import { openApp } from "../../AppsBar/selectedApp";
   import { mailMustangApp } from "../../Mail/MailMustangApp";
   import EmailAddressPassword from "./EmailAddressPassword.svelte";
@@ -61,9 +63,8 @@
   import Footer from "./Footer.svelte";
   import Button from "../../Shared/Button.svelte";
   import BackgroundVideo from "./BackgroundVideo.svelte";
-  import type { ArrayColl } from "svelte-collections";
   import { NotReached } from "../../../logic/util/util";
-  import { makeManualConfig } from "./autoconfig/findConfig";
+  import type { ArrayColl } from "svelte-collections";
 
   let emailAddress: string;
   let password: string;
@@ -129,7 +130,7 @@
     } else if (step == Step.CheckConfig) {
       step = Step.FinalizeConfig;
     } else if (step == Step.FinalizeConfig) {
-      onClose();
+      onSave();
     } else {
       throw new NotReached();
     }
@@ -172,6 +173,12 @@
     errorMessage = null;
     errorGravity = ErrorGravity.OK;
     step = 1;
+  }
+
+  function onSave() {
+    console.log("save config", config);
+    createConfig(config);
+    onClose();
   }
 
   function onClose() {
