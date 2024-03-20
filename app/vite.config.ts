@@ -25,6 +25,16 @@ export default defineConfig({
         ws: true,
         rewrite: (path) => path.replace(/^\/meet\//, ''),
       },*/
+      '/ispdb/': {
+        target: 'https://v1.ispdb.net/',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/ispdb/, ''),
+      },
+      '/mx/': {
+        target: 'https://mx.thunderbird.net/dns/mx/',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/mx/, ''),
+      },
     },
   },
   plugins: [svelte(), olm],
