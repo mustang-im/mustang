@@ -1,6 +1,6 @@
 <!-- TODO Jail content into an iframe -->
 
-<div bind:this={divEl} class="html-editor" on:send/>
+<div bind:this={divEl} class="html-editor" />
 
 <script lang="ts">
   import { Editor, type AnyExtension } from '@tiptap/core';
