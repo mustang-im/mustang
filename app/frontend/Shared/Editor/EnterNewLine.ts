@@ -1,4 +1,6 @@
-import { Extension, type Range } from "@tiptap/core";
+import { Extension , type Range } from "@tiptap/core";
+import { BulletList } from "@tiptap/extension-bullet-list";
+import { OrderedList } from "@tiptap/extension-ordered-list";
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -25,6 +27,12 @@ export const EnterNewline = Extension.create({
       Enter: () => this.editor.commands.enterLineBreak(),
     }
   },
+  addExtensions() {
+    return [
+      ToggleBulletList,
+      ToggleOrderedList
+    ]
+  },
   addCommands() {
     return {
       enterLineBreak: () => ({ tr, chain }) => {
@@ -44,10 +52,10 @@ export const EnterNewline = Extension.create({
         };
         return chain().deleteRange(newlineRange).createParagraphNear().scrollIntoView().run();
       },
-      splitNewLine: () => ({tr, dispatch}) => {
+      splitNewLine: () => ({tr}) => {
         let {$from, $to} = tr.selection;
         let shift = 0;
-        if (!dispatch || !$from) {
+        if (!$from) {
           return false;
         }
         tr.doc.nodesBetween($from.pos, $to.pos, (node, pos) => {
@@ -58,6 +66,26 @@ export const EnterNewline = Extension.create({
           }
         })
         return true;
+      },
+    }
+  },
+});
+
+const ToggleBulletList = BulletList.extend({
+  addCommands() {
+    return {
+      toggleBulletList: () => ({ chain }) => {
+        return chain().splitNewLine().toggleList(this.name, this.options.itemTypeName, this.options.keepMarks).run();
+      },
+    }
+  },
+});
+
+const ToggleOrderedList = OrderedList.extend({
+  addCommands() {
+    return {
+      toggleOrderedList: () => ({ chain }) => {
+        return chain().splitNewLine().toggleList(this.name, this.options.itemTypeName, this.options.keepMarks).run();
       },
     }
   },

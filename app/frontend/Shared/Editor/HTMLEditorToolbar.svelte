@@ -93,8 +93,8 @@ block
     <Button
       label="Bulleted list"
       shortCutInfo="* Item"
-      on:click={() => editor.chain().focus().splitNewLine().toggleBulletList().run()}
-      disabled={!editor.can().chain().focus().splitNewLine().toggleBulletList().run()}
+      on:click={() => editor.chain().focus().toggleBulletList().run()}
+      disabled={!editor.can().chain().focus().toggleBulletList().run()}
       selected={editor.isActive('bulletList')}
       icon={ListBulletedIcon}
       iconOnly
@@ -102,8 +102,8 @@ block
     <Button
       label="Ordered list"
       shortCutInfo="1. Item"
-      on:click={() => editor.chain().focus().splitNewLine().toggleOrderedList().run()}
-      disabled={!editor.can().chain().focus().splitNewLine().toggleOrderedList().run()}
+      on:click={() => editor.chain().focus().toggleOrderedList().run()}
+      disabled={!editor.can().chain().focus().toggleOrderedList().run()}
       selected={editor.isActive('orderedList')}
       icon={ListNumberedIcon}
       iconOnly
