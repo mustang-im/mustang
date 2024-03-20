@@ -17,6 +17,8 @@
         on:continue={onCheckConfigSucceeded} on:fail={onError} />
     {:else if step == Step.FinalizeConfig}
       <FinalizeConfig {config} />
+    {:else if step == Step.ManualConfig}
+      <ManualConfig {config} />
     {/if}
     <hbox class="buttons">
       {#if step != Step.ManualConfig && step != Step.CheckConfig && step != Step.FinalizeConfig}
@@ -54,12 +56,14 @@
   import FoundConfig from "./FoundConfig.svelte";
   import CheckConfig from "./CheckConfig.svelte";
   import FinalizeConfig from "./FinalizeConfig.svelte";
+  import ManualConfig from "./ManualConfig.svelte";
   import ErrorMessage, { ErrorGravity } from "./ErrorMessage.svelte";
   import Footer from "./Footer.svelte";
   import Button from "../../Shared/Button.svelte";
   import BackgroundVideo from "./BackgroundVideo.svelte";
   import type { ArrayColl } from "svelte-collections";
   import { NotReached } from "../../../logic/util/util";
+  import { makeManualConfig } from "./autoconfig/findConfig";
 
   let emailAddress: string;
   let password: string;
@@ -92,12 +96,15 @@
     let ex = event.detail;
     console.log("find config error", ex, event);
     showError(ex);
-    step = Step.ManualConfig;
+    onManualSetup();
   }
   function onCheckConfigSucceeded() {
     step = Step.FinalizeConfig;
   }
   function onManualSetup() {
+    if (!config || !config.outgoing) {
+      config = makeManualConfig(emailAddress, password);
+    }
     step = Step.ManualConfig;
   }
   function onNewEmailAddress() {
@@ -107,6 +114,7 @@
   $: canContinueButton =
     step == Step.EmailAddress && emailAddress && password ||
     step == Step.FoundConfig ||
+    step == Step.ManualConfig ||
     step == Step.FinalizeConfig;
 
   function onContinue() {
@@ -115,6 +123,8 @@
     } else if (step == Step.FindConfig) {
       step = Step.FoundConfig;
     } else if (step == Step.FoundConfig) {
+      step = Step.CheckConfig;
+    } else if (step == Step.ManualConfig) {
       step = Step.CheckConfig;
     } else if (step == Step.CheckConfig) {
       step = Step.FinalizeConfig;
