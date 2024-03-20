@@ -7,8 +7,10 @@
     />
   <hbox class="buttons">
     <Button classes="cleartext"
+      label={cleartext ? "Hide password" : "Show password"}
       on:click={() => cleartext = !cleartext}
       icon={cleartext ? EyeIcon : EyeOffIcon}
+      iconOnly
       plain
       />
   </hbox>
