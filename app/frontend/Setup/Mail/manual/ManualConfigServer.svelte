@@ -49,10 +49,13 @@
   import { TLSSocketType, type MailAccount, AuthMethod } from "../../../../logic/Mail/MailAccount";
   import ShieldOKIcon from "lucide-svelte/icons/shield-check";
   import ShieldAlertIcon from "lucide-svelte/icons/shield-alert";
-  import { noEncryption, socketLabel } from "./DisplayConfig";
 
   /** in */
   export let config: MailAccount;
+
+  export function noEncryption(tls: TLSSocketType): boolean {
+    return tls != TLSSocketType.TLS && tls != TLSSocketType.STARTTLS;
+  }
 </script>
 
 <style>

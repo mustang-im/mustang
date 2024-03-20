@@ -126,6 +126,7 @@
     } else if (step == Step.FoundConfig) {
       step = Step.CheckConfig;
     } else if (step == Step.ManualConfig) {
+      errorMessage = null;
       step = Step.CheckConfig;
     } else if (step == Step.CheckConfig) {
       step = Step.FinalizeConfig;
