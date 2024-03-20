@@ -45,17 +45,17 @@ export async function readMailAccounts(): Promise<ArrayColl<MailAccount>> {
 
 function readIMAPAccount(prefBranch: string): IMAPAccount {
   let account = new IMAPAccount();
-  readStandardAccount(account, prefBranch);
+  readStandardAccountFromLocalStorage(account, prefBranch);
   return account;
 }
 
 function readPOP3Account(prefBranch: string): POP3Account {
   let account = new POP3Account();
-  readStandardAccount(account, prefBranch);
+  readStandardAccountFromLocalStorage(account, prefBranch);
   return account;
 }
 
-function readStandardAccount(account: MailAccount, prefBranch: string): void {
+function readStandardAccountFromLocalStorage(account: MailAccount, prefBranch: string): void {
   account.hostname = sanitize.hostname(localStorage.getItem(prefBranch + "hostname"));
   account.port = sanitize.portTCP(localStorage.getItem(prefBranch + "port"));
   account.emailAddress = sanitize.nonemptystring(localStorage.getItem(prefBranch + "emailAddress"));
@@ -65,11 +65,37 @@ function readStandardAccount(account: MailAccount, prefBranch: string): void {
       appGlobal.me.name ?? localStorage.getItem("me.realname"));
   account.tls = sanitize.translate(localStorage.getItem(prefBranch + "tls"), {
     plain: 1,
-    TLS: 2,
-    STARTTLS: 3,
+    tls: 2,
+    starttls: 3,
   }, 2);
   account.name = account.emailAddress;
 }
+
+export function saveNewAccountToLocalStorage(account: MailAccount): void {
+  let accountID = nextFreeAccountID();
+  let prefBranch = "mail." + accountID;
+  localStorage.setItem(prefBranch + "hostname", sanitize.hostname(account.hostname));
+  localStorage.setItem(prefBranch + "port", sanitize.portTCP(account.port) + "");
+  localStorage.setItem(prefBranch + "emailAddress", sanitize.emailAddress(account.emailAddress));
+  localStorage.setItem(prefBranch + "username", sanitize.nonemptystring(account.username));
+  localStorage.setItem(prefBranch + "password", sanitize.string(account.password));
+  localStorage.setItem(prefBranch + "userRealname", sanitize.nonemptystring(
+    account.userRealname ?? appGlobal.me.name ?? localStorage.getItem("me.realname")));
+  localStorage.setItem(prefBranch + "tls", sanitize.alphanumdash(account.tls.toString().toLowerCase()));
+  account.name = sanitize.emailAddress(account.emailAddress);
+}
+
+function nextFreeAccountID(): string {
+  for (let i = 1; true; i++) {
+    let accountID = `account${i}.`;
+    let prefBranch = `mail.account${i}.`;
+    let protocol = localStorage.getItem(prefBranch + "protocol");
+    if (!protocol) {
+      return accountID;
+    }
+  }
+}
+
 
 export function newAccountForProtocol(protocol: string): MailAccount {
   if (protocol == "imap") {
