@@ -4,26 +4,31 @@
 </StatusMessage>
 
 {#if altConfigs.length == 1}
-  <hbox class="display">
+  <hbox class="display single">
     <DisplayConfig {config} />
   </hbox>
 {:else}
-  {#each $altConfigs.each as altConfig}
-    <hbox>
-      <input type="radio"
-        checked={altConfig == config}
-        value={altConfig.protocol}
-        name="protocol"
-        on:change={() => onChange(altConfig)}
-        />
-      <hbox class="protocol">{altConfig.protocol}</hbox>
-    </hbox>
-    {#if altConfig == config}
-      <hbox class="display">
-        <DisplayConfig config={altConfig} />
-      </hbox>
-    {/if}
-  {/each}
+  <vbox class="configs">
+    {#each $altConfigs.each as altConfig}
+      <vbox class="alt">
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <hbox class="protocol-header" on:click={event => onChange(altConfig, event)}>
+          <input type="radio"
+            checked={altConfig == config}
+            value={altConfig.protocol}
+            name="protocol"
+            on:change={event => onChange(altConfig, event)}
+            />
+          <label class="protocol" for={altConfig.protocol}>{altConfig.protocol}</label>
+        </hbox>
+        {#if altConfig == config}
+          <hbox class="display">
+            <DisplayConfig config={altConfig} />
+          </hbox>
+        {/if}
+      </vbox>
+    {/each}
+  </vbox>
 {/if}
 
 <script lang="ts">
@@ -36,15 +41,24 @@
   export let config: MailAccount;
   export let altConfigs: ArrayColl<MailAccount>;
 
-  function onChange(newConfig: MailAccount) {
+  function onChange(newConfig: MailAccount, event: Event) {
     config = newConfig;
+    event.stopPropagation();
   }
 </script>
 
 <style>
-  .display {
+  .display.single {
     justify-content: center;
     margin-top: 24px;
+    margin-bottom: 24px;
+  }
+  .configs {
+    margin-top: 24px;
+  }
+  .alt .display {
+    justify-content: center;
+    margin-top: 12px;
     margin-bottom: 24px;
   }
   .protocol {
