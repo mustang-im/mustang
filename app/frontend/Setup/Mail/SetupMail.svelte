@@ -50,7 +50,7 @@
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { createConfig } from "./autoconfig/createConfig";
-  import { makeManualConfig } from "./autoconfig/findConfig";
+  import { makeManualConfig } from "./autoconfig/manualConfig";
   import { openApp } from "../../AppsBar/selectedApp";
   import { mailMustangApp } from "../../Mail/MailMustangApp";
   import EmailAddressPassword from "./EmailAddressPassword.svelte";
@@ -58,7 +58,7 @@
   import FoundConfig from "./FoundConfig.svelte";
   import CheckConfig from "./CheckConfig.svelte";
   import FinalizeConfig from "./FinalizeConfig.svelte";
-  import ManualConfig from "./ManualConfig.svelte";
+  import ManualConfig from "./manual/ManualConfig.svelte";
   import ErrorMessage, { ErrorGravity } from "./ErrorMessage.svelte";
   import Footer from "./Footer.svelte";
   import Button from "../../Shared/Button.svelte";

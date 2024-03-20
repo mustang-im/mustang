@@ -19,9 +19,9 @@
 </vbox>
 
 <script lang="ts">
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import type { MailAccount } from "../../../../logic/Mail/MailAccount";
   import ManualConfigServer from "./ManualConfigServer.svelte";
-  import StatusMessage from "./StatusMessage.svelte";
+  import StatusMessage from "../StatusMessage.svelte";
   import ManualConfigIcon from "lucide-svelte/icons/router";
   import ArrowLeftIcon from "lucide-svelte/icons/arrow-big-left";
   import ArrowRightIcon from "lucide-svelte/icons/arrow-big-right";
