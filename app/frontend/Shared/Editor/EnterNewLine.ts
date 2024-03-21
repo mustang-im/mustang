@@ -1,6 +1,13 @@
-import { Extension, type Range } from "@tiptap/core";
+import { Extension, type Extensions, type Range } from "@tiptap/core";
 import { BulletList } from "@tiptap/extension-bullet-list";
 import { OrderedList } from "@tiptap/extension-ordered-list";
+import { Heading } from "@tiptap/extension-heading";
+
+export interface EnterNewlineOptions {
+  toggleHeading: boolean,
+  toggleBulletList: boolean,
+  toggleOrderedList: boolean,
+}
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -21,17 +28,31 @@ declare module '@tiptap/core' {
   * new paragraph.
   * 2. On two consecutive `Enter` keypresses, it deletes the previous 
   * `<br>` and creates a new paragraph. */
-export const EnterNewline = Extension.create({
+export const EnterNewline = Extension.create<EnterNewlineOptions>({
+  addOptions() {
+    return {
+      toggleHeading: true,
+      toggleBulletList: true,
+      toggleOrderedList: true,
+    }
+  },
   addKeyboardShortcuts() {
     return {
       Enter: ({ editor }) => editor.commands.enterLineBreak(),
     }
   },
   addExtensions() {
-    return [
-      ToggleBulletList,
-      ToggleOrderedList
-    ]
+    let extensions: Extensions = [];
+    if (this.options.toggleHeading) {
+      extensions.push(ToggleHeading);
+    }
+    if (this.options.toggleBulletList) {
+      extensions.push(ToggleBulletList);
+    }
+    if (this.options.toggleOrderedList) {
+      extensions.push(ToggleOrderedList);
+    }
+    return extensions;
   },
   addCommands() {
     return {
@@ -102,6 +123,20 @@ export const EnterNewline = Extension.create({
         }
         return true;
       },
+    }
+  },
+});
+
+const ToggleHeading = Heading.extend({
+  addCommands() {
+    return {
+      toggleHeading: (attributes) => ({ chain }) => {
+        if (!this.options.levels.includes(attributes.level)) {
+          return false
+        }
+
+        return chain().splitNewLine().toggleNode(this.name, 'paragraph', attributes).run();
+      }
     }
   },
 });
