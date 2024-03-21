@@ -1,6 +1,7 @@
 import { MailAccount } from './MailAccount';
 import { IMAPAccount } from './IMAP/IMAPAccount';
 import { POP3Account } from './POP3/POP3Account';
+import { SMTPAccount } from './SMTP/SMTPAccount';
 import { sanitize } from '../../../lib/util/sanitizeDatatypes';
 import { NotReached } from '../util/util';
 import { ArrayColl } from 'svelte-collections';
@@ -103,6 +104,9 @@ export function newAccountForProtocol(protocol: string): MailAccount {
   }
   if (protocol == "pop3") {
     return new POP3Account();
+  }
+  if (protocol == "smtp") {
+    return new SMTPAccount();
   }
   if (protocol == "mail") {
     return new MailAccount();

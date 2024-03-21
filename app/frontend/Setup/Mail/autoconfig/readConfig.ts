@@ -15,6 +15,7 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string): 
   let xml = autoconfigXML.clientConfig.emailProvider;
 
   let configs = new ArrayColl<MailAccount>();
+  let outgoingConfigs = new ArrayColl<MailAccount>();
 
   let displayName = xml.displayName ? sanitize.label(xml.displayName) : sanitize.hostname(xml["@id"]);
   //let domains = xml.$domain.map(domain => sanitize.hostname(domain));
@@ -37,13 +38,17 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string): 
   // Outgoing server
   for (let oX of ensureArray(xml.$outgoingServer)) {
     try {
-      configs.push(readServer(oX, displayName));
+      outgoingConfigs.push(readServer(oX, displayName));
     } catch (ex) {
       firstError = ex;
     }
   }
-  if (!configs.length) {
+  if (!outgoingConfigs.length) {
     throw firstError ?? new Error("No working <outgoingServer> in autoconfig XML found");
+  }
+  let outgoing = outgoingConfigs.first;
+  for (let config of configs) {
+    config.outgoing = outgoing;
   }
 
   return configs;
