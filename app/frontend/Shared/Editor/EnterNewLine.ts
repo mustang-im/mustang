@@ -119,7 +119,7 @@ export const EnterNewline = Extension.create<EnterNewlineOptions>({
 
         // Places the cursor 
         if ($to.nodeAfter && $to.nodeAfter.type.name === 'hardBreak') {
-          commands.setTextSelection({ from: $from.pos + shift - 1, to: $to.pos + shift + 1 });
+          commands.setTextSelection({ from: $from.pos + 1, to: $to.pos + shift + 1 });
         }
         return true;
       },
