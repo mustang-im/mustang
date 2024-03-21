@@ -43,6 +43,7 @@ export const EnterNewline = Extension.create<EnterNewlineOptions>({
   },
   addExtensions() {
     let extensions: Extensions = [];
+
     if (this.options.toggleHeading) {
       extensions.push(ToggleHeading);
     }
@@ -86,7 +87,7 @@ export const EnterNewline = Extension.create<EnterNewlineOptions>({
         if ($from.pos !== $from.start() || $to.pos !== $to.end()) {
 
           // Delete and split first <br> before selection
-          let breakBefore = -1
+          let breakBefore = -1;
           tr.doc.nodesBetween($from.start(), $from.pos, (node, pos) => {
             if (node.type.name === 'hardBreak') breakBefore = pos
           })
@@ -117,7 +118,7 @@ export const EnterNewline = Extension.create<EnterNewlineOptions>({
           }
         });
 
-        // Places the cursor 
+        // Unselects the last `<br>` to avoid toggling the next line
         if ($to.nodeAfter && $to.nodeAfter.type.name === 'hardBreak') {
           commands.setTextSelection({ from: $from.pos + 1, to: $to.pos + shift + 1 });
         }
@@ -136,7 +137,7 @@ const ToggleHeading = Heading.extend({
         }
 
         return chain().splitNewLine().toggleNode(this.name, 'paragraph', attributes).run();
-      }
+      },
     }
   },
 });
