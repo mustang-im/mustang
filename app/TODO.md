@@ -2,7 +2,6 @@
 * Errors
   * Notification bar
 * init
-  * Create global init function, which inits appGlobal and then inits each app
   * Move chat account load into Chat app ini.
 * Router
   * Allow app to change the screen
@@ -77,8 +76,11 @@
 ## Protocol
 * OpenTalk server
   * Participant opening/closing cam is delayed
-  * Mute/unmute
+  * Mute/unmute without destroying stream
   * TURN server
+  * Re-connect
+  * Lower resolution video
+  * Show Internet connection quality for self and other participants
 * XMPP 1:1
 * XMPP group?
 * Matrix 1:1
@@ -96,15 +98,13 @@
 # Infra
 * App shell: XULrunner, Electron etc.
 * Cordova or similar
-* node.js start and shutdown
-* IPC: Communication to node.js process. Use jpc?
+* JPC: TCP sockets
 
 # Apps
 * Need: App shell, for: iframe rights
 
 # Mail
-* Need: node.js, for: IMAP TCP, sqlite etc.
-* Sqlite
+* Re-connect
 * Refactor IMAP orcastration: Separate IMAP protocol folder object and IMAP orcestration folder object. The latter does folder cache, IMAP poll/refresh, offline cache etc.
 * JMAP
 
