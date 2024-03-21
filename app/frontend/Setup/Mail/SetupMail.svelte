@@ -49,7 +49,7 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import { createConfig } from "./autoconfig/createConfig";
+  import { saveConfig } from "./autoconfig/saveConfig";
   import { makeManualConfig } from "./autoconfig/manualConfig";
   import { openApp } from "../../AppsBar/selectedApp";
   import { mailMustangApp } from "../../Mail/MailMustangApp";
@@ -178,7 +178,7 @@
 
   function onSave() {
     console.log("save config", config);
-    createConfig(config);
+    saveConfig(config, emailAddress, password);
     onClose();
   }
 
