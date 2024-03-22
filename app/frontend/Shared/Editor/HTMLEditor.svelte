@@ -59,6 +59,10 @@
 
 <style>
   /** Fix app.css, see .value */
+  .html-editor :global(p) {
+    margin: 0 0 1em 0;
+  }
+
   .html-editor :global(*) {
     user-select: text;
   }

@@ -98,7 +98,7 @@ export const EnterNewline = Extension.create<EnterNewlineOptions>({
 
           // Delete and split first <br> after selection
           let breakAfter = -1;
-          tr.doc.nodesBetween($to.pos, $to.after(), (node, pos) => {
+          tr.doc.nodesBetween($to.pos, $to.end(), (node, pos) => {
             if (breakAfter > -1) return false
             if (node.type.name === 'hardBreak') breakAfter = pos
           })
