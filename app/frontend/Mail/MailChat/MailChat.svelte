@@ -53,7 +53,7 @@
   let selectedPerson: Person;
   $: rootFolders = mergeColls<Folder>(accounts.map(account => account.rootFolders).values());
   $: allMessages = mergeColls<EMail>(rootFolders.map(folder => folder.messages).values());
-  $: personMessages = allMessages.filter(msg => msg.contact == selectedPerson).sortBy(msg => msg.received);
+  $: personMessages = allMessages.filter(msg => msg.contact == selectedPerson).sortBy(msg => msg.sent);
   $: filteredMessages = $globalSearchTerm
     ? personMessages.filter(msg => msg.text.toLowerCase().includes($globalSearchTerm))
     : personMessages;

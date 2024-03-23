@@ -27,7 +27,7 @@
   export let selectedMessages: ArrayColl<EMail>;
   export let selectedMessage: EMail;
 
-  $: sortedMessages = messages.sortBy(email => -email.received.getTime());
+  $: sortedMessages = messages.sortBy(email => -email.sent.getTime());
 
   async function onKey(event: KeyboardEvent) {
     if (event.key == "Delete") {
