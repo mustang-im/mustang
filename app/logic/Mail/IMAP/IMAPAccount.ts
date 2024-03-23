@@ -1,6 +1,8 @@
 import { MailAccount, TLSSocketType } from "../MailAccount";
 import { IMAPFolder } from "./IMAPFolder";
 import { appGlobal } from "../../app";
+import { SQLAccount } from "../SQL/SQLAccount";
+import { SQLFolder } from "../SQL/SQLFolder";
 import type { ArrayColl, Collection } from "svelte-collections";
 import { assert } from "../../util/util";
 import type { ImapFlow } from "../../../../e2/node_modules/imapflow";
@@ -22,6 +24,11 @@ export class IMAPAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
+    if (!this.dbID) {
+      await SQLAccount.save(this);
+    }
+    await SQLFolder.readAllHierarchy(this);
+
     let conn = await this.connection();
     await conn.connect();
     await this.listFolders();
@@ -63,6 +70,8 @@ export class IMAPAccount extends MailAccount {
   }
 
   async listFolders(): Promise<void> {
+    await SQLFolder.readAllHierarchy(this);
+
     // listTree() doesn't return the message count and is not well-implemented
     let folders = await this._connection.list({
       statusQuery: {
@@ -73,6 +82,14 @@ export class IMAPAccount extends MailAccount {
     });
     // console.log("folders", foldersFlat);
     this.readFolders(folders, null, this.rootFolders as ArrayColl<IMAPFolder>);
+
+    for (let folder of this.getAllFolders()) {
+      if (!folder.dbID) {
+        await SQLFolder.save(folder);
+      } else {
+        await SQLFolder.saveProperties(folder);
+      }
+    }
   }
 
   readFolders(allFoldersInfo: any[], parent: IMAPFolder, subFolders: Collection<IMAPFolder>): void {

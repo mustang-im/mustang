@@ -56,7 +56,8 @@ export class SQLEMail {
         isStarred = ${email.isStarred ? 1 : 0},
         isReplied = ${email.isReplied ? 1 : 0},
         isSpam = ${email.isSpam ? 1 : 0},
-        isDraft = ${email.isDraft ? 1 : 0}
+        isDraft = ${email.isDraft ? 1 : 0},
+        downloadComplete = ${email.downloadComplete ? 1 : 0}
       WHERE id = ${email.dbID}
       `);
   }

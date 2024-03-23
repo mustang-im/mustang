@@ -110,9 +110,10 @@ export const mailDatabaseSchema = sql`
     "isReplied" BOOLEAN default false,
     "isDraft" BOOLEAN default false,
     "isSpam" BOOLEAN default false,
-    FOREIGN KEY (parentMsgID)
-      REFERENCES email (id)
-      ON DELETE SET NULL,
+    "downloadComplete" BOOLEAN default false,
+    -- FOREIGN KEY (parentMsgID)
+    --   REFERENCES email (messageID)
+    --   ON DELETE SET NULL,
     FOREIGN KEY (folderID)
       REFERENCES folder (ID)
       ON DELETE CASCADE

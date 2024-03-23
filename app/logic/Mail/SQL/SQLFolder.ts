@@ -14,16 +14,16 @@ export class SQLFolder extends Folder {
     let insert = await (await getDatabase()).run(sql`
       INSERT OR REPLACE INTO folder (
         id, accountID, name, path,
-        parent, specialUse,
-        countTotal, countUnread, countNewArrived,
-        uidvalidity, lastSeen
+        parent, specialUse
       ) VALUES (
         ${folder.dbID}, ${folder.account.dbID}, ${folder.name}, ${folder.path},
-        ${folder.parent?.dbID}, ${folder.specialFolder},
-        ${folder.countTotal}, ${folder.countUnread}, ${folder.countNewArrived},
-        ${folder.uidvalidity}, ${folder.lastSeen}
+        ${folder.parent?.dbID}, ${folder.specialFolder}
       )`);
     folder.dbID = insert.lastInsertRowid;
+    await this.saveProperties(folder);
+  }
+
+  static async saveProperties(folder: Folder) {
     await (await getDatabase()).run(sql`
       UPDATE folder SET
         countTotal = ${folder.countTotal},

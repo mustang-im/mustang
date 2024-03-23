@@ -2,6 +2,7 @@ import { EMail, PersonEmailAddress } from "../EMail";
 import { findOrCreatePerson, findOrCreatePersonEmailAddress } from "../Person";
 import { Attachment, ContentDisposition } from "../Attachment";
 import type { IMAPFolder } from "./IMAPFolder";
+import { SQLEMail } from "../SQL/SQLEMail";
 import { assert } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
@@ -72,6 +73,7 @@ export class IMAPEMail extends EMail {
     }));
     //console.log("imapflow mail", mail, "text", mail.text, "html", mail.html);
     //console.log("IMAPEMail", this, "text", this.text, "html", this.html);
+    await SQLEMail.save(this);
   }
 
   async markRead(read = true) {
