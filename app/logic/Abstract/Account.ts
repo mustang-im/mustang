@@ -44,8 +44,9 @@ export class Account extends Observable {
   }
 }
 
+let lastID = 0;
 function findFreeAccountID(): string {
-  for (let i = 1; true; i++) {
+  for (let i = lastID + 1; true; i++) {
     let id = "account" + i;
     if (appGlobal.allAccounts.contents.some(acc => acc.id == id)) {
       continue;

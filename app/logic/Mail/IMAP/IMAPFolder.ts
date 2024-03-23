@@ -98,10 +98,8 @@ export class IMAPFolder extends Folder {
     let downloadedMessages = new ArrayColl<IMAPEMail>();
     const kMaxCount = 50;
     while (needToDownload.hasItems) {
-      let downloadMessages = new ArrayColl<IMAPEMail>();
-      for (let i = 0; i < kMaxCount; i++) {
-        downloadMessages.add(needToDownload.shift());
-      }
+      let downloadMessages = needToDownload.getIndexRange(needToDownload.length - kMaxCount, kMaxCount) as any as IMAPEMail[];
+      needToDownload.removeAll(downloadMessages);
       let uids = downloadMessages.map(msg => msg.uid).join(",");
       await this.runCommand(async (conn) => {
         for await (let msgInfo of await conn.fetch(uids, {

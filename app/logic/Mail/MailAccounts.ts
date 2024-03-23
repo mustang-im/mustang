@@ -18,15 +18,16 @@ import { ArrayColl } from 'svelte-collections';
 export async function readMailAccounts(): Promise<ArrayColl<MailAccount>> {
   let accounts = new ArrayColl<MailAccount>();
   for (let i = 1; true; i++) {
+    let id = `account${i}`;
     let prefBranch = `mail.account${i}.`;
     try {
       let protocol = localStorage.getItem(prefBranch + "protocol");
       if (!protocol) {
         break;
       } else if (protocol == "imap") {
-        accounts.add(await readIMAPAccount(prefBranch));
+        accounts.add(await readIMAPAccount(prefBranch, id));
       } else if (protocol == "pop3") {
-        accounts.add(await readPOP3Account(prefBranch));
+        accounts.add(await readPOP3Account(prefBranch, id));
       } else {
         console.error(`Unknown mail protocol ${protocol} in localStorage ${prefBranch}protocol`);
       }
@@ -44,19 +45,19 @@ export async function readMailAccounts(): Promise<ArrayColl<MailAccount>> {
   return accounts;
 }
 
-async function readIMAPAccount(prefBranch: string): Promise<IMAPAccount> {
+async function readIMAPAccount(prefBranch: string, id: string): Promise<IMAPAccount> {
   let account = new IMAPAccount();
   await readStandardAccountFromLocalStorage(account, prefBranch);
   return account;
 }
 
-async function readPOP3Account(prefBranch: string): Promise<POP3Account> {
+async function readPOP3Account(prefBranch: string, id: string): Promise<POP3Account> {
   let account = new POP3Account();
   await readStandardAccountFromLocalStorage(account, prefBranch);
   return account;
 }
 
-async function readStandardAccountFromLocalStorage(account: MailAccount, prefBranch: string): void {
+async function readStandardAccountFromLocalStorage(account: MailAccount, prefBranch: string): Promise<void> {
   account.hostname = sanitize.hostname(localStorage.getItem(prefBranch + "hostname"));
   account.port = sanitize.portTCP(localStorage.getItem(prefBranch + "port"));
   account.emailAddress = sanitize.nonemptystring(localStorage.getItem(prefBranch + "emailAddress"));

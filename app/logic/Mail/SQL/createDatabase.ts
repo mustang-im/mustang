@@ -56,7 +56,7 @@ export const mailDatabaseSchema = sql`
   );
 
   -- n:n table for email to emailPersons
-  -- TODO Should we merge emailPersons into this table? + Less JOINs, - more duplication, + allows the name to change between emails.
+  -- TODO Should we merge emailPersons into this table? + Less JOINs, - more duplication
   CREATE TABLE "emailPersonRel" (
     "emailID" INTEGER not null,
     "emailPersonID" INTEGER not null,
