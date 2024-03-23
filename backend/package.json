@@ -5,8 +5,10 @@
   "main": "./backend.ts",
   "dependencies": {
     "@radically-straightforward/sqlite": "^1.0.0",
+    "@types/nodemailer": "^6.4.14",
     "bufferutil": "^4.0.8",
     "imapflow": "^1.0.155",
+    "nodemailer": "^6.9.13",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
     "utf-8-validate": "^6.0.3",
