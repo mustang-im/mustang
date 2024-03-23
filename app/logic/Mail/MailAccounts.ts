@@ -2,11 +2,11 @@ import { MailAccount } from './MailAccount';
 import { IMAPAccount } from './IMAP/IMAPAccount';
 import { POP3Account } from './POP3/POP3Account';
 import { SMTPAccount } from './SMTP/SMTPAccount';
-import { sanitize } from '../../../lib/util/sanitizeDatatypes';
-import { NotReached } from '../util/util';
-import { ArrayColl } from 'svelte-collections';
-import { appGlobal } from '../app';
 import { ContactEntry } from '../Abstract/Person';
+import { appGlobal } from '../app';
+import { NotReached } from '../util/util';
+import { sanitize } from '../../../lib/util/sanitizeDatatypes';
+import { ArrayColl } from 'svelte-collections';
 
 /**
  * Reads settings for mail accounts,
@@ -24,9 +24,9 @@ export async function readMailAccounts(): Promise<ArrayColl<MailAccount>> {
       if (!protocol) {
         break;
       } else if (protocol == "imap") {
-        accounts.add(readIMAPAccount(prefBranch));
+        accounts.add(await readIMAPAccount(prefBranch));
       } else if (protocol == "pop3") {
-        accounts.add(readPOP3Account(prefBranch));
+        accounts.add(await readPOP3Account(prefBranch));
       } else {
         console.error(`Unknown mail protocol ${protocol} in localStorage ${prefBranch}protocol`);
       }
@@ -44,19 +44,19 @@ export async function readMailAccounts(): Promise<ArrayColl<MailAccount>> {
   return accounts;
 }
 
-function readIMAPAccount(prefBranch: string): IMAPAccount {
+async function readIMAPAccount(prefBranch: string): Promise<IMAPAccount> {
   let account = new IMAPAccount();
-  readStandardAccountFromLocalStorage(account, prefBranch);
+  await readStandardAccountFromLocalStorage(account, prefBranch);
   return account;
 }
 
-function readPOP3Account(prefBranch: string): POP3Account {
+async function readPOP3Account(prefBranch: string): Promise<POP3Account> {
   let account = new POP3Account();
-  readStandardAccountFromLocalStorage(account, prefBranch);
+  await readStandardAccountFromLocalStorage(account, prefBranch);
   return account;
 }
 
-function readStandardAccountFromLocalStorage(account: MailAccount, prefBranch: string): void {
+async function readStandardAccountFromLocalStorage(account: MailAccount, prefBranch: string): void {
   account.hostname = sanitize.hostname(localStorage.getItem(prefBranch + "hostname"));
   account.port = sanitize.portTCP(localStorage.getItem(prefBranch + "port"));
   account.emailAddress = sanitize.nonemptystring(localStorage.getItem(prefBranch + "emailAddress"));
@@ -96,7 +96,6 @@ function nextFreeAccountID(): string {
     }
   }
 }
-
 
 export function newAccountForProtocol(protocol: string): MailAccount {
   if (protocol == "imap") {

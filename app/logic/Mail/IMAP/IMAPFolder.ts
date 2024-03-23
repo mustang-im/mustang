@@ -1,6 +1,8 @@
 import { Folder, SpecialFolder } from "../Folder";
 import { IMAPEMail } from "./IMAPEMail";
 import type { IMAPAccount } from "./IMAPAccount";
+import { SQLFolder } from "../SQL/SQLFolder";
+import { SQLEMail } from "../SQL/SQLEMail";
 import { ArrayColl, Collection } from "svelte-collections";
 
 export class IMAPFolder extends Folder {
@@ -41,59 +43,91 @@ export class IMAPFolder extends Folder {
   }
 
   async listMessages() {
+    if (!this.dbID) {
+      await SQLFolder.save(this);
+    }
+    await SQLEMail.readAll(this);
+
     if (this.countTotal === 0) {
       return;
     }
+    let newMessages = new ArrayColl<IMAPEMail>();
+    let updatedMessages = new ArrayColl<IMAPEMail>();
     await this.runCommand(async (conn) => {
-      let newMessages = new ArrayColl<IMAPEMail>();
       let msgsAsyncIterator = await conn.fetch({ all: true }, {
+        uid: true,
         size: true,
         threadId: true,
         internalDate: true,
         envelope: true,
         flags: true,
+      }, {
+        changedSince: this.lastSeen,
       });
       for await (let msgInfo of msgsAsyncIterator) {
         let msg = this.getEMailByUID(msgInfo.uid);
-        if (!msg) {
-          msg = new IMAPEMail(this);
+        if (msg) {
           msg.fromFlow(msgInfo);
-          newMessages.add(msg);
-        }
-      }
-      this.messages.addAll(newMessages); // notify only once
-    });
-    await this.downloadMessagesComplete();
-  }
-
-  async downloadMessagesComplete() {
-    await this.runCommand(async (conn) => {
-      let newMessages = new ArrayColl<IMAPEMail>();
-      for await (let msgInfo of await conn.fetch({ all: true }, {
-        size: true,
-        threadId: true,
-        envelope: true,
-        source: true,
-        flags: true,
-        // headers: true,
-      })) {
-        let msg = this.getEMailByUID(msgInfo.uid);
-        if (msg?.downloadComplete) {
-          continue;
-        } else if (msg) {
-          msg.fromFlow(msgInfo);
-          msg.downloadComplete = true;
-          await msg.parseMIME();
+          updatedMessages.add(msg);
         } else {
           msg = new IMAPEMail(this);
           msg.fromFlow(msgInfo);
-          msg.downloadComplete = true;
-          await msg.parseMIME();
           newMessages.add(msg);
         }
+        this.updateModSeq(msgInfo.modseq);
       }
-      this.messages.addAll(newMessages); // notify only once
     });
+    this.messages.addAll(newMessages); // notify only once
+
+    for (let email of updatedMessages) {
+      await SQLEMail.save(email);
+      // await SQLEMail.saveWritableProps(email);
+    }
+    for (let email of newMessages) {
+      await SQLEMail.save(email);
+    }
+
+    await this.downloadMessagesComplete();
+  }
+
+  /**
+   * @return Actually newly downloaded msgs
+   */
+  async downloadMessagesComplete(): Promise<ArrayColl<IMAPEMail>> {
+    let needToDownload = new ArrayColl(this.messages.contents.filter(msg => !msg.downloadComplete) as IMAPEMail[]);
+    let downloadedMessages = new ArrayColl<IMAPEMail>();
+    const kMaxCount = 50;
+    while (needToDownload.hasItems) {
+      let downloadMessages = new ArrayColl<IMAPEMail>();
+      for (let i = 0; i < kMaxCount; i++) {
+        downloadMessages.add(needToDownload.shift());
+      }
+      let uids = downloadMessages.map(msg => msg.uid).join(",");
+      await this.runCommand(async (conn) => {
+        for await (let msgInfo of await conn.fetch(uids, {
+          uid: true,
+          size: true,
+          threadId: true,
+          envelope: true,
+          source: true,
+          flags: true,
+          // headers: true,
+        }, { uid: true })) {
+          let msg = this.getEMailByUID(msgInfo.uid);
+          if (msg?.downloadComplete) {
+            continue;
+          } else if (msg) {
+            msg.fromFlow(msgInfo);
+            msg.downloadComplete = true;
+            this.updateModSeq(msgInfo.modseq);
+            await msg.parseMIME();
+            await SQLEMail.save(msg);
+            downloadedMessages.add(msg);
+          }
+        }
+      });
+      return downloadedMessages;
+    }
   }
 
   getEMailByUID(uid: number): IMAPEMail {
@@ -103,6 +137,15 @@ export class IMAPFolder extends Folder {
   /* getEMailByUIDOrCreate(uid: number): IMAPEMail {
     return this.getEMailByUID(uid) ?? new IMAPEMail(this);
   }*/
+
+  updateModSeq(modseq: number) {
+    if (typeof (modseq) != "number") {
+      return;
+    }
+    if (modseq > this.lastSeen) {
+      this.lastSeen = modseq;
+    }
+  }
 
 
   async moveMessagesHere(messages: Collection<IMAPEMail>) {
@@ -136,6 +179,7 @@ export class IMAPFolder extends Folder {
     folder.name = name;
     folder.parent = this;
     this.subFolders.add(folder);
+    await SQLFolder.save(this);
     console.log("Folder created");
     return folder;
   }
