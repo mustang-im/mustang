@@ -10,16 +10,38 @@ import sql from "../../../../lib/rs-sqlite";
 
 export class SQLFolder extends Folder {
   static async save(folder: Folder) {
-    // `INSERT id = null` will fill the `id` with a new ID value. `id` is a an alias for `rowid`.
-    let insert = await (await getDatabase()).run(sql`
-      INSERT OR REPLACE INTO folder (
-        id, accountID, name, path,
-        parent, specialUse
-      ) VALUES (
-        ${folder.dbID}, ${folder.account.dbID}, ${folder.name}, ${folder.path},
-        ${folder.parent?.dbID}, ${folder.specialFolder}
-      )`);
-    folder.dbID = insert.lastInsertRowid;
+    if (!folder.dbID) {
+      let existing = await (await getDatabase()).get(sql`
+        SELECT
+          id
+        FROM folder
+        WHERE
+          path = ${folder.path} AND
+          accountID = ${folder.account.id}
+        `) as any;
+      if (existing?.id) {
+        folder.dbID = existing.id;
+      }
+    }
+    if (!folder.dbID) {
+      let insert = await (await getDatabase()).run(sql`
+        INSERT INTO folder(
+          accountID, name, path,
+          parent, specialUse
+        ) VALUES(
+          ${folder.account.dbID}, ${folder.name}, ${folder.path},
+          ${folder.parent?.dbID}, ${folder.specialFolder}
+        )`);
+      folder.dbID = insert.lastInsertRowid;
+    } else {
+      await (await getDatabase()).run(sql`
+        UPDATE folder SET
+          name = ${folder.name}, path = ${folder.path},
+          parent = ${folder.parent?.dbID}, specialUse = ${folder.specialFolder}
+        WHERE id = ${folder.dbID}
+        `);
+    }
+
     await this.saveProperties(folder);
   }
 
@@ -50,7 +72,7 @@ export class SQLFolder extends Folder {
     folder.countTotal = sanitize.integer(row.countTotal);
     folder.countUnread = sanitize.integer(row.countUnread);
     folder.countNewArrived = sanitize.integer(row.countNewArrived);
-    folder.specialFolder = sanitize.alphanumdash(row.specialUse) as SpecialFolder;
+    folder.specialFolder = row.specialUse ? sanitize.alphanumdash(row.specialUse) as SpecialFolder : null;
     (folder as any as IMAPFolder).uidvalidity = sanitize.integer(row.uidvalidity ?? 0);
     (folder as any as IMAPFolder).lastSeen = sanitize.integer(row.lastSeen ?? 0);
     let accountID = sanitize.integer(row.accountID);
@@ -65,7 +87,7 @@ export class SQLFolder extends Folder {
   }
 
   /** @returns the root folders */
-  static async readAllHierarchy(account: MailAccount): Promise<ArrayColl<Folder>> {
+  static async readAllHierarchy(account: MailAccount): Promise<void> {
     let rows = await (await getDatabase()).all(sql`
       SELECT
         id, parent
@@ -74,14 +96,15 @@ export class SQLFolder extends Folder {
       `) as any;
     async function readSubFolders(parentFolderID: number | null, resultFolders: ArrayColl<Folder>) {
       for (let row of rows.filter(r => r.parent == parentFolderID)) {
+        if (account.findFolder(folder => folder.dbID == row.id)) {
+          continue;
+        }
         let folder = account.newFolder();
         await SQLFolder.read(row.id, folder);
         resultFolders.add(folder);
         await readSubFolders(folder.dbID, folder.subFolders);
       }
     }
-    let rootFolders = new ArrayColl<Folder>();
-    await readSubFolders(null, rootFolders);
-    return rootFolders;
+    await readSubFolders(null, account.rootFolders);
   }
 }

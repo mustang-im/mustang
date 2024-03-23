@@ -47,12 +47,14 @@ export async function readMailAccounts(): Promise<ArrayColl<MailAccount>> {
 
 async function readIMAPAccount(prefBranch: string, id: string): Promise<IMAPAccount> {
   let account = new IMAPAccount();
+  account.id = id;
   await readStandardAccountFromLocalStorage(account, prefBranch);
   return account;
 }
 
 async function readPOP3Account(prefBranch: string, id: string): Promise<POP3Account> {
   let account = new POP3Account();
+  account.id = id;
   await readStandardAccountFromLocalStorage(account, prefBranch);
   return account;
 }

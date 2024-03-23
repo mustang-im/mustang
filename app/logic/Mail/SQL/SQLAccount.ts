@@ -8,21 +8,43 @@ import sql from "../../../../lib/rs-sqlite";
 
 export class SQLAccount {
   static async save(acc: MailAccount) {
-    // TODO encrypt password
-    // `INSERT id = null` will fill the `id` with a new ID value. `id` is a an alias for `rowid`.
-    let insert = await (await getDatabase()).run(sql`
-      INSERT OR REPLACE INTO emailAccount (
-        id, idStr, name, protocol, emailAddress,
-        username, passwordButter,
-        hostname, port, tls, url,
-        userRealname
-      ) VALUES (
-        ${acc.dbID}, ${acc.id}, ${acc.name}, ${acc.protocol}, ${acc.emailAddress},
-        ${acc.username}, ${acc.password},
-        ${acc.hostname}, ${acc.port}, ${acc.tls}, ${acc.url},
-        ${acc.userRealname}
-      )`);
-    acc.dbID = insert.lastInsertRowid;
+    if (!acc.dbID) {
+      let existing = await (await getDatabase()).get(sql`
+        SELECT
+          id
+        FROM emailAccount
+        WHERE
+          idStr = ${acc.id}
+        `) as any;
+      if (existing?.id) {
+        acc.dbID = existing.id;
+      }
+    }
+    if (!acc.dbID) {
+      // TODO encrypt password
+      let insert = await (await getDatabase()).run(sql`
+        INSERT INTO emailAccount (
+          idStr, name, protocol, emailAddress,
+          username, passwordButter,
+          hostname, port, tls, url,
+          userRealname
+        ) VALUES (
+          ${acc.id}, ${acc.name}, ${acc.protocol}, ${acc.emailAddress},
+          ${acc.username}, ${acc.password},
+          ${acc.hostname}, ${acc.port}, ${acc.tls}, ${acc.url},
+          ${acc.userRealname}
+        )`);
+      acc.dbID = insert.lastInsertRowid;
+    } else {
+      await (await getDatabase()).run(sql`
+        UPDATE emailAccount SET
+          name = ${acc.name}, emailAddress = ${acc.emailAddress},
+          username = ${acc.username}, passwordButter = ${acc.password},
+          hostname = ${acc.hostname}, port = ${acc.port}, tls = ${acc.tls}, url = ${acc.url},
+          userRealname = ${acc.userRealname}
+        WHERE id = ${acc.dbID}
+        `);
+    }
   }
 
   static async read(dbID: number, acc: MailAccount) {
