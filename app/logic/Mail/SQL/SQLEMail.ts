@@ -183,7 +183,7 @@ export class SQLEMail {
     }
   }
 
-  static async readAll(folder: Folder): Promise<ArrayColl<EMail>> {
+  static async readAll(folder: Folder): Promise<void> {
     let rows = await (await getDatabase()).all(sql`
       SELECT
         id
@@ -192,14 +192,15 @@ export class SQLEMail {
       `) as any;
     let emails = new ArrayColl<EMail>();
     for (let row of rows) {
-      let email = folder.newEMail();
-      if (folder.messages.find(email => email.dbID == row.id)) {
+      let email = folder.messages.find(email => email.dbID == row.id);
+      if (email) {
         await SQLEMail.readWritableProps(email);
-        continue;
+      } else {
+        email = folder.newEMail();
+        await SQLEMail.read(row.id, email);
+        emails.add(email);
       }
-      await SQLEMail.read(row.id, email);
-      emails.add(email);
     }
-    return emails;
+    folder.messages.addAll(emails);
   }
 }
