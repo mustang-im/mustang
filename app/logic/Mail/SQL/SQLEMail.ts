@@ -14,7 +14,7 @@ export class SQLEMail {
    */
   static async save(email: EMail) {
     if (!email.dbID) {
-      let exists = await (await getDatabase()).get(sql`
+      let existing = await (await getDatabase()).get(sql`
         SELECT
           id
         FROM email
@@ -22,28 +22,31 @@ export class SQLEMail {
           messageID = ${email.id} AND
           uid = ${(email as any as IMAPEMail).uid} AND
           folderID = ${email.folder.dbID}
-        `);
-      if (!exists) {
-        let insert = await (await getDatabase()).run(sql`
-          INSERT INTO email (
-            id, messageID, folderID, uid, parentMsgID,
-            attachmentsCount, size, dateSent, dateReceived,
-            outgoing, -- contactEmail, contactName, myEmail
-            subject, plaintext, html
-          ) VALUES (
-            ${email.dbID}, ${email.id}, ${email.folder.dbID}, ${(email as any as IMAPEMail).uid}, ${email.inReplyTo},
-            ${email.attachments.length}, ${email.size}, ${email.sent.getTime()}, ${email.received.getTime()},
-            ${email.outgoing ? 1 : 0},
-            ${email.subject}, ${email.text}, ${email.html}
-          )`);
-        email.dbID = insert.lastInsertRowid;
-        await this.saveRecipient(email, email.from, 1);
-        await this.saveRecipients(email, email.to, 2);
-        await this.saveRecipients(email, email.cc, 3);
-        await this.saveRecipients(email, email.bcc, 4);
-        if (email.replyTo?.emailAddress) {
-          await this.saveRecipient(email, email.replyTo.name, email.replyTo.emailAddress, 5);
-        }
+        `) as any;
+      if (existing?.id) {
+        email.dbID = existing.id;
+      }
+    }
+    if (!email.dbID) {
+      let insert = await (await getDatabase()).run(sql`
+        INSERT INTO email (
+          messageID, folderID, uid, parentMsgID,
+          attachmentsCount, size, dateSent, dateReceived,
+          outgoing, -- contactEmail, contactName, myEmail
+          subject, plaintext, html
+        ) VALUES (
+          ${email.id}, ${email.folder.dbID}, ${(email as any as IMAPEMail).uid}, ${email.inReplyTo},
+          ${email.attachments.length}, ${email.size}, ${email.sent.getTime()}, ${email.received.getTime()},
+          ${email.outgoing ? 1 : 0},
+          ${email.subject}, ${email.text}, ${email.html}
+        )`);
+      email.dbID = insert.lastInsertRowid;
+      await this.saveRecipient(email, email.from, 1);
+      await this.saveRecipients(email, email.to, 2);
+      await this.saveRecipients(email, email.cc, 3);
+      await this.saveRecipients(email, email.bcc, 4);
+      if (email.replyTo?.emailAddress) {
+        await this.saveRecipient(email, email.replyTo.name, email.replyTo.emailAddress, 5);
       }
     }
     await this.saveWritableProps(email);
@@ -111,7 +114,7 @@ export class SQLEMail {
     (email as any as IMAPEMail).uid = row.uid ? sanitize.integer(row.uid) : null;
     email.id = sanitize.nonemptystring(row.messageID);
     email.inReplyTo = sanitize.string(row.parentMsgID);
-    email.size = sanitize.integer(row.size);
+    email.size = row.size ? sanitize.integer(row.size) : null;
     email.sent = sanitize.date(row.dateSent);
     email.received = sanitize.date(row.dateReceived);
     email.outgoing = sanitize.boolean(!!row.outgoing);

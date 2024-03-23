@@ -2,7 +2,7 @@ import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 
 export class Account extends Observable {
-  readonly id: string;
+  id: string;
   @notifyChangedProperty
   name: string;
   @notifyChangedProperty
