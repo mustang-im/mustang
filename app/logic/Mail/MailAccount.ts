@@ -25,7 +25,7 @@ export class MailAccount extends Account {
   /** SMTP server
    * Null for JMAP, Exchange etc. */
   @notifyChangedProperty
-  outgoing: MailAccount = null;
+  outgoing: MailAccount & OutgoingMailAccount = null;
   /** Where we got the config from, during setup */
   source: "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | null = null;
 
@@ -97,4 +97,8 @@ export enum AuthMethod {
   GSSAPI = 3,
   CRAMMD5 = 5,
   NTLM = 6,
+}
+
+export interface OutgoingMailAccount {
+  send(email: EMail): Promise<void>;
 }

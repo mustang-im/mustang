@@ -1,6 +1,7 @@
 import JPCWebSocket from '../lib/jpc-ws';
 import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite";
+import nodemailer from 'nodemailer';
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
@@ -17,6 +18,8 @@ async function createSharedAppObject() {
   return {
     createIMAPFlowConnection,
     getSQLiteDatabase,
+    sendMailNodemailer,
+    verifyServerNodemailer,
   };
 }
 
@@ -26,6 +29,16 @@ function createIMAPFlowConnection(...args): ImapFlow {
 
 function getSQLiteDatabase(filename: string): Database {
   return new Database(path.join(getConfigDir(), filename));
+}
+
+async function sendMailNodemailer(transport, mail) {
+  let transporter = nodemailer.createTransport(transport);
+  await transporter.sendMail(mail);
+}
+
+async function verifyServerNodemailer(transport) {
+  let transporter = nodemailer.createTransport(transport);
+  await transporter.verify();
 }
 
 const kAppConfigDir = "Mustang";

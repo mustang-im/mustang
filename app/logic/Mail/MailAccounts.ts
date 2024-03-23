@@ -49,6 +49,7 @@ async function readIMAPAccount(prefBranch: string, id: string): Promise<IMAPAcco
   let account = new IMAPAccount();
   account.id = id;
   await readStandardAccountFromLocalStorage(account, prefBranch);
+  account.outgoing = await readSMTPAccount(prefBranch, id);
   return account;
 }
 
@@ -56,6 +57,7 @@ async function readPOP3Account(prefBranch: string, id: string): Promise<POP3Acco
   let account = new POP3Account();
   account.id = id;
   await readStandardAccountFromLocalStorage(account, prefBranch);
+  account.outgoing = await readSMTPAccount(prefBranch, id);
   return account;
 }
 
@@ -66,13 +68,35 @@ async function readStandardAccountFromLocalStorage(account: MailAccount, prefBra
   account.username = sanitize.nonemptystring(localStorage.getItem(prefBranch + "username"));
   account.password = sanitize.string(localStorage.getItem(prefBranch + "password"));
   account.userRealname = sanitize.nonemptystring(localStorage.getItem(prefBranch + "userRealname") ??
-      appGlobal.me.name ?? localStorage.getItem("me.realname"));
+    appGlobal.me.name ?? localStorage.getItem("me.realname"));
   account.tls = sanitize.translate(localStorage.getItem(prefBranch + "tls"), {
     plain: 1,
     tls: 2,
     starttls: 3,
   }, 2);
   account.name = account.emailAddress;
+}
+
+async function readSMTPAccount(prefBranchBase: string, idBase: string): Promise<SMTPAccount> {
+  let prefBranchSMTP = prefBranchBase + "smtp.";
+  let id = idBase + "-smtp";
+  let account = new SMTPAccount();
+  account.id = id;
+  account.hostname = sanitize.hostname(localStorage.getItem(prefBranchSMTP + "hostname"));
+  account.port = sanitize.portTCP(localStorage.getItem(prefBranchSMTP + "port"));
+  account.username = sanitize.nonemptystring(localStorage.getItem(prefBranchSMTP + "username"));
+  account.password = sanitize.string(localStorage.getItem(prefBranchSMTP + "password"));
+  account.tls = sanitize.translate(localStorage.getItem(prefBranchSMTP + "tls"), {
+    plain: 1,
+    tls: 2,
+    starttls: 3,
+  }, 2);
+
+  account.emailAddress = sanitize.nonemptystring(localStorage.getItem(prefBranchBase + "emailAddress"));
+  account.userRealname = sanitize.nonemptystring(localStorage.getItem(prefBranchBase + "userRealname") ??
+    appGlobal.me.name ?? localStorage.getItem("me.realname"));
+  account.name = account.emailAddress;
+  return account;
 }
 
 export function saveNewAccountToLocalStorage(account: MailAccount): void {

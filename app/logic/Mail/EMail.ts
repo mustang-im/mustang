@@ -4,7 +4,8 @@ import type { Folder } from "./Folder";
 import type { Person } from "../Abstract/Person";
 import { appGlobal } from "../app";
 import { backgroundError } from "../../frontend/Util/error";
-import { notifyChangedProperty, Observable } from "../util/Observable";
+import { assert } from "../util/util";
+import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, MapColl } from "svelte-collections";
 
 export class EMail extends Message {
@@ -113,7 +114,11 @@ export class EMail extends Message {
   }
 
   async send(): Promise<void> {
-    alert("Sending email\n(not really yet)\n\n" + this.html?.substring(0, 200));
+    this.isDraft = false;
+    assert(this.folder?.account?.outgoing, "Outgoing server not set up for account " + this.folder?.account?.name);
+    await this.folder.account.outgoing.send(this);
+    console.log("Sent email", this.subject, "to", this.to.first.emailAddress, this);
+    // TODO move to Sent or target folder?
   }
 }
 

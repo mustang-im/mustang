@@ -28,6 +28,22 @@ export function arrayRemoveAll(array, item) {
   }
 }
 
+export async function blobToBase64(blob: Blob): Promise<string> {
+  let dataURL = await blobToDataURL(blob)
+  return dataURL.split(",")[1];
+}
+
+export async function blobToDataURL(blob: Blob): Promise<URLString> {
+  return new Promise((resolve) => {
+    let reader = new FileReader();
+    reader.onloadend = () => {
+      let dataURL = reader.result as string;
+      resolve(dataURL);
+    }
+    reader.readAsDataURL(blob);
+  });
+}
+
 /** Used for if/else and switch statements
  * when they run into a case that should not happen */
 export class NotReached extends Error {
