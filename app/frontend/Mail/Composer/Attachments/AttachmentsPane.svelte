@@ -1,8 +1,8 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <vbox flex class="attachments-pane">
   <Scroll>
-    {#each $attachments.each as file}
-      <AttachmentEntry {file} />
+    {#each $attachments.each as attachment}
+      <AttachmentEntry {attachment} />
     {/each}
     <hbox class="buttons">
       <RoundButton
@@ -16,6 +16,7 @@
 <FileSelector bind:this={fileSelector} />
 
 <script lang="ts">
+  import { Attachment, ContentDisposition } from "../../../../logic/Mail/Attachment";
   import AttachmentEntry from "./AttachmentEntry.svelte";
   import FileSelector from "./FileSelector.svelte";
   import RoundButton from "../../../Shared/RoundButton.svelte";
@@ -23,7 +24,7 @@
   import AddIcon from "lucide-svelte/icons/plus";
   import type { Collection } from "svelte-collections";
 
-  export let attachments: Collection<File>;
+  export let attachments: Collection<Attachment>;
 
   let fileSelector: FileSelector;
   export async function onAdd() {
@@ -32,8 +33,8 @@
       console.log("no file selected");
       return;
     }
-    console.log("selected file", file);
-    attachments.add(file);
+    console.log("Selected attachment file", file);
+    attachments.add(Attachment.fromFile(file));
   }
 </script>
 

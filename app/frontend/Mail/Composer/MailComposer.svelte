@@ -87,7 +87,7 @@
                 padding="6px"
                 filled
                 disabled={!mail.subject || $to.isEmpty}
-                on:click={onSend}
+                on:click={() => catchErrors(onSend)}
                 />
             </hbox>
           </hbox>
@@ -106,6 +106,8 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { Attachment } from "../../../logic/Mail/Attachment";
   import { insertImage } from "../../Shared/Editor/InsertImage";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { appGlobal } from "../../../logic/app";
@@ -119,6 +121,7 @@
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
+  import { catchErrors } from "../../Util/error";
   import type { Editor } from '@tiptap/core';
   import SendIcon from "lucide-svelte/icons/send";
   import TrashIcon from "lucide-svelte/icons/trash";
@@ -138,13 +141,13 @@
       console.log("no file selected");
       return;
     }
-    console.log("selected file", file);
-    mail.attachments.add(file);
+    console.log("Selected attachment file", file);
+    mail.attachments.add(Attachment.fromFile(file));
   }
 
   function onFilesDrop(event: CustomEvent) {
     let files = event.detail.files as File[];
-    mail.attachments.addAll(files);
+    mail.attachments.addAll(files.map(file => Attachment.fromFile(file)));
   }
 
   function onFileInlineDrop(event: CustomEvent) {

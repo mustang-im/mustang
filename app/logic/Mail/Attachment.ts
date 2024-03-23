@@ -8,6 +8,14 @@ export class Attachment extends Observable {
   /** embedded image */
   related: boolean;
   contentID: string;
+
+  static fromFile(file: File): Attachment {
+    let attachment = new Attachment();
+    attachment.content = file;
+    attachment.filename = file.name;
+    attachment.disposition = ContentDisposition.attachment;
+    return attachment;
+  }
 }
 
 export enum ContentDisposition {

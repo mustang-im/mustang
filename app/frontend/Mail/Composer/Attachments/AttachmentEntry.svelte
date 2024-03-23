@@ -1,13 +1,13 @@
 <hbox class="attachment">
   <hbox class="icon">
-    <FileIcon ext={file.name?.split(".").pop()} size={32} />
+    <FileIcon ext={attachment.filename?.split(".").pop()} size={32} />
   </hbox>
   <vbox flex class="right">
     <hbox class="name">
-      {file.name}
+      {attachment.filename}
     </hbox>
     <hbox class="size">
-      {Math.ceil(file.size / 1024)} KB
+      {Math.ceil(attachment.content.size / 1024)} KB
     </hbox>
   </vbox>
   <vbox class="buttons">
@@ -16,11 +16,12 @@
 </hbox>
 
 <script lang="ts">
+  import type { Attachment } from "../../../../logic/Mail/Attachment";
   import FileIcon from "../../../Files/FileIcon.svelte";
   import Button from "../../../Shared/Button.svelte";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
 
-  export let file: File;
+  export let attachment: Attachment;
 </script>
 
 <style>
