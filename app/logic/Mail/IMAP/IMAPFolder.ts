@@ -34,7 +34,7 @@ export class IMAPFolder extends Folder {
   async runCommand(imapFunc: (conn: any) => Promise<void>) {
     let lock;
     try {
-      let conn = this.account._connection;
+      let conn = await this.account.connection();
       lock = await conn.getMailboxLock(this.path);
       await imapFunc(conn);
     } finally {
