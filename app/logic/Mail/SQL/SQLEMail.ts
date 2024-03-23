@@ -36,7 +36,7 @@ export class SQLEMail {
           subject, plaintext, html
         ) VALUES (
           ${email.id}, ${email.folder.dbID}, ${(email as any as IMAPEMail).uid}, ${email.inReplyTo},
-          ${email.attachments.length}, ${email.size}, ${email.sent.getTime()}, ${email.received.getTime()},
+          ${email.attachments.length}, ${email.size}, ${email.sent.getTime() / 1000}, ${email.received.getTime() / 1000},
           ${email.outgoing ? 1 : 0},
           ${email.subject}, ${email.text}, ${email.html}
         )`);
