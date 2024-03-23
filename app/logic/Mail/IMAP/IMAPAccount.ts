@@ -30,7 +30,15 @@ export class IMAPAccount extends MailAccount {
     await SQLFolder.readAllHierarchy(this);
 
     let conn = await this.connection();
-    await conn.connect();
+    try {
+      await conn.connect();
+    } catch (ex) {
+      if (ex.message = "Command failed.") {
+        throw new Error("Failed to connect to server " + this.hostname + " for account " + this.name);
+      } else {
+        throw ex;
+      }
+    }
     await this.listFolders();
   }
 
