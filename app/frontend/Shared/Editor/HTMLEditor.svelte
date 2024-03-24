@@ -11,6 +11,7 @@
   import { SplitBlockquote } from './SplitBlockquote';
   import { Footer } from './Footer';
   import { BoldStar, ItalicSlash } from './StdConventions';
+  import { LinkShortcut } from './LinkShortcut';
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
   // import { common as lowlightCommon, createLowlight } from 'lowlight'
   import { onMount, onDestroy } from 'svelte';
@@ -40,6 +41,7 @@
         }),
         BoldStar,
         ItalicSlash,
+        LinkShortcut,
         // CodeBlockLowlightFeature.configure({
         //  lowlight: createLowlight(lowlightCommon),
         // }),
