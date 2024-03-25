@@ -1,12 +1,16 @@
+# Next
+* HTTP calls from node.js backend
+* Mail: Autoconfig
+* Mail: Attachments
+* XMPP
+
 # App logic
 * Errors
   * Notification bar
 * init
-  * Move chat account load into Chat app ini.
+  * Move chat account load into Chat app
 * Router
-  * Allow app to change the screen
-  * Contacts to chat, chat to contact etc.
-  * Write mail
+  * Use Svelte router with objects stack?
 
 # UI
 * Window header
@@ -104,11 +108,29 @@
 * Need: App shell, for: iframe rights
 
 # Mail
-* Re-connect
-* Refactor IMAP orcastration: Separate IMAP protocol folder object and IMAP orcestration folder object. The latter does folder cache, IMAP poll/refresh, offline cache etc.
+* Autoconfig
+   * Promise with abort
+   * PriorityAbortable
+   * Manual config
+   * Guess config
+      * Needss: TCP stream from node.js backend
+* Attachments
+  * Needs: File API
+* Push mail / IDLE
+   * New mail
+   * Flag changes
+   * Removed emails
+* Removed emails, during fetch after login
+* Save original emails as MIME in ZIP file
+  * Needs: File API
+* Search
+* Refactor IMAP orchestration?: Separate IMAP protocol folder object and IMAP orcestration folder object. The latter does folder cache, IMAP poll/refresh, offline cache etc.
 * JMAP
 
-## Editor
+## Composer
+* Add new email address and person from To: line
+
+### Editor
 * first enter: newline, second enter: paragraph
 * blockquote cite vs. third party
 * Insert link
