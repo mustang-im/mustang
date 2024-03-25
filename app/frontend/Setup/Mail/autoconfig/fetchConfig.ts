@@ -1,5 +1,6 @@
 import type { MailAccount } from "../../../../logic/Mail/MailAccount";
 import { readConfigFromXML } from "./readConfig";
+import { appGlobal } from "../../../../logic/app";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../../../logic/util/util";
 import type { ArrayColl } from "svelte-collections";
@@ -39,10 +40,8 @@ export async function fetchConfig(domain: string, emailAddress: string): Promise
   throw new Error(`Could not find a config for ${emailAddress}`);
 }
 
-// const kISPDBURL = "https://v1.ispdb.net/";
-const kISPDBURL = "/ispdb/";
-// const kMXService = "https://mx.thunderbird.net/dns/mx/";
-const kMXService = "/mx/";
+const kISPDBURL = "https://v1.ispdb.net/";
+const kMXService = "https://mx.thunderbird.net/dns/mx/";
 
 /**
  * Tries to get a configuration for this ISP from our central database.
@@ -109,26 +108,17 @@ async function getMX(domain: string): Promise<string> {
   return mxs[0];
 }
 
-async function fetchText_axios(url: string) {
-  try {
-    let response = await axios.get(url);
-    let text = response.data;
-    assert(text && typeof (text) == "string", "Did not receive text");
-    return text;
-  } catch (ex) {
-    console.error(ex);
-    throw new Error(`Failed to fetch ${url}: ${ex.message}`);
-  }
-}
+let ky;
 
 async function fetchText(url: string) {
+  if (!ky) {
+    ky = await appGlobal.remoteApp.kyCreate();
+  }
   try {
-    let response = await fetch(url, { mode: 'no-cors' });
-    let text = await response.text();
+    let text = await ky.get(url, { result: "text" });
     assert(text && typeof (text) == "string", "Did not receive text");
     return text;
   } catch (ex) {
-    console.error(ex);
     throw new Error(`Failed to fetch ${url}: ${ex.message}`);
   }
 }
