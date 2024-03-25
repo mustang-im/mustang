@@ -33,7 +33,7 @@
   function onDrop(event: DragEvent, inline = false) {
     event.preventDefault(); // Don't load file into browser
     dragging = 0;
-    if (!event.dataTransfer.items || event.dataTransfer.items[0].kind !== 'file') {
+    if (!(event.dataTransfer.items && event.dataTransfer.items[0].kind == 'file')) {
       return;
     }
     let files: File[] = [];
@@ -53,7 +53,7 @@
   }
   function onDragEnter(event: DragEvent) {
     event.preventDefault();
-    if (!event.dataTransfer.items || event.dataTransfer.items[0].kind !== 'file') {
+    if (!(event.dataTransfer.items && event.dataTransfer.items[0].kind == 'file')) {
       return;
     }
     let mimetypes: string[] = [];
