@@ -182,6 +182,8 @@ export class IMAPFolder extends Folder {
     return folder;
   }
 
+  /** @param specialUse From RFC 6154, e.g. `\Sent`
+   * <https://datatracker.ietf.org/doc/html/rfc6154> */
   specialUse(specialUse: string): void {
     switch (specialUse) {
       case "\Inbox":
@@ -208,6 +210,20 @@ export class IMAPFolder extends Folder {
         this.account.archive = this;
         this.specialFolder = SpecialFolder.Archive;
         break;
+    }
+    if (this.path.toUpperCase() == "INBOX") {
+      this.account.inbox = this;
+      this.specialFolder = SpecialFolder.Inbox;
+    } else if (!this.account.sent && this.path.toLowerCase() == "sent") {
+      // or "INBOX/Sent" or "Sent Messages" (Exchange) or various translated versions of it
+      this.account.sent = this;
+      this.specialFolder = SpecialFolder.Sent;
+    } else if (!this.account.drafts && this.path.toLowerCase() == "drafts") {
+      this.account.drafts = this;
+      this.specialFolder = SpecialFolder.Drafts;
+    } else if (!this.account.trash && this.path.toLowerCase() == "trash") {
+      this.account.trash = this;
+      this.specialFolder = SpecialFolder.Trash;
     }
   }
 
