@@ -35,7 +35,18 @@ export class IMAPFolder extends Folder {
     let lock;
     try {
       let conn = await this.account.connection();
-      lock = await conn.getMailboxLock(this.path);
+      try {
+        lock = await conn.getMailboxLock(this.path);
+      } catch (ex) {
+        if (ex.code == "NoConnection") {
+          this.account._connection = null;
+          conn = await this.account.connection();
+          lock = await conn.getMailboxLock(this.path);
+          // Re-try only once
+        } else {
+          throw ex;
+        }
+      }
       await imapFunc(conn);
     } finally {
       lock?.release();
