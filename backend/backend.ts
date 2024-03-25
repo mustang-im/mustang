@@ -1,6 +1,7 @@
 import JPCWebSocket from '../lib/jpc-ws';
 import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite";
+import ky from 'ky';
 import nodemailer from 'nodemailer';
 import path from "node:path";
 import os from "node:os";
@@ -16,11 +17,51 @@ const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save
 
 async function createSharedAppObject() {
   return {
+    kyCreate,
     createIMAPFlowConnection,
     getSQLiteDatabase,
     sendMailNodemailer,
     verifyServerNodemailer,
   };
+}
+
+/**
+ * @param defaultOptions
+ * @return Object with get(url, options), post(), put() etc. functions
+ *   Either options or defaultOptions contain
+ *   `result = "text"` or "json", "formData", "blob", "arrayBuffer",
+ *   then directly calls `text()`, so that you can do fetch in one step with a single `await`.
+ *
+ * E.g.
+ * ```js
+ * let ky = await remoteApp.kyCreate("https://api.example.com", { result: "json" });
+ * let json = await ky.get("users/");
+ * ```
+ * or (identical)
+ * ```js
+ * let ky = await remoteApp.kyCreate();
+ * let json = await ky.get(https://api.example.com/users", { result: "json" });
+ * ```
+ */
+function kyCreate(defaultOptions) {
+ /* `ky` (like axios) is both a function and acts like an object with functions get(), post() etc. as properties,
+  * which confuses jpc, so make it only an object. */
+  let kyObj = {};
+  let kyFunc = ky.create(defaultOptions);
+  for (let name in kyFunc) {
+    kyObj[name] = async (input, options) => {
+      let response = kyFunc[name](input, options);
+      let resultType = options?.result || defaultOptions?.result;
+      if (resultType &&
+          ["text", "json", "formData", "blob", "arrayBuffer"].includes(resultType) &&
+          ["get", "put", "post", "patch", "delete", "head"].includes(name)) {
+        return await response[resultType]();
+      } else {
+        return response;
+      }
+    }
+  }
+  return kyObj;
 }
 
 function createIMAPFlowConnection(...args): ImapFlow {

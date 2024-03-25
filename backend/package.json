@@ -8,6 +8,7 @@
     "@types/nodemailer": "^6.4.14",
     "bufferutil": "^4.0.8",
     "imapflow": "^1.0.155",
+    "ky": "^1.2.3",
     "nodemailer": "^6.9.13",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
