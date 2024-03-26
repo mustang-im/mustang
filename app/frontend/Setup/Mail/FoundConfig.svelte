@@ -9,7 +9,7 @@
   </hbox>
 {:else}
   <vbox class="configs">
-    {#each $altConfigs.each as altConfig}
+    {#each $uniqueConfigs.each as altConfig}
       <vbox class="alt">
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <hbox class="protocol-header" on:click={event => onChange(altConfig, event)}>
@@ -33,6 +33,7 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { filterUnique } from "../../../logic/Mail/AutoConfig/collections";
   import DisplayConfig from "./DisplayConfig.svelte";
   import StatusMessage from "./StatusMessage.svelte";
   import CheckIcon from "lucide-svelte/icons/check";
@@ -40,6 +41,9 @@
 
   export let config: MailAccount;
   export let altConfigs: ArrayColl<MailAccount>;
+
+  // Show only the most preferred (= first) config of the same protocol
+  $: uniqueConfigs = filterUnique(altConfigs, (a, b) => a.protocol == b.protocol);
 
   function onChange(newConfig: MailAccount, event: Event) {
     config = newConfig;
