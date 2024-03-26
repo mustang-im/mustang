@@ -21,6 +21,7 @@ export class IMAPEMail extends EMail {
       let msgInfo = await conn.fetchOne(this.id);
       this.fromFlow(msgInfo);
     });
+    await this.parseMIME();
   }
 
   fromFlow(msgInfo: any) {
