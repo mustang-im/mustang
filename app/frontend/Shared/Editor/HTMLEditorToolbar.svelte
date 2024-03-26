@@ -173,7 +173,8 @@ block
       />
     {#if hasExtension('sendOnEnter')}
       <Button
-      label="Toggle send button"
+      tooltip={editor.storage.sendOnEnter.isSendOnEnter ? "Use Ctrl-Enter to send" : "Use Enter to send"}
+      selected={editor.storage.sendOnEnter.isSendOnEnter}
       on:click={() => editor.chain().focus().toggleSendKey().run()}
       icon={ForwardIcon}
       iconOnly

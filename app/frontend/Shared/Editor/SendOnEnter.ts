@@ -7,6 +7,10 @@ export interface SendOnEnterOptions {
   sendFunc: Function;
 }
 
+export interface SendOnEnterStorage {
+  isSendOnEnter: boolean;
+}
+
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     toggleSendKey: {
@@ -25,11 +29,11 @@ declare module '@tiptap/core' {
 /** Extension for calling a callback on `Ctrl-Enter` or `Enter`
  * to send message.
  */
-export const SendOnEnter = Extension.create<SendOnEnterOptions>({
+export const SendOnEnter = Extension.create<SendOnEnterOptions, SendOnEnterStorage>({
   name: 'sendOnEnter',
   addStorage() {
     return {
-      sendOnCtrlEnter: true,
+      isSendOnEnter: false,
     }
   },
   addOptions() {
@@ -64,8 +68,10 @@ export const SendOnEnter = Extension.create<SendOnEnterOptions>({
       toggleSendKey: () => () => {
         if (this.options.sendKey === 'Enter') {
           this.options.sendKey = 'Ctrl-Enter';
+          this.storage.isSendOnEnter = false;
         } else {
           this.options.sendKey = 'Enter';
+          this.storage.isSendOnEnter = true;
         }
         return true;
       },
