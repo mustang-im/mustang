@@ -102,6 +102,7 @@ async function readSMTPAccount(prefBranchBase: string, idBase: string): Promise<
 export function saveNewAccountToLocalStorage(account: MailAccount): void {
   let accountID = nextFreeAccountID();
   let prefBranch = "mail." + accountID;
+  localStorage.setItem(prefBranch + "protocol", sanitize.alphanumdash(account.protocol));
   localStorage.setItem(prefBranch + "hostname", sanitize.hostname(account.hostname));
   localStorage.setItem(prefBranch + "port", sanitize.portTCP(account.port) + "");
   localStorage.setItem(prefBranch + "emailAddress", sanitize.emailAddress(account.emailAddress));
