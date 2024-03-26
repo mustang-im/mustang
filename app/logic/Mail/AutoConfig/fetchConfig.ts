@@ -2,18 +2,14 @@ import type { MailAccount } from "../MailAccount";
 import { readConfigFromXML } from "./readConfig";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert } from "../../util/util";
+import { assert, type URLString } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 export async function fetchConfig(domain: string, emailAddress: string): Promise<ArrayColl<MailAccount>> {
   domain = sanitize.hostname(domain);
 
-  function unimportantError(ex) {
-    console.error(ex);
-  }
-
   try {
-    return await fetchConfigFromISP(domain);
+    return await fetchConfigFromISP(domain, emailAddress);
   } catch (ex) {
     unimportantError(ex);
   }
@@ -28,7 +24,7 @@ export async function fetchConfig(domain: string, emailAddress: string): Promise
     let mx = await getMX(domain);
     let mxDomain = getBaseDomainFromHost(mx);
     try {
-      return await fetchConfigFromISP(mxDomain);
+      return await fetchConfigFromISP(mxDomain); // without emailAddress
     } catch (ex) {
       unimportantError(ex);
     }
@@ -46,18 +42,35 @@ const kMXService = "https://mx.thunderbird.net/dns/mx/";
 /**
  * Tries to get a configuration for this ISP from our central database.
  */
-async function fetchConfigFromISPDB(domain) {
+async function fetchConfigFromISPDB(domain: string) {
   let xmlStr = await fetchText(kISPDBURL + domain);
   return readConfigFromXML(xmlStr, domain);
 }
 
-async function fetchConfigFromISP(domain) {
-  let url = `https://${domain}/.well-known/mail/config-v1.1.xml`;
+async function fetchConfigFromISP(domain: string, emailAddress?: string) {
+  try {
+    let url = `https://autoconfig.${domain}/mail/config-v1.1.xml`;
+    if (emailAddress) {
+      url += `?emailaddress=${emailAddress}`;
+    }
+    let xmlStr = await fetchText(url);
+    return readConfigFromXML(xmlStr, domain);
+  } catch (ex) {
+    unimportantError(ex);
+  }
+  try {
+    let url = `https://${domain}/.well-known/autoconfig/mail/config-v1.1.xml`;
+    let xmlStr = await fetchText(url);
+    return readConfigFromXML(xmlStr, domain);
+  } catch (ex) {
+    unimportantError(ex);
+  }
+  let url = `http://autoconfig.${domain}/mail/config-v1.1.xml`; // TODO HTTP needed, given MX?
   let xmlStr = await fetchText(url);
   return readConfigFromXML(xmlStr, domain);
 }
 
-export function getDomainForEmailAddress(emailAddress): string {
+export function getDomainForEmailAddress(emailAddress: string): string {
   let domain = emailAddress.split("@")[1];
   assert(domain, `No domain in email address: ${emailAddress}`);
   assert(domain.includes("."), `Need dot in the domain: ${emailAddress}`);
@@ -110,15 +123,19 @@ async function getMX(domain: string): Promise<string> {
 
 let ky;
 
-async function fetchText(url: string) {
+async function fetchText(url: URLString) {
   if (!ky) {
     ky = await appGlobal.remoteApp.kyCreate();
   }
   try {
-    let text = await ky.get(url, { result: "text" });
+    let text = await ky.get(url, { result: "text", retry: 0 });
     assert(text && typeof (text) == "string", "Did not receive text");
     return text;
   } catch (ex) {
     throw new Error(`Failed to fetch ${url}: ${ex.message}`);
   }
+}
+
+function unimportantError(ex: Error) {
+  console.log(ex?.message ?? ex + "");
 }
