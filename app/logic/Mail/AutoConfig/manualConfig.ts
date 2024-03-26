@@ -1,4 +1,4 @@
-import { TLSSocketType, type MailAccount } from "../MailAccount";
+import { AuthMethod, TLSSocketType, type MailAccount } from "../MailAccount";
 import { IMAPAccount } from "../IMAP/IMAPAccount";
 import { SMTPAccount } from "../SMTP/SMTPAccount";
 import { getDomainForEmailAddress } from "./fetchConfig";
@@ -13,6 +13,7 @@ export function makeManualConfig(emailAddress: string, password: string): MailAc
   config.hostname = "replace-this." + domain;
   //config.tls = TLSSocketType.TLS;
   //config.port = kStandardPorts.find(p => p.protocol == config.protocol && p.tls == config.tls)?.port ?? 0;
+  config.authMethod = AuthMethod.Password;
 
   let outgoing = new SMTPAccount();
   outgoing.emailAddress = emailAddress;
@@ -21,6 +22,7 @@ export function makeManualConfig(emailAddress: string, password: string): MailAc
   outgoing.hostname = "replace-this." + domain;
   //config.tls = TLSSocketType.TLS;
   //outgoing.port = kStandardPorts.find(p => p.protocol == outgoing.protocol && p.tls == outgoing.tls)?.port ?? 0;
+  outgoing.authMethod = AuthMethod.Password;
 
   config.outgoing = outgoing;
   return config;
