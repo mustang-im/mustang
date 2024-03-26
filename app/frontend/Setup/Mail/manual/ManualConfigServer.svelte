@@ -1,4 +1,3 @@
-<grid class="manual-config">
   <hbox class="label">Protocol</hbox>
   {#if outgoing}
     <hbox class="protocol">{config.protocol}</hbox>
@@ -54,7 +53,6 @@
       <input type="text" bind:value={config.username} />
     </hbox>
   {/if}
-</grid>
 
 <script lang="ts">
   import { TLSSocketType, type MailAccount, AuthMethod } from "../../../../logic/Mail/MailAccount";
@@ -141,12 +139,6 @@
 </script>
 
 <style>
-  grid {
-    grid-template-columns: auto auto;
-  }
-  grid > * {
-    align-items: end;
-  }
   .label {
     margin-top: 4px;
   }
