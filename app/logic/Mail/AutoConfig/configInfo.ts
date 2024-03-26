@@ -1,8 +1,8 @@
 import type { MailAccount } from "../MailAccount";
 import { TLSSocketType } from "../MailAccount";
 
-export function noEncryption(tls: TLSSocketType): boolean {
-  return tls != TLSSocketType.TLS && tls != TLSSocketType.STARTTLS;
+export function hasEncryption(tls: TLSSocketType): boolean {
+  return tls == TLSSocketType.TLS || tls == TLSSocketType.STARTTLS;
 }
 
 export function isStandardPort(config: MailAccount) {
