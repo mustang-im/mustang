@@ -87,9 +87,9 @@ export const mailDatabaseSchema = sql`
     "attachmentsCount" INTEGER default 0,
     -- in Bytes, of RFC822 MIME message with everything
     "size" INTEGER default null,
-    -- When this email was sent, according to RFC822 Header Date:
+    -- When this email was sent, according to RFC822 Header Date:. Unixtime, in seconds (not milliseconds as JS Date).
     "dateSent" INTEGER not null,
-    -- When this email arrived here with us in the local mailbox
+    -- When this email arrived here with us in the local mailbox. Unixtime, in seconds (not milliseconds as JS Date).
     "dateReceived" INTEGER not null,
     -- (The following fields are a copies of emailPersonsRel, for speed of access.)
     -- true = our user sent this; false = incoming = our user received it
