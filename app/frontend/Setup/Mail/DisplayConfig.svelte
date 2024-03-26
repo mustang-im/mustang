@@ -2,36 +2,37 @@
   <hbox class="direction"><ArrowRightIcon /></hbox>
   <hbox class="protocol">{config.protocol}</hbox>
   <hbox class="hostname">{config.hostname}{portLabel(config)}</hbox>
-  <hbox class="tls-icon" class:noencryption={noEncIn}>
-    {#if noEncIn}
+  <hbox class="tls-icon" class:has-encryption={hasEncIn}>
+    {#if hasEncIn}
       <ShieldAlertIcon size={20} />
     {:else}
       <ShieldOKIcon size={20} />
     {/if}
   </hbox>
-  <hbox class="tls" class:noencryption={noEncIn}>
+  <hbox class="tls" class:has-encryption={hasEncIn}>
     {socketLabel(config.tls)}
   </hbox>
 
-  <!-- TODO outgoing config -->
+  {#if config.outgoing}
   <hbox class="direction"><ArrowLeftIcon /></hbox>
   <hbox class="protocol">SMTP</hbox>
-  <hbox class="hostname">{config.hostname}{portLabel(config)}</hbox>
-  <hbox class="tls-icon" class:noencryption={noEncOut}>
-    {#if noEncOut}
+  <hbox class="hostname">{config.outgoing.hostname}{portLabel(config)}</hbox>
+  <hbox class="tls-icon" class:has-encryption={hasEncOut}>
+    {#if hasEncOut}
       <ShieldAlertIcon size={20} />
     {:else}
       <ShieldOKIcon size={20} />
     {/if}
   </hbox>
-  <hbox class="tls" class:noencryption={noEncOut}>
-    {socketLabel(config.tls)}
+  <hbox class="tls" class:has-encryption={hasEncOut}>
+    {socketLabel(config.outgoing.tls)}
   </hbox>
+  {/if}
 </grid>
 
 <script lang="ts">
   import { type MailAccount, TLSSocketType } from "../../../logic/Mail/MailAccount";
-  import { isStandardPort, noEncryption } from "../../../logic/Mail/AutoConfig/configInfo";
+  import { isStandardPort, hasEncryption } from "../../../logic/Mail/AutoConfig/configInfo";
   import ShieldOKIcon from "lucide-svelte/icons/shield-check";
   import ShieldAlertIcon from "lucide-svelte/icons/shield-alert";
   import ArrowLeftIcon from "lucide-svelte/icons/arrow-big-left";
@@ -40,8 +41,8 @@
   /** in */
   export let config: MailAccount;
 
-  $: noEncIn = noEncryption(config.tls);
-  $: noEncOut = noEncryption(config.tls);
+  $: hasEncIn = hasEncryption(config.tls);
+  $: hasEncOut = hasEncryption(config.outgoing?.tls);
 
   function socketLabel(tls: TLSSocketType): string {
     if (tls == TLSSocketType.TLS) {
@@ -77,7 +78,7 @@
   .tls-icon {
     margin-right: 6px;
   }
-  .tls-icon.noencryption {
+  .tls-icon:not(.has-encryption) {
     color: red;
   }
   .tls {
