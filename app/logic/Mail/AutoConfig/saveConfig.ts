@@ -1,8 +1,8 @@
-import type { MailAccount } from "../../../../logic/Mail/MailAccount";
-import { SQLAccount } from "../../../../logic/Mail/SQL/SQLAccount";
-import { saveNewAccountToLocalStorage } from "../../../../logic/Mail/MailAccounts";
-import { appGlobal } from "../../../../logic/app";
-import { assert } from "../../../../logic/util/util";
+import type { MailAccount } from "../MailAccount";
+import { SQLAccount } from "../SQL/SQLAccount";
+import { saveNewAccountToLocalStorage } from "../MailAccounts";
+import { appGlobal } from "../../app";
+import { assert } from "../../util/util";
 
 export async function saveConfig(config: MailAccount, emailAddress: string, password: string): Promise<void> {
   fillConfig(config, emailAddress, password);

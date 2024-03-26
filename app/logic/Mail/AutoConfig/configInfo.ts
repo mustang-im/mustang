@@ -1,24 +1,8 @@
-import type { MailAccount } from "../../../logic/Mail/MailAccount";
-import { TLSSocketType } from "../../../logic/Mail/MailAccount";
+import type { MailAccount } from "../MailAccount";
+import { TLSSocketType } from "../MailAccount";
 
 export function noEncryption(tls: TLSSocketType): boolean {
   return tls != TLSSocketType.TLS && tls != TLSSocketType.STARTTLS;
-}
-
-export function socketLabel(tls: TLSSocketType): string {
-  if (tls == TLSSocketType.TLS) {
-    return "TLS";
-  } else if (tls == TLSSocketType.STARTTLS) {
-    return "STARTTLS";
-  } else if (tls == TLSSocketType.Plain) {
-    return "No encryption";
-  } else {
-    return "Unknown";
-  }
-}
-
-export function portLabel(config: MailAccount) {
-  return isStandardPort(config) ? "" : ":" + config.port;
 }
 
 export function isStandardPort(config: MailAccount) {

@@ -1,4 +1,4 @@
-import type { MailAccount } from "../../../../logic/Mail/MailAccount";
+import type { MailAccount } from "../MailAccount";
 import { fetchConfig, getDomainForEmailAddress } from "./fetchConfig";
 import type { ArrayColl } from "svelte-collections";
 

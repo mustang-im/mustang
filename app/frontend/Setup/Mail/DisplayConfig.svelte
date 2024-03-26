@@ -30,18 +30,34 @@
 </grid>
 
 <script lang="ts">
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { type MailAccount, TLSSocketType } from "../../../logic/Mail/MailAccount";
+  import { isStandardPort, noEncryption } from "../../../logic/Mail/AutoConfig/configInfo";
   import ShieldOKIcon from "lucide-svelte/icons/shield-check";
   import ShieldAlertIcon from "lucide-svelte/icons/shield-alert";
   import ArrowLeftIcon from "lucide-svelte/icons/arrow-big-left";
   import ArrowRightIcon from "lucide-svelte/icons/arrow-big-right";
-  import { noEncryption, portLabel, socketLabel } from "./DisplayConfig";
 
   /** in */
   export let config: MailAccount;
 
   $: noEncIn = noEncryption(config.tls);
   $: noEncOut = noEncryption(config.tls);
+
+  function socketLabel(tls: TLSSocketType): string {
+    if (tls == TLSSocketType.TLS) {
+      return "TLS";
+    } else if (tls == TLSSocketType.STARTTLS) {
+      return "STARTTLS";
+    } else if (tls == TLSSocketType.Plain) {
+      return "No encryption";
+    } else {
+      return "Unknown";
+    }
+  }
+
+  function portLabel(config: MailAccount) {
+    return isStandardPort(config) ? "" : ":" + config.port;
+  }
 </script>
 
 <style>

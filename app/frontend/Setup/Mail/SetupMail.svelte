@@ -49,8 +49,8 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import { saveConfig } from "./autoconfig/saveConfig";
-  import { makeManualConfig } from "./autoconfig/manualConfig";
+  import { saveConfig } from "../../../logic/Mail/AutoConfig/saveConfig";
+  import { makeManualConfig } from "../../../logic/Mail/AutoConfig/manualConfig";
   import { openApp } from "../../AppsBar/selectedApp";
   import { mailMustangApp } from "../../Mail/MailMustangApp";
   import EmailAddressPassword from "./EmailAddressPassword.svelte";

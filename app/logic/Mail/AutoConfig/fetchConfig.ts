@@ -1,8 +1,8 @@
-import type { MailAccount } from "../../../../logic/Mail/MailAccount";
+import type { MailAccount } from "../MailAccount";
 import { readConfigFromXML } from "./readConfig";
-import { appGlobal } from "../../../../logic/app";
-import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
-import { assert } from "../../../../logic/util/util";
+import { appGlobal } from "../../app";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { assert } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 export async function fetchConfig(domain: string, emailAddress: string): Promise<ArrayColl<MailAccount>> {

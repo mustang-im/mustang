@@ -2,7 +2,7 @@
   message="We are looking for the configuration of your email account..." />
 
 <script lang="ts">
-  import { findConfig } from "./autoconfig/findConfig";
+  import { findConfig } from "../../../logic/Mail/AutoConfig/findConfig";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import StatusMessage from "./StatusMessage.svelte";
   import type { ArrayColl } from "svelte-collections";
