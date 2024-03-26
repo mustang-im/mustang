@@ -9,12 +9,12 @@
 
   <hbox class="label">Port</hbox>
   <hbox class="port">
-    <input type="number" bind:value={config.port} />
+    <input type="number" bind:value={config.port} on:change={onPortChanged} />
   </hbox>
 
   <hbox class="label">Connection encryption</hbox>
   <hbox>
-    <select bind:value={config.tls}>
+    <select bind:value={config.tls} on:change={onTLSChanged}>
       <option value={TLSSocketType.TLS}>TLS</option>
       <option value={TLSSocketType.STARTTLS}>STARTTLS</option>
       <option value={TLSSocketType.Plain}>Plain</option>
@@ -49,12 +49,30 @@
   import { TLSSocketType, type MailAccount, AuthMethod } from "../../../../logic/Mail/MailAccount";
   import ShieldOKIcon from "lucide-svelte/icons/shield-check";
   import ShieldAlertIcon from "lucide-svelte/icons/shield-alert";
+  import { kStandardPorts } from "../../../../logic/Mail/AutoConfig/configInfo";
 
   /** in */
   export let config: MailAccount;
 
-  export function noEncryption(tls: TLSSocketType): boolean {
+  function noEncryption(tls: TLSSocketType): boolean {
     return tls != TLSSocketType.TLS && tls != TLSSocketType.STARTTLS;
+  }
+
+  function onTLSChanged() {
+    let newP = kStandardPorts.find(p => p.protocol == config.protocol && p.tls == config.tls);
+    let oldIsStandardPort = kStandardPorts.find(p => p.port == config.port); // even if wrong protocol, i.e. confused user
+    let oldPortStillValid = kStandardPorts.find(p => p.port == config.port && p.protocol == config.protocol && p.tls == config.tls); // Port 25, TLS changed -> keep port
+    if (newP && (oldIsStandardPort && !oldPortStillValid || !config.port)) {
+      config.port = newP.port;
+    }
+  }
+
+  function onPortChanged() {
+    let alreadyIsStandardPort = kStandardPorts.find(p => p.protocol == config.protocol && p.port == config.port && p.tls == config.tls);
+    let newPreferred = kStandardPorts.find(p => p.protocol == config.protocol && p.port == config.port);
+    if (newPreferred && !alreadyIsStandardPort) {
+      config.tls = newPreferred.tls;
+    }
   }
 </script>
 
