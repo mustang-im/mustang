@@ -11,14 +11,16 @@ export function makeManualConfig(emailAddress: string, password: string): MailAc
   config.username = emailAddress;
   config.password = password;
   config.hostname = "replace-this." + domain;
-  config.port = kStandardPorts.find(p => p.protocol == config.protocol && p.tls == TLSSocketType.TLS)?.port ?? 0;
+  //config.tls = TLSSocketType.TLS;
+  //config.port = kStandardPorts.find(p => p.protocol == config.protocol && p.tls == config.tls)?.port ?? 0;
 
   let outgoing = new SMTPAccount();
   outgoing.emailAddress = emailAddress;
   outgoing.username = emailAddress;
   outgoing.password = password;
   outgoing.hostname = "replace-this." + domain;
-  outgoing.port = kStandardPorts.find(p => p.protocol == outgoing.protocol && p.tls == TLSSocketType.TLS)?.port ?? 0;
+  //config.tls = TLSSocketType.TLS;
+  //outgoing.port = kStandardPorts.find(p => p.protocol == outgoing.protocol && p.tls == outgoing.tls)?.port ?? 0;
 
   config.outgoing = outgoing;
   return config;

@@ -1,13 +1,22 @@
 <grid class="manual-config">
   <hbox class="label">Protocol</hbox>
-  <hbox class="protocol">{config.protocol}</hbox>
+  {#if outgoing}
+    <hbox class="protocol">{config.protocol}</hbox>
+  {:else}
+    <hbox>
+      <select bind:value={config.protocol} required on:change={onProtocolChanged}>
+        <option value="imap">IMAP</option>
+        <option value="pop3">POP3</option>
+      </select>
+    </hbox>
+  {/if}
 
   <hbox class="label">Hostname</hbox>
   <hbox class="hostname" class:error={hostnameError}>
     <input type="text" bind:value={config.hostname} required />
   </hbox>
 
-  {#if !stepHostname}
+  {#if !stepFull}
     <hbox class="label">Port</hbox>
     <hbox class="port" class:error={portError}>
       <input type="number" bind:value={config.port} required on:change={onPortChanged} />
@@ -56,13 +65,15 @@
   /** in */
   export let config: MailAccount;
 
+  $: outgoing = config.protocol == "smtp";
+
   function noEncryption(tls: TLSSocketType): boolean {
     return tls != TLSSocketType.TLS && tls != TLSSocketType.STARTTLS;
   }
 
   function onTLSChanged() {
     let newP = kStandardPorts.find(p => p.protocol == config.protocol && p.tls == config.tls);
-    let oldIsStandardPort = kStandardPorts.find(p => p.port == config.port); // even if wrong protocol, i.e. confused user
+    let oldIsStandardPort = kStandardPorts.find(p => p.port == config.port); // even if wrong protocol, e.g. just changed protocol, or confused user
     let oldPortStillValid = kStandardPorts.find(p => p.port == config.port && p.protocol == config.protocol && p.tls == config.tls); // Port 25, TLS changed -> keep port
     if (newP && (oldIsStandardPort && !oldPortStillValid || !config.port)) {
       config.port = newP.port;
@@ -77,7 +88,13 @@
     }
   }
 
-  let stepHostname = true;
+  function onProtocolChanged() {
+    onTLSChanged();
+    onPortChanged();
+  }
+
+  /** false = show hostnames only, true = show all fields */
+  let stepFull = true;
   let hostnameError: Error | null = null;
   let portError: Error | null = null;
   let tlsError: Error | null = null;
@@ -93,21 +110,22 @@
     } else {
       hostnameError = null;
     }
-    if (stepHostname) {
-      stepHostname = false;
+    if (stepFull) {
+      stepFull = false;
       return false;
+    }
+    // TODO validate hostname (throw if not reachable), guess config, cache the result, and fill in the fields
+    if (config.tls == TLSSocketType.Unknown) {
+      tlsError = new Error("Please set the correct connection encryption");
+      throw tlsError;
+    } else {
+      tlsError = null;
     }
     if (!config.port) {
       portError = new Error("Please enter the correct port number");
       throw portError;
     } else {
       portError = null;
-    }
-    if (config.tls == TLSSocketType.Unknown) {
-      tlsError = new Error("Please set the correct connection encryption");
-      throw tlsError;
-    } else {
-      tlsError = null;
     }
     if (config.authMethod == AuthMethod.Unknown) {
       authError = new Error("Please enter the authentication method");
