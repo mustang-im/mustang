@@ -16,5 +16,6 @@
 <style>
   grid.result {
     grid-template-columns: auto auto auto auto auto auto;
+    align-items: center;
   }
 </style>
