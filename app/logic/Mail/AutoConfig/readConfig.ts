@@ -31,7 +31,7 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string): 
     }
   }
   if (!configs.length) {
-    throw firstError ?? new Error("No working <incomingServer> in autoconfig XML found");
+    throw firstError ?? new Error(`No working <incomingServer> in autoconfig XML for ${forDomain} found`);
   }
   firstError = null;
 
@@ -44,7 +44,7 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string): 
     }
   }
   if (!outgoingConfigs.length) {
-    throw firstError ?? new Error("No working <outgoingServer> in autoconfig XML found");
+    throw firstError ?? new Error(`No working <outgoingServer> in autoconfig XML for ${forDomain} found`);
   }
   let outgoing = outgoingConfigs.first;
   for (let config of configs) {
@@ -59,7 +59,7 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string): 
  */
 function readServer(xml: any, displayName: string): MailAccount {
   let protocol = sanitize.enum(xml["@type"], ["pop3", "imap", "jmap", "smtp", "exchange"], null);
-  assert(protocol, "Need type for <incomingServer>");
+  assert(protocol, `Need type for <incomingServer> in autoconfig XML for ${displayName}`);
   let account = newAccountForProtocol(protocol);
 
   account.name = displayName;
@@ -86,7 +86,7 @@ function readServer(xml: any, displayName: string): MailAccount {
     "GSSAPI": AuthMethod.GSSAPI,
     "NTLM": AuthMethod.NTLM,
   }, null)).find(v => v !== null);
-  assert(account.authMethod, "No supported <authentication> method in autoconfig");
+  assert(account.authMethod, `No supported <authentication> method in autoconfig XML for ${displayName}\n\nGot authentication methods ${JSON.stringify(xml.$authentication, null, 2)}`);
   return account;
 }
 
