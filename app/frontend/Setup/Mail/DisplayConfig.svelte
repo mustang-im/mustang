@@ -4,9 +4,9 @@
   <hbox class="hostname">{config.hostname}{portLabel(config)}</hbox>
   <hbox class="tls-icon" class:has-encryption={hasEncIn}>
     {#if hasEncIn}
-      <ShieldAlertIcon size={20} />
-    {:else}
       <ShieldOKIcon size={20} />
+    {:else}
+      <ShieldAlertIcon size={20} />
     {/if}
   </hbox>
   <hbox class="tls" class:has-encryption={hasEncIn}>
@@ -19,9 +19,9 @@
   <hbox class="hostname">{config.outgoing.hostname}{portLabel(config)}</hbox>
   <hbox class="tls-icon" class:has-encryption={hasEncOut}>
     {#if hasEncOut}
-      <ShieldAlertIcon size={20} />
-    {:else}
       <ShieldOKIcon size={20} />
+    {:else}
+      <ShieldAlertIcon size={20} />
     {/if}
   </hbox>
   <hbox class="tls" class:has-encryption={hasEncOut}>
