@@ -1,10 +1,14 @@
 # Next
 * HTTP calls from node.js backend
 * Mail: Autoconfig
+  * fillConfig for manual
+  * Cancel button
   * Make it prettier
   * It's too high (I get a scrollbar)
-  * Port should be a combo box with common values (applicable for that selected protocol)
-  * Put protocol IMAP/SMTP on the same line as "Incoming server" / "Outgoing server" (maybe) (would save height, and also be less overwhelming, because less lines in the form)
+  * Manual config
+    * Port should be a combo box with common values (applicable for that selected protocol)
+    * Put protocol IMAP/SMTP on the same line as "Incoming server" / "Outgoing server" (maybe) (would save height, and also be less overwhelming, because less lines in the form)
+    * Outgoing next to incoming
 * Mail: Attachments
 * XMPP
 
