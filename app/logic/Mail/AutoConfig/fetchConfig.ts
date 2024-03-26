@@ -82,7 +82,7 @@ export function getDomainForEmailAddress(emailAddress: string): string {
  * E.g. for "www2.static.amazon.com" returns "amazon.com"
  * and for "www2.static.amazon.co.uk" returns "amazon.co.uk"
  */
-function getBaseDomainFromHost(hostname: string): string {
+export function getBaseDomainFromHost(hostname: string): string {
   let domainparts = hostname.split(".");
   let tld = domainparts.slice().pop();
   // TODO use <https://publicsuffix.org>
