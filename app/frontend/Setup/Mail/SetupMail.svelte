@@ -18,7 +18,7 @@
     {:else if step == Step.FinalizeConfig}
       <FinalizeConfig {config} />
     {:else if step == Step.ManualConfig}
-      <ManualConfig bind:config />
+      <ManualConfig bind:config bind:this={manualConfigEl} />
     {/if}
     <hbox class="buttons">
       {#if step != Step.ManualConfig && step != Step.CheckConfig && step != Step.FinalizeConfig}
@@ -35,7 +35,7 @@
       <hbox flex />
       <Button label="Next" classes="filled large"
         disabled={!canContinueButton}
-        on:click={onContinue}
+        on:click={() => catchErrors(onContinue, showError)}
         bind:buttonEl={nextButtonEl}
         />
     </hbox>
@@ -65,6 +65,7 @@
   import BackgroundVideo from "./BackgroundVideo.svelte";
   import { NotReached } from "../../../logic/util/util";
   import type { ArrayColl } from "svelte-collections";
+  import { catchErrors } from "../../Util/error";
 
   let emailAddress: string;
   let password: string;
@@ -112,13 +113,15 @@
     step = Step.RegisterNew;
   }
 
+  let manualConfigEl: ManualConfig;
+
   $: canContinueButton =
     step == Step.EmailAddress && emailAddress && password ||
     step == Step.FoundConfig ||
     step == Step.ManualConfig ||
     step == Step.FinalizeConfig;
 
-  function onContinue() {
+  async function onContinue() {
     if (step == Step.EmailAddress) {
       step = Step.FindConfig;
     } else if (step == Step.FindConfig) {
@@ -127,6 +130,9 @@
       step = Step.CheckConfig;
     } else if (step == Step.ManualConfig) {
       errorMessage = null;
+      if (!await manualConfigEl.onContinue()) {
+        return;
+      }
       step = Step.CheckConfig;
     } else if (step == Step.CheckConfig) {
       step = Step.FinalizeConfig;
