@@ -3,7 +3,6 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import DisplayConfig from "./DisplayConfig.svelte";
   import StatusMessage from "./StatusMessage.svelte";
   import { sleep } from "../../../logic/util/util";
   import { createEventDispatcher, onMount } from 'svelte';

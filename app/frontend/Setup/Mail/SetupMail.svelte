@@ -1,8 +1,10 @@
 <vbox flex class="setup-mail-window">
   <hbox flex />
   <vbox class="page-box">
-    <EmailAddressPassword bind:emailAddress bind:password
-      on:continue={onEmailAddressSucceeded} />
+    {#if step != Step.FinalizeConfig}
+      <EmailAddressPassword bind:emailAddress bind:password
+        on:continue={onEmailAddressSucceeded} />
+    {/if}
     {#if errorMessage}
       <ErrorMessage {errorMessage} {errorGravity}
         on:continue={clearError} />
@@ -15,10 +17,10 @@
     {:else if step == Step.CheckConfig}
       <CheckConfig {config}
         on:continue={onCheckConfigSucceeded} on:fail={onError} />
-    {:else if step == Step.FinalizeConfig}
-      <FinalizeConfig {config} />
     {:else if step == Step.ManualConfig}
       <ManualConfig bind:config bind:this={manualConfigEl} />
+    {:else if step == Step.FinalizeConfig}
+      <FinalizeConfig {config} />
     {/if}
     <hbox class="buttons">
       {#if step != Step.ManualConfig && step != Step.CheckConfig && step != Step.FinalizeConfig}
@@ -49,7 +51,7 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import { saveConfig } from "../../../logic/Mail/AutoConfig/saveConfig";
+  import { fillConfig, saveConfig } from "../../../logic/Mail/AutoConfig/saveConfig";
   import { makeManualConfig } from "../../../logic/Mail/AutoConfig/manualConfig";
   import { openApp } from "../../AppsBar/selectedApp";
   import { mailMustangApp } from "../../Mail/MailMustangApp";
@@ -127,12 +129,14 @@
     } else if (step == Step.FindConfig) {
       step = Step.FoundConfig;
     } else if (step == Step.FoundConfig) {
+      fillConfig(config, emailAddress, password);
       step = Step.CheckConfig;
     } else if (step == Step.ManualConfig) {
       errorMessage = null;
       if (!await manualConfigEl.onContinue()) {
         return;
       }
+      fillConfig(config, emailAddress, password);
       step = Step.CheckConfig;
     } else if (step == Step.CheckConfig) {
       step = Step.FinalizeConfig;

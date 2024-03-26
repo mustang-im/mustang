@@ -1,37 +1,64 @@
-<vbox class="workspaces">
-  <hbox class="header">Is it a work or private account?</hbox>
+<vbox class="workspace-selector">
+  <hbox class="header">Select the workspace for {config.emailAddress}</hbox>
+  <!--<hbox class="hint">You can change this at any time by going to Settings in the title bar</hbox>-->
 
-  {#each workspaces as workspace}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <hbox class="workspace" on:click={event => onChange(workspace, event)}>
-      <input type="radio"
-        checked={workspace == selectedWorkspace}
-        value={workspace}
-        name="workspace"
-        on:change={event => onChange(workspace, event)}
-        />
-      <label for={workspace} class="name">{workspace}</label>
-    </hbox>
-  {/each}
+  <vbox class="workspaces-box">
+    <vbox class="workspaces">
+      {#each workspaces as workspace}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <hbox class="workspace"
+          on:click={event => onChange(workspace, event)}
+          style="background-color: {workspace.color}"
+          >
+          <input type="radio"
+            checked={workspace == selectedWorkspace}
+            value={workspace}
+            name="workspace"
+            on:change={event => onChange(workspace, event)}
+            />
+          <label for="workspace" class="name">{workspace.name}</label>
+        </hbox>
+      {/each}
+    </vbox>
+  </vbox>
 </vbox>
 
 <script lang="ts">
-  export let selectedWorkspace: string = "Other";
+  import { workspaces, type Workspace } from "../../../logic/Abstract/Workspace";
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
 
-  let workspaces = [ "Work", "Private", "Other" ];
+  export let config: MailAccount;
+  export let selectedWorkspace: Workspace = config.workspace ?? workspaces[workspaces.length - 1];
 
-  function onChange(newWorkspace: string, event: Event) {
+  $: config.workspace = selectedWorkspace;
+
+  function onChange(newWorkspace: Workspace, event: Event) {
     selectedWorkspace = newWorkspace;
     event.stopPropagation();
   }
 </script>
 
 <style>
-  .workspaces {
+  .workspace-selector {
     margin-top: 24px;
   }
   .header {
-    margin-bottom: 4px;
+    font-size: 20px;
+    font-weight: bold;
+  }
+  .hint {
+    margin-top: -4px;
+    font-size: 12px;
+  }
+  .workspaces-box {
+    margin-top: 4px;
+    align-items: center;
+    margin-right: 32px;
+    padding-top: 4px;
+  }
+  .workspace {
+    padding: 6px 20px 6px 12px;
+    margin: 2px;
   }
   .name {
     margin-left: 8px;
