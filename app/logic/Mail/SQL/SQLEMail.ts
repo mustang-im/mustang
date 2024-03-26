@@ -115,8 +115,8 @@ export class SQLEMail {
     email.id = sanitize.nonemptystring(row.messageID);
     email.inReplyTo = sanitize.string(row.parentMsgID);
     email.size = row.size ? sanitize.integer(row.size) : null;
-    email.sent = sanitize.date(row.dateSent);
-    email.received = sanitize.date(row.dateReceived);
+    email.sent = sanitize.date(row.dateSent * 1000);
+    email.received = sanitize.date(row.dateReceived * 1000);
     email.outgoing = sanitize.boolean(!!row.outgoing);
     email.subject = sanitize.string(row.subject);
     email.text = sanitize.string(row.plaintext);
