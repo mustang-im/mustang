@@ -22,26 +22,34 @@
     </hbox>
 
     <hbox class="label">Connection encryption</hbox>
-    <hbox class:error={tlsError}>
+    <hbox class="tls" class:error={tlsError} class:no-encryption={noEncryption(config.tls)}>
       <select bind:value={config.tls} required on:change={onTLSChanged}>
         <option value={TLSSocketType.TLS}>TLS</option>
         <option value={TLSSocketType.STARTTLS}>STARTTLS</option>
         <option value={TLSSocketType.Plain}>Plain</option>
       </select>
       <hbox class="tls-icon">
-        {#if noEncryption(config.tls)}
-          <ShieldAlertIcon />
+        {#if config.tls == TLSSocketType.Unknown}
+          <ShieldQuestionIcon size={20} />
+        {:else if noEncryption(config.tls)}
+          <ShieldAlertIcon size={20} />
         {:else}
-          <ShieldOKIcon />
+          <ShieldOKIcon size={20} />
         {/if}
       </hbox>
     </hbox>
+      {#if tlsWarning}
+        <hbox></hbox>
+        <div class="tls-warning">
+          {tlsWarning}
+        </div>
+      {/if}
 
     <hbox class="label">Authentication method</hbox>
     <hbox class:error={authError}>
       <select bind:value={config.authMethod} required>
         <option value={AuthMethod.Password}>Password</option>
-        <option value={AuthMethod.OAuth2}>OAuth2 / Multi-factor authentication</option>
+        <option value={AuthMethod.OAuth2}>OAuth2 / MFA</option>
         <option value={AuthMethod.GSSAPI}>Kerberos / GSSAPI</option>
         <option value={AuthMethod.CRAMMD5}>CRAM MD5</option>
         <option value={AuthMethod.NTLM}>NTLM</option>
@@ -55,9 +63,10 @@
   {/if}
 
 <script lang="ts">
-  import { TLSSocketType, type MailAccount, AuthMethod } from "../../../../logic/Mail/MailAccount";
+  import { type MailAccount, AuthMethod, TLSSocketType } from "../../../../logic/Mail/MailAccount";
   import ShieldOKIcon from "lucide-svelte/icons/shield-check";
   import ShieldAlertIcon from "lucide-svelte/icons/shield-alert";
+  import ShieldQuestionIcon from "lucide-svelte/icons/shield-question";
   import { kStandardPorts } from "../../../../logic/Mail/AutoConfig/configInfo";
 
   /** in */
@@ -66,8 +75,10 @@
   $: outgoing = config.protocol == "smtp";
 
   function noEncryption(tls: TLSSocketType): boolean {
-    return tls != TLSSocketType.TLS && tls != TLSSocketType.STARTTLS;
+    return tls != TLSSocketType.Unknown && tls != TLSSocketType.TLS && tls != TLSSocketType.STARTTLS;
   }
+
+  $: tlsWarning = noEncryption(config.tls) ? "Attackers can read your password and mails" : null;
 
   function onTLSChanged() {
     let newP = kStandardPorts.find(p => p.protocol == config.protocol && p.tls == config.tls);
@@ -148,11 +159,20 @@
   .port input[type=number] {
     width: 5em;
   }
-  .tls {
-    text-transform: uppercase;
-  }
   .tls-icon {
-    margin-left: 4px;
+    margin-left: 8px;
+  }
+  .tls-icon :global(svg) {
+    stroke: green;
+  }
+  .no-encryption .tls-icon :global(svg) {
+    stroke: red;
+  }
+  .tls-warning {
+    color: red;
+    margin-top: 4px;
+    margin-bottom: 8px;
+    max-width: 12em;
   }
   .error select {
     border: 1px solid red;
