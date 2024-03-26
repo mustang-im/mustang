@@ -2,17 +2,21 @@
   <h2>Manual configuration</h2>
   <hbox class="subtitle">Your email provider or company can tell you these details.</hbox>
 
-  <hbox class="header">
-    <hbox class="direction"><ArrowRightIcon /></hbox>
-    Incoming server
-  </hbox>
-  <ManualConfigServer {config} bind:this={incomingEl} />
+  <grid class="manual-config">
+    <hbox class="header">
+      <hbox class="direction"><ArrowRightIcon /></hbox>
+      Incoming server
+    </hbox>
+    <hbox></hbox>
+    <ManualConfigServer {config} bind:this={incomingEl} />
 
-  <hbox class="header">
-    <hbox class="direction"><ArrowLeftIcon /></hbox>
-    Outgoing server
-  </hbox>
-  <ManualConfigServer config={config.outgoing} bind:this={outgoingEl} />
+    <hbox class="header">
+      <hbox class="direction"><ArrowLeftIcon /></hbox>
+      Outgoing server
+    </hbox>
+    <hbox></hbox>
+    <ManualConfigServer config={config.outgoing} bind:this={outgoingEl} />
+  </grid>
 </vbox>
 
 <script lang="ts">
@@ -37,6 +41,12 @@
 <style>
   h2 {
     margin-bottom: 0px;
+  }
+  grid {
+    grid-template-columns: auto auto;
+  }
+  grid :global(> *) {
+    align-items: end;
   }
   .header {
     font-weight: bold;
