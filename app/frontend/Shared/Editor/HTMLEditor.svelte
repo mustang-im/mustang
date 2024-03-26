@@ -9,7 +9,6 @@
   import ImageFeature from '@tiptap/extension-image';
   import CodeWordFeature from '@tiptap/extension-code';
   import { SplitBlockquote } from './SplitBlockquote';
-  import { ToggleSendKey } from './ToggleSendKey';
   import { Footer } from './Footer';
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
   // import { common as lowlightCommon, createLowlight } from 'lowlight'

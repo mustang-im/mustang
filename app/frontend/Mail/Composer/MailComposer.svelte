@@ -116,7 +116,7 @@
   import AccountDropDown from "../AccountDropDown.svelte";
   import HTMLEditor from "../../Shared/Editor/HTMLEditor.svelte";
   import HTMLEditorToolbar from "../../Shared/Editor/HTMLEditorToolbar.svelte";
-  import { ToggleSendKey } from "../../Shared/Editor/ToggleSendKey";
+  import { SendOnEnter } from "../../Shared/Editor/SendOnEnter";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
@@ -132,7 +132,7 @@
   $: to = mail.to;
 
   const extensions = [
-    ToggleSendKey.configure({
+    SendOnEnter.configure({
       sendKey: 'Ctrl-Enter',
       sendFunc: onSend,
     }),

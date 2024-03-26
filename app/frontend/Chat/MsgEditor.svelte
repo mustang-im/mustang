@@ -32,7 +32,7 @@
   import { UserChatMessage } from "../../logic/Chat/Message";
   import { insertImage } from "../Shared/Editor/InsertImage";
   import HTMLEditorToolbar from "../Shared/Editor/HTMLEditorToolbar.svelte";
-  import { ToggleSendKey } from "../Shared/Editor/ToggleSendKey";
+  import { SendOnEnter } from "../Shared/Editor/SendOnEnter";
   import HTMLEditor from "../Shared/Editor/HTMLEditor.svelte";
   import FileDropTarget from "../Mail/Composer/Attachments/FileDropTarget.svelte";
   import AttachmentsPane from "../Mail/Composer/Attachments/AttachmentsPane.svelte";
@@ -47,7 +47,7 @@
   let editor: Editor;
 
   const extensions = [
-    ToggleSendKey.configure({
+    SendOnEnter.configure({
       sendKey: 'Enter',
       sendFunc: send,
     }),
