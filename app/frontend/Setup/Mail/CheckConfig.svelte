@@ -1,10 +1,6 @@
 <StatusMessage status="processing"
   message="Verifying that the configuration works..." />
 
-<hbox class="display">
-  <DisplayConfig {config} />
-</hbox>
-
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import DisplayConfig from "./DisplayConfig.svelte";
@@ -24,9 +20,4 @@
 </script>
 
 <style>
-  .display {
-    justify-content: center;
-    margin-top: 24px;
-    margin-bottom: 24px;
-  }
 </style>

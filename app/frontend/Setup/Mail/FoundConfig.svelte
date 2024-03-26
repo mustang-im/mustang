@@ -61,7 +61,8 @@
     margin-top: 24px;
   }
   .alt .display {
-    justify-content: center;
+    justify-content: start;
+    margin-left: 26px;
     margin-top: 12px;
     margin-bottom: 24px;
   }
