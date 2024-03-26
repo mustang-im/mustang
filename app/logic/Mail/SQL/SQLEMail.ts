@@ -113,14 +113,14 @@ export class SQLEMail {
     email.dbID = sanitize.integer(dbID);
     (email as any as IMAPEMail).uid = row.uid ? sanitize.integer(row.uid) : null;
     email.id = sanitize.nonemptystring(row.messageID);
-    email.inReplyTo = sanitize.string(row.parentMsgID);
+    email.inReplyTo = sanitize.stringOrNull(row.parentMsgID);
     email.size = row.size ? sanitize.integer(row.size) : null;
     email.sent = sanitize.date(row.dateSent * 1000);
     email.received = sanitize.date(row.dateReceived * 1000);
     email.outgoing = sanitize.boolean(!!row.outgoing);
-    email.subject = sanitize.string(row.subject);
-    email.text = sanitize.string(row.plaintext);
-    email.html = sanitize.string(row.html);
+    email.subject = sanitize.stringOrNull(row.subject);
+    email.text = sanitize.stringOrNull(row.plaintext);
+    email.html = sanitize.stringOrNull(row.html);
     this.readWritablePropsFromResult(email, row);
     await this.readRecipients(email);
     return email;

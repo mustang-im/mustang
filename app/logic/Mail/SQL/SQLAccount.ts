@@ -62,8 +62,8 @@ export class SQLAccount {
     acc.name = sanitize.label(row.name);
     (acc.protocol as any) = sanitize.alphanumdash(row.protocol);
     acc.emailAddress = sanitize.emailAddress(row.emailAddress);
-    acc.username = sanitize.string(row.username);
-    acc.password = row.passwordButter ? sanitize.string(row.passwordButter) : null;
+    acc.username = sanitize.stringOrNull(row.username);
+    acc.password = sanitize.stringOrNull(row.passwordButter);
     acc.hostname = row.hostname ? sanitize.hostname(row.hostname) : null;
     acc.port = row.port ? sanitize.portTCP(row.port) : null;
     acc.tls = sanitize.enum(row.tls, [1, 2, 3], 2);
