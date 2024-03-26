@@ -1,6 +1,6 @@
 <vbox class="workspace-selector">
   <hbox class="header">Select the workspace for {config.emailAddress}</hbox>
-  <!--<hbox class="hint">You can change this at any time by going to Settings in the title bar</hbox>-->
+  <hbox class="hint">Workspaces allow you organize yourself. You can change this at any time, by going to Settings in the title bar.</hbox>
 
   <vbox class="workspaces-box">
     <vbox class="workspaces">
@@ -47,11 +47,10 @@
     font-weight: bold;
   }
   .hint {
-    margin-top: -4px;
     font-size: 12px;
   }
   .workspaces-box {
-    margin-top: 4px;
+    margin-top: 6px;
     align-items: center;
     margin-right: 32px;
     padding-top: 4px;
