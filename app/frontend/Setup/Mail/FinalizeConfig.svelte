@@ -3,7 +3,7 @@
   <CheckIcon slot="icon"/>
 </StatusMessage>
 
-<WorkspaceSelector selectedWorkspace={workspace} />
+<WorkspaceSelector {config} />
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
@@ -12,8 +12,6 @@
   import CheckIcon from "lucide-svelte/icons/check";
 
   export let config: MailAccount;
-
-  let workspace: string;
 </script>
 
 <style>

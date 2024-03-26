@@ -1,3 +1,4 @@
+import { Workspace } from "./Workspace";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 
@@ -9,6 +10,8 @@ export class Account extends Observable {
   userRealname: string;
   /** Class ID. Must be overwritten by subclasses. Written to account prefs. */
   readonly protocol: string = null;
+  @notifyChangedProperty
+  workspace: Workspace;
 
   /** Will be called, when there are errors on the connection
    * which cannot be attributed directly to an API function called,
