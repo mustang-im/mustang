@@ -1,8 +1,8 @@
-import { AuthMethod, MailAccount, TLSSocketType } from "../../../../logic/Mail/MailAccount";
-import { newAccountForProtocol } from "../../../../logic/Mail/MailAccounts";
-import JXON from "../../../../../lib/util/JXON";
-import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
-import { assert } from "../../../../logic/util/util";
+import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
+import { newAccountForProtocol } from "../MailAccounts";
+import JXON from "../../../../lib/util/JXON";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 
 export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string): ArrayColl<MailAccount> {
