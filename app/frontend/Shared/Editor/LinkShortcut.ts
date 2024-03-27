@@ -1,3 +1,4 @@
+import { markInputRule, markPasteRule } from "@tiptap/core";
 import { Link } from "@tiptap/extension-link";
 
 declare module '@tiptap/core' {
@@ -10,6 +11,10 @@ declare module '@tiptap/core' {
     }
   }
 }
+
+export const inputLinkName = /\[(\w+)\]\(\S+\) /i
+export const pasteLinkName = /\[(\w+)\]\(\S+\)/gi
+export const linkRegex = /\[\w+\]\((\S+)\)/i
 
 export const LinkShortcut = Link.extend({
   addKeyboardShortcuts() {
@@ -28,8 +33,36 @@ export const LinkShortcut = Link.extend({
           return false;
         }
         return chain().insertContent(`[${selectedText}](url)`)
-        .setTextSelection({ from: $to.pos + 3, to: $to.pos + 6 }).run();
+          .setTextSelection({ from: $to.pos + 3, to: $to.pos + 6 }).run();
       }
     }
+  },
+  addInputRules() {
+    return [
+      markInputRule({
+        find: inputLinkName,
+        type: this.type,
+        getAttributes: match => {
+          const href = match[0].match(linkRegex)[1];
+          return {
+            href: href,
+          }
+        }
+      }),
+    ]
+  },
+  addPasteRules() {
+    return [
+      markPasteRule({
+        find: pasteLinkName,
+        type: this.type,
+        getAttributes: match => {
+          const href = match[0].match(linkRegex)[1];
+          return {
+            href: href,
+          }
+        }
+      }),
+    ]
   },
 });
