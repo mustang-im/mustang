@@ -36,6 +36,10 @@ export class Folder extends Observable {
     this.id = val;
   }
 
+  get orderPos(): string {
+    return this.specialFolder ? "   " + specialFolderOrder.indexOf(this.specialFolder) : this.name;
+  }
+
   async listMessages() {
     console.log("list messages in folder", this.name);
   }
@@ -83,3 +87,12 @@ export enum SpecialFolder {
   Spam = "spam",
   Archive = "archive",
 }
+
+export const specialFolderOrder = [
+  SpecialFolder.Inbox,
+  SpecialFolder.Sent,
+  SpecialFolder.Drafts,
+  SpecialFolder.Trash,
+  SpecialFolder.Spam,
+  SpecialFolder.Archive,
+];
