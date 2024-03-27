@@ -71,7 +71,7 @@
         <vbox flex class="paper">
           <Scroll>
             <vbox flex class="editor">
-              <HTMLEditor bind:html={mail.html} bind:editor />
+              <HTMLEditor bind:html={mail.html} bind:editor {writeBelowQuote}/>
             </vbox>
           </Scroll>
           <hbox class="footer">
@@ -132,6 +132,8 @@
 
   let editor: Editor;
   $: to = mail.to;
+
+  let writeBelowQuote = mail.writeBelowQuote;
 
   let from: MailAccount;
   let fileSelector: FileSelector;

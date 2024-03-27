@@ -3,7 +3,7 @@
 <div bind:this={divEl} class="html-editor" />
 
 <script lang="ts">
-  import { Editor } from '@tiptap/core';
+  import { Editor, type FocusPosition } from '@tiptap/core';
   import StarterKit from '@tiptap/starter-kit';
   import LinkFeature from '@tiptap/extension-link';
   import ImageFeature from '@tiptap/extension-image';
@@ -23,7 +23,18 @@
   /** out only */
   export let editor: Editor;
 
+  export let writeBelowQuote: boolean = false;
+
   let divEl: HTMLDivElement;
+
+  let cursor: FocusPosition = 'start';
+  /* It differentiates between a new email and old
+  but how do we tell between replied and forwared email?
+  Or this will apply to forwarded also?
+  */
+  if (html && writeBelowQuote) {
+    cursor = 'end';
+  }
 
   onMount(() => {
     editor = new Editor({
@@ -52,6 +63,7 @@
       onUpdate: () => {
         html = editor.getHTML();
       },
+      autofocus: cursor,
     });
   });
 

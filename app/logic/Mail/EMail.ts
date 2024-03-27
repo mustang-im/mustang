@@ -42,6 +42,8 @@ export class EMail extends Message {
   /** Was just downloaded, but wasn't saved to local disk yet.
    * Set only temporarily. */
   needSave = false;
+  @notifyChangedProperty
+  writeBelowQuote: boolean = true;
 
   constructor(folder: Folder) {
     super();
@@ -90,13 +92,18 @@ export class EMail extends Message {
     reply.from.emailAddress = account.emailAddress;
     reply.from.name = account.userRealname;
     reply.subject = "Re: " + this.baseSubject; // Do *not* localize "Re: "
-    reply.html = `<p></p>
-    <p></p>
-    <p></p>
-    <p class="quote-header">${this.quotePrefixLine()}</p>
+
+    let blockquote = `<p class="quote-header">${this.quotePrefixLine()}</p>
     <blockquote cite="mid:${this.id}">
       ${this.html}
     </blockquote>`;
+
+    if (this.writeBelowQuote) {
+      reply.html = blockquote + '<p></p>';
+    } else {
+      reply.html = '<p></p><p></p><p></p>' + blockquote;
+    }
+
     return reply;
   }
 
