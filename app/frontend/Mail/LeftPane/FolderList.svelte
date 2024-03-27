@@ -1,5 +1,5 @@
 <vbox flex class="folder-list">
-  <FastList items={folders} bind:selectedItem={selectedFolder} columns="auto">
+  <FastList items={foldersSorted} bind:selectedItem={selectedFolder} columns="auto">
     <svelte:fragment slot="header">
       <hbox class="header">Folders</hbox>
     </svelte:fragment>
@@ -44,6 +44,8 @@
 
   export let folders: Collection<Folder>;
   export let selectedFolder: Folder; /* in/out */
+
+  $: foldersSorted = folders.sortBy(f => f.orderPos);
 </script>
 
 <style>
