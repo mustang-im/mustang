@@ -18,6 +18,7 @@ async function createWindow(): Promise<void> {
       autoHideMenuBar: true,
       titleBarStyle: 'customButtonsOnHover',
       titleBarOverlay: true,
+      frame: false,
       ...(process.platform === 'linux' ? { icon } : {}),
       webPreferences: {
         preload: join(__dirname, '../preload/index.js'),
