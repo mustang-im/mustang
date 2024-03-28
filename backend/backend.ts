@@ -6,6 +6,7 @@ import nodemailer from 'nodemailer';
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
+import fsPromises, { FileHandle } from "node:fs/promises";
 
 export async function startupBackend() {
   let appGlobal = await createSharedAppObject();
@@ -18,11 +19,32 @@ const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save
 async function createSharedAppObject() {
   return {
     kyCreate,
+    openFile,
+    closeFile,
+    fs: fsPromises,
+    getConfigDir,
     createIMAPFlowConnection,
     getSQLiteDatabase,
     sendMailNodemailer,
     verifyServerNodemailer,
   };
+}
+
+/**
+ * E.g. ```
+ * let contents = new Blob(["test\n"], { type: "text/plain" });
+ * let configDir = await appGlobal.remoteApp.configDir();
+ * let testFile = await appGlobal.remoteApp.openFile(configDir + "test.txt", true);
+ * await testFile.write(new Uint8Array(await contents.arrayBuffer()));
+ * await appGlobal.remoteApp.closeFile(testFile);
+ * ```
+ */
+async function openFile(path: string, write: boolean): Promise<FileHandle> {
+  console.log("open", path);
+  return await fsPromises.open(path, write ? "w" : "r");
+}
+async function closeFile(handle: FileHandle): Promise<void> {
+  await handle.close(); // for some reason, only this function doesn't appear on FileHandle in JPC client
 }
 
 /**
