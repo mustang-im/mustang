@@ -2,6 +2,7 @@ import { MailAccount } from '../MailAccount';
 import { IMAPAccount } from '../IMAP/IMAPAccount';
 import { POP3Account } from '../POP3/POP3Account';
 import { SMTPAccount } from '../SMTP/SMTPAccount';
+import { EWSAccount } from '../EWS/EWSAccount';
 import { ContactEntry } from '../../Abstract/Person';
 import { appGlobal } from '../../app';
 import { NotReached } from '../../util/util';
@@ -28,6 +29,8 @@ export async function readMailAccounts(): Promise<ArrayColl<MailAccount>> {
         accounts.add(await readIMAPAccount(prefBranch, id));
       } else if (protocol == "pop3") {
         accounts.add(await readPOP3Account(prefBranch, id));
+      } else if (protocol == "ews") {
+        accounts.add(await readEWSAccount(prefBranch, id));
       } else {
         console.error(`Unknown mail protocol ${protocol} in localStorage ${prefBranch}protocol`);
       }
@@ -58,6 +61,20 @@ async function readPOP3Account(prefBranch: string, id: string): Promise<POP3Acco
   account.id = id;
   await readStandardAccountFromLocalStorage(account, prefBranch);
   account.outgoing = await readSMTPAccount(prefBranch, id);
+  return account;
+}
+
+async function readEWSAccount(prefBranch: string, id: string): Promise<EWSAccount> {
+  let account = new EWSAccount();
+  account.id = id;
+  account.prefBranch = prefBranch;
+  account.hostname = sanitize.hostname(localStorage.getItem(prefBranch + "hostname"));
+  account.emailAddress = sanitize.nonemptystring(localStorage.getItem(prefBranch + "emailAddress"));
+  account.username = sanitize.nonemptystring(localStorage.getItem(prefBranch + "username") || account.emailAddress);
+  account.password = localStorage.getItem(prefBranch + "password"); // not required to exist
+  account.userRealname = sanitize.nonemptystring(localStorage.getItem(prefBranch + "userRealname") ??
+    appGlobal.me.name ?? localStorage.getItem("me.realname"));
+  account.name = account.emailAddress;
   return account;
 }
 

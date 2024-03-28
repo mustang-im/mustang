@@ -2,6 +2,7 @@ import JPCWebSocket from '../lib/jpc-ws';
 import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite";
 import ky from 'ky';
+import axios from 'axios';
 import nodemailer from 'nodemailer';
 import path from "node:path";
 import os from "node:os";
@@ -20,6 +21,7 @@ const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save
 async function createSharedAppObject() {
   return {
     kyCreate,
+    postHTTP, // TODO Use ky
     openFile,
     closeFile,
     fs: fsPromises,
@@ -76,8 +78,8 @@ async function openFileInExternalApp(filepath: string, appEXE: string): Promise<
  * ```
  */
 function kyCreate(defaultOptions) {
- /* `ky` (like axios) is both a function and acts like an object with functions get(), post() etc. as properties,
-  * which confuses jpc, so make it only an object. */
+  /* `ky` (like axios) is both a function and acts like an object with functions get(), post() etc. as properties,
+   * which confuses jpc, so make it only an object. */
   let kyObj = {};
   let kyFunc = ky.create(defaultOptions);
   for (let name in kyFunc) {
@@ -94,6 +96,19 @@ function kyCreate(defaultOptions) {
     }
   }
   return kyObj;
+}
+
+async function postHTTP(url: string, data: any, config: any) {
+  let result = await axios.post(url, data, config);
+  result.headers = result.headers.toJSON();
+  result.config.headers = result.config.headers.toJSON();
+  delete result.request;
+  for (let key in axios.defaults) {
+    if (result.config[key] == axios.defaults[key]) {
+      delete result.config[key];
+    }
+  }
+  return result;
 }
 
 function createIMAPFlowConnection(...args): ImapFlow {
