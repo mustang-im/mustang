@@ -1,8 +1,8 @@
 <vbox flex class="message-body">
   {#if message.html}
-    <HTMLDisplay html={message.html} />
+    <HTMLDisplay html={$message.html} />
   {:else}
-    <PlaintextDisplay plaintext={message.text} />
+    <PlaintextDisplay plaintext={$message.text} />
   {/if}
 </vbox>
 
