@@ -125,9 +125,13 @@ export const mailDatabaseSchema = sql`
     -- filename and path where the attachment is stored on the user's local disk, after download
     "filepathLocal" TEXT default null,
     "mimeType" TEXT not null,
+    -- file size in bytes. null, if not yet downloaded
+    "size" INTEGER default null,
     "disposition" TEXT default "attachment",
     "contentID" TEXT not null,
     "related" BOOLEAN default 0,
+    UNIQUE("emailID", "filename"),
+    UNIQUE("emailID", "contentID"),
     FOREIGN KEY (emailID)
       REFERENCES email (ID)
       ON DELETE CASCADE

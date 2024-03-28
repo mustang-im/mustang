@@ -108,10 +108,10 @@ export class SQLEMail {
     assert(email.dbID, "Need to save email before attachment");
     await (await getDatabase()).run(sql`
       INSERT OR IGNORE INTO emailAttachment (
-        emailID, filename, filepathLocal, mimeType, contentID, disposition, related
+        emailID, filename, filepathLocal, mimeType, size, contentID, disposition, related
       ) VALUES (
-        ${email.dbID}, ${a.filename}, ${a.filepathLocal}, ${a.mimeType}, ${a.contentID},
-        ${a.disposition}, ${a.related ? 1 : 0}
+        ${email.dbID}, ${a.filename}, ${a.filepathLocal}, ${a.mimeType}, ${a.size},
+        ${a.contentID}, ${a.disposition}, ${a.related ? 1 : 0}
       )`);
   }
 
@@ -133,7 +133,7 @@ export class SQLEMail {
         uid, messageID, parentMsgID,
         size, dateSent, dateReceived,
         outgoing, -- contactEmail, contactName, myEmail
-        subject, plaintext, html,
+        subject, plaintext, html, downloadComplete,
         isRead, isStarred, isReplied, isDraft, isSpam
       FROM email
       WHERE id = ${dbID}
@@ -158,7 +158,7 @@ export class SQLEMail {
   static async readWritableProps(email: EMail) {
     let row = await (await getDatabase()).get(sql`
       SELECT
-        isRead, isStarred, isReplied, isDraft, isSpam
+        isRead, isStarred, isReplied, isDraft, isSpam, downloadComplete
       FROM email
       WHERE id = ${email.dbID}
       `) as any;
@@ -171,6 +171,7 @@ export class SQLEMail {
     email.isReplied = sanitize.boolean(!!row.isReplied);
     email.isDraft = sanitize.boolean(!!row.isDraft);
     email.isSpam = sanitize.boolean(!!row.isSpam);
+    email.downloadComplete = sanitize.boolean(!!row.downloadComplete);
   }
 
   protected static async readRecipients(email: EMail) {
@@ -215,7 +216,7 @@ export class SQLEMail {
   protected static async readAttachments(email: EMail) {
     let attachmentRows = await (await getDatabase()).all(sql`
       SELECT
-        filename, filepathLocal, mimeType, contentID, disposition, related
+        filename, filepathLocal, mimeType, size, contentID, disposition, related
       FROM emailAttachment
       WHERE emailID = ${email.dbID}
       `) as any;
@@ -225,6 +226,7 @@ export class SQLEMail {
         a.filename = sanitize.nonemptystring(row.filename);
         a.filepathLocal = row.filepathLocal ? sanitize.string(row.filepathLocal) : null;
         a.mimeType = sanitize.nonemptystring(row.mimeType);
+        a.size = row.size ? sanitize.integer(row.size) : null;
         a.contentID = sanitize.nonemptystring(row.contentID);
         a.disposition = sanitize.translate(row.disposition, {
           attachment: ContentDisposition.attachment,

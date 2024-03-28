@@ -8,12 +8,12 @@
       <FileIcon {ext} size={24} />
     </hbox>
     <vbox class="info">
-      <hbox title={attachment.filename} class="filename top-row">
-        {attachment.filename}
+      <hbox title={$attachment.filename} class="filename top-row">
+        {$attachment.filename}
       </hbox>
       <hbox class="bottom-row">
         <hbox class="size">
-          {fileSize(attachment.content?.size)}
+          {$attachment.size ? fileSize($attachment.size) : "Not downloaded"}
         </hbox>
         <hbox flex />
         <hbox class="menu">...</hbox>
@@ -25,6 +25,7 @@
 <script lang="ts">
   import type { Attachment } from "../../../logic/Mail/Attachment";
   import type { EMail } from "../../../logic/Mail/EMail";
+  import { appGlobal } from "../../../logic/app";
   import { assert } from "../../../logic/util/util";
   import FileIcon from "../../Files/FileIcon.svelte";
   import { fileSize } from "../../Files/fileSize";
@@ -36,7 +37,7 @@
   $: ext = attachment.filename.split(".").pop();
 
   async function onOpen() {
-    alert("Open not yet implemented");
+    await appGlobal.remoteApp.openFileInExternalApp(attachment.filepathLocal);
   }
 
   let iconEl: HTMLDivElement;

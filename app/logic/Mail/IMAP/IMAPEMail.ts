@@ -71,6 +71,7 @@ export class IMAPEMail extends EMail {
       attachment.related = a.related;
       attachment.contentID = a.contentId;
       attachment.content = new File([a.content], a.filename, { type: a.mimeType });
+      attachment.size = attachment.content.size;
       return attachment;
     }));
     for (let a of this.attachments) {
@@ -78,6 +79,7 @@ export class IMAPEMail extends EMail {
     }
     //console.log("imapflow mail", mail, "text", mail.text, "html", mail.html);
     //console.log("IMAPEMail", this, "text", this.text, "html", this.html);
+    this.downloadComplete = true;
     await SQLEMail.save(this);
   }
 

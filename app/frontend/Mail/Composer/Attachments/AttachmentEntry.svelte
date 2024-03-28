@@ -1,13 +1,13 @@
 <hbox class="attachment">
   <hbox class="icon">
-    <FileIcon ext={attachment.filename?.split(".").pop()} size={32} />
+    <FileIcon ext={$attachment.filename?.split(".").pop()} size={32} />
   </hbox>
   <vbox flex class="right">
     <hbox class="name">
       {attachment.filename}
     </hbox>
     <hbox class="size">
-      {Math.ceil(attachment.content.size / 1024)} KB
+      {Math.ceil($attachment.size / 1024)} KB
     </hbox>
   </vbox>
   <vbox class="buttons">
