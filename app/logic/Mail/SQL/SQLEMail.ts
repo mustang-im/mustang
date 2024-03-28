@@ -50,6 +50,22 @@ export class SQLEMail {
       if (email.replyTo?.emailAddress) {
         await this.saveRecipient(email, email.replyTo.name, email.replyTo.emailAddress, 5);
       }
+    } else {
+      await (await getDatabase()).run(sql`
+        UPDATE email SET
+          messageID = ${email.id},
+          folderID = ${email.folder.dbID},
+          uid = ${(email as any as IMAPEMail).uid},
+          parentMsgID = ${email.inReplyTo},
+          size = ${email.size},
+          dateSent = ${email.sent.getTime() / 1000},
+          dateReceived = ${email.received.getTime() / 1000},
+          outgoing = ${email.outgoing ? 1 : 0},
+          subject = ${email.subject},
+          plaintext = ${email.text},
+          html = ${email.html}
+        WHERE id = ${email.dbID}
+        `);
     }
     await this.saveWritableProps(email);
     for (let attachment of email.attachments) {
@@ -223,10 +239,10 @@ export class SQLEMail {
       try {
         let a = new Attachment();
         a.filename = sanitize.nonemptystring(row.filename);
-        a.filepathLocal = row.filepathLocal ? sanitize.string(row.filepathLocal) : null;
+        a.filepathLocal = sanitize.stringOrNull(row.filepathLocal);
         a.mimeType = sanitize.nonemptystring(row.mimeType);
         a.size = row.size ? sanitize.integer(row.size) : null;
-        a.contentID = row.contentID ? sanitize.string(row.contentID) : null;
+        a.contentID = sanitize.stringOrNull(row.contentID);
         a.disposition = sanitize.translate(row.disposition, {
           attachment: ContentDisposition.attachment,
           inline: ContentDisposition.inline,
