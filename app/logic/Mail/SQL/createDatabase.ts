@@ -83,8 +83,6 @@ export const mailDatabaseSchema = sql`
     -- RFC822 header
     "messageID" TEXT default null,
     "parentMsgID" TEXT default null,
-    -- How many attachments this message has. TODO including m/related ?
-    "attachmentsCount" INTEGER default 0,
     -- in Bytes, of RFC822 MIME message with everything
     "size" INTEGER default null,
     -- When this email was sent, according to RFC822 Header Date:. Unixtime, in seconds (not milliseconds as JS Date).
@@ -116,6 +114,22 @@ export const mailDatabaseSchema = sql`
     --   ON DELETE SET NULL,
     FOREIGN KEY (folderID)
       REFERENCES folder (ID)
+      ON DELETE CASCADE
+  );
+
+  CREATE TABLE "emailAttachment" (
+    "id" INTEGER PRIMARY KEY,
+    "emailID" INTEGER not null,
+    -- filename with extension, as given my the email sender
+    "filename" TEXT not null,
+    -- filename and path where the attachment is stored on the user's local disk, after download
+    "filepathLocal" TEXT default null,
+    "mimeType" TEXT not null,
+    "disposition" TEXT default "attachment",
+    "contentID" TEXT not null,
+    "related" BOOLEAN default 0,
+    FOREIGN KEY (emailID)
+      REFERENCES email (ID)
       ON DELETE CASCADE
   );
 

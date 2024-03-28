@@ -31,7 +31,7 @@
     <hbox class="subject">{$message.subject}</hbox>
     <hbox flex />
     <hbox class="attachments">
-      {#if $message.attachments.hasItems}
+      {#if $attachments.hasItems}
         <AttachmentIcon size="14px" />
       {/if}
     </hbox>
@@ -49,6 +49,8 @@
   import { catchErrors } from "../../Util/error";
 
   export let message: EMail;
+
+  $: attachments = message.attachments;
 
   async function toggleRead() {
     await message.markRead(!message.isRead);

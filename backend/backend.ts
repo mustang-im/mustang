@@ -40,7 +40,6 @@ async function createSharedAppObject() {
  * ```
  */
 async function openFile(path: string, write: boolean): Promise<FileHandle> {
-  console.log("open", path);
   return await fsPromises.open(path, write ? "w" : "r");
 }
 async function closeFile(handle: FileHandle): Promise<void> {

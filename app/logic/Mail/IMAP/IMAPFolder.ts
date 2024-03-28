@@ -38,6 +38,7 @@ export class IMAPFolder extends Folder {
       try {
         lock = await conn.getMailboxLock(this.path);
       } catch (ex) {
+        console.log("Opening IMAP folder failed", ex);
         if (ex.code == "NoConnection") {
           this.account._connection = null;
           conn = await this.account.connection();

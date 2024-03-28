@@ -1,9 +1,11 @@
-import { EMail, PersonEmailAddress } from "../EMail";
+import type { EMail, PersonEmailAddress } from "../EMail";
 import type { Folder } from "../Folder";
+import { Attachment, ContentDisposition } from "../Attachment";
 import { findOrCreatePerson, findOrCreatePersonEmailAddress } from "../Person";
 import { getDatabase } from "./SQLDatabase";
 import type { IMAPEMail } from "../IMAP/IMAPEMail";
 import { backgroundError } from "../../../frontend/Util/error";
+import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import sql from "../../../../lib/rs-sqlite";
@@ -31,12 +33,12 @@ export class SQLEMail {
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO email (
           messageID, folderID, uid, parentMsgID,
-          attachmentsCount, size, dateSent, dateReceived,
+          size, dateSent, dateReceived,
           outgoing, -- contactEmail, contactName, myEmail
           subject, plaintext, html
         ) VALUES (
           ${email.id}, ${email.folder.dbID}, ${(email as any as IMAPEMail).uid}, ${email.inReplyTo},
-          ${email.attachments.length}, ${email.size}, ${email.sent.getTime() / 1000}, ${email.received.getTime() / 1000},
+          ${email.size}, ${email.sent.getTime() / 1000}, ${email.received.getTime() / 1000},
           ${email.outgoing ? 1 : 0},
           ${email.subject}, ${email.text}, ${email.html}
         )`);
@@ -50,6 +52,9 @@ export class SQLEMail {
       }
     }
     await this.saveWritableProps(email);
+    for (let attachment of email.attachments) {
+      await this.saveAttachment(email, attachment);
+    }
   }
 
   static async saveWritableProps(email: EMail) {
@@ -99,11 +104,34 @@ export class SQLEMail {
       )`);
   }
 
+  static async saveAttachment(email: EMail, a: Attachment) {
+    assert(email.dbID, "Need to save email before attachment");
+    await (await getDatabase()).run(sql`
+      INSERT OR IGNORE INTO emailAttachment (
+        emailID, filename, filepathLocal, mimeType, contentID, disposition, related
+      ) VALUES (
+        ${email.dbID}, ${a.filename}, ${a.filepathLocal}, ${a.mimeType}, ${a.contentID},
+        ${a.disposition}, ${a.related ? 1 : 0}
+      )`);
+  }
+
+  /** After downloading and saving the attachment file locally, or moving it on disk,
+   * save its local disk location. */
+  static async saveAttachmentFile(email: EMail, a: Attachment) {
+    assert(email.dbID, "Need to save email before attachment");
+    await (await getDatabase()).run(sql`
+      UPDATE emailAttachment SET
+        filepathLocal = ${a.filepathLocal}
+      WHERE emailID = ${email.dbID}
+        AND filename = ${a.filename}
+      )`);
+  }
+
   static async read(dbID: number, email: EMail): Promise<EMail> {
     let row = await (await getDatabase()).get(sql`
       SELECT
         uid, messageID, parentMsgID,
-        attachmentsCount, size, dateSent, dateReceived,
+        size, dateSent, dateReceived,
         outgoing, -- contactEmail, contactName, myEmail
         subject, plaintext, html,
         isRead, isStarred, isReplied, isDraft, isSpam
@@ -123,6 +151,7 @@ export class SQLEMail {
     email.html = sanitize.stringOrNull(row.html);
     this.readWritablePropsFromResult(email, row);
     await this.readRecipients(email);
+    await this.readAttachments(email);
     return email;
   }
 
@@ -177,6 +206,32 @@ export class SQLEMail {
         } else if (row.recipientType == 4) {
           email.bcc.add(pe);
         }
+      } catch (ex) {
+        backgroundError(ex);
+      }
+    }
+  }
+
+  protected static async readAttachments(email: EMail) {
+    let attachmentRows = await (await getDatabase()).all(sql`
+      SELECT
+        filename, filepathLocal, mimeType, contentID, disposition, related
+      FROM emailAttachment
+      WHERE emailID = ${email.dbID}
+      `) as any;
+    for (let row of attachmentRows) {
+      try {
+        let a = new Attachment();
+        a.filename = sanitize.nonemptystring(row.filename);
+        a.filepathLocal = row.filepathLocal ? sanitize.string(row.filepathLocal) : null;
+        a.mimeType = sanitize.nonemptystring(row.mimeType);
+        a.contentID = sanitize.nonemptystring(row.contentID);
+        a.disposition = sanitize.translate(row.disposition, {
+          attachment: ContentDisposition.attachment,
+          inline: ContentDisposition.inline,
+        }, ContentDisposition.unknown);
+        a.related = sanitize.boolean(!!row.related);
+        email.attachments.add(a);
       } catch (ex) {
         backgroundError(ex);
       }
