@@ -7,6 +7,7 @@ import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
 import fsPromises, { FileHandle } from "node:fs/promises";
+import childProcess from 'node:child_process';
 
 export async function startupBackend() {
   let appGlobal = await createSharedAppObject();
@@ -23,6 +24,7 @@ async function createSharedAppObject() {
     closeFile,
     fs: fsPromises,
     getConfigDir,
+    openFileInExternalApp,
     createIMAPFlowConnection,
     getSQLiteDatabase,
     sendMailNodemailer,
@@ -44,6 +46,15 @@ async function openFile(path: string, write: boolean): Promise<FileHandle> {
 }
 async function closeFile(handle: FileHandle): Promise<void> {
   await handle.close(); // for some reason, only this function doesn't appear on FileHandle in JPC client
+}
+
+async function openFileInExternalApp(filepath: string, appEXE: string): Promise<void> {
+  let launcher = appEXE ??
+    os.platform() == "win32" ? "explorer.exe" :
+    os.platform() == "darwin" ? "open" :
+    "xdg-open";
+  //console.log("Launching", launcher, filepath);
+  childProcess.spawn(launcher, [ filepath ], { shell: false });
 }
 
 /**
