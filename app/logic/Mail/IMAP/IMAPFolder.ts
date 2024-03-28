@@ -114,21 +114,21 @@ export class IMAPFolder extends Folder {
       needToDownload.removeAll(downloadMessages);
       let uids = downloadMessages.map(msg => msg.uid).join(",");
       await this.runCommand(async (conn) => {
-        for await (let msgInfo of await conn.fetch(uids, {
-          uid: true,
-          size: true,
-          threadId: true,
-          envelope: true,
-          source: true,
-          flags: true,
-          // headers: true,
-        }, { uid: true })) {
+        let msgInfos = await conn.fetch(uids, {
+            uid: true,
+            size: true,
+            threadId: true,
+            envelope: true,
+            source: true,
+            flags: true,
+            // headers: true,
+          }, { uid: true });
+        for await (let msgInfo of msgInfos) {
           let msg = this.getEMailByUID(msgInfo.uid);
           if (msg?.downloadComplete) {
             continue;
           } else if (msg) {
             msg.fromFlow(msgInfo);
-            msg.downloadComplete = true;
             this.updateModSeq(msgInfo.modseq);
             await msg.parseMIME();
             await SQLEMail.save(msg);
