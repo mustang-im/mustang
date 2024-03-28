@@ -58,6 +58,7 @@ export class SQLEMail {
   }
 
   static async saveWritableProps(email: EMail) {
+    assert(email.dbID, "Need Email DB ID to save props");
     await (await getDatabase()).run(sql`
       UPDATE email SET
         isRead = ${email.isRead ? 1 : 0},
@@ -77,7 +78,6 @@ export class SQLEMail {
   }
 
   static async saveRecipient(email: EMail, pe: PersonEmailAddress, recipientType: number) {
-    //console.log("  recipient", pe.emailAddress, pe.name, "recipient type", recipientType);
     let exists = await (await getDatabase()).get(sql`
         SELECT
           id
@@ -96,7 +96,6 @@ export class SQLEMail {
       )`);
       personID = insert.lastInsertRowid;
     }
-    //console.log("  person ID", personID, "email ID", email.dbID, "recipient type", recipientType);
     await (await getDatabase()).run(sql`INSERT INTO emailPersonRel (
         emailID, emailPersonID, recipientType
       ) VALUES (
@@ -227,7 +226,7 @@ export class SQLEMail {
         a.filepathLocal = row.filepathLocal ? sanitize.string(row.filepathLocal) : null;
         a.mimeType = sanitize.nonemptystring(row.mimeType);
         a.size = row.size ? sanitize.integer(row.size) : null;
-        a.contentID = sanitize.nonemptystring(row.contentID);
+        a.contentID = row.contentID ? sanitize.string(row.contentID) : null;
         a.disposition = sanitize.translate(row.disposition, {
           attachment: ContentDisposition.attachment,
           inline: ContentDisposition.inline,

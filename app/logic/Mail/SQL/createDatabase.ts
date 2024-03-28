@@ -128,10 +128,9 @@ export const mailDatabaseSchema = sql`
     -- file size in bytes. null, if not yet downloaded
     "size" INTEGER default null,
     "disposition" TEXT default "attachment",
-    "contentID" TEXT not null,
+    "contentID" TEXT default null,
     "related" BOOLEAN default 0,
     UNIQUE("emailID", "filename"),
-    UNIQUE("emailID", "contentID"),
     FOREIGN KEY (emailID)
       REFERENCES email (ID)
       ON DELETE CASCADE
