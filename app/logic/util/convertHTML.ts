@@ -1,11 +1,18 @@
 import insane from "insane";
+import TurndownService from "turndown";
+import markdownit from "markdown-it";
 
 export function convertHTMLToText(html: string): string {
-  return html; // TODO
+  return new TurndownService().turndown(html);
 }
 
+let markdownitInstance;
 export function convertTextToHTML(plaintext: string): string {
-  return sanitizeHTML(plaintext);
+  if (!markdownitInstance) {
+    markdownitInstance = markdownit();
+  }
+  let html = markdownitInstance.render(plaintext);
+  return sanitizeHTML(html);
 }
 
 export function sanitizeHTML(html: string): string {
