@@ -3,6 +3,7 @@ import { findOrCreatePerson, findOrCreatePersonEmailAddress } from "../Person";
 import { Attachment, ContentDisposition } from "../Attachment";
 import type { IMAPFolder } from "./IMAPFolder";
 import { SQLEMail } from "../SQL/SQLEMail";
+import { RawFilesAttachment } from "../RawFiles/RawFilesAttachment";
 import { assert } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
@@ -69,9 +70,12 @@ export class IMAPEMail extends EMail {
       attachment.disposition = a.disposition as ContentDisposition;
       attachment.related = a.related;
       attachment.contentID = a.contentId;
-      attachment.content = new File([ a.content ], a.filename, { type: a.mimeType });
+      attachment.content = new File([a.content], a.filename, { type: a.mimeType });
       return attachment;
     }));
+    for (let a of this.attachments) {
+      await RawFilesAttachment.save(a, this);
+    }
     //console.log("imapflow mail", mail, "text", mail.text, "html", mail.html);
     //console.log("IMAPEMail", this, "text", this.text, "html", this.html);
     await SQLEMail.save(this);
