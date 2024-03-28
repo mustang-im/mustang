@@ -15,18 +15,20 @@ export class RawFilesAttachment {
     attachment.filepathLocal = filepath;
   }
 
-  static async read(attachment: Attachment, email: EMail): Promise<void> {
+  static async read(attachment: Attachment, email: EMail): Promise<File> {
     let filepath = await this.getFilePath(attachment, email);
     let fileHandle = await appGlobal.remoteApp.openFile(filepath, false);
-    let buffer = await fileHandle.read();
+    let array = new Uint8Array(attachment.size);
+    await fileHandle.read(array);
     await appGlobal.remoteApp.closeFile(fileHandle);
-    console.log("read attachment", buffer);
+    let file = new File([array], attachment.filename, { type: attachment.mimeType });
+    attachment.content = file;
+    return file;
   }
 
   static async getFilePath(attachment: Attachment, email: EMail): Promise<string> {
     let configDir = await appGlobal.remoteApp.getConfigDir();
-    // let dir = `${configDir}/files/email/${email.folder.account.id}/${email.folder.path}/${email.dbID}`;
-    let dir = `${configDir}/files/email/${cleanFilename(email.from.emailAddress.replace("@", "-"))}/${email.subject}-${email.dbID}`;
+    let dir = `${configDir}/files/email/${cleanFilename(email.from.emailAddress.replace("@", "-"))}/${cleanFilename(email.subject)}-${email.dbID}`;
     let fs = await appGlobal.remoteApp.fs;
     await fs.mkdir(dir, { recursive: true }); // TODO mode = only user read
     return `${dir}/${cleanFilename(attachment.filename)}`;
