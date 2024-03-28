@@ -92,8 +92,8 @@ export class IMAPFolder extends Folder {
     this.messages.addAll(newMessages); // notify only once
 
     for (let email of updatedMessages) {
-      await SQLEMail.save(email);
-      // await SQLEMail.saveWritableProps(email);
+      // await SQLEMail.save(email);
+      await SQLEMail.saveWritableProps(email);
     }
     for (let email of newMessages) {
       await SQLEMail.save(email);
