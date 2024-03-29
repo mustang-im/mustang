@@ -1,5 +1,5 @@
 import { appGlobal } from './app';
-import { readMailAccounts } from './Mail/MailAccounts';
+import { readMailAccounts } from './Mail/AccountsList/MailAccounts';
 import { readChatAccounts } from './Chat/ChatAccounts';
 import { getTestObjects } from './testData';
 import JPCWebSocket from '../../lib/jpc-ws';

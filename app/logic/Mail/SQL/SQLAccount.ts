@@ -1,6 +1,6 @@
-import { MailAccount } from "../MailAccount";
+import type { MailAccount } from "../MailAccount";
 import { getDatabase } from "./SQLDatabase";
-import { newAccountForProtocol } from "../MailAccounts";
+import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { backgroundError } from "../../../frontend/Util/error";
 import { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
