@@ -1,11 +1,11 @@
-import { MailAccount } from './MailAccount';
-import { IMAPAccount } from './IMAP/IMAPAccount';
-import { POP3Account } from './POP3/POP3Account';
-import { SMTPAccount } from './SMTP/SMTPAccount';
-import { ContactEntry } from '../Abstract/Person';
-import { appGlobal } from '../app';
-import { NotReached } from '../util/util';
-import { sanitize } from '../../../lib/util/sanitizeDatatypes';
+import { MailAccount } from '../MailAccount';
+import { IMAPAccount } from '../IMAP/IMAPAccount';
+import { POP3Account } from '../POP3/POP3Account';
+import { SMTPAccount } from '../SMTP/SMTPAccount';
+import { ContactEntry } from '../../Abstract/Person';
+import { appGlobal } from '../../app';
+import { NotReached } from '../../util/util';
+import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
 import { ArrayColl } from 'svelte-collections';
 
 /**

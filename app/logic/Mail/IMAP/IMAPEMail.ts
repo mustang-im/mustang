@@ -6,6 +6,7 @@ import { RawFilesAttachment } from "../RawFiles/RawFilesAttachment";
 import { assert } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
+import { sanitizeHTML } from "../../util/convertHTML";
 
 export class IMAPEMail extends EMail {
   folder: IMAPFolder;
@@ -61,7 +62,7 @@ export class IMAPEMail extends EMail {
       this.headers.set(header.key, header.value);
     }
     this.text = mail.text;
-    this.html = mail.html;
+    this.html = sanitizeHTML(mail.html);
     this.attachments.addAll(mail.attachments.map(a => {
       let attachment = new Attachment();
       attachment.filename = a.filename;

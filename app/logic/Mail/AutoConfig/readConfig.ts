@@ -1,5 +1,5 @@
 import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
-import { newAccountForProtocol } from "../MailAccounts";
+import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import JXON from "../../../../lib/util/JXON";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
