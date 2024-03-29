@@ -86,9 +86,11 @@ export enum SpecialFolder {
   Trash = "trash",
   Spam = "spam",
   Archive = "archive",
+  All = "all",
 }
 
 export const specialFolderOrder = [
+  SpecialFolder.All,
   SpecialFolder.Inbox,
   SpecialFolder.Sent,
   SpecialFolder.Drafts,

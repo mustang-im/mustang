@@ -7,16 +7,16 @@
 {/if}
 
 <script lang="ts">
+  import { showAccounts } from "../../logic/Mail/AccountsList/ShowAccounts";
   import type { Folder } from "../../logic/Mail/Folder";
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "./Selected";
-  import { appGlobal } from "../../logic/app";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { showError } from "../Util/error";
   import ThreePane from "./3pane/3Pane.svelte";
   import VerticalLayout from "./Vertical/VerticalLayout.svelte";
   import MailChat from "./MailChat/MailChat.svelte";
- 
-  $: accounts = appGlobal.emailAccounts;
+
+  $: accounts = showAccounts;
 
   $: loadFolder($selectedFolder);
   async function loadFolder(folder: Folder) {
