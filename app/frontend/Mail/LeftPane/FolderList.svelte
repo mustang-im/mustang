@@ -6,21 +6,7 @@
     <svelte:fragment slot="row" let:item={folder}>
       <hbox class="folder" on:drop={(event) => catchErrors(() => onDropMail(event, folder))} on:dragover={(event) => catchErrors(() => onDragOverMail(event, folder))}>
         <hbox class="icon">
-          {#if folder.specialFolder == "inbox"}
-            <InboxIcon size="14px" />
-          {:else if folder.specialFolder == "sent"}
-            <SentIcon size="14px" />
-          {:else if folder.specialFolder == "drafts"}
-            <DraftsIcon size="14px" />
-          {:else if folder.specialFolder == "trash"}
-            <TrashIcon size="14px" />
-          {:else if folder.specialFolder == "spam"}
-            <SpamIcon size="14px" />
-          {:else if folder.specialFolder == "archive"}
-            <ArchiveIcon size="14px" />
-          {:else}
-            <FolderIcon size="14px" />
-          {/if}
+          <FolderIcon {folder} size="14px" />
         </hbox>
         <hbox class="label">{folder.name}</hbox>
       </hbox>
@@ -30,17 +16,11 @@
 
 <script lang="ts">
   import type { Folder } from '../../../logic/Mail/Folder';
-  import type { Collection } from 'svelte-collections';
-  import FastList from "../../Shared/FastList.svelte";
-  import FolderIcon from "lucide-svelte/icons/folder";
-  import InboxIcon from "lucide-svelte/icons/inbox";
-  import SentIcon from "lucide-svelte/icons/send";
-  import DraftsIcon from "lucide-svelte/icons/pen-square";
-  import TrashIcon from "lucide-svelte/icons/trash-2";
-  import SpamIcon from "lucide-svelte/icons/shield-x";
-  import ArchiveIcon from "lucide-svelte/icons/archive";
-  import { catchErrors } from '../../Util/error';
   import { onDropMail, onDragOverMail } from '../Message/drag';
+  import FolderIcon from './FolderIcon.svelte';
+  import FastList from "../../Shared/FastList.svelte";
+  import { catchErrors } from '../../Util/error';
+  import type { Collection } from 'svelte-collections';
 
   export let folders: Collection<Folder>;
   export let selectedFolder: Folder; /* in/out */
