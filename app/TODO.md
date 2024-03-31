@@ -122,16 +122,36 @@
    * Manual config
    * Guess config
       * Needss: TCP stream from node.js backend
-* Attachments
-  * Needs: File API
 * Push mail / IDLE
    * New mail
    * Flag changes
    * Removed emails
 * Removed emails, during fetch after login
+* Display subfolders indented, as hierarchy
+* Context menu for account, folder and message
+  * Create subfolder
+  * Close menu when clicking outside menu
 * Save original emails as MIME in ZIP file
-  * Needs: File API
 * Search
+  * with/without text
+  * within current folder / across all accounts and folders
+* Filter actions
+* Virtual folders / Saved searches
+  * Need: Fix observable collections for All Messages
+* View source
+* Print
+* Forward & redirect
+* Test and fix body
+* Delete strategy
+  * Move to trash
+  * Expunge on quit
+* Special folders
+  * Better detection based on flags
+  * Based on common names
+  * Manually in settings
+* Tags
+
+### Later
 * Refactor IMAP orchestration?: Separate IMAP protocol folder object and IMAP orcestration folder object. The latter does folder cache, IMAP poll/refresh, offline cache etc.
 * JMAP
 
