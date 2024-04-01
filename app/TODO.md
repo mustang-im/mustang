@@ -117,8 +117,6 @@
 
 # Mail
 * Autoconfig
-   * Promise with abort
-   * PriorityAbortable
    * Manual config
    * Guess config
       * Needss: TCP stream from node.js backend
