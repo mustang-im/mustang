@@ -1,39 +1,24 @@
 import type { MailAccount } from "../MailAccount";
 import { readConfigFromXML } from "./readConfig";
 import { appGlobal } from "../../app";
+import { PriorityAbortable, makeAbortable } from "../../util/Abortable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, type URLString } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
-export async function fetchConfig(domain: string, emailAddress: string): Promise<ArrayColl<MailAccount>> {
+export async function fetchConfig(domain: string, emailAddress: string, abort: AbortController): Promise<ArrayColl<MailAccount>> {
   domain = sanitize.hostname(domain);
 
+  let priorityOrder = new PriorityAbortable(abort, [
+    fetchConfigFromISP(domain, emailAddress, abort),
+    fetchConfigFromISPDB(domain, abort),
+    fetchConfigForMX(domain, abort),
+  ]);
   try {
-    return await fetchConfigFromISP(domain, emailAddress);
+    return await priorityOrder.run();
   } catch (ex) {
-    unimportantError(ex);
+    throw new Error(`Could not find a config for ${emailAddress}`);
   }
-
-  try {
-    return await fetchConfigFromISPDB(domain);
-  } catch (ex) {
-    unimportantError(ex);
-  }
-
-  try {
-    let mx = await getMX(domain);
-    let mxDomain = getBaseDomainFromHost(mx);
-    try {
-      return await fetchConfigFromISP(mxDomain); // without emailAddress
-    } catch (ex) {
-      unimportantError(ex);
-    }
-    return fetchConfigFromISPDB(mxDomain);
-  } catch (ex) {
-    unimportantError(ex);
-  }
-
-  throw new Error(`Could not find a config for ${emailAddress}`);
 }
 
 const kISPDBURL = "https://v1.ispdb.net/";
@@ -42,32 +27,36 @@ const kMXService = "https://mx.thunderbird.net/dns/mx/";
 /**
  * Tries to get a configuration for this ISP from our central database.
  */
-async function fetchConfigFromISPDB(domain: string) {
-  let xmlStr = await fetchText(kISPDBURL + domain);
+async function fetchConfigFromISPDB(domain: string, abort: AbortController) {
+  let xmlStr = await fetchText(kISPDBURL + domain, abort);
   return readConfigFromXML(xmlStr, domain);
 }
 
-async function fetchConfigFromISP(domain: string, emailAddress?: string) {
-  try {
-    let url = `https://autoconfig.${domain}/mail/config-v1.1.xml`;
-    if (emailAddress) {
-      url += `?emailaddress=${emailAddress}`;
-    }
-    let xmlStr = await fetchText(url);
-    return readConfigFromXML(xmlStr, domain);
-  } catch (ex) {
-    unimportantError(ex);
+async function fetchConfigFromISP(domain: string, emailAddress: string | null, abort: AbortController) {
+  let url1 = `https://autoconfig.${domain}/mail/config-v1.1.xml`;
+  if (emailAddress) {
+    url1 += `?emailaddress=${emailAddress}`;
   }
-  try {
-    let url = `https://${domain}/.well-known/autoconfig/mail/config-v1.1.xml`;
-    let xmlStr = await fetchText(url);
-    return readConfigFromXML(xmlStr, domain);
-  } catch (ex) {
-    unimportantError(ex);
-  }
-  let url = `http://autoconfig.${domain}/mail/config-v1.1.xml`; // TODO HTTP needed, given MX?
-  let xmlStr = await fetchText(url);
+  let url2 = `https://${domain}/.well-known/autoconfig/mail/config-v1.1.xml`;
+  let url3 = `http://autoconfig.${domain}/mail/config-v1.1.xml`; // TODO HTTP needed, given MX?
+
+  let priorityOrder = new PriorityAbortable(abort, [
+    fetchText(url1, abort),
+    fetchText(url2, abort),
+    fetchText(url3, abort),
+  ]);
+  let xmlStr = await priorityOrder.run();
   return readConfigFromXML(xmlStr, domain);
+}
+
+async function fetchConfigForMX(domain, abort: AbortController): Promise<ArrayColl<MailAccount>> {
+  let mx = await getMX(domain, abort);
+  let mxDomain = getBaseDomainFromHost(mx);
+  let priorityOrder = new PriorityAbortable(abort, [
+    fetchConfigFromISP(mxDomain, null, abort), // without emailAddress
+    fetchConfigFromISPDB(mxDomain, abort),
+  ]);
+  return await priorityOrder.run();
 }
 
 export function getDomainForEmailAddress(emailAddress: string): string {
@@ -100,7 +89,7 @@ export function getBaseDomainFromHost(hostname: string): string {
  * @param domain {String}
  * @returns hostname of the first MX server
  */
-async function getMX_node(domain: string): Promise<string> {
+async function getMX_node(domain: string, abort: AbortController): Promise<string> {
   let results = await dns.resolveMx(domain);
   assert(results.length, `No MX found for domain ${domain}`);
   let mxs = results.map(result => sanitize.hostname(result.exchange));
@@ -113,8 +102,8 @@ async function getMX_node(domain: string): Promise<string> {
  * @param domain {String}
  * @returns hostname of the first MX server
  */
-async function getMX(domain: string): Promise<string> {
-  let mxStr = await fetchText(kMXService + domain);
+async function getMX(domain: string, abort: AbortController): Promise<string> {
+  let mxStr = await fetchText(kMXService + domain, abort);
   let mxs = mxStr.split("\n");
   assert(mxs.length, `No MX found for domain ${domain}`);
   mxs = mxs.map(mx => sanitize.hostname(mx));
@@ -123,19 +112,15 @@ async function getMX(domain: string): Promise<string> {
 
 let ky;
 
-async function fetchText(url: URLString) {
+async function fetchText(url: URLString, abort: AbortController) {
   if (!ky) {
     ky = await appGlobal.remoteApp.kyCreate();
   }
   try {
-    let text = await ky.get(url, { result: "text", retry: 0 });
+    let text = await makeAbortable(ky.get(url, { result: "text", retry: 0 }), abort);
     assert(text && typeof (text) == "string", "Did not receive text");
     return text;
   } catch (ex) {
     throw new Error(`Failed to fetch ${url}: ${ex.message}`);
   }
-}
-
-function unimportantError(ex: Error) {
-  console.log(ex?.message ?? ex + "");
 }
