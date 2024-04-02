@@ -1,6 +1,6 @@
 <vbox flex class="setup-mail-window">
   <hbox flex />
-  <vbox class="page-box">
+  <vbox class="page-box" step={step}>
     {#if step != Step.FinalizeConfig && step != Step.ManualConfig}
       <EmailAddressPassword bind:emailAddress bind:password
         on:continue={onEmailAddressSucceeded} />
@@ -206,6 +206,9 @@
     max-width: 32em;
     padding: 24px 48px 20px 48px;
     background-color: white;
+  }
+  .page-box[step="8"] {
+    max-width: 90%;
   }
   .page-box :global(.password) {
     margin-bottom: 32px;
