@@ -1,10 +1,10 @@
 # Next
-* HTTP calls from node.js backend
 * Mail: Autoconfig
   * fillConfig for manual
   * Cancel button
   * Make it prettier
   * It's too high (I get a scrollbar)
+  * Exchange AutoDiscover V2 and V1
   * Manual config
     * Port should be a combo box with common values (applicable for that selected protocol)
     * Put protocol IMAP/SMTP on the same line as "Incoming server" / "Outgoing server" (maybe) (would save height, and also be less overwhelming, because less lines in the form)
@@ -118,8 +118,9 @@
 # Mail
 * Autoconfig
    * Manual config
+   * Exchange AutoDiscover V2 and V1
    * Guess config
-      * Needss: TCP stream from node.js backend
+      * Needs: TCP stream from node.js backend
 * Push mail / IDLE
    * New mail
    * Flag changes
