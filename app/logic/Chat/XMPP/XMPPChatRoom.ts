@@ -1,7 +1,7 @@
 import { Chat } from "../Chat";
 import type { XMPPAccount } from "./XMPPAccount";
 import { DeliveryStatus, UserChatMessage } from "../Message";
-import { xml } from '@xmpp/client';
+import { JXT } from "stanza";
 
 export class XMPPChatRoom extends Chat {
   account: XMPPAccount;
@@ -15,17 +15,18 @@ export class XMPPChatRoom extends Chat {
     message.deliveryStatus = DeliveryStatus.Sending;
     this.messages.add(message);
     //console.log("Sending", message.text, "to", this.name);
-    let html;
+    let xhtmlIM;
     if (message.html) {
-      html = xml("html", { xmlns: 'http://jabber.org/protocol/xhtml-im' },
-        xml("body", { xmlns: 'http://www.w3.org/1999/xhtml' },
-          message.html),
-      );
+      xhtmlIM = JXT.parse(
+        `<html xmlns='http://jabber.org/protocol/xhtml-im'>
+            <body xmlns='http://www.w3.org/1999/xhtml'>${message.html}</body>
+        </html>`);
     }
-    message.id = this.account.client.send(xml("message",
-      { type: "chat", to: message.contact.id },
-      xml("body", {}, message.text),
-      html,
-    ));
+    message.id = this.account.client.sendMessage({
+      to: message.contact.id,
+      html: xhtmlIM,
+      body: message.text,
+    });
+    // this.messages.remove(message);
   }
 }
