@@ -6,8 +6,7 @@ import { appGlobal } from '../../app';
 import { ChatPerson } from '../Person';
 import { ContactEntry } from '../../Abstract/Person';
 import { MapColl } from 'svelte-collections';
-import { client, xml } from '@xmpp/client';
-import setupRoster from '@xmpp-plugins/roster';
+import { xml } from '@xmpp/client';
 
 export class XMPPAccount extends ChatAccount {
   readonly chats = new MapColl<ChatPerson | Group, XMPPChatRoom>;
@@ -23,17 +22,17 @@ export class XMPPAccount extends ChatAccount {
    * This will populate `persons` and `chats`. */
   async login() {
     this.globalUserID = `${this.username}@${this.serverDomain}`;
-    this.client = client({
+    this.client = await appGlobal.remoteApp.createXMPPJSClient({
       username: this.globalUserID,
       password: this.password,
       service: this.serverDomain,
     });
-    this.client.on("error", this.errorCallback);
+    await this.client.on("error", this.errorCallback);
     await this.client.start();
     await this.waitForEvent("status", status => status == "online");
     await this.afterConnect();
 
-    this.client.on("status", async status => {
+    await this.client.on("status", async status => {
       this.isOnline = status == "online";
       if (this.isOnline) {
         try {
@@ -45,11 +44,11 @@ export class XMPPAccount extends ChatAccount {
     });
   };
   protected async afterConnect() {
-    this.client.on("stanza", stanza => this.onStanza(stanza));
+    await this.client.on("stanza", stanza => this.onStanza(stanza));
     await this.client.send(xml("presence"));
-    this.rosterService = setupRoster(this.client);
-    this.rosterService.on("set", ({ person }) => this.onRosterPersonAdded(person));
-    this.rosterService.on("remove", ({ jid }) => this.onRosterPersonRemoved(jid));
+    this.rosterService = await appGlobal.remoteApp.setupXMPPJSRoster(this.client);
+    await this.rosterService.on("set", ({ person }) => this.onRosterPersonAdded(person));
+    await this.rosterService.on("remove", ({ jid }) => this.onRosterPersonRemoved(jid));
     await this.getRoster();
     await this.getRooms();
   }
@@ -106,7 +105,7 @@ export class XMPPAccount extends ChatAccount {
     chatRoom.lastMessage = chatRoom.messages.get(chatRoom.messages.length - 1);
 
     // TODO Listen to chat messages
-    this.client.on('muc:other', xmppMsg => {
+    await this.client.on('muc:other', xmppMsg => {
       console.log("MUC other message", xmppMsg);
     });
   }
@@ -184,8 +183,8 @@ export class XMPPAccount extends ChatAccount {
     return msg;
   }
   async waitForEvent(eventName: string, condition = (...results: any) => true) {
-    await new Promise(resolve => {
-      this.client.on(eventName, (...results) => {
+    await new Promise(async resolve => {
+      await this.client.on(eventName, (...results) => {
         if (condition(...results)) {
           resolve(results);
         }

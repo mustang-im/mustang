@@ -3,6 +3,8 @@ import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite";
 import ky from 'ky';
 import nodemailer from 'nodemailer';
+import { client } from '@xmpp/client';
+import setupRoster from '@xmpp-plugins/roster';
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
@@ -29,6 +31,8 @@ async function createSharedAppObject() {
     getSQLiteDatabase,
     sendMailNodemailer,
     verifyServerNodemailer,
+    createXMPPJSClient,
+    setupXMPPJSRoster,
   };
 }
 
@@ -112,6 +116,14 @@ async function sendMailNodemailer(transport, mail) {
 async function verifyServerNodemailer(transport) {
   let transporter = nodemailer.createTransport(transport);
   await transporter.verify();
+}
+
+function createXMPPJSClient(options) {
+  return client(options);
+}
+
+function setupXMPPJSRoster(client) {
+  return setupRoster(client);
 }
 
 const kAppConfigDir = "Mustang";

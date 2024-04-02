@@ -6,6 +6,8 @@
   "dependencies": {
     "@radically-straightforward/sqlite": "^1.0.0",
     "@types/nodemailer": "^6.4.14",
+    "@xmpp-plugins/roster": "^1.2.0",
+    "@xmpp/client": "^0.13.1",
     "bufferutil": "^4.0.8",
     "imapflow": "^1.0.155",
     "ky": "^1.2.3",
