@@ -92,8 +92,8 @@ export class IMAPFolder extends Folder {
     this.messages.addAll(newMessages); // notify only once
 
     for (let email of updatedMessages) {
-      // await SQLEMail.save(email);
-      await SQLEMail.saveWritableProps(email);
+      await SQLEMail.save(email);
+      // await SQLEMail.saveWritableProps(email); -- TODO: Lacks dbID on initial fetch
     }
     for (let email of newMessages) {
       await SQLEMail.save(email);
@@ -103,6 +103,8 @@ export class IMAPFolder extends Folder {
   }
 
   /**
+   * Checks which of the `messages` are not downloaded yet,
+   * and downloads them in batches.
    * @return Actually newly downloaded msgs
    */
   async downloadMessagesComplete(): Promise<ArrayColl<IMAPEMail>> {
@@ -148,6 +150,10 @@ export class IMAPFolder extends Folder {
     return this.getEMailByUID(uid) ?? new IMAPEMail(this);
   }*/
 
+  getEMailBySeq(seq: number): IMAPEMail {
+    return this.messages.find((m: IMAPEMail) => m.seq == seq) as IMAPEMail;
+  }
+
   updateModSeq(modseq: number) {
     if (typeof (modseq) != "number") {
       return;
@@ -157,6 +163,31 @@ export class IMAPFolder extends Folder {
     }
   }
 
+  /** We received an event from the serverthat the number of emails in the folder changed */
+  async countChanged(newCount: number, oldCount: number): Promise<void> {
+    let hasChanged = newCount != oldCount || newCount != this.countTotal;
+    this.countTotal = newCount;
+    if (hasChanged) {
+      await this.listMessages();
+    }
+  }
+
+  /** We received an event from the serverthat the number of emails in the folder changed */
+  async messageFlagsChanged(uid: number | null, seq: number, flags: Set<string>, newModSeq?: number): Promise<void> {
+    let message = uid ? this.getEMailByUID(uid) : this.getEMailBySeq(seq);
+    if (!message) {
+      await this.listMessages();
+      return;
+    }
+
+    message.setFlagsLocal(flags);
+    SQLEMail.save(message);
+
+    if (newModSeq) {
+      // TODO What if we missed other notifications? Is modseq always increased by exactly 1, so that we can check that?
+      this.updateModSeq(newModSeq);
+    }
+  }
 
   async moveMessagesHere(messages: Collection<IMAPEMail>) {
     await super.moveMessagesHere(messages);

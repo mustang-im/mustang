@@ -12,6 +12,7 @@ export class IMAPEMail extends EMail {
   folder: IMAPFolder;
   /** From IMAP server */
   uid: number | null = null;
+  seq: number | null = null;
 
   constructor(folder: IMAPFolder) {
     super(folder);
@@ -28,17 +29,14 @@ export class IMAPEMail extends EMail {
   fromFlow(msgInfo: any) {
     // <https://imapflow.com/global.html#FetchMessageObject>
     this.uid = msgInfo.uid;
+    this.seq = msgInfo.seq;
     // <https://imapflow.com/global.html#MessageEnvelopeObject>
     let env = msgInfo.envelope;
     this.id = env?.messageId ?? this.uid;
     this.subject = env.subject;
     this.sent = env.date ?? new Date();
     this.received = new Date();
-    let flags = msgInfo.flags;
-    if (flags) {
-      this.isRead = flags.has("\\Seen");
-      this.isNewArrived = flags.has("\\Recent");
-    }
+    this.setFlagsLocal(msgInfo.flags);
     this.inReplyTo = env.inReplyTo;
     let firstFrom = env.from && env.from[0];
     if (firstFrom) {
@@ -52,6 +50,18 @@ export class IMAPEMail extends EMail {
     addPersons(this.cc, env.cc);
     addPersons(this.bcc, env.bcc);
     this.mime = msgInfo.source;
+  }
+
+  setFlagsLocal(flags: Set<string>) {
+    if (!(flags && flags instanceof Set)) {
+      return;
+    }
+    this.isRead = flags.has("\\Seen");
+    this.isNewArrived = flags.has("\\Recent");
+    this.isStarred = flags.has("\\Flagged");
+    this.isReplied = flags.has("\\Answered");
+    this.isSpam = flags.has("\\Junk");
+    this.isDraft = flags.has("\\Draft");
   }
 
   async parseMIME() {
@@ -84,27 +94,27 @@ export class IMAPEMail extends EMail {
 
   async markRead(read = true) {
     super.markRead(read);
-    this.setFlag("\\Seen", read);
+    this.setFlagServer("\\Seen", read);
   }
 
   async markStarred(starred = true) {
     super.markStarred(starred);
-    this.setFlag("\\Flagged", starred);
+    this.setFlagServer("\\Flagged", starred);
   }
 
   async markSpam(spam = true) {
     super.markSpam(spam);
-    this.setFlag("\\Junk", spam);
+    this.setFlagServer("\\Junk", spam);
   }
 
   async markReplied() {
     super.markReplied();
-    this.setFlag("\\Answered", true);
+    this.setFlagServer("\\Answered", true);
   }
 
   async markDraft() {
     super.markDraft();
-    this.setFlag("\\Draft", true);
+    this.setFlagServer("\\Draft", true);
   }
 
   /**
@@ -113,7 +123,7 @@ export class IMAPEMail extends EMail {
    * @param name -- the flag, e.g. "\Seen", "\Recent", "\Junk" etc.
    * @param set -- true = add the flag, false = remove the flag
    */
-  async setFlag(name: string, set = true) {
+  async setFlagServer(name: string, set = true) {
     this.folder.runCommand(async (conn) => {
       if (set) {
         await conn.messageFlagsAdd(this.uid, [name], { uid: true });

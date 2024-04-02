@@ -3,8 +3,8 @@ import { IMAPFolder } from "./IMAPFolder";
 import { appGlobal } from "../../app";
 import { SQLAccount } from "../SQL/SQLAccount";
 import { SQLFolder } from "../SQL/SQLFolder";
-import type { ArrayColl, Collection } from "svelte-collections";
 import { assert } from "../../util/util";
+import type { ArrayColl, Collection } from "svelte-collections";
 import type { ImapFlow } from "../../../../e2/node_modules/imapflow";
 
 export class IMAPAccount extends MailAccount {
@@ -29,16 +29,7 @@ export class IMAPAccount extends MailAccount {
     }
     await SQLFolder.readAllHierarchy(this);
 
-    let conn = await this.connection();
-    try {
-      await conn.connect();
-    } catch (ex) {
-      if (ex.message = "Command failed.") {
-        throw new Error("Failed to connect to server " + this.hostname + " for account " + this.name);
-      } else {
-        throw ex;
-      }
-    }
+    await this.connection();
     await this.listFolders();
   }
 
@@ -68,13 +59,78 @@ export class IMAPAccount extends MailAccount {
       logger: false,
     }
     this._connection = await appGlobal.remoteApp.createIMAPFlowConnection(options);
-    /*this._connection.on("close", () => {
-      if (!(this.password || this.accessToken)) {
-        return;
+    assert(this._connection, `Connection is null\n${this.hostname} IMAP server`);
+
+    try {
+      await this._connection.connect();
+    } catch (ex) {
+      if (ex.code == "NoConn" || ex.message == "Command failed.") {
+        throw new Error("Failed to connect to server " + this.hostname + " for account " + this.name);
+      } else {
+        throw ex;
       }
-      this.connection();
-    });*/
+    }
+    this.attachListeners(this._connection);
     return this._connection;
+  }
+
+  attachListeners(connection: ImapFlow): void {
+    connection.on("close", async () => {
+      try {
+        console.log(`IMAP connection to ${this.hostname} was closed by server, network or OS.`);
+        await this.reconnect();
+      } catch (ex) {
+        ex.message = `Reconnection failed after connection closed:\n${ex.message}\n${this.hostname} IMAP server`;
+        this.errorCallback(ex);
+      }
+    });
+    connection.on("error", async (ex) => {
+      try {
+        ex.message = `Connection to server for ${this.name} failed:\n${ex.message}`;
+        this.errorCallback(ex);
+        await this.reconnect();
+      } catch (ex) {
+        ex.message = `Reconnect failed after connection error:\n${ex.message}\n${this.hostname} IMAP server`;
+        this.errorCallback(ex);
+      }
+    });
+    connection.on("exists", async (info) => {
+      try {
+        let folder = this.getFolderByPath(info.path);
+        assert(folder, `We don't know about this folder`);
+        assert(typeof (info.count) == "number" && typeof (info.prevCount) == "number", "Counts need to be numbers");
+        await folder.countChanged(info.count, info.prevCount);
+      } catch (ex) {
+        console.log("Server event", info);
+        ex.message = `Server event about folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`;
+        this.errorCallback(ex);
+      }
+    });
+    connection.on("flags", async (info) => {
+      try {
+        let folder = this.getFolderByPath(info.path);
+        assert(folder, `We don't know about this folder`);
+        assert(!info.uid || typeof (info.uid) == "number", "Expected optional number for UID");
+        assert(typeof (info.seq) == "number", "Expected number for seq");
+        assert(!info.modseq || typeof (info.modseq) == "number", "Expected number for modseq");
+        assert(info.flags instanceof Set, "Expected Set for flags");
+        await folder.messageFlagsChanged(info.uid ?? null, info.seq, info.flags, info.modseq);
+      } catch (ex) {
+        console.log("Server event", info);
+        ex.message = `Server event about message seq ${info.seq} = UID ${info.uid} in folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`;
+        this.errorCallback(ex);
+      }
+    });
+  }
+
+  protected async reconnect(): Promise<void> {
+    console.log(`Reconnecting...`);
+    this._connection.close();
+    this._connection = null;
+    if (!(this.password || this.accessToken)) {
+      return;
+    }
+    await this.connection();
   }
 
   async listFolders(): Promise<void> {
@@ -116,6 +172,11 @@ export class IMAPAccount extends MailAccount {
       }
       this.readFolders(allFoldersInfo, subFolder, subFolder.subFolders as ArrayColl<IMAPFolder>);
     }
+  }
+
+  getFolderByPath(path: string): IMAPFolder {
+    // only for casting the type
+    return super.getFolderByPath(path) as IMAPFolder;
   }
 
   async logout(): Promise<void> {
