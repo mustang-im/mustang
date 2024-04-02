@@ -3,7 +3,6 @@ import type { Attachment } from "./Attachment";
 import type { Folder } from "./Folder";
 import type { Person } from "../Abstract/Person";
 import { appGlobal } from "../app";
-import { backgroundError } from "../../frontend/Util/error";
 import { assert } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, MapColl } from "svelte-collections";
@@ -83,7 +82,7 @@ export class EMail extends Message {
   }
 
   _reply(): EMail {
-    this.markReplied().catch(backgroundError);
+    this.markReplied().catch(this.folder.account.errorCallback);
     let account = this.folder.account;
     let folder = account.drafts ?? account.sent ?? this.folder;
     let reply = folder.newEMail();

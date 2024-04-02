@@ -62,7 +62,10 @@ export class MailAccount extends Account {
     return allFolders;
   }
   findFolder(findFunc: (folder: Folder) => boolean): Folder | null {
-    return findFolderFromList(this.rootFolders, findFunc);
+    return findSubFolderFromList(this.rootFolders, findFunc);
+  }
+  getFolderByPath(path: string): Folder | null {
+    return this.findFolder(folder => folder.path == path);
   }
 
   newFolder(): Folder {
@@ -70,12 +73,12 @@ export class MailAccount extends Account {
   }
 }
 
-function findFolderFromList(folders: ArrayColl<Folder>, findFunc: (folder: Folder) => boolean): Folder | null {
+function findSubFolderFromList(folders: ArrayColl<Folder>, findFunc: (folder: Folder) => boolean): Folder | null {
   for (let folder of folders) {
     if (findFunc(folder)) {
       return folder;
     }
-    let sub = findFolderFromList(folder.subFolders, findFunc);
+    let sub = findSubFolderFromList(folder.subFolders, findFunc);
     if (sub) {
       return sub;
     }
