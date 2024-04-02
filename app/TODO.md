@@ -106,6 +106,7 @@
 
 # Mail
 * Autoconfig
+  * Save config correctly
   * Exchange AutoDiscover V2 and V1
   * Guess config
     * Needs: TCP stream from node.js backend
@@ -175,7 +176,6 @@
 
 # Setup
 * Chat & Video conf
-* Mail Autoconfig
 * Combined: Mail, chat, fileshare, calendar, contacts with single login/setup
 
 # Later
