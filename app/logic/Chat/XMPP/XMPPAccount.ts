@@ -6,7 +6,7 @@ import { appGlobal } from '../../app';
 import { ChatPerson } from '../Person';
 import { ContactEntry } from '../../Abstract/Person';
 import { MapColl } from 'svelte-collections';
-import * as XMPP from 'stanza';
+import type * as XMPP from 'stanza';
 
 export class XMPPAccount extends ChatAccount {
   readonly protocol: string = "xmpp";
@@ -15,13 +15,14 @@ export class XMPPAccount extends ChatAccount {
   serverDomain: string;
   deviceID: string;
   globalUserID: string;
+
   /** Login to this account on the server. Opens network connection.
    * You must call this after creating the object and having set its properties.
    * This will populate `persons` and `chats`. */
   async login() {
     super.login(false);
     this.globalUserID = `${this.username}@${this.serverDomain}`;
-    this.client = XMPP.createClient({
+    this.client = await appGlobal.remoteApp.createStanzaXMPPClient({
       jid: this.globalUserID,
       password: this.password,
 
@@ -38,12 +39,12 @@ export class XMPPAccount extends ChatAccount {
     let presence = await this.client.sendPresence();
 
     await this.getRooms();
-    this.client.enableKeepAlive();
+    await this.client.enableKeepAlive();
     this.listenToChatMessages();
   };
   async waitForEvent(eventName: keyof XMPP.AgentEvents) {
-    await new Promise(resolve => {
-      this.client.on(eventName, (...results) => resolve(results));
+    await new Promise(async resolve => {
+      await this.client.on(eventName, (...results) => resolve(results));
     });
   }
   async getRoster() {
@@ -76,7 +77,7 @@ export class XMPPAccount extends ChatAccount {
     chatRoom.lastMessage = chatRoom.messages.get(chatRoom.messages.length - 1);
 
     // TODO Listen to chat messages
-    this.client.on('muc:other', xmppMsg => {
+    await this.client.on('muc:other', xmppMsg => {
       console.log("MUC other message", xmppMsg);
     });
   }
@@ -113,8 +114,8 @@ export class XMPPAccount extends ChatAccount {
     }
     return person;
   }
-  listenToChatMessages() {
-    this.client.on("chat", msg => this.processChatMessage(msg));
+  async listenToChatMessages() {
+    await this.client.on("chat", msg => this.processChatMessage(msg));
   }
   processChatMessage(xmppMsg: XMPP.Stanzas.ReceivedMessage): void {
     let chatRoom = this.getExistingRoom(xmppMsg.to);
