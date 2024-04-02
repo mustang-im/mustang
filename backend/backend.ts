@@ -14,6 +14,8 @@ import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
 import { DAVClient } from "tsdav";
 import { createType1Message, decodeType2Message, createType3Message } from "./ntlm";
+import { client as xmppClient, Client as XMPPClient } from '@xmpp/client';
+import setupRoster from '@xmpp-plugins/roster';
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
@@ -78,6 +80,8 @@ async function createSharedAppObject() {
     createType3MessageFromType2Message,
     newAdmZIP,
     newHTTPServer,
+    createXMPPJSClient,
+    setupXMPPJSRoster,
     readFile,
     writeFile,
     getIconForLocalFile,
@@ -472,6 +476,14 @@ function newAdmZIP(filepath: string) {
       throw ex;
     }
   }
+}
+
+function createXMPPJSClient(options: any) {
+  return xmppClient(options);
+}
+
+function setupXMPPJSRoster(client: XMPPClient) {
+  return setupRoster(client);
 }
 
 let mainWindow: BrowserWindow;

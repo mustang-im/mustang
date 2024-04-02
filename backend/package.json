@@ -7,6 +7,8 @@
     "@radically-straightforward/sqlite": "^1.0.0",
     "@types/nodemailer": "^6.4.14",
     "adm-zip": "^0.5.12",
+    "@xmpp-plugins/roster": "^1.2.0",
+    "@xmpp/client": "^0.13.1",
     "bufferutil": "^4.0.8",
     "des.js": "^1.0.1",
     "electron-updater": "^6.6.2",
