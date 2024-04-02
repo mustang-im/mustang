@@ -23,7 +23,6 @@
     "@electron-toolkit/preload": "^2.0.0",
     "@electron-toolkit/utils": "^2.0.0",
     "@radically-straightforward/sqlite": "^1.0.0",
-    "axios": "^1.6.8",
     "better-sqlite3": "^9.4.3",
     "bufferutil": "^4.0.8",
     "core-js": "2.6.12",
