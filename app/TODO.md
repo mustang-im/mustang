@@ -1,11 +1,4 @@
 # Next
-* Mail: Autoconfig
-  * Exchange AutoDiscover V2 and V1
-  * Make it prettier
-  * Scrollbar for dialog box, not app window
-  * Manual config
-    * Port should be a combo box with common values (applicable for that
-       selected protocol)
 * XMPP
 
 # App logic
@@ -113,10 +106,14 @@
 
 # Mail
 * Autoconfig
-   * Manual config
-   * Exchange AutoDiscover V2 and V1
-   * Guess config
-      * Needs: TCP stream from node.js backend
+  * Exchange AutoDiscover V2 and V1
+  * Guess config
+    * Needs: TCP stream from node.js backend
+  * Make it prettier
+  * Scrollbar for dialog box, not app window
+  * Manual config
+    * Port should be a combo box with common values (applicable for that
+       selected protocol)
 * Push mail / IDLE
    * New mail
    * Flag changes
@@ -125,6 +122,8 @@
 * Display subfolders indented, as hierarchy
 * Context menu for account, folder and message
   * Create subfolder
+  * Rename folder, Delete folder
+  * Move folder
   * Close menu when clicking outside menu
 * Save original emails as MIME in ZIP file
 * Search
@@ -137,6 +136,17 @@
 * Print
 * Forward & redirect
 * Test and fix body
+* Import
+  * Thunderbird
+     * Account settings
+     * Mails
+     * Contacts
+     * Calendar
+  * Outlook
+     * Account settings
+     * Contacts
+     * Calendar
+     * Mails
 * Delete strategy
   * Move to trash
   * Expunge on quit
