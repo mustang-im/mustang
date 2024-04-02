@@ -3,6 +3,7 @@ import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite";
 import ky from 'ky';
 import nodemailer from 'nodemailer';
+import * as StanzaXMPP from 'stanza';
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
@@ -29,6 +30,7 @@ async function createSharedAppObject() {
     getSQLiteDatabase,
     sendMailNodemailer,
     verifyServerNodemailer,
+    createStanzaXMPPClient,
   };
 }
 
@@ -112,6 +114,10 @@ async function sendMailNodemailer(transport, mail) {
 async function verifyServerNodemailer(transport) {
   let transporter = nodemailer.createTransport(transport);
   await transporter.verify();
+}
+
+function createStanzaXMPPClient(options) {
+  return StanzaXMPP.createClient(options);
 }
 
 const kAppConfigDir = "Mustang";
