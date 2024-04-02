@@ -10,6 +10,7 @@ import ky from 'ky';
 import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard } from "electron";
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
+import * as StanzaXMPP from 'stanza';
 import { createType1Message, decodeType2Message, createType3Message } from "./ntlm";
 import path from "node:path";
 import os from "node:os";
@@ -75,6 +76,7 @@ async function createSharedAppObject() {
       dirname: path.dirname,
       join: path.join,
     },
+    createStanzaXMPPClient,
   };
 }
 
@@ -326,6 +328,10 @@ async function sendMailNodemailer(transport, mail) {
 async function verifyServerNodemailer(transport) {
   let transporter = nodemailer.createTransport(transport);
   await transporter.verify();
+}
+
+function createStanzaXMPPClient(options) {
+  return StanzaXMPP.createClient(options);
 }
 
 async function getMIMENodemailer(mail): Promise<Uint8Array> {
