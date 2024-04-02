@@ -1,4 +1,20 @@
-  <hbox class="label">Protocol</hbox>
+  <hbox class="header">
+    <hbox class="direction">
+      {#if outgoing}
+          <ArrowLeftIcon />
+      {:else}
+          <ArrowRightIcon />
+      {/if}
+    </hbox>
+    <hbox class="text">
+      {#if outgoing}
+          Outgoing server
+      {:else}
+          Incoming server
+      {/if}
+    </hbox>
+  </hbox>
+
   {#if outgoing}
     <hbox class="protocol">{config.protocol}</hbox>
   {:else}
@@ -10,18 +26,15 @@
     </hbox>
   {/if}
 
-  <hbox class="label">Hostname</hbox>
   <hbox class="hostname" class:error={hostnameError}>
     <input type="text" bind:value={config.hostname} required />
   </hbox>
 
-  {#if !stepFull}
-    <hbox class="label">Port</hbox>
+  {#if stepFull}
     <hbox class="port" class:error={portError}>
       <input type="number" bind:value={config.port} required on:change={onPortChanged} />
     </hbox>
 
-    <hbox class="label">Connection encryption</hbox>
     <hbox class="tls" class:error={tlsError} class:no-encryption={noEncryption(config.tls)}>
       <select bind:value={config.tls} required on:change={onTLSChanged}>
         <option value={TLSSocketType.TLS}>TLS</option>
@@ -45,7 +58,6 @@
         </div>
       {/if}
 
-    <hbox class="label">Authentication method</hbox>
     <hbox class:error={authError}>
       <select bind:value={config.authMethod} required>
         <option value={AuthMethod.Password}>Password</option>
@@ -56,7 +68,6 @@
       </select>
     </hbox>
 
-    <hbox class="label">Username</hbox>
     <hbox class="username">
       <input type="text" bind:value={config.username} />
     </hbox>
@@ -67,10 +78,15 @@
   import ShieldOKIcon from "lucide-svelte/icons/shield-check";
   import ShieldAlertIcon from "lucide-svelte/icons/shield-alert";
   import ShieldQuestionIcon from "lucide-svelte/icons/shield-question";
+  import ArrowLeftIcon from "lucide-svelte/icons/arrow-big-left";
+  import ArrowRightIcon from "lucide-svelte/icons/arrow-big-right";
   import { kStandardPorts } from "../../../../logic/Mail/AutoConfig/configInfo";
 
   /** in */
   export let config: MailAccount;
+  /** false = show hostnames only, true = show all fields.
+   * in/out */
+  export let stepFull: boolean;
 
   $: outgoing = config.protocol == "smtp";
 
@@ -102,8 +118,6 @@
     onPortChanged();
   }
 
-  /** false = show hostnames only, true = show all fields */
-  let stepFull = true;
   let hostnameError: Error | null = null;
   let portError: Error | null = null;
   let tlsError: Error | null = null;
@@ -119,8 +133,8 @@
     } else {
       hostnameError = null;
     }
-    if (stepFull) {
-      stepFull = false;
+    if (!stepFull) {
+      stepFull = true;
       return false;
     }
     // TODO validate hostname (throw if not reachable), guess config, cache the result, and fill in the fields
@@ -150,11 +164,21 @@
 </script>
 
 <style>
-  .label {
-    margin-top: 4px;
+  .header {
+    align-items: center;
+    font-weight: bold;
+    font-size: 18px;
+    margin-top: 24px;
+    margin-bottom: 8px;
+  }
+  .header .direction {
+    margin-right: 6px;
   }
   .protocol {
     text-transform: uppercase;
+  }
+  .hostname input {
+    min-width: 15em;
   }
   .port input[type=number] {
     width: 5em;
