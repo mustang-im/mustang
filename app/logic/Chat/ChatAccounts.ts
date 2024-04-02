@@ -10,7 +10,7 @@ import { ContactEntry } from '../Abstract/Person';
  * Reads settings for chat accounts,
  * and creates corrsponding `ChatAccount` objects.
  * Returns them, and adds them to `appGlobal.chatAccounts`.
- * 
+ *
  * You still need to call `await account.login()` on each of them.
  */
 export async function readChatAccounts(): Promise<ArrayColl<ChatAccount>> {
@@ -47,11 +47,14 @@ function readMatrixAccount(prefBranch: string): MatrixAccount {
   account.baseURL = sanitize.url(localStorage.getItem(prefBranch + "server") ?? "https://matrix.org");
   account.username = sanitize.nonemptystring(localStorage.getItem(prefBranch + "username"));
   account.password = sanitize.nonemptystring(localStorage.getItem(prefBranch + "password"));
-  account.deviceID = sanitize.alphanumdash(localStorage.getItem(prefBranch + "deviceID"));
-  if (!account.deviceID) {
+  let deviceID = localStorage.getItem(prefBranch + "deviceID");
+  if (deviceID) {
+    account.deviceID = sanitize.alphanumdash(deviceID);
+  } else {
     account.deviceID = crypto.randomUUID();
     localStorage.setItem(prefBranch + "deviceID", account.deviceID);
   }
+  account.name = `Matrix ${account.username}`;
   return account;
 }
 
@@ -60,11 +63,14 @@ function readXMPPAccount(prefBranch: string): XMPPAccount {
   account.serverDomain = sanitize.hostname(localStorage.getItem(prefBranch + "server"));
   account.username = sanitize.nonemptystring(localStorage.getItem(prefBranch + "username"));
   account.password = sanitize.nonemptystring(localStorage.getItem(prefBranch + "password"));
-  account.deviceID = sanitize.alphanumdash(localStorage.getItem(prefBranch + "deviceID"));
-  if (!account.deviceID) {
+  let deviceID = localStorage.getItem(prefBranch + "deviceID");
+  if (deviceID) {
+    account.deviceID = sanitize.alphanumdash(deviceID);
+  } else {
     account.deviceID = crypto.randomUUID();
     localStorage.setItem(prefBranch + "deviceID", account.deviceID);
   }
+  account.name = `${account.username}@${account.serverDomain}`;
   return account;
 }
 
