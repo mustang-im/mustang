@@ -1,7 +1,7 @@
 import { VideoConfMeeting, MeetingState } from "./VideoConfMeeting";
 import { ParticipantVideo, ScreenShare, SelfVideo } from "./VideoStream";
 import { MeetingParticipant as Participant, ParticipantRole } from "./Participant";
-import { OAuth2 } from "./OAuth2";
+import { OAuth2 } from "../Auth/OAuth2";
 import { appGlobal } from "../app";
 import { notifyChangedProperty } from "../util/Observable";
 import { assert, sleep, type URLString } from "../util/util";
