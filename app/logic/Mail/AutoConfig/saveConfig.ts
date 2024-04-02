@@ -22,7 +22,7 @@ export function fillConfig(config: MailAccount, emailAddress: string, password: 
   config.password = password;
   config.username = replaceVar(config.username, emailAddress);
   config.hostname = replaceVar(config.hostname, emailAddress);
-  config.name = replaceVar(config.name, emailAddress);
+  config.name = config.name ? replaceVar(config.name, emailAddress) : emailAddress;
 }
 
 function replaceVar(str: string, emailAddress: string): string {
