@@ -109,9 +109,9 @@ export class OAuth2MS {
   async _getAccessTokenFromParams(aParams: { [key: string]: string; }): Promise<{ accessToken: string, refreshToken: string | null }> {
     aParams.client_id = kAuthClientId;
     aParams.scope = kAuthScope;
-    let response = await appGlobal.remoteApp.postHTTP(aParams.grant_type == "password" ? kTokenURLPasswordAuth : kTokenURL, aParams, { validateStatus: null, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+    let response = await appGlobal.remoteApp.postHTTP(aParams.grant_type == "password" ? kTokenURLPasswordAuth : kTokenURL, aParams, { responseType: 'json', throwHttpErrors: false, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
     if (!response.data.access_token) {
-      throw new OAuth2ErrorEWS(response);
+      throw new OAuth2ErrorMS(response.data);
     }
     return { accessToken: response.data.access_token, refreshToken: response.data.refresh_token };
   }
@@ -158,7 +158,7 @@ export class OAuth2MS {
           if (parameters.code) {
             resolve(parameters.code);
           } else {
-            reject(new OAuth2ErrorEWS(parameters));
+            reject(new OAuth2ErrorMS(parameters));
           }
         }
       }
@@ -177,15 +177,15 @@ export class OAuth2MS {
 
 const kErrorConsentRequiredEWS = 65001;
 
-class OAuth2ErrorEWS extends Error {
+class OAuth2ErrorMS extends Error {
   consentRequired = false;
   constructor(aResponse) {
-    let message = `OAuth error (${aResponse.status} ${aResponse.statusText})`;
-    if (aResponse.data.error_description) {
-      message = aResponse.data.error_description.split(/[\r\n]/)[0].replace(/^\w+: /, "");
+    let message = "Unknown OAuth error";
+    if (aResponse.error_description) {
+      message = aResponse.error_description.split(/[\r\n]/)[0].replace(/^\w+: /, "");
     }
     super(message);
-    if (aResponse.data.error_codes && aResponse.data.error_codes.includes(kErrorConsentRequiredEWS)) {
+    if (aResponse.error_codes && aResponse.error_codes.includes(kErrorConsentRequiredEWS)) {
       this.consentRequired = true;
     }
   }
