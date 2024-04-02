@@ -16,6 +16,7 @@
 
   /** in */
   export let config: MailAccount;
+  export let abort: AbortController;
 
   let incomingEl: ManualConfigServer;
   let outgoingEl: ManualConfigServer;

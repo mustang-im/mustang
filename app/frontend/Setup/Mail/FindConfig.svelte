@@ -17,10 +17,12 @@
   export let config: MailAccount;
   /** out */
   export let altConfigs: ArrayColl<MailAccount>;
+  /** in */
+  export let abort: AbortController;
 
   onMount(async () => {
     try {
-      altConfigs = await findConfig(emailAddress, password);
+      altConfigs = await findConfig(emailAddress, password, abort);
       config = altConfigs.slice().shift();
       dispatchEvent("continue");
     } catch (ex) {

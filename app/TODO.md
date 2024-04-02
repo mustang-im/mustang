@@ -1,11 +1,11 @@
 # Next
 * Mail: Autoconfig
-  * Cancel button
-  * Make it prettier
-  * It's too high (I get a scrollbar)
   * Exchange AutoDiscover V2 and V1
+  * Make it prettier
+  * Scrollbar for dialog box, not app window
   * Manual config
-    * Port should be a combo box with common values (applicable for that selected protocol)
+    * Port should be a combo box with common values (applicable for that
+       selected protocol)
 * XMPP
 
 # App logic
