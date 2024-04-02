@@ -36,8 +36,6 @@
     "@tiptap/starter-kit": "^2.2.2",
     "@types/dompurify": "^3.0.5",
     "@types/nodemailer": "^6.4.14",
-    "@xmpp-plugins/roster": "^1.2.0",
-    "@xmpp/client": "^0.13.1",
     "axios": "^1.6.2",
     "dompurify": "^3.1.1",
     "email-addresses": "^5.0.0",
@@ -57,6 +55,7 @@
     "psl": "https://github.com/lupomontero/psl",
     "svelte-collections": "^1.2.4",
     "svelte-i18n-lingui": "^0.1.7",
+    "stanza": "^12.19.0",
     "svelte-icon": "^2.0.0",
     "ws": "^8.16.0"
   },
