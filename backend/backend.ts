@@ -2,7 +2,6 @@ import JPCWebSocket from '../lib/jpc-ws';
 import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite";
 import ky from 'ky';
-import axios from 'axios';
 import nodemailer from 'nodemailer';
 import path from "node:path";
 import os from "node:os";
@@ -99,16 +98,24 @@ function kyCreate(defaultOptions) {
 }
 
 async function postHTTP(url: string, data: any, config: any) {
-  let result = await axios.post(url, data, config);
-  result.headers = result.headers.toJSON();
-  result.config.headers = result.config.headers.toJSON();
-  delete result.request;
-  for (let key in axios.defaults) {
-    if (result.config[key] == axios.defaults[key]) {
-      delete result.config[key];
-    }
+  switch (config.headers['Content-Type']) {
+  case 'application/x-www-form-urlencoded':
+    config.body = new URLSearchParams(data);
+    break;
+  case 'application/json':
+    config.json = data;
+    break;
+  default:
+    config.body = data;
+    break;
   }
-  return result;
+  let response = await ky.post(url, config);
+  return {
+    ok: response.ok,
+    status: response.status,
+    statusText: response.statusText,
+    data: await response[config.responseType](),
+  };
 }
 
 function createIMAPFlowConnection(...args): ImapFlow {

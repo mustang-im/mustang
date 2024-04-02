@@ -112,8 +112,8 @@ export class EWSAccount extends MailAccount {
 
   async createRequestOptions(): Promise<any> {
     let options: any = {
-      validateStatus: null,
-      responseType: 'document', // although we actually get text
+      throwHttpErrors: false,
+      responseType: 'text',
       headers: {
         'Content-Type': "text/xml; charset=utf-8",
       },
@@ -122,7 +122,7 @@ export class EWSAccount extends MailAccount {
       let accessToken = await this.oAuth2.getAccessToken();
       options.headers.Authorization = `Bearer ${accessToken}`;
     } else {
-      options.auth = { username: this.username, password: this.password };
+      options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
     }
     return options;
   }
