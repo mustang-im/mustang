@@ -35,28 +35,29 @@
       <input type="number" bind:value={config.port} required on:change={onPortChanged} />
     </hbox>
 
-    <hbox class="tls" class:error={tlsError} class:no-encryption={noEncryption(config.tls)}>
-      <select bind:value={config.tls} required on:change={onTLSChanged}>
-        <option value={TLSSocketType.TLS}>TLS</option>
-        <option value={TLSSocketType.STARTTLS}>STARTTLS</option>
-        <option value={TLSSocketType.Plain}>Plain</option>
-      </select>
-      <hbox class="tls-icon">
-        {#if config.tls == TLSSocketType.Unknown}
-          <ShieldQuestionIcon size={20} />
-        {:else if noEncryption(config.tls)}
-          <ShieldAlertIcon size={20} />
-        {:else}
-          <ShieldOKIcon size={20} />
-        {/if}
-      </hbox>
-    </hbox>
+    <vbox class="tls" class:error={tlsError} tls={config.tls}>
       {#if tlsWarning}
-        <hbox></hbox>
         <div class="tls-warning">
           {tlsWarning}
         </div>
       {/if}
+      <hbox class="row">
+        <select bind:value={config.tls} required on:change={onTLSChanged}>
+          <option value={TLSSocketType.TLS}>TLS</option>
+          <option value={TLSSocketType.STARTTLS}>STARTTLS</option>
+          <option value={TLSSocketType.Plain}>Plain</option>
+        </select>
+        <hbox class="tls-icon">
+          {#if config.tls == TLSSocketType.Unknown}
+            <ShieldQuestionIcon size={20} />
+          {:else if noEncryption(config.tls)}
+            <ShieldAlertIcon size={20} />
+          {:else}
+            <ShieldOKIcon size={20} />
+          {/if}
+        </hbox>
+      </hbox>
+    </vbox>
 
     <hbox class:error={authError}>
       <select bind:value={config.authMethod} required>
@@ -81,6 +82,8 @@
   import ArrowLeftIcon from "lucide-svelte/icons/arrow-big-left";
   import ArrowRightIcon from "lucide-svelte/icons/arrow-big-right";
   import { kStandardPorts } from "../../../../logic/Mail/AutoConfig/configInfo";
+  import { getDomainForEmailAddress } from "../../../../logic/Mail/AutoConfig/fetchConfig";
+  import { dummyHostname } from "../../../../logic/Mail/AutoConfig/manualConfig";
 
   /** in */
   export let config: MailAccount;
@@ -127,7 +130,11 @@
    * @returns true = can continue, false or exception: Don't continue
    */
   export async function onContinue(): Promise<boolean> {
-    if (!config.hostname) {
+    if (!config.emailAddress) {
+      throw new Error("Please enter the email address");
+    }
+    let domain = getDomainForEmailAddress(config.emailAddress);
+    if (!config.hostname || config.hostname == dummyHostname(domain)) {
       hostnameError = new Error("Please enter the correct hostname");
       throw hostnameError;
     } else {
@@ -183,13 +190,21 @@
   .port input[type=number] {
     width: 5em;
   }
+  .tls {
+    align-items: start;
+    justify-content: end;
+  }
   .tls-icon {
     margin-left: 8px;
   }
-  .tls-icon :global(svg) {
+  .tls[tls="0"] .tls-icon :global(svg) {
+    stroke: grey;
+  }
+  .tls[tls="2"] .tls-icon :global(svg),
+  .tls[tls="3"] .tls-icon :global(svg) {
     stroke: green;
   }
-  .no-encryption .tls-icon :global(svg) {
+  .tls[tls="1"] .tls-icon :global(svg) {
     stroke: red;
   }
   .tls-warning {
