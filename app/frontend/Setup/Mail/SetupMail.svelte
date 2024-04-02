@@ -11,14 +11,14 @@
     {/if}
     {#if step == Step.FindConfig}
       <FindConfig bind:config bind:altConfigs {emailAddress} {password}
-        on:continue={onFindConfigSucceeded} on:fail={onFindConfigFailed} />
+        on:continue={onFindConfigSucceeded} on:fail={onFindConfigFailed} {abort} />
     {:else if step == Step.FoundConfig}
       <FoundConfig bind:config {altConfigs} />
     {:else if step == Step.CheckConfig}
       <CheckConfig {config}
-        on:continue={onCheckConfigSucceeded} on:fail={onError} />
+        on:continue={onCheckConfigSucceeded} on:fail={onCheckConfigFailed} {abort} />
     {:else if step == Step.ManualConfig}
-      <ManualConfig bind:config bind:this={manualConfigEl} />
+      <ManualConfig bind:config bind:this={manualConfigEl} {abort} />
     {:else if step == Step.FinalizeConfig}
       <FinalizeConfig {config} />
     {/if}
@@ -32,6 +32,11 @@
       {#if step == Step.EmailAddress}
         <Button label="Get new email address" classes="secondary"
           on:click={onNewEmailAddress}
+          />
+      {/if}
+      {#if step != Step.EmailAddress}
+        <Button label="Start over" classes="secondary"
+          on:click={reset}
           />
       {/if}
       <hbox flex />
@@ -68,6 +73,7 @@
   import { NotReached } from "../../../logic/util/util";
   import type { ArrayColl } from "svelte-collections";
   import { catchErrors } from "../../Util/error";
+  import { Cancelled } from "../../../logic/util/Abortable";
 
   let emailAddress: string;
   let password: string;
@@ -86,6 +92,7 @@
     ManualConfig = 8,
   }
   let step: Step = Step.EmailAddress;
+  let abort = new AbortController();
 
   let nextButtonEl: HTMLButtonElement;
 
@@ -94,16 +101,34 @@
     step = Step.FindConfig;
   }
   function onFindConfigSucceeded() {
+    if (step != Step.FindConfig) {
+      return;
+    }
     step = Step.FoundConfig;
   }
   function onFindConfigFailed(event: CustomEvent) {
     let ex = event.detail;
-    console.log("find config error", ex, event);
-    showError(ex);
-    onManualSetup();
+    if (ex instanceof Cancelled) {
+      reset();
+    } else {
+      showError(ex);
+      onManualSetup();
+    }
   }
   function onCheckConfigSucceeded() {
+    if (step != Step.CheckConfig) {
+      return;
+    }
     step = Step.FinalizeConfig;
+  }
+  function onCheckConfigFailed(event: CustomEvent) {
+    let ex = event.detail;
+    if (ex instanceof Cancelled) {
+      reset();
+    } else {
+      showError(ex);
+      onManualSetup();
+    }
   }
   function onManualSetup() {
     if (!config || !config.outgoing) {
@@ -154,7 +179,7 @@
     }
   }
   function reset() {
-    // TODO abort ongoing jobs
+    abort.abort();
     config = null;
     altConfigs?.clear();
     errorMessage = null;
@@ -163,12 +188,6 @@
 
   // Error
 
-  function onError(event: CustomEvent) {
-    let ex = event.detail;
-    console.log("error", ex, event);
-    showError(ex);
-  }
-
   let errorMessage: string | null = null;
   let errorGravity: ErrorGravity = ErrorGravity.OK;
 
@@ -176,6 +195,10 @@
     if (typeof (ex) == "string") {
       ex = new Error(ex);
     }
+    if (ex instanceof Cancelled) {
+      return;
+    }
+    console.error(ex);
     errorMessage = ex.message;
     errorGravity = ErrorGravity.Error;
   }
@@ -183,7 +206,6 @@
   function clearError() {
     errorMessage = null;
     errorGravity = ErrorGravity.OK;
-    step = 1;
   }
 
   function onSave() {
