@@ -1,5 +1,5 @@
 # Next
-* XMPP
+* Contacts Save
 
 # App logic
 * Errors
