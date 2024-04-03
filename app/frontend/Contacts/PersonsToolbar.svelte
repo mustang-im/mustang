@@ -10,6 +10,7 @@
   import { ChatPerson } from "../../logic/Chat/Person";
   import type { Person } from "../../logic/Abstract/Person";
   import type { ChatAccount } from "../../logic/Chat/ChatAccount";
+  import { selectedPerson } from "../Shared/Person/PersonOrGroup";
   import { appGlobal } from "../../logic/app";
   import AccountDropDown from "../Shared/AccountDropDown.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
@@ -17,7 +18,6 @@
   import type { Collection } from "svelte-collections";
 
   export let persons: Collection<Person>;
-  export let selected: Person = null;
 
   let selectedAccount: ChatAccount; // TODO contacts account, and email and chat accounts, or all
 
@@ -25,7 +25,7 @@
     let person = new ChatPerson();
     person.name = "New person";
     persons.add(person);
-    selected = person;
+    $selectedPerson = person;
   }
 </script>
 
