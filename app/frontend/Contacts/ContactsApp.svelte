@@ -1,12 +1,12 @@
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox flex class="left-pane" slot="left">
-    <PersonsToolbar {persons} bind:selected={selectedPerson} />
-    <PersonsList persons={filteredPersons} bind:selected={selectedPerson} />
+    <PersonsToolbar {persons} bind:selected={$selectedPerson} />
+    <PersonsList persons={filteredPersons} bind:selected={$selectedPerson} />
   </vbox>
   <vbox flex class="right-pane" slot="right">
-    {#if selectedPerson}
+    {#if $selectedPerson}
       <Scroll>
-        <PersonDetails person={selectedPerson} />
+        <PersonDetails person={$selectedPerson} />
       </Scroll>
     {/if}
   </vbox>
@@ -14,17 +14,17 @@
 
 <script lang="ts">
   import type { Person } from "../../logic/Abstract/Person";
+  import { selectedPerson } from "../Shared/Person/PersonOrGroup";
+  import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import PersonsList from "../Shared/Person/PersonsList.svelte";
   import PersonDetails from "./PersonDetails.svelte";
   import PersonsToolbar from "./PersonsToolbar.svelte";
   import Scroll from "../Shared/Scroll.svelte";
   import Splitter from "../Shared/Splitter.svelte";
-  import { globalSearchTerm } from "../AppsBar/selectedApp";
   import type { Collection } from "svelte-collections";
 
   let persons = appGlobal.persons;
-  let selectedPerson: Person;
 
   $: filteredPersons = $globalSearchTerm
     ? persons.filter(p =>
@@ -37,8 +37,8 @@
     : persons;
   $: clearSelected(filteredPersons);
   function clearSelected(filteredPersons: Collection<Person>) {
-    if (!filteredPersons.contains(selectedPerson)) {
-      selectedPerson = filteredPersons.first;
+    if (!filteredPersons.contains($selectedPerson)) {
+      $selectedPerson = filteredPersons.first;
     }
   }
 </script>
