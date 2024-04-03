@@ -115,11 +115,6 @@
   * Manual config
     * Port should be a combo box with common values (applicable for that
        selected protocol)
-* Push mail / IDLE
-   * New mail
-   * Flag changes
-   * Removed emails
-* Removed emails, during fetch after login
 * Display subfolders indented, as hierarchy
 * Context menu for account, folder and message
   * Create subfolder
@@ -127,16 +122,21 @@
   * Move folder
   * Close menu when clicking outside menu
 * Save original emails as MIME in ZIP file
+* Test and fix body
 * Search
   * with/without text
   * within current folder / across all accounts and folders
 * Filter actions
 * Virtual folders / Saved searches
   * Need: Fix observable collections for All Messages
+* Removed emails
+  * In SQL database
+  * During fetch after login
+  * From IDLE
+  * Loop when deleting mail manually twice: FilteredCollection removed observers
 * View source
 * Print
 * Forward & redirect
-* Test and fix body
 * Import
   * Thunderbird
      * Account settings
