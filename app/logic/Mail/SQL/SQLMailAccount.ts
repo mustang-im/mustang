@@ -7,7 +7,7 @@ import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 
-export class SQLAccount {
+export class SQLMailAccount {
   static async save(acc: MailAccount) {
     if (!acc.dbID) {
       let existing = await (await getDatabase()).get(sql`
@@ -28,12 +28,12 @@ export class SQLAccount {
           idStr, name, protocol, emailAddress,
           username, passwordButter,
           hostname, port, tls, url,
-          userRealname
+          userRealname, workspace
         ) VALUES (
           ${acc.id}, ${acc.name}, ${acc.protocol}, ${acc.emailAddress},
           ${acc.username}, ${acc.password},
           ${acc.hostname}, ${acc.port}, ${acc.tls}, ${acc.url},
-          ${acc.userRealname}
+          ${acc.userRealname}, ${acc.workspace}
         )`);
       acc.dbID = insert.lastInsertRowid;
     } else {
@@ -42,7 +42,7 @@ export class SQLAccount {
           name = ${acc.name}, emailAddress = ${acc.emailAddress},
           username = ${acc.username}, passwordButter = ${acc.password},
           hostname = ${acc.hostname}, port = ${acc.port}, tls = ${acc.tls}, url = ${acc.url},
-          userRealname = ${acc.userRealname}
+          userRealname = ${acc.userRealname}, workspace = ${acc.workspace}
         WHERE id = ${acc.dbID}
         `);
     }
@@ -63,7 +63,7 @@ export class SQLAccount {
         idStr, name, protocol, emailAddress,
         username, passwordButter,
         hostname, port, tls, url,
-        userRealname
+        userRealname, workspace
       FROM emailAccount
       WHERE id = ${dbID}
       `) as any;
@@ -79,6 +79,7 @@ export class SQLAccount {
     acc.tls = sanitize.enum(row.tls, [1, 2, 3], 2);
     acc.url = row.url ? sanitize.url(row.url) : null;
     acc.userRealname = sanitize.label(row.userRealname);
+    // acc.workspace = sanitize.stringOrNull(row.workspace);
     return acc;
   }
 
@@ -92,7 +93,7 @@ export class SQLAccount {
     for (let row of rows) {
       try {
         let account = newAccountForProtocol(row.protocol);
-        await SQLAccount.read(row.id, account);
+        await SQLMailAccount.read(row.id, account);
         accounts.add(account);
       } catch (ex) {
         backgroundError(ex);

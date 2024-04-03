@@ -4,14 +4,20 @@ import { Observable, notifyChangedProperty } from "../util/Observable";
 
 export class Account extends Observable {
   id: string;
+  dbID: number | null = null;
   @notifyChangedProperty
   name: string;
-  @notifyChangedProperty
-  userRealname: string;
   /** Class ID. Must be overwritten by subclasses. Written to account prefs. */
   readonly protocol: string = null;
+  /** Protocol-specific address for the sync server. Only only for some types of accounts. */
+  @notifyChangedProperty
+  url: string | null;
+  @notifyChangedProperty
+  username: string | null;
   @notifyChangedProperty
   workspace: Workspace;
+  @notifyChangedProperty
+  userRealname: string;
 
   /** Will be called, when there are errors on the connection
    * which cannot be attributed directly to an API function called,

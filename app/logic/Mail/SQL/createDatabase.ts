@@ -49,10 +49,10 @@ export const mailDatabaseSchema = sql`
     "name" TEXT,
     -- Optional. Should be set, if this contact is also in table persons / personContacts.
     "personID" INTEGER default null,
-    UNIQUE("emailAddress", "name"),
-    FOREIGN KEY (personID)
-      REFERENCES person (id)
-      ON DELETE SET NULL
+    UNIQUE("emailAddress", "name")
+    -- FOREIGN KEY (personID)
+    --  REFERENCES person (id)
+    --  ON DELETE SET NULL
   );
 
   -- n:n table for email to emailPersons
@@ -182,6 +182,7 @@ export const mailDatabaseSchema = sql`
     "hostname" TEXT default null,
     "port" INTEGER default null,
     "tls" INTEGER default 0,
-    "url" TEXT default null
+    "url" TEXT default null,
+    "workspace" TEXT default null
   );
 `;

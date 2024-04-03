@@ -1,7 +1,7 @@
 import { MailAccount, TLSSocketType } from "../MailAccount";
 import { IMAPFolder } from "./IMAPFolder";
 import { appGlobal } from "../../app";
-import { SQLAccount } from "../SQL/SQLAccount";
+import { SQLMailAccount } from "../SQL/SQLMailAccount";
 import { SQLFolder } from "../SQL/SQLFolder";
 import { assert } from "../../util/util";
 import type { ArrayColl, Collection } from "svelte-collections";
@@ -25,7 +25,7 @@ export class IMAPAccount extends MailAccount {
 
   async login(interactive: boolean): Promise<void> {
     if (!this.dbID) {
-      await SQLAccount.save(this);
+      await SQLMailAccount.save(this);
     }
     await SQLFolder.readAllHierarchy(this);
 
