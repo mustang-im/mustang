@@ -4,7 +4,8 @@
     {person.emailAddresses.first?.value}
   </hbox>
   <vbox slot="person-context-menu" class="context-menu" let:person>
-    {person.name}
+    <PersonContextMenu {person}
+      on:remove={(event) => onRemovePerson(event.detail)} />
   </vbox>
   <slot name="end" slot="end" />
 </PersonsAutocomplete>
@@ -13,6 +14,7 @@
   import { PersonEmailAddress } from "../../../logic/Mail/EMail";
   import type { Person } from "../../../logic/Abstract/Person";
   import PersonsAutocomplete from "../../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
+  import PersonContextMenu from "./PersonContextMenu.svelte";
   import type { ArrayColl } from "svelte-collections";
 
   /** E.g. to, cc or bcc list
@@ -26,6 +28,9 @@
   // Map newly added PersonEmailAddress -> Person
   function onAddPerson(person: Person) {
     addresses.add(PersonEmailAddress.fromPerson(person));
+  }
+  function onRemovePerson(person: Person) {
+    addresses.remove(addresses.find(a => a.person == person));
   }
 </script>
 
