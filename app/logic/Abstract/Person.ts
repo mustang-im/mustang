@@ -26,6 +26,30 @@ export class Person extends ContactBase {
   toString() {
     return this.name;
   }
+
+  notifyObservers(propertyName?: string, oldValue?: any): void {
+    if (propertyName == "name" && this.name && typeof (this.name) == "string") {
+      if (!this.lastName && !this.firstName) { // This contact is being created automatically and we have no first/last name yet
+        // Last word is last name, rest is first name
+        let sp = this.name.split(" ");
+        if (sp.length > 1) {
+          this.lastName = sp.pop();
+          this.firstName = sp.join(" ");
+        }
+      } else {
+        let lastNameStart = this.name.indexOf(this.lastName);
+        if (lastNameStart >= 0) { // editing first name
+          this.lastName = this.name.substring(lastNameStart).trim();
+          this.firstName = this.name.substring(0, lastNameStart - 1).trim();
+        } else { // editing last name
+          if (this.firstName == this.name.substring(0, this.firstName.length)) {
+            this.lastName = this.name.substring(this.firstName.length + 1).trim();
+          }
+        }
+      }
+    }
+    super.notifyObservers(propertyName, oldValue);
+  }
 }
 
 export class ContactEntry {
