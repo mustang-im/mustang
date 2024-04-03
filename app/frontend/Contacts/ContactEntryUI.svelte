@@ -6,7 +6,8 @@
       {/each}
     </select>
   </hbox>
-  <hbox class="value edit">
+  <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+  <hbox class="value edit" tabindex="0" on:keydown={(event) => onKeyEnter(event, onEnter)}>
     <slot name="edit" />
   </hbox>
   <hbox class="actions">
@@ -32,12 +33,13 @@
 <script lang="ts">
   import type { Collection } from "svelte-collections";
   import type { ContactEntry } from "../../logic/Abstract/Person";
-  import { sleep } from "../../logic/util/util";
   import Button from "../Shared/Button.svelte";
   import PencilIcon from "lucide-svelte/icons/pencil";
   import CopyIcon from "lucide-svelte/icons/copy";
   import OKIcon from "lucide-svelte/icons/check";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
+  import { onKeyEnter } from "../Util/util";
+  import { sleep } from "../../logic/util/util";
 
   export let entry: ContactEntry;
   export let coll: Collection<ContactEntry>;
@@ -51,6 +53,10 @@
 
   function stopEditing() {
     isEditing = false;
+  }
+
+  function onEnter() {
+    stopEditing();
   }
 
   async function copyValue() {
