@@ -40,6 +40,8 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { onKeyEnter } from "../Util/util";
   import { sleep } from "../../logic/util/util";
+  import { createEventDispatcher } from 'svelte';
+  const dispatch = createEventDispatcher();
 
   export let entry: ContactEntry;
   export let coll: Collection<ContactEntry>;
@@ -53,6 +55,7 @@
 
   function stopEditing() {
     isEditing = false;
+    dispatch("save");
   }
 
   function onEnter() {

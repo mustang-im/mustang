@@ -4,15 +4,33 @@
       <hbox flex>
         <PersonPicture {person} size={128} />
         <vbox flex class="main-info">
-          <h1 class="name">{person.name}</h1>
-          {#if person.position}
-            <div class="position">{person.position}</div>
-          {/if}
-          {#if person.department}
-            <div class="department">{person.department}</div>
-          {/if}
-          {#if person.company}
-            <div class="company">{person.company}</div>
+          <hbox class="name">
+            <EditableSimpleText bind:value={person.name}
+              on:save={save}
+              bind:isEditing={isEditingName}
+              placeholder="First Lastname" />
+          </hbox>
+          {#if isEditingName}
+            <vbox>
+              <input type="text" bind:value={person.firstName} placeholder="First name" />
+              <input type="text" bind:value={person.lastName} placeholder="Last name" />
+            </vbox>
+          {:else}
+            {#if person.position}
+              <hbox class="position">
+                <EditableSimpleText bind:value={person.position} on:save={save} placeholder="Position" />
+              </hbox>
+            {/if}
+            {#if person.department}
+              <hbox class="department">
+                <EditableSimpleText bind:value={person.department} on:save={save} placeholder="Department" />
+              </hbox>
+            {/if}
+            {#if person.company}
+              <hbox class="company">
+                <EditableSimpleText bind:value={person.company} on:save={save} placeholder="First Lastname" />
+              </hbox>
+            {/if}
           {/if}
         </vbox>
       </hbox>
@@ -163,7 +181,7 @@
 <script lang="ts">
   import { ContactEntry, type Person } from "../../logic/Abstract/Person";
   import { startVideoCall } from "../../logic/Meet/StartCall";
-  import Button from "../Shared/Button.svelte";
+  import EditableSimpleText from "./EditableSimpleText.svelte";
   import ContactEntryUI from "./ContactEntryUI.svelte";
   import EmailAddressDisplay from "./EmailAddressDisplay.svelte";
   import EmailAddressEdit from "./EmailAddressEdit.svelte";
@@ -174,6 +192,7 @@
   import StreetAddressEdit from "./StreetAddressEdit.svelte";
   import PersonPicture from "../Shared/Person/PersonPicture.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
+  import Button from "../Shared/Button.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
   import MailIcon from '../asset/icon/appBar/mail.svg?raw';
   import ChatIcon from '../asset/icon/appBar/chat.svg?raw';
@@ -182,7 +201,7 @@
   import CallIcon from '../asset/icon/meet/callVoice.svg?raw';
   import PhoneIcon from '../asset/icon/meet/call.svg?raw';
   import AddIcon from "lucide-svelte/icons/plus";
-  import { catchErrors } from "../Util/error";
+  import { catchErrors, showError } from "../Util/error";
 
   export let person: Person;
   $: person.name = person.name ?? person.firstName + " " + person.lastName;
@@ -198,6 +217,7 @@
     $: preferredEmailAddress = person.emailAddresses.isEmpty ? null :
     person.emailAddresses.find(p => p.preferred)?.value ||
     person.emailAddresses.first.value;
+    let isEditingName: boolean;
 
     function addEmail() {
       person.emailAddresses.push(new ContactEntry("", "work"));
@@ -210,6 +230,14 @@
     }
     function addStreetAddress() {
       person.streetAddresses.push(new ContactEntry("", "work"));
+    }
+
+    async function save() {
+      try {
+        console.log("TODO implement contact save");
+      } catch (ex) {
+        showError(ex);
+      }
     }
 </script>
 
@@ -229,8 +257,10 @@
     margin-top: 8px;
     margin-bottom: 16px;
   }
-  h1.name {
+  .name :global(input),
+  .name {
     font-size: 18px;
+    font-weight: bold;
     margin-bottom: 8px;
     color: inherit;
   }
