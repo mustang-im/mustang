@@ -61,6 +61,7 @@
 
   let topEl: HTMLDivElement;
   async function onAddPerson(person: Person) {
+    typedText = "";
     dispatchEvent('personSelected', person);
 
     // Clear, to allow user to enter the next person
