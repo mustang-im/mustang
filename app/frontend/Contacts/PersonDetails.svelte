@@ -1,4 +1,4 @@
-<vbox flex class="person-page">
+<vbox flex class="person-page" language={language2Char}>
   <GroupBox classes="person">
     <hbox flex class="main-left" slot="content">
       <hbox flex>
@@ -11,9 +11,11 @@
               placeholder="First Lastname" />
           </hbox>
           {#if isEditingName}
-            <vbox>
-              <input type="text" bind:value={person.firstName} placeholder="First name" />
-              <input type="text" bind:value={person.lastName} placeholder="Last name" />
+            <vbox class="names">
+              <input type="text" bind:value={person.firstName}
+                class="firstname" placeholder="First name" />
+              <input type="text" bind:value={person.lastName}
+                class="lastname" placeholder="Last name" />
             </vbox>
           {:else}
             {#if person.position}
@@ -212,33 +214,35 @@
   $: streetAddresses = person.streetAddresses;
   $: groups = person.groups;
   $: preferredPhoneNumber = person.phoneNumbers.isEmpty ? null :
-    person.phoneNumbers.find(p => p.preferred)?.value ||
-    person.phoneNumbers.first.value;
-    $: preferredEmailAddress = person.emailAddresses.isEmpty ? null :
-    person.emailAddresses.find(p => p.preferred)?.value ||
-    person.emailAddresses.first.value;
-    let isEditingName: boolean;
+      person.phoneNumbers.find(p => p.preferred)?.value ??
+      person.phoneNumbers.first.value;
+  $: preferredEmailAddress = person.emailAddresses.isEmpty ? null :
+      person.emailAddresses.find(p => p.preferred)?.value ??
+      person.emailAddresses.first.value;
+  $: language2Char = navigator.language?.substring(0, 2) ?? "";
 
-    function addEmail() {
-      person.emailAddresses.push(new ContactEntry("", "work"));
-    }
-    function addChatAccount() {
-      person.chatAccounts.push(new ContactEntry("", "matrix"));
-    }
-    function addPhoneNumber() {
-      person.phoneNumbers.push(new ContactEntry("", "work"));
-    }
-    function addStreetAddress() {
-      person.streetAddresses.push(new ContactEntry("", "work"));
-    }
+  let isEditingName: boolean;
 
-    async function save() {
-      try {
-        console.log("TODO implement contact save");
-      } catch (ex) {
-        showError(ex);
-      }
+  function addEmail() {
+    person.emailAddresses.push(new ContactEntry("", "work"));
+  }
+  function addChatAccount() {
+    person.chatAccounts.push(new ContactEntry("", "matrix"));
+  }
+  function addPhoneNumber() {
+    person.phoneNumbers.push(new ContactEntry("", "work"));
+  }
+  function addStreetAddress() {
+    person.streetAddresses.push(new ContactEntry("", "work"));
+  }
+
+  async function save() {
+    try {
+      console.log("TODO implement contact save");
+    } catch (ex) {
+      showError(ex);
     }
+  }
 </script>
 
 <style>
@@ -263,6 +267,15 @@
     font-weight: bold;
     margin-bottom: 8px;
     color: inherit;
+  }
+  .names {
+    margin-right: 42px;
+  }
+  .names input {
+    margin-bottom: 4px;
+  }
+  .person-page[language="fr"] .names input.lastname {
+    text-transform: uppercase;
   }
   .position,
   .department,

@@ -9,7 +9,7 @@
   <div class="value">
     {value}
   </div>
-  <hbox class="actions">
+  <hbox class="actions value">
     <Button on:click={startEditing} icon={PencilIcon} iconOnly plain iconSize="12px" label="Edit" />
   </hbox>
 {/if}
@@ -54,7 +54,7 @@
   .actions > :global(*) {
     min-width: 20px;
   }
-  :global(.group:not(:hover)) .actions {
+  :global(*:not(:hover)) .actions.value {
     visibility: hidden;
   }
 
