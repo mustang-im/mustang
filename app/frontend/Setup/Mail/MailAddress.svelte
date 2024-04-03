@@ -3,7 +3,7 @@
     placeholder="you@example.com"
     bind:value={emailAddress}
     bind:this={inputEl}
-    on:keydown={onKey}
+    on:keydown={(event) => onKeyEnter(event, onEnter)}
     />
   <hbox class="icon" class:valid>
     {#if !emailAddress}
@@ -30,6 +30,7 @@
   import GMailIcon from '../../asset/icon/brand/gmail.svg?raw';
   import Microsoft365Icon from '../../asset/icon/brand/microsoft365.svg?raw';
   import YahooIcon from '../../asset/icon/brand/yahoo.svg?raw';
+  import { onKeyEnter } from '../../Util/util';
   import { createEventDispatcher } from 'svelte';
   const dispatchEvent = createEventDispatcher();
 
@@ -39,12 +40,9 @@
   let inputEl: HTMLInputElement;
   $: valid = emailAddress && emailAddress.includes(".") && inputEl?.validity.valid;
 
-  function onKey(event: KeyboardEvent) {
-    if (event.key == "Enter") {
-      if (valid) {
-        dispatchEvent("continue");
-        event.preventDefault();
-      }
+  function onEnter() {
+    if (valid) {
+      dispatchEvent("continue");
     }
   }
 

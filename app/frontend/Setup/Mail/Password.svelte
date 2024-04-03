@@ -3,7 +3,8 @@
     placeholder="Your password"
     bind:value={password}
     bind:this={inputEl}
-    on:keydown={onKey}
+    required
+    on:keydown={(event) => onKeyEnter(event, onEnter)}
     />
   <hbox class="buttons">
     <Button classes="cleartext"
@@ -20,6 +21,7 @@
   import Button from "../../Shared/Button.svelte";
   import EyeIcon from "lucide-svelte/icons/eye";
   import EyeOffIcon from "lucide-svelte/icons/eye-off";
+  import { onKeyEnter } from "../../Util/util";
   import { createEventDispatcher } from 'svelte';
   const dispatchEvent = createEventDispatcher();
 
@@ -30,10 +32,9 @@
   let inputEl: HTMLInputElement;
   $: if (inputEl) inputEl.type = cleartext ? "text" : "password";
 
-  function onKey(event: KeyboardEvent) {
-    if (event.key == "Enter") {
+  function onEnter() {
+    if (password) {
       dispatchEvent("continue");
-      event.preventDefault();
     }
   }
 
