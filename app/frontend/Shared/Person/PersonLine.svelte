@@ -2,7 +2,7 @@
   <PersonPicture {person} size={pictureSize} />
   <vbox flex class="main">
     <hbox class="first-row">
-      <hbox flex class="name">{person.name}</hbox>
+      <hbox flex class="name">{$person.name}</hbox>
       <slot name="top-right" {person} />
     </hbox>
     <slot name="second-row" {person} />

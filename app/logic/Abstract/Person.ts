@@ -29,21 +29,24 @@ export class Person extends ContactBase {
 
   notifyObservers(propertyName?: string, oldValue?: any): void {
     if (propertyName == "name" && this.name && typeof (this.name) == "string") {
-      if (!this.lastName && !this.firstName) { // This contact is being created automatically and we have no first/last name yet
+      let sp = this.name?.split(" ");
+      if (!this.lastName || !this.firstName) {
         // Last word is last name, rest is first name
-        let sp = this.name.split(" ");
         if (sp.length > 1) {
           this.lastName = sp.pop();
           this.firstName = sp.join(" ");
         }
       } else {
-        let lastNameStart = this.name.indexOf(this.lastName);
+        let lastNameStart = this.name.indexOf(" " + this.lastName);
         if (lastNameStart >= 0) { // editing first name
-          this.lastName = this.name.substring(lastNameStart).trim();
-          this.firstName = this.name.substring(0, lastNameStart - 1).trim();
+          this.lastName = this.name.substring(lastNameStart + 1).trim();
+          this.firstName = this.name.substring(0, lastNameStart).trim();
         } else { // editing last name
           if (this.firstName == this.name.substring(0, this.firstName.length)) {
             this.lastName = this.name.substring(this.firstName.length + 1).trim();
+          } else {
+            this.firstName = "";
+            this.lastName = "";
           }
         }
       }

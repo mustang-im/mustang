@@ -1,12 +1,12 @@
 {#if isEditing}
-  <input type="text" bind:value
+  <input type="text" bind:value bind:this={inputEl}
     {placeholder}
     on:keydown={event => onKeyEnter(event, onEnter)}>
   <hbox class="actions">
     <Button on:click={stopEditing} icon={OKIcon} iconOnly plain iconSize="14px" label="Finish editing and save" />
   </hbox>
 {:else}
-  <div class="value">
+  <div class="value" on:dblclick={startEditing}>
     {value}
   </div>
   <hbox class="actions value">
@@ -19,7 +19,7 @@
   import PencilIcon from "lucide-svelte/icons/pencil";
   import OKIcon from "lucide-svelte/icons/check";
   import { onKeyEnter } from "../Util/util";
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, tick } from 'svelte';
   const dispatch = createEventDispatcher();
 
   /** in/out */
@@ -29,8 +29,13 @@
   /** out only */
   export let isEditing = false;
 
-  function startEditing() {
+  let inputEl: HTMLInputElement;
+
+  async function startEditing() {
     isEditing = true;
+    await tick();
+    inputEl.focus();
+    inputEl.select();
   }
 
   function stopEditing() {

@@ -5,32 +5,32 @@
         <PersonPicture {person} size={128} />
         <vbox flex class="main-info">
           <hbox class="name">
-            <EditableSimpleText bind:value={person.name}
+            <EditableSimpleText bind:value={$person.name}
               on:save={save}
               bind:isEditing={isEditingName}
-              placeholder="First Lastname" />
+              placeholder="First name Last name" />
           </hbox>
           {#if isEditingName}
             <vbox class="names">
-              <input type="text" bind:value={person.firstName}
+              <input type="text" bind:value={$person.firstName}
                 class="firstname" placeholder="First name" />
-              <input type="text" bind:value={person.lastName}
+              <input type="text" bind:value={$person.lastName}
                 class="lastname" placeholder="Last name" />
             </vbox>
           {:else}
-            {#if person.position}
+            {#if $person.position}
               <hbox class="position">
-                <EditableSimpleText bind:value={person.position} on:save={save} placeholder="Position" />
+                <EditableSimpleText bind:value={$person.position} on:save={save} placeholder="Position" />
               </hbox>
             {/if}
-            {#if person.department}
+            {#if $person.department}
               <hbox class="department">
-                <EditableSimpleText bind:value={person.department} on:save={save} placeholder="Department" />
+                <EditableSimpleText bind:value={$person.department} on:save={save} placeholder="Department" />
               </hbox>
             {/if}
-            {#if person.company}
+            {#if $person.company}
               <hbox class="company">
-                <EditableSimpleText bind:value={person.company} on:save={save} placeholder="First Lastname" />
+                <EditableSimpleText bind:value={$person.company} on:save={save} placeholder="First Lastname" />
               </hbox>
             {/if}
           {/if}
@@ -53,17 +53,6 @@
           {/if}
         </hbox>
       </vbox>
-      <!--
-        <vbox flex class="names">
-          <grid>
-            <hbox class="label">First name</hbox>
-            <hbox class="field name">{person.firstName}</hbox>
-
-            <hbox class="label">Last name</hbox>
-            <hbox class="field name">{person.lastName}</hbox>
-          </grid>
-        </vbox>
-      -->
     </hbox>
   </GroupBox>
 
@@ -206,19 +195,18 @@
   import { catchErrors, showError } from "../Util/error";
 
   export let person: Person;
-  $: person.name = person.name ?? person.firstName + " " + person.lastName;
 
   $: emailAddresses = person.emailAddresses;
   $: phoneNumbers = person.phoneNumbers;
   $: chatAccounts = person.chatAccounts;
   $: streetAddresses = person.streetAddresses;
   $: groups = person.groups;
-  $: preferredPhoneNumber = person.phoneNumbers.isEmpty ? null :
-      person.phoneNumbers.find(p => p.preferred)?.value ??
-      person.phoneNumbers.first.value;
-  $: preferredEmailAddress = person.emailAddresses.isEmpty ? null :
-      person.emailAddresses.find(p => p.preferred)?.value ??
-      person.emailAddresses.first.value;
+  $: preferredPhoneNumber = $phoneNumbers.isEmpty ? null :
+      phoneNumbers.find(p => p.preferred)?.value ??
+      phoneNumbers.first.value;
+  $: preferredEmailAddress = $emailAddresses.isEmpty ? null :
+      emailAddresses.find(p => p.preferred)?.value ??
+      emailAddresses.first.value;
   $: language2Char = navigator.language?.substring(0, 2) ?? "";
 
   let isEditingName: boolean;
