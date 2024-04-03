@@ -35,11 +35,13 @@
     width: 60px;
     align-items: start;
     justify-content: center;
+    app-region: drag;
   }
   .app-title {
     font-size: 18px;
     align-items: center;
     margin-left: 12px;
+    app-region: drag;
   }
   .right :global(.settings) {
     color: white;
