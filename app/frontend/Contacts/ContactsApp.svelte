@@ -13,7 +13,6 @@
 </Splitter>
 
 <script lang="ts">
-  import type { Person } from "../../logic/Abstract/Person";
   import { selectedPerson } from "../Shared/Person/PersonOrGroup";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
@@ -22,7 +21,6 @@
   import PersonsToolbar from "./PersonsToolbar.svelte";
   import Scroll from "../Shared/Scroll.svelte";
   import Splitter from "../Shared/Splitter.svelte";
-  import type { Collection } from "svelte-collections";
 
   let persons = appGlobal.persons;
 
@@ -35,8 +33,9 @@
       p.streetAddresses.some(e => e.value.toLowerCase().includes($globalSearchTerm)) ||
       p.notes.toLowerCase().includes($globalSearchTerm))
     : persons;
-  $: clearSelected(filteredPersons);
-  function clearSelected(filteredPersons: Collection<Person>) {
+
+  $: $globalSearchTerm && clearSelected();
+  function clearSelected() {
     if (!filteredPersons.contains($selectedPerson)) {
       $selectedPerson = filteredPersons.first;
     }
