@@ -1,6 +1,6 @@
 import { EMail } from '../EMail';
 import { Folder } from '../Folder';
-import { SQLAccount } from './SQLAccount';
+import { SQLMailAccount } from './SQLMailAccount';
 import { SQLEMail } from './SQLEMail';
 import { SQLFolder } from './SQLFolder';
 import { fakeChatPerson, fakeMailAccount, fakePersons } from '../../testData';
@@ -25,7 +25,7 @@ test("Save and read from SQL database", { timeout: 10000 }, async () => {
   let originalMessages = new ArrayColl<EMail>();
 
   // Save
-  await SQLAccount.save(originalAccount);
+  await SQLMailAccount.save(originalAccount);
   for (let folder of originalFolders) {
     await SQLFolder.save(folder);
     originalMessages.addAll(folder.messages);
@@ -40,7 +40,7 @@ test("Save and read from SQL database", { timeout: 10000 }, async () => {
   appGlobal.emailAccounts.clear();
 
   // Read
-  appGlobal.emailAccounts.addAll(await SQLAccount.readAll());
+  appGlobal.emailAccounts.addAll(await SQLMailAccount.readAll());
   async function readMsgsAndSubFolders(folder: Folder) {
     folder.messages.addAll(await SQLEMail.readAll(folder));
     for (let sub of folder.subFolders) {

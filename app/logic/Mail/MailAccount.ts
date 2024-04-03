@@ -9,15 +9,11 @@ import { ArrayColl, MapColl } from 'svelte-collections';
 export class MailAccount extends Account {
   readonly protocol: string = "mail";
   @notifyChangedProperty
-  url: string | null = null; /** only for some account types */
-  @notifyChangedProperty
   hostname: string | null = null; /** only for some account types */
   @notifyChangedProperty
   port: number | null = null;
   @notifyChangedProperty
   tls = TLSSocketType.Unknown;
-  @notifyChangedProperty
-  username: string;
   @notifyChangedProperty
   password: string | null = null;
   @notifyChangedProperty
@@ -28,8 +24,6 @@ export class MailAccount extends Account {
   outgoing: MailAccount & OutgoingMailAccount = null;
   /** Where we got the config from, during setup */
   source: "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | null = null;
-
-  dbID: number | null = null;
 
   @notifyChangedProperty
   emailAddress: string;

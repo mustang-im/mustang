@@ -1,5 +1,5 @@
 import type { MailAccount } from "../MailAccount";
-import { SQLAccount } from "../SQL/SQLAccount";
+import { SQLMailAccount } from "../SQL/SQLMailAccount";
 import { saveNewAccountToLocalStorage } from "../AccountsList/MailAccounts";
 import { appGlobal } from "../../app";
 import { assert } from "../../util/util";
@@ -8,7 +8,7 @@ export async function saveConfig(config: MailAccount, emailAddress: string, pass
   fillConfig(config, emailAddress, password);
   appGlobal.emailAccounts.add(config);
   saveNewAccountToLocalStorage(config);
-  await SQLAccount.save(config);
+  await SQLMailAccount.save(config);
 }
 
 /**

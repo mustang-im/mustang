@@ -8,6 +8,7 @@ let mailDatabase: Database;
 // https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md
 // https://github.com/radically-straightforward/radically-straightforward/tree/main/sqlite
 // https://www.sqlite.org/lang.html
+// <copied to="Contacts/SQL/SQLDatabase.ts">
 
 export async function getDatabase(): Promise<Database> {
   if (mailDatabase) {
@@ -28,7 +29,7 @@ export async function getDatabase(): Promise<Database> {
  */
 export async function makeTestDatabase(): Promise<Database> {
   const getDatabase = appGlobal.remoteApp.getSQLiteDatabase;
-  mailDatabase = await getDatabase("test.db");
+  mailDatabase = await getDatabase("test-mail.db");
   await deleteDatabase();
   await mailDatabase.migrate(mailDatabaseSchema);
   await mailDatabase.pragma('foreign_keys = true');
