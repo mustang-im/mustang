@@ -1,6 +1,6 @@
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox flex class="left-pane" slot="left">
-    <PersonsToolbar {persons} bind:selected={$selectedPerson} />
+    <PersonsToolbar {persons} />
     <PersonsList persons={filteredPersons} bind:selected={$selectedPerson} />
   </vbox>
   <vbox flex class="right-pane" slot="right">
