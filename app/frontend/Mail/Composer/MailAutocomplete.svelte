@@ -1,4 +1,5 @@
-<PersonsAutocomplete {persons} {placeholder}>
+<PersonsAutocomplete {persons} {placeholder}
+  on:personSelected={(event) => onAddPerson(event.detail)}>
   <hbox slot="result-bottom-row" class="recipient-email-address" let:person>
     {person.emailAddresses.first?.value}
   </hbox>
@@ -10,24 +11,22 @@
 
 <script lang="ts">
   import { PersonEmailAddress } from "../../../logic/Mail/EMail";
+  import type { Person } from "../../../logic/Abstract/Person";
   import PersonsAutocomplete from "../../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
   import type { ArrayColl } from "svelte-collections";
 
   /** E.g. to, cc or bcc list
    * in/out */
   export let addresses: ArrayColl<PersonEmailAddress>;
-  export let placeholder;
+  export let placeholder: string;
 
   // Map Person <- PersonEmailAddress
-  $: persons = addresses.map(a => a.person);
+  $: persons = $addresses.map(a => a.person);
 
-  /*// Map Person -> PersonEmailAddress
-  $: $persons && createPersonAddresses();
-  function createPersonAddresses() {
-    addresses.addAll(persons
-      .contents.filter(person => !addresses.some(pe => pe.person == person))
-      .map(person => PersonEmailAddress.fromPerson(person)));
-  }*/
+  // Map newly added PersonEmailAddress -> Person
+  function onAddPerson(person: Person) {
+    addresses.add(PersonEmailAddress.fromPerson(person));
+  }
 </script>
 
 <style>

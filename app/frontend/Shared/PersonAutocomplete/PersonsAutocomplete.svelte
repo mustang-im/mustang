@@ -6,7 +6,8 @@
   {/each}
   <hbox flex class="input">
     <PersonAutocomplete
-      on:personSelected={(event) => onAddPerson(event.detail.person)}
+      on:personSelected={(event) => onAddPerson(event.detail)}
+      on:personSelected
       skipPersons={$persons}
       {placeholder}
       >

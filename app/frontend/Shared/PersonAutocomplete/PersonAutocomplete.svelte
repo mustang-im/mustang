@@ -9,6 +9,10 @@
     closeOnBlur={false}
     hideArrow={true}
     noResultsText="No person found"
+    bind:text={typedText}
+    create={canCreate(typedText)}
+    createText={"Add this person"}
+    onCreate={(text) => catchErrors(() => onCreate(text))}
     {placeholder}
     >
     <hbox slot="loading">Loading...</hbox>
@@ -21,15 +25,17 @@
 </hbox>
 
 <script lang="ts">
-  import { ArrayColl, type Collection } from "svelte-collections";
-  import type { Person } from "../../../logic/Abstract/Person";
+  import { Person, ContactEntry } from "../../../logic/Abstract/Person";
   import { appGlobal } from "../../../logic/app";
   import PersonAutocompleteResult from "./PersonAutocompleteResult.svelte";
+  import { ArrayColl, type Collection } from "svelte-collections";
   // <https://github.com/pstanoev/simple-svelte-autocomplete>
   // <http://simple-svelte-autocomplete.surge.sh>
   import Autocomplete from 'simple-svelte-autocomplete';
-	import { createEventDispatcher, tick } from 'svelte';
-	const dispatchEvent = createEventDispatcher();
+  import { createEventDispatcher, tick } from 'svelte';
+  import { catchErrors } from "../../Util/error";
+  import { assert } from "../../../logic/util/util";
+  const dispatchEvent = createEventDispatcher();
 
   export let skipPersons: Collection<Person> = new ArrayColl<Person>();
   export let placeholder = "Add person";
@@ -55,7 +61,7 @@
 
   let topEl: HTMLDivElement;
   async function onAddPerson(person: Person) {
-    dispatchEvent('personSelected', { person });
+    dispatchEvent('personSelected', person);
 
     // Clear, to allow user to enter the next person
     await tick();
@@ -63,6 +69,38 @@
     if (topEl) {
       topEl.querySelector("input").value = "";
     }
+  }
+
+  function onCreate(text: string) {
+    // email address is substring, e.g. "Fred <fred@example.com>"
+    assert(kEMailAddressRegexp.test(text), "Need email address");
+
+    // Parse typed text into name and email address
+    text = text.trim();
+    let name = text;
+    let emailAddress = text;
+    if (text.includes("<") && text.includes(">")) {
+      let startBracket = text.indexOf("<");
+      name = text.substring(0, startBracket - 1).trimEnd();
+      let endBracket = text.indexOf(">");
+      emailAddress = text.substring(startBracket + 1, endBracket);
+      // email address is entire string
+      assert(kEMailAddressRegexp.test(emailAddress), "Need email address");
+    }
+
+    let person = new Person();
+    person.name = name;
+    person.emailAddresses.add(new ContactEntry(emailAddress, "mail"));
+    appGlobal.persons.add(person);
+    onAddPerson(person);
+    return person;
+  }
+
+  let typedText: string;
+  const kEMailAddressRegexp = /[a-zA-Z0-9]+@[a-zA-Z0-9\-\.]+\.[a-zA-Z0-9\-]+/;
+  function canCreate(typedText: string) {
+    // email address is substring, e.g. "Fred <fred@example.com>"
+    return typedText && kEMailAddressRegexp.test(typedText);
   }
 </script>
 
