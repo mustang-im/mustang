@@ -7,7 +7,9 @@
     </select>
   </hbox>
   <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-  <hbox class="value edit" tabindex="0" on:keydown={(event) => onKeyEnter(event, onEnter)}>
+  <hbox class="value edit"
+    bind:this={inputWrapperEl}
+    tabindex="0" on:keydown={(event) => onKeyEnter(event, onEnter)}>
     <slot name="edit" />
   </hbox>
   <hbox class="actions">
@@ -40,17 +42,20 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { onKeyEnter } from "../Util/util";
   import { sleep } from "../../logic/util/util";
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, tick } from 'svelte';
   const dispatch = createEventDispatcher();
 
   export let entry: ContactEntry;
   export let coll: Collection<ContactEntry>;
 
   let isEditing = false;
+  let inputWrapperEl: HTMLDivElement;
   let copied = false;
 
-  function startEditing() {
+  async function startEditing() {
     isEditing = true;
+    await tick();
+    inputWrapperEl.querySelector("input")?.focus();
   }
 
   function stopEditing() {

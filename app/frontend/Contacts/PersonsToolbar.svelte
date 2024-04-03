@@ -23,6 +23,7 @@
 
   function addPerson() {
     let person = new ChatPerson();
+    person.name = "New person";
     persons.add(person);
     selected = person;
   }
