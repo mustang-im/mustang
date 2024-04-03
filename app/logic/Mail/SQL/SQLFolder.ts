@@ -57,6 +57,14 @@ export class SQLFolder extends Folder {
       `);
   }
 
+  static async deleteIt(folder: Folder) {
+    assert(folder.dbID, "Need folder DB ID to delete");
+    await (await getDatabase()).run(sql`
+      DELETE FROM folder
+      WHERE id = ${folder.dbID}
+      `);
+  }
+
   static async read(dbID: number, folder: Folder): Promise<Folder> {
     let row = await (await getDatabase()).get(sql`
       SELECT

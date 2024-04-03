@@ -2,8 +2,9 @@ import type { MailAccount } from "../MailAccount";
 import { getDatabase } from "./SQLDatabase";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { backgroundError } from "../../../frontend/Util/error";
-import { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { assert } from "../../util/util";
+import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 
 export class SQLAccount {
@@ -47,7 +48,16 @@ export class SQLAccount {
     }
   }
 
+  static async deleteIt(account: MailAccount) {
+    assert(account.dbID, "Need account DB ID to delete");
+    await (await getDatabase()).run(sql`
+      DELETE FROM emailAccount
+      WHERE id = ${account.dbID}
+      `);
+  }
+
   static async read(dbID: number, acc: MailAccount) {
+    assert(dbID, "Need account DB ID to read it");
     let row = await (await getDatabase()).get(sql`
       SELECT
         idStr, name, protocol, emailAddress,

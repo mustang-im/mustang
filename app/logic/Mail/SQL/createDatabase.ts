@@ -63,7 +63,7 @@ export const mailDatabaseSchema = sql`
     "recipientType" INTEGER not null, -- 1 = from, 2 = to, 3 = cc, 4 = bcc, 5 = replyto, 6 = sender
     FOREIGN KEY (emailID)
       REFERENCES email (id)
-      ON DELETE SET NULL,
+      ON DELETE CASCADE,
     FOREIGN KEY (emailPersonID)
       REFERENCES emailPerson (id)
       ON DELETE CASCADE

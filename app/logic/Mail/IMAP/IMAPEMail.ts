@@ -1,12 +1,13 @@
 import { EMail, PersonEmailAddress } from "../EMail";
+import type { IMAPFolder } from "./IMAPFolder";
 import { findOrCreatePerson, findOrCreatePersonEmailAddress } from "../Person";
 import { Attachment, ContentDisposition } from "../Attachment";
-import type { IMAPFolder } from "./IMAPFolder";
 import { RawFilesAttachment } from "../RawFiles/RawFilesAttachment";
+import { SQLEMail } from "../SQL/SQLEMail";
+import { sanitizeHTML } from "../../util/convertHTML";
 import { assert } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
-import { sanitizeHTML } from "../../util/convertHTML";
 
 export class IMAPEMail extends EMail {
   folder: IMAPFolder;
@@ -135,6 +136,7 @@ export class IMAPEMail extends EMail {
 
   async deleteMessage() {
     await super.deleteMessage();
+    await SQLEMail.deleteIt(this);
     this.folder.runCommand(async (conn) => {
       conn.messageDelete(this.uid, { uid: true });
     });

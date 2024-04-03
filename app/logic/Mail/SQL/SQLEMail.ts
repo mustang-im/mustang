@@ -189,6 +189,14 @@ export class SQLEMail {
     email.downloadComplete = sanitize.boolean(!!row.downloadComplete);
   }
 
+  static async deleteIt(email: EMail) {
+    assert(email.dbID, "Need Email DB ID to delete");
+    await (await getDatabase()).run(sql`
+      DELETE FROM email
+      WHERE id = ${email.dbID}
+      `);
+  }
+
   protected static async readRecipients(email: EMail) {
     let recipientRows = await (await getDatabase()).all(sql`
       SELECT
