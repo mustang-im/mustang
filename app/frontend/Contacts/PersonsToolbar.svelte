@@ -1,5 +1,7 @@
 <hbox class="persons-toolbar">
-  <AccountDropDown bind:selectedAccount accounts={appGlobal.chatAccounts} />
+  <AccountDropDown
+    accounts={appGlobal.addressbooks}
+    bind:selectedAccount={selectedAddressbook} />
   <hbox flex />
   <hbox class="buttons">
     <RoundButton label="New contact" icon={NewContactIcon} iconSize="22px" padding="9px" classes="large create" on:click={addPerson} />
@@ -7,10 +9,9 @@
 </hbox>
 
 <script lang="ts">
-  import { ChatPerson } from "../../logic/Chat/Person";
-  import type { Person } from "../../logic/Abstract/Person";
-  import type { ChatAccount } from "../../logic/Chat/ChatAccount";
+  import { Person } from "../../logic/Abstract/Person";
   import { selectedPerson } from "../Shared/Person/PersonOrGroup";
+  import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import { appGlobal } from "../../logic/app";
   import AccountDropDown from "../Shared/AccountDropDown.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
@@ -19,10 +20,11 @@
 
   export let persons: Collection<Person>;
 
-  let selectedAccount: ChatAccount; // TODO contacts account, and email and chat accounts, or all
+  let selectedAddressbook: Addressbook;
 
   function addPerson() {
-    let person = new ChatPerson();
+    let person = new Person(selectedAddressbook);
+    console.log("Creating person in", selectedAddressbook?.name);
     person.name = "New person";
     persons.add(person);
     $selectedPerson = person;

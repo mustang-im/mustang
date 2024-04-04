@@ -1,6 +1,7 @@
 import { Workspace } from "./Workspace";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
+import { ArrayColl, Collection } from "svelte-collections";
 
 export class Account extends Observable {
   id: string;
@@ -55,11 +56,21 @@ export class Account extends Observable {
 
 let lastID = 0;
 function findFreeAccountID(): string {
-  for (let i = lastID + 1; true; i++) {
+  let allAccounts = getAllAccounts();
+
+  for (let i = ++lastID; true; i++) {
     let id = "account" + i;
-    if (appGlobal.allAccounts.contents.some(acc => acc.id == id)) {
+    if (allAccounts.contents.some(acc => acc.id == id)) {
       continue;
     }
     return id;
   }
+}
+
+function getAllAccounts(): Collection<Account> {
+  let allAccounts = new ArrayColl<Account>();
+  allAccounts.addAll(appGlobal.addressbooks);
+  allAccounts.addAll(appGlobal.emailAccounts);
+  allAccounts.addAll(appGlobal.chatAccounts);
+  return allAccounts;
 }

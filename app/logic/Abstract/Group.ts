@@ -7,4 +7,9 @@ export class Group extends ContactBase {
   @notifyChangedProperty
   description = "";
   readonly participants = new SetColl<Person>();
+
+  async save() {
+    await super.save();
+    await this.addressbook.storage.saveGroup(this);
+  }
 }

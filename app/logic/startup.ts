@@ -1,6 +1,7 @@
 import { appGlobal } from './app';
 import { readMailAccounts } from './Mail/AccountsList/MailAccounts';
 import { readChatAccounts } from './Chat/ChatAccounts';
+import { readAddressbookFromSQL } from './Contacts/AccountsList/SQL';
 import { getTestObjects } from './testData';
 import JPCWebSocket from '../../lib/jpc-ws';
 
@@ -11,11 +12,16 @@ export async function getStartObjects(): Promise<void> {
   await jpc.connect(kSecret, "localhost", 5455);
   console.log("connected to server");
   appGlobal.remoteApp = await jpc.getRemoteStartObject();
+  appGlobal.addressbooks.addAll(await readAddressbookFromSQL());
   appGlobal.emailAccounts.addAll(await readMailAccounts());
   appGlobal.chatAccounts.addAll(await readChatAccounts());
   if (appGlobal.emailAccounts.isEmpty && appGlobal.chatAccounts.isEmpty) {
     await getTestObjects();
   }
+
+  // TODO Save the address book type and ensure that they are of the right type
+  appGlobal.personalAddressbook = appGlobal.addressbooks.first;
+  appGlobal.collectedAddressbook = appGlobal.addressbooks.get(1);
 }
 
 /**

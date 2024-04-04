@@ -22,6 +22,11 @@ export class Person extends ContactBase {
   @notifyChangedProperty
   position: string;
 
+  async save() {
+    await super.save();
+    await this.addressbook.storage.savePerson(this);
+  }
+
   toString() {
     return this.name;
   }
