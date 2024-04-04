@@ -1,45 +1,6 @@
 import sql from "../../../../lib/rs-sqlite/index";
 
 export const mailDatabaseSchema = sql`
-  --- personal address books
-  CREATE TABLE "contactAccount" (
-    "id" INTEGER PRIMARY KEY,
-    "name" TEXT UNIQUE
-  );
-
-  --- persons in the personal address books
-  CREATE TABLE "person" (
-    "id" INTEGER PRIMARY KEY,
-    "contactAccountID" INTEGER,
-    "name" TEXT not null,
-    "firstName" TEXT,
-    "lastName" TEXT,
-    FOREIGN KEY (contactAccountID)
-      REFERENCES contactAccount (id)
-      ON DELETE SET NULL
-  );
-
-  --- Way to contact a person in the personal address book
-  CREATE TABLE "personContact" (
-    "personID" INTEGER,
-    "value" TEXT not null,
-    -- 1 = email address, 2 = chat account, 3 = phone number, 4 = street address
-    "type" INTEGER not null,
-    -- "phone", "fax", "email", "matrix", "xmpp", ...
-    "system" TEXT,
-    -- "work", "private", "mobile", user-custom values
-    "purpose" TEXT,
-    -- Order of preference.
-    -- Lower is more preferred.
-    -- Number across all contact methods. Preference value should be unique per person.
-    "preference" INTEGER,
-    FOREIGN KEY (personID)
-      REFERENCES person (id)
-      ON DELETE CASCADE
-  );
-  CREATE INDEX index_personContact_value ON personContact (value);
-  CREATE INDEX index_personContact_personID ON personContact (personID);
-
   -- Email addresses, as found in received emails.
   -- They are not necessarily in the personal address book.
   CREATE TABLE "emailPerson" (
