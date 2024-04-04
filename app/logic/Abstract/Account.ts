@@ -11,11 +11,11 @@ export class Account extends Observable {
   readonly protocol: string = null;
   /** Protocol-specific address for the sync server. Only only for some types of accounts. */
   @notifyChangedProperty
-  url: string | null;
+  url: string | null = null;
   @notifyChangedProperty
-  username: string | null;
+  username: string | null = null;
   @notifyChangedProperty
-  workspace: Workspace | null;
+  workspace: Workspace | null = null;
   @notifyChangedProperty
   userRealname: string;
 
