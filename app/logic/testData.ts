@@ -6,28 +6,61 @@ import { UserChatMessage } from './Chat/Message';
 import { ChatPerson } from './Chat/Person';
 import { PersonEmailAddress } from './Mail/EMail';
 import { ContactEntry, Person } from './Abstract/Person';
+import { Group } from './Abstract/Group';
 import { Chat } from './Chat/Chat';
 import { Directory, File } from './Files/File';
 import { Calendar } from './Calendar/Calendar';
 import { Event } from './Calendar/Event';
 import { ArrayColl, type Collection } from 'svelte-collections';
 import { faker } from '@faker-js/faker';
+import { Addressbook } from './Contacts/Addressbook';
 
 export async function getTestObjects(): Promise<void> {
   appGlobal.me = fakeChatPerson();
-  appGlobal.persons.addAll(fakePersons());
+  appGlobal.addressbooks.add(fakeAddressbook());
+  appGlobal.persons.addAll(fakePersons(50, appGlobal.addressbooks.first));
   appGlobal.emailAccounts.add(fakeMailAccount(appGlobal.persons, appGlobal.me));
   appGlobal.chatAccounts.add(fakeChatAccount(appGlobal.persons, appGlobal.me));
   appGlobal.calendars.add(fakeCalendar(appGlobal.persons));
   appGlobal.files.addAll(fakeSharedDir(appGlobal.persons));
 }
 
-export function fakePersons(count = 50): Collection<Person> {
+export function fakeAddressbook(): Addressbook {
+  let addressbook = new Addressbook();
+  addressbook.name = faker.company.name();
+  addressbook.url = faker.internet.url();
+  addressbook.username = faker.internet.userName();
+  return addressbook;
+}
+
+export function fakePersons(count = 50, addressbook?: Addressbook): Collection<Person> {
   let persons = new ArrayColl<Person>();
   for (let i = 1; i <= count; i++) {
-    persons.add(fakeChatPerson());
+    let person = fakeChatPerson();
+    person.addressbook = addressbook;
+    persons.add(person);
   }
   return persons;
+}
+
+export function fakeGroups(groupCount = 10, maxMemberCount = 20, addressbook: Addressbook): Collection<Group> {
+  let groups = new ArrayColl<Group>();
+  let persons = addressbook.persons;
+  for (let iP = 1; iP <= groupCount; iP++) {
+    let group = new Group();
+    group.name = faker.helpers.unique(faker.name.jobTitle);
+    group.addressbook = addressbook;
+    let memberCount = 2 + Math.floor(Math.random() * (maxMemberCount - 2));
+    for (let iG = 1; iG <= memberCount; iG++) {
+      let person = persons.getIndex(Math.floor(Math.random() * persons.length));
+      if (group.participants.has(person)) {
+        continue;
+      }
+      group.participants.add(person);
+    }
+    groups.add(group);
+  }
+  return groups;
 }
 
 export function fakeChatPerson(): Person {

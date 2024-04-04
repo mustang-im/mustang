@@ -17,7 +17,7 @@ export class Account extends Observable {
   @notifyChangedProperty
   workspace: Workspace | null = null;
   @notifyChangedProperty
-  userRealname: string;
+  userRealname: string = appGlobal.me?.name;
 
   /** Will be called, when there are errors on the connection
    * which cannot be attributed directly to an API function called,

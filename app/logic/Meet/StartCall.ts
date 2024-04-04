@@ -65,7 +65,7 @@ async function createNewPersonChat(to: Person): Promise<{ chat: Chat, account: C
   // Check available contact methods, and pick the preferred one for this person
   let iHaveMatrix = haveAccountType(MatrixAccount);
   console.log("User has a Matrix account");
-  let entries = to.chatAccounts.sortBy(entry => entry.preferred);
+  let entries = to.chatAccounts.sortBy(entry => entry.preference);
   for (let entry of entries) {
     if (iHaveMatrix && entryIsMatrix(entry)) {
       return createNewMatrixChat(to, entry.value);
@@ -83,10 +83,8 @@ async function createNewGroupChat(to: Group): Promise<{ chat: Chat, account: Cha
   if (iHaveMatrix && theyAllHaveMatrix) {
     let matrixIDs = to.participants.map(person =>
       person.chatAccounts.filter(entry => entryIsMatrix(entry))
-        .sortBy(contact => contact.preferred)
-        .map(contact => contact.value)
-        .values()
-        .first)
+        .sortBy(contact => contact.preference)
+        .first.value)
       .values().contents;
     return createNewMatrixGroupChat(to, matrixIDs);
   }

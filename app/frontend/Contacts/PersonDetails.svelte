@@ -202,10 +202,10 @@
   $: streetAddresses = person.streetAddresses;
   $: groups = person.groups;
   $: preferredPhoneNumber = $phoneNumbers.isEmpty ? null :
-      phoneNumbers.find(p => p.preferred)?.value ??
+      phoneNumbers.sortBy(p => p.preference).first?.value ??
       phoneNumbers.first.value;
   $: preferredEmailAddress = $emailAddresses.isEmpty ? null :
-      emailAddresses.find(p => p.preferred)?.value ??
+      emailAddresses.sortBy(p => p.preference).first?.value ??
       emailAddresses.first.value;
   $: language2Char = navigator.language?.substring(0, 2) ?? "";
 

@@ -1,20 +1,19 @@
 import { ContactBase } from './Contact';
-import { notifyChangedProperty } from '../util/Observable';
+import { notifyChangedProperty, Observable } from '../util/Observable';
 import { ArrayColl } from 'svelte-collections';
 
 export class Person extends ContactBase {
-  dbID: number;
   @notifyChangedProperty
-  firstName: string;
+  firstName: string | null;
   @notifyChangedProperty
-  lastName: string;
+  lastName: string | null;
   readonly emailAddresses = new ArrayColl<ContactEntry>();
   readonly phoneNumbers = new ArrayColl<ContactEntry>();
   readonly chatAccounts = new ArrayColl<ContactEntry>();
   readonly groups = new ArrayColl<ContactEntry>();
   readonly streetAddresses = new ArrayColl<ContactEntry>();
   @notifyChangedProperty
-  notes = "";
+  notes: string | null = "";
 
   @notifyChangedProperty
   company: string;
@@ -55,12 +54,19 @@ export class Person extends ContactBase {
   }
 }
 
-export class ContactEntry {
-  purpose: string; // "work", "home", "mobile", "other", "Teams", "WhatsApp", or any other text
+export class ContactEntry extends Observable {
+  @notifyChangedProperty
   value: string; // email address, or phone number etc.
-  preferred = false;
+  @notifyChangedProperty
+  protocol: string | null; // "email", "tel", "fax", "matrix", "xmpp" etc.
+  @notifyChangedProperty
+  purpose: string | null; // "work", "home", "mobile", "other", "Teams", "WhatsApp", or any other text
+  /** Lower is more preferred */
+  @notifyChangedProperty
+  preference = 0;
 
-  constructor(value: string, purpose: string) {
+  constructor(value: string, purpose: string | null = null) {
+    super();
     this.value = value;
     this.purpose = purpose;
   }

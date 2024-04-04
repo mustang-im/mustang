@@ -72,7 +72,7 @@ export class SQLMailAccount {
     acc.dbID = dbID;
     (acc.id as any) = sanitize.alphanumdash(row.idStr);
     acc.name = sanitize.label(row.name);
-    (acc.protocol as any) = sanitize.alphanumdash(row.protocol);
+    assert(acc.protocol == sanitize.alphanumdash(row.protocol), "MailAccount object of wrong type passed in");
     acc.emailAddress = sanitize.emailAddress(row.emailAddress);
     acc.username = sanitize.stringOrNull(row.username);
     acc.password = sanitize.stringOrNull(row.passwordButter);
