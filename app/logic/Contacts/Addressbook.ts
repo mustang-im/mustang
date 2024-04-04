@@ -9,11 +9,22 @@ export class Addressbook extends Account {
   readonly persons = new ArrayColl<Person>();
   readonly groups = new ArrayColl<Group>();
   readonly contacts: Collection<Contact> = mergeColl(this.persons, this.groups);
+  storage: AddressbookStorage | null = null;
+
+  async save() {
+    await this.storage.saveAddressbook(this);
+  }
 
   newPerson(): Person {
-    return new Person();
+    return new Person(this);
   }
   newGroup(): Group {
-    return new Group();
+    return new Group(this);
   }
+}
+
+export interface AddressbookStorage {
+  savePerson(person: Person): Promise<void>;
+  saveGroup(group: Group): Promise<void>;
+  saveAddressbook(addressbook: Addressbook): Promise<void>;
 }

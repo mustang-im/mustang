@@ -89,7 +89,7 @@
       assert(kEMailAddressRegexp.test(emailAddress), "Need email address");
     }
 
-    let person = new Person();
+    let person = new Person(appGlobal.collectedAddressbook);
     person.name = name;
     person.emailAddresses.add(new ContactEntry(emailAddress, "mail"));
     appGlobal.persons.add(person);

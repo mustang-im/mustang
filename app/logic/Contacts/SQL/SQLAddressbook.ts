@@ -1,6 +1,10 @@
-import type { Addressbook } from "../Addressbook";
+import type { Addressbook, AddressbookStorage } from "../Addressbook";
 import { getDatabase } from "./SQLDatabase";
 import { newAddressbookForProtocol } from "../AccountsList/Addressbooks";
+import type { Group } from "../../Abstract/Group";
+import type { Person } from "../../Abstract/Person";
+import { SQLPerson } from "./SQLPerson";
+import { SQLGroup } from "./SQLGroup";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -8,7 +12,7 @@ import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 
-export class SQLAddressbook {
+export class SQLAddressbook implements AddressbookStorage {
   static async save(acc: Addressbook) {
     if (!acc.dbID) {
       let existing = await (await getDatabase()).get(sql`
@@ -41,6 +45,9 @@ export class SQLAddressbook {
         WHERE id = ${acc.dbID}
         `);
     }
+    if (!acc.storage) {
+      acc.storage = new SQLAddressbook();
+    }
   }
 
   /** Also deletes all persons and groups in this address book */
@@ -71,6 +78,9 @@ export class SQLAddressbook {
     acc.workspace = row.workspace
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace))
       : null;
+    if (!acc.storage) {
+      acc.storage = new SQLAddressbook();
+    }
     return acc;
   }
 
@@ -91,5 +101,15 @@ export class SQLAddressbook {
       }
     }
     return accounts;
+  }
+
+  async saveAddressbook(addressbook: Addressbook): Promise<void> {
+    SQLAddressbook.save(addressbook);
+  }
+  async savePerson(person: Person): Promise<void> {
+    SQLPerson.save(person);
+  }
+  async saveGroup(group: Group): Promise<void> {
+    SQLGroup.save(group);
   }
 }

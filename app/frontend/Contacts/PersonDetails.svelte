@@ -69,7 +69,7 @@
       </svelte:fragment>
       <grid class="items" slot="content">
         {#each $phoneNumbers.each as entry}
-          <ContactEntryUI {entry} coll={phoneNumbers}>
+          <ContactEntryUI {entry} coll={phoneNumbers} on:save={save}>
             <PhoneNumberDisplay slot="display" value={entry.value} />
             <PhoneNumberEdit slot="edit" bind:value={entry.value} />
           </ContactEntryUI>
@@ -87,7 +87,7 @@
       </svelte:fragment>
       <grid class="items" slot="content">
         {#each $emailAddresses.each as entry}
-          <ContactEntryUI {entry} coll={emailAddresses}>
+          <ContactEntryUI {entry} coll={emailAddresses} on:save={save}>
             <EmailAddressDisplay slot="display" value={entry.value} />
             <EmailAddressEdit slot="edit" bind:value={entry.value} />
           </ContactEntryUI>
@@ -105,7 +105,7 @@
       </svelte:fragment>
       <grid class="items" slot="content">
         {#each $chatAccounts.each as entry}
-          <ContactEntryUI {entry} coll={chatAccounts}>
+          <ContactEntryUI {entry} coll={chatAccounts} on:save={save}>
             <EmailAddressDisplay slot="display" value={entry.value} /><!-- TODO chat link -->
             <EmailAddressEdit slot="edit" bind:value={entry.value} /><!-- TODO chat editor -->
           </ContactEntryUI>
@@ -125,7 +125,7 @@
       </svelte:fragment>
       <grid class="items" slot="content">
         {#each $groups.each as entry}
-          <ContactEntryUI {entry} coll={groups}>
+          <ContactEntryUI {entry} coll={groups} on:save={save}>
             <hbox slot="display">{entry.value}</hbox>
           </ContactEntryUI>
         {/each}
@@ -142,7 +142,7 @@
       </svelte:fragment>
       <grid class="items" slot="content">
         {#each $streetAddresses.each as entry}
-          <ContactEntryUI {entry} coll={streetAddresses}>
+          <ContactEntryUI {entry} coll={streetAddresses} on:save={save}>
             <StreetAddressDisplay slot="display" value={entry.value} />
             <StreetAddressEdit slot="edit" bind:value={entry.value} />
           </ContactEntryUI>
@@ -226,7 +226,7 @@
 
   async function save() {
     try {
-      console.log("TODO implement contact save");
+      await person.save();
     } catch (ex) {
       showError(ex);
     }
