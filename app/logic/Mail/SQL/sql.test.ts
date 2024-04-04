@@ -10,7 +10,7 @@ import { expect, test } from 'vitest';
 import JPCWebSocket from '../../../../lib/jpc-ws/protocol';
 import { makeTestDatabase } from './SQLDatabase';
 
-test("Save and read from SQL database", { timeout: 10000 }, async () => {
+test("Save and read mails from SQL database", { timeout: 10000 }, async () => {
   await connectToBackend();
   await makeTestDatabase(); // Let SQLFoo classes use the test database
 
@@ -42,13 +42,13 @@ test("Save and read from SQL database", { timeout: 10000 }, async () => {
   // Read
   appGlobal.emailAccounts.addAll(await SQLMailAccount.readAll());
   async function readMsgsAndSubFolders(folder: Folder) {
-    folder.messages.addAll(await SQLEMail.readAll(folder));
+    await SQLEMail.readAll(folder);
     for (let sub of folder.subFolders) {
       await readMsgsAndSubFolders(sub);
     }
   }
   for (let account of appGlobal.emailAccounts) {
-    account.rootFolders.addAll(await SQLFolder.readAllHierarchy(account));
+    await SQLFolder.readAllHierarchy(account);
     for (let folder of account.rootFolders) {
       await readMsgsAndSubFolders(folder);
     }
