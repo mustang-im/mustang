@@ -4,6 +4,7 @@ import PrivateIcon from "lucide-svelte/icons/book-heart";
 import OtherIcon from "lucide-svelte/icons/shapes";
 
 export class Workspace extends Observable {
+  id: string;
   @notifyChangedProperty
   name: string;
   @notifyChangedProperty
@@ -13,6 +14,7 @@ export class Workspace extends Observable {
 
   constructor(name: string, color: string, icon: any) {
     super();
+    this.id = name;
     this.name = name;
     this.color = color;
     this.icon = icon;

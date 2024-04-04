@@ -15,7 +15,7 @@ export class Account extends Observable {
   @notifyChangedProperty
   username: string | null;
   @notifyChangedProperty
-  workspace: Workspace;
+  workspace: Workspace | null;
   @notifyChangedProperty
   userRealname: string;
 

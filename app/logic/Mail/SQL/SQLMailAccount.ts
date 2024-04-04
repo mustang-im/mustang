@@ -1,6 +1,7 @@
 import type { MailAccount } from "../MailAccount";
 import { getDatabase } from "./SQLDatabase";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
+import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
@@ -48,6 +49,7 @@ export class SQLMailAccount {
     }
   }
 
+  /** Also deletes all folders and messages in this account */
   static async deleteIt(account: MailAccount) {
     assert(account.dbID, "Need account DB ID to delete");
     await (await getDatabase()).run(sql`
@@ -79,7 +81,9 @@ export class SQLMailAccount {
     acc.tls = sanitize.enum(row.tls, [1, 2, 3], 2);
     acc.url = row.url ? sanitize.url(row.url) : null;
     acc.userRealname = sanitize.label(row.userRealname);
-    // acc.workspace = sanitize.stringOrNull(row.workspace);
+    acc.workspace = row.workspace
+      ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace))
+      : null;
     return acc;
   }
 
