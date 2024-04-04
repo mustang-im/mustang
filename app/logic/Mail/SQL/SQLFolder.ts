@@ -57,6 +57,7 @@ export class SQLFolder extends Folder {
       `);
   }
 
+  /** Also deletes all messages in this folder */
   static async deleteIt(folder: Folder) {
     assert(folder.dbID, "Need folder DB ID to delete");
     await (await getDatabase()).run(sql`

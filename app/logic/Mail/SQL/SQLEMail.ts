@@ -270,17 +270,17 @@ export class SQLEMail {
       FROM email
       WHERE folderID = ${folder.dbID}
       `) as any;
-    let emails = new ArrayColl<EMail>();
+    let newEmails = new ArrayColl<EMail>();
     for (let row of rows) {
       let email = folder.messages.find(email => email.dbID == row.id);
       if (email) {
-        await SQLEMail.readWritableProps(email);
+        await SQLEMail.readWritableProps(email); // TODO needed?
       } else {
         email = folder.newEMail();
-        await SQLEMail.read(row.id, email);
-        emails.add(email);
+        await SQLEMail.read(row.id, email); // TODO: Get metadata with query above first, then the email contents?
+        newEmails.add(email);
       }
     }
-    folder.messages.addAll(emails);
+    folder.messages.addAll(newEmails);
   }
 }
