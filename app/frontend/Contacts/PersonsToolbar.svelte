@@ -23,11 +23,8 @@
   /** in/out */
   export let selectedAddressbook: Addressbook;
 
-  $: console.log("Selected address book", selectedAddressbook?.name);
-
   function addPerson() {
     let person = new Person(selectedAddressbook);
-    console.log("Creating person in", selectedAddressbook?.name);
     person.name = "New person";
     persons.add(person);
     $selectedPerson = person;
