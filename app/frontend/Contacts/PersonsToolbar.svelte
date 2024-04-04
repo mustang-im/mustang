@@ -18,9 +18,12 @@
   import NewContactIcon from "lucide-svelte/icons/plus";
   import type { Collection } from "svelte-collections";
 
+  /** in */
   export let persons: Collection<Person>;
+  /** in/out */
+  export let selectedAddressbook: Addressbook;
 
-  let selectedAddressbook: Addressbook;
+  $: console.log("Selected address book", selectedAddressbook?.name);
 
   function addPerson() {
     let person = new Person(selectedAddressbook);
