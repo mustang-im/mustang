@@ -1,6 +1,6 @@
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox flex class="left-pane" slot="left">
-    <PersonsToolbar {persons} />
+    <PersonsToolbar {persons} bind:selectedAddressbook />
     <PersonsList persons={filteredPersons} bind:selected={$selectedPerson} />
   </vbox>
   <vbox flex class="right-pane" slot="right">
@@ -13,6 +13,7 @@
 </Splitter>
 
 <script lang="ts">
+  import type { Person } from "../../logic/Abstract/Person";
   import { selectedPerson } from "../Shared/Person/PersonOrGroup";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
@@ -21,9 +22,11 @@
   import PersonsToolbar from "./PersonsToolbar.svelte";
   import Scroll from "../Shared/Scroll.svelte";
   import Splitter from "../Shared/Splitter.svelte";
+  import type { Collection } from "svelte-collections";
 
-  let persons = appGlobal.persons;
+  let selectedAddressbook = appGlobal.addressbooks.first;
 
+  $: persons = (selectedAddressbook?.persons ?? appGlobal.persons) as Collection<Person>;
   $: filteredPersons = $globalSearchTerm
     ? persons.filter(p =>
       p.name.toLowerCase().includes($globalSearchTerm) ||

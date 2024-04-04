@@ -1,29 +1,25 @@
 <hbox class="account-selector">
-  <NativeSelect
-      data={accountOptions}
-      bind:value={accountID}
-      on:change={onChange}
-  />
+  <select bind:value={selectedAccount}>
+    {#each $accounts.each as account }
+      <option value={account}>
+        {account.name}
+      </option>
+    {/each}
+  </select>
 </hbox>
 
 <script lang="ts">
   import type { Account } from "../../logic/Abstract/Account";
-  import { NativeSelect } from '@svelteuidev/core';
   import type { Collection } from "svelte-collections";
 
   export let selectedAccount: Account; /* in/out */
   export let accounts: Collection<Account>;
 
-  $: accountOptions = $accounts.contents.map(account => ({
-    value: account.id,
-    label: account.name,
-  }));
-
-  $: accountID = selectedAccount?.id ?? $accounts.first?.id;
-
-  function onChange(event) {
-    console.log("accounts dropdown value changed", event);
-    selectedAccount = accounts.contents.find(account => account.id == accountID);
+  $: defaultSelection(selectedAccount);
+  function defaultSelection(_dummy: any) {
+    if (!selectedAccount) {
+      accounts.first;
+    }
   }
 </script>
 
