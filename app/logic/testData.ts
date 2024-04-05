@@ -40,6 +40,9 @@ export function fakePersons(count = 50, addressbook?: Addressbook): Collection<P
     person.addressbook = addressbook;
     persons.add(person);
   }
+  if (addressbook) {
+    addressbook.persons.addAll(persons);
+  }
   return persons;
 }
 
@@ -59,6 +62,9 @@ export function fakeGroups(groupCount = 10, maxMemberCount = 20, addressbook: Ad
       group.participants.add(person);
     }
     groups.add(group);
+  }
+  if (addressbook) {
+    addressbook.groups.addAll(groups);
   }
   return groups;
 }
@@ -211,7 +217,7 @@ export function fakeCalendar(persons: Collection<Person>, eventCount = 50): Cale
   let calendar = new Calendar();
   calendar.name = faker.company.name();
   for (let i = 1; i <= eventCount; i++) {
-    let event = new Event();
+    let event = new Event(calendar);
     event.startTime = i < 5 ? faker.date.recent() : faker.date.future(0.2);
     let endTimeMax = new Date(event.startTime);
     endTimeMax.setMinutes(endTimeMax.getMinutes() + 120);

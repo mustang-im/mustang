@@ -82,9 +82,13 @@ export class SQLPerson {
     person.lastName = row.lastName ? sanitize.stringOrNull(row.lastName) : null;
     person.picture = row.picture ? sanitize.url(row.picture) : null;
     person.notes = sanitize.stringOrNull(row.notes);
-    if (row.addressbookID) {
+    if (row.addressbook) {
       let addressbookID = sanitize.integer(row.addressbookID);
-      person.addressbook = appGlobal.addressbooks.find(ab => ab.dbID == addressbookID);
+      if (person.addressbook) {
+        assert(person.addressbook.dbID == addressbookID, "Wrong addressbook");
+      } else {
+        person.addressbook = appGlobal.addressbooks.find(ab => ab.dbID == addressbookID);
+      }
     }
     SQLPerson.readContacts(person);
     return person;
@@ -144,6 +148,7 @@ export class SQLPerson {
         person = addressbook.newPerson();
         newPersons.add(person);
       }
+      person.addressbook = addressbook;
       await SQLPerson.read(row.id, person, row);
     }
     addressbook.persons.addAll(newPersons);

@@ -73,9 +73,13 @@ export class SQLGroup extends Group {
     group.dbID = sanitize.integer(dbID);
     group.name = sanitize.label(row.name);
     group.description = sanitize.label(row.description);
-    if (row.addressbookID) {
+    if (row.addressbook) {
       let addressbookID = sanitize.integer(row.addressbookID);
-      group.addressbook = appGlobal.addressbooks.find(ab => ab.dbID == addressbookID);
+      if (group.addressbook) {
+        assert(group.addressbook.dbID == addressbookID, "Wrong addressbook");
+      } else {
+        group.addressbook = appGlobal.addressbooks.find(ab => ab.dbID == addressbookID);
+      }
     }
 
     await SQLGroup.readMembers(group);
@@ -95,6 +99,9 @@ export class SQLGroup extends Group {
       try {
         let personID = sanitize.integer(row.personID);
         let person = group.addressbook?.persons.find(p => p.dbID == personID);
+        if (!person) {
+          person = appGlobal.persons.find(p => p.dbID == personID) as Person;
+        }
         if (!person) {
           person = group.addressbook?.newPerson() ?? new Person();
           await SQLPerson.read(personID, person);
