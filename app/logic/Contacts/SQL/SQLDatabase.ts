@@ -1,7 +1,6 @@
 import { appGlobal } from "../../app";
 import sql, { type Database } from "../../../../lib/rs-sqlite/index";
 import { contactsDatabaseSchema } from "./createDatabase";
-import { sleep } from "../../util/util";
 
 let contactsDatabase: Database;
 

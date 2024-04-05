@@ -23,17 +23,19 @@ test("Save and read mails from SQL database", { timeout: 10000 }, async () => {
   let originalFolders = originalAccount.getAllFolders();
   expect(originalFolders.length).toBeGreaterThan(2);
   let originalMessages = new ArrayColl<EMail>();
+  for (let folder of originalFolders) {
+    originalMessages.addAll(folder.messages);
+  }
+  expect(originalMessages.length).toBeGreaterThan(10);
 
   // Save
   await SQLMailAccount.save(originalAccount);
   for (let folder of originalFolders) {
     await SQLFolder.save(folder);
-    originalMessages.addAll(folder.messages);
     for (let msg of folder.messages) {
       await SQLEMail.save(msg);
     }
   }
-  expect(originalMessages.length).toBeGreaterThan(10);
 
   // Clear
   appGlobal.persons.clear();

@@ -100,7 +100,7 @@ export class SQLGroup extends Group {
         let personID = sanitize.integer(row.personID);
         let person = group.addressbook?.persons.find(p => p.dbID == personID);
         if (!person) {
-          person = appGlobal.persons.find(p => p.dbID == personID) as Person;
+          person = appGlobal.persons.find(p => p.dbID == personID);
         }
         if (!person) {
           person = group.addressbook?.newPerson() ?? new Person();

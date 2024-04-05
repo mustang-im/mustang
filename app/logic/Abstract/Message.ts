@@ -8,6 +8,7 @@ export class Message extends Observable {
   /** protocol-specific ID for this message.
    * Allows for reactions, corrections etc. */
   id: string;
+  dbID: number;
   outgoing = false;
   /**
    * Who this message was exchanged with.
@@ -32,7 +33,7 @@ export class Message extends Observable {
   @notifyChangedProperty
   isStarred = false;
   /** Msg ID of another message that this one is a reply of */
-  inReplyTo: string | undefined;
+  inReplyTo: string | null = null;
 
   /** Plaintext version of the message */
   @notifyChangedProperty

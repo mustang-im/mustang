@@ -59,7 +59,7 @@
     : personMessages;
   $: dummyChat = createDummyChat(selectedPerson);
   function createDummyChat(person: Person): Chat {
-    let chat = new Chat();
+    let chat = new Chat(accounts.first);
     chat.id = faker.datatype.uuid();
     chat.contact = person;
     chat.messages.addAll(personMessages);

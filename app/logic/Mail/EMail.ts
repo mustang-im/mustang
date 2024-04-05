@@ -34,7 +34,6 @@ export class EMail extends Message {
   /** Complete MIME source of the email */
   mime: Uint8Array | undefined;
   folder: Folder;
-  dbID: number;
   /** This message has been downloaded completely,
    * with header, body, and all attachments. */
   downloadComplete = false;

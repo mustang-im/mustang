@@ -22,7 +22,7 @@ class AppGlobal {
 
   personalAddressbook: Addressbook;
   collectedAddressbook: Addressbook;
-  readonly persons: Collection<Contact> = mergeColls(this.addressbooks.map(ab => ab.persons));
+  readonly persons: Collection<Person> = mergeColls(this.addressbooks.map(ab => ab.persons));
   //readonly allContacts: Collection<Contact> = mergeColls(this.addressbooks.map(ab => ab.contacts));
   remoteApp: any;
   me = new Person();
