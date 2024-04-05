@@ -28,6 +28,10 @@ export function arrayRemoveAll(array, item) {
   }
 }
 
+export function randomID(): string {
+  return Date.now() + "-" + Math.ceil(Math.random() * 900000);
+}
+
 export async function blobToBase64(blob: Blob): Promise<string> {
   let dataURL = await blobToDataURL(blob)
   return dataURL.split(",")[1];

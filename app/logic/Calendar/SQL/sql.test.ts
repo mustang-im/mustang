@@ -1,7 +1,6 @@
 import { makeTestDatabase } from './SQLDatabase';
 import { SQLCalendar } from './SQLCalendar';
 import { SQLEvent } from './SQLEvent';
-import { Person } from '../../Abstract/Person';
 import { fakeAddressbook, fakeCalendar, fakePersons, fakeChatPerson } from '../../testData';
 import { appGlobal } from '../../app';
 import JPCWebSocket from '../../../../lib/jpc-ws/protocol';
@@ -23,7 +22,7 @@ test("Save and read calendars from SQL database", { timeout: 10000 }, async () =
     if (Math.random() < 0.3) {
       let participantCount = Math.ceil(Math.random() * 8);
       for (let i = 0; i < participantCount; i++) {
-        let person = appGlobal.persons.getIndex(Math.floor(Math.random() * appGlobal.persons.length)) as Person;
+        let person = appGlobal.persons.getIndex(Math.floor(Math.random() * appGlobal.persons.length));
         event.participants.add(person);
       }
     }

@@ -1,7 +1,7 @@
 import type { Person } from "../Abstract/Person";
 import type { Calendar } from "./Calendar";
 import { ArrayColl } from "svelte-collections";
-import { assert } from "../util/util";
+import { assert, randomID } from "../util/util";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 
 export class Event extends Observable {
@@ -42,7 +42,7 @@ export class Event extends Observable {
 
   constructor(calendar: Calendar) {
     super();
-    this.id = "event" + Date.now();
+    this.id = randomID();
     this.calendar = calendar;
   }
 

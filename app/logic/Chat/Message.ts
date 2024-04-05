@@ -7,6 +7,11 @@ export class ChatMessage extends Message {
   to: Chat;
   @notifyChangedProperty
   deliveryStatus = DeliveryStatus.Unknown;
+
+  constructor(chat: Chat) {
+    super();
+    this.to = chat;
+  }
 }
 
 /**

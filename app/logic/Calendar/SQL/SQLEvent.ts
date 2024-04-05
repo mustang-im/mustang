@@ -1,6 +1,6 @@
 import { Event } from "../Event";
 import type { Calendar } from "../Calendar";
-import { Person } from "../../Abstract/Person";
+import type { Person } from "../../Abstract/Person";
 import { SQLPerson } from "../../Contacts/SQL/SQLPerson";
 import { getDatabase } from "./SQLDatabase";
 import { appGlobal } from "../../app";
@@ -109,7 +109,7 @@ export class SQLEvent extends Event {
       try {
         let personID = sanitize.integer(row.personID);
         let person = appGlobal.persons.find(p => p.dbID == personID);
-        if (!person || !(person instanceof Person)) {
+        if (!person) {
           continue;
         }
         event.participants.add(person);

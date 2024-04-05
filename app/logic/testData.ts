@@ -10,10 +10,10 @@ import { Group } from './Abstract/Group';
 import { Chat } from './Chat/Chat';
 import { Directory, File } from './Files/File';
 import { Calendar } from './Calendar/Calendar';
+import { Addressbook } from './Contacts/Addressbook';
 import { Event } from './Calendar/Event';
 import { ArrayColl, type Collection } from 'svelte-collections';
 import { faker } from '@faker-js/faker';
-import { Addressbook } from './Contacts/Addressbook';
 
 export async function getTestObjects(): Promise<void> {
   appGlobal.me = fakeChatPerson();
@@ -185,7 +185,8 @@ export function fakeChatAccount(persons: Collection<Person>, me: Person, msgCoun
   chatAccount.userRealname = me.name;
 
   for (let person of persons) {
-    let chat = new Chat();
+    let chat = new Chat(chatAccount);
+    chat.id = person.id + "-" + faker.datatype.uuid();
     chat.contact = person;
     chatAccount.chats.set(person, chat);
     chatAccount.persons.add(person);
@@ -193,7 +194,8 @@ export function fakeChatAccount(persons: Collection<Person>, me: Person, msgCoun
     let messages = chat.messages;
     let lastTime = faker.date.past(0.1);
     for (let i = 1; i <= msgCount; i++) {
-      let msg = new UserChatMessage();
+      let msg = new UserChatMessage(chat);
+      msg.id = faker.datatype.uuid();
       msg.to = chat;
       msg.contact = chat.contact;
       msg.outgoing = Math.random() < 0.4;

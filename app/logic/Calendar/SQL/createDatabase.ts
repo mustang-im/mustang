@@ -1,6 +1,6 @@
 import sql from "../../../../lib/rs-sqlite/index";
 
-export const contactsDatabaseSchema = sql`
+export const calendarDatabaseSchema = sql`
   CREATE TABLE "calendar" (
     "id" INTEGER PRIMARY KEY,
     "idStr" TEXT UNIQUE,

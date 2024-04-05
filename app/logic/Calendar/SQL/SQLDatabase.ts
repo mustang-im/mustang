@@ -1,6 +1,6 @@
 import { appGlobal } from "../../app";
 import sql, { type Database } from "../../../../lib/rs-sqlite/index";
-import { contactsDatabaseSchema as calendarDatabaseSchema } from "./createDatabase";
+import { calendarDatabaseSchema } from "./createDatabase";
 
 let calendarDatabase: Database;
 
