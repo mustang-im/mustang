@@ -1,6 +1,6 @@
 import { appGlobal } from './app';
-import { readMailAccounts } from './Mail/AccountsList/MailAccounts';
-import { readChatAccounts } from './Chat/ChatAccounts';
+import { readMailAccounts } from './Mail/AccountsList/LocalStorage';
+import { readChatAccounts } from './Chat/AccountsList/LocalStorage';
 import { readAddressbooksFromSQL } from './Contacts/AccountsList/SQL';
 import { readCalendarsFromSQL } from './Calendar/AccountsList/SQL';
 import { getTestObjects } from './testData';

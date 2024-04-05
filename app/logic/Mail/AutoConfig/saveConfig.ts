@@ -1,6 +1,6 @@
 import type { MailAccount } from "../MailAccount";
 import { SQLMailAccount } from "../SQL/SQLMailAccount";
-import { saveNewAccountToLocalStorage } from "../AccountsList/MailAccounts";
+import { saveNewAccountToLocalStorage } from "../AccountsList/LocalStorage";
 import { appGlobal } from "../../app";
 import { assert } from "../../util/util";
 

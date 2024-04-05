@@ -1,5 +1,4 @@
 import { makeTestDatabase } from './SQLDatabase';
-import { Addressbook } from '../Addressbook';
 import { ContactEntry } from '../../Abstract/Person';
 import { SQLAddressbook } from './SQLAddressbook';
 import { SQLGroup } from './SQLGroup';
