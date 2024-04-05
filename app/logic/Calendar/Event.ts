@@ -1,10 +1,12 @@
 import type { Person } from "../Abstract/Person";
+import type { Calendar } from "./Calendar";
 import { ArrayColl } from "svelte-collections";
 import { assert } from "../util/util";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 
 export class Event extends Observable {
   readonly id: string;
+  dbID: number;
   @notifyChangedProperty
   title: string;
   @notifyChangedProperty
@@ -35,10 +37,13 @@ export class Event extends Observable {
   readonly participants = new ArrayColl<Person>();
   @notifyChangedProperty
   lastMod = new Date();
+  @notifyChangedProperty
+  calendar: Calendar;
 
-  constructor() {
+  constructor(calendar: Calendar) {
     super();
-    this.id = crypto.randomUUID();
+    this.id = "event" + Date.now();
+    this.calendar = calendar;
   }
 
   /** in seconds */

@@ -3,7 +3,7 @@ import { SQLAddressbook } from '../SQL/SQLAddressbook';
 import { SQLGroup } from '../SQL/SQLGroup';
 import { ArrayColl, Collection } from 'svelte-collections';
 
-export async function readAddressbookFromSQL(): Promise<Collection<Addressbook>> {
+export async function readAddressbooksFromSQL(): Promise<Collection<Addressbook>> {
   let addressbooks = await SQLAddressbook.readAll();
   for (let addressbook of addressbooks) {
     SQLGroup.readAll(addressbook); // also reads persons

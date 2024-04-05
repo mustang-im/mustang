@@ -5,5 +5,5 @@ export function newAddressbookForProtocol(protocol: string): Addressbook {
   if (protocol == "addressbook-local") {
     return new Addressbook();
   }
-  throw new NotReached(`Unknown account type ${protocol}`);
+  throw new NotReached(`Unknown addressbook type ${protocol}`);
 }

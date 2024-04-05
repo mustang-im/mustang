@@ -4,7 +4,7 @@ import { ContactEntry } from '../../Abstract/Person';
 import { SQLAddressbook } from './SQLAddressbook';
 import { SQLGroup } from './SQLGroup';
 import { SQLPerson } from './SQLPerson';
-import { fakeChatPerson, fakeGroups, fakePersons } from '../../testData';
+import { fakeAddressbook, fakeChatPerson, fakeGroups, fakePersons } from '../../testData';
 import { appGlobal } from '../../app';
 import JPCWebSocket from '../../../../lib/jpc-ws/protocol';
 import { Collection } from 'svelte-collections';
@@ -16,11 +16,10 @@ test("Save and read contacts from SQL database", { timeout: 10000 }, async () =>
 
   // Fake data
   appGlobal.me = fakeChatPerson();
-  let originalAddressbook = new Addressbook();
-  originalAddressbook.name = "Test Addressbook";
+  let originalAddressbook = fakeAddressbook();
   expect(originalAddressbook).toBeDefined();
-  originalAddressbook.persons.addAll(fakePersons(50, originalAddressbook));
-  originalAddressbook.groups.addAll(fakeGroups(10, 15, originalAddressbook));
+  fakePersons(50, originalAddressbook);
+  fakeGroups(10, 15, originalAddressbook);
   expect(originalAddressbook.persons.length).toBeGreaterThan(2);
   expect(originalAddressbook.groups.length).toBeGreaterThan(2);
 
