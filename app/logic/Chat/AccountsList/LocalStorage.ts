@@ -1,10 +1,10 @@
-import type { ChatAccount } from './ChatAccount';
+import type { ChatAccount } from '../ChatAccount';
 import { ArrayColl } from 'svelte-collections';
-import { MatrixAccount } from './Matrix/MatrixAccount';
-import { XMPPAccount } from './XMPP/XMPPAccount';
-import { sanitize } from '../../../lib/util/sanitizeDatatypes';
-import { appGlobal } from '../app';
-import { ContactEntry } from '../Abstract/Person';
+import { MatrixAccount } from '../Matrix/MatrixAccount';
+import { XMPPAccount } from '../XMPP/XMPPAccount';
+import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
+import { appGlobal } from '../../app';
+import { ContactEntry } from '../../Abstract/Person';
 
 /**
  * Reads settings for chat accounts,

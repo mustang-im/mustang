@@ -8,7 +8,7 @@ import JPCWebSocket from '../../../../lib/jpc-ws/protocol';
 import { expect, test } from 'vitest';
 import { SQLPerson } from '../../Contacts/SQL/SQLPerson';
 
-test("Save and read contacts from SQL database", { timeout: 10000 }, async () => {
+test("Save and read calendars from SQL database", { timeout: 10000 }, async () => {
   await connectToBackend();
   await makeTestDatabase(); // Let SQLFoo classes use the test database
 
