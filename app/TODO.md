@@ -1,5 +1,6 @@
 # Next
-* Contacts Save
+* Calendar SQL
+* Chat SQL
 
 # App logic
 * Errors
@@ -171,12 +172,54 @@
 * Insert image
 * Emojis
 
+## Filters
+* User manually moves mail into folder
+  * -> Ask whether to keep doing that
+  * -> create filter based on From address
+* User searches manually
+  * Button to save the search as Virtual folder
+  * Button to create a filter action
+    -> Use the search criteria as filter criteria
+    -> Let user specify filter actions
+* Filter actions
+  * Move into folder
+  * Delete
+  * Mark as spam
+  * Add tag
+  * Redirect
+* Run filters using Sieve or locally
+
+## Security
+* Unknown senders
+  * Shorten name to 30 chars
+  * Remove email address and domain names from name
+  * Make email domain bold, userpart in grey and not bold
+  * Score emails:
+    * Email address or domain name in name
+    * Link text doesn't match link target
+* Promos
+    * Link text doesn't match link target
+
 # Login
 * OAuth2 UI
 
 # Setup
 * Chat & Video conf
 * Combined: Mail, chat, fileshare, calendar, contacts with single login/setup
+
+# Initial release
+* Installer
+  * Windows
+  * Linux
+  * Auto-update client
+  * Auto-update server
+* Git repo
+* Licenses
+  * Adapt our Open-Source license
+  * Third party lib licenses
+    * About dialog
+  * Adapt our EULA and Privacy policy
+  * Impressum
 
 # Later
 * mailto handler
@@ -190,17 +233,3 @@
 * SIP
   * Voice call to phone system
   * Incoming calls
-
-# Security
-* Unknown senders
-  * Shorten name to 30 chars
-  * Remove email address and domain names from name
-  * Make email domain bold, userpart in grey and not bold
-  * Score emails:
-    * Email address or domain name in name
-    * Link text doesn't match link target
-* Promos
-    * Link text doesn't match link target
-
-# Filters
-* Move mail into folder -> Ask whether to keep doing that -> create filter based on From address
