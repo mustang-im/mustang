@@ -1,10 +1,13 @@
 {
-  "name": "e2",
-  "version": "1.0.0",
-  "description": "An Electron application with Svelte and TypeScript",
+  "name": "mustang",
+  "version": "0.5.0",
+  "description": "Video conference, chat, mail, calendar, files, contacts",
   "main": "./out/main/index.js",
-  "author": "example.com",
-  "homepage": "https://www.electronjs.org",
+  "author": "Mustang (https://mustang.im)",
+  "copyright": "Mustang GmbH",
+  "homepage": "https://www.mustang.im",
+  "repository": "https://github.com/mustang.im/mustang",
+  "license": "AGPL-3.0-only",
   "scripts": {
     "format": "prettier --plugin prettier-plugin-svelte --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",

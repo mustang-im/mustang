@@ -1,5 +1,6 @@
-appId: com.electron.app
-productName: e2
+appId: im.mustang.client
+productName: Mustang
+copyright: Copyright © 2024 Mustang GmbH
 directories:
   buildResources: build
 files:
@@ -12,7 +13,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: e2
+  executableName: mustang
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
@@ -30,14 +31,15 @@ dmg:
   artifactName: ${name}-${version}.${ext}
 linux:
   target:
-    - AppImage
-    - snap
+#    - AppImage
+#    - snap
     - deb
-  maintainer: electronjs.org
+#    - rpm
+  maintainer: Mustang
   category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 publish:
   provider: generic
-  url: https://example.com/auto-updates
+  url: https://mustang.im/auto-updates
