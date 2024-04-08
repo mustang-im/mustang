@@ -3,8 +3,10 @@ import { appGlobal } from "../../../logic/app";
 import AccountGeneral from "../Mail/AccountGeneral.svelte";
 import AccountServer from "../Mail/AccountServer.svelte";
 import AccountIdentity from "../Mail/AccountIdentity.svelte";
-import SetupMail from "../../Setup/Mail/SetupMail.svelte";
+import SetupMail from "../Setup/Mail/SetupMail.svelte";
 import { ArrayColl } from "svelte-collections";
+import Licenses from "../About/Licenses.svelte";
+import About from "../About/About.svelte";
 
 const mailSettings = new SettingsCategory("mail", "Mail");
 mailSettings.subCategories.addAll([
@@ -45,8 +47,13 @@ const appSettings = new SettingsCategory("app", "App integration");
 meetSettings.subCategories.addAll([
 ]);
 
-const about = new SettingsCategory("about", "About");
+const customer = new SettingsCategory("customer", "Billing", false, false);
+customer.subCategories.addAll([
+]);
+
+const about = new SettingsCategory("about", "About", false, false, About);
 about.subCategories.addAll([
+  new SettingsCategory("license", "Open-Source", false, false, Licenses),
 ]);
 
 export const settingsCategories = new ArrayColl<SettingsCategory>([
@@ -56,5 +63,6 @@ export const settingsCategories = new ArrayColl<SettingsCategory>([
   calendarSettings,
   contactsSettings,
   appSettings,
+  customer,
   about,
 ]);
