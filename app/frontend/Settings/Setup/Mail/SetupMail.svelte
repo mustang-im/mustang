@@ -22,10 +22,14 @@
     {:else if step == Step.FinalizeConfig}
       <FinalizeConfig {config} />
     {/if}
-    <hbox class="buttons">
+    <ButtonsBottom {canContinue}
+      on:continue={onContinue}
+      on:reset={reset}
+      showReset={step != Step.EmailAddress}
+      >
       {#if step != Step.ManualConfig && step != Step.CheckConfig && step != Step.FinalizeConfig}
         <Button label="Manual setup" classes="secondary"
-          disabled={!canContinueButton}
+          disabled={!canContinue}
           on:click={onManualSetup}
           />
       {/if}
@@ -34,18 +38,7 @@
           on:click={onNewEmailAddress}
           />
       {/if}
-      {#if step != Step.EmailAddress}
-        <Button label="Start over" classes="secondary"
-          on:click={reset}
-          />
-      {/if}
-      <hbox flex />
-      <Button label="Next" classes="filled large"
-        disabled={!canContinueButton}
-        on:click={() => catchErrors(onContinue, showError)}
-        bind:buttonEl={nextButtonEl}
-        />
-    </hbox>
+    </ButtonsBottom>
     {#if step == Step.EmailAddress}
       <Footer />
     {/if}
@@ -68,11 +61,11 @@
   import ManualConfig from "./manual/ManualConfig.svelte";
   import ErrorMessage, { ErrorGravity } from "../ErrorMessage.svelte";
   import Footer from "../Footer.svelte";
+  import ButtonsBottom from "../ButtonsBottom.svelte";
   import Button from "../../../Shared/Button.svelte";
   import BackgroundVideo from "../BackgroundVideo.svelte";
   import { NotReached } from "../../../../logic/util/util";
   import type { ArrayColl } from "svelte-collections";
-  import { catchErrors } from "../../../Util/error";
   import { Cancelled } from "../../../../logic/util/Abortable";
 
   let emailAddress: string;
@@ -142,8 +135,8 @@
 
   let manualConfigEl: ManualConfig;
 
-  $: canContinueButton =
-    step == Step.EmailAddress && emailAddress && password ||
+  $: canContinue =
+    step == Step.EmailAddress && !!emailAddress && !!password ||
     step == Step.FoundConfig ||
     step == Step.ManualConfig ||
     step == Step.FinalizeConfig;
