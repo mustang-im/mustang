@@ -37,5 +37,5 @@ export class MustangApp extends Observable {
    * due to UI space constaints.
    */
   @notifyChangedProperty
-  subApps: Collection<MustangApp> = new ArrayColl<MustangApp>;
+  subApps: Collection<MustangApp> = new ArrayColl<MustangApp>();
 }

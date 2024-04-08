@@ -1,0 +1,55 @@
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<vbox class="account" class:selected={itemSelected} on:click={onSelect}>
+  <hbox class="label">
+    {$account.name}
+  </hbox>
+</vbox>
+{#if accountSelected}
+  <SubCategoriesList subCategories={category.subCategories.filter(cat => cat.isAccountSpecific && cat != mainAccountCategory)} mainCategory={category} />
+{/if}
+
+<script lang="ts">
+  import type { Account } from "../../../logic/Abstract/Account";
+  import type { SettingsCategory } from "./SettingsCategory";
+  import { selectedCategory, selectedAccount } from "./selected";
+  import SubCategoriesList from "./SubCategoriesList.svelte";
+
+  /** in */
+  export let account: Account;
+  export let category: SettingsCategory;
+
+  $: mainAccountCategory = category.subCategories.find(cat => cat.isAccountSpecific && cat.isMain);
+  $: accountSelected = account == $selectedAccount;
+  $: itemSelected = account == $selectedAccount && $selectedCategory == mainAccountCategory;
+
+  function onSelect() {
+    $selectedAccount = account;
+    $selectedCategory = category.subCategories.contents.find(cat => cat.isAccountSpecific && cat.isMain);
+  }
+</script>
+
+<style>
+  .account {
+    align-items: start;
+    padding: 0px 0px 2px 18px;
+  }
+  .label {
+    color: #160C27;
+  }
+  .account:hover {
+    background-color: #A9DAD4;
+  }
+  .selected {
+    background-color: #20AE9E;
+    color: white;
+  }
+  .label {
+    font-size: 13px;
+    color: black;
+    white-space: nowrap;
+    overflow: hidden;
+    margin-top: 4px;
+    margin-left: 4px;
+    margin-right: 4px;
+  }
+</style>
