@@ -100,6 +100,9 @@ export class SQLCalendar implements CalendarStorage {
     return calendars;
   }
 
+  async deleteCalendar(calendar: Calendar): Promise<void> {
+    SQLCalendar.deleteIt(calendar);
+  }
   async saveCalendar(calendar: Calendar): Promise<void> {
     SQLCalendar.save(calendar);
   }

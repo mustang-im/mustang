@@ -1,6 +1,10 @@
-import type { MailAccount } from "../MailAccount";
+import type { MailAccount, MailAccountStorage } from "../MailAccount";
 import { getDatabase } from "./SQLDatabase";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
+import type { EMail } from "../EMail";
+import { SQLEMail } from "./SQLEMail";
+import type { Folder } from "../Folder";
+import { SQLFolder } from "./SQLFolder";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -8,7 +12,7 @@ import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 
-export class SQLMailAccount {
+export class SQLMailAccount implements MailAccountStorage {
   static async save(acc: MailAccount) {
     if (!acc.dbID) {
       let existing = await (await getDatabase()).get(sql`
@@ -47,6 +51,9 @@ export class SQLMailAccount {
         WHERE id = ${acc.dbID}
         `);
     }
+    if (!acc.storage) {
+      acc.storage = new SQLMailAccount();
+    }
   }
 
   /** Also deletes all folders and messages in this account */
@@ -84,6 +91,9 @@ export class SQLMailAccount {
     acc.workspace = row.workspace
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace))
       : null;
+    if (!acc.storage) {
+      acc.storage = new SQLMailAccount();
+    }
     return acc;
   }
 
@@ -104,5 +114,18 @@ export class SQLMailAccount {
       }
     }
     return accounts;
+  }
+
+  async deleteAccount(account: MailAccount): Promise<void> {
+    SQLMailAccount.deleteIt(account);
+  }
+  async saveAccount(account: MailAccount): Promise<void> {
+    SQLMailAccount.save(account);
+  }
+  async saveMessage(email: EMail): Promise<void> {
+    SQLEMail.save(email);
+  }
+  async saveFolder(folder: Folder): Promise<void> {
+    SQLFolder.save(folder);
   }
 }
