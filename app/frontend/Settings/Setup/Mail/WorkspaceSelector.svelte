@@ -24,8 +24,8 @@
 </vbox>
 
 <script lang="ts">
-  import { workspaces, type Workspace } from "../../../logic/Abstract/Workspace";
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { workspaces, type Workspace } from "../../../../logic/Abstract/Workspace";
+  import type { MailAccount } from "../../../../logic/Mail/MailAccount";
 
   export let config: MailAccount;
   export let selectedWorkspace: Workspace = config.workspace ?? workspaces[workspaces.length - 1];

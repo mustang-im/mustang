@@ -6,7 +6,7 @@
 </grid>
 
 <script lang="ts">
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import type { MailAccount } from "../../../../logic/Mail/MailAccount";
   import DisplayConfigServer from "./DisplayConfigServer.svelte";
 
   /** in */

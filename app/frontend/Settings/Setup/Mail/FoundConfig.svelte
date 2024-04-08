@@ -32,8 +32,8 @@
 {/if}
 
 <script lang="ts">
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import { filterUnique } from "../../../logic/Mail/AutoConfig/collections";
+  import type { MailAccount } from "../../../../logic/Mail/MailAccount";
+  import { filterUnique } from "../../../../logic/Mail/AutoConfig/collections";
   import DisplayConfig from "./DisplayConfig.svelte";
   import StatusMessage from "../StatusMessage.svelte";
   import CheckIcon from "lucide-svelte/icons/check";
