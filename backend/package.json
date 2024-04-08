@@ -1,7 +1,9 @@
 {
   "name": "mustang-backend",
-  "version": "1.0.0",
+  "version": "0.5.0",
   "description": "Mustang Backend",
+  "author": "Ben Bucksch / Mustang (https://mustang.im)",
+  "copyright": "Ben Bucksch",
   "main": "./backend.ts",
   "dependencies": {
     "@radically-straightforward/sqlite": "^1.0.0",

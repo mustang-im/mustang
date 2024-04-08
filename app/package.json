@@ -1,8 +1,12 @@
 {
-  "name": "mustang-svelte-gecko",
-  "description": "Prototype for an email application",
+  "name": "mustang-frontend",
+  "description": "Mustang UI",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.5.0",
+  "author": "Ben Bucksch / Mustang (https://mustang.im)",
+  "copyright": "Ben Bucksch",
+  "homepage": "https://mustang.im",
+  "license": "AGPL-3.0-only",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -50,15 +54,12 @@
     "vite": "^4.2.0",
     "vitest": "^1.4.0"
   },
-  "author": "Ben Bucksch",
-  "license": "AGPL-3.0-only",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/benbucksch/mustang.git"
+    "url": "git+https://github.com/mustang.im/mustang.git"
   },
   "bugs": {
-    "url": "https://github.com/benbucksch/mustang/issues"
+    "url": "https://github.com/mustang.im/mustang/issues"
   },
-  "homepage": "https://github.com/benbucksch/mustang#readme",
   "type": "module"
 }
