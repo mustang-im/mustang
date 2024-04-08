@@ -10,7 +10,7 @@
 </vbox>
 
 <script lang="ts">
-  import type { MailAccount } from "../../../../logic/Mail/MailAccount";
+  import type { MailAccount } from "../../../../../logic/Mail/MailAccount";
   import ManualConfigLabels from "./ManualConfigLabels.svelte";
   import ManualConfigServer from "./ManualConfigServer.svelte";
 

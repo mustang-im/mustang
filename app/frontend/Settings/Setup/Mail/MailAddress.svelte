@@ -27,10 +27,10 @@
 <script lang="ts">
   import Icon from 'svelte-icon/Icon.svelte';
   import CheckIcon from "lucide-svelte/icons/check";
-  import GMailIcon from '../../asset/icon/brand/gmail.svg?raw';
-  import Microsoft365Icon from '../../asset/icon/brand/microsoft365.svg?raw';
-  import YahooIcon from '../../asset/icon/brand/yahoo.svg?raw';
-  import { onKeyEnter } from '../../Util/util';
+  import GMailIcon from '../../../asset/icon/brand/gmail.svg?raw';
+  import Microsoft365Icon from '../../../asset/icon/brand/microsoft365.svg?raw';
+  import YahooIcon from '../../../asset/icon/brand/yahoo.svg?raw';
+  import { onKeyEnter } from '../../../Util/util';
   import { createEventDispatcher } from 'svelte';
   const dispatchEvent = createEventDispatcher();
 

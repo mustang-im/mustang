@@ -55,11 +55,11 @@
 </vbox>
 
 <script lang="ts">
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import { fillConfig, saveConfig } from "../../../logic/Mail/AutoConfig/saveConfig";
-  import { makeManualConfig } from "../../../logic/Mail/AutoConfig/manualConfig";
-  import { openApp } from "../../AppsBar/selectedApp";
-  import { mailMustangApp } from "../../Mail/MailMustangApp";
+  import type { MailAccount } from "../../../../logic/Mail/MailAccount";
+  import { fillConfig, saveConfig } from "../../../../logic/Mail/AutoConfig/saveConfig";
+  import { makeManualConfig } from "../../../../logic/Mail/AutoConfig/manualConfig";
+  import { openApp } from "../../../AppsBar/selectedApp";
+  import { mailMustangApp } from "../../../Mail/MailMustangApp";
   import EmailAddressPassword from "./EmailAddressPassword.svelte";
   import FindConfig from "./FindConfig.svelte";
   import FoundConfig from "./FoundConfig.svelte";
@@ -68,12 +68,12 @@
   import ManualConfig from "./manual/ManualConfig.svelte";
   import ErrorMessage, { ErrorGravity } from "../ErrorMessage.svelte";
   import Footer from "../Footer.svelte";
-  import Button from "../../Shared/Button.svelte";
+  import Button from "../../../Shared/Button.svelte";
   import BackgroundVideo from "../BackgroundVideo.svelte";
-  import { NotReached } from "../../../logic/util/util";
+  import { NotReached } from "../../../../logic/util/util";
   import type { ArrayColl } from "svelte-collections";
-  import { catchErrors } from "../../Util/error";
-  import { Cancelled } from "../../../logic/util/Abortable";
+  import { catchErrors } from "../../../Util/error";
+  import { Cancelled } from "../../../../logic/util/Abortable";
 
   let emailAddress: string;
   let password: string;

@@ -1,7 +1,7 @@
 <hbox class="non-domain">{nonDomain}</hbox><hbox class="domain">{domain}</hbox>
 
 <script lang="ts">
-  import { getBaseDomainFromHost } from "../../logic/Mail/AutoConfig/fetchConfig";
+  import { getBaseDomainFromHost } from "../../../logic/Mail/AutoConfig/fetchConfig";
 
   /** in */
   export let hostname: string;
