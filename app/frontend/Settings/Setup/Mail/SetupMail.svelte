@@ -66,10 +66,10 @@
   import CheckConfig from "./CheckConfig.svelte";
   import FinalizeConfig from "./FinalizeConfig.svelte";
   import ManualConfig from "./manual/ManualConfig.svelte";
-  import ErrorMessage, { ErrorGravity } from "./ErrorMessage.svelte";
-  import Footer from "./Footer.svelte";
+  import ErrorMessage, { ErrorGravity } from "../ErrorMessage.svelte";
+  import Footer from "../Footer.svelte";
   import Button from "../../Shared/Button.svelte";
-  import BackgroundVideo from "./BackgroundVideo.svelte";
+  import BackgroundVideo from "../BackgroundVideo.svelte";
   import { NotReached } from "../../../logic/util/util";
   import type { ArrayColl } from "svelte-collections";
   import { catchErrors } from "../../Util/error";

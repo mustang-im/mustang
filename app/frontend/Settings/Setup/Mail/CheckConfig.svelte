@@ -3,7 +3,7 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import StatusMessage from "./StatusMessage.svelte";
+  import StatusMessage from "../StatusMessage.svelte";
   import { makeAbortable } from "../../../logic/util/Abortable";
   import { sleep } from "../../../logic/util/util";
   import { createEventDispatcher, onMount } from 'svelte';
