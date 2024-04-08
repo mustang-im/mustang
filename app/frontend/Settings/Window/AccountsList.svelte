@@ -1,4 +1,4 @@
-{#if $accounts.hasItems}
+{#if $accounts.hasItems || category.newAccountUI}
   <vbox class="accounts" app={category.id}>
     <hbox class="header">
       Accounts
