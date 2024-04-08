@@ -38,11 +38,11 @@ async function createWindow(): Promise<void> {
       return { action: 'deny' }
     })
 
-    mainWindow.webContents.on('did-create-window', (child, details) => {
+    mainWindow.webContents.on('did-create-window', (child, _details) => {
       child.on('closed', () => {
         mainWindow.webContents.send('oauth2-close');
       });
-      child.webContents.on('did-navigate', (event, url) => {
+      child.webContents.on('did-navigate', (_event, url) => {
         mainWindow.webContents.send('oauth2-navigate', url);
       });
     });
