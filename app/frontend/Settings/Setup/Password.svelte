@@ -18,10 +18,10 @@
 </hbox>
 
 <script lang="ts">
-  import Button from "../../Shared/Button.svelte";
+  import Button from "../Shared/Button.svelte";
   import EyeIcon from "lucide-svelte/icons/eye";
   import EyeOffIcon from "lucide-svelte/icons/eye-off";
-  import { onKeyEnter } from "../../Util/util";
+  import { onKeyEnter } from "../Util/util";
   import { createEventDispatcher } from 'svelte';
   const dispatchEvent = createEventDispatcher();
 

@@ -4,8 +4,8 @@
 
 <script lang="ts">
   import MailAddress from "./MailAddress.svelte";
-  import Password from "./Password.svelte";
-  import Header from "./Header.svelte";
+  import Password from "../Password.svelte";
+  import Header from "../Header.svelte";
   import { onMount } from "svelte";
 
   /** in/out */
