@@ -2,6 +2,7 @@ import { Account } from "../Abstract/Account";
 import { Person } from "../Abstract/Person";
 import { Group } from "../Abstract/Group";
 import type { Contact } from "../Abstract/Contact";
+import { appGlobal } from "../app";
 import { ArrayColl, Collection, mergeColl } from "svelte-collections";
 
 export class Addressbook extends Account {
@@ -21,10 +22,16 @@ export class Addressbook extends Account {
   newGroup(): Group {
     return new Group(this);
   }
+
+  async deleteIt(): Promise<void> {
+    await this.storage?.deleteAddressbook(this);
+    appGlobal.addressbooks.remove(this);
+  }
 }
 
 export interface AddressbookStorage {
   savePerson(person: Person): Promise<void>;
   saveGroup(group: Group): Promise<void>;
   saveAddressbook(addressbook: Addressbook): Promise<void>;
+  deleteAddressbook(addressbook: Addressbook): Promise<void>;
 }

@@ -1,6 +1,7 @@
 import { Workspace } from "./Workspace";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
+import { AbstractFunction } from "../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 
 export class Account extends Observable {
@@ -51,6 +52,13 @@ export class Account extends Observable {
   }
 
   async logout(): Promise<void> {
+  }
+
+  /** Deletes this account from the configuration,
+   * and likely deletes all local information from this account.
+   * Does not delete the account on the server. */
+  async deleteIt(): Promise<void> {
+    throw new AbstractFunction();
   }
 }
 

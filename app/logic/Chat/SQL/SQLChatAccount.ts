@@ -1,6 +1,10 @@
-import type { ChatAccount } from "../ChatAccount";
+import type { ChatAccount, ChatAccountStorage } from "../ChatAccount";
 import { getDatabase } from "./SQLDatabase";
 import { newChatAccountForProtocol } from "../AccountsList/ChatAccounts";
+import { Chat } from "../Chat";
+import { SQLChat } from "./SQLChat";
+import { ChatMessage } from "../Message";
+import { SQLChatMessage } from "./SQLChatMessage";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -8,7 +12,7 @@ import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 
-export class SQLChatAccount {
+export class SQLChatAccount implements ChatAccountStorage {
   static async save(acc: ChatAccount) {
     if (!acc.dbID) {
       let existing = await (await getDatabase()).get(sql`
@@ -47,6 +51,9 @@ export class SQLChatAccount {
         WHERE id = ${acc.dbID}
         `);
     }
+    if (!acc.storage) {
+      acc.storage = new SQLChatAccount();
+    }
   }
 
   /** Also deletes all folders and messages in this account */
@@ -83,6 +90,9 @@ export class SQLChatAccount {
     acc.workspace = row.workspace
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace))
       : null;
+    if (!acc.storage) {
+      acc.storage = new SQLChatAccount();
+    }
     return acc;
   }
 
@@ -103,5 +113,18 @@ export class SQLChatAccount {
       }
     }
     return accounts;
+  }
+
+  async deleteAccount(account: ChatAccount): Promise<void> {
+    SQLChatAccount.deleteIt(account);
+  }
+  async saveAccount(account: ChatAccount): Promise<void> {
+    SQLChatAccount.save(account);
+  }
+  async saveMessage(message: ChatMessage): Promise<void> {
+    SQLChatMessage.save(message);
+  }
+  async saveChat(chat: Chat): Promise<void> {
+    SQLChat.save(chat);
   }
 }

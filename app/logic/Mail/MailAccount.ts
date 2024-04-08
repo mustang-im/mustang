@@ -2,6 +2,7 @@ import { Account } from "../Abstract/Account";
 import { Folder } from "./Folder";
 import type { EMail } from "./EMail";
 import type { Person } from "../Abstract/Person";
+import { appGlobal } from "../app";
 import { AbstractFunction } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, MapColl } from 'svelte-collections';
@@ -24,6 +25,7 @@ export class MailAccount extends Account {
   outgoing: MailAccount & OutgoingMailAccount = null;
   /** Where we got the config from, during setup */
   source: "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | null = null;
+  storage: MailAccountStorage;
 
   @notifyChangedProperty
   emailAddress: string;
@@ -65,6 +67,11 @@ export class MailAccount extends Account {
   newFolder(): Folder {
     return new Folder(this);
   }
+
+  async deleteIt(): Promise<void> {
+    await this.storage?.deleteAccount(this);
+    appGlobal.emailAccounts.remove(this);
+  }
 }
 
 function findSubFolderFromList(folders: ArrayColl<Folder>, findFunc: (folder: Folder) => boolean): Folder | null {
@@ -98,4 +105,11 @@ export enum AuthMethod {
 
 export interface OutgoingMailAccount {
   send(email: EMail): Promise<void>;
+}
+
+export interface MailAccountStorage {
+  saveMessage(email: EMail): Promise<void>;
+  saveFolder(folder: Folder): Promise<void>;
+  saveAccount(account: MailAccount): Promise<void>;
+  deleteAccount(account: MailAccount): Promise<void>;
 }
