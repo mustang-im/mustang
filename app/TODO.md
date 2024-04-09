@@ -1,10 +1,12 @@
 # Next
-* Calendar SQL
-* Chat SQL
+* Calendar SQL - Test
+* Chat SQL - Test
+* Mail
+  * Folder hierarchy
+  * All accounts - fix
+  * Threaded mail view?
 
 # App logic
-* Errors
-  * Notification bar
 * init
   * Move chat account load into Chat app
 * Router
