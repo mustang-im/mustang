@@ -30,6 +30,10 @@ export class ChatAccount extends Account {
     return new Chat(this);
   }
 
+  async save(): Promise<void> {
+    await this.storage?.saveAccount(this);
+  }
+
   async deleteIt(): Promise<void> {
     await this.storage?.deleteAccount(this);
     appGlobal.chatAccounts.remove(this);

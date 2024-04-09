@@ -68,6 +68,10 @@ export class MailAccount extends Account {
     return new Folder(this);
   }
 
+  async save(): Promise<void> {
+    await this.storage?.saveAccount(this);
+  }
+
   async deleteIt(): Promise<void> {
     await this.storage?.deleteAccount(this);
     appGlobal.emailAccounts.remove(this);

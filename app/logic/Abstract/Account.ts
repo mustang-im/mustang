@@ -54,6 +54,13 @@ export class Account extends Observable {
   async logout(): Promise<void> {
   }
 
+
+  /** Saves the config in this account to disk.
+   * Does not save the contents, e.g. messages. */
+  async save(): Promise<void> {
+    throw new AbstractFunction();
+  }
+
   /** Deletes this account from the configuration,
    * and likely deletes all local information from this account.
    * Does not delete the account on the server. */
