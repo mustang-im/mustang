@@ -5,17 +5,17 @@
 </div>
 <div>
   Mustang is built using the following Open-Source components.
-  We sincerely thank those authors and contributors for their work and help.
-</div>
-<div>
-  Under MIT license:
-</div>
-<div>
-  TODO compile
+  We sincerely thank those authors and contributors.
 </div>
 
-<script lang="ts">
-</script>
+<iframe src="public/attribution.txt.gz" title="Licenses" />
 
 <style>
+  iframe {
+    flex: 1 0 0;
+    border: none;
+    margin-top: 32px;
+    margin-right: -32px;
+    margin-bottom: -32px;
+  }
 </style>
