@@ -3,10 +3,11 @@ import { appGlobal } from "../../../logic/app";
 import AccountGeneral from "../AccountGeneral.svelte";
 import AccountServer from "../Mail/AccountServer.svelte";
 import AccountIdentity from "../Mail/AccountIdentity.svelte";
-import SetupMail from "../Setup/Mail/SetupMail.svelte";
-import { ArrayColl } from "svelte-collections";
 import Licenses from "../About/Licenses.svelte";
 import About from "../About/About.svelte";
+import SetupMail from "../Setup/Mail/SetupMail.svelte";
+import SetupChat from "../Setup/Chat/SetupChat.svelte";
+import { ArrayColl } from "svelte-collections";
 
 const mailSettings = new SettingsCategory("mail", "Mail");
 mailSettings.subCategories.addAll([
@@ -29,6 +30,7 @@ chatSettings.subCategories.addAll([
   new SettingsCategory("chat-acc-identity", "Identity", true),
 ]);
 chatSettings.accounts = appGlobal.chatAccounts;
+chatSettings.newAccountUI = SetupChat;
 
 const calendarSettings = new SettingsCategory("calendar", "Calendar");
 calendarSettings.subCategories.addAll([

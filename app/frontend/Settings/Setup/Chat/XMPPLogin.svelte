@@ -1,0 +1,65 @@
+<Header
+  title="Set up your existing XMPP account"
+  subtitle="You can use Mustang with your existing XMPP or Jabber account."
+/>
+<vbox flex class="account">
+  <grid>
+    <label for="username">Your JID</label>
+    <input type="text" bind:value={jid} name="username"
+      placeholder="fred@example.com" />
+    <label for="password">Password</label>
+    <Password bind:password />
+  </grid>
+</vbox>
+
+<ButtonsBottom
+  on:continue={() => catchErrors(onContinue)}
+  canContinue={!!config.username && !!config.serverDomain}
+  />
+
+<script lang="ts">
+  import type { XMPPAccount } from "../../../../logic/Chat/XMPP/XMPPAccount";
+  import { SQLChatAccount } from "../../../../logic/Chat/SQL/SQLChatAccount";
+  import { openApp } from "../../../AppsBar/selectedApp";
+  import { chatMustangApp } from "../../../Chat/ChatMustangApp";
+  import { appGlobal } from "../../../../logic/app";
+  import Password from "../Password.svelte";
+  import ButtonsBottom from "../ButtonsBottom.svelte";
+  import Header from "../Header.svelte";
+  import { catchErrors } from "../../../Util/error";
+
+  /** in/out */
+  export let config: XMPPAccount;
+  /** out */
+  export let showPage: ConstructorOfATypedSvelteComponent;
+
+  let password: string;
+  let jid: string;
+  $: splitJID(jid);
+  function splitJID(_dummy: any) {
+    let sp = jid?.split("@");
+    if (!sp || sp.length != 2) {
+      return;
+    }
+    config.username = sp[0];
+    config.serverDomain = sp[1];
+    config.password = password;
+    config.name = jid;
+    config.userRealname = appGlobal.me.name;
+  }
+
+  function onContinue() {
+    SQLChatAccount.save(config);
+    appGlobal.chatAccounts.add(config);
+    openApp(chatMustangApp);
+  }
+</script>
+
+<style>
+  grid {
+    grid-template-columns: max-content auto;
+    align-items: center;
+    margin: 32px;
+    gap: 8px 24px;
+  }
+</style>
