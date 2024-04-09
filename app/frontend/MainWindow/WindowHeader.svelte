@@ -12,6 +12,10 @@
       icon={SettingsIcon} iconSize="24px" plain iconOnly classes="settings"
       on:click={() => catchErrors(onOpenSettings)}
       />
+    <Button label="Close entire app"
+      icon={XIcon} iconSize="24px" plain iconOnly classes="close"
+      on:click={() => catchErrors(onCloseApp)}
+      />
   </hbox>
 </hbox>
 
@@ -24,12 +28,17 @@
   import Icon from 'svelte-icon/Icon.svelte';
   import logo from '../asset/icon/general/logo.svg?raw';
   import SettingsIcon from 'lucide-svelte/icons/settings-2';
+  import XIcon from 'lucide-svelte/icons/x';
   import { catchErrors } from "../Util/error";
 
   export let selectedApp: MustangApp;
 
   function onOpenSettings() {
     openApp(settingsMustangApp);
+  }
+
+  function onCloseApp() {
+    window.close();
   }
 </script>
 
@@ -52,9 +61,9 @@
     margin-left: 12px;
     app-region: drag;
   }
+  .right :global(.close),
   .right :global(.settings) {
     color: white;
-    margin-right: 8px;
   }
   .free {
     app-region: drag;
