@@ -2,18 +2,21 @@
   <WindowHeader selectedApp={$selectedApp} />
   <hbox flex>
     <AppBar bind:selectedApp={$selectedApp} showApps={mustangApps} />
-    {#if !$selectedApp}
-      Loading apps...
-    {:else if sidebar}
-      <Splitter name="sidebar" initialRightRatio={0.25}>
-        <AppContent app={$selectedApp} slot="left"/>
-        <vbox flex class="sidebar" slot="right">
-          <svelte:component this={sidebar} />
-        </vbox>
-      </Splitter>
-    {:else}
-      <AppContent app={$selectedApp} />
-    {/if}
+    <vbox flex>
+      <NotificationBar />
+      {#if !$selectedApp}
+        Loading apps...
+      {:else if sidebar}
+        <Splitter name="sidebar" initialRightRatio={0.25}>
+          <AppContent app={$selectedApp} slot="left"/>
+          <vbox flex class="sidebar" slot="right">
+            <svelte:component this={sidebar} />
+          </vbox>
+        </Splitter>
+      {:else}
+        <AppContent app={$selectedApp} />
+      {/if}
+    </vbox>
   </hbox>
 </vbox>
 <MeetBackground />
@@ -23,13 +26,15 @@
   import { appGlobal } from "../../logic/app";
   import { getStartObjects, loginOnStartup } from "../../logic/startup";
   import { loadMustangApps } from "../AppsBar/loadMustangApps";
+  import { notifications, Notification, NotificationSeverity } from "./Notification";
   import AppBar from "../AppsBar/AppBar.svelte";
   import AppContent from "../AppsBar/AppContent.svelte";
+  import NotificationBar from "./NotificationBar.svelte";
   import WindowHeader from "./WindowHeader.svelte";
   import Splitter from "../Shared/Splitter.svelte";
   import MeetBackground from "../Meet/MeetBackground.svelte";
   import { meetMustangApp } from "../Meet/MeetMustangApp";
-  import { catchErrors, showError } from "../Util/error";
+  import { catchErrors } from "../Util/error";
   import { onMount } from "svelte";
 
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
@@ -42,8 +47,12 @@
       return;
     }
     await getStartObjects();
-    await loginOnStartup(showError); // TODO Show as background error
+    await loginOnStartup(showBackgroundError);
   }));
+
+  function showBackgroundError(ex: Error) {
+    $notifications.add(new Notification(ex.message, NotificationSeverity.Warning));
+  }
 </script>
 
 <style>

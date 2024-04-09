@@ -11,7 +11,7 @@ const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save
 export async function getStartObjects(): Promise<void> {
   let jpc = new JPCWebSocket(null);
   await jpc.connect(kSecret, "localhost", 5455);
-  console.log("connected to server");
+  console.log("Connected to backend");
   appGlobal.remoteApp = await jpc.getRemoteStartObject();
   appGlobal.addressbooks.addAll(await readAddressbooks());
   appGlobal.calendars.addAll(await readCalendars());
@@ -31,10 +31,13 @@ export async function getStartObjects(): Promise<void> {
  *
  * @param errorCallback Called for login errors.
  *   May be called multiple times, e.g. once per account.
+ *   Also called later on, if there are errors on processing server responses,
+ *   e.g. the account being logged out, malformed data etc..
  */
 export async function loginOnStartup(errorCallback: (ex) => void): Promise<void> {
   for (let account of appGlobal.chatAccounts) {
     try {
+      account.errorCallback = errorCallback;
       await account.login(false);
     } catch (e) {
       errorCallback(e);
@@ -45,6 +48,7 @@ export async function loginOnStartup(errorCallback: (ex) => void): Promise<void>
     //if (!(await account.isLoggedIn) && (await account.haveStoredLogin())) {
     try {
       console.log("Logging in mail account", account.name);
+      account.errorCallback = errorCallback;
       await account.login(false);
     } catch (e) {
       errorCallback(e);

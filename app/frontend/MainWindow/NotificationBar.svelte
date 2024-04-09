@@ -1,0 +1,102 @@
+{#if notification}
+  <hbox class="notification-bar"
+    severity={$notification.severity}
+    style={notification.backgroundColor ? `background-color: ${notification.backgroundColor}; color: ${notification.textColor};` : ""}
+    >
+    <hbox flex />
+    <div class="message">
+      {$notification.message}
+    </div>
+    <hbox flex />
+    {#each $notification.buttons.each as button}
+      <Button
+        classes="action small"
+        padding="4px"
+        label={button.label}
+        on:click={() => catchErrors(() => {
+          button.onClick();
+          onClose(notification);
+        })}
+        />
+    {/each}
+    <hbox class="buttons-separator" />
+    {#if $notification.ex && !notification.ex.isUserError}
+      <RoundButton
+        icon={ErrorInfoIcon}
+        classes="error-info small"
+        label="More info about this error"
+        on:click={() => onErrorInfo(notification.ex)}
+        />
+    {/if}
+    <RoundButton
+      icon={XIcon}
+      classes="close small"
+      label="Remove this message"
+      on:click={() => onClose(notification)}
+      />
+  </hbox>
+{/if}
+
+<script lang="ts">
+  import { notifications, Notification } from "./Notification";
+  import Button from "../Shared/Button.svelte";
+  import RoundButton from "../Shared/RoundButton.svelte";
+  import XIcon from "lucide-svelte/icons/x";
+  import ErrorInfoIcon from "lucide-svelte/icons/bot";
+  import { catchErrors } from "../Util/error";
+
+  $: notification = $notifications.sortBy(n => n.severity).first;
+
+  function onClose(notification: Notification) {
+    notifications.remove(notification);
+  }
+
+  function onErrorInfo(ex: Error) {
+    let debugInfo = (ex as any).debugInfo;
+    alert(ex.message +
+      (debugInfo ? "\n\n" + debugInfo : "") +
+      (ex.stack ? "\n\n" + ex.stack : "")
+    );
+  }
+</script>
+
+<style>
+  .notification-bar {
+    align-items: center;
+    color: #160C27;
+    box-shadow: -1px 0px 5px 0.5px rgb(0, 0, 0, 10%);
+    z-index: 3;
+  }
+  .notification-bar[severity="meltdown"] {
+    background-color: #EE421C;
+    color: white;
+  }
+  .notification-bar[severity="error"] {
+    background-color: #FFC93E;
+  }
+  .notification-bar[severity="warning"] {
+    background-color: #FFF160;
+  }
+  .notification-bar[severity="logged-out"] {
+    background-color: #494558; /* same as AppBar */
+    color: white;
+  }
+  .notification-bar[severity="info"] {
+    background-color: #47A5DA;
+  }
+  .message {
+    margin: 2px 16px;
+  }
+  .buttons-separator {
+    margin-right: 12px;
+  }
+  .notification-bar :global(button) {
+    margin: 4px;
+  }
+  .notification-bar :global(button.action) {
+    padding: 4px 10px;
+  }
+  .notification-bar :global(button.error-info:not(:hover)) {
+    background-color: transparent;
+  }
+</style>
