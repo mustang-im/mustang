@@ -2,9 +2,12 @@
 * Calendar SQL - Test
 * Chat SQL - Test
 * Mail
+  * Threads
+    * Message: Conversation view
+    * Message list: Threaded view?
+    * Mail Chat view: Open thread
   * Folder hierarchy
   * All accounts - fix
-  * Threaded mail view?
 
 # App logic
 * init

@@ -112,7 +112,7 @@
 
   $: participants = meeting.participants;
 
-  const allEvents = mergeColls(appGlobal.calendars.map(calendar => calendar.events).values());
+  const allEvents = mergeColls(appGlobal.calendars.map(calendar => calendar.events));
   const now = new Date();
   const maxUpcoming = new Date(); // TODO now + 15 min
   maxUpcoming.setMinutes(maxUpcoming.getMinutes() + 15);
