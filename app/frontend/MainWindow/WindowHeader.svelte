@@ -8,20 +8,29 @@
   <vbox flex class="free" />
   <SearchField bind:searchTerm={$globalSearchTerm} />
   <hbox class="right">
-    <Button label="Settings" icon={SettingsIcon} iconSize="24px" plain iconOnly classes="settings"/>
+    <Button label="Settings"
+      icon={SettingsIcon} iconSize="24px" plain iconOnly classes="settings"
+      on:click={() => catchErrors(onOpenSettings)}
+      />
   </hbox>
 </hbox>
 
 <script lang="ts">
   import type { MustangApp } from "../AppsBar/MustangApp";
+  import { globalSearchTerm, openApp } from "../AppsBar/selectedApp";
+  import { settingsMustangApp } from "../Settings/Window/SettingsMustangApp";
   import SearchField from "../Shared/SearchField.svelte";
   import Button from "../Shared/Button.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
   import logo from '../asset/icon/general/logo.svg?raw';
   import SettingsIcon from 'lucide-svelte/icons/settings-2';
-  import { globalSearchTerm } from "../AppsBar/selectedApp";
+  import { catchErrors } from "../Util/error";
 
   export let selectedApp: MustangApp;
+
+  function onOpenSettings() {
+    openApp(settingsMustangApp);
+  }
 </script>
 
 <style>
