@@ -50,7 +50,7 @@
   import { Event } from "../../../logic/Calendar/Event";
   import { faker } from "@faker-js/faker";
 
-  const allEvents = mergeColls(appGlobal.calendars.map(calendar => calendar.events).values());
+  const allEvents = mergeColls(appGlobal.calendars.map(calendar => calendar.events));
   const now = new Date();
   const maxUpcoming = new Date(); // TODO now + 8 hours
   const maxPrevious = new Date(); // TODO now - 14 days

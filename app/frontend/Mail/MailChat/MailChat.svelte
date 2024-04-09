@@ -51,8 +51,8 @@
   export let accounts: Collection<MailAccount>; /** in */
 
   let selectedPerson: Person;
-  $: rootFolders = mergeColls<Folder>(accounts.map(account => account.rootFolders).values());
-  $: allMessages = mergeColls<EMail>(rootFolders.map(folder => folder.messages).values());
+  $: rootFolders = mergeColls<Folder>(accounts.map(account => account.rootFolders));
+  $: allMessages = mergeColls<EMail>(rootFolders.map(folder => folder.messages));
   $: personMessages = allMessages.filter(msg => msg.contact == selectedPerson).sortBy(msg => msg.sent);
   $: filteredMessages = $globalSearchTerm
     ? personMessages.filter(msg => msg.text.toLowerCase().includes($globalSearchTerm))
