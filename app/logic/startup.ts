@@ -1,8 +1,8 @@
 import { appGlobal } from './app';
-import { readMailAccounts } from './Mail/AccountsList/LocalStorage';
-import { readChatAccounts } from './Chat/AccountsList/LocalStorage';
-import { readAddressbooksFromSQL } from './Contacts/AccountsList/SQL';
-import { readCalendarsFromSQL } from './Calendar/AccountsList/SQL';
+import { readMailAccounts } from './Mail/AccountsList/SQL';
+import { readChatAccounts } from './Chat/AccountsList/SQL';
+import { readAddressbooks } from './Contacts/AccountsList/SQL';
+import { readCalendars } from './Calendar/AccountsList/SQL';
 import { getTestObjects } from './testData';
 import JPCWebSocket from '../../lib/jpc-ws';
 
@@ -13,8 +13,8 @@ export async function getStartObjects(): Promise<void> {
   await jpc.connect(kSecret, "localhost", 5455);
   console.log("connected to server");
   appGlobal.remoteApp = await jpc.getRemoteStartObject();
-  appGlobal.addressbooks.addAll(await readAddressbooksFromSQL());
-  appGlobal.calendars.addAll(await readCalendarsFromSQL());
+  appGlobal.addressbooks.addAll(await readAddressbooks());
+  appGlobal.calendars.addAll(await readCalendars());
   appGlobal.emailAccounts.addAll(await readMailAccounts());
   appGlobal.chatAccounts.addAll(await readChatAccounts());
   if (appGlobal.emailAccounts.isEmpty && appGlobal.chatAccounts.isEmpty) {

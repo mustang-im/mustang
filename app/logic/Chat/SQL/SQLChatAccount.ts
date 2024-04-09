@@ -1,9 +1,9 @@
 import type { ChatAccount, ChatAccountStorage } from "../ChatAccount";
 import { getDatabase } from "./SQLDatabase";
 import { newChatAccountForProtocol } from "../AccountsList/ChatAccounts";
-import { Chat } from "../Chat";
+import type { Chat } from "../Chat";
 import { SQLChat } from "./SQLChat";
-import { ChatMessage } from "../Message";
+import type { ChatMessage } from "../Message";
 import { SQLChatMessage } from "./SQLChatMessage";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";

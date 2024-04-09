@@ -3,7 +3,7 @@ import { SQLCalendar } from '../SQL/SQLCalendar';
 import { SQLEvent } from '../SQL/SQLEvent';
 import { ArrayColl, Collection } from 'svelte-collections';
 
-export async function readCalendarsFromSQL(): Promise<Collection<Calendar>> {
+export async function readCalendars(): Promise<Collection<Calendar>> {
   let calendars = await SQLCalendar.readAll();
   for (let calendar of calendars) {
     SQLEvent.readAll(calendar);
