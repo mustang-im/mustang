@@ -10,7 +10,7 @@ import SetupMail from "../Setup/Mail/SetupMail.svelte";
 import SetupChat from "../Setup/Chat/SetupChat.svelte";
 import { ArrayColl } from "svelte-collections";
 
-const mailSettings = new SettingsCategory("mail", "Mail");
+const mailSettings = new SettingsCategory("mail", "Mail", false, true);
 mailSettings.subCategories.addAll([
   new SettingsCategory("mail-appearance", "Appearance", false, false, Appearance),
   new SettingsCategory("mail-acc-general", "General", true, true, AccountGeneral),
@@ -22,7 +22,7 @@ mailSettings.subCategories.addAll([
 mailSettings.accounts = appGlobal.emailAccounts;
 mailSettings.newAccountUI = SetupMail;
 
-const chatSettings = new SettingsCategory("chat", "Chat");
+const chatSettings = new SettingsCategory("chat", "Chat", false, true);
 chatSettings.subCategories.addAll([
   new SettingsCategory("chat-appearance", "Appearance", false),
   new SettingsCategory("chat-acc-general", "General", true, true, AccountGeneral),
@@ -33,32 +33,32 @@ chatSettings.subCategories.addAll([
 chatSettings.accounts = appGlobal.chatAccounts;
 chatSettings.newAccountUI = SetupChat;
 
-const calendarSettings = new SettingsCategory("calendar", "Calendar");
+const calendarSettings = new SettingsCategory("calendar", "Calendar", false, true);
 calendarSettings.subCategories.addAll([
   new SettingsCategory("calendar-acc-general", "General", true, true, AccountGeneral),
 ]);
 calendarSettings.accounts = appGlobal.calendars;
 
-const contactsSettings = new SettingsCategory("contacts", "Contacts");
+const contactsSettings = new SettingsCategory("contacts", "Contacts", false, true);
 contactsSettings.subCategories.addAll([
   new SettingsCategory("contacts-acc-general", "General", true, true, AccountGeneral),
 ]);
 contactsSettings.accounts = appGlobal.addressbooks;
 
-const meetSettings = new SettingsCategory("meet", "Meet");
+const meetSettings = new SettingsCategory("meet", "Meet", false, true);
 meetSettings.subCategories.addAll([
   new SettingsCategory("meet-acc-general", "General", true, true, AccountGeneral),
 ]);
 
-const appSettings = new SettingsCategory("app", "App integration");
+const appSettings = new SettingsCategory("app", "App integration", false, true);
 appSettings.subCategories.addAll([
 ]);
 
-const customer = new SettingsCategory("customer", "Billing", false, false);
+const customer = new SettingsCategory("customer", "Billing", false, true);
 customer.subCategories.addAll([
 ]);
 
-const about = new SettingsCategory("about", "About", false, false, About);
+const about = new SettingsCategory("about", "About", false, true, About);
 about.subCategories.addAll([
   new SettingsCategory("license", "Open-Source", false, false, Licenses),
 ]);

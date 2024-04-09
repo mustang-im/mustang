@@ -1,6 +1,6 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <vbox class="settings-category" class:selected on:click={onSelect}>
-  <hbox class="label">
+  <hbox class="label" class:main={category.isMain}>
     {category.name}
   </hbox>
 </vbox>
