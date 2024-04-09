@@ -48,8 +48,8 @@
     config.userRealname = appGlobal.me.name;
   }
 
-  function onContinue() {
-    SQLChatAccount.save(config);
+  async function onContinue() {
+    await SQLChatAccount.save(config);
     appGlobal.chatAccounts.add(config);
     openApp(chatMustangApp);
   }

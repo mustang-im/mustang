@@ -12,6 +12,10 @@ export class Calendar extends Account {
     return new Event(this);
   }
 
+  async save(): Promise<void> {
+    await this.storage?.saveCalendar(this);
+  }
+
   async deleteIt(): Promise<void> {
     await this.storage?.deleteCalendar(this);
     appGlobal.calendars.remove(this);

@@ -12,15 +12,15 @@ export class Addressbook extends Account {
   readonly contacts: Collection<Contact> = mergeColl(this.persons, this.groups);
   storage: AddressbookStorage | null = null;
 
-  async save() {
-    await this.storage.saveAddressbook(this);
-  }
-
   newPerson(): Person {
     return new Person(this);
   }
   newGroup(): Group {
     return new Group(this);
+  }
+
+  async save(): Promise<void> {
+    await this.storage?.saveAddressbook(this);
   }
 
   async deleteIt(): Promise<void> {

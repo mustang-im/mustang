@@ -1,6 +1,6 @@
 <grid>
   <label for="name">Account name</label>
-  <input type="text" bind:value={account.name} name="name" />
+  <input type="text" bind:value={account.name} name="name" on:change={() => catchErrors(onNameChange)}/>
 </grid>
 <hbox flex />
 <hbox class="buttons">
@@ -20,6 +20,9 @@
 
   $: mailAccount = account as MailAccount;
 
+  async function onNameChange() {
+    await account.save();
+  }
   async function onDelete() {
     let confirmed = confirm(`Are you sure that you want to the delete account ${account.name} from Mustang and all related data?`);
     if (!confirmed) {
