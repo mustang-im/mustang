@@ -53,4 +53,7 @@
   .buttons :global(.vertical) {
     color: transparent;
   }
+  .buttons :global(svg) {
+    fill: transparent;
+  }
 </style>

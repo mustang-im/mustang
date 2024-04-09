@@ -1,5 +1,6 @@
 import { SettingsCategory } from "./SettingsCategory";
 import { appGlobal } from "../../../logic/app";
+import Appearance from "../Mail/Appearance.svelte";
 import AccountGeneral from "../AccountGeneral.svelte";
 import AccountServer from "../Mail/AccountServer.svelte";
 import AccountIdentity from "../Mail/AccountIdentity.svelte";
@@ -11,7 +12,7 @@ import { ArrayColl } from "svelte-collections";
 
 const mailSettings = new SettingsCategory("mail", "Mail");
 mailSettings.subCategories.addAll([
-  new SettingsCategory("mail-appearance", "Appearance", false),
+  new SettingsCategory("mail-appearance", "Appearance", false, false, Appearance),
   new SettingsCategory("mail-acc-general", "General", true, true, AccountGeneral),
   new SettingsCategory("mail-acc-server", "Server", true, false, AccountServer),
   new SettingsCategory("mail-acc-identity", "Identity", true, false, AccountIdentity),
