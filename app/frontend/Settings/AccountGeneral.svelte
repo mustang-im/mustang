@@ -1,24 +1,19 @@
-<Scroll>
-  <vbox flex class="panel">
-    <grid>
-      <label for="name">Account name</label>
-      <input type="value" bind:value={account.name} name="name" />
-    </grid>
-    <hbox flex />
-    <hbox class="buttons">
-      <Button label="Delete account"
-        classes="delete"
-        on:click={() => catchErrors(onDelete)}
-        />
-    </hbox>
-  </vbox>
-</Scroll>
+<grid>
+  <label for="name">Account name</label>
+  <input type="text" bind:value={account.name} name="name" />
+</grid>
+<hbox flex />
+<hbox class="buttons">
+  <Button label="Delete account"
+    classes="delete"
+    on:click={() => catchErrors(onDelete)}
+    />
+</hbox>
 
 <script lang="ts">
   import type { Account } from "../../logic/Abstract/Account";
   import type { MailAccount } from "../../logic/Mail/MailAccount";
   import Button from "../Shared/Button.svelte";
-  import Scroll from "../Shared/Scroll.svelte";
   import { catchErrors } from "../Util/error";
 
   export let account: Account;
@@ -35,9 +30,6 @@
 </script>
 
 <style>
-  .panel {
-    margin: 32px;
-  }
   grid {
     grid-template-columns: max-content auto;
     gap: 8px 24px;

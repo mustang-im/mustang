@@ -228,20 +228,6 @@
   .page-box :global(.password) {
     margin-bottom: 32px;
   }
-  .buttons {
-    align-items: end;
-    justify-content: end;
-    margin-top: 32px;
-  }
-  .buttons :global(> *) {
-    margin-right: 8px;
-  }
-  .buttons :global(button.secondary) {
-    background-color: inherit;
-    padding: 3px 8px;
-    font-weight: 300;
-    color: #455468;
-  }
   .setup-mail-window :global(input) {
     font-size: 16px;
   }

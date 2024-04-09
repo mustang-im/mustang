@@ -1,7 +1,7 @@
-import { ChatAccount } from '../ChatAccount';
+import type { ChatAccount } from '../ChatAccount';
 import { SQLChatAccount } from '../SQL/SQLChatAccount';
 import { SQLChat } from '../SQL/SQLChat';
-import { Collection } from 'svelte-collections';
+import type { Collection } from 'svelte-collections';
 
 export async function readChatAccounts(): Promise<Collection<ChatAccount>> {
   let chatAccounts = await SQLChatAccount.readAll();

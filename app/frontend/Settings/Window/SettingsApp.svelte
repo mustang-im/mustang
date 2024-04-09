@@ -3,7 +3,9 @@
     <SettingsCategoriesPane {categories} />
   </Scroll>
   <Scroll slot="right">
-    <MainContent category={$selectedCategory} />
+    <vbox flex class="right-page">
+      <MainContent category={$selectedCategory} />
+    </vbox>
   </Scroll>
 </Splitter>
 
@@ -40,5 +42,11 @@
     border-right: 1px dotted lightgray;
     background-color: #F9F9FD;
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on PersonDetails */
+  }
+  .right-page {
+    margin: 32px;
+  }
+  .right-page :global(input) {
+    font-size: 16px;
   }
 </style>
