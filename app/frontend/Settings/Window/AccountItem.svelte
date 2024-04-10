@@ -13,7 +13,7 @@
   import type { SettingsCategory } from "./SettingsCategory";
   import { selectedCategory, selectedAccount } from "./selected";
   import SubCategoriesList from "./SubCategoriesList.svelte";
-  import { accountSettings } from "./SettingsCategories";
+  import { accountSettings } from "../SettingsCategories";
 
   /** in */
   export let account: Account;

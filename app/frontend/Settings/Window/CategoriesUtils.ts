@@ -1,5 +1,5 @@
 import type { SettingsCategory } from "./SettingsCategory";
-import { settingsCategories } from "./SettingsCategories";
+import { settingsCategories } from "../SettingsCategories";
 import type { MustangApp } from "../../AppsBar/MustangApp";
 
 export function getAllSettingsCategories(): SettingsCategory[] {
