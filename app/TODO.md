@@ -1,6 +1,7 @@
 # Next
 * Chat SQL - Test
 * Mail
+  * Folder context menu
   * Threads
     * Message: Conversation view
     * Message list: Threaded view?
@@ -111,11 +112,9 @@
 
 # Mail
 * Autoconfig
-  * Save config correctly
   * Exchange AutoDiscover V2 and V1
   * Guess config
     * Needs: TCP stream from node.js backend
-  * Make it prettier
   * Scrollbar for dialog box, not app window
   * Manual config
     * Port should be a combo box with common values (applicable for that
