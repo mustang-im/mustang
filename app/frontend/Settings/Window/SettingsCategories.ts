@@ -14,6 +14,7 @@ import Licenses from "../About/Licenses.svelte";
 import About from "../About/About.svelte";
 import SetupMail from "../Setup/Mail/SetupMail.svelte";
 import SetupChat from "../Setup/Chat/SetupChat.svelte";
+import SetupCalendar from "../Setup/Calendar/SetupCalendar.svelte";
 import { ArrayColl } from "svelte-collections";
 
 const mailSettings = new SettingsCategory("mail", "Mail", false, true);
@@ -46,6 +47,7 @@ calendarSettings.subCategories.addAll([
   new SettingsCategory("calendar-acc-general", "General", true, true, AccountGeneral),
 ]);
 calendarSettings.accounts = appGlobal.calendars;
+calendarSettings.newAccountUI = SetupCalendar;
 calendarSettings.forApp = calendarMustangApp;
 
 const contactsSettings = new SettingsCategory("contacts", "Contacts", false, true);

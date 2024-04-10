@@ -26,7 +26,7 @@
   /** in */
   export let protocols: ProtocolDescription[];
   /** in/out */
-  export let selectedProtocol: string;
+  export let selectedProtocol: string = protocols[0]?.protocolID;
 
   function onChange(newProtocol: ProtocolDescription, event: Event) {
     selectedProtocol = newProtocol.protocolID;
