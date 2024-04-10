@@ -25,9 +25,11 @@ export class IMAPFolder extends Folder {
   fromFlow(folderInfo: any) {
     this.name = folderInfo.name;
     this.path = folderInfo.path;
-    this.countTotal = folderInfo.status.messages;
-    this.countUnread = folderInfo.status.unseen;
-    this.countNewArrived = folderInfo.status.recent;
+    if (folderInfo.status) {
+      this.countTotal = folderInfo.status.messages;
+      this.countUnread = folderInfo.status.unseen;
+      this.countNewArrived = folderInfo.status.recent;
+    }
     this.specialUse(folderInfo.specialUse);
   }
 
