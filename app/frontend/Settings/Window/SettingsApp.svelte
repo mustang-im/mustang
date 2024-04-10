@@ -10,7 +10,7 @@
 </Splitter>
 
 <script lang="ts">
-  import { settingsCategories } from "./SettingsCategories";
+  import { settingsCategories } from "../SettingsCategories";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import { selectedCategory } from "./selected";
   import SettingsCategoriesPane from "./CategoriesPane.svelte";
