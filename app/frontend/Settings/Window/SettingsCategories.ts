@@ -12,6 +12,7 @@ import AccountURLServer from "../AccountURLServer.svelte";
 import AccountMailServer from "../Mail/AccountMailServer.svelte";
 import AccountIdentity from "../Mail/AccountIdentity.svelte";
 import AccountXMPPServer from "../Chat/AccountXMPPServer.svelte";
+import Devices from "../Meet/Devices.svelte";
 import Licenses from "../About/Licenses.svelte";
 import About from "../About/About.svelte";
 import SetupMail from "../Setup/Mail/SetupMail.svelte";
@@ -79,7 +80,7 @@ settingsCategories.add(contactsSettings);
 const meetSettings = new SettingsCategory("meet", "Meet", null, true);
 meetSettings.subCategories.addAll([
   new SettingsCategory("meet-appearance", "Appearance"),
-  new SettingsCategory("meet-devices", "Devices"),
+  new SettingsCategory("meet-devices", "Devices", Devices),
 ]);
 meetSettings.accounts = appGlobal.meetAccounts;
 meetSettings.newAccountUI = SetupMeetAccount;
