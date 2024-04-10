@@ -9,27 +9,15 @@
 
 <script lang="ts">
   import type { ChatAccount } from "../../../../logic/Chat/ChatAccount";
-  import { SQLChatAccount } from "../../../../logic/Chat/SQL/SQLChatAccount";
   import { openApp } from "../../../AppsBar/selectedApp";
-  import { chatMustangApp } from "../../../Chat/ChatMustangApp";
+  import { settingsMustangApp } from "../../Window/SettingsMustangApp";
+  import { getSettingsCategoryByID } from "../../Window/CategoriesUtils";
+  import { selectedCategory } from "../../Window/selected";
   import SelectProtocol from "./SelectProtocol.svelte";
-  import ErrorMessage, { ErrorGravity } from "../ErrorMessage.svelte";
-  import Footer from "../Footer.svelte";
-  import ButtonsBottom from "../ButtonsBottom.svelte";
-  import Button from "../../../Shared/Button.svelte";
   import BackgroundVideo from "../BackgroundVideo.svelte";
-  import { Cancelled } from "../../../../logic/util/Abortable";
-  import { NotReached } from "../../../../logic/util/util";
 
   let config: ChatAccount;
   let showPage: ConstructorOfATypedSvelteComponent | null = SelectProtocol;
-  let abort = new AbortController();
-
-  function reset() {
-    abort.abort();
-    config = null;
-    errorMessage = null;
-  }
 
   $: checkClose(showPage);
   function checkClose(_dummy: any) {
@@ -39,36 +27,9 @@
     onClose();
   }
 
-  // Error
-
-  let errorMessage: string | null = null;
-  let errorGravity: ErrorGravity = ErrorGravity.OK;
-
-  function showError(ex: Error | string) {
-    if (typeof (ex) == "string") {
-      ex = new Error(ex);
-    }
-    if (ex instanceof Cancelled) {
-      return;
-    }
-    console.error(ex);
-    errorMessage = ex.message;
-    errorGravity = ErrorGravity.Error;
-  }
-
-  function clearError() {
-    errorMessage = null;
-    errorGravity = ErrorGravity.OK;
-  }
-
-  function onSave() {
-    console.log("save config", config);
-    SQLChatAccount.save(config);
-    onClose();
-  }
-
   function onClose() {
-    openApp(chatMustangApp);
+    $selectedCategory = getSettingsCategoryByID("chat");
+    openApp(settingsMustangApp);
   }
 </script>
 

@@ -23,6 +23,8 @@
   import type { MustangApp } from "../AppsBar/MustangApp";
   import { globalSearchTerm, openApp } from "../AppsBar/selectedApp";
   import { settingsMustangApp } from "../Settings/Window/SettingsMustangApp";
+  import { selectedCategory } from "../Settings/Window/selected";
+  import { getSettingsCategoryForApp } from "../Settings/Window/CategoriesUtils";
   import SearchField from "../Shared/SearchField.svelte";
   import Button from "../Shared/Button.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
@@ -34,6 +36,7 @@
   export let selectedApp: MustangApp;
 
   function onOpenSettings() {
+    $selectedCategory = getSettingsCategoryForApp($selectedApp);
     openApp(settingsMustangApp);
   }
 
