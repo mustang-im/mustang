@@ -15,6 +15,7 @@ import About from "../About/About.svelte";
 import SetupMail from "../Setup/Mail/SetupMail.svelte";
 import SetupChat from "../Setup/Chat/SetupChat.svelte";
 import SetupCalendar from "../Setup/Calendar/SetupCalendar.svelte";
+import SetupContacts from "../Setup/Contacts/SetupContacts.svelte";
 import { ArrayColl } from "svelte-collections";
 
 const mailSettings = new SettingsCategory("mail", "Mail", false, true);
@@ -55,6 +56,7 @@ contactsSettings.subCategories.addAll([
   new SettingsCategory("contacts-acc-general", "General", true, true, AccountGeneral),
 ]);
 contactsSettings.accounts = appGlobal.addressbooks;
+contactsSettings.newAccountUI = SetupContacts;
 contactsSettings.forApp = contactsMustangApp;
 
 const meetSettings = new SettingsCategory("meet", "Meet", false, true);
