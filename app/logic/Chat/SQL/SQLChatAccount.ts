@@ -93,6 +93,9 @@ export class SQLChatAccount implements ChatAccountStorage {
     if (!acc.storage) {
       acc.storage = new SQLChatAccount();
     }
+    if (!appGlobal.me.name && acc.userRealname) {
+      appGlobal.me.name = acc.userRealname;
+    }
     return acc;
   }
 

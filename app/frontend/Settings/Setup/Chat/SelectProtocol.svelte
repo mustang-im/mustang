@@ -5,7 +5,12 @@
 
 <ProtocolSelector {protocols} bind:selectedProtocol={selectedProtocol} />
 
-<ButtonsBottom on:continue={() => catchErrors(onContinue)} canContinue={!!selectedProtocol} />
+<ButtonsBottom
+  on:continue={() => catchErrors(onContinue)}
+  canContinue={!!selectedProtocol}
+  hasCancel={true}
+  on:cancel={() => catchErrors(onCancel)}
+  />
 
 <script lang="ts">
   import { newChatAccountForProtocol } from "../../../../logic/Chat/AccountsList/ChatAccounts";
@@ -18,7 +23,7 @@
   import { catchErrors } from "../../../Util/error";
 
   /** out */
-  export let config: ChatAccount;
+  export let config: ChatAccount = null;
   /** out */
   export let showPage: ConstructorOfATypedSvelteComponent;
 
@@ -31,7 +36,6 @@
   const protocols: ProtocolDescription[] = [
     { label: "XMPP / Jabber", protocolID: "xmpp" },
     { label: "Matrix", protocolID: "matrix" },
-    { label: "Dummy chat", protocolID: "chat" },
   ];
 
   function onContinue() {
@@ -41,6 +45,10 @@
     } else if (selectedProtocol == "matrix") {
       showPage = MatrixLogin;
     }
+  }
+
+  function onCancel() {
+    showPage = null;
   }
 </script>
 

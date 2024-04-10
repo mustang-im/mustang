@@ -94,6 +94,9 @@ export class SQLMailAccount implements MailAccountStorage {
     if (!acc.storage) {
       acc.storage = new SQLMailAccount();
     }
+    if (!appGlobal.me.name && acc.userRealname) {
+      appGlobal.me.name = acc.userRealname;
+    }
     return acc;
   }
 
