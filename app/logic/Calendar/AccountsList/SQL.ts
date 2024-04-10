@@ -20,6 +20,6 @@ async function createDefaultCalendars(): Promise<Collection<Calendar>> {
   let personal = new Calendar();
   personal.name = "Personal calendar";
   calendars.add(personal);
-  SQLCalendar.save(personal);
+  await SQLCalendar.save(personal);
   return calendars;
 }

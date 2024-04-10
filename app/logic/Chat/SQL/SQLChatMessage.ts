@@ -17,7 +17,7 @@ export class SQLChatMessage {
    */
   static async save(msg: ChatMessage) {
     if (!msg.contact.dbID) {
-      SQLPerson.save(msg.contact as Person);
+      await SQLPerson.save(msg.contact as Person);
     }
     if (!msg.dbID) {
       let existing = await (await getDatabase()).get(sql`

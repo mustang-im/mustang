@@ -119,15 +119,15 @@ export class SQLChatAccount implements ChatAccountStorage {
   }
 
   async deleteAccount(account: ChatAccount): Promise<void> {
-    SQLChatAccount.deleteIt(account);
+    await SQLChatAccount.deleteIt(account);
   }
   async saveAccount(account: ChatAccount): Promise<void> {
-    SQLChatAccount.save(account);
+    await SQLChatAccount.save(account);
   }
   async saveMessage(message: ChatMessage): Promise<void> {
-    SQLChatMessage.save(message);
+    await SQLChatMessage.save(message);
   }
   async saveChat(chat: Chat): Promise<void> {
-    SQLChat.save(chat);
+    await SQLChat.save(chat);
   }
 }

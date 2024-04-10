@@ -24,6 +24,7 @@ export class Calendar extends Account {
 
 export interface CalendarStorage {
   saveEvent(event: Event): Promise<void>;
+  deleteEvent(event: Event): Promise<void>;
   saveCalendar(calendar: Calendar): Promise<void>;
   deleteCalendar(calendar: Calendar): Promise<void>;
 }

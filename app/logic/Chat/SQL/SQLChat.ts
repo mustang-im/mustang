@@ -18,9 +18,9 @@ export class SQLChat extends Chat {
     assert(chat.account?.dbID, "Need chat account DB ID to save chat");
     if (!chat.contact.dbID) {
       if (chat.contact instanceof Person) {
-        SQLPerson.save(chat.contact);
+        await SQLPerson.save(chat.contact);
       } else if (chat.contact instanceof Group) {
-        SQLGroup.save(chat.contact);
+        await SQLGroup.save(chat.contact);
       }
     }
 

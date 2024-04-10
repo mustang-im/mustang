@@ -104,15 +104,15 @@ export class SQLAddressbook implements AddressbookStorage {
   }
 
   async deleteAddressbook(addressbook: Addressbook): Promise<void> {
-    SQLAddressbook.deleteIt(addressbook);
+    await SQLAddressbook.deleteIt(addressbook);
   }
   async saveAddressbook(addressbook: Addressbook): Promise<void> {
-    SQLAddressbook.save(addressbook);
+    await SQLAddressbook.save(addressbook);
   }
   async savePerson(person: Person): Promise<void> {
-    SQLPerson.save(person);
+    await SQLPerson.save(person);
   }
   async saveGroup(group: Group): Promise<void> {
-    SQLGroup.save(group);
+    await SQLGroup.save(group);
   }
 }

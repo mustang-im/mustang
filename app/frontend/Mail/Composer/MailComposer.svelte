@@ -10,14 +10,14 @@
           icon={TrashIcon}
           iconSize="16px"
           padding="6px"
-          on:click={onDelete}
+          on:click={() => catchErrors(onDelete)}
           />
         <RoundButton
           label="Save and close"
           icon={CloseIcon}
           iconSize="16px"
           padding="6px"
-          on:click={onSave}
+          on:click={() => catchErrors(onSave)}
           />
       </hbox>
     </hbox>
@@ -62,7 +62,7 @@
         label="Attachments"
         icon={AttachmentIcon}
         iconOnly
-        on:click={onAddAttachment}
+        on:click={() => catchErrors(onAddAttachment)}
         slot="end"
         />
     </HTMLEditorToolbar>
@@ -162,10 +162,11 @@
     onClose();
   }
 
-  function onSave() {
+  async function onSave() {
     onClose();
   }
-  function onDelete() {
+  async function onDelete() {
+    await mail.deleteMessage();
     onClose();
   }
 
