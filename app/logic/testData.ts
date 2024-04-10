@@ -11,6 +11,7 @@ import { Chat } from './Chat/Chat';
 import { Directory, File } from './Files/File';
 import { Calendar } from './Calendar/Calendar';
 import { Addressbook } from './Contacts/Addressbook';
+import { MeetAccount } from './Meet/MeetAccount';
 import { Event } from './Calendar/Event';
 import { ArrayColl, type Collection } from 'svelte-collections';
 import { faker } from '@faker-js/faker';
@@ -235,6 +236,14 @@ export function fakeCalendar(persons: Collection<Person>, eventCount = 50): Cale
     calendar.events.add(event);
   }
   return calendar;
+}
+
+export function fakeMeetAccount(): MeetAccount {
+  let account = new MeetAccount();
+  account.name = faker.company.name();
+  account.url = faker.internet.url();
+  account.username = faker.internet.userName();
+  return account;
 }
 
 export function fakeSharedDir(persons: Collection<Person>): Collection<Directory> {
