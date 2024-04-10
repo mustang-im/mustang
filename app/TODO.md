@@ -1,5 +1,4 @@
 # Next
-* Calendar SQL - Test
 * Chat SQL - Test
 * Mail
   * Threads
