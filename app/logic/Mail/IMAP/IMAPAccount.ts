@@ -81,7 +81,7 @@ export class IMAPAccount extends MailAccount {
   attachListeners(connection: ImapFlow): void {
     connection.on("close", async () => {
       try {
-        console.log(`IMAP connection to ${this.hostname} was closed by server, network or OS.`);
+        console.log(`${new Date().toISOString()} IMAP connection to ${this.hostname} was closed by server, network or OS. Reconnecting...`);
         await this.reconnect();
       } catch (ex) {
         ex.message = `Reconnection failed after connection closed:\n${ex.message}\n${this.hostname} IMAP server`;
@@ -90,7 +90,7 @@ export class IMAPAccount extends MailAccount {
     });
     connection.on("error", async (ex) => {
       try {
-        ex.message = `Connection to server for ${this.name} failed:\n${ex.message}`;
+        ex.message = `${new Date().toISOString()} Connection to server for ${this.name} failed:\n${ex.message}`;
         this.errorCallback(ex);
         await this.reconnect();
       } catch (ex) {
@@ -128,7 +128,6 @@ export class IMAPAccount extends MailAccount {
   }
 
   protected async reconnect(): Promise<void> {
-    console.log(`Reconnecting...`);
     this._connection.close();
     this._connection = null;
     if (!(this.password || this.accessToken)) {
