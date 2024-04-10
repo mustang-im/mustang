@@ -31,10 +31,10 @@ dmg:
   artifactName: ${name}-${version}.${ext}
 linux:
   target:
-#    - AppImage
+    - AppImage
 #    - snap
     - deb
-#    - rpm
+    - rpm
   maintainer: Mustang
   category: Utility
 appImage:
