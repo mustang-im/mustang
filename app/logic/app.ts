@@ -1,9 +1,10 @@
 import type { MailAccount } from './Mail/MailAccount';
 import type { ChatAccount } from './Chat/ChatAccount';
 import { Person } from './Abstract/Person';
-import type { Contact } from './Abstract/Contact';
+// import type { Contact } from './Abstract/Contact';
 import type { Addressbook } from './Contacts/Addressbook';
 import type { Calendar } from './Calendar/Calendar';
+import type { MeetAccount } from './Meet/MeetAccount';
 import type { VideoConfMeeting } from './Meet/VideoConfMeeting';
 import type { Directory } from './Files/File';
 import type { Workspace } from './Abstract/Workspace';
@@ -15,6 +16,7 @@ class AppGlobal {
   readonly chatAccounts = new ArrayColl<ChatAccount>();
   readonly addressbooks = new ArrayColl<Addressbook>();
   readonly calendars = new ArrayColl<Calendar>();
+  readonly meetAccounts = new ArrayColl<MeetAccount>();
   readonly meetings = new ArrayColl<VideoConfMeeting>();
   readonly files = new ArrayColl<Directory>();
   readonly workspaces = new ArrayColl<Workspace>();

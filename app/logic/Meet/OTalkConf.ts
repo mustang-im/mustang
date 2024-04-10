@@ -1,7 +1,7 @@
 import { VideoConfMeeting, MeetingState } from "./VideoConfMeeting";
 import { ParticipantVideo, ScreenShare, SelfVideo } from "./VideoStream";
 import { MeetingParticipant as Participant, ParticipantRole } from "./Participant";
-import { OAuth2 } from "../Auth/OAuth2";
+import { M3Account } from "./M3Account";
 import { appGlobal } from "../app";
 import { notifyChangedProperty } from "../util/Observable";
 import { assert, sleep, type URLString } from "../util/util";
@@ -15,8 +15,7 @@ export class OTalkConf extends VideoConfMeeting {
   /** Where guests would go to join the meeting without Mustang app */
   webFrontendBaseURL: string = "https://mustang.im";
   /* Authentication */
-  oauthBaseURL: string = "http://localhost:5454/meet/auth/realms/mustang/protocol/openid-connect/";
-  private oauth2: OAuth2;
+  account: M3Account;
   /* Live connection with the controller, during a conference */
   protected webSocket: WebSocket;
   /* Current meeting */
@@ -43,24 +42,14 @@ export class OTalkConf extends VideoConfMeeting {
    * @throws OAuth2Error
    */
   async login(relogin = false): Promise<void> {
-    if (this.oauth2 && this.oauth2.accessToken && !relogin) {
+    let account = appGlobal.meetAccounts.find(acc => acc instanceof M3Account);
+    assert(account, "Please configure an matching meeting account first");
+    if (this.account.oauth2 && this.account.oauth2.accessToken && !relogin) {
       return;
     }
-
-    let username = localStorage.getItem("conf.otalk.username") as string;
-    let password = localStorage.getItem("conf.otalk.password") as string;
-    assert(username && password, "OTalk: Need authentication. Please set conf.otalk.username and conf.otalk.password in localStorage");
-
-    if (this.oauth2) {
-      this.oauth2.stop();
-    }
-    const kScope = "openid phone profile email";
-    const kClientID = "mustang"; // Configured in KeyCloak <https://accounts.mustang.im/auth/admin/master/console/#/mustang/clients/>
-    this.oauth2 = new OAuth2(this.oauthBaseURL, kScope, kClientID);
-    await this.oauth2.loginWithPassword(username, password);
-
+    await this.account.login(relogin);
     await this.axios.post('auth/login', {
-      id_token: this.oauth2.idToken,
+      id_token: this.account.oauth2.idToken,
     });
   }
 
@@ -68,8 +57,8 @@ export class OTalkConf extends VideoConfMeeting {
     const headers: any = {
       'Content-Type': 'text/json',
     };
-    if (this.oauth2?.authorizationHeader) {
-      headers.Authorization = this.oauth2.authorizationHeader;
+    if (this.account.oauth2?.authorizationHeader) {
+      headers.Authorization = this.account.oauth2.authorizationHeader;
     }
     return axios.create({
       baseURL: `${this.controllerBaseURL}/v1/`,
@@ -134,7 +123,7 @@ export class OTalkConf extends VideoConfMeeting {
   }
 
   async aboutMe(): Promise<{ name: string, picture: URLString, email: string, id: string }> {
-    if (this.oauth2) {
+    if (this.account.oauth2) {
       let response = await this.axios.get("users/me");
       let me = await response.data;
       me.name = me.display_name;
@@ -359,9 +348,6 @@ export class OTalkConf extends VideoConfMeeting {
       await this.removeMyVideo(this.screenShare, true);
     }
     await this.closeWebSocket();
-    if (this.oauth2) {
-      this.oauth2.stop();
-    }
     super.hangup();
   }
 
