@@ -122,7 +122,7 @@ export async function startAudioCall(to: Person | Group): Promise<VideoConfMeeti
  */
 export function isConferenceURL(url: URLString): boolean {
   let urlParsed = new URL(url);
-  return urlParsed.pathname.startsWith("/invite/");
+  return urlParsed.pathname.startsWith("/room/") || urlParsed.pathname.startsWith("/invite/");
 }
 
 /**
@@ -136,7 +136,7 @@ export function isConferenceURL(url: URLString): boolean {
  */
 export async function joinConferenceByURL(url: URLString): Promise<VideoConfMeeting> {
   let urlParsed = new URL(url);
-  if (urlParsed.pathname.startsWith("/invite/")) {
+  if (urlParsed.pathname.startsWith("/room/") || urlParsed.pathname.startsWith("/invite/")) {
     let conf = new OTalkConf();
     await conf.join(url);
     return conf;
