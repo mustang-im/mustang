@@ -47,6 +47,10 @@ export class SMTPAccount extends MailAccount implements OutgoingMailAccount {
     email.received = email.sent;
   }
 
+  async verifyLogin(): Promise<void> {
+    await appGlobal.remoteApp.verifyServerNodemailer(this.getTransportOptions());
+  }
+
   protected static getRecipients(recipients: ArrayColl<PersonEmailAddress>): NMAddress[] {
     return recipients.contents.map(to => SMTPAccount.getRecipient(to));
   }

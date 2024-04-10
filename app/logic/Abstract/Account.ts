@@ -53,6 +53,10 @@ export class Account extends Observable {
   async login(interactive: boolean): Promise<void> {
   }
 
+  /** For setup only. Test that the login works. */
+  async verifyLogin(): Promise<void> {
+  }
+
   async logout(): Promise<void> {
   }
 
