@@ -59,7 +59,7 @@ export class SQLMeetAccount implements MeetAccountStorage {
     assert(dbID, "Need meet account DB ID to read it");
     let row = await (await getDatabase()).get(sql`
       SELECT
-        idStr, name, protocol, url, username,
+        idStr, name, protocol, url, username, password,
         workspace
       FROM meetAccount
       WHERE id = ${dbID}
