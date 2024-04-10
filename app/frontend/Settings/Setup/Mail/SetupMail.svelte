@@ -26,6 +26,8 @@
       on:continue={onContinue}
       on:reset={reset}
       showReset={step != Step.EmailAddress}
+      canCancel={true}
+      on:cancel={() => catchErrors(onClose)}
       >
       {#if step != Step.ManualConfig && step != Step.CheckConfig && step != Step.FinalizeConfig}
         <Button label="Manual setup" classes="secondary"
@@ -67,6 +69,7 @@
   import { NotReached } from "../../../../logic/util/util";
   import type { ArrayColl } from "svelte-collections";
   import { Cancelled } from "../../../../logic/util/Abortable";
+  import { catchErrors } from "../../../Util/error";
 
   let emailAddress: string;
   let password: string;
@@ -202,13 +205,13 @@
   }
 
   async function onSave() {
-    console.log("save config", config);
     await saveConfig(config, emailAddress, password);
     await config.login(true);
     onClose();
   }
 
   function onClose() {
+    abort.abort();
     openApp(mailMustangApp);
   }
 </script>
