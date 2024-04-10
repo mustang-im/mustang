@@ -100,9 +100,9 @@ export class SQLMeetAccount implements MeetAccountStorage {
   }
 
   async deleteAccount(account: MeetAccount): Promise<void> {
-    SQLMeetAccount.deleteIt(account);
+    await SQLMeetAccount.deleteIt(account);
   }
   async saveAccount(account: MeetAccount): Promise<void> {
-    SQLMeetAccount.save(account);
+    await SQLMeetAccount.save(account);
   }
 }

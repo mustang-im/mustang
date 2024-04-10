@@ -78,4 +78,16 @@ export class Event extends Observable {
   set durationDays(days: number) {
     this.duration = days * 86400;
   }
+
+  async save() {
+    assert(this.calendar, "To save an event, it needs to be in a calendar first");
+    assert(this.calendar.storage, "To save an event, the calendar needs to be saved first");
+    await this.calendar.storage.saveEvent(this);
+  }
+
+  async deleteIt() {
+    assert(this.calendar, "To delete an event, it needs to be in a calendar first");
+    assert(this.calendar.storage, "To delete an event, the calendar needs to be saved first");
+    await this.calendar.storage.deleteEvent(this);
+  }
 }

@@ -143,7 +143,7 @@ export class IMAPEMail extends EMail {
     await super.deleteMessage();
     await SQLEMail.deleteIt(this);
     this.folder.runCommand(async (conn) => {
-      conn.messageDelete(this.uid, { uid: true });
+      await conn.messageDelete(this.uid, { uid: true });
     });
   }
 }

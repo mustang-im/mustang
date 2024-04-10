@@ -20,10 +20,10 @@ async function createDefaultAddressbooks(): Promise<Collection<Addressbook>> {
   let personal = new Addressbook();
   personal.name = "Personal addressbook";
   addressbooks.add(personal);
-  SQLAddressbook.save(personal);
+  await SQLAddressbook.save(personal);
   let collected = new Addressbook();
   collected.name = "Collected contacts";
   addressbooks.add(collected);
-  SQLAddressbook.save(collected);
+  await SQLAddressbook.save(collected);
   return addressbooks;
 }
