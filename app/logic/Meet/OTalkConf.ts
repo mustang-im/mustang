@@ -5,15 +5,13 @@ import { M3Account } from "./M3Account";
 import { appGlobal } from "../app";
 import { notifyChangedProperty } from "../util/Observable";
 import { assert, sleep, type URLString } from "../util/util";
-import axios from "axios";
 
 export class OTalkConf extends VideoConfMeeting {
   /** OTalk controller server hostname */
-  controllerBaseURL: string = "http://localhost:5454/meet/controller";
+  controllerBaseURL: string = "https://controller.mustang.im";
   controllerWebSocketURL: string = "wss://controller.mustang.im/signaling";
-  //controllerWebSocketURL: string = "ws://localhost:5454/meet/signaling";
   /** Where guests would go to join the meeting without Mustang app */
-  webFrontendBaseURL: string = "https://mustang.im";
+  webFrontendBaseURL: string = "https://meet.mustang.im";
   /* Authentication */
   account: M3Account;
   /* Live connection with the controller, during a conference */
@@ -60,10 +58,11 @@ export class OTalkConf extends VideoConfMeeting {
     if (this.account.oauth2?.authorizationHeader) {
       headers.Authorization = this.account.oauth2.authorizationHeader;
     }
-    return axios.create({
-      baseURL: `${this.controllerBaseURL}/v1/`,
-      timeout: 3000,
+    return appGlobal.remoteApp.kyCreate({
+      prefixUrl: `${this.controllerBaseURL}/v1/`,
       headers: headers,
+      timeout: 3000,
+      result: "json",
     });
   }
 

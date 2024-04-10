@@ -6,7 +6,7 @@ export class M3Account extends MeetAccount {
   readonly protocol: string = "m3";
   /* Authentication */
   oauth2: OAuth2;
-  oauthBaseURL: string = "http://localhost:5454/meet/auth/realms/mustang/protocol/openid-connect/";
+  oauthBaseURL: string = "https://accounts.mustang.im/realms/mustang/protocol/openid-connect";
 
   /**
    * Login using OAuth2
