@@ -67,7 +67,7 @@ async function openFileInExternalApp(filepath: string, appEXE: string): Promise<
  *
  * E.g.
  * ```js
- * let ky = await remoteApp.kyCreate("https://api.example.com", { result: "json" });
+ * let ky = await remoteApp.kyCreate({ prefixUrl: "https://api.example.com", result: "json" });
  * let json = await ky.get("users/");
  * ```
  * or (identical)
