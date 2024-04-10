@@ -16,8 +16,6 @@ export class MailAccount extends Account {
   @notifyChangedProperty
   tls = TLSSocketType.Unknown;
   @notifyChangedProperty
-  password: string | null = null;
-  @notifyChangedProperty
   authMethod = AuthMethod.Unknown;
   /** SMTP server
    * Null for JMAP, Exchange etc. */

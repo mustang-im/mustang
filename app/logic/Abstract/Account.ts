@@ -16,7 +16,8 @@ export class Account extends Observable {
   url: string | null = null;
   @notifyChangedProperty
   username: string | null = null;
-  protected password: string | null = null;
+  @notifyChangedProperty
+  password: string | null = null;
   @notifyChangedProperty
   workspace: Workspace | null = null;
   @notifyChangedProperty
