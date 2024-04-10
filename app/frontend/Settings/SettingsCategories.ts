@@ -13,8 +13,9 @@ import AccountMailServer from "./Mail/AccountMailServer.svelte";
 import AccountIdentity from "./Mail/AccountIdentity.svelte";
 import AccountXMPPServer from "./Chat/AccountXMPPServer.svelte";
 import Devices from "./Meet/Devices.svelte";
-import Licenses from "./About/Licenses.svelte";
 import About from "./About/About.svelte";
+import Licenses from "./About/Licenses.svelte";
+import Test from "./About/Test.svelte";
 import SetupMail from "./Setup/Mail/SetupMail.svelte";
 import SetupChat from "./Setup/Chat/SetupChat.svelte";
 import SetupCalendar from "./Setup/Calendar/SetupCalendar.svelte";
@@ -103,5 +104,6 @@ settingsCategories.add(customer);
 const about = new SettingsCategory("about", "About", About, true);
 about.subCategories.addAll([
   new SettingsCategory("license", "Open-Source", Licenses),
+  new SettingsCategory("test", "Test", Test),
 ]);
 settingsCategories.add(about);
