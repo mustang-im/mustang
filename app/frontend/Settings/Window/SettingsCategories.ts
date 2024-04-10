@@ -1,4 +1,4 @@
-import { SettingsCategory } from "./SettingsCategory";
+import { SettingsCategory, AccountSettingsCategory as AccSetting } from "./SettingsCategory";
 import { mailMustangApp } from "../../Mail/MailMustangApp";
 import { webAppsMustangApp } from "../../WebApps/WebAppsMustangApp";
 import { meetMustangApp } from "../../Meet/MeetMustangApp";
@@ -11,6 +11,7 @@ import AccountGeneral from "../AccountGeneral.svelte";
 import AccountURLServer from "../AccountURLServer.svelte";
 import AccountMailServer from "../Mail/AccountMailServer.svelte";
 import AccountIdentity from "../Mail/AccountIdentity.svelte";
+import AccountXMPPServer from "../Chat/AccountXMPPServer.svelte";
 import Licenses from "../About/Licenses.svelte";
 import About from "../About/About.svelte";
 import SetupMail from "../Setup/Mail/SetupMail.svelte";
@@ -18,78 +19,88 @@ import SetupChat from "../Setup/Chat/SetupChat.svelte";
 import SetupCalendar from "../Setup/Calendar/SetupCalendar.svelte";
 import SetupContacts from "../Setup/Contacts/SetupContacts.svelte";
 import SetupMeetAccount from "../Setup/Meet/SetupMeetAccount.svelte";
+import { Account } from "../../../logic/Abstract/Account";
+import { MailAccount } from "../../../logic/Mail/MailAccount";
+import { XMPPAccount } from "../../../logic/Chat/XMPP/XMPPAccount";
+import { MatrixAccount } from "../../../logic/Chat/Matrix/MatrixAccount";
+import { M3Account } from "../../../logic/Meet/M3Account";
 import { ArrayColl } from "svelte-collections";
+import { ChatAccount } from "../../../logic/Chat/ChatAccount";
 
-const mailSettings = new SettingsCategory("mail", "Mail", false, true);
+export const settingsCategories = new ArrayColl<SettingsCategory>();
+export const accountSettings = new ArrayColl<AccSetting>();
+
+accountSettings.add(new AccSetting(Account, "acc-general", "General", AccountGeneral, true));
+
+const mailSettings = new SettingsCategory("mail", "Mail", null, true);
 mailSettings.subCategories.addAll([
-  new SettingsCategory("mail-appearance", "Appearance", false, false, Appearance),
-  new SettingsCategory("mail-acc-general", "General", true, true, AccountGeneral),
-  new SettingsCategory("mail-acc-server", "Server", true, false, AccountMailServer),
-  new SettingsCategory("mail-acc-identity", "Identity", true, false, AccountIdentity),
-  new SettingsCategory("mail-acc-send", "Send", true),
-  new SettingsCategory("mail-acc-copies", "Copies", true),
+  new SettingsCategory("mail-appearance", "Appearance", Appearance),
 ]);
 mailSettings.accounts = appGlobal.emailAccounts;
 mailSettings.newAccountUI = SetupMail;
 mailSettings.forApp = mailMustangApp;
+settingsCategories.add(mailSettings);
 
-const chatSettings = new SettingsCategory("chat", "Chat", false, true);
+accountSettings.add(new AccSetting(MailAccount, "mail-server", "Server", AccountMailServer));
+accountSettings.add(new AccSetting(MailAccount, "mail-identity", "Identity", AccountIdentity));
+accountSettings.add(new AccSetting(MailAccount, "mail-send", "Send", null));
+accountSettings.add(new AccSetting(MailAccount, "mail-copies", "Copies", null));
+
+const chatSettings = new SettingsCategory("chat", "Chat", null, true);
 chatSettings.subCategories.addAll([
-  new SettingsCategory("chat-appearance", "Appearance", false),
-  new SettingsCategory("chat-acc-general", "General", true, true, AccountGeneral),
-  new SettingsCategory("chat-acc-send", "Send", true),
-  new SettingsCategory("chat-acc-identity", "Identity", true),
+  new SettingsCategory("chat-appearance", "Appearance"),
 ]);
 chatSettings.accounts = appGlobal.chatAccounts;
 chatSettings.newAccountUI = SetupChat;
 chatSettings.forApp = chatMustangApp;
+settingsCategories.add(chatSettings);
 
-const calendarSettings = new SettingsCategory("calendar", "Calendar", false, true);
+accountSettings.add(new AccSetting(XMPPAccount, "xmpp-server", "Server", AccountXMPPServer));
+accountSettings.add(new AccSetting(MatrixAccount, "matrix-server", "Server", AccountURLServer));
+accountSettings.add(new AccSetting(ChatAccount, "chat-send", "Send", null));
+accountSettings.add(new AccSetting(ChatAccount, "chat-identity", "Identity", null));
+
+const calendarSettings = new SettingsCategory("calendar", "Calendar", null, true);
 calendarSettings.subCategories.addAll([
-  new SettingsCategory("calendar-acc-general", "General", true, true, AccountGeneral),
-  new SettingsCategory("contacts-acc-server", "Server", true, false, AccountURLServer),
 ]);
 calendarSettings.accounts = appGlobal.calendars;
 calendarSettings.newAccountUI = SetupCalendar;
 calendarSettings.forApp = calendarMustangApp;
+settingsCategories.add(calendarSettings);
 
-const contactsSettings = new SettingsCategory("contacts", "Contacts", false, true);
+const contactsSettings = new SettingsCategory("contacts", "Contacts", null, true);
 contactsSettings.subCategories.addAll([
-  new SettingsCategory("contacts-acc-general", "General", true, true, AccountGeneral),
 ]);
 contactsSettings.accounts = appGlobal.addressbooks;
 contactsSettings.newAccountUI = SetupContacts;
 contactsSettings.forApp = contactsMustangApp;
+settingsCategories.add(contactsSettings);
 
-const meetSettings = new SettingsCategory("meet", "Meet", false, true);
+const meetSettings = new SettingsCategory("meet", "Meet", null, true);
 meetSettings.subCategories.addAll([
-  new SettingsCategory("meet-acc-general", "General", true, true, AccountGeneral),
+  new SettingsCategory("meet-appearance", "Appearance"),
+  new SettingsCategory("meet-devices", "Devices"),
 ]);
 meetSettings.accounts = appGlobal.meetAccounts;
 meetSettings.newAccountUI = SetupMeetAccount;
 meetSettings.forApp = meetMustangApp;
+settingsCategories.add(meetSettings);
 
-const appSettings = new SettingsCategory("app", "App integration", false, true);
+accountSettings.add(new AccSetting(M3Account, "m3-server", "Server", AccountURLServer, true));
+
+const appSettings = new SettingsCategory("app", "App integration", null, true);
 appSettings.subCategories.addAll([
 ]);
 appSettings.forApp = webAppsMustangApp;
+settingsCategories.add(appSettings);
 
-const customer = new SettingsCategory("customer", "Billing", false, true);
+const customer = new SettingsCategory("customer", "Billing", null, true);
 customer.subCategories.addAll([
 ]);
+settingsCategories.add(customer);
 
-const about = new SettingsCategory("about", "About", false, true, About);
+const about = new SettingsCategory("about", "About", About, true);
 about.subCategories.addAll([
-  new SettingsCategory("license", "Open-Source", false, false, Licenses),
+  new SettingsCategory("license", "Open-Source", Licenses),
 ]);
-
-export const settingsCategories = new ArrayColl<SettingsCategory>([
-  mailSettings,
-  chatSettings,
-  meetSettings,
-  calendarSettings,
-  contactsSettings,
-  appSettings,
-  customer,
-  about,
-]);
+settingsCategories.add(about);

@@ -10,11 +10,10 @@ import { client, xml } from '@xmpp/client';
 import setupRoster from '@xmpp-plugins/roster';
 
 export class XMPPAccount extends ChatAccount {
+  readonly protocol: string = "xmpp";
   readonly chats = new MapColl<ChatPerson | Group, XMPPChatRoom>;
   client: any;
   serverDomain: string;
-  username: string;
-  password: string;
   deviceID: string;
   globalUserID: string;
   rosterService: any;
