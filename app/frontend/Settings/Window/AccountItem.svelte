@@ -23,7 +23,6 @@
   $: itemSelected = account == $selectedAccount && $selectedCategory == mainAccountCategory;
   $: mainAccountCategory = accountSettings.find(ad => account instanceof ad.type && ad.isMain);
   $: subCategories = accountSettings.filter(ad => account instanceof ad.type && !ad.isMain);
-  $: console.log("Selected", account.protocol, "subcat", subCategories.contents.map(cat => cat.name));
 
   function onSelect() {
     $selectedAccount = account;
