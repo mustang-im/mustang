@@ -1,6 +1,7 @@
 import type { MailAccount, MailAccountStorage } from "../MailAccount";
 import { getDatabase } from "./SQLDatabase";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
+import { SMTPAccount } from "../SMTP/SMTPAccount";
 import type { EMail } from "../EMail";
 import { SQLEMail } from "./SQLEMail";
 import type { Folder } from "../Folder";
@@ -14,6 +15,12 @@ import sql from "../../../../lib/rs-sqlite";
 
 export class SQLMailAccount implements MailAccountStorage {
   static async save(acc: MailAccount) {
+    if (acc.outgoing) {
+      if (!acc.outgoing.emailAddress) {
+        acc.outgoing.emailAddress = acc.emailAddress;
+      }
+      await SQLMailAccount.save(acc.outgoing);
+    }
     if (!acc.dbID) {
       let existing = await (await getDatabase()).get(sql`
         SELECT
@@ -32,13 +39,13 @@ export class SQLMailAccount implements MailAccountStorage {
         INSERT INTO emailAccount (
           idStr, name, protocol, emailAddress,
           username, passwordButter,
-          hostname, port, tls, url,
+          hostname, port, tls, url, outgoingAccountID,
           userRealname, workspace
         ) VALUES (
           ${acc.id}, ${acc.name}, ${acc.protocol}, ${acc.emailAddress},
           ${acc.username}, ${acc.password},
-          ${acc.hostname}, ${acc.port}, ${acc.tls}, ${acc.url},
-          ${acc.userRealname}, ${acc.workspace}
+          ${acc.hostname}, ${acc.port}, ${acc.tls}, ${acc.url}, ${acc.outgoing?.dbID},
+          ${acc.userRealname}, ${acc.workspace?.id}
         )`);
       acc.dbID = insert.lastInsertRowid;
     } else {
@@ -47,7 +54,8 @@ export class SQLMailAccount implements MailAccountStorage {
           name = ${acc.name}, emailAddress = ${acc.emailAddress},
           username = ${acc.username}, passwordButter = ${acc.password},
           hostname = ${acc.hostname}, port = ${acc.port}, tls = ${acc.tls}, url = ${acc.url},
-          userRealname = ${acc.userRealname}, workspace = ${acc.workspace}
+          outgoingAccountID = ${acc.outgoing?.dbID},
+          userRealname = ${acc.userRealname}, workspace = ${acc.workspace?.id}
         WHERE id = ${acc.dbID}
         `);
     }
@@ -72,6 +80,7 @@ export class SQLMailAccount implements MailAccountStorage {
         idStr, name, protocol, emailAddress,
         username, passwordButter,
         hostname, port, tls, url,
+        outgoingAccountID,
         userRealname, workspace
       FROM emailAccount
       WHERE id = ${dbID}
@@ -97,6 +106,12 @@ export class SQLMailAccount implements MailAccountStorage {
     if (!appGlobal.me.name && acc.userRealname) {
       appGlobal.me.name = acc.userRealname;
     }
+    let outgoingAccountID = row.outgoingAccountID ? sanitize.integer(row.outgoingAccountID) : null;
+    if (outgoingAccountID) {
+      let outgoing = new SMTPAccount();
+      await SQLMailAccount.read(outgoingAccountID, outgoing);
+      acc.outgoing = outgoing;
+    }
     return acc;
   }
 
@@ -105,6 +120,7 @@ export class SQLMailAccount implements MailAccountStorage {
       SELECT
         id, protocol
       FROM emailAccount
+      WHERE protocol <> 'smtp'
       `) as any;
     let accounts = new ArrayColl<MailAccount>();
     for (let row of rows) {

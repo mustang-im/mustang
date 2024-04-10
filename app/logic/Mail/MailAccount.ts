@@ -71,6 +71,9 @@ export class MailAccount extends Account {
   }
 
   async deleteIt(): Promise<void> {
+    if (this.outgoing) {
+      await this.storage?.deleteAccount(this.outgoing);
+    }
     await this.storage?.deleteAccount(this);
     appGlobal.emailAccounts.remove(this);
   }
