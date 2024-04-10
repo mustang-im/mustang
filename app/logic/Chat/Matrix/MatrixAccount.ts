@@ -14,6 +14,7 @@ import type { Room, RoomMember } from 'matrix-js-sdk/lib/matrix';
 import olm from 'olm'; // Needed for initCrypto(). Do not remove.
 
 export class MatrixAccount extends ChatAccount {
+  readonly protocol: string = "matrix";
   readonly chats = new MapColl<ChatPerson | Group, MatrixChatRoom>;
   client: matrix.MatrixClient;
   baseURL = "https://matrix.org";

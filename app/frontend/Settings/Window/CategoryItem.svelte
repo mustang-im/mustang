@@ -5,13 +5,13 @@
   </hbox>
 </vbox>
 {#if isSectionOpen}
-  <SubCategoriesList subCategories={category.subCategories.filter(cat => !cat.isAccountSpecific)} mainCategory={category} />
+  <SubCategoriesList subCategories={category.subCategories} mainCategory={category} />
   <AccountsList {category} />
 {/if}
 
 <script lang="ts">
   import type { SettingsCategory } from "./SettingsCategory";
-  import { selectedCategory } from "./selected";
+  import { selectedCategory, selectedAccount } from "./selected";
   import SubCategoriesList from "./SubCategoriesList.svelte";
   import AccountsList from "./AccountsList.svelte";
 
@@ -19,7 +19,7 @@
   export let category: SettingsCategory;
 
   $: selected = category == $selectedCategory;
-  $: isSectionOpen = selected || category.subCategories.contains($selectedCategory);
+  $: isSectionOpen = selected || category.subCategories.contains($selectedCategory) || category.accounts.contains($selectedAccount);
 
   function onSelect() {
     $selectedCategory = category;

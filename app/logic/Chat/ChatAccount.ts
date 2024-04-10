@@ -9,15 +9,13 @@ import { ArrayColl, MapColl } from 'svelte-collections';
 import { notifyChangedProperty } from "../util/Observable";
 
 export class ChatAccount extends Account {
-  readonly protocol = "chat";
+  readonly protocol: string = "chat";
   @notifyChangedProperty
   hostname: string | null = null; /** only for some account types */
   @notifyChangedProperty
   port: number | null = null;
   @notifyChangedProperty
   tls = TLSSocketType.Unknown;
-  @notifyChangedProperty
-  password: string | null = null;
   storage: ChatAccountStorage;
 
   readonly persons = new ArrayColl<ChatPerson>();

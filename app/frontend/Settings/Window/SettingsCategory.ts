@@ -1,7 +1,7 @@
 import type { Account } from "../../../logic/Abstract/Account";
 import { Observable, notifyChangedProperty } from "../../../logic/util/Observable";
 import { ArrayColl, Collection } from "svelte-collections";
-import { MustangApp } from "../../AppsBar/MustangApp";
+import type { MustangApp } from "../../AppsBar/MustangApp";
 
 export class SettingsCategory extends Observable {
   id: string;
@@ -14,7 +14,6 @@ export class SettingsCategory extends Observable {
   icon: string | ConstructorOfATypedSvelteComponent;
 
   isMain = false;
-  isAccountSpecific = false;
   /** Window content with the actual settings that shows on the right
    * when the user selected this settings category */
   windowContent: ConstructorOfATypedSvelteComponent | undefined;
@@ -29,12 +28,11 @@ export class SettingsCategory extends Observable {
   /** If `isMain && !isAccountSpecific`, can have the app that these settings are for */
   forApp: MustangApp;
 
-  constructor(id: string, name: string, isAccountSpecific = false, isMain = false, content?: ConstructorOfATypedSvelteComponent) {
+  constructor(id: string, name: string, content?: ConstructorOfATypedSvelteComponent, isMain = false) {
     super();
     this.id = id;
     this.name = name;
     this.isMain = isMain;
-    this.isAccountSpecific = isAccountSpecific;
     this.windowContent = content;
   }
 
@@ -46,5 +44,13 @@ export class SettingsCategory extends Observable {
     return this.name.toLowerCase().includes(searchTerm) ||
       this.synonyms.some(word => word.toLowerCase().includes(searchTerm)) ||
       this.description?.toLowerCase().includes(searchTerm);
+  }
+}
+
+export class AccountSettingsCategory extends SettingsCategory {
+  type: typeof Account;
+  constructor(type: typeof Account, id: string, name: string, content: ConstructorOfATypedSvelteComponent, isMain = false) {
+    super(id, name, content, isMain);
+    this.type = type;
   }
 }

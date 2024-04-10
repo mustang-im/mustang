@@ -5,7 +5,7 @@
   </hbox>
 </vbox>
 {#if accountSelected}
-  <SubCategoriesList subCategories={category.subCategories.filter(cat => cat.isAccountSpecific && cat != mainAccountCategory)} mainCategory={category} />
+  <SubCategoriesList {subCategories} mainCategory={category} />
 {/if}
 
 <script lang="ts">
@@ -13,18 +13,21 @@
   import type { SettingsCategory } from "./SettingsCategory";
   import { selectedCategory, selectedAccount } from "./selected";
   import SubCategoriesList from "./SubCategoriesList.svelte";
+  import { accountSettings } from "./SettingsCategories";
 
   /** in */
   export let account: Account;
   export let category: SettingsCategory;
 
-  $: mainAccountCategory = category.subCategories.find(cat => cat.isAccountSpecific && cat.isMain);
   $: accountSelected = account == $selectedAccount;
   $: itemSelected = account == $selectedAccount && $selectedCategory == mainAccountCategory;
+  $: mainAccountCategory = accountSettings.find(ad => account instanceof ad.type && ad.isMain);
+  $: subCategories = accountSettings.filter(ad => account instanceof ad.type && !ad.isMain);
+  $: console.log("Selected", account.protocol, "subcat", subCategories.contents.map(cat => cat.name));
 
   function onSelect() {
     $selectedAccount = account;
-    $selectedCategory = category.subCategories.contents.find(cat => cat.isAccountSpecific && cat.isMain);
+    $selectedCategory = mainAccountCategory;
   }
 </script>
 
