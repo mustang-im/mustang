@@ -30,7 +30,7 @@
   let selectedProtocol: string;
 
   const protocols: ProtocolDescription[] = [
-    { label: "Local calendar", protocolID: "calendar-local" },
+    { label: "New local calendar", protocolID: "calendar-local" },
   ];
 
   function onContinue() {

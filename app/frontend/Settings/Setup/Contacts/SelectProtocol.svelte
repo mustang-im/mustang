@@ -30,7 +30,7 @@
   let selectedProtocol: string;
 
   const protocols: ProtocolDescription[] = [
-    { label: "Local addressbook", protocolID: "addressbook-local" },
+    { label: "New local addressbook", protocolID: "addressbook-local" },
   ];
 
   function onContinue() {

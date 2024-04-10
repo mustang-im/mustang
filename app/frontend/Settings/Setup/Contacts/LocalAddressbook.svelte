@@ -1,5 +1,5 @@
 <Header
-  title="Setup your new local addressbook"
+  title="Create your new local addressbook"
   subtitle=""
 />
 <vbox flex class="account">

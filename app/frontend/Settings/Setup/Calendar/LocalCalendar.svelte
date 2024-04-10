@@ -1,5 +1,5 @@
 <Header
-  title="Setup your new local calendar"
+  title="Create your new local calendar"
   subtitle=""
 />
 <vbox flex class="account">
