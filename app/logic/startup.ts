@@ -3,6 +3,7 @@ import { readMailAccounts } from './Mail/AccountsList/SQL';
 import { readChatAccounts } from './Chat/AccountsList/SQL';
 import { readAddressbooks } from './Contacts/AccountsList/SQL';
 import { readCalendars } from './Calendar/AccountsList/SQL';
+import { readMeetAccounts } from './Meet/AccountsList/SQL';
 import { getTestObjects } from './testData';
 import JPCWebSocket from '../../lib/jpc-ws';
 
@@ -17,6 +18,7 @@ export async function getStartObjects(): Promise<void> {
   appGlobal.calendars.addAll(await readCalendars());
   appGlobal.emailAccounts.addAll(await readMailAccounts());
   appGlobal.chatAccounts.addAll(await readChatAccounts());
+  appGlobal.meetAccounts.addAll(await readMeetAccounts());
   if (appGlobal.emailAccounts.isEmpty && appGlobal.chatAccounts.isEmpty) {
     await getTestObjects();
   }
