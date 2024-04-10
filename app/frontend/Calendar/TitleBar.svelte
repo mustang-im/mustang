@@ -1,5 +1,5 @@
 <hbox class="title-bar">
-  <CalendarSelector calendar={$selectedCalendar}/>
+  <AccountDropDown bind:selectedAccount={$selectedCalendar} accounts={appGlobal.calendars} />
   <RoundButton classes="add-button create" label="New event" icon={AddToCalendarIcon} on:click={addEvent} iconSize="20px" padding="10px" />
   <hbox class="spacer" />
   <ViewSelector bind:dateInterval />
@@ -8,10 +8,11 @@
 <script lang="ts">
   import { selectedCalendar, type DateInterval } from "./selected";
   import ViewSelector from "./ViewSelector.svelte";
+  import AccountDropDown from "../Shared/AccountDropDown.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import AddToCalendarIcon from "lucide-svelte/icons/calendar-plus";
   import { createEventDispatcher } from 'svelte';
-  import CalendarSelector from "./CalendarSelector.svelte";
+  import { appGlobal } from "../../logic/app";
   const dispatch = createEventDispatcher();
 
   export let dateInterval: DateInterval = 7; /* in/out */
