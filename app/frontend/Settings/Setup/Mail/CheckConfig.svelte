@@ -3,20 +3,21 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
+  import { checkConfig } from "../../../../logic/Mail/AutoConfig/checkConfig";
   import StatusMessage from "../StatusMessage.svelte";
-  import { makeAbortable } from "../../../../logic/util/Abortable";
-  import { sleep } from "../../../../logic/util/util";
   import { createEventDispatcher, onMount } from 'svelte';
   const dispatchEvent = createEventDispatcher();
 
   /** in */
   export let config: MailAccount;
+  export let emailAddress: string;
+  export let password: string;
   /** in */
   export let abort: AbortController;
 
   onMount(async () => {
     try {
-      await makeAbortable(sleep(3), abort);
+      await checkConfig(config, emailAddress, password);
       dispatchEvent("continue");
     } catch (ex) {
       dispatchEvent("fail", ex);

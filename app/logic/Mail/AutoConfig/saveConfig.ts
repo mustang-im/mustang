@@ -22,11 +22,14 @@ export function fillConfig(config: MailAccount, emailAddress: string, password: 
   config.username = replaceVar(config.username, emailAddress);
   config.hostname = replaceVar(config.hostname, emailAddress);
   config.name = config.name ? replaceVar(config.name, emailAddress) : emailAddress;
+  if (appGlobal.emailAccounts.find(acc => acc.name == config.name)) {
+    config.name += " " + emailAddress;
+  }
   if (config.outgoing) {
-    fillConfig(config.outgoing, emailAddress, password);
     if (config.outgoing.name == config.name) {
       config.outgoing.name += " "; // Hack for SMTP and uniqueness
     }
+    fillConfig(config.outgoing, emailAddress, password);
   }
 }
 

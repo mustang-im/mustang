@@ -15,7 +15,7 @@
     {:else if step == Step.FoundConfig}
       <FoundConfig bind:config {altConfigs} />
     {:else if step == Step.CheckConfig}
-      <CheckConfig {config}
+      <CheckConfig {config} {emailAddress} {password}
         on:continue={onCheckConfigSucceeded} on:fail={onCheckConfigFailed} {abort} />
     {:else if step == Step.ManualConfig}
       <ManualConfig bind:config bind:this={manualConfigEl} {abort} />

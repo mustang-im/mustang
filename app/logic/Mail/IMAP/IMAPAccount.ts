@@ -33,6 +33,10 @@ export class IMAPAccount extends MailAccount {
     await this.listFolders();
   }
 
+  async verifyLogin(): Promise<void> {
+    await this.connection();
+  }
+
   async connection(): Promise<ImapFlow> {
     if (this._connection) {
       return this._connection;
