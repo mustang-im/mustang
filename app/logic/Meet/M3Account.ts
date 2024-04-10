@@ -15,10 +15,10 @@ export class M3Account extends MeetAccount {
    * @throws OAuth2Error
    */
   async login(relogin = false): Promise<void> {
-    if (this.oauth2 && this.oauth2.accessToken && !relogin) {
+    if (this.oauth2?.accessToken && !relogin) {
       return;
     }
-    assert(this.username && this.password, "OTalk: Need authentication. Please set conf.otalk.username and conf.otalk.password in localStorage");
+    assert(this.username && this.password, `Please configure the M3 account ${this.name}`);
 
     if (this.oauth2) {
       this.oauth2.stop();

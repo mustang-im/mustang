@@ -26,17 +26,17 @@ export class SQLMeetAccount implements MeetAccountStorage {
       // TODO save password separately
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO meetAccount (
-          idStr, name, protocol, url, username,
+          idStr, name, protocol, url, username, password,
           workspace
         ) VALUES (
-          ${acc.id}, ${acc.name}, ${acc.protocol}, ${acc.url}, ${acc.username},
+          ${acc.id}, ${acc.name}, ${acc.protocol}, ${acc.url}, ${acc.username}, ${acc.password},
           ${acc.workspace}
         )`);
       acc.dbID = insert.lastInsertRowid;
     } else {
       await (await getDatabase()).run(sql`
         UPDATE meetAccount SET
-          name = ${acc.name}, url = ${acc.url}, username = ${acc.username},
+          name = ${acc.name}, url = ${acc.url}, username = ${acc.username}, password = ${acc.password},
           workspace = ${acc.workspace}
         WHERE id = ${acc.dbID}
         `);
@@ -69,6 +69,7 @@ export class SQLMeetAccount implements MeetAccountStorage {
     acc.name = sanitize.label(row.name);
     assert(acc.protocol == sanitize.alphanumdash(row.protocol), "Meet account object of wrong type passed in");
     acc.username = sanitize.stringOrNull(row.username);
+    acc.password = sanitize.stringOrNull(row.password);
     acc.url = row.url ? sanitize.url(row.url) : null;
     acc.workspace = row.workspace
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace))

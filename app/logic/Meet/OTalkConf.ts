@@ -42,9 +42,9 @@ export class OTalkConf extends VideoConfMeeting {
    * @throws OAuth2Error
    */
   async login(relogin = false): Promise<void> {
-    let account = appGlobal.meetAccounts.find(acc => acc instanceof M3Account);
-    assert(account, "Please configure an matching meeting account first");
-    if (this.account.oauth2 && this.account.oauth2.accessToken && !relogin) {
+    this.account = appGlobal.meetAccounts.find(acc => acc instanceof M3Account) as M3Account;
+    assert(this.account, "Please configure an matching meeting account first");
+    if (this.account.oauth2?.accessToken && !relogin) {
       return;
     }
     await this.account.login(relogin);

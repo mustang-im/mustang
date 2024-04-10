@@ -8,6 +8,7 @@ export const meetDatabaseSchema = sql`
     "protocol" TEXT not null,
     "url" TEXT default null,
     "username" TEXT default null,
+    "password" TEXT default null,
     "authMethod" INTEGER default 0,
     "workspace" TEXT default null
   );
