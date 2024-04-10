@@ -39,13 +39,13 @@ export class SQLMailAccount implements MailAccountStorage {
         INSERT INTO emailAccount (
           idStr, name, protocol, emailAddress,
           username, passwordButter,
-          hostname, port, tls, url, outgoingAccountID,
-          userRealname, workspace
+          hostname, port, tls, authMethod, url,
+          outgoingAccountID, userRealname, workspace
         ) VALUES (
           ${acc.id}, ${acc.name}, ${acc.protocol}, ${acc.emailAddress},
           ${acc.username}, ${acc.password},
-          ${acc.hostname}, ${acc.port}, ${acc.tls}, ${acc.url}, ${acc.outgoing?.dbID},
-          ${acc.userRealname}, ${acc.workspace?.id}
+          ${acc.hostname}, ${acc.port}, ${acc.tls}, ${acc.authMethod}, ${acc.url},
+          ${acc.outgoing?.dbID}, ${acc.userRealname}, ${acc.workspace?.id}
         )`);
       acc.dbID = insert.lastInsertRowid;
     } else {
@@ -54,7 +54,7 @@ export class SQLMailAccount implements MailAccountStorage {
           name = ${acc.name}, emailAddress = ${acc.emailAddress},
           username = ${acc.username}, passwordButter = ${acc.password},
           hostname = ${acc.hostname}, port = ${acc.port}, tls = ${acc.tls}, url = ${acc.url},
-          outgoingAccountID = ${acc.outgoing?.dbID},
+          authMethod = ${acc.authMethod}, outgoingAccountID = ${acc.outgoing?.dbID},
           userRealname = ${acc.userRealname}, workspace = ${acc.workspace?.id}
         WHERE id = ${acc.dbID}
         `);
@@ -79,7 +79,7 @@ export class SQLMailAccount implements MailAccountStorage {
       SELECT
         idStr, name, protocol, emailAddress,
         username, passwordButter,
-        hostname, port, tls, url,
+        hostname, port, tls, authMethod, url,
         outgoingAccountID,
         userRealname, workspace
       FROM emailAccount
@@ -95,6 +95,7 @@ export class SQLMailAccount implements MailAccountStorage {
     acc.hostname = row.hostname ? sanitize.hostname(row.hostname) : null;
     acc.port = row.port ? sanitize.portTCP(row.port) : null;
     acc.tls = sanitize.enum(row.tls, [1, 2, 3], 0);
+    acc.authMethod = sanitize.integerRange(row.authMethod, 0, 20);
     acc.url = row.url ? sanitize.url(row.url) : null;
     acc.userRealname = sanitize.label(row.userRealname);
     acc.workspace = row.workspace
