@@ -1,4 +1,4 @@
-<vbox flex class="setup-chat-window">
+<vbox flex class="setup-meet-window">
   <hbox flex />
   <vbox class="page-box">
     <svelte:component this={showPage} bind:showPage bind:config
@@ -10,17 +10,17 @@
 </vbox>
 
 <script lang="ts">
-  import type { ChatAccount } from "../../../../logic/Chat/ChatAccount";
+  import type { MeetAccount } from "../../../../logic/Meet/MeetAccount";
   import { openApp } from "../../../AppsBar/selectedApp";
   import { selectedCategory } from "../../Window/selected";
   import { getSettingsCategoryForApp } from "../../Window/CategoriesUtils";
   import { settingsMustangApp } from "../../Window/SettingsMustangApp";
-  import { chatMustangApp } from "../../../Chat/ChatMustangApp";
+  import { meetMustangApp } from "../../../Meet/MeetMustangApp";
   import SelectProtocol from "./SelectProtocol.svelte";
   import BackgroundVideo from "../BackgroundVideo.svelte";
   import { catchErrors } from "../../../Util/error";
 
-  let config: ChatAccount;
+  let config: MeetAccount;
   let showPage: ConstructorOfATypedSvelteComponent | null = SelectProtocol;
 
   $: checkClose(showPage);
@@ -32,13 +32,13 @@
   }
 
   function onClose() {
-    $selectedCategory = getSettingsCategoryForApp(chatMustangApp);
+    $selectedCategory = getSettingsCategoryForApp(meetMustangApp);
     openApp(settingsMustangApp);
   }
 </script>
 
 <style>
-  .setup-chat-window {
+  .setup-meet-window {
     justify-content: center;
     align-items: center;
   }

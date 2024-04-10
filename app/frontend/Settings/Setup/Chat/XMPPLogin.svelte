@@ -8,13 +8,13 @@
     <input type="text" bind:value={jid} name="username"
       placeholder="fred@example.com" />
     <label for="password">Password</label>
-    <Password bind:password />
+    <Password bind:password={config.password} />
   </grid>
 </vbox>
 
 <ButtonsBottom
   on:continue={() => catchErrors(onContinue)}
-  canContinue={!!config.username && !!config.serverDomain}
+  canContinue={!!config.username && !!config.serverDomain && !!config.password}
   canCancel={true}
   on:cancel
   />
@@ -33,7 +33,6 @@
   /** out */
   export let showPage: ConstructorOfATypedSvelteComponent;
 
-  let password: string;
   let jid: string;
   $: splitJID(jid);
   function splitJID(_dummy: any) {
@@ -43,7 +42,6 @@
     }
     config.username = sp[0];
     config.serverDomain = sp[1];
-    config.password = password;
     config.name = jid;
     config.userRealname = appGlobal.me.name;
   }

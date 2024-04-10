@@ -8,7 +8,8 @@ import { chatMustangApp } from "../../Chat/ChatMustangApp";
 import { appGlobal } from "../../../logic/app";
 import Appearance from "../Mail/Appearance.svelte";
 import AccountGeneral from "../AccountGeneral.svelte";
-import AccountServer from "../Mail/AccountServer.svelte";
+import AccountURLServer from "../AccountURLServer.svelte";
+import AccountMailServer from "../Mail/AccountMailServer.svelte";
 import AccountIdentity from "../Mail/AccountIdentity.svelte";
 import Licenses from "../About/Licenses.svelte";
 import About from "../About/About.svelte";
@@ -16,13 +17,14 @@ import SetupMail from "../Setup/Mail/SetupMail.svelte";
 import SetupChat from "../Setup/Chat/SetupChat.svelte";
 import SetupCalendar from "../Setup/Calendar/SetupCalendar.svelte";
 import SetupContacts from "../Setup/Contacts/SetupContacts.svelte";
+import SetupMeetAccount from "../Setup/Meet/SetupMeetAccount.svelte";
 import { ArrayColl } from "svelte-collections";
 
 const mailSettings = new SettingsCategory("mail", "Mail", false, true);
 mailSettings.subCategories.addAll([
   new SettingsCategory("mail-appearance", "Appearance", false, false, Appearance),
   new SettingsCategory("mail-acc-general", "General", true, true, AccountGeneral),
-  new SettingsCategory("mail-acc-server", "Server", true, false, AccountServer),
+  new SettingsCategory("mail-acc-server", "Server", true, false, AccountMailServer),
   new SettingsCategory("mail-acc-identity", "Identity", true, false, AccountIdentity),
   new SettingsCategory("mail-acc-send", "Send", true),
   new SettingsCategory("mail-acc-copies", "Copies", true),
@@ -35,7 +37,6 @@ const chatSettings = new SettingsCategory("chat", "Chat", false, true);
 chatSettings.subCategories.addAll([
   new SettingsCategory("chat-appearance", "Appearance", false),
   new SettingsCategory("chat-acc-general", "General", true, true, AccountGeneral),
-  new SettingsCategory("chat-acc-server", "Server", true),
   new SettingsCategory("chat-acc-send", "Send", true),
   new SettingsCategory("chat-acc-identity", "Identity", true),
 ]);
@@ -46,6 +47,7 @@ chatSettings.forApp = chatMustangApp;
 const calendarSettings = new SettingsCategory("calendar", "Calendar", false, true);
 calendarSettings.subCategories.addAll([
   new SettingsCategory("calendar-acc-general", "General", true, true, AccountGeneral),
+  new SettingsCategory("contacts-acc-server", "Server", true, false, AccountURLServer),
 ]);
 calendarSettings.accounts = appGlobal.calendars;
 calendarSettings.newAccountUI = SetupCalendar;
@@ -63,6 +65,8 @@ const meetSettings = new SettingsCategory("meet", "Meet", false, true);
 meetSettings.subCategories.addAll([
   new SettingsCategory("meet-acc-general", "General", true, true, AccountGeneral),
 ]);
+meetSettings.accounts = appGlobal.meetAccounts;
+meetSettings.newAccountUI = SetupMeetAccount;
 meetSettings.forApp = meetMustangApp;
 
 const appSettings = new SettingsCategory("app", "App integration", false, true);

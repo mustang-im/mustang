@@ -1,4 +1,4 @@
-<vbox flex class="setup-mail-window">
+<vbox flex class="setup-contacts-window">
   <hbox flex />
   <vbox class="page-box">
     <svelte:component this={showPage} bind:showPage bind:config
@@ -38,7 +38,7 @@
 </script>
 
 <style>
-  .setup-mail-window {
+  .setup-contacts-window {
     justify-content: center;
     align-items: center;
   }
