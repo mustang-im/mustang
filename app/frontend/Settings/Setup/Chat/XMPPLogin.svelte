@@ -20,8 +20,6 @@
 <script lang="ts">
   import type { XMPPAccount } from "../../../../logic/Chat/XMPP/XMPPAccount";
   import { SQLChatAccount } from "../../../../logic/Chat/SQL/SQLChatAccount";
-  import { openApp } from "../../../AppsBar/selectedApp";
-  import { chatMustangApp } from "../../../Chat/ChatMustangApp";
   import { appGlobal } from "../../../../logic/app";
   import Password from "../Password.svelte";
   import ButtonsBottom from "../ButtonsBottom.svelte";
@@ -51,7 +49,7 @@
   async function onContinue() {
     await SQLChatAccount.save(config);
     appGlobal.chatAccounts.add(config);
-    openApp(chatMustangApp);
+    showPage = null;
   }
 </script>
 
