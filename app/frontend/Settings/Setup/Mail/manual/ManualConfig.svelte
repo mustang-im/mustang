@@ -5,7 +5,9 @@
   <grid class="manual-config" full={stepFull}>
     <ManualConfigLabels {stepFull} />
     <ManualConfigServer {config} bind:this={incomingEl} bind:stepFull />
-    <ManualConfigServer config={config.outgoing} bind:this={outgoingEl} {stepFull} />
+    {#if config.outgoing}
+      <ManualConfigServer config={config.outgoing} bind:this={outgoingEl} {stepFull} />
+    {/if}
   </grid>
 </vbox>
 
@@ -16,11 +18,12 @@
 
   /** in */
   export let config: MailAccount;
-  export let abort: AbortController;
+  export let abort: AbortController = new AbortController();
+  /** in/out */
+  export let stepFull = false;
 
   let incomingEl: ManualConfigServer;
   let outgoingEl: ManualConfigServer;
-  let stepFull = false;
 
   /** User just pressed the [Next] button */
   export async function onContinue(): Promise<boolean> {
