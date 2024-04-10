@@ -35,7 +35,7 @@ export class RawFilesAttachment {
   }
 }
 
-/** Replace funny or dangerous characters and strings from the filename */
+/** TODO Replace funny or dangerous characters and strings from the filename */
 export function cleanFilename(filename: string): string {
   return filename.replace(/[\<\>\@\:]/g, "");
 }

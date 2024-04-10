@@ -5,6 +5,7 @@ import { Attachment, ContentDisposition } from "../Attachment";
 import { RawFilesAttachment } from "../RawFiles/RawFilesAttachment";
 import { SQLEMail } from "../SQL/SQLEMail";
 import { sanitizeHTML } from "../../util/convertHTML";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
@@ -29,19 +30,19 @@ export class IMAPEMail extends EMail {
 
   fromFlow(msgInfo: any) {
     // <https://imapflow.com/global.html#FetchMessageObject>
-    this.uid = msgInfo.uid;
-    this.seq = msgInfo.seq;
+    this.uid = msgInfo.uid ? sanitize.integer(msgInfo.uid) : null;
+    this.seq = msgInfo.seq ? sanitize.integer(msgInfo.seq) : null;
     // <https://imapflow.com/global.html#MessageEnvelopeObject>
     let env = msgInfo.envelope;
-    this.id = env?.messageId ?? this.uid;
-    this.subject = env.subject;
-    this.sent = env.date ?? new Date();
+    this.id = env?.messageId ? sanitize.nonemptystring(env.messageId) : this.uid + "";
+    this.subject = sanitize.stringOrNull(env.subject);
+    this.sent = env.date ? sanitize.date(env.date) : new Date();
     this.received = new Date();
     this.setFlagsLocal(msgInfo.flags);
-    this.inReplyTo = env.inReplyTo;
+    this.inReplyTo = sanitize.stringOrNull(env.inReplyTo);
     let firstFrom = env.from && env.from[0];
     if (firstFrom) {
-      this.contact = findOrCreatePerson(firstFrom.address, firstFrom.name);
+      this.contact = findOrCreatePerson(sanitize.nonemptystring(firstFrom.address), sanitize.stringOrNull(firstFrom.name));
       this.from = findOrCreatePersonEmailAddress(firstFrom.address, firstFrom.name);
     } else {
       this.contact = findOrCreatePerson("unknown@example.com", "Unknown");
@@ -50,6 +51,7 @@ export class IMAPEMail extends EMail {
     addPersons(this.to, env.to);
     addPersons(this.cc, env.cc);
     addPersons(this.bcc, env.bcc);
+    assert(!msgInfo.source || msgInfo.source instanceof Uint8Array, "MIME source needs to be a buffer");
     this.mime = msgInfo.source;
   }
 
@@ -68,21 +70,24 @@ export class IMAPEMail extends EMail {
   async parseMIME() {
     //console.log("MIME source", this.mime, new TextDecoder("utf-8").decode(this.mime));
     assert(this.mime?.length, "MIME source not yet downloaded");
-    let mail = await new PostalMIME().parse(this.mime);
+    let mail = await new PostalMIME().parse(sanitize.nonemptystring(this.mime));
     for (let header of mail.headers) {
-      this.headers.set(header.key, header.value);
+      this.headers.set(sanitize.nonemptystring(header.key), sanitize.nonemptystring(header.value));
     }
     this.text = mail.text;
-    this.html = sanitizeHTML(mail.html);
+    this.html = sanitizeHTML(sanitize.stringOrNull(mail.html));
     this.attachments.addAll(mail.attachments.map(a => {
       let attachment = new Attachment();
-      attachment.filename = a.filename;
-      attachment.mimeType = a.mimeType;
-      attachment.disposition = a.disposition as ContentDisposition;
-      attachment.related = a.related;
-      attachment.contentID = a.contentId;
+      attachment.filename = sanitize.nonemptystring(a.filename);
+      attachment.mimeType = sanitize.nonemptystring(a.mimeType);
+      attachment.disposition = sanitize.translate(a.disposition, {
+        attachment: ContentDisposition.attachment,
+        inline: ContentDisposition.inline,
+      }, ContentDisposition.unknown);
+      attachment.related = sanitize.boolean(a.related);
+      attachment.contentID = sanitize.stringOrNull(a.contentId);
       attachment.content = new File([a.content], a.filename, { type: a.mimeType });
-      attachment.size = attachment.content.size;
+      attachment.size = attachment.content.size ? sanitize.integer(attachment.content.size) : null;
       return attachment;
     }));
     for (let a of this.attachments) {
@@ -148,5 +153,5 @@ function addPersons(targetList: ArrayColl<PersonEmailAddress>, personList: any[]
     return;
   }
   targetList.addAll(personList.map(p =>
-      findOrCreatePersonEmailAddress(p.address, p.name)));
+    findOrCreatePersonEmailAddress(sanitize.nonemptystring(p.address), sanitize.stringOrNull(p.name))));
 }
