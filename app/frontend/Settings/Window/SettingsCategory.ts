@@ -1,6 +1,7 @@
 import type { Account } from "../../../logic/Abstract/Account";
 import { Observable, notifyChangedProperty } from "../../../logic/util/Observable";
 import { ArrayColl, Collection } from "svelte-collections";
+import { MustangApp } from "../../AppsBar/MustangApp";
 
 export class SettingsCategory extends Observable {
   id: string;
@@ -25,6 +26,8 @@ export class SettingsCategory extends Observable {
   @notifyChangedProperty
   accounts: Collection<Account> = new ArrayColl<Account>();
   newAccountUI: ConstructorOfATypedSvelteComponent | undefined;
+  /** If `isMain && !isAccountSpecific`, can have the app that these settings are for */
+  forApp: MustangApp;
 
   constructor(id: string, name: string, isAccountSpecific = false, isMain = false, content?: ConstructorOfATypedSvelteComponent) {
     super();
