@@ -5,7 +5,12 @@
 
 <ProtocolSelector {protocols} bind:selectedProtocol={selectedProtocol} />
 
-<ButtonsBottom on:continue={() => catchErrors(onContinue)} canContinue={!!selectedProtocol} />
+<ButtonsBottom
+  on:continue={() => catchErrors(onContinue)}
+  canContinue={!!selectedProtocol}
+  canCancel={true}
+  on:cancel
+  />
 
 <script lang="ts">
   import type { Calendar } from "../../../../logic/Calendar/Calendar";

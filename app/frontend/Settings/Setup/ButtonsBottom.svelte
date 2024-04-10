@@ -5,6 +5,11 @@
       on:click={reset}
       />
   {/if}
+  {#if canCancel}
+    <Button label="Cancel" classes="secondary"
+      on:click={onCancel}
+      />
+  {/if}
   <hbox flex />
   <Button label="Next" classes="filled large"
     disabled={!canContinue}
@@ -19,10 +24,15 @@
   const dispatch = createEventDispatcher();
 
   export let canContinue: boolean;
+  export let canCancel = false;
   export let showReset = false;
 
-  async function onContinue() {
+  function onContinue() {
     dispatch("continue");
+  }
+
+  function onCancel() {
+    dispatch("cancel");
   }
 
   function reset() {

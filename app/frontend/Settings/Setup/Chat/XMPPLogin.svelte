@@ -15,6 +15,8 @@
 <ButtonsBottom
   on:continue={() => catchErrors(onContinue)}
   canContinue={!!config.username && !!config.serverDomain}
+  canCancel={true}
+  on:cancel
   />
 
 <script lang="ts">

@@ -1,7 +1,9 @@
 <vbox flex class="setup-mail-window">
   <hbox flex />
   <vbox class="page-box">
-    <svelte:component this={showPage} bind:showPage bind:config />
+    <svelte:component this={showPage} bind:showPage bind:config
+      on:cancel={() => catchErrors(onClose)}
+      />
   </vbox>
   <hbox flex />
   <BackgroundVideo />
@@ -10,11 +12,13 @@
 <script lang="ts">
   import type { Calendar } from "../../../../logic/Calendar/Calendar";
   import { openApp } from "../../../AppsBar/selectedApp";
-  import { settingsMustangApp } from "../../Window/SettingsMustangApp";
-  import { getSettingsCategoryByID } from "../../Window/CategoriesUtils";
   import { selectedCategory } from "../../Window/selected";
+  import { getSettingsCategoryForApp } from "../../Window/CategoriesUtils";
+  import { settingsMustangApp } from "../../Window/SettingsMustangApp";
+  import { calendarMustangApp } from "../../../Calendar/CalendarMustangApp";
   import SelectProtocol from "./SelectProtocol.svelte";
   import BackgroundVideo from "../BackgroundVideo.svelte";
+  import { catchErrors } from "../../../Util/error";
 
   let config: Calendar;
   let showPage: ConstructorOfATypedSvelteComponent | null = SelectProtocol;
@@ -28,7 +32,7 @@
   }
 
   function onClose() {
-    $selectedCategory = getSettingsCategoryByID("calendar");
+    $selectedCategory = getSettingsCategoryForApp(calendarMustangApp);
     openApp(settingsMustangApp);
   }
 </script>

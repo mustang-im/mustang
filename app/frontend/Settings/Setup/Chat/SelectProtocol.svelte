@@ -8,8 +8,8 @@
 <ButtonsBottom
   on:continue={() => catchErrors(onContinue)}
   canContinue={!!selectedProtocol}
-  hasCancel={true}
-  on:cancel={() => catchErrors(onCancel)}
+  canCancel={true}
+  on:cancel
   />
 
 <script lang="ts">
