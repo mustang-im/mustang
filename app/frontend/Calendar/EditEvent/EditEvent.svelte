@@ -91,7 +91,8 @@
           label="Save"
           icon={SaveIcon}
           iconSize="16px"
-          on:click={onSave}
+          disabled={!canSave}
+          on:click={() => catchErrors(onSave)}
           />
       </hbox>
     </vbox>
@@ -115,6 +116,7 @@
   import CloseIcon from "lucide-svelte/icons/x";
   import CopyIcon from "lucide-svelte/icons/copy";
   import BrowserIcon from "lucide-svelte/icons/globe";
+  import { catchErrors } from "../../Util/error";
   import type { Editor } from '@tiptap/core';
 
   export let event: Event;
@@ -131,7 +133,14 @@
     // event.onlineMeetingURL
   }
 
-  function onSave() {
+  $: canSave = event && event.title && event.startTime && event.endTime &&
+      event.startTime.getTime() <= event.endTime.getTime();
+
+  async function onSave() {
+    if (!event.calendar.events.contains(event)) {
+      event.calendar.events.add(event);
+    }
+    await event.save();
     onClose();
   }
 

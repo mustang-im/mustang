@@ -1,5 +1,5 @@
 <vbox flex class="calendar-app">
-  <TitleBar bind:dateInterval={$selectedDateInterval} on:addEvent={addEvent} />
+  <TitleBar bind:dateInterval={$selectedDateInterval} on:addEvent={() => catchErrors(addEvent)} />
   <Scroll>
     <vbox flex class="main">
       {#if dateInterval == 0 || $globalSearchTerm}
@@ -23,7 +23,7 @@
 
 <script lang="ts">
   import { Event } from "../../logic/Calendar/Event";
-  import { selectedDate, selectedDateInterval } from "./selected";
+  import { selectedCalendar, selectedDate, selectedDateInterval } from "./selected";
   import { calendarMustangApp } from "./CalendarMustangApp";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
@@ -33,13 +33,17 @@
   import DualView from "./DualView.svelte";
   import ListView from "./ListView.svelte";
   import Scroll from "../Shared/Scroll.svelte";
-  import { ArrayColl } from "svelte-collections";
+  import { catchErrors } from "../Util/error";
+  import { assert } from "../../logic/util/util";
+  import { mergeColls } from "svelte-collections";
 
   $: dateInterval = $selectedDateInterval;
-  $: events = appGlobal.calendars.first?.events.sortBy(ev => ev.startTime) ?? new ArrayColl<Event>();
+  $: events = mergeColls(appGlobal.calendars.map(cal => cal.events)).sortBy(ev => ev.startTime);
+  $: if (!$selectedCalendar) { $selectedCalendar = appGlobal.calendars.first; }
 
   function addEvent() {
-    let event = new Event();
+    assert($selectedCalendar, "Please select a calendar first");
+    let event = new Event($selectedCalendar);
     event.startTime = new Date();
     event.endTime = new Date();
     calendarMustangApp.editEvent(event);
