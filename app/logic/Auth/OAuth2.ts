@@ -1,5 +1,5 @@
 import { assert, NotImplemented } from "../util/util";
-import axios from "axios";
+import { appGlobal } from "../app";
 
 /**
  * Implements login via OAuth2
@@ -30,7 +30,6 @@ export class OAuth2 {
   expiresAt: Date | null = null;
   protected expiryTimout: NodeJS.Timeout;
   refreshErrorCallback = (ex: Error) => console.error(ex);
-  protected axios: any;
 
   constructor(oauth2BaseURL: string, scope: string, clientID: string) {
     assert(oauth2BaseURL.startsWith("https://") || oauth2BaseURL.startsWith("http://"), "Need OAuth2 URL");
@@ -38,14 +37,6 @@ export class OAuth2 {
     this.oauth2BaseURL = oauth2BaseURL;
     this.scope = scope;
     this.clientID = clientID;
-    this.axios = axios.create({
-      baseURL: `${this.oauth2BaseURL}/token`,
-      timeout: 3000,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'text/json',
-      }
-    });
   }
 
   /**
@@ -117,7 +108,15 @@ export class OAuth2 {
   protected async getAccessTokenFromParams(params: any, additionalHeaders?: any): Promise<string> {
     params.scope = this.scope;
     params.client_id = this.clientID;
-    let response = await this.axios.post('', new URLSearchParams(params), {
+    let ky = await appGlobal.remoteApp.kyCreate({
+      prefixUrl: `${this.oauth2BaseURL}/token`,
+      timeout: 3000,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'text/json',
+      }
+    });
+    let response = await ky.post('', new URLSearchParams(params), {
       headers: additionalHeaders,
     });
     let data = response.data;
