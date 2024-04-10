@@ -143,7 +143,11 @@ export const mailDatabaseSchema = sql`
     "hostname" TEXT default null,
     "port" INTEGER default null,
     "tls" INTEGER default 0,
+    "outgoingAccountID" INTEGER default null,
     "url" TEXT default null,
-    "workspace" TEXT default null
+    "workspace" TEXT default null,
+    FOREIGN KEY (outgoingAccountID)
+      REFERENCES emailAccount (id)
+      ON DELETE CASCADE
   );
 `;

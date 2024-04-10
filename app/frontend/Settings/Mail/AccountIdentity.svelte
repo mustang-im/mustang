@@ -1,6 +1,8 @@
 <grid>
   <label for="realname">Your name</label>
   <input type="text" bind:value={account.userRealname} name="realname" />
+  <label for="emailaddress">Your email address</label>
+  <input type="email" bind:value={mailAccount.emailAddress} name="emailaddress" />
 </grid>
 
 <script lang="ts">

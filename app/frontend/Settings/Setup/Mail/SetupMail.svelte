@@ -159,7 +159,7 @@
     } else if (step == Step.CheckConfig) {
       step = Step.FinalizeConfig;
     } else if (step == Step.FinalizeConfig) {
-      onSave();
+      await onSave();
     } else {
       throw new NotReached();
     }
@@ -201,9 +201,10 @@
     errorGravity = ErrorGravity.OK;
   }
 
-  function onSave() {
+  async function onSave() {
     console.log("save config", config);
-    saveConfig(config, emailAddress, password);
+    await saveConfig(config, emailAddress, password);
+    await config.login(true);
     onClose();
   }
 
