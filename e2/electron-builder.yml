@@ -23,7 +23,6 @@ mac:
   target:
     - target: default
       arch: universal
-
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
     - NSCameraUsageDescription: Application requests access to the device's camera.
