@@ -30,6 +30,7 @@ mac:
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: false
+  mergeASARs: false
 dmg:
   artifactName: ${name}-${version}.${ext}
 linux:
@@ -43,6 +44,8 @@ linux:
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: true
+buildDependenciesFromSource: true
+nodeVersion: lts
 publish:
   provider: generic
   url: https://mustang.im/auto-updates
