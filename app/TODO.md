@@ -8,7 +8,12 @@
     * Mail Chat view: Open thread
   * Folder hierarchy
   * All accounts - fix
-
+  * Bugs
+    * Google
+      * no email subject
+    * Setup mail
+      * When finishing gives error, don't allow the user to click multiple times, creating multiple accounts.
+      * after account delete: remove general panel
 # App logic
 * init
   * Move chat account load into Chat app
@@ -213,14 +218,13 @@
 # Initial release
 * Installer
   * Windows
-  * Linux
+  * Linux - DONE
+  * Mac ARM - DONE
   * Auto-update client
   * Auto-update server
 * Git repo
 * Licenses
   * Adapt our Open-Source license
-  * Third party lib licenses
-    * About dialog
   * Adapt our EULA and Privacy policy
   * Impressum
 
