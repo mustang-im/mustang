@@ -24,7 +24,6 @@ import SetupMeetAccount from "./Setup/Meet/SetupMeetAccount.svelte";
 import { Account } from "../../logic/Abstract/Account";
 import { MailAccount } from "../../logic/Mail/MailAccount";
 import { XMPPAccount } from "../../logic/Chat/XMPP/XMPPAccount";
-import { MatrixAccount } from "../../logic/Chat/Matrix/MatrixAccount";
 import { M3Account } from "../../logic/Meet/M3Account";
 import { ArrayColl } from "svelte-collections";
 import { ChatAccount } from "../../logic/Chat/ChatAccount";
@@ -58,7 +57,6 @@ chatSettings.forApp = chatMustangApp;
 settingsCategories.add(chatSettings);
 
 accountSettings.add(new AccSetting(XMPPAccount, "xmpp-server", "Server", AccountXMPPServer));
-accountSettings.add(new AccSetting(MatrixAccount, "matrix-server", "Server", AccountURLServer));
 accountSettings.add(new AccSetting(ChatAccount, "chat-send", "Send", null));
 accountSettings.add(new AccSetting(ChatAccount, "chat-identity", "Identity", null));
 

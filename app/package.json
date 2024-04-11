@@ -34,8 +34,6 @@
     "lowlight": "^3.1.0",
     "lucide-svelte": "^0.293.0",
     "markdown-it": "^14.1.0",
-    "matrix-js-sdk": "^30.0.1",
-    "olm": "https://packages.matrix.org/npm/olm/olm-3.2.1.tgz",
     "postal-mime": "^2.1.2",
     "pretty-bytes": "^6.1.1",
     "svelte-collections": "^1.1.21",

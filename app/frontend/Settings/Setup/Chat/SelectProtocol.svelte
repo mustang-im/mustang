@@ -19,7 +19,6 @@
   import ButtonsBottom from "../ButtonsBottom.svelte";
   import Header from "../Header.svelte";
   import XMPPLogin from "./XMPPLogin.svelte";
-  import MatrixLogin from "./MatrixLogin.svelte";
   import { catchErrors } from "../../../Util/error";
 
   /** out */
@@ -35,15 +34,12 @@
 
   const protocols: ProtocolDescription[] = [
     { label: "XMPP / Jabber", protocolID: "xmpp" },
-    { label: "Matrix", protocolID: "matrix" },
   ];
 
   function onContinue() {
     config = newChatAccountForProtocol(selectedProtocol);
     if (selectedProtocol == "xmpp") {
       showPage = XMPPLogin;
-    } else if (selectedProtocol == "matrix") {
-      showPage = MatrixLogin;
     }
   }
 

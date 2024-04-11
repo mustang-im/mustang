@@ -1,6 +1,5 @@
 import type { ChatAccount } from '../ChatAccount';
 import { ArrayColl } from 'svelte-collections';
-import { MatrixAccount } from '../Matrix/MatrixAccount';
 import { XMPPAccount } from '../XMPP/XMPPAccount';
 import { sanitize } from '../../../../lib/util/sanitizeDatatypes';
 import { appGlobal } from '../../app';
@@ -21,8 +20,6 @@ export async function readChatAccounts(): Promise<ArrayColl<ChatAccount>> {
       let protocol = localStorage.getItem(prefBranch + "protocol");
       if (!protocol) {
         break;
-      } else if (protocol == "matrix") {
-        accounts.add(readMatrixAccount(prefBranch));
       } else if (protocol == "xmpp") {
         accounts.add(readXMPPAccount(prefBranch));
       } else {
@@ -40,22 +37,6 @@ export async function readChatAccounts(): Promise<ArrayColl<ChatAccount>> {
     readMe(account);
   }
   return accounts;
-}
-
-function readMatrixAccount(prefBranch: string): MatrixAccount {
-  let account = new MatrixAccount();
-  account.baseURL = sanitize.url(localStorage.getItem(prefBranch + "server") ?? "https://matrix.org");
-  account.username = sanitize.nonemptystring(localStorage.getItem(prefBranch + "username"));
-  account.password = sanitize.nonemptystring(localStorage.getItem(prefBranch + "password"));
-  let deviceID = localStorage.getItem(prefBranch + "deviceID");
-  if (deviceID) {
-    account.deviceID = sanitize.alphanumdash(deviceID);
-  } else {
-    account.deviceID = crypto.randomUUID();
-    localStorage.setItem(prefBranch + "deviceID", account.deviceID);
-  }
-  account.name = `Matrix ${account.username}`;
-  return account;
 }
 
 function readXMPPAccount(prefBranch: string): XMPPAccount {

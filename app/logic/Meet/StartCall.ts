@@ -5,8 +5,6 @@ import { MeetingParticipant } from "./Participant";
 import type { ChatAccount } from "../Chat/ChatAccount";
 import type { Chat } from "../Chat/Chat";
 import { OTalkConf } from "./OTalkConf";
-import { MatrixAccount } from "../Chat/Matrix/MatrixAccount";
-import { MatrixVideoConf } from "./MatrixVideoConf";
 import { appGlobal } from "../app";
 import type { URLString } from "../util/util";
 
@@ -33,9 +31,6 @@ export async function startVideoCall(to: Person | Group): Promise<VideoConfMeeti
     throw new Error("No suitable contact methods found for " + to.name);
   }
   let conf: VideoConfMeeting | null = null;
-  if (haveChat.account instanceof MatrixAccount) {
-    conf = await MatrixVideoConf.call(haveChat.chat, haveChat.account.client);
-  }
   if (!conf) {
     throw new Error("Call not possible for this type of contact");
   }
@@ -57,58 +52,14 @@ function getExistingChat(person: Person | Group): { chat: Chat, account: ChatAcc
   return null;
 }
 
-function accountSuitableForCall(account: ChatAccount) {
-  return account instanceof MatrixAccount;
-}
-
 async function createNewPersonChat(to: Person): Promise<{ chat: Chat, account: ChatAccount } | null> {
   // Check available contact methods, and pick the preferred one for this person
-  let iHaveMatrix = haveAccountType(MatrixAccount);
-  console.log("User has a Matrix account");
-  let entries = to.chatAccounts.sortBy(entry => entry.preference);
-  for (let entry of entries) {
-    if (iHaveMatrix && entryIsMatrix(entry)) {
-      return createNewMatrixChat(to, entry.value);
-    }
-  }
   return null;
 }
 
 async function createNewGroupChat(to: Group): Promise<{ chat: Chat, account: ChatAccount } | null> {
   // TODO implement creating a group chat to an arbitrary list of people
-  let iHaveMatrix = haveAccountType(MatrixAccount);
-  let theyAllHaveMatrix =
-    to.participants.contents.every(person =>
-      person.chatAccounts.some(entry => entryIsMatrix(entry)));
-  if (iHaveMatrix && theyAllHaveMatrix) {
-    let matrixIDs = to.participants.map(person =>
-      person.chatAccounts.filter(entry => entryIsMatrix(entry))
-        .sortBy(contact => contact.preference)
-        .first.value)
-      .values().contents;
-    return createNewMatrixGroupChat(to, matrixIDs);
-  }
   return null;
-}
-
-async function createNewMatrixChat(to: Person, matrixID: string): Promise<{ chat: Chat, account: MatrixAccount } | null> {
-  throw new Error("Not implemented: Create Matrix chat room to person");
-  // TODO Create Matrix chat room with that person
-  return null;
-}
-
-async function createNewMatrixGroupChat(to: Group, matrixIDs: string[]): Promise<{ chat: Chat, account: MatrixAccount } | null> {
-  throw new Error("Not implemented: Create Matrix chat room to group");
-  // TODO Create Matrix chat room with those persons
-  return null;
-}
-
-function haveAccountType(type: typeof ChatAccount): boolean {
-  return appGlobal.chatAccounts.some(account => account instanceof type);
-}
-
-function entryIsMatrix(contact: ContactEntry) {
-  return contact.purpose.toLowerCase() == "matrix";
 }
 
 export async function startAudioCall(to: Person | Group): Promise<VideoConfMeeting> {
