@@ -66,7 +66,7 @@ export class OAuth2MS {
         if (!ex.consentRequired) {
           // Password auth didn't work; don't bother trying it again.
           this.account.password = null;
-          localStorage.removeItem(this.account.prefBranch + "password");
+          await this.account.storage.saveAccount(this.account);
         }
       }
     }
@@ -101,7 +101,7 @@ export class OAuth2MS {
   async getAccessTokenFromPassword(): Promise<{ accessToken: string, refreshToken: string | null }> {
     return await this._getAccessTokenFromParams({
       grant_type: "password",
-      username: this.account.username,
+      username: this.account.username || this.account.emailAddress,
       password: this.account.password,
     });
   }
@@ -117,15 +117,15 @@ export class OAuth2MS {
   }
 
   async getRefreshTokenFromStorage(): Promise<string> {
-    return localStorage.getItem(this.account.prefBranch + "refreshToken");
+    return localStorage.getItem("mail." + this.account.id + ".refreshToken");
   }
 
   async deleteRefreshTokenFromStorage() {
-    localStorage.removeItem(this.account.prefBranch + "refreshToken");
+    localStorage.removeItem("mail." + this.account.id + ".refreshToken");
   }
 
   async storeRefreshToken(refreshToken: string) {
-    return localStorage.setItem(this.account.prefBranch + "refreshToken", refreshToken);
+    return localStorage.setItem("mail." + this.account.id + ".refreshToken", refreshToken);
   }
 
   getAuthURL(aState: string): string {
@@ -136,7 +136,7 @@ export class OAuth2MS {
       response_mode: "query",
       scope: kAuthScope,
       state: aState,
-      login_hint: this.account.username,
+      login_hint: this.account.username || this.account.emailAddress,
     });
   }
 
