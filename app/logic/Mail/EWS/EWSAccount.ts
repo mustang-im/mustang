@@ -9,7 +9,6 @@ export class EWSAccount extends MailAccount {
   readonly protocol: string = "ews";
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
-  prefBranch: string = "";
   oAuth2: OAuth2MS | undefined;
 
   constructor() {
@@ -122,7 +121,7 @@ export class EWSAccount extends MailAccount {
       let accessToken = await this.oAuth2.getAccessToken();
       options.headers.Authorization = `Bearer ${accessToken}`;
     } else {
-      options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
+      options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username || this.emailAddress}:${this.password}`)))}`;
     }
     return options;
   }
