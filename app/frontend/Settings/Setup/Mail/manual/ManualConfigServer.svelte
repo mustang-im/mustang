@@ -218,7 +218,7 @@
     min-width: 7em;
   }
   .authMethod select {
-    widtdh: 10px;
+    width: 100%;
   }
   .port input[type=number] {
     width: 6em;

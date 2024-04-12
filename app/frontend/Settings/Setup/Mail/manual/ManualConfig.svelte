@@ -1,15 +1,10 @@
-<vbox>
-  <h2>Manual configuration</h2>
-  <hbox class="subtitle">Your email provider or company can tell you these details.</hbox>
-
-  <grid class="manual-config" full={stepFull}>
-    <ManualConfigLabels {stepFull} />
-    <ManualConfigServer {config} bind:this={incomingEl} bind:stepFull />
-    {#if config.outgoing}
-      <ManualConfigServer config={config.outgoing} bind:this={outgoingEl} {stepFull} />
-    {/if}
-  </grid>
-</vbox>
+<grid class="manual-config" full={stepFull}>
+  <ManualConfigLabels {stepFull} />
+  <ManualConfigServer {config} bind:this={incomingEl} bind:stepFull />
+  {#if config.outgoing}
+    <ManualConfigServer config={config.outgoing} bind:this={outgoingEl} {stepFull} />
+  {/if}
+</grid>
 
 <script lang="ts">
   import type { MailAccount } from "../../../../../logic/Mail/MailAccount";
@@ -18,24 +13,14 @@
 
   /** in */
   export let config: MailAccount;
-  export let abort: AbortController = new AbortController();
-  /** in/out */
-  export let stepFull = false;
+  export let stepFull = true;
 
-  let incomingEl: ManualConfigServer;
-  let outgoingEl: ManualConfigServer;
-
-  /** User just pressed the [Next] button */
-  export async function onContinue(): Promise<boolean> {
-    return await incomingEl.onContinue() &&
-      await outgoingEl.onContinue();
-  }
+  /** out only */
+  export let incomingEl: ManualConfigServer = null;
+  export let outgoingEl: ManualConfigServer = null;
 </script>
 
 <style>
-  h2 {
-    margin-bottom: 0px;
-  }
   grid {
     grid-auto-flow: column;
     grid-template-rows: auto auto auto;
