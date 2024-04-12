@@ -128,7 +128,11 @@ export class IMAPAccount extends MailAccount {
   }
 
   protected async reconnect(): Promise<void> {
-    this._connection.close();
+    try {
+      this._connection.close();
+    } catch (ex) {
+      // Sometimes gives "Connection not available". Do nothing.
+    }
     this._connection = null;
     if (!(this.password || this.accessToken)) {
       return;
