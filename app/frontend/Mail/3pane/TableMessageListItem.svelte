@@ -1,7 +1,7 @@
 <hbox class="unread button" class:read={$message.isRead}>
   <Button
     icon={CircleIcon}
-    iconSize="10px"
+    iconSize="7px"
     iconOnly
     label={message.isRead ? "Mark this message as unread" : "Mark this message as read"}
     on:click={() => catchErrors(toggleRead)}
@@ -11,7 +11,7 @@
 <hbox class="star button" class:starred={$message.isStarred}>
   <Button
     icon={StarIcon}
-    iconSize="14px"
+    iconSize="16px"
     iconOnly
     label="Remember this message"
     on:click={() => catchErrors(toggleStar)}
@@ -68,7 +68,7 @@
     align-items: center;
   }
   .button :global(svg) {
-    stroke-width: 1px;
+    stroke: none;
   }
   :global(.row:not(:hover)) .star:not(.starred) :global(svg) {
     opacity: 0;
