@@ -1,4 +1,10 @@
-<ManualConfig config={mailAccount} stepFull={true} />
+<vbox>
+  <h2>Server</h2>
+  <hbox class="subtitle">Your email provider or company can tell you these details.</hbox>
+
+  <ManualConfig config={mailAccount} stepFull={true} />
+</vbox>
+
 
 <script lang="ts">
   import type { Account } from "../../../logic/Abstract/Account";
@@ -16,3 +22,10 @@
     await SQLMailAccount.save(mailAccount);
   }
 </script>
+
+<style>
+  h2 {
+    margin-top: 0px;
+    margin-bottom: 0px;
+  }
+</style>

@@ -18,12 +18,12 @@
       <CheckConfig {config} {emailAddress} {password}
         on:continue={onCheckConfigSucceeded} on:fail={onCheckConfigFailed} {abort} />
     {:else if step == Step.ManualConfig}
-      <ManualConfig bind:config bind:this={manualConfigEl} {abort} />
+      <ManualConfigPage bind:config bind:this={manualConfigEl} {abort} />
     {:else if step == Step.FinalizeConfig}
       <FinalizeConfig {config} />
     {/if}
     <ButtonsBottom {canContinue}
-      on:continue={onContinue}
+      on:continue={() => catchErrors(onContinue, showError)}
       on:reset={reset}
       showReset={step != Step.EmailAddress}
       canCancel={true}
@@ -60,7 +60,7 @@
   import FoundConfig from "./FoundConfig.svelte";
   import CheckConfig from "./CheckConfig.svelte";
   import FinalizeConfig from "./FinalizeConfig.svelte";
-  import ManualConfig from "./manual/ManualConfig.svelte";
+  import ManualConfigPage from "./manual/ManualConfigPage.svelte";
   import ErrorMessage, { ErrorGravity } from "../ErrorMessage.svelte";
   import Footer from "../Footer.svelte";
   import ButtonsBottom from "../ButtonsBottom.svelte";
