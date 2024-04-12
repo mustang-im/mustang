@@ -40,12 +40,33 @@
     grid-auto-flow: column;
     grid-template-rows: auto auto auto;
     grid-auto-columns: max-content auto auto;
-    column-gap: 24px;
+    row-gap: 12px;
   }
   grid[full=true] {
     grid-template-rows: auto auto auto auto auto auto auto;
   }
   grid :global(> *) {
     align-items: end;
+  }
+
+  /* Style */
+
+  grid {
+    border: 1px solid #EEEEEE;
+    border-radius: 6px;
+    margin-top: 24px;
+    padding-bottom: 20px;
+  }
+  grid :global(.header) {
+    background-color: #F9F8FD;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 8px;
+    font-size: 14px;
+    border-bottom: 1px solid #EEEEEE;
+  }
+  grid :global(> *) {
+    padding-left: 16px;
+    padding-right: 16px;
   }
 </style>

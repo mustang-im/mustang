@@ -1,4 +1,4 @@
-  <hbox></hbox>
+  <hbox class="header"></hbox>
   <hbox class="label">Protocol</hbox>
   <hbox class="label">Hostname</hbox>
   {#if stepFull}
@@ -11,9 +11,3 @@
 <script lang="ts">
   export let stepFull: boolean;
 </script>
-
-<style>
-  .label {
-    margin-top: 4px;
-  }
-</style>

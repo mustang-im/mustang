@@ -1,9 +1,9 @@
   <hbox class="header">
     <hbox class="direction">
       {#if outgoing}
-          <ArrowLeftIcon />
+          <ArrowLeftIcon size={14} />
       {:else}
-          <ArrowRightIcon />
+          <ArrowRightIcon size={14} />
       {/if}
     </hbox>
     <hbox class="text">
@@ -59,7 +59,7 @@
       </hbox>
     </vbox>
 
-    <hbox class:error={authError}>
+    <hbox class="authMethod" class:error={authError}>
       <select bind:value={config.authMethod} required>
         <option value={AuthMethod.Password}>Password</option>
         <option value={AuthMethod.OAuth2}>OAuth2 / MFA</option>
@@ -82,8 +82,8 @@
   import ShieldOKIcon from "lucide-svelte/icons/shield-check";
   import ShieldAlertIcon from "lucide-svelte/icons/shield-alert";
   import ShieldQuestionIcon from "lucide-svelte/icons/shield-question";
-  import ArrowLeftIcon from "lucide-svelte/icons/arrow-big-left";
-  import ArrowRightIcon from "lucide-svelte/icons/arrow-big-right";
+  import ArrowLeftIcon from "lucide-svelte/icons/move-left";
+  import ArrowRightIcon from "lucide-svelte/icons/move-right";
 
   /** in */
   export let config: MailAccount;
@@ -174,21 +174,16 @@
   .header {
     align-items: center;
     font-weight: bold;
-    font-size: 18px;
-    margin-top: 24px;
-    margin-bottom: 8px;
   }
   .header .direction {
     margin-right: 6px;
+    color: #555555;
   }
   .protocol {
     text-transform: uppercase;
   }
   .hostname input {
     min-width: 15em;
-  }
-  .port input[type=number] {
-    width: 5em;
   }
   .tls {
     align-items: start;
@@ -218,5 +213,14 @@
   }
   .error input {
     border: 1px solid red;
+  }
+  select {
+    min-width: 7em;
+  }
+  .authMethod select {
+    widtdh: 10px;
+  }
+  .port input[type=number] {
+    width: 6em;
   }
 </style>

@@ -95,14 +95,23 @@ input[type="text"] {
   border-bottom: 1px solid #DFDFDF;
   width: 100%;
 }
-
 input:focus {
   outline: none;
   border-bottom: 1px solid #20AE9E;
 }
-
 input::placeholder {
   color: #0C0F27BB;
+}
+
+select {
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  border-bottom: 1px solid #DFDFDF;
+}
+select:focus {
+  outline: none;
+  border-bottom: 1px solid #20AE9E;
 }
 
 a[href] {
