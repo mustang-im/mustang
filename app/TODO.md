@@ -1,7 +1,9 @@
 # Next
 * Chat SQL - Test
 * Mail
+  * Server settings UI style
   * Folder context menu
+  * Message list context menu
   * Threads
     * Message: Conversation view
     * Message list: Threaded view?
