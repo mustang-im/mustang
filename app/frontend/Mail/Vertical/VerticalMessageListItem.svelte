@@ -5,6 +5,16 @@
   <hbox class="top-row">
     <hbox class="contact">{message.contact.name}</hbox>
     <hbox flex />
+    <hbox class="date">{getDateString($message.sent)}</hbox>
+  </hbox>
+  <hbox class="bottom-row">
+    <hbox class="subject">{$message.subject}</hbox>
+    <hbox flex />
+    <hbox class="attachments">
+      {#if $attachments.hasItems}
+        <AttachmentIcon size="14px" />
+      {/if}
+    </hbox>
     <hbox class="star button" class:starred={$message.isStarred}>
       <Button
         icon={StarIcon}
@@ -24,16 +34,6 @@
         on:click={() => catchErrors(toggleRead)}
         plain
         />
-    </hbox>
-    <hbox class="date">{getDateString($message.sent)}</hbox>
-  </hbox>
-  <hbox class="bottom-row">
-    <hbox class="subject">{$message.subject}</hbox>
-    <hbox flex />
-    <hbox class="attachments">
-      {#if $attachments.hasItems}
-        <AttachmentIcon size="14px" />
-      {/if}
     </hbox>
   </hbox>
 </vbox>
