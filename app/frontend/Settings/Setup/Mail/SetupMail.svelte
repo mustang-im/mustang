@@ -90,10 +90,7 @@
   let step: Step = Step.EmailAddress;
   let abort = new AbortController();
 
-  let nextButtonEl: HTMLButtonElement;
-
   async function onEmailAddressSucceeded() {
-    nextButtonEl.focus();
     step = Step.FindConfig;
   }
   function onFindConfigSucceeded() {
