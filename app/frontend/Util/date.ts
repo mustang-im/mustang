@@ -16,9 +16,9 @@ export function getDateString(date: Date): string {
   } else if (today.getTime() - date.getTime() < 7 * 24 * 60 * 60 * 1000) { // this week
     dateDetails = { weekday: "short", hour: "numeric", minute: "numeric" };
   } else if (date.getFullYear() == today.getFullYear()) { // this year
-    dateDetails = { month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" };
+    dateDetails = { month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" };
   } else {
-    dateDetails = { year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" };
+    dateDetails = { year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" };
   }
   return date.toLocaleString(navigator.language, dateDetails);
 }

@@ -54,7 +54,10 @@
   }
   .date {
     min-width: 8em;
-    justify-content: center;
+    justify-content: start;
+    margin-right: 16px;
+    font-size: 12px !important;
+    font-family: Helvetica, Arial, sans-serif;
   }
   .subject.unread,
   .date.unread {
