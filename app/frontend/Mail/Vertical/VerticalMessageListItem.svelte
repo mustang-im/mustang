@@ -18,7 +18,7 @@
     <hbox class="star button" class:starred={$message.isStarred}>
       <Button
         icon={StarIcon}
-        iconSize="14px"
+        iconSize="16px"
         iconOnly
         label="Remember this message"
         on:click={() => catchErrors(toggleStar)}
@@ -28,7 +28,7 @@
     <hbox class="unread button">
       <Button
         icon={CircleIcon}
-        iconSize="8px"
+        iconSize="7px"
         iconOnly
         label={message.isRead ? "Mark this message as unread" : "Mark this message as read"}
         on:click={() => catchErrors(toggleRead)}
@@ -98,7 +98,7 @@
     vertical-align: bottom;
   }
   .button :global(svg) {
-    stroke-width: 1px;
+    stroke: none;
   }
   :global(.row:not(:hover)) .star:not(.starred) :global(svg) {
     opacity: 0;
