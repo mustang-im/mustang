@@ -82,7 +82,10 @@
     font-weight: bold;
   }
   .date {
-    min-width: 2.5em
+    min-width: 8em;
+    justify-content: start;
+    font-size: 12px !important;
+    font-family: Helvetica, Arial, sans-serif;
   }
   .message.unread .date {
     font-weight: bold;
