@@ -33,6 +33,9 @@
   {#if stepFull}
     <hbox class="port" class:error={portError}>
       <input type="number" bind:value={config.port} required on:change={onPortChanged} />
+      {#if !isStandardPort}
+        <hbox class="default">Default: {defaultPort}</hbox>
+      {/if}
     </hbox>
 
     <vbox class="tls" class:error={tlsError} tls={config.tls}>
@@ -109,12 +112,14 @@
   }
 
   function onPortChanged() {
-    let alreadyIsStandardPort = kStandardPorts.find(p => p.protocol == config.protocol && p.port == config.port && p.tls == config.tls);
     let newPreferred = kStandardPorts.find(p => p.protocol == config.protocol && p.port == config.port);
-    if (newPreferred && !alreadyIsStandardPort) {
+    if (newPreferred && !isStandardPort) {
       config.tls = newPreferred.tls;
     }
   }
+
+  $: defaultPort = kStandardPorts.find(p => p.protocol == config.protocol && p.tls == config.tls)?.port;
+  $: isStandardPort = !!kStandardPorts.find(p => p.protocol == config.protocol && p.port == config.port && p.tls == config.tls); // also allow SMTP 25
 
   function onProtocolChanged() {
     onTLSChanged();
@@ -184,6 +189,10 @@
   }
   .hostname input {
     min-width: 15em;
+  }
+  .port .default {
+    color: #555555;
+    margin-left: 8px;
   }
   .tls {
     align-items: start;
