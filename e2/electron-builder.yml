@@ -45,7 +45,6 @@ appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: true
 buildDependenciesFromSource: true
-nodeVersion: lt
 publish:
   provider: generic
   url: https://mustang.im/auto-updates
