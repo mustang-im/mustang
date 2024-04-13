@@ -33,11 +33,12 @@
     height: 24px;
   }
   .person:not(.selected):hover {
-    background-color: #A9DAD4;
+    background-color: var(--hover-bg);
+    color: var(--hover-fg);
   }
   .person.selected {
-    background-color: #20AE9E;
-    color: white;
+    background-color: var(--selected-bg);
+    color: var(--selected-fg);
   }
   .person :global(.avatar) {
     margin: 0px;

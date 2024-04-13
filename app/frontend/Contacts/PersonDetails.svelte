@@ -237,8 +237,6 @@
   .person-page {
     padding: 8px;
     font-size: 14px;
-    background: url(../asset/background-repeat.png) repeat;
-    background-color: #E6F2F1;
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%) inset;
   }
   .person-page :global(.group .content) {
@@ -314,7 +312,7 @@
     color: grey;
   }
   .notes textarea:focus {
-    outline: 2px solid #20AE9E;
+    outline: 2px solid var(--input-focus);
   }
   grid {
     display: grid;

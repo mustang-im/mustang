@@ -18,10 +18,10 @@
     padding: 10px 0px 6px 0px;
   }
   .label :global(.label){
-    color: white;
+    color: var(--appbar-fg);
   }
   .icon :global(.cls-1) {
-    stroke: white;
+    stroke: var(--appbar-fg);
   }
   .app-button:hover {
     background-color: rgba(255, 255, 255, 25%);
@@ -39,13 +39,13 @@
     color: rgba(255, 255, 255, 80%);
   }
   .app-button.selected .icon {
-    color: #494558;
+    color: #494558 /* var(--appbar-bg) */;
   }
   .app-button.selected .icon :global(.cls-1) {
-    stroke: #494558;
+    stroke: #494558 /* var(--appbar-bg) */;
   }
   .app-button.selected .icon :global(.date-calendar-icon) {
-    fill: #494558;
+    fill: #494558 /* var(--appbar-bg) */;
   }
   .label {
     font-size: 11px;

@@ -60,10 +60,13 @@
 <style>
   .left-pane {
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on MessageList */
-    background-color: #F9F9FD;
+    background-color: var(--leftbar-bg);
+    color: var(--leftbar-fg);
   }
   .messages {
-    background-color: #F9F9FD;
+    background: url(../asset/background-repeat.png) repeat;
+    background-color: var(--main-pattern-bg);
+    color: var(--main-pattern-fg);
   }
   .editor {
     height: 112px;

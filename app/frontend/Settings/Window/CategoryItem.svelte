@@ -34,19 +34,17 @@
     align-items: start;
     padding: 0px 0px 2px 18px;
   }
-  .label {
-    color: #160C27;
-  }
   .settings-category:hover {
-    background-color: #A9DAD4;
+    background-color: var(--hover-bg);
+    color: var(--hover-fg);
   }
   .selected {
-    background-color: #20AE9E;
-    color: white;
+    background-color: var(--selected-bg);
+    color:  var(--selected-fg);
   }
   .label {
     font-size: 13px;
-    color: black;
+    color: --var(fg);
     white-space: nowrap;
     overflow: hidden;
     margin-top: 4px;

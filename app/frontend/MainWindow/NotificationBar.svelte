@@ -78,8 +78,8 @@
     background-color: #FFF160;
   }
   .notification-bar[severity="logged-out"] {
-    background-color: #494558; /* same as AppBar */
-    color: white;
+    background-color: var(--appbar-bg);
+    color: var(--appbar-fg);
   }
   .notification-bar[severity="info"] {
     background-color: #47A5DA;

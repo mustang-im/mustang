@@ -65,7 +65,7 @@
 
   input {
     border: none;
-    border-bottom: 2px solid #20AE9E;
+    border-bottom: 2px solid var(--input-focus);
     /* background-color: rgba(32, 174, 158, 20%); /* #20AE9E */
     margin-top: 9px;
   }

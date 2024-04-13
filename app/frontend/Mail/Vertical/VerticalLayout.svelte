@@ -47,7 +47,13 @@
 <style>
   .folder-pane {
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 8%); /* Also on MessageList */
-    background-color: #F9F9FD;
+    background-color: var(--leftbar-bg);
+    color: var(--leftbar-fg);
+  }
+  .message-list-pane,
+  .message-display-pane {
+    background-color: var(--main-bg);
+    color: var(--main-fg);
   }
   .message-list-pane {
     box-shadow: 1px 0px 6px 0px rgba(0, 0, 0, 8%); /* Also on MessageList */

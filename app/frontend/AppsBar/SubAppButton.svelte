@@ -35,13 +35,13 @@
     color: rgba(255, 255, 255, 80%);
   }
   .sub-app-button.selected .icon {
-    color: #494558;
+    color: #494558 /* var(--appbar-bg) */;
   }
   .sub-app-button.selected .icon :global(.cls-1) {
-    stroke: #494558;
+    stroke: #494558 /* var(--appbar-bg) */;
   }
   .sub-app-button.selected .icon :global(.date-calendar-icon) {
-    fill: #494558;
+    fill: #494558 /* var(--appbar-bg) */;
   }
 
   :global(.sub-app-bar[app="webapps"]) .icon {

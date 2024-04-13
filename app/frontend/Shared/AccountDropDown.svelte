@@ -26,6 +26,7 @@
 <style>
   .account-selector :global(select) {
     border: none;
+    color: inherit;
     background-color: transparent;
   }
 </style>
