@@ -12,8 +12,8 @@ export function loadMustangApps() {
     contactsMustangApp,
     mailMustangApp,
     chatMustangApp,
-    calendarMustangApp,
     meetMustangApp,
+    calendarMustangApp,
     filesMustangApp,
     webAppsMustangApp,
   ]);
