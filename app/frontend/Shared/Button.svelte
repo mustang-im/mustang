@@ -75,22 +75,22 @@
     opacity: 50%;
   }
   button:hover:not(.disabled) {
-    background-color: --var(hover-bg);
-    color: --var(hover-fg);
+    background-color: var(--hover-bg);
+    color: var(--hover-fg);
   }
   .selected:not(.disabled) {
-    background-color: --var(selected-bg);
-    color: --var(selected-fg);
+    background-color: var(--selected-bg);
+    color: var(--selected-fg);
   }
   .selected:hover:not(.disabled) {
-    background-color: --var(selected-hover-bg);
-    color: --var(selected-hover-bg);
+    background-color: var(--selected-hover-bg);
+    color: var(--selected-hover-bg);
   }
   button.secondary {
-    border-color: --var(button-secondard-line);
+    border-color: var(--button-secondard-line);
   }
   button.filled {
-    background-color: --var(--inverted-bg);
+    background-color: var(--inverted-bg);
     color: var(--inverted-fg);
   }
   button.large {

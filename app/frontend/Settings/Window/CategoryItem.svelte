@@ -44,7 +44,7 @@
   }
   .label {
     font-size: 13px;
-    color: --var(fg);
+    color: var(--fg);
     white-space: nowrap;
     overflow: hidden;
     margin-top: 4px;
