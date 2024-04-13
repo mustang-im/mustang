@@ -7,6 +7,11 @@ export class M3Account extends MeetAccount {
   /* Authentication */
   oauth2: OAuth2;
   oauthBaseURL: string = "https://accounts.mustang.im/realms/mustang/protocol/openid-connect";
+  /** M3 controller server */
+  controllerBaseURL: string = "https://controller.mustang.im";
+  controllerWebSocketURL: string = "wss://controller.mustang.im/signaling";
+  /** Where guests would go to join the meeting without Mustang app */
+  webFrontendBaseURL: string = "https://meet.mustang.im";
 
   /**
    * Login using OAuth2
