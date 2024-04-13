@@ -6,8 +6,8 @@ import { appGlobal } from "../app";
 import { notifyChangedProperty } from "../util/Observable";
 import { assert, sleep, type URLString } from "../util/util";
 
-export class OTalkConf extends VideoConfMeeting {
-  /** OTalk controller server hostname */
+export class M3Conf extends VideoConfMeeting {
+  /** M3 controller server hostname */
   controllerBaseURL: string = "https://controller.mustang.im";
   controllerWebSocketURL: string = "wss://controller.mustang.im/signaling";
   /** Where guests would go to join the meeting without Mustang app */
@@ -109,7 +109,7 @@ export class OTalkConf extends VideoConfMeeting {
     }
     this.inviteCode = inviteCode;
     this.roomID = roomID;
-    // uh... OTalk protocol doesn't give any way to find the controller (e.g. of a third-party server)
+    // uh... protocol doesn't give any way to find the controller (e.g. of a third-party server)
     urlParsed.hostname = "controller." + urlParsed.hostname.replace("www.", "");
     this.controllerBaseURL = urlParsed.origin;
     this.state = MeetingState.JoinConference;
@@ -350,8 +350,8 @@ export class OTalkConf extends VideoConfMeeting {
     super.hangup();
   }
 
-  static async createAdhoc(): Promise<OTalkConf> {
-    let meet = new OTalkConf();
+  static async createAdhoc(): Promise<M3Conf> {
+    let meet = new M3Conf();
     await meet.createNewConference();
     return meet;
   }

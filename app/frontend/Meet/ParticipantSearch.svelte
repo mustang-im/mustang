@@ -19,7 +19,7 @@
 
 <script lang="ts">
   import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
-  import { OTalkConf } from "../../logic/Meet/OTalkConf";
+  import { M3Conf } from "../../logic/Meet/M3Conf";
   import { MeetingParticipant } from "../../logic/Meet/Participant";
   import { ParticipantVideo } from "../../logic/Meet/VideoStream";
   import { appGlobal } from "../../logic/app";
@@ -48,7 +48,7 @@
   }
 
   async function inviteParticipant() {
-    if (meeting instanceof OTalkConf) {
+    if (meeting instanceof M3Conf) {
       let invitationURL = await meeting.getInvitationURL();
       navigator.clipboard.writeText(invitationURL);
       return;

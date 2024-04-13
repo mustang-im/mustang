@@ -88,7 +88,7 @@
   * Before joining conference
 
 ## Protocol
-* OpenTalk server
+* M3 server
   * Participant opening/closing cam is delayed
   * Mute/unmute without destroying stream
   * TURN server

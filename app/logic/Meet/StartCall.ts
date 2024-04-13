@@ -4,7 +4,7 @@ import { Group } from "../Abstract/Group";
 import { MeetingParticipant } from "./Participant";
 import type { ChatAccount } from "../Chat/ChatAccount";
 import type { Chat } from "../Chat/Chat";
-import { OTalkConf } from "./OTalkConf";
+import { M3Conf } from "./M3Conf";
 import { MatrixAccount } from "../Chat/Matrix/MatrixAccount";
 import { MatrixVideoConf } from "./MatrixVideoConf";
 import { appGlobal } from "../app";
@@ -137,7 +137,7 @@ export function isConferenceURL(url: URLString): boolean {
 export async function joinConferenceByURL(url: URLString): Promise<VideoConfMeeting> {
   let urlParsed = new URL(url);
   if (urlParsed.pathname.startsWith("/room/") || urlParsed.pathname.startsWith("/invite/")) {
-    let conf = new OTalkConf();
+    let conf = new M3Conf();
     await conf.join(url);
     return conf;
   }
