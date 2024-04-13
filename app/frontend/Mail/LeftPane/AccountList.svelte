@@ -43,6 +43,9 @@
     color: grey;
     font-size: 12px;
   }
+  .header :global(button) {
+    margin-left: 4px;
+  }
   .account {
     align-items: center;
     padding-left: 12px;

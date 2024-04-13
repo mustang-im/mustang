@@ -2,6 +2,7 @@
   <vbox flex class="folder-pane" slot="left">
     <AccountList accounts={$accounts} bind:selectedAccount>
       <hbox class="buttons" slot="top-right">
+        <GetMailButton account={selectedAccount} />
         <WriteButton {selectedAccount} />
       </hbox>
     </AccountList>
@@ -32,8 +33,9 @@
   import VerticalMessageList from "./VerticalMessageList.svelte";
   import MessageDisplay from "../Message/MessageDisplay.svelte";
   import StartPage from "../StartPage.svelte";
-  import ViewSwitcher from "../LeftPane/ViewSwitcher.svelte";
+  import GetMailButton from "../LeftPane/GetMailButton.svelte";
   import WriteButton from "../LeftPane/WriteButton.svelte";
+  import ViewSwitcher from "../LeftPane/ViewSwitcher.svelte";
   import Splitter from "../../Shared/Splitter.svelte";
   import { ArrayColl, Collection } from 'svelte-collections';
 
