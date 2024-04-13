@@ -3,6 +3,7 @@
     <!--<ProjectList />-->
     <AccountList accounts={$accounts} bind:selectedAccount>
       <hbox class="buttons" slot="top-right">
+        <GetMailButton account={selectedAccount} />
         <WriteButton {selectedAccount} />
       </hbox>
     </AccountList>
@@ -34,8 +35,9 @@
   import TableMessageList from "./TableMessageList.svelte";
   import MessageDisplay from "../Message/MessageDisplay.svelte";
   import StartPage from "../StartPage.svelte";
-  import ViewSwitcher from "../LeftPane/ViewSwitcher.svelte";
+  import GetMailButton from "../LeftPane/GetMailButton.svelte";
   import WriteButton from "../LeftPane/WriteButton.svelte";
+  import ViewSwitcher from "../LeftPane/ViewSwitcher.svelte";
   import Splitter from "../../Shared/Splitter.svelte";
   import SplitterHorizontal from "../../Shared/SplitterHorizontal.svelte";
   import { ArrayColl, Collection } from 'svelte-collections';
@@ -65,6 +67,10 @@
 
   .buttons {
     margin: 8px 8px 0 8px;
+    align-items: end;
+  }
+  .buttons :global(button) {
+    margin-left: 6px;
   }
   .buttons :global(svg) {
     margin: 4px;
