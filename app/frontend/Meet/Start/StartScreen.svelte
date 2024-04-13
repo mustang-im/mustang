@@ -44,7 +44,7 @@
   import VideoIcon from 'lucide-svelte/icons/video';
   import AddToCalendarIcon from "lucide-svelte/icons/calendar-plus";
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
-  import { OTalkConf } from "../../../logic/Meet/OTalkConf";
+  import { M3Conf } from "../../../logic/Meet/M3Conf";
   import { catchErrors } from "../../Util/error";
   import { mergeColls } from "svelte-collections";
   import { Event } from "../../../logic/Calendar/Event";
@@ -58,7 +58,7 @@
   const previousMeetings = allEvents.filter(event => event.startTime < now && event.startTime > maxPrevious);
 
   async function startAdHocMeeting() {
-    let meeting = await OTalkConf.createAdhoc();
+    let meeting = await M3Conf.createAdhoc();
     appGlobal.meetings.add(meeting);
   }
 

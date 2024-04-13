@@ -1,4 +1,4 @@
-# OTalk Protocol
+# M3 Protocol
 
 This documents the on-the-wire protocol that is needed to login, set up a video conference, join, and administrate it.
 
@@ -252,7 +252,7 @@ Response:
           display_name: "Somebody else",
           avatar_url: "https://libavatar.org/...",
           role: "moderator",
-          hand_is_up: false, 
+          hand_is_up: false,
           left_at: "2024-02-07T00:41:37Z", // or null if participating
           participation_kind: "user"
         },
