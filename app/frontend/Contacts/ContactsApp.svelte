@@ -4,7 +4,7 @@
     <PersonsList persons={filteredPersons} bind:selected={$selectedPerson} />
   </vbox>
   <vbox flex class="right-pane" slot="right">
-    {#if $selectedPerson}
+    {#if $selectedPerson && $selectedPerson instanceof Person}
       <Scroll>
         <PersonDetails person={$selectedPerson} />
       </Scroll>
@@ -13,7 +13,7 @@
 </Splitter>
 
 <script lang="ts">
-  import type { Person } from "../../logic/Abstract/Person";
+  import { Person } from "../../logic/Abstract/Person";
   import { selectedPerson } from "../Shared/Person/PersonOrGroup";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
