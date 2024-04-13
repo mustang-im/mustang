@@ -68,6 +68,7 @@ export class IMAPAccount extends MailAccount {
     try {
       await this._connection.connect();
     } catch (ex) {
+      this._connection = null;
       if (ex.code == "NoConn" || ex.message == "Command failed.") {
         throw new Error("Failed to connect to server " + this.hostname + " for account " + this.name);
       } else {
@@ -129,7 +130,7 @@ export class IMAPAccount extends MailAccount {
 
   protected async reconnect(): Promise<void> {
     try {
-      this._connection.close();
+      this._connection?.close();
     } catch (ex) {
       // Sometimes gives "Connection not available". Do nothing.
     }
@@ -144,7 +145,7 @@ export class IMAPAccount extends MailAccount {
     await SQLFolder.readAllHierarchy(this);
 
     // listTree() doesn't return the message count and is not well-implemented
-    let folders = await this._connection.list({
+    let folders = await (await this.connection()).list({
       statusQuery: {
         messages: true, // Total msg count
         recent: true, // \Recent msg count
@@ -187,7 +188,7 @@ export class IMAPAccount extends MailAccount {
   }
 
   async logout(): Promise<void> {
-    await this._connection.logout();
+    await this._connection?.logout();
   }
 
   newFolder(): IMAPFolder {

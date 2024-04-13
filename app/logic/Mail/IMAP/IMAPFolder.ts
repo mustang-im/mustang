@@ -194,7 +194,7 @@ export class IMAPFolder extends Folder {
   async moveMessagesHere(messages: Collection<IMAPEMail>) {
     await super.moveMessagesHere(messages);
     let ids = messages.contents.map(msg => msg.uid).join(",");
-    await this.account._connection.messageMove(ids, this.path, { uid: true });
+    await (await this.account.connection()).messageMove(ids, this.path, { uid: true });
     let sourceFolder = messages.first.folder;
     sourceFolder.countTotal -= 1;
     this.countTotal += 1;
@@ -205,7 +205,7 @@ export class IMAPFolder extends Folder {
   async copyMessagesHere(messages: Collection<IMAPEMail>) {
     await super.copyMessagesHere(messages);
     let ids = messages.contents.map(msg => msg.uid).join(",");
-    await this.account._connection.messageCopy(ids, this.path, { uid: true });
+    await (await this.account.connection()).messageCopy(ids, this.path, { uid: true });
     let sourceFolder = messages.first.folder;
     this.countTotal += 1;
     await sourceFolder.listMessages();
