@@ -7,11 +7,8 @@ import { notifyChangedProperty } from "../util/Observable";
 import { assert, sleep, type URLString } from "../util/util";
 
 export class M3Conf extends VideoConfMeeting {
-  /** M3 controller server hostname */
-  controllerBaseURL: string = "https://controller.mustang.im";
-  controllerWebSocketURL: string = "wss://controller.mustang.im/signaling";
-  /** Where guests would go to join the meeting without Mustang app */
-  webFrontendBaseURL: string = "https://meet.mustang.im";
+  controllerBaseURL: string;
+  controllerWebSocketURL: string;
   /* Authentication */
   account: M3Account;
   /* Live connection with the controller, during a conference */
@@ -49,6 +46,8 @@ export class M3Conf extends VideoConfMeeting {
     await this.http.post('auth/login', {
       id_token: this.account.oauth2.idToken,
     });
+    this.controllerBaseURL = this.account.controllerBaseURL;
+    this.controllerWebSocketURL = this.account.controllerWebSocketURL;
   }
 
   protected get http() {
@@ -112,13 +111,14 @@ export class M3Conf extends VideoConfMeeting {
     // uh... protocol doesn't give any way to find the controller (e.g. of a third-party server)
     urlParsed.hostname = "controller." + urlParsed.hostname.replace("www.", "");
     this.controllerBaseURL = urlParsed.origin;
+    this.controllerWebSocketURL = `wss://${urlParsed.host}/signalling`;
     this.state = MeetingState.JoinConference;
   }
 
   async getInvitationURL(): Promise<URLString> {
     assert(this.roomID, "Need to create the conference first");
     let response = await this.http.post(`rooms/${this.roomID}/invites`, {});
-    return `${this.webFrontendBaseURL}/invite/${response.data.invite_code}`;
+    return `${this.account.webFrontendBaseURL}/invite/${response.data.invite_code}`;
   }
 
   async aboutMe(): Promise<{ name: string, picture: URLString, email: string, id: string }> {
