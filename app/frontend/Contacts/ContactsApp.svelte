@@ -48,7 +48,13 @@
 <style>
   .left-pane {
     border-right: 1px dotted lightgray;
-    background-color: #F9F9FD;
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on PersonDetails */
+    background-color: var(--leftbar-bg);
+    color: var(--leftbar-fg);
+  }
+  .right-pane {
+    background: url(../asset/background-repeat.png) repeat;
+    background-color: var(--main-pattern-bg);
+    color: var(--main-pattern-fg);
   }
 </style>

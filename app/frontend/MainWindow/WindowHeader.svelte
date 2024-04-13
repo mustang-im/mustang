@@ -47,8 +47,8 @@
 
 <style>
   .window-header {
-    background-color: #160C27; /* 142862 */
-    color: white;
+    background-color: var(--inverted-bg);
+    color: var(--inverted-fg);
   }
   .app-logo {
     margin: 8px;
@@ -79,9 +79,9 @@
   }
   .window-header :global(.search input) {
     background-color: transparent;
-    color: white;
+    color: var(--inverted-fg);
   }
   .window-header :global(.search input::placeholder) {
-    color: white;
+    color: var(--inverted-fg);
   }
 </style>

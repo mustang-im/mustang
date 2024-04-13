@@ -68,6 +68,6 @@
     margin-left: 2px;
   }
   .icon.valid {
-    color: #20AE9E;
+    color: var(--selected-bg);
   }
 </style>

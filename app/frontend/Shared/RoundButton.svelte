@@ -46,15 +46,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
+
+    background-color: #f9f9f9;
   }
   button.border {
     border: 1px solid #B2ADB8;
   }
   .filled:not(:hover) {
-    background-color: #160C27; /* 142862 */
+    background-color: var(--inverted-bg);
+    color: var(--inverted-fg);
     border: none;
     padding: calc(var(--padding) + 1px);
-    color: white;
     stroke-width: 2px;
   }
   :global(svg) {
@@ -70,28 +72,22 @@
     opacity: 50%;
   }
   button:hover:not(.disabled) {
-    background-color: #A9DAD4;
-    color: black;
+    background-color: var(--hover-bg);
+    color: var(--hover-fg);
     border: 1px solid transparent !important;
   }
   .selected:not(.disabled) {
-    background-color: #20AE9E; /* or #27C1AA */
-    color: white;
+    background-color: var(--selected-bg);
+    color:  var(--selected-fg);
   }
   .selected:hover:not(.disabled) {
-    background-color: #1C998B;
-    color: white;
+    background-color: var(--selected-hover-bg);
+    color: var(--selected-hover-fg);
   }
   button.secondary {
-    border-color: #A1E4DA;
+    border-color: var(--button-secondary-line);
   }
   button.plain {
     background-color: transparent;
-  }
-
-  @media (prefers-color-scheme: light) {
-    button {
-      background-color: #f9f9f9;
-    }
   }
 </style>

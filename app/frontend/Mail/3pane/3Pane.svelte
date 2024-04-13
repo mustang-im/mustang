@@ -51,7 +51,13 @@
   .folder-pane {
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on MessageList */
     z-index: 2;
-    background-color: #F9F9FD;
+    background-color: var(--leftbar-bg);
+    color: var(--leftbar-fg);
+  }
+  .message-list-pane,
+  .message-display-pane {
+    background-color: var(--main-bg);
+    color: var(--main-fg);
   }
   .message-display-pane {
     flex: 2 0 0;

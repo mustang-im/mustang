@@ -7,13 +7,13 @@
   .loader {
     aspect-ratio: 1;
     display: grid;
-    border: 4px solid #0000;
+    border: 4px solid white;
     border-radius: 50%;
     border-right-color: #20AE9E;
     animation: l15 1s infinite linear;
   }
   .loader::before,
-  .loader::after {    
+  .loader::after {
     content: "";
     grid-area: 1/1;
     margin: 2px;

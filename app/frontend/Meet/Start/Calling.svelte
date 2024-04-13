@@ -153,24 +153,24 @@
       justify-content: center;
     }
   }
+  .box,
+  .device-setup {
+    aspect-ratio: 8/10;
+    border-radius: 4px;
+    background-color: var(--inverted-bg);
+    color: var(--inverted-fg);
+  }
   .box {
     max-width: 400px;
     max-height: 400px;
-    aspect-ratio: 8/10;
-    background-color: #160C27;
-    border-radius: 4px;
     padding: 40px;
   }
   .device-setup {
     max-width: 400px;
     max-height: 440px;
-    aspect-ratio: 8/10;
-    background-color: #160C27;
-    border-radius: 4px;
     padding: 20px 0px;
   }
   .text {
-    color: white;
     align-items: center;
     justify-content: center;
     margin-bottom: 20px;
@@ -210,7 +210,7 @@
   }
   .device-setup :global(button.button),
   .device-setup :global(button.button:hover:not(.disabled)) {
-    border: 2px solid #160C27 !important;
+    border: 2px solid var(--inverted-bg) !important;
   }
   .device-setup :global(button.border svg path) {
     stroke-width: 1.5px;
