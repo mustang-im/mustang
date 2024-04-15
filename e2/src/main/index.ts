@@ -14,7 +14,7 @@ function createWindow(): void {
       height: 700,
       show: false,
       autoHideMenuBar: true,
-      titleBarStyle: 'customButtonsOnHover',
+      titleBarStyle: 'hiddenInset',
       titleBarOverlay: true,
       frame: false,
       ...(process.platform === 'linux' ? { icon } : {}),
