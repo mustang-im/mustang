@@ -43,6 +43,13 @@
   function onCloseApp() {
     window.close();
   }
+
+  // Detect if mac and add attribute for moving app logo to right
+  const platform = navigator.userAgent;
+  if (platform.includes('Macintosh')) {
+    const body = document.querySelector('body');
+    body.setAttribute('os', 'mac');
+  }
 </script>
 
 <style>
@@ -57,6 +64,9 @@
     align-items: start;
     justify-content: center;
     app-region: drag;
+  }
+  :global(body[os='mac']) .app-logo {
+    margin-left: 90px;
   }
   .app-title {
     font-size: 18px;
