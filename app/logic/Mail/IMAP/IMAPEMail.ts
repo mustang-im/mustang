@@ -71,24 +71,29 @@ export class IMAPEMail extends EMail {
     //console.log("MIME source", this.mime, new TextDecoder("utf-8").decode(this.mime));
     assert(this.mime?.length, "MIME source not yet downloaded");
     let mail = await new PostalMIME().parse(sanitize.nonemptystring(this.mime));
+    /** TODO header.key returns Uint8Array
     for (let header of mail.headers) {
       this.headers.set(sanitize.nonemptystring(header.key), sanitize.nonemptystring(header.value));
-    }
+    }*/
     this.text = mail.text;
     this.html = sanitizeHTML(sanitize.stringOrNull(mail.html));
     this.attachments.addAll(mail.attachments.map(a => {
-      let attachment = new Attachment();
-      attachment.filename = sanitize.nonemptystring(a.filename);
-      attachment.mimeType = sanitize.nonemptystring(a.mimeType);
-      attachment.disposition = sanitize.translate(a.disposition, {
-        attachment: ContentDisposition.attachment,
-        inline: ContentDisposition.inline,
-      }, ContentDisposition.unknown);
-      attachment.related = sanitize.boolean(a.related);
-      attachment.contentID = sanitize.stringOrNull(a.contentId);
-      attachment.content = new File([a.content], a.filename, { type: a.mimeType });
-      attachment.size = attachment.content.size ? sanitize.integer(attachment.content.size) : null;
-      return attachment;
+      try {
+        let attachment = new Attachment();
+        attachment.mimeType = sanitize.nonemptystring(a.mimeType);
+        attachment.filename = sanitize.stringOrNull(a.filename) ?? "file." + attachment.mimeType.split("/").pop();
+        attachment.disposition = sanitize.translate(a.disposition, {
+          attachment: ContentDisposition.attachment,
+          inline: ContentDisposition.inline,
+        }, ContentDisposition.unknown);
+        attachment.related = sanitize.boolean(a.related);
+        attachment.contentID = sanitize.stringOrNull(a.contentId);
+        attachment.content = new File([a.content], a.filename, { type: a.mimeType });
+        attachment.size = attachment.content.size ? sanitize.integer(attachment.content.size) : null;
+        return attachment;
+      } catch (ex) {
+        this.folder.account.errorCallback(ex);
+      }
     }));
     for (let a of this.attachments) {
       await RawFilesAttachment.save(a, this);
