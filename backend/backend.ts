@@ -25,6 +25,7 @@ async function createSharedAppObject() {
     closeFile,
     fs: fsPromises,
     getConfigDir,
+    getFilesDir,
     openFileInExternalApp,
     createIMAPFlowConnection,
     getSQLiteDatabase,
@@ -136,14 +137,41 @@ async function verifyServerNodemailer(transport) {
   await transporter.verify();
 }
 
-const kAppConfigDir = "Mustang";
+const kAppDir = "Mustang";
+
 /**
  * Get the user config directory on disk.
+ *
+ * The files in here are useful mostly to the app itself, in internal data formats,
+ * and not really useful without the app.
+ * Consequently, this is a directory that is usually *not* shown to the user,
+ * but still accessible, if needed by technical people or for backups.
+ *
  * Linux: /home/USER/.mustang/
  * Windows: C:\Users\USER\AppData\Mustang\
+ * Mac OS:
  */
 function getConfigDir(): string {
-  let dirname = os.platform() == "win32" || os.platform() == "darwin" ? kAppConfigDir : "." + kAppConfigDir.toLowerCase();
+  let dirname = os.platform() == "win32" || os.platform() == "darwin" ? kAppDir : "." + kAppDir.toLowerCase();
+  let dir = path.join(os.homedir(), dirname);
+  fs.mkdirSync(dir, { recursive: true });
+  return dir;
+}
+
+/**
+ * Get the directory on disk where we store the files that our user exchanged with others.
+ * E.g. file sharing, email attachments, chat transfer files, and email backups.
+ *
+ * This should be a folder where the user can go to, but not right in the middle of his
+ * personal documents and folders.
+ *
+ * TODO Change it
+ * Linux: /home/USER/.mustang/
+ * Windows: C:\Users\USER\AppData\Mustang\
+ * Mac OS:
+ */
+function getFilesDir(): string {
+  let dirname = os.platform() == "win32" || os.platform() == "darwin" ? kAppDir : "." + kAppDir.toLowerCase();
   let dir = path.join(os.homedir(), dirname);
   fs.mkdirSync(dir, { recursive: true });
   return dir;
