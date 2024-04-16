@@ -71,6 +71,16 @@ export class Folder extends Observable {
   }
 
   async createSubFolder(name: string): Promise<Folder> {
+    let folder = this.account.newFolder();
+    folder.name = name;
+    folder.parent = this;
+    folder.path = this.path + "/" + name;
+    this.subFolders.add(folder);
+    return folder;
+  }
+
+  /** Warning: Also deletes all messages in the folder, also on the server */
+  async deleteIt(): Promise<void> {
     throw new AbstractFunction();
   }
 

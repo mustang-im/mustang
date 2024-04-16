@@ -20,7 +20,8 @@ export class IMAPAccount extends MailAccount {
   }
 
   get isLoggedIn(): boolean {
-    return !!this._connection?.authenticated;
+    // return !!this._connection?.authenticated; TODO authenticated is always false
+    return !!this._connection;
   }
 
   async login(interactive: boolean): Promise<void> {

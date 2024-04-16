@@ -4,6 +4,7 @@ import type { IMAPAccount } from "./IMAPAccount";
 import { SQLFolder } from "../SQL/SQLFolder";
 import { SQLEMail } from "../SQL/SQLEMail";
 import { ArrayColl, Collection } from "svelte-collections";
+import { assert } from "../../util/util";
 
 export class IMAPFolder extends Folder {
   account: IMAPAccount;
@@ -214,17 +215,32 @@ export class IMAPFolder extends Folder {
 
   async moveFolderHere(folder: Folder) {
     await super.moveFolderHere(folder);
-    console.log("Folder moved");
+    assert(folder.subFolders.isEmpty, `Folder ${folder.name} has sub-folders. Cannot yet move entire folder hierarchies. You may move the folders individually.`);
+    let newFolder = await this.createSubFolder(folder.name);
+    await newFolder.moveMessagesHere(folder.messages as any as Collection<IMAPEMail>);
+    await folder.deleteIt();
+    await newFolder.listMessages();
+    console.log("Folder moved from", folder.path, "to", newFolder.path);
   }
 
   async createSubFolder(name: string): Promise<IMAPFolder> {
-    let folder = new IMAPFolder(this.account);
-    folder.name = name;
-    folder.parent = this;
-    this.subFolders.add(folder);
-    await SQLFolder.save(this);
-    console.log("Folder created");
-    return folder;
+    let newFolder = await super.createSubFolder(name) as IMAPFolder;
+    let created = await (await this.account.connection()).mailboxCreate([this.path, name]);
+    newFolder.path = created.path;
+    console.log("IMAP folder created", name, newFolder.path);
+    await newFolder.listMessages();
+    return newFolder;
+  }
+
+  /** Warning: Also deletes all messages in the folder, also on the server */
+  async deleteIt(): Promise<void> {
+    if (this.parent) {
+      this.parent.subFolders.remove(this);
+    } else {
+      this.account.rootFolders.remove(this);
+    }
+    await (await this.account.connection()).mailboxDelete(this.path);
+    console.log("IMAP folder deleted", this.name, this.path);
   }
 
   /** @param specialUse From RFC 6154, e.g. `\Sent`

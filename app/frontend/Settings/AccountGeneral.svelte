@@ -40,6 +40,9 @@
   .buttons {
     justify-content: end;
   }
+  .buttons :global(button) {
+    margin-left: 8px;
+  }
   .buttons :global(button.delete) {
     background-color: lightsalmon;
   }
