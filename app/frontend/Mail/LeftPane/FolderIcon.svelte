@@ -21,7 +21,7 @@
   import FolderIcon from "lucide-svelte/icons/folder";
   import InboxIcon from "lucide-svelte/icons/inbox";
   import SentIcon from "lucide-svelte/icons/send";
-  import DraftsIcon from "lucide-svelte/icons/pen-square";
+  import DraftsIcon from "lucide-svelte/icons/square-pen";
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
   import ArchiveIcon from "lucide-svelte/icons/archive";

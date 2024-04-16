@@ -183,7 +183,7 @@ block
   import Button from '../../Shared/Button.svelte';
   import ItalicIcon from "lucide-svelte/icons/italic";
   import CodeWordIcon from "lucide-svelte/icons/code";
-  import CodeBlockIcon from "lucide-svelte/icons/code-2";
+  import CodeBlockIcon from "lucide-svelte/icons/code-xml";
   import QuoteMailIcon from "lucide-svelte/icons/text-quote";
   import QuoteIcon from "lucide-svelte/icons/quote";
   import LinkIcon from "lucide-svelte/icons/link";
