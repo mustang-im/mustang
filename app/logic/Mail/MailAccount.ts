@@ -1,12 +1,11 @@
 import { Account } from "../Abstract/Account";
-import { Folder } from "./Folder";
+import { Folder, SpecialFolder } from "./Folder";
 import type { EMail } from "./EMail";
 import type { Person } from "../Abstract/Person";
 import { appGlobal } from "../app";
 import { AbstractFunction } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, MapColl } from 'svelte-collections';
-import type SpecialFolder from "../../frontend/Settings/Mail/Account/SpecialFolder.svelte";
 
 export class MailAccount extends Account {
   readonly protocol: string = "mail";
