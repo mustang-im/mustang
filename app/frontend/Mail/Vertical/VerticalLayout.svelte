@@ -64,6 +64,10 @@
 
   .buttons {
     margin: 8px 8px 0 8px;
+    align-items: end;
+  }
+  .buttons :global(button) {
+    margin-left: 6px;
   }
   .buttons :global(svg) {
     margin: 4px;

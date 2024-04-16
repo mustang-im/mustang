@@ -1,4 +1,6 @@
-{#if view == "chat"}
+{#if $openFolderProperties}
+ <FolderProperties bind:folder={$selectedFolder}  {accounts}bind:selectedAccount={$selectedAccount} />
+{:else if view == "chat"}
   <MailChat {accounts} />
 {:else if view == "vertical"}
  <VerticalLayout {accounts} bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} />
@@ -15,6 +17,7 @@
   import ThreePane from "./3pane/3Pane.svelte";
   import VerticalLayout from "./Vertical/VerticalLayout.svelte";
   import MailChat from "./MailChat/MailChat.svelte";
+  import FolderProperties, { openFolderProperties } from "./FolderProperties.svelte";
 
   $: accounts = showAccounts;
 

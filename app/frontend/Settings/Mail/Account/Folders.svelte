@@ -1,5 +1,5 @@
 <vbox flex>
-  <h2>Folder</h2>
+  <h2>Folders</h2>
   <hbox class="subtitle">Rename folders, set special folders, share them with others</hbox>
 
   {#if $mailAccount?.isLoggedIn && $mailAccount.rootFolders.hasItems}
@@ -9,7 +9,9 @@
         {#if folder}
           <FolderGeneral {folder} />
           <hbox flex />
-          <FolderActions {folder} />
+          <FolderActions {folder}>
+            <slot name="buttons-bottom-right" slot="buttons-bottom-right" />
+          </FolderActions>
         {/if}
       </vbox>
     </Splitter>
@@ -39,6 +41,9 @@
   h2 {
     margin-top: 0px;
     margin-bottom: 0px;
+  }
+  .subtitle {
+    margin-bottom: 16px;
   }
   .right {
     margin: 12px 32px;
