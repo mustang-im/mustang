@@ -22,6 +22,11 @@ export class IMAPFolder extends Folder {
   set path(val: string) {
     this.id = val;
   }
+  getPathComponents(): string[] {
+    assert(this.path, "Missing folder path");
+    assert(this.account.pathDelimiter, "Missing path delimiter");
+    return this.path?.split(this.account.pathDelimiter);
+  }
 
   fromFlow(folderInfo: any) {
     this.name = folderInfo.name;
@@ -213,14 +218,17 @@ export class IMAPFolder extends Folder {
     await this.listMessages();
   }
 
-  async moveFolderHere(folder: Folder) {
+  async moveFolderHere(folder: IMAPFolder) {
+    assert(folder.account = this.account, "Cannot move folders between accounts yet. You can create a new folder and move the messages");
     await super.moveFolderHere(folder);
+    /*
     assert(folder.subFolders.isEmpty, `Folder ${folder.name} has sub-folders. Cannot yet move entire folder hierarchies. You may move the folders individually.`);
     let newFolder = await this.createSubFolder(folder.name);
     await newFolder.moveMessagesHere(folder.messages as any as Collection<IMAPEMail>);
     await folder.deleteIt();
-    await newFolder.listMessages();
     console.log("Folder moved from", folder.path, "to", newFolder.path);
+    */
+    await (await this.account.connection()).mailboxRename(folder.path, [this.path, folder.getPathComponents().pop() ]);
   }
 
   async createSubFolder(name: string): Promise<IMAPFolder> {
@@ -230,6 +238,13 @@ export class IMAPFolder extends Folder {
     console.log("IMAP folder created", name, newFolder.path);
     await newFolder.listMessages();
     return newFolder;
+  }
+
+  async rename(newName: string): Promise<void> {
+    this.name = newName;
+    let parentPath = this.parent ? this.parent.path : this.getPathComponents().slice(0, -1);
+    await (await this.account.connection()).mailboxRename(this.path, [ ...parentPath, newName ]);
+    console.log("renamed", this.path, "to parent", parentPath, [...parentPath, newName]);
   }
 
   /** Warning: Also deletes all messages in the folder, also on the server */

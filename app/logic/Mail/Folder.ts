@@ -79,6 +79,10 @@ export class Folder extends Observable {
     return folder;
   }
 
+  async rename(newName: string): Promise<void> {
+    this.name = newName;
+  }
+
   /** Warning: Also deletes all messages in the folder, also on the server */
   async deleteIt(): Promise<void> {
     throw new AbstractFunction();
