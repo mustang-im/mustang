@@ -1,6 +1,10 @@
 <grid class="main">
   <label for="name">Folder name</label>
-  <input type="text" bind:value={folder.name} name="name" on:change={() => catchErrors(onNameChange)} />
+  <input type="text" bind:value={folderName} name="name" />
+  <Button label="Rename"
+    classes="create"
+    on:click={() => catchErrors(onNameChange)}
+    />
 </grid>
 <hbox flex />
 {#if needNewFolderName}
@@ -34,7 +38,15 @@
 
   export let folder: Folder;
 
+  $: init($folder);
+
+  let folderName: string;
+  function init(_dummy: any) {
+    folderName = folder.name;
+  }
   async function onNameChange() {
+    assert(folderName, "Name cannot be empty");
+    await folder.rename(folderName);
     await save();
   }
   async function onDelete() {
@@ -66,10 +78,7 @@
 </script>
 
 <style>
-  grid.main {
-    grid-template-columns: max-content auto;
-    gap: 8px 24px;
-  }
+  grid.main,
   grid.create-folder {
     grid-template-columns: max-content auto max-content;
     gap: 8px 24px;

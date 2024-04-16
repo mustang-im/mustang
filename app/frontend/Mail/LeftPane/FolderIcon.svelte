@@ -1,16 +1,16 @@
-{#if folder.specialFolder == SpecialFolder.Inbox}
+{#if $folder.specialFolder == SpecialFolder.Inbox}
   <InboxIcon {size} />
-{:else if folder.specialFolder == SpecialFolder.Sent}
+{:else if $folder.specialFolder == SpecialFolder.Sent}
   <SentIcon {size} />
-{:else if folder.specialFolder == SpecialFolder.Drafts}
+{:else if $folder.specialFolder == SpecialFolder.Drafts}
   <DraftsIcon {size} />
-{:else if folder.specialFolder == SpecialFolder.Trash}
+{:else if $folder.specialFolder == SpecialFolder.Trash}
   <TrashIcon {size} />
-{:else if folder.specialFolder == SpecialFolder.Spam}
+{:else if $folder.specialFolder == SpecialFolder.Spam}
   <SpamIcon {size} />
-{:else if folder.specialFolder == SpecialFolder.Archive}
+{:else if $folder.specialFolder == SpecialFolder.Archive}
   <ArchiveIcon {size} />
-{:else if folder.specialFolder == SpecialFolder.All}
+{:else if $folder.specialFolder == SpecialFolder.All}
   <AllFoldersIcon {size} />
 {:else}
   <FolderIcon {size} />

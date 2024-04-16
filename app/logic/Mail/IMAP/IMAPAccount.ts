@@ -13,6 +13,7 @@ export class IMAPAccount extends MailAccount {
   accessToken: string | undefined;
   acceptOldTLS = false;
   acceptBrokenTLSCerts = false;
+  pathDelimiter: string; /** Separator in folder path. E.g. '.' or '/', depending on server */
 
   constructor() {
     super();
@@ -178,6 +179,9 @@ export class IMAPAccount extends MailAccount {
         subFolder.fromFlow(folderInfo);
         subFolders.add(subFolder);
         subFolder.parent = parent;
+      }
+      if (!this.pathDelimiter && folderInfo.delimiter) {
+        this.pathDelimiter = folderInfo.delimiter;
       }
       this.readFolders(allFoldersInfo, subFolder, subFolder.subFolders as ArrayColl<IMAPFolder>);
     }
