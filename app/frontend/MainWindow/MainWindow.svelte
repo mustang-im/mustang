@@ -26,7 +26,6 @@
   import { appGlobal } from "../../logic/app";
   import { getStartObjects, loginOnStartup } from "../../logic/startup";
   import { loadMustangApps } from "../AppsBar/loadMustangApps";
-  import { notifications, Notification, NotificationSeverity } from "./Notification";
   import AppBar from "../AppsBar/AppBar.svelte";
   import AppContent from "../AppsBar/AppContent.svelte";
   import NotificationBar from "./NotificationBar.svelte";
@@ -34,7 +33,7 @@
   import Splitter from "../Shared/Splitter.svelte";
   import MeetBackground from "../Meet/MeetBackground.svelte";
   import { meetMustangApp } from "../Meet/MeetMustangApp";
-  import { catchErrors } from "../Util/error";
+  import { catchErrors, backgroundError } from "../Util/error";
   import { onMount } from "svelte";
 
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
@@ -47,12 +46,8 @@
       return;
     }
     await getStartObjects();
-    await loginOnStartup(showBackgroundError);
+    await loginOnStartup(backgroundError);
   }));
-
-  function showBackgroundError(ex: Error) {
-    $notifications.add(new Notification(ex.message, NotificationSeverity.Warning));
-  }
 </script>
 
 <style>
