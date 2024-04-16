@@ -7,7 +7,9 @@
       <FolderList folders={mailAccount.rootFolders} bind:selectedFolder={folder} slot="left" />
       <vbox class="right" slot="right">
         {#if folder}
-          <AccountFolderGeneral {folder} />
+          <FolderGeneral {folder} />
+          <hbox flex />
+          <FolderActions {folder} />
         {/if}
       </vbox>
     </Splitter>
@@ -22,7 +24,8 @@
   import type { Account } from "../../../../logic/Abstract/Account";
   import type { Folder } from "../../../../logic/Mail/Folder";
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
-  import AccountFolderGeneral from "./FolderGeneral.svelte";
+  import FolderGeneral from "./FolderGeneral.svelte";
+  import FolderActions from "./FolderActions.svelte";
   import FolderList from "../../../Mail/LeftPane/FolderList.svelte";
   import Splitter from "../../../Shared/Splitter.svelte";
 
