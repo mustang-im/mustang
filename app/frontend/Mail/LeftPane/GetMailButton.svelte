@@ -1,7 +1,14 @@
-<hbox class="get-mail">
+<hbox class="get-mail {status}">
   <RoundButton
     label="Get mail"
-    icon={DownloadIcon} classes="small"
+    icon={
+      status == Status.Fetching ? FetchingIcon :
+      status == Status.New ? NewIcon :
+      status == Status.Done ? DoneIcon :
+      status == Status.Login ? LoginIcon :
+      DownloadIcon
+      }
+    classes="small"
     iconSize="12px"
     padding="0px"
     disabled={!account}
@@ -13,23 +20,65 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import DownloadIcon from "lucide-svelte/icons/download";
+  import FetchingIcon from "lucide-svelte/icons/arrow-big-down-dash";
+  import DoneIcon from "lucide-svelte/icons/check";
+  import NewIcon from "lucide-svelte/icons/sparkle";
+  import LoginIcon from "lucide-svelte/icons/key-round";
   import { catchErrors } from "../../Util/error";
   import { selectedFolder } from "../Selected";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
+  import { sleep } from "../../../logic/util/util";
 
   export let account: MailAccount; /* in/out */
 
+  enum Status {
+    Waiting = "waiting",
+    Login = "login",
+    Fetching = "fetching",
+    New = "new",
+    Done = "done",
+  };
+  let status = Status.Waiting;
+
   async function getMail() {
     if (!account.isLoggedIn) {
+      status = Status.Login;
       await account.login(true);
     }
     let folder = $selectedFolder ?? account.getSpecialFolder(SpecialFolder.Inbox);
+    status = Status.Fetching;
     await folder.listMessages();
+    status = folder.countNewArrived ? Status.New : Status.Done;
+    await sleep(2);
+    status = Status.Waiting;
   }
 </script>
 
 <style>
   .get-mail {
     height: 22px;
+  }
+  .get-mail.new :global(svg) {
+    color: orange;
+    stroke-width: 3px;
+  }
+  .get-mail.done :global(svg) {
+    color: green;
+    stroke-width: 4px;
+  }
+  .get-mail.fetching :global(svg) {
+    stroke-width: 2px;
+    animation: down 1.5s ease 0s infinite normal ;
+  }
+  @keyframes down {
+    0% {
+      transform: translateY(-3px);
+    }
+    80% {
+      transform: translateY(3px);
+    }
+    100% {
+      transform: translateY(-3px);
+    }
   }
 </style>
