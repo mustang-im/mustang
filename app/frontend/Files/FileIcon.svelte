@@ -17,7 +17,7 @@
 <script lang="ts">
   import FileIcon from "lucide-svelte/icons/file";
   import DocIcon from "lucide-svelte/icons/file-text";
-  import HTMLIcon from "lucide-svelte/icons/code-2";
+  import HTMLIcon from "lucide-svelte/icons/code-xml";
   import SpreadsheetIcon from "lucide-svelte/icons/table";
   import MusicIcon from "lucide-svelte/icons/music";
   import ImageIcon from "lucide-svelte/icons/image";

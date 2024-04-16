@@ -68,7 +68,7 @@
   import SpamIcon from "lucide-svelte/icons/shield-x";
   import TranslateIcon from "lucide-svelte/icons/languages";
   import PrintIcon from "lucide-svelte/icons/printer";
-  import SourceIcon from "lucide-svelte/icons/code-2";
+  import SourceIcon from "lucide-svelte/icons/code-xml";
   import { catchErrors } from "../../Util/error";
 
   export let message: EMail;
