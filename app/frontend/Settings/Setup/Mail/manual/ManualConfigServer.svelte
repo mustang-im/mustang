@@ -33,7 +33,7 @@
   {#if stepFull}
     <hbox class="port" class:error={portError}>
       <input type="number" bind:value={config.port} required on:change={onPortChanged} />
-      {#if !isStandardPort}
+      {#if !isStandardPort && defaultPort}
         <hbox class="default">Default: {defaultPort}</hbox>
       {/if}
     </hbox>
