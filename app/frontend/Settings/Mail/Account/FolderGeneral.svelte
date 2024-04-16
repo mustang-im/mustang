@@ -7,16 +7,18 @@
     />
 
   <label for="count">Messages</label>
-  <hbox class="value" name="count">{folder.countNewArrived} new, {folder.countUnread} unread, {folder.countTotal} total messages</hbox>
-  <hbox></hbox>
+  <hbox class="value" name="count">{$folder.countNewArrived} new, {$folder.countUnread} unread, {$folder.countTotal} total messages</hbox>
+  <Button label="Mark all read"
+    on:click={() => catchErrors(onMarkAllRead)}
+    />
 </grid>
 
 <script lang="ts">
   import type { Folder } from "../../../../logic/Mail/Folder";
   import { SQLFolder } from "../../../../logic/Mail/SQL/SQLFolder";
-  import { assert } from "../../../../logic/util/util";
   import Button from "../../../Shared/Button.svelte";
   import { catchErrors } from "../../../Util/error";
+  import { assert } from "../../../../logic/util/util";
 
   export let folder: Folder;
 
@@ -30,6 +32,10 @@
     assert(folderName, "Name cannot be empty");
     await folder.rename(folderName);
     await save();
+  }
+
+  async function onMarkAllRead() {
+    await folder.markAllRead();
   }
 
   async function save() {
