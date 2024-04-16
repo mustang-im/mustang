@@ -11,11 +11,18 @@
   <Button label="Mark all read"
     on:click={() => catchErrors(onMarkAllRead)}
     />
+
+  <label for="count">Use as</label>
+  <SpecialFolderDropDown bind:specialFolderType={folder.specialFolder} />
+  <Button label="Save"
+    on:click={() => catchErrors(onChangeSpecialFolder)}
+    />
 </grid>
 
 <script lang="ts">
   import type { Folder } from "../../../../logic/Mail/Folder";
   import { SQLFolder } from "../../../../logic/Mail/SQL/SQLFolder";
+  import SpecialFolderDropDown from "./SpecialFolderDropDown.svelte";
   import Button from "../../../Shared/Button.svelte";
   import { catchErrors } from "../../../Util/error";
   import { assert } from "../../../../logic/util/util";
@@ -36,6 +43,10 @@
 
   async function onMarkAllRead() {
     await folder.markAllRead();
+  }
+
+  async function onChangeSpecialFolder() {
+    await save();
   }
 
   async function save() {
