@@ -230,6 +230,10 @@
   * Adapt our EULA and Privacy policy
   * Impressum
 
+# Server
+* Error logging server: Sentry
+  * Error logging client
+
 # Later
 * mailto handler
 * WhatsApp
