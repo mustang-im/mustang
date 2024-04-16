@@ -6,8 +6,8 @@
 </grid>
 
 <script lang="ts">
-  import type { Account } from "../../../logic/Abstract/Account";
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import type { Account } from "../../../../logic/Abstract/Account";
+  import type { MailAccount } from "../../../../logic/Mail/MailAccount";
 
   export let account: Account;
 
