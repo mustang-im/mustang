@@ -41,12 +41,12 @@ export class MatrixVideoConf extends VideoConfMeeting {
 
   async answer() {
     this._call.answer();
-    super.answer();
+    await super.answer();
   }
 
   async hangup() {
     this._call.hangup(CallErrorCode.UserHangup, false);
-    super.hangup();
+    await super.hangup();
   }
 
   /**
