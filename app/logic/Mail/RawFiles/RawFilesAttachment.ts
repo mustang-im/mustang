@@ -27,7 +27,7 @@ export class RawFilesAttachment {
   }
 
   static async getFilePath(attachment: Attachment, email: EMail): Promise<string> {
-    let configDir = await appGlobal.remoteApp.getConfigDir();
+    let configDir = await appGlobal.remoteApp.getFilesDir();
     let dir = `${configDir}/files/email/${cleanFilename(email.from.emailAddress.replace("@", "-"))}/${cleanFilename(email.subject)}-${email.dbID}`;
     let fs = await appGlobal.remoteApp.fs;
     await fs.mkdir(dir, { recursive: true }); // TODO mode = only user read
