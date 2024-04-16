@@ -123,7 +123,7 @@ export class IMAPAccount extends MailAccount {
         assert(info.flags instanceof Set, "Expected Set for flags");
         await folder.messageFlagsChanged(info.uid ?? null, info.seq, info.flags, info.modseq);
       } catch (ex) {
-        console.log("Server event", info);
+        console.log("Error", ex, "in processing server event", info);
         ex.message = `Server event about message seq ${info.seq} = UID ${info.uid} in folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`;
         this.errorCallback(ex);
       }

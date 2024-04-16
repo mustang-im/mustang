@@ -22,10 +22,9 @@
 
 <script lang="ts">
   import type { Folder } from "../../../../logic/Mail/Folder";
-  import { SQLFolder } from "../../../../logic/Mail/SQL/SQLFolder";
-  import { assert } from "../../../../logic/util/util";
   import Button from "../../../Shared/Button.svelte";
   import { catchErrors } from "../../../Util/error";
+  import { assert } from "../../../../logic/util/util";
 
   export let folder: Folder;
 
@@ -49,11 +48,6 @@
     needNewFolderName = false;
 
     await folder.createSubFolder(newFolderName);
-  }
-
-  // $: $folder, catchErrors(save);
-  async function save() {
-    await SQLFolder.save(folder);
   }
 </script>
 

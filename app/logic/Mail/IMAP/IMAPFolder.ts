@@ -258,6 +258,16 @@ export class IMAPFolder extends Folder {
     console.log("IMAP folder deleted", this.name, this.path);
   }
 
+  async markAllRead(): Promise<void> {
+    // console.log("Marking", this.name, "as read");
+    await super.markAllRead();
+    // console.log("Marked", this.messages.length, "messages as read");
+    await this.runCommand(async (conn) => {
+        await conn.messageFlagsAdd("1:*", ["\\Seen"], { uid: true });
+    });
+    // console.log("Marked IMAP messages as read");
+  }
+
   /** @param specialUse From RFC 6154, e.g. `\Sent`
    * <https://datatracker.ietf.org/doc/html/rfc6154> */
   specialUse(specialUse: string): void {

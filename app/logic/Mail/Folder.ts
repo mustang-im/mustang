@@ -88,6 +88,13 @@ export class Folder extends Observable {
     throw new AbstractFunction();
   }
 
+  async markAllRead(): Promise<void> {
+    this.countUnread = 0;
+    for (let message of this.messages) {
+      message.isRead = true;
+    }
+  }
+
   newEMail(): EMail {
     return new EMail(this);
   }
