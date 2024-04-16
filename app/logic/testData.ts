@@ -1,6 +1,6 @@
 import { appGlobal } from './app';
 import { MailAccount } from './Mail/MailAccount';
-import type { Folder, SpecialFolder } from './Mail/Folder';
+import { Folder, SpecialFolder } from './Mail/Folder';
 import { ChatAccount } from './Chat/ChatAccount';
 import { UserChatMessage } from './Chat/Message';
 import { ChatPerson } from './Chat/Person';
@@ -118,7 +118,8 @@ export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCoun
     folder.specialFolder = folder.name.toLowerCase() as SpecialFolder;
     account.rootFolders.push(folder);
   }
-  account.inbox = account.rootFolders.first;
+  let inbox = account.rootFolders.first;
+  inbox.specialFolder = SpecialFolder.Inbox;
 
   let lastReadTime = new Date();
   lastReadTime.setHours(lastReadTime.getHours() - 1);
@@ -129,10 +130,10 @@ export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCoun
       emailNr++;
       let folder: Folder;
       if (Math.random() < 0.99) {
-        folder = account.inbox;
+        folder = inbox;
       } else {
         let folderIndex = Math.floor(Math.random() * account.rootFolders.length);
-        folder = account.rootFolders.getIndex(folderIndex) ?? account.inbox;
+        folder = account.rootFolders.getIndex(folderIndex) ?? inbox;
       }
       let msg = folder.newEMail();
       msg.id = emailNr + '@' + account.emailAddress;

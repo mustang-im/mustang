@@ -6,6 +6,7 @@ import { appGlobal } from "../app";
 import { AbstractFunction } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, MapColl } from 'svelte-collections';
+import type SpecialFolder from "../../frontend/Settings/Mail/Account/SpecialFolder.svelte";
 
 export class MailAccount extends Account {
   readonly protocol: string = "mail";
@@ -76,6 +77,21 @@ export class MailAccount extends Account {
     }
     await this.storage?.deleteAccount(this);
     appGlobal.emailAccounts.remove(this);
+  }
+
+  /** Get the `specialFolder` in this account. */
+  getSpecialFolder(specialFolder: SpecialFolder) {
+    let folder = this.getAllFolders().find(folder => folder.specialFolder == specialFolder);
+    if (folder) {
+      return folder;
+    }
+    if (specialFolder == SpecialFolder.Sent) {
+      return this.getSpecialFolder(SpecialFolder.Inbox);
+    }
+    if (specialFolder == SpecialFolder.Drafts) {
+      return this.getSpecialFolder(SpecialFolder.Sent);
+    }
+    return this.rootFolders.first;
   }
 }
 

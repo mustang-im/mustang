@@ -1,7 +1,7 @@
 import { Folder, SpecialFolder } from "../Folder";
-import { MailAccount } from "../MailAccount";
-import { AllAccounts } from "./AllAccounts";
-import { EMail } from "../EMail";
+import type { MailAccount } from "../MailAccount";
+import type { AllAccounts } from "./AllAccounts";
+import type { EMail } from "../EMail";
 import { assert } from "../../util/util";
 import { mergeColls, Collection } from "svelte-collections";
 
@@ -52,8 +52,8 @@ export class AllFolders extends Folder {
   newEMail(): EMail {
     let account = this.account.accounts.first;
     assert(account, "Setup and select email account first");
-    let folder = account.sent ?? account.inbox ?? account.rootFolders.first;
-    assert(account, `No folder found in account ${account.name}`);
+    let folder = account.getSpecialFolder(SpecialFolder.Sent);
+    assert(folder, `No folder found in account ${account.name}`);
     return folder.newEMail();
   }
 }

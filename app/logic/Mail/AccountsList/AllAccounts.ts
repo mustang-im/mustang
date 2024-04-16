@@ -28,20 +28,20 @@ export class AllAccounts extends MailAccount {
 
     let inbox = new AllFolders(this);
     inbox.name = "Inbox";
+    inbox.specialFolder = SpecialFolder.Inbox;
     inbox.followSpecialFolder(SpecialFolder.Inbox);
-    this.inbox = inbox as any as Folder;
     this.rootFolders.add(inbox as any as Folder);
 
     let sent = new AllFolders(this);
     sent.name = "Sent";
+    inbox.specialFolder = SpecialFolder.Sent;
     sent.followSpecialFolder(SpecialFolder.Sent);
-    this.sent = sent as any as Folder;
     this.rootFolders.add(sent as any as Folder);
 
     let drafts = new AllFolders(this);
     drafts.name = "Drafts";
+    drafts.specialFolder = SpecialFolder.Drafts;
     drafts.followSpecialFolder(SpecialFolder.Drafts);
-    this.drafts = drafts as any as Folder;
     this.rootFolders.add(drafts as any as Folder);
   }
 

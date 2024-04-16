@@ -36,7 +36,7 @@ export class IMAPFolder extends Folder {
       this.countUnread = folderInfo.status.unseen;
       this.countNewArrived = folderInfo.status.recent;
     }
-    this.specialUse(folderInfo.specialUse);
+    this.setSpecialUse(folderInfo.specialUse);
   }
 
   async runCommand(imapFunc: (conn: any) => Promise<void>) {
@@ -274,45 +274,35 @@ export class IMAPFolder extends Folder {
 
   /** @param specialUse From RFC 6154, e.g. `\Sent`
    * <https://datatracker.ietf.org/doc/html/rfc6154> */
-  specialUse(specialUse: string): void {
+  setSpecialUse(specialUse: string): void {
     switch (specialUse) {
-      case "\Inbox":
-        this.account.inbox = this;
+      case "\\Inbox":
         this.specialFolder = SpecialFolder.Inbox;
         break;
-      case "\Trash":
-        this.account.trash = this;
+      case "\\Trash":
         this.specialFolder = SpecialFolder.Trash;
         break;
-      case "\Junk":
-        this.account.spam = this;
+      case "\\Junk":
         this.specialFolder = SpecialFolder.Spam;
         break;
-      case "\Sent":
-        this.account.sent = this;
+      case "\\Sent":
         this.specialFolder = SpecialFolder.Sent;
         break;
-      case "\Drafts":
-        this.account.drafts = this;
+      case "\\Drafts":
         this.specialFolder = SpecialFolder.Drafts;
         break;
-      case "\Archive":
-        this.account.archive = this;
+      case "\\Archive":
         this.specialFolder = SpecialFolder.Archive;
         break;
     }
     if (this.path.toUpperCase() == "INBOX") {
-      this.account.inbox = this;
       this.specialFolder = SpecialFolder.Inbox;
-    } else if (!this.account.sent && this.path.toLowerCase() == "sent") {
+    } else if (!this.account.getSpecialFolder(SpecialFolder.Sent) && this.path.toLowerCase() == "sent") {
       // or "INBOX/Sent" or "Sent Messages" (Exchange) or various translated versions of it
-      this.account.sent = this;
       this.specialFolder = SpecialFolder.Sent;
-    } else if (!this.account.drafts && this.path.toLowerCase() == "drafts") {
-      this.account.drafts = this;
+    } else if (!this.account.getSpecialFolder(SpecialFolder.Drafts) && this.path.toLowerCase() == "drafts") {
       this.specialFolder = SpecialFolder.Drafts;
-    } else if (!this.account.trash && this.path.toLowerCase() == "trash") {
-      this.account.trash = this;
+    } else if (!this.account.getSpecialFolder(SpecialFolder.Trash) && this.path.toLowerCase() == "trash") {
       this.specialFolder = SpecialFolder.Trash;
     }
   }

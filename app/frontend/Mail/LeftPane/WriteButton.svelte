@@ -7,6 +7,7 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { SpecialFolder } from "../../../logic/Mail/Folder";
   import { mailMustangApp } from "../MailMustangApp";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import WriteIcon from "lucide-svelte/icons/pencil";
@@ -15,10 +16,7 @@
   export let selectedAccount: MailAccount; /* in/out */
 
   function newMail() {
-    let folder = selectedAccount.drafts ??
-      selectedAccount.sent ??
-      selectedAccount.inbox ??
-      selectedAccount.rootFolders.first;
+    let folder = selectedAccount.getSpecialFolder(SpecialFolder.Drafts);
     let mail = folder.newEMail();
     mail.from.emailAddress = selectedAccount.emailAddress;
     mail.from.name = selectedAccount.userRealname;
