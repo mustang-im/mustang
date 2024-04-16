@@ -336,7 +336,7 @@ export class M3Conf extends VideoConfMeeting {
   }
 
   async answer() {
-    super.answer();
+    await super.answer();
   }
 
   async hangup() {
@@ -347,7 +347,7 @@ export class M3Conf extends VideoConfMeeting {
       await this.removeMyVideo(this.screenShare, true);
     }
     await this.closeWebSocket();
-    super.hangup();
+    await super.hangup();
   }
 
   static async createAdhoc(): Promise<M3Conf> {

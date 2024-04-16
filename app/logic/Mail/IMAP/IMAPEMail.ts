@@ -21,7 +21,7 @@ export class IMAPEMail extends EMail {
   }
 
   async download() {
-    this.folder.runCommand(async (conn) => {
+    await this.folder.runCommand(async (conn) => {
       let msgInfo = await conn.fetchOne(this.id);
       this.fromFlow(msgInfo);
     });
@@ -99,28 +99,28 @@ export class IMAPEMail extends EMail {
   }
 
   async markRead(read = true) {
-    super.markRead(read);
-    this.setFlagServer("\\Seen", read);
+    await super.markRead(read);
+    await this.setFlagServer("\\Seen", read);
   }
 
   async markStarred(starred = true) {
-    super.markStarred(starred);
-    this.setFlagServer("\\Flagged", starred);
+    await super.markStarred(starred);
+    await this.setFlagServer("\\Flagged", starred);
   }
 
   async markSpam(spam = true) {
-    super.markSpam(spam);
-    this.setFlagServer("\\Junk", spam);
+    await super.markSpam(spam);
+    await this.setFlagServer("\\Junk", spam);
   }
 
   async markReplied() {
-    super.markReplied();
-    this.setFlagServer("\\Answered", true);
+    await super.markReplied();
+    await this.setFlagServer("\\Answered", true);
   }
 
   async markDraft() {
-    super.markDraft();
-    this.setFlagServer("\\Draft", true);
+    await super.markDraft();
+    await this.setFlagServer("\\Draft", true);
   }
 
   /**
@@ -130,7 +130,7 @@ export class IMAPEMail extends EMail {
    * @param set -- true = add the flag, false = remove the flag
    */
   async setFlagServer(name: string, set = true) {
-    this.folder.runCommand(async (conn) => {
+    await this.folder.runCommand(async (conn) => {
       if (set) {
         await conn.messageFlagsAdd(this.uid, [name], { uid: true });
       } else {
@@ -142,7 +142,7 @@ export class IMAPEMail extends EMail {
   async deleteMessage() {
     await super.deleteMessage();
     await SQLEMail.deleteIt(this);
-    this.folder.runCommand(async (conn) => {
+    await this.folder.runCommand(async (conn) => {
       await conn.messageDelete(this.uid, { uid: true });
     });
   }
