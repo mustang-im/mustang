@@ -45,6 +45,10 @@ export class AllAccounts extends MailAccount {
     this.rootFolders.add(drafts as any as Folder);
   }
 
+  get isLoggedIn(): boolean {
+    return this.accounts.contents.every(acc => acc.isLoggedIn);
+  }
+
   async login(interactive: boolean): Promise<void> {
     for (let account of this.accounts) {
       await account.login(interactive);
