@@ -134,15 +134,19 @@ export class IMAPFolder extends Folder {
             // headers: true,
           }, { uid: true });
         for await (let msgInfo of msgInfos) {
-          let msg = this.getEMailByUID(msgInfo.uid);
-          if (msg?.downloadComplete) {
-            continue;
-          } else if (msg) {
-            msg.fromFlow(msgInfo);
-            this.updateModSeq(msgInfo.modseq);
-            await msg.parseMIME();
-            await SQLEMail.save(msg);
-            downloadedMessages.add(msg);
+          try {
+            let msg = this.getEMailByUID(msgInfo.uid);
+            if (msg?.downloadComplete) {
+              continue;
+            } else if (msg) {
+              msg.fromFlow(msgInfo);
+              this.updateModSeq(msgInfo.modseq);
+              await msg.parseMIME();
+              await SQLEMail.save(msg);
+              downloadedMessages.add(msg);
+            }
+          } catch (ex) {
+            this.account.errorCallback(ex);
           }
         }
       });
