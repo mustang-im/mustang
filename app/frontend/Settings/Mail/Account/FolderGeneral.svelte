@@ -6,16 +6,16 @@
     on:click={() => catchErrors(onNameChange)}
     />
 
-  <label for="count">Messages</label>
-  <hbox class="value" name="count">{$folder.countNewArrived} new, {$folder.countUnread} unread, {$folder.countTotal} total messages</hbox>
-  <Button label="Mark all read"
-    on:click={() => catchErrors(onMarkAllRead)}
-    />
-
   <label for="count">Use as</label>
   <SpecialFolderDropDown bind:specialFolderType={folder.specialFolder} />
   <Button label="Save"
     on:click={() => catchErrors(onChangeSpecialFolder)}
+    />
+
+  <label for="count">Messages</label>
+  <hbox class="value" name="count">{$folder.countNewArrived} new, {$folder.countUnread} unread, {$folder.countTotal} total messages</hbox>
+  <Button label="Mark all read"
+    on:click={() => catchErrors(onMarkAllRead)}
     />
 </grid>
 

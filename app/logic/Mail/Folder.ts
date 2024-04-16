@@ -14,7 +14,7 @@ export class Folder extends Observable {
   parent: Folder | null;
   account: MailAccount;
   @notifyChangedProperty
-  specialFolder: SpecialFolder;
+  specialFolder: SpecialFolder = SpecialFolder.Normal;
   readonly messages = new ArrayColl<EMail>();
   readonly subFolders = new ArrayColl<Folder>();
   @notifyChangedProperty
@@ -60,7 +60,7 @@ export class Folder extends Observable {
   }
 
   async moveFolderHere(folder: Folder) {
-    assert(folder != folder.account.inbox, "Cannot move the inbox");
+    assert(folder != folder.account.getSpecialFolder(SpecialFolder.Inbox), "Cannot move the inbox");
     assert(!folder.specialFolder, "Should not move special folders");
     assert(folder != this, "Cannot move folder into itself. Neither physics nor logic allow that.");
     assert(this.subFolders.contains(folder), "Is already a subfolder");
@@ -101,12 +101,14 @@ export class Folder extends Observable {
 }
 
 export enum SpecialFolder {
+  Normal = "normal",
   Inbox = "inbox",
   Sent = "sent",
   Drafts = "drafts",
   Trash = "trash",
   Spam = "spam",
   Archive = "archive",
+  Outbox = "outbox",
   All = "all",
 }
 
@@ -118,4 +120,6 @@ export const specialFolderOrder = [
   SpecialFolder.Trash,
   SpecialFolder.Spam,
   SpecialFolder.Archive,
+  SpecialFolder.Outbox,
+  SpecialFolder.Normal,
 ];

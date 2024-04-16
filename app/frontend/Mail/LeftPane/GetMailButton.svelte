@@ -15,6 +15,7 @@
   import DownloadIcon from "lucide-svelte/icons/download";
   import { catchErrors } from "../../Util/error";
   import { selectedFolder } from "../Selected";
+  import { SpecialFolder } from "../../../logic/Mail/Folder";
 
   export let account: MailAccount; /* in/out */
 
@@ -22,7 +23,7 @@
     if (!account.isLoggedIn) {
       await account.login(true);
     }
-    let folder = $selectedFolder ?? account.inbox;
+    let folder = $selectedFolder ?? account.getSpecialFolder(SpecialFolder.Inbox);
     await folder.listMessages();
   }
 </script>

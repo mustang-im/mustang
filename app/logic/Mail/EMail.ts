@@ -1,6 +1,6 @@
 import { Message } from "../Abstract/Message";
 import type { Attachment } from "./Attachment";
-import type { Folder } from "./Folder";
+import { type Folder, SpecialFolder } from "./Folder";
 import type { Person } from "../Abstract/Person";
 import { appGlobal } from "../app";
 import { assert } from "../util/util";
@@ -83,7 +83,7 @@ export class EMail extends Message {
   _reply(): EMail {
     this.markReplied().catch(this.folder.account.errorCallback);
     let account = this.folder.account;
-    let folder = account.drafts ?? account.sent ?? this.folder;
+    let folder = account.getSpecialFolder(SpecialFolder.Drafts);
     let reply = folder.newEMail();
     reply.from.emailAddress = account.emailAddress;
     reply.from.name = account.userRealname;

@@ -199,23 +199,18 @@ export class EWSAccount extends MailAccount {
         switch (folder.DistinguishedFolderId) {
         case "inbox":
           ewsFolder.specialFolder = SpecialFolder.Inbox;
-          this.inbox = ewsFolder;
           break;
         case "drafts":
           ewsFolder.specialFolder = SpecialFolder.Drafts;
-          this.drafts = ewsFolder;
           break;
         case "sentitems":
           ewsFolder.specialFolder = SpecialFolder.Sent;
-          this.sent = ewsFolder;
           break;
         case "junkemail":
           ewsFolder.specialFolder = SpecialFolder.Spam;
-          this.spam = ewsFolder;
           break;
         case "deleteditems":
           ewsFolder.specialFolder = SpecialFolder.Trash;
-          this.trash = ewsFolder;
           break;
         //case "outbox":
         }
