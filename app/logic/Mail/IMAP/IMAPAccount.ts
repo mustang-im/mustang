@@ -72,7 +72,18 @@ export class IMAPAccount extends MailAccount {
       await this._connection.connect();
     } catch (ex) {
       this._connection = null;
-      if (ex.code == "NoConn" || ex.message == "Command failed.") {
+      if (ex.responseText) {
+        ex.message = ex.responseText;
+      }
+      if (ex.authenticationFailed) {
+        ex.message = "Check your login, username, and password:\n" + ex.message;
+        ex.authFail = true;
+        throw ex;
+      } else if (ex.code == "ClosedAfterConnectTLS") {
+        ex.message = "Check your login, username, and password:";
+        ex.authFail = true;
+        throw ex;
+      } else if (ex.code == "NoConn" || ex.message == "Command failed.") {
         throw new Error("Failed to connect to server " + this.hostname + " for account " + this.name);
       } else {
         throw ex;

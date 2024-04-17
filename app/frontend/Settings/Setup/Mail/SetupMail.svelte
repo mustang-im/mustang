@@ -119,8 +119,8 @@
     if (ex instanceof Cancelled) {
       reset();
     } else {
+      step = Step.FoundConfig;
       showError(ex);
-      onManualSetup();
     }
   }
   function onManualSetup() {
