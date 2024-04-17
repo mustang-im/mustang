@@ -88,7 +88,7 @@
   }
   :global(.selected) button:hover:not(.disabled) {
     background-color: var(--selected-hover-bg);
-    color: var(--selected-hover-bg);
+    color: var(--selected-hover-fg);
   }
   button.secondary {
     border-color: var(--button-secondard-line);

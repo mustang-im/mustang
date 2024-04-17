@@ -118,6 +118,20 @@ export class EMail extends Message {
     console.log("Sent email", this.subject, "to", this.to.first.emailAddress, this);
     // TODO move to Sent or target folder?
   }
+
+  /**
+   * @param up
+   * true: older message
+   * false: newer message
+   * null: Same list position, after deleting this message
+   */
+  nextMessage(up?: boolean): EMail {
+    let i = this.folder.messages.getKeyForValue(this);
+    if (typeof (up) == "boolean") {
+      up ? --i : ++i;
+    }
+    return this.folder.messages.getIndex(i);
+  }
 }
 
 export class PersonEmailAddress {
