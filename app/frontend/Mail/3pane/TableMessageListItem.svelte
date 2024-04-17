@@ -101,7 +101,7 @@
     font-weight: bold;
   }
   .buttons.hover {
-    justify-content: end;
+    justify-content: start;
   }
   :global(.row:not(:hover)) .buttons.hover {
     display: none;

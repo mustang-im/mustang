@@ -1,14 +1,11 @@
 # Next
 * Chat SQL - Test
 * Mail
-  * Server settings UI style
-  * Folder context menu
-  * Message list context menu
+  * Folder hierarchy
   * Threads
     * Message: Conversation view
     * Message list: Threaded view?
     * Mail Chat view: Open thread
-  * Folder hierarchy
   * All accounts - fix
   * Bugs
     * Google
@@ -16,14 +13,10 @@
     * Setup mail
       * When finishing gives error, don't allow the user to click multiple times, creating multiple accounts.
       * after account delete: remove general panel
-# App logic
-* init
-  * Move chat account load into Chat app
-* Router
-  * Use Svelte router with objects stack?
 
 # UI
 * Window header
+* Close menu when clicking outside menu
 
 # Chat
 ## UI
@@ -84,8 +77,7 @@
 # Meet
 ## UI
 * Open/close cam and mic
-* UI for incoming or outgoing call
-  * Before joining conference
+* UI before joining conference
 
 ## Protocol
 * M3 server
@@ -109,22 +101,11 @@
 * WhatsApp
 * Zoom
 
-# Infra
-* App shell: XULrunner, Electron etc.
-* Cordova or similar
-* JPC: TCP sockets
-
 # Apps
 * Need: App shell, for: iframe rights
 
 # Mail
 * Display subfolders indented, as hierarchy
-* Autoconfig
-  * Exchange AutoDiscover V2 and V1
-  * Scrollbar for dialog box, not app window
-* Context menu for account and message
-  * Move folder
-  * Close menu when clicking outside menu
 * Save original emails as MIME in ZIP file
 * Search
   * with/without text
@@ -137,9 +118,12 @@
   * During fetch after login
   * From IDLE
   * Loop when deleting mail manually twice: FilteredCollection removed observers
-* View source
-* Print
+* Autoconfig
+  * Exchange AutoDiscover V2 and V1
+  * Scrollbar for dialog box, not app window
 * Forward & redirect
+* Print
+* View source
 * Import
   * Thunderbird
      * Account settings
@@ -152,6 +136,7 @@
      * Calendar
      * Mails
 * HTML emails as sent, but sanitized and jailed
+* Move folder
 * Delete strategy
   * Move to trash
   * Expunge on quit
@@ -239,3 +224,9 @@
 * SIP
   * Voice call to phone system
   * Incoming calls
+
+## App logic
+* init
+  * Move chat account load into Chat app
+* Router
+  * Use Svelte router with objects stack?
