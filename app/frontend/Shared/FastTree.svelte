@@ -4,8 +4,6 @@
   <div slot="row" class="tree-row" let:item>
     <slot name="row" {item}
       indentionLevel={getIndentionLevelFor(item)}
-      canExpand={item.children.hasItems}
-      isExpanded={item.expanded}
       />
   </div>
 </FastList>
