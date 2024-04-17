@@ -10,7 +10,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import MessageAttachment from "./MessageAttachment.svelte";
+  import MessageAttachment from "./AttachmentUI.svelte";
 
   export let message: EMail;
 </script>
