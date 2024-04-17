@@ -1,6 +1,6 @@
 <vbox class="app-bar">
   {#each $showApps.each as app}
-    <AppButton on:click={() => selectedApp = app} selected={selectedApp == app}>
+    <AppButton on:click={() => selectedApp = app} selected={selectedApp == app} classes={app.id}>
       <AppIcon slot="icon" icon={app.icon} size="24px" />
       <hbox slot="label" class="label">
         {app.name}
@@ -37,5 +37,8 @@
   .app-bar :global(.app-button),
   .bottom {
     border-right: 1px dotted grey;
+  }
+  .app-bar :global(.app-button.settings:not(.selected)) {
+    display: none;
   }
 </style>
