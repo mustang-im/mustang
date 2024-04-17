@@ -78,11 +78,15 @@
     background-color: var(--hover-bg);
     color: var(--hover-fg);
   }
-  .selected:not(.disabled) {
+  button.selected:not(.disabled) {
     background-color: var(--selected-bg);
     color: var(--selected-fg);
   }
-  .selected:hover:not(.disabled) {
+  button.selected:hover:not(.disabled) {
+    background-color: var(--selected-hover-bg);
+    color: var(--selected-hover-bg);
+  }
+  :global(.selected) button:hover:not(.disabled) {
     background-color: var(--selected-hover-bg);
     color: var(--selected-hover-bg);
   }

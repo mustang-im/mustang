@@ -67,17 +67,22 @@
     width: 20px;
     align-items: center;
   }
-  .button :global(svg) {
+  .star :global(svg),
+  .unread :global(svg) {
+    stroke-width: 1px;
+  }
+  :global(.row:not(:hover)) .unread :global(svg),
+  :global(.row:not(:hover)) .star :global(svg) {
     stroke: none;
   }
   :global(.row:not(:hover)) .star:not(.starred) :global(svg) {
     opacity: 0;
   }
-  .star.starred :global(svg) {
-    fill: orange;
-  }
   :global(.row:not(:hover)) .unread.read :global(svg) {
     opacity: 0;
+  }
+  .star.starred :global(svg) {
+    fill: orange;
   }
   .unread:not(.read) :global(svg) {
     fill: green;
