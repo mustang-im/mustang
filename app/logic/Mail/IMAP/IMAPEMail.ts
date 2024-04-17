@@ -70,31 +70,33 @@ export class IMAPEMail extends EMail {
   async parseMIME() {
     //console.log("MIME source", this.mime, new TextDecoder("utf-8").decode(this.mime));
     assert(this.mime?.length, "MIME source not yet downloaded");
-    let mail = await new PostalMIME().parse(sanitize.nonemptystring(this.mime));
+    assert(this.mime instanceof Uint8Array, "MIME source should be a byte array");
+    let mail = await new PostalMIME().parse(this.mime);
     /** TODO header.key returns Uint8Array
     for (let header of mail.headers) {
       this.headers.set(sanitize.nonemptystring(header.key), sanitize.nonemptystring(header.value));
     }*/
     this.text = mail.text;
     this.html = sanitizeHTML(sanitize.stringOrNull(mail.html));
+    let fallbackContentID = 0;
     this.attachments.addAll(mail.attachments.map(a => {
       try {
         let attachment = new Attachment();
-        attachment.mimeType = sanitize.nonemptystring(a.mimeType);
+        attachment.mimeType = sanitize.stringOrNull(a.mimeType) ?? "application/octet-stream";
         attachment.filename = sanitize.stringOrNull(a.filename) ?? "file." + attachment.mimeType.split("/").pop();
         attachment.disposition = sanitize.translate(a.disposition, {
           attachment: ContentDisposition.attachment,
           inline: ContentDisposition.inline,
         }, ContentDisposition.unknown);
-        attachment.related = sanitize.boolean(a.related);
-        attachment.contentID = sanitize.stringOrNull(a.contentId);
+        attachment.related = a.related ? sanitize.boolean(a.related) : false;
+        attachment.contentID = sanitize.stringOrNull(a.contentId) ?? "" + fallbackContentID++;
         attachment.content = new File([a.content], a.filename, { type: a.mimeType });
-        attachment.size = attachment.content.size ? sanitize.integer(attachment.content.size) : null;
+        attachment.size = attachment.content.size ? sanitize.integer(attachment.content.size) : 0;
         return attachment;
       } catch (ex) {
         this.folder.account.errorCallback(ex);
       }
-    }));
+    }).filter(attachment => !!attachment));
     for (let a of this.attachments) {
       await RawFilesAttachment.save(a, this);
     }
