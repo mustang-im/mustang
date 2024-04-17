@@ -97,8 +97,10 @@ export class IMAPEMail extends EMail {
         this.folder.account.errorCallback(ex);
       }
     }).filter(attachment => !!attachment));
-    for (let a of this.attachments) {
-      await RawFilesAttachment.save(a, this);
+    if (this.attachments.hasItems) {
+      await Promise.all(this.attachments.contents.map(a =>
+        RawFilesAttachment.save(a, this)));
+      await RawFilesAttachment.emailFinished(this);
     }
     //console.log("imapflow mail", mail, "text", mail.text, "html", mail.html);
     //console.log("IMAPEMail", this, "text", this.text, "html", this.html);

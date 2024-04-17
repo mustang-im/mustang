@@ -1,4 +1,4 @@
-import type { URLString } from "../../logic/util/util";
+import { sanitizeFilename, type URLString } from "../../logic/util/util";
 
 export function onKeyEnter(event: KeyboardEvent, onEnter: () => void) {
   if (event.key == "Enter") {
@@ -27,17 +27,4 @@ export function saveURLAsFile(url: URLString, filename: string) {
   a.setAttribute("target", "_blank");
   a.click();
   a.href = '';
-}
-
-/** Removes potentially dangerous parts of the file name, e.g.
- * \ / : . ' " ! ? * |
- * See <https://kizu514.com/blog/forbidden-file-names-on-windows-10/>
- * but there are many others. */
-export function sanitizeFilename(label: string): string {
-  let filename = label.replace(/[^a-zA-Z0-9 \.\-\_]/g, "");
-  const kDeviceNames = ['NUL', 'AUX', 'PRN', 'CON', 'COM', 'LPT', 'COM1', 'LPT1', 'COM2', 'LPT2'];
-  if (filename.length < 5 && kDeviceNames.includes(filename)) {
-    filename = "file";
-  }
-  return filename;
 }

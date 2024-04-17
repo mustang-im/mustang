@@ -48,6 +48,19 @@ export async function blobToDataURL(blob: Blob): Promise<URLString> {
   });
 }
 
+/** Removes potentially dangerous parts of the file name, e.g.
+ * \ / : . ' " ! ? * |
+ * See <https://kizu514.com/blog/forbidden-file-names-on-windows-10/>
+ * but there are many others. */
+export function sanitizeFilename(label: string): string {
+  let filename = label.replace(/[^a-zA-Z0-9 \.\-\_]/g, "");
+  const kDeviceNames = ['NUL', 'AUX', 'PRN', 'CON', 'COM', 'LPT', 'COM1', 'LPT1', 'COM2', 'LPT2'];
+  if (filename.length < 5 && kDeviceNames.includes(filename)) {
+    filename = "file";
+  }
+  return filename;
+}
+
 /** Used for if/else and switch statements
  * when they run into a case that should not happen */
 export class NotReached extends Error {
