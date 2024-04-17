@@ -1,11 +1,11 @@
-<FastList items={expandedItems} {columns} bind:selectedItem bind:selectedItems>
+<FastList items={showItems} {columns} bind:selectedItem bind:selectedItems>
   <slot name="header" slot="header" />
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div slot="row" class="tree-row" let:item>
     <slot name="row" {item}
       indentionLevel={getIndentionLevelFor(item)}
       canExpand={item.children.hasItems}
-      isExpanded={showChildrenOf.has(item)}
+      isExpanded={item.expanded}
       />
   </div>
 </FastList>
@@ -31,23 +31,22 @@
   export let items: Collection<T>;
 
   /** items + children which are displayed */
-  let expandedItems: Collection<T>;
-  let showChildrenOf = new Set<T>();
-
-  $: expandedItems = new ArrayColl(items);
+  $: showItems = new ArrayColl(items);
 
   const selectOpens = true;
   $: selectOpens && selectedItem && openOnly(selectedItem)
   function openOnly(selectedItem: T) {
-    expandedItems = new ArrayColl(items);
-    showChildrenOf.clear();
+    for (let item of showItems) {
+      item.expanded = false;
+    }
+    showItems = new ArrayColl(items);
     if (!selectedItem) {
       return;
     }
     let cur = selectedItem;
     while (cur) {
-      showChildrenOf.add(cur);
-      expandedItems.addAll(cur.children);
+      cur.expanded = true;
+      showItems.addAll(cur.children);
       cur = cur.parent;
     }
   }

@@ -15,17 +15,16 @@
   import Button from "../../Shared/Button.svelte";
   import ExpandIcon from "lucide-svelte/icons/chevron-right";
   import CollapseIcon from "lucide-svelte/icons/chevron-down";
-  import { createEventDispatcher } from 'svelte';
-  const dispatch = createEventDispatcher();
 
+  /** in */
   export let canExpand = false;
+  /** in/out */
   export let isExpanded = false;
+  /** in */
   export let indentionLevel = 0;
 
-  console.log("treeitemline indention", indentionLevel);
-
   function onExpandCollapse() {
-    dispatch('expandCollapse');
+    isExpanded = !isExpanded;
   }
 </script>
 
