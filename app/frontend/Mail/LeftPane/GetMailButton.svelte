@@ -41,16 +41,21 @@
   let status = Status.Waiting;
 
   async function getMail() {
-    if (!account.isLoggedIn) {
-      status = Status.Login;
-      await account.login(true);
+    try {
+      if (!account.isLoggedIn) {
+        status = Status.Login;
+        await account.login(true);
+      }
+      let folder = $selectedFolder ?? account.getSpecialFolder(SpecialFolder.Inbox);
+      status = Status.Fetching;
+      await folder.listMessages();
+      status = folder.countNewArrived ? Status.New : Status.Done;
+      await sleep(2);
+      status = Status.Waiting;
+    } catch (ex) {
+      status = Status.Waiting;
+      throw ex;
     }
-    let folder = $selectedFolder ?? account.getSpecialFolder(SpecialFolder.Inbox);
-    status = Status.Fetching;
-    await folder.listMessages();
-    status = folder.countNewArrived ? Status.New : Status.Done;
-    await sleep(2);
-    status = Status.Waiting;
   }
 </script>
 
