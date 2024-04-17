@@ -29,7 +29,7 @@ const kMXService = "https://mx.thunderbird.net/dns/mx/";
  */
 async function fetchConfigFromISPDB(domain: string, abort: AbortController) {
   let xmlStr = await fetchText(kISPDBURL + domain, abort);
-  return readConfigFromXML(xmlStr, domain);
+  return readConfigFromXML(xmlStr, domain, "ispdb");
 }
 
 async function fetchConfigFromISP(domain: string, emailAddress: string | null, abort: AbortController) {
@@ -46,7 +46,7 @@ async function fetchConfigFromISP(domain: string, emailAddress: string | null, a
     fetchText(url3, abort),
   ]);
   let xmlStr = await priorityOrder.run();
-  return readConfigFromXML(xmlStr, domain);
+  return readConfigFromXML(xmlStr, domain, "autoconfig-isp");
 }
 
 async function fetchConfigForMX(domain, abort: AbortController): Promise<ArrayColl<MailAccount>> {
@@ -90,24 +90,29 @@ export function getBaseDomainFromHost(hostname: string): string {
  * @returns hostname of the first MX server
  */
 async function getMX_node(domain: string, abort: AbortController): Promise<string> {
-  let results = await dns.resolveMx(domain);
-  assert(results.length, `No MX found for domain ${domain}`);
-  let mxs = results.map(result => sanitize.hostname(result.exchange));
-  return mxs[0];
+  let results = []; // await dns.resolveMx(domain);
+  let result = results[0];
+  assert(result, `No MX found for domain ${domain}`);
+  return sanitize.hostname(result.exchange);
 }
 
 /**
  * Queries the DNS MX for the domain
  *
+ * TODO Use DoH?
+ * TODO Cache result
+ * TODO Query both web service and local DNS, and
+ * use the result only when they match.
+ *
  * @param domain {String}
  * @returns hostname of the first MX server
  */
-async function getMX(domain: string, abort: AbortController): Promise<string> {
+export async function getMX(domain: string, abort: AbortController): Promise<string> {
   let mxStr = await fetchText(kMXService + domain, abort);
-  let mxs = mxStr.split("\n");
-  assert(mxs.length, `No MX found for domain ${domain}`);
-  mxs = mxs.map(mx => sanitize.hostname(mx));
-  return mxs[0];
+  let mxs = mxStr.split("\n"); // last line might be empty
+  let mx = mxs[0];
+  assert(mx, `No MX found for domain ${domain}`);
+  return sanitize.hostname(mx);
 }
 
 let ky;

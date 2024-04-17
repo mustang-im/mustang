@@ -1,5 +1,4 @@
-<StatusMessage status="success"
-  message="We found the configuration in our database.">
+<StatusMessage status="success" message={successMessage}>
   <CheckIcon slot="icon" />
 </StatusMessage>
 
@@ -49,6 +48,14 @@
     config = newConfig;
     event.stopPropagation();
   }
+
+  $: successMessage = !config?.source ? "No config found" :
+    config.source == "ispdb" ? "We found the configuration in our database." :
+    config.source == "autoconfig-isp" ? "We received the configuration from the ISP." :
+    config.source == "guess" ? "We guessed a configuration that might work." :
+    config.source == "autodiscover-xml" ? "We received the configuration from Microsoft Exchange." :
+    config.source == "autodiscover-json" ? "We received the configuration for Microsoft Exchange" :
+    "We found a configuration";
 </script>
 
 <style>
