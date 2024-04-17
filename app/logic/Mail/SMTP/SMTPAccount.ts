@@ -30,25 +30,41 @@ export class SMTPAccount extends MailAccount implements OutgoingMailAccount {
   }
 
   async send(email: EMail): Promise<void> {
-    let result = await appGlobal.remoteApp.sendMailNodemailer(this.getTransportOptions(), {
-      subject: email.subject,
-      inReplyTo: email.inReplyTo,
-      from: SMTPAccount.getRecipient(email.from),
-      replyTo: SMTPAccount.getRecipient(email.replyTo),
-      to: SMTPAccount.getRecipients(email.to),
-      cc: SMTPAccount.getRecipients(email.cc),
-      bcc: SMTPAccount.getRecipients(email.bcc),
-      text: email.text,
-      html: email.html,
-      attachDataUrls: true,
-      attachments: await SMTPAccount.getAttachments(email),
-    });
-    email.sent = new Date();
-    email.received = email.sent;
+    try {
+      let result = await appGlobal.remoteApp.sendMailNodemailer(this.getTransportOptions(), {
+        subject: email.subject,
+        inReplyTo: email.inReplyTo,
+        from: SMTPAccount.getRecipient(email.from),
+        replyTo: SMTPAccount.getRecipient(email.replyTo),
+        to: SMTPAccount.getRecipients(email.to),
+        cc: SMTPAccount.getRecipients(email.cc),
+        bcc: SMTPAccount.getRecipients(email.bcc),
+        text: email.text,
+        html: email.html,
+        attachDataUrls: true,
+        attachments: await SMTPAccount.getAttachments(email),
+      });
+      email.sent = new Date();
+      email.received = email.sent;
+    } catch (ex) {
+      if (ex.code == "EAUTH") {
+        ex.message = "Check your login, username, and password:\n" + ex.message;
+        ex.authFail = true;
+      }
+      throw ex;
+    }
   }
 
   async verifyLogin(): Promise<void> {
-    await appGlobal.remoteApp.verifyServerNodemailer(this.getTransportOptions());
+    try {
+      await appGlobal.remoteApp.verifyServerNodemailer(this.getTransportOptions());
+    } catch (ex) {
+      if (ex.code == "EAUTH") {
+        ex.message = "Check your login, username, and password:\n" + ex.message;
+        ex.authFail = true;
+      }
+      throw ex;
+    }
   }
 
   protected static getRecipients(recipients: ArrayColl<PersonEmailAddress>): NMAddress[] {

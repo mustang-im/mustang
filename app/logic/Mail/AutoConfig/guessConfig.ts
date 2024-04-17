@@ -101,7 +101,7 @@ async function tryIMAP(hostname: string, tls: TLSSocketType, abort: AbortControl
   try {
     await config.verifyLogin();
   } catch (ex) {
-    if (ex.code == "ClosedAfterConnectTLS") {
+    if (ex.authFail) {
       // OK. Login fail is expected.
     } else {
       //console.log("IMAP config failed", hostname, port, tls, ex?.message, ex);
@@ -128,7 +128,7 @@ async function trySMTP(hostname: string, tls: TLSSocketType, port: number | null
   try {
     await config.verifyLogin();
   } catch (ex) {
-    if (ex.code == "EAUTH") {
+    if (ex.authFail) {
       // OK. Login fail is expected.
     } else {
       //console.log("SMTP config failed", hostname, port, tls, ex?.message, ex);
