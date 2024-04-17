@@ -16,7 +16,7 @@
           {$attachment.size ? fileSize($attachment.size) : "Not downloaded"}
         </hbox>
         <hbox flex />
-        <hbox class="menu">...</hbox>
+        <AttachmentMenu {attachment} />
       </hbox>
     </vbox>
   </hbox>
@@ -27,6 +27,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { appGlobal } from "../../../logic/app";
   import { assert } from "../../../logic/util/util";
+  import AttachmentMenu from "./AttachmentMenu.svelte";
   import FileIcon from "../../Files/FileIcon.svelte";
   import { fileSize } from "../../Files/fileSize";
   import { catchErrors } from "../../Util/error";
@@ -85,7 +86,6 @@
   }
   .top-row,
   .bottom-row,
-  .menu,
   .size {
     align-items: center;
   }
@@ -100,5 +100,8 @@
   }
   .bottom-row {
     font-size: 12px;
+  }
+  .bottom-row :global(.svelteui-Popper-root) {
+    position: fixed;
   }
 </style>
