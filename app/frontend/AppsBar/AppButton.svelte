@@ -1,5 +1,5 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<vbox class="app-button" class:selected on:click>
+<vbox class="app-button {classes}" class:selected on:click>
   <hbox class="icon">
     <slot name="icon" />
   </hbox>
@@ -10,6 +10,7 @@
 
 <script lang="ts">
   export let selected = false;
+  export let classes: string = "";
 </script>
 
 <style>
