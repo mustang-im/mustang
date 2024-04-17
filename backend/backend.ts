@@ -23,7 +23,9 @@ async function createSharedAppObject() {
     postHTTP, // TODO Use ky
     openFile,
     closeFile,
-    fs: fsPromises,
+    path: {
+      dirname: path.dirname,
+    },
     getConfigDir,
     getFilesDir,
     openFileInExternalApp,
