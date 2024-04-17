@@ -50,7 +50,7 @@
   </Menu.Item>
   <Menu.Item
     on:click={() => catchErrors(() => showSource())}
-    title="Show the on-the-wire RFC 822 format of this message"
+    title="Show the on-the-wire format of this message"
     icon={SourceIcon}>
     Show source
   </Menu.Item>

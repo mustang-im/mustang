@@ -169,13 +169,18 @@ a:hover {
 
 /* Fastlist */
 
-.fast-list .row.selected * {
+.fast-list .row.selected > * {
   background-color: var(--selected-bg);
-  color: white;
+  color: var(--selected-fg);
 }
 
-.fast-list .row:not(.selected):hover * {
+.fast-list .row:not(.selected):hover > * {
   background-color: var(--hover-bg);
+  color: var(--hover-fg);
+}
+.fast-list .row.selected:hover > * {
+  background-color: var(--selected-hover-bg);
+  color: var(--selected-hover-fg);
 }
 
 /* Fix svelte-ui menu */
@@ -190,11 +195,12 @@ button.svelteui-MenuItem-root {
 
 button.svelteui-MenuItem-root[classname="selected"] {
   background-color: var(--selected-bg);
-  color: white;
+  color: var(--selected-fg);
 }
 
 button.svelteui-MenuItem-root:hover:not([classname="selected"]) {
   background-color: var(--hover-bg);
+  color: var(--hover-fg);
 }
 
 /* Fix svelte-ui dropdown */
@@ -202,4 +208,5 @@ button.svelteui-MenuItem-root:hover:not([classname="selected"]) {
 .svelteui-NativeSelect-root select option:hover {
   /* TODO not the right selector */
   background-color: var(--hover-bg);
+  color: var(--hover-fg);
 }

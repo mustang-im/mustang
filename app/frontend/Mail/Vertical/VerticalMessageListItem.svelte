@@ -6,6 +6,28 @@
     <hbox class="contact">{message.contact.name}</hbox>
     <hbox flex />
     <hbox class="date">{getDateString($message.sent)}</hbox>
+    <hbox class="buttons hover">
+      <hbox class="spam button">
+        <Button
+          icon={SpamIcon}
+          iconSize="16px"
+          iconOnly
+          label="Mark as spam and delete"
+          on:click={() => catchErrors(markAsSpam)}
+          plain
+          />
+      </hbox>
+      <hbox class="delete button">
+        <Button
+          icon={DeleteIcon}
+          iconSize="16px"
+          iconOnly
+          label="Delete this message"
+          on:click={() => catchErrors(deleteMessage)}
+          plain
+          />
+      </hbox>
+    </hbox>
   </hbox>
   <hbox class="bottom-row">
     <hbox class="subject">{$message.subject}</hbox>
@@ -41,10 +63,13 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { onDragStartMail } from "../Message/drag";
+  import { selectedMessage } from "../Selected";
   import Button from "../../Shared/Button.svelte";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
+  import DeleteIcon from "lucide-svelte/icons/trash-2";
+  import SpamIcon from "lucide-svelte/icons/shield-x";
   import { getDateString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
 
@@ -57,6 +82,15 @@
   }
   async function toggleStar() {
     await message.markStarred(!message.isStarred);
+  }
+  async function deleteMessage() {
+    await message.deleteMessage();
+    $selectedMessage = message.nextMessage();
+  }
+  async function markAsSpam() {
+    await message.markSpam(true);
+    await message.deleteMessage();
+    $selectedMessage = message.nextMessage();
   }
 </script>
 
@@ -93,23 +127,46 @@
   .subject {
     line-height: 1.3;
   }
+  :global(.row:not(:hover)) .buttons.hover {
+    display: none;
+  }
+  :global(.row:hover) .date {
+    display: none;
+  }
   .button {
     width: 20px;
     vertical-align: bottom;
   }
-  .star :global(svg),
-  .unread :global(svg) {
+
+  /* <copied from="TableMessageListItem.svelte"> */
+  .button:hover {
+    background-color: var(--selected-hover-bg);
+    color: var(--selected-hover-fg);
+  }
+  :global(.row.selected:hover) .button:hover {
+    background-color: var(--hover-bg);
+    color: var(--hover-fg);
+  }
+  .button :global(button) {
+    background-color: unset !important;
+    color: unset !important;
+  }
+  .star :global(svg) {
     stroke-width: 1px;
+  }
+  .buttons.hover :global(svg),
+  .unread :global(svg) {
+    stroke-width: 1.5px;
   }
   :global(.row:not(:hover)) .unread :global(svg),
   :global(.row:not(:hover)) .star :global(svg) {
     stroke: none;
   }
   :global(.row:not(:hover)) .star:not(.starred) :global(svg) {
-    opacity: 0;
+    display: none;
   }
-  :global(.row:not(:hover)) .message.read .unread :global(svg) {
-    opacity: 0;
+  :global(.row:not(:hover)) .unread.read :global(svg) {
+    display: none;
   }
   .star.starred :global(svg) {
     fill: orange;
@@ -117,4 +174,5 @@
   .message.unread .unread :global(svg) {
     fill: green;
   }
+  /* </copied> */
 </style>
