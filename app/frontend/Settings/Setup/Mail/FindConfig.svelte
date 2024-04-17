@@ -5,6 +5,7 @@
   import { findConfig } from "../../../../logic/Mail/AutoConfig/findConfig";
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
   import StatusMessage from "../StatusMessage.svelte";
+  import { assert } from "../../../../logic/util/util";
   import type { ArrayColl } from "svelte-collections";
   import { createEventDispatcher, onMount } from 'svelte';
   const dispatchEvent = createEventDispatcher();
@@ -23,6 +24,7 @@
   onMount(async () => {
     try {
       altConfigs = await findConfig(emailAddress, password, abort);
+      assert(altConfigs?.length, `We could not find a configuration for ${emailAddress}`);
       config = altConfigs.slice().shift();
       dispatchEvent("continue");
     } catch (ex) {
@@ -30,6 +32,3 @@
     }
   });
 </script>
-
-<style>
-</style>

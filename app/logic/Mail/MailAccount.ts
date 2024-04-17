@@ -22,7 +22,7 @@ export class MailAccount extends Account {
   @notifyChangedProperty
   outgoing: MailAccount & OutgoingMailAccount = null;
   /** Where we got the config from, during setup */
-  source: "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | null = null;
+  source: ConfigSource = null;
   storage: MailAccountStorage;
 
   @notifyChangedProperty
@@ -122,6 +122,8 @@ export enum AuthMethod {
   CRAMMD5 = 5,
   NTLM = 6,
 }
+
+export type ConfigSource = "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | null;
 
 export interface OutgoingMailAccount {
   send(email: EMail): Promise<void>;

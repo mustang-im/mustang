@@ -1,4 +1,4 @@
-import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
+import { AuthMethod, MailAccount, TLSSocketType, type ConfigSource } from "../MailAccount";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import type { SMTPAccount } from "../SMTP/SMTPAccount";
 import JXON from "../../../../lib/util/JXON";
@@ -6,7 +6,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 
-export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string): ArrayColl<MailAccount> {
+export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string, source: ConfigSource): ArrayColl<MailAccount> {
   let autoconfigXML = JXON.parse(autoconfigXMLStr);
   if (typeof (autoconfigXML) != "object" ||
     !autoconfigXML?.clientConfig?.emailProvider) {
@@ -26,7 +26,7 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string): 
   // Incoming server
   for (let iX of ensureArray(xml.$incomingServer)) {
     try {
-      configs.push(readServer(iX, displayName));
+      configs.push(readServer(iX, displayName, source));
     } catch (ex) {
       firstError = ex;
     }
@@ -39,7 +39,7 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string): 
   // Outgoing server
   for (let oX of ensureArray(xml.$outgoingServer)) {
     try {
-      outgoingConfigs.push(readServer(oX, displayName) as SMTPAccount);
+      outgoingConfigs.push(readServer(oX, displayName, source) as SMTPAccount);
     } catch (ex) {
       firstError = ex;
     }
@@ -58,7 +58,7 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string): 
 /**
  * @param {JXON} xml <incomingServer> or <outgoingServer>
  */
-function readServer(xml: any, displayName: string): MailAccount {
+function readServer(xml: any, displayName: string, source: ConfigSource): MailAccount {
   let protocol = sanitize.enum(xml["@type"], ["pop3", "imap", "jmap", "smtp", "exchange"], null);
   assert(protocol, `Need type for <incomingServer> in autoconfig XML for ${displayName}`);
   let account = newAccountForProtocol(protocol);
@@ -88,6 +88,7 @@ function readServer(xml: any, displayName: string): MailAccount {
     "NTLM": AuthMethod.NTLM,
   }, null)).find(v => v !== null);
   assert(account.authMethod, `No supported <authentication> method in autoconfig XML for ${displayName}\n\nGot authentication methods ${JSON.stringify(xml.$authentication, null, 2)}`);
+  account.source = source;
   return account;
 }
 
