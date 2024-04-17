@@ -23,6 +23,7 @@ async function createSharedAppObject() {
     postHTTP, // TODO Use ky
     openFile,
     closeFile,
+    fs: fsPromises,
     path: {
       dirname: path.dirname,
     },
@@ -45,8 +46,8 @@ async function createSharedAppObject() {
  * await appGlobal.remoteApp.closeFile(testFile);
  * ```
  */
-async function openFile(path: string, write: boolean): Promise<FileHandle> {
-  return await fsPromises.open(path, write ? "w" : "r");
+async function openFile(path: string, write: boolean, mode?: string | number): Promise<FileHandle> {
+  return await fsPromises.open(path, write ? "w" : "r", mode);
 }
 async function closeFile(handle: FileHandle): Promise<void> {
   await handle.close(); // for some reason, only this function doesn't appear on FileHandle in JPC client
@@ -160,6 +161,8 @@ function getConfigDir(): string {
   return dir;
 }
 
+let filesDirEnsured = false;
+
 /**
  * Get the directory on disk where we store the files that our user exchanged with others.
  * E.g. file sharing, email attachments, chat transfer files, and email backups.
@@ -175,6 +178,9 @@ function getConfigDir(): string {
 function getFilesDir(): string {
   let dirname = os.platform() == "win32" || os.platform() == "darwin" ? kAppDir : "." + kAppDir.toLowerCase();
   let dir = path.join(os.homedir(), dirname);
-  fs.mkdirSync(dir, { recursive: true });
+  if (!filesDirEnsured) {
+    fs.mkdirSync(dir, { recursive: true });
+    filesDirEnsured = true;
+  }
   return dir;
 }
