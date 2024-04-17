@@ -7,12 +7,12 @@ export interface TreeItem<T> {
 }
 
 /** @returns 0 = root, 1 = first level children, 2 = grand children etc. */
-export function getIndentionLevelFor<T>(item: T): number {
+export function getIndentionLevelFor<T extends TreeItem<T>>(item: T): number {
   let indentionLevel = -1;
   let cur = item;
   while (cur) {
     indentionLevel++;
-    cur = (cur as any as TreeItem<T>).parent;
+    cur = cur.parent;
   }
   return indentionLevel;
 }

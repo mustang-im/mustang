@@ -1,4 +1,7 @@
-<hbox class="folder" on:drop={(event) => catchErrors(() => onDropMail(event, folder))} on:dragover={(event) => catchErrors(() => onDragOverMail(event, folder))}>
+<hbox class="folder" flex
+  on:drop={(event) => catchErrors(() => onDropMail(event, folder))}
+  on:dragover={(event) => catchErrors(() => onDragOverMail(event, folder))}
+  >
   <hbox class="icon">
     <FolderIcon {folder} size="14px" />
   </hbox>
