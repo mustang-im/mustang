@@ -97,17 +97,22 @@
     width: 20px;
     vertical-align: bottom;
   }
-  .button :global(svg) {
+  .star :global(svg),
+  .unread :global(svg) {
+    stroke-width: 1px;
+  }
+  :global(.row:not(:hover)) .unread :global(svg),
+  :global(.row:not(:hover)) .star :global(svg) {
     stroke: none;
   }
   :global(.row:not(:hover)) .star:not(.starred) :global(svg) {
     opacity: 0;
   }
-  .star.starred :global(svg) {
-    fill: orange;
-  }
   :global(.row:not(:hover)) .message.read .unread :global(svg) {
     opacity: 0;
+  }
+  .star.starred :global(svg) {
+    fill: orange;
   }
   .message.unread .unread :global(svg) {
     fill: green;

@@ -118,20 +118,14 @@
 * Need: App shell, for: iframe rights
 
 # Mail
+* Display subfolders indented, as hierarchy
 * Autoconfig
   * Exchange AutoDiscover V2 and V1
   * Scrollbar for dialog box, not app window
-  * Manual config
-    * Port should be a combo box with common values (applicable for that
-       selected protocol)
-* Display subfolders indented, as hierarchy
-* Context menu for account, folder and message
-  * Create subfolder
-  * Rename folder, Delete folder
+* Context menu for account and message
   * Move folder
   * Close menu when clicking outside menu
 * Save original emails as MIME in ZIP file
-* Test and fix body
 * Search
   * with/without text
   * within current folder / across all accounts and folders
@@ -157,6 +151,7 @@
      * Contacts
      * Calendar
      * Mails
+* HTML emails as sent, but sanitized and jailed
 * Delete strategy
   * Move to trash
   * Expunge on quit
