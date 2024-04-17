@@ -51,7 +51,7 @@
 
   $: successMessage = !config?.source ? "No config found" :
     config.source == "ispdb" ? "We found the configuration in our database." :
-    config.source == "autoconfig-isp" ? "We received the configuration from the ISP." :
+    config.source == "autoconfig-isp" ? "We received the configuration from your email provider." :
     config.source == "guess" ? "We guessed a configuration that might work." :
     config.source == "autodiscover-xml" ? "We received the configuration from Microsoft Exchange." :
     config.source == "autodiscover-json" ? "We received the configuration for Microsoft Exchange" :
