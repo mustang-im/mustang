@@ -1,5 +1,5 @@
 <hbox style="margin-left: {indentionLevel * 12}px" flex>
-  {#if isTree}
+  {#if canExpand}
     <Button
       classes="expand"
       label={isExpanded ? "Collapse" : "Expand"}
@@ -18,9 +18,11 @@
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
 
-  export let indentionLevel = 0;
+  export let canExpand = false;
   export let isExpanded = false;
-  export let isTree = true;
+  export let indentionLevel = 0;
+
+  console.log("treeitemline indention", indentionLevel);
 
   function onExpandCollapse() {
     dispatch('expandCollapse');

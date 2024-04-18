@@ -4,8 +4,8 @@
   <div slot="row" class="tree-row" let:item>
     <slot name="row" {item}
       indentionLevel={getIndentionLevelFor(item)}
+      canExpand={item.children.hasItems}
       isExpanded={showChildrenOf.has(item)}
-      isTree={true}
       />
   </div>
 </FastList>
@@ -22,18 +22,23 @@
   import { type Collection, ArrayColl } from "svelte-collections"
   import FastList from "./FastList.svelte";
 
+  // <https://github.com/dummdidumm/rfcs/blob/ts-typedefs-within-svelte-components/text/ts-typing-props-slots-events.md>
+  type T = $$Generic<TreeItem>;
+
   /**
    * The items to display in the list.
    */
-  export let items: Collection<TreeItem>;
+  export let items: Collection<T>;
 
   /** items + children which are displayed */
-  let expandedItems: Collection<TreeItem>;
-  let showChildrenOf = new Set<TreeItem>();
+  let expandedItems: Collection<T>;
+  let showChildrenOf = new Set<T>();
+
+  $: expandedItems = new ArrayColl(items);
 
   const selectOpens = true;
   $: selectOpens && selectedItem && openOnly(selectedItem)
-  function openOnly(selectedItem: TreeItem) {
+  function openOnly(selectedItem: T) {
     expandedItems = new ArrayColl(items);
     showChildrenOf.clear();
     if (!selectedItem) {
@@ -51,6 +56,15 @@
   export let columns: string = "auto";
 
   /**
+   * The list item that the user selected,
+   * e.g. by clicking on it.
+   * Unlike selecteditems, this is always returns just one element.
+   *
+   * in/out
+   */
+  export let selectedItem: T = null;
+
+  /**
    * The list items that the user selected,
    * e.g. by clicking on them.
    * This is usually just one element,
@@ -64,16 +78,7 @@
    *
    * out only
    */
-  export let selectedItems = new ArrayColl<TreeItem>();
-
-  /**
-   * The list item that the user selected,
-   * e.g. by clicking on it.
-   * Unlike selecteditems, this is always returns just one element.
-   *
-   * in/out
-   */
-  export let selectedItem: TreeItem = null;
+  export let selectedItems: ArrayColl<T>;
 </script>
 
 <style>

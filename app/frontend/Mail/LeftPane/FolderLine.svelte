@@ -21,6 +21,8 @@
 
   export let folder: Folder;
 
+  // $: console.log("FolderLine for folder", folder.name, folder);
+
   function onSettings() {
     $selectedFolder = folder;
     $openFolderProperties = true;
