@@ -152,11 +152,12 @@ const kAppDir = "Mustang";
  *
  * Linux: /home/USER/.mustang/
  * Windows: C:\Users\USER\AppData\Mustang\
- * Mac OS:
+ * Mac OS: /Users/USER/Library/Application Support/Mustang
  */
 function getConfigDir(): string {
   let dirname = os.platform() == "win32" || os.platform() == "darwin" ? kAppDir : "." + kAppDir.toLowerCase();
-  let dir = path.join(os.homedir(), dirname);
+  let datadir = os.platform() == "darwin" ? path.join(os.homedir(), "Library/Application Support") : os.homedir();
+  let dir = path.join(datadir, dirname);
   fs.mkdirSync(dir, { recursive: true });
   return dir;
 }
@@ -173,7 +174,7 @@ let filesDirEnsured = false;
  * TODO Change it
  * Linux: /home/USER/.mustang/
  * Windows: C:\Users\USER\AppData\Mustang\
- * Mac OS:
+ * Mac OS: /Users/USER/Mustang
  */
 function getFilesDir(): string {
   let dirname = os.platform() == "win32" || os.platform() == "darwin" ? kAppDir : "." + kAppDir.toLowerCase();
