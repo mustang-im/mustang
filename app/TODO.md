@@ -1,7 +1,6 @@
 # Next
 * Chat SQL - Test
 * Mail
-  * Folder hierarchy
   * Threads
     * Message: Conversation view
     * Message list: Threaded view?
@@ -105,7 +104,6 @@
 * Need: App shell, for: iframe rights
 
 # Mail
-* Display subfolders indented, as hierarchy
 * Save original emails as MIME in ZIP file
 * Search
   * with/without text

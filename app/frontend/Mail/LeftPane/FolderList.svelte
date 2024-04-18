@@ -15,7 +15,7 @@
   import FastTree from '../../Shared/FastTree.svelte';
   import type { Collection, ArrayColl } from 'svelte-collections';
   import FolderLine from './FolderLine.svelte';
-  import TreeItemLine from './TreeItemLine.svelte';
+  import TreeItemLine from '../../Shared/FastTreeItem.svelte';
 
   export let folders: Collection<Folder>;
   export let selectedFolder: Folder; /* in/out */

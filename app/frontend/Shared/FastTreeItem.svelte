@@ -15,8 +15,8 @@
 
 <script lang="ts">
   import type { Collection } from "svelte-collections";
-  import { getIndentionLevelFor } from "../../Shared/FastTree";
-  import Button from "../../Shared/Button.svelte";
+  import { getIndentionLevelFor } from "./FastTree";
+  import Button from "./Button.svelte";
   import ExpandIcon from "lucide-svelte/icons/chevron-right";
   import CollapseIcon from "lucide-svelte/icons/chevron-down";
 
