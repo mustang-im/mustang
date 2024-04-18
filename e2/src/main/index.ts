@@ -4,6 +4,11 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
+// Set app data directory name to capitalized 'Mustang' on Mac OS instead of 'mustang'
+if (process.platform == 'darwin') {
+  app.setName('Mustang');
+}
+
 function createWindow(): void {
   try {
     startupBackend();
