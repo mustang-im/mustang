@@ -5,7 +5,7 @@
       label={isExpanded ? "Collapse" : "Expand"}
       icon={isExpanded ? CollapseIcon : ExpandIcon}
       iconOnly plain
-      on:click={onExpandCollapse}
+      on:click={(event) => onExpandCollapse(event)}
       />
   {:else}
     <hbox class="button-placeholder" />
@@ -31,9 +31,11 @@
   $: isExpanded = $item.expanded;
   $: indentionLevel = getIndentionLevelFor(item);
 
-  function onExpandCollapse() {
-    console.log("expand/coll", "was", item.expanded, "change to", !item.expanded);
+  function onExpandCollapse(event: MouseEvent) {
+    return;
     item.expanded = !item.expanded;
+    event.preventDefault();
+    event.stopPropagation();
   }
 </script>
 
