@@ -1,17 +1,20 @@
 <vbox flex class="folder-list">
-  <FastList items={foldersSorted} bind:selectedItem={selectedFolder} columns="auto">
+  <FastTree items={foldersSorted} bind:selectedItem={selectedFolder} columns="auto">
     <svelte:fragment slot="header">
       <hbox class="header">Folders</hbox>
     </svelte:fragment>
-    <FolderLine {folder} let:item={folder} slot="row"/>
-  </FastList>
+    <TreeItemLine slot="row" let:item={folder} let:indentionLevel {indentionLevel} let:isExpanded {isExpanded} let:isTree {isTree}>
+      <FolderLine {folder} slot="row" />
+    </TreeItemLine>
+  </FastTree>
 </vbox>
 
 <script lang="ts">
   import type { Folder } from '../../../logic/Mail/Folder';
-  import FastList from "../../Shared/FastList.svelte";
+  import FastTree from '../../Shared/FastTree.svelte';
   import type { Collection } from 'svelte-collections';
   import FolderLine from './FolderLine.svelte';
+  import TreeItemLine from './TreeItemLine.svelte';
 
   export let folders: Collection<Folder>;
   export let selectedFolder: Folder; /* in/out */

@@ -30,7 +30,6 @@
 <style>
   .folder {
     align-items: center;
-    padding-left: 12px;
     padding-top: 2px;
     padding-bottom: 2px;
   }
