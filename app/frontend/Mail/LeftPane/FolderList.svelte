@@ -4,7 +4,7 @@
       <hbox class="header">Folders</hbox>
     </svelte:fragment>
     <TreeItemLine slot="row" let:item={folder} let:indentionLevel {indentionLevel} let:isExpanded {isExpanded} let:isTree {isTree}>
-      <FolderLine {folder} slot="row" />
+      <FolderLine folder={folder} slot="row" />
     </TreeItemLine>
   </FastTree>
 </vbox>
