@@ -37,15 +37,20 @@
     for (let item of showItems) {
       item.expanded = false;
     }
-    showItems = new ArrayColl(items);
+    showItems = new ArrayColl(items); // TODO inefficient
     if (!selectedItem) {
       return;
     }
-    let cur = selectedItem;
+    let path: T[] = [];
+    let cur = selectedItem; // walking down->up
     while (cur) {
-      cur.expanded = true;
-      showItems.addAll(cur.children);
+      path.push(cur);
       cur = cur.parent;
+    }
+    path.reverse(); // top->down
+    for (let cur of path) {
+      cur.expanded = true;
+      showItems.splice(showItems.getKeyForValue(cur) + 1, 0, ...cur.children.contents);
     }
   }
 
