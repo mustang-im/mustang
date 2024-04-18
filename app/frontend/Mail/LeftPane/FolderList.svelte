@@ -1,5 +1,6 @@
 <vbox flex class="folder-list">
-  <FastTree items={foldersSorted} bind:selectedItem={selectedFolder} columns="auto">
+  <FastTree items={foldersSorted} bind:selectedItem={selectedFolder} bind:selectedItems={selectedFolders}
+    columns="auto">
     <svelte:fragment slot="header">
       <hbox class="header">Folders</hbox>
     </svelte:fragment>
@@ -12,12 +13,13 @@
 <script lang="ts">
   import type { Folder } from '../../../logic/Mail/Folder';
   import FastTree from '../../Shared/FastTree.svelte';
-  import type { Collection } from 'svelte-collections';
+  import type { Collection, ArrayColl } from 'svelte-collections';
   import FolderLine from './FolderLine.svelte';
   import TreeItemLine from './TreeItemLine.svelte';
 
   export let folders: Collection<Folder>;
   export let selectedFolder: Folder; /* in/out */
+  export let selectedFolders: ArrayColl<Folder>;
 
   $: foldersSorted = folders.sortBy(f => f.orderPos);
 </script>
