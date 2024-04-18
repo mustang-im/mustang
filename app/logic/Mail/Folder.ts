@@ -1,10 +1,11 @@
 import { EMail } from "./EMail";
 import type { MailAccount } from "./MailAccount";
+import type { TreeItem } from "../../frontend/Shared/FastTree";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, Collection } from 'svelte-collections';
 import { assert, AbstractFunction } from "../util/util";
 
-export class Folder extends Observable {
+export class Folder extends Observable implements TreeItem {
   /** IMAP: folder path */
   id: string;
   dbID: number;
@@ -93,6 +94,10 @@ export class Folder extends Observable {
     for (let message of this.messages) {
       message.isRead = true;
     }
+  }
+
+  get children(): Collection<TreeItem> {
+    return this.subFolders as any as Collection<TreeItem>;
   }
 
   newEMail(): EMail {

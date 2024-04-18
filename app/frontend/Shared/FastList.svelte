@@ -50,13 +50,10 @@
   You're not limited to a single line per row, and you can have rich HTML content in each cell.
   However, the number of columns must be the same for every row / entry.
 
-  Try it out at http://benbucksch.github.io/trex/fastlist-test.html (non-Svelte DOM version)
+  Try it out at https://benbucksch.github.io/trex/fastlist-test.html (non-Svelte DOM version)
 
   TODO:
-  * tree functionality
   * alignment
-  * fixing column width to not change while scrolling
-  * etc.
   */
 
   import { Collection, CollectionObserver, ArrayColl } from "svelte-collections"
@@ -82,7 +79,7 @@
    * This collection object is always the same.
    * You can be notified of changes in the selection using
    * the normal collection observers.
-   * 
+   *
    * @see also selectedItem
    *
    * out only
