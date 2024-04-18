@@ -16,3 +16,15 @@ export function getIndentionLevelFor<T extends TreeItem<T>>(item: T): number {
   }
   return indentionLevel;
 }
+
+/** Adds a property decorator to a property outside the class.
+ * Useful, if you're dynamically adding properties to the JS object and
+ * want the decorator for those properties.
+ * Use this sparingly. */
+export function addPropertyDecorator<T>(obj: T, propertyName: string, decorator: (obj: T, propertyName: string) => void) {
+  let descriptor = Object.getOwnPropertyDescriptor(obj, propertyName);
+  if (descriptor.set) { // TODO multiple decorators
+    return;
+  }
+  decorator(obj, propertyName);
+}
