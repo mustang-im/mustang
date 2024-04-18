@@ -1,4 +1,4 @@
-<hbox class="unread button" class:read={$message.isRead}>
+<hbox class="unread-dot button" class:unread={!$message.isRead}>
   <Button
     icon={CircleIcon}
     iconSize="7px"
@@ -21,6 +21,11 @@
 <hbox class="attachment button">
   {#if $message.attachments.hasItems}
     <AttachmentIcon size="12px" />
+  {/if}
+</hbox>
+<hbox class="direction">
+  {#if message.outgoing}
+    <OutgoingIcon size={16} />
   {/if}
 </hbox>
 <hbox class="correspondent" draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}>{$message.contact.name}</hbox>
@@ -53,6 +58,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { selectedMessage } from "../Selected";
   import Button from "../../Shared/Button.svelte";
+  import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
@@ -127,27 +133,34 @@
     background-color: unset !important;
     color: unset !important;
   }
+  .direction {
+    align-items: center;
+  }
+  .direction :global(svg) {
+    stroke-width: 1px;
+    color: darkred;
+  }
   .star :global(svg) {
     stroke-width: 1px;
   }
   .buttons.hover :global(svg),
-  .unread :global(svg) {
+  .unread-dot :global(svg) {
     stroke-width: 1.5px;
   }
-  :global(.row:not(:hover)) .unread :global(svg),
+  :global(.row:not(:hover)) .unread-dot :global(svg),
   :global(.row:not(:hover)) .star :global(svg) {
     stroke: none;
   }
   :global(.row:not(:hover)) .star:not(.starred) :global(svg) {
     display: none;
   }
-  :global(.row:not(:hover)) .unread.read :global(svg) {
+  :global(.row:not(:hover)) .unread-dot:not(.unread) :global(svg) {
     display: none;
   }
   .star.starred :global(svg) {
     fill: orange;
   }
-  .unread:not(.read) :global(svg) {
+  .unread-dot.unread :global(svg) {
     fill: green;
   }
   /* </copied> */
