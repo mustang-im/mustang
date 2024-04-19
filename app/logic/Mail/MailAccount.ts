@@ -1,4 +1,5 @@
 import { Account } from "../Abstract/Account";
+import type { MailIdentity } from "./MailIdentity";
 import { Folder, SpecialFolder } from "./Folder";
 import type { EMail } from "./EMail";
 import type { Person } from "../Abstract/Person";
@@ -27,18 +28,14 @@ export class MailAccount extends Account {
 
   @notifyChangedProperty
   emailAddress: string;
+  @notifyChangedProperty
+  readonly identities = new ArrayColl<MailIdentity>();
+
   readonly rootFolders = new ArrayColl<Folder>();
   /** List of all messages in all folders,
    * filtered based on the person.
    * TODO move up, across all accounts? */
   readonly messages = new MapColl<Person, EMail>();
-  @notifyChangedProperty
-  inbox: Folder;
-  trash: Folder;
-  spam: Folder;
-  sent: Folder;
-  drafts: Folder;
-  archive: Folder;
 
   async listFolders(): Promise<void> {
     throw new AbstractFunction();
@@ -91,6 +88,10 @@ export class MailAccount extends Account {
       return this.getSpecialFolder(SpecialFolder.Sent);
     }
     return this.rootFolders.first;
+  }
+
+  toDebugString() {
+    return `${this.protocol.toUpperCase()} account, id ${this.id}, host ${this.hostname}:${this.port}, username ${this.username}, url ${this.url}`;
   }
 }
 

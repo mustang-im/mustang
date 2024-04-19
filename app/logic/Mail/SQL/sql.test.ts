@@ -4,11 +4,11 @@ import { SQLMailAccount } from './SQLMailAccount';
 import { SQLEMail } from './SQLEMail';
 import { SQLFolder } from './SQLFolder';
 import { fakeChatPerson, fakeMailAccount, fakePersons } from '../../testData';
+import { makeTestDatabase } from './SQLDatabase';
+import { connectToBackend } from '../../../test/logic/util/backend.test';
 import { appGlobal } from '../../app';
 import { ArrayColl } from 'svelte-collections';
 import { expect, test } from 'vitest';
-import JPCWebSocket from '../../../../lib/jpc-ws/protocol';
-import { makeTestDatabase } from './SQLDatabase';
 
 test("Save and read mails from SQL database", { timeout: 10000 }, async () => {
   await connectToBackend();
@@ -101,10 +101,3 @@ test("Save and read mails from SQL database", { timeout: 10000 }, async () => {
     }
   }
 });
-
-async function connectToBackend() {
-  let jpc = new JPCWebSocket(null);
-  const kSecret = 'eyache5C';
-  await jpc.connect(kSecret, "localhost", 5455);
-  appGlobal.remoteApp = await jpc.getRemoteStartObject();
-}
