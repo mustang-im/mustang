@@ -21,12 +21,6 @@ async function createSharedAppObject() {
   return {
     kyCreate,
     postHTTP, // TODO Use ky
-    openFile,
-    closeFile,
-    fs: fsPromises,
-    path: {
-      dirname: path.dirname,
-    },
     getConfigDir,
     getFilesDir,
     openFileInExternalApp,
@@ -34,6 +28,17 @@ async function createSharedAppObject() {
     getSQLiteDatabase,
     sendMailNodemailer,
     verifyServerNodemailer,
+    openFile,
+    closeFile,
+    fs: fsPromises,
+    os: {
+      homedir: os.homedir,
+      platform: os.platform,
+    },
+    path: {
+      dirname: path.dirname,
+      join: path.join,
+    },
   };
 }
 
