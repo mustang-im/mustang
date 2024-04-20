@@ -212,6 +212,9 @@ export class ThunderbirdProfile {
 
   /** Result is in `this.prefs` */
   async readPrefs(): Promise<void> {
+    if (this.prefs) {
+      return;
+    }
     let prefsPath = await appGlobal.remoteApp.path.join(this.path, "prefs.js");
     //console.log(`Looking for Thunderbird prefs.js at ${prefsPath}`);
     let prefsText = await appGlobal.remoteApp.fs.readFile(prefsPath, { encoding: "utf-8" });
