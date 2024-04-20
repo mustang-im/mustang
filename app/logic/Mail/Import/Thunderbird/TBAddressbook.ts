@@ -56,6 +56,9 @@ export class ThunderbirdAddressbook extends Addressbook {
       }
       try {
         let filename = sanitize.nonemptystring(profile.prefs[key]);
+        if (!filename.endsWith(".sqlite")) {
+          continue;
+        }
         let serverID = key.slice("ldap_2.servers.".length, -(".filename".length));
         let name = sanitize.stringOrNull(profile.prefs[`"ldap_2.servers.${serverID}.description"`]) ?? "Old addressbook";
         let ab = await this.read(profile, filename, name);
