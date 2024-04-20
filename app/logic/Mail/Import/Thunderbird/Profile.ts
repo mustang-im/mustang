@@ -10,6 +10,8 @@ import { appGlobal } from "../../../app";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { arrayRemove, assert, NotReached } from "../../../util/util";
 import { parse as parseINI } from 'ini';
+import { OWAAccount } from "../../OWA/OWAAccount";
+import { ActiveSyncAccount } from "../../ActiveSync/ActiveSyncAccount";
 
 /** Finds the list of Thunderbird profiles of the current OS user,
  * with the directory root path of the profile. */
@@ -24,18 +26,40 @@ export class ThunderbirdProfile {
   /** key = pref name, e.g. "mail.foo" value: pref value, e.g. 993, true, or "imap.example.com" */
   prefs: Record<string, any>;
 
-  async readAccounts(): Promise<MailAccount[]> {
+  async readMailAccounts(): Promise<MailAccount[]> {
     let accounts: MailAccount[] = [];
     await this.readPrefs();
     let accountIDs = sanitize.stringOrNull(this.prefs["mail.accountmanager.accounts"])?.split(",");
     assert(accountIDs && accountIDs.length, "  No accounts found for " + this.path);
 
     for (let accountID of accountIDs) {
-      let account = this.readAccount(accountID);
+      let account = this.readMailAccount(accountID);
       if (account) {
         accounts.push(account);
       }
     }
+
+    // In case the account identity wasn't linked with an SMTP server,
+    // associate them now, based on the username.
+    let smtpIDs = sanitize.stringOrNull(this.prefs["mail.smtpservers"])?.split(",");
+    assert(smtpIDs && smtpIDs.length, "  No SMTP servers found for " + this.path);
+    for (let smtpID of smtpIDs) {
+      let smtp = this.readSMTPServer(smtpID);
+      if (!smtp) {
+        continue;
+      }
+      for (let account of accounts) {
+        if (account.outgoing) {
+          continue;
+        }
+        if (account.username == smtp.username &&
+            (account instanceof IMAPAccount || account instanceof POP3Account)) {
+          account.outgoing = smtp as any as MailAccount & OutgoingMailAccount;
+          smtp.id = account.id + "-" + smtp.id.replace("tb-", "");
+        }
+      }
+    }
+    accounts = accounts.filter(acc => acc?.outgoing || !(acc instanceof IMAPAccount || acc instanceof POP3Account));
 
     // Make default account the first in the array
     let defaultAccountName = this.prefs["mail.accountmanager.defaultaccount"];
@@ -50,27 +74,28 @@ export class ThunderbirdProfile {
     return accounts;
   }
 
-  readAccount(accountID: string): MailAccount | null {
+  readMailAccount(accountID: string): MailAccount | null {
     try {
       let prefBranch = `mail.account.${accountID}`;
-      console.log("  reading", accountID);
       let serverID = this.prefs[`${prefBranch}.server`];
-      let protocol = sanitize.enum(this.prefs[`mail.server.${serverID}.type`], ["imap", "pop3", "exchange", "exquilla"], null);
+      let protocol = sanitize.enum(this.prefs[`mail.server.${serverID}.type`], ["imap", "pop3", "owl", "owl-ews", "owl-eas", "exquilla"], null);
+      //console.log("  reading", accountID, "server", serverID, "protocol", protocol, "hostname", this.prefs[`mail.server.${serverID}.hostname`]);
       if (!protocol || protocol == "none") {
         return null;
       } else if (protocol == "exquilla") {
         protocol = "ews";
-      } else if (protocol == "exchange") {
-        // TODO owl, owl-ews or owl-eas?
+      } else if (protocol == "owl") {
+        protocol = "owa";
+      } else if (protocol == "owl-ews") {
         protocol = "ews";
+      } else if (protocol == "owl-eas") {
+        protocol = "activesync";
       }
       let acc = newAccountForProtocol(protocol);
-      console.log("  protocol", protocol);
       acc.id = "tb-" + accountID;
-      this.readServer(serverID, acc);
+      this.readMailServer(serverID, acc);
       let identityIDs = this.prefs[`${prefBranch}.identities`]?.split(",");
-      acc.identities.addAll(identityIDs.map(id => this.readIdentity(id, acc)));
-      assert(acc.outgoing, "SMTP server missing for account " + accountID);
+      acc.identities.addAll(identityIDs.map(id => this.readMailIdentity(id, acc)));
       assert(acc.identities.hasItems, "Identities missing for account " + accountID);
       return acc;
     } catch (ex) {
@@ -79,23 +104,30 @@ export class ThunderbirdProfile {
     }
   }
 
-  readServer(serverID: string, acc: MailAccount): void {
+  readMailServer(serverID: string, acc: MailAccount): void {
     let prefBranch = `mail.server.${serverID}`;
     acc.name = sanitize.label(this.prefs[`${prefBranch}.name`]);
     acc.username = sanitize.stringOrNull(this.prefs[`${prefBranch}.userName`]);
     if (acc instanceof EWSAccount) {
-      acc.url = sanitize.url(this.prefs[`${prefBranch}.ewsURL`]);
+      // ewsURL from ExQuilla, and ews_url from Owl in EWS mode
+      let ewsURLExQuilla = this.prefs[`${prefBranch}.ewsURL`];
+      let ewsURLOwl = this.prefs[`${prefBranch}.ews_url`];
+      acc.url = sanitize.url(ewsURLOwl ?? ewsURLExQuilla);
+    } else if (acc instanceof OWAAccount) {
+      acc.url = sanitize.url(this.prefs[`${prefBranch}.owa_url`]);
+    } else if (acc instanceof ActiveSyncAccount) {
+      acc.url = sanitize.url(this.prefs[`${prefBranch}.eas_url`]);
     } else if (acc instanceof IMAPAccount || acc instanceof POP3Account) {
       acc.hostname = sanitize.hostname(this.prefs[`${prefBranch}.hostname`]);
       acc.tls = ThunderbirdProfile.convertTLS(this.prefs[`${prefBranch}.socketType`], prefBranch);
       acc.port = ThunderbirdProfile.convertPort(this.prefs[`${prefBranch}.port`], acc as any as MailAccount);
-      acc.authMethod = ThunderbirdProfile.convertAuthMethod(this.prefs[`${prefBranch}.authMethod`]);
     } else {
       throw new NotReached();
     }
+    acc.authMethod = ThunderbirdProfile.convertAuthMethod(this.prefs[`${prefBranch}.authMethod`]);
   }
 
-  readIdentity(identityID: string, account: MailAccount): MailIdentity | null {
+  readMailIdentity(identityID: string, account: MailAccount): MailIdentity | null {
     try {
       let identity = new MailIdentity();
       identity.id = "tb-" + identityID;
@@ -113,9 +145,12 @@ export class ThunderbirdProfile {
 
       if (!account.outgoing) {
         let id = this.prefs[`${prefBranch}.smtpServer`];
-        let server = this.readSMTPServer(id, account);
-        if (server) {
-          account.outgoing = server as any as MailAccount & OutgoingMailAccount;
+        if (id) {
+          let smtp = this.readSMTPServer(id);
+          if (smtp) {
+            account.outgoing = smtp as any as MailAccount & OutgoingMailAccount;
+            smtp.id = account.id + "-" + smtp.id.replace("tb-", "");
+          }
         }
       }
       return identity;
@@ -125,10 +160,10 @@ export class ThunderbirdProfile {
     }
   }
 
-  readSMTPServer(serverID: string, account: MailAccount): SMTPAccount | null {
+  readSMTPServer(serverID: string): SMTPAccount | null {
     try {
       let acc = new SMTPAccount();
-      acc.id = "tb-" + acc.id + "-smtp";
+      acc.id = "tb-" + serverID;
       let prefBranch = `mail.smtpserver.${serverID}`;
       acc.hostname = this.prefs[`${prefBranch}.hostname`];
       acc.username = this.prefs[`${prefBranch}.username`];
@@ -150,15 +185,13 @@ export class ThunderbirdProfile {
       2: TLSSocketType.STARTTLS,
       3: TLSSocketType.TLS,
     }, null);
-    try {
-      assert(tls, "Need socketType for server " + prefBranch + ", got " + tbValue + " "+ typeof tbValue);
-    } catch (ex) { console.log(ex.message) }
+    assert(tls, "Need socketType for server " + prefBranch + ".socketType, got " + tbValue + " "+ typeof tbValue);
     return tls;
   }
 
   static convertAuthMethod(tbValue: number): AuthMethod {
     // nsMsgSocketType <https://searchfox.org/comm-central/source/mailnews/base/public/MailNewsTypes2.idl#60>
-    let authMethod = sanitize.translate(tbValue, {
+    return sanitize.translate(tbValue, {
       0: AuthMethod.Password, // No auth at all, but let's try password
       2: AuthMethod.Password, // "old" = IMAP Login
       3: AuthMethod.Password, // Cleartext Password
@@ -169,9 +202,7 @@ export class ThunderbirdProfile {
       8: AuthMethod.Password, // "Secure", deprecated
       9: AuthMethod.Password, // anything
       10: AuthMethod.OAuth2,
-    }, null);
-    assert(authMethod, "Need authMethod");
-    return authMethod;
+    }, AuthMethod.Password);
   }
 
   static convertPort(tbValue: number, acc: MailAccount): number {
@@ -187,23 +218,27 @@ export class ThunderbirdProfile {
     let prefsLines = prefsText.split("\n"); // TODO LF?
     let prefs = {};
     for (let line of prefsLines) {
-      if (!(line.startsWith(`user_pref("`) && line.includes(`", "`) && line.endsWith(`");`))) {
+      if (!(line.startsWith(`user_pref("`) && line.endsWith(`);`))) {
         continue;
       }
-      let nameVal = line.slice(11, -3).split(`", "`);
+      let nameVal = line.slice(11, -2).split(`", `);
       if (nameVal.length != 2) {
         continue;
       }
       let [name, value] = nameVal;
-      let number = parseInt(value); // convert integers
-      if (!isNaN(number)) {
-        value = number;
-      } else if (value == "true" || value == "false") { // convert booleans
-        value = value == "true";
-      } else if (typeof (value) == "string") {
-        value = value.replace(/\\"/g, `"`).replace(/\\n/g, `\n`); // unescape
+      try {
+        value = JSON.parse(value);
+        /*let number = parseInt(value); // convert integers
+        if (!isNaN(number)) {
+          value = number;
+        } else if (value == "true" || value == "false") { // convert booleans
+          value = value == "true";
+        } else if (typeof (value) == "string") {
+          value = value.replace(/\\"/g, `"`).replace(/\\n/g, `\n`); // unescape
+        }*/
+        prefs[name] = value;
+      } catch (ex) {
       }
-      prefs[name] = value;
     }
     this.prefs = prefs;
   }
@@ -225,7 +260,6 @@ export class ThunderbirdProfile {
       try {
         let section = iniContents[sectionName];
         if (sectionName.startsWith("Profile")) {
-          //console.log("section", section);
           let profile = new ThunderbirdProfile();
           profile.name = sanitize.nonemptystring(section.Name);
           profile.relativePath = sanitize.nonemptystring(section.Path);
