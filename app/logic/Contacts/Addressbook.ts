@@ -6,7 +6,7 @@ import { appGlobal } from "../app";
 import { ArrayColl, Collection, mergeColl } from "svelte-collections";
 
 export class Addressbook extends Account {
-  readonly protocol = "addressbook-local";
+  readonly protocol: string = "addressbook-local";
   readonly persons = new ArrayColl<Person>();
   readonly groups = new ArrayColl<Group>();
   readonly contacts: Collection<Contact> = mergeColl(this.persons, this.groups);
