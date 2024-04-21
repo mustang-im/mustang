@@ -18,9 +18,6 @@ export class IMAPCFolder extends DelegateFolder {
       await SQLEMail.readAll(this.base);
     }
     await this.base.listMessages();
-    for (let email of this.messages.contents.filter(email => !email.dbID)) {
-      await SQLEMail.save(email);
-    }
   }
 
   async downloadMessagesComplete() {
