@@ -39,7 +39,7 @@
 
   $: outgoing = config.protocol == "smtp";
   $: hasEnc = hasEncryption(config.tls);
-  $: tlsWarning = !hasEncryption(config.tls) ? "Attackers can read your password and mails" : null;
+  $: tlsWarning = !hasEncryption(config.tls) || config.acceptBrokenTLSCerts ? "Attackers can read your password and mails" : null;
 
   function socketLabel(tls: TLSSocketType): string {
     if (tls == TLSSocketType.TLS) {

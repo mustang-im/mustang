@@ -59,6 +59,7 @@
             <ShieldOKIcon size={20} />
           {/if}
         </hbox>
+        <input type="checkbox" bind:checked={config.acceptBrokenTLSCerts} /> Accept broken TLS certificates
       </hbox>
     </vbox>
 
@@ -100,7 +101,7 @@
     return tls != TLSSocketType.Unknown && tls != TLSSocketType.TLS && tls != TLSSocketType.STARTTLS;
   }
 
-  $: tlsWarning = noEncryption(config.tls) ? "Attackers can read your password and mails" : null;
+  $: tlsWarning = noEncryption(config.tls) || config.acceptBrokenTLSCerts ? "Attackers can read your password and mails" : null;
 
   function onTLSChanged() {
     let newP = kStandardPorts.find(p => p.protocol == config.protocol && p.tls == config.tls);
@@ -171,6 +172,7 @@
     if (config.hostname?.endsWith("example.com")) { // TODO replace with real checks
       throw new Error("example.com is not a real domain");
     }
+    console.log("config", config)
     return true;
   }
 </script>
