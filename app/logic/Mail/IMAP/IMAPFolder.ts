@@ -99,14 +99,6 @@ export class IMAPFolder extends Folder {
     });
     this.messages.addAll(newMessages); // notify only once
 
-    for (let email of updatedMessages) {
-      await SQLEMail.save(email);
-      // await SQLEMail.saveWritableProps(email); -- TODO: Lacks dbID on initial fetch
-    }
-    for (let email of newMessages) {
-      await SQLEMail.save(email);
-    }
-
     await this.downloadMessagesComplete();
   }
 
