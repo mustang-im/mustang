@@ -126,6 +126,8 @@
   function onManualSetup() {
     if (!config || !config.outgoing) {
       config = makeManualConfig(emailAddress, password);
+    } else {
+      fillConfig(config, emailAddress, password);
     }
     step = Step.ManualConfig;
   }
@@ -133,7 +135,7 @@
     step = Step.RegisterNew;
   }
 
-  let manualConfigEl: ManualConfig;
+  let manualConfigEl: ManualConfigPage;
 
   $: canContinue =
     step == Step.EmailAddress && !!emailAddress && !!password ||
