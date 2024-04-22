@@ -104,6 +104,23 @@
 * Need: App shell, for: iframe rights
 
 # Mail
+* Bugs
+  * Attachments save (double?)
+  * split()
+* Body
+  * Plaintext formatting
+  * HTML formatting
+  * Link
+    * Click
+    * Hover
+    * Right-click, copy
+* Recipients display
+  * Known persons
+  * Unknown persons
+  * Known name, but unknown email address
+    * Warn when reading
+    * Warn when replying
+* Compose: Recipients entry
 * Save original emails as MIME in ZIP file
 * Search
   * with/without text
