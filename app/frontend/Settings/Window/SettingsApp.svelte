@@ -3,6 +3,18 @@
     <SettingsCategoriesPane {categories} />
   </Scroll>
   <Scroll slot="right">
+    <hbox class="settings-title-bar">
+      <hbox flex class="spacer" />
+      <hbox class="buttons">
+        <RoundButton
+          label="Close settings"
+          icon={CloseIcon}
+          iconSize="16px"
+          padding="6px"
+          on:click={() => catchErrors(onClose)}
+          />
+      </hbox>
+    </hbox>
     <vbox flex class="right-page">
       <MainContent category={$selectedCategory} />
     </vbox>
@@ -11,12 +23,16 @@
 
 <script lang="ts">
   import { settingsCategories } from "../SettingsCategories";
-  import { globalSearchTerm } from "../../AppsBar/selectedApp";
+  import { globalSearchTerm, openApp } from "../../AppsBar/selectedApp";
   import { selectedCategory } from "./selected";
+  import { mailMustangApp } from "../../Mail/MailMustangApp";
   import SettingsCategoriesPane from "./CategoriesPane.svelte";
   import MainContent from "./MainContent.svelte";
   import Splitter from "../../Shared/Splitter.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
+  import RoundButton from "../../Shared/RoundButton.svelte";
+  import CloseIcon from "lucide-svelte/icons/x";
+  import { catchErrors } from "../../Util/error";
 
   let categories = settingsCategories;
 
@@ -35,6 +51,10 @@
       }
     }
   }
+
+  function onClose() {
+    openApp($selectedCategory?.forApp ?? mailMustangApp);
+  }
 </script>
 
 <style>
@@ -44,7 +64,10 @@
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on PersonDetails */
   }
   .right-page {
-    margin: 32px;
+    margin: 0px 32px 32px 32px;
+  }
+  .settings-title-bar {
+    margin: 16px 16px 0px 16px;
   }
   .right-page :global(input) {
     font-size: 16px;
