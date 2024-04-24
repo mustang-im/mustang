@@ -80,12 +80,12 @@ export class SQLChatAccount implements ChatAccountStorage {
     (acc.id as any) = sanitize.alphanumdash(row.idStr);
     acc.name = sanitize.label(row.name);
     assert(acc.protocol == sanitize.alphanumdash(row.protocol), "MailAccount object of wrong type passed in");
-    acc.username = sanitize.stringOrNull(row.username);
-    acc.password = sanitize.stringOrNull(row.passwordButter);
-    acc.hostname = row.hostname ? sanitize.hostname(row.hostname) : null;
-    acc.port = row.port ? sanitize.portTCP(row.port) : null;
+    acc.username = sanitize.string(row.username, null);
+    acc.password = sanitize.string(row.passwordButter, null);
+    acc.hostname = sanitize.hostname(row.hostname, null);
+    acc.port = sanitize.portTCP(row.port, null);
     acc.tls = sanitize.enum(row.tls, [1, 2, 3], 0);
-    acc.url = row.url ? sanitize.url(row.url) : null;
+    acc.url = sanitize.url(row.url, null);
     acc.userRealname = sanitize.label(row.userRealname);
     acc.workspace = row.workspace
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace))

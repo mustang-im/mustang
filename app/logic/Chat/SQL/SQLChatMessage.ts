@@ -80,12 +80,12 @@ export class SQLChatMessage {
     msg.dbID = sanitize.integer(dbID);
     msg.id = sanitize.nonemptystring(row.idStr);
     msg.outgoing = sanitize.boolean(!!row.outgoing);
-    msg.inReplyTo = sanitize.stringOrNull(row.parentMsgID);
-    msg.sent = sanitize.date(row.dateSent * 1000);
-    msg.received = sanitize.date(row.dateReceived * 1000);
-    msg.text = sanitize.string(row.plaintext);
-    msg.html = sanitize.string(row.html);
-    SQLChatMessage.readReactions(msg, sanitize.stringOrNull(row.reactionsJSON));
+    msg.inReplyTo = sanitize.string(row.parentMsgID, null);
+    msg.sent = sanitize.date(row.dateSent * 1000, new Date());
+    msg.received = sanitize.date(row.dateReceived * 1000, new Date());
+    msg.text = sanitize.string(row.plaintext, "");
+    msg.html = sanitize.string(row.html, "");
+    SQLChatMessage.readReactions(msg, sanitize.string(row.reactionsJSON, null));
     let fromPersonID = sanitize.integer(row.fromPersonID);
     let chatID = sanitize.integer(row.chatID);
     if (msg.to) {

@@ -60,7 +60,7 @@ export class ThunderbirdAddressbook extends Addressbook {
           continue;
         }
         let serverID = key.slice("ldap_2.servers.".length, -(".filename".length));
-        let name = sanitize.stringOrNull(profile.prefs[`"ldap_2.servers.${serverID}.description"`]) ?? "Old addressbook";
+        let name = sanitize.string(profile.prefs[`"ldap_2.servers.${serverID}.description"`], "Old addressbook");
         let ab = await this.read(profile, filename, name);
         addressbooks.add(ab);
       } catch (ex) {

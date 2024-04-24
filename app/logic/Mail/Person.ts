@@ -25,7 +25,7 @@ export function findOrCreatePersonEmailAddress(emailAddress: string, realname: s
   }
   let pe = new PersonEmailAddress();
   pe.emailAddress = emailAddress;
-  pe.name = realname;
+  pe.name = realname ?? emailAddress;
   return pe;
 }
 
@@ -38,7 +38,7 @@ export function findOrCreatePerson(emailAddress: string, realname: string): Pers
   if (existing) {
     return existing;
   }
-  let newPerson = new MailPerson(emailAddress, realname);
+  let newPerson = new MailPerson(emailAddress, realname ?? emailAddress);
   mailPersons.add(newPerson);
   return newPerson;
 }

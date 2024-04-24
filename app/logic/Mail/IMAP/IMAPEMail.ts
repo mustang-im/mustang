@@ -6,7 +6,7 @@ import { RawFilesAttachment } from "../RawFiles/RawFilesAttachment";
 import { SQLEMail } from "../SQL/SQLEMail";
 import { sanitizeHTML } from "../../util/convertHTML";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert } from "../../util/util";
+import { assert, fileExtensionForMIMEType } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
 
@@ -30,19 +30,19 @@ export class IMAPEMail extends EMail {
 
   fromFlow(msgInfo: any) {
     // <https://imapflow.com/global.html#FetchMessageObject>
-    this.uid = msgInfo.uid ? sanitize.integer(msgInfo.uid) : null;
-    this.seq = msgInfo.seq ? sanitize.integer(msgInfo.seq) : null;
+    this.uid = sanitize.integer(msgInfo.uid, null);
+    this.seq = sanitize.integer(msgInfo.seq, null);
     // <https://imapflow.com/global.html#MessageEnvelopeObject>
     let env = msgInfo.envelope;
-    this.id = env?.messageId ? sanitize.nonemptystring(env.messageId) : this.uid + "";
-    this.subject = sanitize.stringOrNull(env.subject);
-    this.sent = env.date ? sanitize.date(env.date) : new Date();
+    this.id = sanitize.nonemptystring(env.messageId, this.uid + "");
+    this.subject = sanitize.string(env.subject, null);
+    this.sent = sanitize.date(env.date, new Date());
     this.received = new Date();
     this.setFlagsLocal(msgInfo.flags);
-    this.inReplyTo = sanitize.stringOrNull(env.inReplyTo);
+    this.inReplyTo = sanitize.string(env.inReplyTo, null);
     let firstFrom = env.from && env.from[0];
     if (firstFrom) {
-      this.contact = findOrCreatePerson(sanitize.nonemptystring(firstFrom.address), sanitize.stringOrNull(firstFrom.name));
+      this.contact = findOrCreatePerson(sanitize.nonemptystring(firstFrom.address), sanitize.string(firstFrom.name, null));
       this.from = findOrCreatePersonEmailAddress(firstFrom.address, firstFrom.name);
     } else {
       this.contact = findOrCreatePerson("unknown@example.com", "Unknown");
@@ -77,21 +77,21 @@ export class IMAPEMail extends EMail {
       this.headers.set(sanitize.nonemptystring(header.key), sanitize.nonemptystring(header.value));
     }*/
     this.text = mail.text;
-    this.html = sanitizeHTML(sanitize.stringOrNull(mail.html));
-    let fallbackContentID = 0;
+    this.html = sanitizeHTML(sanitize.string(mail.html, null));
+    let fallbackID = 0;
     this.attachments.addAll(mail.attachments.map(a => {
       try {
         let attachment = new Attachment();
-        attachment.mimeType = sanitize.stringOrNull(a.mimeType) ?? "application/octet-stream";
-        attachment.filename = sanitize.stringOrNull(a.filename) ?? "file." + attachment.mimeType.split("/").pop();
+        attachment.contentID = sanitize.nonemptystring(a.contentId, ++fallbackID);
+        attachment.mimeType = sanitize.string(a.mimeType, "application/octet-stream");
+        attachment.filename = sanitize.string(a.filename, "attachment" + fallbackID + "." + fileExtensionForMIMEType(attachment.mimeType));
         attachment.disposition = sanitize.translate(a.disposition, {
           attachment: ContentDisposition.attachment,
           inline: ContentDisposition.inline,
         }, ContentDisposition.unknown);
         attachment.related = a.related ? sanitize.boolean(a.related) : false;
-        attachment.contentID = sanitize.stringOrNull(a.contentId) ?? "" + fallbackContentID++;
         attachment.content = new File([a.content], a.filename, { type: a.mimeType });
-        attachment.size = attachment.content.size ? sanitize.integer(attachment.content.size) : 0;
+        attachment.size = sanitize.integer(attachment.content.size, -1);
         return attachment;
       } catch (ex) {
         this.folder.account.errorCallback(ex);
@@ -162,5 +162,5 @@ function addPersons(targetList: ArrayColl<PersonEmailAddress>, personList: any[]
     return;
   }
   targetList.addAll(personList.map(p =>
-    findOrCreatePersonEmailAddress(sanitize.nonemptystring(p.address), sanitize.stringOrNull(p.name))));
+    findOrCreatePersonEmailAddress(sanitize.nonemptystring(p.address), sanitize.string(p.name, null))));
 }

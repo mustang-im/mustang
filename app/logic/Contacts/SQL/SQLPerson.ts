@@ -78,10 +78,10 @@ export class SQLPerson {
     }
     person.dbID = sanitize.integer(dbID);
     person.name = sanitize.label(row.name);
-    person.firstName = row.firstName ? sanitize.label(row.firstName) : null;
-    person.lastName = row.lastName ? sanitize.stringOrNull(row.lastName) : null;
-    person.picture = row.picture ? sanitize.url(row.picture) : null;
-    person.notes = sanitize.stringOrNull(row.notes);
+    person.firstName = sanitize.label(row.firstName, null);
+    person.lastName = sanitize.string(row.lastName, null);
+    person.picture = sanitize.url(row.picture, null);
+    person.notes = sanitize.string(row.notes, null);
     if (row.addressbook) {
       let addressbookID = sanitize.integer(row.addressbookID);
       if (person.addressbook) {
@@ -104,10 +104,10 @@ export class SQLPerson {
       WHERE personID = ${person.dbID}
       `) as any;
     for (let row of rows) {
-      let purpose = row.purpose ? sanitize.label(row.purpose) : null;
+      let purpose = sanitize.label(row.purpose, null);
       let contactEntry = new ContactEntry(sanitize.string(row.value), purpose);
       contactEntry.preference = sanitize.integer(row.preference);
-      contactEntry.protocol = sanitize.stringOrNull(row.protocol);
+      contactEntry.protocol = sanitize.string(row.protocol, null);
       let type = row.type;
       if (type == ContactType.EMailAddress) {
         person.emailAddresses.add(contactEntry);

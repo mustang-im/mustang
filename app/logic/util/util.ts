@@ -61,6 +61,16 @@ export function sanitizeFilename(label: string): string {
   return filename;
 }
 
+export function fileExtensionForMIMEType(mimetype: string) {
+  if (typeof (mimetype) == "string" && mimetype != "application/octet-stream") {
+    let type = mimetype.split("/")[1];
+    if (type) {
+      return type;
+    }
+  }
+  return ".ext";
+}
+
 /** Used for if/else and switch statements
  * when they run into a case that should not happen */
 export class NotReached extends Error {
