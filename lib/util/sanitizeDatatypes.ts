@@ -15,29 +15,29 @@ let throwErrors = Symbol("Throw");
  * they throw exceptions.
  */
 class Sanitize {
-  integer(unchecked, fallback = throwErrors) {
+  integer(unchecked: number | string, fallback: number | Symbol = throwErrors): number {
     if (typeof (unchecked) == "number") {
       return unchecked;
     }
     let r = parseInt(unchecked);
     if (isNaN(r)) {
-      haveError("no_number.error", unchecked, fallback);
+      return haveError("No number", unchecked, fallback);
     }
     return r;
   }
 
-  integerRange(unchecked, min, max, fallback) {
+  integerRange(unchecked: number, min: number, max: number, fallback: number | Symbol = throwErrors): number {
     let i = this.integer(unchecked, fallback);
     if (i < min) {
-      haveError("number_too_small.error", unchecked, fallback);
+      return haveError("Number too small", unchecked, fallback);
     }
     if (i > max) {
-      haveError("number_too_large.error", unchecked, fallback);
+      return haveError("Number too large", unchecked, fallback);
     }
     return i;
   }
 
-  boolean(unchecked, fallback) {
+  boolean(unchecked: boolean | string, fallback: boolean | Symbol = throwErrors): boolean {
     if (typeof (unchecked) == "boolean") {
       return unchecked;
     }
@@ -47,19 +47,19 @@ class Sanitize {
     if (unchecked == "false") {
       return false;
     }
-    haveError("boolean.error", unchecked, fallback);
+    return haveError("Boolean", unchecked, fallback);
   }
 
-  string(unchecked, fallback) {
+  string(unchecked: string | null, fallback: string | Symbol = throwErrors): string {
     if (unchecked === null || unchecked === undefined) {
-      haveError("string_empty.error", unchecked, fallback);
+      return haveError("String empty", unchecked, fallback);
     }
     return String(unchecked);
   }
 
-  nonemptystring(unchecked, fallback) {
+  nonemptystring(unchecked: string, fallback: string | Symbol = throwErrors): string {
     if (!unchecked) {
-      haveError("string_empty.error", unchecked, fallback);
+      return haveError("String empty", unchecked, fallback);
     }
     return this.string(unchecked, fallback);
   }
@@ -69,10 +69,10 @@ class Sanitize {
    *
    * Empty strings not allowed (good idea?).
    */
-  alphanumdash(unchecked, fallback) {
+  alphanumdash(unchecked: string, fallback: string | Symbol = throwErrors): string {
     let str = this.nonemptystring(unchecked, fallback);
     if (!/^[a-zA-Z0-9\-\_]*$/.test(str)) {
-      haveError("alphanumdash.error", unchecked, fallback);
+      return haveError("Not alpha-num-dash", unchecked, fallback);
     }
     return str;
   }
@@ -85,26 +85,26 @@ class Sanitize {
    * HACK: "%" is allowed, because we allow placeholders in hostnames in the
    * config file.
    */
-  hostname(unchecked, fallback) {
+  hostname(unchecked: string, fallback: string | Symbol = throwErrors): string {
     let str = this.nonemptystring(unchecked, fallback);
     if (!/^[a-zA-Z0-9\-\.%]*$/.test(unchecked)) {
-      haveError("hostname_syntax.error", unchecked, fallback);
+      return haveError("Hostname syntax", unchecked, fallback);
     }
     return str.toLowerCase();
   }
 
-  portTCP(unchecked, fallback) {
+  portTCP(unchecked, fallback: number | Symbol = throwErrors) {
     return this.integerRange(unchecked, 1, 65535, fallback);
   }
 
   /**
    * A non-chrome URL that's safe to request.
    */
-  url(unchecked, fallback) {
-    let str = this.string(unchecked, fallback);
-    if (str.substring(0, 5) != "http:" && str.substring(0, 6) != "https:" &&
+  url(unchecked: string, fallback: string | Symbol = throwErrors): string {
+    let str = this.nonemptystring(unchecked, fallback);
+    if (!str || str.substring(0, 5) != "http:" && str.substring(0, 6) != "https:" &&
       str.substring(0, 4) != "ftp:") {
-      haveError("url_scheme.error", unchecked, fallback);
+      return haveError("URL scheme", unchecked, fallback);
     }
     //TODO security-check URL
     return str;
@@ -113,11 +113,11 @@ class Sanitize {
   /**
    * Email address foo@bar.com
    */
-  emailAddress(unchecked, fallback) {
+  emailAddress(unchecked: string, fallback: string | Symbol = throwErrors): string {
     let str = this.nonemptystring(unchecked, fallback);
     let sp = str.split("@");
     if (sp.length != 2 || !/^[a-zA-Z0-9\-%+_\.\*]+@[a-z0-9\-\.]+\.[a-z]+$/i.test(str)) {
-      haveError("not_an_email_address.error", unchecked, fallback);
+      return haveError("Not an email address", unchecked, fallback);
     }
     let user = this.nonemptystring(sp[0], fallback); // implicitly checks, var unused
     let domain = this.hostname(sp[1], fallback); // implicitly checks, var unused
@@ -127,7 +127,7 @@ class Sanitize {
   /**
    * A value which should be shown to the user in the UI as label
    */
-  label(unchecked, fallback) {
+  label(unchecked: string | null, fallback: string | Symbol = throwErrors): string {
     return this.string(unchecked, fallback);
   }
 
@@ -137,7 +137,7 @@ class Sanitize {
    *   or an RFC822 Date string
    * @return {Date}
    */
-  date(unchecked, fallback) {
+  date(unchecked: Date | string | number, fallback: Date | Symbol = throwErrors): Date {
     if (typeof (unchecked) == "string") {
       return new Date(unchecked); // ISO or RFC822 format
     } else if (typeof (unchecked) == "number") {
@@ -145,7 +145,7 @@ class Sanitize {
     } else if (typeof (unchecked) == "object" && unchecked instanceof Date) {
       return new Date(unchecked); // ISO or RFC822 format
     } else {
-      haveError("date_not_string_or_number.error", unchecked, fallback);
+      return haveError("Date not string or number", unchecked, fallback);
     }
   }
 
@@ -160,9 +160,9 @@ class Sanitize {
    *       no |defaultValue| is passed.
    * @throws MalformedException
    */
-  enum(unchecked, allowedValues, fallback) {
+  enum<T>(unchecked: T, allowedValues: T[], fallback: T | Symbol = throwErrors): T {
     return allowedValues.find(allowedValue => allowedValue == unchecked) ??
-      haveError("allowed_value.error", unchecked, fallback);
+      haveError("Allowed value", unchecked, fallback);
   }
 
   /**
@@ -182,17 +182,17 @@ class Sanitize {
    *       no |defaultValue| is passed.
    * @throws MalformedException
    */
-  translate(unchecked, mapping, fallback) {
+  translate<F, T>(unchecked: F, mapping: Record<any, T>, fallback: T | Symbol = throwErrors): T {
     for (let inputValue in mapping) {
       if (inputValue == unchecked) {
         return mapping[inputValue];
       }
     }
-    haveError("allowed_value.error", unchecked, fallback);
+    return haveError("Allowed value", unchecked, fallback);
   }
 }
 
-function haveError(errorMsg, unchecked, fallback) {
+function haveError(errorMsg: string, unchecked: any, fallback: any): any {
   if (fallback === throwErrors) {
     throw new MalformedException(errorMsg, unchecked);
   } else {
@@ -201,20 +201,19 @@ function haveError(errorMsg, unchecked, fallback) {
 }
 
 class MalformedException extends Error {
-  constructor(msgID, uncheckedBadValue) {
-    let msg = "Value error: " + msgID.replace(".error", "").replace(/ /g, "_");;
+  constructor(msgID: string, uncheckedBadValue: any) {
+    let msg = "Value error: " + msgID;
+    msg += " (Bad value: " + new String(uncheckedBadValue) + ")";
     /* try {
       let gSanitizeBundle = new StringBundle("util");
-      msg = gSanitizeBundle.get(msgID);
+      msg = gSanitizeBundle.get(msgID.toLowerCase().replace(/ /g, "_") + ".error");
     } catch (ex) { } */
-    console.log(msg += " (bad value: " + new String(uncheckedBadValue) + ")");
     super(msg);
-    this.msg = msg;
+    //this.msg = msg;
   }
   toString() {
-    return this.msg;
+    return this.message;
   }
 }
 
 export let sanitize = new Sanitize();
-// exports.sanitize = sanitize;
