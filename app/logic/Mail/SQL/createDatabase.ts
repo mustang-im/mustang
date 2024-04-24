@@ -43,7 +43,11 @@ export const mailDatabaseSchema = sql`
     "uid" INTEGER default null,
     -- RFC822 header
     "messageID" TEXT default null,
+    -- In-Reply-To header
     "parentMsgID" TEXT default null,
+    -- Msg-ID of the first (=top-level) message in a thread
+    -- All msgs in the thread should have the same threadID, making them easy and fast to find in the DB.
+    "threadID" TEXT default null,
     -- in Bytes, of RFC822 MIME message with everything
     "size" INTEGER default null,
     -- When this email was sent, according to RFC822 Header Date:. Unixtime, in seconds (not milliseconds as JS Date).
