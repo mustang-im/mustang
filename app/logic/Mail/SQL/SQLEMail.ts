@@ -5,7 +5,7 @@ import { findOrCreatePerson, findOrCreatePersonEmailAddress } from "../Person";
 import { getDatabase } from "./SQLDatabase";
 import type { IMAPEMail } from "../IMAP/IMAPEMail";
 import { backgroundError } from "../../../frontend/Util/error";
-import { assert } from "../../util/util";
+import { assert, fileExtensionForMIMEType } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import sql from "../../../../lib/rs-sqlite";
@@ -154,16 +154,16 @@ export class SQLEMail {
       WHERE id = ${dbID}
       `) as any;
     email.dbID = sanitize.integer(dbID);
-    (email as any as IMAPEMail).uid = row.uid ? sanitize.integer(row.uid) : null;
+    (email as any as IMAPEMail).uid = sanitize.integer(row.uid, null);
     email.id = sanitize.nonemptystring(row.messageID);
-    email.inReplyTo = sanitize.stringOrNull(row.parentMsgID);
-    email.size = row.size ? sanitize.integer(row.size) : null;
-    email.sent = sanitize.date(row.dateSent * 1000);
-    email.received = sanitize.date(row.dateReceived * 1000);
+    email.inReplyTo = sanitize.string(row.parentMsgID, null);
+    email.size = sanitize.integer(row.size, null);
+    email.sent = sanitize.date(row.dateSent * 1000, new Date());
+    email.received = sanitize.date(row.dateReceived * 1000, new Date());
     email.outgoing = sanitize.boolean(!!row.outgoing);
-    email.subject = sanitize.stringOrNull(row.subject);
-    email.text = sanitize.stringOrNull(row.plaintext);
-    email.html = sanitize.stringOrNull(row.html);
+    email.subject = sanitize.string(row.subject, null);
+    email.text = sanitize.string(row.plaintext, "no text");
+    email.html = sanitize.string(row.html, "no text");
     this.readWritablePropsFromResult(email, row);
     await this.readRecipients(email);
     await this.readAttachments(email);
@@ -206,8 +206,8 @@ export class SQLEMail {
       `) as any;
     for (let row of recipientRows) {
       try {
-        let addr = sanitize.emailAddress(row.emailAddress);
-        let name = sanitize.label(row.name);
+        let addr = sanitize.emailAddress(row.emailAddress, "email@invalid");
+        let name = sanitize.label(row.name, null);
         let pe = findOrCreatePersonEmailAddress(addr, name);
         if (row.recipientType == 1) {
           email.from = pe;
@@ -243,14 +243,15 @@ export class SQLEMail {
       FROM emailAttachment
       WHERE emailID = ${email.dbID}
       `) as any;
+    let fallbackID = 0;
     for (let row of attachmentRows) {
       try {
         let a = new Attachment();
-        a.filename = sanitize.nonemptystring(row.filename);
-        a.filepathLocal = sanitize.stringOrNull(row.filepathLocal);
-        a.mimeType = sanitize.nonemptystring(row.mimeType);
-        a.size = row.size ? sanitize.integer(row.size) : null;
-        a.contentID = sanitize.stringOrNull(row.contentID);
+        a.mimeType = sanitize.nonemptystring(row.mimeType, "application/octet-stream");
+        a.contentID = sanitize.nonemptystring(row.contentID, "" + ++fallbackID);
+        a.filename = sanitize.nonemptystring(row.filename, "attachment" + fallbackID + "." + fileExtensionForMIMEType(a.mimeType));
+        a.filepathLocal = sanitize.string(row.filepathLocal, null);
+        a.size = sanitize.integer(row.size, -1);
         a.disposition = sanitize.translate(row.disposition, {
           attachment: ContentDisposition.attachment,
           inline: ContentDisposition.inline,

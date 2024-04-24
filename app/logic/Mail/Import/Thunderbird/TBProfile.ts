@@ -29,7 +29,7 @@ export class ThunderbirdProfile {
   async readMailAccounts(): Promise<MailAccount[]> {
     let accounts: MailAccount[] = [];
     await this.readPrefs();
-    let accountIDs = sanitize.stringOrNull(this.prefs["mail.accountmanager.accounts"])?.split(",");
+    let accountIDs = sanitize.string(this.prefs["mail.accountmanager.accounts"], null)?.split(",");
     assert(accountIDs && accountIDs.length, "  No accounts found for " + this.path);
 
     for (let accountID of accountIDs) {
@@ -41,7 +41,7 @@ export class ThunderbirdProfile {
 
     // In case the account identity wasn't linked with an SMTP server,
     // associate them now, based on the username.
-    let smtpIDs = sanitize.stringOrNull(this.prefs["mail.smtpservers"])?.split(",");
+    let smtpIDs = sanitize.string(this.prefs["mail.smtpservers"], null)?.split(",");
     assert(smtpIDs && smtpIDs.length, "  No SMTP servers found for " + this.path);
     for (let smtpID of smtpIDs) {
       let smtp = this.readSMTPServer(smtpID);
@@ -107,7 +107,7 @@ export class ThunderbirdProfile {
   readMailServer(serverID: string, acc: MailAccount): void {
     let prefBranch = `mail.server.${serverID}`;
     acc.name = sanitize.label(this.prefs[`${prefBranch}.name`]);
-    acc.username = sanitize.stringOrNull(this.prefs[`${prefBranch}.userName`]);
+    acc.username = sanitize.string(this.prefs[`${prefBranch}.userName`]);
     if (acc instanceof EWSAccount) {
       // ewsURL from ExQuilla, and ews_url from Owl in EWS mode
       let ewsURLExQuilla = this.prefs[`${prefBranch}.ewsURL`];
@@ -290,7 +290,7 @@ export class ThunderbirdProfile {
         if (!sectionName.startsWith("Install")) {
           continue;
         }
-        let path = sanitize.stringOrNull(section.Default);
+        let path = sanitize.string(section.Default, null);
         if (!path) {
           continue;
         }

@@ -68,9 +68,9 @@ export class SQLMeetAccount implements MeetAccountStorage {
     (acc.id as any) = sanitize.alphanumdash(row.idStr);
     acc.name = sanitize.label(row.name);
     assert(acc.protocol == sanitize.alphanumdash(row.protocol), "Meet account object of wrong type passed in");
-    acc.username = sanitize.stringOrNull(row.username);
-    acc.password = sanitize.stringOrNull(row.password);
-    acc.url = row.url ? sanitize.url(row.url) : null;
+    acc.username = sanitize.string(row.username, null);
+    acc.password = sanitize.string(row.password, null);
+    acc.url = sanitize.url(row.url, null);
     acc.workspace = row.workspace
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace))
       : null;

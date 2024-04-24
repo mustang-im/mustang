@@ -79,7 +79,7 @@ export class SQLChat extends Chat {
     chat.dbID = sanitize.integer(dbID);
     chat.id = sanitize.string(row.idStr);
     chat.name = sanitize.label(row.name);
-    chat.syncState = sanitize.stringOrNull(row.syncState);
+    chat.syncState = sanitize.string(row.syncState, null);
     let contactID = sanitize.integer(row.contactID);
     chat.contact = appGlobal.persons.find(p => p.dbID == contactID);
     // TODO Group
