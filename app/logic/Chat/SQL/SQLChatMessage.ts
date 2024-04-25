@@ -84,7 +84,10 @@ export class SQLChatMessage {
     msg.sent = sanitize.date(row.dateSent * 1000, new Date());
     msg.received = sanitize.date(row.dateReceived * 1000, new Date());
     msg.text = sanitize.string(row.plaintext, "");
-    msg.html = sanitize.string(row.html, "");
+    let html = sanitize.string(row.html, null);
+    if (html) {
+      msg.html = html;
+    }
     SQLChatMessage.readReactions(msg, sanitize.string(row.reactionsJSON, null));
     let fromPersonID = sanitize.integer(row.fromPersonID);
     let chatID = sanitize.integer(row.chatID);
@@ -149,13 +152,17 @@ export class SQLChatMessage {
       `) as any;
     let newMsgs = new ArrayColl<Message>();
     for (let row of rows) {
-      let msg = chat.messages.find(msg => msg.dbID == row.id);
-      if (msg) {
-        await SQLChatMessage.read(row.id, msg as any as ChatMessage); // TODO needed?
-      } else {
-        msg = chat.newMessage();
-        await SQLChatMessage.read(row.id, msg as any as ChatMessage, row);
-        newMsgs.add(msg);
+      try {
+        let msg = chat.messages.find(msg => msg.dbID == row.id);
+        if (msg) {
+          await SQLChatMessage.read(row.id, msg as any as ChatMessage); // TODO needed?
+        } else {
+          msg = chat.newMessage();
+          await SQLChatMessage.read(row.id, msg as any as ChatMessage, row);
+          newMsgs.add(msg);
+        }
+      } catch (ex) {
+        chat.account.errorCallback(ex);
       }
     }
     chat.messages.addAll(newMsgs);

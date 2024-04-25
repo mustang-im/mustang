@@ -72,7 +72,7 @@ export class SQLMeetAccount implements MeetAccountStorage {
     acc.password = sanitize.string(row.password, null);
     acc.url = sanitize.url(row.url, null);
     acc.workspace = row.workspace
-      ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace))
+      ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
       : null;
     if (!acc.storage) {
       acc.storage = new SQLMeetAccount();

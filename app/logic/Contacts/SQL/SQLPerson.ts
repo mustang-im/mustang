@@ -106,7 +106,7 @@ export class SQLPerson {
     for (let row of rows) {
       let purpose = sanitize.label(row.purpose, null);
       let contactEntry = new ContactEntry(sanitize.string(row.value), purpose);
-      contactEntry.preference = sanitize.integer(row.preference);
+      contactEntry.preference = sanitize.integer(row.preference, 100);
       contactEntry.protocol = sanitize.string(row.protocol, null);
       let type = row.type;
       if (type == ContactType.EMailAddress) {
@@ -118,7 +118,7 @@ export class SQLPerson {
       } else if (type == ContactType.StreetAddress) {
         person.streetAddresses.add(contactEntry);
       } else {
-        console.log("contact detail", row);
+        console.log("Unknown contact detail type", type, row);
         return; // Forward compatibility. Do not throw.
       }
     }
@@ -142,14 +142,18 @@ export class SQLPerson {
       `) as any;
     let newPersons = new ArrayColl<Person>();
     for (let row of rows) {
-      let personID = sanitize.integer(row.id);
-      let person = addressbook.persons.find(person => person.dbID == personID);
-      if (!person) {
-        person = addressbook.newPerson();
-        newPersons.add(person);
+      try {
+        let personID = sanitize.integer(row.id);
+        let person = addressbook.persons.find(person => person.dbID == personID);
+        if (!person) {
+          person = addressbook.newPerson();
+          newPersons.add(person);
+        }
+        person.addressbook = addressbook;
+        await SQLPerson.read(row.id, person, row);
+      } catch (ex) {
+        addressbook.errorCallback(ex);
       }
-      person.addressbook = addressbook;
-      await SQLPerson.read(row.id, person, row);
     }
     addressbook.persons.addAll(newPersons);
   }

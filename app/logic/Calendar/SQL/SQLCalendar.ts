@@ -69,7 +69,7 @@ export class SQLCalendar implements CalendarStorage {
     cal.dbID = dbID;
     (cal.id as any) = sanitize.alphanumdash(row.idStr);
     cal.name = sanitize.label(row.name);
-    assert(cal.protocol == sanitize.alphanumdash(row.protocol, null), "Calendar object of wrong type passed in");
+    assert(cal.protocol == sanitize.alphanumdash(row.protocol), "Calendar object of wrong type passed in");
     cal.username = sanitize.string(row.username, null);
     cal.url = sanitize.url(row.url, null);
     cal.workspace = row.workspace

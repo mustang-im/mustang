@@ -65,12 +65,12 @@ export const chatDatabaseSchema = sql`
   CREATE TABLE "chatAccount" (
     -- Same ID as in the preferences file
     "id" INTEGER PRIMARY KEY,
-    "idStr" TEXT not null,
-    "name" TEXT not null UNIQUE,
+    "idStr" TEXT not null UNIQUE,
+    "name" TEXT not null,
+    "protocol" TEXT not null,
     "username" TEXT default null,
     "passwordButter" TEXT default null,
     "userRealname" TEXT not null,
-    "protocol" TEXT not null,
     "hostname" TEXT default null,
     "port" INTEGER default null,
     "tls" INTEGER default 0,

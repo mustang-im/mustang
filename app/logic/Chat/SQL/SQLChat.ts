@@ -78,12 +78,12 @@ export class SQLChat extends Chat {
     }
     chat.dbID = sanitize.integer(dbID);
     chat.id = sanitize.string(row.idStr);
-    chat.name = sanitize.label(row.name);
     chat.syncState = sanitize.string(row.syncState, null);
     let contactID = sanitize.integer(row.contactID);
     chat.contact = appGlobal.persons.find(p => p.dbID == contactID);
     // TODO Group
     assert(chat.contact, "Contact not found");
+    chat.name = sanitize.label(row.name, chat.contact.name);
     let accountID = sanitize.integer(row.accountID);
     chat.account = appGlobal.chatAccounts.find(acc => acc.dbID == accountID) as any as Account;
     assert(chat.account, `Account ${accountID} not yet loaded`);
@@ -100,13 +100,17 @@ export class SQLChat extends Chat {
       `) as any;
     let newChats = new ArrayColl<Chat>();
     for (let row of rows) {
-      let chat = account.chats.find(email => email.dbID == row.id);
-      if (chat) {
-        await SQLChat.read(row.id, chat); // TODO needed?
-      } else {
-        chat = account.newChat();
-        await SQLChat.read(row.id, chat, row);
-        newChats.add(chat);
+      try {
+        let chat = account.chats.find(email => email.dbID == row.id);
+        if (chat) {
+          await SQLChat.read(row.id, chat); // TODO needed?
+        } else {
+          chat = account.newChat();
+          await SQLChat.read(row.id, chat, row);
+          newChats.add(chat);
+        }
+      } catch (ex) {
+        account.errorCallback(ex);
       }
     }
     account.chats.addAll(newChats);

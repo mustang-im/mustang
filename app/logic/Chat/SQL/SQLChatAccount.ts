@@ -11,6 +11,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
+import { TLSSocketType } from "../../Mail/MailAccount";
 
 export class SQLChatAccount implements ChatAccountStorage {
   static async save(acc: ChatAccount) {
@@ -84,11 +85,11 @@ export class SQLChatAccount implements ChatAccountStorage {
     acc.password = sanitize.string(row.passwordButter, null);
     acc.hostname = sanitize.hostname(row.hostname, null);
     acc.port = sanitize.portTCP(row.port, null);
-    acc.tls = sanitize.enum(row.tls, [1, 2, 3], 0);
+    acc.tls = sanitize.enum(row.tls, [TLSSocketType.Plain, TLSSocketType.TLS, TLSSocketType.STARTTLS], TLSSocketType.Unknown);
     acc.url = sanitize.url(row.url, null);
-    acc.userRealname = sanitize.label(row.userRealname);
+    acc.userRealname = sanitize.label(row.userRealname, appGlobal.me.name);
     acc.workspace = row.workspace
-      ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace))
+      ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
       : null;
     if (!acc.storage) {
       acc.storage = new SQLChatAccount();

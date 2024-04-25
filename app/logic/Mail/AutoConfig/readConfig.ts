@@ -18,7 +18,7 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string, s
   let configs = new ArrayColl<MailAccount>();
   let outgoingConfigs = new ArrayColl<SMTPAccount>();
 
-  let displayName = xml.displayName ? sanitize.label(xml.displayName) : sanitize.hostname(xml["@id"]);
+  let displayName = sanitize.label(xml.displayName, sanitize.label(xml["@id"], forDomain));
   //let domains = xml.$domain.map(domain => sanitize.hostname(domain));
   assert(ensureArray(xml.$domain).includes(forDomain), "Need proper <domain> in XML");
   let firstError: Error;

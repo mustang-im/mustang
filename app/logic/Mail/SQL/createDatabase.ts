@@ -136,14 +136,14 @@ export const mailDatabaseSchema = sql`
   CREATE TABLE "emailAccount" (
     -- Same ID as in the preferences file
     "id" INTEGER PRIMARY KEY,
-    "idStr" TEXT not null,
-    "name" TEXT not null UNIQUE,
+    "idStr" TEXT not null UNIQUE,
+    "name" TEXT not null,
     "emailAddress" TEXT not null,
+    -- "imap", "pop3", "jmap", "ews", "owa", "activesync"
+    "protocol" TEXT not null,
     "username" TEXT default null,
     "passwordButter" TEXT default null,
     "userRealname" TEXT not null,
-    -- "imap", "pop3", "jmap", "ews", "owa", "activesync"
-    "protocol" TEXT not null,
     "hostname" TEXT default null,
     "port" INTEGER default null,
     "tls" INTEGER default 0,

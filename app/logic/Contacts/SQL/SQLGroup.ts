@@ -72,7 +72,7 @@ export class SQLGroup extends Group {
     }
     group.dbID = sanitize.integer(dbID);
     group.name = sanitize.label(row.name);
-    group.description = sanitize.label(row.description);
+    group.description = sanitize.label(row.description, "");
     if (row.addressbook) {
       let addressbookID = sanitize.integer(row.addressbookID);
       if (group.addressbook) {

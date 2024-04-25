@@ -44,7 +44,7 @@ export async function readChatAccounts(): Promise<ArrayColl<ChatAccount>> {
 
 function readMatrixAccount(prefBranch: string): MatrixAccount {
   let account = new MatrixAccount();
-  account.baseURL = sanitize.url(localStorage.getItem(prefBranch + "server") ?? "https://matrix.org");
+  account.baseURL = sanitize.url(localStorage.getItem(prefBranch + "server"), "https://matrix.org");
   account.username = sanitize.nonemptystring(localStorage.getItem(prefBranch + "username"));
   account.password = sanitize.nonemptystring(localStorage.getItem(prefBranch + "password"));
   let deviceID = localStorage.getItem(prefBranch + "deviceID");
