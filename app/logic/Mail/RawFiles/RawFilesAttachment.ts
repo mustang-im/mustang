@@ -50,6 +50,6 @@ export class RawFilesAttachment {
 
   static async getDirPath(email: EMail): Promise<string> {
     configDir = configDir ?? await appGlobal.remoteApp.getFilesDir();
-    return `${configDir}/files/email/${sanitizeFilename(email.from.emailAddress.replace("@", "-"))}/${sanitizeFilename(email.subject)}-${email.dbID}`;
+    return `${configDir}/files/email/${sanitizeFilename(email.from.emailAddress.replace("@", "-"))}/${email.dbID}-${sanitizeFilename(email.subject)}`;
   }
 }
