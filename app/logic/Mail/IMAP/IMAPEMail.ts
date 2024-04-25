@@ -104,6 +104,9 @@ export class IMAPEMail extends EMail {
         this.folder.account.errorCallback(ex);
       }
     }).filter(attachment => !!attachment));
+
+    // Save
+    await SQLEMail.save(this);
     if (this.attachments.hasItems) {
       await Promise.all(this.attachments.contents.map(a =>
         RawFilesAttachment.save(a, this)));

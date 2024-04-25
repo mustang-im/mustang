@@ -134,7 +134,6 @@ export class IMAPFolder extends Folder {
               msg.fromFlow(msgInfo);
               this.updateModSeq(msgInfo.modseq);
               await msg.parseMIME();
-              await SQLEMail.save(msg);
               downloadedMessages.add(msg);
             }
           } catch (ex) {
