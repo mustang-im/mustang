@@ -78,12 +78,12 @@ export class SQLFolder extends Folder {
     folder.dbID = sanitize.integer(dbID);
     folder.name = sanitize.label(row.name);
     folder.path = sanitize.label(row.path);
-    folder.countTotal = sanitize.integer(row.countTotal);
-    folder.countUnread = sanitize.integer(row.countUnread);
-    folder.countNewArrived = sanitize.integer(row.countNewArrived);
-    folder.specialFolder = row.specialUse ? sanitize.alphanumdash(row.specialUse) as SpecialFolder : null;
-    (folder as any as IMAPFolder).uidvalidity = sanitize.integer(row.uidvalidity ?? 0);
-    (folder as any as IMAPFolder).lastSeen = sanitize.integer(row.lastSeen ?? 0);
+    folder.countTotal = sanitize.integer(row.countTotal, 0);
+    folder.countUnread = sanitize.integer(row.countUnread, 0);
+    folder.countNewArrived = sanitize.integer(row.countNewArrived, 0);
+    folder.specialFolder = sanitize.alphanumdash(row.specialUse, null) as SpecialFolder;
+    (folder as any as IMAPFolder).uidvalidity = sanitize.integer(row.uidvalidity, 0);
+    (folder as any as IMAPFolder).lastSeen = sanitize.integer(row.lastSeen, 0);
     let accountID = sanitize.integer(row.accountID);
     folder.account = appGlobal.emailAccounts.find(acc => acc.dbID == accountID);
     assert(folder.account, `Account ${accountID} not yet loaded`);

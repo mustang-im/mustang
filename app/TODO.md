@@ -1,20 +1,20 @@
 # Next
-* Chat SQL - Test
 * Mail
   * Threads
     * Message: Conversation view
     * Message list: Threaded view?
     * Mail Chat view: Open thread
   * All accounts - fix
+  * Plaintext mail line wraps
   * Bugs
     * Google
       * no email subject
     * Setup mail
       * When finishing gives error, don't allow the user to click multiple times, creating multiple accounts.
       * after account delete: remove general panel
+* Read and save real name of user
 
 # UI
-* Window header
 * Close menu when clicking outside menu
 
 # Chat
@@ -207,6 +207,7 @@
 * OAuth2 UI
 
 # Setup
+* Read and save real name of user
 * Chat & Video conf
 * Combined: Mail, chat, fileshare, calendar, contacts with single login/setup
 
@@ -222,6 +223,7 @@
   * Adapt our Open-Source license
   * Adapt our EULA and Privacy policy
   * Impressum
+* Password storage
 
 # Server
 * Error logging server: Sentry

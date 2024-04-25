@@ -6,7 +6,6 @@ import { backgroundError } from "../../../../frontend/Util/error";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
 import sql, { Database } from "../../../../../lib/rs-sqlite";
-import { assert } from "../../../util/util";
 
 export class ThunderbirdAddressbook extends Addressbook {
   readonly protocol: string = "thunderbird-addressbook-sqlite";
@@ -23,17 +22,17 @@ export class ThunderbirdAddressbook extends Addressbook {
       FROM properties
       `) as any;
     let cards = rows.filter(row => row.name == "PrimaryEmail");
+    let fallbackID = 0;
     for (let card of cards) {
       try {
-        let id = sanitize.alphanumdash(card.card);
+        let id = sanitize.alphanumdash(card.card, "" + ++fallbackID);
         let emailAddress = sanitize.emailAddress(card.value);
         let values = rows.filter(row => row.card == id);
         let person = new Person();
         person.id = id;
-        person.name = values.find(row => row.name == "DisplayName")?.value ??
-          emailAddress;
-        person.firstName = values.find(row => row.name == "FirstName")?.value;
-        person.lastName = values.find(row => row.name == "LastName")?.value;
+        person.name = sanitize.nonemptystring(values.find(row => row.name == "DisplayName")?.value, emailAddress);
+        person.firstName = sanitize.string(values.find(row => row.name == "FirstName")?.value, null);
+        person.lastName = sanitize.string(values.find(row => row.name == "LastName")?.value, null);
         let entry = new ContactEntry(emailAddress, "main");
         entry.protocol = "email";
         entry.preference = 0;

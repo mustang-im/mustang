@@ -80,13 +80,16 @@ export class SQLEvent extends Event {
         `) as any;
     }
     event.dbID = sanitize.integer(dbID);
-    event.title = sanitize.label(row.title);
-    event.descriptionText = sanitize.label(row.descriptionText);
-    event.descriptionHTML = sanitize.string(row.descriptionHTML);
+    event.title = sanitize.label(row.title, "Meeting");
+    event.descriptionText = sanitize.label(row.descriptionText, "");
+    let html = sanitize.string(row.descriptionHTML, null);
+    if (html) {
+      event.descriptionHTML = html;
+    }
     event.startTime = sanitize.date(row.startTime);
-    event.endTime = sanitize.date(row.endTime);
-    if (row.calendar) {
-      let calendarID = sanitize.integer(row.calendarID);
+    event.endTime = sanitize.date(row.endTime, event.startTime);
+    if (row.calendarID) {
+      let calendarID = sanitize.integer(row.calendarID, null);
       if (event.calendar) {
         assert(event.calendar.dbID == calendarID, "Wrong calendar");
       } else {
@@ -136,13 +139,17 @@ export class SQLEvent extends Event {
       `) as any;
     let newEvents = new ArrayColl<Event>();
     for (let row of rows) {
-      let event = calendar.events.find(event => event.dbID == row.id);
-      if (!event) {
-        event = calendar.newEvent();
-        newEvents.add(event);
+      try {
+        let event = calendar.events.find(event => event.dbID == row.id);
+        if (!event) {
+          event = calendar.newEvent();
+          newEvents.add(event);
+        }
+        event.calendar = calendar;
+        await SQLEvent.read(row.id, event, row);
+      } catch (ex) {
+        calendar.errorCallback(ex);
       }
-      event.calendar = calendar;
-      await SQLEvent.read(row.id, event, row);
     }
     calendar.events.addAll(newEvents);
   }

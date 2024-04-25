@@ -1,4 +1,4 @@
-import type { MailAccount, MailAccountStorage, OutgoingMailAccount } from '../MailAccount';
+import { MailAccount, MailAccountStorage, OutgoingMailAccount, TLSSocketType } from '../MailAccount';
 import { IMAPAccount } from '../IMAP/IMAPAccount';
 import { POP3Account } from '../POP3/POP3Account';
 import { SMTPAccount } from '../SMTP/SMTPAccount';
@@ -75,10 +75,10 @@ async function readStandardAccountFromLocalStorage(account: MailAccount, prefBra
   account.userRealname = sanitize.nonemptystring(localStorage.getItem(prefBranch + "userRealname") ??
     appGlobal.me.name ?? localStorage.getItem("me.realname"));
   account.tls = sanitize.translate(localStorage.getItem(prefBranch + "tls"), {
-    plain: 1,
-    tls: 2,
-    starttls: 3,
-  }, 2);
+    plain: TLSSocketType.Plain,
+    tls: TLSSocketType.TLS,
+    starttls: TLSSocketType.STARTTLS,
+  }, TLSSocketType.TLS);
   account.name = account.emailAddress;
   account.storage = new MailAccountLocalStorage();
 }
@@ -93,10 +93,10 @@ async function readSMTPAccount(prefBranchBase: string, idBase: string): Promise<
   account.username = sanitize.nonemptystring(localStorage.getItem(prefBranchSMTP + "username"));
   account.password = sanitize.string(localStorage.getItem(prefBranchSMTP + "password"));
   account.tls = sanitize.translate(localStorage.getItem(prefBranchSMTP + "tls"), {
-    plain: 1,
-    tls: 2,
-    starttls: 3,
-  }, 2);
+    plain: TLSSocketType.Plain,
+    tls: TLSSocketType.TLS,
+    starttls: TLSSocketType.STARTTLS,
+  }, TLSSocketType.TLS);
   account.emailAddress = sanitize.nonemptystring(localStorage.getItem(prefBranchBase + "emailAddress"));
   account.userRealname = sanitize.nonemptystring(localStorage.getItem(prefBranchBase + "userRealname") ??
     appGlobal.me.name ?? localStorage.getItem("me.realname"));

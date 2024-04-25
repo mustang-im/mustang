@@ -1,4 +1,4 @@
-import type { MailAccount, MailAccountStorage } from "../MailAccount";
+import { TLSSocketType, type MailAccount, type MailAccountStorage } from "../MailAccount";
 import { getDatabase } from "./SQLDatabase";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { SMTPAccount } from "../SMTP/SMTPAccount";
@@ -87,19 +87,19 @@ export class SQLMailAccount implements MailAccountStorage {
       `) as any;
     acc.dbID = dbID;
     (acc.id as any) = sanitize.alphanumdash(row.idStr);
-    acc.name = sanitize.label(row.name);
     assert(acc.protocol == sanitize.alphanumdash(row.protocol), "MailAccount object of wrong type passed in");
     acc.emailAddress = sanitize.emailAddress(row.emailAddress);
     acc.username = sanitize.string(row.username, null);
     acc.password = sanitize.string(row.passwordButter, null);
     acc.hostname = sanitize.hostname(row.hostname, null);
     acc.port = sanitize.portTCP(row.port, null);
-    acc.tls = sanitize.enum(row.tls, [1, 2, 3], 0);
+    acc.tls = sanitize.enum(row.tls, [TLSSocketType.Plain, TLSSocketType.TLS, TLSSocketType.STARTTLS], TLSSocketType.Unknown);
     acc.authMethod = sanitize.integerRange(row.authMethod, 0, 20);
     acc.url = sanitize.url(row.url, null);
-    acc.userRealname = sanitize.label(row.userRealname);
+    acc.userRealname = sanitize.label(row.userRealname, appGlobal.me.name);
+    acc.name = sanitize.label(row.name, acc.emailAddress);
     acc.workspace = row.workspace
-      ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace))
+      ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
       : null;
     if (!acc.storage) {
       acc.storage = new SQLMailAccount();

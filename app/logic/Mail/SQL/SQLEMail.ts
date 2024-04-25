@@ -162,8 +162,11 @@ export class SQLEMail {
     email.received = sanitize.date(row.dateReceived * 1000, new Date());
     email.outgoing = sanitize.boolean(!!row.outgoing);
     email.subject = sanitize.string(row.subject, null);
-    email.text = sanitize.string(row.plaintext, "no text");
-    email.html = sanitize.string(row.html, "no text");
+    email.text = sanitize.string(row.plaintext, "");
+    let html = sanitize.string(row.html, null);
+    if (html) {
+      email.html = html;
+    }
     this.readWritablePropsFromResult(email, row);
     await this.readRecipients(email);
     await this.readAttachments(email);
@@ -206,7 +209,7 @@ export class SQLEMail {
       `) as any;
     for (let row of recipientRows) {
       try {
-        let addr = sanitize.emailAddress(row.emailAddress, "email@invalid");
+        let addr = sanitize.emailAddress(row.emailAddress, "unknown@invalid");
         let name = sanitize.label(row.name, null);
         let pe = findOrCreatePersonEmailAddress(addr, name);
         if (row.recipientType == 1) {
@@ -249,7 +252,7 @@ export class SQLEMail {
         let a = new Attachment();
         a.mimeType = sanitize.nonemptystring(row.mimeType, "application/octet-stream");
         a.contentID = sanitize.nonemptystring(row.contentID, "" + ++fallbackID);
-        a.filename = sanitize.nonemptystring(row.filename, "attachment" + fallbackID + "." + fileExtensionForMIMEType(a.mimeType));
+        a.filename = sanitize.nonemptystring(row.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(a.mimeType));
         a.filepathLocal = sanitize.string(row.filepathLocal, null);
         a.size = sanitize.integer(row.size, -1);
         a.disposition = sanitize.translate(row.disposition, {

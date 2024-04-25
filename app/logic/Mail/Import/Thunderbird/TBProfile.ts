@@ -106,8 +106,8 @@ export class ThunderbirdProfile {
 
   readMailServer(serverID: string, acc: MailAccount): void {
     let prefBranch = `mail.server.${serverID}`;
-    acc.name = sanitize.label(this.prefs[`${prefBranch}.name`]);
     acc.username = sanitize.string(this.prefs[`${prefBranch}.userName`]);
+    acc.name = sanitize.label(this.prefs[`${prefBranch}.name`], acc.userRealname);
     if (acc instanceof EWSAccount) {
       // ewsURL from ExQuilla, and ews_url from Owl in EWS mode
       let ewsURLExQuilla = this.prefs[`${prefBranch}.ewsURL`];
@@ -133,9 +133,9 @@ export class ThunderbirdProfile {
       identity.id = "tb-" + identityID;
       let prefBranch = `mail.identity.${identityID}`;
       assert(this.prefs[`${prefBranch}.valid`] !== false, "Identity marked as invalid");
-      identity.userRealname = this.prefs[`${prefBranch}.fullName`];
-      identity.emailAddress = this.prefs[`${prefBranch}.useremail`];
-      let signatureHTML = this.prefs[`${prefBranch}.htmlSigText`];
+      identity.userRealname = sanitize.label(this.prefs[`${prefBranch}.fullName`]);
+      identity.emailAddress = sanitize.emailAddress(this.prefs[`${prefBranch}.useremail`]);
+      let signatureHTML = sanitize.string(this.prefs[`${prefBranch}.htmlSigText`], null);
       if (signatureHTML) {
         if (this.prefs[`${prefBranch}.htmlSigText`] === false) {
           signatureHTML = `<pre>${signatureHTML}</pre>`;
@@ -149,7 +149,7 @@ export class ThunderbirdProfile {
           let smtp = this.readSMTPServer(id);
           if (smtp) {
             account.outgoing = smtp as any as MailAccount & OutgoingMailAccount;
-            smtp.id = account.id + "-" + smtp.id.replace("tb-", "");
+            smtp.id = sanitize.nonemptystring(account.id + "-" + smtp.id.replace("tb-", ""));
           }
         }
       }
@@ -191,7 +191,7 @@ export class ThunderbirdProfile {
 
   static convertAuthMethod(tbValue: number): AuthMethod {
     // nsMsgSocketType <https://searchfox.org/comm-central/source/mailnews/base/public/MailNewsTypes2.idl#60>
-    return sanitize.translate(tbValue, {
+    let authMethod = sanitize.translate(tbValue, {
       0: AuthMethod.Password, // No auth at all, but let's try password
       2: AuthMethod.Password, // "old" = IMAP Login
       3: AuthMethod.Password, // Cleartext Password
@@ -203,6 +203,8 @@ export class ThunderbirdProfile {
       9: AuthMethod.Password, // anything
       10: AuthMethod.OAuth2,
     }, AuthMethod.Password);
+    assert(authMethod, "Auth method not supported");
+    return authMethod;
   }
 
   static convertPort(tbValue: number, acc: MailAccount): number {

@@ -41,12 +41,12 @@ export class IMAPEMail extends EMail {
     this.setFlagsLocal(msgInfo.flags);
     this.inReplyTo = sanitize.string(env.inReplyTo, null);
     let firstFrom = env.from && env.from[0];
-    if (firstFrom) {
+    if (firstFrom && firstFrom.address) {
       this.contact = findOrCreatePerson(sanitize.nonemptystring(firstFrom.address), sanitize.string(firstFrom.name, null));
       this.from = findOrCreatePersonEmailAddress(firstFrom.address, firstFrom.name);
     } else {
-      this.contact = findOrCreatePerson("unknown@example.com", "Unknown");
-      this.from = findOrCreatePersonEmailAddress("unknown@example.com", "Unknown");
+      this.contact = findOrCreatePerson("unknown@invalid", "Unknown");
+      this.from = findOrCreatePersonEmailAddress("unknown@invalid", "Unknown");
     }
     addPersons(this.to, env.to);
     addPersons(this.cc, env.cc);
@@ -74,23 +74,30 @@ export class IMAPEMail extends EMail {
     let mail = await new PostalMIME().parse(this.mime);
     /** TODO header.key returns Uint8Array
     for (let header of mail.headers) {
-      this.headers.set(sanitize.nonemptystring(header.key), sanitize.nonemptystring(header.value));
+      try {
+        this.headers.set(sanitize.nonemptystring(header.key), sanitize.nonemptystring(header.value));
+      } catch (ex) {
+        this.folder.account.errorCallback(ex);
+      }
     }*/
     this.text = mail.text;
-    this.html = sanitizeHTML(sanitize.string(mail.html, null));
+    let html = sanitize.string(mail.html, null);
+    if (html) {
+      this.html = sanitizeHTML(html);
+    }
     let fallbackID = 0;
     this.attachments.addAll(mail.attachments.map(a => {
       try {
         let attachment = new Attachment();
-        attachment.contentID = sanitize.nonemptystring(a.contentId, ++fallbackID);
-        attachment.mimeType = sanitize.string(a.mimeType, "application/octet-stream");
-        attachment.filename = sanitize.string(a.filename, "attachment" + fallbackID + "." + fileExtensionForMIMEType(attachment.mimeType));
+        attachment.contentID = sanitize.nonemptystring(a.contentId, "" + ++fallbackID);
+        attachment.mimeType = sanitize.nonemptystring(a.mimeType, "application/octet-stream");
+        attachment.filename = sanitize.nonemptystring(a.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(attachment.mimeType));
         attachment.disposition = sanitize.translate(a.disposition, {
           attachment: ContentDisposition.attachment,
           inline: ContentDisposition.inline,
         }, ContentDisposition.unknown);
-        attachment.related = a.related ? sanitize.boolean(a.related) : false;
-        attachment.content = new File([a.content], a.filename, { type: a.mimeType });
+        attachment.related = sanitize.boolean(a.related, false);
+        attachment.content = new File([a.content], attachment.filename, { type: attachment.mimeType });
         attachment.size = sanitize.integer(attachment.content.size, -1);
         return attachment;
       } catch (ex) {
@@ -162,5 +169,5 @@ function addPersons(targetList: ArrayColl<PersonEmailAddress>, personList: any[]
     return;
   }
   targetList.addAll(personList.map(p =>
-    findOrCreatePersonEmailAddress(sanitize.nonemptystring(p.address), sanitize.string(p.name, null))));
+    findOrCreatePersonEmailAddress(sanitize.nonemptystring(p.address, "unknown@invalid"), sanitize.string(p.name, null))));
 }
