@@ -7,6 +7,7 @@
   * All accounts - fix
   * Plaintext mail line wraps
   * Bugs
+    * msg id undefined
     * Google
       * no email subject
     * Setup mail
@@ -104,9 +105,6 @@
 * Need: App shell, for: iframe rights
 
 # Mail
-* Bugs
-  * Attachments save (double?)
-  * split()
 * Body
   * Plaintext formatting
   * HTML formatting

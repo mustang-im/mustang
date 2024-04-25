@@ -4,6 +4,7 @@
     icon={
       status == Status.Fetching ? FetchingIcon :
       status == Status.New ? NewIcon :
+      status == Status.Error ? ErrorIcon :
       status == Status.Done ? DoneIcon :
       status == Status.Login ? LoginIcon :
       DownloadIcon
@@ -24,7 +25,8 @@
   import DoneIcon from "lucide-svelte/icons/check";
   import NewIcon from "lucide-svelte/icons/sparkle";
   import LoginIcon from "lucide-svelte/icons/key-round";
-  import { catchErrors } from "../../Util/error";
+  import ErrorIcon from "lucide-svelte/icons/server-crash";
+  import { catchErrors, showError } from "../../Util/error";
   import { selectedFolder } from "../Selected";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
   import { sleep } from "../../../logic/util/util";
@@ -36,6 +38,7 @@
     Login = "login",
     Fetching = "fetching",
     New = "new",
+    Error = "error",
     Done = "done",
   };
   let status = Status.Waiting;
@@ -53,8 +56,10 @@
       await sleep(2);
       status = Status.Waiting;
     } catch (ex) {
-      status = Status.Waiting;
-      throw ex;
+      showError(ex);
+      status = Status.Error;
+      await sleep(2);
+      status = Status.Done;
     }
   }
 </script>
