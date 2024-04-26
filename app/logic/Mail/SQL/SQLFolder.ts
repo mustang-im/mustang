@@ -3,7 +3,7 @@ import type { IMAPFolder } from "../IMAP/IMAPFolder";
 import type { MailAccount } from "../MailAccount";
 import { getDatabase } from "./SQLDatabase";
 import { appGlobal } from "../../app";
-import { ArrayColl } from "svelte-collections";
+import type { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import sql from "../../../../lib/rs-sqlite";

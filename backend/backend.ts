@@ -1,6 +1,6 @@
 import JPCWebSocket from '../lib/jpc-ws';
 import { ImapFlow } from 'imapflow';
-import { Database } from "@radically-straightforward/sqlite";
+import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
 import nodemailer from 'nodemailer';
