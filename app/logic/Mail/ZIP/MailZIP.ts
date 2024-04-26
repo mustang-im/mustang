@@ -3,9 +3,7 @@ import { appGlobal } from "../../app";
 import { sanitizeFilename, assert } from "../../util/util";
 import type { Folder } from "../Folder";
 import { ArrayColl, MapColl, SetColl } from "svelte-collections";
-import { Buffer } from "buffer/"; // https://github.com/feross/buffer
-import type Zip from "adm-zip";
-import { sleep } from "matrix-js-sdk/lib/utils";
+import JSZip from "jszip";
 
 /** Save all emails of a folder in a ZIP file in the local disk filesystem.
  * Each folder has its own ZIP file, in the form `AccountID/Parent/Path/Folder Name.zip`.
@@ -20,25 +18,27 @@ export class MailZIP {
     assert(email.mime, "Need MIME source to save the email as mail.zip");
     assert(email.dbID, "Please save the email first in the database, so that we can use the dbID as filename in the as mail.zip");
     let zip = await this.getFolderZIP(email.folder);
-    // https://github.com/cthackers/adm-zip/wiki/ADM-ZIP-Introduction
-    // https://github.com/cthackers/adm-zip/wiki/ADM-ZIP
-    // TODO The whole library is synchronous. That's of course a major problem.
-    // Alternative: https://www.npmjs.com/package/cross-zip (but requires zip to be installed)
-    // We need to `await` here, because of JPC. This is particularly important here,
-    // because we're writing many emails at the same time, and each re-writes the ZIP file.
-    // Without `await`, we risk a race condition that overwrites the recently changed ZIP file.
-    await zip.addFile(email.dbID, new Buffer(email.mime), email.id);
+    // https://stuk.github.io/jszip/documentation/api_jszip.html
+    zip.file("" + email.dbID, email.mime, {
+      binary: true,
+      comment: email.id,
+      date: email.sent,
+    });
     MailZIP.writeZip(zip, email.folder.account.errorCallback);
   }
 
   /** Write the file to disk n seconds after the last call to this function */
-  static writeZip(zip: Zip, errorCallback: (ex) => void) {
-    if (zip.writeTimer) {
-      clearTimeout(zip.writeTimer);
+  static writeZip(zip: JSZip, errorCallback: (ex) => void) {
+    let zipHelper = zip as any;
+    if (zipHelper.writeTimer) {
+      clearTimeout(zipHelper.writeTimer);
     }
-    zip.writeTimer = setTimeout(async () => {
+    zipHelper.writeTimer = setTimeout(async () => {
       try {
-        await zip.writeZip();
+        let blob = await zip.generateAsync({ type: "blob" });
+        let fileHandle = zipHelper.fileHandle;
+        await fileHandle.write(new Uint8Array(await blob.arrayBuffer()));
+        await appGlobal.remoteApp.closeFile(fileHandle);
         haveZips.removeKey(haveZips.getKeyForValue(zip));
       } catch (ex) {
         errorCallback(ex);
@@ -49,12 +49,12 @@ export class MailZIP {
   static async readAll(folder: Folder): Promise<ArrayColl<EMail>> {
     let emails = new ArrayColl<EMail>();
     let zip = await this.getFolderZIP(folder);
-    let files = await zip.getEntries();
+    let files = [];
+    zip.forEach(file => files.push(file));
     for (let file of files) {
       try {
         let email = folder.newEMail();
-        email.mime = await zip.readFile(file) as Uint8Array;
-        console.log("email.mime (should be Uint8array)", email.mime);
+        email.mime = await file.async("uint8array") as Uint8Array;
         await email.parseMIME();
         await email.save();
       } catch (ex) {
@@ -64,22 +64,24 @@ export class MailZIP {
     return emails;
   }
 
-  static async getFolderZIP(folder: Folder): Promise<Zip> {
+  static async getFolderZIP(folder: Folder): Promise<JSZip> {
     let filename = await this.getFolderZIPFilePath(folder);
     let zip = haveZips.get(filename);
     if (zip) {
       return zip;
     }
-    try {
-      // Opens the existing ZIP file. Throws when the file doesn't exist.
-      zip = await appGlobal.remoteApp.newAdmZIP(filename);
-    } catch (ex) {
-      // Create a new ZIP file.
-      zip = await appGlobal.remoteApp.newAdmZIP();
-      await zip.writeZip(filename);
-      zip = await appGlobal.remoteApp.newAdmZIP(filename);
-    }
+    zip = new JSZip();
     haveZips.set(filename, zip);
+    try {
+      // open existing
+      let fileHandle = await appGlobal.remoteApp.openFile(filename, true);
+      let array = new Uint8Array();
+      await fileHandle.read(array);
+      await zip.loadAsync(array);
+      let zipHelper = zip as any;
+      zipHelper.fileHandle = fileHandle;
+    } catch (ex) {
+    }
     return zip;
   }
 
@@ -101,4 +103,4 @@ export class MailZIP {
 
 let filesDir: string | null = null;
 let haveDirs = new SetColl<string>(); // Check dir only once per app session
-let haveZips = new MapColl<string, Zip>(); // Currently open ZIP files
+let haveZips = new MapColl<string, JSZip>(); // Currently open ZIP files
