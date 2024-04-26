@@ -119,7 +119,7 @@
     if (ex instanceof Cancelled) {
       reset();
     } else {
-      step = Step.FoundConfig;
+      step = config?.source == "manual" ? Step.ManualConfig : Step.FoundConfig;
       showError(ex);
     }
   }
