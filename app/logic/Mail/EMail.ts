@@ -1,11 +1,16 @@
 import { Message } from "../Abstract/Message";
-import type { Attachment } from "./Attachment";
 import { type Folder, SpecialFolder } from "./Folder";
 import type { Person } from "../Abstract/Person";
+import { Attachment, ContentDisposition } from "./Attachment";
+import { RawFilesAttachment } from "./RawFiles/RawFilesAttachment";
+import { SQLEMail } from "./SQL/SQLEMail";
+import { sanitizeHTML } from "../util/convertHTML";
 import { appGlobal } from "../app";
-import { assert } from "../util/util";
+import { fileExtensionForMIMEType, assert } from "../util/util";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, MapColl } from "svelte-collections";
+import PostalMIME from "postal-mime";
 
 export class EMail extends Message {
   @notifyChangedProperty
@@ -71,6 +76,65 @@ export class EMail extends Message {
 
   async deleteMessage() {
     this.folder.messages.remove(this);
+  }
+
+  async parseMIME() {
+    //console.log("MIME source", this.mime, new TextDecoder("utf-8").decode(this.mime));
+    assert(this.mime?.length, "MIME source not yet downloaded");
+    assert(this.mime instanceof Uint8Array, "MIME source should be a byte array");
+    let mail = await new PostalMIME().parse(this.mime);
+    /** TODO header.key returns Uint8Array
+    for (let header of mail.headers) {
+      try {
+        this.headers.set(sanitize.nonemptystring(header.key), sanitize.nonemptystring(header.value));
+      } catch (ex) {
+        this.folder.account.errorCallback(ex);
+      }
+    }*/
+    this.text = mail.text;
+    let html = sanitize.string(mail.html, null);
+    if (html) {
+      this.html = sanitizeHTML(html);
+    }
+    let fallbackID = 0;
+    this.attachments.addAll(mail.attachments.map(a => {
+      try {
+        let attachment = new Attachment();
+        attachment.contentID = sanitize.nonemptystring(a.contentId, "" + ++fallbackID);
+        attachment.mimeType = sanitize.nonemptystring(a.mimeType, "application/octet-stream");
+        attachment.filename = sanitize.nonemptystring(a.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(attachment.mimeType));
+        attachment.disposition = sanitize.translate(a.disposition, {
+          attachment: ContentDisposition.attachment,
+          inline: ContentDisposition.inline,
+        }, ContentDisposition.unknown);
+        attachment.related = sanitize.boolean(a.related, false);
+        attachment.content = new File([a.content], attachment.filename, { type: attachment.mimeType });
+        attachment.size = sanitize.integer(attachment.content.size, -1);
+        return attachment;
+      } catch (ex) {
+        this.folder.account.errorCallback(ex);
+      }
+    }).filter(attachment => !!attachment));
+
+    await this.save();
+  }
+
+  /**
+   * Saves the email
+   * 1. in the database (meta-data, body text)
+   * 2. attachments as raw files
+   * 3. the MIME source as mail.zip
+   *
+   * Do this only exactly once per email `dbID`. */
+  protected async save() {
+    assert(!this.downloadComplete, `Already saved this email (dbID ${this.dbID})`);
+    await SQLEMail.save(this);
+    if (this.attachments.hasItems) {
+      await Promise.all(this.attachments.contents.map(a =>
+        RawFilesAttachment.save(a, this)));
+      await RawFilesAttachment.emailFinished(this);
+    }
+    this.downloadComplete = true;
   }
 
   quotePrefixLine(): string {
