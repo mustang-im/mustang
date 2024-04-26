@@ -7,6 +7,14 @@ let configDir: string = null;
 
 /** Save email attachments as files in the local disk filesystem */
 export class RawFilesAttachment {
+  static async saveEMail(email: EMail) {
+    if (email.attachments.hasItems) {
+      await Promise.all(email.attachments.contents.map(a =>
+        RawFilesAttachment.save(a, email)));
+      await RawFilesAttachment.emailFinished(email);
+    }
+  }
+
   static async save(attachment: Attachment, email: EMail) {
     if (!attachment.content) {
       return;

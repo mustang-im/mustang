@@ -170,11 +170,7 @@ export class EMail extends Message {
     }
     assert(!this.downloadComplete, `Already saved this email (dbID ${this.dbID})`);
     await SQLEMail.save(this);
-    if (this.attachments.hasItems) {
-      await Promise.all(this.attachments.contents.map(a =>
-        RawFilesAttachment.save(a, this)));
-      await RawFilesAttachment.emailFinished(this);
-    }
+    await RawFilesAttachment.saveEMail(this);
     this.downloadComplete = true;
   }
 
