@@ -4,6 +4,7 @@ import type { Person } from "../Abstract/Person";
 import { Attachment, ContentDisposition } from "./Attachment";
 import { RawFilesAttachment } from "./RawFiles/RawFilesAttachment";
 import { SQLEMail } from "./SQL/SQLEMail";
+import { MailZIP } from "./ZIP/MailZIP";
 import { findOrCreatePerson, findOrCreatePersonEmailAddress } from "./Person";
 import { sanitizeHTML } from "../util/convertHTML";
 import { appGlobal } from "../app";
@@ -170,8 +171,10 @@ export class EMail extends Message {
     }
     assert(!this.downloadComplete, `Already saved this email (dbID ${this.dbID})`);
     await SQLEMail.save(this);
+    await MailZIP.save(this);
     await RawFilesAttachment.saveEMail(this);
     this.downloadComplete = true;
+    await SQLEMail.saveWritableProps(this);
   }
 
   quotePrefixLine(): string {

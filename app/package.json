@@ -29,6 +29,7 @@
     "@xmpp-plugins/roster": "^1.2.0",
     "@xmpp/client": "^0.13.1",
     "axios": "^1.6.2",
+    "buffer": "^6.0.3",
     "ini": "^4.1.2",
     "insane": "^2.6.2",
     "lodash": "^4.17.21",
@@ -47,6 +48,7 @@
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.3",
     "@tsconfig/svelte": "^3.0.0",
+    "adm-zip": "^0.5.12",
     "simple-svelte-autocomplete": "^2.5.2",
     "svelte": "^3.55.1",
     "svelte-check": "^2.10.3",

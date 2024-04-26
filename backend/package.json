@@ -8,6 +8,7 @@
   "dependencies": {
     "@radically-straightforward/sqlite": "^1.0.0",
     "@types/nodemailer": "^6.4.14",
+    "adm-zip": "^0.5.12",
     "bufferutil": "^4.0.8",
     "imapflow": "^1.0.155",
     "ky": "^1.2.3",
