@@ -124,7 +124,7 @@ export enum AuthMethod {
   NTLM = 6,
 }
 
-export type ConfigSource = "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | null;
+export type ConfigSource = "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | "manual" | null;
 
 export interface OutgoingMailAccount {
   send(email: EMail): Promise<void>;

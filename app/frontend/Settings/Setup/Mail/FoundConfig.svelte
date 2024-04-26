@@ -2,7 +2,7 @@
   <CheckIcon slot="icon" />
 </StatusMessage>
 
-{#if altConfigs.length == 1}
+{#if !altConfigs || altConfigs.length == 1}
   <hbox class="display single">
     <DisplayConfig {config} />
   </hbox>
