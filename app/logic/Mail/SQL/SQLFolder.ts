@@ -17,7 +17,7 @@ export class SQLFolder extends Folder {
         FROM folder
         WHERE
           path = ${folder.path} AND
-          accountID = ${folder.account.id}
+          accountID = ${folder.account.dbID}
         `) as any;
       if (existing?.id) {
         folder.dbID = existing.id;
