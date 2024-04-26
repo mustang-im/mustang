@@ -1,14 +1,10 @@
 import { EMail, PersonEmailAddress } from "../EMail";
 import type { IMAPFolder } from "./IMAPFolder";
 import { findOrCreatePerson, findOrCreatePersonEmailAddress } from "../Person";
-import { Attachment, ContentDisposition } from "../Attachment";
-import { RawFilesAttachment } from "../RawFiles/RawFilesAttachment";
 import { SQLEMail } from "../SQL/SQLEMail";
-import { sanitizeHTML } from "../../util/convertHTML";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, fileExtensionForMIMEType } from "../../util/util";
+import { assert } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
-import PostalMIME from "postal-mime";
 
 export class IMAPEMail extends EMail {
   folder: IMAPFolder;
@@ -65,56 +61,6 @@ export class IMAPEMail extends EMail {
     this.isReplied = flags.has("\\Answered");
     this.isSpam = flags.has("\\Junk");
     this.isDraft = flags.has("\\Draft");
-  }
-
-  async parseMIME() {
-    //console.log("MIME source", this.mime, new TextDecoder("utf-8").decode(this.mime));
-    assert(this.mime?.length, "MIME source not yet downloaded");
-    assert(this.mime instanceof Uint8Array, "MIME source should be a byte array");
-    let mail = await new PostalMIME().parse(this.mime);
-    /** TODO header.key returns Uint8Array
-    for (let header of mail.headers) {
-      try {
-        this.headers.set(sanitize.nonemptystring(header.key), sanitize.nonemptystring(header.value));
-      } catch (ex) {
-        this.folder.account.errorCallback(ex);
-      }
-    }*/
-    this.text = mail.text;
-    let html = sanitize.string(mail.html, null);
-    if (html) {
-      this.html = sanitizeHTML(html);
-    }
-    let fallbackID = 0;
-    this.attachments.addAll(mail.attachments.map(a => {
-      try {
-        let attachment = new Attachment();
-        attachment.contentID = sanitize.nonemptystring(a.contentId, "" + ++fallbackID);
-        attachment.mimeType = sanitize.nonemptystring(a.mimeType, "application/octet-stream");
-        attachment.filename = sanitize.nonemptystring(a.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(attachment.mimeType));
-        attachment.disposition = sanitize.translate(a.disposition, {
-          attachment: ContentDisposition.attachment,
-          inline: ContentDisposition.inline,
-        }, ContentDisposition.unknown);
-        attachment.related = sanitize.boolean(a.related, false);
-        attachment.content = new File([a.content], attachment.filename, { type: attachment.mimeType });
-        attachment.size = sanitize.integer(attachment.content.size, -1);
-        return attachment;
-      } catch (ex) {
-        this.folder.account.errorCallback(ex);
-      }
-    }).filter(attachment => !!attachment));
-
-    // Save
-    await SQLEMail.save(this);
-    if (this.attachments.hasItems) {
-      await Promise.all(this.attachments.contents.map(a =>
-        RawFilesAttachment.save(a, this)));
-      await RawFilesAttachment.emailFinished(this);
-    }
-    //console.log("imapflow mail", mail, "text", mail.text, "html", mail.html);
-    //console.log("IMAPEMail", this, "text", this.text, "html", this.html);
-    this.downloadComplete = true;
   }
 
   async markRead(read = true) {
