@@ -172,9 +172,9 @@
         newIndex -= showRows;
       }
       if (newIndex < 0) {
-        newIndex += items.length;
+        newIndex = 0;
       } else if (newIndex >= items.length) {
-        newIndex -= items.length;
+        newIndex = items.length - 1;
       }
       let newElement = items.getIndex(newIndex);
       if (!newElement) {
@@ -225,31 +225,31 @@
     scrollPos = Math.round(scrollbarE.scrollTop / rowHeight); // TODO ceil()?
   }
 
-  function onSelectElement(selectedItem, event: MouseEvent) {
+  function onSelectElement(clickedItem, event: MouseEvent) {
     if (event.shiftKey) { // select whole range
       let firstItem = selectedItems.first;
-      let inRange = false;
-      for (let item of items) {
-        if (inRange) {
-          selectedItems.add(item);
-        }
-        if (item == firstItem) {
-          inRange = true;
-          // firstItem is already in selectedItems, so don't re-add it in this loop
-        }
-        if (item == selectedItem) {
-          inRange = false;
-        }
-      };
+      let lastItem = clickedItem;
+      let itemsArray = new ArrayColl(items);
+      let firstItemIndex = itemsArray.getKeyForValue(firstItem);
+      let lastItemIndex = itemsArray.getKeyForValue(lastItem);
+      selectedItems.clear();
+      selectedItems.add(firstItem); // Should stay first, to be the anchor for later operations
+      if (firstItemIndex == lastItemIndex) {
+        // Only this
+      } else if (firstItemIndex < lastItemIndex) {
+        selectedItems.addAll(itemsArray.getIndexRange(firstItemIndex + 1, lastItemIndex - firstItemIndex));
+      } else { // User selected bottom -> top
+        selectedItems.addAll(itemsArray.getIndexRange(lastItemIndex, firstItemIndex - lastItemIndex));
+      }
     } else if (event.ctrlKey) { // add to current selection
-      if (selectedItems.contains(selectedItem)) {
-        selectedItems.remove(selectedItem);
+      if (selectedItems.contains(clickedItem)) {
+        selectedItems.remove(clickedItem);
       } else {
-        selectedItems.add(selectedItem);
+        selectedItems.add(clickedItem);
       }
     } else { // no modifier, i.e. a simple single-selection click
       selectedItems.clear();
-      selectedItems.add(selectedItem);
+      selectedItems.add(clickedItem);
     }
   }
 
