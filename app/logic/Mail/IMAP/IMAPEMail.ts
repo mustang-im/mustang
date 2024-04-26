@@ -1,10 +1,8 @@
-import { EMail, PersonEmailAddress } from "../EMail";
-import type { IMAPFolder } from "./IMAPFolder";
+import { EMail, setPersons } from "../EMail";
 import { findOrCreatePerson, findOrCreatePersonEmailAddress } from "../Person";
-import { SQLEMail } from "../SQL/SQLEMail";
+import type { IMAPFolder } from "./IMAPFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
-import type { ArrayColl } from "svelte-collections";
 
 export class IMAPEMail extends EMail {
   folder: IMAPFolder;
@@ -36,17 +34,17 @@ export class IMAPEMail extends EMail {
     this.received = new Date();
     this.setFlagsLocal(msgInfo.flags);
     this.inReplyTo = sanitize.string(env.inReplyTo, null);
-    let firstFrom = env.from && env.from[0];
-    if (firstFrom && firstFrom.address) {
-      this.contact = findOrCreatePerson(sanitize.nonemptystring(firstFrom.address), sanitize.string(firstFrom.name, null));
-      this.from = findOrCreatePersonEmailAddress(firstFrom.address, firstFrom.name);
+    if (env.from?.length && env.from[0]?.address) {
+      let firstFrom = env.from[0];
+      this.contact = findOrCreatePerson(sanitize.nonemptystring(firstFrom.address), sanitize.label(firstFrom.name, null));
+      this.from = findOrCreatePersonEmailAddress(sanitize.nonemptystring(firstFrom.address), sanitize.label(firstFrom.name, null));
     } else {
       this.contact = findOrCreatePerson("unknown@invalid", "Unknown");
       this.from = findOrCreatePersonEmailAddress("unknown@invalid", "Unknown");
     }
-    addPersons(this.to, env.to);
-    addPersons(this.cc, env.cc);
-    addPersons(this.bcc, env.bcc);
+    setPersons(this.to, env.to);
+    setPersons(this.cc, env.cc);
+    setPersons(this.bcc, env.bcc);
     assert(!msgInfo.source || msgInfo.source instanceof Uint8Array, "MIME source needs to be a buffer");
     this.mime = msgInfo.source;
   }
@@ -106,17 +104,8 @@ export class IMAPEMail extends EMail {
 
   async deleteMessage() {
     await super.deleteMessage();
-    await SQLEMail.deleteIt(this);
     await this.folder.runCommand(async (conn) => {
       await conn.messageDelete(this.uid, { uid: true });
     });
   }
-}
-
-function addPersons(targetList: ArrayColl<PersonEmailAddress>, personList: any[]): void {
-  if (!personList?.length) {
-    return;
-  }
-  targetList.addAll(personList.map(p =>
-    findOrCreatePersonEmailAddress(sanitize.nonemptystring(p.address, "unknown@invalid"), sanitize.string(p.name, null))));
 }

@@ -4,6 +4,7 @@ import type { Person } from "../Abstract/Person";
 import { Attachment, ContentDisposition } from "./Attachment";
 import { RawFilesAttachment } from "./RawFiles/RawFilesAttachment";
 import { SQLEMail } from "./SQL/SQLEMail";
+import { findOrCreatePerson, findOrCreatePersonEmailAddress } from "./Person";
 import { sanitizeHTML } from "../util/convertHTML";
 import { appGlobal } from "../app";
 import { fileExtensionForMIMEType, assert } from "../util/util";
@@ -27,6 +28,11 @@ export class EMail extends Message {
   /** Size of full RFC822 MIME message, in bytes */
   @notifyChangedProperty
   size: number;
+  /** List of parent message IDs, starting with top level and ending with direct parent.
+   * The last entry should theoretically match `inReplyTo`. */
+  @notifyChangedProperty
+  references: string[] | null = null;
+
   /** This is a Junk message */
   @notifyChangedProperty
   isSpam = false;
@@ -76,6 +82,7 @@ export class EMail extends Message {
 
   async deleteMessage() {
     this.folder.messages.remove(this);
+    await SQLEMail.deleteIt(this);
   }
 
   async parseMIME() {
@@ -83,6 +90,8 @@ export class EMail extends Message {
     assert(this.mime?.length, "MIME source not yet downloaded");
     assert(this.mime instanceof Uint8Array, "MIME source should be a byte array");
     let mail = await new PostalMIME().parse(this.mime);
+
+    // Headers
     /** TODO header.key returns Uint8Array
     for (let header of mail.headers) {
       try {
@@ -91,11 +100,41 @@ export class EMail extends Message {
         this.folder.account.errorCallback(ex);
       }
     }*/
+
+    if (!this.id || !this.subject || !this.from || !this.sent) {
+      this.id = sanitize.string(mail.messageId, this.id ?? "");
+      this.subject = sanitize.string(mail.subject, this.subject ?? "");
+      this.sent = sanitize.date(mail.date, this.sent ?? new Date());
+      if (mail.from?.address) {
+        this.contact = findOrCreatePerson(sanitize.nonemptystring(mail.from.address), sanitize.label(mail.from.name, null));
+        this.from = findOrCreatePersonEmailAddress(sanitize.nonemptystring(mail.from.address), sanitize.label(mail.from.name, null));
+      } else {
+        this.contact = findOrCreatePerson("unknown@invalid", "Unknown");
+        this.from = findOrCreatePersonEmailAddress("unknown@invalid", "Unknown");
+      }
+    }
+    if (this.to.isEmpty) {
+      setPersons(this.to, mail.to);
+      setPersons(this.cc, mail.cc);
+      setPersons(this.bcc, mail.bcc);
+    }
+    if (!this.replyTo && mail.replyTo?.length) {
+      let p = mail.replyTo[0];
+      this.replyTo = findOrCreatePersonEmailAddress(sanitize.nonemptystring(p.address, "unknown@invalid"), sanitize.label(p.name, null));
+    }
+    if (!this.inReplyTo) {
+      this.inReplyTo = sanitize.string(mail.inReplyTo, null);
+    }
+    this.references = sanitize.string(mail.references, null)?.split(" ");
+
+    // Body
     this.text = mail.text;
     let html = sanitize.string(mail.html, null);
     if (html) {
       this.html = sanitizeHTML(html);
     }
+
+    // Attachments
     let fallbackID = 0;
     this.attachments.addAll(mail.attachments.map(a => {
       try {
@@ -210,4 +249,13 @@ export class PersonEmailAddress {
     pe.person = person;
     return pe;
   }
+}
+
+export function setPersons(targetList: ArrayColl<PersonEmailAddress>, personList: { address: string, name: string }[]): void {
+  targetList.clear();
+  if (!personList?.length) {
+    return;
+  }
+  targetList.addAll(personList.map(p =>
+    findOrCreatePersonEmailAddress(sanitize.nonemptystring(p.address, "unknown@invalid"), sanitize.label(p.name, null))));
 }
