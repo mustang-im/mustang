@@ -86,9 +86,9 @@ export class EMail extends Message {
   }
 
   async parseMIME() {
-    //console.log("MIME source", this.mime, new TextDecoder("utf-8").decode(this.mime));
     assert(this.mime?.length, "MIME source not yet downloaded");
     assert(this.mime instanceof Uint8Array, "MIME source should be a byte array");
+    //console.log("MIME source", this.mime, new TextDecoder("utf-8").decode(this.mime));
     let mail = await new PostalMIME().parse(this.mime);
 
     // Headers
@@ -154,8 +154,6 @@ export class EMail extends Message {
         this.folder.account.errorCallback(ex);
       }
     }).filter(attachment => !!attachment));
-
-    await this.save();
   }
 
   /**
@@ -164,8 +162,12 @@ export class EMail extends Message {
    * 2. attachments as raw files
    * 3. the MIME source as mail.zip
    *
-   * Do this only exactly once per email `dbID`. */
-  protected async save() {
+   * Do this only exactly once per email `dbID`.
+   * This typically happens immediately after`parseMIME()`. */
+  async save() {
+    if (this.downloadComplete) {
+      return;
+    }
     assert(!this.downloadComplete, `Already saved this email (dbID ${this.dbID})`);
     await SQLEMail.save(this);
     if (this.attachments.hasItems) {
