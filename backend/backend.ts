@@ -1,6 +1,7 @@
 import JPCWebSocket from '../lib/jpc-ws';
 import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite";
+import Zip from "adm-zip";
 import ky from 'ky';
 import nodemailer from 'nodemailer';
 import path from "node:path";
@@ -28,6 +29,7 @@ async function createSharedAppObject() {
     getSQLiteDatabase,
     sendMailNodemailer,
     verifyServerNodemailer,
+    newAdmZIP,
     openFile,
     closeFile,
     fs: fsPromises,
@@ -143,6 +145,10 @@ async function sendMailNodemailer(transport, mail) {
 async function verifyServerNodemailer(transport) {
   let transporter = nodemailer.createTransport(transport);
   await transporter.verify();
+}
+
+function newAdmZIP(filepath: string) {
+  return new Zip(filepath);
 }
 
 const kAppDir = "Mustang";
