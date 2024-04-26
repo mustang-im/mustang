@@ -1,8 +1,10 @@
 import { EMail } from '../EMail';
-import { Folder } from '../Folder';
+import { Folder, SpecialFolder } from '../Folder';
 import { SQLMailAccount } from './SQLMailAccount';
 import { SQLEMail } from './SQLEMail';
 import { SQLFolder } from './SQLFolder';
+import { SQLSearchEMail } from './SQLSearchEMail';
+import { readMailAccounts } from '../AccountsList/SQL';
 import { fakeChatPerson, fakeMailAccount, fakePersons } from '../../testData';
 import { makeTestDatabase } from './SQLDatabase';
 import { connectToBackend } from '../../../test/logic/util/backend.test';
@@ -100,4 +102,13 @@ test("Save and read mails from SQL database", { timeout: 10000 }, async () => {
       }
     }
   }
+});
+
+test.skip("Search mails in SQL database", { timeout: 1000 }, async () => {
+  let accounts = await readMailAccounts();
+  let folder = accounts.first.getSpecialFolder(SpecialFolder.Inbox);
+  let search = new SQLSearchEMail();
+  search.folder = folder;
+  let messages = await search.startSearch();
+  expect(messages.length).toBeGreaterThan(0);
 });
