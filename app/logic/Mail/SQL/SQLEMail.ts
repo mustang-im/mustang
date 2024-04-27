@@ -140,7 +140,7 @@ export class SQLEMail {
       WHERE emailID = ${email.dbID}
         AND filename = ${a.filename}
         AND contentID = ${a.contentID}
-      )`);
+      `);
   }
 
   static async read(dbID: number, email: EMail): Promise<EMail> {

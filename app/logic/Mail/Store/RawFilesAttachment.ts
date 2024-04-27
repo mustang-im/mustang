@@ -35,9 +35,8 @@ export class RawFilesAttachment {
    * attachment files. */
   static async emailFinished(email: EMail): Promise<void> {
     let dir = await this.getDirPath(email);
-    let fs = await appGlobal.remoteApp.fs;
     // Permissions: Only user can list and read files, but not remove them
-    await fs.chmod(dir, 0o500);
+    await appGlobal.remoteApp.fs.chmod(dir, 0o500);
   }
 
   static async read(attachment: Attachment, email: EMail): Promise<File> {
@@ -61,9 +60,8 @@ export class RawFilesAttachment {
 
   static async getFilePath(attachment: Attachment, email: EMail): Promise<string> {
     let dir = await this.getDirPath(email);
-    let fs = await appGlobal.remoteApp.fs;
     // Permissions: Only user can read and write the dir. Permissions later changed in `emailFinished()`
-    await fs.mkdir(dir, { recursive: true, mode: 0o700 });
+    await appGlobal.remoteApp.fs.mkdir(dir, { recursive: true, mode: 0o700 });
     return `${dir}/${sanitizeFilename(attachment.filename)}`;
   }
 

@@ -89,9 +89,8 @@ export class MailZIP {
       dir += `/${sanitizeFilename(folder.parent.path)}`;
     }
     if (!haveDirs.contains(dir)) {
-      let fs = await appGlobal.remoteApp.fs;
       // Permissions: Only user can read and write the dir.
-      await fs.mkdir(dir, { recursive: true, mode: 0o700 });
+      await appGlobal.remoteApp.fs.mkdir(dir, { recursive: true, mode: 0o700 });
       haveDirs.add(dir);
     }
     return `${dir}/${sanitizeFilename(folder.name)}.zip`;
