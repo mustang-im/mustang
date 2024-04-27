@@ -22,17 +22,19 @@
 <MeetBackground />
 
 <script lang="ts">
-  import { mustangApps, selectedApp, sidebarApp } from "../AppsBar/selectedApp";
+  import { selectedApp, sidebarApp, mustangApps, openApp } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import { getStartObjects, loginOnStartup } from "../../logic/startup";
   import { loadMustangApps } from "../AppsBar/loadMustangApps";
+  import { meetMustangApp } from "../Meet/MeetMustangApp";
+  import { SetupMustangApp } from "../Settings/Setup/SetupMustangApp";
   import AppBar from "../AppsBar/AppBar.svelte";
   import AppContent from "../AppsBar/AppContent.svelte";
   import NotificationBar from "./NotificationBar.svelte";
   import WindowHeader from "./WindowHeader.svelte";
   import Splitter from "../Shared/Splitter.svelte";
   import MeetBackground from "../Meet/MeetBackground.svelte";
-  import { meetMustangApp } from "../Meet/MeetMustangApp";
+  import SetupMail from "../Settings/Setup/Mail/SetupMail.svelte";
   import { catchErrors, backgroundError } from "../Util/error";
   import { onMount } from "svelte";
 
@@ -40,14 +42,26 @@
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;
   $: sidebar = $sidebarApp?.sidebar;
 
-  onMount(() => catchErrors(async () => {
+  onMount(() => catchErrors(startup));
+
+  async function startup() {
     loadMustangApps();
     if (appGlobal.persons.hasItems) {
       return;
     }
     await getStartObjects();
-    await loginOnStartup(backgroundError);
-  }));
+    if (appGlobal.emailAccounts.isEmpty && appGlobal.chatAccounts.isEmpty) {
+      setup();
+    } else {
+      await loginOnStartup(backgroundError);
+    }
+  }
+
+  function setup() {
+    let setupApp = new SetupMustangApp();
+    setupApp.mainWindow = SetupMail;
+    openApp(setupApp);
+  }
 </script>
 
 <style>
