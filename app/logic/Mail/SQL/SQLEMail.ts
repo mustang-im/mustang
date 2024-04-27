@@ -139,6 +139,7 @@ export class SQLEMail {
         filepathLocal = ${a.filepathLocal}
       WHERE emailID = ${email.dbID}
         AND filename = ${a.filename}
+        AND contentID = ${a.contentID}
       )`);
   }
 

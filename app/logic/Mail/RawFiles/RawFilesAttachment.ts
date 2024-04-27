@@ -2,12 +2,14 @@ import type { Attachment } from "../Attachment";
 import type { EMail } from "../EMail";
 import { appGlobal } from "../../app";
 import { sanitizeFilename } from "../../util/util";
+import { SQLEMail } from "../SQL/SQLEMail";
 
 let configDir: string = null;
 
 /** Save email attachments as files in the local disk filesystem */
 export class RawFilesAttachment {
   static async saveEMail(email: EMail) {
+    await RawFilesAttachment.rmdirWithFiles(await this.getDirPath(email));
     if (email.attachments.hasItems) {
       await Promise.all(email.attachments.contents.map(a =>
         RawFilesAttachment.save(a, email)));
@@ -25,6 +27,7 @@ export class RawFilesAttachment {
     await fileHandle.write(new Uint8Array(await attachment.content.arrayBuffer()));
     await appGlobal.remoteApp.closeFile(fileHandle);
     attachment.filepathLocal = filepath;
+    await SQLEMail.saveAttachmentFile(email, attachment);
   }
 
   /** Call this when you finished writing all attachments for this email.
@@ -46,6 +49,14 @@ export class RawFilesAttachment {
     let file = new File([array], attachment.filename, { type: attachment.mimeType });
     attachment.content = file;
     return file;
+  }
+
+  static async rmdirWithFiles(dir: string) {
+    let files = await appGlobal.remoteApp.fs.readdir(dir);
+    for (let file of files) {
+      await appGlobal.remoteApp.fs.rm(dir + "/" + file);
+    }
+    await appGlobal.remoteApp.fs.rmdir(dir);
   }
 
   static async getFilePath(attachment: Attachment, email: EMail): Promise<string> {
