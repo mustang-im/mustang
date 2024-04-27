@@ -9,7 +9,7 @@ let configDir: string = null;
 /** Save email attachments as files in the local disk filesystem */
 export class RawFilesAttachment {
   static async saveEMail(email: EMail) {
-    await RawFilesAttachment.rmdirWithFiles(await this.getDirPath(email));
+    //await RawFilesAttachment.rmdirWithFiles(await this.getDirPath(email));
     if (email.attachments.hasItems) {
       await Promise.all(email.attachments.contents.map(a =>
         RawFilesAttachment.save(a, email)));

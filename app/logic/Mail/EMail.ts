@@ -174,7 +174,7 @@ export class EMail extends Message {
     await SQLEMail.save(this);
     await MailZIP.save(this);
     await MailDir.save(this);
-    //await RawFilesAttachment.saveEMail(this);
+    await RawFilesAttachment.saveEMail(this);
     this.downloadComplete = true;
     await SQLEMail.saveWritableProps(this);
   }
