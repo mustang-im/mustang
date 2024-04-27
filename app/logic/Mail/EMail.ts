@@ -5,6 +5,7 @@ import { Attachment, ContentDisposition } from "./Attachment";
 import { RawFilesAttachment } from "./Store/RawFilesAttachment";
 import { SQLEMail } from "./SQL/SQLEMail";
 import { MailZIP } from "./Store/MailZIP";
+import { MailDir } from "./Store/MailDir";
 import { findOrCreatePerson, findOrCreatePersonEmailAddress } from "./Person";
 import { sanitizeHTML } from "../util/convertHTML";
 import { appGlobal } from "../app";
@@ -171,8 +172,9 @@ export class EMail extends Message {
     }
     assert(!this.downloadComplete, `Already saved this email (dbID ${this.dbID})`);
     await SQLEMail.save(this);
-    //await MailZIP.save(this);
-    await RawFilesAttachment.saveEMail(this);
+    await MailZIP.save(this);
+    await MailDir.save(this);
+    //await RawFilesAttachment.saveEMail(this);
     this.downloadComplete = true;
     await SQLEMail.saveWritableProps(this);
   }
