@@ -5,7 +5,6 @@ import type { Folder } from "../Folder";
 import { ArrayColl, MapColl, SetColl } from "svelte-collections";
 import { Buffer } from "buffer/"; // https://github.com/feross/buffer
 import type Zip from "adm-zip";
-import { sleep } from "matrix-js-sdk/lib/utils";
 
 /** Save all emails of a folder in a ZIP file in the local disk filesystem.
  * Each folder has its own ZIP file, in the form `AccountID/Parent/Path/Folder Name.zip`.
@@ -27,7 +26,7 @@ export class MailZIP {
     // We need to `await` here, because of JPC. This is particularly important here,
     // because we're writing many emails at the same time, and each re-writes the ZIP file.
     // Without `await`, we risk a race condition that overwrites the recently changed ZIP file.
-    await zip.addFile(email.dbID, new Buffer(email.mime), email.id);
+    await zip.addFile(email.dbID + "", Buffer.from(email.mime), email.id);
     MailZIP.writeZip(zip, email.folder.account.errorCallback);
   }
 
