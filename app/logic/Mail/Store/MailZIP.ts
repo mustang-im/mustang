@@ -10,7 +10,7 @@ import type Zip from "adm-zip";
  * Each folder has its own ZIP file, in the form `AccountID/Parent/Path/Folder Name.zip`.
  * Each email is saved as original RFC822 MIME message,
  * one file inside the ZIP per email.
- * The email filename inside the ZIP is the unique `dbID` of the email.
+ * The email filename inside the ZIP is the unique `dbID` of the email, with ".eml" ext.
  * The email file comment in the ZIP is the RFC822 `Message-ID`.
  * (It's also an option to use the msgID as filename, but mailing lists are terrible
  * and rewrite messages in various ways, but keep the msgID...) */
@@ -26,7 +26,7 @@ export class MailZIP {
     // We need to `await` here, because of JPC. This is particularly important here,
     // because we're writing many emails at the same time, and each re-writes the ZIP file.
     // Without `await`, we risk a race condition that overwrites the recently changed ZIP file.
-    await zip.addFile(email.dbID + "", Buffer.from(email.mime), email.id);
+    await zip.addFile(email.dbID + ".eml", Buffer.from(email.mime), email.id);
     MailZIP.writeZip(zip, email.folder.account.errorCallback);
   }
 
