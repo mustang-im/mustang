@@ -43,7 +43,7 @@ export class MailDir {
 
   static async getFolderDir(folder: Folder): Promise<string> {
     filesDir = filesDir ?? await appGlobal.remoteApp.getFilesDir();
-    let dir = `${filesDir}/backup/email/${sanitizeFilename(folder.account.emailAddress.replace("@", "-"))}-${sanitizeFilename(folder.account.id)}`;
+    let dir = `${filesDir}/backup/email/individual/${sanitizeFilename(folder.account.emailAddress.replace("@", "-"))}-${sanitizeFilename(folder.account.id)}`;
     if (folder.parent) {
       dir += `/${sanitizeFilename(folder.parent.path)}`;
     }
