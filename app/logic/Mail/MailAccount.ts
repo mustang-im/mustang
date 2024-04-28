@@ -76,7 +76,7 @@ export class MailAccount extends Account {
   }
 
   /** Get the `specialFolder` in this account. */
-  getSpecialFolder(specialFolder: SpecialFolder) {
+  getSpecialFolder(specialFolder: SpecialFolder): Folder {
     let folder = this.getAllFolders().find(folder => folder.specialFolder == specialFolder);
     if (folder) {
       return folder;

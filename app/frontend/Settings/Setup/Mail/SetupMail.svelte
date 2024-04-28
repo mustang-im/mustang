@@ -51,10 +51,11 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
-  import { fillConfig, saveConfig } from "../../../../logic/Mail/AutoConfig/saveConfig";
+  import { saveConfig, fillConfig, getFirstMessages } from "../../../../logic/Mail/AutoConfig/saveConfig";
   import { makeManualConfig } from "../../../../logic/Mail/AutoConfig/manualConfig";
   import { openApp } from "../../../AppsBar/selectedApp";
   import { mailMustangApp } from "../../../Mail/MailMustangApp";
+  import { Cancelled } from "../../../../logic/util/Abortable";
   import EmailAddressPassword from "./EmailAddressPassword.svelte";
   import FindConfig from "./FindConfig.svelte";
   import FoundConfig from "./FoundConfig.svelte";
@@ -66,10 +67,9 @@
   import ButtonsBottom from "../ButtonsBottom.svelte";
   import Button from "../../../Shared/Button.svelte";
   import BackgroundVideo from "../BackgroundVideo.svelte";
+  import { backgroundError, catchErrors } from "../../../Util/error";
   import { NotReached } from "../../../../logic/util/util";
   import type { ArrayColl } from "svelte-collections";
-  import { Cancelled } from "../../../../logic/util/Abortable";
-  import { catchErrors } from "../../../Util/error";
 
   let emailAddress: string;
   let password: string;
@@ -178,6 +178,7 @@
     config = null;
     altConfigs?.clear();
     errorMessage = null;
+    isSaving = false;
     step = Step.EmailAddress;
   }
 
@@ -203,9 +204,15 @@
     errorGravity = ErrorGravity.OK;
   }
 
+  let isSaving = false;
   async function onSave() {
+    if (isSaving) { // Don't run twice, e.g. when user clicks the button twice or in case of errors
+      return;
+    }
+    isSaving = true;
     await saveConfig(config, emailAddress, password);
     await config.login(true);
+    getFirstMessages(config).catch(backgroundError);
     onClose();
   }
 
