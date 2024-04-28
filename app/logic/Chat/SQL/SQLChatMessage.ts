@@ -43,7 +43,7 @@ export class SQLChatMessage {
         ) VALUES (
           ${msg.outgoing ? 1 : 0}, ${msg.contact.dbID}, ${msg.inReplyTo},
           ${msg.sent.getTime() / 1000}, ${msg.received.getTime() / 1000},
-          ${msg.text}, ${msg.html}, ${reactionsJSON},
+          ${msg.text}, ${msg.rawHTMLDangerous}, ${reactionsJSON},
           ${msg.to.dbID}, ${msg.id}
         )`);
       msg.dbID = insert.lastInsertRowid;
@@ -56,7 +56,7 @@ export class SQLChatMessage {
           dateReceived = ${msg.received.getTime() / 1000},
           outgoing = ${msg.outgoing ? 1 : 0},
           plaintext = ${msg.text},
-          html = ${msg.html},
+          html = ${msg.rawHTMLDangerous},
           reactionsJSON = ${reactionsJSON},
           chatID = ${msg.to.dbID},
           idStr = ${msg.id}

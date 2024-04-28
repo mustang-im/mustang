@@ -35,36 +35,58 @@ export class Message extends Observable {
   /** Msg ID of another message that this one is a reply of */
   inReplyTo: string | null = null;
 
-  /** Plaintext version of the message */
   @notifyChangedProperty
-  _text: string;
+  protected _text: string;
+  /** Plaintext version of the message */
   get text(): string {
     if (this._text) {
       return this._text;
     }
-    if (this._html) {
-      return convertHTMLToText(this._html);
+    if (this._rawHTML) {
+      return this._text = convertHTMLToText(this._rawHTML);
     }
     return null;
   }
+  /** Must also set `.html` (or at least get `.html` to auto-generate it),
+   * to keep them in sync. */
   set text(val: string) {
     this._text = val;
   }
 
-  /** HTML version of the message */
+  /** HTML version of the message.
+   * Directly from the network.
+   * Attention: Untrusted. MUST be sanitized before using it.
+   * @see _sanitizedHTML */
   @notifyChangedProperty
-  _html: string;
+  protected _rawHTML: string;
+  /** HTML version of the message.
+   * Sanitized. */
+  protected _sanitizedHTML: string;
+  /** HTML version of the message.
+   * Sanitized. */
   get html(): string {
-    if (this._html) {
-      return this._html;
+    if (this._sanitizedHTML) {
+      return this._sanitizedHTML;
+    }
+    if (this._rawHTML) {
+      return this._sanitizedHTML = sanitizeHTML(this._rawHTML);
     }
     if (this._text) {
-      return convertTextToHTML(this._text);
+      return this._sanitizedHTML = convertTextToHTML(this._text);
     }
     return null;
   }
+  /** Must also set `.text` (or at least get `.text` to auto-generate it),
+   * to keep them in sync. */
   set html(val: string) {
-    this._html = sanitizeHTML(val);
+    this._rawHTML = val;
+  }
+  /** Get the raw HTML, as we received it from the network.
+   * ATTENTION: DANGEROUS: You MUST NOT render this,
+   * neither directly nor indirectly.  If you save this, make sure that
+   * all reading paths sanitize the HTML before rendering it. */
+  get rawHTMLDangerous(): string {
+    return this._rawHTML;
   }
 
   readonly reactions = new MapColl<Person, string>();

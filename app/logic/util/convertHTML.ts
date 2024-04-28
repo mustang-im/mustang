@@ -3,7 +3,7 @@ import TurndownService from "turndown";
 import markdownit from "markdown-it";
 
 export function convertHTMLToText(html: string): string {
-  return new TurndownService().turndown(html);
+  return new TurndownService().turndown(sanitizeHTML(html));
 }
 
 let markdownitInstance;

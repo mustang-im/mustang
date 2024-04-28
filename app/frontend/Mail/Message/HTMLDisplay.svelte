@@ -1,3 +1,4 @@
+<!-- TODO Security: Test that this <iframe> is untrusted and jailed -->
 <iframe class="html-display" srcdoc={displayHTML} title="Text" />
 
 <script lang="ts">

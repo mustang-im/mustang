@@ -40,7 +40,7 @@ export class SQLEMail {
           ${email.id}, ${email.folder.dbID}, ${(email as any as IMAPEMail).uid}, ${email.inReplyTo},
           ${email.size}, ${email.sent.getTime() / 1000}, ${email.received.getTime() / 1000},
           ${email.outgoing ? 1 : 0},
-          ${email.subject}, ${email.text}, ${email.html}
+          ${email.subject}, ${email.text}, ${email.rawHTMLDangerous}
         )`);
       email.dbID = insert.lastInsertRowid;
       await this.saveRecipient(email, email.from, 1);
@@ -63,7 +63,7 @@ export class SQLEMail {
           outgoing = ${email.outgoing ? 1 : 0},
           subject = ${email.subject},
           plaintext = ${email.text},
-          html = ${email.html}
+          html = ${email.rawHTMLDangerous}
         WHERE id = ${email.dbID}
         `);
     }

@@ -28,7 +28,7 @@
       <slot name="inner-top" />
       <div class="text selectable">
         {#if message.html}
-          <!-- TODO Sanitize HTML. It comes from untrusted sources. Dangerous! @see also Mail MessageBody.svelte -->
+          <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection. -->
           {@html message.html }
         {:else}
           {message.text || '' }

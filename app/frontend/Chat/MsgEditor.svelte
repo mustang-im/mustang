@@ -54,8 +54,8 @@
     }
     let msg = new UserChatMessage();
     msg.outgoing = true;
-    msg.text = to.draftMessage;
-    msg.html = msg.text;
+    msg.html = to.draftMessage;
+    msg.text; // Generate to keep in sync
     msg.to = to;
     msg.contact = to.contact;
     msg.sent = new Date();

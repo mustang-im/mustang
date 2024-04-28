@@ -135,7 +135,7 @@ export class EMail extends Message {
     this.text = mail.text;
     let html = sanitize.string(mail.html, null);
     if (html) {
-      this.html = sanitizeHTML(html);
+      this.html = html;
     }
 
     // Attachments
