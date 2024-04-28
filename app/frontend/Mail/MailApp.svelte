@@ -23,6 +23,7 @@
   import FolderProperties, { openFolderProperties } from "./FolderProperties.svelte";
   import { SQLSearchEMail } from "../../logic/Mail/SQL/SQLSearchEMail";
   import { ArrayColl } from "svelte-collections";
+  import { useDebounce } from '@svelteuidev/composables';
 
   $: accounts = showAccounts;
   $: folders = $selectedAccount?.rootFolders ?? new ArrayColl<Folder>();
@@ -43,7 +44,8 @@
 
   let isSearching = false;
   let beforeSearchFolder: Folder;
-  $: startSearch($globalSearchTerm);
+  $: $globalSearchTerm, startSearchDebounced();
+  const startSearchDebounced = useDebounce(() => startSearch($globalSearchTerm), 1000);
   async function startSearch(searchTerm: string) {
     try {
       if (!(view == "vertical" || view == "3pane")) {

@@ -5,9 +5,9 @@ import { EMail } from "../EMail";
 import { Folder, SpecialFolder } from "../Folder";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
-import { ArrayColl, MapColl } from "svelte-collections";
-import sql from "../../../../lib/rs-sqlite";
 import { assert } from "../../util/util";
+import { ArrayColl, MapColl } from "svelte-collections";
+import sql, { type Query } from "../../../../lib/rs-sqlite";
 
 export class SQLSearchEMail extends SearchEMail {
   /** Start a database search based on the critera set on this object */
@@ -23,30 +23,32 @@ export class SQLSearchEMail extends SearchEMail {
     // TODO 1:n relations attachments and recipients
 
     // Search matching emails directly in the SQL database
-    let rows = await (await getDatabase()).all(sql`
+    let query = sql`
       SELECT
         id, folderID
       FROM email
-      ${this.account?.dbID ? sql` LEFT JOIN folder ON (folderID = folder.id) ` : ''}
+      $${this.account?.dbID ? sql` LEFT JOIN folder ON (folderID = folder.id) ` : sql``}
       WHERE 1=1
-        ${this.account?.dbID ? sql` AND accountID = ${this.account.dbID} ` : ''}
-        ${this.folder?.dbID ? sql` AND folderID = ${this.folder.dbID} ` : ''}
-        ${typeof (this.isOutgoing) == "boolean" ? sql` AND outgoing = ${this.isOutgoing} ` : ''}
-        ${typeof (this.isRead) == "boolean" ? sql` AND isRead = ${this.isRead} ` : ''}
-        ${typeof (this.isStarred) == "boolean" ? sql` AND isStarred = ${this.isStarred} ` : ''}
-        ${typeof (this.isReplied) == "boolean" ? sql` AND isReplied = ${this.isReplied} ` : ''}
-        ${typeof (this.threadID) == "string" ? sql` AND threadID = ${this.threadID} ` : ''}
-        ${this.sizeMin ? sql` AND size >= ${this.sizeMin} ` : ''}
-        ${this.sizeMax ? sql` AND size <= ${this.sizeMax} ` : ''}
-        ${contactEmail ? sql` AND contactEmail = ${contactEmail} ` : ''}
-        ${this.bodyText ? sql` AND (subject LIKE '%${this.bodyText}%' OR plaintext LIKE '%${this.bodyText}%') ` : ''}
-      ${limit ? sql`LIMIT ${limit}` : ''}
-      `) as any;
+        $${this.account?.dbID ? sql` AND accountID = ${this.account.dbID} ` : sql``}
+        $${this.folder?.dbID ? sql` AND folderID = ${this.folder.dbID} ` : sql``}
+        $${typeof (this.isOutgoing) == "boolean" ? sql` AND outgoing = ${this.isOutgoing} ` : sql``}
+        $${typeof (this.isRead) == "boolean" ? sql` AND isRead = ${this.isRead} ` : sql``}
+        $${typeof (this.isStarred) == "boolean" ? sql` AND isStarred = ${this.isStarred} ` : sql``}
+        $${typeof (this.isReplied) == "boolean" ? sql` AND isReplied = ${this.isReplied} ` : sql``}
+        $${typeof (this.threadID) == "string" ? sql` AND threadID = ${this.threadID} ` : sql``}
+        $${this.sizeMin ? sql` AND size >= ${this.sizeMin} ` : sql``}
+        $${this.sizeMax ? sql` AND size <= ${this.sizeMax} ` : sql``}
+        $${contactEmail ? sql` AND contactEmail = ${contactEmail} ` : sql``}
+        $${this.bodyText ? sql` AND (subject LIKE ${'%' + this.bodyText + '%'} OR plaintext LIKE ${'%' + this.bodyText + '%'}) ` : sql``}
+      $${limit ? sql` LIMIT ${limit} ` : sql``}
+      `;
+    //console.log("query string", queryString(query));
+    let rows = await (await getDatabase()).all(query) as any;
 
     // Find existing email obj in `folder.messages`,
     // or create new temporary `EMail` objects for the results
     let cachedFolders = new MapColl<number, Folder>(); // dbID -> folder
-    function findFolder(dbID: number): Folder | null {
+    const findFolder = (dbID: number): Folder | null => {
       if (!dbID) {
         return null;
       }
@@ -88,4 +90,15 @@ export class SQLSearchEMail extends SearchEMail {
     }
     return emails;
   }
+}
+
+/** For debugging, returns the rs-sql SQL query as a string */
+function queryString(query: Query): string {
+  let str = "";
+  let params = query.parameters.slice();
+  for (let sourcePart of query.sourceParts) {
+    str += sourcePart.trim();
+    str += params.shift() ?? "";
+  }
+  return str;
 }
