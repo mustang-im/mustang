@@ -93,13 +93,13 @@
     await message.markStarred(!message.isStarred);
   }
   async function deleteMessage() {
+    $selectedMessage = message.nextMessage(true);
     await message.deleteMessage();
-    $selectedMessage = message.nextMessage();
   }
   async function markAsSpam() {
+    $selectedMessage = message.nextMessage(true);
     await message.markSpam(true);
     await message.deleteMessage();
-    $selectedMessage = message.nextMessage();
   }
 
   async function onKey(event: KeyboardEvent) {
