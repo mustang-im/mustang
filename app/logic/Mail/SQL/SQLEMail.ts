@@ -144,18 +144,20 @@ export class SQLEMail {
       `);
   }
 
-  static async read(dbID: number, email: EMail): Promise<EMail> {
+  static async read(dbID: number, email: EMail, emailRow: any, recipientRows: any[], attachmentRows: any[]): Promise<EMail> {
+    // <copied to="readAll()" />
     let row = await (await getDatabase()).get(sql`
       SELECT
         uid, messageID, parentMsgID,
         size, dateSent, dateReceived,
-        outgoing, -- contactEmail, contactName, myEmail
+        outgoing,
         subject, plaintext, html,
         threadID, downloadComplete,
         isRead, isStarred, isReplied, isDraft, isSpam
       FROM email
       WHERE id = ${dbID}
       `) as any;
+    // contactEmail, contactName, myEmail
     email.dbID = sanitize.integer(dbID);
     (email as any as IMAPEMail).uid = sanitize.integer(row.uid, null);
     email.id = sanitize.nonemptystring(row.messageID);
@@ -170,23 +172,21 @@ export class SQLEMail {
     if (html) {
       email.html = html;
     }
-    this.readWritablePropsFromResult(email, row);
-    await this.readRecipients(email);
-    await this.readAttachments(email);
+    this.readWritableProps(email, row);
+    await this.readRecipients(email, recipientRows);
+    await this.readAttachments(email, attachmentRows);
     return email;
   }
 
-  static async readWritableProps(email: EMail) {
-    let row = await (await getDatabase()).get(sql`
+  static async readWritableProps(email: EMail, row: any) {
+    if (!row) {
+      row = await (await getDatabase()).get(sql`
       SELECT
         isRead, isStarred, isReplied, isDraft, isSpam, threadID, downloadComplete
       FROM email
       WHERE id = ${email.dbID}
       `) as any;
-    this.readWritablePropsFromResult(email, row);
-  }
-
-  protected static readWritablePropsFromResult(email: EMail, row) {
+    }
     email.isRead = sanitize.boolean(!!row.isRead);
     email.isStarred = sanitize.boolean(!!row.isStarred);
     email.isReplied = sanitize.boolean(!!row.isReplied);
@@ -204,13 +204,17 @@ export class SQLEMail {
       `);
   }
 
-  protected static async readRecipients(email: EMail) {
-    let recipientRows = await (await getDatabase()).all(sql`
+  protected static async readRecipients(email: EMail, recipientRows: any[]) {
+    if (!recipientRows) {
+      // <copied to="readAll()" />
+      recipientRows = await (await getDatabase()).all(sql`
       SELECT
         name, emailAddress, recipientType
-      FROM emailPersonRel LEFT JOIN emailPerson ON (emailPersonRel.emailPersonID = emailPerson.id)
+      FROM emailPersonRel
+        LEFT JOIN emailPerson ON (emailPersonRel.emailPersonID = emailPerson.id)
       WHERE emailID = ${email.dbID}
       `) as any;
+    }
     for (let row of recipientRows) {
       try {
         let addr = sanitize.emailAddress(row.emailAddress, "unknown@invalid");
@@ -243,13 +247,16 @@ export class SQLEMail {
     }
   }
 
-  protected static async readAttachments(email: EMail) {
-    let attachmentRows = await (await getDatabase()).all(sql`
+  protected static async readAttachments(email: EMail, attachmentRows: any[]) {
+    if (!attachmentRows) {
+      // <copied to="readAll()" />
+      attachmentRows = await (await getDatabase()).all(sql`
       SELECT
         filename, filepathLocal, mimeType, size, contentID, disposition, related
       FROM emailAttachment
       WHERE emailID = ${email.dbID}
       `) as any;
+    }
     let fallbackID = 0;
     for (let row of attachmentRows) {
       try {
@@ -272,20 +279,48 @@ export class SQLEMail {
   }
 
   static async readAll(folder: Folder): Promise<void> {
-    let rows = await (await getDatabase()).all(sql`
+    // <copied from="read()" />
+    let emailRows = await (await getDatabase()).all(sql`
       SELECT
-        id
+        id, uid, messageID, parentMsgID,
+        size, dateSent, dateReceived,
+        outgoing,
+        subject,
+        threadID, downloadComplete,
+        isRead, isStarred, isReplied, isDraft, isSpam
       FROM email
       WHERE folderID = ${folder.dbID}
       `) as any;
+    //console.time("sql read emails");
+    // plaintext, html, -- 10x slower, so do this later or on demand
+    //console.timeEnd("sql read emails");
+    // <copied from="readRecipients()" />
+    let folderRecipientRows = await (await getDatabase()).all(sql`
+      SELECT
+        name, emailAddress, recipientType
+      FROM emailPersonRel
+        LEFT JOIN emailPerson ON (emailPersonRel.emailPersonID = emailPerson.id)
+        LEFT JOIN email ON (emailID = email.id)
+      WHERE folderID = ${folder.dbID}
+      `) as any;
+    // <copied from="readAttachments()" />
+    let folderAttachmentRows = await (await getDatabase()).all(sql`
+      SELECT
+        filename, filepathLocal, mimeType, emailAttachment.size as size, contentID, disposition, related
+      FROM emailAttachment
+      LEFT JOIN email ON (emailID = email.id)
+      WHERE folderID = ${folder.dbID}
+      `) as any;
     let newEmails = new ArrayColl<EMail>();
-    for (let row of rows) {
+    for (let row of emailRows) {
       let email = folder.messages.find(email => email.dbID == row.id);
       if (email) {
-        await SQLEMail.readWritableProps(email); // TODO needed?
+        await SQLEMail.readWritableProps(email, row); // TODO needed?
       } else {
         email = folder.newEMail();
-        await SQLEMail.read(row.id, email); // TODO: Get metadata with query above first, then the email contents?
+        let emailRecipientRows = folderRecipientRows.filter(r => r.emailID == row.id);
+        let emailAttachmentRows = folderAttachmentRows.filter(r => r.emailID == row.id);
+        await SQLEMail.read(row.id, email, row, emailRecipientRows, emailAttachmentRows);
         newEmails.add(email);
       }
     }
