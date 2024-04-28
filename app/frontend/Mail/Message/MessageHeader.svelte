@@ -4,9 +4,15 @@
       <PersonPicture person={$message.contact} />
     {/if}
     <vbox>
-      <value class="from" title={$message.from.emailAddress}>
-        {from}
-      </value>
+      <hbox class="from">
+        {#if $message.outgoing}
+          <value class="from" title={$message.from.emailAddress}>
+            {from}
+          </value>
+        {:else}
+          <Recipient recipient={$message.from} />
+        {/if}
+      </hbox>
       {#if $message.to.hasItems}
         <hbox class="to">
           to&nbsp;
@@ -43,6 +49,7 @@
   import { selectedPerson, type PersonOrGroup } from "../../Shared/Person/PersonOrGroup";
   import MessageToolbar from "./MessageToolbar.svelte";
   import RecipientList from "./RecipientList.svelte";
+  import Recipient from "./Recipient.svelte";
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
   import { catchErrors, backgroundError } from "../../Util/error";
   import { getDateString } from "../../Util/date";

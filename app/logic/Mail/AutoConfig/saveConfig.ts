@@ -52,7 +52,7 @@ function replaceVar(str: string, emailAddress: string): string {
   );
 }
 
-function nameFromEmailAddress(emailAddress: string): string {
+export function nameFromEmailAddress(emailAddress: string): string {
   let name = emailAddress.split("@")[0];
   name = name.replace(/\./g, " ");
   name = name.split(" ").map(n => n[0].toUpperCase() + n.substring(1)).join(" "); // Capitalize

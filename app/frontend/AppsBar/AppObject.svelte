@@ -1,5 +1,5 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<hbox class="app-object" on:click={() => catchErrors(() => openUIFor(obj))}>
+<hbox class="app-object" on:click={() => catchErrors(onOpen)}>
   <slot />
 </hbox>
 
@@ -9,6 +9,14 @@
   import { catchErrors } from "../Util/error";
 
   export let obj: Observable;
+  export let createObject: () => Observable | null = null;
+
+  function onOpen() {
+    if (typeof(createObject) == "function") {
+      obj = createObject();
+    }
+    openUIFor(obj);
+  }
 </script>
 
 <style>
