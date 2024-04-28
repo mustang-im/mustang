@@ -19,6 +19,10 @@ export class MailZIP {
     assert(email.mime, "Need MIME source to save the email as mail.zip");
     assert(email.dbID, "Please save the email first in the database, so that we can use the dbID as filename in the as mail.zip");
     let zip = await this.getFolderZIP(email.folder);
+    let filename = email.dbID + ".eml";
+    if (zip.getEntry(filename)) {
+      return;
+    }
     // https://github.com/cthackers/adm-zip/wiki/ADM-ZIP-Introduction
     // https://github.com/cthackers/adm-zip/wiki/ADM-ZIP
     // TODO The whole library is synchronous. That's of course a major problem.
@@ -26,7 +30,7 @@ export class MailZIP {
     // We need to `await` here, because of JPC. This is particularly important here,
     // because we're writing many emails at the same time, and each re-writes the ZIP file.
     // Without `await`, we risk a race condition that overwrites the recently changed ZIP file.
-    await zip.addFile(email.dbID + ".eml", Buffer.from(email.mime), email.id);
+    await zip.addFile(filename, Buffer.from(email.mime), email.id);
     MailZIP.writeZip(zip, email.folder.account.errorCallback);
   }
 
