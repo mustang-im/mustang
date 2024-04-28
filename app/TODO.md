@@ -119,10 +119,8 @@
     * Warn when reading
     * Warn when replying
 * Compose: Recipients entry
-* Save original emails as MIME in ZIP file
 * Search
-  * with/without text
-  * within current folder / across all accounts and folders
+  * UI for criteria other than text
 * Filter actions
 * Virtual folders / Saved searches
   * Need: Fix observable collections for All Messages

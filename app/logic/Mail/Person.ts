@@ -48,7 +48,7 @@ export function findPerson(emailAddress: string, realname: string): Person {
   if (existing) {
     return existing;
   }
-  existing = mailPersons.find(p => p.emailAddresses.some(e => e.value == emailAddress));
+  existing = mailPersons.find(p => p.name == realname && p.emailAddresses.some(e => e.value == emailAddress));
   if (existing) {
     return existing;
   }
