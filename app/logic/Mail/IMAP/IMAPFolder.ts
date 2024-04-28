@@ -39,7 +39,7 @@ export class IMAPFolder extends Folder {
     this.setSpecialUse(folderInfo.specialUse);
   }
 
-  async runCommand(imapFunc: (conn: any) => Promise<void>) {
+  async runCommand<T>(imapFunc: (conn: any) => Promise<T>): Promise<T> {
     let lock;
     try {
       let conn = await this.account.connection();
@@ -56,7 +56,7 @@ export class IMAPFolder extends Folder {
           throw ex;
         }
       }
-      await imapFunc(conn);
+      return await imapFunc(conn);
     } finally {
       lock?.release();
     }
@@ -73,8 +73,8 @@ export class IMAPFolder extends Folder {
     }
     let newMessages = new ArrayColl<IMAPEMail>();
     let updatedMessages = new ArrayColl<IMAPEMail>();
-    await this.runCommand(async (conn) => {
-      let msgsAsyncIterator = await conn.fetch({ all: true }, {
+    let msgsAsyncIterator = await this.runCommand(async (conn) => {
+      return await conn.fetch({ all: true }, {
         uid: true,
         size: true,
         threadId: true,
@@ -84,19 +84,19 @@ export class IMAPFolder extends Folder {
       }, {
         changedSince: this.lastSeen,
       });
-      for await (let msgInfo of msgsAsyncIterator) {
-        let msg = this.getEMailByUID(msgInfo.uid);
-        if (msg) {
-          msg.fromFlow(msgInfo);
-          updatedMessages.add(msg);
-        } else {
-          msg = new IMAPEMail(this);
-          msg.fromFlow(msgInfo);
-          newMessages.add(msg);
-        }
-        this.updateModSeq(msgInfo.modseq);
-      }
     });
+    for await (let msgInfo of msgsAsyncIterator) {
+      let msg = this.getEMailByUID(msgInfo.uid);
+      if (msg) {
+        msg.fromFlow(msgInfo);
+        updatedMessages.add(msg);
+      } else {
+        msg = new IMAPEMail(this);
+        msg.fromFlow(msgInfo);
+        newMessages.add(msg);
+      }
+      this.updateModSeq(msgInfo.modseq);
+    }
     this.messages.addAll(newMessages); // notify only once
 
     await this.downloadMessagesComplete();
@@ -115,8 +115,8 @@ export class IMAPFolder extends Folder {
       let downloadMessages = needToDownload.getIndexRange(needToDownload.length - kMaxCount, kMaxCount) as any as IMAPEMail[];
       needToDownload.removeAll(downloadMessages);
       let uids = downloadMessages.map(msg => msg.uid).join(",");
-      await this.runCommand(async (conn) => {
-        let msgInfos = await conn.fetch(uids, {
+      let msgInfos = await this.runCommand(async (conn) => {
+        return await conn.fetch(uids, {
             uid: true,
             size: true,
             threadId: true,
@@ -125,23 +125,23 @@ export class IMAPFolder extends Folder {
             flags: true,
             // headers: true,
           }, { uid: true });
-        for await (let msgInfo of msgInfos) {
-          try {
-            let msg = this.getEMailByUID(msgInfo.uid);
-            if (msg?.downloadComplete) {
-              continue;
-            } else if (msg) {
-              msg.fromFlow(msgInfo);
-              this.updateModSeq(msgInfo.modseq);
-              await msg.parseMIME();
-              await msg.save();
-              downloadedMessages.add(msg);
-            }
-          } catch (ex) {
-            this.account.errorCallback(ex);
-          }
-        }
       });
+      for await (let msgInfo of msgInfos) {
+        try {
+          let msg = this.getEMailByUID(msgInfo.uid);
+          if (msg?.downloadComplete) {
+            continue;
+          } else if (msg) {
+            msg.fromFlow(msgInfo);
+            this.updateModSeq(msgInfo.modseq);
+            await msg.parseMIME();
+            await msg.save();
+            downloadedMessages.add(msg);
+          }
+        } catch (ex) {
+          this.account.errorCallback(ex);
+        }
+      }
       return downloadedMessages;
     }
   }
@@ -255,13 +255,10 @@ export class IMAPFolder extends Folder {
   }
 
   async markAllRead(): Promise<void> {
-    // console.log("Marking", this.name, "as read");
     await super.markAllRead();
-    // console.log("Marked", this.messages.length, "messages as read");
     await this.runCommand(async (conn) => {
         await conn.messageFlagsAdd("1:*", ["\\Seen"], { uid: true });
     });
-    // console.log("Marked IMAP messages as read");
   }
 
   /** @param specialUse From RFC 6154, e.g. `\Sent`

@@ -15,10 +15,10 @@ export class IMAPEMail extends EMail {
   }
 
   async download() {
-    await this.folder.runCommand(async (conn) => {
-      let msgInfo = await conn.fetchOne(this.id);
-      this.fromFlow(msgInfo);
+    let msgInfo = await this.folder.runCommand(async (conn) => {
+      return await conn.fetchOne(this.id);
     });
+    this.fromFlow(msgInfo);
     await this.parseMIME();
     await this.save();
   }
