@@ -1,6 +1,6 @@
 <AppObject obj={recipient.person}>
   <value title={recipient.emailAddress}>
-    {recipient.name}
+    {recipient.name || recipient.emailAddress}
   </value>
 </AppObject>
 
@@ -10,6 +10,8 @@
   import AppObject from "../../AppsBar/AppObject.svelte";
 
   export let recipient: PersonEmailAddress;
+
+  // Using `||` instead of `??` above, so that the fallback also works for `name == ""`
 
   $: recipient && createPersonOnDemand()
   /** Allow to click on a person and see it in the Contacts page. */

@@ -271,6 +271,10 @@ export class PersonEmailAddress {
     pe.person = person;
     return pe;
   }
+
+  toString() {
+    return this.name + " <" + this.emailAddress + ">";
+  }
 }
 
 export function setPersons(targetList: ArrayColl<PersonEmailAddress>, personList: { address: string, name: string }[]): void {
