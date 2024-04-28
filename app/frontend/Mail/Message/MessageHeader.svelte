@@ -47,7 +47,8 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { Person } from "../../../logic/Abstract/Person";
-  import { selectedPerson, type PersonOrGroup } from "../../Shared/Person/PersonOrGroup";
+  import type { PersonOrGroup } from "../../Shared/Person/PersonOrGroup";
+  import { selectedPerson } from "../../Shared/Person/Selected";
   import MessageToolbar from "./MessageToolbar.svelte";
   import RecipientList from "./RecipientList.svelte";
   import Recipient from "./Recipient.svelte";

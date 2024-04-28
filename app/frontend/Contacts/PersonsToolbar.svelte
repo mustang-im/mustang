@@ -10,7 +10,7 @@
 
 <script lang="ts">
   import { Person } from "../../logic/Abstract/Person";
-  import { selectedPerson } from "../Shared/Person/PersonOrGroup";
+  import { selectedPerson } from "../Shared/Person/Selected";
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import { appGlobal } from "../../logic/app";
   import AccountDropDown from "../Shared/AccountDropDown.svelte";

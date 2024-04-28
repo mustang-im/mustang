@@ -13,7 +13,8 @@
 
 <script lang="ts">
   import { Person } from "../../../logic/Abstract/Person";
-  import {type PersonOrGroup,  selectedPerson } from "./PersonOrGroup";
+  import type { PersonOrGroup } from "./PersonOrGroup";
+  import { selectedPerson } from "./Selected";
   import type { Collection } from "svelte-collections";
   import PersonLine from "./PersonLine.svelte";
   import SearchField from "../SearchField.svelte";

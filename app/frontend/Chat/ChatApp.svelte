@@ -29,7 +29,7 @@
   import { Person } from "../../logic/Abstract/Person";
   import { UserChatMessage } from "../../logic/Chat/Message";
   import { ChatRoomEvent } from "../../logic/Chat/RoomEvent";
-  import { selectedPerson } from "../Shared/Person/PersonOrGroup";
+  import { selectedPerson } from "../Shared/Person/Selected";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import MessageList from "./MessageView/MessageList.svelte";

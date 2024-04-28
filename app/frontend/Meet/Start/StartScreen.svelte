@@ -36,7 +36,7 @@
   import { MeetingState, VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
   import { ParticipantVideo, SelfVideo } from "../../../logic/Meet/VideoStream";
   import { MeetingParticipant, ParticipantRole } from "../../../logic/Meet/Participant";
-  import { selectedPerson } from "../../Shared/Person/PersonOrGroup";
+  import { selectedPerson } from "../../Shared/Person/Selected";
   import { joinConferenceByURL } from "../../../logic/Meet/StartCall";
   import { appGlobal } from "../../../logic/app";
   import MeetingList from "./MeetingList.svelte";

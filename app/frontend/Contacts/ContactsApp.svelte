@@ -14,7 +14,7 @@
 
 <script lang="ts">
   import { Person } from "../../logic/Abstract/Person";
-  import { selectedPerson } from "../Shared/Person/PersonOrGroup";
+  import { selectedPerson } from "../Shared/Person/Selected";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import PersonsList from "../Shared/Person/PersonsList.svelte";
