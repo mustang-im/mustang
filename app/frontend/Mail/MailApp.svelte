@@ -51,10 +51,12 @@
       if (!(view == "vertical" || view == "3pane")) {
         return;
       }
-      if (!searchTerm && isSearching) {
-        isSearching = false;
-        $selectedFolder = $selectedMessage?.folder ?? beforeSearchFolder;
-        $selectedAccount = $selectedFolder?.account ?? appGlobal.emailAccounts.first;
+      if (!searchTerm) {
+        if (isSearching) {
+          isSearching = false;
+          $selectedFolder = $selectedMessage?.folder ?? beforeSearchFolder;
+          $selectedAccount = $selectedFolder?.account ?? appGlobal.emailAccounts.first;
+          }
         return;
       }
       isSearching = true;
