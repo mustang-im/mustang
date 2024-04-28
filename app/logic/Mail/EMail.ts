@@ -175,7 +175,7 @@ export class EMail extends Message {
     assert(!this.downloadComplete, `Already saved this email (dbID ${this.dbID})`);
     await SQLEMail.save(this);
     await MailZIP.save(this);
-    await MailDir.save(this);
+    //await MailDir.save(this);
     await RawFilesAttachment.saveEMail(this);
     this.downloadComplete = true;
     await SQLEMail.saveWritableProps(this);
