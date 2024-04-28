@@ -6,6 +6,7 @@
     * Mail Chat view: Open thread
   * All accounts - fix
   * Plaintext mail line wraps
+  * OAuth2
   * Bugs
     * Google
       * no email subject

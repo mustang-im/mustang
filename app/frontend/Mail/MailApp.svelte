@@ -45,7 +45,7 @@
   let isSearching = false;
   let beforeSearchFolder: Folder;
   $: $globalSearchTerm, startSearchDebounced();
-  const startSearchDebounced = useDebounce(() => startSearch($globalSearchTerm), 1000);
+  const startSearchDebounced = useDebounce(() => startSearch($globalSearchTerm), 300);
   async function startSearch(searchTerm: string) {
     try {
       if (!(view == "vertical" || view == "3pane")) {
