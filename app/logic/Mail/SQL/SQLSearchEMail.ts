@@ -5,13 +5,13 @@ import { EMail } from "../EMail";
 import { Folder, SpecialFolder } from "../Folder";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
-import { ArrayColl, Collection, MapColl } from "svelte-collections";
+import { ArrayColl, MapColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 import { assert } from "../../util/util";
 
 export class SQLSearchEMail extends SearchEMail {
   /** Start a database search based on the critera set on this object */
-  async startSearch(limit?: number): Promise<Collection<EMail>> {
+  async startSearch(limit?: number): Promise<ArrayColl<EMail>> {
     let parseError = backgroundError;
     if (this.folder && this.account) {
       assert(this.account == this.folder.account, "Folder and account need to match");
