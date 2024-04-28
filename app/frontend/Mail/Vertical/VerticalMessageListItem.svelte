@@ -11,7 +11,7 @@
         <OutgoingIcon size={16} />
       {/if}
     </hbox>
-    <hbox class="contact">{message.contact.name}</hbox>
+    <hbox class="contact">{message.contact?.name ?? ""}</hbox>
     <hbox flex />
     <hbox class="date">{getDateString($message.sent)}</hbox>
     <hbox class="buttons hover">
