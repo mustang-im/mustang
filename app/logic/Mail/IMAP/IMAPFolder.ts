@@ -142,8 +142,8 @@ export class IMAPFolder extends Folder {
           this.account.errorCallback(ex);
         }
       }
-      return downloadedMessages;
     }
+    return downloadedMessages;
   }
 
   getEMailByUID(uid: number): IMAPEMail {
