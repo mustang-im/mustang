@@ -1,5 +1,5 @@
 import { EMail, setPersons } from "../EMail";
-import { findOrCreatePerson, findOrCreatePersonEmailAddress } from "../Person";
+import { findOrCreatePerson, findOrCreatePersonEmailAddress, findPerson } from "../Person";
 import type { IMAPFolder } from "./IMAPFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
@@ -38,15 +38,14 @@ export class IMAPEMail extends EMail {
     this.threadID = sanitize.string(env.threadId, null); // Only if server supports OBJECTID or X-GM-EXT-1 IMAP extension
     if (env.from?.length && env.from[0]?.address) {
       let firstFrom = env.from[0];
-      this.contact = findOrCreatePerson(sanitize.nonemptystring(firstFrom.address), sanitize.label(firstFrom.name, null));
       this.from = findOrCreatePersonEmailAddress(sanitize.nonemptystring(firstFrom.address), sanitize.label(firstFrom.name, null));
     } else {
-      this.contact = findOrCreatePerson("unknown@invalid", "Unknown");
       this.from = findOrCreatePersonEmailAddress("unknown@invalid", "Unknown");
     }
     setPersons(this.to, env.to);
     setPersons(this.cc, env.cc);
     setPersons(this.bcc, env.bcc);
+    this.contact = this.outgoing ? this.to.first : this.from;
     assert(!msgInfo.source || msgInfo.source instanceof Uint8Array, "MIME source needs to be a buffer");
     this.mime = msgInfo.source;
   }

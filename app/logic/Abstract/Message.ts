@@ -1,5 +1,6 @@
 import type { Contact } from "./Contact";
 import type { Person } from "./Person";
+import type { PersonEmailAddress } from "../Mail/EMail";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { MapColl } from "svelte-collections";
@@ -15,7 +16,7 @@ export class Message extends Observable {
    * if outgoing = true, this is the recipient, otherwise the sender
    */
   @notifyChangedProperty
-  contact: Contact;
+  contact: Contact | PersonEmailAddress;
   /** When the message was sent */
   @notifyChangedProperty
   sent: Date;

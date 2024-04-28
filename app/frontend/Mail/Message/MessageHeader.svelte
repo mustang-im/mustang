@@ -1,6 +1,6 @@
 <vbox class="message-header" class:outgoing={$message.outgoing}>
   <hbox>
-    {#if message.contact instanceof Person && message.contact.picture}
+    {#if $message.contact instanceof Person && $message.contact.picture}
       <PersonPicture person={$message.contact} />
     {/if}
     <vbox>
@@ -44,7 +44,7 @@
 </vbox>
 
 <script lang="ts">
-  import type { EMail } from "../../../logic/Mail/EMail";
+  import { PersonEmailAddress, type EMail } from "../../../logic/Mail/EMail";
   import { Person } from "../../../logic/Abstract/Person";
   import { selectedPerson, type PersonOrGroup } from "../../Shared/Person/PersonOrGroup";
   import MessageToolbar from "./MessageToolbar.svelte";
@@ -76,7 +76,7 @@
   });
 
   $: selectPerson(message?.contact);
-  function selectPerson(contact: PersonOrGroup) {
+  function selectPerson(contact: PersonOrGroup | PersonEmailAddress) {
     if (!(contact instanceof Person)) {
       return;
     }
@@ -97,6 +97,9 @@
   }
   .from {
     font-weight: bold;
+  }
+  .from :global(.domain) {
+    font-weight: normal;
   }
   .outgoing .from {
     font-weight: normal;

@@ -2,11 +2,11 @@
   <value class="name" title={recipient.emailAddress}>
     {recipient.name?.substring(0, 25) || recipient.emailAddress}
   </value>
-  <value class="domain">
-    {#if !recipient.person && recipient.name}
+  {#if !recipient.person && recipient.name}
+    <value class="domain">
       @{getBaseDomainFromHost(getDomainForEmailAddress(recipient.emailAddress))}
-    {/if}
-  </value>
+    </value>
+  {/if}
 </AppObject>
 
 <script lang="ts">
@@ -17,6 +17,8 @@
   import AppObject from "../../AppsBar/AppObject.svelte";
 
   export let recipient: PersonEmailAddress;
+
+  $: recipient.findPerson();
 
   // Using `||` instead of `??` above, so that the fallback also works for `name == ""`
 
@@ -33,8 +35,16 @@
 </script>
 
 <style>
+  :global(.app-object):has(.name) {
+    display: block;
+  }
+  .name {
+    display: inline;
+    margin-left: 4px;
+  }
   .domain {
-    font-weight: bold;
+    display: inline;
+    font-style: italic;
     margin-left: 4px;
   }
 </style>

@@ -16,7 +16,7 @@
     {#if !(fastFollowup && hideHeaderFollowup)}
       <hbox class="meta">
         {#if !message.outgoing && !followup}
-          <hbox class="from">{message.contact.name}</hbox>
+          <hbox class="from">{message.contact?.name}</hbox>
         {/if}
         <hbox flex>
           <slot name="above-center" />

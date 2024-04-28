@@ -175,6 +175,7 @@ export class SQLEMail {
     this.readWritableProps(email, row);
     await this.readRecipients(email, recipientRows);
     await this.readAttachments(email, attachmentRows);
+    email.contact = email.outgoing ? email.to.first : email.from;
     return email;
   }
 
@@ -222,9 +223,6 @@ export class SQLEMail {
         let pe = findOrCreatePersonEmailAddress(addr, name);
         if (row.recipientType == 1) {
           email.from = pe;
-          if (!email.outgoing) {
-            email.contact = findOrCreatePerson(addr, name);
-          }
           continue;
         } else if (row.recipientType == 5) {
           email.replyTo.emailAddress = addr;
@@ -233,9 +231,6 @@ export class SQLEMail {
         }
         if (row.recipientType == 2) {
           email.to.add(pe);
-          if (email.outgoing && !email.contact) {
-            email.contact = findOrCreatePerson(addr, name);
-          }
         } else if (row.recipientType == 3) {
           email.cc.add(pe);
         } else if (row.recipientType == 4) {

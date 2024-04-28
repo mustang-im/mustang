@@ -6,8 +6,7 @@ import { RawFilesAttachment } from "./Store/RawFilesAttachment";
 import { SQLEMail } from "./SQL/SQLEMail";
 import { MailZIP } from "./Store/MailZIP";
 import { MailDir } from "./Store/MailDir";
-import { findOrCreatePerson, findOrCreatePersonEmailAddress } from "./Person";
-import { sanitizeHTML } from "../util/convertHTML";
+import { findPerson, findOrCreatePersonEmailAddress } from "./Person";
 import { appGlobal } from "../app";
 import { fileExtensionForMIMEType, assert } from "../util/util";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
@@ -110,10 +109,8 @@ export class EMail extends Message {
       this.subject = sanitize.string(mail.subject, this.subject ?? "");
       this.sent = sanitize.date(mail.date, this.sent ?? new Date());
       if (mail.from?.address) {
-        this.contact = findOrCreatePerson(sanitize.nonemptystring(mail.from.address), sanitize.label(mail.from.name, null));
         this.from = findOrCreatePersonEmailAddress(sanitize.nonemptystring(mail.from.address), sanitize.label(mail.from.name, null));
       } else {
-        this.contact = findOrCreatePerson("unknown@invalid", "Unknown");
         this.from = findOrCreatePersonEmailAddress("unknown@invalid", "Unknown");
       }
     }
@@ -122,6 +119,7 @@ export class EMail extends Message {
       setPersons(this.cc, mail.cc);
       setPersons(this.bcc, mail.bcc);
     }
+    this.contact = this.outgoing ? this.to.first : this.from;
     if (!this.replyTo && mail.replyTo?.length) {
       let p = mail.replyTo[0];
       this.replyTo = findOrCreatePersonEmailAddress(sanitize.nonemptystring(p.address, "unknown@invalid"), sanitize.label(p.name, null));
@@ -270,6 +268,13 @@ export class PersonEmailAddress {
     pe.emailAddress = person.emailAddresses.first?.value;
     pe.person = person;
     return pe;
+  }
+
+  findPerson() {
+    if (this.person) {
+      return;
+    }
+    this.person = findPerson(this.emailAddress, this.name);
   }
 
   toString() {
