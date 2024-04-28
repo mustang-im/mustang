@@ -35,6 +35,7 @@ export class IMAPEMail extends EMail {
     this.received = new Date();
     this.setFlagsLocal(msgInfo.flags);
     this.inReplyTo = sanitize.string(env.inReplyTo, null);
+    this.threadID = sanitize.string(env.threadId, null); // Only if server supports OBJECTID or X-GM-EXT-1 IMAP extension
     if (env.from?.length && env.from[0]?.address) {
       let firstFrom = env.from[0];
       this.contact = findOrCreatePerson(sanitize.nonemptystring(firstFrom.address), sanitize.label(firstFrom.name, null));

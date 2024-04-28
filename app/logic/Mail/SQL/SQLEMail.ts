@@ -82,6 +82,7 @@ export class SQLEMail {
         isReplied = ${email.isReplied ? 1 : 0},
         isSpam = ${email.isSpam ? 1 : 0},
         isDraft = ${email.isDraft ? 1 : 0},
+        threadID = ${email.threadID},
         downloadComplete = ${email.downloadComplete ? 1 : 0}
       WHERE id = ${email.dbID}
       `);
@@ -149,7 +150,8 @@ export class SQLEMail {
         uid, messageID, parentMsgID,
         size, dateSent, dateReceived,
         outgoing, -- contactEmail, contactName, myEmail
-        subject, plaintext, html, downloadComplete,
+        subject, plaintext, html,
+        threadID, downloadComplete,
         isRead, isStarred, isReplied, isDraft, isSpam
       FROM email
       WHERE id = ${dbID}
@@ -177,7 +179,7 @@ export class SQLEMail {
   static async readWritableProps(email: EMail) {
     let row = await (await getDatabase()).get(sql`
       SELECT
-        isRead, isStarred, isReplied, isDraft, isSpam, downloadComplete
+        isRead, isStarred, isReplied, isDraft, isSpam, threadID, downloadComplete
       FROM email
       WHERE id = ${email.dbID}
       `) as any;
@@ -190,6 +192,7 @@ export class SQLEMail {
     email.isReplied = sanitize.boolean(!!row.isReplied);
     email.isDraft = sanitize.boolean(!!row.isDraft);
     email.isSpam = sanitize.boolean(!!row.isSpam);
+    email.threadID = sanitize.string(row.threadID, null);
     email.downloadComplete = sanitize.boolean(!!row.downloadComplete);
   }
 

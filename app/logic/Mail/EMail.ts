@@ -12,7 +12,7 @@ import { appGlobal } from "../app";
 import { fileExtensionForMIMEType, assert } from "../util/util";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../util/Observable";
-import { ArrayColl, MapColl } from "svelte-collections";
+import { ArrayColl, Collection, MapColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
 
 export class EMail extends Message {
@@ -47,6 +47,8 @@ export class EMail extends Message {
   /** Complete MIME source of the email */
   mime: Uint8Array | undefined;
   folder: Folder;
+  /** msg ID of the thread starter message */
+  threadID: string | null = null;
   /** This message has been downloaded completely,
    * with header, body, and all attachments. */
   downloadComplete = false;
@@ -177,6 +179,23 @@ export class EMail extends Message {
     await RawFilesAttachment.saveEMail(this);
     this.downloadComplete = true;
     await SQLEMail.saveWritableProps(this);
+  }
+
+  async findThread(messages: Collection<EMail>): Promise<string | null>{
+    if (this.threadID) {
+      return this.threadID;
+    }
+    if (!this.dbID) {
+      return null;
+    }
+    let inReplyTo = null;
+    while (inReplyTo) {
+      let parent = messages.find(msg => msg.id == inReplyTo);
+      inReplyTo = parent?.inReplyTo;
+    }
+    this.threadID = inReplyTo ?? null;
+    await SQLEMail.saveWritableProps(this);
+    return this.threadID;
   }
 
   quotePrefixLine(): string {

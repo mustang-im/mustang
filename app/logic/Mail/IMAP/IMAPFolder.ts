@@ -143,6 +143,13 @@ export class IMAPFolder extends Folder {
         }
       }
     }
+
+    for (let msg of this.messages) {
+      if (!msg.threadID && msg.dbID) {
+        await msg.findThread(this.messages);
+      }
+    }
+
     return downloadedMessages;
   }
 
