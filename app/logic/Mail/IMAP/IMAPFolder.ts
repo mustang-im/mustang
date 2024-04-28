@@ -73,8 +73,8 @@ export class IMAPFolder extends Folder {
     }
     let newMessages = new ArrayColl<IMAPEMail>();
     let updatedMessages = new ArrayColl<IMAPEMail>();
-    let msgsAsyncIterator = await this.runCommand(async (conn) => {
-      return await conn.fetch({ all: true }, {
+    await this.runCommand(async (conn) => {
+      let msgsAsyncIterator = await conn.fetch({ all: true }, {
         uid: true,
         size: true,
         threadId: true,
@@ -84,19 +84,19 @@ export class IMAPFolder extends Folder {
       }, {
         changedSince: this.lastSeen,
       });
-    });
-    for await (let msgInfo of msgsAsyncIterator) {
-      let msg = this.getEMailByUID(msgInfo.uid);
-      if (msg) {
-        msg.fromFlow(msgInfo);
-        updatedMessages.add(msg);
-      } else {
-        msg = new IMAPEMail(this);
-        msg.fromFlow(msgInfo);
-        newMessages.add(msg);
+      for await (let msgInfo of msgsAsyncIterator) {
+        let msg = this.getEMailByUID(msgInfo.uid);
+        if (msg) {
+          msg.fromFlow(msgInfo);
+          updatedMessages.add(msg);
+        } else {
+          msg = new IMAPEMail(this);
+          msg.fromFlow(msgInfo);
+          newMessages.add(msg);
+        }
+        this.updateModSeq(msgInfo.modseq);
       }
-      this.updateModSeq(msgInfo.modseq);
-    }
+    });
     this.messages.addAll(newMessages); // notify only once
 
     await this.downloadMessagesComplete();
@@ -115,33 +115,33 @@ export class IMAPFolder extends Folder {
       let downloadMessages = needToDownload.getIndexRange(needToDownload.length - kMaxCount, kMaxCount) as any as IMAPEMail[];
       needToDownload.removeAll(downloadMessages);
       let uids = downloadMessages.map(msg => msg.uid).join(",");
-      let msgInfos = await this.runCommand(async (conn) => {
-        return await conn.fetch(uids, {
-            uid: true,
-            size: true,
-            threadId: true,
-            envelope: true,
-            source: true,
-            flags: true,
-            // headers: true,
-          }, { uid: true });
-      });
-      for await (let msgInfo of msgInfos) {
-        try {
-          let msg = this.getEMailByUID(msgInfo.uid);
-          if (msg?.downloadComplete) {
-            continue;
-          } else if (msg) {
-            msg.fromFlow(msgInfo);
-            this.updateModSeq(msgInfo.modseq);
-            await msg.parseMIME();
-            await msg.save();
-            downloadedMessages.add(msg);
+      await this.runCommand(async (conn) => {
+        let msgInfos = await conn.fetch(uids, {
+          uid: true,
+          size: true,
+          threadId: true,
+          envelope: true,
+          source: true,
+          flags: true,
+          // headers: true,
+        }, { uid: true });
+        for await (let msgInfo of msgInfos) {
+          try {
+            let msg = this.getEMailByUID(msgInfo.uid);
+            if (msg?.downloadComplete) {
+              continue;
+            } else if (msg) {
+              msg.fromFlow(msgInfo);
+              this.updateModSeq(msgInfo.modseq);
+              await msg.parseMIME();
+              await msg.save();
+              downloadedMessages.add(msg);
+            }
+          } catch (ex) {
+            this.account.errorCallback(ex);
           }
-        } catch (ex) {
-          this.account.errorCallback(ex);
         }
-      }
+      });
     }
 
     for (let msg of this.messages) {
