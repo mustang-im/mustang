@@ -69,7 +69,6 @@ export class SQLAddressbook implements AddressbookStorage {
       WHERE id = ${dbID}
       `) as any;
     acc.dbID = dbID;
-    console.log("Reading addressbook", dbID, row);
     (acc.id as any) = sanitize.alphanumdash(row.idStr);
     acc.name = sanitize.label(row.name);
     assert(acc.protocol == sanitize.alphanumdash(row.protocol), "Addressbook object of wrong type passed in");

@@ -1,10 +1,11 @@
-import { EMail, type PersonEmailAddress } from "../EMail";
-import { MailAccount } from "../MailAccount";
-import { Folder } from "../Folder";
-import type { MailPerson } from "../Person";
+import type { EMail } from "../EMail";
+import type { PersonUID } from "../../Abstract/PersonUID";
+import type { MailAccount } from "../MailAccount";
+import type { Folder } from "../Folder";
 import { AbstractFunction } from "../../util/util";
 import { Observable } from "../../util/Observable";
-import { Collection } from "svelte-collections";
+import type { Collection } from "svelte-collections";
+import type { PersonOrGroup } from "../../../frontend/Shared/Person/PersonOrGroup";
 
 /** Contains the search criteria for emails.
  * Subclasses then implement the concrete search algo.
@@ -15,9 +16,9 @@ export class SearchEMail extends Observable {
   folder: Folder | null = null;
 
   isOutgoing: boolean | null = null;
-  contact: MailPerson | null = null;
-  from: PersonEmailAddress | null = null;
-  recipientsIncludes: PersonEmailAddress | null = null;
+  contact: PersonOrGroup | PersonUID | null = null;
+  from: PersonUID | null = null;
+  recipientsIncludes: PersonUID | null = null;
 
   threadID: string | null = null;
   dateSentFrom: Date | null = null;

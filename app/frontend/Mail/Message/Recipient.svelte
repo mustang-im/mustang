@@ -10,13 +10,13 @@
 </AppObject>
 
 <script lang="ts">
-  import type { PersonEmailAddress } from "../../../logic/Mail/EMail";
+  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { Person, ContactEntry } from "../../../logic/Abstract/Person";
   import { getDomainForEmailAddress, getBaseDomainFromHost } from "../../../logic/Mail/AutoConfig/fetchConfig";
   import { nameFromEmailAddress } from "../../../logic/Mail/AutoConfig/saveConfig";
   import AppObject from "../../AppsBar/AppObject.svelte";
 
-  export let recipient: PersonEmailAddress;
+  export let recipient: PersonUID;
 
   $: recipient.findPerson();
 

@@ -1,12 +1,11 @@
 import { Message } from "../Abstract/Message";
 import { type Folder, SpecialFolder } from "./Folder";
-import type { Person } from "../Abstract/Person";
 import { Attachment, ContentDisposition } from "./Attachment";
 import { RawFilesAttachment } from "./Store/RawFilesAttachment";
 import { SQLEMail } from "./SQL/SQLEMail";
 import { MailZIP } from "./Store/MailZIP";
 import { MailDir } from "./Store/MailDir";
-import { findPerson, findOrCreatePersonEmailAddress } from "./Person";
+import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { appGlobal } from "../app";
 import { fileExtensionForMIMEType, assert } from "../util/util";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
@@ -18,12 +17,12 @@ export class EMail extends Message {
   @notifyChangedProperty
   subject: string;
   @notifyChangedProperty
-  from = new PersonEmailAddress();
+  from = new PersonUID();
   @notifyChangedProperty
-  replyTo = new PersonEmailAddress();
-  readonly to = new ArrayColl<PersonEmailAddress>();
-  readonly cc = new ArrayColl<PersonEmailAddress>();
-  readonly bcc = new ArrayColl<PersonEmailAddress>();
+  replyTo = new PersonUID();
+  readonly to = new ArrayColl<PersonUID>();
+  readonly cc = new ArrayColl<PersonUID>();
+  readonly bcc = new ArrayColl<PersonUID>();
   readonly attachments = new ArrayColl<Attachment>();
   readonly headers = new MapColl<string, string>();
   /** Size of full RFC822 MIME message, in bytes */
@@ -109,9 +108,9 @@ export class EMail extends Message {
       this.subject = sanitize.string(mail.subject, this.subject ?? "");
       this.sent = sanitize.date(mail.date, this.sent ?? new Date());
       if (mail.from?.address) {
-        this.from = findOrCreatePersonEmailAddress(sanitize.nonemptystring(mail.from.address), sanitize.label(mail.from.name, null));
+        this.from = findOrCreatePersonUID(sanitize.nonemptystring(mail.from.address), sanitize.label(mail.from.name, null));
       } else {
-        this.from = findOrCreatePersonEmailAddress("unknown@invalid", "Unknown");
+        this.from = findOrCreatePersonUID("unknown@invalid", "Unknown");
       }
     }
     if (this.to.isEmpty) {
@@ -122,7 +121,7 @@ export class EMail extends Message {
     this.contact = this.outgoing ? this.to.first : this.from;
     if (!this.replyTo && mail.replyTo?.length) {
       let p = mail.replyTo[0];
-      this.replyTo = findOrCreatePersonEmailAddress(sanitize.nonemptystring(p.address, "unknown@invalid"), sanitize.label(p.name, null));
+      this.replyTo = findOrCreatePersonUID(sanitize.nonemptystring(p.address, "unknown@invalid"), sanitize.label(p.name, null));
     }
     if (!this.inReplyTo) {
       this.inReplyTo = sanitize.string(mail.inReplyTo, null);
@@ -257,36 +256,11 @@ export class EMail extends Message {
   }
 }
 
-export class PersonEmailAddress {
-  name: string;
-  emailAddress: string;
-  person?: Person;
-
-  static fromPerson(person: Person) {
-    let pe = new PersonEmailAddress();
-    pe.name = person.name;
-    pe.emailAddress = person.emailAddresses.first?.value;
-    pe.person = person;
-    return pe;
-  }
-
-  findPerson() {
-    if (this.person) {
-      return;
-    }
-    this.person = findPerson(this.emailAddress, this.name);
-  }
-
-  toString() {
-    return this.name + " <" + this.emailAddress + ">";
-  }
-}
-
-export function setPersons(targetList: ArrayColl<PersonEmailAddress>, personList: { address: string, name: string }[]): void {
+export function setPersons(targetList: ArrayColl<PersonUID>, personList: { address: string, name: string }[]): void {
   targetList.clear();
   if (!personList?.length) {
     return;
   }
   targetList.addAll(personList.map(p =>
-    findOrCreatePersonEmailAddress(sanitize.nonemptystring(p.address, "unknown@invalid"), sanitize.label(p.name, null))));
+    findOrCreatePersonUID(sanitize.nonemptystring(p.address, "unknown@invalid"), sanitize.label(p.name, null))));
 }

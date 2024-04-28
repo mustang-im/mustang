@@ -11,7 +11,7 @@
 </PersonsAutocomplete>
 
 <script lang="ts">
-  import { PersonEmailAddress } from "../../../logic/Mail/EMail";
+  import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import type { Person } from "../../../logic/Abstract/Person";
   import PersonsAutocomplete from "../../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
   import PersonContextMenu from "./PersonContextMenu.svelte";
@@ -19,7 +19,7 @@
 
   /** E.g. to, cc or bcc list
    * in/out */
-  export let addresses: ArrayColl<PersonEmailAddress>;
+  export let addresses: ArrayColl<PersonUID>;
   export let placeholder: string;
 
   // Map Person <- PersonEmailAddress
@@ -27,7 +27,7 @@
 
   // Map newly added PersonEmailAddress -> Person
   function onAddPerson(person: Person) {
-    addresses.add(PersonEmailAddress.fromPerson(person));
+    addresses.add(PersonUID.fromPerson(person));
   }
   function onRemovePerson(person: Person) {
     addresses.remove(addresses.find(a => a.person == person));

@@ -1,5 +1,6 @@
 import { MailAccount, TLSSocketType, type OutgoingMailAccount } from "../MailAccount";
-import type { EMail, PersonEmailAddress } from "../EMail";
+import type { EMail } from "../EMail";
+import type { PersonUID } from "../../Abstract/PersonUID";
 import { Attachment , ContentDisposition } from "../Attachment";
 import { appGlobal } from "../../app";
 import { blobToBase64 } from "../../util/util";
@@ -67,10 +68,10 @@ export class SMTPAccount extends MailAccount implements OutgoingMailAccount {
     }
   }
 
-  protected static getRecipients(recipients: ArrayColl<PersonEmailAddress>): NMAddress[] {
+  protected static getRecipients(recipients: ArrayColl<PersonUID>): NMAddress[] {
     return recipients.contents.map(to => SMTPAccount.getRecipient(to));
   }
-  protected static getRecipient(to: PersonEmailAddress): NMAddress {
+  protected static getRecipient(to: PersonUID): NMAddress {
     // `${to.name} <${to.emailAddress}>` created by nodemailer, with quotes
     return {
       name: to.name,

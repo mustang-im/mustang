@@ -1,7 +1,7 @@
-import type { EMail, PersonEmailAddress } from "../EMail";
+import type { EMail } from "../EMail";
+import { type PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import type { Folder } from "../Folder";
 import { Attachment, ContentDisposition } from "../Attachment";
-import { findOrCreatePerson, findOrCreatePersonEmailAddress } from "../Person";
 import { getDatabase } from "./SQLDatabase";
 import type { IMAPEMail } from "../IMAP/IMAPEMail";
 import { backgroundError } from "../../../frontend/Util/error";
@@ -88,20 +88,20 @@ export class SQLEMail {
       `);
   }
 
-  static async saveRecipients(email: EMail, recipients: ArrayColl<PersonEmailAddress>, recipientsType: number) {
+  static async saveRecipients(email: EMail, recipients: ArrayColl<PersonUID>, recipientsType: number) {
     for (let recipient of recipients) {
       await this.saveRecipient(email, recipient, recipientsType);
     }
   }
 
-  static async saveRecipient(email: EMail, pe: PersonEmailAddress, recipientType: number) {
+  static async saveRecipient(email: EMail, puid: PersonUID, recipientType: number) {
     let exists = await (await getDatabase()).get(sql`
         SELECT
           id
         FROM emailPerson
         WHERE
-          emailAddress = ${pe.emailAddress} AND
-          name = ${pe.name}
+          emailAddress = ${puid.emailAddress} AND
+          name = ${puid.name}
         `) as any;
     let personID = exists?.id;
     if (!personID) {
@@ -109,7 +109,7 @@ export class SQLEMail {
       INSERT OR IGNORE INTO emailPerson (
         name, emailAddress, personID
       ) VALUES (
-        ${pe.name}, ${pe.emailAddress}, ${pe.person?.dbID}
+        ${puid.name}, ${puid.emailAddress}, ${puid.person?.dbID}
       )`);
       personID = insert.lastInsertRowid;
     }
@@ -220,9 +220,9 @@ export class SQLEMail {
       try {
         let addr = sanitize.emailAddress(row.emailAddress, "unknown@invalid");
         let name = sanitize.label(row.name, null);
-        let pe = findOrCreatePersonEmailAddress(addr, name);
+        let uid = findOrCreatePersonUID(addr, name);
         if (row.recipientType == 1) {
-          email.from = pe;
+          email.from = uid;
           continue;
         } else if (row.recipientType == 5) {
           email.replyTo.emailAddress = addr;
@@ -230,11 +230,11 @@ export class SQLEMail {
           continue;
         }
         if (row.recipientType == 2) {
-          email.to.add(pe);
+          email.to.add(uid);
         } else if (row.recipientType == 3) {
-          email.cc.add(pe);
+          email.cc.add(uid);
         } else if (row.recipientType == 4) {
-          email.bcc.add(pe);
+          email.bcc.add(uid);
         }
       } catch (ex) {
         backgroundError(ex);

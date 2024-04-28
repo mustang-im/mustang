@@ -2,7 +2,7 @@ import type { MailAccount } from "../MailAccount";
 import { SQLMailAccount } from "../SQL/SQLMailAccount";
 import { ContactEntry, Person } from "../../Abstract/Person";
 import { Folder, SpecialFolder } from "../../Mail/Folder";
-import type { PersonEmailAddress } from "../EMail";
+import type { PersonUID } from "../../Abstract/PersonUID";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
@@ -95,7 +95,7 @@ async function populateCollectedAddresses(sentFolder: Folder, config: MailAccoun
    * double-check using the From address of each message. */
   let sentMsgs = sentFolder.messages.contents.filter(msg => msg.from?.emailAddress == config.emailAddress);
   let recipientLists = sentMsgs.flatMap(msg => msg.to);
-  let recipients = new SetColl<PersonEmailAddress>();
+  let recipients = new SetColl<PersonUID>();
   for (let list of recipientLists) {
     for (let person of list) {
       if (person.emailAddress && person.name &&

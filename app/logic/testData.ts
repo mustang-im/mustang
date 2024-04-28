@@ -4,7 +4,7 @@ import { Folder, SpecialFolder } from './Mail/Folder';
 import { ChatAccount } from './Chat/ChatAccount';
 import { UserChatMessage } from './Chat/Message';
 import { ChatPerson } from './Chat/Person';
-import { PersonEmailAddress } from './Mail/EMail';
+import { PersonUID } from './Abstract/PersonUID';
 import { ContactEntry, Person } from './Abstract/Person';
 import { Group } from './Abstract/Group';
 import { Chat } from './Chat/Chat';
@@ -107,9 +107,9 @@ export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCoun
   account.port = 993;
   account.tls = 2;
   me.emailAddresses.add(new ContactEntry(account.emailAddress, "Primary"));
-  let mePE = new PersonEmailAddress();
-  mePE.name = account.userRealname;
-  mePE.emailAddress = account.emailAddress;
+  let meUID = new PersonUID();
+  meUID.name = account.userRealname;
+  meUID.emailAddress = account.emailAddress;
 
   for (let name of ['Inbox', 'Sent', 'Drafts', 'Trash', 'Spam']) {
     let folder = account.newFolder();
@@ -125,7 +125,7 @@ export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCoun
   lastReadTime.setHours(lastReadTime.getHours() - 1);
   let emailNr = 0;
   for (let person of persons) {
-    let personPE = PersonEmailAddress.fromPerson(person);
+    let pUID = PersonUID.fromPerson(person);
     for (let i = 1; i <= msgCount; i++) {
       emailNr++;
       let folder: Folder;
@@ -144,8 +144,8 @@ export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCoun
       msg.subject = faker.hacker.phrase().replace("!", "").replace(/,.*/, "");
       msg.outgoing = Math.random() < 0.4;
       msg.contact = person;
-      msg.from = msg.outgoing ? mePE : personPE;
-      msg.to.add(msg.outgoing ? personPE : mePE);
+      msg.from = msg.outgoing ? meUID : pUID;
+      msg.to.add(msg.outgoing ? pUID : meUID);
       for (let i = Math.floor(Math.random() * 3); i > 0; i--) {
         msg.to.add(fakeMailPerson());
       }
@@ -174,8 +174,8 @@ export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCoun
   return account;
 }
 
-export function fakeMailPerson(): PersonEmailAddress {
-  let person = new PersonEmailAddress();
+export function fakeMailPerson(): PersonUID {
+  let person = new PersonUID();
   person.name = faker.name.fullName();
   person.emailAddress = faker.internet.email().toLowerCase();
   return person;

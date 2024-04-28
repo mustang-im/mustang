@@ -44,7 +44,8 @@
 </vbox>
 
 <script lang="ts">
-  import { PersonEmailAddress, type EMail } from "../../../logic/Mail/EMail";
+  import type { EMail } from "../../../logic/Mail/EMail";
+  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { Person } from "../../../logic/Abstract/Person";
   import { selectedPerson, type PersonOrGroup } from "../../Shared/Person/PersonOrGroup";
   import MessageToolbar from "./MessageToolbar.svelte";
@@ -76,7 +77,7 @@
   });
 
   $: selectPerson(message?.contact);
-  function selectPerson(contact: PersonOrGroup | PersonEmailAddress) {
+  function selectPerson(contact: PersonOrGroup | PersonUID) {
     if (!(contact instanceof Person)) {
       return;
     }
