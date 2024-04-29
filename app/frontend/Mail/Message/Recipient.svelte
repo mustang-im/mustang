@@ -1,6 +1,6 @@
 <AppObject obj={recipient.person} createObject={recipient.person ? null : createPersonOnDemand}>
-  <value class="name" title={recipient.emailAddress}>
-    {recipient.name?.substring(0, 25) || recipient.emailAddress?.split("@")[0]}
+  <value class="name" title={recipient.name + "\n" + recipient.emailAddress}>
+    {personDisplayName(recipient).replace(/@.*/, "")}
   </value>
   {#if !recipient.findPerson()}
     <value class="domain" title={recipient.emailAddress}>
@@ -10,7 +10,7 @@
 </AppObject>
 
 <script lang="ts">
-  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import { type PersonUID, personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { Person, ContactEntry } from "../../../logic/Abstract/Person";
   import { getDomainForEmailAddress, getBaseDomainFromHost } from "../../../logic/Mail/AutoConfig/fetchConfig";
   import { nameFromEmailAddress } from "../../../logic/Mail/AutoConfig/saveConfig";

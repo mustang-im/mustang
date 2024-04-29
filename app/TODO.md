@@ -181,7 +181,6 @@
 
 ## Security
 * Unknown senders
-  * Remove email address and domain names from name
   * Known name, but unknown email address
     * Warn when reading
     * Warn when replying
@@ -189,6 +188,7 @@
     * Email address or domain name in name
     * Link text doesn't match link target
   * Make email domain bold, userpart in grey and not bold DONE
+  * Remove email address and domain names from name DONE
   * Shorten name to 30 chars DONE
 * HTML
   * Test sanitization

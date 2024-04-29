@@ -63,7 +63,10 @@ export function personDisplayName(person: PersonOrGroup | PersonUID) {
     if (!person.name) {
       return person.emailAddress;
     }
-    return person.name.substring(0, 30);
+    return person.name?.
+      replace(/@.*/, "").
+      replace(/ via .*/, "").
+      substring(0, 30);
     /* Show domain - but too cluttered
     let domain = getBaseDomainFromHost(getDomainForEmailAddress(person.emailAddress));
     return person.name.substring(0, 20) + " @" + domain; */
