@@ -144,9 +144,10 @@ export class SQLEMail {
       `);
   }
 
-  static async read(dbID: number, email: EMail, emailRow: any, recipientRows: any[], attachmentRows: any[]): Promise<EMail> {
-    // <copied to="readAll()" />
-    let row = await (await getDatabase()).get(sql`
+  static async read(dbID: number, email: EMail, row: any, recipientRows: any[], attachmentRows: any[]): Promise<EMail> {
+    if (!row) {
+      // <copied to="readAll()" />
+      row = await (await getDatabase()).get(sql`
       SELECT
         uid, messageID, parentMsgID,
         size, dateSent, dateReceived,
@@ -157,7 +158,8 @@ export class SQLEMail {
       FROM email
       WHERE id = ${dbID}
       `) as any;
-    // contactEmail, contactName, myEmail
+      // contactEmail, contactName, myEmail
+    }
     email.dbID = sanitize.integer(dbID);
     (email as any as IMAPEMail).uid = sanitize.integer(row.uid, null);
     email.id = sanitize.nonemptystring(row.messageID);
@@ -209,11 +211,11 @@ export class SQLEMail {
     if (!recipientRows) {
       // <copied to="readAll()" />
       recipientRows = await (await getDatabase()).all(sql`
-      SELECT
-        name, emailAddress, recipientType
-      FROM emailPersonRel
-        LEFT JOIN emailPerson ON (emailPersonRel.emailPersonID = emailPerson.id)
-      WHERE emailID = ${email.dbID}
+        SELECT
+          name, emailAddress, recipientType
+        FROM emailPersonRel
+          LEFT JOIN emailPerson ON (emailPersonRel.emailPersonID = emailPerson.id)
+        WHERE emailID = ${email.dbID}
       `) as any;
     }
     for (let row of recipientRows) {
@@ -246,10 +248,10 @@ export class SQLEMail {
     if (!attachmentRows) {
       // <copied to="readAll()" />
       attachmentRows = await (await getDatabase()).all(sql`
-      SELECT
-        filename, filepathLocal, mimeType, size, contentID, disposition, related
-      FROM emailAttachment
-      WHERE emailID = ${email.dbID}
+        SELECT
+          filename, filepathLocal, mimeType, size, contentID, disposition, related
+        FROM emailAttachment
+        WHERE emailID = ${email.dbID}
       `) as any;
     }
     let fallbackID = 0;
@@ -285,27 +287,27 @@ export class SQLEMail {
         isRead, isStarred, isReplied, isDraft, isSpam
       FROM email
       WHERE folderID = ${folder.dbID}
-      `) as any;
+    `) as any;
     //console.time("sql read emails");
     // plaintext, html, -- 10x slower, so do this later or on demand
     //console.timeEnd("sql read emails");
     // <copied from="readRecipients()" />
     let folderRecipientRows = await (await getDatabase()).all(sql`
       SELECT
-        name, emailAddress, recipientType
+        emailID, name, emailAddress, recipientType
       FROM emailPersonRel
         LEFT JOIN emailPerson ON (emailPersonRel.emailPersonID = emailPerson.id)
         LEFT JOIN email ON (emailID = email.id)
       WHERE folderID = ${folder.dbID}
-      `) as any;
+    `) as any;
     // <copied from="readAttachments()" />
     let folderAttachmentRows = await (await getDatabase()).all(sql`
       SELECT
-        filename, filepathLocal, mimeType, emailAttachment.size as size, contentID, disposition, related
+        emailID, filename, filepathLocal, mimeType, emailAttachment.size as size, contentID, disposition, related
       FROM emailAttachment
       LEFT JOIN email ON (emailID = email.id)
       WHERE folderID = ${folder.dbID}
-      `) as any;
+    `) as any;
     let newEmails = new ArrayColl<EMail>();
     for (let row of emailRows) {
       let email = folder.messages.find(email => email.dbID == row.id);
