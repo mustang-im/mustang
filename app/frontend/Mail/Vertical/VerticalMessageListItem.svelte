@@ -11,7 +11,7 @@
         <OutgoingIcon size={16} />
       {/if}
     </hbox>
-    <hbox class="contact">{message.contact?.name ?? ""}</hbox>
+    <hbox class="contact">{contactName}</hbox>
     <hbox flex />
     <hbox class="date">{getDateString($message.sent)}</hbox>
     <hbox class="buttons hover">
@@ -70,8 +70,9 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { onDragStartMail } from "../Message/drag";
+  import { personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { selectedMessage } from "../Selected";
+  import { onDragStartMail } from "../Message/drag";
   import Button from "../../Shared/Button.svelte";
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
   import StarIcon from "lucide-svelte/icons/star";
@@ -85,6 +86,7 @@
   export let message: EMail;
 
   $: attachments = message.attachments;
+  $: contactName = personDisplayName(message.contact);
 
   async function toggleRead() {
     await message.markRead(!message.isRead);

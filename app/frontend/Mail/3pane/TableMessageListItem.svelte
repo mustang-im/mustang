@@ -28,7 +28,7 @@
     <OutgoingIcon size={16} />
   {/if}
 </hbox>
-<hbox class="correspondent" draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}>{$message.contact?.name ?? ""}</hbox>
+<hbox class="correspondent" draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}>{contactName}</hbox>
 <hbox class="subject" class:unread={!$message.isRead} draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}>{$message.subject}</hbox>
 <hbox class="date" class:unread={!$message.isRead} draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}>{getDateString($message.sent)}</hbox>
 <hbox class="buttons hover">
@@ -56,7 +56,9 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
+  import { personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { selectedMessage } from "../Selected";
+  import { onDragStartMail } from "../Message/drag";
   import Button from "../../Shared/Button.svelte";
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
   import StarIcon from "lucide-svelte/icons/star";
@@ -66,9 +68,10 @@
   import SpamIcon from "lucide-svelte/icons/shield-x";
   import { getDateString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
-  import { onDragStartMail } from "../Message/drag";
 
   export let message: EMail;
+
+  $: contactName = personDisplayName(message.contact);
 
   async function toggleRead() {
     await message.markRead(!message.isRead);

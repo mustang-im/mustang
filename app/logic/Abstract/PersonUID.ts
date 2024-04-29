@@ -1,4 +1,6 @@
-import type { Person } from "../Abstract/Person";
+import type { PersonOrGroup } from "../../frontend/Shared/Person/PersonOrGroup";
+import { Group } from "./Group";
+import { Person } from "./Person";
 import { appGlobal } from "../app";
 
 export class PersonUID {
@@ -46,4 +48,26 @@ export function findPerson(emailAddress: string, realname: string): Person | und
     return existing;
   }
   return undefined;
+}
+
+export function personDisplayName(person: PersonOrGroup | PersonUID) {
+  if (!person) {
+    return "";
+  } else if (person instanceof Person || person instanceof Group) {
+    return person.name;
+  } else if (person instanceof PersonUID) {
+    person.findPerson();
+    if (person.person) {
+      return person.name;
+    }
+    if (!person.name) {
+      return person.emailAddress;
+    }
+    return person.name.substring(0, 30);
+    /* Show domain - but too cluttered
+    let domain = getBaseDomainFromHost(getDomainForEmailAddress(person.emailAddress));
+    return person.name.substring(0, 20) + " @" + domain; */
+  } else {
+    return "Unknown contact type";
+  }
 }
