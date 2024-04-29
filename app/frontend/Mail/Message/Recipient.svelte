@@ -10,9 +10,9 @@
 </AppObject>
 
 <script lang="ts">
-  import { type PersonUID, personDisplayName } from "../../../logic/Abstract/PersonUID";
+  import { type PersonUID, personDisplayName, getDomainForEmailAddress } from "../../../logic/Abstract/PersonUID";
   import { Person, ContactEntry } from "../../../logic/Abstract/Person";
-  import { getDomainForEmailAddress, getBaseDomainFromHost } from "../../../logic/Mail/AutoConfig/fetchConfig";
+  import { getBaseDomainFromHost } from "../../../logic/Mail/AutoConfig/fetchConfig";
   import { nameFromEmailAddress } from "../../../logic/Mail/AutoConfig/saveConfig";
   import AppObject from "../../AppsBar/AppObject.svelte";
 

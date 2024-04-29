@@ -2,6 +2,7 @@ import type { PersonOrGroup } from "../../frontend/Shared/Person/PersonOrGroup";
 import { Group } from "./Group";
 import { Person } from "./Person";
 import { appGlobal } from "../app";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 
 export class PersonUID {
   name: string;
@@ -73,4 +74,9 @@ export function personDisplayName(person: PersonOrGroup | PersonUID) {
   } else {
     return "Unknown contact type";
   }
+}
+
+export function getDomainForEmailAddress(emailAddress): string {
+  // Do not throw, because this function is used in {UI code}
+  return sanitize.hostname(emailAddress.split("@").pop(), "unknown");
 }
