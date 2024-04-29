@@ -107,9 +107,7 @@ export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCoun
   account.port = 993;
   account.tls = 2;
   me.emailAddresses.add(new ContactEntry(account.emailAddress, "Primary"));
-  let meUID = new PersonUID();
-  meUID.name = account.userRealname;
-  meUID.emailAddress = account.emailAddress;
+  let meUID = new PersonUID(account.emailAddress, account.userRealname);
 
   for (let name of ['Inbox', 'Sent', 'Drafts', 'Trash', 'Spam']) {
     let folder = account.newFolder();
@@ -175,10 +173,7 @@ export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCoun
 }
 
 export function fakeMailPerson(): PersonUID {
-  let person = new PersonUID();
-  person.name = faker.name.fullName();
-  person.emailAddress = faker.internet.email().toLowerCase();
-  return person;
+  return new PersonUID(faker.internet.email().toLowerCase(), faker.name.fullName());
 }
 
 export function fakeChatAccount(persons: Collection<Person>, me: Person, msgCount = 300): ChatAccount {

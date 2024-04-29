@@ -7,10 +7,13 @@ export class PersonUID {
   emailAddress: string;
   person?: Person;
 
+  constructor(emailAddress?: string, name?: string) {
+    this.emailAddress = emailAddress;
+    this.name = name;
+  }
+
   static fromPerson(person: Person) {
-    let puid = new PersonUID();
-    puid.name = person.name;
-    puid.emailAddress = person.emailAddresses.first?.value;
+    let puid = new PersonUID(person.emailAddresses.first?.value, person.name);
     puid.person = person;
     return puid;
   }
@@ -34,10 +37,7 @@ export function findOrCreatePersonUID(emailAddress: string, realname: string): P
   if (existing) {
     return PersonUID.fromPerson(existing);
   }
-  let puid = new PersonUID();
-  puid.emailAddress = emailAddress;
-  puid.name = realname ?? emailAddress;
-  return puid;
+  return new PersonUID(emailAddress, realname ?? emailAddress);
 }
 
 export function findPerson(emailAddress: string, realname: string): Person | undefined {

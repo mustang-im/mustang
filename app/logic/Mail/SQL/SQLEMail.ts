@@ -1,5 +1,5 @@
 import type { EMail } from "../EMail";
-import { type PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import type { Folder } from "../Folder";
 import { Attachment, ContentDisposition } from "../Attachment";
 import { getDatabase } from "./SQLDatabase";
@@ -34,7 +34,7 @@ export class SQLEMail {
         INSERT INTO email (
           messageID, folderID, uid, parentMsgID,
           size, dateSent, dateReceived,
-          outgoing, -- contactEmail, contactName, myEmail
+          outgoing,
           subject, plaintext, html
         ) VALUES (
           ${email.id}, ${email.folder.dbID}, ${(email as any as IMAPEMail).uid}, ${email.inReplyTo},
@@ -42,13 +42,14 @@ export class SQLEMail {
           ${email.outgoing ? 1 : 0},
           ${email.subject}, ${email.text}, ${email.rawHTMLDangerous}
         )`);
+      // -- contactEmail, contactName, myEmail
       email.dbID = insert.lastInsertRowid;
       await this.saveRecipient(email, email.from, 1);
       await this.saveRecipients(email, email.to, 2);
       await this.saveRecipients(email, email.cc, 3);
       await this.saveRecipients(email, email.bcc, 4);
       if (email.replyTo?.emailAddress) {
-        await this.saveRecipient(email, email.replyTo.name, email.replyTo.emailAddress, 5);
+        await this.saveRecipient(email, new PersonUID(email.replyTo.name, email.replyTo.emailAddress), 5);
       }
     } else {
       await (await getDatabase()).run(sql`
@@ -65,7 +66,7 @@ export class SQLEMail {
           plaintext = ${email.text},
           html = ${email.rawHTMLDangerous}
         WHERE id = ${email.dbID}
-        `);
+      `);
     }
     await this.saveWritableProps(email);
     for (let attachment of email.attachments) {
