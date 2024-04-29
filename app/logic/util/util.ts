@@ -58,7 +58,7 @@ export function sanitizeFilename(label: string): string {
   if (filename.length < 5 && kDeviceNames.includes(filename)) {
     filename = "file";
   }
-  return filename;
+  return filename.trim();
 }
 
 export function fileExtensionForMIMEType(mimetype: string) {

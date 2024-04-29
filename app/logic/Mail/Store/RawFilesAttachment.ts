@@ -1,7 +1,7 @@
 import type { Attachment } from "../Attachment";
 import type { EMail } from "../EMail";
 import { appGlobal } from "../../app";
-import { sanitizeFilename } from "../../util/util";
+import { sanitizeFilename, fileExtensionForMIMEType } from "../../util/util";
 import { SQLEMail } from "../SQL/SQLEMail";
 
 let configDir: string = null;
@@ -62,7 +62,11 @@ export class RawFilesAttachment {
     let dir = await this.getDirPath(email);
     // Permissions: Only user can read and write the dir. Permissions later changed in `emailFinished()`
     await appGlobal.remoteApp.fs.mkdir(dir, { recursive: true, mode: 0o700 });
-    return `${dir}/${sanitizeFilename(attachment.filename)}`;
+    let id = email.attachments.getKeyForValue(attachment) ?? Math.floor(Math.random() * 100) + 100;
+    let fileparts = attachment.filename.split(".");
+    let ext = fileparts.length > 1 ? fileparts.pop() : fileExtensionForMIMEType(attachment.mimeType);
+    let filename = fileparts.join(".") + "-" + id + "." + ext;
+    return `${dir}/${sanitizeFilename(filename)}`;
   }
 
   static async getDirPath(email: EMail): Promise<string> {
