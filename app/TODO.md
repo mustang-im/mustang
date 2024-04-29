@@ -11,9 +11,7 @@
     * Google
       * no email subject
     * Setup mail
-      * When finishing gives error, don't allow the user to click multiple times, creating multiple accounts.
       * after account delete: remove general panel
-* Read and save real name of user
 
 # UI
 * Close menu when clicking outside menu
@@ -107,17 +105,10 @@
 # Mail
 * Body
   * Plaintext formatting
-  * HTML formatting
   * Link
     * Click
     * Hover
     * Right-click, copy
-* Recipients display
-  * Known persons
-  * Unknown persons
-  * Known name, but unknown email address
-    * Warn when reading
-    * Warn when replying
 * Compose: Recipients entry
 * Search
   * UI for criteria other than text
@@ -136,17 +127,17 @@
 * Print
 * View source
 * Import
+  * UI in Setup
   * Thunderbird
-     * Account settings
+     * Account settings - Logic implemented
      * Mails
-     * Contacts
+     * Contacts - Partial
      * Calendar
   * Outlook
      * Account settings
      * Contacts
      * Calendar
      * Mails
-* HTML emails as sent, but sanitized and jailed
 * Move folder
 * Delete strategy
   * Move to trash
@@ -190,14 +181,22 @@
 
 ## Security
 * Unknown senders
-  * Shorten name to 30 chars
   * Remove email address and domain names from name
-  * Make email domain bold, userpart in grey and not bold
-  * Score emails:
+  * Known name, but unknown email address
+    * Warn when reading
+    * Warn when replying
+  * Score emails
     * Email address or domain name in name
     * Link text doesn't match link target
+  * Make email domain bold, userpart in grey and not bold DONE
+  * Shorten name to 30 chars DONE
+* HTML
+  * Test sanitization
+  * Make `<iframe>` untrusted and test it
+  * Block HTTP loads
+  * Show link target domain
 * Promos
-    * Link text doesn't match link target
+  * Link text doesn't match link target
 
 # Login
 * OAuth2 UI
