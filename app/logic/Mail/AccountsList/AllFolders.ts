@@ -3,7 +3,7 @@ import type { MailAccount } from "../MailAccount";
 import type { AllAccounts } from "./AllAccounts";
 import type { EMail } from "../EMail";
 import { assert } from "../../util/util";
-import { mergeColls, Collection } from "svelte-collections";
+import { mergeColls, mergeColl, Collection } from "svelte-collections";
 
 export class AllFolders extends Folder {
   account: AllAccounts;
@@ -30,7 +30,13 @@ export class AllFolders extends Folder {
 
   async listMessages() {
     await Promise.all(this._folders.contents.map(folder =>
-        folder.listMessages()));
+      folder.listMessages()));
+  }
+
+  async downloadMessages() {
+    let results = await Promise.all(this._folders.contents.map(folder =>
+      folder.downloadMessages()));
+    return mergeColl(...results);
   }
 
   async moveMessagesHere(messages: Collection<EMail>) {

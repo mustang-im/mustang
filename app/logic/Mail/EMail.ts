@@ -7,7 +7,7 @@ import { MailZIP } from "./Store/MailZIP";
 import { MailDir } from "./Store/MailDir";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { appGlobal } from "../app";
-import { fileExtensionForMIMEType, assert } from "../util/util";
+import { fileExtensionForMIMEType, assert, AbstractFunction } from "../util/util";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, Collection, MapColl } from "svelte-collections";
@@ -170,10 +170,9 @@ export class EMail extends Message {
    * Do this only exactly once per email `dbID`.
    * This typically happens immediately after`parseMIME()`. */
   async save() {
-    if (this.downloadComplete) {
+    if (await this.isDownloadCompleteDoublecheck()) {
       return;
     }
-    assert(!this.downloadComplete, `Already saved this email (dbID ${this.dbID})`);
     await SQLEMail.save(this);
     await MailZIP.save(this);
     //await MailDir.save(this);
@@ -182,20 +181,49 @@ export class EMail extends Message {
     await SQLEMail.saveWritableProps(this);
   }
 
-  get html(): string {
-    if (this.needToLoadBody) {
-    //if (this._rawHTML == null && this._text == null) {
-      if (!this.dbID) {
-        return "Message not downloaded yet";
-      }
-      SQLEMail.readBody(this)
-        .catch(this.folder.account.errorCallback); // async, but observers will trigger reload
-      return "Message content not downloaded yet";
+  protected async isDownloadCompleteDoublecheck(): Promise<boolean> {
+    if (this.downloadComplete) {
+      return true;
     }
-    return super.html;
+    // Double-check for concurrent downloads
+    let check = this.folder.newEMail();
+    check.dbID = this.dbID;
+    await SQLEMail.readWritableProps(this);
+    return check.downloadComplete;
+  }
+
+  get html(): string {
+    if (!this.needToLoadBody) {
+      return super.html;
+    }
+
+    (async () => { // observers will trigger reload
+      try {
+        if (this.dbID) {
+          await SQLEMail.readBody(this);
+        }
+      } catch (ex) {
+        this.folder.account.errorCallback(ex);
+      }
+      try {
+        if (this.needToLoadBody) {
+          await this.download();
+        }
+      } catch (ex) {
+        this.folder.account.errorCallback(ex);
+        // this.text = ex?.message ?? ex + "";
+      }
+    })();
+    return this.dbID
+      ? "Message content not downloaded yet"
+      : "Message not loaded yet";
   }
   set html(val: string) {
     super.html = val;
+  }
+
+  async download() {
+    throw new AbstractFunction();
   }
 
   async findThread(messages: Collection<EMail>): Promise<string | null>{

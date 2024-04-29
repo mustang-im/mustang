@@ -103,8 +103,7 @@ export class IMAPFolder extends Folder {
     });
     this.messages.addAll(newMessages); // notify only once
     await SQLFolder.saveProperties(this);
-
-    await this.downloadMessagesComplete();
+    // Should save to SQL DB, but often no `subject`, which violates the DB schema
   }
 
   /**
@@ -112,14 +111,14 @@ export class IMAPFolder extends Folder {
    * and downloads them in batches.
    * @return Actually newly downloaded msgs
    */
-  async downloadMessagesComplete(): Promise<ArrayColl<IMAPEMail>> {
-    let needToDownload = new ArrayColl(this.messages.contents.filter(msg => !msg.downloadComplete) as IMAPEMail[]);
-    let downloadedMessages = new ArrayColl<IMAPEMail>();
+  async downloadMessages(): Promise<Collection<IMAPEMail>> {
+    let needMsgs = new ArrayColl(this.messages.contents.filter(msg => !msg.downloadComplete) as IMAPEMail[]);
+    let downloadedMsgs = new ArrayColl<IMAPEMail>();
     const kMaxCount = 50;
-    while (needToDownload.hasItems) {
-      let downloadMessages = needToDownload.getIndexRange(needToDownload.length - kMaxCount, kMaxCount) as any as IMAPEMail[];
-      needToDownload.removeAll(downloadMessages);
-      let uids = downloadMessages.map(msg => msg.uid).join(",");
+    while (needMsgs.hasItems) {
+      let downloadingMsgs = needMsgs.getIndexRange(needMsgs.length - kMaxCount, kMaxCount) as any as IMAPEMail[];
+      needMsgs.removeAll(downloadingMsgs);
+      let uids = downloadingMsgs.map(msg => msg.uid).join(",");
       await this.runCommand(async (conn) => {
         let msgInfos = await conn.fetch(uids, {
           uid: true,
@@ -140,7 +139,7 @@ export class IMAPFolder extends Folder {
               this.updateModSeq(msgInfo.modseq);
               await msg.parseMIME();
               await msg.save();
-              downloadedMessages.add(msg);
+              downloadedMsgs.add(msg);
             }
           } catch (ex) {
             this.account.errorCallback(ex);
@@ -155,7 +154,7 @@ export class IMAPFolder extends Folder {
       }
     }
 
-    return downloadedMessages;
+    return downloadedMsgs;
   }
 
   getEMailByUID(uid: number): IMAPEMail {
@@ -185,6 +184,7 @@ export class IMAPFolder extends Folder {
     this.countTotal = newCount;
     if (hasChanged) {
       await this.listMessages();
+      await this.downloadMessages();
     }
   }
 

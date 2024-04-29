@@ -186,7 +186,7 @@ export class SQLEMail {
     return email;
   }
 
-  static async readWritableProps(email: EMail, row: any) {
+  static async readWritableProps(email: EMail, row?: any) {
     if (!row) {
       row = await (await getDatabase()).get(sql`
       SELECT
@@ -194,6 +194,9 @@ export class SQLEMail {
       FROM email
       WHERE id = ${email.dbID}
       `) as any;
+    }
+    if (!row) {
+      return;
     }
     email.isRead = sanitize.boolean(!!row.isRead);
     email.isStarred = sanitize.boolean(!!row.isStarred);
@@ -288,12 +291,13 @@ export class SQLEMail {
       FROM email
       WHERE id = ${email.dbID}
     `) as any;
-    email.text = sanitize.string(row.plaintext, "");
+    let text = sanitize.string(row.plaintext, "")
+    email.text = text;
     let html = sanitize.string(row.html, null);
     if (html) {
       email.html = html;
     }
-    email.needToLoadBody = false;
+    email.needToLoadBody = text == null && html == null;
   }
 
   static async readAll(folder: Folder): Promise<void> {

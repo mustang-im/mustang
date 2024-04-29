@@ -42,7 +42,11 @@ export class Folder extends Observable implements TreeItem {
   }
 
   async listMessages() {
-    console.log("list messages in folder", this.name);
+    throw new AbstractFunction();
+  }
+
+  async downloadMessages(): Promise<Collection<EMail>> {
+    throw new AbstractFunction();
   }
 
   async moveMessagesHere(messages: Collection<EMail>) {
