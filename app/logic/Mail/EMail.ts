@@ -184,6 +184,9 @@ export class EMail extends Message {
   get html(): string {
     if (this.needToLoadBody) {
     //if (this._rawHTML == null && this._text == null) {
+      if (!this.dbID) {
+        return "Message not downloaded yet";
+      }
       SQLEMail.readBody(this)
         .catch(this.folder.account.errorCallback); // async, but observers will trigger reload
       return "Message content not downloaded yet";
