@@ -37,14 +37,16 @@ class Sanitize {
     return i;
   }
 
-  boolean(unchecked: boolean | string | null, fallback: boolean | null | Symbol = throwErrors): boolean {
+  boolean(unchecked: boolean | string | number | null, fallback: boolean | null | Symbol = throwErrors): boolean {
     if (typeof (unchecked) == "boolean") {
       return unchecked;
     }
-    if (unchecked == "true") {
+    if (unchecked === "true" || unchecked === "1" || unchecked === 1) {
       return true;
     }
-    if (unchecked == "false") {
+    if (unchecked === "false" || unchecked === "0" ||
+      unchecked === 0 ||
+      unchecked === null || unchecked === undefined) {
       return false;
     }
     return haveError("Boolean", unchecked, fallback);
