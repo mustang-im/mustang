@@ -1,6 +1,11 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<hbox class="person" class:selected={open} class:no-pic={!person?.picture} on:click={onClick}>
-  <PersonPicture person={person} size={24} />
+<hbox class="person"
+  class:selected={open}
+  class:no-pic={!person.person?.picture}
+  on:click={onClick}>
+  {#if person.person?.picture}
+    <PersonPicture person={person.person} size={24} />
+  {/if}
   <vbox flex class="right">
     <hbox flex class="name">{person.name}</hbox>
   </vbox>
@@ -11,10 +16,10 @@
 </vbox>
 
 <script lang="ts">
-  import type { Person } from "../../../logic/Abstract/Person";
+  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import PersonPicture from "../Person/PersonPicture.svelte";
 
-  export let person: Person;
+  export let person: PersonUID;
 
   let open = false;
 
@@ -44,16 +49,12 @@
     margin: 0px;
     margin-right: 6px;
   }
-  .name {
-    align-items: center;
-    white-space: nowrap;
-  }
-
   .no-pic {
     padding-left: 14px;
   }
-  .no-pic :global(.avatar) {
-    display: none;
+  .name {
+    align-items: center;
+    white-space: nowrap;
   }
 
   .context-menu:not(.open) {

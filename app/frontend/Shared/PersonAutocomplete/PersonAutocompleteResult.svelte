@@ -1,5 +1,5 @@
 <hbox flex class="person">
-  <PersonPicture person={person} size={32} />
+  <PersonPicture person={person?.person} size={32} />
   <vbox flex class="right">
     <hbox class="top-row">
       <hbox flex class="name">{person.name}</hbox>
@@ -11,10 +11,10 @@
 </hbox>
 
 <script lang="ts">
-  import type { Person } from "../../../logic/Abstract/Person";
+  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import PersonPicture from "../Person/PersonPicture.svelte";
 
-  export let person: Person;
+  export let person: PersonUID;
 </script>
 
 <style>

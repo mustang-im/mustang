@@ -9,14 +9,14 @@
 </Menu>
 
 <script lang="ts">
-  import type { Person } from "../../../logic/Abstract/Person";
+  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { Menu } from "@svelteuidev/core";
   import RemoveIcon from "lucide-svelte/icons/x";
   import { catchErrors } from "../../Util/error";
   import { createEventDispatcher } from 'svelte';
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{ remove: PersonUID }>();
 
-  export let person: Person;
+  export let person: PersonUID;
 
   function onRemove() {
     dispatch("remove", person);

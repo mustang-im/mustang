@@ -19,17 +19,19 @@
 
 <script lang="ts">
   import type { Collection } from "svelte-collections";
-  import type { Person } from "../../../logic/Abstract/Person";
+  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import PersonAutocomplete from "./PersonAutocomplete.svelte";
   import PersonEntry from "./PersonEntry.svelte";
 
   /**
    * The persons that the user selected.
    * in/out */
-  export let persons: Collection<Person>;
+  export let persons: Collection<PersonUID>;
   export let placeholder: string = null;
 
-  function onAddPerson(person: Person) {
+  $: console.log("persons", persons.contents);
+
+  function onAddPerson(person: PersonUID) {
     if (!person || persons.contains(person)) {
       return;
     }

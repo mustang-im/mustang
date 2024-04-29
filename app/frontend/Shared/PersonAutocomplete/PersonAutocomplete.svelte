@@ -25,7 +25,7 @@
 </hbox>
 
 <script lang="ts">
-  import { Person, ContactEntry } from "../../../logic/Abstract/Person";
+  import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { appGlobal } from "../../../logic/app";
   import PersonAutocompleteResult from "./PersonAutocompleteResult.svelte";
   import { ArrayColl, type Collection } from "svelte-collections";
@@ -35,22 +35,30 @@
   import { createEventDispatcher, tick } from 'svelte';
   import { catchErrors } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
-  const dispatchEvent = createEventDispatcher();
+  const dispatch = createEventDispatcher<{ personSelected: PersonUID }>();
 
-  export let skipPersons: Collection<Person> = new ArrayColl<Person>();
+  export let skipPersons: Collection<PersonUID> = new ArrayColl<PersonUID>();
   export let placeholder = "Add person";
 
-  export async function search(inputStr: string): Promise<Person[]> {
+  export async function search(inputStr: string): Promise<PersonUID[]> {
     try {
       if (inputStr.length < 2) {
         return [];
       }
       inputStr = inputStr.toLowerCase();
-      let results = appGlobal.persons
+      let persons = appGlobal.persons
         .filter(person => person.name.toLowerCase().includes(inputStr) &&
-          !skipPersons.contains(person));
-      console.log("Got", results.length, "results for", inputStr);
-      return results.contents;
+          !skipPersons.find(uid => uid.person == person));
+      let emailAddresses: PersonUID[] = [];
+      for (let person of persons) {
+        for (let c of person.emailAddresses.sortBy(c => c.preference)) {
+          let uid = new PersonUID(person.name, c.value);
+          uid.person = person;
+          emailAddresses.push(uid);
+        }
+      }
+      console.log("Got", persons.length, "persons with ", emailAddresses.length, "email addresses for", inputStr);
+      return emailAddresses;
     } catch (ex) {
       console.error(ex);
       alert(ex.message);
@@ -60,9 +68,9 @@
   }
 
   let topEl: HTMLDivElement;
-  async function onAddPerson(person: Person) {
+  async function onAddPerson(person: PersonUID) {
     typedText = "";
-    dispatchEvent('personSelected', person);
+    dispatch('personSelected', person);
 
     // Clear, to allow user to enter the next person
     await tick();
@@ -72,7 +80,7 @@
     }
   }
 
-  function onCreate(text: string) {
+  function onCreate(text: string): PersonUID {
     // email address is substring, e.g. "Fred <fred@example.com>"
     assert(kEMailAddressRegexp.test(text), "Need email address");
 
@@ -89,12 +97,15 @@
       assert(kEMailAddressRegexp.test(emailAddress), "Need email address");
     }
 
+    /* TODO
     let person = new Person(appGlobal.collectedAddressbook);
     person.name = name;
     person.emailAddresses.add(new ContactEntry(emailAddress, "mail"));
     appGlobal.persons.add(person);
-    onAddPerson(person);
-    return person;
+    */
+    let personUID = new PersonUID(emailAddress, name);
+    onAddPerson(personUID);
+    return personUID;
   }
 
   let typedText: string;
