@@ -1,12 +1,7 @@
-<hbox class="unread-dot button" class:unread={!$message.isRead}>
-  <Button
-    icon={CircleIcon}
-    iconSize="7px"
-    iconOnly
-    label={message.isRead ? "Mark this message as unread" : "Mark this message as read"}
-    on:click={() => catchErrors(toggleRead)}
-    plain
-    />
+<hbox class="attachment">
+  {#if $message.attachments.hasItems}
+    <AttachmentIcon size="12px" />
+  {/if}
 </hbox>
 <hbox class="star button" class:starred={$message.isStarred}>
   <Button
@@ -18,10 +13,15 @@
     plain
     />
 </hbox>
-<hbox class="attachment button">
-  {#if $message.attachments.hasItems}
-    <AttachmentIcon size="12px" />
-  {/if}
+<hbox class="unread-dot button" class:unread={!$message.isRead}>
+  <Button
+    icon={CircleIcon}
+    iconSize="7px"
+    iconOnly
+    label={message.isRead ? "Mark this message as unread" : "Mark this message as read"}
+    on:click={() => catchErrors(toggleRead)}
+    plain
+    />
 </hbox>
 <hbox class="direction">
   {#if message.outgoing}
@@ -119,8 +119,17 @@
     display: none;
   }
   .button {
-    width: 20px;
+    width: 16px;
+    padding: 0px 4px 0px 0px;
     align-items: center;
+  }
+  .attachment {
+    width: 16px;
+    padding: 4px 0px 0px 8px;
+  }
+  .direction {
+    width: 16px;
+    padding: 0px 0px 0px 0px;
   }
 
   /* <copied to="VerticalMessageListItem.svelte"> */
