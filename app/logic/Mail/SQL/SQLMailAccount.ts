@@ -6,6 +6,7 @@ import type { EMail } from "../EMail";
 import { SQLEMail } from "./SQLEMail";
 import type { Folder } from "../Folder";
 import { SQLFolder } from "./SQLFolder";
+import { ContactEntry } from "../../Abstract/Person";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -106,6 +107,9 @@ export class SQLMailAccount implements MailAccountStorage {
     }
     if (!appGlobal.me.name && acc.userRealname) {
       appGlobal.me.name = acc.userRealname;
+    }
+    if (!appGlobal.me.emailAddresses.find(c => c.value == acc.emailAddress)) {
+      appGlobal.me.emailAddresses.add(new ContactEntry(acc.emailAddress, "account"));
     }
     let outgoingAccountID = sanitize.integer(row.outgoingAccountID, null);
     if (outgoingAccountID) {

@@ -1,6 +1,7 @@
 import { EMail, setPersons } from "../EMail";
-import { findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import type { IMAPFolder } from "./IMAPFolder";
+import { findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 
@@ -45,6 +46,7 @@ export class IMAPEMail extends EMail {
     setPersons(this.to, env.to);
     setPersons(this.cc, env.cc);
     setPersons(this.bcc, env.bcc);
+    this.outgoing = appGlobal.me.emailAddresses.some(e => e.value == this.from.emailAddress);
     this.contact = this.outgoing ? this.to.first : this.from;
     this.needToLoadBody = this._text == null && this._rawHTML == null;
     assert(!msgInfo.source || msgInfo.source instanceof Uint8Array, "MIME source needs to be a buffer");

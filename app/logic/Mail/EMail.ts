@@ -120,6 +120,7 @@ export class EMail extends Message {
       setPersons(this.cc, mail.cc);
       setPersons(this.bcc, mail.bcc);
     }
+    this.outgoing = appGlobal.me.emailAddresses.some(e => e.value == this.from.emailAddress);
     this.contact = this.outgoing ? this.to.first : this.from;
     if (!this.replyTo && mail.replyTo?.length) {
       let p = mail.replyTo[0];

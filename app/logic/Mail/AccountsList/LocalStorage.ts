@@ -163,7 +163,9 @@ function readMe(account: MailAccount) {
   if (!appGlobal.me.name && account.userRealname) {
     appGlobal.me.name = account.userRealname;
   }
-  appGlobal.me.emailAddresses.add(new ContactEntry(account.emailAddress, "account"));
+  if (!appGlobal.me.emailAddresses.find(c => c.value == account.emailAddress)) {
+    appGlobal.me.emailAddresses.add(new ContactEntry(account.emailAddress, "account"));
+  }
 }
 
 export class MailAccountLocalStorage implements MailAccountStorage {
