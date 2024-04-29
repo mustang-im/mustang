@@ -1,9 +1,9 @@
 <AppObject obj={recipient.person} createObject={recipient.person ? null : createPersonOnDemand}>
   <value class="name" title={recipient.emailAddress}>
-    {recipient.name?.substring(0, 25) || recipient.emailAddress}
+    {recipient.name?.substring(0, 25) || recipient.emailAddress?.split("@")[0]}
   </value>
-  {#if !recipient.person && recipient.name}
-    <value class="domain">
+  {#if !recipient.findPerson()}
+    <value class="domain" title={recipient.emailAddress}>
       @{getBaseDomainFromHost(getDomainForEmailAddress(recipient.emailAddress))}
     </value>
   {/if}
@@ -17,8 +17,6 @@
   import AppObject from "../../AppsBar/AppObject.svelte";
 
   export let recipient: PersonUID;
-
-  $: recipient.findPerson();
 
   // Using `||` instead of `??` above, so that the fallback also works for `name == ""`
 
@@ -44,6 +42,7 @@
   }
   .domain {
     display: inline;
+    font-weight: normal;
     font-style: italic;
     margin-left: 4px;
   }

@@ -22,9 +22,9 @@ export class PersonUID {
 
   findPerson() {
     if (this.person) {
-      return;
+      return this.person;
     }
-    this.person = findPerson(this.emailAddress, this.name);
+    return this.person = findPerson(this.emailAddress, this.name);
   }
 
   toString() {
