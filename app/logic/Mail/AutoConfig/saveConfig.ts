@@ -105,6 +105,7 @@ async function populateCollectedAddresses(sentFolder: Folder, config: MailAccoun
     }
   }
   let collected = appGlobal.collectedAddressbook.persons;
+  await appGlobal.collectedAddressbook.save();
   for (let recipient of recipients) {
     let person = new Person();
     person.name = recipient.name;
@@ -113,6 +114,6 @@ async function populateCollectedAddresses(sentFolder: Folder, config: MailAccoun
     contact.protocol = "email";
     person.emailAddresses.add(contact);
     collected.add(person);
+    await person.save();
   }
-  await appGlobal.collectedAddressbook.save();
 }
