@@ -170,10 +170,14 @@ export class SQLEMail {
     email.received = sanitize.date(row.dateReceived * 1000, new Date());
     email.outgoing = sanitize.boolean(!!row.outgoing);
     email.subject = sanitize.string(row.subject, null);
-    email.text = sanitize.string(row.plaintext, "");
-    let html = sanitize.string(row.html, null);
-    if (html) {
-      email.html = html;
+    if (row.plaintext == null && row.html == null) {
+      email.needToLoadBody = true;
+    } else {
+      email.text = sanitize.string(row.plaintext, "");
+      let html = sanitize.string(row.html, null);
+      if (html) {
+        email.html = html;
+      }
     }
     this.readWritableProps(email, row);
     await this.readRecipients(email, recipientRows);
@@ -274,6 +278,22 @@ export class SQLEMail {
         backgroundError(ex);
       }
     }
+  }
+
+  static async readBody(email: EMail): Promise<void> {
+    assert(email.dbID, "Need to read email metadata from database first");
+    let row = await (await getDatabase()).get(sql`
+      SELECT
+        plaintext, html
+      FROM email
+      WHERE id = ${email.dbID}
+    `) as any;
+    email.text = sanitize.string(row.plaintext, "");
+    let html = sanitize.string(row.html, null);
+    if (html) {
+      email.html = html;
+    }
+    email.needToLoadBody = false;
   }
 
   static async readAll(folder: Folder): Promise<void> {

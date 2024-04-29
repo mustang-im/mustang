@@ -53,6 +53,8 @@ export class EMail extends Message {
   /** Was just downloaded, but wasn't saved to local disk yet.
    * Set only temporarily. */
   needSave = false;
+  /** Body hasn't been loaded yet */
+  needToLoadBody = false;
 
   constructor(folder: Folder) {
     super();
@@ -134,6 +136,7 @@ export class EMail extends Message {
     if (html) {
       this.html = html;
     }
+    this.needToLoadBody = false;
 
     // Attachments
     let fallbackID = 0;
@@ -176,6 +179,19 @@ export class EMail extends Message {
     await RawFilesAttachment.saveEMail(this);
     this.downloadComplete = true;
     await SQLEMail.saveWritableProps(this);
+  }
+
+  get html(): string {
+    if (this.needToLoadBody) {
+    //if (this._rawHTML == null && this._text == null) {
+      SQLEMail.readBody(this)
+        .catch(this.folder.account.errorCallback); // async, but observers will trigger reload
+      return "Message content not downloaded yet";
+    }
+    return super.html;
+  }
+  set html(val: string) {
+    super.html = val;
   }
 
   async findThread(messages: Collection<EMail>): Promise<string | null>{
