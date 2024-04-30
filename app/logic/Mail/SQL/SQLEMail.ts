@@ -44,7 +44,6 @@ export class SQLEMail {
         )`);
       // -- contactEmail, contactName, myEmail
       email.dbID = insert.lastInsertRowid;
-      await this.saveRecipients(email);
     } else {
       await (await getDatabase()).run(sql`
         UPDATE email SET
@@ -63,6 +62,7 @@ export class SQLEMail {
       `);
     }
     await this.saveWritableProps(email);
+    await this.saveRecipients(email);
     await this.saveAttachments(email);
   }
 
@@ -84,10 +84,10 @@ export class SQLEMail {
   protected static async saveRecipients(email: EMail) {
     assert(email.dbID, "Need Email DB ID");
     // See comment in `saveAttachments()` below
-    /*await (await getDatabase()).run(sql`
+    await (await getDatabase()).run(sql`
       DELETE FROM emailPersonRel
       WHERE emailID = ${email.dbID}
-      `);*/
+      `);
 
     await this.saveRecipient(email, email.from, 1);
     await this.saveRecipientsOfType(email, email.to, 2);
@@ -147,10 +147,10 @@ export class SQLEMail {
      * `INSERT OR IGNORE` alone doesn't help.
      * We wouldn't have that problem with a
      * JSON-based record-is-a-document NoSQL database. */
-    /*await (await getDatabase()).run(sql`
+    await (await getDatabase()).run(sql`
       DELETE FROM emailAttachment
       WHERE emailID = ${email.dbID}
-      `);*/
+      `);
 
     for (let attachment of email.attachments) {
       await this.saveAttachment(email, attachment);
