@@ -66,11 +66,12 @@ export class IMAPFolder extends Folder {
     if (!this.dbID) {
       await SQLFolder.save(this);
     }
-    console.log(this.name, "Start reading msgs from DB");
-    console.time(this.path);
-    await SQLEMail.readAll(this);
-    console.log(this.name, "Finished reading msgs from DB");
-    console.timeEnd(this.path);
+    if (!this.messages.hasItems) {
+      console.log(this.name, "Start reading msgs from DB");
+      console.time(this.path);
+      await SQLEMail.readAll(this);
+      console.timeEnd(this.path);
+    }
 
     if (this.countTotal === 0) {
       return;
