@@ -1,6 +1,6 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <vbox class="person-popup" on:click={onClickInside}>
-  <hbox>
+  <hbox class="picture-name">
     <hbox class="picture">
       {#if person?.picture}
         <PersonPicture {person} size={32} />
@@ -59,7 +59,7 @@
       {/each}
     </vbox>
   {/if}
-  <hbox class="addressbooks">
+  <hbox class="addressbooks" class:top-border={person?.emailAddresses.length > 1}>
     <AddressbookSelector addressbooks={appGlobal.addressbooks} bind:selectedAddressbook />
   </hbox>
   <hbox class="bottom buttons">
@@ -191,6 +191,7 @@
   .other-email-address {
     align-items: center;
     font-size: 13px;
+    color: #555555;
     cursor: pointer;
   }
   .other-email-address :global(svg) {
@@ -198,7 +199,13 @@
   }
   .addressbooks {
     padding: 12px;
+  }
+  .addressbooks.top-border {
     border-top: 1px solid lightgray;
+  }
+  .addressbooks:not(.top-border) {
+    margin-top: -6px;
+    padding-top: 0px;
   }
   .bottom.buttons {
     border-top: 1px solid lightgrey;
@@ -207,7 +214,7 @@
     border-left: 1px solid lightgrey;
   }
   .bottom.buttons > :global(button) {
-    padding: 6px 12px;
+    padding: 8px 16px;
     border-radius: 0px;
   }
 </style>
