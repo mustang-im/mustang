@@ -1,13 +1,16 @@
 <hbox flex class="persons-autocomplete">
   {#each $persons.each as person}
-    <PersonEntry {person}>
+    <PersonEntry {person}
+      on:removePerson
+      on:removePerson={(event) => onRemovePerson(event.detail)}
+      >
       <slot name="person-context-menu" slot="context-menu" {person} />
     </PersonEntry>
   {/each}
   <hbox flex class="input">
     <PersonAutocomplete
-      on:personSelected={(event) => onAddPerson(event.detail)}
-      on:personSelected
+      on:addPerson
+      on:addPerson={(event) => onAddPerson(event.detail)}
       skipPersons={$persons}
       {placeholder}
       >
@@ -29,14 +32,19 @@
   export let persons: Collection<PersonUID>;
   export let placeholder: string = null;
 
-  $: console.log("persons", persons.contents);
+  //$: console.log("persons", persons.contents);
 
   function onAddPerson(person: PersonUID) {
     if (!person || persons.contains(person)) {
       return;
     }
     persons.add(person);
-    console.log("added " + person, person);
+  }
+  function onRemovePerson(person: PersonUID) {
+    if (!person) {
+      return;
+    }
+    persons.remove(person);
   }
 </script>
 
@@ -53,7 +61,7 @@
   .persons-autocomplete > :global(*) {
     margin: 3.5px 3px;
   }
-  .persons-autocomplete :global(input) {
+  .persons-autocomplete :global(input.autocomplete-input) {
     border: none;
   }
 </style>

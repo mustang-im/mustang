@@ -35,7 +35,7 @@
   import { createEventDispatcher, tick } from 'svelte';
   import { catchErrors } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
-  const dispatch = createEventDispatcher<{ personSelected: PersonUID }>();
+  const dispatch = createEventDispatcher<{ addPerson: PersonUID }>();
 
   export let skipPersons: Collection<PersonUID> = new ArrayColl<PersonUID>();
   export let placeholder = "Add person";
@@ -70,7 +70,7 @@
   let topEl: HTMLDivElement;
   async function onAddPerson(person: PersonUID) {
     typedText = "";
-    dispatch('personSelected', person);
+    dispatch('addPerson', person);
 
     // Clear, to allow user to enter the next person
     await tick();

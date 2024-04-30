@@ -1,16 +1,22 @@
 import type { PersonOrGroup } from "../../frontend/Shared/Person/PersonOrGroup";
 import { Group } from "./Group";
-import { Person } from "./Person";
+import { ContactEntry, Person } from "./Person";
 import { appGlobal } from "../app";
+import { nameFromEmailAddress } from "../Mail/AutoConfig/saveConfig";
+import { Observable, notifyChangedProperty } from "../util/Observable";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 
-export class PersonUID {
+export class PersonUID extends Observable {
+  @notifyChangedProperty
   name: string;
   /** or user ID, for chat and other systems (despite the property name) */
+  @notifyChangedProperty
   emailAddress: string;
+  @notifyChangedProperty
   person?: Person;
 
   constructor(emailAddress?: string, name?: string) {
+    super();
     this.emailAddress = emailAddress;
     this.name = name;
   }
@@ -26,6 +32,16 @@ export class PersonUID {
       return this.person;
     }
     return this.person = findPerson(this.emailAddress, this.name);
+  }
+
+  createPerson() {
+    if (this.person) {
+      return this.person;
+    }
+    this.person = new Person();
+    this.person.name = this.name || nameFromEmailAddress(this.emailAddress);
+    this.person.emailAddresses.add(new ContactEntry(this.emailAddress, "primary"));
+    return this.person;
   }
 
   toString() {

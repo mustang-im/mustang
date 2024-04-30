@@ -31,7 +31,12 @@
       </hbox>
       <hbox flex>
         <hbox flex>
-          <MailAutocomplete addresses={mail.to} placeholder="Add recipient" />
+          <MailAutocomplete addresses={mail.to} placeholder="Add recipient">
+            <svelte:fragment slot="person-popup-buttons" let:personUID>
+              <Button plain label="CC" on:click={() => catchErrors(() => onMoveToCC(personUID))} />
+              <Button plain label="BCC" on:click={() => catchErrors(() => onMoveToBCC(personUID))} />
+            </svelte:fragment>
+          </MailAutocomplete>
         </hbox>
         <hbox class="cc buttons">
           <Button
@@ -50,11 +55,21 @@
       </hbox>
     {#if showCC}
       <hbox class="label">Cc</hbox>
-      <MailAutocomplete addresses={mail.cc} placeholder="Add CC recipient" />
+      <MailAutocomplete addresses={mail.cc} placeholder="Add CC recipient">
+        <svelte:fragment slot="person-popup-buttons" let:personUID>
+          <Button plain label="To" on:click={() => catchErrors(() => onMoveToTo(personUID))} />
+          <Button plain label="BCC" on:click={() => catchErrors(() => onMoveToBCC(personUID))} />
+        </svelte:fragment>
+      </MailAutocomplete>
     {/if}
     {#if showBCC}
       <hbox class="label">Bcc</hbox>
-      <MailAutocomplete addresses={mail.bcc} placeholder="Add BCC recipient" />
+      <MailAutocomplete addresses={mail.bcc} placeholder="Add BCC recipient">
+        <svelte:fragment slot="person-popup-buttons" let:personUID>
+          <Button plain label="To" on:click={() => catchErrors(() => onMoveToTo(personUID))} />
+          <Button plain label="CC" on:click={() => catchErrors(() => onMoveToCC(personUID))} />
+        </svelte:fragment>
+      </MailAutocomplete>
     {/if}
     </grid>
     <HTMLEditorToolbar {editor}>
@@ -106,6 +121,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
+  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { Attachment } from "../../../logic/Mail/Attachment";
   import { insertImage } from "../../Shared/Editor/InsertImage";
@@ -132,8 +148,27 @@
 
   let editor: Editor;
   $: to = mail.to;
-
   let from: MailAccount;
+
+  function onMoveToCC(person: PersonUID) {
+    console.log("move to cc");
+    mail.bcc.remove(person);
+    mail.to.remove(person);
+    mail.cc.add(person);
+  }
+  function onMoveToBCC(person: PersonUID) {
+    console.log("move to bcc");
+    mail.cc.remove(person);
+    mail.to.remove(person);
+    mail.bcc.add(person);
+  }
+  function onMoveToTo(person: PersonUID) {
+    console.log("move to to");
+    mail.cc.remove(person);
+    mail.bcc.remove(person);
+    mail.to.add(person);
+  }
+
   let fileSelector: FileSelector;
   async function onAddAttachment() {
     let file = await fileSelector.selectFile();

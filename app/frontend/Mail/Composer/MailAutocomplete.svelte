@@ -1,19 +1,17 @@
 <PersonsAutocomplete persons={addresses} {placeholder}
-  on:personSelected={(event) => onAddPerson(event.detail)}>
+  on:addPerson={(event) => onAddPerson(event.detail)}
+  on:removePerson={(event) => onRemovePerson(event.detail)}
+  >
   <hbox slot="result-bottom-row" class="recipient-email-address" let:person>
     {person.emailAddresses.first?.value}
   </hbox>
-  <vbox slot="person-context-menu" class="context-menu" let:person>
-    <PersonContextMenu {person}
-      on:remove={(event) => onRemovePerson(event.detail)} />
-  </vbox>
   <slot name="end" slot="end" />
+  <slot name="person-popup-buttons" slot="person-popup-buttons" let:personUID {personUID} />
 </PersonsAutocomplete>
 
 <script lang="ts">
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import PersonsAutocomplete from "../../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
-  import PersonContextMenu from "./PersonContextMenu.svelte";
   import type { ArrayColl } from "svelte-collections";
 
   /** E.g. to, cc or bcc list
