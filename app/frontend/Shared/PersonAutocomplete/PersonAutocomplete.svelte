@@ -26,6 +26,7 @@
 
 <script lang="ts">
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import type { Person } from "../../../logic/Abstract/Person";
   import { appGlobal } from "../../../logic/app";
   import PersonAutocompleteResult from "./PersonAutocompleteResult.svelte";
   import { ArrayColl, type Collection } from "svelte-collections";
@@ -46,13 +47,17 @@
         return [];
       }
       inputStr = inputStr.toLowerCase();
-      let persons = appGlobal.persons
-        .filter(person => person.name.toLowerCase().includes(inputStr) &&
-          !skipPersons.find(uid => uid.person == person));
+      let persons: Person[] = [];
+      for (let ab of appGlobal.addressbooks) {
+        persons.push(...ab.persons.filter(person => person.name.toLowerCase().includes(inputStr)));
+      }
       let emailAddresses: PersonUID[] = [];
       for (let person of persons) {
         for (let c of person.emailAddresses.sortBy(c => c.preference)) {
-          let uid = new PersonUID(person.name, c.value);
+          if (skipPersons.find(p => p.emailAddress == c.value)) {
+            continue;
+          }
+          let uid = new PersonUID(c.value, person.name);
           uid.person = person;
           emailAddresses.push(uid);
         }

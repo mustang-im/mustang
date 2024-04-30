@@ -22,6 +22,9 @@
   .name {
     align-items: center;
   }
+  .name {
+    font-size: 16px;
+  }
   .person :global(.avatar) {
     margin: 0px;
     margin-right: 6px;

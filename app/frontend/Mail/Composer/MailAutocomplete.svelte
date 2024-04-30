@@ -3,7 +3,7 @@
   on:removePerson={(event) => onRemovePerson(event.detail)}
   >
   <hbox slot="result-bottom-row" class="recipient-email-address" let:person>
-    {person.emailAddresses.first?.value}
+    {person.emailAddress}
   </hbox>
   <slot name="end" slot="end" />
   <slot name="person-popup-buttons" slot="person-popup-buttons" let:personUID {personUID} />
@@ -29,7 +29,7 @@
 
 <style>
   .recipient-email-address {
-    font-size: 10px;
+    font-size: 14px;
     opacity: 50%;
     overflow: hidden;
     align-items: center;
