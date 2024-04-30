@@ -50,7 +50,7 @@
   }
   async function openFolder() {
     let dir = await appGlobal.remoteApp.path.dirname(attachment.filepathLocal);
-    console.log("dir", dir);
+    assert(dir, "Attachments were not downloaded and saved yet");
     await appGlobal.remoteApp.openFileInExternalApp(dir);
   }
   async function saveFile() {

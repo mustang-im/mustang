@@ -11,7 +11,7 @@ export class RawFilesAttachment {
   static async saveEMail(email: EMail) {
     //await RawFilesAttachment.rmdirWithFiles(await this.getDirPath(email));
     if (email.attachments.hasItems) {
-      await Promise.all(email.attachments.contents.map(a =>
+      await Promise.allSettled(email.attachments.contents.map(a =>
         RawFilesAttachment.save(a, email)));
       await RawFilesAttachment.emailFinished(email);
     }
@@ -51,11 +51,14 @@ export class RawFilesAttachment {
   }
 
   static async rmdirWithFiles(dir: string) {
-    let files = await appGlobal.remoteApp.fs.readdir(dir);
-    for (let file of files) {
-      await appGlobal.remoteApp.fs.rm(dir + "/" + file);
+    try {
+      let files = await appGlobal.remoteApp.fs.readdir(dir);
+      for (let file of files) {
+        await appGlobal.remoteApp.fs.rm(dir + "/" + file);
+      }
+      await appGlobal.remoteApp.fs.rmdir(dir);
+    } catch (ex) {
     }
-    await appGlobal.remoteApp.fs.rmdir(dir);
   }
 
   static async getFilePath(attachment: Attachment, email: EMail): Promise<string> {
