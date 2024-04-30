@@ -147,6 +147,11 @@ select:focus {
   border-bottom: 1px solid var(--input-focus);
 }
 
+.autocomplete.select .autocomplete-list .autocomplete-list-item.selected {
+  background-color: var(--selected-bg);
+  color: var(--selected-fg);
+}
+
 a[href] {
   text-decoration: none;
 }
