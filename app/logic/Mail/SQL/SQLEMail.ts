@@ -44,13 +44,7 @@ export class SQLEMail {
         )`);
       // -- contactEmail, contactName, myEmail
       email.dbID = insert.lastInsertRowid;
-      await this.saveRecipient(email, email.from, 1);
-      await this.saveRecipients(email, email.to, 2);
-      await this.saveRecipients(email, email.cc, 3);
-      await this.saveRecipients(email, email.bcc, 4);
-      if (email.replyTo?.emailAddress) {
-        await this.saveRecipient(email, new PersonUID(email.replyTo.name, email.replyTo.emailAddress), 5);
-      }
+      await this.saveRecipients(email);
     } else {
       await (await getDatabase()).run(sql`
         UPDATE email SET
@@ -69,9 +63,7 @@ export class SQLEMail {
       `);
     }
     await this.saveWritableProps(email);
-    for (let attachment of email.attachments) {
-      await this.saveAttachment(email, attachment);
-    }
+    await this.saveAttachments(email);
   }
 
   static async saveWritableProps(email: EMail) {
@@ -89,13 +81,31 @@ export class SQLEMail {
       `);
   }
 
-  static async saveRecipients(email: EMail, recipients: ArrayColl<PersonUID>, recipientsType: number) {
+  protected static async saveRecipients(email: EMail) {
+    assert(email.dbID, "Need Email DB ID");
+    // See comment in `saveAttachments()` below
+    /*await (await getDatabase()).run(sql`
+      DELETE FROM emailPersonRel
+      WHERE emailID = ${email.dbID}
+      `);*/
+
+    await this.saveRecipient(email, email.from, 1);
+    await this.saveRecipientsOfType(email, email.to, 2);
+    await this.saveRecipientsOfType(email, email.cc, 3);
+    await this.saveRecipientsOfType(email, email.bcc, 4);
+    if (email.replyTo?.emailAddress) {
+      let replyToUID = new PersonUID(email.replyTo.name, email.replyTo.emailAddress);
+      await this.saveRecipient(email, replyToUID, 5);
+    }
+  }
+
+  protected static async saveRecipientsOfType(email: EMail, recipients: ArrayColl<PersonUID>, recipientsType: number) {
     for (let recipient of recipients) {
       await this.saveRecipient(email, recipient, recipientsType);
     }
   }
 
-  static async saveRecipient(email: EMail, puid: PersonUID, recipientType: number) {
+  protected static async saveRecipient(email: EMail, puid: PersonUID, recipientType: number) {
     let exists = await (await getDatabase()).get(sql`
         SELECT
           id
@@ -103,7 +113,7 @@ export class SQLEMail {
         WHERE
           emailAddress = ${puid.emailAddress} AND
           name = ${puid.name}
-        `) as any;
+      `) as any;
     let personID = exists?.id;
     if (!personID) {
       let insert = await (await getDatabase()).run(sql`
@@ -114,14 +124,40 @@ export class SQLEMail {
       )`);
       personID = insert.lastInsertRowid;
     }
-    await (await getDatabase()).run(sql`INSERT INTO emailPersonRel (
+    await (await getDatabase()).run(sql`
+      INSERT INTO emailPersonRel (
         emailID, emailPersonID, recipientType
       ) VALUES (
         ${email.dbID}, ${personID}, ${recipientType}
       )`);
   }
 
-  static async saveAttachment(email: EMail, a: Attachment) {
+  protected static async saveAttachments(email: EMail) {
+    assert(email.dbID, "Need Email DB ID");
+    /** Problem: We might be saving the same email multiple times, because:
+     * a) We save only the msg list of the folder, so we have only partial emails,
+     *     and we don't know the attachments yet.
+     * b) the full email might be saved multiple times.
+     *
+     * Solution: To avoid that we're adding the same attachments multiple times
+     * in the 1:n table, delete existing records before adding them here.
+     * Same problem in `saveRecipients()` above.
+     *
+     * Alternatives: Yes, it's ugly. Better solutions?
+     * `INSERT OR IGNORE` alone doesn't help.
+     * We wouldn't have that problem with a
+     * JSON-based record-is-a-document NoSQL database. */
+    /*await (await getDatabase()).run(sql`
+      DELETE FROM emailAttachment
+      WHERE emailID = ${email.dbID}
+      `);*/
+
+    for (let attachment of email.attachments) {
+      await this.saveAttachment(email, attachment);
+    }
+  }
+
+  protected static async saveAttachment(email: EMail, a: Attachment) {
     assert(email.dbID, "Need to save email before attachment");
     await (await getDatabase()).run(sql`
       INSERT OR IGNORE INTO emailAttachment (
