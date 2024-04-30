@@ -35,6 +35,7 @@ export class PersonUID extends Observable {
   }
 
   createPerson() {
+    this.person = this.findPerson();
     if (this.person) {
       return this.person;
     }
@@ -60,9 +61,11 @@ export function findOrCreatePersonUID(emailAddress: string, realname: string): P
 }
 
 export function findPerson(emailAddress: string, realname: string): Person | undefined {
-  let existing = appGlobal.persons.find(p => p.emailAddresses.some(e => e.value == emailAddress));
-  if (existing) {
-    return existing;
+  for (let ab of appGlobal.addressbooks) {
+    let existing = ab.persons.find(p => p.emailAddresses.some(e => e.value == emailAddress));
+    if (existing) {
+      return existing;
+    }
   }
   return undefined;
 }

@@ -1,10 +1,16 @@
 <hbox class="persons-toolbar">
-  <AccountDropDown
-    accounts={appGlobal.addressbooks}
-    bind:selectedAccount={selectedAddressbook} />
+  <Scroll>
+    <AddressbookSelector addressbooks={appGlobal.addressbooks}
+      bind:selectedAddressbook />
+  </Scroll>
   <hbox flex />
   <hbox class="buttons">
-    <RoundButton label="New contact" icon={NewContactIcon} iconSize="22px" padding="9px" classes="large create" on:click={addPerson} />
+    <RoundButton
+      label="New contact"
+      icon={NewContactIcon}
+      iconSize="22px" padding="9px" classes="large create"
+      on:click={() => catchErrors(addPerson)}
+      />
   </hbox>
 </hbox>
 
@@ -13,9 +19,11 @@
   import { selectedPerson } from "../Shared/Person/Selected";
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import { appGlobal } from "../../logic/app";
-  import AccountDropDown from "../Shared/AccountDropDown.svelte";
+  import AddressbookSelector from "./AddressbookSelector.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
+  import Scroll from "../Shared/Scroll.svelte";
   import NewContactIcon from "lucide-svelte/icons/plus";
+  import { catchErrors } from "../Util/error";
   import type { Collection } from "svelte-collections";
 
   /** in */
@@ -24,6 +32,7 @@
   export let selectedAddressbook: Addressbook;
 
   function addPerson() {
+    //assert(persons instanceof ArrayColl, "Please exit the search before adding a person");
     let person = new Person(selectedAddressbook);
     person.name = "New person";
     persons.add(person);

@@ -59,6 +59,9 @@
       {/each}
     </vbox>
   {/if}
+  <hbox class="addressbooks">
+    <AddressbookSelector addressbooks={appGlobal.addressbooks} bind:selectedAddressbook />
+  </hbox>
   <hbox class="bottom buttons">
     <Button plain
       label="Edit"
@@ -89,6 +92,7 @@
   import { catchErrors } from "../../Util/error";
   import { useDebounce } from "@svelteuidev/composables";
   import { createEventDispatcher } from 'svelte';
+  import AddressbookSelector from "../../Contacts/AddressbookSelector.svelte";
   const dispatch = createEventDispatcher<{ removePerson: PersonUID, close: void }>();
 
   export let personUID: PersonUID;
@@ -96,13 +100,26 @@
   let person: Person;
   let contactEntry: ContactEntry;
   let addressbook: Addressbook;
+  let selectedAddressbook: Addressbook;
   let isEditing = false;
 
   $: onLoad(personUID);
   function onLoad(personUID: PersonUID) {
     person = personUID.createPerson();
     contactEntry = person.emailAddresses.find(c => c.value == personUID.emailAddress);
+    addressbook = selectedAddressbook = appGlobal.addressbooks.find(ab => ab.persons.contains(person));
     isEditing = !addressbook || appGlobal.collectedAddressbook.persons.contains(person);
+  }
+
+  $: catchErrors(() => onChangeAddressbook(selectedAddressbook));
+  async function onChangeAddressbook(newAddressbook: Addressbook) {
+    if (addressbook == newAddressbook) {
+      return;
+    }
+    addressbook?.persons.remove(person);
+    newAddressbook.persons.add(person);
+    person.addressbook = addressbook = newAddressbook;
+    await person.save();
   }
 
   function onClickInside(event: MouseEvent) {
@@ -169,7 +186,7 @@
     margin: 8px 8px;
   }
   .other-email-addresses {
-    margin: 0px 12px 12px 12px;
+    margin: 0px 12px 12px 68px;
   }
   .other-email-address {
     align-items: center;
@@ -178,6 +195,10 @@
   }
   .other-email-address :global(svg) {
     margin-right: 6px;
+  }
+  .addressbooks {
+    padding: 12px;
+    border-top: 1px solid lightgray;
   }
   .bottom.buttons {
     border-top: 1px solid lightgrey;
