@@ -1,4 +1,4 @@
-import type { Person } from "../Abstract/Person";
+import type { PersonUID } from "../Abstract/PersonUID";
 import type { Calendar } from "./Calendar";
 import { ArrayColl } from "svelte-collections";
 import { assert, randomID } from "../util/util";
@@ -34,7 +34,7 @@ export class Event extends Observable {
   @notifyChangedProperty
   onlineMeetingURL: string;
   @notifyChangedProperty
-  readonly participants = new ArrayColl<Person>();
+  readonly participants = new ArrayColl<PersonUID>();
   @notifyChangedProperty
   lastMod = new Date();
   @notifyChangedProperty

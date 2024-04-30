@@ -1,13 +1,15 @@
 <hbox class="availability" class:yes class:no={!yes}>
+  <!--
   {yes ? "Available" : "Not available"}
+  -->
 </hbox>
 
 <script lang="ts">
-  import type { Person } from "../../../logic/Abstract/Person";
+  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
 
-  export let person: Person;
+  export let person: PersonUID;
 
-  $: yes = person?.firstName.length <= 6;
+  let yes = true;
 </script>
 
 <style>

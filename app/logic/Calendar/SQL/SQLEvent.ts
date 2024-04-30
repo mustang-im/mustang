@@ -9,6 +9,7 @@ import { backgroundError } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
+import type { PersonUID } from "../../Abstract/PersonUID";
 
 export class SQLEvent extends Event {
   static async save(event: Event) {
@@ -42,12 +43,16 @@ export class SQLEvent extends Event {
   }
 
   static async saveParticipants(event: Event) {
-    for (let person of event.participants) {
-      await this.saveParticipant(event, person);
+    for (let personUID of event.participants) {
+      await this.saveParticipant(event, personUID);
     }
   }
 
-  static async saveParticipant(event: Event, person: Person) {
+  static async saveParticipant(event: Event, personUID: PersonUID) {
+    let person = personUID.createPerson();
+    if (!person.addressbook) {
+      person.addressbook = appGlobal.collectedAddressbook;
+    }
     if (!person.dbID) {
       await SQLPerson.save(person);
     }

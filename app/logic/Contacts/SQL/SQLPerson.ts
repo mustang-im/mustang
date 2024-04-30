@@ -1,5 +1,5 @@
 import { ContactEntry, Person } from "../../Abstract/Person";
-import { Addressbook } from "../Addressbook";
+import type { Addressbook } from "../Addressbook";
 import { getDatabase } from "./SQLDatabase";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";

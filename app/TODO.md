@@ -3,7 +3,6 @@
   * Bugs
     * Deleting wrong email
     * Sending wrong text
-    * Calendar edit persons: Test
     * Person Popup opening automatically and focussing the name field
       * Close popup on enter or tab
     * Plaintext mail line wraps
