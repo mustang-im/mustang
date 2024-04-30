@@ -1,17 +1,21 @@
 # Next
 * Mail
+  * Bugs
+    * Deleting wrong email
+    * Sending wrong text
+    * Calendar edit persons: Test
+    * Person Popup opening automatically and focussing the name field
+      * Close popup on enter or tab
+    * Plaintext mail line wraps
+    * HTML mail links: click and hover
+  * OAuth2
   * Threads
     * Message: Conversation view
     * Message list: Threaded view?
     * Mail Chat view: Open thread
   * All accounts - fix
-  * Plaintext mail line wraps
-  * OAuth2
-  * Bugs
-    * Google
-      * no email subject
-    * Setup mail
-      * after account delete: remove general panel
+  * Setup mail
+    * after account delete: remove general panel
 
 # UI
 * Close menu when clicking outside menu
