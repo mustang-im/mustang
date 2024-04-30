@@ -160,7 +160,7 @@
   .person-popup {
     background-color: white;
     border-radius: 5px;
-    box-shadow: 2px 2px 4px 0px rgba(22, 12, 39, 20%); /* #160C27 */
+    box-shadow: 2.281px 1.14px 9.123px 0px rgba(22, 12, 39, 20%); /* #160C27 */
   }
   .picture {
     align-items: start;
@@ -201,17 +201,17 @@
     padding: 12px;
   }
   .addressbooks.top-border {
-    border-top: 1px solid lightgray;
+    border-top: 1px solid #DCDBDF;
   }
   .addressbooks:not(.top-border) {
     margin-top: -6px;
     padding-top: 0px;
   }
   .bottom.buttons {
-    border-top: 1px solid lightgrey;
+    border-top: 1px solid #DCDBDF;
   }
   .bottom.buttons > :global(button:not(:first-child)) {
-    border-left: 1px solid lightgrey;
+    border-left: 1px solid #DCDBDF;
   }
   .bottom.buttons > :global(button) {
     padding: 8px 16px;
