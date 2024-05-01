@@ -66,7 +66,6 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { selectedMessage } from "../Selected";
   import { mailMustangApp } from "../MailMustangApp";
   import MessageMenu from "./MessageMenu.svelte";
   import Button from "../../Shared/Button.svelte";
@@ -95,11 +94,9 @@
     mailMustangApp.writeMail(reply);
   }
   async function deleteMessage() {
-    $selectedMessage = message.nextMessage(true);
     await message.deleteMessage();
   }
   async function markAsSpam() {
-    $selectedMessage = message.nextMessage(true);
     await message.markSpam(true);
     await message.deleteMessage();
   }

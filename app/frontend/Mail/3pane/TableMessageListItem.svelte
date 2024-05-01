@@ -57,7 +57,6 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { personDisplayName } from "../../../logic/Abstract/PersonUID";
-  import { selectedMessage } from "../Selected";
   import { onDragStartMail } from "../Message/drag";
   import Button from "../../Shared/Button.svelte";
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
@@ -80,11 +79,9 @@
     await message.markStarred(!message.isStarred);
   }
   async function deleteMessage() {
-    $selectedMessage = message.nextMessage(true);
     await message.deleteMessage();
   }
   async function markAsSpam() {
-    $selectedMessage = message.nextMessage(true);
     await message.markSpam(true);
     await message.deleteMessage();
   }

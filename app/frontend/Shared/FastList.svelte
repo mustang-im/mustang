@@ -95,6 +95,10 @@
    */
   export let selectedItem: T = null;
 
+  /** When the `selectedItems` are removed from `items`,
+   * select the items which was in their place in the list. */
+  export let ensureSelection = true;
+
   let listE: HTMLDivElement;
   let headerE: HTMLDivElement;
   let contentE: HTMLDivElement;
@@ -255,10 +259,30 @@
     }
   }
 
+  /** If the selected items were removed from the list,
+   * adapt the selectedItems and implicitly selectedItem. */
+  $: ensureSelection && $items && replaceSelectedItem();
+  function replaceSelectedItem() {
+    if (selectedItems.isEmpty) {
+      return;
+    }
+    selectedItems.removeAll(selectedItems.filter(a => !items.includes(a)));
+    if (selectedItems.isEmpty) {
+      let newItem = items.getIndex(lastSelectedIndex) ?? items.first;
+      if (!newItem) {
+        return;
+      }
+      selectedItems.add(newItem);
+    }
+  }
+  $: lastSelectedIndex = ensureSelection ? getLastSelectedIndex(items, selectedItem) : -1;
+  function getLastSelectedIndex(coll: Collection<T>, item: T) {
+    return coll.contents.findIndex(a => a == item);
+  }
+
   /**
    * Convenience class which returns just the first selected item
    */
-  //export class SingleSelectionObserver<T> {
   class SingleSelectionObserver<T> extends CollectionObserver<T> {
     added(_items: T[], selectedItems: Collection<T>) {
       this.onSelectedItem(selectedItems.first);
