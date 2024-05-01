@@ -118,10 +118,11 @@
 * Filter actions
 * Virtual folders / Saved searches
   * Need: Fix observable collections for All Messages
+* IMAP
+  * UID vs. seq
+  * modseq und CONDSTORE
 * Removed emails
-  * In SQL database
   * During fetch after login
-  * From IDLE
   * Loop when deleting mail manually twice: FilteredCollection removed observers
 * Autoconfig
   * Exchange AutoDiscover V2 and V1

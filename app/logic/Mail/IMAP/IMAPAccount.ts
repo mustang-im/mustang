@@ -140,6 +140,18 @@ export class IMAPAccount extends MailAccount {
         this.errorCallback(ex);
       }
     });
+    connection.on("expunge", async (info) => {
+      try {
+        let folder = this.getFolderByPath(info.path);
+        assert(folder, `We don't know about this folder`);
+        assert(typeof (info.seq) == "number", "seq must be a number");
+        await folder.messageDeletedNotification(info.seq);
+      } catch (ex) {
+        console.log("Server event", info);
+        ex.message = `Server event about folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`;
+        this.errorCallback(ex);
+      }
+    });
   }
 
   protected async reconnect(): Promise<void> {

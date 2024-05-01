@@ -244,6 +244,9 @@ export class SQLEMail {
   }
 
   static async deleteIt(email: EMail) {
+    if (!email.dbID) {
+      return;
+    }
     assert(email.dbID, "Need Email DB ID to delete");
     await (await getDatabase()).run(sql`
       DELETE FROM email

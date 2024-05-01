@@ -179,7 +179,8 @@ export class IMAPFolder extends Folder {
     }
   }
 
-  /** We received an event from the serverthat the number of emails in the folder changed */
+  /** We received an event from the server that the
+   * number of emails in the folder changed */
   async countChanged(newCount: number, oldCount: number): Promise<void> {
     let hasChanged = newCount != oldCount || newCount != this.countTotal;
     this.countTotal = newCount;
@@ -189,7 +190,8 @@ export class IMAPFolder extends Folder {
     }
   }
 
-  /** We received an event from the serverthat the number of emails in the folder changed */
+  /** We received an event from the server that the
+   * unread or flag status of an email changed */
   async messageFlagsChanged(uid: number | null, seq: number, flags: Set<string>, newModSeq?: number): Promise<void> {
     let message = uid ? this.getEMailByUID(uid) : this.getEMailBySeq(seq);
     if (!message) {
@@ -204,6 +206,17 @@ export class IMAPFolder extends Folder {
       // TODO What if we missed other notifications? Is modseq always increased by exactly 1, so that we can check that?
       this.updateModSeq(newModSeq);
     }
+  }
+
+  /** We received an event from the server that a
+   * message was deleted */
+  async messageDeletedNotification(seq: number): Promise<void> {
+    let message = this.getEMailBySeq(seq);
+    if (!message) {
+      return;
+    }
+    this.messages.remove(message);
+    await SQLEMail.deleteIt(message);
   }
 
   async moveMessagesHere(messages: Collection<IMAPEMail>) {
