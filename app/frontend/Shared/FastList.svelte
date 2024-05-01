@@ -157,8 +157,11 @@
 
   function onKey(event: KeyboardEvent) {
     // https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
+    // Do allow Ctrl/Shift, so that we can expand selection with keyboard
     if (event.key == "ArrowDown" || event.key == "ArrowUp" ||
         event.key == "PageDown" || event.key == "PageUp") {
+      event.stopPropagation();
+      event.preventDefault();
       let lastItem = selectedItems.last || selectedItem;
       let oldIndex = lastItem ? items.contents.findIndex(item => item == lastItem) : 0;
       let newIndex = oldIndex;
@@ -192,7 +195,6 @@
         selectedItems.add(newElement);
       }
       scrollIntoView(newIndex);
-      event.stopPropagation();
     }
   }
 

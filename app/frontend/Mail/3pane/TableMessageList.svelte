@@ -1,5 +1,8 @@
+<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <vbox flex class="message-list"
-  on:keydown={event => catchErrors(() => onKey(event))}>
+  on:keydown={event => catchErrors(() => onKeyOnList(event))}
+  tabindex={0}
+  >
   <FastList items={sortedMessages}
     bind:selectedItem={selectedMessage}
     bind:selectedItems={selectedMessages}
@@ -18,6 +21,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
+  import { onKeyOnList } from "./MessageList";
   import FastList from "../../Shared/FastList.svelte";
   import TableMessageListItem from "./TableMessageListItem.svelte";
   import type { Collection, ArrayColl } from "svelte-collections";
@@ -28,16 +32,6 @@
   export let selectedMessage: EMail;
 
   $: sortedMessages = messages.sortBy(email => -email.sent.getTime());
-
-  async function onKey(event: KeyboardEvent) {
-    if (event.key == "Delete") {
-      await Promise.all(selectedMessages.map(msg => msg.deleteMessage()));
-      event.stopPropagation();
-    } else if (event.key == "j") {
-      await Promise.all(selectedMessages.map(msg => msg.deleteMessage()));
-      event.stopPropagation();
-    }
-  }
 </script>
 
 <style>

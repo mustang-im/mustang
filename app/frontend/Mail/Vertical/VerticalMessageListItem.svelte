@@ -2,8 +2,6 @@
 <vbox class="message"
   class:unread={!$message.isRead}
   draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
-  on:keydown={event => catchErrors(() => onKey(event))}
-  tabindex={0}
   >
   <hbox class="top-row">
     <hbox class="direction">
@@ -102,24 +100,6 @@
     $selectedMessage = message.nextMessage(true);
     await message.markSpam(true);
     await message.deleteMessage();
-  }
-
-  async function onKey(event: KeyboardEvent) {
-    if (!event.altKey && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
-      if (event.key == "m") {
-        await toggleRead();
-        event.stopPropagation();
-      } else if (event.key == "s") {
-        await toggleStar();
-        event.stopPropagation();
-      } else if (event.key == "j") {
-        await markAsSpam();
-        event.stopPropagation();
-      } else if (event.key == "del") {
-        await deleteMessage();
-        event.stopPropagation();
-      }
-    }
   }
 </script>
 

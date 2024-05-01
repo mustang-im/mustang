@@ -27,19 +27,19 @@ export async function onDropMail(event: DragEvent, folder: Folder) {
     return;
   }
   let msgIDs = msgIDsStr.split(",");
-  let messages = get(selectedMessages);
+  let messages = get(selectedMessages).contents;
   if (msgIDs.length == 0) {
     return;
   } else if (msgIDs.length == 1) {
     assert(msgIDs[0] == message.id, "Drag&drop failed: Selected message ID doesn't match the drag data");
-    messages = new ArrayColl<EMail>([ message ]);
+    messages = [ message ];
   } else {
     assert(messages.every(msg => msgIDs.includes(msg.id)), "Drag&drop failed: Selected message IDs don't match the drag data");
   }
   if (event.ctrlKey || event.metaKey) {
-    await folder.copyMessagesHere(messages);
+    await folder.copyMessagesHere(new ArrayColl(messages));
   } else {
-    await folder.moveMessagesHere(messages);
+    await folder.moveMessagesHere(new ArrayColl(messages));
   }
 }
 
