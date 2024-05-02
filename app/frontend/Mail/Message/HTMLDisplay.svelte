@@ -1,5 +1,5 @@
-<!-- TODO Security: Test that this <iframe sandbox> is untrusted and jailed -->
-<iframe class="html-display" srcdoc={displayHTML} title="Text" sandbox="" />
+<!-- TODO Security: Test that this <iframe> is untrusted and jailed -->
+<webview class="html-display" src={"data:text/html;charset=utf-8," + displayHTML} title="Text" />
 
 <script lang="ts">
   import cssContent from "./content.css?inline";

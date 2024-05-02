@@ -1,5 +1,5 @@
 {#if runningApp}
-  <iframe class="app-runner" src={runningApp.start} title={runningApp.nameTranslated} sandbox="" />
+  <webview class="app-runner" src={runningApp.start} title={runningApp.nameTranslated} />
 {:else if showStore}
   <AppStore bind:showStore />
 {:else if appGlobal.apps.myApps}
