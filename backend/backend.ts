@@ -3,6 +3,7 @@ import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
+import { Notification, Tray } from "electron";
 import nodemailer from 'nodemailer';
 import path from "node:path";
 import os from "node:os";
@@ -22,6 +23,9 @@ async function createSharedAppObject() {
   return {
     kyCreate,
     postHTTP, // TODO Use ky
+    newOSNotification,
+    isOSNotificationSupported,
+    newTrayIcon,
     getConfigDir,
     getFilesDir,
     openFileInExternalApp,
@@ -127,6 +131,20 @@ async function postHTTP(url: string, data: any, config: any) {
     statusText: response.statusText,
     data: await response[config.responseType](),
   };
+}
+
+/** <https://www.electronjs.org/docs/latest/api/tray> */
+function newTrayIcon(image: string, guid?: string): Tray {
+  return new Tray(image, guid);
+}
+
+/** <https://www.electronjs.org/docs/latest/api/notification> */
+function newOSNotification(options: any): Notification {
+  return new Notification(options);
+}
+
+function isOSNotificationSupported(): boolean {
+  return Notification.isSupported();
 }
 
 function createIMAPFlowConnection(...args): ImapFlow {

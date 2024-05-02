@@ -59,6 +59,10 @@ export class MailAccount extends Account {
     return this.findFolder(folder => folder.path == path);
   }
 
+  get inbox(): Folder | null {
+    return this.getSpecialFolder(SpecialFolder.Inbox) ?? this.rootFolders.first;
+  }
+
   newFolder(): Folder {
     return new Folder(this);
   }

@@ -20,6 +20,7 @@
   </hbox>
 </vbox>
 <MeetBackground />
+<MailInBackground />
 
 <script lang="ts">
   import { selectedApp, sidebarApp, mustangApps, openApp } from "../AppsBar/selectedApp";
@@ -33,6 +34,7 @@
   import NotificationBar from "./NotificationBar.svelte";
   import WindowHeader from "./WindowHeader.svelte";
   import Splitter from "../Shared/Splitter.svelte";
+  import MailInBackground from "../Mail/MailInBackground.svelte";
   import MeetBackground from "../Meet/MeetBackground.svelte";
   import SetupMail from "../Settings/Setup/Mail/SetupMail.svelte";
   import { catchErrors, backgroundError } from "../Util/error";
