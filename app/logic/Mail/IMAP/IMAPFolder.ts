@@ -90,6 +90,9 @@ export class IMAPFolder extends Folder {
         changedSince: this.lastSeen,
       });
       for await (let msgInfo of msgsAsyncIterator) {
+        if (!msgInfo.envelope) {
+          continue;
+        }
         let msg = this.getEMailByUID(msgInfo.uid);
         if (msg) {
           msg.fromFlow(msgInfo);
