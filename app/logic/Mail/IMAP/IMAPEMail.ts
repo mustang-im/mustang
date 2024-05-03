@@ -15,6 +15,15 @@ export class IMAPEMail extends EMail {
     super(folder);
   }
 
+  get pID() {
+    return String(this.uid);
+  }
+  set pID(val) {
+    if (val == String(Number(val) >>> 0)) {
+      this.uid = Number(val);
+    }
+  }
+
   async download() {
     let msgInfo = await this.folder.runCommand(async (conn) => {
       // TODO uid failed for me for msgs with uid > folder msg count

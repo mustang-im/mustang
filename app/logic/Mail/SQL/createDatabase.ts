@@ -40,7 +40,8 @@ export const mailDatabaseSchema = sql`
     -- See also folder.uidvalidity
     -- <https://www.rfc-editor.org/rfc/rfc3501#section-2.3.1.1>
     -- And yes, we're explicity designing that an email can only be in one folder at a time. Greetings to Gmail.
-    "uid" INTEGER default null,
+    -- EWS ID string
+    "pID" TEXT default null,
     -- RFC822 header
     "messageID" TEXT default null,
     -- In-Reply-To header

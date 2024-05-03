@@ -14,6 +14,13 @@ export class DelegateEMail extends EMail {
     this.base = base;
   }
 
+  get pID() {
+    return base.pID;
+  }
+  set pID(val) {
+    base.pID = val;
+  }
+
   async download() {
     await this.base.download();
   }

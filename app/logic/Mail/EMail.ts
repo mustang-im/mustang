@@ -61,6 +61,13 @@ export class EMail extends Message {
     this.folder = folder;
   }
 
+  get pID(): string {
+    throw new AbstractFunction();
+  }
+  set pID(val: string) {
+    throw new AbstractFunction();
+  }
+
   get messageID(): string {
     return this.id;
   }
