@@ -3,6 +3,7 @@ import { IMAPFolder } from "./IMAPFolder";
 import { appGlobal } from "../../app";
 import { SQLMailAccount } from "../SQL/SQLMailAccount";
 import { SQLFolder } from "../SQL/SQLFolder";
+import type { EMail } from "../EMail";
 import { assert } from "../../util/util";
 import type { ArrayColl, Collection } from "svelte-collections";
 import type { ImapFlow } from "../../../../e2/node_modules/imapflow";
@@ -219,6 +220,11 @@ export class IMAPAccount extends MailAccount {
   async logout(): Promise<void> {
     await this._connection?.logout();
   }
+
+  async send(email: EMail): Promise<void> {
+    assert(this.outgoing, "SMTP server is not set up for IMAP account " + this.name);
+    await this.outgoing.send(email);
+  };
 
   newFolder(): IMAPFolder {
     return new IMAPFolder(this);

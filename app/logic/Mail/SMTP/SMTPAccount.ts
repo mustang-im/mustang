@@ -1,4 +1,4 @@
-import { MailAccount, TLSSocketType, type OutgoingMailAccount } from "../MailAccount";
+import { MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { Attachment , ContentDisposition } from "../Attachment";
@@ -7,7 +7,7 @@ import { blobToBase64 } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 import type { Attachment as NMAttachment, Address as NMAddress } from "@types/nodemailer/lib/mailer";
 
-export class SMTPAccount extends MailAccount implements OutgoingMailAccount {
+export class SMTPAccount extends MailAccount {
   readonly protocol: string = "smtp";
 
   protected getTransportOptions() {

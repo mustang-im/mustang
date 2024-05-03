@@ -1,4 +1,4 @@
-import { AuthMethod, MailAccount, OutgoingMailAccount, TLSSocketType } from "../../MailAccount";
+import { AuthMethod, MailAccount, TLSSocketType } from "../../MailAccount";
 import { SMTPAccount } from "../../SMTP/SMTPAccount";
 import { EWSAccount } from "../../EWS/EWSAccount";
 import { IMAPAccount } from "../../IMAP/IMAPAccount";
@@ -54,7 +54,7 @@ export class ThunderbirdProfile {
         }
         if (account.username == smtp.username &&
             (account instanceof IMAPAccount || account instanceof POP3Account)) {
-          account.outgoing = smtp as any as MailAccount & OutgoingMailAccount;
+          account.outgoing = smtp as any as MailAccount;
           smtp.id = account.id + "-" + smtp.id.replace("tb-", "");
         }
       }
@@ -148,7 +148,7 @@ export class ThunderbirdProfile {
         if (id) {
           let smtp = this.readSMTPServer(id);
           if (smtp) {
-            account.outgoing = smtp as any as MailAccount & OutgoingMailAccount;
+            account.outgoing = smtp as any as MailAccount;
             smtp.id = sanitize.nonemptystring(account.id + "-" + smtp.id.replace("tb-", ""));
           }
         }

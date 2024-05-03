@@ -19,9 +19,9 @@ export class MailAccount extends Account {
   @notifyChangedProperty
   authMethod = AuthMethod.Unknown;
   /** SMTP server
-   * Null for JMAP, Exchange etc. */
+   * Only set for IMAP and POP3. null for JMAP, Exchange etc. */
   @notifyChangedProperty
-  outgoing: MailAccount & OutgoingMailAccount = null;
+  outgoing: MailAccount = null;
   /** Where we got the config from, during setup */
   source: ConfigSource = null;
   storage: MailAccountStorage;
@@ -62,6 +62,10 @@ export class MailAccount extends Account {
   get inbox(): Folder | null {
     return this.getSpecialFolder(SpecialFolder.Inbox) ?? this.rootFolders.first;
   }
+
+  async send(email: EMail): Promise<void> {
+    throw new AbstractFunction();
+  };
 
   newFolder(): Folder {
     return new Folder(this);
@@ -129,10 +133,6 @@ export enum AuthMethod {
 }
 
 export type ConfigSource = "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | "manual" | null;
-
-export interface OutgoingMailAccount {
-  send(email: EMail): Promise<void>;
-}
 
 export interface MailAccountStorage {
   saveMessage(email: EMail): Promise<void>;

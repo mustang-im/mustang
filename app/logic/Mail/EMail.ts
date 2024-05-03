@@ -287,8 +287,9 @@ export class EMail extends Message {
 
   async send(): Promise<void> {
     this.isDraft = false;
-    assert(this.folder?.account?.outgoing, "Outgoing server not set up for account " + this.folder?.account?.name);
-    await this.folder.account.outgoing.send(this);
+    let server = this.folder?.account;
+    assert(server, "Cannot send: Server for draft email is not configured");
+    await server.send(this);
     console.log("Sent email", this.subject, "to", this.to.first.emailAddress, this);
     // TODO move to Sent or target folder?
   }

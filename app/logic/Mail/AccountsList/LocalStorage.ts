@@ -1,4 +1,4 @@
-import { MailAccount, MailAccountStorage, OutgoingMailAccount, TLSSocketType } from '../MailAccount';
+import { MailAccount, MailAccountStorage, TLSSocketType } from '../MailAccount';
 import { IMAPAccount } from '../IMAP/IMAPAccount';
 import { POP3Account } from '../POP3/POP3Account';
 import { SMTPAccount } from '../SMTP/SMTPAccount';
@@ -54,7 +54,7 @@ async function readIMAPAccount(prefBranch: string, id: string): Promise<IMAPAcco
   let account = new IMAPAccount();
   account.id = id;
   await readStandardAccountFromLocalStorage(account as any as MailAccount, prefBranch);
-  account.outgoing = await readSMTPAccount(prefBranch, id) as any as MailAccount & OutgoingMailAccount;
+  account.outgoing = await readSMTPAccount(prefBranch, id) as any as MailAccount;
   return account;
 }
 
@@ -62,7 +62,7 @@ async function readPOP3Account(prefBranch: string, id: string): Promise<POP3Acco
   let account = new POP3Account();
   account.id = id;
   await readStandardAccountFromLocalStorage(account as any as MailAccount, prefBranch);
-  account.outgoing = await readSMTPAccount(prefBranch, id) as any as MailAccount & OutgoingMailAccount;
+  account.outgoing = await readSMTPAccount(prefBranch, id) as any as MailAccount;
   return account;
 }
 
