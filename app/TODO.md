@@ -217,11 +217,9 @@
   * Mac ARM - DONE
   * Auto-update client
   * Auto-update server
-* Git repo
 * Licenses
   * Adapt our Open-Source license
   * Adapt our EULA and Privacy policy
-  * Impressum
 * Password storage
 
 # Server
