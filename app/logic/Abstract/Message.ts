@@ -37,7 +37,7 @@ export class Message extends Observable {
   inReplyTo: string | null = null;
 
   @notifyChangedProperty
-  protected _text: string;
+  protected _text: string = null;
   /** Plaintext version of the message */
   get text(): string {
     if (this._text) {
@@ -59,10 +59,10 @@ export class Message extends Observable {
    * Attention: Untrusted. MUST be sanitized before using it.
    * @see _sanitizedHTML */
   @notifyChangedProperty
-  protected _rawHTML: string;
+  protected _rawHTML: string = null;
   /** HTML version of the message.
    * Sanitized. */
-  protected _sanitizedHTML: string;
+  protected _sanitizedHTML: string = null;
   /** HTML version of the message.
    * Sanitized. */
   get html(): string {
