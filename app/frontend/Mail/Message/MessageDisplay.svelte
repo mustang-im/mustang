@@ -17,7 +17,8 @@
 
 <style>
 .message-display {
-  background-color: #F9F9FD;
+  background-color: var(--leftbar-bg);
+  color: var(--leftbar-fg);
 }
 .paper {
   background-color: white;
