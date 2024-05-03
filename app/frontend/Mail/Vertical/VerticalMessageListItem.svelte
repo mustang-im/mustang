@@ -143,7 +143,7 @@
     width: 20px;
     vertical-align: bottom;
   }
-  .direction {
+  .direction > :global(*) {
     margin-right: 4px;
   }
 

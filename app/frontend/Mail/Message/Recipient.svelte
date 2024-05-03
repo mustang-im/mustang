@@ -25,7 +25,7 @@
   }
   .name {
     display: inline;
-    margin-left: 4px;
+    margin-right: 4px;
   }
   .domain {
     display: inline;
