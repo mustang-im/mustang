@@ -206,9 +206,8 @@ export class SQLEMail {
     email.received = sanitize.date(row.dateReceived * 1000, new Date());
     email.outgoing = sanitize.boolean(!!row.outgoing);
     email.subject = sanitize.string(row.subject, null);
-    if (row.plaintext == null && row.html == null) {
-      email.needToLoadBody = true;
-    } else {
+    if (row.plaintext != null || row.html != null) {
+      email.needToLoadBody = false;
       email.text = sanitize.string(row.plaintext, "");
       let html = sanitize.string(row.html, null);
       if (html) {
@@ -330,7 +329,7 @@ export class SQLEMail {
       FROM email
       WHERE id = ${email.dbID}
     `) as any;
-    let text = sanitize.string(row.plaintext, "")
+    let text = sanitize.string(row.plaintext, null)
     email.text = text;
     let html = sanitize.string(row.html, null);
     if (html) {

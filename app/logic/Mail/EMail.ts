@@ -54,7 +54,7 @@ export class EMail extends Message {
    * Set only temporarily. */
   needSave = false;
   /** Body hasn't been loaded yet */
-  needToLoadBody = false;
+  needToLoadBody = true;
 
   constructor(folder: Folder) {
     super();
