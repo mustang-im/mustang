@@ -74,8 +74,8 @@ export class EWSAccount extends MailAccount {
     xml.documentElement.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:m", "http://schemas.microsoft.com/exchange/services/2006/messages");
     xml.documentElement.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:t", "http://schemas.microsoft.com/exchange/services/2006/types");
     this.JSON2XML({
-      t$RequestServierVersion: {
-        Version: "Exchange2003",
+      t$RequestServerVersion: {
+        Version: "Exchange2013",
       },
       t$TimeZoneContext: {
         t$TimeZoneDefinition: {
