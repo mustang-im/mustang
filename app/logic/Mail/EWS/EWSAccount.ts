@@ -1,6 +1,5 @@
 import { MailAccount, TLSSocketType } from "../MailAccount";
 import { EWSFolder } from "./EWSFolder";
-import { SpecialFolder } from "../Folder";
 import { OAuth2MS } from "../../Auth/OAuth2MS";
 import { appGlobal } from "../../app";
 import { assert } from "../../util/util";
@@ -18,10 +17,6 @@ export class EWSAccount extends MailAccount {
 
   newFolder(): EWSFolder {
     return new EWSFolder(this);
-  }
-
-  get subFolders() { // Thunderbird uses an actual root folder but we have to fake it
-    return this.rootFolders;
   }
 
   get isLoggedIn(): boolean {
@@ -145,22 +140,7 @@ export class EWSAccount extends MailAccount {
   }
 
   async listFolders(): Promise<void> {
-    let request = {
-      m$GetFolder: {
-        m$FolderShape: {
-          t$BaseShape: "IdOnly",
-        },
-        m$FolderIds: {
-          t$DistinguishedFolderId: [{
-            Id: "msgfolderroot",
-          }],
-        },
-      },
-    };
-    let response = await this.callEWS(request);
-    let rootFolderId = response.Folders.Folder.FolderId.Id;
     let folderMap = {};
-    folderMap[rootFolderId] = this;
     let query = {
       m$FindFolder: {
         Traversal: "Deep",
@@ -186,33 +166,16 @@ export class EWSAccount extends MailAccount {
     let result = await this.callEWS(query);
     for (let folder of result.RootFolder.Folders.Folder) {
       if (!folder.FolderClass || folder.FolderClass == "IPF.Note" || folder.FolderClass.startsWith("IPF.Note.")) {
-        let ewsFolder = this.newFolder();
         let parent = folderMap[folder.ParentFolderId.Id];
-        ewsFolder.id = folder.FolderId.Id;
-        ewsFolder.name = folder.DisplayName;
-        ewsFolder.parent = parent == this ? null : parent;
-        ewsFolder.countTotal = folder.TotalCount;
-        ewsFolder.countUnread = folder.UnreadCount;
-        parent.subFolders.push(ewsFolder);
-        folderMap[folder.FolderId.Id] = ewsFolder;
-        switch (folder.DistinguishedFolderId) {
-        case "inbox":
-          ewsFolder.specialFolder = SpecialFolder.Inbox;
-          break;
-        case "drafts":
-          ewsFolder.specialFolder = SpecialFolder.Drafts;
-          break;
-        case "sentitems":
-          ewsFolder.specialFolder = SpecialFolder.Sent;
-          break;
-        case "junkemail":
-          ewsFolder.specialFolder = SpecialFolder.Spam;
-          break;
-        case "deleteditems":
-          ewsFolder.specialFolder = SpecialFolder.Trash;
-          break;
-        //case "outbox":
+        let parentFolders = parent ? parent.subFolders : this.rootFolders;
+        let ewsFolder = parentFolders.find(ewsFolder => ewsFolder.id == folder.FolderId.Id);
+        if (!ewsFolder) {
+          ewsFolder = this.newFolder();
+          ewsFolder.parent = parent || null;
+          parentFolders.push(ewsFolder);
         }
+        ewsFolder.fromXML(folder);
+        folderMap[folder.FolderId.Id] = ewsFolder;
       }
     }
   }
