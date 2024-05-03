@@ -1,4 +1,4 @@
-<audio src="/sound/ringtone1.mp3" bind:this={audioEl} />
+<audio src="/sound/new-message.mp3" bind:this={audioEl} />
 
 <script lang="ts">
   import type { EMail } from "../../logic/Mail/EMail";
