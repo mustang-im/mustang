@@ -23,19 +23,32 @@
 
   let audioEl: HTMLAudioElement;
 
+  // settings
   const doSound = true;
-  const doOSNotification = false;
   const doWebNotification = true;
+  const doOSNotification = false;
   let isOSNotificationSupported: boolean = undefined;
+  const onlyInAB = true;
+
+  const filterConditions: ((msg: EMail) => boolean)[] = [];
+  filterConditions.push(msg => msg.isNewArrived);
+  if (onlyInAB) {
+    filterConditions.push(msg => msg.from?.findPerson() && appGlobal.addressbooks.some(ab => ab.persons.some(person => person == msg.from.person)));
+  }
 
   async function showNewMail(messages: EMail[]) {
     console.log("Show new mail", messages.length);
     if (!messages?.length) {
       return;
     }
+    messages = messages.filter(msg => filterConditions.every(func => func(msg)));
+    console.log("  after filters", messages.length);
+    if (!messages?.length) {
+      return;
+    }
     let message = messages.length == 1 ? messages[0] : null;
     messages = messages.slice(0, 5);
-    // TODO prioritize messages based on relation of user to sender
+
     let title = message?.subject ??
       messages.map(msg => msg.subject?.substring(0, 20) ?? "")
           .join(", ").substring(0, 60);
