@@ -63,7 +63,7 @@ export const mailDatabaseSchema = sql`
     "contactEmail" TEXT default null,
     "contactName" TEXT default null,
     -- RFC822 header Subject:
-    "subject" TEXT not null,
+    "subject" TEXT default null,
     -- plaintext content of the email body. May be converted or post-processed.
     "plaintext" TEXT default null,
     -- HTML content of the email body. May be converted or post-processed.
