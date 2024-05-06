@@ -178,11 +178,22 @@ export class EWSFolder extends Folder {
   }
 
   async downloadMessages(): Promise<Collection<EWSEMail>> {
+    let missing = this.messages.filter(msg => !msg.downloadComplete) as any as Collection<EWSEMail>;
+    const kMaxSize = 50000;
+    let missingLarge = missing.filter(msg => msg.size && msg.size > kMaxSize);
+    let missingSmall = missing.subtract(missingLarge);
+    // First the small messages, then the large ones
+    let downloadedSmall = await this.downloadSpecificMessages(missingSmall);
+    let downloadedLarge = await this.downloadSpecificMessages(missingLarge);
+    return downloadedSmall.concat(downloadedLarge);
+  }
+
+  async downloadSpecificMessages(emails: Collection<EWSEMail>): Promise<Collection<EWSEMail>> {
     let downloadedEmail = new ArrayColl<EWSEMail>();
-    let emailToDownload = this.messages.contents.filter(message => !message.downloadComplete) as EWSEMail[];
+    let emailsToDownload = emails.contents;
     const kMaxCount = 50;
-    for (let i = 0; i < emailToDownload.length; i += kMaxCount) {
-      let batch = emailToDownload.slice(i, i + 50);
+    for (let i = 0; i < emailsToDownload.length; i += kMaxCount) {
+      let batch = emailsToDownload.slice(i, i + 50);
       let request = {
         m$GetItem: {
           m$ItemShape: {
@@ -199,7 +210,7 @@ export class EWSFolder extends Folder {
         results = [results];
       }
       for (let result of results) {
-        let email = emailToDownload.find(email => email.itemID == result.Items.Message.ItemId.Id);
+        let email = emailsToDownload.find(email => email.itemID == result.Items.Message.ItemId.Id);
         if (email && !email.downloadComplete) {
           email.mime = new Uint8Array(await (await fetch("data:message/rfc822;base64," + result.Items.Message.MimeContent.Value)).arrayBuffer());
           await email.parseMIME();
