@@ -122,7 +122,7 @@ export class EWSFolder extends Folder {
                   FieldURI: "message:CcRecipients",
                 }, {
                   FieldURI: "message:BccRecipients",
-                /* Non-MIME
+                /* Non-MIME @see EWSEMail.bodyAndAttachmentsFromXML()
                 }, {
                   FieldURI: "item:Attachments",
                 */

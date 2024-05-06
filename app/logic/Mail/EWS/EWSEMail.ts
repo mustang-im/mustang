@@ -74,7 +74,13 @@ export class EWSEMail extends EMail {
     setPersons(this.cc, xmljs.CcRecipients?.Mailbox);
     setPersons(this.bcc, xmljs.BccRecipients?.Mailbox);
     this.contact = this.outgoing ? this.to.first : this.from;
-    /* Non-MIME
+  }
+
+  /** Get body and attachments from Exchange.
+   * This is an alternative to parsing MIME.
+   * @see EWSFolder GetItem server call. */
+  bodyAndAttachmentsFromXML(xmljs) {
+    assert(this.itemID == xmljs.ItemId.Id, "EWS EMail ItemID doesn't match");
     if (xmljs.Body?.BodyType == "Text") {
       this.text = xmljs.Body.Value;
     } else {
@@ -102,7 +108,6 @@ export class EWSEMail extends EMail {
         return attachment;
       }));
     }
-    */
   }
 
   setFlags(xmljs) {
