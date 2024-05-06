@@ -3,8 +3,8 @@ import { EWSEMail } from "./EWSEMail";
 import type { EWSAccount } from "./EWSAccount";
 import { SQLFolder } from "../SQL/SQLFolder";
 import { SQLEMail } from "../SQL/SQLEMail";
-import { ArrayColl, Collection } from "svelte-collections";
 import { assert } from "../../util/util";
+import { ArrayColl, Collection } from "svelte-collections";
 
 export class EWSFolder extends Folder {
   account: EWSAccount;
@@ -177,9 +177,9 @@ export class EWSFolder extends Folder {
     this.messages.replaceAll(allEmail);
   }
 
-  async downloadMessages(): Promise<Collection<EWSEmail>> {
-    let downloadedEmail = new ArrayColl<EWSEmail>();
-    let emailToDownload = this.messages.contents.filter(message => !message.downloadComplete);
+  async downloadMessages(): Promise<Collection<EWSEMail>> {
+    let downloadedEmail = new ArrayColl<EWSEMail>();
+    let emailToDownload = this.messages.contents.filter(message => !message.downloadComplete) as EWSEMail[];
     const kMaxCount = 50;
     for (let i = 0; i < emailToDownload.length; i += kMaxCount) {
       let batch = emailToDownload.slice(i, i + 50);

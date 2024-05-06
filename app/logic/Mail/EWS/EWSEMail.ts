@@ -1,20 +1,21 @@
 import { EMail } from "../EMail";
-import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { Attachment, ContentDisposition } from "../Attachment";
-import { appGlobal } from "../../app";
 import { SQLEMail } from "../SQL/SQLEMail";
-import type { ArrayColl } from "svelte-collections";
 import type { EWSFolder } from "./EWSFolder";
+import { Attachment, ContentDisposition } from "../Attachment";
+import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import { appGlobal } from "../../app";
+import { assert } from "../../util/util";
+import type { ArrayColl } from "svelte-collections";
 
 export class EWSEMail extends EMail {
   folder: EWSFolder;
-  itemID: string;
 
-  get pID() {
-    return this.itemID;
+  get itemID(): string | null {
+    return this.pID as string | null;
   }
-  set pID(val) {
-    this.itemID = val;
+  set itemID(val: string | null) {
+    assert(val == null || typeof (val) == "string", "EWS EMail itemID must be a string");
+    this.pID = val;
   }
 
   async download() {
