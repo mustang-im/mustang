@@ -47,6 +47,12 @@ export class EMail extends Message {
   folder: Folder;
   /** msg ID of the thread starter message */
   threadID: string | null = null;
+  /** Protocol-specific ID for this email.
+   * E.g. UID or seq for IMAP, or EWS ID string.
+   * The type string or number depends on the protocol.
+   * Each protocol defines a get/set function with the protocol-specific name,
+   * E.g. `IMAPEMail.uid: number` and `EWSEMail.itemID: string` are getters for pID. */
+  pID: string | number | null = null;
   /** This message has been downloaded completely,
    * with header, body, and all attachments. */
   downloadComplete = false;

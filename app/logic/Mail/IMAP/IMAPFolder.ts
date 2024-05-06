@@ -9,8 +9,6 @@ import { assert } from "../../util/util";
 export class IMAPFolder extends Folder {
   account: IMAPAccount;
   uidvalidity: number = 0;
-  /** Last sequence number seen */
-  lastSeen: number = 0;
 
   constructor(account: IMAPAccount) {
     super(account);
@@ -26,6 +24,15 @@ export class IMAPFolder extends Folder {
     assert(this.path, "Missing folder path");
     assert(this.account.pathDelimiter, "Missing path delimiter");
     return this.path?.split(this.account.pathDelimiter);
+  }
+
+  /** Last sequence number seen */
+  get lastModSeq(): number {
+    return this.syncState as number ?? 0;
+  }
+  set lastModSeq(val: number) {
+    assert(typeof (val) == "number", "IMAP Folder modseq must be a number");
+    this.syncState = val;
   }
 
   fromFlow(folderInfo: any) {
@@ -87,7 +94,7 @@ export class IMAPFolder extends Folder {
         envelope: true,
         flags: true,
       }, {
-        changedSince: this.lastSeen,
+        changedSince: this.lastModSeq,
       });
       for await (let msgInfo of msgsAsyncIterator) {
         if (!msgInfo.envelope) {
@@ -177,8 +184,8 @@ export class IMAPFolder extends Folder {
     if (typeof (modseq) != "number") {
       return;
     }
-    if (modseq > this.lastSeen) {
-      this.lastSeen = modseq;
+    if (modseq > this.lastModSeq) {
+      this.lastModSeq = modseq;
     }
   }
 

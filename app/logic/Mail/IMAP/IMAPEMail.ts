@@ -8,11 +8,18 @@ import { assert } from "../../util/util";
 export class IMAPEMail extends EMail {
   folder: IMAPFolder;
   /** From IMAP server */
-  uid: number | null = null;
   seq: number | null = null;
 
   constructor(folder: IMAPFolder) {
     super(folder);
+  }
+
+  get uid(): number | null {
+    return this.pID as number | null;
+  }
+  set uid(val: number | null) {
+    assert(val === null || typeof (val) == "number", "IMAP EMail UID must be a number");
+    this.pID = val;
   }
 
   async download() {

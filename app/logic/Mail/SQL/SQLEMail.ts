@@ -22,7 +22,7 @@ export class SQLEMail {
         FROM email
         WHERE
           messageID = ${email.id} AND
-          uid = ${(email as any as IMAPEMail).uid} AND
+          pID = ${email.pID} AND
           folderID = ${email.folder.dbID}
         `) as any;
       if (existing?.id) {
@@ -32,12 +32,12 @@ export class SQLEMail {
     if (!email.dbID) {
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO email (
-          messageID, folderID, uid, parentMsgID,
+          messageID, folderID, pID, parentMsgID,
           size, dateSent, dateReceived,
           outgoing,
           subject, plaintext, html
         ) VALUES (
-          ${email.id}, ${email.folder.dbID}, ${(email as any as IMAPEMail).uid}, ${email.inReplyTo},
+          ${email.id}, ${email.folder.dbID}, ${email.pID}, ${email.inReplyTo},
           ${email.size}, ${email.sent.getTime() / 1000}, ${email.received.getTime() / 1000},
           ${email.outgoing ? 1 : 0},
           ${email.subject}, ${email.text}, ${email.rawHTMLDangerous}
@@ -49,7 +49,7 @@ export class SQLEMail {
         UPDATE email SET
           messageID = ${email.id},
           folderID = ${email.folder.dbID},
-          uid = ${(email as any as IMAPEMail).uid},
+          pID = ${email.pID},
           parentMsgID = ${email.inReplyTo},
           size = ${email.size},
           dateSent = ${email.sent.getTime() / 1000},
@@ -186,7 +186,7 @@ export class SQLEMail {
       // <copied to="readAll()" />
       row = await (await getDatabase()).get(sql`
       SELECT
-        uid, messageID, parentMsgID,
+        pID, messageID, parentMsgID,
         size, dateSent, dateReceived,
         outgoing,
         subject, plaintext, html,
@@ -198,7 +198,9 @@ export class SQLEMail {
       // contactEmail, contactName, myEmail
     }
     email.dbID = sanitize.integer(dbID);
-    (email as any as IMAPEMail).uid = sanitize.integer(row.uid, null);
+    email.pID = typeof(row.pID) == "number"
+      ? sanitize.integer(row.pID, null)
+      : sanitize.string(row.pID, null);
     email.id = sanitize.nonemptystring(row.messageID);
     email.inReplyTo = sanitize.string(row.parentMsgID, null);
     email.size = sanitize.integer(row.size, null);
@@ -343,7 +345,7 @@ export class SQLEMail {
     // <copied from="read()" />
     let emailRows = await (await getDatabase()).all(sql`
       SELECT
-        id, uid, messageID, parentMsgID,
+        id, pID, messageID, parentMsgID,
         size, dateSent, dateReceived,
         outgoing,
         subject,

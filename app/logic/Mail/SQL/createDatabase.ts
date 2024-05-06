@@ -36,11 +36,13 @@ export const mailDatabaseSchema = sql`
     "id" INTEGER PRIMARY KEY,
     -- We're explicity designing that an email can only be in one folder at a time. Greetings to Gmail.
     "folderID" INTEGER not null,
-    -- IMAP UID number. This is relative to the folder.
+    -- Protocol-specific ID for this email. @see EMail.pid.
+    -- IMAP: UID as integer. This is relative to the folder.
     -- See also folder.uidvalidity
     -- <https://www.rfc-editor.org/rfc/rfc3501#section-2.3.1.1>
-    -- And yes, we're explicity designing that an email can only be in one folder at a time. Greetings to Gmail.
-    "uid" INTEGER default null,
+    -- EWS: ItemID as string
+    -- Data type can be either string or integer or null (sqlite supports dynamic typing, per cell).
+    "pID" default null,
     -- RFC822 header
     "messageID" TEXT default null,
     -- In-Reply-To header
@@ -120,12 +122,13 @@ export const mailDatabaseSchema = sql`
     "countNewArrived" INTEGER default 0,
     -- Special Use: "inbox", "sent", "drafts", "trash", "junk", "archive"
     "specialUse" TEXT default null,
+    -- Last update from server we for this folder.
+    -- IMAP: modseq from CONDSTORE, i.e. the highest sequence number (or highest UID?)
+    -- ActiveSync and EWS: The last sync state.
+    -- Data type can be either string or integer or null (sqlite supports dynamic typing, per cell).
+    "syncState" default null,
     -- <https://www.rfc-editor.org/rfc/rfc3501#section-2.3.1.1>
     "uidvalidity" INTEGER default null,
-    -- Last update from server we for this folder.
-    -- For IMAP, that's the highest sequence number (or highest UID?)
-    -- For ActiveSync, this is the last sync state. Integer sufficient?
-    "lastSeen" INTEGER default null,
     UNIQUE("accountID", "path"),
     FOREIGN KEY (accountID)
       REFERENCES emailAccount (id)

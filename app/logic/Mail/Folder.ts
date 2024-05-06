@@ -24,6 +24,11 @@ export class Folder extends Observable implements TreeItem {
   countUnread = 0;
   @notifyChangedProperty
   countNewArrived = 0;
+  /**
+   * IMAP: modseq from CONDSTORE, as integer
+   * EWS: Sync state, as string
+   */
+  syncState: number | string | null = null;
 
   constructor(account: MailAccount) {
     super();
