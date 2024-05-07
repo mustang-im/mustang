@@ -3,8 +3,9 @@ import { POP3Account } from "../POP3/POP3Account";
 import { SMTPAccount } from "../SMTP/SMTPAccount";
 import { AuthMethod, TLSSocketType } from "../MailAccount";
 import { kStandardPorts } from "./configInfo";
-import { getMX, getBaseDomainFromHost } from "./fetchConfig";
+import { getMX } from "./fetchConfig";
 import { PriorityAbortable, ParallelAbortable } from "../../util/Abortable";
+import { getBaseDomainFromHost } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 

@@ -10,8 +10,8 @@
 </AppObject>
 
 <script lang="ts">
-  import { type PersonUID, personDisplayName, getDomainForEmailAddress } from "../../../logic/Abstract/PersonUID";
-  import { getBaseDomainFromHost } from "../../../logic/Mail/AutoConfig/fetchConfig";
+  import { type PersonUID, personDisplayName } from "../../../logic/Abstract/PersonUID";
+  import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../../logic/util/netUtil";
   import AppObject from "../../AppsBar/AppObject.svelte";
 
   export let recipient: PersonUID;

@@ -80,13 +80,13 @@
 <script lang="ts">
   import { type MailAccount, AuthMethod, TLSSocketType } from "../../../../../logic/Mail/MailAccount";
   import { kStandardPorts } from "../../../../../logic/Mail/AutoConfig/configInfo";
-  import { getDomainForEmailAddress } from "../../../../../logic/Mail/AutoConfig/fetchConfig";
   import { dummyHostname } from "../../../../../logic/Mail/AutoConfig/manualConfig";
   import ShieldOKIcon from "lucide-svelte/icons/shield-check";
   import ShieldAlertIcon from "lucide-svelte/icons/shield-alert";
   import ShieldQuestionIcon from "lucide-svelte/icons/shield-question";
   import ArrowLeftIcon from "lucide-svelte/icons/move-left";
   import ArrowRightIcon from "lucide-svelte/icons/move-right";
+  import { getDomainForEmailAddress } from "../../../../../logic/util/netUtil";
 
   /** in */
   export let config: MailAccount;

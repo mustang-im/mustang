@@ -94,8 +94,3 @@ export function personDisplayName(person: PersonOrGroup | PersonUID) {
     return "Unknown contact type";
   }
 }
-
-export function getDomainForEmailAddress(emailAddress): string {
-  // Do not throw, because this function is used in {UI code}
-  return sanitize.hostname(emailAddress.split("@").pop(), "unknown");
-}

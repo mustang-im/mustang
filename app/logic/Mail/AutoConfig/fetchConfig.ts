@@ -3,6 +3,7 @@ import { readConfigFromXML } from "./readConfig";
 import { appGlobal } from "../../app";
 import { PriorityAbortable, makeAbortable } from "../../util/Abortable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { getBaseDomainFromHost } from "../../util/netUtil";
 import { assert, type URLString } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
@@ -57,30 +58,6 @@ async function fetchConfigForMX(domain, abort: AbortController): Promise<ArrayCo
     fetchConfigFromISPDB(mxDomain, abort),
   ]);
   return await priorityOrder.run();
-}
-
-export function getDomainForEmailAddress(emailAddress: string): string {
-  let domain = emailAddress.split("@")[1];
-  assert(domain, `No domain in email address: ${emailAddress}`);
-  assert(domain.includes("."), `Need dot in the domain: ${emailAddress}`);
-  return sanitize.hostname(domain);
-}
-
-/**
- * Returns the base domain of hostname.
- * E.g. for "www2.static.amazon.com" returns "amazon.com"
- * and for "www2.static.amazon.co.uk" returns "amazon.co.uk"
- */
-export function getBaseDomainFromHost(hostname: string): string {
-  let domainparts = hostname.split(".");
-  let tld = domainparts.slice().pop();
-  // TODO use <https://publicsuffix.org>
-  // Compare Firefox EffectiveTLD.getBaseDomainFromHost()
-  if (tld == "uk" || tld == "au") {
-    return domainparts.slice(domainparts.length - 3).join(".");
-  } else {
-    return domainparts.slice(domainparts.length - 2).join(".");
-  }
 }
 
 /**

@@ -1,6 +1,7 @@
 import type { MailAccount } from "../MailAccount";
-import { fetchConfig, getDomainForEmailAddress } from "./fetchConfig";
+import { fetchConfig } from "./fetchConfig";
 import { guessConfig } from "./guessConfig";
+import { getDomainForEmailAddress } from "../../util/netUtil";
 import { ArrayColl } from "svelte-collections";
 
 export async function findConfig(emailAddress: string, password: string, abort: AbortController): Promise<ArrayColl<MailAccount>> {

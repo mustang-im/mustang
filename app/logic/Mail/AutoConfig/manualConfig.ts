@@ -1,7 +1,7 @@
-import { AuthMethod, TLSSocketType, type MailAccount } from "../MailAccount";
+import { AuthMethod, type MailAccount } from "../MailAccount";
 import { IMAPAccount } from "../IMAP/IMAPAccount";
 import { SMTPAccount } from "../SMTP/SMTPAccount";
-import { getDomainForEmailAddress } from "./fetchConfig";
+import { getDomainForEmailAddress } from "../../util/netUtil";
 
 export function makeManualConfig(emailAddress: string, password: string): MailAccount {
   let domain = getDomainForEmailAddress(emailAddress)
