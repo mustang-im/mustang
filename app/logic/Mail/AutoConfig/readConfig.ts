@@ -49,7 +49,9 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string, s
   }
   let outgoing = outgoingConfigs.first;
   for (let config of configs) {
-    config.outgoing = outgoing;
+    if (config.protocol == "imap" || config.protocol == "pop3") {
+      config.outgoing = outgoing;
+    }
   }
 
   return configs;
@@ -61,9 +63,23 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string, s
 function readServer(xml: any, displayName: string, source: ConfigSource): MailAccount {
   let protocol = sanitize.enum(xml["@type"], ["pop3", "imap", "jmap", "smtp", "exchange"], null);
   assert(protocol, `Need type for <incomingServer> in autoconfig XML for ${displayName}`);
+
+  if (protocol == "exchange") { // Backwards compat
+    let ewsURL = sanitize.url(xml.ewsURL, null);
+    let owaURL = sanitize.url(xml.owaURL, null);
+    let activeSyncURL = sanitize.url(xml.easURL, null);
+    assert(ewsURL || owaURL || activeSyncURL, "Malformed or unknown Exchange config");
+    assert(ewsURL || owaURL, "ActiveSync not yet supported");
+    // Return only the most preferred config (for this backwards compat)
+    protocol = ewsURL ? "ews" : owaURL ? "owa" : "activesync";
+    xml.url = ewsURL ?? owaURL ?? activeSyncURL;
+    assert(xml.url, "Need URL for Exchange servers");
+  }
+
   let account = newAccountForProtocol(protocol);
 
   account.name = displayName;
+  account.url = sanitize.url(xml.url, null);
   account.hostname = sanitize.hostname(xml.hostname);
   account.port = sanitize.portTCP(xml.port);
   account.username = sanitize.string(xml.username); // may be a %VARIABLE%
