@@ -33,11 +33,19 @@ function createWindow(): void {
       mainWindow.show()
     })
 
+    /** Ensure that new web windows are opened in the browser, not inside our app.
+     *
+     * Attention: This does *not* catch normal `<a href="">` links.
+     * Thus, sanitizeHTML() adds a `target="_blank"` to such links,
+     * which is considered a new web window and forces them to end up here. */
     mainWindow.webContents.setWindowOpenHandler((details) => {
-      if (details.features.includes("oauth2popup")) {
+      // Allow windows opened by us for OAuth2
+      if (details?.features?.includes("oauth2popup")) {
         return { action: 'allow' };
       }
+      // Open the URL in the system web browser
       shell.openExternal(details.url)
+      // ... and do not open a new Electron window
       return { action: 'deny' }
     })
 

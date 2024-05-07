@@ -1,3 +1,4 @@
+import { getBaseDomainFromHost } from "./netUtil";
 import DOMPurify from "dompurify"; // https://github.com/cure53/DOMPurify
 import TurndownService from "turndown";
 import markdownit from "markdown-it";
@@ -99,11 +100,25 @@ DOMPurify.addHook('uponSanitizeElement', (node, data) => {
 
 DOMPurify.addHook('afterSanitizeAttributes', node => {
   for (let attribute of urlAttributes) {
-    if (node.hasAttribute(attribute) && !(node.tagName.toLowerCase() == "a" && attribute == "href")) {
-      if (node.getAttribute(attribute) != urlAttribute(node.getAttribute(attribute))) {
-        console.log(node.tagName, attribute, "=", node.getAttribute(attribute), "=>", urlAttribute(node.getAttribute(attribute)));
+    if (node.hasAttribute(attribute)) {
+      if (node.tagName.toLowerCase() == "a" && attribute == "href") {
+        try {
+          // New window requests are caught by e2 index.ts setWindowOpenHandler()
+          node.setAttribute("target", "_blank");
+          let url = node.getAttribute(attribute);
+          if (!url) {
+            continue;
+          }
+          let hostname = new URL(url).hostname;
+          let domain = getBaseDomainFromHost(hostname);
+          node.setAttribute("title", domain + "\n\n" + url);
+        } catch (ex) {
+          node.setAttribute(attribute, "");
+          node.setAttribute("title", ex.message ?? ex + "");
+        }
+      } else {
+        node.setAttribute(attribute, urlAttribute(node.getAttribute(attribute)));
       }
-      node.setAttribute(attribute, urlAttribute(node.getAttribute(attribute)));
     }
   }
 

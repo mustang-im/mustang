@@ -6,7 +6,6 @@
     * Person Popup opening automatically and focussing the name field
       * Close popup on enter or tab
     * Plaintext mail line wraps
-    * HTML mail links: click and hover
   * OAuth2
   * Threads
     * Message: Conversation view
@@ -108,10 +107,7 @@
 # Mail
 * Body
   * Plaintext formatting
-  * Link
-    * Click
-    * Hover
-    * Right-click, copy
+  * Link: Right-click menu, copy
 * Compose: Recipients entry
 * Search
   * UI for criteria other than text
