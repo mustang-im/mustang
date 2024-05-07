@@ -33,9 +33,9 @@ export class AllFolders extends Folder {
       folder.listMessages()));
   }
 
-  async downloadMessages() {
+  async downloadAllMessages() {
     let results = await Promise.all(this._folders.contents.map(folder =>
-      folder.downloadMessages()));
+      folder.downloadAllMessages()));
     return mergeColl(...results);
   }
 

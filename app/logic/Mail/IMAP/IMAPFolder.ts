@@ -118,12 +118,11 @@ export class IMAPFolder extends Folder {
   }
 
   /**
-   * Checks which of the `messages` are not downloaded yet,
-   * and downloads them in batches.
+   * Downloads the emails in batches.
    * @return Actually newly downloaded msgs
    */
-  async downloadMessages(): Promise<Collection<IMAPEMail>> {
-    let needMsgs = new ArrayColl(this.messages.contents.filter(msg => !msg.downloadComplete) as IMAPEMail[]);
+  async downloadMessages(emails: Collection<IMAPEMail>): Promise<Collection<IMAPEMail>> {
+    let needMsgs = new ArrayColl(emails);
     let downloadedMsgs = new ArrayColl<IMAPEMail>();
     const kMaxCount = 50;
     while (needMsgs.hasItems) {
@@ -196,7 +195,7 @@ export class IMAPFolder extends Folder {
     this.countTotal = newCount;
     if (hasChanged) {
       await this.listMessages();
-      await this.downloadMessages();
+      await this.downloadAllMessages();
     }
   }
 

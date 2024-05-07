@@ -177,18 +177,7 @@ export class EWSFolder extends Folder {
     this.messages.replaceAll(allEmail);
   }
 
-  async downloadMessages(): Promise<Collection<EWSEMail>> {
-    let missing = this.messages.filter(msg => !msg.downloadComplete) as any as Collection<EWSEMail>;
-    const kMaxSize = 50000;
-    let missingLarge = missing.filter(msg => msg.size && msg.size > kMaxSize);
-    let missingSmall = missing.subtract(missingLarge);
-    // First the small messages, then the large ones
-    let downloadedSmall = await this.downloadSpecificMessages(missingSmall);
-    let downloadedLarge = await this.downloadSpecificMessages(missingLarge);
-    return downloadedSmall.concat(downloadedLarge);
-  }
-
-  async downloadSpecificMessages(emails: Collection<EWSEMail>): Promise<Collection<EWSEMail>> {
+  async downloadMessages(emails: Collection<EWSEMail>): Promise<Collection<EWSEMail>> {
     let downloadedEmail = new ArrayColl<EWSEMail>();
     let emailsToDownload = emails.contents;
     const kMaxCount = 50;

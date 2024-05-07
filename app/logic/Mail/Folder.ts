@@ -50,7 +50,23 @@ export class Folder extends Observable implements TreeItem {
     throw new AbstractFunction();
   }
 
-  async downloadMessages(): Promise<Collection<EMail>> {
+  /** Downloads the entire MIME of *all* emails in this folder.
+   * Tries to download the small emails first, then the large emails.
+   * @returns the actually downloaded emails. */
+  async downloadAllMessages(): Promise<Collection<EMail>> {
+    let missing = this.messages.filter(msg => !msg.downloadComplete) as any as Collection<EMail>;
+    const kMaxSize = 50000;
+    let missingLarge = missing.filter(msg => msg.size && msg.size > kMaxSize);
+    let missingSmall = missing.subtract(missingLarge);
+    // First the small messages, then the large ones
+    let downloadedSmall = await this.downloadMessages(missingSmall);
+    let downloadedLarge = await this.downloadMessages(missingLarge);
+    return downloadedSmall.concat(downloadedLarge);
+  }
+
+  /** Downloads the entire MIME of the given emails.
+   * @returns the actually downloaded emails. */
+  async downloadMessages(emails: Collection<EMail>): Promise<Collection<EMail>> {
     throw new AbstractFunction();
   }
 

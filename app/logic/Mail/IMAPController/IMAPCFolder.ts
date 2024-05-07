@@ -22,16 +22,16 @@ export class IMAPCFolder extends DelegateFolder {
     await this.base.listMessages();
   }
 
-  async downloadMessages() {
-    for (let email of this.messages.contents.filter(email => !email.downloadComplete)) {
+  async downloadMessages(emails: Collection<IMAPCEMail>): Collection<IMAPCEMail> {
+    for (let email of emails.contents.filter(email => !email.downloadComplete)) {
       email.needSave = true;
     }
-    let result = await this.base.downloadMessages();
-    for (let email of this.messages.contents.filter(email => !email.needSave)) {
+    let result = await this.base.downloadMessages(emails);
+    for (let email of emails.contents.filter(email => email.needSave)) {
       await SQLEMail.save(email);
       email.needSave = false;
     }
-    return result as any as Collection<EMail>;
+    return result as any as Collection<IMAPCEMail>;
   }
 
   newEMail(): IMAPCEMail {

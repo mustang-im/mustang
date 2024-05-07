@@ -35,8 +35,12 @@ export class DelegateFolder extends Folder {
     await this.base.listMessages();
   }
 
-  async downloadMessages() {
-    return await this.base.downloadMessages();
+  async downloadAllMessages() {
+    return await this.base.downloadAllMessages();
+  }
+
+  async downloadMessages(emails: Collection<DelegateEMail>) {
+    return await this.base.downloadMessages(emails);
   }
 
   async moveMessagesHere(messages: Collection<DelegateEMail>) {

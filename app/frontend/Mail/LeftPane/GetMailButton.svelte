@@ -55,7 +55,7 @@
       let folder = $selectedFolder ?? account.getSpecialFolder(SpecialFolder.Inbox);
       status = Status.Fetching;
       await folder.listMessages();
-      await folder.downloadMessages();
+      await folder.downloadAllMessages();
       status = folder.countNewArrived ? Status.New : Status.Done;
       await sleep(2);
       status = Status.Waiting;
