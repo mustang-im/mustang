@@ -30,7 +30,7 @@ export function sanitizeHTML(html: string): string {
 // <copied from="https://github.com/cure53/DOMPurify/blob/main/demos/hooks-proxy-demo.html" modified="true" license="Apache 2.0">
 const proxy = 'http://localhost:5454/proxy?url=';
 const cssURLRegex = /(url\("?)(?!data:)/gim;
-const attributes = ['action', 'background', 'href', 'poster', 'src', 'srcset'];
+const urlAttributes = ['action', 'background', 'href', 'poster', 'src', 'srcset'];
 
 function urlAttribute(url) {
   return /^data:image\//.test(url)
@@ -98,11 +98,14 @@ DOMPurify.addHook('uponSanitizeElement', (node, data) => {
 });
 
 DOMPurify.addHook('afterSanitizeAttributes', node => {
-  attributes.forEach(attribute => {
-    if (node.hasAttribute(attribute)) {
+  for (let attribute of urlAttributes) {
+    if (node.hasAttribute(attribute) && !(node.tagName.toLowerCase() == "a" && attribute == "href")) {
+      if (node.getAttribute(attribute) != urlAttribute(node.getAttribute(attribute))) {
+        console.log(node.tagName, attribute, "=", node.getAttribute(attribute), "=>", urlAttribute(node.getAttribute(attribute)));
+      }
       node.setAttribute(attribute, urlAttribute(node.getAttribute(attribute)));
     }
-  });
+  }
 
   if (node.hasAttribute('style')) {
     const styles = node.style;
