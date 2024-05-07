@@ -42,7 +42,7 @@ export const mailDatabaseSchema = sql`
     -- <https://www.rfc-editor.org/rfc/rfc3501#section-2.3.1.1>
     -- EWS: ItemID as string
     -- Data type can be either string or integer or null (sqlite supports dynamic typing, per cell).
-    "pID" default null,
+    "pID" ANY default null,
     -- RFC822 header
     "messageID" TEXT default null,
     -- In-Reply-To header
@@ -60,10 +60,10 @@ export const mailDatabaseSchema = sql`
     -- true = our user sent this; false = incoming = our user received it
     "outgoing" BOOLEAN default false,
     -- Email address of our user that was used, either as From (outgoing) or To/CC (incoming).
-    "myEmail", TEXT default null,
+    -- "myEmail" TEXT default null,
     -- If outgoing: First To: ; if incoming: (First) From:
-    "contactEmail" TEXT default null,
-    "contactName" TEXT default null,
+    -- "contactEmail" TEXT default null,
+    -- "contactName" TEXT default null,
     -- RFC822 header Subject:
     "subject" TEXT not null,
     -- plaintext content of the email body. May be converted or post-processed.
@@ -126,7 +126,7 @@ export const mailDatabaseSchema = sql`
     -- IMAP: modseq from CONDSTORE, i.e. the highest sequence number (or highest UID?)
     -- ActiveSync and EWS: The last sync state.
     -- Data type can be either string or integer or null (sqlite supports dynamic typing, per cell).
-    "syncState" default null,
+    "syncState" ANY default null,
     -- <https://www.rfc-editor.org/rfc/rfc3501#section-2.3.1.1>
     "uidvalidity" INTEGER default null,
     UNIQUE("accountID", "path"),
