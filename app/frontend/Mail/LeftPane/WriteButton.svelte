@@ -18,6 +18,7 @@
   function newMail() {
     let folder = selectedAccount.getSpecialFolder(SpecialFolder.Drafts);
     let mail = folder.newEMail();
+    mail.needToLoadBody = false;
     mail.from.emailAddress = selectedAccount.emailAddress;
     mail.from.name = selectedAccount.userRealname;
     mailMustangApp.writeMail(mail);

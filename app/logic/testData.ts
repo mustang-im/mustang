@@ -134,6 +134,7 @@ export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCoun
         folder = account.rootFolders.getIndex(folderIndex) ?? inbox;
       }
       let msg = folder.newEMail();
+      msg.needToLoadBody = false;
       msg.id = emailNr + '@' + account.emailAddress;
       msg.sent = faker.date.past(0.1);
       msg.received = new Date(msg.sent.getTime() + 500);

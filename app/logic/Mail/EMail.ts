@@ -265,6 +265,7 @@ export class EMail extends Message {
     let account = this.folder.account;
     let folder = account.getSpecialFolder(SpecialFolder.Drafts);
     let reply = folder.newEMail();
+    reply.needToLoadBody = false;
     reply.from.emailAddress = account.emailAddress;
     reply.from.name = account.userRealname;
     reply.subject = "Re: " + this.baseSubject; // Do *not* localize "Re: "
