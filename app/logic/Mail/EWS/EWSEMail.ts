@@ -19,7 +19,6 @@ export class EWSEMail extends EMail {
   }
 
   async download() {
-    console.trace();
     let request = {
       m$GetItem: {
         m$ItemShape: {
