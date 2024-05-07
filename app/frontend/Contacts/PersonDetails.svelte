@@ -39,7 +39,7 @@
       <vbox flex class="main-right">
         <hbox class="main-call">
           <RoundButton label="Video call" icon={CameraIcon} classes="large secondary action"
-            on:click={() => catchErrors(() => startVideoCall(person))} />
+            onClick={() => startVideoCall(person)} />
           {#if preferredPhoneNumber}
             <a href="tel:{preferredPhoneNumber}" class="phone-call">
               <RoundButton label="Call" icon={CallIcon} iconSize="19px" classes="large secondary action" />
@@ -192,7 +192,7 @@
   import CallIcon from '../asset/icon/meet/callVoice.svg?raw';
   import PhoneIcon from '../asset/icon/meet/call.svg?raw';
   import AddIcon from "lucide-svelte/icons/plus";
-  import { catchErrors, showError } from "../Util/error";
+  import { showError } from "../Util/error";
 
   export let person: Person;
 

@@ -3,19 +3,19 @@
   <input type="text" bind:value={folderName} name="name" />
   <Button label="Rename"
     classes="create"
-    on:click={() => catchErrors(onNameChange)}
+    onClick={onNameChange}
     />
 
   <label for="count">Use as</label>
   <SpecialFolderDropDown bind:specialFolderType={folder.specialFolder} />
   <Button label="Save"
-    on:click={() => catchErrors(onChangeSpecialFolder)}
+    onClick={onChangeSpecialFolder}
     />
 
   <label for="count">Messages</label>
   <hbox class="value" name="count">{$folder.countNewArrived} new, {$folder.countUnread} unread, {$folder.countTotal} total messages</hbox>
   <Button label="Mark all read"
-    on:click={() => catchErrors(onMarkAllRead)}
+    onClick={onMarkAllRead}
     />
 </grid>
 
@@ -24,7 +24,6 @@
   import { SQLFolder } from "../../../../logic/Mail/SQL/SQLFolder";
   import SpecialFolderDropDown from "./SpecialFolderDropDown.svelte";
   import Button from "../../../Shared/Button.svelte";
-  import { catchErrors } from "../../../Util/error";
   import { assert } from "../../../../logic/util/util";
 
   export let folder: Folder;

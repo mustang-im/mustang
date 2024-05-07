@@ -45,13 +45,13 @@
             label="Cancel"
             icon={XIcon}
             iconSize="24px"
-            on:click={() => catchErrors(cancel)}
+            onClick={cancel}
             />
         {:else}
           <RoundButton classes="hangup"
             label={$meeting.state == MeetingState.IncomingCall ? "Decline call" : "Hang up"}
             icon={HangUpIcon}
-            on:click={() => catchErrors(hangup)}
+            onClick={hangup}
             iconSize="24px"
             border={false} />
         {/if}
@@ -61,7 +61,7 @@
             label={$meeting.state == MeetingState.Init ? "Start conference" : $meeting.state == MeetingState.OutgoingCallPrepare ? "Call" : "Accept call"}
             icon={$meeting.state == MeetingState.Init ? OpenIcon : CallIcon}
             iconSize="24px"
-            on:click={() => catchErrors(accept)}
+            onClick={accept}
             border={false} />
         {/if}
       </hbox>
@@ -106,7 +106,6 @@
   import OpenIcon from "lucide-svelte/icons/door-open";
   import HourglassIcon from "lucide-svelte/icons/hourglass";
   import { mergeColls } from "svelte-collections";
-  import { catchErrors } from "../../Util/error";
 
   export let meeting: VideoConfMeeting;
 

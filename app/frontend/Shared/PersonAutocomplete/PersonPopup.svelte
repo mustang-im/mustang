@@ -8,7 +8,7 @@
         <RoundButton
           icon={AvatarFallbackIcon}
           iconSize="24px" filled
-          on:click={() => catchErrors(() => onEditPerson())}
+          onClick={onEditPerson}
           />
       {/if}
     </hbox>
@@ -28,7 +28,7 @@
         <Button plain iconOnly iconSize="14px"
           label="Save"
           icon={CheckIcon}
-          on:click={() => catchErrors(onSave)}
+          onClick={onSave}
           />
       </vbox>
       -->
@@ -65,11 +65,11 @@
   <hbox class="bottom buttons">
     <Button plain
       label="Edit"
-      on:click={() => catchErrors(() => onEditPerson())}
+      onClick={onEditPerson}
       />
     <Button plain
       label="Remove"
-      on:click={() => catchErrors(() => onRemovePerson())}
+      onClick={onRemovePerson}
       />
     <slot name="buttons" {personUID} />
   </hbox>

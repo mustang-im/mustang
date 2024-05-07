@@ -9,7 +9,7 @@ import { catchErrors } from "../../Util/error";
     <RoundButton
       label="Answer"
       icon={AnswerCallIcon}
-      on:click={() => catchErrors(() => answerCall())}
+      onClick={answerCall}
       classes="answer"
       filled
       />

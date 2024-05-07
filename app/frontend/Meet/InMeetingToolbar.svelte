@@ -14,7 +14,7 @@
     label="Screen share"
     classes="screen-share large"
     selected={$screenShareOn}
-    on:click={() => catchErrors(toggleScreenShare)}
+    onClick={toggleScreenShare}
     icon={$screenShareOn ? ScreenShareIcon : ScreenShareOffIcon}
     iconSize="24px"
     border={false}
@@ -23,7 +23,7 @@
     label="Camera"
     classes="camera large"
     selected={$cameraOn}
-    on:click={() => catchErrors(toggleCamera)}
+    onClick={toggleCamera}
     icon={$cameraOn ? CameraIcon : CameraOffIcon}
     iconSize="24px"
     border={false}
@@ -32,7 +32,7 @@
     label="Mute"
     classes="mic large"
     selected={$micOn}
-    on:click={() => catchErrors(toggleMic)}
+    onClick={toggleMic}
     icon={$micOn ? MicrophoneIcon : MicrophoneOffIcon}
     iconSize="24px"
     border={false}
@@ -42,7 +42,7 @@
     label={handRaised ? "Hand raised" : "Raise hand"}
     classes="hand large"
     selected={handRaised}
-    on:click={() => catchErrors(toggleHand)}
+    onClick={toggleHand}
     icon={handRaised ? HandIcon : HandDownIcon}
     iconSize="24px"
     border={false}
@@ -51,7 +51,7 @@
     <RoundButton
       label="Leave"
       classes="leave large"
-      on:click={() => catchErrors(leave)}
+      onClick={leave}
       icon={LeaveIcon}
       iconSize="24px"
       border={false}
@@ -62,7 +62,7 @@
     <RoundButton
       label={showSidebar ? "Close participants list" : "Open participants list"}
       classes="sidebar secondary large"
-      on:click={() => showSidebar = !showSidebar}
+      onClick={() => showSidebar = !showSidebar}
       icon={showSidebar ? CloseSidebarIcon : OpenSidebarIcon}
       iconSize="24px"
       border={false}
@@ -89,7 +89,6 @@
   import OpenSidebarIcon from "lucide-svelte/icons/users-round";
   import OpenToLeftIcon from "lucide-svelte/icons/arrow-left-from-line";
   import CloseSidebarIcon from "lucide-svelte/icons/arrow-right-from-line";
-  import { catchErrors } from "../Util/error";
 
   export let meeting: VideoConfMeeting;
   export let isSidebar = false;

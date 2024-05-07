@@ -13,10 +13,10 @@
         classes="action small"
         padding="4px"
         label={button.label}
-        on:click={() => catchErrors(() => {
+        onClick={() => {
           button.onClick();
           onClose(notification);
-        })}
+        }}
         />
     {/each}
     <hbox class="buttons-separator" />
@@ -43,7 +43,6 @@
   import RoundButton from "../Shared/RoundButton.svelte";
   import XIcon from "lucide-svelte/icons/x";
   import ErrorInfoIcon from "lucide-svelte/icons/bot";
-  import { catchErrors } from "../Util/error";
 
   $: notification = $notifications.sortBy(n => n.severity).first;
 

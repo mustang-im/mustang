@@ -1,4 +1,4 @@
-<button on:click on:dblclick bind:this={buttonEl}
+<button on:click on:dblclick on:click={myOnClick} bind:this={buttonEl}
   title={tooltip} class="button {classes}" class:plain
   {disabled} class:disabled class:selected
   >
@@ -26,6 +26,7 @@
 <script lang="ts">
   import Icon from 'svelte-icon/Icon.svelte';
   import type { ComponentType } from 'svelte';
+  import { showError } from '../Util/error';
 
   /** Show this label below the icon (unless `iconOnly` or label slot).
    * If iconOnly and no explicit `tooltip`: Show it as tooltip. */
@@ -43,6 +44,8 @@
   export let iconOnly = false;
   export let disabled = false;
   export let selected = false;
+  export let onClick: (event: Event) => void = null;
+  export let errorCallback = showError;
   /** e.g. to `.focus()`
    * out */
   export let buttonEl: HTMLButtonElement = null;
@@ -50,6 +53,19 @@
   $: hasIcon = !!icon || $$slots.icon;
   $: hasLabel = (!!label || $$slots.label) && !iconOnly;
 
+  async function myOnClick(event: Event) {
+    if (!(onClick && typeof(onClick) == "function")) {
+      return;
+    }
+    let previousDisabled = disabled;
+    disabled = true;
+    try {
+      await onClick(event);
+    } catch (ex) {
+      errorCallback(ex);
+    }
+    disabled = previousDisabled;
+  }
 </script>
 
 <style>

@@ -92,7 +92,7 @@
           icon={SaveIcon}
           iconSize="16px"
           disabled={!canSave}
-          on:click={() => catchErrors(onSave)}
+          onClick={onSave}
           />
       </hbox>
     </vbox>
@@ -116,7 +116,6 @@
   import CloseIcon from "lucide-svelte/icons/x";
   import CopyIcon from "lucide-svelte/icons/copy";
   import BrowserIcon from "lucide-svelte/icons/globe";
-  import { catchErrors } from "../../Util/error";
   import type { Editor } from '@tiptap/core';
 
   export let event: Event;

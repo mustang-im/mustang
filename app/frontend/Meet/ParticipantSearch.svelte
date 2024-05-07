@@ -3,14 +3,14 @@
   <hbox class="buttons">
     <RoundButton
       label="New contact"
-      on:click={() => catchErrors(addPerson)}
+      onClick={addPerson}
       icon={NewContactIcon}
       iconSize="16px"
       />
     <RoundButton
       label="Copy invitation link"
       classes="invite-participant"
-      on:click={() => catchErrors(inviteParticipant)}
+      onClick={inviteParticipant}
       icon={InviteUserIcon}
       iconSize="16px"
       />
@@ -26,7 +26,6 @@
   import RoundButton from "../Shared/RoundButton.svelte";
   import NewContactIcon from "lucide-svelte/icons/plus";
   import InviteUserIcon from "lucide-svelte/icons/link";
-  import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
 
   export let meeting: VideoConfMeeting;

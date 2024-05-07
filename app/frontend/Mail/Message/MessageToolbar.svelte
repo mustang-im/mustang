@@ -5,7 +5,7 @@
       iconSize="24px"
       iconOnly
       label={"Reply to author"}
-      on:click={() => catchErrors(() => reply())}
+      onClick={reply}
       plain
       />
   </hbox>
@@ -15,7 +15,7 @@
       iconSize="24px"
       iconOnly
       label={"Reply to all"}
-      on:click={() => catchErrors(() => replyAll())}
+      onClick={replyAll}
       plain
       />
   </hbox>
@@ -25,7 +25,7 @@
       iconSize="16px"
       iconOnly
       label={"Delete this message"}
-      on:click={() => catchErrors(() => deleteMessage())}
+      onClick={deleteMessage}
       plain
       />
   </hbox>
@@ -35,7 +35,7 @@
       iconSize="16px"
       iconOnly
       label={"Mark as spam"}
-      on:click={() => catchErrors(() => markAsSpam())}
+      onClick={markAsSpam}
       plain
       />
   </hbox>
@@ -45,7 +45,7 @@
       iconSize="16px"
       iconOnly
       label={message.isRead ? "Mark this message as unread" : "Mark this message as read"}
-      on:click={() => catchErrors(() => toggleRead())}
+      onClick={toggleRead}
       plain
       />
   </hbox>
@@ -55,7 +55,7 @@
       iconSize="20px"
       iconOnly
       label="Remember this message"
-      on:click={() => catchErrors(() => toggleStar())}
+      onClick={toggleStar}
       plain
       />
   </hbox>
@@ -75,7 +75,6 @@
   import ReplyAllIcon from "lucide-svelte/icons/reply-all";
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
-  import { catchErrors } from "../../Util/error";
 
   export let message: EMail;
 

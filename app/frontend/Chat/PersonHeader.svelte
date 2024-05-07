@@ -7,9 +7,9 @@
   </vbox>
   <hbox class="actions">
     <RoundButton label="Video call" icon={VideoCallIcon} classes="secondary large"
-      on:click={() => catchErrors(() => startVideoCall(person))} />
+      onClick={() => startVideoCall(person)} />
     <RoundButton label="Audio call" icon={VoiceCallIcon} classes="secondary large"
-      on:click={() => catchErrors(() => startAudioCall(person))} />
+      onClick={() => startAudioCall(person)} />
   </hbox>
   <hbox flex />
 </hbox>
@@ -18,7 +18,6 @@
   import type { Contact } from "../../logic/Abstract/Contact";
   import { Person } from "../../logic/Abstract/Person";
   import { startVideoCall, startAudioCall } from "../../logic/Meet/StartCall";
-  import { catchErrors } from "../Util/error";
   import PersonPicture from "../Shared/Person/PersonPicture.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import VideoCallIcon from '../asset/icon/appBar/meet.svg?raw';

@@ -2,7 +2,7 @@
   label="Write new email"
   icon={WriteIcon} classes="create"
   disabled={!selectedAccount}
-  on:click={() => catchErrors(newMail)}
+  onClick={newMail}
   />
 
 <script lang="ts">
@@ -11,7 +11,6 @@
   import { mailMustangApp } from "../MailMustangApp";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import WriteIcon from "lucide-svelte/icons/pencil";
-  import { catchErrors } from "../../Util/error";
 
   export let selectedAccount: MailAccount; /* in/out */
 

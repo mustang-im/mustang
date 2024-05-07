@@ -11,7 +11,7 @@
       <Button plain
         classes={$participant.handUp ? "hand-up" : "hand-down"}
         label={$participant.handUp ? "Take hand down" : ""}
-        on:click={() => catchErrors(() => toggleHand(participant))}
+        onClick={() => toggleHand(participant)}
         icon={$participant.handUp ? HandIcon : HandDownIcon}
         disabled={!userIsModerator}
         iconOnly />
@@ -20,14 +20,14 @@
       <Button plain
         classes="toggle-mic"
         label="Mute"
-        on:click={() => catchErrors(() => toggleMic(participant))}
+        onClick={() => toggleMic(participant)}
         icon={$participant.micOn ? MicrophoneIcon : MicrophoneOffIcon}
         disabled={!userIsModerator}
         iconOnly />
       <Button plain
         classes="toggle-camera"
         label="Camera"
-        on:click={() => catchErrors(() => toggleCamera(participant))}
+        onClick={() => toggleCamera(participant)}
         icon={$participant.cameraOn ? CameraIcon : CameraOffIcon}
         disabled={!userIsModerator}
         iconOnly />

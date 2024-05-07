@@ -2,7 +2,7 @@
   <RoundButton
     label={video ? (on ? "Turn camera off" : "Turn camera on") : (on ? "Mute" : "Unmute")}
     classes="toggle"
-    on:click={() => catchErrors(toggle)}
+    onClick={toggle}
     icon={video ? (on ? CameraIcon : CameraOffIcon) : (on ? MicrophoneIcon : MicrophoneOffIcon)}
     iconSize="24px"
     />

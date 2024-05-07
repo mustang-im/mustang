@@ -14,11 +14,11 @@
     <hbox flex />
     {#if $myApps.includes(app)}
       <Button classes="remove" label="Remove"
-        on:click={() => catchErrors(remove)}
+        onClick={remove}
         />
     {:else}
       <Button classes="add" label="Add"
-        on:click={() => catchErrors(add)}
+        onClick={add}
         />
   {/if}
   </hbox>
@@ -28,7 +28,6 @@
   import type AppListed from "../../../logic/Apps/AppListed";
   import { appGlobal } from "../../../logic/app";
   import Button from "../../Shared/Button.svelte";
-  import { catchErrors } from "../../Util/error";
 
   export let app: AppListed;
   export let selectedApp: AppListed; /* in/out */

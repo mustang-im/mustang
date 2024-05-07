@@ -17,7 +17,7 @@
     </Splitter>
   {:else if !$mailAccount?.isLoggedIn}
     Please log in to account {mailAccount?.name} first
-    <!--<Button label="Login" on:click={() => catchErrors(() => mailAccount.login(true))} />-->
+    <!--<Button label="Login" onClick={() => mailAccount.login(true)} />-->
   {/if}
 </vbox>
 

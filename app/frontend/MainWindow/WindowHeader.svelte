@@ -10,11 +10,11 @@
   <hbox class="right">
     <Button label="Settings"
       icon={SettingsIcon} iconSize="24px" plain iconOnly classes="settings"
-      on:click={() => catchErrors(onOpenSettings)}
+      onClick={onOpenSettings}
       />
     <Button label="Close entire app"
       icon={XIcon} iconSize="24px" plain iconOnly classes="close"
-      on:click={() => catchErrors(onCloseApp)}
+      onClick={onCloseApp}
       />
   </hbox>
 </hbox>
@@ -31,7 +31,6 @@
   import logo from '../asset/icon/general/logo.svg?raw';
   import SettingsIcon from 'lucide-svelte/icons/settings-2';
   import XIcon from 'lucide-svelte/icons/x';
-  import { catchErrors } from "../Util/error";
 
   export let selectedApp: MustangApp;
 

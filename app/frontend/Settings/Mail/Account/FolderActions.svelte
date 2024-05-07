@@ -4,7 +4,7 @@
     <input type="text" bind:value={newFolderName} name="new-name" />
     <Button label="Create sub-folder"
       classes="create"
-      on:click={() => catchErrors(onCreateSubFolder)}
+      onClick={onCreateSubFolder}
       />
   </grid>
 {:else}
@@ -12,12 +12,12 @@
     <Button label="Delete folder"
       classes="delete"
       icon={DeleteIcon}
-      on:click={() => catchErrors(onDelete)}
+      onClick={onDelete}
       />
     <Button label="Create sub-folder"
       classes="create"
       icon={CreateFolderIcon}
-      on:click={() => catchErrors(onOpenCreateSubFolder)}
+      onClick={onOpenCreateSubFolder}
       />
     <slot name="buttons-bottom-right" />
   </hbox>
@@ -29,7 +29,6 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import CreateFolderIcon from "lucide-svelte/icons/folder-plus";
   import CloseIcon from "lucide-svelte/icons/x";
-  import { catchErrors } from "../../../Util/error";
   import { assert } from "../../../../logic/util/util";
 
   export let folder: Folder;

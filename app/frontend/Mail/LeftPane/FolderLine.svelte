@@ -8,7 +8,7 @@
   <hbox class="label">{$folder.name}</hbox>
   <hbox class="buttons" flex>
     <Button label="Folder properties" icon={MoreIcon} iconOnly plain
-      on:click={() => catchErrors(() => onSettings())} />
+      onClick={onSettings} />
   </hbox>
 </hbox>
 

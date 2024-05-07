@@ -12,7 +12,7 @@
     classes="small"
     iconSize="12px"
     padding="0px"
-    disabled={!account}
+    disabled={!account || status != Status.Waiting}
     on:click={() => catchErrors(getMail)}
     />
 </hbox>

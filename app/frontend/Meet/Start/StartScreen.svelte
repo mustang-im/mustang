@@ -2,17 +2,17 @@
   <vbox flex class="actions-container">
     <vbox class="actions">
       {#if $selectedPerson}
-        <Button label="Call {$selectedPerson.name}" on:click={() => catchErrors(callSelected)} classes="call-person secondary">
+        <Button label="Call {$selectedPerson.name}" onClick={callSelected} classes="call-person secondary">
           <PersonPicture slot="icon" person={$selectedPerson} size={24} />
         </Button>
-        <Button label="Test incoming call" icon={VideoIcon} on:click={() => catchErrors(testIncoming)} classes="secondary" />
+        <Button label="Test incoming call" icon={VideoIcon} onClick={testIncoming} classes="secondary" />
       {/if}
       <Button label="Plan a meeting" icon={AddToCalendarIcon} classes="secondary" iconSize="14px" />
-      <Button label="Start an ad-hoc meeting" icon={VideoIcon} on:click={() => catchErrors(startAdHocMeeting)} classes="secondary" />
+      <Button label="Start an ad-hoc meeting" icon={VideoIcon} onClick={startAdHocMeeting} classes="secondary" />
       <hbox>
         <input class="meeting-link" type="url" bind:value={conferenceURL} placeholder="Enter meeting link to join" />
         <Button label="Join" classes="secondary"
-          on:click={() => catchErrors(joinByURL)} />
+          onClick={joinByURL} />
       </hbox>
     </vbox>
   </vbox>
@@ -45,7 +45,6 @@
   import AddToCalendarIcon from "lucide-svelte/icons/calendar-plus";
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
   import { M3Conf } from "../../../logic/Meet/M3Conf";
-  import { catchErrors } from "../../Util/error";
   import { mergeColls } from "svelte-collections";
   import { Event } from "../../../logic/Calendar/Event";
   import { faker } from "@faker-js/faker";

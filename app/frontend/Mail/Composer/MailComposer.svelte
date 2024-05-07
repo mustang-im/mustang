@@ -10,14 +10,14 @@
           icon={TrashIcon}
           iconSize="16px"
           padding="6px"
-          on:click={() => catchErrors(onDelete)}
+          onClick={onDelete}
           />
         <RoundButton
           label="Save and close"
           icon={CloseIcon}
           iconSize="16px"
           padding="6px"
-          on:click={() => catchErrors(onSave)}
+          onClick={onSave}
           />
       </hbox>
     </hbox>
@@ -33,8 +33,8 @@
         <hbox flex>
           <MailAutocomplete addresses={mail.to} placeholder="Add recipient">
             <svelte:fragment slot="person-popup-buttons" let:personUID>
-              <Button plain label="CC" on:click={() => catchErrors(() => onMoveToCC(personUID))} />
-              <Button plain label="BCC" on:click={() => catchErrors(() => onMoveToBCC(personUID))} />
+              <Button plain label="CC" onClick={() => onMoveToCC(personUID)} />
+              <Button plain label="BCC" onClick={() => onMoveToBCC(personUID)} />
             </svelte:fragment>
           </MailAutocomplete>
         </hbox>
@@ -57,8 +57,8 @@
       <hbox class="label">Cc</hbox>
       <MailAutocomplete addresses={mail.cc} placeholder="Add CC recipient">
         <svelte:fragment slot="person-popup-buttons" let:personUID>
-          <Button plain label="To" on:click={() => catchErrors(() => onMoveToTo(personUID))} />
-          <Button plain label="BCC" on:click={() => catchErrors(() => onMoveToBCC(personUID))} />
+          <Button plain label="To" onClick={() => onMoveToTo(personUID)} />
+          <Button plain label="BCC" onClick={() => onMoveToBCC(personUID)} />
         </svelte:fragment>
       </MailAutocomplete>
     {/if}
@@ -66,8 +66,8 @@
       <hbox class="label">Bcc</hbox>
       <MailAutocomplete addresses={mail.bcc} placeholder="Add BCC recipient">
         <svelte:fragment slot="person-popup-buttons" let:personUID>
-          <Button plain label="To" on:click={() => catchErrors(() => onMoveToTo(personUID))} />
-          <Button plain label="CC" on:click={() => catchErrors(() => onMoveToCC(personUID))} />
+          <Button plain label="To" onClick={() => onMoveToTo(personUID)} />
+          <Button plain label="CC" onClick={() => onMoveToCC(personUID)} />
         </svelte:fragment>
       </MailAutocomplete>
     {/if}
@@ -77,7 +77,7 @@
         label="Attachments"
         icon={AttachmentIcon}
         iconOnly
-        on:click={() => catchErrors(onAddAttachment)}
+        onClick={onAddAttachment}
         slot="end"
         />
     </HTMLEditorToolbar>
@@ -102,7 +102,7 @@
                 padding="6px"
                 filled
                 disabled={!mail.subject || $to.isEmpty}
-                on:click={() => catchErrors(onSend)}
+                onClick={onSend}
                 />
             </hbox>
           </hbox>
@@ -137,7 +137,6 @@
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
-  import { catchErrors } from "../../Util/error";
   import type { Editor } from '@tiptap/core';
   import SendIcon from "lucide-svelte/icons/send";
   import TrashIcon from "lucide-svelte/icons/trash";

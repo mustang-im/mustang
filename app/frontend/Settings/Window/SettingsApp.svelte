@@ -11,7 +11,7 @@
           icon={CloseIcon}
           iconSize="16px"
           padding="6px"
-          on:click={() => catchErrors(onClose)}
+          onClick={onClose}
           />
       </hbox>
     </hbox>
@@ -32,7 +32,6 @@
   import Scroll from "../../Shared/Scroll.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import CloseIcon from "lucide-svelte/icons/x";
-  import { catchErrors } from "../../Util/error";
 
   let categories = settingsCategories;
 

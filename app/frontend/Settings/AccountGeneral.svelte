@@ -6,7 +6,7 @@
 <hbox class="buttons">
   <Button label="Delete account"
     classes="delete"
-    on:click={() => catchErrors(onDelete)}
+    onClick={onDelete}
     />
 </hbox>
 

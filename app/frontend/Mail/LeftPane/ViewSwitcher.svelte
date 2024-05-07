@@ -5,7 +5,7 @@
     iconOnly
     iconSize="16px"
     plain
-    on:click={() => catchErrors(() => switchTo('chat'))}
+    onClick={() => switchTo('chat')}
     selected={view == "chat"}
     />
   <Button
@@ -15,7 +15,7 @@
     iconOnly
     iconSize="16px"
     plain
-    on:click={() => catchErrors(() => switchTo('vertical'))}
+    onClick={() => switchTo('vertical')}
     selected={view == "vertical"}
     />
   <Button
@@ -24,14 +24,13 @@
     iconOnly
     iconSize="16px"
     plain
-    on:click={() => catchErrors(() => switchTo('3pane'))}
+    onClick={() => switchTo('3pane')}
     selected={view == "3pane"}
     />
 </hbox>
 
 <script lang="ts">
   import { getLocalStorage } from "../../Util/LocalStorage";
-  import { catchErrors } from "../../Util/error";
   import Button from "../../Shared/Button.svelte";
   import ChatIcon from "lucide-svelte/icons/message-square";
   //import VerticalIcon from "lucide-svelte/icons/columns";

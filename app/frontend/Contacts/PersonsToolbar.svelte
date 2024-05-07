@@ -9,7 +9,7 @@
       label="New contact"
       icon={NewContactIcon}
       iconSize="22px" padding="9px" classes="large create"
-      on:click={() => catchErrors(addPerson)}
+      onClick={addPerson}
       />
   </hbox>
 </hbox>
@@ -23,7 +23,6 @@
   import RoundButton from "../Shared/RoundButton.svelte";
   import Scroll from "../Shared/Scroll.svelte";
   import NewContactIcon from "lucide-svelte/icons/plus";
-  import { catchErrors } from "../Util/error";
   import type { Collection } from "svelte-collections";
 
   /** in */

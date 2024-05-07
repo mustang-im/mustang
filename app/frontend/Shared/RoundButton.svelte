@@ -1,4 +1,4 @@
-<button on:click on:dblclick
+<button on:click on:dblclick on:click={myOnClick}
   title={label} class="button {classes}" class:filled class:border
   {disabled} class:disabled class:selected
   style="--padding: {padding}"
@@ -17,6 +17,7 @@
 <script lang="ts">
   import Icon from 'svelte-icon/Icon.svelte';
   import type { ComponentType } from 'svelte';
+  import { showError } from '../Util/error';
 
   export let label: string = null;
   export let icon: ComponentType | string = null;
@@ -34,6 +35,22 @@
   export let border = true;
   export let disabled = false;
   export let selected = false;
+  export let onClick: (event: Event) => void = null;
+  export let errorCallback = showError;
+
+  async function myOnClick(event: Event) {
+    if (!(onClick && typeof(onClick) == "function")) {
+      return;
+    }
+    let previousDisabled = disabled;
+    disabled = true;
+    try {
+      await onClick(event);
+    } catch (ex) {
+      errorCallback(ex);
+    }
+    disabled = previousDisabled;
+  }
 </script>
 
 <style>

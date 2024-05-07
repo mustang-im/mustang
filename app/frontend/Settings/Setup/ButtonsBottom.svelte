@@ -13,13 +13,12 @@
   <hbox flex />
   <Button label="Next" classes="filled large"
     disabled={!canContinue}
-    on:click={() => catchErrors(onContinue)}
+    onClick={onContinue}
     />
 </hbox>
 
 <script lang="ts">
   import Button from "../../Shared/Button.svelte";
-  import { catchErrors } from "../../Util/error";
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
 
