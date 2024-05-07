@@ -132,20 +132,24 @@
    * Updates the DOM elements with the rows.
    */
   async function updateSize() {
-    if (items.isEmpty) {
-      return;
+    try {
+      if (items.isEmpty) {
+        return;
+      }
+      await tick();
+      let contentRow = contentE.firstChild?.firstChild as HTMLElement;
+      rowHeight = contentRow.offsetHeight;
+      let availableHeight = listE.offsetHeight - headerE.offsetHeight;
+
+      showRows = Math.min(items.length, Math.floor(availableHeight / rowHeight));
+      // Workaround: the following line should be triggered automatically in the $: above, but it doesn't.
+      showItems = $items.getIndexRange(scrollPos, showRows) as T[];
+
+      let scrollHeight = items.length * rowHeight;
+      scrollbarHidden = scrollHeight <= availableHeight;
+    } catch (ex) {
+      console.error(ex);
     }
-    await tick();
-    let contentRow = contentE.firstChild?.firstChild as HTMLElement;
-    rowHeight = contentRow.offsetHeight;
-    let availableHeight = listE.offsetHeight - headerE.offsetHeight;
-
-    showRows = Math.min(items.length, Math.floor(availableHeight / rowHeight));
-    // Workaround: the following line should be triggered automatically in the $: above, but it doesn't.
-    showItems = $items.getIndexRange(scrollPos, showRows) as T[];
-
-    let scrollHeight = items.length * rowHeight;
-    scrollbarHidden = scrollHeight <= availableHeight;
   }
 
   onMount(() => {
