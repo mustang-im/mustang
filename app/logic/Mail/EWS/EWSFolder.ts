@@ -75,10 +75,10 @@ export class EWSFolder extends Folder {
         Traversal: "Shallow",
       },
     };
-    let result: any = { RootFolder: {} };
-    while (result.RootFolder.IncludesLastItemInRange != "true") {
+    let result: any = { RootFolder: { IncludesLastItemInRange: "false" } };
+    while (result?.RootFolder?.IncludesLastItemInRange === "false") {
       result = await this.account.callEWS(request);
-      if (!result.RootFolder.Items) {
+      if (!result?.RootFolder?.Items) {
         // This folder is empty.
         break;
       }
