@@ -182,7 +182,7 @@ export class EWSFolder extends Folder {
     let emailsToDownload = emails.contents;
     const kMaxCount = 50;
     for (let i = 0; i < emailsToDownload.length; i += kMaxCount) {
-      let batch = emailsToDownload.slice(i, i + 50);
+      let batch = emailsToDownload.slice(i, i + kMaxCount);
       let request = {
         m$GetItem: {
           m$ItemShape: {
