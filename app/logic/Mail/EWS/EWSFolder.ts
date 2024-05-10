@@ -345,7 +345,7 @@ export class EWSFolder extends Folder {
     let request = {
       m$MarkAllItemsAsRead: {
         m$ReadFlag: true,
-        m$SuppressReadREceipts: true,
+        m$SuppressReadReceipts: true,
         m$FolderIds: {
           t$FolderId: {
             Id: this.id,
