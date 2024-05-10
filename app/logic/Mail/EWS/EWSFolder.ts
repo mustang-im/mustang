@@ -6,6 +6,8 @@ import { SQLEMail } from "../SQL/SQLEMail";
 import { assert } from "../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 
+const kMaxCount = 50;
+
 export class EWSFolder extends Folder {
   account: EWSAccount;
 
@@ -44,6 +46,93 @@ export class EWSFolder extends Folder {
     }
     await SQLEMail.readAll(this);
 
+    return this.updateChangedMessages();
+  }
+
+  // Uses the sync state to get just the messages that changed since last time.
+  async updateChangedMessages() {
+    let sync = {
+      m$SyncFolderItems: {
+        m$ItemShape: {
+          t$BaseShape: "IdOnly",
+          t$AdditionalProperties: {
+            t$FieldURI: [{
+              FieldURI: "message:IsRead",
+            }, {
+              FieldURI: "item:IsDraft",
+            }, {
+              FieldURI: "item:Flag",
+            }],
+            t$ExtendedFieldURI: {
+              PropertyTag: "0x1080",
+              PropertyType: "Integer",
+            },
+          },
+        },
+        m$SyncFolderId: {
+          t$FolderId: {
+            Id: this.id,
+          },
+        },
+        m$SyncState: this.syncState,
+        m$MaxChangesReturned: kMaxCount,
+      }
+    };
+    let result: any = { IncludesLastItemInRange: "false" };
+    while (result.IncludesLastItemInRange === "false") {
+      try {
+        result = await this.account.callEWS(sync);
+      } catch (ex) {
+        if (ex.error?.ResponseCode != 'ErrorInvalidSyncStateData') {
+          throw ex;
+        }
+        this.syncState = null;
+        await SQLFolder.save(this);
+        sync.m$SyncFolderItems.m$SyncState = null;
+        result = await this.account.callEWS(sync);
+      }
+      let newMessageIDs = [];
+      let processReadFlagChange = async (email, change) => {
+        email.isRead = change.IsRead == "true";
+        await SQLEMail.saveWritableProps(email);
+      };
+      let processUpdate = async (email, update) => {
+        email.setFlags(update);
+        await SQLEMail.saveWritableProps(email);
+      };
+      let processCreate = create => {
+        newMessageIDs.push(create.ItemId);
+      };
+      let processDelete = async email => {
+        this.messages.remove(email);
+        await SQLEMail.deleteIt(email);
+      };
+      let processChanges = async (changes, exists, create?) => {
+        if (changes?.Message) {
+          for (let change of ensureArray(changes.Message)) {
+            let email = this.getEmailByItemId(change.ItemId.Id);
+            if (email) {
+              await exists(email, change);
+            } else if (create) {
+              create(email);
+            }
+          }
+        }
+      };
+      await processChanges(result.Changes.readFlagChange, processReadFlagChange, processCreate);
+      await processChanges(result.Changes.Update, processUpdate, processCreate);
+      await processChanges(result.Changes.Create, processUpdate, processCreate);
+      await processChanges(result.Changes.Delete, processDelete);
+      this.messages.addAll(await this.getNewMessageHeaders(newMessageIDs));
+      this.syncState = sync.m$SyncFolderItems.m$SyncState = result.SyncState;
+      await SQLFolder.save(this);
+    }
+  }
+
+  // Lists all messages starting from scratch, ignoring the sync state.
+  // If you don't want this, then clear the sync state and update changes.
+  // Assumes previously known messages have already been loaded from the db.
+  async listAllMessages() {
     let allEmail: ArrayColl<EWSEMail> = new ArrayColl();
     let request = {
       m$FindItem: {
@@ -180,7 +269,6 @@ export class EWSFolder extends Folder {
   async downloadMessages(emails: Collection<EWSEMail>): Promise<Collection<EWSEMail>> {
     let downloadedEmail = new ArrayColl<EWSEMail>();
     let emailsToDownload = emails.contents;
-    const kMaxCount = 50;
     for (let i = 0; i < emailsToDownload.length; i += kMaxCount) {
       let batch = emailsToDownload.slice(i, i + kMaxCount);
       let request = {
