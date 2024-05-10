@@ -81,6 +81,7 @@ export class Message extends Observable {
    * to keep them in sync. */
   set html(val: string) {
     this._rawHTML = val;
+    this._sanitizedHTML = null;
   }
   /** Get the raw HTML, as we received it from the network.
    * ATTENTION: DANGEROUS: You MUST NOT render this,
@@ -88,6 +89,9 @@ export class Message extends Observable {
    * all reading paths sanitize the HTML before rendering it. */
   get rawHTMLDangerous(): string {
     return this._rawHTML;
+  }
+  set rawHTMLDangerous(val: string) {
+    this.html = val;
   }
 
   readonly reactions = new MapColl<Person, string>();

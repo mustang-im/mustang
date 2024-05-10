@@ -86,7 +86,9 @@
         <vbox flex class="paper">
           <Scroll>
             <vbox flex class="editor">
-              <HTMLEditor bind:html={mail.html} bind:editor />
+              <!-- The html in the mail passed in MUST already be sanitized HTML.
+              Using `rawHTMLDangerous` avoids that we're sanitizing on every keypress. -->
+              <HTMLEditor bind:html={mail.rawHTMLDangerous} bind:editor />
             </vbox>
           </Scroll>
           <hbox class="footer">
@@ -149,20 +151,27 @@
   $: to = mail.to;
   let from: MailAccount;
 
+  // HACK to reload the HTMLEditor to force it to load the new text
+  let lastMail = mail;
+  $: differentMailLoaded(mail);
+  function differentMailLoaded(_dummy: any) {
+    if (editor && mail != lastMail) {
+      lastMail = mail;
+      editor.commands.setContent(mail.html);
+    }
+  }
+
   function onMoveToCC(person: PersonUID) {
-    console.log("move to cc");
     mail.bcc.remove(person);
     mail.to.remove(person);
     mail.cc.add(person);
   }
   function onMoveToBCC(person: PersonUID) {
-    console.log("move to bcc");
     mail.cc.remove(person);
     mail.to.remove(person);
     mail.bcc.add(person);
   }
   function onMoveToTo(person: PersonUID) {
-    console.log("move to to");
     mail.cc.remove(person);
     mail.bcc.remove(person);
     mail.to.add(person);
@@ -198,6 +207,8 @@
   }
 
   async function onSave() {
+    mail.text = null;
+    // TODO upload to Drafts folder, and delete old draft
     onClose();
   }
   async function onDelete() {
