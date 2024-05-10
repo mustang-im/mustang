@@ -8,7 +8,7 @@
   We sincerely thank those authors and contributors.
 </div>
 
-<iframe src="public/attribution.txt.gz" title="Licenses" />
+<iframe src="public/attribution.txt.gz" title="Licenses" sandbox="" />
 
 <style>
   iframe {

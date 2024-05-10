@@ -1,5 +1,5 @@
-<!-- TODO Security: Test that this <iframe> is untrusted and jailed -->
-<iframe class="html-display" srcdoc={displayHTML} title="Text" />
+<!-- TODO Security: Test that this <iframe sandbox> is untrusted and jailed -->
+<iframe class="html-display" srcdoc={displayHTML} title="Text" sandbox="" />
 
 <script lang="ts">
   import cssContent from "./content.css?inline";
