@@ -8,7 +8,7 @@
 
 <style>
   .view-switcher :global(svg) {
-    width: 128px;
-    height: 128px;
+    width: 32px;
+    height: 32px;
   }
 </style>

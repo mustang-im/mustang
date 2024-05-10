@@ -239,9 +239,6 @@
     font-size: 14px;
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%) inset;
   }
-  .person-page :global(.group .content) {
-    background-color: white;
-  }
   .main-info {
     margin-left: 24px;
     margin-top: 8px;

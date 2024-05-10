@@ -37,18 +37,19 @@
   /* Style */
 
   grid {
-    border: 1px solid #EEEEEE;
+    border: 1px solid var(--border);
     border-radius: 6px;
     margin-top: 24px;
     padding-bottom: 20px;
   }
   grid :global(.header) {
-    background-color: #F9F8FD;
+    background-color: var(--headerbar-bg);
+    color: var(--headerbar-fg);
     padding-top: 8px;
     padding-bottom: 8px;
     padding-left: 8px;
     font-size: 14px;
-    border-bottom: 1px solid #EEEEEE;
+    border-bottom: 1px solid var(--border);
   }
   grid :global(> *) {
     padding-left: 16px;

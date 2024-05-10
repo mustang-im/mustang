@@ -46,8 +46,8 @@
 
 <style>
   .window-header {
-    background-color: var(--inverted-bg);
-    color: var(--inverted-fg);
+    background-color: var(--windowheader-bg);
+    color: var(--windowheader-fg);
   }
   .app-logo {
     margin: 8px;
@@ -73,14 +73,16 @@
 
   .window-header :global(.search) {
     margin: 6px 12px;
-    background-color: rgb(255, 255, 255, 10%);
     border: none;
   }
-  .window-header :global(.search input) {
-    background-color: transparent;
-    color: var(--inverted-fg);
+  .window-header :global(.search:not(.has-search)) {
+    background-color: rgb(255, 255, 255, 10%);
   }
-  .window-header :global(.search input::placeholder) {
+  .window-header :global(.search :has(input:focus)) {
+    background-color: var(--inverted-bg);
+  }
+  .window-header :global(.search:not(.has-search) input) {
+    background-color: transparent;
     color: var(--inverted-fg);
   }
 </style>

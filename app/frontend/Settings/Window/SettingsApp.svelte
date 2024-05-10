@@ -57,11 +57,6 @@
 </script>
 
 <style>
-  .left-pane {
-    border-right: 1px dotted lightgray;
-    background-color: #F9F9FD;
-    box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on PersonDetails */
-  }
   .right-page {
     margin: 0px 32px 32px 32px;
   }

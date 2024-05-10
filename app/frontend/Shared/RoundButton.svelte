@@ -64,10 +64,11 @@
     align-items: center;
     justify-content: center;
 
-    background-color: #f9f9f9;
+    background-color: var(--button-bg);
+    color: var(--button-fg);
   }
   button.border {
-    border: 1px solid #B2ADB8;
+    border: 1px solid var(--button-border);
   }
   .filled:not(:hover) {
     background-color: var(--inverted-bg);

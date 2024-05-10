@@ -12,6 +12,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+  color-scheme: light dark;
 }
 
 :root {
@@ -25,31 +26,71 @@
   --hover-fg: #160C27;
   --selected-hover-bg: #1C998B;
   --selected-hover-fg: white;
-  --main-bg: white;
-  --main-fg: #160C27;
+  --main-bg: var(--bg);
+  --main-fg: var(--fg);
   --main-pattern-bg: #E6F2F1;
   --main-pattern-fg: #160C27;
   --leftbar-bg: #F9F9FD; /* #F9F9FD, #F9F9F9, #716E7D */
   --leftbar-fg: #160C27;
   --headerbar-bg: #EEEEEE;
   --headerbar-fg: #160C27;
-  --input-line: #DFDFDF;
-  --input-focus: #20AE9E;
+  --windowheader-bg: #160C27;
+  --windowheader-fg: white;
+  /* #142862, #213547 */
   --appbar-bg: #494558;
   --appbar-fg: white;
+  --border: #EEEEEE; /* #3A3A3B */
+  --input-bg: field;
+  --input-fg: fieldtext;
+  --input-line: #DFDFDF;
+  --input-focus: #20AE9E;
+  --button-bg: #F9F9FD;
+  --button-fg: black;
+  --button-border: #B2ADB8;
   --button-secondary-line: #A1E4DA;
 
-  color-scheme: light; /* light dark */
   color: (--fg);
   background-color: var(-bg);
 }
 
-/*
-@media (prefers-color-scheme: light) {
+@media (prefers-color-scheme: dark) {
   :root {
+    --bg: #141416;
+    --fg: #D1D1D2;
+    --inverted-bg: #D1D1D2;
+    --inverted-fg: #141416;
+    --selected-bg: #20AE9E;
+    --selected-fg: white;
+    --hover-bg: #1E6A63;
+    --hover-fg: #D1D1D2;
+    --selected-hover-bg: #1C998B; /* TODO */
+    --selected-hover-fg: white;
+    --main-bg: var(--bg);
+    --main-fg: var(--fg);
+    --main-pattern-bg: #141416;
+    --main-pattern-fg: #D1D1D2;
+    --leftbar-bg: #1B1A1E;
+    --leftbar-fg: #D1D1D2;
+    --windowheader-bg: #202022;
+    --windowheader-fg: #D1D1D2;
+    --headerbar-bg: #202022;
+    --headerbar-fg: #D1D1D2;
+    --appbar-bg: #2C2930;
+    --appbar-fg: white;
+    --border: #3A3A3B;
+    --input-bg: transparent;
+    --input-fg: fieldtext;
+    --input-line: #3A3A3B;
+    --input-focus: #20AE9E;
+    --button-bg: #6B6B6C;
+    --button-fg: #CDCDCD;
+    --button-border: #CDCDCD;
+    --button-secondary-line: #A1E4DA;
+
+    color: (--fg);
+    background-color: var(-bg);
   }
 }
-*/
 
 body {
   margin: 0;
@@ -124,6 +165,8 @@ input[type="password"],
 input[type="email"],
 input[type="url"],
 input[type="text"] {
+  background-color: var(--input-bg);
+  color: var(--input-fg);
   border: none;
   border-bottom: 1px solid var(--input-line);
   width: 100%;

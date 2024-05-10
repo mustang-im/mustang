@@ -1,8 +1,8 @@
-<hbox class="search">
+<hbox class="search" class:has-search={searchInput}>
   <SearchIcon size="16px" />
   <input type="search" bind:value={searchInput} {placeholder} />
   {#if searchInput}
-    <RoundButton icon={XIcon} iconSize="16px" padding="4px" border={false}
+    <RoundButton icon={XIcon} iconSize="16px" padding="2px" border={false}
       on:click={() => searchInput = undefined} />
   {/if}
 </hbox>
@@ -27,8 +27,13 @@
     padding-left: 8px;
     padding-right: 4px;
     border-radius: 100px;
-    background-color: white;
+    background-color: field;
+    color: fieldtext;
     align-items: center;
+  }
+  .search.has-search {
+    background-color: var(--inverted-bg);
+    color: var(--inverted-fg);
   }
   .search :global(svg) {
     color: #808080;
@@ -39,9 +44,14 @@
     border: none;
     margin-left: 4px;
     border-radius: 100px;
+    background-color: inherit;
+    color: inherit;
   }
   input::placeholder {
     color: #808080;
+  }
+  input::-webkit-search-cancel-button {
+    display: none;
   }
 
   .search :global(.button) {

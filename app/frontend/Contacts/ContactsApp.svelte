@@ -55,6 +55,7 @@
   .right-pane {
     background: url(../asset/background-repeat.png) repeat;
     background-color: var(--main-pattern-bg);
+    background-blend-mode: soft-light;
     color: var(--main-pattern-fg);
   }
   .left-pane :global(.person .main) {

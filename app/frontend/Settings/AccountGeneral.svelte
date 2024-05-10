@@ -45,5 +45,6 @@
   }
   .buttons :global(button.delete) {
     background-color: lightsalmon;
+    color: black;
   }
 </style>

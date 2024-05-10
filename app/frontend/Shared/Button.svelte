@@ -76,8 +76,9 @@
     justify-content: center;
   }
   button:not(.plain) {
-    background-color: #f9f9f9;
-    border: 1px solid #B2ADB8;
+    background-color: var(--button-bg);
+    color: var(--button-fg);
+    border: 1px solid var(--button-border);
     border-radius: 1000px;
     padding: 6px 8px;
   }

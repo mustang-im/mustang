@@ -20,9 +20,16 @@
   .header {
     align-items: center;
     padding: 8px 16px 8px 20px;
-    background-color: rgba(32, 174, 158, 5%); /* #20AE9E */
+    background-color: rgba(32, 174, 158, 5%); /* #20AE9E0C */
+  }
+  @media (prefers-color-scheme: dark) {
+    .header {
+      background-color: #20202270;
+    }
   }
   .content {
+    background-color: var(--main-bg);
+    color: var(--main-fg);
     padding: 8px 16px 16px 20px;
   }
 </style>
