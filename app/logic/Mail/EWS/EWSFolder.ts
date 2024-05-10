@@ -95,80 +95,86 @@ export class EWSFolder extends Folder {
           newMessageIDs.push(message.ItemId);
         }
       }
-      if (newMessageIDs.length) {
-        let request = {
-          m$GetItem: {
-            m$ItemShape: {
-              t$BaseShape: "IdOnly",
-              t$AdditionalProperties: {
-                t$FieldURI: [{
-                  FieldURI: "message:InternetMessageId",
-                }, {
-                  FieldURI: "message:IsRead",
-                }, {
-                  FieldURI: "message:References",
-                }, {
-                  FieldURI: "message:ReplyTo",
-                }, {
-                  FieldURI: "message:From",
-                }, {
-                  FieldURI: "message:Sender",
-                }, {
-                  FieldURI: "message:ToRecipients",
-                }, {
-                  FieldURI: "message:CcRecipients",
-                }, {
-                  FieldURI: "message:BccRecipients",
-                /* Non-MIME @see EWSEMail.bodyAndAttachmentsFromXML()
-                }, {
-                  FieldURI: "item:Attachments",
-                */
-                }, {
-                  FieldURI: "item:Subject",
-                }, {
-                  FieldURI: "item:DateTimeReceived",
-                }, {
-                  FieldURI: "item:InReplyTo",
-                }, {
-                  FieldURI: "item:IsDraft",
-                }, {
-                  FieldURI: "item:DateTimeSent",
-                /* Non-MIME
-                }, {
-                  FieldURI: "item:Body",
-                */
-                }, {
-                  FieldURI: "item:Flag",
-                /* Non-MIME
-                }, {
-                  FieldURI: "item:TextBody",
-                */
-                }],
-                t$ExtendedFieldURI: {
-                  PropertyTag: "0x1080",
-                  PropertyType: "Integer",
-                },
-              },
-            },
-            m$ItemIds: {
-              t$ItemId: newMessageIDs,
-            },
-          },
-        };
-        let results = await this.account.callEWS(request);
-        for (let result of ensureArray(results)) {
-          let email = this.newEMail();
-          email.fromXML(result.Items.Message);
-          await SQLEMail.save(email);
-          allEmail.add(email);
-        }
-      }
+      allEmail.addAll(await this.getNewMessageHeaders(newMessageIDs));
     }
 
     for (let email of this.messages.subtract(allEmail).contents) {
       SQLEMail.deleteIt(email);
     }
     this.messages.replaceAll(allEmail);
+  }
+
+  async getNewMessageHeaders(newMessageIDs: Array<{ ID: string }>): Promise<Collection<EWSEMail>> {
+    let allEmail = new ArrayColl<EWSEMail>();
+    if (newMessageIDs.length) {
+      let request = {
+        m$GetItem: {
+          m$ItemShape: {
+            t$BaseShape: "IdOnly",
+            t$AdditionalProperties: {
+              t$FieldURI: [{
+                FieldURI: "message:InternetMessageId",
+              }, {
+                FieldURI: "message:IsRead",
+              }, {
+                FieldURI: "message:References",
+              }, {
+                FieldURI: "message:ReplyTo",
+              }, {
+                FieldURI: "message:From",
+              }, {
+                FieldURI: "message:Sender",
+              }, {
+                FieldURI: "message:ToRecipients",
+              }, {
+                FieldURI: "message:CcRecipients",
+              }, {
+                FieldURI: "message:BccRecipients",
+              /* Non-MIME @see EWSEMail.bodyAndAttachmentsFromXML()
+              }, {
+                FieldURI: "item:Attachments",
+              */
+              }, {
+                FieldURI: "item:Subject",
+              }, {
+                FieldURI: "item:DateTimeReceived",
+              }, {
+                FieldURI: "item:InReplyTo",
+              }, {
+                FieldURI: "item:IsDraft",
+              }, {
+                FieldURI: "item:DateTimeSent",
+              /* Non-MIME
+              }, {
+                FieldURI: "item:Body",
+              */
+              }, {
+                FieldURI: "item:Flag",
+              /* Non-MIME
+              }, {
+                FieldURI: "item:TextBody",
+              */
+              }],
+              t$ExtendedFieldURI: {
+                PropertyTag: "0x1080",
+                PropertyType: "Integer",
+              },
+            },
+          },
+          m$ItemIds: {
+            t$ItemId: newMessageIDs,
+          },
+        },
+      };
+      let results = ensureArray(await this.account.callEWS(request));
+      for (let result of results) {
+        let email = this.newEMail();
+        email.fromXML(result.Items.Message);
+        await SQLEMail.save(email);
+        allEmail.add(email);
+      }
+    }
+    return allEmail;
   }
 
   async downloadMessages(emails: Collection<EWSEMail>): Promise<Collection<EWSEMail>> {
