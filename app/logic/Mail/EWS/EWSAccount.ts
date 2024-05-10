@@ -24,7 +24,7 @@ export class EWSAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
-    if (this.hostname == "outlook.office365.com") {
+    if (new URL(this.url).hostname == "outlook.office365.com") {
       this.oAuth2 = new OAuth2MS(this, interactive);
     }
     await this.listFolders();
@@ -123,7 +123,7 @@ export class EWSAccount extends MailAccount {
 
   async callEWS(aRequest: Json): Promise<any> {
     while (true) {
-      let response = await appGlobal.remoteApp.postHTTP(`https://${this.hostname}/EWS/Exchange.asmx`, this.request2XML(aRequest), await this.createRequestOptions());
+      let response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), await this.createRequestOptions());
       response.responseXML = this.parseXML(response.data);
       if (response.status == 200) {
         return this.checkResponse(response, aRequest);
