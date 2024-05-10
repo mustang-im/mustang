@@ -1,5 +1,5 @@
 import { Folder, SpecialFolder } from "../Folder";
-import { EWSEMail } from "./EWSEMail";
+import { EWSEMail, ensureArray } from "./EWSEMail";
 import type { EWSAccount } from "./EWSAccount";
 import { SQLFolder } from "../SQL/SQLFolder";
 import { SQLEMail } from "../SQL/SQLEMail";
@@ -83,10 +83,7 @@ export class EWSFolder extends Folder {
         break;
       }
       request.m$FindItem.m$IndexedPageItemView.Offset = result.RootFolder.IndexedPagingOffset;
-      let messages = result.RootFolder.Items.Message;
-      if (!Array.isArray(messages)) {
-        messages = [messages];
-      }
+      let messages = ensureArray(result.RootFolder.Items.Message);
       let newMessageIDs = [];
       for (let message of messages) {
         let email = this.getEmailByItemId(message.ItemId.Id);
@@ -159,10 +156,7 @@ export class EWSFolder extends Folder {
           },
         };
         let results = await this.account.callEWS(request);
-        if (!Array.isArray(results)) {
-          results = [results];
-        }
-        for (let result of results) {
+        for (let result of ensureArray(results)) {
           let email = this.newEMail();
           email.fromXML(result.Items.Message);
           await SQLEMail.save(email);
@@ -194,10 +188,7 @@ export class EWSFolder extends Folder {
           },
         },
       };
-      let results = await this.account.callEWS(request);
-      if (!Array.isArray(results)) {
-        results = [results];
-      }
+      let results = ensureArray(await this.account.callEWS(request));
       for (let result of results) {
         let email = emailsToDownload.find(email => email.itemID == result.Items.Message.ItemId.Id);
         if (email && !email.downloadComplete) {

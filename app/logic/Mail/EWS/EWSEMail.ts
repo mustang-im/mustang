@@ -91,10 +91,7 @@ export class EWSEMail extends EMail {
       }
     }
     if (xmljs.Attachments?.FileAttachment) {
-      let attachments = xmljs.Attachments.FileAttachment;
-      if (!Array.isArray(attachments)) {
-        attachments = [attachments];
-      }
+      let attachments = ensureArray(xmljs.Attachments.FileAttachment);
       this.attachments.replaceAll(attachments.map(a => {
         let attachment = new Attachment();
         attachment.filename = a.Name;
@@ -251,8 +248,9 @@ function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {
   if (!mailboxes) {
     return;
   }
-  if (!Array.isArray(mailboxes)) {
-    mailboxes = [mailboxes];
-  }
-  targetList.replaceAll(mailboxes.map(mailbox => findOrCreatePersonUID(mailbox.EmailAddress, mailbox.Name)));
+  targetList.replaceAll(ensureArray(mailboxes).map(mailbox => findOrCreatePersonUID(mailbox.EmailAddress, mailbox.Name)));
+}
+
+export function ensureArray<Type>(val: Type[] | Type): Type[] {
+  return Array.isArray(val) ? val : [val];
 }
