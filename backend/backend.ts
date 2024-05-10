@@ -3,7 +3,7 @@ import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import { Notification, Tray } from "electron";
+import { nativeTheme, Notification, Tray } from "electron";
 import nodemailer from 'nodemailer';
 import path from "node:path";
 import os from "node:os";
@@ -26,6 +26,7 @@ async function createSharedAppObject() {
     newOSNotification,
     isOSNotificationSupported,
     newTrayIcon,
+    setDarkMode,
     getConfigDir,
     getFilesDir,
     openFileInExternalApp,
@@ -145,6 +146,13 @@ function newOSNotification(options: any): Notification {
 
 function isOSNotificationSupported(): boolean {
   return Notification.isSupported();
+}
+
+function setDarkMode(mode: "system" | "light" | "dark") {
+  if (!["system", "light", "dark"].includes(mode)) {
+    throw new Error("Bad dark mode " + mode);
+  }
+  nativeTheme.themeSource = mode;
 }
 
 function createIMAPFlowConnection(...args): ImapFlow {

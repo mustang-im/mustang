@@ -26,6 +26,7 @@
   import { selectedApp, sidebarApp, mustangApps, openApp } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import { getStartObjects, loginOnStartup } from "../../logic/startup";
+  import { getLocalStorage } from "../Util/LocalStorage";
   import { loadMustangApps } from "../AppsBar/loadMustangApps";
   import { meetMustangApp } from "../Meet/MeetMustangApp";
   import { SetupMustangApp } from "../Settings/Setup/SetupMustangApp";
@@ -38,6 +39,7 @@
   import MeetBackground from "../Meet/MeetBackground.svelte";
   import SetupMail from "../Settings/Setup/Mail/SetupMail.svelte";
   import { catchErrors, backgroundError } from "../Util/error";
+  import { assert } from "../../logic/util/util";
   import { onMount } from "svelte";
 
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
@@ -64,6 +66,17 @@
     setupApp.mainWindow = SetupMail;
     openApp(setupApp);
   }
+
+  let darkModeSetting = getLocalStorage("appearance.darkmode", "system");
+  $: changeDarkMode($darkModeSetting.value);
+  function changeDarkMode(mode: string) {
+    if (!appGlobal?.remoteApp) {
+      return;
+    }
+    assert(["system", "light", "dark"].includes(mode), "Bad dark mode " + mode);
+    appGlobal.remoteApp.setDarkMode(mode);
+  }
+
 </script>
 
 <style>

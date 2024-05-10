@@ -6,7 +6,8 @@ import { contactsMustangApp } from "../Contacts/ContactsMustangApp";
 import { calendarMustangApp } from "../Calendar/CalendarMustangApp";
 import { chatMustangApp } from "../Chat/ChatMustangApp";
 import { appGlobal } from "../../logic/app";
-import Appearance from "./Mail/Appearance.svelte";
+import GlobalAppearance from "./Global/Appearance.svelte";
+import MailAppearance from "./Mail/Appearance.svelte";
 import AccountGeneral from "./AccountGeneral.svelte";
 import AccountURLServer from "./AccountURLServer.svelte";
 import AccountMailServer from "./Mail/Account/Server.svelte";
@@ -35,9 +36,15 @@ export const accountSettings = new ArrayColl<AccSetting>();
 
 accountSettings.add(new AccSetting(Account, "acc-general", "General", AccountGeneral, true));
 
+const globalSettings = new SettingsCategory("global", "All", null, true);
+globalSettings.subCategories.addAll([
+  new SettingsCategory("global-appearance", "Appearance", GlobalAppearance),
+]);
+settingsCategories.add(globalSettings);
+
 const mailSettings = new SettingsCategory("mail", "Mail", null, true);
 mailSettings.subCategories.addAll([
-  new SettingsCategory("mail-appearance", "Appearance", Appearance),
+  new SettingsCategory("mail-appearance", "Appearance", MailAppearance),
 ]);
 mailSettings.accounts = appGlobal.emailAccounts;
 mailSettings.newAccountUI = SetupMail;
