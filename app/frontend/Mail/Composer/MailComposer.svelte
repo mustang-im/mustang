@@ -152,6 +152,7 @@
   let from: MailAccount;
 
   // HACK to reload the HTMLEditor to force it to load the new text
+  // See <https://github.com/ueberdosis/tiptap/issues/4918>
   let lastMail = mail;
   $: differentMailLoaded(mail);
   function differentMailLoaded(_dummy: any) {

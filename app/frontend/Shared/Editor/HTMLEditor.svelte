@@ -18,6 +18,7 @@
   /**
    * TODO Bug: Only accepts `html` on component creation.
    * After that, it's out-only.
+   * @see <https://github.com/ueberdosis/tiptap/issues/4918>
    * in/out */
   export let html: string;
   /** out only */
@@ -25,7 +26,9 @@
 
   let divEl: HTMLDivElement;
 
-  onMount(() => {
+  onMount(onLoad);
+
+  function onLoad() {
     editor = new Editor({
       element: divEl,
       extensions: [
@@ -49,11 +52,18 @@
         // force re-render so `editor.isActive` works as expected
         editor = editor;
       },
-      onUpdate: () => {
+      onUpdate: ({ editor }) => {
         html = editor.getHTML();
       },
     });
-  });
+  }
+
+  export function forceReload() {
+    if (editor) {
+      editor.destroy();
+    }
+    onLoad();
+  }
 
   // TODO Listen to html. But removes all whitespace.
   //$: editor && editor.commands.setContent(html);
