@@ -78,6 +78,15 @@ export class EMail extends Message {
     return this.subject.replace(/^([Re|RE|AW|Aw]: ?)+/, "");
   }
 
+  /** Marks as spam, and deletes or moves the message, as configured */
+  async treatSpam(spam = true) {
+    await this.markSpam(spam);
+    if (spam) {
+      await this.deleteMessage();
+    }
+  }
+
+  /** You probably want to call @see treatSpam() */
   async markSpam(spam = true) {
     this.isSpam = spam;
   }

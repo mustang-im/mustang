@@ -28,10 +28,8 @@ export async function onKeyOnList(event: KeyboardEvent) {
       event.stopPropagation();
       selectedMessagesColl.clear();
       selectedMessagesColl.add(message.nextMessage(false));
-      await Promise.allSettled(messages.map(async msg => {
-        await msg.markSpam();
-        await msg.deleteMessage();
-      }));
+      await Promise.allSettled(messages.map(msg =>
+        msg.treatSpam()));
       return;
     } else if (event.key == "Delete") {
       event.stopPropagation();

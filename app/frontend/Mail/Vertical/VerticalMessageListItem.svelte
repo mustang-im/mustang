@@ -95,8 +95,7 @@
     await message.deleteMessage();
   }
   async function markAsSpam() {
-    await message.markSpam(true);
-    await message.deleteMessage();
+    await message.treatSpam(true);
   }
 </script>
 
