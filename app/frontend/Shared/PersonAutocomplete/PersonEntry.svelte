@@ -68,7 +68,8 @@
 
 <style>
   .person {
-    background-color: white;
+    background-color: var(--main-bg);
+    color: var(--main-fg);
     border-radius: 100px;
     box-shadow: -1px 0px 5px 0.5px rgb(0, 0, 0, 7%);
     align-items: center;

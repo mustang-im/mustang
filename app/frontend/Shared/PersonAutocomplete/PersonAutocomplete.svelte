@@ -134,17 +134,15 @@
   height: 100%;
 }
 .person-autocomplete :global(input) {
+  background-color: var(--main-bg);
+  color: var(--main-fg);
   padding: 0px 12px !important;
-  background-color: #FCFCFF;
   box-shadow: -1px 0px 5px 0.5px rgb(0, 0, 0, 3%);
   border-radius: 100px;
   align-items: center;
 }
 .person-autocomplete :global(input::placeholder) {
   color: #7D7886;
-}
-.person-autocomplete :global(.autocomplete-list) {
-  padding: 0px !important;
 }
 
 .person-autocomplete :global(.mdc-deprecated-list-item--activated) {

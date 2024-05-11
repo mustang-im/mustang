@@ -21,7 +21,8 @@
   color: var(--leftbar-fg);
 }
 .paper {
-  background-color: white;
+  background-color: var(--main-bg);
+  color: var(--main-fg);
   border-radius: 5px;
   box-shadow: -1px 0px 5px 0.5px rgb(0, 0, 0, 10%);
   margin: 0px 0px 2px 8px;

@@ -1,7 +1,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <vbox class="person-popup" on:click={onClickInside}>
   <hbox class="picture-name">
-    <hbox class="picture">
+    <vbox class="picture">
       {#if person?.picture}
         <PersonPicture {person} size={32} />
       {:else}
@@ -11,7 +11,7 @@
           onClick={onEditPerson}
           />
       {/if}
-    </hbox>
+    </vbox>
     {#if isEditing}
       <vbox class="name-primary-mail" flex>
         <input class="name" type="text"
@@ -158,13 +158,19 @@
 
 <style>
   .person-popup {
-    background-color: white;
+    background-color: var(--leftbar-bg);
+    color: var(--leftbar-fg);
     border-radius: 5px;
-    box-shadow: 2.281px 1.14px 9.123px 0px rgba(22, 12, 39, 20%); /* #160C27 */
+    box-shadow: 2.281px 1.14px 9.123px 0px rgba(var(--shadow-color), 20%);
+  }
+  @media (prefers-color-scheme: dark) {
+    .person-popup {
+      box-shadow: none;
+    }
   }
   .picture {
-    align-items: start;
-    padding: 12px;
+    justify-content: center;
+    margin: 0px 12px;
   }
   .name-primary-mail {
     margin: 12px 18px 12px 0px;
@@ -201,17 +207,17 @@
     padding: 12px;
   }
   .addressbooks.top-border {
-    border-top: 1px solid #DCDBDF;
+    border-top: 1px solid var(--border);
   }
   .addressbooks:not(.top-border) {
     margin-top: -6px;
     padding-top: 0px;
   }
   .bottom.buttons {
-    border-top: 1px solid #DCDBDF;
+    border-top: 1px solid var(--border);
   }
   .bottom.buttons > :global(button:not(:first-child)) {
-    border-left: 1px solid #DCDBDF;
+    border-left: 1px solid var(--border);
   }
   .bottom.buttons > :global(button) {
     padding: 8px 16px;

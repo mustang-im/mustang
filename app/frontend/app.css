@@ -48,6 +48,7 @@
   --button-fg: black;
   --button-border: #B2ADB8;
   --button-secondary-line: #A1E4DA;
+  --shadow-color: 22, 12, 39; /* #160C27 */
 
   color: (--fg);
   background-color: var(-bg);
@@ -63,7 +64,7 @@
     --selected-fg: white;
     --hover-bg: #1E6A63;
     --hover-fg: #D1D1D2;
-    --selected-hover-bg: #1C998B; /* TODO */
+    --selected-hover-bg: #1C998B;
     --selected-hover-fg: white;
     --main-bg: var(--bg);
     --main-fg: var(--fg);
@@ -86,6 +87,7 @@
     --button-fg: #CDCDCD;
     --button-border: #CDCDCD;
     --button-secondary-line: #A1E4DA;
+    --shadow-color: 107, 107, 108; /* #6B6B6C */
 
     color: (--fg);
     background-color: var(-bg);
@@ -181,7 +183,8 @@ input::placeholder {
 
 select {
   border: none;
-  background: transparent;
+  background-color: var(--leftbar-bg);
+  color: var(--leftbar-fg);
   font-size: 14px;
   border-bottom: 1px solid var(--input-line);
 }
@@ -189,10 +192,26 @@ select:focus {
   outline: none;
   border-bottom: 1px solid var(--input-focus);
 }
-
+select option {
+  background-color: var(--leftbar-bg);
+  color: var(--leftbar-fg);
+}
+select option:hover {
+  /* not working, see <https://stackoverflow.com/a/15627759/7154362> */
+  background-color: var(--hover-bg);
+  color: var(--hover-fg);
+}
+/* most of these classes are for specificity. ditto below. */
+.autocomplete.select.is-fullwidth .autocomplete-list .autocomplete-list-item {
+  background-color: var(--main-bg);
+  color: var(--main-fg);
+}
 .autocomplete.select .autocomplete-list .autocomplete-list-item.selected {
   background-color: var(--selected-bg);
   color: var(--selected-fg);
+}
+.autocomplete.select.is-fullwidth .autocomplete-list {
+  padding: 0px;
 }
 
 a[href] {

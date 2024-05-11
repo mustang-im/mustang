@@ -37,7 +37,13 @@
   }
   .app-bar :global(.app-button),
   .bottom {
-    border-right: 1px dotted grey;
+    border-right: 1px dotted var(--border);
+  }
+  @media (prefers-color-scheme: light) {
+    .app-bar :global(.app-button),
+    .bottom {
+      border-right: 1px dotted grey;
+    }
   }
   .app-bar :global(.app-button.settings:not(.selected)) {
     display: none;

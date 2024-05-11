@@ -52,8 +52,9 @@
     padding-top: 2px;
     padding-bottom: 2px;
   }
+  .icon :global(path),
   .icon :global(.cls-2) {
-    stroke: black;
+    stroke: var(--leftpane-fg);
   }
   .label {
     margin-left: 8px;

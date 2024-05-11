@@ -239,7 +239,8 @@
 <style>
   .mail-composer-window {
     padding: 8px 16px;
-    background-color: #FCFCFC;
+    background-color: var(--leftpane-bg);
+    color: var(--leftpane-fg);
   }
   .cc.buttons {
     border-bottom: 1px solid rgb(0, 0, 0, 7%);
@@ -249,6 +250,7 @@
   }
   .cc.buttons > :global(button:not(.selected)){
     background-color: inherit;
+    color: inherit;
   }
   .cc.buttons > :global(button.selected) {
     background-color: rgb(0, 0, 0, 5%);
@@ -273,7 +275,8 @@
     min-width: 1.7em;
   }
   .paper {
-    background-color: white;
+    background-color: var(--main-bg);
+    color: var(--main-fg);
     border-radius: 5px;
     box-shadow: -1px 0px 5px 0.5px rgb(0, 0, 0, 10%);
     margin-top: 4px;

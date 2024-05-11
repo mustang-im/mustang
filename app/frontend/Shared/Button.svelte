@@ -101,7 +101,7 @@
   }
   button.selected:hover:not(.disabled) {
     background-color: var(--selected-hover-bg);
-    color: var(--selected-hover-bg);
+    color: var(--selected-hover-fg);
   }
   :global(.selected) button:hover:not(.disabled) {
     background-color: var(--selected-hover-bg);
