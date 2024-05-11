@@ -152,7 +152,8 @@
 <style>
   .event-edit-window {
     padding: 20px 32px;
-    background-color: #EEEEEE;
+    background-color: var(--leftbar-bg);
+    color: var(--leftbar-fg);
   }
   .window-title-bar {
     margin-bottom: 8px;
@@ -197,7 +198,8 @@
   }
   .editor-wrapper {
     border: 1px solid lightgray;
-    background-color: white;
+    background-color: var(--main-bg);
+    color: var(--main-fg);
   }
   .editor {
     font-family: unset;

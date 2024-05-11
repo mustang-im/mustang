@@ -63,8 +63,8 @@
   }
   .icon {
     aspect-ratio: 1/1;
-    background-color: #00000070;
-    color: white;
+    background-color: var(--outstanding-bg);
+    color: var(--outstanding-fg);
     align-items: center;
     justify-content: center;
     border-top-left-radius: 3px;
@@ -75,14 +75,13 @@
     padding: 2px 8px 2px 8px;
     border-top-right-radius: 3px;
     border-bottom-right-radius: 3px;
-    background-color: #FFFFFF50;
+    background-color: var(--main-bg);
+    color: var(--main-fg);
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%);
   }
   .attachment:hover .icon {
-    background-color: black;
-  }
-  .attachment:hover .info {
-    background-color: white;
+    background-color: var(--inverted-bg);
+    color: var(--inverted-fg);
   }
   .top-row,
   .bottom-row,

@@ -40,6 +40,8 @@
   --appbar-bg: #494558;
   --appbar-fg: white;
   --border: #EEEEEE; /* #3A3A3B */
+  --outstanding-bg: #888888;
+  --outstanding-fg: white;
   --input-bg: field;
   --input-fg: fieldtext;
   --input-line: #DFDFDF;
@@ -79,6 +81,8 @@
     --appbar-bg: #2C2930;
     --appbar-fg: white;
     --border: #3A3A3B;
+    --outstanding-bg: #666666;
+    --outstanding-fg: #D1D1D2;
     --input-bg: transparent;
     --input-fg: fieldtext;
     --input-line: #3A3A3B;
