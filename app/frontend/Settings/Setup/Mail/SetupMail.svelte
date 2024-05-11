@@ -230,7 +230,8 @@
   .page-box {
     max-width: 32em;
     padding: 24px 48px 20px 48px;
-    background-color: white;
+    background-color: var(--main-bg);
+    color: var(--main-fg);
   }
   .page-box[step="8"] {
     max-width: 90%;

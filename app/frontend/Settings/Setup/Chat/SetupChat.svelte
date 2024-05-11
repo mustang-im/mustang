@@ -45,12 +45,13 @@
   .page-box {
     max-width: 32em;
     padding: 24px 48px 20px 48px;
-    background-color: white;
+    background-color: var(--main-bg);
+    color: var(--main-fg);
   }
-  .setup-mail-window :global(input) {
+  .setup-chat-window :global(input) {
     font-size: 16px;
   }
-  .setup-mail-window :global(input::placeholder) {
+  .setup-chat-window :global(input::placeholder) {
     font-weight: 300;
   }
 </style>

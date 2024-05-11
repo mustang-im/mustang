@@ -50,6 +50,14 @@
     color: #FFC83A;
     border: 1px solid #FFC83A;
   }
+  @media (prefers-color-scheme: dark) {
+    .success .box,
+    .processing .box,
+    .warning .box,
+    .error .box {
+      background-color: unset;
+    }
+  }
   .icon {
     margin-right: 8px;
   }

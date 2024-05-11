@@ -18,7 +18,7 @@
   }
   .subtitle {
     margin-top: 2px;
-    color: #4C4B4E;
+    opacity: 65%;
     font-weight: 300;
     line-height: 1.4;
   }

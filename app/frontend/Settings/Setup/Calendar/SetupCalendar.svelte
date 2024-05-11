@@ -1,4 +1,4 @@
-<vbox flex class="setup-mail-window">
+<vbox flex class="setup-calendar-window">
   <hbox flex />
   <vbox class="page-box">
     <svelte:component this={showPage} bind:showPage bind:config
@@ -38,19 +38,20 @@
 </script>
 
 <style>
-  .setup-mail-window {
+  .setup-calendar-window {
     justify-content: center;
     align-items: center;
   }
   .page-box {
     max-width: 32em;
     padding: 24px 48px 20px 48px;
-    background-color: white;
+    background-color: var(--main-bg);
+    color: var(--main-fg);
   }
-  .setup-mail-window :global(input) {
+  .setup-calendar-window :global(input) {
     font-size: 16px;
   }
-  .setup-mail-window :global(input::placeholder) {
+  .setup-calendar-window :global(input::placeholder) {
     font-weight: 300;
   }
 </style>
