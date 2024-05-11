@@ -39,8 +39,8 @@
   import MeetBackground from "../Meet/MeetBackground.svelte";
   import SetupMail from "../Settings/Setup/Mail/SetupMail.svelte";
   import { catchErrors, backgroundError } from "../Util/error";
-  import { assert } from "../../logic/util/util";
-  import { onMount } from "svelte";
+  import { assert, sleep } from "../../logic/util/util";
+  import { onMount, tick } from "svelte";
 
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;
@@ -54,6 +54,7 @@
       return;
     }
     await getStartObjects();
+    changeDarkMode($darkModeSetting.value);
     if (appGlobal.emailAccounts.isEmpty && appGlobal.chatAccounts.isEmpty) {
       setup();
     } else {
