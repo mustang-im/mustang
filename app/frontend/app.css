@@ -107,6 +107,11 @@ body {
   scrollbar-color: #22222325 transparent;
 }
 
+*::selection {
+  background-color: var(--selected-bg);
+  color: var(--selected-fg);
+}
+
 input,
 button {
   font-family: inherit;

@@ -25,3 +25,8 @@ body {
     background-color: #141416 !important;
   }
 }
+
+*::selection {
+  background-color: #20AE9E;
+  color: white;
+}
