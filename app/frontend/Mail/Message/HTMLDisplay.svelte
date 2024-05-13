@@ -11,5 +11,5 @@
   export let html: string;
   export let allowExternalImages = false;
 
-  $: headHTML = `<style>\n${cssBody}\n${cssContent}\n${cssFont}\n</style>`;
+  $: headHTML = `<style>\n${cssBody}\n${cssContent}\n</style>`;
 </script>

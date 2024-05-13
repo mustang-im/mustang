@@ -212,33 +212,52 @@ export class EMail extends Message {
   }
 
   get html(): string {
-    if (!this.needToLoadBody) {
-      return super.html;
+    if (this.needToLoadBody) {
+      // observers will trigger reload
+      (async () => this.getBody())();
+      return this.downloadingMsg();
     }
 
-    (async () => { // observers will trigger reload
-      try {
-        if (this.dbID) {
-          await SQLEMail.readBody(this);
-        }
-      } catch (ex) {
-        this.folder.account.errorCallback(ex);
-      }
-      try {
-        if (this.needToLoadBody) {
-          await this.download();
-        }
-      } catch (ex) {
-        this.folder.account.errorCallback(ex);
-        // this.text = ex?.message ?? ex + "";
-      }
-    })();
-    return this.dbID
-      ? "Message content not downloaded yet"
-      : "Message not loaded yet";
+    return super.html;
   }
   set html(val: string) {
     super.html = val;
+  }
+
+  get text(): string {
+    if (this.needToLoadBody) {
+      // observers will trigger reload
+      (async () => this.getBody())();
+      return this.downloadingMsg();
+    }
+
+    return super.text;
+  }
+  set text(val: string) {
+    super.text = val;
+  }
+
+  protected async getBody(): Promise<void> {
+    try {
+      if (this.dbID) {
+        await SQLEMail.readBody(this);
+      }
+    } catch (ex) {
+      this.folder.account.errorCallback(ex);
+    }
+    try {
+      if (this.needToLoadBody) {
+        await this.download();
+      }
+    } catch (ex) {
+      this.folder.account.errorCallback(ex);
+      // this.text = ex?.message ?? ex + "";
+    }
+  }
+  protected downloadingMsg(): string {
+    return this.dbID
+      ? "Message content not downloaded yet"
+      : "Message not loaded yet";
   }
 
   async download() {

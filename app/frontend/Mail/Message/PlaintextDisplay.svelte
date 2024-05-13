@@ -1,8 +1,12 @@
-<div class="plaintext value">
-  {plaintext || ''}
-</div>
+<Scroll>
+  <div class="plaintext value">
+    {plaintext || ''}
+  </div>
+</Scroll>
 
 <script lang="ts">
+  import Scroll from "../../Shared/Scroll.svelte";
+
   export let plaintext: string;
 </script>
 

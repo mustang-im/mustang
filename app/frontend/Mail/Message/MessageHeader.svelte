@@ -40,7 +40,13 @@
       </value>
     </vbox>
   </hbox>
-  <value class="subject">{$message.subject}</value>
+  <hbox class="subject-line">
+    <value class="subject">{$message.subject}</value>
+    <hbox flex />
+    <vbox class="display-mode">
+      <DisplayModeSwitcher />
+    </vbox>
+  </hbox>
 </vbox>
 
 <script lang="ts">
@@ -53,6 +59,7 @@
   import RecipientList from "./RecipientList.svelte";
   import Recipient from "./Recipient.svelte";
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
+  import DisplayModeSwitcher from "./DisplayModeSwitcher.svelte";
   import { catchErrors, backgroundError } from "../../Util/error";
   import { getDateString } from "../../Util/date";
   import { onDestroy } from "svelte";
@@ -121,5 +128,11 @@
   }
   .date {
     align-self: end;
+  }
+  .subject-line {
+    flex-wrap: wrap;
+  }
+  .display-mode {
+    justify-content: end;
   }
 </style>

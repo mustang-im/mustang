@@ -2,10 +2,8 @@
 * Mail
   * Bugs
     * Deleting wrong email
-    * Sending wrong text
     * Person Popup opening automatically and focussing the name field
       * Close popup on enter or tab
-    * Plaintext mail line wraps
   * OAuth2
   * Threads
     * Message: Conversation view
