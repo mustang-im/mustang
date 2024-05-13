@@ -28,3 +28,13 @@ export function saveURLAsFile(url: URLString, filename: string) {
   a.click();
   a.href = '';
 }
+
+export async function stringToDataURL(mimetype: string, content: string): Promise<string> {
+  const bytes = new TextEncoder().encode(content);
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(new Blob([bytes], { type: mimetype + ";charset=utf-8" }));
+  });
+}
