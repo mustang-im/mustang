@@ -1,5 +1,5 @@
 {#if runningApp}
-  <webview class="app-runner" src={runningApp.start} title={runningApp.nameTranslated} />
+  <AppRunner {runningApp} />
 {:else if showStore}
   <AppStore bind:showStore />
 {:else if appGlobal.apps.myApps}
@@ -11,6 +11,7 @@
 <script lang="ts">
   import type AppListed from "../../logic/Apps/AppListed";
   import { appGlobal } from "../../logic/app";
+  import AppRunner from "./Launcher/AppRunner.svelte";
   import AppStore from "./Shop/AppStore.svelte";
   import AppsLauncher from "./Launcher/AppsLauncher.svelte";
   import { onMount } from "svelte";
@@ -21,12 +22,4 @@
   onMount(async () => {
     await appGlobal.apps.load();
   });
-
-  $: console.log("running app", runningApp?.nameTranslated);
 </script>
-
-<style>
-  .app-runner {
-    flex: 1 0 0;
-  }
-</style>
