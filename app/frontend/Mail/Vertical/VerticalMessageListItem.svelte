@@ -12,6 +12,7 @@
     <hbox class="contact">{contactName}</hbox>
     <hbox flex />
     <hbox class="date">{getDateString($message.sent)}</hbox>
+    <!--
     <hbox class="buttons hover">
       <hbox class="spam button">
         <Button
@@ -34,6 +35,7 @@
           />
       </hbox>
     </hbox>
+    -->
   </hbox>
   <hbox class="bottom-row">
     <hbox class="subject">{$message.subject}</hbox>
