@@ -1,4 +1,4 @@
-<WebView html={displayHTML} allowServerCalls={allowExternalImages} title="Text" />
+<WebView {html} {headHTML} allowServerCalls={allowExternalImages} title="Text" />
 
 <script lang="ts">
   import cssContent from "./content.css?inline";
@@ -10,5 +10,5 @@
   export let html: string;
   export let allowExternalImages = false;
 
-  $: displayHTML = `<style>${cssBody}\n${cssContent}</style>\n\n` + html;
+  $: headHTML = `<style>${cssBody}\n${cssContent}</style>`;
 </script>

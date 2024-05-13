@@ -12,8 +12,11 @@
    * DANGER Attention: The HTML should already be sanitized using `sanitizeHTML()`
    * Alternative to `url` - set only one of them. */
   export let html: string | null = null;
+  /** Insert this into the `<head>` section of the HTML, before display.
+   * Optional */
+  export let headHTML = "";
   /** The webpage to show.
-   * Alternative to `html` string - set only one of them. */
+   * Alternative to `html` - set only one of them. */
   export let url = "";
   /** Tooltip when hovering */
   export let title: string;
@@ -28,12 +31,17 @@
    */
   export let allowServerCalls: boolean | string = true;
 
-  $: displayHTML = html /* ? `<meta http-equiv="Content-Security-Policy" content="default-src '${
-    allowServerCalls === true ? "*" : allowServerCalls === false ? "none" : allowServerCalls
-  }'" /> ` + html : null;*/
-  $: displayHTML && setURL(displayHTML);
-  async function setURL(_dummy: any) {
+  $: html && setURL();
+  async function setURL() {
     url = "";
+    let displayHTML = html;
+    let head = headHTML; /*`<meta http-equiv="Content-Security-Policy" content="default-src '${
+      allowServerCalls === true ? "*" : allowServerCalls === false ? "none" : allowServerCalls
+    }'">\n\n` + headHTML + `\n\n`; */
+    let headPos = displayHTML.indexOf("<head>");
+    headPos = headPos < 0 ? 0 : headPos + 6;
+    displayHTML = displayHTML.substring(0, headPos) + head + displayHTML.substring(headPos);
+    // console.log("html", displayHTML);
     url = await stringToDataURL("text/html", displayHTML);
   }
 
