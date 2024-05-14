@@ -136,7 +136,6 @@
   * Scrollbar for dialog box, not app window
 * Forward & redirect
 * Print
-* View source
 * Import
   * UI in Setup
   * Thunderbird

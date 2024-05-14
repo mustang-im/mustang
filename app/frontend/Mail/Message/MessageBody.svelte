@@ -15,11 +15,19 @@
   import { getLocalStorage } from "../../Util/LocalStorage";
   import HTMLDisplay from "./HTMLDisplay.svelte";
   import PlaintextDisplay from "./PlaintextDisplay.svelte";
+  import { catchErrors } from "../../Util/error";
 
   export let message: EMail;
 
   let modeSetting = getLocalStorage("mail.contentRendering", "html");
   $: mode = $modeSetting.value as DisplayMode;
+
+  $: mode && message && catchErrors(onChanged);
+  async function onChanged() {
+    if (mode == DisplayMode.Source) {
+      await message.download();
+    }
+  }
 </script>
 
 <script lang="ts" context="module">
