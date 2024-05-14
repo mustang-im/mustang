@@ -6,6 +6,7 @@
         selected={acc == selectedAccount}
         on:click={() => onSelect(acc)}
         icon={acc.icon ?? icon}
+        border={false}
       />
     </hbox>
   {/each}

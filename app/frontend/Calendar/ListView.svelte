@@ -1,3 +1,8 @@
+<hbox class="range-header">
+  <slot name="top-left" />
+  <hbox flex />
+  <slot name="top-right" />
+</hbox>
 <vbox flex class="list-view">
   <FastList items={filteredEvents}
     columns="auto 1fr">
@@ -15,7 +20,7 @@
   import FastList from "../Shared/FastList.svelte";
   import type { Collection } from "svelte-collections";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
-  
+
   export let events: Collection<Event>;
 
   $: filteredEvents = globalSearchTerm

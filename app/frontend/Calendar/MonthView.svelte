@@ -1,6 +1,10 @@
 <vbox class="month-view" flex>
   <hbox class="range-header">
+    <slot name="top-left" />
+    <hbox flex />
     <DateRange bind:date={start} dateInterval={showDays} />
+    <hbox flex />
+    <slot name="top-right" />
   </hbox>
   <grid flex class="month">
     {#each weekDays as day}

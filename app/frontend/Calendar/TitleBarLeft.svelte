@@ -1,21 +1,17 @@
 <hbox class="title-bar">
-  <AccountDropDown bind:selectedAccount={$selectedCalendar} accounts={appGlobal.calendars} />
-  <RoundButton classes="add-button create" label="New event" icon={AddToCalendarIcon} on:click={addEvent} iconSize="20px" padding="10px" />
-  <hbox class="spacer" />
-  <ViewSelector bind:dateInterval />
+  <AccountSelectorRound bind:selectedAccount={$selectedCalendar} accounts={appGlobal.calendars} icon={CalendarIcon} />
+  <RoundButton classes="add-button create" label="New event" icon={AddToCalendarIcon} on:click={addEvent} iconSize="22px" padding="6px" />
 </hbox>
 
 <script lang="ts">
   import { selectedCalendar, type DateInterval } from "./selected";
-  import ViewSelector from "./ViewSelector.svelte";
-  import AccountDropDown from "../Shared/AccountDropDown.svelte";
+  import AccountSelectorRound from "../Shared/AccountSelectorRound.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
-  import AddToCalendarIcon from "lucide-svelte/icons/calendar-plus";
+  import CalendarIcon from "lucide-svelte/icons/calendar";
+  import AddToCalendarIcon from "lucide-svelte/icons/plus";
   import { createEventDispatcher } from 'svelte';
   import { appGlobal } from "../../logic/app";
   const dispatch = createEventDispatcher();
-
-  export let dateInterval: DateInterval = 7; /* in/out */
 
   function addEvent() {
     dispatch('addEvent');
@@ -25,10 +21,18 @@
 <style>
   .title-bar {
     align-items: center;
-    margin: 16px 32px 0px 32px;
+    justify-content: center;
+    margin: 4px;
   }
   .title-bar :global(.calendar-selector) {
     margin-right: 16px;
+  }
+  .title-bar :global(.account button) {
+    padding: 8px;
+  }
+  .title-bar :global(.account .icon svg) {
+    height: 20px;
+    width: 20px;
   }
   .title-bar :global(.add-button) {
     margin: 4px;

@@ -1,4 +1,4 @@
-<hbox class="range-header">
+<hbox class="date-range-header">
   <hbox class="date-range">{simpleDateString(date)}</hbox>
   <Button classes="previous-button" label="Previous {dateInterval} days" icon={ChevronLeftIcon} on:click={pagePrevious} iconSize="16px" plain iconOnly />
   <Button classes="next-button" label="Next {dateInterval} days" icon={ChevronRightIcon} on:click={pageNext} iconSize="16px" plain iconOnly />
@@ -31,12 +31,14 @@
 </script>
 
 <style>
-  .range-header {
+  .date-range-header {
+    align-items: center;
+    align-self: end;
     margin-bottom: 4px;
   }
   .date-range {
     font-size: 18px;
     margin-left: 8px;
-    width: 10em;
+    margin-right: 8px;
   }
 </style>

@@ -1,38 +1,20 @@
 <vbox flex class="calendar-app">
-  <TitleBar bind:dateInterval={$selectedDateInterval} on:addEvent={() => catchErrors(addEvent)} />
-  <Scroll>
-    <vbox flex class="main">
-      {#if dateInterval == 0 || $globalSearchTerm}
-        <ListView {events} />
-      {:else if dateInterval == 1}
-        <WeekView bind:start={$selectedDate} {events} showDays={1} />
-      {:else if dateInterval == 7}
-        <WeekView bind:start={$selectedDate} {events} />
-      {:else if dateInterval == 28}
-        <MonthView bind:start={$selectedDate} {events} showDays={28} />
-      {:else if dateInterval == 31}
-        <MonthView bind:start={$selectedDate} {events} />
-      {:else if dateInterval == 2}
-        <DualView bind:start={$selectedDate} {events} />
-      {:else}
-        <WeekView bind:start={$selectedDate} {events} />
-      {/if}
-    </vbox>
-  </Scroll>
+  <vbox flex class="main">
+    <MainView {events} bind:start={$selectedDate} {dateInterval}>
+      <TitleBarLeft on:addEvent={() => catchErrors(addEvent)} slot="top-left" />
+      <ViewSelector bind:dateInterval slot="top-right" />
+    </MainView>
+  </vbox>
 </vbox>
 
 <script lang="ts">
   import { Event } from "../../logic/Calendar/Event";
   import { selectedCalendar, selectedDate, selectedDateInterval } from "./selected";
   import { calendarMustangApp } from "./CalendarMustangApp";
-  import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
-  import TitleBar from "./TitleBar.svelte";
-  import WeekView from "./WeekView.svelte";
-  import MonthView from "./MonthView.svelte";
-  import DualView from "./DualView.svelte";
-  import ListView from "./ListView.svelte";
-  import Scroll from "../Shared/Scroll.svelte";
+  import MainView from "./MainView.svelte";
+  import ViewSelector from "./ViewSelector.svelte";
+  import TitleBarLeft from "./TitleBarLeft.svelte";
   import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { mergeColls } from "svelte-collections";
@@ -52,6 +34,10 @@
 
 <style>
   .main {
-    margin: 32px;
+    margin: 0px 16px 16px 16px;
+  }
+  .main :global(.range-header) {
+    height: 58px;
+    align-items: center;
   }
 </style>

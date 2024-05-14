@@ -1,7 +1,11 @@
 <vbox class="week-view" flex>
   <hbox class="range-header">
+    <slot name="top-left" />
+    <hbox flex />
     <DateRange bind:date={start} dateInterval={showDays == 2 ? 1 : showDays} />
     <Button classes="today-button" label="Go back to today" icon={TodayIcon} on:click={goToToday} iconSize="16px" plain iconOnly />
+    <hbox flex />
+    <slot name="top-right" />
   </hbox>
   <grid flex class="week" columns={showDays}>
     <hbox />
@@ -101,10 +105,9 @@
   }
   .range-header {
     align-items: center;
-    margin-left: 4em;
   }
   .range-header :global(.today-button) {
-    height: 100%;
-    margin-bottom: 4px;
+    align-self: end;
+    margin-bottom: 8px;
   }
 </style>
