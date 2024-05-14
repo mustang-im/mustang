@@ -131,6 +131,7 @@
   }
   .subject-line {
     flex-wrap: wrap;
+    justify-content: end;
   }
   .display-mode {
     justify-content: end;
