@@ -45,6 +45,11 @@
     border-radius: 1000px;
     padding: 4px 6px;
   }
+  @media (prefers-color-scheme: dark) {
+    .today .date-number {
+      background-color: var(--selected-bg);
+    }
+  }
   .month {
     font-size: 90%;
     align-self: end;

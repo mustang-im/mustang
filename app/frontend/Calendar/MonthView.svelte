@@ -85,6 +85,19 @@
   .day:hover:not(.selected) {
     background-color: #F1F9F8;
   }
+  @media (prefers-color-scheme: dark) {
+    .day.selected {
+      background-color: #193D39;
+    }
+    .day:hover:not(.selected) {
+      background-color: var(--hover-bg);
+      color: var(--hover-fg);
+    }
+    .day.selected:hover {
+      background-color: var(--selected-hover-bg);
+      color: var(--selected-hover-fg);
+    }
+  }
   .month-view :global(.date-range) {
     font-weight: bold;
   }
