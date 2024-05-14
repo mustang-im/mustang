@@ -1,10 +1,24 @@
 import { getBaseDomainFromHost } from "./netUtil";
 import DOMPurify from "dompurify"; // https://github.com/cure53/DOMPurify
-import TurndownService from "turndown";
+import { convert as htmlToText } from "html-to-text";
 import markdownit from "markdown-it";
 
 export function convertHTMLToText(html: string): string {
-  return new TurndownService().turndown(sanitizeHTML(html));
+  return htmlToText(sanitizeHTML(html), {
+    formatters: {
+      removeFormatter: () => { },
+    },
+    selectors: [
+      {
+        selector: "img",
+        format: "removeFormatter",
+      },
+      {
+        selector: "style",
+        format: "removeFormatter",
+      },
+    ],
+  });
 }
 
 let markdownitInstance;
