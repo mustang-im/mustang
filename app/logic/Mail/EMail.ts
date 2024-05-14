@@ -76,7 +76,7 @@ export class EMail extends Message {
   }
 
   get baseSubject(): string {
-    return this.subject.replace(/^([Re|RE|AW|Aw]: ?)+/, "");
+    return this.subject.replace(/^([Re|RE|AW|Aw]: ?)+/g, "");
   }
 
   /** Marks as spam, and deletes or moves the message, as configured */
@@ -305,6 +305,7 @@ export class EMail extends Message {
     reply.from.emailAddress = account.emailAddress;
     reply.from.name = account.userRealname;
     reply.subject = "Re: " + this.baseSubject; // Do *not* localize "Re: "
+    reply.inReplyTo = this.messageID;
     reply.html = `<p></p>
     <p></p>
     <p></p>
