@@ -153,7 +153,11 @@
     margin-left: 0px;
   }
   .text :global(pre) {
-    white-space: pre-wrap;
+    white-space: pre-wrap !important;
+  }
+  .text :global(*) {
+    text-wrap: wrap !important;
+    overflow-wrap: anywhere !important;
   }
 
   .reactions {
