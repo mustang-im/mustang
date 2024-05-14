@@ -1,16 +1,16 @@
-<MessageList messages={threadMessages}>
-  <svelte:fragment slot="message" let:message let:previousMessage>
-    {#if message instanceof EMail }
-      <MailMessage {message} {previousMessage} />
-    {/if}
-  </svelte:fragment>
-</MessageList>
+<Scroll>
+  <vbox class="messages">
+    {#each $threadMessages.each as message, i}
+      <MailMessage {message} previousMessage={threadMessages.getIndex(i - 1)} />
+    {/each}
+  </vbox>
+</Scroll>
 
 <script lang="ts">
-  import { EMail } from "../../../logic/Mail/EMail";
+  import type { EMail } from "../../../logic/Mail/EMail";
   import { SQLSearchEMail } from "../../../logic/Mail/SQL/SQLSearchEMail";
-  import MessageList from "../../Chat/MessageView/MessageList.svelte";
   import MailMessage from "../MailChat/MailMessage.svelte";
+  import Scroll from "../../Shared/Scroll.svelte";
   import { ArrayColl } from "svelte-collections";
   import { catchErrors } from "../../Util/error";
 
@@ -32,15 +32,5 @@
     for (let msg of threadMessages) {
       msg.html;
     }
-  }
-</script>
-
-<script lang="ts" context="module">
-  export enum DisplayMode {
-    HTML = "html",
-    HTMLWithExternal = "with-external",
-    Plaintext = "plaintext",
-    Source = "source",
-    Thread = "thread",
   }
 </script>
