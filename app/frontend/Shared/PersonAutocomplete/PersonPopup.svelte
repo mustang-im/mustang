@@ -60,7 +60,7 @@
     </vbox>
   {/if}
   <hbox class="addressbooks" class:top-border={person?.emailAddresses.length > 1}>
-    <AddressbookSelector addressbooks={appGlobal.addressbooks} bind:selectedAddressbook />
+    <AddressbookSelector bind:selectedAddressbook />
   </hbox>
   <hbox class="bottom buttons">
     <Button plain

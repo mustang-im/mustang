@@ -1,7 +1,6 @@
 <hbox class="persons-toolbar">
   <Scroll>
-    <AddressbookSelector addressbooks={appGlobal.addressbooks}
-      bind:selectedAddressbook />
+    <AddressbookSelector bind:selectedAddressbook />
   </Scroll>
   <hbox flex />
   <hbox class="buttons">
@@ -18,7 +17,6 @@
   import { Person } from "../../logic/Abstract/Person";
   import { selectedPerson } from "../Shared/Person/Selected";
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
-  import { appGlobal } from "../../logic/app";
   import AddressbookSelector from "./AddressbookSelector.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import Scroll from "../Shared/Scroll.svelte";

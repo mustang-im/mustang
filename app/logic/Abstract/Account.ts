@@ -3,12 +3,15 @@ import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { AbstractFunction } from "../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
+import type { ComponentType } from "svelte";
 
 export class Account extends Observable {
   id: string;
   dbID: number | null = null;
   @notifyChangedProperty
   name: string;
+  @notifyChangedProperty
+  icon: ComponentType | string | null = null;
   /** Class ID. Must be overwritten by subclasses. Written to account prefs. */
   readonly protocol: string = null;
   /** Protocol-specific address for the sync server. Only only for some types of accounts. */
