@@ -20,6 +20,7 @@ export class SearchEMail extends Observable {
   from: PersonUID | null = null;
   recipientsIncludes: PersonUID | null = null;
 
+  messageID: string | null = null;
   threadID: string | null = null;
   dateSentFrom: Date | null = null;
   dateSentTo: Date | null = null;

@@ -1,7 +1,7 @@
 import { SearchEMail } from "./SearchEMail";
 import { SQLEMail } from "./SQLEMail";
 import { getDatabase } from "./SQLDatabase";
-import { EMail } from "../EMail";
+import type { EMail } from "../EMail";
 import { Folder, SpecialFolder } from "../Folder";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
@@ -36,6 +36,7 @@ export class SQLSearchEMail extends SearchEMail {
         $${typeof (this.isStarred) == "boolean" ? sql` AND isStarred = ${this.isStarred} ` : sql``}
         $${typeof (this.isReplied) == "boolean" ? sql` AND isReplied = ${this.isReplied} ` : sql``}
         $${typeof (this.threadID) == "string" ? sql` AND threadID = ${this.threadID} ` : sql``}
+        $${typeof (this.messageID) == "string" ? sql` AND messageID = ${this.messageID} ` : sql``}
         $${this.sizeMin ? sql` AND size >= ${this.sizeMin} ` : sql``}
         $${this.sizeMax ? sql` AND size <= ${this.sizeMax} ` : sql``}
         $${contactEmail ? sql` AND contactEmail = ${contactEmail} ` : sql``}
