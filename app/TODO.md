@@ -4,14 +4,28 @@
     * Deleting wrong email
     * Person Popup opening automatically and focussing the name field
       * Close popup on enter or tab
-  * OAuth2
   * Threads
     * Message: Conversation view
     * Message list: Threaded view?
     * Mail Chat view: Open thread
+  * Search
+  * OAuth2
+  * Settings
   * All accounts - fix
   * Setup mail
     * after account delete: remove general panel
+
+# Polish
+## Elena
+* Dark mode pref is null
+* Make default window bigger
+* @yahoo.com.au fails in setup
+* Open attachment file opens Documents folder
+* Attachments repeated, on first download only
+* Calendar
+  * Open event on click
+  * Tuesday first day
+  * Gap between day/month view
 
 # UI
 * Close menu when clicking outside menu
@@ -104,7 +118,6 @@
 
 # Mail
 * Body
-  * Plaintext formatting
   * Link: Right-click menu, copy
 * Compose: Recipients entry
 * Search
@@ -145,6 +158,7 @@
   * Based on common names
   * Manually in settings
 * Tags
+* Plaintext formatting
 
 ### Later
 * Refactor IMAP orchestration?: Separate IMAP protocol folder object and IMAP orcestration folder object. The latter does folder cache, IMAP poll/refresh, offline cache etc.
