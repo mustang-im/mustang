@@ -3,6 +3,7 @@
     <HTMLDisplay html={$message.html} allowExternalImages={mode == DisplayMode.HTMLWithExternal} />
   {:else if mode == DisplayMode.Plaintext}
     <PlaintextDisplay plaintext={$message.text} />
+    <!--<HTMLDisplay html={convertTextToHTML($message.text)} />-->
   {:else if mode == DisplayMode.Source}
     <PlaintextDisplay plaintext={getSource($message)} />
   {:else}
@@ -15,7 +16,7 @@
   import { getLocalStorage } from "../../Util/LocalStorage";
   import HTMLDisplay from "./HTMLDisplay.svelte";
   import PlaintextDisplay from "./PlaintextDisplay.svelte";
-  import { catchErrors, showError } from "../../Util/error";
+  import { showError } from "../../Util/error";
 
   export let message: EMail;
 
