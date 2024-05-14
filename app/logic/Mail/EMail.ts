@@ -43,6 +43,7 @@ export class EMail extends Message {
   @notifyChangedProperty
   isDraft = false;
   /** Complete MIME source of the email */
+  @notifyChangedProperty
   mime: Uint8Array | undefined;
   folder: Folder;
   /** msg ID of the thread starter message */
@@ -258,6 +259,12 @@ export class EMail extends Message {
     return this.dbID
       ? "Message content not downloaded yet"
       : "Message not loaded yet";
+  }
+  async loadMIME() {
+    if (this.mime) {
+      return;
+    }
+    await MailZIP.read(this);
   }
 
   async download() {

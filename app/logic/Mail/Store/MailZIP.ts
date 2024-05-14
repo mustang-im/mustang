@@ -17,9 +17,8 @@ import type Zip from "adm-zip";
 export class MailZIP {
   static async save(email: EMail) {
     assert(email.mime, "Need MIME source to save the email as mail.zip");
-    assert(email.dbID, "Please save the email first in the database, so that we can use the dbID as filename in the as mail.zip");
     let zip = await this.getFolderZIP(email.folder);
-    let filename = email.dbID + ".eml";
+    let filename = this.getEMailFilename(email);
     if (zip.getEntry(filename)) {
       return;
     }
@@ -47,6 +46,13 @@ export class MailZIP {
         errorCallback(ex);
       }
     }, 3000);
+  }
+
+  static async read(email: EMail) {
+    let zip = await this.getFolderZIP(email.folder);
+    let file = await zip.getEntry(this.getEMailFilename(email));
+    email.mime = await zip.readFile(file) as Uint8Array;
+    console.log("Read MIME source of email", email.subject, email.mime);
   }
 
   static async readAll(folder: Folder): Promise<ArrayColl<EMail>> {
@@ -98,6 +104,11 @@ export class MailZIP {
       haveDirs.add(dir);
     }
     return `${dir}/${sanitizeFilename(folder.name)}.zip`;
+  }
+
+  static getEMailFilename(email: EMail): string {
+    assert(email.dbID, "Please read or save the email first in the database, so that we can use the dbID as filename in the as mail.zip");
+    return email.dbID + ".eml";
   }
 }
 
