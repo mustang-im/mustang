@@ -1,3 +1,4 @@
+import { OAuth2Window } from "./OAuth2Window";
 import { assert, NotImplemented } from "../util/util";
 import { appGlobal } from "../app";
 
@@ -17,9 +18,13 @@ import { appGlobal } from "../app";
  * the token will continue to be refreshed.
  */
 export class OAuth2 {
-  oauth2BaseURL: string;
+  /** OAuth2 base URL */
+  tokenURL: string;
+  authURL: string;
+  authDoneURL = "http://localhost/";
   scope: string;
   clientID: string;
+  clientSecret: string | null = null;
   accessToken?: string;
   protected refreshToken?: string;
   idToken: string;
@@ -31,12 +36,15 @@ export class OAuth2 {
   protected expiryTimout: NodeJS.Timeout;
   refreshErrorCallback = (ex: Error) => console.error(ex);
 
-  constructor(oauth2BaseURL: string, scope: string, clientID: string) {
-    assert(oauth2BaseURL.startsWith("https://") || oauth2BaseURL.startsWith("http://"), "Need OAuth2 URL");
+  constructor(tokenURL: string, authURL: string, scope: string, clientID: string, clientSecret?: string) {
+    assert(tokenURL?.startsWith("https://") || tokenURL?.startsWith("http://"), "Need OAuth2 server token URL");
+    assert(authURL?.startsWith("https://") || authURL?.startsWith("http://"), "Need OAuth2 login page URL");
     assert(scope, "Need OAuth2 scope");
-    this.oauth2BaseURL = oauth2BaseURL;
+    this.tokenURL = tokenURL;
+    this.authURL = authURL;
     this.scope = scope;
     this.clientID = clientID;
+    this.clientSecret = clientSecret ?? null;
   }
 
   /**
@@ -47,10 +55,16 @@ export class OAuth2 {
   }
 
   /**
+   * @param interactive
+   *   true = May open a login window for the user to complete, but only if needed.
+   *     If possible, returns accessToken without UI.
+   *     (If you want to force login UI, use `loginWithUI()`.)
+   *   false = Only background login, e.g. using refreshToken.
+   *     If an interactive login would be needed, it will fail with `OAuth2LoginNeeded`.
    * @returns accessToken
-   * @throws OAuth2Error
+   * @throws OAuth2LoginNeeded, OAuth2Error
    */
-  async login(): Promise<string> {
+  async login(interactive: boolean): Promise<string> {
     if (this.accessToken) {
       return this.accessToken;
     }
@@ -60,15 +74,28 @@ export class OAuth2 {
     if (this.password) {
       await this.loginWithPassword(this.username, this.password);
     }
-    throw new NotImplemented();
+    if (!interactive) {
+      throw new OAuth2LoginNeeded();
+    }
+    await this.loginWithUI();
   }
+
+  /**
+   * @returns accessToken
+   */
+  async loginWithUI(): Promise<string> {
+    let ui = new OAuth2Window(this);
+    let authCode = await ui.login();
+    return await this.getAccessTokenFromAuthCode(authCode);
+  }
+
   /**
    * @returns accessToken
    * @throws OAuth2Error
    */
   async loginWithPassword(username: string, password: string): Promise<string> {
     assert(username && password, "Need username and password");
-    //const basicAuth = Buffer.from(`${username}:${password}`).toString("base64");
+    // node.js: const basicAuth = Buffer.from(`${username}:${password}`).toString("base64");
     const basicAuth = btoa(`${username}:${password}`);
     let accessToken = this.getAccessTokenFromParams({
       grant_type: "password",
@@ -81,6 +108,14 @@ export class OAuth2 {
     this.password = password;
     return accessToken;
   }
+
+  async logout(): Promise<void> {
+    this.stop();
+    this.accessToken = undefined;
+    this.refreshToken = undefined;
+    this.deleteRefreshTokenFromStorage();
+  }
+
   /**
    * @returns accessToken
    * @throws OAuth2Error
@@ -91,6 +126,7 @@ export class OAuth2 {
       code: authCode,
     });
   }
+
   /**
    * @returns accessToken
    * @throws OAuth2Error
@@ -101,6 +137,7 @@ export class OAuth2 {
       refresh_token: refreshToken,
     });
   }
+
   /**
    * @returns accessToken
    * @throws OAuth2Error
@@ -109,7 +146,7 @@ export class OAuth2 {
     params.scope = this.scope;
     params.client_id = this.clientID;
     let ky = await appGlobal.remoteApp.kyCreate({
-      prefixUrl: `${this.oauth2BaseURL}/token`,
+      prefixUrl: `${this.tokenURL}/token`,
       timeout: 3000,
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -141,21 +178,20 @@ export class OAuth2 {
     }
     return this.accessToken;
   }
-  /**
-   * @returns accessToken
-   */
-  async loginWithUI(): Promise<string> {
-    throw new NotImplemented();
+
+  getAuthURL(aState: string): string {
+    return this.authURL + "?" + new URLSearchParams({
+      client_id: this.clientID,
+      response_type: "code",
+      redirect_uri: this.authDoneURL,
+      response_mode: "query",
+      scope: this.scope,
+      state: aState,
+      login_hint: this.username,
+    });
   }
 
-  async logout(): Promise<void> {
-    this.stop();
-    this.accessToken = undefined;
-    this.refreshToken = undefined;
-    this.deleteRefreshTokenFromStorage();
-  }
-
-  refreshInSeconds(seconds: number) {
+  refreshInSeconds(seconds: number): void {
     if (this.expiryTimout) {
       clearTimeout(this.expiryTimout);
     }
@@ -169,6 +205,7 @@ export class OAuth2 {
       }
     }, seconds * 1000);
   }
+
   /**
    * Stop refreshing the access token.
    * You must call `stop()` or `logout()` before dropping this `OAuth2Login` object.
@@ -194,18 +231,32 @@ export class OAuth2 {
     localStorage.setItem(this.storageKey, refreshToken);
   }
   protected get storageKey(): string {
-    let host = this.oauth2BaseURL.replace(/.*:\/\//, "");
+    let host = new URL(this.tokenURL).host;
     return `oauth2.refreshToken.${this.username}.${host}`;
   }
 }
 
 export class OAuth2Error extends Error {
+}
+
+export class OAuth2LoginNeeded extends Error {
+  constructor() {
+    super("Please login");
+  }
+}
+
+export class OAuth2ServerError extends OAuth2Error {
   details: any;
+  consentRequired = false;
   constructor(json: any) {
-    let msg = json.error_description
-      ?? json.error?.replace("_", " ")
+    let msg = json?.error_description?.split(/[\r\n]/)[0].replace(/^\w+: /, "")
+      ?? json?.error?.replace("_", " ")
       ?? "Login failed. Unknown OAuth2 error.";
     super(msg);
+    const kErrorConsentRequiredEWS = 65001;
+    if (json.error_codes && json.error_codes.includes(kErrorConsentRequiredEWS)) {
+      this.consentRequired = true;
+    }
     this.details = json;
   }
 }
