@@ -39,8 +39,8 @@
 <style>
   .events {
     position: relative;
-    border-left: 1px dashed #E1E2E5;
-    border-bottom: 1px dashed #E1E2E5;
+    border-left: 1px dotted var(--border);
+    border-bottom: 1px dotted var(--border);
   }
   .month-name {
     position: absolute;

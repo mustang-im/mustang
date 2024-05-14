@@ -30,7 +30,7 @@
   import { selectedDate } from "./selected";
   import { getWeekDays } from "../Util/date";
   import type { Collection } from "svelte-collections";
-  
+
   export let start: Date;
   export let events: Collection<Event>;
   export let showDays = 35;
@@ -59,12 +59,12 @@
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     grid-template-rows: max-content;
     grid-auto-rows: 1fr;
-    border-right: 1px dashed #E1E2E5;
+    border-right: 1px dotted var(--border);
   }
   .weekday {
-    border-top: 1px dashed #E1E2E5;
-    border-left: 1px dashed #E1E2E5;
-    border-bottom: 1px dashed #E1E2E5;
+    border-top: 1px dotted var(--border);
+    border-left: 1px dotted var(--border);
+    border-bottom: 1px dotted var(--border);
     padding: 4px 8px;
     color: #8B8B8B;
     opacity: 70%;

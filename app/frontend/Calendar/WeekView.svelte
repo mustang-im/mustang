@@ -88,9 +88,9 @@
   }
   .day-header {
     padding: 8px 16px;
-    border-top: 1px dashed #E1E2E5;
-    border-left: 1px dashed #E1E2E5;
-    border-bottom: 1px dashed #E1E2E5;
+    border-top: 1px dotted var(--border);
+    border-left: 1px dotted var(--border);
+    border-bottom: 1px dotted var(--border);
   }
   .day-header .date {
     font-size: 180%;

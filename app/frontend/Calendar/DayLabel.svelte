@@ -33,7 +33,7 @@
 <style>
   .day {
     padding: 4px 8px;
-    border-left: 1px dashed #E1E2E5;
+    border-left: 1px dotted var(--border);
     font-size: 13px;
   }
   .today {
