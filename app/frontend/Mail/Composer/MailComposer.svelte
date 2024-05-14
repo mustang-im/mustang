@@ -123,11 +123,13 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { Attachment } from "../../../logic/Mail/Attachment";
   import { insertImage } from "../../Shared/Editor/InsertImage";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
+  import { SpecialFolder } from "../../../logic/Mail/Folder";
+  import { selectedAccount } from "../Selected";
   import { appGlobal } from "../../../logic/app";
   import MailAutocomplete from "./MailAutocomplete.svelte";
   import AttachmentsPane from "./Attachments/AttachmentsPane.svelte";
@@ -156,10 +158,23 @@
   let lastMail = mail;
   $: differentMailLoaded(mail);
   function differentMailLoaded(_dummy: any) {
-    if (editor && mail != lastMail) {
-      lastMail = mail;
+    if (mail == lastMail || !mail) {
+      return;
+    }
+    lastMail = mail;
+    if (editor) {
       editor.commands.setContent(mail.html);
     }
+    if (mail.from?.emailAddress) {
+      from = appGlobal.emailAccounts.find(acc => acc.emailAddress == mail.from.emailAddress) ??
+        $selectedAccount;
+    }
+  }
+
+  $: from && setFrom()
+  function setFrom() {
+    mail.from = new PersonUID(from.emailAddress, from.userRealname);
+    mail.folder = from.getSpecialFolder(SpecialFolder.Sent) ?? from.inbox;
   }
 
   function onMoveToCC(person: PersonUID) {
