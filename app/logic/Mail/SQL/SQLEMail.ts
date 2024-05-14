@@ -40,7 +40,7 @@ export class SQLEMail {
           ${email.id}, ${email.folder.dbID}, ${email.pID}, ${email.inReplyTo},
           ${email.size}, ${email.sent.getTime() / 1000}, ${email.received.getTime() / 1000},
           ${email.outgoing ? 1 : 0},
-          ${email.subject}, ${email.text}, ${email.rawHTMLDangerous}
+          ${email.subject}, ${email.rawText}, ${email.rawHTMLDangerous}
         )`);
       // -- contactEmail, contactName, myEmail
       email.dbID = insert.lastInsertRowid;
@@ -56,7 +56,7 @@ export class SQLEMail {
           dateReceived = ${email.received.getTime() / 1000},
           outgoing = ${email.outgoing ? 1 : 0},
           subject = ${email.subject},
-          plaintext = ${email.text},
+          plaintext = ${email.rawText},
           html = ${email.rawHTMLDangerous}
         WHERE id = ${email.dbID}
       `);
@@ -210,7 +210,7 @@ export class SQLEMail {
     email.subject = sanitize.string(row.subject, null);
     if (row.plaintext != null || row.html != null) {
       email.needToLoadBody = false;
-      email.text = sanitize.string(row.plaintext, "");
+      email.text = sanitize.string(row.plaintext, null);
       let html = sanitize.string(row.html, null);
       if (html) {
         email.html = html;

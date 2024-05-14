@@ -93,6 +93,9 @@ export class Message extends Observable {
   set rawHTMLDangerous(val: string) {
     this.html = val;
   }
+  get rawText(): string {
+    return this._text;
+  }
 
   readonly reactions = new MapColl<Person, string>();
 
