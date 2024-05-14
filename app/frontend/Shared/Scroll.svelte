@@ -14,5 +14,6 @@
     flex: 1 0 0;
     position: relative;
     overflow: auto;
+    overflow-wrap: anywhere;
   }
 </style>

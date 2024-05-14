@@ -14,6 +14,7 @@
   .plaintext {
     flex: 1 0 0;
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
     max-width: 50em;
     padding: 16px;
   }
