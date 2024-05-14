@@ -272,19 +272,20 @@ export class EMail extends Message {
   }
 
   async findThread(messages: Collection<EMail>): Promise<string | null>{
-    if (this.threadID) {
-      return this.threadID;
-    }
+    let oldThreadID = this.threadID;
     if (!this.dbID) {
       return null;
     }
-    let inReplyTo = null;
-    while (inReplyTo) {
-      let parent = messages.find(msg => msg.id == inReplyTo);
-      inReplyTo = parent?.inReplyTo;
+    let inReplyTo = this.inReplyTo;
+    let parent = messages.find(msg => msg.messageID == inReplyTo);
+    while (parent?.inReplyTo) {
+      inReplyTo = parent.inReplyTo;
+      parent = messages.find(msg => msg.messageID == inReplyTo);
     }
-    this.threadID = inReplyTo ?? null;
-    await SQLEMail.saveWritableProps(this);
+    this.threadID = inReplyTo;
+    if (oldThreadID != this.threadID) {
+      await SQLEMail.saveWritableProps(this);
+    }
     return this.threadID;
   }
 
