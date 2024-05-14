@@ -2,10 +2,13 @@
 * Mail
   * Bugs
     * Deleting wrong email
+    * dateSent is null
+    * attachments duplicated after first fetch
     * Person Popup opening automatically and focussing the name field
       * Close popup on enter or tab
   * Threads
     * Find thread
+    * Hide quotes
     * Message list: Threaded view?
     * Mail Chat view: Open thread
   * Search
