@@ -4,7 +4,7 @@
   {:else if mode == DisplayMode.Plaintext}
     <PlaintextDisplay plaintext={$message.text} />
   {:else if mode == DisplayMode.Source}
-    <PlaintextDisplay plaintext={new TextDecoder().decode($message.mime)} />
+    <PlaintextDisplay plaintext={getSource($message)} />
   {:else}
     Unknown mode
   {/if}
@@ -15,18 +15,19 @@
   import { getLocalStorage } from "../../Util/LocalStorage";
   import HTMLDisplay from "./HTMLDisplay.svelte";
   import PlaintextDisplay from "./PlaintextDisplay.svelte";
-  import { catchErrors } from "../../Util/error";
+  import { catchErrors, showError } from "../../Util/error";
 
   export let message: EMail;
 
   let modeSetting = getLocalStorage("mail.contentRendering", "html");
   $: mode = $modeSetting.value as DisplayMode;
 
-  $: mode && message && catchErrors(onChanged);
-  async function onChanged() {
-    if (mode == DisplayMode.Source) {
-      await message.download();
+  function getSource(message): string {
+    if (message.mime) {
+      return new TextDecoder().decode($message.mime);
     }
+    message.download().catch(showError);
+    return "Loading email source...";
   }
 </script>
 

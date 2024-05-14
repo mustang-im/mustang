@@ -39,12 +39,14 @@
 
 <script lang="ts">
   import { getLocalStorage } from "../../Util/LocalStorage";
+  import { selectedMessage } from "../Selected";
   import { DisplayMode } from "./MessageBody.svelte";
   import Button from "../../Shared/Button.svelte";
   import HTMLIcon from "lucide-svelte/icons/mail";
   import WithExternalIcon from "lucide-svelte/icons/image";
   import PlaintextIcon from "lucide-svelte/icons/type";
   import SourceIcon from "lucide-svelte/icons/code-xml";
+  import { catchErrors } from "../../Util/error";
 
   export let mode: DisplayMode = DisplayMode.HTML;
 
@@ -54,6 +56,20 @@
   function switchTo(newMode: DisplayMode) {
     mode = newMode;
     modeSetting.value = newMode;
+
+    if (mode != DisplayMode.HTMLWithExternal &&
+      mode != DisplayMode.Source) {
+      resetToMode = mode;
+    }
+  }
+
+  let resetToMode = DisplayMode.HTML;
+  $: $selectedMessage && catchErrors(onMessageChanged);
+  function onMessageChanged() {
+    if (mode != resetToMode) {
+      mode = resetToMode;
+      modeSetting.value = resetToMode;
+    }
   }
 </script>
 
