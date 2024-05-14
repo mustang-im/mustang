@@ -1,38 +1,34 @@
 <hbox flex
   class="message"
-  class:incoming={!message.outgoing}
-  class:outgoing={message.outgoing}
+  class:incoming={!$message.outgoing}
+  class:outgoing={$message.outgoing}
   class:followup
-  deliveryStatus={message instanceof ChatMessage ? message.deliveryStatus : DeliveryStatus.Unknown}
+  deliveryStatus={$message instanceof ChatMessage ? $message.deliveryStatus : DeliveryStatus.Unknown}
   >
-  {#if !message.outgoing && !followup}
+  {#if !$message.outgoing && !followup}
     <vbox class="avatar">
-      {#if message.contact instanceof Person}
-        <PersonPicture person={message.contact} size={32} />
+      {#if $message.contact instanceof Person}
+        <PersonPicture person={$message.contact} size={32} />
       {/if}
     </vbox>
   {/if}
   <vbox class="right">
     {#if !(fastFollowup && hideHeaderFollowup)}
       <hbox class="meta">
-        {#if !message.outgoing && !followup}
-          <hbox class="from">{message.contact?.name}</hbox>
+        {#if !$message.outgoing && !followup}
+          <hbox class="from">{$message.contact?.name}</hbox>
         {/if}
         <hbox flex>
           <slot name="above-center" />
         </hbox>
-        <hbox class="time">{getDateString(message.sent)}</hbox>
+        <hbox class="time">{getDateString($message.sent)}</hbox>
       </hbox>
     {/if}
     <vbox class="bubble">
       <slot name="inner-top" />
       <div class="text selectable">
-        {#if message.html}
-          <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection. -->
-          {@html message.html }
-        {:else}
-          {message.text || '' }
-        {/if}
+        <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection. -->
+        {@html $message.html }
         <slot name="bubble" />
       </div>
       <slot name="inner-bottom" />
@@ -58,11 +54,11 @@
   export let previousMessage: Message = null;
   export let hideHeaderFollowup = false;
 
-  $: followup = message.contact == previousMessage?.contact && // same author
-    message.outgoing == previousMessage?.outgoing;
+  $: followup = $message.contact == previousMessage?.contact && // same author
+    $message.outgoing == previousMessage?.outgoing;
   $: fastFollowup = followup &&
-    message.sent.getTime() - previousMessage.sent.getTime() < 5 * 60 * 1000; // < 5 mins apart
-  $: reactions = message.reactions;
+    $message.sent.getTime() - previousMessage.sent.getTime() < 5 * 60 * 1000; // < 5 mins apart
+  $: reactions = $message.reactions;
 </script>
 
 <style>
@@ -149,7 +145,6 @@
   .text {
     font-size: 13.3px;
     overflow-wrap: anywhere;
-    overflow-wrap: break-word;
   }
 
   .text :global(blockquote) {

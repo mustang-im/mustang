@@ -1,6 +1,15 @@
 <hbox class="buttons">
   <Button
-    label="Pretty"
+    label="Thread"
+    icon={ThreadIcon}
+    iconOnly
+    iconSize="16px"
+    plain
+    onClick={() => switchTo(DisplayMode.Thread)}
+    selected={mode == DisplayMode.Thread}
+    />
+  <Button
+    label="Formatted"
     icon={HTMLIcon}
     iconOnly
     iconSize="16px"
@@ -42,6 +51,7 @@
   import { selectedMessage } from "../Selected";
   import { DisplayMode } from "./MessageBody.svelte";
   import Button from "../../Shared/Button.svelte";
+  import ThreadIcon from "lucide-svelte/icons/message-square-text";
   import HTMLIcon from "lucide-svelte/icons/mail";
   import WithExternalIcon from "lucide-svelte/icons/image";
   import PlaintextIcon from "lucide-svelte/icons/type";

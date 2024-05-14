@@ -8,7 +8,7 @@
   <svelte:fragment slot="inner-top">
     {#if !(previousMessage instanceof EMail && message.subject == previousMessage.subject)}
       <h2 class="subject">
-        {message.subject}
+        {$message.subject}
       </h2>
     {/if}
   </svelte:fragment>

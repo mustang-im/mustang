@@ -5,7 +5,7 @@
     * Person Popup opening automatically and focussing the name field
       * Close popup on enter or tab
   * Threads
-    * Message: Conversation view
+    * Find thread
     * Message list: Threaded view?
     * Mail Chat view: Open thread
   * Search
@@ -157,7 +157,7 @@
   * Based on common names
   * Manually in settings
 * Tags
-* Plaintext formatting
+* Plaintext: URLs
 
 ### Later
 * Refactor IMAP orchestration?: Separate IMAP protocol folder object and IMAP orcestration folder object. The latter does folder cache, IMAP poll/refresh, offline cache etc.

@@ -6,6 +6,8 @@
     <!--<HTMLDisplay html={convertTextToHTML($message.text)} />-->
   {:else if mode == DisplayMode.Source}
     <PlaintextDisplay plaintext={getSource($message)} />
+  {:else if mode == DisplayMode.Thread}
+    <ThreadDisplay {message} />
   {:else}
     Unknown mode
   {/if}
@@ -16,6 +18,7 @@
   import { getLocalStorage } from "../../Util/LocalStorage";
   import HTMLDisplay from "./HTMLDisplay.svelte";
   import PlaintextDisplay from "./PlaintextDisplay.svelte";
+  import ThreadDisplay from "./ThreadDisplay.svelte";
   import { showError } from "../../Util/error";
 
   export let message: EMail;
@@ -38,5 +41,6 @@
     HTMLWithExternal = "with-external",
     Plaintext = "plaintext",
     Source = "source",
+    Thread = "thread",
   }
 </script>
