@@ -1,7 +1,7 @@
 <Scroll>
-  <div class="plaintext value">
-    {plaintext || ''}
-  </div>
+  <pre class="plaintext value">
+{plaintext || ''}
+  </pre>
 </Scroll>
 
 <script lang="ts">
