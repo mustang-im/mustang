@@ -331,8 +331,11 @@ export class SQLEMail {
       FROM email
       WHERE id = ${email.dbID}
     `) as any;
+    assert(row, "Email DB ID " + email.dbID + " not found in DB");
     let text = sanitize.string(row.plaintext, null)
-    email.text = text;
+    if (text) {
+      email.text = text;
+    }
     let html = sanitize.string(row.html, null);
     if (html) {
       email.html = html;

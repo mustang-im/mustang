@@ -8,6 +8,7 @@ import { MailDir } from "./Store/MailDir";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { appGlobal } from "../app";
 import { fileExtensionForMIMEType, assert, AbstractFunction } from "../util/util";
+import { backgroundError } from "../../frontend/Util/error";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, Collection, MapColl } from "svelte-collections";
@@ -215,7 +216,7 @@ export class EMail extends Message {
   get html(): string {
     if (this.needToLoadBody) {
       // observers will trigger reload
-      (async () => this.getBody())();
+      this.getBody().catch(backgroundError);
       return this.downloadingMsg();
     }
 
@@ -228,7 +229,7 @@ export class EMail extends Message {
   get text(): string {
     if (this.needToLoadBody) {
       // observers will trigger reload
-      (async () => this.getBody())();
+      this.getBody().catch(backgroundError);
       return this.downloadingMsg();
     }
 
