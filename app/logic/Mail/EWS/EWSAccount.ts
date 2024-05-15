@@ -111,7 +111,6 @@ export class EWSAccount extends MailAccount {
   async createRequestOptions(): Promise<any> {
     let options: any = {
       throwHttpErrors: false,
-      responseType: 'text',
       headers: {
         'Content-Type': "text/xml; charset=utf-8",
       },
@@ -126,7 +125,7 @@ export class EWSAccount extends MailAccount {
 
   async callEWS(aRequest: Json): Promise<any> {
     while (true) {
-      let response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), await this.createRequestOptions());
+      let response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", await this.createRequestOptions());
       response.responseXML = this.parseXML(response.data);
       if (response.status == 200) {
         return this.checkResponse(response, aRequest);

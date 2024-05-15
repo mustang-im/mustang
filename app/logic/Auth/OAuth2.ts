@@ -1,5 +1,5 @@
 import { newOAuth2UI, OAuth2UIMethod } from "./OAuth2UIMethod";
-import { OAuth2Error, OAuth2LoginNeeded } from "./OAuth2Error";
+import { OAuth2Error, OAuth2LoginNeeded, OAuth2ServerError } from "./OAuth2Error";
 import { assert, type URLString } from "../util/util";
 import { appGlobal } from "../app";
 
@@ -161,19 +161,22 @@ export class OAuth2 {
   protected async getAccessTokenFromParams(params: any, additionalHeaders?: any): Promise<string> {
     params.scope = this.scope;
     params.client_id = this.clientID;
-    let ky = await appGlobal.remoteApp.kyCreate({
-      prefixUrl: this.tokenURL,
-      timeout: 3000,
+
+    console.log("OAuth call", this.tokenURL, "params ?", params, additionalHeaders);
+    let response = await appGlobal.remoteApp.postHTTP(this.tokenURL, params, "json", {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': 'text/json',
-      }
-    });
-    let response = await ky.post('', new URLSearchParams(params), {
-      headers: additionalHeaders,
+        ...additionalHeaders,
+      },
+      timeout: 3000,
+      throwHttpErrors: false,
     });
     let data = response.data;
-    if (data.error || !data.access_token) {
+    if (data.error) {
+      throw new OAuth2ServerError(data);
+    }
+    if (!data.access_token) {
       throw new OAuth2Error(data);
     }
     this.accessToken = data.access_token;

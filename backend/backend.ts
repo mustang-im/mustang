@@ -116,7 +116,12 @@ function kyCreate(defaultOptions) {
   return kyObj;
 }
 
-async function postHTTP(url: string, data: any, config: any) {
+/**
+ * @param responseType "text", "json", "formData", "blob", "arrayBuffer"
+ *    @see <https://developer.mozilla.org/en-US/docs/Web/API/Response#instance_methods>
+ * @param config ky config @see <https://github.com/sindresorhus/ky>
+ */
+async function postHTTP(url: string, data: any, responseType: string, config: any) {
   switch (config.headers['Content-Type']) {
   case 'application/x-www-form-urlencoded':
     config.body = new URLSearchParams(data);
@@ -133,7 +138,7 @@ async function postHTTP(url: string, data: any, config: any) {
     ok: response.ok,
     status: response.status,
     statusText: response.statusText,
-    data: await response[config.responseType](),
+    data: await response[responseType](),
   };
 }
 
