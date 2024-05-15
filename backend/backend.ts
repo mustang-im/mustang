@@ -1,3 +1,4 @@
+import { HTTPServer } from './HTTPServer';
 import JPCWebSocket from '../lib/jpc-ws';
 import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
@@ -5,7 +6,6 @@ import Zip from "adm-zip";
 import ky from 'ky';
 import { shell, nativeTheme, Notification, Tray } from "electron";
 import nodemailer from 'nodemailer';
-import express from 'express';
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
@@ -37,7 +37,7 @@ async function createSharedAppObject() {
     sendMailNodemailer,
     verifyServerNodemailer,
     newAdmZIP,
-    newExpressHTTPServer,
+    newHTTPServer,
     openFile,
     closeFile,
     fs: fsPromises,
@@ -137,8 +137,8 @@ async function postHTTP(url: string, data: any, config: any) {
   };
 }
 
-function newExpressHTTPServer() {
-  return express();
+function newHTTPServer() {
+  return new HTTPServer();
 }
 
 /** <https://www.electronjs.org/docs/latest/api/tray> */

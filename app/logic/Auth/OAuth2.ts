@@ -91,6 +91,7 @@ export class OAuth2 {
     let state = Math.random().toString().slice(2);
     let url = this.getAuthURL(state);
     let authCode = await ui.login(url);
+    console.log("Got authCode", authCode);
     return await this.getAccessTokenFromAuthCode(authCode);
   }
 

@@ -1,6 +1,6 @@
 import { OAuth2UI } from "./OAuth2UI";
-import { type URLString } from "../util/util";
 import { appGlobal } from "../app";
+import type { URLString } from "../util/util";
 
 /**
  * Opens the OS default browser with the OAuth2 login page,
@@ -16,28 +16,24 @@ export class OAuth2SystemBrowser extends OAuth2UI {
     // Would need to use a URL param to distinguish between the results.
     // Use random port. Do all OAuth2 providers support http://localhost:* ?
     let port = 1024 + Math.ceil(Math.random() * 64000);
-    return await new Promise(async (resolve, reject) => {
-      let app = await appGlobal.remoteApp.newExpressHTTPServer();
-      console.log("app", app);
-      let server;
-      let killTimeout: NodeJS.Timeout;
-      app.get("/login-finished", (req, res) => {
-        console.log("OAuth2: Login finished", req?.url);
+    let server = await appGlobal.remoteApp.newHTTPServer();
+    await server.start(port);
+    console.log(`OAuth2: Listening on HTTP port ${port} for OAuth2 login finish`);
+    // Close after 15 mins no result
+    let killTimeout = setTimeout(() => {
+      server.close();
+    }, 15 * 60 * 1000);
+    // TODO error page and parse error
+    return new Promise((resolve, reject) => {
+      server.get("/login-finished", (url: URLString) => {
+        console.log("OAuth2: Login finished", url);
         clearTimeout(killTimeout);
-        let url = req?.url;
         server.close();
-        let urlParams = new URLSearchParams(url.search);
+        let query = url.substring(url.indexOf("?"));
+        let urlParams = new URLSearchParams(query);
         let authCode = urlParams.get('authCode');
         resolve(authCode);
       });
-      // TODO error page and parse error
-      server = app.listen(port, () => {
-        console.log(`OAuth2: Listening on HTTP port ${port} for OAuth2 login finish`)
-      });
-      // Close after 15 mins no result
-      killTimeout = setTimeout(() => {
-        server.close();
-      }, 15 * 60 * 1000);
     });
   }
 }
