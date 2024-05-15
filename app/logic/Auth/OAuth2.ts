@@ -31,7 +31,7 @@ export class OAuth2 {
   idToken: string;
   uiMethod: OAuth2UIMethod = OAuth2UIMethod.Window;
 
-  protected username: string;
+  username: string;
   protected password: string;
 
   expiresAt: Date | null = null;

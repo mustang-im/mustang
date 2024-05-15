@@ -28,6 +28,7 @@ export class EWSAccount extends MailAccount {
     if (this.authMethod == AuthMethod.OAuth2) {
       let urls = OAuth2URLs.find(a => a.domains.includes(this.hostname));
       this.oAuth2 = new OAuth2(urls.tokenURL, urls.authURL, urls.authDoneURL, urls.scope, urls.clientID, urls.clientSecret);
+      this.oAuth2.username = this.username ?? this.emailAddress;
       await this.oAuth2.login(interactive);
     }
     await this.listFolders();
