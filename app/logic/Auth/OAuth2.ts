@@ -140,6 +140,8 @@ export class OAuth2 {
     return await this.getAccessTokenFromParams({
       grant_type: "authorization_code",
       code: authCode,
+      // Microsoft: This *has* to be the same redirect URL that was used for the login page
+      redirect_uri: this.authDoneURL,
     });
   }
 
@@ -200,6 +202,7 @@ export class OAuth2 {
 
   getAuthURL(doneURL?: URLString): URLString {
     let state = Math.random().toString().slice(2);
+    this.authDoneURL = doneURL ?? this.authDoneURL; // needed for getAccessTokenFromAuthCode()
     return this.authURL + "?" + new URLSearchParams({
       client_id: this.clientID,
       response_type: "code",
