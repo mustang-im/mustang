@@ -4,7 +4,7 @@
     style={notification.backgroundColor ? `background-color: ${notification.backgroundColor}; color: ${notification.textColor};` : ""}
     >
     <hbox flex />
-    <div class="message">
+    <div class="message value">
       {$notification.message}
     </div>
     <hbox flex />
