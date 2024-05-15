@@ -11,7 +11,7 @@ export class OAuth2Dialog extends OAuth2UI {
    * @returns authCode
    * @throws OAuth2Error
    */
-  async login(url: URLString): Promise<string> {
+  async login(): Promise<string> {
     throw new NotImplemented();
   }
 }

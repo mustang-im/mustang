@@ -21,11 +21,10 @@ export class OAuth2UI {
 
   /**
    * Does an interactive login
-   * @param authURL The full URL of the login page to open
    * @returns authCode
    * @throws OAuth2Error
    */
-  async login(authURL: URLString): Promise<string> {
+  async login(): Promise<string> {
     throw new AbstractFunction();
   }
 }

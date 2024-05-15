@@ -22,7 +22,7 @@ export class OAuth2 {
   /** OAuth2 base URL */
   tokenURL: URLString;
   authURL: URLString;
-  authDoneURL: URLString = "http://localhost/";
+  authDoneURL: URLString = "http://localhost:5455/login-success";
   scope: string;
   clientID: string;
   clientSecret: string | null = null;
@@ -89,8 +89,7 @@ export class OAuth2 {
    */
   async loginWithUI(): Promise<string> {
     let ui = newOAuth2UI(this.uiMethod, this);
-    let url = this.getAuthURL();
-    let authCode = await ui.login(url);
+    let authCode = await ui.login();
     console.log("Got authCode", authCode);
     return await this.getAccessTokenFromAuthCode(authCode);
   }
@@ -163,7 +162,7 @@ export class OAuth2 {
     params.scope = this.scope;
     params.client_id = this.clientID;
     let ky = await appGlobal.remoteApp.kyCreate({
-      prefixUrl: `${this.tokenURL}/token`,
+      prefixUrl: this.tokenURL,
       timeout: 3000,
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -196,12 +195,12 @@ export class OAuth2 {
     return this.accessToken;
   }
 
-  getAuthURL(): string {
+  getAuthURL(doneURL?: URLString): URLString {
     let state = Math.random().toString().slice(2);
     return this.authURL + "?" + new URLSearchParams({
       client_id: this.clientID,
       response_type: "code",
-      redirect_uri: this.authDoneURL,
+      redirect_uri: doneURL ?? this.authDoneURL,
       response_mode: "query",
       scope: this.scope,
       state: state,

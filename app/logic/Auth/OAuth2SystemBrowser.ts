@@ -10,9 +10,7 @@ import type { URLString } from "../util/util";
  * to that localhost URL. Extracts and returns the `authCode`.
  */
 export class OAuth2SystemBrowser extends OAuth2UI {
-  async login(url: URLString): Promise<string> {
-    console.log("OAuth2: Starting system browser with URL", url);
-    await appGlobal.remoteApp.shell.openExternal(url);
+  async login(): Promise<string> {
     // Maybe re-use the running server for multiple logins at the same time?
     // Would need to use a URL param to distinguish between the results.
     // Use random port. Do all OAuth2 providers support http://localhost:* ?
@@ -24,9 +22,13 @@ export class OAuth2SystemBrowser extends OAuth2UI {
     let killTimeout = setTimeout(() => {
       server.close();
     }, 15 * 60 * 1000);
+    let doneURL = `http://localhost:${port}/login-success`;
+    let url = this.oAuth2.getAuthURL(doneURL);
+    console.log("OAuth2: Starting system browser with URL", url);
+    await appGlobal.remoteApp.shell.openExternal(url);
     // TODO error page and parse error
     return new Promise((resolve, reject) => {
-      server.get("/login-finished", (url: URLString) => {
+      server.get("/login-success", (url: URLString) => {
         try {
           console.log("OAuth2: Login finished", url);
           clearTimeout(killTimeout);

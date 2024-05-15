@@ -12,7 +12,8 @@ export class OAuth2Window extends OAuth2UI {
    * @returns authCode
    * @throws OAuth2Error
    */
-  async login(url: URLString): Promise<string> {
+  async login(): Promise<string> {
+    let url = this.oAuth2.getAuthURL();
     let popup = window.open(url, "_blank", "center,oauth2popup") as Window;
     assert(popup, "Failed to open OAuth2 window");
     let state = new URL(url).searchParams.get("state");
