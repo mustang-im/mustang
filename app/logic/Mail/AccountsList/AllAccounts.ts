@@ -46,7 +46,7 @@ export class AllAccounts extends MailAccount {
   }
 
   get isLoggedIn(): boolean {
-    return this.accounts.contents.every(acc => acc.isLoggedIn);
+    return this.accounts.contents.some(acc => acc.isLoggedIn);
   }
 
   async login(interactive: boolean): Promise<void> {
