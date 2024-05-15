@@ -1,4 +1,5 @@
 import { OAuth2UI } from "./OAuth2UI";
+import { OAuth2Error, OAuth2ServerError } from "./OAuth2Error";
 import { appGlobal } from "../app";
 import type { URLString } from "../util/util";
 
@@ -26,13 +27,21 @@ export class OAuth2SystemBrowser extends OAuth2UI {
     // TODO error page and parse error
     return new Promise((resolve, reject) => {
       server.get("/login-finished", (url: URLString) => {
-        console.log("OAuth2: Login finished", url);
-        clearTimeout(killTimeout);
-        server.close();
-        let query = url.substring(url.indexOf("?"));
-        let urlParams = new URLSearchParams(query);
-        let authCode = urlParams.get('authCode');
-        resolve(authCode);
+        try {
+          console.log("OAuth2: Login finished", url);
+          clearTimeout(killTimeout);
+          server.close();
+          let query = url.substring(url.indexOf("?"));
+          let urlParams = Object.fromEntries(new URLSearchParams(query));
+          let authCode = urlParams.code;
+          if (authCode) {
+            resolve(authCode);
+          } else {
+            reject(new OAuth2ServerError(urlParams));
+          }
+        } catch (ex) {
+          reject(ex);
+        }
       });
     });
   }
