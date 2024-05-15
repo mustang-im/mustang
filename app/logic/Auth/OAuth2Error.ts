@@ -15,10 +15,18 @@ export class OAuth2ServerError extends OAuth2Error {
       ?? json?.error?.replace("_", " ")
       ?? "Login failed. Unknown OAuth2 error.";
     super(msg);
+    // Microsoft
     const kErrorConsentRequiredEWS = 65001;
-    if (json.error_codes && json.error_codes.includes(kErrorConsentRequiredEWS)) {
+    const kErrorRedirectURLWrong = 700009;
+    if (json.error_codes?.includes(kErrorConsentRequiredEWS)) {
       this.consentRequired = true;
     }
+    if (json.error_codes?.includes(kErrorRedirectURLWrong)) {
+      this.message = "Microsoft OAuth2: Redirect URL is wrong";
+    }
+    this.code = json.error;
+    this.codes = json.error_codes;
     this.details = json;
+    console.log("OAuth2 error", this, json);
   }
 }
