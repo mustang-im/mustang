@@ -168,20 +168,21 @@ export class EWSAccount extends MailAccount {
   }
 
   async callEWS(aRequest: Json): Promise<any> {
-    while (true) {
-      let response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", await this.createRequestOptions());
-      response.responseXML = this.parseXML(response.data);
-      if (response.status == 200) {
-        return this.checkResponse(response, aRequest);
-      }
-      if (response.status != 401) {
-        throw new EWSError(response, aRequest);
-      }
+    let response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", await this.createRequestOptions());
+    response.responseXML = this.parseXML(response.data);
+    if (response.status == 200) {
+      return this.checkResponse(response, aRequest);
+    }
+    if (response.status == 401) {
       if (this.oAuth2) {
         this.oAuth2.reset();
+        await this.oAuth2.login(false); // will throw error, if interactive login is needed
+        await this.callEWS(aRequest); // repeat the call
       } else {
         throw new Error("Password incorrect");
       }
+    } else {
+      throw new EWSError(response, aRequest);
     }
   }
 
