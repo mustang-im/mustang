@@ -10,6 +10,7 @@
     "@types/nodemailer": "^6.4.14",
     "adm-zip": "^0.5.12",
     "bufferutil": "^4.0.8",
+    "express": "^4.19.2",
     "imapflow": "^1.0.155",
     "ky": "^1.2.3",
     "nodemailer": "^6.9.13",

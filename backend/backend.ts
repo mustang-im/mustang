@@ -3,8 +3,9 @@ import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import { nativeTheme, Notification, Tray } from "electron";
+import { shell, nativeTheme, Notification, Tray } from "electron";
 import nodemailer from 'nodemailer';
+import express from 'express';
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
@@ -26,6 +27,7 @@ async function createSharedAppObject() {
     newOSNotification,
     isOSNotificationSupported,
     newTrayIcon,
+    shell,
     setDarkMode,
     getConfigDir,
     getFilesDir,
@@ -35,6 +37,7 @@ async function createSharedAppObject() {
     sendMailNodemailer,
     verifyServerNodemailer,
     newAdmZIP,
+    newExpressHTTPServer,
     openFile,
     closeFile,
     fs: fsPromises,
@@ -132,6 +135,10 @@ async function postHTTP(url: string, data: any, config: any) {
     statusText: response.statusText,
     data: await response[config.responseType](),
   };
+}
+
+function newExpressHTTPServer() {
+  return express();
 }
 
 /** <https://www.electronjs.org/docs/latest/api/tray> */

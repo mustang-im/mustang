@@ -1,6 +1,6 @@
 import { OAuth2UI } from "./OAuth2UI";
-import { OAuth2Error, OAuth2ServerError } from "./OAuth2";
-import { assert, AbstractFunction, type URLString } from "../util/util";
+import { OAuth2ServerError } from "./OAuth2";
+import { assert, type URLString } from "../util/util";
 
 /**
  * Opens a new window for OAuth2 login,

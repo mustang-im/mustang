@@ -1,5 +1,6 @@
 import { OAuth2Window } from "./OAuth2Window";
-import { assert, NotImplemented, type URLString } from "../util/util";
+import { OAuth2SystemBrowser } from "./OAuth2SystemBrowser";
+import { assert, type URLString } from "../util/util";
 import { appGlobal } from "../app";
 
 /**
@@ -86,7 +87,7 @@ export class OAuth2 {
    * @returns accessToken
    */
   async loginWithUI(): Promise<string> {
-    let ui = new OAuth2Window(this);
+    let ui = new OAuth2SystemBrowser(this);
     let state = Math.random().toString().slice(2);
     let url = this.getAuthURL(state);
     let authCode = await ui.login(url);
