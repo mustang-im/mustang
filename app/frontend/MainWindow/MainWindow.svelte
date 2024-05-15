@@ -58,7 +58,7 @@
     if (appGlobal.emailAccounts.isEmpty && appGlobal.chatAccounts.isEmpty) {
       setup();
     } else {
-      await loginOnStartup(backgroundError);
+      await loginOnStartup(console.error);
     }
   }
 
