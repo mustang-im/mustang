@@ -20,7 +20,7 @@ export class EMail extends Message {
   @notifyChangedProperty
   from = new PersonUID();
   @notifyChangedProperty
-  replyTo = new PersonUID();
+  replyTo: PersonUID | null = null;
   readonly to = new ArrayColl<PersonUID>();
   readonly cc = new ArrayColl<PersonUID>();
   readonly bcc = new ArrayColl<PersonUID>();
@@ -319,7 +319,7 @@ export class EMail extends Message {
 
   replyToAuthor(): EMail {
     let reply = this._reply();
-    reply.to.add(this.from);
+    reply.to.add(this.replyTo ?? this.from);
     return reply;
   }
 

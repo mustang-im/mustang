@@ -275,8 +275,7 @@ export class SQLEMail {
           email.from = uid;
           continue;
         } else if (row.recipientType == 5) {
-          email.replyTo.emailAddress = addr;
-          email.replyTo.name = name;
+          email.replyTo = uid;
           continue;
         }
         if (row.recipientType == 2) {

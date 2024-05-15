@@ -36,7 +36,7 @@ export class SMTPAccount extends MailAccount {
         subject: email.subject,
         inReplyTo: email.inReplyTo,
         from: SMTPAccount.getRecipient(email.from),
-        replyTo: SMTPAccount.getRecipient(email.replyTo),
+        replyTo: email.replyTo ? SMTPAccount.getRecipient(email.replyTo) : null,
         to: SMTPAccount.getRecipients(email.to),
         cc: SMTPAccount.getRecipients(email.cc),
         bcc: SMTPAccount.getRecipients(email.bcc),
