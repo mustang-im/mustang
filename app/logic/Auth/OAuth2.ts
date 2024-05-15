@@ -1,5 +1,5 @@
 import { OAuth2Window } from "./OAuth2Window";
-import { assert, NotImplemented } from "../util/util";
+import { assert, NotImplemented, type URLString } from "../util/util";
 import { appGlobal } from "../app";
 
 /**
@@ -19,9 +19,9 @@ import { appGlobal } from "../app";
  */
 export class OAuth2 {
   /** OAuth2 base URL */
-  tokenURL: string;
-  authURL: string;
-  authDoneURL = "http://localhost/";
+  tokenURL: URLString;
+  authURL: URLString;
+  authDoneURL: URLString = "http://localhost/";
   scope: string;
   clientID: string;
   clientSecret: string | null = null;
@@ -36,12 +36,14 @@ export class OAuth2 {
   protected expiryTimout: NodeJS.Timeout;
   refreshErrorCallback = (ex: Error) => console.error(ex);
 
-  constructor(tokenURL: string, authURL: string, scope: string, clientID: string, clientSecret?: string) {
+  constructor(tokenURL: string, authURL: string, authDoneURL: string | null, scope: string, clientID: string, clientSecret?: string) {
     assert(tokenURL?.startsWith("https://") || tokenURL?.startsWith("http://"), "Need OAuth2 server token URL");
     assert(authURL?.startsWith("https://") || authURL?.startsWith("http://"), "Need OAuth2 login page URL");
+    assert(!authDoneURL || authDoneURL?.startsWith("https://") || authDoneURL?.startsWith("http://"), "Need OAuth2 login finish URL");
     assert(scope, "Need OAuth2 scope");
     this.tokenURL = tokenURL;
     this.authURL = authURL;
+    this.authDoneURL = authDoneURL;
     this.scope = scope;
     this.clientID = clientID;
     this.clientSecret = clientSecret ?? null;
@@ -85,7 +87,9 @@ export class OAuth2 {
    */
   async loginWithUI(): Promise<string> {
     let ui = new OAuth2Window(this);
-    let authCode = await ui.login();
+    let state = Math.random().toString().slice(2);
+    let url = this.getAuthURL(state);
+    let authCode = await ui.login(url);
     return await this.getAccessTokenFromAuthCode(authCode);
   }
 
@@ -109,11 +113,22 @@ export class OAuth2 {
     return accessToken;
   }
 
+  /** clearLogin(), and also actively log out from the server.
+   * The latter is currently not implemented */
   async logout(): Promise<void> {
+    this.reset();
+  }
+
+  /** Forgets the current login and deletes the refresh token */
+  async reset(): Promise<void> {
     this.stop();
     this.accessToken = undefined;
     this.refreshToken = undefined;
     this.deleteRefreshTokenFromStorage();
+  }
+
+  get isLoggedIn(): boolean {
+    return !!this.accessToken;
   }
 
   /**

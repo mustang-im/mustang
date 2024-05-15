@@ -1,5 +1,5 @@
 import { OAuth2 } from "./OAuth2";
-import { assert, AbstractFunction } from "../util/util";
+import { assert, AbstractFunction, type URLString } from "../util/util";
 
 /**
  * Shows a login page for OAuth2,
@@ -21,10 +21,11 @@ export class OAuth2UI {
 
   /**
    * Does an interactive login
+   * @param authURL The full URL of the login page to open
    * @returns authCode
    * @throws OAuth2Error
    */
-  async login(): Promise<string> {
+  async login(authURL: URLString): Promise<string> {
     throw new AbstractFunction();
   }
 }

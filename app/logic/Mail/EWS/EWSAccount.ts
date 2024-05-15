@@ -1,6 +1,7 @@
-import { MailAccount, TLSSocketType } from "../MailAccount";
+import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
 import { EWSFolder } from "./EWSFolder";
-import { OAuth2MS } from "../../Auth/OAuth2MS";
+import { OAuth2 } from "../../Auth/OAuth2";
+import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { appGlobal } from "../../app";
 import { assert } from "../../util/util";
 
@@ -8,7 +9,7 @@ export class EWSAccount extends MailAccount {
   readonly protocol: string = "ews";
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
-  oAuth2: OAuth2MS | undefined;
+  oAuth2: OAuth2 | undefined;
 
   constructor() {
     super();
@@ -20,12 +21,14 @@ export class EWSAccount extends MailAccount {
   }
 
   get isLoggedIn(): boolean {
-    return !this.rootFolders.isEmpty;
+    return this.oAuth2.isLoggedIn;
   }
 
   async login(interactive: boolean): Promise<void> {
-    if (new URL(this.url).hostname == "outlook.office365.com") {
-      this.oAuth2 = new OAuth2MS(this, interactive);
+    if (this.authMethod == AuthMethod.OAuth2) {
+      let urls = OAuth2URLs.find(a => a.domains.includes(this.hostname));
+      this.oAuth2 = new OAuth2(urls.tokenURL, urls.authURL, urls.authDoneURL, urls.scope, urls.clientID, urls.clientSecret);
+      await this.oAuth2.login(interactive);
     }
     await this.listFolders();
   }
@@ -113,8 +116,7 @@ export class EWSAccount extends MailAccount {
       },
     };
     if (this.oAuth2) {
-      let accessToken = await this.oAuth2.getAccessToken();
-      options.headers.Authorization = `Bearer ${accessToken}`;
+      options.headers.Authorization = await this.oAuth2.authorizationHeader;
     } else {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username || this.emailAddress}:${this.password}`)))}`;
     }
@@ -132,7 +134,7 @@ export class EWSAccount extends MailAccount {
         throw new EWSError(response, aRequest);
       }
       if (this.oAuth2) {
-        this.oAuth2.clearAccessToken();
+        this.oAuth2.reset();
       } else {
         throw new Error("Password incorrect");
       }
