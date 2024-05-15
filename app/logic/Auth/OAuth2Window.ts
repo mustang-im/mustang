@@ -15,12 +15,13 @@ export class OAuth2Window extends OAuth2UI {
   async login(url: URLString): Promise<string> {
     let popup = window.open(url, "_blank", "center,oauth2popup") as Window;
     assert(popup, "Failed to open OAuth2 window");
+    let state = new URL(url).searchParams.get("state");
     return await new Promise((resolve, reject) => {
       let ipcRenderer = (window as any).electron.ipcRenderer; // TODO use JPC, or remove window
       let weClosed = false;
-      let handleNavigation = (event, value) => {
+      let handleNavigation = (event, urlStr: URLString) => {
         try {
-          let url = new URL(value);
+          let url = new URL(urlStr);
           let urlParams = Object.fromEntries(url.searchParams);
           url.hash = url.search = "";
           if (url.href.startsWith(this.oAuth2.authDoneURL) && urlParams.state == state) {
@@ -28,8 +29,9 @@ export class OAuth2Window extends OAuth2UI {
             ipcRenderer.removeListener('oauth2-close', handleClose);
             weClosed = true;
             popup.close();
-            if (urlParams.code) {
-              resolve(urlParams.code);
+            let authCode = urlParams.code;
+            if (authCode) {
+              resolve(authCode);
             } else {
               reject(new OAuth2ServerError(urlParams));
             }

@@ -89,8 +89,7 @@ export class OAuth2 {
    */
   async loginWithUI(): Promise<string> {
     let ui = newOAuth2UI(this.uiMethod, this);
-    let state = Math.random().toString().slice(2);
-    let url = this.getAuthURL(state);
+    let url = this.getAuthURL();
     let authCode = await ui.login(url);
     console.log("Got authCode", authCode);
     return await this.getAccessTokenFromAuthCode(authCode);
@@ -197,14 +196,15 @@ export class OAuth2 {
     return this.accessToken;
   }
 
-  getAuthURL(aState: string): string {
+  getAuthURL(): string {
+    let state = Math.random().toString().slice(2);
     return this.authURL + "?" + new URLSearchParams({
       client_id: this.clientID,
       response_type: "code",
       redirect_uri: this.authDoneURL,
       response_mode: "query",
       scope: this.scope,
-      state: aState,
+      state: state,
       login_hint: this.username,
     });
   }

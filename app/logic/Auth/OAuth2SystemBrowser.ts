@@ -31,8 +31,7 @@ export class OAuth2SystemBrowser extends OAuth2UI {
           console.log("OAuth2: Login finished", url);
           clearTimeout(killTimeout);
           server.close();
-          let query = url.substring(url.indexOf("?"));
-          let urlParams = Object.fromEntries(new URLSearchParams(query));
+          let urlParams = Object.fromEntries(new URL(url).searchParams);
           let authCode = urlParams.code;
           if (authCode) {
             resolve(authCode);
