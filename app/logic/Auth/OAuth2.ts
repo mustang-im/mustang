@@ -90,7 +90,6 @@ export class OAuth2 {
   async loginWithUI(): Promise<string> {
     let ui = newOAuth2UI(this.uiMethod, this);
     let authCode = await ui.login();
-    console.log("Got authCode", authCode);
     return await this.getAccessTokenFromAuthCode(authCode);
   }
 
@@ -164,7 +163,6 @@ export class OAuth2 {
     params.scope = this.scope;
     params.client_id = this.clientID;
 
-    console.log("OAuth call", this.tokenURL, "params ?", params, additionalHeaders);
     let response = await appGlobal.remoteApp.postHTTP(this.tokenURL, params, "json", {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',

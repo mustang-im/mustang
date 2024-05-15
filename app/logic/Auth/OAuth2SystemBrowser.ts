@@ -17,20 +17,19 @@ export class OAuth2SystemBrowser extends OAuth2UI {
     let port = 1024 + Math.ceil(Math.random() * 64000);
     let server = await appGlobal.remoteApp.newHTTPServer();
     await server.start(port);
-    console.log(`OAuth2: Listening on HTTP port ${port} for OAuth2 login finish`);
     // Close after 15 mins no result
     let killTimeout = setTimeout(() => {
       server.close();
     }, 15 * 60 * 1000);
     let doneURL = `http://localhost:${port}/login-success`;
     let url = this.oAuth2.getAuthURL(doneURL);
-    console.log("OAuth2: Starting system browser with URL", url);
+    // console.log("OAuth2: Starting system browser with URL", url, "and done URL", doneURL);
     await appGlobal.remoteApp.shell.openExternal(url);
     // TODO error page and parse error
     return new Promise((resolve, reject) => {
       server.get("/login-success", (url: URLString) => {
         try {
-          console.log("OAuth2: Login finished", url);
+          // console.log("OAuth2: Login finished", url);
           clearTimeout(killTimeout);
           server.close();
           let urlParams = Object.fromEntries(new URL(url).searchParams);

@@ -13,6 +13,8 @@
     * Mail Chat view: Open thread
   * Search
   * OAuth2
+    * in-app
+    * register with providers
   * Settings
   * All accounts - fix
   * Setup mail
