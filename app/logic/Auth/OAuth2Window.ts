@@ -4,7 +4,7 @@ import { assert, type URLString } from "../util/util";
 
 /**
  * Opens a new window for OAuth2 login,
- * monitors the process and returns the `authCode`.
+ * monitors the URL changes, and returns the `authCode`.
  */
 export class OAuth2Window extends OAuth2UI {
   /**
