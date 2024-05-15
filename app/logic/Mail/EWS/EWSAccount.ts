@@ -1,4 +1,7 @@
 import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
+import type { EMail } from "../EMail";
+import { ContentDisposition } from "../Attachment";
+import { blobToBase64 } from "../../util/util";
 import { EWSFolder } from "./EWSFolder";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
@@ -36,6 +39,46 @@ export class EWSAccount extends MailAccount {
 
   async logout(): Promise<void> {
     // Not sure what the intention is here.
+  }
+
+  async send(email: EMail): Promise<void> {
+    // This should be type Json but my version of TypeScript doesn't like that
+    let request: any = {
+      m$CreateItem: {
+        m$Items: {
+          t$Message: {
+            t$ItemClass: "IPM.Note",
+            t$Subject: email.subject,
+            t$Body: {
+              BodyType: email.html ? "HTML" : "Text",
+              _TextContent_: email.html || email.text,
+            },
+          },
+        },
+        MessageDisposition: "SendAndSaveCopy",
+      },
+    };
+    if (email.attachments.hasItems) {
+      request.m$CreateItem.m$Items.t$Message.t$Attachments = await Promise.all(email.attachments.contents.map(async attachment => ({
+        t$Name: attachment.filename,
+        t$ContentType: attachment.mimeType,
+        t$ContentID: attachment.contentID,
+        t$Size: attachment.size,
+        t$IsInline: attachment.disposition == ContentDisposition.inline,
+        t$Content: await blobToBase64(attachment.content),
+      })));
+    }
+    if (email.inReplyTo) {
+      request.m$CreateItem.m$Items.t$Message.t$InReplyTo = email.inReplyTo;
+    }
+    addRecipients(request, "t$ToRecipients", email.to.contents);
+    addRecipients(request, "t$CcReipients", email.cc.contents);
+    addRecipients(request, "t$BccRecipients", email.bcc.contents);
+    addRecipients(request, "t$From", [email.from]);
+    if (email.replyTo) {
+      addRecipients(request, "t$ReplyTo", [email.replyTo]);
+    }
+    await this.callEWS(request);
   }
 
   JSON2XML(aJSON: Json, aParent: Element, aNS: string, aTag: string): void {
@@ -287,5 +330,17 @@ class EWSItemError extends Error {
     this.request = aRequest;
     this.error = errorResponseJSON as Json;
     this.type = errorResponseJSON.ResponseCode;
+  }
+}
+
+// This should be type Json but my version of TypeScript doesn't like that
+function addRecipients(aRequest: any, aType: string, aRecipients): void {
+  if (aRecipients.length) {
+    aRequest.m$CreateItem.m$Items.t$Message[aType] = aRecipients.map(recipient => ({
+      t$Mailbox: {
+        t$Name: recipient.name,
+        t$EmailAddress: recipient.emailAddress,
+      },
+    }));
   }
 }
