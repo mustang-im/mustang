@@ -91,42 +91,46 @@ export class EWSFolder extends Folder {
         sync.m$SyncFolderItems.m$SyncState = null;
         result = await this.account.callEWS(sync);
       }
-      let newMessageIDs = [];
-      let processReadFlagChange = async (email, change) => {
-        email.isRead = change.IsRead == "true";
-        await SQLEMail.saveWritableProps(email);
-      };
-      let processUpdate = async (email, update) => {
-        email.setFlags(update);
-        await SQLEMail.saveWritableProps(email);
-      };
-      let processCreate = create => {
-        newMessageIDs.push(create.ItemId);
-      };
-      let processDelete = async email => {
-        this.messages.remove(email);
-        await SQLEMail.deleteIt(email);
-      };
-      let processChanges = async (changes, exists, create?) => {
-        if (changes?.Message) {
-          for (let change of ensureArray(changes.Message)) {
-            let email = this.getEmailByItemId(change.ItemId.Id);
-            if (email) {
-              await exists(email, change);
-            } else if (create) {
-              create(email);
-            }
-          }
-        }
-      };
-      await processChanges(result.Changes.readFlagChange, processReadFlagChange, processCreate);
-      await processChanges(result.Changes.Update, processUpdate, processCreate);
-      await processChanges(result.Changes.Create, processUpdate, processCreate);
-      await processChanges(result.Changes.Delete, processDelete);
+      let newMessageIDs = (await Promise.all([
+        this.processSyncChanges(result.Changes.readFlagChange, this.processSyncReadFlagChange),
+        this.processSyncChanges(result.Changes.Update, this.processSyncUpdate),
+        this.processSyncChanges(result.Changes.Create, this.processSyncUpdate),
+      ])).flat();
+      await this.processSyncChanges(result.Changes.Delete, this.processSyncDelete);
       this.messages.addAll(await this.getNewMessageHeaders(newMessageIDs));
       this.syncState = sync.m$SyncFolderItems.m$SyncState = result.SyncState;
       await SQLFolder.save(this);
     }
+  }
+
+  protected async processSyncChanges(changes, callback): Promise<any[]> {
+    let unprocessedChanges: any[] = [];
+    if (changes?.Message) {
+      for (let change of ensureArray(changes.Message)) {
+        let email = this.getEmailByItemId(change.ItemId.Id);
+        if (email) {
+          await callback.call(this, email, change);
+        } else {
+          unprocessedChanges.push(change.ItemId);
+        }
+      }
+    }
+    return unprocessedChanges;
+  }
+
+  protected async processSyncReadFlagChange(email, change) {
+    email.isRead = change.IsRead == "true";
+    await SQLEMail.saveWritableProps(email);
+  }
+
+  protected async processSyncUpdate(email, update) {
+    email.setFlags(update);
+    await SQLEMail.saveWritableProps(email);
+  }
+
+  protected async processSyncDelete(email) {
+    this.messages.remove(email);
+    await SQLEMail.deleteIt(email);
   }
 
   // Lists all messages starting from scratch, ignoring the sync state.
