@@ -15,8 +15,8 @@ function createWindow(): void {
 
     // Create the browser window.
     const mainWindow = new BrowserWindow({
-      width: 1280,
-      height: 700,
+      width: 1700,
+      height: 950,
       show: false,
       autoHideMenuBar: true,
       titleBarStyle: 'customButtonsOnHover',

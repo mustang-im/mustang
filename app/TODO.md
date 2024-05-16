@@ -5,6 +5,7 @@
     * FastList doesn't update some rows
     * Person Popup opening automatically and focussing the name field
       * Close popup on enter or tab
+    * Save window size
   * Threads
     * Find thread
     * Hide quotes
@@ -22,7 +23,6 @@
 # Polish
 ## Elena
 * Dark mode pref is null
-* Make default window bigger
 * @yahoo.com.au fails in setup
 * Calendar
   * Open event on click
