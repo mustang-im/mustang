@@ -16,13 +16,14 @@
     * in-app
     * register with providers
   * Settings
+  * inline images display
+  * inline images send
   * All accounts - fix
   * Setup mail
     * after account delete: remove general panel
 
 # Polish
 ## Elena
-* @yahoo.com.au fails in setup
 * Calendar
   * Open event on click
   * Tuesday first day
