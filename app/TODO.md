@@ -3,7 +3,6 @@
   * Bugs
     * Delete button disabled too long
     * FastList doesn't update some rows
-    * attachments duplicated after first fetch
     * Person Popup opening automatically and focussing the name field
       * Close popup on enter or tab
   * Threads
@@ -25,7 +24,6 @@
 * Dark mode pref is null
 * Make default window bigger
 * @yahoo.com.au fails in setup
-* Attachments repeated, on first download only
 * Calendar
   * Open event on click
   * Tuesday first day

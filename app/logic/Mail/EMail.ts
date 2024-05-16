@@ -132,11 +132,9 @@ export class EMail extends Message {
         this.from = findOrCreatePersonUID("unknown@invalid", "Unknown");
       }
     }
-    if (this.to.isEmpty) {
-      setPersons(this.to, mail.to);
-      setPersons(this.cc, mail.cc);
-      setPersons(this.bcc, mail.bcc);
-    }
+    setPersons(this.to, mail.to);
+    setPersons(this.cc, mail.cc);
+    setPersons(this.bcc, mail.bcc);
     this.outgoing = appGlobal.me.emailAddresses.some(e => e.value == this.from.emailAddress);
     this.contact = this.outgoing ? this.to.first : this.from;
     if (!this.replyTo && mail.replyTo?.length) {
@@ -158,6 +156,7 @@ export class EMail extends Message {
 
     // Attachments
     let fallbackID = 0;
+    this.attachments.clear();
     this.attachments.addAll(mail.attachments.map(a => {
       try {
         let attachment = new Attachment();
