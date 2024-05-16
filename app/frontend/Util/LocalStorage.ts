@@ -9,7 +9,7 @@ class ObservableLocalStorageSetting<T> extends Observable {
     this.defaultValue = defaultValue;
   }
   get value(): T {
-    return JSON.parse(localStorage.getItem(this.key));
+    return JSON.parse(localStorage.getItem(this.key)) ?? this.defaultValue;
   }
   set value(val: T) {
     localStorage.setItem(this.key, JSON.stringify(val));

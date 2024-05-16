@@ -22,7 +22,6 @@
 
 # Polish
 ## Elena
-* Dark mode pref is null
 * @yahoo.com.au fails in setup
 * Calendar
   * Open event on click
