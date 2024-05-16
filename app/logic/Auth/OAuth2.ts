@@ -72,8 +72,12 @@ export class OAuth2 {
     if (this.accessToken) {
       return this.accessToken;
     }
-    if (this.accessToken) {
-      return this.accessToken;
+    let refreshToken = this.refreshToken ?? await this.getRefreshTokenFromStorage();
+    if (refreshToken) {
+      await this.getAccessTokenFromRefreshToken(refreshToken);
+      if (this.accessToken) {
+        return this.accessToken;
+      }
     }
     if (this.password) {
       await this.loginWithPassword(this.username, this.password);
@@ -182,6 +186,7 @@ export class OAuth2 {
     this.accessToken = data.access_token;
     if (data.refresh_token) {
       this.refreshToken = data.refresh_token;
+      await this.storeRefreshToken(this.refreshToken);
     }
     if (data.id_token) {
       this.idToken = data.id_token;
