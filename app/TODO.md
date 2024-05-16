@@ -25,7 +25,6 @@
 * Dark mode pref is null
 * Make default window bigger
 * @yahoo.com.au fails in setup
-* Open attachment file opens Documents folder
 * Attachments repeated, on first download only
 * Calendar
   * Open event on click

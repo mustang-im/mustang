@@ -1,4 +1,7 @@
+import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
+import { saveURLAsFile } from "../../frontend/Util/util";
+import { NotImplemented } from "../util/util";
 
 export class Attachment extends Observable {
   /** filename with extension, as given by the sender of the email */
@@ -32,6 +35,25 @@ export class Attachment extends Observable {
     attachment.size = file.size;
     attachment.disposition = ContentDisposition.attachment;
     return attachment;
+  }
+
+  /** Open the native desktop app with this file */
+  async openOSApp() {
+    await appGlobal.remoteApp.shell.openPath(this.filepathLocal);
+  }
+  /** Open the native file manager with the folder
+   * where this file is, and select this file. */
+  async openOSFolder() {
+    await appGlobal.remoteApp.shell.showItemInFolder(this.filepathLocal);
+  }
+  async saveFile() {
+    throw new NotImplemented();
+    let url = "file://" + this.filepathLocal;
+    console.log("url " + url);
+    saveURLAsFile(url, this.filename);
+  }
+  async deleteFile() {
+    throw new NotImplemented();
   }
 }
 

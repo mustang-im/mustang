@@ -25,7 +25,6 @@
 <script lang="ts">
   import type { Attachment } from "../../../logic/Mail/Attachment";
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { appGlobal } from "../../../logic/app";
   import { assert } from "../../../logic/util/util";
   import AttachmentMenu from "./AttachmentMenu.svelte";
   import FileIcon from "../../Files/FileIcon.svelte";
@@ -38,7 +37,7 @@
   $: ext = attachment.filename.split(".").pop();
 
   async function onOpen() {
-    await appGlobal.remoteApp.openFileInExternalApp(attachment.filepathLocal);
+    await attachment.openOSApp();
   }
 
   let iconEl: HTMLDivElement;

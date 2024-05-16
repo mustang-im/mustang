@@ -32,7 +32,6 @@
 
 <script lang="ts">
   import type { Attachment } from "../../../logic/Mail/Attachment";
-  import { appGlobal } from "../../../logic/app";
   import { Menu } from "@svelteuidev/core";
   import DotsIcon from "lucide-svelte/icons/ellipsis";
   import OpenIcon from "lucide-svelte/icons/external-link";
@@ -40,25 +39,19 @@
   import SaveIcon from "lucide-svelte/icons/save";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { catchErrors } from "../../Util/error";
-  import { assert, NotImplemented } from "../../../logic/util/util";
-  import { saveBlobAsFile, saveURLAsFile } from "../../Util/util";
 
   export let attachment: Attachment;
 
   async function openExternal() {
-    await appGlobal.remoteApp.openFileInExternalApp(attachment.filepathLocal);
+    await attachment.openOSApp();
   }
   async function openFolder() {
-    let dir = await appGlobal.remoteApp.path.dirname(attachment.filepathLocal);
-    assert(dir, "Attachments were not downloaded and saved yet");
-    await appGlobal.remoteApp.openFileInExternalApp(dir);
+    await attachment.openOSFolder();
   }
   async function saveFile() {
-    let url = "file://" + attachment.filepathLocal;
-    alert("url " + url);
-    saveURLAsFile(url, attachment.filename);
+    await attachment.saveFile();
   }
   async function deleteIt() {
-    throw new NotImplemented();
+    await attachment.deleteFile();
   }
 </script>
