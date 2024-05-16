@@ -21,6 +21,7 @@ import { appGlobal } from "../app";
 export class OAuth2 {
   /** OAuth2 base URL */
   tokenURL: URLString;
+  tokenURLPasswordAuth?: URLString;
   authURL: URLString;
   authDoneURL: URLString = "http://localhost:5455/login-success";
   scope: string;
@@ -32,7 +33,7 @@ export class OAuth2 {
   uiMethod: OAuth2UIMethod = OAuth2UIMethod.Window;
 
   username: string;
-  protected password: string;
+  password: string;
 
   expiresAt: Date | null = null;
   protected expiryTimout: NodeJS.Timeout;
@@ -49,6 +50,11 @@ export class OAuth2 {
     this.scope = scope;
     this.clientID = clientID;
     this.clientSecret = clientSecret ?? null;
+  }
+
+  setTokenURLPasswordAuth(url: string) {
+    assert(url?.startsWith("https://") || url?.startsWith("http://"), "Malformed OAuth2 server token URL");
+    this.tokenURLPasswordAuth = url;
   }
 
   /**
@@ -74,18 +80,15 @@ export class OAuth2 {
     }
     let refreshToken = this.refreshToken ?? await this.getRefreshTokenFromStorage();
     if (refreshToken) {
-      await this.getAccessTokenFromRefreshToken(refreshToken);
-      if (this.accessToken) {
-        return this.accessToken;
-      }
+      return await this.getAccessTokenFromRefreshToken(refreshToken);
     }
     if (this.password) {
-      await this.loginWithPassword(this.username, this.password);
+      return await this.loginWithPassword(this.username, this.password);
     }
     if (!interactive) {
       throw new OAuth2LoginNeeded();
     }
-    await this.loginWithUI();
+    return await this.loginWithUI();
   }
 
   /**
@@ -111,7 +114,7 @@ export class OAuth2 {
       password: password,
     }, {
       Authentication: `Basic ${basicAuth}`,
-    });
+    }, this.tokenURLPasswordAuth);
     this.username = username;
     this.password = password;
     return accessToken;
@@ -163,11 +166,11 @@ export class OAuth2 {
    * @returns accessToken
    * @throws OAuth2Error
    */
-  protected async getAccessTokenFromParams(params: any, additionalHeaders?: any): Promise<string> {
+  protected async getAccessTokenFromParams(params: any, additionalHeaders?: any, tokenURL: string | void = this.tokenURL): Promise<string> {
     params.scope = this.scope;
     params.client_id = this.clientID;
 
-    let response = await appGlobal.remoteApp.postHTTP(this.tokenURL, params, "json", {
+    let response = await appGlobal.remoteApp.postHTTP(tokenURL, params, "json", {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': 'text/json',
