@@ -1,8 +1,8 @@
 # Next
 * Mail
   * Bugs
-    * Deleting wrong email
-    * dateSent is null
+    * Delete button disabled too long
+    * FastList doesn't update some rows
     * attachments duplicated after first fetch
     * Person Popup opening automatically and focussing the name field
       * Close popup on enter or tab

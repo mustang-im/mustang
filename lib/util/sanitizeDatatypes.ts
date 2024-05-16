@@ -140,7 +140,9 @@ class Sanitize {
    * @return {Date}
    */
   date(unchecked: Date | string | number | null, fallback: Date | null | Symbol = throwErrors): Date {
-    if (typeof (unchecked) == "string") {
+    if (!unchecked) {
+      return haveError("Date is empty", unchecked, fallback);
+    } else if (typeof (unchecked) == "string") {
       return new Date(unchecked); // ISO or RFC822 format
     } else if (typeof (unchecked) == "number") {
       return new Date(unchecked); // Unixtime in milliseconds

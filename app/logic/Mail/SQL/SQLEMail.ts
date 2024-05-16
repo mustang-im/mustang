@@ -38,7 +38,7 @@ export class SQLEMail {
           subject, plaintext, html
         ) VALUES (
           ${email.id}, ${email.folder.dbID}, ${email.pID}, ${email.inReplyTo},
-          ${email.size}, ${email.sent.getTime() / 1000}, ${email.received.getTime() / 1000},
+          ${email.size}, ${email.sent.getTime() / 1000 || Date.now() / 1000}, ${email.received.getTime() / 1000},
           ${email.outgoing ? 1 : 0},
           ${email.subject}, ${email.rawText}, ${email.rawHTMLDangerous}
         )`);
@@ -52,7 +52,7 @@ export class SQLEMail {
           pID = ${email.pID},
           parentMsgID = ${email.inReplyTo},
           size = ${email.size},
-          dateSent = ${email.sent.getTime() / 1000},
+          dateSent = ${email.sent.getTime() / 1000 || Date.now() / 1000},
           dateReceived = ${email.received.getTime() / 1000},
           outgoing = ${email.outgoing ? 1 : 0},
           subject = ${email.subject},
