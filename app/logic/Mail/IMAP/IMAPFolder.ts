@@ -3,6 +3,7 @@ import { IMAPEMail } from "./IMAPEMail";
 import type { IMAPAccount } from "./IMAPAccount";
 import { SQLFolder } from "../SQL/SQLFolder";
 import { SQLEMail } from "../SQL/SQLEMail";
+import type { EMail } from "../EMail";
 import { ArrayColl, Collection } from "svelte-collections";
 import { assert } from "../../util/util";
 
@@ -260,6 +261,14 @@ export class IMAPFolder extends Folder {
     console.log("Folder moved from", folder.path, "to", newFolder.path);
     */
     await (await this.account.connection()).mailboxRename(folder.path, [this.path, folder.getPathComponents().pop() ]);
+  }
+
+  async addMessage(email: EMail) {
+    assert(email.mime, "Need MIME to upload it to a folder"); // TODO download msg, or construct MIME
+    await this.runCommand(async (conn) => {
+      let flags = null; // TODO
+      await conn.append(this.path, email.mime, flags);
+    });
   }
 
   async createSubFolder(name: string): Promise<IMAPFolder> {
