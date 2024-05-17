@@ -70,9 +70,10 @@ export class ContactEntry extends Observable {
   @notifyChangedProperty
   preference = 0;
 
-  constructor(value: string, purpose: string | null = null) {
+  constructor(value: string, purpose: string | null = null, protocol: string | null = null) {
     super();
     this.value = value;
     this.purpose = purpose;
+    this.protocol = protocol;
   }
 }

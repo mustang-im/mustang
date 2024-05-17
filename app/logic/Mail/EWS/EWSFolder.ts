@@ -6,7 +6,7 @@ import { SQLEMail } from "../SQL/SQLEMail";
 import { assert } from "../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 
-const kMaxCount = 50;
+export const kMaxCount = 50;
 
 export class EWSFolder extends Folder {
   account: EWSAccount;

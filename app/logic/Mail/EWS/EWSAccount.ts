@@ -1,6 +1,7 @@
 import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { EWSFolder } from "./EWSFolder";
+import type { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
@@ -38,6 +39,11 @@ export class EWSAccount extends MailAccount {
       await this.oAuth2.login(interactive);
     }
     await this.listFolders();
+    let addressbook = appGlobal.addressbooks.find((addressbook: EWSAddressbook) => addressbook.protocol == "addressbook-ews" && addressbook.url == this.url && addressbook.username == this.emailAddress) as EWSAddressbook | void;
+    if (addressbook) {
+      addressbook.account = this;
+      await addressbook.listContacts();
+    }
   }
 
   async logout(): Promise<void> {
