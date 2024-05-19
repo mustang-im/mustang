@@ -1,20 +1,26 @@
 <vbox flex class="folder-pane">
-  <!--<ProjectList />-->
-  <AccountList accounts={$accounts} bind:selectedAccount>
-    <hbox class="buttons" slot="top-right">
-      <GetMailButton account={selectedAccount} />
-      <WriteButton {selectedAccount} />
-    </hbox>
-  </AccountList>
-  <FolderList {folders} bind:selectedFolder bind:selectedFolders />
-  <ViewSwitcher />
+  {#if isSearching}
+    <Search {selectedAccount} {selectedFolder} />
+  {:else}
+    <!--<ProjectList />-->
+    <AccountList accounts={$accounts} bind:selectedAccount>
+      <hbox class="buttons" slot="top-right">
+        <GetMailButton account={selectedAccount} />
+        <WriteButton {selectedAccount} />
+      </hbox>
+    </AccountList>
+    <FolderList {folders} bind:selectedFolder bind:selectedFolders />
+    <ViewSwitcher />
+  {/if}
 </vbox>
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import type { Folder } from "../../../logic/Mail/Folder";
+  import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import AccountList from "./AccountList.svelte";
   import FolderList from "./FolderList.svelte";
+  import Search from "./Search.svelte";
   import ProjectList from "./ProjectList.svelte";
   import GetMailButton from "./GetMailButton.svelte";
   import WriteButton from "./WriteButton.svelte";
@@ -26,6 +32,8 @@
   export let selectedAccount: MailAccount; /** in/out */
   export let selectedFolder: Folder; /** in/out */
   export let selectedFolders: ArrayColl<Folder>;
+
+  $: isSearching = !!$globalSearchTerm;
 </script>
 
 <style>

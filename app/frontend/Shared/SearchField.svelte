@@ -1,9 +1,9 @@
 <hbox class="search" class:has-search={searchInput}>
   <SearchIcon size="16px" />
-  <input type="search" bind:value={searchInput} {placeholder} />
+  <input type="search" bind:value={searchInput} {placeholder} on:input={onInput} />
   {#if searchInput}
     <RoundButton icon={XIcon} iconSize="16px" padding="2px" border={false}
-      on:click={() => searchInput = undefined} />
+      on:click={onClear} />
   {/if}
 </hbox>
 
@@ -17,19 +17,32 @@
   export let searchTerm: string;
 
   let searchInput: string;
-  $: searchTerm = searchInput?.toLowerCase();
+  $: searchInput = searchTerm;
+  function onInput() {
+    if (!searchInput) {
+      searchTerm = null;
+      return;
+    }
+    if (searchTerm == searchInput) {
+      return;
+    }
+    searchTerm = searchInput?.toLowerCase();
+  }
+  function onClear() {
+    searchInput = null;
+    searchTerm = null;
+  }
 </script>
 
 <style>
   .search {
-    margin: 0px 12px 8px 12px;
+    align-items: center;
     border: 1px solid #A1E4DA;
     padding-left: 8px;
     padding-right: 4px;
     border-radius: 100px;
     background-color: field;
     color: fieldtext;
-    align-items: center;
   }
   .search.has-search {
     background-color: var(--inverted-bg);

@@ -38,4 +38,7 @@
   .persons :global(.row > *) {
     padding: 0;
   }
+  .persons :global(.search) {
+    margin: 0px 12px 8px 12px;
+  }
 </style>
