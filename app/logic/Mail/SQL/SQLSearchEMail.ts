@@ -25,16 +25,16 @@ export class SQLSearchEMail extends SearchEMail {
     // Search matching emails directly in the SQL database
     let query = sql`
       SELECT
-        id, folderID
+        email.id as id, folderID
       FROM email
-      $${this.account?.dbID ? sql` LEFT JOIN folder ON (folderID = folder.id) ` : sql``}
+      $${this.account?.dbID ? sql` LEFT JOIN folder ON (email.folderID = folder.id) ` : sql``}
       WHERE 1=1
         $${this.account?.dbID ? sql` AND accountID = ${this.account.dbID} ` : sql``}
         $${this.folder?.dbID ? sql` AND folderID = ${this.folder.dbID} ` : sql``}
-        $${typeof (this.isOutgoing) == "boolean" ? sql` AND outgoing = ${this.isOutgoing} ` : sql``}
-        $${typeof (this.isRead) == "boolean" ? sql` AND isRead = ${this.isRead} ` : sql``}
-        $${typeof (this.isStarred) == "boolean" ? sql` AND isStarred = ${this.isStarred} ` : sql``}
-        $${typeof (this.isReplied) == "boolean" ? sql` AND isReplied = ${this.isReplied} ` : sql``}
+        $${typeof (this.isOutgoing) == "boolean" ? sql` AND outgoing = ${this.isOutgoing ? 1 : 0} ` : sql``}
+        $${typeof (this.isRead) == "boolean" ? sql` AND isRead = ${this.isRead ? 1 : 0} ` : sql``}
+        $${typeof (this.isStarred) == "boolean" ? sql` AND isStarred = ${this.isStarred ? 1 : 0} ` : sql``}
+        $${typeof (this.isReplied) == "boolean" ? sql` AND isReplied = ${this.isReplied ? 1 : 0} ` : sql``}
         $${typeof (this.threadID) == "string" ? sql` AND threadID = ${this.threadID} ` : sql``}
         $${typeof (this.messageID) == "string" ? sql` AND messageID = ${this.messageID} ` : sql``}
         $${this.sizeMin ? sql` AND size >= ${this.sizeMin} ` : sql``}

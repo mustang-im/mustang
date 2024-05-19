@@ -14,45 +14,47 @@
       on:clear={onClear} bind:this={searchFieldEl} />
   </hbox>
   <vbox class="boolean-criteria">
-    <Checkbox bind:checked={forSent}
+    <Checkbox bind:checked={isOutgoing}
       label="Sent by me">
       <OutgoingIcon size="16px" slot="icon" />
     </Checkbox>
-    <Checkbox bind:checked={forUnread}
+    <Checkbox bind:checked={isUnread}
       label="Unread"
-      classes="unread {forUnread ? "is-unread" : ""}">
+      classes="unread {isUnread ? "is-unread" : ""}">
       <CircleIcon size="16px" slot="icon" />
     </Checkbox>
-    <Checkbox bind:checked={forStar}
+    <Checkbox bind:checked={isStar}
       label="Starred"
-      classes="star {forStar ? "starred" : ""}">
+      classes="star {isStar ? "starred" : ""}">
       <StarIcon size="16px" slot="icon" />
     </Checkbox>
-    <Checkbox bind:checked={forAttachment}
+    <!--
+    <Checkbox bind:checked={isAttachment}
       label="Attachment">
       <AttachmentIcon size="16px" slot="icon" />
     </Checkbox>
-    {#if forAttachment}
-      <!--- TODO use Slider -->
+    {#if isAttachment}
+      <!-- TODO use Slider --
       <grid class="size">
-        <Checkbox bind:checked={minSizeEnabled}
+        <Checkbox bind:checked={isMinSize}
           label="At least " />
         <input type="number" bind:value={minSizeMB}
-          min={1} max={20} disabled={!minSizeEnabled} />
+          min={1} max={20} disabled={!isMinSize} />
         MB
-        <Checkbox bind:checked={maxSizeEnabled}
+        <Checkbox bind:checked={isMaxSize}
           label="Less than " />
         <input type="number" bind:value={maxSizeMB}
-          min={1} max={20} maxlength="2" disabled={!maxSizeEnabled} />
+          min={1} max={20} maxlength="2" disabled={!isMaxSize} />
         MB
       </grid>
     {/if}
+    -->
     {#if $selectedAccount}
-      <Checkbox bind:checked={forAccount}
+      <Checkbox bind:checked={isAccount}
         label="In account {$selectedAccount.name}" />
     {/if}
     {#if $selectedFolder}
-      <Checkbox bind:checked={forFolder}
+      <Checkbox bind:checked={isFolder}
         label="In folder {$selectedFolder.name}" />
     {/if}
   </vbox>
@@ -81,21 +83,23 @@
    * in/out */
   export let searchMessages: ArrayColl<EMail> | null = null;
 
-  let forAccount = false;
-  let forFolder = false;
-  let forSent = false;
-  let forUnread = false;
-  let forStar = false;
-  let forAttachment = false;
-  let minSizeEnabled = false;
-  let maxSizeEnabled = false;
+  let isAccount = false;
+  let isFolder = false;
+  let isOutgoing = false;
+  let isUnread = false;
+  let isStar = false;
+  let isAttachment = false;
+  let isMinSize = false;
+  let isMaxSize = false;
   let minSizeMB: number | null = null;
   let maxSizeMB: number | null = null;
 
-  $: if (!minSizeEnabled) minSizeMB = null;
-  $: if (!maxSizeEnabled) maxSizeMB = null;
+  $: if (!isMinSize) minSizeMB = null;
+  $: if (!isMaxSize) maxSizeMB = null;
 
-  $: $globalSearchTerm, startSearchDebounced();
+  $: $globalSearchTerm, isOutgoing, isUnread, isStar, isAttachment,
+    isMaxSize, isMinSize, maxSizeMB, minSizeMB, isAccount, isFolder,
+    startSearchDebounced();
   const startSearchDebounced = useDebounce(() => startSearch(), 300);
   async function startSearch() {
     try {
@@ -109,6 +113,14 @@
 
       let search = new SQLSearchEMail();
       search.bodyText = searchTerm;
+      search.isOutgoing = isOutgoing ? true : null;
+      search.isRead = isUnread ? false : null;
+      search.isStarred = isStar ? true : null;
+      search.hasAttachment = isAttachment ? true : null;
+      search.sizeMax = isMaxSize ? maxSizeMB : null;
+      search.sizeMin = isMinSize ? minSizeMB : null;
+      search.account = isAccount ? $selectedAccount : null;
+      search.folder = isFolder ? $selectedFolder : null;
       searchMessages = await search.startSearch();
       $selectedMessage = searchMessages.first;
     } catch (ex) {
