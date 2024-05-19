@@ -1,6 +1,6 @@
 <hbox class="search" class:has-search={searchInput}>
   <SearchIcon size="16px" />
-  <input type="search" bind:value={searchInput} {placeholder} on:input={onInput} />
+  <input type="search" bind:value={searchInput} {placeholder} on:input={onInput} bind:this={inputEl} />
   {#if searchInput}
     <RoundButton icon={XIcon} iconSize="16px" padding="2px" border={false}
       on:click={onClear} />
@@ -11,6 +11,8 @@
   import RoundButton from "./RoundButton.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
   import XIcon from "lucide-svelte/icons/x";
+  import { createEventDispatcher } from "svelte";
+  const dispatchEvent = createEventDispatcher();
 
   export let placeholder = "Search";
   /** out only */
@@ -29,8 +31,13 @@
     searchTerm = searchInput?.toLowerCase();
   }
   function onClear() {
-    searchInput = null;
     searchTerm = null;
+    dispatchEvent("clear");
+  }
+
+  let inputEl: HTMLInputElement;
+  export function focus() {
+    inputEl.focus();
   }
 </script>
 

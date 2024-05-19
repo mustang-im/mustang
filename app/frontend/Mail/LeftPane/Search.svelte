@@ -1,20 +1,19 @@
 <vbox flex class="search">
-  <hbox class="header">Search</hbox>
-  {#if $globalSearchTerm}
-    <hbox class="term">
-      for
-      <SearchField bind:searchTerm={$globalSearchTerm} placeholder="Search for email content or subject" />
+  <hbox class="header-bar">
+    <hbox class="header">Search</hbox>
+    <hbox flex />
+    <hbox class="buttons top-right">
+      <RoundButton icon={XIcon} iconSize="16px" padding="4px" border={true} classes="small"
+        on:click={onClear} />
     </hbox>
-  {/if}
+  </hbox>
+  <hbox class="term">
+    for
+    <SearchField bind:searchTerm={$globalSearchTerm}
+      placeholder="Mail content or subject"
+      on:clear={onClear} bind:this={searchFieldEl} />
+  </hbox>
   <vbox class="boolean-criteria">
-    {#if selectedAccount}
-      <Checkbox bind:checked={forAccount}
-        label="In account {selectedAccount.name}" />
-    {/if}
-    {#if selectedFolder}
-      <Checkbox bind:checked={forFolder}
-        label="In folder {selectedFolder.name}" />
-    {/if}
     <Checkbox bind:checked={forSent}
       label="Sent by me">
       <OutgoingIcon size="16px" slot="icon" />
@@ -48,22 +47,39 @@
         MB
       </grid>
     {/if}
+    {#if $selectedAccount}
+      <Checkbox bind:checked={forAccount}
+        label="In account {$selectedAccount.name}" />
+    {/if}
+    {#if $selectedFolder}
+      <Checkbox bind:checked={forFolder}
+        label="In folder {$selectedFolder.name}" />
+    {/if}
   </vbox>
 </vbox>
 
 <script lang="ts">
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import type { Folder } from "../../../logic/Mail/Folder";
+  import { SQLSearchEMail } from "../../../logic/Mail/SQL/SQLSearchEMail";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
+  import type { EMail } from "../../../logic/Mail/EMail";
+  import { selectedMessage, selectedAccount, selectedFolder } from "../Selected";
   import Checkbox from "../../Shared/Checkbox.svelte";
   import SearchField from "../../Shared/SearchField.svelte";
+  import RoundButton from "../../Shared/RoundButton.svelte";
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
+  import XIcon from "lucide-svelte/icons/x";
+  import { showError } from "../../Util/error";
+  import type { ArrayColl } from "svelte-collections";
+  import { useDebounce } from '@svelteuidev/composables';
+  import { createEventDispatcher, onMount } from 'svelte';
+  const dispatchEvent = createEventDispatcher();
 
-  export let selectedAccount: MailAccount; /** in/out */
-  export let selectedFolder: Folder; /** in/out */
+  /** The search result
+   * in/out */
+  export let searchMessages: ArrayColl<EMail> | null = null;
 
   let forAccount = false;
   let forFolder = false;
@@ -78,15 +94,53 @@
 
   $: if (!minSizeEnabled) minSizeMB = null;
   $: if (!maxSizeEnabled) maxSizeMB = null;
+
+  $: $globalSearchTerm, startSearchDebounced();
+  const startSearchDebounced = useDebounce(() => startSearch(), 300);
+  async function startSearch() {
+    try {
+      let searchTerm = $globalSearchTerm;
+      console.log("start search term", searchTerm);
+      if (!searchTerm) {
+        searchMessages = null;
+        return;
+      }
+      $selectedMessage = null;
+
+      let search = new SQLSearchEMail();
+      search.bodyText = searchTerm;
+      searchMessages = await search.startSearch();
+      $selectedMessage = searchMessages.first;
+    } catch (ex) {
+      showError(ex);
+    }
+  }
+
+  function onClear() {
+    $globalSearchTerm = null;
+    searchMessages = null;
+    dispatchEvent("clear");
+  }
+
+  let searchFieldEl: SearchField;
+  onMount(() => {
+    if (!$globalSearchTerm) {
+      searchFieldEl.focus();
+    }
+  });
 </script>
 
 <style>
   .search {
-    margin: 16px 24px;
+    margin: 8px 8px 16px 24px;
   }
   .header {
+    margin-top: 8px;
     font-size: 20px;
     font-weight: bold;
+  }
+  .buttons.top-right {
+    align-items: start;
   }
   .term {
     margin: 8px 0px;

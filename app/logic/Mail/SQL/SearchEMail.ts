@@ -4,7 +4,7 @@ import type { MailAccount } from "../MailAccount";
 import type { Folder } from "../Folder";
 import { AbstractFunction } from "../../util/util";
 import { Observable } from "../../util/Observable";
-import type { Collection } from "svelte-collections";
+import type { ArrayColl } from "svelte-collections";
 import type { PersonOrGroup } from "../../../frontend/Shared/Person/PersonOrGroup";
 
 /** Contains the search criteria for emails.
@@ -40,7 +40,7 @@ export class SearchEMail extends Observable {
    * Obviously, this is slow. */
   bodyText: string | null = null;
 
-  async startSearch(limit?: number): Promise<Collection<EMail>> {
+  async startSearch(limit?: number): Promise<ArrayColl<EMail>> {
     throw new AbstractFunction();
   }
 }

@@ -1,6 +1,6 @@
 <Splitter name="mail.3pane.folders" initialRightRatio={4}>
   <LeftPane accounts={$accounts} bind:selectedAccount
-    {folders} bind:selectedFolder bind:selectedFolders
+    {folders} bind:selectedFolder bind:selectedFolders bind:searchMessages
     slot="left" />
   <SplitterHorizontal slot="right" name="mail.3pane.msgs" initialBottomRatio={2}>
     <vbox flex class="message-list-pane" slot="top">
@@ -32,6 +32,7 @@
   export let accounts: Collection<MailAccount>; /** in */
   export let messages: ArrayColl<EMail>; /** in */
   export let folders: ArrayColl<Folder>; /** in */
+  export let searchMessages: ArrayColl<EMail> | null; /** out */
   export let selectedAccount: MailAccount; /** in/out */
   export let selectedFolder: Folder; /** in/out */
   export let selectedMessage: EMail; /** in/out */
