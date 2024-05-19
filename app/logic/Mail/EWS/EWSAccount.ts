@@ -152,7 +152,7 @@ export class EWSAccount extends MailAccount {
     return document.getElementsByTagName('parsererror').length ? null : document;
   }
 
-  async createRequestOptions(): Promise<any> {
+  createRequestOptions(): Promise<any> {
     let options: any = {
       throwHttpErrors: false,
       headers: {
@@ -160,7 +160,7 @@ export class EWSAccount extends MailAccount {
       },
     };
     if (this.oAuth2) {
-      options.headers.Authorization = await this.oAuth2.authorizationHeader;
+      options.headers.Authorization = this.oAuth2.authorizationHeader;
     } else {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username || this.emailAddress}:${this.password}`)))}`;
     }
@@ -168,7 +168,7 @@ export class EWSAccount extends MailAccount {
   }
 
   async callEWS(aRequest: Json): Promise<any> {
-    let response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", await this.createRequestOptions());
+    let response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions());
     response.responseXML = this.parseXML(response.data);
     if (response.status == 200) {
       return this.checkResponse(response, aRequest);
@@ -177,7 +177,7 @@ export class EWSAccount extends MailAccount {
       if (this.oAuth2) {
         this.oAuth2.reset();
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
-        await this.callEWS(aRequest); // repeat the call
+        return await this.callEWS(aRequest); // repeat the call
       } else {
         throw new Error("Password incorrect");
       }
