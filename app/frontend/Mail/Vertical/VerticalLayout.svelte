@@ -1,14 +1,7 @@
 <Splitter name="mail.vertical.folders" initialRightRatio={4}>
-  <vbox flex class="folder-pane" slot="left">
-    <AccountList accounts={$accounts} bind:selectedAccount>
-      <hbox class="buttons" slot="top-right">
-        <GetMailButton account={selectedAccount} />
-        <WriteButton {selectedAccount} />
-      </hbox>
-    </AccountList>
-    <FolderList {folders} bind:selectedFolder bind:selectedFolders />
-    <ViewSwitcher />
-  </vbox>
+  <LeftPane accounts={$accounts} bind:selectedAccount
+    {folders} bind:selectedFolder bind:selectedFolders
+    slot="left" />
   <Splitter slot="right" name="mail.vertical.msgs" initialRightRatio={2}>
     <vbox flex class="message-list-pane" slot="left">
       <VerticalMessageList {messages} bind:selectedMessage bind:selectedMessages />
@@ -28,14 +21,10 @@
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { EMail } from "../../../logic/Mail/EMail";
 
-  import AccountList from "../LeftPane/AccountList.svelte";
-  import FolderList from "../LeftPane/FolderList.svelte";
   import VerticalMessageList from "./VerticalMessageList.svelte";
+  import LeftPane from "../LeftPane/LeftPane.svelte";
   import MessageDisplay from "../Message/MessageDisplay.svelte";
   import StartPage from "../StartPage.svelte";
-  import GetMailButton from "../LeftPane/GetMailButton.svelte";
-  import WriteButton from "../LeftPane/WriteButton.svelte";
-  import ViewSwitcher from "../LeftPane/ViewSwitcher.svelte";
   import Splitter from "../../Shared/Splitter.svelte";
   import type { ArrayColl, Collection } from 'svelte-collections';
 
@@ -50,11 +39,6 @@
 </script>
 
 <style>
-  .folder-pane {
-    box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 8%); /* Also on MessageList */
-    background-color: var(--leftbar-bg);
-    color: var(--leftbar-fg);
-  }
   .message-list-pane,
   .message-display-pane {
     background-color: var(--main-bg);
@@ -63,16 +47,5 @@
   .message-list-pane {
     box-shadow: 1px 0px 6px 0px rgba(0, 0, 0, 8%); /* Also on MessageList */
     z-index: 2;
-  }
-
-  .buttons {
-    margin: 8px 8px 0 8px;
-    align-items: end;
-  }
-  .buttons :global(button) {
-    margin-left: 6px;
-  }
-  .buttons :global(svg) {
-    margin: 4px;
   }
 </style>

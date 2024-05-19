@@ -1,15 +1,7 @@
 <Splitter name="mail.3pane.folders" initialRightRatio={4}>
-  <vbox flex class="folder-pane" slot="left">
-    <!--<ProjectList />-->
-    <AccountList accounts={$accounts} bind:selectedAccount>
-      <hbox class="buttons" slot="top-right">
-        <GetMailButton account={selectedAccount} />
-        <WriteButton {selectedAccount} />
-      </hbox>
-    </AccountList>
-    <FolderList {folders} bind:selectedFolder bind:selectedFolders />
-    <ViewSwitcher />
-  </vbox>
+  <LeftPane accounts={$accounts} bind:selectedAccount
+    {folders} bind:selectedFolder bind:selectedFolders
+    slot="left" />
   <SplitterHorizontal slot="right" name="mail.3pane.msgs" initialBottomRatio={2}>
     <vbox flex class="message-list-pane" slot="top">
       <TableMessageList {messages} bind:selectedMessage bind:selectedMessages />
@@ -29,15 +21,10 @@
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { EMail } from "../../../logic/Mail/EMail";
 
-  import AccountList from "../LeftPane/AccountList.svelte";
-  import FolderList from "../LeftPane/FolderList.svelte";
-  import ProjectList from "../LeftPane/ProjectList.svelte";
   import TableMessageList from "./TableMessageList.svelte";
+  import LeftPane from "../LeftPane/LeftPane.svelte";
   import MessageDisplay from "../Message/MessageDisplay.svelte";
   import StartPage from "../StartPage.svelte";
-  import GetMailButton from "../LeftPane/GetMailButton.svelte";
-  import WriteButton from "../LeftPane/WriteButton.svelte";
-  import ViewSwitcher from "../LeftPane/ViewSwitcher.svelte";
   import Splitter from "../../Shared/Splitter.svelte";
   import SplitterHorizontal from "../../Shared/SplitterHorizontal.svelte";
   import type { ArrayColl, Collection } from 'svelte-collections';
@@ -53,12 +40,6 @@
 </script>
 
 <style>
-  .folder-pane {
-    box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on MessageList */
-    z-index: 2;
-    background-color: var(--leftbar-bg);
-    color: var(--leftbar-fg);
-  }
   .message-list-pane,
   .message-display-pane {
     background-color: var(--main-bg);
@@ -66,16 +47,5 @@
   }
   .message-display-pane {
     flex: 2 0 0;
-  }
-
-  .buttons {
-    margin: 8px 8px 0 8px;
-    align-items: end;
-  }
-  .buttons :global(button) {
-    margin-left: 6px;
-  }
-  .buttons :global(svg) {
-    margin: 4px;
   }
 </style>
