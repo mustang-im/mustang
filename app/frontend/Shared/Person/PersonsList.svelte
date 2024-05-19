@@ -1,9 +1,9 @@
-<vbox flex class="persons">
+<vbox flex class="persons" {size}>
   <SearchField bind:searchTerm placeholder="Search for a person or group" />
   <FastList items={personsFiltered} columns="auto">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <vbox class="person" slot="row" let:item={person} on:click={() => selected = person}>
-      <PersonLine {person} isSelected={person == selected} {pictureSize}>
+      <PersonLine {person} isSelected={person == selected} {pictureSize} {size}>
         <slot name="top-right" slot="top-right" {person} />
         <slot name="second-row" slot="second-row" {person} />
       </PersonLine>
@@ -22,7 +22,8 @@
 
   export let persons: Collection<PersonOrGroup>;
   export let selected: PersonOrGroup = $selectedPerson;
-  export let pictureSize = 56;
+  export let size: "large" | "small" = "large";
+  export let pictureSize = size == "large" ? 56 : 20;
 
   let searchTerm: string;
   $: personsFiltered = searchTerm

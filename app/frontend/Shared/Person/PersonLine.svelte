@@ -1,4 +1,4 @@
-<hbox flex class="person" class:selected={isSelected}>
+<hbox flex class="person" class:selected={isSelected} {size}>
   <PersonPicture {person} size={pictureSize} />
   <vbox flex class="main">
     <hbox class="first-row">
@@ -16,6 +16,7 @@
   export let person: PersonOrGroup;
   export let isSelected = false;
   export let pictureSize: number;
+  export let size: "large" | "small" = "large";
 </script>
 
 <style>
@@ -33,5 +34,11 @@
   }
   .name {
     font-size: 14px;
+  }
+  .person[size="small"] .main {
+    padding: 1px 20px 0px 0px;
+  }
+  .person[size="small"] :global(.avatar) {
+    margin: 2px 14px;
   }
 </style>

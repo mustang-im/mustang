@@ -1,7 +1,7 @@
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox flex class="left-pane" slot="left">
     <PersonsToolbar {persons} bind:selectedAddressbook />
-    <PersonsList persons={filteredPersons} bind:selected={$selectedPerson} pictureSize={20} />
+    <PersonsList persons={filteredPersons} bind:selected={$selectedPerson} size="small" />
   </vbox>
   <vbox flex class="right-pane" slot="right">
     {#if $selectedPerson && $selectedPerson instanceof Person}
@@ -57,11 +57,5 @@
     background-color: var(--main-pattern-bg);
     background-blend-mode: soft-light;
     color: var(--main-pattern-fg);
-  }
-  .left-pane :global(.person .main) {
-    padding: 1px 20px 0px 0px;
-  }
-  .left-pane :global(.person .avatar) {
-    margin: 2px 14px;
   }
 </style>
