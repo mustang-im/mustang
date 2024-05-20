@@ -6,7 +6,7 @@ import type { Person } from "../Abstract/Person";
 import { appGlobal } from "../app";
 import { AbstractFunction } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
-import { ArrayColl, MapColl } from 'svelte-collections';
+import { Collection, ArrayColl, MapColl } from 'svelte-collections';
 
 export class MailAccount extends Account {
   readonly protocol: string = "mail";
@@ -31,7 +31,7 @@ export class MailAccount extends Account {
   @notifyChangedProperty
   readonly identities = new ArrayColl<MailIdentity>();
 
-  readonly rootFolders = new ArrayColl<Folder>();
+  readonly rootFolders: Collection<Folder> = new ArrayColl<Folder>();
   /** List of all messages in all folders,
    * filtered based on the person.
    * TODO move up, across all accounts? */
@@ -43,7 +43,7 @@ export class MailAccount extends Account {
 
   getAllFolders() {
     let allFolders = new ArrayColl<Folder>();
-    function iterateFolders(folders: ArrayColl<Folder>) {
+    function iterateFolders(folders: Collection<Folder>) {
       allFolders.addAll(folders);
       for (let folder of folders) {
         iterateFolders(folder.subFolders);
@@ -103,7 +103,7 @@ export class MailAccount extends Account {
   }
 }
 
-function findSubFolderFromList(folders: ArrayColl<Folder>, findFunc: (folder: Folder) => boolean): Folder | null {
+function findSubFolderFromList(folders: Collection<Folder>, findFunc: (folder: Folder) => boolean): Folder | null {
   for (let folder of folders) {
     if (findFunc(folder)) {
       return folder;

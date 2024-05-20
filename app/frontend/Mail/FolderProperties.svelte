@@ -3,7 +3,7 @@
     <AccountList accounts={$accounts} bind:selectedAccount>
       <hbox class="above-accounts" slot="top-right" />
     </AccountList>
-    <FolderList bind:selectedFolder={folder}  folders={selectedAccount ? selectedAccount.rootFolders : new ArrayColl()} />
+    <FolderList bind:selectedFolder={folder}  folders={selectedAccount ? selectedAccount.rootFolders : new ArrayColl()} bind:selectedFolders />
   </vbox>
   <vbox class="main" slot="right" flex>
     <hbox class="top">
@@ -53,6 +53,8 @@
 
   export let accounts: Collection<MailAccount>; /** in */
   export let selectedAccount: MailAccount; /** in/out */
+
+  let selectedFolders: ArrayColl<Folder>;
 
   function onClose() {
     $openFolderProperties = false;

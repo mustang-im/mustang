@@ -19,7 +19,7 @@
   import VerticalLayout from "./Vertical/VerticalLayout.svelte";
   import MailChat from "./MailChat/MailChat.svelte";
   import FolderProperties, { openFolderProperties } from "./FolderProperties.svelte";
-  import { ArrayColl, Collection } from "svelte-collections";
+  import { ArrayColl } from "svelte-collections";
 
   $: accounts = showAccounts;
   $: folders = $selectedAccount?.rootFolders ?? new ArrayColl<Folder>();

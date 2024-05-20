@@ -4,7 +4,7 @@
 
   {#if $mailAccount?.isLoggedIn && $mailAccount.rootFolders.hasItems}
     <Splitter name="settings-mail-folders" initialRightRatio={4}>
-      <FolderList folders={mailAccount.rootFolders} bind:selectedFolder={folder} slot="left" />
+      <FolderList folders={mailAccount.rootFolders} bind:selectedFolder={folder} bind:selectedFolders slot="left" />
       <vbox class="right" slot="right">
         {#if folder}
           <FolderGeneral {folder} />
@@ -30,11 +30,13 @@
   import FolderActions from "./FolderActions.svelte";
   import FolderList from "../../../Mail/LeftPane/FolderList.svelte";
   import Splitter from "../../../Shared/Splitter.svelte";
+  import type { ArrayColl } from "svelte-collections";
 
   export let folder: Folder = null;
   export let account: Account = folder?.account;
 
   $: mailAccount = account as MailAccount;
+  let selectedFolders: ArrayColl<Folder>;
 </script>
 
 <style>

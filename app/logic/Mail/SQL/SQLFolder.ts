@@ -3,7 +3,7 @@ import type { IMAPFolder } from "../IMAP/IMAPFolder";
 import type { MailAccount } from "../MailAccount";
 import { getDatabase } from "./SQLDatabase";
 import { appGlobal } from "../../app";
-import type { ArrayColl } from "svelte-collections";
+import type { Collection } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import sql from "../../../../lib/rs-sqlite";
@@ -105,7 +105,7 @@ export class SQLFolder extends Folder {
       FROM folder
       WHERE accountID = ${account.dbID}
       `) as any;
-    async function readSubFolders(parentFolderID: number | null, resultFolders: ArrayColl<Folder>) {
+    async function readSubFolders(parentFolderID: number | null, resultFolders: Collection<Folder>) {
       for (let row of rows.filter(r => r.parent == parentFolderID)) {
         if (account.findFolder(folder => folder.dbID == row.id)) {
           continue;

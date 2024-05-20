@@ -30,7 +30,7 @@
 
   export let accounts: Collection<MailAccount>; /** in */
   export let messages: ArrayColl<EMail>; /** in */
-  export let folders: ArrayColl<Folder>; /** in */
+  export let folders: Collection<Folder>; /** in */
   export let searchMessages: ArrayColl<EMail> | null; /** out */
   export let selectedAccount: MailAccount; /** in/out */
   export let selectedFolder: Folder; /** in/out */
