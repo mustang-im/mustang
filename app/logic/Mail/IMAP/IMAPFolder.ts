@@ -210,7 +210,7 @@ export class IMAPFolder extends Folder {
     }
 
     message.setFlagsLocal(flags);
-    SQLEMail.save(message);
+    await SQLEMail.save(message);
 
     if (newModSeq) {
       // TODO What if we missed other notifications? Is modseq always increased by exactly 1, so that we can check that?
