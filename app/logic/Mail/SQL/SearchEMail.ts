@@ -45,25 +45,30 @@ export class SearchEMail extends Observable {
   }
 
   fromJSON(json: any) {
-    this.bodyText = sanitize.string(json.bodyText, null);
-    this.isOutgoing = sanitize.boolean(json.isOutgoing, null);
-    this.isRead = sanitize.boolean(json.isRead, null);
-    this.isReplied = sanitize.boolean(json.isReplied, null);
-    this.isStarred = sanitize.boolean(json.isStarred, null);
-    this.hasAttachment = sanitize.boolean(json.hasAttachment, null);
-    if (Array.isArray(json.hasAttachmentMIMETypes)) {
-      this.hasAttachmentMIMETypes = json.hasAttachmentMIMETypes.map(mimetype => sanitize.string(mimetype));
+    function boolean(value: boolean | undefined): boolean | undefined {
+      return value != null ? sanitize.boolean(value, null) ?? undefined : undefined
     }
-    this.sizeMin = sanitize.integer(json.sizeMin, null);
-    this.sizeMax = sanitize.integer(json.sizeMax, null);
-    this.messageID = sanitize.string(json.messageID, null);
-    this.threadID = sanitize.string(json.threadID, null);
-    this.dateSentFrom = sanitize.date(json.dateSentFrom, null);
-    this.dateSentTo = sanitize.date(json.dateSentTo, null);
+    this.bodyText = sanitize.string(json.bodyText, null) ?? undefined;
+    this.isOutgoing = boolean(json.isOutgoing);
+    this.isRead = boolean(json.isRead);
+    this.isReplied = boolean(json.isReplied);
+    this.isStarred = boolean(json.isStarred);
+    this.hasAttachment = boolean(json.hasAttachment);
+    this.hasAttachmentMIMETypes = Array.isArray(json.hasAttachmentMIMETypes)
+      ? json.hasAttachmentMIMETypes.map(mimetype => sanitize.string(mimetype))
+      : undefined;
+    this.sizeMin = sanitize.integer(json.sizeMin, null) ?? undefined;
+    this.sizeMax = sanitize.integer(json.sizeMax, null) ?? undefined;
+    this.messageID = sanitize.string(json.messageID, null) ?? undefined;
+    this.threadID = sanitize.string(json.threadID, null) ?? undefined;
+    this.dateSentFrom = sanitize.date(json.dateSentFrom, null) ?? undefined;
+    this.dateSentTo = sanitize.date(json.dateSentTo, null) ?? undefined;
 
     this.includesPerson = findPerson(json.includesPersonEMail, "");
     this.account = appGlobal.emailAccounts.find(acc => acc.id == json.accountID);
-    this.folder = this.account ? this.account.findFolder(folder => folder.path == json.folderPath) : null;
+    this.folder = this.account
+      ? this.account.findFolder(folder => folder.path == json.folderPath) ?? undefined
+      : undefined;
   }
 
   toJSON() {

@@ -28,7 +28,7 @@ export class SQLSearchEMail extends SearchEMail {
       FROM email
       $${this.account?.dbID ? sql` LEFT JOIN folder ON (email.folderID = folder.id) ` : sql``}
       $${this.includesPerson ? sql` LEFT JOIN emailPersonRel ON (email.id = emailPersonRel.emailID) LEFT JOIN emailPerson ON (emailPersonRel.emailPersonID = emailPerson.id) ` : sql``}
-      $${this.hasAttachment ? sql` LEFT JOIN emailAttachment ON (email.id = emailAttachment.emailID) ` : sql``}
+      $${this.hasAttachment === true || this.hasAttachment === false ? sql` LEFT JOIN emailAttachment ON (email.id = emailAttachment.emailID) ` : sql``}
       WHERE 1=1
         $${this.account?.dbID ? sql` AND accountID = ${this.account.dbID} ` : sql``}
         $${this.folder?.dbID ? sql` AND folderID = ${this.folder.dbID} ` : sql``}
@@ -41,9 +41,11 @@ export class SQLSearchEMail extends SearchEMail {
         $${this.sizeMin ? sql` AND size >= ${this.sizeMin} ` : sql``}
         $${this.sizeMax ? sql` AND size <= ${this.sizeMax} ` : sql``}
         $${this.includesPerson?.emailAddresses.hasItems ? sql` AND emailPerson.emailAddress IN ${this.includesPerson.emailAddresses.contents.map(c => c.value)} ` : sql``}
-        $${this.hasAttachment ? sql` AND emailAttachment.disposition = 'attachment' ` : sql``}
+        $${this.hasAttachment === true ? sql` AND emailAttachment.disposition = 'attachment' ` : sql``}
+        $${this.hasAttachment === false ? sql` AND emailAttachment.id IS NULL ` : sql``}
         $${this.hasAttachmentMIMETypes ? sql` AND emailAttachment.mimeType IN ${this.hasAttachmentMIMETypes} ` : sql``}
         $${this.bodyText ? sql` AND (LOWER(subject) LIKE ${'%' + this.bodyText.toLowerCase() + '%'} OR LOWER(plaintext) LIKE ${'%' + this.bodyText.toLowerCase() + '%'}) ` : sql``}
+      ORDER BY dateSent DESC
       $${limit ? sql` LIMIT ${limit} ` : sql``}
       `;
     //console.log("query string", queryString(query));

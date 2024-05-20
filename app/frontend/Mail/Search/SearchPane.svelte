@@ -83,6 +83,13 @@
       {/if}
     {/if}
   </vbox>
+  <hbox class="results-count">
+    {#if searchMessages?.length > kLimit}
+      More than {kLimit} mails
+    {:else if searchMessages}
+      {searchMessages?.length} mails
+    {/if}
+  </hbox>
   <ExpandSection headerBox={true}>
     <hbox class="header" slot="header">
       Save search as folder
@@ -128,27 +135,28 @@
    * in/out */
   export let searchMessages: ArrayColl<EMail> | null = null;
 
-  let isAccount = false;
-  let isFolder = false;
-  let isOutgoing = false;
-  let isUnread = false;
-  let isStar = false;
-  let isAttachment = false;
-  let isAttachmentTypes: Collection<FileType>;
-  let isMinSize = false;
-  let isMaxSize = false;
-  let minSizeMB: number | null = null;
-  let maxSizeMB: number | null = null;
-  let isPerson = false;
-  let includesPerson: Person | null = null;
+  let isAccount: boolean | undefined = undefined;
+  let isFolder: boolean | undefined = undefined;
+  let isOutgoing: boolean | undefined = undefined;
+  let isUnread: boolean | undefined = undefined;
+  let isStar: boolean | undefined = undefined;
+  let isAttachment: boolean | undefined = undefined;
+  let isAttachmentTypes: Collection<FileType> | undefined = undefined;
+  let isMinSize: boolean | undefined = undefined;
+  let isMaxSize: boolean | undefined = undefined;
+  let minSizeMB: number | undefined = undefined;
+  let maxSizeMB: number | undefined = undefined;
+  let isPerson: boolean | undefined = undefined;
+  let includesPerson: Person | undefined = undefined;
 
-  $: if (!isMinSize) minSizeMB = null;
-  $: if (!isMaxSize) maxSizeMB = null;
+  $: if (!isMinSize) minSizeMB = undefined;
+  $: if (!isMaxSize) maxSizeMB = undefined;
 
   let selectedFolders: ArrayColl<Folder>;
   $: persons = searchMessages ? personsInEMails(searchMessages) : appGlobal.collectedAddressbook.persons;
   $: if (!isPerson) includesPerson = null;
 
+  const kLimit = 200;
   let search = new SQLSearchEMail();
   $: $globalSearchTerm, isOutgoing, isUnread, isStar, isAttachment, $isAttachmentTypes,
     isMaxSize, isMinSize, maxSizeMB, minSizeMB,
@@ -161,17 +169,17 @@
       $selectedMessage = null;
 
       search.bodyText = searchTerm;
-      search.isOutgoing = isOutgoing ? true : null;
-      search.isRead = isUnread ? false : null;
-      search.isStarred = isStar ? true : null;
-      search.hasAttachment = isAttachment ? true : null;
-      search.hasAttachmentMIMETypes = isAttachment && isAttachmentTypes?.hasItems ? isAttachmentTypes.contents.flatMap(type => type.mimeTypes) : null;
-      search.sizeMax = isMaxSize ? maxSizeMB : null;
-      search.sizeMin = isMinSize ? minSizeMB : null;
-      search.account = isAccount ? $selectedAccount : null;
-      search.folder = isFolder ? $selectedFolder : null;
-      search.includesPerson = isPerson ? includesPerson : null;
-      searchMessages = await search.startSearch();
+      search.isOutgoing = isOutgoing;
+      search.isRead = isUnread !== undefined ? !isUnread : undefined;
+      search.isStarred = isStar;
+      search.hasAttachment = isAttachment;
+      search.hasAttachmentMIMETypes = isAttachment && isAttachmentTypes?.hasItems ? isAttachmentTypes.contents.flatMap(type => type.mimeTypes) : undefined;
+      search.sizeMax = maxSizeMB;
+      search.sizeMin = minSizeMB;
+      search.account = isAccount ? $selectedAccount : undefined;
+      search.folder = isFolder ? $selectedFolder : undefined;
+      search.includesPerson = isPerson ? includesPerson : undefined;
+      searchMessages = await search.startSearch(kLimit + 1);
       $selectedMessage = searchMessages.first;
     } catch (ex) {
       showError(ex);
@@ -247,4 +255,8 @@
     border-bottom: unset;
   }
   */
+  .results-count {
+    margin: 12px 24px;
+    justify-content: end;
+  }
 </style>
