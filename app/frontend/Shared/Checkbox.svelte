@@ -6,12 +6,12 @@
       bind:id
       color="var(--selected-bg)"
       size="sm" radius="sm" />
-  {:else if checked == false}
+  {:else if checked == false && allowIndetermined}
     <Checkbox
       indeterminate
       on:click={onToggle}
       bind:id
-      color="var(--selected-bg)"
+      color="red"
       size="sm" radius="sm" />
   {:else}
     <Checkbox
@@ -32,14 +32,17 @@
   export let checked;
   export let label = "";
   export let classes = "";
+  export let allowIndetermined = checked === undefined || checked === null;
+  export let allowFalse = true;
 
   let id: string;
 
-  let haveIndetermined = checked === undefined || checked === null;
   function onToggle() {
-    if (checked === true) {
+    if (checked === true && allowFalse) {
       checked = false;
-    } else if (checked === false && haveIndetermined) {
+    } else if (checked === true) {
+      checked = undefined;
+    } else if (checked === false && allowIndetermined) {
       checked = undefined;
     } else if (checked === false) {
       checked = true;

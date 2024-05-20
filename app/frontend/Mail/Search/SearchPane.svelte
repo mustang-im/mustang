@@ -51,7 +51,7 @@
       </grid>
       -->
     {/if}
-    <Checkbox bind:checked={isPerson}
+    <Checkbox bind:checked={isPerson} allowFalse={false}
       label="{isPerson ? includesPerson?.name ?? "Person" : "Person"}">
       <PersonIcon size="16px" slot="icon" />
     </Checkbox>
@@ -60,7 +60,7 @@
         <PersonsList {persons} bind:selected={includesPerson} size="small" />
       </vbox>
     {/if}
-    <Checkbox bind:checked={isAccount}
+    <Checkbox bind:checked={isAccount} allowFalse={false}
       label="{account?.name} account only">
       <AccountIcon size="16px" slot="icon" />
     </Checkbox>
@@ -70,7 +70,7 @@
       </vbox>
     {/if}
     {#if account}
-      <Checkbox bind:checked={isFolder}
+      <Checkbox bind:checked={isFolder} allowFalse={false}
         label="{folder?.name} folder only">
         <FolderIcon size="16px" slot="icon" />
       </Checkbox>
