@@ -46,7 +46,7 @@ export class Folder extends Observable implements TreeItem {
     return this.specialFolder ? "   " + specialFolderOrder.indexOf(this.specialFolder) : this.name;
   }
 
-  async listMessages() {
+  async listMessages(): Promise<void> {
     throw new AbstractFunction();
   }
 

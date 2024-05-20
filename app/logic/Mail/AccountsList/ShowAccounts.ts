@@ -1,8 +1,9 @@
-import { MailAccount } from "../MailAccount";
+import type { MailAccount } from "../MailAccount";
+import { AllAccounts } from "../Virtual/AllAccounts";
 import { appGlobal } from "../../app";
 import { mergeColl, Collection, ArrayColl } from "svelte-collections";
-import { AllAccounts } from "./AllAccounts";
 
-const allAccountsAsCollection = new ArrayColl([new AllAccounts(appGlobal.emailAccounts)]) as any as Collection<MailAccount>;
+export let allAccountsAccount = new AllAccounts(appGlobal.emailAccounts);
+const allAccountsAsCollection = new ArrayColl([allAccountsAccount]) as any as Collection<MailAccount>;
 
 export const showAccounts: Collection<MailAccount> = mergeColl(allAccountsAsCollection, appGlobal.emailAccounts);
