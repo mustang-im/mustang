@@ -1,4 +1,4 @@
-<vbox class="search">
+<vbox flex class="search">
   <hbox class="header-bar">
     <hbox class="header">Search</hbox>
     <hbox flex />
@@ -13,7 +13,7 @@
       placeholder="Mail content or subject"
       on:clear={onClear} bind:this={searchFieldEl} />
   </hbox>
-  <vbox class="boolean-criteria">
+  <vbox flex class="boolean-criteria">
     <Checkbox bind:checked={isOutgoing}
       label="Sent by me">
       <OutgoingIcon size="16px" slot="icon" />
@@ -49,43 +49,64 @@
       </grid>
     {/if}
     -->
+    <Checkbox bind:checked={isPerson}
+      label="{isPerson ? includesPerson?.name ?? "Person" : "Person"}">
+      <PersonIcon size="16px" slot="icon" />
+    </Checkbox>
+    {#if isPerson}
+      <vbox flex class="listbox">
+        <PersonsList {persons} bind:selected={includesPerson} size="small" />
+      </vbox>
+    {/if}
     {#if $selectedAccount}
       <Checkbox bind:checked={isAccount}
-        label="In account {$selectedAccount.name}" />
+        label="{$selectedAccount.name} account only">
+        <AccountIcon size="16px" slot="icon" />
+      </Checkbox>
+      {#if isAccount}
+        <vbox class="listbox">
+          <AccountList accounts={appGlobal.emailAccounts} bind:selectedAccount={$selectedAccount} />
+        </vbox>
+      {/if}
     {/if}
     {#if $selectedFolder}
       <Checkbox bind:checked={isFolder}
-        label="In folder {$selectedFolder.name}" />
+        label="{$selectedFolder.name} folder only">
+        <FolderIcon size="16px" slot="icon" />
+      </Checkbox>
+      {#if isFolder && $selectedAccount}
+        <vbox flex class="listbox">
+          <FolderList folders={$selectedAccount?.rootFolders} bind:selectedFolder={$selectedFolder} bind:selectedFolders />
+        </vbox>
+      {/if}
     {/if}
-    <Checkbox bind:checked={isPerson}
-      label="Person">
-      <PersonIcon size="16px" slot="icon" />
-    </Checkbox>
   </vbox>
 </vbox>
-{#if isPerson}
-  <PersonsList {persons} bind:selected={includesPerson} size="small" />
-{/if}
 
 <script lang="ts">
   import { SQLSearchEMail } from "../../../logic/Mail/SQL/SQLSearchEMail";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { Person } from "../../../logic/Abstract/Person";
+  import type { Folder } from "../../../logic/Mail/Folder";
   import { selectedMessage, selectedAccount, selectedFolder } from "../Selected";
   import { appGlobal } from "../../../logic/app";
   import SearchField from "../../Shared/SearchField.svelte";
   import PersonsList from "../../Shared/Person/PersonsList.svelte";
+  import AccountList from "./AccountList.svelte";
+  import FolderList from "./FolderList.svelte";
   import Checkbox from "../../Shared/Checkbox.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
+  import AccountIcon from "lucide-svelte/icons/mail";
+  import FolderIcon from "lucide-svelte/icons/folder";
   import PersonIcon from "lucide-svelte/icons/user-round";
   import XIcon from "lucide-svelte/icons/x";
   import { showError } from "../../Util/error";
-  import type { ArrayColl } from "svelte-collections";
+  import type { ArrayColl, Collection } from "svelte-collections";
   import { useDebounce } from '@svelteuidev/composables';
   import { createEventDispatcher, onMount } from 'svelte';
   const dispatchEvent = createEventDispatcher();
@@ -111,9 +132,11 @@
   $: if (!isMaxSize) maxSizeMB = null;
 
   let persons = appGlobal.collectedAddressbook.persons;
+  let selectedFolders: Collection<Folder>;
 
   $: $globalSearchTerm, isOutgoing, isUnread, isStar, isAttachment,
-    isMaxSize, isMinSize, maxSizeMB, minSizeMB, isAccount, isFolder, isPerson, includesPerson,
+    isMaxSize, isMinSize, maxSizeMB, minSizeMB,
+    isAccount, $selectedAccount, isFolder, $selectedFolder, isPerson, includesPerson,
     startSearchDebounced();
   const startSearchDebounced = useDebounce(() => startSearch(), 300);
   async function startSearch() {
@@ -155,7 +178,10 @@
 
 <style>
   .search {
-    margin: 8px 8px 16px 24px;
+    margin: 8px 0px 12px 24px;
+  }
+  .header-bar {
+    margin-right: 8px;
   }
   .header {
     margin-top: 8px;
@@ -177,13 +203,16 @@
     font-size: 16px;
   }
   .boolean-criteria {
-    margin: 16px 0px 48px 0px;
+    margin-top: 16px;
   }
   .search :global(.star.starred svg) {
     fill: orange;
   }
   .search :global(.unread.is-unread svg) {
     fill: green;
+  }
+  .listbox {
+    margin: 4px 0px 24px 0px;
   }
   /*
   grid.size {
