@@ -32,8 +32,10 @@
       label="Attachment">
       <AttachmentIcon size="16px" slot="icon" />
     </Checkbox>
-    <!--
     {#if isAttachment}
+      <vbox flex class="listbox">
+        <GenericFileTypesList bind:selectedFileTypes={isAttachmentTypes} />
+      </vbox>
       <!-- TODO use Slider --
       <grid class="size">
         <Checkbox bind:checked={isMinSize}
@@ -47,8 +49,8 @@
           min={1} max={20} maxlength="2" disabled={!isMaxSize} />
         MB
       </grid>
+      -->
     {/if}
-    -->
     <Checkbox bind:checked={isPerson}
       label="{isPerson ? includesPerson?.name ?? "Person" : "Person"}">
       <PersonIcon size="16px" slot="icon" />
@@ -89,10 +91,12 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { Person } from "../../../logic/Abstract/Person";
   import type { Folder } from "../../../logic/Mail/Folder";
+  import type { FileType } from "../../../logic/Files/MIMETypes";
   import { personsInEMails } from "../../../logic/Mail/Person";
   import { selectedMessage, selectedAccount, selectedFolder } from "../Selected";
   import { appGlobal } from "../../../logic/app";
   import SearchField from "../../Shared/SearchField.svelte";
+  import GenericFileTypesList from "../../Files/GenericFileTypesList.svelte";
   import PersonsList from "../../Shared/Person/PersonsList.svelte";
   import AccountList from "./AccountList.svelte";
   import FolderList from "./FolderList.svelte";
@@ -122,6 +126,7 @@
   let isUnread = false;
   let isStar = false;
   let isAttachment = false;
+  let isAttachmentTypes: Collection<FileType>;
   let isMinSize = false;
   let isMaxSize = false;
   let minSizeMB: number | null = null;
@@ -136,7 +141,7 @@
   $: persons = searchMessages ? personsInEMails(searchMessages) : appGlobal.collectedAddressbook.persons;
   $: if (!isPerson) includesPerson = null;
 
-  $: $globalSearchTerm, isOutgoing, isUnread, isStar, isAttachment,
+  $: $globalSearchTerm, isOutgoing, isUnread, isStar, isAttachment, $isAttachmentTypes,
     isMaxSize, isMinSize, maxSizeMB, minSizeMB,
     isAccount, $selectedAccount, isFolder, $selectedFolder, isPerson, includesPerson,
     startSearchDebounced();
@@ -152,6 +157,7 @@
       search.isRead = isUnread ? false : null;
       search.isStarred = isStar ? true : null;
       search.hasAttachment = isAttachment ? true : null;
+      search.hasAttachmentMIMETypes = isAttachment && isAttachmentTypes?.hasItems ? isAttachmentTypes.contents.flatMap(type => type.mimeTypes) : null;
       search.sizeMax = isMaxSize ? maxSizeMB : null;
       search.sizeMin = isMinSize ? minSizeMB : null;
       search.account = isAccount ? $selectedAccount : null;

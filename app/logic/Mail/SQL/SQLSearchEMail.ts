@@ -42,6 +42,7 @@ export class SQLSearchEMail extends SearchEMail {
         $${this.sizeMax ? sql` AND size <= ${this.sizeMax} ` : sql``}
         $${this.includesPerson?.emailAddresses.hasItems ? sql` AND emailPerson.emailAddress IN ${this.includesPerson.emailAddresses.contents.map(c => c.value)} ` : sql``}
         $${this.hasAttachment ? sql` AND emailAttachment.disposition = 'attachment' ` : sql``}
+        $${this.hasAttachmentMIMETypes ? sql` AND emailAttachment.mimeType IN ${this.hasAttachmentMIMETypes} ` : sql``}
         $${this.bodyText ? sql` AND (LOWER(subject) LIKE ${'%' + this.bodyText.toLowerCase() + '%'} OR LOWER(plaintext) LIKE ${'%' + this.bodyText.toLowerCase() + '%'}) ` : sql``}
       $${limit ? sql` LIMIT ${limit} ` : sql``}
       `;
