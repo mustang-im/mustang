@@ -43,10 +43,15 @@
 
   function onClearSearch() {
     isSearching = false;
+    searchMessages = null;
   }
   function onOpenSearch() {
     isSearching = true;
   }
+
+  // Search.svelte is removed here above, and therefore cannot react anymore, so have to do it here.
+  // Reproduction: window title | search field | (x) button
+  $: if (!$globalSearchTerm) onClearSearch();
 </script>
 
 <style>
