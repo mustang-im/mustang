@@ -46,7 +46,7 @@ export class SearchEMail extends Observable {
 
   fromJSON(json: any) {
     function boolean(value: boolean | undefined): boolean | undefined {
-      return value != null ? sanitize.boolean(value, null) ?? undefined : undefined
+      return typeof (value) == "boolean" ? value : undefined;
     }
     this.bodyText = sanitize.string(json.bodyText, null) ?? undefined;
     this.isOutgoing = boolean(json.isOutgoing);
@@ -94,7 +94,7 @@ export class SearchEMail extends Observable {
 
   clone(): SearchEMail {
     let clone = new (this as any).constructor();
-    clone.fromJSON(this.toJSON);
+    clone.fromJSON(this.toJSON());
     return clone;
   }
 }

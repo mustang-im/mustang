@@ -60,25 +60,23 @@
         <PersonsList {persons} bind:selected={includesPerson} size="small" />
       </vbox>
     {/if}
-    {#if $selectedAccount}
-      <Checkbox bind:checked={isAccount}
-        label="{$selectedAccount.name} account only">
-        <AccountIcon size="16px" slot="icon" />
-      </Checkbox>
-      {#if isAccount}
-        <vbox class="listbox">
-          <AccountList accounts={appGlobal.emailAccounts} bind:selectedAccount={$selectedAccount} />
-        </vbox>
-      {/if}
+    <Checkbox bind:checked={isAccount}
+      label="{account?.name} account only">
+      <AccountIcon size="16px" slot="icon" />
+    </Checkbox>
+    {#if isAccount || isFolder}
+      <vbox class="listbox">
+        <AccountList accounts={appGlobal.emailAccounts} bind:selectedAccount={account} />
+      </vbox>
     {/if}
-    {#if $selectedFolder}
+    {#if account}
       <Checkbox bind:checked={isFolder}
-        label="{$selectedFolder.name} folder only">
+        label="{folder?.name} folder only">
         <FolderIcon size="16px" slot="icon" />
       </Checkbox>
-      {#if isFolder && $selectedAccount}
+      {#if isFolder}
         <vbox flex class="listbox">
-          <FolderList folders={$selectedAccount?.rootFolders} bind:selectedFolder={$selectedFolder} bind:selectedFolders />
+          <FolderList folders={account.rootFolders} bind:selectedFolder={folder} bind:selectedFolders />
         </vbox>
       {/if}
     {/if}
@@ -90,7 +88,7 @@
       {searchMessages?.length} mails
     {/if}
   </hbox>
-  <ExpandSection headerBox={true}>
+  <ExpandSection headerBox={false}>
     <hbox class="header" slot="header">
       Save search as folder
     </hbox>
@@ -152,15 +150,18 @@
   $: if (!isMinSize) minSizeMB = undefined;
   $: if (!isMaxSize) maxSizeMB = undefined;
 
+  let account = $selectedAccount;
+  let folder = $selectedFolder;
   let selectedFolders: ArrayColl<Folder>;
   $: persons = searchMessages ? personsInEMails(searchMessages) : appGlobal.collectedAddressbook.persons;
   $: if (!isPerson) includesPerson = null;
+  let isOpen = true;
 
   const kLimit = 200;
   let search = new SQLSearchEMail();
-  $: $globalSearchTerm, isOutgoing, isUnread, isStar, isAttachment, $isAttachmentTypes,
+  $: isOpen && $globalSearchTerm, isOutgoing, isUnread, isStar, isAttachment, $isAttachmentTypes,
     isMaxSize, isMinSize, maxSizeMB, minSizeMB,
-    isAccount, $selectedAccount, isFolder, $selectedFolder, isPerson, includesPerson,
+    isAccount, account, isFolder, folder, isPerson, includesPerson,
     startSearchDebounced();
   const startSearchDebounced = useDebounce(() => startSearch(), 300);
   async function startSearch() {
@@ -176,10 +177,14 @@
       search.hasAttachmentMIMETypes = isAttachment && isAttachmentTypes?.hasItems ? isAttachmentTypes.contents.flatMap(type => type.mimeTypes) : undefined;
       search.sizeMax = maxSizeMB;
       search.sizeMin = minSizeMB;
-      search.account = isAccount ? $selectedAccount : undefined;
-      search.folder = isFolder ? $selectedFolder : undefined;
+      search.account = isAccount ? account : undefined;
+      search.folder = isFolder ? folder : undefined;
       search.includesPerson = isPerson ? includesPerson : undefined;
-      searchMessages = await search.startSearch(kLimit + 1);
+      let result = await search.startSearch(kLimit + 1);
+      if (!isOpen) {
+        return;
+      }
+      searchMessages = result;
       $selectedMessage = searchMessages.first;
     } catch (ex) {
       showError(ex);
@@ -187,6 +192,7 @@
   }
 
   function onClear() {
+    isOpen = false;
     $globalSearchTerm = null;
     searchMessages = null;
     dispatchEvent("clear");
