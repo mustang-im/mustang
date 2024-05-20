@@ -71,7 +71,7 @@ export class SavedSearchFolder extends Folder {
     saveSavedSearches();
   }
 
-  async deleteThis() {
+  async deleteIt() {
     savedSearchFolders.remove(this);
     saveSavedSearches();
   }
@@ -95,15 +95,19 @@ export const savedSearchFolders = new ArrayColl<SavedSearchFolder>();
 /** Called on startup only.
  * Populates `savedSearchFolders` and saves to localStorage. */
 export function readSavedSearches() {
-  assert(savedSearchFolders.isEmpty, "Already read saved searches. Call this only once at startup");
-  let arrayJSON = JSON.parse(localStorage.getItem("savedSearches") ?? "[]");
-  assert(Array.isArray(arrayJSON), "Could not read saved searches");
-  for (let searchJSON of arrayJSON) {
-    try {
-      savedSearchFolders.add(SavedSearchFolder.readFromJSON(searchJSON));
-    } catch (ex) {
-      backgroundError(ex);
+  try {
+    assert(savedSearchFolders.isEmpty, "Already read saved searches. Call this only once at startup");
+    let arrayJSON = JSON.parse(localStorage.getItem("savedSearches") || "[]");
+    assert(Array.isArray(arrayJSON), "Could not read saved searches");
+    for (let searchJSON of arrayJSON) {
+      try {
+        savedSearchFolders.add(SavedSearchFolder.readFromJSON(searchJSON));
+      } catch (ex) {
+        backgroundError(ex);
+      }
     }
+  } catch (ex) {
+    backgroundError(ex);
   }
   allAccountsAccount.rootFolders.addColl(savedSearchFolders);
 }

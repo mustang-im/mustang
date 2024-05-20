@@ -1,7 +1,5 @@
 <vbox class="saved-search">
-  {#if search && folder}
-    <input type="text" bind:value={folder.name} placeholder="Name of the folder" />
-  {/if}
+  <input type="text" bind:value={name} placeholder="Name of the folder" />
   <hbox class="buttons">
     <Button
       icon={SaveIcon}
@@ -12,19 +10,28 @@
 </vbox>
 
 <script lang="ts">
-  import { onMount } from "svelte";
   import type { SearchEMail } from "../../../logic/Mail/SQL/SearchEMail";
   import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
+  import { selectedAccount, selectedFolder } from "../Selected";
+  import { allAccountsAccount } from "../../../logic/Mail/AccountsList/ShowAccounts";
   import Button from "../../Shared/Button.svelte";
   import SaveIcon from "lucide-svelte/icons/save";
+  import { createEventDispatcher } from 'svelte';
+  const dispatchEvent = createEventDispatcher();
 
   /** in */
   export let search: SearchEMail;
 
-  $: folder = new SavedSearchFolder(search);
+  let name: string;
 
   async function onSave() {
+    let folder = new SavedSearchFolder(search.clone());
+    folder.name = name;
     await folder.save();
+
+    $selectedAccount = allAccountsAccount;
+    $selectedFolder = folder;
+    dispatchEvent("close");
   }
 </script>
 

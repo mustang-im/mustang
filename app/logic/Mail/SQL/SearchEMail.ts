@@ -79,11 +79,17 @@ export class SearchEMail extends Observable {
       sizeMax: this.sizeMax,
       messageID: this.messageID,
       threadID: this.threadID,
-      dateSentFrom: this.dateSentFrom.toISOString(),
-      dateSentTo: this.dateSentTo.toISOString(),
-      includesPersonEMail: this.includesPerson.emailAddresses.first?.value ?? null,
+      dateSentFrom: this.dateSentFrom?.toISOString(),
+      dateSentTo: this.dateSentTo?.toISOString(),
+      includesPersonEMail: this.includesPerson?.emailAddresses.first?.value ?? null,
       accountID: this.account?.id ?? this.folder?.account?.id,
       folderPath: this.folder?.path,
     };
+  }
+
+  clone(): SearchEMail {
+    let clone = new (this as any).constructor();
+    clone.fromJSON(this.toJSON);
+    return clone;
   }
 }

@@ -87,7 +87,7 @@
     <hbox class="header" slot="header">
       Save search as folder
     </hbox>
-    <SavedSearchUI {search} />
+    <SavedSearchUI {search} on:close={onClear} />
   </ExpandSection>
 </vbox>
 
