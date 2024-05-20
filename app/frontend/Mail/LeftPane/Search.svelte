@@ -1,4 +1,4 @@
-<vbox flex class="search">
+<vbox class="search">
   <hbox class="header-bar">
     <hbox class="header">Search</hbox>
     <hbox flex />
@@ -57,21 +57,32 @@
       <Checkbox bind:checked={isFolder}
         label="In folder {$selectedFolder.name}" />
     {/if}
+    <Checkbox bind:checked={isPerson}
+      label="Person">
+      <PersonIcon size="16px" slot="icon" />
+    </Checkbox>
   </vbox>
 </vbox>
+{#if isPerson}
+  <PersonsList {persons} bind:selected={includesPerson} size="small" />
+{/if}
 
 <script lang="ts">
   import { SQLSearchEMail } from "../../../logic/Mail/SQL/SQLSearchEMail";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import type { EMail } from "../../../logic/Mail/EMail";
+  import type { Person } from "../../../logic/Abstract/Person";
   import { selectedMessage, selectedAccount, selectedFolder } from "../Selected";
-  import Checkbox from "../../Shared/Checkbox.svelte";
+  import { appGlobal } from "../../../logic/app";
   import SearchField from "../../Shared/SearchField.svelte";
+  import PersonsList from "../../Shared/Person/PersonsList.svelte";
+  import Checkbox from "../../Shared/Checkbox.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
+  import PersonIcon from "lucide-svelte/icons/user-round";
   import XIcon from "lucide-svelte/icons/x";
   import { showError } from "../../Util/error";
   import type { ArrayColl } from "svelte-collections";
@@ -93,22 +104,21 @@
   let isMaxSize = false;
   let minSizeMB: number | null = null;
   let maxSizeMB: number | null = null;
+  let isPerson = false;
+  let includesPerson: Person | null = null;
 
   $: if (!isMinSize) minSizeMB = null;
   $: if (!isMaxSize) maxSizeMB = null;
 
+  let persons = appGlobal.collectedAddressbook.persons;
+
   $: $globalSearchTerm, isOutgoing, isUnread, isStar, isAttachment,
-    isMaxSize, isMinSize, maxSizeMB, minSizeMB, isAccount, isFolder,
+    isMaxSize, isMinSize, maxSizeMB, minSizeMB, isAccount, isFolder, isPerson, includesPerson,
     startSearchDebounced();
   const startSearchDebounced = useDebounce(() => startSearch(), 300);
   async function startSearch() {
     try {
       let searchTerm = $globalSearchTerm;
-      console.log("start search term", searchTerm);
-      if (!searchTerm) {
-        searchMessages = null;
-        return;
-      }
       $selectedMessage = null;
 
       let search = new SQLSearchEMail();
@@ -121,6 +131,7 @@
       search.sizeMin = isMinSize ? minSizeMB : null;
       search.account = isAccount ? $selectedAccount : null;
       search.folder = isFolder ? $selectedFolder : null;
+      search.includesPerson = isPerson ? includesPerson : null;
       searchMessages = await search.startSearch();
       $selectedMessage = searchMessages.first;
     } catch (ex) {
@@ -166,7 +177,7 @@
     font-size: 16px;
   }
   .boolean-criteria {
-    margin: 16px 0px;
+    margin: 16px 0px 48px 0px;
   }
   .search :global(.star.starred svg) {
     fill: orange;
@@ -174,6 +185,7 @@
   .search :global(.unread.is-unread svg) {
     fill: green;
   }
+  /*
   grid.size {
     margin: 4px 0px 8px 32px;
     grid-template-columns: max-content max-content max-content;
@@ -187,4 +199,5 @@
     background-color: unset;
     border-bottom: unset;
   }
+  */
 </style>

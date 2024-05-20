@@ -19,7 +19,6 @@ export class SQLSearchEMail extends SearchEMail {
     if (this.hasAttachmentMIMETypes) {
       this.hasAttachment = true;
     }
-    let contactEmail = this.contact?.emailAddresses.first?.value; // TODO add person ID to email table
     // TODO 1:n relations attachments and recipients
 
     // Search matching emails directly in the SQL database
@@ -28,6 +27,7 @@ export class SQLSearchEMail extends SearchEMail {
         email.id as id, folderID
       FROM email
       $${this.account?.dbID ? sql` LEFT JOIN folder ON (email.folderID = folder.id) ` : sql``}
+      $${this.includesPerson ? sql` LEFT JOIN emailPersonRel ON (email.id = emailPersonRel.emailID) LEFT JOIN emailPerson ON (emailPersonRel.emailPersonID = emailPerson.id) ` : sql``}
       WHERE 1=1
         $${this.account?.dbID ? sql` AND accountID = ${this.account.dbID} ` : sql``}
         $${this.folder?.dbID ? sql` AND folderID = ${this.folder.dbID} ` : sql``}
@@ -39,7 +39,7 @@ export class SQLSearchEMail extends SearchEMail {
         $${typeof (this.messageID) == "string" ? sql` AND messageID = ${this.messageID} ` : sql``}
         $${this.sizeMin ? sql` AND size >= ${this.sizeMin} ` : sql``}
         $${this.sizeMax ? sql` AND size <= ${this.sizeMax} ` : sql``}
-        $${contactEmail ? sql` AND contactEmail = ${contactEmail} ` : sql``}
+        $${this.includesPerson?.emailAddresses.hasItems ? sql` AND emailPerson.emailAddress IN ${this.includesPerson.emailAddresses.contents.map(c => c.value)} ` : sql``}
         $${this.bodyText ? sql` AND (subject LIKE ${'%' + this.bodyText + '%'} OR plaintext LIKE ${'%' + this.bodyText + '%'}) ` : sql``}
       $${limit ? sql` LIMIT ${limit} ` : sql``}
       `;
