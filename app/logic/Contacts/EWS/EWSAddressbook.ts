@@ -12,7 +12,6 @@ export class EWSAddressbook extends Addressbook {
   account: EWSAccount;
 
   newPerson(): EWSPerson {
-    throw "readonly for now";
     return new EWSPerson(this);
   }
   newGroup(): EWSGroup {
