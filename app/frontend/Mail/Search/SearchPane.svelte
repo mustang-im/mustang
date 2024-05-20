@@ -98,8 +98,8 @@
   import SearchField from "../../Shared/SearchField.svelte";
   import GenericFileTypesList from "../../Files/GenericFileTypesList.svelte";
   import PersonsList from "../../Shared/Person/PersonsList.svelte";
-  import AccountList from "./AccountList.svelte";
-  import FolderList from "./FolderList.svelte";
+  import AccountList from "../LeftPane/AccountList.svelte";
+  import FolderList from "../LeftPane/FolderList.svelte";
   import Checkbox from "../../Shared/Checkbox.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";

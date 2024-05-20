@@ -1,6 +1,6 @@
 <vbox flex class="folder-pane">
   {#if isSearching}
-    <Search bind:searchMessages on:clear={onClearSearch} />
+    <SearchPane bind:searchMessages on:clear={onClearSearch} />
   {:else}
     <!--<ProjectList />-->
     <AccountList accounts={$accounts} bind:selectedAccount>
@@ -23,7 +23,7 @@
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import AccountList from "./AccountList.svelte";
   import FolderList from "./FolderList.svelte";
-  import Search from "./Search.svelte";
+  import SearchPane from "../Search/SearchPane.svelte";
   import ProjectList from "./ProjectList.svelte";
   import GetMailButton from "./GetMailButton.svelte";
   import WriteButton from "./WriteButton.svelte";
