@@ -89,6 +89,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { Person } from "../../../logic/Abstract/Person";
   import type { Folder } from "../../../logic/Mail/Folder";
+  import { personsInEMails } from "../../../logic/Mail/Person";
   import { selectedMessage, selectedAccount, selectedFolder } from "../Selected";
   import { appGlobal } from "../../../logic/app";
   import SearchField from "../../Shared/SearchField.svelte";
@@ -131,8 +132,9 @@
   $: if (!isMinSize) minSizeMB = null;
   $: if (!isMaxSize) maxSizeMB = null;
 
-  let persons = appGlobal.collectedAddressbook.persons;
   let selectedFolders: Collection<Folder>;
+  $: persons = searchMessages ? personsInEMails(searchMessages) : appGlobal.collectedAddressbook.persons;
+  $: if (!isPerson) includesPerson = null;
 
   $: $globalSearchTerm, isOutgoing, isUnread, isStar, isAttachment,
     isMaxSize, isMinSize, maxSizeMB, minSizeMB,
