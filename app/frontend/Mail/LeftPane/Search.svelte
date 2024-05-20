@@ -28,11 +28,11 @@
       classes="star {isStar ? "starred" : ""}">
       <StarIcon size="16px" slot="icon" />
     </Checkbox>
-    <!--
     <Checkbox bind:checked={isAttachment}
       label="Attachment">
       <AttachmentIcon size="16px" slot="icon" />
     </Checkbox>
+    <!--
     {#if isAttachment}
       <!-- TODO use Slider --
       <grid class="size">

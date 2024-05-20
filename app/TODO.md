@@ -1,5 +1,10 @@
 # Next
 * Mail
+  * Save in Sent folder
+  * Search
+    * Saved searches
+    * Actions
+  * Settings
   * Bugs
     * Delete button disabled too long
     * FastList doesn't update some rows
@@ -11,11 +16,9 @@
     * Hide quotes
     * Message list: Threaded view?
     * Mail Chat view: Open thread
-  * Search
   * OAuth2
     * in-app
     * register with providers
-  * Settings
   * inline images display
   * inline images send
   * All accounts - fix
