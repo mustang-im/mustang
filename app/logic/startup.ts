@@ -4,6 +4,7 @@ import { readChatAccounts } from './Chat/AccountsList/SQL';
 import { readAddressbooks } from './Contacts/AccountsList/SQL';
 import { readCalendars } from './Calendar/AccountsList/SQL';
 import { readMeetAccounts } from './Meet/AccountsList/SQL';
+import { readSavedSearches } from './Mail/Virtual/SavedSearchFolder';
 import JPCWebSocket from '../../lib/jpc-ws';
 
 const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
@@ -22,6 +23,7 @@ export async function getStartObjects(): Promise<void> {
   // TODO Save the address book type and ensure that they are of the right type
   appGlobal.personalAddressbook = appGlobal.addressbooks.first;
   appGlobal.collectedAddressbook = appGlobal.addressbooks.get(1);
+  readSavedSearches();
 }
 
 /**

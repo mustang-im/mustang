@@ -2,8 +2,11 @@ import type { EMail } from "../EMail";
 import type { Person } from "../../Abstract/Person";
 import type { MailAccount } from "../MailAccount";
 import type { Folder } from "../Folder";
-import { AbstractFunction } from "../../util/util";
+import { findPerson } from "../../Abstract/PersonUID";
+import { appGlobal } from "../../app";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Observable } from "../../util/Observable";
+import { AbstractFunction } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 /** Contains the search criteria for emails.
@@ -39,5 +42,48 @@ export class SearchEMail extends Observable {
 
   async startSearch(limit?: number): Promise<ArrayColl<EMail>> {
     throw new AbstractFunction();
+  }
+
+  fromJSON(json: any) {
+    this.bodyText = sanitize.string(json.bodyText, null);
+    this.isOutgoing = sanitize.boolean(json.isOutgoing, null);
+    this.isRead = sanitize.boolean(json.isRead, null);
+    this.isReplied = sanitize.boolean(json.isReplied, null);
+    this.isStarred = sanitize.boolean(json.isStarred, null);
+    this.hasAttachment = sanitize.boolean(json.hasAttachment, null);
+    if (Array.isArray(json.hasAttachmentMIMETypes)) {
+      this.hasAttachmentMIMETypes = json.hasAttachmentMIMETypes.map(mimetype => sanitize.string(mimetype));
+    }
+    this.sizeMin = sanitize.integer(json.sizeMin, null);
+    this.sizeMax = sanitize.integer(json.sizeMax, null);
+    this.messageID = sanitize.string(json.messageID, null);
+    this.threadID = sanitize.string(json.threadID, null);
+    this.dateSentFrom = sanitize.date(json.dateSentFrom, null);
+    this.dateSentTo = sanitize.date(json.dateSentTo, null);
+
+    this.includesPerson = findPerson(json.includesPersonEMail, "");
+    this.account = appGlobal.emailAccounts.find(acc => acc.id == json.accountID);
+    this.folder = this.account ? this.account.findFolder(folder => folder.path == json.folderPath) : null;
+  }
+
+  toJSON() {
+    return {
+      bodyText: this.bodyText,
+      isOutgoing: this.isOutgoing,
+      isRead: this.isRead,
+      isReplied: this.isReplied,
+      isStarred: this.isStarred,
+      hasAttachment: this.hasAttachment,
+      hasAttachmentMIMETypes: this.hasAttachmentMIMETypes,
+      sizeMin: this.sizeMin,
+      sizeMax: this.sizeMax,
+      messageID: this.messageID,
+      threadID: this.threadID,
+      dateSentFrom: this.dateSentFrom.toISOString(),
+      dateSentTo: this.dateSentTo.toISOString(),
+      includesPersonEMail: this.includesPerson.emailAddresses.first?.value ?? null,
+      accountID: this.account?.id ?? this.folder?.account?.id,
+      folderPath: this.folder?.path,
+    };
   }
 }

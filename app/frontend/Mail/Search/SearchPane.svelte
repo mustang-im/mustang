@@ -1,6 +1,6 @@
 <vbox flex class="search">
   <hbox class="header-bar">
-    <hbox class="header">Search</hbox>
+    <hbox class="header top">Search</hbox>
     <hbox flex />
     <hbox class="buttons top-right">
       <RoundButton icon={XIcon} iconSize="16px" padding="4px" border={true} classes="small"
@@ -83,6 +83,12 @@
       {/if}
     {/if}
   </vbox>
+  <ExpandSection headerBox={true}>
+    <hbox class="header" slot="header">
+      Save search as folder
+    </hbox>
+    <SavedSearchUI {search} />
+  </ExpandSection>
 </vbox>
 
 <script lang="ts">
@@ -95,12 +101,14 @@
   import { personsInEMails } from "../../../logic/Mail/Person";
   import { selectedMessage, selectedAccount, selectedFolder } from "../Selected";
   import { appGlobal } from "../../../logic/app";
+  import SavedSearchUI from "./SavedSearchUI.svelte";
   import SearchField from "../../Shared/SearchField.svelte";
   import GenericFileTypesList from "../../Files/GenericFileTypesList.svelte";
   import PersonsList from "../../Shared/Person/PersonsList.svelte";
   import AccountList from "../LeftPane/AccountList.svelte";
   import FolderList from "../LeftPane/FolderList.svelte";
   import Checkbox from "../../Shared/Checkbox.svelte";
+  import ExpandSection from "../../Shared/ExpandSection.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
   import StarIcon from "lucide-svelte/icons/star";
@@ -137,10 +145,11 @@
   $: if (!isMinSize) minSizeMB = null;
   $: if (!isMaxSize) maxSizeMB = null;
 
-  let selectedFolders: Collection<Folder>;
+  let selectedFolders: ArrayColl<Folder>;
   $: persons = searchMessages ? personsInEMails(searchMessages) : appGlobal.collectedAddressbook.persons;
   $: if (!isPerson) includesPerson = null;
 
+  let search = new SQLSearchEMail();
   $: $globalSearchTerm, isOutgoing, isUnread, isStar, isAttachment, $isAttachmentTypes,
     isMaxSize, isMinSize, maxSizeMB, minSizeMB,
     isAccount, $selectedAccount, isFolder, $selectedFolder, isPerson, includesPerson,
@@ -151,7 +160,6 @@
       let searchTerm = $globalSearchTerm;
       $selectedMessage = null;
 
-      let search = new SQLSearchEMail();
       search.bodyText = searchTerm;
       search.isOutgoing = isOutgoing ? true : null;
       search.isRead = isUnread ? false : null;
@@ -191,8 +199,10 @@
   .header-bar {
     margin-right: 8px;
   }
-  .header {
+  .header.top {
     margin-top: 8px;
+  }
+  .header {
     font-size: 20px;
     font-weight: bold;
   }
