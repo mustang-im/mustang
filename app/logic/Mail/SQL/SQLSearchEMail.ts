@@ -40,7 +40,7 @@ export class SQLSearchEMail extends SearchEMail {
         $${this.sizeMin ? sql` AND size >= ${this.sizeMin} ` : sql``}
         $${this.sizeMax ? sql` AND size <= ${this.sizeMax} ` : sql``}
         $${this.includesPerson?.emailAddresses.hasItems ? sql` AND emailPerson.emailAddress IN ${this.includesPerson.emailAddresses.contents.map(c => c.value)} ` : sql``}
-        $${this.bodyText ? sql` AND (subject LIKE ${'%' + this.bodyText + '%'} OR plaintext LIKE ${'%' + this.bodyText + '%'}) ` : sql``}
+        $${this.bodyText ? sql` AND (LOWER(subject) LIKE ${'%' + this.bodyText.toLowerCase() + '%'} OR LOWER(plaintext) LIKE ${'%' + this.bodyText.toLowerCase() + '%'}) ` : sql``}
       $${limit ? sql` LIMIT ${limit} ` : sql``}
       `;
     //console.log("query string", queryString(query));
