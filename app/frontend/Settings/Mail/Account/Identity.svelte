@@ -8,9 +8,12 @@
       />
   </PageHeader>
 
-    <IdentityBlock identity={account} />
+    <IdentityBlock identity={account} canRemove={false} />
     {#each $identities.each as identity}
-      <IdentityBlock {identity} />
+      <IdentityBlock {identity}
+        canRemove={$identities.length > 1}
+        on:delete={event => catchErrors(() => onDelete(event.detail))}
+        />
     {/each}
 </vbox>
 
@@ -22,6 +25,8 @@
   import RoundButton from "../../../Shared/RoundButton.svelte";
   import PageHeader from "../../Shared/PageHeader.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
+  import { assert } from "../../../../logic/util/util";
+  import { catchErrors } from "../../../Util/error";
 
   export let account: Account;
 
@@ -32,6 +37,11 @@
     let id = new MailIdentity();
     id.userRealname = account.userRealname;
     identities.add(id);
+  }
+  async function onDelete(identity) {
+    assert(identities.length > 1, "Cannot remove the last identity");
+    identities.remove(identity);
+    await account.save();
   }
 </script>
 

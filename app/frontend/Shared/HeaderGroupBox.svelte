@@ -1,6 +1,10 @@
 <vbox class="group {classes}">
   <hbox class="header">
     <slot name="header" />
+    <hbox flex />
+    <hbox class="buttons">
+      <slot name="buttons-top-right" />
+    </hbox>
   </hbox>
   <vbox class="content" flex>
     <slot />

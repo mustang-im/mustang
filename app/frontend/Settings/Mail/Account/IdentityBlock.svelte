@@ -1,5 +1,14 @@
 <HeaderGroupBox>
   <hbox slot="header">{identity.emailAddress || "New"}</hbox>
+  <svelte:fragment slot="buttons-top-right">
+    {#if canRemove}
+      <RoundButton
+        label="Add"
+        onClick={onDelete}
+        icon={DeleteIcon}
+        />
+    {/if}
+  </svelte:fragment>
   <vbox class="content">
     <grid>
       <label for="realname">Your name</label>
@@ -69,19 +78,23 @@
 
 <script lang="ts">
   import type { MailIdentity } from "../../../../logic/Mail/MailIdentity";
+  import SentByExplainer from "./SentByExplainer.svelte";
   import HTMLEditor from "../../../Shared/Editor/HTMLEditor.svelte";
   import HTMLEditorToolbar from "../../../Shared/Editor/HTMLEditorToolbar.svelte";
   import ExpanderButton from "../../../Shared/ExpanderButton.svelte";
   import ExpanderButtons from "../../../Shared/ExpanderButtons.svelte";
   import HeaderGroupBox from "../../../Shared/HeaderGroupBox.svelte";
+  import RoundButton from "../../../Shared/RoundButton.svelte";
+  import DeleteIcon from "lucide-svelte/icons/trash-2";
   import RemoveIcon from "lucide-svelte/icons/circle-x";
   import Icon from 'svelte-icon/Icon.svelte';
   import logo from '../../../asset/icon/general/logo.svg?raw';
   import type { Editor } from "@tiptap/core";
-  import RoundButton from "../../../Shared/RoundButton.svelte";
-  import SentByExplainer from "./SentByExplainer.svelte";
+  import { createEventDispatcher } from 'svelte';
+  const dispatchEvent = createEventDispatcher();
 
   export let identity: MailIdentity;
+  export let canRemove = true;
 
   let showReplyTo = !!identity.replyTo;
   let showOrganisation = !!identity.organisation;
@@ -89,6 +102,10 @@
   let showSentBy = true;
   let showSentByExplainer = false;
   let editor: Editor;
+
+  function onDelete() {
+    dispatchEvent("delete", identity);
+  }
 </script>
 
 <style>
