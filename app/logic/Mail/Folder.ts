@@ -136,7 +136,7 @@ export class Folder extends Observable implements TreeItem {
 
   /** @return false, if delete is possible. If not, a string with the reason why it's not possible. */
   disableDelete(): string | false {
-    if (this.specialFolder) {
+    if (this.specialFolder != SpecialFolder.Normal) {
       return "You cannot delete this folder, because it has a special use. See Use As.";
     }
     return false;
