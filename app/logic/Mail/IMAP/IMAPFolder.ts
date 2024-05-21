@@ -65,6 +65,13 @@ export class IMAPFolder extends Folder {
         }
       }
       return await imapFunc(conn);
+    } catch (ex) {
+      if (ex.responseText) {
+        ex.message = ex.responseText
+          .replace("Error in IMAP command", "IMAP")
+          .replace(/ \([\d\. +]* secs\)\./, "");
+      }
+      throw ex;
     } finally {
       lock?.release();
     }
