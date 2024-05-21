@@ -16,6 +16,7 @@
       <vbox class="name-primary-mail" flex>
         <input class="name" type="text"
           bind:value={$personUID.name}
+          bind:this={nameInputEl}
           on:input={onSaveDebounced}
           placeholder="Enter a name for the person" />
         <input class="email" type="email"
@@ -91,7 +92,7 @@
   import MailIcon from "lucide-svelte/icons/mail";
   import { catchErrors } from "../../Util/error";
   import { useDebounce } from "@svelteuidev/composables";
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import AddressbookSelector from "../../Contacts/AddressbookSelector.svelte";
   const dispatch = createEventDispatcher<{ removePerson: PersonUID, close: void }>();
 
@@ -102,6 +103,14 @@
   let addressbook: Addressbook;
   let selectedAddressbook: Addressbook;
   let isEditing = false;
+  let nameInputEl: HTMLInputElement;
+
+  onMount(() => {
+    if (nameInputEl) {
+      nameInputEl.select();
+    }
+  });
+  $: nameInputEl?.focus();
 
   $: onLoad(personUID);
   function onLoad(personUID: PersonUID) {

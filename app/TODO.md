@@ -5,7 +5,7 @@
   * Bugs
     * Delete button disabled too long
     * FastList doesn't update some rows
-    * Person Popup opening automatically and focussing the name field
+    * Person Popup open automatically
       * Close popup on enter or tab
     * Save window size
   * Search
