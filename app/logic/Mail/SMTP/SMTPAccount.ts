@@ -88,6 +88,7 @@ export class SMTPAccount extends MailAccount {
       encoding: "base64",
       contentType: a.mimeType,
       contentDisposition: a.disposition == ContentDisposition.inline ? 'inline' : 'attachment',
+      cid: a.contentID,
     };
   }
 }
