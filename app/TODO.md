@@ -5,8 +5,6 @@
   * Bugs
     * Delete button disabled too long
     * FastList doesn't update some rows
-    * Person Popup open automatically
-      * Close popup on enter or tab
     * Save window size
   * Search
     * Saved searches - Edit

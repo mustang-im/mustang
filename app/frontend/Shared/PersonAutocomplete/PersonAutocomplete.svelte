@@ -73,6 +73,7 @@
   }
 
   let topEl: HTMLDivElement;
+  $: inputEl = topEl?.querySelector("input");
   async function onAddPerson(person: PersonUID) {
     typedText = "";
     (person as any).openPopup = person.name == person.emailAddress;
@@ -81,8 +82,8 @@
     // Clear, to allow user to enter the next person
     await tick();
     // Hack, because component doesn't allow me to clear the text field value
-    if (topEl) {
-      topEl.querySelector("input").value = "";
+    if (inputEl) {
+      inputEl.value = "";
     }
   }
 
@@ -119,6 +120,10 @@
   function canCreate(typedText: string) {
     // email address is substring, e.g. "Fred <fred@example.com>"
     return typedText && kEMailAddressRegexp.test(typedText);
+  }
+
+  export function focus() {
+    inputEl?.focus();
   }
 </script>
 

@@ -3,6 +3,7 @@
     <PersonEntry {person}
       on:removePerson
       on:removePerson={(event) => onRemovePerson(event.detail)}
+      on:focusNext={onFocusNext}
       >
       <slot name="person-context-menu" slot="context-menu" {person} />
     </PersonEntry>
@@ -13,6 +14,7 @@
       on:addPerson={(event) => onAddPerson(event.detail)}
       skipPersons={$persons}
       {placeholder}
+      bind:this={autocompleteEl}
       >
       <slot name="result-bottom-row" slot="result-bottom-row" let:person {person} />
     </PersonAutocomplete>
@@ -45,6 +47,10 @@
       return;
     }
     persons.remove(person);
+  }
+  let autocompleteEl: PersonAutocomplete;
+  function onFocusNext() {
+    autocompleteEl?.focus();
   }
 </script>
 

@@ -16,7 +16,7 @@
     use:popupContent={popupOptions}>
     <PersonPopup personUID={person}
       on:removePerson
-      on:close={() => popupOpen = false}
+      on:close={onClose}
       >
       <slot name="person-popup-buttons" slot="buttons" personUID={person} />
     </PersonPopup>
@@ -31,6 +31,8 @@
   import PersonPopup from "./PersonPopup.svelte";
   import PersonPicture from "../Person/PersonPicture.svelte";
   import { createPopperActions } from 'svelte-popperjs';
+  import { createEventDispatcher } from 'svelte';
+  const dispatchEvent = createEventDispatcher<{ focusNext: void }>();
 
   export let person: PersonUID;
 
@@ -67,6 +69,11 @@
   function onClick(event: MouseEvent) {
     popupOpen = !popupOpen;
     event.stopPropagation();
+  }
+
+  function onClose() {
+    popupOpen = false;
+    dispatchEvent("focusNext");
   }
 </script>
 

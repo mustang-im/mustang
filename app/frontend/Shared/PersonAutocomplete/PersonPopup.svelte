@@ -18,6 +18,7 @@
           bind:value={$personUID.name}
           bind:this={nameInputEl}
           on:input={onSaveDebounced}
+          on:keydown={(event) => onKeyEnter(event, onClose)}
           placeholder="Enter a name for the person" />
         <input class="email" type="email"
           bind:value={$personUID.emailAddress}
@@ -90,6 +91,7 @@
   import EditIcon from "lucide-svelte/icons/pencil";
   import CheckIcon from "lucide-svelte/icons/check";
   import MailIcon from "lucide-svelte/icons/mail";
+  import { onKeyEnter } from "../../Util/util";
   import { catchErrors } from "../../Util/error";
   import { useDebounce } from "@svelteuidev/composables";
   import { createEventDispatcher, onMount } from 'svelte';
@@ -131,11 +133,14 @@
     await person.save();
   }
 
+  function onClose() {
+    dispatch("close");
+  }
   function onClickInside(event: MouseEvent) {
     event.stopPropagation();
   }
   function onClickOutside(event: MouseEvent) {
-    dispatch("close");
+    onClose();
   }
   const onSaveDebounced = useDebounce(() => catchErrors(onSave), 1000);
   async function onSave() {
@@ -152,7 +157,7 @@
     await person.save();
   }
   function onEditPerson() {
-    dispatch("close");
+    onClose();
     openUIFor(personUID.createPerson());
   }
   function onRemovePerson() {
