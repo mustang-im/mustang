@@ -60,6 +60,10 @@
     ],
   };
 
+  if ((person as any).openPopup) {
+    popupOpen = true;
+  }
+
   function onClick(event: MouseEvent) {
     popupOpen = !popupOpen;
     event.stopPropagation();

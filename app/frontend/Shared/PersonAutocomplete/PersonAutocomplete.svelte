@@ -75,6 +75,7 @@
   let topEl: HTMLDivElement;
   async function onAddPerson(person: PersonUID) {
     typedText = "";
+    (person as any).openPopup = person.name == person.emailAddress;
     dispatch('addPerson', person);
 
     // Clear, to allow user to enter the next person
