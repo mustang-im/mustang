@@ -27,6 +27,8 @@ export class SMTPAccount extends MailAccount {
       connectionTimeout: 5000,
       greetingTimeout: 20000,
       logger: true,
+      disableFileAccess: true,
+      disableUrlAccess: true,
     };
   }
 
@@ -44,6 +46,8 @@ export class SMTPAccount extends MailAccount {
         html: email.html,
         attachDataUrls: true,
         attachments: await SMTPAccount.getAttachments(email),
+        disableFileAccess: true,
+        disableUrlAccess: true,
       });
       email.sent = new Date();
       email.received = email.sent;
