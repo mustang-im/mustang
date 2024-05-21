@@ -118,6 +118,10 @@ export class Folder extends Observable implements TreeItem {
     this.name = newName;
   }
 
+  async save(): Promise<void> {
+    this.account.storage.saveFolder(this);
+  }
+
   /** Warning: Also deletes all messages in the folder, also on the server */
   async deleteIt(): Promise<void> {
     if (this.parent) {

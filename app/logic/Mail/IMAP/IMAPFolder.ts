@@ -79,7 +79,7 @@ export class IMAPFolder extends Folder {
 
   async listMessages() {
     if (!this.dbID) {
-      await SQLFolder.save(this);
+      await this.save();
     }
     if (!this.messages.hasItems) {
       console.log(this.name, "Start reading msgs from DB");

@@ -64,7 +64,7 @@
   }
 
   async function save() {
-    await SQLFolder.save(folder);
+    await folder.save();
   }
 </script>
 
