@@ -248,7 +248,8 @@ export class IMAPFolder extends Folder {
   async moveMessagesHere(messages: Collection<IMAPEMail>) {
     await super.moveMessagesHere(messages);
     let ids = messages.contents.map(msg => msg.uid).join(",");
-    await (await this.account.connection()).messageMove(ids, this.path, { uid: true });
+    let conn = await this.account.connection(); // Don't lock: 2 mailboxes involved
+    await conn.messageMove(ids, this.path, { uid: true });
     let sourceFolder = messages.first.folder;
     sourceFolder.countTotal -= 1;
     this.countTotal += 1;
@@ -259,7 +260,8 @@ export class IMAPFolder extends Folder {
   async copyMessagesHere(messages: Collection<IMAPEMail>) {
     await super.copyMessagesHere(messages);
     let ids = messages.contents.map(msg => msg.uid).join(",");
-    await (await this.account.connection()).messageCopy(ids, this.path, { uid: true });
+    let conn = await this.account.connection(); // Don't lock: 2 mailboxes involved
+    await conn.messageCopy(ids, this.path, { uid: true });
     let sourceFolder = messages.first.folder;
     this.countTotal += 1;
     await sourceFolder.listMessages();
@@ -276,13 +278,17 @@ export class IMAPFolder extends Folder {
     await folder.deleteIt();
     console.log("Folder moved from", folder.path, "to", newFolder.path);
     */
-    await (await this.account.connection()).mailboxRename(folder.path, [this.path, folder.getPathComponents().pop() ]);
+    await this.runCommand(async (conn) => {
+      await conn.mailboxRename(folder.path, [this.path, folder.getPathComponents().pop()]);
+    });
   }
 
   async createSubFolder(name: string): Promise<IMAPFolder> {
     let newFolder = await super.createSubFolder(name) as IMAPFolder;
-    let created = await (await this.account.connection()).mailboxCreate([this.path, name]);
-    newFolder.path = created.path;
+    await this.runCommand(async (conn) => {
+      let created = await conn.mailboxCreate([this.path, name]);
+      newFolder.path = created.path;
+    });
     console.log("IMAP folder created", name, newFolder.path);
     await newFolder.listMessages();
     return newFolder;
@@ -291,7 +297,9 @@ export class IMAPFolder extends Folder {
   async rename(newName: string): Promise<void> {
     this.name = newName;
     let parentPath = this.parent ? this.parent.path : this.getPathComponents().slice(0, -1);
-    await (await this.account.connection()).mailboxRename(this.path, [ ...parentPath, newName ]);
+    await this.runCommand(async (conn) => {
+      await conn.mailboxRename(this.path, [...parentPath, newName]);
+    });
     console.log("renamed", this.path, "to parent", parentPath, [...parentPath, newName]);
   }
 
@@ -302,14 +310,16 @@ export class IMAPFolder extends Folder {
     } else {
       this.account.rootFolders.remove(this);
     }
-    await (await this.account.connection()).mailboxDelete(this.path);
+    await this.runCommand(async (conn) => {
+      await conn.mailboxDelete(this.path);
+    });
     console.log("IMAP folder deleted", this.name, this.path);
   }
 
   async markAllRead(): Promise<void> {
     await super.markAllRead();
     await this.runCommand(async (conn) => {
-        await conn.messageFlagsAdd("1:*", ["\\Seen"], { uid: true });
+      await conn.messageFlagsAdd("1:*", ["\\Seen"], { uid: true });
     });
   }
 
