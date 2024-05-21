@@ -1,9 +1,6 @@
 # Next
 * Mail
   * Save in Sent folder
-  * Search
-    * Saved searches
-    * Actions
   * Settings
   * Bugs
     * Delete button disabled too long
@@ -11,6 +8,13 @@
     * Person Popup opening automatically and focussing the name field
       * Close popup on enter or tab
     * Save window size
+  * Search
+    * Saved searches - Edit
+    * Actions
+      * Create
+      * List
+      * Edit
+      * Run
   * Threads
     * Find thread
     * Hide quotes
@@ -19,9 +23,13 @@
   * OAuth2
     * in-app
     * register with providers
+  * Move messages to deep subfolders
+  * Move messages to other accounts
   * inline images display
   * inline images send
-  * All accounts - fix
+  * All accounts
+    * fix mergeColls()
+    * use search folder
   * Setup mail
     * after account delete: remove general panel
 
@@ -30,7 +38,6 @@
 * Calendar
   * Open event on click
   * Tuesday first day
-  * Gap between day/month view
 
 # UI
 * Close menu when clicking outside menu
