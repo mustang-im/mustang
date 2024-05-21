@@ -83,6 +83,11 @@ export class MailAccount extends Account {
     appGlobal.emailAccounts.remove(this);
   }
 
+  isEMailAddress(emailAddress: string): boolean {
+    return this.emailAddress == emailAddress ||
+      this.identities.some(id => id.emailAddress == emailAddress);
+  }
+
   /** Get the `specialFolder` in this account. */
   getSpecialFolder(specialFolder: SpecialFolder): Folder {
     let folder = this.getAllFolders().find(folder => folder.specialFolder == specialFolder);

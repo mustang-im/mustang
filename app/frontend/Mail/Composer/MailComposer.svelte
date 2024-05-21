@@ -158,16 +158,19 @@
   let lastMail = mail;
   $: differentMailLoaded(mail);
   function differentMailLoaded(_dummy: any) {
+    if (mail.from?.emailAddress) {
+      let recipients;
+      from = appGlobal.emailAccounts.find(acc => acc.isEMailAddress(mail.from.emailAddress)) ??
+        (recipients = mail.to.contents.concat(mail.cc.contents).concat(mail.bcc.contents) &&
+         appGlobal.emailAccounts.find(acc => recipients.some(c => acc.isEMailAddress(c.emailAddress)))) ??
+        $selectedAccount;
+    }
     if (mail == lastMail || !mail) {
       return;
     }
     lastMail = mail;
     if (editor) {
       editor.commands.setContent(mail.html);
-    }
-    if (mail.from?.emailAddress) {
-      from = appGlobal.emailAccounts.find(acc => acc.emailAddress == mail.from.emailAddress) ??
-        $selectedAccount;
     }
   }
 
