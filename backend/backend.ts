@@ -6,6 +6,7 @@ import Zip from "adm-zip";
 import ky from 'ky';
 import { shell, nativeTheme, Notification, Tray } from "electron";
 import nodemailer from 'nodemailer';
+import MailComposer from 'nodemailer/lib/mail-composer';
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
@@ -36,6 +37,7 @@ async function createSharedAppObject() {
     getSQLiteDatabase,
     sendMailNodemailer,
     verifyServerNodemailer,
+    getMIMENodemailer,
     newAdmZIP,
     newHTTPServer,
     openFile,
@@ -183,6 +185,12 @@ async function sendMailNodemailer(transport, mail) {
 async function verifyServerNodemailer(transport) {
   let transporter = nodemailer.createTransport(transport);
   await transporter.verify();
+}
+
+async function getMIMENodemailer(mail): Promise<Uint8Array> {
+  let composer = new MailComposer(mail);
+  let buffer = await composer.compile().build();
+  return buffer;
 }
 
 function newAdmZIP(filepath: string) {

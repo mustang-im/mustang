@@ -70,6 +70,15 @@ export class Folder extends Observable implements TreeItem {
     throw new AbstractFunction();
   }
 
+  async addMessage(email: EMail) {
+    if (!email.mime) {
+      await email.download();
+    }
+    assert(email.mime, "Need MIME to upload it to a folder");
+    email.folder = this;
+    this.messages.add(email);
+  }
+
   async moveMessagesHere(messages: Collection<EMail>) {
     let sourceFolder = messages.first.folder;
     assert(sourceFolder, "Need source folder");

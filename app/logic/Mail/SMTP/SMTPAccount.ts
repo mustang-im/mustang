@@ -6,6 +6,8 @@ import { appGlobal } from "../../app";
 import { blobToBase64 } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 import type { Attachment as NMAttachment, Address as NMAddress } from "@types/nodemailer/lib/mailer";
+import type Mail from "@types/nodemailer/lib/mailer";
+type NMMail = Mail.Options;
 
 export class SMTPAccount extends MailAccount {
   readonly protocol: string = "smtp";
@@ -34,23 +36,12 @@ export class SMTPAccount extends MailAccount {
 
   async send(email: EMail): Promise<void> {
     try {
-      let result = await appGlobal.remoteApp.sendMailNodemailer(this.getTransportOptions(), {
-        subject: email.subject,
-        inReplyTo: email.inReplyTo,
-        from: SMTPAccount.getRecipient(email.from),
-        replyTo: email.replyTo ? SMTPAccount.getRecipient(email.replyTo) : null,
-        to: SMTPAccount.getRecipients(email.to),
-        cc: SMTPAccount.getRecipients(email.cc),
-        bcc: SMTPAccount.getRecipients(email.bcc),
-        text: email.text,
-        html: email.html,
-        attachDataUrls: true,
-        attachments: await SMTPAccount.getAttachments(email),
-        disableFileAccess: true,
-        disableUrlAccess: true,
-      });
+      let result = await appGlobal.remoteApp.sendMailNodemailer(
+        this.getTransportOptions(),
+        await SMTPAccount.getNMMail(email));
       email.sent = new Date();
       email.received = email.sent;
+      email.mime = await SMTPAccount.getMIME(email); // to save the Sent mail
     } catch (ex) {
       if (ex.code == "EAUTH") {
         ex.message = "Check your login, username, and password:\n" + ex.message;
@@ -58,6 +49,28 @@ export class SMTPAccount extends MailAccount {
       }
       throw ex;
     }
+  }
+
+  static async getNMMail(email: EMail): Promise<NMMail> {
+    return {
+      subject: email.subject,
+      inReplyTo: email.inReplyTo,
+      from: SMTPAccount.getRecipient(email.from),
+      replyTo: email.replyTo ? SMTPAccount.getRecipient(email.replyTo) : null,
+      to: SMTPAccount.getRecipients(email.to),
+      cc: SMTPAccount.getRecipients(email.cc),
+      bcc: SMTPAccount.getRecipients(email.bcc),
+      text: email.text,
+      html: email.html,
+      attachDataUrls: true,
+      attachments: await SMTPAccount.getAttachments(email),
+      disableFileAccess: true,
+      disableUrlAccess: true,
+    };
+  }
+
+  static async getMIME(email: EMail): Promise<Uint8Array> {
+    return await appGlobal.remoteApp.getMIMENodemailer(await SMTPAccount.getNMMail(email));
   }
 
   async verifyLogin(): Promise<void> {

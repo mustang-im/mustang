@@ -229,6 +229,15 @@ export class IMAPFolder extends Folder {
     await SQLEMail.deleteIt(message);
   }
 
+  async addMessage(email: EMail) {
+    return;
+    await super.addMessage(email);
+    await this.runCommand(async (conn) => {
+      let flags = ["\\Seen"]; // TODO
+      await conn.append(this.path, email.mime, flags); // TODO hangs
+    });
+  }
+
   async moveMessagesHere(messages: Collection<IMAPEMail>) {
     await super.moveMessagesHere(messages);
     let ids = messages.contents.map(msg => msg.uid).join(",");
@@ -261,14 +270,6 @@ export class IMAPFolder extends Folder {
     console.log("Folder moved from", folder.path, "to", newFolder.path);
     */
     await (await this.account.connection()).mailboxRename(folder.path, [this.path, folder.getPathComponents().pop() ]);
-  }
-
-  async addMessage(email: EMail) {
-    assert(email.mime, "Need MIME to upload it to a folder"); // TODO download msg, or construct MIME
-    await this.runCommand(async (conn) => {
-      let flags = null; // TODO
-      await conn.append(this.path, email.mime, flags);
-    });
   }
 
   async createSubFolder(name: string): Promise<IMAPFolder> {

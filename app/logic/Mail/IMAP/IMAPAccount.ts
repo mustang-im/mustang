@@ -4,6 +4,8 @@ import { appGlobal } from "../../app";
 import { SQLMailAccount } from "../SQL/SQLMailAccount";
 import { SQLFolder } from "../SQL/SQLFolder";
 import type { EMail } from "../EMail";
+import { SpecialFolder } from "../Folder";
+import { SMTPAccount } from "../SMTP/SMTPAccount";
 import { assert } from "../../util/util";
 import type { ArrayColl, Collection } from "svelte-collections";
 import type { ImapFlow } from "../../../../e2/node_modules/imapflow";
@@ -224,7 +226,13 @@ export class IMAPAccount extends MailAccount {
   async send(email: EMail): Promise<void> {
     assert(this.outgoing, "SMTP server is not set up for IMAP account " + this.name);
     await this.outgoing.send(email);
+    await this.saveSent(email);
   };
+
+  protected async saveSent(email: EMail): Promise<void> {
+    let sentFolder = this.getSpecialFolder(SpecialFolder.Sent);
+    await sentFolder.addMessage(email);
+  }
 
   newFolder(): IMAPFolder {
     return new IMAPFolder(this);
