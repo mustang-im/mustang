@@ -1,7 +1,7 @@
 import { Observable, notifyChangedProperty } from "../util/Observable";
 
 export class MailIdentity extends Observable {
-  id: string;
+  id = crypto.randomUUID();
   @notifyChangedProperty
   userRealname: string;
   @notifyChangedProperty

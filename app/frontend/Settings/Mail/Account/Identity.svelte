@@ -1,22 +1,42 @@
-<grid>
-  <label for="realname">Your name</label>
-  <input type="text" bind:value={account.userRealname} name="realname" />
-  <label for="emailaddress">Your email address</label>
-  <input type="email" bind:value={mailAccount.emailAddress} name="emailaddress" />
-</grid>
+<vbox flex class="page">
+  <PageHeader title="Identities" subtitle="This is how you appear to others when you send mail">
+    <RoundButton
+      label="Add"
+      onClick={onAdd}
+      icon={AddIcon}
+      slot="buttons-top-right"
+      />
+  </PageHeader>
+
+    <IdentityBlock identity={account} />
+    {#each $identities.each as identity}
+      <IdentityBlock {identity} />
+    {/each}
+</vbox>
 
 <script lang="ts">
   import type { Account } from "../../../../logic/Abstract/Account";
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
+  import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
+  import IdentityBlock from "./IdentityBlock.svelte";
+  import RoundButton from "../../../Shared/RoundButton.svelte";
+  import PageHeader from "../../Shared/PageHeader.svelte";
+  import AddIcon from "lucide-svelte/icons/plus";
 
   export let account: Account;
 
-  $: mailAccount = account as MailAccount;
+  $: identities = (account as MailAccount).identities;
+  $: console.log("identities", $identities.contents);
+
+  function onAdd() {
+    let id = new MailIdentity();
+    id.userRealname = account.userRealname;
+    identities.add(id);
+  }
 </script>
 
 <style>
-  grid {
-    grid-template-columns: max-content auto;
-    gap: 8px 24px;
+  .page {
+    max-width: 40em;
   }
 </style>
