@@ -13,11 +13,13 @@
       classes="delete"
       icon={DeleteIcon}
       onClick={onDelete}
+      disabled={folder.disableDelete()}
       />
     <Button label="Create sub-folder"
       classes="create"
       icon={CreateFolderIcon}
       onClick={onOpenCreateSubFolder}
+      disabled={folder.disableSubfolders()}
       />
     <slot name="buttons-bottom-right" />
   </hbox>
@@ -28,7 +30,6 @@
   import Button from "../../../Shared/Button.svelte";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import CreateFolderIcon from "lucide-svelte/icons/folder-plus";
-  import CloseIcon from "lucide-svelte/icons/x";
   import { assert } from "../../../../logic/util/util";
 
   export let folder: Folder;

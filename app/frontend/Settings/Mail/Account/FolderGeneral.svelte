@@ -7,13 +7,25 @@
     />
 
   <label for="count">Use as</label>
-  <SpecialFolderDropDown bind:specialFolderType={folder.specialFolder} />
+  <SpecialFolderDropDown bind:specialFolderType={folder.specialFolder} disabled={disableSpecial} />
   <Button label="Save"
     onClick={onChangeSpecialFolder}
+    disabled={disableSpecial}
     />
 
   <label for="count">Messages</label>
-  <hbox class="value" name="count">{$folder.countNewArrived} new, {$folder.countUnread} unread, {$folder.countTotal} total messages</hbox>
+  <hbox class="value" name="count">
+    {#if $folder.countTotal > 0}
+      {$folder.countNewArrived} new,
+      {$folder.countUnread} unread,
+      {$folder.countTotal} total messages.
+    {/if}
+    {#if $folder.countTotal > 0 && $folder.countTotal == $messages.length}
+      All downloaded.
+    {:else if $messages.length > 0}
+      {$messages.length} local messages.
+    {/if}
+  </hbox>
   <Button label="Mark all read"
     onClick={onMarkAllRead}
     />
@@ -29,6 +41,9 @@
   export let folder: Folder;
 
   $: init($folder);
+
+  $: messages = $folder.messages;
+  $: disableSpecial = $folder.disableChangeSpecial();
 
   let folderName: string;
   function init(_dummy: any) {

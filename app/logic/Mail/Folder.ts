@@ -125,6 +125,27 @@ export class Folder extends Observable implements TreeItem {
     return this.subFolders as any as Collection<TreeItem>;
   }
 
+  /** @return false, if delete is possible. If not, a string with the reason why it's not possible. */
+  disableDelete(): string | false {
+    if (this.specialFolder) {
+      return "You cannot delete this folder, because it has a special use. See Use As.";
+    }
+    return false;
+  }
+
+  /** @return false, if creating subfolders is possible. If not, a string with the reason why it's not possible. */
+  disableSubfolders(): string | false {
+    return false;
+  }
+
+  /** @return false, if changing the special folder is possible. If not, a string with the reason why it's not possible. */
+  disableChangeSpecial(): string | false {
+    if (this.path.toUpperCase() == "INBOX") {
+      return "You cannot change the Inbox folder.";
+    }
+    return false;
+  }
+
   newEMail(): EMail {
     return new EMail(this);
   }
@@ -140,6 +161,7 @@ export enum SpecialFolder {
   Archive = "archive",
   Outbox = "outbox",
   All = "all",
+  Search = "search",
 }
 
 export const specialFolderOrder = [
@@ -151,5 +173,6 @@ export const specialFolderOrder = [
   SpecialFolder.Spam,
   SpecialFolder.Archive,
   SpecialFolder.Outbox,
+  SpecialFolder.Search,
   SpecialFolder.Normal,
 ];

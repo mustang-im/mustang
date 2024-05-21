@@ -1,6 +1,6 @@
 <button on:click on:dblclick on:click={myOnClick} bind:this={buttonEl}
-  title={tooltip} class="button {classes}" class:plain
-  {disabled} class:disabled class:selected
+  title={typeof(disabled) == "string" ? disabled : tooltip} class="button {classes}" class:plain
+  disabled={!!disabled} class:disabled class:selected
   >
   <hbox class="icon">
     {#if typeof(icon) == "string"}
@@ -31,19 +31,23 @@
   /** Show this label below the icon (unless `iconOnly` or label slot).
    * If iconOnly and no explicit `tooltip`: Show it as tooltip. */
   export let label: string = null;
+  export let icon: ComponentType | string = null;
+  export let classes = "";
+  export let plain = false;
+  export let iconSize = "16px";
+  export let iconOnly = false;
+  /** For toggle buttons: pressed/active state */
+  export let selected = false;
+  /** If true or a string, refuse input and make it grey.
+   * If a string, this string will be shown as tooltip. This allows you to inform the user
+   * about the reason why the button is disabled */
+  export let disabled: boolean | string = false;
   export let shortCutInfo: string = null;
   /** What to show when the user hovers with the mouse over the
    * button for ca. 2+ seconds.
    * Defaults to `label` and `shortCutInfo`. */
   export let tooltip: string = label +
     (shortCutInfo ? "\n\nShortcut: " + shortCutInfo : '');
-  export let icon: ComponentType | string = null;
-  export let classes = "";
-  export let plain = false;
-  export let iconSize = "16px";
-  export let iconOnly = false;
-  export let disabled = false;
-  export let selected = false;
   export let onClick: (event: Event) => void = null;
   export let errorCallback = showError;
   /** e.g. to `.focus()`

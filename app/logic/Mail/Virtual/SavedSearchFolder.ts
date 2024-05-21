@@ -13,6 +13,7 @@ export class SavedSearchFolder extends Folder {
   account: AllAccounts;
   _foldersDummy = new ArrayColl<Folder>();
   search: SearchEMail;
+  readonly specialFolder: SpecialFolder = SpecialFolder.Search;
 
   constructor(search: SearchEMail) {
     super(allAccountsAccount);
@@ -72,8 +73,20 @@ export class SavedSearchFolder extends Folder {
   }
 
   async deleteIt() {
+    let canDelete = this.canDelete();
+    assert(canDelete === true, canDelete ?? "Cannot delete");
     savedSearchFolders.remove(this);
     saveSavedSearches();
+  }
+
+  disableDelete(): string | false {
+    return false;
+  }
+  disableSubfolders(): string | false {
+    return "This folder is a search";
+  }
+  disableChangeSpecial(): string | false {
+    return "This is a search folder. You cannot change its type, but you may delete it.";
   }
 
   async moveMessagesHere(messages: Collection<EMail>) {

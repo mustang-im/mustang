@@ -1,4 +1,6 @@
-<select bind:value={specialFolderType}>
+<select bind:value={specialFolderType}
+  disabled={!!disabled} title={typeof(disabled) == "string" ? disabled : undefined}
+  >
   {#each specialFolderOrder as type }
     <option value={type}>
       {type}
@@ -10,6 +12,7 @@
   import { SpecialFolder, specialFolderOrder } from "../../../../logic/Mail/Folder";
 
   export let specialFolderType: SpecialFolder;
+  export let disabled: boolean | string = false;
 </script>
 
 <style>
