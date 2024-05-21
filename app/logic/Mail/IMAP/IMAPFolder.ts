@@ -295,7 +295,7 @@ export class IMAPFolder extends Folder {
   }
 
   async rename(newName: string): Promise<void> {
-    this.name = newName;
+    await super.rename(newName);
     let parentPath = this.parent ? this.parent.path : this.getPathComponents().slice(0, -1);
     await this.runCommand(async (conn) => {
       await conn.mailboxRename(this.path, [...parentPath, newName]);
@@ -305,11 +305,8 @@ export class IMAPFolder extends Folder {
 
   /** Warning: Also deletes all messages in the folder, also on the server */
   async deleteIt(): Promise<void> {
-    if (this.parent) {
-      this.parent.subFolders.remove(this);
-    } else {
-      this.account.rootFolders.remove(this);
-    }
+    await super.deleteIt();
+    SQLFolder.deleteIt(this);
     await this.runCommand(async (conn) => {
       await conn.mailboxDelete(this.path);
     });

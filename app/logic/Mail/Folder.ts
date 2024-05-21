@@ -120,7 +120,11 @@ export class Folder extends Observable implements TreeItem {
 
   /** Warning: Also deletes all messages in the folder, also on the server */
   async deleteIt(): Promise<void> {
-    throw new AbstractFunction();
+    if (this.parent) {
+      this.parent.subFolders.remove(this);
+    } else {
+      this.account.rootFolders.remove(this);
+    }
   }
 
   async markAllRead(): Promise<void> {

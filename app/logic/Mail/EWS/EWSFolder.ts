@@ -407,10 +407,12 @@ export class EWSFolder extends Folder {
       },
     };
     await this.account.callEWS(request);
-    this.name = name;
+    await super.rename(name);
   }
 
   async deleteIt() {
+    await super.deleteIt();
+    await SQLFolder.deleteIt(this);
     let request = {
       m$DeleteFolder: {
         m$FolderIds: {
@@ -422,12 +424,6 @@ export class EWSFolder extends Folder {
       },
     };
     await this.account.callEWS(request);
-    await SQLFolder.deleteIt(this);
-    if (this.parent) {
-      this.parent.subFolders.remove(this);
-    } else {
-      this.account.rootFolders.remove(this);
-    }
   }
 
   async markAllRead() {
