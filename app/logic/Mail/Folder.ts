@@ -97,8 +97,10 @@ export class Folder extends Observable implements TreeItem {
   async moveFolderHere(folder: Folder) {
     assert(folder != folder.account.getSpecialFolder(SpecialFolder.Inbox), "Cannot move the inbox");
     assert(!folder.specialFolder, "Should not move special folders");
-    assert(folder != this, "Cannot move folder into itself. Neither physics nor logic allow that.");
-    assert(this.subFolders.contains(folder), "Is already a subfolder");
+    assert(folder != this, "Cannot move a folder into itself. Neither physics nor logic allow that. We would run into a circle and run and run and run...");
+    assert(this.subFolders.contains(folder), "This folder is *already* a subfolder of the target folder");
+    let disableSubfolders = this.disableSubfolders();
+    assert(!disableSubfolders, disableSubfolders ?? "This folder cannot have subfolders");
     // TODO Check sub sub folders
     folder.parent.subFolders.remove(folder);
     folder.parent = this;
@@ -106,6 +108,8 @@ export class Folder extends Observable implements TreeItem {
   }
 
   async createSubFolder(name: string): Promise<Folder> {
+    let disableSubfolders = this.disableSubfolders();
+    assert(!disableSubfolders, disableSubfolders ?? "This folder cannot have subfolders");
     let folder = this.account.newFolder();
     folder.name = name;
     folder.parent = this;
@@ -124,6 +128,8 @@ export class Folder extends Observable implements TreeItem {
 
   /** Warning: Also deletes all messages in the folder, also on the server */
   async deleteIt(): Promise<void> {
+    let disableDelete = this.disableDelete();
+    assert(!disableDelete, disableDelete ?? "Cannot delete");
     if (this.parent) {
       this.parent.subFolders.remove(this);
     } else {

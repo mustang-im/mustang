@@ -3,7 +3,7 @@
   <svelte:fragment slot="buttons-top-right">
     {#if canRemove}
       <RoundButton
-        label="Add"
+        label="Delete this identity"
         onClick={onDelete}
         icon={DeleteIcon}
         />

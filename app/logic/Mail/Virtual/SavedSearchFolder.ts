@@ -73,8 +73,8 @@ export class SavedSearchFolder extends Folder {
   }
 
   async deleteIt() {
-    let canDelete = this.canDelete();
-    assert(canDelete === true, canDelete ?? "Cannot delete");
+    let disableDelete = this.disableDelete();
+    assert(!disableDelete, disableDelete ?? "Cannot delete");
     savedSearchFolders.remove(this);
     saveSavedSearches();
   }
