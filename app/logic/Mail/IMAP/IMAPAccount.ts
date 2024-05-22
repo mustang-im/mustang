@@ -59,7 +59,7 @@ export class IMAPAccount extends MailAccount {
       },
       clientInfo: useragent,
       tls: {
-        minVersion: this.acceptOldTLS ? 'TLSv1.0' : undefined,
+        minVersion: this.acceptOldTLS ? 'TLSv1' : undefined,
         rejectUnauthorized: !this.acceptBrokenTLSCerts,
       },
       maxIdleTime: 30 * 1000, // 30 s, refresh IDLE
