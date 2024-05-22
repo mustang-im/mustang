@@ -43,6 +43,8 @@ export class EMail extends Message {
   /** The user started writing this message, but didn't send it yet */
   @notifyChangedProperty
   isDraft = false;
+  @notifyChangedProperty
+  isDeleted = false;
   /** Complete MIME source of the email */
   @notifyChangedProperty
   mime: Uint8Array | undefined;
@@ -103,8 +105,10 @@ export class EMail extends Message {
   }
 
   async deleteMessage() {
+    this.isDeleted = true;
     this.folder.messages.remove(this);
     await SQLEMail.deleteIt(this);
+    this.dbID = null;
   }
 
   async parseMIME() {
@@ -187,7 +191,7 @@ export class EMail extends Message {
    * Do this only exactly once per email `dbID`.
    * This typically happens immediately after`parseMIME()`. */
   async save() {
-    if (await this.isDownloadCompleteDoublecheck()) {
+    if (this.isDeleted || await this.isDownloadCompleteDoublecheck()) {
       return;
     }
     await SQLEMail.save(this);
@@ -209,7 +213,7 @@ export class EMail extends Message {
     // Double-check for concurrent downloads
     let check = this.folder.newEMail();
     check.dbID = this.dbID;
-    await SQLEMail.readWritableProps(this);
+    await SQLEMail.readWritableProps(check);
     return check.downloadComplete;
   }
 
