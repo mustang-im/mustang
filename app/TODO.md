@@ -3,7 +3,6 @@
   * Save in Sent folder
   * Settings
   * Bugs
-    * Delete button disabled too long
     * FastList doesn't update some rows
     * Save window size
   * Search

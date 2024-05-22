@@ -26,6 +26,7 @@
       iconOnly
       label={"Delete this message"}
       onClick={deleteMessage}
+      disabled={!message}
       plain
       />
   </hbox>
@@ -36,6 +37,7 @@
       iconOnly
       label={"Mark as spam"}
       onClick={markAsSpam}
+      disabled={!message}
       plain
       />
   </hbox>
@@ -44,7 +46,7 @@
       icon={CircleIcon}
       iconSize="16px"
       iconOnly
-      label={message.isRead ? "Mark this message as unread" : "Mark this message as read"}
+      label={$message.isRead ? "Mark this message as unread" : "Mark this message as read"}
       onClick={toggleRead}
       plain
       />
