@@ -14,10 +14,11 @@ export class SQLPerson {
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO person (
           name, firstName, lastName,
-          picture, notes, addressbookID
+          picture, notes, pID, addressbookID
         ) VALUES (
           ${person.name}, ${person.firstName}, ${person.lastName},
-          ${person.picture}, ${person.notes}, ${person.addressbook?.dbID}
+          ${person.picture}, ${person.notes}, ${person.id},
+          ${person.addressbook?.dbID}
         )`);
       person.dbID = insert.lastInsertRowid;
     } else {
@@ -28,6 +29,7 @@ export class SQLPerson {
           lastName = ${person.lastName},
           picture = ${person.picture},
           notes = ${person.notes},
+          pID = ${person.id},
           addressbookID = ${person.addressbook?.dbID}
         WHERE id = ${person.dbID}
         `);
@@ -71,7 +73,7 @@ export class SQLPerson {
       row = await (await getDatabase()).get(sql`
         SELECT
           name, firstName, lastName,
-          picture, notes, addressbookID
+          picture, notes, addressbookID, pID
         FROM person
         WHERE id = ${dbID}
         `) as any;
@@ -82,6 +84,7 @@ export class SQLPerson {
     person.lastName = sanitize.string(row.lastName, null);
     person.picture = sanitize.url(row.picture, null);
     person.notes = sanitize.string(row.notes, null);
+    person.id = row.pID;
     if (row.addressbook) {
       let addressbookID = sanitize.integer(row.addressbookID);
       if (person.addressbook) {
@@ -136,7 +139,7 @@ export class SQLPerson {
     let rows = await (await getDatabase()).all(sql`
       SELECT
         id, name, firstName, lastName,
-        picture, notes
+        picture, notes, pID
       FROM person
       WHERE addressbookID = ${addressbook.dbID}
       `) as any;

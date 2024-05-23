@@ -9,13 +9,15 @@ export const contactsDatabaseSchema = sql`
     "url" TEXT default null,
     "username" TEXT default null,
     "userRealname" TEXT default null,
-    "workspace" TEXT default null
+    "workspace" TEXT default null,
+    "syncState" ANY default null
   );
 
   --- Persons in the personal address books
   CREATE TABLE "person" (
     "id" INTEGER PRIMARY KEY,
     "addressbookID" INTEGER default null,
+    "pID" ANY default null,
     "name" TEXT not null,
     "firstName" TEXT,
     "lastName" TEXT,
@@ -51,9 +53,10 @@ export const contactsDatabaseSchema = sql`
   CREATE INDEX index_personContact_personID ON personContact (personID);
 
   --- Groups in the personal address books
-  CREATE TABLE "groupp" (
+  CREATE TABLE "group" (
     "id" INTEGER PRIMARY KEY,
     "addressbookID" INTEGER default null,
+    "pID" ANY default null,
     "name" TEXT not null,
     "description" TEXT default null,
     FOREIGN KEY (addressbookID)
@@ -66,7 +69,7 @@ export const contactsDatabaseSchema = sql`
     "groupID" INTEGER not null,
     "personID" INTEGER not null,
     FOREIGN KEY (groupID)
-      REFERENCES groupp (id)
+      REFERENCES "group" (id)
       ON DELETE CASCADE,
     FOREIGN KEY (personID)
       REFERENCES person (id)

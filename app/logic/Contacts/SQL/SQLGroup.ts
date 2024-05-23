@@ -15,18 +15,18 @@ export class SQLGroup extends Group {
     assert(group.addressbook?.dbID, "Need address book ID to save the group");
     if (!group.dbID) {
       let insert = await (await getDatabase()).run(sql`
-        INSERT INTO groupp (
-          name, description, addressbookID
+        INSERT INTO "group" (
+          name, description, pID, addressbookID
         ) VALUES (
           ${group.name}, ${group.description},
-          ${group.addressbook?.dbID}
+          ${group.id}, ${group.addressbook?.dbID}
         )`);
       group.dbID = insert.lastInsertRowid;
     } else {
       await (await getDatabase()).run(sql`
-        UPDATE groupp SET
+        UPDATE "group" SET
           name = ${group.name}, description = ${group.description},
-          addressbookID = ${group.addressbook?.dbID}
+          pID = ${group.id}, addressbookID = ${group.addressbook?.dbID}
         WHERE id = ${group.dbID}
         `);
     }
@@ -56,7 +56,7 @@ export class SQLGroup extends Group {
   static async deleteIt(group: Group) {
     assert(group.dbID, "Need Group DB ID to delete");
     await (await getDatabase()).run(sql`
-      DELETE FROM groupp
+      DELETE FROM "group"
       WHERE id = ${group.dbID}
       `);
   }
@@ -65,14 +65,15 @@ export class SQLGroup extends Group {
     if (!row) {
       row = await (await getDatabase()).get(sql`
         SELECT
-          name, description, addressbookID
-        FROM groupp
+          name, description, pID, addressbookID
+        FROM "group"
         WHERE id = ${dbID}
         `) as any;
     }
     group.dbID = sanitize.integer(dbID);
     group.name = sanitize.label(row.name);
     group.description = sanitize.label(row.description, "");
+    group.id = row.pID;
     if (row.addressbook) {
       let addressbookID = sanitize.integer(row.addressbookID);
       if (group.addressbook) {
@@ -125,8 +126,8 @@ export class SQLGroup extends Group {
 
     let rows = await (await getDatabase()).all(sql`
       SELECT
-        id, name, description
-      FROM groupp
+        id, name, description, pID
+      FROM "group"
       WHERE addressbookID = ${addressbook.dbID}
       `) as any;
     let newGroups = new ArrayColl<Group>();

@@ -11,6 +11,7 @@ export class Addressbook extends Account {
   readonly groups = new ArrayColl<Group>();
   readonly contacts: Collection<Contact> = mergeColl(this.persons, this.groups);
   storage: AddressbookStorage | null = null;
+  syncState: string | null = null;
 
   newPerson(): Person {
     return new Person(this);

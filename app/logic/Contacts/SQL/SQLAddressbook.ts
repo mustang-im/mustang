@@ -31,17 +31,18 @@ export class SQLAddressbook implements AddressbookStorage {
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO addressbook (
           idStr, name, protocol, url, username,
-          userRealname, workspace
+          userRealname, workspace, syncState
         ) VALUES (
           ${acc.id}, ${acc.name}, ${acc.protocol}, ${acc.url}, ${acc.username},
-          ${acc.userRealname}, ${acc.workspace}
+          ${acc.userRealname}, ${acc.workspace}, ${acc.syncState}
         )`);
       acc.dbID = insert.lastInsertRowid;
     } else {
       await (await getDatabase()).run(sql`
         UPDATE addressbook SET
           name = ${acc.name}, url = ${acc.url}, username = ${acc.username},
-          userRealname = ${acc.userRealname}, workspace = ${acc.workspace}
+          userRealname = ${acc.userRealname}, workspace = ${acc.workspace},
+          syncState = ${acc.syncState}
         WHERE id = ${acc.dbID}
         `);
     }
@@ -64,7 +65,7 @@ export class SQLAddressbook implements AddressbookStorage {
     let row = await (await getDatabase()).get(sql`
       SELECT
         idStr, name, protocol, url, username,
-        userRealname, workspace
+        userRealname, workspace, syncState
       FROM addressbook
       WHERE id = ${dbID}
       `) as any;
@@ -78,6 +79,7 @@ export class SQLAddressbook implements AddressbookStorage {
     acc.workspace = row.workspace
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
       : null;
+    acc.syncState = row.syncState;
     if (!acc.storage) {
       acc.storage = new SQLAddressbook();
     }
