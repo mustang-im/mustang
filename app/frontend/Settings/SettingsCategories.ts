@@ -8,12 +8,14 @@ import { chatMustangApp } from "../Chat/ChatMustangApp";
 import { appGlobal } from "../../logic/app";
 import GlobalAppearance from "./Global/Appearance.svelte";
 import MailAppearance from "./Mail/Appearance.svelte";
+import MailNotifications from "./Mail/Notifications.svelte";
 import AccountGeneral from "./AccountGeneral.svelte";
 import AccountURLServer from "./AccountURLServer.svelte";
 import AccountMailServer from "./Mail/Account/Server.svelte";
 import AccountFolders from "./Mail/Account/Folders.svelte";
 import AccountIdentity from "./Mail/Account/Identity.svelte";
 import AccountXMPPServer from "./Chat/AccountXMPPServer.svelte";
+import ChatNotifications from "./Chat/Notifications.svelte";
 import Devices from "./Meet/Devices.svelte";
 import About from "./About/About.svelte";
 import Licenses from "./About/Licenses.svelte";
@@ -45,6 +47,7 @@ settingsCategories.add(globalSettings);
 const mailSettings = new SettingsCategory("mail", "Mail", null, true);
 mailSettings.subCategories.addAll([
   new SettingsCategory("mail-appearance", "Appearance", MailAppearance),
+  new SettingsCategory("mail-notifications", "Notifications", MailNotifications),
 ]);
 mailSettings.accounts = appGlobal.emailAccounts;
 mailSettings.newAccountUI = SetupMail;
@@ -60,6 +63,7 @@ accountSettings.add(new AccSetting(MailAccount, "mail-copies", "Copies", null));
 const chatSettings = new SettingsCategory("chat", "Chat", null, true);
 chatSettings.subCategories.addAll([
   new SettingsCategory("chat-appearance", "Appearance"),
+  new SettingsCategory("chat-notifications", "Notifications", ChatNotifications),
 ]);
 chatSettings.accounts = appGlobal.chatAccounts;
 chatSettings.newAccountUI = SetupChat;
