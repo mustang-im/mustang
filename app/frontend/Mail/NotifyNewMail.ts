@@ -42,6 +42,9 @@ export async function showNewMail(messages: EMail[]) {
   let message = messages.length == 1 ? messages[0] : null;
   messages = messages.slice(0, 5);
 
+  for (let msg of messages) {
+    await msg.download();
+  }
   let title = message?.subject ??
     messages.map(msg => msg.subject?.substring(0, 20) ?? "")
       .join(", ").substring(0, 60);
