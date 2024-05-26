@@ -1,7 +1,27 @@
 # Next
 * Mail
   * Save in Sent folder
+    * JPC buffer frontend -> backend
   * Settings
+    * Save identites
+    * Notifications
+    * Compose and quote
+  * Selection
+    * Persists between apps
+    * Default selection on start
+  * OAuth2
+    * Gmail
+    * in-app
+    * register with providers
+  * Threads
+    * Find thread
+    * Hide quotes
+    * Message list: Threaded view?
+    * Mail Chat view: Open thread
+  * Move messages to deep subfolders
+  * Move messages to other accounts
+  * inline images display
+  * inline images send
   * Bugs
     * FastList doesn't update some rows
     * Save window size
@@ -12,18 +32,6 @@
       * List
       * Edit
       * Run
-  * Threads
-    * Find thread
-    * Hide quotes
-    * Message list: Threaded view?
-    * Mail Chat view: Open thread
-  * OAuth2
-    * in-app
-    * register with providers
-  * Move messages to deep subfolders
-  * Move messages to other accounts
-  * inline images display
-  * inline images send
   * All accounts
     * fix mergeColls()
     * use search folder
