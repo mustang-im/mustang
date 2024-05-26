@@ -36,12 +36,19 @@ export class SMTPAccount extends MailAccount {
 
   async send(email: EMail): Promise<void> {
     try {
+      let mail = await SMTPAccount.getNMMail(email);
       let result = await appGlobal.remoteApp.sendMailNodemailer(
-        this.getTransportOptions(),
-        await SMTPAccount.getNMMail(email));
+        this.getTransportOptions(), mail);
       email.sent = new Date();
       email.received = email.sent;
-      email.mime = await SMTPAccount.getMIME(email); // to save the Sent mail
+      email.mime = await appGlobal.remoteApp.getMIMENodemailer(mail); // to save the Sent mail
+
+      // Send copy to myself, via SMTP - Workaround for IMAP.addMessage() not working
+      // <https://nodemailer.com/smtp/envelope/>
+      mail.envelope = {};
+      mail.envelope.to = this.emailAddress;
+      await appGlobal.remoteApp.sendMailNodemailer(
+        this.getTransportOptions(), mail);
     } catch (ex) {
       if (ex.code == "EAUTH") {
         ex.message = "Check your login, username, and password:\n" + ex.message;
@@ -70,7 +77,8 @@ export class SMTPAccount extends MailAccount {
   }
 
   static async getMIME(email: EMail): Promise<Uint8Array> {
-    return await appGlobal.remoteApp.getMIMENodemailer(await SMTPAccount.getNMMail(email));
+    let mail = await SMTPAccount.getNMMail(email);
+    return await appGlobal.remoteApp.getMIMENodemailer(mail);
   }
 
   async verifyLogin(): Promise<void> {
