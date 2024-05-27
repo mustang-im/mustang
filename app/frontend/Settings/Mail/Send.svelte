@@ -1,50 +1,60 @@
-<hbox class="groups">
-  <HeaderGroupBox>
-    <hbox slot="header">
-      Quote
+<HeaderGroupBox>
+  <hbox slot="header">
+    Quote
+  </hbox>
+  <vbox>
+    <hbox class="subtitle">When replying:</hbox>
+
+    <hbox class="quote">
+      <vbox>
+        <label class="radio">
+          <input type="radio" value="below" bind:group={$quoteSetting.value} />
+          Quote below, Reply above
+        </label>
+        <img src={quoteBelowImg} title="Quote below" alt="Quote below" width="166" height="94" />
+      </vbox>
+
+      <vbox>
+        <label class="radio">
+          <input type="radio" value="above" bind:group={$quoteSetting.value} />
+          Quote above, Reply below
+        </label>
+        <img src={quoteAboveImg} title="Quote above" alt="Quote above" width="163" height="99" />
+      </vbox>
+
+      <vbox>
+        <label class="radio">
+          <input type="radio" value="none" bind:group={$quoteSetting.value} />
+          Do not quote
+        </label>
+        <hbox />
+      </vbox>
     </hbox>
-    <vbox class="quote">
-      <hbox class="subtitle">When replying:</hbox>
+  </vbox>
+</HeaderGroupBox>
 
-      <label class="radio">
-        <input type="radio" value="below" bind:group={$quoteSetting.value} />
-        Quote below, Reply above
-      </label>
-      <img src={quoteBelowImg} title="Quote below" alt="Quote below" width="256" height="112" />
-
-      <label class="radio">
-        <input type="radio" value="above" bind:group={$quoteSetting.value} />
-        Quote above, Reply below
-      </label>
-      <img src={quoteAboveImg} title="Quote above" alt="Quote above" width="256" height="112" />
-
-      <label class="radio">
-        <input type="radio" value="none" bind:group={$quoteSetting.value} />
-        Do not quote
-      </label>
-      <hbox />
-    </vbox>
-  </HeaderGroupBox>
-
-  <HeaderGroupBox>
-    <hbox slot="header">
-      Composition
-    </hbox>
-    <vbox class="format">
+<HeaderGroupBox>
+  <hbox slot="header">
+    Composition
+  </hbox>
+  <hbox class="format">
+    <vbox>
       <label class="radio">
         <input type="radio" value="html" bind:group={$formatSetting.value} />
         Send as HTML and Plaintext
       </label>
-      <img src={htmlImg} title="HTML" alt="HTML" width="335" height="107" />
+      <img src={htmlImg} title="HTML" alt="HTML" width="248" height="96" />
+    </vbox>
 
+    <vbox>
       <label class="radio">
         <input type="radio" value="plaintext" bind:group={$formatSetting.value} />
         Send as Plaintext only
       </label>
-      <img src={plaintextImg} title="Plaintext" alt="Plaintext" width="413" height="88" />
+      <img src={plaintextImg} title="Plaintext" alt="Plaintext" width="290" height="77" />
     </vbox>
-  </HeaderGroupBox>
-</hbox>
+  </hbox>
+</HeaderGroupBox>
 
 <script lang="ts">
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
@@ -59,20 +69,18 @@
 </script>
 
 <style>
-  .groups {
-    flex-wrap: wrap;
-  }
-  .groups :global(> *) {
-    margin-right: 32px;
-  }
-  .groups :global(.group .content) {
-    margin-right: 32px;
-  }
   .subtitle {
     margin-bottom: 16px;
   }
-  img {
-    margin: 4px 0px 24px 28px;
+  hbox.quote,
+  hbox.format {
+    flex-wrap: wrap;
+  }
+  .quote img {
+    margin: 12px 48px 24px 28px;
+  }
+  .format img {
+    margin: 16px 32px 24px 28px;
   }
   .radio {
     align-items: center;
