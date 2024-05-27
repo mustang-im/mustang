@@ -84,7 +84,7 @@ export class SQLPerson {
     person.lastName = sanitize.string(row.lastName, null);
     person.picture = sanitize.url(row.picture, null);
     person.notes = sanitize.string(row.notes, null);
-    person.id = row.pID;
+    person.id = sanitize.string(row.pID, null);
     if (row.addressbook) {
       let addressbookID = sanitize.integer(row.addressbookID);
       if (person.addressbook) {

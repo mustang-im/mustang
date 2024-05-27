@@ -17,6 +17,7 @@ export const contactsDatabaseSchema = sql`
   CREATE TABLE "person" (
     "id" INTEGER PRIMARY KEY,
     "addressbookID" INTEGER default null,
+    -- Protocol-specific ID
     "pID" ANY default null,
     "name" TEXT not null,
     "firstName" TEXT,
@@ -56,6 +57,7 @@ export const contactsDatabaseSchema = sql`
   CREATE TABLE "group" (
     "id" INTEGER PRIMARY KEY,
     "addressbookID" INTEGER default null,
+    -- Protocol-specific ID
     "pID" ANY default null,
     "name" TEXT not null,
     "description" TEXT default null,
