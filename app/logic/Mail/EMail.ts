@@ -10,6 +10,7 @@ import { appGlobal } from "../app";
 import { fileExtensionForMIMEType, assert, AbstractFunction } from "../util/util";
 import { backgroundError } from "../../frontend/Util/error";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, Collection, MapColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
@@ -312,13 +313,18 @@ export class EMail extends Message {
     reply.from.name = account.userRealname;
     reply.subject = "Re: " + this.baseSubject; // Do *not* localize "Re: "
     reply.inReplyTo = this.messageID;
-    reply.html = `<p></p>
-    <p></p>
-    <p></p>
-    <p class="quote-header">${this.quotePrefixLine()}</p>
+    let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
+    let quote = `<p class="quote-header">${this.quotePrefixLine()}</p>
     <blockquote cite="mid:${this.id}">
       ${this.html}
     </blockquote>`;
+    reply.html = quoteSetting == "none" ? `<p></p>` :
+      quoteSetting == "below" ? `<p></p>
+    <p></p>
+    ${quote}`
+        : `${quote}
+    <p></p>
+    <p></p>`;
     return reply;
   }
 

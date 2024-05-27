@@ -1,32 +1,76 @@
-<HeaderGroupBox>
-  <hbox slot="header">
-    Composition
-  </hbox>
-  <vbox class="send-format">
-    <hbox class="radio">
-      <input type="radio" value="html" bind:group={$formatSetting.value} name="html" />
-      <label for="html">Send as HTML and Plaintext</label>
+<hbox class="groups">
+  <HeaderGroupBox>
+    <hbox slot="header">
+      Quote
     </hbox>
-    <img src={htmlImg} title="HTML" alt="HTML" width="274" height="126" />
+    <vbox class="quote">
+      <hbox class="subtitle">When replying:</hbox>
 
-    <hbox class="radio">
-      <input type="radio" value="plaintext" bind:group={$formatSetting.value} name="plaintext" />
-      <label for="html">Send as Plaintext only</label>
+      <label class="radio">
+        <input type="radio" value="below" bind:group={$quoteSetting.value} />
+        Reply above, Quote below
+      </label>
+      <img src={quoteBelowImg} title="Quote below" alt="Quote below" width="256" height="112" />
+
+      <label class="radio">
+        <input type="radio" value="above" bind:group={$quoteSetting.value} />
+        Reply below, Quote above
+      </label>
+      <img src={quoteAboveImg} title="Quote above" alt="Quote above" width="256" height="112" />
+
+      <label class="radio">
+        <input type="radio" value="none" bind:group={$quoteSetting.value} />
+        Do not quote
+      </label>
+      <hbox />
+    </vbox>
+  </HeaderGroupBox>
+
+  <HeaderGroupBox>
+    <hbox slot="header">
+      Composition
     </hbox>
-    <img src={plaintextImg} title="Plaintext" alt="Plaintext" width="250" height="117" />
-  </vbox>
-</HeaderGroupBox>
+    <vbox class="format">
+      <label class="radio">
+        <input type="radio" value="html" bind:group={$formatSetting.value} />
+        Send as HTML and Plaintext
+      </label>
+      <img src={htmlImg} title="HTML" alt="HTML" width="274" height="126" />
+
+      <label class="radio">
+        <input type="radio" value="plaintext" bind:group={$formatSetting.value} />
+        Send as Plaintext only
+      </label>
+      <img src={plaintextImg} title="Plaintext" alt="Plaintext" width="250" height="117" />
+    </vbox>
+  </HeaderGroupBox>
+</hbox>
 
 <script lang="ts">
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import { getLocalStorage } from "../../Util/LocalStorage";
   import htmlImg from "../../asset/settings/mail/send/html.png";
   import plaintextImg from "../../asset/settings/mail/send/plaintext.png";
+  import quoteBelowImg from "../../asset/settings/mail/send/quote-below.png";
+  import quoteAboveImg from "../../asset/settings/mail/send/quote-above.png";
 
   let formatSetting = getLocalStorage("mail.send.format", "html");
+  let quoteSetting = getLocalStorage("mail.send.quote", "below");
 </script>
 
 <style>
+  .groups {
+    flex-wrap: wrap;
+  }
+  .groups :global(> *) {
+    margin-right: 32px;
+  }
+  .groups :global(.group .content) {
+    margin-right: 32px;
+  }
+  .subtitle {
+    margin-bottom: 16px;
+  }
   img {
     margin: 4px 0px 24px 28px;
   }
@@ -35,5 +79,8 @@
   }
   label {
     margin-left: 8px;
+  }
+  .quote img {
+    opacity: 60%;
   }
 </style>
