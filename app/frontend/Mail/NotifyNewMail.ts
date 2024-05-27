@@ -32,8 +32,7 @@ export async function showNewMail(messages: EMail[]) {
   const doWebNotification = settings.includes("popup");
   const doOSNotification = settings.includes("popup-os");
   let isOSNotificationSupported: boolean = undefined;
-  const onlyInAB = true;
-  console.log("notify by", settings, "sound", doSound, "popup", doWebNotification);
+  const onlyInAB = getLocalStorage("notifications.mail.only.addressbook", true).value;
 
   const filterConditions: ((msg: EMail) => boolean)[] = [];
   filterConditions.push(msg => msg.isNewArrived);
