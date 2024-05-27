@@ -22,13 +22,16 @@
     threadMessages.clear();
     threadMessages.add(message);
     message.html;
+    await message.findThread(message.folder.messages);
     if (!message.threadID) {
       return;
     }
     let search = new SQLSearchEMail();
     search.threadID = message.threadID;
     threadMessages.clear();
-    threadMessages.addAll(await search.startSearch());
+    let msgs = await search.startSearch();
+    msgs = msgs.sortBy(email => email.sent);
+    threadMessages.addAll(msgs);
     for (let msg of threadMessages) {
       msg.html;
     }

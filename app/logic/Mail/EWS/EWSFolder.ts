@@ -298,11 +298,11 @@ export class EWSFolder extends Folder {
       }
     }
 
-    for (let email of this.messages) {
+    /*for (let email of this.messages) {
       if (!email.threadID && email.dbID) {
         await email.findThread(this.messages);
       }
-    }
+    }*/
 
     return downloadedEmail;
   }

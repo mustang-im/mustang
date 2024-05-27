@@ -279,7 +279,6 @@ export class EMail extends Message {
   }
 
   async findThread(messages: Collection<EMail>): Promise<string | null>{
-    let oldThreadID = this.threadID;
     if (!this.dbID) {
       return null;
     }
@@ -289,6 +288,7 @@ export class EMail extends Message {
       inReplyTo = parent.inReplyTo;
       parent = messages.find(msg => msg.messageID == inReplyTo);
     }
+    let oldThreadID = this.threadID;
     this.threadID = inReplyTo;
     if (oldThreadID != this.threadID) {
       await SQLEMail.saveWritableProps(this);

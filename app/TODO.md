@@ -12,12 +12,14 @@
     * in-app
     * register with providers
   * Threads
-    * Find thread
     * Hide quotes
     * Message list: Threaded view?
     * Mail Chat view: Open thread
   * Move messages to deep subfolders
   * Move messages to other accounts
+  * Setup
+    * Autodiscover
+    * Import account UI
   * inline images display
   * inline images send
   * Bugs
