@@ -64,7 +64,7 @@ export class SearchEMail extends Observable {
     this.dateSentFrom = sanitize.date(json.dateSentFrom, null) ?? undefined;
     this.dateSentTo = sanitize.date(json.dateSentTo, null) ?? undefined;
 
-    this.includesPerson = findPerson(json.includesPersonEMail, "");
+    this.includesPerson = findPerson(json.includesPersonEMail);
     this.account = appGlobal.emailAccounts.find(acc => acc.id == json.accountID);
     this.folder = this.account
       ? this.account.findFolder(folder => folder.path == json.folderPath) ?? undefined

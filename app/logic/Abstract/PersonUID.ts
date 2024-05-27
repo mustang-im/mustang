@@ -31,7 +31,7 @@ export class PersonUID extends Observable {
     if (this.person) {
       return this.person;
     }
-    return this.person = findPerson(this.emailAddress, this.name);
+    return this.person = findPerson(this.emailAddress);
   }
 
   createPerson() {
@@ -53,14 +53,15 @@ export class PersonUID extends Observable {
 export function findOrCreatePersonUID(emailAddress: string, realname: string): PersonUID {
   /* TODO what if the person or email address is later added to the personal address book?
     How to replace the existing Person object references? */
-  let existing = findPerson(emailAddress, realname);
+  let existing = findPerson(emailAddress);
+  let uid = new PersonUID(emailAddress, realname ?? existing?.name ?? emailAddress);
   if (existing) {
-    return PersonUID.fromPerson(existing);
+    uid.person = existing;
   }
-  return new PersonUID(emailAddress, realname ?? emailAddress);
+  return uid;
 }
 
-export function findPerson(emailAddress: string, realname: string): Person | undefined {
+export function findPerson(emailAddress: string): Person | undefined {
   for (let ab of appGlobal.addressbooks) {
     let existing = ab.persons.find(p => p.emailAddresses.some(e => e.value == emailAddress));
     if (existing) {
