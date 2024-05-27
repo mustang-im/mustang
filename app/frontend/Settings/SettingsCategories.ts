@@ -9,6 +9,7 @@ import { appGlobal } from "../../logic/app";
 import GlobalAppearance from "./Global/Appearance.svelte";
 import MailAppearance from "./Mail/Appearance.svelte";
 import MailNotifications from "./Mail/Notifications.svelte";
+import MailSend from "./Mail/Send.svelte";
 import AccountGeneral from "./AccountGeneral.svelte";
 import AccountURLServer from "./AccountURLServer.svelte";
 import AccountMailServer from "./Mail/Account/Server.svelte";
@@ -48,6 +49,7 @@ const mailSettings = new SettingsCategory("mail", "Mail", null, true);
 mailSettings.subCategories.addAll([
   new SettingsCategory("mail-appearance", "Appearance", MailAppearance),
   new SettingsCategory("mail-notifications", "Notifications", MailNotifications),
+  new SettingsCategory("mail-send", "Send", MailSend),
 ]);
 mailSettings.accounts = appGlobal.emailAccounts;
 mailSettings.newAccountUI = SetupMail;
@@ -57,8 +59,6 @@ settingsCategories.add(mailSettings);
 accountSettings.add(new AccSetting(MailAccount, "mail-server", "Server", AccountMailServer));
 accountSettings.add(new AccSetting(MailAccount, "mail-folders", "Folders", AccountFolders));
 accountSettings.add(new AccSetting(MailAccount, "mail-identity", "Identity", AccountIdentity));
-accountSettings.add(new AccSetting(MailAccount, "mail-send", "Send", null));
-accountSettings.add(new AccSetting(MailAccount, "mail-copies", "Copies", null));
 
 const chatSettings = new SettingsCategory("chat", "Chat", null, true);
 chatSettings.subCategories.addAll([

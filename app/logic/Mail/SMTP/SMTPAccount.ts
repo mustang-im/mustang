@@ -3,6 +3,7 @@ import type { EMail } from "../EMail";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { Attachment , ContentDisposition } from "../Attachment";
 import { appGlobal } from "../../app";
+import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { blobToBase64 } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 import type { Attachment as NMAttachment, Address as NMAddress } from "@types/nodemailer/lib/mailer";
@@ -59,6 +60,7 @@ export class SMTPAccount extends MailAccount {
   }
 
   static async getNMMail(email: EMail): Promise<NMMail> {
+    let doHTML = getLocalStorage("mail.send.format", "html").value == "html";
     return {
       subject: email.subject,
       inReplyTo: email.inReplyTo,
@@ -68,7 +70,7 @@ export class SMTPAccount extends MailAccount {
       cc: SMTPAccount.getRecipients(email.cc),
       bcc: SMTPAccount.getRecipients(email.bcc),
       text: email.text,
-      html: email.html,
+      html: doHTML ? email.html : null,
       attachDataUrls: true,
       attachments: await SMTPAccount.getAttachments(email),
       disableFileAccess: true,
