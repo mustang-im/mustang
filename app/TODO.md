@@ -4,8 +4,6 @@
     * JPC buffer frontend -> backend
   * Settings
     * Save identites
-    * Notifications
-    * Compose and quote
   * Selection
     * Persists between apps
     * Default selection on start

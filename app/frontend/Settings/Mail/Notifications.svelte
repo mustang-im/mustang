@@ -3,7 +3,7 @@
     <hbox slot="header">
       Notifications
     </hbox>
-    <hbox class="subtitle">When a new mail arrives, show:</hbox>
+    <hbox class="subtitle">When a new mail arrives, show with:</hbox>
     <NotificationKinds bind:list={notificationsSetting.value} />
   </HeaderGroupBox>
 

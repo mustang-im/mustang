@@ -8,13 +8,13 @@
 
       <label class="radio">
         <input type="radio" value="below" bind:group={$quoteSetting.value} />
-        Reply above, Quote below
+        Quote below, Reply above
       </label>
       <img src={quoteBelowImg} title="Quote below" alt="Quote below" width="256" height="112" />
 
       <label class="radio">
         <input type="radio" value="above" bind:group={$quoteSetting.value} />
-        Reply below, Quote above
+        Quote above, Reply below
       </label>
       <img src={quoteAboveImg} title="Quote above" alt="Quote above" width="256" height="112" />
 
