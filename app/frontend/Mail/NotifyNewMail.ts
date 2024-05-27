@@ -2,6 +2,7 @@ import type { EMail } from "../../logic/Mail/EMail";
 import type { MailAccount } from "../../logic/Mail/MailAccount";
 import { appGlobal } from "../../logic/app";
 import { sleep } from "../../logic/util/util";
+import MailIcon from '../asset/icon/appBar/mail.svg?raw';
 import { backgroundError, showError } from "../Util/error";
 import { CollectionObserver, type Collection } from "svelte-collections";
 
@@ -18,6 +19,8 @@ export async function newMailListener(emailAccounts: Collection<MailAccount>) {
 
 // settings
 const doSound = true;
+const doTaskbar = true;
+const doTray = true;
 const doWebNotification = true;
 const doOSNotification = false;
 let isOSNotificationSupported: boolean = undefined;
@@ -39,6 +42,7 @@ export async function showNewMail(messages: EMail[]) {
   if (!messages?.length) {
     return;
   }
+  let count = messages.length;
   let message = messages.length == 1 ? messages[0] : null;
   messages = messages.slice(0, 5);
 
@@ -63,6 +67,7 @@ export async function showNewMail(messages: EMail[]) {
       backgroundError(ex);
     }
   }
+
   if (doWebNotification) {
     try {
       let notification = new Notification(title, {
@@ -78,6 +83,7 @@ export async function showNewMail(messages: EMail[]) {
       backgroundError(ex);
     }
   }
+
   if (doOSNotification && isOSNotificationSupported) {
     try {
       let notification = await appGlobal.remoteApp.newOSNotification({
@@ -113,6 +119,25 @@ export async function showNewMail(messages: EMail[]) {
       backgroundError(ex);
     }
   }
+
+  if (doTaskbar) {
+    try {
+    } catch (ex) {
+      backgroundError(ex);
+    }
+  }
+
+  if (doTray) {
+    try {
+      await appGlobal.remoteApp.newTrayIcon(bubbleImageURL(count));
+    } catch (ex) {
+      backgroundError(ex);
+    }
+  }
+}
+
+function bubbleImageURL(count: number) {
+  return "data:image/svg;base64," + btoa(MailIcon);
 }
 
 class NewMessageObserver extends CollectionObserver<EMail> {

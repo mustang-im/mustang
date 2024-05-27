@@ -4,7 +4,7 @@ import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import { shell, nativeTheme, Notification, Tray } from "electron";
+import { shell, nativeTheme, Notification, Tray, nativeImage } from "electron";
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
 import path from "node:path";
@@ -149,8 +149,8 @@ function newHTTPServer() {
 }
 
 /** <https://www.electronjs.org/docs/latest/api/tray> */
-function newTrayIcon(image: string, guid?: string): Tray {
-  return new Tray(image, guid);
+function newTrayIcon(imgDataURL: string): Tray {
+  return new Tray(nativeImage.createFromDataURL(imgDataURL));
 }
 
 /** <https://www.electronjs.org/docs/latest/api/notification> */
