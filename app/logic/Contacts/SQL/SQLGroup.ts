@@ -3,12 +3,13 @@ import { Person } from "../../Abstract/Person";
 import type { Addressbook } from "../Addressbook";
 import { SQLPerson } from "./SQLPerson";
 import { getDatabase } from "./SQLDatabase";
+import { findPersonFunc, PersonUID,  } from "../../Abstract/PersonUID";
+import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { backgroundError } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
-import { appGlobal } from "../../app";
 
 export class SQLGroup extends Group {
   static async save(group: Group) {
@@ -40,8 +41,11 @@ export class SQLGroup extends Group {
     }
   }
 
-  static async saveMember(group: Group, person: Person) {
-    if (!person.dbID) {
+  static async saveMember(group: Group, uid: PersonUID) {
+    let person = uid.person;
+    if (!person?.dbID) {
+      person = uid.createPerson();
+      person.addressbook = appGlobal.collectedAddressbook; // TODO use better addressbook - group.addressbook?
       await SQLPerson.save(person);
     }
     await (await getDatabase()).run(sql`
@@ -98,15 +102,12 @@ export class SQLGroup extends Group {
     for (let row of rows) {
       try {
         let personID = sanitize.integer(row.personID);
-        let person = group.addressbook?.persons.find(p => p.dbID == personID);
-        if (!person) {
-          person = appGlobal.persons.find(p => p.dbID == personID);
-        }
+        let person = findPersonFunc(p => p.dbID == personID);
         if (!person) {
           person = group.addressbook?.newPerson() ?? new Person();
           await SQLPerson.read(personID, person);
         }
-        group.participants.add(person);
+        group.participants.add(PersonUID.fromPerson(person));
       } catch (ex) {
         backgroundError(ex);
       }

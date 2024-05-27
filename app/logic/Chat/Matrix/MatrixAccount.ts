@@ -7,11 +7,12 @@ import { Group } from '../../Abstract/Group';
 import { appGlobal } from '../../app';
 import { ChatPerson } from '../Person';
 import { ContactEntry } from '../../Abstract/Person';
-import { assert } from '../../util/util';
+import { assert, type URLString } from '../../util/util';
 import { MapColl } from 'svelte-collections';
 import * as matrix from 'matrix-js-sdk';
 import type { Room, RoomMember } from 'matrix-js-sdk/lib/matrix';
 import olm from 'olm'; // Needed for initCrypto(). Do not remove.
+import { findOrCreatePersonUID, type PersonUID } from '../../Abstract/PersonUID';
 
 export class MatrixAccount extends ChatAccount {
   readonly protocol: string = "matrix";
@@ -62,7 +63,10 @@ export class MatrixAccount extends ChatAccount {
     let group = new Group();
     group.name = room.name;
     for (let member of room.getJoinedMembers()) {
-      group.participants.add(this.getPerson(member));
+      // let picMXC = member.getMxcAvatarUrl();
+      // let picURL = getHttpUriForMxc(this.baseURL, picMXC, 64, 64, "scale", true);
+      let picURL = member.getAvatarUrl(this.baseURL, 64, 64, "scale", true, false);
+      group.participants.add(this.getPerson(member.userId, member.name, picURL));
     }
     chatRoom.contact = group.participants.length <= 2 && group.participants.find(person => person.id == this.globalUserID)
       ? (group.participants.find(person => person.id != this.globalUserID) ?? group.participants.first)
@@ -85,24 +89,18 @@ export class MatrixAccount extends ChatAccount {
   getExistingRoom(roomID: string): MatrixChatRoom {
     return this.chats.find(chat => chat.id == roomID);
   }
-  getExistingPerson(userId: string) {
-    return appGlobal.persons.find(person => person.chatAccounts.some(acc => acc.value == userId && acc.purpose == "matrix"));
-  }
-  getPerson(member: RoomMember) {
-    let existing = this.getExistingPerson(member.userId);
-    if (existing) {
-      return existing;
+  getPerson(userID: string, realname: string, picURL: URLString): PersonUID {
+    let uid = findOrCreatePersonUID(userID, realname);
+    if (uid.person) {
+      return uid;
     }
     let person = new ChatPerson();
-    person.name = member.name;
-    person.id = member.userId;
-    person.chatAccounts.add(new ContactEntry(member.userId, "matrix"));
-    let picURL = member.getAvatarUrl(this.baseURL, 64, 64, "scale", true, false);
-    // let picMXC = member.getMxcAvatarUrl();
-    // let picURL = getHttpUriForMxc(this.baseURL, picMXC, 64, 64, "scale", true);
+    person.name = realname;
+    person.id = userID;
+    person.chatAccounts.add(new ContactEntry(userID, "matrix"));
     person.picture = picURL;
-    appGlobal.persons.add(person);
-    return person;
+    uid.person = person;
+    return uid;
   }
   async getEvent(event, chatRoom: MatrixChatRoom): Promise<ChatMessage | null> {
     let type = event.getType();
@@ -140,8 +138,7 @@ export class MatrixAccount extends ChatAccount {
   }
   getReaction(event, chatRoom: MatrixChatRoom): void {
     let senderUserID = event.getSender();
-    let person = this.getExistingPerson(senderUserID);
-    assert(person, "Reaction: Sender not found: " + senderUserID);
+    let person = findOrCreatePersonUID(senderUserID, null);
     let data = event.event?.content["m.relates_to"];
     assert(data.rel_type == "m.annotation", "Unknown reaction type " + data.rel_type);
     let emoji = data.key;
@@ -168,13 +165,7 @@ export class MatrixAccount extends ChatAccount {
   getJoinLeaveInviteEvent(event, chatRoom: MatrixChatRoom): ChatMessage {
     let data = event.event.content;
     let senderUserID = event.getSender();
-    let person = this.getExistingPerson(senderUserID);
-    if (!person) {
-      person = new ChatPerson();
-      person.name = event.displayname;
-      person.picture = event.avatar_url; // may be null
-      appGlobal.persons.add(person);
-    }
+    let person = this.getPerson(senderUserID, event.displayname, event.avatar_url);
 
     if (data.membership == "join" || data.membership == "leave") {
       let msg = new JoinLeave();

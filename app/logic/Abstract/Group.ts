@@ -1,12 +1,12 @@
 import { ContactBase } from './Contact';
-import type { Person } from './Person';
+import type { PersonUID } from './PersonUID';
 import { notifyChangedProperty } from '../util/Observable';
 import { SetColl } from 'svelte-collections';
 
 export class Group extends ContactBase {
   @notifyChangedProperty
   description = "";
-  readonly participants = new SetColl<Person>();
+  readonly participants = new SetColl<PersonUID>();
 
   async save() {
     await super.save();

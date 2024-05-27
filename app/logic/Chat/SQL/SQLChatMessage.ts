@@ -10,6 +10,7 @@ import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 import { Message } from "../../Abstract/Message";
+import { findOrCreatePersonUID, findPersonFunc, PersonUID } from "../../Abstract/PersonUID";
 
 export class SQLChatMessage {
   /**
@@ -108,9 +109,10 @@ export class SQLChatMessage {
     for (let reaction of reactions) {
       try {
         let personID = sanitize.integer(reaction.personID);
-        let person = appGlobal.persons.find(p => p.dbID == personID);
+        let person = findPersonFunc(p => p.dbID == personID);
+        let uid = PersonUID.fromPerson(person);
         let emoji = sanitize.string(reaction.emoji);
-        msg.reactions.set(person, emoji);
+        msg.reactions.set(uid, emoji);
       } catch (ex) {
         backgroundError(ex);
       }
@@ -119,8 +121,11 @@ export class SQLChatMessage {
 
   protected static async saveReactions(msg: ChatMessage): Promise<string> {
     let reactions: ReactionJSON[] = [];
-    msg.reactions.forEach(async (emoji: string, person: Person) => {
-      if (!person.dbID) {
+    msg.reactions.forEach(async (emoji: string, uid: PersonUID) => {
+      let person = uid.person;
+      if (!person?.dbID) {
+        person = uid.createPerson();
+        person.addressbook = appGlobal.collectedAddressbook; // TODO needs better addressbook
         await SQLPerson.save(person);
       }
       reactions.push({

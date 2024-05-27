@@ -97,7 +97,7 @@ export class Message extends Observable {
     return this._text;
   }
 
-  readonly reactions = new MapColl<Person, string>();
+  readonly reactions = new MapColl<PersonUID, string>();
 
   async markRead(read = true) {
     this.isRead = read;

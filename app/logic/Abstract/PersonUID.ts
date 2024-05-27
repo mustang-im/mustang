@@ -4,7 +4,6 @@ import { ContactEntry, Person } from "./Person";
 import { appGlobal } from "../app";
 import { nameFromEmailAddress } from "../Mail/AutoConfig/saveConfig";
 import { Observable, notifyChangedProperty } from "../util/Observable";
-import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 
 export class PersonUID extends Observable {
   @notifyChangedProperty
@@ -62,8 +61,12 @@ export function findOrCreatePersonUID(emailAddress: string, realname: string): P
 }
 
 export function findPerson(emailAddress: string): Person | undefined {
+  return findPersonFunc(p => p.emailAddresses.some(e => e.value == emailAddress));
+}
+
+export function findPersonFunc(testFunc: (person: Person) => boolean): Person | undefined {
   for (let ab of appGlobal.addressbooks) {
-    let existing = ab.persons.find(p => p.emailAddresses.some(e => e.value == emailAddress));
+    let existing = ab.persons.find(testFunc);
     if (existing) {
       return existing;
     }
