@@ -148,7 +148,7 @@ export class EMail extends Message {
       this.replyTo = findOrCreatePersonUID(sanitize.nonemptystring(p.address, "unknown@invalid"), sanitize.label(p.name, null));
     }
     if (!this.inReplyTo) {
-      this.inReplyTo = sanitize.string(mail.inReplyTo, null);
+      this.inReplyTo = this.threadID = sanitize.string(mail.inReplyTo, null);
     }
     this.references = sanitize.string(mail.references, null)?.split(" ");
 

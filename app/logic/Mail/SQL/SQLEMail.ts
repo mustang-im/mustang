@@ -240,7 +240,7 @@ export class SQLEMail {
     email.isReplied = sanitize.boolean(!!row.isReplied);
     email.isDraft = sanitize.boolean(!!row.isDraft);
     email.isSpam = sanitize.boolean(!!row.isSpam);
-    email.threadID = sanitize.string(row.threadID, null);
+    email.threadID = sanitize.string(row.threadID ?? row.parentMsgID, null);
     email.downloadComplete = sanitize.boolean(!!row.downloadComplete);
   }
 
