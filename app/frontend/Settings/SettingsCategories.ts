@@ -9,6 +9,7 @@ import { appGlobal } from "../../logic/app";
 import GlobalAppearance from "./Global/Appearance.svelte";
 import MailAppearance from "./Mail/Appearance.svelte";
 import MailNotifications from "./Mail/Notifications.svelte";
+import MailRead from "./Mail/Read.svelte";
 import MailSend from "./Mail/Send.svelte";
 import AccountGeneral from "./AccountGeneral.svelte";
 import AccountURLServer from "./AccountURLServer.svelte";
@@ -49,6 +50,7 @@ const mailSettings = new SettingsCategory("mail", "Mail", null, true);
 mailSettings.subCategories.addAll([
   new SettingsCategory("mail-appearance", "Appearance", MailAppearance),
   new SettingsCategory("mail-notifications", "Notifications", MailNotifications),
+  new SettingsCategory("mail-read", "Read", MailRead),
   new SettingsCategory("mail-send", "Send", MailSend),
 ]);
 mailSettings.accounts = appGlobal.emailAccounts;

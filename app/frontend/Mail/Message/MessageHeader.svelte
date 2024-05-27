@@ -60,6 +60,7 @@
   import Recipient from "./Recipient.svelte";
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
   import DisplayModeSwitcher from "./DisplayModeSwitcher.svelte";
+  import { getLocalStorage } from "../../Util/LocalStorage";
   import { catchErrors, backgroundError } from "../../Util/error";
   import { getDateString } from "../../Util/date";
   import { onDestroy } from "svelte";
@@ -71,10 +72,18 @@
     : message.contact?.name
       ?? message.from.emailAddress;
 
-  $: catchErrors(() => markMessageAsRead(message), backgroundError);
+  let readDelaySetting = getLocalStorage("mail.read.after", 0); // 0 = Immediately; -1 = Manually; 1 to 20 = delay in seconds
+  $: readDelay = $readDelaySetting.value;
+  $: catchErrors(() => markMessageAsRead(message, readDelay), backgroundError);
   let readTimeout: NodeJS.Timeout;
-  const readDelay = 3; // seconds, 0 to 30
-  function markMessageAsRead(message: EMail) {
+  function markMessageAsRead(message: EMail, readDelay: number) {
+    if (readDelay < 0) {
+      return;
+    }
+    if (readDelay == 0) {
+      message.markRead(true).catch(backgroundError);
+      return;
+    }
     clearTimeout(readTimeout);
     readTimeout = setTimeout(() => {
       message.markRead(true).catch(backgroundError);
