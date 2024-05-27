@@ -1,6 +1,7 @@
 import type { EMail } from "../../logic/Mail/EMail";
 import type { MailAccount } from "../../logic/Mail/MailAccount";
 import { appGlobal } from "../../logic/app";
+import { getLocalStorage } from "../Util/LocalStorage";
 import { sleep } from "../../logic/util/util";
 import MailIcon from '../asset/icon/appBar/mail.svg?raw';
 import { backgroundError, showError } from "../Util/error";
@@ -17,26 +18,29 @@ export async function newMailListener(emailAccounts: Collection<MailAccount>) {
   }
 }
 
-// settings
-const doSound = true;
-const doTaskbar = true;
-const doTray = true;
-const doWebNotification = true;
-const doOSNotification = false;
-let isOSNotificationSupported: boolean = undefined;
-const onlyInAB = true;
-
-const filterConditions: ((msg: EMail) => boolean)[] = [];
-filterConditions.push(msg => msg.isNewArrived);
-if (onlyInAB) {
-  filterConditions.push(msg => msg.from?.findPerson() && appGlobal.addressbooks.some(ab => ab.persons.some(person => person == msg.from.person)));
-}
-
 export async function showNewMail(messages: EMail[]) {
   console.log("Show new mail", messages.length);
   if (!messages?.length) {
     return;
   }
+
+  // settings
+  let settings = getLocalStorage("notifications.mail", ["popup", "sound"]).value;
+  const doSound = settings.includes("sound");
+  const doTaskbar = settings.includes("taskbar");
+  const doTray = settings.includes("try");
+  const doWebNotification = settings.includes("popup");
+  const doOSNotification = settings.includes("popup-os");
+  let isOSNotificationSupported: boolean = undefined;
+  const onlyInAB = true;
+  console.log("notify by", settings, "sound", doSound, "popup", doWebNotification);
+
+  const filterConditions: ((msg: EMail) => boolean)[] = [];
+  filterConditions.push(msg => msg.isNewArrived);
+  if (onlyInAB) {
+    filterConditions.push(msg => msg.from?.findPerson() && appGlobal.addressbooks.some(ab => ab.persons.some(person => person == msg.from.person)));
+  }
+
   messages = messages.filter(msg => filterConditions.every(func => func(msg)));
   console.log("  after filters", messages.length);
   if (!messages?.length) {

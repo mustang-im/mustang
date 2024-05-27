@@ -1,42 +1,52 @@
 <vbox class="notifications">
-  <Checkbox label="Popup" bind:checked={isPopup} size="xs" />
+  <label>
+    <input type="checkbox" value="popup" bind:group={list} />
+    Popup
+  </label>
   <img src={popupImg} title="Popup" alt="Popup" />
 
-  <Checkbox label="Sound" bind:checked={isSound} size="xs" />
+  <label>
+    <input type="checkbox" value="sound" bind:group={list} />
+    Sound
+  </label>
   <img src={soundImg} title="Sound" alt="Sound" />
 
-  <Checkbox label="Bubble on the appbar in Mustang" bind:checked={isAppbar} size="xs" disabled title="Not yet implemented" />
+  <label title="Not yet implemented">
+    <input type="checkbox" value="appbar" bind:group={list} disabled />
+    Bubble on the appbar in Mustang
+  </label>
   <img src={appbarImg} title="Appbar" alt="Appbar" />
 
-  <Checkbox label="Bubble on the system task bar" bind:checked={isTaskbar} size="xs" disabled title="Not yet implemented" />
+  <label title="Not yet implemented">
+    <input type="checkbox" value="taskbar" bind:group={list} disabled />
+    Bubble on the system task bar
+  </label>
   <img src={taskbarImg} title="System task bar" alt="System task bar" />
 </vbox>
 
 <!--
-<Checkbox label="Show an icon on the system tray" bind:checked={isTray} size="xs" />
 <img src={trayImg} title="System tray icon" alt="System tray icon" />
 -->
 
 <script lang="ts">
-  import { Checkbox } from "@svelteuidev/core";
   import popupImg from "../../asset/settings/notification/popup.png";
   import soundImg from "../../asset/settings/notification/sound.png";
   import appbarImg from "../../asset/settings/notification/appbar.png";
   import taskbarImg from "../../asset/settings/notification/taskbar.png";
   //import trayImg from "../../asset/settings/notification/tray.png";
 
-  let isPopup = true;
-  let isSound = true;
-  let isAppbar = false;
-  let isTaskbar = false;
-  let isTray = false;
+  /** in/out */
+  export let list: string[];
 </script>
 
 <style>
-  .notifications :global(.svelteui-Checkbox-label) {
-    font-size: 16px;
+  label {
+    align-items: center;
+    display: flex;
   }
-
+  label input {
+    margin-right: 8px;
+  }
   img {
     width: 99px;
     height: 64px;
