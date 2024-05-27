@@ -33,7 +33,7 @@ export class OAuth2 {
   uiMethod: OAuth2UIMethod = OAuth2UIMethod.Window;
 
   username: string;
-  password: string;
+  protected password: string;
 
   expiresAt: Date | null = null;
   protected expiryTimout: NodeJS.Timeout;
@@ -55,6 +55,10 @@ export class OAuth2 {
   setTokenURLPasswordAuth(url: string) {
     assert(url?.startsWith("https://") || url?.startsWith("http://"), "Malformed OAuth2 server token URL");
     this.tokenURLPasswordAuth = url;
+  }
+
+  setPassword(password: string) {
+    this.password = password;
   }
 
   /**
