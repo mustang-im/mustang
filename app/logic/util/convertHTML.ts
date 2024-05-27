@@ -26,7 +26,7 @@ export function convertTextToHTML(plaintext: string): string {
   if (!markdownitInstance) {
     markdownitInstance = markdownit({
       linkify: true,
-      break: true,
+      breaks: true,
     });
   }
   let html = markdownitInstance.render(plaintext);
