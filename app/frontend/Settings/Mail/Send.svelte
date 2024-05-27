@@ -35,13 +35,13 @@
         <input type="radio" value="html" bind:group={$formatSetting.value} />
         Send as HTML and Plaintext
       </label>
-      <img src={htmlImg} title="HTML" alt="HTML" width="274" height="126" />
+      <img src={htmlImg} title="HTML" alt="HTML" width="335" height="107" />
 
       <label class="radio">
         <input type="radio" value="plaintext" bind:group={$formatSetting.value} />
         Send as Plaintext only
       </label>
-      <img src={plaintextImg} title="Plaintext" alt="Plaintext" width="250" height="117" />
+      <img src={plaintextImg} title="Plaintext" alt="Plaintext" width="413" height="88" />
     </vbox>
   </HeaderGroupBox>
 </hbox>
@@ -80,7 +80,10 @@
   label {
     margin-left: 8px;
   }
+  .format img {
+    opacity: 80%;
+  }
   .quote img {
-    opacity: 60%;
+    opacity: 50%;
   }
 </style>
