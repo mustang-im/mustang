@@ -26,12 +26,10 @@ export function convertTextToHTML(plaintext: string): string {
   if (!markdownitInstance) {
     markdownitInstance = markdownit({
       linkify: true,
+      break: true,
     });
   }
   let html = markdownitInstance.render(plaintext);
-  html = html.replace(/([^>])\n/g, "$1<br>\n")
-    .replace(/<\/p>\n/g, "</p><br>\n") +
-    "<style>blockquote { margin-top: -1.3em; }</style>";
   return sanitizeHTML(html);
 }
 
