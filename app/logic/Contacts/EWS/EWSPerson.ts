@@ -86,12 +86,12 @@ export class EWSPerson extends Person {
   }
 
   async save() {
-    await SQLPerson.save(this);
     if (this.itemID) {
       await this.update();
     } else {
       await this.create();
     }
+    await SQLPerson.save(this);
   }
 
   async update() {

@@ -85,7 +85,7 @@ export class SQLPerson {
     person.picture = sanitize.url(row.picture, null);
     person.notes = sanitize.string(row.notes, null);
     person.id = sanitize.string(row.pID, null);
-    if (row.addressbook) {
+    if (row.addressbookID) {
       let addressbookID = sanitize.integer(row.addressbookID);
       if (person.addressbook) {
         assert(person.addressbook.dbID == addressbookID, "Wrong addressbook");
