@@ -3,6 +3,8 @@
 
 <script lang="ts">
   import { stringToDataURL } from "../Util/util";
+  import { createEventDispatcher } from 'svelte';
+  const dispatch = createEventDispatcher();
 
   /**
    * Displays untrusted HTML in a sandboxed iframe which does not allow any JavaScript.
@@ -45,7 +47,13 @@
     url = await stringToDataURL("text/html", displayHTML);
   }
 
-  let webviewE: HTMLIFrameElement;
+  let webviewE: HTMLIFrameElement = null;
+  $: webviewE && haveWebView();
+  function haveWebView () {
+    webviewE.addEventListener("dom-ready", () => {
+      dispatch("webview", webviewE);
+    }, { once: true });
+  }
 </script>
 
 <style>

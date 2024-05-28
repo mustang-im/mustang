@@ -56,9 +56,13 @@
   </Menu.Item>
 </Menu>
 
+<Print {message} bind:this={printE} />
+
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { mailMustangApp } from "../MailMustangApp";
+  import { getLocalStorage } from "../../Util/LocalStorage";
+  import Print from "./MessagePrint.svelte";
   import { Menu } from "@svelteuidev/core";
   import ReplyIcon from "lucide-svelte/icons/reply";
   import ReplyAllIcon from "lucide-svelte/icons/reply-all";
@@ -71,7 +75,6 @@
   import SourceIcon from "lucide-svelte/icons/code-xml";
   import { catchErrors } from "../../Util/error";
   import { NotImplemented } from "../../../logic/util/util";
-  import { getLocalStorage } from "../../Util/LocalStorage";
 
   export let message: EMail;
   export let padding = 5;
@@ -107,8 +110,9 @@
     await message.treatSpam(true);
   }
 
-  function print() {
-    throw new NotImplemented();
+  let printE: Print;
+  async function print() {
+    await printE.print();
   }
   function showSource() {
     let setting = getLocalStorage("mail.contentRendering", "html");

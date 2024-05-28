@@ -1,4 +1,4 @@
-<WebView {html} {headHTML} allowServerCalls={allowExternalImages} title="Text" />
+<WebView {html} {headHTML} allowServerCalls={allowExternalImages} title="Text" on:webview />
 
 <script lang="ts">
   import cssContent from "./content.css?inline";
@@ -10,6 +10,8 @@
    * @see also Chat Message.svelte */
   export let html: string;
   export let allowExternalImages = false;
+  /** out only */
+  export let webviewE: HTMLIFrameElement = null;
 
   $: headHTML = `<style>\n${cssBody}\n${cssContent}\n</style>`;
 </script>

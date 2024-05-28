@@ -151,8 +151,6 @@
 * Autoconfig
   * Exchange AutoDiscover V2 and V1
   * Scrollbar for dialog box, not app window
-* Forward & redirect
-* Print
 * Import
   * UI in Setup
   * Thunderbird
