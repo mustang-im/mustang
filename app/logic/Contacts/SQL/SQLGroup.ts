@@ -35,6 +35,12 @@ export class SQLGroup extends Group {
   }
 
   static async saveMembers(group: Group) {
+    // TODO Use a more elegant way to remove deleted entries
+    await (await getDatabase()).run(sql`
+      DELETE FROM groupMember
+      WHERE groupID = ${group.dbID}
+      `);
+
     for (let person of group.participants) {
       await this.saveMember(group, person);
     }
