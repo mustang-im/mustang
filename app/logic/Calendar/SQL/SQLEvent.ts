@@ -1,7 +1,6 @@
 import { Event } from "../Event";
 import type { Calendar } from "../Calendar";
-import type { Person } from "../../Abstract/Person";
-import { SQLPerson } from "../../Contacts/SQL/SQLPerson";
+import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { getDatabase } from "./SQLDatabase";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -9,7 +8,6 @@ import { backgroundError } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
-import type { PersonUID } from "../../Abstract/PersonUID";
 
 export class SQLEvent extends Event {
   static async save(event: Event) {
@@ -43,24 +41,23 @@ export class SQLEvent extends Event {
   }
 
   static async saveParticipants(event: Event) {
-    for (let personUID of event.participants) {
-      await this.saveParticipant(event, personUID);
+    // TODO Use a more elegant way to remove deleted entries
+    await (await getDatabase()).run(sql`
+      DELETE FROM eventParticipant
+      WHERE eventID = ${event.dbID}
+      `);
+
+    for (let uid of event.participants) {
+      await this.saveParticipant(event, uid);
     }
   }
 
-  static async saveParticipant(event: Event, personUID: PersonUID) {
-    let person = personUID.createPerson();
-    if (!person.addressbook) {
-      person.addressbook = appGlobal.collectedAddressbook;
-    }
-    if (!person.dbID) {
-      await SQLPerson.save(person);
-    }
+  static async saveParticipant(event: Event, uid: PersonUID) {
     await (await getDatabase()).run(sql`
       INSERT INTO eventParticipant (
-        eventID, personID, confirmed
+        eventID, emailAddress, name, confirmed
       ) VALUES (
-        ${event.dbID}, ${person.dbID}, null
+        ${event.dbID}, ${uid.emailAddress}, ${uid.name}, null
       )`);
   }
 
@@ -109,18 +106,14 @@ export class SQLEvent extends Event {
   protected static async readParticipants(event: Event) {
     let rows = await (await getDatabase()).all(sql`
       SELECT
-        personID, confirmed
+        emailAddress, name, confirmed
       FROM eventParticipant
       WHERE eventID = ${event.dbID}
       `) as any;
     for (let row of rows) {
       try {
-        let personID = sanitize.integer(row.personID);
-        let person = appGlobal.persons.find(p => p.dbID == personID);
-        if (!person) {
-          continue;
-        }
-        event.participants.add(person);
+        let uid = findOrCreatePersonUID(row.emailAddress, row.name);
+        event.participants.add(uid);
       } catch (ex) {
         backgroundError(ex);
       }

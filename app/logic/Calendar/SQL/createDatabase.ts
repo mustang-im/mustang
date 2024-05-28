@@ -91,10 +91,11 @@ export const calendarDatabaseSchema = sql`
       ON DELETE CASCADE
   );
 
-  --- Who will attent the event, apart from (not including) our user
+  --- Who will attent the event, not including its organizer
   CREATE TABLE "eventParticipant" (
     "eventID" INTEGER not null,
-    "personID" INTEGER not null,
+    "emailAddress" TEXT not null,
+    "name" TEXT,
     -- 1 = accepted
     -- 2 = rejected
     -- 3 = tentative accepted
@@ -105,5 +106,4 @@ export const calendarDatabaseSchema = sql`
       ON DELETE CASCADE
   );
   CREATE INDEX index_groupMember_eventID ON eventParticipant (eventID);
-  CREATE INDEX index_groupMember_personID ON eventParticipant (personID);
 `;

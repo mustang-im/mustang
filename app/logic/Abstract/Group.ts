@@ -1,5 +1,5 @@
 import { ContactBase } from './Contact';
-import type { Person } from './Person';
+import type { PersonUID } from './PersonUID';
 import { notifyChangedProperty } from '../util/Observable';
 import { SetColl } from 'svelte-collections';
 
