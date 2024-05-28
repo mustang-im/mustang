@@ -1,7 +1,8 @@
 import { Person, ContactEntry } from '../../Abstract/Person';
-import { assert } from "../../util/util";
 import type { EWSAddressbook } from './EWSAddressbook';
+import { SQLPerson } from '../SQL/SQLPerson';
 import { ensureArray } from "../../Mail/EWS/EWSEMail";
+import { assert } from "../../util/util";
 
 const PhysicalAddressElements = ["Street", "City", "State", "PostalCode", "CountryOrRegion"];
 const PhysicalAddressPurposes = { Business: "work", Home: "home", Other: "other" };
@@ -85,6 +86,7 @@ export class EWSPerson extends Person {
   }
 
   async save() {
+    await SQLPerson.save(this);
     if (this.itemID) {
       await this.update();
     } else {

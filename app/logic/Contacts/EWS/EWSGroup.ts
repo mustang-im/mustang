@@ -2,6 +2,8 @@ import { Group } from '../../Abstract/Group';
 import { Person, ContactEntry } from '../../Abstract/Person';
 import type { EWSAddressbook } from './EWSAddressbook';
 import { ensureArray } from "../../Mail/EWS/EWSEMail";
+import { SQLGroup } from '../SQL/SQLGroup';
+import { NotImplemented } from '../../util/util';
 
 export class EWSGroup extends Group {
   addressbook: EWSAddressbook | null;
@@ -29,7 +31,8 @@ export class EWSGroup extends Group {
   }
 
   async save() {
-    throw new Error("Not yet implemetned");
+    await SQLGroup.save(this);
+    throw new NotImplemented();
   }
 }
 

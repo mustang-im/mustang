@@ -4,6 +4,7 @@ import { EWSGroup } from "./EWSGroup";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { ensureArray } from "../../Mail/EWS/EWSEMail";
+import { NotImplemented } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 export class EWSAddressbook extends Addressbook {
@@ -15,7 +16,7 @@ export class EWSAddressbook extends Addressbook {
     return new EWSPerson(this);
   }
   newGroup(): EWSGroup {
-    throw "can't be bothered to support";
+    throw new NotImplemented();
     return new EWSGroup(this);
   }
 
