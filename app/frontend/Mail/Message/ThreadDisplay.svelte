@@ -4,6 +4,7 @@
       <MailMessage {message} previousMessage={threadMessages.getIndex(i - 1)} />
     {/each}
   </vbox>
+  <vbox class="rest" flex />
 </Scroll>
 
 <script lang="ts">
@@ -37,3 +38,24 @@
     }
   }
 </script>
+
+<style>
+  .messages,
+  .rest {
+    background: url(../../asset/background-repeat.png) repeat;
+    background-color: var(--main-pattern-bg);
+    background-blend-mode: soft-light;
+    color: var(--main-pattern-fg);
+  }
+  @media (prefers-color-scheme: light) {
+    .messages,
+    .rest {
+      background-color: #F0F0F5;
+      color: black;
+    }
+    .messages :global(.from) {
+      color: black;
+      font-size: 16px;
+    }
+  }
+</style>

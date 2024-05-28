@@ -128,6 +128,7 @@
     padding-left: 60px;
   }
   .meta {
+    align-items: end;
     margin-bottom: 2px;
     font-size: x-small;
     color: #999999;
