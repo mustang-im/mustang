@@ -4,7 +4,7 @@ import { SQLPerson } from '../SQL/SQLPerson';
 import { ensureArray } from "../../Mail/EWS/EWSEMail";
 import { assert } from "../../util/util";
 
-const PhysicalAddressElements = ["Street", "City", "State", "PostalCode", "CountryOrRegion"];
+const PhysicalAddressElements = ["Street", "City", "PostalCode", "State", "CountryOrRegion"];
 const PhysicalAddressPurposes = { Business: "work", Home: "home", Other: "other" };
 const PhoneMapping: [string, string, number, string][] = [
   ["home", "tel", 2, "HomePhone"],
@@ -131,7 +131,7 @@ export class EWSPerson extends Person {
         let value: string | string[] = entry.value;
         if (value) {
           value = value.split("\n");
-          assert(value.length == 5, "Street address must have exactly five lines: Address, City, State, ZIP Code, Country");
+          assert(value.length == 5, "Street address must have exactly 5 lines: Street and house, City, ZIP Code, State, Country");
         }
         for (let i = 0; i < 5; i++) {
           this.addUpdate(updates, "t$PhysicalAddresses", value && value[i] && {
