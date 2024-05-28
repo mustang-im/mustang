@@ -12,12 +12,16 @@
       </h2>
     {/if}
   </svelte:fragment>
+  <svelte:fragment slot="menu">
+    <Toolbar {message} />
+  </svelte:fragment>
 </MessageBubble>
 
 <script lang="ts">
   import type { Message } from "../../../logic/Abstract/Message";
   import { EMail } from "../../../logic/Mail/EMail";
   import MessageBubble from "../../Chat/MessageView/Message.svelte";
+  import Toolbar from "./MailChatToolbar.svelte";
 
   export let message: EMail;
   export let previousMessage: Message;

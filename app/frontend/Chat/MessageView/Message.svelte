@@ -25,6 +25,11 @@
       </hbox>
     {/if}
     <vbox class="bubble">
+      {#if $$slots.menu}
+        <hbox class="menu" class:openMenuOnMessageHover>
+          <slot name="menu" />
+        </hbox>
+      {/if}
       <slot name="inner-top" />
       <div class="text selectable">
         <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection. -->
@@ -53,6 +58,7 @@
   export let message: Message;
   export let previousMessage: Message = null;
   export let hideHeaderFollowup = false;
+  export let openMenuOnMessageHover = false;
 
   $: followup = $message.contact == previousMessage?.contact && // same author
     $message.outgoing == previousMessage?.outgoing;
@@ -174,6 +180,37 @@
   }
   .outgoing .reactions {
     background-color: white;
+  }
+
+  .menu {
+    display: none;
+  }
+  .message:hover .menu.openMenuOnMessageHover,
+  .menu:hover,
+  .message:has(.meta:hover) .menu {
+    display: flex;
+    position: absolute;
+    height: 24px;
+    max-height: 24px;
+    top: -30px;
+    right: 10%;
+    align-items: center;
+    justify-content: end;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background-color: var(--leftbar-bg);
+    color: var(--leftbar-fg);
+    padding: 0px 4px;
+    border: 2px solid transparent;
+    border-radius: 20px;
+    box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 10%);
+    z-index: 1;
+  }
+  .menu > * {
+    margin-left: 8px;
+  }
+  .menu :global(svg) {
+    stroke-width: 1.5px;
   }
 
   .outgoing[deliveryStatus=sending] {

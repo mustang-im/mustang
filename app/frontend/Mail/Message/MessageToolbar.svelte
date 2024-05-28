@@ -80,6 +80,8 @@
 
   export let message: EMail;
 
+  /* <copied to="MailChatToolbar.svelte" /> */
+
   async function toggleRead() {
     await message.markRead(!message.isRead);
   }

@@ -1,4 +1,4 @@
-<Menu>
+<Menu gutter={padding}>
   <Menu.Item
     on:click={() => catchErrors(() => reply())}
     title="Reply to the person who sent this message"
@@ -72,6 +72,7 @@
   import { catchErrors } from "../../Util/error";
 
   export let message: EMail;
+  export let padding = 5;
 
   function reply() {
     let reply = message.replyToAuthor();
