@@ -27,14 +27,14 @@ export async function onKeyOnList(event: KeyboardEvent) {
     } else if (event.key == "j") {
       event.stopPropagation();
       selectedMessagesColl.clear();
-      selectedMessagesColl.add(message.nextMessage(false));
+      selectedMessagesColl.add(message.action.nextMessage(false));
       await Promise.allSettled(messages.map(msg =>
         msg.treatSpam()));
       return;
     } else if (event.key == "Delete") {
       event.stopPropagation();
       selectedMessagesColl.clear();
-      selectedMessagesColl.add(message.nextMessage(false));
+      selectedMessagesColl.add(message.action.nextMessage(false));
       await Promise.allSettled(messages.map(msg =>
         msg.deleteMessage()));
       return;

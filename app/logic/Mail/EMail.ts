@@ -7,7 +7,7 @@ import { MailZIP } from "./Store/MailZIP";
 import { MailDir } from "./Store/MailDir";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { appGlobal } from "../app";
-import { fileExtensionForMIMEType, assert, AbstractFunction } from "../util/util";
+import { fileExtensionForMIMEType, assert, AbstractFunction, NotImplemented } from "../util/util";
 import { backgroundError } from "../../frontend/Util/error";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
@@ -296,27 +296,65 @@ export class EMail extends Message {
     return this.threadID;
   }
 
+  get action(): EMailActions {
+    return new EMailActions(this);
+  }
+
+  async send(): Promise<void> {
+    this.isDraft = false;
+    let server = this.folder?.account;
+    assert(server, "Cannot send: Server for draft email is not configured");
+    await server.send(this);
+    // TODO move to Sent or target folder?
+  }
+}
+
+
+/** Functions based on the email, which are either
+ * not changing the email itself, but are based on the email,
+ * or are higher-level functions not inherently about the email object. */
+export class EMailActions {
+  readonly email: EMail;
+
+  constructor(email: EMail) {
+    this.email = email;
+  }
+
+  /**
+   * @param up
+   * true: older message
+   * false: newer message
+   * null: Same list position, after deleting this message
+   */
+  nextMessage(up?: boolean): EMail {
+    let i = this.email.folder.messages.getKeyForValue(this.email);
+    if (typeof (up) == "boolean") {
+      up ? --i : ++i;
+    }
+    return this.email.folder.messages.getIndex(i);
+  }
+
   quotePrefixLine(): string {
     function getDate(date: Date) {
       return date.toLocaleString(navigator.language, { year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" });
     }
-    return `${this.contact.name} wrote on ${getDate(this.sent)}:`;
+    return `${this.email.contact.name} wrote on ${getDate(this.email.sent)}:`;
   }
 
   _reply(): EMail {
-    this.markReplied().catch(this.folder.account.errorCallback);
-    let account = this.folder.account;
+    this.email.markReplied().catch(this.email.folder.account.errorCallback);
+    let account = this.email.folder.account;
     let folder = account.getSpecialFolder(SpecialFolder.Drafts);
     let reply = folder.newEMail();
     reply.needToLoadBody = false;
     reply.from.emailAddress = account.emailAddress;
     reply.from.name = account.userRealname;
-    reply.subject = "Re: " + this.baseSubject; // Do *not* localize "Re: "
-    reply.inReplyTo = this.messageID;
+    reply.subject = "Re: " + this.email.baseSubject; // Do *not* localize "Re: "
+    reply.inReplyTo = this.email.messageID;
     let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
     let quote = `<p class="quote-header">${this.quotePrefixLine()}</p>
-    <blockquote cite="mid:${this.id}">
-      ${this.html}
+    <blockquote cite="mid:${this.email.id}">
+      ${this.email.html}
     </blockquote>`;
     reply.html = quoteSetting == "none" ? `<p></p>` :
       quoteSetting == "below" ? `<p></p>
@@ -330,39 +368,26 @@ export class EMail extends Message {
 
   replyToAuthor(): EMail {
     let reply = this._reply();
-    reply.to.add(this.replyTo ?? this.from);
+    reply.to.add(this.email.replyTo ?? this.email.from);
     return reply;
   }
 
   replyAll(): EMail {
     let reply = this.replyToAuthor();
-    reply.to.addAll(this.to.contents.filter(pe => !appGlobal.me.emailAddresses.some(em => em.value == pe.emailAddress)));
-    reply.cc.addAll(this.cc.contents.filter(pe => !appGlobal.me.emailAddresses.some(em => em.value == pe.emailAddress)));
+    reply.to.addAll(this.email.to.contents.filter(pe => !appGlobal.me.emailAddresses.some(em => em.value == pe.emailAddress)));
+    reply.cc.addAll(this.email.cc.contents.filter(pe => !appGlobal.me.emailAddresses.some(em => em.value == pe.emailAddress)));
     return reply;
   }
 
-  async send(): Promise<void> {
-    this.isDraft = false;
-    let server = this.folder?.account;
-    assert(server, "Cannot send: Server for draft email is not configured");
-    await server.send(this);
-    // TODO move to Sent or target folder?
+  forward(): EMail {
+    throw new NotImplemented();
   }
 
-  /**
-   * @param up
-   * true: older message
-   * false: newer message
-   * null: Same list position, after deleting this message
-   */
-  nextMessage(up?: boolean): EMail {
-    let i = this.folder.messages.getKeyForValue(this);
-    if (typeof (up) == "boolean") {
-      up ? --i : ++i;
-    }
-    return this.folder.messages.getIndex(i);
+  redirect(): EMail {
+    throw new NotImplemented();
   }
 }
+
 
 export function setPersons(targetList: ArrayColl<PersonUID>, personList: { address: string, name: string }[]): void {
   targetList.clear();

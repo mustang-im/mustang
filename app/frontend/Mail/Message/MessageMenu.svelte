@@ -70,21 +70,27 @@
   import PrintIcon from "lucide-svelte/icons/printer";
   import SourceIcon from "lucide-svelte/icons/code-xml";
   import { catchErrors } from "../../Util/error";
+  import { NotImplemented } from "../../../logic/util/util";
+  import { getLocalStorage } from "../../Util/LocalStorage";
 
   export let message: EMail;
   export let padding = 5;
 
   function reply() {
-    let reply = message.replyToAuthor();
+    let reply = message.action.replyToAuthor();
     mailMustangApp.writeMail(reply);
   }
   function replyAll() {
-    let reply = message.replyAll();
+    let reply = message.action.replyAll();
     mailMustangApp.writeMail(reply);
   }
   function forward() {
+    let forward = message.action.forward();
+    mailMustangApp.writeMail(forward);
   }
   function redirect() {
+    let redirect = message.action.redirect();
+    mailMustangApp.writeMail(redirect);
   }
 
   async function deleteMessage() {
@@ -95,10 +101,14 @@
   }
 
   function print() {
+    throw new NotImplemented();
   }
   function showSource() {
+    let setting = getLocalStorage("mail.contentRendering", "html");
+    setting.value = setting.value == "source" ? "html" : "source";
   }
   function translate() {
+    throw new NotImplemented();
   }
 </script>
 

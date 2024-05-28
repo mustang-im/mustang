@@ -65,11 +65,11 @@
     await message.markStarred(!message.isStarred);
   }
   function reply() {
-    let reply = message.replyToAuthor();
+    let reply = message.action.replyToAuthor();
     mailMustangApp.writeMail(reply);
   }
   function replyAll() {
-    let reply = message.replyAll();
+    let reply = message.action.replyAll();
     mailMustangApp.writeMail(reply);
   }
 </script>

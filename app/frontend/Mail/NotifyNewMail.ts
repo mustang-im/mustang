@@ -110,7 +110,7 @@ export async function showNewMail(messages: EMail[]) {
       notification.on("reply", async (event, replyText) => {
         try {
           console.log("Reply with:\n" + replyText + "\nto msg\n" + msg.subject);
-          let replyMsg = msg.replyToAuthor();
+          let replyMsg = msg.action.replyToAuthor();
           replyMsg.html = null;
           replyMsg.text = replyText;
           await replyMsg.send();
