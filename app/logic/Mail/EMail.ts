@@ -14,7 +14,6 @@ import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, Collection, MapColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
-import { getDateString } from "../../frontend/Util/date";
 
 export class EMail extends Message {
   @notifyChangedProperty
@@ -198,7 +197,7 @@ export class EMail extends Message {
     }
     await SQLEMail.save(this);
     await MailZIP.save(this);
-    await MailDir.save(this);
+    //await MailDir.save(this);
     try {
       await RawFilesAttachment.saveEMail(this);
     } catch (ex) {
