@@ -66,19 +66,12 @@
   function switchTo(newMode: DisplayMode) {
     mode = newMode;
     modeSetting.value = newMode;
-
-    if (mode != DisplayMode.HTMLWithExternal &&
-      mode != DisplayMode.Source) {
-      resetToMode = mode;
-    }
   }
 
-  let resetToMode = DisplayMode.HTML;
   $: $selectedMessage && catchErrors(onMessageChanged);
   function onMessageChanged() {
-    if (mode != resetToMode) {
-      mode = resetToMode;
-      modeSetting.value = resetToMode;
+    if (mode == DisplayMode.HTMLWithExternal) {
+      switchTo(DisplayMode.HTML);
     }
   }
 </script>
