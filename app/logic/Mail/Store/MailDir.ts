@@ -20,20 +20,27 @@ export class MailDir {
     await appGlobal.remoteApp.closeFile(fileHandle);
   }
 
+  static async read(email: EMail): Promise<void> {
+    await this._read(email, await this.getFilePath(email));
+  }
+
+  static async _read(email: EMail, filepath: string): Promise<void> {
+    let fileHandle = await appGlobal.remoteApp.openFile(filepath, false);
+    let fileContent = new Uint8Array();
+    await fileHandle.read(fileContent);
+    await appGlobal.remoteApp.closeFile(fileHandle);
+    email.mime = fileContent;
+    await email.parseMIME();
+    await email.save();
+  }
+
   static async readAll(folder: Folder): Promise<ArrayColl<EMail>> {
     let emails = new ArrayColl<EMail>();
     let dir = await this.getFolderDir(folder);
     let files = await appGlobal.remoteApp.fs.readdir() as string[];
     for (let file of files) {
       try {
-        let fileHandle = await appGlobal.remoteApp.openFile(dir + "/" + file, false);
-        let fileContent = new Uint8Array();
-        await fileHandle.read(fileContent);
-        await appGlobal.remoteApp.closeFile(fileHandle);
-        let email = folder.newEMail();
-        email.mime = fileContent;
-        await email.parseMIME();
-        await email.save();
+        await this._read(folder.newEMail(), dir + "/" + file);
       } catch (ex) {
         folder.account.errorCallback(ex);
       }

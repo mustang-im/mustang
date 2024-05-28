@@ -1,5 +1,5 @@
 import { Message } from "../Abstract/Message";
-import { type Folder, SpecialFolder } from "./Folder";
+import type { Folder } from "./Folder";
 import { Attachment, ContentDisposition } from "./Attachment";
 import { RawFilesAttachment } from "./Store/RawFilesAttachment";
 import { SQLEMail } from "./SQL/SQLEMail";
@@ -14,6 +14,7 @@ import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, Collection, MapColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
+import { getDateString } from "../../frontend/Util/date";
 
 export class EMail extends Message {
   @notifyChangedProperty
@@ -197,7 +198,7 @@ export class EMail extends Message {
     }
     await SQLEMail.save(this);
     await MailZIP.save(this);
-    //await MailDir.save(this);
+    await MailDir.save(this);
     try {
       await RawFilesAttachment.saveEMail(this);
     } catch (ex) {
@@ -205,6 +206,24 @@ export class EMail extends Message {
     }
     this.downloadComplete = true;
     await SQLEMail.saveWritableProps(this);
+  }
+
+  async load() {
+    if (this.mime) {
+      return;
+    }
+    if (this.dbID) {
+      try {
+        await SQLEMail.read(this.dbID, this);
+        await MailZIP.read(this);
+        //await MailDir.read(this);
+        await this.parseMIME();
+        return;
+      } catch (ex) {
+        console.error(ex);
+      }
+    }
+    await this.download();
   }
 
   protected async isDownloadCompleteDoublecheck(): Promise<boolean> {
@@ -265,12 +284,6 @@ export class EMail extends Message {
     return this.dbID
       ? "Message content not downloaded yet"
       : "Message not loaded yet";
-  }
-  async loadMIME() {
-    if (this.mime) {
-      return;
-    }
-    await MailZIP.read(this);
   }
 
   async download() {
@@ -343,12 +356,7 @@ export class EMailActions {
 
   _reply(): EMail {
     this.email.markReplied().catch(this.email.folder.account.errorCallback);
-    let account = this.email.folder.account;
-    let folder = account.getSpecialFolder(SpecialFolder.Drafts);
-    let reply = folder.newEMail();
-    reply.needToLoadBody = false;
-    reply.from.emailAddress = account.emailAddress;
-    reply.from.name = account.userRealname;
+    let reply = this.email.folder.account.newEMailFrom();
     reply.subject = "Re: " + this.email.baseSubject; // Do *not* localize "Re: "
     reply.inReplyTo = this.email.messageID;
     let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
@@ -379,12 +387,68 @@ export class EMailActions {
     return reply;
   }
 
-  forward(): EMail {
-    throw new NotImplemented();
+  async forward(): Promise<EMail> {
+    let setting = getLocalStorage("mail.send.forward", "inline").value;
+    if (setting == "attachment") {
+      return await this.forwardAsAttachment();
+    } else {
+      return await this.forwardInline();
+    }
   }
 
-  redirect(): EMail {
-    throw new NotImplemented();
+  async forwardInline(): Promise<EMail> {
+    await this.email.load();
+    let forward = this.email.folder.account.newEMailFrom();
+    forward.subject = "Fwd: " + this.email.subject;
+    forward.html = `<p></p>
+    <p></p>
+    <p></p>
+    <hr />
+    <p class="forward-header">
+      <div>
+        <span class="field">From:</span> <span class="value">
+          ${this.email.from?.name ?? this.email.from.emailAddress}${this.email.from?.name != this.email.from?.emailAddress ? ' <' + this.email.from.emailAddress + '>' : ''}
+        </span>
+      </div>
+      <div>
+        <span class="field">Date:</span> <span class="value">
+          ${this.email.sent.toLocaleString(navigator.language, { year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" })}
+        </span>
+      </div>
+      <div>
+        <span class="field">Subject:</span> <span class="value">
+          ${this.email.subject}
+        </span>
+      </div>
+    </p>
+    <p></p>
+    ${ this.email.html}`;
+    forward.attachments.addAll(this.email.attachments.map(a => a.clone()));
+    return forward;
+  }
+
+  async forwardAsAttachment(): Promise<EMail> {
+    await this.email.load();
+    let forward = this.email.folder.account.newEMailFrom();
+    forward.subject = "Fwd: " + this.email.subject;
+    let a = new Attachment();
+    a.mimeType = "message/rfc822";
+    a.disposition = ContentDisposition.inline;
+    a.filename = this.email.subject + ".eml";
+    a.content = new File([this.email.mime], a.filename);
+    a.size = this.email.size;
+    forward.attachments.add(a);
+    return forward;
+  }
+
+  async redirect(): Promise<EMail> {
+    await this.email.load();
+    let redirect = this.email.folder.account.newEMailFrom();
+    redirect.replyTo = this.email.from;
+    redirect.subject = this.email.subject;
+    redirect.html = this.email.html;
+    redirect.attachments.addAll(this.email.attachments.map(a => a.clone()));
+    return redirect;
   }
 }
 

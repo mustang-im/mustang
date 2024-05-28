@@ -12,7 +12,7 @@
     Reply to all
   </Menu.Item>
   <Menu.Item
-    on:click={() => catchErrors(() => forward())}
+    on:click={event => catchErrors(() => forward(event))}
     title="Send this message to somebody else"
     icon={ForwardIcon}>
     Forward
@@ -84,12 +84,19 @@
     let reply = message.action.replyAll();
     mailMustangApp.writeMail(reply);
   }
-  function forward() {
-    let forward = message.action.forward();
+  async function forward(event: MouseEvent) {
+    let setting = getLocalStorage("mail.send.forward", "inline").value;
+    let shift = !!event?.shiftKey;
+    let forward: EMail;
+    if (setting == "attachment" && !shift || setting == "inline" && shift) {
+      forward = await message.action.forwardAsAttachment();
+    } else {
+      forward = await message.action.forwardInline();
+    }
     mailMustangApp.writeMail(forward);
   }
-  function redirect() {
-    let redirect = message.action.redirect();
+  async function redirect() {
+    let redirect = await message.action.redirect();
     mailMustangApp.writeMail(redirect);
   }
 

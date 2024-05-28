@@ -71,6 +71,15 @@ export class MailAccount extends Account {
     return new Folder(this);
   }
 
+  newEMailFrom(): EMail {
+    let folder = this.getSpecialFolder(SpecialFolder.Drafts);
+    let email = folder.newEMail();
+    email.needToLoadBody = false;
+    email.from.emailAddress = this.emailAddress;
+    email.from.name = this.userRealname;
+    return email;
+  }
+
   async save(): Promise<void> {
     await this.storage?.saveAccount(this);
   }

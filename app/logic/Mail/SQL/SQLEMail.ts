@@ -181,7 +181,7 @@ export class SQLEMail {
       `);
   }
 
-  static async read(dbID: number, email: EMail, row: any, recipientRows: any[], attachmentRows: any[]): Promise<EMail> {
+  static async read(dbID: number, email: EMail, row?: any, recipientRows?: any[], attachmentRows?: any[]): Promise<EMail> {
     if (!row) {
       // <copied to="readAll()" />
       row = await (await getDatabase()).get(sql`
@@ -255,7 +255,7 @@ export class SQLEMail {
       `);
   }
 
-  protected static async readRecipients(email: EMail, recipientRows: any[]) {
+  protected static async readRecipients(email: EMail, recipientRows?: any[]) {
     if (!recipientRows) {
       // <copied to="readAll()" />
       recipientRows = await (await getDatabase()).all(sql`
@@ -291,7 +291,7 @@ export class SQLEMail {
     }
   }
 
-  protected static async readAttachments(email: EMail, attachmentRows: any[]) {
+  protected static async readAttachments(email: EMail, attachmentRows?: any[]) {
     if (!attachmentRows) {
       // <copied to="readAll()" />
       attachmentRows = await (await getDatabase()).all(sql`

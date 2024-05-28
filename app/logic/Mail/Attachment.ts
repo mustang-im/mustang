@@ -37,6 +37,15 @@ export class Attachment extends Observable {
     return attachment;
   }
 
+  clone(): Attachment {
+    let clone = new Attachment();
+    Object.assign(clone, this);
+    if (this.content) {
+      clone.content = new File([this.content], this.content.name);
+    }
+    return clone;
+  }
+
   /** Open the native desktop app with this file */
   async openOSApp() {
     await appGlobal.remoteApp.shell.openPath(this.filepathLocal);
