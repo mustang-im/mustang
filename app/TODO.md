@@ -20,7 +20,6 @@
   * Setup
     * Autodiscover
     * Import account UI
-  * inline images display
   * inline images send
   * Bugs
     * FastList doesn't update some rows
@@ -45,7 +44,7 @@
 * Calendar
   * Open event on click
   * Tuesday first day
-* Images, inline and remote
+* Images, remote
 * Saved Searches delete: Update list
 * List view: Sort order
 * MailChat/Thread: Jail HTML: Styles and size

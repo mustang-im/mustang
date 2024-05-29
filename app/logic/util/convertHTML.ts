@@ -51,7 +51,7 @@ const cssURLRegex = /(url\("?)(?!data:)/gim;
 const urlAttributes = ['action', 'background', 'href', 'poster', 'src', 'srcset'];
 
 function urlAttribute(url) {
-  return /^data:image\//.test(url)
+  return /^data:image\//.test(url) || /^cid:/.test(url)
     ? url
     // : `${proxy}${escape(url)}`;
     : "";
@@ -128,7 +128,7 @@ DOMPurify.addHook('afterSanitizeAttributes', node => {
           }
           let hostname = new URL(url).hostname;
           let domain = getBaseDomainFromHost(hostname);
-          node.setAttribute("title", domain + "\n\n" + url);
+          node.setAttribute("title", domain + "\n\n" + url.substring(0, 120));
         } catch (ex) {
           node.setAttribute(attribute, "");
           node.setAttribute("title", ex.message ?? ex + "");

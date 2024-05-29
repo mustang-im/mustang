@@ -8,7 +8,7 @@ import { MailZIP } from "./Store/MailZIP";
 import { MailDir } from "./Store/MailDir";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { appGlobal } from "../app";
-import { fileExtensionForMIMEType, assert, AbstractFunction, NotImplemented } from "../util/util";
+import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
 import { backgroundError } from "../../frontend/Util/error";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
@@ -68,6 +68,8 @@ export class EMail extends Message {
   /** Body hasn't been loaded yet */
   @notifyChangedProperty
   needToLoadBody = true;
+  @notifyChangedProperty
+  haveCID = false;
 
   constructor(folder: Folder) {
     super();
@@ -246,6 +248,12 @@ export class EMail extends Message {
       // observers will trigger reload
       this.getBody().catch(backgroundError);
       return this.downloadingMsg();
+    }
+    if (!this.haveCID && this._sanitizedHTML && this.attachments.hasItems) {
+      (async () => {
+        this._sanitizedHTML = await addCID(this._sanitizedHTML, this);
+        this.haveCID = true; // triggers reload, which we need
+      })().catch(backgroundError);
     }
 
     return super.html;
@@ -454,6 +462,35 @@ export class EMailActions {
     redirect.attachments.addAll(this.email.attachments.map(a => a.clone()));
     return redirect;
   }
+}
+
+/** For inline images, convert `cid:` URIs into `data:` URIs. */
+async function addCID(html: string, email: EMail): Promise<string> {
+  try {
+    let doc = new DOMParser().parseFromString(html, "text/html");
+    let imgs = doc.querySelectorAll("img[src]");
+    if (imgs.length) {
+      await email.load();
+    }
+    for (let img of imgs) {
+      let src = img.getAttribute("src");
+      console.log(`Before <img src="${src}">`);
+      if (!src || !src.startsWith("cid:")) {
+        continue;
+      }
+      let cid = src.substring(4);
+      let attachment = email.attachments.find(a => a.contentID == "<" + cid + ">");
+      src = attachment?.content
+        ? await blobToDataURL(attachment.content)
+        : "";
+      img.setAttribute("src", src);
+      console.log(`Adding <img src="${src}">`);
+    }
+    html = new XMLSerializer().serializeToString(doc);
+  } catch (ex) {
+    backgroundError(ex);
+  }
+  return html;
 }
 
 

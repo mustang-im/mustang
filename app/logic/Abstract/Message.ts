@@ -57,11 +57,14 @@ export class Message extends Observable {
   /** HTML version of the message.
    * Directly from the network.
    * Attention: Untrusted. MUST be sanitized before using it.
+   * This is the version that will be saved on disk.
    * @see _sanitizedHTML */
   @notifyChangedProperty
   protected _rawHTML: string = null;
   /** HTML version of the message.
-   * Sanitized. */
+   * Sanitized.
+   * This is only cached here in RAM, but not saved on disk,
+   * so that we can change the sanitization. */
   protected _sanitizedHTML: string = null;
   /** HTML version of the message.
    * Sanitized. */
