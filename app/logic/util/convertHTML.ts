@@ -134,7 +134,12 @@ DOMPurify.addHook('afterSanitizeAttributes', node => {
           node.setAttribute("title", ex.message ?? ex + "");
         }
       } else {
-        node.setAttribute(attribute, urlAttribute(node.getAttribute(attribute)));
+        let orgURL = node.getAttribute(attribute);
+        let newURL = urlAttribute(orgURL);
+        node.setAttribute(attribute, newURL);
+        if (!newURL && !node.getAttribute("alt")) {
+          node.style.visibility = "hidden";
+        }
       }
     }
   }
