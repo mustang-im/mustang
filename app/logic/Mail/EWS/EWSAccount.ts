@@ -2,6 +2,7 @@ import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { EWSFolder } from "./EWSFolder";
 import type { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
+import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
@@ -42,6 +43,11 @@ export class EWSAccount extends MailAccount {
     if (addressbook) {
       addressbook.account = this;
       await addressbook.listContacts();
+    }
+    let calendar = appGlobal.calendars.find((calendar: EWSCalendar) => calendar.protocol == "calendar-ews" && calendar.url == this.url && calendar.username == this.emailAddress) as EWSCalendar | void;
+    if (calendar) {
+      calendar.account = this;
+      await calendar.listEvents();
     }
   }
 
