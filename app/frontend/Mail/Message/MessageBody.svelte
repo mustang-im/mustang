@@ -1,20 +1,26 @@
 <vbox flex class="message-body">
-  {#if mode == DisplayMode.HTML || mode == DisplayMode.HTMLWithExternal}
-    <HTMLDisplay html={$message.html} allowExternalImages={mode == DisplayMode.HTMLWithExternal} />
-  {:else if mode == DisplayMode.Plaintext}
-    <PlaintextDisplay plaintext={$message.text} />
-    <!--<HTMLDisplay html={convertTextToHTML($message.text)} />-->
-  {:else if mode == DisplayMode.Source}
-    {#await message.load()}
-      Loading...
-    {:then}
-      <PlaintextDisplay plaintext={getSource(message)} />
-    {/await}
-  {:else if mode == DisplayMode.Thread}
-    <ThreadDisplay {message} />
-  {:else}
-    Unknown mode
-  {/if}
+  {#await message.loadBody()}
+    Loading...
+  {:then}
+    {#if mode == DisplayMode.HTML || mode == DisplayMode.HTMLWithExternal}
+      <HTMLDisplay html={$message.html} allowExternalImages={mode == DisplayMode.HTMLWithExternal} />
+    {:else if mode == DisplayMode.Plaintext}
+      <PlaintextDisplay plaintext={$message.text} />
+      <!--<HTMLDisplay html={convertTextToHTML($message.text)} />-->
+    {:else if mode == DisplayMode.Source}
+      {#await message.loadMIME()}
+        Loading...
+      {:then}
+        <PlaintextDisplay plaintext={getSource($message)} />
+      {/await}
+    {:else if mode == DisplayMode.Thread}
+      <ThreadDisplay {message} />
+    {:else}
+      Unknown display mode
+    {/if}
+  {:catch ex}
+    {ex.message ?? ex + ""}
+  {/await}
 </vbox>
 
 <script lang="ts">

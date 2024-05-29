@@ -211,7 +211,18 @@ export class EMail extends Message {
     await SQLEMail.saveWritableProps(this);
   }
 
-  async load() {
+  protected async isDownloadCompleteDoublecheck(): Promise<boolean> {
+    if (this.downloadComplete) {
+      return true;
+    }
+    // Double-check for concurrent downloads
+    let check = this.folder.newEMail();
+    check.dbID = this.dbID;
+    await SQLEMail.readWritableProps(check);
+    return check.downloadComplete;
+  }
+
+  async loadMIME() {
     if (this.mime) {
       return;
     }
@@ -232,30 +243,29 @@ export class EMail extends Message {
     await this.download();
   }
 
-  protected async isDownloadCompleteDoublecheck(): Promise<boolean> {
-    if (this.downloadComplete) {
-      return true;
+  async loadBody() {
+    if (this.needToLoadBody) {
+      if (this.dbID) {
+        await SQLEMail.readBody(this);
+      }
+      if (this.needToLoadBody) {
+        await this.download();
+      }
     }
-    // Double-check for concurrent downloads
-    let check = this.folder.newEMail();
-    check.dbID = this.dbID;
-    await SQLEMail.readWritableProps(check);
-    return check.downloadComplete;
+
+    super.html;
+    if (!this.haveCID && this._sanitizedHTML && this.attachments.hasItems) {
+      this._sanitizedHTML = await addCID(this._sanitizedHTML, this);
+      this.haveCID = true; // triggers reload
+    }
   }
 
   get html(): string {
     if (this.needToLoadBody) {
       // observers will trigger reload
-      this.getBody().catch(backgroundError);
+      this.loadBody().catch(backgroundError);
       return this.downloadingMsg();
     }
-    if (!this.haveCID && this._sanitizedHTML && this.attachments.hasItems) {
-      (async () => {
-        this._sanitizedHTML = await addCID(this._sanitizedHTML, this);
-        this.haveCID = true; // triggers reload, which we need
-      })().catch(backgroundError);
-    }
-
     return super.html;
   }
   set html(val: string) {
@@ -265,7 +275,7 @@ export class EMail extends Message {
   get text(): string {
     if (this.needToLoadBody) {
       // observers will trigger reload
-      this.getBody().catch(backgroundError);
+      this.loadBody().catch(backgroundError);
       return this.downloadingMsg();
     }
 
@@ -275,23 +285,6 @@ export class EMail extends Message {
     super.text = val;
   }
 
-  protected async getBody(): Promise<void> {
-    try {
-      if (this.dbID) {
-        await SQLEMail.readBody(this);
-      }
-    } catch (ex) {
-      this.folder.account.errorCallback(ex);
-    }
-    try {
-      if (this.needToLoadBody) {
-        await this.download();
-      }
-    } catch (ex) {
-      this.folder.account.errorCallback(ex);
-      // this.text = ex?.message ?? ex + "";
-    }
-  }
   protected downloadingMsg(): string {
     return this.dbID
       ? "Message content not downloaded yet"
@@ -409,7 +402,7 @@ export class EMailActions {
   }
 
   async forwardInline(): Promise<EMail> {
-    await this.email.load();
+    await this.email.loadMIME();
     let forward = this.email.folder.account.newEMailFrom();
     forward.subject = "Fwd: " + this.email.subject;
     forward.html = `<p></p>
@@ -440,7 +433,7 @@ export class EMailActions {
   }
 
   async forwardAsAttachment(): Promise<EMail> {
-    await this.email.load();
+    await this.email.loadMIME();
     let forward = this.email.folder.account.newEMailFrom();
     forward.subject = "Fwd: " + this.email.subject;
     let a = new Attachment();
@@ -454,7 +447,7 @@ export class EMailActions {
   }
 
   async redirect(): Promise<EMail> {
-    await this.email.load();
+    await this.email.loadMIME();
     let redirect = this.email.folder.account.newEMailFrom();
     redirect.replyTo = this.email.from;
     redirect.subject = this.email.subject;
@@ -470,7 +463,7 @@ async function addCID(html: string, email: EMail): Promise<string> {
     let doc = new DOMParser().parseFromString(html, "text/html");
     let imgs = doc.querySelectorAll("img[src]");
     if (imgs.length) {
-      await email.load();
+      await email.loadMIME();
     }
     for (let img of imgs) {
       let src = img.getAttribute("src");
