@@ -40,9 +40,15 @@
 
 # Polish
 ## Elena
+* Clear profile
+* Debug dump of settings
 * Calendar
   * Open event on click
   * Tuesday first day
+* Images, inline and remote
+* Saved Searches delete: Update list
+* List view: Sort order
+* MailChat/Thread: Jail HTML: Styles and size
 
 # UI
 * Close menu when clicking outside menu
