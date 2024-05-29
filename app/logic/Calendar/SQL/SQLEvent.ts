@@ -17,11 +17,11 @@ export class SQLEvent extends Event {
         INSERT INTO event (
           title, descriptionText, descriptionHTML,
           startTime, endTime,
-          calendarID
+          iCalUID, pID, calendarID
         ) VALUES (
           ${event.title}, ${event.descriptionText}, ${event.descriptionHTML},
-          ${event.startTime.toISOString()}, ${event.endTime.toISOString()},
-          ${event.calendar?.dbID}
+          ${event.startTime?.toISOString()}, ${event.endTime?.toISOString()},
+          ${event.iCalUID}, ${event.pID}, ${event.calendar?.dbID}
         )`);
       event.dbID = insert.lastInsertRowid;
     } else {
@@ -30,8 +30,10 @@ export class SQLEvent extends Event {
           title = ${event.title},
           descriptionText = ${event.descriptionText},
           descriptionHTML = ${event.descriptionHTML},
-          startTime = ${event.startTime.toISOString()},
-          endTime = ${event.endTime.toISOString()},
+          startTime = ${event.startTime?.toISOString()},
+          endTime = ${event.endTime?.toISOString()},
+          iCalUID = ${event.iCalUID},
+          pID = ${event.pID},
           calendarID = ${event.calendar?.dbID}
         WHERE id = ${event.dbID}
         `);
@@ -76,7 +78,7 @@ export class SQLEvent extends Event {
         SELECT
           title, descriptionText, descriptionHTML,
           startTime, endTime,
-          calendarID
+          iCalUID, pID, calendarID
         FROM event
         WHERE id = ${dbID}
         `) as any;
@@ -88,8 +90,10 @@ export class SQLEvent extends Event {
     if (html) {
       event.descriptionHTML = html;
     }
-    event.startTime = sanitize.date(row.startTime);
+    event.startTime = sanitize.date(row.startTime, null);
     event.endTime = sanitize.date(row.endTime, event.startTime);
+    event.iCalUID = row.iCalUID;
+    event.pID = row.pID;
     if (row.calendarID) {
       let calendarID = sanitize.integer(row.calendarID, null);
       if (event.calendar) {
@@ -131,7 +135,7 @@ export class SQLEvent extends Event {
       SELECT
         title, descriptionText, descriptionHTML,
         startTime, endTime,
-        id
+        iCalUID, pID, id
       FROM event
       WHERE calendarID = ${calendar.dbID}
       `) as any;

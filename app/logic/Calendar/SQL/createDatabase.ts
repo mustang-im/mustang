@@ -25,6 +25,10 @@ export const calendarDatabaseSchema = sql`
   CREATE TABLE "event" (
     "id" INTEGER PRIMARY KEY,
     "calendarID" INTEGER default null,
+    -- iCal UID for a meeting
+    "iCalUID" TEXT default null,
+    -- Protocol-specific ID
+    "pID" TEXT default null,
     -- Summary or subject of the event
     -- Plaintext
     "title" TEXT not null,

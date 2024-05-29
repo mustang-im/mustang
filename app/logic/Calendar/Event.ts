@@ -7,6 +7,10 @@ import { Observable, notifyChangedProperty } from "../util/Observable";
 export class Event extends Observable {
   readonly id: string;
   dbID: number;
+  /** iCal UID for use with meetings */
+  iCalUID: string | null = null;
+  /** Protocol-specific ID for this event */
+  pID: string | null = null;
   @notifyChangedProperty
   title: string;
   @notifyChangedProperty
