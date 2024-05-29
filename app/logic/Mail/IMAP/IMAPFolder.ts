@@ -34,6 +34,7 @@ export class IMAPFolder extends Folder {
   set lastModSeq(val: number) {
     assert(typeof (val) == "number", "IMAP Folder modseq must be a number");
     this.syncState = val;
+    SQLFolder.save(this).catch(this.account.errorCallback);
   }
 
   fromFlow(folderInfo: any) {
