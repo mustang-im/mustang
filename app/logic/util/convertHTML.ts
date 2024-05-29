@@ -137,9 +137,6 @@ DOMPurify.addHook('afterSanitizeAttributes', node => {
         let orgURL = node.getAttribute(attribute);
         let newURL = urlAttribute(orgURL);
         node.setAttribute(attribute, newURL);
-        if (!newURL && !node.getAttribute("alt")) {
-          node.style.visibility = "hidden";
-        }
       }
     }
   }

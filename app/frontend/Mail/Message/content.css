@@ -7,3 +7,7 @@ blockquote {
   padding-left: 20px;
   margin-left: 0px;
 }
+
+img[src=""] {
+  visibility: hidden;
+}
