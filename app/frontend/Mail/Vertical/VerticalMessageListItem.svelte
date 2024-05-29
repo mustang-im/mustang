@@ -134,12 +134,14 @@
   .subject {
     line-height: 1.3;
   }
+  /*
   :global(.row:not(:hover)) .buttons.hover {
     display: none;
   }
   :global(.row:hover) .date {
     display: none;
   }
+  */
   .button {
     width: 20px;
     vertical-align: bottom;
