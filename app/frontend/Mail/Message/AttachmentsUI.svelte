@@ -1,7 +1,7 @@
-{#if $message.attachments.hasItems}
+{#if attachments.hasItems}
   <vbox class="attachments">
     <hbox class="attachments-list">
-      {#each $message.attachments.each as attachment}
+      {#each attachments.each as attachment}
         <MessageAttachment {message} {attachment} />
       {/each}
     </hbox>
@@ -9,10 +9,13 @@
 {/if}
 
 <script lang="ts">
+  import { ContentDisposition } from "../../../logic/Mail/Attachment";
   import type { EMail } from "../../../logic/Mail/EMail";
   import MessageAttachment from "./AttachmentUI.svelte";
 
   export let message: EMail;
+
+  $: attachments = $message.attachments.filter(a => a.disposition == ContentDisposition.attachment);
 </script>
 
 <style>
