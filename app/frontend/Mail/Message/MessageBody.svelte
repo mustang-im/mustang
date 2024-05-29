@@ -5,7 +5,11 @@
     <PlaintextDisplay plaintext={$message.text} />
     <!--<HTMLDisplay html={convertTextToHTML($message.text)} />-->
   {:else if mode == DisplayMode.Source}
-    <PlaintextDisplay plaintext={getSource($message)} />
+    {#await message.load()}
+      Loading...
+    {:then}
+      <PlaintextDisplay plaintext={getSource(message)} />
+    {/await}
   {:else if mode == DisplayMode.Thread}
     <ThreadDisplay {message} />
   {:else}
@@ -26,12 +30,11 @@
   let modeSetting = getLocalStorage("mail.contentRendering", "html");
   $: mode = $modeSetting.value as DisplayMode;
 
-  function getSource(message): string {
-    if (message.mime) {
-      return new TextDecoder().decode($message.mime);
+  function getSource(message: EMail): string {
+    if (!message.mime) {
+      return "Source not available";
     }
-    message.download().catch(showError);
-    return "Loading email source...";
+    return new TextDecoder().decode($message.mime);
   }
 </script>
 

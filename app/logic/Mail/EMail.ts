@@ -3,6 +3,7 @@ import type { Folder } from "./Folder";
 import { Attachment, ContentDisposition } from "./Attachment";
 import { RawFilesAttachment } from "./Store/RawFilesAttachment";
 import { SQLEMail } from "./SQL/SQLEMail";
+import { SQLSourceEMail } from "./SQL/Source/SQLSourceEMail";
 import { MailZIP } from "./Store/MailZIP";
 import { MailDir } from "./Store/MailDir";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
@@ -196,6 +197,7 @@ export class EMail extends Message {
       return;
     }
     await SQLEMail.save(this);
+    await SQLSourceEMail.save(this);
     await MailZIP.save(this);
     //await MailDir.save(this);
     try {
@@ -214,10 +216,13 @@ export class EMail extends Message {
     if (this.dbID) {
       try {
         await SQLEMail.read(this.dbID, this);
-        await MailZIP.read(this);
+        //await MailZIP.read(this);
         //await MailDir.read(this);
-        await this.parseMIME();
-        return;
+        await SQLSourceEMail.read(this);
+        if (this.mime) {
+          await this.parseMIME();
+          return;
+        }
       } catch (ex) {
         console.error(ex);
       }
