@@ -30,9 +30,11 @@
   $: loadFolder($selectedFolder);
   async function loadFolder(folder: Folder) {
     try {
-      $selectedMessage = null;
       if (!folder) {
         return;
+      }
+      if ($selectedMessage?.folder != folder) {
+        $selectedMessage = null;
       }
       await folder.listMessages();
     } catch (ex) {
