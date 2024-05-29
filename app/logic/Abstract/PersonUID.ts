@@ -78,11 +78,11 @@ export function personDisplayName(person: PersonOrGroup | PersonUID) {
     return person.name;
   } else if (person instanceof PersonUID) {
     person.findPerson();
-    if (person.person) {
-      return person.name;
+    if (person.person?.name) {
+      return person.person.name;
     }
     if (!person.name) {
-      return person.emailAddress;
+      return person.emailAddress ?? "";
     }
     return person.name?.
       replace(/@.*/, "").

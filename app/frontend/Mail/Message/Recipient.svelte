@@ -4,7 +4,7 @@
   </value>
   {#if !recipient.findPerson()}
     <value class="domain" title={recipient.emailAddress}>
-      @{getBaseDomainFromHost(getDomainForEmailAddress(recipient.emailAddress))}
+      @{getBaseDomainFromHost(getDomainForEmailAddress(recipient.emailAddress ?? "u@invalid"))}
     </value>
   {/if}
 </AppObject>
