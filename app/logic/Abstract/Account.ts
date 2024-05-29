@@ -58,6 +58,7 @@ export class Account extends Observable {
 
   /** For setup only. Test that the login works. */
   async verifyLogin(): Promise<void> {
+    await this.login(true);
   }
 
   async logout(): Promise<void> {
