@@ -35,15 +35,17 @@
     onClick={() => switchTo(DisplayMode.Plaintext)}
     selected={mode == DisplayMode.Plaintext}
     />
-  <Button
-    label="Source"
-    icon={SourceIcon}
-    iconOnly
-    iconSize="16px"
-    plain
-    onClick={() => switchTo(DisplayMode.Source)}
-    selected={mode == DisplayMode.Source}
-    />
+  {#if mode == DisplayMode.Source}
+    <Button
+      label="Source"
+      icon={SourceIcon}
+      iconOnly
+      iconSize="16px"
+      plain
+      onClick={() => switchTo(DisplayMode.Source)}
+      selected={mode == DisplayMode.Source}
+      />
+  {/if}
 </hbox>
 
 <script lang="ts">
