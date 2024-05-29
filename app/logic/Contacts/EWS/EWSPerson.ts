@@ -192,14 +192,14 @@ export class EWSPerson extends Person {
       let entry = this.streetAddresses.find(entry => entry.purpose == PhysicalAddressPurposes[key]);
       if (entry?.value) {
         let value = entry.value.split("\n");
-        assert(value.length == 5, "Street address must have exactly five lines: Address, City, State, ZIP Code, Country");
+        assert(value.length == 5, "Street address must have exactly five lines: Street and house, City, ZIP Code, State, Country");
         physicalAddresses.t$Entry.push({
           Key: key,
           t$Street: value[0],
           t$City: value[1],
-          t$State: value[2],
+          t$State: value[4],
+          t$CountryOrRegion: value[6],
           t$PostalCode: value[3],
-          t$CountryOrRegion: value[4],
         });
       }
     }
