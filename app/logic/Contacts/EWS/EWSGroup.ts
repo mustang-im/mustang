@@ -33,10 +33,85 @@ export class EWSGroup extends Group {
   }
 
   async save() {
-    throw new NotImplemented();
-    /* Don't allow the local DB to get out of step with the server
+    // XXX untested due to no UI yet
+    if (this.itemID) {
+      await this.update();
+    } else {
+      await this.create();
+    }
     await SQLGroup.save(this);
-    */
+  }
+
+  async update() {
+    let request = {
+      m$UpdateItem: {
+        m$ItemChanges: {
+          t$ItemChange: {
+            t$ItemId: {
+              Id: this.itemID,
+            },
+            t$Updates: {
+              t$SetItemField: [],
+              t$DeleteItemField: [],
+            },
+          },
+        },
+        ConflictResolution: "AlwaysOverwrite",
+      },
+    };
+    let updates = request.m$UpdateItem.m$ItemChanges.t$ItemChange.t$Updates;
+    this.addUpdate(updates, "t$Body", this.description && { BodyType: "Text", _TextContent_: this.description }, "item:Body");
+    this.addUpdate(updates, "t$DisplayName", this.name, "contacts:DisplayName");
+    this.addUpdate(updates, "t$Members", this.participants.hasItems && {
+      t$Member: this.participants.contents.map(entry => ({
+        t$Mailbox: {
+         t$EmailAddress: entry.emailAddress,
+         t$Name: entry.name,
+        },
+      })),
+    }, "distributionlist:Members");
+    await this.addressbook.account.callEWS(request);
+  }
+
+  addUpdate(updates, key, value, FieldURI, FieldIndex?) {
+    let field = {} as any;
+    if (FieldIndex) {
+      field.t$IndexedFieldURI = { FieldURI, FieldIndex };
+    } else {
+      field.t$FieldURI = { FieldURI };
+    }
+    if (!value) {
+      updates.t$DeleteItemField.push(field);
+    } else {
+      field.t$DistributionList = { [key]: value };
+      updates.t$SetItemField.push(field);
+    }
+  }
+
+  async create() {
+    let request = {
+      m$CreateItem: {
+        m$Items: {
+          t$DistributionList: {
+            t$Body: this.description ? {
+              BodyType: "Text",
+              _TextContent_: this.description,
+            } : "",
+            t$DisplayName: this.name,
+            t$Members: this.participants.hasItems ? {
+              t$Member: this.participants.contents.map(entry => ({
+                t$Mailbox: {
+                 t$EmailAddress: entry.emailAddress,
+                 t$Name: entry.name,
+                },
+              })),
+            } : "",
+          },
+        },
+      },
+    };
+    let response = await this.addressbook.account.callEWS(request);
+    this.itemID = response.Items.DistributionList.ItemId.Id;
   }
 }
 
