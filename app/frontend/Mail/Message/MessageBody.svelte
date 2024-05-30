@@ -1,6 +1,10 @@
 <vbox flex class="message-body">
   {#await message.loadBody()}
-    Loading...
+    {#await sleep(1)}
+      <hbox></hbox>
+    {:then}
+      Loading...
+    {/await}
   {:then}
     {#if mode == DisplayMode.HTML || mode == DisplayMode.HTMLWithExternal}
       <HTMLDisplay html={$message.html} allowExternalImages={mode == DisplayMode.HTMLWithExternal} />
@@ -30,6 +34,7 @@
   import PlaintextDisplay from "./PlaintextDisplay.svelte";
   import ThreadDisplay from "./ThreadDisplay.svelte";
   import { showError } from "../../Util/error";
+  import { sleep } from "../../../logic/util/util";
 
   export let message: EMail;
 
