@@ -56,12 +56,9 @@ async function createSharedAppObject() {
 
 async function readFile(path: string): Promise<Uint8Array> {
   let fileHandle = await fsPromises.open(path, "r");
-  let stats = await fileHandle.stat();
-  let contents = new Uint8Array(stats.size);
-  await fileHandle.read(contents);
-  //console.log("file", path, "size", stats.size, "=", contents.length, contents);
+  let { buffer } = await fileHandle.read();
   await fileHandle.close();
-  return contents;
+  return buffer;
 }
 async function writeFile(path: string, permissions: number, contents: Uint8Array): Promise<void> {
   let fileHandle = await fsPromises.open(path, "w", permissions);

@@ -252,6 +252,7 @@ export class EMail extends Message {
       await RawFilesAttachment.readEMail(this);
     } catch (ex) {
       console.error(ex);
+      // fallback
       await this.loadMIME();
     }
   }
