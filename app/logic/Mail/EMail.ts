@@ -162,6 +162,7 @@ export class EMail extends Message {
       this.html = html;
     }
     this.needToLoadBody = false;
+    this.haveCID = false;
 
     // Attachments
     let fallbackID = 0;
@@ -248,7 +249,7 @@ export class EMail extends Message {
       return;
     }
     try {
-      RawFilesAttachment.readEMail(this);
+      await RawFilesAttachment.readEMail(this);
     } catch (ex) {
       console.error(ex);
       await this.loadMIME();
@@ -265,9 +266,9 @@ export class EMail extends Message {
       }
     }
 
-    super.html;
-    if (!this.haveCID && this._sanitizedHTML && this.attachments.hasItems) {
-      this._sanitizedHTML = await addCID(this._sanitizedHTML, this);
+    let html = super.html;
+    if (!this.haveCID && html && this.attachments.hasItems) {
+      this._sanitizedHTML = await addCID(html, this);
       this.haveCID = true; // triggers reload
     }
   }

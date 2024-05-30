@@ -33,6 +33,7 @@ export const chatDatabaseSchema = sql`
     -- filename with extension, as given by the sender
     "filename" TEXT not null,
     -- filename and path where the attachment is stored on the user's local disk, after download
+    -- path is relative to app root directory
     "filepathLocal" TEXT default null,
     "mimeType" TEXT not null,
     -- file size in bytes. null, if not yet downloaded

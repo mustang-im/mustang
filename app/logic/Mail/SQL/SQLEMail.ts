@@ -164,7 +164,7 @@ export class SQLEMail {
     if (!configDir) {
       configDir = await appGlobal.remoteApp.getFilesDir();
     }
-    let filepath = configDir + "/" + a.filepathLocal;
+    let filepath = a.filepathLocal?.replace(configDir + "/", "");
     await (await getDatabase()).run(sql`
       INSERT OR IGNORE INTO emailAttachment (
         emailID, filename, filepathLocal, mimeType, size, contentID, disposition, related
@@ -181,7 +181,7 @@ export class SQLEMail {
     if (!configDir) {
       configDir = await appGlobal.remoteApp.getFilesDir();
     }
-    let filepath = configDir + "/" + a.filepathLocal;
+    let filepath = a.filepathLocal?.replace(configDir + "/", "");
     await (await getDatabase()).run(sql`
       UPDATE emailAttachment SET
         filepathLocal = ${filepath}

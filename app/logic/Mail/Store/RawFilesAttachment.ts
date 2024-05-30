@@ -41,7 +41,7 @@ export class RawFilesAttachment {
 
   static async readEMail(email: EMail): Promise<void> {
     assert(email.dbID, "need email DB ID to read attachments from disk");
-    SQLEMail.read(email.dbID, email);
+    await SQLEMail.read(email.dbID, email);
     for (let attachment of email.attachments) {
       await this.read(attachment);
     }
