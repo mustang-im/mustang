@@ -1,8 +1,8 @@
 import type { Attachment } from "../Attachment";
 import type { EMail } from "../EMail";
-import { appGlobal } from "../../app";
-import { sanitizeFilename, fileExtensionForMIMEType } from "../../util/util";
 import { SQLEMail } from "../SQL/SQLEMail";
+import { appGlobal } from "../../app";
+import { sanitizeFilename, fileExtensionForMIMEType, assert } from "../../util/util";
 
 let configDir: string = null;
 
@@ -26,6 +26,7 @@ export class RawFilesAttachment {
     let fileHandle = await appGlobal.remoteApp.openFile(filepath, true, 0o400);
     await fileHandle.write(new Uint8Array(await attachment.content.arrayBuffer()));
     await appGlobal.remoteApp.closeFile(fileHandle);
+    //attachment.filepathLocal = filepath.replace(configDir + "/", "");
     attachment.filepathLocal = filepath;
     await SQLEMail.saveAttachmentFile(email, attachment);
   }
@@ -39,9 +40,17 @@ export class RawFilesAttachment {
     await appGlobal.remoteApp.fs.chmod(dir, 0o500);
   }
 
-  static async read(attachment: Attachment, email: EMail): Promise<File> {
-    let filepath = await this.getFilePath(attachment, email);
-    let fileHandle = await appGlobal.remoteApp.openFile(filepath, false);
+  static async readEMail(email: EMail): Promise<void> {
+    assert(email.dbID, "need email DB ID to read attachments from disk");
+    SQLEMail.read(email.dbID, email);
+    for (let attachment of email.attachments) {
+      await this.read(attachment);
+    }
+  }
+
+  static async read(attachment: Attachment): Promise<File> {
+    assert(attachment.filepathLocal, "need attachment filename");
+    let fileHandle = await appGlobal.remoteApp.openFile(attachment.filepathLocal, false);
     let array = new Uint8Array(attachment.size);
     await fileHandle.read(array);
     await appGlobal.remoteApp.closeFile(fileHandle);

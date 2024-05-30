@@ -243,6 +243,18 @@ export class EMail extends Message {
     await this.download();
   }
 
+  async loadAttachments() {
+    if (this.attachments.every(a => a.content)) {
+      return;
+    }
+    try {
+      RawFilesAttachment.readEMail(this);
+    } catch (ex) {
+      console.error(ex);
+      await this.loadMIME();
+    }
+  }
+
   async loadBody() {
     if (this.needToLoadBody) {
       if (this.dbID) {
@@ -402,7 +414,7 @@ export class EMailActions {
   }
 
   async forwardInline(): Promise<EMail> {
-    await this.email.loadMIME();
+    await this.email.loadAttachments();
     let forward = this.email.folder.account.newEMailFrom();
     forward.subject = "Fwd: " + this.email.subject;
     forward.html = `<p></p>
@@ -433,7 +445,7 @@ export class EMailActions {
   }
 
   async forwardAsAttachment(): Promise<EMail> {
-    await this.email.loadMIME();
+    await this.email.loadAttachments();
     let forward = this.email.folder.account.newEMailFrom();
     forward.subject = "Fwd: " + this.email.subject;
     let a = new Attachment();
@@ -447,7 +459,7 @@ export class EMailActions {
   }
 
   async redirect(): Promise<EMail> {
-    await this.email.loadMIME();
+    await this.email.loadAttachments();
     let redirect = this.email.folder.account.newEMailFrom();
     redirect.replyTo = this.email.from;
     redirect.subject = this.email.subject;
@@ -463,11 +475,10 @@ async function addCID(html: string, email: EMail): Promise<string> {
     let doc = new DOMParser().parseFromString(html, "text/html");
     let imgs = doc.querySelectorAll("img[src]");
     if (imgs.length) {
-      await email.loadMIME();
+      await email.loadAttachments();
     }
     for (let img of imgs) {
       let src = img.getAttribute("src");
-      console.log(`Before <img src="${src}">`);
       if (!src || !src.startsWith("cid:")) {
         continue;
       }
@@ -477,7 +488,6 @@ async function addCID(html: string, email: EMail): Promise<string> {
         ? await blobToDataURL(attachment.content)
         : "";
       img.setAttribute("src", src);
-      console.log(`Adding <img src="${src}">`);
     }
     html = new XMLSerializer().serializeToString(doc);
   } catch (ex) {
