@@ -74,7 +74,19 @@ export class EWSEvent extends Event {
   }
 
   async deleteIt() {
-    throw new NotImplemented();
+    let request = {
+      m$DeleteItem: {
+        m$ItemIds: {
+          t$ItemId: {
+            Id: this.itemID,
+          },
+        },
+        DeleteType: "MoveToDeletedItems",
+        SendMeetingCancellations: "SendToAllAndSaveCopy",
+      },
+    };
+    await this.calendar.account.callEWS(request);
+    await super.deleteIt();
   }
 }
 
