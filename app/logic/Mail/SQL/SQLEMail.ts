@@ -3,12 +3,14 @@ import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import type { Folder } from "../Folder";
 import { Attachment, ContentDisposition } from "../Attachment";
 import { getDatabase } from "./SQLDatabase";
-import type { IMAPEMail } from "../IMAP/IMAPEMail";
+import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { assert, fileExtensionForMIMEType } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import sql from "../../../../lib/rs-sqlite";
+
+let configDir: string = null;
 
 export class SQLEMail {
   /**
@@ -159,11 +161,15 @@ export class SQLEMail {
 
   protected static async saveAttachment(email: EMail, a: Attachment) {
     assert(email.dbID, "Need to save email before attachment");
+    if (!configDir) {
+      configDir = await appGlobal.remoteApp.getFilesDir();
+    }
+    let filepath = configDir + "/" + a.filepathLocal;
     await (await getDatabase()).run(sql`
       INSERT OR IGNORE INTO emailAttachment (
         emailID, filename, filepathLocal, mimeType, size, contentID, disposition, related
       ) VALUES (
-        ${email.dbID}, ${a.filename}, ${a.filepathLocal}, ${a.mimeType}, ${a.size},
+        ${email.dbID}, ${a.filename}, ${filepath}, ${a.mimeType}, ${a.size},
         ${a.contentID}, ${a.disposition}, ${a.related ? 1 : 0}
       )`);
   }
@@ -172,9 +178,13 @@ export class SQLEMail {
    * save its local disk location. */
   static async saveAttachmentFile(email: EMail, a: Attachment) {
     assert(email.dbID, "Need to save email before attachment");
+    if (!configDir) {
+      configDir = await appGlobal.remoteApp.getFilesDir();
+    }
+    let filepath = configDir + "/" + a.filepathLocal;
     await (await getDatabase()).run(sql`
       UPDATE emailAttachment SET
-        filepathLocal = ${a.filepathLocal}
+        filepathLocal = ${filepath}
       WHERE emailID = ${email.dbID}
         AND filename = ${a.filename}
         AND contentID = ${a.contentID}
@@ -302,13 +312,17 @@ export class SQLEMail {
       `) as any;
     }
     let fallbackID = 0;
+    if (!configDir) {
+      configDir = await appGlobal.remoteApp.getFilesDir();
+    }
     for (let row of attachmentRows) {
       try {
         let a = new Attachment();
         a.mimeType = sanitize.nonemptystring(row.mimeType, "application/octet-stream");
         a.contentID = sanitize.nonemptystring(row.contentID, "" + ++fallbackID);
         a.filename = sanitize.nonemptystring(row.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(a.mimeType));
-        a.filepathLocal = sanitize.string(row.filepathLocal, null);
+        let filepath = sanitize.string(row.filepathLocal, null);
+        a.filepathLocal = filepath ? configDir + "/" + filepath : null;
         a.size = sanitize.integer(row.size, -1);
         a.disposition = sanitize.translate(row.disposition, {
           attachment: ContentDisposition.attachment,

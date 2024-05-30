@@ -26,7 +26,6 @@ export class RawFilesAttachment {
     let fileHandle = await appGlobal.remoteApp.openFile(filepath, true, 0o400);
     await fileHandle.write(new Uint8Array(await attachment.content.arrayBuffer()));
     await appGlobal.remoteApp.closeFile(fileHandle);
-    //attachment.filepathLocal = filepath.replace(configDir + "/", "");
     attachment.filepathLocal = filepath;
     await SQLEMail.saveAttachmentFile(email, attachment);
   }
@@ -82,7 +81,9 @@ export class RawFilesAttachment {
   }
 
   static async getDirPath(email: EMail): Promise<string> {
-    configDir = configDir ?? await appGlobal.remoteApp.getFilesDir();
+    if (!configDir) {
+      configDir = await appGlobal.remoteApp.getFilesDir();
+    }
     return `${configDir}/files/email/${sanitizeFilename(email.from.emailAddress.replace("@", "-"))}/${email.dbID}-${sanitizeFilename(email.subject)}`;
   }
 }
