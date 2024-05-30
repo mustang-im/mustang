@@ -15,9 +15,7 @@ export class MailDir {
     assert(email.mime, "Need MIME source to save the email in maildir");
     let filepath = await this.getFilePath(email);
     // Permissions: Only user can read the file, but not modify
-    let fileHandle = await appGlobal.remoteApp.openFile(filepath, true, 0o400);
-    await fileHandle.write(email.mime);
-    await appGlobal.remoteApp.closeFile(fileHandle);
+    await appGlobal.remoteApp.writeFile(filepath, 0o400, email.mime);
   }
 
   static async read(email: EMail): Promise<void> {
@@ -25,11 +23,7 @@ export class MailDir {
   }
 
   static async _read(email: EMail, filepath: string): Promise<void> {
-    let fileHandle = await appGlobal.remoteApp.openFile(filepath, false);
-    let fileContent = new Uint8Array();
-    await fileHandle.read(fileContent);
-    await appGlobal.remoteApp.closeFile(fileHandle);
-    email.mime = fileContent;
+    email.mime = await appGlobal.remoteApp.readFile(filepath);
     await email.parseMIME();
     await email.save();
   }

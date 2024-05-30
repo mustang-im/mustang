@@ -40,8 +40,8 @@ async function createSharedAppObject() {
     getMIMENodemailer,
     newAdmZIP,
     newHTTPServer,
-    openFile,
-    closeFile,
+    readFile,
+    writeFile,
     fs: fsPromises,
     os: {
       homedir: os.homedir,
@@ -54,6 +54,20 @@ async function createSharedAppObject() {
   };
 }
 
+async function readFile(path: string): Promise<Uint8Array> {
+  let fileHandle = await fsPromises.open(path, "r");
+  let stats = await fileHandle.stat();
+  let contents = new Uint8Array(stats.size);
+  await fileHandle.read(contents);
+  //console.log("file", path, "size", stats.size, "=", contents.length, contents);
+  await fileHandle.close();
+  return contents;
+}
+async function writeFile(path: string, permissions: number, contents: Uint8Array): Promise<void> {
+  let fileHandle = await fsPromises.open(path, "w", permissions);
+  await fileHandle.write(contents);
+  await fileHandle.close();
+}
 /**
  * E.g. ```
  * let contents = new Blob(["test\n"], { type: "text/plain" });
@@ -62,13 +76,13 @@ async function createSharedAppObject() {
  * await testFile.write(new Uint8Array(await contents.arrayBuffer()));
  * await appGlobal.remoteApp.closeFile(testFile);
  * ```
- */
+ * /
 async function openFile(path: string, write: boolean, mode?: string | number): Promise<FileHandle> {
   return await fsPromises.open(path, write ? "w" : "r", mode);
 }
 async function closeFile(handle: FileHandle): Promise<void> {
   await handle.close(); // for some reason, only this function doesn't appear on FileHandle in JPC client
-}
+}*/
 
 async function openFileInExternalApp(filepath: string, appEXE: string): Promise<void> {
   let launcher = appEXE ??

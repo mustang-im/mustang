@@ -22,10 +22,9 @@ export class RawFilesAttachment {
       return;
     }
     let filepath = await this.getFilePath(attachment, email);
+    let contents = new Uint8Array(await attachment.content.arrayBuffer());
     // Permissions: Only user can read the file, but not modify
-    let fileHandle = await appGlobal.remoteApp.openFile(filepath, true, 0o400);
-    await fileHandle.write(new Uint8Array(await attachment.content.arrayBuffer()));
-    await appGlobal.remoteApp.closeFile(fileHandle);
+    await appGlobal.remoteApp.writeFile(filepath, 0o400, contents);
     attachment.filepathLocal = filepath;
     await SQLEMail.saveAttachmentFile(email, attachment);
   }
@@ -49,10 +48,7 @@ export class RawFilesAttachment {
 
   static async read(attachment: Attachment): Promise<File> {
     assert(attachment.filepathLocal, "need attachment filename");
-    let fileHandle = await appGlobal.remoteApp.openFile(attachment.filepathLocal, false);
-    let array = new Uint8Array(attachment.size);
-    await fileHandle.read(array);
-    await appGlobal.remoteApp.closeFile(fileHandle);
+    let array = await appGlobal.remoteApp.readFile(attachment.filepathLocal);
     let file = new File([array], attachment.filename, { type: attachment.mimeType });
     attachment.content = file;
     return file;
