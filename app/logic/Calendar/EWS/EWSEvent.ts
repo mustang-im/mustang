@@ -86,9 +86,7 @@ export class EWSEvent extends Event {
         await this.createTask();
       }
     }
-    /* Needs sync working before we can save to DB
     await super.save();
-    */
   }
 
   async updateCalendarItem() {
