@@ -92,21 +92,24 @@ export class EWSFolder extends Folder {
         result = await this.account.callEWS(sync);
       }
       let newMessageIDs = (await Promise.all([
-        this.processSyncChanges(result.Changes.readFlagChange, this.processSyncReadFlagChange),
+        this.processSyncChanges(result.Changes.ReadFlagChange, this.processSyncReadFlagChange, true),
         this.processSyncChanges(result.Changes.Update, this.processSyncUpdate),
         this.processSyncChanges(result.Changes.Create, this.processSyncUpdate),
       ])).flat();
-      await this.processSyncChanges(result.Changes.Delete, this.processSyncDelete);
+      await this.processSyncChanges(result.Changes.Delete, this.processSyncDelete, true);
       this.messages.addAll(await this.getNewMessageHeaders(newMessageIDs));
       this.syncState = sync.m$SyncFolderItems.m$SyncState = result.SyncState;
       await SQLFolder.save(this);
     }
   }
 
-  protected async processSyncChanges(changes, callback): Promise<any[]> {
+  protected async processSyncChanges(changes, callback, isid): Promise<any[]> {
     let unprocessedChanges: any[] = [];
-    if (changes?.Message) {
-      for (let change of ensureArray(changes.Message)) {
+    if (changes) {
+      for (let change of ensureArray(changes)) {
+        if (!isid) {
+          change = change.Message;
+        }
         let email = this.getEmailByItemId(change.ItemId.Id);
         if (email) {
           await callback.call(this, email, change);
