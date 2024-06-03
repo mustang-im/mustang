@@ -84,13 +84,14 @@ export class EWSFolder extends Folder {
       try {
         result = await this.account.callEWS(sync);
       } catch (ex) {
-        if (ex.error?.ResponseCode != 'ErrorInvalidSyncStateData') {
+        if (ex.error?.ResponseCode == 'ErrorInvalidSyncStateData') {
+          this.syncState = null;
+          await SQLFolder.save(this);
+          sync.m$SyncFolderItems.m$SyncState = null;
+          result = await this.account.callEWS(sync);
+        } else {
           throw ex;
         }
-        this.syncState = null;
-        await SQLFolder.save(this);
-        sync.m$SyncFolderItems.m$SyncState = null;
-        result = await this.account.callEWS(sync);
       }
       let newMessageIDs = (await Promise.all([
         this.forEachSyncChange(result.Changes.ReadFlagChange, this.processSyncReadFlagChange, true),
@@ -192,7 +193,7 @@ export class EWSFolder extends Folder {
       allEmail.addAll(await this.getNewMessageHeaders(newMessageIDs));
     }
 
-    for (let email of this.messages.subtract(allEmail).contents) {
+    for (let email of this.messages.subtract(allEmail)) {
       SQLEMail.deleteIt(email);
     }
     this.messages.replaceAll(allEmail);
