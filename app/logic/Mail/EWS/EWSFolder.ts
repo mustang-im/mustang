@@ -49,7 +49,8 @@ export class EWSFolder extends Folder {
     return this.updateChangedMessages();
   }
 
-  // Uses the sync state to get just the messages that changed since last time.
+  /** Uses the sync state to get just the messages that changed since last time.
+   * Assumes previously known messages have already been loaded from the DB. */
   async updateChangedMessages() {
     let sync = {
       m$SyncFolderItems: {
@@ -96,20 +97,20 @@ export class EWSFolder extends Folder {
         this.forEachSyncChange(result.Changes.Update, this.processSyncUpdate, false),
         this.forEachSyncChange(result.Changes.Create, this.processSyncUpdate, false),
       ])).flat();
-      await this.forEachSyncChange(result.Changes.Delete, this.processSyncDelete, true);
       this.messages.addAll(await this.getNewMessageHeaders(newMessageIDs));
+      await this.forEachSyncChange(result.Changes.Delete, this.processSyncDelete, true);
       this.syncState = sync.m$SyncFolderItems.m$SyncState = result.SyncState;
       await SQLFolder.save(this);
     }
   }
 
-  protected async forEachSyncChange(changes: any[], eachCallback, isID: boolean): Promise<any[]> {
+  protected async forEachSyncChange(changes: any[], eachCallback, isDirectList: boolean): Promise<any[]> {
     let newEMails: any[] = [];
     for (let change of ensureArray(changes)) {
-      if (!isID) {
+      if (!isDirectList) {
         change = getItem(change);
       }
-      let email = this.getEmailByItemId(change.ItemId.Id);
+      let email = this.getEmailByItemId(change?.ItemId?.Id);
       if (email) {
         await eachCallback.call(this, email, change);
       } else {
@@ -133,9 +134,9 @@ export class EWSFolder extends Folder {
     await email.deleteMessageLocally();
   }
 
-  // Lists all messages starting from scratch, ignoring the sync state.
-  // If you don't want this, then clear the sync state and update changes.
-  // Assumes previously known messages have already been loaded from the db.
+  /** Lists all messages starting from scratch, ignoring the sync state.
+   * If you don't want this, then clear the sync state and update changes.
+   * Assumes previously known messages have already been loaded from the DB. */
   async listAllMessages() {
     let allEmail: ArrayColl<EWSEMail> = new ArrayColl();
     let request = {
@@ -308,6 +309,9 @@ export class EWSFolder extends Folder {
   }
 
   getEmailByItemId(id: string): EWSEMail | undefined {
+    if (!id) {
+      return undefined;
+    }
     return this.messages.find((m: EWSEMail) => m.itemID == id) as EWSEMail | undefined;
   }
 
