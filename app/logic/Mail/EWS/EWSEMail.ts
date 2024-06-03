@@ -1,5 +1,5 @@
 import { EMail } from "../EMail";
-import type { EWSFolder } from "./EWSFolder";
+import { type EWSFolder, getEWSItem } from "./EWSFolder";
 import { Attachment, ContentDisposition } from "../Attachment";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { appGlobal } from "../../app";
@@ -32,7 +32,8 @@ export class EWSEMail extends EMail {
       },
     };
     let result = await this.folder.account.callEWS(request);
-    this.mime = new Uint8Array(await base64ToArrayBuffer(result.Items.Message.MimeContent.Value, "message/rfc822"));
+    let mimeBase64 = getEWSItem(result.Items).MimeContent.Value;
+    this.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
     await this.parseMIME();
     await this.save();
   }

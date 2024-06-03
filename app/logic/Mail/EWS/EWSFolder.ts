@@ -108,7 +108,7 @@ export class EWSFolder extends Folder {
     let newEMails: any[] = [];
     for (let change of ensureArray(changes)) {
       if (!isDirectList) {
-        change = getItem(change);
+        change = getEWSItem(change);
       }
       let email = this.getEmailByItemId(change?.ItemId?.Id);
       if (email) {
@@ -177,7 +177,7 @@ export class EWSFolder extends Folder {
         break;
       }
       request.m$FindItem.m$IndexedPageItemView.Offset = result.RootFolder.IndexedPagingOffset;
-      let messages = getItems(result.RootFolder.Items);
+      let messages = getEWSItems(result.RootFolder.Items);
       let newMessageIDs = [];
       for (let message of messages) {
         let email = this.getEmailByItemId(message.ItemId.Id);
@@ -263,7 +263,7 @@ export class EWSFolder extends Folder {
       let results = ensureArray(await this.account.callEWS(request));
       for (let result of results) {
         let email = this.newEMail();
-        email.fromXML(getItem(result.Items));
+        email.fromXML(getEWSItem(result.Items));
         await SQLEMail.save(email);
         allEmail.add(email);
       }
@@ -289,9 +289,9 @@ export class EWSFolder extends Folder {
       };
       let results = ensureArray(await this.account.callEWS(request));
       for (let result of results) {
-        let email = emailsToDownload.find(email => email.itemID == getItem(result.Items).ItemId.Id);
+        let email = emailsToDownload.find(email => email.itemID == getEWSItem(result.Items).ItemId.Id);
         if (email && !email.downloadComplete) {
-          let mimeBase64 = getItem(result.Items).MimeContent.Value;
+          let mimeBase64 = getEWSItem(result.Items).MimeContent.Value;
           email.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
           await email.parseMIME();
           await email.save();
@@ -456,12 +456,12 @@ export class EWSFolder extends Folder {
  * * `.MeetingCancellation` = Calendar event cancelled by organizer
  * ...
  * This function is a convenience for a single item. */
-function getItem(item: any): any {
+export function getEWSItem(item: any): any {
   return Object.values(item)[0];
 }
 
-/** @see getItem()
+/** @see getEWSItem()
  * This function is a convenience for a multiple items. */
-function getItems(items: any[]): any[] {
+function getEWSItems(items: any[]): any[] {
   return Object.values(items).flat();
 }
