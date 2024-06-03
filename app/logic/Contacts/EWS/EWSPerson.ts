@@ -2,6 +2,7 @@ import { Person, ContactEntry } from '../../Abstract/Person';
 import type { EWSAddressbook } from './EWSAddressbook';
 import { SQLPerson } from '../SQL/SQLPerson';
 import { ensureArray } from "../../Mail/EWS/EWSEMail";
+import EWSCreateItemRequest from "../../Mail/EWS/EWSCreateItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/EWSUpdateItemRequest";
 import { assert } from "../../util/util";
 
@@ -156,55 +157,62 @@ export class EWSPerson extends Person {
   }
 
   async create() {
-    let phoneNumbers = { t$Entry: PhoneMapping.flatMap(([purpose, protocol, count, key]) => this.phoneNumbers.contents.filter(entry => entry.purpose == purpose && (entry.protocol || "tel") == protocol).slice(0, count).map((entry, i) => ({ Key: key + (i ? "2" : ""), _TextContent_: entry.value }))) };
-    let physicalAddresses = { t$Entry: [] };
+    let request = new EWSCreateItemRequest();
+    request.addField("Contact", "Body", this.notes && { BodyType: "Text", _TextContent_: this.notes }, "item:Body");
+    request.addField("Contact", "DisplayName", this.name, "contacts:DisplayName");
+    request.addField("Contact", "GivenName", this.firstName, "contacts:GivenName");
+    request.addField("Contact", "CompanyName", this.company, "contacts:CompanyName");
+    for (let i = 1; i <= 3; i++) {
+      let entry = this.emailAddresses.getIndex(i - 1);
+      request.addField("Contact", "EmailAddresses", entry && {
+        t$Entry: {
+          Key: "EmailAddress" + i,
+          _TextContent_: entry.value,
+        },
+      }, "contacts:EmailAddress", "EmailAddress" + i);
+    }
     for (let key in PhysicalAddressPurposes) {
       let entry = this.streetAddresses.find(entry => entry.purpose == PhysicalAddressPurposes[key]);
-      if (entry?.value) {
-        let value = entry.value.split("\n");
-        assert(value.length == 5, "Street address must have exactly five lines: Street and house, City, ZIP Code, State, Country");
-        physicalAddresses.t$Entry.push({
-          Key: key,
-          t$Street: value[0],
-          t$City: value[1],
-          t$State: value[4],
-          t$CountryOrRegion: value[6],
-          t$PostalCode: value[3],
-        });
+      if (entry) {
+        let value: string | string[] = entry.value;
+        if (value) {
+          value = value.split("\n");
+          assert(value.length == 5, "Street address must have exactly 5 lines: Street and house, City, ZIP Code, State, Country");
+        }
+        for (let i = 0; i < 5; i++) {
+          request.addField("Contact", "PhysicalAddresses", value && {
+            t$Entry: {
+              Key: key,
+              ["t$" + PhysicalAddressElements[i]]: value[i],
+            },
+          }, "contacts:PhysicalAddress:" + PhysicalAddressElements[i], key);
+        }
       }
     }
-    let request = {
-      m$CreateItem: {
-        m$Items: {
-          t$Contact: {
-            t$Body: this.notes ? {
-              BodyType: "Text",
-              _TextContent_: this.notes,
-            } : "",
-            t$DisplayName: this.name,
-            t$GivenName: this.firstName || "",
-            t$CompanyName: this.company || "",
-            t$EmailAddresses: this.emailAddresses.hasItems ? {
-              t$Entry: this.emailAddresses.getIndexRange(0, 3).map((entry, i) => ({
-                Key: "EmailAddress" + ++i,
-                _TextContent_: entry.value,
-              })),
-            } : "",
-            t$PhysicalAddresses: physicalAddresses.t$Entry.length ? physicalAddresses : "",
-            t$PhoneNumbers: phoneNumbers.t$Entry.length ? phoneNumbers : "",
-            t$Department: this.department || "",
-            t$ImAddresses: this.chatAccounts.hasItems ? {
-              t$Entry: this.chatAccounts.getIndexRange(0, 3).map((entry, i) => ({
-                Key: "ImAddress" + ++i,
-                _TextContent_: entry.value,
-              })),
-            } : "",
-            t$JobTitle: this.position || "",
-            t$Surname: this.lastName || "",
+    for (let [purpose, protocol, count, key] of PhoneMapping) {
+      let values = this.phoneNumbers.contents.filter(entry => entry.purpose == purpose && (entry.protocol || "tel") == protocol).map(entry => entry.value);
+      for (let i = 0; i < count; i++) {
+        request.addField("Contact", "PhoneNumbers", values[i] && {
+          t$Entry: {
+            Key: key,
+            _TextContent_: values[i],
           },
+        }, "contacts:PhoneNumber", key);
+        key += "2";
+      }
+    }
+    request.addField("Contact", "Department", this.department, "contacts:Department");
+    for (let i = 1; i <= 3; i++) {
+      let entry = this.chatAccounts.getIndex(i - 1);
+      request.addField("Contact", "ImAddresses", entry && {
+        t$Entry: {
+          Key: "ImAddress" + i,
+          _TextContent_: entry.value,
         },
-      },
-    };
+      }, "contacts:ImAddress", "ImAddress" + i);
+    }
+    request.addField("Contact", "JobTitle", this.position, "contacts:JobTitle");
+    request.addField("Contact", "Surname", this.lastName, "contacts:Surname");
     let response = await this.addressbook.account.callEWS(request);
     this.itemID = response.Items.Contact.ItemId.Id;
   }
