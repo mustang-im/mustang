@@ -3,6 +3,7 @@ import { Person, ContactEntry } from '../../Abstract/Person';
 import { findPerson } from '../../Abstract/PersonUID';
 import type { EWSAddressbook } from './EWSAddressbook';
 import { ensureArray } from "../../Mail/EWS/EWSEMail";
+import EWSUpdateItemRequest from "../../Mail/EWS/EWSUpdateItemRequest";
 import { SQLGroup } from '../SQL/SQLGroup';
 import { NotImplemented } from '../../util/util';
 import { appGlobal } from "../../app";
@@ -43,26 +44,10 @@ export class EWSGroup extends Group {
   }
 
   async update() {
-    let request = {
-      m$UpdateItem: {
-        m$ItemChanges: {
-          t$ItemChange: {
-            t$ItemId: {
-              Id: this.itemID,
-            },
-            t$Updates: {
-              t$SetItemField: [],
-              t$DeleteItemField: [],
-            },
-          },
-        },
-        ConflictResolution: "AlwaysOverwrite",
-      },
-    };
-    let updates = request.m$UpdateItem.m$ItemChanges.t$ItemChange.t$Updates;
-    this.addUpdate(updates, "t$Body", this.description && { BodyType: "Text", _TextContent_: this.description }, "item:Body");
-    this.addUpdate(updates, "t$DisplayName", this.name, "contacts:DisplayName");
-    this.addUpdate(updates, "t$Members", this.participants.hasItems && {
+    let request = new EWSUpdateItemRequest(this.itemID);
+    request.addField("DistributionList", "Body", this.description && { BodyType: "Text", _TextContent_: this.description }, "item:Body");
+    request.addField("DistributionList", "DisplayName", this.name, "contacts:DisplayName");
+    request.addField("DistributionList", "Members", this.participants.hasItems && {
       t$Member: this.participants.contents.map(entry => ({
         t$Mailbox: {
          t$EmailAddress: entry.emailAddress,
@@ -71,21 +56,6 @@ export class EWSGroup extends Group {
       })),
     }, "distributionlist:Members");
     await this.addressbook.account.callEWS(request);
-  }
-
-  addUpdate(updates, key, value, FieldURI, FieldIndex?) {
-    let field = {} as any;
-    if (FieldIndex) {
-      field.t$IndexedFieldURI = { FieldURI, FieldIndex };
-    } else {
-      field.t$FieldURI = { FieldURI };
-    }
-    if (!value) {
-      updates.t$DeleteItemField.push(field);
-    } else {
-      field.t$DistributionList = { [key]: value };
-      updates.t$SetItemField.push(field);
-    }
   }
 
   async create() {

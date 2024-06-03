@@ -3,6 +3,7 @@ import type { EWSCalendar } from "./EWSCalendar";
 import WindowsZones from "./WindowsZones";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { ensureArray } from "../../Mail/EWS/EWSEMail";
+import EWSUpdateItemRequest from "../../Mail/EWS/EWSUpdateItemRequest";
 import { NotImplemented } from "../../util/util";
 
 const gTimeZone = WindowsZones[Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
@@ -90,34 +91,17 @@ export class EWSEvent extends Event {
   }
 
   async updateCalendarItem() {
-    let request = {
-      m$UpdateItem: {
-        m$ItemChanges: {
-          t$ItemChange: {
-            t$ItemId: {
-              Id: this.itemID,
-            },
-            t$Updates: {
-              t$SetItemField: [],
-              t$DeleteItemField: [],
-            },
-          },
-        },
-        ConflictResolution: "AlwaysOverwrite",
-        SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy",
-      },
-    };
-    let updates = request.m$UpdateItem.m$ItemChanges.t$ItemChange.t$Updates;
-    this.addCalendarItemUpdate(updates, "t$Subject", this.title, "item:Subject");
-    this.addCalendarItemUpdate(updates, "t$Body", this.descriptionHTML ? { BodyType: "HTML", _TextContent_: this.descriptionHTML } : this.descriptionText ? { BodyType: "Text", _TextContent_: this.descriptionText } : "", "item:Body");
-    this.addCalendarItemUpdate(updates, "t$ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
-    this.addCalendarItemUpdate(updates, "t$ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
-    this.addCalendarItemUpdate(updates, "t$UID", this.iCalUID, "calendar:UID");
-    this.addCalendarItemUpdate(updates, "t$Start", this.dateString(this.startTime), "calendar:Start");
-    this.addCalendarItemUpdate(updates, "t$End", this.dateString(this.endTime), "calendar:End");
-    this.addCalendarItemUpdate(updates, "t$IsAllDayEvent", this.allDay, "calendar:IsAllDayEvent");
-    this.addCalendarItemUpdate(updates, "t$Location", this.location, "calendar:Location");
-    this.addCalendarItemUpdate(updates, "t$RequiredAttendees", this.participants.hasItems && {
+    let request = new EWSUpdateItemRequest(this.itemID, {SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy"});
+    request.addField("CalendarItem", "Subject", this.title, "item:Subject");
+    request.addField("CalendarItem", "Body", this.descriptionHTML ? { BodyType: "HTML", _TextContent_: this.descriptionHTML } : this.descriptionText ? { BodyType: "Text", _TextContent_: this.descriptionText } : "", "item:Body");
+    request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
+    request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
+    request.addField("CalendarItem", "UID", this.iCalUID, "calendar:UID");
+    request.addField("CalendarItem", "Start", this.dateString(this.startTime), "calendar:Start");
+    request.addField("CalendarItem", "End", this.dateString(this.endTime), "calendar:End");
+    request.addField("CalendarItem", "IsAllDayEvent", this.allDay, "calendar:IsAllDayEvent");
+    request.addField("CalendarItem", "Location", this.location, "calendar:Location");
+    request.addField("CalendarItem", "RequiredAttendees", this.participants.hasItems && {
       t$Attendee: this.participants.contents.map(entry => ({
         t$Mailbox: {
           t$EmailAddress: entry.emailAddress,
@@ -127,65 +111,19 @@ export class EWSEvent extends Event {
     }, "calendar:RequiredAttendees");
     // No support for optional attendees in mustang;
     // all attendees get converted to be required for now.
-    this.addCalendarItemUpdate(updates, "t$OptionalAttendees", null, "calendar:OptionalAttendees");
-    this.addCalendarItemUpdate(updates, "t$StartTimeZone", { Id: gTimeZone }, "calendar:StartTimeZone");
-    this.addCalendarItemUpdate(updates, "t$EndTimeZone", { Id: gTimeZone }, "calendar:EndTimeZone");
+    request.addField("CalendarItem", "OptionalAttendees", null, "calendar:OptionalAttendees");
+    request.addField("CalendarItem", "StartTimeZone", { Id: gTimeZone }, "calendar:StartTimeZone");
+    request.addField("CalendarItem", "EndTimeZone", { Id: gTimeZone }, "calendar:EndTimeZone");
     await this.calendar.account.callEWS(request);
-  }
-
-  addCalendarItemUpdate(updates, key, value, FieldURI, FieldIndex?) {
-    let field = {} as any;
-    if (FieldIndex) {
-      field.t$IndexedFieldURI = { FieldURI, FieldIndex };
-    } else {
-      field.t$FieldURI = { FieldURI };
-    }
-    if (value == null) {
-      updates.t$DeleteItemField.push(field);
-    } else {
-      field.t$CalendarItem = { [key]: value };
-      updates.t$SetItemField.push(field);
-    }
   }
 
   async updateTask() {
-    let request = {
-      m$UpdateItem: {
-        m$ItemChanges: {
-          t$ItemChange: {
-            t$ItemId: {
-              Id: this.itemID,
-            },
-            t$Updates: {
-              t$SetItemField: [],
-              t$DeleteItemField: [],
-            },
-          },
-        },
-        ConflictResolution: "AlwaysOverwrite",
-      },
-    };
-    let updates = request.m$UpdateItem.m$ItemChanges.t$ItemChange.t$Updates;
-    this.addTaskUpdate(updates, "t$Subject", this.title, "item:Subject");
-    this.addTaskUpdate(updates, "t$ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
-    this.addTaskUpdate(updates, "t$ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
-    this.addTaskUpdate(updates, "t$DueDate", this.endTime?.toISOString(), "task:DueDate");
+    let request = new EWSUpdateItemRequest(this.itemID);
+    request.addField("Task", "Subject", this.title, "item:Subject");
+    request.addField("Task", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
+    request.addField("Task", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
+    request.addField("Task", "DueDate", this.endTime?.toISOString(), "task:DueDate");
     await this.calendar.account.callEWS(request);
-  }
-
-  addTaskUpdate(updates, key, value, FieldURI, FieldIndex?) {
-    let field = {} as any;
-    if (FieldIndex) {
-      field.t$IndexedFieldURI = { FieldURI, FieldIndex };
-    } else {
-      field.t$FieldURI = { FieldURI };
-    }
-    if (value == null) {
-      updates.t$DeleteItemField.push(field);
-    } else {
-      field.t$Task = { [key]: value };
-      updates.t$SetItemField.push(field);
-    }
   }
 
   async createCalendarItem() {

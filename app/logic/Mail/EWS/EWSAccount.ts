@@ -1,6 +1,7 @@
 import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { EWSFolder } from "./EWSFolder";
+import type EWSUpdateItemRequest from "./EWSUpdateItemRequest";
 import type { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
 import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import type { PersonUID } from "../../Abstract/PersonUID";
@@ -10,6 +11,10 @@ import { ContentDisposition } from "../Attachment";
 import { appGlobal } from "../../app";
 import { blobToBase64 } from "../../util/util";
 import { assert } from "../../util/util";
+
+type Json = string | number | boolean | null | Json[] | {[key: string]: Json};
+
+type JsonRequest = Json | EWSUpdateItemRequest;
 
 export class EWSAccount extends MailAccount {
   readonly protocol: string = "ews";
@@ -95,7 +100,7 @@ export class EWSAccount extends MailAccount {
     await this.callEWS(request);
   }
 
-  JSON2XML(aJSON: Json, aParent: Element, aNS: string, aTag: string): void {
+  JSON2XML(aJSON: JsonRequest, aParent: Element, aNS: string, aTag: string): void {
     if (aJSON == null) {
       return;
     }
@@ -124,7 +129,7 @@ export class EWSAccount extends MailAccount {
     }
   }
 
-  request2XML(aRequest: Json): string {
+  request2XML(aRequest: JsonRequest): string {
     let xml = document.implementation.createDocument("http://schemas.xmlsoap.org/soap/envelope/", "s:Envelope");
     xml.documentElement.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:s", "http://schemas.xmlsoap.org/soap/envelope/");
     xml.documentElement.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:m", "http://schemas.microsoft.com/exchange/services/2006/messages");
@@ -143,7 +148,7 @@ export class EWSAccount extends MailAccount {
     return new XMLSerializer().serializeToString(xml);
   }
 
-  checkResponse(aResponse, aRequest: Json): Json {
+  checkResponse(aResponse, aRequest: JsonRequest): Json {
     let responseXML = aResponse.responseXML;
     if (!responseXML) {
       throw new EWSError(aResponse, aRequest);
@@ -180,7 +185,7 @@ export class EWSAccount extends MailAccount {
     return options;
   }
 
-  async callEWS(aRequest: Json): Promise<any> {
+  async callEWS(aRequest: JsonRequest): Promise<any> {
     let response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions());
     response.responseXML = this.parseXML(response.data);
     if (response.status == 200) {
@@ -241,8 +246,6 @@ export class EWSAccount extends MailAccount {
   }
 }
 
-
-type Json = string | number | boolean | null | Json[] | { [key: string]: Json };
 
 function XML2JSON(aNode: Element): Json {
   if (!aNode.children.length && !aNode.attributes.length) {
@@ -332,10 +335,10 @@ class EWSError extends Error {
 }
 
 class EWSItemError extends Error {
-  readonly request: Json;
+  readonly request: JsonRequest;
   readonly error: Json;
   readonly type: string;
-  constructor(errorResponseJSON: any, aRequest: Json) {
+  constructor(errorResponseJSON: any, aRequest: JsonRequest) {
     if (Array.isArray(errorResponseJSON.MessageXml?.Value)) {
       for (let { Name, Value } of errorResponseJSON.MessageXml.Value) {
         errorResponseJSON[Name.replace(/^InnerError/, "")] = Value;

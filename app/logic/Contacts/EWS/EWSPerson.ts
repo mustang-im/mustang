@@ -2,6 +2,7 @@ import { Person, ContactEntry } from '../../Abstract/Person';
 import type { EWSAddressbook } from './EWSAddressbook';
 import { SQLPerson } from '../SQL/SQLPerson';
 import { ensureArray } from "../../Mail/EWS/EWSEMail";
+import EWSUpdateItemRequest from "../../Mail/EWS/EWSUpdateItemRequest";
 import { assert } from "../../util/util";
 
 const PhysicalAddressElements = ["Street", "City", "PostalCode", "State", "CountryOrRegion"];
@@ -95,30 +96,14 @@ export class EWSPerson extends Person {
   }
 
   async update() {
-    let request = {
-      m$UpdateItem: {
-        m$ItemChanges: {
-          t$ItemChange: {
-            t$ItemId: {
-              Id: this.itemID,
-            },
-            t$Updates: {
-              t$SetItemField: [],
-              t$DeleteItemField: [],
-            },
-          },
-        },
-        ConflictResolution: "AlwaysOverwrite",
-      },
-    };
-    let updates = request.m$UpdateItem.m$ItemChanges.t$ItemChange.t$Updates;
-    this.addUpdate(updates, "t$Body", this.notes && { BodyType: "Text", _TextContent_: this.notes }, "item:Body");
-    this.addUpdate(updates, "t$DisplayName", this.name, "contacts:DisplayName");
-    this.addUpdate(updates, "t$GivenName", this.firstName, "contacts:GivenName");
-    this.addUpdate(updates, "t$CompanyName", this.company, "contacts:CompanyName");
+    let request = new EWSUpdateItemRequest(this.itemID);
+    request.addField("Contact", "Body", this.notes && { BodyType: "Text", _TextContent_: this.notes }, "item:Body");
+    request.addField("Contact", "DisplayName", this.name, "contacts:DisplayName");
+    request.addField("Contact", "GivenName", this.firstName, "contacts:GivenName");
+    request.addField("Contact", "CompanyName", this.company, "contacts:CompanyName");
     for (let i = 1; i <= 3; i++) {
       let entry = this.emailAddresses.getIndex(i - 1);
-      this.addUpdate(updates, "t$EmailAddresses", entry && {
+      request.addField("Contact", "EmailAddresses", entry && {
         t$Entry: {
           Key: "EmailAddress" + i,
           _TextContent_: entry.value,
@@ -134,7 +119,7 @@ export class EWSPerson extends Person {
           assert(value.length == 5, "Street address must have exactly 5 lines: Street and house, City, ZIP Code, State, Country");
         }
         for (let i = 0; i < 5; i++) {
-          this.addUpdate(updates, "t$PhysicalAddresses", value && value[i] && {
+          request.addField("Contact", "PhysicalAddresses", value && {
             t$Entry: {
               Key: key,
               ["t$" + PhysicalAddressElements[i]]: value[i],
@@ -146,7 +131,7 @@ export class EWSPerson extends Person {
     for (let [purpose, protocol, count, key] of PhoneMapping) {
       let values = this.phoneNumbers.contents.filter(entry => entry.purpose == purpose && (entry.protocol || "tel") == protocol).map(entry => entry.value);
       for (let i = 0; i < count; i++) {
-        this.addUpdate(updates, "t$PhoneNumbers", values[i] && {
+        request.addField("Contact", "PhoneNumbers", values[i] && {
           t$Entry: {
             Key: key,
             _TextContent_: values[i],
@@ -155,34 +140,19 @@ export class EWSPerson extends Person {
         key += "2";
       }
     }
-    this.addUpdate(updates, "t$Department", this.department, "contacts:Department");
+    request.addField("Contact", "Department", this.department, "contacts:Department");
     for (let i = 1; i <= 3; i++) {
       let entry = this.chatAccounts.getIndex(i - 1);
-      this.addUpdate(updates, "t$ImAddresses", entry && {
+      request.addField("Contact", "ImAddresses", entry && {
         t$Entry: {
           Key: "ImAddress" + i,
           _TextContent_: entry.value,
         },
       }, "contacts:ImAddress", "ImAddress" + i);
     }
-    this.addUpdate(updates, "t$JobTitle", this.position, "contacts:JobTitle");
-    this.addUpdate(updates, "t$Surname", this.lastName, "contacts:Surname");
+    request.addField("Contact", "JobTitle", this.position, "contacts:JobTitle");
+    request.addField("Contact", "Surname", this.lastName, "contacts:Surname");
     await this.addressbook.account.callEWS(request);
-  }
-
-  addUpdate(updates, key, value, FieldURI, FieldIndex?) {
-    let field = {} as any;
-    if (FieldIndex) {
-      field.t$IndexedFieldURI = { FieldURI, FieldIndex };
-    } else {
-      field.t$FieldURI = { FieldURI };
-    }
-    if (!value) {
-      updates.t$DeleteItemField.push(field);
-    } else {
-      field.t$Contact = { [key]: value };
-      updates.t$SetItemField.push(field);
-    }
   }
 
   async create() {
