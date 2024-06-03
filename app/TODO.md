@@ -5,13 +5,13 @@
   * Settings
     * Save identites
   * Selection
-    * Persists between apps
     * Default selection on start
   * OAuth2
     * Gmail
     * in-app
     * register with providers
   * Threads
+    * Search all folders
     * Hide quotes
     * Message list: Threaded view?
     * Mail Chat view: Open thread
