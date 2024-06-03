@@ -252,5 +252,5 @@ function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {
 }
 
 export function ensureArray<Type>(val: Type[] | Type): Type[] {
-  return Array.isArray(val) ? val : [val];
+  return val ? Array.isArray(val) ? val : [val] : [];
 }

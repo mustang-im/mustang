@@ -92,33 +92,32 @@ export class EWSFolder extends Folder {
         result = await this.account.callEWS(sync);
       }
       let newMessageIDs = (await Promise.all([
-        this.processSyncChanges(result.Changes.ReadFlagChange, this.processSyncReadFlagChange, true),
-        this.processSyncChanges(result.Changes.Update, this.processSyncUpdate),
-        this.processSyncChanges(result.Changes.Create, this.processSyncUpdate),
+        this.forEachSyncChange(result.Changes.ReadFlagChange, this.processSyncReadFlagChange, true),
+        this.forEachSyncChange(result.Changes.Update, this.processSyncUpdate, false),
+        this.forEachSyncChange(result.Changes.Create, this.processSyncUpdate, false),
       ])).flat();
-      await this.processSyncChanges(result.Changes.Delete, this.processSyncDelete, true);
+      await this.forEachSyncChange(result.Changes.Delete, this.processSyncDelete, true);
       this.messages.addAll(await this.getNewMessageHeaders(newMessageIDs));
       this.syncState = sync.m$SyncFolderItems.m$SyncState = result.SyncState;
       await SQLFolder.save(this);
     }
   }
 
-  protected async processSyncChanges(changes, callback, isid): Promise<any[]> {
-    let unprocessedChanges: any[] = [];
-    if (changes) {
-      for (let change of ensureArray(changes)) {
-        if (!isid) {
-          change = change.Message;
-        }
-        let email = this.getEmailByItemId(change.ItemId.Id);
-        if (email) {
-          await callback.call(this, email, change);
-        } else {
-          unprocessedChanges.push(change.ItemId);
-        }
+  protected async forEachSyncChange(changes: any[], eachCallback, isID: boolean): Promise<any[]> {
+    let newEMails: any[] = [];
+    for (let change of ensureArray(changes)) {
+      let itemID = isID ? change?.Message?.ItemID : change?.ItemID;
+      if (!itemID) {
+        continue; // TODO Handle MeetingRequest, MeetingCancellation etc.
+      }
+      let email = this.getEmailByItemId(itemID?.Id);
+      if (email) {
+        await eachCallback.call(this, email, change);
+      } else {
+        newEMails.push(itemID);
       }
     }
-    return unprocessedChanges;
+    return newEMails;
   }
 
   protected async processSyncReadFlagChange(email, change) {
@@ -310,7 +309,10 @@ export class EWSFolder extends Folder {
     return downloadedEmail;
   }
 
-  getEmailByItemId(id: string): EWSEMail {
+  getEmailByItemId(id: string): EWSEMail | undefined {
+    if (!id) {
+      return undefined;
+    }
     return this.messages.find((m: EWSEMail) => m.itemID == id) as EWSEMail;
   }
 
