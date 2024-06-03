@@ -264,7 +264,6 @@ export class EWSFolder extends Folder {
       for (let result of results) {
         let email = this.newEMail();
         email.fromXML(getEWSItem(result.Items));
-        await SQLEMail.save(email);
         allEmail.add(email);
       }
     }
