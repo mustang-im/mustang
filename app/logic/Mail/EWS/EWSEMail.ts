@@ -226,7 +226,7 @@ export class EWSEMail extends EMail {
     await super.markDraft();
   }
 
-  async deleteMessage() {
+  async deleteMessageOnServer() {
     let request = {
       m$DeleteItem: {
         m$ItemIds: {
@@ -239,8 +239,6 @@ export class EWSEMail extends EMail {
       SuppressReadReceipts: true,
     };
     await this.folder.account.callEWS(request);
-    await super.deleteMessage();
-    await SQLEMail.deleteIt(this);
   }
 }
 

@@ -64,6 +64,16 @@ export class DelegateEMail extends EMail {
     await this.base.deleteMessage();
   }
 
+  async deleteMessageLocally() {
+    await super.deleteMessageLocally();
+    await this.base.deleteMessageLocally();
+  }
+
+  async deleteMessageOnServer() {
+    await super.deleteMessageOnServer();
+    await this.base.deleteMessageOnServer();
+  }
+
   get id(): string {
     return this.base.id;
   }

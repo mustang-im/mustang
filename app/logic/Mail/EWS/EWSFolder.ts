@@ -120,19 +120,18 @@ export class EWSFolder extends Folder {
     return newEMails;
   }
 
-  protected async processSyncReadFlagChange(email, change) {
+  protected async processSyncReadFlagChange(email: EWSEMail, change: any) {
     email.isRead = change.IsRead == "true";
     await SQLEMail.saveWritableProps(email);
   }
 
-  protected async processSyncUpdate(email, update) {
+  protected async processSyncUpdate(email: EWSEMail, update: any) {
     email.setFlags(update);
     await SQLEMail.saveWritableProps(email);
   }
 
-  protected async processSyncDelete(email) {
-    this.messages.remove(email);
-    await SQLEMail.deleteIt(email);
+  protected async processSyncDelete(email: EWSEMail) {
+    await email.deleteMessageLocally();
   }
 
   // Lists all messages starting from scratch, ignoring the sync state.

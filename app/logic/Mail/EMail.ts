@@ -8,7 +8,7 @@ import { MailZIP } from "./Store/MailZIP";
 import { MailDir } from "./Store/MailDir";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { appGlobal } from "../app";
-import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
+import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction, NotImplemented } from "../util/util";
 import { backgroundError } from "../../frontend/Util/error";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
@@ -109,10 +109,18 @@ export class EMail extends Message {
   }
 
   async deleteMessage() {
+    await this.deleteMessageLocally();
+    await this.deleteMessageOnServer();
+  }
+
+  async deleteMessageLocally() {
     this.isDeleted = true;
     this.folder.messages.remove(this);
     await SQLEMail.deleteIt(this);
     this.dbID = null;
+  }
+
+  async deleteMessageOnServer() {
   }
 
   async parseMIME() {
