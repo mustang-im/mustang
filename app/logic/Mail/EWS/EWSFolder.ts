@@ -3,7 +3,7 @@ import { EWSEMail, ensureArray } from "./EWSEMail";
 import type { EWSAccount } from "./EWSAccount";
 import { SQLFolder } from "../SQL/SQLFolder";
 import { SQLEMail } from "../SQL/SQLEMail";
-import { assert } from "../../util/util";
+import { base64ToArrayBuffer, assert } from "../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 
 export const kMaxCount = 50;
@@ -291,7 +291,8 @@ export class EWSFolder extends Folder {
       for (let result of results) {
         let email = emailsToDownload.find(email => email.itemID == getItem(result.Items).ItemId.Id);
         if (email && !email.downloadComplete) {
-          email.mime = new Uint8Array(await (await fetch("data:message/rfc822;base64," + getItem(result.Items).MimeContent.Value)).arrayBuffer());
+          let mimeBase64 = getItem(result.Items).MimeContent.Value;
+          email.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
           await email.parseMIME();
           await email.save();
           downloadedEmail.add(email);

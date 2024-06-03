@@ -1,10 +1,9 @@
 import { EMail } from "../EMail";
-import { SQLEMail } from "../SQL/SQLEMail";
 import type { EWSFolder } from "./EWSFolder";
 import { Attachment, ContentDisposition } from "../Attachment";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { appGlobal } from "../../app";
-import { assert } from "../../util/util";
+import { base64ToArrayBuffer, assert } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 export class EWSEMail extends EMail {
@@ -33,7 +32,7 @@ export class EWSEMail extends EMail {
       },
     };
     let result = await this.folder.account.callEWS(request);
-    this.mime = new Uint8Array(await (await fetch("data:message/rfc822;base64," + result.Items.Message.MimeContent.Value)).arrayBuffer());
+    this.mime = new Uint8Array(await base64ToArrayBuffer(result.Items.Message.MimeContent.Value, "message/rfc822"));
     await this.parseMIME();
     await this.save();
   }

@@ -48,6 +48,11 @@ export async function blobToDataURL(blob: Blob): Promise<URLString> {
   });
 }
 
+export async function base64ToArrayBuffer(base64: string, mimetype: string): Promise<ArrayBuffer> {
+  let res = await fetch(`data:${mimetype};base64,` + base64);
+  return await res.arrayBuffer();
+}
+
 /** Removes potentially dangerous parts of the file name, e.g.
  * \ / : . ' " ! ? * |
  * See <https://kizu514.com/blog/forbidden-file-names-on-windows-10/>
