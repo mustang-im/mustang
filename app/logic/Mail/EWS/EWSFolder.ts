@@ -106,15 +106,14 @@ export class EWSFolder extends Folder {
   protected async forEachSyncChange(changes: any[], eachCallback, isID: boolean): Promise<any[]> {
     let newEMails: any[] = [];
     for (let change of ensureArray(changes)) {
-      let itemID = isID ? change?.Message?.ItemID : change?.ItemID;
-      if (!itemID) {
-        continue; // TODO Handle MeetingRequest, MeetingCancellation etc.
+      if (!isID) {
+        change = getItem(change);
       }
-      let email = this.getEmailByItemId(itemID?.Id);
+      let email = this.getEmailByItemId(change.ItemId.Id);
       if (email) {
         await eachCallback.call(this, email, change);
       } else {
-        newEMails.push(itemID);
+        newEMails.push(change.ItemId);
       }
     }
     return newEMails;
@@ -177,7 +176,7 @@ export class EWSFolder extends Folder {
         break;
       }
       request.m$FindItem.m$IndexedPageItemView.Offset = result.RootFolder.IndexedPagingOffset;
-      let messages = ensureArray(result.RootFolder.Items.Message);
+      let messages = Object.values(result.RootFolder.Items).flat() as any;
       let newMessageIDs = [];
       for (let message of messages) {
         let email = this.getEmailByItemId(message.ItemId.Id);
@@ -263,7 +262,7 @@ export class EWSFolder extends Folder {
       let results = ensureArray(await this.account.callEWS(request));
       for (let result of results) {
         let email = this.newEMail();
-        email.fromXML(result.Items.Message);
+        email.fromXML(getItem(result.Items));
         await SQLEMail.save(email);
         allEmail.add(email);
       }
@@ -289,9 +288,9 @@ export class EWSFolder extends Folder {
       };
       let results = ensureArray(await this.account.callEWS(request));
       for (let result of results) {
-        let email = emailsToDownload.find(email => email.itemID == result.Items.Message.ItemId.Id);
+        let email = emailsToDownload.find(email => email.itemID == getItem(result.Items).ItemId.Id);
         if (email && !email.downloadComplete) {
-          email.mime = new Uint8Array(await (await fetch("data:message/rfc822;base64," + result.Items.Message.MimeContent.Value)).arrayBuffer());
+          email.mime = new Uint8Array(await (await fetch("data:message/rfc822;base64," + getItem(result.Items).MimeContent.Value)).arrayBuffer());
           await email.parseMIME();
           await email.save();
           downloadedEmail.add(email);
@@ -309,10 +308,7 @@ export class EWSFolder extends Folder {
   }
 
   getEmailByItemId(id: string): EWSEMail | undefined {
-    if (!id) {
-      return undefined;
-    }
-    return this.messages.find((m: EWSEMail) => m.itemID == id) as EWSEMail;
+    return this.messages.find((m: EWSEMail) => m.itemID == id) as EWSEMail | undefined;
   }
 
   async moveMessagesHere(messages: Collection<EWSEMail>) {
@@ -445,4 +441,13 @@ export class EWSFolder extends Folder {
     await this.account.callEWS(request);
     await super.markAllRead();
   }
+}
+
+/*
+ * The EWS Items element contains items grouped by their EWS type.
+ * To get multiple items, use Object.values(Items).flat()
+ * This function is a convenience for a single item.
+ */
+function getItem(item: any): any {
+  return Object.values(item)[0];
 }
