@@ -26,7 +26,7 @@ export class EWSAccount extends MailAccount {
   }
 
   get isLoggedIn(): boolean {
-    return this.oAuth2.isLoggedIn;
+    return this.oAuth2?.isLoggedIn;
   }
 
   async login(interactive: boolean): Promise<void> {
