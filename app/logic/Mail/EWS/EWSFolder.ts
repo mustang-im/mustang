@@ -177,7 +177,7 @@ export class EWSFolder extends Folder {
         break;
       }
       request.m$FindItem.m$IndexedPageItemView.Offset = result.RootFolder.IndexedPagingOffset;
-      let messages = Object.values(result.RootFolder.Items).flat() as any;
+      let messages = getItems(result.RootFolder.Items);
       let newMessageIDs = [];
       for (let message of messages) {
         let email = this.getEmailByItemId(message.ItemId.Id);
@@ -447,11 +447,20 @@ export class EWSFolder extends Folder {
   }
 }
 
-/*
+/**
  * The EWS Items element contains items grouped by their EWS type.
- * To get multiple items, use Object.values(Items).flat()
- * This function is a convenience for a single item.
- */
+ * It returns:
+ * * `.Message` = EMail
+ * * `.MeetingRequest` = Calendar invitation
+ * * `.MeetingCancellation` = Calendar event cancelled by organizer
+ * ...
+ * This function is a convenience for a single item. */
 function getItem(item: any): any {
   return Object.values(item)[0];
+}
+
+/** @see getItem()
+ * This function is a convenience for a multiple items. */
+function getItems(items: any[]): any[] {
+  return Object.values(items).flat();
 }
