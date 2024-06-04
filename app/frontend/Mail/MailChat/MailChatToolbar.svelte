@@ -38,6 +38,16 @@
     plain
     />
 </hbox>
+<hbox class="open">
+  <Button
+    icon={OpenIcon}
+    iconSize="20px"
+    iconOnly
+    label="Open this message alone"
+    onClick={openMessageAlone}
+    plain
+    />
+</hbox>
 <hbox class="menu">
   <hbox class="menu-inner">
     <MessageMenu {message} padding={0} />
@@ -53,6 +63,9 @@
   import CircleIcon from "lucide-svelte/icons/circle";
   import ReplyIcon from "lucide-svelte/icons/reply";
   import ReplyAllIcon from "lucide-svelte/icons/reply-all";
+  import OpenIcon from "lucide-svelte/icons/maximize-2";
+  import { selectedMessage } from "../Selected";
+  import { getLocalStorage } from "../../Util/LocalStorage";
 
   export let message: EMail;
 
@@ -71,6 +84,11 @@
   function replyAll() {
     let reply = message.action.replyAll();
     mailMustangApp.writeMail(reply);
+  }
+  function openMessageAlone() {
+    $selectedMessage = message;
+    let modeSetting = getLocalStorage("mail.contentRendering", "html");
+    modeSetting.value = "html";
   }
 </script>
 
