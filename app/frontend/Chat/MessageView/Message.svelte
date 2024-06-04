@@ -33,7 +33,7 @@
       <slot name="inner-top" />
       <div class="text selectable">
         <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection. -->
-        {@html $message.html }
+        {@html $message.html || ""}
         <slot name="bubble" />
       </div>
       <slot name="inner-bottom" />
