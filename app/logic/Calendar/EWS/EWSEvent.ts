@@ -75,60 +75,18 @@ export class EWSEvent extends Event {
   }
 
   async save() {
-    if (this.itemID) {
-      if (this.startTime) {
-        await this.updateCalendarItem();
-      } else {
-        await this.updateTask();
-      }
+    if (this.startTime) {
+      await this.saveCalendarItem();
     } else {
-      if (this.startTime) {
-        await this.createCalendarItem();
-      } else {
-        await this.createTask();
-      }
+      await this.saveTask();
     }
     await super.save();
   }
 
-  async updateCalendarItem() {
-    let request = new EWSUpdateItemRequest(this.itemID, {SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy"});
-    request.addField("CalendarItem", "Subject", this.title, "item:Subject");
-    request.addField("CalendarItem", "Body", this.descriptionHTML ? { BodyType: "HTML", _TextContent_: this.descriptionHTML } : this.descriptionText ? { BodyType: "Text", _TextContent_: this.descriptionText } : "", "item:Body");
-    request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
-    request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
-    request.addField("CalendarItem", "UID", this.iCalUID, "calendar:UID");
-    request.addField("CalendarItem", "Start", this.dateString(this.startTime), "calendar:Start");
-    request.addField("CalendarItem", "End", this.dateString(this.endTime), "calendar:End");
-    request.addField("CalendarItem", "IsAllDayEvent", this.allDay, "calendar:IsAllDayEvent");
-    request.addField("CalendarItem", "Location", this.location, "calendar:Location");
-    request.addField("CalendarItem", "RequiredAttendees", this.participants.hasItems && {
-      t$Attendee: this.participants.contents.map(entry => ({
-        t$Mailbox: {
-          t$EmailAddress: entry.emailAddress,
-          t$Name: entry.name,
-        }
-      })),
-    }, "calendar:RequiredAttendees");
-    // No support for optional attendees in mustang;
-    // all attendees get converted to be required for now.
-    request.addField("CalendarItem", "OptionalAttendees", null, "calendar:OptionalAttendees");
-    request.addField("CalendarItem", "StartTimeZone", { Id: gTimeZone }, "calendar:StartTimeZone");
-    request.addField("CalendarItem", "EndTimeZone", { Id: gTimeZone }, "calendar:EndTimeZone");
-    await this.calendar.account.callEWS(request);
-  }
-
-  async updateTask() {
-    let request = new EWSUpdateItemRequest(this.itemID);
-    request.addField("Task", "Subject", this.title, "item:Subject");
-    request.addField("Task", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
-    request.addField("Task", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
-    request.addField("Task", "DueDate", this.endTime?.toISOString(), "task:DueDate");
-    await this.calendar.account.callEWS(request);
-  }
-
-  async createCalendarItem() {
-    let request: any = new EWSCreateItemRequest({SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy"});
+  async saveCalendarItem() {
+    let request: any = this.itemID ?
+      new EWSUpdateItemRequest(this.itemID, {SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
+      new EWSCreateItemRequest({SendMeetingInvitations: "SendToAllAndSaveCopy"});
     request.addField("CalendarItem", "Subject", this.title, "item:Subject");
     request.addField("CalendarItem", "Body", this.descriptionHTML ? { BodyType: "HTML", _TextContent_: this.descriptionHTML } : this.descriptionText ? { BodyType: "Text", _TextContent_: this.descriptionText } : "", "item:Body");
     request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
@@ -152,6 +110,9 @@ export class EWSEvent extends Event {
     request.addField("CalendarItem", "StartTimeZone", { Id: gTimeZone }, "calendar:StartTimeZone");
     request.addField("CalendarItem", "EndTimeZone", { Id: gTimeZone }, "calendar:EndTimeZone");
     let response = await this.calendar.account.callEWS(request);
+    if (this.iCalUID) {
+      return;
+    }
     // Need an extra server roundtrip to get the UID
     request = {
       m$GetItem: {
@@ -173,8 +134,8 @@ export class EWSEvent extends Event {
     this.itemID = response.Items.CalendarItem.ItemId.Id;
   }
 
-  async createTask() {
-    let request = new EWSCreateItemRequest();
+  async saveTask() {
+    let request = this.itemID ? new EWSUpdateItemRequest(this.itemID) : new EWSCreateItemRequest();
     request.addField("Task", "Subject", this.title, "item:Subject");
     request.addField("Task", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
     request.addField("Task", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");

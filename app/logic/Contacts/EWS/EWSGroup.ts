@@ -36,31 +36,7 @@ export class EWSGroup extends Group {
 
   async save() {
     // XXX untested due to no UI yet
-    if (this.itemID) {
-      await this.update();
-    } else {
-      await this.create();
-    }
-    await SQLGroup.save(this);
-  }
-
-  async update() {
-    let request = new EWSUpdateItemRequest(this.itemID);
-    request.addField("DistributionList", "Body", this.description && { BodyType: "Text", _TextContent_: this.description }, "item:Body");
-    request.addField("DistributionList", "DisplayName", this.name, "contacts:DisplayName");
-    request.addField("DistributionList", "Members", this.participants.hasItems && {
-      t$Member: this.participants.contents.map(entry => ({
-        t$Mailbox: {
-         t$EmailAddress: entry.emailAddress,
-         t$Name: entry.name,
-        },
-      })),
-    }, "distributionlist:Members");
-    await this.addressbook.account.callEWS(request);
-  }
-
-  async create() {
-    let request = new EWSCreateItemRequest();
+    let request = this.itemID ? new EWSUpdateItemRequest(this.itemID) : new EWSCreateItemRequest();
     request.addField("DistributionList", "Body", this.description && { BodyType: "Text", _TextContent_: this.description }, "item:Body");
     request.addField("DistributionList", "DisplayName", this.name, "contacts:DisplayName");
     request.addField("DistributionList", "Members", this.participants.hasItems ? {
@@ -73,6 +49,7 @@ export class EWSGroup extends Group {
     } : "", "distributionlist:Members");
     let response = await this.addressbook.account.callEWS(request);
     this.itemID = response.Items.DistributionList.ItemId.Id;
+    await SQLGroup.save(this);
   }
 }
 
