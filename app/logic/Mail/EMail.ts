@@ -4,6 +4,7 @@ import { Attachment, ContentDisposition } from "./Attachment";
 import { RawFilesAttachment } from "./Store/RawFilesAttachment";
 import { SQLEMail } from "./SQL/SQLEMail";
 import { SQLSourceEMail } from "./SQL/Source/SQLSourceEMail";
+import { sqlFindMessageByID } from "./SQL/SQLSearchEMail";
 import { MailZIP } from "./Store/MailZIP";
 import { MailDir } from "./Store/MailDir";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
@@ -13,7 +14,7 @@ import { backgroundError } from "../../frontend/Util/error";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { notifyChangedProperty } from "../util/Observable";
-import { ArrayColl, Collection, MapColl } from "svelte-collections";
+import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
 
 export class EMail extends Message {
@@ -322,15 +323,21 @@ export class EMail extends Message {
     if (!this.dbID) {
       return null;
     }
-    let inReplyTo = this.inReplyTo;
-    let parent = messages.find(msg => msg.messageID == inReplyTo);
-    while (parent?.inReplyTo) {
-      inReplyTo = parent.inReplyTo;
-      parent = messages.find(msg => msg.messageID == inReplyTo);
+    let threadID = this.threadID ?? this.inReplyTo;
+    let lastThreadIDs = new SetColl<string>();
+    while (threadID && !lastThreadIDs.contains(threadID)) {
+      lastThreadIDs.add(threadID);
+      console.log("finding thread", threadID);
+      let parent = messages.find(msg => msg.threadID == threadID || msg.messageID == threadID)
+        ?? await sqlFindMessageByID(threadID);
+      threadID = parent?.threadID ?? parent?.inReplyTo;
+      if (threadID && parent.threadID != threadID) {
+        parent.threadID = threadID;
+        await SQLEMail.saveWritableProps(parent);
+      }
     }
-    let oldThreadID = this.threadID;
-    this.threadID = inReplyTo;
-    if (oldThreadID != this.threadID) {
+    if (threadID && this.threadID != threadID) {
+      this.threadID = threadID;
       await SQLEMail.saveWritableProps(this);
     }
     return this.threadID;

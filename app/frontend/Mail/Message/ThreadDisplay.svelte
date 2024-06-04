@@ -1,3 +1,4 @@
+<hbox style="justify-content: center">The threaded view does not yet work as intended.</hbox>
 <Scroll>
   <vbox class="messages">
     {#each $threadMessages.each as message, i}
