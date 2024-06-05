@@ -18,7 +18,7 @@
 </hbox>
 
 <script lang="ts">
-  import Button from "../../Shared/Button.svelte";
+  import Button from "../../../Shared/Button.svelte";
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
 

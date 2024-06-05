@@ -15,10 +15,10 @@
 <script lang="ts">
   import type { Calendar } from "../../../../logic/Calendar/Calendar";
   import { newCalendarForProtocol } from "../../../../logic/Calendar/AccountsList/Calendars";
-  import ProtocolSelector, { ProtocolDescription } from "../ProtocolSelector.svelte";
   import LocalCalendar from "./LocalCalendar.svelte";
-  import ButtonsBottom from "../ButtonsBottom.svelte";
-  import Header from "../Header.svelte";
+  import ProtocolSelector, { ProtocolDescription } from "../Shared/ProtocolSelector.svelte";
+  import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
+  import Header from "../Shared/Header.svelte";
   import { NotReached } from "../../../../logic/util/util";
   import { catchErrors } from "../../../Util/error";
 

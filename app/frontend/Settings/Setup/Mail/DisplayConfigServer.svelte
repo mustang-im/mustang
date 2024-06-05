@@ -28,7 +28,7 @@
 <script lang="ts">
   import { type MailAccount, TLSSocketType } from "../../../../logic/Mail/MailAccount";
   import { isStandardPort, hasEncryption } from "../../../../logic/Mail/AutoConfig/configInfo";
-  import HostnameDomain from "../HostnameDomain.svelte";
+  import HostnameDomain from "../Shared/HostnameDomain.svelte";
   import ShieldOKIcon from "lucide-svelte/icons/shield-check";
   import ShieldAlertIcon from "lucide-svelte/icons/shield-alert";
   import ArrowLeftIcon from "lucide-svelte/icons/arrow-big-left";

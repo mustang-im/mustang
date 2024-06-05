@@ -23,9 +23,9 @@
   import type { MeetAccount } from "../../../../logic/Meet/MeetAccount";
   import { SQLMeetAccount } from "../../../../logic/Meet/SQL/SQLMeetAccount";
   import { appGlobal } from "../../../../logic/app";
-  import Password from "../Password.svelte";
-  import ButtonsBottom from "../ButtonsBottom.svelte";
-  import Header from "../Header.svelte";
+  import Password from "../Shared/Password.svelte";
+  import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
+  import Header from "../Shared/Header.svelte";
   import { catchErrors } from "../../../Util/error";
 
   /** in/out */

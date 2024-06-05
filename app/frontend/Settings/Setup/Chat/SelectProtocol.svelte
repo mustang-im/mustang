@@ -15,9 +15,9 @@
 <script lang="ts">
   import { newChatAccountForProtocol } from "../../../../logic/Chat/AccountsList/ChatAccounts";
   import type { ChatAccount } from "../../../../logic/Chat/ChatAccount";
-  import ProtocolSelector, { ProtocolDescription } from "../ProtocolSelector.svelte";
-  import ButtonsBottom from "../ButtonsBottom.svelte";
-  import Header from "../Header.svelte";
+  import ProtocolSelector, { ProtocolDescription } from "../Shared/ProtocolSelector.svelte";
+  import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
+  import Header from "../Shared/Header.svelte";
   import XMPPLogin from "./XMPPLogin.svelte";
   import MatrixLogin from "./MatrixLogin.svelte";
   import { catchErrors } from "../../../Util/error";

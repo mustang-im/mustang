@@ -21,8 +21,8 @@
   import type { Calendar } from "../../../../logic/Calendar/Calendar";
   import { SQLCalendar } from "../../../../logic/Calendar/SQL/SQLCalendar";
   import { appGlobal } from "../../../../logic/app";
-  import ButtonsBottom from "../ButtonsBottom.svelte";
-  import Header from "../Header.svelte";
+  import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
+  import Header from "../Shared/Header.svelte";
   import { catchErrors } from "../../../Util/error";
 
   /** in/out */

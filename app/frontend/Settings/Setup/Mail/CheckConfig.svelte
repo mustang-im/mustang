@@ -4,7 +4,7 @@
 <script lang="ts">
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
   import { checkConfig } from "../../../../logic/Mail/AutoConfig/checkConfig";
-  import StatusMessage from "../StatusMessage.svelte";
+  import StatusMessage from "../Shared/StatusMessage.svelte";
   import { createEventDispatcher, onMount } from 'svelte';
   const dispatchEvent = createEventDispatcher();
 

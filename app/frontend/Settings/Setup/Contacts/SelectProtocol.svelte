@@ -15,10 +15,10 @@
 <script lang="ts">
   import type { Addressbook } from "../../../../logic/Contacts/Addressbook";
   import { newAddressbookForProtocol } from "../../../../logic/Contacts/AccountsList/Addressbooks";
-  import ProtocolSelector, { ProtocolDescription } from "../ProtocolSelector.svelte";
   import LocalAddressbook from "./LocalAddressbook.svelte";
-  import ButtonsBottom from "../ButtonsBottom.svelte";
-  import Header from "../Header.svelte";
+  import ProtocolSelector, { ProtocolDescription } from "../Shared/ProtocolSelector.svelte";
+  import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
+  import Header from "../Shared/Header.svelte";
   import { NotReached } from "../../../../logic/util/util";
   import { catchErrors } from "../../../Util/error";
 

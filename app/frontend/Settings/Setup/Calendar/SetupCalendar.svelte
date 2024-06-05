@@ -17,7 +17,7 @@
   import { settingsMustangApp } from "../../Window/SettingsMustangApp";
   import { calendarMustangApp } from "../../../Calendar/CalendarMustangApp";
   import SelectProtocol from "./SelectProtocol.svelte";
-  import BackgroundVideo from "../BackgroundVideo.svelte";
+  import BackgroundVideo from "../Shared/BackgroundVideo.svelte";
   import { catchErrors } from "../../../Util/error";
 
   let config: Calendar;

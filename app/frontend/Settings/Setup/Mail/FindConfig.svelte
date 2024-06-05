@@ -4,7 +4,7 @@
 <script lang="ts">
   import { findConfig } from "../../../../logic/Mail/AutoConfig/findConfig";
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
-  import StatusMessage from "../StatusMessage.svelte";
+  import StatusMessage from "../Shared/StatusMessage.svelte";
   import { assert } from "../../../../logic/util/util";
   import type { ArrayColl } from "svelte-collections";
   import { createEventDispatcher, onMount } from 'svelte';
