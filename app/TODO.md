@@ -1,7 +1,5 @@
 # Next
 * Mail
-  * Save in Sent folder
-    * JPC buffer frontend -> backend
   * Settings
     * Save identites
   * Selection

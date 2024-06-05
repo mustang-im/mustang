@@ -239,7 +239,8 @@ export class IMAPFolder extends Folder {
   }
 
   async addMessage(email: EMail) {
-    await super.addMessage(email);
+    // Do *not* call super.addMessage();
+    assert(email.mime, "Need MIME to upload it to a folder");
     await this.runCommand(async (conn) => {
       let flags = ["\\Seen"]; // TODO
       await conn.append(this.path, Buffer.from(email.mime), flags); // TODO hangs

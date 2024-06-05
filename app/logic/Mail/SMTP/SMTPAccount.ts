@@ -43,13 +43,6 @@ export class SMTPAccount extends MailAccount {
       email.sent = new Date();
       email.received = email.sent;
       email.mime = await appGlobal.remoteApp.getMIMENodemailer(mail); // to save the Sent mail
-
-      // Send copy to myself, via SMTP - Workaround for IMAP.addMessage() not working
-      // <https://nodemailer.com/smtp/envelope/>
-      mail.envelope = {};
-      mail.envelope.to = this.emailAddress;
-      await appGlobal.remoteApp.sendMailNodemailer(
-        this.getTransportOptions(), mail);
     } catch (ex) {
       if (ex.code == "EAUTH") {
         ex.message = "Check your login, username, and password:\n" + ex.message;
