@@ -5,6 +5,7 @@ import { Attachment, ContentDisposition } from "../Attachment";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { appGlobal } from "../../app";
 import { base64ToArrayBuffer, assert } from "../../util/util";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
 
 export class EWSEMail extends EMail {
@@ -33,45 +34,37 @@ export class EWSEMail extends EMail {
       },
     };
     let result = await this.folder.account.callEWS(request);
-    let mimeBase64 = getEWSItem(result.Items).MimeContent.Value;
+    let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
     this.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
     await this.parseMIME();
     await this.save();
   }
 
   fromXML(xmljs) {
-    this.itemID = xmljs.ItemId.Id;
-    if ("InternetMessageId" in xmljs) {
-      this.id = xmljs.InternetMessageId;
-    }
-    if ("Subject" in xmljs) {
-      this.subject = xmljs.Subject;
-    }
+    this.itemID = sanitize.nonemptystring(xmljs.ItemId.Id);
+    this.id = sanitize.nonemptystring(xmljs.InternetMessageId, "");
+    this.subject = sanitize.nonemptystring(xmljs.Subject, "");
     if ("DateTimeSent" in xmljs) {
-      this.sent = new Date(xmljs.DateTimeSent);
+      this.sent = sanitize.date(xmljs.DateTimeSent);
     } else {
       this.sent = new Date();
     }
     if ("DateTimeReceived" in xmljs) {
-      this.received = new Date(xmljs.DateTimeReceived);
+      this.received = sanitize.date(xmljs.DateTimeReceived);
     } else {
       this.received = new Date();
     }
     this.setFlags(xmljs);
-    if ("InReplyTo" in xmljs) {
-      this.inReplyTo = xmljs.InReplyTo;
-    }
-    if ("References" in xmljs) {
-      this.references = xmljs.References;
-    }
+    this.inReplyTo = sanitize.nonemptystring(xmljs.InReplyTo, null);
+    this.references = sanitize.nonemptystring(xmljs.References, null)?.split(" ");
     if ("ReplyTo" in xmljs) {
-      this.replyTo = findOrCreatePersonUID(xmljs.ReplyTo.Mailbox.EmailAddress, xmljs.ReplyTo.Mailbox.Name);
+      this.replyTo = findOrCreatePersonUID(sanitize.emailAddress(xmljs.ReplyTo.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.ReplyTo.Mailbox.Name, null));
     }
     if ("From" in xmljs) {
-      this.from = findOrCreatePersonUID(xmljs.From.Mailbox.EmailAddress, xmljs.From.Mailbox.Name);
+      this.from = findOrCreatePersonUID(sanitize.emailAddress(xmljs.From.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.From.Mailbox.Name, null));
       this.outgoing = appGlobal.me.emailAddresses.some(e => e.value == this.from.emailAddress);
     } else if ("Sender" in xmljs) {
-      this.from = findOrCreatePersonUID(xmljs.Sender.Mailbox.EmailAddress, xmljs.Sender.Mailbox.Name);
+      this.from = findOrCreatePersonUID(sanitize.emailAddress(xmljs.Sender.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.Sender.Mailbox.Name, null));
       this.outgoing = appGlobal.me.emailAddresses.some(e => e.value == this.from.emailAddress);
     }
     setPersons(this.to, xmljs.ToRecipients?.Mailbox);
@@ -86,13 +79,11 @@ export class EWSEMail extends EMail {
   bodyAndAttachmentsFromXML(xmljs) {
     assert(this.itemID == xmljs.ItemId.Id, "EWS EMail ItemID doesn't match");
     if (xmljs.Body?.BodyType == "Text") {
-      this.text = xmljs.Body.Value;
+      this.text = sanitize.nonemptystring(xmljs.Body.Value, "");
     } else {
-      if (xmljs.TextBody) {
-        this.text = xmljs.TextBody.Value;
-      }
+      this.text = sanitize.nonemptystring(xmljs.TextBody?.Value, "");
       if (xmljs.Body?.BodyType == "HTML") {
-        this.html = xmljs.Body.Value;
+        this.html = sanitize.nonemptystring(xmljs.Body.Value, "");
       }
     }
     if (xmljs.Attachments?.FileAttachment) {
@@ -112,12 +103,12 @@ export class EWSEMail extends EMail {
   }
 
   setFlags(xmljs) {
-    this.isRead = xmljs.IsRead == "true";
+    this.isRead = sanitize.boolean(xmljs.IsRead);
     this.isNewArrived = xmljs.ExtendedProperty?.Value == 0xFFFFFFFF; // -1?
     this.isReplied = xmljs.ExtendedProperty?.Value == 0x105;
     this.isStarred = xmljs.Flag?.FlagStatus == "Flagged";
     // can't work out how to find junk status
-    this.isDraft = xmljs.IsDraft == "true";
+    this.isDraft = sanitize.boolean(xmljs.IsDraft);
   }
 
   async markRead(read = true) {
@@ -194,7 +185,7 @@ function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {
   if (!mailboxes) {
     return;
   }
-  targetList.replaceAll(ensureArray(mailboxes).map(mailbox => findOrCreatePersonUID(mailbox.EmailAddress, mailbox.Name)));
+  targetList.replaceAll(ensureArray(mailboxes).map(mailbox => findOrCreatePersonUID(sanitize.emailAddress(mailbox.EmailAddress), sanitize.nonemptystring(mailbox.Name, null))));
 }
 
 export function ensureArray<Type>(val: Type[] | Type): Type[] {

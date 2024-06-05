@@ -5,6 +5,7 @@ import { ensureArray } from "../../Mail/EWS/EWSEMail";
 import EWSCreateItemRequest from "../../Mail/EWS/EWSCreateItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/EWSUpdateItemRequest";
 import { assert } from "../../util/util";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 const PhysicalAddressElements = ["Street", "City", "PostalCode", "State", "CountryOrRegion"];
 const PhysicalAddressPurposes = { Business: "work", Home: "home", Other: "other" };
@@ -28,63 +29,50 @@ export class EWSPerson extends Person {
   }
 
   fromXML(xmljs: any) {
-    this.itemID = xmljs.ItemId.Id;
-    if (xmljs.DisplayName) {
-      this.name = xmljs.DisplayName;
-    }
-    if (xmljs.GivenName) {
-      this.firstName = xmljs.GivenName;
-    }
-    if (xmljs.Surname) {
-      this.lastName = xmljs.Surname;
-    }
+    this.itemID = sanitize.nonemptystring(xmljs.ItemId.Id);
+    this.name = sanitize.nonemptystring(xmljs.DisplayName, "");
+    this.firstName = sanitize.nonemptystring(xmljs.GivenName, "");
+    this.lastName = sanitize.nonemptystring(xmljs.Surname, "");
     if (xmljs.EmailAddresses?.Entry) {
-      this.emailAddresses.replaceAll(ensureArray(xmljs.EmailAddresses.Entry).filter(entry => entry.Value && (!entry.RoutingType || entry.RoutingType == "SMTP")).map(entry => new ContactEntry(entry.Value, null, "mailto")));
+      this.emailAddresses.replaceAll(ensureArray(xmljs.EmailAddresses.Entry).filter(entry => entry.Value && (!entry.RoutingType || entry.RoutingType == "SMTP")).map(entry => new ContactEntry(sanitize.nonemptystring(entry.Value), null, "mailto")));
     }
     if (xmljs.PhoneNumbers?.Entry) {
-      for (let entry of ensureArray(xmljs.PhoneNumbers.Entry).filter(entry => entry.Value)) {
-        switch (entry.Key) {
+      for (let entry of ensureArray(xmljs.PhoneNumbers.Entry)) {
+        let value = sanitize.nonemptystring(entry.Value, null);
+        switch (value && entry.Key) { // Key may have other unsupported values
         case "HomePhone":
         case "HomePhone2":
-          this.phoneNumbers.add(new ContactEntry(entry.Value, "home", "tel"));
+          this.phoneNumbers.add(new ContactEntry(value, "home", "tel"));
           break;
         case "BusinessPhone":
         case "BusinessPhone2":
-          this.phoneNumbers.add(new ContactEntry(entry.Value, "work", "tel"));
+          this.phoneNumbers.add(new ContactEntry(value, "work", "tel"));
           break;
         case "HomeFax":
-          this.phoneNumbers.add(new ContactEntry(entry.Value, "home", "fax"));
+          this.phoneNumbers.add(new ContactEntry(value, "home", "fax"));
           break;
         case "BusinessFax":
-          this.phoneNumbers.add(new ContactEntry(entry.Value, "work", "fax"));
+          this.phoneNumbers.add(new ContactEntry(value, "work", "fax"));
           break;
         case "OtherFax":
-          this.phoneNumbers.add(new ContactEntry(entry.Value, "other", "fax"));
+          this.phoneNumbers.add(new ContactEntry(value, "other", "fax"));
           break;
         case "MobilePhone":
-          this.phoneNumbers.add(new ContactEntry(entry.Value, "mobile", "tel"));
+          this.phoneNumbers.add(new ContactEntry(value, "mobile", "tel"));
           break;
         }
       }
     }
     if (xmljs.ImAddresses?.Entry) {
-      this.chatAccounts.replaceAll(ensureArray(xmljs.ImAddresses.Entry).filter(entry => entry.Value).map(entry => new ContactEntry(entry.Value)));
+      this.chatAccounts.replaceAll(ensureArray(xmljs.ImAddresses.Entry).filter(entry => entry.Value).map(entry => new ContactEntry(sanitize.nonemptystring(entry.Value))));
     }
     if (xmljs.PhysicalAddresses?.Entry) {
-      this.streetAddresses.replaceAll(ensureArray(xmljs.PhysicalAddresses.Entry).map(entry => new ContactEntry(PhysicalAddressElements.map(element => entry[element] || "").join("\n"), PhysicalAddressPurposes[entry.Key])));
+      this.streetAddresses.replaceAll(ensureArray(xmljs.PhysicalAddresses.Entry).map(entry => new ContactEntry(PhysicalAddressElements.map(element => sanitize.nonemptystring(entry[element], "")).join("\n"), PhysicalAddressPurposes[entry.Key])));
     }
-    if (xmljs.Body) {
-      this.notes = xmljs.Body.Value;
-    }
-    if (xmljs.CompanyName) {
-      this.company = xmljs.CompanyName;
-    }
-    if (xmljs.Department) {
-      this.department = xmljs.Department;
-    }
-    if (xmljs.JobTitle) {
-      this.position = xmljs.JobTitle;
-    }
+    this.notes = sanitize.nonemptystring(xmljs.Body?.Value, "");
+    this.company = sanitize.nonemptystring(xmljs.CompanyName, "");
+    this.department = sanitize.nonemptystring(xmljs.Department, "");
+    this.position = sanitize.nonemptystring(xmljs.JobTitle, "");
   }
 
   async save() {
@@ -145,7 +133,7 @@ export class EWSPerson extends Person {
     request.addField("Contact", "JobTitle", this.position, "contacts:JobTitle");
     request.addField("Contact", "Surname", this.lastName, "contacts:Surname");
     let response = await this.addressbook.account.callEWS(request);
-    this.itemID = response.Items.Contact.ItemId.Id;
+    this.itemID = sanitize.nonemptystring(response.Items.Contact.ItemId.Id);
     await SQLPerson.save(this);
   }
 }

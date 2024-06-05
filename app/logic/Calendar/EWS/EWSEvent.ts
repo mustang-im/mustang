@@ -5,6 +5,7 @@ import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { ensureArray } from "../../Mail/EWS/EWSEMail";
 import EWSCreateItemRequest from "../../Mail/EWS/EWSCreateItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/EWSUpdateItemRequest";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 const gTimeZone = WindowsTimezones[Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
 
@@ -19,47 +20,39 @@ export class EWSEvent extends Event {
   }
 
   fromXML(xmljs) {
-    this.itemID = xmljs.ItemId.Id;
-    if (xmljs.UID) {
-      this.calUID = xmljs.UID;
-    }
-    if (xmljs.Subject) {
-      this.title = xmljs.Subject;
-    }
+    this.itemID = sanitize.nonemptystring(xmljs.ItemId.Id);
+    this.calUID = sanitize.nonemptystring(xmljs.UID, null);
+    this.title = sanitize.nonemptystring(xmljs.Subject, "");
     if (xmljs.Body?.BodyType == "Text") {
-      this.descriptionText = xmljs.Body.Value;
+      this.descriptionText = sanitize.nonemptystring(xmljs.Body.Value, "");
     } else {
-      if (xmljs.TextBody) {
-        this.descriptionText = xmljs.TextBody.Value;
-      }
+      this.descriptionText = sanitize.nonemptystring(xmljs.TextBody?.Value, "");
       if (xmljs.Body?.BodyType == "HTML") {
-        this.descriptionHTML = xmljs.Body.Value;
+        this.descriptionHTML = sanitize.nonemptystring(xmljs.Body.Value, "");
       }
     }
     if (xmljs.Start) {
-      this.startTime = new Date(xmljs.Start);
+      this.startTime = sanitize.date(xmljs.Start);
     }
     if (xmljs.End) {
-      this.endTime = new Date(xmljs.End);
+      this.endTime = sanitize.date(xmljs.End);
     }
     if (xmljs.DueDate) {
-      this.endTime = new Date(xmljs.DueDate);
+      this.endTime = sanitize.date(xmljs.DueDate);
     }
-    this.allDay = xmljs.IsAllDayEvent == "true";
+    this.allDay = sanitize.boolean(xmljs.IsAllDayEvent);
     if (xmljs.Recurrence) {
       this.repeat = true;
       if (!this.startTime && xmljs.Recurrence.EndDateRecurrence) {
-        this.startTime = new Date(xmljs.Recurrence.EndDateRecurrence.StartDate.slice(0, 10));
+        this.startTime = sanitize.date(xmljs.Recurrence.EndDateRecurrence.StartDate.slice(0, 10));
       }
     }
     if (xmljs.ReminderIsSet == "true") {
-      this.alarm = new Date(this.startTime.getTime() - 60 * xmljs.ReminderMinutesBeforeStart);
+      this.alarm = new Date(this.startTime.getTime() - 60 * sanitize.integer(xmljs.ReminderMinutesBeforeStart));
     } else {
       this.alarm = null;
     }
-    if (xmljs.Location) {
-      this.location = xmljs.Location;
-    }
+    this.location = sanitize.nonemptystring(xmljs.Location, "");
     let participants: PersonUID[] = [];
     if (xmljs.RequiredAttendees?.Attendee) {
       addParticipants(xmljs.RequiredAttendees.Attendee, participants);
@@ -69,7 +62,7 @@ export class EWSEvent extends Event {
     }
     this.participants.replaceAll(participants);
     if (xmljs.LastModifiedTime) {
-      this.lastMod = new Date(xmljs.LastModifiedTime);
+      this.lastMod = sanitize.date(xmljs.LastModifiedTime);
     }
   }
 
@@ -129,8 +122,8 @@ export class EWSEvent extends Event {
       },
     };
     response = await this.calendar.account.callEWS(request);
-    this.calUID = response.Items.CalendarItem.UID;
-    this.itemID = response.Items.CalendarItem.ItemId.Id;
+    this.calUID = sanitize.nonemptystring(response.Items.CalendarItem.UID);
+    this.itemID = sanitize.nonemptystring(response.Items.CalendarItem.ItemId.Id);
   }
 
   async saveTask() {
@@ -140,7 +133,7 @@ export class EWSEvent extends Event {
     request.addField("Task", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
     request.addField("Task", "DueDate", this.endTime?.toISOString(), "task:DueDate");
     let response = await this.calendar.account.callEWS(request);
-    this.itemID = response.Items.Task.ItemId.Id;
+    this.itemID = sanitize.nonemptystring(response.Items.Task.ItemId.Id);
   }
 
   dateString(date: Date): string {
@@ -178,6 +171,6 @@ export class EWSEvent extends Event {
 
 function addParticipants(attendees, participants: PersonUID[]) {
   for (let attendee of ensureArray(attendees)) {
-    participants.push(findOrCreatePersonUID(attendee.Mailbox.EmailAddress, attendee.Mailbox.Name));
+    participants.push(findOrCreatePersonUID(sanitize.emailAddress(attendee.Mailbox.EmailAddress), sanitize.nonemptystring(attendee.Mailbox.Name, null)));
   }
 }

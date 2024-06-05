@@ -5,6 +5,7 @@ import { SQLCalendar } from "../SQL/SQLCalendar";
 import { SQLEvent } from "../SQL/SQLEvent";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { ensureArray } from "../../Mail/EWS/EWSEMail";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
 
 export class EWSCalendar extends Calendar {
@@ -67,7 +68,7 @@ export class EWSCalendar extends Calendar {
       }
       if (result.Changes.Delete) {
         for (let deletion of ensureArray(result.Changes.Delete)) {
-          let event = this.getEventByItemId(deletion.ItemId.Id);
+          let event = this.getEventByItemId(sanitize.nonemptystring(deletion.ItemId.Id));
           if (event) {
             this.events.remove(event);
             await SQLEvent.deleteIt(event);
@@ -75,7 +76,7 @@ export class EWSCalendar extends Calendar {
         }
       }
       await this.getEvents(eventIDs, events);
-      syncState = sync.m$SyncFolderItems.m$SyncState = result.SyncState;
+      syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
     }
     this.events.addAll(events);
     return syncState!;
@@ -119,7 +120,7 @@ export class EWSCalendar extends Calendar {
       if (!result?.RootFolder?.Items) {
         break;
       }
-      request.m$FindItem.m$IndexedPageItemView.Offset = result.RootFolder.IndexedPagingOffset;
+      request.m$FindItem.m$IndexedPageItemView.Offset = sanitize.integer(result.RootFolder.IndexedPagingOffset);
       await this.getEvents(ensureArray(result.RootFolder.Items.CalendarItem || result.RootFolder.Items.Task).map(item => item.ItemId), events);
     }
   }
@@ -166,7 +167,7 @@ export class EWSCalendar extends Calendar {
     };
     let results = ensureArray(await this.account.callEWS(request));
     for (let result of results) {
-      let event = this.getEventByItemId(result.Items.CalendarItem?.ItemId.Id || result.Items.Task.ItemId.Id);
+      let event = this.getEventByItemId(sanitize.nonemptystring(result.Items.CalendarItem?.ItemId.Id || result.Items.Task.ItemId.Id));
       if (event) {
         event.fromXML(result.Items.CalendarItem || result.Items.Task);
         await SQLEvent.save(event);
