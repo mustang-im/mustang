@@ -48,9 +48,13 @@ export class EWSEMail extends EMail {
     }
     if ("DateTimeSent" in xmljs) {
       this.sent = new Date(xmljs.DateTimeSent);
+    } else {
+      this.sent = new Date();
     }
     if ("DateTimeReceived" in xmljs) {
       this.received = new Date(xmljs.DateTimeReceived);
+    } else {
+      this.received = new Date();
     }
     this.setFlags(xmljs);
     if ("InReplyTo" in xmljs) {

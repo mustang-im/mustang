@@ -19,7 +19,7 @@ import PostalMIME from "postal-mime";
 
 export class EMail extends Message {
   @notifyChangedProperty
-  subject: string;
+  subject: string = "";
   @notifyChangedProperty
   from = new PersonUID();
   @notifyChangedProperty
