@@ -6,6 +6,7 @@ import { SQLEMail } from "../SQL/SQLEMail";
 import type { EMail } from "../EMail";
 import { ArrayColl, Collection } from "svelte-collections";
 import { assert } from "../../util/util";
+import { Buffer } from "buffer/";
 
 export class IMAPFolder extends Folder {
   account: IMAPAccount;
@@ -238,11 +239,10 @@ export class IMAPFolder extends Folder {
   }
 
   async addMessage(email: EMail) {
-    return;
     await super.addMessage(email);
     await this.runCommand(async (conn) => {
       let flags = ["\\Seen"]; // TODO
-      await conn.append(this.path, email.mime, flags); // TODO hangs
+      await conn.append(this.path, Buffer.from(email.mime), flags); // TODO hangs
     });
   }
 
