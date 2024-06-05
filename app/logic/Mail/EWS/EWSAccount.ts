@@ -3,8 +3,8 @@ import type { EMail } from "../EMail";
 import { EWSFolder } from "./EWSFolder";
 import EWSCreateItemRequest from "./EWSCreateItemRequest";
 import type EWSUpdateItemRequest from "./EWSUpdateItemRequest";
-import type { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
-import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
+import { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
+import { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
@@ -45,16 +45,30 @@ export class EWSAccount extends MailAccount {
       await this.oAuth2.login(interactive);
     }
     await this.listFolders();
+
     let addressbook = appGlobal.addressbooks.find((addressbook: EWSAddressbook) => addressbook.protocol == "addressbook-ews" && addressbook.url == this.url && addressbook.username == this.emailAddress) as EWSAddressbook | void;
-    if (addressbook) {
-      addressbook.account = this;
-      await addressbook.listContacts();
+    if (!addressbook) {
+      addressbook = new EWSAddressbook();
+      addressbook.name = this.name;
+      addressbook.url = this.url;
+      addressbook.username = this.emailAddress;
+      addressbook.workspace = this.workspace;
+      appGlobal.addressbooks.add(addressbook);
     }
+    addressbook.account = this;
+    await addressbook.listContacts();
+
     let calendar = appGlobal.calendars.find((calendar: EWSCalendar) => calendar.protocol == "calendar-ews" && calendar.url == this.url && calendar.username == this.emailAddress) as EWSCalendar | void;
-    if (calendar) {
-      calendar.account = this;
-      await calendar.listEvents();
+    if (!calendar) {
+      calendar = new EWSCalendar();
+      calendar.name = this.name;
+      calendar.url = this.url;
+      calendar.username = this.emailAddress;
+      calendar.workspace = this.workspace;
+      appGlobal.calendars.add(calendar);
     }
+    calendar.account = this;
+    await calendar.listEvents();
   }
 
   async logout(): Promise<void> {
