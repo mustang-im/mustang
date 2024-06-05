@@ -1,37 +1,37 @@
 # Next
 * Mail
   * Settings
-    * Save identites
+    * Save identities
+  * Setup
+    * Autodiscover
+    * Import account UI
   * Selection
     * Default selection on start
   * OAuth2
     * Gmail
-    * in-app
+    * In-app login
     * register with providers
+  * Inline images send
+  * Move messages to deep subfolders
+  * Move messages to other accounts
+  * Bugs
+    * FastList doesn't update some rows #66
+    * Save window size
   * Threads
     * Search all folders
     * Hide quotes
     * Message list: Threaded view?
     * Mail Chat view: Open thread
-  * Move messages to deep subfolders
-  * Move messages to other accounts
-  * Setup
-    * Autodiscover
-    * Import account UI
-  * inline images send
-  * Bugs
-    * FastList doesn't update some rows
-    * Save window size
   * Search
     * Saved searches - Edit
-    * Actions
+    * Actions (Filters)
       * Create
       * List
       * Edit
       * Run
   * All accounts
-    * fix mergeColls()
-    * use search folder
+    * Fix mergeColls() #72
+    * Use search folder
   * Setup mail
     * after account delete: remove general panel
 
