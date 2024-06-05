@@ -28,7 +28,7 @@ export function fillConfig(config: MailAccount, emailAddress: string, password: 
   config.userRealname = appGlobal.me.name ?? nameFromEmailAddress(emailAddress); // may be overwritten in setRealname()
   config.emailAddress = emailAddress;
   config.password = password;
-  config.username = replaceVar(config.username, emailAddress);
+  config.username = config.username ? replaceVar(config.username, emailAddress) : emailAddress;
   config.hostname = replaceVar(config.hostname, emailAddress);
   config.name = config.name ? replaceVar(config.name, emailAddress) : emailAddress;
   if (appGlobal.emailAccounts.find(acc => acc.name == config.name)) {
