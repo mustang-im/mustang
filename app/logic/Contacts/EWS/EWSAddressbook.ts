@@ -7,6 +7,7 @@ import { EWSGroup } from "./EWSGroup";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { ensureArray } from "../../Mail/EWS/EWSEMail";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
 
 export class EWSAddressbook extends Addressbook {
@@ -75,19 +76,19 @@ export class EWSAddressbook extends Addressbook {
       }
       if (result.Changes.Delete) {
         for (let deletion of ensureArray(result.Changes.Delete)) {
-          let person = this.getPersonByItemId(deletion.ItemId.Id);
+          let person = this.getPersonByItemId(sanitize.nonemptystring(deletion.ItemId.Id));
           if (person) {
             this.persons.remove(person);
             await SQLPerson.deleteIt(person);
           }
-          let group = this.getGroupByItemId(deletion.ItemId.Id);
+          let group = this.getGroupByItemId(sanitize.nonemptystring(deletion.ItemId.Id));
           if (group) {
             this.groups.remove(group);
             await SQLGroup.deleteIt(group);
           }
         }
       }
-      this.syncState = sync.m$SyncFolderItems.m$SyncState = result.SyncState;
+      this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
       await SQLAddressbook.save(this);
     }
     await this.listPersons(persons);
@@ -123,7 +124,7 @@ export class EWSAddressbook extends Addressbook {
       if (!result?.RootFolder?.Items) {
         break;
       }
-      request.m$FindItem.m$IndexedPageItemView.Offset = result.RootFolder.IndexedPagingOffset;
+      request.m$FindItem.m$IndexedPageItemView.Offset = sanitize.integer(result.RootFolder.IndexedPagingOffset);
       if (result.RootFolder.Items.Contact) {
         persons = persons.concat(ensureArray(result.RootFolder.Items.Contact));
       }

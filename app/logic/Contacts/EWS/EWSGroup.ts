@@ -6,6 +6,7 @@ import { ensureArray } from "../../Mail/EWS/EWSEMail";
 import EWSCreateItemRequest from "../../Mail/EWS/EWSCreateItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/EWSUpdateItemRequest";
 import { SQLGroup } from '../SQL/SQLGroup';
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotImplemented } from '../../util/util';
 import { appGlobal } from "../../app";
 
@@ -20,17 +21,13 @@ export class EWSGroup extends Group {
   }
 
   fromXML(xmljs: any) {
-    this.itemID = xmljs.ItemId.Id;
-    if (xmljs.DisplayName) {
-      this.name = xmljs.DisplayName;
-    }
-    if (xmljs.Body) {
-      this.description = xmljs.Body.Value;
-    }
+    this.itemID = sanitize.nonemptystring(xmljs.ItemId.Id);
+    this.name = sanitize.nonemptystring(xmljs.DisplayName, "");
+    this.description = sanitize.nonemptystring(xmljs.Body?.Value, "");
     if (xmljs.Members?.Member) {
       // `replaceAll` doesn't work for a `SetColl`
       this.participants.clear();
-      this.participants.addAll(ensureArray(xmljs.Members.Member).map(member => findOrCreatePerson(member.Mailbox.EmailAddress, member.Mailbox.Name)));
+      this.participants.addAll(ensureArray(xmljs.Members.Member).map(member => findOrCreatePerson(sanitize.emailAddress(member.Mailbox.EmailAddress), sanitize.nonemptystring(member.Mailbox.Name, null))));
     }
   }
 
@@ -48,7 +45,7 @@ export class EWSGroup extends Group {
       })),
     } : "", "distributionlist:Members");
     let response = await this.addressbook.account.callEWS(request);
-    this.itemID = response.Items.DistributionList.ItemId.Id;
+    this.itemID = sanitize.nonemptystring(response.Items.DistributionList.ItemId.Id);
     await SQLGroup.save(this);
   }
 }
