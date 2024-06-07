@@ -21,31 +21,30 @@ export class AllAccounts extends MailAccount {
     this.accounts = accounts;
     this.allRootFolders = mergeColls(this.accounts.map(account => account.rootFolders));
 
-    let specialFolders = new ArrayColl<Folder>();
     let all = new AllFolders(this);
     all.name = "All messages";
     all.specialFolder = SpecialFolder.All;
     //all.followSpecialFolder(SpecialFolder.All);
     all.folders = mergeColls(this.accounts.map(account => account.getAllFolders()));
-    specialFolders.add(all as any as Folder);
+    this.specialFolders.add(all as any as Folder);
 
     let inbox = new AllFolders(this);
     inbox.name = "Inbox";
     inbox.specialFolder = SpecialFolder.Inbox;
     inbox.followSpecialFolder(SpecialFolder.Inbox);
-    specialFolders.add(inbox as any as Folder);
+    this.specialFolders.add(inbox as any as Folder);
 
     let sent = new AllFolders(this);
     sent.name = "Sent";
     inbox.specialFolder = SpecialFolder.Sent;
     sent.followSpecialFolder(SpecialFolder.Sent);
-    specialFolders.add(sent as any as Folder);
+    this.specialFolders.add(sent as any as Folder);
 
     let drafts = new AllFolders(this);
     drafts.name = "Drafts";
     drafts.specialFolder = SpecialFolder.Drafts;
     drafts.followSpecialFolder(SpecialFolder.Drafts);
-    specialFolders.add(drafts as any as Folder);
+    this.specialFolders.add(drafts as any as Folder);
   }
 
   get isLoggedIn(): boolean {
