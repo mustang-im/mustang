@@ -116,14 +116,22 @@ class Sanitize {
    * Email address foo@bar.com
    */
   emailAddress(unchecked: string | null, fallback: string | null | Symbol = throwErrors): string {
-    let str = this.nonemptystring(unchecked, fallback);
-    let sp = str.split("@");
-    if (sp.length != 2 || !/^[a-zA-Z0-9\-%+_\.\*]+@[a-z0-9\-\.]+\.[a-z]+$/i.test(str)) {
+    if (!unchecked) {
+      return haveError("Missing email address", unchecked, fallback);
+    }
+    let str = String(unchecked);
+    if (!/^[a-zA-Z0-9\-%+_\.\*]+@[a-z0-9\-\.]+\.[a-z]+$/i.test(str)) {
       return haveError("Not an email address", unchecked, fallback);
     }
-    let user = this.nonemptystring(sp[0], fallback); // implicitly checks, var unused
-    let domain = this.hostname(sp[1], fallback); // implicitly checks, var unused
     return str.toLowerCase();
+    /*
+    let sp = str.split("@");
+    if (sp.length != 2) {
+      throw new Error("");
+    }
+    let user = this.nonemptystring(sp[0]); // only check, var unused
+    let domain = this.hostname(sp[1]); // only check, var unused
+    */
   }
 
   /**
@@ -150,6 +158,17 @@ class Sanitize {
       return new Date(unchecked); // ISO or RFC822 format
     } else {
       return haveError("Date not string or number", unchecked, fallback);
+    }
+  }
+
+  /**
+   * A value which should be shown to the user in the UI as label
+   */
+  array(unchecked: [] | null, fallback: [] | null | Symbol = throwErrors): [] | null {
+    if (unchecked && Array.isArray(unchecked)) {
+      return unchecked;
+    } else {
+      return haveError("Not an array", unchecked, fallback);
     }
   }
 
