@@ -1,6 +1,6 @@
 <!-- TODO Jail content into an iframe -->
 
-<div bind:this={divEl} class="html-editor" />
+<div bind:this={rootEl} class="html-editor" />
 
 <script lang="ts">
   import { Editor } from '@tiptap/core';
@@ -23,14 +23,16 @@
   export let html: string;
   /** out only */
   export let editor: Editor;
+  export let tabindex = null;
 
-  let divEl: HTMLDivElement;
+  let rootEl: HTMLDivElement;
 
   onMount(onLoad);
 
   function onLoad() {
+    editorElementCreatedMutationObserver.observe(rootEl, {childList: true});
     editor = new Editor({
-      element: divEl,
+      element: rootEl,
       extensions: [
         StarterKit,
         LinkFeature,
@@ -72,7 +74,21 @@
     if (editor) {
       editor.destroy();
     }
+    editorElementCreatedMutationObserver.disconnect();
   });
+
+  const editorElementCreatedMutationObserver = new MutationObserver((mutationList, observer) => {
+    for (let mutation of mutationList) {
+      for (let element of mutation.addedNodes) {
+        onEditorElementCreated(element as HTMLDivElement);
+      }
+    }
+  });
+  function onEditorElementCreated(el: HTMLDivElement) {
+    if (tabindex) {
+      el.tabIndex = tabindex;
+    }
+  }
 </script>
 
 <style>

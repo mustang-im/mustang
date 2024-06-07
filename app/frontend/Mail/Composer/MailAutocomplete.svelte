@@ -1,4 +1,4 @@
-<PersonsAutocomplete persons={addresses} {placeholder}
+<PersonsAutocomplete persons={addresses} {placeholder} {tabindex} {autofocus}
   on:addPerson={(event) => onAddPerson(event.detail)}
   on:removePerson={(event) => onRemovePerson(event.detail)}
   >
@@ -18,6 +18,8 @@
    * in/out */
   export let addresses: ArrayColl<PersonUID>;
   export let placeholder: string;
+  export let tabindex = null;
+  export let autofocus = false;
 
   function onAddPerson(person: PersonUID) {
     addresses.add(person);

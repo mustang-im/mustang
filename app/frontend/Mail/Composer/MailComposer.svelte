@@ -31,7 +31,7 @@
       </hbox>
       <hbox flex>
         <hbox flex>
-          <MailAutocomplete addresses={mail.to} placeholder="Add recipient">
+          <MailAutocomplete addresses={mail.to} placeholder="Add recipient" tabindex={1} autofocus={true}>
             <svelte:fragment slot="person-popup-buttons" let:personUID>
               <Button plain label="CC" onClick={() => onMoveToCC(personUID)} />
               <Button plain label="BCC" onClick={() => onMoveToBCC(personUID)} />
@@ -55,7 +55,7 @@
       </hbox>
     {#if showCC}
       <hbox class="label">Cc</hbox>
-      <MailAutocomplete addresses={mail.cc} placeholder="Add CC recipient">
+      <MailAutocomplete addresses={mail.cc} placeholder="Add CC recipient" tabindex={1}>
         <svelte:fragment slot="person-popup-buttons" let:personUID>
           <Button plain label="To" onClick={() => onMoveToTo(personUID)} />
           <Button plain label="BCC" onClick={() => onMoveToBCC(personUID)} />
@@ -64,7 +64,7 @@
     {/if}
     {#if showBCC}
       <hbox class="label">Bcc</hbox>
-      <MailAutocomplete addresses={mail.bcc} placeholder="Add BCC recipient">
+      <MailAutocomplete addresses={mail.bcc} placeholder="Add BCC recipient" tabindex={1}>
         <svelte:fragment slot="person-popup-buttons" let:personUID>
           <Button plain label="To" onClick={() => onMoveToTo(personUID)} />
           <Button plain label="CC" onClick={() => onMoveToCC(personUID)} />
@@ -88,13 +88,13 @@
             <vbox flex class="editor">
               <!-- The html in the mail passed in MUST already be sanitized HTML.
               Using `rawHTMLDangerous` avoids that we're sanitizing on every keypress. -->
-              <HTMLEditor bind:html={mail.rawHTMLDangerous} bind:editor />
+              <HTMLEditor bind:html={mail.rawHTMLDangerous} bind:editor tabindex={1} />
             </vbox>
           </Scroll>
           <hbox class="footer">
             <hbox class="label">Subject</hbox>
             <hbox class="subject" flex>
-              <input type="text" bind:value={mail.subject} />
+              <input type="text" bind:value={mail.subject} tabindex={1} />
             </hbox>
             <hbox class="buttons">
               <RoundButton
@@ -105,6 +105,7 @@
                 filled
                 disabled={!mail.subject || $to.isEmpty}
                 onClick={onSend}
+                tabindex={1}
                 />
             </hbox>
           </hbox>

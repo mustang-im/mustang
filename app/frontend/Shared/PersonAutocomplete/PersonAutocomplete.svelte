@@ -14,6 +14,8 @@
     createText={"Add this person"}
     onCreate={(text) => catchErrors(() => onCreate(text))}
     {placeholder}
+    {autofocus}
+    tabIndex={tabindex}
     >
     <hbox slot="loading">Loading...</hbox>
     <svelte:fragment slot="item" let:item={person}>
@@ -40,6 +42,8 @@
 
   export let skipPersons: Collection<PersonUID> = new ArrayColl<PersonUID>();
   export let placeholder = "Add person";
+  export let tabindex = null;
+  export let autofocus = false;
 
   export async function search(inputStr: string): Promise<PersonUID[]> {
     try {

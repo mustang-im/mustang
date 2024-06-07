@@ -13,7 +13,7 @@
       on:addPerson
       on:addPerson={(event) => onAddPerson(event.detail)}
       skipPersons={$persons}
-      {placeholder}
+      {placeholder} {tabindex} {autofocus}
       bind:this={autocompleteEl}
       >
       <slot name="result-bottom-row" slot="result-bottom-row" let:person {person} />
@@ -33,6 +33,8 @@
    * in/out */
   export let persons: Collection<PersonUID>;
   export let placeholder: string = null;
+  export let tabindex = null;
+  export let autofocus = false;
 
   //$: console.log("persons", persons.contents);
 

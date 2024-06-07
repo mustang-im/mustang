@@ -1,6 +1,7 @@
 <button on:click on:dblclick on:click={myOnClick}
   title={label} class="button {classes}" class:filled class:border
   {disabled} class:disabled class:selected
+  {tabindex}
   style="--padding: {padding}"
   >
   <hbox class="icon">
@@ -35,6 +36,7 @@
   export let border = true;
   export let disabled = false;
   export let selected = false;
+  export let tabindex = null;
   export let onClick: (event: Event) => void = null;
   export let errorCallback = showError;
 

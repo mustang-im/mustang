@@ -1,6 +1,7 @@
 <button on:click on:dblclick on:click={myOnClick} bind:this={buttonEl}
   title={typeof(disabled) == "string" ? disabled : tooltip} class="button {classes}" class:plain
   disabled={!!disabled} class:disabled class:selected
+  {tabindex}
   >
   <hbox class="icon">
     {#if typeof(icon) == "string"}
@@ -48,6 +49,7 @@
    * Defaults to `label` and `shortCutInfo`. */
   export let tooltip: string = label +
     (shortCutInfo ? "\n\nShortcut: " + shortCutInfo : '');
+  export let tabindex = null;
   export let onClick: (event: Event) => void = null;
   export let errorCallback = showError;
   /** e.g. to `.focus()`
