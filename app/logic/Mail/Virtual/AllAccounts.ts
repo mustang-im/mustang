@@ -1,7 +1,6 @@
 import { MailAccount } from "../MailAccount";
 import { Folder, SpecialFolder } from "../Folder";
 import { AllFolders } from "./AllFolders";
-import { savedSearchFolders } from "./SavedSearchFolder";
 import { ArrayColl, Collection, mergeColl, mergeColls } from "svelte-collections";
 
 /** Unified view of all other active mail accounts */
@@ -13,7 +12,7 @@ export class AllAccounts extends MailAccount {
   accounts: Collection<MailAccount>;
   allRootFolders: Collection<Folder>;
   specialFolders = new ArrayColl<Folder>();
-  rootFolders = mergeColl(this.specialFolders);
+  rootFolders = mergeColl(this.specialFolders); // `readSavedSearches()` adds `savedSearchFolders`
 
   /** @param accounts typically `appGlobal.emailAccounts` */
   constructor(accounts: Collection<MailAccount>) {
