@@ -41,12 +41,13 @@ export class SQLMailAccount implements MailAccountStorage {
           idStr, name, protocol, emailAddress,
           username, passwordButter,
           hostname, port, tls, authMethod, url,
-          outgoingAccountID, userRealname, workspace
+          outgoingAccountID, userRealname, workspace, configJSON
         ) VALUES (
           ${acc.id}, ${acc.name}, ${acc.protocol}, ${acc.emailAddress},
           ${acc.username}, ${acc.password},
           ${acc.hostname}, ${acc.port}, ${acc.tls}, ${acc.authMethod}, ${acc.url},
-          ${acc.outgoing?.dbID}, ${acc.userRealname}, ${acc.workspace?.id}
+          ${acc.outgoing?.dbID}, ${acc.userRealname}, ${acc.workspace?.id},
+          ${JSON.stringify(acc.toConfigJSON(), null, 2)}
         )`);
       acc.dbID = insert.lastInsertRowid;
     } else {
@@ -56,7 +57,8 @@ export class SQLMailAccount implements MailAccountStorage {
           username = ${acc.username}, passwordButter = ${acc.password},
           hostname = ${acc.hostname}, port = ${acc.port}, tls = ${acc.tls}, url = ${acc.url},
           authMethod = ${acc.authMethod}, outgoingAccountID = ${acc.outgoing?.dbID},
-          userRealname = ${acc.userRealname}, workspace = ${acc.workspace?.id}
+          userRealname = ${acc.userRealname}, workspace = ${acc.workspace?.id},
+          configJSON = ${JSON.stringify(acc.toConfigJSON(), null, 2)}
         WHERE id = ${acc.dbID}
         `);
     }
@@ -82,7 +84,7 @@ export class SQLMailAccount implements MailAccountStorage {
         username, passwordButter,
         hostname, port, tls, authMethod, url,
         outgoingAccountID,
-        userRealname, workspace
+        userRealname, workspace, configJSON
       FROM emailAccount
       WHERE id = ${dbID}
       `) as any;
@@ -102,6 +104,7 @@ export class SQLMailAccount implements MailAccountStorage {
     acc.workspace = row.workspace
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
       : null;
+    acc.fromConfigJSON(JSON.parse(sanitize.nonemptystring(row.configJSON, "{}")));
     if (!acc.storage) {
       acc.storage = new SQLMailAccount();
     }

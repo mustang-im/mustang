@@ -10,6 +10,8 @@ export const meetDatabaseSchema = sql`
     "username" TEXT default null,
     "password" TEXT default null,
     "authMethod" INTEGER default 0,
-    "workspace" TEXT default null
+    "configJSON" TEXT default null,
+    "workspace" TEXT default null,
+    "syncState" ANY default null
   );
 `;

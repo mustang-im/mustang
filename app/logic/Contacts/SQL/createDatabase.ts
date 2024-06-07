@@ -9,6 +9,7 @@ export const contactsDatabaseSchema = sql`
     "url" TEXT default null,
     "username" TEXT default null,
     "userRealname" TEXT default null,
+    "configJSON" TEXT default null,
     "workspace" TEXT default null,
     "syncState" ANY default null
   );

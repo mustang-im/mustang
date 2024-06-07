@@ -1,10 +1,11 @@
 import { Account } from "../Abstract/Account";
-import type { MailIdentity } from "./MailIdentity";
+import { MailIdentity } from "./MailIdentity";
 import { Folder, SpecialFolder } from "./Folder";
 import type { EMail } from "./EMail";
 import type { Person } from "../Abstract/Person";
 import { appGlobal } from "../app";
-import { AbstractFunction } from "../util/util";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+import { AbstractFunction, assert } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
 import { Collection, ArrayColl, MapColl } from 'svelte-collections';
 
@@ -95,6 +96,18 @@ export class MailAccount extends Account {
   isEMailAddress(emailAddress: string): boolean {
     return this.emailAddress == emailAddress ||
       this.identities.some(id => id.emailAddress == emailAddress);
+  }
+
+  fromConfigJSON(config: any) {
+    assert(typeof (config) == "object", "Config must be a JSON object");
+    this.identities.clear();
+    this.identities.addAll(sanitize.array(config.identities, []).map(json =>
+      MailIdentity.fromConfigJSON(json)));
+  }
+  toConfigJSON(): any {
+    return {
+      identities: this.identities.contents.map(id => id.toConfigJSON()),
+    };
   }
 
   /** Get the `specialFolder` in this account. */

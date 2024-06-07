@@ -76,6 +76,7 @@ export const chatDatabaseSchema = sql`
     "port" INTEGER default null,
     "tls" INTEGER default 0,
     "url" TEXT default null,
+    "configJSON" TEXT default null,
     "workspace" TEXT default null
   );
 `;

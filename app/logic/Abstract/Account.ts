@@ -1,7 +1,7 @@
 import { Workspace } from "./Workspace";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
-import { AbstractFunction } from "../util/util";
+import { AbstractFunction, assert } from "../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 import type { ComponentType } from "svelte";
 
@@ -76,6 +76,13 @@ export class Account extends Observable {
    * Does not delete the account on the server. */
   async deleteIt(): Promise<void> {
     throw new AbstractFunction();
+  }
+
+  fromConfigJSON(config: any) {
+    assert(typeof (config) == "object", "Config must be a JSON object");
+  }
+  toConfigJSON(): any {
+    return {};
   }
 }
 

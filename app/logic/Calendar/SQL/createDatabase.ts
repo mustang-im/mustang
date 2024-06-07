@@ -16,7 +16,9 @@ export const calendarDatabaseSchema = sql`
     -- Format: HTML hex code without "#"
     -- Optional. Defaults to the default color for events.
     "color" TEXT default null,
-    "workspace" TEXT default null
+    "configJSON" TEXT default null,
+    "workspace" TEXT default null,
+    "syncState" ANY default null
   );
 
   --- Meetings scheduled at a specific date/time

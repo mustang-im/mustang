@@ -154,6 +154,7 @@ export const mailDatabaseSchema = sql`
     "authMethod" INTEGER default 0,
     "outgoingAccountID" INTEGER default null,
     "url" TEXT default null,
+    "configJSON" TEXT default null,
     "workspace" TEXT default null,
     FOREIGN KEY (outgoingAccountID)
       REFERENCES emailAccount (id)
