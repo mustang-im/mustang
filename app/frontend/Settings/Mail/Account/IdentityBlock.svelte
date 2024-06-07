@@ -114,6 +114,13 @@
   function onDelete() {
     dispatchEvent("delete", identity);
   }
+
+  $: clearSig(identity.signatureHTML);
+  function clearSig(_dummy: any) {
+    if (identity.signatureHTML == "<p></p>") {
+      identity.signatureHTML = null;
+    }
+  }
 </script>
 
 <style>

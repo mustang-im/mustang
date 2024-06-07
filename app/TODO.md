@@ -1,7 +1,5 @@
 # Next
 * Mail
-  * Settings
-    * Save identities
   * Setup
     * Autodiscover
     * Import account UI
