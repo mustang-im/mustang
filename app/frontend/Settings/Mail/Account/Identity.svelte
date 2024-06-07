@@ -8,7 +8,6 @@
       />
   </PageHeader>
 
-  <IdentityBlock identity={account} canRemove={false} />
   {#each $identities.each as identity}
     <IdentityBlock {identity}
       canRemove={$identities.length > 1}
@@ -26,7 +25,6 @@
 </vbox>
 
 <script lang="ts">
-  import type { Account } from "../../../../logic/Abstract/Account";
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
   import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
   import IdentityBlock from "./IdentityBlock.svelte";
@@ -38,13 +36,13 @@
   import { assert } from "../../../../logic/util/util";
   import { catchErrors } from "../../../Util/error";
 
-  export let account: Account;
+  export let account: MailAccount;
 
   $: identities = (account as MailAccount).identities;
   $: console.log("identities", $identities.contents);
 
   function onAdd() {
-    let id = new MailIdentity();
+    let id = new MailIdentity(account);
     id.userRealname = account.userRealname;
     identities.add(id);
   }
@@ -54,6 +52,9 @@
     await account.save();
   }
   async function onSave() {
+    assert(identities.hasItems, "Need at least 1 identity");
+    account.emailAddress = identities.first.emailAddress;
+    account.userRealname = identities.first.userRealname;
     await account.save();
   }
 </script>

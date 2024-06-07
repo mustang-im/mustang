@@ -6,7 +6,7 @@ import type { MailAccount } from "./MailAccount";
 
 export class MailIdentity extends Observable {
   id = crypto.randomUUID();
-  account: MailAccount;
+  readonly account: MailAccount;
   @notifyChangedProperty
   userRealname: string;
   @notifyChangedProperty
@@ -26,6 +26,11 @@ export class MailIdentity extends Observable {
   @notifyChangedProperty
   sendBCC = new ArrayColl<string>();
 
+  constructor(account: MailAccount) {
+    super();
+    this.account = account;
+  }
+
   get name(): string {
     return this.emailAddress;
   }
@@ -38,8 +43,7 @@ export class MailIdentity extends Observable {
    * this specific identity only, i.e. a subtree of the `MailAccount.config`. */
   static fromConfigJSON(config: any, account: MailAccount): MailIdentity {
     assert(typeof (config) == "object", "Config must be a JSON object");
-    let thiss = new MailIdentity();
-    thiss.account = account;
+    let thiss = new MailIdentity(account);
     thiss.id = sanitize.nonemptystring(config.id);
     thiss.userRealname = sanitize.label(config.userRealname);
     thiss.emailAddress = sanitize.emailAddress(config.emailAddress);

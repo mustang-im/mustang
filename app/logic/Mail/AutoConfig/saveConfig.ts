@@ -7,16 +7,23 @@ import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import { SetColl } from "svelte-collections";
+import { MailIdentity } from "../MailIdentity";
 
 export async function saveConfig(config: MailAccount, emailAddress: string, password: string): Promise<void> {
   fillConfig(config, emailAddress, password);
-  appGlobal.emailAccounts.add(config);
-  // saveAccountToLocalStorage(config);
-  await SQLMailAccount.save(config);
+
+  let identity = new MailIdentity(config);
+  identity.userRealname = config.userRealname;
+  identity.emailAddress = config.emailAddress;
+  config.identities.add(identity);
 
   if (!appGlobal.me.emailAddresses.find(c => c.value == config.emailAddress)) {
     appGlobal.me.emailAddresses.add(new ContactEntry(config.emailAddress, "account"));
   }
+
+  appGlobal.emailAccounts.add(config);
+  // saveAccountToLocalStorage(config);
+  await SQLMailAccount.save(config);
 }
 
 /**

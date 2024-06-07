@@ -129,7 +129,7 @@ export class ThunderbirdProfile {
 
   readMailIdentity(identityID: string, account: MailAccount): MailIdentity | null {
     try {
-      let identity = new MailIdentity();
+      let identity = new MailIdentity(account);
       identity.id = "tb-" + identityID;
       let prefBranch = `mail.identity.${identityID}`;
       assert(this.prefs[`${prefBranch}.valid`] !== false, "Identity marked as invalid");
