@@ -85,7 +85,7 @@ export class EMail extends Message {
   }
 
   get baseSubject(): string {
-    return this.subject.replace(/^([Re|RE|AW|Aw]: ?)+/g, "");
+    return this.subject.replace(/^((Re|RE|AW|Aw): ?)+/g, "");
   }
 
   /** Marks as spam, and deletes or moves the message, as configured */
