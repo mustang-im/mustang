@@ -20,6 +20,14 @@
         autofocus={!identity.emailAddress}
         name="emailaddress" class="emailaddress" />
 
+      {#if identity?.emailAddress?.includes("*")}
+        <hbox />
+        <hbox>
+          <hbox class="catch-all">This is a catch-all email address.</hbox>
+          <a href="https://ww.mustang.im/link/catch-all" target="_blank">More info</a>
+        </hbox>
+      {/if}
+
       <!--
       <label for="picture">Profile picture</label>
       <img on:click={} name="picture" />
@@ -116,6 +124,10 @@
   }
   .emailaddress:invalid {
     background-color: #FFF160;
+  }
+  .catch-all {
+    font-style: italic;
+    margin-right: 1em;
   }
   .reply-to {
     margin-top: 32px;

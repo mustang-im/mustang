@@ -1,8 +1,8 @@
-import { ArrayColl } from "svelte-collections";
+import type { MailAccount } from "./MailAccount";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { assert } from "../util/util";
-import type { MailAccount } from "./MailAccount";
+import { ArrayColl } from "svelte-collections";
 
 export class MailIdentity extends Observable {
   id = crypto.randomUUID();
@@ -36,7 +36,12 @@ export class MailIdentity extends Observable {
   }
 
   isEMailAddress(emailAddress: string): boolean {
-    return this.emailAddress == emailAddress;
+    if (this.emailAddress.includes("*")) {
+      let sp = this.emailAddress.split("*");
+      return emailAddress.startsWith(sp[0]) && emailAddress.endsWith(sp[1]);
+    } else {
+      return this.emailAddress == emailAddress;
+    }
   }
 
   /** @param config JSON object which contains the data for
