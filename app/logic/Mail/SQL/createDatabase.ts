@@ -104,6 +104,15 @@ export const mailDatabaseSchema = sql`
       ON DELETE CASCADE
   );
 
+  CREATE TABLE "emailTag" (
+    "id" INTEGER PRIMARY KEY,
+    "emailID" INTEGER not null,
+    "tagID" INTEGER not null,
+    FOREIGN KEY (emailID)
+      REFERENCES email (ID)
+      ON DELETE CASCADE
+  );
+
   -- Email folders, e.g. Inbox, sent, and user-custom folders
   CREATE TABLE "folder" (
     "id" INTEGER PRIMARY KEY,
