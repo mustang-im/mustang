@@ -177,9 +177,16 @@
 * Tags
 * Plaintext: URLs
 
-### Later
-* Refactor IMAP orchestration?: Separate IMAP protocol folder object and IMAP orcestration folder object. The latter does folder cache, IMAP poll/refresh, offline cache etc.
-* JMAP
+## Missing features
+* Filters / Actions
+* Spam filter
+* Tags
+* Thread pane sort
+* Threading in Thread pane
+* Archive
+* Save/Load mail as .eml file
+* Undo
+* Encryption
 
 ## Composer
 * Add new email address and person from To: line
@@ -226,6 +233,10 @@
   * Show link target domain
 * Promos
   * Link text doesn't match link target
+
+## Later
+* Refactor IMAP orchestration?: Separate IMAP protocol folder object and IMAP orcestration folder object. The latter does folder cache, IMAP poll/refresh, offline cache etc.
+* JMAP
 
 # Login
 * OAuth2 UI
