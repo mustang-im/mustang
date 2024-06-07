@@ -29,7 +29,7 @@
   export let items: Collection<T>;
 
   /** items + children which are displayed */
-  $: showItems = new ArrayColl(items);
+  $: showItems = new ArrayColl($items);
 
   const selectOpens = true;
   $: selectOpens && selectedItem && openOnly(selectedItem)
