@@ -55,6 +55,10 @@ export class AllFolders extends Folder {
     throw new Error("Select a folder in a specific account first, to create a subfolder");
   }
 
+  disableChangeSpecial(): string | false {
+    return "You cannot change an All accounts special folder."
+  }
+
   newEMail(): EMail {
     let account = this.account.accounts.first;
     assert(account, "Setup and select email account first");
