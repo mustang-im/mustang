@@ -181,11 +181,12 @@
 * Filters / Actions
 * Spam filter
 * Tags
+* Archive
+* Undo
+* Spellcheck
 * Thread pane sort
 * Threading in Thread pane
-* Archive
 * Save/Load mail as .eml file
-* Undo
 * Encryption
 
 ## Composer
