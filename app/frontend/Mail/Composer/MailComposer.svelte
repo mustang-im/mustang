@@ -221,6 +221,14 @@
 
   async function onSend() {
     mail.text = null;
+
+    if (fromIdentity.replyTo) {
+      mail.replyTo = new PersonUID(fromIdentity.replyTo, fromIdentity.userRealname);
+    }
+    let sig = fromIdentity.signatureHTML;
+    if (sig) {
+      mail.html += `<footer class="signature">${sig}</footer>`;
+    }
     await mail.send();
     onClose();
   }
