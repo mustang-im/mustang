@@ -2,7 +2,7 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <vbox flex class="mail-composer-window">
     <hbox class="window-title-bar">
-      <AccountDropDown bind:selectedAccount={from} accounts={appGlobal.emailAccounts} />
+      <IdentitySelector bind:selectedIdentity={fromIdentity} chooseFromPersons={recipients} />
       <hbox flex class="spacer" />
       <hbox class="close buttons">
         <RoundButton
@@ -125,12 +125,10 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { Attachment } from "../../../logic/Mail/Attachment";
   import { insertImage } from "../../Shared/Editor/InsertImage";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
-  import { selectedAccount } from "../Selected";
   import { appGlobal } from "../../../logic/app";
   import MailAutocomplete from "./MailAutocomplete.svelte";
   import AttachmentsPane from "./Attachments/AttachmentsPane.svelte";
@@ -147,12 +145,16 @@
   import TrashIcon from "lucide-svelte/icons/trash";
   import CloseIcon from "lucide-svelte/icons/x";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
+  import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
+  import { ArrayColl } from "svelte-collections";
+  import IdentitySelector from "./IdentitySelector.svelte";
 
   export let mail: EMail;
 
   let editor: Editor;
   $: to = mail.to;
-  let from: MailAccount;
+  let fromIdentity: MailIdentity;
+  let recipients: PersonUID[];
 
   // HACK to reload the HTMLEditor to force it to load the new text
   // See <https://github.com/ueberdosis/tiptap/issues/4918>
@@ -160,11 +162,7 @@
   $: differentMailLoaded(mail);
   function differentMailLoaded(_dummy: any) {
     if (mail.from?.emailAddress) {
-      let recipients;
-      from = appGlobal.emailAccounts.find(acc => acc.isEMailAddress(mail.from.emailAddress)) ??
-        (recipients = mail.to.contents.concat(mail.cc.contents).concat(mail.bcc.contents) &&
-         appGlobal.emailAccounts.find(acc => recipients.some(c => acc.isEMailAddress(c.emailAddress)))) ??
-        $selectedAccount;
+      recipients = [mail.from, ...mail.to.contents, ...mail.cc.contents, ...mail.bcc.contents];
     }
     if (mail == lastMail || !mail) {
       return;
@@ -175,10 +173,11 @@
     }
   }
 
-  $: from && setFrom()
-  function setFrom() {
-    mail.from = new PersonUID(from.emailAddress, from.userRealname);
-    mail.folder = from.getSpecialFolder(SpecialFolder.Sent) ?? from.inbox;
+  $: fromIdentity && setFromHeader()
+  function setFromHeader() {
+    mail.from = new PersonUID(fromIdentity.emailAddress, fromIdentity.userRealname);
+    mail.folder = fromIdentity.account.getSpecialFolder(SpecialFolder.Sent)
+      ?? fromIdentity.account.inbox;
   }
 
   function onMoveToCC(person: PersonUID) {

@@ -2,9 +2,11 @@ import { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { assert } from "../util/util";
+import type { MailAccount } from "./MailAccount";
 
 export class MailIdentity extends Observable {
   id = crypto.randomUUID();
+  account: MailAccount;
   @notifyChangedProperty
   userRealname: string;
   @notifyChangedProperty
@@ -24,11 +26,20 @@ export class MailIdentity extends Observable {
   @notifyChangedProperty
   sendBCC = new ArrayColl<string>();
 
+  get name(): string {
+    return this.emailAddress;
+  }
+
+  isEMailAddress(emailAddress: string): boolean {
+    return this.emailAddress == emailAddress;
+  }
+
   /** @param config JSON object which contains the data for
    * this specific identity only, i.e. a subtree of the `MailAccount.config`. */
-  static fromConfigJSON(config: any): MailIdentity {
+  static fromConfigJSON(config: any, account: MailAccount): MailIdentity {
     assert(typeof (config) == "object", "Config must be a JSON object");
     let thiss = new MailIdentity();
+    thiss.account = account;
     thiss.id = sanitize.nonemptystring(config.id);
     thiss.userRealname = sanitize.label(config.userRealname);
     thiss.emailAddress = sanitize.emailAddress(config.emailAddress);

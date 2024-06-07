@@ -102,7 +102,7 @@ export class MailAccount extends Account {
     assert(typeof (config) == "object", "Config must be a JSON object");
     this.identities.clear();
     this.identities.addAll(sanitize.array(config.identities, []).map(json =>
-      MailIdentity.fromConfigJSON(json)));
+      MailIdentity.fromConfigJSON(json, this)));
   }
   toConfigJSON(): any {
     return {
