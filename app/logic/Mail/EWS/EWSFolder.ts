@@ -448,6 +448,10 @@ export class EWSFolder extends Folder {
     await this.account.callEWS(request);
     await super.markAllRead();
   }
+
+  disableChangeSpecial(): string | false {
+    return "You cannot change Exchange special folders.";
+  }
 }
 
 /**
