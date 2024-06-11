@@ -6,6 +6,7 @@ export async function checkConfig(config: MailAccount, emailAddress: string, pas
   console.log("Checking new mail account", config);
   await config.verifyLogin();
   if (config.outgoing) {
+    config.outgoing.oAuth2 = config.oAuth2;
     await config.outgoing.verifyLogin();
   }
 }

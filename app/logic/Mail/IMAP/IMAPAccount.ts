@@ -243,6 +243,12 @@ export class IMAPAccount extends MailAccount {
 
   async send(email: EMail): Promise<void> {
     assert(this.outgoing, "SMTP server is not set up for IMAP account " + this.name);
+    if (!this.isLoggedIn) {
+      await this.login(true);
+    }
+    // Assume that SMTP and IMAP server have the same oAuth2 login
+    this.outgoing.oAuth2 = this.oAuth2;
+
     await this.outgoing.send(email);
     await this.saveSent(email);
   };

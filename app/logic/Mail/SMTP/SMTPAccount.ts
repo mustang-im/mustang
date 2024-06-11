@@ -1,10 +1,10 @@
-import { MailAccount, TLSSocketType } from "../MailAccount";
+import { MailAccount, TLSSocketType, AuthMethod } from "../MailAccount";
 import type { EMail } from "../EMail";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { Attachment , ContentDisposition } from "../Attachment";
 import { appGlobal } from "../../app";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
-import { blobToBase64 } from "../../util/util";
+import { blobToBase64, assert } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 import type { Attachment as NMAttachment, Address as NMAddress } from "@types/nodemailer/lib/mailer";
 import type Mail from "@types/nodemailer/lib/mailer";
@@ -14,6 +14,20 @@ export class SMTPAccount extends MailAccount {
   readonly protocol: string = "smtp";
 
   protected getTransportOptions() {
+    // Auth method
+    let usePassword = [
+      AuthMethod.Password,
+      AuthMethod.GSSAPI,
+      AuthMethod.NTLM,
+      AuthMethod.Unknown,
+    ].includes(this.authMethod);
+    let useOAuth2 = [
+      AuthMethod.OAuth2,
+    ].includes(this.authMethod);
+    if (useOAuth2) {
+      assert(this.oAuth2?.accessToken, `${this.name} SMTP: Need OAuth2 login from IMAP`);
+    }
+
     return {
       host: this.hostname,
       port: this.port,
@@ -23,8 +37,9 @@ export class SMTPAccount extends MailAccount {
       },
       auth: {
         user: this.username,
-        pass: this.password,
-        // TODO type: 'oauth2',
+        pass: usePassword ? this.password : undefined,
+        accessToken: this.oAuth2 ? this.oAuth2.accessToken : null,
+        type: this.oAuth2 ? "OAuth2" : undefined,
       },
       dnsTimeout: 5000,
       connectionTimeout: 5000,
