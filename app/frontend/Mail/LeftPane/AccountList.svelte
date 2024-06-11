@@ -32,7 +32,7 @@
   }
   .header {
     align-items: end;
-    margin-bottom: 8px;
+    margin-top: 8px;
     margin-left: 4px;
   }
   .header-label {

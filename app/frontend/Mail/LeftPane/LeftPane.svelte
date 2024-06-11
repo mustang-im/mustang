@@ -1,9 +1,20 @@
 <vbox flex class="folder-pane">
-  <Tabs bind:active={activeTab} on:change={onTabChange}>
-    <Tabs.Tab label='Folders' icon={FolderIcon}></Tabs.Tab>
-    <Tabs.Tab label='Persons' icon={PersonIcon}></Tabs.Tab>
-    <Tabs.Tab icon={SearchIcon}></Tabs.Tab>
-  </Tabs>
+    <hbox class="top">
+      <Tabs bind:active={activeTab} on:change={onTabChange}>
+        <Tabs.Tab icon={FolderIcon}></Tabs.Tab>
+        <Tabs.Tab icon={PersonIcon}></Tabs.Tab>
+        <Tabs.Tab icon={SearchIcon}></Tabs.Tab>
+      </Tabs>
+      <hbox flex />
+      <hbox class="buttons">
+        {#if activeTab == 0}
+          <GetMailButton account={selectedAccount} />
+        {/if}
+        {#if activeTab == 0 || activeTab == 1}
+          <WriteButton {selectedAccount} />
+        {/if}
+      </hbox>
+    </hbox>
 
   {#if activeTab == 1}
     <PersonsList persons={appGlobal.persons}  bind:selected={$selectedPerson} size="small" />
@@ -12,14 +23,7 @@
     <SearchPane bind:searchMessages on:clear={onClearSearch} />
   {:else}
     <!--<ProjectList />-->
-    <AccountList accounts={$accounts} bind:selectedAccount>
-      <hbox class="buttons" slot="top-right">
-        <RoundButton icon={SearchIcon} label="Search" onClick={onOpenSearch}
-          classes="small" iconSize="12px" padding="0px" />
-        <GetMailButton account={selectedAccount} />
-        <WriteButton {selectedAccount} />
-      </hbox>
-    </AccountList>
+    <AccountList accounts={$accounts} bind:selectedAccount />
     <FolderList {folders} bind:selectedFolder bind:selectedFolders />
     <ViewSwitcher />
   {/if}
@@ -32,7 +36,6 @@
   import type { Person } from "../../../logic/Abstract/Person";
   import { selectedPerson } from "../../Shared/Person/Selected";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
-  import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import { SQLSearchEMail } from "../../../logic/Mail/SQL/SQLSearchEMail";
   import { appGlobal } from "../../../logic/app";
   import AccountList from "./AccountList.svelte";
@@ -43,7 +46,6 @@
   import GetMailButton from "./GetMailButton.svelte";
   import WriteButton from "./WriteButton.svelte";
   import ViewSwitcher from "./ViewSwitcher.svelte";
-  import RoundButton from "../../Shared/RoundButton.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
   import FolderIcon from "lucide-svelte/icons/folder";
   import PersonIcon from "lucide-svelte/icons/user";
@@ -70,9 +72,6 @@
   function onClearSearch() {
     activeTab = 0;
   }
-  function onOpenSearch() {
-    activeTab = 2;
-  }
   function onTabChange(event) {
     activeTab = event.detail.index;
   }
@@ -98,6 +97,19 @@
     color: var(--leftbar-fg);
   }
 
+  .folder-pane :global(.persons) {
+    margin-top: 8px;
+  }
+  .folder-pane :global(.account-list) {
+    margin-top: -4px;
+  }
+  .folder-pane :global(.search) {
+    margin-top: -2px;
+  }
+  .top :global(.svelteui-Tab) {
+    padding: 8px 12px;
+    height: unset;
+  }
   .buttons {
     margin: 8px 8px 0 8px;
     align-items: end;
