@@ -96,8 +96,7 @@ export class SQLEMail {
     await this.saveRecipientsOfType(email, email.cc, 3);
     await this.saveRecipientsOfType(email, email.bcc, 4);
     if (email.replyTo?.emailAddress) {
-      let replyToUID = new PersonUID(email.replyTo.name, email.replyTo.emailAddress);
-      await this.saveRecipient(email, replyToUID, 5);
+      await this.saveRecipient(email, email.replyTo, 5);
     }
   }
 
