@@ -137,27 +137,26 @@
 # Mail
 * Body
   * Link: Right-click menu, copy
-* Compose: Recipients entry
+* Compose: Recipients entry - DONE
 * Search
-  * UI for criteria other than text
+  * UI for criteria other than text - DONE
 * Filter actions
-* Virtual folders / Saved searches
-  * Need: Fix observable collections for All Messages
+* Virtual folders / Saved searches - DONE
 * IMAP
   * UID vs. seq
-  * modseq und CONDSTORE
+  * modseq und CONDSTORE - implemented
 * Removed emails
-  * During fetch after login
-  * Loop when deleting mail manually twice: FilteredCollection removed observers
+  * During fetch after login - FIXED?
+  * Loop when deleting mail manually twice: FilteredCollection removed observers - FIXED?
 * Autoconfig
-  * Exchange AutoDiscover V2 and V1
+  * Exchange AutoDiscover V2 and V1 - partially implemented
   * Scrollbar for dialog box, not app window
 * Import
   * UI in Setup
   * Thunderbird
-     * Account settings - Logic implemented
+     * Account settings - Logic implemented, UI missing
      * Mails
-     * Contacts - Partial
+     * Contacts - Partially implemented
      * Calendar
   * Outlook
      * Account settings
@@ -171,7 +170,7 @@
 * Special folders
   * Better detection based on flags
   * Based on common names
-  * Manually in settings
+  * Manually in settings - DONE
 * Tags
 * Plaintext: URLs
 
@@ -191,7 +190,7 @@
 * Add new email address and person from To: line
 
 ### Editor
-* first enter: newline, second enter: paragraph
+* First Enter keypress: newline, second Enter keypress: paragraph -  #35 DONE
 * blockquote cite vs. third party
 * Insert link
 * Insert image

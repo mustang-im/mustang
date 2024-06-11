@@ -19,6 +19,8 @@ yarn run dev
 
 # Build release
 
+1. Install: See as dev Install above
+2. Build
 ```
 (cd app; yarn build)
 (cd e2; yarn build:win)
