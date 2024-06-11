@@ -23,14 +23,17 @@ export class OAuth2Window extends OAuth2UI {
       let weClosed = false;
       let handleNavigation = (event, urlStr: URLString) => {
         try {
+          console.log("OAuth2 window new page is Done URL", urlStr.startsWith(doneURL), urlStr);
           let url = new URL(urlStr);
           let urlParams = Object.fromEntries(url.searchParams);
           url.hash = url.search = "";
           if (url.href.startsWith(doneURL) && urlParams.state == state) {
+            console.log("  is Done");
             ipcRenderer.removeListener('oauth2-navigate', handleNavigation);
             ipcRenderer.removeListener('oauth2-close', handleClose);
             weClosed = true;
             popup.close();
+            this.oAuth2.scope = urlParams.scope || this.oAuth2.scope;
             let authCode = urlParams.code;
             if (authCode) {
               resolve(authCode);

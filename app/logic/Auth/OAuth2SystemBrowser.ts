@@ -27,12 +27,13 @@ export class OAuth2SystemBrowser extends OAuth2UI {
     await appGlobal.remoteApp.shell.openExternal(url);
     // TODO error page and parse error
     return new Promise((resolve, reject) => {
-      server.get("/login-success", (url: URLString) => {
+      server.get("/login-success", (urlPath: URLString) => {
         try {
           // console.log("OAuth2: Login finished", url);
           clearTimeout(killTimeout);
           server.close();
-          let urlParams = Object.fromEntries(new URL(url).searchParams);
+          let urlParams = Object.fromEntries(new URL("http://d" + urlPath).searchParams);
+          this.oAuth2.scope = urlParams.scope || this.oAuth2.scope;
           let authCode = urlParams.code;
           if (authCode) {
             resolve(authCode);

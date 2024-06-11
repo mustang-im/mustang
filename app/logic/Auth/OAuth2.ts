@@ -174,6 +174,7 @@ export class OAuth2 {
   protected async getAccessTokenFromParams(params: any, additionalHeaders?: any, tokenURL: string | void = this.tokenURL): Promise<string> {
     params.scope = this.scope;
     params.client_id = this.clientID;
+    params.client_secret = this.clientSecret || undefined;
 
     let response = await appGlobal.remoteApp.postHTTP(tokenURL, params, "json", {
       headers: {
