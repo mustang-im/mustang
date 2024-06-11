@@ -1,6 +1,8 @@
 import { AuthMethod, MailAccount, TLSSocketType, type ConfigSource } from "../MailAccount";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import type { SMTPAccount } from "../SMTP/SMTPAccount";
+import { OAuth2 } from "../../Auth/OAuth2";
+import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import JXON from "../../../../lib/util/JXON";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
@@ -26,7 +28,7 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string, s
   // Incoming server
   for (let iX of ensureArray(xml.$incomingServer)) {
     try {
-      configs.push(readServer(iX, displayName, source));
+      configs.push(readServer(iX, displayName, xml, source));
     } catch (ex) {
       firstError = ex;
     }
@@ -39,7 +41,7 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string, s
   // Outgoing server
   for (let oX of ensureArray(xml.$outgoingServer)) {
     try {
-      outgoingConfigs.push(readServer(oX, displayName, source) as SMTPAccount);
+      outgoingConfigs.push(readServer(oX, displayName, xml, source) as SMTPAccount);
     } catch (ex) {
       firstError = ex;
     }
@@ -60,7 +62,7 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string, s
 /**
  * @param {JXON} xml <incomingServer> or <outgoingServer>
  */
-function readServer(xml: any, displayName: string, source: ConfigSource): MailAccount {
+function readServer(xml: any, displayName: string, fullXML: any, source: ConfigSource): MailAccount {
   let protocol = sanitize.enum(xml["@type"], ["pop3", "imap", "jmap", "smtp", "exchange"], null);
   assert(protocol, `Need type for <incomingServer> in autoconfig XML for ${displayName}`);
 
@@ -95,17 +97,59 @@ function readServer(xml: any, displayName: string, source: ConfigSource): MailAc
   }, null)).find(v => v !== null);
   assert(account.tls, "No supported <socketType> in autoconfig");
 
-  // Take first supported auth method
-  account.authMethod = ensureArray(xml.$authentication).map(auth => sanitize.translate(auth, {
+  let authMethods = ensureArray(xml.$authentication).map(auth => sanitize.translate(auth, {
     "password-cleartext": AuthMethod.Password,
     "OAuth2": AuthMethod.OAuth2,
     "password-encrypted": AuthMethod.CRAMMD5,
     "GSSAPI": AuthMethod.GSSAPI,
     "NTLM": AuthMethod.NTLM,
-  }, null)).find(v => v !== null);
+  }, null)).filter(v => v !== null);
+  // Take first supported auth method
+  for (let authMethod of authMethods) {
+    try {
+      account.authMethod = authMethod;
+      getOAuth2Config(account, fullXML);
+      break; // success -> use this auth method
+    } catch (ex) {
+      console.log(account.name + ":", ex?.message ?? ex + "");
+      // try next
+    }
+  }
   assert(account.authMethod, `No supported <authentication> method in autoconfig XML for ${displayName}\n\nGot authentication methods ${JSON.stringify(xml.$authentication, null, 2)}`);
+
   account.source = source;
   return account;
+}
+
+function getOAuth2Config(account: MailAccount, autoConfigXML: any): OAuth2 {
+  if (![AuthMethod.OAuth2].includes(account.authMethod)) {
+    return;
+  }
+  let oAuth2: OAuth2;
+  // try built-in
+  let builtin = OAuth2URLs.find(a => a.hostnames.includes(account.hostname));
+  if (builtin) {
+    oAuth2 = new OAuth2(builtin.tokenURL, builtin.authURL, builtin.authDoneURL, builtin.scope, builtin.clientID, builtin.clientSecret);
+    oAuth2.setTokenURLPasswordAuth(builtin.tokenURLPasswordAuth);
+  } else {
+    try {
+      let xml = autoConfigXML.oAuth2;
+      oAuth2 = new OAuth2(
+        sanitize.url(xml.tokenURL),
+        sanitize.url(xml.authURL),
+        sanitize.url(xml.authDoneURL, null),
+        sanitize.nonemptystring(xml.scope),
+        sanitize.nonemptystring(xml.clientID, "mail"),
+        sanitize.nonemptystring(xml.clientSecret, null),
+      );
+    } catch (ex) {
+      console.error(ex);
+    }
+  }
+  assert(oAuth2, "No suitable OAuth2 config found, neither in AutoConfig XML, nor built-in");
+  oAuth2.setPassword(account.password);
+  oAuth2.username = account.username ?? account.emailAddress;
+  account.oAuth2 = oAuth2;
 }
 
 function ensureArray(value) {

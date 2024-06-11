@@ -1,11 +1,10 @@
-import { MailAccount, TLSSocketType } from "../MailAccount";
+import { MailAccount, TLSSocketType, AuthMethod } from "../MailAccount";
 import { IMAPFolder } from "./IMAPFolder";
 import { appGlobal } from "../../app";
 import { SQLMailAccount } from "../SQL/SQLMailAccount";
 import { SQLFolder } from "../SQL/SQLFolder";
 import type { EMail } from "../EMail";
 import { SpecialFolder } from "../Folder";
-import { SMTPAccount } from "../SMTP/SMTPAccount";
 import { assert } from "../../util/util";
 import type { ArrayColl, Collection } from "svelte-collections";
 import type { ImapFlow } from "../../../../e2/node_modules/imapflow";
@@ -25,7 +24,7 @@ export class IMAPAccount extends MailAccount {
 
   get isLoggedIn(): boolean {
     // return !!this._connection?.authenticated; TODO authenticated is always false
-    return !!this._connection;
+    return !!this._connection || this.oAuth2?.isLoggedIn;
   }
 
   async login(interactive: boolean): Promise<void> {
@@ -34,19 +33,38 @@ export class IMAPAccount extends MailAccount {
     }
     await SQLFolder.readAllHierarchy(this);
 
-    await this.connection();
+    await this.connection(interactive);
     await this.listFolders();
   }
 
   async verifyLogin(): Promise<void> {
-    await this.connection();
+    await this.connection(true);
     await this.logout();
   }
 
-  async connection(): Promise<ImapFlow> {
+  async connection(interactive = false): Promise<ImapFlow> {
     if (this._connection) {
       return this._connection;
     }
+
+    // Auth method
+    let usePassword = [
+      AuthMethod.Password,
+      AuthMethod.GSSAPI,
+      AuthMethod.NTLM,
+      AuthMethod.Unknown,
+    ].includes(this.authMethod);
+    let useOAuth2 = [
+      AuthMethod.OAuth2,
+    ].includes(this.authMethod);
+    if (useOAuth2) {
+      assert(this.oAuth2, `${this.name}: need OAuth2 configuration`);
+      if (!this.oAuth2.isLoggedIn) {
+        await this.oAuth2.login(interactive);
+      }
+      assert(this.oAuth2.accessToken, `${this.name}: OAuth2 login failed`);
+    }
+
     // <https://imapflow.com/module-imapflow-ImapFlow.html>
     let options = {
       host: this.hostname,
@@ -54,8 +72,8 @@ export class IMAPAccount extends MailAccount {
       secure: this.tls == TLSSocketType.TLS,
       auth: {
         user: this.username,
-        pass: this.password,
-        // accessToken: ...
+        pass: usePassword ? this.password : undefined,
+        accessToken: this.oAuth2 ? this.oAuth2.accessToken : null,
       },
       clientInfo: useragent,
       tls: {
@@ -68,13 +86,12 @@ export class IMAPAccount extends MailAccount {
       socketTimeout: 30 * 60 * 1000, // 30 min of inactivity
       logger: false,
     }
-    this._connection = await appGlobal.remoteApp.createIMAPFlowConnection(options);
-    assert(this._connection, `Connection is null\n${this.hostname} IMAP server`);
+    let connection = await appGlobal.remoteApp.createIMAPFlowConnection(options);
+    assert(connection, `Connection is null\n${this.hostname} IMAP server`);
 
     try {
-      await this._connection.connect();
+      await connection.connect();
     } catch (ex) {
-      this._connection = null;
       if (ex.responseText) {
         ex.message = ex.responseText;
       }
@@ -92,6 +109,7 @@ export class IMAPAccount extends MailAccount {
         throw ex;
       }
     }
+    this._connection = connection;
     this.attachListeners(this._connection);
     return this._connection;
   }

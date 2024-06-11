@@ -11,6 +11,7 @@
 export const OAuth2URLs = [
   {
     domains: ["outlook.com", "outlook.office365.com", ],
+    hostnames: ["outlook.office365.com"],
     authURL: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
     authDoneURL: "https://login.microsoftonline.com/common/oauth2/nativeclient",
     tokenURL: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
@@ -22,10 +23,11 @@ export const OAuth2URLs = [
   },
   {
     domains: ["google.com", "gmail.com", "googlemail.com" ],
+    hostnames: ["imap.gmail.com", "smtp.gmail.com", "pop.gmail.com"],
     authURL: "https://accounts.google.com/o/oauth2/auth",
     tokenURL: "https://accounts.google.com/o/oauth2/token",
     logoutURL: "https://www.google.com/accounts/Logout?continue=https://appengine.google.com/_ah/logout?continue=http://localhost",
-    scope: "https://mail.google.com/ https://www.googleapis.com/auth/carddav https://www.googleapis.com/auth/calendar",
+    scope: "https://mail.google.com/ https://www.googleapis.com/auth/carddav https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/contacts",
     clientID: "592666826535-3ba3dp3eghj978d2r6nojihk699h9b4n.apps.googleusercontent.com",
     clientSecret: "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",
   },

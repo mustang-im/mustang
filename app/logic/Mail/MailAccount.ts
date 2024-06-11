@@ -3,6 +3,7 @@ import { MailIdentity } from "./MailIdentity";
 import { Folder, SpecialFolder } from "./Folder";
 import type { EMail } from "./EMail";
 import type { Person } from "../Abstract/Person";
+import { OAuth2 } from "../Auth/OAuth2";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { AbstractFunction, assert } from "../util/util";
@@ -19,6 +20,8 @@ export class MailAccount extends Account {
   tls = TLSSocketType.Unknown;
   @notifyChangedProperty
   authMethod = AuthMethod.Unknown;
+  @notifyChangedProperty
+  oAuth2: OAuth2 = null;
   /** SMTP server
    * Only set for IMAP and POP3. null for JMAP, Exchange etc. */
   @notifyChangedProperty
@@ -103,10 +106,16 @@ export class MailAccount extends Account {
     this.identities.clear();
     this.identities.addAll(sanitize.array(config.identities, []).map(json =>
       MailIdentity.fromConfigJSON(json, this)));
+    if (config.oAuth2) {
+      this.oAuth2 = OAuth2.fromConfigJSON(config.oAuth2);
+      this.oAuth2.setPassword(this.password);
+      this.oAuth2.username = this.username ?? this.emailAddress;
+    }
   }
   toConfigJSON(): any {
     return {
       identities: this.identities.contents.map(id => id.toConfigJSON()),
+      oAuth2: this.oAuth2 ? this.oAuth2.toConfigJSON() : undefined,
     };
   }
 

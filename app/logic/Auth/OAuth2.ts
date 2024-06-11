@@ -1,7 +1,8 @@
 import { newOAuth2UI, OAuth2UIMethod } from "./OAuth2UIMethod";
 import { OAuth2Error, OAuth2LoginNeeded, OAuth2ServerError } from "./OAuth2Error";
-import { assert, type URLString } from "../util/util";
 import { appGlobal } from "../app";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+import { assert, type URLString } from "../util/util";
 
 /**
  * Implements login via OAuth2
@@ -53,8 +54,8 @@ export class OAuth2 {
   }
 
   setTokenURLPasswordAuth(url: string) {
-    assert(url?.startsWith("https://") || url?.startsWith("http://"), "Malformed OAuth2 server token URL");
-    this.tokenURLPasswordAuth = url;
+    assert(!url || url?.startsWith("https://") || url?.startsWith("http://"), "Malformed OAuth2 server token URL for password: " + url);
+    this.tokenURLPasswordAuth = url || null;
   }
 
   setPassword(password: string) {
@@ -248,6 +249,35 @@ export class OAuth2 {
       clearTimeout(this.expiryTimout);
     }
     this.expiresAt = null;
+  }
+
+  static fromConfigJSON(json: any): OAuth2 {
+    let o = new OAuth2(
+      sanitize.url(json.tokenURL),
+      sanitize.url(json.authURL),
+      sanitize.url(json.authDoneURL, null),
+      sanitize.nonemptystring(json.scope),
+      sanitize.nonemptystring(json.clientID, "mail"),
+      sanitize.nonemptystring(json.clientSecret, null),
+    );
+    o.uiMethod = sanitize.translate(json.uiMethod, {
+      "browser": OAuth2UIMethod.SystemBrowser,
+      "window": OAuth2UIMethod.Window,
+      "dialog": OAuth2UIMethod.Dialog,
+    }, o.uiMethod);
+    // You have to set username and password in caller
+    return o;
+  }
+  toConfigJSON(): any {
+    return {
+      tokenURL: this.tokenURL,
+      authURL: this.authURL,
+      authDoneURL: this.authDoneURL,
+      scope: this.scope,
+      clientID: this.clientID,
+      clientSecret: this.clientSecret,
+      uiMethod: this.uiMethod,
+    };
   }
 
   /**
