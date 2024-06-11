@@ -37,12 +37,13 @@ export class SQLEMail {
           messageID, folderID, pID, parentMsgID,
           size, dateSent, dateReceived,
           outgoing,
-          subject, plaintext, html
+          subject, plaintext, html, method, ics
         ) VALUES (
           ${email.id}, ${email.folder.dbID}, ${email.pID}, ${email.inReplyTo},
           ${email.size}, ${email.sent.getTime() / 1000}, ${email.received.getTime() / 1000},
           ${email.outgoing ? 1 : 0},
-          ${email.subject}, ${email.rawText}, ${email.rawHTMLDangerous}
+          ${email.subject}, ${email.rawText}, ${email.rawHTMLDangerous},
+          ${email.method}, ${email.ics}
         )`);
       // -- contactEmail, contactName, myEmail
       email.dbID = insert.lastInsertRowid;
@@ -59,7 +60,9 @@ export class SQLEMail {
           outgoing = ${email.outgoing ? 1 : 0},
           subject = ${email.subject},
           plaintext = ${email.rawText},
-          html = ${email.rawHTMLDangerous}
+          html = ${email.rawHTMLDangerous},
+          method = ${email.method},
+          ics = ${email.ics}
         WHERE id = ${email.dbID}
       `);
     }
@@ -198,7 +201,7 @@ export class SQLEMail {
         pID, messageID, parentMsgID,
         size, dateSent, dateReceived,
         outgoing,
-        subject, plaintext, html,
+        subject, plaintext, html, method, ics,
         threadID, downloadComplete,
         isRead, isStarred, isReplied, isDraft, isSpam
       FROM email
@@ -225,6 +228,8 @@ export class SQLEMail {
         email.html = html;
       }
     }
+    email.method = sanitize.string(row.method, null);
+    email.ics = sanitize.string(row.ics, null);
     this.readWritableProps(email, row);
     await this.readRecipients(email, recipientRows);
     await this.readAttachments(email, attachmentRows);

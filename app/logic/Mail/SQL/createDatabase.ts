@@ -70,6 +70,10 @@ export const mailDatabaseSchema = sql`
     "plaintext" TEXT default null,
     -- HTML content of the email body. May be converted or post-processed.
     "html" TEXT default null,
+    -- Invitation type, typically REQUEST
+    "method" TEXT default null,
+    -- Invitation calendar data
+    "ics" TEXT default null,
     "isRead" BOOLEAN default false,
     "isStarred" BOOLEAN default false,
     "isReplied" BOOLEAN default false,

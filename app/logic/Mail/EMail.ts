@@ -16,6 +16,10 @@ import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { notifyChangedProperty } from "../util/Observable";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
+import ical from "ical/ical";
+
+// https://www.rfc-editor.org/rfc/rfc5546.html#page-8
+export type iTIPMethod = "PUBLISH" | "REQUEST" | "REPLY" | "ADD" | "CANCEL" | "REFRESH" | "COUNTER" | "DECLINECOUNTER";
 
 export class EMail extends Message {
   @notifyChangedProperty
@@ -36,6 +40,13 @@ export class EMail extends Message {
    * The last entry should theoretically match `inReplyTo`. */
   @notifyChangedProperty
   references: string[] | null = null;
+
+  /* The iTIP method */
+  @notifyChangedProperty
+  method: iTIPMethod | null = null;
+  /* Content of any text/calendar alternative */
+  @notifyChangedProperty
+  ics: string | null = null;
 
   /** This is a Junk message */
   @notifyChangedProperty
@@ -88,6 +99,10 @@ export class EMail extends Message {
     return this.subject.replace(/^((Re|RE|AW|Aw): ?)+/g, "");
   }
 
+  get event(): any | null {
+    return this.ics && ical.parseICS(this.ics);
+  }
+
   /** Marks as spam, and deletes or moves the message, as configured */
   async treatSpam(spam = true) {
     await this.markSpam(spam);
@@ -128,7 +143,9 @@ export class EMail extends Message {
     assert(this.mime?.length, "MIME source not yet downloaded");
     assert(this.mime instanceof Uint8Array, "MIME source should be a byte array");
     //console.log("MIME source", this.mime, new TextDecoder("utf-8").decode(this.mime));
-    let mail = await new PostalMIME().parse(this.mime);
+    // We need access to internal PostalMIME data.
+    let postalMIME: any = new PostalMIME();
+    let mail = await postalMIME.parse(this.mime);
 
     // Headers
     /** TODO header.key returns Uint8Array
@@ -169,6 +186,10 @@ export class EMail extends Message {
     let html = sanitize.string(mail.html, null);
     if (html) {
       this.html = html;
+    }
+    if (postalMIME.textContent.calendar) {
+      this.method = iTIPMethod(postalMIME.root);
+      this.ics = postalMIME.textContent.calendar;
     }
     this.needToLoadBody = false;
     this.haveCID = false;
@@ -511,6 +532,22 @@ async function addCID(html: string, email: EMail): Promise<string> {
     backgroundError(ex);
   }
   return html;
+}
+
+
+/* Find the iTIP method from a PostalMime node */
+function iTIPMethod(node): string | null {
+  if (node.contentType.parsed.value == "text/calendar" &&
+      node.contentDisposition.parsed.value != "attachment") {
+    return node.contentType.parsed.params.method || null;
+  }
+  for (let child of node.childNodes) {
+    let method = iTIPMethod(child);
+    if (method) {
+      return method;
+    }
+  }
+  return null;
 }
 
 
