@@ -51,7 +51,7 @@ export class OAuth2 {
     this.account = account;
     this.tokenURL = tokenURL;
     this.authURL = authURL;
-    this.authDoneURL = authDoneURL;
+    this.authDoneURL = authDoneURL ?? this.authDoneURL;
     this.scope = scope;
     this.clientID = clientID;
     this.clientSecret = clientSecret ?? null;
@@ -240,7 +240,7 @@ export class OAuth2 {
   }
 
   /** Helper for auth Done URL */
-  isDoneURL(url: URLString): boolean {
+  isAuthDoneURL(url: URLString): boolean {
     let urlParams = Object.fromEntries(new URL(url).searchParams);
     return url.startsWith(this.authDoneURL) &&
       this.verificationToken && urlParams.state == this.verificationToken;
@@ -248,7 +248,7 @@ export class OAuth2 {
 
   /**
    * Helper for auth Done URL
-   * @param url The done URL @see isDoneURL()
+   * @param url The done URL @see isAuthDoneURL()
    * @returns authCode
    * @throws OAuth2ServerError
    */

@@ -12,8 +12,7 @@ export class OAuth2Window extends OAuth2UI {
    * @throws OAuth2Error
    */
   async login(): Promise<string> {
-    let doneURL = `http://localhost/login-success`;
-    let url = this.oAuth2.getAuthURL(doneURL);
+    let url = this.oAuth2.getAuthURL();
     let popup = window.open(url, "_blank", "center,oauth2popup") as Window;
     assert(popup, "Failed to open OAuth2 window");
     return await new Promise((resolve, reject) => {
@@ -21,7 +20,7 @@ export class OAuth2Window extends OAuth2UI {
       let weClosed = false;
       let handleNavigation = (event, url: URLString) => {
         try {
-          if (this.oAuth2.isDoneURL(url)) {
+          if (this.oAuth2.isAuthDoneURL(url)) {
             ipcRenderer.removeListener('oauth2-navigate', handleNavigation);
             ipcRenderer.removeListener('oauth2-close', handleClose);
             weClosed = true;

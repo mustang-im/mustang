@@ -20,6 +20,7 @@ export class OAuth2Dialog extends OAuth2UI {
    */
   async login(): Promise<string> {
     this.startURL = this.oAuth2.getAuthURL();
+    // console.log("OAuth2 start url", dialog.startURL);
     oAuth2DialogOpen.add(this);
     return new Promise((resolve, reject) => {
       this.doneFunc = resolve;
@@ -27,7 +28,8 @@ export class OAuth2Dialog extends OAuth2UI {
     });
   }
   urlChange(url: URLString) {
-    if (this.oAuth2.isDoneURL(url) && this.doneFunc) {
+    // console.log("OAuth2 page change to", url);
+    if (this.oAuth2.isAuthDoneURL(url) && this.doneFunc) {
       try {
         this.doneFunc(this.oAuth2.getAuthCodeFromDoneURL(url));
         oAuth2DialogOpen.remove(this);
