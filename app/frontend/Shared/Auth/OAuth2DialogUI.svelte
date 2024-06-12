@@ -3,6 +3,7 @@
   url={dialog.startURL}
   on:page-change={onPageChange}
   on:close={onClose}
+  {sessionSaveID}
   />
 
 <script lang="ts">
@@ -13,7 +14,7 @@
 
   export let dialog: OAuth2Dialog;
 
-  $: account = dialog.oAuth2.account;
+  let sessionSaveID = "login:" + dialog.oAuth2.account?.id;
 
   async function onPageChange(event: CustomEvent<URLString>) {
     let url = event.detail;

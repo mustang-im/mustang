@@ -12,7 +12,7 @@
   </hbox>
 </hbox>
 
-<webview bind:this={webviewE} src={url} {title} />
+<webview bind:this={webviewE} src={url} {title} {partition} />
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
@@ -30,6 +30,9 @@
   export let url = "";
   /** Tooltip when hovering */
   export let title: string;
+  export let sessionSaveID: string;
+
+  $: partition = sessionSaveID ? "persist:" + sessionSaveID : undefined;
 
   function getDomain(url: URLString) {
     if (!url) {
