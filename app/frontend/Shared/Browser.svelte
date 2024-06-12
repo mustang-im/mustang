@@ -3,6 +3,11 @@
     {getDomain(webviewE?.src ?? " original" + url)}
   </hbox>
   <hbox class="buttons right">
+    <hbox class="loading">
+      {#if isLoading}
+        <Loader size="sm" />
+      {/if}
+    </hbox>
     <RoundButton
       label="Close"
       icon={CloseIcon}
@@ -20,6 +25,7 @@
   import CloseIcon from "lucide-svelte/icons/x";
   import { getBaseDomainFromHost } from '../../logic/util/netUtil';
   import type { URLString } from '../../logic/util/util';
+  import { Loader } from '@svelteuidev/core';
   const dispatch = createEventDispatcher();
 
   /**
@@ -41,11 +47,19 @@
     return getBaseDomainFromHost(new URL(url).hostname);
   }
 
+  let isLoading = true;
+
   let webviewE: HTMLIFrameElement = null;
   $: webviewE && haveWebView();
   function haveWebView () {
     webviewE.addEventListener("dom-ready", () => {
       dispatch("page-change", webviewE.src);
+    });
+    webviewE.addEventListener("did-start-loading", () => {
+      isLoading = true;
+    });
+    webviewE.addEventListener("did-stop-loading", () => {
+      isLoading = false;
     });
   }
 
@@ -73,8 +87,14 @@
     padding: 2px 12px;
   }
   .buttons {
-    align-items: start;
-    justify-content: end;
+    align-items: center;
+    justify-content: center;
     margin: 2px;
+  }
+  .buttons :global(> *) {
+    margin-left: 6px;
+  }
+  .loading {
+    width: 24px;
   }
 </style>
