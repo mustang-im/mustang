@@ -1,5 +1,6 @@
 import { newOAuth2UI, OAuth2UIMethod } from "./OAuth2UIMethod";
 import { OAuth2Error, OAuth2LoginNeeded, OAuth2ServerError } from "./OAuth2Error";
+import type { Account } from "../Abstract/Account";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { assert, type URLString } from "../util/util";
@@ -20,6 +21,7 @@ import { assert, type URLString } from "../util/util";
  * the token will continue to be refreshed.
  */
 export class OAuth2 {
+  account: Account;
   /** OAuth2 base URL */
   tokenURL: URLString;
   tokenURLPasswordAuth?: URLString;
@@ -41,11 +43,12 @@ export class OAuth2 {
   protected expiryTimout: NodeJS.Timeout;
   refreshErrorCallback = (ex: Error) => console.error(ex);
 
-  constructor(tokenURL: string, authURL: string, authDoneURL: string | null, scope: string, clientID: string, clientSecret?: string) {
+  constructor(account: Account, tokenURL: string, authURL: string, authDoneURL: string | null, scope: string, clientID: string, clientSecret?: string) {
     assert(tokenURL?.startsWith("https://") || tokenURL?.startsWith("http://"), "Need OAuth2 server token URL");
     assert(authURL?.startsWith("https://") || authURL?.startsWith("http://"), "Need OAuth2 login page URL");
     assert(!authDoneURL || authDoneURL?.startsWith("https://") || authDoneURL?.startsWith("http://"), "Need OAuth2 login finish URL");
     assert(scope, "Need OAuth2 scope");
+    this.account = account;
     this.tokenURL = tokenURL;
     this.authURL = authURL;
     this.authDoneURL = authDoneURL;
@@ -286,8 +289,9 @@ export class OAuth2 {
     this.expiresAt = null;
   }
 
-  static fromConfigJSON(json: any): OAuth2 {
+  static fromConfigJSON(json: any, account: Account): OAuth2 {
     let o = new OAuth2(
+      account,
       sanitize.url(json.tokenURL),
       sanitize.url(json.authURL),
       sanitize.url(json.authDoneURL, null),

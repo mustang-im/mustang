@@ -30,7 +30,7 @@ export class M3Account extends MeetAccount {
     }
     const kScope = "openid phone profile email";
     const kClientID = "mustang"; // Configured in KeyCloak <https://accounts.mustang.im/auth/admin/master/console/#/mustang/clients/>
-    this.oauth2 = new OAuth2(this.oauthBaseURL + "/token", this.oauthBaseURL + "/authorize", null, kScope, kClientID);
+    this.oauth2 = new OAuth2(this, this.oauthBaseURL + "/token", this.oauthBaseURL + "/authorize", null, kScope, kClientID);
     await this.oauth2.loginWithPassword(this.username, this.password);
   }
 }

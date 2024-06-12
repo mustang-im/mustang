@@ -107,7 +107,7 @@ export class MailAccount extends Account {
     this.identities.addAll(sanitize.array(config.identities, []).map(json =>
       MailIdentity.fromConfigJSON(json, this)));
     if (config.oAuth2) {
-      this.oAuth2 = OAuth2.fromConfigJSON(config.oAuth2);
+      this.oAuth2 = OAuth2.fromConfigJSON(config.oAuth2, this);
       this.oAuth2.setPassword(this.password);
       this.oAuth2.username = this.username ?? this.emailAddress;
     }

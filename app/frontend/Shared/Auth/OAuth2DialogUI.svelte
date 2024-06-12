@@ -13,6 +13,8 @@
 
   export let dialog: OAuth2Dialog;
 
+  $: account = dialog.oAuth2.account;
+
   async function onPageChange(event: CustomEvent<URLString>) {
     let url = event.detail;
     dialog.urlChange(url);

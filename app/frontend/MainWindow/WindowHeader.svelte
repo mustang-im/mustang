@@ -3,7 +3,7 @@
     <Icon data={logo} size="20px" />
   </vbox>
   <hbox class="app-title">
-    {selectedApp?.name ?? "Mustang"}
+    {$titleStore ?? selectedApp?.name ?? "Mustang"}
   </hbox>
   <vbox flex class="free" />
   <SearchField bind:searchTerm={$globalSearchTerm} />
@@ -42,6 +42,8 @@
   function onCloseApp() {
     window.close();
   }
+
+  $: titleStore = selectedApp?.title;
 </script>
 
 <style>

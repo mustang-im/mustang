@@ -32,7 +32,7 @@ export class EWSAccount extends MailAccount {
   async login(interactive: boolean): Promise<void> {
     if (this.authMethod == AuthMethod.OAuth2) {
       let urls = OAuth2URLs.find(a => a.hostnames.includes(this.hostname));
-      this.oAuth2 = new OAuth2(urls.tokenURL, urls.authURL, urls.authDoneURL, urls.scope, urls.clientID, urls.clientSecret);
+      this.oAuth2 = new OAuth2(this, urls.tokenURL, urls.authURL, urls.authDoneURL, urls.scope, urls.clientID, urls.clientSecret);
       this.oAuth2.setTokenURLPasswordAuth(urls.tokenURLPasswordAuth);
       this.oAuth2.setPassword(this.password);
       this.oAuth2.username = this.username ?? this.emailAddress;

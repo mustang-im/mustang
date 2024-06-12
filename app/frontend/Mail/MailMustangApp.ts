@@ -17,17 +17,19 @@ export class MailMustangApp extends MustangApp {
   mainWindow = MailApp;
 
   writeMail(mail: EMail) {
-    let edit = new WriteMailMustangApp();
-    edit.title = derived(mail, () => mail.subject ?? edit.name);
-    edit.mainWindowProperties = {
+    let composerApp = new WriteMailMustangApp();
+    composerApp.title = derived(mail, () => mail.subject ?? composerApp.name);
+    composerApp.mainWindowProperties = {
       mail: mail,
     };
-    mailMustangApp.subApps.add(edit);
-    openApp(edit);
+    mailMustangApp.subApps.add(composerApp);
+    openApp(composerApp);
   }
 
   login(dialog: OAuth2Dialog): LoginDialogMustangApp {
     let loginApp = new LoginDialogMustangApp();
+    let account = dialog.oAuth2.account;
+    loginApp.title = derived(account, () => "Login to " + account.name);
     loginApp.mainWindowProperties = {
       dialog: dialog,
     };
@@ -56,16 +58,12 @@ export const mailMustangApp = new MailMustangApp();
 oAuth2DialogOpen.registerObserver({
   added(dialogs: OAuth2Dialog[]) {
     for (let dialog of dialogs) {
-      console.log("dialog added", dialog);
       dialog.mustangApp = mailMustangApp.login(dialog);
     }
   },
   removed(dialogs) {
     for (let dialog of dialogs) {
-      console.log("dialog removed", dialog);
-      console.log("  apps before remove", mailMustangApp.subApps.contents);
       mailMustangApp.subApps.remove(dialog.mustangApp);
-      console.log("  apps after remove", mailMustangApp.subApps.contents);
     }
   },
 });
