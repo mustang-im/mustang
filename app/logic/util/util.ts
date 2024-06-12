@@ -90,6 +90,16 @@ export class NotImplemented extends Error {
   }
 }
 
+export class UserError extends Error {
+  isUserError = true;
+}
+
+export class UserCancelled extends UserError {
+  constructor(msg?: string) {
+    super(msg ?? "Cancelled");
+  }
+}
+
 export class AbstractFunction extends Error {
   constructor() {
     super("Not yet implemented in the subclass");

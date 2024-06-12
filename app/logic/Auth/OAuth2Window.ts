@@ -1,6 +1,5 @@
 import { OAuth2UI } from "./OAuth2UI";
-import { OAuth2ServerError } from "./OAuth2Error";
-import { assert, type URLString } from "../util/util";
+import { UserCancelled, type URLString, assert } from "../util/util";
 
 /**
  * Opens a new window for OAuth2 login,
@@ -42,7 +41,7 @@ export class OAuth2Window extends OAuth2UI {
         ipcRenderer.removeListener('oauth2-navigate', handleNavigation);
         ipcRenderer.removeListener('oauth2-close', handleClose);
         if (!weClosed) {
-          reject(new Error("Authentication window was closed by user"));
+          reject(new UserCancelled("Authentication window was closed by user"));
         }
       }
       ipcRenderer.on('oauth2-navigate', handleNavigation);

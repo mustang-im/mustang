@@ -1,5 +1,4 @@
 import { OAuth2UI } from "./OAuth2UI";
-import { OAuth2Error, OAuth2ServerError } from "./OAuth2Error";
 import { appGlobal } from "../app";
 import type { URLString } from "../util/util";
 
