@@ -8,7 +8,7 @@
       status == Status.Done ? DoneIcon :
       status == Status.Login ? LoginIcon :
       DownloadIcon
-      }
+    }
     classes="small"
     iconSize="12px"
     padding="0px"
@@ -63,7 +63,7 @@
       showError(ex);
       status = Status.Error;
       await sleep(2);
-      status = Status.Done;
+      status = Status.Waiting;
     }
   }
 </script>
