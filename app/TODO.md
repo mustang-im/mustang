@@ -6,7 +6,6 @@
   * Selection
     * Default selection on start
   * OAuth2
-    * Gmail
     * In-app login
     * register with providers
   * Inline images send

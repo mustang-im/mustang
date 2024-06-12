@@ -85,10 +85,18 @@ export class OAuth2 {
     }
     let refreshToken = this.refreshToken ?? await this.getRefreshTokenFromStorage();
     if (refreshToken) {
-      return await this.getAccessTokenFromRefreshToken(refreshToken);
+      try {
+        return await this.getAccessTokenFromRefreshToken(refreshToken);
+      } catch (ex) {
+        console.error(ex);
+      }
     }
-    if (this.password) {
-      return await this.loginWithPassword(this.username, this.password);
+    if (this.password && this.tokenURLPasswordAuth) {
+      try {
+        return await this.loginWithPassword(this.username, this.password);
+      } catch (ex) {
+        console.error(ex);
+      }
     }
     if (!interactive) {
       throw new OAuth2LoginNeeded();
@@ -111,6 +119,7 @@ export class OAuth2 {
    */
   async loginWithPassword(username: string, password: string): Promise<string> {
     assert(username && password, "Need username and password");
+    assert(this.tokenURLPasswordAuth, "oAuth2 password login is not supported by this provider");
     // node.js: const basicAuth = Buffer.from(`${username}:${password}`).toString("base64");
     const basicAuth = btoa(`${username}:${password}`);
     let accessToken = this.getAccessTokenFromParams({
