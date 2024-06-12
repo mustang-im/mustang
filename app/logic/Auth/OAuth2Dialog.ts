@@ -1,17 +1,50 @@
 import { OAuth2UI } from "./OAuth2UI";
-import { NotImplemented, type URLString } from "../util/util";
+import type { LoginDialogMustangApp } from "../../frontend/Shared/Auth/AuthMustangApp";
+import type { URLString } from "../util/util";
+import { ArrayColl } from "svelte-collections";
 
 /**
  * Opens the OAuth2 login webpage in a dialog within the app main window,
  * monitors the URL changes, and returns the `authCode`.
  */
 export class OAuth2Dialog extends OAuth2UI {
+  startURL: URLString;
+  protected doneFunc: (authCode: string) => void;
+  protected failFunc: (ex: Error) => void;
+  mustangApp: LoginDialogMustangApp;
+
   /**
    * Does an interactive login
    * @returns authCode
    * @throws OAuth2Error
    */
   async login(): Promise<string> {
-    throw new NotImplemented();
+    this.startURL = this.oAuth2.getAuthURL();
+    oAuth2DialogOpen.add(this);
+    return new Promise((resolve, reject) => {
+      this.doneFunc = resolve;
+      this.failFunc = reject;
+    });
+  }
+  urlChange(url: URLString) {
+    if (this.oAuth2.isDoneURL(url) && this.doneFunc) {
+      try {
+        this.doneFunc(this.oAuth2.getAuthCodeFromDoneURL(url));
+        oAuth2DialogOpen.remove(this);
+      } catch (ex) {
+        this.failed(ex);
+      }
+    }
+  }
+  failed(ex: Error) {
+    if (!this.failFunc) {
+      return;
+    }
+    oAuth2DialogOpen.remove(this);
+    this.failFunc(ex);
+    this.failFunc = null;
+    this.doneFunc = null;
   }
 }
+
+export const oAuth2DialogOpen = new ArrayColl<OAuth2Dialog>();

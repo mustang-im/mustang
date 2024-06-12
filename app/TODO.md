@@ -6,8 +6,7 @@
   * Selection
     * Default selection on start
   * OAuth2
-    * In-app login
-    * register with providers
+    * Register with providers
   * Inline images send
   * Move messages to deep subfolders
   * Move messages to other accounts

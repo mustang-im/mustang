@@ -32,7 +32,7 @@ export class OAuth2 {
   protected refreshToken?: string;
   idToken: string;
   verificationToken: string; /** `state` URL param of authURL/doneURL */
-  uiMethod: OAuth2UIMethod = OAuth2UIMethod.Window;
+  uiMethod: OAuth2UIMethod = OAuth2UIMethod.Dialog;
 
   username: string;
   protected password: string;
