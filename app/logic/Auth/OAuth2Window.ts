@@ -17,29 +17,17 @@ export class OAuth2Window extends OAuth2UI {
     let url = this.oAuth2.getAuthURL(doneURL);
     let popup = window.open(url, "_blank", "center,oauth2popup") as Window;
     assert(popup, "Failed to open OAuth2 window");
-    let state = new URL(url).searchParams.get("state");
     return await new Promise((resolve, reject) => {
       let ipcRenderer = (window as any).electron.ipcRenderer; // TODO use JPC, or remove window
       let weClosed = false;
-      let handleNavigation = (event, urlStr: URLString) => {
+      let handleNavigation = (event, url: URLString) => {
         try {
-          console.log("OAuth2 window new page is Done URL", urlStr.startsWith(doneURL), urlStr);
-          let url = new URL(urlStr);
-          let urlParams = Object.fromEntries(url.searchParams);
-          url.hash = url.search = "";
-          if (url.href.startsWith(doneURL) && urlParams.state == state) {
-            console.log("  is Done");
+          if (this.oAuth2.isDoneURL(url)) {
             ipcRenderer.removeListener('oauth2-navigate', handleNavigation);
             ipcRenderer.removeListener('oauth2-close', handleClose);
             weClosed = true;
             popup.close();
-            this.oAuth2.scope = urlParams.scope || this.oAuth2.scope;
-            let authCode = urlParams.code;
-            if (authCode) {
-              resolve(authCode);
-            } else {
-              reject(new OAuth2ServerError(urlParams));
-            }
+            resolve(this.oAuth2.getAuthCodeFromDoneURL(url));
           }
         } catch (ex) {
           reject(ex);

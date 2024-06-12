@@ -26,11 +26,12 @@ export class OAuth2 {
   authURL: URLString;
   authDoneURL: URLString = "http://localhost:5455/login-success";
   scope: string;
-  clientID: string;
+  clientID = "mail";
   clientSecret: string | null = null;
   accessToken?: string;
   protected refreshToken?: string;
   idToken: string;
+  verificationToken: string; /** `state` URL param of authURL/doneURL */
   uiMethod: OAuth2UIMethod = OAuth2UIMethod.Window;
 
   username: string;
@@ -222,7 +223,7 @@ export class OAuth2 {
   }
 
   getAuthURL(doneURL?: URLString): URLString {
-    let state = Math.random().toString().slice(2);
+    this.verificationToken = Math.random().toString().slice(2);
     this.authDoneURL = doneURL ?? this.authDoneURL; // needed for getAccessTokenFromAuthCode()
     return this.authURL + "?" + new URLSearchParams({
       client_id: this.clientID,
@@ -230,9 +231,33 @@ export class OAuth2 {
       redirect_uri: doneURL ?? this.authDoneURL,
       response_mode: "query",
       scope: this.scope,
-      state: state,
+      state: this.verificationToken,
       login_hint: this.username,
     });
+  }
+
+  /** Helper for auth Done URL */
+  isDoneURL(url: URLString): boolean {
+    let urlParams = Object.fromEntries(new URL(url).searchParams);
+    return url.startsWith(this.authDoneURL) &&
+      this.verificationToken && urlParams.state == this.verificationToken;
+  }
+
+  /**
+   * Helper for auth Done URL
+   * @param url The done URL @see isDoneURL()
+   * @returns authCode
+   * @throws OAuth2ServerError
+   */
+  getAuthCodeFromDoneURL(url: URLString): string {
+    let urlParams = Object.fromEntries(new URL(url).searchParams);
+    this.scope = urlParams.scope || this.scope;
+    let authCode = urlParams.code;
+    if (authCode) {
+      return authCode;
+    } else {
+      throw new OAuth2ServerError(urlParams);
+    }
   }
 
   refreshInSeconds(seconds: number): void {

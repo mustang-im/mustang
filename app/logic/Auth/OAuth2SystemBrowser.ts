@@ -32,14 +32,8 @@ export class OAuth2SystemBrowser extends OAuth2UI {
           // console.log("OAuth2: Login finished", url);
           clearTimeout(killTimeout);
           server.close();
-          let urlParams = Object.fromEntries(new URL("http://d" + urlPath).searchParams);
-          this.oAuth2.scope = urlParams.scope || this.oAuth2.scope;
-          let authCode = urlParams.code;
-          if (authCode) {
-            resolve(authCode);
-          } else {
-            reject(new OAuth2ServerError(urlParams));
-          }
+          let url = "http://d" + urlPath;
+          resolve(this.oAuth2.getAuthCodeFromDoneURL(url));
         } catch (ex) {
           reject(ex);
         }
