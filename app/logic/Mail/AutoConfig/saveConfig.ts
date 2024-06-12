@@ -8,6 +8,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import { SetColl } from "svelte-collections";
 import { MailIdentity } from "../MailIdentity";
+import { backgroundError } from "../../../frontend/Util/error";
 
 export async function saveConfig(config: MailAccount, emailAddress: string, password: string): Promise<void> {
   fillConfig(config, emailAddress, password);
@@ -39,8 +40,12 @@ export function fillConfig(config: MailAccount, emailAddress: string, password: 
   config.username = config.username ? replaceVar(config.username, emailAddress) : emailAddress;
   config.hostname = replaceVar(config.hostname, emailAddress);
   config.name = config.name ? replaceVar(config.name, emailAddress) : emailAddress;
-  if (appGlobal.emailAccounts.find(acc => acc.name == config.name)) {
+
+  let existingAccount = appGlobal.emailAccounts.find(acc => acc.name == config.name);
+  if (existingAccount && !existingAccount.name.includes(emailAddress)) {
     config.name += " " + emailAddress;
+    existingAccount.name += " " + existingAccount.emailAddress;
+    existingAccount.save().catch(backgroundError);
   }
   if (config.outgoing) {
     if (config.outgoing.name == config.name) {

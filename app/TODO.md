@@ -170,7 +170,6 @@
   * Based on common names
   * Manually in settings - DONE
 * Tags
-* Plaintext: URLs
 
 ## Missing features
 * Filters / Actions
