@@ -8,7 +8,7 @@
       <hbox flex />
       <hbox class="buttons">
         {#if activeTab == 0}
-          <GetMailButton account={selectedAccount} />
+          <GetMailButton folder={selectedFolder ?? selectedAccount?.getSpecialFolder(SpecialFolder.Inbox)} />
         {/if}
         {#if activeTab == 0 || activeTab == 1}
           <WriteButton {selectedAccount} />
@@ -31,7 +31,7 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import type { Folder } from "../../../logic/Mail/Folder";
+  import { type Folder, SpecialFolder } from "../../../logic/Mail/Folder";
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { Person } from "../../../logic/Abstract/Person";
   import { selectedPerson } from "../../Shared/Person/Selected";

@@ -12,13 +12,13 @@
     classes="small"
     iconSize="12px"
     padding="0px"
-    disabled={!account || status != Status.Waiting}
+    disabled={!folder?.account || status != Status.Waiting}
     on:click={() => catchErrors(getMail)}
     />
 </hbox>
 
 <script lang="ts">
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import type { Folder } from "../../../logic/Mail/Folder";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import DownloadIcon from "lucide-svelte/icons/download";
   import FetchingIcon from "lucide-svelte/icons/arrow-big-down-dash";
@@ -27,11 +27,9 @@
   import LoginIcon from "lucide-svelte/icons/key-round";
   import ErrorIcon from "lucide-svelte/icons/server-crash";
   import { catchErrors, showError } from "../../Util/error";
-  import { selectedFolder } from "../Selected";
-  import { SpecialFolder } from "../../../logic/Mail/Folder";
   import { sleep } from "../../../logic/util/util";
 
-  export let account: MailAccount; /* in/out */
+  export let folder: Folder; /* in */
 
   enum Status {
     Waiting = "waiting",
@@ -48,11 +46,11 @@
       if (status != Status.Waiting) {
         return;
       }
+      let account = folder.account;
       if (!account.isLoggedIn) {
         status = Status.Login;
         await account.login(true);
       }
-      let folder = $selectedFolder ?? account.getSpecialFolder(SpecialFolder.Inbox);
       status = Status.Fetching;
       await folder.listMessages();
       await folder.downloadAllMessages();
