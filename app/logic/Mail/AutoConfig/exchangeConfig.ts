@@ -116,6 +116,7 @@ function readAutoDiscoverV1XML(xmlStr: string): ArrayColl<MailAccount> {
       console.error(ex); // Do not report to user nor error server
     }
   }
+  setSTMPServer(accounts);
   // emailAddress, username and password will be filled in by `fillConfig()` later
   assert(accounts.hasItems, "No applicable config found");
   return accounts;
@@ -148,6 +149,7 @@ function setSTMPServer(accounts: ArrayColl<MailAccount>) {
       acc.outgoing = smtp;
     }
   }
+  accounts.removeAll(smtpAccounts);
 }
 
 /** Implements the Exchange AutoDiscover V2 (JSON-based) protocol */
