@@ -6,10 +6,27 @@
   {/if}
 </grid>
 
+{#if config.oAuth2}
+  <OAuth2Manual {config} />
+{/if}
+
+<hbox flex />
+<hbox class="buttons">
+  <Button label="Save"
+    classes="save"
+    icon={SaveIcon}
+    onClick={onSave}
+    />
+  <slot name="buttons-bottom-right" />
+</hbox>
+
 <script lang="ts">
   import type { MailAccount } from "../../../../../logic/Mail/MailAccount";
+  import Button from "../../../../Shared/Button.svelte";
   import ManualConfigLabels from "./ManualConfigLabels.svelte";
   import ManualConfigServer from "./ManualConfigServer.svelte";
+  import OAuth2Manual from "./OAuth2Manual.svelte";
+  import SaveIcon from "lucide-svelte/icons/save";
 
   /** in */
   export let config: MailAccount;
@@ -18,6 +35,10 @@
   /** out only */
   export let incomingEl: ManualConfigServer = null;
   export let outgoingEl: ManualConfigServer = null;
+
+  async function onSave() {
+    await config.save();
+  }
 </script>
 
 <style>
@@ -54,5 +75,12 @@
   grid :global(> *) {
     padding-left: 16px;
     padding-right: 16px;
+  }
+  .buttons {
+    justify-content: end;
+    margin-top: 16px;
+  }
+  .buttons :global(button) {
+    margin-left: 8px;
   }
 </style>
