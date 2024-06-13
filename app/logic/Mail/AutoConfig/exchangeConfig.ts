@@ -251,12 +251,12 @@ async function fetchXML(url: URLString, params: any, abort: AbortController): Pr
   try {
     Object.assign(params, { result: "text", retry: 0 });
     if (params.username && params.password) {
-      if (!params.header) {
-        params.header = {};
+      if (!params.headers) {
+        params.headers = {};
       }
       let str = params.username + ":" + params.password;
       let utf8 = String.fromCharCode(...new TextEncoder().encode(str));
-      params.header.Authorization = "Basic " + btoa(utf8);
+      params.headers.Authorization = "Basic " + btoa(utf8);
     }
     let xmlStr = await makeAbortable(ky.post(url, params), abort);
     assert(xmlStr && typeof (xmlStr) == "string", "Did not receive text");
