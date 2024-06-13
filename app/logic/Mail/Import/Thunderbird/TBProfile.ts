@@ -38,14 +38,14 @@ export class ThunderbirdProfile {
     for (let accountID of accountIDs) {
       let account = this.readMailAccount(accountID);
       if (account) {
+        (account as any).tbID = accountID;
         accounts.push(account);
       }
     }
 
     // In case the account identity wasn't linked with an SMTP server,
     // associate them now, based on the username.
-    let smtpIDs = sanitize.string(this.prefs["mail.smtpservers"], null)?.split(",");
-    assert(smtpIDs && smtpIDs.length, "  No SMTP servers found for " + this.path);
+    let smtpIDs = sanitize.string(this.prefs["mail.smtpservers"], null)?.split(",") ?? [];
     for (let smtpID of smtpIDs) {
       let smtp = this.readSMTPServer(smtpID);
       if (!smtp) {
@@ -62,18 +62,17 @@ export class ThunderbirdProfile {
         }
       }
     }
-    accounts = accounts.filter(acc => acc?.outgoing || !(acc instanceof IMAPAccount || acc instanceof POP3Account));
+    accounts = accounts.filter(acc => !((acc instanceof IMAPAccount || acc instanceof POP3Account) && !acc.outgoing));
 
     // Make default account the first in the array
     let defaultAccountName = this.prefs["mail.accountmanager.defaultaccount"];
     if (defaultAccountName) {
-      let defaultAccount = accounts.find(acc => acc.id == "tb-" + defaultAccountName);
+      let defaultAccount = accounts.find(acc => (acc as any).tbID == defaultAccountName);
       if (defaultAccount) {
         arrayRemove(accounts, defaultAccount);
         accounts.unshift(defaultAccount);
       }
     }
-
     return accounts;
   }
 
@@ -81,41 +80,25 @@ export class ThunderbirdProfile {
     try {
       let prefBranch = `mail.account.${accountID}`;
       let serverID = this.prefs[`${prefBranch}.server`];
-      let protocol = sanitize.enum(this.prefs[`mail.server.${serverID}.type`], ["imap", "pop3", "owl", "owl-ews", "owl-eas", "exquilla"], null);
-      //console.log("  reading", accountID, "server", serverID, "protocol", protocol, "hostname", this.prefs[`mail.server.${serverID}.hostname`]);
-      if (!protocol || protocol == "none") {
+      let protocol = sanitize.translate(this.prefs[`mail.server.${serverID}.type`], {
+        "imap": "imap",
+        "pop3": "pop3",
+        "owl": "owa",
+        "owl-ews": "ews",
+        "owl-eas": "activesync",
+        "exquilla": "ews",
+      }, null);
+      if (!protocol) {
         return null;
-      } else if (protocol == "exquilla") {
-        protocol = "ews";
-      } else if (protocol == "owl") {
-        protocol = "owa";
-      } else if (protocol == "owl-ews") {
-        protocol = "ews";
-      } else if (protocol == "owl-eas") {
-        protocol = "activesync";
       }
+      //console.log("  reading", accountID, "server", serverID, "protocol", protocol, "hostname", this.prefs[`mail.server.${serverID}.hostname`]);
       let acc = newAccountForProtocol(protocol);
       acc.id = "tb-" + accountID + "-" + acc.id;
       this.readMailServer(serverID, acc);
 
-      let identityIDs = this.prefs[`${prefBranch}.identities`]?.split(",");
-      acc.identities.addAll(identityIDs.map(id => this.readMailIdentity(id, acc)));
-      assert(acc.identities.hasItems, "Identities missing for account " + accountID);
-      let mainIdentity = acc.identities.first;
-      acc.emailAddress = mainIdentity.emailAddress;
-      acc.userRealname = mainIdentity.userRealname;
-
-      if (acc.protocol == "ews" || acc.protocol == "owa" || acc.protocol == "eas") {
-        assert(acc.url, `${acc.name}: Need URL`);
-        let url = new URL(acc.url);
-        acc.hostname = url.hostname;
-        acc.port = 443;
-        acc.tls = TLSSocketType.TLS;
-      }
-
       if (acc.authMethod == AuthMethod.OAuth2) {
         let hostname = acc.hostname ?? "none";
-        if (acc.protocol == "ews" || acc.protocol == "owa" || acc.protocol == "eas") {
+        if (acc instanceof EWSAccount || acc instanceof OWAAccount || acc instanceof ActiveSyncAccount) {
           hostname = "outlook.office365.com";
         }
         let url = OAuth2URLs.find(url => url.hostnames.includes(hostname));
@@ -132,7 +115,14 @@ export class ThunderbirdProfile {
         acc.oAuth2.username = acc.username ?? acc.emailAddress;
       }
 
-      return acc;
+      let identityIDs = this.prefs[`${prefBranch}.identities`]?.split(",");
+      acc.identities.addAll(identityIDs.map(id => this.readMailIdentity(id, acc)));
+      assert(acc.identities.hasItems, "Identities missing for account " + accountID);
+      let mainIdentity = acc.identities.first;
+      acc.emailAddress = mainIdentity.emailAddress;
+      acc.userRealname = mainIdentity.userRealname;
+
+      return acc as any as MailAccount;
     } catch (ex) {
       console.error(ex); // TODO disable errors in production
       return null;
@@ -143,6 +133,7 @@ export class ThunderbirdProfile {
     let prefBranch = `mail.server.${serverID}`;
     acc.username = sanitize.string(this.prefs[`${prefBranch}.userName`]);
     acc.name = sanitize.label(this.prefs[`${prefBranch}.name`], acc.userRealname);
+
     if (acc instanceof EWSAccount) {
       // ewsURL from ExQuilla, and ews_url from Owl in EWS mode
       let ewsURLExQuilla = this.prefs[`${prefBranch}.ewsURL`];
@@ -159,6 +150,11 @@ export class ThunderbirdProfile {
     } else {
       throw new NotReached();
     }
+    if (acc instanceof EWSAccount || acc instanceof OWAAccount || acc instanceof ActiveSyncAccount) {
+      assert(acc.url, `${acc.name}: Need URL`);
+      acc.hostname = new URL(acc.url).hostname;
+    }
+
     acc.authMethod = ThunderbirdProfile.convertAuthMethod(this.prefs[`${prefBranch}.authMethod`]);
   }
 

@@ -14,7 +14,6 @@ export class EWSAccount extends MailAccount {
   readonly protocol: string = "ews";
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
-  oAuth2: OAuth2 | undefined;
 
   constructor() {
     super();

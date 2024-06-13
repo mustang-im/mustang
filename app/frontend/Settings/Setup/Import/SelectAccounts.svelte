@@ -35,6 +35,8 @@
 <script lang="ts">
   import { ThunderbirdProfile } from "../../../../logic/Mail/Import/Thunderbird/TBProfile";
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
+  import { IMAPAccount } from "../../../../logic/Mail/IMAP/IMAPAccount";
+  import { EWSAccount } from "../../../../logic/Mail/EWS/EWSAccount";
   import StatusMessage from "../Shared/StatusMessage.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Checkbox from "../../../Shared/Checkbox.svelte";
@@ -45,10 +47,7 @@
   export let accounts: MailAccount[] = [];
   export let onContinue = () => undefined;
 
-  $: console.log("accounts", accounts);
-
   async function startImport() {
-    console.log("scaning");
     let profiles = await ThunderbirdProfile.findProfiles();
     if (profiles.length) {
       for (let profile of profiles.filter(p => p.name && !p.name.includes("Test"))) {
@@ -62,15 +61,14 @@
     }
 
     // POP3, OWA, ActiveSync not yet supported
-    accounts = accounts.filter(acc => acc.protocol == "imap" || acc.protocol == "ews");
+    accounts = accounts.filter(acc => acc instanceof IMAPAccount || acc instanceof EWSAccount);
 
     for (let account of accounts) {
       (account as any).import = true;
     }
 
-    console.log("scan finished", accounts);
+    console.log("Imported accounts", accounts);
     if (!accounts.length) {
-      console.log("no accounts found");
       onContinue();
       return;
     }
