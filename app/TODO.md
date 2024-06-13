@@ -2,6 +2,10 @@
 * Mail
   * Setup
     * Autodiscover
+  * Import
+    * Polish UI
+    * Exchange: Import calendars and contacts
+    * "Create more accounts" screen
   * Selection
     * Default selection on start
   * OAuth2
