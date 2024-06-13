@@ -30,7 +30,10 @@
 
   <hbox class="spacer2" flex />
 
-  <WorkspaceSelector config={account} />
+  <vbox class="workspace">
+    <hbox class="header">Workspace</hbox>
+    <WorkspaceSelector config={account} horizontal={true} />
+  </vbox>
 {/if}
 
 <ButtonsBottom
@@ -148,5 +151,14 @@
   .spacer1,
   .spacer2 {
     min-height: 5vh;
+  }
+  .workspace {
+    margin-bottom: 32px;
+  }
+  .workspace .header {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 24px;
+    margin-bottom: 8px;
   }
 </style>

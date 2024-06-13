@@ -3,6 +3,7 @@
   <CheckIcon slot="icon"/>
 </StatusMessage>
 
+<hbox class="header">Select the workspace for {config.emailAddress}</hbox>
 <WorkspaceSelector {config} />
 
 <script lang="ts">
@@ -15,4 +16,10 @@
 </script>
 
 <style>
+  .header {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 24px;
+    margin-bottom: 8px;
+  }
 </style>

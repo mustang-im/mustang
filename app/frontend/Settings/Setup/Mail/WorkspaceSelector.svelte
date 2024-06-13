@@ -1,9 +1,8 @@
 <vbox class="workspace-selector">
-  <hbox class="header">Select the workspace for {config.emailAddress}</hbox>
   <hbox class="hint">Workspaces allow you organize yourself. You can change this at any time, by going to Settings in the title bar.</hbox>
 
   <vbox class="workspaces-box">
-    <vbox class="workspaces">
+    <vbox class="workspaces" class:horizontal>
       {#each workspaces as workspace}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <hbox class="workspace"
@@ -29,6 +28,7 @@
 
   export let config: MailAccount;
   export let selectedWorkspace: Workspace = config.workspace ?? workspaces[workspaces.length - 1];
+  export let horizontal = false;
 
   $: config.workspace = selectedWorkspace;
 
@@ -39,13 +39,6 @@
 </script>
 
 <style>
-  .workspace-selector {
-    margin-top: 24px;
-  }
-  .header {
-    font-size: 20px;
-    font-weight: bold;
-  }
   .hint {
     font-size: 12px;
   }
@@ -54,6 +47,10 @@
     align-items: center;
     margin-right: 32px;
     padding-top: 4px;
+  }
+  .workspaces.horizontal {
+    flex-direction: row;
+    flex-wrap: wrap;
   }
   .workspace {
     padding: 6px 20px 6px 12px;
