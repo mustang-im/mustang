@@ -2,41 +2,34 @@
   <slot />
   {#if showReset}
     <Button label="Start over" classes="secondary"
-      on:click={reset}
+      onClick={onReset}
+      {errorCallback}
       />
   {/if}
   {#if canCancel}
     <Button label="Cancel" classes="secondary"
-      on:click={onCancel}
+      onClick={onCancel}
+      {errorCallback}
       />
   {/if}
   <hbox flex />
   <Button label="Next" classes="filled large"
     disabled={!canContinue}
     onClick={onContinue}
+    {errorCallback}
     />
 </hbox>
 
 <script lang="ts">
   import Button from "../../../Shared/Button.svelte";
-  import { createEventDispatcher } from 'svelte';
-  const dispatch = createEventDispatcher();
 
+  export let onContinue = (event: Event) => undefined;
+  export let onCancel = (event: Event) => undefined;
+  export let onReset = (event: Event) => undefined;
   export let canContinue: boolean;
   export let canCancel = false;
   export let showReset = false;
-
-  function onContinue() {
-    dispatch("continue");
-  }
-
-  function onCancel() {
-    dispatch("cancel");
-  }
-
-  function reset() {
-    dispatch("reset");
-  }
+  export let errorCallback = (ex: Error) => undefined;
 </script>
 
 <style>

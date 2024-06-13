@@ -21,7 +21,7 @@
 {/await}
 <ButtonsBottom
   canContinue={!!accounts.length}
-  on:continue={() => catchErrors(onContinue)}
+  onContinue={onContinue}
   >
   <Button label="Skip" classes="secondary"
     onClick={onSkip}
@@ -37,11 +37,9 @@
   import Button from "../../../Shared/Button.svelte";
   import Header from "../Shared/Header.svelte";
   import Scroll from "../../../Shared/Scroll.svelte";
-  import { catchErrors } from "../../../Util/error";
-  import { createEventDispatcher } from 'svelte';
-  const dispatch = createEventDispatcher();
 
   export let accounts: MailAccount[] = [];
+  export let onContinue = () => undefined;
 
   $: console.log("accounts", accounts);
 
@@ -75,10 +73,6 @@
       (account as any).import = false;
     }
     onContinue();
-  }
-
-  function onContinue() {
-    dispatch("continue");
   }
 </script>
 

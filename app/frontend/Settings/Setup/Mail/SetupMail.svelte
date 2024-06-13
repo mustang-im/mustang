@@ -23,21 +23,22 @@
       <FinalizeConfig {config} />
     {/if}
     <ButtonsBottom {canContinue}
-      on:continue={() => catchErrors(onContinue, showError)}
-      on:reset={reset}
+      onContinue={onContinue}
+      errorCallback={showError}
+      onReset={reset}
       showReset={step != Step.EmailAddress}
       canCancel={true}
-      on:cancel={() => catchErrors(onClose)}
+      onCancel={onClose}
       >
       {#if step != Step.ManualConfig && step != Step.CheckConfig && step != Step.FinalizeConfig}
         <Button label="Manual setup" classes="secondary"
           disabled={!canContinue}
-          on:click={onManualSetup}
+          onClick={onManualSetup}
           />
       {/if}
       {#if step == Step.EmailAddress}
         <Button label="Get new email address" classes="secondary"
-          on:click={onNewEmailAddress}
+          onClick={onNewEmailAddress}
           />
       {/if}
     </ButtonsBottom>

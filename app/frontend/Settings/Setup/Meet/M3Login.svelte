@@ -13,10 +13,10 @@
 </vbox>
 
 <ButtonsBottom
-  on:continue={() => catchErrors(onContinue)}
+  onContinue={onContinue}
   canContinue={!!config.username && !!config.password}
   canCancel={true}
-  on:cancel
+  onCancel={onCancel}
   />
 
 <script lang="ts">
@@ -26,12 +26,12 @@
   import Password from "../Shared/Password.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
-  import { catchErrors } from "../../../Util/error";
 
   /** in/out */
   export let config: MeetAccount;
   /** out */
   export let showPage: ConstructorOfATypedSvelteComponent;
+  export let onCancel = (event: Event) => undefined;
 
   async function onContinue() {
     config.name = config.username;

@@ -31,7 +31,8 @@
 
 <ButtonsBottom
   canContinue={havePassword && !validating}
-  on:continue={() => catchErrors(validateAccount, showError)}
+  onContinue={validateAccount}
+  errorCallback={showError}
   >
   <Button label="Back" classes="secondary"
     onClick={previousAccount}
@@ -44,6 +45,7 @@
 <script lang="ts">
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
   import { checkConfig } from "../../../../logic/Mail/AutoConfig/checkConfig";
+  import { saveAndInitConfig } from "../../../../logic/Mail/AutoConfig/saveConfig";
   import WorkspaceSelector from "../Mail/WorkspaceSelector.svelte";
   import Header from "../Shared/Header.svelte";
   import StatusMessage from "../Shared/StatusMessage.svelte";
@@ -51,12 +53,10 @@
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Button from "../../../Shared/Button.svelte";
   import { Cancelled } from "../../../../logic/util/Abortable";
-  import { createEventDispatcher } from 'svelte';
-  import { catchErrors } from "../../../Util/error";
-  import { saveAndInitConfig } from "../../../../logic/Mail/AutoConfig/saveConfig";
-  const dispatch = createEventDispatcher();
 
   export let accounts: MailAccount[] = [];
+  export let onContinue = () => undefined;
+  export let onBack = () => undefined;
 
   let currentAccountIndex = 0;
   let account = accounts[0];
@@ -95,7 +95,7 @@
   function nextAccount() {
     account = accounts[++currentAccountIndex];
     if (currentAccountIndex >= accounts.length) {
-      dispatch("continue");
+      onContinue();
       return;
     }
     resetForAccount();
@@ -104,7 +104,7 @@
   function previousAccount() {
     account = accounts[--currentAccountIndex];
     if (currentAccountIndex < 0) {
-      dispatch("back");
+      onBack();
       return;
     }
     resetForAccount();

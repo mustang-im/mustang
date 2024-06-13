@@ -1,5 +1,5 @@
 {#if isImporting}
-  <Import on:cancel={onSkipImport}/>
+  <Import onContinue={onImportFinished} onCancel={onImportSkip} />
 {:else}
   <SetupMail />
 {/if}
@@ -10,7 +10,10 @@
 
   let isImporting = true;
 
-  function onSkipImport() {
+  function onImportSkip() {
+    isImporting = false;
+  }
+  function onImportFinished() {
     isImporting = false;
   }
 </script>

@@ -6,10 +6,10 @@
 <ProtocolSelector {protocols} bind:selectedProtocol={selectedProtocol} />
 
 <ButtonsBottom
-  on:continue={() => catchErrors(onContinue)}
+  onContinue={onContinue}
   canContinue={!!selectedProtocol}
   canCancel={true}
-  on:cancel
+  onCancel={onCancel}
   />
 
 <script lang="ts">
@@ -20,12 +20,12 @@
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
   import { NotReached } from "../../../../logic/util/util";
-  import { catchErrors } from "../../../Util/error";
 
   /** out */
   export let config: Addressbook = null;
   /** out */
   export let showPage: ConstructorOfATypedSvelteComponent;
+  export let onCancel = (event: Event) => undefined;
 
   let selectedProtocol: string;
 

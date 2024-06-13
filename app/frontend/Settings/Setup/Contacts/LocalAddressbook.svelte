@@ -11,10 +11,10 @@
 </vbox>
 
 <ButtonsBottom
-  on:continue={() => catchErrors(onContinue)}
+  onContinue={onContinue}
   canContinue={!!config.name}
   canCancel={true}
-  on:cancel
+  onCancel={onCancel}
   />
 
 <script lang="ts">
@@ -23,12 +23,12 @@
   import { appGlobal } from "../../../../logic/app";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
-  import { catchErrors } from "../../../Util/error";
 
   /** in/out */
   export let config: Addressbook;
   /** out */
   export let showPage: ConstructorOfATypedSvelteComponent;
+  export let onCancel = (event: Event) => undefined;
 
   async function onContinue() {
     await SQLAddressbook.save(config);

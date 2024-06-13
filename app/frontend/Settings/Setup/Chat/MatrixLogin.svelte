@@ -13,10 +13,10 @@
 </vbox>
 
 <ButtonsBottom
-  on:continue={() => catchErrors(onContinue)}
+  onContinue={onContinue}
   canContinue={!!config.username && !!config.baseURL}
   canCancel={true}
-  on:cancel
+  onCancel={onCancel}
   />
 
 <script lang="ts">
@@ -26,12 +26,12 @@
   import Password from "../Shared/Password.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
-  import { catchErrors } from "../../../Util/error";
 
   /** in/out */
   export let config: MatrixAccount;
   /** out */
   export let showPage: ConstructorOfATypedSvelteComponent;
+  export let onCancel = (event: Event) => undefined;
 
   let password: string;
   let userID: string;

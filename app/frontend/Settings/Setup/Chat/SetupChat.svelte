@@ -2,7 +2,7 @@
   <hbox flex />
   <vbox class="page-box">
     <svelte:component this={showPage} bind:showPage bind:config
-      on:cancel={() => catchErrors(onClose)}
+      onCancel={onClose}
       />
   </vbox>
   <hbox flex />
@@ -18,7 +18,6 @@
   import { chatMustangApp } from "../../../Chat/ChatMustangApp";
   import SelectProtocol from "./SelectProtocol.svelte";
   import BackgroundVideo from "../Shared/BackgroundVideo.svelte";
-  import { catchErrors } from "../../../Util/error";
 
   let config: ChatAccount;
   let showPage: ConstructorOfATypedSvelteComponent | null = SelectProtocol;

@@ -6,10 +6,10 @@
 <ProtocolSelector {protocols} bind:selectedProtocol={selectedProtocol} />
 
 <ButtonsBottom
-  on:continue={() => catchErrors(onContinue)}
+  onContinue={onContinue}
   canContinue={!!selectedProtocol}
   canCancel={true}
-  on:cancel
+  onCancel={onCancel}
   />
 
 <script lang="ts">
@@ -20,12 +20,12 @@
   import Header from "../Shared/Header.svelte";
   import XMPPLogin from "./XMPPLogin.svelte";
   import MatrixLogin from "./MatrixLogin.svelte";
-  import { catchErrors } from "../../../Util/error";
 
   /** out */
   export let config: ChatAccount = null;
   /** out */
   export let showPage: ConstructorOfATypedSvelteComponent;
+  export let onCancel = () => undefined;
 
   let selectedProtocol: string;
   /*$: onSelectProtocol(selectedProtocol);
@@ -45,10 +45,6 @@
     } else if (selectedProtocol == "matrix") {
       showPage = MatrixLogin;
     }
-  }
-
-  function onCancel() {
-    showPage = null;
   }
 </script>
 
