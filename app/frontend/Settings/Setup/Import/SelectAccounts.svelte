@@ -59,6 +59,10 @@
         }
       }
     }
+
+    // POP3, OWA, ActiveSync not yet supported
+    accounts = accounts.filter(acc => acc.protocol == "imap" || acc.protocol == "ews");
+
     for (let account of accounts) {
       (account as any).import = true;
     }
