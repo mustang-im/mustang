@@ -37,7 +37,7 @@
   import Splitter from "../Shared/Splitter.svelte";
   import MailInBackground from "../Mail/MailInBackground.svelte";
   import MeetBackground from "../Meet/MeetBackground.svelte";
-  import SetupMail from "../Settings/Setup/Mail/SetupMail.svelte";
+  import InitialSetup from "../Settings/Setup/InitialSetup.svelte";
   import { catchErrors, backgroundError } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { onMount } from "svelte";
@@ -64,7 +64,7 @@
 
   function setup() {
     let setupApp = new SetupMustangApp();
-    setupApp.mainWindow = SetupMail;
+    setupApp.mainWindow = InitialSetup;
     openApp(setupApp);
   }
 

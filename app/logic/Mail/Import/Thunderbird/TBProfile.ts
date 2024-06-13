@@ -1,17 +1,17 @@
 import { AuthMethod, MailAccount, TLSSocketType } from "../../MailAccount";
+import { MailIdentity } from "../../MailIdentity";
 import { SMTPAccount } from "../../SMTP/SMTPAccount";
-import { EWSAccount } from "../../EWS/EWSAccount";
 import { IMAPAccount } from "../../IMAP/IMAPAccount";
 import { POP3Account } from "../../POP3/POP3Account";
-import { MailIdentity } from "../../MailIdentity";
+import { EWSAccount } from "../../EWS/EWSAccount";
+import { OWAAccount } from "../../OWA/OWAAccount";
+import { ActiveSyncAccount } from "../../ActiveSync/ActiveSyncAccount";
 import { newAccountForProtocol } from "../../AccountsList/MailAccounts";
 import { kStandardPorts } from "../../AutoConfig/configInfo";
 import { appGlobal } from "../../../app";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { arrayRemove, assert, NotReached } from "../../../util/util";
 import { parse as parseINI } from 'ini';
-import { OWAAccount } from "../../OWA/OWAAccount";
-import { ActiveSyncAccount } from "../../ActiveSync/ActiveSyncAccount";
 
 /** Finds the list of Thunderbird profiles of the current OS user,
  * with the directory root path of the profile. */
@@ -316,8 +316,8 @@ export class ThunderbirdProfile {
     https://support.mozilla.org/de/kb/Benutzerprofile-Thunderbird#thunderbird:mac:tb115
     https://support.mozilla.org/de/kb/Benutzerprofile-Thunderbird#thunderbird:linux:tb115
     */
-    let homedir = await appGlobal.remoteApp.homedir();
-    let platform = await appGlobal.remoteApp.platform();
+    let homedir = await appGlobal.remoteApp.os.homedir();
+    let platform = await appGlobal.remoteApp.os.platform();
     let subdir =
       platform == "darwin" ? "Library/Thunderbird/Profiles" :
         platform == "win32" ? "Thunderbird/Profiles" :
