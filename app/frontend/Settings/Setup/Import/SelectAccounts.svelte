@@ -6,12 +6,16 @@
   <StatusMessage status="processing"
     message="Importing accounts..." />
 {:then}
-  Found {accounts.length} imported accounts
-  {#each accounts as account}
-    <hbox>
-      <Checkbox label={account.name} bind:checked={account.import} />
-    </hbox>
-  {/each}
+  <hbox class="found">Found {accounts.length} imported accounts</hbox>
+  <vbox class="accounts">
+    <Scroll>
+      {#each accounts as account}
+        <hbox>
+          <Checkbox label={account.name} bind:checked={account.import} />
+        </hbox>
+      {/each}
+    </Scroll>
+  </vbox>
 {:catch ex}
   {ex?.message ?? ex + ""}
 {/await}
@@ -30,10 +34,11 @@
   import StatusMessage from "../Shared/StatusMessage.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Checkbox from "../../../Shared/Checkbox.svelte";
-  import { catchErrors } from "../../../Util/error";
-  import { createEventDispatcher } from 'svelte';
   import Button from "../../../Shared/Button.svelte";
   import Header from "../Shared/Header.svelte";
+  import Scroll from "../../../Shared/Scroll.svelte";
+  import { catchErrors } from "../../../Util/error";
+  import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
 
   export let accounts: MailAccount[] = [];
@@ -78,4 +83,11 @@
 </script>
 
 <style>
+  .found {
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .accounts {
+    min-height: 30vh;
+  }
 </style>
