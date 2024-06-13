@@ -6,6 +6,7 @@
     * Default selection on start
   * OAuth2
     * Register with providers
+    * Popup dialog - for setup
   * Inline images send
   * Move messages to deep subfolders
     * Drag&Drop: Open on drag over
@@ -130,9 +131,6 @@
 * WhatsApp
 * Zoom
 
-# Apps
-* Need: App shell, for: iframe rights
-
 # Mail
 * Body
   * Link: Right-click menu, copy
@@ -230,11 +228,7 @@
 * Refactor IMAP orchestration?: Separate IMAP protocol folder object and IMAP orcestration folder object. The latter does folder cache, IMAP poll/refresh, offline cache etc.
 * JMAP
 
-# Login
-* OAuth2 UI
-
 # Setup
-* Read and save real name of user
 * Chat & Video conf
 * Combined: Mail, chat, fileshare, calendar, contacts with single login/setup
 
