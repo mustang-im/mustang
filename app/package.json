@@ -31,7 +31,6 @@
     "@xmpp-plugins/roster": "^1.2.0",
     "@xmpp/client": "^0.13.1",
     "axios": "^1.6.2",
-    "buffer": "^6.0.3",
     "dompurify": "^3.1.1",
     "html-to-text": "^9.0.5",
     "ini": "^4.1.2",
