@@ -14,7 +14,7 @@
     </hbox>
   {/if}
 
-  <hbox flex />
+  <hbox class="spacer1" flex />
 
   {#if validating}
     <StatusMessage status="processing"
@@ -24,7 +24,7 @@
     <ErrorMessage {errorMessage} errorGravity={ErrorGravity.Error} />
   {/if}
 
-  <hbox flex />
+  <hbox class="spacer2" flex />
 
   <WorkspaceSelector config={account} />
 {/if}
@@ -39,13 +39,6 @@
   <Button label="Skip" classes="secondary"
     onClick={nextAccount}
     />
-  <!--
-  <hbox class="loader">
-    {#if validating}
-      <Loader size="sm" />
-    {/if}
-  </hbox>
-  -->
 </ButtonsBottom>
 
 <script lang="ts">
@@ -58,15 +51,15 @@
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Button from "../../../Shared/Button.svelte";
   import { Cancelled } from "../../../../logic/util/Abortable";
-  import { Loader } from "@svelteuidev/core";
   import { createEventDispatcher } from 'svelte';
   import { catchErrors } from "../../../Util/error";
+  import { saveAndInitConfig } from "../../../../logic/Mail/AutoConfig/saveConfig";
   const dispatch = createEventDispatcher();
 
   export let accounts: MailAccount[] = [];
 
   let currentAccountIndex = 0;
-  $: account = accounts[currentAccountIndex];
+  let account = accounts[0];
   let password = "";
   let oAuth2Succeeded = false;
   $: havePassword = password || oAuth2Succeeded;
@@ -95,18 +88,22 @@
       validating = false;
     }
     validated = true;
+    await saveAndInitConfig(account, account.emailAddress, password);
     nextAccount();
   }
 
   function nextAccount() {
-    if (++currentAccountIndex >= accounts.length) {
+    account = accounts[++currentAccountIndex];
+    if (currentAccountIndex >= accounts.length) {
       dispatch("continue");
       return;
     }
     resetForAccount();
   }
+
   function previousAccount() {
-    if (--currentAccountIndex < 0) {
+    account = accounts[--currentAccountIndex];
+    if (currentAccountIndex < 0) {
       dispatch("back");
       return;
     }
@@ -134,7 +131,8 @@
 </script>
 
 <style>
-  .loader {
-    width: 28px;
+  .spacer1,
+  .spacer2 {
+    min-height: 5vh;
   }
 </style>

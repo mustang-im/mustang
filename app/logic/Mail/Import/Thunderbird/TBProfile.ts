@@ -92,11 +92,15 @@ export class ThunderbirdProfile {
         protocol = "activesync";
       }
       let acc = newAccountForProtocol(protocol);
-      acc.id = "tb-" + accountID;
+      acc.id = "tb-" + accountID + "-" + acc.id;
       this.readMailServer(serverID, acc);
+
       let identityIDs = this.prefs[`${prefBranch}.identities`]?.split(",");
       acc.identities.addAll(identityIDs.map(id => this.readMailIdentity(id, acc)));
       assert(acc.identities.hasItems, "Identities missing for account " + accountID);
+      let mainIdentity = acc.identities.first;
+      acc.emailAddress = mainIdentity.emailAddress;
+      acc.userRealname = mainIdentity.userRealname;
       return acc;
     } catch (ex) {
       console.error(ex); // TODO disable errors in production
@@ -307,6 +311,7 @@ export class ThunderbirdProfile {
     }
     return profiles;
   }
+
   static async baseDir(): Promise<string> {
     /*
     Win10: C:\Users\USER\AppData\Roaming\Thunderbird\Profiles\

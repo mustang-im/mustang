@@ -51,7 +51,7 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
-  import { saveConfig, fillConfig, getFirstMessages } from "../../../../logic/Mail/AutoConfig/saveConfig";
+  import { saveAndInitConfig, fillConfig  } from "../../../../logic/Mail/AutoConfig/saveConfig";
   import { makeManualConfig } from "../../../../logic/Mail/AutoConfig/manualConfig";
   import { openApp } from "../../../AppsBar/selectedApp";
   import { mailMustangApp } from "../../../Mail/MailMustangApp";
@@ -210,9 +210,7 @@
       return;
     }
     isSaving = true;
-    await saveConfig(config, emailAddress, password);
-    await config.login(true);
-    getFirstMessages(config).catch(backgroundError);
+    await saveAndInitConfig(config, emailAddress, password);
     onClose();
   }
 

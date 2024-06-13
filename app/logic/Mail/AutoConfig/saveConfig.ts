@@ -10,6 +10,12 @@ import { SetColl } from "svelte-collections";
 import { MailIdentity } from "../MailIdentity";
 import { backgroundError } from "../../../frontend/Util/error";
 
+export async function saveAndInitConfig(config: MailAccount, emailAddress: string, password: string): Promise<void> {
+  await saveConfig(config, emailAddress, password);
+  await config.login(true);
+  getFirstMessages(config).catch(backgroundError);
+}
+
 export async function saveConfig(config: MailAccount, emailAddress: string, password: string): Promise<void> {
   fillConfig(config, emailAddress, password);
 
