@@ -26,6 +26,9 @@
   <Button label="Skip" classes="secondary"
     onClick={onSkip}
     />
+  <Button label="Uncheck all" classes="secondary"
+    onClick={onUncheckAll}
+    />
 </ButtonsBottom>
 
 <script lang="ts">
@@ -68,10 +71,15 @@
     }
   }
 
-  function onSkip() {
+  function onUncheckAll() {
     for (let account of accounts) {
       (account as any).import = false;
     }
+    accounts = accounts;
+  }
+
+  function onSkip() {
+    onUncheckAll();
     onContinue();
   }
 </script>
