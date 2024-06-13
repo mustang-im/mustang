@@ -39,6 +39,10 @@ export class IMAPEMail extends EMail {
   }
 
   fromFlow(msgInfo: any) {
+    this.setFlagsLocal(msgInfo.flags);
+    if (this.downloadComplete) {
+      return;
+    }
     // <https://imapflow.com/global.html#FetchMessageObject>
     this.uid = sanitize.integer(msgInfo.uid, null);
     this.seq = sanitize.integer(msgInfo.seq, null);
@@ -48,7 +52,6 @@ export class IMAPEMail extends EMail {
     this.subject = sanitize.string(env.subject, null);
     this.sent = sanitize.date(env.date, new Date());
     this.received = new Date();
-    this.setFlagsLocal(msgInfo.flags);
     this.inReplyTo = sanitize.string(env.inReplyTo, null);
     this.threadID = sanitize.string(env.threadId, null); // Only if server supports OBJECTID or X-GM-EXT-1 IMAP extension
     if (env.from?.length && env.from[0]?.address) {
