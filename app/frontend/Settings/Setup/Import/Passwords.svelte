@@ -11,7 +11,7 @@
         />
     </hbox>
   {:else}
-    <hbox>
+    <hbox class="password-row">
       <label for="password">Password</label>
       <Password bind:password />
     </hbox>
@@ -138,6 +138,12 @@
 <style>
   .buttons.login {
     justify-content: center;
+  }
+  .password-row {
+    align-items: center;
+  }
+  .password-row label {
+    margin-right: 24px;
   }
   .spacer1,
   .spacer2 {
