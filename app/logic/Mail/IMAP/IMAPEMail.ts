@@ -40,12 +40,12 @@ export class IMAPEMail extends EMail {
 
   fromFlow(msgInfo: any) {
     this.setFlagsLocal(msgInfo.flags);
-    if (this.downloadComplete) {
-      return;
-    }
     // <https://imapflow.com/global.html#FetchMessageObject>
     this.uid = sanitize.integer(msgInfo.uid, null);
     this.seq = sanitize.integer(msgInfo.seq, null);
+    if (this.downloadComplete) {
+      return;
+    }
     // <https://imapflow.com/global.html#MessageEnvelopeObject>
     let env = msgInfo.envelope;
     this.id = sanitize.nonemptystring(env.messageId, this.uid + "");
