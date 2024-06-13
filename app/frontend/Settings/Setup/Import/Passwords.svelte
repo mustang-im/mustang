@@ -2,15 +2,18 @@
   <Header title={account.name} subtitle={account.emailAddress} />
 
   {#if account?.oAuth2}
-    <Button label="Login" classes="primary"
-      onClick={loginOAuth2}
-      errorCallback={showError}
-      disabled={oAuth2Succeeded}
-      />
+    <hbox class="buttons login">
+      <Button label="Login"
+        classes="filled large"
+        onClick={loginOAuth2}
+        errorCallback={showError}
+        disabled={oAuth2Succeeded}
+        />
+    </hbox>
   {:else}
     <hbox>
       <label for="password">Password</label>
-      <input type="password" name="password" bind:value={password} />
+      <Password bind:password />
     </hbox>
   {/if}
 
@@ -21,7 +24,8 @@
       message="Verifying that the configuration works..." />
   {/if}
   {#if errorMessage}
-    <ErrorMessage {errorMessage} errorGravity={ErrorGravity.Error} />
+    <ErrorMessage {errorMessage} errorGravity={ErrorGravity.Error}
+      on:continue={() => errorMessage = null} />
   {/if}
 
   <hbox class="spacer2" flex />
@@ -46,6 +50,7 @@
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
   import { checkConfig } from "../../../../logic/Mail/AutoConfig/checkConfig";
   import { saveAndInitConfig } from "../../../../logic/Mail/AutoConfig/saveConfig";
+  import Password from "../Shared/Password.svelte";
   import WorkspaceSelector from "../Mail/WorkspaceSelector.svelte";
   import Header from "../Shared/Header.svelte";
   import StatusMessage from "../Shared/StatusMessage.svelte";
@@ -131,6 +136,9 @@
 </script>
 
 <style>
+  .buttons.login {
+    justify-content: center;
+  }
   .spacer1,
   .spacer2 {
     min-height: 5vh;

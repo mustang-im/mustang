@@ -4,6 +4,7 @@
     bind:value={password}
     bind:this={inputEl}
     required
+    name="password"
     on:keydown={(event) => onKeyEnter(event, onEnter)}
     />
   <hbox class="buttons">

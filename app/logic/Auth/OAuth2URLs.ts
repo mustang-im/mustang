@@ -11,7 +11,7 @@
 export const OAuth2URLs = [
   {
     domains: ["outlook.com", "outlook.office365.com", ],
-    hostnames: ["outlook.office365.com"],
+    hostnames: ["outlook.office365.com", "outlook.office.com"],
     authURL: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
     authDoneURL: "https://login.microsoftonline.com/common/oauth2/nativeclient",
     tokenURL: "https://login.microsoftonline.com/common/oauth2/v2.0/token",

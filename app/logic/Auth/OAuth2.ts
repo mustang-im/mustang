@@ -43,7 +43,7 @@ export class OAuth2 {
   protected expiryTimout: NodeJS.Timeout;
   refreshErrorCallback = (ex: Error) => console.error(ex);
 
-  constructor(account: Account, tokenURL: string, authURL: string, authDoneURL: string | null, scope: string, clientID: string, clientSecret?: string) {
+  constructor(account: Account, tokenURL: string, authURL: string, authDoneURL: string | null | undefined, scope: string, clientID: string, clientSecret?: string | null) {
     assert(tokenURL?.startsWith("https://") || tokenURL?.startsWith("http://"), "Need OAuth2 server token URL");
     assert(authURL?.startsWith("https://") || authURL?.startsWith("http://"), "Need OAuth2 login page URL");
     assert(!authDoneURL || authDoneURL?.startsWith("https://") || authDoneURL?.startsWith("http://"), "Need OAuth2 login finish URL");
@@ -57,7 +57,7 @@ export class OAuth2 {
     this.clientSecret = clientSecret ?? null;
   }
 
-  setTokenURLPasswordAuth(url: string) {
+  setTokenURLPasswordAuth(url: string | null | undefined) {
     assert(!url || url?.startsWith("https://") || url?.startsWith("http://"), "Malformed OAuth2 server token URL for password: " + url);
     this.tokenURLPasswordAuth = url || null;
   }

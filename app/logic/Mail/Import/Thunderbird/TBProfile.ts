@@ -8,6 +8,9 @@ import { OWAAccount } from "../../OWA/OWAAccount";
 import { ActiveSyncAccount } from "../../ActiveSync/ActiveSyncAccount";
 import { newAccountForProtocol } from "../../AccountsList/MailAccounts";
 import { kStandardPorts } from "../../AutoConfig/configInfo";
+import { Account } from "../../../Abstract/Account";
+import { OAuth2URLs } from "../../../Auth/OAuth2URLs";
+import { OAuth2 } from "../../../Auth/OAuth2";
 import { appGlobal } from "../../../app";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { arrayRemove, assert, NotReached } from "../../../util/util";
@@ -101,6 +104,25 @@ export class ThunderbirdProfile {
       let mainIdentity = acc.identities.first;
       acc.emailAddress = mainIdentity.emailAddress;
       acc.userRealname = mainIdentity.userRealname;
+
+      if (acc.authMethod == AuthMethod.OAuth2) {
+        let hostname = acc.hostname ?? "none";
+        if (acc.protocol == "ews" || acc.protocol == "owa" || acc.protocol == "eas") {
+          hostname = "outlook.office365.com";
+        }
+        let url = OAuth2URLs.find(url => url.hostnames.includes(hostname));
+        assert(url, `${acc.name}: Need OAuth2 config for host ${hostname}`);
+        acc.oAuth2 = new OAuth2(
+          acc as any as Account,
+          url.tokenURL,
+          url.authURL,
+          url.authDoneURL,
+          url.scope,
+          url.clientID,
+          url.clientSecret);
+        acc.oAuth2.setTokenURLPasswordAuth(url.tokenURLPasswordAuth);
+        acc.oAuth2.username = acc.username ?? acc.emailAddress;
+      }
       return acc;
     } catch (ex) {
       console.error(ex); // TODO disable errors in production
