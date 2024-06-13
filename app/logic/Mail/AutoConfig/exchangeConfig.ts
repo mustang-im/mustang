@@ -245,11 +245,7 @@ async function fetchJSON(url: URLString, abort: AbortController): Promise<any> {
  * @return XML as string
  */
 async function fetchXML(url: URLString, params: any, abort: AbortController): Promise<string> {
-  if (!ky) {
-    ky = await appGlobal.remoteApp.kyCreate();
-  }
   try {
-    Object.assign(params, { result: "text", retry: 0 });
     if (params.username && params.password) {
       if (!params.header) {
         params.header = {};
@@ -258,10 +254,31 @@ async function fetchXML(url: URLString, params: any, abort: AbortController): Pr
       let utf8 = String.fromCharCode(...new TextEncoder().encode(str));
       params.header.Authorization = "Basic " + btoa(utf8);
     }
-    let xmlStr = await makeAbortable(ky.post(url, params), abort);
-    assert(xmlStr && typeof (xmlStr) == "string", "Did not receive text");
-    return xmlStr;
+    let response = await fetchHTTP(url, params, abort);
+    if (await response.ok) {
+      return await response.text();
+    }
+    let responseURL = await response.url;
+    if (responseURL != url && responseURL.startsWith("https://") && responseURL.endsWith(url.slice(url.lastIndexOf(".")))) {
+      // The redirect will have corrupted the request; retry with the new URL.
+      response = await fetchHTTP(responseURL, params, abort);
+      if (await response.ok) {
+        return await response.text();
+      }
+    }
+    throw new Error(`Request failed with status code ${await response.status} ${await response.statusText}`);
   } catch (ex) {
     throw new Error(`Failed to fetch ${url}: ${ex.message}`);
   }
+}
+
+/**
+ * @return Response as remoted by JPC (type isn't exactly correct)
+ */
+async function fetchHTTP(url: URLString, params: any, abort: AbortController): Promise<Response> {
+  if (!ky) {
+    ky = await appGlobal.remoteApp.kyCreate();
+  }
+  params = Object.assign({ throwHttpErrors: false }, params);
+  return await makeAbortable(ky.post(url, params), abort);
 }
