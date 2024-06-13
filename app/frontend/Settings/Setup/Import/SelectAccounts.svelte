@@ -9,11 +9,12 @@
   <hbox class="found">Found {accounts.length} imported accounts</hbox>
   <vbox class="accounts">
     <Scroll>
-      {#each accounts as account}
-        <hbox>
+      <grid class="protocol-grid">
+        {#each accounts as account}
           <Checkbox label={account.name} bind:checked={account.import} />
-        </hbox>
-      {/each}
+          <hbox class="protocol">{account.protocol.toUpperCase()}</hbox>
+        {/each}
+      </grid>
     </Scroll>
   </vbox>
 {:catch ex}
@@ -95,5 +96,9 @@
   }
   .accounts {
     min-height: 30vh;
+  }
+  grid.protocol-grid {
+    grid-template-columns: auto max-content;
+    margin: 4px 12px;
   }
 </style>
