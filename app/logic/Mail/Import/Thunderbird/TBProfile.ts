@@ -105,6 +105,14 @@ export class ThunderbirdProfile {
       acc.emailAddress = mainIdentity.emailAddress;
       acc.userRealname = mainIdentity.userRealname;
 
+      if (acc.protocol == "ews" || acc.protocol == "owa" || acc.protocol == "eas") {
+        assert(acc.url, `${acc.name}: Need URL`);
+        let url = new URL(acc.url);
+        acc.hostname = url.hostname;
+        acc.port = 443;
+        acc.tls = TLSSocketType.TLS;
+      }
+
       if (acc.authMethod == AuthMethod.OAuth2) {
         let hostname = acc.hostname ?? "none";
         if (acc.protocol == "ews" || acc.protocol == "owa" || acc.protocol == "eas") {
@@ -123,6 +131,7 @@ export class ThunderbirdProfile {
         acc.oAuth2.setTokenURLPasswordAuth(url.tokenURLPasswordAuth);
         acc.oAuth2.username = acc.username ?? acc.emailAddress;
       }
+
       return acc;
     } catch (ex) {
       console.error(ex); // TODO disable errors in production
