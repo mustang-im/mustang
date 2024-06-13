@@ -2,13 +2,14 @@
 * Mail
   * Setup
     * Autodiscover
-    * Import account UI
   * Selection
     * Default selection on start
   * OAuth2
     * Register with providers
   * Inline images send
   * Move messages to deep subfolders
+    * Drag&Drop: Open on drag over
+    * Popup dialog
   * Move messages to other accounts
   * Bugs
     * FastList doesn't update some rows #66
@@ -135,9 +136,6 @@
 # Mail
 * Body
   * Link: Right-click menu, copy
-* Compose: Recipients entry - DONE
-* Search
-  * UI for criteria other than text - DONE
 * Filter actions
 * Virtual folders / Saved searches - DONE
 * IMAP
@@ -150,9 +148,8 @@
   * Exchange AutoDiscover V2 and V1 - partially implemented
   * Scrollbar for dialog box, not app window
 * Import
-  * UI in Setup
   * Thunderbird
-     * Account settings - Logic implemented, UI missing
+     * Account settings - DONE
      * Mails
      * Contacts - Partially implemented
      * Calendar
