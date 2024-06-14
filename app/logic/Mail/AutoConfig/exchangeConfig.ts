@@ -159,8 +159,8 @@ export async function exchangeAutoDiscoverV2JSON(domain: string, emailAddress: s
   // <https://learn.microsoft.com/en-us/exchange/architecture/client-access/autodiscover?view=exchserver-2019>
   // <https://www.msxfaq.de/exchange/autodiscover/autodiscover_v2.htm>
   const url1 = `https://autodiscover.${domain}/autodiscover/autodiscover.json/v1.0/${emailAddress}?Protocol=`;
-  const url2 = `https://autodiscover.${domain}/AutoDiscover/AutoDiscover.json/v1.0/${emailAddress}?Protocol=`;
-  const url3 = `https://${domain}/AutoDiscover/AutoDiscover.json/v1.0/${emailAddress}?Protocol=`;
+  const url2 = `https://${domain}/autodiscover/autodiscover.json/v1.0/${emailAddress}?Protocol=`;
+  const url3 = `http://autodiscover.${domain}/autodiscover/autodiscover.json/v1.0/${emailAddress}?Protocol=`;
   // each URL with each protocol: 3 URLs x 2 protocols = 6 URLs
   let urls = [url1, url2, url3];
 
