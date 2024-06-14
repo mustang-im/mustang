@@ -71,7 +71,7 @@ async function fetchV1HTTP(url: URLString, callArgs: any, abort: AbortController
 function readAutoDiscoverV1XML(xmlStr: string): ArrayColl<MailAccount> {
   let jxon = JXON.parse(xmlStr);
   assert(typeof (jxon) == "object", "Did not receive XML");
-  let protocolsXML = jxon?.Autodiscover?.Response?.Account?.Protocol;
+  let protocolsXML = jxon?.Autodiscover?.Response?.Account?.$Protocol;
   console.log("Got AutoDiscover XML", protocolsXML, "full", jxon);
   assert(protocolsXML, "Did not receive valid AutoDiscover XML");
   let accounts = new ArrayColl<MailAccount>();
