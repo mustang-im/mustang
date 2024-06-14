@@ -22,3 +22,10 @@ jobs:
     - run: cd backend; npm install
     - run: cd e2; npm install --legacy-peer-deps
     - run: cd e2; npm run build:win
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: Installers Windows
+        path: |
+          e2/dist/*.exe
+          e2/dist/*.msi

@@ -36,7 +36,7 @@ dmg:
 linux:
   target:
     - AppImage
-#    - snap
+    - snap
     - deb
     - rpm
   maintainer: Mustang

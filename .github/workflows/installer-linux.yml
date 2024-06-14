@@ -22,4 +22,14 @@ jobs:
     - run: cd lib; npm install
     - run: cd backend; npm install
     - run: cd e2; npm install --legacy-peer-deps
-    - run: cd e2; npm run build:win
+    - run: cd e2; npm run build:linux
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: Installers Linux
+        path: |
+          e2/dist/*.deb
+          e2/dist/*.rpm
+          e2/dist/*.AppImage
+          e2/dist/*.flatpak
+          e2/dist/*.snap
