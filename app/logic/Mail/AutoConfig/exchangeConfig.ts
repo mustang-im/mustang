@@ -261,7 +261,7 @@ async function fetchXML(url: URLString, params: any, abort: AbortController): Pr
     let responseURL = await response.url;
     let fileExt = url.slice(url.lastIndexOf("."));
     if (responseURL != url && responseURL.startsWith("https://") && responseURL.endsWith(fileExt)) {
-      // The redirect will have corrupted the request; retry with the new URL.
+      // The redirect will have corrupted the request (HTTP POST->GET, and dropped body); retry with the new URL.
       response = await fetchHTTP(responseURL, params, abort);
       if (await response.ok) {
         return await response.text();
