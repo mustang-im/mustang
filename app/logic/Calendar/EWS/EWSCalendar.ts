@@ -68,7 +68,7 @@ export class EWSCalendar extends Calendar {
       }
       if (result.Changes.Delete) {
         for (let deletion of ensureArray(result.Changes.Delete)) {
-          let event = this.getEventByItemId(sanitize.nonemptystring(deletion.ItemId.Id));
+          let event = this.getEventByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
           if (event) {
             this.events.remove(event);
             await SQLEvent.deleteIt(event);
@@ -82,7 +82,7 @@ export class EWSCalendar extends Calendar {
     return syncState!;
   }
 
-  getEventByItemId(id: string): EWSEvent | void {
+  getEventByItemID(id: string): EWSEvent | void {
     return this.events.find(p => p.itemID == id);
   }
 
@@ -167,7 +167,7 @@ export class EWSCalendar extends Calendar {
     };
     let results = ensureArray(await this.account.callEWS(request));
     for (let result of results) {
-      let event = this.getEventByItemId(sanitize.nonemptystring(result.Items.CalendarItem?.ItemId.Id || result.Items.Task.ItemId.Id));
+      let event = this.getEventByItemID(sanitize.nonemptystring(result.Items.CalendarItem?.ItemId.Id || result.Items.Task.ItemId.Id));
       if (event) {
         event.fromXML(result.Items.CalendarItem || result.Items.Task);
         await SQLEvent.save(event);
