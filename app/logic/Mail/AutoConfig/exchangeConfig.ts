@@ -179,11 +179,12 @@ async function fetchV2AllProtocols(urlPrefix: URLString, abort: AbortController)
   let results = await Promise.allSettled<MailAccount>(protocols.map(protocol =>
     fetchV2SingleProtocol(urlPrefix, protocol, abort)
   ));
-  let successes = results.filter(r => r.status == "fulfilled");
-  if (!successes.length) {
-    throw results[0].reason;
+  let successes = new ArrayColl(results.filter(r => r.status == "fulfilled").map(r => (r as any).value));
+  if (successes.hasItems) {
+    return successes;
+  } else {
+    throw (results[0] as any).reason;
   }
-  return new ArrayColl(successes.map(r => r.value));
 }
 
 /** @param protocol Like `Account.protocol` */
