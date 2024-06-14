@@ -45,7 +45,14 @@ export async function exchangeAutoDiscoverV1XML(domain: string, emailAddress: st
     fetchV1HTTP(url3, callArgs, abort),
   ]);
   try {
-    return await priorityOrder.run();
+    let config = await priorityOrder.run();
+    if (typeof config == "string") {
+      if (!confirm(`Autodiscover information for your account may be available at ${new URL(config).hostname}.\n\nDo you want Mustang to submit your credentials to this host?`)) {
+        throw new Error("User cancelled HTTP redirect");
+      }
+      config = await fetchV1(config, callArgs, abort);
+    }
+    return config;
   } catch (ex) {
     throw new Error(`Could not find a config for ${emailAddress}`);
   }
@@ -57,15 +64,17 @@ async function fetchV1(url: URLString, callArgs: any, abort: AbortController): P
 }
 
 async function fetchV1HTTP(url: URLString, callArgs: any, abort: AbortController): Promise<ArrayColl<MailAccount>> {
-  // url3 is HTTP (not HTTPS), so suppress password. Even MS spec demands so.
-  const call3Args: any = {};
-  Object.assign(call3Args, callArgs);
-  delete call3Args.username;
-  delete call3Args.password;
+  let response = await fetchHTTP(url, callArgs, abort);
+  if (await response.ok) {
+    let xmlStr = await response.text();
+    return readAutoDiscoverV1XML(xmlStr);
+  }
 
-  // TODO catch redirect, and if HTTPS *and* a trusted domain, include password
-
-  return await fetchV1(url, call3Args, abort);
+  let responseURL = await response.url;
+  if (responseURL.startsWith("https://") && responseURL.endsWith(url.slice(url.lastIndexOf(".")))) {
+    return responseURL; // Don't prompt user yet, we're lowest priority.
+  }
+  throw new Error(`Request failed with status code ${await response.status} ${await response.statusText}`);
 }
 
 function readAutoDiscoverV1XML(xmlStr: string): ArrayColl<MailAccount> {
