@@ -11,14 +11,14 @@ export async function findConfig(emailAddress: string, password: string, abort: 
   try {
     let priorityOrder = new PriorityAbortable(abort, [
       fetchConfig(domain, emailAddress, abort),
-      //exchangeAutoDiscoverV2JSON(domain, emailAddress, abort),
+      exchangeAutoDiscoverV2JSON(domain, emailAddress, abort),
     ]);
     return await priorityOrder.run();
   } catch (ex) {
     console.log(`Fetch config for ${emailAddress} failed`);
   }
   try {
-    //return await exchangeAutoDiscoverV1XML(domain, emailAddress, null, password, () => false, abort);
+    return await exchangeAutoDiscoverV1XML(domain, emailAddress, null, password, () => false, abort);
   } catch (ex) {
     console.log(`AutoDiscover for ${emailAddress} failed`);
   }
