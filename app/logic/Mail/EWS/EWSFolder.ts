@@ -112,7 +112,7 @@ export class EWSFolder extends Folder {
       if (!isDirectList) {
         change = getEWSItem(change);
       }
-      let email = this.getEmailByItemId(sanitize.nonemptystring(change.ItemId.Id));
+      let email = this.getEmailByItemID(sanitize.nonemptystring(change.ItemId.Id));
       if (email) {
         await eachCallback.call(this, email, change);
       } else {
@@ -182,7 +182,7 @@ export class EWSFolder extends Folder {
       let messages = getEWSItems(result.RootFolder.Items);
       let newMessageIDs = [];
       for (let message of messages) {
-        let email = this.getEmailByItemId(sanitize.nonemptystring(message.ItemId.Id));
+        let email = this.getEmailByItemID(sanitize.nonemptystring(message.ItemId.Id));
         if (email) {
           email.setFlags(message);
           await SQLEMail.saveWritableProps(email);
@@ -311,7 +311,7 @@ export class EWSFolder extends Folder {
     return downloadedEmail;
   }
 
-  getEmailByItemId(id: string): EWSEMail | undefined {
+  getEmailByItemID(id: string): EWSEMail | undefined {
     if (!id) {
       return undefined;
     }
