@@ -348,12 +348,13 @@ export class ThunderbirdProfile {
     https://support.mozilla.org/de/kb/Benutzerprofile-Thunderbird#thunderbird:mac:tb115
     https://support.mozilla.org/de/kb/Benutzerprofile-Thunderbird#thunderbird:linux:tb115
     */
-    let homedir = await appGlobal.remoteApp.os.homedir();
-    let platform = await appGlobal.remoteApp.os.platform();
+    let platform = await appGlobal.remoteApp.platform();
+    let dir = await appGlobal.remoteApp.directory(
+      platform == "win32" ? "appData" : "home");
     let subdir =
       platform == "darwin" ? "Library/Thunderbird/Profiles" :
         platform == "win32" ? "Thunderbird/Profiles" :
           ".thunderbird";
-    return await appGlobal.remoteApp.path.join(homedir, subdir);
+    return await appGlobal.remoteApp.path.join(dir, subdir);
   }
 }

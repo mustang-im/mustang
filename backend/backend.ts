@@ -4,7 +4,7 @@ import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import { shell, nativeTheme, Notification, Tray, nativeImage } from "electron";
+import { shell, nativeTheme, Notification, Tray, nativeImage, app } from "electron";
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
 import path from "node:path";
@@ -43,10 +43,8 @@ async function createSharedAppObject() {
     readFile,
     writeFile,
     fs: fsPromises,
-    os: {
-      homedir: os.homedir,
-      platform: os.platform,
-    },
+    directory,
+    platform,
     path: {
       dirname: path.dirname,
       join: path.join,
@@ -208,6 +206,17 @@ function newAdmZIP(filepath: string) {
   return new Zip(filepath);
 }
 
+function platform(): string {
+  return os.platform();
+}
+
+/** @param type
+ *   e.g. "home", "appData" (`.config` and `%APPDATA%`), "userData" (app config)
+ *   @see <https://www.electronjs.org/docs/latest/api/app#appgetpathname> */
+function directory(type: string): string {
+  return app.getPath(type as any);
+}
+
 const kAppDir = "Mustang";
 
 /**
@@ -223,14 +232,19 @@ const kAppDir = "Mustang";
  * Mac OS: /Users/USER/Library/Application Support/Mustang
  */
 function getConfigDir(): string {
-  let dirname = os.platform() == "win32" || os.platform() == "darwin" ? kAppDir : "." + kAppDir.toLowerCase();
-  let datadir = os.platform() == "darwin" ? path.join(os.homedir(), "Library/Application Support") : os.homedir();
+  let platform = os.platform();
+  let datadir = platform == "win32" || platform == "darwin"
+    ? app.getPath("appData")
+    : app.getPath("home");
+  let dirname = platform == "win32" || platform == "darwin"
+    ? kAppDir
+    : "." + kAppDir.toLowerCase();
   let dir = path.join(datadir, dirname);
   fs.mkdirSync(dir, { recursive: true });
   return dir;
 }
 
-let filesDirEnsured = false;
+let filesDirCreated = false;
 
 /**
  * Get the directory on disk where we store the files that our user exchanged with others.
@@ -242,14 +256,18 @@ let filesDirEnsured = false;
  * TODO Change it
  * Linux: /home/USER/.mustang/
  * Windows: C:\Users\USER\AppData\Mustang\
- * Mac OS: /Users/USER/Mustang
+ * Mac OS: /Users/USER/Library/Mustang
  */
 function getFilesDir(): string {
-  let dirname = os.platform() == "win32" || os.platform() == "darwin" ? kAppDir : "." + kAppDir.toLowerCase();
+  let platform = os.platform();
+  let dirname =
+    platform == "win32" ? kAppDir :
+    platform == "darwin" ? "Library/" + kAppDir :
+    "." + kAppDir.toLowerCase();
   let dir = path.join(os.homedir(), dirname);
-  if (!filesDirEnsured) {
+  if (!filesDirCreated) {
     fs.mkdirSync(dir, { recursive: true });
-    filesDirEnsured = true;
+    filesDirCreated = true;
   }
   return dir;
 }
