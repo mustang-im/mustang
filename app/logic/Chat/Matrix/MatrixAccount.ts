@@ -9,9 +9,9 @@ import { ChatPerson } from '../Person';
 import { ContactEntry } from '../../Abstract/Person';
 import { assert } from '../../util/util';
 import { MapColl } from 'svelte-collections';
-import * as matrix from 'matrix-js-sdk';
-import type { Room, RoomMember } from 'matrix-js-sdk/lib/matrix';
-import olm from 'olm'; // Needed for initCrypto(). Do not remove.
+//import * as matrix from 'matrix-js-sdk';
+//import type { Room, RoomMember } from 'matrix-js-sdk/lib/matrix';
+//import olm from 'olm'; // Needed for initCrypto(). Do not remove.
 
 export class MatrixAccount extends ChatAccount {
   readonly protocol: string = "matrix";
@@ -29,6 +29,7 @@ export class MatrixAccount extends ChatAccount {
     (window as any).global = window; // Fix Matrix
     let serverID = this.baseURL.replace("https://", "");
     let userID = `@${this.username}:${serverID}`;
+    return;
     this.client = matrix.createClient({
       baseUrl: this.baseURL,
       userId: userID,
