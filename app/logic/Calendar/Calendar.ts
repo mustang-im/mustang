@@ -7,6 +7,7 @@ export class Calendar extends Account {
   readonly protocol: string = "calendar-local";
   readonly events = new ArrayColl<Event>();
   storage: CalendarStorage | null = null;
+  syncState: string | null = null;
 
   newEvent(): Event {
     return new Event(this);

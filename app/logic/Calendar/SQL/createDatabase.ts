@@ -25,6 +25,10 @@ export const calendarDatabaseSchema = sql`
   CREATE TABLE "event" (
     "id" INTEGER PRIMARY KEY,
     "calendarID" INTEGER default null,
+    -- iCal UID for a meeting
+    "calUID" TEXT default null,
+    -- Protocol-specific ID
+    "pID" TEXT default null,
     -- Summary or subject of the event
     -- Plaintext
     "title" TEXT not null,
@@ -62,6 +66,11 @@ export const calendarDatabaseSchema = sql`
     -- Format: HTML hex code without "#"
     -- Optional. If null, the background color will be determined by the calendar.
     "color" TEXT default null,
+    -- 0 = Event. Not a task.
+    -- 1 = task without start and end time. Start and end time are dummy values.
+    -- 2 = task with due time (= end time), but without start time
+    -- 3 = task with start time and due time
+    "task" INTEGER default null,
     -- If this is a recurring (repeating) meeting and this is the master, contains the RRule.
     -- For non-repeating events, this is null. For recurring instances, this is null and "recurrenceMaster" is set.
     -- Format: iCalendar RRule
@@ -91,10 +100,11 @@ export const calendarDatabaseSchema = sql`
       ON DELETE CASCADE
   );
 
-  --- Who will attent the event, apart from (not including) our user
+  --- Who will attent the event, not including our user
   CREATE TABLE "eventParticipant" (
     "eventID" INTEGER not null,
-    "personID" INTEGER not null,
+    "emailAddress" TEXT not null,
+    "name" TEXT,
     -- 1 = accepted
     -- 2 = rejected
     -- 3 = tentative accepted
@@ -105,5 +115,4 @@ export const calendarDatabaseSchema = sql`
       ON DELETE CASCADE
   );
   CREATE INDEX index_groupMember_eventID ON eventParticipant (eventID);
-  CREATE INDEX index_groupMember_personID ON eventParticipant (personID);
 `;

@@ -29,17 +29,17 @@ export class SQLCalendar implements CalendarStorage {
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO calendar (
           idStr, name, protocol, url, username,
-          workspace
+          workspace, syncState
         ) VALUES (
           ${cal.id}, ${cal.name}, ${cal.protocol}, ${cal.url}, ${cal.username},
-          ${cal.workspace}
+          ${cal.workspace}, ${cal.syncState}
         )`);
       cal.dbID = insert.lastInsertRowid;
     } else {
       await (await getDatabase()).run(sql`
         UPDATE calendar SET
           name = ${cal.name}, url = ${cal.url}, username = ${cal.username},
-          workspace = ${cal.workspace}
+          workspace = ${cal.workspace}, syncState = ${cal.syncState}
         WHERE id = ${cal.dbID}
         `);
     }
@@ -62,7 +62,7 @@ export class SQLCalendar implements CalendarStorage {
     let row = await (await getDatabase()).get(sql`
       SELECT
         idStr, name, protocol, url, username,
-        workspace
+        workspace, syncState
       FROM calendar
       WHERE id = ${dbID}
       `) as any;
@@ -75,6 +75,7 @@ export class SQLCalendar implements CalendarStorage {
     cal.workspace = row.workspace
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
       : null;
+    cal.syncState = row.syncState;
     if (!cal.storage) {
       cal.storage = new SQLCalendar();
     }

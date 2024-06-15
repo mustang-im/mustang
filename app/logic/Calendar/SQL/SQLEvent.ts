@@ -1,7 +1,6 @@
 import { Event } from "../Event";
 import type { Calendar } from "../Calendar";
-import type { Person } from "../../Abstract/Person";
-import { SQLPerson } from "../../Contacts/SQL/SQLPerson";
+import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { getDatabase } from "./SQLDatabase";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -9,7 +8,6 @@ import { backgroundError } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
-import type { PersonUID } from "../../Abstract/PersonUID";
 
 export class SQLEvent extends Event {
   static async save(event: Event) {
@@ -19,11 +17,11 @@ export class SQLEvent extends Event {
         INSERT INTO event (
           title, descriptionText, descriptionHTML,
           startTime, endTime,
-          calendarID
+          calUID, pID, calendarID
         ) VALUES (
           ${event.title}, ${event.descriptionText}, ${event.descriptionHTML},
           ${event.startTime.toISOString()}, ${event.endTime.toISOString()},
-          ${event.calendar?.dbID}
+          ${event.calUID}, ${event.pID}, ${event.calendar?.dbID}
         )`);
       event.dbID = insert.lastInsertRowid;
     } else {
@@ -34,6 +32,8 @@ export class SQLEvent extends Event {
           descriptionHTML = ${event.descriptionHTML},
           startTime = ${event.startTime.toISOString()},
           endTime = ${event.endTime.toISOString()},
+          calUID = ${event.calUID},
+          pID = ${event.pID},
           calendarID = ${event.calendar?.dbID}
         WHERE id = ${event.dbID}
         `);
@@ -43,24 +43,22 @@ export class SQLEvent extends Event {
   }
 
   static async saveParticipants(event: Event) {
+    await (await getDatabase()).run(sql`
+      DELETE FROM eventParticipant
+      WHERE eventID = ${event.dbID}
+      `);
+
     for (let personUID of event.participants) {
       await this.saveParticipant(event, personUID);
     }
   }
 
   static async saveParticipant(event: Event, personUID: PersonUID) {
-    let person = personUID.createPerson();
-    if (!person.addressbook) {
-      person.addressbook = appGlobal.collectedAddressbook;
-    }
-    if (!person.dbID) {
-      await SQLPerson.save(person);
-    }
     await (await getDatabase()).run(sql`
       INSERT INTO eventParticipant (
-        eventID, personID, confirmed
+        eventID, emailAddress, name, confirmed
       ) VALUES (
-        ${event.dbID}, ${person.dbID}, null
+        ${event.dbID},  ${personUID.emailAddress}, ${personUID.name}, null
       )`);
   }
 
@@ -79,7 +77,7 @@ export class SQLEvent extends Event {
         SELECT
           title, descriptionText, descriptionHTML,
           startTime, endTime,
-          calendarID
+          calUID, pID, calendarID
         FROM event
         WHERE id = ${dbID}
         `) as any;
@@ -93,6 +91,8 @@ export class SQLEvent extends Event {
     }
     event.startTime = sanitize.date(row.startTime);
     event.endTime = sanitize.date(row.endTime, event.startTime);
+    event.calUID = row.calUID;
+    event.pID = row.pID;
     if (row.calendarID) {
       let calendarID = sanitize.integer(row.calendarID, null);
       if (event.calendar) {
@@ -115,12 +115,8 @@ export class SQLEvent extends Event {
       `) as any;
     for (let row of rows) {
       try {
-        let personID = sanitize.integer(row.personID);
-        let person = appGlobal.persons.find(p => p.dbID == personID);
-        if (!person) {
-          continue;
-        }
-        event.participants.add(person);
+        let personUID = findOrCreatePersonUID(row.emailAddress, row.name);
+        event.participants.add(personUID);
       } catch (ex) {
         backgroundError(ex);
       }
@@ -138,7 +134,7 @@ export class SQLEvent extends Event {
       SELECT
         title, descriptionText, descriptionHTML,
         startTime, endTime,
-        id
+        calUID, pID, id
       FROM event
       WHERE calendarID = ${calendar.dbID}
       `) as any;
