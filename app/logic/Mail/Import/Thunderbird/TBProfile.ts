@@ -251,7 +251,8 @@ export class ThunderbirdProfile {
     let prefsPath = await appGlobal.remoteApp.path.join(this.path, "prefs.js");
     //console.log(`Looking for Thunderbird prefs.js at ${prefsPath}`);
     let prefsText = await appGlobal.remoteApp.fs.readFile(prefsPath, { encoding: "utf-8" });
-    let prefsLines = prefsText.split("\n"); // TODO LF?
+    prefsText = prefsText.replaceAll("\n\r", "\n").replaceAll("\r", "\n");
+    let prefsLines = prefsText.split("\n");
     let prefs = {};
     for (let line of prefsLines) {
       if (!(line.startsWith(`user_pref("`) && line.endsWith(`);`))) {
