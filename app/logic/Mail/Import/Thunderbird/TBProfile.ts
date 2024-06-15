@@ -8,7 +8,7 @@ import { OWAAccount } from "../../OWA/OWAAccount";
 import { ActiveSyncAccount } from "../../ActiveSync/ActiveSyncAccount";
 import { newAccountForProtocol } from "../../AccountsList/MailAccounts";
 import { kStandardPorts } from "../../AutoConfig/configInfo";
-import { Account } from "../../../Abstract/Account";
+import type { Account } from "../../../Abstract/Account";
 import { OAuth2URLs } from "../../../Auth/OAuth2URLs";
 import { OAuth2 } from "../../../Auth/OAuth2";
 import { appGlobal } from "../../../app";
@@ -341,8 +341,8 @@ export class ThunderbirdProfile {
 
   static async baseDir(): Promise<string> {
     /*
-    Win10: C:\Users\USER\AppData\Roaming\Thunderbird\Profiles\
-    Mac OS X: /Users/USER/Library/Thunderbird/Profiles/
+    Win10: C:\Users\USER\AppData\Roaming\Thunderbird\
+    Mac OS X: /Users/USER/Library/Thunderbird/
     Linux: /home/USER/.thunderbird/
     https://support.mozilla.org/de/kb/Benutzerprofile-Thunderbird#thunderbird:win10:tb115
     https://support.mozilla.org/de/kb/Benutzerprofile-Thunderbird#thunderbird:mac:tb115
@@ -352,8 +352,8 @@ export class ThunderbirdProfile {
     let dir = await appGlobal.remoteApp.directory(
       platform == "win32" ? "appData" : "home");
     let subdir =
-      platform == "darwin" ? "Library/Thunderbird/Profiles" :
-        platform == "win32" ? "Thunderbird/Profiles" :
+      platform == "darwin" ? "Library/Thunderbird" :
+        platform == "win32" ? "Thunderbird" :
           ".thunderbird";
     return await appGlobal.remoteApp.path.join(dir, subdir);
   }
