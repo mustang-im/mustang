@@ -5,6 +5,7 @@
     bind:this={inputEl}
     required
     name="password"
+    {autofocus}
     on:keydown={(event) => onKeyEnter(event, onEnter)}
     />
   <hbox class="buttons">
@@ -28,6 +29,7 @@
 
   /** in/out */
   export let password: string;
+  export let autofocus = false;
 
   let cleartext = false;
   let inputEl: HTMLInputElement;

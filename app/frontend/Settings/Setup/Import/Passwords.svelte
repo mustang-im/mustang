@@ -13,7 +13,9 @@
   {:else}
     <hbox class="password-row">
       <label for="password">Password</label>
-      <Password bind:password />
+      <Password bind:password
+        autofocus={true}
+        on:continue={() => catchErrors(validateAccount, showError)} />
     </hbox>
   {/if}
 
@@ -61,6 +63,7 @@
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Button from "../../../Shared/Button.svelte";
   import { Cancelled } from "../../../../logic/util/Abortable";
+  import { catchErrors } from "../../../Util/error";
 
   export let accounts: MailAccount[] = [];
   export let onContinue = () => undefined;
