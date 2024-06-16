@@ -14,7 +14,7 @@
           </hbox>
           <hbox class="email-address">{other.emailAddresses.first?.value ?? ""}</hbox>
           <hbox class="buttons">
-            <Button label="Merge" onClick={() => merge(other)} />
+            <Button label="Merge" icon={MergeIcon} plain onClick={() => merge(other)} />
           </hbox>
         </hbox>
       {/each}
@@ -27,6 +27,7 @@
   import GroupBox from "./GroupBox.svelte";
   import PersonPicture from "../Shared/Person/PersonPicture.svelte";
   import Button from "../Shared/Button.svelte";
+  import MergeIcon from "lucide-svelte/icons/combine";
   import PersonsIcon from "lucide-svelte/icons/users";
   import { catchErrors, showError } from "../Util/error";
   import { appGlobal } from "../../logic/app";
@@ -56,7 +57,7 @@
   }
 
   async function merge(other: Person) {
-    if (!confirm("Do you want to merge the 2 contacts and delete the other one?")) {
+    if (!confirm("Do you want to merge the 2 contacts, i.e. copy the data from the other contact into this contact, and delete the other contact?")) {
       return;
     }
     await person.merge(other);
@@ -82,5 +83,8 @@
   .buttons {
     align-items: right;
     margin-left: 24px;
+  }
+  .other-person:not(:hover) .buttons {
+    visibility: hidden;
   }
 </style>

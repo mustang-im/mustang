@@ -22,7 +22,7 @@
   <hbox class="value">
     <slot name="display" />
   </hbox>
-  <hbox class="actions">
+  <hbox class="actions contact-entry">
     <Button on:click={startEditing} icon={PencilIcon} iconOnly plain iconSize="12px" label="Edit" />
     <Button on:click={copyValue} icon={CopyIcon} iconOnly plain iconSize="12px" label="Copy info to clipboard" />
     {#if copied}

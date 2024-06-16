@@ -52,6 +52,10 @@
             </a>
           {/if}
         </hbox>
+        <hbox flex />
+        <hbox class="main-right-bottom">
+          <PersonMenu {person} />
+        </hbox>
       </vbox>
     </hbox>
   </GroupBox>
@@ -186,6 +190,7 @@
   import StreetAddressDisplay from "./StreetAddressDisplay.svelte";
   import StreetAddressEdit from "./StreetAddressEdit.svelte";
   import SameName from "./SameName.svelte";
+  import PersonMenu from "./PersonMenu.svelte";
   import PersonPicture from "../Shared/Person/PersonPicture.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import Button from "../Shared/Button.svelte";
@@ -273,6 +278,9 @@
   .main-right {
     margin: 16px;
   }
+  .main-right-bottom {
+    justify-content: end;
+  }
   .preferred {
     margin-top: 8px;
     margin-bottom: 8px;
@@ -331,7 +339,7 @@
   :global(.group:not(:hover)) .actions {
     visibility: hidden;
   }
-  .person-page :global(.group button) {
+  .person-page :global(.group .actions.contact-entry button) {
     color: #9894A0;
   }
   .person-page :global(.group button.add),
