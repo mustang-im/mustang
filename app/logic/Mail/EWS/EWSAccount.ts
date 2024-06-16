@@ -1,7 +1,10 @@
 import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { EWSFolder } from "./EWSFolder";
+import EWSCreateItemRequest from "./EWSCreateItemRequest";
+import type EWSUpdateItemRequest from "./EWSUpdateItemRequest";
 import type { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
+import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
@@ -9,6 +12,10 @@ import { ContentDisposition } from "../Attachment";
 import { appGlobal } from "../../app";
 import { blobToBase64 } from "../../util/util";
 import { assert } from "../../util/util";
+
+type Json = string | number | boolean | null | Json[] | {[key: string]: Json};
+
+type Request = EWSCreateItemRequest | EWSUpdateItemRequest | Json;
 
 export class EWSAccount extends MailAccount {
   readonly protocol: string = "ews";
@@ -43,6 +50,11 @@ export class EWSAccount extends MailAccount {
       addressbook.account = this;
       await addressbook.listContacts();
     }
+    let calendar = appGlobal.calendars.find((calendar: EWSCalendar) => calendar.protocol == "calendar-ews" && calendar.url == this.url && calendar.username == this.emailAddress) as EWSCalendar | void;
+    if (calendar) {
+      calendar.account = this;
+      await calendar.listEvents();
+    }
   }
 
   async logout(): Promise<void> {
@@ -50,46 +62,39 @@ export class EWSAccount extends MailAccount {
   }
 
   async send(email: EMail): Promise<void> {
-    // This should be type Json but my version of TypeScript doesn't like that
-    let request: any = {
-      m$CreateItem: {
-        m$Items: {
-          t$Message: {
-            t$ItemClass: "IPM.Note",
-            t$Subject: email.subject,
-            t$Body: {
-              BodyType: email.html ? "HTML" : "Text",
-              _TextContent_: email.html || email.text,
-            },
-          },
-        },
-        MessageDisposition: "SendAndSaveCopy",
-      },
-    };
+    let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
+    request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
+    request.addField("Message", "Subject", email.subject, "item:Subject");
+    request.addField("Message", "Body", {
+      BodyType: email.html ? "HTML" : "Text",
+      _TextContent_: email.html || email.text,
+    }, "item:Body");
     if (email.attachments.hasItems) {
-      request.m$CreateItem.m$Items.t$Message.t$Attachments = await Promise.all(email.attachments.contents.map(async attachment => ({
-        t$Name: attachment.filename,
-        t$ContentType: attachment.mimeType,
-        t$ContentID: attachment.contentID,
-        t$Size: attachment.size,
-        t$IsInline: attachment.disposition == ContentDisposition.inline,
-        t$Content: await blobToBase64(attachment.content),
-      })));
+      request.addField("Message", "Attachments", {
+        t$ItemAttachment: await Promise.all(email.attachments.contents.map(async attachment => ({
+          t$Name: attachment.filename,
+          t$ContentType: attachment.mimeType,
+          t$ContentID: attachment.contentID,
+          t$Size: attachment.size,
+          t$IsInline: attachment.disposition == ContentDisposition.inline,
+          t$Content: await blobToBase64(attachment.content),
+        }))),
+      }, "item:Attachments");
     }
     if (email.inReplyTo) {
-      request.m$CreateItem.m$Items.t$Message.t$InReplyTo = email.inReplyTo;
+      request.addField("Message", "InReplyTo", email.inReplyTo, "item:InReplyTo");
     }
-    addRecipients(request, "t$ToRecipients", email.to.contents);
-    addRecipients(request, "t$CcReipients", email.cc.contents);
-    addRecipients(request, "t$BccRecipients", email.bcc.contents);
-    addRecipients(request, "t$From", [email.from]);
     if (email.replyTo) {
-      addRecipients(request, "t$ReplyTo", [email.replyTo]);
+      addRecipients(request, "ReplyTo", [email.replyTo]);
     }
+    addRecipients(request, "From", [email.from]);
+    addRecipients(request, "ToRecipients", email.to.contents);
+    addRecipients(request, "CcReipients", email.cc.contents);
+    addRecipients(request, "BccRecipients", email.bcc.contents);
     await this.callEWS(request);
   }
 
-  JSON2XML(aJSON: Json, aParent: Element, aNS: string, aTag: string): void {
+  JSON2XML(aJSON: Request, aParent: Element, aNS: string, aTag: string): void {
     if (aJSON == null) {
       return;
     }
@@ -118,7 +123,7 @@ export class EWSAccount extends MailAccount {
     }
   }
 
-  request2XML(aRequest: Json): string {
+  request2XML(aRequest: Request): string {
     let xml = document.implementation.createDocument("http://schemas.xmlsoap.org/soap/envelope/", "s:Envelope");
     xml.documentElement.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:s", "http://schemas.xmlsoap.org/soap/envelope/");
     xml.documentElement.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:m", "http://schemas.microsoft.com/exchange/services/2006/messages");
@@ -137,7 +142,7 @@ export class EWSAccount extends MailAccount {
     return new XMLSerializer().serializeToString(xml);
   }
 
-  checkResponse(aResponse, aRequest: Json): Json {
+  checkResponse(aResponse, aRequest: Request): Json {
     let responseXML = aResponse.responseXML;
     if (!responseXML) {
       throw new EWSError(aResponse, aRequest);
@@ -174,7 +179,7 @@ export class EWSAccount extends MailAccount {
     return options;
   }
 
-  async callEWS(aRequest: Json): Promise<any> {
+  async callEWS(aRequest: Request): Promise<any> {
     let response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions());
     response.responseXML = this.parseXML(response.data);
     if (response.status == 200) {
@@ -235,8 +240,6 @@ export class EWSAccount extends MailAccount {
   }
 }
 
-
-type Json = string | number | boolean | null | Json[] | { [key: string]: Json };
 
 function XML2JSON(aNode: Element): Json {
   if (!aNode.children.length && !aNode.attributes.length) {
@@ -326,10 +329,10 @@ class EWSError extends Error {
 }
 
 class EWSItemError extends Error {
-  readonly request: Json;
+  readonly request: Request;
   readonly error: Json;
   readonly type: string;
-  constructor(errorResponseJSON: any, aRequest: Json) {
+  constructor(errorResponseJSON: any, aRequest: Request) {
     if (Array.isArray(errorResponseJSON.MessageXml?.Value)) {
       for (let { Name, Value } of errorResponseJSON.MessageXml.Value) {
         errorResponseJSON[Name.replace(/^InnerError/, "")] = Value;
@@ -346,10 +349,10 @@ function addRecipients(aRequest: any, aType: string, aRecipients: PersonUID[]): 
   if (!aRecipients.length) {
     return;
   }
-  aRequest.m$CreateItem.m$Items.t$Message[aType] = aRecipients.map(recipient => ({
-    t$Mailbox: {
+  aRequest.addField("Message", aType, {
+    t$Mailbox: aRecipients.map(recipient => ({
       t$Name: recipient.name,
       t$EmailAddress: recipient.emailAddress,
-    },
-  }));
+    })),
+  }, "message:" + aType);
 }

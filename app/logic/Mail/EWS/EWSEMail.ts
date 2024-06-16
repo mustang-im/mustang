@@ -1,5 +1,6 @@
 import { EMail } from "../EMail";
 import { type EWSFolder, getEWSItem } from "./EWSFolder";
+import EWSUpdateItemRequest from "./EWSUpdateItemRequest";
 import { Attachment, ContentDisposition } from "../Attachment";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { appGlobal } from "../../app";
@@ -120,66 +121,28 @@ export class EWSEMail extends EMail {
   }
 
   async markRead(read = true) {
-    let request = {
-      m$UpdateItem: {
-        m$ItemChanges: {
-          t$ItemChange: {
-            t$ItemId: {
-              Id: this.itemID,
-            },
-            t$Updates: {
-              t$SetItemField: {
-                t$FieldURI: {
-                  FieldURI: "message:IsRead",
-                },
-                t$Message: {
-                  t$IsRead: read,
-                },
-              },
-            },
-          },
-        },
-        ConflictResolution: "AlwaysOverwrite",
-        MessageDisposition: "SaveOnly",
-        SendMeetingInvitationsOrCancellations: "SendToNone",
-        SuppressReadReceipts: true,
-      },
-    };
+    let request = new EWSUpdateItemRequest(this.itemID, {
+      MessageDisposition: "SaveOnly",
+      SendMeetingInvitationsOrCancellations: "SendToNone",
+      SuppressReadReceipts: true,
+    });
+    request.addField("Message", "IsRead", read, "message:IsRead");
     await this.folder.account.callEWS(request);
     await super.markRead(read);
   }
 
   async markStarred(starred = true) {
-    let request = {
-      m$UpdateItem: {
-        m$ItemChanges: {
-          t$ItemChange: {
-            t$ItemId: {
-              Id: this.itemID,
-            },
-            t$Updates: {
-              t$SetItemField: {
-                t$FieldURI: {
-                  FieldURI: "item:Flag",
-                },
-                t$Item: {
-                  t$Flag: {
-                    t$CompleteDate: null,
-                    t$DueDate: null,
-                    t$StartDate: null,
-                    t$FlagStatus: starred ? "Flagged" : "notFlagged",
-                  },
-                },
-              },
-            },
-          },
-        },
-        ConflictResolution: "AlwaysOverwrite",
-        MessageDisposition: "SaveOnly",
-        SendMeetingInvitationsOrCancellations: "SendToNone",
-        SuppressReadReceipts: true,
-      },
-    };
+    let request = new EWSUpdateItemRequest(this.itemID, {
+      MessageDisposition: "SaveOnly",
+      SendMeetingInvitationsOrCancellations: "SendToNone",
+      SuppressReadReceipts: true,
+    });
+    request.addField("Message", "Flag", {
+      t$CompleteDate: null,
+      t$DueDate: null,
+      t$StartDate: null,
+      t$FlagStatus: starred ? "Flagged" : "NotFlagged",
+    }, "item:Flag");
     await this.folder.account.callEWS(request);
     await super.markStarred(starred);
   }
@@ -201,31 +164,12 @@ export class EWSEMail extends EMail {
   }
 
   async markDraft() {
-    let request = {
-      m$UpdateItem: {
-        m$ItemChanges: {
-          t$ItemChange: {
-            t$ItemId: {
-              Id: this.itemID,
-            },
-            t$Updates: {
-              t$SetItemField: {
-                t$FieldURI: {
-                  FieldURI: "message:IsDraft",
-                },
-                t$Message: {
-                  t$IsDraft: true,
-                },
-              },
-            },
-          },
-        },
-        ConflictResolution: "AlwaysOverwrite",
-        MessageDisposition: "SaveOnly",
-        SendMeetingInvitationsOrCancellations: "SendToNone",
-        SuppressReadReceipts: true,
-      },
-    };
+    let request = new EWSUpdateItemRequest(this.itemID, {
+      MessageDisposition: "SaveOnly",
+      SendMeetingInvitationsOrCancellations: "SendToNone",
+      SuppressReadReceipts: true,
+    });
+    request.addField("Message", "IsDraft", true, "message:IsDraft");
     await this.folder.account.callEWS(request);
     await super.markDraft();
   }
