@@ -13,7 +13,7 @@
       onClick={onOpenSettings}
       />
     <Button label="Minimize"
-      icon={MinimizeIcon} iconSize="24px" plain iconOnly classes="close"
+      icon={MinimizeIcon} iconSize="24px" plain iconOnly classes="minimize"
       onClick={onMinimize}
       />
     <Button label="Close entire app"
@@ -76,8 +76,12 @@
     app-region: drag;
   }
   .right :global(.close),
+  .right :global(.minimize),
   .right :global(.settings) {
     color: white;
+  }
+  .right :global(.minimize svg) {
+    margin-top: 10px; /* Find better icon */
   }
   .free {
     app-region: drag;

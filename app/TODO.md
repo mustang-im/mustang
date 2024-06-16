@@ -1,10 +1,7 @@
 # Next
 * Mail
   * Main window
-    * Minimize
     * Save window size
-  * Calendar: DB changes
-    * Color for calendar and event
   * Setup
     * Autodiscover
     * EWS with URL
