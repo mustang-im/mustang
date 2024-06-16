@@ -1,7 +1,7 @@
 <hbox flex class="person-autocomplete" bind:this={topEl}>
   <Autocomplete
-    onChange={onAddPerson}
-    searchFunction={search}
+    onChange={() => catchErrors(onAddPerson)}
+    searchFunction={() => catchErrors(search)}
     delay={100}
     minCharactersToSearch={2}
     localFiltering={false}
@@ -10,7 +10,7 @@
     hideArrow={true}
     noResultsText="No person found"
     bind:text={typedText}
-    create={canCreate(typedText)}
+    create={() => catchErrors(() => canCreate(typedText))}
     createText={"Add this person"}
     onCreate={(text) => catchErrors(() => onCreate(text))}
     {placeholder}
@@ -46,34 +46,27 @@
   export let autofocus = false;
 
   export async function search(inputStr: string): Promise<PersonUID[]> {
-    try {
-      if (inputStr.length < 2) {
-        return [];
-      }
-      inputStr = inputStr.toLowerCase();
-      let persons: Person[] = [];
-      for (let ab of appGlobal.addressbooks) {
-        persons.push(...ab.persons.filter(person => person.name.toLowerCase().includes(inputStr)));
-      }
-      let emailAddresses: PersonUID[] = [];
-      for (let person of persons) {
-        for (let c of person.emailAddresses.sortBy(c => c.preference)) {
-          if (skipPersons.find(p => p.emailAddress == c.value)) {
-            continue;
-          }
-          let uid = new PersonUID(c.value, person.name);
-          uid.person = person;
-          emailAddresses.push(uid);
-        }
-      }
-      console.log("Got", persons.length, "persons with ", emailAddresses.length, "email addresses for", inputStr);
-      return emailAddresses;
-    } catch (ex) {
-      console.error(ex);
-      alert(ex.message);
-      //inputE.setCustomValidity(ex.message ?? ex + "");
-      //inputE.reportValidity();
+    if (inputStr.length < 2) {
+      return [];
     }
+    inputStr = inputStr.toLowerCase();
+    let persons: Person[] = [];
+    for (let ab of appGlobal.addressbooks) {
+      persons.push(...ab.persons.filter(person => person.name.toLowerCase().includes(inputStr)));
+    }
+    let emailAddresses: PersonUID[] = [];
+    for (let person of persons) {
+      for (let c of person.emailAddresses.sortBy(c => c.preference)) {
+        if (skipPersons.find(p => p.emailAddress == c.value)) {
+          continue;
+        }
+        let uid = new PersonUID(c.value, person.name);
+        uid.person = person;
+        emailAddresses.push(uid);
+      }
+    }
+    console.log("Got", persons.length, "persons with ", emailAddresses.length, "email addresses for", inputStr);
+    return emailAddresses;
   }
 
   let topEl: HTMLDivElement;
