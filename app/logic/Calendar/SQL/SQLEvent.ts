@@ -109,7 +109,7 @@ export class SQLEvent extends Event {
   protected static async readParticipants(event: Event) {
     let rows = await (await getDatabase()).all(sql`
       SELECT
-        personID, confirmed
+        emailAddress, name, confirmed
       FROM eventParticipant
       WHERE eventID = ${event.dbID}
       `) as any;
