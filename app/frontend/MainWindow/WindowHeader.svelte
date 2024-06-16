@@ -12,6 +12,10 @@
       icon={SettingsIcon} iconSize="24px" plain iconOnly classes="settings"
       onClick={onOpenSettings}
       />
+    <Button label="Minimize"
+      icon={MinimizeIcon} iconSize="24px" plain iconOnly classes="close"
+      onClick={onMinimize}
+      />
     <Button label="Close entire app"
       icon={XIcon} iconSize="24px" plain iconOnly classes="close"
       onClick={onCloseApp}
@@ -23,13 +27,15 @@
   import type { MustangApp } from "../AppsBar/MustangApp";
   import { globalSearchTerm, openApp } from "../AppsBar/selectedApp";
   import { settingsMustangApp } from "../Settings/Window/SettingsMustangApp";
-  import { selectedCategory } from "../Settings/Window/selected";
   import { getSettingsCategoryForApp } from "../Settings/Window/CategoriesUtils";
+  import { selectedCategory } from "../Settings/Window/selected";
+  import { appGlobal } from "../../logic/app";
   import SearchField from "../Shared/SearchField.svelte";
   import Button from "../Shared/Button.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
   import logo from '../asset/icon/general/logo.svg?raw';
   import SettingsIcon from 'lucide-svelte/icons/settings-2';
+  import MinimizeIcon from 'lucide-svelte/icons/minus';
   import XIcon from 'lucide-svelte/icons/x';
 
   export let selectedApp: MustangApp;
@@ -37,6 +43,10 @@
   function onOpenSettings() {
     $selectedCategory = getSettingsCategoryForApp($selectedApp);
     openApp(settingsMustangApp);
+  }
+
+  function onMinimize() {
+    appGlobal.remoteApp.minimizeMainWindow();
   }
 
   function onCloseApp() {

@@ -1,4 +1,4 @@
-import { startupBackend } from '../../../backend/backend';
+import { setMainWindow, startupBackend } from '../../../backend/backend';
 import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -29,6 +29,7 @@ function createWindow(): void {
         webviewTag: true,
       }
     })
+    setMainWindow(mainWindow);
 
     mainWindow.on('ready-to-show', () => {
       mainWindow.show()

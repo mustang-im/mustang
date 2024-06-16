@@ -4,16 +4,17 @@ import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import { shell, nativeTheme, Notification, Tray, nativeImage, app } from "electron";
+import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow } from "electron";
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
-import fsPromises, { FileHandle } from "node:fs/promises";
+import fsPromises from "node:fs/promises";
 import childProcess from 'node:child_process';
 
-export async function startupBackend() {
+export async function startupBackend(mainWin: BrowserWindow) {
+  mainWindow = mainWin;
   let appGlobal = await createSharedAppObject();
   let jpc = new JPCWebSocket(appGlobal);
   await jpc.listen(kSecret, 5455, false);
@@ -28,6 +29,9 @@ async function createSharedAppObject() {
     newOSNotification,
     isOSNotificationSupported,
     newTrayIcon,
+    setBadgeCount,
+    minimizeMainWindow,
+    unminimizeMainWindow,
     shell,
     setDarkMode,
     getConfigDir,
@@ -204,6 +208,24 @@ async function getMIMENodemailer(mail): Promise<Uint8Array> {
 
 function newAdmZIP(filepath: string) {
   return new Zip(filepath);
+}
+
+let mainWindow: BrowserWindow;
+
+export function setMainWindow(mainWin: BrowserWindow) {
+  mainWindow = mainWin;
+}
+
+function minimizeMainWindow() {
+  mainWindow.minimize();
+}
+
+function unminimizeMainWindow() {
+  mainWindow.restore();
+}
+
+function setBadgeCount(count: number) {
+  app.setBadgeCount(count);
 }
 
 function platform(): string {
