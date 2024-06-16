@@ -104,20 +104,8 @@ export async function showNewMail(messages: EMail[]) {
       notification.show();
 
       let msg = message ?? messages[0];
-      notification.on("click", event => {
-        alert("open message\n" + msg.subject); // TODO
-      });
-      notification.on("reply", async (event, replyText) => {
-        try {
-          console.log("Reply with:\n" + replyText + "\nto msg\n" + msg.subject);
-          let replyMsg = msg.action.replyToAuthor();
-          replyMsg.html = null;
-          replyMsg.text = replyText;
-          await replyMsg.send();
-        } catch (ex) {
-          showError(ex);
-        }
-      });
+      notification.on("click", event => openMessage(msg));
+      notification.on("reply", async (event, replyText) => reply(msg, replyText));
     } catch (ex) {
       backgroundError(ex);
     }
@@ -136,6 +124,31 @@ export async function showNewMail(messages: EMail[]) {
     } catch (ex) {
       backgroundError(ex);
     }
+  }
+}
+
+async function openMessage(msg: EMail) {
+  try {
+    appGlobal.remoteApp.unminimizeMainWindow();
+  } catch (ex) {
+    console.error(ex);
+  }
+  try {
+    alert("open message\n" + msg.subject); // TODO
+  } catch (ex) {
+    console.error(ex);
+  }
+}
+
+async function reply(msg: EMail, replyText: string) {
+  try {
+    console.log("Reply with:\n" + replyText + "\nto msg\n" + msg.subject);
+    let replyMsg = msg.action.replyToAuthor();
+    replyMsg.html = null;
+    replyMsg.text = replyText;
+    await replyMsg.send();
+  } catch (ex) {
+    showError(ex);
   }
 }
 
