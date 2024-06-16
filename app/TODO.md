@@ -1,24 +1,37 @@
 # Next
 * Mail
+  * Contacts
+    * Delete
+    * Move to other address book
+    * Import from TB
+    * Merge with other account
+  * Main window
+    * Minimize
+    * Save window size
+  * Calendar: DB changes
+    * Color for calendar and event
   * Setup
     * Autodiscover
+    * EWS with URL
   * Import
-    * Polish UI
     * Exchange: Import calendars and contacts
     * "Create more accounts" screen
-  * Selection
-    * Default selection on start
   * OAuth2
-    * Register with providers
-    * Popup dialog - for setup
-  * Inline images send
+    * Google approval
+    * Yahoo registration
+    * Microsoft - Partner support
+  * Calendar
+    * Test
+    * Edit
+    * Delete Event
+    * Move to other calendar
   * Move messages to deep subfolders
     * Drag&Drop: Open on drag over
     * Popup dialog
+  * Bug: Selection: Default selection on start
+  * Inline images send
   * Move messages to other accounts
-  * Bugs
-    * FastList doesn't update some rows #66
-    * Save window size
+  * Import: Polish UI
   * Threads
     * Search all folders
     * Hide quotes
@@ -31,6 +44,8 @@
       * List
       * Edit
       * Run
+  * Bugs: FastList doesn't update some rows #66
+  * OAuth2: Popup dialog - for setup
   * All accounts
     * Fix mergeColls() #72
     * Use search folder
@@ -48,6 +63,21 @@
 * Saved Searches delete: Update list
 * List view: Sort order
 * MailChat/Thread: Jail HTML: Styles and size
+
+# Initial release
+* Installer
+  * Windows on CI - DONE
+  * Linux on CI - DONE
+  * Mac ARM on CI
+  * Auto-update client
+  * Auto-update server
+* Licenses
+  * Adapt our Open-Source license
+  * Adapt our EULA and Privacy policy
+* Beta notification bar
+* Beta time-bomb
+* License client
+* Password storage
 
 # UI
 * Close menu when clicking outside menu
@@ -235,18 +265,6 @@
 # Setup
 * Chat & Video conf
 * Combined: Mail, chat, fileshare, calendar, contacts with single login/setup
-
-# Initial release
-* Installer
-  * Windows
-  * Linux - DONE
-  * Mac ARM - DONE
-  * Auto-update client
-  * Auto-update server
-* Licenses
-  * Adapt our Open-Source license
-  * Adapt our EULA and Privacy policy
-* Password storage
 
 # Server
 * Error logging server: Sentry
