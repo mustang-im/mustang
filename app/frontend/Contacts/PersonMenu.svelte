@@ -18,12 +18,13 @@
 
 <script lang="ts">
   import type { Person } from "../../logic/Abstract/Person";
-  import { Menu } from "@svelteuidev/core";
+  import { selectedPerson } from "../Shared/Person/Selected";
+  import { appGlobal } from "../../logic/app";
   import DotsIcon from "lucide-svelte/icons/ellipsis";
   import SaveIcon from "lucide-svelte/icons/save";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
+  import { Menu } from "@svelteuidev/core";
   import { catchErrors } from "../Util/error";
-  import { appGlobal } from "../../logic/app";
 
   export let person: Person;
 
@@ -35,6 +36,15 @@
     await person.save();
   }
   async function deleteIt() {
+    let addressbook = person.addressbook;
+    let posInAddressbook = person.addressbook.persons.indexOf(person);
+
     await person.deleteIt();
+
+    if (person == $selectedPerson) {
+      let next = addressbook.persons.getIndex(posInAddressbook)
+        ?? addressbook.persons.first;
+      $selectedPerson = next;
+    }
   }
 </script>

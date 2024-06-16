@@ -1,7 +1,7 @@
 <hbox flex class="person-autocomplete" bind:this={topEl}>
   <Autocomplete
-    onChange={() => catchErrors(onAddPerson)}
-    searchFunction={() => catchErrors(search)}
+    onChange={person => catchErrors(() => onAddPerson(person))}
+    searchFunction={inputStr => catchErrors(() => search(inputStr))}
     delay={100}
     minCharactersToSearch={2}
     localFiltering={false}
@@ -72,6 +72,9 @@
   let topEl: HTMLDivElement;
   $: inputEl = topEl?.querySelector("input");
   async function onAddPerson(person: PersonUID) {
+    if (!person) {
+      return;
+    }
     typedText = "";
     (person as any).openPopup = person.name == person.emailAddress;
     dispatch('addPerson', person);
