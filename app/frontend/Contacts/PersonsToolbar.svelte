@@ -9,12 +9,13 @@
       icon={NewContactIcon}
       iconSize="22px" padding="9px" classes="large create"
       onClick={addPerson}
+      disabled={!$selectedAddressbook}
       />
   </hbox>
 </hbox>
 
 <script lang="ts">
-  import { Person } from "../../logic/Abstract/Person";
+  import type { Person } from "../../logic/Abstract/Person";
   import { selectedPerson } from "../Shared/Person/Selected";
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import AddressbookSelector from "./AddressbookSelector.svelte";

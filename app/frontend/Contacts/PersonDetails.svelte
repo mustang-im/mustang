@@ -150,6 +150,7 @@
       </grid>
     </GroupBox>
 
+    <!--
     <GroupBox classes="preferences">
       <svelte:fragment slot="header">
         <Icon data={ChatIcon} size="16px" />
@@ -160,7 +161,10 @@
         <hbox>WhatsApp</hbox>
         <hbox>[o] Notifications</hbox>
       </vbox>
-  </GroupBox>
+    </GroupBox>
+    -->
+
+    <SameName bind:person />
 
   </grid>
 
@@ -181,6 +185,7 @@
   import PhoneNumberEdit from "./PhoneNumberEdit.svelte";
   import StreetAddressDisplay from "./StreetAddressDisplay.svelte";
   import StreetAddressEdit from "./StreetAddressEdit.svelte";
+  import SameName from "./SameName.svelte";
   import PersonPicture from "../Shared/Person/PersonPicture.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import Button from "../Shared/Button.svelte";
@@ -283,7 +288,8 @@
   grid.boxes {
     grid-template-columns: 1fr 1fr;
   }
-  h3 {
+  h3,
+  .person-page :global(.group .header h3) {
     margin-left: 10px;
     margin-top: 0px;
     margin-bottom: 0px;

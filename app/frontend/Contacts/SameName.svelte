@@ -1,0 +1,86 @@
+{#if $sameName?.hasItems}
+  <GroupBox classes="merge">
+    <svelte:fragment slot="header">
+      <PersonsIcon size="16px" />
+      <h3>Similar names</h3>
+    </svelte:fragment>
+    <vbox class="merge" slot="content">
+      {#each $sameName.each as other}
+        <hbox class="other-person">
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <hbox on:click={() => catchErrors(() => openPerson(other))} class="linked-object">
+            <PersonPicture {person} size={24} />
+            <hbox class="name">{other.name}</hbox>
+          </hbox>
+          <hbox class="email-address">{other.emailAddresses.first?.value ?? ""}</hbox>
+          <hbox class="buttons">
+            <Button label="Merge" onClick={() => merge(other)} />
+          </hbox>
+        </hbox>
+      {/each}
+    </vbox>
+  </GroupBox>
+{/if}
+
+<script lang="ts">
+  import type { Person } from "../../logic/Abstract/Person";
+  import GroupBox from "./GroupBox.svelte";
+  import PersonPicture from "../Shared/Person/PersonPicture.svelte";
+  import Button from "../Shared/Button.svelte";
+  import PersonsIcon from "lucide-svelte/icons/users";
+  import { catchErrors, showError } from "../Util/error";
+  import { appGlobal } from "../../logic/app";
+  import { ArrayColl } from "svelte-collections";
+
+  export let person: Person;
+
+  let sameName = new ArrayColl<Person>();
+  $: findSameName(person);
+  function findSameName(person: Person) {
+    sameName.clear();
+    if (!person) {
+      return;
+    }
+    for (let ab of appGlobal.addressbooks) {
+      for (let other of ab.persons) {
+        if (other && other != person &&
+          other.name?.toLowerCase() == person?.name?.toLowerCase()) {
+          sameName.add(other);
+        }
+      }
+    }
+  }
+
+  function openPerson(other: Person) {
+    person = other;
+  }
+
+  async function merge(other: Person) {
+    if (!confirm("Do you want to merge the 2 contacts and delete the other one?")) {
+      return;
+    }
+    await person.merge(other);
+    person = person;
+  }
+</script>
+
+<style>
+  .other-person {
+    align-items: center;
+  }
+  .linked-object {
+    align-items: center;
+    color: var(--link-fg);
+  }
+  .linked-object:hover {
+    color: var(--link-hover-fg);
+    text-decoration: underline;
+  }
+  .email-address {
+    margin-left: 24px;
+  }
+  .buttons {
+    align-items: right;
+    margin-left: 24px;
+  }
+</style>

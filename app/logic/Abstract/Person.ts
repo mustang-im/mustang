@@ -27,6 +27,14 @@ export class Person extends ContactBase {
     await this.addressbook.storage.savePerson(this);
   }
 
+  async deleteIt() {
+    if (!this.addressbook) {
+      return;
+    }
+    this.addressbook.persons.remove(this);
+    await this.addressbook.storage.deletePerson(this);
+  }
+
   toString() {
     return this.name;
   }
@@ -56,6 +64,20 @@ export class Person extends ContactBase {
       }
     }
     super.notifyObservers(propertyName, oldValue);
+  }
+
+  async merge(other: Person) {
+    this.picture = this.picture ?? other.picture;
+    this.company = this.company ?? other.company;
+    this.department = this.department ?? other.department;
+    this.position = this.position ?? other.position;
+    this.notes = this.notes ?? "" + other.notes ?? "";
+    this.emailAddresses.addAll(other.emailAddresses);
+    this.phoneNumbers.addAll(other.phoneNumbers);
+    this.chatAccounts.addAll(other.chatAccounts);
+    this.streetAddresses.addAll(other.streetAddresses);
+    this.groups.addAll(other.groups);
+    await other.deleteIt();
   }
 }
 

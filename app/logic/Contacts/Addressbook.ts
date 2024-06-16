@@ -32,7 +32,9 @@ export class Addressbook extends Account {
 
 export interface AddressbookStorage {
   savePerson(person: Person): Promise<void>;
+  deletePerson(person: Person): Promise<void>;
   saveGroup(group: Group): Promise<void>;
+  deleteGroup(group: Group): Promise<void>;
   saveAddressbook(addressbook: Addressbook): Promise<void>;
   deleteAddressbook(addressbook: Addressbook): Promise<void>;
 }

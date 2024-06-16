@@ -46,6 +46,8 @@
   --input-fg: fieldtext;
   --input-line: #DFDFDF;
   --input-focus: #20AE9E;
+  --link-fg: #747bff;
+  --link-hover-fg: #535bf2;
   --button-bg: #F9F9FD;
   --button-fg: black;
   --button-border: #B2ADB8;
@@ -87,6 +89,8 @@
     --input-fg: fieldtext;
     --input-line: #3A3A3B;
     --input-focus: #20AE9E;
+    --link-fg: #646cff;
+    --link-hover-fg: #535bf2;
     --button-bg: #6B6B6C;
     --button-fg: #CDCDCD;
     --button-border: #CDCDCD;
@@ -233,16 +237,13 @@ a[href] {
 }
 a {
   font-weight: 500;
-  color: #646cff;
+  color: var(--link-fg);
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
-}
-@media (prefers-color-scheme: light) {
-  a:hover {
-    color: #747bff;
-  }
+  color: var(--link-hover-fg);
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 /* Fastlist */
