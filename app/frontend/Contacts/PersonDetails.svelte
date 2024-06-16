@@ -54,6 +54,7 @@
         </hbox>
         <hbox flex />
         <hbox class="main-right-bottom">
+          <AddressbookChanger {person} />
           <PersonMenu {person} />
         </hbox>
       </vbox>
@@ -192,6 +193,7 @@
   import SameName from "./SameName.svelte";
   import PersonMenu from "./PersonMenu.svelte";
   import PersonPicture from "../Shared/Person/PersonPicture.svelte";
+  import AddressbookChanger from "./AddressbookChanger.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import Button from "../Shared/Button.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
@@ -280,6 +282,10 @@
   }
   .main-right-bottom {
     justify-content: end;
+    align-items: center;
+  }
+  .main-right-bottom :global(.svelteui-Menu-root) {
+    margin-left: 12px;
   }
   .preferred {
     margin-top: 8px;

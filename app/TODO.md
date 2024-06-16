@@ -1,10 +1,5 @@
 # Next
 * Mail
-  * Contacts
-    * Delete
-    * Move to other address book
-    * Import from TB
-    * Merge with other account
   * Main window
     * Minimize
     * Save window size
@@ -16,6 +11,7 @@
   * Import
     * Exchange: Import calendars and contacts
     * "Create more accounts" screen
+    * Contacts: TB address books
   * OAuth2
     * Google approval
     * Yahoo registration

@@ -30,6 +30,7 @@
   async function save() {
     if (!person.addressbook) {
       person.addressbook = appGlobal.personalAddressbook;
+      person.addressbook.persons.add(person);
     }
     await person.save();
   }

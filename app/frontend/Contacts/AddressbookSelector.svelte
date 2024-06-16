@@ -1,7 +1,9 @@
 <AccountSelectorRound
   accounts={appGlobal.addressbooks}
   bind:selectedAccount={selectedAddressbook}
-  icon={AddressbookIcon} />
+  icon={AddressbookIcon}
+  on:select
+  />
 
 <script lang="ts">
   import type { Addressbook } from "../../logic/Contacts/Addressbook";

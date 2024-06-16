@@ -62,7 +62,7 @@
     </vbox>
   {/if}
   <hbox class="addressbooks" class:top-border={person?.emailAddresses.length > 1}>
-    <AddressbookSelector bind:selectedAddressbook />
+    <AddressbookChanger {person} />
   </hbox>
   <hbox class="bottom buttons">
     <Button plain
@@ -81,9 +81,9 @@
 <script lang="ts">
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import type { ContactEntry, Person } from "../../../logic/Abstract/Person";
-  import type { Addressbook } from "../../../logic/Contacts/Addressbook";
   import { openUIFor } from "../../AppsBar/changeTo";
   import { appGlobal } from "../../../logic/app";
+  import AddressbookChanger from "../../Contacts/AddressbookChanger.svelte";
   import PersonPicture from "../Person/PersonPicture.svelte";
   import Button from "../Button.svelte";
   import RoundButton from "../RoundButton.svelte";
@@ -95,15 +95,12 @@
   import { catchErrors } from "../../Util/error";
   import { useDebounce } from "@svelteuidev/composables";
   import { createEventDispatcher, onMount } from 'svelte';
-  import AddressbookSelector from "../../Contacts/AddressbookSelector.svelte";
   const dispatch = createEventDispatcher<{ removePerson: PersonUID, close: void }>();
 
   export let personUID: PersonUID;
 
   let person: Person;
   let contactEntry: ContactEntry;
-  let addressbook: Addressbook;
-  let selectedAddressbook: Addressbook;
   let isEditing = false;
   let nameInputEl: HTMLInputElement;
 
@@ -118,19 +115,7 @@
   function onLoad(personUID: PersonUID) {
     person = personUID.createPerson();
     contactEntry = person.emailAddresses.find(c => c.value == personUID.emailAddress);
-    addressbook = selectedAddressbook = appGlobal.addressbooks.find(ab => ab.persons.contains(person));
-    isEditing = !addressbook || appGlobal.collectedAddressbook.persons.contains(person);
-  }
-
-  $: catchErrors(() => onChangeAddressbook(selectedAddressbook));
-  async function onChangeAddressbook(newAddressbook: Addressbook) {
-    if (addressbook == newAddressbook) {
-      return;
-    }
-    addressbook?.persons.remove(person);
-    newAddressbook.persons.add(person);
-    person.addressbook = addressbook = newAddressbook;
-    await person.save();
+    isEditing = !person.addressbook || person.addressbook == appGlobal.collectedAddressbook;
   }
 
   function onClose() {
@@ -147,12 +132,9 @@
     let person = personUID.createPerson();
     person.name = personUID.name;
     contactEntry.value = personUID.emailAddress;
-    if (!addressbook) {
-      addressbook = appGlobal.addressbooks.find(ab => ab.persons.contains(person));
-    }
-    if (!addressbook) {
-      addressbook = appGlobal.personalAddressbook;
-      addressbook.persons.add(person);
+    if (!person.addressbook) {
+      person.addressbook = appGlobal.personalAddressbook;
+      person.addressbook.persons.add(person);
     }
     await person.save();
   }

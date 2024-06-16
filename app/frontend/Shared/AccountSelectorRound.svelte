@@ -17,6 +17,8 @@
   import RoundButton from "./RoundButton.svelte";
   import type { Collection } from "svelte-collections";
   import type { ComponentType } from "svelte";
+  import { createEventDispatcher } from 'svelte';
+  const dispatch = createEventDispatcher();
 
   /** in */
   export let accounts: Collection<Account>;
@@ -26,6 +28,7 @@
 
   function onSelect(acc: Account) {
     selectedAccount = acc;
+    dispatch("select", acc);
   }
 </script>
 
