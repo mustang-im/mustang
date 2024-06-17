@@ -26,6 +26,7 @@ export class Addressbook extends Account {
     let newPerson = this.newPerson();
     if (Object.getPrototypeOf(person) == Object.getPrototypeOf(newPerson)) {
       person.addressbook?.persons.remove(person);
+      person.addressbook = this;
       this.persons.add(person);
       return person;
     }
@@ -43,7 +44,8 @@ export class Addressbook extends Account {
     let newGroup = this.newGroup();
     if (Object.getPrototypeOf(group) == Object.getPrototypeOf(newGroup)) {
       group.addressbook?.groups.remove(group);
-      this.persons.add(group);
+      group.addressbook = this;
+      this.groups.add(group);
       return group;
     }
     Object.assign(newGroup, group);
