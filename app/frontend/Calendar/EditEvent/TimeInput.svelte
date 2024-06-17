@@ -20,26 +20,29 @@
 
   export function onChange() {
     try {
-      do {
-        let parts = userValue.match(/^(\d{1,2})(:?(\d\d))?\s*(am?|(pm?))?$/i);
-        if (!parts) break;
-        let hour = Number(parts[1]);
-        if (parts[4]) {
-          if (hour < 1 || hour > 12) break;
-          hour %= 12;
-          if (parts[5]) {
-            hour += 12;
-          }
-        } else {
-          if (hour > 23) break;
+      let parts = userValue.match(/^(\d{1,2})(:?(\d\d))?\s*(am?|(pm?))?$/i);
+      if (!parts) {
+        throw new Error("Could not interpret value as a time");
+      }
+      let hour = Number(parts[1]);
+      if (parts[4]) {
+        if (hour < 1 || hour > 12) {
+          throw new Error("Hour must be between 1 and 12 when using am or pm");
         }
-        let minute = Number(parts[3] || 0);
-        if (minute > 59) break;
-        time.setHours(hour, minute, 0, 0);
-        time = time; // force refresh
-        return;
-      } while (false);
-      inputE.setCustomValidity("A valid time is required");
+        hour %= 12;
+        if (parts[5]) {
+          hour += 12;
+        }
+      } else if (hour > 23) {
+        throw new Error("Hour moust be less than 24");
+      }
+      let minute = Number(parts[3] || 0);
+      if (minute > 59) {
+        throw new Error("Minute must be less than 59");
+      }
+      time.setHours(hour, minute, 0, 0);
+      time = time; // force refresh
+      return;
     } catch (ex) {
       inputE.setCustomValidity(ex.message);
     }
