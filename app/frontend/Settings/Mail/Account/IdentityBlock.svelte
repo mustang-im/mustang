@@ -24,7 +24,7 @@
         <hbox />
         <hbox>
           <hbox class="catch-all">This is a catch-all email address.</hbox>
-          <a href="https://ww.mustang.im/link/catch-all" target="_blank">More info</a>
+          <a href="{siteRoot}/link/catch-all" target="_blank">More info</a>
         </hbox>
       {/if}
 
@@ -54,7 +54,7 @@
             <hbox class="sentBy">
               <div>
                 <!--<Icon data={logo} size="20px" />-->
-                Sent by <a href="https://mustang.im" target="_blank" style="color: #20AE9E"><strong><em>Mustang</em></strong></a>
+                Sent by <a href={siteRoot} target="_blank" style="color: #20AE9E"><strong><em>{appName}</em></strong></a>
               </div>
               {#if !showSentByExplainer}
                 <RoundButton
@@ -99,6 +99,7 @@
   import logo from '../../../asset/icon/general/logo.svg?raw';
   import type { Editor } from "@tiptap/core";
   import { createEventDispatcher } from 'svelte';
+  import { appName, siteRoot } from "../../../build";
   const dispatchEvent = createEventDispatcher();
 
   export let identity: MailIdentity;

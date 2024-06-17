@@ -1,9 +1,9 @@
 <vbox class="sent-by-explainer">
   <hbox class="help">
-    Help us spread the word about Mustang!
+    Help us spread the word about {appName}!
   </hbox>
   <vbox class="sub-box">
-    <hbox>To use Mustang professionally and remove this note, you can subscribe to one of our plans.</hbox>
+    <hbox>To use {appName} professionally and remove this note, you can subscribe to one of our plans.</hbox>
     <a href={kSubscribeURL} target="_blank">
       <Button
         label="See plans"
@@ -14,8 +14,9 @@
 
 <script lang="ts">
   import Button from "../../../Shared/Button.svelte";
+  import { appName, siteRoot } from "../../../build";
 
-  const kSubscribeURL = "https://mustang.im#plans";
+  const kSubscribeURL = `${siteRoot}#plans`;
   /*async function onSubscribeClick() {
     await appGlobal.remoteApp.shell.openExternal(kSubscribeURL);
   }*/

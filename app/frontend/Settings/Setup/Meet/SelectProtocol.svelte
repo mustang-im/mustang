@@ -20,6 +20,7 @@
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
   import { NotReached } from "../../../../logic/util/util";
+  import { appName } from "../../../build";
 
   /** out */
   export let config: MeetAccount = null;
@@ -30,7 +31,7 @@
   let selectedProtocol: string;
 
   const protocols: ProtocolDescription[] = [
-    { label: "Mustang video conference account", protocolID: "m3" },
+    { label: `${appName} video conference account`, protocolID: "m3" },
   ];
 
   function onContinue() {

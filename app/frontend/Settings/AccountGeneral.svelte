@@ -15,6 +15,7 @@
   import type { MailAccount } from "../../logic/Mail/MailAccount";
   import Button from "../Shared/Button.svelte";
   import { catchErrors } from "../Util/error";
+  import { appName } from "../build";
 
   export let account: Account;
 
@@ -24,7 +25,7 @@
     await account.save();
   }
   async function onDelete() {
-    let confirmed = confirm(`Are you sure that you want to the delete account ${account.name} from Mustang and all related data?`);
+    let confirmed = confirm(`Are you sure that you want to the delete account ${account.name} from ${appName} and all related data?`);
     if (!confirmed) {
       return;
     }

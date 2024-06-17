@@ -8,6 +8,7 @@ import { SpecialFolder } from "../Folder";
 import { assert } from "../../util/util";
 import type { ArrayColl, Collection } from "svelte-collections";
 import type { ImapFlow } from "../../../../e2/node_modules/imapflow";
+import { appName, appVersion, siteRoot } from "../../../frontend/build";
 
 export class IMAPAccount extends MailAccount {
   readonly protocol: string = "imap";
@@ -264,7 +265,7 @@ export class IMAPAccount extends MailAccount {
 }
 
 const useragent = {
-  name: "Mustang",
-  version: "0.1",
-  'support-url': "https://mustang.im",
+  name: appName,
+  version: appVersion,
+  'support-url': siteRoot,
 };

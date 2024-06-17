@@ -1,6 +1,6 @@
 <Header
   title="Set up your existing Matrix account"
-  subtitle="You can use Mustang with your existing Matrix account or you can create a new Matrix account."
+  subtitle="You can use {appName} with your existing Matrix account or you can create a new Matrix account."
 />
 <vbox flex class="account">
   <grid>
@@ -26,6 +26,7 @@
   import Password from "../Shared/Password.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
+  import { appName } from "../../../build";
 
   /** in/out */
   export let config: MatrixAccount;

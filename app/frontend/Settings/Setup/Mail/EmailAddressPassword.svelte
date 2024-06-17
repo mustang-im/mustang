@@ -1,4 +1,4 @@
-<Header title="Set up existing email address" subtitle="You can use Mustang with your existing email address or you can make a new email address." />
+<Header title="Set up existing email address" subtitle="You can use {appName} with your existing email address or you can make a new email address." />
 <MailAddress bind:emailAddress bind:this={mailAddressEl} on:continue={doFocusPassword} />
 <Password bind:password bind:this={passwordEl} on:continue />
 
@@ -7,6 +7,7 @@
   import Password from "../Shared/Password.svelte";
   import Header from "../Shared/Header.svelte";
   import { onMount } from "svelte";
+  import { appName } from "../../../build";
 
   /** in/out */
   export let emailAddress: string;

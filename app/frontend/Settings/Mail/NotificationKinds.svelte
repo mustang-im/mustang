@@ -13,7 +13,7 @@
 
   <label title="Not yet implemented">
     <input type="checkbox" value="appbar" bind:group={list} disabled />
-    Bubble on the appbar in Mustang
+    Bubble on the appbar in {appName}
   </label>
   <img src={appbarImg} title="Appbar" alt="Appbar" />
 
@@ -33,6 +33,7 @@
   import soundImg from "../../asset/settings/notification/sound.png";
   import appbarImg from "../../asset/settings/notification/appbar.png";
   import taskbarImg from "../../asset/settings/notification/taskbar.png";
+  import { appName } from "../../build";
   //import trayImg from "../../asset/settings/notification/tray.png";
 
   /** in/out */

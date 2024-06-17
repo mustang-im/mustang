@@ -1,6 +1,6 @@
 <Header
   title="Set up your existing chat account"
-  subtitle="You can use Mustang with your existing chat account or you can create a new chat account."
+  subtitle="You can use {appName} with your existing chat account or you can create a new chat account."
 />
 
 <ProtocolSelector {protocols} bind:selectedProtocol={selectedProtocol} />
@@ -20,6 +20,7 @@
   import Header from "../Shared/Header.svelte";
   import XMPPLogin from "./XMPPLogin.svelte";
   import MatrixLogin from "./MatrixLogin.svelte";
+  import { appName } from "../../../build";
 
   /** out */
   export let config: ChatAccount = null;

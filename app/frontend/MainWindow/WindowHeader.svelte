@@ -1,9 +1,11 @@
 <hbox class="window-header">
   <vbox class="app-logo">
+    {#if appName == "Mustang"}
     <Icon data={logo} size="20px" />
+    {/if}
   </vbox>
   <hbox class="app-title">
-    {$titleStore ?? selectedApp?.name ?? "Mustang"}
+    {$titleStore ?? selectedApp?.name ?? appName}
   </hbox>
   <vbox flex class="free" />
   <SearchField bind:searchTerm={$globalSearchTerm} />
@@ -30,6 +32,7 @@
   import { getSettingsCategoryForApp } from "../Settings/Window/CategoriesUtils";
   import { selectedCategory } from "../Settings/Window/selected";
   import { appGlobal } from "../../logic/app";
+  import { appName } from "../build";
   import SearchField from "../Shared/SearchField.svelte";
   import Button from "../Shared/Button.svelte";
   import Icon from 'svelte-icon/Icon.svelte';

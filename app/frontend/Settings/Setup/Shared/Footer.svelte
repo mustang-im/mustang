@@ -1,9 +1,10 @@
 <hbox class="footer">
-  <a href="https://mustang.im/eula" target="_blank">Terms of use</a>
-  <a href="https://mustang.im/privacy" target="_blank">Privacy</a>
+  <a href="{siteRoot}/eula" target="_blank">Terms of use</a>
+  <a href="{siteRoot}/privacy" target="_blank">Privacy</a>
 </hbox>
 
 <script lang="ts">
+  import { siteRoot } from "../../../build";
 </script>
 
 <style>

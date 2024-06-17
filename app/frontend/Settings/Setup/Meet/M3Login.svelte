@@ -1,10 +1,10 @@
 <Header
-  title="Set up your existing Mustang account for meetings"
+  title="Set up your existing {appName} account for meetings"
   subtitle="If you don't have an account yet, you can subscribe on our website."
 />
 <vbox flex class="account">
   <grid>
-    <label for="username">Your Mustang email address</label>
+    <label for="username">Your {appName} email address</label>
     <input type="text" bind:value={config.username} name="username"
       placeholder="fred@example.com" />
     <label for="password">Password</label>
@@ -26,6 +26,7 @@
   import Password from "../Shared/Password.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
+  import { appName } from "../../../build";
 
   /** in/out */
   export let config: MeetAccount;
