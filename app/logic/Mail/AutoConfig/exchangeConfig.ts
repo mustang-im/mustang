@@ -79,9 +79,10 @@ async function fetchV1HTTP(url: URLString, callArgs: any, emailAddress: string, 
   assert(redirectURL.endsWith(fileExt), `Exchange AutoDiscover redirect URL seems to be the wrong file type: ${redirectURL}. Skipping.`);
   let redirectDomain = getBaseDomainFromHost(new URL(redirectURL).hostname);
   let originalDomain = getDomainForEmailAddress(emailAddress);
-  let trustedDomain = redirectDomain == originalDomain ||
-    ["office.com", "office365.com", "outlook.com"].includes(redirectDomain);
-  if (trustedDomain) {
+  if (["office.com", "office365.com", "outlook.com"].includes(redirectDomain)) {
+    throw new Error("Office365 should use AutoConfig or AutoDiscover V2 JSON. It doesn't support AutoDiscover V1 XML with password anymore.");
+  };
+  if (redirectDomain == originalDomain) {
     return await fetchV1(redirectURL, callArgs, abort);
   }
   // Ask user to confirm redirect, but only if there is no better config found in parallel.
