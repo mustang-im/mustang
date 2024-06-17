@@ -6,7 +6,6 @@ import { SQLEMail } from "../SQL/SQLEMail";
 import type { EMail } from "../EMail";
 import { ArrayColl, Collection } from "svelte-collections";
 import { assert } from "../../util/util";
-import { Buffer } from "buffer/";
 
 export class IMAPFolder extends Folder {
   account: IMAPAccount;

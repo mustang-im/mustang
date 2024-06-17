@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 import { olm } from './build/olm';
 
@@ -8,5 +9,5 @@ export default defineConfig({
     port: 5454,
     strictPort: true,
   },
-  plugins: [svelte(), olm],
+  plugins: [nodePolyfills({include: ['buffer'], globals: {global: false, process: false}}), svelte(), olm],
 });
