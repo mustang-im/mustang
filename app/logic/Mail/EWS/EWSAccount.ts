@@ -190,10 +190,10 @@ export class EWSAccount extends MailAccount {
         this.oAuth2.reset();
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return await this.callEWS(aRequest); // repeat the call
-      } else if (/\bBasic\b/.test(response.WWWAuthenticate)) {
-        throw new Error("Password incorrect");
-      } else {
+      } else if (!/\bBasic\b/.test(response.WWWAuthenticate)) {
         throw new Error("Unsupported authentication protocol(s): " + response.WWWAuthenticate);
+      } else {
+        throw new Error("Password incorrect");
       }
     } else {
       throw new EWSError(response, aRequest);
