@@ -20,6 +20,41 @@ export class Addressbook extends Account {
     return new Group(this);
   }
 
+  /** Person class needs to match account class, so need to clone.
+   * @returns the new Person object */
+  async movePersonHere(person: Person): Promise<Person> {
+    let newPerson = this.newPerson();
+    if (Object.getPrototypeOf(person) == Object.getPrototypeOf(newPerson)) {
+      person.addressbook?.persons.remove(person);
+      this.persons.add(person);
+      return person;
+    }
+    Object.assign(newPerson, person);
+    newPerson.addressbook = this;
+    person.addressbook?.persons.remove(person);
+    this.persons.add(newPerson);
+    await person.deleteIt();
+    await newPerson.save();
+    return newPerson;
+  }
+  /** Group class needs to match account class, so need to clone.
+   * @returns the new Group object */
+  async moveGroupHere(group: Group): Promise<Group> {
+    let newGroup = this.newGroup();
+    if (Object.getPrototypeOf(group) == Object.getPrototypeOf(newGroup)) {
+      group.addressbook?.groups.remove(group);
+      this.persons.add(group);
+      return group;
+    }
+    Object.assign(newGroup, group);
+    newGroup.addressbook = this;
+    group.addressbook?.groups.remove(group);
+    this.groups.add(newGroup);
+    await group.deleteIt();
+    await newGroup.save();
+    return newGroup;
+  }
+
   async save(): Promise<void> {
     await this.storage?.saveAddressbook(this);
   }

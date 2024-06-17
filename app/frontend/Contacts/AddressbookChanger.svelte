@@ -17,9 +17,7 @@
     if (person?.addressbook == newAddressbook || !newAddressbook) {
       return;
     }
-    person.addressbook?.persons.remove(person);
-    person.addressbook = newAddressbook;
-    newAddressbook.persons.add(person);
+    newAddressbook.movePersonHere(person);
     await person.save();
   }
 </script>
