@@ -1,5 +1,6 @@
 import { EMail } from "../EMail";
 import { type EWSFolder, getEWSItem } from "./EWSFolder";
+import EWSDeleteItemRequest from "./EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "./EWSUpdateItemRequest";
 import { Attachment, ContentDisposition } from "../Attachment";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
@@ -166,17 +167,7 @@ export class EWSEMail extends EMail {
   }
 
   async deleteMessageOnServer() {
-    let request = {
-      m$DeleteItem: {
-        m$ItemIds: {
-          t$ItemId: {
-            Id: this.itemID,
-          },
-        },
-      },
-      DeleteType: "MoveToDeletedItems",
-      SuppressReadReceipts: true,
-    };
+    let request = new EWSDeleteItemRequest(this.itemID, {SuppressReadReceipts: true});
     await this.folder.account.callEWS(request);
   }
 }

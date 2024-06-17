@@ -2,6 +2,7 @@ import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { EWSFolder } from "./EWSFolder";
 import EWSCreateItemRequest from "./EWSCreateItemRequest";
+import type EWSDeleteItemRequest from "./EWSDeleteItemRequest";
 import type EWSUpdateItemRequest from "./EWSUpdateItemRequest";
 import { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
 import { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
@@ -15,7 +16,7 @@ import { assert } from "../../util/util";
 
 type Json = string | number | boolean | null | Json[] | {[key: string]: Json};
 
-type JsonRequest = Json | EWSCreateItemRequest | EWSUpdateItemRequest;
+type JsonRequest = Json | EWSCreateItemRequest | EWSDeleteItemRequest | EWSUpdateItemRequest;
 
 export class EWSAccount extends MailAccount {
   readonly protocol: string = "ews";
