@@ -4,6 +4,7 @@ import WindowsTimezones from "./WindowsTimezones";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { ensureArray } from "../../Mail/EWS/EWSEMail";
 import EWSCreateItemRequest from "../../Mail/EWS/EWSCreateItemRequest";
+import EWSDeleteItemRequest from "../../Mail/EWS/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/EWSUpdateItemRequest";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
@@ -157,17 +158,7 @@ export class EWSEvent extends Event {
   }
 
   async deleteIt() {
-    let request = {
-      m$DeleteItem: {
-        m$ItemIds: {
-          t$ItemId: {
-            Id: this.itemID,
-          },
-        },
-        DeleteType: "MoveToDeletedItems",
-        SendMeetingCancellations: "SendToAllAndSaveCopy",
-      },
-    };
+    let request = new EWSDeleteItemRequest(this.itemID, {SendMeetingCancellations: "SendToAllAndSaveCopy"});
     await this.calendar.account.callEWS(request);
     await super.deleteIt();
   }

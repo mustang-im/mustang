@@ -3,6 +3,7 @@ import type { EWSAddressbook } from './EWSAddressbook';
 import { SQLPerson } from '../SQL/SQLPerson';
 import { ensureArray } from "../../Mail/EWS/EWSEMail";
 import EWSCreateItemRequest from "../../Mail/EWS/EWSCreateItemRequest";
+import EWSDeleteItemRequest from "../../Mail/EWS/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/EWSUpdateItemRequest";
 import { assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -135,5 +136,11 @@ export class EWSPerson extends Person {
     let response = await this.addressbook.account.callEWS(request);
     this.itemID = sanitize.nonemptystring(response.Items.Contact.ItemId.Id);
     await SQLPerson.save(this);
+  }
+
+  async deleteIt() {
+    let request = new EWSDeleteItemRequest(this.itemID);
+    await this.addressbook.account.callEWS(request);
+    await super.deleteIt();
   }
 }

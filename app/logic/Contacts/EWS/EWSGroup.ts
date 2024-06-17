@@ -4,6 +4,7 @@ import { findPerson } from '../../Abstract/PersonUID';
 import type { EWSAddressbook } from './EWSAddressbook';
 import { ensureArray } from "../../Mail/EWS/EWSEMail";
 import EWSCreateItemRequest from "../../Mail/EWS/EWSCreateItemRequest";
+import EWSDeleteItemRequest from "../../Mail/EWS/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/EWSUpdateItemRequest";
 import { SQLGroup } from '../SQL/SQLGroup';
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -36,10 +37,11 @@ export class EWSGroup extends Group {
     let request = this.itemID ? new EWSUpdateItemRequest(this.itemID) : new EWSCreateItemRequest();
     request.addField("DistributionList", "Body", this.description && { BodyType: "Text", _TextContent_: this.description }, "item:Body");
     request.addField("DistributionList", "DisplayName", this.name, "contacts:DisplayName");
-    request.addField("DistributionList", "Members", this.participants.hasItems ? {
-      t$Member: this.participants.contents.map(entry => ({
+    let participants = this.participants.contents.filter(entry => entry.emailAddresses.first?.value);
+    request.addField("DistributionList", "Members", participants.length ? {
+      t$Member: participants.map(entry => ({
         t$Mailbox: {
-         t$EmailAddress: entry.emailAddress,
+         t$EmailAddress: entry.emailAddresses.first.value,
          t$Name: entry.name,
         },
       })),
@@ -47,6 +49,12 @@ export class EWSGroup extends Group {
     let response = await this.addressbook.account.callEWS(request);
     this.itemID = sanitize.nonemptystring(response.Items.DistributionList.ItemId.Id);
     await SQLGroup.save(this);
+  }
+
+  async deleteIt() {
+    let request = new EWSDeleteItemRequest(this.itemID);
+    await this.addressbook.account.callEWS(request);
+    await super.deleteIt();
   }
 }
 

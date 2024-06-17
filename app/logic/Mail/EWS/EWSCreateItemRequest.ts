@@ -1,4 +1,4 @@
-export default class EWSUpdateItemRequest {
+export default class EWSCreateItemRequest {
   m$CreateItem: any = {
     m$Items: {},
   };
