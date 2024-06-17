@@ -40,10 +40,10 @@ export class EWSEvent extends Event {
       this.startTime = new Date(xmljs.Start);
     }
     if (xmljs.End) {
-      this.endTime = new Date(xmljs.Start);
+      this.endTime = new Date(xmljs.End);
     }
     if (xmljs.DueDate) {
-      this.endTime = new Date(xmljs.Start);
+      this.endTime = new Date(xmljs.DueDate);
     }
     this.allDay = xmljs.IsAllDayEvent == "true";
     if (xmljs.Recurrence) {
