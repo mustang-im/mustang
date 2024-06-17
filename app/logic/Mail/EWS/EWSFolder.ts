@@ -4,6 +4,7 @@ import type { EWSAccount } from "./EWSAccount";
 import { SQLFolder } from "../SQL/SQLFolder";
 import { SQLEMail } from "../SQL/SQLEMail";
 import { base64ToArrayBuffer, assert } from "../../util/util";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
 
 export const kMaxCount = 50;
@@ -16,11 +17,11 @@ export class EWSFolder extends Folder {
   }
 
   fromXML(xmljs: any) {
-    this.id = xmljs.FolderId.Id;
-    this.name = xmljs.DisplayName;
-    this.countTotal = Number(xmljs.TotalCount);
-    this.countUnread = Number(xmljs.UnreadCount);
-    switch (xmljs.DistinguishedFolderId) {
+    this.id = sanitize.nonemptystring(xmljs.FolderId.Id);
+    this.name = sanitize.nonemptystring(xmljs.DisplayName);
+    this.countTotal = sanitize.integer(xmljs.TotalCount);
+    this.countUnread = sanitize.integer(xmljs.UnreadCount);
+    switch (xmljs.DistinguishedFolderId) { // allowed to be null
     case "inbox":
       this.specialFolder = SpecialFolder.Inbox;
       break;
@@ -100,7 +101,7 @@ export class EWSFolder extends Folder {
       ])).flat();
       this.messages.addAll(await this.getNewMessageHeaders(newMessageIDs));
       await this.forEachSyncChange(result.Changes.Delete, this.processSyncDelete, true);
-      this.syncState = sync.m$SyncFolderItems.m$SyncState = result.SyncState;
+      this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
       await SQLFolder.save(this);
     }
   }
@@ -111,7 +112,7 @@ export class EWSFolder extends Folder {
       if (!isDirectList) {
         change = getEWSItem(change);
       }
-      let email = this.getEmailByItemId(change?.ItemId?.Id);
+      let email = this.getEmailByItemID(sanitize.nonemptystring(change.ItemId.Id));
       if (email) {
         await eachCallback.call(this, email, change);
       } else {
@@ -122,7 +123,7 @@ export class EWSFolder extends Folder {
   }
 
   protected async processSyncReadFlagChange(email: EWSEMail, change: any) {
-    email.isRead = change.IsRead == "true";
+    email.isRead = sanitize.boolean(change.IsRead);
     await SQLEMail.saveWritableProps(email);
   }
 
@@ -177,11 +178,11 @@ export class EWSFolder extends Folder {
         // This folder is empty.
         break;
       }
-      request.m$FindItem.m$IndexedPageItemView.Offset = result.RootFolder.IndexedPagingOffset;
+      request.m$FindItem.m$IndexedPageItemView.Offset = sanitize.integer(result.RootFolder.IndexedPagingOffset);
       let messages = getEWSItems(result.RootFolder.Items);
       let newMessageIDs = [];
       for (let message of messages) {
-        let email = this.getEmailByItemId(message.ItemId.Id);
+        let email = this.getEmailByItemID(sanitize.nonemptystring(message.ItemId.Id));
         if (email) {
           email.setFlags(message);
           await SQLEMail.saveWritableProps(email);
@@ -292,7 +293,7 @@ export class EWSFolder extends Folder {
       for (let result of results) {
         let email = emailsToDownload.find(email => email.itemID == getEWSItem(result.Items).ItemId.Id);
         if (email && !email.downloadComplete) {
-          let mimeBase64 = getEWSItem(result.Items).MimeContent.Value;
+          let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
           email.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
           await email.parseMIME();
           await email.save();
@@ -310,7 +311,7 @@ export class EWSFolder extends Folder {
     return downloadedEmail;
   }
 
-  getEmailByItemId(id: string): EWSEMail | undefined {
+  getEmailByItemID(id: string): EWSEMail | undefined {
     if (!id) {
       return undefined;
     }
@@ -386,7 +387,7 @@ export class EWSFolder extends Folder {
     };
     let result = await this.account.callEWS(request);
     let folder = await super.createSubFolder(name) as EWSFolder;
-    folder.id = result.Folders.Folder.FolderId.Id;
+    folder.id = sanitize.nonemptystring(result.Folders.Folder.FolderId.Id);
     return folder;
   }
 
@@ -446,6 +447,10 @@ export class EWSFolder extends Folder {
     };
     await this.account.callEWS(request);
     await super.markAllRead();
+  }
+
+  disableChangeSpecial(): string | false {
+    return "You cannot change Exchange special folders.";
   }
 }
 

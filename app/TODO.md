@@ -3,7 +3,8 @@
   * Main window
     * Save window size
   * Setup
-    * EWS with URL
+    * Manual config, remove [Save] button
+    * EWS: Manual config with URL
   * Import
     * Exchange: Import calendars and contacts
     * "Create more accounts" screen
@@ -69,6 +70,8 @@
 * Beta notification bar
 * Beta time-bomb
 * License client
+* Parula website
+* Parula app brand change
 * Password storage
 
 # UI

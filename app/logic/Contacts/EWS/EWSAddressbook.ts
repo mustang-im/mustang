@@ -7,6 +7,7 @@ import { EWSGroup } from "./EWSGroup";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { ensureArray } from "../../Mail/EWS/EWSEMail";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
 
 export class EWSAddressbook extends Addressbook {
@@ -75,19 +76,19 @@ export class EWSAddressbook extends Addressbook {
       }
       if (result.Changes.Delete) {
         for (let deletion of ensureArray(result.Changes.Delete)) {
-          let person = this.getPersonByItemId(deletion.ItemId.Id);
+          let person = this.getPersonByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
           if (person) {
             this.persons.remove(person);
             await SQLPerson.deleteIt(person);
           }
-          let group = this.getGroupByItemId(deletion.ItemId.Id);
+          let group = this.getGroupByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
           if (group) {
             this.groups.remove(group);
             await SQLGroup.deleteIt(group);
           }
         }
       }
-      this.syncState = sync.m$SyncFolderItems.m$SyncState = result.SyncState;
+      this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
       await SQLAddressbook.save(this);
     }
     await this.listPersons(persons);
@@ -123,7 +124,7 @@ export class EWSAddressbook extends Addressbook {
       if (!result?.RootFolder?.Items) {
         break;
       }
-      request.m$FindItem.m$IndexedPageItemView.Offset = result.RootFolder.IndexedPagingOffset;
+      request.m$FindItem.m$IndexedPageItemView.Offset = sanitize.integer(result.RootFolder.IndexedPagingOffset);
       if (result.RootFolder.Items.Contact) {
         persons = persons.concat(ensureArray(result.RootFolder.Items.Contact));
       }
@@ -162,7 +163,7 @@ export class EWSAddressbook extends Addressbook {
       };
       let results = ensureArray(await this.account.callEWS(request));
       for (let result of results) {
-        let person = this.getPersonByItemId(result.Items.Contact.ItemId.Id);
+        let person = this.getPersonByItemID(result.Items.Contact.ItemId.Id);
         if (person) {
           person.fromXML(result.Items.Contact);
           await SQLPerson.save(person);
@@ -176,7 +177,7 @@ export class EWSAddressbook extends Addressbook {
     }
   }
 
-  getPersonByItemId(id: string): EWSPerson | void {
+  getPersonByItemID(id: string): EWSPerson | void {
     return this.persons.find(p => p.itemID == id);
   }
 
@@ -205,7 +206,7 @@ export class EWSAddressbook extends Addressbook {
       };
       let results = ensureArray(await this.account.callEWS(request));
       for (let result of results) {
-        let group = this.getGroupByItemId(result.Items.DistributionList.ItemId.Id);
+        let group = this.getGroupByItemID(result.Items.DistributionList.ItemId.Id);
         if (group) {
           group.fromXML(result.Items.DistributionList);
           await SQLGroup.save(group);
@@ -219,7 +220,7 @@ export class EWSAddressbook extends Addressbook {
     }
   }
 
-  getGroupByItemId(id: string): EWSGroup | void {
+  getGroupByItemID(id: string): EWSGroup | void {
     return this.groups.find(p => p.itemID == id);
   }
 }

@@ -5,6 +5,7 @@ import { SQLCalendar } from "../SQL/SQLCalendar";
 import { SQLEvent } from "../SQL/SQLEvent";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { ensureArray } from "../../Mail/EWS/EWSEMail";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
 
 export class EWSCalendar extends Calendar {
@@ -17,11 +18,15 @@ export class EWSCalendar extends Calendar {
   }
 
   async listEvents() {
+    /* Disabling tasks for now.
     // syncState is base64-encoded so it's safe to split and join on comma
     let [calendar, tasks] = this.syncState?.split(",") || [];
     calendar = await this.syncFolder("calendar", calendar);
     tasks = await this.syncFolder("tasks", tasks);
     this.syncState = calendar + "," + tasks;
+    */
+    // Delete the next line when enabling tasks.
+    this.syncState = await this.syncFolder("calendar", this.syncState);
     await SQLCalendar.save(this);
   }
 
@@ -67,7 +72,7 @@ export class EWSCalendar extends Calendar {
       }
       if (result.Changes.Delete) {
         for (let deletion of ensureArray(result.Changes.Delete)) {
-          let event = this.getEventByItemId(deletion.ItemId.Id);
+          let event = this.getEventByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
           if (event) {
             this.events.remove(event);
             await SQLEvent.deleteIt(event);
@@ -75,13 +80,13 @@ export class EWSCalendar extends Calendar {
         }
       }
       await this.getEvents(eventIDs, events);
-      syncState = sync.m$SyncFolderItems.m$SyncState = result.SyncState;
+      syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
     }
     this.events.addAll(events);
     return syncState!;
   }
 
-  getEventByItemId(id: string): EWSEvent | void {
+  getEventByItemID(id: string): EWSEvent | void {
     return this.events.find(p => p.itemID == id);
   }
 
@@ -91,7 +96,9 @@ export class EWSCalendar extends Calendar {
   async listAllEvents() {
     let events: EWSEvent[] = [];
     await this.listFolder("calendar", events);
+    /* Disabling tasks for now.
     await this.listFolder("tasks", events);
+    */
     this.events.replaceAll(events);
   }
 
@@ -119,7 +126,7 @@ export class EWSCalendar extends Calendar {
       if (!result?.RootFolder?.Items) {
         break;
       }
-      request.m$FindItem.m$IndexedPageItemView.Offset = result.RootFolder.IndexedPagingOffset;
+      request.m$FindItem.m$IndexedPageItemView.Offset = sanitize.integer(result.RootFolder.IndexedPagingOffset);
       await this.getEvents(ensureArray(result.RootFolder.Items.CalendarItem || result.RootFolder.Items.Task).map(item => item.ItemId), events);
     }
   }
@@ -166,7 +173,7 @@ export class EWSCalendar extends Calendar {
     };
     let results = ensureArray(await this.account.callEWS(request));
     for (let result of results) {
-      let event = this.getEventByItemId(result.Items.CalendarItem?.ItemId.Id || result.Items.Task.ItemId.Id);
+      let event = this.getEventByItemID(sanitize.nonemptystring(result.Items.CalendarItem?.ItemId.Id || result.Items.Task.ItemId.Id));
       if (event) {
         event.fromXML(result.Items.CalendarItem || result.Items.Task);
         await SQLEvent.save(event);
