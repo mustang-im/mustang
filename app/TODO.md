@@ -16,6 +16,7 @@
     * Open attachment
   * Style
     * Icon color
+    * About | Open Source: Double scrollbar
   * OAuth2
     * Google approval
     * Yahoo registration

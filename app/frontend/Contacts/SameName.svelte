@@ -68,6 +68,7 @@
 <style>
   .other-person {
     align-items: center;
+    height: 24px;
   }
   .linked-object {
     align-items: center;

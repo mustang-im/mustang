@@ -36,7 +36,7 @@
     margin-right: 32px;
   }
   .groups :global(.group .content) {
-    margin-right: 32px;
+    padding-right: 48px;
   }
   .subtitle {
     margin-bottom: 16px;
