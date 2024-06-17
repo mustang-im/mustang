@@ -15,7 +15,7 @@ import { assert } from "../../util/util";
 
 type Json = string | number | boolean | null | Json[] | {[key: string]: Json};
 
-type Request = EWSCreateItemRequest | EWSUpdateItemRequest | Json;
+type JsonRequest = Json | EWSCreateItemRequest | EWSUpdateItemRequest;
 
 export class EWSAccount extends MailAccount {
   readonly protocol: string = "ews";
@@ -94,7 +94,7 @@ export class EWSAccount extends MailAccount {
     await this.callEWS(request);
   }
 
-  JSON2XML(aJSON: Request, aParent: Element, aNS: string, aTag: string): void {
+  JSON2XML(aJSON: JsonRequest, aParent: Element, aNS: string, aTag: string): void {
     if (aJSON == null) {
       return;
     }
@@ -123,7 +123,7 @@ export class EWSAccount extends MailAccount {
     }
   }
 
-  request2XML(aRequest: Request): string {
+  request2XML(aRequest: JsonRequest): string {
     let xml = document.implementation.createDocument("http://schemas.xmlsoap.org/soap/envelope/", "s:Envelope");
     xml.documentElement.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:s", "http://schemas.xmlsoap.org/soap/envelope/");
     xml.documentElement.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:m", "http://schemas.microsoft.com/exchange/services/2006/messages");
@@ -142,7 +142,7 @@ export class EWSAccount extends MailAccount {
     return new XMLSerializer().serializeToString(xml);
   }
 
-  checkResponse(aResponse, aRequest: Request): Json {
+  checkResponse(aResponse, aRequest: JsonRequest): Json {
     let responseXML = aResponse.responseXML;
     if (!responseXML) {
       throw new EWSError(aResponse, aRequest);
@@ -179,7 +179,7 @@ export class EWSAccount extends MailAccount {
     return options;
   }
 
-  async callEWS(aRequest: Request): Promise<any> {
+  async callEWS(aRequest: JsonRequest): Promise<any> {
     let response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions());
     response.responseXML = this.parseXML(response.data);
     if (response.status == 200) {
@@ -331,10 +331,10 @@ class EWSError extends Error {
 }
 
 class EWSItemError extends Error {
-  readonly request: Request;
+  readonly request: JsonRequest;
   readonly error: Json;
   readonly type: string;
-  constructor(errorResponseJSON: any, aRequest: Request) {
+  constructor(errorResponseJSON: any, aRequest: JsonRequest) {
     if (Array.isArray(errorResponseJSON.MessageXml?.Value)) {
       for (let { Name, Value } of errorResponseJSON.MessageXml.Value) {
         errorResponseJSON[Name.replace(/^InnerError/, "")] = Value;
