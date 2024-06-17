@@ -18,11 +18,15 @@ export class EWSCalendar extends Calendar {
   }
 
   async listEvents() {
+    /* Disabling tasks for now.
     // syncState is base64-encoded so it's safe to split and join on comma
     let [calendar, tasks] = this.syncState?.split(",") || [];
     calendar = await this.syncFolder("calendar", calendar);
     tasks = await this.syncFolder("tasks", tasks);
     this.syncState = calendar + "," + tasks;
+    */
+    // Delete the next line when enabling tasks.
+    this.syncState = await this.syncFolder("calendar", this.syncState);
     await SQLCalendar.save(this);
   }
 
@@ -92,7 +96,9 @@ export class EWSCalendar extends Calendar {
   async listAllEvents() {
     let events: EWSEvent[] = [];
     await this.listFolder("calendar", events);
+    /* Disabling tasks for now.
     await this.listFolder("tasks", events);
+    */
     this.events.replaceAll(events);
   }
 

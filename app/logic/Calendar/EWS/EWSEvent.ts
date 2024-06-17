@@ -67,11 +67,15 @@ export class EWSEvent extends Event {
   }
 
   async save() {
+    /* Disabling tasks for now.
     if (this.startTime) {
+    */
       await this.saveCalendarItem();
+    /* Disabling tasks for now.
     } else {
       await this.saveTask();
     }
+    */
     await super.save();
   }
 
