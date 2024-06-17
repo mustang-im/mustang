@@ -44,7 +44,8 @@
 
 <style>
   .categories {
-    background-color: #E7E2EB;
+    background-color: var(--leftbar-bg);
+    color: var(--leftbar-fg);
     padding: 24px;
     padding-top: 64px;
     font-size: 14px;

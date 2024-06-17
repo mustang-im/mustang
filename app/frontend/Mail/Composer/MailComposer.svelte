@@ -269,10 +269,13 @@
     color: var(--leftpane-fg);
   }
   .cc.buttons {
+    align-items: start;
     border-bottom: 1px solid rgb(0, 0, 0, 7%);
+    margin-top: 4px;
   }
   .cc.buttons > :global(button){
     border: none;
+    margin-left: 4px;
   }
   .cc.buttons > :global(button:not(.selected)){
     background-color: inherit;

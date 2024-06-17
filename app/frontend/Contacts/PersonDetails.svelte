@@ -312,17 +312,17 @@
   }
   .notes {
     margin: 4px;
-    border: 1px dashed #A8AEB5;
+    border: 1px solid var(--border);
     border-radius: 2px;
   }
   .notes textarea {
     height: 100%;
     min-height: 10em;
-    border: none;
+    background-color: var(--main-bg);
+    color: var(--main-fg);
     font-family: sans-serif;
     font-size: 14px;
-    color: #555555;
-    border: 1px dotted lightgray;
+    border: 1px solid var(--border);
     padding: 8px;
   }
   .notes textarea::placeholder {

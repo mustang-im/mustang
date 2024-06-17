@@ -18,6 +18,7 @@
   .sub-app-button {
     align-items: center;
     padding: 0px;
+    border-radius: 4px;
   }
   .icon {
     padding: 2px;

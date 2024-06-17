@@ -14,7 +14,7 @@
 <style>
   .group {
     margin: 5px;
-    border: 1px solid #E6E4E8;
+    border: 1px solid var(--border);
     border-radius: 2px;
   }
   .header {

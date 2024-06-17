@@ -8,7 +8,7 @@
     <PersonPicture person={$person.person} size={24} />
   {/if}
   <vbox flex class="right">
-    <hbox flex class="name">{$person.name}</hbox>
+    <hbox flex class="name">{$person.name || $person.emailAddress}</hbox>
   </vbox>
 </hbox>
 {#if popupOpen}

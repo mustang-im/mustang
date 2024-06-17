@@ -9,6 +9,13 @@
     * Exchange: Import calendars and contacts
     * "Create more accounts" screen
     * Contacts: TB address books
+  * Contacts: Plus section
+  * Composer
+    * PersonEntry: Delete key
+    * Remove added attachment (needs menu item)
+    * Open attachment
+  * Style
+    * Icon color
   * OAuth2
     * Google approval
     * Yahoo registration
@@ -119,6 +126,7 @@
 * Find a suitable open protocol
 
 # Contacts
+* Groups
 * Placeholder when we have no image for a person
 
 # Calendar

@@ -106,10 +106,6 @@
     font-style: italic;
   }
 
-  .value :global(a[href]) {
-    color: darkblue;
-  }
-
   .actions {
     margin-left: 12px;
   }

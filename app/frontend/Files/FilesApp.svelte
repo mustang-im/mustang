@@ -1,6 +1,6 @@
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox class="left-pane" slot="left">
-    <PersonsList {persons} bind:selected={selectedPerson}/>
+    <PersonsList {persons} bind:selected={selectedPerson} size="small" />
   </vbox>
   <vbox class="right-pane" slot="right">
     {#if displayFiles}
@@ -27,6 +27,7 @@
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 8%); /* Also on MessageList */
     background-color: var(--leftbar-bg);
     color: var(--leftbar-fg);
+    margin-top: 12px;
   }
   .right-pane {
     background-color: var(--main-bg);

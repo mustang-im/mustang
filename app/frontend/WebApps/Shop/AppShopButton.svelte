@@ -48,7 +48,7 @@
 
 <style>
   .app {
-    border: 1px dotted lightgray;
+    border: 1px solid var(--border);
     border-radius: 3px;
     margin: 4px;
     padding: 12px;
@@ -60,7 +60,7 @@
   .nameDescr {
     max-width: 192px;
     height: 192px;
-    overflow-y: scroll;
+    overflow-y: auto;
     overflow-x: hidden;
   }
   .name {
