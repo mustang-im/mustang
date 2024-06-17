@@ -3,7 +3,7 @@ import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { kStandardPorts } from "./configInfo";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { appGlobal } from "../../app";
-import { getBaseDomainFromHost } from "../../util/netUtil";
+import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import JXON from "../../../../lib/util/JXON";
 import { PriorityAbortable, makeAbortable } from "../../util/Abortable";
@@ -11,7 +11,7 @@ import { assert, type URLString } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 
 /** Implements the Exchange AutoDiscover V1 (XML-SOAP-based) protocol */
-export async function exchangeAutoDiscoverV1XML(domain: string, emailAddress: string, username: string | null, password: string, confirmCallback: () => boolean, abort: AbortController): Promise<ArrayColl<MailAccount>> {
+export async function exchangeAutoDiscoverV1XML(domain: string, emailAddress: string, username: string | null, password: string, abort: AbortController): Promise<ArrayColl<MailAccount>> {
   domain = sanitize.hostname(domain);
 
   // <https://technet.microsoft.com/en-us/library/bb124251(v=exchg.160).aspx#Autodiscover%20services%20in%20Outlook>
@@ -42,7 +42,7 @@ export async function exchangeAutoDiscoverV1XML(domain: string, emailAddress: st
   let priorityOrder = new PriorityAbortable(abort, [
     fetchV1(url1, callArgs, abort),
     fetchV1(url2, callArgs, abort),
-    fetchV1HTTP(url3, callArgs, abort),
+    fetchV1HTTP(url3, callArgs, emailAddress, abort),
   ]);
   try {
     return await priorityOrder.run();
@@ -51,21 +51,54 @@ export async function exchangeAutoDiscoverV1XML(domain: string, emailAddress: st
   }
 }
 
-async function fetchV1(url: URLString, callArgs: any, abort: AbortController): Promise<ArrayColl<MailAccount>> {
+export async function fetchV1(url: URLString, callArgs: any, abort: AbortController): Promise<ArrayColl<MailAccount>> {
   let xmlStr = await fetchXML(url, callArgs, abort);
   return readAutoDiscoverV1XML(xmlStr);
 }
 
-async function fetchV1HTTP(url: URLString, callArgs: any, abort: AbortController): Promise<ArrayColl<MailAccount>> {
-  // url3 is HTTP (not HTTPS), so suppress password. Even MS spec demands so.
-  const call3Args: any = {};
-  Object.assign(call3Args, callArgs);
-  delete call3Args.username;
-  delete call3Args.password;
+async function fetchV1HTTP(url: URLString, callArgs: any, emailAddress: string, abort: AbortController): Promise<ArrayColl<MailAccount>> {
+  // url is HTTP (not HTTPS), so suppress password. Even MS spec demands so.
+  const argsNoPassword: any = {};
+  Object.assign(argsNoPassword, callArgs);
+  delete argsNoPassword.username;
+  delete argsNoPassword.password;
 
-  // TODO catch redirect, and if HTTPS *and* a trusted domain, include password
+  let response = await fetchHTTP(url, argsNoPassword, abort);
+  if (await response.ok) {
+    let xmlStr = await response.text();
+    return readAutoDiscoverV1XML(xmlStr);
+  }
+  let redirectURL = await response.url;
+  if (url == redirectURL) {
+    throw new Error(`Request failed with status code ${await response.status} ${await response.statusText}`);
+  }
 
-  return await fetchV1(url, call3Args, abort);
+  // We've received a HTTP redirect, from an untrusted HTTP host. Check whether the target is OK to submit the password to.
+  assert(redirectURL.startsWith("https://"), `Exchange AutoDiscover URL ${url} redirected to a HTTP URL ${redirectURL}. Not following that. It must be HTTPS.`);
+  let fileExt = url.slice(url.lastIndexOf("."));
+  assert(redirectURL.endsWith(fileExt), `Exchange AutoDiscover redirect URL seems to be the wrong file type: ${redirectURL}. Skipping.`);
+  let redirectDomain = getBaseDomainFromHost(new URL(redirectURL).hostname);
+  let originalDomain = getDomainForEmailAddress(emailAddress);
+  let trustedDomain = redirectDomain == originalDomain ||
+    ["office.com", "office365.com", "outlook.com"].includes(redirectDomain);
+  if (trustedDomain) {
+    return await fetchV1(url, callArgs, abort);
+  }
+  // Ask user to confirm redirect, but only if there is no better config found in parallel.
+  let askConfig = new ConfirmExchangeRedirect();
+  askConfig.emailAddress = emailAddress;
+  askConfig.url = redirectURL;
+  askConfig.callArgs = callArgs;
+  return new ArrayColl([askConfig]);
+}
+
+/** Fake config object to tell findConfig() to ask the user to confirm the redirect.
+ * The following fields are populated with:
+ * `.emailAddress` = original request by user
+ * `.url` = AutoDiscover redirect URL (not the mail server URL)
+*/
+export class ConfirmExchangeRedirect extends MailAccount {
+  callArgs: any;
 }
 
 function readAutoDiscoverV1XML(xmlStr: string): ArrayColl<MailAccount> {

@@ -23,7 +23,7 @@
 
   onMount(async () => {
     try {
-      altConfigs = await findConfig(emailAddress, password, abort);
+      altConfigs = await findConfig(emailAddress, password, exchangeConfirmCallback, abort);
       assert(altConfigs?.length, `We could not find a configuration for ${emailAddress}`);
       config = altConfigs.slice().shift();
       dispatchEvent("continue");
@@ -31,4 +31,8 @@
       dispatchEvent("fail", ex);
     }
   });
+
+  async function exchangeConfirmCallback(emailAddress: string, redirectDomain: string): Promise<boolean> {
+    return confirm(`A configuration for your account ${emailAddress} may be available at:\n\n${redirectDomain}\n\nDo you want to submit your password there?`);
+  }
 </script>

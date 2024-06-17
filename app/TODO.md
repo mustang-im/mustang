@@ -3,7 +3,6 @@
   * Main window
     * Save window size
   * Setup
-    * Autodiscover
     * EWS with URL
   * Import
     * Exchange: Import calendars and contacts

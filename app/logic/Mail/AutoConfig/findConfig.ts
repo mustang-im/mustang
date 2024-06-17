@@ -1,12 +1,13 @@
 import type { MailAccount } from "../MailAccount";
 import { fetchConfig } from "./fetchConfig";
-import { exchangeAutoDiscoverV1XML, exchangeAutoDiscoverV2JSON } from "./exchangeConfig";
+import { exchangeAutoDiscoverV1XML, exchangeAutoDiscoverV2JSON, fetchV1, ConfirmExchangeRedirect } from "./exchangeConfig";
 import { guessConfig } from "./guessConfig";
 import { PriorityAbortable } from "../../util/Abortable";
-import { getDomainForEmailAddress } from "../../util/netUtil";
+import { UserCancelled } from "../../util/util";
+import { getDomainForEmailAddress, getBaseDomainFromHost } from "../../util/netUtil";
 import { ArrayColl } from "svelte-collections";
 
-export async function findConfig(emailAddress: string, password: string, abort: AbortController): Promise<ArrayColl<MailAccount>> {
+export async function findConfig(emailAddress: string, password: string, exchangeConfirmCallback: (emailAddress: string, redirectDomain: string) => Promise<boolean> | null, abort: AbortController): Promise<ArrayColl<MailAccount>> {
   let domain = getDomainForEmailAddress(emailAddress);
   try {
     let priorityOrder = new PriorityAbortable(abort, [
@@ -18,7 +19,20 @@ export async function findConfig(emailAddress: string, password: string, abort: 
     console.log(`Fetch config for ${emailAddress} failed`);
   }
   try {
-    return await exchangeAutoDiscoverV1XML(domain, emailAddress, null, password, () => false, abort);
+    let configs = await exchangeAutoDiscoverV1XML(domain, emailAddress, null, password, abort);
+    let confirm = configs.find(config => config instanceof ConfirmExchangeRedirect) as ConfirmExchangeRedirect;
+    if (confirm) {
+      let redirectURL = confirm.url;
+      let redirectDomain = getBaseDomainFromHost(new URL(redirectURL).hostname);
+      if (exchangeConfirmCallback &&
+          await exchangeConfirmCallback(emailAddress, redirectDomain)) {
+        return await fetchV1(redirectURL, confirm.callArgs, abort);
+      } else {
+        throw new UserCancelled();
+      }
+    } else {
+      return configs;
+    }
   } catch (ex) {
     console.log(`AutoDiscover for ${emailAddress} failed`);
   }
