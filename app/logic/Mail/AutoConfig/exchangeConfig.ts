@@ -82,7 +82,7 @@ async function fetchV1HTTP(url: URLString, callArgs: any, emailAddress: string, 
   let trustedDomain = redirectDomain == originalDomain ||
     ["office.com", "office365.com", "outlook.com"].includes(redirectDomain);
   if (trustedDomain) {
-    return await fetchV1(url, callArgs, abort);
+    return await fetchV1(redirectURL, callArgs, abort);
   }
   // Ask user to confirm redirect, but only if there is no better config found in parallel.
   let askConfig = new ConfirmExchangeRedirect();
