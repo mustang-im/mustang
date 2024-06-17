@@ -2,7 +2,6 @@
   <Scroll>
     <AddressbookSelector bind:selectedAddressbook />
   </Scroll>
-  <hbox flex />
   <hbox class="buttons">
     <RoundButton
       label="New contact"

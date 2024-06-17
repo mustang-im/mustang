@@ -1,5 +1,5 @@
 <hbox>
-  {#each accounts.each as acc}
+  {#each $accounts.each as acc}
     <hbox class="account" title={acc.name}>
       <RoundButton
         label={acc.name}
