@@ -9,5 +9,5 @@ export default defineConfig({
     port: 5454,
     strictPort: true,
   },
-  plugins: [nodePolyfills(), svelte(), olm],
+  plugins: [nodePolyfills({include: ['buffer'], globals: {global: false, process: false}}), svelte(), olm],
 });
