@@ -14,8 +14,7 @@
     * Yahoo registration
     * Microsoft - Partner support
   * Calendar
-    * Test
-    * Edit
+    * Change Date
     * Delete Event
     * Move to other calendar
   * Move messages to deep subfolders

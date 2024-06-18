@@ -37,7 +37,7 @@
   import VerticalIcon from '../../asset/icon/mail/threeColumns.svg?raw';
   import ThreePaneIcon from "lucide-svelte/icons/layout-panel-left";
 
-  let viewSetting = getLocalStorage("mail.view", "3pane");
+  let viewSetting = getLocalStorage("mail.view", "vertical");
   $: view = $viewSetting.value;
 
   function switchTo(newView: string) {

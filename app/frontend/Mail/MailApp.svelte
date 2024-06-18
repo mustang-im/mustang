@@ -61,6 +61,6 @@
     $selectedPerson = person;
   }
 
-  let viewSetting = getLocalStorage("mail.view", "chat");
+  let viewSetting = getLocalStorage("mail.view", "vertical");
   $: view = $viewSetting.value;
 </script>
