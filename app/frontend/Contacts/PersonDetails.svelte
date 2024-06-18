@@ -195,7 +195,8 @@
 
   {#if showNotes}
     <vbox flex class="notes">
-      <textarea bind:value={person.notes} placeholder="Personal notes" />
+      <!-- svelte-ignore a11y-autofocus -->
+      <textarea bind:value={person.notes} placeholder="Personal notes" autofocus={person.notes == " "} />
     </vbox>
   {/if}
 </vbox>
@@ -375,6 +376,7 @@
   grid.items {
     display: grid;
     grid-template-columns: auto 1fr auto;
+    align-items: start;
   }
   .expanders {
     margin-top: 12px;

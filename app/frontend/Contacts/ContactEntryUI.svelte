@@ -19,7 +19,8 @@
 {:else}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <hbox class="purpose display" on:click={startEditing}>{displayPurpose(entry.purpose)}</hbox>
-  <hbox class="value">
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <hbox class="value" on:click={startEditing}>
     <slot name="display" />
   </hbox>
   <hbox class="actions contact-entry">
@@ -48,7 +49,7 @@
   export let entry: ContactEntry;
   export let coll: Collection<ContactEntry>;
 
-  let isEditing = false;
+  let isEditing = !entry.value;
   let inputWrapperEl: HTMLDivElement;
   let copied = false;
 
@@ -116,6 +117,9 @@
     visibility: hidden;
   }
 
+  .value {
+    min-height: 1.2em;
+  }
   .value.edit :global(input) {
     border: none;
     border-bottom: 2px solid var(--input-focus);

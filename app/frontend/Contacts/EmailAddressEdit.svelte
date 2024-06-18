@@ -1,4 +1,5 @@
-<input type="email" bind:value maxlength={100} />
+<!-- svelte-ignore a11y-autofocus -->
+<input type="email" bind:value maxlength={100} autofocus={!value} />
 
 <script lang="ts">
   export let value: string; /* in/out */
