@@ -4,9 +4,9 @@
 name: Parula Release for Linux
 
 on:
+  workflow_dispatch: # manually triggered
   push:
-    tags:
-      - '*'
+    tags: '*'
 
 jobs:
   build:
@@ -26,7 +26,7 @@ jobs:
     - run: cd backend; npm install
     - run: cd e2; npm install --legacy-peer-deps
     - name: Build
-      uses: DarkGuy10/action-electron-builder@v1
+      uses: DarkGuy10/action-electron-builder@v1.0.0
       with:
         github_token: ${{ secrets.github_token }}
         # If the commit is tagged with a version (e.g. "v1.0.0"),
