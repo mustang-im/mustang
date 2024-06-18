@@ -5,7 +5,7 @@
   "main": "./out/main/index.js",
   "author": "Ben Bucksch / Mustang (https://mustang.im)",
   "copyright": "Ben Bucksch",
-  "homepage": "https://www.mustang.im",
+  "homepage": "https://mustang.im",
   "license": "AGPL-3.0-only",
   "scripts": {
     "format": "prettier --plugin prettier-plugin-svelte --write .",

@@ -72,12 +72,9 @@
   * Auto-update server
 * Licenses
   * Adapt our Open-Source license
-  * Adapt our EULA and Privacy policy
 * Beta notification bar
 * Beta time-bomb
 * License client
-* Parula website
-* Parula app brand change
 * Password storage
 
 # UI

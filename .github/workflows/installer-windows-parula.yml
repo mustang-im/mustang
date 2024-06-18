@@ -1,0 +1,32 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Parula Installers for Windows
+
+on:
+  workflow_dispatch # manually triggered
+
+jobs:
+  build:
+    runs-on: windows-2019
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build installers for Windows
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18.x
+#        cache: 'npm'
+    - run: cd app/build; ./parula-brand.sh
+    - run: cd app; npm install
+    - run: cd lib; npm install
+    - run: cd backend; npm install
+    - run: cd e2; npm install --legacy-peer-deps
+    - run: cd e2; npm run build:win
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: Parula Installers Windows
+        path: |
+          e2/dist/*.exe
+          e2/dist/*.msi
