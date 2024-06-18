@@ -30,3 +30,26 @@ body {
   background-color: #20AE9E;
   color: white;
 }
+
+/* <copied from="app.css"> */
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+::-webkit-scrollbar:hover {
+  background-color: #00000008;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #828282;
+  border-radius: 3px;
+}
+
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar:hover {
+    background-color: #FFFFFF05;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: #5a5959;
+    border-radius: 3px;
+  }
+}

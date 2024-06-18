@@ -111,6 +111,7 @@ body {
   scrollbar-color: #22222325 transparent;
 }
 
+/* <copied from="content-body.css"> */
 ::-webkit-scrollbar {
   height: 8px;
   width: 8px;
