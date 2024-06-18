@@ -3,6 +3,7 @@ import { appGlobal } from "../../app";
 import { sanitizeFilename, assert } from "../../util/util";
 import type { Folder } from "../Folder";
 import { ArrayColl, MapColl, SetColl } from "svelte-collections";
+import { Buffer } from "buffer";
 import type Zip from "adm-zip";
 
 /** Save all emails of a folder in a ZIP file in the local disk filesystem.
