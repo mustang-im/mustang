@@ -18,6 +18,10 @@ export class EWSCalendar extends Calendar {
   }
 
   async listEvents() {
+    if (!this.dbID) {
+      await SQLCalendar.save(this);
+    }
+
     /* Disabling tasks for now.
     // syncState is base64-encoded so it's safe to split and join on comma
     let [calendar, tasks] = this.syncState?.split(",") || [];
