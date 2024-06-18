@@ -89,10 +89,10 @@ export class EWSAddressbook extends Addressbook {
         }
       }
       this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
-      await SQLAddressbook.save(this);
     }
     await this.listPersons(persons);
     await this.listGroups(groups);
+    await SQLAddressbook.save(this);
   }
 
   // Lists all contacts and adds them to the persons and groups.
