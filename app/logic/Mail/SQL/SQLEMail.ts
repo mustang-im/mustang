@@ -262,6 +262,7 @@ export class SQLEMail {
       DELETE FROM email
       WHERE id = ${email.dbID}
       `);
+    email.dbID = null;
   }
 
   protected static async readRecipients(email: EMail, recipientRows?: any[]) {

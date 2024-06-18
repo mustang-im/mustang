@@ -118,7 +118,6 @@ export class EMail extends Message {
     this.isDeleted = true;
     this.folder.messages.remove(this);
     await SQLEMail.deleteIt(this);
-    this.dbID = null;
   }
 
   async deleteMessageOnServer() {
