@@ -18,7 +18,7 @@
     "build:linux": "npm run build && electron-builder --linux --config",
     "build:release:win": "npm run build && electron-builder --win --config --publish always",
     "build:release:mac": "npm run build && electron-builder --mac --config --publish always",
-    "build:release:linux": "npm run build && electron-builder --linux --config --publish always",
+    "build:release:linux": "npm run build && electron-builder --linux AppImage --config --publish always",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {

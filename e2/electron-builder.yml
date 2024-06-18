@@ -15,8 +15,8 @@ asarUnpack:
 win:
   target:
     - nsis
-#    - msi
-    - portable
+    - msi
+#    - portable
   executableName: mustang
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
