@@ -110,7 +110,7 @@
     margin-bottom: 8px;
   }
   .buttons > * {
-    margin-left: 8px;
+    margin-left: 2px;
   }
   .buttons :global(svg) {
     stroke-width: 1.5px;
