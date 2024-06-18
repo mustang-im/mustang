@@ -17,7 +17,7 @@ jobs:
       with:
         node-version: 18.x
 #        cache: 'npm'
-    - run: cd app/build; ./parula-brand.sh
+    - run: cd app/build; sh parula-brand.sh
     - run: sudo -H pip install setuptools
     - run: cd app; npm install
     - run: cd lib; npm install
