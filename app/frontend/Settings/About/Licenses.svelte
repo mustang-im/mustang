@@ -20,7 +20,5 @@
     flex: 1 0 0;
     border: none;
     margin-top: 32px;
-    margin-right: -32px;
-    margin-bottom: -32px;
   }
 </style>
