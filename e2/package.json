@@ -3,10 +3,6 @@
   "version": "0.5.0",
   "description": "Mustang - Video conference, chat, mail, calendar, files, contacts",
   "main": "./out/main/index.js",
-  "author": "Ben Bucksch / Mustang (https://mustang.im)",
-  "copyright": "Ben Bucksch",
-  "homepage": "https://mustang.im",
-  "license": "AGPL-3.0-only",
   "scripts": {
     "format": "prettier --plugin prettier-plugin-svelte --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
@@ -58,5 +54,10 @@
   },
   "bugs": {
     "url": "https://github.com/mustang.im/mustang/issues"
-  }
+  },
+  "author": "Ben Bucksch and  Mustang GmbH (https://mustang.im)",
+  "copyright": "Ben Bucksch",
+  "license": "EUPL-1.2",
+  "licenseText": "See LICENSE file at top level",
+  "homepage": "https://mustang.im"
 }

@@ -1,9 +1,12 @@
 {
-  "name": "mustang-svelte-gecko-server",
-  "description": "Server for Mustang backend",
+  "name": "mustang-gecko-runner",
+  "description": "Electron-like execution runtime based on Gecko and node.js",
   "private": true,
   "version": "0.1.0",
-  "author": "Ben Bucksch",
+  "dependencies": {
+    "express": "^4.18.2",
+    "http-proxy": "^1.18.1"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/benbucksch/mustang.git"
@@ -11,10 +14,10 @@
   "bugs": {
     "url": "https://github.com/benbucksch/mustang/issues"
   },
-  "homepage": "https://github.com/benbucksch/mustang#readme",
-  "type": "module",
-  "dependencies": {
-    "express": "^4.18.2",
-    "http-proxy": "^1.18.1"
-  }
+  "author": "Ben Bucksch and  Mustang GmbH (https://mustang.im)",
+  "copyright": "Ben Bucksch",
+  "homepage": "https://mustang.im",
+  "license": "EUPL-1.2",
+  "licenseText": "See LICENSE file at top level",
+  "type": "module"
 }

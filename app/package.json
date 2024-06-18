@@ -2,11 +2,7 @@
   "name": "mustang-frontend",
   "description": "Mustang UI",
   "private": true,
-  "version": "0.5.1",
-  "author": "Mustang (https://mustang.im)",
-  "copyright": "Ben Bucksch",
-  "homepage": "https://mustang.im",
-  "license": "UNLICENSED",
+  "version": "0.5.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -68,5 +64,10 @@
   "bugs": {
     "url": "https://github.com/mustang.im/mustang/issues"
   },
+  "author": "Ben Bucksch and  Mustang GmbH (https://mustang.im)",
+  "copyright": "Ben Bucksch",
+  "homepage": "https://mustang.im",
+  "license": "EUPL-1.2",
+  "licenseText": "See LICENSE file at top level",
   "type": "module"
 }
