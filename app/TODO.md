@@ -3,18 +3,12 @@
   * Main window
     * Save window size
   * Setup
+    * Default to vertical view
     * Manual config, remove [Save] button
     * EWS: Manual config with URL
   * Import
     * Contacts: TB address books
     * "Create more accounts" screen
-  * Composer
-    * PersonEntry: Delete key
-    * Remove added attachment (needs menu item)
-    * Open attachment
-  * Style
-    * Contacts: Icon inner color in Dark mode
-    * About | Open Source: Double scrollbar
   * OAuth2
     * Google approval
     * Yahoo registration
@@ -30,7 +24,7 @@
   * Bug: Selection: Default selection on start
   * Inline images send
   * Move messages to other accounts
-  * Import: Polish UI
+  * Import: Polish UI style
   * Threads
     * Search all folders
     * Hide quotes
@@ -55,19 +49,25 @@
 ## Elena
 * Clear profile
 * Debug dump of settings
-* Calendar
-  * Open event on click
-  * Tuesday first day
+* Composer
+  * PersonEntry: Delete key
+  * Remove added attachment (needs menu item)
+  * Open attachment
+* Style
+  * Contacts: Icon inner color in Dark mode
 * Images, remote
 * Saved Searches delete: Update list
 * List view: Sort order
 * MailChat/Thread: Jail HTML: Styles and size
+* Calendar
+  * Tuesday first day
 
 # Initial release
 * Installer
   * Windows on CI - DONE
   * Linux on CI - DONE
-  * Mac ARM on CI
+  * Mac ARM on CI - DONE
+  * Mac Signing
   * Auto-update client
   * Auto-update server
 * Licenses
