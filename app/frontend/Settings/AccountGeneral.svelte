@@ -15,7 +15,7 @@
   import type { MailAccount } from "../../logic/Mail/MailAccount";
   import Button from "../Shared/Button.svelte";
   import { catchErrors } from "../Util/error";
-  import { appName } from "../build";
+  import { appName } from "../../logic/build";
 
   export let account: Account;
 

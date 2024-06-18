@@ -11,7 +11,7 @@
 <script lang="ts">
   import Icon from 'svelte-icon/Icon.svelte';
   import logo from '../../asset/icon/general/logo.svg?raw';
-  import { appName, siteRoot } from '../../build';
+  import { appName, siteRoot } from '../../../logic/build';
 </script>
 
 <style>

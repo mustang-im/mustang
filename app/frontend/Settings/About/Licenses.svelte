@@ -1,6 +1,6 @@
 <script>
 
-  import { appName } from "../../build";
+  import { appName } from "../../../logic/build";
 
 </script>
 <div>

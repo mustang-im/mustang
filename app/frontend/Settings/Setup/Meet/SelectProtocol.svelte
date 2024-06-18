@@ -20,7 +20,7 @@
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
   import { NotReached } from "../../../../logic/util/util";
-  import { appName } from "../../../build";
+  import { appName } from "../../../../logic/build";
 
   /** out */
   export let config: MeetAccount = null;

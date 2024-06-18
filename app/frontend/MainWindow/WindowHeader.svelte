@@ -32,7 +32,7 @@
   import { getSettingsCategoryForApp } from "../Settings/Window/CategoriesUtils";
   import { selectedCategory } from "../Settings/Window/selected";
   import { appGlobal } from "../../logic/app";
-  import { appName } from "../build";
+  import { appName } from "../../logic/build";
   import SearchField from "../Shared/SearchField.svelte";
   import Button from "../Shared/Button.svelte";
   import Icon from 'svelte-icon/Icon.svelte';

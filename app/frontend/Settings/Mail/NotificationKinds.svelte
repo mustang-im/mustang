@@ -33,7 +33,7 @@
   import soundImg from "../../asset/settings/notification/sound.png";
   import appbarImg from "../../asset/settings/notification/appbar.png";
   import taskbarImg from "../../asset/settings/notification/taskbar.png";
-  import { appName } from "../../build";
+  import { appName } from "../../../logic/build";
   //import trayImg from "../../asset/settings/notification/tray.png";
 
   /** in/out */

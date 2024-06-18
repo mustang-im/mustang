@@ -99,7 +99,7 @@
   import logo from '../../../asset/icon/general/logo.svg?raw';
   import type { Editor } from "@tiptap/core";
   import { createEventDispatcher } from 'svelte';
-  import { appName, siteRoot } from "../../../build";
+  import { appName, siteRoot } from "../../../../logic/build";
   const dispatchEvent = createEventDispatcher();
 
   export let identity: MailIdentity;

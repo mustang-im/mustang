@@ -26,7 +26,7 @@
   import Password from "../Shared/Password.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
-  import { appName } from "../../../build";
+  import { appName } from "../../../../logic/build";
 
   /** in/out */
   export let config: MatrixAccount;

@@ -20,7 +20,7 @@
   import Header from "../Shared/Header.svelte";
   import XMPPLogin from "./XMPPLogin.svelte";
   import MatrixLogin from "./MatrixLogin.svelte";
-  import { appName } from "../../../build";
+  import { appName } from "../../../../logic/build";
 
   /** out */
   export let config: ChatAccount = null;

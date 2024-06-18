@@ -4,7 +4,7 @@
 </hbox>
 
 <script lang="ts">
-  import { siteRoot } from "../../../build";
+  import { siteRoot } from "../../../../logic/build";
 </script>
 
 <style>

@@ -9,7 +9,7 @@ import { assert, exMessage } from "../../util/util";
 import { notifyChangedProperty } from "../../util/Observable";
 import type { ArrayColl, Collection } from "svelte-collections";
 import type { ImapFlow } from "../../../../e2/node_modules/imapflow";
-import { appName, appVersion, siteRoot } from "../../../frontend/build";
+import { appName, appVersion, siteRoot } from "../../build";
 
 export class IMAPAccount extends MailAccount {
   readonly protocol: string = "imap";
