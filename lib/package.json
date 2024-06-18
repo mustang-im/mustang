@@ -11,7 +11,8 @@
     "lodash": "^4.17.21",
     "r2": "^2.0.1",
     "svelte-collections": "^1.1.20",
-    "ws": "^8.16.0"
+    "ws": "^8.16.0",
+    "vite-plugin-node-polyfills": "^0.22.0"
   },
   "scripts": {
     "test": "node test.js"

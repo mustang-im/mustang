@@ -1,4 +1,5 @@
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
+import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 
 export default defineConfig({
@@ -11,6 +12,6 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()]
   },
   renderer: {
-    plugins: [svelte()]
+    plugins: [nodePolyfills({include: ['buffer'], globals: {global: false, process: false}}), svelte()]
   }
 })
