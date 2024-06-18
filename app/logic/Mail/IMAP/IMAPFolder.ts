@@ -5,7 +5,7 @@ import { SQLFolder } from "../SQL/SQLFolder";
 import { SQLEMail } from "../SQL/SQLEMail";
 import type { EMail } from "../EMail";
 import { ArrayColl, Collection } from "svelte-collections";
-import { assert } from "../../util/util";
+import { assert, exMessage } from "../../util/util";
 
 export class IMAPFolder extends Folder {
   account: IMAPAccount;
@@ -68,9 +68,9 @@ export class IMAPFolder extends Folder {
       return await imapFunc(conn);
     } catch (ex) {
       if (ex.responseText) {
-        ex.message = ex.responseText
+        ex = exMessage(ex, ex.responseText
           .replace("Error in IMAP command", "IMAP")
-          .replace(/ \([\d\. +]* secs\)\./, "");
+          .replace(/ \([\d\. +]* secs\)\./, ""));
       }
       throw ex;
     } finally {

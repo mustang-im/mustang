@@ -60,7 +60,7 @@ export class SMTPAccount extends MailAccount {
       email.mime = await appGlobal.remoteApp.getMIMENodemailer(mail); // to save the Sent mail
     } catch (ex) {
       if (ex.code == "EAUTH") {
-        ex.message = "Check your login, username, and password:\n" + ex.message;
+        ex.message = "Check your login, username, and password.\n" + ex.message;
         ex.authFail = true;
       }
       throw ex;

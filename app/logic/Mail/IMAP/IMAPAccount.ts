@@ -5,7 +5,7 @@ import { SQLMailAccount } from "../SQL/SQLMailAccount";
 import { SQLFolder } from "../SQL/SQLFolder";
 import type { EMail } from "../EMail";
 import { SpecialFolder } from "../Folder";
-import { assert } from "../../util/util";
+import { assert, exMessage } from "../../util/util";
 import type { ArrayColl, Collection } from "svelte-collections";
 import type { ImapFlow } from "../../../../e2/node_modules/imapflow";
 import { appName, appVersion, siteRoot } from "../../../frontend/build";
@@ -94,14 +94,14 @@ export class IMAPAccount extends MailAccount {
       await connection.connect();
     } catch (ex) {
       if (ex.responseText) {
-        ex.message = ex.responseText;
+        ex = exMessage(ex, ex.responseText);
       }
       if (ex.authenticationFailed) {
-        ex.message = "Check your login, username, and password:\n" + ex.message;
+        ex = exMessage(ex, "Check your login, username, and password.\n" + ex.message);
         ex.authFail = true;
         throw ex;
       } else if (ex.code == "ClosedAfterConnectTLS") {
-        ex.message = "Check your login, username, and password:";
+        ex = exMessage(ex, "Check your login, username, and password.");
         ex.authFail = true;
         throw ex;
       } else if (ex.code == "NoConn" || ex.message == "Command failed.") {
@@ -121,17 +121,17 @@ export class IMAPAccount extends MailAccount {
         console.log(`${new Date().toISOString()} IMAP connection to ${this.hostname} was closed by server, network or OS. Reconnecting...`);
         await this.reconnect();
       } catch (ex) {
-        ex.message = `Reconnection failed after connection closed:\n${ex.message}\n${this.hostname} IMAP server`;
+        ex = exMessage(ex, `Reconnection failed after connection closed:\n${ex.message}\n${this.hostname} IMAP server`);
         this.errorCallback(ex);
       }
     });
     connection.on("error", async (ex) => {
       try {
-        ex.message = `${new Date().toISOString()} Connection to server for ${this.name} failed:\n${ex.message}`;
+        ex = exMessage(ex, `${new Date().toISOString()} Connection to server for ${this.name} failed:\n${ex.message}`);
         this.errorCallback(ex);
         await this.reconnect();
       } catch (ex) {
-        ex.message = `Reconnect failed after connection error:\n${ex.message}\n${this.hostname} IMAP server`;
+        ex = exMessage(ex, `Reconnect failed after connection error:\n${ex.message}\n${this.hostname} IMAP server`);
         this.errorCallback(ex);
       }
     });
@@ -143,7 +143,7 @@ export class IMAPAccount extends MailAccount {
         await folder.countChanged(info.count, info.prevCount);
       } catch (ex) {
         console.log("Server event", info);
-        ex.message = `Server event about folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`;
+        ex = exMessage(ex, `Server event about folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`);
         this.errorCallback(ex);
       }
     });
@@ -158,7 +158,7 @@ export class IMAPAccount extends MailAccount {
         await folder.messageFlagsChanged(info.uid ?? null, info.seq, info.flags, info.modseq);
       } catch (ex) {
         console.log("Error", ex, "in processing server event", info);
-        ex.message = `Server event about message seq ${info.seq} = UID ${info.uid} in folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`;
+        ex = exMessage(ex, `Server event about message seq ${info.seq} = UID ${info.uid} in folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`);
         this.errorCallback(ex);
       }
     });
@@ -170,7 +170,7 @@ export class IMAPAccount extends MailAccount {
         await folder.messageDeletedNotification(info.seq);
       } catch (ex) {
         console.log("Server event", info);
-        ex.message = `Server event about folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`;
+        ex = exMessage(ex, `Server event about folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`);
         this.errorCallback(ex);
       }
     });

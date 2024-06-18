@@ -76,6 +76,20 @@ export function fileExtensionForMIMEType(mimetype: string) {
   return ".ext";
 }
 
+/** Replace the error message.
+ * Some network exceptions are read-only and setting `ex.message` will throw. */
+export function exMessage(ex: Error, message: string): Error {
+  try {
+    ex.message = message;
+    return ex;
+  } catch (e2) {
+    let e = new Error(message);
+    Object.assign(e, ex);
+    e.message = message;
+    return e;
+  }
+}
+
 /** Used for if/else and switch statements
  * when they run into a case that should not happen */
 export class NotReached extends Error {
