@@ -6,16 +6,14 @@
     * Manual config, remove [Save] button
     * EWS: Manual config with URL
   * Import
-    * Exchange: Import calendars and contacts
-    * "Create more accounts" screen
     * Contacts: TB address books
-  * Contacts: Plus section
+    * "Create more accounts" screen
   * Composer
     * PersonEntry: Delete key
     * Remove added attachment (needs menu item)
     * Open attachment
   * Style
-    * Icon color
+    * Contacts: Icon inner color in Dark mode
     * About | Open Source: Double scrollbar
   * OAuth2
     * Google approval
