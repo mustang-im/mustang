@@ -30,6 +30,7 @@
       plain
       />
   </hbox>
+  <!--
   <hbox class="spam">
     <Button
       icon={SpamIcon}
@@ -41,6 +42,7 @@
       plain
       />
   </hbox>
+  -->
   <hbox class="unread" class:read={$message.isRead}>
     <Button
       icon={CircleIcon}
