@@ -1,6 +1,6 @@
 {#if !expanded}
   <hbox class="expander-button">
-    <Button plain {icon} onClick={() => expanded = true}>
+    <Button plain {icon} onClick={onExpand}>
       <hbox class="content" slot="label">
         {label}
         <AddIcon size="16px" />
@@ -13,6 +13,8 @@
   import Button from "./Button.svelte";
   import AddIcon from "lucide-svelte/icons/circle-plus";
   import type { ComponentType } from "svelte";
+  import { createEventDispatcher } from 'svelte';
+  const dispatch = createEventDispatcher();
 
   /** A button with label that you can click to expand some entire
    * named section. Upon clicking, the section will appear and
@@ -22,6 +24,11 @@
   export let expanded = false;
   export let label: string;
   export let icon: ComponentType | string = null;
+
+  function onExpand() {
+    expanded = true;
+    dispatch("expand");
+  }
 </script>
 
 <style>
