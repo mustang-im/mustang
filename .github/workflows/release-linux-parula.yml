@@ -28,4 +28,4 @@ jobs:
       with:
         name: GH_TOKEN
         value: ${{ secrets.github_token }}
-    - run: cd e2; npx electron-builder --linux --config --publish always
+    - run: cd e2; npm run build:release:linux
