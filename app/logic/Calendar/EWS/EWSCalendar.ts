@@ -173,15 +173,19 @@ export class EWSCalendar extends Calendar {
     };
     let results = ensureArray(await this.account.callEWS(request));
     for (let result of results) {
-      let event = this.getEventByItemID(sanitize.nonemptystring(result.Items.CalendarItem?.ItemId.Id || result.Items.Task.ItemId.Id));
-      if (event) {
-        event.fromXML(result.Items.CalendarItem || result.Items.Task);
-        await SQLEvent.save(event);
-      } else {
-        event = this.newEvent();
-        event.fromXML(result.Items.CalendarItem || result.Items.Task);
-        await SQLEvent.save(event);
-        events.push(event);
+      try {
+        let event = this.getEventByItemID(sanitize.nonemptystring(result.Items.CalendarItem?.ItemId.Id || result.Items.Task.ItemId.Id));
+        if (event) {
+          event.fromXML(result.Items.CalendarItem || result.Items.Task);
+          await SQLEvent.save(event);
+        } else {
+          event = this.newEvent();
+          event.fromXML(result.Items.CalendarItem || result.Items.Task);
+          await SQLEvent.save(event);
+          events.push(event);
+        }
+      } catch (ex) {
+        this.account.errorCallback(ex);
       }
     }
   }

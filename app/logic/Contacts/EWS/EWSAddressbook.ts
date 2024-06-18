@@ -163,15 +163,19 @@ export class EWSAddressbook extends Addressbook {
       };
       let results = ensureArray(await this.account.callEWS(request));
       for (let result of results) {
-        let person = this.getPersonByItemID(result.Items.Contact.ItemId.Id);
-        if (person) {
-          person.fromXML(result.Items.Contact);
-          await SQLPerson.save(person);
-        } else {
-          person = new EWSPerson(this);
-          person.fromXML(result.Items.Contact);
-          await SQLPerson.save(person);
-          this.persons.add(person);
+        try {
+          let person = this.getPersonByItemID(result.Items.Contact.ItemId.Id);
+          if (person) {
+            person.fromXML(result.Items.Contact);
+            await SQLPerson.save(person);
+          } else {
+            person = new EWSPerson(this);
+            person.fromXML(result.Items.Contact);
+            await SQLPerson.save(person);
+            this.persons.add(person);
+          }
+        } catch (ex) {
+          this.account.errorCallback(ex);
         }
       }
     }
@@ -206,15 +210,19 @@ export class EWSAddressbook extends Addressbook {
       };
       let results = ensureArray(await this.account.callEWS(request));
       for (let result of results) {
-        let group = this.getGroupByItemID(result.Items.DistributionList.ItemId.Id);
-        if (group) {
-          group.fromXML(result.Items.DistributionList);
-          await SQLGroup.save(group);
-        } else {
-          group = new EWSGroup(this);
-          group.fromXML(result.Items.DistributionList);
-          await SQLGroup.save(group);
-          this.groups.add(group);
+        try {
+          let group = this.getGroupByItemID(result.Items.DistributionList.ItemId.Id);
+          if (group) {
+            group.fromXML(result.Items.DistributionList);
+            await SQLGroup.save(group);
+          } else {
+            group = new EWSGroup(this);
+            group.fromXML(result.Items.DistributionList);
+            await SQLGroup.save(group);
+            this.groups.add(group);
+          }
+        } catch (ex) {
+          this.account.errorCallback(ex);
         }
       }
     }
