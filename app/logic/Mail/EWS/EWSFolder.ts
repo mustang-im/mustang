@@ -264,10 +264,14 @@ export class EWSFolder extends Folder {
       };
       let results = ensureArray(await this.account.callEWS(request));
       for (let result of results) {
-        let email = this.newEMail();
-        email.fromXML(getEWSItem(result.Items));
-        await SQLEMail.save(email);
-        allEmail.add(email);
+        try {
+          let email = this.newEMail();
+          email.fromXML(getEWSItem(result.Items));
+          await SQLEMail.save(email);
+          allEmail.add(email);
+        } catch (ex) {
+          this.account.errorCallback(ex);
+        }
       }
     }
     return allEmail;
@@ -293,11 +297,15 @@ export class EWSFolder extends Folder {
       for (let result of results) {
         let email = emailsToDownload.find(email => email.itemID == getEWSItem(result.Items).ItemId.Id);
         if (email && !email.downloadComplete) {
-          let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
-          email.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
-          await email.parseMIME();
-          await email.save();
-          downloadedEmail.add(email);
+          try {
+            let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
+            email.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
+            await email.parseMIME();
+            await email.save();
+            downloadedEmail.add(email);
+          } catch (ex) {
+            this.account.errorCallback(ex);
+          }
         }
       }
     }
