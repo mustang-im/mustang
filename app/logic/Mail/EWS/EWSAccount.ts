@@ -1,6 +1,7 @@
 import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { EWSFolder } from "./EWSFolder";
+import { ensureArray } from "./EWSEMail";
 import EWSCreateItemRequest from "./EWSCreateItemRequest";
 import type EWSDeleteItemRequest from "./EWSDeleteItemRequest";
 import type EWSUpdateItemRequest from "./EWSUpdateItemRequest";
@@ -22,6 +23,7 @@ export class EWSAccount extends MailAccount {
   readonly protocol: string = "ews";
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
+  readonly folderMap = new Map<string, EWSFolder>;
 
   constructor() {
     super();
@@ -71,6 +73,8 @@ export class EWSAccount extends MailAccount {
     }
     calendar.account = this;
     await calendar.listEvents();
+
+    await this.streamNotifications();
   }
 
   async logout(): Promise<void> {
@@ -180,9 +184,9 @@ export class EWSAccount extends MailAccount {
     return document.getElementsByTagName('parsererror').length ? null : document;
   }
 
-  createRequestOptions(): Promise<any> {
+  createRequestOptions(throwHttpErrors = false): Promise<any> {
     let options: any = {
-      throwHttpErrors: false,
+      throwHttpErrors,
       headers: {
         'Content-Type': "text/xml; charset=utf-8",
       },
@@ -216,8 +220,153 @@ export class EWSAccount extends MailAccount {
     }
   }
 
+  async callStream(request: Json, responseCallback) {
+    try {
+      const endEnvelope = "</Envelope>";
+      let requestXML = this.request2XML(request);
+      let data = "";
+      let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions(true));
+      for await (let chunk of response.body) {
+        data += chunk;
+        while (data.includes(endEnvelope)) {
+          let pos = data.indexOf(endEnvelope) + endEnvelope.length;
+          chunk = data.slice(0, pos);
+          data = data.slice(pos);
+          try {
+            let document = this.parseXML(chunk);
+            if (!document) {
+              continue;
+            }
+            let messages = document.querySelector("ResponseMessages");
+            if (!messages) {
+              continue;
+            }
+            let message = Object.values(XML2JSON(messages))[0];
+            if (message.ResponseClass == "Error") {
+              throw new EWSItemError(message, request);
+            }
+            if (message.ConnectionStatus == "Closed") {
+              this.callStream(request, responseCallback);
+            }
+            responseCallback(message);
+          } catch (ex) {
+            this.errorCallback(ex);
+          }
+        }
+      }
+    } catch (ex) {
+      this.errorCallback(ex);
+    }
+  }
+
+  async streamNotifications() {
+    let subscribe = {
+      m$Subscribe: {
+        m$StreamingSubscriptionRequest: {
+          t$EventTypes: {
+            t$EventType: [
+              "CopiedEvent",
+              "CreatedEvent",
+              "DeletedEvent",
+              "ModifiedEvent",
+              "MovedEvent",
+              "NewMailEvent",
+            ],
+          },
+          SubscribeToAllFolders: true,
+        },
+      },
+    };
+    let response = await this.callEWS(subscribe);
+    let streamRequest = {
+      m$GetStreamingEvents: {
+        m$SubscriptionIds: {
+          t$SubscriptionId: response.SubscriptionId,
+        },
+        // Maximum number of minutes to keep a stream open.
+        // In minutes, between 1 and 30, inclusive.
+        m$ConnectionTimeout: 29, // minutes
+      },
+    };
+    this.callStream(streamRequest, async message => {
+      for (let notification of ensureArray(message.Notifications?.Notification)) {
+        await this.processNotification(notification);
+      }
+    });
+  }
+
+  async processNotification(notification) {
+    let hierarchyChanged = false;
+    let folderIDs = new Set<string>();
+    for (let copiedEvent of ensureArray(notification.CopiedEvent)) {
+      if (copiedEvent.ItemId) {
+        folderIDs.add(copiedEvent.ParentFolderId.Id);
+      } else if (copiedEvent.FolderId) {
+        hierarchyChanged = true;
+      } else {
+        this.errorCallback(new Error("CopiedEvent did not conform to schema"));
+      }
+    }
+    for (let createdEvent of ensureArray(notification.CreatedEvent)) {
+      if (createdEvent.ItemId) {
+        folderIDs.add(createdEvent.ParentFolderId.Id);
+      } else if (createdEvent.FolderId) {
+        hierarchyChanged = true;
+      } else {
+        this.errorCallback(new Error("CreatedEvent did not conform to schema"));
+      }
+    }
+    for (let deletedEvent of ensureArray(notification.DeletedEvent)) {
+      if (deletedEvent.ItemId) {
+        folderIDs.add(deletedEvent.ParentFolderId.Id);
+      } else if (deletedEvent.FolderId) {
+        hierarchyChanged = true;
+      } else {
+        this.errorCallback(new Error("DeletedEvent did not conform to schema"));
+      }
+    }
+    for (let modifiedEvent of ensureArray(notification.ModifiedEvent)) {
+      if (modifiedEvent.ItemId) {
+        folderIDs.add(modifiedEvent.ParentFolderId.Id);
+      } else if (modifiedEvent.FolderId) {
+        hierarchyChanged = true;
+      } else {
+        this.errorCallback(new Error("ModifiedEvent did not conform to schema"));
+      }
+    }
+    for (let movedEvent of ensureArray(notification.MovedEvent)) {
+      if (movedEvent.ItemId) {
+        folderIDs.add(movedEvent.OldParentFolderId.Id);
+        folderIDs.add(movedEvent.ParentFolderId.Id);
+      } else if (movedEvent.FolderId) {
+        hierarchyChanged = true;
+      } else {
+        this.errorCallback(new Error("MovedEvent did not conform to schema"));
+      }
+    }
+    for (let newMailEvent of ensureArray(notification.NewMailEvent)) {
+      folderIDs.add(newMailEvent.ParentFolderId.Id);
+    }
+    if (hierarchyChanged) {
+      try {
+        await this.listFolders();
+      } catch (ex) {
+        this.errorCallback(ex);
+      }
+    }
+    for (let folderID of folderIDs) {
+      try {
+        let folder = this.folderMap.get(folderID);
+        if (folder) {
+          await folder.updateChangedMessages();
+        }
+      } catch (ex) {
+        this.errorCallback(ex);
+      }
+    }
+  }
+
   async listFolders(): Promise<void> {
-    let folderMap = {};
     let query = {
       m$FindFolder: {
         Traversal: "Deep",
@@ -243,16 +392,16 @@ export class EWSAccount extends MailAccount {
     let result = await this.callEWS(query);
     for (let folder of result.RootFolder.Folders.Folder) {
       if (!folder.FolderClass || folder.FolderClass == "IPF.Note" || folder.FolderClass.startsWith("IPF.Note.")) {
-        let parent = folderMap[folder.ParentFolderId.Id];
+        let parent = this.folderMap.get(folder.ParentFolderId.Id);
         let parentFolders = parent ? parent.subFolders : this.rootFolders;
-        let ewsFolder = parentFolders.find(ewsFolder => ewsFolder.id == folder.FolderId.Id);
+        let ewsFolder = parentFolders.find(ewsFolder => ewsFolder.id == folder.FolderId.Id) as EWSFolder;
         if (!ewsFolder) {
           ewsFolder = this.newFolder();
           ewsFolder.parent = parent || null;
           parentFolders.push(ewsFolder);
         }
         ewsFolder.fromXML(folder);
-        folderMap[folder.FolderId.Id] = ewsFolder;
+        this.folderMap.set(folder.FolderId.Id, ewsFolder);
       }
     }
   }

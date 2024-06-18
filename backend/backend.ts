@@ -24,7 +24,8 @@ const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save
 async function createSharedAppObject() {
   return {
     kyCreate,
-    postHTTP, // TODO Use ky
+    postHTTP,
+    streamHTTP,
     newOSNotification,
     isOSNotificationSupported,
     newTrayIcon,
@@ -154,6 +155,20 @@ async function postHTTP(url: string, data: any, responseType: string, config: an
     statusText: response.statusText,
     data: await response[responseType](),
     WWWAuthenticate: response.headers.get("WWW-Authenticate"),
+  };
+}
+
+/**
+ * @param config ky config @see <https://github.com/sindresorhus/ky>
+ */
+async function streamHTTP(url: string, data: any, config: any) {
+  config.body = data;
+  let response = await ky.post(url, config);
+  return {
+    ok: response.ok,
+    status: response.status,
+    statusText: response.statusText,
+    body: response.body.pipeThrough(new TextDecoderStream()),
   };
 }
 
