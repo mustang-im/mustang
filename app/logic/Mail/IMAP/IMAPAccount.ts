@@ -6,13 +6,16 @@ import { SQLFolder } from "../SQL/SQLFolder";
 import type { EMail } from "../EMail";
 import { SpecialFolder } from "../Folder";
 import { assert, exMessage } from "../../util/util";
+import { notifyChangedProperty } from "../../util/Observable";
 import type { ArrayColl, Collection } from "svelte-collections";
 import type { ImapFlow } from "../../../../e2/node_modules/imapflow";
 import { appName, appVersion, siteRoot } from "../../../frontend/build";
 
 export class IMAPAccount extends MailAccount {
   readonly protocol: string = "imap";
+  @notifyChangedProperty
   _connection: ImapFlow;
+  @notifyChangedProperty
   accessToken: string | undefined;
   acceptOldTLS = false;
   acceptBrokenTLSCerts = false;

@@ -43,6 +43,7 @@ export class EWSAccount extends MailAccount {
       this.oAuth2.setTokenURLPasswordAuth(urls.tokenURLPasswordAuth);
       this.oAuth2.setPassword(this.password);
       this.oAuth2.username = this.username ?? this.emailAddress;
+      this.oAuth2.subscribe(() => this.notifyObservers());
       await this.oAuth2.login(interactive);
     }
     await this.listFolders();

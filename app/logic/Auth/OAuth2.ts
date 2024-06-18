@@ -2,6 +2,7 @@ import { newOAuth2UI, OAuth2UIMethod } from "./OAuth2UIMethod";
 import { OAuth2Error, OAuth2LoginNeeded, OAuth2ServerError } from "./OAuth2Error";
 import type { Account } from "../Abstract/Account";
 import { appGlobal } from "../app";
+import { Observable, notifyChangedProperty } from "../util/Observable";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { assert, type URLString } from "../util/util";
 
@@ -20,7 +21,7 @@ import { assert, type URLString } from "../util/util";
  * Before dropping (disposing of) this object, please call stop(). Otherwise,
  * the token will continue to be refreshed.
  */
-export class OAuth2 {
+export class OAuth2 extends Observable {
   account: Account;
   /** OAuth2 base URL */
   tokenURL: URLString;
@@ -30,8 +31,11 @@ export class OAuth2 {
   scope: string;
   clientID = "mail";
   clientSecret: string | null = null;
+  @notifyChangedProperty
   accessToken?: string;
+  @notifyChangedProperty
   protected refreshToken?: string;
+  @notifyChangedProperty
   idToken: string;
   verificationToken: string; /** `state` URL param of authURL/doneURL */
   uiMethod: OAuth2UIMethod = OAuth2UIMethod.Window;
@@ -44,6 +48,7 @@ export class OAuth2 {
   refreshErrorCallback = (ex: Error) => console.error(ex);
 
   constructor(account: Account, tokenURL: string, authURL: string, authDoneURL: string | null | undefined, scope: string, clientID: string, clientSecret?: string | null) {
+    super();
     assert(tokenURL?.startsWith("https://") || tokenURL?.startsWith("http://"), "Need OAuth2 server token URL");
     assert(authURL?.startsWith("https://") || authURL?.startsWith("http://"), "Need OAuth2 login page URL");
     assert(!authDoneURL || authDoneURL?.startsWith("https://") || authDoneURL?.startsWith("http://"), "Need OAuth2 login finish URL");

@@ -110,6 +110,7 @@ export class MailAccount extends Account {
       this.oAuth2 = OAuth2.fromConfigJSON(config.oAuth2, this);
       this.oAuth2.setPassword(this.password);
       this.oAuth2.username = this.username ?? this.emailAddress;
+      this.oAuth2.subscribe(() => this.notifyObservers());
     }
   }
   toConfigJSON(): any {
