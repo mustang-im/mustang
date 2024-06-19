@@ -11,6 +11,7 @@ import { Buffer } from "buffer";
 export class IMAPFolder extends Folder {
   account: IMAPAccount;
   uidvalidity: number = 0;
+  readonly deletions = new Set<number>();
 
   constructor(account: IMAPAccount) {
     super(account);
@@ -110,6 +111,9 @@ export class IMAPFolder extends Folder {
         if (!msgInfo.envelope) {
           continue;
         }
+        if (this.deletions.has(msgInfo.uid)) {
+          continue;
+        }
         let msg = this.getEMailByUID(msgInfo.uid);
         if (msg) {
           msg.fromFlow(msgInfo);
@@ -151,6 +155,9 @@ export class IMAPFolder extends Folder {
         }, { uid: true });
         for await (let msgInfo of msgInfos) {
           try {
+            if (this.deletions.has(msgInfo.uid)) {
+              continue;
+            }
             let msg = this.getEMailByUID(msgInfo.uid);
             if (msg?.downloadComplete) {
               continue;
@@ -212,6 +219,9 @@ export class IMAPFolder extends Folder {
   /** We received an event from the server that the
    * unread or flag status of an email changed */
   async messageFlagsChanged(uid: number | null, seq: number, flags: Set<string>, newModSeq?: number): Promise<void> {
+    if (this.deletions.has(uid)) {
+      return;
+    }
     let message = uid ? this.getEMailByUID(uid) : this.getEMailBySeq(seq);
     if (!message) {
       await this.listMessages();
