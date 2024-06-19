@@ -23,6 +23,8 @@ jobs:
     - run: cd backend; npm install
     - run: cd e2; npm install --legacy-peer-deps
     - run: cd e2; npm run build:mac
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
