@@ -1,7 +1,7 @@
 <div>
   You can find the source code of {appName} core
   at <a href="https://github.com/mustang-im/mustang" target="_blank">GitHub</a>
-  under an <a href="https://github.com/mustang-im/mustang/LICENSE" target="_blank">Open-Source license</a>.
+  under an <a href="https://raw.githubusercontent.com/mustang-im/mustang/master/LICENSE" target="_blank">Open-Source license</a>.
 </div>
 <div>
   {appName} is built using the following Open-Source components.
