@@ -128,6 +128,7 @@
     font-size: 12px !important;
     font-family: Helvetica, Arial, sans-serif;
   }
+  .message.unread .subject,
   .message.unread .date {
     font-weight: bold;
   }
