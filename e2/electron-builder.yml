@@ -45,5 +45,7 @@ appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 publish:
-  provider: generic
-  url: https://mustang.im/auto-updates
+  - provider: github
+    protocol: https
+#  - provider generic
+#    url: https://mustang.im/auto-updates

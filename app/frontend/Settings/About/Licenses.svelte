@@ -1,12 +1,7 @@
-<script>
-
-  import { appName } from "../../../logic/build";
-
-</script>
 <div>
   You can find the source code of {appName} core
-  at <a href="https://github.com/mustang.im/mustang" target="_blank">GitHub</a>
-  under an <a href="https://github.com/mustang.im/mustang/LICENSE" target="_blank">Open-Source license</a>.
+  at <a href="https://github.com/mustang-im/mustang" target="_blank">GitHub</a>
+  under an <a href="https://github.com/mustang-im/mustang/LICENSE" target="_blank">Open-Source license</a>.
 </div>
 <div>
   {appName} is built using the following Open-Source components.
@@ -14,6 +9,10 @@
 </div>
 
 <iframe src="public/attribution.txt.gz" title="Licenses" sandbox="" />
+
+<script>
+  import { appName } from "../../../logic/build";
+</script>
 
 <style>
   iframe {

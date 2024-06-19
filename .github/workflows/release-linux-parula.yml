@@ -23,9 +23,6 @@ jobs:
     - run: cd backend; npm install
     - run: cd e2; npm install --legacy-peer-deps
     - run: cd e2; npm run build
-    - name: Environment variable
-      uses: myci-actions/export-env-var@1
-      with:
-        name: GH_TOKEN
-        value: ${{ secrets.github_token }}
     - run: cd e2; npm run build:release:linux
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -63,14 +63,9 @@
 
 # Initial release
 * Installer
-  * Windows on CI - DONE
-  * Linux on CI - DONE
-  * Mac ARM on CI - DONE
   * Mac Signing
   * Auto-update client
-  * Auto-update server
-* Licenses
-  * Adapt our Open-Source license
+  * Auto-update test
 * Beta notification bar
 * Beta time-bomb
 * License client
