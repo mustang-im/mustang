@@ -12,3 +12,8 @@ perl -p -i \
   -e "s|\"name\": \"mustang\"|\"name\": \"parula\"|;" \
   -e "s|\"version\": \".*\"|\"version\": \"$VERSION\"|;" \
   ../../e2/package.json
+perl -p -i \
+  -e "s|Mustang GmbH|Beonex GmbH|g;" \
+  -e "s|Mustang|Parula|g;" \
+  -e "s|mustang|parula|g;" \
+  ../../e2/electron-builder.yml
