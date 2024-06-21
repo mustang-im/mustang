@@ -8,10 +8,13 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest",
-    "check": "svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "extract": "lingui extract",
+    "compile": "lingui compile --typescript"
   },
   "dependencies": {
     "@faker-js/faker": "^7.6.0",
+    "@lingui/core": "^4.11.1",
     "@popperjs/core": "^2.11.8",
     "@svelteuidev/composables": "^0.14.0",
     "@svelteuidev/core": "^0.14.0",
@@ -40,10 +43,12 @@
     "pretty-bytes": "^6.1.1",
     "psl": "https://github.com/lupomontero/psl",
     "svelte-collections": "^1.1.22",
+    "svelte-i18n-lingui": "^0.1.7",
     "svelte-icon": "^2.0.0",
     "ws": "^8.16.0"
   },
   "devDependencies": {
+    "@lingui/cli": "^4.11.1",
     "@sveltejs/vite-plugin-svelte": "^2.0.3",
     "@tsconfig/svelte": "^3.0.0",
     "adm-zip": "^0.5.12",

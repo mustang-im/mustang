@@ -23,7 +23,8 @@
     "frontend/**/*.js",
     "frontend/**/*.svelte",
     "logic/util/Observable.ts",
-    "logic/build.ts"
+    "logic/build.ts", 
+    "lingui.config.ts"  
   ],
   "references": [
     {
