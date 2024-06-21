@@ -1,13 +1,14 @@
 <hbox class="date-range-header">
   <hbox class="date-range">{simpleDateString(date)}</hbox>
-  <Button classes="previous-button" label="Previous {dateInterval} days" icon={ChevronLeftIcon} on:click={pagePrevious} iconSize="16px" plain iconOnly />
-  <Button classes="next-button" label="Next {dateInterval} days" icon={ChevronRightIcon} on:click={pageNext} iconSize="16px" plain iconOnly />
+  <Button classes="previous-button" label={$t`Previous ${dateInterval} days`} icon={ChevronLeftIcon} on:click={pagePrevious} iconSize="16px" plain iconOnly />
+  <Button classes="next-button" label={$t`Next ${dateInterval} days`} icon={ChevronRightIcon} on:click={pageNext} iconSize="16px" plain iconOnly />
 </hbox>
 
 <script lang="ts">
   import Button from "../Shared/Button.svelte";
   import ChevronLeftIcon from "lucide-svelte/icons/chevron-left";
   import ChevronRightIcon from "lucide-svelte/icons/chevron-right";
+  import { t } from "svelte-i18n-lingui";
 
   export let date = new Date(); /* in/out */
   export let dateInterval: number; /* in */

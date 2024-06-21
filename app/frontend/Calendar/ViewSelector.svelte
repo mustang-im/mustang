@@ -6,25 +6,25 @@
 <script lang="ts">
   import type { DateInterval } from "./selected";
   import { NativeSelect } from '@svelteuidev/core';
+  import { t } from "svelte-i18n-lingui";
 
   export let dateInterval: DateInterval = 7; /* in/out */
 
   function dateIntervalLabel(interval: DateInterval) {
-    // TODO l10n
     if (interval == 0) {
-      return "List";
+      return $t`List`;
     } else if (interval == 1) {
-      return "Day";
+      return $t`Day`;
     } else if (interval == 7) {
-      return "Week";
+      return $t`Week`;
     } else if (interval == 31) {
-      return "Month";
+      return $t`Month`;
     } else if (interval == 28) {
-      return "4 Weeks";
+      return $t`4 Weeks`;
     } else if (interval == 2) {
-      return "Day/Month";
+      return $t`Day/Month`;
     } else {
-      return interval + " days";
+      return interval + " " + $t`days`;
     }
   }
 
