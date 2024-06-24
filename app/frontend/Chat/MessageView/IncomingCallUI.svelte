@@ -1,13 +1,7 @@
-<script>
-  import { IncomingCall } from "../../../logic/Chat/RoomEvent";
-  import RoundButton from "../../Shared/RoundButton.svelte";
-import { catchErrors } from "../../Util/error";
-
-</script>
 <MessageUI {message} {previousMessage}>
   <hbox slot="bubble" class="bubblr">
     <RoundButton
-      label="Answer"
+      label={$t`Answer`}
       icon={AnswerCallIcon}
       onClick={answerCall}
       classes="answer"
@@ -20,6 +14,10 @@ import { catchErrors } from "../../Util/error";
   import type { Message } from "../../../logic/Abstract/Message";
   import MessageUI from "./Message.svelte";
   import AnswerCallIcon from "lucide-svelte/icons/phone-call";
+  import { IncomingCall } from "../../../logic/Chat/RoomEvent";
+  import RoundButton from "../../Shared/RoundButton.svelte";
+  import { catchErrors } from "../../Util/error";
+  import { t } from "svelte-i18n-lingui";
 
   export let message: IncomingCall;
   export let previousMessage: Message = null;

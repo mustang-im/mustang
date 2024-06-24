@@ -6,9 +6,9 @@
     <hbox class="name">{person.name}</hbox>
   </vbox>
   <hbox class="actions">
-    <RoundButton label="Video call" icon={VideoCallIcon} classes="secondary large"
+    <RoundButton label={$t`Video call`} icon={VideoCallIcon} classes="secondary large"
       onClick={() => startVideoCall(person)} />
-    <RoundButton label="Audio call" icon={VoiceCallIcon} classes="secondary large"
+    <RoundButton label={$t`Audio call`} icon={VoiceCallIcon} classes="secondary large"
       onClick={() => startAudioCall(person)} />
   </hbox>
   <hbox flex />
@@ -22,6 +22,7 @@
   import RoundButton from "../Shared/RoundButton.svelte";
   import VideoCallIcon from '../asset/icon/appBar/meet.svg?raw';
   import VoiceCallIcon from '../asset/icon/meet/callVoice.svg?raw';
+  import { t } from "svelte-i18n-lingui";
 
   export let person: Contact;
 </script>
