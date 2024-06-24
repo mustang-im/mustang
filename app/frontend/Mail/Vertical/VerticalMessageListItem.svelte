@@ -50,7 +50,7 @@
         icon={StarIcon}
         iconSize="16px"
         iconOnly
-        label="Remember this message"
+        label={$t`Remember this message`}
         onClick={toggleStar}
         plain
         />
@@ -60,7 +60,7 @@
         icon={CircleIcon}
         iconSize="7px"
         iconOnly
-        label={message.isRead ? "Mark this message as unread" : "Mark this message as read"}
+        label={message.isRead ? $t`Mark this message as unread` : $t`Mark this message as read`}
         onClick={toggleRead}
         plain
         />
@@ -81,6 +81,7 @@
   import SpamIcon from "lucide-svelte/icons/shield-x";
   import { getDateString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
+  import { t } from "svelte-i18n-lingui";
 
   export let message: EMail;
 

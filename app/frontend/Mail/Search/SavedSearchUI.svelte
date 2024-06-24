@@ -1,9 +1,9 @@
 <vbox class="saved-search">
-  <input type="text" bind:value={name} placeholder="Name of the folder" />
+  <input type="text" bind:value={name} placeholder={$t`Name of the folder`} />
   <hbox class="buttons">
     <Button
       icon={SaveIcon}
-      label="Save as folder"
+      label={$t`Save as folder`}
       onClick={onSave}
     />
   </hbox>
@@ -17,6 +17,7 @@
   import Button from "../../Shared/Button.svelte";
   import SaveIcon from "lucide-svelte/icons/save";
   import { createEventDispatcher } from 'svelte';
+  import { t } from "svelte-i18n-lingui";
   const dispatchEvent = createEventDispatcher();
 
   /** in */

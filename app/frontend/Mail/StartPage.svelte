@@ -1,8 +1,9 @@
 <hbox class="mail-start-page">
-  Start page
+  {$t`Start page`}
 </hbox>
 
 <script lang="ts">
+  import { t } from "svelte-i18n-lingui";
 </script>
 
 <style>

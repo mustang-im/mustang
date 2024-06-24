@@ -2,7 +2,7 @@
   <svelte:fragment slot="above-center">
     <hbox flex />
     <hbox class="recipients">
-      to: {recipientsLine}
+      {$t`to:`} {recipientsLine}
     </hbox>
   </svelte:fragment>
   <svelte:fragment slot="inner-top">
@@ -22,6 +22,7 @@
   import { EMail } from "../../../logic/Mail/EMail";
   import MessageBubble from "../../Chat/MessageView/Message.svelte";
   import Toolbar from "./MailChatToolbar.svelte";
+  import { t } from "svelte-i18n-lingui";
 
   export let message: EMail;
   export let previousMessage: Message;

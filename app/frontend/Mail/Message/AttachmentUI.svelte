@@ -13,7 +13,7 @@
       </hbox>
       <hbox class="bottom-row">
         <hbox class="size">
-          {$attachment.size ? fileSize($attachment.size) : "Not downloaded"}
+          {$attachment.size ? fileSize($attachment.size) : $t`Not downloaded`}
         </hbox>
         <hbox flex />
         <AttachmentMenu {attachment} />
@@ -30,6 +30,7 @@
   import FileIcon from "../../Files/FileIcon.svelte";
   import { fileSize } from "../../Files/fileSize";
   import { catchErrors } from "../../Util/error";
+  import { t } from "svelte-i18n-lingui";
 
   export let attachment: Attachment;
   export let message: EMail;
@@ -43,7 +44,7 @@
   let iconEl: HTMLDivElement;
 
   function onDragStart(event: DragEvent) {
-    assert(attachment.content instanceof File, "Attachment file is missing");
+    assert(attachment.content instanceof File, $t`Attachment file is missing`);
     event.dataTransfer.items.clear();
     event.dataTransfer.items.add(attachment.content);
     event.dataTransfer.setDragImage(iconEl as HTMLElement, 0, 0);

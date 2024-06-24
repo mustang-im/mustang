@@ -4,7 +4,7 @@
       icon={ReplyIcon}
       iconSize="24px"
       iconOnly
-      label={"Reply to author"}
+      label={$t`Reply to author`}
       onClick={reply}
       plain
       />
@@ -14,7 +14,7 @@
       icon={ReplyAllIcon}
       iconSize="24px"
       iconOnly
-      label={"Reply to all"}
+      label={$t`Reply to all`}
       onClick={replyAll}
       plain
       />
@@ -24,7 +24,7 @@
       icon={TrashIcon}
       iconSize="16px"
       iconOnly
-      label={"Delete this message"}
+      label={$t`Delete this message`}
       onClick={deleteMessage}
       disabled={!message}
       plain
@@ -48,7 +48,7 @@
       icon={CircleIcon}
       iconSize="16px"
       iconOnly
-      label={$message.isRead ? "Mark this message as unread" : "Mark this message as read"}
+      label={$message.isRead ? $t`Mark this message as unread` : $t`Mark this message as read`}
       onClick={toggleRead}
       plain
       />
@@ -58,7 +58,7 @@
       icon={StarIcon}
       iconSize="20px"
       iconOnly
-      label="Remember this message"
+      label={$t`Remember this message`}
       onClick={toggleStar}
       plain
       />
@@ -79,6 +79,7 @@
   import ReplyAllIcon from "lucide-svelte/icons/reply-all";
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
+  import { t } from "svelte-i18n-lingui";
 
   export let message: EMail;
 

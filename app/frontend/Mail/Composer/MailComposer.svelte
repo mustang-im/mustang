@@ -6,14 +6,14 @@
       <hbox flex class="spacer" />
       <hbox class="close buttons">
         <RoundButton
-          label="Discard and close"
+          label={$t`Discard and close`}
           icon={TrashIcon}
           iconSize="16px"
           padding="6px"
           onClick={onDelete}
           />
         <RoundButton
-          label="Save and close"
+          label={$t`Save and close`}
           icon={CloseIcon}
           iconSize="16px"
           padding="6px"
@@ -25,28 +25,28 @@
       <hbox>
         {#if showCC || showBCC}
           <hbox class="label">
-              To
+              {$t`To`}
           </hbox>
         {/if}
       </hbox>
       <hbox flex>
         <hbox flex>
-          <MailAutocomplete addresses={mail.to} placeholder="Add recipient" tabindex={1} autofocus={true}>
+          <MailAutocomplete addresses={mail.to} placeholder={$t`Add recipient`} tabindex={1} autofocus={true}>
             <svelte:fragment slot="person-popup-buttons" let:personUID>
-              <Button plain label="CC" onClick={() => onMoveToCC(personUID)} />
-              <Button plain label="BCC" onClick={() => onMoveToBCC(personUID)} />
+              <Button plain label={$t`CC`} onClick={() => onMoveToCC(personUID)} />
+              <Button plain label={$t`BCC`} onClick={() => onMoveToBCC(personUID)} />
             </svelte:fragment>
           </MailAutocomplete>
         </hbox>
         <hbox class="cc buttons">
           <Button
-            label="Cc"
+            label={$t`Cc`}
             on:click={() => {showCCForce = !showCCForce}}
             disabled={hasCC}
             selected={showCC}
             />
           <Button
-            label="Bcc"
+            label={$t`Bcc`}
             on:click={() => {showBCCForce = !showBCCForce}}
             disabled={hasBCC}
             selected={showBCC}
@@ -54,27 +54,27 @@
         </hbox>
       </hbox>
     {#if showCC}
-      <hbox class="label">Cc</hbox>
-      <MailAutocomplete addresses={mail.cc} placeholder="Add CC recipient" tabindex={1}>
+      <hbox class="label">{$t`Cc`}</hbox>
+      <MailAutocomplete addresses={mail.cc} placeholder={$t`Add CC recipient`} tabindex={1}>
         <svelte:fragment slot="person-popup-buttons" let:personUID>
-          <Button plain label="To" onClick={() => onMoveToTo(personUID)} />
-          <Button plain label="BCC" onClick={() => onMoveToBCC(personUID)} />
+          <Button plain label={$t`To`} onClick={() => onMoveToTo(personUID)} />
+          <Button plain label={$t`BCC`} onClick={() => onMoveToBCC(personUID)} />
         </svelte:fragment>
       </MailAutocomplete>
     {/if}
     {#if showBCC}
-      <hbox class="label">Bcc</hbox>
-      <MailAutocomplete addresses={mail.bcc} placeholder="Add BCC recipient" tabindex={1}>
+      <hbox class="label">{$t`Bcc`}</hbox>
+      <MailAutocomplete addresses={mail.bcc} placeholder={$t`Add BCC recipient`} tabindex={1}>
         <svelte:fragment slot="person-popup-buttons" let:personUID>
-          <Button plain label="To" onClick={() => onMoveToTo(personUID)} />
-          <Button plain label="CC" onClick={() => onMoveToCC(personUID)} />
+          <Button plain label={$t`To`} onClick={() => onMoveToTo(personUID)} />
+          <Button plain label={$t`CC`} onClick={() => onMoveToCC(personUID)} />
         </svelte:fragment>
       </MailAutocomplete>
     {/if}
     </grid>
     <HTMLEditorToolbar {editor}>
       <Button
-        label="Attachments"
+        label={$t`Attachments`}
         icon={AttachmentIcon}
         iconOnly
         onClick={onAddAttachment}
@@ -92,13 +92,13 @@
             </vbox>
           </Scroll>
           <hbox class="footer">
-            <hbox class="label">Subject</hbox>
+            <hbox class="label">{$t`Subject`}</hbox>
             <hbox class="subject" flex>
               <input type="text" bind:value={mail.subject} tabindex={1} />
             </hbox>
             <hbox class="buttons">
               <RoundButton
-                label="Send"
+                label={$t`Send`}
                 icon={SendIcon}
                 iconSize="20px"
                 padding="6px"
@@ -148,6 +148,7 @@
   import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { ArrayColl } from "svelte-collections";
   import IdentitySelector from "./IdentitySelector.svelte";
+  import { t } from "svelte-i18n-lingui";
 
   export let mail: EMail;
 

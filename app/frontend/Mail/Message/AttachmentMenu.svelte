@@ -4,15 +4,15 @@
   </hbox>
   <Menu.Item
     on:click={() => catchErrors(() => openExternal())}
-    title="Open in external application"
+    title={$t`Open in external application`}
     icon={OpenIcon}>
-    Open in external app
+    {$t`Open in external app`}
   </Menu.Item>
   <Menu.Item
     on:click={() => catchErrors(() => openFolder())}
-    title="Open containing folder"
+    title={$t`Open containing folder`}
     icon={FolderIcon}>
-    Open folder
+    {$t`Open folder`}
   </Menu.Item>
   <!--
   <Menu.Item
@@ -39,6 +39,7 @@
   import SaveIcon from "lucide-svelte/icons/save";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { catchErrors } from "../../Util/error";
+  import { t } from "svelte-i18n-lingui";
 
   export let attachment: Attachment;
 

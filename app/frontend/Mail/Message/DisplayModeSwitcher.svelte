@@ -1,6 +1,6 @@
 <hbox class="buttons">
   <Button
-    label="Thread"
+    label={$t`Thread`}
     icon={ThreadIcon}
     iconOnly
     iconSize="16px"
@@ -9,7 +9,7 @@
     selected={mode == DisplayMode.Thread}
     />
   <Button
-    label="Formatted"
+    label={$t`Formatted`}
     icon={HTMLIcon}
     iconOnly
     iconSize="16px"
@@ -18,7 +18,7 @@
     selected={mode == DisplayMode.HTML}
     />
   <Button
-    label="With external content (allows sender to track you)"
+    label={$t`With external content (allows sender to track you)`}
     icon={WithExternalIcon}
     iconOnly
     iconSize="16px"
@@ -27,7 +27,7 @@
     selected={mode == DisplayMode.HTMLWithExternal}
     />
   <Button
-    label="Plaintext"
+    label={$t`Plaintext`}
     icon={PlaintextIcon}
     iconOnly
     iconSize="16px"
@@ -37,7 +37,7 @@
     />
   {#if mode == DisplayMode.Source}
     <Button
-      label="Source"
+      label={$t`Source`}
       icon={SourceIcon}
       iconOnly
       iconSize="16px"
@@ -59,6 +59,7 @@
   import PlaintextIcon from "lucide-svelte/icons/type";
   import SourceIcon from "lucide-svelte/icons/code-xml";
   import { catchErrors } from "../../Util/error";
+  import { t } from "svelte-i18n-lingui";
 
   export let mode: DisplayMode = DisplayMode.HTML;
 

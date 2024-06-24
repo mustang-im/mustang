@@ -9,10 +9,11 @@ import mailIcon from '../asset/icon/appBar/mail.svg?raw';
 import EditIcon from "lucide-svelte/icons/pencil";
 import AuthIcon from "lucide-svelte/icons/key-round";
 import { derived } from "svelte/store";
+import { gt } from "svelte-i18n-lingui";
 
 export class MailMustangApp extends MustangApp {
   id = "mail";
-  name = "Mail";
+  name = gt("Mail");
   icon = mailIcon;
   mainWindow = MailApp;
 
@@ -29,7 +30,7 @@ export class MailMustangApp extends MustangApp {
   login(dialog: OAuth2Dialog): LoginDialogMustangApp {
     let loginApp = new LoginDialogMustangApp();
     let account = dialog.oAuth2.account;
-    loginApp.title = derived(account, () => "Login to " + account.name);
+    loginApp.title = derived(account, () => gt("Login to ") + account.name);
     loginApp.mainWindowProperties = {
       dialog: dialog,
     };
@@ -41,14 +42,14 @@ export class MailMustangApp extends MustangApp {
 
 export class WriteMailMustangApp extends MustangApp {
   id = "mail-write";
-  name = "Compose";
+  name = gt("Compose");
   icon = EditIcon;
   mainWindow = MailComposer;
 }
 
 export class LoginDialogMustangApp extends MustangApp {
   id = "auth-login";
-  name = "Login";
+  name = gt("Login");
   icon = AuthIcon;
   mainWindow = OAuth2DialogUI;
 }

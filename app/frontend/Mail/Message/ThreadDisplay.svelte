@@ -1,4 +1,4 @@
-<hbox style="justify-content: center">The threaded view does not yet work as intended.</hbox>
+<hbox style="justify-content: center">{$t`The threaded view does not yet work as intended.`}</hbox>
 <Scroll>
   <vbox class="messages">
     {#each $threadMessages.each as message, i}
@@ -15,6 +15,7 @@
   import Scroll from "../../Shared/Scroll.svelte";
   import { ArrayColl } from "svelte-collections";
   import { catchErrors } from "../../Util/error";
+  import { t } from "svelte-i18n-lingui";
 
   export let message: EMail;
 

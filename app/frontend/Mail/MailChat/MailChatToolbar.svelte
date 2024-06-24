@@ -3,7 +3,7 @@
     icon={ReplyIcon}
     iconSize="24px"
     iconOnly
-    label={"Reply to author"}
+    label={$t`Reply to author`}
     onClick={reply}
     plain
     />
@@ -13,7 +13,7 @@
     icon={ReplyAllIcon}
     iconSize="24px"
     iconOnly
-    label={"Reply to all"}
+    label={$t`Reply to all`}
     onClick={replyAll}
     plain
     />
@@ -23,7 +23,7 @@
     icon={CircleIcon}
     iconSize="16px"
     iconOnly
-    label={$message.isRead ? "Mark this message as unread" : "Mark this message as read"}
+    label={$message.isRead ? $t`Mark this message as unread` : $t`Mark this message as read`}
     onClick={toggleRead}
     plain
     />
@@ -33,7 +33,7 @@
     icon={StarIcon}
     iconSize="20px"
     iconOnly
-    label="Remember this message"
+    label={$t`Remember this message`}
     onClick={toggleStar}
     plain
     />
@@ -43,7 +43,7 @@
     icon={OpenIcon}
     iconSize="20px"
     iconOnly
-    label="Open this message alone"
+    label={$t`Open this message alone`}
     onClick={openMessageAlone}
     plain
     />
@@ -66,6 +66,7 @@
   import OpenIcon from "lucide-svelte/icons/maximize-2";
   import { selectedMessage } from "../Selected";
   import { getLocalStorage } from "../../Util/LocalStorage";
+  import { t } from "svelte-i18n-lingui";
 
   export let message: EMail;
 

@@ -7,7 +7,7 @@
       {attachment.filename}
     </hbox>
     <hbox class="size">
-      {Math.ceil($attachment.size / 1024)} KB
+      {Math.ceil($attachment.size / 1024)} {$t`KB`}
     </hbox>
   </vbox>
   <vbox class="buttons">
@@ -20,6 +20,7 @@
   import FileIcon from "../../../Files/FileIcon.svelte";
   import Button from "../../../Shared/Button.svelte";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
+  import { t } from "svelte-i18n-lingui";
 
   export let attachment: Attachment;
 </script>
