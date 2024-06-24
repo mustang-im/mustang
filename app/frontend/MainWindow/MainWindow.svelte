@@ -42,6 +42,7 @@
   import { assert } from "../../logic/util/util";
   import { onMount } from "svelte";
   import { setLocale } from "../../l10n/l10n";
+  import { t } from "svelte-i18n-lingui";
 
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;
@@ -76,7 +77,7 @@
     if (!appGlobal?.remoteApp) {
       return;
     }
-    assert(["system", "light", "dark"].includes(mode), "Bad dark mode " + mode);
+    assert(["system", "light", "dark"].includes(mode), $t`Bad dark mode ` + mode);
     appGlobal.remoteApp.setDarkMode(mode);
   }
 

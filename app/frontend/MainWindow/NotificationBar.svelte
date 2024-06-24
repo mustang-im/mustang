@@ -24,14 +24,14 @@
       <RoundButton
         icon={ErrorInfoIcon}
         classes="error-info small"
-        label="More info about this error"
+        label={$t`More info about this error`}
         on:click={() => onErrorInfo(notification.ex)}
         />
     {/if}
     <RoundButton
       icon={XIcon}
       classes="close small"
-      label="Remove this message"
+      label={$t`Remove this message`}
       on:click={() => onClose(notification)}
       />
   </hbox>
@@ -43,6 +43,7 @@
   import RoundButton from "../Shared/RoundButton.svelte";
   import XIcon from "lucide-svelte/icons/x";
   import ErrorInfoIcon from "lucide-svelte/icons/bot";
+  import { t } from "svelte-i18n-lingui";
 
   $: notification = $notifications.sortBy(n => n.severity).first;
 
