@@ -4,7 +4,7 @@
   </Scroll>
   <hbox class="buttons">
     <RoundButton
-      label="New contact"
+      label={$t`New contact`}
       icon={NewContactIcon}
       iconSize="22px" padding="9px" classes="large create"
       onClick={addPerson}
@@ -22,6 +22,7 @@
   import Scroll from "../Shared/Scroll.svelte";
   import NewContactIcon from "lucide-svelte/icons/plus";
   import type { Collection } from "svelte-collections";
+  import { t } from "svelte-i18n-lingui";
 
   /** in */
   export let persons: Collection<Person>;

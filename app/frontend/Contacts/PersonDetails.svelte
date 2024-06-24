@@ -8,29 +8,29 @@
             <EditableSimpleText bind:value={$person.name}
               on:save={save}
               bind:isEditing={isEditingName}
-              placeholder="First name Last name" />
+              placeholder={$t`First name Last name`} />
           </hbox>
           {#if isEditingName}
             <vbox class="names">
               <input type="text" bind:value={$person.firstName}
-                class="firstname" placeholder="First name" />
+                class="firstname" placeholder={$t`First name`} />
               <input type="text" bind:value={$person.lastName}
-                class="lastname" placeholder="Last name" />
+                class="lastname" placeholder={$t`Last name`} />
             </vbox>
           {:else}
             {#if $person.position}
               <hbox class="position">
-                <EditableSimpleText bind:value={$person.position} on:save={save} placeholder="Position" />
+                <EditableSimpleText bind:value={$person.position} on:save={save} placeholder={$t`Position`} />
               </hbox>
             {/if}
             {#if $person.department}
               <hbox class="department">
-                <EditableSimpleText bind:value={$person.department} on:save={save} placeholder="Department" />
+                <EditableSimpleText bind:value={$person.department} on:save={save} placeholder={$t`Department`} />
               </hbox>
             {/if}
             {#if $person.company}
               <hbox class="company">
-                <EditableSimpleText bind:value={$person.company} on:save={save} placeholder="First Lastname" />
+                <EditableSimpleText bind:value={$person.company} on:save={save} placeholder={$t`First Lastname`} />
               </hbox>
             {/if}
           {/if}
@@ -38,17 +38,17 @@
       </hbox>
       <vbox flex class="main-right">
         <hbox class="main-call">
-          <RoundButton label="Video call" icon={CameraIcon} classes="large secondary action"
+          <RoundButton label={$t`Video call`} icon={CameraIcon} classes="large secondary action"
             onClick={() => startVideoCall(person)} />
           {#if preferredPhoneNumber}
             <a href="tel:{preferredPhoneNumber}" class="phone-call">
-              <RoundButton label="Call" icon={CallIcon} iconSize="19px" classes="large secondary action" />
+              <RoundButton label={$t`Call`} icon={CallIcon} iconSize="19px" classes="large secondary action" />
             </a>
           {/if}
-          <RoundButton label="Message" icon={ChatIcon} classes="large secondary action" />
+          <RoundButton label={$t`Message`} icon={ChatIcon} classes="large secondary action" />
           {#if preferredEmailAddress}
             <a href="mailto:{preferredEmailAddress}">
-              <RoundButton label="Send mail" icon={MailIcon} classes="large secondary action" />
+              <RoundButton label={$t`Send mail`} icon={MailIcon} classes="large secondary action" />
             </a>
           {/if}
         </hbox>
@@ -66,7 +66,7 @@
       <GroupBox classes="email">
         <svelte:fragment slot="header">
           <Icon data={MailIcon} size="16px" />
-          <h3>Mail</h3>
+          <h3>{$t`Mail`}</h3>
           <hbox flex class="actions">
             <Button on:click={addEmail} icon={AddIcon} iconOnly plain classes="add" />
           </hbox>
@@ -86,7 +86,7 @@
       <GroupBox classes="chat">
         <svelte:fragment slot="header">
           <Icon data={ChatIcon} size="16px" />
-          <h3>Chat</h3>
+          <h3>{$t`Chat`}</h3>
           <hbox flex class="actions">
             <Button on:click={addChatAccount} icon={AddIcon} iconOnly plain classes="add" />
           </hbox>
@@ -108,7 +108,7 @@
           <hbox class="phone">
             <Icon data={PhoneIcon} size="16px" />
           </hbox>
-          <h3>Phone numbers</h3>
+          <h3>{$t`Phone numbers`}</h3>
           <hbox flex class="actions">
             <Button on:click={addPhoneNumber} icon={AddIcon} iconOnly plain classes="add" />
           </hbox>
@@ -128,7 +128,7 @@
       <GroupBox classes="street-addresses">
         <svelte:fragment slot="header">
           <Icon data={MailIcon} size="16px" />
-          <h3>Street addresses</h3>
+          <h3>{$t`Street addresses`}</h3>
           <hbox flex class="actions">
             <Button on:click={addStreetAddress} icon={AddIcon} iconOnly plain classes="add" />
           </hbox>
@@ -148,7 +148,7 @@
       <GroupBox classes="categories">
         <svelte:fragment slot="header">
           <Icon data={ContactsIcon} size="16px" />
-          <h3>Groups</h3>
+          <h3>{$t`Groups`}</h3>
           <hbox flex class="actions">
             <!--
             <Button on:click={addEmail} icon={AddIcon} iconOnly plain classes="add" />
@@ -184,19 +184,19 @@
 
   <vbox class="expanders">
     <ExpanderButtons>
-      <ExpanderButton bind:expanded={showEmail} label="Mail" on:expand={addEmail} />
-      <ExpanderButton bind:expanded={showChat} label="Chat" on:expand={addChatAccount} />
-      <ExpanderButton bind:expanded={showPhone} label="Phone" on:expand={addPhoneNumber} />
-      <ExpanderButton bind:expanded={showStreet} label="Street address" on:expand={addStreetAddress} />
+      <ExpanderButton bind:expanded={showEmail} label={$t`Mail`} on:expand={addEmail} />
+      <ExpanderButton bind:expanded={showChat} label={$t`Chat`} on:expand={addChatAccount} />
+      <ExpanderButton bind:expanded={showPhone} label={$t`Phone`} on:expand={addPhoneNumber} />
+      <ExpanderButton bind:expanded={showStreet} label={$t`Street address`} on:expand={addStreetAddress} />
       <!--<ExpanderButton bind:expanded={showGroups} label="Groups" on:expand={addGroup} />-->
-      <ExpanderButton bind:expanded={showNotes} label="Notes" on:expand={addNotes} />
+      <ExpanderButton bind:expanded={showNotes} label={$t`Notes`} on:expand={addNotes} />
     </ExpanderButtons>
   </vbox>
 
   {#if showNotes}
     <vbox flex class="notes">
       <!-- svelte-ignore a11y-autofocus -->
-      <textarea bind:value={person.notes} placeholder="Personal notes" autofocus={person.notes == " "} />
+      <textarea bind:value={person.notes} placeholder={$t`Personal notes`} autofocus={person.notes == " "} />
     </vbox>
   {/if}
 </vbox>
@@ -231,6 +231,7 @@
   import AddIcon from "lucide-svelte/icons/plus";
   import { NotImplemented } from "../../logic/util/util";
   import { showError } from "../Util/error";
+  import { t } from "svelte-i18n-lingui";
 
   export let person: Person;
 

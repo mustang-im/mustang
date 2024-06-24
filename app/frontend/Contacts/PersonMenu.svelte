@@ -4,15 +4,15 @@
   </hbox>
   <Menu.Item
     on:click={() => catchErrors(() => save())}
-    title="Save"
+    title={$t`Save`}
     icon={SaveIcon}>
-    Save
+    {$t`Save`}
   </Menu.Item>
   <Menu.Item
     on:click={() => catchErrors(() => deleteIt())}
-    title="Delete"
+    title={$t`Delete`}
     icon={DeleteIcon}>
-    Delete this contact
+    {$t`Delete this contact`}
   </Menu.Item>
 </Menu>
 
@@ -25,6 +25,7 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { Menu } from "@svelteuidev/core";
   import { catchErrors } from "../Util/error";
+  import { t } from "svelte-i18n-lingui";
 
   export let person: Person;
 

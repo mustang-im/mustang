@@ -3,14 +3,14 @@
     {placeholder}
     on:keydown={event => onKeyEnter(event, onEnter)}>
   <hbox class="actions">
-    <Button on:click={stopEditing} icon={OKIcon} iconOnly plain iconSize="14px" label="Finish editing and save" />
+    <Button on:click={stopEditing} icon={OKIcon} iconOnly plain iconSize="14px" label={$t`Finish editing and save`} />
   </hbox>
 {:else}
   <div class="value" on:dblclick={startEditing}>
     {value}
   </div>
   <hbox class="actions value">
-    <Button on:click={startEditing} icon={PencilIcon} iconOnly plain iconSize="12px" label="Edit" />
+    <Button on:click={startEditing} icon={PencilIcon} iconOnly plain iconSize="12px" label={$t`Edit`} />
   </hbox>
 {/if}
 
@@ -20,6 +20,7 @@
   import OKIcon from "lucide-svelte/icons/check";
   import { onKeyEnter } from "../Util/util";
   import { createEventDispatcher, tick } from 'svelte';
+  import { t } from "svelte-i18n-lingui";
   const dispatch = createEventDispatcher();
 
   /** in/out */
