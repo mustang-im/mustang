@@ -1,14 +1,14 @@
 <hbox class="persons-toolbar">
-  <input type="search" bind:value={searchText} placeholder="Add or search a participant" />
+  <input type="search" bind:value={searchText} placeholder={$t`Add or search a participant`} />
   <hbox class="buttons">
     <RoundButton
-      label="New contact"
+      label={$t`New contact`}
       onClick={addPerson}
       icon={NewContactIcon}
       iconSize="16px"
       />
     <RoundButton
-      label="Copy invitation link"
+      label={$t`Copy invitation link`}
       classes="invite-participant"
       onClick={inviteParticipant}
       icon={InviteUserIcon}
@@ -27,6 +27,7 @@
   import NewContactIcon from "lucide-svelte/icons/plus";
   import InviteUserIcon from "lucide-svelte/icons/link";
   import { assert } from "../../logic/util/util";
+  import { t } from "svelte-i18n-lingui";
 
   export let meeting: VideoConfMeeting;
   export let selected: MeetingParticipant;
@@ -58,7 +59,7 @@
   function addTestParticipant() {
     // TODO remove test data
     let chatAccount = appGlobal.chatAccounts.first;
-    assert(chatAccount.persons.hasItems, "No persons in this chat account");
+    assert(chatAccount.persons.hasItems, $t`No persons in this chat account`);
     let person = chatAccount.persons.at(Math.floor(chatAccount.persons.length) * Math.random());
     let participant = new MeetingParticipant();
     participant.name = person.name;

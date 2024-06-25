@@ -2,7 +2,7 @@
   <Time {meeting} />
   <!--MeetingNotes {meeting} /-->
   <vbox class="participants-header">
-    <hbox class="number">{$participants.length} Participants</hbox>
+    <hbox class="number">{$participants.length} {$t`Participants`}</hbox>
   </vbox>
   <ParticipantsList {participants} bind:selected {userIsModerator} />
   <ParticipantSearch {meeting} bind:selected />
@@ -15,6 +15,7 @@
   import ParticipantsList from "./ParticipantsList.svelte";
   import ParticipantSearch from "./ParticipantSearch.svelte";
   import Time from "./Time.svelte";
+  import { t } from "svelte-i18n-lingui";
 
   export let meeting: VideoConfMeeting;
   export let participants: Collection<MeetingParticipant>;

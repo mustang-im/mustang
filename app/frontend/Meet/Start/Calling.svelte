@@ -6,9 +6,9 @@
       <vbox class="text">
         <hbox class="what">
           {#if $meeting.state == MeetingState.OutgoingCallPrepare}
-            Do you want to call?
+            {$t`Do you want to call?`}
           {:else if $meeting.state == MeetingState.OutgoingCall}
-            You're calling...
+            {$t`You're calling...`}
           {:else if $meeting.state == MeetingState.IncomingCall}
           {/if}
         </hbox>
@@ -28,7 +28,7 @@
           {#if $meeting.state == MeetingState.OutgoingCallPrepare}
           {:else if $meeting.state == MeetingState.OutgoingCall}
           {:else if $meeting.state == MeetingState.IncomingCall}
-            is calling you...
+            {$t`is calling you...`}
           {/if}
         </hbox>
       </vbox>
@@ -42,14 +42,14 @@
       <hbox class="actions">
         {#if $meeting.state == MeetingState.Init || $meeting.state == MeetingState.OutgoingCallPrepare}
           <RoundButton classes="cancel"
-            label="Cancel"
+            label={$t`Cancel`}
             icon={XIcon}
             iconSize="24px"
             onClick={cancel}
             />
         {:else}
           <RoundButton classes="hangup"
-            label={$meeting.state == MeetingState.IncomingCall ? "Decline call" : "Hang up"}
+            label={$meeting.state == MeetingState.IncomingCall ? $t`Decline call` : $t`Hang up`}
             icon={HangUpIcon}
             onClick={hangup}
             iconSize="24px"
@@ -58,7 +58,7 @@
         <hbox flex />
         {#if $meeting.state != MeetingState.OutgoingCall}
           <RoundButton classes="accept"
-            label={$meeting.state == MeetingState.Init ? "Start conference" : $meeting.state == MeetingState.OutgoingCallPrepare ? "Call" : "Accept call"}
+            label={$meeting.state == MeetingState.Init ? $t`Start conference` : $meeting.state == MeetingState.OutgoingCallPrepare ? $t`Call` : $t`Accept call`}
             icon={$meeting.state == MeetingState.Init ? OpenIcon : CallIcon}
             iconSize="24px"
             onClick={accept}
@@ -78,7 +78,7 @@
         <vbox class="upcoming-meeting">
           <hbox class="when">
             <HourglassIcon size="16px" />
-            You have a meeting in {upcomingMeetingInMin} minutes:
+            {$t`You have a meeting in ${upcomingMeetingInMin} minutes:`}
           </hbox>
           <hbox class="title">
             {upcomingMeeting.title}
@@ -106,6 +106,7 @@
   import OpenIcon from "lucide-svelte/icons/door-open";
   import HourglassIcon from "lucide-svelte/icons/hourglass";
   import { mergeColls } from "svelte-collections";
+  import { t } from "svelte-i18n-lingui";
 
   export let meeting: VideoConfMeeting;
 

@@ -8,7 +8,7 @@
       </hbox>
       <Button plain
         classes="description-collapse"
-        label={showDescription ? "Collapse description" : "Show meeting description"}
+        label={showDescription ? $t`Collapse description` : $t`Show meeting description`}
         on:click={() => showDescription = !showDescription}
         icon={showDescription ? CollapseIcon : ExpandIcon}
         iconOnly
@@ -35,6 +35,7 @@
   import Button from "../Shared/Button.svelte";
   import ExpandIcon from "lucide-svelte/icons/chevron-down";
   import CollapseIcon from "lucide-svelte/icons/chevron-up";
+  import { t } from "svelte-i18n-lingui";
 
   export let meeting: VideoConfMeeting;
 
