@@ -1,10 +1,11 @@
 <hbox class="footer">
-  <a href="{siteRoot}/eula" target="_blank">Terms of use</a>
-  <a href="{siteRoot}/privacy" target="_blank">Privacy</a>
+  <a href="{siteRoot}/eula" target="_blank">{$t`Terms of use`}</a>
+  <a href="{siteRoot}/privacy" target="_blank">{$t`Privacy`}</a>
 </hbox>
 
 <script lang="ts">
   import { siteRoot } from "../../../../logic/build";
+  import { t } from "svelte-i18n-lingui";
 </script>
 
 <style>

@@ -1,9 +1,9 @@
 <StatusMessage status="success"
-  message="Your email account is working and ready to be used.">
+  message={$t`Your email account is working and ready to be used.`}>
   <CheckIcon slot="icon"/>
 </StatusMessage>
 
-<hbox class="header">Select the workspace for {config.emailAddress}</hbox>
+<hbox class="header">{$t`Select the workspace for ${config.emailAddress}`}</hbox>
 <WorkspaceSelector {config} />
 
 <script lang="ts">
@@ -11,6 +11,7 @@
   import WorkspaceSelector from "./WorkspaceSelector.svelte";
   import StatusMessage from "../Shared/StatusMessage.svelte";
   import CheckIcon from "lucide-svelte/icons/check";
+  import { t } from "svelte-i18n-lingui";
 
   export let config: MailAccount;
 </script>

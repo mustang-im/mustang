@@ -1,27 +1,27 @@
 <vbox class="notifications">
   <label>
     <input type="checkbox" value="popup" bind:group={list} />
-    Popup
+    {$t`Popup`}
   </label>
-  <img src={popupImg} title="Popup" alt="Popup" />
+  <img src={popupImg} title={$t`Popup`} alt={$t`Popup`} />
 
   <label>
     <input type="checkbox" value="sound" bind:group={list} />
-    Sound
+    {$t`Sound`}
   </label>
-  <img src={soundImg} title="Sound" alt="Sound" />
+  <img src={soundImg} title={$t`Sound`} alt={$t`Sound`} />
 
-  <label title="Not yet implemented">
+  <label title={$t`Not yet implemented`}>
     <input type="checkbox" value="appbar" bind:group={list} disabled />
-    Bubble on the appbar in {appName}
+    {$t`Bubble on the appbar in ${appName}`}
   </label>
-  <img src={appbarImg} title="Appbar" alt="Appbar" />
+  <img src={appbarImg} title={$t`Appbar`} alt={$t`Appbar`} />
 
-  <label title="Not yet implemented">
+  <label title={$t`Not yet implemented`}>
     <input type="checkbox" value="taskbar" bind:group={list} disabled />
-    Bubble on the system task bar
+    {$t`Bubble on the system task bar`}
   </label>
-  <img src={taskbarImg} title="System task bar" alt="System task bar" />
+  <img src={taskbarImg} title={$t`System task bar`} alt={$t`System task bar`} />
 </vbox>
 
 <!--
@@ -34,6 +34,7 @@
   import appbarImg from "../../asset/settings/notification/appbar.png";
   import taskbarImg from "../../asset/settings/notification/taskbar.png";
   import { appName } from "../../../logic/build";
+  import { t } from "svelte-i18n-lingui";
   //import trayImg from "../../asset/settings/notification/tray.png";
 
   /** in/out */

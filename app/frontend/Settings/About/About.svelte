@@ -3,15 +3,17 @@
 </vbox>
 <h1>{appName}</h1>
 
-<div>Copyright 2024
-  Ben Bucksch,
-  <a href="{siteRoot}" target="_blank">{appName == "Parula" ? "Beonex GmbH" : "Mustang GmbH"}</a>,
-  and other contributors</div>
+<div>
+  <T msg="Copyright 2024 Ben Bucksch, #, and other contributors">
+    <a href="{siteRoot}" target="_blank">{appName == "Parula" ? "Beonex GmbH" : "Mustang GmbH"}</a>
+  </T>
+</div>
 
 <script lang="ts">
   import Icon from 'svelte-icon/Icon.svelte';
   import logo from '../../asset/icon/general/logo.svg?raw';
   import { appName, siteRoot } from '../../../logic/build';
+  import { T } from 'svelte-i18n-lingui';
 </script>
 
 <style>

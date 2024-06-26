@@ -1,17 +1,21 @@
 <div>
-  You can find the source code of {appName} core
-  at <a href="https://github.com/mustang-im/mustang" target="_blank">GitHub</a>
-  under an <a href="https://raw.githubusercontent.com/mustang-im/mustang/master/LICENSE" target="_blank">Open-Source license</a>.
+  <T msg={`You can find the source code of ${appName} core at # under an #.`}>
+    <!-- Slot 0 doesn't need explicit declaration `slot="0"`, it breaks the code. -->
+    <a href="https://github.com/mustang-im/mustang" target="_blank">GitHub</a>
+    <!-- Slot 1 -->
+    <a href="https://raw.githubusercontent.com/mustang-im/mustang/master/LICENSE" target="_blank" slot="1">Open-Source license</a>
+  </T>
 </div>
 <div>
-  {appName} is built using the following Open-Source components.
-  We sincerely thank those authors and contributors.
+  {$t`${appName} is built using the following Open-Source components.
+  We sincerely thank those authors and contributors.`}
 </div>
 
 <iframe src="public/attribution.txt.gz" title="Licenses" sandbox="" />
 
 <script>
   import { appName } from "../../../logic/build";
+  import { t, T } from "svelte-i18n-lingui";
 </script>
 
 <style>

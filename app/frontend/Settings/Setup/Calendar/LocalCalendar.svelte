@@ -1,12 +1,12 @@
 <Header
-  title="Create your new local calendar"
+  title={$t`Create your new local calendar`}
   subtitle=""
 />
 <vbox flex class="account">
   <grid>
-    <label for="name">Name of the calendar</label>
+    <label for="name">{$t`Name of the calendar`}</label>
     <input type="text" bind:value={config.name} name="name"
-      placeholder="Private" />
+      placeholder={$t`Private`} />
   </grid>
 </vbox>
 
@@ -23,6 +23,7 @@
   import { appGlobal } from "../../../../logic/app";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
+  import { t } from "svelte-i18n-lingui";
 
   /** in/out */
   export let config: Calendar;

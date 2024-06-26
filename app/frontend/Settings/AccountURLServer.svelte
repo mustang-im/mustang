@@ -1,12 +1,13 @@
 <grid>
-  <label for="url">Server URL</label>
+  <label for="url">{$t`Server URL`}</label>
   <hbox class="value">{account.url}</hbox>
-  <label for="username">Username</label>
+  <label for="username">{$t`Username`}</label>
   <hbox class="value">{account.username}</hbox>
 </grid>
 
 <script lang="ts">
   import type { Account } from "../../logic/Abstract/Account";
+  import { t } from "svelte-i18n-lingui";
 
   export let account: Account;
 </script>

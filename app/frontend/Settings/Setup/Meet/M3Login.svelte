@@ -1,13 +1,13 @@
 <Header
-  title="Set up your existing {appName} account for meetings"
-  subtitle="If you don't have an account yet, you can subscribe on our website."
+  title={$t`Set up your existing ${appName} account for meetings`}
+  subtitle={$t`If you don't have an account yet, you can subscribe on our website.`}
 />
 <vbox flex class="account">
   <grid>
-    <label for="username">Your {appName} email address</label>
+    <label for="username">{$t`Your ${appName} email address`}</label>
     <input type="text" bind:value={config.username} name="username"
       placeholder="fred@example.com" />
-    <label for="password">Password</label>
+    <label for="password">{$t`Password`}</label>
     <Password bind:password={config.password} />
   </grid>
 </vbox>
@@ -27,6 +27,7 @@
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
   import { appName } from "../../../../logic/build";
+  import { t } from "svelte-i18n-lingui";
 
   /** in/out */
   export let config: MeetAccount;

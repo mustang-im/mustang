@@ -1,13 +1,13 @@
 <Header
-  title="Set up your existing Matrix account"
-  subtitle="You can use {appName} with your existing Matrix account or you can create a new Matrix account."
+  title={$t`Set up your existing Matrix account`}
+  subtitle={$t`You can use ${appName} with your existing Matrix account or you can create a new Matrix account.`}
 />
 <vbox flex class="account">
   <grid>
-    <label for="username">Your Matrix ID</label>
+    <label for="username">{$t`Your Matrix ID`}</label>
     <input type="text" bind:value={userID} name="username"
       placeholder="@fred:matrix.org" />
-    <label for="password">Password</label>
+    <label for="password">{$t`Password`}</label>
     <Password bind:password />
   </grid>
 </vbox>
@@ -27,6 +27,7 @@
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
   import { appName } from "../../../../logic/build";
+  import { t } from "svelte-i18n-lingui";
 
   /** in/out */
   export let config: MatrixAccount;

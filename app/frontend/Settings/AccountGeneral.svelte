@@ -1,10 +1,10 @@
 <grid>
-  <label for="name">Account name</label>
+  <label for="name">{$t`Account name`}</label>
   <input type="text" bind:value={account.name} name="name" on:change={() => catchErrors(onNameChange)}/>
 </grid>
 <hbox flex />
 <hbox class="buttons">
-  <Button label="Delete account"
+  <Button label={$t`Delete account`}
     classes="delete"
     onClick={onDelete}
     />
@@ -16,6 +16,7 @@
   import Button from "../Shared/Button.svelte";
   import { catchErrors } from "../Util/error";
   import { appName } from "../../logic/build";
+  import { t } from "svelte-i18n-lingui";
 
   export let account: Account;
 
@@ -25,7 +26,7 @@
     await account.save();
   }
   async function onDelete() {
-    let confirmed = confirm(`Are you sure that you want to the delete account ${account.name} from ${appName} and all related data?`);
+    let confirmed = confirm($t`Are you sure that you want to the delete account ${account.name} from ${appName} and all related data?`);
     if (!confirmed) {
       return;
     }

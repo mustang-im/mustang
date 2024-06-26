@@ -1,7 +1,7 @@
 {#if $accounts.hasItems || category.newAccountUI}
   <vbox class="accounts" app={category.id}>
     <hbox class="header">
-      Accounts
+      {$t`Accounts`}
       <hbox flex />
       {#if category.newAccountUI}
         <RoundButton
@@ -9,7 +9,7 @@
           iconSize="10px"
           padding="3px"
           classes="small"
-          label="New account for {category.name}"
+          label={$t`New account for ${category.name}`}
           on:click={onNewAccount}
           />
       {/if}
@@ -28,6 +28,7 @@
   import RoundButton from "../../Shared/RoundButton.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
   import { assert } from "../../../logic/util/util";
+  import { t } from "svelte-i18n-lingui";
 
   /** in */
   export let category: SettingsCategory;

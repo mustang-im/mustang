@@ -1,32 +1,32 @@
 <grid class="main">
-  <label for="name">Folder name</label>
+  <label for="name">{$t`Folder name`}</label>
   <input type="text" bind:value={folderName} name="name" />
-  <Button label="Rename"
+  <Button label={$t`Rename`}
     classes="create"
     onClick={onNameChange}
     />
 
-  <label for="count">Use as</label>
+  <label for="count">{$t`Use as`}</label>
   <SpecialFolderDropDown bind:specialFolderType={folder.specialFolder} disabled={disableSpecial} />
-  <Button label="Save"
+  <Button label={$t`Save`}
     onClick={onChangeSpecialFolder}
     disabled={disableSpecial}
     />
 
-  <label for="count">Messages</label>
+  <label for="count">{$t`Messages`}</label>
   <hbox class="value" name="count">
     {#if $folder.countTotal > 0}
-      {$folder.countNewArrived} new,
-      {$folder.countUnread} unread,
-      {$folder.countTotal} total messages.
+      {$t`${$folder.countNewArrived} new,
+          ${$folder.countUnread} unread,
+          ${$folder.countTotal} total messages.`}
     {/if}
     {#if $folder.countTotal > 0 && $folder.countTotal == $messages.length}
-      All downloaded.
+      {$t`All downloaded.`}
     {:else if $messages.length > 0}
-      {$messages.length} local messages.
+      {$t`${$messages.length} local messages.`}
     {/if}
   </hbox>
-  <Button label="Mark all read"
+  <Button label={$t`Mark all read`}
     onClick={onMarkAllRead}
     />
 </grid>
@@ -37,6 +37,7 @@
   import SpecialFolderDropDown from "./SpecialFolderDropDown.svelte";
   import Button from "../../../Shared/Button.svelte";
   import { assert } from "../../../../logic/util/util";
+  import { t } from "svelte-i18n-lingui";
 
   export let folder: Folder;
 
@@ -50,7 +51,7 @@
     folderName = folder.name;
   }
   async function onNameChange() {
-    assert(folderName, "Name cannot be empty");
+    assert(folderName, $t`Name cannot be empty`);
     await folder.rename(folderName);
     await save();
   }

@@ -8,9 +8,9 @@
     </hbox>
     <hbox class="text">
       {#if outgoing}
-          Outgoing server
+          {$t`Outgoing server`}
       {:else}
-          Incoming server
+          {$t`Incoming server`}
       {/if}
     </hbox>
   </hbox>
@@ -20,8 +20,8 @@
   {:else}
     <hbox>
       <select bind:value={config.protocol} required on:change={onProtocolChanged}>
-        <option value="imap">IMAP</option>
-        <option value="pop3">POP3</option>
+        <option value="imap">{$t`IMAP`}</option>
+        <option value="pop3">{$t`POP3`}</option>
       </select>
     </hbox>
   {/if}
@@ -34,7 +34,7 @@
     <hbox class="port" class:error={portError}>
       <input type="number" bind:value={config.port} required on:change={onPortChanged} />
       {#if !isStandardPort && defaultPort}
-        <hbox class="default">Default: {defaultPort}</hbox>
+        <hbox class="default">{$t`Default: ${defaultPort}`}</hbox>
       {/if}
     </hbox>
 
@@ -46,9 +46,9 @@
       {/if}
       <hbox class="row">
         <select bind:value={config.tls} required on:change={onTLSChanged}>
-          <option value={TLSSocketType.TLS}>TLS</option>
-          <option value={TLSSocketType.STARTTLS}>STARTTLS</option>
-          <option value={TLSSocketType.Plain}>Plain</option>
+          <option value={TLSSocketType.TLS}>{$t`TLS`}</option>
+          <option value={TLSSocketType.STARTTLS}>{$t`STARTTLS`}</option>
+          <option value={TLSSocketType.Plain}>{$t`Plain`}</option>
         </select>
         <hbox class="tls-icon">
           {#if config.tls == TLSSocketType.Unknown}
@@ -64,11 +64,11 @@
 
     <hbox class="authMethod" class:error={authError}>
       <select bind:value={config.authMethod} required>
-        <option value={AuthMethod.Password}>Password</option>
-        <option value={AuthMethod.OAuth2}>OAuth2 / MFA</option>
-        <option value={AuthMethod.GSSAPI}>Kerberos / GSSAPI</option>
-        <option value={AuthMethod.CRAMMD5}>CRAM MD5</option>
-        <option value={AuthMethod.NTLM}>NTLM</option>
+        <option value={AuthMethod.Password}>{$t`Password`}</option>
+        <option value={AuthMethod.OAuth2}>{$t`OAuth2 / MFA`}</option>
+        <option value={AuthMethod.GSSAPI}>{$t`Kerberos / GSSAPI`}</option>
+        <option value={AuthMethod.CRAMMD5}>{$t`CRAM MD5`}</option>
+        <option value={AuthMethod.NTLM}>{$t`NTLM`}</option>
       </select>
     </hbox>
 
@@ -87,6 +87,7 @@
   import ArrowLeftIcon from "lucide-svelte/icons/move-left";
   import ArrowRightIcon from "lucide-svelte/icons/move-right";
   import { getDomainForEmailAddress } from "../../../../../logic/util/netUtil";
+  import { t } from "svelte-i18n-lingui";
 
   /** in */
   export let config: MailAccount;

@@ -1,19 +1,19 @@
 <hbox class="buttons">
   <slot />
   {#if showReset}
-    <Button label="Start over" classes="secondary"
+    <Button label={$t`Start over`} classes="secondary"
       onClick={onReset}
       {errorCallback}
       />
   {/if}
   {#if canCancel}
-    <Button label="Cancel" classes="secondary"
+    <Button label={$t`Cancel`} classes="secondary"
       onClick={onCancel}
       {errorCallback}
       />
   {/if}
   <hbox flex />
-  <Button label="Next" classes="filled large"
+  <Button label={$t`Next`} classes="filled large"
     disabled={!canContinue}
     onClick={onContinue}
     {errorCallback}
@@ -22,6 +22,7 @@
 
 <script lang="ts">
   import Button from "../../../Shared/Button.svelte";
+  import { t } from "svelte-i18n-lingui";
 
   export let onContinue = (event: Event) => undefined;
   export let onCancel = (event: Event) => undefined;

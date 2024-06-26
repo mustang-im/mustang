@@ -1,6 +1,6 @@
 <vbox>
-  <h2>Manual configuration</h2>
-  <hbox class="subtitle">Your email provider or company can tell you these details.</hbox>
+  <h2>{$t`Manual configuration`}</h2>
+  <hbox class="subtitle">{$t`Your email provider or company can tell you these details.`}</hbox>
 
   <ManualConfig {config} bind:stepFull bind:incomingEl bind:outgoingEl />
 </vbox>
@@ -9,6 +9,7 @@
   import type { MailAccount } from "../../../../../logic/Mail/MailAccount";
   import ManualConfig from "./ManualConfig.svelte";
   import type ManualConfigServer from "./ManualConfigServer.svelte";
+  import { t } from "svelte-i18n-lingui";
 
   /** in */
   export let config: MailAccount;

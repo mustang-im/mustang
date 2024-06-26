@@ -1,5 +1,5 @@
 <vbox class="workspace-selector">
-  <hbox class="hint">Workspaces allow you organize yourself. You can change this at any time, by going to Settings in the title bar.</hbox>
+  <hbox class="hint">{$t`Workspaces allow you organize yourself. You can change this at any time, by going to Settings in the title bar.`}</hbox>
 
   <vbox class="workspaces-box">
     <vbox class="workspaces" class:horizontal>
@@ -25,6 +25,7 @@
 <script lang="ts">
   import { workspaces, type Workspace } from "../../../../logic/Abstract/Workspace";
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
+  import { t } from "svelte-i18n-lingui";
 
   export let config: MailAccount;
   export let selectedWorkspace: Workspace = config.workspace ?? workspaces[workspaces.length - 1];

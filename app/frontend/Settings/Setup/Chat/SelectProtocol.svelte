@@ -1,6 +1,6 @@
 <Header
-  title="Set up your existing chat account"
-  subtitle="You can use {appName} with your existing chat account or you can create a new chat account."
+  title={$t`Set up your existing chat account`}
+  subtitle={$t`You can use ${appName} with your existing chat account or you can create a new chat account.`}
 />
 
 <ProtocolSelector {protocols} bind:selectedProtocol={selectedProtocol} />
@@ -21,6 +21,7 @@
   import XMPPLogin from "./XMPPLogin.svelte";
   import MatrixLogin from "./MatrixLogin.svelte";
   import { appName } from "../../../../logic/build";
+  import { t } from "svelte-i18n-lingui";
 
   /** out */
   export let config: ChatAccount = null;
@@ -35,8 +36,8 @@
   }*/
 
   const protocols: ProtocolDescription[] = [
-    { label: "XMPP / Jabber", protocolID: "xmpp" },
-    { label: "Matrix", protocolID: "matrix" },
+    { label: $t`XMPP / Jabber`, protocolID: "xmpp" },
+    { label: $t`Matrix`, protocolID: "matrix" },
   ];
 
   function onContinue() {

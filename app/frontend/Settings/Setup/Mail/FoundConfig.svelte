@@ -37,6 +37,7 @@
   import StatusMessage from "../Shared/StatusMessage.svelte";
   import CheckIcon from "lucide-svelte/icons/check";
   import type { ArrayColl } from "svelte-collections";
+  import { t } from "svelte-i18n-lingui";
 
   export let config: MailAccount;
   export let altConfigs: ArrayColl<MailAccount>;
@@ -49,13 +50,13 @@
     event.stopPropagation();
   }
 
-  $: successMessage = !config?.source ? "No config found" :
-    config.source == "ispdb" ? "We found the configuration in our database." :
-    config.source == "autoconfig-isp" ? "We received the configuration from your email provider." :
-    config.source == "guess" ? "We guessed a configuration that might work." :
-    config.source == "autodiscover-xml" ? "We received the configuration from Microsoft Exchange." :
-    config.source == "autodiscover-json" ? "We received the configuration for Microsoft Exchange" :
-    "We found a configuration";
+  $: successMessage = !config?.source ? $t`No config found` :
+    config.source == "ispdb" ? $t`We found the configuration in our database.` :
+    config.source == "autoconfig-isp" ? $t`We received the configuration from your email provider.` :
+    config.source == "guess" ? $t`We guessed a configuration that might work.` :
+    config.source == "autodiscover-xml" ? $t`We received the configuration from Microsoft Exchange.` :
+    config.source == "autodiscover-json" ? $t`We received the configuration for Microsoft Exchange` :
+    $t`We found a configuration`;
 </script>
 
 <style>

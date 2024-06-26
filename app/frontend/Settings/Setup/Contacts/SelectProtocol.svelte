@@ -1,5 +1,5 @@
 <Header
-  title="Set up your addressbook"
+  title={$t`Set up your addressbook`}
   subtitle=""
 />
 
@@ -20,6 +20,7 @@
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
   import { NotReached } from "../../../../logic/util/util";
+  import { t } from "svelte-i18n-lingui";
 
   /** out */
   export let config: Addressbook = null;
@@ -30,7 +31,7 @@
   let selectedProtocol: string;
 
   const protocols: ProtocolDescription[] = [
-    { label: "New local addressbook", protocolID: "addressbook-local" },
+    { label: $t`New local addressbook`, protocolID: "addressbook-local" },
   ];
 
   function onContinue() {

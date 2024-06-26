@@ -1,5 +1,5 @@
 <hbox class="buttons">
-  <Button label="Load test data"
+  <Button label={$t`Load test data`}
     onClick={getTestObjects}
     />
 </hbox>
@@ -7,6 +7,7 @@
 <script lang="ts">
   import { getTestObjects } from "../../../logic/testData";
   import Button from "../../Shared/Button.svelte";
+  import { t } from "svelte-i18n-lingui";
 </script>
 
 <style>

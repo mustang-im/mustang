@@ -1,6 +1,6 @@
 <hbox class="password">
   <input type="password"
-    placeholder="Your password"
+    placeholder={$t`Your password`}
     bind:value={password}
     bind:this={inputEl}
     required
@@ -10,7 +10,7 @@
     />
   <hbox class="buttons">
     <Button classes="cleartext"
-      label={cleartext ? "Hide password" : "Show password"}
+      label={cleartext ? $t`Hide password` : $t`Show password`}
       on:click={() => cleartext = !cleartext}
       icon={cleartext ? EyeIcon : EyeOffIcon}
       iconOnly
@@ -25,6 +25,7 @@
   import EyeIcon from "lucide-svelte/icons/eye";
   import EyeOffIcon from "lucide-svelte/icons/eye-off";
   import { createEventDispatcher } from 'svelte';
+  import { t } from "svelte-i18n-lingui";
   const dispatchEvent = createEventDispatcher();
 
   /** in/out */
