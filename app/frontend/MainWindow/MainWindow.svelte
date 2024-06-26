@@ -5,7 +5,7 @@
     <vbox flex>
       <NotificationBar />
       {#if !$selectedApp}
-        Loading apps...
+        {$t`Loading apps...`}
       {:else if sidebar}
         <Splitter name="sidebar" initialRightRatio={0.25}>
           <AppContent app={$selectedApp} slot="left"/>
@@ -51,7 +51,7 @@
   onMount(() => catchErrors(startup));
 
   async function startup() {
-    setLocale('en');
+    setLocale(navigator.language);
     loadMustangApps();
     if (appGlobal.persons.hasItems) {
       return;

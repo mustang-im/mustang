@@ -9,8 +9,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "extract": "lingui extract",
-    "compile": "lingui compile --typescript"
+    "l10n:extract": "lingui extract",
+    "l10n:compile": "lingui compile --typescript"
   },
   "dependencies": {
     "@faker-js/faker": "^7.6.0",

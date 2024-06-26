@@ -7,11 +7,8 @@ export default {
 		{
 			path: 'l10n/locales/{locale}/{locale}',
 			include: [
-        "frontend/**/*.ts",
-        "frontend/**/*.js",
-        "frontend/**/*.svelte",
-        "logic/**/*.ts",
-        "logic/**/*.js"
+        "frontend/",
+        "logic/",
       ]
 		}
 	],
