@@ -12,7 +12,7 @@
 
     <hbox class="actions">
       <hbox flex />
-      <Button on:click={startStore} label="More apps" />
+      <Button on:click={startStore} label={$t`More apps`} />
     </hbox>
   </vbox>
   <vbox flex />
@@ -23,6 +23,7 @@
   import AppLaunchButton from "./AppLaunchButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import type { Collection } from "svelte-collections";
+  import { t } from "svelte-i18n-lingui";
 
   export let apps: Collection<AppListed>;
   export let runningApp: AppListed; /* in/out */

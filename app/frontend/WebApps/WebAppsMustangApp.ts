@@ -3,10 +3,11 @@ import { appGlobal } from "../../logic/app";
 import type AppListed from "../../logic/Apps/AppListed";
 import AppsApp from "./WebAppsApp.svelte";
 import appsLauncherIcon from '../asset/icon/appBar/appsLauncher.svg?raw';
+import { gt } from "svelte-i18n-lingui";
 
 export class WebAppsMustangApp extends MustangApp {
   id = "webapps";
-  name = "Apps";
+  name = gt("Apps");
   icon = appsLauncherIcon;
   mainWindow = AppsApp;
   subApps = appGlobal.apps.myApps.map(app => new WebAppSubMustangApp(app));
