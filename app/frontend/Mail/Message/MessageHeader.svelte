@@ -15,19 +15,19 @@
       </hbox>
       {#if $message.to.hasItems}
         <hbox class="to">
-          {$t`to&nbsp;`}
+          {$t`to`}&nbsp;
           <RecipientList recipients={$message.to} />
         </hbox>
       {/if}
       {#if $message.cc.hasItems}
         <hbox class="cc">
-          {$t`cc&nbsp;`}
+          {$t`cc`}&nbsp;
           <RecipientList recipients={$message.cc} />
         </hbox>
       {/if}
       {#if $message.bcc.hasItems}
         <hbox class="bcc">
-          {$t`bcc&nbsp;`}
+          {$t`bcc`}&nbsp;
           <RecipientList recipients={$message.bcc} />
         </hbox>
       {/if}
