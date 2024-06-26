@@ -2,7 +2,7 @@
   {#if canExpand}
     <Button
       classes="expand"
-      label={isExpanded ? "Collapse" : "Expand"}
+      label={isExpanded ? $t`Collapse` : $t`Expand`}
       icon={isExpanded ? CollapseIcon : ExpandIcon}
       iconOnly plain
       on:click={(event) => onExpandCollapse(event)}
@@ -19,6 +19,7 @@
   import Button from "./Button.svelte";
   import ExpandIcon from "lucide-svelte/icons/chevron-right";
   import CollapseIcon from "lucide-svelte/icons/chevron-down";
+  import { t } from "svelte-i18n-lingui";
 
   // <https://github.com/dummdidumm/rfcs/blob/ts-typedefs-within-svelte-components/text/ts-typing-props-slots-events.md>
   type T = $$Generic<TreeItem>;

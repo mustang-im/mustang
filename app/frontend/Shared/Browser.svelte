@@ -9,7 +9,7 @@
       {/if}
     </hbox>
     <RoundButton
-      label="Close"
+      label={$t`Close`}
       icon={CloseIcon}
       on:click={onClose}
       classes="small"
@@ -26,6 +26,7 @@
   import { getBaseDomainFromHost } from '../../logic/util/netUtil';
   import type { URLString } from '../../logic/util/util';
   import { Loader } from '@svelteuidev/core';
+  import { t } from 'svelte-i18n-lingui';
   const dispatch = createEventDispatcher();
 
   /**

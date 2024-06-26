@@ -1,5 +1,5 @@
 <Browser
-  title="Authentication"
+  title={$t`Authentication`}
   url={dialog.startURL}
   on:page-change={onPageChange}
   on:close={onClose}
@@ -11,6 +11,7 @@
   import Browser from "../Browser.svelte";
   import { UserCancelled, type URLString, sleep } from "../../../logic/util/util";
   import { onMount } from "svelte";
+  import { t } from "svelte-i18n-lingui";
 
   export let dialog: OAuth2Dialog;
 
@@ -22,12 +23,12 @@
   }
 
   function onClose() {
-    dialog.failed(new UserCancelled("Authentication dialog was closed"));
+    dialog.failed(new UserCancelled($t`Authentication dialog was closed`));
   }
 
   onMount(async () => {
     await sleep(15 * 60); // 15 mins
-    dialog.failed(new UserCancelled("Authentication dialog was closed due to inaction"));
+    dialog.failed(new UserCancelled($t`Authentication dialog was closed due to inaction`));
   });
 </script>
 

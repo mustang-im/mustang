@@ -12,9 +12,10 @@
   import SearchIcon from "lucide-svelte/icons/search";
   import XIcon from "lucide-svelte/icons/x";
   import { createEventDispatcher } from "svelte";
+  import { t } from "svelte-i18n-lingui";
   const dispatchEvent = createEventDispatcher();
 
-  export let placeholder = "Search";
+  export let placeholder = $t`Search`;
   /** out only */
   export let searchTerm: string;
 

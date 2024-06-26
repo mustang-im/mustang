@@ -7,7 +7,7 @@
     <hbox class="buttons top-right">
       <Button plain
         icon={expanded ? CollapseIcon : ExpandIcon}
-        label={expanded ? "Collapse" : "Expand"}
+        label={expanded ? $t`Collapse` : $t`Expand`}
         onClick={onExpandToggle}
         classes="expand"
         iconOnly iconSize="16px" />
@@ -22,6 +22,7 @@
   import Button from "./Button.svelte";
   import ExpandIcon from "lucide-svelte/icons/chevron-down";
   import CollapseIcon from "lucide-svelte/icons/chevron-up";
+  import { t } from "svelte-i18n-lingui";
 
   /** in/out */
   export let expanded = false;

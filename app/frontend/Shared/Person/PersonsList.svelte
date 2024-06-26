@@ -1,5 +1,5 @@
 <vbox flex class="persons" {size}>
-  <SearchField bind:searchTerm placeholder="Search for a person or group" />
+  <SearchField bind:searchTerm placeholder={$t`Search for a person or group`} />
   <FastList items={personsFiltered} columns="auto">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <vbox class="person" slot="row" let:item={person} on:click={() => selected = person}>
@@ -19,6 +19,7 @@
   import PersonLine from "./PersonLine.svelte";
   import SearchField from "../SearchField.svelte";
   import FastList from "../FastList.svelte";
+  import { t } from "svelte-i18n-lingui";
 
   export let persons: Collection<PersonOrGroup>;
   export let selected: PersonOrGroup = $selectedPerson;
