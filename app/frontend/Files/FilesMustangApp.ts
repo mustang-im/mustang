@@ -5,7 +5,7 @@ import { gt } from "svelte-i18n-lingui";
 
 export class FilesMustangApp extends MustangApp {
   id = "files";
-  name = gt("Files");
+  name = gt`Files`;
   icon = fileShareIcon;
   mainWindow = FilesApp;
 }

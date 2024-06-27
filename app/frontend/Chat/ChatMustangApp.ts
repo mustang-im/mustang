@@ -5,7 +5,7 @@ import { gt } from "svelte-i18n-lingui";
 
 export class ChatMustangApp extends MustangApp {
   id = "chat";
-  name = gt("Chat");
+  name = gt`Chat`;
   icon = chatIcon;
   mainWindow = ChatApp;
 }

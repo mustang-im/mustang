@@ -10,7 +10,7 @@ import { gt } from "svelte-i18n-lingui";
 
 export class CalendarMustangApp extends MustangApp {
   id = "calendar";
-  name = gt("Calendar");
+  name = gt`Calendar`;
   icon = CalendarIcon;
   mainWindow = CalendarApp;
 
@@ -27,7 +27,7 @@ export class CalendarMustangApp extends MustangApp {
 
 export class EventEditMustangApp extends MustangApp {
   id = "calendar-event-edit";
-  name = gt("Event");
+  name = gt`Event`;
   icon = EditIcon;
   mainWindow = EditEvent;
 }

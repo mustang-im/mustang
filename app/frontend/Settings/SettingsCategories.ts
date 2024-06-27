@@ -39,46 +39,46 @@ import { gt } from "svelte-i18n-lingui";
 export const settingsCategories = new ArrayColl<SettingsCategory>();
 export const accountSettings = new ArrayColl<AccSetting>();
 
-accountSettings.add(new AccSetting(Account, "acc-general", gt("General"), AccountGeneral, true));
+accountSettings.add(new AccSetting(Account, "acc-general", gt`General`, AccountGeneral, true));
 
-const globalSettings = new SettingsCategory("global", gt("All"), null, true);
+const globalSettings = new SettingsCategory("global", gt`All`, null, true);
 globalSettings.subCategories.addAll([
-  new SettingsCategory("global-appearance", gt("Appearance"), GlobalAppearance),
+  new SettingsCategory("global-appearance", gt`Appearance`, GlobalAppearance),
 ]);
 settingsCategories.add(globalSettings);
 
-const mailSettings = new SettingsCategory("mail", gt("Mail"), null, true);
+const mailSettings = new SettingsCategory("mail", gt`Mail`, null, true);
 mailSettings.subCategories.addAll([
-  new SettingsCategory("mail-appearance", gt("Appearance"), MailAppearance),
-  new SettingsCategory("mail-notifications", gt("Notifications"), MailNotifications),
-  new SettingsCategory("mail-read", gt("Read"), MailRead),
-  new SettingsCategory("mail-send", gt("Send"), MailSend),
+  new SettingsCategory("mail-appearance", gt`Appearance`, MailAppearance),
+  new SettingsCategory("mail-notifications", gt`Notifications`, MailNotifications),
+  new SettingsCategory("mail-read", gt`Read`, MailRead),
+  new SettingsCategory("mail-send", gt`Send`, MailSend),
 ]);
 mailSettings.accounts = appGlobal.emailAccounts;
 mailSettings.newAccountUI = SetupMail;
 mailSettings.forApp = mailMustangApp;
 settingsCategories.add(mailSettings);
 
-accountSettings.add(new AccSetting(MailAccount, "mail-server", gt("Server"), AccountMailServer));
-accountSettings.add(new AccSetting(MailAccount, "mail-folders", gt("Folders"), AccountFolders));
-accountSettings.add(new AccSetting(MailAccount, "mail-identity", gt("Identity"), AccountIdentity));
+accountSettings.add(new AccSetting(MailAccount, "mail-server", gt`Server`, AccountMailServer));
+accountSettings.add(new AccSetting(MailAccount, "mail-folders", gt`Folders`, AccountFolders));
+accountSettings.add(new AccSetting(MailAccount, "mail-identity", gt`Identity`, AccountIdentity));
 
-const chatSettings = new SettingsCategory("chat", gt("Chat"), null, true);
+const chatSettings = new SettingsCategory("chat", gt`Chat`, null, true);
 chatSettings.subCategories.addAll([
-  new SettingsCategory("chat-appearance", gt("Appearance")),
-  new SettingsCategory("chat-notifications", gt("Notifications"), ChatNotifications),
+  new SettingsCategory("chat-appearance", gt`Appearance`),
+  new SettingsCategory("chat-notifications", gt`Notifications`, ChatNotifications),
 ]);
 chatSettings.accounts = appGlobal.chatAccounts;
 chatSettings.newAccountUI = SetupChat;
 chatSettings.forApp = chatMustangApp;
 settingsCategories.add(chatSettings);
 
-accountSettings.add(new AccSetting(XMPPAccount, "xmpp-server", gt("Server"), AccountXMPPServer));
-accountSettings.add(new AccSetting(MatrixAccount, "matrix-server", gt("Server"), AccountURLServer));
-accountSettings.add(new AccSetting(ChatAccount, "chat-send", gt("Send"), null));
-accountSettings.add(new AccSetting(ChatAccount, "chat-identity", gt("Identity"), null));
+accountSettings.add(new AccSetting(XMPPAccount, "xmpp-server", gt`Server`, AccountXMPPServer));
+accountSettings.add(new AccSetting(MatrixAccount, "matrix-server", gt`Server`, AccountURLServer));
+accountSettings.add(new AccSetting(ChatAccount, "chat-send", gt`Send`, null));
+accountSettings.add(new AccSetting(ChatAccount, "chat-identity", gt`Identity`, null));
 
-const calendarSettings = new SettingsCategory("calendar", gt("Calendar"), null, true);
+const calendarSettings = new SettingsCategory("calendar", gt`Calendar`, null, true);
 calendarSettings.subCategories.addAll([
 ]);
 calendarSettings.accounts = appGlobal.calendars;
@@ -86,7 +86,7 @@ calendarSettings.newAccountUI = SetupCalendar;
 calendarSettings.forApp = calendarMustangApp;
 settingsCategories.add(calendarSettings);
 
-const contactsSettings = new SettingsCategory("contacts", gt("Contacts"), null, true);
+const contactsSettings = new SettingsCategory("contacts", gt`Contacts`, null, true);
 contactsSettings.subCategories.addAll([
 ]);
 contactsSettings.accounts = appGlobal.addressbooks;
@@ -94,32 +94,32 @@ contactsSettings.newAccountUI = SetupContacts;
 contactsSettings.forApp = contactsMustangApp;
 settingsCategories.add(contactsSettings);
 
-const meetSettings = new SettingsCategory("meet", gt("Meet"), null, true);
+const meetSettings = new SettingsCategory("meet", gt`Meet`, null, true);
 meetSettings.subCategories.addAll([
-  new SettingsCategory("meet-appearance", gt("Appearance")),
-  new SettingsCategory("meet-devices", gt("Devices"), Devices),
+  new SettingsCategory("meet-appearance", gt`Appearance`),
+  new SettingsCategory("meet-devices", gt`Devices`, Devices),
 ]);
 meetSettings.accounts = appGlobal.meetAccounts;
 meetSettings.newAccountUI = SetupMeetAccount;
 meetSettings.forApp = meetMustangApp;
 settingsCategories.add(meetSettings);
 
-accountSettings.add(new AccSetting(M3Account, "m3-server", gt("Server"), AccountURLServer, true));
+accountSettings.add(new AccSetting(M3Account, "m3-server", gt`Server`, AccountURLServer, true));
 
-const appSettings = new SettingsCategory("app", gt("App integration"), null, true);
+const appSettings = new SettingsCategory("app", gt`App integration`, null, true);
 appSettings.subCategories.addAll([
 ]);
 appSettings.forApp = webAppsMustangApp;
 settingsCategories.add(appSettings);
 
-const customer = new SettingsCategory("customer", gt("Billing"), null, true);
+const customer = new SettingsCategory("customer", gt`Billing`, null, true);
 customer.subCategories.addAll([
 ]);
 settingsCategories.add(customer);
 
-const about = new SettingsCategory("about", gt("About"), About, true);
+const about = new SettingsCategory("about", gt`About`, About, true);
 about.subCategories.addAll([
-  new SettingsCategory("license", gt("Open-Source"), Licenses),
-  new SettingsCategory("test", gt("Test"), Test),
+  new SettingsCategory("license", gt`Open-Source`, Licenses),
+  new SettingsCategory("test", gt`Test`, Test),
 ]);
 settingsCategories.add(about);

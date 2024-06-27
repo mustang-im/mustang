@@ -6,7 +6,7 @@ import { gt } from "svelte-i18n-lingui";
 
 export class MeetMustangApp extends MustangApp {
   id = "meet";
-  name = gt("Meet");
+  name = gt`Meet`;
   icon = meetIcon;
   mainWindow = MeetApp;
   sidebar = MeetSidebar;

@@ -32,10 +32,10 @@ export async function onDropMail(event: DragEvent, folder: Folder) {
   if (msgIDs.length == 0) {
     return;
   } else if (msgIDs.length == 1) {
-    assert(msgIDs[0] == message.id, gt("Drag&drop failed: Selected message ID doesn't match the drag data"));
+    assert(msgIDs[0] == message.id, gt`Drag&drop failed: Selected message ID doesn't match the drag data`);
     messages = [ message ];
   } else {
-    assert(messages.every(msg => msgIDs.includes(msg.id)), gt("Drag&drop failed: Selected message IDs don't match the drag data"));
+    assert(messages.every(msg => msgIDs.includes(msg.id)), gt`Drag&drop failed: Selected message IDs don't match the drag data`);
   }
   if (event.ctrlKey || event.metaKey) {
     await folder.copyMessagesHere(new ArrayColl(messages));

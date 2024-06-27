@@ -5,7 +5,7 @@ import { gt } from "svelte-i18n-lingui";
 
 export class SettingsMustangApp extends MustangApp {
   id = "settings";
-  name = gt("Settings");
+  name = gt`Settings`;
   icon = SettingsIcon;
   mainWindow = SettingsApp;
 }

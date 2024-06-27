@@ -13,7 +13,7 @@ import { gt } from "svelte-i18n-lingui";
 
 export class MailMustangApp extends MustangApp {
   id = "mail";
-  name = gt("Mail");
+  name = gt`Mail`;
   icon = mailIcon;
   mainWindow = MailApp;
 
@@ -30,7 +30,7 @@ export class MailMustangApp extends MustangApp {
   login(dialog: OAuth2Dialog): LoginDialogMustangApp {
     let loginApp = new LoginDialogMustangApp();
     let account = dialog.oAuth2.account;
-    loginApp.title = derived(account, () => gt("Login to ") + account.name);
+    loginApp.title = derived(account, () => gt`Login to ` + account.name);
     loginApp.mainWindowProperties = {
       dialog: dialog,
     };
@@ -42,14 +42,14 @@ export class MailMustangApp extends MustangApp {
 
 export class WriteMailMustangApp extends MustangApp {
   id = "mail-write";
-  name = gt("Compose");
+  name = gt`Compose`;
   icon = EditIcon;
   mainWindow = MailComposer;
 }
 
 export class LoginDialogMustangApp extends MustangApp {
   id = "auth-login";
-  name = gt("Login");
+  name = gt`Login`;
   icon = AuthIcon;
   mainWindow = OAuth2DialogUI;
 }

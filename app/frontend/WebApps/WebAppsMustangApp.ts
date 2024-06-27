@@ -7,7 +7,7 @@ import { gt } from "svelte-i18n-lingui";
 
 export class WebAppsMustangApp extends MustangApp {
   id = "webapps";
-  name = gt("Apps");
+  name = gt`Apps`;
   icon = appsLauncherIcon;
   mainWindow = AppsApp;
   subApps = appGlobal.apps.myApps.map(app => new WebAppSubMustangApp(app));

@@ -5,7 +5,7 @@ export default {
 	sourceLocale: 'en',
 	catalogs: [
 		{
-			path: 'l10n/locales/{locale}/{locale}',
+			path: 'l10n/locales/{locale}/messages',
 			include: [
         "frontend/",
         "logic/",
