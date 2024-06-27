@@ -1,9 +1,15 @@
 import { locale } from 'svelte-i18n-lingui';
 
-export async function setLocale(lang) {
+const reLang: RegExp = /[a-z]{0,2}/;
+
+export async function setLocale(lang: string) {
   // TODO: Have a better fallback system that checks whether the locale
   // is missing or if there's actually an error
-  // Also fallback to the closest locale e.g. en-US fallsback to en
+  // Support different variants of the same language i.e. en-US en-AU
+
+  // Extract only the 'en' from 'en-US'
+  lang = lang.match(reLang)[0];
+
   try {
     const { messages } = await import(`./locales/${lang}/${lang}.ts`);
     locale.set(lang, messages);
