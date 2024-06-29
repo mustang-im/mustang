@@ -5,45 +5,48 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
-"Language: en\n"
+"Language: el\n"
 "Project-Id-Version: mustang\n"
 "Report-Msgid-Bugs-To: \n"
 "PO-Revision-Date: 2024-06-28 17:58\n"
 "Last-Translator: \n"
-"Language-Team: English\n"
+"Language-Team: Greek\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: mustang\n"
 "X-Crowdin-Project-ID: 689789\n"
-"X-Crowdin-Language: en\n"
+"X-Crowdin-Language: el\n"
 "X-Crowdin-File: /locales/en/messages.po\n"
 "X-Crowdin-File-ID: 32\n"
 
 #: frontend/Mail/Search/SearchPane.svelte:64
 msgid "{0} account only"
-msgstr ""
+msgstr "Μόνο λογαριασμός {0}"
 
 #: frontend/Mail/Search/SearchPane.svelte:74
 msgid "{0} folder only"
-msgstr ""
+msgstr "Φάκελος {0} μόνο"
 
 #: frontend/Settings/About/Licenses.svelte:12
 msgid "{0} is built using the following Open-Source components.\n"
 "  We sincerely thank those authors and contributors."
-msgstr ""
+msgstr "{0} είναι χτισμένο χρησιμοποιώντας τα ακόλουθα στοιχεία ανοιχτού κώδικα.\n"
+"  Ευχαριστούμε ειλικρινά τους συντάκτες και τους συνεισφέροντες."
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:26
 msgid "{0} local messages."
-msgstr ""
+msgstr "Τοπικά μηνύματα {0}."
 
 #: frontend/Mail/Search/SearchPane.svelte:88
 msgid "{0} mails"
-msgstr ""
+msgstr "{0} mails"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:19
 msgid "{0} new,\n"
 "          {1} unread,\n"
 "          {2} total messages."
-msgstr ""
+msgstr "{0} new\n"
+"          {1} unread,\n"
+"          {2} συνολικά μηνύματα."
 
 #: frontend/Settings/Setup/Meet/SelectProtocol.svelte:30
 msgid "{0} video conference account"
@@ -51,31 +54,31 @@ msgstr ""
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:83
 msgid "* Item"
-msgstr ""
+msgstr "* Αντικείμενο"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:7
 msgid "*bold* or **bold**"
-msgstr ""
+msgstr "*bold* ή **bold**"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:17
 msgid "/italic/ or _italic_"
-msgstr ""
+msgstr "/italic/ or _italic_"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:36
 msgid "\\`code\\`"
-msgstr ""
+msgstr "\\`code\\`"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:102
 msgid "# Big title"
-msgstr ""
+msgstr "# Μεγάλος τίτλος"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:112
 msgid "## Sub header"
-msgstr ""
+msgstr "## Υποκεφαλίδα"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:122
 msgid "### Sub sub header"
-msgstr ""
+msgstr "### Υπο υποκεφαλίδα"
 
 #: frontend/Meet/Start/StartScreen.svelte:84
 msgid "<p>\n"
@@ -87,277 +90,285 @@ msgid "<p>\n"
 "        <li>Next steps</li>\n"
 "      </ol>\n"
 "    </p>"
-msgstr ""
+msgstr "<p>\n"
+"      Στόχοι της συνάντησης είναι:\n"
+"      <ol>\n"
+"        <li>Αναθεώρηση των προδιαγραφών UX για τη Γνωριμία με την εφαρμογή</li>\n"
+"        <li>Συζήτηση για σχόλια</li>\n"
+"        <li>Απόφαση αν θα γίνει</li>\n"
+"        <li>Next steps</li>\n"
+"      </ol>\n"
+"    </p>"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:62
 msgid "> Quote"
-msgstr ""
+msgstr "> Παράθεση"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:92
 msgid "1. Item"
-msgstr ""
+msgstr "1. Στοιχείο"
 
 #: frontend/Calendar/ViewSelector.svelte:23
 msgid "4 Weeks"
-msgstr ""
+msgstr "4 Εβδομάδες"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:13
 msgid "A"
-msgstr ""
+msgstr "A"
 
 #: frontend/Settings/Setup/Mail/FindConfig.svelte:32
 msgid "A configuration for your account {0} may be available at:\\n\\n{1}\\n\\nDo you want to submit your password there?"
-msgstr ""
+msgstr "Μια διαμόρφωση για το λογαριασμό σας {0} μπορεί να είναι διαθέσιμη στη διεύθυνση:\\n\\n{1}\\n\\nΘέλετε να υποβάλετε τον κωδικό σας εκεί?"
 
 #: frontend/Settings/SettingsCategories.ts:120
 msgid "About"
-msgstr ""
+msgstr "Σχετικά"
 
 #: frontend/Meet/Start/Calling.svelte:61
 msgid "Accept call"
-msgstr ""
+msgstr "Αποδοχή κλήσης"
 
 #: frontend/Settings/AccountGeneral.svelte:2
 msgid "Account name"
-msgstr ""
+msgstr "Όνομα λογαριασμού"
 
 #: frontend/Mail/LeftPane/AccountList.svelte:5
 #: frontend/Settings/Window/AccountsList.svelte:4
 msgid "Accounts"
-msgstr ""
+msgstr "Λογαριασμοί"
 
 #: frontend/Settings/Mail/Account/Identity.svelte:4
 #: frontend/WebApps/Shop/AppShopButton.svelte:20
 msgid "Add"
-msgstr ""
+msgstr "Προσθήκη"
 
 #: frontend/Mail/Composer/Attachments/AttachmentsPane.svelte:9
 msgid "Add attachment"
-msgstr ""
+msgstr "Προσθήκη συνημμένου"
 
 #: frontend/Mail/Composer/MailComposer.svelte:67
 msgid "Add BCC recipient"
-msgstr ""
+msgstr "Προσθήκη παραλήπτη BCC"
 
 #: frontend/Mail/Composer/MailComposer.svelte:58
 msgid "Add CC recipient"
-msgstr ""
+msgstr "Προσθήκη παραλήπτη CC"
 
 #: frontend/Meet/ParticipantSearch.svelte:2
 msgid "Add or search a participant"
-msgstr ""
+msgstr "Προσθήκη ή αναζήτηση ενός συμμετέχοντα"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:19
 msgid "Add participants"
-msgstr ""
+msgstr "Προσθήκη συμμετεχόντων"
 
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:42
 msgid "Add person"
-msgstr ""
+msgstr "Προσθήκη προσώπου"
 
 #: frontend/Mail/Composer/MailComposer.svelte:34
 msgid "Add recipient"
-msgstr ""
+msgstr "Προσθήκη παραλήπτη"
 
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:14
 msgid "Add this person"
-msgstr ""
+msgstr "Προσθέστε αυτό το άτομο"
 
 #: frontend/Settings/Mail/Read.svelte:
 msgid "After displaying for # seconds"
-msgstr ""
+msgstr "Μετά την εμφάνιση για # δευτερόλεπτα"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:86
 msgid "Alarm"
-msgstr ""
+msgstr "Alarm"
 
 #: frontend/Mail/LeftPane/ProjectList.svelte:7
 #: frontend/Settings/SettingsCategories.ts:44
 msgid "All"
-msgstr ""
+msgstr "Όλα"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:84
 msgid "All day"
-msgstr ""
+msgstr "Όλη την ημέρα"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:24
 msgid "All downloaded."
-msgstr ""
+msgstr "Όλα κατεβασμένα."
 
 #: frontend/Chat/MessageView/IncomingCallUI.svelte:4
 msgid "Answer"
-msgstr ""
+msgstr "Απάντηση"
 
 #: frontend/Settings/SettingsCategories.ts:109
 msgid "App integration"
-msgstr ""
+msgstr "Ολοκλήρωση εφαρμογής"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:18
 #: frontend/Settings/Mail/NotificationKinds.svelte:18
 msgid "Appbar"
-msgstr ""
+msgstr "Γραμμή Εφαρμογών"
 
 #: frontend/Settings/SettingsCategories.ts:46
 #: frontend/Settings/SettingsCategories.ts:52
 #: frontend/Settings/SettingsCategories.ts:68
 #: frontend/Settings/SettingsCategories.ts:99
 msgid "Appearance"
-msgstr ""
+msgstr "Εμφάνιση"
 
 #: frontend/WebApps/WebAppsMustangApp.ts:10
 msgid "Apps"
-msgstr ""
+msgstr "Εφαρμογές"
 
 #: frontend/Settings/AccountGeneral.svelte:23
 msgid "Are you sure that you want to the delete account {0} from {1} and all related data?"
-msgstr ""
+msgstr "Είστε βέβαιοι ότι θέλετε να διαγράψετε τον λογαριασμό {0} από {1} και όλα τα σχετικά δεδομένα?"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:35
 msgid "Are you sure that you want to the delete folder {0} and all messages in it? This will also delete it on the server."
-msgstr ""
+msgstr "Είστε βέβαιοι ότι θέλετε να διαγράψετε το φάκελο {0} και όλα τα μηνύματα σε αυτό? Αυτό θα το διαγράψει επίσης στο διακομιστή."
 
 #: frontend/Mail/Composer/Attachments/FileDropTarget.svelte:15
 msgid "Attach file"
-msgstr ""
+msgstr "Επισύναψη αρχείου"
 
 #: frontend/Mail/Search/SearchPane.svelte:32
 msgid "Attachment"
-msgstr ""
+msgstr "Συνημμένο"
 
 #: frontend/Mail/Message/AttachmentUI.svelte:39
 msgid "Attachment file is missing"
-msgstr ""
+msgstr "Λείπει το συνημμένο αρχείο"
 
 #: frontend/Mail/Composer/MailComposer.svelte:77
 msgid "Attachments"
-msgstr ""
+msgstr "Συνημμένα"
 
 #: frontend/Settings/Setup/Mail/DisplayConfigServer.svelte:40
 msgid "Attackers can read your password and mails"
-msgstr ""
+msgstr "Οι επιτιθέμενοι μπορούν να διαβάσουν τον κωδικό πρόσβασης και τα μηνύματα σας"
 
 #: frontend/Chat/PersonHeader.svelte:11
 msgid "Audio call"
-msgstr ""
+msgstr "Ηχητική κλήση"
 
 #: frontend/Shared/Auth/OAuth2DialogUI.svelte:2
 msgid "Authentication"
-msgstr ""
+msgstr "Ταυτοποίηση"
 
 #: frontend/Shared/Auth/OAuth2DialogUI.svelte:20
 msgid "Authentication dialog was closed"
-msgstr ""
+msgstr "Ο διάλογος ελέγχου ταυτότητας έκλεισε"
 
 #: frontend/Shared/Auth/OAuth2DialogUI.svelte:24
 msgid "Authentication dialog was closed due to inaction"
-msgstr ""
+msgstr "Ο διάλογος ελέγχου ταυτότητας έκλεισε λόγω αδράνειας"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:7
 msgid "Authentication method"
-msgstr ""
+msgstr "Μέθοδος ταυτοποίησης"
 
 #: frontend/MainWindow/MainWindow.svelte:79
 msgid "Bad dark mode "
-msgstr ""
+msgstr "Κακή σκοτεινή λειτουργία "
 
 #: frontend/Mail/Message/MessageHeader.svelte:30
 msgid "bcc"
-msgstr ""
+msgstr "bcc"
 
 #: frontend/Mail/Composer/MailComposer.svelte:49
 #: frontend/Mail/Composer/MailComposer.svelte:66
 msgid "Bcc"
-msgstr ""
+msgstr "Bcc"
 
 #: frontend/Mail/Composer/MailComposer.svelte:37
 #: frontend/Mail/Composer/MailComposer.svelte:61
 msgid "BCC"
-msgstr ""
+msgstr "BCC"
 
 #: frontend/Settings/SettingsCategories.ts:115
 msgid "Billing"
-msgstr ""
+msgstr "Χρέωση"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:6
 msgid "Bold"
-msgstr ""
+msgstr "Bold"
 
 #: frontend/Settings/Setup/Mail/manual/OAuth2Manual.svelte:10
 msgid "Browser"
-msgstr ""
+msgstr "Περιηγητής"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:16
 msgid "Bubble on the appbar in {0}"
-msgstr ""
+msgstr "Φούσκα στη μπάρα εφαρμογών στο {0}"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:22
 msgid "Bubble on the system task bar"
-msgstr ""
+msgstr "Φούσκα στη γραμμή εργασιών συστήματος"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:82
 msgid "Bulleted list"
-msgstr ""
+msgstr "Λίστα με κουκκίδες"
 
 #: frontend/Calendar/CalendarMustangApp.ts:13
 #: frontend/Settings/SettingsCategories.ts:81
 msgid "Calendar"
-msgstr ""
+msgstr "Ημερολόγιο"
 
 #: frontend/Contacts/PersonDetails.svelte:45
 #: frontend/Meet/Start/Calling.svelte:61
 msgid "Call"
-msgstr ""
+msgstr "Κλήση"
 
 #: frontend/Meet/Start/StartScreen.svelte:5
 msgid "Call {0}"
-msgstr ""
+msgstr "Κλήση {0}"
 
 #: frontend/Meet/InMeetingToolbar.svelte:23
 #: frontend/Meet/ParticipantListItem.svelte:29
 msgid "Camera"
-msgstr ""
+msgstr "Κάμερα"
 
 #: frontend/Meet/Start/Calling.svelte:45
 #: frontend/Settings/Setup/Shared/ButtonsBottom.svelte:10
 msgid "Cancel"
-msgstr ""
+msgstr "Ακύρωση"
 
 #: frontend/Settings/Mail/Account/Identity.svelte:46
 msgid "Cannot remove the last identity"
-msgstr ""
+msgstr "Δεν είναι δυνατή η αφαίρεση της τελευταίας ταυτότητας"
 
 #: frontend/Mail/Message/MessageHeader.svelte:24
 msgid "cc"
-msgstr ""
+msgstr "cc"
 
 #: frontend/Mail/Composer/MailComposer.svelte:43
 #: frontend/Mail/Composer/MailComposer.svelte:57
 msgid "Cc"
-msgstr ""
+msgstr "Cc"
 
 #: frontend/Mail/Composer/MailComposer.svelte:36
 #: frontend/Mail/Composer/MailComposer.svelte:70
 msgid "CC"
-msgstr ""
+msgstr "CC"
 
 #: frontend/Chat/ChatMustangApp.ts:8
 #: frontend/Contacts/PersonDetails.svelte:89
 #: frontend/Contacts/PersonDetails.svelte:188
 #: frontend/Settings/SettingsCategories.ts:66
 msgid "Chat"
-msgstr ""
+msgstr "Συνομιλία"
 
 #: frontend/Mail/LeftPane/ViewSwitcher.svelte:3
 msgid "Chat-like mail view"
-msgstr ""
+msgstr "Προβολή αλληλογραφίας τύπου συνομιλίας"
 
 #: frontend/Mail/LeftPane/ViewSwitcher.svelte:22
 msgid "Classic 3-pane view"
-msgstr ""
+msgstr "Κλασική προβολή 3 παραθύρων"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:151
 msgid "Clear formatting"
-msgstr ""
+msgstr "Εκκαθάριση μορφοποίησης"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:7
 #: frontend/Mail/FolderProperties.svelte:14
@@ -365,718 +376,718 @@ msgstr ""
 #: frontend/Shared/Browser.svelte:12
 #: frontend/WebApps/Shop/AppStore.svelte:8
 msgid "Close"
-msgstr ""
+msgstr "Κλείσιμο"
 
 #: frontend/MainWindow/WindowHeader.svelte:21
 msgid "Close entire app"
-msgstr ""
+msgstr "Κλείσιμο ολόκληρης της εφαρμογής"
 
 #: frontend/Meet/InMeetingToolbar.svelte:63
 msgid "Close participants list"
-msgstr ""
+msgstr "Κλείσιμο λίστας συμμετεχόντων"
 
 #: frontend/Settings/Window/SettingsApp.svelte:10
 msgid "Close settings"
-msgstr ""
+msgstr "Κλείσιμο ρυθμίσεων"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:35
 msgid "Code word, within a phrase"
-msgstr ""
+msgstr "Λέξη κώδικα, μέσα σε μια φράση"
 
 #: frontend/Shared/ExpandSection.svelte:10
 #: frontend/Shared/FastTreeItem.svelte:5
 msgid "Collapse"
-msgstr ""
+msgstr "Σύμπτυξη"
 
 #: frontend/Meet/MeetingNotes.svelte:11
 msgid "Collapse description"
-msgstr ""
+msgstr "Σύμπτυξη περιγραφής"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:42
 msgid "Company"
-msgstr ""
+msgstr "Εταιρεία"
 
 #: frontend/Mail/MailMustangApp.ts:45
 msgid "Compose"
-msgstr ""
+msgstr "Σύνθεση"
 
 #: frontend/Settings/Mail/Send.svelte:38
 msgid "Composition"
-msgstr ""
+msgstr "Σύνθεση"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:6
 msgid "Connection encryption"
-msgstr ""
+msgstr "Κρυπτογράφηση σύνδεσης"
 
 #: frontend/Contacts/ContactsMustangApp.ts:8
 #: frontend/Contacts/ContactsMustangApp.ts:12
 #: frontend/Settings/SettingsCategories.ts:89
 msgid "Contacts"
-msgstr ""
+msgstr "Επαφές"
 
 #: frontend/Settings/Setup/Import/SelectAccounts.svelte:3
 msgid "Continue to use your accounts from Thunderbird"
-msgstr ""
+msgstr "Συνεχίστε να χρησιμοποιείτε τους λογαριασμούς σας από το Thunderbird"
 
 #: frontend/Contacts/ContactEntryUI.svelte:30
 msgid "Copied to clipboard ✓"
-msgstr ""
+msgstr "Αντιγράφηκε στο πρόχειρο ✓"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:33
 msgid "Copy"
-msgstr ""
+msgstr "Αντιγραφή"
 
 #: frontend/Contacts/ContactEntryUI.svelte:28
 msgid "Copy info to clipboard"
-msgstr ""
+msgstr "Αντιγραφή πληροφοριών στο πρόχειρο"
 
 #: frontend/Meet/ParticipantSearch.svelte:11
 msgid "Copy invitation link"
-msgstr ""
+msgstr "Αντιγραφή συνδέσμου πρόσκλησης"
 
 #: frontend/Settings/About/About.svelte:
 msgid "Copyright 2024 Ben Bucksch, #, and other contributors"
-msgstr ""
+msgstr "Πνευματικά δικαιώματα 2024 Ben Bucksch, #, και άλλοι συνεισφέροντες"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:14
 msgid "Correspondent"
-msgstr ""
+msgstr "Αντιστοιχούχος"
 
 #: frontend/Calendar/EditEvent/TimeInput.svelte:23
 msgid "Could not interpret value as a time"
-msgstr ""
+msgstr "Αδύνατη η ερμηνεία της αξίας ως χρόνος"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:70
 msgid "CRAM MD5"
-msgstr ""
+msgstr "CRAM MD5"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:5
 #: frontend/Settings/Mail/Account/FolderActions.svelte:18
 msgid "Create sub-folder"
-msgstr ""
+msgstr "Δημιουργία υποφακέλου"
 
 #: frontend/Settings/Setup/Contacts/LocalAddressbook.svelte:2
 msgid "Create your new local addressbook"
-msgstr ""
+msgstr "Δημιουργήστε το νέο τοπικό σας Τηλεφωνικό κατάλογο"
 
 #: frontend/Settings/Setup/Calendar/LocalCalendar.svelte:2
 msgid "Create your new local calendar"
-msgstr ""
+msgstr "Δημιουργία νέου τοπικού ημερολογίου"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:168
 msgid "Ctrl-Y"
-msgstr ""
+msgstr "Ctrl-Y"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:160
 msgid "Ctrl-Z"
-msgstr ""
+msgstr "Ctrl-Z"
 
 #: frontend/Settings/Global/DarkMode.svelte:21
 msgid "Dark"
-msgstr ""
+msgstr "Σκοτεινό"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:16
 msgid "Date"
-msgstr ""
+msgstr "Ημερομηνία"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:69
 #: frontend/Calendar/ViewSelector.svelte:14
 msgid "Day"
-msgstr ""
+msgstr "Ημέρα"
 
 #: frontend/Calendar/ViewSelector.svelte:26
 msgid "Day/Month"
-msgstr ""
+msgstr "Ημέρα/Μήνας"
 
 #: frontend/Calendar/ViewSelector.svelte:29
 msgid "days"
-msgstr ""
+msgstr "ημέρες"
 
 #: frontend/Calendar/EditEvent/DurationUnit.svelte:4
 msgid "Days"
-msgstr ""
+msgstr "Ημέρες"
 
 #: frontend/Meet/Start/Calling.svelte:52
 msgid "Decline call"
-msgstr ""
+msgstr "Απόρριψη κλήσης"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:37
 msgid "Default: {0}"
-msgstr ""
+msgstr "Προεπιλογή: {0}"
 
 #: frontend/Contacts/PersonMenu.svelte:13
 #: frontend/Mail/Message/MessageMenu.svelte:30
 msgid "Delete"
-msgstr ""
+msgstr "Διαγραφή"
 
 #: frontend/Settings/AccountGeneral.svelte:7
 msgid "Delete account"
-msgstr ""
+msgstr "Διαγραφή λογαριασμού"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:12
 msgid "Delete folder"
-msgstr ""
+msgstr "Διαγραφή φακέλου"
 
 #: frontend/Mail/Message/MessageMenu.svelte:35
 msgid "Delete the message, and train the spam filter"
-msgstr ""
+msgstr "Διαγράψτε το μήνυμα και εκπαιδεύστε το φίλτρο spam"
 
 #: frontend/Contacts/PersonMenu.svelte:15
 msgid "Delete this contact"
-msgstr ""
+msgstr "Διαγραφή αυτής της επαφής"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:6
 msgid "Delete this identity"
-msgstr ""
+msgstr "Διαγραφή αυτής της ταυτότητας"
 
 #: frontend/Contacts/ContactEntryUI.svelte:17
 msgid "Delete this information"
-msgstr ""
+msgstr "Διαγραφή αυτών των πληροφοριών"
 
 #: frontend/Mail/3pane/TableMessageListItem.svelte:50
 #: frontend/Mail/Message/MessageToolbar.svelte:27
 msgid "Delete this message"
-msgstr ""
+msgstr "Διαγραφή αυτού του μηνύματος"
 
 #: frontend/Contacts/PersonDetails.svelte:28
 msgid "Department"
-msgstr ""
+msgstr "Τμήμα"
 
 #: frontend/Settings/SettingsCategories.ts:100
 msgid "Devices"
-msgstr ""
+msgstr "Συσκευές"
 
 #: frontend/Mail/Composer/MailComposer.svelte:9
 msgid "Discard and close"
-msgstr ""
+msgstr "Απόρριψη και κλείσιμο"
 
 #: frontend/Settings/Mail/Send.svelte:28
 msgid "Do not quote"
-msgstr ""
+msgstr "Μην παραθέσετε"
 
 #: frontend/Meet/Start/Calling.svelte:9
 msgid "Do you want to call?"
-msgstr ""
+msgstr "Θέλετε να καλέσετε?"
 
 #: frontend/Contacts/SameName.svelte:55
 msgid "Do you want to merge the 2 contacts, i.e. copy the data from the other contact into this contact, and delete the other contact?"
-msgstr ""
+msgstr "Θέλετε να συγχωνεύσετε τις 2 επαφές, π.χ. αντιγράψτε τα δεδομένα από την άλλη επαφή σε αυτή την επαφή, και να διαγράψετε την άλλη επαφή?"
 
 #: frontend/Mail/Message/drag.ts:35
 msgid "Drag&drop failed: Selected message ID doesn't match the drag data"
-msgstr ""
+msgstr "Η απόθεση απέτυχε: Το επιλεγμένο αναγνωριστικό μηνύματος δεν ταιριάζει με τα δεδομένα drag"
 
 #: frontend/Mail/Message/drag.ts:38
 msgid "Drag&drop failed: Selected message IDs don't match the drag data"
-msgstr ""
+msgstr "Η απόθεση απέτυχε: Τα επιλεγμένα αναγνωριστικά μηνυμάτων δεν ταιριάζουν με τα δεδομένα drag"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:78
 msgid "Duration"
-msgstr ""
+msgstr "Διάρκεια"
 
 #: frontend/Contacts/ContactEntryUI.svelte:27
 #: frontend/Contacts/EditableSimpleText.svelte:13
 #: frontend/Shared/PersonAutocomplete/PersonPopup.svelte:69
 msgid "Edit"
-msgstr ""
+msgstr "Επεξεργασία"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:4
 msgid "Edit event"
-msgstr ""
+msgstr "Επεξεργασία συμβάντος"
 
 #: frontend/Shared/PersonAutocomplete/PersonPopup.svelte:44
 msgid "Edit name and email address"
-msgstr ""
+msgstr "Επεξεργασία ονόματος και διεύθυνσης email"
 
 #: frontend/Shared/PersonAutocomplete/PersonPopup.svelte:26
 msgid "Email address to be used here"
-msgstr ""
+msgstr "Διεύθυνση ηλεκτρονικού ταχυδρομείου που θα χρησιμοποιηθεί εδώ"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:75
 msgid "End"
-msgstr ""
+msgstr "Τέλος"
 
 #: frontend/Shared/PersonAutocomplete/PersonPopup.svelte:22
 msgid "Enter a name for the person"
-msgstr ""
+msgstr "Εισάγετε ένα όνομα για το άτομο"
 
 #: frontend/Meet/Start/StartScreen.svelte:13
 msgid "Enter meeting link to join"
-msgstr ""
+msgstr "Εισάγετε σύνδεσμο συνάντησης για να συμμετάσχετε"
 
 #: frontend/Files/FileOrDirectoryLine.svelte:39
 msgid "entries"
-msgstr ""
+msgstr "καταχωρήσεις"
 
 #: frontend/Calendar/CalendarMustangApp.ts:30
 msgid "Event"
-msgstr ""
+msgstr "Γεγονός"
 
 #: frontend/Shared/ExpandSection.svelte:10
 #: frontend/Shared/FastTreeItem.svelte:5
 msgid "Expand"
-msgstr ""
+msgstr "Ανάπτυξη"
 
 #: frontend/Files/GenericFileTypesList.svelte:5
 msgid "File type"
-msgstr ""
+msgstr "Τύπος αρχείου"
 
 #: frontend/Files/FilesMustangApp.ts:8
 msgid "Files"
-msgstr ""
+msgstr "Αρχεία"
 
 #: frontend/Meet/Start/StartScreen.svelte:83
 msgid "Final Approval UX Meet"
-msgstr ""
+msgstr "Τελική Έγκριση Ux Συνάντηση"
 
 #: frontend/Contacts/ContactEntryUI.svelte:16
 #: frontend/Contacts/EditableSimpleText.svelte:6
 msgid "Finish editing and save"
-msgstr ""
+msgstr "Ολοκλήρωση επεξεργασίας και αποθήκευση"
 
 #: frontend/Contacts/PersonDetails.svelte:33
 msgid "First Lastname"
-msgstr ""
+msgstr "Πρώτο Επώνυμο"
 
 #: frontend/Contacts/PersonDetails.svelte:16
 msgid "First name"
-msgstr ""
+msgstr "Όνομα"
 
 #: frontend/Contacts/PersonDetails.svelte:11
 msgid "First name Last name"
-msgstr ""
+msgstr "Επίθετο ονόματος"
 
 #: frontend/Files/FileOrDirectoryLine.svelte:32
 msgid "Folder"
-msgstr ""
+msgstr "Φάκελος"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:2
 msgid "Folder name"
-msgstr ""
+msgstr "Όνομα φακέλου"
 
 #: frontend/Mail/LeftPane/FolderLine.svelte:10
 msgid "Folder properties"
-msgstr ""
+msgstr "Ιδιότητες φακέλου"
 
 #: frontend/Mail/LeftPane/FolderList.svelte:5
 #: frontend/Settings/Mail/Account/Folders.svelte:2
 #: frontend/Settings/SettingsCategories.ts:63
 msgid "Folders"
-msgstr ""
+msgstr "Φάκελοι"
 
 #: frontend/Mail/Search/SearchPane.svelte:11
 msgid "for"
-msgstr ""
+msgstr "για"
 
 #: frontend/Mail/Message/DisplayModeSwitcher.svelte:12
 msgid "Formatted"
-msgstr ""
+msgstr "Μορφοποιημένο"
 
 #: frontend/Mail/Message/MessageMenu.svelte:18
 msgid "Forward"
-msgstr ""
+msgstr "Μπροστά"
 
 #: frontend/Settings/Setup/Import/SelectAccounts.svelte:9
 msgid "Found {0} imported accounts"
-msgstr ""
+msgstr "Βρέθηκαν {0} εισαγόμενοι λογαριασμοί"
 
 #: frontend/Settings/Mail/Notifications.svelte:17
 msgid "From people in my address book"
-msgstr ""
+msgstr "Από άτομα στο βιβλίο διευθύνσεών μου"
 
 #: frontend/Settings/SettingsCategories.ts:42
 msgid "General"
-msgstr ""
+msgstr "Γενικά"
 
 #: frontend/Mail/LeftPane/GetMailButton.svelte:3
 msgid "Get mail"
-msgstr ""
+msgstr "Λήψη μηνύματος"
 
 #: frontend/Settings/Setup/Mail/SetupMail.svelte:40
 msgid "Get new email address"
-msgstr ""
+msgstr "Λήψη νέας διεύθυνσης email"
 
 #: frontend/Meet/InMeetingToolbar.svelte:4
 msgid "Go back to meeting"
-msgstr ""
+msgstr "Πηγαίνετε πίσω στη συνάντηση"
 
 #: frontend/Calendar/WeekView.svelte:6
 msgid "Go back to today"
-msgstr ""
+msgstr "Πηγαίνετε πίσω στο σήμερα"
 
 #: frontend/Contacts/PersonDetails.svelte:151
 msgid "Groups"
-msgstr ""
+msgstr "Ομάδες"
 
 #: frontend/Meet/InMeetingToolbar.svelte:42
 msgid "Hand raised"
-msgstr ""
+msgstr "Μεγαλωμένο χέρι"
 
 #: frontend/Meet/Start/Calling.svelte:52
 msgid "Hang up"
-msgstr ""
+msgstr "Τερματισμός κλήσης"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:111
 msgid "Heading, hierarchy level 2"
-msgstr ""
+msgstr "Επικεφαλίδα, ιεραρχία επίπεδο 2"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:121
 msgid "Heading, hierarchy level 3"
-msgstr ""
+msgstr "Επικεφαλίδα, ιεραρχία επίπεδο 3"
 
 #: frontend/Settings/Mail/Account/SentByExplainer.svelte:3
 msgid "Help us spread the word about {0}!"
-msgstr ""
+msgstr "Βοηθήστε μας να διαδώσουμε τη λέξη για το {0}!"
 
 #: frontend/Settings/Setup/Shared/Password.svelte:13
 msgid "Hide password"
-msgstr ""
+msgstr "Απόκρυψη κωδικού πρόσβασης"
 
 #: frontend/Contacts/ContactEntryUI.svelte:75
 msgid "Home"
-msgstr ""
+msgstr "Αρχική"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:3
 msgid "Hostname"
-msgstr ""
+msgstr "Hostname"
 
 #: frontend/Calendar/EditEvent/TimeInput.svelte:36
 msgid "Hour moust be less than 24"
-msgstr ""
+msgstr "Ώρα του στόματος να είναι μικρότερη από 24"
 
 #: frontend/Calendar/EditEvent/TimeInput.svelte:28
 msgid "Hour must be between 1 and 12 when using am or pm"
-msgstr ""
+msgstr "Η ώρα πρέπει να είναι μεταξύ 1 και 12 όταν χρησιμοποιείτε am ή pm"
 
 #: frontend/Calendar/EditEvent/DurationUnit.svelte:3
 msgid "Hours"
-msgstr ""
+msgstr "Ώρες"
 
 #: frontend/Settings/Mail/Send.svelte:46
 #: frontend/Settings/Mail/Send.svelte:46
 msgid "HTML"
-msgstr ""
+msgstr "HTML"
 
 #: frontend/Settings/Mail/Account/Identity.svelte:2
 msgid "Identities"
-msgstr ""
+msgstr "Ταυτότητες"
 
 #: frontend/Settings/SettingsCategories.ts:64
 #: frontend/Settings/SettingsCategories.ts:79
 msgid "Identity"
-msgstr ""
+msgstr "Ταυτότητα"
 
 #: frontend/Settings/Setup/Meet/M3Login.svelte:3
 msgid "If you don't have an account yet, you can subscribe on our website."
-msgstr ""
+msgstr "Αν δεν έχετε λογαριασμό ακόμα, μπορείτε να εγγραφείτε στην ιστοσελίδα μας."
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:204
 msgid "Image URL"
-msgstr ""
+msgstr "Url Εικόνας"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:23
 msgid "IMAP"
-msgstr ""
+msgstr "IMAP"
 
 #: frontend/Settings/Mail/Read.svelte:19
 msgid "Immediately"
-msgstr ""
+msgstr "Άμεσα"
 
 #: frontend/Settings/Setup/Import/SelectAccounts.svelte:2
 msgid "Import accounts"
-msgstr ""
+msgstr "Εισαγωγή λογαριασμών"
 
 #: frontend/Settings/Setup/Import/SelectAccounts.svelte:7
 msgid "Importing accounts..."
-msgstr ""
+msgstr "Εισαγωγή λογαριασμών..."
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:51
 msgid "In Presence"
-msgstr ""
+msgstr "Σε Παρουσία"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:13
 msgid "Incoming server"
-msgstr ""
+msgstr "Διακομιστής εισερχομένων"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:145
 msgid "Insert image"
-msgstr ""
+msgstr "Εισαγωγή εικόνας"
 
 #: frontend/Mail/Composer/Attachments/FileDropTarget.svelte:11
 msgid "Insert inline into text"
-msgstr ""
+msgstr "Εισαγωγή εμβόλιμου στο κείμενο"
 
 #: frontend/Settings/Setup/Mail/manual/OAuth2Manual.svelte:8
 msgid "Inside app UI"
-msgstr ""
+msgstr "Μέσα στο UI εφαρμογών"
 
 #: frontend/Meet/Start/Calling.svelte:31
 msgid "is calling you..."
-msgstr ""
+msgstr "σας καλεί..."
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:16
 msgid "Italic"
-msgstr ""
+msgstr "Italic"
 
 #: frontend/Meet/Start/StartScreen.svelte:14
 msgid "Join"
-msgstr ""
+msgstr "Συμμετοχή"
 
 #: frontend/Mail/Composer/Attachments/AttachmentEntry.svelte:10
 msgid "KB"
-msgstr ""
+msgstr "KB"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:69
 msgid "Kerberos / GSSAPI"
-msgstr ""
+msgstr "Kerberos / GSSAPI"
 
 #: frontend/Contacts/PersonDetails.svelte:18
 msgid "Last name"
-msgstr ""
+msgstr "Επώνυμο"
 
 #: frontend/Meet/InMeetingToolbar.svelte:52
 msgid "Leave"
-msgstr ""
+msgstr "Αποχώρηση"
 
 #: frontend/Settings/Global/DarkMode.svelte:12
 msgid "Light"
-msgstr ""
+msgstr "Φωτεινό"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:131
 msgid "Link to webpage"
-msgstr ""
+msgstr "Σύνδεσμος στην ιστοσελίδα"
 
 #: frontend/Calendar/ViewSelector.svelte:11
 msgid "List"
-msgstr ""
+msgstr "Λίστα"
 
 #: frontend/Settings/About/Test.svelte:2
 msgid "Load test data"
-msgstr ""
+msgstr "Δεδομένα δοκιμής φορτίου"
 
 #: frontend/MainWindow/MainWindow.svelte:8
 msgid "Loading apps..."
-msgstr ""
+msgstr "Φόρτωση εφαρμογών..."
 
 #: frontend/Mail/Message/MessageBody.svelte:6
 #: frontend/Mail/Message/MessageBody.svelte:16
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:20
 msgid "Loading..."
-msgstr ""
+msgstr "Φόρτωση..."
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:52
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:200
 msgid "Location"
-msgstr ""
+msgstr "Τοποθεσία"
 
 #: frontend/Mail/MailMustangApp.ts:52
 #: frontend/Settings/Setup/Import/Passwords.svelte:6
 msgid "Login"
-msgstr ""
+msgstr "Είσοδος"
 
 #: frontend/Mail/MailMustangApp.ts:33
 msgid "Login to "
-msgstr ""
+msgstr "Συνδεθείτε στο "
 
 #: frontend/Settings/Setup/Mail/manual/OAuth2Manual.svelte:5
 msgid "Login UI"
-msgstr ""
+msgstr "UI Σύνδεσης"
 
 #: frontend/Contacts/PersonDetails.svelte:69
 #: frontend/Contacts/PersonDetails.svelte:187
 #: frontend/Mail/MailMustangApp.ts:16
 #: frontend/Settings/SettingsCategories.ts:50
 msgid "Mail"
-msgstr ""
+msgstr "Αλληλογραφία"
 
 #: frontend/Mail/Search/SearchPane.svelte:13
 msgid "Mail content or subject"
-msgstr ""
+msgstr "Περιεχόμενο αλληλογραφίας ή θέμα"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigPage.svelte:2
 msgid "Manual configuration"
-msgstr ""
+msgstr "Χειροκίνητη ρύθμιση"
 
 #: frontend/Settings/Setup/Mail/SetupMail.svelte:34
 msgid "Manual setup"
-msgstr ""
+msgstr "Χειροκίνητη ρύθμιση"
 
 #: frontend/Settings/Mail/Read.svelte:31
 msgid "Manually"
-msgstr ""
+msgstr "Χειροκίνητα"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:29
 msgid "Mark all read"
-msgstr ""
+msgstr "Επισήμανση όλων των αναγνωσμένων"
 
 #: frontend/Mail/Message/MessageMenu.svelte:37
 msgid "Mark as spam"
-msgstr ""
+msgstr "Σήμανση ως spam"
 
 #: frontend/Mail/3pane/TableMessageListItem.svelte:40
 msgid "Mark as spam and delete"
-msgstr ""
+msgstr "Σήμανση ως spam και διαγραφή"
 
 #: frontend/Settings/Mail/Read.svelte:14
 msgid "Mark mails as read"
-msgstr ""
+msgstr "Σημείωση μηνυμάτων ως αναγνωσμένα"
 
 #: frontend/Mail/3pane/TableMessageListItem.svelte:21
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:26
 #: frontend/Mail/Message/MessageToolbar.svelte:51
 #: frontend/Mail/Vertical/VerticalMessageListItem.svelte:63
 msgid "Mark this message as read"
-msgstr ""
+msgstr "Σημειώστε αυτό το μήνυμα ως αναγνωσμένο"
 
 #: frontend/Mail/3pane/TableMessageListItem.svelte:21
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:26
 #: frontend/Mail/Message/MessageToolbar.svelte:51
 #: frontend/Mail/Vertical/VerticalMessageListItem.svelte:63
 msgid "Mark this message as unread"
-msgstr ""
+msgstr "Σημειώστε αυτό το μήνυμα ως μη αναγνωσμένο"
 
 #: frontend/Contacts/ContactEntryUI.svelte:79
 #: frontend/Settings/Setup/Chat/SelectProtocol.svelte:35
 msgid "Matrix"
-msgstr ""
+msgstr "Πίνακας"
 
 #: frontend/Meet/Video/Video.svelte:8
 msgid "me"
-msgstr ""
+msgstr "εγώ"
 
 #: frontend/Meet/MeetMustangApp.ts:9
 #: frontend/Settings/SettingsCategories.ts:97
 msgid "Meet"
-msgstr ""
+msgstr "Γνωρίστε"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:30
 msgid "Meeting URL"
-msgstr ""
+msgstr "Url Συνάντησης"
 
 #: frontend/Contacts/SameName.svelte:17
 msgid "Merge"
-msgstr ""
+msgstr "Συγχώνευση"
 
 #: frontend/Contacts/PersonDetails.svelte:48
 msgid "Message"
-msgstr ""
+msgstr "Μήνυμα"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:16
 msgid "Messages"
-msgstr ""
+msgstr "Μηνύματα"
 
 #: frontend/Calendar/EventLine.svelte:15
 msgid "min"
-msgstr ""
+msgstr "λεπτά"
 
 #: frontend/MainWindow/WindowHeader.svelte:17
 msgid "Minimize"
-msgstr ""
+msgstr "Minimize"
 
 #: frontend/Calendar/EditEvent/TimeInput.svelte:40
 msgid "Minute must be less than 59"
-msgstr ""
+msgstr "Το λεπτό πρέπει να είναι μικρότερο από 59"
 
 #: frontend/Calendar/EditEvent/DurationUnit.svelte:2
 msgid "Minutes"
-msgstr ""
+msgstr "Λεπτά"
 
 #: frontend/Contacts/ContactEntryUI.svelte:76
 msgid "Mobile"
-msgstr ""
+msgstr "Κινητό"
 
 #: frontend/Calendar/ViewSelector.svelte:20
 msgid "Month"
-msgstr ""
+msgstr "Μήνας"
 
 #: frontend/WebApps/Launcher/AppsLauncher.svelte:15
 msgid "More apps"
-msgstr ""
+msgstr "Περισσότερες εφαρμογές"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:27
 msgid "More info"
-msgstr ""
+msgstr "Περισσότερες πληροφορίες"
 
 #: frontend/MainWindow/NotificationBar.svelte:27
 msgid "More info about this error"
-msgstr ""
+msgstr "Περισσότερες πληροφορίες σχετικά με αυτό το σφάλμα"
 
 #: frontend/Mail/Search/SearchPane.svelte:86
 msgid "More than {0} mails"
-msgstr ""
+msgstr "Περισσότερα από {0} μηνύματα"
 
 #: frontend/Meet/InMeetingToolbar.svelte:32
 #: frontend/Meet/ParticipantListItem.svelte:22
 #: frontend/Meet/Setup/DeviceButton.svelte:3
 msgid "Mute"
-msgstr ""
+msgstr "Σίγαση"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:48
 msgid "Name cannot be empty"
-msgstr ""
+msgstr "Το όνομα δεν μπορεί να είναι κενό"
 
 #: frontend/Settings/Setup/Contacts/LocalAddressbook.svelte:7
 msgid "Name of the addressbook"
-msgstr ""
+msgstr "Όνομα του Τηλεφωνικού καταλόγου"
 
 #: frontend/Settings/Setup/Calendar/LocalCalendar.svelte:7
 msgid "Name of the calendar"
-msgstr ""
+msgstr "Όνομα του ημερολογίου"
 
 #: frontend/Mail/Search/SavedSearchUI.svelte:2
 msgid "Name of the folder"
-msgstr ""
+msgstr "Όνομα του φακέλου"
 
 #: frontend/Settings/Mail/Account/Identity.svelte:51
 msgid "Need at least 1 identity"
-msgstr ""
+msgstr "Χρειάζεστε τουλάχιστον 1 ταυτότητα"
 
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:86
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:97
 msgid "Need email address"
-msgstr ""
+msgstr "Απαιτείται διεύθυνση email"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:47
 msgid "Need folder name"
-msgstr ""
+msgstr "Απαιτείται όνομα φακέλου"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:2
 msgid "New"
-msgstr ""
+msgstr "Νέο"
 
 #: frontend/Settings/Window/AccountsList.svelte:12
 msgid "New account for {0}"
-msgstr ""
+msgstr "Νέος λογαριασμός για {0}"
 
 #: frontend/Contacts/PersonsToolbar.svelte:7
 #: frontend/Meet/ParticipantSearch.svelte:5
 msgid "New contact"
-msgstr ""
+msgstr "Νέα επαφή"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:4
 #: frontend/Calendar/TitleBarLeft.svelte:3
 msgid "New event"
-msgstr ""
+msgstr "Νέο συμβάν"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:3
 msgid "New folder name"
-msgstr ""
+msgstr "Νέο όνομα φακέλου"
 
 #: frontend/Chat/Header.svelte:5
 msgid "New group"
-msgstr ""
+msgstr "Νέα ομάδα"
 
 #: frontend/Settings/Setup/Contacts/SelectProtocol.svelte:29
 msgid "New local addressbook"
-msgstr ""
+msgstr "Νέο τοπικό Τηλεφωνικό κατάλογο"
 
 #: frontend/Settings/Setup/Calendar/SelectProtocol.svelte:29
 msgid "New local calendar"
-msgstr ""
+msgstr "Νέο τοπικό ημερολόγιο"
 
 #: frontend/Settings/Setup/Shared/ButtonsBottom.svelte:16
 msgid "Next"
-msgstr ""
+msgstr "Επόμενο"
 
 #: frontend/Calendar/DateRange.svelte:4
 msgid "Next {0} days"
@@ -1084,123 +1095,123 @@ msgstr ""
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:46
 msgid "No config found"
-msgstr ""
+msgstr "Δεν βρέθηκαν ρυθμίσεις"
 
 #: frontend/Settings/Setup/Mail/DisplayConfigServer.svelte:49
 msgid "No encryption"
-msgstr ""
+msgstr "Χωρίς κρυπτογράφηση"
 
 #: frontend/Meet/Start/StartScreen.svelte:23
 msgid "No meetings coming up"
-msgstr ""
+msgstr "Δεν έρχονται συναντήσεις"
 
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:11
 msgid "No person found"
-msgstr ""
+msgstr "Δεν βρέθηκε κανένα άτομο"
 
 #: frontend/Meet/ParticipantSearch.svelte:55
 msgid "No persons in this chat account"
-msgstr ""
+msgstr "Δεν υπάρχουν άτομα σε αυτόν τον λογαριασμό συνομιλίας"
 
 #: frontend/Meet/Start/StartScreen.svelte:29
 msgid "No recent meetings"
-msgstr ""
+msgstr "Καμία πρόσφατη συνάντηση"
 
 #: frontend/Mail/Message/AttachmentUI.svelte:16
 msgid "Not downloaded"
-msgstr ""
+msgstr "Δεν έχει ληφθεί"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:14
 #: frontend/Settings/Mail/NotificationKinds.svelte:20
 msgid "Not yet implemented"
-msgstr ""
+msgstr "Δεν έχει ακόμη υλοποιηθεί"
 
 #: frontend/Contacts/PersonDetails.svelte:192
 msgid "Notes"
-msgstr ""
+msgstr "Σημειώσεις"
 
 #: frontend/Settings/Chat/Notifications.svelte:3
 #: frontend/Settings/Mail/Notifications.svelte:4
 #: frontend/Settings/SettingsCategories.ts:53
 #: frontend/Settings/SettingsCategories.ts:69
 msgid "Notifications"
-msgstr ""
+msgstr "Ειδοποιήσεις"
 
 #: frontend/Settings/Mail/Notifications.svelte:12
 msgid "Notify only for"
-msgstr ""
+msgstr "Μόνο ειδοποιήσεις για"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:71
 msgid "NTLM"
-msgstr ""
+msgstr "NTLM"
 
 #: frontend/Settings/Setup/Mail/manual/OAuth2Manual.svelte:2
 msgid "OAuth2"
-msgstr ""
+msgstr "OAuth2"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:68
 msgid "OAuth2 / MFA"
-msgstr ""
+msgstr "OAuth2 / MFA"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:29
 msgid "Online"
-msgstr ""
+msgstr "Συνδεδεμένος"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:42
 msgid "Open"
-msgstr ""
+msgstr "Άνοιγμα"
 
 #: frontend/Mail/Message/AttachmentMenu.svelte:13
 msgid "Open containing folder"
-msgstr ""
+msgstr "Άνοιγμα φακέλου που περιέχει"
 
 #: frontend/Mail/Message/AttachmentMenu.svelte:15
 msgid "Open folder"
-msgstr ""
+msgstr "Άνοιγμα φακέλου"
 
 #: frontend/Mail/Message/AttachmentMenu.svelte:9
 msgid "Open in external app"
-msgstr ""
+msgstr "Άνοιγμα σε εξωτερική εφαρμογή"
 
 #: frontend/Mail/Message/AttachmentMenu.svelte:7
 msgid "Open in external application"
-msgstr ""
+msgstr "Άνοιγμα σε εξωτερική εφαρμογή"
 
 #: frontend/Meet/InMeetingToolbar.svelte:63
 msgid "Open participants list"
-msgstr ""
+msgstr "Άνοιγμα λίστας συμμετεχόντων"
 
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:46
 msgid "Open this message alone"
-msgstr ""
+msgstr "Άνοιγμα αυτού του μηνύματος μόνο"
 
 #: frontend/Settings/SettingsCategories.ts:122
 msgid "Open-Source"
-msgstr ""
+msgstr "Ανοιχτού Κώδικα"
 
 #: frontend/Settings/About/Licenses.svelte:8
 msgid "Open-Source license"
-msgstr ""
+msgstr "Άδεια χρήσης ανοιχτού κώδικα"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:91
 msgid "Ordered list"
-msgstr ""
+msgstr "Ταξινομημένη λίστα"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:81
 msgid "Organisation"
-msgstr ""
+msgstr "Organisation"
 
 #: frontend/Contacts/ContactEntryUI.svelte:80
 msgid "Other"
-msgstr ""
+msgstr "Άλλο"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:11
 msgid "Outgoing server"
-msgstr ""
+msgstr "Διακομιστής εξερχομένων"
 
 #: frontend/Meet/Sidebar.svelte:5
 msgid "Participants"
-msgstr ""
+msgstr "Συμμετέχοντες"
 
 #: frontend/Settings/Setup/Chat/MatrixLogin.svelte:10
 #: frontend/Settings/Setup/Chat/XMPPLogin.svelte:10
@@ -1208,220 +1219,220 @@ msgstr ""
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:67
 #: frontend/Settings/Setup/Meet/M3Login.svelte:10
 msgid "Password"
-msgstr ""
+msgstr "Κωδικός"
 
 #: frontend/Mail/Search/SearchPane.svelte:55
 #: frontend/Mail/Search/SearchPane.svelte:55
 msgid "Person"
-msgstr ""
+msgstr "Πρόσωπο"
 
 #: frontend/Contacts/PersonDetails.svelte:199
 msgid "Personal notes"
-msgstr ""
+msgstr "Προσωπικές σημειώσεις"
 
 #: frontend/Contacts/PersonDetails.svelte:189
 msgid "Phone"
-msgstr ""
+msgstr "Τηλέφωνο"
 
 #: frontend/Contacts/PersonDetails.svelte:111
 msgid "Phone numbers"
-msgstr ""
+msgstr "Αριθμοί τηλεφώνου"
 
 #: frontend/Shared/Person/GroupPicture.svelte:7
 #: frontend/Shared/Person/PersonPicture.svelte:6
 msgid "Picture of {0}"
-msgstr ""
+msgstr "Εικόνα του {0}"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:51
 msgid "Plain"
-msgstr ""
+msgstr "Απλό"
 
 #: frontend/Mail/Message/DisplayModeSwitcher.svelte:30
 #: frontend/Settings/Mail/Send.svelte:54
 #: frontend/Settings/Mail/Send.svelte:54
 msgid "Plaintext"
-msgstr ""
+msgstr "Απλό"
 
 #: frontend/Meet/Start/StartScreen.svelte:10
 msgid "Plan a meeting"
-msgstr ""
+msgstr "Σχεδιάστε μια συνάντηση"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:48
 msgid "Please enter a name for the new folder"
-msgstr ""
+msgstr "Παρακαλώ εισάγετε ένα όνομα για το νέο φάκελο"
 
 #: frontend/Settings/Mail/Account/Folders.svelte:19
 msgid "Please log in to account {0} first"
-msgstr ""
+msgstr "Παρακαλώ συνδεθείτε στο λογαριασμό {0} πρώτα"
 
 #: frontend/Calendar/CalendarApp.svelte:27
 msgid "Please select a calendar first"
-msgstr ""
+msgstr "Παρακαλώ επιλέξτε πρώτα ένα ημερολόγιο"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:24
 msgid "POP3"
-msgstr ""
+msgstr "POP3"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:4
 #: frontend/Settings/Mail/NotificationKinds.svelte:6
 #: frontend/Settings/Mail/NotificationKinds.svelte:6
 msgid "Popup"
-msgstr ""
+msgstr "Popup"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:5
 msgid "Port"
-msgstr ""
+msgstr "Θύρα"
 
 #: frontend/Contacts/PersonDetails.svelte:23
 msgid "Position"
-msgstr ""
+msgstr "Θέση"
 
 #: frontend/Calendar/DateRange.svelte:3
 msgid "Previous {0} days"
-msgstr ""
+msgstr "Προηγούμενες {0} ημέρες"
 
 #: frontend/Meet/Start/StartScreen.svelte:27
 msgid "Previous meetings"
-msgstr ""
+msgstr "Προηγούμενες συνεδριάσεις"
 
 #: frontend/Mail/Message/MessageMenu.svelte:49
 msgid "Print"
-msgstr ""
+msgstr "Εκτύπωση"
 
 #: frontend/Settings/Setup/Shared/Footer.svelte:3
 msgid "Privacy"
-msgstr ""
+msgstr "Απόρρητο"
 
 #: frontend/Settings/Setup/Calendar/LocalCalendar.svelte:9
 #: frontend/Settings/Setup/Contacts/LocalAddressbook.svelte:9
 msgid "Private"
-msgstr ""
+msgstr "Ιδιωτικό"
 
 #: frontend/Meet/ParticipantListItem.svelte:39
 msgid "Private chat"
-msgstr ""
+msgstr "Ιδιωτική συνομιλία"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:2
 msgid "Protocol"
-msgstr ""
+msgstr "Protocol"
 
 #: frontend/Mail/Message/MessageMenu.svelte:47
 msgid "Put ink on dead trees which were artificially made white. Save the trees!"
-msgstr ""
+msgstr "Βάλτε μελάνι σε νεκρά δέντρα που τεχνητά έκανε άσπρο. Αποθηκεύστε τα δέντρα!"
 
 #: frontend/Settings/Mail/Send.svelte:3
 msgid "Quote"
-msgstr ""
+msgstr "Παράθεση"
 
 #: frontend/Settings/Mail/Send.svelte:22
 #: frontend/Settings/Mail/Send.svelte:22
 msgid "Quote above"
-msgstr ""
+msgstr "Παράθεση παραπάνω"
 
 #: frontend/Settings/Mail/Send.svelte:20
 msgid "Quote above, Reply below"
-msgstr ""
+msgstr "Παράθεση παραπάνω, Απάντηση παρακάτω"
 
 #: frontend/Settings/Mail/Send.svelte:14
 #: frontend/Settings/Mail/Send.svelte:14
 msgid "Quote below"
-msgstr ""
+msgstr "Παράθεση παρακάτω"
 
 #: frontend/Settings/Mail/Send.svelte:12
 msgid "Quote below, Reply above"
-msgstr ""
+msgstr "Προσφορά παρακάτω, Απάντηση παραπάνω"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:61
 msgid "Quote of the original email"
-msgstr ""
+msgstr "Παράθεση του αρχικού email"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:11
 msgid "R"
-msgstr ""
+msgstr "R"
 
 #: frontend/Meet/InMeetingToolbar.svelte:42
 msgid "Raise hand"
-msgstr ""
+msgstr "Ανύψωση χεριού"
 
 #: frontend/Settings/SettingsCategories.ts:54
 msgid "Read"
-msgstr ""
+msgstr "Ανάγνωση"
 
 #: frontend/Mail/Message/MessageMenu.svelte:24
 msgid "Redirect"
-msgstr ""
+msgstr "Ανακατεύθυνση"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:167
 msgid "Redo the change that was undone before"
-msgstr ""
+msgstr "Επανάληψη της αλλαγής που ακυρώθηκε πριν"
 
 #: frontend/Mail/3pane/TableMessageListItem.svelte:11
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:36
 #: frontend/Mail/Message/MessageToolbar.svelte:61
 #: frontend/Mail/Vertical/VerticalMessageListItem.svelte:53
 msgid "Remember this message"
-msgstr ""
+msgstr "Απομνημόνευση του μηνύματος"
 
 #: frontend/Shared/PersonAutocomplete/PersonPopup.svelte:73
 #: frontend/WebApps/Shop/AppShopButton.svelte:16
 msgid "Remove"
-msgstr ""
+msgstr "Αφαίρεση"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:61
 msgid "Remove 'Sent by'"
-msgstr ""
+msgstr "Αφαίρεση 'στάλθηκε από'"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:138
 msgid "Remove link"
-msgstr ""
+msgstr "Αφαίρεση συνδέσμου"
 
 #: frontend/MainWindow/NotificationBar.svelte:34
 msgid "Remove this message"
-msgstr ""
+msgstr "Αφαίρεση αυτού του μηνύματος"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:4
 msgid "Rename"
-msgstr ""
+msgstr "Μετονομασία"
 
 #: frontend/Settings/Mail/Account/Folders.svelte:3
 msgid "Rename folders, set special folders, share them with others"
-msgstr ""
+msgstr "Μετονομάστε τους φακέλους, ορίστε ειδικούς φακέλους, μοιραστείτε τους με άλλους"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:85
 msgid "Repeated"
-msgstr ""
+msgstr "Επαναλαμβανόμενο"
 
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:16
 #: frontend/Mail/Message/MessageMenu.svelte:12
 #: frontend/Mail/Message/MessageToolbar.svelte:17
 msgid "Reply to all"
-msgstr ""
+msgstr "Απάντηση σε όλους"
 
 #: frontend/Mail/Message/MessageMenu.svelte:10
 msgid "Reply to all recipients of this message"
-msgstr ""
+msgstr "Απάντηση σε όλους τους παραλήπτες αυτού του μηνύματος"
 
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:6
 #: frontend/Mail/Message/MessageMenu.svelte:6
 #: frontend/Mail/Message/MessageToolbar.svelte:7
 msgid "Reply to author"
-msgstr ""
+msgstr "Απάντηση στον συγγραφέα"
 
 #: frontend/Mail/Message/MessageMenu.svelte:4
 msgid "Reply to the person who sent this message"
-msgstr ""
+msgstr "Απάντηση στο πρόσωπο που έστειλε αυτό το μήνυμα"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:80
 msgid "Reply-To"
-msgstr ""
+msgstr "Απάντηση"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:37
 msgid "Reply-to address"
-msgstr ""
+msgstr "Διεύθυνση απάντησης"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:12
 msgid "S"
-msgstr ""
+msgstr "S"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:91
 #: frontend/Contacts/PersonMenu.svelte:7
@@ -1430,93 +1441,93 @@ msgstr ""
 #: frontend/Settings/Mail/Account/Identity.svelte:19
 #: frontend/Settings/Setup/Mail/manual/ManualConfig.svelte:15
 msgid "Save"
-msgstr ""
+msgstr "Αποθήκευση"
 
 #: frontend/Mail/Composer/MailComposer.svelte:16
 msgid "Save and close"
-msgstr ""
+msgstr "Αποθήκευση και κλείσιμο"
 
 #: frontend/Mail/Search/SavedSearchUI.svelte:6
 msgid "Save as folder"
-msgstr ""
+msgstr "Αποθήκευση ως φάκελο"
 
 #: frontend/Mail/Search/SearchPane.svelte:93
 msgid "Save search as folder"
-msgstr ""
+msgstr "Αποθήκευση αναζήτησης ως φακέλου"
 
 #: frontend/Meet/Video/ParticipatingVideo.svelte:11
 msgid "Screen"
-msgstr ""
+msgstr "Οθόνη"
 
 #: frontend/Meet/Video/ParticipatingVideo.svelte:11
 msgid "Screen of {0}"
-msgstr ""
+msgstr "Οθόνη του {0}"
 
 #: frontend/Meet/InMeetingToolbar.svelte:14
 msgid "Screen share"
-msgstr ""
+msgstr "Κοινή χρήση οθόνης"
 
 #: frontend/Shared/SearchField.svelte:16
 msgid "Search"
-msgstr ""
+msgstr "Αναζήτηση"
 
 #: frontend/Shared/Person/PersonsList.svelte:2
 msgid "Search for a person or group"
-msgstr ""
+msgstr "Αναζήτηση για ένα άτομο ή ομάδα"
 
 #: frontend/Settings/Mail/Account/SentByExplainer.svelte:9
 msgid "See plans"
-msgstr ""
+msgstr "Δείτε τα σχέδια"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:13
 msgid "Select camera"
-msgstr ""
+msgstr "Επιλογή κάμερας"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:13
 msgid "Select microphone"
-msgstr ""
+msgstr "Επιλογή μικροφώνου"
 
 #: frontend/Settings/Setup/Mail/FinalizeConfig.svelte:6
 msgid "Select the workspace for {0}"
-msgstr ""
+msgstr "Επιλέξτε το χώρο εργασίας για {0}"
 
 #: frontend/Mail/Composer/MailComposer.svelte:101
 #: frontend/Settings/SettingsCategories.ts:55
 #: frontend/Settings/SettingsCategories.ts:78
 msgid "Send"
-msgstr ""
+msgstr "Αποστολή"
 
 #: frontend/Settings/Mail/Send.svelte:44
 msgid "Send as HTML and Plaintext"
-msgstr ""
+msgstr "Αποστολή ως HTML και Plaintext"
 
 #: frontend/Settings/Mail/Send.svelte:52
 msgid "Send as Plaintext only"
-msgstr ""
+msgstr "Αποστολή μόνο ως απλό"
 
 #: frontend/Contacts/PersonDetails.svelte:51
 msgid "Send mail"
-msgstr ""
+msgstr "Αποστολή μηνύματος"
 
 #: frontend/Mail/Message/MessageMenu.svelte:16
 msgid "Send this message to somebody else"
-msgstr ""
+msgstr "Στείλτε αυτό το μήνυμα σε κάποιον άλλο"
 
 #: frontend/Mail/Message/MessageMenu.svelte:22
 msgid "Send this message to somebody else, who can reply to the original sender"
-msgstr ""
+msgstr "Στείλτε αυτό το μήνυμα σε κάποιον άλλο, ο οποίος μπορεί να απαντήσει στον αρχικό αποστολέα"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:57
 msgid "Sent by"
-msgstr ""
+msgstr "Εστάλη από"
 
 #: frontend/Mail/Search/SearchPane.svelte:18
 msgid "Sent by me"
-msgstr ""
+msgstr "Στάλθηκε από μένα"
 
 #: frontend/Settings/Setup/Mail/manual/OAuth2Manual.svelte:9
 msgid "Separate window"
-msgstr ""
+msgstr "Διαχωρισμός παραθύρου"
 
 #: frontend/Settings/Chat/AccountXMPPServer.svelte:2
 #: frontend/Settings/Mail/Account/Server.svelte:2
@@ -1525,411 +1536,411 @@ msgstr ""
 #: frontend/Settings/SettingsCategories.ts:77
 #: frontend/Settings/SettingsCategories.ts:107
 msgid "Server"
-msgstr ""
+msgstr "Διακομιστής"
 
 #: frontend/Settings/AccountURLServer.svelte:2
 msgid "Server URL"
-msgstr ""
+msgstr "Url Διακομιστή"
 
 #: frontend/Settings/Setup/Mail/EmailAddressPassword.svelte:1
 msgid "Set up existing email address"
-msgstr ""
+msgstr "Ρύθμιση υπάρχουσας διεύθυνσης email"
 
 #: frontend/Settings/Setup/Contacts/SelectProtocol.svelte:2
 msgid "Set up your addressbook"
-msgstr ""
+msgstr "Ρύθμιση του Τηλεφωνικού σας καταλόγου"
 
 #: frontend/Settings/Setup/Calendar/SelectProtocol.svelte:2
 msgid "Set up your calendar"
-msgstr ""
+msgstr "Ρυθμίστε το ημερολόγιο σας"
 
 #: frontend/Settings/Setup/Meet/M3Login.svelte:2
 msgid "Set up your existing {0} account for meetings"
-msgstr ""
+msgstr "Ρυθμίστε τον υπάρχοντα λογαριασμό {0} για συναντήσεις"
 
 #: frontend/Settings/Setup/Chat/SelectProtocol.svelte:2
 msgid "Set up your existing chat account"
-msgstr ""
+msgstr "Ρυθμίστε τον υπάρχοντα λογαριασμό συνομιλίας"
 
 #: frontend/Settings/Setup/Chat/MatrixLogin.svelte:2
 msgid "Set up your existing Matrix account"
-msgstr ""
+msgstr "Ρυθμίστε τον υπάρχοντα λογαριασμό Matrix"
 
 #: frontend/Settings/Setup/Chat/XMPPLogin.svelte:2
 msgid "Set up your existing XMPP account"
-msgstr ""
+msgstr "Ρυθμίστε τον υπάρχοντα λογαριασμό XMPP"
 
 #: frontend/Settings/Setup/Meet/SelectProtocol.svelte:2
 msgid "Set up your meeting account"
-msgstr ""
+msgstr "Ρυθμίστε το λογαριασμό συνάντησής σας"
 
 #: frontend/MainWindow/WindowHeader.svelte:13
 #: frontend/Settings/Window/SettingsMustangApp.ts:8
 msgid "Settings"
-msgstr ""
+msgstr "Ρυθμίσεις"
 
 #: frontend/Settings/Setup/SetupMustangApp.ts:7
 msgid "Setup"
-msgstr ""
+msgstr "Ρύθμιση"
 
 #: frontend/Shared/Button.svelte:49
 msgid "Shortcut: "
-msgstr ""
+msgstr "Συντόμευση: "
 
 #: frontend/Meet/MeetingNotes.svelte:11
 msgid "Show meeting description"
-msgstr ""
+msgstr "Εμφάνιση περιγραφής συνάντησης"
 
 #: frontend/Settings/Mail/Notifications.svelte:14
 msgid "Show notifications only for mails:"
-msgstr ""
+msgstr "Εμφάνιση ειδοποιήσεων μόνο για μηνύματα:"
 
 #: frontend/Settings/Setup/Shared/Password.svelte:13
 msgid "Show password"
-msgstr ""
+msgstr "Εμφάνιση κωδικού πρόσβασης"
 
 #: frontend/Mail/Message/MessageMenu.svelte:55
 msgid "Show source"
-msgstr ""
+msgstr "Εμφάνιση πηγής"
 
 #: frontend/Mail/Message/MessageMenu.svelte:53
 msgid "Show the on-the-wire format of this message"
-msgstr ""
+msgstr "Εμφάνιση της μορφής αυτού του μηνύματος on-the-wire"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:49
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:82
 msgid "Signature"
-msgstr ""
+msgstr "Υπογραφή"
 
 #: frontend/Contacts/SameName.svelte:5
 msgid "Similar names"
-msgstr ""
+msgstr "Παρόμοια ονόματα"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:10
 #: frontend/Settings/Mail/NotificationKinds.svelte:12
 #: frontend/Settings/Mail/NotificationKinds.svelte:12
 msgid "Sound"
-msgstr ""
+msgstr "Ήχος"
 
 #: frontend/Mail/Message/DisplayModeSwitcher.svelte:40
 msgid "Source"
-msgstr ""
+msgstr "Πηγή"
 
 #: frontend/Mail/Message/MessageBody.svelte:42
 msgid "Source not available"
-msgstr ""
+msgstr "Η πηγή δεν είναι διαθέσιμη"
 
 #: frontend/Mail/Search/SearchPane.svelte:27
 msgid "Starred"
-msgstr ""
+msgstr "Αγαπημένα"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:72
 msgid "Start"
-msgstr ""
+msgstr "Έναρξη"
 
 #: frontend/Meet/ParticipantListItem.svelte:37
 msgid "Start a chat with only this person"
-msgstr ""
+msgstr "Ξεκινήστε μια συνομιλία μόνο με αυτό το άτομο"
 
 #: frontend/Meet/Start/StartScreen.svelte:11
 msgid "Start an ad-hoc meeting"
-msgstr ""
+msgstr "Έναρξη συνάντησης ad hoc"
 
 #: frontend/Meet/Start/Calling.svelte:61
 msgid "Start conference"
-msgstr ""
+msgstr "Έναρξη συνδιάσκεψης"
 
 #: frontend/Settings/Setup/Shared/ButtonsBottom.svelte:4
 msgid "Start over"
-msgstr ""
+msgstr "Εκκίνηση μέσω"
 
 #: frontend/Mail/StartPage.svelte:2
 msgid "Start page"
-msgstr ""
+msgstr "Αρχική σελίδα"
 
 #: frontend/Settings/Setup/Mail/DisplayConfigServer.svelte:46
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:50
 msgid "STARTTLS"
-msgstr ""
+msgstr "STARTTLS"
 
 #: frontend/Contacts/PersonDetails.svelte:190
 msgid "Street address"
-msgstr ""
+msgstr "Διεύθυνση της οδού"
 
 #: frontend/Contacts/PersonDetails.svelte:131
 msgid "Street addresses"
-msgstr ""
+msgstr "Οδικές διευθύνσεις"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:26
 msgid "Strike-through"
-msgstr ""
+msgstr "Επιδιαγράμμιση"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:15
 #: frontend/Mail/Composer/MailComposer.svelte:95
 msgid "Subject"
-msgstr ""
+msgstr "Θέμα"
 
 #: frontend/Settings/Global/DarkMode.svelte:3
 msgid "System"
-msgstr ""
+msgstr "Σύστημα"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:24
 #: frontend/Settings/Mail/NotificationKinds.svelte:24
 msgid "System task bar"
-msgstr ""
+msgstr "Γραμμή εργασιών συστήματος"
 
 #: frontend/Meet/ParticipantListItem.svelte:13
 msgid "Take hand down"
-msgstr ""
+msgstr "Πάρτε το χέρι κάτω"
 
 #: frontend/Contacts/ContactEntryUI.svelte:78
 msgid "Teams"
-msgstr ""
+msgstr "Ομάδες"
 
 #: frontend/Settings/Setup/Shared/Footer.svelte:2
 msgid "Terms of use"
-msgstr ""
+msgstr "Όροι χρήσης"
 
 #: frontend/Settings/SettingsCategories.ts:123
 msgid "Test"
-msgstr ""
+msgstr "Δοκιμή"
 
 #: frontend/Meet/Start/StartScreen.svelte:8
 msgid "Test incoming call"
-msgstr ""
+msgstr "Δοκιμή εισερχόμενης κλήσης"
 
 #: frontend/Mail/Message/ThreadDisplay.svelte:1
 msgid "The threaded view does not yet work as intended."
-msgstr ""
+msgstr "Η προβολή με σπείρωμα δεν λειτουργεί ακόμα όπως προβλέπεται."
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:26
 msgid "This is a catch-all email address."
-msgstr ""
+msgstr "Αυτή είναι μια διεύθυνση ηλεκτρονικού ταχυδρομείου-catch-all."
 
 #: frontend/Settings/Mail/Account/Identity.svelte:2
 msgid "This is how you appear to others when you send mail"
-msgstr ""
+msgstr "Έτσι εμφανίζεστε στους άλλους όταν στέλνετε μήνυμα"
 
 #: frontend/Mail/Message/DisplayModeSwitcher.svelte:3
 msgid "Thread"
-msgstr ""
+msgstr "Νήμα"
 
 #: frontend/Calendar/ListView.svelte:10
 msgid "Time"
-msgstr ""
+msgstr "Ώρα"
 
 #: frontend/Calendar/ListView.svelte:11
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:101
 msgid "Title"
-msgstr ""
+msgstr "Τίτλος"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:16
 msgid "Title - Enter the topic of the meeting"
-msgstr ""
+msgstr "Τίτλος - Εισάγετε το θέμα της συνάντησης"
 
 #: frontend/Settings/Setup/Mail/DisplayConfigServer.svelte:43
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:49
 msgid "TLS"
-msgstr ""
+msgstr "TLS"
 
 #: frontend/Mail/Message/MessageHeader.svelte:18
 msgid "to"
-msgstr ""
+msgstr "προς"
 
 #: frontend/Mail/Composer/MailComposer.svelte:28
 #: frontend/Mail/Composer/MailComposer.svelte:60
 #: frontend/Mail/Composer/MailComposer.svelte:69
 msgid "To"
-msgstr ""
+msgstr "Προς"
 
 #: frontend/Settings/Mail/Account/SentByExplainer.svelte:6
 msgid "To use {0} professionally and remove this note, you can subscribe to one of our plans."
-msgstr ""
+msgstr "Για να χρησιμοποιήσετε το {0} επαγγελματικά και να αφαιρέσετε αυτήν τη σημείωση, μπορείτε να εγγραφείτε σε ένα από τα σχέδιά μας."
 
 #: frontend/Mail/MailChat/MailMessage.svelte:5
 msgid "to:"
-msgstr ""
+msgstr "προς:"
 
 #: frontend/Meet/Start/StartScreen.svelte:21
 msgid "Today's next meetings"
-msgstr ""
+msgstr "Οι σημερινές επόμενες συνεδριάσεις"
 
 #: frontend/Mail/Message/MessageMenu.svelte:43
 msgid "Translate"
-msgstr ""
+msgstr "Μετάφραση"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:3
 msgid "Turn camera off"
-msgstr ""
+msgstr "Απενεργοποίηση φωτογρ. μηχανής"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:3
 msgid "Turn camera on"
-msgstr ""
+msgstr "Ενεργοποίηση κάμερας"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:159
 msgid "Undo the last change"
-msgstr ""
+msgstr "Αναίρεση της τελευταίας αλλαγής"
 
 #: frontend/Settings/Setup/Mail/DisplayConfigServer.svelte:52
 msgid "Unknown"
-msgstr ""
+msgstr "Άγνωστο"
 
 #: frontend/Mail/Message/MessageBody.svelte:23
 msgid "Unknown display mode"
-msgstr ""
+msgstr "Άγνωστη λειτουργία οθόνης"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:3
 msgid "Unmute"
-msgstr ""
+msgstr "Κατάργηση Σίγασης"
 
 #: frontend/Mail/Search/SearchPane.svelte:22
 msgid "Unread"
-msgstr ""
+msgstr "Αδιάβαστο"
 
 #: frontend/Mail/Message/MessageMenu.svelte:41
 msgid "Use an online translation service to translate this message to your default language."
-msgstr ""
+msgstr "Χρησιμοποιήστε μια online υπηρεσία μετάφρασης για να μεταφράσετε αυτό το μήνυμα στην προεπιλεγμένη γλώσσα σας."
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:9
 msgid "Use as"
-msgstr ""
+msgstr "Χρήση ως"
 
 #: frontend/Settings/AccountURLServer.svelte:4
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:8
 msgid "Username"
-msgstr ""
+msgstr "Όνομα Χρήστη"
 
 #: frontend/Settings/Chat/AccountXMPPServer.svelte:4
 msgid "Username JID"
-msgstr ""
+msgstr "Username JID"
 
 #: frontend/Settings/Setup/Import/Passwords.svelte:26
 #: frontend/Settings/Setup/Mail/CheckConfig.svelte:2
 msgid "Verifying that the configuration works..."
-msgstr ""
+msgstr "Επαληθεύοντας ότι η διαμόρφωση λειτουργεί..."
 
 #: frontend/Mail/LeftPane/ViewSwitcher.svelte:12
 msgid "Vertical view"
-msgstr ""
+msgstr "Κατακόρυφη προβολή"
 
 #: frontend/Chat/PersonHeader.svelte:9
 #: frontend/Contacts/PersonDetails.svelte:41
 msgid "Video call"
-msgstr ""
+msgstr "Βίντεο κλήση"
 
 #: frontend/Settings/Setup/Mail/FindConfig.svelte:2
 msgid "We are looking for the configuration of your email account..."
-msgstr ""
+msgstr "Ψάχνουμε για τη διαμόρφωση του λογαριασμού email σας..."
 
 #: frontend/Settings/Setup/Mail/FindConfig.svelte:23
 msgid "We could not find a configuration for {0}"
-msgstr ""
+msgstr "Δεν μπορέσαμε να βρούμε μια ρύθμιση παραμέτρων για το {0}"
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:52
 msgid "We found a configuration"
-msgstr ""
+msgstr "Βρήκαμε μια ρύθμιση παραμέτρων"
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:47
 msgid "We found the configuration in our database."
-msgstr ""
+msgstr "Βρήκαμε τη διαμόρφωση στη βάση δεδομένων μας."
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:49
 msgid "We guessed a configuration that might work."
-msgstr ""
+msgstr "Υποθέσαμε μια διαμόρφωση που μπορεί να λειτουργήσει."
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:51
 msgid "We received the configuration for Microsoft Exchange"
-msgstr ""
+msgstr "Λάβαμε τις ρυθμίσεις για το Microsoft Exchange"
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:50
 msgid "We received the configuration from Microsoft Exchange."
-msgstr ""
+msgstr "Λάβαμε τις ρυθμίσεις από το Microsoft Exchange."
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:48
 msgid "We received the configuration from your email provider."
-msgstr ""
+msgstr "Λάβαμε τις ρυθμίσεις από τον πάροχο email σας."
 
 #: frontend/WebApps/Shop/AppShopButton.svelte:12
 msgid "Website"
-msgstr ""
+msgstr "Ιστοσελίδα"
 
 #: frontend/Calendar/ViewSelector.svelte:17
 msgid "Week"
-msgstr ""
+msgstr "Εβδομάδα"
 
 #: frontend/Contacts/ContactEntryUI.svelte:77
 msgid "WhatsApp"
-msgstr ""
+msgstr "WhatsApp"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:67
 msgid "When"
-msgstr ""
+msgstr "Πότε"
 
 #: frontend/Settings/Mail/Notifications.svelte:6
 msgid "When a new mail arrives, show with:"
-msgstr ""
+msgstr "Όταν φτάνει ένα νέο ταχυδρομείο, δείξτε με:"
 
 #: frontend/Settings/Mail/Send.svelte:6
 msgid "When replying:"
-msgstr ""
+msgstr "Κατά την απάντηση:"
 
 #: frontend/Mail/Message/DisplayModeSwitcher.svelte:21
 msgid "With external content (allows sender to track you)"
-msgstr ""
+msgstr "Με εξωτερικό περιεχόμενο (επιτρέπει στον αποστολέα να σας παρακολουθεί)"
 
 #: frontend/Contacts/ContactEntryUI.svelte:74
 msgid "Work"
-msgstr ""
+msgstr "Εργασία"
 
 #: frontend/Settings/Setup/Import/Passwords.svelte:36
 msgid "Workspace"
-msgstr ""
+msgstr "Χώρος Εργασίας"
 
 #: frontend/Mail/LeftPane/ProjectList.svelte:4
 msgid "Workspaces"
-msgstr ""
+msgstr "Χώροι Εργασίας"
 
 #: frontend/Settings/Setup/Mail/WorkspaceSelector.svelte:2
 msgid "Workspaces allow you organize yourself. You can change this at any time, by going to Settings in the title bar."
-msgstr ""
+msgstr "Οι χώροι εργασίας σας επιτρέπουν να οργανώσετε τον εαυτό σας. Μπορείτε να το αλλάξετε ανά πάσα στιγμή, πηγαίνοντας στις Ρυθμίσεις στη γραμμή τίτλων."
 
 #: frontend/Mail/LeftPane/WriteButton.svelte:2
 msgid "Write new email"
-msgstr ""
+msgstr "Γράψτε νέο email"
 
 #: frontend/Settings/Setup/Chat/SelectProtocol.svelte:34
 msgid "XMPP / Jabber"
-msgstr ""
+msgstr "XMPP / Jabber"
 
 #: frontend/Meet/Video/ParticipatingVideo.svelte:7
 msgid "You"
-msgstr ""
+msgstr "Εσείς"
 
 #: frontend/Meet/ParticipantListItem.svelte:67
 #: frontend/Meet/ParticipantListItem.svelte:75
 #: frontend/Meet/ParticipantListItem.svelte:80
 msgid "You are not a moderator"
-msgstr ""
+msgstr "Δεν είστε συντονιστής"
 
 #: frontend/Settings/About/Licenses.svelte:
 msgid "You can find the source code of # core at # under an #."
-msgstr ""
+msgstr "Μπορείτε να βρείτε τον πηγαίο κώδικα του # πυρήνα στο # κάτω από το #."
 
 #: frontend/Settings/Setup/Chat/SelectProtocol.svelte:3
 msgid "You can use {0} with your existing chat account or you can create a new chat account."
-msgstr ""
+msgstr "Μπορείτε να χρησιμοποιήσετε το {0} με τον υπάρχοντα λογαριασμό συνομιλίας σας ή μπορείτε να δημιουργήσετε ένα νέο λογαριασμό συνομιλίας."
 
 #: frontend/Settings/Setup/Mail/EmailAddressPassword.svelte:1
 msgid "You can use {0} with your existing email address or you can make a new email address."
-msgstr ""
+msgstr "Μπορείτε να χρησιμοποιήσετε το {0} με την υπάρχουσα διεύθυνση ηλεκτρονικού ταχυδρομείου σας ή μπορείτε να δημιουργήσετε μια νέα διεύθυνση ηλεκτρονικού ταχυδρομείου."
 
 #: frontend/Settings/Setup/Chat/MatrixLogin.svelte:3
 msgid "You can use {0} with your existing Matrix account or you can create a new Matrix account."
-msgstr ""
+msgstr "Μπορείτε να χρησιμοποιήσετε το {0} με τον υπάρχοντα λογαριασμό Matrix ή μπορείτε να δημιουργήσετε ένα νέο λογαριασμό Matrix."
 
 #: frontend/Settings/Setup/Chat/XMPPLogin.svelte:3
 msgid "You can use {0} with your existing XMPP or Jabber account."
-msgstr ""
+msgstr "Μπορείτε να χρησιμοποιήσετε το {0} με τον υπάρχοντα λογαριασμό XMPP ή Jabber."
 
 #: frontend/Meet/Start/Calling.svelte:81
 msgid "You have a meeting in {0} minutes:"
@@ -1937,46 +1948,46 @@ msgstr ""
 
 #: frontend/Meet/Start/Calling.svelte:11
 msgid "You're calling..."
-msgstr ""
+msgstr "Κάνεις κλήση..."
 
 #: frontend/Settings/Setup/Meet/M3Login.svelte:7
 msgid "Your {0} email address"
-msgstr ""
+msgstr "Η διεύθυνση email σας {0}"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:18
 msgid "Your cameras"
-msgstr ""
+msgstr "Οι κάμερες σας"
 
 #: frontend/Settings/Setup/Mail/FinalizeConfig.svelte:2
 msgid "Your email account is working and ready to be used."
-msgstr ""
+msgstr "Ο λογαριασμός email σας λειτουργεί και είναι έτοιμος για χρήση."
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:17
 msgid "Your email address"
-msgstr ""
+msgstr "Η διεύθυνση email σας"
 
 #: frontend/Settings/Mail/Account/Server.svelte:3
 #: frontend/Settings/Setup/Mail/manual/ManualConfigPage.svelte:3
 msgid "Your email provider or company can tell you these details."
-msgstr ""
+msgstr "Ο πάροχος email ή η εταιρεία σας μπορεί να σας πει αυτές τις λεπτομέρειες."
 
 #: frontend/Settings/Setup/Chat/XMPPLogin.svelte:7
 msgid "Your JID"
-msgstr ""
+msgstr "Το Jid Σας"
 
 #: frontend/Settings/Setup/Chat/MatrixLogin.svelte:7
 msgid "Your Matrix ID"
-msgstr ""
+msgstr "Το Αναγνωριστικό Μήτρας Σας"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:18
 msgid "Your microphones"
-msgstr ""
+msgstr "Τα μικρόφωνα σας"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:14
 msgid "Your name"
-msgstr ""
+msgstr "Το όνομά σας"
 
 #: frontend/Settings/Setup/Shared/Password.svelte:3
 msgid "Your password"
-msgstr ""
+msgstr "Ο κωδικός σας"
 

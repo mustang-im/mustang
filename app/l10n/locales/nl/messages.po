@@ -5,77 +5,80 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
-"Language: en\n"
+"Language: nl\n"
 "Project-Id-Version: mustang\n"
 "Report-Msgid-Bugs-To: \n"
 "PO-Revision-Date: 2024-06-28 17:58\n"
 "Last-Translator: \n"
-"Language-Team: English\n"
+"Language-Team: Dutch\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: mustang\n"
 "X-Crowdin-Project-ID: 689789\n"
-"X-Crowdin-Language: en\n"
+"X-Crowdin-Language: nl\n"
 "X-Crowdin-File: /locales/en/messages.po\n"
 "X-Crowdin-File-ID: 32\n"
 
 #: frontend/Mail/Search/SearchPane.svelte:64
 msgid "{0} account only"
-msgstr ""
+msgstr "{0} account alleen"
 
 #: frontend/Mail/Search/SearchPane.svelte:74
 msgid "{0} folder only"
-msgstr ""
+msgstr "{0} map alleen"
 
 #: frontend/Settings/About/Licenses.svelte:12
 msgid "{0} is built using the following Open-Source components.\n"
 "  We sincerely thank those authors and contributors."
-msgstr ""
+msgstr "{0} is gebouwd met behulp van de volgende Open-Source componenten.\n"
+"  Wij danken deze auteurs en bijdragers van harte."
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:26
 msgid "{0} local messages."
-msgstr ""
+msgstr "{0} lokale berichten."
 
 #: frontend/Mail/Search/SearchPane.svelte:88
 msgid "{0} mails"
-msgstr ""
+msgstr "{0} mails"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:19
 msgid "{0} new,\n"
 "          {1} unread,\n"
 "          {2} total messages."
-msgstr ""
+msgstr "{0} nieuw,\n"
+"          {1} ongelezen,\n"
+"          {2} in totaal berichten."
 
 #: frontend/Settings/Setup/Meet/SelectProtocol.svelte:30
 msgid "{0} video conference account"
-msgstr ""
+msgstr "{0} videocongres account"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:83
 msgid "* Item"
-msgstr ""
+msgstr "* Item"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:7
 msgid "*bold* or **bold**"
-msgstr ""
+msgstr "*bold* of **vet**"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:17
 msgid "/italic/ or _italic_"
-msgstr ""
+msgstr "/italic/ or _italic_"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:36
 msgid "\\`code\\`"
-msgstr ""
+msgstr "\\`code\\`"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:102
 msgid "# Big title"
-msgstr ""
+msgstr "# Grote titel"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:112
 msgid "## Sub header"
-msgstr ""
+msgstr "## Sub-kop"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:122
 msgid "### Sub sub header"
-msgstr ""
+msgstr "### Onderste subkop"
 
 #: frontend/Meet/Start/StartScreen.svelte:84
 msgid "<p>\n"
@@ -91,273 +94,273 @@ msgstr ""
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:62
 msgid "> Quote"
-msgstr ""
+msgstr "> Offerte"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:92
 msgid "1. Item"
-msgstr ""
+msgstr "1. Artikel"
 
 #: frontend/Calendar/ViewSelector.svelte:23
 msgid "4 Weeks"
-msgstr ""
+msgstr "4 weken"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:13
 msgid "A"
-msgstr ""
+msgstr "A"
 
 #: frontend/Settings/Setup/Mail/FindConfig.svelte:32
 msgid "A configuration for your account {0} may be available at:\\n\\n{1}\\n\\nDo you want to submit your password there?"
-msgstr ""
+msgstr "Een configuratie voor uw account {0} kan beschikbaar zijn in:\\n\\n{1}\\n\\nWilt u uw wachtwoord hier indienen?"
 
 #: frontend/Settings/SettingsCategories.ts:120
 msgid "About"
-msgstr ""
+msgstr "Informatie"
 
 #: frontend/Meet/Start/Calling.svelte:61
 msgid "Accept call"
-msgstr ""
+msgstr "Gesprek accepteren"
 
 #: frontend/Settings/AccountGeneral.svelte:2
 msgid "Account name"
-msgstr ""
+msgstr "Klant naam"
 
 #: frontend/Mail/LeftPane/AccountList.svelte:5
 #: frontend/Settings/Window/AccountsList.svelte:4
 msgid "Accounts"
-msgstr ""
+msgstr "Rekeningen"
 
 #: frontend/Settings/Mail/Account/Identity.svelte:4
 #: frontend/WebApps/Shop/AppShopButton.svelte:20
 msgid "Add"
-msgstr ""
+msgstr "Toevoegen"
 
 #: frontend/Mail/Composer/Attachments/AttachmentsPane.svelte:9
 msgid "Add attachment"
-msgstr ""
+msgstr "Bijlage toevoegen"
 
 #: frontend/Mail/Composer/MailComposer.svelte:67
 msgid "Add BCC recipient"
-msgstr ""
+msgstr "BCC ontvanger toevoegen"
 
 #: frontend/Mail/Composer/MailComposer.svelte:58
 msgid "Add CC recipient"
-msgstr ""
+msgstr "CC ontvanger toevoegen"
 
 #: frontend/Meet/ParticipantSearch.svelte:2
 msgid "Add or search a participant"
-msgstr ""
+msgstr "Voeg toe of zoek een gebruiker"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:19
 msgid "Add participants"
-msgstr ""
+msgstr "Deelnemers toevoegen"
 
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:42
 msgid "Add person"
-msgstr ""
+msgstr "Persoon toevoegen"
 
 #: frontend/Mail/Composer/MailComposer.svelte:34
 msgid "Add recipient"
-msgstr ""
+msgstr "Ontvanger toevoegen"
 
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:14
 msgid "Add this person"
-msgstr ""
+msgstr "Voeg deze persoon toe"
 
 #: frontend/Settings/Mail/Read.svelte:
 msgid "After displaying for # seconds"
-msgstr ""
+msgstr "Na weergave voor # seconden"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:86
 msgid "Alarm"
-msgstr ""
+msgstr "Alarm"
 
 #: frontend/Mail/LeftPane/ProjectList.svelte:7
 #: frontend/Settings/SettingsCategories.ts:44
 msgid "All"
-msgstr ""
+msgstr "Allemaal"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:84
 msgid "All day"
-msgstr ""
+msgstr "De hele dag"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:24
 msgid "All downloaded."
-msgstr ""
+msgstr "Alles gedownload."
 
 #: frontend/Chat/MessageView/IncomingCallUI.svelte:4
 msgid "Answer"
-msgstr ""
+msgstr "Beantwoorden"
 
 #: frontend/Settings/SettingsCategories.ts:109
 msgid "App integration"
-msgstr ""
+msgstr "App integratie"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:18
 #: frontend/Settings/Mail/NotificationKinds.svelte:18
 msgid "Appbar"
-msgstr ""
+msgstr "Appbar"
 
 #: frontend/Settings/SettingsCategories.ts:46
 #: frontend/Settings/SettingsCategories.ts:52
 #: frontend/Settings/SettingsCategories.ts:68
 #: frontend/Settings/SettingsCategories.ts:99
 msgid "Appearance"
-msgstr ""
+msgstr "Uiterlijk"
 
 #: frontend/WebApps/WebAppsMustangApp.ts:10
 msgid "Apps"
-msgstr ""
+msgstr "Applicaties"
 
 #: frontend/Settings/AccountGeneral.svelte:23
 msgid "Are you sure that you want to the delete account {0} from {1} and all related data?"
-msgstr ""
+msgstr "Weet u zeker dat u wilt verwijderen {0} van {1} en alle gerelateerde gegevens?"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:35
 msgid "Are you sure that you want to the delete folder {0} and all messages in it? This will also delete it on the server."
-msgstr ""
+msgstr "Weet u zeker dat u de map {0} en alle berichten in de map wilt verwijderen? Dit zal het ook verwijderen op de server."
 
 #: frontend/Mail/Composer/Attachments/FileDropTarget.svelte:15
 msgid "Attach file"
-msgstr ""
+msgstr "Bestand toevoegen"
 
 #: frontend/Mail/Search/SearchPane.svelte:32
 msgid "Attachment"
-msgstr ""
+msgstr "Bijlage"
 
 #: frontend/Mail/Message/AttachmentUI.svelte:39
 msgid "Attachment file is missing"
-msgstr ""
+msgstr "Bijlagebestand ontbreekt"
 
 #: frontend/Mail/Composer/MailComposer.svelte:77
 msgid "Attachments"
-msgstr ""
+msgstr "Bijlagen"
 
 #: frontend/Settings/Setup/Mail/DisplayConfigServer.svelte:40
 msgid "Attackers can read your password and mails"
-msgstr ""
+msgstr "Aanvallers kunnen uw wachtwoord en e-mails lezen"
 
 #: frontend/Chat/PersonHeader.svelte:11
 msgid "Audio call"
-msgstr ""
+msgstr "Audio gesprek"
 
 #: frontend/Shared/Auth/OAuth2DialogUI.svelte:2
 msgid "Authentication"
-msgstr ""
+msgstr "Authenticatie"
 
 #: frontend/Shared/Auth/OAuth2DialogUI.svelte:20
 msgid "Authentication dialog was closed"
-msgstr ""
+msgstr "Authenticatie dialoogvenster is gesloten"
 
 #: frontend/Shared/Auth/OAuth2DialogUI.svelte:24
 msgid "Authentication dialog was closed due to inaction"
-msgstr ""
+msgstr "Authenticatie dialoogvenster is gesloten vanwege inactie"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:7
 msgid "Authentication method"
-msgstr ""
+msgstr "Authenticatie methode"
 
 #: frontend/MainWindow/MainWindow.svelte:79
 msgid "Bad dark mode "
-msgstr ""
+msgstr "Slechte donkere modus "
 
 #: frontend/Mail/Message/MessageHeader.svelte:30
 msgid "bcc"
-msgstr ""
+msgstr "bcc"
 
 #: frontend/Mail/Composer/MailComposer.svelte:49
 #: frontend/Mail/Composer/MailComposer.svelte:66
 msgid "Bcc"
-msgstr ""
+msgstr "Bcc"
 
 #: frontend/Mail/Composer/MailComposer.svelte:37
 #: frontend/Mail/Composer/MailComposer.svelte:61
 msgid "BCC"
-msgstr ""
+msgstr "Bcc"
 
 #: frontend/Settings/SettingsCategories.ts:115
 msgid "Billing"
-msgstr ""
+msgstr "Facturering"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:6
 msgid "Bold"
-msgstr ""
+msgstr "Bold"
 
 #: frontend/Settings/Setup/Mail/manual/OAuth2Manual.svelte:10
 msgid "Browser"
-msgstr ""
+msgstr "browser"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:16
 msgid "Bubble on the appbar in {0}"
-msgstr ""
+msgstr "Bubbel op de appbar in {0}"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:22
 msgid "Bubble on the system task bar"
-msgstr ""
+msgstr "Bubbel op de systeemtaakbalk"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:82
 msgid "Bulleted list"
-msgstr ""
+msgstr "Lijst met opsommingstekens"
 
 #: frontend/Calendar/CalendarMustangApp.ts:13
 #: frontend/Settings/SettingsCategories.ts:81
 msgid "Calendar"
-msgstr ""
+msgstr "Kalender"
 
 #: frontend/Contacts/PersonDetails.svelte:45
 #: frontend/Meet/Start/Calling.svelte:61
 msgid "Call"
-msgstr ""
+msgstr "Oproepen"
 
 #: frontend/Meet/Start/StartScreen.svelte:5
 msgid "Call {0}"
-msgstr ""
+msgstr "Oproep {0}"
 
 #: frontend/Meet/InMeetingToolbar.svelte:23
 #: frontend/Meet/ParticipantListItem.svelte:29
 msgid "Camera"
-msgstr ""
+msgstr "camera"
 
 #: frontend/Meet/Start/Calling.svelte:45
 #: frontend/Settings/Setup/Shared/ButtonsBottom.svelte:10
 msgid "Cancel"
-msgstr ""
+msgstr "annuleren"
 
 #: frontend/Settings/Mail/Account/Identity.svelte:46
 msgid "Cannot remove the last identity"
-msgstr ""
+msgstr "Kan de laatste identiteit niet verwijderen"
 
 #: frontend/Mail/Message/MessageHeader.svelte:24
 msgid "cc"
-msgstr ""
+msgstr "cc"
 
 #: frontend/Mail/Composer/MailComposer.svelte:43
 #: frontend/Mail/Composer/MailComposer.svelte:57
 msgid "Cc"
-msgstr ""
+msgstr "Cc"
 
 #: frontend/Mail/Composer/MailComposer.svelte:36
 #: frontend/Mail/Composer/MailComposer.svelte:70
 msgid "CC"
-msgstr ""
+msgstr "CC"
 
 #: frontend/Chat/ChatMustangApp.ts:8
 #: frontend/Contacts/PersonDetails.svelte:89
 #: frontend/Contacts/PersonDetails.svelte:188
 #: frontend/Settings/SettingsCategories.ts:66
 msgid "Chat"
-msgstr ""
+msgstr "Chatten"
 
 #: frontend/Mail/LeftPane/ViewSwitcher.svelte:3
 msgid "Chat-like mail view"
-msgstr ""
+msgstr "Chat-achtige mailweergave"
 
 #: frontend/Mail/LeftPane/ViewSwitcher.svelte:22
 msgid "Classic 3-pane view"
-msgstr ""
+msgstr "Klassieke 3-pane weergave"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:151
 msgid "Clear formatting"
-msgstr ""
+msgstr "Opmaak wissen"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:7
 #: frontend/Mail/FolderProperties.svelte:14
@@ -365,718 +368,718 @@ msgstr ""
 #: frontend/Shared/Browser.svelte:12
 #: frontend/WebApps/Shop/AppStore.svelte:8
 msgid "Close"
-msgstr ""
+msgstr "Afsluiten"
 
 #: frontend/MainWindow/WindowHeader.svelte:21
 msgid "Close entire app"
-msgstr ""
+msgstr "Sluit hele app"
 
 #: frontend/Meet/InMeetingToolbar.svelte:63
 msgid "Close participants list"
-msgstr ""
+msgstr "Sluit deelnemers lijst"
 
 #: frontend/Settings/Window/SettingsApp.svelte:10
 msgid "Close settings"
-msgstr ""
+msgstr "Instellingen sluiten"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:35
 msgid "Code word, within a phrase"
-msgstr ""
+msgstr "Code woord, binnen een zin"
 
 #: frontend/Shared/ExpandSection.svelte:10
 #: frontend/Shared/FastTreeItem.svelte:5
 msgid "Collapse"
-msgstr ""
+msgstr "Samenvouwen"
 
 #: frontend/Meet/MeetingNotes.svelte:11
 msgid "Collapse description"
-msgstr ""
+msgstr "Omschrijving samenvouwen"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:42
 msgid "Company"
-msgstr ""
+msgstr "Bedrijfsnaam"
 
 #: frontend/Mail/MailMustangApp.ts:45
 msgid "Compose"
-msgstr ""
+msgstr "Samenstellen"
 
 #: frontend/Settings/Mail/Send.svelte:38
 msgid "Composition"
-msgstr ""
+msgstr "Samenstelling"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:6
 msgid "Connection encryption"
-msgstr ""
+msgstr "Connectie encryptie"
 
 #: frontend/Contacts/ContactsMustangApp.ts:8
 #: frontend/Contacts/ContactsMustangApp.ts:12
 #: frontend/Settings/SettingsCategories.ts:89
 msgid "Contacts"
-msgstr ""
+msgstr "Contactpersonen"
 
 #: frontend/Settings/Setup/Import/SelectAccounts.svelte:3
 msgid "Continue to use your accounts from Thunderbird"
-msgstr ""
+msgstr "Blijf je accounts van Thunderbird gebruiken"
 
 #: frontend/Contacts/ContactEntryUI.svelte:30
 msgid "Copied to clipboard ✓"
-msgstr ""
+msgstr "Gekopieerd naar klembord ✓"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:33
 msgid "Copy"
-msgstr ""
+msgstr "Kopiëren"
 
 #: frontend/Contacts/ContactEntryUI.svelte:28
 msgid "Copy info to clipboard"
-msgstr ""
+msgstr "Kopieer info naar klembord"
 
 #: frontend/Meet/ParticipantSearch.svelte:11
 msgid "Copy invitation link"
-msgstr ""
+msgstr "Uitnodigingslink kopiëren"
 
 #: frontend/Settings/About/About.svelte:
 msgid "Copyright 2024 Ben Bucksch, #, and other contributors"
-msgstr ""
+msgstr "Copyright 2024 Ben Bucksch, #, and other contributors"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:14
 msgid "Correspondent"
-msgstr ""
+msgstr "Correspondent"
 
 #: frontend/Calendar/EditEvent/TimeInput.svelte:23
 msgid "Could not interpret value as a time"
-msgstr ""
+msgstr "Waarde kan niet worden geïnterpreteerd als tijd"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:70
 msgid "CRAM MD5"
-msgstr ""
+msgstr "CRAM MD5"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:5
 #: frontend/Settings/Mail/Account/FolderActions.svelte:18
 msgid "Create sub-folder"
-msgstr ""
+msgstr "Nieuwe submap"
 
 #: frontend/Settings/Setup/Contacts/LocalAddressbook.svelte:2
 msgid "Create your new local addressbook"
-msgstr ""
+msgstr "Maak uw nieuwe lokale adresboek aan"
 
 #: frontend/Settings/Setup/Calendar/LocalCalendar.svelte:2
 msgid "Create your new local calendar"
-msgstr ""
+msgstr "Maak uw nieuwe lokale agenda"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:168
 msgid "Ctrl-Y"
-msgstr ""
+msgstr "Ctrl-Y"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:160
 msgid "Ctrl-Z"
-msgstr ""
+msgstr "Ctrl-Z"
 
 #: frontend/Settings/Global/DarkMode.svelte:21
 msgid "Dark"
-msgstr ""
+msgstr "Donker"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:16
 msgid "Date"
-msgstr ""
+msgstr "Datum:"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:69
 #: frontend/Calendar/ViewSelector.svelte:14
 msgid "Day"
-msgstr ""
+msgstr "dag"
 
 #: frontend/Calendar/ViewSelector.svelte:26
 msgid "Day/Month"
-msgstr ""
+msgstr "Dag/maand"
 
 #: frontend/Calendar/ViewSelector.svelte:29
 msgid "days"
-msgstr ""
+msgstr "Dagen"
 
 #: frontend/Calendar/EditEvent/DurationUnit.svelte:4
 msgid "Days"
-msgstr ""
+msgstr "dagen"
 
 #: frontend/Meet/Start/Calling.svelte:52
 msgid "Decline call"
-msgstr ""
+msgstr "Weiger oproep"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:37
 msgid "Default: {0}"
-msgstr ""
+msgstr "Standaard: {0}"
 
 #: frontend/Contacts/PersonMenu.svelte:13
 #: frontend/Mail/Message/MessageMenu.svelte:30
 msgid "Delete"
-msgstr ""
+msgstr "Verwijderen"
 
 #: frontend/Settings/AccountGeneral.svelte:7
 msgid "Delete account"
-msgstr ""
+msgstr "Verwijder account"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:12
 msgid "Delete folder"
-msgstr ""
+msgstr "Map verwijderen"
 
 #: frontend/Mail/Message/MessageMenu.svelte:35
 msgid "Delete the message, and train the spam filter"
-msgstr ""
+msgstr "Verwijder de boodschap en train het spamfilter"
 
 #: frontend/Contacts/PersonMenu.svelte:15
 msgid "Delete this contact"
-msgstr ""
+msgstr "Dit contact verwijderen"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:6
 msgid "Delete this identity"
-msgstr ""
+msgstr "Verwijder deze identiteit"
 
 #: frontend/Contacts/ContactEntryUI.svelte:17
 msgid "Delete this information"
-msgstr ""
+msgstr "Deze informatie verwijderen"
 
 #: frontend/Mail/3pane/TableMessageListItem.svelte:50
 #: frontend/Mail/Message/MessageToolbar.svelte:27
 msgid "Delete this message"
-msgstr ""
+msgstr "Dit bericht verwijderen"
 
 #: frontend/Contacts/PersonDetails.svelte:28
 msgid "Department"
-msgstr ""
+msgstr "Afdeling"
 
 #: frontend/Settings/SettingsCategories.ts:100
 msgid "Devices"
-msgstr ""
+msgstr "Apparaten"
 
 #: frontend/Mail/Composer/MailComposer.svelte:9
 msgid "Discard and close"
-msgstr ""
+msgstr "Negeren en sluiten"
 
 #: frontend/Settings/Mail/Send.svelte:28
 msgid "Do not quote"
-msgstr ""
+msgstr "Niet citeren"
 
 #: frontend/Meet/Start/Calling.svelte:9
 msgid "Do you want to call?"
-msgstr ""
+msgstr "Wil je bellen?"
 
 #: frontend/Contacts/SameName.svelte:55
 msgid "Do you want to merge the 2 contacts, i.e. copy the data from the other contact into this contact, and delete the other contact?"
-msgstr ""
+msgstr "Wilt u de 2 contacten samenvoegen, d.w.z. de gegevens van de andere contactpersoon kopiëren naar deze contactpersoon en de andere contactpersoon verwijderen?"
 
 #: frontend/Mail/Message/drag.ts:35
 msgid "Drag&drop failed: Selected message ID doesn't match the drag data"
-msgstr ""
+msgstr "Slepen &neerzetten mislukt: Geselecteerd bericht-ID komt niet overeen met de drag gegevens"
 
 #: frontend/Mail/Message/drag.ts:38
 msgid "Drag&drop failed: Selected message IDs don't match the drag data"
-msgstr ""
+msgstr "Slepen &neerzetten mislukt: Geselecteerde bericht-ID's komen niet overeen met de drag gegevens"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:78
 msgid "Duration"
-msgstr ""
+msgstr "Duur"
 
 #: frontend/Contacts/ContactEntryUI.svelte:27
 #: frontend/Contacts/EditableSimpleText.svelte:13
 #: frontend/Shared/PersonAutocomplete/PersonPopup.svelte:69
 msgid "Edit"
-msgstr ""
+msgstr "Bewerken"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:4
 msgid "Edit event"
-msgstr ""
+msgstr "Afspraak bewerken"
 
 #: frontend/Shared/PersonAutocomplete/PersonPopup.svelte:44
 msgid "Edit name and email address"
-msgstr ""
+msgstr "Naam en e-mailadres bewerken"
 
 #: frontend/Shared/PersonAutocomplete/PersonPopup.svelte:26
 msgid "Email address to be used here"
-msgstr ""
+msgstr "E-mailadres dat hier gebruikt moet worden"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:75
 msgid "End"
-msgstr ""
+msgstr "Beëindigen"
 
 #: frontend/Shared/PersonAutocomplete/PersonPopup.svelte:22
 msgid "Enter a name for the person"
-msgstr ""
+msgstr "Voer een naam in voor de persoon"
 
 #: frontend/Meet/Start/StartScreen.svelte:13
 msgid "Enter meeting link to join"
-msgstr ""
+msgstr "Voer vergaderlink in om deel te nemen"
 
 #: frontend/Files/FileOrDirectoryLine.svelte:39
 msgid "entries"
-msgstr ""
+msgstr "invoergegevens"
 
 #: frontend/Calendar/CalendarMustangApp.ts:30
 msgid "Event"
-msgstr ""
+msgstr "Gebeurtenis"
 
 #: frontend/Shared/ExpandSection.svelte:10
 #: frontend/Shared/FastTreeItem.svelte:5
 msgid "Expand"
-msgstr ""
+msgstr "Uitklappen"
 
 #: frontend/Files/GenericFileTypesList.svelte:5
 msgid "File type"
-msgstr ""
+msgstr "Soort bestand"
 
 #: frontend/Files/FilesMustangApp.ts:8
 msgid "Files"
-msgstr ""
+msgstr "Bestanden"
 
 #: frontend/Meet/Start/StartScreen.svelte:83
 msgid "Final Approval UX Meet"
-msgstr ""
+msgstr "Laatste goedkeuring UX ontmoeting"
 
 #: frontend/Contacts/ContactEntryUI.svelte:16
 #: frontend/Contacts/EditableSimpleText.svelte:6
 msgid "Finish editing and save"
-msgstr ""
+msgstr "Voltooi het bewerken en opslaan"
 
 #: frontend/Contacts/PersonDetails.svelte:33
 msgid "First Lastname"
-msgstr ""
+msgstr "Voornaam Achternaam"
 
 #: frontend/Contacts/PersonDetails.svelte:16
 msgid "First name"
-msgstr ""
+msgstr "Voornaam is vereist."
 
 #: frontend/Contacts/PersonDetails.svelte:11
 msgid "First name Last name"
-msgstr ""
+msgstr "Voornaam Achternaam"
 
 #: frontend/Files/FileOrDirectoryLine.svelte:32
 msgid "Folder"
-msgstr ""
+msgstr "Map"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:2
 msgid "Folder name"
-msgstr ""
+msgstr "Folder Name"
 
 #: frontend/Mail/LeftPane/FolderLine.svelte:10
 msgid "Folder properties"
-msgstr ""
+msgstr "Map eigenschappen"
 
 #: frontend/Mail/LeftPane/FolderList.svelte:5
 #: frontend/Settings/Mail/Account/Folders.svelte:2
 #: frontend/Settings/SettingsCategories.ts:63
 msgid "Folders"
-msgstr ""
+msgstr "Mappen"
 
 #: frontend/Mail/Search/SearchPane.svelte:11
 msgid "for"
-msgstr ""
+msgstr "voor"
 
 #: frontend/Mail/Message/DisplayModeSwitcher.svelte:12
 msgid "Formatted"
-msgstr ""
+msgstr "Opgemaakt"
 
 #: frontend/Mail/Message/MessageMenu.svelte:18
 msgid "Forward"
-msgstr ""
+msgstr "Doorsturen"
 
 #: frontend/Settings/Setup/Import/SelectAccounts.svelte:9
 msgid "Found {0} imported accounts"
-msgstr ""
+msgstr "Gevonden {0} geïmporteerde accounts"
 
 #: frontend/Settings/Mail/Notifications.svelte:17
 msgid "From people in my address book"
-msgstr ""
+msgstr "Van mensen in mijn adresboek"
 
 #: frontend/Settings/SettingsCategories.ts:42
 msgid "General"
-msgstr ""
+msgstr "Algemeen"
 
 #: frontend/Mail/LeftPane/GetMailButton.svelte:3
 msgid "Get mail"
-msgstr ""
+msgstr "E-mail ophalen"
 
 #: frontend/Settings/Setup/Mail/SetupMail.svelte:40
 msgid "Get new email address"
-msgstr ""
+msgstr "Nieuw e-mailadres ophalen"
 
 #: frontend/Meet/InMeetingToolbar.svelte:4
 msgid "Go back to meeting"
-msgstr ""
+msgstr "Ga terug naar de vergadering"
 
 #: frontend/Calendar/WeekView.svelte:6
 msgid "Go back to today"
-msgstr ""
+msgstr "Ga terug naar vandaag"
 
 #: frontend/Contacts/PersonDetails.svelte:151
 msgid "Groups"
-msgstr ""
+msgstr "Groepen"
 
 #: frontend/Meet/InMeetingToolbar.svelte:42
 msgid "Hand raised"
-msgstr ""
+msgstr "Hand verhoogd"
 
 #: frontend/Meet/Start/Calling.svelte:52
 msgid "Hang up"
-msgstr ""
+msgstr "Hang omhoog"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:111
 msgid "Heading, hierarchy level 2"
-msgstr ""
+msgstr "Richting, hiërarchie niveau 2"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:121
 msgid "Heading, hierarchy level 3"
-msgstr ""
+msgstr "Richting, hiërarchie level 3"
 
 #: frontend/Settings/Mail/Account/SentByExplainer.svelte:3
 msgid "Help us spread the word about {0}!"
-msgstr ""
+msgstr "Help ons om {0} te verspreiden!"
 
 #: frontend/Settings/Setup/Shared/Password.svelte:13
 msgid "Hide password"
-msgstr ""
+msgstr "Wachtwoord verbergen"
 
 #: frontend/Contacts/ContactEntryUI.svelte:75
 msgid "Home"
-msgstr ""
+msgstr "Startpagina"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:3
 msgid "Hostname"
-msgstr ""
+msgstr "Hostname"
 
 #: frontend/Calendar/EditEvent/TimeInput.svelte:36
 msgid "Hour moust be less than 24"
-msgstr ""
+msgstr "Uren moust is minder dan 24"
 
 #: frontend/Calendar/EditEvent/TimeInput.svelte:28
 msgid "Hour must be between 1 and 12 when using am or pm"
-msgstr ""
+msgstr "Uur moet tussen 1 en 12 zijn bij gebruik van am of pm"
 
 #: frontend/Calendar/EditEvent/DurationUnit.svelte:3
 msgid "Hours"
-msgstr ""
+msgstr "Uren"
 
 #: frontend/Settings/Mail/Send.svelte:46
 #: frontend/Settings/Mail/Send.svelte:46
 msgid "HTML"
-msgstr ""
+msgstr "HTML"
 
 #: frontend/Settings/Mail/Account/Identity.svelte:2
 msgid "Identities"
-msgstr ""
+msgstr "Identiteiten"
 
 #: frontend/Settings/SettingsCategories.ts:64
 #: frontend/Settings/SettingsCategories.ts:79
 msgid "Identity"
-msgstr ""
+msgstr "Identiteit"
 
 #: frontend/Settings/Setup/Meet/M3Login.svelte:3
 msgid "If you don't have an account yet, you can subscribe on our website."
-msgstr ""
+msgstr "Als u nog geen account heeft, kunt u zich abonneren op onze website."
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:204
 msgid "Image URL"
-msgstr ""
+msgstr "Afbeelding URL"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:23
 msgid "IMAP"
-msgstr ""
+msgstr "IMAP"
 
 #: frontend/Settings/Mail/Read.svelte:19
 msgid "Immediately"
-msgstr ""
+msgstr "Onmiddellijk"
 
 #: frontend/Settings/Setup/Import/SelectAccounts.svelte:2
 msgid "Import accounts"
-msgstr ""
+msgstr "Importeer accounts"
 
 #: frontend/Settings/Setup/Import/SelectAccounts.svelte:7
 msgid "Importing accounts..."
-msgstr ""
+msgstr "Accounts importeren..."
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:51
 msgid "In Presence"
-msgstr ""
+msgstr "In Aanwezigheid"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:13
 msgid "Incoming server"
-msgstr ""
+msgstr "Inkomende server"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:145
 msgid "Insert image"
-msgstr ""
+msgstr "Afbeelding invoegen"
 
 #: frontend/Mail/Composer/Attachments/FileDropTarget.svelte:11
 msgid "Insert inline into text"
-msgstr ""
+msgstr "Inline in tekst invoegen"
 
 #: frontend/Settings/Setup/Mail/manual/OAuth2Manual.svelte:8
 msgid "Inside app UI"
-msgstr ""
+msgstr "Binnen app UI"
 
 #: frontend/Meet/Start/Calling.svelte:31
 msgid "is calling you..."
-msgstr ""
+msgstr "belt u..."
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:16
 msgid "Italic"
-msgstr ""
+msgstr "Italic"
 
 #: frontend/Meet/Start/StartScreen.svelte:14
 msgid "Join"
-msgstr ""
+msgstr "Deelnemen"
 
 #: frontend/Mail/Composer/Attachments/AttachmentEntry.svelte:10
 msgid "KB"
-msgstr ""
+msgstr "kB"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:69
 msgid "Kerberos / GSSAPI"
-msgstr ""
+msgstr "Kerberos / GSSAPI"
 
 #: frontend/Contacts/PersonDetails.svelte:18
 msgid "Last name"
-msgstr ""
+msgstr "Achternaam is vereist."
 
 #: frontend/Meet/InMeetingToolbar.svelte:52
 msgid "Leave"
-msgstr ""
+msgstr "Verlaat"
 
 #: frontend/Settings/Global/DarkMode.svelte:12
 msgid "Light"
-msgstr ""
+msgstr "Licht"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:131
 msgid "Link to webpage"
-msgstr ""
+msgstr "Link naar webpagina"
 
 #: frontend/Calendar/ViewSelector.svelte:11
 msgid "List"
-msgstr ""
+msgstr "Klantenlijst"
 
 #: frontend/Settings/About/Test.svelte:2
 msgid "Load test data"
-msgstr ""
+msgstr "Testgegevens laden"
 
 #: frontend/MainWindow/MainWindow.svelte:8
 msgid "Loading apps..."
-msgstr ""
+msgstr "Apps laden..."
 
 #: frontend/Mail/Message/MessageBody.svelte:6
 #: frontend/Mail/Message/MessageBody.svelte:16
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:20
 msgid "Loading..."
-msgstr ""
+msgstr "Laden..."
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:52
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:200
 msgid "Location"
-msgstr ""
+msgstr "Locatie"
 
 #: frontend/Mail/MailMustangApp.ts:52
 #: frontend/Settings/Setup/Import/Passwords.svelte:6
 msgid "Login"
-msgstr ""
+msgstr "Aanmelden"
 
 #: frontend/Mail/MailMustangApp.ts:33
 msgid "Login to "
-msgstr ""
+msgstr "Inloggen op "
 
 #: frontend/Settings/Setup/Mail/manual/OAuth2Manual.svelte:5
 msgid "Login UI"
-msgstr ""
+msgstr "Login UI"
 
 #: frontend/Contacts/PersonDetails.svelte:69
 #: frontend/Contacts/PersonDetails.svelte:187
 #: frontend/Mail/MailMustangApp.ts:16
 #: frontend/Settings/SettingsCategories.ts:50
 msgid "Mail"
-msgstr ""
+msgstr "E-mailen"
 
 #: frontend/Mail/Search/SearchPane.svelte:13
 msgid "Mail content or subject"
-msgstr ""
+msgstr "E-mail inhoud of onderwerp"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigPage.svelte:2
 msgid "Manual configuration"
-msgstr ""
+msgstr "Handmatige configuratie"
 
 #: frontend/Settings/Setup/Mail/SetupMail.svelte:34
 msgid "Manual setup"
-msgstr ""
+msgstr "Handmatige installatie"
 
 #: frontend/Settings/Mail/Read.svelte:31
 msgid "Manually"
-msgstr ""
+msgstr "Handmatig"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:29
 msgid "Mark all read"
-msgstr ""
+msgstr "Markeer alle gelezen"
 
 #: frontend/Mail/Message/MessageMenu.svelte:37
 msgid "Mark as spam"
-msgstr ""
+msgstr "Markeren als spam"
 
 #: frontend/Mail/3pane/TableMessageListItem.svelte:40
 msgid "Mark as spam and delete"
-msgstr ""
+msgstr "Markeren als spam en verwijderen"
 
 #: frontend/Settings/Mail/Read.svelte:14
 msgid "Mark mails as read"
-msgstr ""
+msgstr "Markeer mails als gelezen"
 
 #: frontend/Mail/3pane/TableMessageListItem.svelte:21
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:26
 #: frontend/Mail/Message/MessageToolbar.svelte:51
 #: frontend/Mail/Vertical/VerticalMessageListItem.svelte:63
 msgid "Mark this message as read"
-msgstr ""
+msgstr "Markeer dit bericht als gelezen"
 
 #: frontend/Mail/3pane/TableMessageListItem.svelte:21
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:26
 #: frontend/Mail/Message/MessageToolbar.svelte:51
 #: frontend/Mail/Vertical/VerticalMessageListItem.svelte:63
 msgid "Mark this message as unread"
-msgstr ""
+msgstr "Dit bericht als ongelezen markeren"
 
 #: frontend/Contacts/ContactEntryUI.svelte:79
 #: frontend/Settings/Setup/Chat/SelectProtocol.svelte:35
 msgid "Matrix"
-msgstr ""
+msgstr "Matrix"
 
 #: frontend/Meet/Video/Video.svelte:8
 msgid "me"
-msgstr ""
+msgstr "mij"
 
 #: frontend/Meet/MeetMustangApp.ts:9
 #: frontend/Settings/SettingsCategories.ts:97
 msgid "Meet"
-msgstr ""
+msgstr "Ontmoet"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:30
 msgid "Meeting URL"
-msgstr ""
+msgstr "URL vergadering"
 
 #: frontend/Contacts/SameName.svelte:17
 msgid "Merge"
-msgstr ""
+msgstr "Samenvoegen"
 
 #: frontend/Contacts/PersonDetails.svelte:48
 msgid "Message"
-msgstr ""
+msgstr "bericht"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:16
 msgid "Messages"
-msgstr ""
+msgstr "berichten"
 
 #: frontend/Calendar/EventLine.svelte:15
 msgid "min"
-msgstr ""
+msgstr "min."
 
 #: frontend/MainWindow/WindowHeader.svelte:17
 msgid "Minimize"
-msgstr ""
+msgstr "Minimize"
 
 #: frontend/Calendar/EditEvent/TimeInput.svelte:40
 msgid "Minute must be less than 59"
-msgstr ""
+msgstr "Minute moet minder dan 59 zijn"
 
 #: frontend/Calendar/EditEvent/DurationUnit.svelte:2
 msgid "Minutes"
-msgstr ""
+msgstr "minuten"
 
 #: frontend/Contacts/ContactEntryUI.svelte:76
 msgid "Mobile"
-msgstr ""
+msgstr "Mobiel"
 
 #: frontend/Calendar/ViewSelector.svelte:20
 msgid "Month"
-msgstr ""
+msgstr "maand"
 
 #: frontend/WebApps/Launcher/AppsLauncher.svelte:15
 msgid "More apps"
-msgstr ""
+msgstr "Meer apps"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:27
 msgid "More info"
-msgstr ""
+msgstr "Meer informatie"
 
 #: frontend/MainWindow/NotificationBar.svelte:27
 msgid "More info about this error"
-msgstr ""
+msgstr "Meer informatie over deze fout"
 
 #: frontend/Mail/Search/SearchPane.svelte:86
 msgid "More than {0} mails"
-msgstr ""
+msgstr "Meer dan {0} mails"
 
 #: frontend/Meet/InMeetingToolbar.svelte:32
 #: frontend/Meet/ParticipantListItem.svelte:22
 #: frontend/Meet/Setup/DeviceButton.svelte:3
 msgid "Mute"
-msgstr ""
+msgstr "Dempen"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:48
 msgid "Name cannot be empty"
-msgstr ""
+msgstr "Naam mag niet leeg zijn"
 
 #: frontend/Settings/Setup/Contacts/LocalAddressbook.svelte:7
 msgid "Name of the addressbook"
-msgstr ""
+msgstr "Naam van het adresboek"
 
 #: frontend/Settings/Setup/Calendar/LocalCalendar.svelte:7
 msgid "Name of the calendar"
-msgstr ""
+msgstr "Naam van de kalender"
 
 #: frontend/Mail/Search/SavedSearchUI.svelte:2
 msgid "Name of the folder"
-msgstr ""
+msgstr "Naam van de map"
 
 #: frontend/Settings/Mail/Account/Identity.svelte:51
 msgid "Need at least 1 identity"
-msgstr ""
+msgstr "Ten minste 1 identiteit nodig"
 
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:86
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:97
 msgid "Need email address"
-msgstr ""
+msgstr "E-mailadres nodig"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:47
 msgid "Need folder name"
-msgstr ""
+msgstr "Mappennaam nodig"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:2
 msgid "New"
-msgstr ""
+msgstr "Nieuw"
 
 #: frontend/Settings/Window/AccountsList.svelte:12
 msgid "New account for {0}"
-msgstr ""
+msgstr "Nieuw account voor {0}"
 
 #: frontend/Contacts/PersonsToolbar.svelte:7
 #: frontend/Meet/ParticipantSearch.svelte:5
 msgid "New contact"
-msgstr ""
+msgstr "Nieuwe contactpersoon"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:4
 #: frontend/Calendar/TitleBarLeft.svelte:3
 msgid "New event"
-msgstr ""
+msgstr "Nieuwe afspraak"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:3
 msgid "New folder name"
-msgstr ""
+msgstr "Nieuwe mapnaam"
 
 #: frontend/Chat/Header.svelte:5
 msgid "New group"
-msgstr ""
+msgstr "Nieuwe groep"
 
 #: frontend/Settings/Setup/Contacts/SelectProtocol.svelte:29
 msgid "New local addressbook"
-msgstr ""
+msgstr "Nieuw lokaal adresboek"
 
 #: frontend/Settings/Setup/Calendar/SelectProtocol.svelte:29
 msgid "New local calendar"
-msgstr ""
+msgstr "Nieuwe lokale kalender"
 
 #: frontend/Settings/Setup/Shared/ButtonsBottom.svelte:16
 msgid "Next"
-msgstr ""
+msgstr "Volgende"
 
 #: frontend/Calendar/DateRange.svelte:4
 msgid "Next {0} days"
@@ -1084,123 +1087,123 @@ msgstr ""
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:46
 msgid "No config found"
-msgstr ""
+msgstr "Geen configuratie gevonden"
 
 #: frontend/Settings/Setup/Mail/DisplayConfigServer.svelte:49
 msgid "No encryption"
-msgstr ""
+msgstr "Geen versleuteling"
 
 #: frontend/Meet/Start/StartScreen.svelte:23
 msgid "No meetings coming up"
-msgstr ""
+msgstr "Er zijn geen vergaderingen beschikbaar"
 
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:11
 msgid "No person found"
-msgstr ""
+msgstr "Geen persoon gevonden"
 
 #: frontend/Meet/ParticipantSearch.svelte:55
 msgid "No persons in this chat account"
-msgstr ""
+msgstr "Geen personen in dit chat account"
 
 #: frontend/Meet/Start/StartScreen.svelte:29
 msgid "No recent meetings"
-msgstr ""
+msgstr "Geen recente vergaderingen"
 
 #: frontend/Mail/Message/AttachmentUI.svelte:16
 msgid "Not downloaded"
-msgstr ""
+msgstr "Niet gedownload"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:14
 #: frontend/Settings/Mail/NotificationKinds.svelte:20
 msgid "Not yet implemented"
-msgstr ""
+msgstr "Nog niet geïmplementeerd"
 
 #: frontend/Contacts/PersonDetails.svelte:192
 msgid "Notes"
-msgstr ""
+msgstr "Opmerkingen"
 
 #: frontend/Settings/Chat/Notifications.svelte:3
 #: frontend/Settings/Mail/Notifications.svelte:4
 #: frontend/Settings/SettingsCategories.ts:53
 #: frontend/Settings/SettingsCategories.ts:69
 msgid "Notifications"
-msgstr ""
+msgstr "Notificaties"
 
 #: frontend/Settings/Mail/Notifications.svelte:12
 msgid "Notify only for"
-msgstr ""
+msgstr "Melding alleen voor"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:71
 msgid "NTLM"
-msgstr ""
+msgstr "NTLM"
 
 #: frontend/Settings/Setup/Mail/manual/OAuth2Manual.svelte:2
 msgid "OAuth2"
-msgstr ""
+msgstr "OAuth2"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:68
 msgid "OAuth2 / MFA"
-msgstr ""
+msgstr "OAuth2 / MFA"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:29
 msgid "Online"
-msgstr ""
+msgstr "Online"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:42
 msgid "Open"
-msgstr ""
+msgstr "Open"
 
 #: frontend/Mail/Message/AttachmentMenu.svelte:13
 msgid "Open containing folder"
-msgstr ""
+msgstr "Open de bevattende map"
 
 #: frontend/Mail/Message/AttachmentMenu.svelte:15
 msgid "Open folder"
-msgstr ""
+msgstr "Map openen"
 
 #: frontend/Mail/Message/AttachmentMenu.svelte:9
 msgid "Open in external app"
-msgstr ""
+msgstr "Openen in externe app"
 
 #: frontend/Mail/Message/AttachmentMenu.svelte:7
 msgid "Open in external application"
-msgstr ""
+msgstr "Openen in externe applicatie"
 
 #: frontend/Meet/InMeetingToolbar.svelte:63
 msgid "Open participants list"
-msgstr ""
+msgstr "Open lijst deelnemers"
 
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:46
 msgid "Open this message alone"
-msgstr ""
+msgstr "Open dit bericht alleen"
 
 #: frontend/Settings/SettingsCategories.ts:122
 msgid "Open-Source"
-msgstr ""
+msgstr "Open-Source"
 
 #: frontend/Settings/About/Licenses.svelte:8
 msgid "Open-Source license"
-msgstr ""
+msgstr "Open-Source licentie"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:91
 msgid "Ordered list"
-msgstr ""
+msgstr "Geordende lijst"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:81
 msgid "Organisation"
-msgstr ""
+msgstr "Organisation"
 
 #: frontend/Contacts/ContactEntryUI.svelte:80
 msgid "Other"
-msgstr ""
+msgstr "anders"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:11
 msgid "Outgoing server"
-msgstr ""
+msgstr "Uitgaande server"
 
 #: frontend/Meet/Sidebar.svelte:5
 msgid "Participants"
-msgstr ""
+msgstr "Deelnemers"
 
 #: frontend/Settings/Setup/Chat/MatrixLogin.svelte:10
 #: frontend/Settings/Setup/Chat/XMPPLogin.svelte:10
@@ -1208,220 +1211,220 @@ msgstr ""
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:67
 #: frontend/Settings/Setup/Meet/M3Login.svelte:10
 msgid "Password"
-msgstr ""
+msgstr "Wachtwoord"
 
 #: frontend/Mail/Search/SearchPane.svelte:55
 #: frontend/Mail/Search/SearchPane.svelte:55
 msgid "Person"
-msgstr ""
+msgstr "Persoon"
 
 #: frontend/Contacts/PersonDetails.svelte:199
 msgid "Personal notes"
-msgstr ""
+msgstr "Persoonlijke notities"
 
 #: frontend/Contacts/PersonDetails.svelte:189
 msgid "Phone"
-msgstr ""
+msgstr "Telefoonnummer"
 
 #: frontend/Contacts/PersonDetails.svelte:111
 msgid "Phone numbers"
-msgstr ""
+msgstr "Telefoon nummers"
 
 #: frontend/Shared/Person/GroupPicture.svelte:7
 #: frontend/Shared/Person/PersonPicture.svelte:6
 msgid "Picture of {0}"
-msgstr ""
+msgstr "Afbeelding van {0}"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:51
 msgid "Plain"
-msgstr ""
+msgstr "Eenvoudig"
 
 #: frontend/Mail/Message/DisplayModeSwitcher.svelte:30
 #: frontend/Settings/Mail/Send.svelte:54
 #: frontend/Settings/Mail/Send.svelte:54
 msgid "Plaintext"
-msgstr ""
+msgstr "Onopgemaakte tekst"
 
 #: frontend/Meet/Start/StartScreen.svelte:10
 msgid "Plan a meeting"
-msgstr ""
+msgstr "Plan een vergadering"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:48
 msgid "Please enter a name for the new folder"
-msgstr ""
+msgstr "Voer een naam in voor de nieuwe map"
 
 #: frontend/Settings/Mail/Account/Folders.svelte:19
 msgid "Please log in to account {0} first"
-msgstr ""
+msgstr "Log eerst in op account {0}"
 
 #: frontend/Calendar/CalendarApp.svelte:27
 msgid "Please select a calendar first"
-msgstr ""
+msgstr "Selecteer eerst een kalender"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:24
 msgid "POP3"
-msgstr ""
+msgstr "POP3"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:4
 #: frontend/Settings/Mail/NotificationKinds.svelte:6
 #: frontend/Settings/Mail/NotificationKinds.svelte:6
 msgid "Popup"
-msgstr ""
+msgstr "Popup"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:5
 msgid "Port"
-msgstr ""
+msgstr "Poort"
 
 #: frontend/Contacts/PersonDetails.svelte:23
 msgid "Position"
-msgstr ""
+msgstr "Positie"
 
 #: frontend/Calendar/DateRange.svelte:3
 msgid "Previous {0} days"
-msgstr ""
+msgstr "Vorige {0} dagen"
 
 #: frontend/Meet/Start/StartScreen.svelte:27
 msgid "Previous meetings"
-msgstr ""
+msgstr "Eerdere vergaderingen"
 
 #: frontend/Mail/Message/MessageMenu.svelte:49
 msgid "Print"
-msgstr ""
+msgstr "Afdrukken"
 
 #: frontend/Settings/Setup/Shared/Footer.svelte:3
 msgid "Privacy"
-msgstr ""
+msgstr "Privacy"
 
 #: frontend/Settings/Setup/Calendar/LocalCalendar.svelte:9
 #: frontend/Settings/Setup/Contacts/LocalAddressbook.svelte:9
 msgid "Private"
-msgstr ""
+msgstr "Privé"
 
 #: frontend/Meet/ParticipantListItem.svelte:39
 msgid "Private chat"
-msgstr ""
+msgstr "Privé chat"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:2
 msgid "Protocol"
-msgstr ""
+msgstr "Protocol"
 
 #: frontend/Mail/Message/MessageMenu.svelte:47
 msgid "Put ink on dead trees which were artificially made white. Save the trees!"
-msgstr ""
+msgstr "Stop inkt op dode bomen die kunstmatig wit zijn gemaakt. Bespaar de bomen!"
 
 #: frontend/Settings/Mail/Send.svelte:3
 msgid "Quote"
-msgstr ""
+msgstr "Offerte"
 
 #: frontend/Settings/Mail/Send.svelte:22
 #: frontend/Settings/Mail/Send.svelte:22
 msgid "Quote above"
-msgstr ""
+msgstr "Offerte boven"
 
 #: frontend/Settings/Mail/Send.svelte:20
 msgid "Quote above, Reply below"
-msgstr ""
+msgstr "Offerte hierboven, antwoord hieronder"
 
 #: frontend/Settings/Mail/Send.svelte:14
 #: frontend/Settings/Mail/Send.svelte:14
 msgid "Quote below"
-msgstr ""
+msgstr "Offerte hieronder"
 
 #: frontend/Settings/Mail/Send.svelte:12
 msgid "Quote below, Reply above"
-msgstr ""
+msgstr "Offerte hieronder, Reageren hierboven"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:61
 msgid "Quote of the original email"
-msgstr ""
+msgstr "Citaat van de originele e-mail"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:11
 msgid "R"
-msgstr ""
+msgstr "R"
 
 #: frontend/Meet/InMeetingToolbar.svelte:42
 msgid "Raise hand"
-msgstr ""
+msgstr "Stem hand op"
 
 #: frontend/Settings/SettingsCategories.ts:54
 msgid "Read"
-msgstr ""
+msgstr "Lezen"
 
 #: frontend/Mail/Message/MessageMenu.svelte:24
 msgid "Redirect"
-msgstr ""
+msgstr "Doorverwijzen"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:167
 msgid "Redo the change that was undone before"
-msgstr ""
+msgstr "Herhaal de wijziging die eerder ongedaan werd gemaakt"
 
 #: frontend/Mail/3pane/TableMessageListItem.svelte:11
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:36
 #: frontend/Mail/Message/MessageToolbar.svelte:61
 #: frontend/Mail/Vertical/VerticalMessageListItem.svelte:53
 msgid "Remember this message"
-msgstr ""
+msgstr "Onthoud dit bericht"
 
 #: frontend/Shared/PersonAutocomplete/PersonPopup.svelte:73
 #: frontend/WebApps/Shop/AppShopButton.svelte:16
 msgid "Remove"
-msgstr ""
+msgstr "Verwijderen"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:61
 msgid "Remove 'Sent by'"
-msgstr ""
+msgstr "Verwijder 'Verzonden door'"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:138
 msgid "Remove link"
-msgstr ""
+msgstr "Koppeling verwijderen"
 
 #: frontend/MainWindow/NotificationBar.svelte:34
 msgid "Remove this message"
-msgstr ""
+msgstr "Dit bericht verwijderen"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:4
 msgid "Rename"
-msgstr ""
+msgstr "Hernoem"
 
 #: frontend/Settings/Mail/Account/Folders.svelte:3
 msgid "Rename folders, set special folders, share them with others"
-msgstr ""
+msgstr "Maps hernoemen, speciale mappen instellen, ze delen met anderen"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:85
 msgid "Repeated"
-msgstr ""
+msgstr "Herhaald"
 
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:16
 #: frontend/Mail/Message/MessageMenu.svelte:12
 #: frontend/Mail/Message/MessageToolbar.svelte:17
 msgid "Reply to all"
-msgstr ""
+msgstr "Allen beantwoorden"
 
 #: frontend/Mail/Message/MessageMenu.svelte:10
 msgid "Reply to all recipients of this message"
-msgstr ""
+msgstr "Reageer op alle ontvangers van dit bericht"
 
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:6
 #: frontend/Mail/Message/MessageMenu.svelte:6
 #: frontend/Mail/Message/MessageToolbar.svelte:7
 msgid "Reply to author"
-msgstr ""
+msgstr "Antwoord aan auteur"
 
 #: frontend/Mail/Message/MessageMenu.svelte:4
 msgid "Reply to the person who sent this message"
-msgstr ""
+msgstr "Antwoord aan de persoon die dit bericht heeft verzonden"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:80
 msgid "Reply-To"
-msgstr ""
+msgstr "Antwoord-Aan"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:37
 msgid "Reply-to address"
-msgstr ""
+msgstr "Reply-to adres"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:12
 msgid "S"
-msgstr ""
+msgstr "S"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:91
 #: frontend/Contacts/PersonMenu.svelte:7
@@ -1430,93 +1433,93 @@ msgstr ""
 #: frontend/Settings/Mail/Account/Identity.svelte:19
 #: frontend/Settings/Setup/Mail/manual/ManualConfig.svelte:15
 msgid "Save"
-msgstr ""
+msgstr "Opslaan"
 
 #: frontend/Mail/Composer/MailComposer.svelte:16
 msgid "Save and close"
-msgstr ""
+msgstr "Opslaan en sluiten"
 
 #: frontend/Mail/Search/SavedSearchUI.svelte:6
 msgid "Save as folder"
-msgstr ""
+msgstr "Opslaan als map"
 
 #: frontend/Mail/Search/SearchPane.svelte:93
 msgid "Save search as folder"
-msgstr ""
+msgstr "Zoekopdracht opslaan als map"
 
 #: frontend/Meet/Video/ParticipatingVideo.svelte:11
 msgid "Screen"
-msgstr ""
+msgstr "Scherm"
 
 #: frontend/Meet/Video/ParticipatingVideo.svelte:11
 msgid "Screen of {0}"
-msgstr ""
+msgstr "Scherm van {0}"
 
 #: frontend/Meet/InMeetingToolbar.svelte:14
 msgid "Screen share"
-msgstr ""
+msgstr "Scherm delen"
 
 #: frontend/Shared/SearchField.svelte:16
 msgid "Search"
-msgstr ""
+msgstr "Zoeken"
 
 #: frontend/Shared/Person/PersonsList.svelte:2
 msgid "Search for a person or group"
-msgstr ""
+msgstr "Zoek naar een persoon of groep"
 
 #: frontend/Settings/Mail/Account/SentByExplainer.svelte:9
 msgid "See plans"
-msgstr ""
+msgstr "Bekijk plannen"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:13
 msgid "Select camera"
-msgstr ""
+msgstr "Selecteer camera"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:13
 msgid "Select microphone"
-msgstr ""
+msgstr "Selecteer microfoon"
 
 #: frontend/Settings/Setup/Mail/FinalizeConfig.svelte:6
 msgid "Select the workspace for {0}"
-msgstr ""
+msgstr "Selecteer de werkruimte voor {0}"
 
 #: frontend/Mail/Composer/MailComposer.svelte:101
 #: frontend/Settings/SettingsCategories.ts:55
 #: frontend/Settings/SettingsCategories.ts:78
 msgid "Send"
-msgstr ""
+msgstr "Verzenden"
 
 #: frontend/Settings/Mail/Send.svelte:44
 msgid "Send as HTML and Plaintext"
-msgstr ""
+msgstr "Versturen als HTML en onopgemaakte tekst"
 
 #: frontend/Settings/Mail/Send.svelte:52
 msgid "Send as Plaintext only"
-msgstr ""
+msgstr "Alleen als platte tekst verzenden"
 
 #: frontend/Contacts/PersonDetails.svelte:51
 msgid "Send mail"
-msgstr ""
+msgstr "E-mail verzenden"
 
 #: frontend/Mail/Message/MessageMenu.svelte:16
 msgid "Send this message to somebody else"
-msgstr ""
+msgstr "Stuur dit bericht naar iemand anders"
 
 #: frontend/Mail/Message/MessageMenu.svelte:22
 msgid "Send this message to somebody else, who can reply to the original sender"
-msgstr ""
+msgstr "Stuur dit bericht naar iemand anders, die kan antwoorden op de oorspronkelijke afzender"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:57
 msgid "Sent by"
-msgstr ""
+msgstr "Verzonden door"
 
 #: frontend/Mail/Search/SearchPane.svelte:18
 msgid "Sent by me"
-msgstr ""
+msgstr "Verzonden door mij"
 
 #: frontend/Settings/Setup/Mail/manual/OAuth2Manual.svelte:9
 msgid "Separate window"
-msgstr ""
+msgstr "Aparte venster"
 
 #: frontend/Settings/Chat/AccountXMPPServer.svelte:2
 #: frontend/Settings/Mail/Account/Server.svelte:2
@@ -1525,458 +1528,458 @@ msgstr ""
 #: frontend/Settings/SettingsCategories.ts:77
 #: frontend/Settings/SettingsCategories.ts:107
 msgid "Server"
-msgstr ""
+msgstr "Server"
 
 #: frontend/Settings/AccountURLServer.svelte:2
 msgid "Server URL"
-msgstr ""
+msgstr "Server URL"
 
 #: frontend/Settings/Setup/Mail/EmailAddressPassword.svelte:1
 msgid "Set up existing email address"
-msgstr ""
+msgstr "Stel bestaand e-mailadres in"
 
 #: frontend/Settings/Setup/Contacts/SelectProtocol.svelte:2
 msgid "Set up your addressbook"
-msgstr ""
+msgstr "Stel uw adresboek in"
 
 #: frontend/Settings/Setup/Calendar/SelectProtocol.svelte:2
 msgid "Set up your calendar"
-msgstr ""
+msgstr "Stel uw agenda in"
 
 #: frontend/Settings/Setup/Meet/M3Login.svelte:2
 msgid "Set up your existing {0} account for meetings"
-msgstr ""
+msgstr "Stel uw bestaande {0} account in voor vergaderingen"
 
 #: frontend/Settings/Setup/Chat/SelectProtocol.svelte:2
 msgid "Set up your existing chat account"
-msgstr ""
+msgstr "Stel je bestaande chat account in"
 
 #: frontend/Settings/Setup/Chat/MatrixLogin.svelte:2
 msgid "Set up your existing Matrix account"
-msgstr ""
+msgstr "Stel uw bestaande Matrix account in"
 
 #: frontend/Settings/Setup/Chat/XMPPLogin.svelte:2
 msgid "Set up your existing XMPP account"
-msgstr ""
+msgstr "Stel uw bestaande XMPP-account in"
 
 #: frontend/Settings/Setup/Meet/SelectProtocol.svelte:2
 msgid "Set up your meeting account"
-msgstr ""
+msgstr "Stel je meetingaccount in"
 
 #: frontend/MainWindow/WindowHeader.svelte:13
 #: frontend/Settings/Window/SettingsMustangApp.ts:8
 msgid "Settings"
-msgstr ""
+msgstr "Instellingen"
 
 #: frontend/Settings/Setup/SetupMustangApp.ts:7
 msgid "Setup"
-msgstr ""
+msgstr "Instellen"
 
 #: frontend/Shared/Button.svelte:49
 msgid "Shortcut: "
-msgstr ""
+msgstr "Snelkoppeling: "
 
 #: frontend/Meet/MeetingNotes.svelte:11
 msgid "Show meeting description"
-msgstr ""
+msgstr "Toon vergaderbeschrijving"
 
 #: frontend/Settings/Mail/Notifications.svelte:14
 msgid "Show notifications only for mails:"
-msgstr ""
+msgstr "Toon meldingen alleen voor mails:"
 
 #: frontend/Settings/Setup/Shared/Password.svelte:13
 msgid "Show password"
-msgstr ""
+msgstr "Toon wachtwoord"
 
 #: frontend/Mail/Message/MessageMenu.svelte:55
 msgid "Show source"
-msgstr ""
+msgstr "Toon broncode"
 
 #: frontend/Mail/Message/MessageMenu.svelte:53
 msgid "Show the on-the-wire format of this message"
-msgstr ""
+msgstr "Toon de on-the-wire-opmaak van dit bericht"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:49
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:82
 msgid "Signature"
-msgstr ""
+msgstr "Handtekening"
 
 #: frontend/Contacts/SameName.svelte:5
 msgid "Similar names"
-msgstr ""
+msgstr "Vergelijkbare namen"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:10
 #: frontend/Settings/Mail/NotificationKinds.svelte:12
 #: frontend/Settings/Mail/NotificationKinds.svelte:12
 msgid "Sound"
-msgstr ""
+msgstr "Geluid"
 
 #: frontend/Mail/Message/DisplayModeSwitcher.svelte:40
 msgid "Source"
-msgstr ""
+msgstr "Bron"
 
 #: frontend/Mail/Message/MessageBody.svelte:42
 msgid "Source not available"
-msgstr ""
+msgstr "Bron niet beschikbaar"
 
 #: frontend/Mail/Search/SearchPane.svelte:27
 msgid "Starred"
-msgstr ""
+msgstr "Sterren"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:72
 msgid "Start"
-msgstr ""
+msgstr "Beginnen"
 
 #: frontend/Meet/ParticipantListItem.svelte:37
 msgid "Start a chat with only this person"
-msgstr ""
+msgstr "Start een chat met alleen deze persoon"
 
 #: frontend/Meet/Start/StartScreen.svelte:11
 msgid "Start an ad-hoc meeting"
-msgstr ""
+msgstr "Start een ad-hocvergadering"
 
 #: frontend/Meet/Start/Calling.svelte:61
 msgid "Start conference"
-msgstr ""
+msgstr "Conferentie starten"
 
 #: frontend/Settings/Setup/Shared/ButtonsBottom.svelte:4
 msgid "Start over"
-msgstr ""
+msgstr "Opnieuw beginnen"
 
 #: frontend/Mail/StartPage.svelte:2
 msgid "Start page"
-msgstr ""
+msgstr "Start pagina"
 
 #: frontend/Settings/Setup/Mail/DisplayConfigServer.svelte:46
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:50
 msgid "STARTTLS"
-msgstr ""
+msgstr "STARTTLS"
 
 #: frontend/Contacts/PersonDetails.svelte:190
 msgid "Street address"
-msgstr ""
+msgstr "Adres is vereist"
 
 #: frontend/Contacts/PersonDetails.svelte:131
 msgid "Street addresses"
-msgstr ""
+msgstr "Adressen op straat"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:26
 msgid "Strike-through"
-msgstr ""
+msgstr "Doorhalen"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:15
 #: frontend/Mail/Composer/MailComposer.svelte:95
 msgid "Subject"
-msgstr ""
+msgstr "Onderwerp"
 
 #: frontend/Settings/Global/DarkMode.svelte:3
 msgid "System"
-msgstr ""
+msgstr "Systeem"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:24
 #: frontend/Settings/Mail/NotificationKinds.svelte:24
 msgid "System task bar"
-msgstr ""
+msgstr "Systeem taakbalk"
 
 #: frontend/Meet/ParticipantListItem.svelte:13
 msgid "Take hand down"
-msgstr ""
+msgstr "Neem de hand op"
 
 #: frontend/Contacts/ContactEntryUI.svelte:78
 msgid "Teams"
-msgstr ""
+msgstr "teams"
 
 #: frontend/Settings/Setup/Shared/Footer.svelte:2
 msgid "Terms of use"
-msgstr ""
+msgstr "Voorwaarden van gebruik"
 
 #: frontend/Settings/SettingsCategories.ts:123
 msgid "Test"
-msgstr ""
+msgstr "Test"
 
 #: frontend/Meet/Start/StartScreen.svelte:8
 msgid "Test incoming call"
-msgstr ""
+msgstr "Test inkomende oproep"
 
 #: frontend/Mail/Message/ThreadDisplay.svelte:1
 msgid "The threaded view does not yet work as intended."
-msgstr ""
+msgstr "De drieledige visie werkt nog niet zoals bedoeld."
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:26
 msgid "This is a catch-all email address."
-msgstr ""
+msgstr "Dit is een catch-all e-mailadres."
 
 #: frontend/Settings/Mail/Account/Identity.svelte:2
 msgid "This is how you appear to others when you send mail"
-msgstr ""
+msgstr "Dit is hoe je aan anderen lijkt wanneer je e-mail verzendt"
 
 #: frontend/Mail/Message/DisplayModeSwitcher.svelte:3
 msgid "Thread"
-msgstr ""
+msgstr "Conversatie"
 
 #: frontend/Calendar/ListView.svelte:10
 msgid "Time"
-msgstr ""
+msgstr "Tijd"
 
 #: frontend/Calendar/ListView.svelte:11
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:101
 msgid "Title"
-msgstr ""
+msgstr "Aanspreektitel"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:16
 msgid "Title - Enter the topic of the meeting"
-msgstr ""
+msgstr "Titel - Voer het onderwerp van de vergadering in"
 
 #: frontend/Settings/Setup/Mail/DisplayConfigServer.svelte:43
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:49
 msgid "TLS"
-msgstr ""
+msgstr "TLS"
 
 #: frontend/Mail/Message/MessageHeader.svelte:18
 msgid "to"
-msgstr ""
+msgstr "naar"
 
 #: frontend/Mail/Composer/MailComposer.svelte:28
 #: frontend/Mail/Composer/MailComposer.svelte:60
 #: frontend/Mail/Composer/MailComposer.svelte:69
 msgid "To"
-msgstr ""
+msgstr "tot"
 
 #: frontend/Settings/Mail/Account/SentByExplainer.svelte:6
 msgid "To use {0} professionally and remove this note, you can subscribe to one of our plans."
-msgstr ""
+msgstr "Om {0} professioneel te gebruiken en deze notitie te verwijderen, kunt u zich abonneren op een van onze abonnementen."
 
 #: frontend/Mail/MailChat/MailMessage.svelte:5
 msgid "to:"
-msgstr ""
+msgstr "Aan:"
 
 #: frontend/Meet/Start/StartScreen.svelte:21
 msgid "Today's next meetings"
-msgstr ""
+msgstr "De volgende vergaderingen van vandaag"
 
 #: frontend/Mail/Message/MessageMenu.svelte:43
 msgid "Translate"
-msgstr ""
+msgstr "Vertalen"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:3
 msgid "Turn camera off"
-msgstr ""
+msgstr "Camera uitschakelen"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:3
 msgid "Turn camera on"
-msgstr ""
+msgstr "Schakel camera in"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:159
 msgid "Undo the last change"
-msgstr ""
+msgstr "De laatste wijziging ongedaan maken"
 
 #: frontend/Settings/Setup/Mail/DisplayConfigServer.svelte:52
 msgid "Unknown"
-msgstr ""
+msgstr "onbekend"
 
 #: frontend/Mail/Message/MessageBody.svelte:23
 msgid "Unknown display mode"
-msgstr ""
+msgstr "Onbekende weergavemodus"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:3
 msgid "Unmute"
-msgstr ""
+msgstr "Deblokkeer"
 
 #: frontend/Mail/Search/SearchPane.svelte:22
 msgid "Unread"
-msgstr ""
+msgstr "Ongelezen"
 
 #: frontend/Mail/Message/MessageMenu.svelte:41
 msgid "Use an online translation service to translate this message to your default language."
-msgstr ""
+msgstr "Gebruik een online vertaalservice om dit bericht te vertalen naar uw standaardtaal."
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:9
 msgid "Use as"
-msgstr ""
+msgstr "Gebruiken als"
 
 #: frontend/Settings/AccountURLServer.svelte:4
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:8
 msgid "Username"
-msgstr ""
+msgstr "Gebruikersnaam"
 
 #: frontend/Settings/Chat/AccountXMPPServer.svelte:4
 msgid "Username JID"
-msgstr ""
+msgstr "Username JID"
 
 #: frontend/Settings/Setup/Import/Passwords.svelte:26
 #: frontend/Settings/Setup/Mail/CheckConfig.svelte:2
 msgid "Verifying that the configuration works..."
-msgstr ""
+msgstr "Verifiëren dat de configuratie werkt..."
 
 #: frontend/Mail/LeftPane/ViewSwitcher.svelte:12
 msgid "Vertical view"
-msgstr ""
+msgstr "Verticale weergave"
 
 #: frontend/Chat/PersonHeader.svelte:9
 #: frontend/Contacts/PersonDetails.svelte:41
 msgid "Video call"
-msgstr ""
+msgstr "Video oproep"
 
 #: frontend/Settings/Setup/Mail/FindConfig.svelte:2
 msgid "We are looking for the configuration of your email account..."
-msgstr ""
+msgstr "We zijn op zoek naar de configuratie van je e-mailaccount..."
 
 #: frontend/Settings/Setup/Mail/FindConfig.svelte:23
 msgid "We could not find a configuration for {0}"
-msgstr ""
+msgstr "We konden geen configuratie voor {0} vinden"
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:52
 msgid "We found a configuration"
-msgstr ""
+msgstr "We vonden een configuratie"
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:47
 msgid "We found the configuration in our database."
-msgstr ""
+msgstr "We vonden de configuratie in onze database."
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:49
 msgid "We guessed a configuration that might work."
-msgstr ""
+msgstr "We hebben een configuratie geraden die zou kunnen werken."
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:51
 msgid "We received the configuration for Microsoft Exchange"
-msgstr ""
+msgstr "We hebben de configuratie voor Microsoft Exchange ontvangen"
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:50
 msgid "We received the configuration from Microsoft Exchange."
-msgstr ""
+msgstr "We hebben de configuratie van Microsoft Exchange ontvangen."
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:48
 msgid "We received the configuration from your email provider."
-msgstr ""
+msgstr "We hebben de configuratie van je e-mailprovider ontvangen."
 
 #: frontend/WebApps/Shop/AppShopButton.svelte:12
 msgid "Website"
-msgstr ""
+msgstr "website"
 
 #: frontend/Calendar/ViewSelector.svelte:17
 msgid "Week"
-msgstr ""
+msgstr "week"
 
 #: frontend/Contacts/ContactEntryUI.svelte:77
 msgid "WhatsApp"
-msgstr ""
+msgstr "WhatsApp"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:67
 msgid "When"
-msgstr ""
+msgstr "Wanneer"
 
 #: frontend/Settings/Mail/Notifications.svelte:6
 msgid "When a new mail arrives, show with:"
-msgstr ""
+msgstr "Wanneer een nieuwe mail arriveert, laten zien met:"
 
 #: frontend/Settings/Mail/Send.svelte:6
 msgid "When replying:"
-msgstr ""
+msgstr "Bij het antwoorden:"
 
 #: frontend/Mail/Message/DisplayModeSwitcher.svelte:21
 msgid "With external content (allows sender to track you)"
-msgstr ""
+msgstr "Met externe inhoud (staat afzender toe je te volgen)"
 
 #: frontend/Contacts/ContactEntryUI.svelte:74
 msgid "Work"
-msgstr ""
+msgstr "Werk"
 
 #: frontend/Settings/Setup/Import/Passwords.svelte:36
 msgid "Workspace"
-msgstr ""
+msgstr "werkruimte"
 
 #: frontend/Mail/LeftPane/ProjectList.svelte:4
 msgid "Workspaces"
-msgstr ""
+msgstr "Werkruimtes"
 
 #: frontend/Settings/Setup/Mail/WorkspaceSelector.svelte:2
 msgid "Workspaces allow you organize yourself. You can change this at any time, by going to Settings in the title bar."
-msgstr ""
+msgstr "Met werkruimtes kun je jezelf organiseren. Je kunt dit op elk moment veranderen door naar Instellingen te gaan in de titelbalk."
 
 #: frontend/Mail/LeftPane/WriteButton.svelte:2
 msgid "Write new email"
-msgstr ""
+msgstr "Nieuwe e-mail schrijven"
 
 #: frontend/Settings/Setup/Chat/SelectProtocol.svelte:34
 msgid "XMPP / Jabber"
-msgstr ""
+msgstr "XMPP / Jabber"
 
 #: frontend/Meet/Video/ParticipatingVideo.svelte:7
 msgid "You"
-msgstr ""
+msgstr "Jij"
 
 #: frontend/Meet/ParticipantListItem.svelte:67
 #: frontend/Meet/ParticipantListItem.svelte:75
 #: frontend/Meet/ParticipantListItem.svelte:80
 msgid "You are not a moderator"
-msgstr ""
+msgstr "Je bent geen moderator"
 
 #: frontend/Settings/About/Licenses.svelte:
 msgid "You can find the source code of # core at # under an #."
-msgstr ""
+msgstr "Je kunt de broncode van # core vinden op # onder een #."
 
 #: frontend/Settings/Setup/Chat/SelectProtocol.svelte:3
 msgid "You can use {0} with your existing chat account or you can create a new chat account."
-msgstr ""
+msgstr "U kunt {0} gebruiken met uw bestaande chataccount of u kunt een nieuw chataccount aanmaken."
 
 #: frontend/Settings/Setup/Mail/EmailAddressPassword.svelte:1
 msgid "You can use {0} with your existing email address or you can make a new email address."
-msgstr ""
+msgstr "U kunt {0} gebruiken met uw bestaande e-mailadres of u kunt een nieuw e-mailadres maken."
 
 #: frontend/Settings/Setup/Chat/MatrixLogin.svelte:3
 msgid "You can use {0} with your existing Matrix account or you can create a new Matrix account."
-msgstr ""
+msgstr "U kunt {0} gebruiken met uw bestaande Matrix account of u kunt een nieuwe Matrix account aanmaken."
 
 #: frontend/Settings/Setup/Chat/XMPPLogin.svelte:3
 msgid "You can use {0} with your existing XMPP or Jabber account."
-msgstr ""
+msgstr "U kunt {0} gebruiken met uw bestaande XMPP- of Jabber-account."
 
 #: frontend/Meet/Start/Calling.svelte:81
 msgid "You have a meeting in {0} minutes:"
-msgstr ""
+msgstr "U heeft een vergadering in {0} minuten:"
 
 #: frontend/Meet/Start/Calling.svelte:11
 msgid "You're calling..."
-msgstr ""
+msgstr "Je roept..."
 
 #: frontend/Settings/Setup/Meet/M3Login.svelte:7
 msgid "Your {0} email address"
-msgstr ""
+msgstr "Uw {0} e-mailadres"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:18
 msgid "Your cameras"
-msgstr ""
+msgstr "Jouw camera's"
 
 #: frontend/Settings/Setup/Mail/FinalizeConfig.svelte:2
 msgid "Your email account is working and ready to be used."
-msgstr ""
+msgstr "Uw e-mailaccount werkt en is klaar om te worden gebruikt."
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:17
 msgid "Your email address"
-msgstr ""
+msgstr "Uw e-mailadres"
 
 #: frontend/Settings/Mail/Account/Server.svelte:3
 #: frontend/Settings/Setup/Mail/manual/ManualConfigPage.svelte:3
 msgid "Your email provider or company can tell you these details."
-msgstr ""
+msgstr "Uw e-mailprovider of bedrijf kan u deze gegevens vertellen."
 
 #: frontend/Settings/Setup/Chat/XMPPLogin.svelte:7
 msgid "Your JID"
-msgstr ""
+msgstr "Uw JID"
 
 #: frontend/Settings/Setup/Chat/MatrixLogin.svelte:7
 msgid "Your Matrix ID"
-msgstr ""
+msgstr "Uw Matrix ID"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:18
 msgid "Your microphones"
-msgstr ""
+msgstr "Je microfoon"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:14
 msgid "Your name"
-msgstr ""
+msgstr "Uw naam"
 
 #: frontend/Settings/Setup/Shared/Password.svelte:3
 msgid "Your password"
-msgstr ""
+msgstr "Uw wachtwoord"
 

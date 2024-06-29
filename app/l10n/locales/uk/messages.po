@@ -5,16 +5,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
-"Language: en\n"
+"Language: uk\n"
 "Project-Id-Version: mustang\n"
 "Report-Msgid-Bugs-To: \n"
 "PO-Revision-Date: 2024-06-28 17:58\n"
 "Last-Translator: \n"
-"Language-Team: English\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language-Team: Ukrainian\n"
+"Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
 "X-Crowdin-Project: mustang\n"
 "X-Crowdin-Project-ID: 689789\n"
-"X-Crowdin-Language: en\n"
+"X-Crowdin-Language: uk\n"
 "X-Crowdin-File: /locales/en/messages.po\n"
 "X-Crowdin-File-ID: 32\n"
 
@@ -29,21 +29,24 @@ msgstr ""
 #: frontend/Settings/About/Licenses.svelte:12
 msgid "{0} is built using the following Open-Source components.\n"
 "  We sincerely thank those authors and contributors."
-msgstr ""
+msgstr "{0} побудований з використанням наступних компонентів з Open-Source.\n"
+"  Ми щиро дякуємо цим авторам і учасникам."
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:26
 msgid "{0} local messages."
-msgstr ""
+msgstr "{0} локальних повідомлень."
 
 #: frontend/Mail/Search/SearchPane.svelte:88
 msgid "{0} mails"
-msgstr ""
+msgstr "{0} mails"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:19
 msgid "{0} new,\n"
 "          {1} unread,\n"
 "          {2} total messages."
-msgstr ""
+msgstr "{0} новий,\n"
+"          {1} непрочитаних,\n"
+"          {2} повідомлень."
 
 #: frontend/Settings/Setup/Meet/SelectProtocol.svelte:30
 msgid "{0} video conference account"
@@ -51,31 +54,31 @@ msgstr ""
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:83
 msgid "* Item"
-msgstr ""
+msgstr "* Елемент"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:7
 msgid "*bold* or **bold**"
-msgstr ""
+msgstr "*жирний* або **жирний**"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:17
 msgid "/italic/ or _italic_"
-msgstr ""
+msgstr "/italic/ or _italic_"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:36
 msgid "\\`code\\`"
-msgstr ""
+msgstr "\\`код\\`"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:102
 msgid "# Big title"
-msgstr ""
+msgstr "# Великий заголовок"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:112
 msgid "## Sub header"
-msgstr ""
+msgstr "## Підзаголовок"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:122
 msgid "### Sub sub header"
-msgstr ""
+msgstr "### Під-заголовок"
 
 #: frontend/Meet/Start/StartScreen.svelte:84
 msgid "<p>\n"
@@ -91,19 +94,19 @@ msgstr ""
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:62
 msgid "> Quote"
-msgstr ""
+msgstr "> Цитувати"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:92
 msgid "1. Item"
-msgstr ""
+msgstr "1. Предмет"
 
 #: frontend/Calendar/ViewSelector.svelte:23
 msgid "4 Weeks"
-msgstr ""
+msgstr "4 тижні"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:13
 msgid "A"
-msgstr ""
+msgstr "Ля"
 
 #: frontend/Settings/Setup/Mail/FindConfig.svelte:32
 msgid "A configuration for your account {0} may be available at:\\n\\n{1}\\n\\nDo you want to submit your password there?"
@@ -111,253 +114,253 @@ msgstr ""
 
 #: frontend/Settings/SettingsCategories.ts:120
 msgid "About"
-msgstr ""
+msgstr "Про програму"
 
 #: frontend/Meet/Start/Calling.svelte:61
 msgid "Accept call"
-msgstr ""
+msgstr "Прийняти виклик"
 
 #: frontend/Settings/AccountGeneral.svelte:2
 msgid "Account name"
-msgstr ""
+msgstr "Контрагент"
 
 #: frontend/Mail/LeftPane/AccountList.svelte:5
 #: frontend/Settings/Window/AccountsList.svelte:4
 msgid "Accounts"
-msgstr ""
+msgstr "Облікові записи"
 
 #: frontend/Settings/Mail/Account/Identity.svelte:4
 #: frontend/WebApps/Shop/AppShopButton.svelte:20
 msgid "Add"
-msgstr ""
+msgstr "Додати"
 
 #: frontend/Mail/Composer/Attachments/AttachmentsPane.svelte:9
 msgid "Add attachment"
-msgstr ""
+msgstr "Додати вкладення"
 
 #: frontend/Mail/Composer/MailComposer.svelte:67
 msgid "Add BCC recipient"
-msgstr ""
+msgstr "Додати отримувача Прихована копія"
 
 #: frontend/Mail/Composer/MailComposer.svelte:58
 msgid "Add CC recipient"
-msgstr ""
+msgstr "Додати отримувача CC"
 
 #: frontend/Meet/ParticipantSearch.svelte:2
 msgid "Add or search a participant"
-msgstr ""
+msgstr "Додати або знайти учасника"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:19
 msgid "Add participants"
-msgstr ""
+msgstr "Додати учасників"
 
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:42
 msgid "Add person"
-msgstr ""
+msgstr "Додати особу"
 
 #: frontend/Mail/Composer/MailComposer.svelte:34
 msgid "Add recipient"
-msgstr ""
+msgstr "Додати одержувача"
 
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:14
 msgid "Add this person"
-msgstr ""
+msgstr "Додати цю особу"
 
 #: frontend/Settings/Mail/Read.svelte:
 msgid "After displaying for # seconds"
-msgstr ""
+msgstr "Після відображення протягом # секунд"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:86
 msgid "Alarm"
-msgstr ""
+msgstr "Alarm"
 
 #: frontend/Mail/LeftPane/ProjectList.svelte:7
 #: frontend/Settings/SettingsCategories.ts:44
 msgid "All"
-msgstr ""
+msgstr "Всі"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:84
 msgid "All day"
-msgstr ""
+msgstr "Увесь день"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:24
 msgid "All downloaded."
-msgstr ""
+msgstr "Все завантажено."
 
 #: frontend/Chat/MessageView/IncomingCallUI.svelte:4
 msgid "Answer"
-msgstr ""
+msgstr "Відповісти"
 
 #: frontend/Settings/SettingsCategories.ts:109
 msgid "App integration"
-msgstr ""
+msgstr "Інтеграція із додатком"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:18
 #: frontend/Settings/Mail/NotificationKinds.svelte:18
 msgid "Appbar"
-msgstr ""
+msgstr "Панель програм"
 
 #: frontend/Settings/SettingsCategories.ts:46
 #: frontend/Settings/SettingsCategories.ts:52
 #: frontend/Settings/SettingsCategories.ts:68
 #: frontend/Settings/SettingsCategories.ts:99
 msgid "Appearance"
-msgstr ""
+msgstr "Зовнішній вигляд"
 
 #: frontend/WebApps/WebAppsMustangApp.ts:10
 msgid "Apps"
-msgstr ""
+msgstr "Застосунки"
 
 #: frontend/Settings/AccountGeneral.svelte:23
 msgid "Are you sure that you want to the delete account {0} from {1} and all related data?"
-msgstr ""
+msgstr "Ви впевнені, що бажаєте видалити обліковий запис {0} з {1} і всі пов'язані дані?"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:35
 msgid "Are you sure that you want to the delete folder {0} and all messages in it? This will also delete it on the server."
-msgstr ""
+msgstr "Are you sure you want to the delete folder {0} and all повідомлення в ньому? Це також видалить його на сервері."
 
 #: frontend/Mail/Composer/Attachments/FileDropTarget.svelte:15
 msgid "Attach file"
-msgstr ""
+msgstr "Прикріпити файл"
 
 #: frontend/Mail/Search/SearchPane.svelte:32
 msgid "Attachment"
-msgstr ""
+msgstr "Вкладення"
 
 #: frontend/Mail/Message/AttachmentUI.svelte:39
 msgid "Attachment file is missing"
-msgstr ""
+msgstr "Файл вкладення відсутній"
 
 #: frontend/Mail/Composer/MailComposer.svelte:77
 msgid "Attachments"
-msgstr ""
+msgstr "Вкладення"
 
 #: frontend/Settings/Setup/Mail/DisplayConfigServer.svelte:40
 msgid "Attackers can read your password and mails"
-msgstr ""
+msgstr "Атакуючі можуть читати ваш пароль та листи"
 
 #: frontend/Chat/PersonHeader.svelte:11
 msgid "Audio call"
-msgstr ""
+msgstr "Аудіодзвінок"
 
 #: frontend/Shared/Auth/OAuth2DialogUI.svelte:2
 msgid "Authentication"
-msgstr ""
+msgstr "Автентифікація"
 
 #: frontend/Shared/Auth/OAuth2DialogUI.svelte:20
 msgid "Authentication dialog was closed"
-msgstr ""
+msgstr "Діалогове вікно автентифікації було закрито"
 
 #: frontend/Shared/Auth/OAuth2DialogUI.svelte:24
 msgid "Authentication dialog was closed due to inaction"
-msgstr ""
+msgstr "Діалогове вікно автентифікації було закрито через бездіяльність"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:7
 msgid "Authentication method"
-msgstr ""
+msgstr "Метод аутентифікації"
 
 #: frontend/MainWindow/MainWindow.svelte:79
 msgid "Bad dark mode "
-msgstr ""
+msgstr "Помилковий темний режим "
 
 #: frontend/Mail/Message/MessageHeader.svelte:30
 msgid "bcc"
-msgstr ""
+msgstr "прихована копія"
 
 #: frontend/Mail/Composer/MailComposer.svelte:49
 #: frontend/Mail/Composer/MailComposer.svelte:66
 msgid "Bcc"
-msgstr ""
+msgstr "Прихована"
 
 #: frontend/Mail/Composer/MailComposer.svelte:37
 #: frontend/Mail/Composer/MailComposer.svelte:61
 msgid "BCC"
-msgstr ""
+msgstr "Прихована копія"
 
 #: frontend/Settings/SettingsCategories.ts:115
 msgid "Billing"
-msgstr ""
+msgstr "Біллінг"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:6
 msgid "Bold"
-msgstr ""
+msgstr "Bold"
 
 #: frontend/Settings/Setup/Mail/manual/OAuth2Manual.svelte:10
 msgid "Browser"
-msgstr ""
+msgstr "Браузер"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:16
 msgid "Bubble on the appbar in {0}"
-msgstr ""
+msgstr "Bubble на Appbar в {0}"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:22
 msgid "Bubble on the system task bar"
-msgstr ""
+msgstr "Bubble на панелі завдань системи"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:82
 msgid "Bulleted list"
-msgstr ""
+msgstr "Маркований список"
 
 #: frontend/Calendar/CalendarMustangApp.ts:13
 #: frontend/Settings/SettingsCategories.ts:81
 msgid "Calendar"
-msgstr ""
+msgstr "Календар"
 
 #: frontend/Contacts/PersonDetails.svelte:45
 #: frontend/Meet/Start/Calling.svelte:61
 msgid "Call"
-msgstr ""
+msgstr "Дзвінок"
 
 #: frontend/Meet/Start/StartScreen.svelte:5
 msgid "Call {0}"
-msgstr ""
+msgstr "Подзвонити {0}"
 
 #: frontend/Meet/InMeetingToolbar.svelte:23
 #: frontend/Meet/ParticipantListItem.svelte:29
 msgid "Camera"
-msgstr ""
+msgstr "Камера"
 
 #: frontend/Meet/Start/Calling.svelte:45
 #: frontend/Settings/Setup/Shared/ButtonsBottom.svelte:10
 msgid "Cancel"
-msgstr ""
+msgstr "Скасувати"
 
 #: frontend/Settings/Mail/Account/Identity.svelte:46
 msgid "Cannot remove the last identity"
-msgstr ""
+msgstr "Не можна видалити останню особу"
 
 #: frontend/Mail/Message/MessageHeader.svelte:24
 msgid "cc"
-msgstr ""
+msgstr "cc"
 
 #: frontend/Mail/Composer/MailComposer.svelte:43
 #: frontend/Mail/Composer/MailComposer.svelte:57
 msgid "Cc"
-msgstr ""
+msgstr "Cc"
 
 #: frontend/Mail/Composer/MailComposer.svelte:36
 #: frontend/Mail/Composer/MailComposer.svelte:70
 msgid "CC"
-msgstr ""
+msgstr "CC"
 
 #: frontend/Chat/ChatMustangApp.ts:8
 #: frontend/Contacts/PersonDetails.svelte:89
 #: frontend/Contacts/PersonDetails.svelte:188
 #: frontend/Settings/SettingsCategories.ts:66
 msgid "Chat"
-msgstr ""
+msgstr "Чат"
 
 #: frontend/Mail/LeftPane/ViewSwitcher.svelte:3
 msgid "Chat-like mail view"
-msgstr ""
+msgstr "Тек-орієнтований на пошту"
 
 #: frontend/Mail/LeftPane/ViewSwitcher.svelte:22
 msgid "Classic 3-pane view"
-msgstr ""
+msgstr "Класичний 3-панельний вигляд"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:151
 msgid "Clear formatting"
-msgstr ""
+msgstr "Очистити форматування"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:7
 #: frontend/Mail/FolderProperties.svelte:14
@@ -365,641 +368,641 @@ msgstr ""
 #: frontend/Shared/Browser.svelte:12
 #: frontend/WebApps/Shop/AppStore.svelte:8
 msgid "Close"
-msgstr ""
+msgstr "Закрити"
 
 #: frontend/MainWindow/WindowHeader.svelte:21
 msgid "Close entire app"
-msgstr ""
+msgstr "Закрити весь додаток"
 
 #: frontend/Meet/InMeetingToolbar.svelte:63
 msgid "Close participants list"
-msgstr ""
+msgstr "Закрити список учасників"
 
 #: frontend/Settings/Window/SettingsApp.svelte:10
 msgid "Close settings"
-msgstr ""
+msgstr "Закрити налаштування"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:35
 msgid "Code word, within a phrase"
-msgstr ""
+msgstr "Кодове слово, у межах фрази"
 
 #: frontend/Shared/ExpandSection.svelte:10
 #: frontend/Shared/FastTreeItem.svelte:5
 msgid "Collapse"
-msgstr ""
+msgstr "Згорнути"
 
 #: frontend/Meet/MeetingNotes.svelte:11
 msgid "Collapse description"
-msgstr ""
+msgstr "Опис згортання"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:42
 msgid "Company"
-msgstr ""
+msgstr "Організація"
 
 #: frontend/Mail/MailMustangApp.ts:45
 msgid "Compose"
-msgstr ""
+msgstr "Написати лист"
 
 #: frontend/Settings/Mail/Send.svelte:38
 msgid "Composition"
-msgstr ""
+msgstr "Композиція"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:6
 msgid "Connection encryption"
-msgstr ""
+msgstr "Підключення шифрування"
 
 #: frontend/Contacts/ContactsMustangApp.ts:8
 #: frontend/Contacts/ContactsMustangApp.ts:12
 #: frontend/Settings/SettingsCategories.ts:89
 msgid "Contacts"
-msgstr ""
+msgstr "Контакти"
 
 #: frontend/Settings/Setup/Import/SelectAccounts.svelte:3
 msgid "Continue to use your accounts from Thunderbird"
-msgstr ""
+msgstr "Продовжуйте використовувати свої облікові записи з Thunderbird"
 
 #: frontend/Contacts/ContactEntryUI.svelte:30
 msgid "Copied to clipboard ✓"
-msgstr ""
+msgstr "Скопійовано в буфер обміну ✓"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:33
 msgid "Copy"
-msgstr ""
+msgstr "Копія"
 
 #: frontend/Contacts/ContactEntryUI.svelte:28
 msgid "Copy info to clipboard"
-msgstr ""
+msgstr "Скопіювати інформацію в буфер обміну"
 
 #: frontend/Meet/ParticipantSearch.svelte:11
 msgid "Copy invitation link"
-msgstr ""
+msgstr "Скопіювати запрошувальне посилання"
 
 #: frontend/Settings/About/About.svelte:
 msgid "Copyright 2024 Ben Bucksch, #, and other contributors"
-msgstr ""
+msgstr "Авторське право 2024 Бен Бакч, #, та інші учасники"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:14
 msgid "Correspondent"
-msgstr ""
+msgstr "Кореспондент"
 
 #: frontend/Calendar/EditEvent/TimeInput.svelte:23
 msgid "Could not interpret value as a time"
-msgstr ""
+msgstr "Не вдалося інтерпретувати значення як час"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:70
 msgid "CRAM MD5"
-msgstr ""
+msgstr "CRAM MD5"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:5
 #: frontend/Settings/Mail/Account/FolderActions.svelte:18
 msgid "Create sub-folder"
-msgstr ""
+msgstr "Створити вкладену теку"
 
 #: frontend/Settings/Setup/Contacts/LocalAddressbook.svelte:2
 msgid "Create your new local addressbook"
-msgstr ""
+msgstr "Створити нову адресну книгу"
 
 #: frontend/Settings/Setup/Calendar/LocalCalendar.svelte:2
 msgid "Create your new local calendar"
-msgstr ""
+msgstr "Створити новий локальний календар"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:168
 msgid "Ctrl-Y"
-msgstr ""
+msgstr "Ctrl-Y"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:160
 msgid "Ctrl-Z"
-msgstr ""
+msgstr "Ctrl-Z"
 
 #: frontend/Settings/Global/DarkMode.svelte:21
 msgid "Dark"
-msgstr ""
+msgstr "Темна"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:16
 msgid "Date"
-msgstr ""
+msgstr "Дата"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:69
 #: frontend/Calendar/ViewSelector.svelte:14
 msgid "Day"
-msgstr ""
+msgstr "День"
 
 #: frontend/Calendar/ViewSelector.svelte:26
 msgid "Day/Month"
-msgstr ""
+msgstr "День/місяць"
 
 #: frontend/Calendar/ViewSelector.svelte:29
 msgid "days"
-msgstr ""
+msgstr "днів"
 
 #: frontend/Calendar/EditEvent/DurationUnit.svelte:4
 msgid "Days"
-msgstr ""
+msgstr "Днів"
 
 #: frontend/Meet/Start/Calling.svelte:52
 msgid "Decline call"
-msgstr ""
+msgstr "Відхилити виклик"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:37
 msgid "Default: {0}"
-msgstr ""
+msgstr "За замовчуванням: {0}"
 
 #: frontend/Contacts/PersonMenu.svelte:13
 #: frontend/Mail/Message/MessageMenu.svelte:30
 msgid "Delete"
-msgstr ""
+msgstr "Видалити"
 
 #: frontend/Settings/AccountGeneral.svelte:7
 msgid "Delete account"
-msgstr ""
+msgstr "Видалити обліковий запис"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:12
 msgid "Delete folder"
-msgstr ""
+msgstr "Видалити папку"
 
 #: frontend/Mail/Message/MessageMenu.svelte:35
 msgid "Delete the message, and train the spam filter"
-msgstr ""
+msgstr "Видалити повідомлення і тренувати фільтр спаму"
 
 #: frontend/Contacts/PersonMenu.svelte:15
 msgid "Delete this contact"
-msgstr ""
+msgstr "Видалити цей контакт"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:6
 msgid "Delete this identity"
-msgstr ""
+msgstr "Видалити цю особу"
 
 #: frontend/Contacts/ContactEntryUI.svelte:17
 msgid "Delete this information"
-msgstr ""
+msgstr "Видалити цю інформацію"
 
 #: frontend/Mail/3pane/TableMessageListItem.svelte:50
 #: frontend/Mail/Message/MessageToolbar.svelte:27
 msgid "Delete this message"
-msgstr ""
+msgstr "Видалити це повідомлення"
 
 #: frontend/Contacts/PersonDetails.svelte:28
 msgid "Department"
-msgstr ""
+msgstr "Відділ"
 
 #: frontend/Settings/SettingsCategories.ts:100
 msgid "Devices"
-msgstr ""
+msgstr "Пристрої"
 
 #: frontend/Mail/Composer/MailComposer.svelte:9
 msgid "Discard and close"
-msgstr ""
+msgstr "Відхилити і закрити"
 
 #: frontend/Settings/Mail/Send.svelte:28
 msgid "Do not quote"
-msgstr ""
+msgstr "Не цитувати"
 
 #: frontend/Meet/Start/Calling.svelte:9
 msgid "Do you want to call?"
-msgstr ""
+msgstr "Ви хочете зателефонувати?"
 
 #: frontend/Contacts/SameName.svelte:55
 msgid "Do you want to merge the 2 contacts, i.e. copy the data from the other contact into this contact, and delete the other contact?"
-msgstr ""
+msgstr "Об'єднати 2 контакти, тобто копіювати дані з іншого контакту та видалити інший контакт?"
 
 #: frontend/Mail/Message/drag.ts:35
 msgid "Drag&drop failed: Selected message ID doesn't match the drag data"
-msgstr ""
+msgstr "Помилка перетягування: Вибране повідомлення не збігається з даними перетягування"
 
 #: frontend/Mail/Message/drag.ts:38
 msgid "Drag&drop failed: Selected message IDs don't match the drag data"
-msgstr ""
+msgstr "Не вдалося перемістити: ID вибраних повідомлень не збігаються з даними перетягування"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:78
 msgid "Duration"
-msgstr ""
+msgstr "Тривалість"
 
 #: frontend/Contacts/ContactEntryUI.svelte:27
 #: frontend/Contacts/EditableSimpleText.svelte:13
 #: frontend/Shared/PersonAutocomplete/PersonPopup.svelte:69
 msgid "Edit"
-msgstr ""
+msgstr "Редагувати"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:4
 msgid "Edit event"
-msgstr ""
+msgstr "Редагувати подію"
 
 #: frontend/Shared/PersonAutocomplete/PersonPopup.svelte:44
 msgid "Edit name and email address"
-msgstr ""
+msgstr "Редагувати ім'я та адресу електронної пошти"
 
 #: frontend/Shared/PersonAutocomplete/PersonPopup.svelte:26
 msgid "Email address to be used here"
-msgstr ""
+msgstr "Адреса електронної пошти, яку слід використовувати тут"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:75
 msgid "End"
-msgstr ""
+msgstr "Кінець"
 
 #: frontend/Shared/PersonAutocomplete/PersonPopup.svelte:22
 msgid "Enter a name for the person"
-msgstr ""
+msgstr "Введіть ім'я користувача"
 
 #: frontend/Meet/Start/StartScreen.svelte:13
 msgid "Enter meeting link to join"
-msgstr ""
+msgstr "Введіть посилання на зустріч, щоб приєднатися"
 
 #: frontend/Files/FileOrDirectoryLine.svelte:39
 msgid "entries"
-msgstr ""
+msgstr "записів"
 
 #: frontend/Calendar/CalendarMustangApp.ts:30
 msgid "Event"
-msgstr ""
+msgstr "Подія"
 
 #: frontend/Shared/ExpandSection.svelte:10
 #: frontend/Shared/FastTreeItem.svelte:5
 msgid "Expand"
-msgstr ""
+msgstr "Розгорнути"
 
 #: frontend/Files/GenericFileTypesList.svelte:5
 msgid "File type"
-msgstr ""
+msgstr "Тип файлу"
 
 #: frontend/Files/FilesMustangApp.ts:8
 msgid "Files"
-msgstr ""
+msgstr "Файли"
 
 #: frontend/Meet/Start/StartScreen.svelte:83
 msgid "Final Approval UX Meet"
-msgstr ""
+msgstr "Остання зустріч затвердження UX"
 
 #: frontend/Contacts/ContactEntryUI.svelte:16
 #: frontend/Contacts/EditableSimpleText.svelte:6
 msgid "Finish editing and save"
-msgstr ""
+msgstr "Завершіть редагування та збережіть"
 
 #: frontend/Contacts/PersonDetails.svelte:33
 msgid "First Lastname"
-msgstr ""
+msgstr "Ім'я Прізвище"
 
 #: frontend/Contacts/PersonDetails.svelte:16
 msgid "First name"
-msgstr ""
+msgstr "Ім'я"
 
 #: frontend/Contacts/PersonDetails.svelte:11
 msgid "First name Last name"
-msgstr ""
+msgstr "Прізвище"
 
 #: frontend/Files/FileOrDirectoryLine.svelte:32
 msgid "Folder"
-msgstr ""
+msgstr "Тека"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:2
 msgid "Folder name"
-msgstr ""
+msgstr "Ім'я папки"
 
 #: frontend/Mail/LeftPane/FolderLine.svelte:10
 msgid "Folder properties"
-msgstr ""
+msgstr "Властивості теки"
 
 #: frontend/Mail/LeftPane/FolderList.svelte:5
 #: frontend/Settings/Mail/Account/Folders.svelte:2
 #: frontend/Settings/SettingsCategories.ts:63
 msgid "Folders"
-msgstr ""
+msgstr "Папки"
 
 #: frontend/Mail/Search/SearchPane.svelte:11
 msgid "for"
-msgstr ""
+msgstr "за"
 
 #: frontend/Mail/Message/DisplayModeSwitcher.svelte:12
 msgid "Formatted"
-msgstr ""
+msgstr "Форматовано"
 
 #: frontend/Mail/Message/MessageMenu.svelte:18
 msgid "Forward"
-msgstr ""
+msgstr "Переслати"
 
 #: frontend/Settings/Setup/Import/SelectAccounts.svelte:9
 msgid "Found {0} imported accounts"
-msgstr ""
+msgstr "Знайдено {0} імпортованих облікових записів"
 
 #: frontend/Settings/Mail/Notifications.svelte:17
 msgid "From people in my address book"
-msgstr ""
+msgstr "Від людей в моїй адресній книзі"
 
 #: frontend/Settings/SettingsCategories.ts:42
 msgid "General"
-msgstr ""
+msgstr "Загальні налаштування"
 
 #: frontend/Mail/LeftPane/GetMailButton.svelte:3
 msgid "Get mail"
-msgstr ""
+msgstr "Отримати пошту"
 
 #: frontend/Settings/Setup/Mail/SetupMail.svelte:40
 msgid "Get new email address"
-msgstr ""
+msgstr "Отримати нову адресу електронної пошти"
 
 #: frontend/Meet/InMeetingToolbar.svelte:4
 msgid "Go back to meeting"
-msgstr ""
+msgstr "Повернутися до зустрічі"
 
 #: frontend/Calendar/WeekView.svelte:6
 msgid "Go back to today"
-msgstr ""
+msgstr "Повернутися до сьогодні"
 
 #: frontend/Contacts/PersonDetails.svelte:151
 msgid "Groups"
-msgstr ""
+msgstr "Групи"
 
 #: frontend/Meet/InMeetingToolbar.svelte:42
 msgid "Hand raised"
-msgstr ""
+msgstr "Рука піднята"
 
 #: frontend/Meet/Start/Calling.svelte:52
 msgid "Hang up"
-msgstr ""
+msgstr "Завершити виклик"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:111
 msgid "Heading, hierarchy level 2"
-msgstr ""
+msgstr "Головний удар, рівень ієрархії 2"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:121
 msgid "Heading, hierarchy level 3"
-msgstr ""
+msgstr "Головний удар, рівень ієрархії 3"
 
 #: frontend/Settings/Mail/Account/SentByExplainer.svelte:3
 msgid "Help us spread the word about {0}!"
-msgstr ""
+msgstr "Допоможіть нам розповісти про {0}!"
 
 #: frontend/Settings/Setup/Shared/Password.svelte:13
 msgid "Hide password"
-msgstr ""
+msgstr "Приховати пароль"
 
 #: frontend/Contacts/ContactEntryUI.svelte:75
 msgid "Home"
-msgstr ""
+msgstr "Домашній екран"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:3
 msgid "Hostname"
-msgstr ""
+msgstr "Hostname"
 
 #: frontend/Calendar/EditEvent/TimeInput.svelte:36
 msgid "Hour moust be less than 24"
-msgstr ""
+msgstr "Годинник має бути менше 24"
 
 #: frontend/Calendar/EditEvent/TimeInput.svelte:28
 msgid "Hour must be between 1 and 12 when using am or pm"
-msgstr ""
+msgstr "При використанні функції \"Година від 1 до 12\" має бути від 1 до 12, або до вечора"
 
 #: frontend/Calendar/EditEvent/DurationUnit.svelte:3
 msgid "Hours"
-msgstr ""
+msgstr "Годин"
 
 #: frontend/Settings/Mail/Send.svelte:46
 #: frontend/Settings/Mail/Send.svelte:46
 msgid "HTML"
-msgstr ""
+msgstr "Вікі формату HTML"
 
 #: frontend/Settings/Mail/Account/Identity.svelte:2
 msgid "Identities"
-msgstr ""
+msgstr "Особисті дані"
 
 #: frontend/Settings/SettingsCategories.ts:64
 #: frontend/Settings/SettingsCategories.ts:79
 msgid "Identity"
-msgstr ""
+msgstr "Тотожність"
 
 #: frontend/Settings/Setup/Meet/M3Login.svelte:3
 msgid "If you don't have an account yet, you can subscribe on our website."
-msgstr ""
+msgstr "Якщо у вас ще немає облікового запису, ви можете підписатися на нашому сайті."
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:204
 msgid "Image URL"
-msgstr ""
+msgstr "URL-адреса зображення"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:23
 msgid "IMAP"
-msgstr ""
+msgstr "IMAP"
 
 #: frontend/Settings/Mail/Read.svelte:19
 msgid "Immediately"
-msgstr ""
+msgstr "Негайно"
 
 #: frontend/Settings/Setup/Import/SelectAccounts.svelte:2
 msgid "Import accounts"
-msgstr ""
+msgstr "Імпортувати облікові записи"
 
 #: frontend/Settings/Setup/Import/SelectAccounts.svelte:7
 msgid "Importing accounts..."
-msgstr ""
+msgstr "Імпорт рахунків..."
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:51
 msgid "In Presence"
-msgstr ""
+msgstr "В присутності"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:13
 msgid "Incoming server"
-msgstr ""
+msgstr "Сервер вхідної пошти"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:145
 msgid "Insert image"
-msgstr ""
+msgstr "Вставити зображення"
 
 #: frontend/Mail/Composer/Attachments/FileDropTarget.svelte:11
 msgid "Insert inline into text"
-msgstr ""
+msgstr "Вставити в текст"
 
 #: frontend/Settings/Setup/Mail/manual/OAuth2Manual.svelte:8
 msgid "Inside app UI"
-msgstr ""
+msgstr "Інтерфейс додатку"
 
 #: frontend/Meet/Start/Calling.svelte:31
 msgid "is calling you..."
-msgstr ""
+msgstr "телефонує вам..."
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:16
 msgid "Italic"
-msgstr ""
+msgstr "Italic"
 
 #: frontend/Meet/Start/StartScreen.svelte:14
 msgid "Join"
-msgstr ""
+msgstr "Приєднатися до"
 
 #: frontend/Mail/Composer/Attachments/AttachmentEntry.svelte:10
 msgid "KB"
-msgstr ""
+msgstr "КБ"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:69
 msgid "Kerberos / GSSAPI"
-msgstr ""
+msgstr "Кербери / GSSAPI"
 
 #: frontend/Contacts/PersonDetails.svelte:18
 msgid "Last name"
-msgstr ""
+msgstr "Прізвище"
 
 #: frontend/Meet/InMeetingToolbar.svelte:52
 msgid "Leave"
-msgstr ""
+msgstr "Залишити"
 
 #: frontend/Settings/Global/DarkMode.svelte:12
 msgid "Light"
-msgstr ""
+msgstr "Світла"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:131
 msgid "Link to webpage"
-msgstr ""
+msgstr "Посилання на веб-сторінку"
 
 #: frontend/Calendar/ViewSelector.svelte:11
 msgid "List"
-msgstr ""
+msgstr "Список"
 
 #: frontend/Settings/About/Test.svelte:2
 msgid "Load test data"
-msgstr ""
+msgstr "Завантажити тестові дані"
 
 #: frontend/MainWindow/MainWindow.svelte:8
 msgid "Loading apps..."
-msgstr ""
+msgstr "Завантаження програм..."
 
 #: frontend/Mail/Message/MessageBody.svelte:6
 #: frontend/Mail/Message/MessageBody.svelte:16
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:20
 msgid "Loading..."
-msgstr ""
+msgstr "Завантажується..."
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:52
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:200
 msgid "Location"
-msgstr ""
+msgstr "Місцезнаходження"
 
 #: frontend/Mail/MailMustangApp.ts:52
 #: frontend/Settings/Setup/Import/Passwords.svelte:6
 msgid "Login"
-msgstr ""
+msgstr "Логін"
 
 #: frontend/Mail/MailMustangApp.ts:33
 msgid "Login to "
-msgstr ""
+msgstr "Увійти до "
 
 #: frontend/Settings/Setup/Mail/manual/OAuth2Manual.svelte:5
 msgid "Login UI"
-msgstr ""
+msgstr "Логін"
 
 #: frontend/Contacts/PersonDetails.svelte:69
 #: frontend/Contacts/PersonDetails.svelte:187
 #: frontend/Mail/MailMustangApp.ts:16
 #: frontend/Settings/SettingsCategories.ts:50
 msgid "Mail"
-msgstr ""
+msgstr "Пошта"
 
 #: frontend/Mail/Search/SearchPane.svelte:13
 msgid "Mail content or subject"
-msgstr ""
+msgstr "Контент пошти або тема"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigPage.svelte:2
 msgid "Manual configuration"
-msgstr ""
+msgstr "Ручне налаштування"
 
 #: frontend/Settings/Setup/Mail/SetupMail.svelte:34
 msgid "Manual setup"
-msgstr ""
+msgstr "Ручне налаштування"
 
 #: frontend/Settings/Mail/Read.svelte:31
 msgid "Manually"
-msgstr ""
+msgstr "Вручну"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:29
 msgid "Mark all read"
-msgstr ""
+msgstr "Позначити всі як прочитані"
 
 #: frontend/Mail/Message/MessageMenu.svelte:37
 msgid "Mark as spam"
-msgstr ""
+msgstr "Позначити як спам"
 
 #: frontend/Mail/3pane/TableMessageListItem.svelte:40
 msgid "Mark as spam and delete"
-msgstr ""
+msgstr "Позначити як спам і видалити"
 
 #: frontend/Settings/Mail/Read.svelte:14
 msgid "Mark mails as read"
-msgstr ""
+msgstr "Помітити повідомлення як прочитані"
 
 #: frontend/Mail/3pane/TableMessageListItem.svelte:21
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:26
 #: frontend/Mail/Message/MessageToolbar.svelte:51
 #: frontend/Mail/Vertical/VerticalMessageListItem.svelte:63
 msgid "Mark this message as read"
-msgstr ""
+msgstr "Позначити це повідомлення як прочитане"
 
 #: frontend/Mail/3pane/TableMessageListItem.svelte:21
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:26
 #: frontend/Mail/Message/MessageToolbar.svelte:51
 #: frontend/Mail/Vertical/VerticalMessageListItem.svelte:63
 msgid "Mark this message as unread"
-msgstr ""
+msgstr "Позначити це повідомлення як непрочитане"
 
 #: frontend/Contacts/ContactEntryUI.svelte:79
 #: frontend/Settings/Setup/Chat/SelectProtocol.svelte:35
 msgid "Matrix"
-msgstr ""
+msgstr "Матриця"
 
 #: frontend/Meet/Video/Video.svelte:8
 msgid "me"
-msgstr ""
+msgstr "мені"
 
 #: frontend/Meet/MeetMustangApp.ts:9
 #: frontend/Settings/SettingsCategories.ts:97
 msgid "Meet"
-msgstr ""
+msgstr "Знайомство"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:30
 msgid "Meeting URL"
-msgstr ""
+msgstr "URL зустрічі"
 
 #: frontend/Contacts/SameName.svelte:17
 msgid "Merge"
-msgstr ""
+msgstr "Об'єднати"
 
 #: frontend/Contacts/PersonDetails.svelte:48
 msgid "Message"
-msgstr ""
+msgstr "Повідомлення"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:16
 msgid "Messages"
-msgstr ""
+msgstr "Повідомлення"
 
 #: frontend/Calendar/EventLine.svelte:15
 msgid "min"
-msgstr ""
+msgstr "хв"
 
 #: frontend/MainWindow/WindowHeader.svelte:17
 msgid "Minimize"
-msgstr ""
+msgstr "Minimize"
 
 #: frontend/Calendar/EditEvent/TimeInput.svelte:40
 msgid "Minute must be less than 59"
-msgstr ""
+msgstr "Хвилина повинна бути менше 59"
 
 #: frontend/Calendar/EditEvent/DurationUnit.svelte:2
 msgid "Minutes"
-msgstr ""
+msgstr "Хвилин"
 
 #: frontend/Contacts/ContactEntryUI.svelte:76
 msgid "Mobile"
-msgstr ""
+msgstr "Мобільний"
 
 #: frontend/Calendar/ViewSelector.svelte:20
 msgid "Month"
-msgstr ""
+msgstr "Місяць"
 
 #: frontend/WebApps/Launcher/AppsLauncher.svelte:15
 msgid "More apps"
-msgstr ""
+msgstr "Інші застосунки"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:27
 msgid "More info"
-msgstr ""
+msgstr "Детальніше"
 
 #: frontend/MainWindow/NotificationBar.svelte:27
 msgid "More info about this error"
-msgstr ""
+msgstr "Детальніше про цю помилку"
 
 #: frontend/Mail/Search/SearchPane.svelte:86
 msgid "More than {0} mails"
@@ -1009,198 +1012,198 @@ msgstr ""
 #: frontend/Meet/ParticipantListItem.svelte:22
 #: frontend/Meet/Setup/DeviceButton.svelte:3
 msgid "Mute"
-msgstr ""
+msgstr "Вимкнути звук"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:48
 msgid "Name cannot be empty"
-msgstr ""
+msgstr "Назва не може бути порожньою"
 
 #: frontend/Settings/Setup/Contacts/LocalAddressbook.svelte:7
 msgid "Name of the addressbook"
-msgstr ""
+msgstr "Назва адресної книги"
 
 #: frontend/Settings/Setup/Calendar/LocalCalendar.svelte:7
 msgid "Name of the calendar"
-msgstr ""
+msgstr "Ім'я календаря"
 
 #: frontend/Mail/Search/SavedSearchUI.svelte:2
 msgid "Name of the folder"
-msgstr ""
+msgstr "Назва папки"
 
 #: frontend/Settings/Mail/Account/Identity.svelte:51
 msgid "Need at least 1 identity"
-msgstr ""
+msgstr "Потрібна одиниця ідентифікації"
 
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:86
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:97
 msgid "Need email address"
-msgstr ""
+msgstr "Потрібна адреса електронної пошти"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:47
 msgid "Need folder name"
-msgstr ""
+msgstr "Потрібна назва теки"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:2
 msgid "New"
-msgstr ""
+msgstr "Новий"
 
 #: frontend/Settings/Window/AccountsList.svelte:12
 msgid "New account for {0}"
-msgstr ""
+msgstr "Новий обліковий запис для {0}"
 
 #: frontend/Contacts/PersonsToolbar.svelte:7
 #: frontend/Meet/ParticipantSearch.svelte:5
 msgid "New contact"
-msgstr ""
+msgstr "Новий контакт"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:4
 #: frontend/Calendar/TitleBarLeft.svelte:3
 msgid "New event"
-msgstr ""
+msgstr "Нова подія"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:3
 msgid "New folder name"
-msgstr ""
+msgstr "Назва нової папки"
 
 #: frontend/Chat/Header.svelte:5
 msgid "New group"
-msgstr ""
+msgstr "Нова група"
 
 #: frontend/Settings/Setup/Contacts/SelectProtocol.svelte:29
 msgid "New local addressbook"
-msgstr ""
+msgstr "Нова адресна книга"
 
 #: frontend/Settings/Setup/Calendar/SelectProtocol.svelte:29
 msgid "New local calendar"
-msgstr ""
+msgstr "Новий локальний календар"
 
 #: frontend/Settings/Setup/Shared/ButtonsBottom.svelte:16
 msgid "Next"
-msgstr ""
+msgstr "Уперед"
 
 #: frontend/Calendar/DateRange.svelte:4
 msgid "Next {0} days"
-msgstr ""
+msgstr "Наступне {0} днів"
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:46
 msgid "No config found"
-msgstr ""
+msgstr "Конфігурації не знайдено"
 
 #: frontend/Settings/Setup/Mail/DisplayConfigServer.svelte:49
 msgid "No encryption"
-msgstr ""
+msgstr "Не шифрування"
 
 #: frontend/Meet/Start/StartScreen.svelte:23
 msgid "No meetings coming up"
-msgstr ""
+msgstr "Не з'являються зустрічі"
 
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:11
 msgid "No person found"
-msgstr ""
+msgstr "Не знайдено жодної людини"
 
 #: frontend/Meet/ParticipantSearch.svelte:55
 msgid "No persons in this chat account"
-msgstr ""
+msgstr "У цьому акаунті чатів немає учасників"
 
 #: frontend/Meet/Start/StartScreen.svelte:29
 msgid "No recent meetings"
-msgstr ""
+msgstr "Немає нещодавніх зустрічей"
 
 #: frontend/Mail/Message/AttachmentUI.svelte:16
 msgid "Not downloaded"
-msgstr ""
+msgstr "Не завантажено"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:14
 #: frontend/Settings/Mail/NotificationKinds.svelte:20
 msgid "Not yet implemented"
-msgstr ""
+msgstr "Ще не реалізовано"
 
 #: frontend/Contacts/PersonDetails.svelte:192
 msgid "Notes"
-msgstr ""
+msgstr "Нотатки"
 
 #: frontend/Settings/Chat/Notifications.svelte:3
 #: frontend/Settings/Mail/Notifications.svelte:4
 #: frontend/Settings/SettingsCategories.ts:53
 #: frontend/Settings/SettingsCategories.ts:69
 msgid "Notifications"
-msgstr ""
+msgstr "Сповіщення"
 
 #: frontend/Settings/Mail/Notifications.svelte:12
 msgid "Notify only for"
-msgstr ""
+msgstr "Тільки для повідомлень"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:71
 msgid "NTLM"
-msgstr ""
+msgstr "NTLM"
 
 #: frontend/Settings/Setup/Mail/manual/OAuth2Manual.svelte:2
 msgid "OAuth2"
-msgstr ""
+msgstr "OAuth2"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:68
 msgid "OAuth2 / MFA"
-msgstr ""
+msgstr "OAuth2 / MFA"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:29
 msgid "Online"
-msgstr ""
+msgstr "Онлайн"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:42
 msgid "Open"
-msgstr ""
+msgstr "Відкриті"
 
 #: frontend/Mail/Message/AttachmentMenu.svelte:13
 msgid "Open containing folder"
-msgstr ""
+msgstr "Відкрити папку"
 
 #: frontend/Mail/Message/AttachmentMenu.svelte:15
 msgid "Open folder"
-msgstr ""
+msgstr "Відкрити папку"
 
 #: frontend/Mail/Message/AttachmentMenu.svelte:9
 msgid "Open in external app"
-msgstr ""
+msgstr "Відкрити у зовнішньому додатку"
 
 #: frontend/Mail/Message/AttachmentMenu.svelte:7
 msgid "Open in external application"
-msgstr ""
+msgstr "Відкрити в зовнішньому додатку"
 
 #: frontend/Meet/InMeetingToolbar.svelte:63
 msgid "Open participants list"
-msgstr ""
+msgstr "Відкрити список учасників"
 
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:46
 msgid "Open this message alone"
-msgstr ""
+msgstr "Відкрити це повідомлення поодинці"
 
 #: frontend/Settings/SettingsCategories.ts:122
 msgid "Open-Source"
-msgstr ""
+msgstr "Відкритий код"
 
 #: frontend/Settings/About/Licenses.svelte:8
 msgid "Open-Source license"
-msgstr ""
+msgstr "Ліцензія з відкритим вихідним кодом"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:91
 msgid "Ordered list"
-msgstr ""
+msgstr "Нумерований список"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:81
 msgid "Organisation"
-msgstr ""
+msgstr "Organisation"
 
 #: frontend/Contacts/ContactEntryUI.svelte:80
 msgid "Other"
-msgstr ""
+msgstr "Інше"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:11
 msgid "Outgoing server"
-msgstr ""
+msgstr "Сервер вихідної пошти"
 
 #: frontend/Meet/Sidebar.svelte:5
 msgid "Participants"
-msgstr ""
+msgstr "Учасники"
 
 #: frontend/Settings/Setup/Chat/MatrixLogin.svelte:10
 #: frontend/Settings/Setup/Chat/XMPPLogin.svelte:10
@@ -1208,24 +1211,24 @@ msgstr ""
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:67
 #: frontend/Settings/Setup/Meet/M3Login.svelte:10
 msgid "Password"
-msgstr ""
+msgstr "Пароль"
 
 #: frontend/Mail/Search/SearchPane.svelte:55
 #: frontend/Mail/Search/SearchPane.svelte:55
 msgid "Person"
-msgstr ""
+msgstr "Особа"
 
 #: frontend/Contacts/PersonDetails.svelte:199
 msgid "Personal notes"
-msgstr ""
+msgstr "Особисті нотатки"
 
 #: frontend/Contacts/PersonDetails.svelte:189
 msgid "Phone"
-msgstr ""
+msgstr "Телефон"
 
 #: frontend/Contacts/PersonDetails.svelte:111
 msgid "Phone numbers"
-msgstr ""
+msgstr "Номери телефонів"
 
 #: frontend/Shared/Person/GroupPicture.svelte:7
 #: frontend/Shared/Person/PersonPicture.svelte:6
@@ -1234,194 +1237,194 @@ msgstr ""
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:51
 msgid "Plain"
-msgstr ""
+msgstr "Рівнина"
 
 #: frontend/Mail/Message/DisplayModeSwitcher.svelte:30
 #: frontend/Settings/Mail/Send.svelte:54
 #: frontend/Settings/Mail/Send.svelte:54
 msgid "Plaintext"
-msgstr ""
+msgstr "Відкритий текст"
 
 #: frontend/Meet/Start/StartScreen.svelte:10
 msgid "Plan a meeting"
-msgstr ""
+msgstr "Спланувати зустріч"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:48
 msgid "Please enter a name for the new folder"
-msgstr ""
+msgstr "Будь ласка, введіть ім'я для нової папки"
 
 #: frontend/Settings/Mail/Account/Folders.svelte:19
 msgid "Please log in to account {0} first"
-msgstr ""
+msgstr "Спочатку увійдіть до облікового запису {0}"
 
 #: frontend/Calendar/CalendarApp.svelte:27
 msgid "Please select a calendar first"
-msgstr ""
+msgstr "Спочатку виберіть календар"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:24
 msgid "POP3"
-msgstr ""
+msgstr "ПОП3"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:4
 #: frontend/Settings/Mail/NotificationKinds.svelte:6
 #: frontend/Settings/Mail/NotificationKinds.svelte:6
 msgid "Popup"
-msgstr ""
+msgstr "Popup"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:5
 msgid "Port"
-msgstr ""
+msgstr "Порт"
 
 #: frontend/Contacts/PersonDetails.svelte:23
 msgid "Position"
-msgstr ""
+msgstr "Позиція"
 
 #: frontend/Calendar/DateRange.svelte:3
 msgid "Previous {0} days"
-msgstr ""
+msgstr "Попередні {0} днів"
 
 #: frontend/Meet/Start/StartScreen.svelte:27
 msgid "Previous meetings"
-msgstr ""
+msgstr "Попередні зустрічі"
 
 #: frontend/Mail/Message/MessageMenu.svelte:49
 msgid "Print"
-msgstr ""
+msgstr "Друк"
 
 #: frontend/Settings/Setup/Shared/Footer.svelte:3
 msgid "Privacy"
-msgstr ""
+msgstr "Конфіденційність"
 
 #: frontend/Settings/Setup/Calendar/LocalCalendar.svelte:9
 #: frontend/Settings/Setup/Contacts/LocalAddressbook.svelte:9
 msgid "Private"
-msgstr ""
+msgstr "Приватний"
 
 #: frontend/Meet/ParticipantListItem.svelte:39
 msgid "Private chat"
-msgstr ""
+msgstr "Приватний чат"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:2
 msgid "Protocol"
-msgstr ""
+msgstr "Protocol"
 
 #: frontend/Mail/Message/MessageMenu.svelte:47
 msgid "Put ink on dead trees which were artificially made white. Save the trees!"
-msgstr ""
+msgstr "Посади палицю на мертві дерева, що штучно зроблені білі. Врятуй дерева!"
 
 #: frontend/Settings/Mail/Send.svelte:3
 msgid "Quote"
-msgstr ""
+msgstr "Цитувати"
 
 #: frontend/Settings/Mail/Send.svelte:22
 #: frontend/Settings/Mail/Send.svelte:22
 msgid "Quote above"
-msgstr ""
+msgstr "Цитувати вище"
 
 #: frontend/Settings/Mail/Send.svelte:20
 msgid "Quote above, Reply below"
-msgstr ""
+msgstr "Цитата вище і відповісти"
 
 #: frontend/Settings/Mail/Send.svelte:14
 #: frontend/Settings/Mail/Send.svelte:14
 msgid "Quote below"
-msgstr ""
+msgstr "Цитувати нижче"
 
 #: frontend/Settings/Mail/Send.svelte:12
 msgid "Quote below, Reply above"
-msgstr ""
+msgstr "Цитувати нижче: відповісти вище"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:61
 msgid "Quote of the original email"
-msgstr ""
+msgstr "Цитувати оригінальний email"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:11
 msgid "R"
-msgstr ""
+msgstr "Р"
 
 #: frontend/Meet/InMeetingToolbar.svelte:42
 msgid "Raise hand"
-msgstr ""
+msgstr "Підняти руку"
 
 #: frontend/Settings/SettingsCategories.ts:54
 msgid "Read"
-msgstr ""
+msgstr "Прочитано"
 
 #: frontend/Mail/Message/MessageMenu.svelte:24
 msgid "Redirect"
-msgstr ""
+msgstr "Перенаправлення"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:167
 msgid "Redo the change that was undone before"
-msgstr ""
+msgstr "Повторити зміну, що була скасована до"
 
 #: frontend/Mail/3pane/TableMessageListItem.svelte:11
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:36
 #: frontend/Mail/Message/MessageToolbar.svelte:61
 #: frontend/Mail/Vertical/VerticalMessageListItem.svelte:53
 msgid "Remember this message"
-msgstr ""
+msgstr "Запам'ятати це повідомлення"
 
 #: frontend/Shared/PersonAutocomplete/PersonPopup.svelte:73
 #: frontend/WebApps/Shop/AppShopButton.svelte:16
 msgid "Remove"
-msgstr ""
+msgstr "Видалити"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:61
 msgid "Remove 'Sent by'"
-msgstr ""
+msgstr "Видалити 'Надіслано'"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:138
 msgid "Remove link"
-msgstr ""
+msgstr "Видалити посилання"
 
 #: frontend/MainWindow/NotificationBar.svelte:34
 msgid "Remove this message"
-msgstr ""
+msgstr "Видалити це повідомлення"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:4
 msgid "Rename"
-msgstr ""
+msgstr "Перейменувати"
 
 #: frontend/Settings/Mail/Account/Folders.svelte:3
 msgid "Rename folders, set special folders, share them with others"
-msgstr ""
+msgstr "Перейменувати папки, встановити спеціальні папки, поділитися ними з іншими"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:85
 msgid "Repeated"
-msgstr ""
+msgstr "Повторні"
 
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:16
 #: frontend/Mail/Message/MessageMenu.svelte:12
 #: frontend/Mail/Message/MessageToolbar.svelte:17
 msgid "Reply to all"
-msgstr ""
+msgstr "Відповісти всім"
 
 #: frontend/Mail/Message/MessageMenu.svelte:10
 msgid "Reply to all recipients of this message"
-msgstr ""
+msgstr "Відповісти всім одержувачам цього повідомлення"
 
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:6
 #: frontend/Mail/Message/MessageMenu.svelte:6
 #: frontend/Mail/Message/MessageToolbar.svelte:7
 msgid "Reply to author"
-msgstr ""
+msgstr "Відповісти автору"
 
 #: frontend/Mail/Message/MessageMenu.svelte:4
 msgid "Reply to the person who sent this message"
-msgstr ""
+msgstr "Відповідь людині, яка надіслала це повідомлення"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:80
 msgid "Reply-To"
-msgstr ""
+msgstr "Зворотня адреса"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:37
 msgid "Reply-to address"
-msgstr ""
+msgstr "Відповісти на адресу"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:12
 msgid "S"
-msgstr ""
+msgstr "Пд"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:91
 #: frontend/Contacts/PersonMenu.svelte:7
@@ -1430,93 +1433,93 @@ msgstr ""
 #: frontend/Settings/Mail/Account/Identity.svelte:19
 #: frontend/Settings/Setup/Mail/manual/ManualConfig.svelte:15
 msgid "Save"
-msgstr ""
+msgstr "Зберегти"
 
 #: frontend/Mail/Composer/MailComposer.svelte:16
 msgid "Save and close"
-msgstr ""
+msgstr "Зберегти і закрити"
 
 #: frontend/Mail/Search/SavedSearchUI.svelte:6
 msgid "Save as folder"
-msgstr ""
+msgstr "Зберегти як теку"
 
 #: frontend/Mail/Search/SearchPane.svelte:93
 msgid "Save search as folder"
-msgstr ""
+msgstr "Зберегти пошук як теку"
 
 #: frontend/Meet/Video/ParticipatingVideo.svelte:11
 msgid "Screen"
-msgstr ""
+msgstr "Екран"
 
 #: frontend/Meet/Video/ParticipatingVideo.svelte:11
 msgid "Screen of {0}"
-msgstr ""
+msgstr "Екран {0}"
 
 #: frontend/Meet/InMeetingToolbar.svelte:14
 msgid "Screen share"
-msgstr ""
+msgstr "Задіяння екрану"
 
 #: frontend/Shared/SearchField.svelte:16
 msgid "Search"
-msgstr ""
+msgstr "Пошук"
 
 #: frontend/Shared/Person/PersonsList.svelte:2
 msgid "Search for a person or group"
-msgstr ""
+msgstr "Пошук людини або групи"
 
 #: frontend/Settings/Mail/Account/SentByExplainer.svelte:9
 msgid "See plans"
-msgstr ""
+msgstr "Переглянути плани"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:13
 msgid "Select camera"
-msgstr ""
+msgstr "Обрати камеру"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:13
 msgid "Select microphone"
-msgstr ""
+msgstr "Виберіть мікрофон"
 
 #: frontend/Settings/Setup/Mail/FinalizeConfig.svelte:6
 msgid "Select the workspace for {0}"
-msgstr ""
+msgstr "Вибрати робоче середовище для {0}"
 
 #: frontend/Mail/Composer/MailComposer.svelte:101
 #: frontend/Settings/SettingsCategories.ts:55
 #: frontend/Settings/SettingsCategories.ts:78
 msgid "Send"
-msgstr ""
+msgstr "Відправити"
 
 #: frontend/Settings/Mail/Send.svelte:44
 msgid "Send as HTML and Plaintext"
-msgstr ""
+msgstr "Надіслати як HTML і простий текст"
 
 #: frontend/Settings/Mail/Send.svelte:52
 msgid "Send as Plaintext only"
-msgstr ""
+msgstr "Відправити лише як звичайний текст"
 
 #: frontend/Contacts/PersonDetails.svelte:51
 msgid "Send mail"
-msgstr ""
+msgstr "Надіслати пошту"
 
 #: frontend/Mail/Message/MessageMenu.svelte:16
 msgid "Send this message to somebody else"
-msgstr ""
+msgstr "Відправити це повідомлення комусь іншому"
 
 #: frontend/Mail/Message/MessageMenu.svelte:22
 msgid "Send this message to somebody else, who can reply to the original sender"
-msgstr ""
+msgstr "Відправити це повідомлення комусь іншому, хто може відповісти відправнику"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:57
 msgid "Sent by"
-msgstr ""
+msgstr "Надіслав"
 
 #: frontend/Mail/Search/SearchPane.svelte:18
 msgid "Sent by me"
-msgstr ""
+msgstr "Надіслав для мене"
 
 #: frontend/Settings/Setup/Mail/manual/OAuth2Manual.svelte:9
 msgid "Separate window"
-msgstr ""
+msgstr "Відокремити вікно"
 
 #: frontend/Settings/Chat/AccountXMPPServer.svelte:2
 #: frontend/Settings/Mail/Account/Server.svelte:2
@@ -1525,411 +1528,411 @@ msgstr ""
 #: frontend/Settings/SettingsCategories.ts:77
 #: frontend/Settings/SettingsCategories.ts:107
 msgid "Server"
-msgstr ""
+msgstr "Сервер"
 
 #: frontend/Settings/AccountURLServer.svelte:2
 msgid "Server URL"
-msgstr ""
+msgstr "URL-адреса сервера"
 
 #: frontend/Settings/Setup/Mail/EmailAddressPassword.svelte:1
 msgid "Set up existing email address"
-msgstr ""
+msgstr "Налаштування існуючої адреси електронної пошти"
 
 #: frontend/Settings/Setup/Contacts/SelectProtocol.svelte:2
 msgid "Set up your addressbook"
-msgstr ""
+msgstr "Налаштуйте адресну книгу"
 
 #: frontend/Settings/Setup/Calendar/SelectProtocol.svelte:2
 msgid "Set up your calendar"
-msgstr ""
+msgstr "Налаштування календаря"
 
 #: frontend/Settings/Setup/Meet/M3Login.svelte:2
 msgid "Set up your existing {0} account for meetings"
-msgstr ""
+msgstr "Налаштуйте існуючий обліковий запис {0} на зустрічі"
 
 #: frontend/Settings/Setup/Chat/SelectProtocol.svelte:2
 msgid "Set up your existing chat account"
-msgstr ""
+msgstr "Налаштування існуючого облікового запису чату"
 
 #: frontend/Settings/Setup/Chat/MatrixLogin.svelte:2
 msgid "Set up your existing Matrix account"
-msgstr ""
+msgstr "Налаштуйте Ваш існуючий контрагент Matrix"
 
 #: frontend/Settings/Setup/Chat/XMPPLogin.svelte:2
 msgid "Set up your existing XMPP account"
-msgstr ""
+msgstr "Налаштувати існуючий XMPP акаунт"
 
 #: frontend/Settings/Setup/Meet/SelectProtocol.svelte:2
 msgid "Set up your meeting account"
-msgstr ""
+msgstr "Налаштуйте ваш обліковий запис зустрічі"
 
 #: frontend/MainWindow/WindowHeader.svelte:13
 #: frontend/Settings/Window/SettingsMustangApp.ts:8
 msgid "Settings"
-msgstr ""
+msgstr "Налаштування"
 
 #: frontend/Settings/Setup/SetupMustangApp.ts:7
 msgid "Setup"
-msgstr ""
+msgstr "Установка"
 
 #: frontend/Shared/Button.svelte:49
 msgid "Shortcut: "
-msgstr ""
+msgstr "Ярлик: "
 
 #: frontend/Meet/MeetingNotes.svelte:11
 msgid "Show meeting description"
-msgstr ""
+msgstr "Показати опис зустрічі"
 
 #: frontend/Settings/Mail/Notifications.svelte:14
 msgid "Show notifications only for mails:"
-msgstr ""
+msgstr "Показувати сповіщення лише для повідомлень:"
 
 #: frontend/Settings/Setup/Shared/Password.svelte:13
 msgid "Show password"
-msgstr ""
+msgstr "Показати пароль"
 
 #: frontend/Mail/Message/MessageMenu.svelte:55
 msgid "Show source"
-msgstr ""
+msgstr "Показати джерело"
 
 #: frontend/Mail/Message/MessageMenu.svelte:53
 msgid "Show the on-the-wire format of this message"
-msgstr ""
+msgstr "Показувати формат даного повідомлення на карті"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:49
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:82
 msgid "Signature"
-msgstr ""
+msgstr "Підпис"
 
 #: frontend/Contacts/SameName.svelte:5
 msgid "Similar names"
-msgstr ""
+msgstr "Схожі імена"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:10
 #: frontend/Settings/Mail/NotificationKinds.svelte:12
 #: frontend/Settings/Mail/NotificationKinds.svelte:12
 msgid "Sound"
-msgstr ""
+msgstr "Звук"
 
 #: frontend/Mail/Message/DisplayModeSwitcher.svelte:40
 msgid "Source"
-msgstr ""
+msgstr "Джерело"
 
 #: frontend/Mail/Message/MessageBody.svelte:42
 msgid "Source not available"
-msgstr ""
+msgstr "Джерело недоступне"
 
 #: frontend/Mail/Search/SearchPane.svelte:27
 msgid "Starred"
-msgstr ""
+msgstr "Із зірочкою"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:72
 msgid "Start"
-msgstr ""
+msgstr "Старт"
 
 #: frontend/Meet/ParticipantListItem.svelte:37
 msgid "Start a chat with only this person"
-msgstr ""
+msgstr "Розпочніть чат лише з цієї особи"
 
 #: frontend/Meet/Start/StartScreen.svelte:11
 msgid "Start an ad-hoc meeting"
-msgstr ""
+msgstr "Розпочати рекламну зустріч"
 
 #: frontend/Meet/Start/Calling.svelte:61
 msgid "Start conference"
-msgstr ""
+msgstr "Почати конференцію"
 
 #: frontend/Settings/Setup/Shared/ButtonsBottom.svelte:4
 msgid "Start over"
-msgstr ""
+msgstr "Почати знову"
 
 #: frontend/Mail/StartPage.svelte:2
 msgid "Start page"
-msgstr ""
+msgstr "Стартова сторінка"
 
 #: frontend/Settings/Setup/Mail/DisplayConfigServer.svelte:46
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:50
 msgid "STARTTLS"
-msgstr ""
+msgstr "STARTTLS"
 
 #: frontend/Contacts/PersonDetails.svelte:190
 msgid "Street address"
-msgstr ""
+msgstr "Вулиця"
 
 #: frontend/Contacts/PersonDetails.svelte:131
 msgid "Street addresses"
-msgstr ""
+msgstr "Вулиці"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:26
 msgid "Strike-through"
-msgstr ""
+msgstr "Перекреслений"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:15
 #: frontend/Mail/Composer/MailComposer.svelte:95
 msgid "Subject"
-msgstr ""
+msgstr "Тема"
 
 #: frontend/Settings/Global/DarkMode.svelte:3
 msgid "System"
-msgstr ""
+msgstr "Система"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:24
 #: frontend/Settings/Mail/NotificationKinds.svelte:24
 msgid "System task bar"
-msgstr ""
+msgstr "Системна панель завдань"
 
 #: frontend/Meet/ParticipantListItem.svelte:13
 msgid "Take hand down"
-msgstr ""
+msgstr "Зняти руку вниз"
 
 #: frontend/Contacts/ContactEntryUI.svelte:78
 msgid "Teams"
-msgstr ""
+msgstr "Команди"
 
 #: frontend/Settings/Setup/Shared/Footer.svelte:2
 msgid "Terms of use"
-msgstr ""
+msgstr "Умови користування"
 
 #: frontend/Settings/SettingsCategories.ts:123
 msgid "Test"
-msgstr ""
+msgstr "Тест"
 
 #: frontend/Meet/Start/StartScreen.svelte:8
 msgid "Test incoming call"
-msgstr ""
+msgstr "Тестувати вхідний дзвінок"
 
 #: frontend/Mail/Message/ThreadDisplay.svelte:1
 msgid "The threaded view does not yet work as intended."
-msgstr ""
+msgstr "Потоковий вигляд ще не працює належним чином."
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:26
 msgid "This is a catch-all email address."
-msgstr ""
+msgstr "Це - всі електронні адреси."
 
 #: frontend/Settings/Mail/Account/Identity.svelte:2
 msgid "This is how you appear to others when you send mail"
-msgstr ""
+msgstr "Саме так ви з’являєтесь для інших при відправці електронної пошти"
 
 #: frontend/Mail/Message/DisplayModeSwitcher.svelte:3
 msgid "Thread"
-msgstr ""
+msgstr "Нитка"
 
 #: frontend/Calendar/ListView.svelte:10
 msgid "Time"
-msgstr ""
+msgstr "Час"
 
 #: frontend/Calendar/ListView.svelte:11
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:101
 msgid "Title"
-msgstr ""
+msgstr "Найменування"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:16
 msgid "Title - Enter the topic of the meeting"
-msgstr ""
+msgstr "Назва - Введіть тему зустрічі"
 
 #: frontend/Settings/Setup/Mail/DisplayConfigServer.svelte:43
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:49
 msgid "TLS"
-msgstr ""
+msgstr "TLS"
 
 #: frontend/Mail/Message/MessageHeader.svelte:18
 msgid "to"
-msgstr ""
+msgstr "по"
 
 #: frontend/Mail/Composer/MailComposer.svelte:28
 #: frontend/Mail/Composer/MailComposer.svelte:60
 #: frontend/Mail/Composer/MailComposer.svelte:69
 msgid "To"
-msgstr ""
+msgstr "На"
 
 #: frontend/Settings/Mail/Account/SentByExplainer.svelte:6
 msgid "To use {0} professionally and remove this note, you can subscribe to one of our plans."
-msgstr ""
+msgstr "Щоб використовувати професійний {0} та видалити цю замітку, ви можете підписатися на один з наших планів."
 
 #: frontend/Mail/MailChat/MailMessage.svelte:5
 msgid "to:"
-msgstr ""
+msgstr "до:"
 
 #: frontend/Meet/Start/StartScreen.svelte:21
 msgid "Today's next meetings"
-msgstr ""
+msgstr "Наступні зустрічі сьогодні"
 
 #: frontend/Mail/Message/MessageMenu.svelte:43
 msgid "Translate"
-msgstr ""
+msgstr "Переклад"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:3
 msgid "Turn camera off"
-msgstr ""
+msgstr "Вимкнути камеру"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:3
 msgid "Turn camera on"
-msgstr ""
+msgstr "Увімкнути камеру"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:159
 msgid "Undo the last change"
-msgstr ""
+msgstr "Скасувати останні зміни"
 
 #: frontend/Settings/Setup/Mail/DisplayConfigServer.svelte:52
 msgid "Unknown"
-msgstr ""
+msgstr "Не вказано"
 
 #: frontend/Mail/Message/MessageBody.svelte:23
 msgid "Unknown display mode"
-msgstr ""
+msgstr "Невідомий режим відображення"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:3
 msgid "Unmute"
-msgstr ""
+msgstr "Увімк. звук"
 
 #: frontend/Mail/Search/SearchPane.svelte:22
 msgid "Unread"
-msgstr ""
+msgstr "Непрочитані"
 
 #: frontend/Mail/Message/MessageMenu.svelte:41
 msgid "Use an online translation service to translate this message to your default language."
-msgstr ""
+msgstr "Використовувати онлайн сервіс перекладу для перекладу цього повідомлення на мову за замовчуванням."
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:9
 msgid "Use as"
-msgstr ""
+msgstr "Використовувати як"
 
 #: frontend/Settings/AccountURLServer.svelte:4
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:8
 msgid "Username"
-msgstr ""
+msgstr "Ім'я користувача"
 
 #: frontend/Settings/Chat/AccountXMPPServer.svelte:4
 msgid "Username JID"
-msgstr ""
+msgstr "Username JID"
 
 #: frontend/Settings/Setup/Import/Passwords.svelte:26
 #: frontend/Settings/Setup/Mail/CheckConfig.svelte:2
 msgid "Verifying that the configuration works..."
-msgstr ""
+msgstr "Перевірка роботи конфігурації..."
 
 #: frontend/Mail/LeftPane/ViewSwitcher.svelte:12
 msgid "Vertical view"
-msgstr ""
+msgstr "Вертикальний вигляд"
 
 #: frontend/Chat/PersonHeader.svelte:9
 #: frontend/Contacts/PersonDetails.svelte:41
 msgid "Video call"
-msgstr ""
+msgstr "Відеодзвінок"
 
 #: frontend/Settings/Setup/Mail/FindConfig.svelte:2
 msgid "We are looking for the configuration of your email account..."
-msgstr ""
+msgstr "Ми шукаємо конфігурацію вашого облікового запису..."
 
 #: frontend/Settings/Setup/Mail/FindConfig.svelte:23
 msgid "We could not find a configuration for {0}"
-msgstr ""
+msgstr "Ми не змогли знайти конфігурацію для {0}"
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:52
 msgid "We found a configuration"
-msgstr ""
+msgstr "Ми знайшли конфігурацію"
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:47
 msgid "We found the configuration in our database."
-msgstr ""
+msgstr "Ми знайшли конфігурацію в нашій базі даних."
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:49
 msgid "We guessed a configuration that might work."
-msgstr ""
+msgstr "Ми здогадалися про конфігурацію, яка може спрацювати."
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:51
 msgid "We received the configuration for Microsoft Exchange"
-msgstr ""
+msgstr "Ми отримали конфігурацію Microsoft Exchange"
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:50
 msgid "We received the configuration from Microsoft Exchange."
-msgstr ""
+msgstr "Ми отримали конфігурацію з Microsoft Exchange."
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:48
 msgid "We received the configuration from your email provider."
-msgstr ""
+msgstr "Ми отримали конфігурацію від вашого постачальника пошти."
 
 #: frontend/WebApps/Shop/AppShopButton.svelte:12
 msgid "Website"
-msgstr ""
+msgstr "Вебсайт"
 
 #: frontend/Calendar/ViewSelector.svelte:17
 msgid "Week"
-msgstr ""
+msgstr "Тижні"
 
 #: frontend/Contacts/ContactEntryUI.svelte:77
 msgid "WhatsApp"
-msgstr ""
+msgstr "WhatsApp"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:67
 msgid "When"
-msgstr ""
+msgstr "Коли"
 
 #: frontend/Settings/Mail/Notifications.svelte:6
 msgid "When a new mail arrives, show with:"
-msgstr ""
+msgstr "При прибутті з'являться нові повідомлення:"
 
 #: frontend/Settings/Mail/Send.svelte:6
 msgid "When replying:"
-msgstr ""
+msgstr "Під час відповіді:"
 
 #: frontend/Mail/Message/DisplayModeSwitcher.svelte:21
 msgid "With external content (allows sender to track you)"
-msgstr ""
+msgstr "З зовнішнім вмістом (дозволяє відправнику відстежувати Вас)"
 
 #: frontend/Contacts/ContactEntryUI.svelte:74
 msgid "Work"
-msgstr ""
+msgstr "Праця"
 
 #: frontend/Settings/Setup/Import/Passwords.svelte:36
 msgid "Workspace"
-msgstr ""
+msgstr "Робоча область"
 
 #: frontend/Mail/LeftPane/ProjectList.svelte:4
 msgid "Workspaces"
-msgstr ""
+msgstr "Робочі області"
 
 #: frontend/Settings/Setup/Mail/WorkspaceSelector.svelte:2
 msgid "Workspaces allow you organize yourself. You can change this at any time, by going to Settings in the title bar."
-msgstr ""
+msgstr "Робочі області дозволяють вам організувати себе. Це можна змінити в будь-який час, перейшовши до налаштувань в заголовку барі."
 
 #: frontend/Mail/LeftPane/WriteButton.svelte:2
 msgid "Write new email"
-msgstr ""
+msgstr "Написати нову електронну пошту"
 
 #: frontend/Settings/Setup/Chat/SelectProtocol.svelte:34
 msgid "XMPP / Jabber"
-msgstr ""
+msgstr "XMPP / Jabber"
 
 #: frontend/Meet/Video/ParticipatingVideo.svelte:7
 msgid "You"
-msgstr ""
+msgstr "Ви"
 
 #: frontend/Meet/ParticipantListItem.svelte:67
 #: frontend/Meet/ParticipantListItem.svelte:75
 #: frontend/Meet/ParticipantListItem.svelte:80
 msgid "You are not a moderator"
-msgstr ""
+msgstr "Ви не модератор"
 
 #: frontend/Settings/About/Licenses.svelte:
 msgid "You can find the source code of # core at # under an #."
-msgstr ""
+msgstr "Ви можете знайти вихідний код # ядра # в # нижче #."
 
 #: frontend/Settings/Setup/Chat/SelectProtocol.svelte:3
 msgid "You can use {0} with your existing chat account or you can create a new chat account."
-msgstr ""
+msgstr "Ви можете використовувати {0} з існуючим обліковим записом чату, або ви можете створити новий обліковий запис в чаті."
 
 #: frontend/Settings/Setup/Mail/EmailAddressPassword.svelte:1
 msgid "You can use {0} with your existing email address or you can make a new email address."
-msgstr ""
+msgstr "Ви можете використовувати {0} з існуючою електронною адресою або зробити нову адресу електронної пошти."
 
 #: frontend/Settings/Setup/Chat/MatrixLogin.svelte:3
 msgid "You can use {0} with your existing Matrix account or you can create a new Matrix account."
-msgstr ""
+msgstr "Ви можете використовувати {0} з існуючим обліковим записом Matrix, або ви можете створити новий обліковий запис Matrix."
 
 #: frontend/Settings/Setup/Chat/XMPPLogin.svelte:3
 msgid "You can use {0} with your existing XMPP or Jabber account."
-msgstr ""
+msgstr "Ви можете використовувати {0} з існуючим обліковим записом XMPP або Jabber."
 
 #: frontend/Meet/Start/Calling.svelte:81
 msgid "You have a meeting in {0} minutes:"
@@ -1937,46 +1940,46 @@ msgstr ""
 
 #: frontend/Meet/Start/Calling.svelte:11
 msgid "You're calling..."
-msgstr ""
+msgstr "Ви телефонуєте..."
 
 #: frontend/Settings/Setup/Meet/M3Login.svelte:7
 msgid "Your {0} email address"
-msgstr ""
+msgstr "Ваша {0} адреса електронної пошти"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:18
 msgid "Your cameras"
-msgstr ""
+msgstr "Ваші камери"
 
 #: frontend/Settings/Setup/Mail/FinalizeConfig.svelte:2
 msgid "Your email account is working and ready to be used."
-msgstr ""
+msgstr "Ваш обліковий запис електронної пошти працює і готовий до використання."
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:17
 msgid "Your email address"
-msgstr ""
+msgstr "Ваша електронна адреса"
 
 #: frontend/Settings/Mail/Account/Server.svelte:3
 #: frontend/Settings/Setup/Mail/manual/ManualConfigPage.svelte:3
 msgid "Your email provider or company can tell you these details."
-msgstr ""
+msgstr "Ваш провайдер електронної пошти або компанія може розповісти вам ці подробиці."
 
 #: frontend/Settings/Setup/Chat/XMPPLogin.svelte:7
 msgid "Your JID"
-msgstr ""
+msgstr "Ваш JID"
 
 #: frontend/Settings/Setup/Chat/MatrixLogin.svelte:7
 msgid "Your Matrix ID"
-msgstr ""
+msgstr "Ваш ID матриці"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:18
 msgid "Your microphones"
-msgstr ""
+msgstr "Ваші мікрофони"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:14
 msgid "Your name"
-msgstr ""
+msgstr "Ваше ім'я"
 
 #: frontend/Settings/Setup/Shared/Password.svelte:3
 msgid "Your password"
-msgstr ""
+msgstr "Ваш пароль"
 

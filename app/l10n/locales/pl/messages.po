@@ -5,77 +5,80 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
-"Language: en\n"
+"Language: pl\n"
 "Project-Id-Version: mustang\n"
 "Report-Msgid-Bugs-To: \n"
 "PO-Revision-Date: 2024-06-28 17:58\n"
 "Last-Translator: \n"
-"Language-Team: English\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language-Team: Polish\n"
+"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
 "X-Crowdin-Project: mustang\n"
 "X-Crowdin-Project-ID: 689789\n"
-"X-Crowdin-Language: en\n"
+"X-Crowdin-Language: pl\n"
 "X-Crowdin-File: /locales/en/messages.po\n"
 "X-Crowdin-File-ID: 32\n"
 
 #: frontend/Mail/Search/SearchPane.svelte:64
 msgid "{0} account only"
-msgstr ""
+msgstr "Tylko konto {0}"
 
 #: frontend/Mail/Search/SearchPane.svelte:74
 msgid "{0} folder only"
-msgstr ""
+msgstr "Tylko folder {0}"
 
 #: frontend/Settings/About/Licenses.svelte:12
 msgid "{0} is built using the following Open-Source components.\n"
 "  We sincerely thank those authors and contributors."
-msgstr ""
+msgstr "{0} jest budowany przy użyciu następujących komponentów Open-Source.\n"
+"  Szczerze dziękujemy tym autorom i współtwórcom."
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:26
 msgid "{0} local messages."
-msgstr ""
+msgstr "{0} lokalnych wiadomości."
 
 #: frontend/Mail/Search/SearchPane.svelte:88
 msgid "{0} mails"
-msgstr ""
+msgstr "{0} mails"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:19
 msgid "{0} new,\n"
 "          {1} unread,\n"
 "          {2} total messages."
-msgstr ""
+msgstr "{0} nowe,\n"
+"          {1} nieprzeczytane,\n"
+"          {2} wszystkie wiadomości."
 
 #: frontend/Settings/Setup/Meet/SelectProtocol.svelte:30
 msgid "{0} video conference account"
-msgstr ""
+msgstr "Konto wideokonferencji {0}"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:83
 msgid "* Item"
-msgstr ""
+msgstr "* Element"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:7
 msgid "*bold* or **bold**"
-msgstr ""
+msgstr "*pogrubiony* lub **pogrubiony**"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:17
 msgid "/italic/ or _italic_"
-msgstr ""
+msgstr "/italic/ or _italic_"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:36
 msgid "\\`code\\`"
-msgstr ""
+msgstr "\\`kod\\`"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:102
 msgid "# Big title"
-msgstr ""
+msgstr "# Duży tytuł"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:112
 msgid "## Sub header"
-msgstr ""
+msgstr "## Podnagłówek"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:122
 msgid "### Sub sub header"
-msgstr ""
+msgstr "### Podnagłówek"
 
 #: frontend/Meet/Start/StartScreen.svelte:84
 msgid "<p>\n"
@@ -87,23 +90,31 @@ msgid "<p>\n"
 "        <li>Next steps</li>\n"
 "      </ol>\n"
 "    </p>"
-msgstr ""
+msgstr "<p>\n"
+"      Cele spotkania to:\n"
+"      <ol>\n"
+"        <li>Przegląd specyfikacji UX dla Meet App</li>\n"
+"        <li>Omówienie opinii</li>\n"
+"        <li>Decyzja, czy kontynuować</li>\n"
+"        <li>Kolejne kroki</li>\n"
+"      </ol>\n"
+"    </p>"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:62
 msgid "> Quote"
-msgstr ""
+msgstr "> Oferta"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:92
 msgid "1. Item"
-msgstr ""
+msgstr "1. Pozycja"
 
 #: frontend/Calendar/ViewSelector.svelte:23
 msgid "4 Weeks"
-msgstr ""
+msgstr "4 tygodnie"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:13
 msgid "A"
-msgstr ""
+msgstr "Pr"
 
 #: frontend/Settings/Setup/Mail/FindConfig.svelte:32
 msgid "A configuration for your account {0} may be available at:\\n\\n{1}\\n\\nDo you want to submit your password there?"
@@ -111,202 +122,202 @@ msgstr ""
 
 #: frontend/Settings/SettingsCategories.ts:120
 msgid "About"
-msgstr ""
+msgstr "O programie"
 
 #: frontend/Meet/Start/Calling.svelte:61
 msgid "Accept call"
-msgstr ""
+msgstr "Akceptuj połączenie"
 
 #: frontend/Settings/AccountGeneral.svelte:2
 msgid "Account name"
-msgstr ""
+msgstr "Nazwa konta"
 
 #: frontend/Mail/LeftPane/AccountList.svelte:5
 #: frontend/Settings/Window/AccountsList.svelte:4
 msgid "Accounts"
-msgstr ""
+msgstr "Konta"
 
 #: frontend/Settings/Mail/Account/Identity.svelte:4
 #: frontend/WebApps/Shop/AppShopButton.svelte:20
 msgid "Add"
-msgstr ""
+msgstr "Dodaj"
 
 #: frontend/Mail/Composer/Attachments/AttachmentsPane.svelte:9
 msgid "Add attachment"
-msgstr ""
+msgstr "Dodaj załącznik"
 
 #: frontend/Mail/Composer/MailComposer.svelte:67
 msgid "Add BCC recipient"
-msgstr ""
+msgstr "Dodaj odbiorcę BCC"
 
 #: frontend/Mail/Composer/MailComposer.svelte:58
 msgid "Add CC recipient"
-msgstr ""
+msgstr "Dodaj odbiorcę CC"
 
 #: frontend/Meet/ParticipantSearch.svelte:2
 msgid "Add or search a participant"
-msgstr ""
+msgstr "Dodaj lub przeszukaj użytkownika"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:19
 msgid "Add participants"
-msgstr ""
+msgstr "Dodaj uczestników"
 
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:42
 msgid "Add person"
-msgstr ""
+msgstr "Dodaj osobę"
 
 #: frontend/Mail/Composer/MailComposer.svelte:34
 msgid "Add recipient"
-msgstr ""
+msgstr "Dodaj odbiorcę"
 
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:14
 msgid "Add this person"
-msgstr ""
+msgstr "Dodaj tę osobę"
 
 #: frontend/Settings/Mail/Read.svelte:
 msgid "After displaying for # seconds"
-msgstr ""
+msgstr "Po wyświetleniu przez # sekund"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:86
 msgid "Alarm"
-msgstr ""
+msgstr "Alarm"
 
 #: frontend/Mail/LeftPane/ProjectList.svelte:7
 #: frontend/Settings/SettingsCategories.ts:44
 msgid "All"
-msgstr ""
+msgstr "Wszystkie"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:84
 msgid "All day"
-msgstr ""
+msgstr "Cały dzień"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:24
 msgid "All downloaded."
-msgstr ""
+msgstr "Wszystkie pobrane."
 
 #: frontend/Chat/MessageView/IncomingCallUI.svelte:4
 msgid "Answer"
-msgstr ""
+msgstr "Odpowiedz"
 
 #: frontend/Settings/SettingsCategories.ts:109
 msgid "App integration"
-msgstr ""
+msgstr "Integracja z aplikacją"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:18
 #: frontend/Settings/Mail/NotificationKinds.svelte:18
 msgid "Appbar"
-msgstr ""
+msgstr "Pasek aplikacji"
 
 #: frontend/Settings/SettingsCategories.ts:46
 #: frontend/Settings/SettingsCategories.ts:52
 #: frontend/Settings/SettingsCategories.ts:68
 #: frontend/Settings/SettingsCategories.ts:99
 msgid "Appearance"
-msgstr ""
+msgstr "Wygląd"
 
 #: frontend/WebApps/WebAppsMustangApp.ts:10
 msgid "Apps"
-msgstr ""
+msgstr "Aplikacje"
 
 #: frontend/Settings/AccountGeneral.svelte:23
 msgid "Are you sure that you want to the delete account {0} from {1} and all related data?"
-msgstr ""
+msgstr "Czy na pewno chcesz usunąć konto {0} z {1} i wszystkie powiązane dane?"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:35
 msgid "Are you sure that you want to the delete folder {0} and all messages in it? This will also delete it on the server."
-msgstr ""
+msgstr "Czy na pewno chcesz usunąć folder {0} i wszystkie wiadomości w nim? Spowoduje to również usunięcie go z serwera."
 
 #: frontend/Mail/Composer/Attachments/FileDropTarget.svelte:15
 msgid "Attach file"
-msgstr ""
+msgstr "Dołącz plik"
 
 #: frontend/Mail/Search/SearchPane.svelte:32
 msgid "Attachment"
-msgstr ""
+msgstr "Załącznik"
 
 #: frontend/Mail/Message/AttachmentUI.svelte:39
 msgid "Attachment file is missing"
-msgstr ""
+msgstr "Brak pliku załącznika"
 
 #: frontend/Mail/Composer/MailComposer.svelte:77
 msgid "Attachments"
-msgstr ""
+msgstr "Załączniki"
 
 #: frontend/Settings/Setup/Mail/DisplayConfigServer.svelte:40
 msgid "Attackers can read your password and mails"
-msgstr ""
+msgstr "Atakujący mogą czytać Twoje hasło i wiadomości"
 
 #: frontend/Chat/PersonHeader.svelte:11
 msgid "Audio call"
-msgstr ""
+msgstr "Połączenie audio"
 
 #: frontend/Shared/Auth/OAuth2DialogUI.svelte:2
 msgid "Authentication"
-msgstr ""
+msgstr "Uwierzytelnianie"
 
 #: frontend/Shared/Auth/OAuth2DialogUI.svelte:20
 msgid "Authentication dialog was closed"
-msgstr ""
+msgstr "Okno dialogowe uwierzytelniania zostało zamknięte"
 
 #: frontend/Shared/Auth/OAuth2DialogUI.svelte:24
 msgid "Authentication dialog was closed due to inaction"
-msgstr ""
+msgstr "Okno dialogowe uwierzytelniania zostało zamknięte z powodu bezczynności"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:7
 msgid "Authentication method"
-msgstr ""
+msgstr "Metoda uwierzytelniania"
 
 #: frontend/MainWindow/MainWindow.svelte:79
 msgid "Bad dark mode "
-msgstr ""
+msgstr "Błędny tryb ciemny "
 
 #: frontend/Mail/Message/MessageHeader.svelte:30
 msgid "bcc"
-msgstr ""
+msgstr "bcc"
 
 #: frontend/Mail/Composer/MailComposer.svelte:49
 #: frontend/Mail/Composer/MailComposer.svelte:66
 msgid "Bcc"
-msgstr ""
+msgstr "Bcc"
 
 #: frontend/Mail/Composer/MailComposer.svelte:37
 #: frontend/Mail/Composer/MailComposer.svelte:61
 msgid "BCC"
-msgstr ""
+msgstr "BCC"
 
 #: frontend/Settings/SettingsCategories.ts:115
 msgid "Billing"
-msgstr ""
+msgstr "Płatność"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:6
 msgid "Bold"
-msgstr ""
+msgstr "Bold"
 
 #: frontend/Settings/Setup/Mail/manual/OAuth2Manual.svelte:10
 msgid "Browser"
-msgstr ""
+msgstr "Przeglądarki"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:16
 msgid "Bubble on the appbar in {0}"
-msgstr ""
+msgstr "Bańka na pasku aplikacji w {0}"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:22
 msgid "Bubble on the system task bar"
-msgstr ""
+msgstr "Bańka na systemowym pasku zadań"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:82
 msgid "Bulleted list"
-msgstr ""
+msgstr "Lista wypunktowana"
 
 #: frontend/Calendar/CalendarMustangApp.ts:13
 #: frontend/Settings/SettingsCategories.ts:81
 msgid "Calendar"
-msgstr ""
+msgstr "Kalendarz"
 
 #: frontend/Contacts/PersonDetails.svelte:45
 #: frontend/Meet/Start/Calling.svelte:61
 msgid "Call"
-msgstr ""
+msgstr "Połącz"
 
 #: frontend/Meet/Start/StartScreen.svelte:5
 msgid "Call {0}"
@@ -315,49 +326,49 @@ msgstr ""
 #: frontend/Meet/InMeetingToolbar.svelte:23
 #: frontend/Meet/ParticipantListItem.svelte:29
 msgid "Camera"
-msgstr ""
+msgstr "Aparat"
 
 #: frontend/Meet/Start/Calling.svelte:45
 #: frontend/Settings/Setup/Shared/ButtonsBottom.svelte:10
 msgid "Cancel"
-msgstr ""
+msgstr "Anuluj"
 
 #: frontend/Settings/Mail/Account/Identity.svelte:46
 msgid "Cannot remove the last identity"
-msgstr ""
+msgstr "Nie można usunąć ostatniej tożsamości"
 
 #: frontend/Mail/Message/MessageHeader.svelte:24
 msgid "cc"
-msgstr ""
+msgstr "cc"
 
 #: frontend/Mail/Composer/MailComposer.svelte:43
 #: frontend/Mail/Composer/MailComposer.svelte:57
 msgid "Cc"
-msgstr ""
+msgstr "Cc"
 
 #: frontend/Mail/Composer/MailComposer.svelte:36
 #: frontend/Mail/Composer/MailComposer.svelte:70
 msgid "CC"
-msgstr ""
+msgstr "CC"
 
 #: frontend/Chat/ChatMustangApp.ts:8
 #: frontend/Contacts/PersonDetails.svelte:89
 #: frontend/Contacts/PersonDetails.svelte:188
 #: frontend/Settings/SettingsCategories.ts:66
 msgid "Chat"
-msgstr ""
+msgstr "Czat"
 
 #: frontend/Mail/LeftPane/ViewSwitcher.svelte:3
 msgid "Chat-like mail view"
-msgstr ""
+msgstr "Widok pocztowy podobny do czatu"
 
 #: frontend/Mail/LeftPane/ViewSwitcher.svelte:22
 msgid "Classic 3-pane view"
-msgstr ""
+msgstr "Klasyczny 3-panowy widok"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:151
 msgid "Clear formatting"
-msgstr ""
+msgstr "Wyczyść formatowanie"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:7
 #: frontend/Mail/FolderProperties.svelte:14
@@ -365,641 +376,641 @@ msgstr ""
 #: frontend/Shared/Browser.svelte:12
 #: frontend/WebApps/Shop/AppStore.svelte:8
 msgid "Close"
-msgstr ""
+msgstr "Zamknij"
 
 #: frontend/MainWindow/WindowHeader.svelte:21
 msgid "Close entire app"
-msgstr ""
+msgstr "Zamknij całą aplikację"
 
 #: frontend/Meet/InMeetingToolbar.svelte:63
 msgid "Close participants list"
-msgstr ""
+msgstr "Zamknij listę uczestników"
 
 #: frontend/Settings/Window/SettingsApp.svelte:10
 msgid "Close settings"
-msgstr ""
+msgstr "Zamknij ustawienia"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:35
 msgid "Code word, within a phrase"
-msgstr ""
+msgstr "Kod słowa, w ramach frazy"
 
 #: frontend/Shared/ExpandSection.svelte:10
 #: frontend/Shared/FastTreeItem.svelte:5
 msgid "Collapse"
-msgstr ""
+msgstr "Zwiń"
 
 #: frontend/Meet/MeetingNotes.svelte:11
 msgid "Collapse description"
-msgstr ""
+msgstr "Zwiń opis"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:42
 msgid "Company"
-msgstr ""
+msgstr "W związku z tym Komisja odrzuciła ten argument."
 
 #: frontend/Mail/MailMustangApp.ts:45
 msgid "Compose"
-msgstr ""
+msgstr "Napisz"
 
 #: frontend/Settings/Mail/Send.svelte:38
 msgid "Composition"
-msgstr ""
+msgstr "Skład"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:6
 msgid "Connection encryption"
-msgstr ""
+msgstr "Szyfrowanie połączeń"
 
 #: frontend/Contacts/ContactsMustangApp.ts:8
 #: frontend/Contacts/ContactsMustangApp.ts:12
 #: frontend/Settings/SettingsCategories.ts:89
 msgid "Contacts"
-msgstr ""
+msgstr "Kontakty"
 
 #: frontend/Settings/Setup/Import/SelectAccounts.svelte:3
 msgid "Continue to use your accounts from Thunderbird"
-msgstr ""
+msgstr "Kontynuuj korzystanie ze swoich kont przez Thunderbird"
 
 #: frontend/Contacts/ContactEntryUI.svelte:30
 msgid "Copied to clipboard ✓"
-msgstr ""
+msgstr "Skopiowano do schowka ✓"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:33
 msgid "Copy"
-msgstr ""
+msgstr "Kopiuj"
 
 #: frontend/Contacts/ContactEntryUI.svelte:28
 msgid "Copy info to clipboard"
-msgstr ""
+msgstr "Skopiuj informacje do schowka"
 
 #: frontend/Meet/ParticipantSearch.svelte:11
 msgid "Copy invitation link"
-msgstr ""
+msgstr "Kopiuj link zaproszenia"
 
 #: frontend/Settings/About/About.svelte:
 msgid "Copyright 2024 Ben Bucksch, #, and other contributors"
-msgstr ""
+msgstr "Copyright 2024 Ben Bucksch, #, i inni współtwórcy"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:14
 msgid "Correspondent"
-msgstr ""
+msgstr "Korespondent"
 
 #: frontend/Calendar/EditEvent/TimeInput.svelte:23
 msgid "Could not interpret value as a time"
-msgstr ""
+msgstr "Nie można zinterpretować wartości jako czasu"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:70
 msgid "CRAM MD5"
-msgstr ""
+msgstr "MD5 CRAM"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:5
 #: frontend/Settings/Mail/Account/FolderActions.svelte:18
 msgid "Create sub-folder"
-msgstr ""
+msgstr "Utwórz podfolder"
 
 #: frontend/Settings/Setup/Contacts/LocalAddressbook.svelte:2
 msgid "Create your new local addressbook"
-msgstr ""
+msgstr "Utwórz swoją nową lokalną książkę adresową"
 
 #: frontend/Settings/Setup/Calendar/LocalCalendar.svelte:2
 msgid "Create your new local calendar"
-msgstr ""
+msgstr "Utwórz swój nowy lokalny kalendarz"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:168
 msgid "Ctrl-Y"
-msgstr ""
+msgstr "Ctrl-Y"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:160
 msgid "Ctrl-Z"
-msgstr ""
+msgstr "Ctrl-Z"
 
 #: frontend/Settings/Global/DarkMode.svelte:21
 msgid "Dark"
-msgstr ""
+msgstr "Ciemny"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:16
 msgid "Date"
-msgstr ""
+msgstr "Data"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:69
 #: frontend/Calendar/ViewSelector.svelte:14
 msgid "Day"
-msgstr ""
+msgstr "Dzień"
 
 #: frontend/Calendar/ViewSelector.svelte:26
 msgid "Day/Month"
-msgstr ""
+msgstr "Dzień/Miesiąc"
 
 #: frontend/Calendar/ViewSelector.svelte:29
 msgid "days"
-msgstr ""
+msgstr "dni"
 
 #: frontend/Calendar/EditEvent/DurationUnit.svelte:4
 msgid "Days"
-msgstr ""
+msgstr "Dni"
 
 #: frontend/Meet/Start/Calling.svelte:52
 msgid "Decline call"
-msgstr ""
+msgstr "Odrzuć połączenie"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:37
 msgid "Default: {0}"
-msgstr ""
+msgstr "Domyślnie: {0}"
 
 #: frontend/Contacts/PersonMenu.svelte:13
 #: frontend/Mail/Message/MessageMenu.svelte:30
 msgid "Delete"
-msgstr ""
+msgstr "Usuń"
 
 #: frontend/Settings/AccountGeneral.svelte:7
 msgid "Delete account"
-msgstr ""
+msgstr "Usuń konto"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:12
 msgid "Delete folder"
-msgstr ""
+msgstr "Usuń folder"
 
 #: frontend/Mail/Message/MessageMenu.svelte:35
 msgid "Delete the message, and train the spam filter"
-msgstr ""
+msgstr "Usuń wiadomość i wyszkol filtr spamu"
 
 #: frontend/Contacts/PersonMenu.svelte:15
 msgid "Delete this contact"
-msgstr ""
+msgstr "Usuń ten kontakt"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:6
 msgid "Delete this identity"
-msgstr ""
+msgstr "Usuń tę tożsamość"
 
 #: frontend/Contacts/ContactEntryUI.svelte:17
 msgid "Delete this information"
-msgstr ""
+msgstr "Usuń tę informację"
 
 #: frontend/Mail/3pane/TableMessageListItem.svelte:50
 #: frontend/Mail/Message/MessageToolbar.svelte:27
 msgid "Delete this message"
-msgstr ""
+msgstr "Usuń tę wiadomość"
 
 #: frontend/Contacts/PersonDetails.svelte:28
 msgid "Department"
-msgstr ""
+msgstr "Departament"
 
 #: frontend/Settings/SettingsCategories.ts:100
 msgid "Devices"
-msgstr ""
+msgstr "Urządzenia"
 
 #: frontend/Mail/Composer/MailComposer.svelte:9
 msgid "Discard and close"
-msgstr ""
+msgstr "Odrzucić i zamknąć"
 
 #: frontend/Settings/Mail/Send.svelte:28
 msgid "Do not quote"
-msgstr ""
+msgstr "Nie cytuj"
 
 #: frontend/Meet/Start/Calling.svelte:9
 msgid "Do you want to call?"
-msgstr ""
+msgstr "Czy chcesz zadzwonić?"
 
 #: frontend/Contacts/SameName.svelte:55
 msgid "Do you want to merge the 2 contacts, i.e. copy the data from the other contact into this contact, and delete the other contact?"
-msgstr ""
+msgstr "Czy chcesz scalić 2 kontakty, tj. skopiować dane z innego kontaktu do tego kontaktu i usunąć drugi kontakt?"
 
 #: frontend/Mail/Message/drag.ts:35
 msgid "Drag&drop failed: Selected message ID doesn't match the drag data"
-msgstr ""
+msgstr "Nie udało się przeciągnąć &upuść: Wybrany identyfikator wiadomości nie pasuje do danych przeciągnięcia"
 
 #: frontend/Mail/Message/drag.ts:38
 msgid "Drag&drop failed: Selected message IDs don't match the drag data"
-msgstr ""
+msgstr "Przeciąganie nie powiodło się: Wybrane identyfikatory wiadomości nie pasują do danych przeciągnięcia"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:78
 msgid "Duration"
-msgstr ""
+msgstr "Czas trwania"
 
 #: frontend/Contacts/ContactEntryUI.svelte:27
 #: frontend/Contacts/EditableSimpleText.svelte:13
 #: frontend/Shared/PersonAutocomplete/PersonPopup.svelte:69
 msgid "Edit"
-msgstr ""
+msgstr "Edytuj"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:4
 msgid "Edit event"
-msgstr ""
+msgstr "Edytuj wydarzenie"
 
 #: frontend/Shared/PersonAutocomplete/PersonPopup.svelte:44
 msgid "Edit name and email address"
-msgstr ""
+msgstr "Edytuj nazwę i adres e-mail"
 
 #: frontend/Shared/PersonAutocomplete/PersonPopup.svelte:26
 msgid "Email address to be used here"
-msgstr ""
+msgstr "Adres e-mail do użycia tutaj"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:75
 msgid "End"
-msgstr ""
+msgstr "Koniec"
 
 #: frontend/Shared/PersonAutocomplete/PersonPopup.svelte:22
 msgid "Enter a name for the person"
-msgstr ""
+msgstr "Wprowadź imię i nazwisko osoby"
 
 #: frontend/Meet/Start/StartScreen.svelte:13
 msgid "Enter meeting link to join"
-msgstr ""
+msgstr "Wprowadź link do spotkania, aby dołączyć"
 
 #: frontend/Files/FileOrDirectoryLine.svelte:39
 msgid "entries"
-msgstr ""
+msgstr "wpisy"
 
 #: frontend/Calendar/CalendarMustangApp.ts:30
 msgid "Event"
-msgstr ""
+msgstr "Wydarzenie"
 
 #: frontend/Shared/ExpandSection.svelte:10
 #: frontend/Shared/FastTreeItem.svelte:5
 msgid "Expand"
-msgstr ""
+msgstr "Rozwiń"
 
 #: frontend/Files/GenericFileTypesList.svelte:5
 msgid "File type"
-msgstr ""
+msgstr "Typ pliku"
 
 #: frontend/Files/FilesMustangApp.ts:8
 msgid "Files"
-msgstr ""
+msgstr "Pliki"
 
 #: frontend/Meet/Start/StartScreen.svelte:83
 msgid "Final Approval UX Meet"
-msgstr ""
+msgstr "Ostateczne zatwierdzenie UX Poznaj"
 
 #: frontend/Contacts/ContactEntryUI.svelte:16
 #: frontend/Contacts/EditableSimpleText.svelte:6
 msgid "Finish editing and save"
-msgstr ""
+msgstr "Zakończ edycję i zapisz"
 
 #: frontend/Contacts/PersonDetails.svelte:33
 msgid "First Lastname"
-msgstr ""
+msgstr "Imię"
 
 #: frontend/Contacts/PersonDetails.svelte:16
 msgid "First name"
-msgstr ""
+msgstr "Imię"
 
 #: frontend/Contacts/PersonDetails.svelte:11
 msgid "First name Last name"
-msgstr ""
+msgstr "Imię Nazwisko"
 
 #: frontend/Files/FileOrDirectoryLine.svelte:32
 msgid "Folder"
-msgstr ""
+msgstr "Folder"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:2
 msgid "Folder name"
-msgstr ""
+msgstr "Nazwa folderu"
 
 #: frontend/Mail/LeftPane/FolderLine.svelte:10
 msgid "Folder properties"
-msgstr ""
+msgstr "Właściwości folderu"
 
 #: frontend/Mail/LeftPane/FolderList.svelte:5
 #: frontend/Settings/Mail/Account/Folders.svelte:2
 #: frontend/Settings/SettingsCategories.ts:63
 msgid "Folders"
-msgstr ""
+msgstr "Foldery"
 
 #: frontend/Mail/Search/SearchPane.svelte:11
 msgid "for"
-msgstr ""
+msgstr "dla"
 
 #: frontend/Mail/Message/DisplayModeSwitcher.svelte:12
 msgid "Formatted"
-msgstr ""
+msgstr "Sformatowane"
 
 #: frontend/Mail/Message/MessageMenu.svelte:18
 msgid "Forward"
-msgstr ""
+msgstr "Przekaż"
 
 #: frontend/Settings/Setup/Import/SelectAccounts.svelte:9
 msgid "Found {0} imported accounts"
-msgstr ""
+msgstr "Znaleziono zaimportowane konta {0}"
 
 #: frontend/Settings/Mail/Notifications.svelte:17
 msgid "From people in my address book"
-msgstr ""
+msgstr "Od osób w mojej książce adresowej"
 
 #: frontend/Settings/SettingsCategories.ts:42
 msgid "General"
-msgstr ""
+msgstr "Ogólny"
 
 #: frontend/Mail/LeftPane/GetMailButton.svelte:3
 msgid "Get mail"
-msgstr ""
+msgstr "Pobierz pocztę"
 
 #: frontend/Settings/Setup/Mail/SetupMail.svelte:40
 msgid "Get new email address"
-msgstr ""
+msgstr "Pobierz nowy adres e-mail"
 
 #: frontend/Meet/InMeetingToolbar.svelte:4
 msgid "Go back to meeting"
-msgstr ""
+msgstr "Wróć do spotkania"
 
 #: frontend/Calendar/WeekView.svelte:6
 msgid "Go back to today"
-msgstr ""
+msgstr "Wróć do dzisiaj"
 
 #: frontend/Contacts/PersonDetails.svelte:151
 msgid "Groups"
-msgstr ""
+msgstr "Grupy"
 
 #: frontend/Meet/InMeetingToolbar.svelte:42
 msgid "Hand raised"
-msgstr ""
+msgstr "Podniesiona ręka"
 
 #: frontend/Meet/Start/Calling.svelte:52
 msgid "Hang up"
-msgstr ""
+msgstr "Zawieś się"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:111
 msgid "Heading, hierarchy level 2"
-msgstr ""
+msgstr "Kurs, poziom 2 hierarchii"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:121
 msgid "Heading, hierarchy level 3"
-msgstr ""
+msgstr "Kurs, hierarchia poziomu 3"
 
 #: frontend/Settings/Mail/Account/SentByExplainer.svelte:3
 msgid "Help us spread the word about {0}!"
-msgstr ""
+msgstr "Pomóż nam szerzyć słowo o {0}!"
 
 #: frontend/Settings/Setup/Shared/Password.svelte:13
 msgid "Hide password"
-msgstr ""
+msgstr "Ukryj hasło"
 
 #: frontend/Contacts/ContactEntryUI.svelte:75
 msgid "Home"
-msgstr ""
+msgstr "Strona główna"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:3
 msgid "Hostname"
-msgstr ""
+msgstr "Hostname"
 
 #: frontend/Calendar/EditEvent/TimeInput.svelte:36
 msgid "Hour moust be less than 24"
-msgstr ""
+msgstr "Godzinny połówek jest mniejszy niż 24"
 
 #: frontend/Calendar/EditEvent/TimeInput.svelte:28
 msgid "Hour must be between 1 and 12 when using am or pm"
-msgstr ""
+msgstr "Godzina musi wynosić od 1 do 12 godzin podczas pracy o godz."
 
 #: frontend/Calendar/EditEvent/DurationUnit.svelte:3
 msgid "Hours"
-msgstr ""
+msgstr "Godziny"
 
 #: frontend/Settings/Mail/Send.svelte:46
 #: frontend/Settings/Mail/Send.svelte:46
 msgid "HTML"
-msgstr ""
+msgstr "HTML"
 
 #: frontend/Settings/Mail/Account/Identity.svelte:2
 msgid "Identities"
-msgstr ""
+msgstr "Tożsamość"
 
 #: frontend/Settings/SettingsCategories.ts:64
 #: frontend/Settings/SettingsCategories.ts:79
 msgid "Identity"
-msgstr ""
+msgstr "Tożsamość"
 
 #: frontend/Settings/Setup/Meet/M3Login.svelte:3
 msgid "If you don't have an account yet, you can subscribe on our website."
-msgstr ""
+msgstr "Jeśli nie masz jeszcze konta, możesz subskrybować na naszej stronie."
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:204
 msgid "Image URL"
-msgstr ""
+msgstr "Adres URL obrazu"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:23
 msgid "IMAP"
-msgstr ""
+msgstr "IMAP"
 
 #: frontend/Settings/Mail/Read.svelte:19
 msgid "Immediately"
-msgstr ""
+msgstr "Natychmiast"
 
 #: frontend/Settings/Setup/Import/SelectAccounts.svelte:2
 msgid "Import accounts"
-msgstr ""
+msgstr "Importuj konta"
 
 #: frontend/Settings/Setup/Import/SelectAccounts.svelte:7
 msgid "Importing accounts..."
-msgstr ""
+msgstr "Importowanie kont..."
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:51
 msgid "In Presence"
-msgstr ""
+msgstr "W obecności"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:13
 msgid "Incoming server"
-msgstr ""
+msgstr "Serwer przychodzący"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:145
 msgid "Insert image"
-msgstr ""
+msgstr "Wstaw obraz"
 
 #: frontend/Mail/Composer/Attachments/FileDropTarget.svelte:11
 msgid "Insert inline into text"
-msgstr ""
+msgstr "Wstaw do tekstu"
 
 #: frontend/Settings/Setup/Mail/manual/OAuth2Manual.svelte:8
 msgid "Inside app UI"
-msgstr ""
+msgstr "Wewnątrz interfejsu aplikacji"
 
 #: frontend/Meet/Start/Calling.svelte:31
 msgid "is calling you..."
-msgstr ""
+msgstr "dzwoni..."
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:16
 msgid "Italic"
-msgstr ""
+msgstr "Italic"
 
 #: frontend/Meet/Start/StartScreen.svelte:14
 msgid "Join"
-msgstr ""
+msgstr "Dołącz"
 
 #: frontend/Mail/Composer/Attachments/AttachmentEntry.svelte:10
 msgid "KB"
-msgstr ""
+msgstr "KB"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:69
 msgid "Kerberos / GSSAPI"
-msgstr ""
+msgstr "Kerberos / GSSAPI"
 
 #: frontend/Contacts/PersonDetails.svelte:18
 msgid "Last name"
-msgstr ""
+msgstr "Nazwisko"
 
 #: frontend/Meet/InMeetingToolbar.svelte:52
 msgid "Leave"
-msgstr ""
+msgstr "Opuść"
 
 #: frontend/Settings/Global/DarkMode.svelte:12
 msgid "Light"
-msgstr ""
+msgstr "Światło"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:131
 msgid "Link to webpage"
-msgstr ""
+msgstr "Link do strony internetowej"
 
 #: frontend/Calendar/ViewSelector.svelte:11
 msgid "List"
-msgstr ""
+msgstr "Lista"
 
 #: frontend/Settings/About/Test.svelte:2
 msgid "Load test data"
-msgstr ""
+msgstr "Dane z badania obciążenia"
 
 #: frontend/MainWindow/MainWindow.svelte:8
 msgid "Loading apps..."
-msgstr ""
+msgstr "Ładowanie aplikacji..."
 
 #: frontend/Mail/Message/MessageBody.svelte:6
 #: frontend/Mail/Message/MessageBody.svelte:16
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:20
 msgid "Loading..."
-msgstr ""
+msgstr "Ładowanie..."
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:52
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:200
 msgid "Location"
-msgstr ""
+msgstr "Lokalizacja"
 
 #: frontend/Mail/MailMustangApp.ts:52
 #: frontend/Settings/Setup/Import/Passwords.svelte:6
 msgid "Login"
-msgstr ""
+msgstr "Logowanie"
 
 #: frontend/Mail/MailMustangApp.ts:33
 msgid "Login to "
-msgstr ""
+msgstr "Zaloguj się do "
 
 #: frontend/Settings/Setup/Mail/manual/OAuth2Manual.svelte:5
 msgid "Login UI"
-msgstr ""
+msgstr "Logowanie interfejsu użytkownika"
 
 #: frontend/Contacts/PersonDetails.svelte:69
 #: frontend/Contacts/PersonDetails.svelte:187
 #: frontend/Mail/MailMustangApp.ts:16
 #: frontend/Settings/SettingsCategories.ts:50
 msgid "Mail"
-msgstr ""
+msgstr "Poczta"
 
 #: frontend/Mail/Search/SearchPane.svelte:13
 msgid "Mail content or subject"
-msgstr ""
+msgstr "Treść wiadomości lub temat"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigPage.svelte:2
 msgid "Manual configuration"
-msgstr ""
+msgstr "Konfiguracja ręczna"
 
 #: frontend/Settings/Setup/Mail/SetupMail.svelte:34
 msgid "Manual setup"
-msgstr ""
+msgstr "Ustawienia ręczne"
 
 #: frontend/Settings/Mail/Read.svelte:31
 msgid "Manually"
-msgstr ""
+msgstr "Ręcznie"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:29
 msgid "Mark all read"
-msgstr ""
+msgstr "Oznacz wszystkie jako przeczytane"
 
 #: frontend/Mail/Message/MessageMenu.svelte:37
 msgid "Mark as spam"
-msgstr ""
+msgstr "Oznacz jako spam"
 
 #: frontend/Mail/3pane/TableMessageListItem.svelte:40
 msgid "Mark as spam and delete"
-msgstr ""
+msgstr "Oznacz jako spam i usuń"
 
 #: frontend/Settings/Mail/Read.svelte:14
 msgid "Mark mails as read"
-msgstr ""
+msgstr "Oznacz wiadomości jako przeczytane"
 
 #: frontend/Mail/3pane/TableMessageListItem.svelte:21
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:26
 #: frontend/Mail/Message/MessageToolbar.svelte:51
 #: frontend/Mail/Vertical/VerticalMessageListItem.svelte:63
 msgid "Mark this message as read"
-msgstr ""
+msgstr "Oznacz tę wiadomość jako przeczytaną"
 
 #: frontend/Mail/3pane/TableMessageListItem.svelte:21
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:26
 #: frontend/Mail/Message/MessageToolbar.svelte:51
 #: frontend/Mail/Vertical/VerticalMessageListItem.svelte:63
 msgid "Mark this message as unread"
-msgstr ""
+msgstr "Oznacz tę wiadomość jako nieprzeczytaną"
 
 #: frontend/Contacts/ContactEntryUI.svelte:79
 #: frontend/Settings/Setup/Chat/SelectProtocol.svelte:35
 msgid "Matrix"
-msgstr ""
+msgstr "Matryca"
 
 #: frontend/Meet/Video/Video.svelte:8
 msgid "me"
-msgstr ""
+msgstr "mnie"
 
 #: frontend/Meet/MeetMustangApp.ts:9
 #: frontend/Settings/SettingsCategories.ts:97
 msgid "Meet"
-msgstr ""
+msgstr "Poznaj"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:30
 msgid "Meeting URL"
-msgstr ""
+msgstr "Adres URL spotkania"
 
 #: frontend/Contacts/SameName.svelte:17
 msgid "Merge"
-msgstr ""
+msgstr "Połącz"
 
 #: frontend/Contacts/PersonDetails.svelte:48
 msgid "Message"
-msgstr ""
+msgstr "Wiadomość"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:16
 msgid "Messages"
-msgstr ""
+msgstr "Wiadomości"
 
 #: frontend/Calendar/EventLine.svelte:15
 msgid "min"
-msgstr ""
+msgstr "min."
 
 #: frontend/MainWindow/WindowHeader.svelte:17
 msgid "Minimize"
-msgstr ""
+msgstr "Minimize"
 
 #: frontend/Calendar/EditEvent/TimeInput.svelte:40
 msgid "Minute must be less than 59"
-msgstr ""
+msgstr "Minuta musi być mniejsza niż 59"
 
 #: frontend/Calendar/EditEvent/DurationUnit.svelte:2
 msgid "Minutes"
-msgstr ""
+msgstr "Protokoły"
 
 #: frontend/Contacts/ContactEntryUI.svelte:76
 msgid "Mobile"
-msgstr ""
+msgstr "Komórka"
 
 #: frontend/Calendar/ViewSelector.svelte:20
 msgid "Month"
-msgstr ""
+msgstr "Miesiąc"
 
 #: frontend/WebApps/Launcher/AppsLauncher.svelte:15
 msgid "More apps"
-msgstr ""
+msgstr "Więcej aplikacji"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:27
 msgid "More info"
-msgstr ""
+msgstr "Więcej informacji"
 
 #: frontend/MainWindow/NotificationBar.svelte:27
 msgid "More info about this error"
-msgstr ""
+msgstr "Więcej informacji o tym błędzie"
 
 #: frontend/Mail/Search/SearchPane.svelte:86
 msgid "More than {0} mails"
@@ -1009,74 +1020,74 @@ msgstr ""
 #: frontend/Meet/ParticipantListItem.svelte:22
 #: frontend/Meet/Setup/DeviceButton.svelte:3
 msgid "Mute"
-msgstr ""
+msgstr "Wycisz"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:48
 msgid "Name cannot be empty"
-msgstr ""
+msgstr "Nazwa nie może być pusta"
 
 #: frontend/Settings/Setup/Contacts/LocalAddressbook.svelte:7
 msgid "Name of the addressbook"
-msgstr ""
+msgstr "Nazwa książki adresowej"
 
 #: frontend/Settings/Setup/Calendar/LocalCalendar.svelte:7
 msgid "Name of the calendar"
-msgstr ""
+msgstr "Nazwa kalendarza"
 
 #: frontend/Mail/Search/SavedSearchUI.svelte:2
 msgid "Name of the folder"
-msgstr ""
+msgstr "Nazwa folderu"
 
 #: frontend/Settings/Mail/Account/Identity.svelte:51
 msgid "Need at least 1 identity"
-msgstr ""
+msgstr "Potrzeba co najmniej 1 tożsamości"
 
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:86
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:97
 msgid "Need email address"
-msgstr ""
+msgstr "Potrzebny adres e-mail"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:47
 msgid "Need folder name"
-msgstr ""
+msgstr "Potrzebna nazwa folderu"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:2
 msgid "New"
-msgstr ""
+msgstr "Nowy"
 
 #: frontend/Settings/Window/AccountsList.svelte:12
 msgid "New account for {0}"
-msgstr ""
+msgstr "Nowe konto dla {0}"
 
 #: frontend/Contacts/PersonsToolbar.svelte:7
 #: frontend/Meet/ParticipantSearch.svelte:5
 msgid "New contact"
-msgstr ""
+msgstr "Nowy kontakt"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:4
 #: frontend/Calendar/TitleBarLeft.svelte:3
 msgid "New event"
-msgstr ""
+msgstr "Nowe wydarzenie"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:3
 msgid "New folder name"
-msgstr ""
+msgstr "Nowa nazwa folderu"
 
 #: frontend/Chat/Header.svelte:5
 msgid "New group"
-msgstr ""
+msgstr "Nowa grupa"
 
 #: frontend/Settings/Setup/Contacts/SelectProtocol.svelte:29
 msgid "New local addressbook"
-msgstr ""
+msgstr "Nowa lokalna książka adresowa"
 
 #: frontend/Settings/Setup/Calendar/SelectProtocol.svelte:29
 msgid "New local calendar"
-msgstr ""
+msgstr "Nowy kalendarz lokalny"
 
 #: frontend/Settings/Setup/Shared/ButtonsBottom.svelte:16
 msgid "Next"
-msgstr ""
+msgstr "Następny"
 
 #: frontend/Calendar/DateRange.svelte:4
 msgid "Next {0} days"
@@ -1084,123 +1095,123 @@ msgstr ""
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:46
 msgid "No config found"
-msgstr ""
+msgstr "Nie znaleziono konfiguracji"
 
 #: frontend/Settings/Setup/Mail/DisplayConfigServer.svelte:49
 msgid "No encryption"
-msgstr ""
+msgstr "Brak szyfrowania"
 
 #: frontend/Meet/Start/StartScreen.svelte:23
 msgid "No meetings coming up"
-msgstr ""
+msgstr "Brak nadchodzących spotkań"
 
 #: frontend/Shared/PersonAutocomplete/PersonAutocomplete.svelte:11
 msgid "No person found"
-msgstr ""
+msgstr "Nie znaleziono osoby"
 
 #: frontend/Meet/ParticipantSearch.svelte:55
 msgid "No persons in this chat account"
-msgstr ""
+msgstr "Brak osób na tym koncie czatu"
 
 #: frontend/Meet/Start/StartScreen.svelte:29
 msgid "No recent meetings"
-msgstr ""
+msgstr "Brak ostatnich spotkań"
 
 #: frontend/Mail/Message/AttachmentUI.svelte:16
 msgid "Not downloaded"
-msgstr ""
+msgstr "Nie pobrano"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:14
 #: frontend/Settings/Mail/NotificationKinds.svelte:20
 msgid "Not yet implemented"
-msgstr ""
+msgstr "Jeszcze nie zaimplementowane"
 
 #: frontend/Contacts/PersonDetails.svelte:192
 msgid "Notes"
-msgstr ""
+msgstr "Uwagi"
 
 #: frontend/Settings/Chat/Notifications.svelte:3
 #: frontend/Settings/Mail/Notifications.svelte:4
 #: frontend/Settings/SettingsCategories.ts:53
 #: frontend/Settings/SettingsCategories.ts:69
 msgid "Notifications"
-msgstr ""
+msgstr "Powiadomienia"
 
 #: frontend/Settings/Mail/Notifications.svelte:12
 msgid "Notify only for"
-msgstr ""
+msgstr "Powiadom tylko dla"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:71
 msgid "NTLM"
-msgstr ""
+msgstr "NTLM"
 
 #: frontend/Settings/Setup/Mail/manual/OAuth2Manual.svelte:2
 msgid "OAuth2"
-msgstr ""
+msgstr "OAut2"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:68
 msgid "OAuth2 / MFA"
-msgstr ""
+msgstr "OAuth2 / MFA"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:29
 msgid "Online"
-msgstr ""
+msgstr "Dostępny"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:42
 msgid "Open"
-msgstr ""
+msgstr "Otwórz"
 
 #: frontend/Mail/Message/AttachmentMenu.svelte:13
 msgid "Open containing folder"
-msgstr ""
+msgstr "Otwórz zawierający folder"
 
 #: frontend/Mail/Message/AttachmentMenu.svelte:15
 msgid "Open folder"
-msgstr ""
+msgstr "Otwórz folder"
 
 #: frontend/Mail/Message/AttachmentMenu.svelte:9
 msgid "Open in external app"
-msgstr ""
+msgstr "Otwórz w aplikacji zewnętrznej"
 
 #: frontend/Mail/Message/AttachmentMenu.svelte:7
 msgid "Open in external application"
-msgstr ""
+msgstr "Otwórz w zewnętrznej aplikacji"
 
 #: frontend/Meet/InMeetingToolbar.svelte:63
 msgid "Open participants list"
-msgstr ""
+msgstr "Otwórz listę uczestników"
 
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:46
 msgid "Open this message alone"
-msgstr ""
+msgstr "Otwórz tę wiadomość w pojedynkę"
 
 #: frontend/Settings/SettingsCategories.ts:122
 msgid "Open-Source"
-msgstr ""
+msgstr "Otwarte źródło"
 
 #: frontend/Settings/About/Licenses.svelte:8
 msgid "Open-Source license"
-msgstr ""
+msgstr "Licencja Open-Source"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:91
 msgid "Ordered list"
-msgstr ""
+msgstr "Lista uporządkowana"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:81
 msgid "Organisation"
-msgstr ""
+msgstr "Organisation"
 
 #: frontend/Contacts/ContactEntryUI.svelte:80
 msgid "Other"
-msgstr ""
+msgstr "Inne"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:11
 msgid "Outgoing server"
-msgstr ""
+msgstr "Serwer wychodzący"
 
 #: frontend/Meet/Sidebar.svelte:5
 msgid "Participants"
-msgstr ""
+msgstr "Uczestnicy"
 
 #: frontend/Settings/Setup/Chat/MatrixLogin.svelte:10
 #: frontend/Settings/Setup/Chat/XMPPLogin.svelte:10
@@ -1208,220 +1219,220 @@ msgstr ""
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:67
 #: frontend/Settings/Setup/Meet/M3Login.svelte:10
 msgid "Password"
-msgstr ""
+msgstr "Hasło"
 
 #: frontend/Mail/Search/SearchPane.svelte:55
 #: frontend/Mail/Search/SearchPane.svelte:55
 msgid "Person"
-msgstr ""
+msgstr "Osoba"
 
 #: frontend/Contacts/PersonDetails.svelte:199
 msgid "Personal notes"
-msgstr ""
+msgstr "Osobiste notatki"
 
 #: frontend/Contacts/PersonDetails.svelte:189
 msgid "Phone"
-msgstr ""
+msgstr "Telefon"
 
 #: frontend/Contacts/PersonDetails.svelte:111
 msgid "Phone numbers"
-msgstr ""
+msgstr "Numery telefonów"
 
 #: frontend/Shared/Person/GroupPicture.svelte:7
 #: frontend/Shared/Person/PersonPicture.svelte:6
 msgid "Picture of {0}"
-msgstr ""
+msgstr "Zdjęcie {0}"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:51
 msgid "Plain"
-msgstr ""
+msgstr "Zwykłe"
 
 #: frontend/Mail/Message/DisplayModeSwitcher.svelte:30
 #: frontend/Settings/Mail/Send.svelte:54
 #: frontend/Settings/Mail/Send.svelte:54
 msgid "Plaintext"
-msgstr ""
+msgstr "Zwykły"
 
 #: frontend/Meet/Start/StartScreen.svelte:10
 msgid "Plan a meeting"
-msgstr ""
+msgstr "Zaplanuj spotkanie"
 
 #: frontend/Settings/Mail/Account/FolderActions.svelte:48
 msgid "Please enter a name for the new folder"
-msgstr ""
+msgstr "Wprowadź nazwę nowego folderu"
 
 #: frontend/Settings/Mail/Account/Folders.svelte:19
 msgid "Please log in to account {0} first"
-msgstr ""
+msgstr "Proszę najpierw zalogować się do konta {0}"
 
 #: frontend/Calendar/CalendarApp.svelte:27
 msgid "Please select a calendar first"
-msgstr ""
+msgstr "Najpierw wybierz kalendarz"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:24
 msgid "POP3"
-msgstr ""
+msgstr "POP3"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:4
 #: frontend/Settings/Mail/NotificationKinds.svelte:6
 #: frontend/Settings/Mail/NotificationKinds.svelte:6
 msgid "Popup"
-msgstr ""
+msgstr "Popup"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:5
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #: frontend/Contacts/PersonDetails.svelte:23
 msgid "Position"
-msgstr ""
+msgstr "Położenie"
 
 #: frontend/Calendar/DateRange.svelte:3
 msgid "Previous {0} days"
-msgstr ""
+msgstr "Poprzedni {0} dni"
 
 #: frontend/Meet/Start/StartScreen.svelte:27
 msgid "Previous meetings"
-msgstr ""
+msgstr "Poprzednie spotkania"
 
 #: frontend/Mail/Message/MessageMenu.svelte:49
 msgid "Print"
-msgstr ""
+msgstr "Drukuj"
 
 #: frontend/Settings/Setup/Shared/Footer.svelte:3
 msgid "Privacy"
-msgstr ""
+msgstr "Prywatność"
 
 #: frontend/Settings/Setup/Calendar/LocalCalendar.svelte:9
 #: frontend/Settings/Setup/Contacts/LocalAddressbook.svelte:9
 msgid "Private"
-msgstr ""
+msgstr "Prywatny"
 
 #: frontend/Meet/ParticipantListItem.svelte:39
 msgid "Private chat"
-msgstr ""
+msgstr "Czat prywatny"
 
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:2
 msgid "Protocol"
-msgstr ""
+msgstr "Protocol"
 
 #: frontend/Mail/Message/MessageMenu.svelte:47
 msgid "Put ink on dead trees which were artificially made white. Save the trees!"
-msgstr ""
+msgstr "Połóż różowy na martwe drzewa, które zostały sztucznie zrobione na biało. Oszczędzaj drzewa!"
 
 #: frontend/Settings/Mail/Send.svelte:3
 msgid "Quote"
-msgstr ""
+msgstr "Oferta"
 
 #: frontend/Settings/Mail/Send.svelte:22
 #: frontend/Settings/Mail/Send.svelte:22
 msgid "Quote above"
-msgstr ""
+msgstr "Oferta powyżej"
 
 #: frontend/Settings/Mail/Send.svelte:20
 msgid "Quote above, Reply below"
-msgstr ""
+msgstr "Cytat powyżej, Odpowiedz poniżej"
 
 #: frontend/Settings/Mail/Send.svelte:14
 #: frontend/Settings/Mail/Send.svelte:14
 msgid "Quote below"
-msgstr ""
+msgstr "Oferta poniżej"
 
 #: frontend/Settings/Mail/Send.svelte:12
 msgid "Quote below, Reply above"
-msgstr ""
+msgstr "Cytat poniżej, Odpowiedz powyżej"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:61
 msgid "Quote of the original email"
-msgstr ""
+msgstr "Cytat oryginalnego adresu e-mail"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:11
 msgid "R"
-msgstr ""
+msgstr "R"
 
 #: frontend/Meet/InMeetingToolbar.svelte:42
 msgid "Raise hand"
-msgstr ""
+msgstr "Podnieś dłoń"
 
 #: frontend/Settings/SettingsCategories.ts:54
 msgid "Read"
-msgstr ""
+msgstr "Czytaj"
 
 #: frontend/Mail/Message/MessageMenu.svelte:24
 msgid "Redirect"
-msgstr ""
+msgstr "Przekieruj"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:167
 msgid "Redo the change that was undone before"
-msgstr ""
+msgstr "Powtórz zmianę, która została cofnięta wcześniej"
 
 #: frontend/Mail/3pane/TableMessageListItem.svelte:11
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:36
 #: frontend/Mail/Message/MessageToolbar.svelte:61
 #: frontend/Mail/Vertical/VerticalMessageListItem.svelte:53
 msgid "Remember this message"
-msgstr ""
+msgstr "Zapamiętaj tę wiadomość"
 
 #: frontend/Shared/PersonAutocomplete/PersonPopup.svelte:73
 #: frontend/WebApps/Shop/AppShopButton.svelte:16
 msgid "Remove"
-msgstr ""
+msgstr "Usuń"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:61
 msgid "Remove 'Sent by'"
-msgstr ""
+msgstr "Usuń 'Wysłane przez'"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:138
 msgid "Remove link"
-msgstr ""
+msgstr "Usuń link"
 
 #: frontend/MainWindow/NotificationBar.svelte:34
 msgid "Remove this message"
-msgstr ""
+msgstr "Usuń tę wiadomość"
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:4
 msgid "Rename"
-msgstr ""
+msgstr "Zmień nazwę"
 
 #: frontend/Settings/Mail/Account/Folders.svelte:3
 msgid "Rename folders, set special folders, share them with others"
-msgstr ""
+msgstr "Zmień nazwę folderów, ustaw foldery specjalne, udostępniaj je innym"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:85
 msgid "Repeated"
-msgstr ""
+msgstr "Powtarzane"
 
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:16
 #: frontend/Mail/Message/MessageMenu.svelte:12
 #: frontend/Mail/Message/MessageToolbar.svelte:17
 msgid "Reply to all"
-msgstr ""
+msgstr "Odpowiedz wszystkim"
 
 #: frontend/Mail/Message/MessageMenu.svelte:10
 msgid "Reply to all recipients of this message"
-msgstr ""
+msgstr "Odpowiedz wszystkim odbiorcom tej wiadomości"
 
 #: frontend/Mail/MailChat/MailChatToolbar.svelte:6
 #: frontend/Mail/Message/MessageMenu.svelte:6
 #: frontend/Mail/Message/MessageToolbar.svelte:7
 msgid "Reply to author"
-msgstr ""
+msgstr "Odpowiedz autorowi"
 
 #: frontend/Mail/Message/MessageMenu.svelte:4
 msgid "Reply to the person who sent this message"
-msgstr ""
+msgstr "Odpowiedz osobie, która wysłała tę wiadomość"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:80
 msgid "Reply-To"
-msgstr ""
+msgstr "Odpowiedz do"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:37
 msgid "Reply-to address"
-msgstr ""
+msgstr "Adres zwrotny"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:12
 msgid "S"
-msgstr ""
+msgstr "Pr"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:91
 #: frontend/Contacts/PersonMenu.svelte:7
@@ -1430,93 +1441,93 @@ msgstr ""
 #: frontend/Settings/Mail/Account/Identity.svelte:19
 #: frontend/Settings/Setup/Mail/manual/ManualConfig.svelte:15
 msgid "Save"
-msgstr ""
+msgstr "Zapisz"
 
 #: frontend/Mail/Composer/MailComposer.svelte:16
 msgid "Save and close"
-msgstr ""
+msgstr "Zapisz i zamknij"
 
 #: frontend/Mail/Search/SavedSearchUI.svelte:6
 msgid "Save as folder"
-msgstr ""
+msgstr "Zapisz jako folder"
 
 #: frontend/Mail/Search/SearchPane.svelte:93
 msgid "Save search as folder"
-msgstr ""
+msgstr "Zapisz wyszukiwanie jako folder"
 
 #: frontend/Meet/Video/ParticipatingVideo.svelte:11
 msgid "Screen"
-msgstr ""
+msgstr "Ekran"
 
 #: frontend/Meet/Video/ParticipatingVideo.svelte:11
 msgid "Screen of {0}"
-msgstr ""
+msgstr "Ekran {0}"
 
 #: frontend/Meet/InMeetingToolbar.svelte:14
 msgid "Screen share"
-msgstr ""
+msgstr "Udostępnianie ekranu"
 
 #: frontend/Shared/SearchField.svelte:16
 msgid "Search"
-msgstr ""
+msgstr "Szukaj"
 
 #: frontend/Shared/Person/PersonsList.svelte:2
 msgid "Search for a person or group"
-msgstr ""
+msgstr "Szukaj osoby lub grupy"
 
 #: frontend/Settings/Mail/Account/SentByExplainer.svelte:9
 msgid "See plans"
-msgstr ""
+msgstr "Zobacz plany"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:13
 msgid "Select camera"
-msgstr ""
+msgstr "Wybierz kamerę"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:13
 msgid "Select microphone"
-msgstr ""
+msgstr "Wybierz mikrofon"
 
 #: frontend/Settings/Setup/Mail/FinalizeConfig.svelte:6
 msgid "Select the workspace for {0}"
-msgstr ""
+msgstr "Wybierz obszar roboczy dla {0}"
 
 #: frontend/Mail/Composer/MailComposer.svelte:101
 #: frontend/Settings/SettingsCategories.ts:55
 #: frontend/Settings/SettingsCategories.ts:78
 msgid "Send"
-msgstr ""
+msgstr "Wyślij"
 
 #: frontend/Settings/Mail/Send.svelte:44
 msgid "Send as HTML and Plaintext"
-msgstr ""
+msgstr "Wyślij jako HTML i zwykły"
 
 #: frontend/Settings/Mail/Send.svelte:52
 msgid "Send as Plaintext only"
-msgstr ""
+msgstr "Wyślij tylko jako zwykły"
 
 #: frontend/Contacts/PersonDetails.svelte:51
 msgid "Send mail"
-msgstr ""
+msgstr "Wyślij wiadomość"
 
 #: frontend/Mail/Message/MessageMenu.svelte:16
 msgid "Send this message to somebody else"
-msgstr ""
+msgstr "Wyślij tę wiadomość do kogoś innego"
 
 #: frontend/Mail/Message/MessageMenu.svelte:22
 msgid "Send this message to somebody else, who can reply to the original sender"
-msgstr ""
+msgstr "Wyślij tę wiadomość do kogoś innego, kto może odpowiedzieć do pierwotnego nadawcy"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:57
 msgid "Sent by"
-msgstr ""
+msgstr "Wysłane przez"
 
 #: frontend/Mail/Search/SearchPane.svelte:18
 msgid "Sent by me"
-msgstr ""
+msgstr "Wysłane przeze mnie"
 
 #: frontend/Settings/Setup/Mail/manual/OAuth2Manual.svelte:9
 msgid "Separate window"
-msgstr ""
+msgstr "Oddzielne okno"
 
 #: frontend/Settings/Chat/AccountXMPPServer.svelte:2
 #: frontend/Settings/Mail/Account/Server.svelte:2
@@ -1525,458 +1536,458 @@ msgstr ""
 #: frontend/Settings/SettingsCategories.ts:77
 #: frontend/Settings/SettingsCategories.ts:107
 msgid "Server"
-msgstr ""
+msgstr "Serwer"
 
 #: frontend/Settings/AccountURLServer.svelte:2
 msgid "Server URL"
-msgstr ""
+msgstr "Adres URL serwera"
 
 #: frontend/Settings/Setup/Mail/EmailAddressPassword.svelte:1
 msgid "Set up existing email address"
-msgstr ""
+msgstr "Ustaw istniejący adres e-mail"
 
 #: frontend/Settings/Setup/Contacts/SelectProtocol.svelte:2
 msgid "Set up your addressbook"
-msgstr ""
+msgstr "Skonfiguruj książkę adresową"
 
 #: frontend/Settings/Setup/Calendar/SelectProtocol.svelte:2
 msgid "Set up your calendar"
-msgstr ""
+msgstr "Skonfiguruj kalendarz"
 
 #: frontend/Settings/Setup/Meet/M3Login.svelte:2
 msgid "Set up your existing {0} account for meetings"
-msgstr ""
+msgstr "Skonfiguruj swoje istniejące konto {0} dla spotkań"
 
 #: frontend/Settings/Setup/Chat/SelectProtocol.svelte:2
 msgid "Set up your existing chat account"
-msgstr ""
+msgstr "Skonfiguruj swoje istniejące konto czatu"
 
 #: frontend/Settings/Setup/Chat/MatrixLogin.svelte:2
 msgid "Set up your existing Matrix account"
-msgstr ""
+msgstr "Skonfiguruj swoje istniejące konto Matrix"
 
 #: frontend/Settings/Setup/Chat/XMPPLogin.svelte:2
 msgid "Set up your existing XMPP account"
-msgstr ""
+msgstr "Skonfiguruj swoje istniejące konto XMPP"
 
 #: frontend/Settings/Setup/Meet/SelectProtocol.svelte:2
 msgid "Set up your meeting account"
-msgstr ""
+msgstr "Skonfiguruj swoje spotkanie"
 
 #: frontend/MainWindow/WindowHeader.svelte:13
 #: frontend/Settings/Window/SettingsMustangApp.ts:8
 msgid "Settings"
-msgstr ""
+msgstr "Ustawienia"
 
 #: frontend/Settings/Setup/SetupMustangApp.ts:7
 msgid "Setup"
-msgstr ""
+msgstr "Ustawienia"
 
 #: frontend/Shared/Button.svelte:49
 msgid "Shortcut: "
-msgstr ""
+msgstr "Skrót: "
 
 #: frontend/Meet/MeetingNotes.svelte:11
 msgid "Show meeting description"
-msgstr ""
+msgstr "Pokaż opis spotkania"
 
 #: frontend/Settings/Mail/Notifications.svelte:14
 msgid "Show notifications only for mails:"
-msgstr ""
+msgstr "Pokaż powiadomienia tylko dla wiadomości:"
 
 #: frontend/Settings/Setup/Shared/Password.svelte:13
 msgid "Show password"
-msgstr ""
+msgstr "Pokaż hasło"
 
 #: frontend/Mail/Message/MessageMenu.svelte:55
 msgid "Show source"
-msgstr ""
+msgstr "Pokaż źródło"
 
 #: frontend/Mail/Message/MessageMenu.svelte:53
 msgid "Show the on-the-wire format of this message"
-msgstr ""
+msgstr "Pokaż format tej wiadomości na druku"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:49
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:82
 msgid "Signature"
-msgstr ""
+msgstr "Podpis"
 
 #: frontend/Contacts/SameName.svelte:5
 msgid "Similar names"
-msgstr ""
+msgstr "Podobne nazwy"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:10
 #: frontend/Settings/Mail/NotificationKinds.svelte:12
 #: frontend/Settings/Mail/NotificationKinds.svelte:12
 msgid "Sound"
-msgstr ""
+msgstr "Dźwięk"
 
 #: frontend/Mail/Message/DisplayModeSwitcher.svelte:40
 msgid "Source"
-msgstr ""
+msgstr "Źródło"
 
 #: frontend/Mail/Message/MessageBody.svelte:42
 msgid "Source not available"
-msgstr ""
+msgstr "Źródło niedostępne"
 
 #: frontend/Mail/Search/SearchPane.svelte:27
 msgid "Starred"
-msgstr ""
+msgstr "Oznaczone gwiazdką"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:72
 msgid "Start"
-msgstr ""
+msgstr "Rozpocznij"
 
 #: frontend/Meet/ParticipantListItem.svelte:37
 msgid "Start a chat with only this person"
-msgstr ""
+msgstr "Rozpocznij czat tylko z tą osobą"
 
 #: frontend/Meet/Start/StartScreen.svelte:11
 msgid "Start an ad-hoc meeting"
-msgstr ""
+msgstr "Rozpocznij spotkanie ad hoc"
 
 #: frontend/Meet/Start/Calling.svelte:61
 msgid "Start conference"
-msgstr ""
+msgstr "Rozpocznij konferencję"
 
 #: frontend/Settings/Setup/Shared/ButtonsBottom.svelte:4
 msgid "Start over"
-msgstr ""
+msgstr "Rozpocznij od"
 
 #: frontend/Mail/StartPage.svelte:2
 msgid "Start page"
-msgstr ""
+msgstr "Strona startowa"
 
 #: frontend/Settings/Setup/Mail/DisplayConfigServer.svelte:46
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:50
 msgid "STARTTLS"
-msgstr ""
+msgstr "STARTTLS"
 
 #: frontend/Contacts/PersonDetails.svelte:190
 msgid "Street address"
-msgstr ""
+msgstr "Ulica"
 
 #: frontend/Contacts/PersonDetails.svelte:131
 msgid "Street addresses"
-msgstr ""
+msgstr "Adres ulicy"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:26
 msgid "Strike-through"
-msgstr ""
+msgstr "Przekreślenie"
 
 #: frontend/Mail/3pane/TableMessageList.svelte:15
 #: frontend/Mail/Composer/MailComposer.svelte:95
 msgid "Subject"
-msgstr ""
+msgstr "Temat"
 
 #: frontend/Settings/Global/DarkMode.svelte:3
 msgid "System"
-msgstr ""
+msgstr "System"
 
 #: frontend/Settings/Mail/NotificationKinds.svelte:24
 #: frontend/Settings/Mail/NotificationKinds.svelte:24
 msgid "System task bar"
-msgstr ""
+msgstr "Systemowy pasek zadań"
 
 #: frontend/Meet/ParticipantListItem.svelte:13
 msgid "Take hand down"
-msgstr ""
+msgstr "Weź rękę w dół"
 
 #: frontend/Contacts/ContactEntryUI.svelte:78
 msgid "Teams"
-msgstr ""
+msgstr "Drużyny"
 
 #: frontend/Settings/Setup/Shared/Footer.svelte:2
 msgid "Terms of use"
-msgstr ""
+msgstr "Warunki użytkowania"
 
 #: frontend/Settings/SettingsCategories.ts:123
 msgid "Test"
-msgstr ""
+msgstr "Badanie"
 
 #: frontend/Meet/Start/StartScreen.svelte:8
 msgid "Test incoming call"
-msgstr ""
+msgstr "Test połączenia przychodzącego"
 
 #: frontend/Mail/Message/ThreadDisplay.svelte:1
 msgid "The threaded view does not yet work as intended."
-msgstr ""
+msgstr "Widok gwintowany nie działa jeszcze zgodnie z zamierzeniami."
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:26
 msgid "This is a catch-all email address."
-msgstr ""
+msgstr "To jest adres e-mail catch-all."
 
 #: frontend/Settings/Mail/Account/Identity.svelte:2
 msgid "This is how you appear to others when you send mail"
-msgstr ""
+msgstr "Tak wyglądasz innym podczas wysyłania wiadomości"
 
 #: frontend/Mail/Message/DisplayModeSwitcher.svelte:3
 msgid "Thread"
-msgstr ""
+msgstr "Wątek"
 
 #: frontend/Calendar/ListView.svelte:10
 msgid "Time"
-msgstr ""
+msgstr "Czas"
 
 #: frontend/Calendar/ListView.svelte:11
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:101
 msgid "Title"
-msgstr ""
+msgstr "Rozporządzenie Rady (EWG) nr 2658/87 z dnia 23 lipca 1987 r. w sprawie nomenklatury taryfowej i statystycznej oraz w sprawie Wspólnej Taryfy Celnej (Dz.U. L 256 z 7.9.1987, s. 1)."
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:16
 msgid "Title - Enter the topic of the meeting"
-msgstr ""
+msgstr "Tytuł - Wprowadź temat spotkania"
 
 #: frontend/Settings/Setup/Mail/DisplayConfigServer.svelte:43
 #: frontend/Settings/Setup/Mail/manual/ManualConfigServer.svelte:49
 msgid "TLS"
-msgstr ""
+msgstr "TLS"
 
 #: frontend/Mail/Message/MessageHeader.svelte:18
 msgid "to"
-msgstr ""
+msgstr "do"
 
 #: frontend/Mail/Composer/MailComposer.svelte:28
 #: frontend/Mail/Composer/MailComposer.svelte:60
 #: frontend/Mail/Composer/MailComposer.svelte:69
 msgid "To"
-msgstr ""
+msgstr "Do"
 
 #: frontend/Settings/Mail/Account/SentByExplainer.svelte:6
 msgid "To use {0} professionally and remove this note, you can subscribe to one of our plans."
-msgstr ""
+msgstr "Aby profesjonalnie używać {0} i usunąć tę notatkę, możesz subskrybować jeden z naszych planów."
 
 #: frontend/Mail/MailChat/MailMessage.svelte:5
 msgid "to:"
-msgstr ""
+msgstr "do:"
 
 #: frontend/Meet/Start/StartScreen.svelte:21
 msgid "Today's next meetings"
-msgstr ""
+msgstr "Dzisiejsze kolejne posiedzenia"
 
 #: frontend/Mail/Message/MessageMenu.svelte:43
 msgid "Translate"
-msgstr ""
+msgstr "Przetłumacz"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:3
 msgid "Turn camera off"
-msgstr ""
+msgstr "Wyłącz kamerę"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:3
 msgid "Turn camera on"
-msgstr ""
+msgstr "Włącz kamerę"
 
 #: frontend/Shared/Editor/HTMLEditorToolbar.svelte:159
 msgid "Undo the last change"
-msgstr ""
+msgstr "Cofnij ostatnią zmianę"
 
 #: frontend/Settings/Setup/Mail/DisplayConfigServer.svelte:52
 msgid "Unknown"
-msgstr ""
+msgstr "Nieznane"
 
 #: frontend/Mail/Message/MessageBody.svelte:23
 msgid "Unknown display mode"
-msgstr ""
+msgstr "Nieznany tryb wyświetlania"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:3
 msgid "Unmute"
-msgstr ""
+msgstr "Wyłącz wyciszenie"
 
 #: frontend/Mail/Search/SearchPane.svelte:22
 msgid "Unread"
-msgstr ""
+msgstr "Nieprzeczytane"
 
 #: frontend/Mail/Message/MessageMenu.svelte:41
 msgid "Use an online translation service to translate this message to your default language."
-msgstr ""
+msgstr "Użyj usługi tłumaczenia online, aby przetłumaczyć tę wiadomość na domyślny język."
 
 #: frontend/Settings/Mail/Account/FolderGeneral.svelte:9
 msgid "Use as"
-msgstr ""
+msgstr "Użyj jako"
 
 #: frontend/Settings/AccountURLServer.svelte:4
 #: frontend/Settings/Setup/Mail/manual/ManualConfigLabels.svelte:8
 msgid "Username"
-msgstr ""
+msgstr "Nazwa użytkownika"
 
 #: frontend/Settings/Chat/AccountXMPPServer.svelte:4
 msgid "Username JID"
-msgstr ""
+msgstr "Username JID"
 
 #: frontend/Settings/Setup/Import/Passwords.svelte:26
 #: frontend/Settings/Setup/Mail/CheckConfig.svelte:2
 msgid "Verifying that the configuration works..."
-msgstr ""
+msgstr "Sprawdzanie, czy konfiguracja działa..."
 
 #: frontend/Mail/LeftPane/ViewSwitcher.svelte:12
 msgid "Vertical view"
-msgstr ""
+msgstr "Widok pionowy"
 
 #: frontend/Chat/PersonHeader.svelte:9
 #: frontend/Contacts/PersonDetails.svelte:41
 msgid "Video call"
-msgstr ""
+msgstr "Połączenie wideo"
 
 #: frontend/Settings/Setup/Mail/FindConfig.svelte:2
 msgid "We are looking for the configuration of your email account..."
-msgstr ""
+msgstr "Szukamy konfiguracji Twojego konta e-mail..."
 
 #: frontend/Settings/Setup/Mail/FindConfig.svelte:23
 msgid "We could not find a configuration for {0}"
-msgstr ""
+msgstr "Nie udało się znaleźć konfiguracji dla {0}"
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:52
 msgid "We found a configuration"
-msgstr ""
+msgstr "Znaleźliśmy konfigurację"
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:47
 msgid "We found the configuration in our database."
-msgstr ""
+msgstr "Znaleźliśmy konfigurację w naszej bazie danych."
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:49
 msgid "We guessed a configuration that might work."
-msgstr ""
+msgstr "Uzgadniliśmy konfigurację, która może działać."
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:51
 msgid "We received the configuration for Microsoft Exchange"
-msgstr ""
+msgstr "Otrzymaliśmy konfigurację dla Microsoft Exchange"
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:50
 msgid "We received the configuration from Microsoft Exchange."
-msgstr ""
+msgstr "Otrzymaliśmy konfigurację z Microsoft Exchange."
 
 #: frontend/Settings/Setup/Mail/FoundConfig.svelte:48
 msgid "We received the configuration from your email provider."
-msgstr ""
+msgstr "Otrzymaliśmy konfigurację od Twojego dostawcy poczty elektronicznej."
 
 #: frontend/WebApps/Shop/AppShopButton.svelte:12
 msgid "Website"
-msgstr ""
+msgstr "Strona internetowa"
 
 #: frontend/Calendar/ViewSelector.svelte:17
 msgid "Week"
-msgstr ""
+msgstr "Tydzień"
 
 #: frontend/Contacts/ContactEntryUI.svelte:77
 msgid "WhatsApp"
-msgstr ""
+msgstr "Aplikacja"
 
 #: frontend/Calendar/EditEvent/EditEvent.svelte:67
 msgid "When"
-msgstr ""
+msgstr "Kiedy"
 
 #: frontend/Settings/Mail/Notifications.svelte:6
 msgid "When a new mail arrives, show with:"
-msgstr ""
+msgstr "Kiedy pojawi się nowa wiadomość, pokaż się:"
 
 #: frontend/Settings/Mail/Send.svelte:6
 msgid "When replying:"
-msgstr ""
+msgstr "Przy odpowiedzi:"
 
 #: frontend/Mail/Message/DisplayModeSwitcher.svelte:21
 msgid "With external content (allows sender to track you)"
-msgstr ""
+msgstr "Z zewnętrzną zawartością (pozwala nadawcy na śledzenie Ciebie)"
 
 #: frontend/Contacts/ContactEntryUI.svelte:74
 msgid "Work"
-msgstr ""
+msgstr "Praca"
 
 #: frontend/Settings/Setup/Import/Passwords.svelte:36
 msgid "Workspace"
-msgstr ""
+msgstr "Obszar roboczy"
 
 #: frontend/Mail/LeftPane/ProjectList.svelte:4
 msgid "Workspaces"
-msgstr ""
+msgstr "Obszary robocze"
 
 #: frontend/Settings/Setup/Mail/WorkspaceSelector.svelte:2
 msgid "Workspaces allow you organize yourself. You can change this at any time, by going to Settings in the title bar."
-msgstr ""
+msgstr "Obszary robocze umożliwiają organizowanie się. Możesz to zmienić w dowolnym momencie, przechodząc do ustawień na pasku tytułu."
 
 #: frontend/Mail/LeftPane/WriteButton.svelte:2
 msgid "Write new email"
-msgstr ""
+msgstr "Napisz nowy e-mail"
 
 #: frontend/Settings/Setup/Chat/SelectProtocol.svelte:34
 msgid "XMPP / Jabber"
-msgstr ""
+msgstr "XMPP / Jabber"
 
 #: frontend/Meet/Video/ParticipatingVideo.svelte:7
 msgid "You"
-msgstr ""
+msgstr "Ty"
 
 #: frontend/Meet/ParticipantListItem.svelte:67
 #: frontend/Meet/ParticipantListItem.svelte:75
 #: frontend/Meet/ParticipantListItem.svelte:80
 msgid "You are not a moderator"
-msgstr ""
+msgstr "Nie jesteś moderatorem"
 
 #: frontend/Settings/About/Licenses.svelte:
 msgid "You can find the source code of # core at # under an #."
-msgstr ""
+msgstr "Kod źródłowy # rdzenia w # znajduje się pod #."
 
 #: frontend/Settings/Setup/Chat/SelectProtocol.svelte:3
 msgid "You can use {0} with your existing chat account or you can create a new chat account."
-msgstr ""
+msgstr "Możesz użyć {0} z istniejącym kontem czatu lub utworzyć nowe konto czatu."
 
 #: frontend/Settings/Setup/Mail/EmailAddressPassword.svelte:1
 msgid "You can use {0} with your existing email address or you can make a new email address."
-msgstr ""
+msgstr "Możesz użyć {0} z istniejącym adresem e-mail lub utworzyć nowy adres e-mail."
 
 #: frontend/Settings/Setup/Chat/MatrixLogin.svelte:3
 msgid "You can use {0} with your existing Matrix account or you can create a new Matrix account."
-msgstr ""
+msgstr "Możesz użyć {0} z istniejącym kontem Matrix lub utworzyć nowe konto Matrix."
 
 #: frontend/Settings/Setup/Chat/XMPPLogin.svelte:3
 msgid "You can use {0} with your existing XMPP or Jabber account."
-msgstr ""
+msgstr "Możesz użyć {0} z istniejącym kontem XMPP lub Jabber."
 
 #: frontend/Meet/Start/Calling.svelte:81
 msgid "You have a meeting in {0} minutes:"
-msgstr ""
+msgstr "Masz spotkanie w {0} minut:"
 
 #: frontend/Meet/Start/Calling.svelte:11
 msgid "You're calling..."
-msgstr ""
+msgstr "Zadzwonisz..."
 
 #: frontend/Settings/Setup/Meet/M3Login.svelte:7
 msgid "Your {0} email address"
-msgstr ""
+msgstr "Twój adres e-mail {0}"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:18
 msgid "Your cameras"
-msgstr ""
+msgstr "Twoje kamery"
 
 #: frontend/Settings/Setup/Mail/FinalizeConfig.svelte:2
 msgid "Your email account is working and ready to be used."
-msgstr ""
+msgstr "Twoje konto e-mail działa i jest gotowe do użycia."
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:17
 msgid "Your email address"
-msgstr ""
+msgstr "Twój adres e-mail"
 
 #: frontend/Settings/Mail/Account/Server.svelte:3
 #: frontend/Settings/Setup/Mail/manual/ManualConfigPage.svelte:3
 msgid "Your email provider or company can tell you these details."
-msgstr ""
+msgstr "Twój dostawca poczty elektronicznej lub firma może podać Ci te dane."
 
 #: frontend/Settings/Setup/Chat/XMPPLogin.svelte:7
 msgid "Your JID"
-msgstr ""
+msgstr "Twój JID"
 
 #: frontend/Settings/Setup/Chat/MatrixLogin.svelte:7
 msgid "Your Matrix ID"
-msgstr ""
+msgstr "Twój identyfikator Matrycy"
 
 #: frontend/Meet/Setup/DeviceButton.svelte:18
 msgid "Your microphones"
-msgstr ""
+msgstr "Twoje mikrofony"
 
 #: frontend/Settings/Mail/Account/IdentityBlock.svelte:14
 msgid "Your name"
-msgstr ""
+msgstr "Twoje imię"
 
 #: frontend/Settings/Setup/Shared/Password.svelte:3
 msgid "Your password"
-msgstr ""
+msgstr "Twoje hasło"
 
