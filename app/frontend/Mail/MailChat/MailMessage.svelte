@@ -2,7 +2,8 @@
   <svelte:fragment slot="above-center">
     <hbox flex />
     <hbox class="recipients">
-      {$t`to:`} {recipientsLine}
+      {$t`to:`}
+      {recipientsLine}
     </hbox>
   </svelte:fragment>
   <svelte:fragment slot="inner-top">
