@@ -13,5 +13,5 @@ export default {
       ]
     }
   ],
-  extractors: [jstsExtractor, svelteExtractor]
+  extractors: [jstsExtractor, svelteExtractor],
 };

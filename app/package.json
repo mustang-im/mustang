@@ -11,7 +11,6 @@
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "l10n:extract": "lingui extract",
     "l10n:extract:template": "lingui extract-template",
-    "l10n:compile": "lingui compile --typescript",
     "l10n:crowdin": "cd l10n && crowdin",
     "l10n:sync": "cd l10n && crowdin push && crowdin pull",
     "l10n:sync:sources": "cd l10n && crowdin push",
@@ -20,6 +19,7 @@
   "dependencies": {
     "@faker-js/faker": "^7.6.0",
     "@lingui/core": "^4.11.1",
+    "@lingui/vite-plugin": "^4.11.1",
     "@popperjs/core": "^2.11.8",
     "@svelteuidev/composables": "^0.14.0",
     "@svelteuidev/core": "^0.14.0",
