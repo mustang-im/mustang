@@ -5,7 +5,7 @@
     <!-- Slot 1 -->
     <a href="https://github.com/mustang-im/mustang" target="_blank" slot="1">GitHub</a>
     <!-- Slot 2 -->
-    <a href="https://raw.githubusercontent.com/mustang-im/mustang/master/LICENSE" target="_blank" slot="2">Open-Source license</a>
+    <a href="https://raw.githubusercontent.com/mustang-im/mustang/master/LICENSE" target="_blank" slot="2">{$t`Open-Source license`}</a>
   </T>
 </div>
 <div>
