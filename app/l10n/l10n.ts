@@ -1,4 +1,6 @@
-import { locale } from 'svelte-i18n-lingui';
+import { locale, gt as translate } from 'svelte-i18n-lingui';
+import { derived } from 'svelte/store';
+
 import { sourceLocale } from './list';
 
 import { messages as en } from './locales/en/messages.po';
@@ -73,4 +75,16 @@ export async function setLocaleAsync(lang: string) {
     const { messages } = await import(`./locales/${lang}/messages.ts`);
     locale.set(lang, messages);
   }
+}
+
+/** Used in Svelte files, e.g.
+ * $t`Hello World!`
+ */
+export const t = derived(locale, () => translate);
+
+/** Used in .ts modules, e.g.
+ * gt`Hello World!`
+ */
+export function gt(descriptor, ...args) {
+  return translate(descriptor, ...args);
 }
