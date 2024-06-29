@@ -124,8 +124,13 @@ export class IMAPEMail extends EMail {
   }
 
   async deleteMessageOnServer() {
-    await this.folder.runCommand(async (conn) => {
-      await conn.messageDelete(this.uid, { uid: true });
-    });
+    try {
+      this.folder.deletions.add(this.uid);
+      await this.folder.runCommand(async (conn) => {
+        await conn.messageDelete(this.uid, { uid: true });
+      });
+    } finally {
+      this.folder.deletions.delete(this.uid);
+    }
   }
 }
