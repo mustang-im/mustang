@@ -1,10 +1,9 @@
 import { jstsExtractor, svelteExtractor } from 'svelte-i18n-lingui/extractor';
+import { locales, sourceLocale } from './l10n/list';
 
 export default {
-  locales: ['ar','cs','da','de','el','en','es','fi','fr',
-    'it','ja','nl','no','pl','pt','ro','ru','sv','uk','zh'
-  ],
-  sourceLocale: 'en',
+  locales: locales,
+  sourceLocale: sourceLocale,
   catalogs: [
     {
       path: 'l10n/locales/{locale}/messages',

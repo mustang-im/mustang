@@ -44,6 +44,8 @@
   import { setLocale } from "../../l10n/l10n";
   import { t } from "svelte-i18n-lingui";
 
+  setLocale(navigator.language);
+
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;
   $: sidebar = $sidebarApp?.sidebar;
@@ -51,7 +53,6 @@
   onMount(() => catchErrors(startup));
 
   async function startup() {
-    await setLocale(navigator.language);
     loadMustangApps();
     if (appGlobal.persons.hasItems) {
       return;
