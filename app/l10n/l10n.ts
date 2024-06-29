@@ -11,11 +11,11 @@ export async function setLocale(lang: string) {
   lang = lang.match(reLang)[0];
 
   try {
-    const { messages } = await import(`./locales/${lang}/${lang}.ts`);
+    const { messages } = await import(`./locales/${lang}/messages.ts`);
     locale.set(lang, messages);
   } catch (ex) {
     lang = 'en';
-    const { messages } = await import(`./locales/${lang}/${lang}.ts`);
+    const { messages } = await import(`./locales/${lang}/messages.ts`);
     locale.set(lang, messages);
   }
 }
