@@ -4,7 +4,7 @@
   under an <a href="https://raw.githubusercontent.com/mustang-im/mustang/master/LICENSE" target="_blank">Open-Source license</a>.
 </div>
 <div>
-  {appName} is built using the following Open-Source components.
+  {appName} is built using the following <a href="https://github.com/mustang-im/mustang/raw/master/app/public/attribution.txt.gz">Open-Source components</a>.
   We sincerely thank those authors and contributors.
 </div>
 
