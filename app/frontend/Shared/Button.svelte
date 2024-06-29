@@ -49,7 +49,7 @@
    * button for ca. 2+ seconds.
    * Defaults to `label` and `shortCutInfo`. */
   export let tooltip: string = label +
-    (shortCutInfo ? "\n\n" + $t`Shortcut: ` + shortCutInfo : '');
+    (shortCutInfo ? "\n\n" + $t`Shortcut: ${shortCutInfo}` : '');
   export let tabindex = null;
   export let onClick: (event: Event) => void = null;
   export let errorCallback = showError;

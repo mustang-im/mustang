@@ -24,7 +24,7 @@
     } else if (interval == 2) {
       return $t`Day/Month`;
     } else {
-      return interval + " " + $t`days`;
+      return $t`${interval} days`;
     }
   }
 
