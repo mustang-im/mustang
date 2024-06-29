@@ -51,7 +51,7 @@
   onMount(() => catchErrors(startup));
 
   async function startup() {
-    setLocale(navigator.language);
+    await setLocale(navigator.language);
     loadMustangApps();
     if (appGlobal.persons.hasItems) {
       return;
