@@ -1,6 +1,6 @@
 <hbox class="search" class:has-search={searchInput}>
   <SearchIcon size="16px" />
-  <input type="search" bind:value={searchInput} {placeholder} on:input={onInput} bind:this={inputEl} />
+  <input type="search" bind:value={searchInput} placeholder={placeholder ?? $t`Search`} on:input={onInput} bind:this={inputEl} />
   {#if searchInput}
     <RoundButton icon={XIcon} iconSize="16px" padding="2px" border={false}
       on:click={onClear} />
@@ -15,9 +15,11 @@
   import { t } from "svelte-i18n-lingui";
   const dispatchEvent = createEventDispatcher();
 
-  export let placeholder = $t`Search`;
   /** out only */
   export let searchTerm: string;
+  /** Text to show in the empty search field.
+   * Default "Search" */
+  export let placeholder: string = null;
 
   let searchInput: string;
   $: searchInput = searchTerm;
