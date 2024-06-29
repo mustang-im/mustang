@@ -1,16 +1,16 @@
 <div>
-  <T msg="You can find the source code of # core at # under an #.">
+  <T msg={`You can find the source code of ${appName} core at # under an #.`}>
     <!-- Slot 0 doesn't need explicit declaration `slot="0"`, it breaks the code. -->
-    <span>{appName}</span>
+    <a href="https://github.com/mustang-im/mustang" target="_blank">GitHub</a>
     <!-- Slot 1 -->
-    <a href="https://github.com/mustang-im/mustang" target="_blank" slot="1">GitHub</a>
-    <!-- Slot 2 -->
-    <a href="https://raw.githubusercontent.com/mustang-im/mustang/master/LICENSE" target="_blank" slot="2">{$t`Open-Source license`}</a>
+    <a href="https://raw.githubusercontent.com/mustang-im/mustang/master/LICENSE" target="_blank" slot="1">{$t`Open-Source license`}</a>
   </T>
 </div>
 <div>
-  {$t`${appName} is built using the following Open-Source components.
-  We sincerely thank those authors and contributors.`}
+  <T msg={`${appName} is built using the following #. We sincerely thank those authors and contributors.`}>
+    <a href="https://github.com/mustang-im/mustang/raw/master/app/public/attribution.txt.gz">{$t`Open-Source components`}</a>
+  </T>
+  {appName}
 </div>
 
 <iframe src="public/attribution.txt.gz" title="Licenses" sandbox="" />
