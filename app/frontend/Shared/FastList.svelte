@@ -345,6 +345,11 @@
     width: 20px;
     /* top: and height: set in style="" */
   }
+  /* .scrollbar :dir(rtl) Doesn't work */
+  :global([dir="rtl"]) .scrollbar {
+    left: 0px;
+    right: unset;
+  }
   .hidden {
     display: none;
   }
