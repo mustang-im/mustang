@@ -2,7 +2,6 @@
   <Button
     label={$t`System`}
     icon={SystemIcon}
-    iconOnly
     iconSize="16px"
     plain
     onClick={() => switchTo('system')}
@@ -11,7 +10,6 @@
   <Button
     label={$t`Light`}
     icon={LightIcon}
-    iconOnly
     iconSize="16px"
     plain
     onClick={() => switchTo('light')}
@@ -21,7 +19,6 @@
     label={$t`Dark`}
     icon={DarkIcon}
     classes="vertical"
-    iconOnly
     iconSize="16px"
     plain
     onClick={() => switchTo('dark')}
@@ -47,6 +44,7 @@
 
 <style>
   .buttons :global(button) {
-    padding: 4px;
+    padding: 8px;
+    margin-right: 12px;
   }
 </style>

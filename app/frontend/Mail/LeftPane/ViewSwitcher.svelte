@@ -1,8 +1,8 @@
-<hbox class="buttons">
+<hbox class="buttons" class:large>
   <Button
     label={$t`Chat-like mail view`}
     icon={ChatIcon}
-    iconOnly
+    iconOnly={!large}
     iconSize="16px"
     plain
     onClick={() => switchTo('chat')}
@@ -12,7 +12,7 @@
     label={$t`Vertical view`}
     icon={VerticalIcon}
     classes="vertical"
-    iconOnly
+    iconOnly={!large}
     iconSize="16px"
     plain
     onClick={() => switchTo('vertical')}
@@ -21,7 +21,7 @@
   <Button
     label={$t`Classic 3-pane view`}
     icon={ThreePaneIcon}
-    iconOnly
+    iconOnly={!large}
     iconSize="16px"
     plain
     onClick={() => switchTo('3pane')}
@@ -38,6 +38,8 @@
   import ThreePaneIcon from "lucide-svelte/icons/layout-panel-left";
   import { t } from "../../../l10n/l10n";
 
+  export let large = false;
+
   let viewSetting = getLocalStorage("mail.view", "vertical");
   $: view = $viewSetting.value;
 
@@ -50,10 +52,21 @@
   .buttons :global(button) {
     padding: 4px;
   }
-  .buttons :global(.vertical) {
+  .buttons.large :global(button) {
+    padding: 8px;
+    margin-right: 12px;
+  }
+  .buttons :global(.vertical .icon) {
     color: transparent;
   }
   .buttons :global(svg) {
     fill: transparent;
   }
-</style>
+  @media (max-width: 800px)  {
+    .buttons.large {
+      flex-direction: column;
+      align-items: start;
+      justify-content: stretch;
+    }
+  }
+  </style>
