@@ -60,7 +60,7 @@
   import FolderOpenIcon from "lucide-svelte/icons/folder-open";
   import { getDateString } from "../Util/date";
   import { fileSize } from "./fileSize";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
 
   export let file: FileOrDirectory;
   export let indent = 0;

@@ -34,7 +34,7 @@
   import appbarImg from "../../asset/settings/notification/appbar.png";
   import taskbarImg from "../../asset/settings/notification/taskbar.png";
   import { appName } from "../../../logic/build";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
   //import trayImg from "../../asset/settings/notification/tray.png";
 
   /** in/out */

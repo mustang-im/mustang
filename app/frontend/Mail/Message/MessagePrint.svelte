@@ -10,6 +10,7 @@
   import HTMLDisplay from "./HTMLDisplay.svelte";
   import { sleep, NotImplemented } from "../../../logic/util/util";
   import { tick } from "svelte";
+  import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
 

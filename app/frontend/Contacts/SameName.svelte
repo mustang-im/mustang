@@ -32,7 +32,7 @@
   import { catchErrors, showError } from "../Util/error";
   import { appGlobal } from "../../logic/app";
   import { ArrayColl } from "svelte-collections";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
 
   export let person: Person;
 

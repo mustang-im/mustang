@@ -48,7 +48,7 @@
   import { mergeColls } from "svelte-collections";
   import { Event } from "../../../logic/Calendar/Event";
   import { faker } from "@faker-js/faker";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   const allEvents = mergeColls(appGlobal.calendars.map(calendar => calendar.events));
   const now = new Date();

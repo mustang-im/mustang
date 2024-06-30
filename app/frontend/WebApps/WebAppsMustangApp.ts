@@ -3,7 +3,7 @@ import { appGlobal } from "../../logic/app";
 import type AppListed from "../../logic/Apps/AppListed";
 import AppsApp from "./WebAppsApp.svelte";
 import appsLauncherIcon from '../asset/icon/appBar/appsLauncher.svg?raw';
-import { gt } from "svelte-i18n-lingui";
+import { gt } from "../../l10n/l10n";
 
 export class WebAppsMustangApp extends MustangApp {
   id = "webapps";

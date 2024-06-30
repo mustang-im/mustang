@@ -7,7 +7,7 @@
 
 <script lang="ts">
   import type { Account } from "../../logic/Abstract/Account";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
 
   export let account: Account;
 </script>

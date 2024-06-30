@@ -30,7 +30,7 @@
   import FileIcon from "../../Files/FileIcon.svelte";
   import { fileSize } from "../../Files/fileSize";
   import { catchErrors } from "../../Util/error";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let attachment: Attachment;
   export let message: EMail;

@@ -25,7 +25,7 @@
   import EyeIcon from "lucide-svelte/icons/eye";
   import EyeOffIcon from "lucide-svelte/icons/eye-off";
   import { createEventDispatcher } from 'svelte';
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../l10n/l10n";
   const dispatchEvent = createEventDispatcher();
 
   /** in/out */

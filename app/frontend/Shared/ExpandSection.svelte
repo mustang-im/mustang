@@ -22,7 +22,7 @@
   import Button from "./Button.svelte";
   import ExpandIcon from "lucide-svelte/icons/chevron-down";
   import CollapseIcon from "lucide-svelte/icons/chevron-up";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
 
   /** in/out */
   export let expanded = false;

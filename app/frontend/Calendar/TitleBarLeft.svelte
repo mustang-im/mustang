@@ -11,7 +11,7 @@
   import AddToCalendarIcon from "lucide-svelte/icons/plus";
   import { createEventDispatcher } from 'svelte';
   import { appGlobal } from "../../logic/app";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
 
   const dispatch = createEventDispatcher();
 

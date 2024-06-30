@@ -17,7 +17,7 @@
   import { IncomingCall } from "../../../logic/Chat/RoomEvent";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import { catchErrors } from "../../Util/error";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let message: IncomingCall;
   export let previousMessage: Message = null;

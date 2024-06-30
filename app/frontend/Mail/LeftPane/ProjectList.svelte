@@ -11,7 +11,7 @@
 
 <script lang="ts">
   import FastList from "../../Shared/FastList.svelte";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 </script>
 
 <style>

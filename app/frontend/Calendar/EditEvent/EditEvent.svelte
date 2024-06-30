@@ -117,7 +117,7 @@
   import CopyIcon from "lucide-svelte/icons/copy";
   import BrowserIcon from "lucide-svelte/icons/globe";
   import type { Editor } from '@tiptap/core';
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let event: Event;
 

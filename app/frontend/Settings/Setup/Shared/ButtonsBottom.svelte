@@ -22,7 +22,7 @@
 
 <script lang="ts">
   import Button from "../../../Shared/Button.svelte";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../l10n/l10n";
 
   export let onContinue = (event: Event) => undefined;
   export let onCancel = (event: Event) => undefined;

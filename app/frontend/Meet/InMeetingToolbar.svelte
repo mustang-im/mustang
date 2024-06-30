@@ -89,7 +89,7 @@
   import OpenSidebarIcon from "lucide-svelte/icons/users-round";
   import OpenToLeftIcon from "lucide-svelte/icons/arrow-left-from-line";
   import CloseSidebarIcon from "lucide-svelte/icons/arrow-right-from-line";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
 
   export let meeting: VideoConfMeeting;
   export let isSidebar = false;

@@ -12,7 +12,7 @@
   import SearchIcon from "lucide-svelte/icons/search";
   import XIcon from "lucide-svelte/icons/x";
   import { createEventDispatcher } from "svelte";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
   const dispatchEvent = createEventDispatcher();
 
   /** out only */

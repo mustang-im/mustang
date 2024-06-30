@@ -15,7 +15,7 @@
 <script lang="ts">
   import { VideoStream, ParticipantVideo, ScreenShare, SelfVideo } from "../../../logic/Meet/VideoStream";
   import VideoWithLabel from "./VideoWithLabel.svelte";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let video: VideoStream;
   export let showSelf: boolean;

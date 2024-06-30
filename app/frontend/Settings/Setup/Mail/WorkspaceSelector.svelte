@@ -25,7 +25,7 @@
 <script lang="ts">
   import { workspaces, type Workspace } from "../../../../logic/Abstract/Workspace";
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../l10n/l10n";
 
   export let config: MailAccount;
   export let selectedWorkspace: Workspace = config.workspace ?? workspaces[workspaces.length - 1];

@@ -23,7 +23,7 @@
   import { EMail } from "../../../logic/Mail/EMail";
   import MessageBubble from "../../Chat/MessageView/Message.svelte";
   import Toolbar from "./MailChatToolbar.svelte";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
   export let previousMessage: Message;

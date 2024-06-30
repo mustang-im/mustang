@@ -36,7 +36,7 @@
   //import VerticalIcon from "lucide-svelte/icons/columns";
   import VerticalIcon from '../../asset/icon/mail/threeColumns.svg?raw';
   import ThreePaneIcon from "lucide-svelte/icons/layout-panel-left";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   let viewSetting = getLocalStorage("mail.view", "vertical");
   $: view = $viewSetting.value;

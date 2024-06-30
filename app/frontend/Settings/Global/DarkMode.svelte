@@ -35,7 +35,7 @@
   import DarkIcon from "lucide-svelte/icons/moon";
   import LightIcon from "lucide-svelte/icons/sun";
   import SystemIcon from "lucide-svelte/icons/app-window";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   let modeSetting = getLocalStorage("appearance.darkmode", "system");
   $: mode = $modeSetting.value;

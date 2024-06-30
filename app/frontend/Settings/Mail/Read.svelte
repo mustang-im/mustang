@@ -37,7 +37,8 @@
 <script lang="ts">
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import { getLocalStorage } from "../../Util/LocalStorage";
-  import { t, T } from "svelte-i18n-lingui";
+  import { T } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   let readAfter = getLocalStorage("mail.read.after", 0);
   let readSeconds = readAfter.value > 0 ? readAfter.value : 5;

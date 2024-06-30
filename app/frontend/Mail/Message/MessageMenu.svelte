@@ -75,7 +75,7 @@
   import SourceIcon from "lucide-svelte/icons/code-xml";
   import { catchErrors } from "../../Util/error";
   import { NotImplemented } from "../../../logic/util/util";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
   export let padding = 5;

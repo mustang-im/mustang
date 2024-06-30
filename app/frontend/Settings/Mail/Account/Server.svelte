@@ -12,7 +12,7 @@
   import { SQLMailAccount } from "../../../../logic/Mail/SQL/SQLMailAccount";
   import { catchErrors } from "../../../Util/error";
   import ManualConfig from "../../Setup/Mail/manual/ManualConfig.svelte";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../l10n/l10n";
 
   export let account: Account;
 

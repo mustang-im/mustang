@@ -31,7 +31,7 @@
   import FolderList from "../../../Mail/LeftPane/FolderList.svelte";
   import Splitter from "../../../Shared/Splitter.svelte";
   import type { ArrayColl } from "svelte-collections";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../l10n/l10n";
 
   export let folder: Folder = null;
   export let account: Account = folder?.account;

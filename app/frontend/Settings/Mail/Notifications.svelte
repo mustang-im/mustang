@@ -23,7 +23,7 @@
   import { getLocalStorage } from "../../Util/LocalStorage";
   import NotificationKinds from "./NotificationKinds.svelte";
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   let notificationsSetting = getLocalStorage("notifications.mail", ["popup","sound"]);
   let onlyABSetting = getLocalStorage("notifications.mail.only.addressbook", true);

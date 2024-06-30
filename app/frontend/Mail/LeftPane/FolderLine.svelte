@@ -21,7 +21,7 @@
   import { catchErrors } from '../../Util/error';
   import { openFolderProperties } from '../FolderProperties.svelte';
   import { selectedFolder } from '../Selected';
-  import { t } from 'svelte-i18n-lingui';
+  import { t } from '../../../l10n/l10n';
 
   export let folder: Folder;
 

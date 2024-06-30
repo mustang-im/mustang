@@ -67,7 +67,7 @@
   import SpamIcon from "lucide-svelte/icons/shield-x";
   import { getDateString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
 

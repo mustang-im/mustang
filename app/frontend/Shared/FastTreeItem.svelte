@@ -19,7 +19,7 @@
   import Button from "./Button.svelte";
   import ExpandIcon from "lucide-svelte/icons/chevron-right";
   import CollapseIcon from "lucide-svelte/icons/chevron-down";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
 
   // <https://github.com/dummdidumm/rfcs/blob/ts-typedefs-within-svelte-components/text/ts-typing-props-slots-events.md>
   type T = $$Generic<TreeItem>;

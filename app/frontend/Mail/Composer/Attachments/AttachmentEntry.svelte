@@ -20,7 +20,7 @@
   import FileIcon from "../../../Files/FileIcon.svelte";
   import Button from "../../../Shared/Button.svelte";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../l10n/l10n";
 
   export let attachment: Attachment;
 </script>

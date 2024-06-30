@@ -63,7 +63,7 @@
   import plaintextImg from "../../asset/settings/mail/send/plaintext.png";
   import quoteBelowImg from "../../asset/settings/mail/send/quote-below.png";
   import quoteAboveImg from "../../asset/settings/mail/send/quote-above.png";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   let formatSetting = getLocalStorage("mail.send.format", "html");
   let quoteSetting = getLocalStorage("mail.send.quote", "below");

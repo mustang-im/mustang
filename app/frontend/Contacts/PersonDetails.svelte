@@ -231,7 +231,7 @@
   import AddIcon from "lucide-svelte/icons/plus";
   import { NotImplemented } from "../../logic/util/util";
   import { showError } from "../Util/error";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
 
   export let person: Person;
 

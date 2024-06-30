@@ -20,7 +20,7 @@
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
   import { NotReached } from "../../../../logic/util/util";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../l10n/l10n";
 
   /** out */
   export let config: Calendar = null;

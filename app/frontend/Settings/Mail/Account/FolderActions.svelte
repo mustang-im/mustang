@@ -31,7 +31,7 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import CreateFolderIcon from "lucide-svelte/icons/folder-plus";
   import { assert } from "../../../../logic/util/util";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../l10n/l10n";
 
   export let folder: Folder;
 

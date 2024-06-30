@@ -40,7 +40,7 @@
   import DownIcon from "lucide-svelte/icons/chevron-down";
   import { catchErrors } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let on: boolean; /** in/out */
   export let selectedId: string; /** in/out */

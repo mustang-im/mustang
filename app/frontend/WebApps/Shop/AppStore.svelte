@@ -22,7 +22,7 @@
   import CategoryPage from "./CategoryPage.svelte";
   import XIcon from "lucide-svelte/icons/x";
   import { onMount } from "svelte";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let showStore = true; /* in/out */
 

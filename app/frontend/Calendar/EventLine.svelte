@@ -11,7 +11,7 @@
   import type { Event } from "../../logic/Calendar/Event";
   import { calendarMustangApp } from "./CalendarMustangApp";
   import { selectedEvent } from "./selected";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
 
   export let event: Event;
 

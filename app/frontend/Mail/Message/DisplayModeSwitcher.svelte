@@ -59,7 +59,7 @@
   import PlaintextIcon from "lucide-svelte/icons/type";
   import SourceIcon from "lucide-svelte/icons/code-xml";
   import { catchErrors } from "../../Util/error";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let mode: DisplayMode = DisplayMode.HTML;
 

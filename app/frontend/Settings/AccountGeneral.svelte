@@ -16,7 +16,7 @@
   import Button from "../Shared/Button.svelte";
   import { catchErrors } from "../Util/error";
   import { appName } from "../../logic/build";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
 
   export let account: Account;
 

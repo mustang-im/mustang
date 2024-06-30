@@ -44,7 +44,7 @@
   import { onKeyEnter } from "../Util/util";
   import { sleep } from "../../logic/util/util";
   import { createEventDispatcher, tick } from 'svelte';
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
   const dispatch = createEventDispatcher();
 
   export let entry: ContactEntry;

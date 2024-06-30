@@ -18,7 +18,7 @@
   import AccountListItem from "./AccountListItem.svelte";
   import FastList from "../../Shared/FastList.svelte";
   import type { Collection } from 'svelte-collections';
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let accounts: Collection<MailAccount>;
   export let selectedAccount: MailAccount; /* in/out */

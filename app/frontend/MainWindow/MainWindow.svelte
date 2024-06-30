@@ -41,8 +41,7 @@
   import { catchErrors, backgroundError } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { onMount } from "svelte";
-  import { setLocale } from "../../l10n/l10n";
-  import { t } from "svelte-i18n-lingui";
+  import { setLocale, t } from "../../l10n/l10n";
 
   setLocale(navigator.language);
 

@@ -8,7 +8,7 @@
   import { assert } from "../../../../logic/util/util";
   import type { ArrayColl } from "svelte-collections";
   import { createEventDispatcher, onMount } from 'svelte';
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../l10n/l10n";
   const dispatchEvent = createEventDispatcher();
 
   /** in */

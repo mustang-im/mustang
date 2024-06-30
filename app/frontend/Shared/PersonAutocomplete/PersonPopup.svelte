@@ -95,7 +95,7 @@
   import { catchErrors } from "../../Util/error";
   import { useDebounce } from "@svelteuidev/composables";
   import { createEventDispatcher, onMount } from 'svelte';
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
   const dispatch = createEventDispatcher<{ removePerson: PersonUID, close: void }>();
 
   export let personUID: PersonUID;

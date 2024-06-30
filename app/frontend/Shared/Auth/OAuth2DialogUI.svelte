@@ -11,7 +11,7 @@
   import Browser from "../Browser.svelte";
   import { UserCancelled, type URLString, sleep } from "../../../logic/util/util";
   import { onMount } from "svelte";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let dialog: OAuth2Dialog;
 

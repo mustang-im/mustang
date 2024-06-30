@@ -1,6 +1,6 @@
 import { MustangApp } from "../../AppsBar/MustangApp";
 import SettingsIcon from "lucide-svelte/icons/settings";
-import { gt } from "svelte-i18n-lingui";
+import { gt } from "../../../l10n/l10n";
 
 export class SetupMustangApp extends MustangApp {
   id = "setup";

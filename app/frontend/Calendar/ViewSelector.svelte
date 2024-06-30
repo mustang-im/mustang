@@ -6,7 +6,7 @@
 <script lang="ts">
   import type { DateInterval } from "./selected";
   import { NativeSelect } from '@svelteuidev/core';
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
 
   export let dateInterval: DateInterval = 7; /* in/out */
 

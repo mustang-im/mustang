@@ -23,7 +23,7 @@
   import { appGlobal } from "../../../../logic/app";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../l10n/l10n";
 
   /** in/out */
   export let config: Addressbook;

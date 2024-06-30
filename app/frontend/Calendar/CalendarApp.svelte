@@ -18,7 +18,7 @@
   import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { mergeColls } from "svelte-collections";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
 
   $: dateInterval = $selectedDateInterval;
   $: events = mergeColls(appGlobal.calendars.map(cal => cal.events)).sortBy(ev => ev.startTime);

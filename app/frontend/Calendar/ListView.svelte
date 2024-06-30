@@ -20,7 +20,7 @@
   import FastList from "../Shared/FastList.svelte";
   import type { Collection } from "svelte-collections";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
 
   export let events: Collection<Event>;
 

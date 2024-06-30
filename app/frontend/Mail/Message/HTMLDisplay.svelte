@@ -5,7 +5,7 @@
   import cssBody from "./content-body.css?inline";
   import cssFont from "../../asset/font/Karla.css?inline";
   import WebView from "../../Shared/WebView.svelte";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   /** DANGER Attention: You must sanitize the HTML. It comes from untrusted sources.
    * @see also Chat Message.svelte */

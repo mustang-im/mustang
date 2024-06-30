@@ -22,7 +22,7 @@
   import Scroll from "../Shared/Scroll.svelte";
   import NewContactIcon from "lucide-svelte/icons/plus";
   import type { Collection } from "svelte-collections";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
 
   /** in */
   export let persons: Collection<Person>;

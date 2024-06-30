@@ -37,7 +37,7 @@
   import SpecialFolderDropDown from "./SpecialFolderDropDown.svelte";
   import Button from "../../../Shared/Button.svelte";
   import { assert } from "../../../../logic/util/util";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../l10n/l10n";
 
   export let folder: Folder;
 

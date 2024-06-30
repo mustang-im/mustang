@@ -27,7 +27,7 @@
   import NewContactIcon from "lucide-svelte/icons/plus";
   import InviteUserIcon from "lucide-svelte/icons/link";
   import { assert } from "../../logic/util/util";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
 
   export let meeting: VideoConfMeeting;
   export let selected: MeetingParticipant;

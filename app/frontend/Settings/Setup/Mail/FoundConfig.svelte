@@ -37,7 +37,7 @@
   import StatusMessage from "../Shared/StatusMessage.svelte";
   import CheckIcon from "lucide-svelte/icons/check";
   import type { ArrayColl } from "svelte-collections";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../l10n/l10n";
 
   export let config: MailAccount;
   export let altConfigs: ArrayColl<MailAccount>;

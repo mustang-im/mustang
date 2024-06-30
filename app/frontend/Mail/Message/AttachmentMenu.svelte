@@ -39,7 +39,7 @@
   import SaveIcon from "lucide-svelte/icons/save";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { catchErrors } from "../../Util/error";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let attachment: Attachment;
 

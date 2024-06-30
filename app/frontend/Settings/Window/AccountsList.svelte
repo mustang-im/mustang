@@ -28,7 +28,7 @@
   import RoundButton from "../../Shared/RoundButton.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
   import { assert } from "../../../logic/util/util";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   /** in */
   export let category: SettingsCategory;

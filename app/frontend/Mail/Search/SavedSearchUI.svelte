@@ -17,7 +17,7 @@
   import Button from "../../Shared/Button.svelte";
   import SaveIcon from "lucide-svelte/icons/save";
   import { createEventDispatcher } from 'svelte';
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
   const dispatchEvent = createEventDispatcher();
 
   /** in */

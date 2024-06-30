@@ -9,7 +9,7 @@
   import type { MailAccount } from "../../../../../logic/Mail/MailAccount";
   import ManualConfig from "./ManualConfig.svelte";
   import type ManualConfigServer from "./ManualConfigServer.svelte";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../../l10n/l10n";
 
   /** in */
   export let config: MailAccount;

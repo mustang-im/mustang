@@ -106,7 +106,7 @@
   import OpenIcon from "lucide-svelte/icons/door-open";
   import HourglassIcon from "lucide-svelte/icons/hourglass";
   import { mergeColls } from "svelte-collections";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let meeting: VideoConfMeeting;
 

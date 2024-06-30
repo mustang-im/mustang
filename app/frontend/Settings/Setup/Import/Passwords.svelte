@@ -64,7 +64,7 @@
   import Button from "../../../Shared/Button.svelte";
   import { Cancelled } from "../../../../logic/util/Abortable";
   import { catchErrors } from "../../../Util/error";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../l10n/l10n";
 
   export let accounts: MailAccount[] = [];
   export let onContinue = () => undefined;

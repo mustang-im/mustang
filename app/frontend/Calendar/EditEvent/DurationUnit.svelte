@@ -5,7 +5,7 @@
 </select>
 
 <script lang="ts">
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let durationInSeconds: number; /* in/out */
   export let durationInUnit: number; /* in/out */

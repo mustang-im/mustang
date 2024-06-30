@@ -7,7 +7,7 @@
 
 <script lang="ts">
   import type { XMPPAccount } from "../../../logic/Chat/XMPP/XMPPAccount";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let account: XMPPAccount;
 </script>

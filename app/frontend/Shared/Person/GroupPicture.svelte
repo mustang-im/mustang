@@ -13,7 +13,7 @@
 <script lang="ts">
   import type { PersonOrGroup } from "./PersonOrGroup";
   import type { Collection } from "svelte-collections";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let persons: Collection<PersonOrGroup>;
   export let size = 48;

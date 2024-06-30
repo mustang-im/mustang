@@ -1,7 +1,7 @@
 import { MustangApp } from "../AppsBar/MustangApp";
 import FilesApp from "../Files/FilesApp.svelte";
 import fileShareIcon from '../asset/icon/appBar/fileShare.svg?raw';
-import { gt } from "svelte-i18n-lingui";
+import { gt } from "../../l10n/l10n";
 
 export class FilesMustangApp extends MustangApp {
   id = "files";

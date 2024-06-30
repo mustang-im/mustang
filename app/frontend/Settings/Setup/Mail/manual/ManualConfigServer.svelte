@@ -87,7 +87,7 @@
   import ArrowLeftIcon from "lucide-svelte/icons/move-left";
   import ArrowRightIcon from "lucide-svelte/icons/move-right";
   import { getDomainForEmailAddress } from "../../../../../logic/util/netUtil";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../../l10n/l10n";
 
   /** in */
   export let config: MailAccount;

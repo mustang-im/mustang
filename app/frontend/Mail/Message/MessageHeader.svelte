@@ -64,7 +64,7 @@
   import { catchErrors, backgroundError } from "../../Util/error";
   import { getDateString } from "../../Util/date";
   import { onDestroy } from "svelte";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
 

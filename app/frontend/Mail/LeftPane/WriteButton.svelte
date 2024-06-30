@@ -10,7 +10,7 @@
   import { mailMustangApp } from "../MailMustangApp";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import WriteIcon from "lucide-svelte/icons/pencil";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let selectedAccount: MailAccount; /* in/out */
 

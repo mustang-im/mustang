@@ -28,7 +28,7 @@
   import type AppListed from "../../../logic/Apps/AppListed";
   import { appGlobal } from "../../../logic/app";
   import Button from "../../Shared/Button.svelte";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let app: AppListed;
   export let selectedApp: AppListed; /* in/out */

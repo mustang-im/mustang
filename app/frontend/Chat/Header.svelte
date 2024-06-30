@@ -14,7 +14,7 @@
   import NewGroupIcon from "lucide-svelte/icons/plus";
   import { catchErrors } from "../Util/error";
   import { NotImplemented } from "../../logic/util/util";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
 
   let selectedAccount: ChatAccount;
 

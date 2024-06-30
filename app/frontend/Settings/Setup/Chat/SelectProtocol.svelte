@@ -21,7 +21,7 @@
   import XMPPLogin from "./XMPPLogin.svelte";
   import MatrixLogin from "./MatrixLogin.svelte";
   import { appName } from "../../../../logic/build";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../l10n/l10n";
 
   /** out */
   export let config: ChatAccount = null;

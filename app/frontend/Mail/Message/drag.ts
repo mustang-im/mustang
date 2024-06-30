@@ -4,7 +4,7 @@ import { selectedMessage, selectedMessages } from "../Selected";
 import { ArrayColl } from "svelte-collections";
 import { get } from "svelte/store";
 import { assert } from "../../../logic/util/util";
-import { gt } from "svelte-i18n-lingui";
+import { gt } from "../../../l10n/l10n";
 
 export function onDragStartMail(event: DragEvent, message: EMail) {
   selectedMessage.set(message);

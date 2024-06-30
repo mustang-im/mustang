@@ -71,7 +71,7 @@
   import { backgroundError, catchErrors } from "../../../Util/error";
   import { NotReached } from "../../../../logic/util/util";
   import type { ArrayColl } from "svelte-collections";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../l10n/l10n";
 
   let emailAddress: string;
   let password: string;

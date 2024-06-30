@@ -31,7 +31,7 @@
   import Button from "../Shared/Button.svelte";
   import TodayIcon from "lucide-svelte/icons/home";
   import type { Collection } from "svelte-collections";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
 
   export let start: Date;
   export let events: Collection<Event>;

@@ -11,7 +11,7 @@
   import WorkspaceSelector from "./WorkspaceSelector.svelte";
   import StatusMessage from "../Shared/StatusMessage.svelte";
   import CheckIcon from "lucide-svelte/icons/check";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../l10n/l10n";
 
   export let config: MailAccount;
 </script>

@@ -11,7 +11,7 @@
 
 <script lang="ts">
   import type { PersonOrGroup } from "./PersonOrGroup";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let person: PersonOrGroup;
   export let size = 48;

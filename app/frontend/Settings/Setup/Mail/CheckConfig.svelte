@@ -6,7 +6,7 @@
   import { checkConfig } from "../../../../logic/Mail/AutoConfig/checkConfig";
   import StatusMessage from "../Shared/StatusMessage.svelte";
   import { createEventDispatcher, onMount } from 'svelte';
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../l10n/l10n";
   const dispatchEvent = createEventDispatcher();
 
   /** in */

@@ -33,7 +33,7 @@
   import ShieldAlertIcon from "lucide-svelte/icons/shield-alert";
   import ArrowLeftIcon from "lucide-svelte/icons/arrow-big-left";
   import ArrowRightIcon from "lucide-svelte/icons/arrow-big-right";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../l10n/l10n";
 
   /** in */
   export let config: MailAccount;

@@ -9,7 +9,7 @@ import mailIcon from '../asset/icon/appBar/mail.svg?raw';
 import EditIcon from "lucide-svelte/icons/pencil";
 import AuthIcon from "lucide-svelte/icons/key-round";
 import { derived } from "svelte/store";
-import { gt } from "svelte-i18n-lingui";
+import { gt } from "../../l10n/l10n";
 
 export class MailMustangApp extends MustangApp {
   id = "mail";

@@ -7,7 +7,7 @@
 <script lang="ts">
   import { getTestObjects } from "../../../logic/testData";
   import Button from "../../Shared/Button.svelte";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 </script>
 
 <style>

@@ -28,7 +28,7 @@
   import Icon from 'svelte-icon/Icon.svelte';
   import type { ComponentType } from 'svelte';
   import { showError } from '../Util/error';
-  import { t } from 'svelte-i18n-lingui';
+  import { t } from '../../l10n/l10n';
 
   /** Show this label below the icon (unless `iconOnly` or label slot).
    * If iconOnly and no explicit `tooltip`: Show it as tooltip. */

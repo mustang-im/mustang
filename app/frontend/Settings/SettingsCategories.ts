@@ -34,7 +34,7 @@ import { MatrixAccount } from "../../logic/Chat/Matrix/MatrixAccount";
 import { M3Account } from "../../logic/Meet/M3Account";
 import { ArrayColl } from "svelte-collections";
 import { ChatAccount } from "../../logic/Chat/ChatAccount";
-import { gt } from "svelte-i18n-lingui";
+import { gt } from "../../l10n/l10n";
 
 export const settingsCategories = new ArrayColl<SettingsCategory>();
 export const accountSettings = new ArrayColl<AccSetting>();

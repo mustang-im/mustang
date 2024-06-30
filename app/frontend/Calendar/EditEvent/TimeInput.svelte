@@ -1,7 +1,7 @@
 <input bind:value={userValue} on:change={onChange} bind:this={inputE} />
 
 <script lang="ts">
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let time: Date; /* in/out */
 

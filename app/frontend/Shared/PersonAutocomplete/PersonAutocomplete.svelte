@@ -38,7 +38,7 @@
   import { createEventDispatcher, tick } from 'svelte';
   import { catchErrors } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
   const dispatch = createEventDispatcher<{ addPerson: PersonUID }>();
 
   export let skipPersons: Collection<PersonUID> = new ArrayColl<PersonUID>();

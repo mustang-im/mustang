@@ -14,7 +14,7 @@
   import { genericFileTypes, FileType } from '../../logic/Files/MIMETypes';
   import FastList from '../Shared/FastList.svelte';
   import { ArrayColl, type Collection } from 'svelte-collections';
-  import { t } from 'svelte-i18n-lingui';
+  import { t } from '../../l10n/l10n';
 
   let selectedFileType: FileType; /* in/out */
   export let selectedFileTypes: Collection<FileType>;

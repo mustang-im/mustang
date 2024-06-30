@@ -15,7 +15,7 @@
   import ParticipantsList from "./ParticipantsList.svelte";
   import ParticipantSearch from "./ParticipantSearch.svelte";
   import Time from "./Time.svelte";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
 
   export let meeting: VideoConfMeeting;
   export let participants: Collection<MeetingParticipant>;

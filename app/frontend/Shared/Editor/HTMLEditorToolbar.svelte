@@ -195,7 +195,7 @@ block
   import UndoIcon from "lucide-svelte/icons/undo";
   import RedoIcon from "lucide-svelte/icons/redo";
   import type { Editor } from '@tiptap/core';
-  import { t } from 'svelte-i18n-lingui';
+  import { t } from '../../../l10n/l10n';
 
   /* in only */
   export let editor: Editor;

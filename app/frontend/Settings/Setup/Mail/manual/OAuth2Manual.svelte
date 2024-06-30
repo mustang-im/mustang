@@ -41,7 +41,7 @@
   import { OAuth2UIMethod } from "../../../../../logic/Auth/OAuth2UIMethod";
   import type { MailAccount } from "../../../../../logic/Mail/MailAccount";
   import HeaderGroupBox from "../../../../Shared/HeaderGroupBox.svelte";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../../l10n/l10n";
 
   /** in */
   export let config: MailAccount;

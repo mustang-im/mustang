@@ -43,7 +43,7 @@
   import RoundButton from "../Shared/RoundButton.svelte";
   import XIcon from "lucide-svelte/icons/x";
   import ErrorInfoIcon from "lucide-svelte/icons/bot";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
 
   $: notification = $notifications.sortBy(n => n.severity).first;
 

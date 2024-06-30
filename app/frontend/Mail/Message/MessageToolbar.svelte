@@ -77,7 +77,7 @@
   import ReplyAllIcon from "lucide-svelte/icons/reply-all";
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
 

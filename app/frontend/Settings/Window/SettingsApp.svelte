@@ -32,7 +32,7 @@
   import Scroll from "../../Shared/Scroll.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import CloseIcon from "lucide-svelte/icons/x";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   let categories = settingsCategories;
 

@@ -40,7 +40,7 @@
   import SettingsIcon from 'lucide-svelte/icons/settings-2';
   import MinimizeIcon from 'lucide-svelte/icons/minus';
   import XIcon from 'lucide-svelte/icons/x';
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../l10n/l10n";
 
   export let selectedApp: MustangApp;
 

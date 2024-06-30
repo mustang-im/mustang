@@ -27,7 +27,7 @@
   import ManualConfigServer from "./ManualConfigServer.svelte";
   import OAuth2Manual from "./OAuth2Manual.svelte";
   import SaveIcon from "lucide-svelte/icons/save";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../../l10n/l10n";
 
   /** in */
   export let config: MailAccount;

@@ -6,7 +6,7 @@ import EditEvent from "./EditEvent/EditEvent.svelte";
 import CalendarIcon from "../Calendar/CalendarIcon.svelte";
 import EditIcon from "lucide-svelte/icons/pencil";
 import { derived } from "svelte/store";
-import { gt } from "svelte-i18n-lingui";
+import { gt } from "../../l10n/l10n";
 
 export class CalendarMustangApp extends MustangApp {
   id = "calendar";

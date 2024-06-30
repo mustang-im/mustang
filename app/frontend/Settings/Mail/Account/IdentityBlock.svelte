@@ -100,7 +100,7 @@
   import type { Editor } from "@tiptap/core";
   import { createEventDispatcher } from 'svelte';
   import { appName, siteRoot } from "../../../../logic/build";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../l10n/l10n";
   const dispatchEvent = createEventDispatcher();
 
   export let identity: MailIdentity;

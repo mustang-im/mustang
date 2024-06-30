@@ -23,7 +23,7 @@
   import AppLaunchButton from "./AppLaunchButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import type { Collection } from "svelte-collections";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let apps: Collection<AppListed>;
   export let runningApp: AppListed; /* in/out */

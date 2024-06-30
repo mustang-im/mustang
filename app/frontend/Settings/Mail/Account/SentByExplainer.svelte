@@ -15,7 +15,7 @@
 <script lang="ts">
   import Button from "../../../Shared/Button.svelte";
   import { appName, siteRoot } from "../../../../logic/build";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../../l10n/l10n";
 
   const kSubscribeURL = `${siteRoot}#plans`;
   /*async function onSubscribeClick() {

@@ -127,7 +127,7 @@
   import type { ArrayColl, Collection } from "svelte-collections";
   import { useDebounce } from '@svelteuidev/composables';
   import { createEventDispatcher, onMount } from 'svelte';
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
   const dispatchEvent = createEventDispatcher();
 
   /** The search result
