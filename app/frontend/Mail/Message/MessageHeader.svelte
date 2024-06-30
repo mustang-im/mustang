@@ -35,7 +35,7 @@
     <hbox flex />
     <vbox>
       <MessageToolbar {message} />
-      <value class="date" title={$message.sent?.toLocaleString()}>
+      <value class="date" title={$message.sent?.toLocaleString(getUILocale())}>
         {getDateString($message.sent)}
       </value>
     </vbox>
@@ -64,7 +64,7 @@
   import { catchErrors, backgroundError } from "../../Util/error";
   import { getDateString } from "../../Util/date";
   import { onDestroy } from "svelte";
-  import { t } from "../../../l10n/l10n";
+  import { getUILocale, t } from "../../../l10n/l10n";
 
   export let message: EMail;
 

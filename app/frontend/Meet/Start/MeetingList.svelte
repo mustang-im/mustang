@@ -1,7 +1,7 @@
 {#if $meetings.length > 1}
   <grid>
     {#each $meetings.each as meeting}
-      <hbox>{meeting.startTime.toLocaleTimeString()} - {meeting.endTime.toLocaleTimeString()}</hbox>
+      <hbox>{meeting.startTime.toLocaleTimeString(getUILocale())} - {meeting.endTime.toLocaleTimeString(getUILocale())}</hbox>
       <hbox>{meeting.title}</hbox>
     {/each}
   </grid>
@@ -12,6 +12,7 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import type { Collection } from "svelte-collections";
+  import { getUILocale } from "../../../l10n/l10n";
 
   export let meetings: Collection<Event>;
 </script>

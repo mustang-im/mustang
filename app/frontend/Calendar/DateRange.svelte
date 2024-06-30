@@ -8,7 +8,7 @@
   import Button from "../Shared/Button.svelte";
   import ChevronLeftIcon from "lucide-svelte/icons/chevron-left";
   import ChevronRightIcon from "lucide-svelte/icons/chevron-right";
-  import { t } from "../../l10n/l10n";
+  import { getUILocale, t } from "../../l10n/l10n";
 
   export let date = new Date(); /* in/out */
   export let dateInterval: number; /* in */
@@ -23,7 +23,7 @@
   }
 
   function simpleDateString(date) {
-    return date.toLocaleDateString(undefined, {
+    return date.toLocaleDateString(getUILocale(), {
       year: "numeric",
       month: "long",
       // day: dateInterval < 28 ? "numeric" : undefined,

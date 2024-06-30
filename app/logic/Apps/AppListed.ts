@@ -1,3 +1,6 @@
+import { getUILocale } from "../../l10n/l10n";
+import { sourceLocale } from "../../l10n/list";
+
 /**
  * A third party web app listed in our app store.
  * The user can select and use this app.
@@ -37,16 +40,14 @@ export default class AppListed {
 
   /** The name in the user's language, or a fallback when not available */
   get nameTranslated(): string {
-    return this.name[navigator.language] ??
-      this.name[navigator.language.substring(0, 2)] ??
-      this.name['en'] ??
+    return this.name[getUILocale()] ??
+      this.name[sourceLocale] ??
       "";
   }
   /** The description in the user's language, or a fallback when not available */
   get descriptionTranslated(): string {
-    return this.description[navigator.language] ??
-      this.description[navigator.language.substring(0, 2)] ??
-      this.description['en'] ??
+    return this.description[getUILocale()] ??
+      this.description[sourceLocale] ??
       "";
   }
 

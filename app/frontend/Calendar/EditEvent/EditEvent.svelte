@@ -67,7 +67,7 @@
       <hbox>{$t`When`}</hbox>
       <grid class="time">
         <label for="start-time">{$t`Day`}</label>
-        <hbox>{event.startTime.toLocaleDateString(undefined, { year: "numeric", month: "2-digit", day: "2-digit" })}</hbox>
+        <hbox>{event.startTime.toLocaleDateString(getUILocale(), { year: "numeric", month: "2-digit", day: "2-digit" })}</hbox>
 
         <label for="start-time">{$t`Start`}</label>
         <TimeInput time={event.startTime} />
@@ -117,7 +117,7 @@
   import CopyIcon from "lucide-svelte/icons/copy";
   import BrowserIcon from "lucide-svelte/icons/globe";
   import type { Editor } from '@tiptap/core';
-  import { t } from "../../../l10n/l10n";
+  import { getUILocale, t } from "../../../l10n/l10n";
 
   export let event: Event;
 

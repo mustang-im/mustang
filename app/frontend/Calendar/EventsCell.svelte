@@ -9,7 +9,7 @@
   {#if withMonthOnFirst && start.getDate() == 1 ||
     withMonthOnMonday && start.getDay() == 1 }
     <hbox class="month-name">
-      {start.toLocaleDateString(undefined, { month: "long" })}
+      {start.toLocaleDateString(getUILocale(), { month: "long" })}
     </hbox>
   {/if}
 </vbox>
@@ -19,6 +19,7 @@
   import type { Event } from "../../logic/Calendar/Event";
   import Scroll from "../Shared/Scroll.svelte";
   import EventLine from "./EventLine.svelte";
+  import { getUILocale } from "../../l10n/l10n";
 
   export let start: Date;
   export let intervalInHours: number;

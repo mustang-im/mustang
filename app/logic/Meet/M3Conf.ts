@@ -5,6 +5,7 @@ import { M3Account } from "./M3Account";
 import { appGlobal } from "../app";
 import { notifyChangedProperty } from "../util/Observable";
 import { assert, sleep, type URLString } from "../util/util";
+import { getUILocale } from "../../l10n/l10n";
 
 export class M3Conf extends VideoConfMeeting {
   controllerBaseURL: string;
@@ -67,7 +68,7 @@ export class M3Conf extends VideoConfMeeting {
 
   async createNewConference() {
     await this.login();
-    let time = new Date().toLocaleString(navigator.language, { hour: "numeric", minute: "numeric" });
+    let time = new Date().toLocaleString(getUILocale(), { hour: "numeric", minute: "numeric" });
     let response = await this.http.post("events", {
       title: `Meeting ${time}`,
       description: "",

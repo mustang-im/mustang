@@ -1,11 +1,11 @@
 <hbox class="day" on:dblclick={changeToDay} class:today={day.getTime() == today.getTime()}>
   <hbox class="date-number">
-    {day.toLocaleDateString(undefined, { day: "numeric" })}
+    {day.toLocaleDateString(getUILocale(), { day: "numeric" })}
   </hbox>
   {#if withMonthOnFirst && day.getDate() == 1 ||
           withMonthOnMonday && day.getDay() == 1 }
     <hbox class="month">
-      {day.toLocaleDateString(undefined, { month: "short" })}
+      {day.toLocaleDateString(getUILocale(), { month: "short" })}
     </hbox>
   {/if}
   <hbox class="today-icon" flex>
@@ -17,6 +17,7 @@
   import { selectedDate, selectedDateInterval } from "./selected";
   import { getToday } from "../Util/date";
   import TodayIcon from "lucide-svelte/icons/home";
+  import { getUILocale } from "../../l10n/l10n";
 
   export let day: Date
   export let withMonthOnMonday = true;

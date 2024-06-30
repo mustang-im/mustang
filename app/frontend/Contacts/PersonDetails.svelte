@@ -1,4 +1,4 @@
-<vbox flex class="person-page" language={language2Char}>
+<vbox flex class="person-page" language={getUILocale()}>
   <GroupBox classes="person">
     <hbox flex class="main-left" slot="content">
       <hbox flex>
@@ -231,7 +231,7 @@
   import AddIcon from "lucide-svelte/icons/plus";
   import { NotImplemented } from "../../logic/util/util";
   import { showError } from "../Util/error";
-  import { t } from "../../l10n/l10n";
+  import { getUILocale, t } from "../../l10n/l10n";
 
   export let person: Person;
 
@@ -246,7 +246,6 @@
   $: preferredEmailAddress = $emailAddresses.isEmpty ? null :
       emailAddresses.sortBy(p => p.preference).first?.value ??
       emailAddresses.first.value;
-  $: language2Char = navigator.language?.substring(0, 2) ?? "";
 
   let isEditingName: boolean;
   $: showEmail = $emailAddresses.hasItems;

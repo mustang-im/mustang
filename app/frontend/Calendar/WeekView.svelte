@@ -11,8 +11,8 @@
     <hbox />
     {#each days as day}
       <vbox class="day-header">
-        <hbox class="date">{day.toLocaleDateString(undefined, { day: "numeric" })}</hbox>
-        <hbox class="weekday">{day.toLocaleDateString(undefined, { weekday: "long" })}</hbox>
+        <hbox class="date">{day.toLocaleDateString(getUILocale(), { day: "numeric" })}</hbox>
+        <hbox class="weekday">{day.toLocaleDateString(getUILocale(), { weekday: "long" })}</hbox>
       </vbox>
     {/each}
     {#each startTimes as start}
@@ -31,7 +31,7 @@
   import Button from "../Shared/Button.svelte";
   import TodayIcon from "lucide-svelte/icons/home";
   import type { Collection } from "svelte-collections";
-  import { t } from "../../l10n/l10n";
+  import { getUILocale, t } from "../../l10n/l10n";
 
   export let start: Date;
   export let events: Collection<Event>;

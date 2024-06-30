@@ -16,6 +16,7 @@ import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { notifyChangedProperty } from "../util/Observable";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
+import { getUILocale } from "../../l10n/l10n";
 
 export class EMail extends Message {
   @notifyChangedProperty
@@ -382,7 +383,7 @@ export class EMailActions {
 
   quotePrefixLine(): string {
     function getDate(date: Date) {
-      return date.toLocaleString(navigator.language, { year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" });
+      return date.toLocaleString(getUILocale(), { year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" });
     }
     return `${this.email.contact.name} wrote on ${getDate(this.email.sent)}:`;
   }
@@ -445,7 +446,7 @@ export class EMailActions {
       </div>
       <div>
         <span class="field">Date:</span> <span class="value">
-          ${this.email.sent.toLocaleString(navigator.language, { year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" })}
+          ${this.email.sent.toLocaleString(getUILocale(), { year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" })}
         </span>
       </div>
       <div>

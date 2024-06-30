@@ -1,7 +1,7 @@
 <input bind:value={userValue} on:change={onChange} bind:this={inputE} />
 
 <script lang="ts">
-  import { t } from "../../../l10n/l10n";
+  import { getUILocale, t } from "../../../l10n/l10n";
 
   export let time: Date; /* in/out */
 
@@ -9,9 +9,9 @@
   let userValue: string = "";
 
   $: updateUserValue(time);
-  function updateUserValue(time: Date): string {
+  function updateUserValue(time: Date) {
     try {
-      userValue = time.toLocaleString(undefined, {
+      userValue = time.toLocaleString(getUILocale(), {
         hour: "numeric",
         minute: "numeric",
       });

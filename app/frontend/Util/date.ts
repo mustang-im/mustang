@@ -1,3 +1,4 @@
+import { getUILocale } from "../../l10n/l10n";
 
 /**
 * Returns:
@@ -20,7 +21,7 @@ export function getDateString(date: Date): string {
   } else {
     dateDetails = { year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" };
   }
-  return date.toLocaleString(navigator.language, dateDetails);
+  return date.toLocaleString(getUILocale(), dateDetails);
 }
 
 export function getToday() {

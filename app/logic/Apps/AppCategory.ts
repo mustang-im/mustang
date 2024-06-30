@@ -1,5 +1,7 @@
 import type AppListed from "./AppListed";
 import { ArrayColl } from "svelte-collections";
+import { getUILocale } from "../../l10n/l10n";
+import { sourceLocale } from "../../l10n/list";
 
 export default class AppCategory {
   /** Internal ID, without parent categories.
@@ -35,16 +37,14 @@ export default class AppCategory {
 
   /** The name in the user's language, or a fallback when not available */
   get nameTranslated(): string {
-    return this.name[navigator.language] ??
-      this.name[navigator.language.substring(0, 2)] ??
-      this.name['en'] ??
+    return this.name[getUILocale()] ??
+      this.name[sourceLocale] ??
       "";
   }
   /** The description in the user's language, or a fallback when not available */
   get descriptionTranslated(): string {
-    return this.description[navigator.language] ??
-      this.description[navigator.language.substring(0, 2)] ??
-      this.description['en'] ??
+    return this.description[getUILocale()] ??
+      this.description[sourceLocale] ??
       "";
   }
 
