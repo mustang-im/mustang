@@ -1,6 +1,7 @@
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { svelte } from '@sveltejs/vite-plugin-svelte'
+import { lingui } from '@lingui/vite-plugin';
 
 export default defineConfig({
   main: {
@@ -12,6 +13,6 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()]
   },
   renderer: {
-    plugins: [nodePolyfills({include: ['buffer'], globals: {global: false, process: false}}), svelte()]
+    plugins: [nodePolyfills({include: ['buffer'], globals: {global: false, process: false}}), svelte(), lingui({configPath: "../app/lingui.config.ts"})]
   }
 })
