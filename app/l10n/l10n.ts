@@ -50,11 +50,14 @@ const languageMessages = {
   uk: uk,
 };
 
-export function setLocale(lang: string) {
+export function setUILocale(lang: string) {
+  // This function *must* be sync, for gt() to work in TS modules
+
   // e.g. 'en' for 'en-US'
   let lang2 = lang.substring(0, 2);
 
-  let availableLang = languageMessages[lang] ? lang :
+  let availableLang = cachedUILocale =
+    languageMessages[lang] ? lang :
     languageMessages[lang2] ? lang2 :
     sourceLocale;
   let messages = languageMessages[availableLang];
@@ -63,7 +66,7 @@ export function setLocale(lang: string) {
 
 /** Alternative implementation with dynamic loading of locale files. Not used. */
 /*
-export async function setLocaleAsync(lang: string) {
+export async function setUILocaleAsync(lang: string) {
   // e.g. 'en' for 'en-US'
   let lang2 = lang.substring(0, 2);
 
@@ -79,10 +82,22 @@ export async function setLocaleAsync(lang: string) {
 }
 */
 
+let cachedUILocale: string;
+/** @returns 2-letter ISO code for the language that we are using */
+export function getUILocale(): string {
+  if (cachedUILocale) {
+    return cachedUILocale;
+  }
+  return localStorage.getItem("ui.locale") ?? navigator.language;
+}
+
+export function saveUILocale(language: string) {
+  localStorage.setItem("ui.locale", language);
+}
+
 let loadedLocale = false;
 function initLocale() {
-  let lang = localStorage.getItem("locale.ui") ?? navigator.language;
-  setLocale(lang);
+  setUILocale(getUILocale());
 }
 
 /** Used in Svelte files, e.g.
@@ -93,7 +108,7 @@ export const t = derived(locale, () => gt);
  * gt`Hello World!` or gt`Hello ${username}!` */
 export function gt(descriptor, ...args) {
   if (!loadedLocale) {
-    initLocale(); // setLocale() must be sync for this to work
+    initLocale(); // `setUILocale()` must be sync for this to work
     loadedLocale = true;
   }
   return translateString(descriptor, ...args);

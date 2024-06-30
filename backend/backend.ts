@@ -33,6 +33,7 @@ async function createSharedAppObject() {
     minimizeMainWindow,
     unminimizeMainWindow,
     shell,
+    restartApp,
     setDarkMode,
     getConfigDir,
     getFilesDir,
@@ -188,6 +189,11 @@ function newOSNotification(options: any): Notification {
 
 function isOSNotificationSupported(): boolean {
   return Notification.isSupported();
+}
+
+function restartApp() {
+  app.relaunch();
+  app.quit();
 }
 
 function setDarkMode(mode: "system" | "light" | "dark") {
