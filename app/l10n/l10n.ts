@@ -3,27 +3,27 @@ import { derived } from 'svelte/store';
 
 import { sourceLocale } from './list';
 
-import { messages as en } from './locales/en/messages-compiled.json';
-import { messages as de } from './locales/de/messages-compiled.json';
-import { messages as fr } from './locales/fr/messages-compiled.json';
-import { messages as it } from './locales/it/messages-compiled.json';
-import { messages as es } from './locales/es/messages-compiled.json';
-import { messages as pt } from './locales/pt/messages-compiled.json';
-import { messages as pl } from './locales/pl/messages-compiled.json';
-import { messages as ja } from './locales/ja/messages-compiled.json';
-import { messages as zh } from './locales/zh/messages-compiled.json';
+import { messages as en } from './locales/en/messages.json?lingui';
+import { messages as de } from './locales/de/messages.json?lingui';
+import { messages as fr } from './locales/fr/messages.json?lingui';
+import { messages as it } from './locales/it/messages.json?lingui';
+import { messages as es } from './locales/es/messages.json?lingui';
+import { messages as pt } from './locales/pt/messages.json?lingui';
+import { messages as pl } from './locales/pl/messages.json?lingui';
+import { messages as ja } from './locales/ja/messages.json?lingui';
+import { messages as zh } from './locales/zh/messages.json?lingui';
 
-import { messages as ar } from './locales/ar/messages-compiled.json';
-import { messages as cs } from './locales/cs/messages-compiled.json';
-import { messages as da } from './locales/da/messages-compiled.json';
-import { messages as el } from './locales/el/messages-compiled.json';
-import { messages as fi } from './locales/fi/messages-compiled.json';
-import { messages as nl } from './locales/nl/messages-compiled.json';
-import { messages as no } from './locales/no/messages-compiled.json';
-import { messages as ro } from './locales/ro/messages-compiled.json';
-import { messages as ru } from './locales/ru/messages-compiled.json';
-import { messages as sv } from './locales/sv/messages-compiled.json';
-import { messages as uk } from './locales/uk/messages-compiled.json';
+import { messages as ar } from './locales/ar/messages.json?lingui';
+import { messages as cs } from './locales/cs/messages.json?lingui';
+import { messages as da } from './locales/da/messages.json?lingui';
+import { messages as el } from './locales/el/messages.json?lingui';
+import { messages as fi } from './locales/fi/messages.json?lingui';
+import { messages as nl } from './locales/nl/messages.json?lingui';
+import { messages as no } from './locales/no/messages.json?lingui';
+import { messages as ro } from './locales/ro/messages.json?lingui';
+import { messages as ru } from './locales/ru/messages.json?lingui';
+import { messages as sv } from './locales/sv/messages.json?lingui';
+import { messages as uk } from './locales/uk/messages.json?lingui';
 
 /** Map of lang code to messages.
  * Lang codes: <https://www.wikiwand.com/en/List_of_ISO_639_language_codes> */
