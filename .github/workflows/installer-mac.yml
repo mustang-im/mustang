@@ -18,7 +18,7 @@ jobs:
         node-version: 18.x
 #        cache: 'npm'
     - run: sudo -H pip install setuptools
-    - run: cd app; npm install
+    - run: cd app; npm install --legacy-peer-deps
     - run: cd lib; npm install
     - run: cd backend; npm install
     - run: cd e2; npm install --legacy-peer-deps
