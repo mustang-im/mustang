@@ -1,0 +1,62 @@
+How our UI translation works
+
+# Requirements
+
+Our requirements are:
+* In the code, the verbatim English string is hardcoded, e.g.
+  ```
+  tr`Some English words ending with ${ending}`
+  ```
+  This:
+  a) is fail-safe, because missing translations can fall back to that
+  b) avoids that we have to invent new string IDs and it
+  c) allows to delay the localization, not touching multiple files
+    all the time during daily development.
+* Must handle plural forms in all the languages (0, 1, few, many etc.)
+* Should handle brand names without code in the UI.
+* L10n file format must be supported by online web tools for translators.
+
+# Library
+
+We chose lingui and svelte-18n-lingui, because:
+* It supports the Svelte code files
+* It can automatically "extract" the strings from the code into
+  the English source translation file.
+
+# Process
+
+1. During dev, in .svelte files, use
+  ```
+  $t`Some English words ending with ${ending}`
+  ```
+  and in .ts modules, e.g. logic files, use
+  ```
+  gt`Some English words ending with ${ending}`
+  ```
+  Both functions are defined in `app/l10n/l10n.ts`.
+2. Before a translation round, run
+  `yarn run l10n:extract` = `lingui extract`
+  (called "extraction"), which searches the code for the above
+  t and gt functions, and adds the new strings to
+  `l10n/locales/en/messages.json`.
+3. Send the translation files `l10n/locales/*/messages.json`
+   (including the above English source file) to
+   crowdin (for AI translation) and/or weblate (online tools for
+   human translators).
+4. The tools will find which strings are not yet translated, and
+  trigger translation for those.
+5. Translation (AI or humans)
+6. The tools will merge the new translations with the existing
+   translations, adding only the new or changed strings.
+7. The tools will export back into the translation file format that
+  we use, and commit it to a git branch.
+8. We merge the new translations to master branch.
+9. The vite plugin `lingui()` (in `vite.config.js`) reads its config file
+  `lingui.config.ts`. Based on our config, it compiles the
+  `l10n/locales/*/messages.json` files (which contain
+  `{foo}` placeholders) to
+  `l10n/locales/*/messages-compiled.json` files, which will be read
+  by the lingui UI code at application startup and are optimized
+  for fast parsing.
+10. Test
+11. Ship it
