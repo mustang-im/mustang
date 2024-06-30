@@ -41,9 +41,7 @@
   import { catchErrors, backgroundError } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { onMount } from "svelte";
-  import { setLocale, t } from "../../l10n/l10n";
-
-  setLocale(navigator.language);
+  import { t } from "../../l10n/l10n";
 
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;

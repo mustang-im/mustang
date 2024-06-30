@@ -1,4 +1,4 @@
-import { locale, gt as translate } from 'svelte-i18n-lingui';
+import { locale, gt as translateString } from 'svelte-i18n-lingui';
 import { derived } from 'svelte/store';
 
 import { sourceLocale } from './list';
@@ -61,7 +61,8 @@ export function setLocale(lang: string) {
   locale.set(availableLang, messages);
 }
 
-/** Alternative implementation with dynamic loading of locale files. */
+/** Alternative implementation with dynamic loading of locale files. Not used. */
+/*
 export async function setLocaleAsync(lang: string) {
   // e.g. 'en' for 'en-US'
   let lang2 = lang.substring(0, 2);
@@ -76,15 +77,24 @@ export async function setLocaleAsync(lang: string) {
     locale.set(lang, messages);
   }
 }
+*/
+
+let loadedLocale = false;
+function initLocale() {
+  let lang = localStorage.getItem("locale.ui") ?? navigator.language;
+  setLocale(lang);
+}
 
 /** Used in Svelte files, e.g.
- * $t`Hello World!`
- */
-export const t = derived(locale, () => translate);
+ * $t`Hello World!` or $t`Hello ${username}!` */
+export const t = derived(locale, () => gt);
 
 /** Used in .ts modules, e.g.
- * gt`Hello World!`
- */
+ * gt`Hello World!` or gt`Hello ${username}!` */
 export function gt(descriptor, ...args) {
-  return translate(descriptor, ...args);
+  if (!loadedLocale) {
+    initLocale(); // setLocale() must be sync for this to work
+    loadedLocale = true;
+  }
+  return translateString(descriptor, ...args);
 }
