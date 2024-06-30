@@ -30,7 +30,7 @@
             {/if}
             {#if $person.company}
               <hbox class="company">
-                <EditableSimpleText bind:value={$person.company} on:save={save} placeholder={$t`First Lastname`} />
+                <EditableSimpleText bind:value={$person.company} on:save={save} placeholder={$t`First name Last name`} />
               </hbox>
             {/if}
           {/if}

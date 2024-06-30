@@ -8,7 +8,7 @@
     </hbox>
   </hbox>
   <hbox class="term">
-    {$t`for`}
+    {$t`Search for`}
     <SearchField bind:searchTerm={$globalSearchTerm}
       placeholder={$t`Mail content or subject`}
       on:clear={onClear} bind:this={searchFieldEl} />
