@@ -60,3 +60,19 @@ We chose lingui and svelte-18n-lingui, because:
   for fast parsing.
 10. Test
 11. Ship it
+
+# Instructions for translators
+
+* Keep the translation short, but correct and easy to understand.
+* Our audience are business users, freelancers and private users.
+* The language style should be relatively informal, a little colloquial,
+  personal, and speaking to the user's heart. Avoid being overly formal
+  and stiff.
+* If the language offers a formal "you" and a family/friend "you", use
+  the formal "you", unless it's very stiff and uncommon in your
+  language. Use the "you" form that most other software uses.
+* For technical terms, make sure you use the correct technical term.
+  If there is a translated form of a technical term, but the English
+  form is also in common use, prefer the English form. That allows users
+  to get help on international forums and allows our support and AI
+  translation tools to understand the error messages.
