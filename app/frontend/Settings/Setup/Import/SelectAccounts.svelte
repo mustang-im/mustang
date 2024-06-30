@@ -24,10 +24,10 @@
   canContinue={!!accounts.length}
   onContinue={onContinue}
   >
-  <Button label="Skip" classes="secondary"
+  <Button label={$t`Skip`} classes="secondary"
     onClick={onSkip}
     />
-  <Button label="Uncheck all" classes="secondary"
+  <Button label={$t`Uncheck all`} classes="secondary"
     onClick={onUncheckAll}
     />
 </ButtonsBottom>

@@ -30,7 +30,7 @@ export class MailMustangApp extends MustangApp {
   login(dialog: OAuth2Dialog): LoginDialogMustangApp {
     let loginApp = new LoginDialogMustangApp();
     let account = dialog.oAuth2.account;
-    loginApp.title = derived(account, () => gt`Login to ` + account.name);
+    loginApp.title = derived(account, () => gt`Login to ${account.name}`);
     loginApp.mainWindowProperties = {
       dialog: dialog,
     };
