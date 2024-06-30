@@ -52,7 +52,7 @@
 
     width: 100%;
     aspect-ratio: 1/1;
-    margin-bottom: 8px;
+    margin-block-end: 8px;
     transform: rotate(270deg);
 
     color: #8B8B8B;

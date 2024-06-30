@@ -30,7 +30,7 @@
     font-size: 14px;
   }
   .header {
-    padding-left: 10px !important;
+    padding-inline-start: 10px !important;
     color: grey;
     font-size: 12px;
   }

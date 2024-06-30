@@ -112,7 +112,7 @@
   }
   .subject {
     font-weight: 700;
-    margin-top: 12px;
+    margin-block-start: 12px;
   }
   .from {
     font-weight: bold;

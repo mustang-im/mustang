@@ -43,6 +43,6 @@
     border: 2px solid var(--border);
     border-radius: 5px;
     padding: 4px 8px;
-    margin-bottom: 4px;
+    margin-block-end: 4px;
   }
 </style>

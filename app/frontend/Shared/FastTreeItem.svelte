@@ -1,4 +1,4 @@
-<hbox class="tree-line-item" style="margin-left: {indentionLevel * 12}px" flex>
+<hbox class="tree-line-item" style="margin-inline-start: {indentionLevel * 12}px" flex>
   {#if canExpand}
     <Button
       classes="expand"
@@ -50,10 +50,10 @@
   .tree-line-item :global(button.expand) {
     padding: 0;
     min-width: unset;
-    margin-right: 2px;
+    margin-inline-end: 2px;
   }
   .button-placeholder {
-    margin-right: 2px;
+    margin-inline-end: 2px;
     width: 16px;
   }
 </style>

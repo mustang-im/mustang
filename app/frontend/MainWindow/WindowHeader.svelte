@@ -67,7 +67,7 @@
   }
   .app-logo {
     margin: 8px;
-    margin-left: 12px;
+    margin-inline-start: 12px;
     width: 60px;
     align-items: start;
     justify-content: center;
@@ -76,7 +76,7 @@
   .app-title {
     font-size: 18px;
     align-items: center;
-    margin-left: 12px;
+    margin-inline-start: 12px;
     app-region: drag;
   }
   .right :global(.close),
@@ -85,7 +85,7 @@
     color: white;
   }
   .right :global(.minimize svg) {
-    margin-top: 10px; /* Find better icon */
+    margin-block-start: 10px; /* Find better icon */
   }
   .free {
     app-region: drag;

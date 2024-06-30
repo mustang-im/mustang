@@ -131,7 +131,7 @@
 <style>
 .person-autocomplete {
   height: 24px;
-  margin-bottom: -1px;
+  margin-block-end: -1px;
 }
 
 .person-autocomplete :global(.autocomplete) {

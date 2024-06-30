@@ -66,9 +66,9 @@
   }
   .buttons {
     justify-content: end;
-    margin-top: 64px;
+    margin-block-start: 64px;
   }
   .buttons :global(button) {
-    margin-left: 8px;
+    margin-inline-start: 8px;
   }
 </style>

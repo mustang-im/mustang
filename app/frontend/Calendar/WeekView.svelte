@@ -101,14 +101,14 @@
     font-size: 180%;
   }
   .weekday {
-    margin-top: -4px;
-    margin-bottom: 4px;
+    margin-block-start: -4px;
+    margin-block-end: 4px;
   }
   .range-header {
     align-items: center;
   }
   .range-header :global(.today-button) {
     align-self: end;
-    margin-bottom: 8px;
+    margin-block-end: 8px;
   }
 </style>

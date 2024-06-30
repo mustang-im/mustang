@@ -20,7 +20,7 @@
   .header {
     font-size: 20px;
     font-weight: bold;
-    margin-top: 24px;
-    margin-bottom: 8px;
+    margin-block-start: 24px;
+    margin-block-end: 8px;
   }
 </style>

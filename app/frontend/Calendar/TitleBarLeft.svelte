@@ -27,7 +27,7 @@
     margin: 4px;
   }
   .title-bar :global(.calendar-selector) {
-    margin-right: 16px;
+    margin-inline-end: 16px;
   }
   .title-bar :global(.account button) {
     padding: 8px;

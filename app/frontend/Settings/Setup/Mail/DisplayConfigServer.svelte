@@ -57,7 +57,7 @@
 
 <style>
   .direction {
-    margin-right: 4px;
+    margin-inline-end: 4px;
   }
   .protocol {
     text-transform: uppercase;
@@ -66,11 +66,11 @@
     opacity: 60%;
   }
   .hostname {
-    margin-left: 16px;
-    margin-right: 16px;
+    margin-inline-start: 16px;
+    margin-inline-end: 16px;
   }
   .tls-icon {
-    margin-left: 6px;
+    margin-inline-start: 6px;
     color: green;
   }
   .tls-icon:not(.has-encryption) {

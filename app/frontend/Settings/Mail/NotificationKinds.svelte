@@ -47,7 +47,7 @@
     display: flex;
   }
   label input {
-    margin-right: 8px;
+    margin-inline-end: 8px;
   }
   img {
     width: 99px;

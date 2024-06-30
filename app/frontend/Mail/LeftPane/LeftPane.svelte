@@ -98,13 +98,13 @@
   }
 
   .folder-pane :global(.persons) {
-    margin-top: 8px;
+    margin-block-start: 8px;
   }
   .folder-pane :global(.account-list) {
-    margin-top: -4px;
+    margin-block-start: -4px;
   }
   .folder-pane :global(.search) {
-    margin-top: -2px;
+    margin-block-start: -2px;
   }
   .top :global(.svelteui-Tab) {
     padding: 8px 12px;
@@ -115,7 +115,7 @@
     align-items: end;
   }
   .buttons :global(button) {
-    margin-left: 6px;
+    margin-inline-start: 6px;
   }
   .buttons :global(svg) {
     margin: 4px;

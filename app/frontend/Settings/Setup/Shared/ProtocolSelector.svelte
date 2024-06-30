@@ -36,16 +36,16 @@
 
 <style>
   .protocol-selector {
-    margin-top: 6px;
+    margin-block-start: 6px;
     align-items: start;
-    margin-right: 32px;
-    padding-top: 4px;
+    margin-inline-end: 32px;
+    padding-block-start: 4px;
   }
   .protocol {
     padding: 2px 20px 2px 12px;
     margin: 2px;
   }
   .name {
-    margin-left: 8px;
+    margin-inline-start: 8px;
   }
 </style>

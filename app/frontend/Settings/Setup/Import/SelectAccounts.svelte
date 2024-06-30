@@ -91,7 +91,7 @@
 <style>
   .found {
     justify-content: center;
-    margin-bottom: 24px;
+    margin-block-end: 24px;
   }
   .accounts {
     min-height: 30vh;

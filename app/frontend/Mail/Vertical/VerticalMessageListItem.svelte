@@ -115,7 +115,7 @@
   }
   .top-row {
     height: 1.5em;
-    margin-bottom: -1px;
+    margin-block-end: -1px;
   }
   .bottom-row {
     height: 1.3em;
@@ -149,7 +149,7 @@
     vertical-align: bottom;
   }
   .direction > :global(*) {
-    margin-right: 4px;
+    margin-inline-end: 4px;
   }
 
   /* <copied from="TableMessageListItem.svelte"> */

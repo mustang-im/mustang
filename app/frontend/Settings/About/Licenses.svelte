@@ -25,6 +25,6 @@
   iframe {
     flex: 1 0 0;
     border: none;
-    margin-top: 32px;
+    margin-block-start: 32px;
   }
 </style>

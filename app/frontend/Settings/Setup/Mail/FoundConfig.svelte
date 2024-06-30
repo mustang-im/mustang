@@ -62,20 +62,20 @@
 <style>
   .display.single {
     justify-content: center;
-    margin-top: 24px;
-    margin-bottom: 24px;
+    margin-block-start: 24px;
+    margin-block-end: 24px;
   }
   .configs {
-    margin-top: 24px;
+    margin-block-start: 24px;
   }
   .alt .display {
     justify-content: start;
-    margin-left: 26px;
-    margin-top: 12px;
-    margin-bottom: 24px;
+    margin-inline-start: 26px;
+    margin-block-start: 12px;
+    margin-block-end: 24px;
   }
   .protocol {
     text-transform: uppercase;
-    margin-left: 8px;
+    margin-inline-start: 8px;
   }
 </style>

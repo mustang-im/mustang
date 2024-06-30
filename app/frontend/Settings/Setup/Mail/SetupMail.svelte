@@ -237,7 +237,7 @@
     max-width: 90%;
   }
   .page-box :global(.password) {
-    margin-bottom: 32px;
+    margin-block-end: 32px;
   }
   .setup-mail-window :global(input) {
     font-size: 16px;

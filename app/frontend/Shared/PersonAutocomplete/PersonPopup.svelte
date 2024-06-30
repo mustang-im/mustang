@@ -173,7 +173,7 @@
     margin: 12px 18px 12px 0px;
   }
   .name-primary-mail .name {
-    margin-bottom: 3px;
+    margin-block-end: 3px;
   }
   .name-primary-mail,
   .name-primary-mail input {
@@ -198,7 +198,7 @@
     cursor: pointer;
   }
   .other-email-address :global(svg) {
-    margin-right: 6px;
+    margin-inline-end: 6px;
   }
   .addressbooks {
     padding: 12px;
@@ -207,8 +207,8 @@
     border-top: 1px solid var(--border);
   }
   .addressbooks:not(.top-border) {
-    margin-top: -6px;
-    padding-top: 0px;
+    margin-block-start: -6px;
+    padding-block-start: 0px;
   }
   .bottom.buttons {
     border-top: 1px solid var(--border);

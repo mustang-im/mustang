@@ -290,22 +290,22 @@
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%) inset;
   }
   .main-info {
-    margin-left: 24px;
-    margin-top: 8px;
-    margin-bottom: 16px;
+    margin-inline-start: 24px;
+    margin-block-start: 8px;
+    margin-block-end: 16px;
   }
   .name :global(input),
   .name {
     font-size: 18px;
     font-weight: bold;
-    margin-bottom: 8px;
+    margin-block-end: 8px;
     color: inherit;
   }
   .names {
-    margin-right: 42px;
+    margin-inline-end: 42px;
   }
   .names input {
-    margin-bottom: 4px;
+    margin-block-end: 4px;
   }
   .person-page[language="fr"] .names input.lastname {
     text-transform: uppercase;
@@ -323,15 +323,15 @@
     align-items: center;
   }
   .main-right-bottom :global(.svelteui-Menu-root) {
-    margin-left: 12px;
+    margin-inline-start: 12px;
   }
   .preferred {
-    margin-top: 8px;
-    margin-bottom: 8px;
+    margin-block-start: 8px;
+    margin-block-end: 8px;
     font-size: 13px;
   }
   .main-call :global(> *) {
-    margin-right: 10px;
+    margin-inline-end: 10px;
   }
   .phone-call :global(.icon) {
     /* because the icon is 1px smaller */
@@ -342,9 +342,9 @@
   }
   h3,
   .person-page :global(.group .header h3) {
-    margin-left: 10px;
-    margin-top: 0px;
-    margin-bottom: 0px;
+    margin-inline-start: 10px;
+    margin-block-start: 0px;
+    margin-block-end: 0px;
     font-size: 14px;
     vertical-align: middle;
   }
@@ -379,7 +379,7 @@
     align-items: start;
   }
   .expanders {
-    margin-top: 12px;
+    margin-block-start: 12px;
   }
   .actions {
     justify-content: end;

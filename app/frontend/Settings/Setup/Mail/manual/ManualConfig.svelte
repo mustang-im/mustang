@@ -61,27 +61,27 @@
   grid {
     border: 1px solid var(--border);
     border-radius: 6px;
-    margin-top: 24px;
-    padding-bottom: 20px;
+    margin-block-start: 24px;
+    padding-block-end: 20px;
   }
   grid :global(.header) {
     background-color: var(--headerbar-bg);
     color: var(--headerbar-fg);
-    padding-top: 8px;
-    padding-bottom: 8px;
-    padding-left: 8px;
+    padding-block-start: 8px;
+    padding-block-end: 8px;
+    padding-inline-start: 8px;
     font-size: 14px;
     border-bottom: 1px solid var(--border);
   }
   grid :global(> *) {
-    padding-left: 16px;
-    padding-right: 16px;
+    padding-inline-start: 16px;
+    padding-inline-end: 16px;
   }
   .buttons {
     justify-content: end;
-    margin-top: 16px;
+    margin-block-start: 16px;
   }
   .buttons :global(button) {
-    margin-left: 8px;
+    margin-inline-start: 8px;
   }
 </style>

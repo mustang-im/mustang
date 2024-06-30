@@ -29,6 +29,6 @@
 
 <style>
   h2 {
-    margin-bottom: 0px;
+    margin-block-end: 0px;
   }
 </style>

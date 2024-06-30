@@ -98,18 +98,18 @@
 
 <style>
   .purpose, .value, .actions {
-    margin-top: 8px;
+    margin-block-start: 8px;
     font-size: 13px;
   }
 
   .purpose {
-    margin-right: 20px;
+    margin-inline-end: 20px;
     color: grey;
     font-style: italic;
   }
 
   .actions {
-    margin-left: 12px;
+    margin-inline-start: 12px;
   }
   .actions > :global(*) {
     min-width: 20px;

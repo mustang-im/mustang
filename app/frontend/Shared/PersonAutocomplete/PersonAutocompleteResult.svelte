@@ -27,7 +27,7 @@
   }
   .person :global(.avatar) {
     margin: 0px;
-    margin-right: 6px;
+    margin-inline-end: 6px;
   }
   .top-row,
   .bottom-row {

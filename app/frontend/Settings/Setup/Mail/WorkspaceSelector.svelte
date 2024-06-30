@@ -44,10 +44,10 @@
     font-size: 12px;
   }
   .workspaces-box {
-    margin-top: 6px;
+    margin-block-start: 6px;
     align-items: center;
-    margin-right: 32px;
-    padding-top: 4px;
+    margin-inline-end: 32px;
+    padding-block-start: 4px;
   }
   .workspaces.horizontal {
     flex-direction: row;
@@ -58,6 +58,6 @@
     margin: 2px;
   }
   .name {
-    margin-left: 8px;
+    margin-inline-start: 8px;
   }
 </style>

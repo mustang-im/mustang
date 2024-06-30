@@ -15,7 +15,7 @@
 <style>
   .availability {
     font-size: 12px;
-    margin-top: -1px;
+    margin-block-start: -1px;
   }
   .availability.yes {
     color: green;

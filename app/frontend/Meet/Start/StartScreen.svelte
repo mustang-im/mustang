@@ -123,13 +123,13 @@
     flex: 2 0 0;
   }
   .actions :global(> *) {
-    margin-top: 12px;
+    margin-block-start: 12px;
   }
   .actions :global(.call-person .avatar) {
     margin: -4px 0px;
   }
   .meeting-link {
-    margin-right: 4px;
+    margin-inline-end: 4px;
   }
   .meetings {
     justify-content: center;
@@ -141,7 +141,7 @@
   .title {
     font-size: 14px;
     font-weight: bold;
-    margin-bottom: 12px;
+    margin-block-end: 12px;
   }
   .emptyMsg {
     font-size: 12px;

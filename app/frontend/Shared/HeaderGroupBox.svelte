@@ -19,7 +19,7 @@
   .group {
     border: 1px solid var(--border);
     border-radius: 6px;
-    margin-top: 24px;
+    margin-block-start: 24px;
   }
   .header {
     background-color: var(--headerbar-bg);

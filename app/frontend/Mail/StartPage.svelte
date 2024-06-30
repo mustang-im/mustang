@@ -10,6 +10,6 @@
   .mail-start-page {
     align-items: center;
     justify-content: center;
-    padding-top: 5em;
+    padding-block-start: 5em;
   }
 </style>

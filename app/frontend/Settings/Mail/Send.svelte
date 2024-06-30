@@ -71,7 +71,7 @@
 
 <style>
   .subtitle {
-    margin-bottom: 16px;
+    margin-block-end: 16px;
   }
   hbox.quote,
   hbox.format {
@@ -87,7 +87,7 @@
     align-items: center;
   }
   label {
-    margin-left: 8px;
+    margin-inline-start: 8px;
   }
   .format img {
     opacity: 80%;

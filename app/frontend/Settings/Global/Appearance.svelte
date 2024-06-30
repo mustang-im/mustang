@@ -44,6 +44,6 @@
     height: 32px;
   }
   .appearance :global(.restart) {
-    margin-left: 24px;
+    margin-inline-start: 24px;
   }
 </style>

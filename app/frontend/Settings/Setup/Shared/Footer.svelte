@@ -10,10 +10,10 @@
 
 <style>
   .footer {
-    margin-top: 20px;
+    margin-block-start: 20px;
   }
   a[href] {
-    margin-right: 24px;
+    margin-inline-end: 24px;
     color: #8583A8;
     font-weight: 300;
     font-size: 12px;

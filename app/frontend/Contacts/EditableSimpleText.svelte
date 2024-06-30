@@ -51,11 +51,11 @@
 
 <style>
   .value, input, .actions {
-    margin-top: 8px;
+    margin-block-start: 8px;
   }
 
   .actions {
-    margin-left: 12px;
+    margin-inline-start: 12px;
   }
   .actions > :global(*) {
     min-width: 20px;
@@ -68,7 +68,7 @@
     border: none;
     border-bottom: 2px solid var(--input-focus);
     /* background-color: rgba(32, 174, 158, 20%); /* #20AE9E */
-    margin-top: 9px;
+    margin-block-start: 9px;
   }
   input:focus {
     outline: none;

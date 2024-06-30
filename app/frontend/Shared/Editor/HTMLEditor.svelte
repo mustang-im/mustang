@@ -115,7 +115,7 @@
   }
   .html-editor :global(blockquote) {
     border-left: 3px solid blue;
-    padding-left: 20px;
-    margin-left: 0px;
+    padding-inline-start: 20px;
+    margin-inline-start: 0px;
   }
 </style>

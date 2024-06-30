@@ -52,9 +52,9 @@
     font-size: 15px;
   }
   .title-row {
-    margin-top: 8px;
-    margin-bottom: 16px;
-    /*padding-right: 16px;*/
+    margin-block-start: 8px;
+    margin-block-end: 16px;
+    /*padding-inline-end: 16px;*/
   }
   .title-container {
     justify-content: center;

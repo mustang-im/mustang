@@ -48,8 +48,8 @@
   .search {
     align-items: center;
     border: 1px solid #A1E4DA;
-    padding-left: 8px;
-    padding-right: 4px;
+    padding-inline-start: 8px;
+    padding-inline-end: 4px;
     border-radius: 100px;
     background-color: field;
     color: fieldtext;
@@ -65,7 +65,7 @@
     width: 100%;
     height: 24px;
     border: none;
-    margin-left: 4px;
+    margin-inline-start: 4px;
     border-radius: 100px;
     background-color: inherit;
     color: inherit;

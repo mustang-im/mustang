@@ -24,14 +24,14 @@
 
 <style>
   .status {
-    margin-top: 8px;
-    margin-bottom: 8px;
+    margin-block-start: 8px;
+    margin-block-end: 8px;
   }
   .box {
     border-radius: 15px;
     justify-content: start;
-    margin-left: 8px;
-    margin-right: 24px;
+    margin-inline-start: 8px;
+    margin-inline-end: 24px;
     padding: 6px 16px 6px 12px;
   }
   .success .box {
@@ -42,7 +42,7 @@
   .processing .box {
     background-color: #F0F9F8;
     color: #455468;
-    margin-left: 16px;
+    margin-inline-start: 16px;
   }
   .warning .box,
   .error .box {
@@ -59,6 +59,6 @@
     }
   }
   .icon {
-    margin-right: 8px;
+    margin-inline-end: 8px;
   }
 </style>

@@ -80,11 +80,11 @@
     text-decoration: underline;
   }
   .email-address {
-    margin-left: 24px;
+    margin-inline-start: 24px;
   }
   .buttons {
     align-items: right;
-    margin-left: 24px;
+    margin-inline-start: 24px;
   }
   .other-person:not(:hover) .buttons {
     visibility: hidden;

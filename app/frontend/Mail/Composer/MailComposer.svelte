@@ -272,11 +272,11 @@
   .cc.buttons {
     align-items: start;
     border-bottom: 1px solid rgb(0, 0, 0, 7%);
-    margin-top: 4px;
+    margin-block-start: 4px;
   }
   .cc.buttons > :global(button){
     border: none;
-    margin-left: 4px;
+    margin-inline-start: 4px;
   }
   .cc.buttons > :global(button:not(.selected)){
     background-color: inherit;
@@ -286,12 +286,12 @@
     background-color: rgb(0, 0, 0, 5%);
   }
   .window-title-bar .close.buttons > :global(*){
-    margin-left: 8px;
+    margin-inline-start: 8px;
   }
   grid.recipients {
     grid-template-columns: max-content 1fr;
-    margin-top: 4px;
-    margin-bottom: 12px;
+    margin-block-start: 4px;
+    margin-block-end: 12px;
     /* background-color: #FFFFFF55; */
   }
   .label {
@@ -299,9 +299,9 @@
   }
   .recipients .label {
     align-items: top;
-    margin-top: 3px;
-    margin-right: 2px;
-    margin-left: 2px;
+    margin-block-start: 3px;
+    margin-inline-end: 2px;
+    margin-inline-start: 2px;
     min-width: 1.7em;
   }
   .paper {
@@ -309,7 +309,7 @@
     color: var(--main-fg);
     border-radius: 5px;
     box-shadow: -1px 0px 5px 0.5px rgb(0, 0, 0, 10%);
-    margin-top: 4px;
+    margin-block-start: 4px;
   }
   .editor {
     margin: 12px 12px;
@@ -320,11 +320,11 @@
   .attachments {
     min-width: 120px;
     max-width: 350px;
-    margin-right: -12px;
+    margin-inline-end: -12px;
   }
   .footer {
-    margin-top: 8px;
-    margin-bottom: 6px;
+    margin-block-start: 8px;
+    margin-block-end: 6px;
   }
   .footer .label {
     margin: 0px 12px;

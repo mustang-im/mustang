@@ -54,7 +54,7 @@
   }
   .buttons.large :global(button) {
     padding: 8px;
-    margin-right: 12px;
+    margin-inline-end: 12px;
   }
   .buttons :global(.vertical .icon) {
     color: transparent;

@@ -185,7 +185,7 @@
     margin: 8px;
   }
   .actions :global(> *) {
-    margin-right: 8px;
+    margin-inline-end: 8px;
   }
   .actions :global(.leave svg) {
     transform: rotate(135deg);

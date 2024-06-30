@@ -25,12 +25,12 @@
   }
   .name {
     display: inline;
-    margin-right: 4px;
+    margin-inline-end: 4px;
   }
   .domain {
     display: inline;
     font-weight: normal;
     font-style: italic;
-    margin-left: 4px;
+    margin-inline-start: 4px;
   }
 </style>

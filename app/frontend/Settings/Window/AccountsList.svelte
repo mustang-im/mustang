@@ -50,14 +50,14 @@
     margin: 0px 0px 0px 12px;
   }
   .accounts[app="webapps"] {
-    margin-top: 128px;
+    margin-block-start: 128px;
   }
   .header {
     align-items: center;
     font-size: 12px;
     color: darkgray;
-    margin-left: 22px;
-    margin-right: 12px;
+    margin-inline-start: 22px;
+    margin-inline-end: 12px;
   }
   .header :global(button) {
     margin: 1px;

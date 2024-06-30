@@ -33,14 +33,14 @@
   }
   .header {
     align-items: end;
-    margin-top: 8px;
-    margin-left: 4px;
+    margin-block-start: 8px;
+    margin-inline-start: 4px;
   }
   .header-label {
     color: grey;
     font-size: 12px;
   }
   .header :global(button) {
-    margin-left: 4px;
+    margin-inline-start: 4px;
   }
 </style>

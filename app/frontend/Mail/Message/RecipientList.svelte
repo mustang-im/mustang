@@ -22,6 +22,6 @@
     overflow-y: hidden;
   }
   .comma {
-    margin-right: 0.3em;
+    margin-inline-end: 0.3em;
   }
 </style>

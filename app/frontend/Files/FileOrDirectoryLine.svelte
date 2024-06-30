@@ -90,19 +90,19 @@
     color: var(--selected-fg);
   }
   .name, .type, .size, .time {
-    padding-left: 8px;
-    padding-right: 8px;
+    padding-inline-start: 8px;
+    padding-inline-end: 8px;
   }
   .icon {
-    padding-left: 16px;
-    padding-right: 0px;
-    margin-top: 2px;
+    padding-inline-start: 16px;
+    padding-inline-end: 0px;
+    margin-block-start: 2px;
   }
   .icon :global(svg) {
     stroke-width: 1.5px;
   }
   .time {
-    padding-right: 16px;
+    padding-inline-end: 16px;
   }
   .icon {
     align-self: center;
@@ -110,7 +110,7 @@
     background-color: transparent;
   }
   .indention {
-    margin-left: 16px;
+    margin-inline-start: 16px;
   }
   .type {
     min-width: 3.5em;

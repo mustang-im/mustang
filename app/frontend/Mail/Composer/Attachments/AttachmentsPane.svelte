@@ -42,6 +42,6 @@
 <style>
   .buttons {
     justify-content: center;
-    margin-top: 12px;
+    margin-block-start: 12px;
   }
 </style>

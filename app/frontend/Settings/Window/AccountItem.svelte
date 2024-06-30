@@ -48,8 +48,8 @@
     color: var(--fg);
     white-space: nowrap;
     overflow: hidden;
-    margin-top: 4px;
-    margin-left: 4px;
-    margin-right: 4px;
+    margin-block-start: 4px;
+    margin-inline-start: 4px;
+    margin-inline-end: 4px;
   }
 </style>

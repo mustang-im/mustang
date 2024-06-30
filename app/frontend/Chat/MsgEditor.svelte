@@ -101,8 +101,8 @@
   }
   .send-buttons {
     align-self: flex-end;
-    margin-left: 2px;
-    margin-bottom: 2px;
+    margin-inline-start: 2px;
+    margin-block-end: 2px;
   }
   .send-buttons :global(.button) {
     background-color: unset;

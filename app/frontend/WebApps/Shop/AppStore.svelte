@@ -48,7 +48,7 @@
     background-color: var(--leftbar-bg);
     color: var(--leftbar-fg);
     padding: 24px;
-    padding-top: 64px;
+    padding-block-start: 64px;
     font-size: 14px;
     box-shadow: 3px 1px 8px 0px rgba(22, 12, 39, 8%); /* #160C27 */
   }

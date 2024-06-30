@@ -43,7 +43,7 @@
     justify-content: end;
   }
   .buttons :global(button) {
-    margin-left: 8px;
+    margin-inline-start: 8px;
   }
   .buttons :global(button.delete) {
     background-color: lightsalmon;

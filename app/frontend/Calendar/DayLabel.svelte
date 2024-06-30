@@ -54,14 +54,14 @@
   .month {
     font-size: 90%;
     align-self: end;
-    margin-left: 8px;
+    margin-inline-start: 8px;
   }
   .today-icon {
     display: none;
   }
   .day.today .today-icon {
     display: flex;
-    margin-left: 8px;
+    margin-inline-start: 8px;
     justify-content: start;
     align-items: center;
   }

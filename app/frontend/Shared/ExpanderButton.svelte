@@ -41,7 +41,7 @@
     padding: 2px 6px 2px 10px;
   }
   .content :global(svg) {
-    margin-left: 8px;
+    margin-inline-start: 8px;
     stroke-width: 1px;
   }
 </style>

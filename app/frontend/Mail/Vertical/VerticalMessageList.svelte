@@ -30,9 +30,9 @@
 
 <style>
   .message-list :global(.fast-list) {
-    padding-left: 4px;
-    margin-left: -5px;
-    padding-right: 9px;
+    padding-inline-start: 4px;
+    margin-inline-start: -5px;
+    padding-inline-end: 9px;
   }
   .message-list :global(.header) {
     display: none;

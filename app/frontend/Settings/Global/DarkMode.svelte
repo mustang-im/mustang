@@ -45,6 +45,6 @@
 <style>
   .buttons :global(button) {
     padding: 8px;
-    margin-right: 12px;
+    margin-inline-end: 12px;
   }
 </style>

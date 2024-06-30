@@ -34,12 +34,12 @@
     flex-wrap: wrap;
   }
   .groups :global(> *) {
-    margin-right: 32px;
+    margin-inline-end: 32px;
   }
   .groups :global(.group .content) {
-    padding-right: 48px;
+    padding-inline-end: 48px;
   }
   .subtitle {
-    margin-bottom: 16px;
+    margin-block-end: 16px;
   }
 </style>

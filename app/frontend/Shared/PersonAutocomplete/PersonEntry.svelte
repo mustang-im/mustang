@@ -84,7 +84,7 @@
     border-radius: 100px;
     box-shadow: -1px 0px 5px 0.5px rgb(0, 0, 0, 7%);
     align-items: center;
-    padding-right: 12px;
+    padding-inline-end: 12px;
     height: 24px;
   }
   .person:not(.selected):hover {
@@ -97,10 +97,10 @@
   }
   .person :global(.avatar) {
     margin: 0px;
-    margin-right: 6px;
+    margin-inline-end: 6px;
   }
   .no-pic {
-    padding-left: 14px;
+    padding-inline-start: 14px;
   }
   .name {
     align-items: center;

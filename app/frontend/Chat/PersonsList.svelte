@@ -27,11 +27,11 @@
   .last-time {
     opacity: 50%;
     font-size: x-small;
-    margin-top: 3px;
+    margin-block-start: 3px;
   }
   .last-msg {
     opacity: 50%;
-    margin-top: 5px;
+    margin-block-start: 5px;
     font-size: 11.5px;
     max-height: 1.8em;
     overflow: hidden;

@@ -21,7 +21,7 @@
     background-color: var(--leftbar-bg);
     color: var(--leftbar-fg);
     box-shadow: 1px 0px 3px 0px rgba(22, 12, 39, 20%); /* #160C27 */
-    padding-top: 24px;
+    padding-block-start: 24px;
     z-index: 4;
   }
 </style>

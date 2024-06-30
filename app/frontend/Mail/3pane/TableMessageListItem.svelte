@@ -94,7 +94,7 @@
   }
   .date,
   .buttons.hover {
-    margin-right: 16px;
+    margin-inline-end: 16px;
   }
   .date {
     min-width: 8em;

@@ -61,8 +61,8 @@
 
 <style>
   .device-button :global(button.select-device[role=button]) {
-    margin-left: -14px;
-    margin-top: 20px;
+    margin-inline-start: -14px;
+    margin-block-start: 20px;
     padding: 2px;
   }
   .device-button :global(.svelteui-Paper-root) {

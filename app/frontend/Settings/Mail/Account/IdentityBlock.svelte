@@ -136,18 +136,18 @@
   }
   .catch-all {
     font-style: italic;
-    margin-right: 1em;
+    margin-inline-end: 1em;
   }
   .reply-to {
-    margin-top: 32px;
+    margin-block-start: 32px;
   }
   .signature {
-    margin-top: 32px;
+    margin-block-start: 32px;
   }
   .signature-editor-box {
     border: 1px solid var(--border);
     border-radius: 5px;
-    margin-top: 4px;
+    margin-block-start: 4px;
   }
   .signature :global(.html-editor) {
     min-height: 5em;
@@ -157,9 +157,9 @@
     padding: 8px 16px;
   }
   .sentBy :global(button) {
-    margin-left: 12px;
+    margin-inline-start: 12px;
   }
   .content :global(.expander-buttons) {
-    margin-top: 38px;
+    margin-block-start: 38px;
   }
 </style>

@@ -182,7 +182,7 @@
     font-weight: bold;
   }
   .header .direction {
-    margin-right: 6px;
+    margin-inline-end: 6px;
     color: #555555;
   }
   .protocol {
@@ -193,14 +193,14 @@
   }
   .port .default {
     color: #555555;
-    margin-left: 8px;
+    margin-inline-start: 8px;
   }
   .tls {
     align-items: start;
     justify-content: end;
   }
   .tls-icon {
-    margin-left: 8px;
+    margin-inline-start: 8px;
   }
   .tls[tls="0"] .tls-icon :global(svg) {
     stroke: grey;
@@ -214,8 +214,8 @@
   }
   .tls-warning {
     color: red;
-    margin-top: 4px;
-    margin-bottom: 8px;
+    margin-block-start: 4px;
+    margin-block-end: 8px;
     max-width: 12em;
   }
   .error select {

@@ -19,15 +19,15 @@
 <style>
   .account {
     align-items: center;
-    padding-left: 12px;
-    padding-top: 2px;
-    padding-bottom: 2px;
+    padding-inline-start: 12px;
+    padding-block-start: 2px;
+    padding-block-end: 2px;
   }
   .icon :global(path),
   .icon :global(.cls-2) {
     stroke: var(--leftpane-fg);
   }
   .label {
-    margin-left: 8px;
+    margin-inline-start: 8px;
   }
 </style>

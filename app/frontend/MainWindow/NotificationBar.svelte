@@ -88,7 +88,7 @@
     margin: 2px 16px;
   }
   .buttons-separator {
-    margin-right: 12px;
+    margin-inline-end: 12px;
   }
   .notification-bar :global(button) {
     margin: 4px;

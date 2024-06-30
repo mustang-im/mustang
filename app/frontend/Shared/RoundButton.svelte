@@ -86,7 +86,7 @@
     stroke: currentColor;
   }
   .icon {
-    margin-right: 0px;
+    margin-inline-end: 0px;
   }
   .disabled {
     opacity: 50%;

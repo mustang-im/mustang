@@ -76,7 +76,7 @@
   }
   input[type="search"] {
     width: 100%;
-    margin-right: 12px;
+    margin-inline-end: 12px;
     height: 32px;
     padding: 0px 16px;
     border: 1px solid #8D8995;
@@ -88,7 +88,7 @@
     color: white;
   }
   .buttons :global(button) {
-    margin-right: 4px;
+    margin-inline-end: 4px;
   }
   .buttons :global(button.invite-participant) {
     background-color: transparent;

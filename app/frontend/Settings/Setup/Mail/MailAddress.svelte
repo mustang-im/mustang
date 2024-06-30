@@ -65,7 +65,7 @@
     min-width: 32px;
   }
   .icon :global(> *) {
-    margin-left: 2px;
+    margin-inline-start: 2px;
   }
   .icon.valid {
     color: var(--selected-bg);

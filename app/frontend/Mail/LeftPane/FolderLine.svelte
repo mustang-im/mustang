@@ -36,14 +36,14 @@
 <style>
   .folder {
     align-items: center;
-    padding-top: 2px;
-    padding-bottom: 2px;
+    padding-block-start: 2px;
+    padding-block-end: 2px;
   }
   .icon :global(.cls-2) {
     stroke: black;
   }
   .label {
-    padding-left: 8px;
+    padding-inline-start: 8px;
   }
   .buttons {
     justify-content: end;

@@ -108,10 +108,10 @@
 <style>
   .buttons {
     justify-content: end;
-    margin-bottom: 8px;
+    margin-block-end: 8px;
   }
   .buttons > * {
-    margin-left: 2px;
+    margin-inline-start: 2px;
   }
   .buttons :global(svg) {
     stroke-width: 1.5px;

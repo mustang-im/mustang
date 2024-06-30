@@ -97,7 +97,7 @@
     box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 15%);
   }
   .message.followup {
-    margin-top: 3px;
+    margin-block-start: 3px;
   }
 
   /** Speech bubble arrow */
@@ -126,28 +126,28 @@
   }
 
   .avatar {
-    margin-top: 3px;
-    margin-right: 4px;
+    margin-block-start: 3px;
+    margin-inline-end: 4px;
   }
   .message.followup.incoming {
     /* no avatar */
-    padding-left: 60px;
+    padding-inline-start: 60px;
   }
   .meta {
     align-items: end;
-    margin-bottom: 2px;
+    margin-block-end: 2px;
     font-size: x-small;
     color: #999999;
   }
   .incoming .meta {
-    margin-left: 10px;
+    margin-inline-start: 10px;
   }
   .outgoing .meta {
     justify-content: end;
-    margin-right: 10px;
+    margin-inline-end: 10px;
   }
   .from {
-    margin-right: 16px;
+    margin-inline-end: 16px;
   }
   .text {
     font-size: 13.3px;
@@ -156,8 +156,8 @@
 
   .text :global(blockquote) {
     border-left: 3px solid grey;
-    padding-left: 16px;
-    margin-left: 0px;
+    padding-inline-start: 16px;
+    margin-inline-start: 0px;
   }
   .text :global(pre) {
     white-space: pre-wrap !important;
@@ -170,8 +170,8 @@
   .reactions {
     z-index: 1;
     align-self: flex-end;
-    margin-top: -6px;
-    margin-right: 16px;
+    margin-block-start: -6px;
+    margin-inline-end: 16px;
     padding: 0px 4px;
     border: 2px solid transparent;
     border-radius: 20px;
@@ -207,7 +207,7 @@
     z-index: 1;
   }
   .menu > * {
-    margin-left: 8px;
+    margin-inline-start: 8px;
   }
   .menu :global(svg) {
     stroke-width: 1.5px;

@@ -157,7 +157,7 @@
     color: var(--leftbar-fg);
   }
   .window-title-bar {
-    margin-bottom: 8px;
+    margin-block-end: 8px;
     font-weight: bold;
   }
   .left-pane {
@@ -165,7 +165,7 @@
   }
   .right-pane {
     flex: 1 0 0;
-    margin-left: 32px;
+    margin-inline-start: 32px;
   }
   input {
     border-top: none;
@@ -178,8 +178,8 @@
     padding: 6px 12px;
   }
   .participants {
-    margin-top: 24px;
-    margin-bottom: 16px;
+    margin-block-start: 24px;
+    margin-block-end: 16px;
   }
   grid.location {
     grid-template-columns: max-content 1fr max-content;
@@ -188,14 +188,14 @@
     margin: 4px 12px 4px 0px;
   }
   grid.location .buttons {
-    margin-left: 24px;
+    margin-inline-start: 24px;
   }
   .availability {
     font-size: 12px;
   }
   .description {
     min-height: 10em;
-    margin-top: 16px;
+    margin-block-start: 16px;
   }
   .editor-wrapper {
     border: 1px solid lightgray;
@@ -210,10 +210,10 @@
     grid-template-columns: max-content 1fr;
     justify-content: center;
     align-items: center;
-    margin-bottom: 12px;
+    margin-block-end: 12px;
   }
   grid.time label {
-    margin-right: 8px;
+    margin-inline-end: 8px;
   }
   .right-pane :global(.svelteui-Checkbox-root) {
     margin: 2px;
@@ -223,13 +223,13 @@
     text-align: right;
   }
   .duration {
-    margin-right: 6px;
+    margin-inline-end: 6px;
   }
   grid :global(input) {
     padding: 4px 8px;
-    margin-top: 2px;
+    margin-block-start: 2px;
   }
   .event-edit-window :global(.svelteui-Checkbox-label) {
-    padding-left: 8px;
+    padding-inline-start: 8px;
   }
 </style>

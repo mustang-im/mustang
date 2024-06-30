@@ -56,9 +56,9 @@
     text-overflow: clip;
     white-space: nowrap;
     max-width: 100%;
-    margin-top: 4px;
-    margin-left: 4px;
-    margin-right: 4px;
+    margin-block-start: 4px;
+    margin-inline-start: 4px;
+    margin-inline-end: 4px;
   }
   .selected .label {
     color: black;

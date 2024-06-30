@@ -28,7 +28,7 @@
     padding: 24px;
   }
   .header {
-    margin-top: -32px;
+    margin-block-start: -32px;
   }
   h1.name {
     font-size: 24px;

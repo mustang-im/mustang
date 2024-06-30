@@ -103,8 +103,8 @@
   .menu {
     width: 16px;
     height: 16px;
-    padding-bottom: 12px;
-    padding-right: 12px;
+    padding-block-end: 12px;
+    padding-inline-end: 12px;
   }
   .menu-inner {
     position: fixed;

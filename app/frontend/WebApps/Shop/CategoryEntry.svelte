@@ -40,9 +40,9 @@
 
 <style>
   .category {
-    margin-bottom: 12px;
+    margin-block-end: 12px;
   }
   .sub-categories {
-    margin-left: 24px;
+    margin-inline-start: 24px;
   }
 </style>

@@ -173,7 +173,7 @@
   .text {
     align-items: center;
     justify-content: center;
-    margin-bottom: 20px;
+    margin-block-end: 20px;
   }
   .text .who {
     font-size: 24px;
@@ -184,7 +184,7 @@
     justify-content: center;
   }
   .actions {
-    margin-top: 12px;
+    margin-block-start: 12px;
   }
   .actions :global(button) {
     padding: 16px;
@@ -264,28 +264,28 @@
   }
   @keyframes shake {
     from {
-      margin-left: 3px;
+      margin-inline-start: 3px;
     }
     2% {
-      margin-left: -3px;
+      margin-inline-start: -3px;
     }
     4% {
-      margin-left: 3px;
+      margin-inline-start: 3px;
     }
     6% {
-      margin-left: -3px;
+      margin-inline-start: -3px;
     }
     8% {
-      margin-left: 3px;
+      margin-inline-start: 3px;
     }
     10% {
-      margin-left: -3px;
+      margin-inline-start: -3px;
     }
     12% {
-      margin-left: 3px;
+      margin-inline-start: 3px;
     }
     14% {
-      margin-left: 0px;
+      margin-inline-start: 0px;
     }
   }
 </style>

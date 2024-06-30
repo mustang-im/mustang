@@ -93,7 +93,7 @@
     margin: 2px;
   }
   .buttons :global(> *) {
-    margin-left: 6px;
+    margin-inline-start: 6px;
   }
   .loading {
     width: 24px;

@@ -66,7 +66,7 @@
   }
   .name {
     font-size: 16px;
-    margin-top: 16px;
+    margin-block-start: 16px;
   }
   .description {
     font-size: 11px;

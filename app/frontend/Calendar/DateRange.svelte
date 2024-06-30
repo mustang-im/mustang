@@ -35,11 +35,11 @@
   .date-range-header {
     align-items: center;
     align-self: end;
-    margin-bottom: 4px;
+    margin-block-end: 4px;
   }
   .date-range {
     font-size: 18px;
-    margin-left: 8px;
-    margin-right: 8px;
+    margin-inline-start: 8px;
+    margin-inline-end: 8px;
   }
 </style>

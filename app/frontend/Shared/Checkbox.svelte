@@ -61,10 +61,10 @@
   label {
     display: flex;
     align-items: center;
-    margin-left: 8px;
+    margin-inline-start: 8px;
   }
   label :global(svg) {
-    margin-right: 4px;
+    margin-inline-end: 4px;
   }
   hbox.indetermined label {
     opacity: 60%;

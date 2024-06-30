@@ -84,10 +84,10 @@
     object-fit: contain;
   }
   .buttons {
-    margin-top: -22px;
+    margin-block-start: -22px;
     justify-content: center;
   }
   .buttons :global(> *) {
-    margin-left: 4px;
+    margin-inline-start: 4px;
   }
 </style>

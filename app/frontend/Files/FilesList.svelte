@@ -26,20 +26,20 @@
   .files-list {
     display: grid;
     grid-template-columns: auto max-content max-content max-content;
-    margin-top: 8px;
+    margin-block-start: 8px;
   }
   /*
   .name, .type, .size, .time {
-    padding-left: 8px;
-    padding-right: 8px;
+    padding-inline-start: 8px;
+    padding-inline-end: 8px;
     border-bottom: 1px dotted grey;
     border-right: 1px dotted grey;
   }
   .name {
-    padding-left: 16px;
+    padding-inline-start: 16px;
   }
   .time {
-    padding-right: 16px;
+    padding-inline-end: 16px;
   }
   */
 </style>

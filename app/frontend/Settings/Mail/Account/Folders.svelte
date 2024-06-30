@@ -42,11 +42,11 @@
 
 <style>
   h2 {
-    margin-top: 0px;
-    margin-bottom: 0px;
+    margin-block-start: 0px;
+    margin-block-end: 0px;
   }
   .subtitle {
-    margin-bottom: 16px;
+    margin-block-end: 16px;
   }
   .right {
     margin: 12px 32px;

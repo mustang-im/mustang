@@ -10,14 +10,14 @@
 
 <style>
   .header {
-    margin-bottom: 32px;
+    margin-block-end: 32px;
   }
   h1 {
     margin: 0px;
     font-size: 28px;
   }
   .subtitle {
-    margin-top: 2px;
+    margin-block-start: 2px;
     opacity: 65%;
     font-weight: 300;
     line-height: 1.4;

@@ -26,7 +26,7 @@
 
 <style>
   h2 {
-    margin-top: 0px;
-    margin-bottom: 0px;
+    margin-block-start: 0px;
+    margin-block-end: 0px;
   }
 </style>

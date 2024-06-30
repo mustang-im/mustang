@@ -130,6 +130,6 @@
     width: 8px;
   }
   .plain .icon {
-    margin-right: 0;
+    margin-inline-end: 0;
   }
 </style>

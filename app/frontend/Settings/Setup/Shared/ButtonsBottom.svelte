@@ -37,10 +37,10 @@
   .buttons {
     align-items: end;
     justify-content: end;
-    margin-top: 32px;
+    margin-block-start: 32px;
   }
   .buttons :global(> *) {
-    margin-right: 8px;
+    margin-inline-end: 8px;
   }
   .buttons :global(button.secondary) {
     background-color: inherit;

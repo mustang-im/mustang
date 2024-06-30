@@ -212,10 +212,10 @@
     margin: 8px 0px 12px 24px;
   }
   .header-bar {
-    margin-right: 8px;
+    margin-inline-end: 8px;
   }
   .header.top {
-    margin-top: 8px;
+    margin-block-start: 8px;
   }
   .header {
     font-size: 20px;
@@ -236,7 +236,7 @@
     font-size: 16px;
   }
   .boolean-criteria {
-    margin-top: 16px;
+    margin-block-start: 16px;
   }
   .search :global(.star.starred svg) {
     fill: orange;

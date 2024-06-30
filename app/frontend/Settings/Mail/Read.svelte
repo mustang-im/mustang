@@ -53,16 +53,16 @@
     flex-wrap: wrap;
   }
   .groups :global(> *) {
-    margin-right: 32px;
+    margin-inline-end: 32px;
   }
   .groups :global(.group .content) {
-    padding-right: 48px;
+    padding-inline-end: 48px;
   }
   .radio {
     align-items: center;
   }
   label {
-    margin-left: 8px;
+    margin-inline-start: 8px;
   }
   input[type="number"] {
     width: 2.5em;

@@ -36,7 +36,7 @@
   }
   .icon {
     color: lightgray;
-    margin-right: 4px;
+    margin-inline-end: 4px;
   }
   .icon :global(svg) {
     stroke-width: 1px;
@@ -56,7 +56,7 @@
   }
   .buttons {
     align-items: start;
-    margin-top: 4px;
+    margin-block-start: 4px;
   }
   .buttons :global(svg) {
     color: lightgrey;

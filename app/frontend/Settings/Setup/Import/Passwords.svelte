@@ -150,19 +150,19 @@
     align-items: center;
   }
   .password-row label {
-    margin-right: 24px;
+    margin-inline-end: 24px;
   }
   .spacer1,
   .spacer2 {
     min-height: 5vh;
   }
   .workspace {
-    margin-bottom: 32px;
+    margin-block-end: 32px;
   }
   .workspace .header {
     font-size: 20px;
     font-weight: bold;
-    margin-top: 24px;
-    margin-bottom: 8px;
+    margin-block-start: 24px;
+    margin-block-end: 8px;
   }
 </style>

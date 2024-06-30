@@ -64,7 +64,7 @@
     padding: 3px 4px;
   }
   .input {
-    margin-left: 4px;
+    margin-inline-start: 4px;
   }
   .persons-autocomplete > :global(*) {
     margin: 3.5px 3px;

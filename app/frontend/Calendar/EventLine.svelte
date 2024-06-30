@@ -32,7 +32,7 @@ ${event.participants.hasItems ? event.participants.getIndexRange(0, 4).map(perso
 
 <style>
   .event {
-    margin-bottom: 1px;
+    margin-block-end: 1px;
     padding: 4px;
     overflow: hidden;
     white-space: nowrap;
@@ -47,7 +47,7 @@ ${event.participants.hasItems ? event.participants.getIndexRange(0, 4).map(perso
     background-color: #20AF9E70;
   }
   .time {
-    margin-right: 4px;
+    margin-inline-end: 4px;
     font-weight: 600;
   }
 
