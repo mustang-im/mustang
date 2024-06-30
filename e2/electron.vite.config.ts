@@ -13,6 +13,10 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()]
   },
   renderer: {
-    plugins: [nodePolyfills({include: ['buffer'], globals: {global: false, process: false}}), svelte(), lingui({configPath: "../app/lingui.config.ts"})]
+    plugins: [
+      nodePolyfills({include: ['buffer'], globals: {global: false, process: false}}),
+      svelte(),
+      lingui({configPath: "../app/lingui.config.ts"}),
+    ]
   }
 })
