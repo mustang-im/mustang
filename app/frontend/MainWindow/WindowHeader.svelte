@@ -10,15 +10,15 @@
   <vbox flex class="free" />
   <SearchField bind:searchTerm={$globalSearchTerm} />
   <hbox class="right">
-    <Button label="Settings"
+    <Button label={$t`Settings`}
       icon={SettingsIcon} iconSize="24px" plain iconOnly classes="settings"
       onClick={onOpenSettings}
       />
-    <Button label="Minimize"
+    <Button label={$t`Minimize`}
       icon={MinimizeIcon} iconSize="24px" plain iconOnly classes="minimize"
       onClick={onMinimize}
       />
-    <Button label="Close entire app"
+    <Button label={$t`Close entire app`}
       icon={XIcon} iconSize="24px" plain iconOnly classes="close"
       onClick={onCloseApp}
       />
@@ -40,6 +40,7 @@
   import SettingsIcon from 'lucide-svelte/icons/settings-2';
   import MinimizeIcon from 'lucide-svelte/icons/minus';
   import XIcon from 'lucide-svelte/icons/x';
+  import { t } from "../../l10n/l10n";
 
   export let selectedApp: MustangApp;
 

@@ -1,12 +1,12 @@
 <Header
-  title="Import accounts"
-  subtitle="Continue to use your accounts from Thunderbird" />
+  title={$t`Import accounts`}
+  subtitle={$t`Continue to use your accounts from Thunderbird`} />
 
 {#await startImport()}
   <StatusMessage status="processing"
-    message="Importing accounts..." />
+    message={$t`Importing accounts...`} />
 {:then}
-  <hbox class="found">Found {accounts.length} imported accounts</hbox>
+  <hbox class="found">{$t`Found ${accounts.length} imported accounts`}</hbox>
   <vbox class="accounts">
     <Scroll>
       <grid class="protocol-grid">
@@ -24,10 +24,10 @@
   canContinue={!!accounts.length}
   onContinue={onContinue}
   >
-  <Button label="Skip" classes="secondary"
+  <Button label={$t`Skip`} classes="secondary"
     onClick={onSkip}
     />
-  <Button label="Uncheck all" classes="secondary"
+  <Button label={$t`Uncheck all`} classes="secondary"
     onClick={onUncheckAll}
     />
 </ButtonsBottom>
@@ -43,6 +43,7 @@
   import Button from "../../../Shared/Button.svelte";
   import Header from "../Shared/Header.svelte";
   import Scroll from "../../../Shared/Scroll.svelte";
+  import { t } from "../../../../l10n/l10n";
 
   export let accounts: MailAccount[] = [];
   export let onContinue = () => undefined;

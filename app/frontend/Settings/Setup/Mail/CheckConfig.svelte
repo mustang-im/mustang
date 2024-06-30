@@ -1,11 +1,12 @@
 <StatusMessage status="processing"
-  message="Verifying that the configuration works..." />
+  message={$t`Verifying that the configuration works...`} />
 
 <script lang="ts">
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
   import { checkConfig } from "../../../../logic/Mail/AutoConfig/checkConfig";
   import StatusMessage from "../Shared/StatusMessage.svelte";
   import { createEventDispatcher, onMount } from 'svelte';
+  import { t } from "../../../../l10n/l10n";
   const dispatchEvent = createEventDispatcher();
 
   /** in */

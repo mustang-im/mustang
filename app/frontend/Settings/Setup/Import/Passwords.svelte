@@ -3,7 +3,7 @@
 
   {#if account?.oAuth2}
     <hbox class="buttons login">
-      <Button label="Login"
+      <Button label={$t`Login`}
         classes="filled large"
         onClick={loginOAuth2}
         errorCallback={showError}
@@ -12,7 +12,7 @@
     </hbox>
   {:else}
     <hbox class="password-row">
-      <label for="password">Password</label>
+      <label for="password">{$t`Password`}</label>
       <Password bind:password
         autofocus={true}
         on:continue={() => catchErrors(validateAccount, showError)} />
@@ -23,7 +23,7 @@
 
   {#if validating}
     <StatusMessage status="processing"
-      message="Verifying that the configuration works..." />
+      message={$t`Verifying that the configuration works...`} />
   {/if}
   {#if errorMessage}
     <ErrorMessage {errorMessage} errorGravity={ErrorGravity.Error}
@@ -33,7 +33,7 @@
   <hbox class="spacer2" flex />
 
   <vbox class="workspace">
-    <hbox class="header">Workspace</hbox>
+    <hbox class="header">{$t`Workspace`}</hbox>
     <WorkspaceSelector config={account} horizontal={true} />
   </vbox>
 {/if}
@@ -64,6 +64,7 @@
   import Button from "../../../Shared/Button.svelte";
   import { Cancelled } from "../../../../logic/util/Abortable";
   import { catchErrors } from "../../../Util/error";
+  import { t } from "../../../../l10n/l10n";
 
   export let accounts: MailAccount[] = [];
   export let onContinue = () => undefined;

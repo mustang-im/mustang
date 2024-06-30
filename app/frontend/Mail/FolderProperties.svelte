@@ -11,7 +11,7 @@
       <hbox flex />
       <hbox class="buttons">
         <RoundButton
-          label="Close"
+          label={$t`Close`}
           icon={CloseIcon}
           iconSize="16px"
           on:click={onClose}
@@ -21,7 +21,7 @@
     <FolderGeneral {folder} />
     <hbox flex />
     <FolderActions {folder}>
-      <Button label="Close"
+      <Button label={$t`Close`}
         icon={CloseIcon}
         slot="buttons-bottom-right"
         classes="close"
@@ -48,6 +48,7 @@
   import CloseIcon from "lucide-svelte/icons/x";
   import { writable } from "svelte/store";
   import { ArrayColl, Collection } from "svelte-collections";
+  import { t } from "../../l10n/l10n";
 
   export let folder: Folder; /** in/out */
 

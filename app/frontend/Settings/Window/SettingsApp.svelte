@@ -7,7 +7,7 @@
       <hbox flex class="spacer" />
       <hbox class="buttons">
         <RoundButton
-          label="Close settings"
+          label={$t`Close settings`}
           icon={CloseIcon}
           iconSize="16px"
           padding="6px"
@@ -32,6 +32,7 @@
   import Scroll from "../../Shared/Scroll.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import CloseIcon from "lucide-svelte/icons/x";
+  import { t } from "../../../l10n/l10n";
 
   let categories = settingsCategories;
 

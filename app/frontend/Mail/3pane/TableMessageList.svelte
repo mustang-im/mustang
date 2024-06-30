@@ -8,12 +8,12 @@
     bind:selectedItems={selectedMessages}
     columns="auto auto auto auto 1fr 3fr auto">
     <svelte:fragment slot="header">
-      <hbox>R</hbox>
-      <hbox>S</hbox>
-      <hbox>A</hbox>
-      <hbox>Correspondent</hbox>
-      <hbox>Subject</hbox>
-      <hbox class="date">Date</hbox>
+      <hbox>{$t`R`}</hbox>
+      <hbox>{$t`S`}</hbox>
+      <hbox>{$t`A`}</hbox>
+      <hbox>{$t`Correspondent`}</hbox>
+      <hbox>{$t`Subject`}</hbox>
+      <hbox class="date">{$t`Date`}</hbox>
     </svelte:fragment>
     <TableMessageListItem slot="row" let:item message={item} />
   </FastList>
@@ -26,6 +26,7 @@
   import TableMessageListItem from "./TableMessageListItem.svelte";
   import type { Collection, ArrayColl } from "svelte-collections";
   import { catchErrors } from "../../Util/error";
+  import { t } from "../../../l10n/l10n";
 
   export let messages: Collection<EMail>;
   export let selectedMessages: ArrayColl<EMail>;

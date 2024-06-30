@@ -15,19 +15,19 @@
       </hbox>
       {#if $message.to.hasItems}
         <hbox class="to">
-          to&nbsp;
+          {$t`to`}&nbsp;
           <RecipientList recipients={$message.to} />
         </hbox>
       {/if}
       {#if $message.cc.hasItems}
         <hbox class="cc">
-          cc&nbsp;
+          {$t`cc`}&nbsp;
           <RecipientList recipients={$message.cc} />
         </hbox>
       {/if}
       {#if $message.bcc.hasItems}
         <hbox class="bcc">
-          bcc&nbsp;
+          {$t`bcc`}&nbsp;
           <RecipientList recipients={$message.bcc} />
         </hbox>
       {/if}
@@ -64,6 +64,7 @@
   import { catchErrors, backgroundError } from "../../Util/error";
   import { getDateString } from "../../Util/date";
   import { onDestroy } from "svelte";
+  import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
 

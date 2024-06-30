@@ -1,16 +1,17 @@
 <vbox class="workspace-list">
   <FastList columns="auto">
     <svelte:fragment slot="header">
-      <hbox class="header">Workspaces</hbox>
+      <hbox class="header">{$t`Workspaces`}</hbox>
     </svelte:fragment>
     <svelte:fragment slot="row">
-      <hbox>All</hbox>
+      <hbox>{$t`All`}</hbox>
     </svelte:fragment>
   </FastList>
 </vbox>
 
 <script lang="ts">
   import FastList from "../../Shared/FastList.svelte";
+  import { t } from "../../../l10n/l10n";
 </script>
 
 <style>

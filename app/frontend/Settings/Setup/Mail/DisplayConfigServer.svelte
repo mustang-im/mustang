@@ -33,23 +33,24 @@
   import ShieldAlertIcon from "lucide-svelte/icons/shield-alert";
   import ArrowLeftIcon from "lucide-svelte/icons/arrow-big-left";
   import ArrowRightIcon from "lucide-svelte/icons/arrow-big-right";
+  import { t } from "../../../../l10n/l10n";
 
   /** in */
   export let config: MailAccount;
 
   $: outgoing = config.protocol == "smtp";
   $: hasEnc = hasEncryption(config.tls);
-  $: tlsWarning = !hasEncryption(config.tls) ? "Attackers can read your password and mails" : null;
+  $: tlsWarning = !hasEncryption(config.tls) ? $t`Attackers can read your password and mails` : null;
 
   function socketLabel(tls: TLSSocketType): string {
     if (tls == TLSSocketType.TLS) {
-      return "TLS";
+      return $t`TLS`;
     } else if (tls == TLSSocketType.STARTTLS) {
-      return "STARTTLS";
+      return $t`STARTTLS`;
     } else if (tls == TLSSocketType.Plain) {
-      return "No encryption";
+      return $t`No encryption`;
     } else {
-      return "Unknown";
+      return $t`Unknown`;
     }
   }
 </script>

@@ -5,13 +5,14 @@
 {:else if video instanceof ParticipantVideo}
   <img src={video.participant.picture} alt={video.participant.name} />
 {:else if video instanceof SelfVideo}
-  <img src={appGlobal.me.picture} alt="me" />
+  <img src={appGlobal.me.picture} alt={$t`me`} />
 {/if}
 
 <script lang="ts">
   import { VideoStream, SelfVideo, ParticipantVideo, videoStreamClassName } from "../../../logic/Meet/VideoStream";
   import { appGlobal } from "../../../logic/app";
   import { onDestroy } from "svelte";
+  import { t } from "../../../l10n/l10n";
 
   export let video: VideoStream;
 

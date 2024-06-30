@@ -10,7 +10,7 @@
     {#if $participant.handUp}
       <Button plain
         classes={$participant.handUp ? "hand-up" : "hand-down"}
-        label={$participant.handUp ? "Take hand down" : ""}
+        label={$participant.handUp ? $t`Take hand down` : ""}
         onClick={() => toggleHand(participant)}
         icon={$participant.handUp ? HandIcon : HandDownIcon}
         disabled={!userIsModerator}
@@ -19,14 +19,14 @@
     <hbox class="more-actions">
       <Button plain
         classes="toggle-mic"
-        label="Mute"
+        label={$t`Mute`}
         onClick={() => toggleMic(participant)}
         icon={$participant.micOn ? MicrophoneIcon : MicrophoneOffIcon}
         disabled={!userIsModerator}
         iconOnly />
       <Button plain
         classes="toggle-camera"
-        label="Camera"
+        label={$t`Camera`}
         onClick={() => toggleCamera(participant)}
         icon={$participant.cameraOn ? CameraIcon : CameraOffIcon}
         disabled={!userIsModerator}
@@ -34,9 +34,9 @@
       <Menu>
         <Menu.Item
           on:click={() => catchErrors(() => startPrivateChat(participant))}
-          title="Start a chat with only this person"
+          title={$t`Start a chat with only this person`}
           icon={ChatIcon}>
-          Private chat
+          {$t`Private chat`}
         </Menu.Item>
       </Menu>
     </hbox>
@@ -57,6 +57,7 @@
   import ScreenSharingIcon from "lucide-svelte/icons/monitor";
   import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
+  import { t } from "../../l10n/l10n";
 
   export let participant: MeetingParticipant;
   export let userIsModerator = false;
@@ -68,7 +69,7 @@
   // Moderator functions
 
   function toggleHand(participant: MeetingParticipant) {
-    assert(userIsModerator, "You are not a moderator");
+    assert(userIsModerator, $t`You are not a moderator`);
     if (!participant.handUp) {
       return;
     }
@@ -76,12 +77,12 @@
     participant.handUp = false;
   }
   function toggleCamera(participant: MeetingParticipant) {
-    assert(userIsModerator, "You are not a moderator");
+    assert(userIsModerator, $t`You are not a moderator`);
     // TODO Turn camera off on server
     participant.cameraOn = !participant.cameraOn;
   }
   function toggleMic(participant: MeetingParticipant) {
-    assert(userIsModerator, "You are not a moderator");
+    assert(userIsModerator, $t`You are not a moderator`);
     // See camera above
     participant.micOn = !participant.micOn;
   }

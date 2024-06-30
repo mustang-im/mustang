@@ -2,7 +2,7 @@
   <GroupBox classes="merge">
     <svelte:fragment slot="header">
       <PersonsIcon size="16px" />
-      <h3>Similar names</h3>
+      <h3>{$t`Similar names`}</h3>
     </svelte:fragment>
     <vbox class="merge" slot="content">
       {#each $sameName.each as other}
@@ -14,7 +14,7 @@
           </hbox>
           <hbox class="email-address">{other.emailAddresses.first?.value ?? ""}</hbox>
           <hbox class="buttons">
-            <Button label="Merge" icon={MergeIcon} plain onClick={() => merge(other)} />
+            <Button label={$t`Merge`} icon={MergeIcon} plain onClick={() => merge(other)} />
           </hbox>
         </hbox>
       {/each}
@@ -32,6 +32,7 @@
   import { catchErrors, showError } from "../Util/error";
   import { appGlobal } from "../../logic/app";
   import { ArrayColl } from "svelte-collections";
+  import { t } from "../../l10n/l10n";
 
   export let person: Person;
 
@@ -57,7 +58,7 @@
   }
 
   async function merge(other: Person) {
-    if (!confirm("Do you want to merge the 2 contacts, i.e. copy the data from the other contact into this contact, and delete the other contact?")) {
+    if (!confirm($t`Do you want to merge the 2 contacts, i.e. copy the data from the other contact into this contact, and delete the other contact?`)) {
       return;
     }
     await person.merge(other);

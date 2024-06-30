@@ -2,31 +2,31 @@
   <vbox flex class="actions-container">
     <vbox class="actions">
       {#if $selectedPerson}
-        <Button label="Call {$selectedPerson.name}" onClick={callSelected} classes="call-person secondary">
+        <Button label={$t`Call ${$selectedPerson.name}`} onClick={callSelected} classes="call-person secondary">
           <PersonPicture slot="icon" person={$selectedPerson} size={24} />
         </Button>
-        <Button label="Test incoming call" icon={VideoIcon} onClick={testIncoming} classes="secondary" />
+        <Button label={$t`Test incoming call`} icon={VideoIcon} onClick={testIncoming} classes="secondary" />
       {/if}
-      <Button label="Plan a meeting" icon={AddToCalendarIcon} classes="secondary" iconSize="14px" />
-      <Button label="Start an ad-hoc meeting" icon={VideoIcon} onClick={startAdHocMeeting} classes="secondary" />
+      <Button label={$t`Plan a meeting`} icon={AddToCalendarIcon} classes="secondary" iconSize="14px" />
+      <Button label={$t`Start an ad-hoc meeting`} icon={VideoIcon} onClick={startAdHocMeeting} classes="secondary" />
       <hbox>
-        <input class="meeting-link" type="url" bind:value={conferenceURL} placeholder="Enter meeting link to join" />
-        <Button label="Join" classes="secondary"
+        <input class="meeting-link" type="url" bind:value={conferenceURL} placeholder={$t`Enter meeting link to join`} />
+        <Button label={$t`Join`} classes="secondary"
           onClick={joinByURL} />
       </hbox>
     </vbox>
   </vbox>
   <vbox flex class="meetings">
     <vbox flex class="upcoming">
-      <hbox class="title">Today's next meetings</hbox>
+      <hbox class="title">{$t`Today's next meetings`}</hbox>
       <MeetingList meetings={upcomingMeetings}>
-        <div slot="emptyMsg" class="emptyMsg">No meetings coming up</div>
+        <div slot="emptyMsg" class="emptyMsg">{$t`No meetings coming up`}</div>
       </MeetingList>
     </vbox>
     <vbox flex class="previous">
-      <hbox class="title">Previous meetings</hbox>
+      <hbox class="title">{$t`Previous meetings`}</hbox>
       <MeetingList meetings={previousMeetings}>
-        <div slot="emptyMsg" class="emptyMsg">No recent meetings</div>
+        <div slot="emptyMsg" class="emptyMsg">{$t`No recent meetings`}</div>
       </MeetingList>
     </vbox>
   </vbox>
@@ -48,6 +48,7 @@
   import { mergeColls } from "svelte-collections";
   import { Event } from "../../../logic/Calendar/Event";
   import { faker } from "@faker-js/faker";
+  import { t } from "../../../l10n/l10n";
 
   const allEvents = mergeColls(appGlobal.calendars.map(calendar => calendar.events));
   const now = new Date();
@@ -86,8 +87,8 @@
     let event = new Event();
     event.startTime = faker.date.past(0.001);
     event.endTime = faker.date.future(0.001);
-    event.title = "Final Approval UX Meet";
-    event.descriptionHTML = `<p>
+    event.title = $t`Final Approval UX Meet`;
+    event.descriptionHTML = $t`<p>
       Objectives of the meeting are:
       <ol>
         <li>Review of the UX specs for Meet app</li>

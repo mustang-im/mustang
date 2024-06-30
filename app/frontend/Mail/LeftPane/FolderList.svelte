@@ -2,7 +2,7 @@
   <FastTree items={foldersSorted} bind:selectedItem={selectedFolder} bind:selectedItems={selectedFolders}
     columns="auto">
     <svelte:fragment slot="header">
-      <hbox class="header">Folders</hbox>
+      <hbox class="header">{$t`Folders`}</hbox>
     </svelte:fragment>
     <TreeItemLine slot="row" let:item={folder} item={folder}>
       <FolderLine {folder} slot="row" />
@@ -16,6 +16,7 @@
   import type { Collection, ArrayColl } from 'svelte-collections';
   import FolderLine from './FolderLine.svelte';
   import TreeItemLine from '../../Shared/FastTreeItem.svelte';
+  import { t } from '../../../l10n/l10n';
 
   export let folders: Collection<Folder>;
   export let selectedFolder: Folder; /* in/out */

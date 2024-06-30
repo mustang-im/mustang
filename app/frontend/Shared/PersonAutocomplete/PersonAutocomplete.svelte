@@ -8,16 +8,16 @@
     localSorting={false}
     closeOnBlur={false}
     hideArrow={true}
-    noResultsText="No person found"
+    noResultsText={$t`No person found`}
     bind:text={typedText}
     create={() => catchErrors(() => canCreate(typedText))}
-    createText={"Add this person"}
+    createText={$t`Add this person`}
     onCreate={(text) => catchErrors(() => onCreate(text))}
     {placeholder}
     {autofocus}
     tabIndex={tabindex}
     >
-    <hbox slot="loading">Loading...</hbox>
+    <hbox slot="loading">{$t`Loading...`}</hbox>
     <svelte:fragment slot="item" let:item={person}>
       <PersonAutocompleteResult {person}>
         <slot name="result-bottom-row" slot="bottom-row" {person} />
@@ -38,10 +38,11 @@
   import { createEventDispatcher, tick } from 'svelte';
   import { catchErrors } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
+  import { t } from "../../../l10n/l10n";
   const dispatch = createEventDispatcher<{ addPerson: PersonUID }>();
 
   export let skipPersons: Collection<PersonUID> = new ArrayColl<PersonUID>();
-  export let placeholder = "Add person";
+  export let placeholder = $t`Add person`;
   export let tabindex = null;
   export let autofocus = false;
 
@@ -89,7 +90,7 @@
 
   function onCreate(text: string): PersonUID {
     // email address is substring, e.g. "Fred <fred@example.com>"
-    assert(kEMailAddressRegexp.test(text), "Need email address");
+    assert(kEMailAddressRegexp.test(text), $t`Need email address`);
 
     // Parse typed text into name and email address
     text = text.trim();
@@ -101,7 +102,7 @@
       let endBracket = text.indexOf(">");
       emailAddress = text.substring(startBracket + 1, endBracket);
       // email address is entire string
-      assert(kEMailAddressRegexp.test(emailAddress), "Need email address");
+      assert(kEMailAddressRegexp.test(emailAddress), $t`Need email address`);
     }
 
     /* TODO

@@ -28,6 +28,7 @@
   import Icon from 'svelte-icon/Icon.svelte';
   import type { ComponentType } from 'svelte';
   import { showError } from '../Util/error';
+  import { t } from '../../l10n/l10n';
 
   /** Show this label below the icon (unless `iconOnly` or label slot).
    * If iconOnly and no explicit `tooltip`: Show it as tooltip. */
@@ -48,7 +49,7 @@
    * button for ca. 2+ seconds.
    * Defaults to `label` and `shortCutInfo`. */
   export let tooltip: string = label +
-    (shortCutInfo ? "\n\nShortcut: " + shortCutInfo : '');
+    (shortCutInfo ? "\n\n" + $t`Shortcut: ${shortCutInfo}` : '');
   export let tabindex = null;
   export let onClick: (event: Event) => void = null;
   export let errorCallback = showError;

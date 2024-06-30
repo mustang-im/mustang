@@ -11,24 +11,24 @@
 
   <HeaderGroupBox>
     <hbox slot="header">
-      Mark mails as read
+      {$t`Mark mails as read`}
     </hbox>
     <vbox class="read">
       <label class="radio">
         <input type="radio" value={0} bind:group={readAfter.value} />
-        Immediately
+        {$t`Immediately`}
       </label>
 
       <label class="radio">
         <input type="radio" value={readSeconds} bind:group={readAfter.value} />
-        After displaying for
-        <input type="number" bind:value={readSeconds} min={1} max={20} maxlength={2} on:change={onReadSecondsChanged} />
-        seconds
+        <T msg="After displaying for # seconds">
+          <input type="number" bind:value={readSeconds} min={1} max={20} maxlength={2} on:change={onReadSecondsChanged} />
+        </T>
       </label>
 
       <label class="radio">
         <input type="radio" value={-1} bind:group={readAfter.value} />
-        Manually
+        {$t`Manually`}
       </label>
     </vbox>
   </HeaderGroupBox>
@@ -37,6 +37,8 @@
 <script lang="ts">
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import { getLocalStorage } from "../../Util/LocalStorage";
+  import { T } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   let readAfter = getLocalStorage("mail.read.after", 0);
   let readSeconds = readAfter.value > 0 ? readAfter.value : 5;

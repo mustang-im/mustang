@@ -11,11 +11,12 @@
   import type { Event } from "../../logic/Calendar/Event";
   import { calendarMustangApp } from "./CalendarMustangApp";
   import { selectedEvent } from "./selected";
+  import { t } from "../../l10n/l10n";
 
   export let event: Event;
 
   $: startTime = event.startTime.toLocaleString(navigator.language, { hour: "2-digit", minute: "2-digit" });
-  $: eventAsText = `${startTime} – ${Math.ceil((event.endTime.getTime() - event.startTime.getTime()) / 1000 / 60)} min
+  $: eventAsText = `${startTime} – ${Math.ceil((event.endTime.getTime() - event.startTime.getTime()) / 1000 / 60)} ${$t({message: "min", comment: "Minutes Abbreviation"})}
 ${event.title}
 ${event.participants.hasItems ? event.participants.getIndexRange(0, 4).map(person => person.name).join(", "): ""}`;
 

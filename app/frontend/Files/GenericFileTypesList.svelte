@@ -2,7 +2,7 @@
   <FastList items={new ArrayColl(genericFileTypes)} bind:selectedItem={selectedFileType} bind:selectedItems={selectedFileTypes}
     columns="auto">
     <svelte:fragment slot="header">
-      <hbox class="header">File type</hbox>
+      <hbox class="header">{$t`File type`}</hbox>
     </svelte:fragment>
     <svelte:fragment slot="row" let:item={fileType}>
       <hbox class="row">{fileType.name}</hbox>
@@ -14,6 +14,7 @@
   import { genericFileTypes, FileType } from '../../logic/Files/MIMETypes';
   import FastList from '../Shared/FastList.svelte';
   import { ArrayColl, type Collection } from 'svelte-collections';
+  import { t } from '../../l10n/l10n';
 
   let selectedFileType: FileType; /* in/out */
   export let selectedFileTypes: Collection<FileType>;

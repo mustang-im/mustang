@@ -3,8 +3,8 @@
     <slot name="start" />
 
     <Button
-      label="Bold"
-      shortCutInfo="*bold* or **bold**"
+      label={$t`Bold`}
+      shortCutInfo={$t`*bold* or **bold**`}
       on:click={() => editor.chain().focus().toggleBold().run()}
       disabled={!editor.can().chain().focus().toggleBold().run()}
       selected={editor.isActive('bold')}
@@ -13,8 +13,8 @@
       <hbox slot="icon" class="bold-icon">B</hbox>
     </Button>
     <Button
-      label="Italic"
-      shortCutInfo="/italic/ or _italic_"
+      label={$t`Italic`}
+      shortCutInfo={$t`/italic/ or _italic_`}
       on:click={() => editor.chain().focus().toggleItalic().run()}
       disabled={!editor.can().chain().focus().toggleItalic().run()}
       selected={editor.isActive('italic')}
@@ -23,7 +23,7 @@
       iconOnly
       />
     <Button
-      label="Strike-through"
+      label={$t`Strike-through`}
       on:click={() => editor.chain().focus().toggleStrike().run()}
       disabled={!editor.can().chain().focus().toggleStrike().run()}
       selected={editor.isActive('strike')}
@@ -32,8 +32,8 @@
       <hbox slot="icon" class="strike-through-icon">s</hbox>
     </Button>
     <Button
-      label="Code word, within a phrase"
-      shortCutInfo="`code`"
+      label={$t`Code word, within a phrase`}
+      shortCutInfo={$t`\`code\``}
       on:click={() => editor.chain().focus().toggleCode().run()}
       disabled={!editor.can().chain().focus().toggleCode().run()}
       selected={editor.isActive('code')}
@@ -58,8 +58,8 @@ block
       />
     -->
     <Button
-      label="Quote of the original email"
-      shortCutInfo="> Quote"
+      label={$t`Quote of the original email`}
+      shortCutInfo={$t`> Quote`}
       on:click={() => editor.chain().focus().toggleBlockquote().run()}
       disabled={!editor.can().chain().focus().toggleBlockquote().run()}
       selected={editor.isActive('blockquote')}
@@ -79,8 +79,8 @@ block
       />
     -->
     <Button
-      label="Bulleted list"
-      shortCutInfo="* Item"
+      label={$t`Bulleted list`}
+      shortCutInfo={$t`* Item`}
       on:click={() => editor.chain().focus().toggleBulletList().run()}
       disabled={!editor.can().chain().focus().toggleBulletList().run()}
       selected={editor.isActive('bulletList')}
@@ -88,8 +88,8 @@ block
       iconOnly
       />
     <Button
-      label="Ordered list"
-      shortCutInfo="1. Item"
+      label={$t`Ordered list`}
+      shortCutInfo={$t`1. Item`}
       on:click={() => editor.chain().focus().toggleOrderedList().run()}
       disabled={!editor.can().chain().focus().toggleOrderedList().run()}
       selected={editor.isActive('orderedList')}
@@ -98,8 +98,8 @@ block
       />
 
     <Button
-      label="Title"
-      shortCutInfo="# Big title"
+      label={$t`Title`}
+      shortCutInfo={$t`# Big title`}
       on:click={() => editor.chain().focus().toggleHeading({ level: 1}).run()}
       disabled={!editor.can().chain().focus().toggleHeading({ level: 1}).run()}
       selected={editor.isActive('heading', { level: 1 })}
@@ -108,8 +108,8 @@ block
       <hbox slot="icon" class="header-icon">H1</hbox>
     </Button>
     <Button
-      label="Heading, hierarchy level 2"
-      shortCutInfo="## Sub header"
+      label={$t`Heading, hierarchy level 2`}
+      shortCutInfo={$t`## Sub header`}
       on:click={() => editor.chain().focus().toggleHeading({ level: 2}).run()}
       disabled={!editor.can().chain().focus().toggleHeading({ level: 2}).run()}
       selected={editor.isActive('heading', { level: 2 })}
@@ -118,8 +118,8 @@ block
       <hbox slot="icon" class="header-icon">H2</hbox>
     </Button>
     <Button
-      label="Heading, hierarchy level 3"
-      shortCutInfo="### Sub sub header"
+      label={$t`Heading, hierarchy level 3`}
+      shortCutInfo={$t`### Sub sub header`}
       on:click={() => editor.chain().focus().toggleHeading({ level: 3}).run()}
       disabled={!editor.can().chain().focus().toggleHeading({ level: 3}).run()}
       selected={editor.isActive('heading', { level: 3 })}
@@ -128,27 +128,27 @@ block
       <hbox slot="icon" class="header-icon">H3</hbox>
     </Button>
     <Button
-      label="Link to webpage"
+      label={$t`Link to webpage`}
       on:click={createLink}
       selected={editor.isActive('link')}
       icon={LinkIcon}
       iconOnly
       />
     <Button
-      label="Remove link"
+      label={$t`Remove link`}
       on:click={() => editor.chain().focus().unsetLink().run()}
       disabled={!editor.can().chain().focus().unsetLink().run()}
       icon={LinkRemoveIcon}
       iconOnly
       />
     <Button
-      label="Insert image"
+      label={$t`Insert image`}
       on:click={createImage}
       icon={ImageIcon}
       iconOnly
       />
     <Button
-      label="Clear formatting"
+      label={$t`Clear formatting`}
       on:click={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}
       icon={ClearIcon}
       iconSize="16px"
@@ -156,16 +156,16 @@ block
       />
 
     <Button
-      label="Undo the last change"
-      shortCutInfo="Ctrl-Z"
+      label={$t`Undo the last change`}
+      shortCutInfo={$t`Ctrl-Z`}
       on:click={() => editor.chain().focus().undo().run()}
       disabled={!editor.can().chain().focus().undo().run()}
       icon={UndoIcon}
       iconOnly
       />
     <Button
-      label="Redo the change that was undone before"
-      shortCutInfo="Ctrl-Y"
+      label={$t`Redo the change that was undone before`}
+      shortCutInfo={$t`Ctrl-Y`}
       on:click={() => editor.chain().focus().redo().run()}
       disabled={!editor.can().chain().focus().redo().run()}
       icon={RedoIcon}
@@ -195,17 +195,18 @@ block
   import UndoIcon from "lucide-svelte/icons/undo";
   import RedoIcon from "lucide-svelte/icons/redo";
   import type { Editor } from '@tiptap/core';
+  import { t } from '../../../l10n/l10n';
 
   /* in only */
   export let editor: Editor;
 
   function createLink() {
-    let url = window.prompt("Location");
+    let url = window.prompt($t`Location`);
     editor.chain().focus().setLink({ href: url }).run();
   }
 
   function createImage() {
-    let url = window.prompt("Image URL");
+    let url = window.prompt($t`Image URL`);
     editor.chain().focus().setImage({ src: url }).run();
   }
 </script>

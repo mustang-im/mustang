@@ -1,5 +1,5 @@
 <Header
-  title="Set up your meeting account"
+  title={$t`Set up your meeting account`}
   subtitle=""
 />
 
@@ -21,6 +21,7 @@
   import Header from "../Shared/Header.svelte";
   import { NotReached } from "../../../../logic/util/util";
   import { appName } from "../../../../logic/build";
+  import { t } from "../../../../l10n/l10n";
 
   /** out */
   export let config: MeetAccount = null;
@@ -31,7 +32,7 @@
   let selectedProtocol: string;
 
   const protocols: ProtocolDescription[] = [
-    { label: `${appName} video conference account`, protocolID: "m3" },
+    { label: $t`${appName} video conference account`, protocolID: "m3" },
   ];
 
   function onContinue() {

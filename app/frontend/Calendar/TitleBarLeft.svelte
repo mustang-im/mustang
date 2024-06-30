@@ -1,6 +1,6 @@
 <hbox class="title-bar">
   <AccountSelectorRound bind:selectedAccount={$selectedCalendar} accounts={appGlobal.calendars} icon={CalendarIcon} />
-  <RoundButton classes="add-button create" label="New event" icon={AddToCalendarIcon} on:click={addEvent} iconSize="22px" padding="6px" />
+  <RoundButton classes="add-button create" label={$t`New event`} icon={AddToCalendarIcon} on:click={addEvent} iconSize="22px" padding="6px" />
 </hbox>
 
 <script lang="ts">
@@ -11,6 +11,8 @@
   import AddToCalendarIcon from "lucide-svelte/icons/plus";
   import { createEventDispatcher } from 'svelte';
   import { appGlobal } from "../../logic/app";
+  import { t } from "../../l10n/l10n";
+
   const dispatch = createEventDispatcher();
 
   function addEvent() {

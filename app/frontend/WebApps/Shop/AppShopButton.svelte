@@ -9,15 +9,15 @@
   </vbox>
   <hbox class="actions">
     {#if app.homepage}
-      <a class="homepage" href={app.homepage} target="_blank">Website</a>
+      <a class="homepage" href={app.homepage} target="_blank">{$t`Website`}</a>
     {/if}
     <hbox flex />
     {#if $myApps.includes(app)}
-      <Button classes="remove" label="Remove"
+      <Button classes="remove" label={$t`Remove`}
         onClick={remove}
         />
     {:else}
-      <Button classes="add" label="Add"
+      <Button classes="add" label={$t`Add`}
         onClick={add}
         />
   {/if}
@@ -28,6 +28,7 @@
   import type AppListed from "../../../logic/Apps/AppListed";
   import { appGlobal } from "../../../logic/app";
   import Button from "../../Shared/Button.svelte";
+  import { t } from "../../../l10n/l10n";
 
   export let app: AppListed;
   export let selectedApp: AppListed; /* in/out */

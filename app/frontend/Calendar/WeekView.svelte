@@ -3,7 +3,7 @@
     <slot name="top-left" />
     <hbox flex />
     <DateRange bind:date={start} dateInterval={showDays == 2 ? 1 : showDays} />
-    <Button classes="today-button" label="Go back to today" icon={TodayIcon} on:click={goToToday} iconSize="16px" plain iconOnly />
+    <Button classes="today-button" label={$t`Go back to today`} icon={TodayIcon} on:click={goToToday} iconSize="16px" plain iconOnly />
     <hbox flex />
     <slot name="top-right" />
   </hbox>
@@ -31,6 +31,7 @@
   import Button from "../Shared/Button.svelte";
   import TodayIcon from "lucide-svelte/icons/home";
   import type { Collection } from "svelte-collections";
+  import { t } from "../../l10n/l10n";
 
   export let start: Date;
   export let events: Collection<Event>;

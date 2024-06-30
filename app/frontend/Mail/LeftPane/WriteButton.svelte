@@ -1,5 +1,5 @@
 <RoundButton
-  label="Write new email"
+  label={$t`Write new email`}
   icon={WriteIcon} classes="create"
   disabled={!selectedAccount}
   onClick={newMail}
@@ -10,6 +10,7 @@
   import { mailMustangApp } from "../MailMustangApp";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import WriteIcon from "lucide-svelte/icons/pencil";
+  import { t } from "../../../l10n/l10n";
 
   export let selectedAccount: MailAccount; /* in/out */
 

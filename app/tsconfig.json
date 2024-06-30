@@ -18,12 +18,13 @@
     "isolatedModules": true
   },
   "include": [
+    "logic/util/Observable.ts",
+    "logic/build.ts",
+    "lingui.config.ts",
     "frontend/**/*.d.ts",
     "frontend/**/*.ts",
     "frontend/**/*.js",
-    "frontend/**/*.svelte",
-    "logic/util/Observable.ts",
-    "logic/build.ts"
+    "frontend/**/*.svelte"
   ],
   "references": [
     {

@@ -12,7 +12,7 @@
 
 <hbox flex />
 <hbox class="buttons">
-  <Button label="Save"
+  <Button label={$t`Save`}
     classes="save"
     icon={SaveIcon}
     onClick={onSave}
@@ -27,6 +27,7 @@
   import ManualConfigServer from "./ManualConfigServer.svelte";
   import OAuth2Manual from "./OAuth2Manual.svelte";
   import SaveIcon from "lucide-svelte/icons/save";
+  import { t } from "../../../../../l10n/l10n";
 
   /** in */
   export let config: MailAccount;

@@ -7,8 +7,8 @@
   <FastList items={filteredEvents}
     columns="auto 1fr">
     <svelte:fragment slot="header">
-      <hbox class="time">Time</hbox>
-      <hbox>Title</hbox>
+      <hbox class="time">{$t`Time`}</hbox>
+      <hbox>{$t`Title`}</hbox>
     </svelte:fragment>
     <EventLine slot="row" let:item event={item} />
   </FastList>
@@ -20,6 +20,7 @@
   import FastList from "../Shared/FastList.svelte";
   import type { Collection } from "svelte-collections";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
+  import { t } from "../../l10n/l10n";
 
   export let events: Collection<Event>;
 

@@ -8,28 +8,28 @@
     </hbox>
   </hbox>
   <hbox class="term">
-    for
+    {$t`Search for`}
     <SearchField bind:searchTerm={$globalSearchTerm}
-      placeholder="Mail content or subject"
+      placeholder={$t`Mail content or subject`}
       on:clear={onClear} bind:this={searchFieldEl} />
   </hbox>
   <vbox flex class="boolean-criteria">
     <Checkbox bind:checked={isOutgoing}
-      label="Sent by me">
+      label={$t`Sent by me`}>
       <OutgoingIcon size="16px" slot="icon" />
     </Checkbox>
     <Checkbox bind:checked={isUnread}
-      label="Unread"
+      label={$t`Unread`}
       classes="unread {isUnread ? "is-unread" : ""}">
       <CircleIcon size="16px" slot="icon" />
     </Checkbox>
     <Checkbox bind:checked={isStar}
-      label="Starred"
+      label={$t`Starred`}
       classes="star {isStar ? "starred" : ""}">
       <StarIcon size="16px" slot="icon" />
     </Checkbox>
     <Checkbox bind:checked={isAttachment}
-      label="Attachment">
+      label={$t`Attachment`}>
       <AttachmentIcon size="16px" slot="icon" />
     </Checkbox>
     {#if isAttachment}
@@ -52,7 +52,7 @@
       -->
     {/if}
     <Checkbox bind:checked={isPerson} allowFalse={false}
-      label="{isPerson ? includesPerson?.name ?? "Person" : "Person"}">
+      label="{isPerson ? includesPerson?.name ?? $t`Person` : $t`Person`}">
       <PersonIcon size="16px" slot="icon" />
     </Checkbox>
     {#if isPerson}
@@ -61,7 +61,7 @@
       </vbox>
     {/if}
     <Checkbox bind:checked={isAccount} allowFalse={false}
-      label="{account?.name} account only">
+      label={$t`${account?.name} account only`}>
       <AccountIcon size="16px" slot="icon" />
     </Checkbox>
     {#if isAccount || isFolder}
@@ -71,7 +71,7 @@
     {/if}
     {#if account}
       <Checkbox bind:checked={isFolder} allowFalse={false}
-        label="{folder?.name} folder only">
+        label={$t`${folder?.name} folder only`}>
         <FolderIcon size="16px" slot="icon" />
       </Checkbox>
       {#if isFolder}
@@ -83,14 +83,14 @@
   </vbox>
   <hbox class="results-count">
     {#if searchMessages?.length > kLimit}
-      More than {kLimit} mails
+      {$t`More than ${kLimit} mails`}
     {:else if searchMessages}
-      {searchMessages?.length} mails
+      {$t`${searchMessages?.length} mails`}
     {/if}
   </hbox>
   <ExpandSection headerBox={false}>
     <hbox class="header" slot="header">
-      Save search as folder
+      {$t`Save search as folder`}
     </hbox>
     <SavedSearchUI {search} on:close={onClear} />
   </ExpandSection>
@@ -127,6 +127,7 @@
   import type { ArrayColl, Collection } from "svelte-collections";
   import { useDebounce } from '@svelteuidev/composables';
   import { createEventDispatcher, onMount } from 'svelte';
+  import { t } from "../../../l10n/l10n";
   const dispatchEvent = createEventDispatcher();
 
   /** The search result

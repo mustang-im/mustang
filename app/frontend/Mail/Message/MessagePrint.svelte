@@ -10,6 +10,7 @@
   import HTMLDisplay from "./HTMLDisplay.svelte";
   import { sleep, NotImplemented } from "../../../logic/util/util";
   import { tick } from "svelte";
+  import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
 
@@ -42,7 +43,7 @@
     if (Math.random() > 0.02) {
       return;
     }
-    alert("Save the trees!");
+    alert($t`Save the trees!`);
     appGlobal.remoteApp.shell.op
     const kVideoURL = "https://youtube.com/embed/jEI-0PjE3-g?start=22";
     await appGlobal.remoteApp.shell.openExternal(kVideoURL);

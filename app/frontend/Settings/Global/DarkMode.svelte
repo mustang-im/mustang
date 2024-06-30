@@ -1,6 +1,6 @@
 <hbox class="darkmode buttons">
   <Button
-    label="System"
+    label={$t`System`}
     icon={SystemIcon}
     iconOnly
     iconSize="16px"
@@ -9,7 +9,7 @@
     selected={mode == "system"}
     />
   <Button
-    label="Light"
+    label={$t`Light`}
     icon={LightIcon}
     iconOnly
     iconSize="16px"
@@ -18,7 +18,7 @@
     selected={mode == "light"}
     />
   <Button
-    label="Dark"
+    label={$t`Dark`}
     icon={DarkIcon}
     classes="vertical"
     iconOnly
@@ -35,6 +35,7 @@
   import DarkIcon from "lucide-svelte/icons/moon";
   import LightIcon from "lucide-svelte/icons/sun";
   import SystemIcon from "lucide-svelte/icons/app-window";
+  import { t } from "../../../l10n/l10n";
 
   let modeSetting = getLocalStorage("appearance.darkmode", "system");
   $: mode = $modeSetting.value;

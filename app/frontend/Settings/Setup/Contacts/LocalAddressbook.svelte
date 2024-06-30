@@ -1,12 +1,12 @@
 <Header
-  title="Create your new local addressbook"
+  title={$t`Create your new local addressbook`}
   subtitle=""
 />
 <vbox flex class="account">
   <grid>
-    <label for="name">Name of the addressbook</label>
+    <label for="name">{$t`Name of the addressbook`}</label>
     <input type="text" bind:value={config.name} name="name"
-      placeholder="Private" />
+      placeholder={$t`Private`} />
   </grid>
 </vbox>
 
@@ -23,6 +23,7 @@
   import { appGlobal } from "../../../../logic/app";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
+  import { t } from "../../../../l10n/l10n";
 
   /** in/out */
   export let config: Addressbook;

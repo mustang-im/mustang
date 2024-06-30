@@ -1,10 +1,10 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <vbox flex class="event-edit-window">
   <hbox class="window-title-bar">
-    {event.title ? 'Edit event' : 'New event'}
+    {event.title ? $t`Edit event` : $t`New event`}
     <hbox flex class="spacer" />
     <RoundButton
-      label="Close"
+      label={$t`Close`}
       icon={CloseIcon}
       iconSize="16px"
       on:click={onClose}
@@ -13,10 +13,10 @@
   <hbox flex class="left-right">
     <vbox flex class="left-pane">
       <hbox class="title">
-        <input placeholder="Title - Enter the topic of the meeting" bind:value={event.title} />
+        <input placeholder={$t`Title - Enter the topic of the meeting`} bind:value={event.title} />
       </hbox>
       <vbox class="participants">
-        <PersonsAutocomplete persons={event.participants} placeholder="Add participants">
+        <PersonsAutocomplete persons={event.participants} placeholder={$t`Add participants`}>
           <hbox slot="display-bottom-row" let:person>
             <PersonAvailability {person} />
           </hbox>
@@ -26,11 +26,11 @@
         </PersonsAutocomplete>
       </vbox>
       <grid class="location">
-        <Checkbox bind:checked={event.isOnline} label="Online" />
-        <input type="url" bind:value={event.onlineMeetingURL} disabled={!event.isOnline} placeholder="Meeting URL" />
+        <Checkbox bind:checked={event.isOnline} label={$t`Online`} />
+        <input type="url" bind:value={event.onlineMeetingURL} disabled={!event.isOnline} placeholder={$t`Meeting URL`} />
         <hbox class="buttons">
           <Button
-            label="Copy"
+            label={$t`Copy`}
             icon={CopyIcon}
             iconSize="16px"
             iconOnly
@@ -39,7 +39,7 @@
             on:click={onCopyMeetingURL}
             />
           <Button
-            label="Open"
+            label={$t`Open`}
             icon={BrowserIcon}
             iconSize="16px"
             iconOnly
@@ -48,8 +48,8 @@
             on:click={onOpenMeetingURL}
             />
         </hbox>
-        <Checkbox checked={!!event.location} disabled={!event.location} label="In Presence" />
-        <input type="url" bind:value={event.location} placeholder="Location" />
+        <Checkbox checked={!!event.location} disabled={!event.location} label={$t`In Presence`} />
+        <input type="url" bind:value={event.location} placeholder={$t`Location`} />
         <hbox class="buttons" />
       </grid>
       <vbox class="description" flex>
@@ -64,31 +64,31 @@
       </vbox>
     </vbox>
     <vbox flex class="right-pane">
-      <hbox>When</hbox>
+      <hbox>{$t`When`}</hbox>
       <grid class="time">
-        <label for="start-time">Day</label>
+        <label for="start-time">{$t`Day`}</label>
         <hbox>{event.startTime.toLocaleDateString(undefined, { year: "numeric", month: "2-digit", day: "2-digit" })}</hbox>
 
-        <label for="start-time">Start</label>
+        <label for="start-time">{$t`Start`}</label>
         <TimeInput time={event.startTime} />
 
-        <label for="end-time">End</label>
+        <label for="end-time">{$t`End`}</label>
         <TimeInput time={event.endTime} />
 
-        <label for="duration">Duration</label>
+        <label for="duration">{$t`Duration`}</label>
         <hbox>
           <input class="duration" type="number" bind:value={durationInUnit} on:input={durationUnit.onChange} min={0} />
           <DurationUnit bind:durationInSeconds={event.duration} bind:durationInUnit bind:this={durationUnit} />
         </hbox>
       </grid>
-      <Checkbox label="All day" bind:checked={event.allDay} />
-      <Checkbox label="Repeated" bind:checked={event.repeat} />
-      <Checkbox label="Alarm" checked={!!event.alarm} />
+      <Checkbox label={$t`All day`} bind:checked={event.allDay} />
+      <Checkbox label={$t`Repeated`} bind:checked={event.repeat} />
+      <Checkbox label={$t`Alarm`} checked={!!event.alarm} />
       <hbox class="spacer" />
       <hbox class="buttons">
         <hbox class="spacer" />
         <Button
-          label="Save"
+          label={$t`Save`}
           icon={SaveIcon}
           iconSize="16px"
           disabled={!canSave}
@@ -117,6 +117,7 @@
   import CopyIcon from "lucide-svelte/icons/copy";
   import BrowserIcon from "lucide-svelte/icons/globe";
   import type { Editor } from '@tiptap/core';
+  import { t } from "../../../l10n/l10n";
 
   export let event: Event;
 

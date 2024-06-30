@@ -1,6 +1,6 @@
 <vbox flex>
-  <h2>Folders</h2>
-  <hbox class="subtitle">Rename folders, set special folders, share them with others</hbox>
+  <h2>{$t`Folders`}</h2>
+  <hbox class="subtitle">{$t`Rename folders, set special folders, share them with others`}</hbox>
 
   {#if $mailAccount?.isLoggedIn && $mailAccount.rootFolders.hasItems}
     <Splitter name="settings-mail-folders" initialRightRatio={4}>
@@ -16,7 +16,7 @@
       </vbox>
     </Splitter>
   {:else if !$mailAccount?.isLoggedIn}
-    Please log in to account {mailAccount?.name} first
+    {$t`Please log in to account ${mailAccount?.name} first`}
     <!--<Button label="Login" onClick={() => mailAccount.login(true)} />-->
   {/if}
 </vbox>
@@ -31,6 +31,7 @@
   import FolderList from "../../../Mail/LeftPane/FolderList.svelte";
   import Splitter from "../../../Shared/Splitter.svelte";
   import type { ArrayColl } from "svelte-collections";
+  import { t } from "../../../../l10n/l10n";
 
   export let folder: Folder = null;
   export let account: Account = folder?.account;

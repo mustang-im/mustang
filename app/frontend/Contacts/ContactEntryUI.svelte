@@ -13,8 +13,8 @@
     <slot name="edit" />
   </hbox>
   <hbox class="actions">
-    <Button on:click={stopEditing} icon={OKIcon} iconOnly plain iconSize="14px" label="Finish editing and save" />
-    <Button on:click={remove} icon={DeleteIcon} iconOnly plain iconSize="14px" label="Delete this information" />
+    <Button on:click={stopEditing} icon={OKIcon} iconOnly plain iconSize="14px" label={$t`Finish editing and save`} />
+    <Button on:click={remove} icon={DeleteIcon} iconOnly plain iconSize="14px" label={$t`Delete this information`} />
   </hbox>
 {:else}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -24,10 +24,10 @@
     <slot name="display" />
   </hbox>
   <hbox class="actions contact-entry">
-    <Button on:click={startEditing} icon={PencilIcon} iconOnly plain iconSize="12px" label="Edit" />
-    <Button on:click={copyValue} icon={CopyIcon} iconOnly plain iconSize="12px" label="Copy info to clipboard" />
+    <Button on:click={startEditing} icon={PencilIcon} iconOnly plain iconSize="12px" label={$t`Edit`} />
+    <Button on:click={copyValue} icon={CopyIcon} iconOnly plain iconSize="12px" label={$t`Copy info to clipboard`} />
     {#if copied}
-      <hbox>Copied to clipboard ✓</hbox>
+      <hbox>{$t`Copied to clipboard ✓`}</hbox>
     {/if}
     <slot name="actions" />
   </hbox>
@@ -44,6 +44,7 @@
   import { onKeyEnter } from "../Util/util";
   import { sleep } from "../../logic/util/util";
   import { createEventDispatcher, tick } from 'svelte';
+  import { t } from "../../l10n/l10n";
   const dispatch = createEventDispatcher();
 
   export let entry: ContactEntry;
@@ -81,13 +82,13 @@
   }
 
   const purposes = {
-    "work": "Work",
-    "home": "Home",
-    "mobile": "Mobile",
-    "whatsapp": "WhatsApp",
-    "teams": "Teams",
-    "matrix": "Matrix",
-    "other": "Other",
+    "work": $t`Work`,
+    "home": $t`Home`,
+    "mobile": $t`Mobile`,
+    "whatsapp": $t`WhatsApp`,
+    "teams": $t`Teams`,
+    "matrix": $t`Matrix`,
+    "other": $t`Other`,
   }
 
   function displayPurpose(purpose: string) {

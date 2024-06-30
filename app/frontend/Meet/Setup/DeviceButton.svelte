@@ -1,6 +1,6 @@
 <hbox class="device-button">
   <RoundButton
-    label={video ? (on ? "Turn camera off" : "Turn camera on") : (on ? "Mute" : "Unmute")}
+    label={video ? (on ? $t`Turn camera off` : $t`Turn camera on`) : (on ? $t`Mute` : $t`Unmute`)}
     classes="toggle"
     onClick={toggle}
     icon={video ? (on ? CameraIcon : CameraOffIcon) : (on ? MicrophoneIcon : MicrophoneOffIcon)}
@@ -10,12 +10,12 @@
     <RoundButton
       slot="control"
       classes="select-device"
-      label={video ? "Select camera" : "Select microphone"}
+      label={video ? $t`Select camera` : $t`Select microphone`}
       icon={DownIcon}
       iconSize="16px"
       disabled={!on}
       />
-    <Menu.Label>{video ? "Your cameras" : "Your microphones"}</Menu.Label>
+    <Menu.Label>{video ? $t`Your cameras` : $t`Your microphones`}</Menu.Label>
     {#if devices}
       {#each availableDevices as device (device.deviceId)}
         <Menu.Item
@@ -40,6 +40,7 @@
   import DownIcon from "lucide-svelte/icons/chevron-down";
   import { catchErrors } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
+  import { t } from "../../../l10n/l10n";
 
   export let on: boolean; /** in/out */
   export let selectedId: string; /** in/out */

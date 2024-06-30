@@ -2,7 +2,7 @@
   <AccountDropDown bind:selectedAccount accounts={appGlobal.chatAccounts} />
   <hbox flex />
   <hbox class="buttons">
-    <RoundButton label="New group" icon={NewGroupIcon} iconSize="22px" padding="9px" classes="large create" on:click={() => catchErrors(addGroup)} />
+    <RoundButton label={$t`New group`} icon={NewGroupIcon} iconSize="22px" padding="9px" classes="large create" on:click={() => catchErrors(addGroup)} />
   </hbox>
 </hbox>
 
@@ -14,6 +14,7 @@
   import NewGroupIcon from "lucide-svelte/icons/plus";
   import { catchErrors } from "../Util/error";
   import { NotImplemented } from "../../logic/util/util";
+  import { t } from "../../l10n/l10n";
 
   let selectedAccount: ChatAccount;
 

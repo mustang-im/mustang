@@ -8,7 +8,7 @@
     icon={StarIcon}
     iconSize="16px"
     iconOnly
-    label="Remember this message"
+    label={$t`Remember this message`}
     onClick={toggleStar}
     plain
     />
@@ -18,7 +18,7 @@
     icon={CircleIcon}
     iconSize="7px"
     iconOnly
-    label={message.isRead ? "Mark this message as unread" : "Mark this message as read"}
+    label={message.isRead ? $t`Mark this message as unread` : $t`Mark this message as read`}
     onClick={toggleRead}
     plain
     />
@@ -37,7 +37,7 @@
       icon={SpamIcon}
       iconSize="16px"
       iconOnly
-      label="Mark as spam and delete"
+      label={$t`Mark as spam and delete`}
       onClick={markAsSpam}
       plain
       />
@@ -47,7 +47,7 @@
       icon={DeleteIcon}
       iconSize="16px"
       iconOnly
-      label="Delete this message"
+      label={$t`Delete this message`}
       onClick={deleteMessage}
       plain
       />
@@ -67,6 +67,7 @@
   import SpamIcon from "lucide-svelte/icons/shield-x";
   import { getDateString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
+  import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
 

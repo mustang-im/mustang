@@ -1,9 +1,9 @@
 <HeaderGroupBox>
-  <hbox slot="header">{identity.emailAddress || "New"}</hbox>
+  <hbox slot="header">{identity.emailAddress || $t`New`}</hbox>
   <svelte:fragment slot="buttons-top-right">
     {#if canRemove}
       <RoundButton
-        label="Delete this identity"
+        label={$t`Delete this identity`}
         onClick={onDelete}
         icon={DeleteIcon}
         />
@@ -11,10 +11,10 @@
   </svelte:fragment>
   <vbox class="content">
     <grid>
-      <label for="realname">Your name</label>
+      <label for="realname">{$t`Your name`}</label>
       <input type="text" bind:value={identity.userRealname} name="realname" />
 
-      <label for="emailaddress">Your email address</label>
+      <label for="emailaddress">{$t`Your email address`}</label>
       <!-- svelte-ignore a11y-autofocus -->
       <input type="email" bind:value={identity.emailAddress} required
         autofocus={!identity.emailAddress}
@@ -23,8 +23,8 @@
       {#if identity?.emailAddress?.includes("*")}
         <hbox />
         <hbox>
-          <hbox class="catch-all">This is a catch-all email address.</hbox>
-          <a href="{siteRoot}/link/catch-all" target="_blank">More info</a>
+          <hbox class="catch-all">{$t`This is a catch-all email address.`}</hbox>
+          <a href="{siteRoot}/link/catch-all" target="_blank">{$t`More info`}</a>
         </hbox>
       {/if}
 
@@ -34,19 +34,19 @@
       -->
 
       {#if showReplyTo}
-        <label for="replyto" class="reply-to">Reply-to address</label>
+        <label for="replyto" class="reply-to">{$t`Reply-to address`}</label>
         <input type="email" bind:value={identity.replyTo} name="replyto" class="reply-to" />
       {/if}
 
       {#if showOrganisation}
-        <label for="organisation">Company</label>
+        <label for="organisation">{$t`Company`}</label>
         <input type="text" bind:value={identity.organisation} name="organisation" />
       {/if}
     </grid>
 
     {#if showSignature}
       <vbox class="signature">
-        Signature
+        {$t`Signature`}
         <vbox class="signature-editor-box">
           <HTMLEditorToolbar {editor} />
           <HTMLEditor bind:html={identity.signatureHTML} bind:editor />
@@ -54,11 +54,11 @@
             <hbox class="sentBy">
               <div>
                 <!--<Icon data={logo} size="20px" />-->
-                Sent by <a href={siteRoot} target="_blank" style="color: #20AE9E"><strong><em>{appName}</em></strong></a>
+                {$t`Sent by`} <a href={siteRoot} target="_blank" style="color: #20AE9E"><strong><em>{appName}</em></strong></a>
               </div>
               {#if !showSentByExplainer}
                 <RoundButton
-                  label="Remove 'Sent by'"
+                  label={$t`Remove 'Sent by'`}
                   icon={RemoveIcon}
                   border={false}
                   padding="4px"
@@ -77,9 +77,9 @@
     {/if}
 
     <ExpanderButtons>
-      <ExpanderButton bind:expanded={showReplyTo} label="Reply-To" />
-      <ExpanderButton bind:expanded={showOrganisation} label="Organisation" />
-      <ExpanderButton bind:expanded={showSignature} label="Signature" />
+      <ExpanderButton bind:expanded={showReplyTo} label={$t`Reply-To`} />
+      <ExpanderButton bind:expanded={showOrganisation} label={$t`Organisation`} />
+      <ExpanderButton bind:expanded={showSignature} label={$t`Signature`} />
     </ExpanderButtons>
   </vbox>
 </HeaderGroupBox>
@@ -100,6 +100,7 @@
   import type { Editor } from "@tiptap/core";
   import { createEventDispatcher } from 'svelte';
   import { appName, siteRoot } from "../../../../logic/build";
+  import { t } from "../../../../l10n/l10n";
   const dispatchEvent = createEventDispatcher();
 
   export let identity: MailIdentity;

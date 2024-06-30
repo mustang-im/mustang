@@ -1,13 +1,13 @@
 <Header
-  title="Set up your existing XMPP account"
-  subtitle="You can use {appName} with your existing XMPP or Jabber account."
+  title={$t`Set up your existing XMPP account`}
+  subtitle={$t`You can use ${appName} with your existing XMPP or Jabber account.`}
 />
 <vbox flex class="account">
   <grid>
-    <label for="username">Your JID</label>
+    <label for="username">{$t`Your JID`}</label>
     <input type="text" bind:value={jid} name="username"
       placeholder="fred@example.com" />
-    <label for="password">Password</label>
+    <label for="password">{$t`Password`}</label>
     <Password bind:password={config.password} />
   </grid>
 </vbox>
@@ -27,6 +27,7 @@
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
   import { appName } from "../../../../logic/build";
+  import { t } from "../../../../l10n/l10n";
 
   /** in/out */
   export let config: XMPPAccount;

@@ -8,11 +8,11 @@
   <hbox class="overlay">
     {#if isImage && allowInline}
       <hbox flex class="drop-target inline" on:drop={event => onDrop(event, true)}>
-        Insert inline into text
+        {$t`Insert inline into text`}
       </hbox>
     {/if}
     <hbox flex class="drop-target attachment" on:drop={event => onDrop(event, false)}>
-      Attach file
+      {$t`Attach file`}
     </hbox>
   </hbox>
   {/if}
@@ -24,6 +24,7 @@
 <script lang="ts">
   import { isImageMimetype } from "../../../Shared/Editor/InsertImage";
   import { createEventDispatcher } from "svelte";
+  import { t } from "../../../../l10n/l10n";
 
   export let allowInline = false;
 

@@ -4,7 +4,7 @@
     <img
       src={person.picture}
       width={size} height={size}
-      title="Picture of {person.name}"
+      title={$t`Picture of ${person.name}`}
       alt=""
       />
   {/if}
@@ -13,6 +13,7 @@
 <script lang="ts">
   import type { PersonOrGroup } from "./PersonOrGroup";
   import type { Collection } from "svelte-collections";
+  import { t } from "../../../l10n/l10n";
 
   export let persons: Collection<PersonOrGroup>;
   export let size = 48;

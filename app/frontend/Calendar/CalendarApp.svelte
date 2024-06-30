@@ -18,13 +18,14 @@
   import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { mergeColls } from "svelte-collections";
+  import { t } from "../../l10n/l10n";
 
   $: dateInterval = $selectedDateInterval;
   $: events = mergeColls(appGlobal.calendars.map(cal => cal.events)).sortBy(ev => ev.startTime);
   $: if (!$selectedCalendar) { $selectedCalendar = appGlobal.calendars.first; }
 
   function addEvent() {
-    assert($selectedCalendar, "Please select a calendar first");
+    assert($selectedCalendar, $t`Please select a calendar first`);
     let event = $selectedCalendar.newEvent();
     event.startTime = new Date();
     event.endTime = new Date();

@@ -1,6 +1,6 @@
 <hbox class="get-mail {status}">
   <RoundButton
-    label="Get mail"
+    label={$t`Get mail`}
     icon={
       status == Status.Fetching ? FetchingIcon :
       status == Status.New ? NewIcon :
@@ -28,6 +28,7 @@
   import ErrorIcon from "lucide-svelte/icons/server-crash";
   import { catchErrors, showError } from "../../Util/error";
   import { sleep } from "../../../logic/util/util";
+  import { t } from "../../../l10n/l10n";
 
   export let folder: Folder; /* in */
 

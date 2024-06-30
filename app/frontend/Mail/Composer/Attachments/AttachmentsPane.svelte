@@ -6,7 +6,7 @@
     {/each}
     <hbox class="buttons">
       <RoundButton
-        icon={AddIcon} label="Add attachment"
+        icon={AddIcon} label={$t`Add attachment`}
         on:click={onAdd}
         />
     </hbox>
@@ -23,6 +23,7 @@
   import Scroll from "../../../Shared/Scroll.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
   import type { Collection } from "svelte-collections";
+  import { t } from "../../../../l10n/l10n";
 
   export let attachments: Collection<Attachment>;
 

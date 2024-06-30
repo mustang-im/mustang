@@ -1,7 +1,7 @@
 <vbox flex class="page">
-  <PageHeader title="Identities" subtitle="This is how you appear to others when you send mail">
+  <PageHeader title={$t`Identities`} subtitle={$t`This is how you appear to others when you send mail`}>
     <RoundButton
-      label="Add"
+      label={$t`Add`}
       onClick={onAdd}
       icon={AddIcon}
       slot="buttons-top-right"
@@ -16,7 +16,7 @@
   {/each}
 
   <hbox class="buttons">
-    <Button label="Save"
+    <Button label={$t`Save`}
       classes="save"
       icon={SaveIcon}
       onClick={onSave}
@@ -35,6 +35,7 @@
   import SaveIcon from "lucide-svelte/icons/save";
   import { assert } from "../../../../logic/util/util";
   import { catchErrors } from "../../../Util/error";
+  import { t } from "../../../../l10n/l10n";
 
   export let account: MailAccount;
 
@@ -47,12 +48,12 @@
     identities.add(id);
   }
   async function onDelete(identity) {
-    assert(identities.length > 1, "Cannot remove the last identity");
+    assert(identities.length > 1, $t`Cannot remove the last identity`);
     identities.remove(identity);
     await account.save();
   }
   async function onSave() {
-    assert(identities.hasItems, "Need at least 1 identity");
+    assert(identities.hasItems, $t`Need at least 1 identity`);
     account.emailAddress = identities.first.emailAddress;
     account.userRealname = identities.first.userRealname;
     await account.save();

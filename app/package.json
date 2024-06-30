@@ -8,10 +8,19 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest",
-    "check": "svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "l10n:extract": "lingui extract",
+    "l10n:extract:template": "lingui extract-template",
+    "l10n:compile": "lingui compile",
+    "l10n:crowdin": "cd l10n && crowdin",
+    "l10n:sync": "cd l10n && crowdin push && crowdin pull",
+    "l10n:sync:sources": "cd l10n && crowdin push",
+    "l10n:sync:translations": "cd l10n && crowdin pull"
   },
   "dependencies": {
     "@faker-js/faker": "^7.6.0",
+    "@lingui/core": "^4.11.1",
+    "@lingui/vite-plugin": "^4.11.1",
     "@popperjs/core": "^2.11.8",
     "@svelteuidev/composables": "^0.14.0",
     "@svelteuidev/core": "^0.14.0",
@@ -40,10 +49,14 @@
     "pretty-bytes": "^6.1.1",
     "psl": "https://github.com/lupomontero/psl",
     "svelte-collections": "^1.1.22",
+    "svelte-i18n-lingui": "^0.1.7",
     "svelte-icon": "^2.0.0",
     "ws": "^8.16.0"
   },
   "devDependencies": {
+    "@crowdin/cli": "^4.0.0",
+    "@lingui/cli": "^4.11.1",
+    "@lingui/format-json": "^4.11.1",
     "@sveltejs/vite-plugin-svelte": "^2.0.3",
     "@tsconfig/svelte": "^3.0.0",
     "adm-zip": "^0.5.12",

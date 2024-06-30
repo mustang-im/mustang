@@ -5,7 +5,7 @@
     <vbox flex>
       <NotificationBar />
       {#if !$selectedApp}
-        Loading apps...
+        {$t`Loading apps...`}
       {:else if sidebar}
         <Splitter name="sidebar" initialRightRatio={0.25}>
           <AppContent app={$selectedApp} slot="left"/>
@@ -41,6 +41,9 @@
   import { catchErrors, backgroundError } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { onMount } from "svelte";
+  import { setLocale, t } from "../../l10n/l10n";
+
+  setLocale(navigator.language);
 
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;
@@ -74,7 +77,7 @@
     if (!appGlobal?.remoteApp) {
       return;
     }
-    assert(["system", "light", "dark"].includes(mode), "Bad dark mode " + mode);
+    assert(["system", "light", "dark"].includes(mode), $t`Bad dark mode ` + mode);
     appGlobal.remoteApp.setDarkMode(mode);
   }
 

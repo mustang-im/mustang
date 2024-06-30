@@ -1,6 +1,6 @@
 <hbox class="buttons">
   <Button
-    label="Chat-like mail view"
+    label={$t`Chat-like mail view`}
     icon={ChatIcon}
     iconOnly
     iconSize="16px"
@@ -9,7 +9,7 @@
     selected={view == "chat"}
     />
   <Button
-    label="Vertical view"
+    label={$t`Vertical view`}
     icon={VerticalIcon}
     classes="vertical"
     iconOnly
@@ -19,7 +19,7 @@
     selected={view == "vertical"}
     />
   <Button
-    label="Classic 3-pane view"
+    label={$t`Classic 3-pane view`}
     icon={ThreePaneIcon}
     iconOnly
     iconSize="16px"
@@ -36,6 +36,7 @@
   //import VerticalIcon from "lucide-svelte/icons/columns";
   import VerticalIcon from '../../asset/icon/mail/threeColumns.svg?raw';
   import ThreePaneIcon from "lucide-svelte/icons/layout-panel-left";
+  import { t } from "../../../l10n/l10n";
 
   let viewSetting = getLocalStorage("mail.view", "vertical");
   $: view = $viewSetting.value;

@@ -1,7 +1,7 @@
 <hbox class="actions">
   {#if isSidebar}
     <RoundButton
-      label="Go back to meeting"
+      label={$t`Go back to meeting`}
       classes="back-to-meet secondary"
       on:click={() => openApp(meetMustangApp)}
       icon={OpenToLeftIcon}
@@ -11,7 +11,7 @@
       <hbox flex />
   {/if}
   <RoundButton
-    label="Screen share"
+    label={$t`Screen share`}
     classes="screen-share large"
     selected={$screenShareOn}
     onClick={toggleScreenShare}
@@ -20,7 +20,7 @@
     border={false}
     />
   <RoundButton
-    label="Camera"
+    label={$t`Camera`}
     classes="camera large"
     selected={$cameraOn}
     onClick={toggleCamera}
@@ -29,7 +29,7 @@
     border={false}
     />
     <RoundButton
-    label="Mute"
+    label={$t`Mute`}
     classes="mic large"
     selected={$micOn}
     onClick={toggleMic}
@@ -39,7 +39,7 @@
     />
   <hbox flex />
   <RoundButton
-    label={handRaised ? "Hand raised" : "Raise hand"}
+    label={handRaised ? $t`Hand raised` : $t`Raise hand`}
     classes="hand large"
     selected={handRaised}
     onClick={toggleHand}
@@ -49,7 +49,7 @@
     />
   {#if !isSidebar}
     <RoundButton
-      label="Leave"
+      label={$t`Leave`}
       classes="leave large"
       onClick={leave}
       icon={LeaveIcon}
@@ -60,7 +60,7 @@
   <hbox flex />
   {#if !isSidebar}
     <RoundButton
-      label={showSidebar ? "Close participants list" : "Open participants list"}
+      label={showSidebar ? $t`Close participants list` : $t`Open participants list`}
       classes="sidebar secondary large"
       onClick={() => showSidebar = !showSidebar}
       icon={showSidebar ? CloseSidebarIcon : OpenSidebarIcon}
@@ -89,6 +89,7 @@
   import OpenSidebarIcon from "lucide-svelte/icons/users-round";
   import OpenToLeftIcon from "lucide-svelte/icons/arrow-left-from-line";
   import CloseSidebarIcon from "lucide-svelte/icons/arrow-right-from-line";
+  import { t } from "../../l10n/l10n";
 
   export let meeting: VideoConfMeeting;
   export let isSidebar = false;

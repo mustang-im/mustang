@@ -3,7 +3,7 @@
     {#await sleep(1)}
       <hbox></hbox>
     {:then}
-      Loading...
+      {$t`Loading...`}
     {/await}
   {:then}
     {#if mode == DisplayMode.HTML || mode == DisplayMode.HTMLWithExternal}
@@ -13,14 +13,14 @@
       <!--<HTMLDisplay html={convertTextToHTML($message.text)} />-->
     {:else if mode == DisplayMode.Source}
       {#await message.loadMIME()}
-        Loading...
+        {$t`Loading...`}
       {:then}
         <PlaintextDisplay plaintext={getSource($message)} />
       {/await}
     {:else if mode == DisplayMode.Thread}
       <ThreadDisplay {message} />
     {:else}
-      Unknown display mode
+      {$t`Unknown display mode`}
     {/if}
   {:catch ex}
     {ex.message ?? ex + ""}
@@ -35,6 +35,7 @@
   import ThreadDisplay from "./ThreadDisplay.svelte";
   import { showError } from "../../Util/error";
   import { sleep } from "../../../logic/util/util";
+  import { t } from "svelte-i18n-lingui";
 
   export let message: EMail;
 
@@ -43,7 +44,7 @@
 
   function getSource(message: EMail): string {
     if (!message.mime) {
-      return "Source not available";
+      return $t`Source not available`;
     }
     return new TextDecoder().decode($message.mime);
   }

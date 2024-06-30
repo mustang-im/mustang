@@ -19,11 +19,11 @@
           bind:this={nameInputEl}
           on:input={onSaveDebounced}
           on:keydown={(event) => onKeyEnter(event, onClose)}
-          placeholder="Enter a name for the person" />
+          placeholder={$t`Enter a name for the person`} />
         <input class="email" type="email"
           bind:value={$personUID.emailAddress}
           on:input={onSaveDebounced}
-          placeholder="Email address to be used here" />
+          placeholder={$t`Email address to be used here`} />
       </vbox>
       <!--
       <vbox class="top-right buttons">
@@ -41,7 +41,7 @@
       </vbox>
       <vbox class="top-right buttons">
         <Button plain iconOnly iconSize="14px"
-          label="Edit name and email address"
+          label={$t`Edit name and email address`}
           icon={EditIcon}
           on:click={() => isEditing = true}
           />
@@ -66,11 +66,11 @@
   </hbox>
   <hbox class="bottom buttons">
     <Button plain
-      label="Edit"
+      label={$t`Edit`}
       onClick={onEditPerson}
       />
     <Button plain
-      label="Remove"
+      label={$t`Remove`}
       onClick={onRemovePerson}
       />
     <slot name="buttons" {personUID} />
@@ -95,6 +95,7 @@
   import { catchErrors } from "../../Util/error";
   import { useDebounce } from "@svelteuidev/composables";
   import { createEventDispatcher, onMount } from 'svelte';
+  import { t } from "../../../l10n/l10n";
   const dispatch = createEventDispatcher<{ removePerson: PersonUID, close: void }>();
 
   export let personUID: PersonUID;

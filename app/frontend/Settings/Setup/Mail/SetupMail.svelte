@@ -31,13 +31,13 @@
       onCancel={onClose}
       >
       {#if step != Step.ManualConfig && step != Step.CheckConfig && step != Step.FinalizeConfig}
-        <Button label="Manual setup" classes="secondary"
+        <Button label={$t`Manual setup`} classes="secondary"
           disabled={!canContinue}
           onClick={onManualSetup}
           />
       {/if}
       {#if step == Step.EmailAddress}
-        <Button label="Get new email address" classes="secondary"
+        <Button label={$t`Get new email address`} classes="secondary"
           onClick={onNewEmailAddress}
           />
       {/if}
@@ -71,6 +71,7 @@
   import { backgroundError, catchErrors } from "../../../Util/error";
   import { NotReached } from "../../../../logic/util/util";
   import type { ArrayColl } from "svelte-collections";
+  import { t } from "../../../../l10n/l10n";
 
   let emailAddress: string;
   let password: string;

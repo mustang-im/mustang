@@ -1,13 +1,13 @@
 <HeaderGroupBox>
-  <hbox slot="header">OAuth2</hbox>
+  <hbox slot="header">{$t`OAuth2`}</hbox>
   <vbox class="content">
     <grid>
-      <label for="ui">Login UI</label>
+      <label for="ui">{$t`Login UI`}</label>
       <hbox class="ui">
         <select bind:value={oAuth2.uiMethod} required name="ui">
-          <option value={OAuth2UIMethod.Dialog}>Inside app UI</option>
-          <option value={OAuth2UIMethod.Window}>Separate window</option>
-          <option value={OAuth2UIMethod.SystemBrowser}>Browser</option>
+          <option value={OAuth2UIMethod.Dialog}>{$t`Inside app UI`}</option>
+          <option value={OAuth2UIMethod.Window}>{$t`Separate window`}</option>
+          <option value={OAuth2UIMethod.SystemBrowser}>{$t`Browser`}</option>
         </select>
       </hbox>
 
@@ -41,6 +41,7 @@
   import { OAuth2UIMethod } from "../../../../../logic/Auth/OAuth2UIMethod";
   import type { MailAccount } from "../../../../../logic/Mail/MailAccount";
   import HeaderGroupBox from "../../../../Shared/HeaderGroupBox.svelte";
+  import { t } from "../../../../../l10n/l10n";
 
   /** in */
   export let config: MailAccount;

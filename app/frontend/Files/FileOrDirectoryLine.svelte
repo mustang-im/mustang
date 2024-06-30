@@ -29,14 +29,14 @@
     {#if file instanceof File}
       {file.ext}
     {:else if file instanceof Directory}
-      Folder
+      {$t`Folder`}
     {/if}
   </hbox>
   <hbox class="size">
     {#if file instanceof File}
       {fileSize(file.length)}
     {:else if file instanceof Directory}
-      {file.files.length} entries
+      {file.files.length} {$t`entries`}
     {/if}
   </hbox>
   <hbox class="time">
@@ -60,6 +60,7 @@
   import FolderOpenIcon from "lucide-svelte/icons/folder-open";
   import { getDateString } from "../Util/date";
   import { fileSize } from "./fileSize";
+  import { t } from "../../l10n/l10n";
 
   export let file: FileOrDirectory;
   export let indent = 0;

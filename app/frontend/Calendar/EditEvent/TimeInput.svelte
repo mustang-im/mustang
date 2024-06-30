@@ -1,6 +1,8 @@
 <input bind:value={userValue} on:change={onChange} bind:this={inputE} />
 
 <script lang="ts">
+  import { t } from "../../../l10n/l10n";
+
   export let time: Date; /* in/out */
 
   let inputE: HTMLInputElement;
@@ -22,23 +24,23 @@
     try {
       let parts = userValue.match(/^(\d{1,2})(:?(\d\d))?\s*(am?|(pm?))?$/i);
       if (!parts) {
-        throw new Error("Could not interpret value as a time");
+        throw new Error($t`Could not interpret value as a time`);
       }
       let hour = Number(parts[1]);
       if (parts[4]) {
         if (hour < 1 || hour > 12) {
-          throw new Error("Hour must be between 1 and 12 when using am or pm");
+          throw new Error($t`Hour must be between 1 and 12 when using am or pm`);
         }
         hour %= 12;
         if (parts[5]) {
           hour += 12;
         }
       } else if (hour > 23) {
-        throw new Error("Hour moust be less than 24");
+        throw new Error($t`Hour moust be less than 24`);
       }
       let minute = Number(parts[3] || 0);
       if (minute > 59) {
-        throw new Error("Minute must be less than 59");
+        throw new Error($t`Minute must be less than 59`);
       }
       time.setHours(hour, minute, 0, 0);
       time = time; // force refresh

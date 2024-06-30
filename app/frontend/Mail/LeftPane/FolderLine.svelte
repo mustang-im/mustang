@@ -7,7 +7,7 @@
   </hbox>
   <hbox class="label">{$folder.name}</hbox>
   <hbox class="buttons" flex>
-    <Button label="Folder properties" icon={MoreIcon} iconOnly plain
+    <Button label={$t`Folder properties`} icon={MoreIcon} iconOnly plain
       onClick={onSettings} />
   </hbox>
 </hbox>
@@ -21,6 +21,7 @@
   import { catchErrors } from '../../Util/error';
   import { openFolderProperties } from '../FolderProperties.svelte';
   import { selectedFolder } from '../Selected';
+  import { t } from '../../../l10n/l10n';
 
   export let folder: Folder;
 

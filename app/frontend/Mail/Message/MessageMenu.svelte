@@ -1,58 +1,58 @@
 <Menu gutter={padding}>
   <Menu.Item
     on:click={() => catchErrors(() => reply())}
-    title="Reply to the person who sent this message"
+    title={$t`Reply to the person who sent this message`}
     icon={ReplyIcon}>
-    Reply to author
+    {$t`Reply to author`}
   </Menu.Item>
   <Menu.Item
     on:click={() => catchErrors(() => replyAll())}
-    title="Reply to all recipients of this message"
+    title={$t`Reply to all recipients of this message`}
     icon={ReplyAllIcon}>
-    Reply to all
+    {$t`Reply to all`}
   </Menu.Item>
   <Menu.Item
     on:click={event => catchErrors(() => forward(event))}
-    title="Send this message to somebody else"
+    title={$t`Send this message to somebody else`}
     icon={ForwardIcon}>
-    Forward
+    {$t`Forward`}
   </Menu.Item>
   <Menu.Item
     on:click={() => catchErrors(() => redirect())}
-    title="Send this message to somebody else, who can reply to the original sender"
+    title={$t`Send this message to somebody else, who can reply to the original sender`}
     icon={RedirectIcon}>
-    Redirect
+    {$t`Redirect`}
   </Menu.Item>
   <Menu.Item
     on:click={() => catchErrors(() => deleteMessage())}
     color="red"
     icon={TrashIcon}>
-    Delete
+    {$t`Delete`}
   </Menu.Item>
   <Menu.Item
     on:click={() => catchErrors(() => markAsSpam())}
     color="red"
-    title="Delete the message, and train the spam filter"
+    title={$t`Delete the message, and train the spam filter`}
     icon={SpamIcon}>
-    Mark as spam
+    {$t`Mark as spam`}
   </Menu.Item>
   <Menu.Item
     on:click={() => catchErrors(() => translate())}
-    title="Use an online translation service to translate this message to your default language."
+    title={$t`Use an online translation service to translate this message to your default language.`}
     icon={TranslateIcon}>
-    Translate
+    {$t`Translate`}
   </Menu.Item>
   <Menu.Item
     on:click={() => catchErrors(() => print())}
-    title="Put ink on dead trees which were artificially made white. Save the trees!"
+    title={$t`Put ink on dead trees which were artificially made white. Save the trees!`}
     icon={PrintIcon}>
-    Print
+    {$t`Print`}
   </Menu.Item>
   <Menu.Item
     on:click={() => catchErrors(() => showSource())}
-    title="Show the on-the-wire format of this message"
+    title={$t`Show the on-the-wire format of this message`}
     icon={SourceIcon}>
-    Show source
+    {$t`Show source`}
   </Menu.Item>
 </Menu>
 
@@ -75,6 +75,7 @@
   import SourceIcon from "lucide-svelte/icons/code-xml";
   import { catchErrors } from "../../Util/error";
   import { NotImplemented } from "../../../logic/util/util";
+  import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
   export let padding = 5;

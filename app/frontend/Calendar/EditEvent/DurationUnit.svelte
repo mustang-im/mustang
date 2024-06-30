@@ -1,10 +1,12 @@
 <select id="duration-unit" bind:value={unitStr}>
-  <option value="60">Minutes</option>
-  <option value="3600">Hours</option>
-  <option value="86400">Days</option>
+  <option value="60">{$t`Minutes`}</option>
+  <option value="3600">{$t`Hours`}</option>
+  <option value="86400">{$t`Days`}</option>
 </select>
 
 <script lang="ts">
+  import { t } from "../../../l10n/l10n";
+
   export let durationInSeconds: number; /* in/out */
   export let durationInUnit: number; /* in/out */
 

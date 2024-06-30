@@ -3,7 +3,7 @@
     <img
       src={person.picture}
       width={size} height={size}
-      title="Picture of {person.name}"
+      title={$t`Picture of ${person.name}`}
       alt=""
       />
   {/if}
@@ -11,6 +11,7 @@
 
 <script lang="ts">
   import type { PersonOrGroup } from "./PersonOrGroup";
+  import { t } from "../../../l10n/l10n";
 
   export let person: PersonOrGroup;
   export let size = 48;
