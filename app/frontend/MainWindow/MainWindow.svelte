@@ -1,4 +1,4 @@
-<vbox flex class="main-window">
+<vbox flex class="main-window" dir={rtl}>
   <WindowHeader selectedApp={$selectedApp} />
   <hbox flex>
     <AppBar bind:selectedApp={$selectedApp} showApps={mustangApps} />
@@ -41,11 +41,13 @@
   import { catchErrors, backgroundError } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { onMount } from "svelte";
-  import { t } from "../../l10n/l10n";
+  import { getUILocale, t } from "../../l10n/l10n";
+  import { rtlLocales } from "../../l10n/list";
 
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;
   $: sidebar = $sidebarApp?.sidebar;
+  $: rtl = rtlLocales.includes(getUILocale()) ? 'rtl' : null;
 
   onMount(() => catchErrors(startup));
 

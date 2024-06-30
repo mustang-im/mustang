@@ -31,3 +31,5 @@ export const localeNames = {
  * Must match ./locales/<locale>/* files and
  * the imports in ./l10n.ts. */
 export const locales = Object.keys(localeNames);
+
+export const rtlLocales = [ 'ar' ];
