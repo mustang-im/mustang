@@ -51,8 +51,11 @@
   .label {
     font-size: 11px;
     color: #999999;
-    white-space: nowrap;
     overflow: hidden;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    white-space: nowrap;
+    max-width: 100%;
     margin-top: 4px;
     margin-left: 4px;
     margin-right: 4px;
