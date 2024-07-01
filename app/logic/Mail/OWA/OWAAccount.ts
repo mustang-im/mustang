@@ -2,6 +2,7 @@ import { MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { OWAFolder } from "./OWAFolder";
 import OWACreateItemRequest from "./OWACreateItemRequest";
+import { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { ContentDisposition } from "../Attachment";
 import { appGlobal } from "../../app";
@@ -50,6 +51,18 @@ export class OWAAccount extends MailAccount {
   async login(interactive: boolean): Promise<void> {
     await this.listFolders(interactive);
     this.hasLoggedIn = true;
+
+    let calendar = appGlobal.calendars.find((calendar: OWACalendar) => calendar.protocol == "calendar-owa" && calendar.url == this.url && calendar.username == this.emailAddress) as OWACalendar | void;
+    if (!calendar) {
+      calendar = new OWACalendar();
+      calendar.name = this.name;
+      calendar.url = this.url;
+      calendar.username = this.emailAddress;
+      calendar.workspace = this.workspace;
+      appGlobal.calendars.add(calendar);
+    }
+    calendar.account = this;
+    await calendar.listEvents();
   }
 
   async logout(): Promise<void> {
