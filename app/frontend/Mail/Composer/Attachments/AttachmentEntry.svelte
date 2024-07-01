@@ -7,7 +7,7 @@
       {attachment.filename}
     </hbox>
     <hbox class="size">
-      {Math.ceil($attachment.size / 1024)} {$t`KB`}
+      {$t`${Math.ceil($attachment.size / 1024)}KB`}
     </hbox>
   </vbox>
   <vbox class="buttons">
