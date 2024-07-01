@@ -12,6 +12,7 @@ import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 import childProcess from 'node:child_process';
+import * as OWA from './owa';
 
 export async function startupBackend() {
   let appGlobal = await createSharedAppObject();
@@ -26,6 +27,7 @@ async function createSharedAppObject() {
     kyCreate,
     postHTTP,
     streamHTTP,
+    OWA,
     newOSNotification,
     isOSNotificationSupported,
     newTrayIcon,
