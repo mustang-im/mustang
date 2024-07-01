@@ -16,7 +16,7 @@
   export let event: Event;
 
   $: startTime = event.startTime.toLocaleString(getUILocale(), { hour: "2-digit", minute: "2-digit" });
-  $: eventAsText = `${startTime} – ${Math.ceil((event.endTime.getTime() - event.startTime.getTime()) / 1000 / 60)} ${$t({message: "min", comment: "Minutes Abbreviation"})}
+  $: eventAsText = `${startTime} – ${$t`${Math.ceil((event.endTime.getTime() - event.startTime.getTime()) / 1000 / 60)} min`}
 ${event.title}
 ${event.participants.hasItems ? event.participants.getIndexRange(0, 4).map(person => person.name).join(", "): ""}`;
 

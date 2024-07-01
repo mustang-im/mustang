@@ -1,6 +1,6 @@
 <vbox flex class="search">
   <hbox class="header-bar">
-    <hbox class="header top">Search</hbox>
+    <hbox class="header top">{$t`Search`}</hbox>
     <hbox flex />
     <hbox class="buttons top-right">
       <RoundButton icon={XIcon} iconSize="16px" padding="4px" border={true} classes="small"

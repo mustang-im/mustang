@@ -35,7 +35,7 @@
       icon={SpamIcon}
       iconSize="16px"
       iconOnly
-      label={"Mark as spam"}
+      label={$t`Mark as spam`}
       onClick={markAsSpam}
       disabled={!message}
       plain

@@ -2,6 +2,7 @@ import { Addressbook } from '../Addressbook';
 import { SQLAddressbook } from '../SQL/SQLAddressbook';
 import { SQLGroup } from '../SQL/SQLGroup';
 import { ArrayColl, Collection } from 'svelte-collections';
+import { gt } from '../../../l10n/l10n';
 
 export async function readAddressbooks(): Promise<Collection<Addressbook>> {
   let addressbooks = await SQLAddressbook.readAll();
@@ -18,11 +19,11 @@ async function createDefaultAddressbooks(): Promise<Collection<Addressbook>> {
   console.log("Creating default address books");
   let addressbooks = new ArrayColl<Addressbook>();
   let personal = new Addressbook();
-  personal.name = "Personal addressbook";
+  personal.name = gt`Personal addressbook`;
   addressbooks.add(personal);
   await SQLAddressbook.save(personal);
   let collected = new Addressbook();
-  collected.name = "Collected contacts";
+  collected.name = gt`Collected contacts`;
   addressbooks.add(collected);
   await SQLAddressbook.save(collected);
   return addressbooks;
