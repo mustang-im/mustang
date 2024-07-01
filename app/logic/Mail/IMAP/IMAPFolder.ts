@@ -7,6 +7,7 @@ import type { EMail } from "../EMail";
 import { ArrayColl, Collection } from "svelte-collections";
 import { assert, exMessage } from "../../util/util";
 import { Buffer } from "buffer";
+import { gt } from "../../../l10n/l10n";
 
 export class IMAPFolder extends Folder {
   account: IMAPAccount;
@@ -48,6 +49,9 @@ export class IMAPFolder extends Folder {
       this.countNewArrived = folderInfo.status.recent;
     }
     this.setSpecialUse(folderInfo.specialUse);
+    if (this.name.toUpperCase() == "INBOX") {
+      this.name = gt`Inbox`;
+    }
   }
 
   async runCommand<T>(imapFunc: (conn: any) => Promise<T>): Promise<T> {

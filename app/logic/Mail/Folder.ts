@@ -4,6 +4,7 @@ import type { TreeItem } from "../../frontend/Shared/FastTree";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, Collection } from 'svelte-collections';
 import { assert, AbstractFunction } from "../util/util";
+import { gt } from "../../l10n/l10n";
 
 export class Folder extends Observable implements TreeItem {
   /** IMAP: folder path */
@@ -199,3 +200,15 @@ export const specialFolderOrder = [
   SpecialFolder.Search,
   SpecialFolder.Normal,
 ];
+
+export const specialFolderNames = {};
+specialFolderNames[SpecialFolder.Inbox] = gt`Inbox`;
+specialFolderNames[SpecialFolder.Sent] = gt`Sent`;
+specialFolderNames[SpecialFolder.Drafts] = gt`Drafts`;
+specialFolderNames[SpecialFolder.Trash] = gt`Trash`;
+specialFolderNames[SpecialFolder.Spam] = gt`Spam`;
+specialFolderNames[SpecialFolder.Archive] = gt`Archive`;
+specialFolderNames[SpecialFolder.Outbox] = gt`Outbox`;
+specialFolderNames[SpecialFolder.Search] = gt`Saved Search`;
+specialFolderNames[SpecialFolder.Normal] = gt`Normal folder`;
+specialFolderNames[SpecialFolder.All] = gt`All messages`;

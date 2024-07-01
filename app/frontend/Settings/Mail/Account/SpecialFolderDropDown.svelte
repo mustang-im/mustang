@@ -3,13 +3,13 @@
   >
   {#each specialFolderOrder as type }
     <option value={type}>
-      {type}
+      {specialFolderNames[type]}
     </option>
   {/each}
 </select>
 
 <script lang="ts">
-  import { SpecialFolder, specialFolderOrder } from "../../../../logic/Mail/Folder";
+  import { SpecialFolder, specialFolderNames, specialFolderOrder } from "../../../../logic/Mail/Folder";
 
   export let specialFolderType: SpecialFolder;
   export let disabled: boolean | string = false;
