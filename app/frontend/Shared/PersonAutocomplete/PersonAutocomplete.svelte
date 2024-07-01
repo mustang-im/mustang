@@ -1,7 +1,7 @@
 <hbox flex class="person-autocomplete" bind:this={topEl}>
   <Autocomplete
     onChange={person => catchErrors(() => onAddPerson(person))}
-    searchFunction={inputStr => catchErrors(() => search(inputStr))}
+    searchFunction={search}
     delay={100}
     minCharactersToSearch={2}
     localFiltering={false}
@@ -36,7 +36,7 @@
   // <http://simple-svelte-autocomplete.surge.sh>
   import Autocomplete from 'simple-svelte-autocomplete';
   import { createEventDispatcher, tick } from 'svelte';
-  import { catchErrors } from "../../Util/error";
+  import { catchErrors, showError } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
   const dispatch = createEventDispatcher<{ addPerson: PersonUID }>();
@@ -50,24 +50,28 @@
     if (inputStr.length < 2) {
       return [];
     }
-    inputStr = inputStr.toLowerCase();
-    let persons: Person[] = [];
-    for (let ab of appGlobal.addressbooks) {
-      persons.push(...ab.persons.filter(person => person.name.toLowerCase().includes(inputStr)));
-    }
-    let emailAddresses: PersonUID[] = [];
-    for (let person of persons) {
-      for (let c of person.emailAddresses.sortBy(c => c.preference)) {
-        if (skipPersons.find(p => p.emailAddress == c.value)) {
-          continue;
-        }
-        let uid = new PersonUID(c.value, person.name);
-        uid.person = person;
-        emailAddresses.push(uid);
+    try {
+      inputStr = inputStr.toLowerCase();
+      let persons: Person[] = [];
+      for (let ab of appGlobal.addressbooks) {
+        persons.push(...ab.persons.filter(person => person.name.toLowerCase().includes(inputStr)));
       }
+      let emailAddresses: PersonUID[] = [];
+      for (let person of persons) {
+        for (let c of person.emailAddresses.sortBy(c => c.preference)) {
+          if (skipPersons.find(p => p.emailAddress == c.value)) {
+            continue;
+          }
+          let uid = new PersonUID(c.value, person.name);
+          uid.person = person;
+          emailAddresses.push(uid);
+        }
+      }
+      console.log("Got", persons.length, "persons with ", emailAddresses.length, "email addresses for", inputStr);
+      return emailAddresses;
+    } catch (ex) {
+      showError(ex);
     }
-    console.log("Got", persons.length, "persons with ", emailAddresses.length, "email addresses for", inputStr);
-    return emailAddresses;
   }
 
   let topEl: HTMLDivElement;
