@@ -31,4 +31,14 @@ export const OAuth2URLs = [
     clientID: "592666826535-3ba3dp3eghj978d2r6nojihk699h9b4n.apps.googleusercontent.com",
     clientSecret: "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",
   },
+  {
+    domains: ["yahoo.com", "aol.com"],
+    hostnames: ["imap.mail.yahoo.com", "pop.mail.yahoo.com", "smtp.mail.yahoo.com", "imap.aol.com", "pop.aol.com", "smtp.aol.com" ],
+    authURL: "https://api.login.aol.com/oauth2/request_auth",
+    tokenURL: "https://api.login.aol.com/oauth2/get_token",
+    logoutURL: "https://login.yahoo.com/account/logout?logout_all=1&src=app&.done=https%3A%2F%2Fde.yahoo.com%2F",
+    scope: "mail-w",
+    clientID: "dj0yJmk9OEtIQ3ZpU3ZRMmlKJmQ9WVdrOWVqZGpVWEZuVTNBbWNHbzlNQT09JnM9Y29uc3VtZXJzZWNyZXQmc3Y9MCZ4PWU5",
+    clientSecret: null,
+  },
 ];
