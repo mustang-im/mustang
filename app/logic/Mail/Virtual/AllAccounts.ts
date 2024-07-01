@@ -2,6 +2,7 @@ import { MailAccount } from "../MailAccount";
 import { Folder, SpecialFolder } from "../Folder";
 import { AllFolders } from "./AllFolders";
 import { ArrayColl, Collection, mergeColl, mergeColls } from "svelte-collections";
+import { gt } from "../../../l10n/l10n";
 
 /** Unified view of all other active mail accounts */
 export class AllAccounts extends MailAccount {
@@ -17,31 +18,31 @@ export class AllAccounts extends MailAccount {
   /** @param accounts typically `appGlobal.emailAccounts` */
   constructor(accounts: Collection<MailAccount>) {
     super();
-    this.name = "All accounts";
+    this.name = gt`All accounts`;
     this.accounts = accounts;
     this.allRootFolders = mergeColls(this.accounts.map(account => account.rootFolders));
 
     let all = new AllFolders(this);
-    all.name = "All messages";
+    all.name = gt`All messages`;
     all.specialFolder = SpecialFolder.All;
     //all.followSpecialFolder(SpecialFolder.All);
     all.folders = mergeColls(this.accounts.map(account => account.getAllFolders()));
     this.specialFolders.add(all as any as Folder);
 
     let inbox = new AllFolders(this);
-    inbox.name = "Inbox";
+    inbox.name = gt`Inbox`;
     inbox.specialFolder = SpecialFolder.Inbox;
     inbox.followSpecialFolder(SpecialFolder.Inbox);
     this.specialFolders.add(inbox as any as Folder);
 
     let sent = new AllFolders(this);
-    sent.name = "Sent";
+    sent.name = gt`Sent`;
     inbox.specialFolder = SpecialFolder.Sent;
     sent.followSpecialFolder(SpecialFolder.Sent);
     this.specialFolders.add(sent as any as Folder);
 
     let drafts = new AllFolders(this);
-    drafts.name = "Drafts";
+    drafts.name = gt`Drafts`;
     drafts.specialFolder = SpecialFolder.Drafts;
     drafts.followSpecialFolder(SpecialFolder.Drafts);
     this.specialFolders.add(drafts as any as Folder);
