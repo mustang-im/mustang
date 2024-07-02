@@ -85,9 +85,9 @@
     "work": $t`Work`,
     "home": $t`Home`,
     "mobile": $t`Mobile`,
-    "whatsapp": $t`WhatsApp`,
-    "teams": $t`Teams`,
-    "matrix": $t`Matrix`,
+    "whatsapp": "WhatsApp",
+    "teams": "Microsoft Teams",
+    "matrix": "Matrix",
     "other": $t`Other`,
   }
 

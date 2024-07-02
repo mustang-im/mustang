@@ -43,8 +43,8 @@
       {/if}
       <hbox class="row">
         <select bind:value={config.tls} required on:change={onTLSChanged}>
-          <option value={TLSSocketType.TLS}>{$t`TLS`}</option>
-          <option value={TLSSocketType.STARTTLS}>{$t`STARTTLS`}</option>
+          <option value={TLSSocketType.TLS}>TLS</option>
+          <option value={TLSSocketType.STARTTLS}>STARTTLS</option>
           <option value={TLSSocketType.Plain}>{$t`Plain`}</option>
         </select>
         <hbox class="tls-icon">
@@ -62,10 +62,10 @@
     <hbox class="authMethod" class:error={authError}>
       <select bind:value={config.authMethod} required>
         <option value={AuthMethod.Password}>{$t`Password`}</option>
-        <option value={AuthMethod.OAuth2}>{$t`OAuth2 / MFA`}</option>
-        <option value={AuthMethod.GSSAPI}>{$t`Kerberos / GSSAPI`}</option>
-        <option value={AuthMethod.CRAMMD5}>{$t`CRAM MD5`}</option>
-        <option value={AuthMethod.NTLM}>{$t`NTLM`}</option>
+        <option value={AuthMethod.OAuth2}>OAuth2 / {$t`MFA`}</option>
+        <option value={AuthMethod.GSSAPI}>Kerberos / GSSAPI</option>
+        <option value={AuthMethod.CRAMMD5}>CRAM MD5</option>
+        <option value={AuthMethod.NTLM}>NTLM</option>
       </select>
     </hbox>
 

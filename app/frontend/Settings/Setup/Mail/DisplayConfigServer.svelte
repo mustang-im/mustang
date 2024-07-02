@@ -44,9 +44,9 @@
 
   function socketLabel(tls: TLSSocketType): string {
     if (tls == TLSSocketType.TLS) {
-      return $t`TLS`;
+      return "TLS";
     } else if (tls == TLSSocketType.STARTTLS) {
-      return $t`STARTTLS`;
+      return "STARTTLS";
     } else if (tls == TLSSocketType.Plain) {
       return $t`No encryption`;
     } else {

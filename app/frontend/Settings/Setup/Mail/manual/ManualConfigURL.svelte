@@ -28,7 +28,7 @@
     <hbox class="authMethod" class:error={authError}>
       <select bind:value={config.authMethod} required>
         <option value={AuthMethod.Password}>{$t`Password`}</option>
-        <option value={AuthMethod.OAuth2}>{$t`OAuth2 / MFA`}</option>
+        <option value={AuthMethod.OAuth2}>OAuth2 / {$t`MFA`}</option>
       </select>
     </hbox>
 
