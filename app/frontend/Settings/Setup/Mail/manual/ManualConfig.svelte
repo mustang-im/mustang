@@ -1,12 +1,10 @@
-<grid class="manual-config" full={stepFull}>
-  <ManualConfigLabels {stepFull} />
-  <ManualConfigServer {config} bind:this={incomingEl} bind:stepFull {isSetup} />
-  {#if config.outgoing}
-    <ManualConfigServer config={config.outgoing} bind:this={outgoingEl} {stepFull} {isSetup} />
-  {/if}
-</grid>
+{#if usesHostname}
+  <ManualConfigHost bind:config bind:stepFull {isSetup} bind:this={el} />
+{:else}
+  <ManualConfigURL bind:config bind:stepFull {isSetup} bind:this={el} />
+{/if}
 
-{#if config.oAuth2}
+{#if $config.oAuth2 && $config.authMethod == AuthMethod.OAuth2}
   <OAuth2Manual {config} />
 {/if}
 
@@ -23,63 +21,35 @@
 {/if}
 
 <script lang="ts">
-  import type { MailAccount } from "../../../../../logic/Mail/MailAccount";
-  import Button from "../../../../Shared/Button.svelte";
-  import ManualConfigLabels from "./ManualConfigLabels.svelte";
-  import ManualConfigServer from "./ManualConfigServer.svelte";
+  import { AuthMethod, type MailAccount } from "../../../../../logic/Mail/MailAccount";
+  import ManualConfigURL from "./ManualConfigURL.svelte";
+  import ManualConfigHost from "./ManualConfigHost.svelte";
   import OAuth2Manual from "./OAuth2Manual.svelte";
+  import Button from "../../../../Shared/Button.svelte";
   import SaveIcon from "lucide-svelte/icons/save";
   import { t } from "../../../../../l10n/l10n";
 
-  /** in */
+  /** in/out
+   * The entire object changes only when the user changes the protocol,
+   * which happens only when `isSetup` is true.
+   * If `isSetup` is false (default), then this is: in param only. */
   export let config: MailAccount;
   export let stepFull = true;
   export let isSetup = false;
 
-  /** out only */
-  export let incomingEl: ManualConfigServer = null;
-  export let outgoingEl: ManualConfigServer = null;
+  $: usesHostname = ["imap", "pop3"].includes($config.protocol);
 
   async function onSave() {
     await config.save();
   }
+
+  let el: ManualConfigURL | ManualConfigHost  = null;
+  export async function onContinue(): Promise<boolean> {
+    return await el.onContinue();
+  }
 </script>
 
 <style>
-  grid {
-    grid-auto-flow: column;
-    grid-template-rows: auto auto auto;
-    grid-auto-columns: max-content auto auto;
-    row-gap: 12px;
-  }
-  grid[full=true] {
-    grid-template-rows: auto auto auto auto auto auto auto;
-  }
-  grid :global(> *) {
-    align-items: end;
-  }
-
-  /* Style */
-
-  grid {
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    margin-block-start: 24px;
-    padding-block-end: 20px;
-  }
-  grid :global(.header) {
-    background-color: var(--headerbar-bg);
-    color: var(--headerbar-fg);
-    padding-block-start: 8px;
-    padding-block-end: 8px;
-    padding-inline-start: 8px;
-    font-size: 14px;
-    border-bottom: 1px solid var(--border);
-  }
-  grid :global(> *) {
-    padding-inline-start: 16px;
-    padding-inline-end: 16px;
-  }
   .buttons {
     justify-content: end;
     margin-block-start: 16px;

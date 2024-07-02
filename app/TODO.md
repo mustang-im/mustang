@@ -2,10 +2,6 @@
 * Mail
   * Main window
     * Save window size
-  * Setup
-    * Default to vertical view
-    * Manual config, remove [Save] button
-    * EWS: Manual config with URL
   * Import
     * Contacts: TB address books
     * "Create more accounts" screen

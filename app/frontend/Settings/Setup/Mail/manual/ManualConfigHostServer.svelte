@@ -19,12 +19,7 @@
     <hbox class="protocol outgoing">{config.protocol}</hbox>
   {:else}
     <hbox>
-      <select bind:value={config.protocol} required disabled={!isSetup}
-        on:change={onProtocolChanged}
-        class="protocol">
-        <option value="imap">{$t`IMAP`}</option>
-        <option value="pop3">{$t`POP3`}</option>
-      </select>
+      <ProtocolSelector bind:config {isSetup} />
     </hbox>
   {/if}
 
@@ -83,15 +78,16 @@
   import { type MailAccount, AuthMethod, TLSSocketType } from "../../../../../logic/Mail/MailAccount";
   import { kStandardPorts } from "../../../../../logic/Mail/AutoConfig/configInfo";
   import { dummyHostname } from "../../../../../logic/Mail/AutoConfig/manualConfig";
+  import { getDomainForEmailAddress } from "../../../../../logic/util/netUtil";
+  import ProtocolSelector from "./ProtocolSelector.svelte";
   import ShieldOKIcon from "lucide-svelte/icons/shield-check";
   import ShieldAlertIcon from "lucide-svelte/icons/shield-alert";
   import ShieldQuestionIcon from "lucide-svelte/icons/shield-question";
   import ArrowLeftIcon from "lucide-svelte/icons/move-left";
   import ArrowRightIcon from "lucide-svelte/icons/move-right";
-  import { getDomainForEmailAddress } from "../../../../../logic/util/netUtil";
   import { t } from "../../../../../l10n/l10n";
 
-  /** in */
+  /** in/out */
   export let config: MailAccount;
   /** false = show hostnames only, true = show all fields.
    * in/out */
@@ -190,9 +186,6 @@
   }
   .protocol.outgoing {
     text-transform: uppercase;
-  }
-  select.protocol {
-    opacity: unset;
   }
   .hostname input {
     min-width: 15em;

@@ -2,28 +2,23 @@
   <h2>{$t`Manual configuration`}</h2>
   <hbox class="subtitle">{$t`Your email provider or company can tell you these details.`}</hbox>
 
-  <ManualConfig {config} bind:stepFull bind:incomingEl bind:outgoingEl isSetup={true} />
+  <ManualConfig bind:config bind:stepFull bind:this={el} isSetup={true} />
 </vbox>
 
 <script lang="ts">
   import type { MailAccount } from "../../../../../logic/Mail/MailAccount";
   import ManualConfig from "./ManualConfig.svelte";
-  import type ManualConfigServer from "./ManualConfigServer.svelte";
   import { t } from "../../../../../l10n/l10n";
 
-  /** in */
+  /** in/out */
   export let config: MailAccount;
   export let abort: AbortController = new AbortController();
   /** in/out */
   export let stepFull = false;
 
-  let incomingEl: ManualConfigServer;
-  let outgoingEl: ManualConfigServer;
-
-  /** User just pressed the [Next] button */
+  let el: ManualConfig;
   export async function onContinue(): Promise<boolean> {
-    return await incomingEl.onContinue() &&
-      await outgoingEl.onContinue();
+    return await el.onContinue();
   }
 </script>
 

@@ -135,6 +135,23 @@ export class MailAccount extends Account {
     return this.rootFolders.first;
   }
 
+  /** Fills this object with the config values from the other config */
+  cloneFrom(other: MailAccount) {
+    this.url = other.url;
+    this.hostname = other.hostname;
+    this.port = other.port;
+    this.tls = other.tls;
+    this.authMethod = other.authMethod;
+    this.username = other.username;
+    this.emailAddress = other.emailAddress;
+    this.userRealname = other.userRealname;
+
+    // objects
+    this.oAuth2 = other.oAuth2;
+    this.identities.addAll(other.identities);
+    this.outgoing = other.outgoing;
+  }
+
   toDebugString() {
     return `${this.protocol.toUpperCase()} account, id ${this.id}, host ${this.hostname}:${this.port}, username ${this.username}, url ${this.url}`;
   }
