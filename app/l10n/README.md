@@ -61,6 +61,14 @@ We chose lingui and svelte-18n-lingui, because:
 10. Test
 11. Ship it
 
+# Crowdin AI Translation
+
+1. Run the `Crowdin Upload` workflow to upload the sources for translation
+2. Go the the Crowdin project on the Crowdin website
+3. Click `Pre-translate` and wait for translation to complete
+4. Run the `Crowdin Download` workflow to download the translations
+5. Go to the `translation` GitHub branch to see the translations
+
 # Instructions for translators
 
 * Keep the translation short, but correct and easy to understand.
