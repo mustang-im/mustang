@@ -3,8 +3,8 @@
 #
 "project_id_env": "CROWDIN_PROJECT_ID"
 "api_token_env": "CROWDIN_PERSONAL_TOKEN"
-"base_path_env": "CROWDIN_BASE_PATH"
-"base_url_env": "CROWDIN_BASE_URL"
+"base_path": "."
+"base_url": "https://api.crowdin.com"
 
 #
 # Choose file structure in Crowdin
@@ -21,7 +21,7 @@ files: [
     # Source files filter
     # e.g. "/resources/en/*.json"
     #
-    "source": "/locales/en/*.po",
+    "source": "/locales/en/*.json",
 
     #
     # Where translations will be placed
