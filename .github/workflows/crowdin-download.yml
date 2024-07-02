@@ -1,4 +1,4 @@
-# https://github.com/crowdin/github-action/blob/master/EXAMPLES.md#download-only-translations-without-pushing-to-a-branch
+# https://github.com/crowdin/github-action/blob/master/EXAMPLES.md#create-pr-with-the-new-translations
 
 name: Crowdin Download
 
