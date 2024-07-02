@@ -2,7 +2,7 @@
   <h2>{$t`Manual configuration`}</h2>
   <hbox class="subtitle">{$t`Your email provider or company can tell you these details.`}</hbox>
 
-  <ManualConfig {config} bind:stepFull bind:incomingEl bind:outgoingEl />
+  <ManualConfig {config} bind:stepFull bind:incomingEl bind:outgoingEl isSetup={true} />
 </vbox>
 
 <script lang="ts">

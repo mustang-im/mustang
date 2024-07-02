@@ -1,8 +1,8 @@
 <grid class="manual-config" full={stepFull}>
   <ManualConfigLabels {stepFull} />
-  <ManualConfigServer {config} bind:this={incomingEl} bind:stepFull />
+  <ManualConfigServer {config} bind:this={incomingEl} bind:stepFull {isSetup} />
   {#if config.outgoing}
-    <ManualConfigServer config={config.outgoing} bind:this={outgoingEl} {stepFull} />
+    <ManualConfigServer config={config.outgoing} bind:this={outgoingEl} {stepFull} {isSetup} />
   {/if}
 </grid>
 
@@ -10,15 +10,17 @@
   <OAuth2Manual {config} />
 {/if}
 
-<hbox flex />
-<hbox class="buttons">
-  <Button label={$t`Save`}
-    classes="save"
-    icon={SaveIcon}
-    onClick={onSave}
-    />
-  <slot name="buttons-bottom-right" />
-</hbox>
+{#if !isSetup}
+  <hbox flex />
+  <hbox class="buttons">
+    <Button label={$t`Save`}
+      classes="save"
+      icon={SaveIcon}
+      onClick={onSave}
+      />
+    <slot name="buttons-bottom-right" />
+  </hbox>
+{/if}
 
 <script lang="ts">
   import type { MailAccount } from "../../../../../logic/Mail/MailAccount";
@@ -32,6 +34,7 @@
   /** in */
   export let config: MailAccount;
   export let stepFull = true;
+  export let isSetup = false;
 
   /** out only */
   export let incomingEl: ManualConfigServer = null;

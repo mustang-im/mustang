@@ -16,10 +16,12 @@
   </hbox>
 
   {#if outgoing}
-    <hbox class="protocol">{config.protocol}</hbox>
+    <hbox class="protocol outgoing">{config.protocol}</hbox>
   {:else}
     <hbox>
-      <select bind:value={config.protocol} required on:change={onProtocolChanged}>
+      <select bind:value={config.protocol} required disabled={!isSetup}
+        on:change={onProtocolChanged}
+        class="protocol">
         <option value="imap">{$t`IMAP`}</option>
         <option value="pop3">{$t`POP3`}</option>
       </select>
@@ -94,6 +96,7 @@
   /** false = show hostnames only, true = show all fields.
    * in/out */
   export let stepFull: boolean;
+  export let isSetup = false;
 
   $: outgoing = config.protocol == "smtp";
 
@@ -185,8 +188,11 @@
     margin-inline-end: 6px;
     color: #555555;
   }
-  .protocol {
+  .protocol.outgoing {
     text-transform: uppercase;
+  }
+  select.protocol {
+    opacity: unset;
   }
   .hostname input {
     min-width: 15em;
