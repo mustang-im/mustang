@@ -24,7 +24,7 @@ export const localeNames = {
   'ru': "Russian / Русский язык",
   'sv': "Swedish / Svenska",
   'uk': "Ukranian / Українська",
-  'zh': "Simplified Chinese (Taiwan) / 简体中文",
+  'zh': "Simplified Chinese / 简体中文",
 };
 
 /** List of available locales in this build.
