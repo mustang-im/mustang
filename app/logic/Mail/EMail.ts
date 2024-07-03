@@ -93,11 +93,15 @@ export class EMail extends Message {
   async treatSpam(spam = true) {
     const kDeleteSpam = true;
     if (spam && kDeleteSpam) {
-      this.deleteMessageLocally();
+      /** Immediate reaction for end user */
+      await this.deleteMessageLocally();
     }
     await this.markSpam(spam);
     if (spam && kDeleteSpam) {
-      await this.deleteMessageOnServer();
+      /* The spam flag change might trigger a folder listener
+       * from the server, which re-adds this message to the local list.
+       * So, we might have to delete it locally again */
+      await this.deleteMessage();
     }
   }
 
