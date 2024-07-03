@@ -13,8 +13,8 @@ import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { ContentDisposition } from "../Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
-import { blobToBase64 } from "../../util/util";
-import { assert } from "../../util/util";
+import { assert, sleep, blobToBase64, throttleConnectionsPerSecond } from "../../util/util";
+import { SetColl } from "svelte-collections";
 
 type Json = string | number | boolean | null | Json[] | {[key: string]: Json};
 
@@ -25,6 +25,9 @@ export class EWSAccount extends MailAccount {
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
   readonly folderMap = new Map<string, EWSFolder>;
+  maxConcurrency: number = 20;
+  connections = new SetColl<Promise<any>>;
+  nextConnectionTime = new Array(50).fill(0);
 
   constructor() {
     super();
@@ -198,12 +201,53 @@ export class EWSAccount extends MailAccount {
     return options;
   }
 
+  async checkMaxConcurrency(ex: EWSItemError) {
+    if (ex.type != "ErrorServerBusy") {
+      throw ex;
+    }
+    // Check whether the ConcurrentSyncCalls policy was exceeded.
+    if (/'ConcurrentSyncCalls'.*'(\d+)'.*'Ews'/.test(ex.message) && Number(RegExp.$1) < this.maxConcurrency) {
+      this.maxConcurrency = Number(RegExp.$1);
+      console.log(`Server busy, reduced max concurrency to ${this.maxConcurrency}`);
+    }
+    let milliseconds = Number(ex.error.MessageXml?.Value?.Value);
+    if (!milliseconds) {
+      // Server isn't asking us to back off, so give up.
+      throw ex;
+    }
+    if (milliseconds > 20000) {
+      milliseconds = 20000; // Sensible upper limit
+    }
+    console.log(`Server busy, using ${milliseconds}ms backoff time`);
+    await sleep(milliseconds / 1000);
+  }
+
   async callEWS(aRequest: JsonRequest): Promise<any> {
-    let response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions());
+    await throttleConnectionsPerSecond(this.nextConnectionTime);
+    while (this.connections.length >= this.maxConcurrency) {
+      console.log(`Throttling because there are ${this.maxConcurrency} pending connections`);
+      try {
+        await Promise.race(this.connections);
+      } catch (ex) {
+      }
+    }
+    let connection = appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions());
+    this.connections.add(connection);
+    let response;
+    try {
+      response = await connection;
+    } finally {
+      this.connections.remove(connection);
+    }
     response.responseXML = this.parseXML(response.data);
     this.fatalError = null;
     if (response.status == 200) {
-      return this.checkResponse(response, aRequest);
+      try {
+        return this.checkResponse(response, aRequest);
+      } catch (ex) {
+        await this.checkMaxConcurrency(ex);
+        return await this.callEWS(aRequest);
+      }
     }
     if (response.status == 401) {
       if (this.oAuth2) {
@@ -513,7 +557,7 @@ class EWSError extends Error {
 
 class EWSItemError extends Error {
   readonly request: JsonRequest;
-  readonly error: Json;
+  readonly error: any;
   readonly type: string;
   constructor(errorResponseJSON: any, aRequest: JsonRequest) {
     if (Array.isArray(errorResponseJSON.MessageXml?.Value)) {
@@ -523,7 +567,7 @@ class EWSItemError extends Error {
     }
     super(errorResponseJSON.MessageText);
     this.request = aRequest;
-    this.error = errorResponseJSON as Json;
+    this.error = errorResponseJSON;
     this.type = errorResponseJSON.ResponseCode;
   }
 }
