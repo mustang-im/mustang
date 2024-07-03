@@ -9,6 +9,7 @@ export class IMAPEMail extends EMail {
   folder: IMAPFolder;
   /** From IMAP server */
   seq: number | null = null;
+  flagsChanging = false;
 
   constructor(folder: IMAPFolder) {
     super(folder);
@@ -71,7 +72,7 @@ export class IMAPEMail extends EMail {
   }
 
   setFlagsLocal(flags: Set<string>) {
-    if (!(flags && flags instanceof Set)) {
+    if (!(flags && flags instanceof Set) || this.flagsChanging) {
       return;
     }
     this.isRead = flags.has("\\Seen");
@@ -114,6 +115,7 @@ export class IMAPEMail extends EMail {
    * @param set -- true = add the flag, false = remove the flag
    */
   async setFlagServer(name: string, set = true) {
+    this.flagsChanging = true;
     await this.folder.runCommand(async (conn) => {
       if (set) {
         await conn.messageFlagsAdd(this.uid, [name], { uid: true });
@@ -121,6 +123,7 @@ export class IMAPEMail extends EMail {
         await conn.messageFlagsRemove(this.uid, [name], { uid: true });
       }
     });
+    this.flagsChanging = false;
   }
 
   async deleteMessageOnServer() {
