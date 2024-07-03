@@ -91,9 +91,13 @@ export class EMail extends Message {
 
   /** Marks as spam, and deletes or moves the message, as configured */
   async treatSpam(spam = true) {
+    const kDeleteSpam = true;
+    if (spam && kDeleteSpam) {
+      this.deleteMessageLocally();
+    }
     await this.markSpam(spam);
-    if (spam) {
-      await this.deleteMessage();
+    if (spam && kDeleteSpam) {
+      await this.deleteMessageOnServer();
     }
   }
 
