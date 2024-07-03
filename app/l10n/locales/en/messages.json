@@ -1,10 +1,10 @@
 {
   "IYbM1Z": "IYbM1Z",
   "FlvwwB": "{0} account only",
-  "QpgBEp": "{0} days",
+  "QpgBEp": "{0, plural, one { # day} other { # days }}",
   "BqElFK": "{0} folder only",
-  "ZXxoL2": "{0} local messages.",
-  "o7dGee": "{0} mails",
+  "ZXxoL2": "{0, plural, one { # local message. } other { # local messages. }}",
+  "o7dGee": "{0, plural, one { # mail } other { # mails }}",
   "miUdjW": "{0} new,\n          {1} unread,\n          {2} total messages.",
   "6y7ykp": "{0} video conference account",
   "KFAdPX": "* Item",
