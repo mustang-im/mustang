@@ -204,6 +204,16 @@
       }
       scrollIntoView(newIndex);
     }
+
+    if ((event.ctrlKey || event.altKey) && !event.shiftKey && !event.altKey) {
+      if (event.key == "a") {
+        selectedItems.clear();
+        selectedItems.addAll(items);
+        // Keep selectedItem as-is
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    }
   }
 
   function scrollIntoView(index: number) {
