@@ -53,9 +53,6 @@
 
   async function startup() {
     loadMustangApps();
-    if (appGlobal.persons.hasItems) {
-      return;
-    }
     await getStartObjects();
     changeDarkMode($darkModeSetting.value);
     if (appGlobal.emailAccounts.isEmpty && appGlobal.chatAccounts.isEmpty) {

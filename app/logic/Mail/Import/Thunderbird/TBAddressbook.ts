@@ -1,8 +1,7 @@
 import { Addressbook } from "../../../Contacts/Addressbook";
-import { ThunderbirdProfile } from "./TBProfile";
+import type { ThunderbirdProfile } from "./TBProfile";
 import { ContactEntry, Person } from "../../../Abstract/Person";
 import { appGlobal } from "../../../app";
-import { backgroundError } from "../../../../frontend/Util/error";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
 import sql, { Database } from "../../../../../lib/rs-sqlite";
@@ -39,7 +38,7 @@ export class ThunderbirdAddressbook extends Addressbook {
         person.emailAddresses.add(entry);
         ab.persons.add(person);
       } catch (ex) {
-        backgroundError(ex);
+        console.log(ex?.message ?? ex);
       }
     }
 
@@ -63,7 +62,7 @@ export class ThunderbirdAddressbook extends Addressbook {
         let ab = await this.read(profile, filename, name);
         addressbooks.add(ab);
       } catch (ex) {
-        console.error(ex);
+        console.log(ex?.message ?? ex);
       }
     }
     return addressbooks;
@@ -71,6 +70,7 @@ export class ThunderbirdAddressbook extends Addressbook {
 
   static async getDatabase(profile: ThunderbirdProfile, dbFilename: string): Promise<Database> {
     let filePath = await appGlobal.remoteApp.path.join(profile.path, dbFilename);
+    console.log("Importing TB address book in file", filePath);
     return await appGlobal.remoteApp.getSQLiteDatabase(filePath);
   }
 }

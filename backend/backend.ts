@@ -208,7 +208,10 @@ function createIMAPFlowConnection(...args): ImapFlow {
 }
 
 function getSQLiteDatabase(filename: string): Database {
-  return new Database(path.join(getConfigDir(), filename));
+  if (!filename.startsWith("/")) {
+    filename = path.join(getConfigDir(), filename);
+  }
+  return new Database(filename);
 }
 
 async function sendMailNodemailer(transport, mail) {
