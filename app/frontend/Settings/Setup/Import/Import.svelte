@@ -7,6 +7,8 @@
       <Password {account} onContinue={onPasswordContinue} onBack={onPasswordBack} onSkip={onAccountSkip} />
     {:else if step == Step.FinalizeAccount}
       <FinalizeAccount {account} onContinue={onFinalizeContinue} onBack={onFinalizeBack} />
+    {:else if step == Step.SelectAddressBooks}
+      <SelectAddressbooks onContinue={onAddressbooksContinue} />
     {/if}
   </vbox>
   <hbox flex />
@@ -19,6 +21,7 @@
   import Password from "./Password.svelte";
   import FinalizeAccount from "./FinalizeAccount.svelte";
   import BackgroundVideo from "../Shared/BackgroundVideo.svelte";
+  import SelectAddressbooks from "./SelectAddressbooks.svelte";
 
   export let onContinue = () => undefined;
   export let onCancel = () => undefined;
@@ -32,6 +35,7 @@
     SelectAccounts = 1,
     Password = 2,
     FinalizeAccount = 3,
+    SelectAddressBooks = 4,
   }
   let step: Step = Step.SelectAccounts;
 
@@ -42,7 +46,7 @@
       account = accounts[currentAccountIndex];
       step = Step.Password;
     } else {
-      onCancel();
+      step = Step.SelectAddressBooks;
     }
   }
 
@@ -71,9 +75,13 @@
     nextAccount();
   }
 
+  function onAddressbooksContinue() {
+    onContinue();
+  }
+
   function nextAccount() {
     if (++currentAccountIndex >= accounts.length) {
-      onContinue();
+      step = Step.SelectAddressBooks;
       return;
     }
     account = accounts[currentAccountIndex];

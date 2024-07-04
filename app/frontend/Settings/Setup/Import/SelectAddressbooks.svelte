@@ -1,18 +1,18 @@
 <Header
-  title={$t`Import accounts`}
-  subtitle={$t`Continue to use your accounts from Thunderbird`} />
+  title={$t`Import address books`}
+  subtitle={$t`Import your contacts from Thunderbird`} />
 
 {#await startImport()}
   <StatusMessage status="processing"
-    message={$t`Importing accounts...`} />
+    message={$t`Importing address books...`} />
 {:then}
-  <hbox class="found">{$t`Found ${accounts.length} imported accounts`}</hbox>
-  <vbox class="accounts">
+  <hbox class="found">{$t`Found ${addressbooks.length} imported addressbooks`}</hbox>
+  <vbox class="list">
     <Scroll>
       <grid class="protocol-grid">
-        {#each accounts as account}
-          <Checkbox label={account.name} bind:checked={account.import} />
-          <hbox class="protocol">{account.protocol.toUpperCase()}</hbox>
+        {#each $addressbooks.each as addressbook}
+          <Checkbox label={addressbook.name} bind:checked={addressbook.import} />
+          <hbox class="protocol">{addressbook.protocol.toUpperCase()}</hbox>
         {/each}
       </grid>
     </Scroll>
@@ -21,8 +21,8 @@
   {ex?.message ?? ex + ""}
 {/await}
 <ButtonsBottom
-  canContinue={!!accounts.length}
-  onContinue={onContinue}
+  canContinue={!!addressbooks.length}
+  onContinue={onOK}
   >
   <Button label={$t`Skip`} classes="secondary"
     onClick={onSkip}
@@ -34,9 +34,7 @@
 
 <script lang="ts">
   import { ThunderbirdProfile } from "../../../../logic/Mail/Import/Thunderbird/TBProfile";
-  import type { MailAccount } from "../../../../logic/Mail/MailAccount";
-  import { IMAPAccount } from "../../../../logic/Mail/IMAP/IMAPAccount";
-  import { EWSAccount } from "../../../../logic/Mail/EWS/EWSAccount";
+  import type { Addressbook } from "../../../../logic/Contacts/Addressbook";
   import StatusMessage from "../Shared/StatusMessage.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Checkbox from "../../../Shared/Checkbox.svelte";
@@ -44,46 +42,59 @@
   import Header from "../Shared/Header.svelte";
   import Scroll from "../../../Shared/Scroll.svelte";
   import { t } from "../../../../l10n/l10n";
+  import { ThunderbirdAddressbook } from "../../../../logic/Mail/Import/Thunderbird/TBAddressbook";
+  import { ArrayColl } from "svelte-collections";
+  import { appGlobal } from "../../../../logic/app";
+  import { SQLAddressbook } from "../../../../logic/Contacts/SQL/SQLAddressbook";
 
-  export let accounts: MailAccount[] = [];
+  export let addressbooks = new ArrayColl<Addressbook>();
   export let onContinue = () => undefined;
 
   async function startImport() {
+    /* TODO very slow, and unsuccessful
     let profiles = await ThunderbirdProfile.findProfiles();
     if (profiles.length) {
       for (let profile of profiles.filter(p => p.name && !p.name.toLowerCase().includes("test"))) {
         try {
-          let tbAccounts = await profile.readMailAccounts();
-          accounts = accounts.concat(tbAccounts);
+          addressbooks.addAll(await ThunderbirdAddressbook.readAll(profile));
         } catch (ex) {
           console.log(ex?.message);
         }
       }
     }
+    */
 
-    // POP3, OWA, ActiveSync not yet supported
-    accounts = accounts.filter(acc => acc instanceof IMAPAccount || acc instanceof EWSAccount);
-
-    for (let account of accounts) {
+    for (let account of addressbooks) {
       (account as any).import = true;
     }
 
-    console.log("Imported accounts", accounts);
-    if (!accounts.length) {
+    console.log("Found Thunderbird addressbooks", addressbooks);
+    if (!addressbooks.length) {
       onContinue();
       return;
     }
   }
 
   function onUncheckAll() {
-    for (let account of accounts) {
-      (account as any).import = false;
+    for (let addressbook of addressbooks) {
+      (addressbook as any).import = false;
     }
-    accounts = accounts;
+    addressbooks = addressbooks;
   }
 
   function onSkip() {
     onUncheckAll();
+    onContinue();
+  }
+
+  async function onOK() {
+    for (let addressbook of addressbooks) {
+      if (!(addressbook as any).import) {
+        continue;
+      }
+      await SQLAddressbook.save(addressbook);
+      appGlobal.addressbooks.add(addressbook);
+    }
     onContinue();
   }
 </script>
@@ -93,7 +104,7 @@
     justify-content: center;
     margin-block-end: 24px;
   }
-  .accounts {
+  .list {
     min-height: 30vh;
   }
   grid.protocol-grid {
