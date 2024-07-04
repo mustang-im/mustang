@@ -31,11 +31,6 @@
   {/if}
 
   <hbox class="spacer2" flex />
-
-  <vbox class="workspace">
-    <hbox class="header">{$t`Workspace`}</hbox>
-    <WorkspaceSelector config={account} horizontal={true} />
-  </vbox>
 {/if}
 
 <ButtonsBottom
@@ -44,10 +39,10 @@
   errorCallback={showError}
   >
   <Button label="Back" classes="secondary"
-    onClick={previousAccount}
+    onClick={onBack}
     />
   <Button label="Skip" classes="secondary"
-    onClick={nextAccount}
+    onClick={onSkip}
     />
 </ButtonsBottom>
 
@@ -56,7 +51,6 @@
   import { checkConfig } from "../../../../logic/Mail/AutoConfig/checkConfig";
   import { saveAndInitConfig } from "../../../../logic/Mail/AutoConfig/saveConfig";
   import Password from "../Shared/Password.svelte";
-  import WorkspaceSelector from "../Mail/WorkspaceSelector.svelte";
   import Header from "../Shared/Header.svelte";
   import StatusMessage from "../Shared/StatusMessage.svelte";
   import ErrorMessage, { ErrorGravity } from "../Shared/ErrorMessage.svelte";
@@ -66,12 +60,11 @@
   import { catchErrors } from "../../../Util/error";
   import { t } from "../../../../l10n/l10n";
 
-  export let accounts: MailAccount[] = [];
+  export let account: MailAccount;
   export let onContinue = () => undefined;
+  export let onSkip = () => undefined;
   export let onBack = () => undefined;
 
-  let currentAccountIndex = 0;
-  let account = accounts[0];
   let password = "";
   let oAuth2Succeeded = false;
   $: havePassword = password || oAuth2Succeeded;
@@ -101,27 +94,10 @@
     }
     validated = true;
     await saveAndInitConfig(account, account.emailAddress, password);
-    nextAccount();
+    onContinue();
   }
 
-  function nextAccount() {
-    account = accounts[++currentAccountIndex];
-    if (currentAccountIndex >= accounts.length) {
-      onContinue();
-      return;
-    }
-    resetForAccount();
-  }
-
-  function previousAccount() {
-    account = accounts[--currentAccountIndex];
-    if (currentAccountIndex < 0) {
-      onBack();
-      return;
-    }
-    resetForAccount();
-  }
-
+  $: account && resetForAccount();
   function resetForAccount() {
     errorMessage = null;
     validated = false;
@@ -152,17 +128,11 @@
   .password-row label {
     margin-inline-end: 24px;
   }
+  .password-row :global(input) {
+    min-width: 30em;
+  }
   .spacer1,
   .spacer2 {
     min-height: 5vh;
-  }
-  .workspace {
-    margin-block-end: 32px;
-  }
-  .workspace .header {
-    font-size: 20px;
-    font-weight: bold;
-    margin-block-start: 24px;
-    margin-block-end: 8px;
   }
 </style>

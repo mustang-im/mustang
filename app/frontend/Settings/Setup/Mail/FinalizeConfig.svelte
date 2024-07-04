@@ -3,8 +3,12 @@
   <CheckIcon slot="icon"/>
 </StatusMessage>
 
+<hbox class="header">{$t`Account name`}</hbox>
+<hbox class="subtitle">{$t`How do you want to call the account?`}</hbox>
+<input type="text" bind:value={config.name} />
+
 <hbox class="header">{$t`Select the workspace for ${config.emailAddress}`}</hbox>
-<WorkspaceSelector {config} />
+<WorkspaceSelector {config} horizontal={true} />
 
 <script lang="ts">
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
@@ -20,7 +24,15 @@
   .header {
     font-size: 20px;
     font-weight: bold;
-    margin-block-start: 24px;
+    margin-block-start: 48px;
     margin-block-end: 8px;
+  }
+  .subtitle {
+    font-size: 12px;
+    margin-block-start: -8px;
+    margin-block-end: 8px;
+  }
+  input {
+    font-size: 18px;
   }
 </style>
