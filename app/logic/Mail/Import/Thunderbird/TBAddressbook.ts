@@ -9,7 +9,8 @@ import sql, { Database } from "../../../../../lib/rs-sqlite";
 export class ThunderbirdAddressbook extends Addressbook {
   readonly protocol: string = "thunderbird-addressbook-sqlite";
 
-  static async read(profile: ThunderbirdProfile, dbFilename: string, name: string): Promise<ThunderbirdAddressbook> {
+  static async read(profile: ThunderbirdProfile, dbFilename: string, name: string,
+    entryErrorCallback: (ex: Error) => void): Promise<ThunderbirdAddressbook> {
     //console.log("Reading ", name, "file", dbFilename);
     let ab = new ThunderbirdAddressbook();
     ab.id = "tb-" + dbFilename;
@@ -39,14 +40,17 @@ export class ThunderbirdAddressbook extends Addressbook {
         person.emailAddresses.add(entry);
         ab.persons.add(person);
       } catch (ex) {
-        console.log(ex?.message ?? ex);
+        entryErrorCallback(ex);
       }
     }
 
     return ab;
   }
 
-  static async readAll(profile: ThunderbirdProfile): Promise<ArrayColl<ThunderbirdAddressbook>> {
+  static async readAll(profile: ThunderbirdProfile,
+    abErrorCallback: (ex: Error) => void,
+    entryErrorCallback: (ex: Error) => void):
+    Promise<ArrayColl<ThunderbirdAddressbook>> {
     await profile.readPrefs();
     let addressbooks = new ArrayColl<ThunderbirdAddressbook>();
     for (let key in profile.prefs) {
@@ -60,10 +64,10 @@ export class ThunderbirdAddressbook extends Addressbook {
         }
         let serverID = key.slice("ldap_2.servers.".length, -(".filename".length));
         let name = sanitize.string(profile.prefs[`ldap_2.servers.${serverID}.description`], "Old addressbook");
-        let ab = await this.read(profile, filename, name);
+        let ab = await this.read(profile, filename, name, entryErrorCallback);
         addressbooks.add(ab);
       } catch (ex) {
-        console.log(ex?.message ?? ex);
+        abErrorCallback(ex);
       }
     }
     return addressbooks;

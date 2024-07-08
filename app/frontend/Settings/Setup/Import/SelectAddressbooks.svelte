@@ -6,7 +6,7 @@
   <StatusMessage status="processing"
     message={$t`Importing address books...`} />
 {:then}
-  <hbox class="found">{$t`Found ${addressbooks.length} imported addressbooks`}</hbox>
+  <hbox class="found">{$t`Found ${$addressbooks.length} imported addressbooks`}</hbox>
   <vbox class="list">
     <Scroll>
       <grid class="protocol-grid">
@@ -20,8 +20,18 @@
 {:catch ex}
   {ex?.message ?? ex + ""}
 {/await}
+{#if isThunderbirdRunning}
+  <StatusMessage status="error"
+    message={$t`Please close Thunderbird to import the address books of your current profile.`}>
+    <vbox class="retry">
+      <Button label={$t`Retry`} classes="filled"
+        onClick={startImport}
+        />
+    </vbox>
+  </StatusMessage>
+{/if}
 <ButtonsBottom
-  canContinue={!!addressbooks.length}
+  canContinue={!!$addressbooks.length}
   onContinue={onOK}
   >
   <Button label={$t`Skip`} classes="secondary"
@@ -46,19 +56,30 @@
   import { ArrayColl } from "svelte-collections";
   import { appGlobal } from "../../../../logic/app";
   import { SQLAddressbook } from "../../../../logic/Contacts/SQL/SQLAddressbook";
+  import { logError } from "../../../Util/error";
 
   export let addressbooks = new ArrayColl<Addressbook>();
   export let onContinue = () => undefined;
 
+  let errors = new ArrayColl<Error>();
+  let isThunderbirdRunning = false;
+
+  function reset() {
+    addressbooks.clear();
+    errors.clear();
+    isThunderbirdRunning = false;
+  }
+
   async function startImport() {
+    reset();
     let profiles = await ThunderbirdProfile.findProfiles();
     if (profiles.length) {
       for (let profile of profiles.filter(p => p.name && !p.name.toLowerCase().includes("test"))) {
         try {
-          let abs = await ThunderbirdAddressbook.readAll(profile);
+          let abs = await ThunderbirdAddressbook.readAll(profile, abErrorCallback, entryErrorCallback);
           addressbooks.addAll(abs);
         } catch (ex) {
-          console.log(ex?.message);
+          abErrorCallback(ex);
         }
       }
     }
@@ -68,10 +89,23 @@
     }
 
     //console.log("Found Thunderbird addressbooks", addressbooks.contents.map(ab => ab.name));
-    if (!addressbooks.length) {
+    if (!addressbooks.length && !isThunderbirdRunning) {
       onContinue();
       return;
     }
+  }
+
+  function abErrorCallback(ex: Error) {
+    errors.add(ex);
+    let code = (ex as any)?.code;
+    if (code == "SQLITE_BUSY" || code == "SQLITE_LOCKED") {
+      isThunderbirdRunning = true;
+    }
+    logError(ex);
+  }
+
+  function entryErrorCallback(ex: Error) {
+    console.log(ex?.message ?? ex + "");
   }
 
   function onUncheckAll() {
@@ -112,5 +146,9 @@
   }
   .protocol {
     margin-inline-start: 16px;
+  }
+  .retry {
+    justify-content: center;
+    margin-inline-start: 24px;
   }
 </style>
