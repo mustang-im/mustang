@@ -100,4 +100,7 @@
     grid-template-columns: auto max-content;
     margin: 4px 12px;
   }
+  .protocol {
+    margin-inline-start: 16px;
+  }
 </style>

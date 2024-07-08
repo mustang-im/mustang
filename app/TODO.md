@@ -3,7 +3,6 @@
   * Import
     * "Create more accounts" screen
     * Polish UI for Workspace page
-    * Contacts: TB address books
   * Autoconfig fails
   * Autoconfig debug output
   * SSL errors: Allow override (autoconfig, mail server), e.g. Proton

@@ -207,11 +207,11 @@ function createIMAPFlowConnection(...args): ImapFlow {
   return new ImapFlow(...args);
 }
 
-function getSQLiteDatabase(filename: string): Database {
+function getSQLiteDatabase(filename: string, options: any): Database {
   if (!filename.startsWith("/")) {
     filename = path.join(getConfigDir(), filename);
   }
-  return new Database(filename);
+  return new Database(filename, options);
 }
 
 async function sendMailNodemailer(transport, mail) {

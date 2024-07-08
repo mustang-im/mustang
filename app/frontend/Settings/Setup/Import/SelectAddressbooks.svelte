@@ -12,7 +12,7 @@
       <grid class="protocol-grid">
         {#each $addressbooks.each as addressbook}
           <Checkbox label={addressbook.name} bind:checked={addressbook.import} />
-          <hbox class="protocol">{addressbook.protocol.toUpperCase()}</hbox>
+          <hbox class="protocol">Thunderbird</hbox>
         {/each}
       </grid>
     </Scroll>
@@ -51,24 +51,23 @@
   export let onContinue = () => undefined;
 
   async function startImport() {
-    /* TODO very slow, and unsuccessful
     let profiles = await ThunderbirdProfile.findProfiles();
     if (profiles.length) {
       for (let profile of profiles.filter(p => p.name && !p.name.toLowerCase().includes("test"))) {
         try {
-          addressbooks.addAll(await ThunderbirdAddressbook.readAll(profile));
+          let abs = await ThunderbirdAddressbook.readAll(profile);
+          addressbooks.addAll(abs);
         } catch (ex) {
           console.log(ex?.message);
         }
       }
     }
-    */
 
     for (let account of addressbooks) {
       (account as any).import = true;
     }
 
-    console.log("Found Thunderbird addressbooks", addressbooks);
+    //console.log("Found Thunderbird addressbooks", addressbooks.contents.map(ab => ab.name));
     if (!addressbooks.length) {
       onContinue();
       return;
@@ -110,5 +109,8 @@
   grid.protocol-grid {
     grid-template-columns: auto max-content;
     margin: 4px 12px;
+  }
+  .protocol {
+    margin-inline-start: 16px;
   }
 </style>

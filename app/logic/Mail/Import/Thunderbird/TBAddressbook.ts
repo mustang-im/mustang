@@ -10,6 +10,7 @@ export class ThunderbirdAddressbook extends Addressbook {
   readonly protocol: string = "thunderbird-addressbook-sqlite";
 
   static async read(profile: ThunderbirdProfile, dbFilename: string, name: string): Promise<ThunderbirdAddressbook> {
+    //console.log("Reading ", name, "file", dbFilename);
     let ab = new ThunderbirdAddressbook();
     ab.id = "tb-" + dbFilename;
     ab.name = name;
@@ -58,7 +59,7 @@ export class ThunderbirdAddressbook extends Addressbook {
           continue;
         }
         let serverID = key.slice("ldap_2.servers.".length, -(".filename".length));
-        let name = sanitize.string(profile.prefs[`"ldap_2.servers.${serverID}.description"`], "Old addressbook");
+        let name = sanitize.string(profile.prefs[`ldap_2.servers.${serverID}.description`], "Old addressbook");
         let ab = await this.read(profile, filename, name);
         addressbooks.add(ab);
       } catch (ex) {
@@ -70,7 +71,6 @@ export class ThunderbirdAddressbook extends Addressbook {
 
   static async getDatabase(profile: ThunderbirdProfile, dbFilename: string): Promise<Database> {
     let filePath = await appGlobal.remoteApp.path.join(profile.path, dbFilename);
-    console.log("Importing TB address book in file", filePath);
-    return await appGlobal.remoteApp.getSQLiteDatabase(filePath);
+    return await appGlobal.remoteApp.getSQLiteDatabase(filePath, { readonly: true, timeout: 200 });
   }
 }
