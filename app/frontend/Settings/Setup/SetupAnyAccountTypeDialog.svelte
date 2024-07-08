@@ -10,9 +10,6 @@
 <script lang="ts">
   import BackgroundVideo from "./Shared/BackgroundVideo.svelte";
   import SetupAnyAccountType from "./SetupAnyAccountType.svelte";
-
-  export let onContinue = () => undefined;
-  export let onCancel = () => undefined;
 </script>
 
 <style>

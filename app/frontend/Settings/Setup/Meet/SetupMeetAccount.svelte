@@ -11,11 +11,12 @@
 
 <script lang="ts">
   import type { MeetAccount } from "../../../../logic/Meet/MeetAccount";
-  import { openApp } from "../../../AppsBar/selectedApp";
+  import { openApp, selectedApp } from "../../../AppsBar/selectedApp";
   import { selectedCategory } from "../../Window/selected";
   import { getSettingsCategoryForApp } from "../../Window/CategoriesUtils";
   import { settingsMustangApp } from "../../Window/SettingsMustangApp";
   import { meetMustangApp } from "../../../Meet/MeetMustangApp";
+  import { SetupMustangApp } from "../SetupMustangApp";
   import SelectProtocol from "./SelectProtocol.svelte";
   import BackgroundVideo from "../Shared/BackgroundVideo.svelte";
 
@@ -31,8 +32,12 @@
   }
 
   function onClose() {
-    $selectedCategory = getSettingsCategoryForApp(meetMustangApp);
-    openApp(settingsMustangApp);
+    if ($selectedApp instanceof SetupMustangApp && typeof($selectedApp.onBack) == "function") {
+      $selectedApp.onBack();
+    } else {
+      $selectedCategory = getSettingsCategoryForApp(meetMustangApp);
+      openApp(settingsMustangApp);
+    }
   }
 </script>
 

@@ -13,11 +13,13 @@
       />
   {/if}
   <hbox flex />
-  <Button label={$t`Next`} classes="filled large"
-    disabled={!canContinue}
-    onClick={onContinue}
-    {errorCallback}
-    />
+  {#if showContinue}
+    <Button label={labelContinue ?? $t`Next`} classes="filled large"
+      disabled={!canContinue}
+      onClick={onContinue}
+      {errorCallback}
+      />
+  {/if}
 </hbox>
 
 <script lang="ts">
@@ -30,6 +32,8 @@
   export let canContinue: boolean;
   export let canCancel = false;
   export let showReset = false;
+  export let showContinue = true;
+  export let labelContinue: string | null = null;
   export let errorCallback = (ex: Error) => undefined;
 </script>
 

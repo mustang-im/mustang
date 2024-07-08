@@ -22,8 +22,10 @@
 
 <script lang="ts">
   import type { SettingsCategory } from "./SettingsCategory";
-  import { SetupMustangApp } from "../Setup/SetupMustangApp";
   import { openApp } from "../../AppsBar/selectedApp";
+  import { selectedCategory } from "./selected";
+  import { SetupMustangApp } from "../Setup/SetupMustangApp";
+  import { settingsMustangApp } from "./SettingsMustangApp";
   import AccountItem from "./AccountItem.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
@@ -36,10 +38,16 @@
   $: accounts = category.accounts;
 
   function onNewAccount() {
+    assert(category.newAccountUI, "Need newAccountUI");
     let setupApp = new SetupMustangApp();
     setupApp.mainWindow = category.newAccountUI;
-    assert(setupApp.mainWindow, "Need newAccountUI");
+    setupApp.onBack = onReOpenThis;
     openApp(setupApp);
+  }
+
+  function onReOpenThis() {
+    $selectedCategory = category;
+    openApp(settingsMustangApp);
   }
 </script>
 

@@ -10,7 +10,7 @@
     {:else if step == Step.SelectAddressBooks}
       <SelectAddressbooks onContinue={onAddressbooksContinue} />
     {:else if step == Step.Done}
-      <SetupAnyAccountType />
+      <SetupAnyAccountType onContinue={onClose} />
     {/if}
   </vbox>
   <hbox flex />
@@ -19,15 +19,14 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
+  import { openApp } from "../../../AppsBar/selectedApp";
+  import { mailMustangApp } from "../../../Mail/MailMustangApp";
   import SelectAccounts from "./SelectAccounts.svelte";
   import Password from "./Password.svelte";
   import FinalizeAccount from "./FinalizeAccount.svelte";
   import BackgroundVideo from "../Shared/BackgroundVideo.svelte";
   import SelectAddressbooks from "./SelectAddressbooks.svelte";
   import SetupAnyAccountType from "../SetupAnyAccountType.svelte";
-
-  export let onContinue = () => undefined;
-  export let onCancel = () => undefined;
 
   let accountCandidates: MailAccount[];
   let accounts: MailAccount[];
@@ -81,6 +80,10 @@
 
   function onAddressbooksContinue() {
     step = Step.Done;
+  }
+
+  function onClose() {
+    openApp(mailMustangApp);
   }
 
   function nextAccount() {

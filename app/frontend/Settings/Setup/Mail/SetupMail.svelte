@@ -54,7 +54,7 @@
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
   import { saveAndInitConfig, fillConfig  } from "../../../../logic/Mail/AutoConfig/saveConfig";
   import { makeManualConfig } from "../../../../logic/Mail/AutoConfig/manualConfig";
-  import { openApp } from "../../../AppsBar/selectedApp";
+  import { openApp, selectedApp } from "../../../AppsBar/selectedApp";
   import { mailMustangApp } from "../../../Mail/MailMustangApp";
   import { Cancelled } from "../../../../logic/util/Abortable";
   import EmailAddressPassword from "./EmailAddressPassword.svelte";
@@ -72,6 +72,7 @@
   import { NotReached } from "../../../../logic/util/util";
   import type { ArrayColl } from "svelte-collections";
   import { t } from "../../../../l10n/l10n";
+  import { SetupMustangApp } from "../SetupMustangApp";
 
   let emailAddress: string;
   let password: string;
@@ -219,7 +220,11 @@
 
   function onClose() {
     abort.abort();
-    openApp(mailMustangApp);
+    if ($selectedApp instanceof SetupMustangApp && typeof($selectedApp.onBack) == "function") {
+      $selectedApp.onBack();
+    } else {
+      openApp(mailMustangApp);
+    }
   }
 </script>
 
