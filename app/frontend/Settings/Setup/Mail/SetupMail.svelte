@@ -68,6 +68,7 @@
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import BackgroundVideo from "../Shared/BackgroundVideo.svelte";
   import Button from "../../../Shared/Button.svelte";
+  import { logError } from "../../../Util/error";
   import { NotReached } from "../../../../logic/util/util";
   import type { ArrayColl } from "svelte-collections";
   import { t } from "../../../../l10n/l10n";
@@ -196,6 +197,7 @@
       return;
     }
     console.error(ex);
+    logError(ex);
     errorMessage = ex.message;
     errorGravity = ErrorGravity.Error;
   }

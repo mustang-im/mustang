@@ -7,15 +7,11 @@
   * Autoconfig fails
   * Autoconfig debug output
   * SSL errors: Allow override (autoconfig, mail server), e.g. Proton
-  * Error logging
   * OAuth2
     * hotmail scope
     * Google approval
     * Yahoo registration
     * Microsoft - Partner support
-  * Login error UI: Don't show error bar (for background fetches),
-    but just account logged out
-    with error message as tooltip
   * Re-connect JPC on connection loss, e.g. notebook sleep: "WebSocket is already in CLOSING or CLOSED state" makeCall() -> send()
   * No folders -> [Get Mail] button disabled -> Can never login
   * Calendar
