@@ -5,7 +5,7 @@
   "BqElFK": "Vain {0} kansio",
   "ZXxoL2": "{0, monipuolinen, yksi { # paikallinen viesti.} muut paikalliset viestit. }}",
   "o7dGee": "{0, plural, one { #mail} muut { #mails}}",
-  "miUdjW": "uusi,\nlukematta,\n{2, monipuolinen, yksi { { } täydellinen viesti.} muut { # kokonaisviestit. }}",
+  "miUdjW": "{0, monipuolinen, yksi { # paikallinen viesti.} muut paikalliset viestit. }}",
   "6y7ykp": "{0} videon konferenssitili",
   "KFAdPX": "* Kohde",
   "KJIWi5": "*lihavoitu * tai **lihavoitu",
