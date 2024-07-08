@@ -76,8 +76,18 @@ export function fileExtensionForMIMEType(mimetype: string) {
   return ".ext";
 }
 
+/** Abstract class as base class for allowing more specific error classes */
+export class SpecificError extends Error {
+  constructor(ex: Error, message: string) {
+    message = message ?? ex?.message ?? ex + "";
+    super(message);
+    Object.assign(this, ex);
+    this.message = message;
+  }
+}
+
 /** Replace the error message.
- * Some network exceptions are read-only and setting `ex.message` will throw. */
+ * Some network exceptions are read-only and setting `ex.message` will throw.
 export function exMessage(ex: Error, message: string): Error {
   try {
     ex.message = message;
@@ -88,7 +98,7 @@ export function exMessage(ex: Error, message: string): Error {
     e.message = message;
     return e;
   }
-}
+}*/
 
 /** Used for if/else and switch statements
  * when they run into a case that should not happen */

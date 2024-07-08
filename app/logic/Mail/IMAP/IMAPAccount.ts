@@ -5,11 +5,12 @@ import { SQLMailAccount } from "../SQL/SQLMailAccount";
 import { SQLFolder } from "../SQL/SQLFolder";
 import type { EMail } from "../EMail";
 import { SpecialFolder } from "../Folder";
-import { assert, exMessage } from "../../util/util";
+import { assert, SpecificError } from "../../util/util";
 import { notifyChangedProperty } from "../../util/Observable";
 import type { ArrayColl, Collection } from "svelte-collections";
 import type { ImapFlow } from "../../../../e2/node_modules/imapflow";
 import { appName, appVersion, siteRoot } from "../../build";
+import { ConnectError, LoginError } from "../../Abstract/Account";
 
 export class IMAPAccount extends MailAccount {
   readonly protocol: string = "imap";
@@ -96,21 +97,15 @@ export class IMAPAccount extends MailAccount {
     try {
       await connection.connect();
     } catch (ex) {
-      if (ex.responseText) {
-        ex = exMessage(ex, ex.responseText);
-      }
+      let msg = ex?.responseText ?? ex?.message ?? ex + "";
       if (ex.authenticationFailed) {
-        ex = exMessage(ex, "Check your login, username, and password.\n" + ex.message);
-        ex.authFail = true;
-        throw ex;
+        throw new LoginError(ex, "Check your login, username, and password.\n" + msg);
       } else if (ex.code == "ClosedAfterConnectTLS") {
-        ex = exMessage(ex, "Check your login, username, and password.");
-        ex.authFail = true;
-        throw ex;
-      } else if (ex.code == "NoConn" || ex.message == "Command failed.") {
-        throw new Error("Failed to connect to server " + this.hostname + " for account " + this.name);
+        throw new LoginError(ex, "Check your login, username, and password.");
+      } else if (ex.code == "NoConn" || msg == "Command failed.") {
+        throw new ConnectError(ex, "Failed to connect to server " + this.hostname + " for account " + this.name);
       } else {
-        throw ex;
+        throw new ConnectError(ex, msg);
       }
     }
     this._connection = connection;
@@ -124,18 +119,15 @@ export class IMAPAccount extends MailAccount {
         console.log(`${new Date().toISOString()} IMAP connection to ${this.hostname} was closed by server, network or OS. Reconnecting...`);
         await this.reconnect();
       } catch (ex) {
-        ex = exMessage(ex, `Reconnection failed after connection closed:\n${ex.message}\n${this.hostname} IMAP server`);
-        this.errorCallback(ex);
+        this.errorCallback(new ConnectError(ex, `Reconnection failed after connection closed:\n${ex.message}\n${this.hostname} IMAP server`));
       }
     });
     connection.on("error", async (ex) => {
       try {
-        ex = exMessage(ex, `${new Date().toISOString()} Connection to server for ${this.name} failed:\n${ex.message}`);
-        this.errorCallback(ex);
+        this.errorCallback(new ConnectError(ex, `${new Date().toISOString()} Connection to server for ${this.name} failed:\n${ex.message}`));
         await this.reconnect();
       } catch (ex) {
-        ex = exMessage(ex, `Reconnect failed after connection error:\n${ex.message}\n${this.hostname} IMAP server`);
-        this.errorCallback(ex);
+        this.errorCallback(new ConnectError(ex, `Reconnect failed after connection error:\n${ex.message}\n${this.hostname} IMAP server`));
       }
     });
     connection.on("exists", async (info) => {
@@ -146,8 +138,7 @@ export class IMAPAccount extends MailAccount {
         await folder.countChanged(info.count, info.prevCount);
       } catch (ex) {
         console.log("Server event", info);
-        ex = exMessage(ex, `Server event about folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`);
-        this.errorCallback(ex);
+        this.errorCallback(new IMAPCommandError(ex, `Server event about folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`));
       }
     });
     connection.on("flags", async (info) => {
@@ -161,8 +152,7 @@ export class IMAPAccount extends MailAccount {
         await folder.messageFlagsChanged(info.uid ?? null, info.seq, info.flags, info.modseq);
       } catch (ex) {
         console.log("Error", ex, "in processing server event", info);
-        ex = exMessage(ex, `Server event about message seq ${info.seq} = UID ${info.uid} in folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`);
-        this.errorCallback(ex);
+        this.errorCallback(new IMAPCommandError(ex, `Server event about message seq ${info.seq} = UID ${info.uid} in folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`));
       }
     });
     connection.on("expunge", async (info) => {
@@ -173,8 +163,7 @@ export class IMAPAccount extends MailAccount {
         await folder.messageDeletedNotification(info.seq);
       } catch (ex) {
         console.log("Server event", info);
-        ex = exMessage(ex, `Server event about folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`);
-        this.errorCallback(ex);
+        this.errorCallback(new IMAPCommandError(ex, `Server event about folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`));
       }
     });
   }
@@ -265,6 +254,9 @@ export class IMAPAccount extends MailAccount {
   newFolder(): IMAPFolder {
     return new IMAPFolder(this);
   }
+}
+
+export class IMAPCommandError extends SpecificError {
 }
 
 const useragent = {

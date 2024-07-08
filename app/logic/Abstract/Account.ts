@@ -1,7 +1,7 @@
 import { Workspace } from "./Workspace";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
-import { AbstractFunction, assert } from "../util/util";
+import { SpecificError, AbstractFunction, assert } from "../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 import type { ComponentType } from "svelte";
 
@@ -105,4 +105,11 @@ function getAllAccounts(): Collection<Account> {
   allAccounts.addAll(appGlobal.emailAccounts);
   allAccounts.addAll(appGlobal.chatAccounts);
   return allAccounts;
+}
+
+export class ConnectError extends SpecificError {
+}
+
+export class LoginError extends SpecificError {
+  authFail: true;
 }

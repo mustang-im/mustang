@@ -1,11 +1,11 @@
 import { Folder, SpecialFolder } from "../Folder";
 import { IMAPEMail } from "./IMAPEMail";
-import type { IMAPAccount } from "./IMAPAccount";
+import { type IMAPAccount, IMAPCommandError } from "./IMAPAccount";
 import { SQLFolder } from "../SQL/SQLFolder";
 import { SQLEMail } from "../SQL/SQLEMail";
 import type { EMail } from "../EMail";
 import { ArrayColl, Collection } from "svelte-collections";
-import { assert, exMessage } from "../../util/util";
+import { assert } from "../../util/util";
 import { Buffer } from "buffer";
 import { gt } from "../../../l10n/l10n";
 
@@ -74,11 +74,12 @@ export class IMAPFolder extends Folder {
       return await imapFunc(conn);
     } catch (ex) {
       if (ex.responseText) {
-        ex = exMessage(ex, ex.responseText
+        throw new IMAPCommandError(ex, ex.responseText
           .replace("Error in IMAP command", "IMAP")
           .replace(/ \([\d\. +]* secs\)\./, ""));
+      } else {
+        throw ex;
       }
-      throw ex;
     } finally {
       lock?.release();
     }
