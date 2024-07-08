@@ -123,18 +123,17 @@ export class IMAPAccount extends MailAccount {
         console.log(`${new Date().toISOString()} IMAP connection to ${this.hostname} was closed by server, network or OS. Reconnecting...`);
         await this.reconnect();
       } catch (ex) {
-        this.errorCallback(this.fatalError = new ConnectError(ex,
-          `Reconnection failed after connection closed:\n${ex.message}\n${this.hostname} IMAP server`));
+        this.fatalError = new ConnectError(ex,
+          `Reconnection failed after connection closed:\n${ex.message}\n${this.hostname} IMAP server`);
       }
     });
     connection.on("error", async (ex) => {
       try {
-        this.errorCallback(this.fatalError = new ConnectError(ex,
-          `${new Date().toISOString()} Connection to server for ${this.name} failed:\n${ex.message}`));
+        console.log(`${new Date().toISOString()} Connection to server for ${this.name} failed:\n${ex.message}`);
         await this.reconnect();
       } catch (ex) {
-        this.errorCallback(this.fatalError = new ConnectError(ex,
-          `Reconnect failed after connection error:\n${ex.message}\n${this.hostname} IMAP server`));
+        this.fatalError = new ConnectError(ex,
+          `Reconnect failed after connection error:\n${ex.message}\n${this.hostname} IMAP server`);
       }
     });
     connection.on("exists", async (info) => {
