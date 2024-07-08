@@ -25,14 +25,14 @@ export class IMAPEMail extends EMail {
 
   async download() {
     let msgInfo = await this.folder.runCommand(async (conn) => {
-      // TODO uid failed for me for msgs with uid > folder msg count
-      return await conn.fetchOne(this.seq + "", {
+      return await conn.fetchOne(this.uid + "", {
+        uid: true,
         size: true,
         threadId: true,
         envelope: true,
         source: true,
         flags: true,
-      });
+      }, { uid: true });
     });
     this.fromFlow(msgInfo);
     await this.parseMIME();
