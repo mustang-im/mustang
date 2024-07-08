@@ -37,7 +37,7 @@
   import Splitter from "../Shared/Splitter.svelte";
   import MailInBackground from "../Mail/MailInBackground.svelte";
   import MeetBackground from "../Meet/MeetBackground.svelte";
-  import InitialSetup from "../Settings/Setup/InitialSetup.svelte";
+  import InitialSetup from "../Settings/Setup/Import/InitialSetup.svelte";
   import { catchErrors, backgroundError } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { onMount } from "svelte";

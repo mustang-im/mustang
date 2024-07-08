@@ -9,6 +9,8 @@
       <FinalizeAccount {account} onContinue={onFinalizeContinue} onBack={onFinalizeBack} />
     {:else if step == Step.SelectAddressBooks}
       <SelectAddressbooks onContinue={onAddressbooksContinue} />
+    {:else if step == Step.Done}
+      <SetupAnyAccountType />
     {/if}
   </vbox>
   <hbox flex />
@@ -22,6 +24,7 @@
   import FinalizeAccount from "./FinalizeAccount.svelte";
   import BackgroundVideo from "../Shared/BackgroundVideo.svelte";
   import SelectAddressbooks from "./SelectAddressbooks.svelte";
+  import SetupAnyAccountType from "../SetupAnyAccountType.svelte";
 
   export let onContinue = () => undefined;
   export let onCancel = () => undefined;
@@ -36,6 +39,7 @@
     Password = 2,
     FinalizeAccount = 3,
     SelectAddressBooks = 4,
+    Done = 5,
   }
   let step: Step = Step.SelectAccounts;
 
@@ -76,7 +80,7 @@
   }
 
   function onAddressbooksContinue() {
-    onContinue();
+    step = Step.Done;
   }
 
   function nextAccount() {
