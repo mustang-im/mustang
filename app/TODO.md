@@ -17,6 +17,7 @@
     but just account logged out
     with error message as tooltip
   * Re-connect JPC on connection loss, e.g. notebook sleep: "WebSocket is already in CLOSING or CLOSED state" makeCall() -> send()
+  * No folders -> [Get Mail] button disabled -> Can never login
   * Calendar
     * Change Date
     * Delete Event
@@ -27,6 +28,7 @@
   * Bug: Selection: Default selection on start
   * Inline images send
   * Context menu for content: Copy text, link, image
+  * Settings: Server: Allow to change password
   * Move messages to other accounts
   * Import: Polish UI style
   * Main window

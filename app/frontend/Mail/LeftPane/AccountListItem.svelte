@@ -1,4 +1,4 @@
-<hbox class="account">
+<hbox class="account" title={$account.fatalError ? account.fatalError.message : ""}>
   {#if $account.isLoggedIn}
     <hbox class="icon"><Icon data={AccountIcon} size="16px" /></hbox>
   {:else}

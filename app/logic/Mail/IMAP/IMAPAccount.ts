@@ -51,6 +51,7 @@ export class IMAPAccount extends MailAccount {
     if (this._connection) {
       return this._connection;
     }
+    this.fatalError = null;
 
     // Auth method
     let usePassword = [
@@ -99,13 +100,16 @@ export class IMAPAccount extends MailAccount {
     } catch (ex) {
       let msg = ex?.responseText ?? ex?.message ?? ex + "";
       if (ex.authenticationFailed) {
-        throw new LoginError(ex, "Check your login, username, and password.\n" + msg);
+        throw this.fatalError = new LoginError(ex,
+          "Check your login, username, and password.\n" + msg);
       } else if (ex.code == "ClosedAfterConnectTLS") {
-        throw new LoginError(ex, "Check your login, username, and password.");
+        throw this.fatalError = new LoginError(ex,
+          "Check your login, username, and password.");
       } else if (ex.code == "NoConn" || msg == "Command failed.") {
-        throw new ConnectError(ex, "Failed to connect to server " + this.hostname + " for account " + this.name);
+        throw this.fatalError = new ConnectError(ex,
+          "Failed to connect to server " + this.hostname + " for account " + this.name);
       } else {
-        throw new ConnectError(ex, msg);
+        throw this.fatalError = new ConnectError(ex, msg);
       }
     }
     this._connection = connection;
@@ -119,15 +123,18 @@ export class IMAPAccount extends MailAccount {
         console.log(`${new Date().toISOString()} IMAP connection to ${this.hostname} was closed by server, network or OS. Reconnecting...`);
         await this.reconnect();
       } catch (ex) {
-        this.errorCallback(new ConnectError(ex, `Reconnection failed after connection closed:\n${ex.message}\n${this.hostname} IMAP server`));
+        this.errorCallback(this.fatalError = new ConnectError(ex,
+          `Reconnection failed after connection closed:\n${ex.message}\n${this.hostname} IMAP server`));
       }
     });
     connection.on("error", async (ex) => {
       try {
-        this.errorCallback(new ConnectError(ex, `${new Date().toISOString()} Connection to server for ${this.name} failed:\n${ex.message}`));
+        this.errorCallback(this.fatalError = new ConnectError(ex,
+          `${new Date().toISOString()} Connection to server for ${this.name} failed:\n${ex.message}`));
         await this.reconnect();
       } catch (ex) {
-        this.errorCallback(new ConnectError(ex, `Reconnect failed after connection error:\n${ex.message}\n${this.hostname} IMAP server`));
+        this.errorCallback(this.fatalError = new ConnectError(ex,
+          `Reconnect failed after connection error:\n${ex.message}\n${this.hostname} IMAP server`));
       }
     });
     connection.on("exists", async (info) => {

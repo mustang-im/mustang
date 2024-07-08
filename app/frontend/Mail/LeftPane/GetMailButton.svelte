@@ -1,6 +1,6 @@
 <hbox class="get-mail {status}">
   <RoundButton
-    label={$t`Get mail`}
+    label={folder?.account?.fatalError?.message ?? $t`Get mail`}
     icon={
       status == Status.Fetching ? FetchingIcon :
       status == Status.New ? NewIcon :

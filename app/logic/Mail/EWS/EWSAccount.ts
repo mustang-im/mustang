@@ -11,6 +11,7 @@ import type { PersonUID } from "../../Abstract/PersonUID";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { ContentDisposition } from "../Attachment";
+import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { blobToBase64 } from "../../util/util";
 import { assert } from "../../util/util";
@@ -202,6 +203,7 @@ export class EWSAccount extends MailAccount {
   async callEWS(aRequest: JsonRequest): Promise<any> {
     let response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions());
     response.responseXML = this.parseXML(response.data);
+    this.fatalError = null;
     if (response.status == 200) {
       return this.checkResponse(response, aRequest);
     }
@@ -211,9 +213,11 @@ export class EWSAccount extends MailAccount {
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return await this.callEWS(aRequest); // repeat the call
       } else if (!/\bBasic\b/.test(response.WWWAuthenticate)) {
-        throw new Error("Unsupported authentication protocol(s): " + response.WWWAuthenticate);
+        throw this.fatalError = new ConnectError(null,
+          "Unsupported authentication protocol(s): " + response.WWWAuthenticate);
       } else {
-        throw new Error("Password incorrect");
+        throw this.fatalError = new LoginError(null,
+          "Password incorrect");
       }
     } else {
       throw new EWSError(response, aRequest);
