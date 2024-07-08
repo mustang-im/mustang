@@ -5,7 +5,7 @@
   "BqElFK": "مجلد {0} فقط",
   "ZXxoL2": "{0, plural, one { local message. { other { local messages. {}",
   "o7dGee": "{0, plural, one {mail } other {",
-  "miUdjW": "جديد\n{1} غير جاهز\n{2, plural, one { total message. } other {مجموع الرسائل. {}",
+  "miUdjW": "{0, plural, one { local message. { other { local messages. {}",
   "6y7ykp": "حساب تداول فيديو {0}",
   "KFAdPX": "* بند",
   "KJIWi5": "*الجريئة* أو **الجريئة**",
