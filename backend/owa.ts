@@ -54,7 +54,7 @@ export async function fetchSessionData(partition: string, url: string, interacti
   return await response.json();
 }
 
-export async function fetchJSON(partition: string, url: string, request: any) {
+export async function fetchJSON(partition: string, url: string, action: string, request: any) {
   let result = {
     ok: false,
     status: 0,
@@ -69,7 +69,6 @@ export async function fetchJSON(partition: string, url: string, request: any) {
     result.status = 401;
     return result;
   }
-  let action = request.__type.slice(0, -21);
   let options = {
     method: "POST",
     headers: {

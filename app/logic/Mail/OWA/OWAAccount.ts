@@ -2,6 +2,7 @@ import { MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { OWAFolder } from "./OWAFolder";
 import OWACreateItemRequest from "./OWACreateItemRequest";
+import { OWAAddressbook } from "../../Contacts/OWA/OWAAddressbook";
 import { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { ContentDisposition } from "../Attachment";
@@ -51,6 +52,17 @@ export class OWAAccount extends MailAccount {
   async login(interactive: boolean): Promise<void> {
     await this.listFolders(interactive);
     this.hasLoggedIn = true;
+
+    let addressbook = appGlobal.addressbooks.find((addressbook: OWAAddressbook) => addressbook.protocol == "addressbook-owa" && addressbook.url == this.url && addressbook.username == this.emailAddress) as OWAAddressbook | void;
+    if (!addressbook) {
+      addressbook = new OWAAddressbook();
+      addressbook.url = this.url;
+      addressbook.username = this.emailAddress;
+      addressbook.workspace = this.workspace;
+      appGlobal.addressbooks.add(addressbook);
+    }
+    addressbook.account = this;
+    await addressbook.listContacts();
 
     let calendar = appGlobal.calendars.find((calendar: OWACalendar) => calendar.protocol == "calendar-owa" && calendar.url == this.url && calendar.username == this.emailAddress) as OWACalendar | void;
     if (!calendar) {
@@ -106,7 +118,7 @@ export class OWAAccount extends MailAccount {
   async callOWA(aRequest: any): Promise<any> {
     let url = this.url + 'service.svc';
     // Need to ensure the request gets passed as a regular object
-    let response = await appGlobal.remoteApp.OWA.fetchJSON(this.emailAddress, url, Object.assign({}, aRequest));
+    let response = await appGlobal.remoteApp.OWA.fetchJSON(this.emailAddress, url, aRequest.type || aRequest.__type.slice(0, -21), Object.assign({}, aRequest));
     if ([401, 440].includes(response.status)) {
       await this.logout();
       throw new Error("Please login");
