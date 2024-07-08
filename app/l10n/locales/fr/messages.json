@@ -5,7 +5,7 @@
   "BqElFK": "Dossier {0} uniquement",
   "ZXxoL2": "{0, plural, one { # local message. } other { # local messages. }",
   "o7dGee": "{0, plural, one { # mail } other { # mails }}}",
-  "miUdjW": "♪ new, ♪\n{1}non lu,\n{2, plural, one { # total message. } autres { # total messages. }",
+  "miUdjW": "{0, plural, one { # local message. } other { # local messages. }",
   "6y7ykp": "Compte de vidéoconférence {0}",
   "KFAdPX": "* Point",
   "KJIWi5": "*gras* ou **gras**",
