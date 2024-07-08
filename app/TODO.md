@@ -2,18 +2,21 @@
 * Mail
   * Import
     * "Create more accounts" screen
-    * Insert Success / Workflow page
+    * Polish UI for Workspace page
     * Contacts: TB address books
   * Autoconfig fails
+  * Autoconfig debug output
   * SSL errors: Allow override (autoconfig, mail server), e.g. Proton
+  * Error logging
   * OAuth2
+    * hotmail scope
     * Google approval
     * Yahoo registration
     * Microsoft - Partner support
   * Login error UI: Don't show error bar (for background fetches),
     but just account logged out
     with error message as tooltip
-  * IMAP: Invalid messageset (after delete msg. Fixed by [Get mail])
+  * Re-connect JPC on connection loss, e.g. notebook sleep: "WebSocket is already in CLOSING or CLOSED state" makeCall() -> send()
   * Calendar
     * Change Date
     * Delete Event
@@ -22,7 +25,6 @@
     * Drag&Drop: Open on drag over
     * Popup dialog
   * Bug: Selection: Default selection on start
-  * Re-connect JPC on connection loss, e.g. notebook sleep
   * Inline images send
   * Context menu for content: Copy text, link, image
   * Move messages to other accounts
