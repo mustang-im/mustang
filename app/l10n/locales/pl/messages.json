@@ -5,7 +5,7 @@
   "BqElFK": "Tylko folder {0}",
   "ZXxoL2": "{0, plural, one { # local message. } inne { # local message. racja",
   "o7dGee": "{0, plural, one { # mail } other { # mails }}",
-  "miUdjW": "{0} nowy.\n1} nieczytać.\n{2, plural, one { # total message. } inne wiadomości. racja",
+  "miUdjW": "{0, plural, one { # local message. } inne { # local message. racja",
   "6y7ykp": "Konto wideokonferencji {0}",
   "KFAdPX": "* Element",
   "KJIWi5": "*pogrubiony* lub **pogrubiony**",
