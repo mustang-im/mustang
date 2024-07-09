@@ -1,8 +1,5 @@
 # Next
 * Mail
-  * Import
-    * "Create more accounts" screen
-    * Polish UI for Workspace page
   * Autoconfig fails
   * Autoconfig debug output
   * SSL errors: Allow override (autoconfig, mail server), e.g. Proton
@@ -11,6 +8,8 @@
     * Google approval
     * Yahoo registration
     * Microsoft - Partner support
+  * Import
+    * Polish UI for Workspace page
   * Re-connect JPC on connection loss, e.g. notebook sleep: "WebSocket is already in CLOSING or CLOSED state" makeCall() -> send()
   * No folders -> [Get Mail] button disabled -> Can never login
   * Calendar

@@ -84,6 +84,10 @@ export class Account extends Observable {
   toConfigJSON(): any {
     return {};
   }
+
+  toString(): string {
+    return `${this.protocol.toUpperCase()} account: ${this.name}, username ${this.username}, username ${this.username}, URL ${this.url}`;
+  }
 }
 
 let lastID = 0;

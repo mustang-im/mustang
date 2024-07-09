@@ -10,15 +10,17 @@ import { ArrayColl } from "svelte-collections";
 export async function findConfig(emailAddress: string, password: string, exchangeConfirmCallback: (emailAddress: string, redirectDomain: string) => Promise<boolean> | null, abort: AbortController): Promise<ArrayColl<MailAccount>> {
   let domain = getDomainForEmailAddress(emailAddress);
   try {
+    console.log("Starting to fetch config for", emailAddress);
     let priorityOrder = new PriorityAbortable(abort, [
       fetchConfig(domain, emailAddress, abort),
       exchangeAutoDiscoverV2JSON(domain, emailAddress, abort),
     ]);
     return await priorityOrder.run();
   } catch (ex) {
-    console.log(`Fetch config for ${emailAddress} failed`);
+    console.log(`Fetch config for ${emailAddress} failed:`, ex?.message);
   }
   try {
+    console.log("Starting Exchange AutoDiscover V1 XML for", emailAddress);
     let configs = await exchangeAutoDiscoverV1XML(domain, emailAddress, null, password, abort);
     let confirm = configs.find(config => config instanceof ConfirmExchangeRedirect) as ConfirmExchangeRedirect;
     if (confirm) {
@@ -34,9 +36,10 @@ export async function findConfig(emailAddress: string, password: string, exchang
       return configs;
     }
   } catch (ex) {
-    console.log(`AutoDiscover for ${emailAddress} failed`);
+    console.log(`Exchange AutoDiscover for ${emailAddress} failed`);
   }
   try {
+    console.log("Starting to guess config for", emailAddress);
     let config = await guessConfig(domain, emailAddress, abort);
     return new ArrayColl([config as any as MailAccount]);
   } catch (ex) {

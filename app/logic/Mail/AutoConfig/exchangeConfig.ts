@@ -47,7 +47,7 @@ export async function exchangeAutoDiscoverV1XML(domain: string, emailAddress: st
   try {
     return await priorityOrder.run();
   } catch (ex) {
-    throw new Error(`Could not find a config for ${emailAddress}`);
+    throw new Error(`Could not find an Exchange V1 XML config for ${emailAddress}`);
   }
 }
 

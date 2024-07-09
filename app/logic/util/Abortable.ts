@@ -79,6 +79,7 @@ export class ParallelAbortable<T> {
       }
     }
   }
+
   addRequest(request: AbortablePromise<T> | Promise<T>) {
     // Input
     assert(!this.isFinished, "The previous requests already finished, so cannot add new ones anymore");
@@ -87,6 +88,7 @@ export class ParallelAbortable<T> {
     // Add
     this.allRequests.add(requestA);
   }
+
   protected startAll(oneFinished): void {
     for (let request of this.allRequests) {
       this.ongoingRequests.add(request);
@@ -102,6 +104,7 @@ export class ParallelAbortable<T> {
         });
     }
   }
+
   cancel(reason?: string | Cancelled) {
     let reasonC: Cancelled = reason ? reason instanceof Cancelled ? reason : new Cancelled(reason) : new Cancelled("Cancelled")
     this.isFinished = true;
@@ -131,6 +134,22 @@ export class ParallelAbortable<T> {
       }
       this.startAll(checkFinished);
     });
+  }
+
+  get successes(): T[] {
+    return this.succeededRequests.contents;
+  }
+  get errors(): Error[] {
+    return this.failedRequests.contents;
+  }
+  get errorMessages(): string[] {
+    return this.errors.map(ex => ex?.message ?? ex + "");
+  }
+  get printResults(): string {
+    return "  Succeeded:\n" +
+      this.successes.join("\n\n") +
+      "\n  Failed:\n    " +
+      this.errorMessages.join("\n    ");
   }
 }
 

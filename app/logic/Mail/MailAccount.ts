@@ -155,7 +155,11 @@ export class MailAccount extends Account {
   }
 
   toDebugString() {
-    return `${this.protocol.toUpperCase()} account, id ${this.id}, host ${this.hostname}:${this.port}, username ${this.username}, url ${this.url}`;
+    return `${this.protocol.toUpperCase()} account, name ${this.name}, ID ${this.id}, host ${this.hostname}:${this.port}, URL ${this.url}, username ${this.username}, email ${this.emailAddress}`;
+  }
+
+  toString(): string {
+    return this.toDebugString();
   }
 }
 

@@ -16,7 +16,9 @@ export async function fetchConfig(domain: string, emailAddress: string, abort: A
     fetchConfigForMX(domain, abort),
   ]);
   try {
-    return await priorityOrder.run();
+    let config = await priorityOrder.run();
+    console.log("Fetch config results:\n" + priorityOrder.printResults);
+    return config;
   } catch (ex) {
     throw new Error(`Could not find a config for ${emailAddress}`);
   }
@@ -47,6 +49,7 @@ async function fetchConfigFromISP(domain: string, emailAddress: string | null, a
     fetchText(url3, abort),
   ]);
   let xmlStr = await priorityOrder.run();
+  console.log("Fetch from ISP results:\n" + priorityOrder.printResults);
   return readConfigFromXML(xmlStr, domain, "autoconfig-isp");
 }
 
@@ -57,7 +60,9 @@ async function fetchConfigForMX(domain, abort: AbortController): Promise<ArrayCo
     fetchConfigFromISP(mxDomain, null, abort), // without emailAddress
     fetchConfigFromISPDB(mxDomain, abort),
   ]);
-  return await priorityOrder.run();
+  let config = await priorityOrder.run();
+  console.log("Fetch via MX results:\n" + priorityOrder.printResults);
+  return config;
 }
 
 /**
