@@ -7,13 +7,11 @@ import { ArrayColl } from "svelte-collections";
 import sql, { Database } from "../../../../../lib/rs-sqlite";
 
 export class ThunderbirdAddressbook extends Addressbook {
-  readonly protocol: string = "thunderbird-addressbook-sqlite";
-
   static async read(profile: ThunderbirdProfile, dbFilename: string, name: string,
     entryErrorCallback: (ex: Error) => void): Promise<ThunderbirdAddressbook> {
     //console.log("Reading ", name, "file", dbFilename);
     let ab = new ThunderbirdAddressbook();
-    ab.id = "tb-" + dbFilename;
+    ab.id = "tb-" + dbFilename.replace(/\..*/, "ä.").replace(/[^a-zA-Z0-9\-]/g, "");
     ab.name = name;
 
     let db = await this.getDatabase(profile, dbFilename);
