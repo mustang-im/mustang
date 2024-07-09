@@ -45,7 +45,9 @@ export async function exchangeAutoDiscoverV1XML(domain: string, emailAddress: st
     fetchV1HTTP(url3, callArgs, emailAddress, abort),
   ]);
   try {
-    return await priorityOrder.run();
+    let config = await priorityOrder.run();
+    console.log("Exchange AutoDiscover V1 XML results:\n" + priorityOrder.printResults);
+    return config;
   } catch (ex) {
     throw new Error(`Could not find an Exchange V1 XML config for ${emailAddress}`);
   }
@@ -202,7 +204,9 @@ export async function exchangeAutoDiscoverV2JSON(domain: string, emailAddress: s
     fetchV2AllProtocols(url, abort)
   ));
   try {
-    return await priorityOrder.run();
+    let config = await priorityOrder.run();
+    console.log("Exchange AutoDiscover V2 JSON results:\n" + priorityOrder.printResults);
+    return config;
   } catch (ex) {
     throw new Error(`Could not find a config for ${emailAddress}`);
   }
@@ -266,50 +270,42 @@ async function fetchJSON(url: URLString, abort: AbortController): Promise<any> {
   if (!ky) {
     ky = await appGlobal.remoteApp.kyCreate();
   }
-  try {
-    let params = {
-      result: "json",
-      "Content-Type": "text/json; charset=uft8",
-      retry: 0,
-    };
-    let json = await makeAbortable(ky.get(url, params), abort);
-    assert(json && typeof (json) == "object", "Did not receive JSON");
-    return json;
-  } catch (ex) {
-    throw new Error(`Failed to fetch ${url}: ${ex.message}`);
-  }
+  let params = {
+    result: "json",
+    "Content-Type": "text/json; charset=uft8",
+    retry: 0,
+  };
+  let json = await makeAbortable(ky.get(url, params), abort);
+  assert(json && typeof (json) == "object", "Did not receive JSON");
+  return json;
 }
 
 /**
  * @return XML as string
  */
 async function fetchXML(url: URLString, params: any, abort: AbortController): Promise<string> {
-  try {
-    if (params.username && params.password) {
-      if (!params.headers) {
-        params.headers = {};
-      }
-      let str = params.username + ":" + params.password;
-      let utf8 = String.fromCharCode(...new TextEncoder().encode(str));
-      params.headers.Authorization = "Basic " + btoa(utf8);
+  if (params.username && params.password) {
+    if (!params.headers) {
+      params.headers = {};
     }
-    let response = await fetchHTTP(url, params, abort);
+    let str = params.username + ":" + params.password;
+    let utf8 = String.fromCharCode(...new TextEncoder().encode(str));
+    params.headers.Authorization = "Basic " + btoa(utf8);
+  }
+  let response = await fetchHTTP(url, params, abort);
+  if (await response.ok) {
+    return await response.text();
+  }
+  let responseURL = await response.url;
+  let fileExt = url.slice(url.lastIndexOf("."));
+  if (responseURL != url && responseURL.startsWith("https://") && responseURL.endsWith(fileExt)) {
+    // The redirect will have corrupted the request (HTTP POST->GET, and dropped body); retry with the new URL.
+    response = await fetchHTTP(responseURL, params, abort);
     if (await response.ok) {
       return await response.text();
     }
-    let responseURL = await response.url;
-    let fileExt = url.slice(url.lastIndexOf("."));
-    if (responseURL != url && responseURL.startsWith("https://") && responseURL.endsWith(fileExt)) {
-      // The redirect will have corrupted the request (HTTP POST->GET, and dropped body); retry with the new URL.
-      response = await fetchHTTP(responseURL, params, abort);
-      if (await response.ok) {
-        return await response.text();
-      }
-    }
-    throw new Error(`Request failed with status code ${await response.status} ${await response.statusText}`);
-  } catch (ex) {
-    throw new Error(`Failed to fetch ${url}: ${ex.message}`);
   }
+  throw new Error(`Request failed with status code ${await response.status} ${await response.statusText}`);
 }
 
 /**

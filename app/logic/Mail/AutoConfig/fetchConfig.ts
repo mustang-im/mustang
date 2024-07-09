@@ -103,11 +103,7 @@ async function fetchText(url: URLString, abort: AbortController) {
   if (!ky) {
     ky = await appGlobal.remoteApp.kyCreate();
   }
-  try {
-    let text = await makeAbortable(ky.get(url, { result: "text", retry: 0 }), abort);
-    assert(text && typeof (text) == "string", "Did not receive text");
-    return text;
-  } catch (ex) {
-    throw new Error(`Failed to fetch ${url}: ${ex.message}`);
-  }
+  let text = await makeAbortable(ky.get(url, { result: "text", retry: 0 }), abort);
+  assert(text && typeof (text) == "string", "Did not receive text");
+  return text;
 }
