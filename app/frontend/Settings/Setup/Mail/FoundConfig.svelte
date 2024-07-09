@@ -1,6 +1,8 @@
-<StatusMessage status="success" message={successMessage}>
-  <CheckIcon slot="icon" />
-</StatusMessage>
+{#if !haveError}
+  <StatusMessage status="success" message={successMessage}>
+    <CheckIcon slot="icon" />
+  </StatusMessage>
+{/if}
 
 {#if !altConfigs || altConfigs.length == 1}
   <hbox class="display single">
@@ -41,6 +43,7 @@
 
   export let config: MailAccount;
   export let altConfigs: ArrayColl<MailAccount>;
+  export let haveError = false;
 
   // Show only the most preferred (= first) config of the same protocol
   $: uniqueConfigs = filterUnique(altConfigs, (a, b) => a.protocol == b.protocol);

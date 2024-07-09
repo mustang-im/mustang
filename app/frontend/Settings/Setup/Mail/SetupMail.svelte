@@ -13,7 +13,7 @@
       <FindConfig bind:config bind:altConfigs {emailAddress} {password}
         on:continue={onFindConfigSucceeded} on:fail={onFindConfigFailed} {abort} />
     {:else if step == Step.FoundConfig}
-      <FoundConfig bind:config {altConfigs} />
+      <FoundConfig bind:config {altConfigs} haveError={!!errorMessage} />
     {:else if step == Step.CheckConfig}
       <CheckConfig {config} {emailAddress} {password}
         on:continue={onCheckConfigSucceeded} on:fail={onCheckConfigFailed} {abort} />
@@ -153,6 +153,7 @@
       step = Step.FoundConfig;
     } else if (step == Step.FoundConfig) {
       fillConfig(config, emailAddress, password);
+      errorMessage = null;
       step = Step.CheckConfig;
     } else if (step == Step.ManualConfig) {
       errorMessage = null;
@@ -160,6 +161,7 @@
         return;
       }
       fillConfig(config, emailAddress, password);
+      errorMessage = null;
       step = Step.CheckConfig;
     } else if (step == Step.CheckConfig) {
       step = Step.FinalizeConfig;
