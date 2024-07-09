@@ -47,7 +47,7 @@
   .warning .box,
   .error .box {
     background-color: #FFFAEC;
-    color: #FFC83A;
+    color: #DD0000;
     border: 1px solid #FFC83A;
   }
   @media (prefers-color-scheme: dark) {
