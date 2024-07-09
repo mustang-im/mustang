@@ -1,7 +1,6 @@
 # Next
 * Mail
   * Autoconfig fails
-  * Autoconfig debug output
   * SSL errors: Allow override (autoconfig, mail server), e.g. Proton
   * OAuth2
     * hotmail scope
