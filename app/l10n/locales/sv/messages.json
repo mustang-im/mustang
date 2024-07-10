@@ -5,7 +5,7 @@
   "BqElFK": "Endast {0} mapp",
   "ZXxoL2": "{0, plural, one { # local message.} andra { # lokala meddelanden. }}",
   "o7dGee": "{0, plural, one { # mail } andra { # mail }}",
-  "miUdjW": "{0, plural, one { # local message.} andra { # lokala meddelanden. }}",
+  "miUdjW": "{0} nytt,\n{1} oläst,\n{2, plural, one { # totalt meddelande} andra { # totala meddelanden. }}",
   "6y7ykp": "{0} videokonferenskonto",
   "KFAdPX": "* Objekt",
   "KJIWi5": "*fetstil* eller **fetstil**",
