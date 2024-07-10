@@ -5,7 +5,7 @@
   "BqElFK": "{0} Pouze složka",
   "ZXxoL2": "{0, množství, jeden { # lokální zpráva. } další { # lokální zprávy. }}",
   "o7dGee": "{0, množství, jeden { # mail } další { # mails }}",
-  "miUdjW": "{0, množství, jeden { # lokální zpráva. } další { # lokální zprávy. }}",
+  "miUdjW": "{0} nový,\n{1} unread,\n{2, číslo, jedna { # celková zpráva. } další { # celkových zpráv. }}",
   "6y7ykp": "{0} účet videokonference",
   "KFAdPX": "* Položka",
   "KJIWi5": "*tučně* nebo **tučně**",
