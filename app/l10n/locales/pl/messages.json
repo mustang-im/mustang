@@ -294,7 +294,7 @@
   "wpmkz0": "Popup",
   "hZ6znB": "Port",
   "p/78dY": "Położenie",
-  "G/PGJi": "Wcześniej o {0, plural, one { dzień } other { # dni}",
+  "G/PGJi": "Poprzednie {0, plural, one { dzień } other { # dni}}",
   "5eT2Y7": "Poprzednie spotkania",
   "BZz12Q": "Drukuj",
   "rjGI/Q": "Prywatność",
