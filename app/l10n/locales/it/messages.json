@@ -5,7 +5,7 @@
   "BqElFK": "Solo cartella {0}",
   "ZXxoL2": "{0, plurale, uno { # messaggio locale. } altro { # messaggi locali. }}",
   "o7dGee": "{0, plurale, uno { # mail } altro { # mails }}",
-  "miUdjW": "{0, plurale, uno { # messaggio locale. } altro { # messaggi locali. }}",
+  "miUdjW": "Novità,\n{1} non letto,\n{2, plurale, uno { # messaggio totale. } altro { # messaggi totali. }}",
   "6y7ykp": "Account videoconferenza {0}",
   "KFAdPX": "* Elemento",
   "KJIWi5": "*bold* o **bold**",
