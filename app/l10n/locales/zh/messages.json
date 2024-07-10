@@ -1,7 +1,7 @@
 {
   "IYbM1Z": "IYbM1Z",
   "FlvwwB": "仅{0} 账户",
-  "QpgBEp": "{0,复数,1{#day}",
+  "QpgBEp": "{0,plural,other{#天}}",
   "BqElFK": "仅{0} 文件夹",
   "ZXxoL2": "{0,复数,1{地方信息>} 页: 1",
   "o7dGee": "(1 p-4, 1 p-3, 1 fs, 1 gs, 1 ns",
