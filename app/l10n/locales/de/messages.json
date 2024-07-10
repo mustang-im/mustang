@@ -5,7 +5,7 @@
   "BqElFK": "Nur {0} Ordner",
   "ZXxoL2": "{0, plural, eine { # lokale nachricht. } andere { # lokale nachrichten. }",
   "o7dGee": "{0, plural, one { # mail } other { # mails }}}",
-  "miUdjW": "{0, plural, eine { # lokale nachricht. } andere { # lokale nachrichten. }",
+  "miUdjW": "{0} neu,\n{1} ungelesen,\n{2, plural, one { # total message. }",
   "6y7ykp": "{0} Videokonferenz-Konto",
   "KFAdPX": "* Eintrag",
   "KJIWi5": "*Fett* oder **Fett**",
