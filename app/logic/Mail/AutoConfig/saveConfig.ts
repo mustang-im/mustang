@@ -1,4 +1,4 @@
-import type { MailAccount } from "../MailAccount";
+import { AuthMethod, type MailAccount } from "../MailAccount";
 import { SQLMailAccount } from "../SQL/SQLMailAccount";
 import { ContactEntry, Person } from "../../Abstract/Person";
 import { Folder, SpecialFolder } from "../../Mail/Folder";
@@ -59,6 +59,10 @@ export function fillConfig(config: MailAccount, emailAddress: string, password: 
       config.outgoing.name += " "; // Hack for SMTP and uniqueness
     }
     fillConfig(config.outgoing, emailAddress, password);
+  }
+  if (config.authMethod == AuthMethod.OAuth2) {
+    config.oAuth2.username = config.emailAddress; // Fill oAuth2 username before saving refresh token
+    config.oAuth2.setPassword(password);
   }
 }
 
