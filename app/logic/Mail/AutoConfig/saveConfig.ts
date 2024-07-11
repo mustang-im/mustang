@@ -62,6 +62,7 @@ export function fillConfig(config: MailAccount, emailAddress: string, password: 
   }
   if (config.authMethod == AuthMethod.OAuth2) {
     config.oAuth2.username = config.emailAddress; // Fill oAuth2 username before saving refresh token
+    config.oAuth2.setPassword(password);
   }
 }
 
