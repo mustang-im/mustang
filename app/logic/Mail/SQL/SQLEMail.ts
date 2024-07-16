@@ -10,7 +10,7 @@ import { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import sql from "../../../../lib/rs-sqlite";
 
-let configDir: string = null;
+let filesDir: string = null;
 
 export class SQLEMail {
   /**
@@ -160,10 +160,8 @@ export class SQLEMail {
 
   protected static async saveAttachment(email: EMail, a: Attachment) {
     assert(email.dbID, "Need to save email before attachment");
-    if (!configDir) {
-      configDir = await appGlobal.remoteApp.getFilesDir();
-    }
-    let filepath = a.filepathLocal?.replace(configDir + "/", "");
+    filesDir ??= await appGlobal.remoteApp.getFilesDir();
+    let filepath = a.filepathLocal?.replace(filesDir + "/", "");
     await (await getDatabase()).run(sql`
       INSERT OR IGNORE INTO emailAttachment (
         emailID, filename, filepathLocal, mimeType, size, contentID, disposition, related
@@ -177,10 +175,8 @@ export class SQLEMail {
    * save its local disk location. */
   static async saveAttachmentFile(email: EMail, a: Attachment) {
     assert(email.dbID, "Need to save email before attachment");
-    if (!configDir) {
-      configDir = await appGlobal.remoteApp.getFilesDir();
-    }
-    let filepath = a.filepathLocal?.replace(configDir + "/", "");
+    filesDir ??= await appGlobal.remoteApp.getFilesDir();
+    let filepath = a.filepathLocal?.replace(filesDir + "/", "");
     await (await getDatabase()).run(sql`
       UPDATE emailAttachment SET
         filepathLocal = ${filepath}
@@ -312,9 +308,7 @@ export class SQLEMail {
       `) as any;
     }
     let fallbackID = 0;
-    if (!configDir) {
-      configDir = await appGlobal.remoteApp.getFilesDir();
-    }
+    filesDir ??= await appGlobal.remoteApp.getFilesDir();
     for (let row of attachmentRows) {
       try {
         let a = new Attachment();
@@ -322,7 +316,7 @@ export class SQLEMail {
         a.contentID = sanitize.nonemptystring(row.contentID, "" + ++fallbackID);
         a.filename = sanitize.nonemptystring(row.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(a.mimeType));
         let filepath = sanitize.string(row.filepathLocal, null);
-        a.filepathLocal = filepath ? configDir + "/" + filepath : null;
+        a.filepathLocal = filepath ? filesDir + "/" + filepath : null;
         a.size = sanitize.integer(row.size, -1);
         a.disposition = sanitize.translate(row.disposition, {
           attachment: ContentDisposition.attachment,

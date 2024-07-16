@@ -4,7 +4,7 @@ import { SQLEMail } from "../SQL/SQLEMail";
 import { appGlobal } from "../../app";
 import { sanitizeFilename, fileExtensionForMIMEType, assert } from "../../util/util";
 
-let configDir: string = null;
+let filesDir: string = null;
 
 /** Save email attachments as files in the local disk filesystem */
 export class RawFilesAttachment {
@@ -77,9 +77,7 @@ export class RawFilesAttachment {
   }
 
   static async getDirPath(email: EMail): Promise<string> {
-    if (!configDir) {
-      configDir = await appGlobal.remoteApp.getFilesDir();
-    }
-    return `${configDir}/files/email/${sanitizeFilename(email.from.emailAddress.replace("@", "-"))}/${email.dbID}-${sanitizeFilename(email.subject)}`;
+    filesDir ??= await appGlobal.remoteApp.getFilesDir();
+    return `${filesDir}/files/email/${sanitizeFilename(email.from.emailAddress.replace("@", "-"))}/${email.dbID}-${sanitizeFilename(email.subject)}`;
   }
 }
