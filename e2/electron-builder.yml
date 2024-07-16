@@ -47,5 +47,6 @@ npmRebuild: false
 publish:
   - provider: github
     protocol: https
+    releaseType: release
 #  - provider generic
 #    url: https://mustang.im/auto-updates
