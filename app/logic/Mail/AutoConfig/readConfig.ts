@@ -148,8 +148,6 @@ function getOAuth2Config(account: MailAccount, autoConfigXML: any): OAuth2 {
     }
   }
   assert(oAuth2, "No suitable OAuth2 config found, neither in AutoConfig XML, nor built-in");
-  oAuth2.setPassword(account.password);
-  oAuth2.username = account.username ?? account.emailAddress;
   account.oAuth2 = oAuth2;
 }
 

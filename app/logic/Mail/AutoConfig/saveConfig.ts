@@ -60,10 +60,6 @@ export function fillConfig(config: MailAccount, emailAddress: string, password: 
     }
     fillConfig(config.outgoing, emailAddress, password);
   }
-  if (config.authMethod == AuthMethod.OAuth2 && config.oAuth2) {
-    config.oAuth2.username = emailAddress; // Fill oAuth2 username before saving refresh token
-    config.oAuth2.setPassword(password);
-  }
 }
 
 function replaceVar(str: string, emailAddress: string): string {

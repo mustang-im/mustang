@@ -79,7 +79,7 @@ export class IMAPAccount extends MailAccount {
       auth: {
         user: this.username,
         pass: usePassword ? this.password : undefined,
-        accessToken: this.oAuth2 ? this.oAuth2.accessToken : null,
+        accessToken: useOAuth2 ? this.oAuth2.accessToken : null,
       },
       clientInfo: useragent,
       tls: {
