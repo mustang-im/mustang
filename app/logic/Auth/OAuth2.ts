@@ -40,9 +40,6 @@ export class OAuth2 extends Observable {
   verificationToken: string; /** `state` URL param of authURL/doneURL */
   uiMethod: OAuth2UIMethod = OAuth2UIMethod.Window;
 
-  username: string;
-  protected password: string;
-
   expiresAt: Date | null = null;
   protected expiryTimout: NodeJS.Timeout;
   refreshErrorCallback = (ex: Error) => console.error(ex);
@@ -65,10 +62,6 @@ export class OAuth2 extends Observable {
   setTokenURLPasswordAuth(url: string | null | undefined) {
     assert(!url || url?.startsWith("https://") || url?.startsWith("http://"), "Malformed OAuth2 server token URL for password: " + url);
     this.tokenURLPasswordAuth = url || null;
-  }
-
-  setPassword(password: string) {
-    this.password = password;
   }
 
   /**
@@ -100,9 +93,9 @@ export class OAuth2 extends Observable {
         console.error(ex);
       }
     }
-    if (this.password && this.tokenURLPasswordAuth) {
+    if (this.account.password && this.tokenURLPasswordAuth) {
       try {
-        return await this.loginWithPassword(this.username, this.password);
+        return await this.loginWithPassword(this.account.username, this.account.password);
       } catch (ex) {
         console.error(ex);
       }
@@ -138,8 +131,6 @@ export class OAuth2 extends Observable {
     }, {
       Authentication: `Basic ${basicAuth}`,
     }, this.tokenURLPasswordAuth);
-    this.username = username;
-    this.password = password;
     return accessToken;
   }
 
@@ -240,7 +231,7 @@ export class OAuth2 extends Observable {
       response_mode: "query",
       scope: this.scope,
       state: this.verificationToken,
-      login_hint: this.username,
+      login_hint: this.account.username,
     });
   }
 
@@ -339,6 +330,6 @@ export class OAuth2 extends Observable {
   }
   protected get storageKey(): string {
     let host = new URL(this.tokenURL).host;
-    return `oauth2.refreshToken.${this.username}.${host}`;
+    return `oauth2.refreshToken.${this.account.username}.${host}`;
   }
 }

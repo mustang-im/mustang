@@ -112,7 +112,6 @@ export class ThunderbirdProfile {
           url.clientID,
           url.clientSecret);
         acc.oAuth2.setTokenURLPasswordAuth(url.tokenURLPasswordAuth);
-        acc.oAuth2.username = acc.username ?? acc.emailAddress;
       }
 
       let identityIDs = this.prefs[`${prefBranch}.identities`]?.split(",");
