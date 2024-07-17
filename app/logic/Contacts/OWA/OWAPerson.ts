@@ -57,7 +57,7 @@ export class OWAPerson extends Person {
     this.name = sanitize.nonemptystring(response.DisplayName, "");
     this.personaID = sanitize.nonemptystring(response.PersonaId.Id);
     this.fields = fields;
-    //await SQLPerson.save(this);
+    await SQLPerson.save(this);
   }
 
   toFields(): Record<string, string> {
@@ -90,6 +90,6 @@ export class OWAPerson extends Person {
     let request = new OWADeletePersonaRequest(this.personaID);
     await this.addressbook.account.callOWA(request);
     this.addressbook.persons.remove(this);
-    // await SQLPerson.deletePerson(this);
+    await SQLPerson.deleteIt(this);
   }
 }

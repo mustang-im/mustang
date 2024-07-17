@@ -1,4 +1,7 @@
 import { Addressbook } from "../Addressbook";
+import { SQLAddressbook } from '../SQL/SQLAddressbook';
+import { SQLPerson } from '../SQL/SQLPerson';
+import { SQLGroup } from '../SQL/SQLGroup';
 import { OWAPerson } from "./OWAPerson";
 import { OWAGroup } from "./OWAGroup";
 import type { OWAAccount } from "../../Mail/OWA/OWAAccount";
@@ -29,6 +32,10 @@ export class OWAAddressbook extends Addressbook {
     if (!this.name) {
       this.name = contacts.DisplayName;
     }
+    if (!this.dbID) {
+      await SQLAddressbook.save(this);
+    }
+
     let persons = [];
     let groups = [];
     let query = {
@@ -71,37 +78,79 @@ export class OWAAddressbook extends Addressbook {
       }
       query.Body.IndexedPageItemView.Offset += kMaxCount;
     } while (response.ResultSet.length == kMaxCount);
-    for (let person of persons) {
-      let request: any = {
-        __type: "GetPersonaJsonRequest:#Exchange",
-        Header: {
-          __type: "JsonRequestHeaders:#Exchange",
-          RequestServerVersion: "Exchange2013",
-        },
-        Body: {
-          __type: "GetPersonaRequest:#Exchange",
-          PersonaId: {
-            __type: "ItemId:#Exchange",
-            Id: person.PersonaId.Id,
+    await this.listPersons(persons);
+    await this.listGroups(groups);
+  }
+
+  async listPersons(persons: any[]) {
+    for (let person of this.persons.contents.filter(person => !persons.some(result => result.PersonaId.Id == person.personaID))) {
+      this.persons.remove(person);
+      await SQLPerson.deleteIt(person);
+    }
+    for (let result of persons) {
+      try {
+        let request: any = {
+          __type: "GetPersonaJsonRequest:#Exchange",
+          Header: {
+            __type: "JsonRequestHeaders:#Exchange",
+            RequestServerVersion: "Exchange2013",
           },
-        },
-      };
-      let response = await this.account.callOWA(request);
-      Object.assign(person, response.Persona);
-      request = new OWAGetNotesForPersonaRequest(person.PersonaId.Id);
-      response = await this.account.callOWA(request);
-      person.Notes = response.PersonaWithNotes?.BodiesArray[0].Value.Value;
+          Body: {
+            __type: "GetPersonaRequest:#Exchange",
+            PersonaId: {
+              __type: "ItemId:#Exchange",
+              Id: result.PersonaId.Id,
+            },
+          },
+        };
+        let response = await this.account.callOWA(request);
+        Object.assign(result, response.Persona);
+        request = new OWAGetNotesForPersonaRequest(result.PersonaId.Id);
+        response = await this.account.callOWA(request);
+        result.Notes = response.PersonaWithNotes?.BodiesArray[0].Value.Value;
+        let person = this.getPersonByPersonaID(result.PersonaId.Id);
+        if (person) {
+          person.fromJSON(result);
+          await SQLPerson.save(person);
+        } else {
+          person = this.newPerson();
+          person.fromJSON(result);
+          await SQLPerson.save(person);
+          this.persons.add(person);
+        }
+      } catch (ex) {
+        this.account.errorCallback(ex);
+      }
     }
-    for (let group of groups) {
-      let request: any = new OWAGetGroupInfoRequest(group.EmailAddress.ItemId.Id);
-      let response = await this.account.callOWA(request);
-      group.Members = response.Members;
-      request = new OWAGetNotesForPersonaRequest(group.PersonaId.Id);
-      response = await this.account.callOWA(request);
-      group.Notes = response.notes?.BodiesArray[0].Value.Value;
+  }
+
+  async listGroups(groups: any[]) {
+    for (let group of this.groups.contents.filter(group => !groups.some(result => result.PersonaId.Id == group.personaID))) {
+      this.groups.remove(group);
+      await SQLGroup.deleteIt(group);
     }
-    this.persons.replaceAll(persons.map(person => this.newPerson().fromJSON(person)));
-    this.groups.replaceAll(groups.map(group => this.newGroup().fromJSON(group)));
+    for (let result of groups) {
+      try {
+        let request: any = new OWAGetGroupInfoRequest(result.EmailAddress.ItemId.Id);
+        let response = await this.account.callOWA(request);
+        result.Members = response.Members;
+        request = new OWAGetNotesForPersonaRequest(result.PersonaId.Id);
+        response = await this.account.callOWA(request);
+        result.Notes = response.notes?.BodiesArray[0].Value.Value;
+        let group = this.getGroupByPersonaID(result.PersonaId.Id);
+        if (group) {
+          group.fromJSON(result);
+          await SQLGroup.save(group);
+        } else {
+          group = this.newGroup();
+          group.fromJSON(result);
+          await SQLGroup.save(group);
+          this.groups.add(group);
+        }
+      } catch (ex) {
+        this.account.errorCallback(ex);
+      }
+    }
   }
 
   getPersonByPersonaID(id: string): OWAPerson | void {

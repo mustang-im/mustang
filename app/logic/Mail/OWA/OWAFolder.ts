@@ -2,6 +2,7 @@ import { Folder, SpecialFolder } from "../Folder";
 import { OWAEMail } from "./OWAEMail";
 import type { OWAAccount } from "./OWAAccount";
 import { SQLFolder } from "../SQL/SQLFolder";
+import { SQLEMail } from "../SQL/SQLEMail";
 import { base64ToArrayBuffer, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -10,12 +11,17 @@ export const kMaxCount = 50;
 
 export class OWAFolder extends Folder {
   account: OWAAccount;
+  dirty: boolean = false;
 
   newEMail(): OWAEMail {
     return new OWAEMail(this);
   }
 
   fromJSON(json: any) {
+    if (this.countTotal != sanitize.integer(json.TotalCount) ||
+        this.countUnread != sanitize.integer(json.UnreadCount)) {
+      this.dirty = true;
+    }
     this.id = sanitize.nonemptystring(json.FolderId.Id);
     this.name = sanitize.nonemptystring(json.DisplayName);
     this.countTotal = sanitize.integer(json.TotalCount);
@@ -44,7 +50,45 @@ export class OWAFolder extends Folder {
     if (!this.dbID) {
       await SQLFolder.save(this);
     }
-    //await SQLEMail.readAll(this);
+    await SQLEMail.readAll(this);
+
+    if (!this.dirty) {
+      let request = {
+        __type: "GetFolderJsonRequest:#Exchange",
+        Header: {
+          __type: "JsonRequestHeaders:#Exchange",
+          RequestServerVersion: "Exchange2013",
+        },
+        Body: {
+          __type: "GetFolderRequest:#Exchange",
+          FolderShape: {
+            __type: "FolderResponseShape:#Exchange",
+            BaseShape: "IdOnly",
+            AdditionalProperties: [{
+              __type: "PropertyUri:#Exchange",
+              FieldURI: "folder:UnreadCount",
+            }, {
+              __type: "PropertyUri:#Exchange",
+              FieldURI: "folder:TotalCount",
+            }],
+          },
+          FolderIds: [{
+            __type: "FolderId:#Exchange",
+            Id: this.id,
+          }],
+        },
+      };
+      let result = await this.account.callOWA(request);
+      let countTotal = sanitize.integer(result.Folders[0].TotalCount);
+      let countUnread = sanitize.integer(result.Folders[0].UnreadCount);
+      if (this.countTotal == countTotal && this.countUnread == countUnread) {
+        // Nothing to do, hopefully.
+        return;
+      }
+      this.countTotal = countTotal;
+      this.countUnread = countUnread;
+    }
+    this.dirty = false;
 
     let allEmail: ArrayColl<OWAEMail> = new ArrayColl();
     let request = {
@@ -102,7 +146,7 @@ export class OWAFolder extends Folder {
         let email = this.getEmailByItemID(sanitize.nonemptystring(message.ItemId.Id));
         if (email) {
           email.setFlags(message);
-          //await SQLEMail.saveWritableProps(email);
+          await SQLEMail.saveWritableProps(email);
           allEmail.add(email);
         } else {
           newMessageIDs.push(message.ItemId.Id);
@@ -111,9 +155,9 @@ export class OWAFolder extends Folder {
       allEmail.addAll(await this.getNewMessageHeaders(newMessageIDs));
     }
 
-    //for (let email of this.messages.subtract(allEmail)) {
-      //SQLEMail.deleteIt(email);
-    //}
+    for (let email of this.messages.subtract(allEmail)) {
+      SQLEMail.deleteIt(email);
+    }
     this.messages.replaceAll(allEmail);
   }
 
@@ -211,7 +255,7 @@ export class OWAFolder extends Folder {
         try {
           let email = this.newEMail();
           email.fromJSON(item);
-          //await SQLEMail.save(email);
+          await SQLEMail.save(email);
           allEmail.add(email);
         } catch (ex) {
           this.account.errorCallback(ex);
@@ -258,7 +302,7 @@ export class OWAFolder extends Folder {
             let mimeBase64 = sanitize.nonemptystring(item.MimeContent.Value);
             email.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
             await email.parseMIME();
-            //await email.save();
+            await email.save();
             downloadedEmail.add(email);
           } catch (ex) {
             this.account.errorCallback(ex);

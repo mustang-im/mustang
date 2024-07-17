@@ -108,6 +108,7 @@ function getAllAccounts(): Collection<Account> {
   allAccounts.addAll(appGlobal.addressbooks);
   allAccounts.addAll(appGlobal.emailAccounts);
   allAccounts.addAll(appGlobal.chatAccounts);
+  allAccounts.addAll(appGlobal.calendars);
   return allAccounts;
 }
 
