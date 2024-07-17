@@ -37,6 +37,7 @@
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
   import { IMAPAccount } from "../../../../logic/Mail/IMAP/IMAPAccount";
   import { EWSAccount } from "../../../../logic/Mail/EWS/EWSAccount";
+  import { OWAAccount } from "../../../../logic/Mail/OWA/OWAAccount";
   import StatusMessage from "../Shared/StatusMessage.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Checkbox from "../../../Shared/Checkbox.svelte";
@@ -61,8 +62,8 @@
       }
     }
 
-    // POP3, OWA, ActiveSync not yet supported
-    accounts = accounts.filter(acc => acc instanceof IMAPAccount || acc instanceof EWSAccount);
+    // POP3, ActiveSync not yet supported
+    accounts = accounts.filter(acc => acc instanceof IMAPAccount || acc instanceof EWSAccount || acc instanceof OWAAccount);
 
     for (let account of accounts) {
       (account as any).import = true;
