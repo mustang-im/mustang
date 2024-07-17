@@ -76,7 +76,7 @@ export class OWAEvent extends Event {
       await this.saveTask();
     }
     */
-    //await super.save();
+    await super.save();
   }
 
   async saveCalendarItem() {

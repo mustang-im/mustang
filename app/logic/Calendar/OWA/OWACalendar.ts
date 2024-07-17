@@ -1,9 +1,11 @@
 import { Calendar } from "../Calendar";
 import { OWAEvent } from "./OWAEvent";
 import type { OWAAccount } from "../../Mail/OWA/OWAAccount";
+import { SQLCalendar } from "../SQL/SQLCalendar";
+import { SQLEvent } from "../SQL/SQLEvent";
 import { kMaxCount } from "../../Mail/OWA/OWAFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import type { ArrayColl } from "svelte-collections";
+import { ArrayColl } from "svelte-collections";
 
 export class OWACalendar extends Calendar {
   readonly protocol: string = "calendar-owa";
@@ -19,15 +21,22 @@ export class OWACalendar extends Calendar {
   }
 
   async listEvents() {
-    let events: OWAEvent[] = [];
+    if (!this.dbID) {
+      await SQLCalendar.save(this);
+    }
+
+    let events = new ArrayColl<OWAEvent>;
     await this.listFolder("calendar", events);
     /* Disabling tasks for now.
     await this.listFolder("tasks", events);
     */
+    for (let event of this.events.subtract(events)) {
+      SQLEvent.deleteIt(event);
+    }
     this.events.replaceAll(events);
   }
 
-  async listFolder(folder: string, events: OWAEvent[]) {
+  async listFolder(folder: string, events: ArrayColl<OWAEvent>) {
     let request = {
       __type: "FindItemJsonRequest:#Exchange",
       Header: {
@@ -64,7 +73,7 @@ export class OWACalendar extends Calendar {
     }
   }
 
-  async getEvents(eventIDs: string[], events: OWAEvent[]) {
+  async getEvents(eventIDs: string[], events: ArrayColl<OWAEvent>) {
     if (!eventIDs.length) {
       return;
     }
@@ -125,16 +134,10 @@ export class OWACalendar extends Calendar {
     let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
     for (let item of items) {
       try {
-        let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id));
-        if (event) {
-          event.fromJSON(item);
-          //await SQLEvent.save(event);
-        } else {
-          event = this.newEvent();
-          event.fromJSON(item);
-          //await SQLEvent.save(event);
-          events.push(event);
-        }
+        let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id)) || this.newEvent();
+        event.fromJSON(item);
+        await SQLEvent.save(event);
+        events.add(event);
       } catch (ex) {
         this.account.errorCallback(ex);
       }
