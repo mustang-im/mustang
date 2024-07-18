@@ -34,7 +34,7 @@ export class OWAAccount extends MailAccount {
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
   readonly folderMap = new Map<string, OWAFolder>;
-  /*
+  /**
    * We get notifications for folders we're not interested in.
    * We filter them out by checking that the parent exists.
    * But we have to special-case the root folder,
