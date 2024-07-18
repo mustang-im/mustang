@@ -21,6 +21,7 @@ jobs:
       with:
         node-version: 18.x
 #        cache: 'npm'
+    - run: cd app/build; sh mustang-brand.sh
     - run: cd app; npm install --legacy-peer-deps
     - run: cd lib; npm install
     - run: cd backend; npm install
