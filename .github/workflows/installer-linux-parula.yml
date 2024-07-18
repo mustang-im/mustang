@@ -5,10 +5,14 @@ name: Parula Installers for Linux
 
 on:
   workflow_dispatch # manually triggered
+  push:
+    tags: 'v*'
 
 jobs:
   build:
     runs-on: ubuntu-22.04
+    permissions:
+      contents: write
 
     steps:
     - uses: actions/checkout@v4
@@ -23,7 +27,7 @@ jobs:
     - run: cd lib; npm install
     - run: cd backend; npm install
     - run: cd e2; npm install --legacy-peer-deps
-    - run: cd e2; npm run build:linux
+    - run: cd e2; npm run build:release:linux
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Upload
