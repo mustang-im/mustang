@@ -254,7 +254,7 @@ export class EWSAccount extends MailAccount {
                 throw new EWSItemError(message, request);
               }
               if (message.ConnectionStatus == "Closed") {
-                this.callStream(request, responseCallback);
+                continue; // Re-open connection
               }
               responseCallback(message);
             } catch (ex) {
