@@ -52,6 +52,10 @@ export class OWAAccount extends MailAccount {
     return new OWAFolder(this);
   }
 
+  get partition(): string {
+    return 'persist:login:' + this.id;
+  }
+
   get isLoggedIn(): boolean {
     return this.hasLoggedIn;
   }
@@ -90,7 +94,7 @@ export class OWAAccount extends MailAccount {
 
   async logout(): Promise<void> {
     this.hasLoggedIn = false;
-    return appGlobal.remoteApp.OWA.clearStorageData(this.emailAddress);
+    return appGlobal.remoteApp.OWA.clearStorageData(this.partition);
   }
 
   async send(email: EMail): Promise<void> {
@@ -129,7 +133,7 @@ export class OWAAccount extends MailAccount {
   async callOWA(aRequest: any): Promise<any> {
     let url = this.url + 'service.svc';
     // Need to ensure the request gets passed as a regular object
-    let response = await appGlobal.remoteApp.OWA.fetchJSON(this.emailAddress, url, aRequest.type || aRequest.__type.slice(0, -21), Object.assign({}, aRequest));
+    let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, aRequest.type || aRequest.__type.slice(0, -21), Object.assign({}, aRequest));
     if ([401, 440].includes(response.status)) {
       await this.logout();
       throw new Error("Please login");
@@ -155,7 +159,7 @@ export class OWAAccount extends MailAccount {
   }
 
   async listFolders(interactive?: boolean): Promise<void> {
-    let sessionData = await appGlobal.remoteApp.OWA.fetchSessionData(this.emailAddress, this.url, interactive);
+    let sessionData = await appGlobal.remoteApp.OWA.fetchSessionData(this.partition, this.url, interactive);
     if (!sessionData) {
       throw new Error("Authentication window was closed by user");
     }
@@ -179,12 +183,12 @@ export class OWAAccount extends MailAccount {
   async listenForEvents() {
     try {
       let url = this.url + "ev.owa2?ns=PendingRequest&ev=FinishNotificationRequest&UA=0";
-      let response = await appGlobal.remoteApp.OWA.fetchJSON(this.emailAddress, url);
+      let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url);
       let cid = response.json.cid;
       // This loop only ends by exception (e.g. logout) or app shutdown.
       while (true) {
         url = this.url + "ev.owa2?ns=PendingRequest&ev=PendingNotificationRequest&UA=0&cid=" + cid + "&X-OWA-CANARY=";
-        let stream = await appGlobal.remoteApp.OWA.streamJSON(this.emailAddress, url);
+        let stream = await appGlobal.remoteApp.OWA.streamJSON(this.partition, url);
         if (!stream.ok) {
           console.error(`streamJSON failed with HTTP {stream.status} {stream.statusText}`);
           break;
