@@ -72,12 +72,16 @@ export async function fetchJSON(partition: string, url: string, action: string, 
   let options = {
     method: "POST",
     headers: {
-      Action: action,
-      "Content-Type": "application/json",
       "X-OWA-CANARY": cookies[0].value,
     },
-    body: JSON.stringify(request),
   };
+  if (action) {
+    options.headers.Action = action;
+  }
+  if (request) {
+    options.headers["Content-Type"] = "application/json";
+    options.body = JSON.stringify(request);
+  }
   let response = await session.fetch(url, options);
   result.ok = response.ok;
   result.status = response.status;
@@ -85,6 +89,27 @@ export async function fetchJSON(partition: string, url: string, action: string, 
   result.url = response.url;
   result.contentType = response.headers.get('Content-Type');
   result.json = await response.json();
+  return result;
+}
+
+export async function streamJSON(partition: string, url: string) {
+  let result = {
+    ok: false,
+    status: 0,
+    statusText: '',
+    body: null,
+  };
+  let session = Session.fromPartition(partition);
+  let cookies = await session.cookies.get({ name: 'X-OWA-CANARY' });
+  if (!cookies.length) {
+    result.status = 401;
+    return result;
+  }
+  let response = await session.fetch(url + cookies[0].value);
+  result.ok = response.ok;
+  result.status = response.status;
+  result.statusText = response.statusText;
+  result.body = response.body.pipeThrough(new TextDecoderStream());
   return result;
 }
 

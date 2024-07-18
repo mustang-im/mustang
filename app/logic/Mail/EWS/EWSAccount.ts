@@ -231,6 +231,10 @@ export class EWSAccount extends MailAccount {
         let requestXML = this.request2XML(request);
         let data = "";
         let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions(true));
+        if (!response.ok) {
+          console.error(`streamHTTP failed with HTTP {response.status} {response.statusText}`);
+          return;
+        }
         for await (let chunk of response.body) {
           data += chunk;
           while (data.includes(endEnvelope)) {

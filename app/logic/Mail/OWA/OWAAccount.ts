@@ -34,6 +34,13 @@ export class OWAAccount extends MailAccount {
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
   readonly folderMap = new Map<string, OWAFolder>;
+  /*
+   * We get notifications for folders we're not interested in.
+   * We filter them out by checking that the parent exists.
+   * But we have to special-case the root folder,
+   * since Mustang doesn't use a dedicated root folder object.
+   */
+  msgFolderRootID: string | void;
   hasLoggedIn = false;
 
   constructor() {
@@ -75,6 +82,10 @@ export class OWAAccount extends MailAccount {
     }
     calendar.account = this;
     await calendar.listEvents();
+
+    this.listenForEvents();
+    let request = new OWASubscribeToNotificationRequest();
+    this.callOWA(request);
   }
 
   async logout(): Promise<void> {
@@ -148,6 +159,7 @@ export class OWAAccount extends MailAccount {
     if (!sessionData) {
       throw new Error("Authentication window was closed by user");
     }
+    this.msgFolderRootID = sessionData.findFolders.Body.ResponseMessages.Items[0].RootFolder.ParentFolder.FolderId.Id;
     for (let folder of sessionData.findFolders.Body.ResponseMessages.Items[0].RootFolder.Folders) {
       if (!folder.FolderClass || folder.FolderClass == "IPF.Note" || folder.FolderClass.startsWith("IPF.Note.")) {
         let parent = this.folderMap.get(folder.ParentFolderId.Id);
@@ -163,6 +175,80 @@ export class OWAAccount extends MailAccount {
       }
     }
   }
+
+  async listenForEvents() {
+    try {
+      let url = this.url + "ev.owa2?ns=PendingRequest&ev=FinishNotificationRequest&UA=0";
+      let response = await appGlobal.remoteApp.OWA.fetchJSON(this.emailAddress, url);
+      let cid = response.json.cid;
+      // This loop only ends by exception (e.g. logout) or app shutdown.
+      while (true) {
+        url = this.url + "ev.owa2?ns=PendingRequest&ev=PendingNotificationRequest&UA=0&cid=" + cid + "&X-OWA-CANARY=";
+        let stream = await appGlobal.remoteApp.OWA.streamJSON(this.emailAddress, url);
+        if (!stream.ok) {
+          console.error(`streamJSON failed with HTTP {stream.status} {stream.statusText}`);
+          break;
+        }
+        for await (let chunk of stream.body) {
+          // Avoid racing with ourselves, if we caused the notification.
+          await new Promise(resolve => setTimeout(resolve, 100));
+          let matches = chunk.match(/<script>.*?<\/script>/g);
+          if (matches) {
+            let newMessageIDs: string[] = [];
+            for (let match of matches) {
+              let script = match.slice(8, -9);
+              if (script.startsWith("[")) {
+                for (let notification of JSON.parse(script)) {
+                  switch (notification.id) {
+                  case "HierarchyNotification":
+                    this.handleHierarchyNotification(notification);
+                    break;
+                  case "NewMailNotification":
+                    newMessageIDs.push(notification.ItemId);
+                    break;
+                  }
+                }
+              }
+            }
+            if (newMessageIDs.length) {
+              let inbox = this.inbox as OWAFolder;
+              let newMessages = await inbox.getNewMessageHeaders(newMessageIDs);
+              inbox.messages.addAll(newMessages);
+              inbox.downloadMessages(newMessages);
+              inbox.dirty = false; // probably
+            }
+          }
+        }
+      }
+    } catch (ex) {
+      this.errorCallback(ex);
+    }
+  }
+
+  handleHierarchyNotification(notification: any) {
+    try {
+      let parent = this.folderMap.get(notification.parentFolderId);
+      if (!parent && notification.parentFolderId != this.msgFolderRootID) {
+        return;
+      }
+      let folder = this.folderMap.get(notification.folderId);
+      if (!folder) {
+        let parentFolders = parent ? parent.subFolders : this.rootFolders;
+        folder = this.newFolder();
+        folder.parent = parent || null;
+        parentFolders.push(folder);
+        this.folderMap.set(notification.folderId, folder);
+      }
+      folder.fromJSON({
+        FolderId: { Id: notification.folderId },
+        DisplayName: notification.displayName,
+        TotalCount: notification.itemCount,
+        UnreadCount: notification.unreadCount,
+      });
+    } catch (ex) {
+      this.errorCallback(ex);
+    }
+  }
 }
 
 function addRecipients(aRequest: any, aType: string, aRecipients: PersonUID[]): void {
@@ -173,4 +259,33 @@ function addRecipients(aRequest: any, aType: string, aRecipients: PersonUID[]): 
     Name: recipient.name,
     EmailAddress: recipient.emailAddress,
   })), "message:" + aType);
+}
+
+class OWASubscribeToNotificationRequest {
+  readonly request = {
+    __type: "NotificationSubscribeJsonRequest:#Exchange",
+    Header: {
+      __type: "JsonRequestHeaders:#Exchange",
+      RequestServerVersion: "Exchange2013",
+    },
+  };
+  readonly subscriptionData = [{
+    __type: "SubscriptionData:#Exchange",
+    SubscriptionId: "HierarchyNotification",
+    Parameters: {
+      __type: "SubscriptionParameters:#Exchange",
+      NotificationType: "HierarchyNotification",
+    },
+  }, {
+    __type: "SubscriptionData:#Exchange",
+    SubscriptionId: "NewMailNotification",
+    Parameters: {
+      __type: "SubscriptionParameters:#Exchange",
+      NotificationType: "NewMailNotification",
+    },
+  }];
+
+  get type() {
+    return "SubscribeToNotification";
+  }
 }
