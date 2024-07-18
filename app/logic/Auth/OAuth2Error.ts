@@ -1,4 +1,5 @@
 export class OAuth2Error extends Error {
+  authFail: true;
 }
 
 export class OAuth2LoginNeeded extends Error {
