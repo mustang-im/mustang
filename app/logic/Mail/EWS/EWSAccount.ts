@@ -266,6 +266,7 @@ export class EWSAccount extends MailAccount {
           continue;
         }
         this.errorCallback(ex);
+        break;
       }
     }
   }
