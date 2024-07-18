@@ -7,7 +7,7 @@
       <slot name="icon" />
     </hbox>
     {#if message}
-      <hbox>
+      <hbox class="message">
         {message}
       </hbox>
     {/if}
@@ -33,6 +33,9 @@
     margin-inline-start: 8px;
     margin-inline-end: 24px;
     padding: 6px 16px 6px 12px;
+  }
+  .message {
+    overflow-wrap: anywhere;
   }
   .success .box {
     background-color: #E7F9EC;
