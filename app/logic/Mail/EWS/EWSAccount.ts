@@ -223,11 +223,8 @@ export class EWSAccount extends MailAccount {
   }
 
   async callStream(request: Json, responseCallback) {
-    if (!this.isLoggedIn) {
-      throw new LoginError(null, "Please login");
-    }
     let lastAttempt = Date.now();
-    while (this.isLoggedIn && Date.now() - lastAttempt > 10000) { // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
+    while (Date.now() - lastAttempt > 10000) { // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
       try {
         lastAttempt = Date.now();
         const endEnvelope = "</Envelope>";
