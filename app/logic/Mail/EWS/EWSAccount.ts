@@ -223,12 +223,12 @@ export class EWSAccount extends MailAccount {
   }
 
   async callStream(request: Json, responseCallback) {
-    try {
-      if (!this.isLoggedIn) {
-        throw new LoginError(null, "Please login");
-      }
-      let lastAttempt = Date.now();
-      while (this.isLoggedIn && Date.now() - lastAttempt > 10000) { // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
+    if (!this.isLoggedIn) {
+      throw new LoginError(null, "Please login");
+    }
+    let lastAttempt = Date.now();
+    while (this.isLoggedIn && Date.now() - lastAttempt > 10000) { // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
+      try {
         lastAttempt = Date.now();
         const endEnvelope = "</Envelope>";
         let requestXML = this.request2XML(request);
@@ -258,18 +258,18 @@ export class EWSAccount extends MailAccount {
               }
               responseCallback(message);
             } catch (ex) {
-              if (ex?.message == "terminated") {
-                // Connection broke down, which is normal after a while.
-                // Loop and re-open the connection.
-                continue;
-              }
               this.errorCallback(ex);
             }
           }
         }
+      } catch (ex) {
+        if (ex?.message == "terminated") {
+          // Connection broke down, which is normal after a while.
+          // Loop and re-open the connection.
+          continue;
+        }
+        this.errorCallback(ex);
       }
-    } catch (ex) {
-      this.errorCallback(ex);
     }
   }
 
