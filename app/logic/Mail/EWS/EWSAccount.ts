@@ -223,41 +223,51 @@ export class EWSAccount extends MailAccount {
   }
 
   async callStream(request: Json, responseCallback) {
-    try {
-      const endEnvelope = "</Envelope>";
-      let requestXML = this.request2XML(request);
-      let data = "";
-      let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions(true));
-      for await (let chunk of response.body) {
-        data += chunk;
-        while (data.includes(endEnvelope)) {
-          let pos = data.indexOf(endEnvelope) + endEnvelope.length;
-          chunk = data.slice(0, pos);
-          data = data.slice(pos);
-          try {
-            let document = this.parseXML(chunk);
-            if (!document) {
-              continue;
+    let lastAttempt = Date.now();
+    while (Date.now() - lastAttempt > 10000) { // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
+      try {
+        lastAttempt = Date.now();
+        const endEnvelope = "</Envelope>";
+        let requestXML = this.request2XML(request);
+        let data = "";
+        let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions(true));
+        for await (let chunk of response.body) {
+          data += chunk;
+          while (data.includes(endEnvelope)) {
+            let pos = data.indexOf(endEnvelope) + endEnvelope.length;
+            chunk = data.slice(0, pos);
+            data = data.slice(pos);
+            try {
+              let document = this.parseXML(chunk);
+              if (!document) {
+                continue;
+              }
+              let messages = document.querySelector("ResponseMessages");
+              if (!messages) {
+                continue;
+              }
+              let message = Object.values(XML2JSON(messages))[0];
+              if (message.ResponseClass == "Error") {
+                throw new EWSItemError(message, request);
+              }
+              if (message.ConnectionStatus == "Closed") {
+                continue; // Re-open connection
+              }
+              responseCallback(message);
+            } catch (ex) {
+              this.errorCallback(ex);
             }
-            let messages = document.querySelector("ResponseMessages");
-            if (!messages) {
-              continue;
-            }
-            let message = Object.values(XML2JSON(messages))[0];
-            if (message.ResponseClass == "Error") {
-              throw new EWSItemError(message, request);
-            }
-            if (message.ConnectionStatus == "Closed") {
-              this.callStream(request, responseCallback);
-            }
-            responseCallback(message);
-          } catch (ex) {
-            this.errorCallback(ex);
           }
         }
+      } catch (ex) {
+        if (ex?.message == "terminated") {
+          // Connection broke down, which is normal after a while.
+          // Loop and re-open the connection.
+          continue;
+        }
+        this.errorCallback(ex);
+        break;
       }
-    } catch (ex) {
-      this.errorCallback(ex);
     }
   }
 
