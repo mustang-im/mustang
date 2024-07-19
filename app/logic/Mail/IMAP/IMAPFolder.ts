@@ -141,7 +141,7 @@ export class IMAPFolder extends Folder {
    * @return Actually newly downloaded msgs
    */
   async downloadMessages(emails: Collection<IMAPEMail>): Promise<Collection<IMAPEMail>> {
-    let needMsgs = new ArrayColl(emails);
+    let needMsgs = new ArrayColl(emails.sortBy(msg => -msg.uid));
     let downloadedMsgs = new ArrayColl<IMAPEMail>();
     const kMaxCount = 50;
     while (needMsgs.hasItems) {
