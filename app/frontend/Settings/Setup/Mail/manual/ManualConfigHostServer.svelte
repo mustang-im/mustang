@@ -86,6 +86,8 @@
   import ArrowLeftIcon from "lucide-svelte/icons/move-left";
   import ArrowRightIcon from "lucide-svelte/icons/move-right";
   import { t } from "../../../../../l10n/l10n";
+  import { OAuth2URLs } from "../../../../../logic/Auth/OAuth2URLs";
+  import { OAuth2 } from "../../../../../logic/Auth/OAuth2";
 
   /** in/out */
   export let config: MailAccount;
@@ -165,6 +167,11 @@
     if (config.authMethod == AuthMethod.Unknown) {
       authError = new Error("Please enter the authentication method");
       throw authError;
+    } else if (config.authMethod == AuthMethod.OAuth2) {
+      let oAuth = OAuth2URLs.find(o => o.hostnames.some(h => h == config.hostname));
+      if (oAuth) {
+        config.oAuth2 = new OAuth2(this, oAuth.tokenURL, oAuth.authURL, oAuth.authDoneURL, oAuth.scope, oAuth.clientID, oAuth.clientSecret);
+      }
     } else {
       authError = null;
     }
