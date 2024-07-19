@@ -1,7 +1,7 @@
 {
   "IYbM1Z": "ІІбМ1Z",
   "FlvwwB": "{0} account only",
-  "QpgBEp": "{0, множина, один { # день} інші { # дні }}",
+  "QpgBEp": "{0, plural, one { # день} other { # днів }}",
   "BqElFK": "{0} folder only",
   "ZXxoL2": "{0, plural, other {# локальних повідомлень.}}",
   "o7dGee": "{0, plural, one { # mail } other { # mails }}",
