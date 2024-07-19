@@ -3,6 +3,7 @@ import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { autoUpdater } from 'electron-updater';
 
 // Set app data directory name to capitalized 'Mustang' on Mac OS instead of 'mustang'
 if (process.platform == 'darwin') {
@@ -95,6 +96,8 @@ app.whenReady().then(() => {
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
+
+  autoUpdater.checkForUpdatesAndNotify();
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
