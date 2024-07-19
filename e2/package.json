@@ -27,6 +27,7 @@
     "adm-zip": "^0.5.12",
     "better-sqlite3": "^9.4.5",
     "bufferutil": "^4.0.8",
+    "electron-updater": "^6.2.1",
     "utf-8-validate": "^6.0.3",
     "ws": "^8.16.0"
   },
