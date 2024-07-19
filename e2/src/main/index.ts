@@ -1,9 +1,9 @@
 import { setMainWindow, startupBackend } from '../../../backend/backend';
 import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
+import { autoUpdater } from 'electron-updater';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { autoUpdater } from 'electron-updater';
 
 // Set app data directory name to capitalized 'Mustang' on Mac OS instead of 'mustang'
 if (process.platform == 'darwin') {
