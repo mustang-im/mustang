@@ -74,12 +74,13 @@
         let hostname = new URL(config.url).hostname;
         // Office365 needs special handling
         if (hostname.endsWith(".office.com") || hostname.endsWith(".office365.com")) {
+          config.authMethod = AuthMethod.OAuth2;
           if (config.protocol == "ews") {
-            config.url = "https://outlook.office365.com/EWS/Exchange.asmx"
+            config.url = "https://outlook.office365.com/EWS/Exchange.asmx";
           } else if (config.protocol == "owa") {
-            config.url = "https://outlook.office.com/owa/"
+            config.url = "https://outlook.office.com/owa/";
           } else if (config.protocol == "activesync") {
-            config.url = "https://outlook.office365.com/Microsoft-Server-ActiveSync"
+            config.url = "https://outlook.office365.com/Microsoft-Server-ActiveSync";
           }
         }
         let url = new URL(config.url);
