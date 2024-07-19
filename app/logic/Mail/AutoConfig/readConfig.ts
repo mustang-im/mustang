@@ -82,19 +82,32 @@ function readServer(xml: any, displayName: string, fullXML: any, source: ConfigS
 
   account.name = displayName;
   account.url = sanitize.url(xml.url, null);
-  account.hostname = sanitize.hostname(xml.hostname);
-  account.port = sanitize.portTCP(xml.port);
+  if (account.url) {
+    let url = new URL(account.url);
+    account.hostname = url.hostname;
+    account.port = url.port
+      ? sanitize.portTCP(url.port)
+      : url.protocol == "https:" ? 443 : url.protocol == "http:" ? 80 : null;
+    assert(account.port, "Need port number or known protocol in URL");
+  } else {
+    account.hostname = sanitize.hostname(xml.hostname);
+    account.port = sanitize.portTCP(xml.port);
+  }
   account.username = sanitize.string(xml.username); // may be a %VARIABLE%
   if (xml.password) {
     account.password = sanitize.string(xml.password);
   }
 
-  // Take first supported
-  account.tls = ensureArray(xml.$socketType).map(socketType => sanitize.translate(socketType, {
-    plain: TLSSocketType.Plain,
-    SSL: TLSSocketType.TLS,
-    STARTTLS: TLSSocketType.STARTTLS
-  }, null)).find(v => v !== null);
+  if (account.url) {
+    account.tls = account.url.startsWith("https:") ? TLSSocketType.TLS : account.url.startsWith("http:") ? TLSSocketType.Plain : null;
+  } else {
+    // Take first supported
+    account.tls = ensureArray(xml.$socketType).map(socketType => sanitize.translate(socketType, {
+      plain: TLSSocketType.Plain,
+      SSL: TLSSocketType.TLS,
+      STARTTLS: TLSSocketType.STARTTLS
+    }, null)).find(v => v !== null);
+  }
   assert(account.tls, "No supported <socketType> in autoconfig");
 
   let authMethods = ensureArray(xml.$authentication).map(auth => sanitize.translate(auth, {
