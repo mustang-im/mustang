@@ -55,11 +55,19 @@ async function fetchConfigFromISP(domain: string, emailAddress: string | null, a
 
 async function fetchConfigForMX(domain, abort: AbortController): Promise<ArrayColl<MailAccount>> {
   let mx = await getMX(domain, abort);
-  let mxDomain = getBaseDomainFromHost(mx);
-  let priorityOrder = new PriorityAbortable(abort, [
-    fetchConfigFromISP(mxDomain, null, abort), // without emailAddress
-    fetchConfigFromISPDB(mxDomain, abort),
-  ]);
+  let baseDomain = getBaseDomainFromHost(mx); // e.g. "foo.com" for "mx1.olc.foo.com"
+  let longDomain = mx.split(".").slice(1).join("."); // everything after host, e.g. "olc.foo.com" for "mx1.olc.foo.com"
+  let requests = [
+    // fetchConfigFromISP(longDomain, null, abort), // without emailAddress
+    fetchConfigFromISPDB(longDomain, abort),
+  ];
+  if (baseDomain.length < longDomain.length) {
+    requests.push(
+      fetchConfigFromISP(baseDomain, null, abort), // ditto
+      fetchConfigFromISPDB(baseDomain, abort),
+    );
+  }
+  let priorityOrder = new PriorityAbortable(abort, requests);
   let config = await priorityOrder.run();
   console.log("Fetch via MX results:\n" + priorityOrder.printResults);
   return config;
