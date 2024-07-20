@@ -26,3 +26,5 @@ git commit package.json ../e2/package.json -m "Starting version $NEXTVERSION"
 git push
 git push --tags
 # Build will be kicked off by GitHub Actions triggering on the git tag push
+
+bash build/webpage.sh $VERSION
