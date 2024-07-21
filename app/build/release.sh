@@ -14,7 +14,7 @@ perl -p -i \
 git commit package.json ../e2/package.json -m "Version $VERSION"
 git tag -s "v$VERSION" -m $VERSION
 
-NEXTVERSION=$VERSION.1a1
+NEXTVERSION=`node -e "let v = process.argv[1].split('.'); let last = parseInt(v.pop()) + 1; console.log(v.join('.') + '.' + last);" $VERSION`-dev
 perl -p -i \
   -e "s|\"version\": \".*\"|\"version\": \"$NEXTVERSION\"|;" \
   package.json
