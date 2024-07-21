@@ -14,12 +14,19 @@
 
 <style>
   .island {
-    border: 1px solid var(--button-border);
+    border: 1px solid var(--border);
+    border-radius: 1000px;
+  }
+  .island :global(button) {
     border-radius: 1000px;
   }
   .island :global(button:not(:last-of-type)) {
     margin-inline-end: -6px;
-    border-radius: 1000px;
+  }
+  .island :global(button.selected:not(.hover)) {
+    background-color: var(--main-pattern-bg);
+    color: var(--main-pattern-fg);
+    border: none;
   }
   .island :global(button:not(.selected)) {
     background-color: transparent;
@@ -27,9 +34,6 @@
   }
   .island :global(button:hover) {
     z-index: 1;
-  }
-  .island :global(.vertical .icon) {
-    color: transparent;
   }
   .island :global(svg) {
     fill: transparent;

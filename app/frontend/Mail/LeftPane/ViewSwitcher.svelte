@@ -1,30 +1,32 @@
-<IslandSwitcher {large}>
-  <Button
-    label={$t`Chat-like mail view`}
-    icon={ChatIcon}
-    iconOnly={!large}
-    iconSize="16px"
-    onClick={() => switchTo('chat')}
-    selected={view == "chat"}
-    />
-  <Button
-    label={$t`Vertical view`}
-    icon={VerticalIcon}
-    classes="vertical"
-    iconOnly={!large}
-    iconSize="16px"
-    onClick={() => switchTo('vertical')}
-    selected={view == "vertical"}
-    />
-  <Button
-    label={$t`Classic 3-pane view`}
-    icon={ThreePaneIcon}
-    iconOnly={!large}
-    iconSize="16px"
-    onClick={() => switchTo('3pane')}
-    selected={view == "3pane"}
-    />
-</IslandSwitcher>
+<hbox class="switcher">
+  <IslandSwitcher {large}>
+    <Button
+      label={$t`Chat-like mail view`}
+      icon={ChatIcon}
+      iconOnly={!large}
+      iconSize="16px"
+      onClick={() => switchTo('chat')}
+      selected={view == "chat"}
+      />
+    <Button
+      label={$t`Vertical view`}
+      icon={VerticalIcon}
+      classes="vertical"
+      iconOnly={!large}
+      iconSize="16px"
+      onClick={() => switchTo('vertical')}
+      selected={view == "vertical"}
+      />
+    <Button
+      label={$t`Classic 3-pane view`}
+      icon={ThreePaneIcon}
+      iconOnly={!large}
+      iconSize="16px"
+      onClick={() => switchTo('3pane')}
+      selected={view == "3pane"}
+      />
+  </IslandSwitcher>
+</hbox>
 
 <script lang="ts">
   import { getLocalStorage } from "../../Util/LocalStorage";
@@ -45,3 +47,12 @@
     viewSetting.value = newView;
   }
 </script>
+
+<style>
+  .switcher {
+    margin: 6px 8px;
+  }
+  .switcher :global(.vertical .icon) {
+    color: transparent;
+  }
+</style>

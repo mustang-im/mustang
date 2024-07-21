@@ -1,10 +1,8 @@
 <vbox flex class="folder-pane">
     <hbox class="top">
-      <Tabs bind:active={activeTab} on:change={onTabChange}>
-        <Tabs.Tab icon={FolderIcon}></Tabs.Tab>
-        <Tabs.Tab icon={PersonIcon}></Tabs.Tab>
-        <Tabs.Tab icon={SearchIcon}></Tabs.Tab>
-      </Tabs>
+      <vbox class="island">
+        <SearchSwitcher bind:active={activeTab} />
+      </vbox>
       <hbox flex />
       <hbox class="buttons">
         {#if activeTab == 0}
@@ -25,9 +23,7 @@
     <!--<ProjectList />-->
     <AccountList accounts={$accounts} bind:selectedAccount />
     <FolderList {folders} bind:selectedFolder bind:selectedFolders />
-    <hbox class="island-border">
-      <ViewSwitcher />
-    </hbox>
+    <ViewSwitcher />
   {/if}
 </vbox>
 
@@ -48,12 +44,9 @@
   import GetMailButton from "./GetMailButton.svelte";
   import WriteButton from "./WriteButton.svelte";
   import ViewSwitcher from "./ViewSwitcher.svelte";
-  import SearchIcon from "lucide-svelte/icons/search";
-  import FolderIcon from "lucide-svelte/icons/folder";
-  import PersonIcon from "lucide-svelte/icons/user";
   import { catchErrors } from "../../Util/error";
-  import { Tabs } from "@svelteuidev/core";
   import type { ArrayColl, Collection } from 'svelte-collections';
+  import SearchSwitcher, { SearchView } from "./SearchSwitcher.svelte";
 
   export let accounts: Collection<MailAccount>; /** in */
   export let folders: Collection<Folder>; /** in */
@@ -62,22 +55,18 @@
   export let selectedFolder: Folder; /** in/out */
   export let selectedFolders: ArrayColl<Folder>;
 
-  let activeTab = 0;
+  let activeTab = SearchView.Folder;
   $: if (!!$globalSearchTerm) {
-    activeTab = 2;
+    activeTab = SearchView.Search;
   }
-  $: if (activeTab != 2) {
+  $: if (activeTab != SearchView.Search) {
     searchMessages = null;
   }
-  $: if (activeTab >= 0) searchMessages = null;
 
   function onClearSearch() {
-    activeTab = 0;
+    activeTab = SearchView.Folder;
   }
-  function onTabChange(event) {
-    activeTab = event.detail.index;
-  }
-  $: activeTab == 1 && $selectedPerson && catchErrors(() => showPerson($selectedPerson))
+  $: activeTab == SearchView.Person && $selectedPerson && catchErrors(() => showPerson($selectedPerson))
   async function showPerson(person: Person) {
     let search = new SQLSearchEMail();
     search.includesPerson = person;
@@ -122,7 +111,7 @@
   .buttons :global(svg) {
     margin: 4px;
   }
-  .island-border {
-    margin: 6px 8px;
+  .island {
+    margin: 8px 12px;
   }
 </style>

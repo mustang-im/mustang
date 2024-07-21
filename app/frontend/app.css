@@ -54,7 +54,7 @@
   --button-secondary-line: #A1E4DA;
   --shadow-color: 22, 12, 39; /* #160C27 */
 
-  color: (--fg);
+  color: var(--fg);
   background-color: var(-bg);
 }
 
