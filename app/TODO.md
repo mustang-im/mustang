@@ -3,14 +3,15 @@
   * Autoconfig fails
   * SSL errors: Allow override (autoconfig, mail server), e.g. Proton
   * OAuth2
-    * hotmail scope
     * Google approval
     * Yahoo registration
     * Microsoft - Partner support
-  * Import
-    * Polish UI for Workspace page
   * Re-connect JPC on connection loss, e.g. notebook sleep: "WebSocket is already in CLOSING or CLOSED state" makeCall() -> send()
+  * IMAP poll?
+  * Thunderbird AB import all fields
   * No folders -> [Get Mail] button disabled -> Can never login
+  * Folders appear twice
+  * Attachments appear twice
   * Calendar
     * Change Date
     * Delete Event
@@ -77,6 +78,9 @@
 * Close menu when clicking outside menu
 
 # Chat
+## Bugs
+* SqliteError: NOT NULL constraint failed: chatAccount.userRealname
+
 ## UI
 * Message menu
   * Emoji reaction
@@ -168,6 +172,7 @@
 * IMAP
   * UID vs. seq
   * modseq und CONDSTORE - implemented
+  * Subscribed folders only, and subscription UI
 * Removed emails
   * During fetch after login - FIXED?
   * Loop when deleting mail manually twice: FilteredCollection removed observers - FIXED?
@@ -253,6 +258,11 @@
 * Promos
   * Link text doesn't match link target
 
+## Conversation view
+* Collapse specific emails (and save their collapsed state)
+* Power user: Turn branches of a conversation into its own separate conversation
+* Power user: Show branch structure (e.g. using indents)
+
 ## Later
 * Refactor IMAP orchestration?: Separate IMAP protocol folder object and IMAP orcestration folder object. The latter does folder cache, IMAP poll/refresh, offline cache etc.
 * JMAP
@@ -283,3 +293,7 @@
   * Move chat account load into Chat app
 * Router
   * Use Svelte router with objects stack?
+
+## Power users
+* Configurable hotkeys
+* Scripts for Automation (Simple Addons?)
