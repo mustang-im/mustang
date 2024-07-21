@@ -7,8 +7,11 @@
 </hbox>
 <hbox class="protocol">{config.protocol}</hbox>
 <hbox class="hostname"><HostnameDomain hostname={config.hostname} />{isStandardPort(config) ? "" : ":" + config.port}</hbox>
-<hbox class="tls" class:has-encryption={hasEnc}>
+<hbox class="tls" class:tls-warning={tlsWarning} class:has-encryption={hasEnc}>
   {socketLabel(config.tls)}
+  {#if tlsWarning}
+    - {tlsWarning}
+  {/if}
 </hbox>
 <hbox class="tls-icon" class:has-encryption={hasEnc}>
   {#if hasEnc}
@@ -17,13 +20,6 @@
     <ShieldAlertIcon size={20} />
   {/if}
 </hbox>
-{#if tlsWarning}
-  <hbox class="tls-warning">
-    {tlsWarning}
-  </hbox>
-{:else}
-  <hbox></hbox>
-{/if}
 
 <script lang="ts">
   import { type MailAccount, TLSSocketType } from "../../../../logic/Mail/MailAccount";
