@@ -1,10 +1,9 @@
-<hbox class="buttons" class:large>
+<IslandSwitcher {large}>
   <Button
     label={$t`Chat-like mail view`}
     icon={ChatIcon}
     iconOnly={!large}
     iconSize="16px"
-    plain
     onClick={() => switchTo('chat')}
     selected={view == "chat"}
     />
@@ -14,7 +13,6 @@
     classes="vertical"
     iconOnly={!large}
     iconSize="16px"
-    plain
     onClick={() => switchTo('vertical')}
     selected={view == "vertical"}
     />
@@ -23,14 +21,14 @@
     icon={ThreePaneIcon}
     iconOnly={!large}
     iconSize="16px"
-    plain
     onClick={() => switchTo('3pane')}
     selected={view == "3pane"}
     />
-</hbox>
+</IslandSwitcher>
 
 <script lang="ts">
   import { getLocalStorage } from "../../Util/LocalStorage";
+  import IslandSwitcher from "./IslandSwitcher.svelte";
   import Button from "../../Shared/Button.svelte";
   import ChatIcon from "lucide-svelte/icons/message-square";
   //import VerticalIcon from "lucide-svelte/icons/columns";
@@ -47,26 +45,3 @@
     viewSetting.value = newView;
   }
 </script>
-
-<style>
-  .buttons :global(button) {
-    padding: 4px;
-  }
-  .buttons.large :global(button) {
-    padding: 8px;
-    margin-inline-end: 12px;
-  }
-  .buttons :global(.vertical .icon) {
-    color: transparent;
-  }
-  .buttons :global(svg) {
-    fill: transparent;
-  }
-  @media (max-width: 800px)  {
-    .buttons.large {
-      flex-direction: column;
-      align-items: start;
-      justify-content: stretch;
-    }
-  }
-  </style>

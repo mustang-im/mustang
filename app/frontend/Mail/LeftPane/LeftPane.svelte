@@ -25,7 +25,9 @@
     <!--<ProjectList />-->
     <AccountList accounts={$accounts} bind:selectedAccount />
     <FolderList {folders} bind:selectedFolder bind:selectedFolders />
-    <ViewSwitcher />
+    <hbox class="island-border">
+      <ViewSwitcher />
+    </hbox>
   {/if}
 </vbox>
 
@@ -119,5 +121,8 @@
   }
   .buttons :global(svg) {
     margin: 4px;
+  }
+  .island-border {
+    margin: 6px 8px;
   }
 </style>
