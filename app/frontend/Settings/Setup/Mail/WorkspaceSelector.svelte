@@ -1,8 +1,6 @@
 <vbox class="workspace-selector">
-  <hbox class="hint">{$t`Workspaces allow you organize yourself. You can change this at any time, by going to Settings in the title bar.`}</hbox>
-
-  <vbox class="workspaces-box">
-    <vbox class="workspaces" class:horizontal>
+  <vbox class="workspaces-box" class:horizontal>
+    <vbox class="workspaces">
       {#each workspaces as workspace}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <hbox class="workspace"
@@ -20,6 +18,7 @@
       {/each}
     </vbox>
   </vbox>
+  <hbox class="hint">{$t`Workspaces allow you organize yourself. You can change this at any time, by going to Settings in the title bar.`}</hbox>
 </vbox>
 
 <script lang="ts">
@@ -42,14 +41,17 @@
 <style>
   .hint {
     font-size: 12px;
+    opacity: 70%;
   }
   .workspaces-box {
-    margin-block-start: 6px;
-    align-items: center;
     margin-inline-end: 32px;
     padding-block-start: 4px;
+    margin-block-end: 16px;
   }
-  .workspaces.horizontal {
+  .workspaces-box:not(.horizontal) {
+    align-items: center;
+  }
+  .workspaces-box.horizontal .workspaces {
     flex-direction: row;
     flex-wrap: wrap;
   }

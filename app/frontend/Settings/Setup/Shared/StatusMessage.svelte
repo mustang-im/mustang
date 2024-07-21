@@ -39,7 +39,7 @@
   }
   .success .box {
     background-color: #E7F9EC;
-    color: #0BC241;
+    color: #048300;
     border: 1px solid #0BC241;
   }
   .processing .box {

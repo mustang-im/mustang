@@ -1,13 +1,13 @@
 <StatusMessage status="success"
-  message={$t`Your email account is working and ready to be used.`}>
+  message={$t`Your email account ${config.emailAddress} is working and ready to be used.`}>
   <CheckIcon slot="icon"/>
 </StatusMessage>
 
 <hbox class="header">{$t`Account name`}</hbox>
-<hbox class="subtitle">{$t`How do you want to call the account?`}</hbox>
+<hbox class="subtitle">{$t`How do you want to call the account?`} - {config.emailAddress}</hbox>
 <input type="text" bind:value={config.name} />
 
-<hbox class="header">{$t`Select the workspace for ${config.emailAddress}`}</hbox>
+<hbox class="header">{$t`Select the workspace`}</hbox>
 <WorkspaceSelector {config} horizontal={true} />
 
 <script lang="ts">
@@ -30,9 +30,9 @@
   .subtitle {
     font-size: 12px;
     margin-block-start: -8px;
-    margin-block-end: 8px;
+    margin-block-end: 24px;
   }
   input {
-    font-size: 18px;
+    font-size: 20px !important;
   }
 </style>
