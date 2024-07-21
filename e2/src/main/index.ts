@@ -78,7 +78,7 @@ function createWindow(): void {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
@@ -97,7 +97,11 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 
-  autoUpdater.checkForUpdatesAndNotify();
+  try {
+    await autoUpdater.checkForUpdatesAndNotify();
+  } catch (ex) {
+    console.error(ex);
+  }
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
