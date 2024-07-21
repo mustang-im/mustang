@@ -1,10 +1,9 @@
-<hbox class="buttons">
+<IslandSwitcher border={false}>
   <Button
     label={$t`Thread`}
     icon={ThreadIcon}
     iconOnly
     iconSize="16px"
-    plain
     onClick={() => switchTo(DisplayMode.Thread)}
     selected={mode == DisplayMode.Thread}
     />
@@ -13,7 +12,6 @@
     icon={HTMLIcon}
     iconOnly
     iconSize="16px"
-    plain
     onClick={() => switchTo(DisplayMode.HTML)}
     selected={mode == DisplayMode.HTML}
     />
@@ -22,7 +20,6 @@
     icon={WithExternalIcon}
     iconOnly
     iconSize="16px"
-    plain
     onClick={() => switchTo(DisplayMode.HTMLWithExternal)}
     selected={mode == DisplayMode.HTMLWithExternal}
     />
@@ -31,7 +28,6 @@
     icon={PlaintextIcon}
     iconOnly
     iconSize="16px"
-    plain
     onClick={() => switchTo(DisplayMode.Plaintext)}
     selected={mode == DisplayMode.Plaintext}
     />
@@ -41,17 +37,17 @@
       icon={SourceIcon}
       iconOnly
       iconSize="16px"
-      plain
       onClick={() => switchTo(DisplayMode.Source)}
       selected={mode == DisplayMode.Source}
       />
   {/if}
-</hbox>
+</IslandSwitcher>
 
 <script lang="ts">
   import { getLocalStorage } from "../../Util/LocalStorage";
   import { selectedMessage } from "../Selected";
   import { DisplayMode } from "./MessageBody.svelte";
+  import IslandSwitcher from "../LeftPane/IslandSwitcher.svelte";
   import Button from "../../Shared/Button.svelte";
   import ThreadIcon from "lucide-svelte/icons/message-square-text";
   import HTMLIcon from "lucide-svelte/icons/mail";

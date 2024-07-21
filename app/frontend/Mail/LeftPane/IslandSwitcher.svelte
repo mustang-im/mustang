@@ -1,4 +1,4 @@
-<hbox class="island" class:large>
+<hbox class="island" class:large class:border>
   <slot />
 </hbox>
 
@@ -10,10 +10,11 @@
    */
 
   export let large = false;
+  export let border = true;
 </script>
 
 <style>
-  .island {
+  .island.border {
     border: 1px solid var(--border);
     border-radius: 1000px;
   }
