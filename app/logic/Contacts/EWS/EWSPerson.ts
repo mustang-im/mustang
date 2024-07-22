@@ -35,7 +35,7 @@ export class EWSPerson extends Person {
     this.firstName = sanitize.nonemptystring(xmljs.GivenName, "");
     this.lastName = sanitize.nonemptystring(xmljs.Surname, "");
     if (xmljs.EmailAddresses?.Entry) {
-      this.emailAddresses.replaceAll(ensureArray(xmljs.EmailAddresses.Entry).filter(entry => entry.Value && (!entry.RoutingType || entry.RoutingType == "SMTP")).map(entry => new ContactEntry(sanitize.nonemptystring(entry.Value), null, "mailto")));
+      this.emailAddresses.replaceAll(ensureArray(xmljs.EmailAddresses.Entry).filter(entry => entry.Value && (!entry.RoutingType || entry.RoutingType == "SMTP")).map(entry => new ContactEntry(sanitize.nonemptystring(entry.Value), "work", "mailto")));
     }
     if (xmljs.PhoneNumbers?.Entry) {
       for (let entry of ensureArray(xmljs.PhoneNumbers.Entry)) {
@@ -65,7 +65,7 @@ export class EWSPerson extends Person {
       }
     }
     if (xmljs.ImAddresses?.Entry) {
-      this.chatAccounts.replaceAll(ensureArray(xmljs.ImAddresses.Entry).filter(entry => entry.Value).map(entry => new ContactEntry(sanitize.nonemptystring(entry.Value))));
+      this.chatAccounts.replaceAll(ensureArray(xmljs.ImAddresses.Entry).filter(entry => entry.Value).map(entry => new ContactEntry(sanitize.nonemptystring(entry.Value), "other")));
     }
     if (xmljs.PhysicalAddresses?.Entry) {
       this.streetAddresses.replaceAll(ensureArray(xmljs.PhysicalAddresses.Entry).map(entry => new ContactEntry(PhysicalAddressElements.map(element => sanitize.nonemptystring(entry[element], "")).join("\n"), PhysicalAddressPurposes[entry.Key])));

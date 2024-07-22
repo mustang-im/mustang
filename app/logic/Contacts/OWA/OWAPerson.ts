@@ -35,9 +35,9 @@ export class OWAPerson extends Person {
     this.name = sanitize.nonemptystring(json.DisplayName, "");
     this.firstName = sanitize.nonemptystring(json.GivenName, "");
     this.lastName = sanitize.nonemptystring(json.Surname, "");
-    this.emailAddresses.replaceAll(json.EmailAddresses?.filter(address => !address.RoutingType || address.RoutingType == "SMTP").map(address => new ContactEntry(sanitize.nonemptystring(address.EmailAddress))) || []);
+    this.emailAddresses.replaceAll(json.EmailAddresses?.filter(address => !address.RoutingType || address.RoutingType == "SMTP").map(address => new ContactEntry(sanitize.nonemptystring(address.EmailAddress), "work", "mailto")) || []);
     this.phoneNumbers.replaceAll(PhoneMapping.flatMap(([purpose, protocol, ...keys]) => keys.map(key => json[key + "Array"]?.[0]?.Value?.Number).filter(Boolean).map(number => new ContactEntry(number, purpose, protocol))));
-    this.chatAccounts.replaceAll(json.ImAddress ? [new ContactEntry(sanitize.string(json.ImAddress))] : []);
+    this.chatAccounts.replaceAll(json.ImAddress ? [new ContactEntry(sanitize.string(json.ImAddress), "other")] : []);
     this.streetAddresses.replaceAll(Object.keys(PhysicalAddressPurposes).flatMap(purpose => json[purpose + "AddressesArray"]?.filter(entry => entry?.Value).map(entry => new ContactEntry(PhysicalAddressElements.map(element => sanitize.nonemptystring(entry.Value[element], "")).join("\n"), PhysicalAddressPurposes[purpose])) || []));
     this.notes = sanitize.nonemptystring(json.Notes, "");
     this.company = sanitize.nonemptystring(json.CompanyName, "");
