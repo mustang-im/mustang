@@ -1,15 +1,15 @@
 # Next
 * Mail
   * Thunderbird AB import all fields
+  * Import: Polish UI style
   * Delete to trash
   * OAuth2
     * Google approval
     * Yahoo registration
     * Microsoft - Partner support
   * IMAP poll?
+  * Paragraph display with empty line
   * No folders -> [Get Mail] button disabled -> Can never login
-  * Folders appear twice
-  * Attachments appear twice
   * Calendar
     * Change Date
     * Delete Event
@@ -21,8 +21,9 @@
   * Inline images send
   * Context menu for content: Copy text, link, image
   * Settings: Server: Allow to change password
+  * Folders appear twice
+  * Attachments appear twice
   * Move messages to other accounts
-  * Import: Polish UI style
   * Main window
     * Save window size
   * Threads
@@ -45,6 +46,16 @@
   * Setup mail
     * after account delete: remove general panel
 
+# Initial release
+* Installer
+  * Mac Signing
+  * Auto-update client
+  * Auto-update test
+* Beta notification bar
+* Beta time-bomb
+* License client
+* Password storage
+
 # Polish
 ## Elena
 * Clear profile
@@ -61,16 +72,6 @@
 * MailChat/Thread: Jail HTML: Styles and size
 * Calendar
   * Tuesday first day
-
-# Initial release
-* Installer
-  * Mac Signing
-  * Auto-update client
-  * Auto-update test
-* Beta notification bar
-* Beta time-bomb
-* License client
-* Password storage
 
 # UI
 * Close menu when clicking outside menu
