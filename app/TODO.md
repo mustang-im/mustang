@@ -6,7 +6,6 @@
     * Google approval
     * Yahoo registration
     * Microsoft - Partner support
-  * Re-connect JPC on connection loss, e.g. notebook sleep: "WebSocket is already in CLOSING or CLOSED state" makeCall() -> send()
   * IMAP poll?
   * Thunderbird AB import all fields
   * No folders -> [Get Mail] button disabled -> Can never login
