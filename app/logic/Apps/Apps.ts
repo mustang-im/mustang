@@ -1,7 +1,9 @@
 import AppCategory from "./AppCategory";
 import AppListed from "./AppListed";
 import appStore from "./appStore.json";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { MapColl, ArrayColl } from 'svelte-collections';
+import { showError } from "../../frontend/Util/error";
 
 export default class Apps {
   /** fullID -> AppCategory */
@@ -24,9 +26,18 @@ export default class Apps {
       category.apps.addAll(apps);
     }
 
-    let myAppIDs = JSON.parse(localStorage.getItem("apps.selected"));
-    if (myAppIDs) {
-      this.myApps.addAll(this.apps.contents.filter(app => myAppIDs.includes(app.id)));
+    try {
+      let configuredIDs = sanitize.array(JSON.parse(localStorage.getItem("apps.selected")), []);
+      for (let configuredID of configuredIDs) {
+        try {
+          let app = this.apps.find(app => app.id == sanitize.nonemptystring(configuredID));
+          this.myApps.add(app);
+        } catch (ex) {
+          console.log("Configured app not found in app store", ex);
+        }
+      }
+    } catch (ex) {
+      showError(ex);
     }
     this.myApps.subscribe(() => {
       let myAppIDs = this.myApps.map(app => app.id).contents;
