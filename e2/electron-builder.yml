@@ -48,5 +48,6 @@ publish:
   - provider: github
     protocol: https
     releaseType: release
+    channel: mustang
 #  - provider generic
 #    url: https://mustang.im/auto-updates
