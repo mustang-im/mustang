@@ -1,16 +1,18 @@
-<StatusMessage status={statusGravity(errorGravity)}
-  message={errorMessage}>
-  <hbox slot="icon">
-    {#if errorGravity == ErrorGravity.Error}
-      <ErrorIcon />
-    {:else if errorGravity == ErrorGravity.Warning}
-      <WarningIcon />
-    {/if}
-  </hbox>
-  <hbox flex />
-  <RoundButton icon={CloseIcon} iconSize="16px" classes="plain small" border={false}
-    on:click={onClose} />
-</StatusMessage>
+<vbox class="error">
+  <StatusMessage status={statusGravity(errorGravity)}
+    message={errorMessage}>
+    <hbox slot="icon">
+      {#if errorGravity == ErrorGravity.Error}
+        <ErrorIcon />
+      {:else if errorGravity == ErrorGravity.Warning}
+        <WarningIcon />
+      {/if}
+    </hbox>
+    <hbox flex />
+    <RoundButton icon={CloseIcon} iconSize="16px" classes="plain small" border={false}
+      on:click={onClose} />
+  </StatusMessage>
+</vbox>
 
 <script lang="ts" context="module">
   export enum ErrorGravity {
@@ -49,4 +51,7 @@
 </script>
 
 <style>
+  .error {
+    max-width: 50em;
+  }
 </style>
