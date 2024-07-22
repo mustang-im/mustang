@@ -32,8 +32,11 @@ export class SMTPAccount extends MailAccount {
       host: this.hostname,
       port: this.port,
       secure: this.tls == TLSSocketType.TLS,
+      requireTLS: this.tls == TLSSocketType.STARTTLS,
+      ignoreTLS: this.tls == TLSSocketType.Plain,
       tls: {
-        requireTLS: this.tls == TLSSocketType.STARTTLS,
+        //minVersion: this.acceptOldTLS ? 'TLSv1' : undefined,
+        rejectUnauthorized: !this.acceptBrokenTLSCerts,
       },
       auth: {
         user: this.username,

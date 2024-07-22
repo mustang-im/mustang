@@ -104,7 +104,7 @@ export class MailAccount extends Account {
   }
 
   fromConfigJSON(config: any) {
-    assert(typeof (config) == "object", "Config must be a JSON object");
+    super.fromConfigJSON(config);
     this.identities.clear();
     this.identities.addAll(sanitize.array(config.identities, []).map(json =>
       MailIdentity.fromConfigJSON(json, this)));
@@ -114,10 +114,10 @@ export class MailAccount extends Account {
     }
   }
   toConfigJSON(): any {
-    return {
-      identities: this.identities.contents.map(id => id.toConfigJSON()),
-      oAuth2: this.oAuth2 ? this.oAuth2.toConfigJSON() : undefined,
-    };
+    let json = super.toConfigJSON();
+    json.identities = this.identities.contents.map(id => id.toConfigJSON());
+    json.oAuth2 = this.oAuth2 ? this.oAuth2.toConfigJSON() : undefined;
+    return json;
   }
 
   /** Get the `specialFolder` in this account. */

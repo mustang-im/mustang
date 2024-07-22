@@ -39,6 +39,10 @@
 
   $: usesHostname = ["imap", "pop3"].includes($config.protocol);
 
+  $: if (config.fatalError || config.outgoing && config.outgoing.fatalError) {
+    stepFull = true;
+  }
+
   async function onSave() {
     await config.save();
   }

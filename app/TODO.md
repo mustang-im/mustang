@@ -1,7 +1,6 @@
 # Next
 * Mail
   * Autoconfig fails
-  * SSL errors: Allow override (autoconfig, mail server), e.g. Proton
   * OAuth2
     * Google approval
     * Yahoo registration

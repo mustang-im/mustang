@@ -19,7 +19,6 @@ export class IMAPAccount extends MailAccount {
   @notifyChangedProperty
   accessToken: string | undefined;
   acceptOldTLS = false;
-  acceptBrokenTLSCerts = false;
   pathDelimiter: string; /** Separator in folder path. E.g. '.' or '/', depending on server */
 
   constructor() {
@@ -92,6 +91,7 @@ export class IMAPAccount extends MailAccount {
       socketTimeout: 30 * 60 * 1000, // 30 min of inactivity
       logger: false,
     }
+    // console.log("IMAP connection", options);
     let connection = await appGlobal.remoteApp.createIMAPFlowConnection(options);
     assert(connection, `Connection is null\n${this.hostname} IMAP server`);
 

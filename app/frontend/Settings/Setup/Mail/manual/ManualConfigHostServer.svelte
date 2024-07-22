@@ -41,6 +41,11 @@
           {tlsWarning}
         </div>
       {/if}
+      {#if hasCertError || config.acceptBrokenTLSCerts}
+        <vbox class="cert-error-override" class:checked={config.acceptBrokenTLSCerts}>
+          <Checkbox bind:checked={config.acceptBrokenTLSCerts} label={$t(`Do not check where you connect to`)} />
+        </vbox>
+      {/if}
       <hbox class="row">
         <select bind:value={config.tls} required on:change={onTLSChanged}>
           <option value={TLSSocketType.TLS}>TLS</option>
@@ -79,15 +84,17 @@
   import { kStandardPorts } from "../../../../../logic/Mail/AutoConfig/configInfo";
   import { dummyHostname } from "../../../../../logic/Mail/AutoConfig/manualConfig";
   import { getDomainForEmailAddress } from "../../../../../logic/util/netUtil";
+  import { isCertError } from "../../../../../logic/Mail/AutoConfig/checkConfig";
+  import { OAuth2URLs } from "../../../../../logic/Auth/OAuth2URLs";
+  import { OAuth2 } from "../../../../../logic/Auth/OAuth2";
   import ProtocolSelector from "./ProtocolSelector.svelte";
+  import Checkbox from "../../../../Shared/Checkbox.svelte";
   import ShieldOKIcon from "lucide-svelte/icons/shield-check";
   import ShieldAlertIcon from "lucide-svelte/icons/shield-alert";
   import ShieldQuestionIcon from "lucide-svelte/icons/shield-question";
   import ArrowLeftIcon from "lucide-svelte/icons/move-left";
   import ArrowRightIcon from "lucide-svelte/icons/move-right";
   import { t } from "../../../../../l10n/l10n";
-  import { OAuth2URLs } from "../../../../../logic/Auth/OAuth2URLs";
-  import { OAuth2 } from "../../../../../logic/Auth/OAuth2";
 
   /** in/out */
   export let config: MailAccount;
@@ -98,8 +105,11 @@
 
   $: outgoing = config.protocol == "smtp";
 
+  /** Error that happened during checkConfig() */
+  $: hasCertError = isCertError(config.fatalError);
+
   function noEncryption(tls: TLSSocketType): boolean {
-    return tls != TLSSocketType.Unknown && tls != TLSSocketType.TLS && tls != TLSSocketType.STARTTLS;
+    return tls != TLSSocketType.Unknown && tls != TLSSocketType.TLS && tls != TLSSocketType.STARTTLS || config.acceptBrokenTLSCerts;
   }
 
   $: tlsWarning = noEncryption(config.tls) ? "Attackers can read your password and mails" : null;
@@ -223,6 +233,12 @@
     margin-block-start: 4px;
     margin-block-end: 8px;
     max-width: 12em;
+  }
+  .cert-error-override {
+    margin-block-end: 12px;
+  }
+  .cert-error-override.checked {
+    color: red;
   }
   .error select {
     border: 1px solid red;

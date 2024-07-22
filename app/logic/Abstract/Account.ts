@@ -2,6 +2,7 @@ import { Workspace } from "./Workspace";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { SpecificError, AbstractFunction, assert } from "../util/util";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
 import type { ComponentType } from "svelte";
 
@@ -25,6 +26,8 @@ export class Account extends Observable {
   workspace: Workspace | null = null;
   @notifyChangedProperty
   userRealname: string = appGlobal.me?.name;
+  @notifyChangedProperty
+  acceptBrokenTLSCerts = false;
 
   /** Will be called, when there are errors on the connection
    * which cannot be attributed directly to an API function called,
@@ -80,9 +83,12 @@ export class Account extends Observable {
 
   fromConfigJSON(config: any) {
     assert(typeof (config) == "object", "Config must be a JSON object");
+    this.acceptBrokenTLSCerts = sanitize.boolean(config.acceptBrokenTLSCerts, false);
   }
   toConfigJSON(): any {
-    return {};
+    let json: any = {};
+    json.acceptBrokenTLSCerts = this.acceptBrokenTLSCerts;
+    return json;
   }
 
   toString(): string {
