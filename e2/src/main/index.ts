@@ -41,10 +41,18 @@ function createWindow(): void {
      * Attention: This does *not* catch normal `<a href="">` links.
      * Thus, sanitizeHTML() adds a `target="_blank"` to such links,
      * which is considered a new web window and forces them to end up here. */
-    mainWindow.webContents.setWindowOpenHandler((details) => {
+    mainWindow.webContents.setWindowOpenHandler((details): any => {
+      // Chrome special-cases "about:blank". Make *sure* that we don't get this here.
+      if (!details.url?.startsWith("https://")) {
+        return { action: 'deny' };
+      }
       // Allow windows opened by us for OAuth2
+      // Must match OAuth2Window.ts login()
       if (details?.features?.includes("oauth2popup")) {
-        return { action: 'allow' };
+        return {
+          action: 'allow',
+          overrideBrowserWindowOptions: "center,noopener,noreferrer,sandbox=true",
+        };
       }
       // Open the URL in the system web browser
       shell.openExternal(details.url)

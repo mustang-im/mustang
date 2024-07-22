@@ -10,7 +10,14 @@ export async function fetchSessionData(partition: string, url: string, interacti
         //modal: true,
         center: true,
         autoHideMenuBar: true,
-        webPreferences: { session },
+        webPreferences: {
+          session,
+          // Security
+          sandbox: true,
+          disableHtmlFullscreenWindowResize: true,
+          webgl: false,
+          autoplayPolicy: "user-gesture-required",
+        },
       });
       let finished = false;
       let finish = function(data) {
