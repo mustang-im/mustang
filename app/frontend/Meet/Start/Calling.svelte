@@ -118,7 +118,7 @@
   maxUpcoming.setMinutes(maxUpcoming.getMinutes() + 15);
   const upcomingMeetings = allEvents.filter(event => event.startTime > now && event.startTime < maxUpcoming);
   $: upcomingMeeting = $upcomingMeetings.first;
-  $: upcomingMeetingInMin = upcomingMeeting ? Math.floor((upcomingMeeting.startTime.getTime() - new Date().getTime()) / 1000 / 60) : 0;
+  $: upcomingMeetingInMin = upcomingMeeting?.startTime ? Math.floor((upcomingMeeting.startTime.getTime() - new Date().getTime()) / 1000 / 60) : 0;
 
   async function cancel() {
     meeting.state = MeetingState.Ended;

@@ -1,12 +1,12 @@
 # Next
 * Mail
-  * Autoconfig fails
+  * Thunderbird AB import all fields
+  * Delete to trash
   * OAuth2
     * Google approval
     * Yahoo registration
     * Microsoft - Partner support
   * IMAP poll?
-  * Thunderbird AB import all fields
   * No folders -> [Get Mail] button disabled -> Can never login
   * Folders appear twice
   * Attachments appear twice
