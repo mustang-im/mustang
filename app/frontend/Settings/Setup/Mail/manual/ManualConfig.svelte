@@ -45,6 +45,7 @@
 
   let el: ManualConfigURL | ManualConfigHost  = null;
   export async function onContinue(): Promise<boolean> {
+    config.source = "manual";
     return await el.onContinue();
   }
 </script>
