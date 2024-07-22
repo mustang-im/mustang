@@ -28,8 +28,14 @@ export function isCertError(ex: Error): boolean {
   let code = (ex as any).code;
   if (code == "ERR_TLS_CERT_ALTNAME_INVALID") { // IMAPFlow
     return true;
-  } else if (code == "ESOCKET" && ex.message?.includes("altnames")) { // SMTP nodemailer
+  } else if (code == "DEPTH_ZERO_SELF_SIGNED_CERT") { // IMAPFlow
     return true;
+  } else if (code == "ESOCKET" && ex.message) { // SMTP nodemailer
+    if (ex.message.includes("altnames")) {
+      return true;
+    } else if (ex.message.includes("self signed certificate")) {
+      return true;
+    }
   }
   return false;
 }
