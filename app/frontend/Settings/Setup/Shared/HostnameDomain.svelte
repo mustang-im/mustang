@@ -7,7 +7,7 @@
   /** in */
   export let hostname: string;
 
-  $: domain = getBaseDomainFromHost(hostname);
+  $: domain = getBaseDomainFromHost(hostname) ?? "";
   $: nonDomain = hostname.substring(0, hostname.length - domain.length);
 </script>
 
