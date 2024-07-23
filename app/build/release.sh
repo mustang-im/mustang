@@ -11,7 +11,10 @@ perl -p -i \
 perl -p -i \
   -e "s|\"version\": \".*\"|\"version\": \"$VERSION\"|;" \
   ../e2/package.json
-git commit package.json ../e2/package.json -m "Version $VERSION"
+perl -p -i \
+  -e "s|appVersion: .*|appVersion: string = '$VERSION';|;" \
+  ./logic/build.ts
+git commit package.json ../e2/package.json ./logic/build.ts -m "Version $VERSION"
 git tag -s "v$VERSION" -m $VERSION
 
 NEXTVERSION=`node -e "let v = process.argv[1].split('.'); let last = parseInt(v.pop()) + 1; console.log(v.join('.') + '.' + last);" $VERSION`-dev
@@ -24,7 +27,7 @@ perl -p -i \
 perl -p -i \
   -e "s|appVersion: .*|appVersion: string = '$NEXTVERSION';|;" \
   ./logic/build.ts
-git commit package.json ../e2/package.json -m "Starting version $NEXTVERSION"
+git commit package.json ../e2/package.json ./logic/build.ts -m "Starting version $NEXTVERSION"
 
 git push
 git push --tags
