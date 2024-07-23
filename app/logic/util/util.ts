@@ -130,7 +130,7 @@ export class UserCancelled extends UserError {
 
 export class AbstractFunction extends Error {
   constructor() {
-    super("Not yet implemented in the subclass");
+    super("Not yet implemented");
   }
 }
 
