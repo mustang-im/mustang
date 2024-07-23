@@ -1,7 +1,7 @@
 <vbox class="app-logo">
   <Icon data={logo} size="20px" />
 </vbox>
-<h1>{appName}</h1>
+<h1>{appName} {appVersion}</h1>
 
 <div>
   <T msg="Copyright 2024 Ben Bucksch, #, and other contributors">
@@ -12,7 +12,7 @@
 <script lang="ts">
   import Icon from 'svelte-icon/Icon.svelte';
   import logo from '../../asset/icon/general/logo.svg?raw';
-  import { appName, siteRoot } from '../../../logic/build';
+  import { appName, appVersion, siteRoot } from '../../../logic/build';
   import { T } from 'svelte-i18n-lingui';
 </script>
 
