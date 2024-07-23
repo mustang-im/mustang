@@ -6,6 +6,7 @@
     <hbox class="label">{$t`Connection encryption`}</hbox>
     <hbox class="label">{$t`Authentication method`}</hbox>
     <hbox class="label">{$t`Username`}</hbox>
+    <hbox class="label">{$t`Password`}</hbox>
   {/if}
 
 <script lang="ts">

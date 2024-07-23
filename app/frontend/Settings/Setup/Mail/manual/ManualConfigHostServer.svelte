@@ -77,6 +77,10 @@
     <hbox class="username">
       <input type="text" bind:value={config.username} />
     </hbox>
+
+    <hbox class="password">
+      <PasswordChange bind:password={config.password}  />
+    </hbox>
   {/if}
 
 <script lang="ts">
@@ -88,6 +92,7 @@
   import { OAuth2URLs } from "../../../../../logic/Auth/OAuth2URLs";
   import { OAuth2 } from "../../../../../logic/Auth/OAuth2";
   import ProtocolSelector from "./ProtocolSelector.svelte";
+  import PasswordChange from "../../Shared/PasswordChange.svelte";
   import Checkbox from "../../../../Shared/Checkbox.svelte";
   import ShieldOKIcon from "lucide-svelte/icons/shield-check";
   import ShieldAlertIcon from "lucide-svelte/icons/shield-alert";

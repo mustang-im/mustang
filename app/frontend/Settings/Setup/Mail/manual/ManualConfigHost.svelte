@@ -37,7 +37,7 @@
     row-gap: 12px;
   }
   grid[full=true] {
-    grid-template-rows: auto auto auto auto auto auto auto;
+    grid-template-rows: auto auto auto auto auto auto auto auto;
   }
   grid :global(> *) {
     align-items: end;

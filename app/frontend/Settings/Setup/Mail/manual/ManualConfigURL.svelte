@@ -5,6 +5,7 @@
   {#if stepFull}
     <hbox class="label">{$t`Authentication method`}</hbox>
     <hbox class="label">{$t`Username`}</hbox>
+    <hbox class="label">{$t`Password`}</hbox>
   {/if}
 
   <hbox class="header">
@@ -35,12 +36,17 @@
     <hbox class="username">
       <input type="text" bind:value={config.username} />
     </hbox>
+
+    <hbox class="password">
+      <PasswordChange bind:password={config.password}  />
+    </hbox>
   {/if}
 </grid>
 
 <script lang="ts">
   import { type MailAccount, AuthMethod, TLSSocketType } from "../../../../../logic/Mail/MailAccount";
   import ProtocolSelector from "./ProtocolSelector.svelte";
+  import PasswordChange from "../../Shared/PasswordChange.svelte";
   import ServerIcon from "lucide-svelte/icons/server";
   import { t } from "../../../../../l10n/l10n";
   import { assert } from "../../../../../logic/util/util";
@@ -126,7 +132,7 @@
     row-gap: 12px;
   }
   grid[full=true] {
-    grid-template-rows: auto auto auto auto auto;
+    grid-template-rows: auto auto auto auto auto auto;
   }
   grid :global(> *) {
     align-items: end;
