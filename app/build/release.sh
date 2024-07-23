@@ -21,6 +21,9 @@ perl -p -i \
 perl -p -i \
   -e "s|\"version\": \".*\"|\"version\": \"$NEXTVERSION\"|;" \
   ../e2/package.json
+perl -p -i \
+  -e "s|appVersion: .*|appVersion: string = '$NEXTVERSION';|;" \
+  ./logic/build.ts
 git commit package.json ../e2/package.json -m "Starting version $NEXTVERSION"
 
 git push
