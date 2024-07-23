@@ -134,6 +134,9 @@ export class OWAAccount extends MailAccount {
   }
 
   async callOWA(aRequest: any): Promise<any> {
+    if (!this.hasLoggedIn) {
+      throw new LoginError(null, "Please login");
+    }
     let url = this.url + 'service.svc';
     // Need to ensure the request gets passed as a regular object
     let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, aRequest.type || aRequest.__type.slice(0, -21), Object.assign({}, aRequest));
