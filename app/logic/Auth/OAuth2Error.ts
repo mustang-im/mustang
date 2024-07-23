@@ -3,6 +3,7 @@ export class OAuth2Error extends Error {
 }
 
 export class OAuth2LoginNeeded extends Error {
+  authFail: true;
   constructor() {
     super("Please login");
   }

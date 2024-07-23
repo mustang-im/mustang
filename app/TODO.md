@@ -20,7 +20,6 @@
   * Bug: Selection: Default selection on start
   * Inline images send
   * Context menu for content: Copy text, link, image
-  * Settings: Server: Allow to change password
   * Folders appear twice
   * Attachments appear twice
   * Move messages to other accounts

@@ -6,7 +6,9 @@ import { OWAAddressbook } from "../../Contacts/OWA/OWAAddressbook";
 import { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { ContentDisposition } from "../Attachment";
+import { LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
+import { notifyChangedProperty } from "../../util/Observable";
 import { blobToBase64 } from "../../util/util";
 import { assert } from "../../util/util";
 
@@ -41,6 +43,7 @@ export class OWAAccount extends MailAccount {
    * since Mustang doesn't use a dedicated root folder object.
    */
   msgFolderRootID: string | void;
+  @notifyChangedProperty
   hasLoggedIn = false;
 
   constructor() {
@@ -136,7 +139,7 @@ export class OWAAccount extends MailAccount {
     let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, aRequest.type || aRequest.__type.slice(0, -21), Object.assign({}, aRequest));
     if ([401, 440].includes(response.status)) {
       await this.logout();
-      throw new Error("Please login");
+      throw new LoginError(null, "Please login");
     }
     if (!response.json && response.url != url && response.contentType.toLowerCase().split(";")[0].trim() == "text/html") {
       await this.logout();
