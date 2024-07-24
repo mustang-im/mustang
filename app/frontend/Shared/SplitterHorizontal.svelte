@@ -18,12 +18,14 @@
 		<slot name="bottom" />
   </hbox>
 </vbox>
-<svelte:window 
-	on:pointermove={onMouseMove} 
+<svelte:window
+	on:pointermove={onMouseMove}
 	on:pointerup={onMouseUp}
   />
 
 <script lang="ts">
+  import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+
 	/** Copy of <Splitter> */
 
 	/** Left pane cannot be made smaller than this
@@ -38,7 +40,7 @@
 	export let name: string = null;
 
   const barHeight = 2;
-	let bottomRatio = JSON.parse(localStorage?.getItem("ui.splitter." + name)) ?? initialBottomRatio;
+	let bottomRatio = JSON.parse(sanitize.nonemptystring(localStorage?.getItem("ui.splitter." + name), null)) ?? initialBottomRatio;
 
 	let isMouseDown = false;
   let previousMousePosY: number;

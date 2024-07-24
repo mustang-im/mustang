@@ -18,7 +18,7 @@ export async function readChatAccounts(): Promise<ArrayColl<ChatAccount>> {
   for (let i = 1; true; i++) {
     let prefBranch = `chat.account${i}.`;
     try {
-      let protocol = localStorage.getItem(prefBranch + "protocol");
+      let protocol = sanitize.enum(localStorage.getItem(prefBranch + "protocol"), ["xmpp", "matrix"]);
       if (!protocol) {
         break;
       } else if (protocol == "matrix") {
@@ -47,10 +47,8 @@ function readMatrixAccount(prefBranch: string): MatrixAccount {
   account.baseURL = sanitize.url(localStorage.getItem(prefBranch + "server"), "https://matrix.org");
   account.username = sanitize.nonemptystring(localStorage.getItem(prefBranch + "username"));
   account.password = sanitize.nonemptystring(localStorage.getItem(prefBranch + "password"));
-  let deviceID = localStorage.getItem(prefBranch + "deviceID");
-  if (deviceID) {
-    account.deviceID = sanitize.alphanumdash(deviceID);
-  } else {
+  let deviceID = sanitize.alphanumdash(localStorage.getItem(prefBranch + "deviceID"), null);
+  if (!deviceID) {
     account.deviceID = crypto.randomUUID();
     localStorage.setItem(prefBranch + "deviceID", account.deviceID);
   }
@@ -63,10 +61,8 @@ function readXMPPAccount(prefBranch: string): XMPPAccount {
   account.serverDomain = sanitize.hostname(localStorage.getItem(prefBranch + "server"));
   account.username = sanitize.nonemptystring(localStorage.getItem(prefBranch + "username"));
   account.password = sanitize.nonemptystring(localStorage.getItem(prefBranch + "password"));
-  let deviceID = localStorage.getItem(prefBranch + "deviceID");
-  if (deviceID) {
-    account.deviceID = sanitize.alphanumdash(deviceID);
-  } else {
+  let deviceID = sanitize.alphanumdash(localStorage.getItem(prefBranch + "deviceID"), null);
+  if (!deviceID) {
     account.deviceID = crypto.randomUUID();
     localStorage.setItem(prefBranch + "deviceID", account.deviceID);
   }

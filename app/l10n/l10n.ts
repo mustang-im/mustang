@@ -1,3 +1,4 @@
+import { sanitize } from '../../lib/util/sanitizeDatatypes';
 import { locale, gt as translateString } from 'svelte-i18n-lingui';
 import { derived } from 'svelte/store';
 
@@ -88,7 +89,7 @@ export function getUILocale(): string {
   if (cachedUILocale) {
     return cachedUILocale;
   }
-  return localStorage.getItem("ui.locale") ?? navigator.language;
+  return sanitize.nonemptystring(localStorage.getItem("ui.locale"), navigator.language);
 }
 
 export function saveUILocale(language: string) {

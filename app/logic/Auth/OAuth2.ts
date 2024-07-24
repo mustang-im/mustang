@@ -319,7 +319,7 @@ export class OAuth2 extends Observable {
    * @returns refreshToken (or null, if not available)
    */
   protected async getRefreshTokenFromStorage(): Promise<string | null> {
-    return localStorage.getItem(this.storageKey) ?? null;
+    return sanitize.string(localStorage.getItem(this.storageKey), null);
   }
   protected async deleteRefreshTokenFromStorage(): Promise<void> {
     localStorage.removeItem(this.storageKey);

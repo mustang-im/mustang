@@ -1,4 +1,5 @@
 import { Observable } from "../../logic/util/Observable";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 
 class ObservableLocalStorageSetting<T> extends Observable {
   readonly key: string;
@@ -9,7 +10,7 @@ class ObservableLocalStorageSetting<T> extends Observable {
     this.defaultValue = defaultValue;
   }
   get value(): T {
-    return JSON.parse(localStorage.getItem(this.key)) ?? this.defaultValue;
+    return JSON.parse(sanitize.nonemptystring(localStorage.getItem(this.key), null)) ?? this.defaultValue;
   }
   set value(val: T) {
     localStorage.setItem(this.key, JSON.stringify(val));

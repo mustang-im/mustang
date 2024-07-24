@@ -110,8 +110,7 @@ export const savedSearchFolders = new ArrayColl<SavedSearchFolder>();
 export function readSavedSearches() {
   try {
     assert(savedSearchFolders.isEmpty, "Already read saved searches. Call this only once at startup");
-    let arrayJSON = JSON.parse(localStorage.getItem("savedSearches") || "[]");
-    assert(Array.isArray(arrayJSON), "Could not read saved searches");
+    let arrayJSON = sanitize.array(JSON.parse(sanitize.nonemptystring(localStorage.getItem("savedSearches"), null)), []);
     for (let searchJSON of arrayJSON) {
       try {
         savedSearchFolders.add(SavedSearchFolder.readFromJSON(searchJSON));

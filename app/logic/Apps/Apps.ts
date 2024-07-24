@@ -27,7 +27,7 @@ export default class Apps {
     }
 
     try {
-      let configuredIDs = sanitize.array(JSON.parse(sanitize.nonemptystring(localStorage.getItem("apps.selected"), "[]")), []);
+      let configuredIDs = sanitize.array(JSON.parse(sanitize.nonemptystring(localStorage.getItem("apps.selected"), null)), []);
       for (let configuredID of configuredIDs) {
         try {
           let app = this.apps.find(app => app.id == sanitize.nonemptystring(configuredID));

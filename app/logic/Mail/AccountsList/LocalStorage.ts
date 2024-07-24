@@ -24,7 +24,7 @@ export async function readMailAccounts(): Promise<ArrayColl<MailAccount>> {
     let id = `account${i}`;
     let prefBranch = `mail.account${i}.`;
     try {
-      let protocol = localStorage.getItem(prefBranch + "protocol");
+      let protocol = sanitize.enum(localStorage.getItem(prefBranch + "protocol"), ["imap", "pop3", "smtp", "ews", "activesync", "owa"]);
       if (!protocol) {
         break;
       } else if (protocol == "imap") {
@@ -73,7 +73,7 @@ async function readStandardAccountFromLocalStorage(account: MailAccount, prefBra
   account.username = sanitize.nonemptystring(localStorage.getItem(prefBranch + "username"));
   account.password = sanitize.string(localStorage.getItem(prefBranch + "password"));
   account.userRealname = sanitize.nonemptystring(localStorage.getItem(prefBranch + "userRealname") ??
-    appGlobal.me.name ?? localStorage.getItem("me.realname"));
+    appGlobal.me.name ?? sanitize.label(localStorage.getItem("me.realname")));
   account.tls = sanitize.translate(localStorage.getItem(prefBranch + "tls"), {
     plain: TLSSocketType.Plain,
     tls: TLSSocketType.TLS,
@@ -99,7 +99,7 @@ async function readSMTPAccount(prefBranchBase: string, idBase: string): Promise<
   }, TLSSocketType.TLS);
   account.emailAddress = sanitize.nonemptystring(localStorage.getItem(prefBranchBase + "emailAddress"));
   account.userRealname = sanitize.nonemptystring(localStorage.getItem(prefBranchBase + "userRealname") ??
-    appGlobal.me.name ?? localStorage.getItem("me.realname"));
+    appGlobal.me.name ?? sanitize.label(localStorage.getItem("me.realname")));
   account.name = account.emailAddress;
   account.storage = new MailAccountLocalStorage();
   return account;
@@ -112,9 +112,9 @@ async function readEWSAccount(prefBranch: string, id: string): Promise<EWSAccoun
   account.hostname = sanitize.hostname(localStorage.getItem(prefBranch + "hostname"));
   account.emailAddress = sanitize.nonemptystring(localStorage.getItem(prefBranch + "emailAddress"));
   account.username = sanitize.nonemptystring(localStorage.getItem(prefBranch + "username") || account.emailAddress);
-  account.password = localStorage.getItem(prefBranch + "password"); // not required to exist
+  account.password = sanitize.string(localStorage.getItem(prefBranch + "password"), null); // not required to exist
   account.userRealname = sanitize.nonemptystring(localStorage.getItem(prefBranch + "userRealname") ??
-    appGlobal.me.name ?? localStorage.getItem("me.realname"));
+    appGlobal.me.name ?? sanitize.label(localStorage.getItem("me.realname")));
   account.name = account.emailAddress;
   account.storage = new MailAccountLocalStorage();
   return account;
@@ -132,7 +132,7 @@ export function saveAccountToLocalStorage(account: MailAccount): void {
   localStorage.setItem(prefBranch + "username", sanitize.nonemptystring(account.username));
   localStorage.setItem(prefBranch + "password", sanitize.string(account.password));
   localStorage.setItem(prefBranch + "userRealname", sanitize.nonemptystring(
-    account.userRealname ?? appGlobal.me.name ?? localStorage.getItem("me.realname")));
+    account.userRealname ?? appGlobal.me.name ?? sanitize.label(localStorage.getItem("me.realname"))));
   localStorage.setItem(prefBranch + "tls", sanitize.alphanumdash(account.tls.toString().toLowerCase()));
   account.name = sanitize.emailAddress(account.emailAddress);
 }
@@ -152,7 +152,7 @@ function nextFreeAccountID(): string {
   for (let i = 1; true; i++) {
     let accountID = `account${i}`;
     let prefBranch = `mail.account${i}.`;
-    let protocol = localStorage.getItem(prefBranch + "protocol");
+    let protocol = sanitize.string(localStorage.getItem(prefBranch + "protocol"), null);
     if (!protocol) {
       return accountID;
     }

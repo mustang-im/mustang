@@ -18,12 +18,14 @@
 		<slot name="right" />
   </hbox>
 </hbox>
-<svelte:window 
-	on:pointermove={onMouseMove} 
+<svelte:window
+	on:pointermove={onMouseMove}
 	on:pointerup={onMouseUp}
   />
 
 <script lang="ts">
+	import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+
 	/** Left pane cannot be made smaller than this
 	 * in px */
   export let leftMinWidth = 30;
@@ -36,7 +38,7 @@
 	export let name: string = null;
 
   const barWidth = 2;
-	let rightRatio = JSON.parse(localStorage?.getItem("ui.splitter." + name)) ?? initialRightRatio;
+	let rightRatio = JSON.parse(sanitize.nonemptystring(localStorage?.getItem("ui.splitter." + name), null)) ?? initialRightRatio;
 
 	let isMouseDown = false;
   let previousMousePosX: number;
