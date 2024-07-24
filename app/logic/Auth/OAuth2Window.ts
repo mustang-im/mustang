@@ -14,7 +14,7 @@ export class OAuth2Window extends OAuth2UI {
   async login(): Promise<string> {
     let url = this.oAuth2.getAuthURL();
     // Ends up in e2/src/main/index.ts setWindowOpenHandler(). Features are overridden there.
-    let popup = window.open(url, "_blank", "center,noopener,noreferrer,oauth2popup") as Window;
+    let popup = window.open(url, "_blank", "center,oauth2popup") as Window;
     assert(popup, "Failed to open OAuth2 window");
     return await new Promise((resolve, reject) => {
       let ipcRenderer = (window as any).electron.ipcRenderer; // TODO use JPC, or remove window
