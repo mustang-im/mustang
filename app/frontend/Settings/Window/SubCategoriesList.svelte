@@ -19,7 +19,7 @@
   .sub-categories {
     justify-content: start;
     flex-wrap: wrap;
-    margin: 0px 0px 0px 12px;
+    padding-inline-start: 12px;
   }
   .sub-categories[app="webapps"] {
     margin-block-start: 128px;
