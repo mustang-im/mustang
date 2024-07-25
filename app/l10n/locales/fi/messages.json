@@ -152,7 +152,7 @@
   "sQv06Y": "varten",
   "3rcbha": "Muotoiltu",
   "rxWGWX": "Eteenpäin",
-  "4JM6Xj": "Löytyi {0, monikko, muu{# tuotu tili.) muu (#tuodut tilit.}}",
+  "4JM6Xj": "Löytyi {0, plural, zero{# tuotu tili.} other {# tuodut tilit.}}",
   "STPIHh": "Henkilöiltä, jotka ovat osoitekirjassani",
   "Weq9zb": "Yleiset",
   "TShJCT": "Hae sähköposti",
