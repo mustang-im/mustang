@@ -1,10 +1,10 @@
 {
   "IYbM1Z": "IYbM1Z",
   "FlvwwB": "Nur {0} Konto",
-  "QpgBEp": "{0, plural, other { # Tage }}",
+  "QpgBEp": "{0, plural, one { # Tag} other { # Tage }}",
   "BqElFK": "Nur {0} Ordner",
   "ZXxoL2": "{0, plural, one { # lokale nachricht. } other { # lokale nachrichten. }}",
-  "o7dGee": "{0, plural, other { # E-mails }}",
+  "o7dGee": "{0, plural, one { # E-Mail } other { # E-Mails }}",
   "miUdjW": "{0} neu,\n{1} ungelesen,\n{2, plural, other { # insgesamt. }}",
   "6y7ykp": "{0} Videokonferenz-Konto",
   "KFAdPX": "* Eintrag",
