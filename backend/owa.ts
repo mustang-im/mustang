@@ -1,6 +1,6 @@
 import { session as Session, BrowserWindow } from "electron";
 
-export async function fetchSessionData(partition: string, url: string, interactive: boolean) {
+export async function fetchSessionData(partition: string, url: string, interactive?: boolean, autoFillLoginPage?: string) {
   let session = Session.fromPartition(partition);
   let response = await session.fetch(url + 'sessiondata.ashx', { method: 'POST' });
   if ([401, 440].includes(response.status) && interactive) {
@@ -47,6 +47,10 @@ export async function fetchSessionData(partition: string, url: string, interacti
         let cookies = await Session.fromPartition(partition).cookies.get({ name: 'X-OWA-CANARY' });
         if (cookies[0]?.value) {
           checkLoginFinished();
+        } else if (autoFillLoginPage) try {
+          await popup.webContents.executeJavaScript(autoFillLoginPage);
+        } catch (ex) {
+          console.error(ex);
         }
       };
       session.cookies.on('changed', checkCanary);

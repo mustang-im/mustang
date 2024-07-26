@@ -165,7 +165,7 @@ export class OWAAccount extends MailAccount {
   }
 
   async listFolders(interactive?: boolean): Promise<void> {
-    let sessionData = await appGlobal.remoteApp.OWA.fetchSessionData(this.partition, this.url, interactive);
+    let sessionData = await appGlobal.remoteApp.OWA.fetchSessionData(this.partition, this.url, interactive, autoFillLoginPage(this.emailAddress, this.password));
     if (!sessionData) {
       throw new Error("Authentication window was closed by user");
     }
@@ -298,4 +298,133 @@ class OWASubscribeToNotificationRequest {
   get type() {
     return "SubscribeToNotification";
   }
+}
+
+function autoFillLoginPage(username: string = "", password: string = "") {
+  return `
+    function waitForInput() {
+      let observer = new MutationObserver(function(mutations) {
+        // Check whether script manipulated the user/password form.
+        for (let record of mutations) {
+          for (let node of record.addedNodes) {
+            if (node instanceof HTMLInputElement) {
+              observer.disconnect();
+              // Wait for mutations to finish before rechecking for widgets.
+              setTimeout(checkForWidgets, 100);
+              return;
+            }
+          }
+        }
+      });
+      observer.observe(document.body, { subtree: true, childList: true });
+    }
+
+    function checkForWidgets() {
+      let inputs = [...document.querySelectorAll("input")];
+      let user = inputs.filter(input => input.type == "text" || input.type == "email");
+      let pass = inputs.filter(input => input.type == "password");
+      let submit = inputs.filter(input => input.type == "submit");
+      let button = inputs.filter(input => input.type == "button");
+
+      switch (sessionStorage.getItem("AutoLoginStep")) {
+      // New login attempt, no step saved yet.
+      case null:
+        // Maybe we're trying to sign in to a personal account.
+        for (let link of document.links) {
+          if (link.dataset.m) {
+            try {
+              if (JSON.parse(link.dataset.m).cN == "SIGNIN") {
+                sessionStorage.setItem("AutoLoginStep", "OtherUser");
+                link.click();
+                return;
+              }
+            } catch (ex) {
+              console.error(ex);
+            }
+          }
+        }
+        // No sign in link? Fall through to try the "Other User" element.
+
+      case "OtherUser":
+        let otherTile = document.getElementById("otherTile");
+        if (otherTile) {
+          sessionStorage.setItem("AutoLoginStep", "Username");
+          otherTile.click();
+          // This click doesn't load a new page. Instead,
+          // the form to input the user name is created by script.
+          waitForInput();
+          return;
+        }
+        // No "Other User" element? Fall through to try the username.
+
+      case "Username":
+        if (user.length == 1 && pass.length == 1 && submit.length == 1 &&
+            document.activeElement == user[0]) {
+          // The page is prompting us for the email address.
+          sessionStorage.setItem("AutoLoginStep", "Password");
+          user[0].value = ${JSON.stringify(username)};
+          user[0].dispatchEvent(new Event("change"));
+          pass[0].value = ${JSON.stringify(password)};
+          pass[0].dispatchEvent(new Event("change"));
+          submit[0].focus();
+          submit[0].click();
+          // This click doesn't load a new page. Instead,
+          // the form to input the password is manipulated by script.
+          waitForInput();
+          return;
+        }
+
+      // Try the password
+      case "Password":
+        if (user.length == 1 && pass.length == 1 && submit.length == 1 &&
+            document.activeElement == pass[0]) {
+          // The page is prompting us for the password.
+          sessionStorage.setItem("AutoLoginStep", "CheckPassword");
+          // Hotmail: "[x] Keep me signed in"
+          let keep = inputs.filter(input => input.type == "checkbox");
+          if (keep.length == 1 && keep[0].name == "KMSI" && !keep[0].checked) {
+            keep[0].click();
+          }
+          pass[0].value = ${JSON.stringify(password)};
+          pass[0].dispatchEvent(new Event("change"));
+          submit[0].focus();
+          submit[0].click();
+          return;
+        }
+
+      case "CheckPassword":
+        let passwordError = document.getElementById("passwordError");
+        let passwordErrorMessage = passwordError && passwordError.textContent.trim();
+        if (passwordErrorMessage) {
+          sessionStorage.setItem("AutoLoginStep", "PasswordError");
+          // TODO Notify the UI in some way
+          return;
+        }
+
+      // Try the "Stay signed in" prompt
+      case "StaySignedIn":
+        if (user.length == 0 && pass.length == 0 && submit.length == 1 &&
+            button.length == 1 && button[0].value) {
+          // The page is prompting us to stay logged in.
+          sessionStorage.setItem("AutoLoginStep", "Complete");
+          // submit = yes, button = no
+          submit[0].focus();
+          submit[0].click();
+          return;
+        } else {
+          // Page might not be ready yet. Try again after the DOM has updated.
+          waitForInput();
+        }
+        break;
+
+      case "PasswordError":
+        return; // Mute. Let user handle it.
+
+      case "Complete":
+        break; // nothing to do here
+      }
+    };
+
+    checkForWidgets();
+  `;
 }
