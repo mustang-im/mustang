@@ -1,4 +1,5 @@
-import { session as Session, BrowserWindow } from "electron";
+import { net as Net, session as Session, BrowserWindow } from "electron";
+import { Readable } from 'stream';
 
 export async function fetchSessionData(partition: string, url: string, interactive: boolean) {
   let session = Session.fromPartition(partition);
@@ -59,6 +60,60 @@ export async function fetchSessionData(partition: string, url: string, interacti
     throw new Error(`HTTP ${response.status} ${response.statusText}`);
   }
   return await response.json();
+}
+
+/**
+ * Fetches an HTTPS URL using a specific electron partition.
+ * @param partition {string}
+ * @param url       {string}
+ * @param data?     {Dict<string>}
+ *
+ * TODO: Use options parameter, which can contain:
+ * - body {Dict<string>|Buffer|string}
+ * - cache {'default'|'no-store'|'reload'|'no-cache'|'force-cache'}
+ * - credentials {'include'|'omit'|'same-origin'} [currently always 'include']
+ * - headers {Dict<string>}
+ * - method {string} [currently autodetects 'GET' or 'POST']
+ * - origin {string}
+ * - redirect {'follow'|'manual'|'error'} [currently always 'follow']
+ * - result {'text'|'bytes'|'json'|'stream'} [currently always 'text']
+ */
+export async function fetchText(partition: string, url: string, data?: Dict<string>) {
+  return new Promise((resolve, reject) => {
+    let options = {
+      method: data ? 'POST' : 'GET',
+      url: url,
+      partition: partition,
+      credentials: 'include',
+      redirect: 'manual',
+    };
+    let request = Net.request(options);
+    request.on('response', message => {
+      if ([101, 204, 205, 304].includes(message.statusCode)) {
+        resolve({
+          ok: (message.statusCode >= 200 && message.statusCode <= 299),
+          status: message.statusCode,
+          statusText: message.statusMessage,
+          text: '',
+          url: url,
+        });
+      } else {
+        new Response(Readable.toWeb(message)).text().then(text => resolve({
+          ok: (message.statusCode >= 200 && message.statusCode <= 299),
+          status: message.statusCode,
+          statusText: message.statusMessage,
+          text: text,
+          url: url,
+        })).catch(reject);
+      }
+    });
+    request.on('error', reject);
+    request.on('redirect', (statusCode, method, redirectUrl, responseHeaders) => {
+      url = redirectUrl;
+      request.followRedirect();
+    });
+    request.end(data ? new URLSearchParams(data).toString() : '');
+  });
 }
 
 export async function fetchJSON(partition: string, url: string, action: string, request: any) {

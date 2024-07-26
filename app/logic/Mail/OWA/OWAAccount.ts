@@ -1,4 +1,4 @@
-import { MailAccount, TLSSocketType } from "../MailAccount";
+import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { OWAFolder } from "./OWAFolder";
 import OWACreateItemRequest from "./OWACreateItemRequest";
@@ -11,6 +11,13 @@ import { appGlobal } from "../../app";
 import { notifyChangedProperty } from "../../util/Observable";
 import { blobToBase64 } from "../../util/util";
 import { assert } from "../../util/util";
+
+type LoginFormElements = {
+  url: string,
+  form: HTMLFormElement,
+  username: HTMLInputElement,
+  password: HTMLInputElement,
+}
 
 class OWAError extends Error {
   constructor(response) {
@@ -63,8 +70,89 @@ export class OWAAccount extends MailAccount {
     return this.hasLoggedIn;
   }
 
+  async findLoginElements(): Promise<LoginFormElements> {
+    let response = await appGlobal.remoteApp.OWA.fetchText(this.partition, this.url);
+    let elements = null;
+    if (await response.ok) {
+      let url = await response.url;
+      let text = await response.text;
+      let dom = new DOMParser().parseFromString(text, "text/html");
+      for (let form of dom.forms) {
+        if (!/^\//.test(form.getAttribute("action"))) {
+          continue;
+        }
+        let username = null;
+        let password = null;
+        for (let e of form.elements) {
+          let element = e as HTMLInputElement;
+          if (element.style.display == "none") {
+            continue;
+          }
+          if (element.type == "text" || element.type == "email") {
+            if (username) {
+              username = null;
+              break;
+            }
+            username = element;
+          }
+          if (element.type == "password") {
+            if (password) {
+              password = null;
+              break;
+            }
+            password = element;
+          }
+        }
+        if (username && password) {
+          if (elements) {
+            elements = null;
+            break;
+          }
+          elements = { url, form, username, password };
+        }
+      }
+    }
+    return elements;
+  }
+
+  async submitLoginForm(elements: LoginFormElements) {
+    elements.username.value = this.emailAddress;
+    elements.password.value = this.password;
+    if ("flags" in elements.form.elements) {
+      (elements.form.elements.flags as any).value |= 1;
+    }
+    if ("trusted" in elements.form.elements) {
+      (elements.form.elements.trusted as any).checked = true;
+    }
+    let url = new URL(elements.form.getAttribute("action"), elements.url).toString();
+    let data = Object.fromEntries(new FormData(elements.form));
+    return await appGlobal.remoteApp.OWA.fetchText(this.partition, url, data);
+  }
+
   async login(interactive: boolean): Promise<void> {
-    await this.listFolders(interactive);
+    if (this.authMethod == AuthMethod.OAuth2) {
+      await this.listFolders(interactive);
+    } else try {
+      await this.listFolders();
+    } catch (ex) {
+      if (!/^HTTP (401|440)/.test(ex.message)) {
+        throw ex;
+      }
+      let elements = await this.findLoginElements();
+      if (!elements) {
+        throw new Error("Could not find login form");
+      }
+      let response = await this.submitLoginForm(elements);
+      let formURL = new URL(elements.url);
+      let responseURL = new URL(response.url);
+      if (response.status == 401 || responseURL.origin == formURL.origin && responseURL.pathname == formURL.pathname && responseURL.searchParams.get("reason") == "2") {
+        throw new LoginError(null, "Password incorrect");
+      }
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status} ${response.statusText}`);
+      }
+      await this.listFolders();
+    }
     this.hasLoggedIn = true;
 
     let addressbook = appGlobal.addressbooks.find((addressbook: OWAAddressbook) => addressbook.protocol == "addressbook-owa" && addressbook.url == this.url && addressbook.username == this.emailAddress) as OWAAddressbook | void;
