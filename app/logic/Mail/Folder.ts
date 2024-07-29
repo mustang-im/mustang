@@ -6,7 +6,7 @@ import { ArrayColl, Collection } from 'svelte-collections';
 import { assert, AbstractFunction } from "../util/util";
 import { gt } from "../../l10n/l10n";
 
-export class Folder extends Observable implements TreeItem {
+export class Folder extends Observable implements TreeItem<Folder> {
   /** IMAP: folder path */
   id: string;
   dbID: number;
@@ -145,8 +145,8 @@ export class Folder extends Observable implements TreeItem {
     }
   }
 
-  get children(): Collection<TreeItem> {
-    return this.subFolders as any as Collection<TreeItem>;
+  get children(): Collection<Folder> {
+    return this.subFolders as any as Collection<Folder>;
   }
 
   /** @return false, if delete is possible. If not, a string with the reason why it's not possible. */

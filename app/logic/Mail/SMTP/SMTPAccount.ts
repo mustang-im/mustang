@@ -6,8 +6,7 @@ import { appGlobal } from "../../app";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { blobToBase64, assert } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
-import type { Attachment as NMAttachment, Address as NMAddress } from "@types/nodemailer/lib/mailer";
-import type Mail from "@types/nodemailer/lib/mailer";
+import type { default as Mail, Attachment as NMAttachment, Address as NMAddress } from "nodemailer/lib/mailer";
 type NMMail = Mail.Options;
 
 export class SMTPAccount extends MailAccount {

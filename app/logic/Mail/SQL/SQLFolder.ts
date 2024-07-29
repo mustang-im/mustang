@@ -51,7 +51,7 @@ export class SQLFolder extends Folder {
         countTotal = ${folder.countTotal},
         countUnread = ${folder.countUnread},
         countNewArrived = ${folder.countNewArrived},
-        uidvalidity = ${folder.uidvalidity},
+        uidvalidity = ${(folder as IMAPFolder).uidvalidity},
         syncState = ${folder.syncState}
       WHERE id = ${folder.dbID}
       `);
