@@ -43,6 +43,6 @@ export default class Apps {
       let myAppIDs = this.myApps.map(app => app.id).contents;
       localStorage.setItem("apps.selected", JSON.stringify(myAppIDs));
     });
-    this.categories.get("selectedApps").apps = this.myApps;
+    this.categories.get("selectedApps").apps.addAll(this.myApps);
   }
 }

@@ -8,7 +8,7 @@ import { SpecialFolder } from "../Folder";
 import { assert, SpecificError } from "../../util/util";
 import { notifyChangedProperty } from "../../util/Observable";
 import type { ArrayColl, Collection } from "svelte-collections";
-import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
+import type { ImapFlow } from "imapflow";
 import { appName, appVersion, siteRoot } from "../../build";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 
