@@ -99,7 +99,7 @@ export class IMAPFolder extends Folder {
 
   /** Lists all messages in this folder.
    * But doesn't download their contents. @see downloadMessages() */
-  async listMessages() {
+  async listMessages(): Promise<ArrayColl<EMail>> {
     await this.readFolder();
     if (this.countTotal === 0) {
       return;
@@ -107,9 +107,11 @@ export class IMAPFolder extends Folder {
     let { newMessages } = await this.fetchMessageList({ all: true }, {
         changedSince: this.lastModSeq,
       });
+    let newMsgs = new ArrayColl<IMAPEMail>(newMessages.subtract(this.messages as ArrayColl<IMAPEMail>));
     this.messages.addAll(newMessages); // notify only once
     await SQLFolder.saveProperties(this);
     // Should save msgs to SQL DB, but often no `subject`, which violates the DB schema
+    return newMsgs;
   }
 
   /** Lists new messages, based on the UID being higher.

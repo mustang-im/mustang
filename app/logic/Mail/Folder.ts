@@ -158,8 +158,8 @@ export class Folder extends Observable implements TreeItem<Folder> {
     }
   }
 
-  get children(): Collection<TreeItem<Folder>> {
-    return this.subFolders as any as Collection<TreeItem<Folder>>;
+  get children(): Collection<Folder> {
+    return this.subFolders as any as Collection<Folder>;
   }
 
   /** @return false, if delete is possible. If not, a string with the reason why it's not possible. */

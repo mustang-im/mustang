@@ -1,5 +1,5 @@
 import { OAuth2UI } from "./OAuth2UI";
-import type { LoginDialogMustangApp } from "../../frontend/Shared/Auth/AuthMustangApp";
+import type { LoginDialogMustangApp } from "../../frontend/Mail/MailMustangApp";
 import type { URLString } from "../util/util";
 import { ArrayColl } from "svelte-collections";
 
