@@ -52,8 +52,24 @@
   function haveWebView () {
     webviewE.addEventListener("dom-ready", () => {
       dispatch("webview", webviewE);
+      webviewE.addEventListener("did-finish-load", resizeWebview());
     }, { once: true });
   }
+
+  const heightBuffer = 30;
+  function resizeWebview () {
+    webviewE.executeJavaScript(`
+      new Promise(resolve => {
+        const observer = new ResizeObserver(entries => {
+          const contentRect = entries[0].contentRect;
+          resolve(contentRect.height);
+        });
+        observer.observe(document.body);
+      });
+    `).then(height => {
+      webviewE.style.height = height + heightBuffer + 'px';
+    });
+  };
 </script>
 
 <style>
