@@ -33,7 +33,7 @@
       <slot name="inner-top" />
       <div class="text selectable">
         <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection. -->
-        {@html $message.html || ""}
+        <WebView title={$t`text`} html={message.html} />
         <slot name="bubble" />
       </div>
       <slot name="inner-bottom" />
@@ -53,7 +53,9 @@
   import { ChatMessage, DeliveryStatus } from "../../../logic/Chat/Message";
   import { Person } from "../../../logic/Abstract/Person";
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
+  import WebView from "../../Shared/WebView.svelte";
   import { getDateString } from "../../Util/date";
+  import { t } from "../../../l10n/l10n";
 
   export let message: Message;
   export let previousMessage: Message = null;
