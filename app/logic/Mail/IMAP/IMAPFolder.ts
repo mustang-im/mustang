@@ -85,7 +85,7 @@ export class IMAPFolder extends Folder {
     }
   }
 
-  async listMessages() {
+  protected async readFolder() {
     if (!this.dbID) {
       await this.save();
     }
@@ -95,23 +95,51 @@ export class IMAPFolder extends Folder {
       await SQLEMail.readAll(this);
       console.timeEnd(this.path);
     }
+  }
 
+  /** Lists all messages in this folder.
+   * But doesn't download their contents. @see downloadMessages() */
+  async listMessages() {
+    await this.readFolder();
     if (this.countTotal === 0) {
       return;
     }
+    let { newMessages } = await this.fetchMessageList({ all: true }, {
+        changedSince: this.lastModSeq,
+      });
+    this.messages.addAll(newMessages); // notify only once
+    await SQLFolder.saveProperties(this);
+    // Should save msgs to SQL DB, but often no `subject`, which violates the DB schema
+  }
+
+  /** Lists new messages, based on the UID being higher.
+   * But doesn't download their contents @see getNewMessages() */
+  async listNewMessages(): Promise<ArrayColl<IMAPEMail>> {
+    await this.readFolder();
+    if (this.countTotal === 0) {
+      return;
+    }
+    let { newMessages } = await this.fetchMessageList({ uid: this.highestUID() + ":*" }, {
+      changedSince: this.lastModSeq,
+    });
+    this.messages.addAll(newMessages);
+    await SQLFolder.saveProperties(this);
+    return newMessages;
+  }
+
+  protected async fetchMessageList(range: any, options: any): Promise<{ newMessages: ArrayColl<IMAPEMail>, updatedMessages: ArrayColl<IMAPEMail> }> {
     let newMessages = new ArrayColl<IMAPEMail>();
     let updatedMessages = new ArrayColl<IMAPEMail>();
+    console.log("IMAP fetch", range);
     await this.runCommand(async (conn) => {
-      let msgsAsyncIterator = await conn.fetch({ all: true }, {
+      let msgsAsyncIterator = await conn.fetch(range, {
         uid: true,
         size: true,
         threadId: true,
         internalDate: true,
         envelope: true,
         flags: true,
-      }, {
-        changedSince: this.lastModSeq,
-      });
+      }, options);
       for await (let msgInfo of msgsAsyncIterator) {
         if (!msgInfo.envelope) {
           continue;
@@ -131,9 +159,19 @@ export class IMAPFolder extends Folder {
         this.updateModSeq(msgInfo.modseq);
       }
     });
-    this.messages.addAll(newMessages); // notify only once
-    await SQLFolder.saveProperties(this);
-    // Should save to SQL DB, but often no `subject`, which violates the DB schema
+    return { newMessages, updatedMessages };
+  }
+
+  protected highestUID(): number {
+    let uids = this.messages.map((msg: IMAPEMail) => msg.uid);
+    return uids.sortBy(uid => -uid).first;
+  }
+
+  /** Lists new messagess, and downloads them */
+  async getNewMessages(): Promise<ArrayColl<IMAPEMail>> {
+    let newMsgs = await this.listNewMessages();
+    await this.downloadMessages(newMsgs);
+    return newMsgs;
   }
 
   /**
@@ -216,8 +254,7 @@ export class IMAPFolder extends Folder {
     let hasChanged = newCount != oldCount || newCount != this.countTotal;
     this.countTotal = newCount;
     if (hasChanged) {
-      await this.listMessages();
-      await this.downloadAllMessages();
+      await this.getNewMessages();
     }
   }
 
