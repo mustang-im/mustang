@@ -484,7 +484,7 @@
   "/x2S4u": "Caja de salida",
   "GQ3O42": "Trash",
   "IagCbF": "URL",
-  "BaQ5Y3": "KB",
+  "BaQ5Y3": "{0} KB",
   "C2EZrZ": "{0} min",
   "8hbT5v": "Agregar libro de direcciones",
   "pXvPsL": "¿Cómo quieres llamar a la cuenta?",
@@ -498,5 +498,5 @@
   "h69WC6": "Sent",
   "lnSioS": "Enviado por {0}",
   "t8dIOP": "Spam",
-  "cj2oZr": "Tu cuenta de correo electrónico está funcionando y lista para ser usada."
+  "cj2oZr": "Su cuenta de correo electrónico {0} está trabajando y listo para ser utilizado."
 }
