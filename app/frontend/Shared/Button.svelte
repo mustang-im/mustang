@@ -101,11 +101,11 @@
   button:hover:not(.disabled) {
     background-color: var(--hover-bg);
     color: var(--hover-fg);
-    border: 1px solid var(--hover-bg);
   }
   button.selected:not(.disabled) {
     background-color: var(--selected-bg);
     color: var(--selected-fg);
+    border: none;
   }
   button.selected:hover:not(.disabled) {
     background-color: var(--selected-hover-bg);
