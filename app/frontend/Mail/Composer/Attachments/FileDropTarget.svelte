@@ -95,7 +95,7 @@
     margin: 32px;
   }
   .drop-target:global(.hover) {
-    background-color: #00000065 !important;
+    background-color: #00000065;
   }
   .content {
     z-index: 0;
