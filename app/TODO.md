@@ -17,7 +17,6 @@
   * Move messages to deep subfolders
     * Drag&Drop: Open on drag over
     * Popup dialog
-  * Bug: Selection: Default selection on start
   * Inline images send
   * Context menu for content: Copy text, link, image
   * Folders appear twice

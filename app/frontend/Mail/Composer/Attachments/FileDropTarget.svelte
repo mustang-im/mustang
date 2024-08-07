@@ -50,6 +50,7 @@
   }
 
   function onDragOver(event: DragEvent) {
+    (event.target as HTMLElement).classList?.add("hover");
     event.preventDefault();
   }
   function onDragEnter(event: DragEvent) {
@@ -67,10 +68,11 @@
     isImage = mimetypes.every(isImageMimetype);
     dragging++;
   }
-  function onDragLeave() {
+  function onDragLeave(event: DragEvent) {
     if (dragging > 0) {
       dragging--;
     }
+    (event.target as HTMLElement).classList?.remove("hover");
   }
 </script>
 
@@ -87,10 +89,13 @@
   .drop-target {
     align-items: center;
     justify-content: center;
-    background-color: #00000055;
+    background-color: #00000045;
     border: 2px solid gray;
     border-radius: 10px;
     margin: 32px;
+  }
+  .drop-target:global(.hover) {
+    background-color: #00000065 !important;
   }
   .content {
     z-index: 0;
