@@ -1,14 +1,20 @@
 # Next
 * Mail
+  * Password encrypt
   * Thunderbird AB import all fields
   * Import: Polish UI style
-  * Delete to trash
+  * Delete to Trash
   * OAuth2
     * Google approval
     * Yahoo registration
     * Microsoft - Partner support
   * IMAP poll?
   * Paragraph display with empty line
+  * Msg list: Folder move dropdown
+    * Delete and Spam
+    * Move to folder
+    * Tags
+  * Bug: Persons view: disable until bug fixed
   * No folders -> [Get Mail] button disabled -> Can never login
   * Calendar
     * Change Date
@@ -54,7 +60,7 @@
 * License client
 * Password storage
 
-# Polish
+# Feedback
 ## Elena
 * Clear profile
 * Debug dump of settings
@@ -62,14 +68,17 @@
   * PersonEntry: Delete key
   * Remove added attachment (needs menu item)
   * Open attachment
-* Style
-  * Contacts: Icon inner color in Dark mode
 * Images, remote
 * Saved Searches delete: Update list
 * List view: Sort order
 * MailChat/Thread: Jail HTML: Styles and size
 * Calendar
   * Tuesday first day
+## Freshness
+* Account colors
+* Icons for accounts, based on favicon or user-set
+* Pic for users, in identities
+* Unified inbox: Show account as tag or icon
 
 # UI
 * Close menu when clicking outside menu
@@ -203,6 +212,8 @@
 * Tags
 * Archive
 * Undo
+* IMAP Quota
+* IMAP ACL: Share mailbox/folders with colleages
 * Spellcheck
 * Thread pane sort
 * Threading in Thread pane
