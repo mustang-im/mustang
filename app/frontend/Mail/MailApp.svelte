@@ -16,6 +16,7 @@
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "./Selected";
   import { selectedPerson } from "../Shared/Person/Selected";
   import { getLocalStorage } from "../Util/LocalStorage";
+  import { LoginError } from "../../logic/Abstract/Account";
   import { showError } from "../Util/error";
   import ThreePane from "./3pane/3Pane.svelte";
   import VerticalLayout from "./Vertical/VerticalLayout.svelte";
@@ -40,7 +41,11 @@
       }
       await folder.listMessages();
     } catch (ex) {
-      showError(ex);
+      if (ex instanceof LoginError) {
+        folder.account.login(true);
+      } else {
+        showError(ex);
+      }
     }
   }
 
