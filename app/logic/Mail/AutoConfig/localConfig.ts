@@ -111,7 +111,7 @@ const kLocalConfigs = [
       { instruction: `As app name, enter: Mustang` },
       { instruction: `Generate password` },
       { instruction: `Copy` },
-      { enterPassword: true },
+      { instruction: `Paste Password`, enterPassword: true },
     ] as SetupInstruction[],
   },
   {
@@ -272,6 +272,7 @@ const kLocalConfigs = [
       { instruction: `At the bottom, click "Sign-in"` },
       { instruction: `Enable: Let devices and apps use IMAP` },
       { enterPassword: true },
+      { instruction: `Update: Microsoft decided to block IMAP apps and also block OAuth2 registrations. We are trying to resolve it with Microsoft, but communication with them is ... difficult.` },
     ] as SetupInstruction[],
   },
 ];
