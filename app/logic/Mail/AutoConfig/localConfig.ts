@@ -106,8 +106,11 @@ const kLocalConfigs = [
 </clientConfig>
 `,
     instructions: [
-      { url: `` },
-      { instruction: `Enable IMAP access` },
+      { url: `https://login.yahoo.com/myaccount/security/app-password/` },
+      { instruction: `Get started` },
+      { instruction: `As app name, enter: Mustang` },
+      { instruction: `Generate password` },
+      { instruction: `Copy` },
       { enterPassword: true },
     ] as SetupInstruction[],
   },
@@ -264,8 +267,10 @@ const kLocalConfigs = [
 </clientConfig>
 `,
     instructions: [
-      { url: `` },
-      { instruction: `Enable IMAP access` },
+      { url: `https://outlook.live.com/mail/0/options/mail/forwarding` },
+      { instruction: `Forwarding and IMAP` },
+      { instruction: `At the bottom, click "Sign-in"` },
+      { instruction: `Enable: Let devices and apps use IMAP` },
       { enterPassword: true },
     ] as SetupInstruction[],
   },

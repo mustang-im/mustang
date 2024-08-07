@@ -1,7 +1,7 @@
 <vbox flex class="setup-mail-window">
   <hbox flex />
   <vbox class="page-box" step={step}>
-    {#if step != Step.FinalizeConfig && step != Step.ManualConfig}
+    {#if step != Step.FinalizeConfig && step != Step.ManualConfig && step != Step.Instructions}
       <EmailAddressPassword bind:emailAddress bind:password
         on:continue={onEmailAddressSucceeded} />
     {/if}
