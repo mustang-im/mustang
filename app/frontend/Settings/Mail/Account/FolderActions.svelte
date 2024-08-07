@@ -9,12 +9,6 @@
   </grid>
 {:else}
   <hbox class="buttons">
-    <Button label={$t`Delete folder`}
-      classes="delete"
-      icon={DeleteIcon}
-      onClick={onDelete}
-      disabled={folder.disableDelete()}
-      />
     <Button label={$t`Create sub-folder`}
       classes="create"
       icon={CreateFolderIcon}
@@ -28,20 +22,11 @@
 <script lang="ts">
   import type { Folder } from "../../../../logic/Mail/Folder";
   import Button from "../../../Shared/Button.svelte";
-  import DeleteIcon from "lucide-svelte/icons/trash-2";
   import CreateFolderIcon from "lucide-svelte/icons/folder-plus";
   import { assert } from "../../../../logic/util/util";
   import { t } from "../../../../l10n/l10n";
 
   export let folder: Folder;
-
-  async function onDelete() {
-    let confirmed = confirm($t`Are you sure that you want to the delete folder ${folder.name} and all messages in it? This will also delete it on the server.`);
-    if (!confirmed) {
-      return;
-    }
-    await folder.deleteIt();
-  }
 
   let newFolderName: string | undefined;
   let needNewFolderName = false;

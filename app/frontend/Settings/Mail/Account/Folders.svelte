@@ -7,11 +7,7 @@
       <FolderList folders={mailAccount.rootFolders} bind:selectedFolder={folder} bind:selectedFolders slot="left" />
       <vbox class="right" slot="right">
         {#if folder}
-          <FolderGeneral {folder} />
-          <hbox flex />
-          <FolderActions {folder}>
-            <slot name="buttons-bottom-right" slot="buttons-bottom-right" />
-          </FolderActions>
+          <FolderProperties {folder} />
         {/if}
       </vbox>
     </Splitter>
@@ -26,8 +22,7 @@
   import type { Account } from "../../../../logic/Abstract/Account";
   import type { Folder } from "../../../../logic/Mail/Folder";
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
-  import FolderGeneral from "./FolderGeneral.svelte";
-  import FolderActions from "./FolderActions.svelte";
+  import FolderProperties from "../../../Mail/FolderProperties.svelte";
   import FolderList from "../../../Mail/LeftPane/FolderList.svelte";
   import Splitter from "../../../Shared/Splitter.svelte";
   import type { ArrayColl } from "svelte-collections";
@@ -49,6 +44,7 @@
     margin-block-end: 16px;
   }
   .right {
-    margin: 12px 32px;
+    margin: 0px 32px;
+    max-width: 55em;
   }
 </style>

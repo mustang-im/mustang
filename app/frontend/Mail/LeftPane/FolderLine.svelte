@@ -19,7 +19,7 @@
   import Button from '../../Shared/Button.svelte';
   import MoreIcon from "lucide-svelte/icons/ellipsis";
   import { catchErrors } from '../../Util/error';
-  import { openFolderProperties } from '../FolderProperties.svelte';
+  import { openFolderProperties } from '../FolderPropertiesPage.svelte';
   import { selectedFolder } from '../Selected';
   import { t } from '../../../l10n/l10n';
 

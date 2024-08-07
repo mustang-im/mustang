@@ -145,14 +145,14 @@ export class Folder extends Observable implements TreeItem {
     }
   }
 
-  get children(): Collection<TreeItem> {
-    return this.subFolders as any as Collection<TreeItem>;
+  get children(): Collection<TreeItem<Folder>> {
+    return this.subFolders as any as Collection<TreeItem<Folder>>;
   }
 
   /** @return false, if delete is possible. If not, a string with the reason why it's not possible. */
   disableDelete(): string | false {
     if (this.specialFolder != SpecialFolder.Normal) {
-      return "You cannot delete this folder, because it has a special use. See Use As.";
+      return gt(`You cannot delete this folder, because it has a special use. See Use As.`);
     }
     return false;
   }
@@ -165,7 +165,7 @@ export class Folder extends Observable implements TreeItem {
   /** @return false, if changing the special folder is possible. If not, a string with the reason why it's not possible. */
   disableChangeSpecial(): string | false {
     if (this.path.toUpperCase() == "INBOX") {
-      return "You cannot change the Inbox folder.";
+      return gt(`You cannot change the Inbox folder.`);
     }
     return false;
   }
