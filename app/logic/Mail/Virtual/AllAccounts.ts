@@ -46,10 +46,15 @@ export class AllAccounts extends MailAccount {
     drafts.specialFolder = SpecialFolder.Drafts;
     drafts.followSpecialFolder(SpecialFolder.Drafts);
     this.specialFolders.add(drafts as any as Folder);
+
+    /*for (let account of accounts) {
+      account.subscribe(() => this.notifyObservers());
+    }*/
   }
 
   get isLoggedIn(): boolean {
-    return this.accounts.contents.some(acc => acc.isLoggedIn);
+    return true;
+    //return this.accounts.contents.some(acc => acc.isLoggedIn);
   }
 
   async login(interactive: boolean): Promise<void> {
