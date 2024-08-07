@@ -6,7 +6,7 @@ import type { Person } from "../Abstract/Person";
 import { OAuth2 } from "../Auth/OAuth2";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { AbstractFunction, assert } from "../util/util";
+import { AbstractFunction, assert, type URLString } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
 import { Collection, ArrayColl, MapColl } from 'svelte-collections';
 
@@ -36,6 +36,8 @@ export class MailAccount extends Account {
   emailAddress: string;
   @notifyChangedProperty
   readonly identities = new ArrayColl<MailIdentity>();
+  /** Only for setup. We know a config, but the user needs to do some manual steps for this ISP */
+  setupInstructions: SetupInstruction[] | null = null;
 
   readonly rootFolders: Collection<Folder> = new ArrayColl<Folder>();
   /** List of all messages in all folders,
@@ -190,11 +192,18 @@ export enum AuthMethod {
   NTLM = 6,
 }
 
-export type ConfigSource = "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | "manual" | null;
+export type ConfigSource = "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | "manual" | "local" | null;
 
 export interface MailAccountStorage {
   saveMessage(email: EMail): Promise<void>;
   saveFolder(folder: Folder): Promise<void>;
   saveAccount(account: MailAccount): Promise<void>;
   deleteAccount(account: MailAccount): Promise<void>;
+}
+
+export class SetupInstruction {
+  instruction: string | null;
+  url: URLString | null;
+  enterPassword: boolean = false;
+  enterUsername: boolean = false;
 }

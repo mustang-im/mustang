@@ -14,6 +14,8 @@
         on:continue={onFindConfigSucceeded} on:fail={onFindConfigFailed} {abort} />
     {:else if step == Step.FoundConfig}
       <FoundConfig bind:config {altConfigs} haveError={!!errorMessage} />
+    {:else if step == Step.Instructions}
+      <Instructions bind:config {altConfigs} />
     {:else if step == Step.CheckConfig}
       <CheckConfig {config} {emailAddress} {password}
         on:continue={onCheckConfigSucceeded} on:fail={onCheckConfigFailed} {abort} />
@@ -55,6 +57,7 @@
   import { saveAndInitConfig, fillConfig  } from "../../../../logic/Mail/AutoConfig/saveConfig";
   import { makeManualConfig } from "../../../../logic/Mail/AutoConfig/manualConfig";
   import { openApp, selectedApp } from "../../../AppsBar/selectedApp";
+  import { SetupMustangApp } from "../SetupMustangApp";
   import { mailMustangApp } from "../../../Mail/MailMustangApp";
   import { Cancelled } from "../../../../logic/util/Abortable";
   import EmailAddressPassword from "./EmailAddressPassword.svelte";
@@ -63,6 +66,7 @@
   import CheckConfig from "./CheckConfig.svelte";
   import FinalizeConfig from "./FinalizeConfig.svelte";
   import ManualConfigPage from "./manual/ManualConfigPage.svelte";
+  import Instructions from "./Instructions.svelte";
   import ErrorMessage, { ErrorGravity } from "../Shared/ErrorMessage.svelte";
   import Footer from "../Shared/Footer.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
@@ -72,7 +76,6 @@
   import { NotReached } from "../../../../logic/util/util";
   import type { ArrayColl } from "svelte-collections";
   import { t } from "../../../../l10n/l10n";
-  import { SetupMustangApp } from "../SetupMustangApp";
 
   let emailAddress: string;
   let password: string;
@@ -89,6 +92,7 @@
     Error = 6,
     RegisterNew = 7,
     ManualConfig = 8,
+    Instructions = 9,
   }
   let step: Step = Step.EmailAddress;
   let abort = new AbortController();
@@ -151,9 +155,18 @@
       step = Step.FindConfig;
     } else if (step == Step.FindConfig) {
       step = Step.FoundConfig;
+      if (config.source == "local") {
+        await onContinue();
+      }
     } else if (step == Step.FoundConfig) {
       fillConfig(config, emailAddress, password);
       errorMessage = null;
+      if (config.setupInstructions) {
+        step = Step.Instructions;
+      } else {
+        step = Step.CheckConfig;
+      }
+    } else if (step == Step.Instructions) {
       step = Step.CheckConfig;
     } else if (step == Step.ManualConfig) {
       errorMessage = null;

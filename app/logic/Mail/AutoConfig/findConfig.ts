@@ -2,6 +2,7 @@ import type { MailAccount } from "../MailAccount";
 import { fetchConfig } from "./fetchConfig";
 import { exchangeAutoDiscoverV1XML, exchangeAutoDiscoverV2JSON, fetchV1, ConfirmExchangeRedirect } from "./exchangeConfig";
 import { guessConfig } from "./guessConfig";
+import { localConfig } from "./localConfig";
 import { PriorityAbortable } from "../../util/Abortable";
 import { UserCancelled } from "../../util/util";
 import { getDomainForEmailAddress, getBaseDomainFromHost } from "../../util/netUtil";
@@ -9,6 +10,10 @@ import { ArrayColl } from "svelte-collections";
 
 export async function findConfig(emailAddress: string, password: string, exchangeConfirmCallback: (emailAddress: string, redirectDomain: string) => Promise<boolean> | null, abort: AbortController): Promise<ArrayColl<MailAccount>> {
   let domain = getDomainForEmailAddress(emailAddress);
+  try {
+    return localConfig(domain);
+  } catch (ex) {
+  }
   try {
     console.log("Starting to fetch config for", emailAddress);
     let priorityOrder = new PriorityAbortable(abort, [
