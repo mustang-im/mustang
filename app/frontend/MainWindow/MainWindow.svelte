@@ -62,9 +62,8 @@
     } else {
       $selectedApp = mailMustangApp;
       $selectedAccount = appGlobal.emailAccounts.first;
-      $selectedFolder = $selectedAccount.inbox;
-
       await loginOnStartup(console.error, backgroundError);
+      // $selectedFolder = $selectedAccount.inbox;
     }
   }
 

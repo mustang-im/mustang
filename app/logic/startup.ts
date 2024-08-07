@@ -51,7 +51,7 @@ export async function loginOnStartup(startupErrorCallback: (ex) => void, backgro
       console.log("Logging in mail account", account.name);
       account.errorCallback = backgroundErrorCallback;
       await account.login(false);
-      await account.inbox.getNewMessages();
+      // await account.inbox.getNewMessages();
     } catch (e) {
       startupErrorCallback(e);
     }
