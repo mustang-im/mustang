@@ -6,19 +6,22 @@
   {/if}
   <hbox class="label">{$account.name}</hbox>
     <hbox flex class="buttons">
-    {#if !$account.isLoggedIn}
-      <Button plain iconOnly icon={DisconnectedIcon} onClick={login} label={$t(`Login`)} />
-    {/if}
+      {#if $account.isLoggedIn}
+        <GetMailButton folder={account.inbox} />
+      {:else}
+        <Button plain iconOnly icon={DisconnectedIcon} onClick={login} label={$t(`Login`)} iconSize="16px" />
+      {/if}
     </hbox>
 </hbox>
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import Icon from 'svelte-icon/Icon.svelte';
+  import GetMailButton from "./GetMailButton.svelte";
+  import Button from "../../Shared/Button.svelte";
   import AccountIcon from '../../asset/icon/appBar/mail.svg?raw';
   import LoggedOutIcon from "lucide-svelte/icons/mail-x";
   import DisconnectedIcon from "lucide-svelte/icons/unplug";
-  import Button from "../../Shared/Button.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let account: MailAccount;
@@ -51,5 +54,10 @@
   }
   .buttons :global(button) {
     color: unset;
+    background-color: unset;
+    border: none;
+  }
+  .buttons :global(.get-mail button) {
+    padding: 3px;
   }
 </style>

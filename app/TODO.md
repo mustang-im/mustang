@@ -64,6 +64,8 @@
 ## Elena
 * Clear profile
 * Debug dump of settings
+* Gmail: IMAP namename `[Gmail]`
+* Hetzner: foo@unwrap.at doesn't autoconfigure
 * Composer
   * PersonEntry: Delete key
   * Remove added attachment (needs menu item)

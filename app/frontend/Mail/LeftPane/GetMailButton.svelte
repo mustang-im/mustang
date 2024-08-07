@@ -67,9 +67,6 @@
 </script>
 
 <style>
-  .get-mail {
-    height: 22px;
-  }
   .get-mail.new :global(svg) {
     color: orange;
     stroke-width: 3px;

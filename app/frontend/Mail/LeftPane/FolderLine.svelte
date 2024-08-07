@@ -7,6 +7,7 @@
   </hbox>
   <hbox class="label">{$folder.name}</hbox>
   <hbox class="buttons" flex>
+    <GetMailButton {folder} />
     <Button label={$t`Folder properties`} icon={MoreIcon} iconOnly plain
       onClick={onSettings} />
   </hbox>
@@ -15,8 +16,9 @@
 <script lang="ts">
   import type { Folder } from '../../../logic/Mail/Folder';
   import { onDropMail, onDragOverMail } from '../Message/drag';
-  import FolderIcon from './FolderIcon.svelte';
+  import GetMailButton from './GetMailButton.svelte';
   import Button from '../../Shared/Button.svelte';
+  import FolderIcon from './FolderIcon.svelte';
   import MoreIcon from "lucide-svelte/icons/ellipsis";
   import { catchErrors } from '../../Util/error';
   import { openFolderProperties } from '../FolderPropertiesPage.svelte';
@@ -53,5 +55,13 @@
   }
   .buttons :global(button:hover) {
     background: inherit !important;
+  }
+  .buttons :global(button) {
+    color: unset;
+    background-color: unset;
+  }
+  .buttons :global(.get-mail button) {
+    padding: 3px;
+    border: 1px solid transparent;
   }
 </style>

@@ -111,6 +111,9 @@
   .buttons :global(svg) {
     margin: 4px;
   }
+  .buttons :global(.get-mail) {
+    height: 22px;
+  }
   .island {
     margin: 8px 12px;
   }
