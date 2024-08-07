@@ -80,7 +80,7 @@
     margin: 12px 12px 12px 32px;
   }
   .properties {
-    max-width: 55em;
+    max-width: 50em;
   }
   .buttons {
     align-items: start;

@@ -13,7 +13,7 @@
     disabled={disableSpecial}
     />
 
-  <label for="count">{$t`Messages`}</label>
+    <label for="count">{$t`Messages`}</label>
   <hbox class="value" name="count">
     {#if $folder.countTotal > 0}
       {$t`${$folder.countNewArrived} new,
@@ -26,11 +26,13 @@
       {$t`${$messages.length} local messages.`}
     {/if}
   </hbox>
-  <Button label={$t`Get new messages`}
-    onClick={onGetNew}
-    />
+  <hbox />
 
+  <hbox />
   <hbox class="buttons">
+    <Button label={$t`Get new messages`}
+      onClick={onGetNew}
+      />
     <Button label={$t`Download all messages`}
       onClick={onDownloadAll}
       />
@@ -92,11 +94,14 @@
     gap: 8px 24px;
     align-items: center;
   }
+  label {
+    height: 100%;
+  }
   .buttons {
-    justify-content: end;
-    grid-column: 1 / -1;
+    flex-wrap: wrap;
   }
   .buttons :global(button) {
-    margin-inline-start: 6px;
+    margin-inline-end: 6px;
+    margin-block-end: 6px;
   }
 </style>
