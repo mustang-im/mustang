@@ -5,6 +5,11 @@
     <LoggedOutIcon size="16px" />
   {/if}
   <hbox class="label">{$account.name}</hbox>
+    <hbox flex class="buttons">
+    {#if !$account.isLoggedIn}
+      <Button plain icon={DisconnectedIcon} onClick={login} label={$t(`Login`)} />
+    {/if}
+    </hbox>
 </hbox>
 
 <script lang="ts">
@@ -12,8 +17,15 @@
   import Icon from 'svelte-icon/Icon.svelte';
   import AccountIcon from '../../asset/icon/appBar/mail.svg?raw';
   import LoggedOutIcon from "lucide-svelte/icons/mail-x";
+  import DisconnectedIcon from "lucide-svelte/icons/unplug";
+  import Button from "../../Shared/Button.svelte";
+  import { t } from "../../../l10n/l10n";
 
   export let account: MailAccount;
+
+  async function login() {
+    await account.login(true);
+  }
 </script>
 
 <style>
@@ -29,5 +41,15 @@
   }
   .label {
     margin-inline-start: 8px;
+  }
+  /*.account:not(:hover) .buttons {
+    display: none;
+  }*/
+  .buttons {
+    justify-content: end;
+    margin-inline-end: 8px;
+  }
+  .buttons :global(button) {
+    color: unset;
   }
 </style>
