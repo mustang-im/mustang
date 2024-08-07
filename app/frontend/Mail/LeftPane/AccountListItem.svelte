@@ -7,7 +7,7 @@
   <hbox class="label">{$account.name}</hbox>
     <hbox flex class="buttons">
     {#if !$account.isLoggedIn}
-      <Button plain icon={DisconnectedIcon} onClick={login} label={$t(`Login`)} />
+      <Button plain iconOnly icon={DisconnectedIcon} onClick={login} label={$t(`Login`)} />
     {/if}
     </hbox>
 </hbox>
@@ -42,9 +42,9 @@
   .label {
     margin-inline-start: 8px;
   }
-  /*.account:not(:hover) .buttons {
+  .account:not(:hover) .buttons {
     display: none;
-  }*/
+  }
   .buttons {
     justify-content: end;
     margin-inline-end: 8px;
