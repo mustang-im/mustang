@@ -28,6 +28,7 @@
     padding: 12px 20px;
     font-size: 16px;
     font-weight: 500;
+    align-items: center;
   }
   .content {
     background-color: var(--main-bg);
