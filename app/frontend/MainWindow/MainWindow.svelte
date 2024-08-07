@@ -26,8 +26,10 @@
   import { selectedApp, sidebarApp, mustangApps, openApp } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import { getStartObjects, loginOnStartup } from "../../logic/startup";
+  import { selectedAccount, selectedFolder } from "../Mail/Selected";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { loadMustangApps } from "../AppsBar/loadMustangApps";
+  import { mailMustangApp } from "../Mail/MailMustangApp";
   import { meetMustangApp } from "../Meet/MeetMustangApp";
   import { SetupMustangApp } from "../Settings/Setup/SetupMustangApp";
   import AppBar from "../AppsBar/AppBar.svelte";
@@ -58,6 +60,10 @@
     if (appGlobal.emailAccounts.isEmpty && appGlobal.chatAccounts.isEmpty) {
       setup();
     } else {
+      $selectedApp = mailMustangApp;
+      $selectedAccount = appGlobal.emailAccounts.first;
+      $selectedFolder = $selectedAccount.inbox;
+
       await loginOnStartup(console.error, backgroundError);
     }
   }
