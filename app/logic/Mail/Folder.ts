@@ -6,7 +6,7 @@ import { ArrayColl, Collection } from 'svelte-collections';
 import { assert, AbstractFunction } from "../util/util";
 import { gt } from "../../l10n/l10n";
 
-export class Folder extends Observable implements TreeItem {
+export class Folder extends Observable implements TreeItem<Folder> {
   /** IMAP: folder path */
   id: string;
   dbID: number;
@@ -47,12 +47,16 @@ export class Folder extends Observable implements TreeItem {
     return this.specialFolder ? "   " + specialFolderOrder.indexOf(this.specialFolder) : this.name;
   }
 
-  async listMessages(): Promise<void> {
+  /** Gets the metadata of the emails in this folder.
+   * May be slow, depending on the protocol.
+   * @returns the new messages (not yet downloaded). */
+  async listMessages(): Promise<ArrayColl<EMail>> {
     throw new AbstractFunction();
   }
 
   /** Downloads the entire MIME of *all* emails in this folder.
    * Tries to download the small emails first, then the large emails.
+   * Assumes that you did `listMessages()` first.
    * @returns the actually downloaded emails. */
   async downloadAllMessages(): Promise<Collection<EMail>> {
     let missing = this.messages.filter(msg => !msg.downloadComplete) as any as Collection<EMail>;
@@ -68,6 +72,15 @@ export class Folder extends Observable implements TreeItem {
   /** Downloads the entire MIME of the given emails.
    * @returns the actually downloaded emails. */
   async downloadMessages(emails: Collection<EMail>): Promise<Collection<EMail>> {
+    throw new AbstractFunction();
+  }
+
+  /** Lists only the new messages, and downloads them.
+   *
+   * Should be implemented as fast as possible (a few seconds),
+   * so that the action can be repeated routinely every few minutes.
+   * @returns the new messages */
+  async getNewMessages(): Promise<ArrayColl<EMail>> {
     throw new AbstractFunction();
   }
 

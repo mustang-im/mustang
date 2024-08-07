@@ -89,7 +89,7 @@ export class OWAFolder extends Folder {
     return true;
   }
 
-  async listMessages() {
+  async listMessages(): Promise<ArrayColl<OWAEMail>> {
     if (!this.dbID) {
       await SQLFolder.save(this);
     }
@@ -97,10 +97,11 @@ export class OWAFolder extends Folder {
 
     if (!await this.folderCountsChanged()) {
       // Avoid unnecessarily rereading the message list.
-      return;
+      return new ArrayColl<OWAEMail>();
     }
 
-    let allEmail: ArrayColl<OWAEMail> = new ArrayColl();
+    let allMsgs: ArrayColl<OWAEMail> = new ArrayColl();
+    let newMsgs: ArrayColl<OWAEMail> = new ArrayColl();
     let request = {
       __type: "FindItemJsonRequest:#Exchange",
       Header: {
@@ -157,22 +158,24 @@ export class OWAFolder extends Folder {
         if (email) {
           email.setFlags(message);
           await SQLEMail.saveWritableProps(email);
-          allEmail.add(email);
+          allMsgs.add(email);
         } else {
           newMessageIDs.push(message.ItemId.Id);
         }
       }
-      allEmail.addAll(await this.getNewMessageHeaders(newMessageIDs));
+      newMsgs = await this.getNewMessageHeaders(newMessageIDs);
+      allMsgs.addAll(newMsgs);
     }
 
-    for (let email of this.messages.subtract(allEmail)) {
+    for (let email of this.messages.subtract(allMsgs)) {
       SQLEMail.deleteIt(email);
     }
-    this.messages.replaceAll(allEmail);
+    this.messages.replaceAll(allMsgs);
+    return newMsgs;
   }
 
-  async getNewMessageHeaders(newMessageIDs: string[]): Promise<Collection<OWAEMail>> {
-    let allEmail = new ArrayColl<OWAEMail>();
+  async getNewMessageHeaders(newMessageIDs: string[]): Promise<ArrayColl<OWAEMail>> {
+    let newMsgs = new ArrayColl<OWAEMail>();
     if (newMessageIDs.length) {
       let request = {
         __type: "GetItemJsonRequest:#Exchange",
@@ -266,13 +269,13 @@ export class OWAFolder extends Folder {
           let email = this.newEMail();
           email.fromJSON(item);
           await SQLEMail.save(email);
-          allEmail.add(email);
+          newMsgs.add(email);
         } catch (ex) {
           this.account.errorCallback(ex);
         }
       }
     }
-    return allEmail;
+    return newMsgs;
   }
 
   async downloadMessages(emails: Collection<OWAEMail>): Promise<Collection<OWAEMail>> {
@@ -328,6 +331,17 @@ export class OWAFolder extends Folder {
     }*/
 
     return downloadedEmail;
+  }
+
+  /** Lists only the new messages, and downloads them.
+   *
+   * Should be implemented as fast as possible (a few seconds),
+   * so that the action can be repeated routinely every few minutes.
+   * @returns the new messages */
+  async getNewMessages(): Promise<ArrayColl<OWAEMail>> {
+    let newMsgs = await this.listMessages(); // TODO get only the msgs from the last 4 weeks
+    await this.downloadMessages(newMsgs);
+    return newMsgs;
   }
 
   getEmailByItemID(id: string): OWAEMail | undefined {

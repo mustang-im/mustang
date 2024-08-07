@@ -26,14 +26,22 @@
       {$t`${$messages.length} local messages.`}
     {/if}
   </hbox>
-  <Button label={$t`Mark all read`}
-    onClick={onMarkAllRead}
+  <Button label={$t`Get new messages`}
+    onClick={onGetNew}
     />
+
+  <hbox class="buttons">
+    <Button label={$t`Download all messages`}
+      onClick={onDownloadAll}
+      />
+    <Button label={$t`Mark all read`}
+      onClick={onMarkAllRead}
+      />
+  </hbox>
 </grid>
 
 <script lang="ts">
   import type { Folder } from "../../../../logic/Mail/Folder";
-  import { SQLFolder } from "../../../../logic/Mail/SQL/SQLFolder";
   import SpecialFolderDropDown from "./SpecialFolderDropDown.svelte";
   import Button from "../../../Shared/Button.svelte";
   import { assert } from "../../../../logic/util/util";
@@ -56,6 +64,15 @@
     await save();
   }
 
+  async function onGetNew() {
+    await folder.getNewMessages();
+  }
+
+  async function onDownloadAll() {
+    await folder.listMessages();
+    await folder.downloadAllMessages();
+  }
+
   async function onMarkAllRead() {
     await folder.markAllRead();
   }
@@ -74,5 +91,12 @@
     grid-template-columns: max-content auto max-content;
     gap: 8px 24px;
     align-items: center;
+  }
+  .buttons {
+    justify-content: end;
+    grid-column: 1 / -1;
+  }
+  .buttons :global(button) {
+    margin-inline-start: 6px;
   }
 </style>

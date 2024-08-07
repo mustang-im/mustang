@@ -41,7 +41,7 @@ export class EWSFolder extends Folder {
     }
   }
 
-  async listMessages() {
+  async listMessages(): Promise<ArrayColl<EWSEMail>> {
     if (!this.dbID) {
       await SQLFolder.save(this);
     }
@@ -51,8 +51,9 @@ export class EWSFolder extends Folder {
   }
 
   /** Uses the sync state to get just the messages that changed since last time.
-   * Assumes previously known messages have already been loaded from the DB. */
-  async updateChangedMessages() {
+   * Assumes previously known messages have already been loaded from the DB.
+   * @returns the new messages (not yet downloaded) */
+  async updateChangedMessages(): Promise<ArrayColl<EWSEMail>> {
     let sync = {
       m$SyncFolderItems: {
         m$ItemShape: {
@@ -99,10 +100,12 @@ export class EWSFolder extends Folder {
         this.forEachSyncChange(result.Changes.Update, this.processSyncUpdate, false),
         this.forEachSyncChange(result.Changes.Create, this.processSyncUpdate, false),
       ])).flat();
-      this.messages.addAll(await this.getNewMessageHeaders(newMessageIDs));
+      let newMsgs = await this.getNewMessageHeaders(newMessageIDs);
+      this.messages.addAll(newMsgs);
       await this.forEachSyncChange(result.Changes.Delete, this.processSyncDelete, true);
       this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
       await SQLFolder.save(this);
+      return newMsgs;
     }
   }
 
@@ -138,9 +141,11 @@ export class EWSFolder extends Folder {
 
   /** Lists all messages starting from scratch, ignoring the sync state.
    * If you don't want this, then clear the sync state and update changes.
-   * Assumes previously known messages have already been loaded from the DB. */
-  async listAllMessages() {
-    let allEmail: ArrayColl<EWSEMail> = new ArrayColl();
+   * Assumes previously known messages have already been loaded from the DB.
+   * @returns the new messages */
+  async listAllMessages(): Promise<ArrayColl<EWSEMail>> {
+    let allMsgs: ArrayColl<EWSEMail> = new ArrayColl();
+    let newMsgs: ArrayColl<EWSEMail> = new ArrayColl();
     let request = {
       m$FindItem: {
         m$ItemShape: {
@@ -186,22 +191,24 @@ export class EWSFolder extends Folder {
         if (email) {
           email.setFlags(message);
           await SQLEMail.saveWritableProps(email);
-          allEmail.add(email);
+          allMsgs.add(email);
         } else {
           newMessageIDs.push(message.ItemId);
         }
       }
-      allEmail.addAll(await this.getNewMessageHeaders(newMessageIDs));
+      newMsgs = await this.getNewMessageHeaders(newMessageIDs);
+      allMsgs.addAll(newMsgs);
     }
 
-    for (let email of this.messages.subtract(allEmail)) {
+    for (let email of this.messages.subtract(allMsgs)) {
       SQLEMail.deleteIt(email);
     }
-    this.messages.replaceAll(allEmail);
+    this.messages.replaceAll(allMsgs);
+    return newMsgs;
   }
 
-  async getNewMessageHeaders(newMessageIDs: Array<{ ID: string }>): Promise<Collection<EWSEMail>> {
-    let allEmail = new ArrayColl<EWSEMail>();
+  async getNewMessageHeaders(newMessageIDs: Array<{ ID: string }>): Promise<ArrayColl<EWSEMail>> {
+    let newMsgs = new ArrayColl<EWSEMail>();
     if (newMessageIDs.length) {
       let request = {
         m$GetItem: {
@@ -268,13 +275,13 @@ export class EWSFolder extends Folder {
           let email = this.newEMail();
           email.fromXML(getEWSItem(result.Items));
           await SQLEMail.save(email);
-          allEmail.add(email);
+          newMsgs.add(email);
         } catch (ex) {
           this.account.errorCallback(ex);
         }
       }
     }
-    return allEmail;
+    return newMsgs;
   }
 
   async downloadMessages(emails: Collection<EWSEMail>): Promise<Collection<EWSEMail>> {
@@ -317,6 +324,14 @@ export class EWSFolder extends Folder {
     }*/
 
     return downloadedEmail;
+  }
+
+  /** Lists only the new messages, and downloads them.
+   * @returns the new messages */
+  async getNewMessages(): Promise<ArrayColl<EWSEMail>> {
+    let newMsgs = await this.listMessages(); // uses syncState and should be fast
+    await this.downloadMessages(newMsgs);
+    return newMsgs;
   }
 
   getEmailByItemID(id: string): EWSEMail | undefined {
