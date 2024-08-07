@@ -11,7 +11,7 @@
         </a>
       {:else if step.enterPassword}
         {step.instruction || $t(`Password`)}
-        <Password bind:password={config.password} />
+        <Password bind:password />
       {:else if step.enterUsername}
         {step.instruction || $t(`Username`)}
         <input type="text" bind:value={config.username} />
@@ -30,6 +30,7 @@
   import Password from "../Shared/Password.svelte";
 
   export let config: MailAccount;
+  export let password: string; /** in/out */
 </script>
 
 <style>

@@ -1,7 +1,7 @@
 <vbox flex class="setup-mail-window">
   <hbox flex />
   <vbox class="page-box" step={step}>
-    {#if step != Step.FinalizeConfig && step != Step.ManualConfig && step != Step.Instructions}
+    {#if step == Step.EmailAddress || step == Step.FindConfig || step == Step.FoundConfig || step == Step.CheckConfig || step == Step.Error}
       <EmailAddressPassword bind:emailAddress bind:password
         on:continue={onEmailAddressSucceeded} />
     {/if}
@@ -15,7 +15,7 @@
     {:else if step == Step.FoundConfig}
       <FoundConfig bind:config {altConfigs} haveError={!!errorMessage} />
     {:else if step == Step.Instructions}
-      <Instructions bind:config {altConfigs} />
+      <Instructions bind:config bind:password />
     {:else if step == Step.CheckConfig}
       <CheckConfig {config} {emailAddress} {password}
         on:continue={onCheckConfigSucceeded} on:fail={onCheckConfigFailed} {abort} />
@@ -185,7 +185,7 @@
     }
   }
 
-  $: emailAddress, password, resetMaybe();
+  $: emailAddress, resetMaybe();
   function resetMaybe() {
     if (step != Step.EmailAddress) {
       reset();
