@@ -67,7 +67,7 @@
       <hbox>{$t`When`}</hbox>
       <grid class="time">
         <label for="start-time">{$t`Day`}</label>
-        <hbox>{event.startTime.toLocaleDateString(getUILocale(), { year: "numeric", month: "2-digit", day: "2-digit" })}</hbox>
+        <DateInput date={event.startTime} on:change={updateDateUI} />
 
         <label for="start-time">{$t`Start`}</label>
         <TimeInput time={event.startTime} />
@@ -82,10 +82,45 @@
         </hbox>
       </grid>
       <Checkbox label={$t`All day`} bind:checked={event.allDay} />
-      <Checkbox label={$t`Repeated`} bind:checked={event.repeat} />
+      <Checkbox label={$t`Repeated`} bind:checked={event.repeat} disabled={event.parentEvent}/>
+      {#if event.repeat}
+        <hbox>
+          <label>{`Every`}</label>&nbsp;<input class="auto" type="number" min={1} max={99} bind:value={interval} />&nbsp;
+          <select bind:value={frequency}>
+            <option value="{Frequency.Daily}">{$plural(interval, { one: 'day', other: 'days' })}</option>
+            <option value="{Frequency.Weekly}">{$plural(interval, { one: 'week', other: 'weeks' })}</option>
+            <option value="{Frequency.Monthly}">{$plural(interval, { one: 'month', other: 'months' })}</option>
+            <option value="{Frequency.Yearly}">{$plural(interval, { one: 'year', other: 'years' })}</option>
+          </select>
+        </hbox>
+        {#if frequency == Frequency.Yearly }
+          <RadioGroup bind:group={week} items={yearWeekOptions} />
+        {:else if frequency == Frequency.Monthly }
+          <RadioGroup bind:group={week} items={monthWeekOptions} />
+        {:else if frequency == Frequency.Weekly }
+          <CheckboxGroup size="sm" radius="xl" bind:group={weekdays} label={`On days`} items={weekdayOptions} />
+        {/if}
+        <hbox>
+          <Radio label="{`Forever`}" bind:group={end} value="none" />
+        </hbox>
+        <hbox>
+          <Radio class="inline" label="{`For `}" bind:group={end} value="count" />&nbsp;<input class="auto" type="number" min={1} max={99} bind:value={count} on:input={() => end = "count"}>&nbsp;{$plural(count, { one: 'time', other: 'times' })}
+        </hbox>
+        <hbox>
+          <Radio class="inline" label="{`Until`}" bind:group={end} value="date" />&nbsp;<DateInput date={endDate} min={minDate} on:change={() => end = "date"} />
+        </hbox>
+      {/if}
       <Checkbox label={$t`Alarm`} checked={!!event.alarm} />
       <hbox class="spacer" />
       <hbox class="buttons">
+        <Button
+          label={$t`Delete Event`}
+          classes="delete"
+          icon={DeleteIcon}
+          iconSize="16px"
+          disabled={!event.dbID && !event.parentEvent}
+          onClick={onDelete}
+          />
         <hbox class="spacer" />
         <Button
           label={$t`Save`}
@@ -100,18 +135,24 @@
 </vbox>
 
 <script lang="ts">
+  import { plural } from 'svelte-i18n-lingui';
   import type { Event } from "../../../logic/Calendar/Event";
+  import { Frequency, RecurrenceRule, type RecurrenceInit } from "../../../logic/Calendar/RecurrenceRule";
   import { EventEditMustangApp, calendarMustangApp } from "../CalendarMustangApp";
   import PersonsAutocomplete from "../../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
   import PersonAvailability from "./PersonAvailability.svelte";
+  import DateInput from "./DateInput.svelte";
   import TimeInput from "./TimeInput.svelte";
   import DurationUnit from "./DurationUnit.svelte";
+  import RadioGroup from "./RadioGroup.svelte";
+  import CheckboxGroup from "./CheckboxGroup.svelte";
   import HTMLEditorToolbar from "../../Shared/Editor/HTMLEditorToolbar.svelte";
   import HTMLEditor from "../../Shared/Editor/HTMLEditor.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
-  import { Checkbox } from "@svelteuidev/core";
+  import { Checkbox, Radio } from "@svelteuidev/core";
+  import DeleteIcon from "lucide-svelte/icons/trash-2";
   import SaveIcon from "lucide-svelte/icons/check";
   import CloseIcon from "lucide-svelte/icons/x";
   import CopyIcon from "lucide-svelte/icons/copy";
@@ -124,6 +165,58 @@
   let durationUnit: DurationUnit;
   let durationInUnit: number;
   let editor: Editor;
+  let frequency = event.recurrenceRule?.frequency || Frequency.Daily;
+  let interval = event.recurrenceRule?.interval || 1;
+  let count = Number.isFinite(event.recurrenceRule?.count) ? event.recurrenceRule.count : 1;
+  let weekdays = event.recurrenceRule?.weekdays || [event.startTime.getDay()];
+  let week = event.recurrenceRule?.week || 0;
+  let end = event.recurrenceRule?.endDate ? "date" : Number.isFinite(event.recurrenceRule?.count) ? "count" : "none";
+  let endDate = event.recurrenceRule?.endDate || event.startTime;
+  let minDate = event.startTime;
+  let yearWeekOptions, monthWeekOptions, weekdayOptions;
+
+  updateDateUI();
+  function updateDateUI() {
+    yearWeekOptions = [{ label: `On ${event.startTime.toLocaleDateString(getUILocale(), { day: "numeric", month: "long" })}`, value: 0 }];
+    monthWeekOptions = [{ label: `On day ${event.startTime.getDate()}`, value: 0 }];
+
+    let weekday = event.startTime.toLocaleDateString(getUILocale(), { weekday: "long" });
+    let weekno = Math.ceil(event.startTime.getDate() / 7);
+    if (weekno < 5) {
+      let weekname = [`first`, `second`, `third`, `fourth`][weekno - 1];
+      yearWeekOptions.push({ label: `On the ${weekname} ${weekday} in ${event.startTime.toLocaleDateString(getUILocale(), { month: "long" })}`, value: weekno });
+      monthWeekOptions.push({ label: `On the ${weekname} ${weekday}`, value: weekno });
+    }
+
+    if (isLastWeekOfMonth(event.startTime)) {
+      yearWeekOptions.push({ label: `On the last ${weekday} in ${event.startTime.toLocaleDateString(getUILocale(), { month: "long" })}`, value: 5 });
+      monthWeekOptions.push({ label: `On the last ${weekday}`, value: 5 });
+    }
+
+    if (week && (week < 5 || yearWeekOptions.length == 2)) {
+      week = weekno;
+    }
+
+    weekdayOptions = [1, 2, 3, 4, 5, 6, 7].map(day => new Date(2010, 2, day)).map(date => ({
+      value: date.getDay(),
+      checked: date.getDay() == event.startTime.getDay() || weekdays.includes(date.getDay()),
+      disabled: date.getDay() == event.startTime.getDay(),
+      label: date.toLocaleDateString(getUILocale(), { weekday: "narrow" }),
+    }));
+
+    if (endDate <= event.startTime) {
+      endDate = new Date(event.startTime);
+      endDate.setHours(23, 59, 59, 0);
+    }
+    minDate = event.startTime;
+    event.endTime.setFullYear(event.startTime.getFullYear(), event.startTime.getMonth(), event.startTime.getDate());
+  }
+
+  function isLastWeekOfMonth(date) {
+    date = new Date(date);
+    date.setDate(date.getDate() + 7);
+    return date.getDate() < 8;
+  }
 
   function onCopyMeetingURL() {
     new Clipboard().writeText(event.onlineMeetingURL);
@@ -136,11 +229,82 @@
   $: canSave = event && event.title && event.startTime && event.endTime &&
       event.startTime.getTime() <= event.endTime.getTime();
 
+  function newRecurrenceRule(): RecurrenceRule {
+    let init: RecurrenceInit = { startDate: event.startTime, frequency, interval };
+    switch (end) {
+    case "count":
+      init.count = count;
+      break;
+    case "date":
+      init.endDate = endDate;
+      break;
+    }
+    switch (frequency) {
+    case Frequency.Weekly:
+      if (weekdays.length > 1) {
+        init.weekdays = weekdays;
+      }
+      break;
+    case Frequency.Monthly:
+    case Frequency.Yearly:
+      init.week = week;
+      if (week) {
+        init.weekdays = [event.startTime.getDay()];
+      }
+      break;
+    }
+    return new RecurrenceRule(init);
+  }
+
+  function confirmAndChangeRule(): boolean {
+    if (!event.repeat) {
+      if (!event.recurrenceRule) {
+        // Never a recurring event.
+        return true;
+      }
+      if (!confirm(`Are you sure you want to remove this unfortunate series of events?`)) {
+        return false;
+      }
+      event.recurrenceRule = null;
+    } else {
+      let rule = newRecurrenceRule();
+      if (event.recurrenceRule) {
+        if (event.startTime.getTime() == event.recurrenceRule.startDate.getTime() &&
+            rule.getCalString() == event.recurrenceRule.getCalString()) {
+          // Rule hasn't actually changed.
+          return true;
+        }
+        if (!confirm(`This change will reset all of your series to default values.`)) {
+          return false;
+        }
+      }
+      event.recurrenceRule = rule;
+    }
+    event.clearExceptions();
+    return true;
+  }
+
   async function onSave() {
+    if (!confirmAndChangeRule()) {
+      return;
+    }
+    await event.save();
     if (!event.calendar.events.contains(event)) {
       event.calendar.events.add(event);
     }
-    await event.save();
+    if (event.recurrenceRule) {
+      event.calendar.fillOccurrences(new Date(Date.now() + 1e11));
+    }
+    onClose();
+  }
+
+  async function onDelete() {
+    if (event.recurrenceRule) {
+      if (!confirm(`Are you sure you want to remove this unfortunate series of events?`)) {
+        return;
+      }
+    }
+    await event.deleteIt();
     onClose();
   }
 
@@ -207,8 +371,8 @@
     padding: 8px 12px;
   }
   grid.time {
-    grid-template-columns: max-content 1fr;
-    justify-content: center;
+    grid-template-columns: max-content max-content;
+    justify-items: start;
     align-items: center;
     margin-block-end: 12px;
   }
@@ -218,7 +382,7 @@
   .right-pane :global(.svelteui-Checkbox-root) {
     margin: 2px;
   }
-  grid.time :global(input) {
+  grid.time :global(input:not([type="date"])) {
     max-width: 5em;
     text-align: right;
   }
@@ -231,5 +395,15 @@
   }
   .event-edit-window :global(.svelteui-Checkbox-label) {
     padding-inline-start: 8px;
+  }
+  .buttons :global(button.delete) {
+    background-color: lightsalmon;
+    color: black;
+  }
+  input.auto {
+    width: auto;
+  }
+  :global(.inline) {
+    display: inline-flex !important;
   }
 </style>
