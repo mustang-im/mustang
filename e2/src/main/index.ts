@@ -34,6 +34,7 @@ function createWindow(): void {
 
     mainWindow.on('ready-to-show', () => {
       mainWindow.show()
+      mainWindow.openDevTools();
     })
 
     /** Ensure that new web windows are opened in the browser, not inside our app.

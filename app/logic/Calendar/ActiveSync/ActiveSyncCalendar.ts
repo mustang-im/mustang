@@ -6,7 +6,7 @@ export class ActiveSyncCalendar extends Calendar {
   readonly protocol: string = "calendar-activesync";
   account: ActiveSyncAccount;
 
-  newEvent(): ActiveSyncEvent {
-    return new ActiveSyncEvent(this);
+  newEvent(parentEvent?: ActiveSyncEvent): ActiveSyncEvent {
+    return new ActiveSyncEvent(this, parentEvent);
   }
 }

@@ -1,7 +1,7 @@
 import { Account } from "../Abstract/Account";
 import { Event } from "./Event";
 import { appGlobal } from "../app";
-import { ArrayColl } from "svelte-collections";
+import { Collection, ArrayColl } from "svelte-collections";
 
 export class Calendar extends Account {
   readonly protocol: string = "calendar-local";
@@ -9,8 +9,29 @@ export class Calendar extends Account {
   storage: CalendarStorage | null = null;
   syncState: string | null = null;
 
-  newEvent(): Event {
-    return new Event(this);
+  newEvent(parentEvent?: Event): Event {
+    return new Event(this, parentEvent);
+  }
+
+  fillOccurrences(endDate: Date): Collection<Event> {
+    let newOccurrences: Event[] = [];
+    for (let event of this.events.contents.filter(event => event.recurrenceRule)) {
+      let occurrences = event.recurrenceRule.getOccurrencesByDate(endDate);
+      for (let i = 0; i < occurrences.length; i++) {
+        if (event.instances[i] === undefined) {
+          let occurrence = this.newEvent(event);
+          occurrence.recurrenceStartTime = occurrence.startTime = occurrences[i];
+          occurrence.endTime = new Date(event.endTime.getTime() + occurrence.startTime.getTime() - event.startTime.getTime());
+          if (event.alarm) {
+            occurrence.alarm = new Date(event.alarm.getTime() + occurrence.startTime.getTime() - event.startTime.getTime());
+          }
+          event.instances[i] = occurrence;
+          newOccurrences.push(occurrence);
+        }
+      }
+    }
+    this.events.addAll(newOccurrences);
+    return this.events;
   }
 
   async save(): Promise<void> {

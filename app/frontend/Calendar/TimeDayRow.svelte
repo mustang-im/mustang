@@ -1,5 +1,5 @@
 {#each startTimes as start}
-  <EventsCell {start} {events} intervalInHours={1} />
+  <EventsCell {start} {events} intervalInHours={2} />
 {/each}
 
 <script lang="ts">

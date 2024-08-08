@@ -8,7 +8,7 @@
     <hbox slot="header">{$t`Language`}</hbox>
     <hbox>
       <LanguageDropDown bind:language />
-      {#if language != getUILocale()}
+      {#if language != getUILocalePref()}
         <Button
           label="Save and restart"
           icon={RestartIcon}
@@ -21,7 +21,7 @@
 </vbox>
 
 <script lang="ts">
-  import { getUILocale, saveUILocale, setUILocale, t } from "../../../l10n/l10n";
+  import { getUILocale, getUILocalePref, saveUILocale, setUILocale, t } from "../../../l10n/l10n";
   import { appGlobal } from "../../../logic/app";
   import DarkMode from "./DarkMode.svelte";
   import LanguageDropDown from "./LanguageDropDown.svelte";
@@ -29,11 +29,11 @@
   import Button from "../../Shared/Button.svelte";
   import RestartIcon from "lucide-svelte/icons/rotate-ccw";
 
-  let language = getUILocale();
+  let language = getUILocalePref();
 
   async function onChangeLanguage() {
     saveUILocale(language);
-    setUILocale(language);
+    setUILocale(getUILocale());
     await appGlobal.remoteApp.restartApp(); // unfortunately needed for the strings in ts modules
   }
 </script>
