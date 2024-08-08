@@ -1,12 +1,12 @@
 <HeaderGroupBox>
-  <hbox slot="header">{folder.name}</hbox>
+  <hbox slot="header">{$folder.name}</hbox>
   <hbox slot="buttons-top-right">
     <Button label={$t`Delete folder`}
       classes="delete"
       iconOnly
       icon={DeleteIcon}
       onClick={onDelete}
-      disabled={folder.disableDelete()}
+      disabled={$folder.disableDelete()}
       />
   </hbox>
   <FolderGeneral {folder} />
