@@ -1,4 +1,5 @@
 import { Event } from "../Event";
+import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { OWACalendar } from "./OWACalendar";
 import WindowsTimezones from "../EWS/WindowsTimezones";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
@@ -9,8 +10,18 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 const gTimeZone = WindowsTimezones[Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
 
+enum WeekOfMonth {
+  'First' = 1,
+  'Second' = 2,
+  'Third' = 3,
+  'Fourth'= 4,
+  'Last' = 5,
+};
+
 export class OWAEvent extends Event {
   calendar: OWACalendar;
+  parentEvent: OWAEvent;
+  readonly instances: Array<OWAEvent | null | undefined>;
 
   get itemID(): string | null {
     return this.pID;
@@ -31,6 +42,9 @@ export class OWAEvent extends Event {
         this.descriptionHTML = sanitize.nonemptystring(json.Body.Value, "");
       }
     }
+    if (json.RecurrenceId) {
+      this.recurrenceStartTime = this.startTime = sanitize.date(json.RecurrenceId);
+    }
     if (json.Start) {
       this.startTime = sanitize.date(json.Start);
     }
@@ -43,8 +57,31 @@ export class OWAEvent extends Event {
     this.allDay = sanitize.boolean(json.IsAllDayEvent);
     if (json.Recurrence) {
       this.repeat = true;
-      if (!this.startTime && json.Recurrence.EndDateRecurrence) {
-        this.startTime = sanitize.date(json.Recurrence.EndDateRecurrence.StartDate.slice(0, 10));
+      let startDate = this.startTime;
+      let endDate: Date | null = null;
+      if (json.Recurrence.RecurrenceRange.EndDate) {
+        // These dates don't have a time, but they do have a time zone suffixed.
+        if (!startDate) {
+          this.startTime = startDate = sanitize.date(json.Recurrence.RecurrenceRange.StartDate.slice(0, 10));
+        }
+        endDate = sanitize.date(json.Recurrence.RecurrenceRange.EndDate.slice(0, 10));
+        // RecurrenceRule wants this to be at least the same time as the endTime
+        endDate.setDate(endDate.getDate() + 1);
+        endDate.setTime(endDate.getTime() - 1000);
+      }
+      let count = sanitize.integer(json.Recurrence.RecurrenceRange.NumberOfOccurrences, Infinity);
+      let pattern = json.Recurrence.RecurrencePattern;
+      let frequency = pattern.__type.startsWith("Daily") ? Frequency.Daily : pattern.__type.startsWith("Weekly") ? Frequency.Weekly : pattern.Month ? Frequency.Yearly : Frequency.Monthly;
+      let interval = sanitize.integer(pattern.Interval, 1);
+      let weekdays = extractWeekdays(pattern.DaysOfWeek);
+      let week = sanitize.integer(WeekOfMonth[pattern.DayOfWeekIndex], 0);
+      let first = sanitize.integer(Weekday[pattern.FirstDayOfWeek], Weekday.Monday);
+      this.recurrenceRule = new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
+      if (json.DeletedOccurrences) {
+        for (let deletion of json.DeletedOccurrences) {
+          let occurrences = this.recurrenceRule.getOccurrencesByDate(sanitize.date(deletion.Start));
+          this.replaceInstance(occurrences.length - 1, null);
+        }
       }
     }
     if (json.ReminderIsSet == "true") {
@@ -81,13 +118,20 @@ export class OWAEvent extends Event {
 
   async saveCalendarItem() {
     let request: any = this.itemID ?
-      new OWAUpdateItemRequest(this.itemID, {SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
+      new OWAUpdateItemRequest(this.itemID, {SendCalendarInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
+      this.parentEvent ?
+      new OWAUpdateOccurrenceRequest(this, {SendCalendarInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
       new OWACreateItemRequest({SendMeetingInvitations: "SendToAllAndSaveCopy"});
     request.addField("CalendarItem", "Subject", this.title, "item:Subject");
     request.addField("CalendarItem", "Body", this.descriptionHTML ? { __type: "BodyContentType:#Exchange", BodyType: "HTML", Value: this.descriptionHTML } : this.descriptionText ? { __type: "BodyContentType:#Exchange", BodyType: "Text", Value: this.descriptionText } : null, "item:Body");
     request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
     request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
-    request.addField("CalendarItem", "UID", this.calUID, "calendar:UID");
+    request.addField("CalendarItem", "Recurrence", this.recurrenceRule ? this.saveRule(this.recurrenceRule) : null, "calendar:Recurrence");
+    if (this.calUID && !this.itemID && !this.parentEvent) {
+      // This probably only makes sense when creating an event.
+      // (And it's not even needed then as Exchange will auto-generate one.)
+      request.addField("CalendarItem", "UID", this.calUID, "calendar:UID");
+    }
     request.addField("CalendarItem", "Start", this.dateString(this.startTime), "calendar:Start");
     request.addField("CalendarItem", "End", this.dateString(this.endTime), "calendar:End");
     request.addField("CalendarItem", "IsAllDayEvent", this.allDay, "calendar:IsAllDayEvent");
@@ -105,6 +149,7 @@ export class OWAEvent extends Event {
     request.addField("CalendarItem", "StartTimeZone", { Id: gTimeZone }, "calendar:StartTimeZone");
     request.addField("CalendarItem", "EndTimeZone", { Id: gTimeZone }, "calendar:EndTimeZone");
     let response = await this.calendar.account.callOWA(request);
+    this.itemID = sanitize.nonemptystring(response.Items[0].ItemId.Id);
     if (this.calUID) {
       return;
     }
@@ -133,7 +178,6 @@ export class OWAEvent extends Event {
     };
     response = await this.calendar.account.callOWA(request);
     this.calUID = sanitize.nonemptystring(response.Items[0].UID);
-    this.itemID = sanitize.nonemptystring(response.Items[0].ItemId.Id);
   }
 
   async saveTask() {
@@ -141,13 +185,14 @@ export class OWAEvent extends Event {
     request.addField("Task", "Subject", this.title, "item:Subject");
     request.addField("Task", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
     request.addField("Task", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
+    request.addField("Task", "Recurrence", this.recurrenceRule ? this.saveRule(this.recurrenceRule) : null, "task:Recurrence");
     request.addField("Task", "DueDate", this.endTime?.toISOString(), "task:DueDate");
     let response = await this.calendar.account.callOWA(request);
     this.itemID = sanitize.nonemptystring(response.Items[0].ItemId.Id);
   }
 
-  dateString(date: Date): string {
-    if (this.allDay) {
+  dateString(date: Date, day: boolean = this.allDay): string {
+    if (day) {
       return date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0");
     }
     return date.toISOString();
@@ -162,9 +207,76 @@ export class OWAEvent extends Event {
     return (this.alarm.getTime() - this.startTime.getTime()) / -60 | 0;
   }
 
+  saveRule(rule: RecurrenceRule) {
+    let recurrenceType = rule.frequency[0] + rule.frequency.slice(1).toLowerCase();
+    if (recurrenceType == "Yearly" || recurrenceType == "Monthly") {
+      recurrenceType = (rule.week ? "Relative" : "Absolute") + recurrenceType;
+    }
+    let recurrence: any = {
+      __type: "RecurrenceType:#Exchange",
+      RecurrencePattern: {
+        __type: recurrenceType + "Recurrence:#Exchange",
+      },
+      RecurrenceRange: {
+        __type: "NoEndRecurrence:#Exchange",
+      }
+    };
+    if (rule.frequency != Frequency.Yearly) {
+      recurrence.RecurrencePattern.Interval = rule.interval;
+    }
+    if (/^Relative|^Weekly/.test(recurrenceType)) {
+      let weekdays = rule.weekdays || [rule.startDate.getDay()];
+      recurrence.RecurrencePattern.DaysOfWeek = rule.weekdays.map(day => Weekday[day]).join(" ");
+    }
+    if (rule.frequency == Frequency.Weekly) {
+      recurrence.RecurrencePattern.FirstDayOfWeek = Weekday[rule.first];
+    }
+    if (/Relative/.test(recurrenceType)) {
+      recurrence.RecurrencePattern.DayOfWeekIndex = WeekOfMonth[rule.week];
+    }
+    if (/Absolute/.test(recurrenceType)) {
+      recurrence.RecurrencePattern.DayOfMonth = rule.startDate.getDate();
+    }
+    if (rule.frequency == Frequency.Yearly) {
+      recurrence.RecurrencePattern.Month = rule.startDate.toLocaleDateString("en", { month: "long" });
+    }
+    recurrence.RecurrenceRange.StartDate = this.dateString(rule.startDate, true);
+    if (rule.count < Infinity) {
+      recurrence.RecurrenceRange.__type = "NumberedRecurrence:#Exchange";
+      recurrence.RecurrenceRange.NumberOfOccurrences = rule.count;
+    } else if (rule.endDate) {
+      recurrence.RecurrenceRange.__type = "EndDateRecurrence:#Exchange";
+      recurrence.RecurrenceRange.EndDate = this.dateString(rule.endDate, true);
+    }
+    return recurrence;
+  }
+
   async deleteIt() {
-    let request = new OWADeleteItemRequest(this.itemID, {SendMeetingCancellations: "SendToAllAndSaveCopy"});
-    await this.calendar.account.callOWA(request);
+    if (this.itemID) {
+      // This works both for recurring masters and exceptions.
+      let request = new OWADeleteItemRequest(this.itemID, {SendMeetingCancellations: "SendToAllAndSaveCopy"});
+      await this.calendar.account.callOWA(request);
+    } else if (this.parentEvent) {
+      // Create an exclusion.
+      let request = {
+        __type: "DeleteItemJsonRequest:#Exchange",
+        Header: {
+          __type: "JsonRequestHeaders:#Exchange",
+          RequestServerVersion: "Exchange2013",
+        },
+        Body: {
+          __type: "DeleteItemRequest:#Exchange",
+          ItemIds: [{
+            __type: "OccurrenceItemId:#Exchange",
+            RecurringMasterId: this.parentEvent.itemID,
+            InstanceIndex: this.parentEvent.instances.indexOf(this) + 1,
+          }],
+          DeleteType: "MoveToDeletedItems",
+          SendMeetingCancellations: "SendToAllAndSaveCopy",
+        },
+      };
+      await this.calendar.account.callOWA(request);
+    }
     await super.deleteIt();
   }
 }
@@ -172,5 +284,56 @@ export class OWAEvent extends Event {
 function addParticipants(attendees, participants: PersonUID[]) {
   for (let attendee of attendees) {
     participants.push(findOrCreatePersonUID(sanitize.emailAddress(attendee.Mailbox.EmailAddress), sanitize.nonemptystring(attendee.Mailbox.Name, null)));
+  }
+}
+
+function extractWeekdays(daysOfWeek: string): Weekday[] | null {
+  return daysOfWeek ? daysOfWeek.split(" ").map(day => sanitize.integer(Weekday[day])) : null;
+}
+
+class OWAUpdateOccurrenceRequest {
+  readonly __type = "UpdateItemJsonRequest:#Exchange";
+  readonly Header = {
+    __type: "JsonRequestHeaders:#Exchange",
+    RequestServerVersion: "Exchange2013",
+  };
+  Body: any = {
+    __type: "UpdateItemRequest:#Exchange",
+    ConflictResolution: "AlwaysOverwrite",
+    ItemChanges: [{
+      __type: "ItemChange:#Exchange",
+      ItemId: {
+        __type: "OccurrenceItemId:#Exchange",
+      },
+      Updates: []
+    }],
+  };
+
+  constructor(event: OWAEvent, attributes?: {[key: string]: string | boolean}) {
+    this.itemChange.ItemId.RecurringMasterId = event.parentEvent.itemID;
+    this.itemChange.ItemId.InstanceIndex = event.parentEvent.instances.indexOf(event) + 1;
+    Object.assign(this.Body, attributes);
+  }
+
+  protected get itemChange() {
+    return this.Body.ItemChanges[0];
+  }
+
+  addField(type: string, key: string, value: any, FieldURI: string) {
+    let field = {
+      __type: "DeleteItemField:#Exchange",
+      Path: {
+        __type: "PropertyUri:#Exchange",
+        FieldURI: FieldURI,
+      },
+    } as any;
+    if (value != null) {
+      field.__type = "SetItemField:#Exchange";
+      field.Item = {
+        __type: type + ":#Exchange",
+      };
+      field.Item[key] = value;
+    }
+    this.itemChange.Updates.push(field);
   }
 }

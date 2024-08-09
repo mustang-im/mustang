@@ -31,7 +31,10 @@ export class OWACalendar extends Calendar {
     await this.listFolder("tasks", events);
     */
     for (let event of this.events.subtract(events)) {
-      SQLEvent.deleteIt(event);
+      // This might be a filled occurrence that has since been modified.
+      if (event.dbID) {
+        SQLEvent.deleteIt(event);
+      }
     }
     this.events.replaceAll(events);
   }
@@ -73,7 +76,7 @@ export class OWACalendar extends Calendar {
     }
   }
 
-  async getEvents(eventIDs: string[], events: ArrayColl<OWAEvent>) {
+  async getEvents(eventIDs: string[], events: ArrayColl<OWAEvent>, parentEvent?: OWAEvent) {
     if (!eventIDs.length) {
       return;
     }
@@ -121,7 +124,16 @@ export class OWACalendar extends Calendar {
             FieldURI: "calendar:Recurrence",
           }, {
             __type: "PropertyUri:#Exchange",
+            FieldURI: "calendar:ModifiedOccurrences",
+          }, {
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "calendar:DeletedOccurrences",
+          }, {
+            __type: "PropertyUri:#Exchange",
             FieldURI: "calendar:UID",
+          }, {
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "calendar:RecurrenceId",
           }, {
             __type: "PropertyUri:#Exchange",
             FieldURI: "task:Recurrence",
@@ -137,10 +149,22 @@ export class OWACalendar extends Calendar {
     let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
     for (let item of items) {
       try {
-        let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id)) || this.newEvent();
+        let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id)) || this.newEvent(parentEvent);
         event.fromJSON(item);
         await SQLEvent.save(event);
         events.add(event);
+        if (parentEvent && event.recurrenceStartTime) {
+          event.parentEvent = parentEvent; // should already be correct
+          let occurrences = parentEvent.recurrenceRule.getOccurrencesByDate(event.recurrenceStartTime);
+          parentEvent.replaceInstance(occurrences.length - 1, event);
+        }
+        if (item.ModifiedOccurrences?.length && event.recurrenceRule) {
+          await this.getEvents(item.ModifiedOccurrences.map(item => item.ItemId.Id), events, event);
+        }
+        if (event.recurrenceRule) {
+          // Also include any filled occurrences we happen to have.
+          events.addAll(event.instances.filter(instance => instance && !instance.dbID));
+        }
       } catch (ex) {
         this.account.errorCallback(ex);
       }
