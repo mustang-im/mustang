@@ -36,20 +36,20 @@
   export let start: Date;
   export let events: Collection<Event>;
   export let showDays: 1 | 2 | 7 = 7; // If you add new options, adapt styles below
-  export let showHours = 8;
+  export let showHours = 12;
 
   let startTimes: Date[] = [];
   $: start, setStartTimes();
   function setStartTimes() {
     let startTime = new Date(start);
-    startTime.setHours(new Date().getHours()); // start with current hour
+    startTime.setHours(8);
     startTime.setMinutes(0);
     startTime.setSeconds(0);
     startTime.setMilliseconds(0);
     startTimes = [];
-    for (let i = 0; i < showHours; i++) {
+    for (let i = 0; i < showHours; i += 2) {
       startTimes.push(new Date(startTime));
-      startTime.setHours(startTime.getHours() + 1)
+      startTime.setHours(startTime.getHours() + 2)
     }
   }
 
