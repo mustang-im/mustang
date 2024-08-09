@@ -9,11 +9,11 @@ export default class OWADeleteItemRequest {
     ItemIds: [{
       __type: "ItemId:#Exchange",
     }],
-    SuppressReadRecipts: true,
+    DeleteType: "MoveToDeletedItems",
   };
 
   constructor(id: string, attributes?: {[key: string]: string | boolean}) {
-    this.Body.ItemsIds[0].Id = id;
+    this.Body.ItemIds[0].Id = id;
     Object.assign(this.Body, attributes);
   }
 }

@@ -65,8 +65,8 @@ export class OWACalendar extends Calendar {
         },
       },
     };
-    let result: any = { RootFolder: { IncludesLastItemInRange: "false" } };
-    while (result?.RootFolder?.IncludesLastItemInRange === "false") {
+    let result: any = { RootFolder: { IncludesLastItemInRange: false } };
+    while (result?.RootFolder?.IncludesLastItemInRange === false) {
       result = await this.account.callOWA(request);
       if (!result?.RootFolder?.Items?.length) {
         break;
@@ -110,6 +110,9 @@ export class OWACalendar extends Calendar {
           }, {
             __type: "PropertyUri:#Exchange",
             FieldURI: "calendar:IsAllDayEvent",
+          }, {
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "calendar:EnhancedLocation",
           }, {
             __type: "PropertyUri:#Exchange",
             FieldURI: "calendar:RequiredAttendees",
