@@ -35,8 +35,12 @@
   $: start, intervalInHours, setEnd();
   function setEnd() {
     end = new Date(start);
-    end.setHours(end.getHours() + intervalInHours);
-    displayEvents = events.filter(ev => ev.startTime >= start && ev.endTime < end);
+    if (intervalInHours % 24) {
+      end.setHours(end.getHours() + intervalInHours);
+    } else {
+      end.setDate(end.getDate() + intervalInHours / 24);
+    }
+    displayEvents = events.filter(ev => ev.startTime >= start && ev.startTime < end);
   }
 
   function selectDay() {
