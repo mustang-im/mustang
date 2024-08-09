@@ -41,19 +41,20 @@ export class EWSFolder extends Folder {
     }
   }
 
-  async listMessages(): Promise<ArrayColl<EWSEMail>> {
+  async listMessages() {
     if (!this.dbID) {
       await SQLFolder.save(this);
     }
     await SQLEMail.readAll(this);
 
-    return this.updateChangedMessages();
+    this.updateChangedMessages();
   }
 
   /** Uses the sync state to get just the messages that changed since last time.
    * Assumes previously known messages have already been loaded from the DB.
    * @returns the new messages (not yet downloaded) */
   async updateChangedMessages(): Promise<ArrayColl<EWSEMail>> {
+    let newMsgs = new ArrayColl<EWSEMail>();
     let sync = {
       m$SyncFolderItems: {
         m$ItemShape: {
@@ -100,13 +101,13 @@ export class EWSFolder extends Folder {
         this.forEachSyncChange(result.Changes.Update, this.processSyncUpdate, false),
         this.forEachSyncChange(result.Changes.Create, this.processSyncUpdate, false),
       ])).flat();
-      let newMsgs = await this.getNewMessageHeaders(newMessageIDs);
-      this.messages.addAll(newMsgs);
+      await this.getNewMessageHeaders(newMessageIDs, newMsgs);
       await this.forEachSyncChange(result.Changes.Delete, this.processSyncDelete, true);
       this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
       await SQLFolder.save(this);
-      return newMsgs;
     }
+    this.messages.addAll(newMsgs);
+    return newMsgs;
   }
 
   protected async forEachSyncChange(changes: any[], eachCallback, isDirectList: boolean): Promise<any[]> {
@@ -196,9 +197,9 @@ export class EWSFolder extends Folder {
           newMessageIDs.push(message.ItemId);
         }
       }
-      newMsgs = await this.getNewMessageHeaders(newMessageIDs);
-      allMsgs.addAll(newMsgs);
+      await this.getNewMessageHeaders(newMessageIDs, newMsgs);
     }
+    allMsgs.addAll(newMsgs);
 
     for (let email of this.messages.subtract(allMsgs)) {
       SQLEMail.deleteIt(email);
@@ -207,8 +208,7 @@ export class EWSFolder extends Folder {
     return newMsgs;
   }
 
-  async getNewMessageHeaders(newMessageIDs: Array<{ ID: string }>): Promise<ArrayColl<EWSEMail>> {
-    let newMsgs = new ArrayColl<EWSEMail>();
+  async getNewMessageHeaders(newMessageIDs: Array<{ ID: string }>, newMsgs: ArrayColl<EWSEMail>) {
     if (newMessageIDs.length) {
       let request = {
         m$GetItem: {
@@ -281,7 +281,6 @@ export class EWSFolder extends Folder {
         }
       }
     }
-    return newMsgs;
   }
 
   async downloadMessages(emails: Collection<EWSEMail>): Promise<Collection<EWSEMail>> {
@@ -329,7 +328,7 @@ export class EWSFolder extends Folder {
   /** Lists only the new messages, and downloads them.
    * @returns the new messages */
   async getNewMessages(): Promise<ArrayColl<EWSEMail>> {
-    let newMsgs = await this.listMessages(); // uses syncState and should be fast
+    let newMsgs = await this.updateChangedMessages(); // uses syncState and should be fast
     await this.downloadMessages(newMsgs);
     return newMsgs;
   }

@@ -1,6 +1,7 @@
 import { MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { OWAFolder } from "./OWAFolder";
+import type { OWAEMail } from "./OWAEMail";
 import OWACreateItemRequest from "./OWACreateItemRequest";
 import { OWAAddressbook } from "../../Contacts/OWA/OWAAddressbook";
 import { OWACalendar } from "../../Calendar/OWA/OWACalendar";
@@ -11,6 +12,7 @@ import { appGlobal } from "../../app";
 import { notifyChangedProperty } from "../../util/Observable";
 import { blobToBase64 } from "../../util/util";
 import { assert } from "../../util/util";
+import { ArrayColl } from "svelte-collections";
 
 class OWAError extends Error {
   constructor(response) {
@@ -222,7 +224,8 @@ export class OWAAccount extends MailAccount {
             }
             if (newMessageIDs.length) {
               let inbox = this.inbox as OWAFolder;
-              let newMessages = await inbox.getNewMessageHeaders(newMessageIDs);
+              let newMessages = new ArrayColl<OWAEMail>();
+              await inbox.getNewMessageHeaders(newMessageIDs, newMessages);
               inbox.messages.addAll(newMessages);
               inbox.downloadMessages(newMessages);
               inbox.dirty = false; // probably

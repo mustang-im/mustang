@@ -48,9 +48,8 @@ export class Folder extends Observable implements TreeItem<Folder> {
   }
 
   /** Gets the metadata of the emails in this folder.
-   * May be slow, depending on the protocol.
-   * @returns the new messages (not yet downloaded). */
-  async listMessages(): Promise<ArrayColl<EMail>> {
+   * May be slow, depending on the protocol. */
+  async listMessages(): Promise<void> {
     throw new AbstractFunction();
   }
 

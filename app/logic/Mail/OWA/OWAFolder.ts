@@ -89,19 +89,24 @@ export class OWAFolder extends Folder {
     return true;
   }
 
-  async listMessages(): Promise<ArrayColl<OWAEMail>> {
+  async listMessages() {
     if (!this.dbID) {
       await SQLFolder.save(this);
     }
     await SQLEMail.readAll(this);
 
+    await this.listAllMessages();
+  }
+
+  /** Removes deleted messages and returns new messages */
+  async listAllMessages(): Promise<ArrayColl<OWAEMail>> {
+    let newMsgs = new ArrayColl<OWAEMail>;
     if (!await this.folderCountsChanged()) {
       // Avoid unnecessarily rereading the message list.
-      return new ArrayColl<OWAEMail>();
+      return newMsgs;
     }
 
-    let allMsgs: ArrayColl<OWAEMail> = new ArrayColl();
-    let newMsgs: ArrayColl<OWAEMail> = new ArrayColl();
+    let allMsgs = new ArrayColl<OWAEMail>();
     let request = {
       __type: "FindItemJsonRequest:#Exchange",
       Header: {
@@ -163,9 +168,9 @@ export class OWAFolder extends Folder {
           newMessageIDs.push(message.ItemId.Id);
         }
       }
-      newMsgs = await this.getNewMessageHeaders(newMessageIDs);
-      allMsgs.addAll(newMsgs);
+      await this.getNewMessageHeaders(newMessageIDs, newMsgs);
     }
+    allMsgs.addAll(newMsgs);
 
     for (let email of this.messages.subtract(allMsgs)) {
       SQLEMail.deleteIt(email);
@@ -174,8 +179,7 @@ export class OWAFolder extends Folder {
     return newMsgs;
   }
 
-  async getNewMessageHeaders(newMessageIDs: string[]): Promise<ArrayColl<OWAEMail>> {
-    let newMsgs = new ArrayColl<OWAEMail>();
+  async getNewMessageHeaders(newMessageIDs: string[], newMsgs: ArrayColl<OWAEMail>) {
     if (newMessageIDs.length) {
       let request = {
         __type: "GetItemJsonRequest:#Exchange",
@@ -275,7 +279,6 @@ export class OWAFolder extends Folder {
         }
       }
     }
-    return newMsgs;
   }
 
   async downloadMessages(emails: Collection<OWAEMail>): Promise<Collection<OWAEMail>> {
@@ -339,7 +342,7 @@ export class OWAFolder extends Folder {
    * so that the action can be repeated routinely every few minutes.
    * @returns the new messages */
   async getNewMessages(): Promise<ArrayColl<OWAEMail>> {
-    let newMsgs = await this.listMessages(); // TODO get only the msgs from the last 4 weeks
+    let newMsgs = await this.listAllMessages(); // TODO get only the msgs from the last 4 weeks
     await this.downloadMessages(newMsgs);
     return newMsgs;
   }
