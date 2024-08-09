@@ -94,7 +94,7 @@ export class OWAEMail extends EMail {
   async markRead(read = true) {
     let request = new OWAUpdateItemRequest(this.itemID, {
       MessageDisposition: "SaveOnly",
-      SendMeetingInvitationsOrCancellations: "SendToNone",
+      SendCalendarInvitationsOrCancellations: "SendToNone",
       SuppressReadReceipts: true,
     });
     request.addField("Message", "IsRead", read, "message:IsRead");
@@ -105,7 +105,7 @@ export class OWAEMail extends EMail {
   async markStarred(starred = true) {
     let request = new OWAUpdateItemRequest(this.itemID, {
       MessageDisposition: "SaveOnly",
-      SendMeetingInvitationsOrCancellations: "SendToNone",
+      SendCalendarInvitationsOrCancellations: "SendToNone",
       SuppressReadReceipts: true,
     });
     request.addField("Message", "Flag", {
@@ -125,7 +125,7 @@ export class OWAEMail extends EMail {
   async markDraft() {
     let request = new OWAUpdateItemRequest(this.itemID, {
       MessageDisposition: "SaveOnly",
-      SendMeetingInvitationsOrCancellations: "SendToNone",
+      SendCalendarInvitationsOrCancellations: "SendToNone",
       SuppressReadReceipts: true,
     });
     request.addField("Message", "IsDraft", true, "message:IsDraft");

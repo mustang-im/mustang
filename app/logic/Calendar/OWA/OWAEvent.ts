@@ -84,21 +84,21 @@ export class OWAEvent extends Event {
       new OWAUpdateItemRequest(this.itemID, {SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
       new OWACreateItemRequest({SendMeetingInvitations: "SendToAllAndSaveCopy"});
     request.addField("CalendarItem", "Subject", this.title, "item:Subject");
-    request.addField("CalendarItem", "Body", this.descriptionHTML ? { __type: "BodyContentType:#Exchange", BodyType: "HTML", Value: this.descriptionHTML } : this.descriptionText ? { __type: "BodyContentType:#Exchange", BodyType: "Text", Value: this.descriptionText } : "", "item:Body");
+    request.addField("CalendarItem", "Body", this.descriptionHTML ? { __type: "BodyContentType:#Exchange", BodyType: "HTML", Value: this.descriptionHTML } : this.descriptionText ? { __type: "BodyContentType:#Exchange", BodyType: "Text", Value: this.descriptionText } : null, "item:Body");
     request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
     request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
     request.addField("CalendarItem", "UID", this.calUID, "calendar:UID");
     request.addField("CalendarItem", "Start", this.dateString(this.startTime), "calendar:Start");
     request.addField("CalendarItem", "End", this.dateString(this.endTime), "calendar:End");
     request.addField("CalendarItem", "IsAllDayEvent", this.allDay, "calendar:IsAllDayEvent");
-    request.addField("CalendarItem", "Location", this.location, "calendar:Location");
+    request.addField("CalendarItem", "Location", { __type: "EnhancedLocation:#Exchange", DisplayName: this.location, PostalAddress: { __type: "PersonaPostalAddress:#Exchange", Type: "Business", LocationSource: "None", } }, "EnhancedLocation");
     request.addField("CalendarItem", "RequiredAttendees", this.participants.hasItems ? this.participants.contents.map(entry => ({
       __type: "AttendeeType:#Exchange",
       Mailbox: {
         EmailAddress: entry.emailAddress,
         Name: entry.name,
       }
-    })) : [], "calendar:RequiredAttendees");
+    })) : null, "calendar:RequiredAttendees");
     // No support for optional attendees in mustang;
     // all attendees get converted to be required for now.
     request.addField("CalendarItem", "OptionalAttendees", null, "calendar:OptionalAttendees");
