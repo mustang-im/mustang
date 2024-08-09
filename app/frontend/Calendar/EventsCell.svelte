@@ -1,4 +1,4 @@
-<vbox flex class="events">
+<vbox flex class="events" on:click={selectDay} on:dblclick={addEvent}>
   {#if displayEvents && !displayEvents.isEmpty}
     <Scroll>
       {#each displayEvents.each as event (event.id)}
@@ -16,10 +16,13 @@
 
 <script lang="ts">
   import type { Collection } from "svelte-collections";
+  import { selectedCalendar, selectedDate } from "./selected";
+  import { calendarMustangApp } from "./CalendarMustangApp";
   import type { Event } from "../../logic/Calendar/Event";
   import Scroll from "../Shared/Scroll.svelte";
   import EventLine from "./EventLine.svelte";
-  import { getUILocale } from "../../l10n/l10n";
+  import { assert } from "../../logic/util/util";
+  import { t, getUILocale } from "../../l10n/l10n";
 
   export let start: Date;
   export let intervalInHours: number;
@@ -34,6 +37,18 @@
     end = new Date(start);
     end.setHours(end.getHours() + intervalInHours);
     displayEvents = events.filter(ev => ev.startTime >= start && ev.endTime < end);
+  }
+
+  function selectDay() {
+    $selectedDate = start;
+  }
+
+  function addEvent() {
+    assert($selectedCalendar, $t`Please select a calendar first`);
+    let event = $selectedCalendar.newEvent();
+    event.startTime = new Date(start);
+    event.endTime = new Date(start);
+    calendarMustangApp.editEvent(event);
   }
 </script>
 
