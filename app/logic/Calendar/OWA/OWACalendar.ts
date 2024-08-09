@@ -12,8 +12,8 @@ export class OWACalendar extends Calendar {
   readonly events: ArrayColl<OWAEvent>;
   account: OWAAccount;
 
-  newEvent(): OWAEvent {
-    return new OWAEvent(this);
+  newEvent(parentEvent?: OWAEvent): OWAEvent {
+    return new OWAEvent(this, parentEvent);
   }
 
   getEventByItemID(id: string): OWAEvent | void {

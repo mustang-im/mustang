@@ -79,6 +79,9 @@ export const calendarDatabaseSchema = sql`
     -- this is the event ID of the master.
     "recurrenceMasterEventID" INTEGER default null,
     -- If this is an instance of a recurring meeting (not the master),
+    -- this is the meeting's original start time.
+    "recurrenceStartTime" TEXT default null,
+    -- If this is an instance of a recurring meeting (not the master),
     -- and this instance does not follow the normal pattern set by the master,
     -- but is changed in some way, e.g. exceptionally on a different day or time,
     -- then this is true. This means that the information in this event cannot
@@ -97,8 +100,21 @@ export const calendarDatabaseSchema = sql`
     "sourceMimetype" TEXT default null,
     FOREIGN KEY (calendarID)
       REFERENCES calendar (id)
+      ON DELETE CASCADE,
+    FOREIGN KEY (recurrenceMasterEventID)
+      REFERENCES event (id)
       ON DELETE CASCADE
   );
+
+  --- Used to keep track of deleted occurrences
+  CREATE TABLE "eventExclusion" (
+    "recurrenceMasterEventID" INTEGER,
+    "recurrenceIndex" INTEGER,
+    FOREIGN KEY (recurrenceMasterEventID)
+      REFERENCES event (id)
+      ON DELETE CASCADE
+  );
+  CREATE INDEX index_exclusion_eventID ON eventExclusion (recurrenceMasterEventID);
 
   --- Who will attent the event, not including our user
   CREATE TABLE "eventParticipant" (
