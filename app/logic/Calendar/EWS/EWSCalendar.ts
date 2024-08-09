@@ -79,6 +79,7 @@ export class EWSCalendar extends Calendar {
           let event = this.getEventByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
           if (event) {
             this.events.remove(event);
+            this.events.removeAll(event.instances);
             await SQLEvent.deleteIt(event);
           }
         }
@@ -103,6 +104,14 @@ export class EWSCalendar extends Calendar {
     /* Disabling tasks for now.
     await this.listFolder("tasks", events);
     */
+    // Keep any filled instances we already generated.
+    for (let event of events) {
+      for (let instance of event.instances) {
+        if (!events.includes(instance)) {
+          events.push(instance);
+        }
+      }
+    }
     this.events.replaceAll(events);
   }
 
@@ -135,7 +144,7 @@ export class EWSCalendar extends Calendar {
     }
   }
 
-  async getEvents(eventIDs, events: EWSEvent[]) {
+  async getEvents(eventIDs, events: EWSEvent[], parentEvent?: EWSEvent) {
     if (!eventIDs.length) {
       return;
     }
@@ -164,7 +173,13 @@ export class EWSCalendar extends Calendar {
             }, {
               FieldURI: "calendar:Recurrence",
             }, {
+              FieldURI: "calendar:ModifiedOccurrences",
+            }, {
+              FieldURI: "calendar:DeletedOccurrences",
+            }, {
               FieldURI: "calendar:UID",
+            }, {
+              FieldURI: "calendar:RecurrenceId",
             }, {
               FieldURI: "task:Recurrence",
             }],
@@ -177,16 +192,25 @@ export class EWSCalendar extends Calendar {
     };
     let results = ensureArray(await this.account.callEWS(request));
     for (let result of results) {
+      let item = result.Items.CalendarItem || result.Items.Task;
       try {
-        let event = this.getEventByItemID(sanitize.nonemptystring(result.Items.CalendarItem?.ItemId.Id || result.Items.Task.ItemId.Id));
+        let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id));
         if (event) {
-          event.fromXML(result.Items.CalendarItem || result.Items.Task);
+          event.parentEvent = parentEvent; // should already be correct
+          event.fromXML(item);
           await SQLEvent.save(event);
         } else {
-          event = this.newEvent();
-          event.fromXML(result.Items.CalendarItem || result.Items.Task);
+          event = this.newEvent(parentEvent);
+          event.fromXML(item);
           await SQLEvent.save(event);
           events.push(event);
+        }
+        if (parentEvent && event.recurrenceStartTime) {
+          let occurrences = parentEvent.recurrenceRule.getOccurrencesByDate(event.recurrenceStartTime);
+          parentEvent.replaceInstance(occurrences.length - 1, event)
+        }
+        if (item.ModifiedOccurrences?.Occurrence && event.recurrenceRule) {
+          await this.getEvents(ensureArray(item.ModifiedOccurrences.Occurrence).map(item => item.ItemId), events, event);
         }
       } catch (ex) {
         this.account.errorCallback(ex);
