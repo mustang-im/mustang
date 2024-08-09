@@ -27,8 +27,8 @@
   function addEvent() {
     assert($selectedCalendar, $t`Please select a calendar first`);
     let event = $selectedCalendar.newEvent();
-    event.startTime = new Date();
-    event.endTime = new Date();
+    event.startTime = new Date($selectedDate);
+    event.endTime = new Date($selectedDate);
     calendarMustangApp.editEvent(event);
   }
 </script>
