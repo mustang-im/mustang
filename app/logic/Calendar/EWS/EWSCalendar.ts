@@ -13,8 +13,8 @@ export class EWSCalendar extends Calendar {
   readonly events: ArrayColl<EWSEvent>;
   account: EWSAccount;
 
-  newEvent(): EWSEvent {
-    return new EWSEvent(this);
+  newEvent(parentEvent?: EWSEvent): EWSEvent {
+    return new EWSEvent(this, parentEvent);
   }
 
   async listEvents() {

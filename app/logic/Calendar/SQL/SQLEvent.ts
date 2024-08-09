@@ -1,4 +1,5 @@
 import { Event } from "../Event";
+import { RecurrenceRule } from "../RecurrenceRule";
 import type { Calendar } from "../Calendar";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { getDatabase } from "./SQLDatabase";
@@ -6,7 +7,7 @@ import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { backgroundError } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
-import { ArrayColl } from "svelte-collections";
+import { ArrayColl, Collection } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 
 export class SQLEvent extends Event {
@@ -17,11 +18,16 @@ export class SQLEvent extends Event {
         INSERT INTO event (
           title, descriptionText, descriptionHTML,
           startTime, endTime,
-          calUID, pID, calendarID
+          calUID, pID, calendarID,
+          recurrenceRule, recurrenceMasterEventID,
+          recurrenceStartTime, recurrenceIsException
         ) VALUES (
           ${event.title}, ${event.descriptionText}, ${event.descriptionHTML},
           ${event.startTime.toISOString()}, ${event.endTime.toISOString()},
-          ${event.calUID}, ${event.pID}, ${event.calendar?.dbID}
+          ${event.calUID}, ${event.pID}, ${event.calendar?.dbID},
+          ${event.recurrenceRule?.getCalString()}, ${event.parentEvent?.dbID},
+          ${event.recurrenceStartTime?.toISOString()},
+          ${+!!event.parentEvent?.dbID}
         )`);
       event.dbID = insert.lastInsertRowid;
     } else {
@@ -34,12 +40,35 @@ export class SQLEvent extends Event {
           endTime = ${event.endTime.toISOString()},
           calUID = ${event.calUID},
           pID = ${event.pID},
-          calendarID = ${event.calendar?.dbID}
+          calendarID = ${event.calendar?.dbID},
+          recurrenceRule = ${event.recurrenceRule?.getCalString()},
+          recurrenceMasterEventID = ${event.parentEvent?.dbID},
+          recurrenceStartTime = ${event.recurrenceStartTime?.toISOString()},
+          recurrenceIsException = ${+!!event.parentEvent?.dbID}
         WHERE id = ${event.dbID}
         `);
     }
 
+    await this.saveExclusions(event);
     await this.saveParticipants(event);
+  }
+
+  static async saveExclusions(event: Event) {
+    await (await getDatabase()).run(sql`
+      DELETE FROM eventExclusion
+      WHERE recurrenceMasterEventID = ${event.dbID}
+      `);
+
+    for (let i = 0; i < event.instances.length; i++) {
+      if (event.instances[i] === null) {
+        await (await getDatabase()).run(sql`
+          INSERT INTO eventExclusion (
+            recurrenceMasterEventID, recurrenceIndex
+          ) VALUES (
+            ${event.dbID}, ${i}
+          )`);
+      }
+    }
   }
 
   static async saveParticipants(event: Event) {
@@ -71,13 +100,14 @@ export class SQLEvent extends Event {
       `);
   }
 
-  static async read(dbID: number, event: Event, row?: any): Promise<Event> {
+  static async read(dbID: number, event: Event, row?: any, events?: Collection<Event>): Promise<Event> {
     if (!row) {
       row = await (await getDatabase()).get(sql`
         SELECT
           title, descriptionText, descriptionHTML,
           startTime, endTime,
-          calUID, pID, calendarID
+          calUID, pID, calendarID,
+          recurrenceRule, recurrenceMasterEventID, recurrenceStartTime
         FROM event
         WHERE id = ${dbID}
         `) as any;
@@ -101,9 +131,36 @@ export class SQLEvent extends Event {
         event.calendar = appGlobal.calendars.find(cal => cal.dbID == calendarID);
       }
     }
+    if (row.recurrenceMasterEventID && row.recurrenceStartTime) {
+      let masterID = sanitize.integer(row.recurrenceMasterEventID);
+      let parentEvent = events?.find(event => event.dbID == masterID);
+      if (parentEvent?.recurrenceRule) {
+        event.parentEvent = parentEvent;
+        event.recurrenceStartTime = sanitize.date(row.recurrenceStartTime);
+        let occurrences = event.parentEvent.recurrenceRule.getOccurrencesByDate(event.recurrenceStartTime);
+        event.parentEvent.instances[occurrences.length - 1] = event;
+      }
+    }
+    if (row.recurrenceRule) {
+      event.repeat = true;
+      event.recurrenceRule = RecurrenceRule.fromCalString(event.startTime, row.recurrenceRule);
+      await SQLEvent.readExclusions(event);
+    }
 
     await SQLEvent.readParticipants(event);
     return event;
+  }
+
+  protected static async readExclusions(event: Event) {
+    let rows = await (await getDatabase()).all(sql`
+      SELECT
+        recurrenceIndex
+      FROM eventExclusion
+      WHERE recurrenceMasterEventID = ${event.dbID}
+      `) as any;
+    for (let row of rows) {
+      event.instances[row.recurrenceIndex] = null;
+    }
   }
 
   protected static async readParticipants(event: Event) {
@@ -134,9 +191,11 @@ export class SQLEvent extends Event {
       SELECT
         title, descriptionText, descriptionHTML,
         startTime, endTime,
-        calUID, pID, id
+        calUID, pID, id,
+        recurrenceRule, recurrenceMasterEventID, recurrenceStartTime
       FROM event
       WHERE calendarID = ${calendar.dbID}
+      ORDER BY id
       `) as any;
     let newEvents = new ArrayColl<Event>();
     for (let row of rows) {
@@ -147,7 +206,7 @@ export class SQLEvent extends Event {
           newEvents.add(event);
         }
         event.calendar = calendar;
-        await SQLEvent.read(row.id, event, row);
+        await SQLEvent.read(row.id, event, row, newEvents);
       } catch (ex) {
         calendar.errorCallback(ex);
       }
