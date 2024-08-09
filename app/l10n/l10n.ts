@@ -57,7 +57,7 @@ export function setUILocale(lang: string) {
   // e.g. 'en' for 'en-US'
   let lang2 = lang.substring(0, 2);
 
-  let availableLang = cachedUILocale =
+  let availableLang =
     languageMessages[lang] ? lang :
     languageMessages[lang2] ? lang2 :
     sourceLocale;
@@ -84,16 +84,21 @@ export async function setUILocaleAsync(lang: string) {
 */
 
 let cachedUILocale: string;
-/** @returns 2-letter ISO code for the language that we are using */
+/** @returns ISO code for the locale that we are using */
 export function getUILocale(): string {
-  if (cachedUILocale) {
-    return cachedUILocale;
+  if (!cachedUILocale) {
+    cachedUILocale = sanitize.nonemptystring(localStorage.getItem("ui.locale"), navigator.language);
   }
-  return sanitize.nonemptystring(localStorage.getItem("ui.locale"), navigator.language);
+  return cachedUILocale;
+}
+
+export function getUILocalePref() {
+  return sanitize.nonemptystring(localStorage.getItem("ui.locale"), "");
 }
 
 export function saveUILocale(language: string) {
-  localStorage.setItem("ui.locale", language);
+  localStorage.setItem("ui.locale", language || null);
+  cachedUILocale = null;
 }
 
 let loadedLocale = false;
