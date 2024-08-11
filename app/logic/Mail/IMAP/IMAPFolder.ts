@@ -54,19 +54,29 @@ export class IMAPFolder extends Folder {
     }
   }
 
-  async runCommand<T>(imapFunc: (conn: any) => Promise<T>): Promise<T> {
+  async runCommand<T>(imapFunc: (conn: any) => Promise<T>, doLock = false): Promise<T> {
     let lock;
     try {
       let conn = await this.account.connection();
       try {
-        lock = await conn.getMailboxLock(this.path);
+        if (doLock) {
+          lock = await conn.getMailboxLock(this.path);
+        } else if (conn.mailbox.path == this.path) {
+          // already open
+        } else {
+          await conn.mailboxOpen(this.path);
+        }
       } catch (ex) {
         console.log("Opening IMAP folder failed", ex);
         if (ex.code == "NoConnection") {
           this.account._connection = null;
           conn = await this.account.connection();
-          lock = await conn.getMailboxLock(this.path);
-          // Re-try only once
+          if (doLock) {
+            lock = await conn.getMailboxLock(this.path);
+          } else {
+            await conn.mailboxOpen(this.path);
+          }
+          // Re-try only once (to open mailbox)
         } else {
           throw ex;
         }
