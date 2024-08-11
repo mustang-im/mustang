@@ -1,6 +1,5 @@
 # Next
 * Mail
-  * Password encrypt
   * Thunderbird AB import all fields
   * OAuth2
     * Google approval
@@ -57,7 +56,6 @@
 * Beta notification bar
 * Beta time-bomb
 * License client
-* Password storage
 
 # Feedback
 ## Elena

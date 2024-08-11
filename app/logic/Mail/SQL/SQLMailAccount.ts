@@ -7,6 +7,7 @@ import { SQLEMail } from "./SQLEMail";
 import type { Folder } from "../Folder";
 import { SQLFolder } from "./SQLFolder";
 import { ContactEntry } from "../../Abstract/Person";
+import { getPassword, setPassword, deletePassword } from "../../Auth/passwordStore";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -35,16 +36,15 @@ export class SQLMailAccount implements MailAccountStorage {
       }
     }
     if (!acc.dbID) {
-      // TODO encrypt password
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO emailAccount (
           idStr, name, protocol, emailAddress,
-          username, passwordButter,
+          username,
           hostname, port, tls, authMethod, url,
           outgoingAccountID, userRealname, workspace, configJSON
         ) VALUES (
           ${acc.id}, ${acc.name}, ${acc.protocol}, ${acc.emailAddress},
-          ${acc.username}, ${acc.password},
+          ${acc.username},
           ${acc.hostname}, ${acc.port}, ${acc.tls}, ${acc.authMethod}, ${acc.url},
           ${acc.outgoing?.dbID}, ${acc.userRealname}, ${acc.workspace?.id},
           ${JSON.stringify(acc.toConfigJSON(), null, 2)}
@@ -54,7 +54,7 @@ export class SQLMailAccount implements MailAccountStorage {
       await (await getDatabase()).run(sql`
         UPDATE emailAccount SET
           name = ${acc.name}, emailAddress = ${acc.emailAddress},
-          username = ${acc.username}, passwordButter = ${acc.password},
+          username = ${acc.username},
           hostname = ${acc.hostname}, port = ${acc.port}, tls = ${acc.tls}, url = ${acc.url},
           authMethod = ${acc.authMethod}, outgoingAccountID = ${acc.outgoing?.dbID},
           userRealname = ${acc.userRealname}, workspace = ${acc.workspace?.id},
@@ -62,6 +62,7 @@ export class SQLMailAccount implements MailAccountStorage {
         WHERE id = ${acc.dbID}
         `);
     }
+    await setPassword("mail." + acc.id, acc.password);
     if (!acc.storage) {
       acc.storage = new SQLMailAccount();
     }
@@ -74,6 +75,7 @@ export class SQLMailAccount implements MailAccountStorage {
       DELETE FROM emailAccount
       WHERE id = ${account.dbID}
       `);
+    await deletePassword("mail." + account.id);
   }
 
   static async read(dbID: number, acc: MailAccount) {
@@ -93,7 +95,7 @@ export class SQLMailAccount implements MailAccountStorage {
     assert(acc.protocol == sanitize.alphanumdash(row.protocol), "MailAccount object of wrong type passed in");
     acc.emailAddress = sanitize.emailAddress(row.emailAddress);
     acc.username = sanitize.string(row.username, null);
-    acc.password = sanitize.string(row.passwordButter, null);
+    acc.password = await getPassword("mail." + acc.id);
     acc.hostname = sanitize.hostname(row.hostname, null);
     acc.port = sanitize.portTCP(row.port, null);
     acc.tls = sanitize.enum(row.tls, [TLSSocketType.Plain, TLSSocketType.TLS, TLSSocketType.STARTTLS], TLSSocketType.Unknown);

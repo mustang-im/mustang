@@ -46,7 +46,7 @@ function readMatrixAccount(prefBranch: string): MatrixAccount {
   let account = new MatrixAccount();
   account.baseURL = sanitize.url(localStorage.getItem(prefBranch + "server"), "https://matrix.org");
   account.username = sanitize.nonemptystring(localStorage.getItem(prefBranch + "username"));
-  account.password = sanitize.nonemptystring(localStorage.getItem(prefBranch + "password"));
+  // unused code - account.password = sanitize.nonemptystring(localStorage.getItem(prefBranch + "password"));
   let deviceID = sanitize.alphanumdash(localStorage.getItem(prefBranch + "deviceID"), null);
   if (!deviceID) {
     account.deviceID = crypto.randomUUID();
@@ -60,7 +60,7 @@ function readXMPPAccount(prefBranch: string): XMPPAccount {
   let account = new XMPPAccount();
   account.serverDomain = sanitize.hostname(localStorage.getItem(prefBranch + "server"));
   account.username = sanitize.nonemptystring(localStorage.getItem(prefBranch + "username"));
-  account.password = sanitize.nonemptystring(localStorage.getItem(prefBranch + "password"));
+  // unused code - account.password = sanitize.nonemptystring(localStorage.getItem(prefBranch + "password"));
   let deviceID = sanitize.alphanumdash(localStorage.getItem(prefBranch + "deviceID"), null);
   if (!deviceID) {
     account.deviceID = crypto.randomUUID();

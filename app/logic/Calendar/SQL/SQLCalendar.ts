@@ -25,7 +25,6 @@ export class SQLCalendar implements CalendarStorage {
       }
     }
     if (!cal.dbID) {
-      // TODO save password separately
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO calendar (
           idStr, name, protocol, url, username,

@@ -155,7 +155,6 @@ export const mailDatabaseSchema = sql`
     -- "imap", "pop3", "jmap", "ews", "owa", "activesync"
     "protocol" TEXT not null,
     "username" TEXT default null,
-    "passwordButter" TEXT default null,
     "userRealname" TEXT not null,
     "hostname" TEXT default null,
     "port" INTEGER default null,

@@ -27,7 +27,6 @@ export class SQLAddressbook implements AddressbookStorage {
       }
     }
     if (!acc.dbID) {
-      // TODO save password separately
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO addressbook (
           idStr, name, protocol, url, username,

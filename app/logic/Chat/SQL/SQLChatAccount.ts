@@ -5,6 +5,7 @@ import type { Chat } from "../Chat";
 import { SQLChat } from "./SQLChat";
 import type { ChatMessage } from "../Message";
 import { SQLChatMessage } from "./SQLChatMessage";
+import { getPassword, setPassword, deletePassword } from "../../Auth/passwordStore";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -28,16 +29,15 @@ export class SQLChatAccount implements ChatAccountStorage {
       }
     }
     if (!acc.dbID) {
-      // TODO encrypt password
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO chatAccount (
           idStr, name, protocol,
-          username, passwordButter,
+          username,
           hostname, port, tls, url,
           userRealname, workspace
         ) VALUES (
           ${acc.id}, ${acc.name}, ${acc.protocol},
-          ${acc.username}, ${acc.password},
+          ${acc.username},
           ${acc.hostname}, ${acc.port}, ${acc.tls}, ${acc.url},
           ${acc.userRealname}, ${acc.workspace}
         )`);
@@ -46,12 +46,13 @@ export class SQLChatAccount implements ChatAccountStorage {
       await (await getDatabase()).run(sql`
         UPDATE chatAccount SET
           name = ${acc.name},
-          username = ${acc.username}, passwordButter = ${acc.password},
+          username = ${acc.username},
           hostname = ${acc.hostname}, port = ${acc.port}, tls = ${acc.tls}, url = ${acc.url},
           userRealname = ${acc.userRealname}, workspace = ${acc.workspace}
         WHERE id = ${acc.dbID}
         `);
     }
+    await setPassword("chat." + acc.id, acc.password);
     if (!acc.storage) {
       acc.storage = new SQLChatAccount();
     }
@@ -64,6 +65,7 @@ export class SQLChatAccount implements ChatAccountStorage {
       DELETE FROM chatAccount
       WHERE id = ${account.dbID}
       `);
+    await deletePassword("chat." + account.id);
   }
 
   static async read(dbID: number, acc: ChatAccount) {
@@ -71,7 +73,7 @@ export class SQLChatAccount implements ChatAccountStorage {
     let row = await (await getDatabase()).get(sql`
       SELECT
         idStr, name, protocol,
-        username, passwordButter,
+        username,
         hostname, port, tls, url,
         userRealname, workspace
       FROM chatAccount
@@ -82,7 +84,6 @@ export class SQLChatAccount implements ChatAccountStorage {
     acc.name = sanitize.label(row.name);
     assert(acc.protocol == sanitize.alphanumdash(row.protocol), "MailAccount object of wrong type passed in");
     acc.username = sanitize.string(row.username, null);
-    acc.password = sanitize.string(row.passwordButter, null);
     acc.hostname = sanitize.hostname(row.hostname, null);
     acc.port = sanitize.portTCP(row.port, null);
     acc.tls = sanitize.enum(row.tls, [TLSSocketType.Plain, TLSSocketType.TLS, TLSSocketType.STARTTLS], TLSSocketType.Unknown);
@@ -91,6 +92,7 @@ export class SQLChatAccount implements ChatAccountStorage {
     acc.workspace = row.workspace
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
       : null;
+    acc.password = await getPassword("chat." + acc.id);
     if (!acc.storage) {
       acc.storage = new SQLChatAccount();
     }

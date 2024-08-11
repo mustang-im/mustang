@@ -70,7 +70,6 @@ export const chatDatabaseSchema = sql`
     "name" TEXT not null,
     "protocol" TEXT not null,
     "username" TEXT default null,
-    "passwordButter" TEXT default null,
     "userRealname" TEXT not null,
     "hostname" TEXT default null,
     "port" INTEGER default null,

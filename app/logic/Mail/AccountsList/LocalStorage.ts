@@ -71,7 +71,7 @@ async function readStandardAccountFromLocalStorage(account: MailAccount, prefBra
   account.port = sanitize.portTCP(localStorage.getItem(prefBranch + "port"));
   account.emailAddress = sanitize.nonemptystring(localStorage.getItem(prefBranch + "emailAddress"));
   account.username = sanitize.nonemptystring(localStorage.getItem(prefBranch + "username"));
-  account.password = sanitize.string(localStorage.getItem(prefBranch + "password"));
+  // unused code - account.password = sanitize.string(localStorage.getItem(prefBranch + "password"));
   account.userRealname = sanitize.nonemptystring(localStorage.getItem(prefBranch + "userRealname") ??
     appGlobal.me.name ?? sanitize.label(localStorage.getItem("me.realname")));
   account.tls = sanitize.translate(localStorage.getItem(prefBranch + "tls"), {
@@ -91,7 +91,7 @@ async function readSMTPAccount(prefBranchBase: string, idBase: string): Promise<
   account.hostname = sanitize.hostname(localStorage.getItem(prefBranchSMTP + "hostname"));
   account.port = sanitize.portTCP(localStorage.getItem(prefBranchSMTP + "port"));
   account.username = sanitize.nonemptystring(localStorage.getItem(prefBranchSMTP + "username"));
-  account.password = sanitize.string(localStorage.getItem(prefBranchSMTP + "password"));
+  // unused code - account.password = sanitize.string(localStorage.getItem(prefBranchSMTP + "password"));
   account.tls = sanitize.translate(localStorage.getItem(prefBranchSMTP + "tls"), {
     plain: TLSSocketType.Plain,
     tls: TLSSocketType.TLS,
@@ -112,7 +112,7 @@ async function readEWSAccount(prefBranch: string, id: string): Promise<EWSAccoun
   account.hostname = sanitize.hostname(localStorage.getItem(prefBranch + "hostname"));
   account.emailAddress = sanitize.nonemptystring(localStorage.getItem(prefBranch + "emailAddress"));
   account.username = sanitize.nonemptystring(localStorage.getItem(prefBranch + "username") || account.emailAddress);
-  account.password = sanitize.string(localStorage.getItem(prefBranch + "password"), null); // not required to exist
+  // unused code - account.password = sanitize.string(localStorage.getItem(prefBranch + "password"), null); // not required to exist
   account.userRealname = sanitize.nonemptystring(localStorage.getItem(prefBranch + "userRealname") ??
     appGlobal.me.name ?? sanitize.label(localStorage.getItem("me.realname")));
   account.name = account.emailAddress;
@@ -130,7 +130,7 @@ export function saveAccountToLocalStorage(account: MailAccount): void {
   localStorage.setItem(prefBranch + "port", sanitize.portTCP(account.port) + "");
   localStorage.setItem(prefBranch + "emailAddress", sanitize.emailAddress(account.emailAddress));
   localStorage.setItem(prefBranch + "username", sanitize.nonemptystring(account.username));
-  localStorage.setItem(prefBranch + "password", sanitize.string(account.password));
+  // unused code - localStorage.setItem(prefBranch + "password", sanitize.string(account.password));
   localStorage.setItem(prefBranch + "userRealname", sanitize.nonemptystring(
     account.userRealname ?? appGlobal.me.name ?? sanitize.label(localStorage.getItem("me.realname"))));
   localStorage.setItem(prefBranch + "tls", sanitize.alphanumdash(account.tls.toString().toLowerCase()));

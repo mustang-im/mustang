@@ -1,6 +1,7 @@
 import { newOAuth2UI, OAuth2UIMethod } from "./OAuth2UIMethod";
 import { OAuth2Error, OAuth2LoginNeeded, OAuth2ServerError } from "./OAuth2Error";
 import type { Account } from "../Abstract/Account";
+import { getPassword, setPassword, deletePassword } from "./passwordStore";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
@@ -319,17 +320,18 @@ export class OAuth2 extends Observable {
    * @returns refreshToken (or null, if not available)
    */
   protected async getRefreshTokenFromStorage(): Promise<string | null> {
-    return sanitize.string(localStorage.getItem(this.storageKey), null);
+    return await getPassword(this.storageKey);
   }
   protected async deleteRefreshTokenFromStorage(): Promise<void> {
-    localStorage.removeItem(this.storageKey);
+    await deletePassword(this.storageKey);
   }
   protected async storeRefreshToken(refreshToken: string): Promise<void> {
     assert(refreshToken, "Nothing to store");
-    localStorage.setItem(this.storageKey, refreshToken);
+    await setPassword(this.storageKey, refreshToken);
   }
   protected get storageKey(): string {
-    let host = new URL(this.tokenURL).host;
-    return `oauth2.refreshToken.${this.account.username}.${host}`;
+    let host = new URL(this.tokenURL).host.replaceAll(".", "-");
+    let username = this.account.username.replace(/@.*/, "").replaceAll(".", "-");
+    return `oauth2.refreshToken.${username}.${host}`;
   }
 }

@@ -3,16 +3,14 @@
   "version": "0.5.0",
   "description": "Mustang - User-friendly full-featured email application for everybody - Logic",
   "dependencies": {
-    "@buttercup/credentials": "^1.2.0",
-    "generate-password": "^1.4.1",
     "html-to-text": "^5.1.1",
     "i18n": "^0.8.3",
     "iocane": "^1.0.2",
     "lodash": "^4.17.21",
     "r2": "^2.0.1",
     "svelte-collections": "^1.1.20",
-    "ws": "^8.16.0",
-    "vite-plugin-node-polyfills": "^0.22.0"
+    "vite-plugin-node-polyfills": "^0.22.0",
+    "ws": "^8.16.0"
   },
   "scripts": {
     "test": "node test.js"

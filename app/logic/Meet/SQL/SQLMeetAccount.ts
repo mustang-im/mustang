@@ -1,6 +1,7 @@
 import type { MeetAccount, MeetAccountStorage } from "../MeetAccount";
 import { getDatabase } from "./SQLDatabase";
 import { newMeetAccountForProtocol } from "../AccountsList/MeetAccounts";
+import { getPassword, setPassword, deletePassword } from "../../Auth/passwordStore";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -23,24 +24,24 @@ export class SQLMeetAccount implements MeetAccountStorage {
       }
     }
     if (!acc.dbID) {
-      // TODO save password separately
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO meetAccount (
-          idStr, name, protocol, url, username, password,
+          idStr, name, protocol, url, username,
           workspace
         ) VALUES (
-          ${acc.id}, ${acc.name}, ${acc.protocol}, ${acc.url}, ${acc.username}, ${acc.password},
+          ${acc.id}, ${acc.name}, ${acc.protocol}, ${acc.url}, ${acc.username},
           ${acc.workspace}
         )`);
       acc.dbID = insert.lastInsertRowid;
     } else {
       await (await getDatabase()).run(sql`
         UPDATE meetAccount SET
-          name = ${acc.name}, url = ${acc.url}, username = ${acc.username}, password = ${acc.password},
+          name = ${acc.name}, url = ${acc.url}, username = ${acc.username},
           workspace = ${acc.workspace}
         WHERE id = ${acc.dbID}
         `);
     }
+    await setPassword("chat." + acc.id, acc.password);
     if (!acc.storage) {
       acc.storage = new SQLMeetAccount();
     }
@@ -53,13 +54,14 @@ export class SQLMeetAccount implements MeetAccountStorage {
       DELETE FROM meetAccount
       WHERE id = ${acc.dbID}
       `);
+    await deletePassword("meet." + acc.id);
   }
 
   static async read(dbID: number, acc: MeetAccount) {
     assert(dbID, "Need meet account DB ID to read it");
     let row = await (await getDatabase()).get(sql`
       SELECT
-        idStr, name, protocol, url, username, password,
+        idStr, name, protocol, url, username,
         workspace
       FROM meetAccount
       WHERE id = ${dbID}
@@ -69,11 +71,11 @@ export class SQLMeetAccount implements MeetAccountStorage {
     acc.name = sanitize.label(row.name);
     assert(acc.protocol == sanitize.alphanumdash(row.protocol), "Meet account object of wrong type passed in");
     acc.username = sanitize.string(row.username, null);
-    acc.password = sanitize.string(row.password, null);
     acc.url = sanitize.url(row.url, null);
     acc.workspace = row.workspace
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
       : null;
+    acc.password = await getPassword("chat." + acc.id);
     if (!acc.storage) {
       acc.storage = new SQLMeetAccount();
     }
