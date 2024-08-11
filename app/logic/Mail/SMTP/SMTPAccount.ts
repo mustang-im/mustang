@@ -72,6 +72,7 @@ export class SMTPAccount extends MailAccount {
 
   static async getNMMail(email: EMail): Promise<NMMail> {
     let doHTML = getLocalStorage("mail.send.format", "html").value == "html";
+    // <https://nodemailer.com/message/>
     return {
       subject: email.subject,
       inReplyTo: email.inReplyTo,
@@ -84,6 +85,7 @@ export class SMTPAccount extends MailAccount {
       html: doHTML ? email.html : null,
       attachDataUrls: true,
       attachments: await SMTPAccount.getAttachments(email),
+      headers: email.headers.contentKeyValues(),
       disableFileAccess: true,
       disableUrlAccess: true,
     };

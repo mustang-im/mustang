@@ -103,6 +103,17 @@ export class EWSAccount extends MailAccount {
         }))),
       }, "item:Attachments");
     }
+    for (let [header, value] of email.headers.entries()) {
+      request.addField("Message", "ExtendedProperty", {
+        t$ExtendedFieldURI: {
+          PropertyName: header,
+          DistinguishedPropertySetId: "InternetHeaders",
+          PropertyType: "String",
+          // TODO Sends header names as all-lowercase. Should preserve casing.
+        },
+        t$Value: value,
+      }, null);
+    }
     if (email.inReplyTo) {
       request.addField("Message", "InReplyTo", email.inReplyTo, "item:InReplyTo");
     }

@@ -127,16 +127,16 @@
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { Attachment } from "../../../logic/Mail/Attachment";
   import { insertImage } from "../../Shared/Editor/InsertImage";
+  import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
-  import { appGlobal } from "../../../logic/app";
   import MailAutocomplete from "./MailAutocomplete.svelte";
   import AttachmentsPane from "./Attachments/AttachmentsPane.svelte";
   import FileSelector from "./Attachments/FileSelector.svelte";
   import FileDropTarget from "./Attachments/FileDropTarget.svelte";
-  import AccountDropDown from "../../Shared/AccountDropDown.svelte";
   import HTMLEditor from "../../Shared/Editor/HTMLEditor.svelte";
   import HTMLEditorToolbar from "../../Shared/Editor/HTMLEditorToolbar.svelte";
+  import IdentitySelector from "./IdentitySelector.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
@@ -145,9 +145,7 @@
   import TrashIcon from "lucide-svelte/icons/trash";
   import CloseIcon from "lucide-svelte/icons/x";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
-  import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
-  import { ArrayColl } from "svelte-collections";
-  import IdentitySelector from "./IdentitySelector.svelte";
+  import { appName, appVersion } from "../../../logic/build";
   import { t } from "../../../l10n/l10n";
 
   export let mail: EMail;
@@ -230,6 +228,8 @@
     if (sig) {
       mail.html += `<footer class="signature">${sig}</footer>`;
     }
+    mail.headers.set("User-Agent", (appName == "Mustang" ? "" : `Mustang/${appVersion} `) + `${appName}/${appVersion}`);
+
     await mail.send();
     onClose();
   }
