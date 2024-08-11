@@ -2,8 +2,6 @@
 * Mail
   * Password encrypt
   * Thunderbird AB import all fields
-  * Import: Polish UI style
-  * Delete to Trash
   * OAuth2
     * Google approval
     * Yahoo registration
@@ -14,6 +12,7 @@
     * Delete and Spam
     * Move to folder
     * Tags
+  * Import: Polish UI style
   * Bug: Persons view: disable until bug fixed
   * No folders -> [Get Mail] button disabled -> Can never login
   * Calendar
@@ -200,7 +199,6 @@
      * Mails
 * Move folder
 * Delete strategy
-  * Move to trash
   * Expunge on quit
 * Special folders
   * Better detection based on flags

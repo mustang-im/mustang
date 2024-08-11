@@ -28,6 +28,7 @@ export class MailAccount extends Account {
   outgoing: MailAccount = null;
   /** Error that broke the server connection, unrecoverable, including login failures. */
   fatalError: Error = null;
+  spamStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   /** Where we got the config from, during setup */
   source: ConfigSource = null;
   storage: MailAccountStorage;
@@ -199,6 +200,12 @@ export interface MailAccountStorage {
   saveFolder(folder: Folder): Promise<void>;
   saveAccount(account: MailAccount): Promise<void>;
   deleteAccount(account: MailAccount): Promise<void>;
+}
+
+export enum DeleteStrategy {
+  DeleteImmediately = 1,
+  Flag = 1,
+  MoveToTrash = 3,
 }
 
 export class SetupInstruction {

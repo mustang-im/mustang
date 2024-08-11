@@ -1,7 +1,8 @@
 import { Message } from "../Abstract/Message";
-import type { Folder } from "./Folder";
+import { SpecialFolder, type Folder } from "./Folder";
 import { Attachment, ContentDisposition } from "./Attachment";
 import { RawFilesAttachment } from "./Store/RawFilesAttachment";
+import { DeleteStrategy } from "./MailAccount";
 import { SQLEMail } from "./SQL/SQLEMail";
 import { SQLSourceEMail } from "./SQL/Source/SQLSourceEMail";
 import { sqlFindMessageByID } from "./SQL/SQLSearchEMail";
@@ -9,14 +10,14 @@ import { MailZIP } from "./Store/MailZIP";
 import { MailDir } from "./Store/MailDir";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { appGlobal } from "../app";
-import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction, NotImplemented } from "../util/util";
+import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
+import { getUILocale, gt } from "../../l10n/l10n";
 import { backgroundError } from "../../frontend/Util/error";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { notifyChangedProperty } from "../util/Observable";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
-import { getUILocale } from "../../l10n/l10n";
 
 export class EMail extends Message {
   @notifyChangedProperty
@@ -91,17 +92,21 @@ export class EMail extends Message {
 
   /** Marks as spam, and deletes or moves the message, as configured */
   async treatSpam(spam = true) {
-    const kDeleteSpam = true;
-    if (spam && kDeleteSpam) {
+    let strategy = this.folder.account.spamStrategy;
+    if (spam && strategy == DeleteStrategy.DeleteImmediately) {
       /** Immediate reaction for end user */
       await this.deleteMessageLocally();
     }
     await this.markSpam(spam);
-    if (spam && kDeleteSpam) {
+    if (spam && strategy == DeleteStrategy.DeleteImmediately) {
       /* The spam flag change might trigger a folder listener
        * from the server, which re-adds this message to the local list.
        * So, we might have to delete it locally again */
       await this.deleteMessage();
+    } else if (spam && strategy == DeleteStrategy.MoveToTrash) {
+      let spam = this.folder.account.getSpecialFolder(SpecialFolder.Spam);
+      assert(spam, gt`Spam folder is not set. Please go to folder properties and set Use As: Spam.`);
+      spam.moveMessagesHere(new ArrayColl<EMail>([this as any as EMail]));
     }
   }
 

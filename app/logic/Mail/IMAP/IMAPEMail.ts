@@ -1,9 +1,13 @@
 import { EMail, setPersons } from "../EMail";
 import type { IMAPFolder } from "./IMAPFolder";
+import { SpecialFolder } from "../Folder";
+import { DeleteStrategy } from "../MailAccount";
 import { findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert } from "../../util/util";
+import { assert, NotReached } from "../../util/util";
+import { ArrayColl } from "svelte-collections";
+import { gt } from "../../../l10n/l10n";
 
 export class IMAPEMail extends EMail {
   folder: IMAPFolder;
@@ -129,9 +133,20 @@ export class IMAPEMail extends EMail {
   async deleteMessageOnServer() {
     try {
       this.folder.deletions.add(this.uid);
-      await this.folder.runCommand(async (conn) => {
-        await conn.messageDelete(this.uid, { uid: true });
-      });
+      let strategy = this.folder.account.deleteStrategy;
+      if (strategy == DeleteStrategy.DeleteImmediately) {
+        await this.folder.runCommand(async (conn) => {
+          await conn.messageDelete(this.uid, { uid: true });
+        });
+      } else if (strategy == DeleteStrategy.MoveToTrash) {
+        let trash = this.folder.account.getSpecialFolder(SpecialFolder.Trash);
+        assert(trash, gt`Trash folder is not set. Cannot delete the email. Please go to folder properties and set Use As: Trash.`);
+        trash.moveMessagesHere(new ArrayColl<EMail>([this as any as EMail]));
+      } else if (strategy == DeleteStrategy.Flag) {
+        await this.setFlagServer("\\Deleted", true);
+      } else {
+        throw new NotReached("Unknown delete strategy");
+      }
     } finally {
       this.folder.deletions.delete(this.uid);
     }

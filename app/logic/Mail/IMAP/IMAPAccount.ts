@@ -1,4 +1,4 @@
-import { MailAccount, TLSSocketType, AuthMethod } from "../MailAccount";
+import { MailAccount, TLSSocketType, AuthMethod, DeleteStrategy } from "../MailAccount";
 import { IMAPFolder } from "./IMAPFolder";
 import { appGlobal } from "../../app";
 import { SQLMailAccount } from "../SQL/SQLMailAccount";
@@ -20,6 +20,7 @@ export class IMAPAccount extends MailAccount {
   accessToken: string | undefined;
   acceptOldTLS = false;
   pathDelimiter: string; /** Separator in folder path. E.g. '.' or '/', depending on server */
+  deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
 
   constructor() {
     super();
