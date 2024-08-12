@@ -27,14 +27,30 @@ export class Event extends Observable {
   allDay = false;
   @notifyChangedProperty
   repeat = false;
+  /** If `repeat` is set, should be the rule which describes the pattern. */
   @notifyChangedProperty
   recurrenceRule: RecurrenceRule | undefined;
+  /** Links back to the recurring master from an instance. */
   @notifyChangedProperty
   parentEvent: Event | undefined;
-  /** in case a recurrence instance had its start time modified */
+  /**
+   * If this is an instance of a recurring meeting (not the master),
+   * then this is the instance's original start time.
+   * This allows us to work out the instance index of an exception,
+   * even if its actual start time has been modified.
+   */
   recurrenceStartTime: Date | undefined;
-  /** null means deleted instance, undefined means not filled yet */
-  readonly instances: Array<Event | null | undefined> = [];
+  /**
+   * Holds child instances of a recurring event:
+   * - undefined means that a recurring instance hasn't been generated yet
+   * - null means that that the instance was excluded
+   * - a saved event means that the instance is an exception
+   * - an unsaved event means that the instance was auto-generated
+   *
+   * Note that the array may not be complete but `fillRecurrences`
+   * will auto-generate additional instances if necessary.
+   */
+  readonly instances = new ArrayColl<Event | null | undefined>;
   @notifyChangedProperty
   alarm: Date = null;
 
@@ -59,7 +75,7 @@ export class Event extends Observable {
     this.calendar = calendar;
     if (parentEvent) {
       this.parentEvent = parentEvent;
-      this.copyFromParent();
+      this.copyFrom(parentEvent);
     }
   }
 
@@ -96,19 +112,21 @@ export class Event extends Observable {
     this.duration = days * 86400;
   }
 
-  copyFromParent() {
-    let parentEvent = this.parentEvent;
-    this.calUID = parentEvent.calUID;
-    this.title = parentEvent.title;
-    this.descriptionText = parentEvent.descriptionText;
-    this.descriptionHTML = parentEvent.descriptionHTML;
-    this.allDay = parentEvent.allDay;
-    this.parentEvent = parentEvent;
-    this.location = parentEvent.location;
-    this.isOnline = parentEvent.isOnline;
-    this.isPresence = parentEvent.isPresence;
-    this.onlineMeetingURL = parentEvent.onlineMeetingURL;
-    this.participants.replaceAll(parentEvent.participants);
+  /**
+   * Used to update placeholder instances from their recurring master.
+   * Copies the event properties that are shared between recurring instances.
+   */
+  copyFrom(original: Event) {
+    this.calUID = original.calUID;
+    this.title = original.title;
+    this.descriptionText = original.descriptionText;
+    this.descriptionHTML = original.descriptionHTML;
+    this.allDay = original.allDay;
+    this.location = original.location;
+    this.isOnline = original.isOnline;
+    this.isPresence = original.isPresence;
+    this.onlineMeetingURL = original.onlineMeetingURL;
+    this.participants.replaceAll(original.participants);
   }
 
   async save() {
@@ -117,7 +135,7 @@ export class Event extends Observable {
     await this.calendar.storage.saveEvent(this);
     for (let occurrence of this.instances) {
       if (occurrence && !occurrence.dbID) {
-        occurrence.copyFromParent();
+        occurrence.copyFrom(this);
       }
     }
   }
@@ -139,14 +157,37 @@ export class Event extends Observable {
     }
   }
 
+  /**
+   * Ensures that all recurring instances exist up to the provided date.
+   * Must only be called on recurring master events.
+   */
+  fillRecurrences(endDate: Date) {
+    let newOccurrences: Event[] = [];
+    let occurrences = this.recurrenceRule.getOccurrencesByDate(endDate);
+    for (let i = 0; i < occurrences.length; i++) {
+      if (this.instances.get(i) === undefined) {
+        let occurrence = this.calendar.newEvent(this);
+        occurrence.recurrenceStartTime = occurrences[i];
+        occurrence.startTime = new Date(occurrences[i]); // Clone in case of exception
+        occurrence.endTime = new Date(this.endTime.getTime() + occurrence.startTime.getTime() - this.startTime.getTime());
+        if (this.alarm) {
+          occurrence.alarm = new Date(this.alarm.getTime() + occurrence.startTime.getTime() - this.startTime.getTime());
+        }
+        this.instances.set(i, occurrence);
+        newOccurrences.push(occurrence);
+      }
+    }
+    this.calendar.events.addAll(newOccurrences);
+  }
+
   clearExceptions() {
-    this.calendar.events.removeAll(this.instances.filter(Boolean));
+    this.calendar.events.removeAll(this.instances.contents.filter(Boolean));
     for (let event of this.instances) {
       if (event?.dbID) {
         this.calendar.storage.deleteEvent(event);
       }
     }
-    this.instances.length = 0;
+    this.instances.clear();
   }
 
   /**
@@ -154,8 +195,8 @@ export class Event extends Observable {
    * (and also database when an exception subsequently becomes an exclusion).
    */
   replaceInstance(index: number, occurrence: Event) {
-    let previous = this.instances[index];
-    this.instances[index] = occurrence;
+    let previous = this.instances.get(index);
+    this.instances.set(index, occurrence);
     // There won't be a previous instance if this is a new recurring event
     // and we haven't filled its occurrences yet. Or, this might be an update
     // to a known existing exception.

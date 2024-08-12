@@ -6,6 +6,7 @@ import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import OWACreateItemRequest from "../../Mail/OWA/OWACreateItemRequest";
 import OWADeleteItemRequest from "../../Mail/OWA/OWADeleteItemRequest";
 import OWAUpdateItemRequest from "../../Mail/OWA/OWAUpdateItemRequest";
+import type { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 const gTimeZone = WindowsTimezones[Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
@@ -21,7 +22,7 @@ enum WeekOfMonth {
 export class OWAEvent extends Event {
   calendar: OWACalendar;
   parentEvent: OWAEvent;
-  readonly instances: Array<OWAEvent | null | undefined>;
+  readonly instances: ArrayColl<OWAEvent | null | undefined>;
 
   get itemID(): string | null {
     return this.pID;
@@ -43,7 +44,9 @@ export class OWAEvent extends Event {
       }
     }
     if (json.RecurrenceId) {
-      this.recurrenceStartTime = this.startTime = sanitize.date(json.RecurrenceId);
+      this.recurrenceStartTime = sanitize.date(json.RecurrenceId);
+      // In case it's not otherwise provided to us.
+      this.startTime = new Date(this.recurrenceStartTime);
     }
     if (json.Start) {
       this.startTime = sanitize.date(json.Start);
@@ -57,26 +60,7 @@ export class OWAEvent extends Event {
     this.allDay = sanitize.boolean(json.IsAllDayEvent);
     if (json.Recurrence) {
       this.repeat = true;
-      let startDate = this.startTime;
-      let endDate: Date | null = null;
-      if (json.Recurrence.RecurrenceRange.EndDate) {
-        // These dates don't have a time, but they do have a time zone suffixed.
-        if (!startDate) {
-          this.startTime = startDate = sanitize.date(json.Recurrence.RecurrenceRange.StartDate.slice(0, 10));
-        }
-        endDate = sanitize.date(json.Recurrence.RecurrenceRange.EndDate.slice(0, 10));
-        // RecurrenceRule wants this to be at least the same time as the endTime
-        endDate.setDate(endDate.getDate() + 1);
-        endDate.setTime(endDate.getTime() - 1000);
-      }
-      let count = sanitize.integer(json.Recurrence.RecurrenceRange.NumberOfOccurrences, Infinity);
-      let pattern = json.Recurrence.RecurrencePattern;
-      let frequency = pattern.__type.startsWith("Daily") ? Frequency.Daily : pattern.__type.startsWith("Weekly") ? Frequency.Weekly : pattern.Month ? Frequency.Yearly : Frequency.Monthly;
-      let interval = sanitize.integer(pattern.Interval, 1);
-      let weekdays = extractWeekdays(pattern.DaysOfWeek);
-      let week = sanitize.integer(WeekOfMonth[pattern.DayOfWeekIndex], 0);
-      let first = sanitize.integer(Weekday[pattern.FirstDayOfWeek], Weekday.Monday);
-      this.recurrenceRule = new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
+      this.recurrenceRule = this.newRecurrenceRule(json.Recurrence);
       if (json.DeletedOccurrences) {
         for (let deletion of json.DeletedOccurrences) {
           let occurrences = this.recurrenceRule.getOccurrencesByDate(sanitize.date(deletion.Start));
@@ -101,6 +85,29 @@ export class OWAEvent extends Event {
     if (json.LastModifiedTime) {
       this.lastMod = sanitize.date(json.LastModifiedTime);
     }
+  }
+
+  newRecurrenceRule(json: any): RecurrenceRule {
+    let startDate = this.startTime;
+    let endDate: Date | null = null;
+    if (json.RecurrenceRange.EndDate) {
+      // These dates don't have a time, but they do have a time zone suffixed.
+      if (!startDate) {
+        this.startTime = startDate = sanitize.date(json.RecurrenceRange.StartDate.slice(0, 10));
+      }
+      endDate = sanitize.date(json.RecurrenceRange.EndDate.slice(0, 10));
+      // RecurrenceRule wants this to be at least the same time as the endTime
+      endDate.setDate(endDate.getDate() + 1);
+      endDate.setTime(endDate.getTime() - 1000);
+    }
+    let count = sanitize.integer(json.RecurrenceRange.NumberOfOccurrences, Infinity);
+    let pattern = json.RecurrencePattern;
+    let frequency = pattern.__type.startsWith("Daily") ? Frequency.Daily : pattern.__type.startsWith("Weekly") ? Frequency.Weekly : pattern.Month ? Frequency.Yearly : Frequency.Monthly;
+    let interval = sanitize.integer(pattern.Interval, 1);
+    let weekdays = extractWeekdays(pattern.DaysOfWeek);
+    let week = sanitize.integer(WeekOfMonth[pattern.DayOfWeekIndex], 0);
+    let first = sanitize.integer(Weekday[pattern.FirstDayOfWeek], Weekday.Monday);
+    return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
   }
 
   async save() {

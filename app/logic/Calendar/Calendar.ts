@@ -13,24 +13,14 @@ export class Calendar extends Account {
     return new Event(this, parentEvent);
   }
 
-  fillOccurrences(endDate: Date): Collection<Event> {
-    let newOccurrences: Event[] = [];
+  /**
+   * Ensures that instances for all recurring events in the calendar exist
+   * up to the provided date. Returns all events as a convenience.
+   */
+  fillRecurrences(endDate: Date): Collection<Event> {
     for (let event of this.events.contents.filter(event => event.recurrenceRule)) {
-      let occurrences = event.recurrenceRule.getOccurrencesByDate(endDate);
-      for (let i = 0; i < occurrences.length; i++) {
-        if (event.instances[i] === undefined) {
-          let occurrence = this.newEvent(event);
-          occurrence.recurrenceStartTime = occurrence.startTime = occurrences[i];
-          occurrence.endTime = new Date(event.endTime.getTime() + occurrence.startTime.getTime() - event.startTime.getTime());
-          if (event.alarm) {
-            occurrence.alarm = new Date(event.alarm.getTime() + occurrence.startTime.getTime() - event.startTime.getTime());
-          }
-          event.instances[i] = occurrence;
-          newOccurrences.push(occurrence);
-        }
-      }
+      event.fillRecurrences(endDate);
     }
-    this.events.addAll(newOccurrences);
     return this.events;
   }
 
