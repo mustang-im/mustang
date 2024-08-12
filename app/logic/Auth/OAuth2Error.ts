@@ -10,6 +10,8 @@ export class OAuth2LoginNeeded extends Error {
 }
 
 export class OAuth2ServerError extends OAuth2Error {
+  code: string;
+  codes: number[];
   details: any;
   consentRequired = false;
   constructor(json: any) {

@@ -8,7 +8,7 @@ import { SpecialFolder } from "../Folder";
 import { assert, SpecificError } from "../../util/util";
 import { notifyChangedProperty } from "../../util/Observable";
 import type { ArrayColl, Collection } from "svelte-collections";
-import type { ImapFlow } from "../../../../e2/node_modules/imapflow";
+import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
 import { appName, appVersion, siteRoot } from "../../build";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 
@@ -232,9 +232,9 @@ export class IMAPAccount extends MailAccount {
     }
   }
 
-  getFolderByPath(path: string): IMAPFolder {
+  getFolderByPath(path: string): IMAPFolder | null {
     // only for casting the type
-    return super.getFolderByPath(path) as IMAPFolder;
+    return super.getFolderByPath(path) as IMAPFolder | null;
   }
 
   async logout(): Promise<void> {

@@ -109,7 +109,7 @@ export class IMAPFolder extends Folder {
 
   /** Lists all messages in this folder.
    * But doesn't download their contents. @see downloadMessages() */
-  async listMessages() {
+  async listMessages(): Promise<ArrayColl<IMAPEMail>>  {
     await this.readFolder();
     if (this.countTotal === 0) {
       return;

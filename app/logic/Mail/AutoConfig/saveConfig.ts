@@ -1,4 +1,4 @@
-import { AuthMethod, type MailAccount } from "../MailAccount";
+import type { AuthMethod, MailAccount } from "../MailAccount";
 import { SQLMailAccount } from "../SQL/SQLMailAccount";
 import { ContactEntry, Person } from "../../Abstract/Person";
 import { Folder, SpecialFolder } from "../../Mail/Folder";

@@ -9,7 +9,7 @@ export class Addressbook extends Account {
   readonly protocol: string = "addressbook-local";
   readonly persons = new ArrayColl<Person>();
   readonly groups = new ArrayColl<Group>();
-  readonly contacts: Collection<Contact> = mergeColl(this.persons, this.groups);
+  readonly contacts: Collection<Contact> = mergeColl(this.persons as Collection<Contact>, this.groups as Collection<Contact>);
   storage: AddressbookStorage | null = null;
   syncState: string | null = null;
 

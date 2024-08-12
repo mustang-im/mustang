@@ -110,7 +110,7 @@ function addCSSRules(output, cssRules) {
 DOMPurify.addHook('uponSanitizeElement', (node, data) => {
   if (data.tagName === 'style') {
     const output = [];
-    addCSSRules(output, node.sheet.cssRules);
+    addCSSRules(output, (node as HTMLStyleElement).sheet.cssRules);
     node.textContent = output.join("\n");
   }
 });
@@ -142,7 +142,7 @@ DOMPurify.addHook('afterSanitizeAttributes', node => {
   }
 
   if (node.hasAttribute('style')) {
-    const styles = node.style;
+    const styles = (node as HTMLElement).style;
     const output = [];
     for (let style of [...styles].reverse()) {
       if (styles[style] && cssURLRegex.test(styles[style])) {
