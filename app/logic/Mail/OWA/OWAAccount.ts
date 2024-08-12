@@ -120,17 +120,16 @@ export class OWAAccount extends MailAccount {
         Content: await blobToBase64(attachment.content),
       }))), "item:Attachments");
     }
-    /* TODO FIXME Send additional headers
-    for (let [header, value] of email.headers.entries()) {
-      request.addField("Message", "ExtendedProperty", {
+    if (email.headers.hasItems) {
+      request.addField("Message", "ExtendedProperty", [...email.headers.entries()].map(([header, value]) => ({
         ExtendedFieldURI: {
           PropertyName: header,
           DistinguishedPropertySetId: "InternetHeaders",
           PropertyType: "String",
         },
         Value: value,
-      }, null);
-    }*/
+      })), null);
+    }
     if (email.inReplyTo) {
       request.addField("Message", "InReplyTo", email.inReplyTo, "item:InReplyTo");
     }
