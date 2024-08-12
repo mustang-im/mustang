@@ -1,4 +1,5 @@
 import { newOAuth2UI, OAuth2UIMethod } from "./OAuth2UIMethod";
+import { generateChallenge, generateVerifier } from "./PKCE";
 import { OAuth2Error, OAuth2LoginNeeded, OAuth2ServerError } from "./OAuth2Error";
 import type { Account } from "../Abstract/Account";
 import { getPassword, setPassword, deletePassword } from "./passwordStore";
@@ -32,6 +33,7 @@ export class OAuth2 extends Observable {
   scope: string;
   clientID = "mail";
   clientSecret: string | null = null;
+  codeVerifier?: string;
   @notifyChangedProperty
   accessToken?: string;
   @notifyChangedProperty
@@ -222,18 +224,31 @@ export class OAuth2 extends Observable {
     return this.accessToken;
   }
 
-  getAuthURL(doneURL?: URLString): URLString {
-    this.verificationToken = Math.random().toString().slice(2);
+  async getAuthURL(doneURL?: URLString): Promise<URLString> {
     this.authDoneURL = doneURL ?? this.authDoneURL; // needed for getAccessTokenFromAuthCode()
-    return this.authURL + "?" + new URLSearchParams({
+    let params = new URLSearchParams({
       client_id: this.clientID,
       response_type: "code",
       redirect_uri: doneURL ?? this.authDoneURL,
-      response_mode: "query",
       scope: this.scope,
-      state: this.verificationToken,
-      login_hint: this.account.username,
     });
+
+    if (this.clientSecret) {
+      this.verificationToken = Math.random().toString().slice(2);
+      params.append("response_mode", "query");
+      params.append("state", this.verificationToken);
+      params.append("login_hint", this.account.username);
+    } else {
+      try {
+        this.codeVerifier = generateVerifier();
+        params.append("code_challenge", await generateChallenge(this.codeVerifier));
+        params.append("code_challenge_method", "S256");
+      } catch (ex) {
+        console.error(ex);
+      }
+    }
+
+    return this.authURL + "?" + params;
   }
 
   /** Helper for auth Done URL */
