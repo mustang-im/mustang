@@ -105,9 +105,11 @@ export class IMAPFolder extends Folder {
     let { newMessages } = await this.fetchMessageList({ all: true }, {
         changedSince: this.lastModSeq,
       });
+    let newMsgsLocal = new ArrayColl<IMAPEMail>(newMessages.subtract(this.messages as ArrayColl<IMAPEMail>));
     this.messages.addAll(newMessages); // notify only once
     await SQLFolder.saveProperties(this);
     // Should save msgs to SQL DB, but often no `subject`, which violates the DB schema
+    return newMsgsLocal;
   }
 
   /** Lists new messages, based on the UID being higher.

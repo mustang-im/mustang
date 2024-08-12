@@ -96,8 +96,8 @@ export class OWAFolder extends Folder {
       return new ArrayColl<OWAEMail>();
     }
 
-    let allMsgs: ArrayColl<OWAEMail> = new ArrayColl();
-    let newMsgs: ArrayColl<OWAEMail> = new ArrayColl();
+    let allMsgs = new ArrayColl<OWAEMail>();
+    let newMsgs = new ArrayColl<OWAEMail>();
     let request = {
       __type: "FindItemJsonRequest:#Exchange",
       Header: {

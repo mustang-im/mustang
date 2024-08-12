@@ -77,6 +77,7 @@ export class EWSFolder extends Folder {
         m$MaxChangesReturned: kMaxCount,
       }
     };
+    let newMsgs = new ArrayColl<EWSEMail>();
     let result: any = { IncludesLastItemInRange: "false" };
     while (result.IncludesLastItemInRange === "false") {
       try {
@@ -96,13 +97,14 @@ export class EWSFolder extends Folder {
         this.forEachSyncChange(result.Changes.Update, this.processSyncUpdate, false),
         this.forEachSyncChange(result.Changes.Create, this.processSyncUpdate, false),
       ])).flat();
-      let newMsgs = await this.getNewMessageHeaders(newMessageIDs);
-      this.messages.addAll(newMsgs);
+      let newMsgsInIteration = await this.getNewMessageHeaders(newMessageIDs);
+      this.messages.addAll(newMsgsInIteration);
+      newMsgs.addAll(newMsgsInIteration);
       await this.forEachSyncChange(result.Changes.Delete, this.processSyncDelete, true);
       this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
       await SQLFolder.save(this);
-      return newMsgs;
     }
+    return newMsgs;
   }
 
   protected async forEachSyncChange(changes: any[], eachCallback, isDirectList: boolean): Promise<any[]> {
@@ -140,8 +142,8 @@ export class EWSFolder extends Folder {
    * Assumes previously known messages have already been loaded from the DB.
    * @returns the new messages */
   async listAllMessages(): Promise<ArrayColl<EWSEMail>> {
-    let allMsgs: ArrayColl<EWSEMail> = new ArrayColl();
-    let newMsgs: ArrayColl<EWSEMail> = new ArrayColl();
+    let allMsgs = new ArrayColl<EWSEMail>();
+    let newMsgs = new ArrayColl<EWSEMail>();
     let request = {
       m$FindItem: {
         m$ItemShape: {
