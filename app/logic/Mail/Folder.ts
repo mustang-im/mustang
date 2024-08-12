@@ -1,6 +1,7 @@
 import { EMail } from "./EMail";
 import type { MailAccount } from "./MailAccount";
 import type { TreeItem } from "../../frontend/Shared/FastTree";
+import { SQLEMail } from "./SQL/SQLEMail";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, Collection } from 'svelte-collections';
 import { assert, AbstractFunction } from "../util/util";
@@ -45,6 +46,18 @@ export class Folder extends Observable implements TreeItem<Folder> {
 
   get orderPos(): string {
     return this.specialFolder ? "   " + specialFolderOrder.indexOf(this.specialFolder) : this.name;
+  }
+
+  protected async readFolder() {
+    if (!this.dbID) {
+      await this.save();
+    }
+    if (!this.messages.hasItems) {
+      let log = "Reading msgs from DB, for folder " + this.account.name + " " + this.path;
+      console.time(log);
+      await SQLEMail.readAll(this);
+      console.timeEnd(log);
+    }
   }
 
   /** Gets the metadata of the emails in this folder.

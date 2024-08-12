@@ -90,11 +90,7 @@ export class OWAFolder extends Folder {
   }
 
   async listMessages(): Promise<ArrayColl<OWAEMail>> {
-    if (!this.dbID) {
-      await SQLFolder.save(this);
-    }
-    await SQLEMail.readAll(this);
-
+    await this.readFolder();
     if (!await this.folderCountsChanged()) {
       // Avoid unnecessarily rereading the message list.
       return new ArrayColl<OWAEMail>();

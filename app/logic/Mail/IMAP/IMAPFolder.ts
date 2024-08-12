@@ -95,18 +95,6 @@ export class IMAPFolder extends Folder {
     }
   }
 
-  protected async readFolder() {
-    if (!this.dbID) {
-      await this.save();
-    }
-    if (!this.messages.hasItems) {
-      console.log(this.name, "Start reading msgs from DB");
-      console.time(this.path);
-      await SQLEMail.readAll(this);
-      console.timeEnd(this.path);
-    }
-  }
-
   /** Lists all messages in this folder.
    * But doesn't download their contents. @see downloadMessages() */
   async listMessages(): Promise<ArrayColl<IMAPEMail>>  {

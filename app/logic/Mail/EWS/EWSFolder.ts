@@ -42,11 +42,7 @@ export class EWSFolder extends Folder {
   }
 
   async listMessages(): Promise<ArrayColl<EWSEMail>> {
-    if (!this.dbID) {
-      await SQLFolder.save(this);
-    }
-    await SQLEMail.readAll(this);
-
+    await this.readFolder();
     return this.updateChangedMessages();
   }
 
