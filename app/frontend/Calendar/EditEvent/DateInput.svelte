@@ -1,10 +1,16 @@
-<input type="date" required min={toHTMLString(min)} nax={toHTMLString(max)} bind:value on:change={onChange} on:change />
+<input type="date"
+  required
+  min={toHTMLString(min)} max={toHTMLString(max)}
+  bind:value
+  on:change={onChange}
+  on:change
+  />
 
 <script lang="ts">
   export let date: Date = new Date();
   export let min: Date | null = null;
   export let max: Date | null = null;
-  let value, minstr, maxstr;
+  let value: string;
 
   $: updateValue(date);
   function updateValue(date: Date) {
@@ -20,7 +26,7 @@
 
   function onChange() {
     let [fullYear, month, day] = value.split("-");
-    date.setFullYear(fullYear, month - 1, day);
+    date.setFullYear(parseInt(fullYear), parseInt(month) - 1, parseInt(day));
     date = date;
   }
 </script>
