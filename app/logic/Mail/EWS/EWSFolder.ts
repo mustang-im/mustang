@@ -194,13 +194,14 @@ export class EWSFolder extends Folder {
           newMessageIDs.push(message.ItemId);
         }
       }
-      newMsgs = await this.getNewMessageHeaders(newMessageIDs);
-      allMsgs.addAll(newMsgs);
+      let newMsgsInIteration = await this.getNewMessageHeaders(newMessageIDs);
+      newMsgs.addAll(newMsgsInIteration);
     }
 
     for (let email of this.messages.subtract(allMsgs)) {
       SQLEMail.deleteIt(email);
     }
+    allMsgs.addAll(newMsgs);
     this.messages.replaceAll(allMsgs);
     return newMsgs;
   }
