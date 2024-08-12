@@ -371,6 +371,7 @@ export class SQLEMail {
         isRead, isStarred, isReplied, isDraft, isSpam
       FROM email
       WHERE folderID = ${folder.dbID}
+      ORDER BY dateReceived DESC
       $${limit ? sql` LIMIT ${limit} ` : sql``}
       $${startWith ? sql` OFFSET ${startWith} ` : sql``}
     `) as any;
