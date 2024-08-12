@@ -33,7 +33,7 @@
   function setEnd() {
     end = new Date(start);
     end.setHours(end.getHours() + intervalInHours);
-    displayEvents = events.filter(ev => ev.startTime >= start && ev.endTime < end);
+    displayEvents = events.filter(ev => ev.startTime >= start && ev.startTime < end);
   }
 </script>
 
