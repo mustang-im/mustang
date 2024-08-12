@@ -3,8 +3,8 @@
   * Thunderbird AB import all fields
   * OAuth2
     * Google approval
-    * Yahoo registration
-    * Microsoft - Partner support
+    * Yahoo: PCKE
+    * Microsoft: Client ID for public
   * IMAP poll?
   * Paragraph display with empty line
   * Msg list: Folder move dropdown
@@ -15,17 +15,15 @@
   * Bug: Persons view: disable until bug fixed
   * No folders -> [Get Mail] button disabled -> Can never login
   * Calendar
-    * Change Date
-    * Delete Event
+    * Edit event UI
     * Move to other calendar
-  * Move messages to deep subfolders
-    * Drag&Drop: Open on drag over
-    * Popup dialog
   * Inline images send
   * Context menu for content: Copy text, link, image
+  * FastTree
+    * Drag&Drop: Open on drag over - for: Move messages to deep subfolders
+  * Move messages to other accounts
   * Folders appear twice
   * Attachments appear twice
-  * Move messages to other accounts
   * Main window
     * Save window size
   * Threads
