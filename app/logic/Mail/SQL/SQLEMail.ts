@@ -350,7 +350,16 @@ export class SQLEMail {
     email.needToLoadBody = text == null && html == null;
   }
 
-  static async readAll(folder: Folder): Promise<void> {
+  /**
+   * @param limit Max number of results (optional, default all)
+   * @param startWith Do not return the first `startWith` results (optional, default all)
+   *
+   * Adds the new emails to the folder, and updates existing emails.
+   */
+  static async readAll(folder: Folder, limit?: number, startWith?: number): Promise<void> {
+    if (startWith && !limit) {
+      limit = -1;
+    }
     // <copied from="read()" />
     let emailRows = await (await getDatabase()).all(sql`
       SELECT
@@ -362,6 +371,8 @@ export class SQLEMail {
         isRead, isStarred, isReplied, isDraft, isSpam
       FROM email
       WHERE folderID = ${folder.dbID}
+      $${limit ? sql` LIMIT ${limit} ` : sql``}
+      $${startWith ? sql` OFFSET ${startWith} ` : sql``}
     `) as any;
     //console.time("sql read emails");
     // plaintext, html, -- 10x slower, so do this later or on demand

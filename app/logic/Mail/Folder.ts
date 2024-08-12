@@ -54,8 +54,11 @@ export class Folder extends Observable implements TreeItem<Folder> {
     }
     if (!this.messages.hasItems) {
       let log = "Reading msgs from DB, for folder " + this.account.name + " " + this.path;
+      console.time(log + " first 200");
+      await SQLEMail.readAll(this, 200);
+      console.timeEnd(log + " first 200");
       console.time(log);
-      await SQLEMail.readAll(this);
+      await SQLEMail.readAll(this, null, 200);
       console.timeEnd(log);
     }
   }
