@@ -189,7 +189,7 @@ export class OAuth2 extends Observable {
     let response = await appGlobal.remoteApp.postHTTP(tokenURL, params, "json", {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'text/json',
+        'Accept': 'application/json',
         ...additionalHeaders,
       },
       timeout: 3000,
