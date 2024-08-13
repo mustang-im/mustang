@@ -1,5 +1,5 @@
 import { newOAuth2UI, OAuth2UIMethod } from "./OAuth2UIMethod";
-import { generateChallenge, generateVerifier } from "./PKCE";
+import pkceChallenge from "pkce-challenge";
 import { OAuth2Error, OAuth2LoginNeeded, OAuth2ServerError } from "./OAuth2Error";
 import type { Account } from "../Abstract/Account";
 import { getPassword, setPassword, deletePassword } from "./passwordStore";
@@ -251,8 +251,9 @@ export class OAuth2 extends Observable {
       params.append("login_hint", this.account.username);
     } else {
       try {
-        this.codeVerifier = generateVerifier();
-        params.append("code_challenge", await generateChallenge(this.codeVerifier));
+        const pkce = await pkceChallenge();
+        this.codeVerifier = pkce.code_verifier;
+        params.append("code_challenge", pkce.code_challenge);
         params.append("code_challenge_method", "S256");
       } catch (ex) {
         console.error(ex);
