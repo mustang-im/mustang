@@ -184,16 +184,27 @@ export class OAuth2 extends Observable {
    * @throws OAuth2Error
    */
   protected async getAccessTokenFromParams(params: any, additionalHeaders?: any, tokenURL: string | void = this.tokenURL): Promise<string> {
-    params.scope = this.scope;
     params.client_id = this.clientID;
-    params.client_secret = this.clientSecret || undefined;
+    
+    if (this.clientSecret) {
+      params.client_secret = this.clientSecret;
+      params.scope = this.scope;
+    } else {
+      params.code_verifier = this.codeVerifier;
+    }
+
+    let headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Accept': 'application/json',
+      ...additionalHeaders,
+    }
+
+    if (!this.clientSecret) {
+      headers.Authorization = `Basic ${btoa(this.clientID + ":")}`;
+    }
 
     let response = await appGlobal.remoteApp.postHTTP(tokenURL, params, "json", {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'text/json',
-        ...additionalHeaders,
-      },
+      headers,
       timeout: 3000,
       throwHttpErrors: false,
     });
