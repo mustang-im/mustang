@@ -34,7 +34,7 @@ export class OAuth2 extends Observable {
   scope: string;
   clientID = "mail";
   clientSecret: string | null = null;
-  doPKCE: boolean;
+  doPKCE = false;
   protected codeVerifierPKCE?: string;
   @notifyChangedProperty
   accessToken?: string;
@@ -49,7 +49,7 @@ export class OAuth2 extends Observable {
   protected expiryTimout: NodeJS.Timeout;
   refreshErrorCallback = (ex: Error) => console.error(ex);
 
-  constructor(account: Account, tokenURL: string, authURL: string, authDoneURL: string | null | undefined, scope: string, clientID: string, clientSecret?: string | null, doPKCE?: boolean) {
+  constructor(account: Account, tokenURL: string, authURL: string, authDoneURL: string | null | undefined, scope: string, clientID: string, clientSecret?: string | null, doPKCE = false) {
     super();
     assert(tokenURL?.startsWith("https://") || tokenURL?.startsWith("http://"), "Need OAuth2 server token URL");
     assert(authURL?.startsWith("https://") || authURL?.startsWith("http://"), "Need OAuth2 login page URL");
@@ -62,7 +62,7 @@ export class OAuth2 extends Observable {
     this.scope = scope;
     this.clientID = clientID;
     this.clientSecret = clientSecret ?? null;
-    this.doPKCE = doPKCE ?? false;
+    this.doPKCE = doPKCE;
   }
 
   setTokenURLPasswordAuth(url: string | null | undefined) {
