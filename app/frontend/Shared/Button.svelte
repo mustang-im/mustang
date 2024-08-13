@@ -68,6 +68,7 @@
     disabled = true;
     try {
       await onClick(event);
+      event.stopPropagation();
     } catch (ex) {
       errorCallback(ex);
     }
