@@ -1,5 +1,4 @@
 import { newOAuth2UI, OAuth2UIMethod } from "./OAuth2UIMethod";
-import pkceChallenge from "pkce-challenge";
 import { OAuth2Error, OAuth2LoginNeeded, OAuth2ServerError } from "./OAuth2Error";
 import type { Account } from "../Abstract/Account";
 import { getPassword, setPassword, deletePassword } from "./passwordStore";
@@ -33,7 +32,6 @@ export class OAuth2 extends Observable {
   scope: string;
   clientID = "mail";
   clientSecret: string | null = null;
-  codeVerifier?: string;
   @notifyChangedProperty
   accessToken?: string;
   @notifyChangedProperty
@@ -184,27 +182,16 @@ export class OAuth2 extends Observable {
    * @throws OAuth2Error
    */
   protected async getAccessTokenFromParams(params: any, additionalHeaders?: any, tokenURL: string | void = this.tokenURL): Promise<string> {
+    params.scope = this.scope;
     params.client_id = this.clientID;
-    
-    if (this.clientSecret) {
-      params.client_secret = this.clientSecret;
-      params.scope = this.scope;
-    } else {
-      assert(!!this.codeVerifier, "Need code verifier");
-      params.code_verifier = this.codeVerifier;
-    }
-
-    let headers = {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Accept': 'application/json',
-      ...additionalHeaders,
-    }
-    if (!this.clientSecret) {
-      headers.Authorization = `Basic ${btoa(this.clientID + ":")}`;
-    }
+    params.client_secret = this.clientSecret || undefined;
 
     let response = await appGlobal.remoteApp.postHTTP(tokenURL, params, "json", {
-      headers,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'text/json',
+        ...additionalHeaders,
+      },
       timeout: 3000,
       throwHttpErrors: false,
     });
@@ -235,43 +222,25 @@ export class OAuth2 extends Observable {
     return this.accessToken;
   }
 
-  async getAuthURL(doneURL?: URLString): Promise<URLString> {
+  getAuthURL(doneURL?: URLString): URLString {
+    this.verificationToken = Math.random().toString().slice(2);
     this.authDoneURL = doneURL ?? this.authDoneURL; // needed for getAccessTokenFromAuthCode()
-    let params = new URLSearchParams({
+    return this.authURL + "?" + new URLSearchParams({
       client_id: this.clientID,
       response_type: "code",
       redirect_uri: doneURL ?? this.authDoneURL,
+      response_mode: "query",
       scope: this.scope,
+      state: this.verificationToken,
+      login_hint: this.account.username,
     });
-
-    if (this.clientSecret) {
-      this.verificationToken = Math.random().toString().slice(2);
-      params.append("response_mode", "query");
-      params.append("state", this.verificationToken);
-      params.append("login_hint", this.account.username);
-    } else {
-      try {
-        const pkce = await pkceChallenge();
-        this.codeVerifier = pkce.code_verifier;
-        params.append("code_challenge", pkce.code_challenge);
-        params.append("code_challenge_method", "S256");
-      } catch (ex) {
-        console.error(ex);
-      }
-    }
-
-    return this.authURL + "?" + params;
   }
 
   /** Helper for auth Done URL */
   isAuthDoneURL(url: URLString): boolean {
     let urlParams = Object.fromEntries(new URL(url).searchParams);
-    if (this.clientSecret) {
-      return url.startsWith(this.authDoneURL) &&
+    return url.startsWith(this.authDoneURL) &&
       this.verificationToken && urlParams.state == this.verificationToken;
-    } else {
-      return url.startsWith(this.authDoneURL) && !!urlParams.code;
-    }
   }
 
   /**
