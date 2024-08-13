@@ -61,15 +61,30 @@
       plain
       />
   </hbox>
+  <hbox class="move button" bind:this={popupAnchor}>
+    <Button
+      icon={FolderActionsIcon}
+      iconSize="16px"
+      iconOnly
+      label={$t`Move to folder`}
+      onClick={onPopupToggle}
+      plain
+      />
+  </hbox>
   <hbox>
     <MessageMenu {message} />
   </hbox>
 </hbox>
+<Popup bind:popupOpen {popupAnchor} placement="bottom" boundaryElSel=".message-list-pane">
+    <MessageMovePopup {message} on:close={onPopupClose} />
+</Popup>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { mailMustangApp } from "../MailMustangApp";
   import MessageMenu from "./MessageMenu.svelte";
+  import MessageMovePopup from "../Message/MessageMovePopup.svelte";
+  import Popup from "../../Shared/Popup.svelte";
   import Button from "../../Shared/Button.svelte";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
@@ -77,6 +92,7 @@
   import ReplyAllIcon from "lucide-svelte/icons/reply-all";
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
+  import FolderActionsIcon from "lucide-svelte/icons/folder-dot";
   import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
@@ -102,6 +118,16 @@
   }
   async function markAsSpam() {
     await message.treatSpam(true);
+  }
+
+  // Folder Popup
+  let popupAnchor: HTMLElement;
+  let popupOpen = false;
+  function onPopupToggle(event) {
+    popupOpen = !popupOpen;
+  }
+  function onPopupClose() {
+    popupOpen = false;
   }
 </script>
 
