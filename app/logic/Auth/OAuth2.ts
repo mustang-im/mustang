@@ -7,6 +7,7 @@ import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { assert, type URLString } from "../util/util";
+import { backgroundError } from "../../frontend/Util/error";
 
 /**
  * Implements login via OAuth2
@@ -252,7 +253,7 @@ export class OAuth2 extends Observable {
         params.append("code_challenge_method", "S256");
       }
     } catch (ex) {
-      console.error(ex);
+      backgroundError(ex);
     }
     return this.authURL + "?" + params;
   }
