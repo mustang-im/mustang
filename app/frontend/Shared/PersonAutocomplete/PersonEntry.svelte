@@ -2,8 +2,8 @@
 <hbox class="person"
   class:selected={popupOpen}
   class:no-pic={!$person.person?.picture}
-  use:popupRef
-  on:click={onClick}>
+  bind:this={popupAnchor}
+  on:click={onPopupToggle}>
   {#if $person.person?.picture}
     <PersonPicture person={$person.person} size={24} />
   {/if}
@@ -11,17 +11,14 @@
     <hbox flex class="name">{$person.name || $person.emailAddress}</hbox>
   </vbox>
 </hbox>
-{#if popupOpen}
-  <vbox class="popup"
-    use:popupContent={popupOptions}>
-    <PersonPopup personUID={person}
-      on:removePerson
-      on:close={onClose}
-      >
-      <slot name="person-popup-buttons" slot="buttons" personUID={person} />
-    </PersonPopup>
-  </vbox>
-{/if}
+<Popup bind:popupOpen {popupAnchor} placement="bottom-start" boundaryElSel=".mail-composer-window">
+  <PersonPopup personUID={person}
+    on:removePerson
+    on:close={onPopupClose}
+    >
+    <slot name="person-popup-buttons" slot="buttons" personUID={person} />
+  </PersonPopup>
+</Popup>
 <vbox class="context-menu" class:open>
   <slot name="context-menu" {person} />
 </vbox>
@@ -30,48 +27,26 @@
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import PersonPopup from "./PersonPopup.svelte";
   import PersonPicture from "../Person/PersonPicture.svelte";
-  import { createPopperActions } from 'svelte-popperjs';
+  import Popup from "../Popup.svelte";
   import { createEventDispatcher } from 'svelte';
   const dispatchEvent = createEventDispatcher<{ focusNext: void }>();
 
   export let person: PersonUID;
 
+  // Popup
   let popupOpen = false;
-  const [popupRef, popupContent] = createPopperActions({
-    placement: 'bottom-start',
-    strategy: 'fixed',
-  });
-  const popupOptions = {
-    modifiers: [
-      {
-        name: 'offset',
-        options: { offset: [0, 4] },
-        preventOverflow: true,
-        allow: true,
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          padding: 8,
-          boundary: document.querySelector('.mail-composer-window'),
-        },
-      },
-      {
-        name: 'hide',
-      },
-    ],
-  };
+  let popupAnchor: HTMLElement;
 
   if ((person as any).openPopup) {
     popupOpen = true;
   }
 
-  function onClick(event: MouseEvent) {
+  function onPopupToggle(event: MouseEvent) {
     popupOpen = !popupOpen;
     event.stopPropagation();
   }
 
-  function onClose() {
+  function onPopupClose() {
     popupOpen = false;
     dispatchEvent("focusNext");
   }

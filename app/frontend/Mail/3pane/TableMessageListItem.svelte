@@ -32,6 +32,16 @@
 <hbox class="subject" class:unread={!$message.isRead} draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}>{$message.subject}</hbox>
 <hbox class="date" class:unread={!$message.isRead} draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}>{getDateString($message.sent)}</hbox>
 <hbox class="buttons hover">
+  <hbox class="move button" bind:this={popupAnchor}>
+    <Button
+      icon={FolderActionsIcon}
+      iconSize="16px"
+      iconOnly
+      label={$t`Move or delete`}
+      onClick={onPopupToggle}
+      plain
+      />
+  </hbox>
   <hbox class="spam button">
     <Button
       icon={SpamIcon}
@@ -53,11 +63,16 @@
       />
   </hbox>
 </hbox>
+<Popup bind:popupOpen {popupAnchor} placement="bottom" boundaryElSel=".message-list-pane">
+    <MessageMovePopup {message} on:close={onPopupClose} />
+</Popup>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { onDragStartMail } from "../Message/drag";
+  import MessageMovePopup from "../Message/MessageMovePopup.svelte";
+  import Popup from "../../Shared/Popup.svelte";
   import Button from "../../Shared/Button.svelte";
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
   import StarIcon from "lucide-svelte/icons/star";
@@ -65,6 +80,7 @@
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
+  import FolderActionsIcon from "lucide-svelte/icons/folder-dot";
   import { getDateString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
@@ -84,6 +100,16 @@
   }
   async function markAsSpam() {
     await message.treatSpam(true);
+  }
+
+  // Popup
+  let popupAnchor: HTMLElement;
+  let popupOpen = false;
+  function onPopupToggle(event) {
+    popupOpen = !popupOpen;
+  }
+  function onPopupClose() {
+    popupOpen = false;
   }
 </script>
 
