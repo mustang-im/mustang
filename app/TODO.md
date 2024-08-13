@@ -6,7 +6,6 @@
     * Yahoo: PCKE
     * Microsoft: Client ID for public
   * IMAP poll?
-  * Paragraph display with empty line
   * Msg list: Folder move dropdown
     * Delete and Spam
     * Move to folder
