@@ -10,7 +10,6 @@
   <T msg={`${appName} is built using the following #. We sincerely thank those authors and contributors.`}>
     <a href="https://github.com/mustang-im/mustang/raw/master/app/public/attribution.txt.gz">{$t`Open-Source components`}</a>
   </T>
-  {appName}
 </div>
 
 <iframe src="public/attribution.txt.gz" title="Licenses" sandbox="" />
