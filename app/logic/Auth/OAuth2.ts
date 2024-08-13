@@ -1,5 +1,6 @@
 import { newOAuth2UI, OAuth2UIMethod } from "./OAuth2UIMethod";
 import { OAuth2Error, OAuth2LoginNeeded, OAuth2ServerError } from "./OAuth2Error";
+import pkceChallenge from "pkce-challenge";
 import type { Account } from "../Abstract/Account";
 import { getPassword, setPassword, deletePassword } from "./passwordStore";
 import { appGlobal } from "../app";
@@ -32,6 +33,8 @@ export class OAuth2 extends Observable {
   scope: string;
   clientID = "mail";
   clientSecret: string | null = null;
+  doPKCE: boolean;
+  protected codeVerifierPKCE?: string;
   @notifyChangedProperty
   accessToken?: string;
   @notifyChangedProperty
@@ -45,7 +48,7 @@ export class OAuth2 extends Observable {
   protected expiryTimout: NodeJS.Timeout;
   refreshErrorCallback = (ex: Error) => console.error(ex);
 
-  constructor(account: Account, tokenURL: string, authURL: string, authDoneURL: string | null | undefined, scope: string, clientID: string, clientSecret?: string | null) {
+  constructor(account: Account, tokenURL: string, authURL: string, authDoneURL: string | null | undefined, scope: string, clientID: string, clientSecret?: string | null, doPKCE?: boolean) {
     super();
     assert(tokenURL?.startsWith("https://") || tokenURL?.startsWith("http://"), "Need OAuth2 server token URL");
     assert(authURL?.startsWith("https://") || authURL?.startsWith("http://"), "Need OAuth2 login page URL");
@@ -58,6 +61,7 @@ export class OAuth2 extends Observable {
     this.scope = scope;
     this.clientID = clientID;
     this.clientSecret = clientSecret ?? null;
+    this.doPKCE = doPKCE ?? false;
   }
 
   setTokenURLPasswordAuth(url: string | null | undefined) {
@@ -185,11 +189,16 @@ export class OAuth2 extends Observable {
     params.scope = this.scope;
     params.client_id = this.clientID;
     params.client_secret = this.clientSecret || undefined;
+    
+    if (this.doPKCE) {
+      assert(!!this.codeVerifierPKCE, "Missing code verifier");
+      params.code_verifier = this.codeVerifierPKCE;
+    }
 
     let response = await appGlobal.remoteApp.postHTTP(tokenURL, params, "json", {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'text/json',
+        'Accept': 'application/json',
         ...additionalHeaders,
       },
       timeout: 3000,
@@ -222,10 +231,10 @@ export class OAuth2 extends Observable {
     return this.accessToken;
   }
 
-  getAuthURL(doneURL?: URLString): URLString {
+  async getAuthURL(doneURL?: URLString): Promise<URLString> {
     this.verificationToken = Math.random().toString().slice(2);
     this.authDoneURL = doneURL ?? this.authDoneURL; // needed for getAccessTokenFromAuthCode()
-    return this.authURL + "?" + new URLSearchParams({
+    let params = new URLSearchParams({
       client_id: this.clientID,
       response_type: "code",
       redirect_uri: doneURL ?? this.authDoneURL,
@@ -234,6 +243,18 @@ export class OAuth2 extends Observable {
       state: this.verificationToken,
       login_hint: this.account.username,
     });
+
+    try {
+      if (this.doPKCE) {
+        const pkce = await pkceChallenge();
+        this.codeVerifierPKCE = pkce.code_verifier;
+        params.append("code_challenge", pkce.code_challenge);
+        params.append("code_challenge_method", "S256");
+      }
+    } catch (ex) {
+      console.error(ex);
+    }
+    return this.authURL + "?" + params;
   }
 
   /** Helper for auth Done URL */
