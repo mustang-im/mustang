@@ -19,7 +19,7 @@ export class OAuth2Dialog extends OAuth2UI {
    * @throws OAuth2Error
    */
   async login(): Promise<string> {
-    this.startURL = this.oAuth2.getAuthURL();
+    this.startURL = await this.oAuth2.getAuthURL();
     // console.log("OAuth2 start url", dialog.startURL);
     oAuth2DialogOpen.add(this);
     return new Promise((resolve, reject) => {
