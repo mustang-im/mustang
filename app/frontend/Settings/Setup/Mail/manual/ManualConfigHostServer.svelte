@@ -185,7 +185,7 @@
     } else if (config.authMethod == AuthMethod.OAuth2) {
       let oAuth = OAuth2URLs.find(o => o.hostnames.some(h => h == config.hostname));
       if (oAuth) {
-        config.oAuth2 = new OAuth2(config, oAuth.tokenURL, oAuth.authURL, oAuth.authDoneURL, oAuth.scope, oAuth.clientID, oAuth.clientSecret);
+        config.oAuth2 = new OAuth2(config, oAuth.tokenURL, oAuth.authURL, oAuth.authDoneURL, oAuth.scope, oAuth.clientID, oAuth.clientSecret, oAuth.doPKCE);
       }
     } else {
       authError = null;
