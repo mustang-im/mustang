@@ -8,11 +8,13 @@
       />
     <Button plain
       label={$t`Spam`}
+      tooltip={$t`Treat this email as spam: Move it to the Spam folder, and train the spam filter`}
       onClick={onSpam}
       icon={SpamIcon}
       />
     <Button plain
       label={$t`Archive`}
+      tooltip={$t`Move this email to the archive folder`}
       onClick={onArchive}
       icon={ArchiveIcon}
       iconOnly
@@ -32,6 +34,7 @@
     <hbox flex />
     <Button plain
       label={$t`Copy`}
+      tooltip={$t`Copy this email to folder ${selectedFolder.name}`}
       onClick={onCopy}
       icon={CopyIcon}
       iconOnly
@@ -39,6 +42,7 @@
       />
     <Button plain
       label={$t`Move`}
+      tooltip={$t`Move this email to folder ${selectedFolder.name}`}
       onClick={onMove}
       icon={MoveIcon}
       disabled={selectedFolder == message.folder}

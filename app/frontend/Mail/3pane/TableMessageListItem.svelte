@@ -37,7 +37,7 @@
       icon={FolderActionsIcon}
       iconSize="16px"
       iconOnly
-      label={$t`Move or delete`}
+      label={$t`Move to folder`}
       onClick={onPopupToggle}
       plain
       />
@@ -47,7 +47,8 @@
       icon={SpamIcon}
       iconSize="16px"
       iconOnly
-      label={$t`Mark as spam and delete`}
+      label={$t`Mark as spam`}
+      tooltip={$t`Treat this email as spam: Move it to the Spam folder, and train the spam filter`}
       onClick={markAsSpam}
       plain
       />

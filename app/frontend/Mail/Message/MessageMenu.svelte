@@ -32,7 +32,7 @@
   <Menu.Item
     on:click={() => catchErrors(() => markAsSpam())}
     color="red"
-    title={$t`Delete the message, and train the spam filter`}
+    title={$t`Treat this email as spam: Move it to the Spam folder, and train the spam filter`}
     icon={SpamIcon}>
     {$t`Mark as spam`}
   </Menu.Item>
