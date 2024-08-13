@@ -106,7 +106,7 @@ export class EMail extends Message {
     } else if (spam && strategy == DeleteStrategy.MoveToTrash) {
       let spam = this.folder.account.getSpecialFolder(SpecialFolder.Spam);
       assert(spam, gt`Spam folder is not set. Please go to folder properties and set Use As: Spam.`);
-      spam.moveMessagesHere(new ArrayColl<EMail>([this as any as EMail]));
+      spam.moveMessageHere(this);
     }
   }
 
@@ -121,6 +121,16 @@ export class EMail extends Message {
 
   async markDraft() {
     this.isDraft = true;
+  }
+
+  async moveToArchive() {
+    let account = this.folder.account;
+    let archive = account.getSpecialFolder(SpecialFolder.Archive);
+    if (!archive) {
+      archive = await account.inbox.createSubFolder(gt(`Archive`));
+      archive.specialFolder = SpecialFolder.Archive; // TODO set on server
+    }
+    archive.moveMessageHere(this);
   }
 
   async deleteMessage() {

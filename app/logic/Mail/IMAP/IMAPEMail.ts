@@ -141,7 +141,7 @@ export class IMAPEMail extends EMail {
       } else if (strategy == DeleteStrategy.MoveToTrash) {
         let trash = this.folder.account.getSpecialFolder(SpecialFolder.Trash);
         assert(trash, gt`Trash folder is not set. Cannot delete the email. Please go to folder properties and set Use As: Trash.`);
-        trash.moveMessagesHere(new ArrayColl<EMail>([this as any as EMail]));
+        trash.moveMessageHere(this);
       } else if (strategy == DeleteStrategy.Flag) {
         await this.setFlagServer("\\Deleted", true);
       } else {

@@ -2,6 +2,7 @@
 <vbox class="message"
   class:unread={!$message.isRead}
   draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
+  use:popupRef
   >
   <hbox class="top-row">
     <hbox class="direction">
@@ -19,7 +20,7 @@
           icon={SpamIcon}
           iconSize="16px"
           iconOnly
-          label="Mark as spam and delete"
+          label={$t`Mark as spam and delete`}
           onClick={markAsSpam}
           plain
           />
@@ -29,7 +30,7 @@
           icon={DeleteIcon}
           iconSize="16px"
           iconOnly
-          label="Delete this message"
+          label={$t`Delete this message`}
           onClick={deleteMessage}
           plain
           />
@@ -40,6 +41,16 @@
   <hbox class="bottom-row">
     <hbox class="subject">{$message.subject}</hbox>
     <hbox flex />
+    <hbox class="move button">
+      <Button
+        icon={MoreActionsIcon}
+        iconSize="16px"
+        iconOnly
+        label={$t`Move or delete`}
+        onClick={onPopupToggle}
+        plain
+        />
+    </hbox>
     <hbox class="attachments">
       {#if $attachments.hasItems}
         <AttachmentIcon size="14px" />
@@ -67,21 +78,32 @@
     </hbox>
   </hbox>
 </vbox>
+{#if popupOpen}
+  <vbox class="popup"
+    use:popupContent={popupOptions}>
+    <MessageMovePopup {message}
+      on:close={onPopupClose}
+      />
+  </vbox>
+{/if}
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { onDragStartMail } from "../Message/drag";
+  import MessageMovePopup from "../Message/MessageMovePopup.svelte";
   import Button from "../../Shared/Button.svelte";
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
+  import MoreActionsIcon from "lucide-svelte/icons/circle-dot";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
   import { getDateString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
+  import { createPopperActions } from "svelte-popperjs";
 
   export let message: EMail;
 
@@ -99,6 +121,41 @@
   }
   async function markAsSpam() {
     await message.treatSpam(true);
+  }
+
+  // Popup
+
+  let popupOpen = false;
+  const [popupRef, popupContent] = createPopperActions({
+    placement: 'bottom-end',
+    strategy: 'fixed',
+  });
+  const popupOptions = {
+    modifiers: [
+      {
+        name: 'offset',
+        options: { offset: [0, 4] },
+        preventOverflow: true,
+        allow: true,
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          padding: 8,
+          boundary: document.querySelector('.message-list-pane'),
+        },
+      },
+      {
+        name: 'hide',
+      },
+    ],
+  };
+
+  function onPopupToggle(event) {
+    popupOpen = !popupOpen;
+  }
+  function onPopupClose() {
+    popupOpen = false;
   }
 </script>
 
@@ -196,4 +253,21 @@
     fill: green;
   }
   /* </copied> */
+  .move.button {
+    margin-inline-end: 8px;
+  }
+  .move.button :global(svg) {
+    stroke-width: 1px;
+  }
+  :global(.row:not(:hover)) .move.button {
+    display: none;
+  }
+  .popup {
+    z-index: 100;
+    background-color: unset;
+    padding: 0;
+    border-radius: 5px;
+    margin: 5px;
+    box-shadow: 2.281px 1.14px 9.123px 0px rgba(var(--shadow-color), 10%);
+  }
 </style>

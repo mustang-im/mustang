@@ -109,6 +109,14 @@ export class Folder extends Observable implements TreeItem<Folder> {
     this.messages.add(email);
   }
 
+  async moveMessageHere(message: EMail) {
+    await this.moveMessagesHere(new ArrayColl([message]));
+  }
+
+  async copyMessageHere(message: EMail) {
+    await this.copyMessagesHere(new ArrayColl([message]));
+  }
+
   async moveMessagesHere(messages: Collection<EMail>) {
     let sourceFolder = messages.first.folder;
     assert(sourceFolder, "Need source folder");

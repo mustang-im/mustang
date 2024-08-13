@@ -6,10 +6,6 @@
     * Yahoo: PCKE
     * Microsoft: Client ID for public
   * IMAP poll?
-  * Msg list: Folder move dropdown
-    * Delete and Spam
-    * Move to folder
-    * Tags
   * Import: Polish UI style
   * Bug: Persons view: disable until bug fixed
   * No folders -> [Get Mail] button disabled -> Can never login
