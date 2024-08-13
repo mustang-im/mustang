@@ -190,6 +190,7 @@ export class OAuth2 extends Observable {
       params.client_secret = this.clientSecret;
       params.scope = this.scope;
     } else {
+      assert(!!this.codeVerifier, "Need code verifier");
       params.code_verifier = this.codeVerifier;
     }
 
@@ -198,7 +199,6 @@ export class OAuth2 extends Observable {
       'Accept': 'application/json',
       ...additionalHeaders,
     }
-
     if (!this.clientSecret) {
       headers.Authorization = `Basic ${btoa(this.clientID + ":")}`;
     }
