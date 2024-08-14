@@ -6,16 +6,38 @@
     <hbox class="subtitle">{$t`Mark your messages, to create your custom workflows`}</hbox>
 
     <vbox class="tags">
-      <TagSelector tags={availableTags} canAdd={true} canDelete={true} />
+      <TagSelector tags={availableTags} canAdd={true}>
+        <RoundButton
+          slot="tag-button"
+          let:tag
+          label={$t`Remove`}
+          onClick={() => onRemove(tag)}
+          icon={DeleteIcon}
+          classes="small remove"
+          iconSize="12px"
+          padding="0px"
+          border={false}
+          />
+      </TagSelector>
     </vbox>
   </HeaderGroupBox>
 </vbox>
 
 <script lang="ts">
-  import { availableTags } from "../../../logic/Mail/Tag";
+  import { Tag, availableTags } from "../../../logic/Mail/Tag";
   import TagSelector from "../../Mail/Tag/TagSelector.svelte";
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
+  import RoundButton from "../../Shared/RoundButton.svelte";
+  import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { t } from "../../../l10n/l10n";
+
+  function onRemove(tag: Tag) {
+    if (!confirm($t`Do you want to delete this tag entirely?`)) {
+      return;
+    }
+
+    availableTags.remove(tag);
+  }
 </script>
 
 <style>

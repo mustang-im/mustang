@@ -38,7 +38,19 @@
       <hbox>
         {#if $tags.hasItems}
           <hbox class="tags">
-            <TagSelector tags={$tags} canAdd={false} canDelete={false} />
+            <TagSelector tags={$tags} canAdd={false}>
+              <RoundButton
+                slot="tag-button"
+                let:tag
+                label={$t`Remove`}
+                onClick={() => onTagRemove(tag)}
+                icon={RemoveIcon}
+                classes="small remove"
+                iconSize="12px"
+                padding="0px"
+                border={false}
+                />
+            </TagSelector>
           </hbox>
         {/if}
         <value class="date" title={$message.sent?.toLocaleString(getUILocale())}>
@@ -62,12 +74,15 @@
   import { Person } from "../../../logic/Abstract/Person";
   import type { PersonOrGroup } from "../../Shared/Person/PersonOrGroup";
   import { selectedPerson } from "../../Shared/Person/Selected";
+  import type { Tag } from "../../../logic/Mail/Tag";
   import MessageToolbar from "./MessageToolbar.svelte";
   import RecipientList from "./RecipientList.svelte";
   import Recipient from "./Recipient.svelte";
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
   import DisplayModeSwitcher from "./DisplayModeSwitcher.svelte";
   import TagSelector from "../Tag/TagSelector.svelte";
+  import RoundButton from "../../Shared/RoundButton.svelte";
+  import RemoveIcon from "lucide-svelte/icons/x";
   import { getLocalStorage } from "../../Util/LocalStorage";
   import { catchErrors, backgroundError } from "../../Util/error";
   import { getDateString } from "../../Util/date";
@@ -109,6 +124,10 @@
       return;
     }
     $selectedPerson = contact;
+  }
+
+  function onTagRemove(tag: Tag) {
+    tags.remove(tag);
   }
 </script>
 

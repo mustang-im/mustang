@@ -2,11 +2,11 @@
   <hbox class="tag-list">
     {#each $tags.each as tag}
       <TagBubble {tag}
-        selected={selectedTags ? $selectedTags.contains(tag) : undefined}
-        on:remove={(event) => catchErrors(() => onRemove(event.detail))}
+        selected={$selectedTags ? $selectedTags.contains(tag) : undefined}
         on:click={() => catchErrors(() => onSelectToggle(tag))}
-        {canDelete}
-        />
+        >
+        <slot name="tag-button" slot="tag-button" {tag} />
+      </TagBubble>
     {/each}
 
     {#if canAdd && !isAdding}
@@ -44,9 +44,7 @@
 
   export let tags: SetColl<Tag>;
   export let selectedTags: SetColl<Tag> = undefined;
-  export let confirmDelete = tags == availableTags;
   export let canAdd = true;
-  export let canDelete = false;
 
   function onSelectToggle(tag: Tag) {
     if (!selectedTags) {
@@ -71,15 +69,6 @@
     tags.add(tag);
     await saveTagsList();
     isAdding = false;
-  }
-
-  function onRemove(tag: Tag) {
-    if (confirmDelete &&
-        !confirm($t`Do you want to delete this tag entirely?`)) {
-      return;
-    }
-
-    tags.remove(tag);
   }
 </script>
 

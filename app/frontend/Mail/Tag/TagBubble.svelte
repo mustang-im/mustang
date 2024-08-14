@@ -7,34 +7,16 @@
   >
   {$tag.name}
 
-  {#if canDelete}
-    <RoundButton
-      label={$t`Remove`}
-      onClick={onRemove}
-      icon={DeleteIcon}
-      classes="small remove"
-      iconSize="12px"
-      padding="0px"
-      border={false}
-      />
-  {/if}
+  <hbox class="buttons-right">
+    <slot name="tag-button" {tag} />
+  </hbox>
 </hbox>
 
 <script lang="ts">
   import type { Tag } from "../../../logic/Mail/Tag";
-  import RoundButton from "../../Shared/RoundButton.svelte";
-  import DeleteIcon from "lucide-svelte/icons/trash-2";
-  import { t } from "../../../l10n/l10n";
-  import { createEventDispatcher } from "svelte";
-  const dispatch = createEventDispatcher<{ remove: Tag }>();
 
   export let tag: Tag;
   export let selected: boolean | undefined = undefined;
-  export let canDelete = false;
-
-  function onRemove() {
-    dispatch("remove", tag);
-  }
 </script>
 
 <style>
@@ -59,7 +41,7 @@
   .tag.selected {
     border: 1px solid var(--button-border);
   }
-  .tag :global(.button.remove) {
+  .buttons-right :global(button) {
     margin-inline-start: -8px;
     margin-inline-end: -6px;
   }
