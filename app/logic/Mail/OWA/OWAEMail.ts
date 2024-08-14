@@ -1,5 +1,6 @@
 import { EMail } from "../EMail";
 import type { OWAFolder } from "./OWAFolder";
+import type { Tag } from "../Tag";
 import OWADeleteItemRequest from "./OWADeleteItemRequest";
 import OWAUpdateItemRequest from "./OWAUpdateItemRequest";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
@@ -136,6 +137,12 @@ export class OWAEMail extends EMail {
   async deleteMessageOnServer() {
     let request = new OWADeleteItemRequest(this.itemID, {SuppressReadReceipts: true});
     await this.folder.account.callOWA(request);
+  }
+
+  async addTagOnServer(tag: Tag) {
+  }
+
+  async removeTagOnServer(tag: Tag) {
   }
 }
 

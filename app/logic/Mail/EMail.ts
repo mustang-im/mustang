@@ -31,6 +31,10 @@ export class EMail extends Message {
   readonly cc = new ArrayColl<PersonUID>();
   readonly bcc = new ArrayColl<PersonUID>();
   readonly attachments = new ArrayColl<Attachment>();
+  /** Tags/keywords that apply to this message.
+   * To modify them (based on user input, not reading), use addTag()/removeTag()
+   * @see Tag */
+  readonly tags = new SetColl<Tag>();
   readonly headers = new MapColl<string, string>();
   /** Size of full RFC822 MIME message, in bytes */
   @notifyChangedProperty
@@ -55,9 +59,6 @@ export class EMail extends Message {
   @notifyChangedProperty
   mime: Uint8Array | undefined;
   folder: Folder;
-  /** Tags/keywords that apply to this message.
-   * @see Tag */
-  tags = new SetColl<Tag>();
   /** msg ID of the thread starter message */
   threadID: string | null = null;
   /** Protocol-specific ID for this email.
@@ -149,6 +150,24 @@ export class EMail extends Message {
   }
 
   async deleteMessageOnServer() {
+  }
+
+  async addTag(tag: Tag) {
+    this.tags.add(tag);
+    await SQLEMail.saveTags(this);
+    await this.addTagOnServer(tag);
+  }
+
+  async removeTag(tag: Tag) {
+    this.tags.remove(tag);
+    await SQLEMail.saveTags(this);
+    await this.removeTagOnServer(tag);
+  }
+
+  async addTagOnServer(tag: Tag) {
+  }
+
+  async removeTagOnServer(tag: Tag) {
   }
 
   async parseMIME() {

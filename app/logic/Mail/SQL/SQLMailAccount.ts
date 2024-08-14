@@ -83,7 +83,7 @@ export class SQLMailAccount implements MailAccountStorage {
     let row = await (await getDatabase()).get(sql`
       SELECT
         idStr, name, protocol, emailAddress,
-        username, passwordButter,
+        username,
         hostname, port, tls, authMethod, url,
         outgoingAccountID,
         userRealname, workspace, configJSON

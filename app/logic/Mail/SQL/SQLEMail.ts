@@ -2,6 +2,7 @@ import type { EMail } from "../EMail";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import type { Folder } from "../Folder";
 import { Attachment, ContentDisposition } from "../Attachment";
+import { getTagByName, Tag } from "../Tag";
 import { getDatabase } from "./SQLDatabase";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
@@ -66,6 +67,7 @@ export class SQLEMail {
     await this.saveWritableProps(email);
     await this.saveRecipients(email);
     await this.saveAttachments(email);
+    await this.saveTags(email);
   }
 
   static async saveWritableProps(email: EMail) {
@@ -81,6 +83,8 @@ export class SQLEMail {
         downloadComplete = ${email.downloadComplete ? 1 : 0}
       WHERE id = ${email.dbID}
       `);
+
+    await this.saveTags(email);
   }
 
   protected static async saveRecipients(email: EMail) {
@@ -186,7 +190,29 @@ export class SQLEMail {
       `);
   }
 
-  static async read(dbID: number, email: EMail, row?: any, recipientRows?: any[], attachmentRows?: any[]): Promise<EMail> {
+  static async saveTags(email: EMail) {
+    assert(email.dbID, "Need Email DB ID");
+    await (await getDatabase()).run(sql`
+      DELETE FROM emailTag
+      WHERE emailID = ${email.dbID}
+      `);
+
+    for (let tag of email.tags) {
+      await this.saveTag(email, tag);
+    }
+  }
+
+  protected static async saveTag(email: EMail, tag: Tag) {
+    assert(email.dbID, "Need to save email before tags");
+    await (await getDatabase()).run(sql`
+      INSERT OR IGNORE INTO emailTag (
+        emailID, tagName
+      ) VALUES (
+        ${email.dbID}, ${tag.name}
+      )`);
+  }
+
+  static async read(dbID: number, email: EMail, row?: any, recipientRows?: any[], attachmentRows?: any[], tagRows?: any[]): Promise<EMail> {
     if (!row) {
       // <copied to="readAll()" />
       row = await (await getDatabase()).get(sql`
@@ -224,6 +250,7 @@ export class SQLEMail {
     this.readWritableProps(email, row);
     await this.readRecipients(email, recipientRows);
     await this.readAttachments(email, attachmentRows);
+    await this.readTags(email, tagRows);
     email.contact = email.outgoing ? email.to.first : email.from;
     return email;
   }
@@ -247,6 +274,8 @@ export class SQLEMail {
     email.isSpam = sanitize.boolean(!!row.isSpam);
     email.threadID = sanitize.string(row.threadID ?? row.parentMsgID, null);
     email.downloadComplete = sanitize.boolean(!!row.downloadComplete);
+
+    await this.readTags(email);
   }
 
   static async deleteIt(email: EMail) {
@@ -272,6 +301,10 @@ export class SQLEMail {
         WHERE emailID = ${email.dbID}
       `) as any;
     }
+    email.to.clear();
+    email.cc.clear();
+    email.bcc.clear();
+    email.replyTo = null;
     for (let row of recipientRows) {
       try {
         let addr = sanitize.emailAddress(row.emailAddress, "unknown@invalid");
@@ -309,6 +342,7 @@ export class SQLEMail {
     }
     let fallbackID = 0;
     filesDir ??= await appGlobal.remoteApp.getFilesDir();
+    email.attachments.clear();
     for (let row of attachmentRows) {
       try {
         let a = new Attachment();
@@ -324,6 +358,28 @@ export class SQLEMail {
         }, ContentDisposition.unknown);
         a.related = sanitize.boolean(!!row.related);
         email.attachments.add(a);
+      } catch (ex) {
+        backgroundError(ex);
+      }
+    }
+  }
+
+  protected static async readTags(email: EMail, tagRows?: any[]) {
+    if (!tagRows) {
+      // <copied to="readAll()" />
+      tagRows = await (await getDatabase()).all(sql`
+        SELECT
+          tagName
+        FROM emailTag
+        WHERE emailID = ${email.dbID}
+      `) as any;
+    }
+    email.tags.clear();
+    for (let row of tagRows) {
+      try {
+        let name = sanitize.nonemptystring(row.tagName);
+        let tag = getTagByName(name);
+        email.tags.add(tag);
       } catch (ex) {
         backgroundError(ex);
       }
@@ -395,6 +451,13 @@ export class SQLEMail {
       LEFT JOIN email ON (emailID = email.id)
       WHERE folderID = ${folder.dbID}
     `) as any;
+    let folderTagRows = await (await getDatabase()).all(sql`
+        SELECT
+          tagName
+        FROM emailTag
+        LEFT JOIN email ON (emailID = email.id)
+        WHERE folderID = ${folder.dbID}
+      `) as any;
     let newEmails = new ArrayColl<EMail>();
     for (let row of emailRows) {
       let email = folder.messages.find(email => email.dbID == row.id);
@@ -404,7 +467,8 @@ export class SQLEMail {
         email = folder.newEMail();
         let emailRecipientRows = folderRecipientRows.filter(r => r.emailID == row.id);
         let emailAttachmentRows = folderAttachmentRows.filter(r => r.emailID == row.id);
-        await SQLEMail.read(row.id, email, row, emailRecipientRows, emailAttachmentRows);
+        let emailTagRows = folderTagRows.filter(r => r.emailID == row.id);
+        await SQLEMail.read(row.id, email, row, emailRecipientRows, emailAttachmentRows, emailTagRows);
         newEmails.add(email);
       }
     }

@@ -32,7 +32,7 @@
 <hbox class="subject" class:unread={!$message.isRead} draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}>{$message.subject}</hbox>
 <hbox class="tags">
   {#if $tags.hasItems}
-    <TagSelector tags={$tags} canAdd={false} canDelete={false} />
+    <TagSelector tags={$tags} {message} canAdd={false} />
   {/if}
 </hbox>
 <hbox class="date" class:unread={!$message.isRead} draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}>{getDateString($message.sent)}</hbox>

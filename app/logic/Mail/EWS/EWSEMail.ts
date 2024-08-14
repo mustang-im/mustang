@@ -1,9 +1,10 @@
 import { EMail } from "../EMail";
 import { type EWSFolder, getEWSItem } from "./EWSFolder";
-import EWSDeleteItemRequest from "./EWSDeleteItemRequest";
-import EWSUpdateItemRequest from "./EWSUpdateItemRequest";
+import type { Tag } from "../Tag";
 import { Attachment, ContentDisposition } from "../Attachment";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import EWSDeleteItemRequest from "./EWSDeleteItemRequest";
+import EWSUpdateItemRequest from "./EWSUpdateItemRequest";
 import { appGlobal } from "../../app";
 import { base64ToArrayBuffer, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -169,6 +170,12 @@ export class EWSEMail extends EMail {
   async deleteMessageOnServer() {
     let request = new EWSDeleteItemRequest(this.itemID, {SuppressReadReceipts: true});
     await this.folder.account.callEWS(request);
+  }
+
+  async addTagOnServer(tag: Tag) {
+  }
+
+  async removeTagOnServer(tag: Tag) {
   }
 }
 

@@ -14,7 +14,7 @@
     <hbox flex />
     {#if $tags.hasItems}
       <hbox class="tags">
-        <TagSelector tags={$tags} canAdd={false} canDelete={false} />
+        <TagSelector tags={$tags} {message} canAdd={false} />
       </hbox>
     {/if}
     <hbox class="date">{getDateString($message.sent)}</hbox>

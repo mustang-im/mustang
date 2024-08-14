@@ -38,7 +38,7 @@
       <hbox>
         {#if $tags.hasItems}
           <hbox class="tags">
-            <TagSelector tags={$tags} canAdd={false}>
+            <TagSelector tags={$tags} {message} canAdd={false}>
               <RoundButton
                 slot="tag-button"
                 let:tag
@@ -126,8 +126,8 @@
     $selectedPerson = contact;
   }
 
-  function onTagRemove(tag: Tag) {
-    tags.remove(tag);
+  async function onTagRemove(tag: Tag) {
+    await message.removeTag(tag);
   }
 </script>
 

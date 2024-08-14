@@ -31,8 +31,10 @@
     <hbox class="header">{$t`Tags`}</hbox>
     <TagSelector
       tags={availableTags}
-      bind:selectedTags={message.tags}
-      on:selection={onClose}
+      selectedTags={message.tags}
+      {message}
+      on:select={onClose}
+      on:unselect={onClose}
       />
   </vbox>
   <vbox class="folders">

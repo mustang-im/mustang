@@ -20,6 +20,20 @@ export class Tag extends Observable {
 
 export const availableTags = new SetColl<Tag>();
 
+export function getTagByName(name: string, autoAdd = true): Tag {
+  let existing = availableTags.find(tag => tag.name == name);
+  if (existing) {
+    return existing;
+  }
+  let tag = new Tag();
+  tag.name = name;
+  tag.color = "#000000";
+  if (autoAdd) {
+    availableTags.add(tag);
+  }
+  return tag;
+}
+
 export async function loadTagsList() {
   let json: any[] = sanitize.array(JSON.parse(sanitize.string(localStorage.getItem("tags"), "")), []);
   availableTags.clear();

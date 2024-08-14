@@ -2,11 +2,11 @@ import { EMail, setPersons } from "../EMail";
 import type { IMAPFolder } from "./IMAPFolder";
 import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
+import type { Tag } from "../Tag";
 import { findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, NotReached } from "../../util/util";
-import { ArrayColl } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
 
 export class IMAPEMail extends EMail {
@@ -150,5 +150,11 @@ export class IMAPEMail extends EMail {
     } finally {
       this.folder.deletions.delete(this.uid);
     }
+  }
+
+  async addTagOnServer(tag: Tag) {
+  }
+
+  async removeTagOnServer(tag: Tag) {
   }
 }

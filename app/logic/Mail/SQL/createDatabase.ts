@@ -107,11 +107,13 @@ export const mailDatabaseSchema = sql`
   CREATE TABLE "emailTag" (
     "id" INTEGER PRIMARY KEY,
     "emailID" INTEGER not null,
-    "tagID" INTEGER not null,
+    "tagName" TEXT not null,
     FOREIGN KEY (emailID)
       REFERENCES email (ID)
       ON DELETE CASCADE
   );
+  CREATE INDEX index_emailTag_emailID ON emailTag (emailID);
+  CREATE INDEX index_emailTag_tagName ON emailTag (tagName);
 
   -- Email folders, e.g. Inbox, sent, and user-custom folders
   CREATE TABLE "folder" (
