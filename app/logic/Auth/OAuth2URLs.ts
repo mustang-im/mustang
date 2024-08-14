@@ -17,7 +17,7 @@ export const OAuth2URLs = [
     tokenURL: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
     tokenURLPasswordAuth: "https://login.microsoftonline.com/organizations/oauth2/v2.0/token",
     logoutURL: "https://login.microsoftonline.com/common/oauth2/logout",
-    scope: "offline_access EWS.AccessAsUser.All https://outlook.office.com/IMAP.AccessAsUser.All https://outlook.office.com/POP.AccessAsUser.All https://outlook.office.com/SMTP.Send",
+    scope: "offline_access EWS.AccessAsUser.All EAS.AccessAsUser.All https://outlook.office.com/IMAP.AccessAsUser.All https://outlook.office.com/POP.AccessAsUser.All https://outlook.office.com/SMTP.Send",
     clientID: "1d01f7d4-334b-475a-9176-a0d504c6a38a",
     clientSecret: null,
     doPKCE: false,
