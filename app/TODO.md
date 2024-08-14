@@ -15,13 +15,11 @@
     * Drag&Drop: Open on drag over - for: Move messages to deep subfolders
   * Move messages to other accounts
   * Folders appear twice
-  * Tags
-    * Search tags
-    * Show list of tags in folder pane, and filter folder by tags
-    * Save tags to EWS and OWA
-    * Shrink tag list when not enough space
   * Main window
     * Save window size
+  * Tags
+    * Shrink tag list when not enough space
+    * Save tags to EWS and OWA
   * Threads
     * Search all folders
     * Hide quotes
@@ -198,7 +196,6 @@
 ## Missing features
 * Filters / Actions
 * Spam filter
-* Tags
 * Archive
 * Undo
 * IMAP Quota

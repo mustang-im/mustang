@@ -60,6 +60,15 @@
         <PersonsList {persons} bind:selected={includesPerson} size="small" />
       </vbox>
     {/if}
+    <Checkbox bind:checked={isTag} allowFalse={false}
+      label={$t`Tags`}>
+      <TagIcon size="16px" slot="icon" />
+    </Checkbox>
+    {#if isTag}
+      <vbox class="listbox">
+        <TagSelector tags={availableTags} {selectedTags} canAdd={false} />
+      </vbox>
+    {/if}
     <Checkbox bind:checked={isAccount} allowFalse={false}
       label={$t`${account?.name} account only`}>
       <AccountIcon size="16px" slot="icon" />
@@ -103,6 +112,7 @@
   import type { Person } from "../../../logic/Abstract/Person";
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { FileType } from "../../../logic/Files/MIMETypes";
+  import { availableTags, type Tag } from "../../../logic/Mail/Tag";
   import { personsInEMails } from "../../../logic/Mail/Person";
   import { selectedMessage, selectedAccount, selectedFolder } from "../Selected";
   import { appGlobal } from "../../../logic/app";
@@ -112,6 +122,7 @@
   import PersonsList from "../../Shared/Person/PersonsList.svelte";
   import AccountList from "../LeftPane/AccountList.svelte";
   import FolderList from "../LeftPane/FolderList.svelte";
+  import TagSelector from "../Tag/TagSelector.svelte";
   import Checkbox from "../../Shared/Checkbox.svelte";
   import ExpandSection from "../../Shared/ExpandSection.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
@@ -121,14 +132,15 @@
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
   import AccountIcon from "lucide-svelte/icons/mail";
   import FolderIcon from "lucide-svelte/icons/folder";
+  import TagIcon from "lucide-svelte/icons/tag";
   import PersonIcon from "lucide-svelte/icons/user-round";
   import XIcon from "lucide-svelte/icons/x";
   import { showError } from "../../Util/error";
-  import type { ArrayColl, Collection } from "svelte-collections";
+  import { SetColl, type ArrayColl, type Collection } from "svelte-collections";
   import { useDebounce } from '@svelteuidev/composables';
-  import { createEventDispatcher, onMount } from 'svelte';
   import { t } from "../../../l10n/l10n";
-  const dispatchEvent = createEventDispatcher();
+  import { createEventDispatcher, onMount } from 'svelte';
+  const dispatchEvent = createEventDispatcher<{ clear: void }>();
 
   /** The search result
    * in/out */
@@ -136,6 +148,7 @@
 
   let isAccount: boolean | undefined = undefined;
   let isFolder: boolean | undefined = undefined;
+  let isTag: boolean | undefined = undefined;
   let isOutgoing: boolean | undefined = undefined;
   let isUnread: boolean | undefined = undefined;
   let isStar: boolean | undefined = undefined;
@@ -154,15 +167,18 @@
   let account = $selectedAccount;
   let folder = $selectedFolder;
   let selectedFolders: ArrayColl<Folder>;
+  let selectedTags = new SetColl<Tag>();
   $: persons = searchMessages ? personsInEMails(searchMessages) : appGlobal.collectedAddressbook.persons;
   $: if (!isPerson) includesPerson = null;
+  $: if (!isTag) selectedTags.clear();
   let isOpen = true;
 
   const kLimit = 200;
   let search = new SQLSearchEMail();
-  $: isOpen && $globalSearchTerm, isOutgoing, isUnread, isStar, isAttachment, $isAttachmentTypes,
+  $: isOpen && $globalSearchTerm, isOutgoing, isUnread, isStar,
     isMaxSize, isMinSize, maxSizeMB, minSizeMB,
     isAccount, account, isFolder, folder, isPerson, includesPerson,
+    isTag, $selectedTags, isAttachment, $isAttachmentTypes,
     startSearchDebounced();
   const startSearchDebounced = useDebounce(() => startSearch(), 300);
   async function startSearch() {
@@ -180,6 +196,7 @@
       search.sizeMin = minSizeMB;
       search.account = isAccount ? account : undefined;
       search.folder = isFolder ? folder : undefined;
+      search.tags = isTag && selectedTags.hasItems ? selectedTags : undefined;
       search.includesPerson = isPerson ? includesPerson : undefined;
       let result = await search.startSearch(kLimit + 1);
       if (!isOpen) {

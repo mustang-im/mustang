@@ -23,6 +23,10 @@
     <!--<ProjectList />-->
     <AccountList accounts={$accounts} bind:selectedAccount />
     <FolderList {folders} bind:selectedFolder bind:selectedFolders />
+    {#if selectedFolder && !(selectedFolder instanceof SavedSearchFolder)}
+      <TagsList folder={selectedFolder} bind:searchMessages on:clear={onClearSearch} />
+    {/if}
+    <hbox class="separator" />
     <ViewSwitcher />
   {/if}
 </vbox>
@@ -35,18 +39,20 @@
   import { selectedPerson } from "../../Shared/Person/Selected";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import { SQLSearchEMail } from "../../../logic/Mail/SQL/SQLSearchEMail";
+  import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import { appGlobal } from "../../../logic/app";
   import AccountList from "./AccountList.svelte";
   import FolderList from "./FolderList.svelte";
+  import TagsList from "./TagsList.svelte";
   import SearchPane from "../Search/SearchPane.svelte";
   import PersonsList from "../../Shared/Person/PersonsList.svelte";
   import ProjectList from "./ProjectList.svelte";
   import GetMailButton from "./GetMailButton.svelte";
   import WriteButton from "./WriteButton.svelte";
   import ViewSwitcher from "./ViewSwitcher.svelte";
+  import SearchSwitcher, { SearchView } from "./SearchSwitcher.svelte";
   import { catchErrors } from "../../Util/error";
   import type { ArrayColl, Collection } from 'svelte-collections';
-  import SearchSwitcher, { SearchView } from "./SearchSwitcher.svelte";
 
   export let accounts: Collection<MailAccount>; /** in */
   export let folders: Collection<Folder>; /** in */
@@ -96,6 +102,9 @@
   }
   .folder-pane :global(.search) {
     margin-block-start: -2px;
+  }
+  .separator {
+    margin-block-start: 20px;
   }
   .top :global(.svelteui-Tab) {
     padding: 8px 12px;

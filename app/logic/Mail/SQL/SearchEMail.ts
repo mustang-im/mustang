@@ -2,12 +2,13 @@ import type { EMail } from "../EMail";
 import type { Person } from "../../Abstract/Person";
 import type { MailAccount } from "../MailAccount";
 import type { Folder } from "../Folder";
+import { getTagByName, type Tag } from "../Tag";
 import { findPerson } from "../../Abstract/PersonUID";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Observable } from "../../util/Observable";
 import { AbstractFunction } from "../../util/util";
-import type { ArrayColl } from "svelte-collections";
+import { SetColl, type ArrayColl, type Collection } from "svelte-collections";
 
 /** Contains the search criteria for emails.
  * Subclasses then implement the concrete search algo.
@@ -30,6 +31,7 @@ export class SearchEMail extends Observable {
   isRead: boolean | null = null;
   isStarred: boolean | null = null;
   isReplied: boolean | null = null;
+  tags: Collection<Tag> | null = null;
 
   hasAttachment: boolean | null = null;
   /** Has an attachment of one of these types.
@@ -54,9 +56,9 @@ export class SearchEMail extends Observable {
     this.isReplied = boolean(json.isReplied);
     this.isStarred = boolean(json.isStarred);
     this.hasAttachment = boolean(json.hasAttachment);
-    this.hasAttachmentMIMETypes = Array.isArray(json.hasAttachmentMIMETypes)
-      ? json.hasAttachmentMIMETypes.map(mimetype => sanitize.string(mimetype))
-      : undefined;
+    this.hasAttachmentMIMETypes = sanitize.array(
+      json.hasAttachmentMIMETypes?.map(mimetype => sanitize.string(mimetype)),
+      null);
     this.sizeMin = sanitize.integer(json.sizeMin, null) ?? undefined;
     this.sizeMax = sanitize.integer(json.sizeMax, null) ?? undefined;
     this.messageID = sanitize.string(json.messageID, null) ?? undefined;
@@ -66,9 +68,8 @@ export class SearchEMail extends Observable {
 
     this.includesPerson = findPerson(json.includesPersonEMail);
     this.account = appGlobal.emailAccounts.find(acc => acc.id == json.accountID);
-    this.folder = this.account
-      ? this.account.findFolder(folder => folder.path == json.folderPath) ?? undefined
-      : undefined;
+    this.folder = this.account?.findFolder(folder => folder.path == json.folderPath) ?? undefined;
+    this.tags = createSetColl(sanitize.array(json.tags, [])?.map(name => getTagByName(name)));
   }
 
   toJSON() {
@@ -89,6 +90,7 @@ export class SearchEMail extends Observable {
       includesPersonEMail: this.includesPerson?.emailAddresses.first?.value ?? null,
       accountID: this.account?.id ?? this.folder?.account?.id,
       folderPath: this.folder?.path,
+      tags: this.tags?.contents.map(tag => tag.name),
     };
   }
 
@@ -97,4 +99,15 @@ export class SearchEMail extends Observable {
     clone.fromJSON(this.toJSON());
     return clone;
   }
+}
+
+// TODO Move into SetColl() ctor
+function createSetColl<Item>(initial: Item[]): SetColl<Item> {
+  let set = new SetColl<Item>();
+  if (Array.isArray(initial) && initial.length || initial instanceof Set && initial.size) {
+    for (let item of initial) {
+      set.add(item);
+    }
+  }
+  return set;
 }
