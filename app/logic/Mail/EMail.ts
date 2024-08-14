@@ -2,6 +2,7 @@ import { Message } from "../Abstract/Message";
 import { SpecialFolder, type Folder } from "./Folder";
 import { Attachment, ContentDisposition } from "./Attachment";
 import { RawFilesAttachment } from "./Store/RawFilesAttachment";
+import type { Tag } from "./Tag";
 import { DeleteStrategy } from "./MailAccount";
 import { SQLEMail } from "./SQL/SQLEMail";
 import { SQLSourceEMail } from "./SQL/Source/SQLSourceEMail";
@@ -54,6 +55,9 @@ export class EMail extends Message {
   @notifyChangedProperty
   mime: Uint8Array | undefined;
   folder: Folder;
+  /** Tags/keywords that apply to this message.
+   * @see Tag */
+  tags = new SetColl<Tag>();
   /** msg ID of the thread starter message */
   threadID: string | null = null;
   /** Protocol-specific ID for this email.

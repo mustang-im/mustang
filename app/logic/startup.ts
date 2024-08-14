@@ -5,6 +5,7 @@ import { readAddressbooks } from './Contacts/AccountsList/SQL';
 import { readCalendars } from './Calendar/AccountsList/SQL';
 import { readMeetAccounts } from './Meet/AccountsList/SQL';
 import { readSavedSearches } from './Mail/Virtual/SavedSearchFolder';
+import { loadTagsList } from './Mail/Tag';
 import JPCWebSocket from '../../lib/jpc-ws';
 
 const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
@@ -24,6 +25,7 @@ export async function getStartObjects(): Promise<void> {
   appGlobal.personalAddressbook = appGlobal.addressbooks.first;
   appGlobal.collectedAddressbook = appGlobal.addressbooks.get(1);
   readSavedSearches();
+  await loadTagsList();
 }
 
 /**

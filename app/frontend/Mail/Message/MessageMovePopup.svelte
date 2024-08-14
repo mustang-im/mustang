@@ -27,9 +27,17 @@
       icon={CloseIcon}
       />
   </hbox>
-  <hbox class="folders">
+  <vbox class="tags">
+    <hbox class="header">{$t`Tags`}</hbox>
+    <TagSelector
+      tags={availableTags}
+      bind:selectedTags={message.tags}
+      on:selection={onClose}
+      />
+  </vbox>
+  <vbox class="folders">
     <FolderList folders={availableFolders} bind:selectedFolder bind:selectedFolders />
-  </hbox>
+  </vbox>
   <hbox class="bottom buttons">
     <hbox flex />
     <Button plain
@@ -54,6 +62,8 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { Folder } from "../../../logic/Mail/Folder";
+  import { availableTags } from "../../../logic/Mail/Tag";
+  import TagSelector from "../Tag/TagSelector.svelte";
   import FolderList from "../LeftPane/FolderList.svelte";
   import Button from "../../Shared/Button.svelte";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
@@ -111,11 +121,25 @@
     background-color: var(--leftbar-bg);
     color: var(--leftbar-fg);
   }
+  .message-popup :global(.header) {
+    display: flex !important;
+    height: unset !important;
+  }
+  .header {
+    color: grey;
+    font-size: 12px;
+  }
+  .header,
+  .message-popup :global(grid > .header) {
+    margin-block-start: 0px;
+    margin-block-end: 4px;
+  }
+  .tags {
+    margin: 10px;
+    max-width: 300px;
+  }
   .folders {
     height: 20em;
-  }
-  .folders :global(.fast-list .header) {
-    display: flex;
   }
   .buttons {
     border-top: 1px solid var(--border);

@@ -6,13 +6,14 @@
   <FastList items={sortedMessages}
     bind:selectedItem={selectedMessage}
     bind:selectedItems={selectedMessages}
-    columns="auto auto auto auto 1fr 3fr auto">
+    columns="auto auto auto auto 1fr 3fr auto auto">
     <svelte:fragment slot="header">
       <hbox>{$t`R`}</hbox>
       <hbox>{$t`S`}</hbox>
       <hbox>{$t`A`}</hbox>
       <hbox>{$t`Correspondent`}</hbox>
       <hbox>{$t`Subject`}</hbox>
+      <hbox>{$t`Tags`}</hbox>
       <hbox class="date">{$t`Date`}</hbox>
     </svelte:fragment>
     <TableMessageListItem slot="row" let:item message={item} />

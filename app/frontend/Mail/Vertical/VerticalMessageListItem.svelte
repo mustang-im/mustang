@@ -12,6 +12,11 @@
     </hbox>
     <hbox class="contact">{contactName}</hbox>
     <hbox flex />
+    {#if $tags.hasItems}
+      <hbox class="tags">
+        <TagSelector tags={$tags} canAdd={false} canDelete={false} />
+      </hbox>
+    {/if}
     <hbox class="date">{getDateString($message.sent)}</hbox>
     <!--
     <hbox class="buttons hover">
@@ -87,6 +92,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { onDragStartMail } from "../Message/drag";
+  import TagSelector from "../Tag/TagSelector.svelte";
   import MessageMovePopup from "../Message/MessageMovePopup.svelte";
   import Popup from "../../Shared/Popup.svelte";
   import Button from "../../Shared/Button.svelte";
@@ -104,6 +110,7 @@
   export let message: EMail;
 
   $: attachments = message.attachments;
+  $: tags = message.tags;
   $: contactName = personDisplayName(message.contact);
 
   async function toggleRead() {
@@ -223,7 +230,15 @@
   .unread-dot.unread :global(svg) {
     fill: green;
   }
+  .tags :global(.tag) {
+    margin: 0 2px;
+    min-height: unset;
+    border: none;
+  }
   /* </copied> */
+  .tags {
+    margin-inline-end: 8px;
+  }
   .move.button {
     margin-inline-end: 8px;
   }

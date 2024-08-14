@@ -1,5 +1,5 @@
 <hbox class="attachment">
-  {#if $message.attachments.hasItems}
+  {#if $attachments.hasItems}
     <AttachmentIcon size="12px" />
   {/if}
 </hbox>
@@ -30,6 +30,11 @@
 </hbox>
 <hbox class="correspondent" draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}>{contactName}</hbox>
 <hbox class="subject" class:unread={!$message.isRead} draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}>{$message.subject}</hbox>
+<hbox class="tags">
+  {#if $tags.hasItems}
+    <TagSelector tags={$tags} canAdd={false} canDelete={false} />
+  {/if}
+</hbox>
 <hbox class="date" class:unread={!$message.isRead} draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}>{getDateString($message.sent)}</hbox>
 <hbox class="buttons hover">
   <hbox class="move button" bind:this={popupAnchor}>
@@ -72,6 +77,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { onDragStartMail } from "../Message/drag";
+  import TagSelector from "../Tag/TagSelector.svelte";
   import MessageMovePopup from "../Message/MessageMovePopup.svelte";
   import Popup from "../../Shared/Popup.svelte";
   import Button from "../../Shared/Button.svelte";
@@ -88,6 +94,8 @@
 
   export let message: EMail;
 
+  $: attachments = message.attachments;
+  $: tags = message.tags;
   $: contactName = personDisplayName(message.contact);
 
   async function toggleRead() {
@@ -198,6 +206,11 @@
   }
   .unread-dot.unread :global(svg) {
     fill: green;
+  }
+  .tags :global(.tag) {
+    margin: 0 2px;
+    min-height: unset;
+    border: none;
   }
   /* </copied> */
 </style>

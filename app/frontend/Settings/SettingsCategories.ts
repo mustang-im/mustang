@@ -11,6 +11,7 @@ import MailAppearance from "./Mail/Appearance.svelte";
 import MailNotifications from "./Mail/Notifications.svelte";
 import MailRead from "./Mail/Read.svelte";
 import MailSend from "./Mail/Send.svelte";
+import MailTags from "./Mail/Tags.svelte";
 import AccountGeneral from "./AccountGeneral.svelte";
 import AccountURLServer from "./AccountURLServer.svelte";
 import AccountMailServer from "./Mail/Account/Server.svelte";
@@ -53,6 +54,7 @@ mailSettings.subCategories.addAll([
   new SettingsCategory("mail-notifications", gt`Notifications`, MailNotifications),
   new SettingsCategory("mail-read", gt`Read`, MailRead),
   new SettingsCategory("mail-send", gt`Send`, MailSend),
+  new SettingsCategory("mail-send", gt`Tags`, MailTags),
 ]);
 mailSettings.accounts = appGlobal.emailAccounts;
 mailSettings.newAccountUI = SetupMail;
