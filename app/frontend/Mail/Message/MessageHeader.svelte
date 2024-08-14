@@ -33,11 +33,18 @@
       {/if}
     </vbox>
     <hbox flex />
-    <vbox>
+    <vbox class="top-right">
       <MessageToolbar {message} />
-      <value class="date" title={$message.sent?.toLocaleString(getUILocale())}>
-        {getDateString($message.sent)}
-      </value>
+      <hbox>
+        {#if $tags.hasItems}
+          <hbox class="tags">
+            <TagSelector tags={$tags} canAdd={false} canDelete={false} />
+          </hbox>
+        {/if}
+        <value class="date" title={$message.sent?.toLocaleString(getUILocale())}>
+          {getDateString($message.sent)}
+        </value>
+      </hbox>
     </vbox>
   </hbox>
   <hbox class="subject-line">
@@ -60,6 +67,7 @@
   import Recipient from "./Recipient.svelte";
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
   import DisplayModeSwitcher from "./DisplayModeSwitcher.svelte";
+  import TagSelector from "../Tag/TagSelector.svelte";
   import { getLocalStorage } from "../../Util/LocalStorage";
   import { catchErrors, backgroundError } from "../../Util/error";
   import { getDateString } from "../../Util/date";
@@ -72,6 +80,7 @@
     ? "me"
     : message.contact?.name
       ?? message.from.emailAddress;
+  $: tags = message.tags;
 
   let readDelaySetting = getLocalStorage("mail.read.after", 0); // 0 = Immediately; -1 = Manually; 1 to 20 = delay in seconds
   $: readDelay = $readDelaySetting.value;
@@ -109,6 +118,12 @@
     padding: 12px 20px 8px 20px;
     box-shadow: 0px -1px 5px 0px rgba(0, 0, 0, 8%);
     z-index: 1;
+  }
+  .top-right {
+    align-items: end;
+  }
+  .tags {
+    margin-inline-end: 12px;
   }
   .subject {
     font-weight: 700;

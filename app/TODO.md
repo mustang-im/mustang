@@ -17,6 +17,13 @@
   * Move messages to other accounts
   * Folders appear twice
   * Attachments appear twice
+  * Tags
+    * Search tags
+    * Show list of tags in folder pane, and filter folder by tags
+    * Save tags in DB
+    * Save tags to IMAP
+    * Save tags to EWS and OWA
+    * Shrink tag list when not enough space
   * Main window
     * Save window size
   * Threads
