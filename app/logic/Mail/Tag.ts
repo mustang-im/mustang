@@ -35,7 +35,7 @@ export function getTagByName(name: string, autoAdd = true): Tag {
 }
 
 export async function loadTagsList() {
-  let json: any[] = sanitize.array(JSON.parse(sanitize.string(localStorage.getItem("tags"), "")), []);
+  let json: any[] = sanitize.array(JSON.parse(sanitize.nonemptystring(localStorage.getItem("tags"), "[]")), []);
   availableTags.clear();
   for (let tagJSON of json) {
     let tag = new Tag();

@@ -60,6 +60,8 @@ export class EWSFolder extends Folder {
             }, {
               FieldURI: "item:IsDraft",
             }, {
+              FieldURI: "item:Categories",
+            }, {
               FieldURI: "item:Flag",
             }],
             t$ExtendedFieldURI: {
@@ -153,6 +155,8 @@ export class EWSFolder extends Folder {
               FieldURI: "message:IsRead",
             }, {
               FieldURI: "item:IsDraft",
+            }, {
+              FieldURI: "item:Categories",
             }, {
               FieldURI: "item:Flag",
             }],
@@ -250,6 +254,8 @@ export class EWSFolder extends Folder {
               }, {
                 FieldURI: "item:Body",
               */
+              }, {
+                FieldURI: "item:Categories",
               }, {
                 FieldURI: "item:Flag",
               /* Non-MIME
