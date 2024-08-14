@@ -317,6 +317,7 @@ export class OAuth2 extends Observable {
       sanitize.nonemptystring(json.scope),
       sanitize.nonemptystring(json.clientID, "mail"),
       sanitize.nonemptystring(json.clientSecret, null),
+      sanitize.boolean(json.doPKCE, false),
     );
     o.uiMethod = sanitize.translate(json.uiMethod, {
       "browser": OAuth2UIMethod.SystemBrowser,
@@ -334,6 +335,7 @@ export class OAuth2 extends Observable {
       scope: this.scope,
       clientID: this.clientID,
       clientSecret: this.clientSecret,
+      doPKCE: this.doPKCE,
       uiMethod: this.uiMethod,
     };
   }
