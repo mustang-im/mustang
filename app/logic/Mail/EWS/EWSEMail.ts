@@ -1,6 +1,6 @@
 import { EMail } from "../EMail";
 import { type EWSFolder, getEWSItem } from "./EWSFolder";
-import type { Tag } from "../Tag";
+import { type Tag, getTagByName } from "../Tag";
 import { Attachment, ContentDisposition } from "../Attachment";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import EWSDeleteItemRequest from "./EWSDeleteItemRequest";
@@ -111,6 +111,11 @@ export class EWSEMail extends EMail {
     this.isStarred = xmljs.Flag?.FlagStatus == "Flagged";
     // can't work out how to find junk status
     this.isDraft = sanitize.boolean(xmljs.IsDraft);
+    // `replaceAll` doesn't work for a `SetColl`
+    this.tags.clear();
+    if (xmljs.Categories) {
+      this.tags.addAll(ensureArray(xmljs.Categories.String).map(name => getTagByName(name)));
+    }
   }
 
   async markRead(read = true) {
@@ -173,9 +178,21 @@ export class EWSEMail extends EMail {
   }
 
   async addTagOnServer(tag: Tag) {
+    await this.updateTags();
   }
 
   async removeTagOnServer(tag: Tag) {
+    await this.updateTags();
+  }
+
+  async updateTags() {
+    let request = new EWSUpdateItemRequest(this.itemID, {
+      MessageDisposition: "SaveOnly",
+      SendCalendarInvitationsOrCancellations: "SendToNone",
+      SuppressReadReceipts: true,
+    });
+    request.addField("Message", "Categories", this.tags.hasItems ? { t$String: this.tags.contents.map(tag => tag.name) } : null, "item:Categories");
+    await this.folder.account.callEWS(request);
   }
 }
 

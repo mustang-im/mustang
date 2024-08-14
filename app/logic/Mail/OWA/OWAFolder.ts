@@ -117,6 +117,9 @@ export class OWAFolder extends Folder {
             FieldURI: "item:IsDraft",
           }, {
             __type: "PropertyUri:#Exchange",
+            FieldURI: "item:Categories",
+          }, {
+            __type: "PropertyUri:#Exchange",
             FieldURI: "item:Flag",
           /*}, {
             __type: "PropertyUri:#Exchange",
@@ -237,6 +240,9 @@ export class OWAFolder extends Folder {
               __type: "PropertyUri:#Exchange",
               FieldURI: "item:Body",
             */
+            }, {
+              __type: "PropertyUri:#Exchange",
+              FieldURI: "item:Categories",
             }, {
               __type: "PropertyUri:#Exchange",
               FieldURI: "item:Flag",

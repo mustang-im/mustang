@@ -1,6 +1,6 @@
 import { EMail } from "../EMail";
 import type { OWAFolder } from "./OWAFolder";
-import type { Tag } from "../Tag";
+import { Tag, getTagByName } from "../Tag";
 import OWADeleteItemRequest from "./OWADeleteItemRequest";
 import OWAUpdateItemRequest from "./OWAUpdateItemRequest";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
@@ -90,6 +90,11 @@ export class OWAEMail extends EMail {
     this.isStarred = json.Flag?.FlagStatus == "Flagged";
     // can't work out how to find junk status
     this.isDraft = sanitize.boolean(json.IsDraft);
+    // `replaceAll` doesn't work for a `SetColl`
+    this.tags.clear();
+    if (json.Categories) {
+      this.tags.addAll(json.Categories.map(name => getTagByName(name)));
+    }
   }
 
   async markRead(read = true) {
@@ -140,9 +145,21 @@ export class OWAEMail extends EMail {
   }
 
   async addTagOnServer(tag: Tag) {
+    await this.updateTags();
   }
 
   async removeTagOnServer(tag: Tag) {
+    await this.updateTags();
+  }
+
+  async updateTags() {
+    let request = new OWAUpdateItemRequest(this.itemID, {
+      MessageDisposition: "SaveOnly",
+      SendCalendarInvitationsOrCancellations: "SendToNone",
+      SuppressReadReceipts: true,
+    });
+    request.addField("Message", "Categories", this.tags.contents.map(tag => tag.name), "Categories");
+    await this.folder.account.callOWA(request);
   }
 }
 
