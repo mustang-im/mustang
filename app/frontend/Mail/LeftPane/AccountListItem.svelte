@@ -1,8 +1,8 @@
 <hbox class="account" title={$account.fatalError ? account.fatalError.message : ""}>
   {#if $account.isLoggedIn}
-    <hbox class="icon"><Icon data={AccountIcon} size="16px" /></hbox>
+    <hbox class="icon"><Icon data={MailIcon} size="16px" /></hbox>
   {:else}
-    <LoggedOutIcon size="16px" />
+    <hbox class="icon"><Icon data={MailXIcon} size="16px" /></hbox>
   {/if}
   <hbox class="label">{$account.name}</hbox>
     <hbox flex class="buttons">
@@ -19,8 +19,8 @@
   import Icon from 'svelte-icon/Icon.svelte';
   import GetMailButton from "./GetMailButton.svelte";
   import Button from "../../Shared/Button.svelte";
-  import AccountIcon from '../../asset/icon/appBar/mail.svg?raw';
-  import LoggedOutIcon from "lucide-svelte/icons/mail-x";
+  import MailIcon from '../../asset/icon/appBar/mail.svg?raw';
+  import MailXIcon from '../../asset/icon/mail/mail-question.svg?raw';
   import DisconnectedIcon from "lucide-svelte/icons/unplug";
   import { t } from "../../../l10n/l10n";
 

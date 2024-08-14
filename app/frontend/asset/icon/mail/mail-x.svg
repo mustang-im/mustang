@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <style>
+      .cls-1 {
+        stroke: #000;
+      }
+
+      .cls-2 {
+        stroke: #27c1aa;
+      }
+
+      .cls-2, .cls-1 {
+        fill: none;
+        stroke-linecap: round;
+        stroke-width: 8px;
+      }
+
+      .mark {
+        stroke: #000;
+        stroke-width: 8px;
+        stroke-linecap: round;
+      }
+    </style>
+  </defs>
+
+  <path class="mark" d="M124 94L104 114" />
+  <path class="mark" d="M104 94L124 114"/>
+  <path class="cls-2" d="M28.2578 40.95L41.1078 51.66C52.0378 60.7699 57.5078 65.3299 63.9778 65.3299C70.4478 65.3299 75.9078 60.7699 86.8478 51.66L99.6978 40.95" />
+  <path class="cls-1" d="M123.95 73V30.89C123.23 24.99 121.05 21.62 119.31 19.68C114.62 14.44 107.27 13.06 62.84 13C60.91 13 59.99 13 59.36 13H59.35C17.48 13.1 11.81 16.19 8.64 19.68C6.92 21.57 4.71 24.92 4 30.89V103.13C4 109.24 8.95 114.19 15.06 114.19H83" />
+</svg>
+
