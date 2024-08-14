@@ -20,6 +20,7 @@ export const OAuth2URLs = [
     scope: "offline_access https://outlook.office.com/.default",
     clientID: "5cf03223-8b81-4558-ae82-a8e31e66a889",
     clientSecret: null,
+    doPKCE: false,
   },
   {
     domains: ["google.com", "gmail.com", "googlemail.com" ],
@@ -30,6 +31,7 @@ export const OAuth2URLs = [
     scope: "https://mail.google.com/ https://www.googleapis.com/auth/carddav https://www.googleapis.com/auth/calendar",
     clientID: "592666826535-3ba3dp3eghj978d2r6nojihk699h9b4n.apps.googleusercontent.com",
     clientSecret: "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",
+    doPKCE: false,
   },
   {
     domains: ["yahoo.com"],

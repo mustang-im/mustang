@@ -190,7 +190,7 @@ export class OAuth2 extends Observable {
     params.scope = this.scope;
     params.client_id = this.clientID;
     params.client_secret = this.clientSecret || undefined;
-    
+
     if (this.doPKCE) {
       assert(!!this.codeVerifierPKCE, "Missing code verifier");
       params.code_verifier = this.codeVerifierPKCE;
