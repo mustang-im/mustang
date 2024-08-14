@@ -110,7 +110,8 @@ export class ThunderbirdProfile {
           url.authDoneURL,
           url.scope,
           url.clientID,
-          url.clientSecret);
+          url.clientSecret,
+          url.doPKCE);
         acc.oAuth2.setTokenURLPasswordAuth(url.tokenURLPasswordAuth);
       }
 
