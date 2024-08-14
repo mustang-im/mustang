@@ -21,7 +21,7 @@ export class OAuth2SystemBrowser extends OAuth2UI {
       server.close();
     }, 15 * 60 * 1000);
     let doneURL = `http://localhost:${port}/login-success`;
-    let url = this.oAuth2.getAuthURL(doneURL);
+    let url = await this.oAuth2.getAuthURL(doneURL);
     // console.log("OAuth2: Starting system browser with URL", url, "and done URL", doneURL);
     await appGlobal.remoteApp.shell.openExternal(url);
     return new Promise((resolve, reject) => {

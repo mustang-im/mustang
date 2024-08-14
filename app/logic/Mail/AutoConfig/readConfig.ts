@@ -142,7 +142,7 @@ function getOAuth2Config(account: MailAccount, autoConfigXML: any): OAuth2 {
   // try built-in
   let builtin = OAuth2URLs.find(a => a.hostnames.includes(account.hostname));
   if (builtin) {
-    oAuth2 = new OAuth2(account, builtin.tokenURL, builtin.authURL, builtin.authDoneURL, builtin.scope, builtin.clientID, builtin.clientSecret);
+    oAuth2 = new OAuth2(account, builtin.tokenURL, builtin.authURL, builtin.authDoneURL, builtin.scope, builtin.clientID, builtin.clientSecret, builtin.doPKCE);
     oAuth2.setTokenURLPasswordAuth(builtin.tokenURLPasswordAuth);
   } else {
     try {
