@@ -2,7 +2,7 @@ import { EMail, setPersons } from "../EMail";
 import type { IMAPFolder } from "./IMAPFolder";
 import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
-import type { Tag } from "../Tag";
+import { getTagByName, type Tag } from "../Tag";
 import { findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -85,6 +85,13 @@ export class IMAPEMail extends EMail {
     this.isReplied = flags.has("\\Answered");
     this.isSpam = flags.has("\\Junk");
     this.isDraft = flags.has("\\Draft");
+
+    for (let customTag of flags) {
+      if (customTag.startsWith("\\") || customTag.startsWith("$")) {
+        continue;
+      }
+      this.tags.add(getTagByName(customTag));
+    }
   }
 
   async markRead(read = true) {
@@ -130,6 +137,14 @@ export class IMAPEMail extends EMail {
     this.flagsChanging = false;
   }
 
+  async addTagOnServer(tag: Tag) {
+    await this.setFlagServer(tag.name, true);
+  }
+
+  async removeTagOnServer(tag: Tag) {
+    await this.setFlagServer(tag.name, false);
+  }
+
   async deleteMessageOnServer() {
     try {
       this.folder.deletions.add(this.uid);
@@ -150,11 +165,5 @@ export class IMAPEMail extends EMail {
     } finally {
       this.folder.deletions.delete(this.uid);
     }
-  }
-
-  async addTagOnServer(tag: Tag) {
-  }
-
-  async removeTagOnServer(tag: Tag) {
   }
 }
