@@ -6,16 +6,20 @@
   <StatusMessage status="processing"
     message={$t`Importing address books...`} />
 {:then}
-  <hbox class="found">{$t`Found ${$addressbooks.length} imported addressbooks`}</hbox>
-  <vbox class="list">
-    <Scroll>
-      <grid class="protocol-grid">
-        {#each $addressbooks.each as addressbook}
-          <Checkbox label={addressbook.name} bind:checked={addressbook.import} />
-          <hbox class="protocol">Thunderbird</hbox>
-        {/each}
-      </grid>
-    </Scroll>
+  <vbox class="results">
+    <HeaderGroupBox>
+      <hbox class="found" slot="header">{$t`Found ${$addressbooks.length} imported addressbooks`}</hbox>
+      <vbox class="list">
+        <Scroll>
+          <grid class="protocol-grid">
+            {#each $addressbooks.each as addressbook}
+              <Checkbox label={addressbook.name} bind:checked={addressbook.import} />
+              <hbox class="protocol thunderbird-local">Thunderbird</hbox>
+            {/each}
+          </grid>
+        </Scroll>
+      </vbox>
+    </HeaderGroupBox>
   </vbox>
 {:catch ex}
   {ex?.message ?? ex + ""}
@@ -34,11 +38,11 @@
   canContinue={!!$addressbooks.length}
   onContinue={onOK}
   >
-  <Button label={$t`Skip`} classes="secondary"
-    onClick={onSkip}
-    />
   <Button label={$t`Uncheck all`} classes="secondary"
     onClick={onUncheckAll}
+    />
+  <Button label={$t`Skip`} classes="secondary"
+    onClick={onSkip}
     />
 </ButtonsBottom>
 
@@ -48,6 +52,7 @@
   import StatusMessage from "../Shared/StatusMessage.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Checkbox from "../../../Shared/Checkbox.svelte";
+  import HeaderGroupBox from "../../../Shared/HeaderGroupBox.svelte";
   import Button from "../../../Shared/Button.svelte";
   import Header from "../Shared/Header.svelte";
   import Scroll from "../../../Shared/Scroll.svelte";
@@ -133,9 +138,11 @@
 </script>
 
 <style>
+  .results > :global(.group) {
+    margin-block-start: -4px;
+  }
   .found {
     justify-content: center;
-    margin-block-end: 24px;
   }
   .list {
     min-height: 30vh;
@@ -143,12 +150,25 @@
   grid.protocol-grid {
     grid-template-columns: auto max-content;
     margin: 4px 12px;
-  }
-  .protocol {
-    margin-inline-start: 16px;
+    row-gap: 6px;
   }
   .retry {
     justify-content: center;
     margin-inline-start: 24px;
+  }
+
+  .protocol {
+    min-height: 16px;
+    font-size: 12px;
+    border-radius: 8px;
+    color: white;
+    border: 1px solid transparent;
+    padding-inline-start: 8px;
+    padding-inline-end: 8px;
+    margin: 2px;
+    margin-inline-start: 24px;
+  }
+  .protocol.thunderbird-local {
+    background-color: #1177d9;
   }
 </style>

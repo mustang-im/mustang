@@ -44,4 +44,11 @@
     margin-inline-start: 8px;
     stroke-width: 1px;
   }
+  .expander-button :global(button:hover:not(.disabled)) {
+    background-color: transparent;
+  }
+  :global(button:hover:not(.disabled)) .content {
+    background-color: var(--hover-bg);
+    color: var(--hover-fg);
+  }
 </style>

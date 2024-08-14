@@ -5,7 +5,6 @@
     * Google approval
     * Microsoft: Client ID for public
   * IMAP poll
-  * Import: Polish UI style
   * Bug: Persons view: disable until bug fixed
   * Calendar
     * Edit event UI
