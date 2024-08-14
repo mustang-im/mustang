@@ -4,10 +4,9 @@
   * OAuth2
     * Google approval
     * Microsoft: Client ID for public
-  * IMAP poll?
+  * IMAP poll
   * Import: Polish UI style
   * Bug: Persons view: disable until bug fixed
-  * No folders -> [Get Mail] button disabled -> Can never login
   * Calendar
     * Edit event UI
     * Move to other calendar
@@ -42,7 +41,6 @@
 
 # Initial release
 * Installer
-  * Mac Signing
   * Auto-update client
   * Auto-update test
 * Beta notification bar
@@ -71,7 +69,7 @@
 * Unified inbox: Show account as tag or icon
 
 # UI
-* Close menu when clicking outside menu
+* Close menu when clicking inside message
 
 # Chat
 ## Bugs
@@ -128,7 +126,6 @@
   * ical
   * JMAP
   * JSCalendar
-* Store locally
 * Invitation send
 * Invitation receive
 * Free/busy dialog
