@@ -3,7 +3,6 @@
   * Thunderbird AB import all fields
   * OAuth2
     * Google approval
-    * Yahoo: PCKE
     * Microsoft: Client ID for public
   * IMAP poll?
   * Import: Polish UI style
@@ -55,7 +54,6 @@
 * Clear profile
 * Debug dump of settings
 * Gmail: IMAP namename `[Gmail]`
-* Hetzner: foo@unwrap.at doesn't autoconfigure
 * Composer
   * PersonEntry: Delete key
   * Remove added attachment (needs menu item)
@@ -195,7 +193,7 @@
   * Better detection based on flags
   * Based on common names
   * Manually in settings - DONE
-* Tags
+  * Set on server after manually changing
 
 ## Missing features
 * Filters / Actions
