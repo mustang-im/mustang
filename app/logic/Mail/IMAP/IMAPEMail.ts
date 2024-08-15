@@ -87,7 +87,8 @@ export class IMAPEMail extends EMail {
     this.isDraft = flags.has("\\Draft");
 
     for (let customTag of flags) {
-      if (customTag.startsWith("\\") || customTag.startsWith("$")) {
+      if (customTag.startsWith("\\") || customTag.startsWith("$") ||
+          ["nonjunk", "junk"].includes(customTag.toLowerCase())) {
         continue;
       }
       this.tags.add(getTagByName(customTag));
