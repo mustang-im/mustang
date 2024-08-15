@@ -378,7 +378,7 @@ export class EWSFolder extends Folder {
   }
 
   async moveFolderHere(folder: EWSFolder) {
-    assert(folder.account = this.account, "Cannot move folders between accounts");
+    assert(folder.account == this.account, "Cannot move folders between accounts");
     let request = {
       m$MoveFolder: {
         m$ToFolderId: {

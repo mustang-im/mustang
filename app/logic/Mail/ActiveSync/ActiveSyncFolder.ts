@@ -1,9 +1,311 @@
-import { Folder } from "../Folder";
+import { Folder, SpecialFolder } from "../Folder";
 import { ActiveSyncEMail } from "./ActiveSyncEMail";
+import { type ActiveSyncAccount, EASError } from "./ActiveSyncAccount";
+import { SQLFolder } from "../SQL/SQLFolder";
+import { SQLEMail } from "../SQL/SQLEMail";
+import { assert, NotImplemented, NotSupported } from "../../util/util";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { ArrayColl, type Collection } from "svelte-collections";
+
+const kMaxCount = 50;
+
+export enum FolderType {
+  OtherSpecialFolder = "1",
+  Inbox = "2",
+  Drafts = "3",
+  Trash = "4",
+  Sent = "5",
+  Outbox = "6",
+  Tasks = "7",
+  Calendar = "8",
+  Contacts = "9",
+  Notes = "10",
+  Journal = "11",
+  UserFolder = "12",
+  UserCalendar = "13",
+  UserContacts = "14",
+  UserTasks = "15",
+}
 
 export class ActiveSyncFolder extends Folder {
+  account: ActiveSyncAccount;
+  messages: ArrayColl<ActiveSyncEMail>;
+  syncKeyBusy: Promise<any> | null;
 
   newEMail(): ActiveSyncEMail {
     return new ActiveSyncEMail(this);
   }
+
+  get parentFolderList() {
+    return this.parent?.subFolders || this.account.rootFolders;
+  }
+
+  addToParent() {
+    if (!this.parentFolderList.contains(this)) {
+      this.parentFolderList.add(this);
+    }
+  }
+
+  removeFromParent() {
+    this.parentFolderList.remove(this);
+  }
+
+  fromWBXML(wbxmljs: any) {
+    this.id = sanitize.nonemptystring(wbxmljs.ServerId);
+    this.name = sanitize.nonemptystring(wbxmljs.DisplayName);
+    switch (wbxmljs.Type) {
+    case FolderType.Inbox:
+      this.specialFolder = SpecialFolder.Inbox;
+      break;
+    case FolderType.Drafts:
+      this.specialFolder = SpecialFolder.Drafts;
+      break;
+    case FolderType.Trash:
+      this.specialFolder = SpecialFolder.Trash;
+      break;
+    case FolderType.Sent:
+      this.specialFolder = SpecialFolder.Sent;
+      break;
+    //case FolderType.Outbox:
+    //no FolderType.Spam:
+    }
+  }
+
+  /**
+   * Sync requests for a given folder must be serialised,
+   * because they all use the same per-folder sync key.
+   */
+  async queuedSyncRequest(data: any): Promise<any> {
+    if (!this.syncState && !this.syncKeyBusy) try {
+      // First request must be an empty request.
+      this.syncKeyBusy = this.makeSyncRequest();
+      await this.syncKeyBusy;
+    } finally {
+      this.syncKeyBusy = null;
+    }
+    while (this.syncKeyBusy) try {
+      await this.syncKeyBusy;
+    } catch (ex) {
+      // If the function currently holding the sync key throws, we don't care.
+    }
+    try {
+      this.syncKeyBusy = this.makeSyncRequest(data);
+      return await this.syncKeyBusy;
+    } finally {
+      this.syncKeyBusy = null;
+    }
+  }
+
+  protected async makeSyncRequest(data?: any): Promise<any> {
+    let request = {
+      Collections: {
+        Collection: Object.assign({
+          SyncKey: this.syncState || "0",
+          CollectionId: this.id,
+        }, data),
+      },
+    };
+    let response = await this.account.callEAS("Sync", request);
+    if (!response) {
+      return null;
+    }
+    if (response.Collections.Collection.Status == "3") {
+      // Out of sync.
+      this.syncState = null;
+      await SQLFolder.save(this);
+    }
+    if (response.Collections.Collection.Status != "1") {
+      throw new EASError("Sync", response.Collections.Collection.Status);
+    }
+    this.syncState = response.Collections.Collection.SyncKey;
+    await SQLFolder.save(this);
+    return response.Collections.Collection;
+  }
+
+  async listMessages(): Promise<ArrayColl<ActiveSyncEMail>> {
+    await this.readFolder();
+    let newMsgs = new ArrayColl<ActiveSyncEMail>();
+    let data = {
+      WindowSize: String(kMaxCount),
+      Options: {
+        MIMESupport: "2",
+        BodyPreference: {
+          Type: "4",
+          TruncationSize: "0",
+        },
+      },
+    };
+    let response: any = { MoreAvailable: "" };
+    while (response.MoreAvailable == "") {
+      response = await this.queuedSyncRequest(data);
+      if (!response) {
+        // No changes at all.
+        break;
+      }
+      for (let item of ensureArray(response.Commands?.Add).concat(ensureArray(response.Commands?.Change))) {
+        let email = this.getEmailByServerID(item.ServerId);
+        if (email) {
+          email.setFlags(item.ApplicationData);
+          await SQLEMail.saveWritableProps(email);
+        } else {
+          email = this.newEMail();
+          email.serverID = item.ServerId;
+          email.fromWBXML(item.ApplicationData);
+          await SQLEMail.save(email);
+          newMsgs.add(email);
+        }
+      }
+      for (let item of ensureArray(response.Commands?.Delete)) {
+        let email = this.getEmailByServerID(item.ServerId);
+        if (email) {
+          await email.deleteMessageLocally();
+        }
+      }
+    }
+    this.messages.addAll(newMsgs);
+    return newMsgs;
+  }
+
+  async downloadMessages(emails: Collection<ActiveSyncEMail>): Promise<Collection<ActiveSyncEMail>> {
+    let downloadedEmail = new ArrayColl<ActiveSyncEMail>();
+    let emailsToDownload = emails.contents;
+    for (let i = 0; i < emailsToDownload.length; i += kMaxCount) {
+      let batch = emailsToDownload.slice(i, i + kMaxCount);
+      let request = {
+        Fetch: batch.map(email => ({
+          Store: "Mailbox",
+          ServerId: email.serverID,
+          CollectionId: this.id,
+          Options: {
+            MIMESupport: "2",
+            BodyPreference: {
+              Type: "4",
+            },
+          },
+        })),
+      };
+      let results = await this.account.callEAS("ItemOperations", request);
+      for (let result of ensureArray(results.Response.Fetch)) try {
+        if (result.Status != "1") {
+          throw new EASError("ItemOperations", result.Status);
+        }
+        let email = emailsToDownload.find(email => email.serverID == result.ServerID);
+        if (email && !email.downloadComplete) {
+          email.mime = result.Properties.Body.RawData;
+          await email.parseMIME();
+          await email.save();
+          downloadedEmail.add(email);
+        }
+      } catch (ex) {
+        this.account.errorCallback(ex);
+      }
+    }
+    return downloadedEmail;
+  }
+
+  async getNewMessages(): Promise<ArrayColl<ActiveSyncEMail>> {
+    let newMsgs = await this.listMessages();
+    await this.downloadMessages(newMsgs);
+    return newMsgs;
+  }
+
+  async addMessage(email: ActiveSyncEMail) {
+    throw new NotSupported("Drafts are not supported by ActiveSync 14.1");
+    // ActiveSync 16 apparently does let you create drafts.
+  }
+
+  getEmailByServerID(id: string): ActiveSyncEMail | undefined {
+    if (!id) {
+      return undefined;
+    }
+    return this.messages.find(m => m.serverID == id);
+  }
+
+  async moveMessagesHere(messages: Collection<ActiveSyncEMail>) {
+    assert(messages.contents.every(message => message.folder.account == this.account), "Cannot move messages between accounts");
+    let request = {
+      Move: messages.contents.map(msg => ({
+        SrcMsgId: msg.serverID,
+        SrcFldId: msg.folder.id,
+        DstFldId: this.id,
+      })),
+    };
+    let result = await this.account.callEAS("MoveItems", request);
+    // Just reporting to the console for now.
+    for (let response of ensureArray(result.Response)) {
+      // "3" is success for a Move operation... go figure.
+      if (response.Status != "3") {
+        console.error(`ActiveSync MoveItems status ${response.Status}`);
+      }
+    }
+  }
+
+  async copyMessagesHere(messages: Collection<ActiveSyncEMail>) {
+    throw new NotSupported("ActiveSync does not permit messages to be copied");
+  }
+
+  async moveFolderHere(folder: ActiveSyncFolder) {
+    assert(folder.account == this.account, "Cannot move folders between accounts");
+    let request = {
+      ServerId: this.id,
+      ParentId: folder.id,
+      DisplayName: this.name,
+    };
+    await this.account.queuedRequest("FolderUpdate", request);
+    await super.moveFolderHere(folder);
+    // We're required to sync which should be a no-op at this point.
+    await this.account.listFolders();
+  }
+
+  async createSubFolder(name: string): Promise<ActiveSyncFolder> {
+    let request = {
+      ParentId: this.id,
+      DisplayName: name,
+      Type: "1",
+    };
+    let result = await this.account.queuedRequest("FolderCreate", request);
+    // We're required to sync the folder hierarchy after creating a folder.
+    // This would normally perform the folder creation steps for us,
+    // but unfortunately the API wants us to return the new folder,
+    // even though nobody ever uses it, so we have to jump through hoops.
+    let folder = await super.createSubFolder(name) as ActiveSyncFolder;
+    folder.id = sanitize.nonemptystring(result.ServerId);
+    await this.account.listFolders();
+    return folder;
+  }
+
+  async rename(name: string) {
+    let request = {
+      ServerId: this.id,
+      ParentId: this.parent?.id || "0",
+      DisplayName: name,
+    };
+    await this.account.queuedRequest("FolderUpdate", request);
+    await super.rename(name);
+    // We're required to sync which should be a no-op at this point.
+    await this.account.listFolders();
+  }
+
+  async deleteIt() {
+    let request = {
+      ServerId: this.id,
+    };
+    await this.account.queuedRequest("FolderDelete", request);
+    await SQLFolder.deleteIt(this);
+    this.removeFromParent();
+    // We're required to sync which should be a no-op at this point.
+    await this.account.listFolders();
+  }
+
+  async markAllRead() {
+    throw new NotImplemented();
+  }
+
+  disableChangeSpecial(): string | false {
+    return "You cannot change Exchange special folders.";
+  }
+}
+
+export function ensureArray<Type>(val: Type[] | Type): Type[] {
+  return val ? Array.isArray(val) ? val : [val] : [];
 }
