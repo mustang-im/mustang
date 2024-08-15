@@ -97,7 +97,7 @@ export function getUILocalePref() {
 }
 
 export function saveUILocale(language: string) {
-  localStorage.setItem("ui.locale", language || null);
+  localStorage.setItem("ui.locale", language);
   cachedUILocale = null;
 }
 
