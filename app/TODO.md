@@ -1,19 +1,19 @@
 # Next
 * Mail
-  * Thunderbird AB import all fields
   * OAuth2
     * Google approval
     * Microsoft: Client ID for public
-  * IMAP poll
+  * IMAP, see below
+  * Inline images send
+  * Context menu for content: Copy text, link, image
   * Bug: Search and persons view: Disable until search bug fixed
+  * Bug: Thunderbird AB import misses ABs and fields
   * Calendar
     * Edit event UI
     * Move to other calendar
-  * Inline images send
-  * Folders appear twice - Get folder list from server after login
-  * Context menu for content: Copy text, link, image
   * FastTree
-    * Drag&Drop: Open on drag over - for: Move messages to deep subfolders
+    * Drag&Drop: Open on drag over - for: Move messages to deep subfolders -> Rewrite FastTree
+  * Bugs: FastList doesn't update some rows #66
   * Move messages to other accounts
   * Main window
     * Save window size
@@ -22,26 +22,21 @@
     * Hide quotes
     * Message list: Threaded view?
     * Mail Chat view: Open thread
-  * Search
-    * Saved searches - Edit
-    * Actions (Filters)
-      * Create
-      * List
-      * Edit
-      * Run
-  * Bugs: FastList doesn't update some rows #66
+  * Actions (Filters) (after search)
+    * Create
+    * List
+    * Edit
+    * Run
   * Tags: Shrink tag list when not enough space
   * OAuth2: Popup dialog - for setup
   * All accounts
     * Fix mergeColls() #72
     * Use search folder
   * Setup mail
-    * after account delete: remove general panel
+    * After account delete: remove general panel
+    * Scroll inside dialog, not whole window
 
 # Initial release
-* Installer
-  * Auto-update client
-  * Auto-update test
 * Beta notification bar
 * Beta time-bomb
 * License client
@@ -160,17 +155,11 @@
 * Body
   * Link: Right-click menu, copy
 * Filter actions
-* Virtual folders / Saved searches - DONE
-* IMAP
-  * UID vs. seq
-  * modseq und CONDSTORE - implemented
-  * Subscribed folders only, and subscription UI
-* Removed emails
-  * During fetch after login - FIXED?
-  * Loop when deleting mail manually twice: FilteredCollection removed observers - FIXED?
-* Autoconfig
-  * Exchange AutoDiscover V2 and V1 - partially implemented
-  * Scrollbar for dialog box, not app window
+* Special folders
+  * Better detection based on flags
+  * Based on common names
+  * Manually in settings - DONE
+  * Set on server after manually changing
 * Import
   * Thunderbird
      * Account settings - DONE
@@ -182,14 +171,18 @@
      * Contacts
      * Calendar
      * Mails
+
+## IMAP
+* Expunge notification: Seq changes and deletes the wrong message
+* Deleted emails: Update folder (and remove msgs) after login
+* Update folder list (and remove folders) after login
+  * Folders appear twice - Get folder list from server after login
+* UID vs. seq
+* Poll
+* Subscribed folders only, and subscription UI
 * Move folder
 * Delete strategy
   * Expunge on quit
-* Special folders
-  * Better detection based on flags
-  * Based on common names
-  * Manually in settings - DONE
-  * Set on server after manually changing
 
 ## Missing features
 * Filters / Actions
