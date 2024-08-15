@@ -36,6 +36,7 @@ export class Event extends Observable {
   /**
    * If this is an instance of a recurring meeting (not the master),
    * then this is the instance's original start time.
+   * The `startTime` may contain a modified time as an exception.
    * This allows us to work out the instance index of an exception,
    * even if its actual start time has been modified.
    */
