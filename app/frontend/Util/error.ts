@@ -1,4 +1,5 @@
 import { notifications, Notification, NotificationSeverity } from "../MainWindow/Notification";
+import { production } from "../../logic/build";
 import * as Sentry from "@sentry/svelte";
 
 export function showError(ex: Error) {
@@ -28,7 +29,9 @@ export function logError(ex: Error) {
     if ((ex as any)?.isUserError) {
       return;
     }
-    Sentry.captureException(ex);
+    if (production) {
+      Sentry.captureException(ex);
+    }
   } catch (ex) {
     console.error(ex);
   }

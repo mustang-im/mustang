@@ -263,10 +263,6 @@
 * Chat & Video conf
 * Combined: Mail, chat, fileshare, calendar, contacts with single login/setup
 
-# Server
-* Error logging server: Sentry
-  * Error logging client
-
 # Later
 * mailto handler
 * WhatsApp
