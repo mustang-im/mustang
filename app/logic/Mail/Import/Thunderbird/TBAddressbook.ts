@@ -3,7 +3,8 @@ import type { ThunderbirdProfile } from "./TBProfile";
 import { ContactEntry, Person } from "../../../Abstract/Person";
 import { appGlobal } from "../../../app";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
-import { ArrayColl } from "svelte-collections";
+import { assert, NotReached } from "../../../util/util";
+import { ArrayColl, SetColl } from "svelte-collections";
 import sql, { Database } from "../../../../../lib/rs-sqlite";
 
 export class ThunderbirdAddressbook extends Addressbook {
@@ -17,32 +18,141 @@ export class ThunderbirdAddressbook extends Addressbook {
     let db = await this.getDatabase(profile, dbFilename);
     let rows = await db.all(sql`
       SELECT
-        card, name, value
+        card as cardID, name, value
       FROM properties
       `) as any;
-    let cards = rows.filter(row => row.name == "PrimaryEmail");
-    let fallbackID = 0;
-    for (let card of cards) {
+    let ids = new SetColl<string>();
+    for (let row of rows) {
+      ids.add(row.cardID);
+    }
+    for (let id of ids) {
       try {
-        let id = sanitize.alphanumdash(card.card, "" + ++fallbackID);
-        let emailAddress = sanitize.emailAddress(card.value);
-        let values = rows.filter(row => row.card == id);
-        let person = new Person();
-        person.id = id;
-        person.name = sanitize.nonemptystring(values.find(row => row.name == "DisplayName")?.value, emailAddress);
-        person.firstName = sanitize.string(values.find(row => row.name == "FirstName")?.value, null);
-        person.lastName = sanitize.string(values.find(row => row.name == "LastName")?.value, null);
-        let entry = new ContactEntry(emailAddress, "main");
-        entry.protocol = "email";
-        entry.preference = 0;
-        person.emailAddresses.add(entry);
+        id = sanitize.alphanumdash(id);
+        let personRows = rows.filter(row => row.cardID == id);
+        let person = this.readCard(id, personRows);
         ab.persons.add(person);
       } catch (ex) {
         entryErrorCallback(ex);
       }
     }
 
+    assert(ab.persons.hasItems, "No persons found");
     return ab;
+  }
+
+  protected static readCard(id: string, rows: any[]): Person {
+    function getRow(name: string): string | null {
+      return rows.find(row => row.name == name)?.value;
+    }
+    function addContact(contact: string, protocol: string, purpose: string, preference: number, addTo: ArrayColl<ContactEntry>) {
+      if (!contact) {
+        return;
+      }
+      let entry = new ContactEntry(contact);
+      entry.purpose = purpose;
+      entry.protocol = protocol;
+      entry.preference = preference;
+      addTo.add(entry);
+    }
+
+    let person = new Person();
+    person.id = id;
+    let emailAddress = sanitize.emailAddress(getRow("PrimaryEmail"), null);
+
+    // Name
+    person.firstName = sanitize.nonemptystring(getRow("FirstName"), null);
+    person.lastName = sanitize.nonemptystring(getRow("LastName"), null);
+    person.name = sanitize.nonemptystring(getRow("DisplayName"), null);
+    if (person.name) {
+      // Good
+    } else if (person.firstName || person.lastName) {
+      person.name =
+        person.firstName +
+        (person.firstName && person.lastName ? " " : "") +
+        person.lastName;
+    } else if (emailAddress) {
+      person.name = emailAddress;
+    } else {
+      throw new NotReached("Need either name or email address for contact");
+    }
+
+    person.notes = sanitize.nonemptystring(getRow("Notes"), null);
+    person.popularity = sanitize.integer(getRow("PopularityIndex"), 0);
+    let photo = getRow("PhotoURI");
+    if (photo && getRow("PhotoType") != "generic" && !photo.startsWith("chrome:")) {
+      person.picture = sanitize.url(photo, null);
+    }
+
+    // Company
+    person.company = sanitize.nonemptystring(getRow("Company"), null);
+    person.department = sanitize.nonemptystring(getRow("Department"), null);
+    person.position = sanitize.nonemptystring(getRow("JobTitle"), null);
+
+    // Mail
+    addContact(emailAddress, "email", "main", 0, person.emailAddresses);
+    addContact(sanitize.emailAddress(getRow("SecondEmail"), null), "email", "second", 1, person.emailAddresses);
+
+    // Phone
+    addContact(sanitize.nonemptystring(getRow("CellularNumber"), null), "phone", "mobile", 1, person.phoneNumbers);
+    addContact(sanitize.nonemptystring(getRow("WorkPhone"), null), "phone", "work", 2, person.phoneNumbers);
+    addContact(sanitize.nonemptystring(getRow("HomePhone"), null), "phone", "home", 3, person.phoneNumbers);
+    addContact(sanitize.nonemptystring(getRow("FaxNumber"), null), "fax", "work", 100, person.phoneNumbers);
+    addContact(sanitize.nonemptystring(getRow("PagerNumber"), null), "other", "work", 100, person.phoneNumbers);
+
+    // URLs
+    addContact(sanitize.nonemptystring(getRow("WebPage1"), null), "url", "web", 1, person.urls);
+    addContact(sanitize.nonemptystring(getRow("WebPage2"), null), "url", "web", 2, person.urls);
+
+    // Chat
+    addContact(sanitize.nonemptystring(getRow("_AimScreenName"), null), "aim", "main", 10, person.chatAccounts);
+    addContact(sanitize.nonemptystring(getRow("_Skype"), null), "skype", "main", 10, person.chatAccounts);
+    addContact(sanitize.nonemptystring(getRow("_QQ"), null), "qq", "main", 10, person.chatAccounts);
+
+    // Street addresses
+    function addStreetAddress(street: string, street2: string, postcode: string, city: string, state: string, country: string, purpose: string, preference: number) {
+      if (!(street || street2 || postcode || city || state || country)) {
+        return;
+      }
+      let address = `${street || ""}${street && street2 ? " - " : ""}${street2 || ""}\n${postcode || ""}\n${city || ""}\n${state || ""}\n${country || ""}`;
+      addContact(address, "address", purpose, preference, person.streetAddresses);
+    }
+    addStreetAddress(
+      getRow("WorkAddress"), getRow("WorkAddress2"),
+      getRow("WorkZipCode"), getRow("WorkCity"),
+      getRow("WorkState"), getRow("WorkCountry"),
+      "work", 1);
+    addStreetAddress(
+      getRow("HomeAddress"), getRow("HomeAddress2"),
+      getRow("HomeZipCode"), getRow("HomeCity"),
+      getRow("HomeState"), getRow("HomeCountry"),
+      "home", 2);
+
+    // Birthday
+    let birthYear = sanitize.integer(getRow("BirthYear"), null);
+    let birthMonth = sanitize.integer(getRow("BirthMonth"), null);
+    let birthDay = sanitize.integer(getRow("BirthDay"), null);
+    if (birthYear || birthMonth || birthDay) {
+      let date = new Date();
+      date.setUTCFullYear(birthYear);
+      date.setUTCMonth(birthMonth);
+      date.setUTCDate(birthDay);
+      let birthStr = date.toLocaleDateString(undefined, {
+        year: birthYear ? 'numeric' : undefined,
+        month: birthMonth ? 'long' : undefined,
+        day: birthDay ? 'numeric' : undefined,
+      });
+      addContact(birthStr, "date-locale", "birthday", 0, person.custom);
+      addContact(`${birthYear || ""}-${birthMonth || ""}-${birthDay || ""}`, "date-iso", "birthday", 1, person.custom);
+    }
+
+    // Additional fields
+    addContact(sanitize.nonemptystring(getRow("NickName"), null), "name", "nick", 0, person.custom);
+    addContact(sanitize.nonemptystring(getRow("Custom1"), null), "other", "1", 1, person.custom);
+    addContact(sanitize.nonemptystring(getRow("Custom2"), null), "other", "2", 2, person.custom);
+    addContact(sanitize.nonemptystring(getRow("Custom3"), null), "other", "3", 3, person.custom);
+    addContact(sanitize.nonemptystring(getRow("Custom4"), null), "other", "4", 4, person.custom);
+
+    return person;
   }
 
   static async readAll(profile: ThunderbirdProfile,

@@ -12,6 +12,10 @@ export class Person extends ContactBase {
   readonly chatAccounts = new ArrayColl<ContactEntry>();
   readonly groups = new ArrayColl<ContactEntry>();
   readonly streetAddresses = new ArrayColl<ContactEntry>();
+  /** Webpages about the person */
+  readonly urls = new ArrayColl<ContactEntry>();
+  /** Custom user-defined fields */
+  readonly custom = new ArrayColl<ContactEntry>();
   @notifyChangedProperty
   notes: string | null = "";
 
@@ -21,6 +25,12 @@ export class Person extends ContactBase {
   department: string;
   @notifyChangedProperty
   position: string;
+
+  /** How often this person has been contacted recently.
+   * A combination of frequency and recency.
+   * Higher is more popular. */
+  @notifyChangedProperty
+  popularity: number = 0;
 
   async save() {
     await super.save();
@@ -41,29 +51,33 @@ export class Person extends ContactBase {
 
   notifyObservers(propertyName?: string, oldValue?: any): void {
     if (propertyName == "name" && this.name && typeof (this.name) == "string") {
-      let sp = this.name?.split(" ");
-      if (!this.lastName || !this.firstName) {
-        // Last word is last name, rest is first name
-        if (sp.length > 1) {
-          this.lastName = sp.pop();
-          this.firstName = sp.join(" ");
-        }
-      } else {
-        let lastNameStart = this.name.indexOf(" " + this.lastName);
-        if (lastNameStart >= 0) { // editing first name
-          this.lastName = this.name.substring(lastNameStart + 1).trim();
-          this.firstName = this.name.substring(0, lastNameStart).trim();
-        } else { // editing last name
-          if (this.firstName == this.name.substring(0, this.firstName.length)) {
-            this.lastName = this.name.substring(this.firstName.length + 1).trim();
-          } else {
-            this.firstName = "";
-            this.lastName = "";
-          }
+      this.fixName();
+    }
+    super.notifyObservers(propertyName, oldValue);
+  }
+
+  protected fixName(): void {
+    let sp = this.name?.split(" ");
+    if (!this.lastName || !this.firstName) {
+      // Last word is last name, rest is first name
+      if (sp.length > 1) {
+        this.lastName = sp.pop();
+        this.firstName = sp.join(" ");
+      }
+    } else {
+      let lastNameStart = this.name.indexOf(" " + this.lastName);
+      if (lastNameStart >= 0) { // editing first name
+        this.lastName = this.name.substring(lastNameStart + 1).trim();
+        this.firstName = this.name.substring(0, lastNameStart).trim();
+      } else { // editing last name
+        if (this.firstName == this.name.substring(0, this.firstName.length)) {
+          this.lastName = this.name.substring(this.firstName.length + 1).trim();
+        } else {
+          this.firstName = "";
+          this.lastName = "";
         }
       }
     }
-    super.notifyObservers(propertyName, oldValue);
   }
 
   async merge(other: Person) {
@@ -71,11 +85,12 @@ export class Person extends ContactBase {
     this.company = this.company ?? other.company;
     this.department = this.department ?? other.department;
     this.position = this.position ?? other.position;
-    this.notes = this.notes ?? "" + other.notes ?? "";
+    this.notes = ((this.notes || "") + (other.notes || "")) || null;
     this.emailAddresses.addAll(other.emailAddresses);
     this.phoneNumbers.addAll(other.phoneNumbers);
     this.chatAccounts.addAll(other.chatAccounts);
     this.streetAddresses.addAll(other.streetAddresses);
+    this.urls.addAll(other.urls);
     this.groups.addAll(other.groups);
     await other.deleteIt();
   }

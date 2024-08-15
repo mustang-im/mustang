@@ -62,6 +62,7 @@
       return;
     }
     await person.merge(other);
+    await other.deleteIt();
     person = person;
   }
 </script>

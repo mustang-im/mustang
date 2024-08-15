@@ -14,11 +14,12 @@ export class SQLPerson {
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO person (
           name, firstName, lastName,
-          picture, notes, pID, addressbookID
+          picture, notes, popularity,
+          pID, addressbookID
         ) VALUES (
           ${person.name}, ${person.firstName}, ${person.lastName},
-          ${person.picture}, ${person.notes}, ${person.id},
-          ${person.addressbook?.dbID}
+          ${person.picture}, ${person.notes}, ${person.popularity},
+          ${person.id}, ${person.addressbook?.dbID}
         )`);
       person.dbID = insert.lastInsertRowid;
     } else {
@@ -29,6 +30,7 @@ export class SQLPerson {
           lastName = ${person.lastName},
           picture = ${person.picture},
           notes = ${person.notes},
+          popularity = ${person.popularity},
           pID = ${person.id},
           addressbookID = ${person.addressbook?.dbID}
         WHERE id = ${person.dbID}
@@ -38,6 +40,8 @@ export class SQLPerson {
     SQLPerson.saveContacts(person, person.chatAccounts, ContactType.Chat);
     SQLPerson.saveContacts(person, person.phoneNumbers, ContactType.Phone);
     SQLPerson.saveContacts(person, person.streetAddresses, ContactType.StreetAddress);
+    SQLPerson.saveContacts(person, person.urls, ContactType.URL);
+    SQLPerson.saveContacts(person, person.custom, ContactType.Custom);
   }
 
   protected static async saveContacts(person: Person, contacts: Collection<ContactEntry>, contactType: ContactType) {
@@ -73,7 +77,7 @@ export class SQLPerson {
       row = await (await getDatabase()).get(sql`
         SELECT
           name, firstName, lastName,
-          picture, notes, addressbookID, pID
+          picture, notes, popularity, addressbookID, pID
         FROM person
         WHERE id = ${dbID}
         `) as any;
@@ -84,6 +88,7 @@ export class SQLPerson {
     person.lastName = sanitize.string(row.lastName, null);
     person.picture = sanitize.url(row.picture, null);
     person.notes = sanitize.string(row.notes, null);
+    person.popularity = sanitize.integer(row.popularity, null);
     person.id = sanitize.string(row.pID, null);
     if (row.addressbookID) {
       let addressbookID = sanitize.integer(row.addressbookID);
@@ -120,6 +125,10 @@ export class SQLPerson {
         person.phoneNumbers.add(contactEntry);
       } else if (type == ContactType.StreetAddress) {
         person.streetAddresses.add(contactEntry);
+      } else if (type == ContactType.URL) {
+        person.urls.add(contactEntry);
+      } else if (type == ContactType.Custom) {
+        person.custom.add(contactEntry);
       } else {
         console.log("Unknown contact detail type", type, row);
         return; // Forward compatibility. Do not throw.
@@ -139,7 +148,7 @@ export class SQLPerson {
     let rows = await (await getDatabase()).all(sql`
       SELECT
         id, name, firstName, lastName,
-        picture, notes, pID
+        picture, notes, popularity, pID
       FROM person
       WHERE addressbookID = ${addressbook.dbID}
       `) as any;
@@ -167,4 +176,6 @@ enum ContactType {
   Chat = 2,
   Phone = 3,
   StreetAddress = 4,
+  URL = 5,
+  Custom = 6,
 }

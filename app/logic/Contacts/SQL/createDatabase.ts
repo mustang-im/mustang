@@ -26,6 +26,7 @@ export const contactsDatabaseSchema = sql`
     -- URL
     "picture" TEXT default null,
     "notes" TEXT default null,
+    "popularity" INTEGER default null,
     FOREIGN KEY (addressbookID)
       REFERENCES addressbook (id)
       ON DELETE SET NULL
