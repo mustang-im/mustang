@@ -5,21 +5,18 @@
     * Google approval
     * Microsoft: Client ID for public
   * IMAP poll
-  * Bug: Persons view: disable until bug fixed
+  * Bug: Search and persons view: Disable until search bug fixed
   * Calendar
     * Edit event UI
     * Move to other calendar
   * Inline images send
+  * Folders appear twice - Get folder list from server after login
   * Context menu for content: Copy text, link, image
   * FastTree
     * Drag&Drop: Open on drag over - for: Move messages to deep subfolders
   * Move messages to other accounts
-  * Folders appear twice
   * Main window
     * Save window size
-  * Tags
-    * Shrink tag list when not enough space
-    * Save tags to EWS and OWA
   * Threads
     * Search all folders
     * Hide quotes
@@ -33,6 +30,7 @@
       * Edit
       * Run
   * Bugs: FastList doesn't update some rows #66
+  * Tags: Shrink tag list when not enough space
   * OAuth2: Popup dialog - for setup
   * All accounts
     * Fix mergeColls() #72
