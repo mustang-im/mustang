@@ -7,16 +7,11 @@ export enum Frequency {
   Yearly = "YEARLY",
 }
 
+/**
+ * Maps between pretty names (also used by Exchange) and
+ * JavaScript day of week values (as returned by getDay)
+ */
 export enum Weekday {
-  // iCal names
-  SU = 0,
-  MO = 1,
-  TU = 2,
-  WE = 3,
-  TH = 4,
-  FR = 5,
-  SA = 6,
-  // Pretty names (must come last)
   Sunday = 0,
   Monday = 1,
   Tuesday = 2,
@@ -24,6 +19,17 @@ export enum Weekday {
   Thursday = 4,
   Friday = 5,
   Saturday = 6,
+}
+
+/** Maps between iCal names and JavaScript day of week values */
+export enum iCalWeekday {
+  SU = 0,
+  MO = 1,
+  TU = 2,
+  WE = 3,
+  TH = 4,
+  FR = 5,
+  SA = 6,
 }
 
 /**
@@ -124,13 +130,13 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
         data.week = sanitize.integer(byday[0]);
         byday = byday.split(byday[0]).join("");
       }
-      data.weekdays = byday.split(",").map(day => Weekday[day]);
+      data.weekdays = byday.split(",").map(day => iCalWeekday[day]);
       for (let day of data.weekdays) {
         sanitize.integer(day);
       }
     }
     if (first) {
-      data.first = sanitize.integer(Weekday[first]);
+      data.first = sanitize.integer(iCalWeekday[first]);
     }
     return new RecurrenceRule(data);
   }
@@ -148,10 +154,10 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     }
     if (this.weekdays) {
       let weekstr = String((this.week + 1) % 6 - 1 || "");
-      rule.BYDAY = this.weekdays.map(day => weekstr + Weekday[day].slice(0, 2).toUpperCase()).join(",");
+      rule.BYDAY = this.weekdays.map(day => weekstr + iCalWeekday[day]).join(",");
     }
     if (this.first != Weekday.Monday) {
-      rule.WKST = Weekday[this.first].slice(0, 2).toUpperCase();
+      rule.WKST = iCalWeekday[this.first];
     }
     return 'RRULE:' + Object.entries(rule).map(entry => entry.join("=")).join(";");
   }

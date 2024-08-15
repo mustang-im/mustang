@@ -79,7 +79,9 @@ export const calendarDatabaseSchema = sql`
     -- this is the event ID of the master.
     "recurrenceMasterEventID" INTEGER default null,
     -- If this is an instance of a recurring meeting (not the master),
-    -- this is the meeting's original start time.
+    -- this is the instance's original start time.
+    -- This allows us to work out the instance index of an exception,
+    -- even if its actual start time has been modified.
     "recurrenceStartTime" TEXT default null,
     -- If this is an instance of a recurring meeting (not the master),
     -- and this instance does not follow the normal pattern set by the master,

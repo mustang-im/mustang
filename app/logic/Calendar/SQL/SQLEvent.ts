@@ -60,7 +60,7 @@ export class SQLEvent extends Event {
       `);
 
     for (let i = 0; i < event.instances.length; i++) {
-      if (event.instances[i] === null) {
+      if (event.instances.get(i) === null) {
         await (await getDatabase()).run(sql`
           INSERT INTO eventExclusion (
             recurrenceMasterEventID, recurrenceIndex
@@ -138,7 +138,7 @@ export class SQLEvent extends Event {
         event.parentEvent = parentEvent;
         event.recurrenceStartTime = sanitize.date(row.recurrenceStartTime);
         let occurrences = event.parentEvent.recurrenceRule.getOccurrencesByDate(event.recurrenceStartTime);
-        event.parentEvent.instances[occurrences.length - 1] = event;
+        event.parentEvent.instances.set(occurrences.length - 1, event);
       }
     }
     if (row.recurrenceRule) {
@@ -159,7 +159,7 @@ export class SQLEvent extends Event {
       WHERE recurrenceMasterEventID = ${event.dbID}
       `) as any;
     for (let row of rows) {
-      event.instances[row.recurrenceIndex] = null;
+      event.instances.set(row.recurrenceIndex, null);
     }
   }
 
