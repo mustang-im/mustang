@@ -56,9 +56,11 @@
     }, { once: true });
   }
 
-  const heightBuffer = 30;
+  const heightBuffer = 20;
   function resizeWebview () {
     webviewE.executeJavaScript(`
+      document.body.style.minHeight = "0px";
+      document.body.style.height = "fit-content";
       new Promise(resolve => {
         const observer = new ResizeObserver(entries => {
           const contentRect = entries[0].contentRect;
