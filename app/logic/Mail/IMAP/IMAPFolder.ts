@@ -173,8 +173,9 @@ export class IMAPFolder extends Folder {
     return new ArrayColl(ids);
   }
 
-  /** Lists new messagess, and downloads them */
+  /** Lists new messages, and downloads them */
   async getNewMessages(): Promise<ArrayColl<IMAPEMail>> {
+    await this.checkDeletedMessages(this.recentMsg?.uid);
     let newMsgs = await this.listNewMessages();
     await this.downloadMessages(newMsgs);
     return newMsgs;
@@ -241,25 +242,32 @@ export class IMAPFolder extends Folder {
     return this.getEMailByUID(uid) ?? new IMAPEMail(this);
   }*/
 
+  /** Does *not* necessarily return the right email. But typically one close to it. */
   getEMailBySeq(seq: number): IMAPEMail {
-    //return this.messages.find((m: IMAPEMail) => m.seq == seq) as IMAPEMail;
+    let msg = this.messages.find((m: IMAPEMail) => m.seq == seq) as IMAPEMail;
+    if (msg) {
+      return msg;
+    }
     // The sequence number changes with every email deletion :-( Thus,
     // emulate how the server calculates the sequence number
     return this.messages.sortBy((m: IMAPEMail) => m.uid).getIndex(seq) as IMAPEMail;
   }
 
+  /** @returns UID of newest message known locally */
   protected get highestUID(): number {
     let uids = this.messages.map((msg: IMAPEMail) => msg.uid);
     return uids.sortBy(uid => -uid).first;
   }
 
+  /** @returns message from n days ago */
   protected get recentMsg(): IMAPEMail {
+    const kDaysPast = 14;
     let recently = new Date();
-    recently.setDate(recently.getDate() - 14);
+    recently.setDate(recently.getDate() - kDaysPast);
     return this.messages
-      .filter(msg => msg.received.getTime() < recently.getTime())
+      .filter(msg => msg.received.getTime() < recently.getTime()) // last n days
       .sortBy((msg: IMAPEMail) => msg.uid)
-      .first as IMAPEMail;
+      .first as IMAPEMail; // oldest
   }
 
   updateModSeq(modseq: number) {
@@ -295,7 +303,6 @@ export class IMAPFolder extends Folder {
   }
 
   protected async pollRun() {
-    await this.checkDeletedMessages(this.recentMsg?.uid);
     await this.getNewMessages();
   }
 
@@ -357,7 +364,7 @@ export class IMAPFolder extends Folder {
     if (message) {
       let sortedByUID = this.messages.sortBy((msg: IMAPEMail) => -msg.uid);
       let pos = sortedByUID.getKeyForValue(message);
-      pos += 10; // Get a few more
+      pos += 20; // Get a few more
       let fromMsg = sortedByUID.getIndex(pos) ?? sortedByUID.last;
       fromUID = (fromMsg as IMAPEMail).uid;
     }

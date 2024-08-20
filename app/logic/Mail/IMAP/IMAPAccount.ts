@@ -94,7 +94,7 @@ export class IMAPAccount extends MailAccount {
       connectionTimeout: 5 * 1000, // 5 s connection timeout
       greetingTimeout: 5 * 1000, // 5 s greeting timeout
       socketTimeout: 30 * 60 * 1000, // 30 min of inactivity
-      logger: false,
+      logger: true,
     }
     // console.log("IMAP connection", options);
     let connection = await appGlobal.remoteApp.createIMAPFlowConnection(options);

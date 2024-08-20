@@ -173,16 +173,14 @@
      * Mails
 
 ## IMAP
-* Expunge notification: Seq changes and deletes the wrong message
-* Deleted emails: Update folder (and remove msgs) after login
 * Update folder list (and remove folders) after login
   * Folders appear twice - Get folder list from server after login
-* UID vs. seq
-* Poll
+* Save/read poll and login prefs
+* Fallback: When CONDSTORE and changedSince not supported
 * Subscribed folders only, and subscription UI
 * Move folder
-* Delete strategy
-  * Expunge on quit
+* Fallback: When UID not supported
+* Expunge on quit
 
 ## Missing features
 * Filters / Actions
