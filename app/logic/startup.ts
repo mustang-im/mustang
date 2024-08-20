@@ -41,7 +41,9 @@ export async function loginOnStartup(startupErrorCallback: (ex) => void, backgro
   for (let account of appGlobal.chatAccounts) {
     try {
       account.errorCallback = backgroundErrorCallback;
-      await account.login(false);
+      if (account.loginOnStartup) {
+        await account.login(false);
+      }
     } catch (e) {
       startupErrorCallback(e);
     }
@@ -50,10 +52,12 @@ export async function loginOnStartup(startupErrorCallback: (ex) => void, backgro
   for (let account of appGlobal.emailAccounts) {
     //if (!(await account.isLoggedIn) && (await account.haveStoredLogin())) {
     try {
-      console.log("Logging in mail account", account.name);
       account.errorCallback = backgroundErrorCallback;
-      await account.login(false);
-      // await account.inbox.getNewMessages();
+      if (account.loginOnStartup) {
+        console.log("Logging in mail account", account.name);
+        await account.login(false);
+        // await account.inbox.getNewMessages();
+      }
     } catch (e) {
       startupErrorCallback(e);
     }

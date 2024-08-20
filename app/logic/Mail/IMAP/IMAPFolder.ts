@@ -12,6 +12,7 @@ import { gt } from "../../../l10n/l10n";
 export class IMAPFolder extends Folder {
   account: IMAPAccount;
   uidvalidity: number = 0;
+  protected poller: ReturnType<typeof setInterval>;
   readonly deletions = new Set<number>();
 
   constructor(account: IMAPAccount) {
@@ -119,7 +120,7 @@ export class IMAPFolder extends Folder {
     if (this.countTotal === 0) {
       return;
     }
-    let { newMessages } = await this.fetchMessageList({ uid: this.highestUID() + ":*" }, {
+    let { newMessages } = await this.fetchMessageList({ uid: this.highestUID + ":*" }, {
       changedSince: this.lastModSeq,
     });
     this.messages.addAll(newMessages);
@@ -127,19 +128,20 @@ export class IMAPFolder extends Folder {
     return newMessages;
   }
 
-  protected async fetchMessageList(range: any, options: any): Promise<{ newMessages: ArrayColl<IMAPEMail>, updatedMessages: ArrayColl<IMAPEMail> }> {
+  protected async fetchMessageList(range: any, options: any, idsOnly = false): Promise<{ newMessages: ArrayColl<IMAPEMail>, updatedMessages: ArrayColl<IMAPEMail> }> {
+    console.log("IMAP fetch", range);
     let newMessages = new ArrayColl<IMAPEMail>();
     let updatedMessages = new ArrayColl<IMAPEMail>();
-    console.log("IMAP fetch", range);
     await this.runCommand(async (conn) => {
-      let msgsAsyncIterator = await conn.fetch(range, {
+      let returnData = {
         uid: true,
         size: true,
         threadId: true,
         internalDate: true,
         envelope: true,
         flags: true,
-      }, options);
+      };
+      let msgsAsyncIterator = await conn.fetch(range, returnData, options);
       for await (let msgInfo of msgsAsyncIterator) {
         if (!msgInfo.envelope) {
           continue;
@@ -162,9 +164,13 @@ export class IMAPFolder extends Folder {
     return { newMessages, updatedMessages };
   }
 
-  protected highestUID(): number {
-    let uids = this.messages.map((msg: IMAPEMail) => msg.uid);
-    return uids.sortBy(uid => -uid).first;
+  /** @returns UIDs within the requested range */
+  protected async fetchUIDList(range: any): Promise<ArrayColl<number>> {
+    let ids: number[];
+    await this.runCommand(async (conn) => {
+      ids = await conn.search(range, { uid: true });
+    });
+    return new ArrayColl(ids);
   }
 
   /** Lists new messagess, and downloads them */
@@ -236,7 +242,24 @@ export class IMAPFolder extends Folder {
   }*/
 
   getEMailBySeq(seq: number): IMAPEMail {
-    return this.messages.find((m: IMAPEMail) => m.seq == seq) as IMAPEMail;
+    //return this.messages.find((m: IMAPEMail) => m.seq == seq) as IMAPEMail;
+    // The sequence number changes with every email deletion :-( Thus,
+    // emulate how the server calculates the sequence number
+    return this.messages.sortBy((m: IMAPEMail) => m.uid).getIndex(seq) as IMAPEMail;
+  }
+
+  protected get highestUID(): number {
+    let uids = this.messages.map((msg: IMAPEMail) => msg.uid);
+    return uids.sortBy(uid => -uid).first;
+  }
+
+  protected get recentMsg(): IMAPEMail {
+    let recently = new Date();
+    recently.setDate(recently.getDate() - 14);
+    return this.messages
+      .filter(msg => msg.received.getTime() < recently.getTime())
+      .sortBy((msg: IMAPEMail) => msg.uid)
+      .first as IMAPEMail;
   }
 
   updateModSeq(modseq: number) {
@@ -245,6 +268,53 @@ export class IMAPFolder extends Folder {
     }
     if (modseq > this.lastModSeq) {
       this.lastModSeq = modseq;
+    }
+  }
+
+  startPolling() {
+    if (!this.account.pollIntervalMinutes) {
+      return;
+    }
+    this.stopPolling();
+
+    this.poller = setInterval(async () => {
+      try {
+        await this.pollRun();
+      } catch (ex) {
+        this.account.errorCallback(ex);
+      }
+    }, this.account.pollIntervalMinutes * 1000 * 60);
+  }
+
+  stopPolling() {
+    if (!this.poller) {
+      return;
+    }
+    clearInterval(this.poller);
+    this.poller = null;
+  }
+
+  protected async pollRun() {
+    await this.checkDeletedMessages(this.recentMsg?.uid);
+    await this.getNewMessages();
+  }
+
+  /**
+   * Compares messages on the server with the locally known messages,
+   * and deletes all messages locally that do not exist on the server.
+   *
+   * @param fromUID Check all messages starting with this UID,
+   *   up to the newest message in this folder.
+   *   Optional. By default, checks entire folder (may be slow!)
+   */
+  async checkDeletedMessages(fromUID: number = 1) {
+    let localMsgs = this.messages.filter((msg: IMAPEMail) => msg.uid >= fromUID);
+    let serverUIDs = await this.fetchUIDList({ uid: fromUID + ":" + this.highestUID });
+    let deletedMsgs = localMsgs.filter((msg: IMAPEMail) => !serverUIDs.includes(msg.uid));
+
+    this.messages.removeAll(deletedMsgs);
+    for (let deletedMsg of deletedMsgs) {
+      await deletedMsg.deleteMessageLocally();
     }
   }
 
@@ -282,12 +352,16 @@ export class IMAPFolder extends Folder {
   /** We received an event from the server that a
    * message was deleted */
   async messageDeletedNotification(seq: number): Promise<void> {
+    let fromUID: number;
     let message = this.getEMailBySeq(seq);
-    if (!message) {
-      return;
+    if (message) {
+      let sortedByUID = this.messages.sortBy((msg: IMAPEMail) => -msg.uid);
+      let pos = sortedByUID.getKeyForValue(message);
+      pos += 10; // Get a few more
+      let fromMsg = sortedByUID.getIndex(pos) ?? sortedByUID.last;
+      fromUID = (fromMsg as IMAPEMail).uid;
     }
-    this.messages.remove(message);
-    await SQLEMail.deleteIt(message);
+    await this.checkDeletedMessages(fromUID);
   }
 
   async addMessage(email: EMail) {

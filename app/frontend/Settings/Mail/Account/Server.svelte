@@ -3,15 +3,20 @@
   <hbox class="subtitle">{$t`Your email provider or company can tell you these details.`}</hbox>
 
   <ManualConfig config={mailAccount} stepFull={true} />
-</vbox>
 
+  {#if account instanceof IMAPAccount}
+    <ServerIMAPAdvanced {account} />
+  {/if}
+</vbox>
 
 <script lang="ts">
   import type { Account } from "../../../../logic/Abstract/Account";
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
   import { SQLMailAccount } from "../../../../logic/Mail/SQL/SQLMailAccount";
+  import { IMAPAccount } from "../../../../logic/Mail/IMAP/IMAPAccount";
   import { catchErrors } from "../../../Util/error";
   import ManualConfig from "../../Setup/Mail/manual/ManualConfig.svelte";
+  import ServerIMAPAdvanced from "./ServerIMAPAdvanced.svelte";
   import { t } from "../../../../l10n/l10n";
 
   export let account: Account;

@@ -21,6 +21,9 @@ export class IMAPAccount extends MailAccount {
   acceptOldTLS = false;
   pathDelimiter: string; /** Separator in folder path. E.g. '.' or '/', depending on server */
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
+  /** if polling is enabled, how often to poll.
+   * In minutes. 0 or null = polling disabled */
+  pollIntervalMinutes = 10;
 
   constructor() {
     super();
@@ -40,6 +43,7 @@ export class IMAPAccount extends MailAccount {
 
     await this.connection(interactive);
     await this.listFolders();
+    (this.inbox as IMAPFolder).startPolling();
   }
 
   async verifyLogin(): Promise<void> {
@@ -176,6 +180,7 @@ export class IMAPAccount extends MailAccount {
   }
 
   protected async reconnect(): Promise<void> {
+    // Note: Do not stop polling
     try {
       this._connection?.close();
     } catch (ex) {
@@ -237,7 +242,14 @@ export class IMAPAccount extends MailAccount {
     return super.getFolderByPath(path) as IMAPFolder | null;
   }
 
+  protected stopPolling() {
+    for (let folder of this.getAllFolders()) {
+      (folder as IMAPFolder).stopPolling();
+    }
+  }
+
   async logout(): Promise<void> {
+    this.stopPolling();
     await this._connection?.logout();
   }
 

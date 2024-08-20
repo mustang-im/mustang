@@ -28,6 +28,8 @@ export class Account extends Observable {
   userRealname: string = appGlobal.me?.name;
   @notifyChangedProperty
   acceptBrokenTLSCerts = false;
+  @notifyChangedProperty
+  loginOnStartup = true;
 
   /** Will be called, when there are errors on the connection
    * which cannot be attributed directly to an API function called,
