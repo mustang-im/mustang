@@ -33,7 +33,7 @@
       <slot name="inner-top" />
       <div class="text selectable">
         <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection. -->
-        <WebView title={$t`text`} html={message.html} />
+        <WebView title={$t`Text`} html={message.html} />
         <slot name="bubble" />
       </div>
       <slot name="inner-bottom" />
