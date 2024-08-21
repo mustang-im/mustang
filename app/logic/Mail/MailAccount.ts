@@ -196,10 +196,12 @@ export enum AuthMethod {
 export type ConfigSource = "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | "manual" | "local" | null;
 
 export interface MailAccountStorage {
-  saveMessage(email: EMail): Promise<void>;
-  saveFolder(folder: Folder): Promise<void>;
   saveAccount(account: MailAccount): Promise<void>;
   deleteAccount(account: MailAccount): Promise<void>;
+  saveFolder(folder: Folder): Promise<void>;
+  deleteFolder(folder: Folder): Promise<void>;
+  saveMessage(email: EMail): Promise<void>;
+  readAllMessages(folder: Folder, limit?: number, startWith?: number): Promise<void>;
 }
 
 export enum DeleteStrategy {

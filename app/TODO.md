@@ -173,8 +173,6 @@
      * Mails
 
 ## IMAP
-* Update folder list (and remove folders) after login
-  * Folders appear twice - Get folder list from server after login
 * Save/read poll and login prefs
 * Fallback: When CONDSTORE and changedSince not supported
 * Subscribed folders only, and subscription UI

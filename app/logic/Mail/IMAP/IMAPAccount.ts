@@ -7,7 +7,7 @@ import type { EMail } from "../EMail";
 import { SpecialFolder } from "../Folder";
 import { assert, SpecificError } from "../../util/util";
 import { notifyChangedProperty } from "../../util/Observable";
-import type { ArrayColl, Collection } from "svelte-collections";
+import { ArrayColl, type Collection } from "svelte-collections";
 import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
 import { appName, appVersion, siteRoot } from "../../build";
 import { ConnectError, LoginError } from "../../Abstract/Account";
@@ -197,7 +197,7 @@ export class IMAPAccount extends MailAccount {
     await SQLFolder.readAllHierarchy(this);
 
     // listTree() doesn't return the message count and is not well-implemented
-    let folders = await (await this.connection()).list({
+    let foldersInfo = await (await this.connection()).list({
       statusQuery: {
         messages: true, // Total msg count
         recent: true, // \Recent msg count
@@ -205,9 +205,14 @@ export class IMAPAccount extends MailAccount {
       },
     });
     // console.log("folders", foldersFlat);
-    this.readFolders(folders, null, this.rootFolders as ArrayColl<IMAPFolder>);
+    let currentFolders = new ArrayColl<IMAPFolder>();
+    this.readFolders(foldersInfo, null, this.rootFolders as ArrayColl<IMAPFolder>, currentFolders);
 
     for (let folder of this.getAllFolders()) {
+      if (!currentFolders.includes(folder as IMAPFolder)) {
+        await folder.deleteItLocally();
+        continue;
+      }
       if (!folder.dbID) {
         await SQLFolder.save(folder);
       } else {
@@ -216,7 +221,7 @@ export class IMAPAccount extends MailAccount {
     }
   }
 
-  readFolders(allFoldersInfo: any[], parent: IMAPFolder, subFolders: Collection<IMAPFolder>): void {
+  readFolders(allFoldersInfo: any[], parent: IMAPFolder, subFolders: Collection<IMAPFolder>, resultAllFolders: Collection<IMAPFolder>): void {
     let subFoldersInfo = allFoldersInfo.filter(folderInfo => folderInfo.parentPath == (parent?.path ?? ""));
     for (let folderInfo of subFoldersInfo) {
       let subFolder = subFolders.find(folder => folder.path == folderInfo.path);
@@ -230,10 +235,11 @@ export class IMAPAccount extends MailAccount {
         subFolders.add(subFolder);
         subFolder.parent = parent;
       }
+      resultAllFolders.add(subFolder);
       if (!this.pathDelimiter && folderInfo.delimiter) {
         this.pathDelimiter = folderInfo.delimiter;
       }
-      this.readFolders(allFoldersInfo, subFolder, subFolder.subFolders as ArrayColl<IMAPFolder>);
+      this.readFolders(allFoldersInfo, subFolder, subFolder.subFolders as ArrayColl<IMAPFolder>, resultAllFolders);
     }
   }
 
