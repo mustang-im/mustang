@@ -119,6 +119,15 @@ export class IMAPFolder extends Folder {
     // TODO save range of lowest and highest UID of emails that we have fetched and saved,
     // to not re-fetch the whole list over and over again.
     let allUIDs = await this.fetchUIDList({ all: true });
+
+    // Delete messages that are no longer on the server @see checkDeletedMessages()
+    let deletedMsgs = this.messages.filter((msg: IMAPEMail) => !allUIDs.includes(msg.uid));
+    this.messages.removeAll(deletedMsgs);
+    for (let deletedMsg of deletedMsgs) {
+      await deletedMsg.deleteMessageLocally();
+    }
+
+    // Fetch new msgs
     let localUIDs = new ArrayColl(this.messages.contents.map((msg: IMAPEMail) => msg.uid));
     let newUIDs = allUIDs.subtract(localUIDs).sortBy(uid => -uid);
     let newMsgs = new ArrayColl<IMAPEMail>();
@@ -135,6 +144,7 @@ export class IMAPFolder extends Folder {
       //let saveTime = Date.now() - startTime - fetchTime;
       //console.log("  Fetched", fetchUIDs.length, ", remaining", newUIDs.length, "- Time: Fetch:", fetchTime / kBatchSize, "ms/msg, save time", saveTime / kBatchSize, "ms/msg");
     }
+
     await SQLFolder.saveProperties(this);
     return newMsgs;
   }

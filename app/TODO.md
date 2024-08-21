@@ -173,7 +173,6 @@
      * Mails
 
 ## IMAP
-* Fallback: When CONDSTORE and changedSince not supported
 * Subscribed folders only, and subscription UI
 * Move folder
 * Fallback: When UID not supported
