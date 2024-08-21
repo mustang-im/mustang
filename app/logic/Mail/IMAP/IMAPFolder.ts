@@ -104,7 +104,7 @@ export class IMAPFolder extends Folder {
       return;
     }
     let { newMessages } = await this.fetchMessageList({ all: true }, {
-        changedSince: this.lastModSeq,
+        changedSince: this.lastModSeq, // Works only with CONDSTORE capa. TODO fallback.
       });
     let newMsgsLocal = new ArrayColl<IMAPEMail>(newMessages.subtract(this.messages as ArrayColl<IMAPEMail>));
     this.messages.addAll(newMessages); // notify only once
@@ -244,13 +244,18 @@ export class IMAPFolder extends Folder {
 
   /** Does *not* necessarily return the right email. But typically one close to it. */
   getEMailBySeq(seq: number): IMAPEMail {
-    let msg = this.messages.find((m: IMAPEMail) => m.seq == seq) as IMAPEMail;
+    let msg = this.messages.find((m: IMAPEMail) => m.seq == seq);
     if (msg) {
-      return msg;
+      return msg as IMAPEMail;
     }
+    let byUID = this.messages.sortBy((m: IMAPEMail) => m.uid);
     // The sequence number changes with every email deletion :-( Thus,
     // emulate how the server calculates the sequence number
-    return this.messages.sortBy((m: IMAPEMail) => m.uid).getIndex(seq) as IMAPEMail;
+    msg = byUID.getIndex(seq);
+    if (msg) {
+      return msg as IMAPEMail;
+    }
+    return byUID.last as IMAPEMail;
   }
 
   /** @returns UID of newest message known locally */
