@@ -173,7 +173,6 @@
      * Mails
 
 ## IMAP
-* Save/read poll and login prefs
 * Fallback: When CONDSTORE and changedSince not supported
 * Subscribed folders only, and subscription UI
 * Move folder

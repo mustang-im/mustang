@@ -4,13 +4,14 @@ import { appGlobal } from "../../app";
 import { SQLMailAccount } from "../SQL/SQLMailAccount";
 import { SQLFolder } from "../SQL/SQLFolder";
 import type { EMail } from "../EMail";
+import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder } from "../Folder";
 import { assert, SpecificError } from "../../util/util";
 import { notifyChangedProperty } from "../../util/Observable";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { appName, appVersion, siteRoot } from "../../build";
 import { ArrayColl, type Collection } from "svelte-collections";
 import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
-import { appName, appVersion, siteRoot } from "../../build";
-import { ConnectError, LoginError } from "../../Abstract/Account";
 
 export class IMAPAccount extends MailAccount {
   readonly protocol: string = "imap";
@@ -274,6 +275,16 @@ export class IMAPAccount extends MailAccount {
   protected async saveSent(email: EMail): Promise<void> {
     let sentFolder = this.getSpecialFolder(SpecialFolder.Sent);
     await sentFolder.addMessage(email);
+  }
+
+  fromConfigJSON(config: any) {
+    super.fromConfigJSON(config);
+    this.pollIntervalMinutes = sanitize.integer(config.pollIntervalMinutes, this.pollIntervalMinutes);
+  }
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.pollIntervalMinutes = this.pollIntervalMinutes;
+    return json;
   }
 
   newFolder(): IMAPFolder {
