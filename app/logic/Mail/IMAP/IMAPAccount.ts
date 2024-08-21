@@ -194,6 +194,12 @@ export class IMAPAccount extends MailAccount {
     await this.connection();
   }
 
+  async hasCapability(capa: string): Promise<boolean> {
+    let conn = await this.connection();
+    let capabilities = await conn.capabilities;
+    return await capabilities.has(capa);
+  }
+
   async listFolders(): Promise<void> {
     await SQLFolder.readAllHierarchy(this);
 

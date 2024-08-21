@@ -103,14 +103,19 @@ export class IMAPFolder extends Folder {
     if (this.countTotal === 0) {
       return;
     }
-    let newMsgs = await this.fetchAllUnknownMessages();
-    // TODO update flags of recent msgs
+    let newMsgs: ArrayColl<IMAPEMail>;
+    if (await this.account.hasCapability("CONDSTORE")) {
+      newMsgs = await this.listChangedMessages();
+    } else {
+      newMsgs = await this.listAllUnknownMessages();
+      // TODO update flags of recent msgs
+    }
     return newMsgs;
   }
 
   /** Lists all messages in this folder that have not been fetched yet.
    * But doesn't download their contents. @see downloadMessages() */
-  protected async fetchAllUnknownMessages(): Promise<ArrayColl<IMAPEMail>> {
+  protected async listAllUnknownMessages(): Promise<ArrayColl<IMAPEMail>> {
     // TODO save range of lowest and highest UID of emails that we have fetched and saved,
     // to not re-fetch the whole list over and over again.
     let allUIDs = await this.fetchUIDList({ all: true });
@@ -121,26 +126,14 @@ export class IMAPFolder extends Folder {
     const kBatchSize = 200;
     while (newUIDs.hasItems) {
       let startTime = Date.now();
-      console.log("Still need to fetch", newUIDs.length, "messages");
       let fetchUIDs = newUIDs.splice(0, kBatchSize); // Gets the first n, and removes them from the list
-      console.log("   fetch", fetchUIDs.length, ", new remaining", newUIDs.length);
       let { newMessages } = await this.fetchMessageList({ uid: fetchUIDs.join(",") }, {});
       newMsgs.addAll(newMessages);
       this.messages.addAll(newMessages);
-      console.log("   added", newMessages.length, "msgs, now ", this.messages.length, "local msgs, of which", newMsgs.length, "are new");
       let fetchTime = Date.now() - startTime;
-
-      for (let email of newMessages) {
-        try {
-          if (email.subject) {
-            await SQLEMail.save(email);
-          }
-        } catch (ex) {
-          this.account.errorCallback(ex);
-        }
-      }
+      await this.saveMsgs(newMessages);
       let saveTime = Date.now() - startTime - fetchTime;
-      console.log("  Time: Fetch:", fetchTime / kBatchSize, "ms/msg, save time", saveTime / kBatchSize, "ms/msg");
+      console.log("  Fetched", fetchUIDs.length, ", remaining", newUIDs.length, "- Time: Fetch:", fetchTime / kBatchSize, "ms/msg, save time", saveTime / kBatchSize, "ms/msg");
     }
     await SQLFolder.saveProperties(this);
     return newMsgs;
@@ -150,11 +143,22 @@ export class IMAPFolder extends Folder {
    * But doesn't download their contents. @see downloadMessages() */
   protected async listAllMessages(): Promise<ArrayColl<IMAPEMail>> {
     let { newMessages } = await this.fetchMessageList({ all: true }, {});
-    let newMsgsLocal = new ArrayColl<IMAPEMail>(newMessages.subtract(this.messages as ArrayColl<IMAPEMail>));
     this.messages.addAll(newMessages);
     await SQLFolder.saveProperties(this);
-    // Should save msgs to SQL DB, but often no `subject`, which violates the DB schema
-    return newMsgsLocal;
+    await this.saveMsgs(newMessages);
+    return newMessages;
+  }
+
+  /** Lists all messages in this folder that are new or updated since the last fetch.
+   * Works only with CONDSTORE server capability. */
+  protected async listChangedMessages(): Promise<ArrayColl<IMAPEMail>> {
+    let { newMessages } = await this.fetchMessageList({ all: true }, {
+      changedSince: this.lastModSeq, // Works only with CONDSTORE capa
+    });
+    this.messages.addAll(newMessages);
+    await SQLFolder.saveProperties(this);
+    await this.saveMsgs(newMessages);
+    return newMessages;
   }
 
   /** Lists new messages, based on the UID being higher.
@@ -323,6 +327,18 @@ export class IMAPFolder extends Folder {
       .filter(msg => msg.received.getTime() < recently.getTime()) // last n days
       .sortBy((msg: IMAPEMail) => msg.uid)
       .first as IMAPEMail; // oldest
+  }
+
+  protected async saveMsgs(msgs: Collection<IMAPEMail>) {
+    for (let email of msgs) {
+      try {
+        if (email.subject) {
+          await SQLEMail.save(email);
+        }
+      } catch (ex) {
+        this.account.errorCallback(ex);
+      }
+    }
   }
 
   updateModSeq(modseq: number) {
