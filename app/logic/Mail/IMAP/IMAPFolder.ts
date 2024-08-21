@@ -103,11 +103,55 @@ export class IMAPFolder extends Folder {
     if (this.countTotal === 0) {
       return;
     }
-    let { newMessages } = await this.fetchMessageList({ all: true }, {
-        changedSince: this.lastModSeq, // Works only with CONDSTORE capa. TODO fallback.
-      });
+    let newMsgs = await this.fetchAllUnknownMessages();
+    // TODO update flags of recent msgs
+    return newMsgs;
+  }
+
+  /** Lists all messages in this folder that have not been fetched yet.
+   * But doesn't download their contents. @see downloadMessages() */
+  protected async fetchAllUnknownMessages(): Promise<ArrayColl<IMAPEMail>> {
+    // TODO save range of lowest and highest UID of emails that we have fetched and saved,
+    // to not re-fetch the whole list over and over again.
+    let allUIDs = await this.fetchUIDList({ all: true });
+    let localUIDs = new ArrayColl(this.messages.contents.map((msg: IMAPEMail) => msg.uid));
+    let newUIDs = allUIDs.subtract(localUIDs).sortBy(uid => -uid);
+    let newMsgs = new ArrayColl<IMAPEMail>();
+    console.log("Folder", this.account.name, this.name, "has", allUIDs.length, "msgs,", localUIDs.length, "local msgs,", newUIDs.length, "new");
+    const kBatchSize = 200;
+    while (newUIDs.hasItems) {
+      let startTime = Date.now();
+      console.log("Still need to fetch", newUIDs.length, "messages");
+      let fetchUIDs = newUIDs.splice(0, kBatchSize); // Gets the first n, and removes them from the list
+      console.log("   fetch", fetchUIDs.length, ", new remaining", newUIDs.length);
+      let { newMessages } = await this.fetchMessageList({ uid: fetchUIDs.join(",") }, {});
+      newMsgs.addAll(newMessages);
+      this.messages.addAll(newMessages);
+      console.log("   added", newMessages.length, "msgs, now ", this.messages.length, "local msgs, of which", newMsgs.length, "are new");
+      let fetchTime = Date.now() - startTime;
+
+      for (let email of newMessages) {
+        try {
+          if (email.subject) {
+            await SQLEMail.save(email);
+          }
+        } catch (ex) {
+          this.account.errorCallback(ex);
+        }
+      }
+      let saveTime = Date.now() - startTime - fetchTime;
+      console.log("  Time: Fetch:", fetchTime / kBatchSize, "ms/msg, save time", saveTime / kBatchSize, "ms/msg");
+    }
+    await SQLFolder.saveProperties(this);
+    return newMsgs;
+  }
+
+  /** Lists all messages in this folder.
+   * But doesn't download their contents. @see downloadMessages() */
+  protected async listAllMessages(): Promise<ArrayColl<IMAPEMail>> {
+    let { newMessages } = await this.fetchMessageList({ all: true }, {});
     let newMsgsLocal = new ArrayColl<IMAPEMail>(newMessages.subtract(this.messages as ArrayColl<IMAPEMail>));
-    this.messages.addAll(newMessages); // notify only once
+    this.messages.addAll(newMessages);
     await SQLFolder.saveProperties(this);
     // Should save msgs to SQL DB, but often no `subject`, which violates the DB schema
     return newMsgsLocal;
@@ -120,15 +164,13 @@ export class IMAPFolder extends Folder {
     if (this.countTotal === 0) {
       return;
     }
-    let { newMessages } = await this.fetchMessageList({ uid: this.highestUID + ":*" }, {
-      changedSince: this.lastModSeq,
-    });
+    let { newMessages } = await this.fetchMessageList({ uid: this.highestUID + ":*" }, {});
     this.messages.addAll(newMessages);
     await SQLFolder.saveProperties(this);
     return newMessages;
   }
 
-  protected async fetchMessageList(range: any, options: any, idsOnly = false): Promise<{ newMessages: ArrayColl<IMAPEMail>, updatedMessages: ArrayColl<IMAPEMail> }> {
+  protected async fetchMessageList(range: any, options: any): Promise<{ newMessages: ArrayColl<IMAPEMail>, updatedMessages: ArrayColl<IMAPEMail> }> {
     console.log("IMAP fetch", range);
     let newMessages = new ArrayColl<IMAPEMail>();
     let updatedMessages = new ArrayColl<IMAPEMail>();
@@ -181,6 +223,14 @@ export class IMAPFolder extends Folder {
     return newMsgs;
   }
 
+  /** Lists all messages, and downloads them */
+  async getAllMessages(): Promise<ArrayColl<IMAPEMail>> {
+    await this.checkDeletedMessages(1);
+    let newMsgs = await this.listAllMessages();
+    await this.downloadMessages(newMsgs);
+    return newMsgs;
+  }
+
   /**
    * Downloads the emails in batches.
    * @return Actually newly downloaded msgs
@@ -194,7 +244,7 @@ export class IMAPFolder extends Folder {
       needMsgs.removeAll(downloadingMsgs);
       let uids = downloadingMsgs.map(msg => msg.uid).join(",");
       await this.runCommand(async (conn) => {
-        let msgInfos = await conn.fetch(uids, {
+        let msgInfos = await conn.fetch({ uid: uids }, {
           uid: true,
           size: true,
           threadId: true,
