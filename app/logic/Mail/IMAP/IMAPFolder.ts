@@ -444,9 +444,7 @@ export class IMAPFolder extends Folder {
   }
 
   /** Warning: Also deletes all messages in the folder, also on the server */
-  async deleteIt(): Promise<void> {
-    await super.deleteIt();
-    SQLFolder.deleteIt(this);
+  protected async deleteItOnServer(): Promise<void> {
     await this.runCommand(async (conn) => {
       await conn.mailboxDelete(this.path);
     });

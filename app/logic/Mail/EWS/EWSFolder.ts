@@ -445,9 +445,7 @@ export class EWSFolder extends Folder {
     await super.rename(name);
   }
 
-  async deleteIt() {
-    await super.deleteIt();
-    await SQLFolder.deleteIt(this);
+  async deleteItOnServer() {
     let request = {
       m$DeleteFolder: {
         m$FolderIds: {

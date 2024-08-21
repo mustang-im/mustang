@@ -1,6 +1,7 @@
 import { EMail } from "./EMail";
 import type { MailAccount } from "./MailAccount";
 import type { TreeItem } from "../../frontend/Shared/FastTree";
+import { SQLFolder } from "./SQL/SQLFolder";
 import { SQLEMail } from "./SQL/SQLEMail";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, Collection } from 'svelte-collections';
@@ -166,6 +167,12 @@ export class Folder extends Observable implements TreeItem<Folder> {
 
   /** Warning: Also deletes all messages in the folder, also on the server */
   async deleteIt(): Promise<void> {
+    await this.deleteItLocally();
+    await this.deleteItOnServer();
+  }
+
+  /** Warning: Also deletes all messages in the folder, also on the server */
+  protected async deleteItLocally(): Promise<void> {
     let disableDelete = this.disableDelete();
     assert(!disableDelete, disableDelete ?? "Cannot delete");
     if (this.parent) {
@@ -173,6 +180,12 @@ export class Folder extends Observable implements TreeItem<Folder> {
     } else {
       this.account.rootFolders.remove(this);
     }
+    if (this.dbID) {
+      SQLFolder.deleteIt(this);
+    }
+  }
+
+  protected async deleteItOnServer() {
   }
 
   async markAllRead(): Promise<void> {

@@ -483,7 +483,7 @@ export class OWAFolder extends Folder {
     await super.rename(name);
   }
 
-  async deleteIt() {
+  protected async deleteItOnServer() {
     let request = {
       __type: "DeleteFolderJsonRequest:#Exchange",
       Header: {
@@ -500,8 +500,6 @@ export class OWAFolder extends Folder {
       },
     };
     await this.account.callOWA(request);
-    await super.deleteIt();
-    await SQLFolder.deleteIt(this);
   }
 
   async markAllRead() {
