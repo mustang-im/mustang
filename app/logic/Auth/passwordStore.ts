@@ -13,6 +13,10 @@ export async function getPassword(account: string): Promise<string | null> {
 }
 
 export async function setPassword(account: string, password: string): Promise<void> {
+  if (!password) {
+    await deletePassword(account);
+    return;
+  }
   let encrypted = await encrypt(secret, password);
   localStorage.setItem(getKey(account), encrypted);
 }
