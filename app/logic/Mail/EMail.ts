@@ -13,7 +13,6 @@ import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { appGlobal } from "../app";
 import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
 import { getUILocale, gt } from "../../l10n/l10n";
-import { backgroundError } from "../../frontend/Util/error";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { notifyChangedProperty } from "../util/Observable";
@@ -332,7 +331,7 @@ export class EMail extends Message {
   get html(): string {
     if (this.needToLoadBody) {
       // observers will trigger reload
-      this.loadBody().catch(backgroundError);
+      this.loadBody().catch(this.folder.account.errorCallback);
       return this.downloadingMsg();
     }
     return super.html;
@@ -344,7 +343,7 @@ export class EMail extends Message {
   get text(): string {
     if (this.needToLoadBody) {
       // observers will trigger reload
-      this.loadBody().catch(backgroundError);
+      this.loadBody().catch(this.folder.account.errorCallback);
       return this.downloadingMsg();
     }
 
@@ -554,7 +553,7 @@ async function addCID(html: string, email: EMail): Promise<string> {
     }
     html = new XMLSerializer().serializeToString(doc);
   } catch (ex) {
-    backgroundError(ex);
+    email.folder.account.errorCallback(ex);
   }
   return html;
 }

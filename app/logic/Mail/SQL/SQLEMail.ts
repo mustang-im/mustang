@@ -5,7 +5,6 @@ import { Attachment, ContentDisposition } from "../Attachment";
 import { getTagByName, Tag } from "../Tag";
 import { getDatabase } from "./SQLDatabase";
 import { appGlobal } from "../../app";
-import { backgroundError } from "../../../frontend/Util/error";
 import { assert, fileExtensionForMIMEType } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -325,7 +324,7 @@ export class SQLEMail {
           email.bcc.add(uid);
         }
       } catch (ex) {
-        backgroundError(ex);
+        email.folder.account.errorCallback(ex);
       }
     }
   }
@@ -359,7 +358,7 @@ export class SQLEMail {
         a.related = sanitize.boolean(!!row.related);
         email.attachments.add(a);
       } catch (ex) {
-        backgroundError(ex);
+        email.folder.account.errorCallback(ex);
       }
     }
   }
@@ -381,7 +380,7 @@ export class SQLEMail {
         let tag = getTagByName(name);
         email.tags.add(tag);
       } catch (ex) {
-        backgroundError(ex);
+        email.folder.account.errorCallback(ex);
       }
     }
   }
