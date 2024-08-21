@@ -22,6 +22,8 @@
   export let url = "";
   /** Tooltip when hovering */
   export let title: string;
+  /** Size the <WebView> to the size of the content */
+  export let autoSize = false;
   /**
    * Which HTTP servers may be called automatically during the HTML load,
    * e.g. for images, stylesheets etc.?
@@ -52,8 +54,37 @@
   function haveWebView () {
     webviewE.addEventListener("dom-ready", () => {
       dispatch("webview", webviewE);
+      if (autoSize) {
+        webviewE.addEventListener("did-finish-load", resizeWebview());
+      }
     }, { once: true });
   }
+
+  const widthBuffer = 20;
+  const heightBuffer = 40;
+  async function resizeWebview () {
+    try {
+      const dimensions = await webviewE.executeJavaScript(`
+        document.body.style.minHeight = "0px";
+        document.body.style.height = "fit-content";
+        document.body.style.width = "fit-content";
+        new Promise(resolve => {
+          const observer = new ResizeObserver(entries => {
+            const contentRect = entries[0].borderBoxSize[0];
+            resolve({
+              width: contentRect.inlineSize,
+              height: contentRect.blockSize,
+            });
+          });
+          observer.observe(document.body);
+        });
+      `);
+      webviewE.style.width = (dimensions.width + widthBuffer) + "px";
+      webviewE.style.height = (dimensions.height + heightBuffer) + "px";
+    } catch (ex) {
+      console.error(ex);
+    }
+  };
 </script>
 
 <style>

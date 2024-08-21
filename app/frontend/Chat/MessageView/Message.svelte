@@ -33,7 +33,7 @@
       <slot name="inner-top" />
       <div class="text selectable">
         <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection. -->
-        {@html $message.html || ""}
+        <WebView title={$t`Text`} html={message.html} {headHTML} autoSize />
         <slot name="bubble" />
       </div>
       <slot name="inner-bottom" />
@@ -52,8 +52,13 @@
   import type { Message } from "../../../logic/Abstract/Message";
   import { ChatMessage, DeliveryStatus } from "../../../logic/Chat/Message";
   import { Person } from "../../../logic/Abstract/Person";
+  import cssContent from "../../Mail/Message/content.css?inline";
+  import cssBody from "../../Mail/Message/content-body.css?inline";
+  import cssFont from "../../asset/font/Karla.css?inline";
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
+  import WebView from "../../Shared/WebView.svelte";
   import { getDateString } from "../../Util/date";
+  import { t } from "../../../l10n/l10n";
 
   export let message: Message;
   export let previousMessage: Message = null;
@@ -65,6 +70,8 @@
   $: fastFollowup = followup &&
     $message.sent.getTime() - previousMessage.sent.getTime() < 5 * 60 * 1000; // < 5 mins apart
   $: reactions = $message.reactions;
+
+  $: headHTML = `<style>\n${cssBody}\n${cssContent}\n</style>`;
 </script>
 
 <style>
