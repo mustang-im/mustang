@@ -58,24 +58,27 @@
 
   const heightBuffer = 20;
   async function resizeWebview () {
-    const dimensions = await webviewE.executeJavaScript(`
-      document.body.style.minHeight = "0px";
-      document.body.style.height = "fit-content";
-      document.body.style.width = "fit-content";
-      new Promise(resolve => {
-        const observer = new ResizeObserver(entries => {
-          const contentRect = entries[0].contentRect;
-          resolve({ 
-            width: contentRect.width,
-            height: contentRect.height 
+    try {
+      const dimensions = await webviewE.executeJavaScript(`
+        document.body.style.minHeight = "0px";
+        document.body.style.height = "fit-content";
+        document.body.style.width = "fit-content";
+        new Promise(resolve => {
+          const observer = new ResizeObserver(entries => {
+            const contentRect = entries[0].contentRect;
+            resolve({ 
+              width: contentRect.width,
+              height: contentRect.height 
+            });
           });
+          observer.observe(document.body);
         });
-        observer.observe(document.body);
-      });
-    `);
-
-    webviewE.style.width = dimensions.width + "px";
-    webviewE.style.height = dimensions.height + heightBuffer + "px";
+      `);
+      webviewE.style.width = dimensions.width + "px";
+      webviewE.style.height = dimensions.height + heightBuffer + "px";
+    } catch (ex) {
+      console.error(ex);
+    }
   };
 </script>
 
