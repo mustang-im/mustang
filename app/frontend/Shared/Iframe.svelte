@@ -35,6 +35,8 @@
    */
   export let allowServerCalls: boolean | string = true;
 
+  const origin = window.origin;
+
   const reSizeCSS = `<style>
   body {
     min-height: 0px;
@@ -52,7 +54,7 @@
       window.parent.postMessage({
         width: width,
         height: height,
-      }, "*");
+      }, "${origin}");
     };
   <\/script>`;
   $: html && setURL();
@@ -75,7 +77,7 @@
     iframeE.addEventListener("load", () => {
       dispatch("iframe", iframeE);
       if (autoSize) {
-        iframeE.addEventListener("load", resizeIframe);
+        resizeIframe();
       }
     }, { once: true });
   }
@@ -86,11 +88,10 @@
     try {
       // console.log(iframeE.contentWindow.document);
       window.addEventListener("message", (e) => {
-        console.log(html);
         const dimensions = e.data;
         iframeE.style.width = (dimensions.width + widthBuffer) + "px";
         iframeE.style.height = (dimensions.height + heightBuffer) + "px";
-      })
+      });
       // iframeE.style.width = (dimensions.width + widthBuffer) + "px";
       // iframeE.style.height = (dimensions.height + heightBuffer) + "px";
     } catch (ex) {
