@@ -23,6 +23,7 @@
       {$t`Unknown display mode`}
     {/if}
   {:catch ex}
+    {console.error(ex), logError(ex), ""}
     {ex.message ?? ex + ""}
   {/await}
 </vbox>
@@ -33,7 +34,7 @@
   import HTMLDisplay from "./HTMLDisplay.svelte";
   import PlaintextDisplay from "./PlaintextDisplay.svelte";
   import ThreadDisplay from "./ThreadDisplay.svelte";
-  import { showError } from "../../Util/error";
+  import { logError } from "../../Util/error";
   import { sleep } from "../../../logic/util/util";
   import { t } from "svelte-i18n-lingui";
 
