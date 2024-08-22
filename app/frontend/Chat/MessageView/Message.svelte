@@ -33,7 +33,7 @@
       <slot name="inner-top" />
       <div class="text selectable">
         <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection. -->
-        <WebView title={$t`Text`} html={message.html} {headHTML} autoSize />
+        <Iframe title={$t`Text`} html={message.html} {headHTML} autoSize />
         <slot name="bubble" />
       </div>
       <slot name="inner-bottom" />
@@ -59,6 +59,7 @@
   import WebView from "../../Shared/WebView.svelte";
   import { getDateString } from "../../Util/date";
   import { t } from "../../../l10n/l10n";
+  import Iframe from "../../Shared/Iframe.svelte";
 
   export let message: Message;
   export let previousMessage: Message = null;
