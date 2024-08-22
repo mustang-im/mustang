@@ -3,7 +3,7 @@
 
 <script lang="ts">
   import { stringToDataURL } from "../Util/util";
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   const dispatch = createEventDispatcher();
 
   /**
@@ -72,15 +72,14 @@
   }
 
   let iframeE: HTMLIFrameElement = null;
-  $: iframeE && haveIframe();
-  function haveIframe () {
+  onMount(() => {
     iframeE.addEventListener("load", () => {
       dispatch("iframe", iframeE);
       if (autoSize) {
         resizeIframe();
       }
     }, { once: true });
-  }
+  });
 
   const widthBuffer = 0;
   const heightBuffer = 0;
@@ -91,7 +90,7 @@
         const dimensions = e.data;
         iframeE.style.width = (dimensions.width + widthBuffer) + "px";
         iframeE.style.height = (dimensions.height + heightBuffer) + "px";
-      });
+      }, { once: true });
       // iframeE.style.width = (dimensions.width + widthBuffer) + "px";
       // iframeE.style.height = (dimensions.height + heightBuffer) + "px";
     } catch (ex) {
