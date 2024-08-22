@@ -4,6 +4,7 @@
   class:outgoing={$message.outgoing}
   class:followup
   deliveryStatus={$message instanceof ChatMessage ? $message.deliveryStatus : DeliveryStatus.Unknown}
+  bind:this={messageE}
   >
   {#if !$message.outgoing && !followup}
     <vbox class="avatar">
@@ -59,6 +60,7 @@
   import MessageWebview from "./MessageWebview.svelte";
   import { getDateString } from "../../Util/date";
   import { t } from "../../../l10n/l10n";
+    import { onMount } from "svelte";
 
   export let message: Message;
   export let previousMessage: Message = null;
@@ -72,6 +74,9 @@
   $: reactions = $message.reactions;
 
   $: headHTML = `<style>\n${cssBody}\n${cssContent}\n</style>`;
+
+  let messageE: HTMLElement;
+
 </script>
 
 <style>

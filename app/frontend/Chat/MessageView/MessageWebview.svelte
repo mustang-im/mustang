@@ -70,17 +70,16 @@
 
   onMount(() => {
     try {
-      if (loaded) {
-        loadWebView();
-      } else {
+      if (!loaded) {
         startLazy();
       }
     } catch (ex) {
-      console.log(ex);
+      console.error(ex);
     }
   });
 
-  function loadWebView () {
+  $: loaded && webviewE && haveWebView();
+  function haveWebView () {
     webviewE.addEventListener("dom-ready", () => {
       dispatch("webview", webviewE);
       if (autoSize) {
@@ -117,10 +116,9 @@
       const e = entries[0];
       if (e.isIntersecting) {
         loaded = true;
-        loadWebView();
         observer.unobserve(e.target);
       }
-    });
+    }, { threshold: 0.1 });
     observer.observe(placeholderE);
   }
 </script>
