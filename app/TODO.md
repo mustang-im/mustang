@@ -173,6 +173,9 @@
      * Mails
 
 ## IMAP
+* Body downloadComplete, but body not loaded
+* Download all msgs in folder: When?
+* Old msgs keep coming back, new msgs not saved
 * Subscribed folders only, and subscription UI
 * Move folder
 * Fallback: When UID not supported
