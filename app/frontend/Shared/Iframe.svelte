@@ -1,5 +1,10 @@
-<!-- TODO Security: Test that this <iframe> is untrusted and jailed -->
-<iframe bind:this={iframeE} src={url} {title} sandbox="allow-scripts" loading="lazy"/>
+{#if lazyLoad}
+  <div bind:this={lazyLoadE}></div>
+{/if}
+{#if load}
+  <!-- TODO Security: Test that this <iframe> is untrusted and jailed -->
+  <iframe bind:this={iframeE} src={url} {title} sandbox="allow-scripts" loading="lazy"/>
+{/if}
 
 <script lang="ts">
   import { stringToDataURL } from "../Util/util";
@@ -24,6 +29,8 @@
   export let title: string;
   /** Size the <Iframe> to the size of the content */
   export let autoSize = false;
+  /** Lazy load iframe */
+  export let lazyLoad = true;
   /**
    * Which HTTP servers may be called automatically during the HTML load,
    * e.g. for images, stylesheets etc.?
@@ -34,6 +41,8 @@
    * This does *not* limit user clicks on links like `<a href="https://...">`.
    */
   export let allowServerCalls: boolean | string = true;
+
+  let load = lazyLoad ? false : true;
 
   const origin = window.origin;
 
@@ -73,12 +82,13 @@
 
   let iframeE: HTMLIFrameElement = null;
   onMount(() => {
-    iframeE.addEventListener("load", () => {
-      dispatch("iframe", iframeE);
-      if (autoSize) {
-        resizeIframe();
-      }
-    }, { once: true });
+    // iframeE.addEventListener("load", () => {
+    //   dispatch("iframe", iframeE);
+    //   if (autoSize) {
+    //     resizeIframe();
+    //   }
+    // }, { once: true });
+    startLazyLoad();
   });
 
   const widthBuffer = 0;
@@ -97,6 +107,34 @@
       console.error(ex);
     }
   };
+
+  let lazyLoadE: HTMLDivElement;
+  function startLazyLoad() {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          load = true;
+          lazyLoad = false;
+          iframeE.addEventListener("load", () => {
+            setURL();
+            dispatch("iframe", iframeE);
+            if (autoSize) {
+              resizeIframe();
+            }
+          }, { once: true });
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    if (lazyLoad) {
+      observer.observe(lazyLoadE);
+    }
+    if (load) {
+      observer.unobserve(lazyLoadE);
+      load = true;
+      lazyLoad = false;
+    }
+  }
 </script>
 
 <style>
