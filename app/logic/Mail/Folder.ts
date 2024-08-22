@@ -166,14 +166,14 @@ export class Folder extends Observable implements TreeItem<Folder> {
 
   /** Warning: Also deletes all messages in the folder, also on the server */
   async deleteIt(): Promise<void> {
+    let disableDelete = this.disableDelete();
+    assert(!disableDelete, disableDelete ?? "Cannot delete");
     await this.deleteItLocally();
     await this.deleteItOnServer();
   }
 
   /** Warning: Also deletes all messages in the folder, also on the server */
   async deleteItLocally(): Promise<void> {
-    let disableDelete = this.disableDelete();
-    assert(!disableDelete, disableDelete ?? "Cannot delete");
     if (this.parent) {
       this.parent.subFolders.remove(this);
     } else {
