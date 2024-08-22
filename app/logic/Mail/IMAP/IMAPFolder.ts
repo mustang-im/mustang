@@ -180,6 +180,7 @@ export class IMAPFolder extends Folder {
     }
     let { newMessages } = await this.fetchMessageList({ uid: this.highestUID + ":*" }, {});
     this.messages.addAll(newMessages);
+    await this.saveMsgs(newMessages);
     await SQLFolder.saveProperties(this);
     return newMessages;
   }
