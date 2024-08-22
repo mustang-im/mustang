@@ -33,7 +33,7 @@
       <slot name="inner-top" />
       <div class="text selectable">
         <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection. -->
-        <WebView title={$t`Text`} html={message.html} {headHTML} autoSize />
+        <MessageWebview title={$t`Text`} html={message.html} {headHTML} autoSize lazyLoad/>
         <slot name="bubble" />
       </div>
       <slot name="inner-bottom" />
@@ -56,7 +56,7 @@
   import cssBody from "../../Mail/Message/content-body.css?inline";
   import cssFont from "../../asset/font/Karla.css?inline";
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
-  import WebView from "../../Shared/WebView.svelte";
+  import MessageWebview from "./MessageWebview.svelte";
   import { getDateString } from "../../Util/date";
   import { t } from "../../../l10n/l10n";
 
