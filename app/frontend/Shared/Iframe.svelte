@@ -1,9 +1,9 @@
-{#if lazyLoad}
-  <div bind:this={lazyLoadE}></div>
+{#if !loaded}
+  <div bind:this={placeholderE} class="placeholder"></div>
 {/if}
-{#if load}
-  <!-- TODO Security: Test that this <iframe> is untrusted and jailed -->
-  <iframe bind:this={iframeE} src={url} {title} sandbox="allow-scripts" loading="lazy"/>
+{#if loaded}
+  <!-- TODO Security: Test that this <webview> is untrusted and jailed -->
+  <iframe bind:this={iframeE} src={url} {title} />
 {/if}
 
 <script lang="ts">
@@ -30,7 +30,7 @@
   /** Size the <Iframe> to the size of the content */
   export let autoSize = false;
   /** Lazy load iframe */
-  export let lazyLoad = true;
+  export let lazyLoad = false;
   /**
    * Which HTTP servers may be called automatically during the HTML load,
    * e.g. for images, stylesheets etc.?
@@ -42,7 +42,7 @@
    */
   export let allowServerCalls: boolean | string = true;
 
-  let load = lazyLoad ? false : true;
+  let loaded = lazyLoad ? false : true;
 
   const origin = window.origin;
 
@@ -55,17 +55,21 @@
   </style>`;
 
   const reSizeScript = `<script>
-    window.onload = (e) => {
-      const body = document.body;
-      const html = document.documentElement;
-      const width = Math.max( body.scrollWidth, body.offsetWidth, html.clientWidth, html.scrollWidth, html.offsetWidth );
-      const height = Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
-      window.parent.postMessage({
-        width: width,
-        height: height,
-      }, "${origin}");
-    };
-  <\/script>`;
+    window.onload = () => {
+      window.addEventListener("message", (e) => {
+        if (e.origin == "${origin}" && e.data == "dimensions") {
+          const body = document.body;
+          const html = document.documentElement;
+          const width = Math.max( body.scrollWidth, body.offsetWidth, html.clientWidth, html.scrollWidth, html.offsetWidth );
+          const height = Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
+          window.parent.postMessage({
+            width: width,
+            height: height,
+          }, "${origin}");
+        }
+      });
+    }
+  <\/script>`; 
   $: html && setURL();
   async function setURL() {
     url = "";
@@ -81,58 +85,63 @@
   }
 
   let iframeE: HTMLIFrameElement = null;
-  onMount(() => {
-    // iframeE.addEventListener("load", () => {
-    //   dispatch("iframe", iframeE);
-    //   if (autoSize) {
-    //     resizeIframe();
-    //   }
-    // }, { once: true });
-    startLazyLoad();
-  });
 
-  const widthBuffer = 0;
-  const heightBuffer = 0;
-  async function resizeIframe () {
+  $: loaded && iframeE && haveWebView();
+  function haveWebView () {
+    iframeE.addEventListener("load", () => {
+      dispatch("iframe", iframeE);
+      if (autoSize) {
+        resizeWebview();
+      }
+    }, { once: true });
+  }
+
+  async function resizeWebview () {
     try {
-      // console.log(iframeE.contentWindow.document);
+      iframeE.contentWindow.postMessage("dimensions", "*");
       window.addEventListener("message", (e) => {
         const dimensions = e.data;
-        iframeE.style.width = (dimensions.width + widthBuffer) + "px";
-        iframeE.style.height = (dimensions.height + heightBuffer) + "px";
-      }, { once: true });
-      // iframeE.style.width = (dimensions.width + widthBuffer) + "px";
-      // iframeE.style.height = (dimensions.height + heightBuffer) + "px";
+        if (iframeE) {
+          iframeE.style.width = dimensions.width + "px";
+          iframeE.style.height = dimensions.height + "px";          
+        }
+      });
     } catch (ex) {
       console.error(ex);
     }
   };
 
-  let lazyLoadE: HTMLDivElement;
-  function startLazyLoad() {
+  let placeholderE: HTMLDivElement;
+
+  $: lazyLoad && placeholderE && startLazy();
+  function startLazy() {
     const observer = new IntersectionObserver((entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          load = true;
-          lazyLoad = false;
-          iframeE.addEventListener("load", () => {
-            setURL();
-            dispatch("iframe", iframeE);
-            if (autoSize) {
-              resizeIframe();
-            }
-          }, { once: true });
-          observer.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.1 });
-    if (lazyLoad) {
-      observer.observe(lazyLoadE);
+      const e = entries[0];
+      if (e.isIntersecting) {
+        loaded = true;
+        observer.unobserve(e.target);
+      }
+    }, { rootMargin: "100px 0px" });
+    try {
+      observer.observe(placeholderE);
+    } catch (ex) {
+      console.error(ex);
     }
-    if (load) {
-      observer.unobserve(lazyLoadE);
-      load = true;
-      lazyLoad = false;
+  }
+
+  $: lazyLoad && iframeE && startLazyUnload();
+  function startLazyUnload() {
+    const observer = new IntersectionObserver((entries) => {
+      const e = entries[0];
+      if (!e.isIntersecting) {
+        loaded = false;
+        observer.unobserve(e.target);
+      }
+    });
+    try {
+      observer.observe(iframeE);
+    } catch (ex) {
+      console.error(ex);
     }
   }
 </script>
