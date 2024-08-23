@@ -31,6 +31,8 @@
   export let autoSize = false;
   /** Loads only if in view */
   export let lazyLoad = false;
+  /** Max width for autoSize */
+  export let maxWidth: number;
   /**
    * Which HTTP servers may be called automatically during the HTML load,
    * e.g. for images, stylesheets etc.?
@@ -46,7 +48,7 @@
 
   const reSizeCSS = `<style>
     html, body {
-      min-Height: 0;
+      min-height: 0;
       height: fit-content;
       width: fit-content;
     }
@@ -88,13 +90,15 @@
     }, { once: true });
   }
 
+  // $: autoSize && maxWidth && resizeWebview();
   async function resizeWebview () {
     try {
       const dimensions = await webviewE.executeJavaScript(`
         const body = document.body;
         const html = document.documentElement;
-        const width = Math.max( body.scrollLeft, body.scrollWidth, body.offsetWidth, html.clientWidth, html.scrollWidth, html.offsetWidth );
-        const height = Math.max( body.scrollTop, body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
+        const contentWidth = Math.max( body.scrollLeft, body.scrollWidth, body.offsetWidth, html.clientWidth, html.scrollWidth, html.offsetWidth, body.getBoundingClientRect().width );
+        const width = Math.min(${maxWidth}, contentWidth);
+        const height = Math.max( body.scrollTop, body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight, body.getBoundingClientRect().height );
         new Promise((resolve) => {
           resolve({
             width: width,
@@ -102,7 +106,7 @@
           });
         });
       `);
-      webviewE.style.width = dimensions.width + "px";
+      webviewE.style.width = (dimensions.width < maxWidth ? "100%" : dimensions.width + "px");
       webviewE.style.height = dimensions.height + "px";
     } catch (ex) {
       console.error(ex);
@@ -126,7 +130,7 @@
 <style>
   .placeholder {
     height: 50px;
-    width: 100px;
+    max-width: 100%;
   }
   webview {
     flex: 1 0 0;

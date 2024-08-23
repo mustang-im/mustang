@@ -34,7 +34,7 @@
       <slot name="inner-top" />
       <div class="text selectable">
         <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection. -->
-        <MessageWebview title={$t`Text`} html={message.html} {headHTML} autoSize lazyLoad/>
+        <MessageWebview title={$t`Text`} html={message.html} {headHTML} autoSize lazyLoad {maxWidth}/>
         <slot name="bubble" />
       </div>
       <slot name="inner-bottom" />
@@ -60,7 +60,7 @@
   import MessageWebview from "./MessageWebview.svelte";
   import { getDateString } from "../../Util/date";
   import { t } from "../../../l10n/l10n";
-    import { onMount } from "svelte";
+  import { onMount } from "svelte";
 
   export let message: Message;
   export let previousMessage: Message = null;
@@ -77,6 +77,11 @@
 
   let messageE: HTMLElement;
 
+  let maxWidth;
+
+  onMount(() => {
+    maxWidth = messageE.getBoundingClientRect().width;
+  });
 </script>
 
 <style>
