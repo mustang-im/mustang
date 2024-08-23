@@ -31,8 +31,8 @@
   export let autoSize = false;
   /** Loads only if in view */
   export let lazyLoad = false;
-  /** Max width for autoSize */
-  export let maxWidth: number;
+  /** Max width in px for autoSize */
+  export let maxWidth: number = 150;
   /**
    * Which HTTP servers may be called automatically during the HTML load,
    * e.g. for images, stylesheets etc.?
@@ -70,16 +70,6 @@
 
   let webviewE: HTMLIFrameElement = null;
 
-  onMount(() => {
-    try {
-      if (!loaded) {
-        startLazy();
-      }
-    } catch (ex) {
-      console.error(ex);
-    }
-  });
-
   $: loaded && webviewE && haveWebView();
   function haveWebView () {
     webviewE.addEventListener("dom-ready", () => {
@@ -90,7 +80,6 @@
     }, { once: true });
   }
 
-  // $: autoSize && maxWidth && resizeWebview();
   async function resizeWebview () {
     try {
       const dimensions = await webviewE.executeJavaScript(`
@@ -115,6 +104,7 @@
 
   let placeholderE: HTMLDivElement;
 
+  $: lazyLoad && placeholderE && startLazy();
   function startLazy() {
     const observer = new IntersectionObserver((entries) => {
       const e = entries[0];
@@ -122,8 +112,28 @@
         loaded = true;
         observer.unobserve(e.target);
       }
-    }, { threshold: 0.1 });
-    observer.observe(placeholderE);
+    }, { rootMargin: "100px 0px" });
+    try {
+      observer.observe(placeholderE);
+    } catch (ex) {
+      console.error(ex);
+    }
+  }
+
+  $: lazyLoad && webviewE && startLazyUnload();
+  function startLazyUnload() {
+    const observer = new IntersectionObserver((entries) => {
+      const e = entries[0];
+      if (!e.isIntersecting) {
+        loaded = false;
+        observer.unobserve(e.target);
+      }
+    });
+    try {
+      observer.observe(webviewE);
+    } catch (ex) {
+      console.error(ex);
+    }
   }
 </script>
 

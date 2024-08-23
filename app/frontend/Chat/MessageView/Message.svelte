@@ -80,7 +80,7 @@
   let maxWidth;
 
   onMount(() => {
-    maxWidth = messageE.getBoundingClientRect().width;
+    maxWidth = messageE.parentElement.getBoundingClientRect().width;
   });
 </script>
 
