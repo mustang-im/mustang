@@ -34,7 +34,7 @@
       <slot name="inner-top" />
       <div class="text selectable">
         <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection. -->
-        <MessageWebview title={$t`Text`} html={message.html} {headHTML} autoSize lazyLoad {maxWidth}/>
+        <MessageWebview title={$t`Text`} html={$message.html || ""} {headHTML} autoSize lazyLoad {maxWidth}/>
         <slot name="bubble" />
       </div>
       <slot name="inner-bottom" />

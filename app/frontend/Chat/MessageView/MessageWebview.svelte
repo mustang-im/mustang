@@ -102,7 +102,7 @@
         new Promise((resolve) => {
           resolve({
             width: width,
-            height: height
+            height: height,
           });
         });
       `);
