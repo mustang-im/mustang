@@ -270,6 +270,9 @@ export class EMail extends Message {
     if (this.downloadComplete) {
       return true;
     }
+    if (!this.mime) {
+      return false;
+    }
     // Double-check for concurrent downloads
     let check = this.folder.newEMail();
     check.dbID = this.dbID;
@@ -320,12 +323,15 @@ export class EMail extends Message {
         await this.download();
       }
     }
+    if (this.haveCID) {
+      return;
+    }
 
     let html = super.html;
-    if (!this.haveCID && html && this.attachments.hasItems) {
+    if (html && this.attachments.hasItems) {
       this._sanitizedHTML = await addCID(html, this);
-      this.haveCID = true; // triggers reload
     }
+    this.haveCID = true; // triggers reload
   }
 
   get html(): string {
