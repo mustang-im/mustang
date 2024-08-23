@@ -35,14 +35,6 @@
    */
   export let allowServerCalls: boolean | string = true;
 
-  const reSizeCSS = `<style>
-    html, body {
-      min-Height: 0;
-      height: fit-content;
-      width: fit-content;
-    }
-  </style>`;
-
   $: html && setURL();
   async function setURL() {
     url = "";
@@ -52,7 +44,7 @@
     }'">\n\n` + headHTML + `\n\n`; */
     let headPos = displayHTML.indexOf("<head>");
     headPos = headPos < 0 ? 0 : headPos + 6;
-    displayHTML = displayHTML.substring(0, headPos) + head + reSizeCSS + displayHTML.substring(headPos);
+    displayHTML = displayHTML.substring(0, headPos) + head + displayHTML.substring(headPos);
     // console.log("html", displayHTML);
     url = await stringToDataURL("text/html", displayHTML);
   }
@@ -68,22 +60,27 @@
     }, { once: true });
   }
 
+  const widthBuffer = 20;
+  const heightBuffer = 40;
   async function resizeWebview () {
     try {
       const dimensions = await webviewE.executeJavaScript(`
-        const body = document.body;
-        const html = document.documentElement;
-        const width = Math.max( body.scrollLeft, body.scrollWidth, body.offsetWidth, html.clientWidth, html.scrollWidth, html.offsetWidth );
-        const height = Math.max( body.scrollTop, body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
-        new Promise((resolve) => {
-          resolve({
-            width: width,
-            height: height
+        document.body.style.minHeight = "0px";
+        document.body.style.height = "fit-content";
+        document.body.style.width = "fit-content";
+        new Promise(resolve => {
+          const observer = new ResizeObserver(entries => {
+            const contentRect = entries[0].borderBoxSize[0];
+            resolve({
+              width: contentRect.inlineSize,
+              height: contentRect.blockSize,
+            });
           });
+          observer.observe(document.body);
         });
       `);
-      webviewE.style.width = dimensions.width + "px";
-      webviewE.style.height = dimensions.height + "px";
+      webviewE.style.width = (dimensions.width + widthBuffer) + "px";
+      webviewE.style.height = (dimensions.height + heightBuffer) + "px";
     } catch (ex) {
       console.error(ex);
     }
