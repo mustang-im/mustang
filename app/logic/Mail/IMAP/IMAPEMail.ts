@@ -79,12 +79,13 @@ export class IMAPEMail extends EMail {
     if (!(flags && flags instanceof Set) || this.flagsChanging) {
       return;
     }
+    // <https://www.ietf.org/rfc/rfc9051.html#section-2.3.2>
     this.isRead = flags.has("\\Seen");
     this.isNewArrived = flags.has("\\Recent");
     this.isStarred = flags.has("\\Flagged");
     this.isReplied = flags.has("\\Answered");
-    this.isSpam = flags.has("\\Junk");
     this.isDraft = flags.has("\\Draft");
+    this.isSpam = flags.has("$Junk");
 
     for (let customTag of flags) {
       if (customTag.startsWith("\\") || customTag.startsWith("$") ||
@@ -107,7 +108,7 @@ export class IMAPEMail extends EMail {
 
   async markSpam(spam = true) {
     await super.markSpam(spam);
-    await this.setFlagServer("\\Junk", spam);
+    await this.setFlagServer("$Junk", spam);
   }
 
   async markReplied() {
@@ -123,7 +124,7 @@ export class IMAPEMail extends EMail {
   /**
    * Set read/starred etc. flag on the message
    *
-   * @param name -- the flag, e.g. "\Seen", "\Recent", "\Junk" etc.
+   * @param name -- the flag, e.g. "\Seen", "\Recent", "$Junk" etc., or a user-set tag
    * @param set -- true = add the flag, false = remove the flag
    */
   async setFlagServer(name: string, set = true) {
