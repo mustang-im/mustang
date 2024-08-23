@@ -32,7 +32,6 @@
   .message-list :global(.fast-list) {
     padding-inline-start: 4px;
     margin-inline-start: -5px;
-    padding-inline-end: 9px;
   }
   .message-list :global(.header) {
     display: none;

@@ -129,7 +129,7 @@
   }
   .date,
   .buttons.hover {
-    margin-inline-end: 16px;
+    padding-inline-end: 16px;
   }
   .date {
     min-width: 8em;
