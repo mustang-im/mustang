@@ -1,11 +1,18 @@
 <vbox flex class="message-body">
-  {#await message.loadBody()}
-    {#await sleep(1)}
-      <hbox></hbox>
+  {#if message.needToLoadBody}
+    {#await message.loadBody()}
+      {#await sleep(1)}
+        <hbox></hbox>
+      {:then}
+        {$t`Loading...`}
+      {/await}
     {:then}
-      {$t`Loading...`}
+      <svelte:self {message} />
+    {:catch ex}
+      {console.error(ex), logError(ex), ""}
+      {ex.message ?? ex + ""}
     {/await}
-  {:then}
+  {:else}
     {#if mode == DisplayMode.HTML || mode == DisplayMode.HTMLWithExternal}
       <HTMLDisplay html={$message.html} allowExternalImages={mode == DisplayMode.HTMLWithExternal} />
     {:else if mode == DisplayMode.Plaintext}
@@ -22,10 +29,7 @@
     {:else}
       {$t`Unknown display mode`}
     {/if}
-  {:catch ex}
-    {console.error(ex), logError(ex), ""}
-    {ex.message ?? ex + ""}
-  {/await}
+  {/if}
 </vbox>
 
 <script lang="ts">
