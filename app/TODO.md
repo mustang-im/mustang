@@ -1,9 +1,9 @@
 # Next
 * Mail
-  * OAuth2
-    * Google approval
-    * Microsoft: Client ID for public
+  * SQL: Stable DB
+  * Collections sort is slow, and observers keep them alive
   * IMAP, see below
+  * OAuth2: Microsoft
   * Inline images send
   * Context menu for content: Copy text, link, image
   * Bug: Search and persons view: Disable until search bug fixed
@@ -173,6 +173,7 @@
      * Mails
 
 ## IMAP
+* Bug: "MIME source not yet downloaded", stays
 * Download all msgs in folder: When?
 * Old msgs keep coming back, new msgs not saved
 * Subscribed folders only, and subscription UI
