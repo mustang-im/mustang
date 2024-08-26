@@ -86,8 +86,8 @@
 
   let iframeE: HTMLIFrameElement = null;
 
-  $: loaded && iframeE && haveWebView();
-  function haveWebView () {
+  $: loaded && iframeE && haveIframe();
+  function haveIframe () {
     iframeE.addEventListener("load", () => {
       dispatch("iframe", iframeE);
       if (autoSize) {
@@ -103,7 +103,7 @@
         const dimensions = e.data;
         if (iframeE) {
           iframeE.style.width = dimensions.width + "px";
-          iframeE.style.height = dimensions.height + "px";          
+          iframeE.style.height = dimensions.height + "px";
         }
       });
     } catch (ex) {
@@ -137,7 +137,7 @@
         loaded = false;
         observer.unobserve(e.target);
       }
-    });
+    }, { rootMargin: "100px 0px" });
     try {
       observer.observe(iframeE);
     } catch (ex) {
@@ -147,6 +147,10 @@
 </script>
 
 <style>
+  .placeholder {
+    width: 100%;
+    height: 25px;
+  }
   iframe {
     flex: 1 1 0;
     width: 100%;
