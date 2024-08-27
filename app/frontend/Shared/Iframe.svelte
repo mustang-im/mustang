@@ -52,6 +52,7 @@
     min-width: 100px;
     height: fit-content;
     width: fit-content;
+    over-flow: visible;
   }
   </style>`;
 
@@ -105,9 +106,7 @@
       window.addEventListener("message", (e) => {
         const dimensions = e.data;
         if (iframeE) {
-          const style = window.getComputedStyle(iframeE);
-          const maxWidth = parseFloat(style.width);
-          iframeE.style.width = Math.min(maxWidth, dimensions.width) + "px";
+          iframeE.style.width =  iframeE.parentElement.clientWidth > dimensions.width ? "100%" : dimensions.width + "px";
           iframeE.style.height = (dimensions.height + heigthBuffer) + "px";
         }
       });
@@ -159,7 +158,7 @@
   iframe {
     flex: 1 1 0;
     border: none;
-    width: 1000px;
+    width: 100%;
     max-width: 100%;
   }
 </style>
