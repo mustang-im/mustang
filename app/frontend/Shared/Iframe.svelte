@@ -3,7 +3,7 @@
 {/if}
 {#if loaded}
   <!-- TODO Security: Test that this <webview> is untrusted and jailed -->
-  <iframe bind:this={iframeE} src={url} {title} />
+  <iframe bind:this={iframeE} src={url} {title} sandbox="allow-scripts" credentialless/>
 {/if}
 
 <script lang="ts">
