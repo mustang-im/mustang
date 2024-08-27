@@ -50,11 +50,11 @@
 
   const autoSizeCSS = `<style>
   body {
-    min-height: 0px;
-    min-width: 100px;
-    height: fit-content;
-    width: fit-content;
-    over-flow: visible;
+    min-height: 0px !important;
+    min-width: 100px !important;
+    height: fit-content !important;
+    width: fit-content !important;
+    over-flow: visible !important;
   }
   </style>`;
 
