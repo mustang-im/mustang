@@ -117,8 +117,8 @@
 
   let placeholderE: HTMLDivElement;
 
-  $: lazyLoad && placeholderE && startLazy();
-  function startLazy() {
+  $: lazyLoad && placeholderE && startLazyLoad();
+  function startLazyLoad() {
     const observer = new IntersectionObserver((entries) => {
       const e = entries[0];
       if (e.isIntersecting) {
