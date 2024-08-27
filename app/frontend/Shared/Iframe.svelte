@@ -49,6 +49,7 @@
   const reSizeCSS = `<style>
   body {
     min-height: 0px;
+    min-width: 100px;
     height: fit-content;
     width: fit-content;
   }
@@ -58,9 +59,10 @@
     window.onload = () => {
       window.addEventListener("message", (e) => {
         if (e.origin == "${origin}" && e.data == "dimensions") {
-          const body = document.body;
           const html = document.documentElement;
-          const width = Math.max( body.scrollWidth, body.offsetWidth, html.clientWidth, html.scrollWidth, html.offsetWidth );
+          const body = document.body;
+          const bodyStyles = window.getComputedStyle(body);
+          const width = parseFloat(bodyStyles.width);
           const height = Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
           window.parent.postMessage({
             width: width,
@@ -91,19 +93,22 @@
     iframeE.addEventListener("load", () => {
       dispatch("iframe", iframeE);
       if (autoSize) {
-        resizeWebview();
+        resizeIframe();
       }
     }, { once: true });
   }
 
-  async function resizeWebview () {
+  const heigthBuffer = 10;
+  async function resizeIframe () {
     try {
       iframeE.contentWindow.postMessage("dimensions", "*");
       window.addEventListener("message", (e) => {
         const dimensions = e.data;
         if (iframeE) {
-          iframeE.style.width = dimensions.width + "px";
-          iframeE.style.height = dimensions.height + "px";
+          const style = window.getComputedStyle(iframeE);
+          const maxWidth = parseFloat(style.width);
+          iframeE.style.width = Math.min(maxWidth, dimensions.width) + "px";
+          iframeE.style.height = (dimensions.height + heigthBuffer) + "px";
         }
       });
     } catch (ex) {
@@ -153,7 +158,9 @@
   }
   iframe {
     flex: 1 1 0;
-    width: 100%;
+    border: none;
+    width: 1000px;
+    max-width: 100%;
   }
 </style>
 
