@@ -3,7 +3,7 @@
 {/if}
 {#if loaded}
   <!-- TODO Security: Test that this <webview> is untrusted and jailed -->
-  <iframe bind:this={iframeE} src={url} {title} sandbox="allow-scripts" credentialless/>
+  <iframe bind:this={iframeE} src={url} {title} sandbox={autoSize ? "allow-scripts" : ""} credentialless/>
 {/if}
 
 <script lang="ts">
@@ -48,7 +48,7 @@
 
   const origin = window.origin;
 
-  const reSizeCSS = `<style>
+  const autoSizeCSS = `<style>
   body {
     min-height: 0px;
     min-width: 100px;
@@ -58,7 +58,7 @@
   }
   </style>`;
 
-  const reSizeScript = `<script>
+  const autoSizeScript = `<script>
     window.addEventListener("load", () => {
       window.addEventListener("message", (e) => {
         if (e.origin == "${origin}" && e.data == "dimensions") {
@@ -84,7 +84,11 @@
     }'">\n\n` + headHTML + `\n\n`; */
     let headPos = displayHTML.indexOf("<head>");
     headPos = headPos < 0 ? 0 : headPos + 6;
-    displayHTML = displayHTML.substring(0, headPos) + head + reSizeCSS + displayHTML.substring(headPos) + reSizeScript;
+    if (autoSize) {
+      displayHTML = displayHTML.substring(0, headPos) + head + autoSizeCSS + displayHTML.substring(headPos) + autoSizeScript;
+    } else {
+      displayHTML = displayHTML.substring(0, headPos) + head + displayHTML.substring(headPos);
+    }
     // console.log("html", displayHTML);
     url = await stringToDataURL("text/html", displayHTML);
   }
@@ -96,13 +100,13 @@
     iframeE.addEventListener("load", () => {
       dispatch("iframe", iframeE);
       if (autoSize) {
-        resizeIframe();
+        autoSizeIframe();
       }
     }, { once: true });
   }
 
   const heigthBuffer = 10;
-  async function resizeIframe () {
+  async function autoSizeIframe () {
     try {
       iframeE.contentWindow.postMessage("dimensions", "*");
       window.addEventListener("message", (e) => {
