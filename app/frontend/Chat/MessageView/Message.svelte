@@ -33,7 +33,7 @@
       <slot name="inner-top" />
       <div class="text selectable">
         <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection. -->
-        <Iframe title={$t`Text`} html={$message.html || ""} {headHTML} autoSize lazyLoad />
+        <Iframe title={$t`Text`} html={$message.html || ""} {headHTML} autoSize lazyLoad lazyUnload/>
         <slot name="bubble" />
       </div>
       <slot name="inner-bottom" />
