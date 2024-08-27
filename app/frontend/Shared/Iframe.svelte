@@ -31,6 +31,8 @@
   export let autoSize = false;
   /** Lazy load iframe */
   export let lazyLoad = false;
+  /** Unload iframe when not in view */
+  export let lazyUnload = false;
   /**
    * Which HTTP servers may be called automatically during the HTML load,
    * e.g. for images, stylesheets etc.?
@@ -57,7 +59,7 @@
   </style>`;
 
   const reSizeScript = `<script>
-    window.onload = () => {
+    window.addEventListener("load", () => {
       window.addEventListener("message", (e) => {
         if (e.origin == "${origin}" && e.data == "dimensions") {
           const html = document.documentElement;
@@ -71,7 +73,7 @@
           }, "${origin}");
         }
       });
-    }
+    });
   <\/script>`; 
   $: html && setURL();
   async function setURL() {
@@ -106,7 +108,9 @@
       window.addEventListener("message", (e) => {
         const dimensions = e.data;
         if (iframeE) {
-          iframeE.style.width =  iframeE.parentElement.clientWidth > dimensions.width ? "100%" : dimensions.width + "px";
+          if (iframeE.parentElement.clientWidth < dimensions.width) {
+            iframeE.style.width = dimensions.width + "px";
+          }
           iframeE.style.height = (dimensions.height + heigthBuffer) + "px";
         }
       });
@@ -133,7 +137,7 @@
     }
   }
 
-  $: lazyLoad && iframeE && startLazyUnload();
+  $: lazyUnload && iframeE && startLazyUnload();
   function startLazyUnload() {
     const observer = new IntersectionObserver((entries) => {
       const e = entries[0];
