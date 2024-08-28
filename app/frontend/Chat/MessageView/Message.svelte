@@ -56,10 +56,9 @@
   import cssBody from "../../Mail/Message/content-body.css?inline";
   import cssFont from "../../asset/font/Karla.css?inline";
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
-  import WebView from "../../Shared/WebView.svelte";
+  import Iframe from "../../Shared/Iframe.svelte";
   import { getDateString } from "../../Util/date";
   import { t } from "../../../l10n/l10n";
-  import Iframe from "../../Shared/Iframe.svelte";
 
   export let message: Message;
   export let previousMessage: Message = null;

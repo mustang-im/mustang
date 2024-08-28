@@ -2,20 +2,20 @@
   <div bind:this={placeholderE} class="placeholder"></div>
 {/if}
 {#if loaded}
-  <!-- TODO Security: Test that this <webview> is untrusted and jailed -->
+  <!-- TODO Security: Test that this <iframe> is untrusted and jailed -->
   <iframe 
     bind:this={iframeE} 
     src={url} 
     {title} 
     sandbox={autoSize ? "allow-scripts" : ""} 
-    csp="sandbox allow-scripts; default-src 'self' 'unsafe-inline'"
+    csp="sandbox {autoSize ? "allow-scripts" : ""}; default-src 'self' 'unsafe-inline'"
     credentialless 
   />
 {/if}
 
 <script lang="ts">
   import { stringToDataURL } from "../Util/util";
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
 
   /**
@@ -66,20 +66,18 @@
   </style>`;
 
   const autoSizeScript = `<script>
-    window.addEventListener("load", () => {
-      window.addEventListener("message", (e) => {
-        if (e.origin == "${origin}" && e.data == "dimensions") {
-          const html = document.documentElement;
-          const body = document.body;
-          const bodyStyles = window.getComputedStyle(body);
-          const width = parseFloat(bodyStyles.width);
-          const height = Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
-          window.parent.postMessage({
-            width: width,
-            height: height,
-          }, "${origin}");
-        }
-      });
+    window.addEventListener("message", (e) => {
+      if (e.origin == "${origin}" && e.data == "dimensions") {
+        const html = document.documentElement;
+        const body = document.body;
+        const bodyStyles = window.getComputedStyle(body);
+        const width = parseFloat(bodyStyles.width);
+        const height = Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
+        window.parent.postMessage({
+          width: width,
+          height: height,
+        }, "${origin}");
+      }
     });
   <\/script>`; 
   $: html && setURL();
@@ -175,6 +173,7 @@
     border: none;
     width: 100%;
     max-width: 100%;
+    min-height: 0px;
   }
 </style>
 
