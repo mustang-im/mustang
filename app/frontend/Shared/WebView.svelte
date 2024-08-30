@@ -84,11 +84,10 @@
     try {
       size = await webviewE.executeJavaScript(`
         try {
-          const html = document.documentElement;
           const body = document.body;
-          const bodyStyles = window.getComputedStyle(body);
-          const width = parseFloat(bodyStyles.width);
-          const height = Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
+          const styles = window.getComputedStyle(body);
+          const width = parseFloat(styles.width);
+          const height = Math.max( body.scrollHeight, body.offsetHeight, parseFloat(styles.height) );
           new Promise((resolve) => {
             resolve({
               width: width,
@@ -119,9 +118,7 @@
     if (webviewE.parentElement && size.width < webviewE.parentElement.clientWidth) {
       webviewE.style.width = "100%";
     }
-    if (size.height != webviewE.style.height) {
-      webviewE.style.height = (size.height + heightBuffer) + "px";
-    }
+    webviewE.style.height = (size.height + heightBuffer) + "px";
   };
 </script>
 
