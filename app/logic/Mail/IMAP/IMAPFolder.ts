@@ -481,8 +481,6 @@ export class IMAPFolder extends Folder {
     let toUID = updateMsgs.last?.uid ?? this.highestUID;
     let { updatedMessages } = await this.fetchFlags({ uid: fromUID + ":" + toUID }, {});
     await this.saveMsgs(updatedMessages);
-
-    this.listMessages
   }
 
   /** We received an event from the server that a
