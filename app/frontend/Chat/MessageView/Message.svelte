@@ -32,8 +32,10 @@
       {/if}
       <slot name="inner-top" />
       <div class="text selectable">
-        <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection. -->
+        {@html $message.html || ""}
+        <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection.
         <WebView title={$t`Text`} html={message.html} {headHTML} autoSize />
+        -->
         <slot name="bubble" />
       </div>
       <slot name="inner-bottom" />
