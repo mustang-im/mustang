@@ -206,6 +206,14 @@ export class Folder extends Observable implements TreeItem<Folder> {
     return false;
   }
 
+  /** @return false, if renaming is possible. If not, a string with the reason why it's not possible. */
+  disableRename(): string | false {
+    if (this.specialFolder == SpecialFolder.Inbox || this.path?.toUpperCase() == "INBOX") {
+      return gt(`You cannot rename the inbox.`);
+    }
+    return false;
+  }
+
   /** @return false, if creating subfolders is possible. If not, a string with the reason why it's not possible. */
   disableSubfolders(): string | false {
     return false;

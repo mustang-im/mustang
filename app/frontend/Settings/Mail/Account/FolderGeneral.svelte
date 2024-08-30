@@ -1,9 +1,10 @@
 <grid class="main">
   <label for="name">{$t`Folder name`}</label>
-  <input type="text" bind:value={folderName} name="name" />
+  <input type="text" bind:value={folderName} name="name" readonly={!!disableRename} />
   <Button label={$t`Rename`}
     classes="create"
     onClick={onNameChange}
+    disabled={disableRename}
     />
 
   <label for="count">{$t`Use as`}</label>
@@ -55,6 +56,7 @@
 
   $: messages = $folder.messages;
   $: disableSpecial = $folder.disableChangeSpecial();
+  $: disableRename = $folder.disableRename();
 
   let folderName: string;
   function init(_dummy: any) {
@@ -103,5 +105,8 @@
   .buttons :global(button) {
     margin-inline-end: 6px;
     margin-block-end: 6px;
+  }
+  input[readonly] {
+    opacity: 70%;
   }
 </style>
