@@ -95,28 +95,40 @@ export class EMail extends Message {
   }
 
   /** Marks as spam, and deletes or moves the message, as configured */
-  async treatSpam(spam = true) {
+  async treatSpam(isSpam = true) {
     let strategy = this.folder.account.spamStrategy;
-    if (spam && strategy == DeleteStrategy.DeleteImmediately) {
-      /** Immediate reaction for end user */
-      await this.deleteMessageLocally();
-    }
-    await this.markSpam(spam);
-    if (spam && strategy == DeleteStrategy.DeleteImmediately) {
-      /* The spam flag change might trigger a folder listener
-       * from the server, which re-adds this message to the local list.
-       * So, we might have to delete it locally again */
-      await this.deleteMessage();
-    } else if (spam && strategy == DeleteStrategy.MoveToTrash) {
-      let spam = this.folder.account.getSpecialFolder(SpecialFolder.Spam);
-      assert(spam, gt`Spam folder is not set. Please go to folder properties and set Use As: Spam.`);
-      spam.moveMessageHere(this);
+    if (strategy == DeleteStrategy.MoveToTrash) {
+      let spamFolder = this.folder.account.getSpecialFolder(SpecialFolder.Spam);
+      assert(spamFolder, gt`Spam folder is not set. Please go to folder properties and set Use As: Spam.`);
+      if (isSpam) {
+        /** Immediate reaction for end user */
+        await this.deleteMessageLocally();
+        await this.markSpam(isSpam);
+        spamFolder.moveMessageHere(this);
+      } else {
+        await this.markSpam(isSpam);
+        if (this.folder == spamFolder) {
+          this.folder.account.inbox.moveMessageHere(this);
+        }
+      }
+    } else if (strategy == DeleteStrategy.DeleteImmediately) {
+      if (isSpam) {
+        /** Immediate reaction for end user */
+        await this.deleteMessageLocally();
+        await this.markSpam(isSpam);
+        /* The spam flag change might trigger a folder listener
+        * from the server, which re-adds this message to the local list.
+        * So, we might have to delete it locally again */
+        await this.deleteMessage();
+      } else {
+        await this.markSpam(isSpam);
+      }
     }
   }
 
   /** You probably want to call @see treatSpam() */
-  async markSpam(spam = true) {
-    this.isSpam = spam;
+  async markSpam(isSpam = true) {
+    this.isSpam = isSpam;
   }
 
   async markReplied() {
