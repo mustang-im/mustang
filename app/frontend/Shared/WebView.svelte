@@ -35,6 +35,16 @@
    */
   export let allowServerCalls: boolean | string = true;
 
+  const autoSizeCSS = `<style>
+  body {
+    min-height: 0px !important;
+    min-width: 100px !important;
+    height: fit-content !important;
+    width: fit-content !important;
+    over-flow: visible !important;
+  }
+  </style>`;
+
   $: html && setURL();
   async function setURL() {
     url = "";
@@ -44,7 +54,11 @@
     }'">\n\n` + headHTML + `\n\n`; */
     let headPos = displayHTML.indexOf("<head>");
     headPos = headPos < 0 ? 0 : headPos + 6;
-    displayHTML = displayHTML.substring(0, headPos) + head + displayHTML.substring(headPos);
+    if (autoSize) {
+      displayHTML = displayHTML.substring(0, headPos) + head + autoSizeCSS + displayHTML.substring(headPos);
+    } else {
+      displayHTML = displayHTML.substring(0, headPos) + head + displayHTML.substring(headPos);
+    }    
     // console.log("html", displayHTML);
     url = await stringToDataURL("text/html", displayHTML);
   }
