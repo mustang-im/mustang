@@ -79,18 +79,16 @@
   async function resizeWebview () {
     try {
       const dimensions = await webviewE.executeJavaScript(`
-        document.body.style.minHeight = "0px";
-        document.body.style.height = "fit-content";
-        document.body.style.width = "fit-content";
+        const html = document.documentElement;
+        const body = document.body;
+        const bodyStyles = window.getComputedStyle(body);
+        const width = parseFloat(bodyStyles.width);
+        const height = Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
         new Promise(resolve => {
-          const observer = new ResizeObserver(entries => {
-            const contentRect = entries[0].borderBoxSize[0];
-            resolve({
-              width: contentRect.inlineSize,
-              height: contentRect.blockSize,
-            });
+          resolve({
+            width: width,
+            height: height,
           });
-          observer.observe(document.body);
         });
       `);
       webviewE.style.width = (dimensions.width + widthBuffer) + "px";
