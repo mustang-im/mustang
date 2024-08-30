@@ -4,6 +4,7 @@
   class:outgoing={$message.outgoing}
   class:followup
   deliveryStatus={$message instanceof ChatMessage ? $message.deliveryStatus : DeliveryStatus.Unknown}
+  bind:this={messageE}
   >
   {#if !$message.outgoing && !followup}
     <vbox class="avatar">
@@ -33,7 +34,7 @@
       <slot name="inner-top" />
       <div class="text selectable">
         <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection. -->
-        <WebView title={$t`Text`} html={$message.html || ""} {headHTML} autoSize />
+        <WebView title={$t`Text`} html={$message.html || ""} {headHTML} autoSize {maxWidth}/>
         <slot name="bubble" />
       </div>
       <slot name="inner-bottom" />
@@ -59,6 +60,7 @@
   import WebView from "../../Shared/WebView.svelte";
   import { getDateString } from "../../Util/date";
   import { t } from "../../../l10n/l10n";
+  import { onMount } from "svelte";
 
   export let message: Message;
   export let previousMessage: Message = null;
@@ -72,6 +74,21 @@
   $: reactions = $message.reactions;
 
   $: headHTML = `<style>\n${cssBody}\n${cssContent}\n</style>`;
+
+  let messageE: HTMLDivElement;
+  let maxWidth: number;
+
+  onMount(() => {
+    observeMaxWidth();
+  });
+
+  function observeMaxWidth() {
+    const observer = new ResizeObserver((entries) => {
+      const el = entries[0];
+      maxWidth = el.contentRect.width * 0.75;
+    });
+    observer.observe(messageE.parentElement);
+  }
 </script>
 
 <style>

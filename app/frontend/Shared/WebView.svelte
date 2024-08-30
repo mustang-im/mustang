@@ -24,6 +24,8 @@
   export let title: string;
   /** Size the <WebView> to the size of the content */
   export let autoSize = false;
+  /** Max width in px for auto size */
+  export let maxWidth: number | null = null;
   /**
    * Which HTTP servers may be called automatically during the HTML load,
    * e.g. for images, stylesheets etc.?
@@ -69,32 +71,56 @@
     webviewE.addEventListener("dom-ready", () => {
       dispatch("webview", webviewE);
       if (autoSize) {
-        webviewE.addEventListener("did-finish-load", resizeWebview);
+        webviewE.addEventListener("did-finish-load", async () => {
+          await getContentSize();
+          resizeWebview();
+        });
       }
     }, { once: true });
   }
 
-  const widthBuffer = 20;
-  const heightBuffer = 40;
-  async function resizeWebview () {
+  let size;
+  async function getContentSize() {
     try {
-      const dimensions = await webviewE.executeJavaScript(`
-        const html = document.documentElement;
-        const body = document.body;
-        const bodyStyles = window.getComputedStyle(body);
-        const width = parseFloat(bodyStyles.width);
-        const height = Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
-        new Promise(resolve => {
-          resolve({
-            width: width,
-            height: height,
+      size = await webviewE.executeJavaScript(`
+        try {
+          const html = document.documentElement;
+          const body = document.body;
+          const bodyStyles = window.getComputedStyle(body);
+          const width = parseFloat(bodyStyles.width);
+          const height = Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
+          new Promise((resolve) => {
+            resolve({
+              width: width,
+              height: height,
+            });
           });
-        });
+        } catch (ex) {
+          new Promise((_, reject) => {
+            reject(JSON.stringify(ex));
+          });
+        }
       `);
-      webviewE.style.width = (dimensions.width + widthBuffer) + "px";
-      webviewE.style.height = (dimensions.height + heightBuffer) + "px";
     } catch (ex) {
       console.error(ex);
+    }
+  }
+
+  const heightBuffer = 10;
+  $: autoSize && size && maxWidth && resizeWebview();
+  function resizeWebview() {
+    if ((webviewE.parentElement && size.width > webviewE.parentElement.clientWidth) && 
+    (!maxWidth || maxWidth && size.width < maxWidth)) {
+      webviewE.style.width = size.width + "px";
+    }
+    if (maxWidth && maxWidth < size.width) {
+      webviewE.style.width = maxWidth + "px";
+    }
+    if (webviewE.parentElement && size.width < webviewE.parentElement.clientWidth) {
+      webviewE.style.width = "100%";
+    }
+    if (size.height != webviewE.style.height) {
+      webviewE.style.height = (size.height + heightBuffer) + "px";
     }
   };
 </script>
@@ -102,5 +128,7 @@
 <style>
   webview {
     flex: 1 0 0;
+    width: 100%;
+    height: auto;
   }
 </style>
