@@ -55,7 +55,7 @@
     webviewE.addEventListener("dom-ready", () => {
       dispatch("webview", webviewE);
       if (autoSize) {
-        webviewE.addEventListener("did-finish-load", resizeWebview());
+        webviewE.addEventListener("did-finish-load", resizeWebview);
       }
     }, { once: true });
   }
