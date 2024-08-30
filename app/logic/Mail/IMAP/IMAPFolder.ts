@@ -258,7 +258,7 @@ export class IMAPFolder extends Folder {
       return;
     }
     let { updatedMessages } = await this.fetchFlags(
-      { uid: this.recentMsg + ":" + highestUID }, {});
+      { uid: this.recentMsg.uid + ":" + highestUID }, {});
     await this.saveMsgs(updatedMessages);
   }
 
