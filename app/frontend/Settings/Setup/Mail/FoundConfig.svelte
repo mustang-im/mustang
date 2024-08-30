@@ -46,7 +46,8 @@
   export let haveError = false;
 
   // Show only the most preferred (= first) config of the same protocol
-  $: uniqueConfigs = filterUnique(altConfigs, (a, b) => a.protocol == b.protocol);
+  // TODO Disable POP3 and ActiveSync until they are implemented
+  $: uniqueConfigs = filterUnique(altConfigs.filter(a => a.protocol != "pop3" && a.protocol != "activesync"), (a, b) => a.protocol == b.protocol);
 
   function onChange(newConfig: MailAccount, event: Event) {
     config = newConfig;
