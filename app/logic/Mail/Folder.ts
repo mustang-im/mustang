@@ -157,6 +157,8 @@ export class Folder extends Observable implements TreeItem<Folder> {
   }
 
   async rename(newName: string): Promise<void> {
+    let disabled = this.disableRename();
+    assert(!disabled, disabled);
     this.name = newName;
   }
 
