@@ -442,7 +442,7 @@ export class IMAPFolder extends Folder {
    *   Optional. By default, checks entire folder (may be slow!)
    */
   async checkDeletedMessages(fromUID: number = 1) {
-    let localMsgs = this.messages.filter((msg: IMAPEMail) => msg.uid >= fromUID);
+    let localMsgs = this.messages.contents.filter((msg: IMAPEMail) => msg.uid >= fromUID);
     let serverUIDs = await this.fetchUIDList({ uid: fromUID + ":" + this.highestUID });
     let deletedMsgs = localMsgs.filter((msg: IMAPEMail) => !serverUIDs.includes(msg.uid));
 
