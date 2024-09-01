@@ -2,7 +2,11 @@
 * Mail
   * SQL: Stable DB
   * Collections sort is slow, and observers keep them alive
-  * IMAP, see below
+  * IMAP
+    * Bug: "MIME source not yet downloaded", stays
+    * Bug: After delete, new msgs are removed locally (and come back only after a poll)
+    * Bug: Old msgs keep coming back, new msgs not saved
+    * See also below
   * OAuth2: Microsoft
   * Inline images send
   * Context menu for content: Copy text, link, image
@@ -173,9 +177,7 @@
      * Mails
 
 ## IMAP
-* Bug: "MIME source not yet downloaded", stays
 * Download all msgs in folder: When?
-* Old msgs keep coming back, new msgs not saved
 * Subscribed folders only, and subscription UI
 * Move folder
 * Fallback: When UID not supported
