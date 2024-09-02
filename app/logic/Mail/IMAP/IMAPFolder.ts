@@ -178,7 +178,8 @@ export class IMAPFolder extends Folder {
     if (this.countTotal === 0) {
       return;
     }
-    let { newMessages } = await this.fetchMessageList({ uid: this.highestUID + ":*" }, {});
+    let fromUID = this.highestUID ?? "1";
+    let { newMessages } = await this.fetchMessageList({ uid: fromUID + ":*" }, {});
     this.messages.addAll(newMessages);
     await this.saveMsgs(newMessages);
     await SQLFolder.saveProperties(this);
