@@ -501,7 +501,7 @@
   "9TO8nT": "Vaše heslo",
   "EclUNy": "{0} vyžaduje, abyste udělali nějaké manuální kroky pro počáteční nastavení",
   "bxDnZ3": "{num, číslo, jeden {day} jiný {days}}",
-  "7+VY14": "{num, plural, one {month} other {months}}",
+  "7+VY14": "{num, množství, jeden {měsíc} jiný {měsíce}}",
   "VD5HcG": "{num, plural, one {time} other {times}}",
   "dmgyKy": "{num, číslo, jeden {week} jiný {weeks}}",
   "dnIrnN": "{num, plural, one {year} other {years}}",
