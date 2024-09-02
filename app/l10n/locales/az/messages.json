@@ -1,7 +1,7 @@
 {
   "IYbM1Z": "IYbM1Z",
   "FlvwwB": "{0} hesabı yalnız",
-  "QpgBEp": "{0, ümumi, bir { # gün} digər { # gün }}",
+  "QpgBEp": "{0, plural, one { # day} other { # days }}",
   "BqElFK": "{0} qrup yalnız",
   "BaQ5Y3": "{0} KB",
   "ZXxoL2": "{0, ümumi, bir { # yerli mesaj. əlavə { # yerli mesajlar. qeydiyyat",
