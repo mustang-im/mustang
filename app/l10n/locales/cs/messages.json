@@ -502,7 +502,7 @@
   "EclUNy": "{0} vyžaduje, abyste udělali nějaké manuální kroky pro počáteční nastavení",
   "bxDnZ3": "{num, číslo, jeden {day} jiný {days}}",
   "7+VY14": "{num, množství, jeden {měsíc} jiný {měsíce}}",
-  "VD5HcG": "{num, plural, one {time} other {times}}",
+  "VD5HcG": "{num, číslo, jeden {time} jiný {times}}",
   "dmgyKy": "{num, číslo, jeden {week} jiný {weeks}}",
   "dnIrnN": "{num, plural, one {year} other {years}}",
   "sxkWRg": "Pokročilí",
