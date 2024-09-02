@@ -2,6 +2,7 @@ import { setMainWindow, startupBackend } from '../../../backend/backend';
 import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { autoUpdater } from 'electron-updater';
+import contextMenu from 'electron-context-menu';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
@@ -13,6 +14,12 @@ if (process.platform == 'darwin') {
 function createWindow(): void {
   try {
     startupBackend();
+
+    contextMenu({
+      showSelectAll: true,
+      showSaveImageAs: true,
+      showServices: true,
+    });
 
     // Create the browser window.
     const mainWindow = new BrowserWindow({

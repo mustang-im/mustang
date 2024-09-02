@@ -3,6 +3,7 @@
   "version": "0.6.4-dev",
   "description": "Mustang - Video conference, chat, mail, calendar, files, contacts",
   "main": "./out/main/index.js",
+  "type": "module",
   "scripts": {
     "format": "prettier --plugin prettier-plugin-svelte --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
@@ -27,6 +28,7 @@
     "adm-zip": "^0.5.12",
     "better-sqlite3": "^9.4.5",
     "bufferutil": "^4.0.8",
+    "electron-context-menu": "^4.0.4",
     "electron-updater": "^6.3.3",
     "utf-8-validate": "^6.0.3",
     "ws": "^8.16.0"
