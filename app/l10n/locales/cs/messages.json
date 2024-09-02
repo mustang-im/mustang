@@ -503,7 +503,7 @@
   "bxDnZ3": "{num, číslo, jeden {day} jiný {days}}",
   "7+VY14": "{num, plural, one {month} other {months}}",
   "VD5HcG": "{num, plural, one {time} other {times}}",
-  "dmgyKy": "{num, plural, one {week} other {weeks}}",
+  "dmgyKy": "{num, číslo, jeden {week} jiný {weeks}}",
   "dnIrnN": "{num, plural, one {year} other {years}}",
   "sxkWRg": "Pokročilí",
   "EjGIIm": "Jste si jisti, že chcete odstranit tuto nešťastnou řadu událostí?",
