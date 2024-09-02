@@ -502,7 +502,7 @@
   "EclUNy": "{0} requires you to do some manual steps for initial set up",
   "bxDnZ3": "{num, plural, one {day} other {days}}",
   "7+VY14": "{num, plural, one {month} other {months}}",
-  "VD5HcG": "num, meervoud, een andere keer",
+  "VD5HcG": "{num, plural, one {time} other {times}}",
   "dmgyKy": "num, plural, oneweeks andere weeks",
   "dnIrnN": "num, meervoud, een andere jarige",
   "sxkWRg": "Vertaling:",
