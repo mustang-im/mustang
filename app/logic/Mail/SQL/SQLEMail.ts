@@ -4,6 +4,7 @@ import type { Folder } from "../Folder";
 import { Attachment, ContentDisposition } from "../Attachment";
 import { getTagByName, Tag } from "../Tag";
 import { getDatabase } from "./SQLDatabase";
+import { SQLFolder } from "./SQLFolder";
 import { appGlobal } from "../../app";
 import { assert, fileExtensionForMIMEType } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
@@ -17,6 +18,9 @@ export class SQLEMail {
    * Save only fully downloaded emails
    */
   static async save(email: EMail) {
+    if (!email.folder.dbID) {
+      await SQLFolder.save(email.folder);
+    }
     if (!email.dbID) {
       let existing = await (await getDatabase()).get(sql`
         SELECT
