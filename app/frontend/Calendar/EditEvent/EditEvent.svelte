@@ -98,16 +98,16 @@
         {:else if frequency == Frequency.Monthly }
           <RadioGroup bind:group={week} items={monthWeekOptions} />
         {:else if frequency == Frequency.Weekly }
-          <CheckboxGroup size="sm" radius="xl" bind:group={weekdays} label={`On days`} items={weekdayOptions} />
+          <CheckboxGroup size="sm" radius="xl" bind:group={weekdays} label={$t`On days`} items={weekdayOptions} />
         {/if}
         <hbox>
-          <Radio label="{`Forever`}" bind:group={end} value="none" />
+          <Radio label="{$t`Forever`}" bind:group={end} value="none" />
         </hbox>
         <hbox>
-          <Radio class="inline" label="{`For `}" bind:group={end} value="count" />&nbsp;<input class="auto" type="number" min={1} max={99} bind:value={count} on:input={() => end = "count"}>&nbsp;{$plural(count, { one: 'time', other: 'times' })}
+          <Radio class="inline" label="{$t`For `}" bind:group={end} value="count" />&nbsp;<input class="auto" type="number" min={1} max={99} bind:value={count} on:input={() => end = "count"}>&nbsp;{$plural(count, { one: 'time', other: 'times' })}
         </hbox>
         <hbox>
-          <Radio class="inline" label="{`Until`}" bind:group={end} value="date" />&nbsp;<DateInput date={endDate} min={minDate} on:change={() => end = "date"} />
+          <Radio class="inline" label="{$t`Until`}" bind:group={end} value="date" />&nbsp;<DateInput date={endDate} min={minDate} on:change={() => end = "date"} />
         </hbox>
       {/if}
       <Checkbox label={$t`Alarm`} checked={!!event.alarm} />
@@ -177,20 +177,20 @@
 
   updateDateUI();
   function updateDateUI() {
-    yearWeekOptions = [{ label: `On ${event.startTime.toLocaleDateString(getUILocale(), { day: "numeric", month: "long" })}`, value: 0 }];
-    monthWeekOptions = [{ label: `On day ${event.startTime.getDate()}`, value: 0 }];
+    yearWeekOptions = [{ label: $t`On ${event.startTime.toLocaleDateString(getUILocale(), { day: "numeric", month: "long" })}`, value: 0 }];
+    monthWeekOptions = [{ label: $t`On day ${event.startTime.getDate()}`, value: 0 }];
 
     let weekday = event.startTime.toLocaleDateString(getUILocale(), { weekday: "long" });
     let weekno = Math.ceil(event.startTime.getDate() / 7);
     if (weekno < 5) {
-      let weekname = [`first`, `second`, `third`, `fourth`][weekno - 1];
+      let weekname = [$t`first`, $t`second`, $t`third`, $t`fourth`][weekno - 1];
       yearWeekOptions.push({ label: `On the ${weekname} ${weekday} in ${event.startTime.toLocaleDateString(getUILocale(), { month: "long" })}`, value: weekno });
       monthWeekOptions.push({ label: `On the ${weekname} ${weekday}`, value: weekno });
     }
 
     if (isLastWeekOfMonth(event.startTime)) {
-      yearWeekOptions.push({ label: `On the last ${weekday} in ${event.startTime.toLocaleDateString(getUILocale(), { month: "long" })}`, value: 5 });
-      monthWeekOptions.push({ label: `On the last ${weekday}`, value: 5 });
+      yearWeekOptions.push({ label: $t`On the last ${weekday} in ${event.startTime.toLocaleDateString(getUILocale(), { month: "long" })}`, value: 5 });
+      monthWeekOptions.push({ label: $t`On the last ${weekday}`, value: 5 });
     }
 
     if (week && (week < 5 || yearWeekOptions.length == 2)) {
@@ -262,7 +262,7 @@
         // Never a recurring event.
         return true;
       }
-      if (!confirm(`Are you sure you want to remove this unfortunate series of events?`)) {
+      if (!confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
         return false;
       }
       event.recurrenceRule = null;
@@ -274,7 +274,7 @@
           // Rule hasn't actually changed.
           return true;
         }
-        if (!confirm(`This change will reset all of your series to default values.`)) {
+        if (!confirm($t`This change will reset all of your series to default values.`)) {
           return false;
         }
       }
@@ -300,7 +300,7 @@
 
   async function onDelete() {
     if (event.recurrenceRule) {
-      if (!confirm(`Are you sure you want to remove this unfortunate series of events?`)) {
+      if (!confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
         return;
       }
     }
