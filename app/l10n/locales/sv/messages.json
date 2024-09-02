@@ -502,7 +502,7 @@
   "EclUNy": "{0} kräver att du gör några manuella steg för första installationen",
   "bxDnZ3": "{num, plural, one {day} other {days}}",
   "7+VY14": "{num, plural, one {month} other {months}}",
-  "VD5HcG": "{num, plural, one {time} andra {times}}",
+  "VD5HcG": "{num, plural, one {time} other {times}}",
   "dmgyKy": "{num, plural, one {week} other {weeks}}",
   "dnIrnN": "{num, plural, one {year} other {years}}",
   "sxkWRg": "Avancerad",
