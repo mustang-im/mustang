@@ -500,7 +500,7 @@
   "q8yluz": "اسمك",
   "9TO8nT": "كلمة المرور الخاصة بك",
   "EclUNy": "{0} يَتطلّبُك أَنْ تَعمَلُ بَعْض الخطواتِ اليدويةِ للتحضير الأوليِ",
-  "bxDnZ3": "{عدم, plural, one {day} other {days}}",
+  "bxDnZ3": "{num, plural, one {day} other {days}}",
   "7+VY14": "{عدد، تعدد، {شهر}آخر {شهر}}",
   "VD5HcG": "{عدم, plural, one {time} other {times}}",
   "dmgyKy": "{عدد، تعدد، {أسبوع}آخر {أسبوع}}",
