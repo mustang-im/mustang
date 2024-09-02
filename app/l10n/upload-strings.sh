@@ -1,0 +1,1 @@
+wlc upload mustang/mustang/en --input l10n/locales/en/messages.json --method add
