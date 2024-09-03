@@ -26,6 +26,28 @@ import { messages as ru } from './locales/ru/messages-compiled.json';
 import { messages as sv } from './locales/sv/messages-compiled.json';
 import { messages as uk } from './locales/uk/messages-compiled.json';
 
+import { messages as bn } from './locales/bn/messages-compiled.json';
+import { messages as eo } from './locales/eo/messages-compiled.json';
+import { messages as et } from './locales/et/messages-compiled.json';
+import { messages as fa } from './locales/fa/messages-compiled.json';
+import { messages as ga } from './locales/ga/messages-compiled.json';
+import { messages as he } from './locales/he/messages-compiled.json';
+import { messages as hi } from './locales/hi/messages-compiled.json';
+import { messages as hu } from './locales/hu/messages-compiled.json';
+import { messages as id } from './locales/id/messages-compiled.json';
+import { messages as ko } from './locales/ko/messages-compiled.json';
+import { messages as lt } from './locales/lt/messages-compiled.json';
+import { messages as ms } from './locales/ms/messages-compiled.json';
+import { messages as sk } from './locales/sk/messages-compiled.json';
+import { messages as sl } from './locales/sl/messages-compiled.json';
+import { messages as sr } from './locales/sr/messages-compiled.json';
+import { messages as sq } from './locales/sq/messages-compiled.json';
+import { messages as th } from './locales/th/messages-compiled.json';
+import { messages as tl } from './locales/tl/messages-compiled.json';
+import { messages as tr } from './locales/tr/messages-compiled.json';
+import { messages as ur } from './locales/ur/messages-compiled.json';
+import { messages as vi } from './locales/vi/messages-compiled.json';
+
 /** Map of lang code to messages.
  * Lang codes: <https://www.wikiwand.com/en/List_of_ISO_639_language_codes> */
 const languageMessages = {
@@ -49,6 +71,27 @@ const languageMessages = {
   ru: ru,
   sv: sv,
   uk: uk,
+  bn: bn,
+  eo: eo,
+  et: et,
+  fa: fa,
+  ga: ga,
+  he: he,
+  hi: hi,
+  hu: hu,
+  id: id,
+  ko: ko,
+  lt: lt,
+  ms: ms,
+  sk: sk,
+  sl: sl,
+  sr: sr,
+  sq: sq,
+  th: th,
+  tl: tl,
+  tr: tr,
+  ur: ur,
+  vi: vi,
 };
 
 export function setUILocale(lang: string) {
