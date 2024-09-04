@@ -1,6 +1,6 @@
-import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
+import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
 import { nodePolyfills } from "vite-plugin-node-polyfills";
-import { svelte } from '@sveltejs/vite-plugin-svelte'
+import { svelte } from '@sveltejs/vite-plugin-svelte';
 
 export default defineConfig({
   main: {
@@ -11,8 +11,8 @@ export default defineConfig({
       rollupOptions: {
         output: {
           format: 'es'
-        }
-      }
+        },
+      },
     },
   },
   preload: {
@@ -21,8 +21,8 @@ export default defineConfig({
       rollupOptions: {
         output: {
           format: 'es'
-        }
-      }
+        },
+      },
     },
   },
   renderer: {
