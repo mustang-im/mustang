@@ -40,7 +40,6 @@ import { messages as lt } from './locales/lt/messages-compiled.json';
 import { messages as ms } from './locales/ms/messages-compiled.json';
 import { messages as sk } from './locales/sk/messages-compiled.json';
 import { messages as sl } from './locales/sl/messages-compiled.json';
-import { messages as sr } from './locales/sr/messages-compiled.json';
 import { messages as sq } from './locales/sq/messages-compiled.json';
 import { messages as th } from './locales/th/messages-compiled.json';
 import { messages as tl } from './locales/tl/messages-compiled.json';
@@ -85,7 +84,6 @@ const languageMessages = {
   ms: ms,
   sk: sk,
   sl: sl,
-  sr: sr,
   sq: sq,
   th: th,
   tl: tl,
