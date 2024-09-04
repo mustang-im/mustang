@@ -37,7 +37,7 @@
     "@electron-toolkit/tsconfig": "^1.0.1",
     "@sveltejs/vite-plugin-svelte": "^3.0.1",
     "@types/node": "^18.17.5",
-    "electron": "^25.6.0",
+    "electron": "^32.0.1",
     "electron-builder": "^24.6.3",
     "electron-vite": "^2.3.0",
     "eslint": "^8.47.0",
