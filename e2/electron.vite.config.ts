@@ -6,10 +6,24 @@ export default defineConfig({
   main: {
     plugins: [
       externalizeDepsPlugin({ exclude: ["@radically-straightforward/sqlite"] }),
-    ]
+    ],
+    build: {
+      rollupOptions: {
+        output: {
+          format: 'es'
+        }
+      }
+    },
   },
   preload: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin()],
+    build: {
+      rollupOptions: {
+        output: {
+          format: 'es'
+        }
+      }
+    },
   },
   renderer: {
     plugins: [nodePolyfills({include: ['buffer'], globals: {global: false, process: false}}), svelte()]
