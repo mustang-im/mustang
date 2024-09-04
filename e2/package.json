@@ -39,7 +39,7 @@
     "@types/node": "^18.17.5",
     "electron": "^25.6.0",
     "electron-builder": "^24.6.3",
-    "electron-vite": "^1.0.27",
+    "electron-vite": "^2.3.0",
     "eslint": "^8.47.0",
     "eslint-plugin-svelte": "^2.32.4",
     "i18n": "^0.8.3",
