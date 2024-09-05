@@ -4,7 +4,6 @@ import type { Folder } from "../Folder";
 import { Attachment, ContentDisposition } from "../Attachment";
 import { getTagByName, Tag } from "../Tag";
 import { getDatabase } from "./SQLDatabase";
-import { SQLFolder } from "./SQLFolder";
 import { appGlobal } from "../../app";
 import { assert, fileExtensionForMIMEType } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
