@@ -1,13 +1,15 @@
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { svelte } from '@sveltejs/vite-plugin-svelte';
-import esmShim from 'esm-shim-plugin';
+import replace from '@rollup/plugin-replace';
 
 export default defineConfig({
   main: {
     plugins: [
       externalizeDepsPlugin({ exclude: ["@radically-straightforward/sqlite"] }),
-      esmShim(),
+      replace({
+        __dirname: 'import.meta.dirname',
+      }),
     ],
     build: {
       rollupOptions: {
@@ -20,7 +22,6 @@ export default defineConfig({
   preload: {
     plugins: [
       externalizeDepsPlugin(),
-      esmShim(),
     ],
     build: {
       rollupOptions: {

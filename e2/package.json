@@ -37,6 +37,7 @@
     "@electron-toolkit/eslint-config-prettier": "^1.0.1",
     "@electron-toolkit/eslint-config-ts": "^1.0.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
+    "@rollup/plugin-replace": "^5.0.7",
     "@sveltejs/vite-plugin-svelte": "^3.0.1",
     "@types/node": "^18.17.5",
     "electron": "^32.0.1",
