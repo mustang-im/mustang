@@ -19,7 +19,7 @@ export class SQLEMail {
    */
   static async save(email: EMail) {
     if (!email.folder.dbID) {
-      await SQLFolder.save(email.folder);
+      await email.folder.save();
     }
     if (!email.dbID) {
       let existing = await (await getDatabase()).get(sql`
