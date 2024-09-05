@@ -283,7 +283,13 @@ export class ThunderbirdProfile {
   static async findProfiles(): Promise<ThunderbirdProfile[]> {
     let baseDir = await this.baseDir();
     let iniPath = await appGlobal.remoteApp.path.join(baseDir, "profiles.ini");
-    let iniText = await await appGlobal.remoteApp.fs.readFile(iniPath, { encoding: "utf-8" });
+    let iniText: string;
+    try {
+      iniText = await appGlobal.remoteApp.fs.readFile(iniPath, { encoding: "utf-8" });
+    } catch (ex) {
+      console.log("Failed to find Thunderbird profiles:", ex?.message);
+      return [];
+    }
     let iniContents = parseINI(iniText);
     let profiles: ThunderbirdProfile[] = [];
     /*
