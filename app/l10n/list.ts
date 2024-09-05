@@ -54,4 +54,4 @@ export const localeNames = {
  * the imports in ./l10n.ts. */
 export const locales = Object.keys(localeNames);
 
-export const rtlLocales = [ 'ar' ];
+export const rtlLocales = [ 'ar', 'fa', 'he', 'ur' ];
