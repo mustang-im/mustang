@@ -39,27 +39,18 @@ export async function getStartObjects(): Promise<void> {
  */
 export async function loginOnStartup(startupErrorCallback: (ex) => void, backgroundErrorCallback: (ex) => void): Promise<void> {
   for (let account of appGlobal.chatAccounts) {
-    try {
-      account.errorCallback = backgroundErrorCallback;
-      if (account.loginOnStartup) {
-        await account.login(false);
-      }
-    } catch (e) {
-      startupErrorCallback(e);
+    account.errorCallback = backgroundErrorCallback;
+    if (account.loginOnStartup) {
+      account.login(false).catch(startupErrorCallback);
     }
   }
 
   for (let account of appGlobal.emailAccounts) {
     //if (!(await account.isLoggedIn) && (await account.haveStoredLogin())) {
-    try {
-      account.errorCallback = backgroundErrorCallback;
-      if (account.loginOnStartup) {
-        console.log("Logging in mail account", account.name);
-        await account.login(false);
-        // await account.inbox.getNewMessages();
-      }
-    } catch (e) {
-      startupErrorCallback(e);
+    account.errorCallback = backgroundErrorCallback;
+    if (account.loginOnStartup) {
+      await account.login(false).catch(startupErrorCallback);
+      // account.inbox.getNewMessages().catch(startupErrorCallback);
     }
   }
 }
