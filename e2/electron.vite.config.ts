@@ -11,25 +11,11 @@ export default defineConfig({
         __dirname: 'import.meta.dirname',
       }),
     ],
-    build: {
-      rollupOptions: {
-        output: {
-          format: 'es',
-        },
-      },
-    },
   },
   preload: {
     plugins: [
       externalizeDepsPlugin(),
     ],
-    build: {
-      rollupOptions: {
-        output: {
-          format: 'es',
-        },
-      },
-    },
   },
   renderer: {
     plugins: [nodePolyfills({include: ['buffer'], globals: {global: false, process: false}}), svelte()]
