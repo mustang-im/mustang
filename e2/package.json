@@ -29,7 +29,6 @@
     "better-sqlite3": "^11.2.1",
     "bufferutil": "^4.0.8",
     "electron-updater": "^6.3.3",
-    "esm-shim-plugin": "https://github.com/jermy-c/esm-shim-plugin",
     "utf-8-validate": "^6.0.3",
     "ws": "^8.16.0"
   },
