@@ -12,7 +12,7 @@ export default defineConfig({
     build: {
       rollupOptions: {
         output: {
-          format: 'es'
+          format: 'es',
         },
       },
     },
@@ -25,7 +25,7 @@ export default defineConfig({
     build: {
       rollupOptions: {
         output: {
-          format: 'es'
+          format: 'es',
         },
       },
     },
