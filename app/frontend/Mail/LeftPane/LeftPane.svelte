@@ -24,7 +24,7 @@
     <AccountList accounts={$accounts} bind:selectedAccount />
     <FolderList {folders} bind:selectedFolder bind:selectedFolders />
     {#if selectedFolder && !(selectedFolder instanceof SavedSearchFolder)}
-      <TagsList folder={selectedFolder} bind:searchMessages on:clear={onClearSearch} />
+      <TagsList folder={selectedFolder} bind:searchMessages />
     {/if}
     <hbox class="separator" />
     <ViewSwitcher />
