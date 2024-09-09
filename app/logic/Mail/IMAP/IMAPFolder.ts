@@ -1,8 +1,6 @@
 import { Folder, SpecialFolder } from "../Folder";
 import { IMAPEMail } from "./IMAPEMail";
 import { type IMAPAccount, IMAPCommandError } from "./IMAPAccount";
-import { SQLFolder } from "../SQL/SQLFolder";
-import { SQLEMail } from "../SQL/SQLEMail";
 import type { EMail } from "../EMail";
 import { ArrayColl, Collection } from "svelte-collections";
 import { assert } from "../../util/util";
@@ -38,7 +36,7 @@ export class IMAPFolder extends Folder {
   set lastModSeq(val: number) {
     assert(typeof (val) == "number", "IMAP Folder modseq must be a number");
     this.syncState = val;
-    SQLFolder.saveProperties(this).catch(this.account.errorCallback);
+    this.storage.saveFolderProperties(this).catch(this.account.errorCallback);
   }
 
   fromFlow(folderInfo: any) {
@@ -145,7 +143,7 @@ export class IMAPFolder extends Folder {
       //console.log("  Fetched", fetchUIDs.length, ", remaining", newUIDs.length, "- Time: Fetch:", fetchTime / kBatchSize, "ms/msg, save time", saveTime / kBatchSize, "ms/msg");
     }
 
-    await SQLFolder.saveProperties(this);
+    await this.storage.saveFolderProperties(this);
     return newMsgs;
   }
 
@@ -154,7 +152,7 @@ export class IMAPFolder extends Folder {
   protected async listAllMessages(): Promise<ArrayColl<IMAPEMail>> {
     let { newMessages } = await this.fetchMessageList({ all: true }, {});
     this.messages.addAll(newMessages);
-    await SQLFolder.saveProperties(this);
+    await this.storage.saveFolderProperties(this);
     await this.saveMsgs(newMessages);
     return newMessages;
   }
@@ -166,7 +164,7 @@ export class IMAPFolder extends Folder {
       changedSince: this.lastModSeq, // Works only with CONDSTORE capa
     });
     this.messages.addAll(newMessages);
-    await SQLFolder.saveProperties(this);
+    await this.storage.saveFolderProperties(this);
     await this.saveMsgs(newMessages);
     return newMessages;
   }
@@ -182,7 +180,7 @@ export class IMAPFolder extends Folder {
     let { newMessages } = await this.fetchMessageList({ uid: fromUID + ":*" }, {});
     this.messages.addAll(newMessages);
     await this.saveMsgs(newMessages);
-    await SQLFolder.saveProperties(this);
+    await this.storage.saveFolderProperties(this);
     return newMessages;
   }
 
@@ -388,7 +386,7 @@ export class IMAPFolder extends Folder {
     for (let email of msgs) {
       try {
         if (email.subject) {
-          await SQLEMail.save(email);
+          await this.storage.saveMessage(email);
         }
       } catch (ex) {
         this.account.errorCallback(ex);
@@ -473,7 +471,7 @@ export class IMAPFolder extends Folder {
     let message = uid && this.getEMailByUID(uid);
     if (message) {
       message.setFlagsLocal(flags);
-      await SQLEMail.save(message);
+      await this.storage.saveMessage(message);
       return;
     }
 

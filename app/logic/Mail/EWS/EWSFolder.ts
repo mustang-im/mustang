@@ -1,8 +1,6 @@
 import { Folder, SpecialFolder } from "../Folder";
 import { EWSEMail, ensureArray } from "./EWSEMail";
 import type { EWSAccount } from "./EWSAccount";
-import { SQLFolder } from "../SQL/SQLFolder";
-import { SQLEMail } from "../SQL/SQLEMail";
 import { base64ToArrayBuffer, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -87,7 +85,7 @@ export class EWSFolder extends Folder {
       } catch (ex) {
         if (ex.error?.ResponseCode == 'ErrorInvalidSyncStateData') {
           this.syncState = null;
-          await SQLFolder.save(this);
+          await this.storage.saveFolder(this);
           sync.m$SyncFolderItems.m$SyncState = null;
           result = await this.account.callEWS(sync);
         } else {
@@ -104,7 +102,7 @@ export class EWSFolder extends Folder {
       newMsgs.addAll(newMsgsInIteration);
       await this.forEachSyncChange(result.Changes.Delete, this.processSyncDelete, true);
       this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
-      await SQLFolder.save(this);
+      await this.storage.saveFolder(this);
     }
     return newMsgs;
   }
@@ -127,12 +125,12 @@ export class EWSFolder extends Folder {
 
   protected async processSyncReadFlagChange(email: EWSEMail, change: any) {
     email.isRead = sanitize.boolean(change.IsRead);
-    await SQLEMail.saveWritableProps(email);
+    await this.storage.saveMessageWritableProps(email);
   }
 
   protected async processSyncUpdate(email: EWSEMail, update: any) {
     email.setFlags(update);
-    await SQLEMail.saveWritableProps(email);
+    await this.storage.saveMessageWritableProps(email);
   }
 
   protected async processSyncDelete(email: EWSEMail) {
@@ -192,7 +190,7 @@ export class EWSFolder extends Folder {
         let email = this.getEmailByItemID(sanitize.nonemptystring(message.ItemId.Id));
         if (email) {
           email.setFlags(message);
-          await SQLEMail.saveWritableProps(email);
+          await this.storage.saveMessageWritableProps(email);
           allMsgs.add(email);
         } else {
           newMessageIDs.push(message.ItemId);
@@ -203,7 +201,7 @@ export class EWSFolder extends Folder {
     }
 
     for (let email of this.messages.subtract(allMsgs)) {
-      SQLEMail.deleteIt(email);
+      await this.storage.deleteMessage(email);
     }
     allMsgs.addAll(newMsgs);
     this.messages.replaceAll(allMsgs);
@@ -279,7 +277,7 @@ export class EWSFolder extends Folder {
         try {
           let email = this.newEMail();
           email.fromXML(getEWSItem(result.Items));
-          await SQLEMail.save(email);
+          await this.storage.saveMessage(email);
           newMsgs.add(email);
         } catch (ex) {
           this.account.errorCallback(ex);

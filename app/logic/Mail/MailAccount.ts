@@ -32,6 +32,8 @@ export class MailAccount extends Account {
   /** Where we got the config from, during setup */
   source: ConfigSource = null;
   storage: MailAccountStorage;
+  /** Ways to store email content in RFC822 format. First storage will be used for reading. */
+  contentStorage = new ArrayColl<MailContentStorage>();
 
   @notifyChangedProperty
   emailAddress: string;
@@ -198,10 +200,24 @@ export type ConfigSource = "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "au
 export interface MailAccountStorage {
   saveAccount(account: MailAccount): Promise<void>;
   deleteAccount(account: MailAccount): Promise<void>;
+  readFolderHierarchy(account: MailAccount): Promise<void>;
   saveFolder(folder: Folder): Promise<void>;
+  saveFolderProperties(folder: Folder): Promise<void>;
   deleteFolder(folder: Folder): Promise<void>;
+  readMessage(email: EMail): Promise<void>;
+  readMessageWritableProps(email: EMail): Promise<void>;
+  readMessageBody(email: EMail): Promise<void>;
   saveMessage(email: EMail): Promise<void>;
+  saveMessageWritableProps(email: EMail): Promise<void>;
+  saveMessageTags(email: EMail): Promise<void>;
+  deleteMessage(email: EMail): Promise<void>;
   readAllMessages(folder: Folder, limit?: number, startWith?: number): Promise<void>;
+}
+
+export interface MailContentStorage {
+  save(email: EMail): Promise<void>;
+  read(email: EMail): Promise<void>;
+  deleteIt(email: EMail): Promise<void>;
 }
 
 export enum DeleteStrategy {

@@ -1,3 +1,4 @@
+import type { MailContentStorage } from "../../MailAccount";
 import type { EMail } from "../../EMail";
 import { getDatabase } from "./SQLSourceDatabase";
 import { SQLEMail } from "../SQLEMail";
@@ -7,11 +8,11 @@ import sql from "../../../../../lib/rs-sqlite";
 /** Stores the RFC822 MIME source of the email,
  * for backup purposes, and for features like
  * "View source", Forward/Redirect etc. */
-export class SQLSourceEMail {
+export class SQLSourceEMail implements MailContentStorage {
   /**
    * Save only fully downloaded emails
    */
-  static async save(email: EMail) {
+  async save(email: EMail) {
     assert(email.mime, "Have no email source that I could save");
     if (!email.dbID) {
       await SQLEMail.save(email);
@@ -24,7 +25,7 @@ export class SQLSourceEMail {
       )`);
   }
 
-  static async read(email: EMail): Promise<void> {
+  async read(email: EMail): Promise<void> {
     assert(email.dbID, "Have no email ID");
     let row = await (await getDatabase()).get(sql`
       SELECT
@@ -38,7 +39,7 @@ export class SQLSourceEMail {
     email.mime = row.mime;
   }
 
-  static async deleteIt(email: EMail) {
+  async deleteIt(email: EMail) {
     if (!email.dbID) {
       return;
     }

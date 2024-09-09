@@ -1,7 +1,6 @@
 import { EMail } from "./EMail";
 import type { MailAccount } from "./MailAccount";
 import type { TreeItem } from "../../frontend/Shared/FastTree";
-import { SQLEMail } from "./SQL/SQLEMail";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, Collection } from 'svelte-collections';
 import { assert, AbstractFunction } from "../util/util";
@@ -48,6 +47,10 @@ export class Folder extends Observable implements TreeItem<Folder> {
     return this.specialFolder ? "   " + specialFolderOrder.indexOf(this.specialFolder) : this.name;
   }
 
+  protected get storage() {
+    return this.account.storage;
+  }
+
   protected async readFolder() {
     if (!this.dbID) {
       await this.save();
@@ -55,10 +58,10 @@ export class Folder extends Observable implements TreeItem<Folder> {
     if (!this.messages.hasItems) {
       let log = "Reading msgs from DB, for folder " + this.account.name + " " + this.path;
       console.time(log + " first 200");
-      await SQLEMail.readAll(this, 200);
+      await this.storage.readAllMessages(this, 200);
       console.timeEnd(log + " first 200");
       console.time(log);
-      await SQLEMail.readAll(this, null, 200);
+      await this.storage.readAllMessages(this, null, 200);
       console.timeEnd(log);
     }
   }
@@ -163,7 +166,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
   }
 
   async save(): Promise<void> {
-    this.account.storage.saveFolder(this);
+    await this.storage.saveFolder(this);
   }
 
   /** Warning: Also deletes all messages in the folder, also on the server */
@@ -182,7 +185,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
       this.account.rootFolders.remove(this);
     }
     if (this.dbID) {
-      this.account.storage.deleteFolder(this);
+      await this.storage.deleteFolder(this);
     }
   }
 

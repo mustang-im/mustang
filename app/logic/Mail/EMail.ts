@@ -3,17 +3,14 @@ import { SpecialFolder, type Folder } from "./Folder";
 import { Attachment, ContentDisposition } from "./Attachment";
 import { RawFilesAttachment } from "./Store/RawFilesAttachment";
 import type { Tag } from "./Tag";
-import { DeleteStrategy } from "./MailAccount";
-import { SQLEMail } from "./SQL/SQLEMail";
-import { SQLSourceEMail } from "./SQL/Source/SQLSourceEMail";
+import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
 import { sqlFindMessageByID } from "./SQL/SQLSearchEMail";
-import { MailZIP } from "./Store/MailZIP";
-import { MailDir } from "./Store/MailDir";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { appGlobal } from "../app";
 import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
 import { getUILocale, gt } from "../../l10n/l10n";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+import { PromiseAllDone } from "../util/PromiseAllDone";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { notifyChangedProperty } from "../util/Observable";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
@@ -94,6 +91,10 @@ export class EMail extends Message {
     return this.subject.replace(/^((Re|RE|AW|Aw): ?)+/g, "");
   }
 
+  get storage(): MailAccountStorage {
+    return this.folder.account.storage;
+  }
+
   /** Marks as spam, and deletes or moves the message, as configured */
   async treatSpam(isSpam = true) {
     let strategy = this.folder.account.spamStrategy;
@@ -157,7 +158,7 @@ export class EMail extends Message {
   async deleteMessageLocally() {
     this.isDeleted = true;
     this.folder.messages.remove(this);
-    await SQLEMail.deleteIt(this);
+    await this.storage.deleteMessage(this);
   }
 
   async deleteMessageOnServer() {
@@ -165,13 +166,13 @@ export class EMail extends Message {
 
   async addTag(tag: Tag) {
     this.tags.add(tag);
-    await SQLEMail.saveTags(this);
+    await this.storage.saveMessageTags(this);
     await this.addTagOnServer(tag);
   }
 
   async removeTag(tag: Tag) {
     this.tags.remove(tag);
-    await SQLEMail.saveTags(this);
+    await this.storage.saveMessageTags(this);
     await this.removeTagOnServer(tag);
   }
 
@@ -265,17 +266,14 @@ export class EMail extends Message {
     if (this.isDeleted || await this.isDownloadCompleteDoublecheck()) {
       return;
     }
-    await SQLEMail.save(this);
-    await SQLSourceEMail.save(this);
-    await MailZIP.save(this);
-    //await MailDir.save(this);
-    try {
-      await RawFilesAttachment.saveEMail(this);
-    } catch (ex) {
-      console.log(ex);
+    await this.storage.saveMessage(this);
+    let contentSaves = new PromiseAllDone();
+    for (let contentStorage of this.folder.account.contentStorage) {
+      contentSaves.add(contentStorage.save(this));
     }
+    await contentSaves.wait();
     this.downloadComplete = true;
-    await SQLEMail.saveWritableProps(this);
+    await this.storage.saveMessageWritableProps(this); // save downloadComplete = true
   }
 
   protected async isDownloadCompleteDoublecheck(): Promise<boolean> {
@@ -288,7 +286,7 @@ export class EMail extends Message {
     // Double-check for concurrent downloads
     let check = this.folder.newEMail();
     check.dbID = this.dbID;
-    await SQLEMail.readWritableProps(check);
+    await this.storage.readMessageWritableProps(check);
     return check.downloadComplete;
   }
 
@@ -298,10 +296,8 @@ export class EMail extends Message {
     }
     if (this.dbID) {
       try {
-        await SQLEMail.read(this.dbID, this);
-        //await MailZIP.read(this);
-        //await MailDir.read(this);
-        await SQLSourceEMail.read(this);
+        await this.storage.readMessage(this);
+        await this.folder.account.contentStorage.first.read(this);
         if (this.mime) {
           await this.parseMIME();
           return;
@@ -318,7 +314,9 @@ export class EMail extends Message {
       return;
     }
     try {
-      await RawFilesAttachment.readEMail(this);
+      let att = this.folder.account.contentStorage.find(st => st instanceof RawFilesAttachment);
+      assert(att, "Raw attachment storage not configured");
+      await att.read(this);
     } catch (ex) {
       console.error(ex);
       // fallback
@@ -329,7 +327,7 @@ export class EMail extends Message {
   async loadBody() {
     if (this.needToLoadBody) {
       if (this.dbID) {
-        await SQLEMail.readBody(this);
+        await this.storage.readMessageBody(this);
       }
       if (this.needToLoadBody) {
         await this.download();
@@ -396,12 +394,12 @@ export class EMail extends Message {
       threadID = parent?.threadID ?? parent?.inReplyTo;
       if (threadID && parent.threadID != threadID) {
         parent.threadID = threadID;
-        await SQLEMail.saveWritableProps(parent);
+        await this.storage.saveMessageWritableProps(parent);
       }
     }
     if (threadID && this.threadID != threadID) {
       this.threadID = threadID;
-      await SQLEMail.saveWritableProps(this);
+      await this.storage.saveMessageWritableProps(this);
     }
     return this.threadID;
   }

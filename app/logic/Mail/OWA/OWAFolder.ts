@@ -1,8 +1,6 @@
 import { Folder, SpecialFolder } from "../Folder";
 import { OWAEMail } from "./OWAEMail";
 import type { OWAAccount } from "./OWAAccount";
-import { SQLFolder } from "../SQL/SQLFolder";
-import { SQLEMail } from "../SQL/SQLEMail";
 import { base64ToArrayBuffer, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -156,7 +154,7 @@ export class OWAFolder extends Folder {
         let email = this.getEmailByItemID(sanitize.nonemptystring(message.ItemId.Id));
         if (email) {
           email.setFlags(message);
-          await SQLEMail.saveWritableProps(email);
+          await this.storage.saveMessageWritableProps(email);
           allMsgs.add(email);
         } else {
           newMessageIDs.push(message.ItemId.Id);
@@ -167,7 +165,7 @@ export class OWAFolder extends Folder {
     }
 
     for (let email of this.messages.subtract(allMsgs)) {
-      SQLEMail.deleteIt(email);
+      await this.storage.deleteMessage(email);
     }
     allMsgs.addAll(newMsgs);
     this.messages.replaceAll(allMsgs);
@@ -271,7 +269,7 @@ export class OWAFolder extends Folder {
         try {
           let email = this.newEMail();
           email.fromJSON(item);
-          await SQLEMail.save(email);
+          await this.storage.saveMessage(email);
           newMsgs.add(email);
         } catch (ex) {
           this.account.errorCallback(ex);

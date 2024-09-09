@@ -1,8 +1,6 @@
 import { MailAccount, TLSSocketType, AuthMethod, DeleteStrategy } from "../MailAccount";
 import { IMAPFolder } from "./IMAPFolder";
 import { appGlobal } from "../../app";
-import { SQLMailAccount } from "../SQL/SQLMailAccount";
-import { SQLFolder } from "../SQL/SQLFolder";
 import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder } from "../Folder";
@@ -38,9 +36,9 @@ export class IMAPAccount extends MailAccount {
 
   async login(interactive: boolean): Promise<void> {
     if (!this.dbID) {
-      await SQLMailAccount.save(this);
+      await this.storage.saveAccount(this);
     }
-    await SQLFolder.readAllHierarchy(this);
+    await this.storage.readFolderHierarchy(this);
 
     await this.connection(interactive);
     await this.listFolders();
@@ -201,7 +199,7 @@ export class IMAPAccount extends MailAccount {
   }
 
   async listFolders(): Promise<void> {
-    await SQLFolder.readAllHierarchy(this);
+    await this.storage.readFolderHierarchy(this);
 
     // listTree() doesn't return the message count and is not well-implemented
     let foldersInfo = await (await this.connection()).list({
@@ -221,9 +219,9 @@ export class IMAPAccount extends MailAccount {
         continue;
       }
       if (!folder.dbID) {
-        await SQLFolder.save(folder);
+        await this.storage.saveFolder(folder);
       } else {
-        await SQLFolder.saveProperties(folder);
+        await this.storage.saveFolderProperties(folder);
       }
     }
   }

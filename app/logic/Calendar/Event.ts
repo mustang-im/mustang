@@ -185,7 +185,7 @@ export class Event extends Observable {
     this.calendar.events.removeAll(this.instances.contents.filter(Boolean));
     for (let event of this.instances) {
       if (event?.dbID) {
-        this.calendar.storage.deleteEvent(event);
+        this.calendar.storage.deleteEvent(event).catch(this.calendar.errorCallback);
       }
     }
     this.instances.clear();
@@ -210,7 +210,7 @@ export class Event extends Observable {
     // 3. Deleting an exception. In this case, also need to delete from db.
     this.calendar.events.remove(previous);
     if (previous.dbID) {
-      this.calendar.storage.deleteEvent(previous);
+      this.calendar.storage.deleteEvent(previous).catch(this.calendar.errorCallback);
     }
   }
 }

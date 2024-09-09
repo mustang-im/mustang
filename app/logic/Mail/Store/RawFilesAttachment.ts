@@ -1,3 +1,4 @@
+import type { MailContentStorage } from "../MailAccount";
 import type { Attachment } from "../Attachment";
 import type { EMail } from "../EMail";
 import { SQLEMail } from "../SQL/SQLEMail";
@@ -7,21 +8,21 @@ import { sanitizeFilename, fileExtensionForMIMEType, assert } from "../../util/u
 let filesDir: string = null;
 
 /** Save email attachments as files in the local disk filesystem */
-export class RawFilesAttachment {
-  static async saveEMail(email: EMail) {
+export class RawFilesAttachment implements MailContentStorage {
+  async save(email: EMail) {
     //await RawFilesAttachment.rmdirWithFiles(await this.getDirPath(email));
     if (email.attachments.hasItems) {
       await Promise.allSettled(email.attachments.contents.map(a =>
-        RawFilesAttachment.save(a, email)));
+        this.saveAttachment(a, email)));
       await RawFilesAttachment.emailFinished(email);
     }
   }
 
-  static async save(attachment: Attachment, email: EMail) {
+  async saveAttachment(attachment: Attachment, email: EMail) {
     if (!attachment.content) {
       return;
     }
-    let filepath = await this.getFilePath(attachment, email);
+    let filepath = await RawFilesAttachment.getFilePath(attachment, email);
     let contents = new Uint8Array(await attachment.content.arrayBuffer());
     // Permissions: Only user can read the file, but not modify
     await appGlobal.remoteApp.writeFile(filepath, 0o400, contents);
@@ -38,20 +39,25 @@ export class RawFilesAttachment {
     await appGlobal.remoteApp.fs.chmod(dir, 0o500);
   }
 
-  static async readEMail(email: EMail): Promise<void> {
+  async read(email: EMail): Promise<void> {
     assert(email.dbID, "need email DB ID to read attachments from disk");
-    await SQLEMail.read(email.dbID, email);
+    await email.folder.account.storage.readMessage(email);
     for (let attachment of email.attachments) {
-      await this.read(attachment);
+      await this.readAttachment(attachment);
     }
   }
 
-  static async read(attachment: Attachment): Promise<File> {
+  async readAttachment(attachment: Attachment): Promise<File> {
     assert(attachment.filepathLocal, "need attachment filename");
     let array = await appGlobal.remoteApp.readFile(attachment.filepathLocal);
     let file = new File([array], attachment.filename, { type: attachment.mimeType });
     attachment.content = file;
     return file;
+  }
+
+  async deleteIt(email: EMail): Promise<void> {
+    let dir = await RawFilesAttachment.getDirPath(email);
+    await RawFilesAttachment.rmdirWithFiles(dir);
   }
 
   static async rmdirWithFiles(dir: string) {

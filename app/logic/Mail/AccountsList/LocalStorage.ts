@@ -175,10 +175,41 @@ export class MailAccountLocalStorage implements MailAccountStorage {
   async saveAccount(account: MailAccount): Promise<void> {
     saveAccountToLocalStorage(account);
   }
-  async saveMessage(email: EMail): Promise<void> {
+
+  async readFolderHierarchy(account: MailAccount): Promise<void> {
     throw new NotImplemented();
   }
   async saveFolder(folder: Folder): Promise<void> {
+    throw new NotImplemented();
+  }
+  async saveFolderProperties(folder: Folder): Promise<void> {
+    throw new NotImplemented();
+  }
+  async deleteFolder(folder: Folder): Promise<void> {
+    throw new NotImplemented();
+  }
+  async readMessage(email: EMail): Promise<void> {
+    throw new NotImplemented();
+  }
+  async readMessageWritableProps(email: EMail): Promise<void> {
+    throw new NotImplemented();
+  }
+  async readMessageBody(email: EMail): Promise<void> {
+    throw new NotImplemented();
+  }
+  async saveMessage(email: EMail): Promise<void> {
+    throw new NotImplemented();
+  }
+  async saveMessageWritableProps(email: EMail): Promise<void> {
+    throw new NotImplemented();
+  }
+  async saveMessageTags(email: EMail): Promise<void> {
+    throw new NotImplemented();
+  }
+  async deleteMessage(email: EMail): Promise<void> {
+    throw new NotImplemented();
+  }
+  async readAllMessages(folder: Folder, limit?: number | undefined, startWith?: number | undefined): Promise<void> {
     throw new NotImplemented();
   }
 }

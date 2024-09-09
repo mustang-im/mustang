@@ -1,11 +1,8 @@
-import { TLSSocketType, type MailAccount, type MailAccountStorage } from "../MailAccount";
+import { TLSSocketType, type MailAccount } from "../MailAccount";
 import { getDatabase } from "./SQLDatabase";
+import { setStorage } from "../Store/setStorage";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { SMTPAccount } from "../SMTP/SMTPAccount";
-import type { EMail } from "../EMail";
-import { SQLEMail } from "./SQLEMail";
-import type { Folder } from "../Folder";
-import { SQLFolder } from "./SQLFolder";
 import { ContactEntry } from "../../Abstract/Person";
 import { getPassword, setPassword, deletePassword } from "../../Auth/passwordStore";
 import { appGlobal } from "../../app";
@@ -15,7 +12,7 @@ import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 
-export class SQLMailAccount implements MailAccountStorage {
+export class SQLMailAccount {
   static async save(acc: MailAccount) {
     if (acc.outgoing) {
       if (!acc.outgoing.emailAddress) {
@@ -63,9 +60,7 @@ export class SQLMailAccount implements MailAccountStorage {
         `);
     }
     await setPassword("mail." + acc.id, acc.password);
-    if (!acc.storage) {
-      acc.storage = new SQLMailAccount();
-    }
+    setStorage(acc);
   }
 
   /** Also deletes all folders and messages in this account */
@@ -107,9 +102,7 @@ export class SQLMailAccount implements MailAccountStorage {
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
       : null;
     acc.fromConfigJSON(JSON.parse(sanitize.nonemptystring(row.configJSON, "{}")));
-    if (!acc.storage) {
-      acc.storage = new SQLMailAccount();
-    }
+    setStorage(acc);
     if (!appGlobal.me.name && acc.userRealname) {
       appGlobal.me.name = acc.userRealname;
     }
@@ -143,27 +136,5 @@ export class SQLMailAccount implements MailAccountStorage {
       }
     }
     return accounts;
-  }
-
-  async saveAccount(account: MailAccount): Promise<void> {
-    await SQLMailAccount.save(account);
-  }
-  async deleteAccount(account: MailAccount): Promise<void> {
-    await SQLMailAccount.deleteIt(account);
-  }
-  async saveFolder(folder: Folder): Promise<void> {
-    await SQLFolder.save(folder);
-  }
-  async deleteFolder(folder: Folder): Promise<void> {
-    await SQLFolder.deleteIt(folder);
-  }
-  async saveMessage(email: EMail): Promise<void> {
-    await SQLEMail.save(email);
-  }
-  async readAllMessages(folder: Folder, limit?: number, startWith?: number): Promise<void> {
-    await SQLEMail.readAll(folder, limit, startWith);
-  }
-  async deleteMessage(email: EMail): Promise<void> {
-    await SQLEMail.save(email);
   }
 }
