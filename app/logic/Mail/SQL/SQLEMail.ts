@@ -237,8 +237,8 @@ export class SQLEMail {
     email.id = sanitize.nonemptystring(row.messageID);
     email.inReplyTo = sanitize.string(row.parentMsgID, null);
     email.size = sanitize.integer(row.size, null);
-    email.sent = sanitize.date(row.dateSent * 1000, new Date());
     email.received = sanitize.date(row.dateReceived * 1000, new Date());
+    email.sent = sanitize.date(row.dateSent * 1000, email.received);
     email.outgoing = sanitize.boolean(!!row.outgoing);
     email.subject = sanitize.string(row.subject, null);
     if (row.plaintext != null || row.html != null) {
