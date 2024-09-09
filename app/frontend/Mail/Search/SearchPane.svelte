@@ -136,7 +136,7 @@
   import PersonIcon from "lucide-svelte/icons/user-round";
   import XIcon from "lucide-svelte/icons/x";
   import { showError } from "../../Util/error";
-  import { SetColl, type ArrayColl, type Collection } from "svelte-collections";
+  import { SetColl, ArrayColl, type Collection } from "svelte-collections";
   import { useDebounce } from '@svelteuidev/composables';
   import { t } from "../../../l10n/l10n";
   import { createEventDispatcher, onMount } from 'svelte';
@@ -185,6 +185,7 @@
     try {
       let searchTerm = $globalSearchTerm;
       $selectedMessage = null;
+      searchMessages = new ArrayColl<EMail>();
 
       search.bodyText = searchTerm;
       search.isOutgoing = isOutgoing;
