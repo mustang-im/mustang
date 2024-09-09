@@ -5,19 +5,19 @@
       </vbox>
       <hbox flex />
       <hbox class="buttons">
-        {#if activeTab == 0}
+        {#if activeTab == SearchView.Folder}
           <GetMailButton folder={selectedFolder ?? selectedAccount?.getSpecialFolder(SpecialFolder.Inbox)} />
         {/if}
-        {#if activeTab == 0 || activeTab == 1}
+        {#if activeTab == SearchView.Folder || activeTab == SearchView.Person}
           <WriteButton {selectedAccount} />
         {/if}
       </hbox>
     </hbox>
 
-  {#if activeTab == 1}
+  {#if activeTab == SearchView.Person}
     <PersonsList persons={appGlobal.persons}  bind:selected={$selectedPerson} size="small" />
     <ViewSwitcher />
-  {:else if activeTab == 2}
+  {:else if activeTab == SearchView.Search}
     <SearchPane bind:searchMessages on:clear={onClearSearch} />
   {:else}
     <!--<ProjectList />-->
