@@ -39,7 +39,7 @@ export class EWSEMail extends EMail {
     let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
     this.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
     await this.parseMIME();
-    await this.save();
+    await this.saveComplete();
   }
 
   fromXML(xmljs) {

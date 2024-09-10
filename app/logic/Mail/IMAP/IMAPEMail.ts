@@ -40,7 +40,7 @@ export class IMAPEMail extends EMail {
     });
     this.fromFlow(msgInfo);
     await this.parseMIME();
-    await this.save();
+    await this.saveComplete();
   }
 
   fromFlow(msgInfo: any) {
