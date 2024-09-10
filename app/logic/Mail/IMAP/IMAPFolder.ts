@@ -138,7 +138,7 @@ export class IMAPFolder extends Folder {
       newMsgs.addAll(newMessages);
       this.messages.addAll(newMessages);
       //let fetchTime = Date.now() - startTime;
-      await this.saveMsgs(newMessages);
+      await this.saveNewMsgs(newMessages);
       //let saveTime = Date.now() - startTime - fetchTime;
       //console.log("  Fetched", fetchUIDs.length, ", remaining", newUIDs.length, "- Time: Fetch:", fetchTime / kBatchSize, "ms/msg, save time", saveTime / kBatchSize, "ms/msg");
     }
@@ -153,7 +153,7 @@ export class IMAPFolder extends Folder {
     let { newMessages } = await this.fetchMessageList({ all: true }, {});
     this.messages.addAll(newMessages);
     await this.storage.saveFolderProperties(this);
-    await this.saveMsgs(newMessages);
+    await this.saveNewMsgs(newMessages);
     return newMessages;
   }
 
@@ -165,7 +165,7 @@ export class IMAPFolder extends Folder {
     });
     this.messages.addAll(newMessages);
     await this.storage.saveFolderProperties(this);
-    await this.saveMsgs(newMessages);
+    await this.saveNewMsgs(newMessages);
     return newMessages;
   }
 
@@ -179,7 +179,7 @@ export class IMAPFolder extends Folder {
     let fromUID = this.highestUID ?? "1";
     let { newMessages } = await this.fetchMessageList({ uid: fromUID + ":*" }, {});
     this.messages.addAll(newMessages);
-    await this.saveMsgs(newMessages);
+    await this.saveNewMsgs(newMessages);
     await this.storage.saveFolderProperties(this);
     return newMessages;
   }
@@ -258,7 +258,7 @@ export class IMAPFolder extends Folder {
     }
     let { updatedMessages } = await this.fetchFlags(
       { uid: this.recentMsg.uid + ":" + highestUID }, {});
-    await this.saveMsgs(updatedMessages);
+    await this.saveMsgUpdates(updatedMessages);
   }
 
   /** Lists new messages, and downloads them */
@@ -311,7 +311,7 @@ export class IMAPFolder extends Folder {
               msg.fromFlow(msgInfo);
               this.updateModSeq(msgInfo.modseq);
               await msg.parseMIME();
-              await msg.save();
+              await msg.saveCompleteMessage();
               downloadedMsgs.add(msg);
             }
           } catch (ex) {
@@ -381,7 +381,7 @@ export class IMAPFolder extends Folder {
       .first as IMAPEMail; // oldest
   }
 
-  protected async saveMsgs(msgs: Collection<IMAPEMail>) {
+  protected async saveNewMsgs(msgs: Collection<IMAPEMail>) {
     //let startTime = Date.now();
     for (let email of msgs) {
       try {
@@ -394,6 +394,18 @@ export class IMAPFolder extends Folder {
     }
     //let saveTime = Date.now() - startTime;
     //console.log("  Saved", msgs.length, "msgs in", saveTime, "ms =", saveTime / msgs.length, "ms/msg");
+  }
+
+  protected async saveMsgUpdates(msgs: Collection<IMAPEMail>) {
+    for (let email of msgs) {
+      try {
+        if (email.subject) {
+          await this.storage.saveMessageWritableProps(email);
+        }
+      } catch (ex) {
+        this.account.errorCallback(ex);
+      }
+    }
   }
 
   updateModSeq(modseq: number) {
@@ -471,7 +483,7 @@ export class IMAPFolder extends Folder {
     let message = uid && this.getEMailByUID(uid);
     if (message) {
       message.setFlagsLocal(flags);
-      await this.storage.saveMessage(message);
+      await this.storage.saveMessageWritableProps(message);
       return;
     }
 
@@ -479,7 +491,7 @@ export class IMAPFolder extends Folder {
     let fromUID = updateMsgs.first?.uid ?? 1;
     let toUID = updateMsgs.last?.uid ?? this.highestUID;
     let { updatedMessages } = await this.fetchFlags({ uid: fromUID + ":" + toUID }, {});
-    await this.saveMsgs(updatedMessages);
+    await this.saveMsgUpdates(updatedMessages);
   }
 
   /** We received an event from the server that a

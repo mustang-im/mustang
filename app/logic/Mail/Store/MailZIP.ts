@@ -71,7 +71,7 @@ export class MailZIP implements MailContentStorage {
         email.mime = await zip.readFile(file) as Uint8Array;
         console.log("email.mime (should be Uint8array)", email.mime);
         await email.parseMIME();
-        await email.save();
+        await email.saveCompleteMessage();
       } catch (ex) {
         folder.account.errorCallback(ex);
       }

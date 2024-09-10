@@ -48,7 +48,7 @@ export class OWAEMail extends EMail {
     let mimeBase64 = sanitize.nonemptystring(result.Items[0].MimeContent.Value);
     this.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
     await this.parseMIME();
-    await this.save();
+    await this.saveCompleteMessage();
   }
 
   fromJSON(json) {

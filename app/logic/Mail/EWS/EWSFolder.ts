@@ -311,7 +311,7 @@ export class EWSFolder extends Folder {
             let mimeBase64 = sanitize.nonemptystring(getEWSItem(result.Items).MimeContent.Value);
             email.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
             await email.parseMIME();
-            await email.save();
+            await email.saveCompleteMessage();
             downloadedEmail.add(email);
           } catch (ex) {
             this.account.errorCallback(ex);

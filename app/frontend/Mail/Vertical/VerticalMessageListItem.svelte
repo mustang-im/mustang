@@ -6,7 +6,7 @@
   >
   <hbox class="top-row">
     <hbox class="direction">
-      {#if message.outgoing}
+      {#if $message.outgoing}
         <OutgoingIcon size={16} />
       {/if}
     </hbox>
@@ -77,7 +77,7 @@
         icon={CircleIcon}
         iconSize="7px"
         iconOnly
-        label={message.isRead ? $t`Mark this message as unread` : $t`Mark this message as read`}
+        label={$message.isRead ? $t`Mark this message as unread` : $t`Mark this message as read`}
         onClick={toggleRead}
         plain
         />
@@ -111,7 +111,7 @@
 
   $: attachments = message.attachments;
   $: tags = message.tags;
-  $: contactName = personDisplayName(message.contact);
+  $: contactName = personDisplayName($message.contact);
 
   async function toggleRead() {
     await message.markRead(!message.isRead);
