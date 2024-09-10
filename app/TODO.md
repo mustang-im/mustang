@@ -3,7 +3,6 @@
   * SQL: Stable DB
   * Collections sort is slow, and observers keep them alive
   * IMAP
-    * Bug: "MIME source not yet downloaded", stays
     * Bug: After delete, new msgs are removed locally (and come back only after a poll)
     * Bug: Old msgs keep coming back, new msgs not saved
     * See also below
