@@ -261,7 +261,7 @@ export class EMail extends Message {
    *
    * Do this only exactly once per email `dbID`.
    * This typically happens immediately after`parseMIME()`. */
-  async saveComplete() {
+  async saveCompleteMessage() {
     if (this.isDeleted || await this.isDownloadCompleteDoublecheck()) {
       return;
     }
