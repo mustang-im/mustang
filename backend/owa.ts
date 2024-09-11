@@ -89,11 +89,13 @@ export async function fetchJSON(partition: string, url: string, action: string, 
     json: null,
   };
   let session = Session.fromPartition(partition);
+  let urlObj = new URL(url);
   let cookies = await session.cookies.get({ name: 'X-OWA-CANARY' });
   if (!cookies.length) {
     result.status = 401;
     return result;
   }
+  urlObj.hostname = cookies[0].domain;
   let options = {
     method: "POST",
     headers: {
@@ -107,7 +109,8 @@ export async function fetchJSON(partition: string, url: string, action: string, 
     options.headers["Content-Type"] = "application/json";
     options.body = JSON.stringify(request);
   }
-  let response = await session.fetch(url, options);
+  let response = await session.fetch(urlObj.toString(), options);
+  console.log(url);
   result.ok = response.ok;
   result.status = response.status;
   result.statusText = response.statusText;
