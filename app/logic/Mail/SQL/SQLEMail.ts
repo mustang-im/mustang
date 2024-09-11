@@ -235,7 +235,7 @@ export class SQLEMail {
     email.pID = typeof(row.pID) == "number"
       ? sanitize.integer(row.pID, null)
       : sanitize.string(row.pID, null);
-    email.id = sanitize.nonemptystring(row.messageID);
+    email.id = sanitize.nonemptystring(row.messageID, "");
     email.inReplyTo = sanitize.string(row.parentMsgID, null);
     email.size = sanitize.integer(row.size, null);
     email.received = sanitize.date(row.dateReceived * 1000, new Date());

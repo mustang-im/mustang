@@ -128,6 +128,12 @@ export class NotImplemented extends Error {
   }
 }
 
+export class NotSupported extends Error {
+  constructor(msg?: string) {
+    super(msg ?? "Operation not supported");
+  }
+}
+
 export class UserError extends Error {
   isUserError = true;
 }

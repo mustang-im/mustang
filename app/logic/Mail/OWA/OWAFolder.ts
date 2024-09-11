@@ -391,7 +391,7 @@ export class OWAFolder extends Folder {
   }
 
   async moveFolderHere(folder: OWAFolder) {
-    assert(folder.account = this.account, "Cannot move folders between accounts");
+    assert(folder.account == this.account, "Cannot move folders between accounts");
     let request = {
       __type: "MoveFolderJsonRequest:#Exchange",
       Header: {
