@@ -38,10 +38,8 @@ export async function fetchSessionData(partition: string, url: string, interacti
       let checkLoginFinished = async function() {
         try {
           response = await session.fetch(urlObj.toString() + 'sessiondata.ashx', { method: 'POST' });
-          console.log(response.status);
           finish(await response.json());
         } catch (ex) {
-          console.error(ex);
         }
       }
       let checkCanary = async function(_event, cookie: Electron.Cookie, _cause, removed) {
