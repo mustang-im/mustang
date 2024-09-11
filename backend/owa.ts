@@ -1,8 +1,12 @@
 import { session as Session, BrowserWindow } from "electron";
 
+const kCookieName = "X-OWA-CANARY";
+const kHotmailServer = "outlook.live.com";
+
 export async function fetchSessionData(partition: string, url: string, interactive: boolean) {
   let session = Session.fromPartition(partition);
   let response = await session.fetch(url + 'sessiondata.ashx', { method: 'POST' });
+  let urlObj = new URL(url);
   if ([401, 440].includes(response.status) && interactive) {
     return await new Promise(resolve => {
       let popup = new BrowserWindow({
@@ -30,21 +34,44 @@ export async function fetchSessionData(partition: string, url: string, interacti
         if (!popup.isDestroyed()) {
           popup.destroy();
         }
+        console.log(popup.isDestroyed());
       };
       let checkLoginFinished = async function() {
         try {
+          console.log("checkLoginFinished");
+          let cookies = await Session.fromPartition(partition).cookies.get({ name: kCookieName, path: urlObj.pathname });
+          console.log(url + 'sessiondata.ashx', cookies[0]);
           response = await session.fetch(url + 'sessiondata.ashx', { method: 'POST' });
+          if (!response.ok) {
+            console.log("Error fetching session", response.headers);
+          }
           finish(await response.json());
         } catch (ex) {
+          console.error(ex);
         }
       }
-      let checkCanary = function(_event, cookie, _cause, removed) {
-        if (!removed && cookie.name == 'X-OWA-CANARY') {
-          checkLoginFinished();
+      let checkCanary = async function(_event, cookie: Electron.Cookie, _cause, removed) {
+        // For Hotmail, check the path to the CANARY cookie.
+        if (cookie.domain == kHotmailServer &&
+          cookie.name == kCookieName &&
+          cookie.path?.startsWith("/owa/")) {
+        // Hotmail also sets cookies for /owa/0/, /mail/0/, /calendar/0/ etc.,
+        // but we can use only the /owa/0/ cookie.
+        // We also need to use that URL for the service request.
+        // This needs to happen before CheckLoginFinished().
+          urlObj.pathname = cookie.path;
+          console.log("owa set path: " + cookie.path);
+        }
+        if (!removed &&
+          cookie.name == kCookieName &&
+          cookie.domain == urlObj.hostname
+        ) {
+          await checkLoginFinished();
         }
       };
       let checkLoaded = async function(_event) {
-        let cookies = await Session.fromPartition(partition).cookies.get({ name: 'X-OWA-CANARY' });
+        console.log("checkLoaded");
+        let cookies = await Session.fromPartition(partition).cookies.get({ name: kCookieName });
         if (cookies[0]?.value) {
           checkLoginFinished();
         }
@@ -52,7 +79,7 @@ export async function fetchSessionData(partition: string, url: string, interacti
       session.cookies.on('changed', checkCanary);
       popup.on('closed', function() { finish(null); });
       popup.webContents.on('did-stop-loading', checkLoaded);
-      popup.loadURL(url);
+      popup.loadURL(url.toString());
     });
   }
   if (!response.ok) {
