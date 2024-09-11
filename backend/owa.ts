@@ -96,6 +96,10 @@ export async function fetchJSON(partition: string, url: string, action: string, 
     return result;
   }
   urlObj.hostname = cookies[0].domain;
+  let owaCookies = cookies.filter(cookie => cookie.path?.startsWith("/owa/"));
+  if (owaCookies.length) {
+    urlObj.pathname = owaCookies[0].path + urlObj.pathname.replace("/owa/", "");
+  }
   let options = {
     method: "POST",
     headers: {
