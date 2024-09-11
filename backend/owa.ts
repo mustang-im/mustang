@@ -2,6 +2,7 @@ import { session as Session, BrowserWindow } from "electron";
 
 const kCookieName = "X-OWA-CANARY";
 const kHotmailServer = "outlook.live.com";
+const reOWAPath = /^\/owa\/(\d+\/){0,1}/;
 
 export async function fetchSessionData(partition: string, url: string, interactive: boolean) {
   let session = Session.fromPartition(partition);
@@ -43,10 +44,10 @@ export async function fetchSessionData(partition: string, url: string, interacti
         }
       }
       let checkCanary = async function(_event, cookie, _cause, removed) {
-        // For Hotmail, check the path to the CANARY cookie.
+        // For Hotmail and personal accounts, check the path to the CANARY cookie.
         if (cookie.domain == kHotmailServer &&
           cookie.name == kCookieName &&
-          cookie.path?.startsWith("/owa/")) {
+          cookie.path?.match(reOWAPath)) {
         // Hotmail also sets cookies for /owa/0/, /mail/0/, /calendar/0/ etc.,
         // but we can use only the /owa/0/ cookie.
         // We also need to use that URL for the service request.
@@ -96,9 +97,9 @@ export async function fetchJSON(partition: string, url: string, action: string, 
     return result;
   }
   urlObj.hostname = cookies[0].domain;
-  let owaCookies = cookies.filter(cookie => cookie.path?.startsWith("/owa/"));
-  if (owaCookies.length) {
-    urlObj.pathname = owaCookies[0].path + urlObj.pathname.replace("/owa/", "");
+  let owaCookies = cookies.filter(cookie => cookie.path?.match(reOWAPath));
+  if (owaCookies.length && urlObj.pathname.match(reOWAPath)) {
+    urlObj.pathname = owaCookies[0].path + urlObj.pathname.replace(reOWAPath , "");
   }
   let options = {
     method: "POST",
@@ -114,7 +115,6 @@ export async function fetchJSON(partition: string, url: string, action: string, 
     options.body = JSON.stringify(request);
   }
   let response = await session.fetch(urlObj.toString(), options);
-  console.log(url);
   result.ok = response.ok;
   result.status = response.status;
   result.statusText = response.statusText;
