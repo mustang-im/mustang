@@ -34,17 +34,11 @@ export async function fetchSessionData(partition: string, url: string, interacti
         if (!popup.isDestroyed()) {
           popup.destroy();
         }
-        console.log(popup.isDestroyed());
       };
       let checkLoginFinished = async function() {
         try {
-          console.log("checkLoginFinished");
-          let cookies = await Session.fromPartition(partition).cookies.get({ name: kCookieName, path: urlObj.pathname });
-          console.log(urlObj.toString() + 'sessiondata.ashx', cookies[0]);
-          response = await session.fetch(urlObj.toString() + 'sessiondata.ashx', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-          if (!response.ok) {
-            console.log("Error fetching session", response.headers);
-          }
+          response = await session.fetch(urlObj.toString() + 'sessiondata.ashx', { method: 'POST' });
+          console.log(response.status);
           finish(await response.json());
         } catch (ex) {
           console.error(ex);
@@ -61,7 +55,6 @@ export async function fetchSessionData(partition: string, url: string, interacti
         // This needs to happen before CheckLoginFinished().
           urlObj.hostname = cookie.domain;
           urlObj.pathname = cookie.path;
-          console.log("owa set path: " + cookie.path);
         }
         if (!removed &&
           cookie.name == kCookieName &&
@@ -71,7 +64,6 @@ export async function fetchSessionData(partition: string, url: string, interacti
         }
       };
       let checkLoaded = async function(_event) {
-        console.log("checkLoaded");
         let cookies = await Session.fromPartition(partition).cookies.get({ name: kCookieName });
         if (cookies[0]?.value) {
           checkLoginFinished();
