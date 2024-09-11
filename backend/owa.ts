@@ -7,7 +7,7 @@ const reOWAPath = /^\/owa\/(\d+\/){0,1}/;
 export async function fetchSessionData(partition: string, url: string, interactive: boolean) {
   let session = Session.fromPartition(partition);
   let urlObj = new URL(url);
-  let cookies = await session.cookies.get({ name: 'X-OWA-CANARY' });
+  let cookies = await session.cookies.get({ name: kCookieName });
   if (cookies.length) {
     urlObj.hostname = cookies[0].domain;
     let owaCookies = cookies.filter(cookie => cookie.path?.match(reOWAPath));
