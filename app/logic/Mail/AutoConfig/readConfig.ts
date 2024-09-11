@@ -71,7 +71,6 @@ function readServer(xml: any, displayName: string, fullXML: any, source: ConfigS
     let owaURL = sanitize.url(xml.owaURL, null);
     let activeSyncURL = sanitize.url(xml.easURL, null);
     assert(ewsURL || owaURL || activeSyncURL, "Malformed or unknown Exchange config");
-    assert(ewsURL || owaURL, "ActiveSync not yet supported");
     // Return only the most preferred config (for this backwards compat)
     protocol = ewsURL ? "ews" : owaURL ? "owa" : "activesync";
     xml.url = ewsURL ?? owaURL ?? activeSyncURL;
