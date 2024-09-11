@@ -6,8 +6,16 @@ const reOWAPath = /^\/owa\/(\d+\/){0,1}/;
 
 export async function fetchSessionData(partition: string, url: string, interactive: boolean) {
   let session = Session.fromPartition(partition);
-  let response = await session.fetch(url + 'sessiondata.ashx', { method: 'POST' });
   let urlObj = new URL(url);
+  let cookies = await session.cookies.get({ name: 'X-OWA-CANARY' });
+  if (cookies.length) {
+    urlObj.hostname = cookies[0].domain;
+    let owaCookies = cookies.filter(cookie => cookie.path?.match(reOWAPath));
+    if (owaCookies.length && urlObj.pathname.match(reOWAPath)) {
+      urlObj.pathname = owaCookies[0].path + urlObj.pathname.replace(reOWAPath , "");
+    }
+  }
+  let response = await session.fetch(urlObj.toString() + 'sessiondata.ashx', { method: 'POST' });
   if ([401, 440].includes(response.status) && interactive) {
     return await new Promise(resolve => {
       let popup = new BrowserWindow({
