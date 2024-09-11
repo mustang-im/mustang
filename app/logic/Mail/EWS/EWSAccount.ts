@@ -39,7 +39,7 @@ export class EWSAccount extends MailAccount {
   }
 
   get isLoggedIn(): boolean {
-    return this.oAuth2?.isLoggedIn;
+    return !this.oAuth2 || this.oAuth2.isLoggedIn;
   }
 
   async login(interactive: boolean): Promise<void> {
@@ -80,7 +80,7 @@ export class EWSAccount extends MailAccount {
   }
 
   async logout(): Promise<void> {
-    // Not sure what the intention is here.
+    this.oAuth2?.logout();
   }
 
   async send(email: EMail): Promise<void> {
