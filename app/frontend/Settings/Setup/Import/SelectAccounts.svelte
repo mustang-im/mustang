@@ -39,9 +39,6 @@
 <script lang="ts">
   import { ThunderbirdProfile } from "../../../../logic/Mail/Import/Thunderbird/TBProfile";
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
-  import { IMAPAccount } from "../../../../logic/Mail/IMAP/IMAPAccount";
-  import { EWSAccount } from "../../../../logic/Mail/EWS/EWSAccount";
-  import { OWAAccount } from "../../../../logic/Mail/OWA/OWAAccount";
   import StatusMessage from "../Shared/StatusMessage.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Checkbox from "../../../Shared/Checkbox.svelte";
@@ -67,8 +64,8 @@
       }
     }
 
-    // POP3, ActiveSync not yet supported
-    accounts = accounts.filter(acc => acc instanceof IMAPAccount || acc instanceof EWSAccount || acc instanceof OWAAccount);
+    // POP3 not yet supported
+    accounts = accounts.filter(acc => acc.protocol != "pop3");
 
     for (let account of accounts) {
       (account as any).import = true;

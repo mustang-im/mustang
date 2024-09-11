@@ -5,6 +5,7 @@
   <option value="pop3">POP3</option>
   <option value="ews">EWS</option>
   <option value="owa">OWA</option>
+  <option value="activesync">ActiveSync</option>
 </select>
 
 <script lang="ts">

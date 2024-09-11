@@ -25,6 +25,7 @@ const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save
 async function createSharedAppObject() {
   return {
     kyCreate,
+    optionsHTTP,
     postHTTP,
     streamHTTP,
     OWA,
@@ -170,6 +171,24 @@ export class HTTPFetchError extends Error {
       }
     }
   }
+}
+
+/**
+ * Perform an OPTIONS request to check the ActiveSync version.
+ * @param config ky config @see <https://github.com/sindresorhus/ky>
+ */
+async function optionsHTTP(url: string, config: any) {
+  // Sadly OPTIONS is not directly supported by ky
+  config.method = 'OPTIONS';
+  let response = await ky(url, config);
+  return {
+    ok: response.ok,
+    status: response.status,
+    statusText: response.statusText,
+    WWWAuthenticate: response.headers.get("WWW-Authenticate"),
+    MSASProtocolVersions: response.headers.get("MS-ASPRotocolVersions"),
+    MSServerActiveSync: response.headers.get("MS-Server-ActiveSync"),
+  };
 }
 
 /**

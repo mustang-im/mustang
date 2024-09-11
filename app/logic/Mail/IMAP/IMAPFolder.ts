@@ -174,7 +174,7 @@ export class IMAPFolder extends Folder {
   async listNewMessages(): Promise<ArrayColl<IMAPEMail>> {
     await this.readFolder();
     if (this.countTotal === 0) {
-      return;
+      return new ArrayColl();
     }
     let fromUID = this.highestUID ?? "1";
     let { newMessages } = await this.fetchMessageList({ uid: fromUID + ":*" }, {});
