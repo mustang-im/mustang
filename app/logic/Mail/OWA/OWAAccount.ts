@@ -179,9 +179,6 @@ export class OWAAccount extends MailAccount {
     if (!sessionData) {
       throw new Error("Authentication window was closed by user");
     }
-    if (sessionData.findFolders.Body.ResponseMessages.Items[0].ResponseClass == "Error") {
-      throw new Error(sessionData.findFolders.Body.ResponseMessages.Items[0].ResponseCode);
-    }
     this.msgFolderRootID = sessionData.findFolders.Body.ResponseMessages.Items[0].RootFolder.ParentFolder.FolderId.Id;
     for (let folder of sessionData.findFolders.Body.ResponseMessages.Items[0].RootFolder.Folders) {
       if (!folder.FolderClass || folder.FolderClass == "IPF.Note" || folder.FolderClass.startsWith("IPF.Note.")) {
