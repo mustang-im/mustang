@@ -120,7 +120,9 @@ function readServer(xml: any, displayName: string, fullXML: any, source: ConfigS
   for (let authMethod of authMethods) {
     try {
       account.authMethod = authMethod;
-      getOAuth2Config(account, fullXML);
+      if (account.authMethod == AuthMethod.OAuth2) {
+        account.oAuth2 = getOAuth2Config(account, fullXML); // can throw
+      }
       break; // success -> use this auth method
     } catch (ex) {
       console.log(account.name + ":", ex?.message ?? ex + "");
@@ -134,16 +136,13 @@ function readServer(xml: any, displayName: string, fullXML: any, source: ConfigS
 }
 
 function getOAuth2Config(account: MailAccount, autoConfigXML: any): OAuth2 {
-  if (![AuthMethod.OAuth2].includes(account.authMethod)) {
-    return;
-  }
   let oAuth2: OAuth2;
   // try built-in
   let builtin = OAuth2URLs.find(a => a.hostnames.includes(account.hostname));
   if (builtin) {
     oAuth2 = new OAuth2(account, builtin.tokenURL, builtin.authURL, builtin.authDoneURL, builtin.scope, builtin.clientID, builtin.clientSecret, builtin.doPKCE);
     oAuth2.setTokenURLPasswordAuth(builtin.tokenURLPasswordAuth);
-  } else {
+  } else if (autoConfigXML.oAuth2) {
     try {
       let xml = autoConfigXML.oAuth2;
       oAuth2 = new OAuth2(
@@ -160,7 +159,7 @@ function getOAuth2Config(account: MailAccount, autoConfigXML: any): OAuth2 {
     }
   }
   assert(oAuth2, "No suitable OAuth2 config found, neither in AutoConfig XML, nor built-in");
-  account.oAuth2 = oAuth2;
+  return oAuth2;
 }
 
 function ensureArray(value) {
