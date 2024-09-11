@@ -42,7 +42,7 @@ export async function fetchSessionData(partition: string, url: string, interacti
         } catch (ex) {
         }
       }
-      let checkCanary = async function(_event, cookie: Electron.Cookie, _cause, removed) {
+      let checkCanary = async function(_event, cookie, _cause, removed) {
         // For Hotmail, check the path to the CANARY cookie.
         if (cookie.domain == kHotmailServer &&
           cookie.name == kCookieName &&
