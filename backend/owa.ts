@@ -40,8 +40,8 @@ export async function fetchSessionData(partition: string, url: string, interacti
         try {
           console.log("checkLoginFinished");
           let cookies = await Session.fromPartition(partition).cookies.get({ name: kCookieName, path: urlObj.pathname });
-          console.log(url + 'sessiondata.ashx', cookies[0]);
-          response = await session.fetch(url + 'sessiondata.ashx', { method: 'POST' });
+          console.log(urlObj.toString() + 'sessiondata.ashx', cookies[0]);
+          response = await session.fetch(urlObj.toString() + 'sessiondata.ashx', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
           if (!response.ok) {
             console.log("Error fetching session", response.headers);
           }
@@ -59,6 +59,7 @@ export async function fetchSessionData(partition: string, url: string, interacti
         // but we can use only the /owa/0/ cookie.
         // We also need to use that URL for the service request.
         // This needs to happen before CheckLoginFinished().
+          urlObj.hostname = cookie.domain;
           urlObj.pathname = cookie.path;
           console.log("owa set path: " + cookie.path);
         }
