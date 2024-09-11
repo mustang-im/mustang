@@ -108,7 +108,6 @@ body {
   place-items: center;
   min-width: 640px;
   min-height: 100vh;
-  scrollbar-color: #22222325 transparent;
 }
 
 /* <copied from="content-body.css"> */
