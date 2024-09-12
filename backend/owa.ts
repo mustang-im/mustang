@@ -61,7 +61,8 @@ export async function fetchSessionData(partition: string, url: string, interacti
   return await response.json();
 }
 
-export async function fetchJSON(partition: string, url: string, action: string, request: any) {
+export async function fetchJSON(partition: string, url: string, authHeader: string, action: string, request: any) {
+  let session = Session.fromPartition(partition);
   let result = {
     ok: false,
     status: 0,
@@ -70,18 +71,20 @@ export async function fetchJSON(partition: string, url: string, action: string, 
     contentType: '',
     json: null,
   };
-  let session = Session.fromPartition(partition);
-  let cookies = await session.cookies.get({ name: 'X-OWA-CANARY' });
-  if (!cookies.length) {
-    result.status = 401;
-    return result;
-  }
   let options = {
     method: "POST",
-    headers: {
-      "X-OWA-CANARY": cookies[0].value,
-    },
+    headers: {},
   };
+  if (authHeader) {
+    options.headers.Authorization = authHeader;
+  } else {
+    let cookies = await session.cookies.get({ name: 'X-OWA-CANARY' });
+    if (!cookies.length) {
+      result.status = 401;
+      return result;
+    }
+    options.headers["X-OWA-CANARY"] = cookies[0].value;
+  }
   if (action) {
     options.headers.Action = action;
   }

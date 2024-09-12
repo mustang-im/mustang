@@ -6,11 +6,14 @@ import { OWAAddressbook } from "../../Contacts/OWA/OWAAddressbook";
 import { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { ContentDisposition } from "../Attachment";
+import { OAuth2URLs } from "../../Auth/OAuth2URLs";
+import { OAuth2 } from "../../Auth/OAuth2";
 import { LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { notifyChangedProperty } from "../../util/Observable";
 import { blobToBase64 } from "../../util/util";
 import { assert } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 
 class OWAError extends Error {
   constructor(response) {
@@ -64,6 +67,14 @@ export class OWAAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
+    let urls = OAuth2URLs.find(a => a.hostnames.includes(this.hostname));
+    if (urls) {
+      this.oAuth2 = new OAuth2(this, urls.tokenURL, urls.authURL, urls.authDoneURL, urls.scope, urls.clientID, urls.clientSecret, urls.doPKCE);
+      this.oAuth2.setTokenURLPasswordAuth(urls.tokenURLPasswordAuth);
+      this.oAuth2.subscribe(() => this.notifyObservers());
+      await this.oAuth2.login(interactive);
+    }
+
     await this.listFolders(interactive);
     this.hasLoggedIn = true;
 
@@ -149,7 +160,7 @@ export class OWAAccount extends MailAccount {
     }
     let url = this.url + 'service.svc';
     // Need to ensure the request gets passed as a regular object
-    let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, aRequest.type || aRequest.__type.slice(0, -21), Object.assign({}, aRequest));
+    let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, this.oAuth2?.authorizationHeader, aRequest.type || aRequest.__type.slice(0, -21), Object.assign({}, aRequest));
     if ([401, 440].includes(response.status)) {
       await this.logout();
       throw new LoginError(null, "Please login");
@@ -175,9 +186,16 @@ export class OWAAccount extends MailAccount {
   }
 
   async listFolders(interactive?: boolean): Promise<void> {
-    let sessionData = await appGlobal.remoteApp.OWA.fetchSessionData(this.partition, this.url, interactive);
+    let sessionData: any;
+    if (this.oAuth2) {
+      sessionData = await appGlobal.remoteApp.OWA.fetchJSON(
+        this.partition, this.url + 'sessiondata.ashx', this.oAuth2?.authorizationHeader);
+    } else {
+      sessionData = await appGlobal.remoteApp.OWA.fetchSessionData(
+        this.partition, this.url, interactive);
+    }
     if (!sessionData) {
-      throw new Error("Authentication window was closed by user");
+      throw new Error(gt`Authentication failed`);
     }
     this.msgFolderRootID = sessionData.findFolders.Body.ResponseMessages.Items[0].RootFolder.ParentFolder.FolderId.Id;
     for (let folder of sessionData.findFolders.Body.ResponseMessages.Items[0].RootFolder.Folders) {
@@ -199,7 +217,7 @@ export class OWAAccount extends MailAccount {
   async listenForEvents() {
     try {
       let url = this.url + "ev.owa2?ns=PendingRequest&ev=FinishNotificationRequest&UA=0";
-      let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url);
+      let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, this.oAuth2?.authorizationHeader);
       let cid = response.json.cid;
       // This loop only ends by exception (e.g. logout) or app shutdown.
       while (true) {
