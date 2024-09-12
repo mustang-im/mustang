@@ -303,7 +303,7 @@ export class ActiveSyncAccount extends MailAccount {
           folder.parent = parent;
         }
         folder.addToParent();
-        folder.save();
+        await folder.save();
         break;
       case FolderType.Tasks:
       case FolderType.UserTasks:
