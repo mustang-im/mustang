@@ -2,7 +2,6 @@ import { session as Session, BrowserWindow } from "electron";
 
 const kCookieName = "X-OWA-CANARY";
 const kHotmailServer = "outlook.live.com";
-const reOWAPath = /^\/owa\/(\d+\/){0,1}/;
 
 export async function fetchSessionData(partition: string, url: string, interactive: boolean) {
   let session = Session.fromPartition(partition);
@@ -10,12 +9,13 @@ export async function fetchSessionData(partition: string, url: string, interacti
   let cookies = await session.cookies.get({ name: kCookieName });
   if (cookies.length) {
     urlObj.hostname = cookies[0].domain;
-    let owaCookies = cookies.filter(cookie => cookie.path?.match(reOWAPath));
-    if (owaCookies.length && urlObj.pathname.match(reOWAPath)) {
-      urlObj.pathname = owaCookies[0].path + urlObj.pathname.replace(reOWAPath , "");
+    let owaCookies = cookies.filter(cookie => cookie.path == "/owa/");
+    if (owaCookies.length && urlObj.pathname.startsWith("/owa/")) {
+      urlObj.pathname = owaCookies[0].path + urlObj.pathname.replace("/owa/", "");
     }
   }
-  let response = await session.fetch(urlObj.toString() + 'sessiondata.ashx', { method: 'POST' });
+  url = urlObj.toString();
+  let response = await session.fetch(url + 'sessiondata.ashx', { method: 'POST' });
   if ([401, 440].includes(response.status) && interactive) {
     return await new Promise(resolve => {
       let popup = new BrowserWindow({
@@ -52,10 +52,13 @@ export async function fetchSessionData(partition: string, url: string, interacti
         }
       }
       let checkCanary = async function(_event, cookie, _cause, removed) {
+        if (removed) {
+          return;
+        }
         // For Hotmail and personal accounts, check the path to the CANARY cookie.
         if (cookie.domain == kHotmailServer &&
           cookie.name == kCookieName &&
-          cookie.path?.match(reOWAPath)) {
+          cookie.path?.startsWith("/owa/")) {
         // Hotmail also sets cookies for /owa/0/, /mail/0/, /calendar/0/ etc.,
         // but we can use only the /owa/0/ cookie.
         // We also need to use that URL for the service request.
@@ -105,9 +108,9 @@ export async function fetchJSON(partition: string, url: string, action: string, 
     return result;
   }
   urlObj.hostname = cookies[0].domain;
-  let owaCookies = cookies.filter(cookie => cookie.path?.match(reOWAPath));
-  if (owaCookies.length && urlObj.pathname.match(reOWAPath)) {
-    urlObj.pathname = owaCookies[0].path + urlObj.pathname.replace(reOWAPath , "");
+  let owaCookies = cookies.filter(cookie => cookie.path?.startsWith("/owa/"));
+  if (owaCookies.length && urlObj.pathname.startsWith("/owa/")) {
+    urlObj.pathname = owaCookies[0].path + urlObj.pathname.replace("/owa/", "");
   }
   let options = {
     method: "POST",
