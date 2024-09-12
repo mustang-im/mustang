@@ -41,7 +41,7 @@ export class RawFilesAttachment implements MailContentStorage {
 
   async read(email: EMail): Promise<void> {
     assert(email.dbID, "need email DB ID to read attachments from disk");
-    await email.folder.account.storage.readMessage(email);
+    //await email.folder.account.storage.readMessage(email);
     for (let attachment of email.attachments) {
       await this.readAttachment(attachment);
     }
