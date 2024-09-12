@@ -179,6 +179,7 @@ export class OWAAccount extends MailAccount {
     if (!sessionData) {
       throw new Error("Authentication window was closed by user");
     }
+    this.url = sessionData.owaURL ?? this.url;
     this.msgFolderRootID = sessionData.findFolders.Body.ResponseMessages.Items[0].RootFolder.ParentFolder.FolderId.Id;
     for (let folder of sessionData.findFolders.Body.ResponseMessages.Items[0].RootFolder.Folders) {
       if (!folder.FolderClass || folder.FolderClass == "IPF.Note" || folder.FolderClass.startsWith("IPF.Note.")) {

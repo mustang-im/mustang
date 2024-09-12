@@ -5,19 +5,13 @@ const kHotmailServer = "outlook.live.com";
 
 export async function fetchSessionData(partition: string, url: string, interactive: boolean) {
   let session = Session.fromPartition(partition);
-  let urlObj = new URL(url);
-  let cookies = await session.cookies.get({ name: kCookieName });
-  if (cookies.length) {
-    urlObj.hostname = cookies[0].domain;
-    let owaCookies = cookies.filter(cookie => cookie.path == "/owa/");
-    if (owaCookies.length && urlObj.pathname.startsWith("/owa/")) {
-      urlObj.pathname = owaCookies[0].path + urlObj.pathname.replace("/owa/", "");
-    }
-  }
-  url = urlObj.toString();
   let response = await session.fetch(url + 'sessiondata.ashx', { method: 'POST' });
   if ([401, 440].includes(response.status) && interactive) {
     return await new Promise(resolve => {
+      let urlObj = new URL(url);
+      // We want to skip the landing page for personal Microsoft accounts.
+      let isHotmail = urlObj.hostname == kHotmailServer;
+      url = isHotmail ? urlObj + "?nlp=1" : urlObj.href;
       let popup = new BrowserWindow({
         //parent: mainWindow,
         //modal: true,
@@ -38,7 +32,10 @@ export async function fetchSessionData(partition: string, url: string, interacti
           return;
         }
         finished = true;
-        session.cookies.removeListener('changed', checkCanary);
+        session.cookies.removeListener('changed', onCookie);
+        if (isHotmail) {
+          data.owaURL = url;
+        }
         resolve(data);
         if (!popup.isDestroyed()) {
           popup.destroy();
@@ -46,31 +43,32 @@ export async function fetchSessionData(partition: string, url: string, interacti
       };
       let checkLoginFinished = async function() {
         try {
-          response = await session.fetch(urlObj.toString() + 'sessiondata.ashx', { method: 'POST' });
+          url = urlObj.href;
+          response = await session.fetch(url + 'sessiondata.ashx', { method: 'POST' });
           finish(await response.json());
         } catch (ex) {
         }
       }
-      let checkCanary = async function(_event, cookie, _cause, removed) {
+      let onCookie = async function(_event, cookie, _cause, removed) {
         if (removed) {
           return;
         }
-        // For Hotmail and personal accounts, check the path to the CANARY cookie.
+        // For Hotmail, check the path to the CANARY cookie.
         if (cookie.domain == kHotmailServer &&
           cookie.name == kCookieName &&
-          cookie.path?.startsWith("/owa/")) {
-        // Hotmail also sets cookies for /owa/0/, /mail/0/, /calendar/0/ etc.,
-        // but we can use only the /owa/0/ cookie.
-        // We also need to use that URL for the service request.
-        // This needs to happen before CheckLoginFinished().
+          cookie.path.startsWith("/owa/")) {
+          // Hotmail also sets cookies for /owa/0/, /mail/0/, /calendar/0/ etc.,
+          // but we can use only the /owa/0/ cookie.
+          // We also need to use that URL for the service request.
+          // This needs to happen before CheckLoginFinished().
           urlObj.hostname = cookie.domain;
           urlObj.pathname = cookie.path;
+          isHotmail = true;
         }
-        if (!removed &&
-          cookie.name == kCookieName &&
-          cookie.domain == urlObj.hostname
-        ) {
-          await checkLoginFinished();
+        // If we receive the canary cookie, check whether we're logged in
+        if (cookie.name == kCookieName &&
+            cookie.domain == urlObj.hostname) {
+            checkLoginFinished();
         }
       };
       let checkLoaded = async function(_event) {
@@ -79,10 +77,10 @@ export async function fetchSessionData(partition: string, url: string, interacti
           checkLoginFinished();
         }
       };
-      session.cookies.on('changed', checkCanary);
+      session.cookies.on('changed', onCookie);
       popup.on('closed', function() { finish(null); });
       popup.webContents.on('did-stop-loading', checkLoaded);
-      popup.loadURL(url.toString());
+      popup.loadURL(url);
     });
   }
   if (!response.ok) {
@@ -106,11 +104,6 @@ export async function fetchJSON(partition: string, url: string, action: string, 
   if (!cookies.length) {
     result.status = 401;
     return result;
-  }
-  urlObj.hostname = cookies[0].domain;
-  let owaCookies = cookies.filter(cookie => cookie.path?.startsWith("/owa/"));
-  if (owaCookies.length && urlObj.pathname.startsWith("/owa/")) {
-    urlObj.pathname = owaCookies[0].path + urlObj.pathname.replace("/owa/", "");
   }
   let options = {
     method: "POST",
