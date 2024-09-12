@@ -212,6 +212,7 @@ export interface MailAccountStorage {
   saveMessageTags(email: EMail): Promise<void>;
   deleteMessage(email: EMail): Promise<void>;
   readAllMessages(folder: Folder, limit?: number, startWith?: number): Promise<void>;
+  readAllMessagesMainProperties(folder: Folder, limit?: number, startWith?: number): Promise<void>;
 }
 
 export interface MailContentStorage {

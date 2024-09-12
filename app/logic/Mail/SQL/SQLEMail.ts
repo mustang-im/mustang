@@ -258,6 +258,30 @@ export class SQLEMail {
     return email;
   }
 
+  /** Read only the most important properties for the msg list view. */
+  static async readMainProperties(dbID: number, email: EMail, row: any): Promise<void> {
+    email.dbID = sanitize.integer(dbID);
+    email.pID = typeof (row.pID) == "number"
+      ? sanitize.integer(row.pID, null)
+      : sanitize.string(row.pID, null);
+    email.id = sanitize.nonemptystring(row.messageID);
+    email.inReplyTo = sanitize.string(row.parentMsgID, null);
+    email.size = sanitize.integer(row.size, null);
+    email.sent = sanitize.date(row.dateSent * 1000, new Date());
+    email.received = sanitize.date(row.dateReceived * 1000, new Date());
+    email.outgoing = sanitize.boolean(!!row.outgoing);
+    email.subject = sanitize.string(row.subject, null);
+
+    email.isRead = sanitize.boolean(!!row.isRead);
+    email.isStarred = sanitize.boolean(!!row.isStarred);
+    email.isReplied = sanitize.boolean(!!row.isReplied);
+    email.isSpam = sanitize.boolean(!!row.isSpam);
+    email.threadID = sanitize.string(row.threadID ?? row.parentMsgID, null);
+    email.downloadComplete = sanitize.boolean(!!row.downloadComplete);
+
+    email.contact = findOrCreatePersonUID("foo45@example.com", sanitize.label(row.contactName, null));
+  }
+
   static async readWritableProps(email: EMail, row?: any) {
     if (!row) {
       row = await (await getDatabase()).get(sql`
@@ -474,6 +498,51 @@ export class SQLEMail {
         await SQLEMail.read(row.id, email, row, emailRecipientRows, emailAttachmentRows, emailTagRows);
         newEmails.add(email);
       }
+    }
+    folder.messages.addAll(newEmails);
+  }
+
+  /**
+   * @param limit Max number of results (optional, default all)
+   * @param startWith Do not return the first `startWith` results (optional, default all)
+   *
+   * Reads only the date, subject, read status and maybe the first sender and recipient
+   */
+  static async readAllMainProperties(folder: Folder, limit?: number, startWith?: number): Promise<void> {
+    if (startWith && !limit) {
+      limit = -1;
+    }
+    // <copied from="read()" />
+    let emailRows = await (await getDatabase()).all(sql`
+      SELECT
+        id, pID, messageID, parentMsgID,
+        size, dateSent, dateReceived,
+        outgoing,
+        subject,
+        threadID, downloadComplete,
+        isRead, isStarred, isReplied, isSpam,
+        (SELECT name
+         FROM emailPersonRel
+           LEFT JOIN emailPerson ON (emailPersonRel.emailPersonID = emailPerson.id)
+         WHERE emailID = email.id AND recipientType =
+          (CASE WHEN outgoing THEN 2 ELSE 1 END)
+         ORDER BY emailPersonRel.ROWID ASC LIMIT 1)
+         AS contactName
+      FROM email
+      WHERE folderID = ${folder.dbID}
+      ORDER BY dateReceived DESC
+      $${limit ? sql` LIMIT ${limit} ` : sql``}
+      $${startWith ? sql` OFFSET ${startWith} ` : sql``}
+    `) as any;
+    let newEmails = new ArrayColl<EMail>();
+    for (let row of emailRows) {
+      let email = folder.messages.find(email => email.dbID == row.id);
+      if (email) {
+        continue;
+      }
+      email = folder.newEMail();
+      await SQLEMail.readMainProperties(row.id, email, row);
+      newEmails.add(email);
     }
     folder.messages.addAll(newEmails);
   }

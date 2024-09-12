@@ -32,6 +32,9 @@ export class SQLStorage implements MailAccountStorage {
   async readAllMessages(folder: Folder, limit?: number, startWith?: number): Promise<void> {
     await SQLEMail.readAll(folder, limit, startWith);
   }
+  async readAllMessagesMainProperties(folder: Folder, limit?: number, startWith?: number): Promise<void> {
+    await SQLEMail.readAllMainProperties(folder, limit, startWith);
+  }
   async readMessageBody(email: EMail): Promise<void> {
     await SQLEMail.readBody(email);
   }

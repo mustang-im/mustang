@@ -1,6 +1,7 @@
 import { EMail } from "./EMail";
 import type { MailAccount } from "./MailAccount";
 import type { TreeItem } from "../../frontend/Shared/FastTree";
+import { EMailCollection } from "./SQL/EMailCollection";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, Collection } from 'svelte-collections';
 import { assert, AbstractFunction } from "../util/util";
@@ -17,7 +18,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
   account: MailAccount;
   @notifyChangedProperty
   specialFolder: SpecialFolder = SpecialFolder.Normal;
-  readonly messages = new ArrayColl<EMail>();
+  readonly messages = new EMailCollection(this);
   readonly subFolders = new ArrayColl<Folder>();
   @notifyChangedProperty
   countTotal = 0;
@@ -47,23 +48,12 @@ export class Folder extends Observable implements TreeItem<Folder> {
     return this.specialFolder ? "   " + specialFolderOrder.indexOf(this.specialFolder) : this.name;
   }
 
-  protected get storage() {
+  get storage() {
     return this.account.storage;
   }
 
   protected async readFolder() {
-    if (!this.dbID) {
-      await this.save();
-    }
-    if (!this.messages.hasItems) {
-      let log = "Reading msgs from DB, for folder " + this.account.name + " " + this.path;
-      console.time(log + " first 200");
-      await this.storage.readAllMessages(this, 200);
-      console.timeEnd(log + " first 200");
-      console.time(log);
-      await this.storage.readAllMessages(this, null, 200);
-      console.timeEnd(log);
-    }
+    await this.messages.readFolder();
   }
 
   /** Gets the metadata of the emails in this folder.
