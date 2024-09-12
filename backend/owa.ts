@@ -33,9 +33,6 @@ export async function fetchSessionData(partition: string, url: string, interacti
         }
         finished = true;
         session.cookies.removeListener('changed', onCookie);
-        if (isHotmail) {
-          data.owaURL = url;
-        }
         resolve(data);
         if (!popup.isDestroyed()) {
           popup.destroy();
@@ -45,7 +42,11 @@ export async function fetchSessionData(partition: string, url: string, interacti
         try {
           url = urlObj.href;
           response = await session.fetch(url + 'sessiondata.ashx', { method: 'POST' });
-          finish(await response.json());
+          let json = await response.json();
+          if (isHotmail) {
+            json.owaURL = url;
+          }
+          finish(json);
         } catch (ex) {
         }
       }
