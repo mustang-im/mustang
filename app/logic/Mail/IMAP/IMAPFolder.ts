@@ -547,7 +547,7 @@ export class IMAPFolder extends Folder {
   }
 
   async moveFolderHere(folder: IMAPFolder) {
-    assert(folder.account = this.account, "Cannot move folders between accounts yet. You can create a new folder and move the messages");
+    assert(folder.account == this.account, "Cannot move folders between accounts yet. You can create a new folder and move the messages");
     await super.moveFolderHere(folder);
     /*
     assert(folder.subFolders.isEmpty, `Folder ${folder.name} has sub-folders. Cannot yet move entire folder hierarchies. You may move the folders individually.`);
