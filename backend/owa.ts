@@ -77,6 +77,15 @@ export async function fetchJSON(partition: string, url: string, authHeader: stri
   };
   if (authHeader) {
     options.headers.Authorization = authHeader;
+    await session.cookies.set({
+      url: url,
+      name: "OpenIdConnect.token.v1",
+      value: authHeader.replace("Bearer ", ""),
+      secure: true,
+      httpOnly: true,
+    });
+    let cookies = await session.cookies.get({ url: url });
+    console.log("fetch", authHeader, cookies);
   } else {
     let cookies = await session.cookies.get({ name: 'X-OWA-CANARY' });
     if (!cookies.length) {
