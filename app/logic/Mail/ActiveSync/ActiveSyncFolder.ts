@@ -1,11 +1,10 @@
 import { Folder, SpecialFolder } from "../Folder";
 import { ActiveSyncEMail } from "./ActiveSyncEMail";
 import { type ActiveSyncAccount, type ActiveSyncPingable, EASError } from "./ActiveSyncAccount";
-import { SQLFolder } from "../SQL/SQLFolder";
-import { SQLEMail } from "../SQL/SQLEMail";
 import { assert, NotImplemented, NotSupported } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, type Collection } from "svelte-collections";
+import { gt } from "../../../l10n/l10n";
 
 export const kMaxCount = 50;
 
@@ -121,13 +120,13 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
     if (response.Collections.Collection.Status == "3") {
       // Out of sync.
       this.syncState = null;
-      await SQLFolder.save(this);
+      await this.storage.saveFolder(this);
     }
     if (response.Collections.Collection.Status != "1") {
       throw new EASError("Sync", response.Collections.Collection.Status);
     }
     this.syncState = response.Collections.Collection.SyncKey;
-    await SQLFolder.save(this);
+    await this.storage.saveFolder(this);
     return response.Collections.Collection;
   }
 
@@ -155,12 +154,12 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
         let email = this.getEmailByServerID(item.ServerId);
         if (email) {
           email.setFlags(item.ApplicationData);
-          await SQLEMail.saveWritableProps(email);
+          await this.storage.saveMessageWritableProps(email);
         } else {
           email = this.newEMail();
           email.serverID = item.ServerId;
           email.fromWBXML(item.ApplicationData);
-          await SQLEMail.save(email);
+          await this.storage.saveMessage(email);
           newMsgs.add(email);
         }
       }
@@ -203,7 +202,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
         if (email && !email.downloadComplete) {
           email.mime = result.Properties.Body.RawData;
           await email.parseMIME();
-          await email.save();
+          await email.saveCompleteMessage();
           downloadedEmail.add(email);
         }
       } catch (ex) {
@@ -251,7 +250,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
   }
 
   async copyMessagesHere(messages: Collection<ActiveSyncEMail>) {
-    throw new NotSupported("ActiveSync does not permit messages to be copied");
+    throw new NotSupported(gt`ActiveSync does not permit messages to be copied`);
   }
 
   async moveFolderHere(folder: ActiveSyncFolder) {
@@ -301,7 +300,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
       ServerId: this.id,
     };
     await this.account.queuedRequest("FolderDelete", request);
-    await SQLFolder.deleteIt(this);
+    await this.storage.deleteFolder(this);
     this.removeFromParent();
     // We're required to sync which should be a no-op at this point.
     await this.account.listFolders();

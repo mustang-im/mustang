@@ -40,7 +40,7 @@ export class ActiveSyncEMail extends EMail {
     }
     this.mime = response.Response.Fetch.Properties.Body.RawData;
     await this.parseMIME();
-    await this.save();
+    await this.saveCompleteMessage();
   }
 
   fromWBXML(wbxmljs: any) {

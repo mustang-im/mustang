@@ -1,7 +1,6 @@
 import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { kMaxCount, ActiveSyncFolder, FolderType, ensureArray } from "./ActiveSyncFolder";
-import { SQLFolder } from "../SQL/SQLFolder";
 import { SMTPAccount } from "../SMTP/SMTPAccount";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
@@ -323,7 +322,7 @@ export class ActiveSyncAccount extends MailAccount {
       let folder = this.findFolderById(deletion.ServerId);
       if (folder) {
         this.removePingable(folder);
-        await SQLFolder.deleteIt(folder);
+        await this.storage.deleteFolder(folder);
         folder.removeFromParent();
       }
       // Delete user calendar/contacts accounts.
