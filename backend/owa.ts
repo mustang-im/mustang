@@ -1,6 +1,6 @@
 import { session as Session, BrowserWindow } from "electron";
 
-const kCookieName = "X-OWA-CANARY";
+const kCanaryName = "X-OWA-CANARY";
 const kHotmailServer = "outlook.live.com";
 
 export async function fetchSessionData(partition: string, url: string, interactive: boolean) {
@@ -11,7 +11,9 @@ export async function fetchSessionData(partition: string, url: string, interacti
       let urlObj = new URL(url);
       // We want to skip the landing page for personal Microsoft accounts.
       let isHotmail = urlObj.hostname == kHotmailServer;
-      url = isHotmail ? urlObj + "?nlp=1" : urlObj.href;
+      if (isHotmail) {
+        url = url + "?nlp=1";
+      }
       let popup = new BrowserWindow({
         //parent: mainWindow,
         //modal: true,
@@ -50,32 +52,36 @@ export async function fetchSessionData(partition: string, url: string, interacti
         } catch (ex) {
         }
       }
-      let onCookie = async function(_event, cookie, _cause, removed) {
-        if (removed) {
-          return;
-        }
-        // For Hotmail, check the path to the CANARY cookie.
-        if (cookie.domain == kHotmailServer &&
-          cookie.name == kCookieName &&
-          cookie.path.startsWith("/owa/")) {
-          // Hotmail also sets cookies for /owa/0/, /mail/0/, /calendar/0/ etc.,
-          // but we can use only the /owa/0/ cookie.
-          // We also need to use that URL for the service request.
-          // This needs to happen before CheckLoginFinished().
-          urlObj.hostname = cookie.domain;
-          urlObj.pathname = cookie.path;
-          isHotmail = true;
-        }
-        // If we receive the canary cookie, check whether we're logged in
-        if (cookie.name == kCookieName &&
+      let onCookie = async function (_event, cookie, _cause, removed) {
+        try {
+          if (removed) {
+            return;
+          }
+          // For Hotmail, check the path to the CANARY cookie.
+          if (cookie.domain == kHotmailServer &&
+            cookie.name == kCanaryName &&
+            cookie.path?.startsWith("/owa/")) {
+            // Hotmail also sets cookies for /owa/0/, /mail/0/, /calendar/0/ etc.,
+            // but we can use only the /owa/0/ cookie.
+            // We also need to use that URL for the service request.
+            // This needs to happen before CheckLoginFinished().
+            urlObj.hostname = cookie.domain;
+            urlObj.pathname = cookie.path;
+            isHotmail = true;
+          }
+          // If we receive the canary cookie, check whether we're logged in
+          if (cookie.name == kCanaryName &&
             cookie.domain == urlObj.hostname) {
-            checkLoginFinished();
+            await checkLoginFinished();
+          }
+        } catch (ex) {
+          console.error(ex);
         }
       };
       let checkLoaded = async function(_event) {
-        let cookies = await Session.fromPartition(partition).cookies.get({ name: kCookieName });
+        let cookies = await Session.fromPartition(partition).cookies.get({ name: kCanaryName });
         if (cookies[0]?.value) {
-          checkLoginFinished();
+          await checkLoginFinished();
         }
       };
       session.cookies.on('changed', onCookie);
@@ -100,17 +106,16 @@ export async function fetchJSON(partition: string, url: string, action: string, 
     json: null,
   };
   let session = Session.fromPartition(partition);
-  let cookies = await session.cookies.get({ name: 'X-OWA-CANARY' });
+  let cookies = await session.cookies.get({ name: kCanaryName });
   if (!cookies.length) {
     result.status = 401;
     return result;
   }
   let options = {
     method: "POST",
-    headers: {
-      "X-OWA-CANARY": cookies[0].value,
-    },
+    headers: {},
   };
+  options.headers[kCanaryName] = cookies[0].value;
   if (action) {
     options.headers.Action = action;
   }
@@ -136,7 +141,7 @@ export async function streamJSON(partition: string, url: string) {
     body: null,
   };
   let session = Session.fromPartition(partition);
-  let cookies = await session.cookies.get({ name: 'X-OWA-CANARY' });
+  let cookies = await session.cookies.get({ name: kCanaryName });
   if (!cookies.length) {
     result.status = 401;
     return result;
