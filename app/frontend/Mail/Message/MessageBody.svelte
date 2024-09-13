@@ -1,34 +1,34 @@
 <vbox flex class="message-body">
-  {#if $message.needToLoadBody}
+  {#if message.needToLoadBody}
     {#await message.loadBody()}
       {#await sleep(1)}
         <hbox></hbox>
       {:then}
         {$t`Loading...`}
       {/await}
-    {:then}
-      <svelte:self {message} />
     {:catch ex}
       {console.error(ex), logError(ex), ""}
       {ex.message ?? ex + ""}
     {/await}
+  {/if}
+
+  {#if $message.needToLoadBody}
+    <hbox></hbox>
+  {:else if mode == DisplayMode.HTML || mode == DisplayMode.HTMLWithExternal}
+    <HTMLDisplay html={$message.html} allowExternalImages={mode == DisplayMode.HTMLWithExternal} />
+  {:else if mode == DisplayMode.Plaintext}
+    <PlaintextDisplay plaintext={$message.text} />
+    <!--<HTMLDisplay html={convertTextToHTML($message.text)} />-->
+  {:else if mode == DisplayMode.Source}
+    {#await message.loadMIME()}
+      {$t`Loading...`}
+    {:then}
+      <PlaintextDisplay plaintext={getSource($message)} />
+    {/await}
+  {:else if mode == DisplayMode.Thread}
+    <ThreadDisplay {message} />
   {:else}
-    {#if mode == DisplayMode.HTML || mode == DisplayMode.HTMLWithExternal}
-      <HTMLDisplay html={$message.html} allowExternalImages={mode == DisplayMode.HTMLWithExternal} />
-    {:else if mode == DisplayMode.Plaintext}
-      <PlaintextDisplay plaintext={$message.text} />
-      <!--<HTMLDisplay html={convertTextToHTML($message.text)} />-->
-    {:else if mode == DisplayMode.Source}
-      {#await message.loadMIME()}
-        {$t`Loading...`}
-      {:then}
-        <PlaintextDisplay plaintext={getSource($message)} />
-      {/await}
-    {:else if mode == DisplayMode.Thread}
-      <ThreadDisplay {message} />
-    {:else}
-      {$t`Unknown display mode`}
-    {/if}
+    {$t`Unknown display mode`}
   {/if}
 </vbox>
 
