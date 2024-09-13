@@ -32,10 +32,9 @@
       {/if}
       <slot name="inner-top" />
       <div class="text selectable">
-        {@html $message.html || ""}
-        <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection.
-        <WebView title={$t`Text`} html={message.html} {headHTML} autoSize />
-        -->
+        <SanitizedHTMLDisplay html={$message.html} />
+        <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection. -->
+        <!-- <WebView title={$t`Text`} html={$message.html} {headHTML} autoSize /> -->
         <slot name="bubble" />
       </div>
       <slot name="inner-bottom" />
@@ -58,6 +57,7 @@
   import cssBody from "../../Mail/Message/content-body.css?inline";
   import cssFont from "../../asset/font/Karla.css?inline";
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
+  import SanitizedHTMLDisplay from "../../Shared/SanitizedHTMLDisplay.svelte";
   import WebView from "../../Shared/WebView.svelte";
   import { getDateString } from "../../Util/date";
   import { t } from "../../../l10n/l10n";
