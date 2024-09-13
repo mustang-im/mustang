@@ -382,7 +382,7 @@ export class IMAPFolder extends Folder {
   }
 
   protected async saveNewMsgs(msgs: Collection<IMAPEMail>) {
-    //let startTime = Date.now();
+    let startTime = Date.now();
     for (let email of msgs) {
       try {
         if (email.subject) {
@@ -392,8 +392,8 @@ export class IMAPFolder extends Folder {
         this.account.errorCallback(ex);
       }
     }
-    //let saveTime = Date.now() - startTime;
-    //console.log("  Saved", msgs.length, "msgs in", saveTime, "ms =", saveTime / msgs.length, "ms/msg");
+    let saveTime = Date.now() - startTime;
+    console.log("  Saved", msgs.length, "msgs in", saveTime, "ms =", saveTime / msgs.length, "ms/msg");
   }
 
   protected async saveMsgUpdates(msgs: Collection<IMAPEMail>) {
