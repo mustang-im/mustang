@@ -1,9 +1,10 @@
-import { MailAccount, TLSSocketType } from "../MailAccount";
+import { MailAccount, AuthMethod, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { OWAFolder } from "./OWAFolder";
-import OWACreateItemRequest from "./OWACreateItemRequest";
 import { OWAAddressbook } from "../../Contacts/OWA/OWAAddressbook";
 import { OWACalendar } from "../../Calendar/OWA/OWACalendar";
+import OWACreateItemRequest from "./OWACreateItemRequest";
+import { OWALoginForm } from "./OWALoginForm";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { ContentDisposition } from "../Attachment";
 import { LoginError } from "../../Abstract/Account";
@@ -11,6 +12,7 @@ import { appGlobal } from "../../app";
 import { notifyChangedProperty } from "../../util/Observable";
 import { blobToBase64 } from "../../util/util";
 import { assert } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 
 class OWAError extends Error {
   constructor(response) {
@@ -64,7 +66,31 @@ export class OWAAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
-    await this.listFolders(interactive);
+    if (this.authMethod == AuthMethod.OAuth2) {
+      await this.listFolders(interactive);
+    } else {
+      try {
+        await this.listFolders();
+      } catch (ex) {
+        if (!/^HTTP (401|440)/.test(ex.message)) {
+          throw ex;
+        }
+        let elements = await OWALoginForm.findLoginElements(this.url, this.partition);
+        if (!elements) {
+          throw new Error(gt`Could not find login form`);
+        }
+        let response = await OWALoginForm.submitLoginForm(this.emailAddress, this.password, this.partition, elements);
+        let formURL = new URL(elements.url);
+        let responseURL = new URL(response.url);
+        if (response.status == 401 || responseURL.origin == formURL.origin && responseURL.pathname == formURL.pathname && responseURL.searchParams.get("reason") == "2") {
+          throw new LoginError(null, gt`Password incorrect`);
+        }
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status} ${response.statusText}`);
+        }
+        await this.listFolders();
+      }
+    }
     this.hasLoggedIn = true;
 
     let addressbook = appGlobal.addressbooks.find((addressbook: OWAAddressbook) => addressbook.protocol == "addressbook-owa" && addressbook.url == this.url && addressbook.username == this.emailAddress) as OWAAddressbook | void;
