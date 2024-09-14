@@ -52,7 +52,7 @@ export function fakeGroups(groupCount = 10, maxMemberCount = 20, addressbook: Ad
   let persons = addressbook.persons;
   for (let iP = 1; iP <= groupCount; iP++) {
     let group = new Group();
-    group.name = faker.helpers.unique(faker.name.jobTitle);
+    group.name = unique(faker.person.jobTitle);
     group.addressbook = addressbook;
     let memberCount = 2 + Math.floor(Math.random() * (maxMemberCount - 2));
     for (let iG = 1; iG <= memberCount; iG++) {
@@ -72,7 +72,7 @@ export function fakeGroups(groupCount = 10, maxMemberCount = 20, addressbook: Ad
 
 export function fakeChatPerson(): Person {
   let person = new ChatPerson();
-  person.id = faker.datatype.uuid();
+  person.id = faker.string.uuid();
   person.firstName = faker.name.firstName();
   person.lastName = faker.name.lastName();
   person.name = person.firstName + " " + person.lastName;
@@ -85,14 +85,14 @@ export function fakeChatPerson(): Person {
   person.groups.add(new ContactEntry(faker.company.name(), "Mustang"));
   person.groups.add(new ContactEntry(faker.company.name(), "WhatsApp"));
   person.groups.add(new ContactEntry(faker.company.name(), "Teams"));
-  let address = faker.address.streetAddress() + "\n" +
-    faker.address.zipCode() + " " +
-    faker.address.cityName();
+  let address = faker.location.streetAddress() + "\n" +
+    faker.location.zipCode() + " " +
+    faker.location.city();
   person.streetAddresses.add(new ContactEntry(address, "home"));
   person.picture = faker.image.avatar();
   person.company = faker.company.name();
   person.department = faker.commerce.department();
-  person.position = faker.company.bsNoun();
+  person.position = faker.person.jobTitle();
   return person;
 }
 
@@ -184,7 +184,7 @@ export function fakeChatAccount(persons: Collection<Person>, me: Person, msgCoun
 
   for (let person of persons) {
     let chat = new Chat(chatAccount);
-    chat.id = person.id + "-" + faker.datatype.uuid();
+    chat.id = person.id + "-" + faker.string.uuid();
     chat.contact = person;
     chatAccount.chats.set(person, chat);
     chatAccount.persons.add(person);
@@ -193,7 +193,7 @@ export function fakeChatAccount(persons: Collection<Person>, me: Person, msgCoun
     let lastTime = faker.date.past(0.1);
     for (let i = 1; i <= msgCount; i++) {
       let msg = new UserChatMessage(chat);
-      msg.id = faker.datatype.uuid();
+      msg.id = faker.string.uuid();
       msg.to = chat;
       msg.contact = chat.contact;
       msg.outgoing = Math.random() < 0.4;
@@ -218,17 +218,17 @@ export function fakeCalendar(persons: Collection<Person>, eventCount = 50): Cale
   calendar.name = faker.company.name();
   for (let i = 1; i <= eventCount; i++) {
     let event = new Event(calendar);
-    event.startTime = i < 5 ? faker.date.recent() : faker.date.future(0.2);
+    event.startTime = i < 5 ? faker.date.recent() : faker.date.future({ years: 0.2 });
     let endTimeMax = new Date(event.startTime);
     endTimeMax.setMinutes(endTimeMax.getMinutes() + 120);
-    event.endTime = faker.date.between(event.startTime, endTimeMax);
-    event.title = faker.random.words();
-    event.descriptionText = faker.random.words() + "\n" + faker.random.words();
+    event.endTime = faker.date.between({ from: event.startTime, to: endTimeMax });
+    event.title = faker.company.buzzPhrase();
+    event.descriptionText = faker.hacker.phrase() + "\n" + faker.hacker.phrase();
     event.descriptionHTML = event.descriptionText.replace("\n", "<br>");
-    event.location = faker.datatype.boolean ? faker.address.streetAddress() : faker.address.nearbyGPSCoordinate().join(", ");
+    event.location = faker.datatype.boolean ? faker.location.streetAddress() : faker.location.nearbyGPSCoordinate().join(", ");
     let participantsCount = Math.random() * 5;
     for (let i = 1; i < participantsCount; i++) {
-      event.participants.add(persons.getIndex(Math.floor(Math.random() * persons.length)));
+      event.participants.add(fakeMailPerson());
     }
     calendar.events.add(event);
   }
@@ -265,7 +265,7 @@ export function fakeSharedDir(persons: Collection<Person>): Collection<Directory
 
 export function fakeDir(parentDir: Directory): Directory {
   let directory = new Directory();
-  directory.name = faker.helpers.unique(() => faker.system.fileName({ extensionCount: 0 }));
+  directory.name = unique(() => faker.system.fileName({ extensionCount: 0 }));
   directory.lastMod = faker.date.past();
   directory.setParent(parentDir);
   let dirCount = Math.random() * 6;
@@ -282,12 +282,18 @@ export function fakeDir(parentDir: Directory): Directory {
 
 export function fakeFile(parentDir: Directory): File {
   let file = new File();
-  file.name = faker.helpers.unique(() => faker.system.commonFileName());
+  file.name = unique(faker.system.commonFileName);
   let parts = file.name.split(".");
   file.ext = parts.pop();
   file.nameWithoutExt = parts.join(".");
-  file.length = faker.datatype.number(40000000);
+  file.length = faker.number.int({ max: 40000000 });
   file.lastMod = faker.date.past();
   file.setParent(parentDir);
   return file;
+}
+
+function unique<T>(func: () => T): T {
+  // TODO
+  // Please avoid leaks
+  return func();
 }

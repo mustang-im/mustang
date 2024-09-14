@@ -18,7 +18,7 @@
     "l10n:sync:translations": "cd l10n && crowdin pull"
   },
   "dependencies": {
-    "@faker-js/faker": "^7.6.0",
+    "@faker-js/faker": "^9.0.0",
     "@lingui/core": "^4.11.1",
     "@lingui/vite-plugin": "^4.11.1",
     "@popperjs/core": "^2.11.8",

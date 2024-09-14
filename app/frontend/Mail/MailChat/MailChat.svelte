@@ -60,7 +60,7 @@
   $: dummyChat = createDummyChat(selectedPerson);
   function createDummyChat(person: Person): Chat {
     let chat = new Chat(accounts.first);
-    chat.id = faker.datatype.uuid();
+    chat.id = faker.string.uuid();
     chat.contact = person;
     chat.messages.addAll(personMessages);
     chat.lastMessage = personMessages.last;
