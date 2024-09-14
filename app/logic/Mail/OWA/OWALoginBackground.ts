@@ -1,6 +1,6 @@
 import { appGlobal } from "../../app";
 
-export class OWALoginForm {
+export class OWALoginBackground {
   static async submitLoginForm(emailAddress: string, password: string, partition: string, elements: OWALoginFormElements) {
     elements.username.value = emailAddress;
     elements.password.value = password;

@@ -4,7 +4,7 @@ import { OWAFolder } from "./OWAFolder";
 import { OWAAddressbook } from "../../Contacts/OWA/OWAAddressbook";
 import { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import OWACreateItemRequest from "./OWACreateItemRequest";
-import { OWALoginForm } from "./OWALoginForm";
+import { OWALoginBackground } from "./OWALoginBackground";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { ContentDisposition } from "../Attachment";
 import { LoginError } from "../../Abstract/Account";
@@ -75,11 +75,11 @@ export class OWAAccount extends MailAccount {
         if (!/^HTTP (401|440)/.test(ex.message)) {
           throw ex;
         }
-        let elements = await OWALoginForm.findLoginElements(this.url, this.partition);
+        let elements = await OWALoginBackground.findLoginElements(this.url, this.partition);
         if (!elements) {
           throw new Error(gt`Could not find login form`);
         }
-        let response = await OWALoginForm.submitLoginForm(this.emailAddress, this.password, this.partition, elements);
+        let response = await OWALoginBackground.submitLoginForm(this.emailAddress, this.password, this.partition, elements);
         let formURL = new URL(elements.url);
         let responseURL = new URL(response.url);
         if (response.status == 401 || responseURL.origin == formURL.origin && responseURL.pathname == formURL.pathname && responseURL.searchParams.get("reason") == "2") {
