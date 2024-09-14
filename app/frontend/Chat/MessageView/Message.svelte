@@ -4,6 +4,7 @@
   class:outgoing={$message.outgoing}
   class:followup
   deliveryStatus={$message instanceof ChatMessage ? $message.deliveryStatus : DeliveryStatus.Unknown}
+  bind:clientWidth={overallWidth}
   >
   {#if !$message.outgoing && !followup}
     <vbox class="avatar">
@@ -31,7 +32,7 @@
         </hbox>
       {/if}
       <slot name="inner-top" />
-      <div class="text selectable">
+      <div class="text selectable" style="max-width: {overallWidth}px">
         <SanitizedHTMLDisplay html={$message.html} />
         <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection. -->
         <!-- <WebView title={$t`Text`} html={$message.html} {headHTML} autoSize /> -->
@@ -74,6 +75,8 @@
   $: reactions = $message.reactions;
 
   $: headHTML = `<style>\n${cssBody}\n${cssContent}\n</style>`;
+
+  let overallWidth: number;
 </script>
 
 <style>
@@ -160,20 +163,6 @@
   }
   .text {
     font-size: 13.3px;
-    overflow-wrap: anywhere;
-  }
-
-  .text :global(blockquote) {
-    border-left: 3px solid grey;
-    padding-inline-start: 16px;
-    margin-inline-start: 0px;
-  }
-  .text :global(pre) {
-    white-space: pre-wrap !important;
-  }
-  .text :global(*) {
-    text-wrap: wrap !important;
-    overflow-wrap: anywhere !important;
   }
 
   .reactions {
