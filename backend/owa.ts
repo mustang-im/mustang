@@ -4,7 +4,7 @@ import { Readable } from 'stream';
 const kCanaryName = "X-OWA-CANARY";
 const kHotmailServer = "outlook.live.com";
 
-export async function fetchSessionData(partition: string, url: string, interactive: boolean) {
+export async function fetchSessionData(partition: string, url: string, interactive?: boolean, autoFillLoginPage?: string) {
   let session = Session.fromPartition(partition);
   let response = await session.fetch(url + 'sessiondata.ashx', { method: 'POST' });
   if ([401, 440].includes(response.status) && interactive) {
@@ -83,6 +83,12 @@ export async function fetchSessionData(partition: string, url: string, interacti
         let cookies = await Session.fromPartition(partition).cookies.get({ name: kCanaryName });
         if (cookies[0]?.value) {
           await checkLoginFinished();
+        } else if (autoFillLoginPage) {
+          try {
+            await popup.webContents.executeJavaScript(autoFillLoginPage);
+          } catch (ex) {
+            console.error(ex);
+          }
         }
       };
       session.cookies.on('changed', onCookie);

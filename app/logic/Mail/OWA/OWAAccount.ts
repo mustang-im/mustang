@@ -5,6 +5,7 @@ import { OWAAddressbook } from "../../Contacts/OWA/OWAAddressbook";
 import { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import OWACreateItemRequest from "./OWACreateItemRequest";
 import { OWALoginBackground } from "./OWALoginBackground";
+import { owaAutoFillLoginPage } from "./OWALoginAutoFill";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { ContentDisposition } from "../Attachment";
 import { LoginError } from "../../Abstract/Account";
@@ -201,7 +202,11 @@ export class OWAAccount extends MailAccount {
   }
 
   async listFolders(interactive?: boolean): Promise<void> {
-    let sessionData = await appGlobal.remoteApp.OWA.fetchSessionData(this.partition, this.url, interactive);
+    let autofillJS: string | null = "";
+    if (interactive) {
+      autofillJS = owaAutoFillLoginPage(this.emailAddress, this.password);
+    }
+    let sessionData = await appGlobal.remoteApp.OWA.fetchSessionData(this.partition, this.url, interactive, autofillJS);
     if (!sessionData) {
       throw new Error("Authentication window was closed by user");
     }
