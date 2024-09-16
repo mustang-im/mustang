@@ -1,8 +1,8 @@
 <grid class="manual-config" full={stepFull}>
   <ManualConfigLabels {stepFull} />
   <ManualConfigServer bind:config bind:stepFull {isSetup} bind:this={incomingEl} />
-  {#if config.outgoing}
-    <ManualConfigServer bind:config={config.outgoing} {stepFull} {isSetup} bind:this={outgoingEl} />
+  {#if outgoing}
+    <ManualConfigServer bind:config={outgoing} {stepFull} {isSetup} bind:this={outgoingEl} />
   {/if}
 </grid>
 
@@ -18,6 +18,7 @@
   export let stepFull: boolean;
   export let isSetup = false;
 
+  $: outgoing = $config.outgoing;
   let incomingEl: ManualConfigServer = null;
   let outgoingEl: ManualConfigServer = null;
 
