@@ -153,7 +153,7 @@
   let editor: Editor;
   $: to = mail.to;
   let fromIdentity: MailIdentity;
-  let recipients: PersonUID[];
+  let recipients: PersonUID[] = [];
 
   // HACK to reload the HTMLEditor to force it to load the new text
   // See <https://github.com/ueberdosis/tiptap/issues/4918>
