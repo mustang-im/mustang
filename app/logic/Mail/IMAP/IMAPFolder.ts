@@ -497,7 +497,7 @@ export class IMAPFolder extends Folder {
   /** We received an event from the server that a
    * message was deleted */
   async messageDeletedNotification(seq: number): Promise<void> {
-    await this.checkDeletedMessages(this.recentMsg?.uid);
+    await this.checkDeletedMessages(this.recentMsg?.uid); // HACK Doesn't consider which msg was deleted
 
     /* old impl:
     let fromUID: number;
