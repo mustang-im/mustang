@@ -497,6 +497,8 @@ export class IMAPFolder extends Folder {
   /** We received an event from the server that a
    * message was deleted */
   async messageDeletedNotification(seq: number): Promise<void> {
+    await this.checkDeletedMessages(this.recentMsg?.uid);
+
     /* old impl:
     let fromUID: number;
     let message = this.getEMailBySeq(seq);
@@ -507,8 +509,10 @@ export class IMAPFolder extends Folder {
       let fromMsg = sortedByUID.getIndex(pos) ?? sortedByUID.last;
       fromUID = (fromMsg as IMAPEMail).uid;
     } */
+    /* New impl: TODO Deletes last few days of messages
     let fromUID = this.getEmailsAroundSeq(seq, 20, 0).first?.uid;
     await this.checkDeletedMessages(fromUID);
+    */
   }
 
   async addMessage(email: EMail) {
