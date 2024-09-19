@@ -2,10 +2,7 @@
 * Mail
   * SQL: Stable DB
   * Collections sort is slow after additions/removals
-  * IMAP
-    * Bug: After delete, new msgs are removed locally (and come back only after a poll)
-    * Bug: Old msgs keep coming back, new msgs not saved
-    * See also below
+  * IMAP: See below
   * Inline images send
   * Context menu for content: Copy text, link, image
   * Bug: Search and persons view: Disable until search bug fixed
@@ -109,6 +106,7 @@
 * Signal
 * WhatsApp
 * DIM <https://www.dim.chat>
+* Discord
 * Find a suitable open protocol
 
 # Contacts
