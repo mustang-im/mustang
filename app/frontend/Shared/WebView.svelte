@@ -3,7 +3,7 @@
 
 <script lang="ts">
   import { stringToDataURL } from "../Util/util";
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   const dispatch = createEventDispatcher();
 
   /**
@@ -24,8 +24,6 @@
   export let title: string;
   /** Size the <WebView> to the size of the content */
   export let autoSize = false;
-  /** Max width in px for auto size */
-  export let maxWidth: number | null = null;
   /**
    * Which HTTP servers may be called automatically during the HTML load,
    * e.g. for images, stylesheets etc.?
@@ -46,6 +44,12 @@
     over-flow: visible !important;
   }
   </style>`;
+
+  onMount(() =>{
+    if (autoSize) {
+      observeMaxWidth();
+    }
+  });
 
   $: html && setURL();
   async function setURL() {
@@ -106,6 +110,7 @@
   }
 
   const heightBuffer = 10;
+  let maxWidth: number;
   $: autoSize && size && maxWidth && resizeWebview();
   function resizeWebview() {
     if ((webviewE.parentElement && size.width > webviewE.parentElement.clientWidth) && 
@@ -120,6 +125,28 @@
     }
     webviewE.style.height = (size.height + heightBuffer) + "px";
   };
+
+  function observeMaxWidth() {
+    const parent = parentWithMaxWidth(webviewE);
+    const maxWidthVal = getComputedStyle(parent).maxWidth;
+    const observer = new ResizeObserver((entries) => {
+      const el = entries[0];
+      if (maxWidthVal.endsWith("%")) {
+        maxWidth = el.contentRect.width * (parseInt(maxWidthVal)/100);
+      } else {
+        maxWidth = parseInt(maxWidthVal);
+      }
+    });
+    observer.observe(parent.parentElement);
+  }
+
+  function parentWithMaxWidth(el: HTMLElement) {
+    while (el.parentElement &&
+      getComputedStyle(el).maxWidth == "none") {
+      el = el.parentElement;
+    }
+    return el;
+  }
 </script>
 
 <style>
