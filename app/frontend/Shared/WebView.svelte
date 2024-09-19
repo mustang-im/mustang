@@ -35,16 +35,6 @@
    */
   export let allowServerCalls: boolean | string = true;
 
-  const autoSizeCSS = `<style>
-  body {
-    min-height: 0px !important;
-    min-width: 100px !important;
-    height: fit-content !important;
-    width: fit-content !important;
-    over-flow: visible !important;
-  }
-  </style>`;
-
   onMount(() =>{
     if (autoSize) {
       observeMaxWidth();
@@ -54,17 +44,26 @@
   $: html && setURL();
   async function setURL() {
     url = "";
-    let displayHTML = html;
-    let head = headHTML; /*`<meta http-equiv="Content-Security-Policy" content="default-src '${
+    const autoSizeCSS = `<style>
+      body {
+        min-height: 0px !important;
+        min-width: 100px !important;
+        height: fit-content !important;
+        width: fit-content !important;
+        over-flow: visible !important;
+      }
+    </style>`;
+    const head = headHTML; /*`<meta http-equiv="Content-Security-Policy" content="default-src '${
       allowServerCalls === true ? "*" : allowServerCalls === false ? "none" : allowServerCalls
     }'">\n\n` + headHTML + `\n\n`; */
+    let displayHTML = html;
     let headPos = displayHTML.indexOf("<head>");
     headPos = headPos < 0 ? 0 : headPos + 6;
-    if (autoSize) {
-      displayHTML = displayHTML.substring(0, headPos) + head + autoSizeCSS + displayHTML.substring(headPos);
-    } else {
-      displayHTML = displayHTML.substring(0, headPos) + head + displayHTML.substring(headPos);
-    }    
+    displayHTML =
+      displayHTML.substring(0, headPos) +
+      head +
+      (autoSize ? autoSizeCSS: "") +
+      displayHTML.substring(headPos);
     // console.log("html", displayHTML);
     url = await stringToDataURL("text/html", displayHTML);
   }
@@ -75,15 +74,12 @@
     webviewE.addEventListener("dom-ready", () => {
       dispatch("webview", webviewE);
       if (autoSize) {
-        webviewE.addEventListener("did-finish-load", async () => {
-          await getContentSize();
-          resizeWebview();
-        });
+        webviewE.addEventListener("did-finish-load", onLoadResize);
       }
     }, { once: true });
   }
 
-  let size;
+  let size: { width: number; height: number };
   async function getContentSize() {
     try {
       size = await webviewE.executeJavaScript(`
@@ -109,11 +105,16 @@
     }
   }
 
+  async function onLoadResize() {
+    await getContentSize();
+    resizeWebview();
+  }
+
   const heightBuffer = 10;
   let maxWidth: number;
   $: autoSize && size && maxWidth && resizeWebview();
   function resizeWebview() {
-    if ((webviewE.parentElement && size.width > webviewE.parentElement.clientWidth) && 
+    if ((webviewE.parentElement && size.width > webviewE.parentElement.clientWidth) &&
     (!maxWidth || maxWidth && size.width < maxWidth)) {
       webviewE.style.width = size.width + "px";
     }
