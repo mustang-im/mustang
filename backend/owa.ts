@@ -136,7 +136,7 @@ export async function fetchJSON(partition: string, url: string, action: string, 
   result.statusText = response.statusText;
   result.url = response.url;
   result.contentType = response.headers.get('Content-Type');
-  result.json = await response.json();
+  result.json = result.contentType ? await response.json() : {} ; // Quick workaround for End of JSON Error
   return result;
 }
 
