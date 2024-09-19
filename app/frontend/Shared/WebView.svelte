@@ -3,7 +3,7 @@
 
 <script lang="ts">
   import { stringToDataURL } from "../Util/util";
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   const dispatch = createEventDispatcher();
 
   /**
@@ -35,16 +35,35 @@
    */
   export let allowServerCalls: boolean | string = true;
 
+  onMount(() =>{
+    if (autoSize) {
+      observeMaxWidth();
+    }
+  });
+
   $: html && setURL();
   async function setURL() {
     url = "";
-    let displayHTML = html;
-    let head = headHTML; /*`<meta http-equiv="Content-Security-Policy" content="default-src '${
+    const autoSizeCSS = `<style>
+      body {
+        min-height: 0px !important;
+        min-width: 100px !important;
+        height: fit-content !important;
+        width: fit-content !important;
+        over-flow: visible !important;
+      }
+    </style>`;
+    const head = headHTML; /*`<meta http-equiv="Content-Security-Policy" content="default-src '${
       allowServerCalls === true ? "*" : allowServerCalls === false ? "none" : allowServerCalls
     }'">\n\n` + headHTML + `\n\n`; */
+    let displayHTML = html;
     let headPos = displayHTML.indexOf("<head>");
     headPos = headPos < 0 ? 0 : headPos + 6;
-    displayHTML = displayHTML.substring(0, headPos) + head + displayHTML.substring(headPos);
+    displayHTML =
+      displayHTML.substring(0, headPos) +
+      head +
+      (autoSize ? autoSizeCSS: "") +
+      displayHTML.substring(headPos);
     // console.log("html", displayHTML);
     url = await stringToDataURL("text/html", displayHTML);
   }
@@ -55,40 +74,86 @@
     webviewE.addEventListener("dom-ready", () => {
       dispatch("webview", webviewE);
       if (autoSize) {
-        webviewE.addEventListener("did-finish-load", resizeWebview());
+        webviewE.addEventListener("did-finish-load", onLoadResize);
       }
     }, { once: true });
   }
 
-  const widthBuffer = 20;
-  const heightBuffer = 40;
-  async function resizeWebview () {
+  let size: { width: number; height: number };
+  async function getContentSize() {
     try {
-      const dimensions = await webviewE.executeJavaScript(`
-        document.body.style.minHeight = "0px";
-        document.body.style.height = "fit-content";
-        document.body.style.width = "fit-content";
-        new Promise(resolve => {
-          const observer = new ResizeObserver(entries => {
-            const contentRect = entries[0].borderBoxSize[0];
+      size = await webviewE.executeJavaScript(`
+        try {
+          const body = document.body;
+          const styles = window.getComputedStyle(body);
+          const width = parseFloat(styles.width);
+          const height = Math.max( body.scrollHeight, body.offsetHeight, parseFloat(styles.height) );
+          new Promise((resolve) => {
             resolve({
-              width: contentRect.inlineSize,
-              height: contentRect.blockSize,
+              width: width,
+              height: height,
             });
           });
-          observer.observe(document.body);
-        });
+        } catch (ex) {
+          new Promise((_, reject) => {
+            reject(JSON.stringify(ex));
+          });
+        }
       `);
-      webviewE.style.width = (dimensions.width + widthBuffer) + "px";
-      webviewE.style.height = (dimensions.height + heightBuffer) + "px";
     } catch (ex) {
       console.error(ex);
     }
+  }
+
+  async function onLoadResize() {
+    await getContentSize();
+    resizeWebview();
+  }
+
+  const heightBuffer = 10;
+  let maxWidth: number;
+  $: autoSize && size && maxWidth && resizeWebview();
+  function resizeWebview() {
+    if ((webviewE.parentElement && size.width > webviewE.parentElement.clientWidth) &&
+    (!maxWidth || maxWidth && size.width < maxWidth)) {
+      webviewE.style.width = size.width + "px";
+    }
+    if (maxWidth && maxWidth < size.width) {
+      webviewE.style.width = maxWidth + "px";
+    }
+    if (webviewE.parentElement && size.width < webviewE.parentElement.clientWidth) {
+      webviewE.style.width = "100%";
+    }
+    webviewE.style.height = (size.height + heightBuffer) + "px";
   };
+
+  function observeMaxWidth() {
+    const parent = parentWithMaxWidth(webviewE);
+    const maxWidthVal = getComputedStyle(parent).maxWidth;
+    const observer = new ResizeObserver((entries) => {
+      const el = entries[0];
+      if (maxWidthVal.endsWith("%")) {
+        maxWidth = el.contentRect.width * (parseInt(maxWidthVal)/100);
+      } else {
+        maxWidth = parseInt(maxWidthVal);
+      }
+    });
+    observer.observe(parent.parentElement);
+  }
+
+  function parentWithMaxWidth(el: HTMLElement) {
+    while (el.parentElement &&
+      getComputedStyle(el).maxWidth == "none") {
+      el = el.parentElement;
+    }
+    return el;
+  }
 </script>
 
 <style>
   webview {
     flex: 1 0 0;
+    width: 100%;
+    height: auto;
   }
 </style>

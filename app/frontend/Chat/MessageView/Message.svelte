@@ -34,7 +34,7 @@
       <div class="text selectable">
         {@html $message.html || ""}
         <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection.
-        <WebView title={$t`Text`} html={message.html} {headHTML} autoSize />
+        <WebView title={$t`Text`} html={$message.html || ""} {headHTML} autoSize />
         -->
         <slot name="bubble" />
       </div>
