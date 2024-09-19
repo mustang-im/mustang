@@ -126,6 +126,6 @@ export class ConnectError extends SpecificError {
 }
 
 export class LoginError extends SpecificError {
-  authFail: true;
-  isUserError: true;
+  authFail = true;
+  isUserError = true;
 }
