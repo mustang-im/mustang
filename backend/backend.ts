@@ -4,7 +4,7 @@ import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow } from "electron";
+import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, Menu, MenuItemConstructorOptions } from "electron";
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
 import path from "node:path";
@@ -38,6 +38,7 @@ async function createSharedAppObject() {
     shell,
     restartApp,
     setDarkMode,
+    openMenu,
     getConfigDir,
     getFilesDir,
     openFileInExternalApp,
@@ -260,6 +261,11 @@ function setDarkMode(mode: "system" | "light" | "dark") {
     throw new Error("Bad dark mode " + mode);
   }
   nativeTheme.themeSource = mode;
+}
+
+function openMenu(menuItems: MenuItemConstructorOptions[]): void {
+  let menu = Menu.buildFromTemplate(menuItems);
+  menu.popup();
 }
 
 function createIMAPFlowConnection(...args): ImapFlow {

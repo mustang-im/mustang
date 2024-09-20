@@ -1,9 +1,30 @@
+
 <!-- TODO Security: Test that this <webview> is untrusted and jailed -->
 <webview bind:this={webviewE} src={url} {title} />
 
+<!--
+{#if contextMenuItems && contextMenuItems.hasItems}
+  <Menu opened={true} position="bottom" placement="end" on:close={() => contextMenuItems = null}>
+    {#each contextMenuItems.each as menuItem}
+      <Menu.Item
+        on:click={() => catchErrors(() =>menuItem.action)}
+        title={menuItem.label}
+        icon={menuItem.icon}>
+        {menuItem.label}
+      </Menu.Item>
+    {/each}
+  </Menu>
+{/if}
+-->
+
 <script lang="ts">
+  import { buildContextMenu, MenuItem, type ContextInfo } from "./ContextMenu";
+  // import { Menu } from "@svelteuidev/core";
   import { stringToDataURL } from "../Util/util";
   import { createEventDispatcher, onMount } from 'svelte';
+  import type { ArrayColl } from "svelte-collections";
+  import { catchErrors } from "../Util/error";
+  import { appGlobal } from "../../logic/app";
   const dispatch = createEventDispatcher();
 
   /**
@@ -77,6 +98,23 @@
         webviewE.addEventListener("did-finish-load", onLoadResize);
       }
     }, { once: true });
+
+    // <https://www.electronjs.org/docs/latest/api/webview-tag/#event-context-menu>
+    webviewE.addEventListener("context-menu", event => catchErrors(() => {
+      onContextMenu((event as any).params);
+    }));
+  }
+
+  let contextMenuItems: ArrayColl<MenuItem>;
+  async function onContextMenu(contextInfo: ContextInfo) {
+    contextMenuItems = buildContextMenu(contextInfo, webviewE.contentWindow);
+    console.log("Context menu items:", contextMenuItems.contents.map(i => i.id).join(", "), contextMenuItems.contents);
+    await appGlobal.remoteApp.openMenu(contextMenuItems.contents.map(item => ({
+      id: item.id,
+      label: item.label,
+      icon: item.icon,
+      click: () => catchErrors(item.action),
+    })));
   }
 
   let size: { width: number; height: number };
