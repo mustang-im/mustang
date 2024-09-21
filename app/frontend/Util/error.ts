@@ -12,6 +12,9 @@ export function showError(ex: Error) {
 
 export function backgroundError(ex: Error) {
   console.error(ex);
+  if (production) {
+    return;
+  }
   if (shouldShow(ex)) {
     notifications.add(new Notification(ex.message, NotificationSeverity.Warning, ex));
     logError(ex);
