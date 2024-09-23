@@ -97,12 +97,20 @@
       if (autoSize) {
         webviewE.addEventListener("did-finish-load", onLoadResize);
       }
+      inputListener();
     }, { once: true });
 
     // <https://www.electronjs.org/docs/latest/api/webview-tag/#event-context-menu>
     webviewE.addEventListener("context-menu", event => catchErrors(() => {
       onContextMenu((event as any).params);
     }));
+  }
+
+  function inputListener() {
+    appGlobal.remoteApp.windowInputListener(webviewE.getWebContentsId());
+    window.addEventListener("input-event", event => {
+      console.log("input-event", event);
+    });
   }
 
   let contextMenuItems: ArrayColl<MenuItem>;
