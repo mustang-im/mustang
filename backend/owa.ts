@@ -136,7 +136,15 @@ export async function fetchJSON(partition: string, url: string, action: string, 
   result.statusText = response.statusText;
   result.url = response.url;
   result.contentType = response.headers.get('Content-Type');
-  result.json = await response.json();
+  try {
+    result.json = await response.json();
+  } catch (ex) {
+    if (ex instanceof SyntaxError &&
+      ex.message == "Unexpected end of JSON input") {
+    } else {
+      throw ex;
+    }
+  }
   return result;
 }
 
