@@ -63,13 +63,18 @@ export class ActiveSyncAccount extends MailAccount {
       this.oAuth2.subscribe(() => this.notifyObservers());
       await this.oAuth2.login(interactive);
     }
-    if (this.storage) {
-      // We can only do this once the account has been saved,
-      // because we need to be able to save the folders.
-      await this.listFolders();
-    } else {
-      await this.verifyLogin();
+    let request = {
+      DeviceInformation: {
+        Set: {
+          Model: "Computer",
+        },
+      },
+    };
+    let response = await this.callEAS("Settings", request);
+    if (response.DeviceInformation.Status != "1") {
+      throw new EASError("Settings", response.DeviceInformation.Status);
     }
+    await this.listFolders();
   }
 
   async logout(): Promise<void> {
@@ -107,7 +112,11 @@ export class ActiveSyncAccount extends MailAccount {
       throwHttpErrors: false,
       headers: {},
     };
-    if (this.oAuth2) {
+    if (this.authMethod == AuthMethod.OAuth2) {
+      let urls = OAuth2URLs.find(a => a.hostnames.includes(this.hostname));
+      this.oAuth2 = new OAuth2(this, urls.tokenURL, urls.authURL, urls.authDoneURL, urls.scope, urls.clientID, urls.clientSecret, urls.doPKCE);
+      this.oAuth2.setTokenURLPasswordAuth(urls.tokenURLPasswordAuth);
+      await this.oAuth2.login(true);
       options.headers.Authorization = this.oAuth2.authorizationHeader;
     } else {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username || this.emailAddress}:${this.password}`)))}`;
@@ -115,10 +124,10 @@ export class ActiveSyncAccount extends MailAccount {
     let response = await appGlobal.remoteApp.optionsHTTP(this.url, options);
     if (response.ok) {
       let versions = (response.MSASProtocolVersions || "").split(",");
-      if (versions.includes("14.1")) {
+      if (versions.includes("14.0")) {
         return;
       }
-      throw new Error(`ActiveSync version(s) ${response.MSServerActiveSync} not supported`);
+      throw new Error(`ActiveSync version(s) ${response.MSASProtocolVersions} not supported`);
     }
     if (response.status == 401) {
       if (this.oAuth2) {
@@ -162,7 +171,7 @@ export class ActiveSyncAccount extends MailAccount {
       throwHttpErrors: false,
       headers: {
         "Content-Type": "application/vnd.ms-sync.wbxml",
-        "MS-ASProtocolVersion": "14.1",
+        "MS-ASProtocolVersion": "14.0",
       },
       timeout: heartbeat * 1000 + 10000, // extra timeout for Ping commands
     };
@@ -221,11 +230,6 @@ export class ActiveSyncAccount extends MailAccount {
    */
   async provision(): Promise<string> {
     let request: any = {
-      DeviceInformation: {
-        Set: {
-          Model: "Computer",
-        },
-      },
       Policies: {
         Policy: {
           PolicyType: "MS-EAS-Provisioning-WBXML",
@@ -236,7 +240,6 @@ export class ActiveSyncAccount extends MailAccount {
     if (policy.Policies.Policy.Status != "1") {
       throw new EASError("Provision", policy.Policies.Policy.Status);
     }
-    delete request.DeviceInformation;
     request.Policies.Policy.PolicyKey = policy.Policies.Policy.PolicyKey;
     request.Policies.Policy.Status = "1";
     policy = await this.callEAS("Provision", request);

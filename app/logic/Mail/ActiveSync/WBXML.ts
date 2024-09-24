@@ -25,7 +25,7 @@ const kTags = [
   [,,,,, "Search",, "Store", "Name", "Query", "Options", "Range", "Status", "Response", "Result", "Properties", "Total"],
   [,,,,, "DisplayName", "Phone", "Office", "Title", "Company", "Alias", "FirstName", "LastName", "HomePhone", "MobilePhone", "EmailAddress"],
   [,,,,, "BodyPreference", "Type", "TruncationSize",,, "Body", "Data", "EstimatedDataSize", "Truncated", "Attachments", "Attachment", "DisplayName", "FileReference", "Method", "ContentId", "ContentLocation", "IsInline", "NativeBodyType",, "Preview"],
-  [,,,,,, "Status",, "Set",,,,,,,,,,,,,, "DeviceInformation", "Model"],
+  [,,,,,"Settings", "Status",, "Set",,,,,,,,,,,,,, "DeviceInformation", "Model"],
   [],
   [,,,,, "ItemOperations", "Fetch", "Store", "Options",,, "Properties",, "Status", "Response",,,, "EmptyFolderContents", "DeleteSubFolders"],
   [,,,,, "SendMail",,, "SaveInSentItems",,,,,,,, "Mime", "ClientId", "Status"],
