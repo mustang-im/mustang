@@ -248,13 +248,43 @@ export class OWAAccount extends MailAccount {
     if (interactive) {
       autofillJS = owaAutoFillLoginPage(this.username, this.password);
     }
-    let sessionData = await appGlobal.remoteApp.OWA.fetchSessionData(this.partition, this.url, interactive, autofillJS);
+    await throttleConnectionsPerSecond(this.nextConnectionTime);
+    while (this.connections.length >= this.maxConcurrency) {
+      console.log(`Throttling because there are ${this.maxConcurrency} pending connections`);
+      try {
+        await Promise.race(this.connections);
+      } catch (ex) {
+      }
+    }
+    let concurrentConnections = this.connections.length;
+    let connection = appGlobal.remoteApp.OWA.fetchSessionData(this.partition, this.url, interactive, autofillJS);
+    this.connections.add(connection);
+    let sessionData;
+    try {
+      sessionData = await connection;
+    } finally {
+      this.connections.remove(connection);
+    }
     if (!sessionData) {
       throw new Error("Authentication window was closed by user");
     }
     this.url = sessionData.owaURL ?? this.url;
-    this.msgFolderRootID = sessionData.findFolders.Body.ResponseMessages.Items[0].RootFolder.ParentFolder.FolderId.Id;
-    for (let folder of sessionData.findFolders.Body.ResponseMessages.Items[0].RootFolder.Folders) {
+    let result = sessionData.findFolders.Body.ResponseMessages.Items[0];
+    if (result.MessageText) {
+      if (result.ResponseCode == "OverBudgetException" || result.ResponseCode == "ErrorTooManyObjectsOpened") {
+        let match = result.MessageText.match(/'MaxConcurrency'.*'(\d+)'.*'Owa'/);
+        let maxConcurrency = match ? Number(match[1]) : concurrentConnections;
+        if (maxConcurrency < this.maxConcurrency) {
+          this.maxConcurrency = maxConcurrency;
+          console.log(`Server busy, reduced max concurrency to ${this.maxConcurrency}`);
+        }
+        await sleep(5);
+        return await this.listFolders();
+      }
+      throw new OWAError(result.MessageText);
+    }
+    this.msgFolderRootID = result.RootFolder.ParentFolder.FolderId.Id;
+    for (let folder of result.RootFolder.Folders) {
       if (!folder.FolderClass || folder.FolderClass == "IPF.Note" || folder.FolderClass.startsWith("IPF.Note.")) {
         let parent = this.folderMap.get(folder.ParentFolderId.Id);
         let parentFolders = parent ? parent.subFolders : this.rootFolders;
