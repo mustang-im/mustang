@@ -189,6 +189,7 @@ async function optionsHTTP(url: string, config: any) {
     WWWAuthenticate: response.headers.get("WWW-Authenticate"),
     MSASProtocolVersions: response.headers.get("MS-ASPRotocolVersions"),
     MSServerActiveSync: response.headers.get("MS-Server-ActiveSync"),
+    setCookie: response.headers.get("set-cookie"),
   };
 }
 

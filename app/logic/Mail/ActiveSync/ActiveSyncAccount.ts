@@ -141,6 +141,12 @@ export class ActiveSyncAccount extends MailAccount {
         throw this.fatalError = new LoginError(null,
           "Password incorrect");
       }
+    } else if (response.status == 451) {
+      if (response.setCookie) {
+        let defaultAnchorMailbox = (response.setCookie.split(';')[0]).split('=')[1];
+        this.setStorageItem("defaultAnchorMailbox", defaultAnchorMailbox);
+        return await this.verifyLogin();
+      }
     }
     throw new Error(`HTTP ${response.status} ${response.statusText}`);
   }
@@ -183,6 +189,9 @@ export class ActiveSyncAccount extends MailAccount {
     if (await this.policyKey) {
       options.headers["X-MS-PolicyKey"] = await this.policyKey;
     }
+    if (this.getStorageItem("defaultAnchorMailbox")) {
+      options.headers.cookie = `DefaultAnchorMailbox=${this.getStorageItem("defaultAnchorMailbox")}`;
+    }
     let wbxml = await request2WBXML({ [aCommand]: aRequest });
     let response = await appGlobal.remoteApp.postHTTP(String(url), wbxml, "arrayBuffer", options);
     this.fatalError = null;
@@ -220,6 +229,12 @@ export class ActiveSyncAccount extends MailAccount {
       } else {
         throw this.fatalError = new LoginError(null,
           "Password incorrect");
+      }
+    } else if (response.status == 451) {
+      if (response.setCookie) {
+        let defaultAnchorMailbox = (response.setCookie.split(';')[0]).split('=')[1];
+        this.setStorageItem("defaultAnchorMailbox", defaultAnchorMailbox);
+        return await this.verifyLogin();
       }
     }
     throw new Error(`HTTP ${response.status} ${response.statusText}`);
