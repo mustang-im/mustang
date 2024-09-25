@@ -11,8 +11,8 @@ import { ContentDisposition } from "../Attachment";
 import { LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { notifyChangedProperty } from "../../util/Observable";
-import { blobToBase64 } from "../../util/util";
-import { assert } from "../../util/util";
+import { assert, sleep, blobToBase64, throttleConnectionsPerSecond } from "../../util/util";
+import { SetColl } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
 
 class OWAError extends Error {
@@ -39,6 +39,9 @@ export class OWAAccount extends MailAccount {
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
   readonly folderMap = new Map<string, OWAFolder>;
+  maxConcurrency: number = 20;
+  connections = new SetColl<Promise<any>>;
+  nextConnectionTime = new Array(50).fill(0);
   /**
    * We get notifications for folders we're not interested in.
    * We filter them out by checking that the parent exists.
@@ -174,9 +177,25 @@ export class OWAAccount extends MailAccount {
     if (!this.hasLoggedIn) {
       throw new LoginError(null, "Please login");
     }
+    await throttleConnectionsPerSecond(this.nextConnectionTime);
+    while (this.connections.length >= this.maxConcurrency) {
+      console.log(`Throttling because there are ${this.maxConcurrency} pending connections`);
+      try {
+        await Promise.race(this.connections);
+      } catch (ex) {
+      }
+    }
+    let concurrentConnections = this.connections.length;
     let url = this.url + 'service.svc';
     // Need to ensure the request gets passed as a regular object
-    let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, aRequest.type || aRequest.__type.slice(0, -21), Object.assign({}, aRequest));
+    let connection = appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, aRequest.type || aRequest.__type.slice(0, -21), Object.assign({}, aRequest));
+    this.connections.add(connection);
+    let response;
+    try {
+      response = await connection;
+    } finally {
+      this.connections.remove(connection);
+    }
     if ([401, 440].includes(response.status)) {
       await this.logout();
       throw new LoginError(null, "Please login");
@@ -196,6 +215,16 @@ export class OWAAccount extends MailAccount {
       result = result.ResponseMessages.Items[0];
     }
     if (result.MessageText) {
+      if (result.ResponseCode == "OverBudgetException" || result.ResponseCode == "ErrorTooManyObjectsOpened") {
+        let match = result.MessageText.match(/'MaxConcurrency'.*'(\d+)'.*'Owa'/);
+        let maxConcurrency = match ? Number(match[1]) : concurrentConnections;
+        if (maxConcurrency < this.maxConcurrency) {
+          this.maxConcurrency = maxConcurrency;
+          console.log(`Server busy, reduced max concurrency to ${this.maxConcurrency}`);
+        }
+        await sleep(5);
+        return await this.callOWA(aRequest);
+      }
       throw new OWAError(response);
     }
     return result;
@@ -206,13 +235,43 @@ export class OWAAccount extends MailAccount {
     if (interactive) {
       autofillJS = owaAutoFillLoginPage(this.emailAddress, this.password);
     }
-    let sessionData = await appGlobal.remoteApp.OWA.fetchSessionData(this.partition, this.url, interactive, autofillJS);
+    await throttleConnectionsPerSecond(this.nextConnectionTime);
+    while (this.connections.length >= this.maxConcurrency) {
+      console.log(`Throttling because there are ${this.maxConcurrency} pending connections`);
+      try {
+        await Promise.race(this.connections);
+      } catch (ex) {
+      }
+    }
+    let concurrentConnections = this.connections.length;
+    let connection = appGlobal.remoteApp.OWA.fetchSessionData(this.partition, this.url, interactive, autofillJS);
+    this.connections.add(connection);
+    let sessionData;
+    try {
+      sessionData = await connection;
+    } finally {
+      this.connections.remove(connection);
+    }
     if (!sessionData) {
       throw new Error("Authentication window was closed by user");
     }
     this.url = sessionData.owaURL ?? this.url;
-    this.msgFolderRootID = sessionData.findFolders.Body.ResponseMessages.Items[0].RootFolder.ParentFolder.FolderId.Id;
-    for (let folder of sessionData.findFolders.Body.ResponseMessages.Items[0].RootFolder.Folders) {
+    let result = sessionData.findFolders.Body.ResponseMessages.Items[0];
+    if (result.MessageText) {
+      if (result.ResponseCode == "OverBudgetException" || result.ResponseCode == "ErrorTooManyObjectsOpened") {
+        let match = result.MessageText.match(/'MaxConcurrency'.*'(\d+)'.*'Owa'/);
+        let maxConcurrency = match ? Number(match[1]) : concurrentConnections;
+        if (maxConcurrency < this.maxConcurrency) {
+          this.maxConcurrency = maxConcurrency;
+          console.log(`Server busy, reduced max concurrency to ${this.maxConcurrency}`);
+        }
+        await sleep(5);
+        return await this.listFolders();
+      }
+      throw new OWAError(result.MessageText);
+    }
+    this.msgFolderRootID = result.RootFolder.ParentFolder.FolderId.Id;
+    for (let folder of result.RootFolder.Folders) {
       if (!folder.FolderClass || folder.FolderClass == "IPF.Note" || folder.FolderClass.startsWith("IPF.Note.")) {
         let parent = this.folderMap.get(folder.ParentFolderId.Id);
         let parentFolders = parent ? parent.subFolders : this.rootFolders;
