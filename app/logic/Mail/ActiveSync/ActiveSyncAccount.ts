@@ -234,7 +234,7 @@ export class ActiveSyncAccount extends MailAccount {
       if (response.setCookie) {
         let defaultAnchorMailbox = (response.setCookie.split(';')[0]).split('=')[1];
         this.setStorageItem("defaultAnchorMailbox", defaultAnchorMailbox);
-        return await this.verifyLogin();
+        return await this.callEAS(aCommand, aRequest);
       }
     }
     throw new Error(`HTTP ${response.status} ${response.statusText}`);
