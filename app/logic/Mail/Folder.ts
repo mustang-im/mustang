@@ -18,7 +18,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
   account: MailAccount;
   @notifyChangedProperty
   specialFolder: SpecialFolder = SpecialFolder.Normal;
-  readonly messages = new EMailCollection(this);
+  readonly messages = new EMailCollection<EMail>(this);
   readonly subFolders = new ArrayColl<Folder>();
   @notifyChangedProperty
   countTotal = 0;
