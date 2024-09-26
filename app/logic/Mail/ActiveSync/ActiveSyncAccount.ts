@@ -110,7 +110,9 @@ export class ActiveSyncAccount extends MailAccount {
   async verifyLogin() {
     let options: any = {
       throwHttpErrors: false,
-      headers: {},
+      headers: {
+        Cookie: `DefaultAnchorMailbox=${this.emailAddress}`,
+      },
     };
     if (this.authMethod == AuthMethod.OAuth2) {
       let urls = OAuth2URLs.find(a => a.hostnames.includes(this.hostname));
@@ -172,6 +174,7 @@ export class ActiveSyncAccount extends MailAccount {
       headers: {
         "Content-Type": "application/vnd.ms-sync.wbxml",
         "MS-ASProtocolVersion": "14.0",
+        Cookie: `DefaultAnchorMailbox=${this.emailAddress}`,
       },
       timeout: heartbeat * 1000 + 10000, // extra timeout for Ping commands
     };
