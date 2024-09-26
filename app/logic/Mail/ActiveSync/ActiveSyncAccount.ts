@@ -32,6 +32,7 @@ export class ActiveSyncAccount extends MailAccount {
   listening = false;
   policyKey: Promise<string> | string;
   syncKeyBusy: Promise<any> | null;
+  version: string;
 
   constructor() {
     super();
@@ -62,6 +63,20 @@ export class ActiveSyncAccount extends MailAccount {
       this.oAuth2.setTokenURLPasswordAuth(urls.tokenURLPasswordAuth);
       this.oAuth2.subscribe(() => this.notifyObservers());
       await this.oAuth2.login(interactive);
+    }
+    this.version = this.getStorageItem("version");
+    if (this.version == "14.0") {
+      let request = {
+        DeviceInformation: {
+          Set: {
+            Model: "Computer",
+          },
+        },
+      };
+      let response = await this.callEAS("Settings", request);
+      if (response.DeviceInformation.Status != "1") {
+        throw new EASError("Settings", response.DeviceInformation.Status);
+      }
     }
     await this.listFolders();
   }
@@ -101,6 +116,9 @@ export class ActiveSyncAccount extends MailAccount {
       throwHttpErrors: false,
       headers: {},
     };
+    if (this.version == "14.0") {
+      options.headers.cookie = `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`;
+    }
     if (this.authMethod == AuthMethod.OAuth2) {
       let urls = OAuth2URLs.find(a => a.hostnames.includes(this.hostname));
       this.oAuth2 = new OAuth2(this, urls.tokenURL, urls.authURL, urls.authDoneURL, urls.scope, urls.clientID, urls.clientSecret, urls.doPKCE);
@@ -114,9 +132,15 @@ export class ActiveSyncAccount extends MailAccount {
     if (response.ok) {
       let versions = (response.MSASProtocolVersions || "").split(",");
       if (versions.includes("14.1")) {
+        this.version = "14.1";
+        this.setStorageItem("version", this.version);
+        return;
+      } else if (versions.includes("14.0")) {
+        this.version = "14.0";
+        this.setStorageItem("version", this.version);
         return;
       }
-      throw new Error(`ActiveSync version(s) ${response.MSServerActiveSync} not supported`);
+      throw new Error(`ActiveSync version(s) ${response.MSASProtocolVersions} not supported`);
     }
     if (response.status == 401) {
       if (this.oAuth2) {
@@ -130,6 +154,9 @@ export class ActiveSyncAccount extends MailAccount {
         throw this.fatalError = new LoginError(null,
           "Password incorrect");
       }
+    } else if (response.status == 451 && this.version != "14.0") {
+      this.version = "14.0";
+      return await this.verifyLogin();
     }
     throw new Error(`HTTP ${response.status} ${response.statusText}`);
   }
@@ -160,7 +187,7 @@ export class ActiveSyncAccount extends MailAccount {
       throwHttpErrors: false,
       headers: {
         "Content-Type": "application/vnd.ms-sync.wbxml",
-        "MS-ASProtocolVersion": "14.1",
+        "MS-ASProtocolVersion": this.version,
       },
       timeout: heartbeat * 1000 + 10000, // extra timeout for Ping commands
     };
@@ -171,6 +198,9 @@ export class ActiveSyncAccount extends MailAccount {
     }
     if (await this.policyKey) {
       options.headers["X-MS-PolicyKey"] = await this.policyKey;
+    }
+    if (this.version == "14.0") {
+      options.headers.cookie = `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`;
     }
     let wbxml = await request2WBXML({ [aCommand]: aRequest });
     let response = await appGlobal.remoteApp.postHTTP(String(url), wbxml, "arrayBuffer", options);
@@ -230,6 +260,9 @@ export class ActiveSyncAccount extends MailAccount {
         },
       },
     };
+    if (this.version == "14.0") {
+      delete request.DeviceInformation;
+    }
     let policy = await this.callEAS("Provision", request);
     if (policy.Policies.Policy.Status != "1") {
       throw new EASError("Provision", policy.Policies.Policy.Status);
