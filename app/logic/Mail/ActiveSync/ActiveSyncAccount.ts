@@ -115,7 +115,7 @@ export class ActiveSyncAccount extends MailAccount {
     let options: any = {
       throwHttpErrors: false,
       headers: {
-        cookie: `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for v14.0
+        Cookie: `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for v14.0
       },
     };
     if (this.authMethod == AuthMethod.OAuth2) {
@@ -184,7 +184,7 @@ export class ActiveSyncAccount extends MailAccount {
       headers: {
         "Content-Type": "application/vnd.ms-sync.wbxml",
         "MS-ASProtocolVersion": this.version,
-        cookie: `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for 14.0
+        Cookie: `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for 14.0
       },
       timeout: heartbeat * 1000 + 10000, // extra timeout for Ping commands
     };
