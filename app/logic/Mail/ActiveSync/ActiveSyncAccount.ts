@@ -63,13 +63,7 @@ export class ActiveSyncAccount extends MailAccount {
       this.oAuth2.subscribe(() => this.notifyObservers());
       await this.oAuth2.login(interactive);
     }
-    if (this.storage) {
-      // We can only do this once the account has been saved,
-      // because we need to be able to save the folders.
-      await this.listFolders();
-    } else {
-      await this.verifyLogin();
-    }
+    await this.listFolders();
   }
 
   async logout(): Promise<void> {
@@ -107,7 +101,11 @@ export class ActiveSyncAccount extends MailAccount {
       throwHttpErrors: false,
       headers: {},
     };
-    if (this.oAuth2) {
+    if (this.authMethod == AuthMethod.OAuth2) {
+      let urls = OAuth2URLs.find(a => a.hostnames.includes(this.hostname));
+      this.oAuth2 = new OAuth2(this, urls.tokenURL, urls.authURL, urls.authDoneURL, urls.scope, urls.clientID, urls.clientSecret, urls.doPKCE);
+      this.oAuth2.setTokenURLPasswordAuth(urls.tokenURLPasswordAuth);
+      await this.oAuth2.login(true);
       options.headers.Authorization = this.oAuth2.authorizationHeader;
     } else {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username || this.emailAddress}:${this.password}`)))}`;
