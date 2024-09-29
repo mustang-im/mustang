@@ -43,17 +43,20 @@ export class M3Conf extends VideoConfMeeting {
     if (this.account.oauth2?.accessToken && !relogin) {
       return;
     }
-    await this.account.login(relogin);
-    await this.http.post('auth/login', {
-      id_token: this.account.oauth2.idToken,
-    });
+    assert(this.account.controllerBaseURL, "Need controller URL");
     this.controllerBaseURL = this.account.controllerBaseURL;
     this.controllerWebSocketURL = this.account.controllerWebSocketURL;
+
+    await this.account.login(relogin);
+    // TODO fails with: type=REFRESH_TOKEN_ERROR, error=invalid_token, grant_type=refresh_token, client_auth_method=client-secret
+    await this.httpPost('auth/login', {
+      id_token: this.account.oauth2.idToken,
+    });
   }
 
-  protected get http() {
+  protected async ky() {
     const headers: any = {
-      'Content-Type': 'text/json',
+      'Content-Type': 'application/json',
     };
     if (this.account.oauth2?.authorizationHeader) {
       headers.Authorization = this.account.oauth2.authorizationHeader;
@@ -66,10 +69,20 @@ export class M3Conf extends VideoConfMeeting {
     });
   }
 
+  protected async httpPost(urlSuffix: string, sendJSON: any): Promise<any> {
+    let ky = await this.ky();
+    return await ky.post(urlSuffix, sendJSON);
+  }
+
+  protected async httpGet(urlSuffix: string): Promise<any> {
+    let ky = await this.ky();
+    return await ky.get(urlSuffix);
+  }
+
   async createNewConference() {
     await this.login();
     let time = new Date().toLocaleString(getUILocale(), { hour: "numeric", minute: "numeric" });
-    let response = await this.http.post("events", {
+    let response = await this.httpPost("events", {
       title: `Meeting ${time}`,
       description: "",
       is_time_independent: true,
@@ -89,7 +102,7 @@ export class M3Conf extends VideoConfMeeting {
    * URL form: https://<web-frontend-host>/invite/<invite-code>
    */
   async join(url: URLString) {
-    this.iceServers = await this.http.post(`turn`, {});
+    this.iceServers = await this.httpPost(`turn`, {});
 
     let urlParsed = new URL(url);
     // Data comes from user. All error messages in this function are user visible. TODO Translate error messages.
@@ -98,7 +111,7 @@ export class M3Conf extends VideoConfMeeting {
     assert(inviteCode.match(/^[a-f0-9\-]*$/), "Not a valid invitation URL");
     let roomID: string;
     try {
-      let response = await this.http.post(`invite/verify`, {
+      let response = await this.httpPost(`invite/verify`, {
         invite_code: inviteCode,
       });
       roomID = response.data.room_id;
@@ -118,13 +131,13 @@ export class M3Conf extends VideoConfMeeting {
 
   async getInvitationURL(): Promise<URLString> {
     assert(this.roomID, "Need to create the conference first");
-    let response = await this.http.post(`rooms/${this.roomID}/invites`, {});
+    let response = await this.httpPost(`rooms/${this.roomID}/invites`, {});
     return `${this.account.webFrontendBaseURL}/invite/${response.data.invite_code}`;
   }
 
   async aboutMe(): Promise<{ name: string, picture: URLString, email: string, id: string }> {
     if (this.account.oauth2) {
-      let response = await this.http.get("users/me");
+      let response = await this.httpGet("users/me");
       let me = await response.data;
       me.name = me.display_name;
       me.picture
@@ -194,15 +207,15 @@ export class M3Conf extends VideoConfMeeting {
     await super.start();
     let roomTicket: string;
     if (this.inviteCode) {
-      let request = await this.http.post(`rooms/${this.roomID}/start_invited`, {
+      let request = await this.httpPost(`rooms/${this.roomID}/start_invited`, {
         invite_code: this.inviteCode,
         breakout_room: null,
       });
       roomTicket = request.data.ticket;
       this.resumptionTicket = request.data.resumption;
     } else {
-      await this.http.get(`turn`);
-      let request = await this.http.post(`rooms/${this.roomID}/start`, {
+      await this.httpGet(`turn`);
+      let request = await this.httpPost(`rooms/${this.roomID}/start`, {
         breakout_room: null,
       });
       roomTicket = request.data.ticket;
