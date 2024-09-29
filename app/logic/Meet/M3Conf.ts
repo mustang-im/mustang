@@ -557,7 +557,7 @@ export class M3Conf extends VideoConfMeeting {
   // WebSocket handling
 
   protected async createWebSocket(ticket: string) {
-    this.webSocket = new WebSocket(this.controllerWebSocketURL, [`ticket#${ticket}`, "k3k-signaling-json-v1.0"]);
+    this.webSocket = new WebSocket(this.controllerWebSocketURL, [`ticket#${ticket}`, "opentalk-signaling-json-v1.0"]);
     await new Promise(resolve => { // wait for connection to be established
       this.webSocket.onopen = resolve;
     });
