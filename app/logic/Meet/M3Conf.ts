@@ -38,14 +38,15 @@ export class M3Conf extends VideoConfMeeting {
    * @throws OAuth2Error
    */
   async login(relogin = false): Promise<void> {
+    // TODO Multi-account
     this.account = appGlobal.meetAccounts.find(acc => acc instanceof M3Account) as M3Account;
     assert(this.account, "Please configure an matching meeting account first");
-    if (this.account.oauth2?.accessToken && !relogin) {
-      return;
-    }
-    assert(this.account.controllerBaseURL, "Need controller URL");
+    assert(this.controllerBaseURL, "Need controller URL");
     this.controllerBaseURL = this.account.controllerBaseURL;
     this.controllerWebSocketURL = this.account.controllerWebSocketURL;
+    if (this.account.isLoggedIn && !relogin) {
+      return;
+    }
 
     await this.account.login(relogin);
     // TODO fails with: type=REFRESH_TOKEN_ERROR, error=invalid_token, grant_type=refresh_token, client_auth_method=client-secret
@@ -55,6 +56,7 @@ export class M3Conf extends VideoConfMeeting {
   }
 
   protected async ky() {
+    assert(this.controllerBaseURL, "Need controller URL");
     const headers: any = {
       'Content-Type': 'application/json',
     };
