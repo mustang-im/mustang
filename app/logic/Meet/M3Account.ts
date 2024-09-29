@@ -1,12 +1,12 @@
 import { MeetAccount } from "./MeetAccount";
 import { OAuth2 } from "../Auth/OAuth2";
 import { assert } from "../util/util";
+import { OAuth2URLs } from "../Auth/OAuth2URLs";
 
 export class M3Account extends MeetAccount {
   readonly protocol: string = "m3";
   /* Authentication */
   oauth2: OAuth2;
-  oauthBaseURL: string = "https://accounts.mustang.im/realms/mustang/protocol/openid-connect";
   /** M3 controller server */
   controllerBaseURL: string = "https://controller.mustang.im";
   controllerWebSocketURL: string = "wss://controller.mustang.im/signaling";
@@ -23,15 +23,17 @@ export class M3Account extends MeetAccount {
     if (this.oauth2?.accessToken && !relogin) {
       return;
     }
-    assert(this.username && this.password, `Please configure the M3 account ${this.name}`);
+    assert(this.username, `Please configure the M3 account ${this.name}`);
 
     if (this.oauth2) {
       this.oauth2.stop();
     }
-    const kScope = "openid phone profile email";
-    const kClientID = "mustang"; // Configured in KeyCloak <https://accounts.mustang.im/auth/admin/master/console/#/mustang/clients/>
-    this.oauth2 = new OAuth2(this, this.oauthBaseURL + "/token", this.oauthBaseURL + "/authorize", null, kScope, kClientID);
+    let controllerHostname = new URL(this.controllerBaseURL).hostname;
+    let urls = OAuth2URLs.find(urls => urls.hostnames.includes(controllerHostname));
+    assert(urls, "Need OAuth2 config for Mustang video conference");
+    this.oauth2 = new OAuth2(this, urls.tokenURL, urls.authURL, urls.authDoneURL, urls.scope, urls.clientID);
+    this.oauth2.setTokenURLPasswordAuth(urls.tokenURLPasswordAuth);
     this.oauth2.subscribe(() => this.notifyObservers());
-    await this.oauth2.loginWithPassword(this.username, this.password);
+    await this.oauth2.login(true);
   }
 }
