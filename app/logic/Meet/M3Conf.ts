@@ -41,7 +41,7 @@ export class M3Conf extends VideoConfMeeting {
     // TODO Multi-account
     this.account = appGlobal.meetAccounts.find(acc => acc instanceof M3Account) as M3Account;
     assert(this.account, "Please configure an matching meeting account first");
-    assert(this.controllerBaseURL, "Need controller URL");
+    assert(this.account.controllerBaseURL, "Need controller URL");
     this.controllerBaseURL = this.account.controllerBaseURL;
     this.controllerWebSocketURL = this.account.controllerWebSocketURL;
     if (this.account.isLoggedIn && !relogin) {
@@ -73,7 +73,7 @@ export class M3Conf extends VideoConfMeeting {
 
   protected async httpPost(urlSuffix: string, sendJSON: any): Promise<any> {
     let ky = await this.ky();
-    return await ky.post(urlSuffix, sendJSON);
+    return await ky.post(urlSuffix, { json: sendJSON });
   }
 
   protected async httpGet(urlSuffix: string): Promise<any> {
@@ -84,7 +84,7 @@ export class M3Conf extends VideoConfMeeting {
   async createNewConference() {
     await this.login();
     let time = new Date().toLocaleString(getUILocale(), { hour: "numeric", minute: "numeric" });
-    let response = await this.httpPost("events", {
+    let event = await this.httpPost("events", {
       title: `Meeting ${time}`,
       description: "",
       is_time_independent: true,
@@ -92,7 +92,6 @@ export class M3Conf extends VideoConfMeeting {
       recurrence_pattern: [],
       is_adhoc: true,
     });
-    let event = response.data;
     console.log("new conference", event);
     this.eventID = event.id;
     this.roomID = event.room.id;
@@ -116,7 +115,7 @@ export class M3Conf extends VideoConfMeeting {
       let response = await this.httpPost(`invite/verify`, {
         invite_code: inviteCode,
       });
-      roomID = response.data.room_id;
+      roomID = response.room_id;
       assert(roomID, "Room ID missing");
     } catch (ex) {
       ex.message = "This invitation is not valid anymore. Please request a new invitation from the organizer of the meeting.";
@@ -134,13 +133,12 @@ export class M3Conf extends VideoConfMeeting {
   async getInvitationURL(): Promise<URLString> {
     assert(this.roomID, "Need to create the conference first");
     let response = await this.httpPost(`rooms/${this.roomID}/invites`, {});
-    return `${this.account.webFrontendBaseURL}/invite/${response.data.invite_code}`;
+    return `${this.account.webFrontendBaseURL}/invite/${response.invite_code}`;
   }
 
   async aboutMe(): Promise<{ name: string, picture: URLString, email: string, id: string }> {
     if (this.account.oauth2) {
-      let response = await this.httpGet("users/me");
-      let me = await response.data;
+      let me = await this.httpGet("users/me");
       me.name = me.display_name;
       me.picture
       return {
@@ -209,19 +207,19 @@ export class M3Conf extends VideoConfMeeting {
     await super.start();
     let roomTicket: string;
     if (this.inviteCode) {
-      let request = await this.httpPost(`rooms/${this.roomID}/start_invited`, {
+      let response = await this.httpPost(`rooms/${this.roomID}/start_invited`, {
         invite_code: this.inviteCode,
         breakout_room: null,
       });
-      roomTicket = request.data.ticket;
-      this.resumptionTicket = request.data.resumption;
+      roomTicket = response.ticket;
+      this.resumptionTicket = response.resumption;
     } else {
       await this.httpGet(`turn`);
-      let request = await this.httpPost(`rooms/${this.roomID}/start`, {
+      let response = await this.httpPost(`rooms/${this.roomID}/start`, {
         breakout_room: null,
       });
-      roomTicket = request.data.ticket;
-      this.resumptionTicket = request.data.resumption;
+      roomTicket = response.ticket;
+      this.resumptionTicket = response.resumption;
     }
     assert(roomTicket, "Failed to get authentication for the conference room");
 
