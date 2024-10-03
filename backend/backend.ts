@@ -35,7 +35,7 @@ async function createSharedAppObject() {
     setBadgeCount,
     minimizeMainWindow,
     unminimizeMainWindow,
-    windowInputListener,
+    clickListener,
     shell,
     restartApp,
     setDarkMode,
@@ -317,11 +317,12 @@ function unminimizeMainWindow() {
   mainWindow.restore();
 }
 
-function windowInputListener(id: number) {
+function clickListener(id: number) {
   const win = webContents.fromId(id);
-  win.on("input-event", (_, e) => {
-    console.log(e);
-    mainWindow.webContents.postMessage("input-event", e);
+  win?.on("input-event", (_, e) => {
+    if (e.type == "mouseDown") {
+      mainWindow.webContents.send("click", { id: id });
+    }
   });
 }
 
