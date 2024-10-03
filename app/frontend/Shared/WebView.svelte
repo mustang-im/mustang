@@ -107,9 +107,12 @@
   }
 
   function inputListener() {
-    appGlobal.remoteApp.windowInputListener(webviewE.getWebContentsId());
-    window.addEventListener("input-event", event => {
-      console.log("input-event", event);
+    let id = webviewE.getWebContentsId();
+    appGlobal.remoteApp.clickListener(id);
+    window.electron.ipcRenderer.on("click", (_, v) => {
+      if (v.id == id) {
+        webviewE.click();
+      }
     });
   }
 
