@@ -1,6 +1,7 @@
 import { Folder, SpecialFolder } from "../Folder";
 import { ActiveSyncEMail } from "./ActiveSyncEMail";
 import { type ActiveSyncAccount, type ActiveSyncPingable, EASError } from "./ActiveSyncAccount";
+import type { EMailCollection } from "../SQL/EMailCollection";
 import { assert, NotImplemented, NotSupported } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, type Collection } from "svelte-collections";
@@ -28,7 +29,7 @@ export enum FolderType {
 
 export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
   account: ActiveSyncAccount;
-  messages: ArrayColl<ActiveSyncEMail>;
+  messages: EMailCollection<ActiveSyncEMail>;
   syncKeyBusy: Promise<any> | null;
   readonly folderClass = "Email";
 
