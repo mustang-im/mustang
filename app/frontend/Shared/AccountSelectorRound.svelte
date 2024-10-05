@@ -1,14 +1,20 @@
-<hbox>
+<hbox class="accounts">
   {#each $accounts.each as acc}
-    <hbox class="account" title={acc.name}>
-      <RoundButton
-        label={acc.name}
-        selected={acc == selectedAccount}
-        on:click={() => onSelect(acc)}
-        icon={acc.icon ?? icon}
-        border={false}
-      />
-    </hbox>
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <vbox class="account" title={acc.name}
+      on:click={() => onSelect(acc)}
+      >
+      <hbox>
+        <RoundButton
+          label={acc.name}
+          selected={acc == selectedAccount}
+          on:click={() => onSelect(acc)}
+          icon={acc.icon ?? iconDefault}
+          border={false}
+        />
+      </hbox>
+      <div class="name">{acc.name}</div>
+    </vbox>
   {/each}
 </hbox>
 
@@ -24,7 +30,7 @@
   export let accounts: Collection<Account>;
   /** in/out */
   export let selectedAccount: Account;
-  export let icon: ComponentType | string;
+  export let iconDefault: ComponentType | string;
 
   function onSelect(acc: Account) {
     selectedAccount = acc;
@@ -33,7 +39,16 @@
 </script>
 
 <style>
+  .accounts {
+    flex-wrap: wrap;
+  }
   .account {
+    align-items: center;
     margin-inline-end: 6px;
+    width: 48px;
+  }
+  .name {
+    font-size: 10px;
+    text-align: center;
   }
 </style>

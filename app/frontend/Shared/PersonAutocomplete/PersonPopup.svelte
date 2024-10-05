@@ -202,6 +202,7 @@
   }
   .addressbooks {
     padding: 12px;
+    max-width: 280px;
   }
   .addressbooks.top-border {
     border-top: 1px solid var(--border);

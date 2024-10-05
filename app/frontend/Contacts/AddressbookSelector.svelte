@@ -1,7 +1,7 @@
 <AccountSelectorRound
   accounts={appGlobal.addressbooks}
   bind:selectedAccount={selectedAddressbook}
-  icon={AddressbookIcon}
+  iconDefault={AddressbookIcon}
   on:select
   />
 
@@ -15,7 +15,7 @@
   /** in/out */
   export let selectedAddressbook: Addressbook;
 
-  if (appGlobal?.collectedAddressbook?.icon) {
+  if (!appGlobal?.collectedAddressbook?.icon) {
     appGlobal.collectedAddressbook.icon = CollectedIcon;
   }
 </script>

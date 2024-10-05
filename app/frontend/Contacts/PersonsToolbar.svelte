@@ -41,6 +41,6 @@
 <style>
   .persons-toolbar {
     margin: 10px 12px 10px 16px;
-    align-items: center;
+    align-items: end;
   }
 </style>
