@@ -15,7 +15,7 @@
   /** in/out */
   export let selectedAddressbook: Addressbook;
 
-  if (!appGlobal?.collectedAddressbook?.icon) {
+  if (appGlobal?.collectedAddressbook && !appGlobal?.collectedAddressbook?.icon) {
     appGlobal.collectedAddressbook.icon = CollectedIcon;
   }
 </script>
