@@ -232,7 +232,8 @@ export class OWAAccount extends MailAccount {
     try {
       let url = this.url + "ev.owa2?ns=PendingRequest&ev=FinishNotificationRequest&UA=0";
       let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url);
-      let cid = response.json.cid;
+      let json = response.json;
+      let cid = json ? json.cid : null;
       // This loop only ends by exception (e.g. logout) or app shutdown.
       while (true) {
         url = this.url + "ev.owa2?ns=PendingRequest&ev=PendingNotificationRequest&UA=0&cid=" + cid + "&X-OWA-CANARY=";
