@@ -12,6 +12,7 @@ import { appGlobal } from "../../app";
 import { assert, NotSupported } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
+import { gt } from "../../../l10n/l10n";
 
 const kFolderSyncKeyError = "9";
 
@@ -34,6 +35,7 @@ export class ActiveSyncAccount extends MailAccount {
   listening = false;
   policyKey: Promise<string> | string;
   syncKeyBusy: Promise<any> | null;
+  protocolVersion: string;
 
   constructor() {
     super();
@@ -65,12 +67,19 @@ export class ActiveSyncAccount extends MailAccount {
       this.oAuth2.subscribe(() => this.notifyObservers());
       await this.oAuth2.login(interactive);
     }
-    if (this.storage) {
-      // We can only do this once the account has been saved,
-      // because we need to be able to save the folders.
-      await this.listFolders();
-    } else {
-      await this.verifyLogin();
+    this.protocolVersion = this.getStorageItem("protocolVersion");
+    if (this.protocolVersion == "14.0") {
+      let request = {
+        DeviceInformation: {
+          Set: {
+            Model: "Computer",
+          },
+        },
+      };
+      let response = await this.callEAS("Settings", request);
+      if (response.DeviceInformation.Status != "1") {
+        throw new EASError("Settings", response.DeviceInformation.Status);
+      }
     }
 
     for (let addressbook of appGlobal.addressbooks) {
@@ -114,9 +123,18 @@ export class ActiveSyncAccount extends MailAccount {
   async verifyLogin() {
     let options: any = {
       throwHttpErrors: false,
-      headers: {},
+      headers: {
+        Cookie: `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for v14.0
+      },
     };
-    if (this.oAuth2) {
+    if (this.authMethod == AuthMethod.OAuth2) {
+      if (!this.oAuth2) {
+        let urls = OAuth2URLs.find(a => a.hostnames.includes(this.hostname));
+        assert(urls, gt`Could not find OAuth2 config for ${this.hostname}`);
+        this.oAuth2 = new OAuth2(this, urls.tokenURL, urls.authURL, urls.authDoneURL, urls.scope, urls.clientID, urls.clientSecret, urls.doPKCE);
+        this.oAuth2.setTokenURLPasswordAuth(urls.tokenURLPasswordAuth);
+      }
+      await this.oAuth2.login(true);
       options.headers.Authorization = this.oAuth2.authorizationHeader;
     } else {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username || this.emailAddress}:${this.password}`)))}`;
@@ -125,9 +143,15 @@ export class ActiveSyncAccount extends MailAccount {
     if (response.ok) {
       let versions = (response.MSASProtocolVersions || "").split(",");
       if (versions.includes("14.1")) {
+        this.protocolVersion = "14.1";
+        this.setStorageItem("protocolVersion", this.protocolVersion);
+        return;
+      } else if (versions.includes("14.0")) {
+        this.protocolVersion = "14.0";
+        this.setStorageItem("protocolVersion", this.protocolVersion);
         return;
       }
-      throw new Error(`ActiveSync version(s) ${response.MSServerActiveSync} not supported`);
+      throw new Error(`ActiveSync version(s) ${response.MSASProtocolVersions} not supported`);
     }
     if (response.status == 401) {
       if (this.oAuth2) {
@@ -171,7 +195,8 @@ export class ActiveSyncAccount extends MailAccount {
       throwHttpErrors: false,
       headers: {
         "Content-Type": "application/vnd.ms-sync.wbxml",
-        "MS-ASProtocolVersion": "14.1",
+        "MS-ASProtocolVersion": this.protocolVersion,
+        Cookie: `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for 14.0
       },
       timeout: heartbeat * 1000 + 10000, // extra timeout for Ping commands
     };
@@ -241,6 +266,9 @@ export class ActiveSyncAccount extends MailAccount {
         },
       },
     };
+    if (this.protocolVersion == "14.0") {
+      delete request.DeviceInformation;
+    }
     let policy = await this.callEAS("Provision", request);
     if (policy.Policies.Policy.Status != "1") {
       throw new EASError("Provision", policy.Policies.Policy.Status);
