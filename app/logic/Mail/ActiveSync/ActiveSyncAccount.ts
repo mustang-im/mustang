@@ -33,7 +33,7 @@ export class ActiveSyncAccount extends MailAccount {
   listening = false;
   policyKey: Promise<string> | string;
   syncKeyBusy: Promise<any> | null;
-  version: string;
+  protocolVersion: string;
 
   constructor() {
     super();
@@ -65,8 +65,8 @@ export class ActiveSyncAccount extends MailAccount {
       this.oAuth2.subscribe(() => this.notifyObservers());
       await this.oAuth2.login(interactive);
     }
-    this.version = this.getStorageItem("version");
-    if (this.version == "14.0") {
+    this.protocolVersion = this.getStorageItem("protocolVersion");
+    if (this.protocolVersion == "14.0") {
       let request = {
         DeviceInformation: {
           Set: {
@@ -135,12 +135,12 @@ export class ActiveSyncAccount extends MailAccount {
     if (response.ok) {
       let versions = (response.MSASProtocolVersions || "").split(",");
       if (versions.includes("14.1")) {
-        this.version = "14.1";
-        this.setStorageItem("version", this.version);
+        this.protocolVersion = "14.1";
+        this.setStorageItem("protocolVersion", this.protocolVersion);
         return;
       } else if (versions.includes("14.0")) {
-        this.version = "14.0";
-        this.setStorageItem("version", this.version);
+        this.protocolVersion = "14.0";
+        this.setStorageItem("protocolVersion", this.protocolVersion);
         return;
       }
       throw new Error(`ActiveSync version(s) ${response.MSASProtocolVersions} not supported`);
@@ -187,7 +187,7 @@ export class ActiveSyncAccount extends MailAccount {
       throwHttpErrors: false,
       headers: {
         "Content-Type": "application/vnd.ms-sync.wbxml",
-        "MS-ASProtocolVersion": this.version,
+        "MS-ASProtocolVersion": this.protocolVersion,
         Cookie: `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for 14.0
       },
       timeout: heartbeat * 1000 + 10000, // extra timeout for Ping commands
@@ -258,7 +258,7 @@ export class ActiveSyncAccount extends MailAccount {
         },
       },
     };
-    if (this.version == "14.0") {
+    if (this.protocolVersion == "14.0") {
       delete request.DeviceInformation;
     }
     let policy = await this.callEAS("Provision", request);
