@@ -18,7 +18,7 @@
   $: defaultSelection(selectedAccount);
   function defaultSelection(_dummy: any) {
     if (!selectedAccount) {
-      accounts.first;
+      selectedAccount = accounts.first;
     }
   }
 </script>
