@@ -1,13 +1,11 @@
 
 export function owaAutoFillLoginPage(username = "", password = "") {
-  return (functionAsString(autoFillPageScript)
-    .replaceAll("$USERNAME$", username)
-    .replaceAll("$PASSWORD$", password));
+  return `(${autoFillPageScript})(${JSON.stringify(username)}, ${JSON.stringify(password)})`;
 }
 
 /** This script will be exported as string and executed within the login page.
  * Never run it here in frontend. */
-function autoFillPageScript() {
+function autoFillPageScript(username, password) {
   function waitForMutation() {
     let observer = new MutationObserver(function (mutations) {
       observer.disconnect();
@@ -63,9 +61,9 @@ function autoFillPageScript() {
            document.activeElement == user[0]) {
           // The page is prompting us for the email address.
           sessionStorage.setItem("AutoLoginStep", "Password");
-          user[0].value = "$USERNAME$";
+          user[0].value = username;
           user[0].dispatchEvent(new Event("change"));
-          pass[0].value = "$PASSWORD$";
+          pass[0].value = password;
           pass[0].dispatchEvent(new Event("change"));
           submit[0].focus();
           submit[0].click();
@@ -90,7 +88,7 @@ function autoFillPageScript() {
           // Simply setting the value does not work for Hotmail,
           // apparently because it overwrites the value setter.
           // Call the original one from the prototype instead.
-          Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(pass[0], "$PASSWORD$");
+          Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(pass[0], password);
           pass[0].dispatchEvent(new Event("change", { bubbles: true }));
           submit[0].focus();
           submit[0].click();
@@ -137,9 +135,4 @@ function autoFillPageScript() {
   };
 
   checkForWidgets();
-}
-
-function functionAsString(func: Function) {
-  // Remove first and last time = "function a() {", "}"
-  return func.toString().split("\n").slice(1, -1).join("\n");
 }

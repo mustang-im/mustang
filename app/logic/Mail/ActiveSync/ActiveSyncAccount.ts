@@ -2,6 +2,8 @@ import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { kMaxCount, ActiveSyncFolder, FolderType, ensureArray } from "./ActiveSyncFolder";
 import { SMTPAccount } from "../SMTP/SMTPAccount";
+import { ActiveSyncAddressbook } from "../../Contacts/ActiveSync/ActiveSyncAddressbook";
+import { ActiveSyncCalendar } from "../../Calendar/ActiveSync/ActiveSyncCalendar";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { request2WBXML, WBXML2JSON } from "./WBXML";
@@ -79,7 +81,13 @@ export class ActiveSyncAccount extends MailAccount {
         throw new EASError("Settings", response.DeviceInformation.Status);
       }
     }
-    await this.listFolders();
+
+    for (let addressbook of appGlobal.addressbooks) {
+      if (addressbook.protocol == "addressbook-activesync" && addressbook.url.startsWith(this.url + "?") && addressbook.username == this.emailAddress) {
+        (addressbook as ActiveSyncAddressbook).account = this;
+        await (addressbook as ActiveSyncAddressbook).listContacts();
+      }
+    }
   }
 
   async logout(): Promise<void> {
@@ -314,7 +322,9 @@ export class ActiveSyncAccount extends MailAccount {
 
   async listFolders(): Promise<void> {
     let response = await this.queuedRequest("FolderSync");
+    let url = new URL(this.url);
     for (let change of ensureArray(response.Changes?.Add).concat(ensureArray(response.Changes?.Update))) {
+      url.searchParams.set("serverID", change.ServerId);
       switch (change.Type) {
       case FolderType.OtherSpecialFolder:
       case FolderType.Inbox:
@@ -339,11 +349,31 @@ export class ActiveSyncAccount extends MailAccount {
         break;
       case FolderType.Calendar:
       case FolderType.UserCalendar:
-        // (Re)create calendar account here.
+        let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.protocol == "addressbook-activesync" && calendar.url == url.toString() && calendar.username == this.emailAddress) as ActiveSyncCalendar | void;
+        if (calendar) {
+          calendar.name = change.DisplayName;
+        } else {
+          calendar = new ActiveSyncCalendar();
+          calendar.name = change.DisplayName;
+          calendar.url = url.toString();
+          calendar.username = this.emailAddress;
+          calendar.workspace = this.workspace;
+          appGlobal.calendars.add(calendar);
+        }
         break;
       case FolderType.Contacts:
       case FolderType.UserContacts:
-        // (Re)create contacts account here.
+        let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.protocol == "addressbook-activesync" && addressbook.url == url.toString() && addressbook.username == this.emailAddress) as ActiveSyncAddressbook | void;
+        if (addressbook) {
+          addressbook.name = change.DisplayName;
+        } else {
+          addressbook = new ActiveSyncAddressbook();
+          addressbook.name = change.DisplayName;
+          addressbook.url = url.toString();
+          addressbook.username = this.emailAddress;
+          addressbook.workspace = this.workspace;
+          appGlobal.addressbooks.add(addressbook);
+        }
         break;
       }
     }
@@ -354,7 +384,18 @@ export class ActiveSyncAccount extends MailAccount {
         await this.storage.deleteFolder(folder);
         folder.removeFromParent();
       }
-      // Delete user calendar/contacts accounts.
+      let url = new URL(this.url);
+      url.searchParams.set("serverID", deletion.ServerId);
+      let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.protocol == "addressbook-activesync" && addressbook.url == url.toString() && addressbook.username == this.emailAddress) as ActiveSyncAddressbook | void;
+      if (addressbook) {
+        this.removePingable(addressbook);
+        addressbook.deleteIt();
+      }
+      let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.protocol == "calendar-activesync" && calendar.url == url.toString() && calendar.username == this.emailAddress) as ActiveSyncCalendar | void;
+      if (calendar) {
+        this.removePingable(calendar);
+        calendar.deleteIt();
+      }
     }
   }
 

@@ -3,7 +3,7 @@ import { PromiseAllDone } from '../../util/PromiseAllDone';
 import type { EMail } from '../EMail';
 import type { Folder } from '../Folder';
 
-export class EMailCollection extends ArrayColl<EMail> {
+export class EMailCollection<T extends EMail> extends ArrayColl<T> {
   folder: Folder;
 
   constructor(folder: Folder) {
@@ -26,7 +26,7 @@ export class EMailCollection extends ArrayColl<EMail> {
     }
   }
 
-  getIndexRange(i: number, length: number): EMail[] {
+  getIndexRange(i: number, length: number): T[] {
     let emails = super.getIndexRange(i, length);
 
     let needEmails = emails.filter((email: any) => !email.haveMetadata);

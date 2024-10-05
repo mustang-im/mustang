@@ -57,4 +57,18 @@ export const OAuth2URLs = [
     clientSecret: null,
     doPKCE: true,
   },
+  {
+    domains: ["mustang.im"],
+    hostnames: ["controller.mustang.im"],
+    // Configured in KeyCloak <https://accounts.mustang.im/auth/admin/master/console/#/mustang/clients/>
+    authURL: "https://accounts.mustang.im/auth/realms/mustang/protocol/openid-connect/auth",
+    authDoneURL: "https://mustang.im/loggedin",
+    tokenURL: "https://accounts.mustang.im/auth/realms/mustang/protocol/openid-connect/token",
+    tokenURLPasswordAuth: "https://accounts.mustang.im/auth/realms/mustang/protocol/openid-connect/token",
+    logoutURL: "https://accounts.mustang.im/auth/realms/mustang/protocol/openid-connect/logout",
+    scope: "openid phone profile email",
+    clientID: "mustang",
+    clientSecret: null,
+    doPKCE: false,
+  },
 ];
