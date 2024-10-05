@@ -139,8 +139,11 @@ export async function fetchJSON(partition: string, url: string, action: string, 
   try {
     result.json = await response.json();
   } catch (ex) {
-    if (ex !instanceof SyntaxError &&
-      ex.message != "Unexpected end of JSON input") {
+    if (ex instanceof SyntaxError &&
+        (ex.message == "Unexpected end of JSON input" ||
+         ex.message?.includes("DOCTYPE"))) {
+      response.json = null;
+    } else {
       throw ex;
     }
   }
