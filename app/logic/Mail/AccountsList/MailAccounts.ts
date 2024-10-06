@@ -1,5 +1,6 @@
 import { MailAccount } from '../MailAccount';
 import { IMAPAccount } from '../IMAP/IMAPAccount';
+import { JMAPAccount } from '../JMAP/JMAPAccount';
 import { POP3Account } from '../POP3/POP3Account';
 import { SMTPAccount } from '../SMTP/SMTPAccount';
 import { EWSAccount } from '../EWS/EWSAccount';
@@ -21,6 +22,8 @@ function _newAccountForProtocol(protocol: string): MailAccount {
     return new IMAPAccount();
   } else if (protocol == "pop3") {
     return new POP3Account();
+  } else if (protocol == "jmap") {
+    return new JMAPAccount();
   } else if (protocol == "smtp") {
     return new SMTPAccount();
   } else if (protocol == "ews") {
@@ -45,6 +48,7 @@ const kProtocolLabel = {
   "imap": "IMAP",
   "pop3": "POP3",
   "smtp": "SMTP",
+  "jmap": "JMAP",
   "ews": "EWS",
   "owa": "OWA",
   "activesync": "ActiveSync",

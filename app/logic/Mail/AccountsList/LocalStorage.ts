@@ -24,7 +24,7 @@ export async function readMailAccounts(): Promise<ArrayColl<MailAccount>> {
     let id = `account${i}`;
     let prefBranch = `mail.account${i}.`;
     try {
-      let protocol = sanitize.enum(localStorage.getItem(prefBranch + "protocol"), ["imap", "pop3", "smtp", "ews", "activesync", "owa"]);
+      let protocol = sanitize.enum(localStorage.getItem(prefBranch + "protocol"), ["imap", "jmap", "pop3", "smtp", "ews", "activesync", "owa"]);
       if (!protocol) {
         break;
       } else if (protocol == "imap") {
@@ -34,7 +34,7 @@ export async function readMailAccounts(): Promise<ArrayColl<MailAccount>> {
       } else if (protocol == "ews") {
         accounts.add(await readEWSAccount(prefBranch, id) as any as MailAccount);
       } else {
-        console.error(`Unknown mail protocol ${protocol} in localStorage ${prefBranch}protocol`);
+        console.error(`Unsupported mail protocol ${protocol} in localStorage ${prefBranch}protocol`);
       }
     } catch (ex) {
       console.log("Could not load account", prefBranch);

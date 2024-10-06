@@ -26,6 +26,8 @@ export class MailAccount extends Account {
    * Only set for IMAP and POP3. null for JMAP, Exchange etc. */
   @notifyChangedProperty
   outgoing: MailAccount = null;
+  /** Error that broke the server connection, unrecoverable, including login failures. */
+  fatalError: Error | null = null;
   spamStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   /** Where we got the config from, during setup */
   source: ConfigSource = null;
