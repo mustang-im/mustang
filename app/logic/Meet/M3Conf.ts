@@ -50,7 +50,7 @@ export class M3Conf extends VideoConfMeeting {
 
     await this.account.login(relogin);
     // TODO fails with: type=REFRESH_TOKEN_ERROR, error=invalid_token, grant_type=refresh_token, client_auth_method=client-secret
-    await this.httpPost('auth/login', {
+    await this.httpPost("auth/login", {
       id_token: this.account.oauth2.idToken,
     });
   }
@@ -58,9 +58,9 @@ export class M3Conf extends VideoConfMeeting {
   protected async ky() {
     assert(this.controllerBaseURL, "Need controller URL");
     const headers: any = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
-    if (this.account.oauth2?.authorizationHeader) {
+    if (this.account.oauth2?.isLoggedIn) {
       headers.Authorization = this.account.oauth2.authorizationHeader;
     }
     return appGlobal.remoteApp.kyCreate({
