@@ -1,5 +1,6 @@
 import { newOAuth2UI, OAuth2UIMethod } from "./OAuth2UIMethod";
 import { OAuth2Error, OAuth2LoginNeeded, OAuth2ServerError } from "./OAuth2Error";
+import { basicAuth } from "./httpAuth";
 import pkceChallenge from "pkce-challenge";
 import type { Account } from "../Abstract/Account";
 import { getPassword, setPassword, deletePassword } from "./passwordStore";
@@ -127,14 +128,12 @@ export class OAuth2 extends Observable {
   async loginWithPassword(username: string, password: string): Promise<string> {
     assert(username && password, "Need username and password");
     assert(this.tokenURLPasswordAuth, "oAuth2 password login is not supported by this provider");
-    // node.js: const basicAuth = Buffer.from(`${username}:${password}`).toString("base64");
-    const basicAuth = btoa(`${username}:${password}`);
     let accessToken = this.getAccessTokenFromParams({
       grant_type: "password",
       username: username,
       password: password,
     }, {
-      Authentication: `Basic ${basicAuth}`,
+      Authentication: basicAuth(username, password),
     }, this.tokenURLPasswordAuth);
     return accessToken;
   }
