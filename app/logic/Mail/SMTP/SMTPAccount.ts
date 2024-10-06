@@ -40,8 +40,8 @@ export class SMTPAccount extends MailAccount {
       auth: {
         user: this.username,
         pass: usePassword ? this.password : undefined,
-        accessToken: this.oAuth2 ? this.oAuth2.accessToken : null,
-        type: this.oAuth2 ? "OAuth2" : undefined,
+        accessToken: useOAuth2 ? this.oAuth2.accessToken : null,
+        type: useOAuth2 ? "OAuth2" : undefined,
       },
       dnsTimeout: 5000,
       connectionTimeout: 5000,
