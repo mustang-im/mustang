@@ -153,7 +153,7 @@ function getOAuth2Config(account: MailAccount, autoConfigXML: any): OAuth2 {
         sanitize.url(xml.authURL),
         sanitize.url(xml.authDoneURL, null),
         sanitize.nonemptystring(xml.scope),
-        sanitize.nonemptystring(xml.clientID, "mail"),
+        sanitize.nonemptystring(xml.clientID, "open"),
         sanitize.nonemptystring(xml.clientSecret, null),
         sanitize.boolean(xml.usePKCE, false)
       );
