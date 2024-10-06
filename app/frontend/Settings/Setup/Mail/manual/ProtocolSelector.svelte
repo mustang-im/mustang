@@ -22,6 +22,7 @@
     console.log("new protocol", protocol);
     let newConfig = newAccountForProtocol(protocol);
     newConfig.cloneFrom(config);
+    newConfig.url = "";
     config = newConfig;
   }
 </script>
