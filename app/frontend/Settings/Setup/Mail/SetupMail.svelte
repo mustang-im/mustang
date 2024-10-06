@@ -131,7 +131,8 @@
     }
   }
   function onManualSetup() {
-    if (!config || !config.outgoing) {
+    if (!config ||
+        !config.outgoing && (config.protocol == "imap" || config.protocol == "pop3")) {
       config = makeManualConfig(emailAddress, password);
     } else {
       fillConfig(config, emailAddress, password);
