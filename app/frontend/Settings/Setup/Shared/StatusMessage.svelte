@@ -7,7 +7,7 @@
       <slot name="icon" />
     </hbox>
     {#if message}
-      <hbox class="message">
+      <hbox class="message value">
         {message}
       </hbox>
     {/if}
