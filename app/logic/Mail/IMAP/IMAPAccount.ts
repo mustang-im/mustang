@@ -10,13 +10,12 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { appName, appVersion, siteRoot } from "../../build";
 import { ArrayColl, type Collection } from "svelte-collections";
 import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
+import { gt } from "../../../l10n/l10n";
 
 export class IMAPAccount extends MailAccount {
   readonly protocol: string = "imap";
   @notifyChangedProperty
   _connection: ImapFlow;
-  @notifyChangedProperty
-  accessToken: string | undefined;
   acceptOldTLS = false;
   pathDelimiter: string; /** Separator in folder path. E.g. '.' or '/', depending on server */
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
@@ -67,11 +66,11 @@ export class IMAPAccount extends MailAccount {
       AuthMethod.OAuth2,
     ].includes(this.authMethod);
     if (useOAuth2) {
-      assert(this.oAuth2, `${this.name}: need OAuth2 configuration`);
+      assert(this.oAuth2, this.name + `: ` + gt`Need OAuth2 configuration`);
       if (!this.oAuth2.isLoggedIn) {
         await this.oAuth2.login(interactive);
       }
-      assert(this.oAuth2.accessToken, `${this.name}: OAuth2 login failed`);
+      assert(this.oAuth2.accessToken, this.name + `: ` + gt`OAuth2: Login failed`);
     }
 
     // <https://imapflow.com/module-imapflow-ImapFlow.html>
@@ -82,7 +81,7 @@ export class IMAPAccount extends MailAccount {
       auth: {
         user: this.username,
         pass: usePassword ? this.password : undefined,
-        accessToken: useOAuth2 ? this.oAuth2.accessToken : null,
+        accessToken: useOAuth2 ? this.oAuth2.accessToken : undefined,
       },
       clientInfo: useragent,
       tls: {
@@ -186,7 +185,7 @@ export class IMAPAccount extends MailAccount {
       // Sometimes gives "Connection not available". Do nothing.
     }
     this._connection = null;
-    if (!(this.password || this.accessToken)) {
+    if (!(this.password || this.oAuth2?.isLoggedIn)) {
       return;
     }
     await this.connection();
@@ -262,6 +261,9 @@ export class IMAPAccount extends MailAccount {
   async logout(): Promise<void> {
     this.stopPolling();
     await this._connection?.logout();
+    if (this.oAuth2) {
+      await this.oAuth2.logout();
+    }
   }
 
   async send(email: EMail): Promise<void> {
