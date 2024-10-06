@@ -14,7 +14,7 @@ import { gt } from "../../../l10n/l10n";
 export class JMAPAccount extends MailAccount {
   readonly protocol: string = "jmap";
   @notifyChangedProperty
-  _connection: ImapFlow;
+  _connection: any;
   @notifyChangedProperty
   accessToken: string | undefined;
   acceptOldTLS = false;
@@ -26,12 +26,11 @@ export class JMAPAccount extends MailAccount {
 
   constructor() {
     super();
-    assert(appGlobal.remoteApp.createJMAPFlowConnection, "JMAP: Need backend");
+    assert(appGlobal.remoteApp.kyCreate, "JMAP: Need backend");
   }
 
   get isLoggedIn(): boolean {
-    // return !!this._connection?.authenticated; TODO authenticated is always false
-    return !!this._connection || this.oAuth2?.isLoggedIn;
+    return !!this.password || this.oAuth2?.isLoggedIn;
   }
 
   async login(interactive: boolean): Promise<void> {
@@ -39,6 +38,8 @@ export class JMAPAccount extends MailAccount {
       await this.storage.saveAccount(this);
     }
     await this.storage.readFolderHierarchy(this);
+
+    let session = this;
 
     await this.connection(interactive);
     await this.listFolders();
@@ -50,7 +51,7 @@ export class JMAPAccount extends MailAccount {
     await this.logout();
   }
 
-  async connection(interactive = false): Promise<ImapFlow> {
+  async connection(interactive = false): Promise<any> {
     if (this._connection) {
       return this._connection;
     }
@@ -67,7 +68,6 @@ export class JMAPAccount extends MailAccount {
       assert(this.oAuth2.accessToken, this.name + `: ` + gt`OAuth2 login failed`);
     }
 
-    // <https://jmapflow.com/module-jmapflow-ImapFlow.html>
     let options = {
       host: this.hostname,
       port: this.port,
@@ -77,7 +77,6 @@ export class JMAPAccount extends MailAccount {
         pass: usePassword ? this.password : undefined,
         accessToken: useOAuth2 ? this.oAuth2.accessToken : null,
       },
-      clientInfo: useragent,
       tls: {
         minVersion: this.acceptOldTLS ? 'TLSv1' : undefined,
         rejectUnauthorized: !this.acceptBrokenTLSCerts,
@@ -114,7 +113,7 @@ export class JMAPAccount extends MailAccount {
     return this._connection;
   }
 
-  attachListeners(connection: ImapFlow): void {
+  attachListeners(connection: any): void {
     connection.on("close", async () => {
       try {
         console.log(`${new Date().toISOString()} JMAP connection to ${this.hostname} was closed by server, network or OS. Reconnecting...`);
