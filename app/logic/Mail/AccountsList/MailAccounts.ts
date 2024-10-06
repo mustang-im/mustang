@@ -48,6 +48,7 @@ const kProtocolLabel = {
   "imap": "IMAP",
   "pop3": "POP3",
   "smtp": "SMTP",
+  "jmap": "JMAP",
   "ews": "EWS",
   "owa": "OWA",
   "activesync": "ActiveSync",
