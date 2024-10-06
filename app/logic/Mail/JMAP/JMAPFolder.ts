@@ -2,11 +2,12 @@ import { Folder, SpecialFolder } from "../Folder";
 import { JMAPEMail } from "./JMAPEMail";
 import { type JMAPAccount, JMAPCommandError } from "./JMAPAccount";
 import type { EMail } from "../EMail";
-import { EMailCollection } from "../SQL/EMailCollection";
+import type { EMailCollection } from "../SQL/EMailCollection";
 import { ArrayColl, Collection } from "svelte-collections";
 import { assert } from "../../util/util";
 import { Buffer } from "buffer";
 import { gt } from "../../../l10n/l10n";
+import type { TJMAPFolder } from "./JMAPTypes";
 
 export class JMAPFolder extends Folder {
   account: JMAPAccount;
@@ -25,11 +26,6 @@ export class JMAPFolder extends Folder {
   set path(val: string) {
     this.id = val;
   }
-  getPathComponents(): string[] {
-    assert(this.path, "Missing folder path");
-    assert(this.account.pathDelimiter, "Missing path delimiter");
-    return this.path?.split(this.account.pathDelimiter);
-  }
 
   /** Last sequence number seen */
   get lastModSeq(): number {
@@ -41,18 +37,11 @@ export class JMAPFolder extends Folder {
     this.storage.saveFolderProperties(this).catch(this.account.errorCallback);
   }
 
-  fromFlow(folderInfo: any) {
-    this.name = folderInfo.name;
-    this.path = folderInfo.path;
-    if (folderInfo.status) {
-      this.countTotal = folderInfo.status.messages;
-      this.countUnread = folderInfo.status.unseen;
-      this.countNewArrived = folderInfo.status.recent;
-    }
-    this.setSpecialUse(folderInfo.specialUse);
-    if (this.name.toUpperCase() == "INBOX") {
-      this.name = gt`Inbox`;
-    }
+  fromJMAP(folderJSON: TJMAPFolder) {
+    this.name = folderJSON.name;
+    this.countTotal = folderJSON.totalEmails;
+    this.countUnread = folderJSON.unreadEmails;
+    this.setSpecialUse(folderJSON.role);
   }
 
   async runCommand<T>(jmapFunc: (conn: any) => Promise<T>, doLock = false): Promise<T> {
@@ -70,7 +59,7 @@ export class JMAPFolder extends Folder {
       } catch (ex) {
         console.log(gt`Opening JMAP folder failed`, ex);
         if (ex.code == "NoConnection") {
-          this.account._connection = null;
+          this.account.session = null;
           conn = await this.account.connection();
           if (doLock) {
             lock = await conn.getMailboxLock(this.path);
@@ -98,16 +87,8 @@ export class JMAPFolder extends Folder {
    * But doesn't download their contents. @see downloadMessages() */
   async listMessages(): Promise<ArrayColl<JMAPEMail>>  {
     await this.readFolder();
-    if (this.countTotal === 0) {
-      return new ArrayColl<JMAPEMail>();
-    }
-    let newMsgs: ArrayColl<JMAPEMail>;
-    if (await this.account.hasCapability("CONDSTORE")) {
-      newMsgs = await this.listChangedMessages();
-    } else {
-      newMsgs = await this.listAllUnknownMessages();
-      await this.updateNewFlags();
-    }
+    let newMsgs = new ArrayColl<JMAPEMail>();
+    // TODO
     return newMsgs;
   }
 
@@ -561,7 +542,7 @@ export class JMAPFolder extends Folder {
     console.log("Folder moved from", folder.path, "to", newFolder.path);
     */
     await this.runCommand(async (conn) => {
-      await conn.mailboxRename(folder.path, [this.path, folder.getPathComponents().pop()]);
+      // Set this.JSON.parentId = folder.id;
     });
   }
 
@@ -578,11 +559,9 @@ export class JMAPFolder extends Folder {
 
   async rename(newName: string): Promise<void> {
     await super.rename(newName);
-    let parentPath = this.parent ? this.parent.path : this.getPathComponents().slice(0, -1);
     await this.runCommand(async (conn) => {
-      await conn.mailboxRename(this.path, [...parentPath, newName]);
+      // Set this.JSON.name = newName;
     });
-    console.log("renamed", this.path, "to parent", parentPath, [...parentPath, newName]);
   }
 
   /** Warning: Also deletes all messages in the folder, also on the server */
@@ -602,36 +581,26 @@ export class JMAPFolder extends Folder {
 
   /** @param specialUse From RFC 6154, e.g. `\Sent`
    * <https://datatracker.ietf.org/doc/html/rfc6154> */
-  setSpecialUse(specialUse: string): void {
-    switch (specialUse) {
-      case "\\Inbox":
+  setSpecialUse(role: string): void {
+    switch (role) {
+      case "inbox":
         this.specialFolder = SpecialFolder.Inbox;
         break;
-      case "\\Trash":
+      case "trash":
         this.specialFolder = SpecialFolder.Trash;
         break;
-      case "\\Junk":
+      case "junk":
         this.specialFolder = SpecialFolder.Spam;
         break;
-      case "\\Sent":
+      case "sent":
         this.specialFolder = SpecialFolder.Sent;
         break;
-      case "\\Drafts":
+      case "drafts":
         this.specialFolder = SpecialFolder.Drafts;
         break;
-      case "\\Archive":
+      case "archive":
         this.specialFolder = SpecialFolder.Archive;
         break;
-    }
-    if (this.path.toUpperCase() == "INBOX") {
-      this.specialFolder = SpecialFolder.Inbox;
-    } else if (!this.account.getSpecialFolder(SpecialFolder.Sent) && this.path.toLowerCase() == "sent") {
-      // or "INBOX/Sent" or "Sent Messages" (Exchange) or various translated versions of it
-      this.specialFolder = SpecialFolder.Sent;
-    } else if (!this.account.getSpecialFolder(SpecialFolder.Drafts) && this.path.toLowerCase() == "drafts") {
-      this.specialFolder = SpecialFolder.Drafts;
-    } else if (!this.account.getSpecialFolder(SpecialFolder.Trash) && this.path.toLowerCase() == "trash") {
-      this.specialFolder = SpecialFolder.Trash;
     }
   }
 

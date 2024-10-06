@@ -1,24 +1,24 @@
 import { MailAccount, TLSSocketType, AuthMethod, DeleteStrategy } from "../MailAccount";
 import { JMAPFolder } from "./JMAPFolder";
-import { appGlobal } from "../../app";
+import type { TJMAPAPIErrorResponse, TJMAPAPIRequest, TJMAPAPIResponse, TJMAPFolder, TJMAPMethodResponse, TJMAPSession } from "./JMAPTypes";
 import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder } from "../Folder";
-import { assert, SpecificError } from "../../util/util";
+import { appGlobal } from "../../app";
+import { assert, SpecificError, type URLString } from "../../util/util";
 import { notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { appName, appVersion, siteRoot } from "../../build";
-import { ArrayColl, type Collection } from "svelte-collections";
+import { appName, appVersion } from "../../build";
+import { ArrayColl, MapColl, type Collection } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
+import { basicAuth } from "../../Auth/httpAuth";
 
 export class JMAPAccount extends MailAccount {
   readonly protocol: string = "jmap";
   @notifyChangedProperty
-  _connection: any;
-  @notifyChangedProperty
-  accessToken: string | undefined;
-  acceptOldTLS = false;
-  pathDelimiter: string; /** Separator in folder path. E.g. '.' or '/', depending on server */
+  session: TJMAPSession;
+  accountID: string;
+  allFolders = new MapColl<string, JMAPFolder>();
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
@@ -30,7 +30,8 @@ export class JMAPAccount extends MailAccount {
   }
 
   get isLoggedIn(): boolean {
-    return !!this.password || this.oAuth2?.isLoggedIn;
+    return this.session &&
+      (this.authMethod != AuthMethod.OAuth2 || this.oAuth2?.isLoggedIn);
   }
 
   async login(interactive: boolean): Promise<void> {
@@ -39,171 +40,157 @@ export class JMAPAccount extends MailAccount {
     }
     await this.storage.readFolderHierarchy(this);
 
-    let session = this;
-
-    await this.connection(interactive);
+    await this.getSession(interactive);
     await this.listFolders();
     (this.inbox as JMAPFolder).startPolling();
   }
 
   async verifyLogin(): Promise<void> {
-    await this.connection(true);
+    await this.getSession(true);
     await this.logout();
   }
 
-  async connection(interactive = false): Promise<any> {
-    if (this._connection) {
-      return this._connection;
-    }
-    this.fatalError = null;
-
+  async getSession(interactive: boolean): Promise<void> {
     // Auth method
-    let usePassword = [ AuthMethod.Password ].includes(this.authMethod);
-    let useOAuth2 = [ AuthMethod.OAuth2 ].includes(this.authMethod);
+    let useOAuth2 = [AuthMethod.OAuth2].includes(this.authMethod);
     if (useOAuth2) {
       assert(this.oAuth2, this.name + `: ` + gt`Need OAuth2 configuration`);
       if (!this.oAuth2.isLoggedIn) {
         await this.oAuth2.login(interactive);
+        assert(this.oAuth2.isLoggedIn, this.name + `: ` + gt`OAuth2: Login failed`);
       }
-      assert(this.oAuth2.accessToken, this.name + `: ` + gt`OAuth2 login failed`);
     }
 
-    let options = {
-      host: this.hostname,
-      port: this.port,
-      secure: this.tls == TLSSocketType.TLS,
-      auth: {
-        user: this.username,
-        pass: usePassword ? this.password : undefined,
-        accessToken: useOAuth2 ? this.oAuth2.accessToken : null,
-      },
-      tls: {
-        minVersion: this.acceptOldTLS ? 'TLSv1' : undefined,
-        rejectUnauthorized: !this.acceptBrokenTLSCerts,
-      },
-      maxIdleTime: 30 * 1000, // 30 s, refresh IDLE
-      connectionTimeout: 5 * 1000, // 5 s connection timeout
-      greetingTimeout: 5 * 1000, // 5 s greeting timeout
-      socketTimeout: 30 * 60 * 1000, // 30 min of inactivity
-      logger: false,
-    }
-    // console.log("JMAP connection", options);
-    let connection = await appGlobal.remoteApp.createJMAPFlowConnection(options);
-    assert(connection, `Connection is null\n${this.hostname} JMAP server`);
+    let session: TJMAPSession = await this.httpGet(this.url);
+    console.log("JMAP session", session);
+    assert(session.capabilities, "Need capabilities in session");
+    assert(session.accounts, "Need accounts list in session");
+    assert(session.primaryAccounts, "Need primaryAccount ID in session");
+    assert(sanitize.url(session.apiUrl), "Need apiUrl in session");
+    assert(sanitize.url(session.downloadUrl), "Need downloadUrl in session");
+    assert(sanitize.url(session.uploadUrl), "Need uploadUrl in session");
+    assert(sanitize.url(session.eventSourceUrl), "Need eventSourceUrl in session");
+    this.accountID = session.primaryAccounts["urn:ietf:params:jmap:mail"];
+    assert(this.accountID, "JMAP Session: No primary mail account");
+    let mailAccount = session.accounts[this.accountID];
+    assert(mailAccount, "JMAP Session: Account not found");
 
+    this.session = session;
+  }
+
+  /** A single API call, with a single result */
+  async makeSingleCall(method: string, argumentsJSON: Record<string, any>): Promise<Record<string, any>> {
+    let responses = await this.makeCalls([[ method, argumentsJSON ]]);
+    let response = responses[0];
+    assert(response[0] == method, "Method in response does not match");
+    return response[1];
+  }
+
+  /** Make multiple calls in one request
+   * @calls Array of calls.
+   *   Each call is an array with 3 entries:
+   *   0: Method name
+   *   1: Aguments
+   *   2: Call number (Optional)
+   *   E.g. `[ "methodName", { arg1: "value1", arg2: true, arg3: 45 }, "firstCall" ]`
+   * @returns Results from the calls.
+   *   One call may return multiple results, so the results array may be longer than the number of calls.
+   *   The results will in the same order as the calls, though. */
+  async makeCalls(calls: [ string, Record<string, any>, string? ][]): Promise<TJMAPMethodResponse[]> {
+    let requestJSON: TJMAPAPIRequest = {
+      using: ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail"],
+      methodCalls: [],
+    };
+    let callCounter = 0;
+    for (let call of calls) {
+      call[2] ??= `c${++callCounter}`;
+      requestJSON.methodCalls.push([call[0], call[1], call[2]]);
+    }
+
+    let responsesJSON: TJMAPAPIResponse | TJMAPAPIErrorResponse;
     try {
-      await connection.connect();
+      responsesJSON = await this.httpPost(this.session.apiUrl, requestJSON);
     } catch (ex) {
-      let msg = ex?.responseText ?? ex?.message ?? ex + "";
-      if (ex.authenticationFailed) {
-        throw this.fatalError = new LoginError(ex,
-          "Check your login, username, and password.\n" + msg);
-      } else if (ex.code == "EAUTH" || ex.code == "ClosedAfterConnectTLS") {
-        throw this.fatalError = new LoginError(ex,
-          "Check your login, username, and password.\n" + msg);
-      } else if (ex.code == "NoConn" || msg == "Command failed.") {
-        throw this.fatalError = new ConnectError(ex,
-          "Failed to connect to server " + this.hostname + " for account " + this.name);
-      } else {
-        throw this.fatalError = new ConnectError(ex, msg);
+      if ((ex as any).httpCode) { // HTTPFetchError from backend.ts
+        let errorJSON = responsesJSON as TJMAPAPIErrorResponse;
+        ex.message = errorJSON.detail ?? ex.message;
+        ex.code = errorJSON.type;
+        throw ex;
+      }
+      throw ex;
+    }
+    responsesJSON = responsesJSON as TJMAPAPIResponse;
+
+    let callNumbers = requestJSON.methodCalls.map(call => call[2]);
+    for (let resp of responsesJSON.methodResponses) {
+      assert(callNumbers.includes(resp[2]), "Method in response does not match");
+      if (resp[0] == "error") {
+        let ex = new Error(resp[1] as any);
+        (ex as any).debug = {
+          requests: calls,
+          responses: responsesJSON.methodResponses,
+        };
+        throw ex;
       }
     }
-    this._connection = connection;
-    this.attachListeners(this._connection);
-    return this._connection;
+    return responsesJSON.methodResponses;
   }
 
-  attachListeners(connection: any): void {
-    connection.on("close", async () => {
-      try {
-        console.log(`${new Date().toISOString()} JMAP connection to ${this.hostname} was closed by server, network or OS. Reconnecting...`);
-        await this.reconnect();
-      } catch (ex) {
-        this.fatalError = new ConnectError(ex,
-          `Reconnection failed after connection closed:\n${ex.message}\n${this.hostname} JMAP server`);
-      }
-    });
-    connection.on("error", async (ex) => {
-      try {
-        console.log(`${new Date().toISOString()} Connection to server for ${this.name} failed:\n${ex.message}`);
-        await this.reconnect();
-      } catch (ex) {
-        this.fatalError = new ConnectError(ex,
-          `Reconnect failed after connection error:\n${ex.message}\n${this.hostname} JMAP server`);
-      }
-    });
-    connection.on("exists", async (info) => {
-      try {
-        let folder = this.getFolderByPath(info.path);
-        assert(folder, `We don't know about this folder`);
-        assert(typeof (info.count) == "number" && typeof (info.prevCount) == "number", "Counts need to be numbers");
-        await folder.countChanged(info.count, info.prevCount);
-      } catch (ex) {
-        console.log("Server event", info);
-        this.errorCallback(new JMAPCommandError(ex, `Server event about folder ${info.path} failed:\n${ex.message}\n${this.hostname} JMAP server`));
-      }
-    });
-    connection.on("flags", async (info) => {
-      try {
-        let folder = this.getFolderByPath(info.path);
-        assert(folder, `We don't know about this folder`);
-        assert(!info.uid || typeof (info.uid) == "number", "Expected optional number for UID");
-        assert(typeof (info.seq) == "number", "Expected number for seq");
-        assert(!info.modseq || typeof (info.modseq) == "number", "Expected number for modseq");
-        assert(info.flags instanceof Set, "Expected Set for flags");
-        await folder.messageFlagsChanged(info.uid ?? null, info.seq, info.flags, info.modseq);
-      } catch (ex) {
-        console.log("Error", ex, "in processing server event", info);
-        this.errorCallback(new JMAPCommandError(ex, `Server event about message seq ${info.seq} = UID ${info.uid} in folder ${info.path} failed:\n${ex.message}\n${this.hostname} JMAP server`));
-      }
-    });
-    connection.on("expunge", async (info) => {
-      try {
-        let folder = this.getFolderByPath(info.path);
-        assert(folder, `We don't know about this folder`);
-        assert(typeof (info.seq) == "number", "seq must be a number");
-        await folder.messageDeletedNotification(info.seq);
-      } catch (ex) {
-        console.log("Server event", info);
-        this.errorCallback(new JMAPCommandError(ex, `Server event about folder ${info.path} failed:\n${ex.message}\n${this.hostname} JMAP server`));
-      }
+  protected async ky() {
+    const headers: any = {
+      "Content-Type": "application/json",
+      "User-Agent": `${appName}/${appVersion}`,
+    };
+
+    // Auth method
+    let usePassword = [AuthMethod.Password].includes(this.authMethod);
+    let useOAuth2 = [AuthMethod.OAuth2].includes(this.authMethod);
+    if (usePassword) {
+      headers.Authorization = basicAuth(this.username, this.password);
+    } else if (useOAuth2) {
+      assert(this.oAuth2?.isLoggedIn, this.name + `: ` + gt`OAuth: Need login`);
+      headers.Authorization = this.oAuth2.authorizationHeader;
+    }
+    console.log("JMAP headers", headers);
+
+    return appGlobal.remoteApp.kyCreate({
+      headers: headers,
+      timeout: 3000,
+      result: "json",
     });
   }
 
-  protected async reconnect(): Promise<void> {
-    // Note: Do not stop polling
-    try {
-      this._connection?.close();
-    } catch (ex) {
-      // Sometimes gives "Connection not available". Do nothing.
-    }
-    this._connection = null;
-    if (!(this.password || this.accessToken)) {
-      return;
-    }
-    await this.connection();
+  protected async httpGet(url: string): Promise<any> {
+    let ky = await this.ky();
+    return await ky.get(url);
   }
 
-  async hasCapability(capa: string): Promise<boolean> {
-    let conn = await this.connection();
-    let capabilities = await conn.capabilities;
-    return await capabilities.has(capa);
+  protected async httpPost(url: string, sendJSON: any): Promise<any> {
+    let ky = await this.ky();
+    return await ky.post(url, { json: sendJSON });
+  }
+
+  /** dummy, remove later */
+  async connection(): Promise<any> {
   }
 
   async listFolders(): Promise<void> {
     await this.storage.readFolderHierarchy(this);
 
-    // listTree() doesn't return the message count and is not well-implemented
-    let foldersInfo = await (await this.connection()).list({
-      statusQuery: {
-        messages: true, // Total msg count
-        recent: true, // \Recent msg count
-        unseen: true, // Unseen msg count
-      },
-    });
-    // console.log("folders", foldersFlat);
     let currentFolders = new ArrayColl<JMAPFolder>();
-    this.readFolders(foldersInfo, null, this.rootFolders as ArrayColl<JMAPFolder>, currentFolders);
+
+    let serverFoldersResponse = await this.makeSingleCall("Mailbox/get", {
+      "accountId": this.accountID,
+      "ids": null,
+    });
+    for (let folderJSON of serverFoldersResponse.list as TJMAPFolder[]) {
+      let folder = this.getFolderByID(folderJSON.id) ?? this.newFolder();
+      // Assumes that parent folders will be listed first
+      folder.parent = this.getFolderByID(folderJSON.parentId);
+      folder.fromJMAP(folderJSON);
+    }
+
+    // TODO
 
     for (let folder of this.getAllFolders()) {
       if (!currentFolders.includes(folder as JMAPFolder)) {
@@ -218,31 +205,8 @@ export class JMAPAccount extends MailAccount {
     }
   }
 
-  readFolders(allFoldersInfo: any[], parent: JMAPFolder, subFolders: Collection<JMAPFolder>, resultAllFolders: Collection<JMAPFolder>): void {
-    let subFoldersInfo = allFoldersInfo.filter(folderInfo => folderInfo.parentPath == (parent?.path ?? ""));
-    for (let folderInfo of subFoldersInfo) {
-      let subFolder = subFolders.find(folder => folder.path == folderInfo.path);
-      if (subFolder) {
-        if (folderInfo.status) {
-          subFolder.fromFlow(folderInfo); // update with new info
-        }
-      } else {
-        subFolder = new JMAPFolder(this);
-        subFolder.fromFlow(folderInfo);
-        subFolders.add(subFolder);
-        subFolder.parent = parent;
-      }
-      resultAllFolders.add(subFolder);
-      if (!this.pathDelimiter && folderInfo.delimiter) {
-        this.pathDelimiter = folderInfo.delimiter;
-      }
-      this.readFolders(allFoldersInfo, subFolder, subFolder.subFolders as ArrayColl<JMAPFolder>, resultAllFolders);
-    }
-  }
-
-  getFolderByPath(path: string): JMAPFolder | null {
-    // only for casting the type
-    return super.getFolderByPath(path) as JMAPFolder | null;
+  getFolderByID(id: string): JMAPFolder | null {
+    return this.allFolders.get(id);
   }
 
   protected stopPolling() {
@@ -253,24 +217,33 @@ export class JMAPAccount extends MailAccount {
 
   async logout(): Promise<void> {
     this.stopPolling();
-    await this._connection?.logout();
+    if (this.oAuth2) {
+      await this.oAuth2.logout();
+    }
   }
 
   async send(email: EMail): Promise<void> {
-    assert(this.outgoing, "SMTP server is not set up for JMAP account " + this.name);
-    if (!this.isLoggedIn) {
-      await this.login(true);
-    }
-    // Assume that SMTP and JMAP server have the same oAuth2 login
-    this.outgoing.oAuth2 = this.oAuth2;
-
-    await this.outgoing.send(email);
+    // TODO
     await this.saveSent(email);
   };
 
   protected async saveSent(email: EMail): Promise<void> {
     let sentFolder = this.getSpecialFolder(SpecialFolder.Sent);
     await sentFolder.addMessage(email);
+  }
+
+  hasCapability(capa: string): boolean {
+    if (!this.session) {
+      return false;
+    }
+    return !!this.session.capabilities[capa];
+  }
+
+  getCapability(capa: string): Record<string, any> | null {
+    if (!this.session) {
+      return null;
+    }
+    return this.session.capabilities[capa];
   }
 
   fromConfigJSON(config: any) {
