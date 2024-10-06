@@ -88,6 +88,7 @@ export class OAuth2 extends Observable {
    * @throws OAuth2LoginNeeded, OAuth2Error
    */
   async login(interactive: boolean): Promise<string> {
+    assert(this.account, "Need to set account first");
     if (this.accessToken) {
       return this.accessToken;
     }

@@ -15,6 +15,7 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string, s
     console.log("autoconfig xml", JSON.stringify(autoconfigXML, null, 2), autoconfigXML);
     throw new Error("Config syntax error");
   }
+  let fullXML = autoconfigXML.clientConfig;
   let xml = autoconfigXML.clientConfig.emailProvider;
 
   let configs = new ArrayColl<MailAccount>();
@@ -28,7 +29,7 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string, s
   // Incoming server
   for (let iX of ensureArray(xml.$incomingServer)) {
     try {
-      configs.push(readServer(iX, displayName, xml, source));
+      configs.push(readServer(iX, displayName, fullXML, source));
     } catch (ex) {
       firstError = ex;
     }
@@ -41,7 +42,7 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string, s
   // Outgoing server
   for (let oX of ensureArray(xml.$outgoingServer)) {
     try {
-      outgoingConfigs.push(readServer(oX, displayName, xml, source) as SMTPAccount);
+      outgoingConfigs.push(readServer(oX, displayName, fullXML, source) as SMTPAccount);
     } catch (ex) {
       firstError = ex;
     }
@@ -111,6 +112,7 @@ function readServer(xml: any, displayName: string, fullXML: any, source: ConfigS
 
   let authMethods = ensureArray(xml.$authentication).map(auth => sanitize.translate(auth, {
     "password-cleartext": AuthMethod.Password,
+    "http-basic": AuthMethod.Password,
     "OAuth2": AuthMethod.OAuth2,
     "password-encrypted": AuthMethod.CRAMMD5,
     "GSSAPI": AuthMethod.GSSAPI,
@@ -146,13 +148,14 @@ function getOAuth2Config(account: MailAccount, autoConfigXML: any): OAuth2 {
     try {
       let xml = autoConfigXML.oAuth2;
       oAuth2 = new OAuth2(
-        this,
+        account,
         sanitize.url(xml.tokenURL),
         sanitize.url(xml.authURL),
         sanitize.url(xml.authDoneURL, null),
         sanitize.nonemptystring(xml.scope),
         sanitize.nonemptystring(xml.clientID, "mail"),
         sanitize.nonemptystring(xml.clientSecret, null),
+        sanitize.boolean(xml.usePKCE, false)
       );
     } catch (ex) {
       console.error(ex);
