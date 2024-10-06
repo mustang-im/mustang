@@ -4,7 +4,7 @@
   <ManualConfigURL bind:config bind:stepFull {isSetup} bind:this={el} />
 {/if}
 
-{#if $config.oAuth2 && $config.authMethod == AuthMethod.OAuth2}
+{#if $config.oAuth2 && $config.authMethod == AuthMethod.OAuth2 && stepFull}
   <OAuth2Manual {config} />
 {/if}
 
