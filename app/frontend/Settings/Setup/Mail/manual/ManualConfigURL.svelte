@@ -50,6 +50,9 @@
   import ServerIcon from "lucide-svelte/icons/server";
   import { t } from "../../../../../l10n/l10n";
   import { assert } from "../../../../../logic/util/util";
+  import { getStandardURL } from "../../../../../logic/Mail/AutoConfig/configInfo";
+  import { getDomainForEmailAddress } from "../../../../../logic/util/netUtil";
+  import { backgroundError } from "../../../../Util/error";
 
   /** in/out */
   export let config: MailAccount;
@@ -60,6 +63,16 @@
 
   let urlError: Error | null = null;
   let authError: Error | null = null;
+
+  $: config?.protocol && !config.url && setDefaultURL();
+  function setDefaultURL() {
+    try {
+      let domain = getDomainForEmailAddress(config.emailAddress);
+      config.url = getStandardURL(config.protocol, domain);
+    } catch (ex) {
+      backgroundError(ex);
+    }
+  }
 
   /** User just pressed the [Next] button
    * @returns true = can continue, false or exception: Don't continue

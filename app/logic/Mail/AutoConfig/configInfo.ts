@@ -1,5 +1,6 @@
 import type { MailAccount } from "../MailAccount";
 import { TLSSocketType } from "../MailAccount";
+import { assert, NotReached, type URLString } from "../../util/util";
 
 export function hasEncryption(tls: TLSSocketType): boolean {
   return tls == TLSSocketType.TLS || tls == TLSSocketType.STARTTLS;
@@ -27,3 +28,17 @@ export const kStandardPorts = [
   { protocol: "activesync", tls: TLSSocketType.TLS, port: 443 },
   { protocol: "owa", tls: TLSSocketType.TLS, port: 443 },
 ];
+
+export function getStandardURL(protocol: string, domain: string): URLString {
+  if (protocol == "jmap") {
+    return `https://${domain}/.well-known/jmap`;
+  } else if (protocol == "ews") {
+    return `https://mail.${domain}/EWS/Exchange.asmx`;
+  } else if (protocol == "owa") {
+    return `https://mail.${domain}/owa/`;
+  } else if (protocol == "activesync") {
+    return `https://mail.${domain}/Microsoft-Server-ActiveSync`;
+  } else {
+    return "";
+  }
+}
