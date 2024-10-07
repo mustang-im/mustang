@@ -29,7 +29,7 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
     throw new NotSupported("ActiveSync does not support distribution lists");
   }
 
-  async queuedSyncRequest(data: any): Promise<any> {
+  async queuedSyncRequest(data: any, callback?: (response: any) => Promise<void>): Promise<any> {
     if (!this.syncState && !this.syncKeyBusy) try {
       // First request must be an empty request.
       this.syncKeyBusy = this.makeSyncRequest();
@@ -43,14 +43,14 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
       // If the function currently holding the sync key throws, we don't care.
     }
     try {
-      this.syncKeyBusy = this.makeSyncRequest(data);
+      this.syncKeyBusy = this.makeSyncRequest(data, callback);
       return await this.syncKeyBusy;
     } finally {
       this.syncKeyBusy = null;
     }
   }
 
-  protected async makeSyncRequest(data?: any): Promise<any> {
+  protected async makeSyncRequest(data?: any, callback?: (response: any) => Promise<void>): Promise<any> {
     let request = {
       Collections: {
         Collection: Object.assign({
@@ -71,6 +71,7 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
     if (response.Collections.Collection.Status != "1") {
       throw new EASError("Sync", response.Collections.Collection.Status);
     }
+    callback?.(response.Collections.Collection);
     this.syncState = response.Collections.Collection.SyncKey;
     await SQLAddressbook.save(this);
     return response.Collections.Collection;
@@ -89,13 +90,7 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
         },
       },
     };
-    let response: any = { MoreAvailable: "" };
-    while (response.MoreAvailable == "") {
-      response = await this.queuedSyncRequest(data);
-      if (!response) {
-        // No changes at all.
-        break;
-      }
+    while ((await this.queuedSyncRequest(data, async response => {
       for (let item of ensureArray(response.Commands?.Add).concat(ensureArray(response.Commands?.Change))) {
         try {
           let person = this.getPersonByServerID(item.ServerId);
@@ -114,12 +109,16 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
         }
       }
       for (let item of ensureArray(response.Commands?.Delete)) {
-        let person = this.getPersonByServerID(item.ServerId);
-        if (person) {
-          await SQLPerson.deleteIt(person);
+        try {
+          let person = this.getPersonByServerID(item.ServerId);
+          if (person) {
+            await SQLPerson.deleteIt(person);
+          }
+        } catch (ex) {
+          this.account.errorCallback(ex);
         }
       }
-    }
+    }))?.MoreAvailable == "");
     this.account.addPingable(this);
   }
 
