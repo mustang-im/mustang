@@ -94,7 +94,7 @@ export class OWAAccount extends MailAccount {
     }
     this.hasLoggedIn = true;
 
-    let addressbook = appGlobal.addressbooks.find((addressbook: OWAAddressbook) => addressbook.protocol == "addressbook-owa" && addressbook.url == this.url && addressbook.username == this.emailAddress) as OWAAddressbook | void;
+    let addressbook = appGlobal.addressbooks.find((addressbook: OWAAddressbook) => addressbook.protocol == "addressbook-owa" && addressbook.url == this.url && addressbook.username == this.username) as OWAAddressbook | void;
     if (!addressbook) {
       addressbook = new OWAAddressbook();
       addressbook.url = this.url;
@@ -105,7 +105,7 @@ export class OWAAccount extends MailAccount {
     addressbook.account = this;
     await addressbook.listContacts();
 
-    let calendar = appGlobal.calendars.find((calendar: OWACalendar) => calendar.protocol == "calendar-owa" && calendar.url == this.url && calendar.username == this.emailAddress) as OWACalendar | void;
+    let calendar = appGlobal.calendars.find((calendar: OWACalendar) => calendar.protocol == "calendar-owa" && calendar.url == this.url && calendar.username == this.username) as OWACalendar | void;
     if (!calendar) {
       calendar = new OWACalendar();
       calendar.name = this.name;
