@@ -465,8 +465,20 @@ export class EASError extends Error {
   type: string;
   code: string;
   constructor(aCommand: string, aStatus: string) {
-    super(`ActiveSync ${aCommand} status ${aStatus}`);
+    let status = EASCode[parseInt(aStatus)] ?? aStatus;
+    super(`ActiveSync ${aCommand} status ${status}`);
     this.type = aCommand;
     this.code = aStatus;
   }
+}
+
+enum EASCode {
+  "Sync key out of date" = 3,
+  "Request format error" = 4,
+  "Temporary server error" = 5,
+  "Invalid request data" = 6,
+  "Change rejected by server" = 7,
+  "Item not found" = 8,
+  "Folder hierarchy changed" = 12,
+  "Retryable server error" = 16, 
 }
