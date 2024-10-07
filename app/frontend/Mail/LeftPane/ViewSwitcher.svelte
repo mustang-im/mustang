@@ -33,8 +33,7 @@
   import IslandSwitcher from "./IslandSwitcher.svelte";
   import Button from "../../Shared/Button.svelte";
   import ChatIcon from "lucide-svelte/icons/message-square";
-  //import VerticalIcon from "lucide-svelte/icons/columns";
-  import VerticalIcon from '../../asset/icon/mail/threeColumns.svg?raw';
+  import VerticalIcon from "lucide-svelte/icons/columns-3";
   import ThreePaneIcon from "lucide-svelte/icons/layout-panel-left";
   import { t } from "../../../l10n/l10n";
 
@@ -51,8 +50,5 @@
 <style>
   .switcher {
     margin: 6px 8px;
-  }
-  .switcher :global(.vertical .icon) {
-    color: transparent;
   }
 </style>
