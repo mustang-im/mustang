@@ -30,6 +30,7 @@
     "@tiptap/extension-code-block-lowlight": "^2.2.2",
     "@tiptap/extension-image": "^2.2.4",
     "@tiptap/extension-link": "^2.2.2",
+    "@tiptap/extension-text-style": "^2.8.0",
     "@tiptap/pm": "^2.2.2",
     "@tiptap/starter-kit": "^2.2.2",
     "@types/dompurify": "^3.0.5",
