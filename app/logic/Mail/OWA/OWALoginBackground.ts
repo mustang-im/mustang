@@ -1,8 +1,8 @@
 import { appGlobal } from "../../app";
 
 export class OWALoginBackground {
-  static async submitLoginForm(emailAddress: string, password: string, partition: string, elements: OWALoginFormElements) {
-    elements.username.value = emailAddress;
+  static async submitLoginForm(username: string, password: string, partition: string, elements: OWALoginFormElements) {
+    elements.username.value = username;
     elements.password.value = password;
     if ("flags" in elements.form.elements) {
       (elements.form.elements.flags as any).value |= 1;

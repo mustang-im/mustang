@@ -207,7 +207,7 @@ export class EWSAccount extends MailAccount {
     if (this.oAuth2) {
       options.headers.Authorization = this.oAuth2.authorizationHeader;
     } else {
-      options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username || this.emailAddress}:${this.password}`)))}`;
+      options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
     }
     return options;
   }
