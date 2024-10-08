@@ -52,7 +52,7 @@ export class EWSAccount extends MailAccount {
     }
     await this.listFolders();
 
-    let addressbook = appGlobal.addressbooks.find((addressbook: EWSAddressbook) => addressbook.protocol == "addressbook-ews" && addressbook.url == this.url && addressbook.username == this.emailAddress) as EWSAddressbook | void;
+    let addressbook = appGlobal.addressbooks.find((addressbook: EWSAddressbook) => addressbook.protocol == "addressbook-ews" && addressbook.url == this.url && addressbook.username == this.username) as EWSAddressbook | void;
     if (!addressbook) {
       addressbook = new EWSAddressbook();
       addressbook.name = this.name;
@@ -64,7 +64,7 @@ export class EWSAccount extends MailAccount {
     addressbook.account = this;
     await addressbook.listContacts();
 
-    let calendar = appGlobal.calendars.find((calendar: EWSCalendar) => calendar.protocol == "calendar-ews" && calendar.url == this.url && calendar.username == this.emailAddress) as EWSCalendar | void;
+    let calendar = appGlobal.calendars.find((calendar: EWSCalendar) => calendar.protocol == "calendar-ews" && calendar.url == this.url && calendar.username == this.username) as EWSCalendar | void;
     if (!calendar) {
       calendar = new EWSCalendar();
       calendar.name = this.name;
