@@ -80,7 +80,7 @@ export class OWAAccount extends MailAccount {
         if (!elements) {
           throw new Error(gt`Could not find login form`);
         }
-        let response = await OWALoginBackground.submitLoginForm(this.emailAddress, this.password, this.partition, elements);
+        let response = await OWALoginBackground.submitLoginForm(this.username, this.password, this.partition, elements);
         let formURL = new URL(elements.url);
         let responseURL = new URL(response.url);
         if (response.status == 401 || responseURL.origin == formURL.origin && responseURL.pathname == formURL.pathname && responseURL.searchParams.get("reason") == "2") {
@@ -204,7 +204,7 @@ export class OWAAccount extends MailAccount {
   async listFolders(interactive?: boolean): Promise<void> {
     let autofillJS: string | null = "";
     if (interactive) {
-      autofillJS = owaAutoFillLoginPage(this.emailAddress, this.password);
+      autofillJS = owaAutoFillLoginPage(this.username, this.password);
     }
     let sessionData = await appGlobal.remoteApp.OWA.fetchSessionData(this.partition, this.url, interactive, autofillJS);
     if (!sessionData) {

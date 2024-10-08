@@ -137,7 +137,7 @@ export class ActiveSyncAccount extends MailAccount {
       await this.oAuth2.login(true);
       options.headers.Authorization = this.oAuth2.authorizationHeader;
     } else {
-      options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username || this.emailAddress}:${this.password}`)))}`;
+      options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
     }
     let response = await appGlobal.remoteApp.optionsHTTP(this.url, options);
     if (response.ok) {
@@ -188,7 +188,7 @@ export class ActiveSyncAccount extends MailAccount {
   async callEAS(aCommand: string, aRequest: any, heartbeat = 0): Promise<any> {
     let url = new URL(this.url);
     url.searchParams.append("Cmd", aCommand);
-    url.searchParams.append("User", this.username || this.emailAddress);
+    url.searchParams.append("User", this.username);
     url.searchParams.append("DeviceID", this.getDeviceID());
     url.searchParams.append("DeviceType", "UniversalOutlook");
     let options: any = {
@@ -203,7 +203,7 @@ export class ActiveSyncAccount extends MailAccount {
     if (this.oAuth2) {
       options.headers.Authorization = this.oAuth2.authorizationHeader;
     } else {
-      options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username || this.emailAddress}:${this.password}`)))}`;
+      options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
     }
     if (await this.policyKey) {
       options.headers["X-MS-PolicyKey"] = await this.policyKey;
