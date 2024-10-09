@@ -108,6 +108,25 @@ export class AceEMail {
       });
   }
 
+  static kMainPropertiesInclude = [
+    "*/id",
+    "*/pID",
+    "*/subject",
+    "*/outgoing",
+    "*/from",
+    "*/to",
+    "*/threadID",
+    "*/inReplyTo",
+    "*/size",
+    "*/sent",
+    "*/received",
+    "*/downloadComplete",
+    "*/isRead",
+    "*/isStarred",
+    "*/isReplied",
+    "*/isSpam",
+  ];
+
   /**
    * @param limit Max number of results (optional, default all)
    * @param startWith Do not return the first `startWith` results (optional, default all)
@@ -121,26 +140,7 @@ export class AceEMail {
     await JSONEMail.init();
     let db = await getDatabase();
     db.ref(this.refBranch).forEach(
-      {
-        include: [
-          "*/id",
-          "*/pID",
-          "*/subject",
-          "*/outgoing",
-          "*/from",
-          "*/to",
-          "*/threadID",
-          "*/inReplyTo",
-          "*/size",
-          "*/sent",
-          "*/received",
-          "*/downloadComplete",
-          "*/isRead",
-          "*/isStarred",
-          "*/isReplied",
-          "*/isSpam",
-        ]
-      },
+      { include: this.kMainPropertiesInclude },
       snapshot => {
         let dbID = snapshot.key;
         let json = snapshot.val();

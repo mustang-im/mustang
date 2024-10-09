@@ -7,7 +7,7 @@ import type { Collection } from "svelte-collections";
 import { assert } from "../../util/util";
 
 export class AceFolder extends Folder {
-  static readonly refBranch = "mail/email";
+  static readonly refBranch = "mail/folder";
   static ref(folder: Folder): string {
     assert(folder.dbID, "Need folder.dbID");
     return this.refBranch + "/" + folder.dbID;
@@ -42,7 +42,7 @@ export class AceFolder extends Folder {
   /** @returns the root folders */
   static async readAllHierarchy(account: MailAccount): Promise<void> {
     let rows = await appGlobal.remoteApp.aceQuery(await getDatabase(),
-      `mail/folder/`,
+      this.refBranch,
       [{ column: 'accountID', op: '==', value: account.id }]);
     async function readSubFolders(parentFolderID: string | null, resultFolders: Collection<Folder>) {
       for (let row of rows.filter(r => r.parent == parentFolderID)) {
