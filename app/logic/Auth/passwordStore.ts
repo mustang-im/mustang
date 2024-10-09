@@ -12,7 +12,7 @@ export async function getPassword(account: string): Promise<string | null> {
   return sanitize.string(await decrypt(secret, encrypted) as string, null);
 }
 
-export async function setPassword(account: string, password: string): Promise<void> {
+export async function setPassword(account: string, password: string | null): Promise<void> {
   if (!password) {
     await deletePassword(account);
     return;
