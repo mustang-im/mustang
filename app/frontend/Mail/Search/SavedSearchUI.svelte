@@ -10,7 +10,7 @@
 </vbox>
 
 <script lang="ts">
-  import type { SearchEMail } from "../../../logic/Mail/SQL/SearchEMail";
+  import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
   import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import { selectedAccount, selectedFolder } from "../Selected";
   import { allAccountsAccount } from "../../../logic/Mail/AccountsList/ShowAccounts";

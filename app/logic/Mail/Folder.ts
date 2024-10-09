@@ -1,7 +1,7 @@
 import { EMail } from "./EMail";
 import type { MailAccount } from "./MailAccount";
 import type { TreeItem } from "../../frontend/Shared/FastTree";
-import { EMailCollection } from "./SQL/EMailCollection";
+import { EMailCollection } from "./Store/EMailCollection";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, Collection } from 'svelte-collections';
 import { assert, AbstractFunction } from "../util/util";

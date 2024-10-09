@@ -1,4 +1,4 @@
-import { SearchEMail } from "./SearchEMail";
+import { SearchEMail } from "../Store/SearchEMail";
 import { SQLEMail } from "./SQLEMail";
 import { getDatabase } from "./SQLDatabase";
 import type { EMail } from "../EMail";

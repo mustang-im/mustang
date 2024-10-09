@@ -3,7 +3,7 @@ import { RawFilesAttachment } from "./RawFilesAttachment";
 import { SQLStorage } from "../SQL/SQLStorage";
 import { SQLSearchEMail } from "../SQL/SQLSearchEMail";
 import { SQLSourceEMail } from "../SQL/Source/SQLSourceEMail";
-import type { SearchEMail } from "../SQL/SearchEMail";
+import type { SearchEMail } from "./SearchEMail";
 import type { MailAccount } from "../MailAccount";
 
 export function setStorage(acc: MailAccount) {

@@ -1,5 +1,5 @@
 import { Folder, SpecialFolder } from "../Folder";
-import type { SearchEMail } from "../SQL/SearchEMail";
+import type { SearchEMail } from "../Store/SearchEMail";
 import { newSearchEMail } from "../Store/setStorage";
 import type { AllAccounts } from "./AllAccounts";
 import type { EMail } from "../EMail";
