@@ -8,7 +8,7 @@ import type { ComponentType } from "svelte";
 
 export class Account extends Observable {
   id: string;
-  dbID: number | null = null;
+  dbID: number | string | null = null;
   @notifyChangedProperty
   name: string;
   @notifyChangedProperty

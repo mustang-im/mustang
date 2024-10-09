@@ -9,7 +9,7 @@ export class Message extends Observable {
   /** protocol-specific ID for this message.
    * Allows for reactions, corrections etc. */
   id: string;
-  dbID: number;
+  dbID: number | string;
   outgoing = false;
   /**
    * Who this message was exchanged with.

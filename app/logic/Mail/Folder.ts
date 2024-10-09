@@ -10,7 +10,7 @@ import { gt } from "../../l10n/l10n";
 export class Folder extends Observable implements TreeItem<Folder> {
   /** IMAP: folder path */
   id: string;
-  dbID: number;
+  dbID: number | string;
   @notifyChangedProperty
   name: string;
   @notifyChangedProperty
@@ -37,6 +37,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
     this.account = account;
   }
 
+  // TODO remove, and adapt SQLFolder to use folder.id instead (but keep column name "path" in the DB)
   get path(): string {
     return this.id;
   }
