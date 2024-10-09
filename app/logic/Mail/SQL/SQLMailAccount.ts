@@ -1,11 +1,10 @@
-import { TLSSocketType, type MailAccount } from "../MailAccount";
+import type { MailAccount } from "../MailAccount";
 import { getDatabase } from "./SQLDatabase";
+import { JSONMailAccount } from "../JSON/JSONMailAccount";
 import { setStorage } from "../Store/setStorage";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { SMTPAccount } from "../SMTP/SMTPAccount";
-import { ContactEntry } from "../../Abstract/Person";
 import { getPassword, setPassword, deletePassword } from "../../Auth/passwordStore";
-import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
@@ -15,9 +14,7 @@ import sql from "../../../../lib/rs-sqlite";
 export class SQLMailAccount {
   static async save(acc: MailAccount) {
     if (acc.outgoing) {
-      if (!acc.outgoing.emailAddress) {
-        acc.outgoing.emailAddress = acc.emailAddress;
-      }
+      acc.outgoing.emailAddress ??= acc.emailAddress;
       await SQLMailAccount.save(acc.outgoing);
     }
     if (!acc.dbID) {
@@ -86,34 +83,15 @@ export class SQLMailAccount {
       WHERE id = ${dbID}
       `) as any;
     acc.dbID = dbID;
-    (acc.id as any) = sanitize.alphanumdash(row.idStr);
-    assert(acc.protocol == sanitize.alphanumdash(row.protocol), "MailAccount object of wrong type passed in");
-    acc.emailAddress = sanitize.emailAddress(row.emailAddress);
-    acc.username = sanitize.string(row.username, null);
+    row.id = row.idStr;
+    row.configJSON = JSON.parse(sanitize.nonemptystring(row.configJSON, "{}"));
+    JSONMailAccount.read(acc, row);
     acc.password = await getPassword("mail." + acc.id);
-    acc.hostname = sanitize.hostname(row.hostname, null);
-    acc.port = sanitize.portTCP(row.port, null);
-    acc.tls = sanitize.enum(row.tls, [TLSSocketType.Plain, TLSSocketType.TLS, TLSSocketType.STARTTLS], TLSSocketType.Unknown);
-    acc.authMethod = sanitize.integerRange(row.authMethod, 0, 20);
-    acc.url = sanitize.url(row.url, null);
-    acc.userRealname = sanitize.label(row.userRealname, appGlobal.me.name);
-    acc.name = sanitize.label(row.name, acc.emailAddress);
-    acc.workspace = row.workspace
-      ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
-      : null;
-    acc.fromConfigJSON(JSON.parse(sanitize.nonemptystring(row.configJSON, "{}")));
     setStorage(acc);
-    if (!appGlobal.me.name && acc.userRealname) {
-      appGlobal.me.name = acc.userRealname;
-    }
-    if (!appGlobal.me.emailAddresses.find(c => c.value == acc.emailAddress)) {
-      appGlobal.me.emailAddresses.add(new ContactEntry(acc.emailAddress, "account"));
-    }
     let outgoingAccountID = sanitize.integer(row.outgoingAccountID, null);
     if (outgoingAccountID) {
-      let outgoing = new SMTPAccount();
-      await SQLMailAccount.read(outgoingAccountID, outgoing);
-      acc.outgoing = outgoing;
+      acc.outgoing = new SMTPAccount();
+      await SQLMailAccount.read(outgoingAccountID, acc.outgoing);
     }
     return acc;
   }

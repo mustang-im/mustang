@@ -95,3 +95,5 @@ export function personDisplayName(person: PersonOrGroup | PersonUID) {
     return "Unknown contact type";
   }
 }
+
+export const kDummyPerson = new PersonUID("unknown@invalid", "");

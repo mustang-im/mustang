@@ -3,14 +3,12 @@ import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import type { Folder } from "../Folder";
 import { Attachment, ContentDisposition } from "../Attachment";
 import { getTagByName, Tag } from "../Tag";
+import { JSONEMail } from "../JSON/JSONEMail";
 import { getDatabase } from "./SQLDatabase";
-import { appGlobal } from "../../app";
 import { assert, fileExtensionForMIMEType } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import sql from "../../../../lib/rs-sqlite";
-
-let filesDir: string = null;
 
 export class SQLEMail {
   /**
@@ -167,8 +165,7 @@ export class SQLEMail {
 
   protected static async saveAttachment(email: EMail, a: Attachment) {
     assert(email.dbID, "Need to save email before attachment");
-    filesDir ??= await appGlobal.remoteApp.getFilesDir();
-    let filepath = a.filepathLocal?.replace(filesDir + "/", "");
+    let filepath = a.filepathLocal?.replace(JSONEMail.filesDir + "/", "");
     await (await getDatabase()).run(sql`
       INSERT OR IGNORE INTO emailAttachment (
         emailID, filename, filepathLocal, mimeType, size, contentID, disposition, related
@@ -182,8 +179,7 @@ export class SQLEMail {
    * save its local disk location. */
   static async saveAttachmentFile(email: EMail, a: Attachment) {
     assert(email.dbID, "Need to save email before attachment");
-    filesDir ??= await appGlobal.remoteApp.getFilesDir();
-    let filepath = a.filepathLocal?.replace(filesDir + "/", "");
+    let filepath = a.filepathLocal?.replace(JSONEMail.filesDir + "/", "");
     await (await getDatabase()).run(sql`
       UPDATE emailAttachment SET
         filepathLocal = ${filepath}
@@ -368,7 +364,6 @@ export class SQLEMail {
       `) as any;
     }
     let fallbackID = 0;
-    filesDir ??= await appGlobal.remoteApp.getFilesDir();
     email.attachments.clear();
     for (let row of attachmentRows) {
       try {
@@ -377,7 +372,7 @@ export class SQLEMail {
         a.contentID = sanitize.nonemptystring(row.contentID, "" + ++fallbackID);
         a.filename = sanitize.nonemptystring(row.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(a.mimeType));
         let filepath = sanitize.string(row.filepathLocal, null);
-        a.filepathLocal = filepath ? filesDir + "/" + filepath : null;
+        a.filepathLocal = filepath ? JSONEMail.filesDir + "/" + filepath : null;
         a.size = sanitize.integer(row.size, -1);
         a.disposition = sanitize.translate(row.disposition, {
           attachment: ContentDisposition.attachment,
@@ -443,6 +438,7 @@ export class SQLEMail {
     if (startWith && !limit) {
       limit = -1;
     }
+    await JSONEMail.init();
     // <copied from="read()" />
     let emailRows = await (await getDatabase()).all(sql`
       SELECT
@@ -512,6 +508,7 @@ export class SQLEMail {
     if (startWith && !limit) {
       limit = -1;
     }
+    await JSONEMail.init();
     // <copied from="read()" />
     let emailRows = await (await getDatabase()).all(sql`
       SELECT

@@ -105,7 +105,7 @@ export class SQLFolder extends Folder {
       FROM folder
       WHERE accountID = ${account.dbID}
       `) as any;
-    async function readSubFolders(parentFolderID: number | null, resultFolders: Collection<Folder>) {
+    async function readSubFolders(parentFolderID: number | string | null, resultFolders: Collection<Folder>) {
       for (let row of rows.filter(r => r.parent == parentFolderID)) {
         if (account.findFolder(folder => folder.dbID == row.id)) {
           continue;
