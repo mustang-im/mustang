@@ -1,0 +1,72 @@
+import type { MailAccount } from "../MailAccount";
+import { getDatabase } from "./AceDatabase";
+import { JSONMailAccount } from "../JSON/JSONMailAccount";
+import { setStorage } from "../Store/setStorage";
+import { newAccountForProtocol } from "../AccountsList/MailAccounts";
+import { SMTPAccount } from "../SMTP/SMTPAccount";
+import { getPassword, setPassword, deletePassword } from "../../Auth/passwordStore";
+import { appGlobal } from "../../app";
+import { backgroundError } from "../../../frontend/Util/error";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { assert } from "../../util/util";
+import { ArrayColl } from "svelte-collections";
+
+export class AceMailAccount {
+  static readonly refBranch = "mail/account";
+  static ref(acc: MailAccount): string {
+    assert(acc.id, "Need account.id");
+    return this.refBranch + "/" + acc.id;
+  }
+
+  static async save(acc: MailAccount) {
+    if (acc.outgoing) {
+      acc.outgoing.emailAddress ??= acc.emailAddress;
+      await AceMailAccount.save(acc.outgoing);
+    }
+    acc.dbID = acc.id;
+    let json = JSONMailAccount.save(acc);
+    await appGlobal.remoteApp.aceSet(await getDatabase(), this.ref(acc), json);
+    await setPassword("mail." + acc.id, acc.password);
+    setStorage(acc);
+  }
+
+  /** Also deletes all folders and messages in this account */
+  static async deleteIt(acc: MailAccount) {
+    assert(acc.id, "Need account ID to delete");
+    await appGlobal.remoteApp.aceRemove(await getDatabase(), this.ref(acc));
+    await deletePassword("mail." + acc.id);
+  }
+
+  static async read(accID: string, acc: MailAccount, json?: any) {
+    assert(accID, "Need account ID to read it");
+    if (!json) {
+      json = await appGlobal.remoteApp.aceGet(await getDatabase(), this.ref(acc));
+    }
+    assert(accID == json.id, "Account reference ID doesn't match saved account ID");
+    JSONMailAccount.read(acc, json);
+    acc.dbID = acc.id;
+    acc.password = await getPassword("mail." + acc.id);
+    setStorage(acc);
+    let outgoingAccountID = sanitize.alphanumdash(json.outgoingAccountID, null);
+    if (outgoingAccountID) {
+      acc.outgoing = new SMTPAccount() as any as MailAccount;
+      await AceMailAccount.read(outgoingAccountID, acc.outgoing);
+    }
+    return acc;
+  }
+
+  static async readAll(): Promise<ArrayColl<MailAccount>> {
+    let jsonRows = await appGlobal.remoteApp.aceGet(await getDatabase(), `mail/account/*`);
+    let accounts = new ArrayColl<MailAccount>();
+    for (let json of jsonRows) {
+      try {
+        let account = newAccountForProtocol(json.protocol);
+        await AceMailAccount.read(json.id, account, json);
+        accounts.add(account);
+      } catch (ex) {
+        backgroundError(ex);
+      }
+    }
+    return accounts;
+  }
+}

@@ -64,6 +64,7 @@
     "@lingui/format-json": "^4.11.1",
     "@sveltejs/vite-plugin-svelte": "^2.0.3",
     "@tsconfig/svelte": "^3.0.0",
+    "acebase": "^1.29.5",
     "adm-zip": "^0.5.12",
     "simple-svelte-autocomplete": "^2.5.2",
     "svelte": "^3.55.1",

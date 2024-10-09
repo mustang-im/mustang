@@ -2,6 +2,7 @@ import { HTTPServer } from './HTTPServer';
 import JPCWebSocket from '../lib/jpc-ws';
 import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
+import { AceBase, type DataReference } from "acebase";
 import Zip from "adm-zip";
 import ky from 'ky';
 import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, Menu, MenuItemConstructorOptions } from "electron";
@@ -43,10 +44,17 @@ async function createSharedAppObject() {
     getFilesDir,
     openFileInExternalApp,
     createIMAPFlowConnection,
-    getSQLiteDatabase,
     sendMailNodemailer,
     verifyServerNodemailer,
     getMIMENodemailer,
+    getSQLiteDatabase,
+    getAceDatabase,
+    aceGet,
+    aceSet,
+    acePush,
+    aceUpdate,
+    aceRemove,
+    aceQuery,
     newAdmZIP,
     newHTTPServer,
     readFile,
@@ -275,13 +283,6 @@ function createIMAPFlowConnection(...args): ImapFlow {
   return new ImapFlow(...args);
 }
 
-function getSQLiteDatabase(filename: string, options: any): Database {
-  if (!filename.startsWith("/")) {
-    filename = path.join(getConfigDir(), filename);
-  }
-  return new Database(filename, options);
-}
-
 async function sendMailNodemailer(transport, mail) {
   let transporter = nodemailer.createTransport(transport);
   await transporter.sendMail(mail);
@@ -296,6 +297,57 @@ async function getMIMENodemailer(mail): Promise<Uint8Array> {
   let composer = new MailComposer(mail);
   let buffer = await composer.compile().build();
   return buffer;
+}
+
+function getSQLiteDatabase(filename: string, options: any): Database {
+  if (!filename.startsWith("/")) {
+    filename = path.join(getConfigDir(), filename);
+  }
+  return new Database(filename, options);
+}
+
+async function getAceDatabase(filename: string, options: any): Promise<AceBase> {
+  if (!filename.startsWith("/")) {
+    filename = path.join(getConfigDir(), filename);
+  }
+  let db = new AceBase(filename, options);
+  await db.ready();
+  return db;
+}
+
+async function aceGet(db: AceBase, refPath: string): Promise<any> {
+  let snapshot = await db.ref(refPath).get();
+  if (snapshot.exists()) {
+    return snapshot.val();
+  } else {
+    return null;
+  }
+}
+
+async function aceSet(db: AceBase, refPath: string, value: any): Promise<DataReference<any>> {
+  return db.ref(refPath).set(value);
+}
+
+async function acePush(db: AceBase, refPath: string, value: any): Promise<string> {
+  let ref = await db.ref(refPath).push(value);
+  return ref.key;
+}
+
+async function aceUpdate(db: AceBase, refPath: string, value: any): Promise<DataReference<any>> {
+  return db.ref(refPath).update(value);
+}
+
+async function aceRemove(db: AceBase, refPath: string): Promise<DataReference<any>> {
+  return db.ref(refPath).remove();
+}
+
+async function aceQuery(db: AceBase, refPath: string, filters: [{column: any, op: any, value: any}]): Promise<any[]> {
+  let q = db.query(refPath);
+  for (let filter of filters) {
+    q = q.filter(filter.column, filter.op, filter.value);
+  }
+  let snapshots = await q.get();
+  return snapshots.getValues();
 }
 
 function newAdmZIP(filepath: string) {
