@@ -38,7 +38,7 @@
   import type { Person } from "../../../logic/Abstract/Person";
   import { selectedPerson } from "../../Shared/Person/Selected";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
-  import { SQLSearchEMail } from "../../../logic/Mail/SQL/SQLSearchEMail";
+  import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
   import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import { appGlobal } from "../../../logic/app";
   import AccountList from "./AccountList.svelte";
@@ -74,7 +74,7 @@
   }
   $: activeTab == SearchView.Person && $selectedPerson && catchErrors(() => showPerson($selectedPerson))
   async function showPerson(person: Person) {
-    let search = new SQLSearchEMail();
+    let search = newSearchEMail();
     search.includesPerson = person;
     //let folder = new SavedSearchFolder(search);
     //selectedFolder = folder;

@@ -1,6 +1,6 @@
 import { Folder, SpecialFolder } from "../Folder";
 import type { SearchEMail } from "../SQL/SearchEMail";
-import { SQLSearchEMail } from "../SQL/SQLSearchEMail";
+import { newSearchEMail } from "../Store/setStorage";
 import type { AllAccounts } from "./AllAccounts";
 import type { EMail } from "../EMail";
 import { allAccountsAccount } from "../AccountsList/ShowAccounts";
@@ -45,7 +45,7 @@ export class SavedSearchFolder extends Folder {
   }
 
   static readFromJSON(json: any): SavedSearchFolder {
-    let search = new SQLSearchEMail();
+    let search = newSearchEMail();
     search.fromJSON(json);
     let folder = new SavedSearchFolder(search);
     folder.name = sanitize.label(json.name, "Search");

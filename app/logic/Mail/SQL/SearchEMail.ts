@@ -2,6 +2,7 @@ import type { EMail } from "../EMail";
 import type { Person } from "../../Abstract/Person";
 import type { MailAccount } from "../MailAccount";
 import type { Folder } from "../Folder";
+import { newSearchEMail } from "../Store/setStorage";
 import { getTagByName, type Tag } from "../Tag";
 import { findPerson } from "../../Abstract/PersonUID";
 import { appGlobal } from "../../app";
@@ -100,6 +101,17 @@ export class SearchEMail extends Observable {
     return clone;
   }
 }
+
+export async function findMessageByID(msgid: string): Promise<EMail | undefined> {
+  let search = newSearchEMail();
+  search.messageID = msgid;
+  let results = await search.startSearch();
+  if (results.isEmpty) {
+    return undefined;
+  }
+  return results.first;
+}
+
 
 // TODO Move into SetColl() ctor
 function createSetColl<Item>(initial: Item[]): SetColl<Item> {

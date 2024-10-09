@@ -12,7 +12,7 @@
   import { availableTags, type Tag } from '../../../logic/Mail/Tag';
   import type { Folder } from '../../../logic/Mail/Folder';
   import type { EMail } from '../../../logic/Mail/EMail';
-  import { SQLSearchEMail } from '../../../logic/Mail/SQL/SQLSearchEMail';
+  import { newSearchEMail } from '../../../logic/Mail/Store/setStorage';
   import TagSelector from '../Tag/TagSelector.svelte';
   import { catchErrors } from '../../Util/error';
   import { ArrayColl, SetColl } from 'svelte-collections';
@@ -28,7 +28,7 @@
 
   async function onSelect() {
     if (selectedTags.hasItems) {
-      let search = new SQLSearchEMail();
+      let search = newSearchEMail();
       search.folder = folder;
       search.tags = selectedTags;
       searchMessages = await search.startSearch();

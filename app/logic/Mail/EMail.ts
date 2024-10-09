@@ -3,7 +3,6 @@ import { SpecialFolder, type Folder } from "./Folder";
 import { Attachment, ContentDisposition } from "./Attachment";
 import type { Tag } from "./Tag";
 import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
-//import { sqlFindMessageByID } from "./SQL/SQLSearchEMail";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { appGlobal } from "../app";
 import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
@@ -389,7 +388,7 @@ export class EMail extends Message {
       lastThreadIDs.add(threadID);
       console.log("finding thread", threadID);
       let parent = messages.find(msg => msg.threadID == threadID || msg.messageID == threadID)
-        //?? await sqlFindMessageByID(threadID);
+        //?? await findMessageByID(threadID);
       threadID = parent?.threadID ?? parent?.inReplyTo;
       if (threadID && parent.threadID != threadID) {
         parent.threadID = threadID;

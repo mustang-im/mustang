@@ -106,7 +106,7 @@
 </vbox>
 
 <script lang="ts">
-  import { SQLSearchEMail } from "../../../logic/Mail/SQL/SQLSearchEMail";
+  import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { Person } from "../../../logic/Abstract/Person";
@@ -174,7 +174,7 @@
   let isOpen = true;
 
   const kLimit = 200;
-  let search = new SQLSearchEMail();
+  let search = newSearchEMail();
   $: isOpen && $globalSearchTerm, isOutgoing, isUnread, isStar,
     isMaxSize, isMinSize, maxSizeMB, minSizeMB,
     isAccount, account, isFolder, folder, isPerson, includesPerson,

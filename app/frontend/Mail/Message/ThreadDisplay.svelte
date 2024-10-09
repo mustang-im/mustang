@@ -10,7 +10,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { SQLSearchEMail } from "../../../logic/Mail/SQL/SQLSearchEMail";
+  import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
   import MailMessage from "../MailChat/MailMessage.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import { ArrayColl } from "svelte-collections";
@@ -29,7 +29,7 @@
     if (!message.threadID) {
       return;
     }
-    let search = new SQLSearchEMail();
+    let search = newSearchEMail();
     search.threadID = message.threadID;
     threadMessages.clear();
     let msgs = await search.startSearch();

@@ -112,13 +112,3 @@ function queryString(query: Query): string {
   }
   return str;
 }
-
-export async function sqlFindMessageByID(msgid: string): Promise<EMail | undefined> {
-  let search = new SQLSearchEMail();
-  search.messageID = msgid;
-  let results = await search.startSearch();
-  if (results.isEmpty) {
-    return undefined;
-  }
-  return results.first;
-}
