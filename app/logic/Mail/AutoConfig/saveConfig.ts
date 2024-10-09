@@ -1,5 +1,4 @@
-import type { AuthMethod, MailAccount } from "../MailAccount";
-import { SQLMailAccount } from "../SQL/SQLMailAccount";
+import type { MailAccount } from "../MailAccount";
 import { ContactEntry, Person } from "../../Abstract/Person";
 import { Folder, SpecialFolder } from "../../Mail/Folder";
 import type { PersonUID } from "../../Abstract/PersonUID";
@@ -31,7 +30,7 @@ export async function saveConfig(config: MailAccount, emailAddress: string, pass
   appGlobal.emailAccounts.add(config);
   console.log("Saving new mail account", config);
   // saveAccountToLocalStorage(config);
-  await SQLMailAccount.save(config);
+  await config.save();
 }
 
 /**

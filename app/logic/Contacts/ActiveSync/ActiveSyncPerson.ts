@@ -1,6 +1,5 @@
 import { Person, ContactEntry } from '../../Abstract/Person';
 import type { ActiveSyncAddressbook } from './ActiveSyncAddressbook';
-import { SQLPerson } from '../SQL/SQLPerson';
 import { EASError } from "../../Mail/ActiveSync/ActiveSyncAccount";
 import { assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -101,7 +100,7 @@ export class ActiveSyncPerson extends Person {
         this.serverID = response.Responses.Add.ServerId;
       }
     }
-    await SQLPerson.save(this);
+    await super.save();
   }
 
   async deleteIt() {

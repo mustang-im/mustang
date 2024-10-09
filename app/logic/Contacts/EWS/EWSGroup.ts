@@ -6,9 +6,7 @@ import { ensureArray } from "../../Mail/EWS/EWSEMail";
 import EWSCreateItemRequest from "../../Mail/EWS/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "../../Mail/EWS/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/EWSUpdateItemRequest";
-import { SQLGroup } from '../SQL/SQLGroup';
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { NotImplemented } from '../../util/util';
 import { appGlobal } from "../../app";
 
 export class EWSGroup extends Group {
@@ -48,7 +46,7 @@ export class EWSGroup extends Group {
     } : "", "distributionlist:Members");
     let response = await this.addressbook.account.callEWS(request);
     this.itemID = sanitize.nonemptystring(response.Items.DistributionList.ItemId.Id);
-    await SQLGroup.save(this);
+    await super.save();
   }
 
   async deleteIt() {

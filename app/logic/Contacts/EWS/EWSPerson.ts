@@ -1,6 +1,5 @@
 import { Person, ContactEntry } from '../../Abstract/Person';
 import type { EWSAddressbook } from './EWSAddressbook';
-import { SQLPerson } from '../SQL/SQLPerson';
 import { ensureArray } from "../../Mail/EWS/EWSEMail";
 import EWSCreateItemRequest from "../../Mail/EWS/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "../../Mail/EWS/EWSDeleteItemRequest";
@@ -135,7 +134,7 @@ export class EWSPerson extends Person {
     request.addField("Contact", "Surname", this.lastName, "contacts:Surname");
     let response = await this.addressbook.account.callEWS(request);
     this.itemID = sanitize.nonemptystring(response.Items.Contact.ItemId.Id);
-    await SQLPerson.save(this);
+    await super.save();
   }
 
   async deleteIt() {

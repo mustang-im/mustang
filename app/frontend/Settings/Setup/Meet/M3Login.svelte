@@ -21,7 +21,6 @@
 
 <script lang="ts">
   import type { MeetAccount } from "../../../../logic/Meet/MeetAccount";
-  import { SQLMeetAccount } from "../../../../logic/Meet/SQL/SQLMeetAccount";
   import { appGlobal } from "../../../../logic/app";
   import Password from "../Shared/Password.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
@@ -38,7 +37,7 @@
   async function onContinue() {
     config.name = config.username;
     config.userRealname = appGlobal.me.name;
-    await SQLMeetAccount.save(config);
+    await config.save();
     appGlobal.meetAccounts.add(config);
     showPage = null;
   }

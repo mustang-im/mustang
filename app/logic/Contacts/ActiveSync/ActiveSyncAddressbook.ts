@@ -1,6 +1,4 @@
 import { Addressbook } from "../Addressbook";
-import { SQLAddressbook } from '../SQL/SQLAddressbook';
-import { SQLPerson } from '../SQL/SQLPerson';
 import { ActiveSyncPerson } from "./ActiveSyncPerson";
 import { EASError, type ActiveSyncAccount, type ActiveSyncPingable } from "../../Mail/ActiveSync/ActiveSyncAccount";
 import { kMaxCount, ensureArray } from "../../Mail/ActiveSync/ActiveSyncFolder";
@@ -66,19 +64,19 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
     if (response.Collections.Collection.Status == "3") {
       // Out of sync.
       this.syncState = null;
-      await SQLAddressbook.save(this);
+      await this.save();
     }
     if (response.Collections.Collection.Status != "1") {
       throw new EASError("Sync", response.Collections.Collection.Status);
     }
     this.syncState = response.Collections.Collection.SyncKey;
-    await SQLAddressbook.save(this);
+    await this.save();
     return response.Collections.Collection;
   }
 
   async listContacts() {
     if (!this.dbID) {
-      await SQLAddressbook.save(this);
+      await this.save();
     }
 
     let data = {
@@ -101,12 +99,12 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
           let person = this.getPersonByServerID(item.ServerId);
           if (person) {
             person.fromWBXML(item.ApplicationData);
-            await SQLPerson.save(person);
+            await person.save();
           } else {
             person = this.newPerson();
             person.serverID = item.ServerId;
             person.fromWBXML(item.ApplicationData);
-            await SQLPerson.save(person);
+            await person.save();
             this.persons.add(person);
           }
         } catch (ex) {
@@ -116,7 +114,7 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
       for (let item of ensureArray(response.Commands?.Delete)) {
         let person = this.getPersonByServerID(item.ServerId);
         if (person) {
-          await SQLPerson.deleteIt(person);
+          await person.deleteIt();
         }
       }
     }

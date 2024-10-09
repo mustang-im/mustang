@@ -1,8 +1,6 @@
 import { Calendar } from "../Calendar";
 import { OWAEvent } from "./OWAEvent";
 import type { OWAAccount } from "../../Mail/OWA/OWAAccount";
-import { SQLCalendar } from "../SQL/SQLCalendar";
-import { SQLEvent } from "../SQL/SQLEvent";
 import { kMaxCount } from "../../Mail/OWA/OWAFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
@@ -22,7 +20,7 @@ export class OWACalendar extends Calendar {
 
   async listEvents() {
     if (!this.dbID) {
-      await SQLCalendar.save(this);
+      await this.save();
     }
 
     let events = new ArrayColl<OWAEvent>;
@@ -33,7 +31,7 @@ export class OWACalendar extends Calendar {
     for (let event of this.events.subtract(events)) {
       // This might be a filled occurrence that has since been modified.
       if (event.dbID) {
-        SQLEvent.deleteIt(event);
+        event.deleteIt();
       }
     }
     this.events.replaceAll(events);
@@ -151,7 +149,7 @@ export class OWACalendar extends Calendar {
       try {
         let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id)) || this.newEvent(parentEvent);
         event.fromJSON(item);
-        await SQLEvent.save(event);
+        await event.save();
         events.add(event);
         if (parentEvent && event.recurrenceStartTime) {
           event.parentEvent = parentEvent; // should already be correct

@@ -2,8 +2,6 @@ import { Group } from '../../Abstract/Group';
 import { Person, ContactEntry } from '../../Abstract/Person';
 import { findPerson } from '../../Abstract/PersonUID';
 import type { OWAAddressbook } from './OWAAddressbook';
-import OWADeletePersonaRequest from "./OWADeletePersonaRequest";
-import { SQLGroup } from '../SQL/SQLGroup';
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotImplemented } from '../../util/util';
 import { appGlobal } from "../../app";

@@ -19,7 +19,6 @@
 
 <script lang="ts">
   import type { Addressbook } from "../../../../logic/Contacts/Addressbook";
-  import { SQLAddressbook } from "../../../../logic/Contacts/SQL/SQLAddressbook";
   import { appGlobal } from "../../../../logic/app";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
@@ -32,7 +31,7 @@
   export let onCancel = (event: Event) => undefined;
 
   async function onContinue() {
-    await SQLAddressbook.save(config);
+    await config.save();
     appGlobal.addressbooks.add(config);
     showPage = null;
   }

@@ -60,7 +60,6 @@
   import { ThunderbirdAddressbook } from "../../../../logic/Mail/Import/Thunderbird/TBAddressbook";
   import { ArrayColl } from "svelte-collections";
   import { appGlobal } from "../../../../logic/app";
-  import { SQLAddressbook } from "../../../../logic/Contacts/SQL/SQLAddressbook";
   import { logError } from "../../../Util/error";
 
   export let addressbooks = new ArrayColl<Addressbook>();
@@ -130,7 +129,7 @@
       if (!(addressbook as any).import) {
         continue;
       }
-      await SQLAddressbook.save(addressbook);
+      await addressbook.save();
       appGlobal.addressbooks.add(addressbook);
     }
     onContinue();

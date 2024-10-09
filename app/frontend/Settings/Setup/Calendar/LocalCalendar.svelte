@@ -19,7 +19,6 @@
 
 <script lang="ts">
   import type { Calendar } from "../../../../logic/Calendar/Calendar";
-  import { SQLCalendar } from "../../../../logic/Calendar/SQL/SQLCalendar";
   import { appGlobal } from "../../../../logic/app";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
@@ -32,7 +31,7 @@
   export let onCancel = (event: Event) => undefined;
 
   async function onContinue() {
-    await SQLCalendar.save(config);
+    await config.save();
     appGlobal.calendars.add(config);
     showPage = null;
   }

@@ -1,8 +1,6 @@
 import { Calendar } from "../Calendar";
 import { EWSEvent } from "./EWSEvent";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
-import { SQLCalendar } from "../SQL/SQLCalendar";
-import { SQLEvent } from "../SQL/SQLEvent";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { ensureArray } from "../../Mail/EWS/EWSEMail";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -19,7 +17,7 @@ export class EWSCalendar extends Calendar {
 
   async listEvents() {
     if (!this.dbID) {
-      await SQLCalendar.save(this);
+      await this.save();
     }
 
     /* Disabling tasks for now.
@@ -31,7 +29,7 @@ export class EWSCalendar extends Calendar {
     */
     // Delete the next line when enabling tasks.
     this.syncState = await this.syncFolder("calendar", this.syncState);
-    await SQLCalendar.save(this);
+    await this.save();
   }
 
   async syncFolder(folder: string, syncState: string | null): Promise<string> {
@@ -80,7 +78,7 @@ export class EWSCalendar extends Calendar {
           if (event) {
             this.events.remove(event);
             this.events.removeAll(event.instances);
-            await SQLEvent.deleteIt(event);
+            await event.deleteIt();
           }
         }
       }
@@ -198,11 +196,11 @@ export class EWSCalendar extends Calendar {
         if (event) {
           event.parentEvent = parentEvent; // should already be correct
           event.fromXML(item);
-          await SQLEvent.save(event);
+          await event.save();
         } else {
           event = this.newEvent(parentEvent);
           event.fromXML(item);
-          await SQLEvent.save(event);
+          await event.save();
           events.push(event);
         }
         if (parentEvent && event.recurrenceStartTime) {

@@ -12,7 +12,6 @@
 <script lang="ts">
   import type { Account } from "../../../../logic/Abstract/Account";
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
-  import { SQLMailAccount } from "../../../../logic/Mail/SQL/SQLMailAccount";
   import { IMAPAccount } from "../../../../logic/Mail/IMAP/IMAPAccount";
   import { catchErrors } from "../../../Util/error";
   import ManualConfig from "../../Setup/Mail/manual/ManualConfig.svelte";
@@ -25,7 +24,7 @@
 
   $: $account, catchErrors(save);
   async function save() {
-    await SQLMailAccount.save(mailAccount);
+    await mailAccount.save();
   }
 </script>
 

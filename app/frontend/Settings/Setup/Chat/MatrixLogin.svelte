@@ -21,7 +21,6 @@
 
 <script lang="ts">
   import type { MatrixAccount } from "../../../../logic/Chat/Matrix/MatrixAccount";
-  import { SQLChatAccount } from "../../../../logic/Chat/SQL/SQLChatAccount";
   import { appGlobal } from "../../../../logic/app";
   import Password from "../Shared/Password.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
@@ -54,7 +53,7 @@
   }
 
   async function onContinue() {
-    await SQLChatAccount.save(config);
+    await config.save();
     appGlobal.chatAccounts.add(config);
     showPage = null;
   }

@@ -1,7 +1,4 @@
 import { Addressbook } from "../Addressbook";
-import { SQLAddressbook } from '../SQL/SQLAddressbook';
-import { SQLPerson } from '../SQL/SQLPerson';
-import { SQLGroup } from '../SQL/SQLGroup';
 import { OWAPerson } from "./OWAPerson";
 import { OWAGroup } from "./OWAGroup";
 import type { OWAAccount } from "../../Mail/OWA/OWAAccount";
@@ -33,7 +30,7 @@ export class OWAAddressbook extends Addressbook {
       this.name = contacts.DisplayName;
     }
     if (!this.dbID) {
-      await SQLAddressbook.save(this);
+      await this.save();
     }
 
     let persons = [];
@@ -85,7 +82,7 @@ export class OWAAddressbook extends Addressbook {
   async listPersons(persons: any[]) {
     for (let person of this.persons.contents.filter(person => !persons.some(result => result.PersonaId.Id == person.personaID))) {
       this.persons.remove(person);
-      await SQLPerson.deleteIt(person);
+      await person.deleteIt();
     }
     for (let result of persons) {
       try {
@@ -111,11 +108,11 @@ export class OWAAddressbook extends Addressbook {
         let person = this.getPersonByPersonaID(result.PersonaId.Id);
         if (person) {
           person.fromJSON(result);
-          await SQLPerson.save(person);
+          await person.save();
         } else {
           person = this.newPerson();
           person.fromJSON(result);
-          await SQLPerson.save(person);
+          await person.save();
           this.persons.add(person);
         }
       } catch (ex) {
@@ -127,7 +124,7 @@ export class OWAAddressbook extends Addressbook {
   async listGroups(groups: any[]) {
     for (let group of this.groups.contents.filter(group => !groups.some(result => result.PersonaId.Id == group.personaID))) {
       this.groups.remove(group);
-      await SQLGroup.deleteIt(group);
+      await group.deleteIt();
     }
     for (let result of groups) {
       try {
@@ -140,11 +137,11 @@ export class OWAAddressbook extends Addressbook {
         let group = this.getGroupByPersonaID(result.PersonaId.Id);
         if (group) {
           group.fromJSON(result);
-          await SQLGroup.save(group);
+          await group.save();
         } else {
           group = this.newGroup();
           group.fromJSON(result);
-          await SQLGroup.save(group);
+          await group.save();
           this.groups.add(group);
         }
       } catch (ex) {

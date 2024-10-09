@@ -1,10 +1,8 @@
 import { Person, ContactEntry } from '../../Abstract/Person';
 import type { OWAAddressbook } from './OWAAddressbook';
-import { SQLPerson } from '../SQL/SQLPerson';
 import OWACreatePersonaRequest from "./OWACreatePersonaRequest";
 import OWADeletePersonaRequest from "./OWADeletePersonaRequest";
 import OWAUpdatePersonaRequest from "./OWAUpdatePersonaRequest";
-import { assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 const PhysicalAddressElements = ["Street", "City", "State", "PostalCode", "Country"];
@@ -57,7 +55,7 @@ export class OWAPerson extends Person {
     this.name = sanitize.nonemptystring(response.DisplayName, "");
     this.personaID = sanitize.nonemptystring(response.PersonaId.Id);
     this.fields = fields;
-    await SQLPerson.save(this);
+    await super.save();
   }
 
   toFields(): Record<string, string> {
@@ -90,6 +88,6 @@ export class OWAPerson extends Person {
     let request = new OWADeletePersonaRequest(this.personaID);
     await this.addressbook.account.callOWA(request);
     this.addressbook.persons.remove(this);
-    await SQLPerson.deleteIt(this);
+    await super.deleteIt();
   }
 }

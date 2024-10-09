@@ -1,7 +1,4 @@
 import { Addressbook } from "../Addressbook";
-import { SQLAddressbook } from '../SQL/SQLAddressbook';
-import { SQLPerson } from '../SQL/SQLPerson';
-import { SQLGroup } from '../SQL/SQLGroup';
 import { EWSPerson } from "./EWSPerson";
 import { EWSGroup } from "./EWSGroup";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
@@ -25,7 +22,7 @@ export class EWSAddressbook extends Addressbook {
 
   async listContacts() {
     if (!this.dbID) {
-      await SQLAddressbook.save(this);
+      await this.save();
     }
 
     return this.updateChangedContacts();
@@ -58,7 +55,7 @@ export class EWSAddressbook extends Addressbook {
           throw ex;
         }
         this.syncState = null;
-        await SQLAddressbook.save(this);
+        await this.save();
         sync.m$SyncFolderItems.m$SyncState = null;
         result = await this.account.callEWS(sync);
       }
@@ -79,12 +76,12 @@ export class EWSAddressbook extends Addressbook {
           let person = this.getPersonByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
           if (person) {
             this.persons.remove(person);
-            await SQLPerson.deleteIt(person);
+            await person.deleteIt();
           }
           let group = this.getGroupByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
           if (group) {
             this.groups.remove(group);
-            await SQLGroup.deleteIt(group);
+            await group.deleteIt();
           }
         }
       }
@@ -92,7 +89,7 @@ export class EWSAddressbook extends Addressbook {
     }
     await this.listPersons(persons);
     await this.listGroups(groups);
-    await SQLAddressbook.save(this);
+    await this.save();
   }
 
   // Lists all contacts and adds them to the persons and groups.
@@ -167,11 +164,11 @@ export class EWSAddressbook extends Addressbook {
           let person = this.getPersonByItemID(result.Items.Contact.ItemId.Id);
           if (person) {
             person.fromXML(result.Items.Contact);
-            await SQLPerson.save(person);
+            await person.save();
           } else {
             person = new EWSPerson(this);
             person.fromXML(result.Items.Contact);
-            await SQLPerson.save(person);
+            await person.save();
             this.persons.add(person);
           }
         } catch (ex) {
@@ -214,11 +211,11 @@ export class EWSAddressbook extends Addressbook {
           let group = this.getGroupByItemID(result.Items.DistributionList.ItemId.Id);
           if (group) {
             group.fromXML(result.Items.DistributionList);
-            await SQLGroup.save(group);
+            await group.save();
           } else {
             group = new EWSGroup(this);
             group.fromXML(result.Items.DistributionList);
-            await SQLGroup.save(group);
+            await group.save();
             this.groups.add(group);
           }
         } catch (ex) {
