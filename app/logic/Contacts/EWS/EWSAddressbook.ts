@@ -76,12 +76,12 @@ export class EWSAddressbook extends Addressbook {
           let person = this.getPersonByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
           if (person) {
             this.persons.remove(person);
-            await person.deleteIt();
+            await this.storage.deletePerson(person);
           }
           let group = this.getGroupByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
           if (group) {
             this.groups.remove(group);
-            await group.deleteIt();
+            await this.storage.deleteGroup(group);
           }
         }
       }
@@ -164,11 +164,11 @@ export class EWSAddressbook extends Addressbook {
           let person = this.getPersonByItemID(result.Items.Contact.ItemId.Id);
           if (person) {
             person.fromXML(result.Items.Contact);
-            await person.save();
+            await this.storage.savePerson(person);
           } else {
             person = new EWSPerson(this);
             person.fromXML(result.Items.Contact);
-            await person.save();
+            await this.storage.savePerson(person);
             this.persons.add(person);
           }
         } catch (ex) {
@@ -211,11 +211,11 @@ export class EWSAddressbook extends Addressbook {
           let group = this.getGroupByItemID(result.Items.DistributionList.ItemId.Id);
           if (group) {
             group.fromXML(result.Items.DistributionList);
-            await group.save();
+            await this.storage.saveGroup(group);
           } else {
             group = new EWSGroup(this);
             group.fromXML(result.Items.DistributionList);
-            await group.save();
+            await this.storage.saveGroup(group);
             this.groups.add(group);
           }
         } catch (ex) {
