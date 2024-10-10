@@ -82,7 +82,7 @@ export class OWAAddressbook extends Addressbook {
   async listPersons(persons: any[]) {
     for (let person of this.persons.contents.filter(person => !persons.some(result => result.PersonaId.Id == person.personaID))) {
       this.persons.remove(person);
-      await person.deleteIt();
+      await this.storage.deletePerson(person);
     }
     for (let result of persons) {
       try {
@@ -108,11 +108,11 @@ export class OWAAddressbook extends Addressbook {
         let person = this.getPersonByPersonaID(result.PersonaId.Id);
         if (person) {
           person.fromJSON(result);
-          await person.save();
+          await this.storage.savePerson(person);
         } else {
           person = this.newPerson();
           person.fromJSON(result);
-          await person.save();
+          await this.storage.savePerson(person);
           this.persons.add(person);
         }
       } catch (ex) {
@@ -124,7 +124,7 @@ export class OWAAddressbook extends Addressbook {
   async listGroups(groups: any[]) {
     for (let group of this.groups.contents.filter(group => !groups.some(result => result.PersonaId.Id == group.personaID))) {
       this.groups.remove(group);
-      await group.deleteIt();
+      await this.storage.deleteGroup(group);
     }
     for (let result of groups) {
       try {
@@ -137,11 +137,11 @@ export class OWAAddressbook extends Addressbook {
         let group = this.getGroupByPersonaID(result.PersonaId.Id);
         if (group) {
           group.fromJSON(result);
-          await group.save();
+          await this.storage.saveGroup(group);
         } else {
           group = this.newGroup();
           group.fromJSON(result);
-          await group.save();
+          await this.storage.saveGroup(group);
           this.groups.add(group);
         }
       } catch (ex) {
