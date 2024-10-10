@@ -82,6 +82,8 @@ export class ActiveSyncAccount extends MailAccount {
       }
     }
 
+    await this.listFolders();
+
     for (let addressbook of appGlobal.addressbooks) {
       if (addressbook.protocol == "addressbook-activesync" && addressbook.url.startsWith(this.url + "?") && addressbook.username == this.username) {
         (addressbook as ActiveSyncAddressbook).account = this;
