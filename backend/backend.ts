@@ -14,6 +14,7 @@ import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 import childProcess from 'node:child_process';
 import * as OWA from './owa';
+import { AceBaseHandle } from './acebase';
 
 export async function startupBackend() {
   let appGlobal = await createSharedAppObject();
@@ -49,12 +50,6 @@ async function createSharedAppObject() {
     getMIMENodemailer,
     getSQLiteDatabase,
     getAceDatabase,
-    aceGet,
-    aceSet,
-    acePush,
-    aceUpdate,
-    aceRemove,
-    aceQuery,
     newAdmZIP,
     newHTTPServer,
     readFile,
@@ -306,12 +301,11 @@ function getSQLiteDatabase(filename: string, options: any): Database {
   return new Database(filename, options);
 }
 
-async function getAceDatabase(filename: string, options: any): Promise<AceBase> {
-  if (!filename.startsWith("/")) {
-    filename = path.join(getConfigDir(), filename);
-  }
-  let db = new AceBase(filename, options);
-  await db.ready();
+async function getAceDatabase(filename: string, options: any): Promise<AceBaseHandle> {
+  let db = new AceBaseHandle();
+  options ??= {};
+  options.path ??= getConfigDir();
+  await db.init(filename, options);
   return db;
 }
 
@@ -348,6 +342,10 @@ async function aceQuery(db: AceBase, refPath: string, filters: [{column: any, op
   }
   let snapshots = await q.get();
   return snapshots.getValues();
+}
+
+function aceRef(db: AceBase, refPath: string): DataReference {
+  return db.ref(refPath);
 }
 
 function newAdmZIP(filepath: string) {

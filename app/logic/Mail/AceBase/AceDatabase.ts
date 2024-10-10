@@ -1,15 +1,15 @@
 import { appGlobal } from "../../app";
-import type { AceBase } from "acebase";
+import { AceBaseHandle } from "../../../../backend/acebase";
 
-let mailDatabase: AceBase;
+let mailDatabase: AceBaseHandle;
 
 // Lib docs: <https://github.com/appy-one/acebase>
 
-export async function getDatabase(): Promise<AceBase> {
+export async function getDatabase(): Promise<AceBaseHandle> {
   if (mailDatabase) {
     return mailDatabase;
   }
-  mailDatabase = await appGlobal.remoteApp.getAceDatabase("mail.db");
+  mailDatabase = await appGlobal.remoteApp.getAceDatabase("mail");
   return mailDatabase;
 }
 
@@ -18,8 +18,8 @@ export async function getDatabase(): Promise<AceBase> {
  * and lets getDatabase() from now on return that test database,
  * until the process is shut down.
  */
-export async function makeTestDatabase(): Promise<AceBase> {
-  mailDatabase = await appGlobal.remoteApp.getAceDatabase("test-mail.db");
+export async function makeTestDatabase(): Promise<AceBaseHandle> {
+  mailDatabase = await appGlobal.remoteApp.getAceDatabase("test-mail");
   await deleteDatabase();
   return mailDatabase;
 }

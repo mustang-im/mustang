@@ -3,7 +3,6 @@ import type { Folder } from "../Folder";
 import { Attachment } from "../Attachment";
 import { JSONEMail } from "../JSON/JSONEMail";
 import { getDatabase } from "./AceDatabase";
-import { appGlobal } from "../../app";
 import { assert } from "../../util/util";
 
 export class AceEMail {
@@ -22,10 +21,11 @@ export class AceEMail {
       await email.folder.save();
     }
     let json = JSONEMail.save(email);
+    let db = await getDatabase();
     if (email.dbID) {
-      await appGlobal.remoteApp.aceSet(await getDatabase(), this.ref(email), json);
+      await db.set(this.ref(email), json);
     } else {
-      email.dbID = await appGlobal.remoteApp.acePush(await getDatabase(), this.refBranch, json);
+      email.dbID = await db.push(this.refBranch, json);
     }
   }
 
@@ -33,7 +33,8 @@ export class AceEMail {
     let json: any = {};
     JSONEMail.saveWritableProps(email, json);
     json.tags = JSONEMail.saveTags(email);
-    await appGlobal.remoteApp.aceUpdate(await getDatabase(), this.ref(email), json);
+    let db = await getDatabase();
+    await db.update(this.ref(email), json);
   }
 
   /** After downloading and saving the attachment file locally, or moving it on disk,
@@ -41,18 +42,21 @@ export class AceEMail {
   static async saveAttachmentFile(email: EMail, a: Attachment) {
     let json: any = {};
     json.attachments = JSONEMail.saveAttachments(email); // TODO need JSON->Ace path mapping to save only the one attachment
-    await appGlobal.remoteApp.aceUpdate(await getDatabase(), this.ref(email), json);
+    let db = await getDatabase();
+    await db.update(this.ref(email), json);
   }
 
   static async saveTags(email: EMail) {
     let json: any = {};
     json.tags = JSONEMail.saveTags(email);
-    await appGlobal.remoteApp.aceUpdate(await getDatabase(), this.ref(email), json);
+    let db = await getDatabase();
+    await db.update(this.ref(email), json);
   }
 
   static async read(dbID: number | string, email: EMail, json?: any): Promise<EMail> {
     if (!json) {
-      json = await appGlobal.remoteApp.aceGet(await getDatabase(), this.ref(email));
+      let db = await getDatabase();
+      json = await db.get(this.ref(email));
     }
     JSONEMail.read(dbID, email, json);
     return email;
@@ -65,18 +69,21 @@ export class AceEMail {
 
   static async readWritableProps(email: EMail, json?: any) {
     if (!json) {
-      json = await appGlobal.remoteApp.aceGet(await getDatabase(), this.ref(email));
+      let db = await getDatabase();
+      json = await db.get(this.ref(email));
     }
     JSONEMail.readWritableProps(email, json);
     JSONEMail.readTags(email, json.tags);
   }
 
   static async deleteIt(email: EMail) {
-    await appGlobal.remoteApp.aceRemove(await getDatabase(), this.ref(email));
+    let db = await getDatabase();
+    await db.remove(this.ref(email));
   }
 
   static async readBody(email: EMail): Promise<void> {
-    let json = await appGlobal.remoteApp.aceGet(await getDatabase(), this.ref(email));
+    let db = await getDatabase();
+    let json = await db.get(this.ref(email));
     JSONEMail.readBody(email, json);
   }
 

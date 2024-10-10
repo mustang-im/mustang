@@ -20,8 +20,8 @@ export class AceSearchEMail extends SearchEMail {
     }
     // TODO 1:n relations attachments and recipients
 
-    let filters = [];
-    filters.push({ column: 'accountID', op: '==', value: account.id });
+    let filters: { column: string, op: any, value: string }[] = [];
+    filters.push({ column: 'accountID', op: '==', value: this.account.id });
 
 /*      SELECT
         email.id as id, folderID
@@ -53,15 +53,16 @@ export class AceSearchEMail extends SearchEMail {
       $${limit ? sql` LIMIT ${limit} ` : sql``}
       `;
 */
-    let snapshots = await appGlobal.remoteApp.aceQuery(await getDatabase(),
+    let db = await getDatabase();
+    let emailJSONRows = await db.query(
       AceEMail.refBranch,
-      filters)
-      .get({ include: AceEMail.kMainPropertiesInclude });
+      filters,
+      { include: AceEMail.kMainPropertiesInclude });
 
     // Find existing email obj in `folder.messages`,
     // or create new temporary `EMail` objects for the results
-    let cachedFolders = new MapColl<number, Folder>(); // dbID -> folder
-    const findFolder = (dbID: number): Folder | null => {
+    let cachedFolders = new MapColl<string, Folder>(); // dbID -> folder
+    const findFolder = (dbID: string): Folder | null => {
       if (!dbID) {
         return null;
       }
@@ -75,7 +76,7 @@ export class AceSearchEMail extends SearchEMail {
       for (let account of appGlobal.emailAccounts) {
         for (let folder of account.getAllFolders()) {
           if (folder.dbID) {
-            cachedFolders.set(folder.dbID, folder);
+            cachedFolders.set(folder.dbID as string, folder);
           }
         }
       }
@@ -85,16 +86,16 @@ export class AceSearchEMail extends SearchEMail {
       this.account?.getSpecialFolder(SpecialFolder.Inbox) ??
       appGlobal.emailAccounts.first.getSpecialFolder(SpecialFolder.Inbox);
     let emails = new ArrayColl<EMail>();
-    for (let row of rows) {
-      let folder = findFolder(row.folderID);
-      let existing = folder?.messages.find(msg => msg.dbID == row.id);
+    for (let emailJSON of emailJSONRows) {
+      let folder = findFolder(emailJSON.folderID);
+      let existing = folder?.messages.find(msg => msg.dbID == emailJSON.id);
       if (existing) {
         emails.add(existing);
         continue;
       }
       let email = (folder ?? randomFolder).newEMail();
       try {
-        await AceEMail.read(row.id, email); // TODO: Get metadata with query above first, then the email contents?
+        await AceEMail.read(emailJSON.id, email); // TODO: Get metadata with query above first, then the email contents?
         // Do *not* add this temp `email` object to `folder.messages`
       } catch (ex) {
         parseError(ex);
