@@ -136,16 +136,12 @@ export async function fetchJSON(partition: string, url: string, action: string, 
   result.statusText = response.statusText;
   result.url = response.url;
   result.contentType = response.headers.get('Content-Type');
+  result.text = await response.text();
   try {
-    result.json = await response.json();
+    result.json = JSON.parse(result.text);
   } catch (ex) {
-    if (ex instanceof SyntaxError &&
-        (ex.message == "Unexpected end of JSON input" ||
-         ex.message?.includes("DOCTYPE"))) {
-      response.json = null;
-    } else {
-      throw ex;
-    }
+    result.ok = false;
+    result.statusText = ex.message;
   }
   return result;
 }
@@ -222,6 +218,23 @@ export async function streamJSON(partition: string, url: string) {
   result.ok = response.ok;
   result.status = response.status;
   result.statusText = response.statusText;
+  result.body = response.body.pipeThrough(new TextDecoderStream());
+  return result;
+}
+
+export async function streamEvents(partition: string, url: string, options: any) {
+  let result = {
+    ok: false,
+    status: 0,
+    statusText: '',
+    body: null,
+  };
+  let session = Session.fromPartition(partition);
+  let response = await session.fetch(url, options);
+  result.ok = response.ok;
+  result.status = response.status;
+  result.statusText = response.statusText;
+  // XXX TODO pipe through event decoder stream
   result.body = response.body.pipeThrough(new TextDecoderStream());
   return result;
 }
