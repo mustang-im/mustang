@@ -49,29 +49,32 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
   }
 
   protected async makeSyncRequest(data?: any, callback?: (response: any) => Promise<void>): Promise<any> {
-    let request = {
-      Collections: {
-        Collection: Object.assign({
-          SyncKey: this.syncState || "0",
-          CollectionId: this.serverID,
-        }, data),
-      },
-    };
-    let response = await this.account.callEAS("Sync", request);
-    if (!response) {
-      return null;
-    }
-    if (response.Collections.Collection.Status == "3") {
-      // Out of sync.
-      this.syncState = null;
+    let response;
+    do {
+      let request = {
+        Collections: {
+          Collection: Object.assign({
+            SyncKey: this.syncState || "0",
+            CollectionId: this.serverID,
+          }, data),
+        },
+      };
+      response = await this.account.callEAS("Sync", request);
+      if (!response) {
+        return null;
+      }
+      if (response.Collections.Collection.Status == "3") {
+        // Out of sync.
+        this.syncState = null;
+        await this.save();
+      }
+      if (response.Collections.Collection.Status != "1") {
+        throw new EASError("Sync", response.Collections.Collection.Status);
+      }
+      callback?.(response.Collections.Collection);
+      this.syncState = response.Collections.Collection.SyncKey;
       await this.save();
-    }
-    if (response.Collections.Collection.Status != "1") {
-      throw new EASError("Sync", response.Collections.Collection.Status);
-    }
-    callback?.(response.Collections.Collection);
-    this.syncState = response.Collections.Collection.SyncKey;
-    await this.save();
+    } while (callback && response.Collections.Collection.MoreAvailable == "");
     return response.Collections.Collection;
   }
 
@@ -88,7 +91,7 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
         },
       },
     };
-    while ((await this.queuedSyncRequest(data, async response => {
+    await this.queuedSyncRequest(data, async response => {
       for (let item of ensureArray(response.Commands?.Add).concat(ensureArray(response.Commands?.Change))) {
         try {
           let person = this.getPersonByServerID(item.ServerId);
@@ -116,7 +119,7 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
           this.account.errorCallback(ex);
         }
       }
-    }))?.MoreAvailable == "");
+    });
     this.account.addPingable(this);
   }
 
