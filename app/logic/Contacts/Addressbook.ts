@@ -2,6 +2,7 @@ import { Account } from "../Abstract/Account";
 import { Person } from "../Abstract/Person";
 import { Group } from "../Abstract/Group";
 import type { Contact } from "../Abstract/Contact";
+import { setStorage } from "./Store/setStorage";
 import { appGlobal } from "../app";
 import { ArrayColl, Collection, mergeColl } from "svelte-collections";
 
@@ -12,6 +13,11 @@ export class Addressbook extends Account {
   readonly contacts: Collection<Contact> = mergeColl(this.persons as Collection<Contact>, this.groups as Collection<Contact>);
   storage: AddressbookStorage | null = null;
   syncState: string | null = null;
+
+  constructor() {
+    super();
+    setStorage(this);
+  }
 
   newPerson(): Person {
     return new Person(this);
