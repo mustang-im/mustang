@@ -1,11 +1,10 @@
 import { Person, ContactEntry } from '../../Abstract/Person';
 import type { EWSAddressbook } from './EWSAddressbook';
-import { ensureArray } from "../../Mail/EWS/EWSEMail";
 import EWSCreateItemRequest from "../../Mail/EWS/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "../../Mail/EWS/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/EWSUpdateItemRequest";
-import { assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { ensureArray, assert } from "../../util/util";
 
 const PhysicalAddressElements = ["Street", "City", "PostalCode", "State", "CountryOrRegion"];
 const PhysicalAddressPurposes = { Business: "work", Home: "home", Other: "other" };

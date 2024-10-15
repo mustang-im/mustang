@@ -2,7 +2,7 @@ import { Calendar } from "../Calendar";
 import { EWSEvent } from "./EWSEvent";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
-import { ensureArray } from "../../Mail/EWS/EWSEMail";
+import { ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
 

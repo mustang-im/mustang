@@ -1,8 +1,8 @@
 import { Addressbook } from "../Addressbook";
 import { ActiveSyncPerson } from "./ActiveSyncPerson";
 import { EASError, type ActiveSyncAccount, type ActiveSyncPingable } from "../../Mail/ActiveSync/ActiveSyncAccount";
-import { kMaxCount, ensureArray } from "../../Mail/ActiveSync/ActiveSyncFolder";
-import { NotSupported } from "../../util/util";
+import { kMaxCount } from "../../Mail/ActiveSync/ActiveSyncFolder";
+import { ensureArray, NotSupported } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPingable {

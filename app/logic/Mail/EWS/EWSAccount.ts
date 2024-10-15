@@ -1,7 +1,6 @@
 import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { EWSFolder } from "./EWSFolder";
-import { ensureArray } from "./EWSEMail";
 import EWSCreateItemRequest from "./EWSCreateItemRequest";
 import type EWSDeleteItemRequest from "./EWSDeleteItemRequest";
 import type EWSUpdateItemRequest from "./EWSUpdateItemRequest";
@@ -13,7 +12,7 @@ import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { ContentDisposition } from "../Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
-import { assert, sleep, blobToBase64, throttleConnectionsPerSecond } from "../../util/util";
+import { assert, sleep, blobToBase64, throttleConnectionsPerSecond, ensureArray } from "../../util/util";
 import { SetColl } from "svelte-collections";
 
 type Json = string | number | boolean | null | Json[] | {[key: string]: Json};

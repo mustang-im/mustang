@@ -2,12 +2,12 @@ import { Group } from '../../Abstract/Group';
 import { Person, ContactEntry } from '../../Abstract/Person';
 import { findPerson } from '../../Abstract/PersonUID';
 import type { EWSAddressbook } from './EWSAddressbook';
-import { ensureArray } from "../../Mail/EWS/EWSEMail";
 import EWSCreateItemRequest from "../../Mail/EWS/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "../../Mail/EWS/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/EWSUpdateItemRequest";
-import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { appGlobal } from "../../app";
+import { ensureArray } from "../../util/util";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export class EWSGroup extends Group {
   addressbook: EWSAddressbook | null;

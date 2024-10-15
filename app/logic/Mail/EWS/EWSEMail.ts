@@ -6,8 +6,8 @@ import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import EWSDeleteItemRequest from "./EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "./EWSUpdateItemRequest";
 import { appGlobal } from "../../app";
-import { base64ToArrayBuffer, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { base64ToArrayBuffer, assert, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 export class EWSEMail extends EMail {
@@ -201,8 +201,4 @@ function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {
     return;
   }
   targetList.replaceAll(ensureArray(mailboxes).map(mailbox => findOrCreatePersonUID(sanitize.emailAddress(mailbox.EmailAddress), sanitize.nonemptystring(mailbox.Name, null))));
-}
-
-export function ensureArray<Type>(val: Type[] | Type): Type[] {
-  return val ? Array.isArray(val) ? val : [val] : [];
 }
