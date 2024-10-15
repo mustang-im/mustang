@@ -82,6 +82,7 @@ export class EWSAddressbook extends Addressbook {
           let group = this.getGroupByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
           if (group) {
             this.groups.remove(group);
+            await group.deleteFromServer();
             await group.deleteIt();
           }
         }
@@ -214,10 +215,12 @@ export class EWSAddressbook extends Addressbook {
           let group = this.getGroupByItemID(result.Items.DistributionList.ItemId.Id);
           if (group) {
             group.fromXML(result.Items.DistributionList);
+            await group.saveToServer();
             await group.save();
           } else {
             group = new EWSGroup(this);
             group.fromXML(result.Items.DistributionList);
+            await group.saveToServer();
             await group.save();
             this.groups.add(group);
           }

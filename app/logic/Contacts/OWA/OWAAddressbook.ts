@@ -127,6 +127,7 @@ export class OWAAddressbook extends Addressbook {
   async listGroups(groups: any[]) {
     for (let group of this.groups.contents.filter(group => !groups.some(result => result.PersonaId.Id == group.personaID))) {
       this.groups.remove(group);
+      await group.deleteFromServer();
       await group.deleteIt();
     }
     for (let result of groups) {
@@ -140,10 +141,12 @@ export class OWAAddressbook extends Addressbook {
         let group = this.getGroupByPersonaID(result.PersonaId.Id);
         if (group) {
           group.fromJSON(result);
+          await group.saveToServer();
           await group.save();
         } else {
           group = this.newGroup();
           group.fromJSON(result);
+          await group.saveToServer();
           await group.save();
           this.groups.add(group);
         }
