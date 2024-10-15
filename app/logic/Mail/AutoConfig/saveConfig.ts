@@ -1,13 +1,13 @@
 import type { MailAccount } from "../MailAccount";
 import { ContactEntry, Person } from "../../Abstract/Person";
 import { Folder, SpecialFolder } from "../../Mail/Folder";
-import type { PersonUID } from "../../Abstract/PersonUID";
+import { MailIdentity } from "../MailIdentity";
+import { type PersonUID, nameFromEmailAddress } from "../../Abstract/PersonUID";
 import { appGlobal } from "../../app";
+import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import { SetColl } from "svelte-collections";
-import { MailIdentity } from "../MailIdentity";
-import { backgroundError } from "../../../frontend/Util/error";
 
 export async function saveAndInitConfig(config: MailAccount, emailAddress: string, password: string): Promise<void> {
   await saveConfig(config, emailAddress, password);
@@ -69,13 +69,6 @@ function replaceVar(str: string, emailAddress: string): string {
     .replace("%EMAILLOCALPART%", emailParts[0])
     .replace("%EMAILDOMAIN%", emailParts[1])
   );
-}
-
-export function nameFromEmailAddress(emailAddress: string): string {
-  let name = emailAddress.split("@")[0];
-  name = name.replace(/\./g, " ");
-  name = name.split(" ").map(n => n[0].toUpperCase() + n.substring(1)).join(" "); // Capitalize
-  return name;
 }
 
 /**
