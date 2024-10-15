@@ -31,7 +31,8 @@ export class OWACalendar extends Calendar {
     for (let event of this.events.subtract(events)) {
       // This might be a filled occurrence that has since been modified.
       if (event.dbID) {
-        event.deleteIt();
+        await event.deleteIt();
+        await event.deleteFromServer();
       }
     }
     this.events.replaceAll(events);
@@ -150,6 +151,7 @@ export class OWACalendar extends Calendar {
         let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id)) || this.newEvent(parentEvent);
         event.fromJSON(item);
         await event.save();
+        await event.saveToServer();
         events.add(event);
         if (parentEvent && event.recurrenceStartTime) {
           event.parentEvent = parentEvent; // should already be correct

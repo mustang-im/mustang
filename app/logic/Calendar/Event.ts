@@ -130,6 +130,9 @@ export class Event extends Observable {
     this.participants.replaceAll(original.participants);
   }
 
+  /**
+   * Saves the event locally to the database.
+   */
   async save() {
     assert(this.calendar, "To save an event, it needs to be in a calendar first");
     assert(this.calendar.storage, "To save an event, the calendar needs to be saved first");
@@ -141,6 +144,16 @@ export class Event extends Observable {
     }
   }
 
+  /**
+   * Abstract method to implement saving events to the server.
+   * Needs to be implemented for each protocol.
+   */
+  async saveToServer(): Promise<void> {
+  }
+
+  /**
+   * Deletes the event locally from the database.
+   */
   async deleteIt() {
     assert(this.calendar, "To delete an event, it needs to be in a calendar first");
     assert(this.calendar.storage, "To delete an event, the calendar needs to be saved first");
@@ -156,6 +169,13 @@ export class Event extends Observable {
         await this.calendar.storage.saveEvent(this.parentEvent);
       }
     }
+  }
+
+  /**
+   * Abstract method to implement deleting events from the server.
+   * Needs to be implemented for each protocol.
+   */
+  async deleteFromServer(): Promise<void> {
   }
 
   /**

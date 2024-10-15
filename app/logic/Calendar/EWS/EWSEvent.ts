@@ -122,6 +122,10 @@ export class EWSEvent extends Event {
   }
 
   async save() {
+    await super.save();
+  }
+
+  async saveToServer() {
     /* Disabling tasks for now.
     if (this.startTime) {
     */
@@ -131,7 +135,6 @@ export class EWSEvent extends Event {
       await this.saveTask();
     }
     */
-    await super.save();
   }
 
   async saveCalendarItem() {
@@ -265,6 +268,10 @@ export class EWSEvent extends Event {
   }
 
   async deleteIt() {
+    await super.deleteIt();
+  }
+
+  async deleteFromServer() {
     if (this.itemID) {
       // This works both for recurring masters and exceptions.
       let request = new EWSDeleteItemRequest(this.itemID, {SendMeetingCancellations: "SendToAllAndSaveCopy"});
@@ -285,7 +292,6 @@ export class EWSEvent extends Event {
       };
       await this.calendar.account.callEWS(request);
     }
-    await super.deleteIt();
   }
 }
 
