@@ -125,7 +125,7 @@ export class EWSEvent extends Event {
     /* Disabling tasks for now.
     if (this.startTime) {
     */
-      await this.saveCalendarItem();
+      await this.saveCalendarItemToServer();
     /* Disabling tasks for now.
     } else {
       await this.saveTask();
@@ -133,7 +133,7 @@ export class EWSEvent extends Event {
     */
   }
 
-  async saveCalendarItem() {
+  async saveCalendarItemToServer() {
     let request: any = this.itemID ?
       new EWSUpdateItemRequest(this.itemID, {SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
       this.parentEvent ?

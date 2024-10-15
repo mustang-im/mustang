@@ -1,6 +1,7 @@
 import { ContactBase } from './Contact';
 import { notifyChangedProperty, Observable } from '../util/Observable';
 import { ArrayColl } from 'svelte-collections';
+import { AbstractFunction } from '../util/util';
 
 export class Person extends ContactBase {
   @notifyChangedProperty
@@ -40,11 +41,8 @@ export class Person extends ContactBase {
     await this.addressbook.storage.savePerson(this);
   }
 
-  /**
-   * Abstract method to implement saving contact to the server.
-   * Needs to be implemented for each protocol.
-   */
   async saveToServer(): Promise<void> {
+    throw new AbstractFunction();
   }
 
   /**
@@ -58,11 +56,8 @@ export class Person extends ContactBase {
     await this.addressbook.storage.deletePerson(this);
   }
 
-  /**
-   * Abstract method to implement deleting contact from the server.
-   * Needs to be implemented for each protocol.
-   */
   async deleteFromServer(): Promise<void> {
+    throw new AbstractFunction();
   }
 
   toString() {

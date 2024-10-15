@@ -2,7 +2,7 @@ import type { PersonUID } from "../Abstract/PersonUID";
 import type { Calendar } from "./Calendar";
 import type { RecurrenceRule } from "./RecurrenceRule";
 import { ArrayColl } from "svelte-collections";
-import { assert, randomID } from "../util/util";
+import { AbstractFunction, assert, randomID } from "../util/util";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 
 export class Event extends Observable {
@@ -144,11 +144,8 @@ export class Event extends Observable {
     }
   }
 
-  /**
-   * Abstract method to implement saving events to the server.
-   * Needs to be implemented for each protocol.
-   */
   async saveToServer(): Promise<void> {
+    throw new AbstractFunction();
   }
 
   /**
@@ -171,11 +168,8 @@ export class Event extends Observable {
     }
   }
 
-  /**
-   * Abstract method to implement deleting events from the server.
-   * Needs to be implemented for each protocol.
-   */
   async deleteFromServer(): Promise<void> {
+    throw new AbstractFunction();
   }
 
   /**

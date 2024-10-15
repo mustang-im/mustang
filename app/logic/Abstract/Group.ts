@@ -2,6 +2,7 @@ import { ContactBase } from './Contact';
 import type { Person } from './Person';
 import { notifyChangedProperty } from '../util/Observable';
 import { SetColl } from 'svelte-collections';
+import { AbstractFunction } from '../util/util';
 
 export class Group extends ContactBase {
   @notifyChangedProperty
@@ -16,11 +17,8 @@ export class Group extends ContactBase {
     await this.addressbook.storage.saveGroup(this);
   }
 
-  /**
-   * Abstract method to implement saving group to the server.
-   * Needs to be implemented for each protocol.
-   */
   async saveToServer(): Promise<void> {
+    throw new AbstractFunction();
   }
 
   /**
@@ -34,10 +32,7 @@ export class Group extends ContactBase {
     await this.addressbook.storage.deleteGroup(this);
   }
 
-  /**
-   * Abstract method to implement deleting group from the server.
-   * Needs to be implemented for each protocol.
-   */
   async deleteFromServer() {
+    throw new AbstractFunction();
   }
 }
