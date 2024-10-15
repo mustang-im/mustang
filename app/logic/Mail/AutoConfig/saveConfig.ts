@@ -3,6 +3,7 @@ import { ContactEntry, Person } from "../../Abstract/Person";
 import { Folder, SpecialFolder } from "../../Mail/Folder";
 import { MailIdentity } from "../MailIdentity";
 import { type PersonUID, nameFromEmailAddress } from "../../Abstract/PersonUID";
+import { setStorage } from "../Store/setStorage";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -30,6 +31,7 @@ export async function saveConfig(config: MailAccount, emailAddress: string, pass
   appGlobal.emailAccounts.add(config);
   console.log("Saving new mail account", config);
   // saveAccountToLocalStorage(config);
+  setStorage(config);
   await config.save();
 }
 
