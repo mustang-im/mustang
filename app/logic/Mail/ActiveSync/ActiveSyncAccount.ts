@@ -327,83 +327,87 @@ export class ActiveSyncAccount extends MailAccount {
   async listFolders(): Promise<void> {
     await this.queuedRequest("FolderSync", {}, async response => {
       let url = new URL(this.url);
-      for (let change of ensureArray(response.Changes?.Add).concat(ensureArray(response.Changes?.Update))) try {
-        url.searchParams.set("serverID", change.ServerId);
-        switch (change.Type) {
-        case FolderType.OtherSpecialFolder:
-        case FolderType.Inbox:
-        case FolderType.Drafts:
-        case FolderType.Trash:
-        case FolderType.Sent:
-        case FolderType.Outbox:
-        case FolderType.UserFolder:
-          let folder = this.findFolderById(change.ServerId) || this.newFolder();
-          folder.fromWBXML(change);
-          let parent = this.findFolderById(change.ParentId);
-          if (parent != folder.parent) {
+      for (let change of ensureArray(response.Changes?.Add).concat(ensureArray(response.Changes?.Update))) {
+        try {
+          url.searchParams.set("serverID", change.ServerId);
+          switch (change.Type) {
+          case FolderType.OtherSpecialFolder:
+          case FolderType.Inbox:
+          case FolderType.Drafts:
+          case FolderType.Trash:
+          case FolderType.Sent:
+          case FolderType.Outbox:
+          case FolderType.UserFolder:
+            let folder = this.findFolderById(change.ServerId) || this.newFolder();
+            folder.fromWBXML(change);
+            let parent = this.findFolderById(change.ParentId);
+            if (parent != folder.parent) {
+              folder.removeFromParent();
+              folder.parent = parent;
+            }
+            folder.addToParent();
+            await folder.save();
+            break;
+          case FolderType.Tasks:
+          case FolderType.UserTasks:
+            // Mustang doesn't support tasks yet, fortunately.
+            break;
+          case FolderType.Calendar:
+          case FolderType.UserCalendar:
+            let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.protocol == "addressbook-activesync" && calendar.url == url.toString() && calendar.username == this.username) as ActiveSyncCalendar | void;
+            if (calendar) {
+              calendar.name = change.DisplayName;
+            } else {
+              calendar = new ActiveSyncCalendar();
+              calendar.name = change.DisplayName;
+              calendar.url = url.toString();
+              calendar.username = this.emailAddress;
+              calendar.workspace = this.workspace;
+              appGlobal.calendars.add(calendar);
+            }
+            break;
+          case FolderType.Contacts:
+          case FolderType.UserContacts:
+            let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.protocol == "addressbook-activesync" && addressbook.url == url.toString() && addressbook.username == this.username) as ActiveSyncAddressbook | void;
+            if (addressbook) {
+              addressbook.name = change.DisplayName;
+            } else {
+              addressbook = new ActiveSyncAddressbook();
+              addressbook.name = change.DisplayName;
+              addressbook.url = url.toString();
+              addressbook.username = this.emailAddress;
+              addressbook.workspace = this.workspace;
+              appGlobal.addressbooks.add(addressbook);
+            }
+            break;
+          }
+        } catch (ex) {
+          this.errorCallback(ex);
+        }
+      }
+      for (let deletion of ensureArray(response.Changes.Delete)) {
+        try {
+          let folder = this.findFolderById(deletion.ServerId);
+          if (folder) {
+            this.removePingable(folder);
+            await this.storage.deleteFolder(folder);
             folder.removeFromParent();
-            folder.parent = parent;
           }
-          folder.addToParent();
-          await folder.save();
-          break;
-        case FolderType.Tasks:
-        case FolderType.UserTasks:
-          // Mustang doesn't support tasks yet, fortunately.
-          break;
-        case FolderType.Calendar:
-        case FolderType.UserCalendar:
-          let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.protocol == "addressbook-activesync" && calendar.url == url.toString() && calendar.username == this.username) as ActiveSyncCalendar | void;
-          if (calendar) {
-            calendar.name = change.DisplayName;
-          } else {
-            calendar = new ActiveSyncCalendar();
-            calendar.name = change.DisplayName;
-            calendar.url = url.toString();
-            calendar.username = this.emailAddress;
-            calendar.workspace = this.workspace;
-            appGlobal.calendars.add(calendar);
-          }
-          break;
-        case FolderType.Contacts:
-        case FolderType.UserContacts:
+          let url = new URL(this.url);
+          url.searchParams.set("serverID", deletion.ServerId);
           let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.protocol == "addressbook-activesync" && addressbook.url == url.toString() && addressbook.username == this.username) as ActiveSyncAddressbook | void;
           if (addressbook) {
-            addressbook.name = change.DisplayName;
-          } else {
-            addressbook = new ActiveSyncAddressbook();
-            addressbook.name = change.DisplayName;
-            addressbook.url = url.toString();
-            addressbook.username = this.emailAddress;
-            addressbook.workspace = this.workspace;
-            appGlobal.addressbooks.add(addressbook);
+            this.removePingable(addressbook);
+            addressbook.deleteIt();
           }
-          break;
+          let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.protocol == "calendar-activesync" && calendar.url == url.toString() && calendar.username == this.username) as ActiveSyncCalendar | void;
+          if (calendar) {
+            this.removePingable(calendar);
+            calendar.deleteIt();
+          }
+        } catch (ex) {
+          this.errorCallback(ex);
         }
-      } catch (ex) {
-        this.errorCallback(ex);
-      }
-      for (let deletion of ensureArray(response.Changes.Delete)) try {
-        let folder = this.findFolderById(deletion.ServerId);
-        if (folder) {
-          this.removePingable(folder);
-          await this.storage.deleteFolder(folder);
-          folder.removeFromParent();
-        }
-        let url = new URL(this.url);
-        url.searchParams.set("serverID", deletion.ServerId);
-        let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.protocol == "addressbook-activesync" && addressbook.url == url.toString() && addressbook.username == this.username) as ActiveSyncAddressbook | void;
-        if (addressbook) {
-          this.removePingable(addressbook);
-          addressbook.deleteIt();
-        }
-        let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.protocol == "calendar-activesync" && calendar.url == url.toString() && calendar.username == this.username) as ActiveSyncCalendar | void;
-        if (calendar) {
-          this.removePingable(calendar);
-          calendar.deleteIt();
-        }
-      } catch (ex) {
-        this.errorCallback(ex);
       }
     });
   }

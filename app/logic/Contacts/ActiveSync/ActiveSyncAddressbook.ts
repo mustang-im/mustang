@@ -27,7 +27,12 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
     throw new NotSupported("ActiveSync does not support distribution lists");
   }
 
-  async queuedSyncRequest(data: any, callback?: (response: any) => Promise<void>): Promise<any> {
+  /**
+   * Queues a `Sync` request locally. It waits until the server is available.
+   * @param data 
+   * @param responseFunc 
+   */
+  async queuedSyncRequest(data: any, responseFunc?: (response: any) => Promise<void>): Promise<any> {
     if (!this.syncState && !this.syncKeyBusy) try {
       // First request must be an empty request.
       this.syncKeyBusy = this.makeSyncRequest();
@@ -41,14 +46,20 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
       // If the function currently holding the sync key throws, we don't care.
     }
     try {
-      this.syncKeyBusy = this.makeSyncRequest(data, callback);
+      this.syncKeyBusy = this.makeSyncRequest(data, responseFunc);
       return await this.syncKeyBusy;
     } finally {
       this.syncKeyBusy = null;
     }
   }
 
-  protected async makeSyncRequest(data?: any, callback?: (response: any) => Promise<void>): Promise<any> {
+  /**
+   * Makes a `Sync` request to the server. It is called by `queuedSyncRequest`
+   * and it may be called multiple times.
+   * @param data 
+   * @param responseFunc 
+   */
+  protected async makeSyncRequest(data?: any, responseFunc?: (response: any) => Promise<void>): Promise<any> {
     let response;
     do {
       let request = {
@@ -71,10 +82,10 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
       if (response.Collections.Collection.Status != "1") {
         throw new EASError("Sync", response.Collections.Collection.Status);
       }
-      callback?.(response.Collections.Collection);
+      responseFunc?.(response.Collections.Collection);
       this.syncState = response.Collections.Collection.SyncKey;
       await this.save();
-    } while (callback && response.Collections.Collection.MoreAvailable == "");
+    } while (responseFunc && response.Collections.Collection.MoreAvailable == "");
     return response.Collections.Collection;
   }
 

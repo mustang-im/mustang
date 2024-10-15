@@ -81,10 +81,14 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
   }
 
   /**
+   * Queues `Sync` requests locally and waits until the 
+   * server is available.
    * Sync requests for a given folder must be serialised,
    * because they all use the same per-folder sync key.
+   * @param data information about the request
+   * @param responseFunc callback for processing the response
    */
-  async queuedSyncRequest(data: any, callback?: (response: any) => Promise<void>): Promise<any> {
+  async queuedSyncRequest(data: any, responseFunc?: (response: any) => Promise<void>): Promise<any> {
     if (!this.syncState && !this.syncKeyBusy) try {
       // First request must be an empty request.
       this.syncKeyBusy = this.makeSyncRequest();
@@ -98,14 +102,20 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
       // If the function currently holding the sync key throws, we don't care.
     }
     try {
-      this.syncKeyBusy = this.makeSyncRequest(data, callback);
+      this.syncKeyBusy = this.makeSyncRequest(data, responseFunc);
       return await this.syncKeyBusy;
     } finally {
       this.syncKeyBusy = null;
     }
   }
 
-  protected async makeSyncRequest(data?: any, callback?: (response: any) => Promise<void>): Promise<any> {
+  /**
+   * Makes a `Sync` request to the server. It is called by
+   * `queuedSyncRequest()` and it may be called multiple times.
+   * @param data information about the request
+   * @param responseFunc callback function for processing the response
+   */
+  protected async makeSyncRequest(data?: any, responseFunc?: (response: any) => Promise<void>): Promise<any> {
     let response;
     do {
       let request = {
@@ -128,10 +138,10 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
       if (response.Collections.Collection.Status != "1") {
         throw new EASError("Sync", response.Collections.Collection.Status);
       }
-      callback?.(response.Collections.Collection);
+      responseFunc?.(response.Collections.Collection);
       this.syncState = response.Collections.Collection.SyncKey;
       await this.storage.saveFolder(this);
-    } while (callback && response.Collections.Collection.MoreAvailable == "");
+    } while (responseFunc && response.Collections.Collection.MoreAvailable == "");
     return response.Collections.Collection;
   }
 
@@ -149,28 +159,32 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
       },
     };
     await this.queuedSyncRequest(data, async response => {
-      for (let item of ensureArray(response.Commands?.Add).concat(ensureArray(response.Commands?.Change))) try {
-        let email = this.getEmailByServerID(item.ServerId);
-        if (email) {
-          email.setFlags(item.ApplicationData);
-          await this.storage.saveMessageWritableProps(email);
-        } else {
-          email = this.newEMail();
-          email.serverID = item.ServerId;
-          email.fromWBXML(item.ApplicationData);
-          await this.storage.saveMessage(email);
-          newMsgs.add(email);
+      for (let item of ensureArray(response.Commands?.Add).concat(ensureArray(response.Commands?.Change))) {
+        try {
+          let email = this.getEmailByServerID(item.ServerId);
+          if (email) {
+            email.setFlags(item.ApplicationData);
+            await this.storage.saveMessageWritableProps(email);
+          } else {
+            email = this.newEMail();
+            email.serverID = item.ServerId;
+            email.fromWBXML(item.ApplicationData);
+            await this.storage.saveMessage(email);
+            newMsgs.add(email);
+          }
+        } catch (ex) {
+          this.account.errorCallback(ex);
         }
-      } catch (ex) {
-        this.account.errorCallback(ex);
       }
-      for (let item of ensureArray(response.Commands?.Delete)) try {
-        let email = this.getEmailByServerID(item.ServerId);
-        if (email) {
-          await email.deleteMessageLocally();
+      for (let item of ensureArray(response.Commands?.Delete)) {
+        try {
+          let email = this.getEmailByServerID(item.ServerId);
+          if (email) {
+            await email.deleteMessageLocally();
+          }
+        } catch (ex) {
+          this.account.errorCallback(ex);
         }
-      } catch (ex) {
-        this.account.errorCallback(ex);
       }
     });
     this.messages.addAll(newMsgs);
