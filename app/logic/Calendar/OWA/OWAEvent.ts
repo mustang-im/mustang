@@ -110,10 +110,6 @@ export class OWAEvent extends Event {
     return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
   }
 
-  async save() {
-    await super.save();
-  }
-
   async saveToServer() {
     /* Disabling tasks for now.
     if (this.startTime) {
@@ -259,10 +255,6 @@ export class OWAEvent extends Event {
       recurrence.RecurrenceRange.EndDate = this.dateString(rule.endDate, true);
     }
     return recurrence;
-  }
-
-  async deleteIt() {
-    await super.deleteIt();
   }
 
   async deleteFromServer() {

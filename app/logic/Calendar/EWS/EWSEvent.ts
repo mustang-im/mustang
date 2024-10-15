@@ -121,10 +121,6 @@ export class EWSEvent extends Event {
     return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
   }
 
-  async save() {
-    await super.save();
-  }
-
   async saveToServer() {
     /* Disabling tasks for now.
     if (this.startTime) {
@@ -265,10 +261,6 @@ export class EWSEvent extends Event {
       };
     }
     return recurrence;
-  }
-
-  async deleteIt() {
-    await super.deleteIt();
   }
 
   async deleteFromServer() {

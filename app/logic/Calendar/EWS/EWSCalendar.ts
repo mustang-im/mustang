@@ -78,8 +78,8 @@ export class EWSCalendar extends Calendar {
           if (event) {
             this.events.remove(event);
             this.events.removeAll(event.instances);
-            await event.deleteIt();
             await event.deleteFromServer();
+            await event.deleteIt();
           }
         }
       }
@@ -197,13 +197,13 @@ export class EWSCalendar extends Calendar {
         if (event) {
           event.parentEvent = parentEvent; // should already be correct
           event.fromXML(item);
-          await event.save();
           await event.saveToServer();
+          await event.save();
         } else {
           event = this.newEvent(parentEvent);
           event.fromXML(item);
-          await event.save();
           await event.saveToServer();
+          await event.save();
           events.push(event);
         }
         if (parentEvent && event.recurrenceStartTime) {
