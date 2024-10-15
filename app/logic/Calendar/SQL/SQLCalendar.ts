@@ -1,7 +1,8 @@
-import type { Calendar } from "../Calendar";
+import type { Calendar, CalendarStorage } from "../Calendar";
+import type { Event } from "../Event";
 import { getDatabase } from "./SQLDatabase";
 import { newCalendarForProtocol } from "../AccountsList/Calendars";
-import { setStorage} from "../Store/setStorage";
+import { SQLEvent } from "./SQLEvent";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -9,7 +10,7 @@ import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 
-export class SQLCalendar {
+export class SQLCalendar implements CalendarStorage {
   static async save(cal: Calendar) {
     if (!cal.dbID) {
       let existing = await (await getDatabase()).get(sql`
@@ -41,7 +42,9 @@ export class SQLCalendar {
         WHERE id = ${cal.dbID}
         `);
     }
-    setStorage(cal);
+    if (!cal.storage) {
+      cal.storage = new SQLCalendar();
+    }
   }
 
   /** Also deletes all persons and groups in this address book */
@@ -72,7 +75,9 @@ export class SQLCalendar {
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
       : null;
     cal.syncState = row.syncState;
-    setStorage(cal);
+    if (!cal.storage) {
+      cal.storage = new SQLCalendar();
+    }
     return cal;
   }
 
@@ -93,5 +98,18 @@ export class SQLCalendar {
       }
     }
     return calendars;
+  }
+
+  async deleteCalendar(calendar: Calendar): Promise<void> {
+    await SQLCalendar.deleteIt(calendar);
+  }
+  async saveCalendar(calendar: Calendar): Promise<void> {
+    await SQLCalendar.save(calendar);
+  }
+  async saveEvent(event: Event): Promise<void> {
+    await SQLEvent.save(event);
+  }
+  async deleteEvent(event: Event): Promise<void> {
+    await SQLEvent.deleteIt(event);
   }
 }
