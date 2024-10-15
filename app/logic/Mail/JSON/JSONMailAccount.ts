@@ -22,6 +22,7 @@ export class JSONMailAccount {
     json.hostname = acc.hostname;
     json.port = acc.port;
     json.tls = acc.tls;
+    json.config = acc.toConfigJSON();
     return json;
   }
 
@@ -38,10 +39,10 @@ export class JSONMailAccount {
     acc.userRealname = sanitize.label(json.userRealname, appGlobal.me.name);
     acc.name = sanitize.label(json.name, acc.emailAddress);
 
+    acc.fromConfigJSON(json.config ?? {});
     acc.workspace = json.workspace
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(json.workspace, null))
       : null;
-    acc.fromConfigJSON(json.configJSON);
     if (!appGlobal.me.name && acc.userRealname) {
       appGlobal.me.name = acc.userRealname;
     }
