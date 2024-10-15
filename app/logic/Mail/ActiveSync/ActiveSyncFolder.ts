@@ -81,12 +81,17 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
   }
 
   /**
-   * Queues `Sync` requests locally and waits until the 
+   * Queues `Sync` (synchronization) requests locally and waits until the 
    * server is available.
    * Sync requests for a given folder must be serialised,
    * because they all use the same per-folder sync key.
    * @param data information about the request
-   * @param responseFunc callback for processing the response
+   * @param responseFunc
+   * - It performs actions using the parameter `response.Collections.Collection`.
+   * - It is called when the response is not null.
+   * - It will be repeatedly called while `response.Collections.Collection.MoreAvailable` is 
+   * equal to an empty string.
+   * - It may be called many times.
    */
   async queuedSyncRequest(data: any, responseFunc?: (response: any) => Promise<void>): Promise<any> {
     if (!this.syncState && !this.syncKeyBusy) try {
@@ -110,10 +115,15 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
   }
 
   /**
-   * Makes a `Sync` request to the server. It is called by
-   * `queuedSyncRequest()` and it may be called multiple times.
+   * Makes a `Sync` (synchronization) request to the server.
+   * You probably want to call it using the wrapper `queuedSyncRequest()`.
    * @param data information about the request
-   * @param responseFunc callback function for processing the response
+   * @param responseFunc
+   * - It performs actions using the parameter `response.Collections.Collection`.
+   * - It is called when the response is not null.
+   * - It will be repeatedly called while `response.Collections.Collection.MoreAvailable` is 
+   * equal to an empty string.
+   * - It may be called many times.
    */
   protected async makeSyncRequest(data?: any, responseFunc?: (response: any) => Promise<void>): Promise<any> {
     let response;
