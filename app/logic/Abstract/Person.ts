@@ -32,17 +32,37 @@ export class Person extends ContactBase {
   @notifyChangedProperty
   popularity: number = 0;
 
+  /**
+   * Saves the contact locally to the database.
+    */
   async save() {
     await super.save();
     await this.addressbook.storage.savePerson(this);
   }
 
+  /**
+   * Abstract method to implement saving contact to the server.
+   * Needs to be implemented for each protocol.
+   */
+  async saveToServer(): Promise<void> {
+  }
+
+  /**
+   * Deletes the contact locally from the database.
+    */
   async deleteIt() {
     if (!this.addressbook) {
       return;
     }
     this.addressbook.persons.remove(this);
     await this.addressbook.storage.deletePerson(this);
+  }
+
+  /**
+   * Abstract method to implement deleting contact from the server.
+   * Needs to be implemented for each protocol.
+   */
+  async deleteFromServer(): Promise<void> {
   }
 
   toString() {

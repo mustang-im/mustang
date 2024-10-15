@@ -82,6 +82,7 @@ export class OWAAddressbook extends Addressbook {
   async listPersons(persons: any[]) {
     for (let person of this.persons.contents.filter(person => !persons.some(result => result.PersonaId.Id == person.personaID))) {
       this.persons.remove(person);
+      await person.deleteFromServer();
       await person.deleteIt();
     }
     for (let result of persons) {
@@ -108,10 +109,12 @@ export class OWAAddressbook extends Addressbook {
         let person = this.getPersonByPersonaID(result.PersonaId.Id);
         if (person) {
           person.fromJSON(result);
+          await person.saveToServer();
           await person.save();
         } else {
           person = this.newPerson();
           person.fromJSON(result);
+          await person.saveToServer();
           await person.save();
           this.persons.add(person);
         }
