@@ -1,6 +1,6 @@
 import { Calendar } from '../Calendar';
-import { SQLCalendar } from '../SQL/SQLCalendar';
-import { SQLEvent } from '../SQL/SQLEvent';
+import { SQLCalendar } from './SQLCalendar';
+import { SQLEvent } from './SQLEvent';
 import { ArrayColl, Collection } from 'svelte-collections';
 
 export async function readCalendars(): Promise<Collection<Calendar>> {
