@@ -1,6 +1,6 @@
 import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
-import { kMaxCount, ActiveSyncFolder, FolderType, ensureArray } from "./ActiveSyncFolder";
+import { kMaxCount, ActiveSyncFolder, FolderType } from "./ActiveSyncFolder";
 import { SMTPAccount } from "../SMTP/SMTPAccount";
 import { ActiveSyncAddressbook } from "../../Contacts/ActiveSync/ActiveSyncAddressbook";
 import { ActiveSyncCalendar } from "../../Calendar/ActiveSync/ActiveSyncCalendar";
@@ -9,7 +9,7 @@ import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { request2WBXML, WBXML2JSON } from "./WBXML";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
-import { assert, NotSupported } from "../../util/util";
+import { ensureArray, assert, NotSupported } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";

@@ -45,7 +45,7 @@ export class OWAPerson extends Person {
     return this;
   }
 
-  async save() {
+  async saveToServer() {
     let fields = this.toFields();
     if (Object.keys(fields).every(key => fields[key] == this.fields[key])) {
       return;
@@ -55,7 +55,6 @@ export class OWAPerson extends Person {
     this.name = sanitize.nonemptystring(response.DisplayName, "");
     this.personaID = sanitize.nonemptystring(response.PersonaId.Id);
     this.fields = fields;
-    await super.save();
   }
 
   toFields(): Record<string, string> {
@@ -84,10 +83,9 @@ export class OWAPerson extends Person {
     return fields;
   }
 
-  async deleteIt() {
+  async deleteFromServer() {
     let request = new OWADeletePersonaRequest(this.personaID);
     await this.addressbook.account.callOWA(request);
     this.addressbook.persons.remove(this);
-    await super.deleteIt();
   }
 }

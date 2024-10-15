@@ -1,8 +1,8 @@
 import { Addressbook } from "../Addressbook";
 import { ActiveSyncPerson } from "./ActiveSyncPerson";
 import { EASError, type ActiveSyncAccount, type ActiveSyncPingable } from "../../Mail/ActiveSync/ActiveSyncAccount";
-import { kMaxCount, ensureArray } from "../../Mail/ActiveSync/ActiveSyncFolder";
-import { NotSupported } from "../../util/util";
+import { kMaxCount } from "../../Mail/ActiveSync/ActiveSyncFolder";
+import { ensureArray, NotSupported } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPingable {
@@ -118,11 +118,13 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
           let person = this.getPersonByServerID(item.ServerId);
           if (person) {
             person.fromWBXML(item.ApplicationData);
+            await person.saveToServer();
             await person.save();
           } else {
             person = this.newPerson();
             person.serverID = item.ServerId;
             person.fromWBXML(item.ApplicationData);
+            await person.saveToServer();
             await person.save();
             this.persons.add(person);
           }
@@ -134,6 +136,7 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
         try {
          let person = this.getPersonByServerID(item.ServerId);
           if (person) {
+            await person.deleteFromServer();
             await person.deleteIt();
           }
         } catch (ex) {

@@ -1,8 +1,8 @@
 import { Folder, SpecialFolder } from "../Folder";
 import { ActiveSyncEMail } from "./ActiveSyncEMail";
 import { type ActiveSyncAccount, type ActiveSyncPingable, EASError } from "./ActiveSyncAccount";
-import type { EMailCollection } from "../SQL/EMailCollection";
-import { assert, NotImplemented, NotSupported } from "../../util/util";
+import type { EMailCollection } from "../Store/EMailCollection";
+import { ensureArray, assert, NotImplemented, NotSupported } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, type Collection } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
@@ -340,8 +340,4 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
   disableChangeSpecial(): string | false {
     return "You cannot change Exchange special folders.";
   }
-}
-
-export function ensureArray<Type>(val: Type[] | Type): Type[] {
-  return val ? Array.isArray(val) ? val : [val] : [];
 }

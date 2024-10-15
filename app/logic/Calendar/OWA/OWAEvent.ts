@@ -110,7 +110,7 @@ export class OWAEvent extends Event {
     return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
   }
 
-  async save() {
+  async saveToServer() {
     /* Disabling tasks for now.
     if (this.startTime) {
     */
@@ -120,7 +120,6 @@ export class OWAEvent extends Event {
       await this.saveTask();
     }
     */
-    await super.save();
   }
 
   async saveCalendarItem() {
@@ -258,7 +257,7 @@ export class OWAEvent extends Event {
     return recurrence;
   }
 
-  async deleteIt() {
+  async deleteFromServer() {
     if (this.itemID) {
       // This works both for recurring masters and exceptions.
       let request = new OWADeleteItemRequest(this.itemID, {SendMeetingCancellations: "SendToAllAndSaveCopy"});
@@ -284,7 +283,6 @@ export class OWAEvent extends Event {
       };
       await this.calendar.account.callOWA(request);
     }
-    await super.deleteIt();
   }
 }
 

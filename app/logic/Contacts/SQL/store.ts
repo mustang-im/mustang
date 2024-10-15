@@ -1,6 +1,6 @@
 import { Addressbook } from '../Addressbook';
-import { SQLAddressbook } from '../SQL/SQLAddressbook';
-import { SQLGroup } from '../SQL/SQLGroup';
+import { SQLAddressbook } from './SQLAddressbook';
+import { SQLGroup } from './SQLGroup';
 import { ArrayColl, Collection } from 'svelte-collections';
 import { gt } from '../../../l10n/l10n';
 

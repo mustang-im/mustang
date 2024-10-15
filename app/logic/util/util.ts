@@ -28,6 +28,10 @@ export function arrayRemoveAll(array, item) {
   }
 }
 
+export function ensureArray<Type>(val: Type[] | Type): Type[] {
+  return val ? Array.isArray(val) ? val : [val] : [];
+}
+
 export function randomID(): string {
   return Date.now() + "-" + Math.ceil(Math.random() * 900000);
 }

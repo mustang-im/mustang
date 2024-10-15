@@ -1,6 +1,6 @@
 import type { MailAccount } from '../MailAccount';
-import { SQLMailAccount } from '../SQL/SQLMailAccount';
-import { SQLFolder } from '../SQL/SQLFolder';
+import { SQLMailAccount } from './SQLMailAccount';
+import { SQLFolder } from './SQLFolder';
 import type { Collection } from 'svelte-collections';
 
 export async function readMailAccounts(): Promise<Collection<MailAccount>> {

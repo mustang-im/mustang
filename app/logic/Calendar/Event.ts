@@ -2,7 +2,7 @@ import type { PersonUID } from "../Abstract/PersonUID";
 import type { Calendar } from "./Calendar";
 import type { RecurrenceRule } from "./RecurrenceRule";
 import { ArrayColl } from "svelte-collections";
-import { assert, randomID } from "../util/util";
+import { AbstractFunction, assert, randomID } from "../util/util";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 
 export class Event extends Observable {
@@ -130,6 +130,9 @@ export class Event extends Observable {
     this.participants.replaceAll(original.participants);
   }
 
+  /**
+   * Saves the event locally to the database.
+   */
   async save() {
     assert(this.calendar, "To save an event, it needs to be in a calendar first");
     assert(this.calendar.storage, "To save an event, the calendar needs to be saved first");
@@ -141,6 +144,13 @@ export class Event extends Observable {
     }
   }
 
+  async saveToServer(): Promise<void> {
+    throw new AbstractFunction();
+  }
+
+  /**
+   * Deletes the event locally from the database.
+   */
   async deleteIt() {
     assert(this.calendar, "To delete an event, it needs to be in a calendar first");
     assert(this.calendar.storage, "To delete an event, the calendar needs to be saved first");
@@ -156,6 +166,10 @@ export class Event extends Observable {
         await this.calendar.storage.saveEvent(this.parentEvent);
       }
     }
+  }
+
+  async deleteFromServer(): Promise<void> {
+    throw new AbstractFunction();
   }
 
   /**

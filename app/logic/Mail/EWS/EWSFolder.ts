@@ -1,7 +1,7 @@
 import { Folder, SpecialFolder } from "../Folder";
-import { EWSEMail, ensureArray } from "./EWSEMail";
+import { EWSEMail } from "./EWSEMail";
 import type { EWSAccount } from "./EWSAccount";
-import { base64ToArrayBuffer, assert } from "../../util/util";
+import { base64ToArrayBuffer, ensureArray, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
 

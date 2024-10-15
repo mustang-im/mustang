@@ -2,7 +2,7 @@ import { Calendar } from "../Calendar";
 import { EWSEvent } from "./EWSEvent";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
-import { ensureArray } from "../../Mail/EWS/EWSEMail";
+import { ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
 
@@ -78,6 +78,7 @@ export class EWSCalendar extends Calendar {
           if (event) {
             this.events.remove(event);
             this.events.removeAll(event.instances);
+            await event.deleteFromServer();
             await event.deleteIt();
           }
         }
@@ -196,10 +197,12 @@ export class EWSCalendar extends Calendar {
         if (event) {
           event.parentEvent = parentEvent; // should already be correct
           event.fromXML(item);
+          await event.saveToServer();
           await event.save();
         } else {
           event = this.newEvent(parentEvent);
           event.fromXML(item);
+          await event.saveToServer();
           await event.save();
           events.push(event);
         }

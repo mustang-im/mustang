@@ -2,9 +2,7 @@ import type { PersonOrGroup } from "../../frontend/Shared/Person/PersonOrGroup";
 import { Group } from "./Group";
 import { ContactEntry, Person } from "./Person";
 import { appGlobal } from "../app";
-import { nameFromEmailAddress } from "../Mail/AutoConfig/saveConfig";
 import { Observable, notifyChangedProperty } from "../util/Observable";
-import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 
 export class PersonUID extends Observable {
   @notifyChangedProperty
@@ -94,6 +92,13 @@ export function personDisplayName(person: PersonOrGroup | PersonUID) {
   } else {
     return "Unknown contact type";
   }
+}
+
+export function nameFromEmailAddress(emailAddress: string): string {
+  let name = emailAddress.split("@")[0];
+  name = name.replace(/\./g, " ");
+  name = name.split(" ").map(n => n[0].toUpperCase() + n.substring(1)).join(" "); // Capitalize
+  return name;
 }
 
 export const kDummyPerson = new PersonUID("unknown@invalid", "");

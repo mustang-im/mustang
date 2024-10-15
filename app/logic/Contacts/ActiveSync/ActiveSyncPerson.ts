@@ -47,7 +47,7 @@ export class ActiveSyncPerson extends Person {
     this.position = sanitize.nonemptystring(wbxmljs.JobTitle, "");
   }
 
-  async save() {
+  async saveToServer() {
     let fields: Record<string, string | { Type: string, Data: string | {} }> = {
       FirstName: this.firstName,
       LastName: this.lastName,
@@ -100,10 +100,9 @@ export class ActiveSyncPerson extends Person {
         this.serverID = response.Responses.Add.ServerId;
       }
     }
-    await super.save();
   }
 
-  async deleteIt() {
+  async deleteFromServer() {
     let data = {
       DeletesAsMoves: "1",
       GetChanges: "0",
@@ -117,6 +116,5 @@ export class ActiveSyncPerson extends Person {
     if (response.Responses) {
       throw new EASError("Sync", response.Responses.Delete.Status);
     }
-    await super.deleteIt();
   }
 }

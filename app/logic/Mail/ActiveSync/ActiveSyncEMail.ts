@@ -1,9 +1,9 @@
 import { EMail } from "../EMail";
-import { type ActiveSyncFolder, ensureArray } from "./ActiveSyncFolder";
+import type { ActiveSyncFolder } from "./ActiveSyncFolder";
 import { EASError } from "./ActiveSyncAccount";
 import { type Tag, getTagByName } from "../Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { assert, NotSupported } from "../../util/util";
+import { ensureArray, assert, NotSupported } from "../../util/util";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";

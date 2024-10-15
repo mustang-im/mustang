@@ -2,12 +2,12 @@ import { Group } from '../../Abstract/Group';
 import { Person, ContactEntry } from '../../Abstract/Person';
 import { findPerson } from '../../Abstract/PersonUID';
 import type { EWSAddressbook } from './EWSAddressbook';
-import { ensureArray } from "../../Mail/EWS/EWSEMail";
 import EWSCreateItemRequest from "../../Mail/EWS/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "../../Mail/EWS/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/EWSUpdateItemRequest";
-import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { appGlobal } from "../../app";
+import { ensureArray } from "../../util/util";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export class EWSGroup extends Group {
   addressbook: EWSAddressbook | null;
@@ -30,7 +30,7 @@ export class EWSGroup extends Group {
     }
   }
 
-  async save() {
+  async saveToServer() {
     // XXX untested due to no UI yet
     let request = this.itemID ? new EWSUpdateItemRequest(this.itemID) : new EWSCreateItemRequest();
     request.addField("DistributionList", "Body", this.description && { BodyType: "Text", _TextContent_: this.description }, "item:Body");
@@ -46,13 +46,11 @@ export class EWSGroup extends Group {
     } : "", "distributionlist:Members");
     let response = await this.addressbook.account.callEWS(request);
     this.itemID = sanitize.nonemptystring(response.Items.DistributionList.ItemId.Id);
-    await super.save();
   }
 
-  async deleteIt() {
+  async deleteFromServer() {
     let request = new EWSDeleteItemRequest(this.itemID);
     await this.addressbook.account.callEWS(request);
-    await super.deleteIt();
   }
 }
 

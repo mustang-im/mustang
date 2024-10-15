@@ -5,7 +5,7 @@ import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import JXON from "../../../../lib/util/JXON";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert } from "../../util/util";
+import { ensureArray, assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 
 export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string, source: ConfigSource): ArrayColl<MailAccount> {
@@ -163,8 +163,4 @@ function getOAuth2Config(account: MailAccount, autoConfigXML: any): OAuth2 {
   }
   assert(oAuth2, "No suitable OAuth2 config found, neither in AutoConfig XML, nor built-in");
   return oAuth2;
-}
-
-function ensureArray(value) {
-  return Array.isArray(value) ? value : [];
 }
