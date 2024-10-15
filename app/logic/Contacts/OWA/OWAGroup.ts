@@ -28,11 +28,11 @@ export class OWAGroup extends Group {
     return this;
   }
 
-  async save() {
+  async saveToServer() {
     throw new NotImplemented();
   }
 
-  async deleteIt() {
+  async deleteFromServer() {
     throw new NotImplemented();
     /* Don't know whether this works
     let request = new OWADeletePersonaRequest(this.personaID);

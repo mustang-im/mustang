@@ -1,6 +1,7 @@
 import { ContactBase } from './Contact';
 import { notifyChangedProperty, Observable } from '../util/Observable';
 import { ArrayColl } from 'svelte-collections';
+import { AbstractFunction } from '../util/util';
 
 export class Person extends ContactBase {
   @notifyChangedProperty
@@ -32,17 +33,31 @@ export class Person extends ContactBase {
   @notifyChangedProperty
   popularity: number = 0;
 
+  /**
+   * Saves the contact locally to the database.
+    */
   async save() {
     await super.save();
     await this.addressbook.storage.savePerson(this);
   }
 
+  async saveToServer(): Promise<void> {
+    throw new AbstractFunction();
+  }
+
+  /**
+   * Deletes the contact locally from the database.
+    */
   async deleteIt() {
     if (!this.addressbook) {
       return;
     }
     this.addressbook.persons.remove(this);
     await this.addressbook.storage.deletePerson(this);
+  }
+
+  async deleteFromServer(): Promise<void> {
+    throw new AbstractFunction();
   }
 
   toString() {

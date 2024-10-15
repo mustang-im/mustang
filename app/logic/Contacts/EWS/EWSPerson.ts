@@ -74,7 +74,7 @@ export class EWSPerson extends Person {
     this.position = sanitize.nonemptystring(xmljs.JobTitle, "");
   }
 
-  async save() {
+  async saveToServer() {
     let request = this.itemID ? new EWSUpdateItemRequest(this.itemID) : new EWSCreateItemRequest();
     request.addField("Contact", "Body", this.notes && { BodyType: "Text", _TextContent_: this.notes }, "item:Body");
     request.addField("Contact", "DisplayName", this.name, "contacts:DisplayName");
@@ -133,12 +133,10 @@ export class EWSPerson extends Person {
     request.addField("Contact", "Surname", this.lastName, "contacts:Surname");
     let response = await this.addressbook.account.callEWS(request);
     this.itemID = sanitize.nonemptystring(response.Items.Contact.ItemId.Id);
-    await super.save();
   }
 
-  async deleteIt() {
+  async deleteFromServer() {
     let request = new EWSDeleteItemRequest(this.itemID);
     await this.addressbook.account.callEWS(request);
-    await super.deleteIt();
   }
 }

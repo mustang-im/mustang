@@ -121,20 +121,19 @@ export class EWSEvent extends Event {
     return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
   }
 
-  async save() {
+  async saveToServer() {
     /* Disabling tasks for now.
     if (this.startTime) {
     */
-      await this.saveCalendarItem();
+      await this.saveCalendarItemToServer();
     /* Disabling tasks for now.
     } else {
       await this.saveTask();
     }
     */
-    await super.save();
   }
 
-  async saveCalendarItem() {
+  async saveCalendarItemToServer() {
     let request: any = this.itemID ?
       new EWSUpdateItemRequest(this.itemID, {SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
       this.parentEvent ?
@@ -264,7 +263,7 @@ export class EWSEvent extends Event {
     return recurrence;
   }
 
-  async deleteIt() {
+  async deleteFromServer() {
     if (this.itemID) {
       // This works both for recurring masters and exceptions.
       let request = new EWSDeleteItemRequest(this.itemID, {SendMeetingCancellations: "SendToAllAndSaveCopy"});
@@ -285,7 +284,6 @@ export class EWSEvent extends Event {
       };
       await this.calendar.account.callEWS(request);
     }
-    await super.deleteIt();
   }
 }
 
