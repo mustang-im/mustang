@@ -1,10 +1,7 @@
-import type { Addressbook, AddressbookStorage } from "../Addressbook";
+import type { Addressbook } from "../Addressbook";
 import { getDatabase } from "./SQLDatabase";
 import { newAddressbookForProtocol } from "../AccountsList/Addressbooks";
-import type { Group } from "../../Abstract/Group";
-import type { Person } from "../../Abstract/Person";
-import { SQLPerson } from "./SQLPerson";
-import { SQLGroup } from "./SQLGroup";
+import { SQLAddressbookStorage } from "./SQLAddressbookStorage";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -12,7 +9,7 @@ import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 
-export class SQLAddressbook implements AddressbookStorage {
+export class SQLAddressbook {
   static async save(acc: Addressbook) {
     if (!acc.dbID) {
       let existing = await (await getDatabase()).get(sql`
@@ -45,9 +42,6 @@ export class SQLAddressbook implements AddressbookStorage {
         WHERE id = ${acc.dbID}
         `);
     }
-    if (!acc.storage) {
-      acc.storage = new SQLAddressbook();
-    }
   }
 
   /** Also deletes all persons and groups in this address book */
@@ -79,9 +73,7 @@ export class SQLAddressbook implements AddressbookStorage {
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
       : null;
     acc.syncState = row.syncState;
-    if (!acc.storage) {
-      acc.storage = new SQLAddressbook();
-    }
+    acc.storage = new SQLAddressbookStorage();
     return acc;
   }
 
@@ -102,24 +94,5 @@ export class SQLAddressbook implements AddressbookStorage {
       }
     }
     return accounts;
-  }
-
-  async deleteAddressbook(addressbook: Addressbook): Promise<void> {
-    await SQLAddressbook.deleteIt(addressbook);
-  }
-  async saveAddressbook(addressbook: Addressbook): Promise<void> {
-    await SQLAddressbook.save(addressbook);
-  }
-  async savePerson(person: Person): Promise<void> {
-    await SQLPerson.save(person);
-  }
-  async deletePerson(person: Person): Promise<void> {
-    await SQLPerson.deleteIt(person);
-  }
-  async saveGroup(group: Group): Promise<void> {
-    await SQLGroup.save(group);
-  }
-  async deleteGroup(group: Group): Promise<void> {
-    await SQLGroup.deleteIt(group);
   }
 }

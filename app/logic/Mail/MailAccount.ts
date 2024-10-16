@@ -6,7 +6,7 @@ import type { Person } from "../Abstract/Person";
 import { OAuth2 } from "../Auth/OAuth2";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { AbstractFunction, assert, type URLString } from "../util/util";
+import { AbstractFunction, type URLString } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
 import { Collection, ArrayColl, MapColl } from 'svelte-collections';
 

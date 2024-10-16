@@ -1,4 +1,4 @@
-import type { MeetAccount, MeetAccountStorage } from "../MeetAccount";
+import type { MeetAccount } from "../MeetAccount";
 import { getDatabase } from "./SQLDatabase";
 import { newMeetAccountForProtocol } from "../AccountsList/MeetAccounts";
 import { getPassword, setPassword, deletePassword } from "../../Auth/passwordStore";
@@ -9,7 +9,7 @@ import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 
-export class SQLMeetAccount implements MeetAccountStorage {
+export class SQLMeetAccount {
   static async save(acc: MeetAccount) {
     if (!acc.dbID) {
       let existing = await (await getDatabase()).get(sql`
@@ -42,9 +42,6 @@ export class SQLMeetAccount implements MeetAccountStorage {
         `);
     }
     await setPassword("chat." + acc.id, acc.password);
-    if (!acc.storage) {
-      acc.storage = new SQLMeetAccount();
-    }
   }
 
   /** Also deletes all persons and groups in this address book */
@@ -76,9 +73,7 @@ export class SQLMeetAccount implements MeetAccountStorage {
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
       : null;
     acc.password = await getPassword("chat." + acc.id);
-    if (!acc.storage) {
-      acc.storage = new SQLMeetAccount();
-    }
+    acc.storage = new SQLMeetAccount();
     return acc;
   }
 
@@ -99,12 +94,5 @@ export class SQLMeetAccount implements MeetAccountStorage {
       }
     }
     return accounts;
-  }
-
-  async deleteAccount(account: MeetAccount): Promise<void> {
-    await SQLMeetAccount.deleteIt(account);
-  }
-  async saveAccount(account: MeetAccount): Promise<void> {
-    await SQLMeetAccount.save(account);
   }
 }

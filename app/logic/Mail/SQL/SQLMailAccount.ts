@@ -1,8 +1,8 @@
 import type { MailAccount } from "../MailAccount";
 import { getDatabase } from "./SQLDatabase";
 import { JSONMailAccount } from "../JSON/JSONMailAccount";
-import { setStorage } from "../Store/setStorage";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
+import { SQLMailStorage } from "./SQLMailStorage";
 import { SMTPAccount } from "../SMTP/SMTPAccount";
 import { getPassword, setPassword, deletePassword } from "../../Auth/passwordStore";
 import { backgroundError } from "../../../frontend/Util/error";
@@ -57,7 +57,6 @@ export class SQLMailAccount {
         `);
     }
     await setPassword("mail." + acc.id, acc.password);
-    setStorage(acc);
   }
 
   /** Also deletes all folders and messages in this account */
@@ -87,7 +86,7 @@ export class SQLMailAccount {
     row.configJSON = JSON.parse(sanitize.nonemptystring(row.configJSON, "{}"));
     JSONMailAccount.read(acc, row);
     acc.password = await getPassword("mail." + acc.id);
-    setStorage(acc);
+    acc.storage = new SQLMailStorage();
     let outgoingAccountID = sanitize.integer(row.outgoingAccountID, null);
     if (outgoingAccountID) {
       acc.outgoing = new SMTPAccount();
