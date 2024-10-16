@@ -6,13 +6,13 @@ import { EWSAccount } from '../EWS/EWSAccount';
 import { OWAAccount } from '../OWA/OWAAccount';
 import { ActiveSyncAccount } from '../ActiveSync/ActiveSyncAccount';
 import { SQLMailStorage } from '../SQL/SQLMailStorage';
-import { setContentStorage } from '../Store/setStorage';
+import { setStorage } from '../Store/setStorage';
 import { NotReached } from '../../util/util';
+import type { Collection } from 'svelte-collections';
 
 export function newAccountForProtocol(protocol: string): MailAccount {
   let acc = _newAccountForProtocol(protocol);
-  acc.storage = new SQLMailStorage();
-  setContentStorage(acc);
+  setStorage(acc);
   return acc;
 }
 
@@ -33,4 +33,8 @@ function _newAccountForProtocol(protocol: string): MailAccount {
     return new MailAccount();
   }
   throw new NotReached(`Unknown account type ${protocol}`);
+}
+
+export async function readMailAccounts(): Promise<Collection<MailAccount>> {
+  return await SQLMailStorage.readMailAccounts();
 }

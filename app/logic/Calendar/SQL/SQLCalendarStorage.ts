@@ -2,6 +2,7 @@ import type { Calendar, CalendarStorage } from "../Calendar";
 import { SQLCalendar } from "./SQLCalendar";
 import type { Event } from "../Event";
 import { SQLEvent } from "./SQLEvent";
+import type { Collection } from "svelte-collections";
 
 export class SQLCalendarStorage implements CalendarStorage {
   async deleteCalendar(calendar: Calendar): Promise<void> {
@@ -15,5 +16,13 @@ export class SQLCalendarStorage implements CalendarStorage {
   }
   async deleteEvent(event: Event): Promise<void> {
     await SQLEvent.deleteIt(event);
+  }
+
+  static async readCalendars(): Promise<Collection<Calendar>> {
+    let calendars = await SQLCalendar.readAll();
+    for (let calendar of calendars) {
+      SQLEvent.readAll(calendar);
+    }
+    return calendars;
   }
 }

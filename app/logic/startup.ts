@@ -1,9 +1,9 @@
 import { appGlobal } from './app';
-import { readMailAccounts } from './Mail/SQL/store';
-import { readChatAccounts } from './Chat/SQL/store';
-import { readAddressbooks } from './Contacts/SQL/store';
-import { readCalendars } from './Calendar/SQL/store';
-import { readMeetAccounts } from './Meet/SQL/store';
+import { readMailAccounts } from './Mail/AccountsList/MailAccounts';
+import { readChatAccounts } from './Chat/AccountsList/ChatAccounts';
+import { readAddressbooks } from './Contacts/AccountsList/Addressbooks';
+import { readCalendars } from './Calendar/AccountsList/Calendars';
+import { readMeetAccounts } from './Meet/AccountsList/MeetAccounts';
 import { readSavedSearches } from './Mail/Virtual/SavedSearchFolder';
 import { loadTagsList } from './Mail/Tag';
 import JPCWebSocket from '../../lib/jpc-ws';
