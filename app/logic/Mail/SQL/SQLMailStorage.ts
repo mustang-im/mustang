@@ -4,6 +4,7 @@ import type { EMail } from "../EMail";
 import { SQLEMail } from "./SQLEMail";
 import type { Folder } from "../Folder";
 import { SQLFolder } from "./SQLFolder";
+import type { Collection } from "svelte-collections";
 
 export class SQLMailStorage implements MailAccountStorage {
   async saveAccount(account: MailAccount): Promise<void> {
@@ -52,5 +53,13 @@ export class SQLMailStorage implements MailAccountStorage {
   }
   async deleteMessage(email: EMail): Promise<void> {
     await SQLEMail.deleteIt(email);
+  }
+
+  static async readMailAccounts(): Promise<Collection<MailAccount>> {
+    let mailAccounts = await SQLMailAccount.readAll();
+    for (let mailAccount of mailAccounts) {
+      await SQLFolder.readAllHierarchy(mailAccount);
+    }
+    return mailAccounts;
   }
 }

@@ -3,12 +3,13 @@ import { getDatabase } from "./SQLDatabase";
 import { JSONMailAccount } from "../JSON/JSONMailAccount";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { SQLMailStorage } from "./SQLMailStorage";
+import { SQLFolder } from "./SQLFolder";
 import { SMTPAccount } from "../SMTP/SMTPAccount";
 import { getPassword, setPassword, deletePassword } from "../../Auth/passwordStore";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
-import { ArrayColl } from "svelte-collections";
+import { ArrayColl, Collection } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 
 export class SQLMailAccount {

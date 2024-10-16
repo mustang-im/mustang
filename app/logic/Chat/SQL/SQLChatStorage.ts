@@ -4,6 +4,7 @@ import type { Chat } from "../Chat";
 import { SQLChat } from "./SQLChat";
 import type { ChatMessage } from "../Message";
 import { SQLChatMessage } from "./SQLChatMessage";
+import type { Collection } from "svelte-collections";
 
 export class SQLChatStorage implements ChatAccountStorage {
   async deleteAccount(account: ChatAccount): Promise<void> {
@@ -17,5 +18,13 @@ export class SQLChatStorage implements ChatAccountStorage {
   }
   async saveChat(chat: Chat): Promise<void> {
     await SQLChat.save(chat);
+  }
+
+  static async readChatAccounts(): Promise<Collection<ChatAccount>> {
+    let chatAccounts = await SQLChatAccount.readAll();
+    for (let chatAccount of chatAccounts) {
+      SQLChat.readAll(chatAccount);
+    }
+    return chatAccounts;
   }
 }

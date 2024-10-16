@@ -4,6 +4,7 @@ import type { Person } from "../../Abstract/Person";
 import { SQLPerson } from "./SQLPerson";
 import type { Group } from "../../Abstract/Group";
 import { SQLGroup } from "./SQLGroup";
+import type { Collection } from "svelte-collections";
 
 export class SQLAddressbookStorage implements AddressbookStorage {
   async deleteAddressbook(addressbook: Addressbook): Promise<void> {
@@ -23,5 +24,13 @@ export class SQLAddressbookStorage implements AddressbookStorage {
   }
   async deleteGroup(group: Group): Promise<void> {
     await SQLGroup.deleteIt(group);
+  }
+
+  static async readAddressbooks(): Promise<Collection<Addressbook>> {
+    let addressbooks = await SQLAddressbook.readAll();
+    for (let addressbook of addressbooks) {
+      SQLGroup.readAll(addressbook); // also reads persons
+    }
+    return addressbooks;
   }
 }

@@ -2,6 +2,7 @@ import { MeetAccount } from '../MeetAccount';
 import { M3Account } from '../M3Account';
 import { SQLMeetStorage } from '../SQL/SQLMeetStorage';
 import { NotReached } from '../../util/util';
+import type { Collection } from 'svelte-collections';
 
 export function newMeetAccountForProtocol(protocol: string): MeetAccount {
   let meet = _newMeetAccountForProtocol(protocol);
@@ -16,4 +17,8 @@ function _newMeetAccountForProtocol(protocol: string): MeetAccount {
     return new M3Account();
   }
   throw new NotReached(`Unknown meet account type ${protocol}`);
+}
+
+export async function readMeetAccounts(): Promise<Collection<MeetAccount>> {
+  return await SQLMeetStorage.readMeetAccounts();
 }
