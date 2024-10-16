@@ -1,6 +1,6 @@
 import { MailZIP } from "./MailZIP";
 import { RawFilesAttachment } from "./RawFilesAttachment";
-import { SQLMailStorage } from "../SQL/SQLMailStorage";
+import { AceMailStorage } from "../AceBase/AceMailStorage";
 import { SQLSearchEMail } from "../SQL/SQLSearchEMail";
 import { SQLSourceEMail } from "../SQL/Source/SQLSourceEMail";
 import type { SearchEMail } from "./SearchEMail";
@@ -8,7 +8,7 @@ import type { MailAccount } from "../MailAccount";
 
 export function setStorage(acc: MailAccount) {
   if (!acc.storage) {
-    acc.storage = new SQLMailStorage();
+    acc.storage = new AceMailStorage();
   }
   setContentStorage(acc);
 }
