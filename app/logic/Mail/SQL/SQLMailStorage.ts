@@ -59,7 +59,7 @@ export class SQLMailStorage implements MailAccountStorage {
   static async readMailAccounts(): Promise<Collection<MailAccount>> {
     let mailAccounts = await SQLMailAccount.readAll();
     for (let mailAccount of mailAccounts) {
-      SQLFolder.readAllHierarchy(mailAccount).catch(backgroundError);
+      await SQLFolder.readAllHierarchy(mailAccount);
     }
     return mailAccounts;
   }

@@ -67,6 +67,7 @@ export class SQLFolder extends Folder {
   }
 
   static async read(dbID: number, folder: Folder): Promise<Folder> {
+    assert(folder.account, `Account not set for folder`);
     let row = await (await getDatabase()).get(sql`
       SELECT
         accountID, name, path, parent,
@@ -87,8 +88,7 @@ export class SQLFolder extends Folder {
       ? sanitize.integer(row.syncState, null)
       : sanitize.string(row.syncState, null);
     let accountID = sanitize.integer(row.accountID);
-    folder.account = appGlobal.emailAccounts.find(acc => acc.dbID == accountID);
-    assert(folder.account, `Account ${accountID} not yet loaded`);
+    assert(folder.account.dbID == accountID, "Folder: Account does not match");
     if (row.parent) {
       let parentFolderID = sanitize.integer(row.parent);
       folder.parent = folder.account.findFolder(folder => folder.dbID == parentFolderID);
