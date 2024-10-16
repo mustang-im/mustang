@@ -5,7 +5,7 @@ import { SMTPAccount } from '../SMTP/SMTPAccount';
 import { EWSAccount } from '../EWS/EWSAccount';
 import { OWAAccount } from '../OWA/OWAAccount';
 import { ActiveSyncAccount } from '../ActiveSync/ActiveSyncAccount';
-import { SQLMailStorage } from '../SQL/SQLMailStorage';
+import { AceMailStorage } from '../AceBase/AceMailStorage';
 import { setStorage } from '../Store/setStorage';
 import { NotReached } from '../../util/util';
 import type { Collection } from 'svelte-collections';
@@ -36,5 +36,5 @@ function _newAccountForProtocol(protocol: string): MailAccount {
 }
 
 export async function readMailAccounts(): Promise<Collection<MailAccount>> {
-  return await SQLMailStorage.readMailAccounts();
+  return await AceMailStorage.readMailAccounts();
 }

@@ -3,8 +3,8 @@ import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/P
 import { Attachment, ContentDisposition } from "../Attachment";
 import { getTagByName } from "../Tag";
 import { appGlobal } from "../../app";
-import { assert, fileExtensionForMIMEType } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { fileExtensionForMIMEType, ensureArray, assert } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 export class JSONEMail {
@@ -173,7 +173,7 @@ export class JSONEMail {
     if (!recipientsJSON) {
       return [];
     }
-    return recipientsJSON.map(r => this.readRecipient(r)).filter(r => r);
+    return ensureArray(recipientsJSON).map(r => this.readRecipient(r)).filter(r => r);
   }
 
   protected static readRecipient(json: any): PersonUID | null {
@@ -192,7 +192,7 @@ export class JSONEMail {
     assert(this.filesDir, "Please call init() first");
     let fallbackID = 0;
     email.attachments.clear();
-    for (let row of emailJSON.attachments) {
+    for (let row of ensureArray(emailJSON.attachments)) {
       this.readAttachment(email, row, ++fallbackID);
     }
   }
@@ -226,13 +226,16 @@ export class JSONEMail {
       return;
     }
     email.tags.clear();
-    for (let json of emailJSON.tags) {
+    for (let json of ensureArray(emailJSON.tags)) {
       this.readTag(email, json);
     }
   }
 
   protected static readTag(email: EMail, json: any): void {
     try {
+      if (!json.tagName) {
+        return;
+      }
       let name = sanitize.nonemptystring(json.tagName);
       let tag = getTagByName(name);
       email.tags.add(tag);
