@@ -1,9 +1,9 @@
 import type { Calendar, CalendarStorage } from "../Calendar";
-import { SQLCalendar } from "../SQL/SQLCalendar";
+import { SQLCalendar } from "./SQLCalendar";
 import type { Event } from "../Event";
 import { SQLEvent } from "./SQLEvent";
 
-export class SQLStorage implements CalendarStorage {
+export class SQLCalendarStorage implements CalendarStorage {
   async deleteCalendar(calendar: Calendar): Promise<void> {
     await SQLCalendar.deleteIt(calendar);
   }

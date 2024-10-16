@@ -5,7 +5,7 @@ import { SQLPerson } from "./SQLPerson";
 import type { Group } from "../../Abstract/Group";
 import { SQLGroup } from "./SQLGroup";
 
-export class SQLStorage implements AddressbookStorage {
+export class SQLAddressbookStorage implements AddressbookStorage {
   async deleteAddressbook(addressbook: Addressbook): Promise<void> {
     await SQLAddressbook.deleteIt(addressbook);
   }

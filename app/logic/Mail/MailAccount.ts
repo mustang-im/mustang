@@ -6,10 +6,9 @@ import type { Person } from "../Abstract/Person";
 import { OAuth2 } from "../Auth/OAuth2";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { AbstractFunction, assert, type URLString } from "../util/util";
+import { AbstractFunction, type URLString } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
 import { Collection, ArrayColl, MapColl } from 'svelte-collections';
-import { setStorage } from "./Store/setStorage";
 
 export class MailAccount extends Account {
   readonly protocol: string = "mail";
@@ -48,11 +47,6 @@ export class MailAccount extends Account {
    * filtered based on the person.
    * TODO move up, across all accounts? */
   readonly messages = new MapColl<Person, EMail>();
-
-  constructor() {
-    super();
-    setStorage(this);
-  }
 
   async listFolders(): Promise<void> {
     throw new AbstractFunction();

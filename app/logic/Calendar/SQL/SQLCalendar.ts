@@ -1,7 +1,7 @@
 import type { Calendar } from "../Calendar";
 import { getDatabase } from "./SQLDatabase";
 import { newCalendarForProtocol } from "../AccountsList/Calendars";
-import { setStorage} from "../Store/setStorage";
+import { SQLCalendarStorage } from "./SQLCalendarStorage";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -41,7 +41,6 @@ export class SQLCalendar {
         WHERE id = ${cal.dbID}
         `);
     }
-    setStorage(cal);
   }
 
   /** Also deletes all persons and groups in this address book */
@@ -72,7 +71,7 @@ export class SQLCalendar {
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
       : null;
     cal.syncState = row.syncState;
-    setStorage(cal);
+    cal.storage = new SQLCalendarStorage();
     return cal;
   }
 

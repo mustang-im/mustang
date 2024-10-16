@@ -1,6 +1,5 @@
 import { Account } from "../Abstract/Account";
 import { Event } from "./Event";
-import { setStorage } from "./Store/setStorage";
 import { appGlobal } from "../app";
 import { Collection, ArrayColl } from "svelte-collections";
 
@@ -9,11 +8,6 @@ export class Calendar extends Account {
   readonly events = new ArrayColl<Event>();
   storage: CalendarStorage | null = null;
   syncState: string | null = null;
-
-  constructor() {
-    super();
-    setStorage(this);
-  }
 
   newEvent(parentEvent?: Event): Event {
     return new Event(this, parentEvent);

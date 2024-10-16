@@ -1,6 +1,6 @@
 import { MailZIP } from "./MailZIP";
 import { RawFilesAttachment } from "./RawFilesAttachment";
-import { SQLStorage } from "../SQL/SQLStorage";
+import { SQLMailStorage } from "../SQL/SQLMailStorage";
 import { SQLSearchEMail } from "../SQL/SQLSearchEMail";
 import { SQLSourceEMail } from "../SQL/Source/SQLSourceEMail";
 import type { SearchEMail } from "./SearchEMail";
@@ -8,8 +8,12 @@ import type { MailAccount } from "../MailAccount";
 
 export function setStorage(acc: MailAccount) {
   if (!acc.storage) {
-    acc.storage = new SQLStorage();
+    acc.storage = new SQLMailStorage();
   }
+  setContentStorage(acc);
+}
+
+export function setContentStorage(acc: MailAccount) {
   if (acc.contentStorage.isEmpty) {
     // First entry will be used for reading
     acc.contentStorage.add(new SQLSourceEMail());

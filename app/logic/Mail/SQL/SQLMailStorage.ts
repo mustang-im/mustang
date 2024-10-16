@@ -5,7 +5,7 @@ import { SQLEMail } from "./SQLEMail";
 import type { Folder } from "../Folder";
 import { SQLFolder } from "./SQLFolder";
 
-export class SQLStorage implements MailAccountStorage {
+export class SQLMailStorage implements MailAccountStorage {
   async saveAccount(account: MailAccount): Promise<void> {
     await SQLMailAccount.save(account);
   }
@@ -27,7 +27,7 @@ export class SQLStorage implements MailAccountStorage {
   }
 
   async readMessage(email: EMail): Promise<void> {
-    await SQLEMail.read(email.dbID, email);
+    await SQLEMail.read(email.dbID as number, email);
   }
   async readAllMessages(folder: Folder, limit?: number, startWith?: number): Promise<void> {
     await SQLEMail.readAll(folder, limit, startWith);

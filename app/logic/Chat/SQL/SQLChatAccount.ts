@@ -1,20 +1,17 @@
-import type { ChatAccount, ChatAccountStorage } from "../ChatAccount";
+import type { ChatAccount } from "../ChatAccount";
 import { getDatabase } from "./SQLDatabase";
 import { newChatAccountForProtocol } from "../AccountsList/ChatAccounts";
-import type { Chat } from "../Chat";
-import { SQLChat } from "./SQLChat";
-import type { ChatMessage } from "../Message";
-import { SQLChatMessage } from "./SQLChatMessage";
+import { SQLChatStorage } from "./SQLChatStorage";
 import { getPassword, setPassword, deletePassword } from "../../Auth/passwordStore";
+import { TLSSocketType } from "../../Mail/MailAccount";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
-import { TLSSocketType } from "../../Mail/MailAccount";
 
-export class SQLChatAccount implements ChatAccountStorage {
+export class SQLChatAccount {
   static async save(acc: ChatAccount) {
     if (!acc.dbID) {
       let existing = await (await getDatabase()).get(sql`
@@ -53,9 +50,6 @@ export class SQLChatAccount implements ChatAccountStorage {
         `);
     }
     await setPassword("chat." + acc.id, acc.password);
-    if (!acc.storage) {
-      acc.storage = new SQLChatAccount();
-    }
   }
 
   /** Also deletes all folders and messages in this account */
@@ -93,9 +87,7 @@ export class SQLChatAccount implements ChatAccountStorage {
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
       : null;
     acc.password = await getPassword("chat." + acc.id);
-    if (!acc.storage) {
-      acc.storage = new SQLChatAccount();
-    }
+    acc.storage = new SQLChatStorage();
     if (!appGlobal.me.name && acc.userRealname) {
       appGlobal.me.name = acc.userRealname;
     }
@@ -119,18 +111,5 @@ export class SQLChatAccount implements ChatAccountStorage {
       }
     }
     return accounts;
-  }
-
-  async deleteAccount(account: ChatAccount): Promise<void> {
-    await SQLChatAccount.deleteIt(account);
-  }
-  async saveAccount(account: ChatAccount): Promise<void> {
-    await SQLChatAccount.save(account);
-  }
-  async saveMessage(message: ChatMessage): Promise<void> {
-    await SQLChatMessage.save(message);
-  }
-  async saveChat(chat: Chat): Promise<void> {
-    await SQLChat.save(chat);
   }
 }

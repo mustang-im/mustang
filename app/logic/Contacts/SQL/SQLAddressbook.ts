@@ -1,7 +1,7 @@
 import type { Addressbook } from "../Addressbook";
 import { getDatabase } from "./SQLDatabase";
 import { newAddressbookForProtocol } from "../AccountsList/Addressbooks";
-import { setStorage } from "../Store/setStorage";
+import { SQLAddressbookStorage } from "./SQLAddressbookStorage";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -42,7 +42,6 @@ export class SQLAddressbook {
         WHERE id = ${acc.dbID}
         `);
     }
-    setStorage(acc);
   }
 
   /** Also deletes all persons and groups in this address book */
@@ -74,7 +73,7 @@ export class SQLAddressbook {
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
       : null;
     acc.syncState = row.syncState;
-    setStorage(acc);
+    acc.storage = new SQLAddressbookStorage();
     return acc;
   }
 
