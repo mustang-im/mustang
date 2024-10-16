@@ -2,9 +2,9 @@ import { Folder, type SpecialFolder } from "../Folder";
 import type { IMAPFolder } from "../IMAP/IMAPFolder";
 import type { MailAccount } from "../MailAccount";
 import { appGlobal } from "../../app";
-import type { Collection } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert } from "../../util/util";
+import { assert, ensureArray } from "../../util/util";
+import type { Collection } from "svelte-collections";
 
 export class JSONFolder extends Folder {
   static save(folder: Folder): any {
@@ -53,7 +53,7 @@ export class JSONFolder extends Folder {
   /** @returns the root folders */
   static readAllHierarchy(account: MailAccount, jsonAll: any[]): void {
     function readSubFolders(parentFolderID: string | null, resultFolders: Collection<Folder>) {
-      for (let json of jsonAll.filter(r => r.parent == parentFolderID)) {
+      for (let json of ensureArray(jsonAll).filter(r => r.parent == parentFolderID)) {
         if (account.findFolder(folder => folder.id == json.id)) {
           continue;
         }
