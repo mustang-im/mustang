@@ -39,7 +39,7 @@ export class JSONMailAccount {
     acc.userRealname = sanitize.label(json.userRealname, appGlobal.me.name);
     acc.name = sanitize.label(json.name, acc.emailAddress);
 
-    acc.fromConfigJSON(json.configJSON ?? {});
+    acc.fromConfigJSON(json.config ?? {});
     acc.workspace = json.workspace
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(json.workspace, null))
       : null;
