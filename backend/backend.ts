@@ -4,7 +4,7 @@ import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, Menu, MenuItemConstructorOptions } from "electron";
+import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, Menu, MenuItemConstructorOptions, webContents } from "electron";
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
 import path from "node:path";
@@ -35,6 +35,7 @@ async function createSharedAppObject() {
     setBadgeCount,
     minimizeMainWindow,
     unminimizeMainWindow,
+    clickListener,
     shell,
     restartApp,
     setDarkMode,
@@ -314,6 +315,15 @@ function minimizeMainWindow() {
 
 function unminimizeMainWindow() {
   mainWindow.restore();
+}
+
+function clickListener(id: number) {
+  const win = webContents.fromId(id);
+  win?.on("input-event", (_, e) => {
+    if (e.type == "mouseDown") {
+      mainWindow.webContents.send("click", { id: id });
+    }
+  });
 }
 
 function setBadgeCount(count: number) {
