@@ -288,6 +288,7 @@
     if (!confirmAndChangeRule()) {
       return;
     }
+    await event.saveToServer();
     await event.save();
     if (!event.calendar.events.contains(event)) {
       event.calendar.events.add(event);
@@ -304,6 +305,7 @@
         return;
       }
     }
+    await event.deleteFromServer();
     await event.deleteIt();
     onClose();
   }
