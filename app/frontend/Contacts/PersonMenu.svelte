@@ -34,12 +34,14 @@
       person.addressbook = appGlobal.personalAddressbook;
       person.addressbook.persons.add(person);
     }
+    await person.saveToServer();
     await person.save();
   }
   async function deleteIt() {
     let addressbook = person.addressbook;
     let posInAddressbook = person.addressbook.persons.indexOf(person);
 
+    await person.deleteFromServer();
     await person.deleteIt();
 
     if (person == $selectedPerson) {
