@@ -1,8 +1,10 @@
 import { MailAccount, AuthMethod, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { OWAFolder } from "./OWAFolder";
-import { OWAAddressbook } from "../../Contacts/OWA/OWAAddressbook";
-import { OWACalendar } from "../../Calendar/OWA/OWACalendar";
+import { newAddressbookForProtocol} from "../../Contacts/AccountsList/Addressbooks";
+import type { OWAAddressbook } from "../../Contacts/OWA/OWAAddressbook";
+import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
+import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import OWACreateItemRequest from "./OWACreateItemRequest";
 import { OWALoginBackground } from "./OWALoginBackground";
 import { owaAutoFillLoginPage } from "./OWALoginAutoFill";
@@ -96,7 +98,7 @@ export class OWAAccount extends MailAccount {
 
     let addressbook = appGlobal.addressbooks.find((addressbook: OWAAddressbook) => addressbook.protocol == "addressbook-owa" && addressbook.url == this.url && addressbook.username == this.username) as OWAAddressbook | void;
     if (!addressbook) {
-      addressbook = new OWAAddressbook();
+      addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
       addressbook.url = this.url;
       addressbook.username = this.emailAddress;
       addressbook.workspace = this.workspace;
@@ -107,7 +109,7 @@ export class OWAAccount extends MailAccount {
 
     let calendar = appGlobal.calendars.find((calendar: OWACalendar) => calendar.protocol == "calendar-owa" && calendar.url == this.url && calendar.username == this.username) as OWACalendar | void;
     if (!calendar) {
-      calendar = new OWACalendar();
+      calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
       calendar.name = this.name;
       calendar.url = this.url;
       calendar.username = this.emailAddress;
