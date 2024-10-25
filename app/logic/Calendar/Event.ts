@@ -162,7 +162,7 @@ export class Event extends Observable {
     if (this.parentEvent) {
       let pos = this.parentEvent.instances.indexOf(this);
       if (pos >= 0) {
-        this.parentEvent.instances[pos] = null;
+        this.parentEvent.instances.set(pos, null);
         await this.calendar.storage.saveEvent(this.parentEvent);
       }
     }
