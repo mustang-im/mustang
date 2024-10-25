@@ -92,6 +92,13 @@ export class ActiveSyncAccount extends MailAccount {
         await (addressbook as ActiveSyncAddressbook).listContacts();
       }
     }
+
+    for (let calendar of appGlobal.calendars) {
+      if (calendar.protocol == "calendar-activesync" && calendar.url.startsWith(this.url + "?") && calendar.username == this.username) {
+        (calendar as ActiveSyncCalendar).account = this;
+        await (calendar as ActiveSyncCalendar).listEvents();
+      }
+    }
   }
 
   async logout(): Promise<void> {
