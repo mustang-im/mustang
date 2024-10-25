@@ -2,8 +2,10 @@ import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { kMaxCount, ActiveSyncFolder, FolderType } from "./ActiveSyncFolder";
 import { SMTPAccount } from "../SMTP/SMTPAccount";
-import { ActiveSyncAddressbook } from "../../Contacts/ActiveSync/ActiveSyncAddressbook";
-import { ActiveSyncCalendar } from "../../Calendar/ActiveSync/ActiveSyncCalendar";
+import { newAddressbookForProtocol} from "../../Contacts/AccountsList/Addressbooks";
+import type { ActiveSyncAddressbook } from "../../Contacts/ActiveSync/ActiveSyncAddressbook";
+import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
+import type { ActiveSyncCalendar } from "../../Calendar/ActiveSync/ActiveSyncCalendar";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { request2WBXML, WBXML2JSON } from "./WBXML";
@@ -358,7 +360,7 @@ export class ActiveSyncAccount extends MailAccount {
             if (calendar) {
               calendar.name = change.DisplayName;
             } else {
-              calendar = new ActiveSyncCalendar();
+              calendar = newCalendarForProtocol("calendar-activesync") as ActiveSyncCalendar;
               calendar.name = change.DisplayName;
               calendar.url = url.toString();
               calendar.username = this.emailAddress;
@@ -372,7 +374,7 @@ export class ActiveSyncAccount extends MailAccount {
             if (addressbook) {
               addressbook.name = change.DisplayName;
             } else {
-              addressbook = new ActiveSyncAddressbook();
+              addressbook = newAddressbookForProtocol("addressbook-activesync") as ActiveSyncAddressbook;
               addressbook.name = change.DisplayName;
               addressbook.url = url.toString();
               addressbook.username = this.emailAddress;

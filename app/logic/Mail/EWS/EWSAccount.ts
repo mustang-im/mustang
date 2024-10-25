@@ -4,8 +4,10 @@ import { EWSFolder } from "./EWSFolder";
 import EWSCreateItemRequest from "./EWSCreateItemRequest";
 import type EWSDeleteItemRequest from "./EWSDeleteItemRequest";
 import type EWSUpdateItemRequest from "./EWSUpdateItemRequest";
-import { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
-import { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
+import { newAddressbookForProtocol} from "../../Contacts/AccountsList/Addressbooks";
+import type { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
+import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
+import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
@@ -53,7 +55,7 @@ export class EWSAccount extends MailAccount {
 
     let addressbook = appGlobal.addressbooks.find((addressbook: EWSAddressbook) => addressbook.protocol == "addressbook-ews" && addressbook.url == this.url && addressbook.username == this.username) as EWSAddressbook | void;
     if (!addressbook) {
-      addressbook = new EWSAddressbook();
+      addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
       addressbook.name = this.name;
       addressbook.url = this.url;
       addressbook.username = this.emailAddress;
@@ -65,7 +67,7 @@ export class EWSAccount extends MailAccount {
 
     let calendar = appGlobal.calendars.find((calendar: EWSCalendar) => calendar.protocol == "calendar-ews" && calendar.url == this.url && calendar.username == this.username) as EWSCalendar | void;
     if (!calendar) {
-      calendar = new EWSCalendar();
+      calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
       calendar.name = this.name;
       calendar.url = this.url;
       calendar.username = this.emailAddress;
