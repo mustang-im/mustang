@@ -40,7 +40,7 @@ export class EWSAccount extends MailAccount {
   }
 
   get isLoggedIn(): boolean {
-    return !this.oAuth2 || this.oAuth2.isLoggedIn;
+    return this.authMethod != AuthMethod.OAuth2 || this.oAuth2?.isLoggedIn;
   }
 
   async login(interactive: boolean): Promise<void> {
