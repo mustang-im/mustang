@@ -118,13 +118,11 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
           let person = this.getPersonByServerID(item.ServerId);
           if (person) {
             person.fromWBXML(item.ApplicationData);
-            await person.saveToServer();
             await person.save();
           } else {
             person = this.newPerson();
             person.serverID = item.ServerId;
             person.fromWBXML(item.ApplicationData);
-            await person.saveToServer();
             await person.save();
             this.persons.add(person);
           }
@@ -136,7 +134,6 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
         try {
          let person = this.getPersonByServerID(item.ServerId);
           if (person) {
-            await person.deleteFromServer();
             await person.deleteIt();
           }
         } catch (ex) {
