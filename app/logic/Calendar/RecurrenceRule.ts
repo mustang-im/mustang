@@ -192,6 +192,10 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     let hours = startDate.getHours();
     let minutes = startDate.getMinutes();
     let seconds = startDate.getSeconds();
+    if ((this.frequency == Frequency.Yearly || this.frequency == Frequency.Monthly) && !this.weekdays) {
+      // Last occurrence might be on the wrong day; use the original day
+      day = this.startDate.getDate();
+    }
     while (this.occurrences.length < count) {
       switch (this.frequency) {
       case Frequency.Daily:
