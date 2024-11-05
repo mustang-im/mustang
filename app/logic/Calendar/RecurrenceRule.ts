@@ -98,7 +98,7 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     Object.assign(this, data);
     // EditEvent mutates the start time, so clone it to be safe.
     this.occurrences.push(this.startDate = new Date(this.startDate));
-    this.fillOccurrences(this.count, this.endDate || new Date(Date.now() + 1e11));
+    // this.fillOccurrences(this.count, this.endDate || new Date(Date.now() + 1e11));
   }
 
   static fromCalString(startDate: Date, calString: string): RecurrenceRule {
