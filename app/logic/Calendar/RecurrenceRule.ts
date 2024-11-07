@@ -93,12 +93,31 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
   readonly first: Weekday = Weekday.Monday;
   /** The occurrences that have already been calculated. */
   readonly occurrences: Date[] = [];
+  /**
+   * The intended date fields of the last calculated occurrence.
+   * The day will be different if the occurrence happened in a short month.
+   */
+  weekday: number;
+  year: number;
+  month: number;
+  day: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
 
   constructor(data: RecurrenceInit) {
     Object.assign(this, data);
     // EditEvent mutates the start time, so clone it to be safe.
-    this.occurrences.push(this.startDate = new Date(this.startDate));
-    this.fillOccurrences(this.count, this.endDate || new Date(Date.now() + 1e11));
+    let startDate = this.startDate = new Date(this.startDate);
+    this.occurrences.push(startDate);
+    this.weekday = startDate.getDay();
+    this.year = startDate.getFullYear();
+    this.month = startDate.getMonth();
+    this.day = startDate.getDate();
+    this.hours = startDate.getHours();
+    this.minutes = startDate.getMinutes();
+    this.seconds = startDate.getSeconds();
+    // this.fillOccurrences(this.count, this.endDate || new Date(Date.now() + 1e11));
   }
 
   static fromCalString(startDate: Date, calString: string): RecurrenceRule {
@@ -184,69 +203,61 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
   }
 
   fillOccurrences(count: number, endDate?: Date) {
-    let startDate = this.occurrences.at(-1)!;
-    let weekday = startDate.getDay();
-    let year = startDate.getFullYear();
-    let month = startDate.getMonth();
-    let day = startDate.getDate();
-    let hours = startDate.getHours();
-    let minutes = startDate.getMinutes();
-    let seconds = startDate.getSeconds();
     while (this.occurrences.length < count) {
       switch (this.frequency) {
       case Frequency.Daily:
-        day += this.interval;
+        this.day += this.interval;
         break;
       case Frequency.Weekly:
         if (!this.weekdays) {
           // optimisation for when the event only happens once per week
-          day += this.interval * 7;
+          this.day += this.interval * 7;
         } else {
-          day++;
-          weekday = (weekday + 1) % 7;
-          if (weekday == this.first) {
-            day += (this.interval - 1) * 7;
+          this.day++;
+          this.weekday = (this.weekday + 1) % 7;
+          if (this.weekday == this.first) {
+            this.day += (this.interval - 1) * 7;
           }
         };
         break;
       case Frequency.Monthly:
         if (!this.weekdays) {
-          month += this.interval;
+          this.month += this.interval;
         } else {
-          day++;
-          if (day > this.week * 7) {
-            month += this.interval;
-            day -= 7;
+          this.day++;
+          if (this.day > this.week * 7) {
+            this.month += this.interval;
+            this.day -= 7;
           }
         }
         break;
       case Frequency.Yearly:
         if (!this.weekdays) {
-          year += this.interval;
+          this.year += this.interval;
         } else {
-          day++;
-          if (day > this.week * 7) {
-            year += this.interval;
-            day -= 7;
+          this.day++;
+          if (this.day > this.week * 7) {
+            this.year += this.interval;
+            this.day -= 7;
           }
         }
         break;
       }
-      let occurrence = new Date(year, month, day, hours, minutes, seconds);
-      if (this.week == 5 && occurrence.getDate() != day) {
+      let occurrence = new Date(this.year, this.month, this.day, this.hours, this.minutes, this.seconds);
+      if (this.week == 5 && occurrence.getDate() != this.day) {
         // Month ran out of days. Advance to the next month/year.
         if (this.frequency == Frequency.Yearly) {
-          year += this.interval;
+          this.year += this.interval;
         } else {
-          month += this.interval;
+          this.month += this.interval;
         }
-        occurrence.setFullYear(year);
-        occurrence.setMonth(month);
+        occurrence.setFullYear(this.year);
+        occurrence.setMonth(this.month);
         // Temporarily advance to the next month.
         occurrence.setDate(32);
         // Rewind to the last week of the month.
         occurrence.setDate(-6);
-        day = occurrence.getDate();
+        this.day = occurrence.getDate();
       }
       if (endDate && occurrence > endDate) {
         break;
@@ -254,7 +265,7 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
       if (this.weekdays && !this.weekdays.includes(occurrence.getDay())) {
         continue;
       }
-      if ((this.frequency == Frequency.Yearly || this.frequency == Frequency.Monthly) && occurrence.getDate() != day) {
+      if ((this.frequency == Frequency.Yearly || this.frequency == Frequency.Monthly) && occurrence.getDate() != this.day) {
         // Ran out of days in the month, so rewind to the last day in the month.
         occurrence.setDate(0);
       }
