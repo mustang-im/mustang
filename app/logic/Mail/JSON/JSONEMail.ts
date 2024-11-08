@@ -203,7 +203,7 @@ export class JSONEMail {
       a.mimeType = sanitize.nonemptystring(json.mimeType, "application/octet-stream");
       a.contentID = sanitize.nonemptystring(json.contentID, "" + fallbackID);
       a.filename = sanitize.nonemptystring(json.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(a.mimeType));
-      let filepathLocal = sanitize.string(json.filepathLocal, null)
+      let filepathLocal = sanitize.string(json.filepath, null)
       if (filepathLocal) {
         a.filepathLocal = this.filesDir + "/" + filepathLocal;
       }
