@@ -23,6 +23,8 @@ export class JSONMailAccount {
     json.port = acc.port;
     json.tls = acc.tls;
     json.config = acc.toConfigJSON();
+    json.workspace = acc.workspace?.id;
+    json.outgoing = acc.outgoing?.dbID;
     return json;
   }
 
