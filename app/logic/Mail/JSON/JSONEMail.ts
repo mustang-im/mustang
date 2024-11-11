@@ -101,8 +101,8 @@ export class JSONEMail {
     // .folder is set by caller when doing `email = folder.newEMail()`
     email.inReplyTo = sanitize.string(json.inReplyTo, null);
     email.size = sanitize.integer(json.size, null);
-    email.received = sanitize.date(json.dateReceived * 1000, new Date());
-    email.sent = sanitize.date(json.dateSent * 1000, email.received);
+    email.received = sanitize.date(json.received * 1000, new Date());
+    email.sent = sanitize.date(json.sent * 1000, email.received);
     email.outgoing = sanitize.boolean(!!json.outgoing);
     email.subject = sanitize.string(json.subject, null);
     if (json.plaintext != null || json.html != null) {
@@ -132,8 +132,8 @@ export class JSONEMail {
     email.id = sanitize.nonemptystring(json.id, "");
     email.inReplyTo = sanitize.string(json.inReplyTo, null);
     email.size = sanitize.integer(json.size, null);
-    email.sent = sanitize.date(json.dateSent * 1000, new Date());
-    email.received = sanitize.date(json.dateReceived * 1000, new Date());
+    email.sent = sanitize.date(json.sent * 1000, new Date());
+    email.received = sanitize.date(json.received * 1000, new Date());
     email.outgoing = sanitize.boolean(json.outgoing);
     email.subject = sanitize.string(json.subject, null);
 
@@ -141,7 +141,7 @@ export class JSONEMail {
     email.isStarred = sanitize.boolean(json.isStarred);
     email.isReplied = sanitize.boolean(json.isReplied);
     email.isSpam = sanitize.boolean(json.isSpam);
-    email.threadID = sanitize.string(json.threadID ?? json.parentMsgID, null);
+    email.threadID = sanitize.string(json.threadID ?? json.inReplyTo, null);
     email.downloadComplete = sanitize.boolean(json.downloadComplete);
 
     // email.contact = findOrCreatePersonUID("foo45@example.com", sanitize.label(json.contactName, null));
@@ -203,7 +203,7 @@ export class JSONEMail {
       a.mimeType = sanitize.nonemptystring(json.mimeType, "application/octet-stream");
       a.contentID = sanitize.nonemptystring(json.contentID, "" + fallbackID);
       a.filename = sanitize.nonemptystring(json.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(a.mimeType));
-      let filepathLocal = sanitize.string(json.filepathLocal, null)
+      let filepathLocal = sanitize.string(json.filepath, null)
       if (filepathLocal) {
         a.filepathLocal = this.filesDir + "/" + filepathLocal;
       }
