@@ -75,7 +75,7 @@ export class JSONEMail {
 
   static saveAttachment(email: EMail, a: Attachment): any {
     assert(this.filesDir, "Please call init() first");
-    let json: any = [];
+    let json: any = {};
     json.filename = a.filename;
     json.filepathLocal = a.filepathLocal?.replace(this.filesDir + "/", "");
     json.mimeType = a.mimeType;
@@ -233,10 +233,10 @@ export class JSONEMail {
 
   protected static readTag(email: EMail, json: any): void {
     try {
-      if (!json.tagName) {
+      if (!json.name) {
         return;
       }
-      let name = sanitize.nonemptystring(json.tagName);
+      let name = sanitize.nonemptystring(json.name);
       let tag = getTagByName(name);
       email.tags.add(tag);
     } catch (ex) {
