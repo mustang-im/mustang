@@ -154,8 +154,9 @@ export class AceEMail {
     await JSONEMail.init();
     let db = await getDatabase();
     let newEmails = new ArrayColl<EMail>();
-    await db.forEach(
+    await db.forEachFiltered(
       this.refBranch,
+      [{ column: "folderID", op: "==", value: folder.id}],
       { include: this.kMainPropertiesInclude },
       (dbID: string, json: any) => {
         let email = folder.messages.find(email => email.dbID == dbID);
