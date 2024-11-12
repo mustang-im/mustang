@@ -1,4 +1,4 @@
-import { type Addressbook } from "../Addressbook";
+import type { Addressbook } from "../Addressbook";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
