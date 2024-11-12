@@ -32,7 +32,7 @@ export class JSONFolder extends Folder {
     folder.countTotal = sanitize.integer(json.countTotal, 0);
     folder.countUnread = sanitize.integer(json.countUnread, 0);
     folder.countNewArrived = sanitize.integer(json.countNewArrived, 0);
-    folder.specialFolder = sanitize.alphanumdash(json.specialUse, null) as SpecialFolder;
+    folder.specialFolder = sanitize.alphanumdash(json.specialFolder, null) as SpecialFolder;
     if (json.uidvalidity !== undefined) {
       (folder as any as IMAPFolder).uidvalidity = sanitize.integer(json.uidvalidity, 0);
     }
@@ -42,8 +42,8 @@ export class JSONFolder extends Folder {
     let accountID = sanitize.alphanumdash(json.accountID);
     folder.account = appGlobal.emailAccounts.find(acc => acc.id == accountID);
     assert(folder.account, `Account ${accountID} not yet loaded`);
-    if (json.parent) {
-      let parentFolderID = sanitize.alphanumdash(json.parent);
+    if (json.parentID) {
+      let parentFolderID = sanitize.alphanumdash(json.parentID);
       folder.parent = folder.account.findFolder(folder => folder.id == parentFolderID);
       assert(folder.parent, `Parent folder ${parentFolderID} not found`);
     }
