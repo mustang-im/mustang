@@ -77,7 +77,7 @@ export class JSONEMail {
     assert(this.filesDir, "Please call init() first");
     let json: any = [];
     json.filename = a.filename;
-    json.filepath = a.filepathLocal?.replace(this.filesDir + "/", "");
+    json.filepathLocal = a.filepathLocal?.replace(this.filesDir + "/", "");
     json.mimeType = a.mimeType;
     json.size = a.size;
     json.contentID = a.contentID;
@@ -203,7 +203,7 @@ export class JSONEMail {
       a.mimeType = sanitize.nonemptystring(json.mimeType, "application/octet-stream");
       a.contentID = sanitize.nonemptystring(json.contentID, "" + fallbackID);
       a.filename = sanitize.nonemptystring(json.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(a.mimeType));
-      let filepathLocal = sanitize.string(json.filepath, null)
+      let filepathLocal = sanitize.string(json.filepathLocal, null)
       if (filepathLocal) {
         a.filepathLocal = this.filesDir + "/" + filepathLocal;
       }
