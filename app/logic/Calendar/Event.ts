@@ -2,7 +2,7 @@ import type { PersonUID } from "../Abstract/PersonUID";
 import type { Calendar } from "./Calendar";
 import type { RecurrenceRule } from "./RecurrenceRule";
 import { ArrayColl } from "svelte-collections";
-import { AbstractFunction, assert, randomID } from "../util/util";
+import { assert, randomID } from "../util/util";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 
 export class Event extends Observable {
@@ -145,7 +145,7 @@ export class Event extends Observable {
   }
 
   async saveToServer(): Promise<void> {
-    throw new AbstractFunction();
+    // nothing to do for local events
   }
 
   /**
@@ -162,14 +162,14 @@ export class Event extends Observable {
     if (this.parentEvent) {
       let pos = this.parentEvent.instances.indexOf(this);
       if (pos >= 0) {
-        this.parentEvent.instances[pos] = null;
+        this.parentEvent.instances.set(pos, null);
         await this.calendar.storage.saveEvent(this.parentEvent);
       }
     }
   }
 
   async deleteFromServer(): Promise<void> {
-    throw new AbstractFunction();
+    // nothing to do for local events
   }
 
   /**
