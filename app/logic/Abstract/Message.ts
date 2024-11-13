@@ -3,6 +3,7 @@ import type { Person } from "./Person";
 import type { PersonUID } from "../Abstract/PersonUID";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
 import { Observable, notifyChangedProperty } from "../util/Observable";
+import { backgroundError } from "../../frontend/Util/error";
 import { MapColl } from "svelte-collections";
 
 export class Message extends Observable {
@@ -72,11 +73,15 @@ export class Message extends Observable {
     if (this._sanitizedHTML) {
       return this._sanitizedHTML;
     }
-    if (this._rawHTML) {
-      return this._sanitizedHTML = sanitizeHTML(this._rawHTML);
-    }
-    if (this._text) {
-      return this._sanitizedHTML = convertTextToHTML(this._text);
+    try {
+      if (this._rawHTML) {
+        return this._sanitizedHTML = sanitizeHTML(this._rawHTML);
+      }
+      if (this._text) {
+        return this._sanitizedHTML = convertTextToHTML(this._text);
+      }
+    } catch (ex) {
+      backgroundError(ex);
     }
     return null;
   }
