@@ -510,7 +510,7 @@ export class IMAPFolder extends Folder {
     if (seq == 1) {
       return; // TODO Handle seq == 1
     }
-    let remainingUIDs = await this.fetchUIDList({ seq: seq - 1 + ":" + seq });
+    let remainingUIDs = await this.fetchUIDList({ seq: (seq - 1) + ":" + seq });
     if (remainingUIDs.length != 2) {
       return; // TODO Handle start and end
     }
