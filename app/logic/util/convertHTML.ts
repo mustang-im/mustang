@@ -66,7 +66,7 @@ function addStyles(output, styles) {
   }
 };
 
-function addCSSRules(output, cssRules) {
+function addCSSRules(output, cssRules = []) {
   for (let rule of [...cssRules].reverse()) {
     switch (rule.type) {
       case CSSRule.STYLE_RULE:
@@ -78,7 +78,7 @@ function addCSSRules(output, cssRules) {
         break;
       case CSSRule.MEDIA_RULE:
         output.push(`@media ${rule.media.mediaText} {`);
-        addCSSRules(output, rule.cssRules);
+        addCSSRules(output, rule?.cssRules);
         output.push('}\n');
         break;
       case CSSRule.FONT_FACE_RULE:
@@ -110,7 +110,7 @@ function addCSSRules(output, cssRules) {
 DOMPurify.addHook('uponSanitizeElement', (node, data) => {
   if (data.tagName === 'style') {
     const output = [];
-    addCSSRules(output, (node as HTMLStyleElement).sheet.cssRules);
+    addCSSRules(output, (node as HTMLStyleElement)?.sheet?.cssRules);
     node.textContent = output.join("\n");
   }
 });
