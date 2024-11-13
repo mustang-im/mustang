@@ -43,7 +43,9 @@ export class JSONGroup {
     return group;
   }
 
-  static readMembers(group: Group, json: any){
+  /** This function assumes that the `Person`s have already been loaded,
+    * because it cannot load the DB. */
+  static readMembers(group: Group, json: any) {
     for (let member of json.members) {
       try {
         let personID = sanitize.integer(member);
