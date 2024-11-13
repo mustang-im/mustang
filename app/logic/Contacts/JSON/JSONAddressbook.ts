@@ -18,11 +18,8 @@ export class JSONAddressbook {
     return json;
   }
 
-  static read(dbID: number | string, acc: Addressbook, json: any) {
-    assert(dbID, "Need addressbook DB ID to read it");
-    acc.dbID = typeof (dbID) == "number"
-      ? sanitize.integer(dbID, null)
-      : sanitize.string(dbID, null);
+  static read(acc: Addressbook, json: any) {
+    assert(acc.id, "Need addressbook ID to read it");
     (acc.id as any) = sanitize.alphanumdash(json.id);
     acc.name = sanitize.label(json.name);
     assert(acc.protocol == sanitize.alphanumdash(json.protocol), "Addressbook object of wrong type passed in");

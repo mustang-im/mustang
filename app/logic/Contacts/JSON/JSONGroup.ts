@@ -25,11 +25,10 @@ export class JSONGroup {
     return json;
   }
 
-  static read(dbID: number, group: Group, json: any): Group {
-    group.dbID = sanitize.integer(dbID);
+  static read(group: Group, json: any): Group {
+    group.id = sanitize.string(json.id, null);
     group.name = sanitize.label(json.name);
     group.description = sanitize.label(json.description, "");
-    group.id = sanitize.string(json.id, null);
     if (json.addressbookID) {
       let addressbookID = sanitize.nonemptystring(json.addressbookID);
       if (group.addressbook) {

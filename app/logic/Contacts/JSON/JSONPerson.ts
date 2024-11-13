@@ -41,15 +41,14 @@ export class JSONPerson {
     return json;
   }
 
-  static read(dbID: number, person: Person, json: any): Person {
-    person.dbID = sanitize.integer(dbID);
+  static read(person: Person, json: any): Person {
+    person.id = sanitize.string(json.id, null);
     person.name = sanitize.label(json.name);
     person.firstName = sanitize.label(json.firstName, null);
     person.lastName = sanitize.string(json.lastName, null);
     person.picture = sanitize.url(json.picture, null);
     person.notes = sanitize.string(json.notes, null);
     person.popularity = sanitize.integer(json.popularity, null);
-    person.id = sanitize.string(json.id, null);
     if (json.addressbookID) {
       let addressbookID = sanitize.nonemptystring(json.addressbookID);
       if (person.addressbook) {
