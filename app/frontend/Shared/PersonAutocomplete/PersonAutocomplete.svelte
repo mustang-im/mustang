@@ -27,7 +27,7 @@
 </hbox>
 
 <script lang="ts">
-  import { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import { PersonUID, nameFromEmailAddress } from "../../../logic/Abstract/PersonUID";
   import type { Person } from "../../../logic/Abstract/Person";
   import { appGlobal } from "../../../logic/app";
   import PersonAutocompleteResult from "./PersonAutocompleteResult.svelte";
@@ -37,6 +37,7 @@
   import Autocomplete from 'simple-svelte-autocomplete';
   import { createEventDispatcher, tick } from 'svelte';
   import { catchErrors, showError } from "../../Util/error";
+  import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
   import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
   const dispatch = createEventDispatcher<{ addPerson: PersonUID }>();
@@ -94,7 +95,7 @@
 
   function onCreate(text: string): PersonUID {
     // email address is substring, e.g. "Fred <fred@example.com>"
-    assert(kEMailAddressRegexp.test(text), $t`Need email address`);
+    assert(text.includes("@"), $t`Need email address`);
 
     // Parse typed text into name and email address
     text = text.trim();
@@ -105,9 +106,8 @@
       name = text.substring(0, startBracket - 1).trimEnd();
       let endBracket = text.indexOf(">");
       emailAddress = text.substring(startBracket + 1, endBracket);
-      // email address is entire string
-      assert(kEMailAddressRegexp.test(emailAddress), $t`Need email address`);
     }
+    sanitize.emailAddress(emailAddress);
 
     /* TODO
     let person = new Person(appGlobal.collectedAddressbook);
@@ -121,10 +121,9 @@
   }
 
   let typedText: string;
-  const kEMailAddressRegexp = /[a-zA-Z0-9]+@[a-zA-Z0-9\-\.]+\.[a-zA-Z0-9\-]+/;
   function canCreate(typedText: string) {
     // email address is substring, e.g. "Fred <fred@example.com>"
-    return typedText && kEMailAddressRegexp.test(typedText);
+    return typedText && sanitize.emailAddress(typedText, "");
   }
 
   export function focus() {
