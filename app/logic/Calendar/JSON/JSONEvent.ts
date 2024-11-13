@@ -10,13 +10,14 @@ export class JSONEvent {
   static save(event: Event): any {
     assert(event.calendar?.id, "Need calendar ID to save the event");
     let json: any = {};
-    json.pID = event.pID;
+    json.id = event.id;
     json.title = event.title;
     json.descriptionText = event.descriptionText;
     json.descriptionHTML = event.descriptionHTML;
     json.startTime = event.startTime.toISOString();
     json.endTime = event.endTime.toISOString();
     json.calUID = event.calUID;
+    json.pID = event.pID;
     json.calendarID = event.calendar.id;
     json.recurrenceRule = event.recurrenceRule?.getCalString();
     json.recurrenceMasterEventID = event.parentEvent?.pID;
@@ -54,7 +55,7 @@ export class JSONEvent {
   }
 
   static read(event: Event, json: any, events?: Collection<Event>): Event {
-    event.pID = json.pID;
+    event.id = json.id;
     event.title = sanitize.label(json.title, "Meeting");
     event.descriptionText = sanitize.label(json.descriptionText, "");
     let html = sanitize.string(json.descriptionHTML, null);
@@ -64,6 +65,7 @@ export class JSONEvent {
     event.startTime = sanitize.date(json.startTime);
     event.endTime = sanitize.date(json.endTime, event.startTime);
     event.calUID = json.calUID;
+    event.pID = json.pID;
     if (json.calendarID) {
       let calendarID = sanitize.string(json.calendarID, null);
       if (event.calendar) {
