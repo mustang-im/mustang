@@ -366,8 +366,13 @@ export class IMAPFolder extends Folder {
 
   /** @returns UID of newest message known locally */
   protected get highestUID(): number {
-    let uids = this.messages.map((msg: IMAPEMail) => msg.uid);
-    return uids.sortBy(uid => -uid).first;
+    let highest = 1;
+    for (let msg of this.messages) {
+      if (msg.uid > highest) {
+        highest = msg.uid;
+      }
+    }
+    return highest;
   }
 
   /** @returns message from n days ago */
