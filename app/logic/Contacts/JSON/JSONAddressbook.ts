@@ -20,7 +20,7 @@ export class JSONAddressbook {
 
   static read(acc: Addressbook, json: any) {
     assert(acc.id, "Need addressbook ID to read it");
-    (acc.id as any) = sanitize.alphanumdash(json.id);
+    acc.id = sanitize.alphanumdash(json.id);
     acc.name = sanitize.label(json.name);
     assert(acc.protocol == sanitize.alphanumdash(json.protocol), "Addressbook object of wrong type passed in");
     acc.username = sanitize.string(json.username, null);
