@@ -6,7 +6,7 @@ import { assert, randomID } from "../util/util";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 
 export class Event extends Observable {
-  readonly id: string;
+  id: string;
   dbID: number;
   /** iCal UID if this is a meeting */
   calUID: string | null = null;
