@@ -69,7 +69,7 @@ export class JSONEvent {
       if (event.calendar) {
         assert(event.calendar.id == calendarID, "Wrong calendar");
       } else {
-        event.calendar = appGlobal.calendars.find(cal => cal.dbID == calendarID);
+        event.calendar = appGlobal.calendars.find(cal => cal.id == calendarID);
       }
     }
     if (json.recurrenceMasterEventID && json.recurrenceStartTime) {
