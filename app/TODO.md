@@ -1,6 +1,10 @@
 # Next
 * Mail
-  * SQL: Stable DB
+  * AceBase: Stable DB
+  * SQL
+    * Batched insert
+    * EMailCollection.sortBy()
+    * email dbID not found, when flag change during first download
   * Collections sort is slow after additions/removals
   * IMAP: See below
   * Inline images send
@@ -173,10 +177,14 @@
      * Mails
 
 ## IMAP
+* Flag notifications with sequence numbers
+* UIDONLY (if available): Enable and test
+* Fallback: When UID not at all supported
 * Download all msgs in folder: When?
 * Subscribed folders only, and subscription UI
 * Move folder
-* Fallback: When UID not supported
+
+### Intentionally not implemented
 * Expunge on quit
 
 ## Missing features
