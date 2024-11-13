@@ -497,22 +497,30 @@ export class IMAPFolder extends Folder {
   /** We received an event from the server that a
    * message was deleted */
   async messageDeletedNotification(seq: number): Promise<void> {
-    await this.checkDeletedMessages(this.recentMsg?.uid); // HACK Doesn't consider which msg was deleted
+    // We need to map from msg sequence number to UID
+    // Ask server to list all known messages (as UID) from 1 msg before seq to seq.
+    // (whereas `seq` is now the message after (!) the deleted msg,
+    // given that seq are order numbers are therefore get re-assigned on delete.)
+    // This should return exactly 2 messages (unless we're at the end or start).
+    // Any UIDs between those 2 UIDs are deleted messages.
+    // We should purge them from our cache.
+    // This works even if several messages are deleted in a row.
+    // Thanks to Arnt Gulbrandsen for the ingeneous tip
 
-    /* old impl:
-    let fromUID: number;
-    let message = this.getEMailBySeq(seq);
-    if (message) {
-      let sortedByUID = this.messages.sortBy((msg: IMAPEMail) => -msg.uid);
-      let pos = sortedByUID.getKeyForValue(message);
-      pos += 20; // Get a few more
-      let fromMsg = sortedByUID.getIndex(pos) ?? sortedByUID.last;
-      fromUID = (fromMsg as IMAPEMail).uid;
-    } */
-    /* New impl: TODO Deletes last few days of messages
-    let fromUID = this.getEmailsAroundSeq(seq, 20, 0).first?.uid;
-    await this.checkDeletedMessages(fromUID);
-    */
+    if (seq == 1) {
+      return; // TODO Handle seq == 1
+    }
+    let remainingUIDs = await this.fetchUIDList({ seq: seq - 1 + ":" + seq });
+    if (remainingUIDs.length != 2) {
+      return; // TODO Handle start and end
+    }
+    let startUID = remainingUIDs.first;
+    let endUID = remainingUIDs.last;
+    let deletedMsgs = this.messages.filter(msg => startUID < msg.uid && msg.uid < endUID);
+    for (let deletedMsg of deletedMsgs) {
+      //console.log(`Deleted msg ${deletedMsg.subject}`);
+      await deletedMsg.deleteMessageLocally();
+    }
   }
 
   async addMessage(email: EMail) {
