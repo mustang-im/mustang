@@ -7,20 +7,20 @@ import { appGlobal } from "../../app";
 
 export class JSONGroup {
   static save(group: Group): any {
-    assert(group.addressbook?.dbID, "Need address book ID to save the group");
+    assert(group.addressbook?.id, "Need address book ID to save the group");
     let json: any = {};
     json.id = group.id;
     json.name = group.name;
     json.description = group.description;
-    json.addressbookID = group.addressbook?.dbID;
+    json.addressbookID = group.addressbook?.id;
     return json;
   }
 
   static saveMembers(group: Group, json: any): any {
     json.members = [];
     for (let person of group.participants) {
-      assert(person.dbID, "Need person ID to save the member");
-      json.members.push(person.dbID);
+      assert(person.id, "Need person ID to save the member");
+      json.members.push(person.id);
     }
     return json;
   }
@@ -31,11 +31,11 @@ export class JSONGroup {
     group.description = sanitize.label(json.description, "");
     group.id = sanitize.string(json.id, null);
     if (json.addressbookID) {
-      let addressbookID = sanitize.integer(json.addressbookID);
+      let addressbookID = sanitize.nonemptystring(json.addressbookID);
       if (group.addressbook) {
-        assert(group.addressbook.dbID == addressbookID, "Wrong addressbook");
+        assert(group.addressbook.id == addressbookID, "Wrong addressbook");
       } else {
-        group.addressbook = appGlobal.addressbooks.find(ab => ab.dbID == addressbookID);
+        group.addressbook = appGlobal.addressbooks.find(ab => ab.id == addressbookID);
       }
     }
 
@@ -48,11 +48,11 @@ export class JSONGroup {
   static readMembers(group: Group, json: any) {
     for (let member of json.members) {
       try {
-        let personID = sanitize.integer(member);
-        let person = group.addressbook?.persons.find(p => p.dbID == personID) as Person;
+        let personID = sanitize.nonemptystring(member);
+        let person = group.addressbook?.persons.find(p => p.id == personID) as Person;
         if (!person) {
           for (let ab of appGlobal.addressbooks) {
-            person = ab.persons.find(p => p.dbID == personID);
+            person = ab.persons.find(p => p.id == personID);
             if (person) {
               break;
             }

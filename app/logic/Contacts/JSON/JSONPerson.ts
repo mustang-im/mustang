@@ -6,7 +6,7 @@ import { ArrayColl, Collection } from "svelte-collections";
 
 export class JSONPerson {
   static save(person: Person): any {
-    assert(person.addressbook?.dbID, "Need address book ID to save the person");
+    assert(person.addressbook?.id, "Need address book ID to save the person");
     let json: any = {};
     json.id = person.id;
     json.name = person.name;
@@ -15,7 +15,7 @@ export class JSONPerson {
     json.picture = person.picture;
     json.notes = person.notes;
     json.popularity = person.popularity;
-    json.addressbookID = person.addressbook?.dbID;
+    json.addressbookID = person.addressbook?.id;
     return json;
   }
 
@@ -51,11 +51,11 @@ export class JSONPerson {
     person.popularity = sanitize.integer(json.popularity, null);
     person.id = sanitize.string(json.id, null);
     if (json.addressbookID) {
-      let addressbookID = sanitize.integer(json.addressbookID);
+      let addressbookID = sanitize.nonemptystring(json.addressbookID);
       if (person.addressbook) {
-        assert(person.addressbook.dbID == addressbookID, "Wrong addressbook");
+        assert(person.addressbook.id == addressbookID, "Wrong addressbook");
       } else {
-        person.addressbook = appGlobal.addressbooks.find(ab => ab.dbID == addressbookID);
+        person.addressbook = appGlobal.addressbooks.find(ab => ab.id == addressbookID);
       }
     }
     JSONPerson.readContacts(person, json);
@@ -63,7 +63,7 @@ export class JSONPerson {
   }
 
   protected static readContacts(person: Person, json: any) {
-    assert(person.dbID, "Need person ID to read the person");
+    assert(person.id, "Need person ID to read the person");
     if (json.emailAddresses) {
       person.emailAddresses.addAll(this.readContactsOfType(json.emailAddresses));
     }

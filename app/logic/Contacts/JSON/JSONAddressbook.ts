@@ -13,7 +13,7 @@ export class JSONAddressbook {
     json.url = acc.url;
     json.username = acc.username;
     json.userRealname = acc.userRealname;
-    json.workspace = acc.workspace;
+    json.workspaceID = acc.workspace?.id;
     json.syncState = acc.syncState;
     return json;
   }
@@ -29,8 +29,8 @@ export class JSONAddressbook {
     acc.username = sanitize.string(json.username, null);
     acc.url = sanitize.url(json.url, null);
     acc.userRealname = sanitize.label(json.userRealname, appGlobal.me.name ?? "You");
-    acc.workspace = json.workspace
-      ? appGlobal.workspaces.find(w => w.id == sanitize.string(json.workspace, null))
+    acc.workspace = json.workspaceID
+      ? appGlobal.workspaces.find(w => w.id == sanitize.string(json.workspaceID, null))
       : null;
     acc.syncState = json.syncState;
     return acc;
