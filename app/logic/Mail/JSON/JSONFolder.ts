@@ -53,14 +53,14 @@ export class JSONFolder extends Folder {
   /** @returns the root folders */
   static readAllHierarchy(account: MailAccount, jsonAll: any[]): void {
     function readSubFolders(parentFolderID: string | null, resultFolders: Collection<Folder>) {
-      for (let json of jsonAll.filter(r => r.parent == parentFolderID)) {
+      for (let json of jsonAll.filter(r => r.parentID == parentFolderID)) {
         if (account.findFolder(folder => folder.id == json.id)) {
           continue;
         }
         let folder = account.newFolder();
         this.read(json.id, folder);
         resultFolders.add(folder);
-        readSubFolders(folder.dbID as string | null, folder.subFolders);
+        readSubFolders(folder.id as string | null, folder.subFolders);
       }
     }
     readSubFolders(null, account.rootFolders);
