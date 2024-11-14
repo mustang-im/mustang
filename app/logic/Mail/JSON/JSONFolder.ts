@@ -27,7 +27,7 @@ export class JSONFolder extends Folder {
   }
 
   static read(folder: Folder, json: any): Folder {
-    folder.id = sanitize.alphanumdash(json.id);
+    folder.id = sanitize.nonemptystring(json.id);
     folder.name = sanitize.label(json.name);
     folder.countTotal = sanitize.integer(json.countTotal, 0);
     folder.countUnread = sanitize.integer(json.countUnread, 0);
@@ -43,7 +43,7 @@ export class JSONFolder extends Folder {
     folder.account = appGlobal.emailAccounts.find(acc => acc.id == accountID);
     assert(folder.account, `Account ${accountID} not yet loaded`);
     if (json.parentID) {
-      let parentFolderID = sanitize.alphanumdash(json.parentID);
+      let parentFolderID = sanitize.string(json.parentID, "");
       folder.parent = folder.account.findFolder(folder => folder.id == parentFolderID);
       assert(folder.parent, `Parent folder ${parentFolderID} not found`);
     }
