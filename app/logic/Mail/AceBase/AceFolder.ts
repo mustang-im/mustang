@@ -50,12 +50,12 @@ export class AceFolder extends Folder {
       [{ column: 'accountID', op: '==', value: account.id }],
       {});
     async function readSubFolders(parentFolderID: string | null, resultFolders: Collection<Folder>) {
-      for (let row of rows.filter(r => r.parent == parentFolderID)) {
-        if (account.findFolder(folder => folder.dbID == row.id)) {
+      for (let row of rows.filter(r => r.parentID == parentFolderID)) {
+        if (account.findFolder(folder => folder.id == row.id)) {
           continue;
         }
         let folder = account.newFolder();
-        await JSONFolder.read(folder, row);
+        JSONFolder.read(folder, row);
         resultFolders.add(folder);
         await readSubFolders(folder.id, folder.subFolders);
       }
