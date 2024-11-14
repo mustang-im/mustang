@@ -19,7 +19,7 @@ export class AceBaseHandle {
   }
 
   async set(refPath: string, value: any): Promise<void> {
-    this._db.ref(refPath).set(value);
+    await this._db.ref(refPath).set(value);
   }
 
   async push(refPath: string, value: any): Promise<string> {
@@ -28,11 +28,11 @@ export class AceBaseHandle {
   }
 
   async update(refPath: string, value: any): Promise<void> {
-    this._db.ref(refPath).update(value);
+    await this._db.ref(refPath).update(value);
   }
 
   async remove(refPath: string): Promise<void> {
-    this._db.ref(refPath).remove();
+    await this._db.ref(refPath).remove();
   }
 
   async query(refPath: string, filters: { column: string, op: any, value: string }[], getOptions: Object): Promise<any[]> {
@@ -45,7 +45,7 @@ export class AceBaseHandle {
   }
 
   async forEach(refPath: string, include: any, eachCallback: (ref: string, value: any) => void): Promise<void> {
-    this._db.ref(refPath).forEach(include, snapshot => {
+    await this._db.ref(refPath).forEach(include, snapshot => {
       eachCallback(snapshot.key, snapshot.val());
     });
   }
