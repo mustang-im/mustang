@@ -27,7 +27,7 @@ export class JSONFolder extends Folder {
   }
 
   static read(folder: Folder, json: any): Folder {
-    folder.id = sanitize.alphanumdash(json.id);
+    folder.id = sanitize.nonemptystring(json.id);
     folder.name = sanitize.label(json.name);
     folder.countTotal = sanitize.integer(json.countTotal, 0);
     folder.countUnread = sanitize.integer(json.countUnread, 0);
@@ -43,7 +43,7 @@ export class JSONFolder extends Folder {
     folder.account = appGlobal.emailAccounts.find(acc => acc.id == accountID);
     assert(folder.account, `Account ${accountID} not yet loaded`);
     if (json.parentID) {
-      let parentFolderID = sanitize.alphanumdash(json.parentID);
+      let parentFolderID = sanitize.string(json.parentID, "");
       folder.parent = folder.account.findFolder(folder => folder.id == parentFolderID);
       assert(folder.parent, `Parent folder ${parentFolderID} not found`);
     }
@@ -53,14 +53,14 @@ export class JSONFolder extends Folder {
   /** @returns the root folders */
   static readAllHierarchy(account: MailAccount, jsonAll: any[]): void {
     function readSubFolders(parentFolderID: string | null, resultFolders: Collection<Folder>) {
-      for (let json of jsonAll.filter(r => r.parent == parentFolderID)) {
+      for (let json of jsonAll.filter(r => r.parentID == parentFolderID)) {
         if (account.findFolder(folder => folder.id == json.id)) {
           continue;
         }
         let folder = account.newFolder();
         this.read(json.id, folder);
         resultFolders.add(folder);
-        readSubFolders(folder.dbID as string | null, folder.subFolders);
+        readSubFolders(folder.id as string | null, folder.subFolders);
       }
     }
     readSubFolders(null, account.rootFolders);
