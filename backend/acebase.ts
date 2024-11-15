@@ -63,6 +63,11 @@ export class AceBaseHandle {
    * @param eachCallback 
    */
   async forEachQuery(refPath: string, query: QueryOptions, include: any, eachCallback: (ref: string, value: any) => void): Promise<void> {
+    await Promise.all([
+      query.filters ? query.filters.flatMap(filter => this._db.indexes.create(refPath, filter.column)) : null,
+      query.sorts ? query.sorts.flatMap(sort => this._db.indexes.create(refPath, sort.column)) : null,
+    ]);
+
     let q = this._db.query(refPath);
     if (query.filters) {
       for (let filter of query.filters) {
