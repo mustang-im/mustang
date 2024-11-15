@@ -103,7 +103,7 @@ export class AceEMail {
     let newEmails = new ArrayColl<EMail>();
     await db.forEachFiltered(
       this.refBranch,
-      [{ column: "folderID", op: "==", value: folder.id}],
+      [{ column: "folderID", op: "==", value: folder.id }],
       { exclude: [ "*/html", "*/plaintext" ] },
       (dbID: string, json: any) => {
         let email = folder.messages.find(email => email.dbID == dbID);
@@ -157,7 +157,7 @@ export class AceEMail {
     let newEmails = new ArrayColl<EMail>();
     await db.forEachFiltered(
       this.refBranch,
-      [{ column: "folderID", op: "==", value: folder.id}],
+      [{ column: "folderID", op: "==", value: folder.id }],
       { include: this.kMainPropertiesInclude },
       (dbID: string, json: any) => {
         let email = folder.messages.find(email => email.dbID == dbID);
