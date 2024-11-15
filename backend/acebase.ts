@@ -49,4 +49,15 @@ export class AceBaseHandle {
       eachCallback(snapshot.key, snapshot.val());
     });
   }
+
+  async forEachFiltered(refPath: string, filters: { column: string, op: any, value: string }[],
+    include: any, eachCallback: (ref: string, value: any) => void): Promise<void> {
+    let q = this._db.query(refPath);
+    for (let filter of filters) {
+      q = q.filter(filter.column, filter.op, filter.value);
+    }
+    await q.forEach(include, snapshot => {
+      eachCallback(snapshot.key, snapshot.val());
+    });
+  }
 }
