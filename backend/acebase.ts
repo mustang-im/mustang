@@ -56,7 +56,7 @@ export class AceBaseHandle {
     for (let filter of filters) {
       q = q.filter(filter.column, filter.op, filter.value);
     }
-    q.forEach(include, snapshot => {
+    await q.forEach(include, snapshot => {
       eachCallback(snapshot.key, snapshot.val());
     });
   }
