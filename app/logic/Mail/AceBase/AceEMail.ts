@@ -95,15 +95,17 @@ export class AceEMail {
    * Adds the new emails to the folder, and updates existing emails.
    */
   static async readAll(folder: Folder, limit?: number, startWith?: number): Promise<void> {
-    if (limit) {
-      return;
-    }
     await JSONEMail.init();
     let db = await getDatabase();
     let newEmails = new ArrayColl<EMail>();
-    await db.forEachFiltered(
+    await db.forEachQuery(
       this.refBranch,
-      [{ column: "folderID", op: "==", value: folder.id }],
+      {
+        filters: [{ column: "folderID", op: "==", value: folder.id }],
+        sorts: [{ column: "sent", ascending: false }],
+        limit: limit,
+        startWith: startWith,
+      },
       { exclude: [ "*/html", "*/plaintext" ] },
       (dbID: string, json: any) => {
         let email = folder.messages.find(email => email.dbID == dbID);
@@ -149,15 +151,17 @@ export class AceEMail {
    * Reads only the date, subject, read status and maybe the first sender and recipient
    */
   static async readAllMainProperties(folder: Folder, limit?: number, startWith?: number): Promise<void> {
-    if (limit) {
-      return;
-    }
     await JSONEMail.init();
     let db = await getDatabase();
     let newEmails = new ArrayColl<EMail>();
-    await db.forEachFiltered(
+    await db.forEachQuery(
       this.refBranch,
-      [{ column: "folderID", op: "==", value: folder.id }],
+      {
+        filters: [{ column: "folderID", op: "==", value: folder.id }],
+        sorts: [{ column: "sent", ascending: false }],
+        limit: limit,
+        startWith: startWith,
+      },
       { include: this.kMainPropertiesInclude },
       (dbID: string, json: any) => {
         let email = folder.messages.find(email => email.dbID == dbID);

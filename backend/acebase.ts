@@ -50,14 +50,45 @@ export class AceBaseHandle {
     });
   }
 
-  async forEachFiltered(refPath: string, filters: { column: string, op: any, value: string }[],
-    include: any, eachCallback: (ref: string, value: any) => void): Promise<void> {
+  /**
+   * For each with a query options
+   * @param refPath 
+   * @param query 
+   * Options:
+   * - filters?: `{ column: string, op: any, value: string }[]`
+   * - sort?: `{ column: string, ascending?: boolean }[]`, ascending is true by default
+   * - limit?
+   * - startWith?
+   * @param include 
+   * @param eachCallback 
+   */
+  async forEachQuery(refPath: string, query: QueryOptions, include: any, eachCallback: (ref: string, value: any) => void): Promise<void> {
     let q = this._db.query(refPath);
-    for (let filter of filters) {
-      q = q.filter(filter.column, filter.op, filter.value);
+    if (query.filters) {
+      for (let filter of query.filters) {
+        q = q.filter(filter.column, filter.op, filter.value);
+      }
+    }
+    if (query.sorts) {
+      for (let sort of query.sorts) {
+        q = q.sort(sort.column, !!sort.ascending);
+      }
+    }
+    if (query.limit) {
+      q = q.take(query.limit);
+    }
+    if (query.startWith) {
+      q = q.skip(query.startWith);
     }
     await q.forEach(include, snapshot => {
       eachCallback(snapshot.key, snapshot.val());
     });
   }
+}
+
+export interface QueryOptions {
+  filters?: { column: string, op: any, value: string }[];
+  sorts?: { column: string, ascending?: boolean }[];
+  limit?: number;
+  startWith?: number;
 }
