@@ -95,6 +95,9 @@ export class AceEMail {
    * Adds the new emails to the folder, and updates existing emails.
    */
   static async readAll(folder: Folder, limit?: number, startWith?: number): Promise<void> {
+    if (limit) {
+      return;
+    }
     await JSONEMail.init();
     let db = await getDatabase();
     let newEmails = new ArrayColl<EMail>();
@@ -103,8 +106,6 @@ export class AceEMail {
       {
         filters: [{ column: "folderID", op: "==", value: folder.id }],
         sorts: [{ column: "sent", ascending: false }],
-        limit: limit,
-        startWith: startWith,
       },
       { exclude: [ "*/html", "*/plaintext" ] },
       (dbID: string, json: any) => {
@@ -151,6 +152,9 @@ export class AceEMail {
    * Reads only the date, subject, read status and maybe the first sender and recipient
    */
   static async readAllMainProperties(folder: Folder, limit?: number, startWith?: number): Promise<void> {
+    if (limit) {
+      return;
+    }
     await JSONEMail.init();
     let db = await getDatabase();
     let newEmails = new ArrayColl<EMail>();
@@ -159,8 +163,6 @@ export class AceEMail {
       {
         filters: [{ column: "folderID", op: "==", value: folder.id }],
         sorts: [{ column: "sent", ascending: false }],
-        limit: limit,
-        startWith: startWith,
       },
       { include: this.kMainPropertiesInclude },
       (dbID: string, json: any) => {
