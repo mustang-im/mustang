@@ -52,8 +52,8 @@ export class AceBaseHandle {
     for (let filter of filters) {
       q = q.filter(filter.column, filter.op, filter.value);
     }
-    let snapshots = await q.get();
-    return snapshots.map(s => s.key);
+    let references = await q.find();
+    return references.map(r => r.key);
   }
 
   async forEach(refPath: string, include: any, eachCallback: (ref: string, value: any) => void): Promise<void> {
