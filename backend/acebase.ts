@@ -44,6 +44,18 @@ export class AceBaseHandle {
     return snapshots.getValues();
   }
 
+  async queryKey(refPath: string, filters: { column: string, op: any, value: string }[]): Promise<string[]> {
+    await Promise.all([
+      filters.length > 0 ? filters.map(f => this._db.indexes.create(refPath, f.column)) : null,
+    ]);
+    let q = this._db.query(refPath);
+    for (let filter of filters) {
+      q = q.filter(filter.column, filter.op, filter.value);
+    }
+    let snapshots = await q.get();
+    return snapshots.map(s => s.key);
+  }
+
   async forEach(refPath: string, include: any, eachCallback: (ref: string, value: any) => void): Promise<void> {
     await this._db.ref(refPath).forEach(include, snapshot => {
       eachCallback(snapshot.key, snapshot.val());

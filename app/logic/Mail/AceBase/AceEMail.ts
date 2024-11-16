@@ -23,6 +23,16 @@ export class AceEMail {
     }
     let json = JSONEMail.save(email);
     let db = await getDatabase();
+    if (!email.dbID) {
+      let q = await db.queryKey(this.refBranch,
+        [
+          { column: "id", op: "==", value: email.id },
+          { column: "pID", op: "==", value: email.pID as string },
+          { column: "folderID", op: "==", value: email.folder.id },
+        ]
+      )
+      email.dbID = q[0];
+    }
     if (email.dbID) {
       await db.set(this.ref(email), json);
     } else {
