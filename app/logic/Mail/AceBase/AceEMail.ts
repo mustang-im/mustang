@@ -101,9 +101,12 @@ export class AceEMail {
     await JSONEMail.init();
     let db = await getDatabase();
     let newEmails = new ArrayColl<EMail>();
-    await db.forEachFiltered(
+    await db.forEachQuery(
       this.refBranch,
-      [{ column: "folderID", op: "==", value: folder.id }],
+      {
+        filters: [{ column: "folderID", op: "==", value: folder.id }],
+        sorts: [{ column: "sent", ascending: false }],
+      },
       { exclude: [ "*/html", "*/plaintext" ] },
       (dbID: string, json: any) => {
         let email = folder.messages.find(email => email.dbID == dbID);
@@ -155,9 +158,12 @@ export class AceEMail {
     await JSONEMail.init();
     let db = await getDatabase();
     let newEmails = new ArrayColl<EMail>();
-    await db.forEachFiltered(
+    await db.forEachQuery(
       this.refBranch,
-      [{ column: "folderID", op: "==", value: folder.id }],
+      {
+        filters: [{ column: "folderID", op: "==", value: folder.id }],
+        sorts: [{ column: "sent", ascending: false }],
+      },
       { include: this.kMainPropertiesInclude },
       (dbID: string, json: any) => {
         let email = folder.messages.find(email => email.dbID == dbID);
