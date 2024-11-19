@@ -148,7 +148,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
       if (response.Collections.Collection.Status != "1") {
         throw new EASError("Sync", response.Collections.Collection.Status);
       }
-      responseFunc?.(response.Collections.Collection);
+      await responseFunc?.(response.Collections.Collection);
       this.syncState = response.Collections.Collection.SyncKey;
       await this.storage.saveFolder(this);
     } while (responseFunc && response.Collections.Collection.MoreAvailable == "");

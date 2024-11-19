@@ -89,7 +89,7 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
       if (response.Collections.Collection.Status != "1") {
         throw new EASError("Sync", response.Collections.Collection.Status);
       }
-      responseFunc?.(response.Collections.Collection);
+      await responseFunc?.(response.Collections.Collection);
       this.syncState = response.Collections.Collection.SyncKey;
       await this.save();
     } while (responseFunc && response.Collections.Collection.MoreAvailable == "");
