@@ -228,8 +228,6 @@ export class JSONEMail {
     email.tags.clear();
     for (let tag of ensureArray(emailJSON.tags)) {
       this.readTag(email, tag);
-    for (let json of emailJSON.tags) {
-      this.readTag(email, json);
     }
   }
 
