@@ -46,7 +46,8 @@ export class IMAPAccount extends MailAccount {
 
   async verifyLogin(): Promise<void> {
     await this.connection(true);
-    await this.logout();
+    this.stopPolling();
+    await this._connection?.logout();
   }
 
   async connection(interactive = false): Promise<ImapFlow> {
