@@ -15,6 +15,15 @@ export class AceFolder extends Folder {
   static async save(folder: Folder) {
     let json = JSONFolder.save(folder);
     let db = await getDatabase();
+    if (!folder.dbID) {
+      let keys = await db.queryKey(this.refBranch,
+        [
+          { column: "id", op: "==", value: folder.id },
+          { column: "accountID", op: "==", value: folder.account.id },
+        ]
+      )
+      folder.dbID = keys[0];
+    }
     if (folder.dbID) {
       await db.set(this.ref(folder), json);
     } else {
