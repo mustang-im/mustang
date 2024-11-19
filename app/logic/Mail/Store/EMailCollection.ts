@@ -33,9 +33,11 @@ export class EMailCollection<T extends EMail> extends ArrayColl<T> {
     if (needEmails.length) {
       let wait = new PromiseAllDone();
       for (let email of needEmails) {
-        (email as any).haveMetadata = true;
         if (email.dbID) {
-          wait.add(email.storage.readMessage(email));
+          wait.add((async () => {
+            await email.storage.readMessage(email);
+            (email as any).haveMetadata = true;
+          })());
         }
       }
       wait.wait().catch(needEmails[0].folder.account.errorCallback);
