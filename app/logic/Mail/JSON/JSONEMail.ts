@@ -3,7 +3,7 @@ import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/P
 import { Attachment, ContentDisposition } from "../Attachment";
 import { getTagByName } from "../Tag";
 import { appGlobal } from "../../app";
-import { assert, fileExtensionForMIMEType } from "../../util/util";
+import { assert, fileExtensionForMIMEType, ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
 
@@ -226,17 +226,17 @@ export class JSONEMail {
       return;
     }
     email.tags.clear();
-    for (let json of emailJSON.tags) {
-      this.readTag(email, json);
+    for (let tag of ensureArray(emailJSON.tags)) {
+      this.readTag(email, tag);
     }
   }
 
   protected static readTag(email: EMail, json: any): void {
     try {
-      if (!json.name) {
+      if (!json) {
         return;
       }
-      let name = sanitize.nonemptystring(json.name);
+      let name = sanitize.nonemptystring(json);
       let tag = getTagByName(name);
       email.tags.add(tag);
     } catch (ex) {
