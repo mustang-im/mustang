@@ -63,20 +63,18 @@ export class AceBaseHandle {
    * @param eachCallback 
    */
   async forEachQuery(refPath: string, query: QueryOptions, include: any, eachCallback: (ref: string, value: any) => void): Promise<void> {
-    await Promise.all([
-      query.filters ? query.filters.flatMap(filter => this._db.indexes.create(refPath, filter.column)) : null,
-      query.sorts ? query.sorts.flatMap(sort => this._db.indexes.create(refPath, sort.column)) : null,
-    ]);
-
     let q = this._db.query(refPath);
+    let cols = new Set<string>();
     if (query.filters) {
       for (let filter of query.filters) {
         q = q.filter(filter.column, filter.op, filter.value);
+        cols.add(filter.column);
       }
     }
     if (query.sorts) {
       for (let sort of query.sorts) {
         q = q.sort(sort.column, !!sort.ascending);
+        cols.add(sort.column);
       }
     }
     if (query.limit) {
@@ -85,6 +83,9 @@ export class AceBaseHandle {
     if (query.startWith) {
       q = q.skip(query.startWith);
     }
+    let colsArray = Array.from(cols);
+    let moreCols = cols.size > 1 ? colsArray.slice(1) : [];
+    await this._db.indexes.create(refPath, colsArray[0], { include: moreCols });
     await q.forEach(include, snapshot => {
       eachCallback(snapshot.key, snapshot.val());
     });
@@ -92,7 +93,7 @@ export class AceBaseHandle {
 }
 
 export interface QueryOptions {
-  filters?: { column: string, op: any, value: string }[];
+  filters?: { column: string, op: any, value: any }[];
   sorts?: { column: string, ascending?: boolean }[];
   limit?: number;
   startWith?: number;

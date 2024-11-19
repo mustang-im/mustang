@@ -161,7 +161,10 @@ export class AceEMail {
     await db.forEachQuery(
       this.refBranch,
       {
-        filters: [{ column: "folderID", op: "==", value: folder.id }],
+        filters: [
+          { column: "folderID", op: "==", value: folder.id },
+          { column: "sent", op: ">=", value: 0 },
+        ],
         sorts: [{ column: "sent", ascending: false }],
       },
       { include: this.kMainPropertiesInclude },
