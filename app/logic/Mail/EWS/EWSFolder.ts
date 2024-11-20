@@ -234,6 +234,8 @@ export class EWSFolder extends Folder {
                 FieldURI: "message:CcRecipients",
               }, {
                 FieldURI: "message:BccRecipients",
+              }, {
+                FieldURI: "item:ItemClass",
               /* Non-MIME @see EWSEMail.bodyAndAttachmentsFromXML()
               }, {
                 FieldURI: "item:Attachments",

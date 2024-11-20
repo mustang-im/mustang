@@ -213,6 +213,9 @@ export class OWAFolder extends Folder {
             }, {
               __type: "PropertyUri:#Exchange",
               FieldURI: "message:BccRecipients",
+            }, {
+              __type: "PropertyUri:#Exchange",
+              FieldURI: "item:ItemClass",
             /* Non-MIME @see OWAEMail.bodyAndAttachmentsFromJson()
             }, {
               __type: "PropertyUri:#Exchange",

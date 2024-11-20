@@ -113,6 +113,9 @@ export class OWACalendar extends Calendar {
             FieldURI: "calendar:EnhancedLocation",
           }, {
             __type: "PropertyUri:#Exchange",
+            FieldURI: "calendar:MyResponseType",
+          }, {
+            __type: "PropertyUri:#Exchange",
             FieldURI: "calendar:RequiredAttendees",
           }, {
             __type: "PropertyUri:#Exchange",

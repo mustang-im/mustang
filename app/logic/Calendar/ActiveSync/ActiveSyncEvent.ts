@@ -1,11 +1,12 @@
-import { Event } from "../Event";
+import { Event, ResponseType } from "../Event";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { ActiveSyncCalendar } from "./ActiveSyncCalendar";
 import WindowsTimezones from "../EWS/WindowsTimezones";
+import type { Responses } from "../../Mail/EMail";
 import { findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { EASError } from "../../Mail/ActiveSync/ActiveSyncAccount";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { ensureArray } from "../../util/util";
+import { assert, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 const kRequiredAttendee = "1";
@@ -56,6 +57,7 @@ export class ActiveSyncEvent extends Event {
     this.alarm = wbxmljs.Reminder ? new Date(this.startTime.getTime() - 60 * sanitize.integer(wbxmljs.Reminder)) : null;
     this.location = sanitize.nonemptystring(wbxmljs.Location, "");
     this.participants.replaceAll(ensureArray(wbxmljs.Attendees?.Attendee).map(attendee => findOrCreatePersonUID(sanitize.emailAddress(attendee.Email), sanitize.nonemptystring(attendee.Name, null))));
+    this.response = sanitize.integer(wbxmljs.ResponseType, ResponseType.Unknown);
   }
 
   newRecurrenceRule(wbxmljs: any): RecurrenceRule {
@@ -162,6 +164,19 @@ export class ActiveSyncEvent extends Event {
         throw new EASError("Sync", response.Responses.Delete.Status);
       }
     }
+  }
+
+  async respondToInvitation(response: Responses): Promise<void> {
+    assert(this.response > ResponseType.Organizer, "Only invitations can be responded to");
+    let request = {
+      Request: {
+        UserResponse: response,
+        CollectionId: this.calendar.serverID,
+        ReqeustId: this.serverID,
+      },
+    };
+    await this.calendar.account.callEAS("MeetingResponse", request);
+    await super.sendInvitationResponse(response); // needs 16.x to do this automatically
   }
 }
 

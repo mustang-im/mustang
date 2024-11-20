@@ -1,13 +1,21 @@
-import { Event } from "../Event";
+import { Event, ResponseType } from "../Event";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { OWACalendar } from "./OWACalendar";
 import WindowsTimezones from "../EWS/WindowsTimezones";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import { Scheduling, type Responses } from "../../Mail/EMail";
 import OWACreateItemRequest from "../../Mail/OWA/OWACreateItemRequest";
 import OWADeleteItemRequest from "../../Mail/OWA/OWADeleteItemRequest";
 import OWAUpdateItemRequest from "../../Mail/OWA/OWAUpdateItemRequest";
 import type { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { assert } from "../../util/util";
+
+const ResponseTypes: Record<Responses, string> = {
+  [Scheduling.Accepted]: "AcceptItem",
+  [Scheduling.Tentative]: "TentativelyAcceptItem",
+  [Scheduling.Declined]: "DeclineItem",
+};
 
 const gTimeZone = WindowsTimezones[Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
 
@@ -82,6 +90,9 @@ export class OWAEvent extends Event {
       addParticipants(json.OptionalAttendees, participants);
     }
     this.participants.replaceAll(participants);
+    if (json.MyResponseType) {
+      this.response = sanitize.integer(ResponseType[json.MyResponseType], ResponseType.Unknown);
+    }
     if (json.LastModifiedTime) {
       this.lastMod = sanitize.date(json.LastModifiedTime);
     }
@@ -283,6 +294,16 @@ export class OWAEvent extends Event {
       };
       await this.calendar.account.callOWA(request);
     }
+  }
+
+  async respondToInvitation(response: Responses): Promise<void> {
+    assert(this.response > ResponseType.Organizer, "Only invitations can be responded to");
+    let request = new OWACreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
+    request.addField(ResponseTypes[response], "ReferenceItemId", {
+      __type: "ItemId:#Exchange",
+      Id: this.itemID,
+    });
+    await this.calendar.account.callOWA(request);
   }
 }
 

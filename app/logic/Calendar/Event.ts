@@ -1,9 +1,20 @@
 import type { PersonUID } from "../Abstract/PersonUID";
 import type { Calendar } from "./Calendar";
 import type { RecurrenceRule } from "./RecurrenceRule";
+import type { Responses } from "../Mail/EMail";
 import { ArrayColl } from "svelte-collections";
-import { assert, randomID } from "../util/util";
+import { assert, randomID, AbstractFunction } from "../util/util";
 import { Observable, notifyChangedProperty } from "../util/Observable";
+
+/* Note: These are EWS/OWA names and ActiveSync values. */
+export enum ResponseType {
+  Unknown = 0,
+  Organizer = 1,
+  Tentative = 2,
+  Accept = 3,
+  Decline = 4,
+  NoResponseReceived = 5,
+}
 
 export class Event extends Observable {
   id: string;
@@ -66,11 +77,13 @@ export class Event extends Observable {
   @notifyChangedProperty
   readonly participants = new ArrayColl<PersonUID>();
   @notifyChangedProperty
+  response = ResponseType.Unknown;
+  @notifyChangedProperty
   lastMod = new Date();
   @notifyChangedProperty
   calendar: Calendar;
 
-  constructor(calendar: Calendar, parentEvent?: Event) {
+  constructor(calendar?: Calendar, parentEvent?: Event) {
     super();
     this.id = randomID();
     this.calendar = calendar;
@@ -128,6 +141,7 @@ export class Event extends Observable {
     this.isPresence = original.isPresence;
     this.onlineMeetingURL = original.onlineMeetingURL;
     this.participants.replaceAll(original.participants);
+    this.response = original.response;
   }
 
   /**
@@ -170,6 +184,15 @@ export class Event extends Observable {
 
   async deleteFromServer(): Promise<void> {
     // nothing to do for local events
+  }
+
+  async respondToInvitation(response: Responses): Promise<void> {
+    assert(this.response > ResponseType.Organizer, "Only invitations can be responded to");
+    throw new AbstractFunction();
+  }
+
+  protected async sendInvitationResponse(response: Responses): Promise<void> {
+    throw new Error("Implement me!"); // TODO
   }
 
   /**

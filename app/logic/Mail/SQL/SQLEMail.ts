@@ -38,12 +38,12 @@ export class SQLEMail {
         INSERT INTO email (
           messageID, folderID, pID, parentMsgID,
           size, dateSent, dateReceived,
-          outgoing,
+          outgoing, scheduling,
           subject, plaintext, html
         ) VALUES (
           ${email.id}, ${email.folder.dbID}, ${email.pID}, ${email.inReplyTo},
           ${email.size}, ${email.sent.getTime() / 1000}, ${email.received.getTime() / 1000},
-          ${email.outgoing ? 1 : 0},
+          ${email.outgoing ? 1 : 0}, ${email.scheduling},
           ${email.subject}, ${email.rawText}, ${email.rawHTMLDangerous}
         )`);
       // -- contactEmail, contactName, myEmail
@@ -59,6 +59,7 @@ export class SQLEMail {
           dateSent = ${email.sent.getTime() / 1000},
           dateReceived = ${email.received.getTime() / 1000},
           outgoing = ${email.outgoing ? 1 : 0},
+          scheduling = ${email.scheduling},
           subject = ${email.subject},
           plaintext = ${email.rawText},
           html = ${email.rawHTMLDangerous}
@@ -218,7 +219,7 @@ export class SQLEMail {
       SELECT
         pID, messageID, parentMsgID,
         size, dateSent, dateReceived,
-        outgoing,
+        outgoing, scheduling,
         subject, plaintext, html,
         threadID, downloadComplete,
         isRead, isStarred, isReplied, isDraft, isSpam
@@ -237,6 +238,7 @@ export class SQLEMail {
     email.received = sanitize.date(row.dateReceived * 1000, new Date());
     email.sent = sanitize.date(row.dateSent * 1000, email.received);
     email.outgoing = sanitize.boolean(!!row.outgoing);
+    email.scheduling = sanitize.integer(row.scheduling, 0);
     email.subject = sanitize.string(row.subject, null);
     if (row.plaintext != null || row.html != null) {
       email.needToLoadBody = false;
@@ -266,6 +268,7 @@ export class SQLEMail {
     email.sent = sanitize.date(row.dateSent * 1000, new Date());
     email.received = sanitize.date(row.dateReceived * 1000, new Date());
     email.outgoing = sanitize.boolean(!!row.outgoing);
+    email.scheduling = sanitize.integer(row.scheduling, 0);
     email.subject = sanitize.string(row.subject, null);
 
     email.isRead = sanitize.boolean(!!row.isRead);
@@ -445,6 +448,7 @@ export class SQLEMail {
         id, pID, messageID, parentMsgID,
         size, dateSent, dateReceived,
         outgoing,
+        scheduling,
         subject,
         threadID, downloadComplete,
         isRead, isStarred, isReplied, isDraft, isSpam
@@ -515,6 +519,7 @@ export class SQLEMail {
         id, pID, messageID, parentMsgID,
         size, dateSent, dateReceived,
         outgoing,
+        scheduling,
         subject,
         threadID, downloadComplete,
         isRead, isStarred, isReplied, isSpam,

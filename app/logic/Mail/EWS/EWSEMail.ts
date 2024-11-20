@@ -1,14 +1,30 @@
-import { EMail } from "../EMail";
+import { EMail, Scheduling, type Responses } from "../EMail";
 import { type EWSFolder, getEWSItem } from "./EWSFolder";
+import { EWSEvent } from "../../Calendar/EWS/EWSEvent";
 import { type Tag, getTagByName } from "../Tag";
 import { Attachment, ContentDisposition } from "../Attachment";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import EWSCreateItemRequest from "./EWSCreateItemRequest";
 import EWSDeleteItemRequest from "./EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "./EWSUpdateItemRequest";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { base64ToArrayBuffer, assert, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
+
+const ExchangeScheduling: Record<string, number> = {
+  "IPM.Schedule.Meeting.Resp.Pos": Scheduling.Accepted,
+  "IPM.Schedule.Meeting.Resp.Tent": Scheduling.Tentative,
+  "IPM.Schedule.Meeting.Resp.Neg": Scheduling.Declined,
+  "IPM.Schedule.Meeting.Request": Scheduling.Request,
+  "IPM.Schedule.Meeting.Canceled": Scheduling.Cancellation,
+};
+
+const ResponseTypes: Record<Responses, string> = {
+  [Scheduling.Accepted]: "AcceptItem",
+  [Scheduling.Tentative]: "TentativelyAcceptItem",
+  [Scheduling.Declined]: "DeclineItem",
+};
 
 export class EWSEMail extends EMail {
   folder: EWSFolder;
@@ -73,6 +89,7 @@ export class EWSEMail extends EMail {
     setPersons(this.cc, xmljs.CcRecipients?.Mailbox);
     setPersons(this.bcc, xmljs.BccRecipients?.Mailbox);
     this.contact = this.outgoing ? this.to.first : this.from;
+    this.scheduling = ExchangeScheduling[xmljs.ItemClass] || Scheduling.None;
   }
 
   /** Get body and attachments from Exchange.
@@ -193,6 +210,67 @@ export class EWSEMail extends EMail {
     });
     request.addField("Message", "Categories", this.tags.hasItems ? { t$String: this.tags.contents.map(tag => tag.name) } : null, "item:Categories");
     await this.folder.account.callEWS(request);
+  }
+
+  async respondToInvitation(response: Responses): Promise<void> {
+    assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
+    let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
+    request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.itemID });
+    await this.folder.account.callEWS(request);
+    await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
+  }
+
+  async loadEvent() {
+    assert(this.scheduling, "This is not an invitation or response");
+    assert(!this.event, "Event has already been loaded");
+    let request = {
+      m$GetItem: {
+        m$ItemShape: {
+          t$BaseShape: "Default",
+          t$BodyType: "Best",
+          t$AdditionalProperties: {
+            t$FieldURI: [{
+              FieldURI: "item:Body",
+            }, {
+              FieldURI: "item:ReminderIsSet",
+            }, {
+              FieldURI: "item:ReminderMinutesBeforeStart",
+            }, {
+              FieldURI: "item:LastModifiedTime",
+            }, {
+              FieldURI: "item:TextBody",
+            }, {
+              FieldURI: "calendar:IsAllDayEvent",
+            }, {
+              FieldURI: "calendar:MyResponseType",
+            }, {
+              FieldURI: "calendar:RequiredAttendees",
+            }, {
+              FieldURI: "calendar:OptionalAttendees",
+            }, {
+              FieldURI: "calendar:Recurrence",
+            }, {
+              FieldURI: "calendar:ModifiedOccurrences",
+            }, {
+              FieldURI: "calendar:DeletedOccurrences",
+            }, {
+              FieldURI: "calendar:UID",
+            }, {
+              FieldURI: "calendar:RecurrenceId",
+            }],
+          },
+        },
+        m$ItemIds: {
+          t$ItemId: {
+            Id: this.itemID,
+          },
+        },
+      },
+    };
+    let result = await this.folder.account.callEWS(request);
+    let event = new EWSEvent();
+    event.fromXML(getEWSItem(result.Items));
+    this.event = event;
   }
 }
 

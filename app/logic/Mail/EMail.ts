@@ -4,6 +4,8 @@ import { Attachment, ContentDisposition } from "./Attachment";
 import type { Tag } from "./Tag";
 import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
+import { Event } from "../Calendar/Event";
+import { RecurrenceRule } from "../Calendar/RecurrenceRule";
 import { appGlobal } from "../app";
 import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
 import { getUILocale, gt } from "../../l10n/l10n";
@@ -13,6 +15,25 @@ import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { notifyChangedProperty } from "../util/Observable";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
+import ical from "node-ical";
+
+/**
+ * For an inbox item that represents a scheduling message, the type of message:
+ * Accepted/Tentative/Declined responses, invitations, or cancellations.
+ * Note that Accepted, Tentative and Declined have values 1, 2 and 3
+ * because these are the values used by ActiveSync for responses.
+ */
+export enum Scheduling {
+  None = 0,
+  Accepted = 1,
+  Tentative = 2,
+  Declined = 3,
+  Request = 4,
+  Cancellation = 5,
+}
+
+/** Just the values used by meeting responses. */
+export type Responses = Scheduling.Accepted | Scheduling.Tentative | Scheduling.Declined;
 
 export class EMail extends Message {
   @notifyChangedProperty
@@ -52,6 +73,10 @@ export class EMail extends Message {
   /** Complete MIME source of the email */
   @notifyChangedProperty
   mime: Uint8Array | undefined;
+  @notifyChangedProperty
+  scheduling: Scheduling = Scheduling.None;
+  @notifyChangedProperty
+  event: Event | undefined;
   folder: Folder;
   /** msg ID of the thread starter message */
   threadID: string | null = null;
@@ -180,11 +205,28 @@ export class EMail extends Message {
   async removeTagOnServer(tag: Tag) {
   }
 
+  async respondToInvitation(response: Responses): Promise<void> {
+    assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
+    throw new AbstractFunction();
+  }
+
+  protected async sendInvitationResponse(response: Responses): Promise<void> {
+    throw new Error("Implement me!"); // TODO
+  }
+
+  async loadEvent() {
+    assert(this.scheduling, "This is not an invitation or response");
+    assert(!this.event, "Event has already been loaded");
+    await this.mime ? this.parseMIME() : this.loadMIME();
+  }
+
   async parseMIME() {
     assert(this.mime?.length, "MIME source not yet downloaded");
     assert(this.mime instanceof Uint8Array, "MIME source should be a byte array");
     //console.log("MIME source", this.mime, new TextDecoder("utf-8").decode(this.mime));
-    let mail = await new PostalMIME().parse(this.mime);
+    // We may need access to internal PostalMIME data.
+    let postalMIME: any = new PostalMIME();
+    let mail = await postalMIME.parse(this.mime);
 
     // Headers
     /** TODO header.key returns Uint8Array
@@ -225,6 +267,14 @@ export class EMail extends Message {
     let html = sanitize.string(mail.html, null);
     if (html) {
       this.html = html;
+    }
+    if (!this.event && postalMIME.textContent.calendar) {
+      let ics = ical.sync.parseICS(postalMIME.textContent.calendar);
+      this.scheduling = iTIPMethod(ics);
+      this.event = convertEvent(ics);
+      if (html) {
+        this.event.descriptionHTML = html;
+      }
     }
     this.needToLoadBody = false;
     this.haveCID = false;
@@ -570,6 +620,95 @@ async function addCID(html: string, email: EMail): Promise<string> {
     email.folder.account.errorCallback(ex);
   }
   return html;
+}
+
+
+/* Find the iTIP method from a parsed vcalendar part */
+function iTIPMethod(ics: any): Scheduling {
+  switch (ics.vcalendar.method) {
+  case "CANCEL":
+    return Scheduling.Cancellation;
+  case "REQUEST":
+    return Scheduling.Request;
+  case "REPLY":
+    let vevent = Object.values(ics).find((event: any) => event.type == "VEVENT") as any;
+    switch (vevent?.attendee?.params?.PARTSTAT) {
+    case "DECLINED":
+      return Scheduling.Declined;
+    case "TENTATIVE":
+      return Scheduling.Tentative;
+    case "ACCEPTED":
+      return Scheduling.Accepted;
+    }
+  }
+  return Scheduling.None;
+}
+
+
+function convertEvent(ics: any): Event | null {
+  let vevent = Object.values(ics).find((event: any) => event.type == "VEVENT") as any;
+  if (!vevent) {
+    return null;
+  }
+  // Parser tries to simplify simple properties for us...
+  for (let prop in vevent) {
+    if (typeof vevent[prop] == "string") {
+      vevent[prop] = { params: {}, val: vevent[prop] };
+    }
+  }
+  let event = new Event();
+  if (vevent.uid) {
+    event.calUID = vevent.uid.val;
+  }
+  if (vevent.summary) {
+    event.title = vevent.summary.val;
+  }
+  if (vevent.description) {
+    event.descriptionText = vevent.description.val;
+  }
+  if (vevent.start) {
+    event.startTime = vevent.start;
+  }
+  if (vevent.end) {
+    event.endTime = vevent.end;
+  }
+  if (vevent.datetype.val == "date") {
+    event.allDay = true;
+    // Start and end time will be in UTC, but we want local time,
+    // so that we can display it to the user in their locale.
+    event.startTime?.setFullYear(event.startTime.getUTCFullYear(), event.startTime.getUTCMonth(), event.startTime.getUTCDate());
+    event.startTime?.setHours(0, 0, 0, 0);
+    event.endTime?.setFullYear(event.endTime.getUTCFullYear(), event.endTime.getUTCMonth(), event.endTime.getUTCDate());
+    event.endTime?.setHours(0, 0, 0, 0);
+  }
+  if (vevent.rrule) {
+    event.repeat = true;
+    // rrule object might contain DTSTART, remove in that case
+    let rrule = vevent.rrule.toString().split("\n").pop();
+    event.recurrenceRule = RecurrenceRule.fromCalString(event.startTime, rrule);
+  }
+  if (vevent.location) {
+    event.location = vevent.location.val;
+  }
+  let organizer: PersonUID | undefined;
+  if (vevent.organizer) {
+    organizer = findOrCreatePersonUID(sanitize.nonemptystring(vevent.organizer.val), sanitize.label(vevent.organizer.params.CN, null));
+    event.participants.add(organizer);
+  }
+  if (vevent.attendee) {
+    if (!Array.isArray(vevent.attendee)) {
+      vevent.attendee = [vevent.attendee];
+    }
+    for (let { val, params: { CN }} of vevent.attendee) {
+      if (val == organizer?.emailAddress) {
+        // Remove the organizer as it has less detail than an attendee
+        event.participants.remove(organizer);
+      }
+      let attendee = findOrCreatePersonUID(sanitize.nonemptystring(val), sanitize.label(CN, null));
+      event.participants.add(attendee);
+    }
+  }
+  return event;
 }
 
 
