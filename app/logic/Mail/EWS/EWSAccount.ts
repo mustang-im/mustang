@@ -81,7 +81,7 @@ export class EWSAccount extends MailAccount {
   }
 
   async logout(): Promise<void> {
-    this.oAuth2?.logout();
+    await this.oAuth2?.logout();
   }
 
   async send(email: EMail): Promise<void> {
