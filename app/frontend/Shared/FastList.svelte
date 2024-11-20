@@ -196,13 +196,13 @@
       if (!newElement) {
         return;
       }
-      if (event.ctrlKey || event.shiftKey) {
-        selectedItems.add(newElement);
-      /*} else if (event.shiftKey) {
+      /*if (event.shiftKey) {
         let startIndex = oldIndex < newIndex ? oldIndex : newIndex;
-        let length = Math.abs(newIndex - oldIndex);
+        let length = Math.abs(newIndex - oldIndex) + 1;
         console.log("from", startIndex, "len", length);
-        selectedItems.addAll(items.getIndexRange(startIndex, length));*/
+        selectedItems.addAll(items.getIndexRange(startIndex, length));
+      } else */ if (event.ctrlKey || event.shiftKey) {
+        selectedItems.add(newElement);
       } else {
         selectedItems.clear();
         selectedItems.add(newElement);
