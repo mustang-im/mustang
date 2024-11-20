@@ -368,8 +368,8 @@ export class IMAPFolder extends Folder {
   protected get highestUID(): number {
     let highest = 1;
     for (let msg of this.messages) {
-      if (msg.uid > highest) {
-        highest = msg.uid;
+      if ((msg as IMAPEMail).uid > highest) {
+        highest = (msg as IMAPEMail).uid;
       }
     }
     return highest;
@@ -521,7 +521,7 @@ export class IMAPFolder extends Folder {
     }
     let startUID = remainingUIDs.first;
     let endUID = remainingUIDs.last;
-    let deletedMsgs = this.messages.filter(msg => startUID < msg.uid && msg.uid < endUID);
+    let deletedMsgs = this.messages.filter((msg: IMAPEMail) => startUID < msg.uid && msg.uid < endUID);
     for (let deletedMsg of deletedMsgs) {
       //console.log(`Deleted msg ${deletedMsg.subject}`);
       await deletedMsg.deleteMessageLocally();
