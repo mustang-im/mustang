@@ -41,7 +41,7 @@ export class EWSFolder extends Folder {
 
   async listMessages(): Promise<ArrayColl<EWSEMail>> {
     await this.readFolder();
-    return this.updateChangedMessages();
+    return await this.updateChangedMessages();
   }
 
   /** Uses the sync state to get just the messages that changed since last time.
