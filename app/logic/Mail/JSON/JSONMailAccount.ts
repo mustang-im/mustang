@@ -22,8 +22,8 @@ export class JSONMailAccount {
     json.hostname = acc.hostname;
     json.port = acc.port;
     json.tls = acc.tls;
-    json.outgoingAccountID = acc.outgoing.id;
-    json.workspaceID = acc.workspace.id;
+    json.outgoingAccountID = acc.outgoing?.id;
+    json.workspaceID = acc.workspace?.id;
     json.config = acc.toConfigJSON();
     return json;
   }
