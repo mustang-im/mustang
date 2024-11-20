@@ -1,9 +1,10 @@
-<input bind:value={userValue} on:change={onChange} bind:this={inputE} />
+<input bind:value={userValue} on:change={onChange} bind:this={inputE} {disabled} />
 
 <script lang="ts">
   import { getUILocale, t } from "../../../l10n/l10n";
 
   export let time: Date; /* in/out */
+  export let disabled = false;
 
   let inputE: HTMLInputElement;
   let userValue: string = "";

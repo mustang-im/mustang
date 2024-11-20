@@ -4,12 +4,14 @@
   bind:value
   on:change={onChange}
   on:change
+  {disabled}
   />
 
 <script lang="ts">
   export let date: Date = new Date();
   export let min: Date | null = null;
   export let max: Date | null = null;
+  export let disabled = false;
   let value: string;
 
   $: updateValue(date);

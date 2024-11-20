@@ -4,22 +4,25 @@
       on:removePerson
       on:removePerson={(event) => onRemovePerson(event.detail)}
       on:focusNext={onFocusNext}
+      {disabled}
       >
       <slot name="person-context-menu" slot="context-menu" {person} />
     </PersonEntry>
   {/each}
-  <hbox flex class="input">
-    <PersonAutocomplete
-      on:addPerson
-      on:addPerson={(event) => onAddPerson(event.detail)}
-      skipPersons={$persons}
-      {placeholder} {tabindex} {autofocus}
-      bind:this={autocompleteEl}
-      >
-      <slot name="result-bottom-row" slot="result-bottom-row" let:person {person} />
-    </PersonAutocomplete>
-    <slot name="end" />
-  </hbox>
+  {#if !disabled}
+    <hbox flex class="input">
+      <PersonAutocomplete
+        on:addPerson
+        on:addPerson={(event) => onAddPerson(event.detail)}
+        skipPersons={$persons}
+        {placeholder} {tabindex} {autofocus}
+        bind:this={autocompleteEl}
+        >
+        <slot name="result-bottom-row" slot="result-bottom-row" let:person {person} />
+      </PersonAutocomplete>
+      <slot name="end" />
+    </hbox>
+  {/if}
 </hbox>
 
 <script lang="ts">
@@ -35,6 +38,7 @@
   export let placeholder: string = null;
   export let tabindex = null;
   export let autofocus = false;
+  export let disabled = false;
 
   //$: console.log("persons", persons.contents);
 

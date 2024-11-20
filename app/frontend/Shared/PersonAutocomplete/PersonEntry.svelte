@@ -15,6 +15,7 @@
   <PersonPopup personUID={person}
     on:removePerson
     on:close={onPopupClose}
+    {disabled}
     >
     <slot name="person-popup-buttons" slot="buttons" personUID={person} />
   </PersonPopup>
@@ -32,6 +33,7 @@
   const dispatchEvent = createEventDispatcher<{ focusNext: void }>();
 
   export let person: PersonUID;
+  export let disabled = false;
 
   // Popup
   let popupOpen = false;

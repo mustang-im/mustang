@@ -6,7 +6,7 @@
 <hbox>
   <slot><label>{label}</label></slot>
   {#each items as item, i}
-    <Checkbox {size} {radius} {...item} bind:checked={item.checked} />
+    <Checkbox {size} {radius} {...item} bind:checked={item.checked} {disabled} />
   {/each}
 </hbox>
 
@@ -17,6 +17,7 @@
   export let radius = undefined;
   export let items = [];
   export let group = [];
+  export let disabled = false;
 
   for (let item of items) {
     item.checked = group.includes(item.value);
