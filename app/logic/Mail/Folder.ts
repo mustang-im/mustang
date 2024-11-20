@@ -54,7 +54,18 @@ export class Folder extends Observable implements TreeItem<Folder> {
   }
 
   protected async readFolder() {
-    await this.messages.readFolder();
+    if (!this.dbID) {
+      await this.save();
+    }
+    if (this.messages.isEmpty) {
+      let log = "Reading msgs from DB, for folder " + this.account.name + " " + this.path;
+      console.time(log + " first 200");
+      await this.storage.readAllMessagesMainProperties(this, 200);
+      console.timeEnd(log + " first 200");
+      console.time(log);
+      await this.storage.readAllMessagesMainProperties(this, null, 200);
+      console.timeEnd(log);
+    }
   }
 
   /** Gets the metadata of the emails in this folder.
