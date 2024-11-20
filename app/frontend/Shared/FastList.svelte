@@ -167,7 +167,8 @@
     // https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
     // Do allow Ctrl/Shift, so that we can expand selection with keyboard
     if (event.key == "ArrowDown" || event.key == "ArrowUp" ||
-        event.key == "PageDown" || event.key == "PageUp") {
+        event.key == "PageDown" || event.key == "PageUp" ||
+        event.key == "Home" || event.key == "End") {
       event.stopPropagation();
       event.preventDefault();
       let lastItem = selectedItems.last || selectedItem;
@@ -175,12 +176,16 @@
       let newIndex = oldIndex;
       if (event.key == "ArrowDown") {
         newIndex++;
-      } else if (event.key == "PageDown") {
-        newIndex += showRows;
       } else if (event.key == "ArrowUp") {
         newIndex--;
+      } else if (event.key == "PageDown") {
+        newIndex += showRows;
       } else if (event.key == "PageUp") {
         newIndex -= showRows;
+      } else if (event.key == "Home") {
+        newIndex = 0;
+      } else if (event.key == "End") {
+        newIndex = items.length - 1;
       }
       if (newIndex < 0) {
         newIndex = 0;
