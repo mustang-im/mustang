@@ -63,6 +63,12 @@ export const calendarDatabaseSchema = sql`
     -- If null, it's a private event of our user, not including other people.
     "organizer" TEXT default null,
     -- Whether the user responded to a meeting
+    -- 0 = Unknown
+    -- 1 = User is the organiser of the meeting
+    -- 2 = User tentatively accepted the meeting
+    -- 3 = User accepted the meeting
+    -- 4 = User declined the meeting
+    -- 5 = User has not yet responded
     responseToOrganizer INTEGER default 0,
     -- Background color for this event, set by the user specifically for this event.
     -- Format: HTML hex code without "#"
