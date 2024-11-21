@@ -84,8 +84,7 @@ export class AceBaseHandle {
       q = q.skip(query.startWith);
     }
     let colsArray = Array.from(cols);
-    let moreCols = cols.size > 1 ? colsArray.slice(1) : [];
-    await this._db.indexes.create(refPath, colsArray[0], { include: moreCols });
+    await Promise.all(colsArray.map(c => this._db.indexes.create(refPath, c)));
     await q.forEach(include, snapshot => {
       eachCallback(snapshot.key, snapshot.val());
     });
