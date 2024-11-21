@@ -360,11 +360,12 @@ export class EWSAccount extends MailAccount {
         m$ConnectionTimeout: 29, // minutes
       },
     };
-    await this.callStream(streamRequest, async message => {
+    // Now, connect and wait for the notifications. Runs 29 minutes long, so don't `await` it.
+    this.callStream(streamRequest, async message => {
       for (let notification of ensureArray(message.Notifications?.Notification)) {
         await this.processNotification(notification);
       }
-    });
+    }).catch(this.errorCallback);
   }
 
   async processNotification(notification) {
