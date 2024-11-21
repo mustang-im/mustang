@@ -1,6 +1,9 @@
 <vbox flex class="message-display">
   <MessageHeader {message} />
   <MessageAttachments {message} />
+  {#if $message.event || $message.scheduling}
+    <Invitation {message} />
+  {/if}
   <vbox flex class="paper">
     <MessageBody {message} />
   </vbox>
@@ -11,6 +14,7 @@
   import MessageHeader from "./MessageHeader.svelte";
   import MessageAttachments from "./AttachmentsUI.svelte";
   import MessageBody from "./MessageBody.svelte";
+  import Invitation from "../../Calendar/Invitation.svelte";
 
   export let message: EMail;
 </script>
