@@ -2,8 +2,6 @@
 /**
  * For an inbox item that represents a scheduling message, the type of message:
  * Accepted/Tentative/Declined responses, invitations, or cancellations.
- * Note that Accepted, Tentative and Declined have values 1, 2 and 3
- * because these are the values used by ActiveSync for responses.
  */
 export enum Scheduling {
   None = 0,
