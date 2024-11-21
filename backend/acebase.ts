@@ -45,13 +45,14 @@ export class AceBaseHandle {
   }
 
   async queryKey(refPath: string, filters: { column: string, op: any, value: string }[]): Promise<string[]> {
-    await Promise.all([
-      filters.length > 0 ? filters.map(f => this._db.indexes.create(refPath, f.column)) : null,
-    ]);
     let q = this._db.query(refPath);
+    let cols = new Set<string>();
     for (let filter of filters) {
       q = q.filter(filter.column, filter.op, filter.value);
+      cols.add(filter.column);
     }
+    let colsArray = Array.from(cols);
+    await Promise.all(colsArray.map(c => this._db.indexes.create(refPath, c)));
     let references = await q.find();
     return references.map(r => r.key);
   }
