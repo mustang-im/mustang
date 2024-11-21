@@ -18,7 +18,7 @@ export class SQLEvent extends Event {
         INSERT INTO event (
           title, descriptionText, descriptionHTML,
           startTime, endTime,
-          calUID, response, pID, calendarID,
+          calUID, responseToOrganizer, pID, calendarID,
           recurrenceRule, recurrenceMasterEventID,
           recurrenceStartTime, recurrenceIsException
         ) VALUES (
@@ -39,7 +39,7 @@ export class SQLEvent extends Event {
           startTime = ${event.startTime.toISOString()},
           endTime = ${event.endTime.toISOString()},
           calUID = ${event.calUID},
-          response = ${event.response},
+          responseToOrganizer = ${event.response},
           pID = ${event.pID},
           calendarID = ${event.calendar?.dbID},
           recurrenceRule = ${event.recurrenceRule?.getCalString()},
@@ -107,7 +107,7 @@ export class SQLEvent extends Event {
         SELECT
           title, descriptionText, descriptionHTML,
           startTime, endTime,
-          calUID, response, pID, calendarID,
+          calUID, responseToOrganizer, pID, calendarID,
           recurrenceRule, recurrenceMasterEventID, recurrenceStartTime
         FROM event
         WHERE id = ${dbID}
@@ -123,7 +123,7 @@ export class SQLEvent extends Event {
     event.startTime = sanitize.date(row.startTime);
     event.endTime = sanitize.date(row.endTime, event.startTime);
     event.calUID = row.calUID;
-    event.response = row.response;
+    event.response = sanitize.integerRange(row.responseToOrganizer, 0, 5);
     event.pID = row.pID;
     if (row.calendarID) {
       let calendarID = sanitize.integer(row.calendarID, null);
@@ -193,7 +193,7 @@ export class SQLEvent extends Event {
       SELECT
         title, descriptionText, descriptionHTML,
         startTime, endTime,
-        calUID, response, pID, id,
+        calUID, responseToOrganizer, pID, id,
         recurrenceRule, recurrenceMasterEventID, recurrenceStartTime
       FROM event
       WHERE calendarID = ${calendar.dbID}
