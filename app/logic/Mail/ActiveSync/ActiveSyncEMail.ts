@@ -192,6 +192,7 @@ export class ActiveSyncEMail extends EMail {
     await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
   }
 
+  /* Disabling because ActiveSync does not provide complete event data.
   async loadEvent() {
     assert(this.scheduling, "This is not an invitation or response");
     assert(!this.event, "Event has already been loaded");
@@ -219,6 +220,7 @@ export class ActiveSyncEMail extends EMail {
     setPersons(event.participants, result.Response.Fetch.Properties.MeetingRequest.Organizer);
     this.event = event;
   }
+  */
 }
 
 function setPersons(targetList: ArrayColl<PersonUID>, addresses: string): void {

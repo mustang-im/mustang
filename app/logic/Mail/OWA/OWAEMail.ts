@@ -190,8 +190,10 @@ export class OWAEMail extends EMail {
     await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
   }
 
+  /* Disabling because OWA only provides event data for invitations,
+   * as opposed to EMail::loadEvent which works for all iTIP messages.
   async loadEvent() {
-    assert(this.scheduling, "This is not an invitation or response");
+    assert(this.scheduling == Scheduling.Request, "This is not an invitation");
     assert(!this.event, "Event has already been loaded");
     let request = {
       __type: "GetItemJsonRequest:#Exchange",
@@ -263,6 +265,7 @@ export class OWAEMail extends EMail {
     event.fromJSON(result.Items[0]);
     this.event = event;
   }
+  */
 }
 
 function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {
