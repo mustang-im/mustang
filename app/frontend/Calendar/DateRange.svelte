@@ -33,7 +33,7 @@
   function htmlMonthYear(date): string {
     let str = monthYear(date);
     let year = date.getFullYear();
-    return str.replace(year, `&nbsp;<span class="year">${year}</span>`);
+    return str.replace(year, `&nbsp;<span class="year">${year}</span>&nbsp;`);
   }
 </script>
 
