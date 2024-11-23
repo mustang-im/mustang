@@ -102,4 +102,7 @@
   .month-view :global(.date-range) {
     font-weight: bold;
   }
+  .month-view :global(.date-range .year) {
+    font-weight: normal;
+  }
 </style>
