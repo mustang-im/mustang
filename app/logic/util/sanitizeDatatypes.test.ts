@@ -57,12 +57,14 @@ test("Check EAI email addresses", () => {
   sanitize.emailAddress("用户@例子.广告");
   // Hindi
   // sanitize.emailAddress("अजय@डाटा.भारत"); TODO
+  sanitize.emailAddress("अजय@अजय.रत");
   // Kannada
   // sanitize.emailAddress("ಬೆಂಬಲ@ಡೇಟಾಮೇಲ್.ಭಾರತ"); TODO
   // Greek
   sanitize.emailAddress("χρήστης@παράδειγμα.ελ");
   // German
   sanitize.emailAddress("Dörte@Sörensen.example.com");
+  sanitize.emailAddress("Dörte@xn--srensen-90a.example.com");
   // Russian
   sanitize.emailAddress("коля@пример.рф");
   // Ukrainian
