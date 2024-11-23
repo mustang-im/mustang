@@ -7,19 +7,23 @@
     <hbox flex />
     <slot name="top-right" />
   </hbox>
-  <grid flex class="week" columns={showDays}>
-    <hbox />
-    {#each days as day}
-      <vbox class="day-header">
-        <hbox class="date">{day.toLocaleDateString(getUILocale(), { day: "numeric" })}</hbox>
-        <hbox class="weekday">{day.toLocaleDateString(getUILocale(), { weekday: "long" })}</hbox>
-      </vbox>
-    {/each}
-    {#each startTimes as start}
-      <TimeLabel time={start} />
-      <TimeDayRow {days} time={start} {events} />
-    {/each}
-  </grid>
+  <vbox flex bind:offsetHeight={visibleHeight}>
+    <Scroll bind:this={scrollE}>
+      <grid flex class="week" columns={showDays} style="min-height: {scrollHeight}px;">
+        <hbox class="top-left header" />
+        {#each days as day}
+          <vbox class="day-header header">
+            <hbox class="date">{day.toLocaleDateString(getUILocale(), { day: "numeric" })}</hbox>
+            <hbox class="weekday">{day.toLocaleDateString(getUILocale(), { weekday: "long" })}</hbox>
+          </vbox>
+        {/each}
+        {#each startTimes as start}
+          <TimeLabel time={start} />
+          <TimeDayRow {days} time={start} {events} />
+        {/each}
+      </grid>
+    </Scroll>
+  </vbox>
 </vbox>
 
 <script lang="ts">
@@ -29,6 +33,7 @@
   import TimeDayRow from "./TimeDayRow.svelte";
   import DateRange from "./DateRange.svelte";
   import Button from "../Shared/Button.svelte";
+  import Scroll from "../Shared/Scroll.svelte";
   import TodayIcon from "lucide-svelte/icons/home";
   import type { Collection } from "svelte-collections";
   import { getUILocale, t } from "../../l10n/l10n";
@@ -36,20 +41,35 @@
   export let start: Date;
   export let events: Collection<Event>;
   export let showDays: 1 | 2 | 7 = 7; // If you add new options, adapt styles below
-  export let showHours = 8;
+  /* Number of hours visible at the same time. Larger range reduces size per hour.
+   * Other hours are available on scroll. */
+  export let showHours = 10;
+  export let defaultFocusHour = 8;
+
+  let startHour = 0;
+  let endHour = 24;
+  let intervalHour = 1;
+
+  let scrollE: Scroll;
+  let visibleHeight = 0;
+  $: pxPerHour =  visibleHeight / showHours;
+  $: scrollHeight = pxPerHour * (endHour - startHour);
+  $: focusHour = start.toDateString() == new Date().toDateString()
+    ? start.getHours()
+    : defaultFocusHour;
+  $: if (scrollE) scrollE.scrollTo((focusHour - 0.5) * pxPerHour); // TODO doesn't work
 
   let startTimes: Date[] = [];
   $: start, setStartTimes();
   function setStartTimes() {
     let startTime = new Date(start);
-    startTime.setHours(new Date().getHours()); // start with current hour
     startTime.setMinutes(0);
     startTime.setSeconds(0);
     startTime.setMilliseconds(0);
     startTimes = [];
-    for (let i = 0; i < showHours; i++) {
+    for (let i = startHour; i < endHour; i += intervalHour) {
+      startTime.setHours(i);
       startTimes.push(new Date(startTime));
-      startTime.setHours(startTime.getHours() + 1)
     }
   }
 
@@ -60,7 +80,7 @@
     if (showDays > 3) {
       startTime.setDate(startTime.getDate() - 1);
     }
-    startTime.setHours(0);
+    startTime.setHours(startHour);
     startTime.setMinutes(0);
     startTime.setSeconds(0);
     startTime.setMilliseconds(0);
@@ -90,6 +110,16 @@
   }
   .week[columns="7"] {
     grid-template-columns: max-content 0.33fr 3fr 2fr 1fr 1fr 1fr 1fr;
+  }
+  .header {
+    position: sticky;
+    top: 0;
+    left: 0;
+    background-color: var(--bg);
+    z-index: 2;
+  }
+  .top-left {
+    height: calc(100% - 10px);
   }
   .day-header {
     padding: 8px 16px;

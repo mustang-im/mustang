@@ -7,6 +7,9 @@
   export function scrollDown() {
     containerE.scrollTop = containerE.scrollHeight;
   }
+  export function scrollTo(y: number) {
+    containerE.scrollTop = y;
+  }
 </script>
 
 <style>
