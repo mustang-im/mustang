@@ -55,7 +55,7 @@
   --shadow-color: 22, 12, 39; /* #160C27 */
 
   color: var(--fg);
-  background-color: var(-bg);
+  background-color: var(--bg);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -97,8 +97,8 @@
     --button-secondary-line: #A1E4DA;
     --shadow-color: 107, 107, 108; /* #6B6B6C */
 
-    color: (--fg);
-    background-color: var(-bg);
+    color: var(--fg);
+    background-color: var(--bg);
   }
 }
 
