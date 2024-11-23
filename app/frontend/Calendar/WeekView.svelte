@@ -55,9 +55,9 @@
   $: pxPerHour =  visibleHeight / showHours;
   $: scrollHeight = pxPerHour * (endHour - startHour);
   $: focusHour = start.toDateString() == new Date().toDateString()
-    ? start.getHours()
+    ? new Date().getHours()
     : defaultFocusHour;
-  $: if (scrollE) scrollE.scrollTo((focusHour - 0.5) * pxPerHour); // TODO doesn't work
+  $: if (scrollE) scrollE.scrollTo((focusHour - 0.5) * pxPerHour);
 
   let startTimes: Date[] = [];
   $: start, setStartTimes();
