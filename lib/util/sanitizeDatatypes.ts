@@ -112,6 +112,9 @@ class Sanitize {
     return str;
   }
 
+  // EAI like ндрис@уайлддк.орг need to pass
+  regexpEMailAddress = /^[\p{Letter}\p{Number}\-+_\.]+@[\p{Letter}\p{Number}\-\.]+\.(?:[\p{Letter}]+|xn--[a-z0-9]+)$/u;
+
   /**
    * Email address foo@bar.com
    */
@@ -120,7 +123,7 @@ class Sanitize {
       return haveError("Missing email address", unchecked, fallback);
     }
     let str = String(unchecked);
-    if (!/^[a-zA-Z0-9\-%+_\.\*]+@[a-z0-9\-\.]+\.[a-z]+$/i.test(str)) {
+    if (!this.regexpEMailAddress.test(str)) {
       return haveError("Not an email address", unchecked, fallback);
     }
     return str.toLowerCase();
