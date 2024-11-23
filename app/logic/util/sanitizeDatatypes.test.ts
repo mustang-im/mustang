@@ -53,6 +53,20 @@ test("Check EAI email addresses", () => {
   sanitize.emailAddress("ндрис@уайлддк.xn--4dn5");
   sanitize.emailAddress("нд1²³рис@уай1²³лддк.орг");
   sanitize.emailAddress("äüößéáúàèù@äüößéáúàèù.com");
+  // Chinese
+  sanitize.emailAddress("用户@例子.广告");
+  // Hindi
+  // sanitize.emailAddress("अजय@डाटा.भारत"); TODO
+  // Kannada
+  // sanitize.emailAddress("ಬೆಂಬಲ@ಡೇಟಾಮೇಲ್.ಭಾರತ"); TODO
+  // Greek
+  sanitize.emailAddress("χρήστης@παράδειγμα.ελ");
+  // German
+  sanitize.emailAddress("Dörte@Sörensen.example.com");
+  // Russian
+  sanitize.emailAddress("коля@пример.рф");
+  // Ukrainian
+  sanitize.emailAddress("квіточка@пошта.укр");
   expect(() => {
     sanitize.emailAddress("d@d.xn-4dn5");
   }).toThrow();
