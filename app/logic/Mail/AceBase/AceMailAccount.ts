@@ -52,6 +52,7 @@ export class AceMailAccount {
     let outgoingAccountID = sanitize.alphanumdash(json.outgoingAccountID, null);
     if (outgoingAccountID) {
       acc.outgoing = new SMTPAccount() as any as MailAccount;
+      acc.outgoing.id = outgoingAccountID;
       await AceMailAccount.read(outgoingAccountID, acc.outgoing);
     }
     return acc;
