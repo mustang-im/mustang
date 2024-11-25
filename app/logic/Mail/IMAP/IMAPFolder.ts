@@ -98,17 +98,22 @@ export class IMAPFolder extends Folder {
    * But doesn't download their contents. @see downloadMessages() */
   async listMessages(): Promise<ArrayColl<IMAPEMail>>  {
     await this.readFolder();
-    if (this.countTotal === 0) {
-      return;
+    let lock = await this._listMessagesLock.lock();
+    try {
+      if (this.countTotal === 0) {
+        return;
+      }
+      let newMsgs: ArrayColl<IMAPEMail>;
+      if (await this.account.hasCapability("CONDSTORE")) {
+        newMsgs = await this.listChangedMessages();
+      } else {
+        newMsgs = await this.listAllUnknownMessages();
+        await this.updateNewFlags();
+      }
+      return newMsgs;
+    } finally {
+      lock.release();
     }
-    let newMsgs: ArrayColl<IMAPEMail>;
-    if (await this.account.hasCapability("CONDSTORE")) {
-      newMsgs = await this.listChangedMessages();
-    } else {
-      newMsgs = await this.listAllUnknownMessages();
-      await this.updateNewFlags();
-    }
-    return newMsgs;
   }
 
   /** Lists all messages in this folder that have not been fetched yet.
@@ -150,11 +155,16 @@ export class IMAPFolder extends Folder {
   /** Lists all messages in this folder.
    * But doesn't download their contents. @see downloadMessages() */
   protected async listAllMessages(): Promise<ArrayColl<IMAPEMail>> {
-    let { newMessages } = await this.fetchMessageList({ all: true }, {});
-    this.messages.addAll(newMessages);
-    await this.storage.saveFolderProperties(this);
-    await this.saveNewMsgs(newMessages);
-    return newMessages;
+    let lock = await this._listMessagesLock.lock();
+    try {
+      let { newMessages } = await this.fetchMessageList({ all: true }, {});
+      this.messages.addAll(newMessages);
+      await this.storage.saveFolderProperties(this);
+      await this.saveNewMsgs(newMessages);
+      return newMessages;
+    } finally {
+      lock.release();
+    }
   }
 
   /** Lists all messages in this folder that are new or updated since the last fetch.
@@ -173,15 +183,20 @@ export class IMAPFolder extends Folder {
    * But doesn't download their contents @see getNewMessages() */
   async listNewMessages(): Promise<ArrayColl<IMAPEMail>> {
     await this.readFolder();
-    if (this.countTotal === 0) {
-      return new ArrayColl();
+    let lock = await this._listMessagesLock.lock();
+    try {
+      if (this.countTotal === 0) {
+        return new ArrayColl();
+      }
+      let fromUID = this.highestUID ?? "1";
+      let { newMessages } = await this.fetchMessageList({ uid: fromUID + ":*" }, {});
+      this.messages.addAll(newMessages);
+      await this.saveNewMsgs(newMessages);
+      await this.storage.saveFolderProperties(this);
+      return newMessages;
+    } finally {
+      lock.release();
     }
-    let fromUID = this.highestUID ?? "1";
-    let { newMessages } = await this.fetchMessageList({ uid: fromUID + ":*" }, {});
-    this.messages.addAll(newMessages);
-    await this.saveNewMsgs(newMessages);
-    await this.storage.saveFolderProperties(this);
-    return newMessages;
   }
 
   protected async fetchMessageList(range: any, options: any): Promise<{ newMessages: ArrayColl<IMAPEMail>, updatedMessages: ArrayColl<IMAPEMail> }> {

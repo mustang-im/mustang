@@ -4,6 +4,7 @@ import type { TreeItem } from "../../frontend/Shared/FastTree";
 import { EMailCollection } from "./Store/EMailCollection";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, Collection } from 'svelte-collections';
+import { Lock } from "../util/Lock";
 import { assert, AbstractFunction } from "../util/util";
 import { gt } from "../../l10n/l10n";
 
@@ -31,6 +32,8 @@ export class Folder extends Observable implements TreeItem<Folder> {
    * EWS: Sync state, as string
    */
   syncState: number | string | null = null;
+  _readFolderLock = new Lock();
+  _listMessagesLock = new Lock();
 
   constructor(account: MailAccount) {
     super();
@@ -54,17 +57,25 @@ export class Folder extends Observable implements TreeItem<Folder> {
   }
 
   protected async readFolder() {
-    if (!this.dbID) {
-      await this.save();
-    }
-    if (this.messages.isEmpty) {
-      let log = "Reading msgs from DB, for folder " + this.account.name + " " + this.path;
-      console.time(log + " first 200");
-      await this.storage.readAllMessagesMainProperties(this, 200);
-      console.timeEnd(log + " first 200");
-      console.time(log);
-      await this.storage.readAllMessagesMainProperties(this, null, 200);
-      console.timeEnd(log);
+    let lock = await this._readFolderLock.lock();
+    try {
+      if (lock.wasWaiting) {
+        return;
+      }
+      if (!this.dbID) {
+        await this.save();
+      }
+      if (this.messages.isEmpty) {
+        let log = "Reading msgs from DB, for folder " + this.account.name + " " + this.path;
+        console.time(log + " first 200");
+        await this.storage.readAllMessagesMainProperties(this, 200);
+        console.timeEnd(log + " first 200");
+        console.time(log);
+        await this.storage.readAllMessagesMainProperties(this, null, 200);
+        console.timeEnd(log);
+      }
+    } finally {
+      lock.release();
     }
   }
 
