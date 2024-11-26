@@ -15,11 +15,9 @@ export class EMailProcessor {
 
   static hookup() {
     if (EMailProcessorList.processors.some(p => p instanceof this)) {
-      console.log("Processor already added");
       return;
     }
     EMailProcessorList.processors.add(new this());
-    console.log("Processors", EMailProcessorList.processors);
   }
   unhookup() {
     EMailProcessorList.processors.remove(this);
