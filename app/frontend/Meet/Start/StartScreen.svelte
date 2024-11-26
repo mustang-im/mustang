@@ -64,10 +64,10 @@
 
   async function testIncoming() {
     let fakeMeeting = new Event();
-    fakeMeeting.startTime = faker.date.soon(1/24/4);
-    fakeMeeting.endTime = faker.date.soon(1/24);
-    fakeMeeting.title = faker.random.words();
-    fakeMeeting.descriptionText = faker.random.words();
+    fakeMeeting.startTime = faker.date.soon({ days: 1/24/4 });
+    fakeMeeting.endTime = faker.date.soon({ days: 1/24 });
+    fakeMeeting.title = faker.word.words();
+    fakeMeeting.descriptionText = faker.hacker.phrase();
     appGlobal.calendars.first.events.add(fakeMeeting);
 
     let caller = new MeetingParticipant();
@@ -85,8 +85,8 @@
     callee.picture = $selectedPerson.picture;
 
     let event = new Event();
-    event.startTime = faker.date.past(0.001);
-    event.endTime = faker.date.future(0.001);
+    event.startTime = faker.date.past({ years: 0.001 });
+    event.endTime = faker.date.future({ years: 0.001 });
     event.title = $t`Final Approval UX Meet`;
     event.descriptionHTML = $t`<p>
       Objectives of the meeting are:
