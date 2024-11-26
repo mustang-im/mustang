@@ -62,18 +62,19 @@ export class Folder extends Observable implements TreeItem<Folder> {
       if (lock.wasWaiting) {
         return;
       }
+      if (this.messages.hasItems) {
+        return;
+      }
       if (!this.dbID) {
         await this.save();
       }
-      if (this.messages.isEmpty) {
-        let log = "Reading msgs from DB, for folder " + this.account.name + " " + this.path;
-        console.time(log + " first 200");
-        await this.storage.readAllMessagesMainProperties(this, 200);
-        console.timeEnd(log + " first 200");
-        console.time(log);
-        await this.storage.readAllMessagesMainProperties(this, null, 200);
-        console.timeEnd(log);
-      }
+      let log = "Reading msgs from DB, for folder " + this.account.name + " " + this.path;
+      console.time(log + " first 200");
+      await this.storage.readAllMessagesMainProperties(this, 200);
+      console.timeEnd(log + " first 200");
+      console.time(log);
+      await this.storage.readAllMessagesMainProperties(this, null, 200);
+      console.timeEnd(log);
     } finally {
       lock.release();
     }

@@ -81,7 +81,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
   }
 
   /**
-   * Queues `Sync` (synchronization) requests locally and waits until the 
+   * Queues `Sync` (synchronization) requests locally and waits until the
    * server is available.
    * Sync requests for a given folder must be serialised,
    * because they all use the same per-folder sync key.
@@ -89,22 +89,26 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
    * @param responseFunc
    * - It performs actions using the parameter `response.Collections.Collection`.
    * - It is called when the response is not null.
-   * - It will be repeatedly called while `response.Collections.Collection.MoreAvailable` is 
+   * - It will be repeatedly called while `response.Collections.Collection.MoreAvailable` is
    * equal to an empty string.
    * - It may be called many times.
    */
   async queuedSyncRequest(data: any, responseFunc?: (response: any) => Promise<void>): Promise<any> {
-    if (!this.syncState && !this.syncKeyBusy) try {
-      // First request must be an empty request.
-      this.syncKeyBusy = this.makeSyncRequest();
-      await this.syncKeyBusy;
-    } finally {
-      this.syncKeyBusy = null;
+    if (!this.syncState && !this.syncKeyBusy) {
+      try {
+        // First request must be an empty request.
+        this.syncKeyBusy = this.makeSyncRequest();
+        await this.syncKeyBusy;
+      } finally {
+        this.syncKeyBusy = null;
+      }
     }
-    while (this.syncKeyBusy) try {
-      await this.syncKeyBusy;
-    } catch (ex) {
-      // If the function currently holding the sync key throws, we don't care.
+    while (this.syncKeyBusy) {
+      try {
+        await this.syncKeyBusy;
+      } catch (ex) {
+        // If the function currently holding the sync key throws, we don't care.
+      }
     }
     try {
       this.syncKeyBusy = this.makeSyncRequest(data, responseFunc);
@@ -121,7 +125,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
    * @param responseFunc
    * - It performs actions using the parameter `response.Collections.Collection`.
    * - It is called when the response is not null.
-   * - It will be repeatedly called while `response.Collections.Collection.MoreAvailable` is 
+   * - It will be repeatedly called while `response.Collections.Collection.MoreAvailable` is
    * equal to an empty string.
    * - It may be called many times.
    */
