@@ -10,7 +10,6 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
   readonly protocol: string = "addressbook-activesync";
   readonly persons: ArrayColl<ActiveSyncPerson>;
   account: ActiveSyncAccount;
-  syncKeyBusy: Promise<any> | null;
   readonly folderClass = "Contacts";
   protected requestLock = new Lock();
 
@@ -40,7 +39,7 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
    * - It may be called many times.
    */
   async makeSyncRequest(data?: any, responseFunc?: (response: any) => Promise<void>): Promise<any> {
-    if (!this.syncState && this.requestLock._waiting.length == 0 && data != undefined) {
+    if (!this.syncState && !this.requestLock.haveWaiting && data != undefined) {
       // First request must be an empty request
       await this.makeSyncRequest();
     }

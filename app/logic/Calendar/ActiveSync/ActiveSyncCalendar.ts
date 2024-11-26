@@ -10,7 +10,6 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
   readonly protocol: string = "calendar-activesync";
   readonly events: ArrayColl<ActiveSyncEvent>;
   account: ActiveSyncAccount;
-  syncKeyBusy: Promise<any> | null;
   readonly folderClass = "Calendar";
   protected requestLock = new Lock();
 
@@ -37,7 +36,7 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
    * - It may be called many times.
    */
   async makeSyncRequest(data?: any, responseFunc?: (response: any) => Promise<void>): Promise<any> {
-    if (!this.syncState && this.requestLock._waiting.length == 0 && data != undefined) {
+    if (!this.syncState && !this.requestLock.haveWaiting && data != undefined) {
       // First request must be an empty request
       await this.makeSyncRequest();
     }

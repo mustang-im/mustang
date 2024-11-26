@@ -89,7 +89,7 @@ export class OWAFolder extends Folder {
 
   async listMessages(): Promise<ArrayColl<OWAEMail>> {
     await this.readFolder();
-    let lock = await this._listMessagesLock.lock();
+    let lock = await this.listMessagesLock.lock();
     try {
       if (!await this.folderCountsChanged()) {
         // Avoid unnecessarily rereading the message list.

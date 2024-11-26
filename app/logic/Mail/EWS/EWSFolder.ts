@@ -48,7 +48,7 @@ export class EWSFolder extends Folder {
    * Assumes previously known messages have already been loaded from the DB.
    * @returns the new messages (not yet downloaded) */
   async updateChangedMessages(): Promise<ArrayColl<EWSEMail>> {
-    let lock = await this._listMessagesLock.lock();
+    let lock = await this.listMessagesLock.lock();
     try {
       let sync = {
         m$SyncFolderItems: {
@@ -147,7 +147,7 @@ export class EWSFolder extends Folder {
    * Assumes previously known messages have already been loaded from the DB.
    * @returns the new messages */
   async listAllMessages(): Promise<ArrayColl<EWSEMail>> {
-    let lock = await this._listMessagesLock.lock();
+    let lock = await this.listMessagesLock.lock();
     try {
       let allMsgs = new ArrayColl<EWSEMail>();
       let newMsgs = new ArrayColl<EWSEMail>();

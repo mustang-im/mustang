@@ -32,8 +32,8 @@ export class Folder extends Observable implements TreeItem<Folder> {
    * EWS: Sync state, as string
    */
   syncState: number | string | null = null;
-  _readFolderLock = new Lock();
-  _listMessagesLock = new Lock();
+  protected readFolderLock = new Lock();
+  protected listMessagesLock = new Lock();
 
   constructor(account: MailAccount) {
     super();
@@ -57,7 +57,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
   }
 
   protected async readFolder() {
-    let lock = await this._readFolderLock.lock();
+    let lock = await this.readFolderLock.lock();
     try {
       if (lock.wasWaiting) {
         return;

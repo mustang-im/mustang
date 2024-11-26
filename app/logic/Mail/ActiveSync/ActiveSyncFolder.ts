@@ -90,12 +90,12 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
    * - It may be called many times.
    */
   async makeSyncRequest(data?: any, responseFunc?: (response: any) => Promise<void>): Promise<any> {
-    if (!this.syncState && this._listMessagesLock._waiting.length == 0 && data != undefined) {
+    if (!this.syncState && !this.listMessagesLock.haveWaiting && data != undefined) {
       // First request must be an empty request
       await this.makeSyncRequest();
     }
 
-    let lock = await this._listMessagesLock.lock();
+    let lock = await this.listMessagesLock.lock();
     try {
       let response;
       do {

@@ -1,6 +1,7 @@
-import { arrayRemove, assert } from "./util";
+import { assert } from "./util";
 
-/** Allows a function to ensure that it will never run in parallel
+/**
+ * Allows a function to ensure that it will never run in parallel
  * with another instance of the same function.
  * Instead, it will wait until the other instance is finished.
  *
@@ -27,47 +28,59 @@ import { arrayRemove, assert } from "./util";
  * }
  * ```
  *
- * 3. Callers of your function call it in the normal way:
+ * 3. Callers of your function can call it in the normal way:
  * `await a.runner();`
  *
  * 4. If your function should not be repeated, you can check whether the lock()
  *   was waiting or not. If it was waiting, you can skip running your function a second time:
  * ```
  * async runner() {
- *   let lock = await this._runnerLock.lock(); // will wait until the others completed
+ *   let lock = await this._runnerLock.lock(); // wait until the others completed
  *   if (lock.wasWaiting) {
+ *     lock.release();
  *     return;
+ *   }
+ *   try {
+ *     await someCriticalCodeWhichNeedsToRunOnlyOnce();
+ *   } finally {
+ *     lock.release();
  *   }
  * ```
  *   However, not that while the previous function started and this function started,
  *   your application state might have changed.
  */
 export class Lock {
-  _waiting: Array<Locked> = [];
+  protected waiting: Array<Locked> = [];
+
   async lock(): Promise<Locked> {
     let locked = new Locked();
-    locked.wasWaiting = this._waiting.length > 0;
+    locked.wasWaiting = this.haveWaiting;
     locked._promise = new Promise(resolve => {
       locked._resolve = resolve;
     });
-    let lastWaiting = this._waiting[this._waiting.length - 1];
-    this._waiting.push(locked);
+    let lastWaiting = this.waiting[this.waiting.length - 1];
+    this.waiting.push(locked);
     // `resolve()` in `Locked.release()`
     if (locked.wasWaiting) {
       await lastWaiting._promise; // wait for `release()` to be called on the other lock
-      let removed = this._waiting.shift(); // remove next
+      let removed = this.waiting.shift(); // remove next
       assert(removed == lastWaiting, "Lock implementation logic error: I am not the currently waiting lock");
       // now, we can run
     }
     return locked;
   }
+
+  get haveWaiting(): boolean {
+    return this.waiting.length > 0;
+  }
 }
 
 export class Locked {
+  wasWaiting: boolean;
   _promise: Promise<null>;
   _resolve: (value: null) => void;
+
   release(): void {
     this._resolve(null);
   };
-  wasWaiting: boolean;
 }
