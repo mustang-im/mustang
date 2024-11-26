@@ -90,9 +90,8 @@
 
 <script lang="ts">
   import { plural } from 'svelte-i18n-lingui';
-  import { type Event, ResponseType } from "../../logic/Calendar/Event";
+  import type { Event } from "../../logic/Calendar/Event";
   import { Frequency, RecurrenceRule, type RecurrenceInit } from "../../logic/Calendar/RecurrenceRule";
-  import { Scheduling, type Responses } from "../../logic/Mail/EMail";
   import PersonsAutocomplete from "../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
   import PersonAvailability from "./EditEvent/PersonAvailability.svelte";
   import DateInput from "./EditEvent/DateInput.svelte";

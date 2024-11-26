@@ -1,9 +1,10 @@
-import { EMail, Scheduling, type Responses } from "../EMail";
+import { EMail } from "../EMail";
 import type { ActiveSyncFolder } from "./ActiveSyncFolder";
 import { EASError } from "./ActiveSyncAccount";
 import { ActiveSyncEvent } from "../../Calendar/ActiveSync/ActiveSyncEvent";
 import { type Tag, getTagByName } from "../Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import { Scheduling, type Responses } from "../../Calendar/Invitation";
 import { ensureArray, assert, NotSupported } from "../../util/util";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";

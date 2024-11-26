@@ -1,4 +1,4 @@
-import { EMail, Scheduling, type Responses } from "../EMail";
+import { EMail } from "../EMail";
 import type { OWAFolder } from "./OWAFolder";
 import { OWAEvent } from "../../Calendar/OWA/OWAEvent";
 import { Tag, getTagByName } from "../Tag";
@@ -6,6 +6,7 @@ import OWACreateItemRequest from "./OWACreateItemRequest";
 import OWADeleteItemRequest from "./OWADeleteItemRequest";
 import OWAUpdateItemRequest from "./OWAUpdateItemRequest";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import { Scheduling, type Responses } from "../../Calendar/Invitation";
 import { appGlobal } from "../../app";
 import { base64ToArrayBuffer, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";

@@ -2,6 +2,7 @@ import { Account } from "../Abstract/Account";
 import { Event } from "./Event";
 import { appGlobal } from "../app";
 import { Collection, ArrayColl } from "svelte-collections";
+import { ICSProcessor } from "./ICSProcessor";
 
 export class Calendar extends Account {
   readonly protocol: string = "calendar-local";
@@ -40,3 +41,5 @@ export interface CalendarStorage {
   saveCalendar(calendar: Calendar): Promise<void>;
   deleteCalendar(calendar: Calendar): Promise<void>;
 }
+
+ICSProcessor.hookup();

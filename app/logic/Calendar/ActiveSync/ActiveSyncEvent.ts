@@ -1,8 +1,8 @@
-import { Event, ResponseType } from "../Event";
+import { Event } from "../Event";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { ActiveSyncCalendar } from "./ActiveSyncCalendar";
 import WindowsTimezones from "../EWS/WindowsTimezones";
-import type { Responses } from "../../Mail/EMail";
+import { ResponseType, type Responses } from "../../Calendar/Invitation";
 import { findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { EASError } from "../../Mail/ActiveSync/ActiveSyncAccount";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";

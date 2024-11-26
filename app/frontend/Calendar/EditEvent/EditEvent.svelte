@@ -144,10 +144,10 @@
 
 <script lang="ts">
   import { plural } from 'svelte-i18n-lingui';
-  import { type Event, ResponseType } from "../../../logic/Calendar/Event";
+  import type { Event } from "../../../logic/Calendar/Event";
   import { Frequency, RecurrenceRule, type RecurrenceInit } from "../../../logic/Calendar/RecurrenceRule";
   import { EventEditMustangApp, calendarMustangApp } from "../CalendarMustangApp";
-  import { Scheduling, type Responses } from "../../../logic/Mail/EMail";
+  import { Scheduling, ResponseType, type Responses } from "../../../logic/Calendar/Invitation";
   import PersonsAutocomplete from "../../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
   import PersonAvailability from "./PersonAvailability.svelte";
   import DateInput from "./DateInput.svelte";

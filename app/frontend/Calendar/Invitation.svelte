@@ -21,7 +21,8 @@
 </vbox>
 
 <script lang="ts">
-  import { type EMail, type Responses, Scheduling } from "../../logic/Mail/EMail";
+  import type { EMail } from "../../logic/Mail/EMail";
+  import { Scheduling, type Responses } from "../../logic/Calendar/Invitation";
   import DisplayEvent from "./DisplayEvent.svelte";
   import Button from "../Shared/Button.svelte";
   import { t } from "../../l10n/l10n";

@@ -1,20 +1,10 @@
 import type { PersonUID } from "../Abstract/PersonUID";
 import type { Calendar } from "./Calendar";
 import type { RecurrenceRule } from "./RecurrenceRule";
-import type { Responses } from "../Mail/EMail";
+import { ResponseType, type Responses } from "./Invitation";
 import { ArrayColl } from "svelte-collections";
 import { assert, randomID, AbstractFunction } from "../util/util";
 import { Observable, notifyChangedProperty } from "../util/Observable";
-
-/* Note: These are EWS/OWA names and ActiveSync values. */
-export enum ResponseType {
-  Unknown = 0,
-  Organizer = 1,
-  Tentative = 2,
-  Accept = 3,
-  Decline = 4,
-  NoResponseReceived = 5,
-}
 
 export class Event extends Observable {
   id: string;

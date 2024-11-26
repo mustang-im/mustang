@@ -1,12 +1,13 @@
-import { EMail, Scheduling, type Responses } from "../EMail";
+import { EMail } from "../EMail";
 import { type EWSFolder, getEWSItem } from "./EWSFolder";
 import { EWSEvent } from "../../Calendar/EWS/EWSEvent";
 import { type Tag, getTagByName } from "../Tag";
 import { Attachment, ContentDisposition } from "../Attachment";
-import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import EWSCreateItemRequest from "./EWSCreateItemRequest";
 import EWSDeleteItemRequest from "./EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "./EWSUpdateItemRequest";
+import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import { Scheduling, type Responses } from "../../Calendar/Invitation";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { base64ToArrayBuffer, assert, ensureArray } from "../../util/util";
