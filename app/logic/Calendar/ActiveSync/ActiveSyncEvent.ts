@@ -129,7 +129,7 @@ export class ActiveSyncEvent extends Event {
         },
       },
     };
-    let response = await this.calendar.queuedSyncRequest(data);
+    let response = await this.calendar.makeSyncRequest(data);
     if (response.Responses) {
       if (response.Responses.Change) {
         throw new EASError("Sync", response.Responses.Change.Status);
@@ -159,7 +159,7 @@ export class ActiveSyncEvent extends Event {
           },
         },
       };
-      let response = await this.calendar.queuedSyncRequest(data);
+      let response = await this.calendar.makeSyncRequest(data);
       if (response.Responses) {
         throw new EASError("Sync", response.Responses.Delete.Status);
       }

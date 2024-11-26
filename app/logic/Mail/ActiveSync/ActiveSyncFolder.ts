@@ -30,7 +30,6 @@ export enum FolderType {
 export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
   account: ActiveSyncAccount;
   messages: EMailCollection<ActiveSyncEMail>;
-  syncKeyBusy: Promise<any> | null;
   readonly folderClass = "Email";
 
   get serverID() {
@@ -81,46 +80,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
   }
 
   /**
-   * Queues `Sync` (synchronization) requests locally and waits until the
-   * server is available.
-   * Sync requests for a given folder must be serialised,
-   * because they all use the same per-folder sync key.
-   * @param data information about the request
-   * @param responseFunc
-   * - It performs actions using the parameter `response.Collections.Collection`.
-   * - It is called when the response is not null.
-   * - It will be repeatedly called while `response.Collections.Collection.MoreAvailable` is
-   * equal to an empty string.
-   * - It may be called many times.
-   */
-  async queuedSyncRequest(data: any, responseFunc?: (response: any) => Promise<void>): Promise<any> {
-    if (!this.syncState && !this.syncKeyBusy) {
-      try {
-        // First request must be an empty request.
-        this.syncKeyBusy = this.makeSyncRequest();
-        await this.syncKeyBusy;
-      } finally {
-        this.syncKeyBusy = null;
-      }
-    }
-    while (this.syncKeyBusy) {
-      try {
-        await this.syncKeyBusy;
-      } catch (ex) {
-        // If the function currently holding the sync key throws, we don't care.
-      }
-    }
-    try {
-      this.syncKeyBusy = this.makeSyncRequest(data, responseFunc);
-      return await this.syncKeyBusy;
-    } finally {
-      this.syncKeyBusy = null;
-    }
-  }
-
-  /**
    * Makes a `Sync` (synchronization) request to the server.
-   * You probably want to call it using the wrapper `queuedSyncRequest()`.
    * @param data information about the request
    * @param responseFunc
    * - It performs actions using the parameter `response.Collections.Collection`.
@@ -129,34 +89,44 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
    * equal to an empty string.
    * - It may be called many times.
    */
-  protected async makeSyncRequest(data?: any, responseFunc?: (response: any) => Promise<void>): Promise<any> {
-    let response;
-    do {
-      let request = {
-        Collections: {
-          Collection: Object.assign({
-            SyncKey: this.syncState || "0",
-            CollectionId: this.id,
-          }, data),
-        },
-      };
-      response = await this.account.callEAS("Sync", request);
-      if (!response) {
-        return null;
-      }
-      if (response.Collections.Collection.Status == "3") {
-        // Out of sync.
-        this.syncState = null;
+  async makeSyncRequest(data?: any, responseFunc?: (response: any) => Promise<void>): Promise<any> {
+    if (!this.syncState && this._listMessagesLock._waiting.length == 0 && data != undefined) {
+      // First request must be an empty request
+      await this.makeSyncRequest();
+    }
+
+    let lock = await this._listMessagesLock.lock();
+    try {
+      let response;
+      do {
+        let request = {
+          Collections: {
+            Collection: Object.assign({
+              SyncKey: this.syncState || "0",
+              CollectionId: this.id,
+            }, data),
+          },
+        };
+        response = await this.account.callEAS("Sync", request);
+        if (!response) {
+          return null;
+        }
+        if (response.Collections.Collection.Status == "3") {
+          // Out of sync.
+          this.syncState = null;
+          await this.storage.saveFolder(this);
+        }
+        if (response.Collections.Collection.Status != "1") {
+          throw new EASError("Sync", response.Collections.Collection.Status);
+        }
+        await responseFunc?.(response.Collections.Collection);
+        this.syncState = response.Collections.Collection.SyncKey;
         await this.storage.saveFolder(this);
-      }
-      if (response.Collections.Collection.Status != "1") {
-        throw new EASError("Sync", response.Collections.Collection.Status);
-      }
-      await responseFunc?.(response.Collections.Collection);
-      this.syncState = response.Collections.Collection.SyncKey;
-      await this.storage.saveFolder(this);
-    } while (responseFunc && response.Collections.Collection.MoreAvailable == "");
-    return response.Collections.Collection;
+      } while (responseFunc && response.Collections.Collection.MoreAvailable == "");
+      return response.Collections.Collection;
+    } finally {
+      lock.release();
+    }
   }
 
   async listMessages(): Promise<ArrayColl<ActiveSyncEMail>> {
@@ -172,7 +142,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
         },
       },
     };
-    await this.queuedSyncRequest(data, async response => {
+    await this.makeSyncRequest(data, async response => {
       for (let item of ensureArray(response.Commands?.Add).concat(ensureArray(response.Commands?.Change))) {
         try {
           let email = this.getEmailByServerID(item.ServerId);

@@ -99,7 +99,7 @@ export class ActiveSyncEMail extends EMail {
         },
       },
     };
-    let response = await this.folder.queuedSyncRequest(data);
+    let response = await this.folder.makeSyncRequest(data);
     if (response.Responses) {
       throw new EASError("Sync", response.Responses.Change.Status);
     }
@@ -118,7 +118,7 @@ export class ActiveSyncEMail extends EMail {
         },
       },
     };
-    let response = await this.folder.queuedSyncRequest(data);
+    let response = await this.folder.makeSyncRequest(data);
     if (response.Responses) {
       throw new EASError("Sync", response.Responses.Change.Status);
     }
@@ -144,7 +144,7 @@ export class ActiveSyncEMail extends EMail {
         },
       },
     };
-    let response = await this.folder.queuedSyncRequest(data);
+    let response = await this.folder.makeSyncRequest(data);
     if (response.Responses) {
       throw new EASError("Sync", response.Responses.Delete.Status);
     }
@@ -172,7 +172,7 @@ export class ActiveSyncEMail extends EMail {
         },
       },
     };
-    let response = await this.folder.queuedSyncRequest(data);
+    let response = await this.folder.makeSyncRequest(data);
     if (response.Responses) {
       throw new EASError("Sync", response.Responses.Change.Status);
     }
