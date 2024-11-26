@@ -496,21 +496,14 @@ export class IMAPFolder extends Folder {
   /** We received an event from the server that the
    * unread or flag status of an email changed */
   async messageFlagsChanged(uid: number | null, seq: number, flags: Set<string>, newModSeq?: number): Promise<void> {
+    // console.log("msg flags changed", "uid", uid, "seq", seq, "flags", flags, "modseq", newModSeq);
     if (this.deletions.has(uid)) {
       return;
     }
-
-    let message = uid && this.getEMailByUID(uid);
-    if (message) {
-      message.setFlagsLocal(flags);
-      await this.storage.saveMessageWritableProps(message);
-      return;
-    }
-
-    let updateMsgs = this.getEmailsAroundSeq(seq, 10, 10);
-    let fromUID = updateMsgs.first?.uid ?? 1;
-    let toUID = updateMsgs.last?.uid ?? this.highestUID;
-    let { updatedMessages } = await this.fetchFlags({ uid: fromUID + ":" + toUID }, {});
+    let query = uid && this.getEMailByUID(uid)
+      ? { uid: uid }
+      : { seq: seq };
+    let { updatedMessages } = await this.fetchFlags(query, {});
     await this.saveMsgUpdates(updatedMessages);
   }
 
