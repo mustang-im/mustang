@@ -57,7 +57,7 @@ export class SQLSearchEMail extends SearchEMail {
 
     // Find existing email obj in `folder.messages`,
     // or create new temporary `EMail` objects for the results
-    let cachedFolders = new MapColl<number, Folder>(); // dbID -> folder
+    let cachedFolders = new MapColl<string | number, Folder>(); // dbID -> folder
     const findFolder = (dbID: number): Folder | null => {
       if (!dbID) {
         return null;

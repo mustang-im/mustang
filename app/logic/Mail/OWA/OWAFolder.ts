@@ -89,87 +89,92 @@ export class OWAFolder extends Folder {
 
   async listMessages(): Promise<ArrayColl<OWAEMail>> {
     await this.readFolder();
-    if (!await this.folderCountsChanged()) {
-      // Avoid unnecessarily rereading the message list.
-      return new ArrayColl<OWAEMail>();
-    }
+    let lock = await this.listMessagesLock.lock();
+    try {
+      if (!await this.folderCountsChanged()) {
+        // Avoid unnecessarily rereading the message list.
+        return new ArrayColl<OWAEMail>();
+      }
 
-    let allMsgs = new ArrayColl<OWAEMail>();
-    let newMsgs = new ArrayColl<OWAEMail>();
-    let request = {
-      __type: "FindItemJsonRequest:#Exchange",
-      Header: {
-        __type: "JsonRequestHeaders:#Exchange",
-        RequestServerVersion: "Exchange2013",
-      },
-      Body: {
-        __type: "FindItemRequest:#Exchange",
-        ItemShape: {
-          __type: "ItemResponseShape:#Exchange",
-          BaseShape: "IdOnly",
-          AdditionalProperties: [{
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "message:IsRead",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "item:IsDraft",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "item:Categories",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "item:Flag",
-          /*}, {
-            __type: "PropertyUri:#Exchange",
-            ExtendedFieldURI: {
-              PropertyTag: "0x1080",
-              PropertyType: "Integer",
-            },*/
+      let allMsgs = new ArrayColl<OWAEMail>();
+      let newMsgs = new ArrayColl<OWAEMail>();
+      let request = {
+        __type: "FindItemJsonRequest:#Exchange",
+        Header: {
+          __type: "JsonRequestHeaders:#Exchange",
+          RequestServerVersion: "Exchange2013",
+        },
+        Body: {
+          __type: "FindItemRequest:#Exchange",
+          ItemShape: {
+            __type: "ItemResponseShape:#Exchange",
+            BaseShape: "IdOnly",
+            AdditionalProperties: [{
+              __type: "PropertyUri:#Exchange",
+              FieldURI: "message:IsRead",
+            }, {
+              __type: "PropertyUri:#Exchange",
+              FieldURI: "item:IsDraft",
+            }, {
+              __type: "PropertyUri:#Exchange",
+              FieldURI: "item:Categories",
+            }, {
+              __type: "PropertyUri:#Exchange",
+              FieldURI: "item:Flag",
+              /*}, {
+                __type: "PropertyUri:#Exchange",
+                ExtendedFieldURI: {
+                  PropertyTag: "0x1080",
+                  PropertyType: "Integer",
+                },*/
+            }],
+          },
+          ParentFolderIds: [{
+            __type: "FolderId:#Exchange",
+            Id: this.id,
           }],
+          Traversal: "Shallow",
+          Paging: {
+            __type: "IndexedPageView:#Exchange",
+            BasePoint: "Beginning",
+            Offset: 0,
+            MaxEntriesReturned: kMaxCount,
+          },
         },
-        ParentFolderIds: [{
-          __type: "FolderId:#Exchange",
-          Id: this.id,
-        }],
-        Traversal: "Shallow",
-        Paging: {
-          __type: "IndexedPageView:#Exchange",
-          BasePoint: "Beginning",
-          Offset: 0,
-          MaxEntriesReturned: kMaxCount,
-        },
-      },
-    };
-    let result: any = { RootFolder: { IncludesLastItemInRange: "false" } };
-    while (result?.RootFolder?.IncludesLastItemInRange === "false") {
-      result = await this.account.callOWA(request);
-      if (!result?.RootFolder?.Items?.length) {
-        // This folder is empty.
-        break;
-      }
-      request.Body.Paging.Offset = sanitize.integer(result.RootFolder.IndexedPagingOffset);
-      let messages = result.RootFolder.Items;
-      let newMessageIDs: string[] = [];
-      for (let message of messages) {
-        let email = this.getEmailByItemID(sanitize.nonemptystring(message.ItemId.Id));
-        if (email) {
-          email.setFlags(message);
-          await this.storage.saveMessageWritableProps(email);
-          allMsgs.add(email);
-        } else {
-          newMessageIDs.push(message.ItemId.Id);
+      };
+      let result: any = { RootFolder: { IncludesLastItemInRange: "false" } };
+      while (result?.RootFolder?.IncludesLastItemInRange === "false") {
+        result = await this.account.callOWA(request);
+        if (!result?.RootFolder?.Items?.length) {
+          // This folder is empty.
+          break;
         }
+        request.Body.Paging.Offset = sanitize.integer(result.RootFolder.IndexedPagingOffset);
+        let messages = result.RootFolder.Items;
+        let newMessageIDs: string[] = [];
+        for (let message of messages) {
+          let email = this.getEmailByItemID(sanitize.nonemptystring(message.ItemId.Id));
+          if (email) {
+            email.setFlags(message);
+            await this.storage.saveMessageWritableProps(email);
+            allMsgs.add(email);
+          } else {
+            newMessageIDs.push(message.ItemId.Id);
+          }
+        }
+        let newMsgsInIteration = await this.getNewMessageHeaders(newMessageIDs);
+        newMsgs.addAll(newMsgsInIteration);
       }
-      let newMsgsInIteration = await this.getNewMessageHeaders(newMessageIDs);
-      newMsgs.addAll(newMsgsInIteration);
-    }
 
-    for (let email of this.messages.subtract(allMsgs)) {
-      await this.storage.deleteMessage(email);
+      for (let email of this.messages.subtract(allMsgs)) {
+        await this.storage.deleteMessage(email);
+      }
+      allMsgs.addAll(newMsgs);
+      this.messages.replaceAll(allMsgs);
+      return newMsgs;
+    } finally {
+      lock.release();
     }
-    allMsgs.addAll(newMsgs);
-    this.messages.replaceAll(allMsgs);
-    return newMsgs;
   }
 
   async getNewMessageHeaders(newMessageIDs: string[]): Promise<ArrayColl<OWAEMail>> {
@@ -213,6 +218,9 @@ export class OWAFolder extends Folder {
             }, {
               __type: "PropertyUri:#Exchange",
               FieldURI: "message:BccRecipients",
+            }, {
+              __type: "PropertyUri:#Exchange",
+              FieldURI: "item:ItemClass",
             /* Non-MIME @see OWAEMail.bodyAndAttachmentsFromJson()
             }, {
               __type: "PropertyUri:#Exchange",

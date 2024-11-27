@@ -1,4 +1,5 @@
-import { sanitizeFilename, type URLString } from "../../logic/util/util";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+import type { URLString } from "../../logic/util/util";
 
 export function onKeyEnter(event: KeyboardEvent, onEnter: () => void) {
   if (event.key == "Enter") {
@@ -23,7 +24,7 @@ export function saveBlobAsFile(blob: Blob, filename?: string) {
 export function saveURLAsFile(url: URLString, filename: string) {
   let a = document.createElement("a");
   a.href = url;
-  a.setAttribute("filename", sanitizeFilename(filename));
+  a.setAttribute("filename", sanitize.filename(filename, "file"));
   a.setAttribute("target", "_blank");
   a.click();
   a.href = '';

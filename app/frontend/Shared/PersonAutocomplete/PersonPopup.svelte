@@ -44,37 +44,40 @@
           label={$t`Edit name and email address`}
           icon={EditIcon}
           on:click={() => isEditing = true}
+          {disabled}
           />
       </vbox>
     {/if}
   </hbox>
-  {#if person?.emailAddresses.hasItems}
-    <vbox class="other-email-addresses">
-      {#each person.emailAddresses.each as altContactEntry}
-        {#if contactEntry != altContactEntry}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <hbox class="other-email-address" on:click={() => catchErrors(() => useOtherEmailAddress(altContactEntry.value))}>
-            <MailIcon size={12} />
-            {altContactEntry.value}
-          </hbox>
-        {/if}
-      {/each}
-    </vbox>
+  {#if !disabled}
+    {#if person?.emailAddresses.hasItems}
+      <vbox class="other-email-addresses">
+        {#each person.emailAddresses.each as altContactEntry}
+          {#if contactEntry != altContactEntry}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <hbox class="other-email-address" on:click={() => catchErrors(() => useOtherEmailAddress(altContactEntry.value))}>
+              <MailIcon size={12} />
+              {altContactEntry.value}
+            </hbox>
+          {/if}
+        {/each}
+      </vbox>
+    {/if}
+    <hbox class="addressbooks" class:top-border={person?.emailAddresses.length > 1}>
+      <AddressbookChanger {person} />
+    </hbox>
+    <hbox class="bottom buttons">
+      <Button plain
+        label={$t`Edit`}
+        onClick={onEditPerson}
+        />
+      <Button plain
+        label={$t`Remove`}
+        onClick={onRemovePerson}
+        />
+      <slot name="buttons" {personUID} />
+    </hbox>
   {/if}
-  <hbox class="addressbooks" class:top-border={person?.emailAddresses.length > 1}>
-    <AddressbookChanger {person} />
-  </hbox>
-  <hbox class="bottom buttons">
-    <Button plain
-      label={$t`Edit`}
-      onClick={onEditPerson}
-      />
-    <Button plain
-      label={$t`Remove`}
-      onClick={onRemovePerson}
-      />
-    <slot name="buttons" {personUID} />
-  </hbox>
 </vbox>
 <svelte:window on:click={onClickOutside} />
 
@@ -103,6 +106,7 @@
   let person: Person;
   let contactEntry: ContactEntry;
   let isEditing = false;
+  let disabled = false;
   let nameInputEl: HTMLInputElement;
 
   onMount(() => {
@@ -116,7 +120,7 @@
   function onLoad(personUID: PersonUID) {
     person = personUID.createPerson();
     contactEntry = person.emailAddresses.find(c => c.value == personUID.emailAddress);
-    isEditing = !person.addressbook || person.addressbook == appGlobal.collectedAddressbook;
+    isEditing = (!person.addressbook || person.addressbook == appGlobal.collectedAddressbook) && !disabled;
   }
 
   function onClose() {

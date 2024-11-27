@@ -4,6 +4,9 @@ import { Attachment, ContentDisposition } from "./Attachment";
 import type { Tag } from "./Tag";
 import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
+import { Event } from "../Calendar/Event";
+import { Scheduling, type Responses } from "../Calendar/Invitation";
+import { EMailProcessorList, ProcessingStartOn } from "./EMailProccessor";
 import { appGlobal } from "../app";
 import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
 import { getUILocale, gt } from "../../l10n/l10n";
@@ -52,6 +55,10 @@ export class EMail extends Message {
   /** Complete MIME source of the email */
   @notifyChangedProperty
   mime: Uint8Array | undefined;
+  @notifyChangedProperty
+  scheduling: Scheduling = Scheduling.None;
+  @notifyChangedProperty
+  event: Event | null = null;
   folder: Folder;
   /** msg ID of the thread starter message */
   threadID: string | null = null;
@@ -180,11 +187,28 @@ export class EMail extends Message {
   async removeTagOnServer(tag: Tag) {
   }
 
+  async respondToInvitation(response: Responses): Promise<void> {
+    assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
+    throw new AbstractFunction();
+  }
+
+  protected async sendInvitationResponse(response: Responses): Promise<void> {
+    throw new Error("Implement me!"); // TODO
+  }
+
+  async loadEvent() {
+    assert(this.scheduling, "This is not an invitation or response");
+    assert(!this.event, "Event has already been loaded");
+    await this.mime ? this.parseMIME() : this.loadMIME();
+  }
+
   async parseMIME() {
     assert(this.mime?.length, "MIME source not yet downloaded");
     assert(this.mime instanceof Uint8Array, "MIME source should be a byte array");
     //console.log("MIME source", this.mime, new TextDecoder("utf-8").decode(this.mime));
-    let mail = await new PostalMIME().parse(this.mime);
+    // We may need access to internal PostalMIME data.
+    let postalMIME: any = new PostalMIME();
+    let mail = await postalMIME.parse(this.mime);
 
     // Headers
     /** TODO header.key returns Uint8Array
@@ -225,6 +249,12 @@ export class EMail extends Message {
     let html = sanitize.string(mail.html, null);
     if (html) {
       this.html = html;
+    }
+    for (let processor of EMailProcessorList.processors) {
+      if (processor.runOn != ProcessingStartOn.Parse) {
+        continue;
+      }
+      await processor.process(this, postalMIME);
     }
     this.needToLoadBody = false;
     this.haveCID = false;
@@ -571,7 +601,6 @@ async function addCID(html: string, email: EMail): Promise<string> {
   }
   return html;
 }
-
 
 export function setPersons(targetList: ArrayColl<PersonUID>, personList: { address: string, name: string }[]): void {
   targetList.clear();

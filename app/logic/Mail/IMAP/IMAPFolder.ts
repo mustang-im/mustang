@@ -98,17 +98,22 @@ export class IMAPFolder extends Folder {
    * But doesn't download their contents. @see downloadMessages() */
   async listMessages(): Promise<ArrayColl<IMAPEMail>>  {
     await this.readFolder();
-    if (this.countTotal === 0) {
-      return;
+    let lock = await this.listMessagesLock.lock();
+    try {
+      if (this.countTotal === 0) {
+        return;
+      }
+      let newMsgs: ArrayColl<IMAPEMail>;
+      if (await this.account.hasCapability("CONDSTORE")) {
+        newMsgs = await this.listChangedMessages();
+      } else {
+        newMsgs = await this.listAllUnknownMessages();
+        await this.updateNewFlags();
+      }
+      return newMsgs;
+    } finally {
+      lock.release();
     }
-    let newMsgs: ArrayColl<IMAPEMail>;
-    if (await this.account.hasCapability("CONDSTORE")) {
-      newMsgs = await this.listChangedMessages();
-    } else {
-      newMsgs = await this.listAllUnknownMessages();
-      await this.updateNewFlags();
-    }
-    return newMsgs;
   }
 
   /** Lists all messages in this folder that have not been fetched yet.
@@ -150,11 +155,16 @@ export class IMAPFolder extends Folder {
   /** Lists all messages in this folder.
    * But doesn't download their contents. @see downloadMessages() */
   protected async listAllMessages(): Promise<ArrayColl<IMAPEMail>> {
-    let { newMessages } = await this.fetchMessageList({ all: true }, {});
-    this.messages.addAll(newMessages);
-    await this.storage.saveFolderProperties(this);
-    await this.saveNewMsgs(newMessages);
-    return newMessages;
+    let lock = await this.listMessagesLock.lock();
+    try {
+      let { newMessages } = await this.fetchMessageList({ all: true }, {});
+      this.messages.addAll(newMessages);
+      await this.storage.saveFolderProperties(this);
+      await this.saveNewMsgs(newMessages);
+      return newMessages;
+    } finally {
+      lock.release();
+    }
   }
 
   /** Lists all messages in this folder that are new or updated since the last fetch.
@@ -173,15 +183,20 @@ export class IMAPFolder extends Folder {
    * But doesn't download their contents @see getNewMessages() */
   async listNewMessages(): Promise<ArrayColl<IMAPEMail>> {
     await this.readFolder();
-    if (this.countTotal === 0) {
-      return new ArrayColl();
+    let lock = await this.listMessagesLock.lock();
+    try {
+      if (this.countTotal === 0) {
+        return new ArrayColl();
+      }
+      let fromUID = this.highestUID ?? "1";
+      let { newMessages } = await this.fetchMessageList({ uid: fromUID + ":*" }, {});
+      this.messages.addAll(newMessages);
+      await this.saveNewMsgs(newMessages);
+      await this.storage.saveFolderProperties(this);
+      return newMessages;
+    } finally {
+      lock.release();
     }
-    let fromUID = this.highestUID ?? "1";
-    let { newMessages } = await this.fetchMessageList({ uid: fromUID + ":*" }, {});
-    this.messages.addAll(newMessages);
-    await this.saveNewMsgs(newMessages);
-    await this.storage.saveFolderProperties(this);
-    return newMessages;
   }
 
   protected async fetchMessageList(range: any, options: any): Promise<{ newMessages: ArrayColl<IMAPEMail>, updatedMessages: ArrayColl<IMAPEMail> }> {
@@ -368,8 +383,8 @@ export class IMAPFolder extends Folder {
   protected get highestUID(): number {
     let highest = 1;
     for (let msg of this.messages) {
-      if (msg.uid > highest) {
-        highest = msg.uid;
+      if ((msg as IMAPEMail).uid > highest) {
+        highest = (msg as IMAPEMail).uid;
       }
     }
     return highest;
@@ -481,21 +496,14 @@ export class IMAPFolder extends Folder {
   /** We received an event from the server that the
    * unread or flag status of an email changed */
   async messageFlagsChanged(uid: number | null, seq: number, flags: Set<string>, newModSeq?: number): Promise<void> {
+    // console.log("msg flags changed", "uid", uid, "seq", seq, "flags", flags, "modseq", newModSeq);
     if (this.deletions.has(uid)) {
       return;
     }
-
-    let message = uid && this.getEMailByUID(uid);
-    if (message) {
-      message.setFlagsLocal(flags);
-      await this.storage.saveMessageWritableProps(message);
-      return;
-    }
-
-    let updateMsgs = this.getEmailsAroundSeq(seq, 10, 10);
-    let fromUID = updateMsgs.first?.uid ?? 1;
-    let toUID = updateMsgs.last?.uid ?? this.highestUID;
-    let { updatedMessages } = await this.fetchFlags({ uid: fromUID + ":" + toUID }, {});
+    let query = uid && this.getEMailByUID(uid)
+      ? { uid: uid }
+      : { seq: seq };
+    let { updatedMessages } = await this.fetchFlags(query, {});
     await this.saveMsgUpdates(updatedMessages);
   }
 
@@ -521,7 +529,7 @@ export class IMAPFolder extends Folder {
     }
     let startUID = remainingUIDs.first;
     let endUID = remainingUIDs.last;
-    let deletedMsgs = this.messages.filter(msg => startUID < msg.uid && msg.uid < endUID);
+    let deletedMsgs = this.messages.filter((msg: IMAPEMail) => startUID < msg.uid && msg.uid < endUID);
     for (let deletedMsg of deletedMsgs) {
       //console.log(`Deleted msg ${deletedMsg.subject}`);
       await deletedMsg.deleteMessageLocally();

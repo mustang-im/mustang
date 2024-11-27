@@ -1,13 +1,23 @@
 import { EMail } from "../EMail";
 import type { ActiveSyncFolder } from "./ActiveSyncFolder";
 import { EASError } from "./ActiveSyncAccount";
+import { ActiveSyncEvent } from "../../Calendar/ActiveSync/ActiveSyncEvent";
 import { type Tag, getTagByName } from "../Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import { Scheduling, type Responses } from "../../Calendar/Invitation";
 import { ensureArray, assert, NotSupported } from "../../util/util";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
 import { parseOneAddress, parseAddressList, type ParsedMailbox } from "email-addresses";
+
+const ExchangeScheduling: Record<string, number> = {
+  "IPM.Schedule.Meeting.Resp.Pos": Scheduling.Accepted,
+  "IPM.Schedule.Meeting.Resp.Tent": Scheduling.Tentative,
+  "IPM.Schedule.Meeting.Resp.Neg": Scheduling.Declined,
+  "IPM.Schedule.Meeting.Request": Scheduling.Request,
+  "IPM.Schedule.Meeting.Canceled": Scheduling.Cancellation,
+};
 
 export class ActiveSyncEMail extends EMail {
   folder: ActiveSyncFolder;
@@ -59,6 +69,14 @@ export class ActiveSyncEMail extends EMail {
     setPersons(this.cc, wbxmljs.Cc);
     setPersons(this.bcc, wbxmljs.Bcc);
     this.contact = this.outgoing ? this.to.first : this.from;
+    this.scheduling = ExchangeScheduling[wbxmljs.MessageClass] || Scheduling.None;
+    /* Can't use this data because the description is missing.
+    if (wbxmljs.MeetingRequest) {
+      let event = new ActiveSyncEvent();
+      event.fromWBXML(wbxmljs.MeetingRequest);
+      this.event = event;
+    }
+    */
   }
 
   setFlags(wbxmljs: any) {
@@ -82,7 +100,7 @@ export class ActiveSyncEMail extends EMail {
         },
       },
     };
-    let response = await this.folder.queuedSyncRequest(data);
+    let response = await this.folder.makeSyncRequest(data);
     if (response.Responses) {
       throw new EASError("Sync", response.Responses.Change.Status);
     }
@@ -101,7 +119,7 @@ export class ActiveSyncEMail extends EMail {
         },
       },
     };
-    let response = await this.folder.queuedSyncRequest(data);
+    let response = await this.folder.makeSyncRequest(data);
     if (response.Responses) {
       throw new EASError("Sync", response.Responses.Change.Status);
     }
@@ -127,7 +145,7 @@ export class ActiveSyncEMail extends EMail {
         },
       },
     };
-    let response = await this.folder.queuedSyncRequest(data);
+    let response = await this.folder.makeSyncRequest(data);
     if (response.Responses) {
       throw new EASError("Sync", response.Responses.Delete.Status);
     }
@@ -155,10 +173,52 @@ export class ActiveSyncEMail extends EMail {
         },
       },
     };
-    let response = await this.folder.queuedSyncRequest(data);
+    let response = await this.folder.makeSyncRequest(data);
     if (response.Responses) {
       throw new EASError("Sync", response.Responses.Change.Status);
     }
+  }
+
+  async respondToInvitation(response: Responses): Promise<void> {
+    assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
+    let request = {
+      Request: {
+        UserResponse: response,
+        CollectionId: this.folder.id,
+        ReqeustId: this.serverID,
+      },
+    };
+    await this.folder.account.callEAS("MeetingResponse", request);
+    await super.sendInvitationResponse(response); // needs 16.x to do this automatically
+    await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
+  }
+
+  async loadEvent() {
+    assert(this.scheduling, "This is not an invitation or response");
+    assert(!this.event, "Event has already been loaded");
+    let request = {
+      Fetch: {
+        Store: "Mailbox",
+        ServerId: this.serverID,
+        CollectionId: this.folder.id,
+        Options: {
+          BodyPreference: {
+            Type: "2",
+          },
+        },
+      },
+    };
+    let result = await this.folder.account.callEAS("ItemOperations", request);
+    if (result.Response.Fetch.Status != "1") {
+      throw new EASError("ItemOperations", result.Response.Fetch.Status);
+    }
+    let event = new ActiveSyncEvent();
+    // When fetching an invitation or response, ActiveSync splits up the
+    // calendar-specific properties, so we need to merge them again.
+    event.fromWBXML({ ...result.Response.Fetch.Properties.MeetingRequest, ...result.Response.Fetch.Properties });
+    // ActiveSync only tells us the organiser, not the full list of attendees
+    setPersons(event.participants, result.Response.Fetch.Properties.MeetingRequest.Organizer);
+    this.event = event;
   }
 }
 

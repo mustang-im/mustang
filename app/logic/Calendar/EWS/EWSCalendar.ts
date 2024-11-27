@@ -165,6 +165,8 @@ export class EWSCalendar extends Calendar {
             }, {
               FieldURI: "calendar:IsAllDayEvent",
             }, {
+              FieldURI: "calendar:MyResponseType",
+            }, {
               FieldURI: "calendar:RequiredAttendees",
             }, {
               FieldURI: "calendar:OptionalAttendees",

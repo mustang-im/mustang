@@ -113,22 +113,30 @@
       <Checkbox label={$t`Alarm`} checked={!!event.alarm} />
       <hbox class="spacer" />
       <hbox class="buttons">
-        <Button
-          label={$t`Delete Event`}
-          classes="delete"
-          icon={DeleteIcon}
-          iconSize="16px"
-          disabled={!event.dbID && !event.parentEvent}
-          onClick={onDelete}
-          />
-        <hbox class="spacer" />
-        <Button
-          label={$t`Save`}
-          icon={SaveIcon}
-          iconSize="16px"
-          disabled={!canSave}
-          onClick={onSave}
-          />
+        {#if event.response == ResponseType.Unknown || event.response == ResponseType.Organizer}
+          <Button
+            label={$t`Delete Event`}
+            classes="delete"
+            icon={DeleteIcon}
+            iconSize="16px"
+            disabled={!event.dbID && !event.parentEvent}
+            onClick={onDelete}
+            />
+          <hbox class="spacer" />
+          <Button
+            label={$t`Save`}
+            icon={SaveIcon}
+            iconSize="16px"
+            disabled={!canSave}
+            onClick={onSave}
+            />
+        {:else}
+          <Button label={$t`Accept`} onClick={onAccept} />
+          <hbox class="spacer" />
+          <Button label={$t`Decline`} onClick={onDecline} />
+          <hbox class="spacer" />
+          <Button label={$t`Tentative`} onClick={onTentative} />
+        {/if}
       </hbox>
     </vbox>
   </hbox>
@@ -139,6 +147,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { Frequency, RecurrenceRule, type RecurrenceInit } from "../../../logic/Calendar/RecurrenceRule";
   import { EventEditMustangApp, calendarMustangApp } from "../CalendarMustangApp";
+  import { Scheduling, ResponseType, type Responses } from "../../../logic/Calendar/Invitation";
   import PersonsAutocomplete from "../../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
   import PersonAvailability from "./PersonAvailability.svelte";
   import DateInput from "./DateInput.svelte";
@@ -308,6 +317,19 @@
     await event.deleteFromServer();
     await event.deleteIt();
     onClose();
+  }
+
+  function respond(response: Responses) {
+    event.respondToInvitation(response).catch(backgroundError);
+  }
+  function onAccept() {
+    respond(Scheduling.Accepted);
+  }
+  function onTentative() {
+    respond(Scheduling.Tentative);
+  }
+  function onDecline() {
+    respond(Scheduling.Declined);
   }
 
   function onClose() {

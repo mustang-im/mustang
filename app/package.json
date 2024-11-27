@@ -2,7 +2,7 @@
   "name": "mustang-frontend",
   "description": "Mustang UI",
   "private": true,
-  "version": "0.6.13-dev",
+  "version": "0.6.15-dev",
   "scripts": {
     "dev": "npm run l10n:compile && vite",
     "build": "npm run l10n:compile && vite build",
@@ -47,6 +47,7 @@
     "lucide-svelte": "^0.368.0",
     "markdown-it": "^14.1.0",
     "matrix-js-sdk": "^30.0.1",
+    "node-ical": "^0.20.1",
     "olm": "https://packages.matrix.org/npm/olm/olm-3.2.1.tgz",
     "password-salt": "^5.0.1",
     "pkce-challenge": "^4.1.0",

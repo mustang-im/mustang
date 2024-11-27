@@ -7,7 +7,7 @@ export default class EWSCreateItemRequest {
     Object.assign(this.m$CreateItem, attributes);
   }
 
-  addField(type: string, key: string, value: any, FieldURI: string, FieldIndex?: string) {
+  addField(type: string, key: string, value: any, FieldURI?: string, FieldIndex?: string) {
     if (value != null) {
       let item = (this.m$CreateItem.m$Items["t$" + type] ||= {});
       if (FieldIndex) {

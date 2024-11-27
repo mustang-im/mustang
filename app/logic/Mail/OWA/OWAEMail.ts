@@ -1,13 +1,30 @@
 import { EMail } from "../EMail";
 import type { OWAFolder } from "./OWAFolder";
+import { OWAEvent } from "../../Calendar/OWA/OWAEvent";
 import { Tag, getTagByName } from "../Tag";
+import OWACreateItemRequest from "./OWACreateItemRequest";
 import OWADeleteItemRequest from "./OWADeleteItemRequest";
 import OWAUpdateItemRequest from "./OWAUpdateItemRequest";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import { Scheduling, type Responses } from "../../Calendar/Invitation";
 import { appGlobal } from "../../app";
 import { base64ToArrayBuffer, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
+
+const ExchangeScheduling: Record<string, number> = {
+  "IPM.Schedule.Meeting.Resp.Pos": Scheduling.Accepted,
+  "IPM.Schedule.Meeting.Resp.Tent": Scheduling.Tentative,
+  "IPM.Schedule.Meeting.Resp.Neg": Scheduling.Declined,
+  "IPM.Schedule.Meeting.Request": Scheduling.Request,
+  "IPM.Schedule.Meeting.Canceled": Scheduling.Cancellation,
+};
+
+const ResponseTypes: Record<Responses, string> = {
+  [Scheduling.Accepted]: "AcceptItem",
+  [Scheduling.Tentative]: "TentativelyAcceptItem",
+  [Scheduling.Declined]: "DeclineItem",
+};
 
 export class OWAEMail extends EMail {
   folder: OWAFolder;
@@ -82,6 +99,7 @@ export class OWAEMail extends EMail {
     setPersons(this.cc, json.CcRecipients);
     setPersons(this.bcc, json.BccRecipients);
     this.contact = this.outgoing ? this.to.first : this.from;
+    this.scheduling = ExchangeScheduling[json.ItemClass] || Scheduling.None;
   }
 
   setFlags(json) {
@@ -160,6 +178,91 @@ export class OWAEMail extends EMail {
     });
     request.addField("Message", "Categories", this.tags.contents.map(tag => tag.name), "Categories");
     await this.folder.account.callOWA(request);
+  }
+
+  async respondToInvitation(response: Responses): Promise<void> {
+    assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
+    let request = new OWACreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
+    request.addField(ResponseTypes[response], "ReferenceItemId", {
+      __type: "ItemId:#Exchange",
+      Id: this.itemID,
+    });
+    await this.folder.account.callOWA(request);
+    await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
+  }
+
+  async loadEvent() {
+    assert(this.scheduling, "This is not an invitation or response");
+    assert(!this.event, "Event has already been loaded");
+    let request = {
+      __type: "GetItemJsonRequest:#Exchange",
+      Header: {
+        __type: "JsonRequestHeaders:#Exchange",
+        RequestServerVersion: "Exchange2013",
+      },
+      Body: {
+        __type: "GetItemRequest:#Exchange",
+        ItemShape: {
+          __type: "ItemResponseShape:#Exchange",
+          BaseShape: "Default",
+          BodyType: "Best",
+          AdditionalProperties: [{
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "item:Body",
+          }, {
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "item:ReminderIsSet",
+          }, {
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "item:ReminderMinutesBeforeStart",
+          }, {
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "item:LastModifiedTime",
+          }, {
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "item:TextBody",
+          }, {
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "calendar:IsAllDayEvent",
+          }, {
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "calendar:EnhancedLocation",
+          }, {
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "calendar:MyResponseType",
+          }, {
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "calendar:RequiredAttendees",
+          }, {
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "calendar:OptionalAttendees",
+          }, {
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "calendar:Recurrence",
+          }, {
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "calendar:ModifiedOccurrences",
+          }, {
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "calendar:DeletedOccurrences",
+          }, {
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "calendar:UID",
+          }, {
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "calendar:RecurrenceId",
+          }],
+        },
+        ItemIds: [{
+          __type: "ItemId:#Exchange",
+          Id: this.itemID,
+        }],
+      },
+    };
+    let result = await this.folder.account.callOWA(request);
+    let event = new OWAEvent();
+    event.fromJSON(result.Items[0]);
+    this.event = event;
   }
 }
 

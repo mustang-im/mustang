@@ -4,13 +4,14 @@ import { EASError, type ActiveSyncAccount, type ActiveSyncPingable } from "../..
 import { kMaxCount } from "../../Mail/ActiveSync/ActiveSyncFolder";
 import { ensureArray, NotSupported } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
+import { Lock } from "../../util/Lock";
 
 export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPingable {
   readonly protocol: string = "addressbook-activesync";
   readonly persons: ArrayColl<ActiveSyncPerson>;
   account: ActiveSyncAccount;
-  syncKeyBusy: Promise<any> | null;
   readonly folderClass = "Contacts";
+  protected requestLock = new Lock();
 
   get serverID() {
     return new URL(this.url).searchParams.get("serverID");
@@ -28,75 +29,52 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
   }
 
   /**
-   * Queues a `Sync` (synchronization) request locally. It waits until the server is available.
-   * @param data information about the request
-   * @param responseFunc
-   * - It performs actions using the parameter `response.Collections.Collection`.
-   * - It is called when the response is not null.
-   * - It will be repeatedly called while `response.Collections.Collection.MoreAvailable` is 
-   * equal to an empty string.
-   * - It may be called many times.
-   */
-  async queuedSyncRequest(data: any, responseFunc?: (response: any) => Promise<void>): Promise<any> {
-    if (!this.syncState && !this.syncKeyBusy) try {
-      // First request must be an empty request.
-      this.syncKeyBusy = this.makeSyncRequest();
-      await this.syncKeyBusy;
-    } finally {
-      this.syncKeyBusy = null;
-    }
-    while (this.syncKeyBusy) try {
-      await this.syncKeyBusy;
-    } catch (ex) {
-      // If the function currently holding the sync key throws, we don't care.
-    }
-    try {
-      this.syncKeyBusy = this.makeSyncRequest(data, responseFunc);
-      return await this.syncKeyBusy;
-    } finally {
-      this.syncKeyBusy = null;
-    }
-  }
-
-  /**
    * Makes a `Sync` (synchronization) request to the server.
-   * You probably want to call it using the wrapper `queuedSyncRequest()`.
    * @param data information about the request
    * @param responseFunc
    * - It performs actions using the parameter `response.Collections.Collection`.
    * - It is called when the response is not null.
-   * - It will be repeatedly called while `response.Collections.Collection.MoreAvailable` is 
+   * - It will be repeatedly called while `response.Collections.Collection.MoreAvailable` is
    * equal to an empty string.
    * - It may be called many times.
    */
-  protected async makeSyncRequest(data?: any, responseFunc?: (response: any) => Promise<void>): Promise<any> {
-    let response;
-    do {
-      let request = {
-        Collections: {
-          Collection: Object.assign({
-            SyncKey: this.syncState || "0",
-            CollectionId: this.serverID,
-          }, data),
-        },
-      };
-      response = await this.account.callEAS("Sync", request);
-      if (!response) {
-        return null;
-      }
-      if (response.Collections.Collection.Status == "3") {
-        // Out of sync.
-        this.syncState = null;
+  async makeSyncRequest(data?: any, responseFunc?: (response: any) => Promise<void>): Promise<any> {
+    if (!this.syncState && !this.requestLock.haveWaiting && data != undefined) {
+      // First request must be an empty request
+      await this.makeSyncRequest();
+    }
+    let lock = await this.requestLock.lock();
+    try {
+      let response;
+      do {
+        let request = {
+          Collections: {
+            Collection: Object.assign({
+              SyncKey: this.syncState || "0",
+              CollectionId: this.serverID,
+            }, data),
+          },
+        };
+        response = await this.account.callEAS("Sync", request);
+        if (!response) {
+          return null;
+        }
+        if (response.Collections.Collection.Status == "3") {
+          // Out of sync.
+          this.syncState = null;
+          await this.save();
+        }
+        if (response.Collections.Collection.Status != "1") {
+          throw new EASError("Sync", response.Collections.Collection.Status);
+        }
+        await responseFunc?.(response.Collections.Collection);
+        this.syncState = response.Collections.Collection.SyncKey;
         await this.save();
-      }
-      if (response.Collections.Collection.Status != "1") {
-        throw new EASError("Sync", response.Collections.Collection.Status);
-      }
-      responseFunc?.(response.Collections.Collection);
-      this.syncState = response.Collections.Collection.SyncKey;
-      await this.save();
-    } while (responseFunc && response.Collections.Collection.MoreAvailable == "");
-    return response.Collections.Collection;
+      } while (responseFunc && response.Collections.Collection.MoreAvailable == "");
+      return response.Collections.Collection;
+    } finally {
+      lock.release();
+    }
   }
 
   async listContacts() {
@@ -112,7 +90,7 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
         },
       },
     };
-    await this.queuedSyncRequest(data, async response => {
+    await this.makeSyncRequest(data, async response => {
       for (let item of ensureArray(response.Commands?.Add).concat(ensureArray(response.Commands?.Change))) {
         try {
           let person = this.getPersonByServerID(item.ServerId);

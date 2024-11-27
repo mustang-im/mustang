@@ -41,70 +41,75 @@ export class EWSFolder extends Folder {
 
   async listMessages(): Promise<ArrayColl<EWSEMail>> {
     await this.readFolder();
-    return this.updateChangedMessages();
+    return await this.updateChangedMessages();
   }
 
   /** Uses the sync state to get just the messages that changed since last time.
    * Assumes previously known messages have already been loaded from the DB.
    * @returns the new messages (not yet downloaded) */
   async updateChangedMessages(): Promise<ArrayColl<EWSEMail>> {
-    let sync = {
-      m$SyncFolderItems: {
-        m$ItemShape: {
-          t$BaseShape: "IdOnly",
-          t$AdditionalProperties: {
-            t$FieldURI: [{
-              FieldURI: "message:IsRead",
-            }, {
-              FieldURI: "item:IsDraft",
-            }, {
-              FieldURI: "item:Categories",
-            }, {
-              FieldURI: "item:Flag",
-            }],
-            t$ExtendedFieldURI: {
-              PropertyTag: "0x1080",
-              PropertyType: "Integer",
+    let lock = await this.listMessagesLock.lock();
+    try {
+      let sync = {
+        m$SyncFolderItems: {
+          m$ItemShape: {
+            t$BaseShape: "IdOnly",
+            t$AdditionalProperties: {
+              t$FieldURI: [{
+                FieldURI: "message:IsRead",
+              }, {
+                FieldURI: "item:IsDraft",
+              }, {
+                FieldURI: "item:Categories",
+              }, {
+                FieldURI: "item:Flag",
+              }],
+              t$ExtendedFieldURI: {
+                PropertyTag: "0x1080",
+                PropertyType: "Integer",
+              },
             },
           },
-        },
-        m$SyncFolderId: {
-          t$FolderId: {
-            Id: this.id,
+          m$SyncFolderId: {
+            t$FolderId: {
+              Id: this.id,
+            },
           },
-        },
-        m$SyncState: this.syncState,
-        m$MaxChangesReturned: kMaxCount,
-      }
-    };
-    let newMsgs = new ArrayColl<EWSEMail>();
-    let result: any = { IncludesLastItemInRange: "false" };
-    while (result.IncludesLastItemInRange === "false") {
-      try {
-        result = await this.account.callEWS(sync);
-      } catch (ex) {
-        if (ex.error?.ResponseCode == 'ErrorInvalidSyncStateData') {
-          this.syncState = null;
-          await this.storage.saveFolder(this);
-          sync.m$SyncFolderItems.m$SyncState = null;
-          result = await this.account.callEWS(sync);
-        } else {
-          throw ex;
+          m$SyncState: this.syncState,
+          m$MaxChangesReturned: kMaxCount,
         }
+      };
+      let newMsgs = new ArrayColl<EWSEMail>();
+      let result: any = { IncludesLastItemInRange: "false" };
+      while (result.IncludesLastItemInRange === "false") {
+        try {
+          result = await this.account.callEWS(sync);
+        } catch (ex) {
+          if (ex.error?.ResponseCode == 'ErrorInvalidSyncStateData') {
+            this.syncState = null;
+            await this.storage.saveFolder(this);
+            sync.m$SyncFolderItems.m$SyncState = null;
+            result = await this.account.callEWS(sync);
+          } else {
+            throw ex;
+          }
+        }
+        let newMessageIDs = (await Promise.all([
+          this.forEachSyncChange(result.Changes.ReadFlagChange, this.processSyncReadFlagChange, true),
+          this.forEachSyncChange(result.Changes.Update, this.processSyncUpdate, false),
+          this.forEachSyncChange(result.Changes.Create, this.processSyncUpdate, false),
+        ])).flat();
+        let newMsgsInIteration = await this.getNewMessageHeaders(newMessageIDs);
+        this.messages.addAll(newMsgsInIteration);
+        newMsgs.addAll(newMsgsInIteration);
+        await this.forEachSyncChange(result.Changes.Delete, this.processSyncDelete, true);
+        this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
+        await this.storage.saveFolder(this);
       }
-      let newMessageIDs = (await Promise.all([
-        this.forEachSyncChange(result.Changes.ReadFlagChange, this.processSyncReadFlagChange, true),
-        this.forEachSyncChange(result.Changes.Update, this.processSyncUpdate, false),
-        this.forEachSyncChange(result.Changes.Create, this.processSyncUpdate, false),
-      ])).flat();
-      let newMsgsInIteration = await this.getNewMessageHeaders(newMessageIDs);
-      this.messages.addAll(newMsgsInIteration);
-      newMsgs.addAll(newMsgsInIteration);
-      await this.forEachSyncChange(result.Changes.Delete, this.processSyncDelete, true);
-      this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
-      await this.storage.saveFolder(this);
+      return newMsgs;
+    } finally {
+      lock.release();
     }
-    return newMsgs;
   }
 
   protected async forEachSyncChange(changes: any[], eachCallback, isDirectList: boolean): Promise<any[]> {
@@ -142,70 +147,75 @@ export class EWSFolder extends Folder {
    * Assumes previously known messages have already been loaded from the DB.
    * @returns the new messages */
   async listAllMessages(): Promise<ArrayColl<EWSEMail>> {
-    let allMsgs = new ArrayColl<EWSEMail>();
-    let newMsgs = new ArrayColl<EWSEMail>();
-    let request = {
-      m$FindItem: {
-        m$ItemShape: {
-          t$BaseShape: "IdOnly",
-          t$AdditionalProperties: {
-            t$FieldURI: [{
-              FieldURI: "message:IsRead",
-            }, {
-              FieldURI: "item:IsDraft",
-            }, {
-              FieldURI: "item:Categories",
-            }, {
-              FieldURI: "item:Flag",
-            }],
-            t$ExtendedFieldURI: {
-              PropertyTag: "0x1080",
-              PropertyType: "Integer",
+    let lock = await this.listMessagesLock.lock();
+    try {
+      let allMsgs = new ArrayColl<EWSEMail>();
+      let newMsgs = new ArrayColl<EWSEMail>();
+      let request = {
+        m$FindItem: {
+          m$ItemShape: {
+            t$BaseShape: "IdOnly",
+            t$AdditionalProperties: {
+              t$FieldURI: [{
+                FieldURI: "message:IsRead",
+              }, {
+                FieldURI: "item:IsDraft",
+              }, {
+                FieldURI: "item:Categories",
+              }, {
+                FieldURI: "item:Flag",
+              }],
+              t$ExtendedFieldURI: {
+                PropertyTag: "0x1080",
+                PropertyType: "Integer",
+              },
             },
           },
-        },
-        m$IndexedPageItemView: {
-          BasePoint: "Beginning",
-          Offset: 0,
-        },
-        m$ParentFolderIds: {
-          t$FolderId: {
-            Id: this.id,
+          m$IndexedPageItemView: {
+            BasePoint: "Beginning",
+            Offset: 0,
           },
+          m$ParentFolderIds: {
+            t$FolderId: {
+              Id: this.id,
+            },
+          },
+          Traversal: "Shallow",
         },
-        Traversal: "Shallow",
-      },
-    };
-    let result: any = { RootFolder: { IncludesLastItemInRange: "false" } };
-    while (result?.RootFolder?.IncludesLastItemInRange === "false") {
-      result = await this.account.callEWS(request);
-      if (!result?.RootFolder?.Items) {
-        // This folder is empty.
-        break;
-      }
-      request.m$FindItem.m$IndexedPageItemView.Offset = sanitize.integer(result.RootFolder.IndexedPagingOffset);
-      let messages = getEWSItems(result.RootFolder.Items);
-      let newMessageIDs = [];
-      for (let message of messages) {
-        let email = this.getEmailByItemID(sanitize.nonemptystring(message.ItemId.Id));
-        if (email) {
-          email.setFlags(message);
-          await this.storage.saveMessageWritableProps(email);
-          allMsgs.add(email);
-        } else {
-          newMessageIDs.push(message.ItemId);
+      };
+      let result: any = { RootFolder: { IncludesLastItemInRange: "false" } };
+      while (result?.RootFolder?.IncludesLastItemInRange === "false") {
+        result = await this.account.callEWS(request);
+        if (!result?.RootFolder?.Items) {
+          // This folder is empty.
+          break;
         }
+        request.m$FindItem.m$IndexedPageItemView.Offset = sanitize.integer(result.RootFolder.IndexedPagingOffset);
+        let messages = getEWSItems(result.RootFolder.Items);
+        let newMessageIDs = [];
+        for (let message of messages) {
+          let email = this.getEmailByItemID(sanitize.nonemptystring(message.ItemId.Id));
+          if (email) {
+            email.setFlags(message);
+            await this.storage.saveMessageWritableProps(email);
+            allMsgs.add(email);
+          } else {
+            newMessageIDs.push(message.ItemId);
+          }
+        }
+        let newMsgsInIteration = await this.getNewMessageHeaders(newMessageIDs);
+        newMsgs.addAll(newMsgsInIteration);
       }
-      let newMsgsInIteration = await this.getNewMessageHeaders(newMessageIDs);
-      newMsgs.addAll(newMsgsInIteration);
-    }
 
-    for (let email of this.messages.subtract(allMsgs)) {
-      await this.storage.deleteMessage(email);
+      for (let email of this.messages.subtract(allMsgs)) {
+        await this.storage.deleteMessage(email);
+      }
+      allMsgs.addAll(newMsgs);
+      this.messages.replaceAll(allMsgs);
+      return newMsgs;
+    } finally {
+      lock.release();
     }
-    allMsgs.addAll(newMsgs);
-    this.messages.replaceAll(allMsgs);
-    return newMsgs;
   }
 
   async getNewMessageHeaders(newMessageIDs: Array<{ ID: string }>): Promise<ArrayColl<EWSEMail>> {
@@ -234,6 +244,8 @@ export class EWSFolder extends Folder {
                 FieldURI: "message:CcRecipients",
               }, {
                 FieldURI: "message:BccRecipients",
+              }, {
+                FieldURI: "item:ItemClass",
               /* Non-MIME @see EWSEMail.bodyAndAttachmentsFromXML()
               }, {
                 FieldURI: "item:Attachments",

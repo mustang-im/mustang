@@ -3,7 +3,8 @@ import type { Attachment } from "../Attachment";
 import type { EMail } from "../EMail";
 import { SQLEMail } from "../SQL/SQLEMail";
 import { appGlobal } from "../../app";
-import { sanitizeFilename, fileExtensionForMIMEType, assert } from "../../util/util";
+import { fileExtensionForMIMEType, assert } from "../../util/util";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 let filesDir: string = null;
 
@@ -79,11 +80,11 @@ export class RawFilesAttachment implements MailContentStorage {
     let fileparts = attachment.filename.split(".");
     let ext = fileparts.length > 1 ? fileparts.pop() : fileExtensionForMIMEType(attachment.mimeType);
     let filename = fileparts.join(".") + "-" + id + "." + ext;
-    return `${dir}/${sanitizeFilename(filename)}`;
+    return `${dir}/${sanitize.filename(filename, "unknownAttachment")}`;
   }
 
   static async getDirPath(email: EMail): Promise<string> {
     filesDir ??= await appGlobal.remoteApp.getFilesDir();
-    return `${filesDir}/files/email/${sanitizeFilename(email.from.emailAddress.replace("@", "-"))}/${email.dbID}-${sanitizeFilename(email.subject)}`;
+    return `${filesDir}/files/email/${sanitize.filename(email.from?.emailAddress?.replace("@", "-"), "unknownPerson")}/${email.dbID}-${sanitize.filename(email.subject, "unknownSubject")}`;
   }
 }

@@ -1,5 +1,5 @@
 <hbox class="date-range-header">
-  <hbox class="date-range">{simpleDateString(date)}</hbox>
+  <hbox class="date-range">{@html htmlMonthYear(date)}</hbox>
   <Button classes="previous-button" label={$t`Previous ${dateInterval} days`} icon={ChevronLeftIcon} on:click={pagePrevious} iconSize="16px" plain iconOnly />
   <Button classes="next-button" label={$t`Next ${dateInterval} days`} icon={ChevronRightIcon} on:click={pageNext} iconSize="16px" plain iconOnly />
 </hbox>
@@ -22,12 +22,18 @@
     date = date;
   }
 
-  function simpleDateString(date) {
+  function monthYear(date): string {
     return date.toLocaleDateString(getUILocale(), {
       year: "numeric",
       month: "long",
       // day: dateInterval < 28 ? "numeric" : undefined,
     });
+  }
+
+  function htmlMonthYear(date): string {
+    let str = monthYear(date);
+    let year = date.getFullYear();
+    return str.replace(year, `&nbsp;<span class="year">${year}</span>&nbsp;`);
   }
 </script>
 

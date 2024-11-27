@@ -18,13 +18,13 @@ export class SQLEvent extends Event {
         INSERT INTO event (
           title, descriptionText, descriptionHTML,
           startTime, endTime,
-          calUID, pID, calendarID,
+          calUID, responseToOrganizer, pID, calendarID,
           recurrenceRule, recurrenceMasterEventID,
           recurrenceStartTime, recurrenceIsException
         ) VALUES (
           ${event.title}, ${event.descriptionText}, ${event.descriptionHTML},
           ${event.startTime.toISOString()}, ${event.endTime.toISOString()},
-          ${event.calUID}, ${event.pID}, ${event.calendar?.dbID},
+          ${event.calUID}, ${event.response}, ${event.pID}, ${event.calendar?.dbID},
           ${event.recurrenceRule?.getCalString()}, ${event.parentEvent?.dbID},
           ${event.recurrenceStartTime?.toISOString()},
           ${+!!event.parentEvent?.dbID}
@@ -39,6 +39,7 @@ export class SQLEvent extends Event {
           startTime = ${event.startTime.toISOString()},
           endTime = ${event.endTime.toISOString()},
           calUID = ${event.calUID},
+          responseToOrganizer = ${event.response},
           pID = ${event.pID},
           calendarID = ${event.calendar?.dbID},
           recurrenceRule = ${event.recurrenceRule?.getCalString()},
@@ -106,7 +107,7 @@ export class SQLEvent extends Event {
         SELECT
           title, descriptionText, descriptionHTML,
           startTime, endTime,
-          calUID, pID, calendarID,
+          calUID, responseToOrganizer, pID, calendarID,
           recurrenceRule, recurrenceMasterEventID, recurrenceStartTime
         FROM event
         WHERE id = ${dbID}
@@ -122,6 +123,7 @@ export class SQLEvent extends Event {
     event.startTime = sanitize.date(row.startTime);
     event.endTime = sanitize.date(row.endTime, event.startTime);
     event.calUID = row.calUID;
+    event.response = sanitize.integerRange(row.responseToOrganizer, 0, 5);
     event.pID = row.pID;
     if (row.calendarID) {
       let calendarID = sanitize.integer(row.calendarID, null);
@@ -191,7 +193,7 @@ export class SQLEvent extends Event {
       SELECT
         title, descriptionText, descriptionHTML,
         startTime, endTime,
-        calUID, pID, id,
+        calUID, responseToOrganizer, pID, id,
         recurrenceRule, recurrenceMasterEventID, recurrenceStartTime
       FROM event
       WHERE calendarID = ${calendar.dbID}

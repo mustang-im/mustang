@@ -112,6 +112,9 @@ class Sanitize {
     return str;
   }
 
+  // EAI like ндрис@уайлддк.орг need to pass
+  regexpEMailAddress = /^[\p{Letter}\p{Number}\-+_\.]+@[\p{Letter}\p{Number}\-\.]+\.(?:[\p{Letter}]+|xn--[a-z0-9]+)$/u;
+
   /**
    * Email address foo@bar.com
    */
@@ -120,7 +123,7 @@ class Sanitize {
       return haveError("Missing email address", unchecked, fallback);
     }
     let str = String(unchecked);
-    if (!/^[a-zA-Z0-9\-%+_\.\*]+@[a-z0-9\-\.]+\.[a-z]+$/i.test(str)) {
+    if (!this.regexpEMailAddress.test(str)) {
       return haveError("Not an email address", unchecked, fallback);
     }
     return str.toLowerCase();
@@ -132,6 +135,23 @@ class Sanitize {
     let user = this.nonemptystring(sp[0]); // only check, var unused
     let domain = this.hostname(sp[1]); // only check, var unused
     */
+  }
+
+  /** Removes potentially dangerous parts of the file name, e.g.
+   * \ / : . ' " ! ? * |
+   * See <https://kizu514.com/blog/forbidden-file-names-on-windows-10/>
+   * but there are many others. */
+  filename(unchecked: string | null, fallback: string | null | Symbol = throwErrors): string {
+    let filename = this.nonemptystring(unchecked, fallback);
+    filename = filename.replace(/[^\p{Letter}\p{Number}\.\-\_] /g, "").trim();
+    if (!filename) {
+      return haveError("Filename cannot have punctuation and control characters", unchecked, fallback);
+    }
+    const kDeviceNames = ['NUL', 'AUX', 'PRN', 'CON', 'COM', 'LPT', 'COM1', 'LPT1', 'COM2', 'LPT2'];
+    if (filename.length < 5 && kDeviceNames.includes(filename)) {
+      return haveError("Filename cannot be a Windows device name", unchecked, fallback);
+    }
+    return filename;
   }
 
   /**

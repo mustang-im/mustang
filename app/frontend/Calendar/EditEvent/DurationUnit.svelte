@@ -1,4 +1,4 @@
-<select id="duration-unit" bind:value={unitStr}>
+<select id="duration-unit" bind:value={unitStr} {disabled}>
   <option value="60">{$t`Minutes`}</option>
   <option value="3600">{$t`Hours`}</option>
   <option value="86400">{$t`Days`}</option>
@@ -9,6 +9,7 @@
 
   export let durationInSeconds: number; /* in/out */
   export let durationInUnit: number; /* in/out */
+  export let disabled = false;
 
   let unitStr: string;
   $: unitInSeconds = parseInt(unitStr);

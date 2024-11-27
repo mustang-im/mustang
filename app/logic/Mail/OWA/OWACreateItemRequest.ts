@@ -13,7 +13,7 @@ export default class OWACreateItemRequest {
     Object.assign(this.Body, attributes);
   }
 
-  addField(type: string, key: string, value: any, FieldURI: string) {
+  addField(type: string, key: string, value: any, FieldURI?: string) {
     let item = this.Body.Items[0];
     item.__type = type + ":#Exchange";
     if (value != null) {

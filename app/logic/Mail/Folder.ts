@@ -4,6 +4,7 @@ import type { TreeItem } from "../../frontend/Shared/FastTree";
 import { EMailCollection } from "./Store/EMailCollection";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, Collection } from 'svelte-collections';
+import { Lock } from "../util/Lock";
 import { assert, AbstractFunction } from "../util/util";
 import { gt } from "../../l10n/l10n";
 
@@ -31,6 +32,8 @@ export class Folder extends Observable implements TreeItem<Folder> {
    * EWS: Sync state, as string
    */
   syncState: number | string | null = null;
+  protected readFolderLock = new Lock();
+  protected listMessagesLock = new Lock();
 
   constructor(account: MailAccount) {
     super();
@@ -54,7 +57,27 @@ export class Folder extends Observable implements TreeItem<Folder> {
   }
 
   protected async readFolder() {
-    await this.messages.readFolder();
+    let lock = await this.readFolderLock.lock();
+    try {
+      if (lock.wasWaiting) {
+        return;
+      }
+      if (this.messages.hasItems) {
+        return;
+      }
+      if (!this.dbID) {
+        await this.save();
+      }
+      let log = "Reading msgs from DB, for folder " + this.account.name + " " + this.path;
+      console.time(log + " first 200");
+      await this.storage.readAllMessagesMainProperties(this, 200);
+      console.timeEnd(log + " first 200");
+      console.time(log);
+      await this.storage.readAllMessagesMainProperties(this, null, 200);
+      console.timeEnd(log);
+    } finally {
+      lock.release();
+    }
   }
 
   /** Gets the metadata of the emails in this folder.

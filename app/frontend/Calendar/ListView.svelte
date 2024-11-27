@@ -25,8 +25,8 @@
   export let events: Collection<Event>;
 
   $: filteredEvents = globalSearchTerm
-    ? events.filter(ev => ev.title.toLowerCase().includes($globalSearchTerm) ||
-      ev.descriptionText.toLowerCase().includes($globalSearchTerm))
+    ? events.filter(ev => ev.title?.toLowerCase().includes($globalSearchTerm) ||
+      ev.descriptionText?.toLowerCase().includes($globalSearchTerm))
     : events;
 </script>
 

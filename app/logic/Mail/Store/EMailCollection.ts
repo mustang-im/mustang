@@ -1,29 +1,15 @@
-import { ArrayColl } from 'svelte-collections';
+import { ArrayColl, SortedCollection } from 'svelte-collections';
 import { PromiseAllDone } from '../../util/PromiseAllDone';
 import type { EMail } from '../EMail';
 import type { Folder } from '../Folder';
 
 export class EMailCollection<T extends EMail> extends ArrayColl<T> {
   folder: Folder;
+  sortFunc: (a: T, b: T) => boolean;
 
   constructor(folder: Folder) {
     super();
     this.folder = folder;
-  }
-
-  async readFolder() {
-    if (!this.folder.dbID) {
-      await this.folder.save();
-    }
-    if (!this.hasItems) {
-      let log = "Reading msgs from DB, for folder " + this.folder.account.name + " " + this.folder.path;
-      console.time(log + " first 200");
-      await this.folder.storage.readAllMessagesMainProperties(this.folder, 200);
-      console.timeEnd(log + " first 200");
-      console.time(log);
-      await this.folder.storage.readAllMessagesMainProperties(this.folder, null, 200);
-      console.timeEnd(log);
-    }
   }
 
   getIndexRange(i: number, length: number): T[] {
@@ -46,7 +32,30 @@ export class EMailCollection<T extends EMail> extends ArrayColl<T> {
     return emails;
   }
 
-  sortBy(sortFunc: any) {
-    return this;
+  sortBy(sortValueFunc: (item: T) => any): SortedCollection<T> {
+    this.sortFunc = (a, b) => sortValueFunc(a) > sortValueFunc(b);
+    this.replaceAll(this.contents.sort((a, b) => sortValueFunc(a) > sortValueFunc(b) ? 1 : sortValueFunc(a) < sortValueFunc(b) ? -1 : 0));
+    return this as any as SortedCollection<T>;
+  }
+
+  protected _addWithoutObserver(item: T) {
+    let array = (this as any)._array as T[];
+    array.splice(this.sortedIndex(item), 0, item);
+  }
+
+  protected sortedIndex(value: T): number {
+    let array = (this as any)._array as T[];
+    let low = 0;
+    let high = array.length;
+
+    while (low < high) {
+      let mid = (low + high) >>> 1;
+      if (this.sortFunc(value, array[mid])) { // value > array[mid]
+        low = mid + 1;
+      } else {
+        high = mid;
+      }
+    }
+    return low;
   }
 }

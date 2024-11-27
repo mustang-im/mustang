@@ -6,7 +6,7 @@
 -->
 <vbox>
   {#each items as item}
-    <Radio {...item} checked={item.value === group} on:change={() => group = item.value} />
+    <Radio {...item} checked={item.value === group} on:change={() => group = item.value} {disabled} />
   {/each}
 </vbox>
 
@@ -14,4 +14,5 @@
   import { Radio } from "@svelteuidev/core";
   export let items = [];
   export let group;
+  export let disabled = false;
 </script>

@@ -3,12 +3,19 @@ import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { EWSCalendar } from "./EWSCalendar";
 import WindowsTimezones from "./WindowsTimezones";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import { Scheduling, ResponseType, type Responses } from "../../Calendar/Invitation";
 import EWSCreateItemRequest from "../../Mail/EWS/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "../../Mail/EWS/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/EWSUpdateItemRequest";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { ensureArray } from "../../util/util";
+import { assert, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
+
+const ResponseTypes: Record<Responses, string> = {
+  [Scheduling.Accepted]: "AcceptItem",
+  [Scheduling.Tentative]: "TentativelyAcceptItem",
+  [Scheduling.Declined]: "DeclineItem",
+};
 
 enum WeekOfMonth {
   'First' = 1,
@@ -92,6 +99,9 @@ export class EWSEvent extends Event {
       addParticipants(xmljs.OptionalAttendees.Attendee, participants);
     }
     this.participants.replaceAll(participants);
+    if (xmljs.MyResponseType) {
+      this.response = sanitize.integer(ResponseType[xmljs.MyResponseType], ResponseType.Unknown);
+    }
     if (xmljs.LastModifiedTime) {
       this.lastMod = sanitize.date(xmljs.LastModifiedTime);
     }
@@ -284,6 +294,13 @@ export class EWSEvent extends Event {
       };
       await this.calendar.account.callEWS(request);
     }
+  }
+
+  async respondToInvitation(response: Responses): Promise<void> {
+    assert(this.response > ResponseType.Organizer, "Only invitations can be responded to");
+    let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
+    request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.itemID });
+    await this.calendar.account.callEWS(request);
   }
 }
 

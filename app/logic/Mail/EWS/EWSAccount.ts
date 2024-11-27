@@ -81,7 +81,7 @@ export class EWSAccount extends MailAccount {
   }
 
   async logout(): Promise<void> {
-    this.oAuth2?.logout();
+    await this.oAuth2?.logout();
   }
 
   async send(email: EMail): Promise<void> {
@@ -263,7 +263,7 @@ export class EWSAccount extends MailAccount {
     }
     if (response.status == 401) {
       if (this.oAuth2) {
-        this.oAuth2.reset();
+        await this.oAuth2.reset();
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return await this.callEWS(aRequest); // repeat the call
       } else if (!/\bBasic\b/.test(response.WWWAuthenticate)) {
@@ -360,11 +360,12 @@ export class EWSAccount extends MailAccount {
         m$ConnectionTimeout: 29, // minutes
       },
     };
+    // Now, connect and wait for the notifications. Runs 29 minutes long, so don't `await` it.
     this.callStream(streamRequest, async message => {
       for (let notification of ensureArray(message.Notifications?.Notification)) {
         await this.processNotification(notification);
       }
-    });
+    }).catch(this.errorCallback);
   }
 
   async processNotification(notification) {

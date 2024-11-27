@@ -88,7 +88,7 @@ export class ActiveSyncPerson extends Person {
         },
       },
     };
-    let response = await this.addressbook.queuedSyncRequest(data);
+    let response = await this.addressbook.makeSyncRequest(data);
     if (response.Responses) {
       if (response.Responses.Change) {
         throw new EASError("Sync", response.Responses.Change.Status);
@@ -112,7 +112,7 @@ export class ActiveSyncPerson extends Person {
         },
       },
     };
-    let response = await this.addressbook.queuedSyncRequest(data);
+    let response = await this.addressbook.makeSyncRequest(data);
     if (response.Responses) {
       throw new EASError("Sync", response.Responses.Delete.Status);
     }
