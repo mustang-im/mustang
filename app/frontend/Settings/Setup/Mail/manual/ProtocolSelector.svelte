@@ -1,16 +1,14 @@
 <select value={config.protocol} required disabled={!isSetup}
   on:change={onProtocolChanged}
   class="protocol">
-  <option value="imap">IMAP</option>
-  <option value="pop3">POP3</option>
-  <option value="ews">EWS</option>
-  <option value="owa">OWA</option>
-  <option value="activesync">ActiveSync</option>
+  {#each listMailProtocols() as protocol}
+    <option value={protocol}>{labelForMailProtocol(protocol)}</option>
+  {/each}
 </select>
 
 <script lang="ts">
   import type { MailAccount } from "../../../../../logic/Mail/MailAccount";
-  import { newAccountForProtocol } from "../../../../../logic/Mail/AccountsList/MailAccounts";
+  import { newAccountForProtocol, listMailProtocols, labelForMailProtocol } from "../../../../../logic/Mail/AccountsList/MailAccounts";
 
   /** in/out */
   export let config: MailAccount;

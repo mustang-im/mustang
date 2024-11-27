@@ -20,7 +20,7 @@
             name="protocol"
             on:change={event => onChange(altConfig, event)}
             />
-          <label class="protocol" for={altConfig.protocol}>{altConfig.protocol}</label>
+          <label class="protocol" for={altConfig.protocol}>{labelForMailProtocol(altConfig.protocol)}</label>
         </hbox>
         {#if altConfig == config}
           <hbox class="display">
@@ -40,6 +40,7 @@
   import CheckIcon from "lucide-svelte/icons/check";
   import type { ArrayColl } from "svelte-collections";
   import { t } from "../../../../l10n/l10n";
+  import { labelForMailProtocol } from "../../../../logic/Mail/AccountsList/MailAccounts";
 
   export let config: MailAccount;
   export let altConfigs: ArrayColl<MailAccount>;
@@ -79,7 +80,6 @@
     margin-block-end: 24px;
   }
   .protocol {
-    text-transform: uppercase;
     margin-inline-start: 8px;
   }
 </style>

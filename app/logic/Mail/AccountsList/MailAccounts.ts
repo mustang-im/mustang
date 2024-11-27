@@ -38,3 +38,22 @@ function _newAccountForProtocol(protocol: string): MailAccount {
 export async function readMailAccounts(): Promise<Collection<MailAccount>> {
   return await SQLMailStorage.readMailAccounts();
 }
+
+
+const kProtocolLabel = {
+  // Displayed to user, but do not translate (technical term)
+  "imap": "IMAP",
+  "pop3": "POP3",
+  "smtp": "SMTP",
+  "ews": "EWS",
+  "owa": "OWA",
+  "activesync": "ActiveSync",
+}
+
+export function listMailProtocols(): string[] {
+  return Object.keys(kProtocolLabel);
+}
+
+export function labelForMailProtocol(protocol: string): string {
+  return kProtocolLabel[protocol];
+}

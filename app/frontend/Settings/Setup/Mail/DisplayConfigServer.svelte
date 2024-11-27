@@ -5,7 +5,7 @@
     <ArrowRightIcon size={16} />
   {/if}
 </hbox>
-<hbox class="protocol">{config.protocol}</hbox>
+<hbox class="protocol">{labelForMailProtocol(config.protocol)}</hbox>
 <hbox class="hostname"><HostnameDomain hostname={config.hostname} />{isStandardPort(config) ? "" : ":" + config.port}</hbox>
 <hbox class="tls" class:tls-warning={tlsWarning} class:has-encryption={hasEnc}>
   {socketLabel(config.tls)}
@@ -24,6 +24,7 @@
 <script lang="ts">
   import { type MailAccount, TLSSocketType } from "../../../../logic/Mail/MailAccount";
   import { isStandardPort, hasEncryption } from "../../../../logic/Mail/AutoConfig/configInfo";
+  import { labelForMailProtocol } from "../../../../logic/Mail/AccountsList/MailAccounts";
   import HostnameDomain from "../Shared/HostnameDomain.svelte";
   import ShieldOKIcon from "lucide-svelte/icons/shield-check";
   import ShieldAlertIcon from "lucide-svelte/icons/shield-alert";
@@ -54,9 +55,6 @@
 <style>
   .direction {
     margin-inline-end: 4px;
-  }
-  .protocol {
-    text-transform: uppercase;
   }
   .protocol, .tls {
     opacity: 60%;
