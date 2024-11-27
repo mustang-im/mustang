@@ -5,7 +5,7 @@ import type { Folder } from '../Folder';
 
 export class EMailCollection<T extends EMail> extends ArrayColl<T> {
   folder: Folder;
-  sortFunc: (a: T, b: T) => boolean;
+  sortFunc: (a: T, b: T) => number;
 
   constructor(folder: Folder) {
     super();
@@ -33,8 +33,8 @@ export class EMailCollection<T extends EMail> extends ArrayColl<T> {
   }
 
   sortBy(sortValueFunc: (item: T) => any): SortedCollection<T> {
-    this.sortFunc = (a, b) => sortValueFunc(a) > sortValueFunc(b);
-    this.replaceAll(this.contents.sort((a, b) => sortValueFunc(a) > sortValueFunc(b) ? 1 : sortValueFunc(a) < sortValueFunc(b) ? -1 : 0));
+    this.sortFunc = (a, b) => compareValues(sortValueFunc(a), sortValueFunc(b));
+    this.replaceAll(this.contents.sort(compareValues));
     return this as any as SortedCollection<T>;
   }
 
@@ -50,12 +50,31 @@ export class EMailCollection<T extends EMail> extends ArrayColl<T> {
 
     while (low < high) {
       let mid = (low + high) >>> 1;
-      if (this.sortFunc(value, array[mid])) { // value > array[mid]
+      if (this.sortFunc(value, array[mid]) > 0) { // value > array[mid]
         low = mid + 1;
       } else {
         high = mid;
       }
     }
     return low;
+  }
+}
+
+
+/**
+ * Works for strings, numbers and `Date`s
+ * @param a, b {`T extends string | number | Date`}
+ * @returns
+ *     `-1`: `a` before `b`
+ *     `1`: `b` before `a`
+ *     `0`: `a` is sorted identical to `b`
+ */
+function compareValues<T>(a: T, b: T): number {
+  if (a < b) {
+    return -1;
+  } else if (a > b) {
+    return 1;
+  } else { // equal
+    return 0;
   }
 }
