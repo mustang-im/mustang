@@ -137,6 +137,23 @@ class Sanitize {
     */
   }
 
+  /** Removes potentially dangerous parts of the file name, e.g.
+   * \ / : . ' " ! ? * |
+   * See <https://kizu514.com/blog/forbidden-file-names-on-windows-10/>
+   * but there are many others. */
+  filename(unchecked: string | null, fallback: string | null | Symbol = throwErrors): string {
+    let filename = this.nonemptystring(unchecked, fallback);
+    filename = filename.replace(/[^\p{Letter}\p{Number}\.\-\_] /g, "").trim();
+    if (!filename) {
+      return haveError("Filename cannot have punctuation and control characters", unchecked, fallback);
+    }
+    const kDeviceNames = ['NUL', 'AUX', 'PRN', 'CON', 'COM', 'LPT', 'COM1', 'LPT1', 'COM2', 'LPT2'];
+    if (filename.length < 5 && kDeviceNames.includes(filename)) {
+      return haveError("Filename cannot be a Windows device name", unchecked, fallback);
+    }
+    return filename;
+  }
+
   /**
    * A value which should be shown to the user in the UI as label
    */

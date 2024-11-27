@@ -1,8 +1,9 @@
 import type { MailContentStorage } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { appGlobal } from "../../app";
-import { sanitizeFilename, assert } from "../../util/util";
 import type { Folder } from "../Folder";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { assert } from "../../util/util";
 import { ArrayColl, SetColl } from "svelte-collections";
 
 /** Save all emails of a mail folder in a folder in the local disk filesystem.
@@ -65,11 +66,11 @@ export class MailDir implements MailContentStorage {
 
   async getFolderDir(folder: Folder): Promise<string> {
     this.filesDir = this.filesDir ?? await appGlobal.remoteApp.getFilesDir();
-    let dir = `${this.filesDir}/backup/email/individual/${sanitizeFilename(folder.account.emailAddress.replace("@", "-"))}-${sanitizeFilename(folder.account.id)}`;
+    let dir = `${this.filesDir}/backup/email/individual/${sanitize.filename(folder.account.emailAddress.replace("@", "-"))}-${sanitize.filename(folder.account.id)}`;
     if (folder.parent) {
-      dir += `/${sanitizeFilename(folder.parent.path)}`;
+      dir += `/${sanitize.filename(folder.parent.path, "unknownFolder")}`;
     }
-    dir += `/${sanitizeFilename(folder.name)}`;
+    dir += `/${sanitize.filename(folder.name, "unknownFolder")}`;
     if (!this.haveDirs.contains(dir)) {
       // Permissions: Only user can read and write the dir.
       await appGlobal.remoteApp.fs.mkdir(dir, { recursive: true, mode: 0o700 });
@@ -81,6 +82,6 @@ export class MailDir implements MailContentStorage {
   async getFilePath(email: EMail): Promise<string> {
     assert(email.dbID, "Please save the email first in the database, so that we can use the dbID as filename");
     let dir = await this.getFolderDir(email.folder);
-    return `${dir}/${sanitizeFilename(email.dbID + "")}.eml`;
+    return `${dir}/${sanitize.filename(email.dbID + "")}.eml`;
   }
 }

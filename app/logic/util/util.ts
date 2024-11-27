@@ -57,19 +57,6 @@ export async function base64ToArrayBuffer(base64: string, mimetype: string): Pro
   return await res.arrayBuffer();
 }
 
-/** Removes potentially dangerous parts of the file name, e.g.
- * \ / : . ' " ! ? * |
- * See <https://kizu514.com/blog/forbidden-file-names-on-windows-10/>
- * but there are many others. */
-export function sanitizeFilename(label: string): string {
-  let filename = label.replace(/[^a-zA-Z0-9 \.\-\_]/g, "");
-  const kDeviceNames = ['NUL', 'AUX', 'PRN', 'CON', 'COM', 'LPT', 'COM1', 'LPT1', 'COM2', 'LPT2'];
-  if (filename.length < 5 && kDeviceNames.includes(filename)) {
-    filename = "file";
-  }
-  return filename.trim();
-}
-
 export function fileExtensionForMIMEType(mimetype: string) {
   if (typeof (mimetype) == "string" && mimetype != "application/octet-stream") {
     let type = mimetype.split("/")[1];

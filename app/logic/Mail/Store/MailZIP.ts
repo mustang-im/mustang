@@ -1,8 +1,9 @@
 import type { MailContentStorage } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { appGlobal } from "../../app";
-import { sanitizeFilename, assert } from "../../util/util";
 import type { Folder } from "../Folder";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { assert } from "../../util/util";
 import { ArrayColl, MapColl, SetColl } from "svelte-collections";
 import { Buffer } from "buffer";
 import type Zip from "adm-zip";
@@ -103,16 +104,16 @@ export class MailZIP implements MailContentStorage {
 
   async getFolderZIPFilePath(folder: Folder): Promise<string> {
     this.filesDir = this.filesDir ?? await appGlobal.remoteApp.getFilesDir();
-    let dir = `${this.filesDir}/backup/email/${sanitizeFilename(folder.account.emailAddress.replace("@", "-"))}-${sanitizeFilename(folder.account.id)}`;
+    let dir = `${this.filesDir}/backup/email/${sanitize.filename(folder.account.emailAddress.replace("@", "-"))}-${sanitize.filename(folder.account.id)}`;
     if (folder.parent) {
-      dir += `/${sanitizeFilename(folder.parent.path)}`;
+      dir += `/${sanitize.filename(folder.parent.path, "unknownFolder")}`;
     }
     if (!this.haveDirs.contains(dir)) {
       // Permissions: Only user can read and write the dir.
       await appGlobal.remoteApp.fs.mkdir(dir, { recursive: true, mode: 0o700 });
       this.haveDirs.add(dir);
     }
-    return `${dir}/${sanitizeFilename(folder.name)}.zip`;
+    return `${dir}/${sanitize.filename(folder.name, "unknownFolder")}.zip`;
   }
 
   getEMailFilename(email: EMail): string {
