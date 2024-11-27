@@ -6,6 +6,7 @@ import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder } from "../Folder";
 import { assert, SpecificError } from "../../util/util";
 import { notifyChangedProperty } from "../../util/Observable";
+import { Lock } from "../../util/Lock";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { appName, appVersion, siteRoot } from "../../build";
 import { ArrayColl, type Collection } from "svelte-collections";
@@ -22,6 +23,7 @@ export class IMAPAccount extends MailAccount {
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
+  protected connectionLock = new Lock();
 
   constructor() {
     super();
@@ -54,71 +56,77 @@ export class IMAPAccount extends MailAccount {
     if (this._connection) {
       return this._connection;
     }
-    this.fatalError = null;
-
-    // Auth method
-    let usePassword = [
-      AuthMethod.Password,
-      AuthMethod.GSSAPI,
-      AuthMethod.NTLM,
-      AuthMethod.Unknown,
-    ].includes(this.authMethod);
-    let useOAuth2 = [
-      AuthMethod.OAuth2,
-    ].includes(this.authMethod);
-    if (useOAuth2) {
-      assert(this.oAuth2, this.name + `: ` + gt`Need OAuth2 configuration`);
-      if (!this.oAuth2.isLoggedIn) {
-        await this.oAuth2.login(interactive);
-      }
-      assert(this.oAuth2.accessToken, this.name + `: ` + gt`OAuth2: Login failed`);
-    }
-
-    // <https://imapflow.com/module-imapflow-ImapFlow.html>
-    let options = {
-      host: this.hostname,
-      port: this.port,
-      secure: this.tls == TLSSocketType.TLS,
-      auth: {
-        user: this.username,
-        pass: usePassword ? this.password : undefined,
-        accessToken: useOAuth2 ? this.oAuth2.accessToken : undefined,
-      },
-      clientInfo: useragent,
-      tls: {
-        minVersion: this.acceptOldTLS ? 'TLSv1' : undefined,
-        rejectUnauthorized: !this.acceptBrokenTLSCerts,
-      },
-      maxIdleTime: 30 * 1000, // 30 s, refresh IDLE
-      connectionTimeout: 5 * 1000, // 5 s connection timeout
-      greetingTimeout: 5 * 1000, // 5 s greeting timeout
-      socketTimeout: 30 * 60 * 1000, // 30 min of inactivity
-      logger: false,
-    }
-    // console.log("IMAP connection", options);
-    let connection = await appGlobal.remoteApp.createIMAPFlowConnection(options);
-    assert(connection, `Connection is null\n${this.hostname} IMAP server`);
-
+    let lock = await this.connectionLock.lock();
     try {
-      await connection.connect();
-    } catch (ex) {
-      let msg = ex?.responseText ?? ex?.message ?? ex + "";
-      if (ex.authenticationFailed) {
-        throw this.fatalError = new LoginError(ex,
-          "Check your login, username, and password.\n" + msg);
-      } else if (ex.code == "EAUTH" || ex.code == "ClosedAfterConnectTLS") {
-        throw this.fatalError = new LoginError(ex,
-          "Check your login, username, and password.\n" + msg);
-      } else if (ex.code == "NoConn" || msg == "Command failed.") {
-        throw this.fatalError = new ConnectError(ex,
-          "Failed to connect to server " + this.hostname + " for account " + this.name);
-      } else {
-        throw this.fatalError = new ConnectError(ex, msg);
+      this.fatalError = null;
+
+      // Auth method
+      let usePassword = [
+        AuthMethod.Password,
+        AuthMethod.GSSAPI,
+        AuthMethod.NTLM,
+        AuthMethod.Unknown,
+      ].includes(this.authMethod);
+      let useOAuth2 = [
+        AuthMethod.OAuth2,
+      ].includes(this.authMethod);
+      if (useOAuth2) {
+        assert(this.oAuth2, this.name + `: ` + gt`Need OAuth2 configuration`);
+        if (!this.oAuth2.isLoggedIn) {
+          await this.oAuth2.login(interactive);
+        }
+        assert(this.oAuth2.accessToken, this.name + `: ` + gt`OAuth2: Login failed`);
       }
+
+      // <https://imapflow.com/module-imapflow-ImapFlow.html>
+      let options = {
+        host: this.hostname,
+        port: this.port,
+        secure: this.tls == TLSSocketType.TLS,
+        auth: {
+          user: this.username,
+          pass: usePassword ? this.password : undefined,
+          accessToken: useOAuth2 ? this.oAuth2.accessToken : undefined,
+        },
+        clientInfo: useragent,
+        tls: {
+          minVersion: this.acceptOldTLS ? 'TLSv1' : undefined,
+          rejectUnauthorized: !this.acceptBrokenTLSCerts,
+        },
+        maxIdleTime: 30 * 1000, // 30 s, refresh IDLE
+        connectionTimeout: 5 * 1000, // 5 s connection timeout
+        greetingTimeout: 5 * 1000, // 5 s greeting timeout
+        socketTimeout: 30 * 60 * 1000, // 30 min of inactivity
+        logger: false,
+      }
+      // console.log("IMAP connection", options);
+
+      let connection = await appGlobal.remoteApp.createIMAPFlowConnection(options);
+      assert(connection, `Connection is null\n${this.hostname} IMAP server`);
+
+      try {
+        await connection.connect();
+      } catch (ex) {
+        let msg = ex?.responseText ?? ex?.message ?? ex + "";
+        if (ex.authenticationFailed) {
+          throw this.fatalError = new LoginError(ex,
+            "Check your login, username, and password.\n" + msg);
+        } else if (ex.code == "EAUTH" || ex.code == "ClosedAfterConnectTLS") {
+          throw this.fatalError = new LoginError(ex,
+            "Check your login, username, and password.\n" + msg);
+        } else if (ex.code == "NoConn" || msg == "Command failed.") {
+          throw this.fatalError = new ConnectError(ex,
+            "Failed to connect to server " + this.hostname + " for account " + this.name);
+        } else {
+          throw this.fatalError = new ConnectError(ex, msg);
+        }
+      }
+      this._connection = connection;
+      this.attachListeners(this._connection);
+      return this._connection;
+    } finally {
+      lock.release();
     }
-    this._connection = connection;
-    this.attachListeners(this._connection);
-    return this._connection;
   }
 
   attachListeners(connection: ImapFlow): void {
@@ -153,6 +161,7 @@ export class IMAPAccount extends MailAccount {
     });
     connection.on("flags", async (info) => {
       try {
+        // console.log("flag change", info);
         let folder = this.getFolderByPath(info.path);
         assert(folder, `We don't know about this folder`);
         assert(!info.uid || typeof (info.uid) == "number", "Expected optional number for UID");
