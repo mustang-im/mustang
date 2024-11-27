@@ -25,3 +25,6 @@ l10n/locales/*/messages-compiled.json
 *.njsproj
 *.sln
 *.sw?
+
+# Sentry Config File
+.env.sentry-build-plugin
