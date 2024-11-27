@@ -29,12 +29,12 @@
   $: persons = (selectedAddressbook?.persons ?? appGlobal.persons) as Collection<Person>;
   $: filteredPersons = $globalSearchTerm
     ? persons.filter(p =>
-      p.name.toLowerCase().includes($globalSearchTerm) ||
+      p.name?.toLowerCase().includes($globalSearchTerm) ||
       p.emailAddresses.some(e => e.value.toLowerCase().includes($globalSearchTerm)) ||
       p.phoneNumbers.some(e => e.value.toLowerCase().includes($globalSearchTerm)) ||
       p.chatAccounts.some(e => e.value.toLowerCase().includes($globalSearchTerm)) ||
       p.streetAddresses.some(e => e.value.toLowerCase().includes($globalSearchTerm)) ||
-      p.notes.toLowerCase().includes($globalSearchTerm))
+      p.notes?.toLowerCase().includes($globalSearchTerm))
     : persons;
 
   $: $globalSearchTerm && clearSelected();

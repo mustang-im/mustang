@@ -108,7 +108,7 @@ function haveAccountType(type: typeof ChatAccount): boolean {
 }
 
 function entryIsMatrix(contact: ContactEntry) {
-  return contact.purpose.toLowerCase() == "matrix";
+  return contact.purpose?.toLowerCase() == "matrix";
 }
 
 export async function startAudioCall(to: Person | Group): Promise<VideoConfMeeting> {

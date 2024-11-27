@@ -28,7 +28,7 @@
 
   let searchTerm: string;
   $: personsFiltered = searchTerm
-    ? persons.filter(p => p.name.toLowerCase().includes(searchTerm))
+    ? persons.filter(p => p.name?.toLowerCase().includes(searchTerm))
     : persons;
 
   $: if (selected instanceof Person) {

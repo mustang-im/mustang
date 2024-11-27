@@ -48,14 +48,14 @@
   export let autofocus = false;
 
   export async function search(inputStr: string): Promise<PersonUID[]> {
-    if (inputStr.length < 2) {
+    if (!inputStr || inputStr.length < 2) {
       return [];
     }
     try {
       inputStr = inputStr.toLowerCase();
       let persons: Person[] = [];
       for (let ab of appGlobal.addressbooks) {
-        persons.push(...ab.persons.filter(person => person.name.toLowerCase().includes(inputStr)));
+        persons.push(...ab.persons.filter(person => person.name?.toLowerCase().includes(inputStr)));
       }
       let emailAddresses: PersonUID[] = [];
       for (let person of persons) {

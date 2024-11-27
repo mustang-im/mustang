@@ -46,7 +46,7 @@
   let selectedChat: Chat;
   let chatRooms = mergeColls(appGlobal.chatAccounts.map(a => a.chats));
   $: messages = $globalSearchTerm
-    ? selectedChat?.messages.filter(msg => msg.text.toLowerCase().includes($globalSearchTerm))
+    ? selectedChat?.messages.filter(msg => msg.text?.toLowerCase().includes($globalSearchTerm))
     : selectedChat?.messages;
 
   onMount(() => {
