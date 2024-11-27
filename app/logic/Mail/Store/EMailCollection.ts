@@ -3,12 +3,13 @@ import { PromiseAllDone } from '../../util/PromiseAllDone';
 import type { EMail } from '../EMail';
 import type { Folder } from '../Folder';
 
-export class EMailCollection<T extends EMail> extends ArrayColl<T> {
+export class EMailCollection<T extends EMail> extends SortedCollection<T> {
   folder: Folder;
   sortFunc: (a: T, b: T) => number;
 
   constructor(folder: Folder) {
-    super();
+    let sortFunc = (a, b) => compareValues(a.sent, b.sent);
+    super(new ArrayColl(), sortFunc);
     this.folder = folder;
   }
 
@@ -31,35 +32,7 @@ export class EMailCollection<T extends EMail> extends ArrayColl<T> {
 
     return emails;
   }
-
-  sortBy(sortValueFunc: (item: T) => any): SortedCollection<T> {
-    this.sortFunc = (a, b) => compareValues(sortValueFunc(a), sortValueFunc(b));
-    this.replaceAll(this.contents.sort(compareValues));
-    return this as any as SortedCollection<T>;
-  }
-
-  protected _addWithoutObserver(item: T) {
-    let array = (this as any)._array as T[];
-    array.splice(this.sortedIndex(item), 0, item);
-  }
-
-  protected sortedIndex(value: T): number {
-    let array = (this as any)._array as T[];
-    let low = 0;
-    let high = array.length;
-
-    while (low < high) {
-      let mid = (low + high) >>> 1;
-      if (this.sortFunc(value, array[mid]) > 0) { // value > array[mid]
-        low = mid + 1;
-      } else {
-        high = mid;
-      }
-    }
-    return low;
-  }
 }
-
 
 /**
  * Works for strings, numbers and `Date`s
