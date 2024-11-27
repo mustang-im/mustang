@@ -80,7 +80,7 @@ export class SQLSearchEMail extends SearchEMail {
     }
     let randomFolder = this.folder ??
       this.account?.getSpecialFolder(SpecialFolder.Inbox) ??
-      appGlobal.emailAccounts.first.getSpecialFolder(SpecialFolder.Inbox);
+      appGlobal.emailAccounts.first?.getSpecialFolder(SpecialFolder.Inbox);
     let emails = new ArrayColl<EMail>();
     for (let row of rows) {
       let folder = findFolder(row.folderID);
