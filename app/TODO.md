@@ -55,6 +55,10 @@
   * PersonEntry: Delete key
   * Remove added attachment (needs menu item)
   * Open attachment
+* Setup
+  * After login, waiting too long before moving to next dialog
+  * OAuth2 login: Close window. Login button disabled.
+* Mail composer: Send: Waiting too long
 * Images, remote
 * Saved Searches delete: Update list
 * List view: Sort order
