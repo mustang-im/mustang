@@ -22,7 +22,7 @@
   export let selectedFolder: Folder; /* in/out */
   export let selectedFolders: ArrayColl<Folder>;
 
-  $: foldersSorted = folders.sortBy(f => f.orderPos);
+  $: foldersSorted = $folders.sortBy(f => f.orderPos);
 </script>
 
 <style>
