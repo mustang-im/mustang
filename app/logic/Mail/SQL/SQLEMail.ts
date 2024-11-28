@@ -278,7 +278,7 @@ export class SQLEMail {
     email.threadID = sanitize.string(row.threadID ?? row.parentMsgID, null);
     email.downloadComplete = sanitize.boolean(!!row.downloadComplete);
 
-    email.contact = findOrCreatePersonUID("foo45@example.com", sanitize.label(row.contactName, null));
+    email.contact = findOrCreatePersonUID("must@n.g", sanitize.label(row.contactName, null));
   }
 
   static async readWritableProps(email: EMail, row?: any) {
