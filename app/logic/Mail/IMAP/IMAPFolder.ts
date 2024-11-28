@@ -349,36 +349,6 @@ export class IMAPFolder extends Folder {
     return this.messages.find((m: IMAPEMail) => m.uid == uid) as IMAPEMail;
   }
 
-  /** Does *not* necessarily return the right email. But typically one close to it. */
-  getEMailBySeq(seq: number): IMAPEMail {
-    let msg = this.messages.find((m: IMAPEMail) => m.seq == seq);
-    if (msg) {
-      return msg as IMAPEMail;
-    }
-    let byUID = this.messages.sortBy((m: IMAPEMail) => m.uid);
-    // The sequence number changes with every email deletion :-( Thus,
-    // emulate how the server calculates the sequence number
-    msg = byUID.getIndex(seq);
-    if (msg) {
-      return msg as IMAPEMail;
-    }
-    return byUID.last as IMAPEMail;
-  }
-
-  /** Return local msgs around the sequence number.
-   * @return first = oldest = `beforeCount` before `seq`, last = newest = `afterCount` after `seq` */
-  getEmailsAroundSeq(seq: number, beforeCount: number, afterCount: number): ArrayColl<IMAPEMail> {
-    let message = this.getEMailBySeq(seq);
-    if (!message) {
-      return new ArrayColl<IMAPEMail>();
-    }
-    let sortedByUID = this.messages.sortBy((msg: IMAPEMail) => msg.uid);
-    let pos = sortedByUID.getKeyForValue(message);
-    let from = pos - beforeCount;
-    let to = pos + afterCount;
-    return new ArrayColl(sortedByUID.getIndexRange(from, to) as IMAPEMail[]);
-  }
-
   /** @returns UID of newest message known locally */
   protected get highestUID(): number {
     let highest = 1;
