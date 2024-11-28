@@ -1,12 +1,14 @@
 # Next
 * Mail
-  * AceBase: Stable DB
   * SQL
-    * Batched insert
-    * EMailCollection.sortBy()
-    * email dbID not found, when flag change during first download
-  * Collections sort is slow after additions/removals
+    * email table: Add column for contact
+  * Main/Dependent accounts
+    * Calendar
+    * SMTP
+    * OAuth2
+  * Move multiple emails at once
   * IMAP: See below
+  * AceBase: Stable DB
   * Inline images send
   * Context menu for content: Copy text, link, image
   * Bug: Search and persons view: Disable until search bug fixed
@@ -175,9 +177,9 @@
      * Contacts
      * Calendar
      * Mails
+* Move emails between accounts
 
 ## IMAP
-* Flag notifications with sequence numbers
 * UIDONLY (if available): Enable and test
 * Fallback: When UID not at all supported
 * Download all msgs in folder: When?
