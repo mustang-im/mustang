@@ -334,6 +334,11 @@ export class ActiveSyncAccount extends MailAccount {
   }
 
   async listFolders(): Promise<void> {
+    await this.storage.readFolderHierarchy(this);
+    if (this.rootFolders.isEmpty) {
+      this.setStorageItem("sync_key", "0");
+    }
+
     await this.queuedRequest("FolderSync", {}, async response => {
       let url = new URL(this.url);
       for (let change of ensureArray(response.Changes?.Add).concat(ensureArray(response.Changes?.Update))) {
