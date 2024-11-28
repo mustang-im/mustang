@@ -15,7 +15,7 @@ export class PersonUID extends Observable {
 
   constructor(emailAddress?: string, name?: string) {
     super();
-    this.emailAddress = emailAddress;
+    this.emailAddress = emailAddress ?? kDummyPerson.emailAddress;
     this.name = name;
   }
 

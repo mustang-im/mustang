@@ -82,7 +82,7 @@
 <svelte:window on:click={onClickOutside} />
 
 <script lang="ts">
-  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import { kDummyPerson, PersonUID } from "../../../logic/Abstract/PersonUID";
   import type { ContactEntry, Person } from "../../../logic/Abstract/Person";
   import { openUIFor } from "../../AppsBar/changeTo";
   import { appGlobal } from "../../../logic/app";
@@ -118,6 +118,8 @@
 
   $: onLoad(personUID);
   function onLoad(personUID: PersonUID) {
+    personUID ??= new PersonUID();
+    personUID.emailAddress ??= kDummyPerson.emailAddress;
     person = personUID.createPerson();
     contactEntry = person.emailAddresses.find(c => c.value == personUID.emailAddress);
     isEditing = (!person.addressbook || person.addressbook == appGlobal.collectedAddressbook) && !disabled;
