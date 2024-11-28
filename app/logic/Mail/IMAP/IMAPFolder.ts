@@ -371,15 +371,11 @@ export class IMAPFolder extends Folder {
       .first as IMAPEMail; // oldest
   }
 
-  /** Save headers of newly discovered emails */
+  /** Save partial headers of newly discovered emails.
+   *
+   * Note: Completely downloaded emails are not saved here, but in
+   * `downloadMessages()` -> `msg.saveCompleteMessage()` */
   protected async saveNewMsgs(msgs: Collection<IMAPEMail>) {
-    // Saving message headers is slow and expensive,
-    // and it drags down the whole app.
-    // It's faster to re-download the headers from the server.
-    // Disable saving only message headers for now.
-    // We will still save the completely downloaded emails, in
-    // `downloadMessages()` -> `msg.saveCompleteMessage()`
-    return;
     let startTime = Date.now();
     await this.storage.saveMessages(msgs);
     let saveTime = Date.now() - startTime;
