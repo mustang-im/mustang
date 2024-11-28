@@ -5,7 +5,6 @@ import { SQLEMail } from "./SQLEMail";
 import type { Folder } from "../Folder";
 import { SQLFolder } from "./SQLFolder";
 import type { Collection } from "svelte-collections";
-import { backgroundError } from "../../../frontend/Util/error";
 
 export class SQLMailStorage implements MailAccountStorage {
   async saveAccount(account: MailAccount): Promise<void> {
@@ -45,6 +44,9 @@ export class SQLMailStorage implements MailAccountStorage {
   }
   async saveMessage(email: EMail): Promise<void> {
     await SQLEMail.save(email);
+  }
+  async saveMessages(emails: Collection<EMail>): Promise<void> {
+    await SQLEMail.saveMultiple(emails);
   }
   async saveMessageWritableProps(email: EMail): Promise<void> {
     await SQLEMail.saveWritableProps(email);

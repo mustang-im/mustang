@@ -5,9 +5,10 @@ import { Attachment, ContentDisposition } from "../Attachment";
 import { getTagByName, Tag } from "../Tag";
 import { JSONEMail } from "../JSON/JSONEMail";
 import { getDatabase } from "./SQLDatabase";
-import { assert, fileExtensionForMIMEType } from "../../util/util";
-import { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { Lock } from "../../util/Lock";
+import { assert, fileExtensionForMIMEType } from "../../util/util";
+import { ArrayColl, Collection } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 
 export class SQLEMail {
@@ -211,6 +212,25 @@ export class SQLEMail {
         ${email.dbID}, ${tag.name}
       )`);
   }
+
+  protected static transactionLock = new Lock();
+
+  static async saveMultiple(emails: Collection<EMail>) {
+    let lock = await this.transactionLock.lock();
+    try {
+      await (await getDatabase()).run(sql`BEGIN TRANSACTION`);
+      for (let email of emails) {
+        if (!email.subject) {
+          continue;
+        }
+        await this.save(email);
+      }
+      await (await getDatabase()).run(sql`END TRANSACTION`);
+    } finally {
+      lock.release();
+    }
+  }
+
 
   static async read(dbID: number, email: EMail, row?: any, recipientRows?: any[], attachmentRows?: any[], tagRows?: any[]): Promise<EMail> {
     if (!row) {

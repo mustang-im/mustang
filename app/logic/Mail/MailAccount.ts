@@ -208,6 +208,7 @@ export interface MailAccountStorage {
   readMessageWritableProps(email: EMail): Promise<void>;
   readMessageBody(email: EMail): Promise<void>;
   saveMessage(email: EMail): Promise<void>;
+  saveMessages(emails: Collection<EMail>): Promise<void>;
   saveMessageWritableProps(email: EMail): Promise<void>;
   saveMessageTags(email: EMail): Promise<void>;
   deleteMessage(email: EMail): Promise<void>;

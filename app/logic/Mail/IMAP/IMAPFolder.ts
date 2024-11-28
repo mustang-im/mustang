@@ -373,29 +373,15 @@ export class IMAPFolder extends Folder {
 
   /** Save headers of newly discovered emails */
   protected async saveNewMsgs(msgs: Collection<IMAPEMail>) {
-    // Saving message headers is so slow and expensive
-    // that it drags down the whole app.
-    // It's far faster to re-download the headers from the server.
-    // Disable it for now, until we can save faster, e.g. as batches.
+    // Saving message headers is slow and expensive,
+    // and it drags down the whole app.
+    // It's faster to re-download the headers from the server.
+    // Disable saving only message headers for now.
     // We will still save the completely downloaded emails, in
     // `downloadMessages()` -> `msg.saveCompleteMessage()`
     return;
-    await this.saveNewMsgsDirectly(msgs);
-    this.saveNewMsgsDirectly(msgs)
-      .catch(this.account.errorCallback);
-  }
-
-  protected async saveNewMsgsDirectly(msgs: Collection<IMAPEMail>) {
     let startTime = Date.now();
-    for (let email of msgs) {
-      try {
-        if (email.subject) {
-          await this.storage.saveMessage(email);
-        }
-      } catch (ex) {
-        this.account.errorCallback(ex);
-      }
-    }
+    await this.storage.saveMessages(msgs);
     let saveTime = Date.now() - startTime;
     console.log("  Saved", msgs.length, "msgs in", saveTime, "ms =", saveTime / msgs.length, "ms/msg");
   }
