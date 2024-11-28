@@ -372,6 +372,11 @@ export class IMAPFolder extends Folder {
   }
 
   protected async saveNewMsgs(msgs: Collection<IMAPEMail>) {
+    this.saveNewMsgsDirectly(msgs)
+      .catch(this.account.errorCallback);
+  }
+
+  protected async saveNewMsgsDirectly(msgs: Collection<IMAPEMail>) {
     let startTime = Date.now();
     for (let email of msgs) {
       try {
