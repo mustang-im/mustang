@@ -8,11 +8,16 @@ export class EMailCollection<T extends EMail> extends SortedCollection<T> {
   sortFunc: (a: T, b: T) => number;
 
   constructor(folder: Folder) {
-    let sortFunc = (a, b) => compareValues(a.sent, b.sent);
+    let sortFunc = (a: T, b: T) => compareValues(a.sent, b.sent);
+    /* Normally, a `SortedCollection` is simply a sorted /copy/ of the source collection.
+     * Here, we don't use a source collection, but add the items directly to the
+     * `SortedCollection`, using `.add()` and `.remove()`. The `SortedCollection`
+     * has code to ensure that even those items added directly to it are also sorted. */
     super(new ArrayColl(), sortFunc);
     this.folder = folder;
   }
 
+  /** Reads the messages from DB on-demand, as the frontend displays them. */
   getIndexRange(i: number, length: number): T[] {
     let emails = super.getIndexRange(i, length);
 
