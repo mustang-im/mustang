@@ -188,7 +188,7 @@ export class IMAPFolder extends Folder {
       if (this.countTotal === 0) {
         return new ArrayColl();
       }
-      let fromUID = this.highestUID ?? "1";
+      let fromUID = this.getHighestUID() ?? "1";
       let { newMessages } = await this.fetchMessageList({ uid: fromUID + ":*" }, {});
       this.messages.addAll(newMessages);
       await this.saveNewMsgs(newMessages);
@@ -266,19 +266,19 @@ export class IMAPFolder extends Folder {
   }
 
   protected async updateNewFlags() {
-    let recentMsg = this.recentMsg;
-    let highestUID = this.highestUID;
+    let recentMsg = this.getRecentMsg();
+    let highestUID = this.getHighestUID();
     if (!recentMsg || !highestUID) {
       return;
     }
     let { updatedMessages } = await this.fetchFlags(
-      { uid: this.recentMsg.uid + ":" + highestUID }, {});
+      { uid: recentMsg.uid + ":" + highestUID }, {});
     await this.saveMsgUpdates(updatedMessages);
   }
 
   /** Lists new messages, and downloads them */
   async getNewMessages(): Promise<ArrayColl<IMAPEMail>> {
-    await this.checkDeletedMessages(this.recentMsg?.uid);
+    await this.checkDeletedMessages(this.getRecentMsg()?.uid);
     let newMsgs = await this.listNewMessages();
     await this.downloadMessages(newMsgs);
     return newMsgs;
@@ -350,7 +350,7 @@ export class IMAPFolder extends Folder {
   }
 
   /** @returns UID of newest message known locally */
-  protected get highestUID(): number {
+  protected getHighestUID(): number {
     let highest = 1;
     for (let msg of this.messages) {
       if ((msg as IMAPEMail).uid > highest) {
@@ -361,7 +361,7 @@ export class IMAPFolder extends Folder {
   }
 
   /** @returns message from n days ago */
-  protected get recentMsg(): IMAPEMail {
+  protected getRecentMsg(): IMAPEMail {
     const kDaysPast = 14;
     let recently = new Date();
     recently.setDate(recently.getDate() - kDaysPast);
@@ -444,7 +444,7 @@ export class IMAPFolder extends Folder {
    */
   async checkDeletedMessages(fromUID: number = 1) {
     let localMsgs = this.messages.contents.filter((msg: IMAPEMail) => msg.uid >= fromUID);
-    let serverUIDs = await this.fetchUIDList({ uid: fromUID + ":" + this.highestUID });
+    let serverUIDs = await this.fetchUIDList({ uid: fromUID + ":" + this.getHighestUID() });
     let deletedMsgs = localMsgs.filter((msg: IMAPEMail) => !serverUIDs.includes(msg.uid));
 
     this.messages.removeAll(deletedMsgs);
