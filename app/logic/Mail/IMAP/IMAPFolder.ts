@@ -419,7 +419,7 @@ export class IMAPFolder extends Folder {
   protected async saveMsgUpdates(msgs: Collection<IMAPEMail>) {
     for (let email of msgs) {
       try {
-        if (email.subject) {
+        if (email.subject && email.dbID) {
           await this.storage.saveMessageWritableProps(email);
         }
       } catch (ex) {
