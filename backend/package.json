@@ -6,6 +6,7 @@
   "dependencies": {
     "@radically-straightforward/sqlite": "^1.0.0",
     "@types/nodemailer": "^6.4.14",
+    "acebase": "^1.29.5",
     "adm-zip": "^0.5.12",
     "bufferutil": "^4.0.8",
     "express": "^4.19.2",

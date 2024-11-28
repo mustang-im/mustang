@@ -2,6 +2,7 @@ import { HTTPServer } from './HTTPServer';
 import JPCWebSocket from '../lib/jpc-ws';
 import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
+import { AceBase, type DataReference } from "acebase";
 import Zip from "adm-zip";
 import ky from 'ky';
 import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, Menu, MenuItemConstructorOptions } from "electron";
@@ -13,6 +14,7 @@ import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 import childProcess from 'node:child_process';
 import * as OWA from './owa';
+import { AceBaseHandle } from './acebase';
 
 export async function startupBackend() {
   let appGlobal = await createSharedAppObject();
@@ -43,10 +45,11 @@ async function createSharedAppObject() {
     getFilesDir,
     openFileInExternalApp,
     createIMAPFlowConnection,
-    getSQLiteDatabase,
     sendMailNodemailer,
     verifyServerNodemailer,
     getMIMENodemailer,
+    getSQLiteDatabase,
+    getAceDatabase,
     newAdmZIP,
     newHTTPServer,
     readFile,
@@ -275,13 +278,6 @@ function createIMAPFlowConnection(...args): ImapFlow {
   return new ImapFlow(...args);
 }
 
-function getSQLiteDatabase(filename: string, options: any): Database {
-  if (!filename.startsWith("/")) {
-    filename = path.join(getConfigDir(), filename);
-  }
-  return new Database(filename, options);
-}
-
 async function sendMailNodemailer(transport, mail) {
   let transporter = nodemailer.createTransport(transport);
   await transporter.sendMail(mail);
@@ -296,6 +292,21 @@ async function getMIMENodemailer(mail): Promise<Uint8Array> {
   let composer = new MailComposer(mail);
   let buffer = await composer.compile().build();
   return buffer;
+}
+
+function getSQLiteDatabase(filename: string, options: any): Database {
+  if (!filename.startsWith("/")) {
+    filename = path.join(getConfigDir(), filename);
+  }
+  return new Database(filename, options);
+}
+
+async function getAceDatabase(filename: string, options: any): Promise<AceBaseHandle> {
+  let db = new AceBaseHandle();
+  options ??= {};
+  options.path ??= getConfigDir();
+  await db.init(filename, options);
+  return db;
 }
 
 function newAdmZIP(filepath: string) {
