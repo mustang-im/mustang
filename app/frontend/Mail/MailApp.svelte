@@ -22,20 +22,21 @@
   import VerticalLayout from "./Vertical/VerticalLayout.svelte";
   import MailChat from "./MailChat/MailChat.svelte";
   import FolderPropertiesPage, { openFolderProperties } from "./FolderPropertiesPage.svelte";
-  import { ArrayColl } from "svelte-collections";
+  import { ArrayColl, Collection } from "svelte-collections";
 
   $: accounts = showAccounts;
   $: folders = $selectedAccount?.rootFolders ?? new ArrayColl<Folder>();
-  $: messages = searchMessages ?? $selectedFolder?.messages ?? new ArrayColl<EMail>();
-
+  let messages: Collection<EMail>;
   let searchMessages: ArrayColl<EMail> | null;
 
   $: loadFolder($selectedFolder).catch(showError);
   async function loadFolder(folder: Folder) {
     try {
+      messages = new ArrayColl();
       if (!folder) {
         return;
       }
+      messages = folder.messages;
       if ($selectedMessage?.folder != folder) {
         $selectedMessage = null;
       }
@@ -47,6 +48,15 @@
       } else {
         showError(ex);
       }
+    }
+  }
+
+  $: searchMessages && openSearch();
+  function openSearch() {
+    if (searchMessages) {
+      messages = searchMessages;
+    } else {
+      loadFolder($selectedFolder).catch(showError);
     }
   }
 
