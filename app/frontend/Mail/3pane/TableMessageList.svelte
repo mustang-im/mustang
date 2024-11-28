@@ -23,6 +23,7 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { onKeyOnList } from "./MessageList";
+  import { EMailCollection } from "../../../logic/Mail/Store/EMailCollection";
   import FastList from "../../Shared/FastList.svelte";
   import TableMessageListItem from "./TableMessageListItem.svelte";
   import type { Collection, ArrayColl } from "svelte-collections";
@@ -33,7 +34,9 @@
   export let selectedMessages: ArrayColl<EMail>;
   export let selectedMessage: EMail;
 
-  $: sortedMessages = messages.sortBy(email => -email.sent.getTime());
+  $: sortedMessages = messages instanceof EMailCollection
+    ? messages
+    : messages.sortBy(email => -email.sent.getTime());
 </script>
 
 <style>

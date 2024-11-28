@@ -16,6 +16,7 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { onKeyOnList } from "../3pane/MessageList";
+  import { EMailCollection } from "../../../logic/Mail/Store/EMailCollection";
   import FastList from "../../Shared/FastList.svelte";
   import VerticalMessageListItem from "./VerticalMessageListItem.svelte";
   import { catchErrors } from "../../Util/error";
@@ -25,7 +26,9 @@
   export let selectedMessage: EMail;
   export let selectedMessages: ArrayColl<EMail>;
 
-  $: sortedMessages = messages.sortBy(email => -email.sent.getTime());
+  $: sortedMessages = messages instanceof EMailCollection
+    ? messages
+    : messages.sortBy(email => -email.sent.getTime());
 </script>
 
 <style>
