@@ -21,6 +21,21 @@ export function backgroundError(ex: Error) {
   }
 }
 
+export function showUserError(ex: Error, autoDisappearAfterSeconds?: number): { remove(): void } {
+  let notification = new Notification(ex.message, NotificationSeverity.Error, ex);
+  notifications.add(notification);
+  if (autoDisappearAfterSeconds) {
+    setTimeout(() => {
+      notifications.remove(notification);
+    }, autoDisappearAfterSeconds * 1000);
+  }
+  return {
+    remove() {
+      notifications.remove(notification);
+    }
+  };
+}
+
 function shouldShow(ex: Error): boolean {
   return ex?.message &&
     !(ex as any).isUserError &&

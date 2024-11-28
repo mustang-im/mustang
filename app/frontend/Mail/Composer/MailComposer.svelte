@@ -130,6 +130,8 @@
   import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
+  import { UserError } from "../../../logic/util/util";
+  import { showUserError } from "../../Util/error";
   import MailAutocomplete from "./MailAutocomplete.svelte";
   import AttachmentsPane from "./Attachments/AttachmentsPane.svelte";
   import FileSelector from "./Attachments/FileSelector.svelte";
@@ -146,7 +148,7 @@
   import CloseIcon from "lucide-svelte/icons/x";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
   import { appName, appVersion } from "../../../logic/build";
-  import { t } from "../../../l10n/l10n";
+  import { t, gt } from "../../../l10n/l10n";
 
   export let mail: EMail;
 
@@ -160,20 +162,34 @@
   let lastMail = mail;
   $: differentMailLoaded(mail);
   function differentMailLoaded(_dummy: any) {
+    if (closing) {
+      return;
+    }
+
     if (mail.from?.emailAddress) {
       recipients = [mail.from, ...mail.to.contents, ...mail.cc.contents, ...mail.bcc.contents];
     }
+
+    const kNoReplyRegExp = /no[\-_t]*reply@|invalid$/;
+    let invalidTo = recipients.find(person =>
+      !person.emailAddress || kNoReplyRegExp.test(person.emailAddress));
+    if (invalidTo) {
+      let notification = showUserError(new UserError(gt`The recipient ${invalidTo.emailAddress} does not accept email`));
+      doOnClose.push(() => notification.remove());
+    }
+
     if (mail == lastMail || !mail) {
       return;
     }
     lastMail = mail;
+
     if (editor) {
       editor.commands.setContent(mail.html);
     }
   }
 
-  $: fromIdentity && setFromHeader()
-  function setFromHeader() {
+  $: fromIdentity && setAuthor()
+  function setAuthor() {
     mail.from = new PersonUID(fromIdentity.emailAddress, fromIdentity.userRealname);
     mail.folder = fromIdentity.account.getSpecialFolder(SpecialFolder.Sent)
       ?? fromIdentity.account.inbox;
@@ -244,7 +260,15 @@
     onClose();
   }
 
+  let closing = false;
+  let doOnClose: (() => void)[] = [];
   function onClose() {
+    closing = true;
+    for (let func of doOnClose) {
+      func();
+    }
+    doOnClose = [];
+
     let me = mailMustangApp.subApps.find(app => app instanceof WriteMailMustangApp && app.mainWindowProperties.mail == mail);
     mailMustangApp.subApps.remove(me);
   }
