@@ -30,7 +30,7 @@
 
   let searchMessages: ArrayColl<EMail> | null;
 
-  $: loadFolder($selectedFolder);
+  $: loadFolder($selectedFolder).catch(showError);
   async function loadFolder(folder: Folder) {
     try {
       if (!folder) {
@@ -42,7 +42,8 @@
       await folder.listMessages();
     } catch (ex) {
       if (ex.authFail) {
-        folder.account.login(true);
+        await folder.account.login(true);
+        await folder.listMessages();
       } else {
         showError(ex);
       }
