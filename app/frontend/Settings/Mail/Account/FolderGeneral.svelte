@@ -21,10 +21,17 @@
           ${$folder.countUnread} unread,
           ${$folder.countTotal} total messages.`}
     {/if}
-    {#if $folder.countTotal > 0 && $folder.countTotal == $messages.length}
+    {#if $folder.countTotal > 0 && $folder.countTotal != $messages.length}
+      {#if $messages.length == 0}
+        {$t`Not opened yet.`}
+      {:else}
+        {$t`${$messages.length} displayed.`}
+      {/if}
+    {/if}
+    {#if $folder.countTotal > 0 && $folder.countTotal == $downloadedMessages.length}
       {$t`All downloaded.`}
-    {:else if $messages.length > 0}
-      {$t`${$messages.length} local messages.`}
+    {:else if $downloadedMessages.length > 0}
+      {$t`${$downloadedMessages.length} downloaded messages.`}
     {/if}
   </hbox>
   <hbox />
@@ -55,6 +62,7 @@
   $: init($folder);
 
   $: messages = $folder.messages;
+  $: downloadedMessages = $messages.filter(msg => msg.downloadComplete);
   $: disableSpecial = $folder.disableChangeSpecial();
   $: disableRename = $folder.disableRename();
 
