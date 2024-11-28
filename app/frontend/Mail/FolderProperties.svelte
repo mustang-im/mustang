@@ -1,18 +1,20 @@
-<HeaderGroupBox>
-  <hbox slot="header">{$folder.name}</hbox>
-  <hbox slot="buttons-top-right">
-    <Button label={$t`Delete folder`}
-      classes="delete"
-      iconOnly
-      icon={DeleteIcon}
-      onClick={onDelete}
-      disabled={$folder.disableDelete()}
-      />
-  </hbox>
-  <FolderGeneral {folder} />
-  <hbox flex class="gap" />
-  <FolderActions {folder} />
-</HeaderGroupBox>
+{#if folder}
+  <HeaderGroupBox>
+    <hbox slot="header">{$folder.name}</hbox>
+    <hbox slot="buttons-top-right">
+      <Button label={$t`Delete folder`}
+        classes="delete"
+        iconOnly
+        icon={DeleteIcon}
+        onClick={onDelete}
+        disabled={$folder.disableDelete()}
+        />
+    </hbox>
+    <FolderGeneral {folder} />
+    <hbox flex class="gap" />
+    <FolderActions {folder} />
+  </HeaderGroupBox>
+{/if}
 
 <script lang="ts">
   import type { Folder } from "../../logic/Mail/Folder";
