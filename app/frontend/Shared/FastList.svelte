@@ -122,7 +122,20 @@
 
   /** How many rows are actually visible on the screen, without scroll */
   let showRows = 1;
-  $: showItems = $items.getIndexRange(scrollPos, showRows) as T[];
+
+  // $: showItems = $items.getIndexRange(scrollPos, showRows) as T[];
+  // Clear the display before rendering a new `items` list
+  let showItems: T[] = [];
+  $: $items, updateItemList().catch(console.error);
+  async function updateItemList() {
+    showItems = [];
+    await tick();
+    updateItems();
+  }
+  $: scrollPos, showRows, updateItems();
+  function updateItems() {
+    showItems = items.getIndexRange(scrollPos, showRows) as T[];
+  }
 
   $: $items.hasItems && listE && updateSize();
 
@@ -138,6 +151,9 @@
       }
       await tick();
       let contentRow = contentE.firstChild?.firstChild as HTMLElement;
+      if (!contentRow) {
+        return;
+      }
       rowHeight = contentRow.offsetHeight;
       let availableHeight = listE.offsetHeight - headerE.offsetHeight;
 
