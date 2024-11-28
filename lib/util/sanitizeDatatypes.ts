@@ -89,7 +89,7 @@ class Sanitize {
    */
   hostname(unchecked: string | null, fallback: string | null | Symbol = throwErrors): string {
     let str = this.nonemptystring(unchecked, fallback);
-    if (!/^[a-zA-Z0-9\-\.%]*$/.test(str)) {
+    if (!/^[\p{Letter}\p{Number}\-\.%]*$/u.test(str)) {
       return haveError("Hostname syntax", unchecked, fallback);
     }
     return str.toLowerCase();
