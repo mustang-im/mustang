@@ -21,21 +21,42 @@ export class EMailCollection<T extends EMail> extends SortedCollection<T> {
   getIndexRange(i: number, length: number): T[] {
     let emails = super.getIndexRange(i, length);
 
-    let needEmails = emails.filter((email: any) => !email.haveMetadata);
-    if (needEmails.length) {
-      let wait = new PromiseAllDone();
-      for (let email of needEmails) {
-        if (email.dbID) {
-          wait.add((async () => {
-            await email.storage.readMessage(email);
-            (email as any).haveMetadata = true;
-          })());
-        }
-      }
-      wait.wait().catch(needEmails[0].folder.account.errorCallback);
+    if (emails.length) {
+      // async: Return before filtering and reading emails
+      this.readMessagesFromDB(emails)
+        .catch(emails[0].folder.account.errorCallback);
     }
-
     return emails;
+  }
+
+  async readMessagesFromDB(emails: EMail[]) {
+    let needEmails = emails.filter((email: any) => !email.haveMetadata);
+    if (!needEmails.length) {
+      return;
+    }
+    for (let email of needEmails) {
+      if (email.dbID) {
+        await email.storage.readMessage(email);
+        (email as any).haveMetadata = true;
+      }
+    }
+  }
+
+  async readMessagesFromDB_parallel(emails: EMail[]) {
+    let needEmails = emails.filter((email: any) => !email.haveMetadata);
+    if (!needEmails.length) {
+      return;
+    }
+    let wait = new PromiseAllDone();
+    for (let email of needEmails) {
+      if (email.dbID) {
+        wait.add((async () => {
+          await email.storage.readMessage(email);
+          (email as any).haveMetadata = true;
+        })());
+      }
+    }
+    await wait.wait();
   }
 }
 
