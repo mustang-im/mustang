@@ -6,7 +6,7 @@ import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder } from "../Folder";
 import { assert, SpecificError } from "../../util/util";
 import { notifyChangedProperty } from "../../util/Observable";
-import { Lock } from "../../util/Lock";
+import { Lock, type Locked } from "../../util/Lock";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { appName, appVersion, siteRoot } from "../../build";
 import { ArrayColl, type Collection } from "svelte-collections";
@@ -15,15 +15,17 @@ import { gt } from "../../../l10n/l10n";
 
 export class IMAPAccount extends MailAccount {
   readonly protocol: string = "imap";
-  @notifyChangedProperty
-  _connection: ImapFlow;
   acceptOldTLS = false;
   pathDelimiter: string; /** Separator in folder path. E.g. '.' or '/', depending on server */
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
-  protected connectionLock = new Lock();
+  @notifyChangedProperty
+  protected connectionMain: ImapFlow;
+  protected connectionFetch: ImapFlow;
+  protected connectionMainLock = new Lock();
+  protected connectionFetchLock = new Lock();
 
   constructor() {
     super();
@@ -31,8 +33,8 @@ export class IMAPAccount extends MailAccount {
   }
 
   get isLoggedIn(): boolean {
-    // return !!this._connection?.authenticated; TODO authenticated is always false
-    return !!this._connection || this.oAuth2?.isLoggedIn;
+    // return !!this.connectionMain?.authenticated; TODO authenticated is always false
+    return !!this.connectionMain || this.oAuth2?.isLoggedIn;
   }
 
   async login(interactive: boolean): Promise<void> {
@@ -48,16 +50,24 @@ export class IMAPAccount extends MailAccount {
 
   async verifyLogin(): Promise<void> {
     await this.connection(true);
-    this.stopPolling();
-    await this._connection?.logout();
+    this.logout(false);
   }
 
-  async connection(interactive = false): Promise<ImapFlow> {
-    if (this._connection) {
-      return this._connection;
+  async connection(interactive = false, isMain = true): Promise<ImapFlow> {
+    if (isMain && this.connectionMain) {
+      return this.connectionMain;
     }
-    let lock = await this.connectionLock.lock();
+    if (!isMain && this.connectionFetch) {
+      return this.connectionFetch;
+    }
+    let lock: Locked;
+    if (isMain) {
+      lock = await this.connectionMainLock.lock();
+    } else {
+      lock = await this.connectionFetchLock.lock();
+    }
     try {
+
       this.fatalError = null;
 
       // Auth method
@@ -93,6 +103,7 @@ export class IMAPAccount extends MailAccount {
           minVersion: this.acceptOldTLS ? 'TLSv1' : undefined,
           rejectUnauthorized: !this.acceptBrokenTLSCerts,
         },
+        disableAutoIdle: !isMain,
         maxIdleTime: 30 * 1000, // 30 s, refresh IDLE
         connectionTimeout: 5 * 1000, // 5 s connection timeout
         greetingTimeout: 5 * 1000, // 5 s greeting timeout
@@ -121,9 +132,13 @@ export class IMAPAccount extends MailAccount {
           throw this.fatalError = new ConnectError(ex, msg);
         }
       }
-      this._connection = connection;
-      this.attachListeners(this._connection);
-      return this._connection;
+      if (isMain) {
+        this.connectionMain = connection;
+      } else {
+        this.connectionFetch = connection;
+      }
+      this.attachListeners(connection);
+      return connection;
     } finally {
       lock.release();
     }
@@ -133,7 +148,7 @@ export class IMAPAccount extends MailAccount {
     connection.on("close", async () => {
       try {
         console.log(`${new Date().toISOString()} IMAP connection to ${this.hostname} was closed by server, network or OS. Reconnecting...`);
-        await this.reconnect();
+        await this.reconnect(connection);
       } catch (ex) {
         this.fatalError = new ConnectError(ex,
           `Reconnection failed after connection closed:\n${ex.message}\n${this.hostname} IMAP server`);
@@ -142,7 +157,7 @@ export class IMAPAccount extends MailAccount {
     connection.on("error", async (ex) => {
       try {
         console.log(`${new Date().toISOString()} Connection to server for ${this.name} failed:\n${ex.message}`);
-        await this.reconnect();
+        await this.reconnect(connection);
       } catch (ex) {
         this.fatalError = new ConnectError(ex,
           `Reconnect failed after connection error:\n${ex.message}\n${this.hostname} IMAP server`);
@@ -168,7 +183,7 @@ export class IMAPAccount extends MailAccount {
         assert(typeof (info.seq) == "number", "Expected number for seq");
         assert(!info.modseq || typeof (info.modseq) == "number", "Expected number for modseq");
         assert(info.flags instanceof Set, "Expected Set for flags");
-        await folder.messageFlagsChanged(info.uid ?? null, info.seq, info.flags, info.modseq);
+        await folder.messageFlagsChanged(info.uid ?? null, info.seq, info.flags, info.modseq, connection);
       } catch (ex) {
         console.log("Error", ex, "in processing server event", info);
         this.errorCallback(new IMAPCommandError(ex, `Server event about message seq ${info.seq} = UID ${info.uid} in folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`));
@@ -179,7 +194,7 @@ export class IMAPAccount extends MailAccount {
         let folder = this.getFolderByPath(info.path);
         assert(folder, `We don't know about this folder`);
         assert(typeof (info.seq) == "number", "seq must be a number");
-        await folder.messageDeletedNotification(info.seq);
+        await folder.messageDeletedNotification(info.seq, connection);
       } catch (ex) {
         console.log("Server event", info);
         this.errorCallback(new IMAPCommandError(ex, `Server event about folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`));
@@ -187,18 +202,26 @@ export class IMAPAccount extends MailAccount {
     });
   }
 
-  protected async reconnect(): Promise<void> {
+  async reconnect(connection: ImapFlow): Promise<ImapFlow> {
     // Note: Do not stop polling
     try {
-      this._connection?.close();
+      connection?.close();
     } catch (ex) {
       // Sometimes gives "Connection not available". Do nothing.
     }
-    this._connection = null;
+
+    let isMain = this.connectionMain == connection;
+    if (isMain) {
+      this.connectionMain = null;
+    } else if (this.connectionFetch == connection) {
+      this.connectionFetch = null;
+    }
+
     if (!(this.password || this.oAuth2?.isLoggedIn)) {
       return;
     }
-    await this.connection();
+
+    return await this.connection(isMain);
   }
 
   async hasCapability(capa: string): Promise<boolean> {
@@ -268,10 +291,11 @@ export class IMAPAccount extends MailAccount {
     }
   }
 
-  async logout(): Promise<void> {
+  async logout(alsoOAuth2 = true): Promise<void> {
     this.stopPolling();
-    await this._connection?.logout();
-    if (this.oAuth2) {
+    await this.connectionMain?.logout();
+    await this.connectionFetch?.logout();
+    if (this.oAuth2 && alsoOAuth2) {
       await this.oAuth2.logout();
     }
   }
