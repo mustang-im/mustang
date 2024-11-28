@@ -8,7 +8,7 @@ export class EMailCollection<T extends EMail> extends SortedCollection<T> {
   sortFunc: (a: T, b: T) => number;
 
   constructor(folder: Folder) {
-    let sortFunc = (a: T, b: T) => compareValues(a.sent, b.sent);
+    let sortFunc = (a: T, b: T) => compareValues(b.sent, a.sent); // inverted = newest first
     /* Normally, a `SortedCollection` is simply a sorted /copy/ of the source collection.
      * Here, we don't use a source collection, but add the items directly to the
      * `SortedCollection`, using `.add()` and `.remove()`. The `SortedCollection`
