@@ -1,0 +1,25 @@
+name: Extract Strings
+
+on:
+  workflow_dispatch # manually triggered
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Extract UI strings to be translated
+      uses: actions/setup-node@v3
+      with:
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        node-version: 18.x
+#        cache: 'npm'
+    - run: cd app; yarn
+    - run: cd app; yarn l10n:extract
+    - name: Commit & Push Changes
+      run: |
+        git config user.name "Bot"
+        git config user.email "translate@mustang.im"
+        git commit -a -m "Translation: Extract UI strings from code into the English master translation file"
+        git push
