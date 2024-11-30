@@ -223,6 +223,8 @@ export class SQLEMail {
   static async saveMultiple(emails: Collection<EMail>) {
     let lock = await this.transactionLock.lock();
     try {
+      // We need to save all persons before the email transaction
+      // otherwise it will not appear in the database
       await (await getDatabase()).executeTransaction(() => {
         for (let email of emails) {
           if (!email.subject) {
