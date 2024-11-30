@@ -223,19 +223,47 @@ export class SQLEMail {
   static async saveMultiple(emails: Collection<EMail>) {
     let lock = await this.transactionLock.lock();
     try {
-      await (await getDatabase()).run(sql`BEGIN TRANSACTION`);
-      for (let email of emails) {
-        if (!email.subject) {
-          continue;
+      await (await getDatabase()).executeTransaction(() => {
+        for (let email of emails) {
+          if (!email.subject) {
+            continue;
+          }
+          this.savePerson(email.from);
+          for (let p of email.to) {
+            this.savePerson(p);
+          }
+          for (let cc of email.cc) {
+            this.savePerson(cc);
+          }
+          for (let bcc of email.bcc) {
+            this.savePerson(bcc);
+          }
+          if (email.replyTo) {
+            this.savePerson(email.replyTo);
+          }
         }
-        await this.save(email);
-      }
-      await (await getDatabase()).run(sql`END TRANSACTION`);
+      });
+      await (await getDatabase()).executeTransaction(() => {
+        for (let email of emails) {
+          if (!email.subject) {
+            continue;
+          }
+          this.save(email);
+        }
+      });
     } finally {
       lock.release();
     }
   }
 
+  protected static async savePerson(puid: PersonUID) {
+    await (await getDatabase()).run(sql`
+      INSERT OR IGNORE INTO emailPerson (
+        name, emailAddress, personID
+      ) VALUES (
+        ${puid.name}, ${puid.emailAddress}, ${puid.person?.dbID}
+      )`);
+  }
 
   static async read(dbID: number, email: EMail, row?: any, recipientRows?: any[], attachmentRows?: any[], tagRows?: any[]): Promise<EMail> {
     if (!row) {
