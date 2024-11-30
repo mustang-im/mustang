@@ -137,3 +137,7 @@ export const calendarDatabaseSchema = sql`
   );
   CREATE INDEX index_groupMember_eventID ON eventParticipant (eventID);
 `;
+
+export const calendarDatabaseMigrations = [
+  sql`ALTER TABLE event ADD COLUMN responseToOrganizer INTEGER default 0,`,
+]

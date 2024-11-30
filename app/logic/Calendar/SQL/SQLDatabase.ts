@@ -1,6 +1,6 @@
 import { appGlobal } from "../../app";
 import sql, { type Database } from "../../../../lib/rs-sqlite/index";
-import { calendarDatabaseSchema } from "./createDatabase";
+import { calendarDatabaseMigrations, calendarDatabaseSchema } from "./createDatabase";
 
 let calendarDatabase: Database;
 
@@ -13,6 +13,7 @@ export async function getDatabase(): Promise<Database> {
   const getDatabase = appGlobal.remoteApp.getSQLiteDatabase;
   calendarDatabase = await getDatabase("calendar.db");
   await calendarDatabase.migrate(calendarDatabaseSchema);
+  await calendarDatabase.migrate(...calendarDatabaseMigrations);
   await calendarDatabase.pragma('foreign_keys = true');
   await calendarDatabase.pragma('journal_mode = DELETE');
   return calendarDatabase;

@@ -178,3 +178,7 @@ export const mailDatabaseSchema = sql`
       ON DELETE CASCADE
   );
 `;
+
+export const mailDatabaseMigrations = [
+  sql`ALTER TABLE email ADD COLUMN "scheduling" INTEGER default 0,`,
+]
