@@ -34,17 +34,20 @@ export class SQLEMail {
         email.dbID = existing.id;
       }
     }
+    let contact = email.contact as PersonUID;
     if (!email.dbID) {
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO email (
           messageID, folderID, pID, parentMsgID,
           size, dateSent, dateReceived,
-          outgoing, scheduling,
+          scheduling,
+          outgoing, contactEmail, contactName,
           subject, plaintext, html
         ) VALUES (
           ${email.id}, ${email.folder.dbID}, ${email.pID}, ${email.inReplyTo},
           ${email.size}, ${email.sent.getTime() / 1000}, ${email.received.getTime() / 1000},
-          ${email.outgoing ? 1 : 0}, ${email.scheduling},
+          ${email.scheduling},
+          ${email.outgoing ? 1 : 0}, ${contact?.emailAddress}, ${email.contact?.name},
           ${email.subject}, ${email.rawText}, ${email.rawHTMLDangerous}
         )`);
       // -- contactEmail, contactName, myEmail
@@ -59,8 +62,10 @@ export class SQLEMail {
           size = ${email.size},
           dateSent = ${email.sent.getTime() / 1000},
           dateReceived = ${email.received.getTime() / 1000},
-          outgoing = ${email.outgoing ? 1 : 0},
           scheduling = ${email.scheduling},
+          outgoing = ${email.outgoing ? 1 : 0},
+          contactEmail = ${contact?.emailAddress},
+          contactName = ${email.contact?.name},
           subject = ${email.subject},
           plaintext = ${email.rawText},
           html = ${email.rawHTMLDangerous}
@@ -298,7 +303,9 @@ export class SQLEMail {
     email.threadID = sanitize.string(row.threadID ?? row.parentMsgID, null);
     email.downloadComplete = sanitize.boolean(!!row.downloadComplete);
 
-    email.contact = findOrCreatePersonUID("must@n.g", " ");
+    email.contact = findOrCreatePersonUID(
+      sanitize.emailAddress(row.contactEmail, "must@n.g"),
+      sanitize.label(row.contactName, " "));
   }
 
   static async readWritableProps(email: EMail, row?: any) {

@@ -62,8 +62,8 @@ export const mailDatabaseSchema = sql`
     -- Email address of our user that was used, either as From (outgoing) or To/CC (incoming).
     -- "myEmail" TEXT default null,
     -- If outgoing: First To: ; if incoming: (First) From:
-    -- "contactEmail" TEXT default null,
-    -- "contactName" TEXT default null,
+    "contactEmail" TEXT default null,
+    "contactName" TEXT default null,
     -- RFC822 header Subject:
     "subject" TEXT not null,
     -- If not zero, then one of the following values:
