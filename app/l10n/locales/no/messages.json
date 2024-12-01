@@ -23,7 +23,7 @@
   "FlvwwB": "{0} konto bare",
   "QpgBEp": "{0, plural, other {# dager}}",
   "BqElFK": "{0} mappe bare",
-  "BaQ5Y3": "",
+  "BaQ5Y3": "{0} KB",
   "ZXxoL2": "{0, plural, other {# lokale meldinger.}}",
   "o7dGee": "{0, plural, other {# mails}}",
   "C2EZrZ": "",
@@ -498,5 +498,6 @@
   "cZNm5F": "Din Matrix-ID",
   "23+T2s": "Dine mikrofoner",
   "q8yluz": "Ditt navn",
-  "9TO8nT": "Ditt passord"
+  "9TO8nT": "Ditt passord",
+  "ZuduiH": "sekundær"
 }
