@@ -24,8 +24,8 @@ export class IMAPAccount extends MailAccount {
   @notifyChangedProperty
   protected connectionMain: ImapFlow;
   protected connectionFetch: ImapFlow;
-  protected connectionMainLock = new Lock();
-  protected connectionFetchLock = new Lock();
+  protected connectMainLock = new Lock();
+  protected connectFetchLock = new Lock();
 
   constructor() {
     super();
@@ -62,9 +62,9 @@ export class IMAPAccount extends MailAccount {
     }
     let lock: Locked;
     if (isMain) {
-      lock = await this.connectionMainLock.lock();
+      lock = await this.connectMainLock.lock();
     } else {
-      lock = await this.connectionFetchLock.lock();
+      lock = await this.connectFetchLock.lock();
     }
     try {
 
