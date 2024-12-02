@@ -18,7 +18,6 @@ export async function getDatabase(): Promise<Database> {
   mailDatabase = await getDatabase("mail.db");
   await mailDatabase.migrate(mailDatabaseSchema);
   await mailDatabase.pragma('foreign_keys = true');
-  await mailDatabase.pragma('synchronous = NORMAL');
   await mailDatabase.pragma('journal_mode = WAL');
   return mailDatabase;
 }
