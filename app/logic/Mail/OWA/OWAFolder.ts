@@ -142,8 +142,8 @@ export class OWAFolder extends Folder {
           },
         },
       };
-      let result: any = { RootFolder: { IncludesLastItemInRange: "false" } };
-      while (result?.RootFolder?.IncludesLastItemInRange === "false") {
+      let result: any = { RootFolder: { IncludesLastItemInRange: false } };
+      while (result?.RootFolder?.IncludesLastItemInRange === false) {
         result = await this.account.callOWA(request);
         if (!result?.RootFolder?.Items?.length) {
           // This folder is empty.
