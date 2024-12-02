@@ -14,15 +14,22 @@
   export let dateInterval: number; /* in */
 
   function pageNext() {
-    date.setDate(date.getDate() + dateInterval);
+    // Advance months by 42 days just to be sure, e.g. for March 2025
+    // MonthView.setDays will then rewind as necessary.
+    date.setDate(date.getDate() + (dateInterval == 35 ? 42 : dateInterval));
     date = date;
   }
   function pagePrevious() {
-    date.setDate(date.getDate() - dateInterval);
+    // Rewind by 28 days at most, e.g. for February 2025
+    // MonthView.setDays will rewind further if necessary.
+    date.setDate(date.getDate() - (dateInterval == 35 ? 28 : dateInterval));
     date = date;
   }
 
   function monthYear(date): string {
+    // Show the month that covers most of the current date range.
+    date = new Date(date);
+    date.setDate(date.getDate() + (dateInterval >> 1));
     return date.toLocaleDateString(getUILocale(), {
       year: "numeric",
       month: "long",
