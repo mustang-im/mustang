@@ -9,7 +9,7 @@
     "adm-zip": "^0.5.12",
     "bufferutil": "^4.0.8",
     "express": "^4.19.2",
-    "imapflow": "^1.0.155",
+    "imapflow": "https://github.com/mustang-im/imapflow.git",
     "ky": "^1.2.3",
     "nodemailer": "^6.9.13",
     "sqlite": "^5.1.1",

@@ -102,6 +102,7 @@ export class IMAPAccount extends MailAccount {
         tls: {
           minVersion: this.acceptOldTLS ? 'TLSv1' : undefined,
           rejectUnauthorized: !this.acceptBrokenTLSCerts,
+          disableSTARTTLS: this.tls == TLSSocketType.Plain,
         },
         disableAutoIdle: !isMain,
         maxIdleTime: 30 * 1000, // 30 s, refresh IDLE
