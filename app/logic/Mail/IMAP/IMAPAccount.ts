@@ -93,6 +93,7 @@ export class IMAPAccount extends MailAccount {
         host: this.hostname,
         port: this.port,
         secure: this.tls == TLSSocketType.TLS,
+        doSTARTTLS: this.tls == TLSSocketType.STARTTLS,
         auth: {
           user: this.username,
           pass: usePassword ? this.password : undefined,
@@ -102,7 +103,6 @@ export class IMAPAccount extends MailAccount {
         tls: {
           minVersion: this.acceptOldTLS ? 'TLSv1' : undefined,
           rejectUnauthorized: !this.acceptBrokenTLSCerts,
-          disableSTARTTLS: this.tls == TLSSocketType.Plain,
         },
         disableAutoIdle: !isMain,
         maxIdleTime: 30 * 1000, // 30 s, refresh IDLE
