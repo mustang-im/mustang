@@ -13,6 +13,7 @@ import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 import childProcess from 'node:child_process';
 import * as OWA from './owa';
+import { appName, production } from '../app/logic/build';
 
 export async function startupBackend() {
   let appGlobal = await createSharedAppObject();
@@ -331,7 +332,7 @@ function directory(type: string): string {
   return app.getPath(type as any);
 }
 
-const kAppDir = "Mustang";
+const kAppDir = production ? appName : appName + "Dev"; // e.g. "Mustang" or "Parula"
 
 /**
  * Get the user config directory on disk.
