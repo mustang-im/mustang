@@ -2,6 +2,7 @@ import { Account } from "../Abstract/Account";
 import { MailIdentity } from "./MailIdentity";
 import { Folder, SpecialFolder } from "./Folder";
 import type { EMail } from "./EMail";
+import { Event, type Responses, Participant } from "../Calendar/Event";
 import type { Person } from "../Abstract/Person";
 import { OAuth2 } from "../Auth/OAuth2";
 import { appGlobal } from "../app";
@@ -76,7 +77,20 @@ export class MailAccount extends Account {
 
   async send(email: EMail): Promise<void> {
     throw new AbstractFunction();
-  };
+  }
+
+  async sendInvitationResponse(invitation: Event, response: Responses): Promise<void> {
+    let email = this.newEMailFrom();
+    email.method = 'REPLY';
+    email.event = new Event();
+    email.event.copyFrom(invitation);
+    email.event.participants.replaceAll([new Participant(this.emailAddress, null, response)]);
+    if (email.event.descriptionText) {
+      email.text = email.event.descriptionText;
+      email.html = email.event.descriptionHTML;
+    }
+    this.send(email);
+  }
 
   newFolder(): Folder {
     return new Folder(this);

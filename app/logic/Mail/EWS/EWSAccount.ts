@@ -14,7 +14,7 @@ import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { ContentDisposition } from "../Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
-import { assert, sleep, blobToBase64, throttleConnectionsPerSecond, ensureArray } from "../../util/util";
+import { assert, sleep, blobToBase64, throttleConnectionsPerSecond, ensureArray, NotSupported } from "../../util/util";
 import { SetColl } from "svelte-collections";
 
 type Json = string | number | boolean | null | Json[] | {[key: string]: Json};
@@ -85,6 +85,9 @@ export class EWSAccount extends MailAccount {
   }
 
   async send(email: EMail): Promise<void> {
+    if (email.method) {
+      throw new NotSupported("Please use Exchange APIs to send iTIP messages");
+    }
     let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
     request.addField("Message", "Subject", email.subject, "item:Subject");

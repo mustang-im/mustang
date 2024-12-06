@@ -13,7 +13,7 @@ import { ContentDisposition } from "../Attachment";
 import { LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { notifyChangedProperty } from "../../util/Observable";
-import { blobToBase64 } from "../../util/util";
+import { blobToBase64, NotSupported } from "../../util/util";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 
@@ -130,6 +130,9 @@ export class OWAAccount extends MailAccount {
   }
 
   async send(email: EMail): Promise<void> {
+    if (email.method) {
+      throw new NotSupported("Please use Exchange APIs to send iTIP messages");
+    }
     let request = new OWACreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
     request.addField("Message", "Subject", email.subject, "item:Subject");

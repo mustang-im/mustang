@@ -4,7 +4,7 @@ import { Attachment, ContentDisposition } from "./Attachment";
 import type { Tag } from "./Tag";
 import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
-import { Event, ResponseType, type Responses, ParticipationStatus, Participant } from "../Calendar/Event";
+import { Event, type iCalMethod, ResponseType, type Responses, ParticipationStatus, Participant } from "../Calendar/Event";
 import { RecurrenceRule } from "../Calendar/RecurrenceRule";
 import { appGlobal } from "../app";
 import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
@@ -93,6 +93,8 @@ export class EMail extends Message {
   needToLoadBody = true;
   @notifyChangedProperty
   haveCID = false;
+  /* Only used when constructing iTIP outgoing messages */
+  method: iCalMethod | undefined;
 
   constructor(folder: Folder) {
     super();
@@ -207,7 +209,7 @@ export class EMail extends Message {
   }
 
   protected async sendInvitationResponse(response: Responses): Promise<void> {
-    throw new Error("Implement me!"); // TODO
+    await this.folder.account.sendInvitationResponse(this.event, response);
   }
 
   async loadEvent() {
