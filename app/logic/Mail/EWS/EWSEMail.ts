@@ -1,5 +1,6 @@
 import { EMail } from "../EMail";
 import { type EWSFolder, getEWSItem } from "./EWSFolder";
+import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import { EWSEvent } from "../../Calendar/EWS/EWSEvent";
 import { type Tag, getTagByName } from "../Tag";
 import { Attachment, ContentDisposition } from "../Attachment";
@@ -215,6 +216,16 @@ export class EWSEMail extends EMail {
     request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.itemID });
     await this.folder.account.callEWS(request);
     await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
+  }
+
+  getUpdateCalendars(): EWSCalendar[] {
+    if (!this.scheduling || this.scheduling == Scheduling.REQUEST || !this.event) {
+      return [];
+    }
+    if (this.folder.account.calendar?.events.some(event => event.calUID == this.event.calUID)) {
+      return [this.folder.account.calendar];
+    }
+    return [];
   }
 
   /** EWS only provides event data for invitations,

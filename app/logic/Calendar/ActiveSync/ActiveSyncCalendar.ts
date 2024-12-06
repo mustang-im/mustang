@@ -1,4 +1,6 @@
 import { Calendar } from "../Calendar";
+import type { Event } from "../Event";
+import type { Scheduling } from "../IMIP";
 import { ActiveSyncEvent, fromCompact } from "./ActiveSyncEvent";
 import type { ActiveSyncAccount, ActiveSyncPingable } from "../../Mail/ActiveSync/ActiveSyncAccount";
 import { kMaxCount } from "../../Mail/ActiveSync/ActiveSyncFolder";
@@ -11,6 +13,7 @@ import type { ArrayColl } from "svelte-collections";
 export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
   readonly protocol: string = "calendar-activesync";
   readonly events: ArrayColl<ActiveSyncEvent>;
+  readonly canUpdateFromResponse: boolean = false;
   account: ActiveSyncAccount;
   readonly folderClass = "Calendar";
   protected requestLock = new Lock();
@@ -25,6 +28,10 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
 
   newEvent(parentEvent?: ActiveSyncEvent): ActiveSyncEvent {
     return new ActiveSyncEvent(this, parentEvent);
+  }
+
+  async updateFromResponse(scheduling: Scheduling, response: Event) {
+    await this.listEvents();
   }
 
   /**

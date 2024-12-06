@@ -17,6 +17,16 @@
       <Button label={$t`Tentative`} onClick={onTentative} />
       <Button label={$t`Decline`} onClick={onDecline} />
     </hbox>
+  {:else if message.scheduling}
+    {@const calendars = message.getUpdateCalendars()}
+    <hbox>
+      <select value={calendar} disabled={calendars.length < 2}>
+        {#each calendars as calendar}
+          <option value={calendar}>calendar.name</option>
+        {/each}
+      </select>
+      <Button label={$t`Update calendar`} disabled={!calendars.length && (message.scheduling == Scheduling.Cancellation ? t`This update has already been processed` : t`This event is not in your calendar`)} onClick={onUpdate} bind:this={update} />
+    </hbox>
   {/if}
 </vbox>
 
@@ -28,6 +38,7 @@
   import { t } from "../../l10n/l10n";
 
   export let message: EMail;
+  let calendar, update;
 
   async function respond(response: Responses) {
     await message.respondToInvitation(response);
@@ -40,6 +51,10 @@
   }
   async function onDecline() {
     await respond(ResponseType.Decline);
+  }
+  async function onUpdate() {
+    await calendar.updateFromResponse(message.scheduling, message.event);
+    update.disabled = await t`This update has already been processed`;
   }
 </script>
 
