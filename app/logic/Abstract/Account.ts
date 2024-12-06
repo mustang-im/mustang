@@ -116,7 +116,7 @@ function findFreeAccountID(): string {
 function getAllAccounts(): Collection<Account> {
   let allAccounts = new ArrayColl<Account>();
   allAccounts.addAll(appGlobal.emailAccounts);
-  allAccounts.addAll(appGlobal.emailAccounts.filter(acc => !!acc.outgoing).map(acc => acc.outgoing));
+  allAccounts.addAll(appGlobal.emailAccounts.map(acc => acc.outgoing).filter(o => !!o));
   allAccounts.addAll(appGlobal.chatAccounts);
   allAccounts.addAll(appGlobal.addressbooks);
   allAccounts.addAll(appGlobal.calendars);
