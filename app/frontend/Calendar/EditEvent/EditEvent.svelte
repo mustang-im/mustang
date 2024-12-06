@@ -147,7 +147,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { Frequency, RecurrenceRule, type RecurrenceInit } from "../../../logic/Calendar/RecurrenceRule";
   import { EventEditMustangApp, calendarMustangApp } from "../CalendarMustangApp";
-  import { Scheduling, ResponseType, type Responses } from "../../../logic/Calendar/Invitation";
+  import { Scheduling, ResponseType, type Responses } from "../../../logic/Calendar/IMIP";
   import PersonsAutocomplete from "../../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
   import PersonAvailability from "./PersonAvailability.svelte";
   import DateInput from "./DateInput.svelte";

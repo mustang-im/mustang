@@ -1,5 +1,5 @@
 import { Event } from "../Event";
-import { Scheduling, ResponseType, type Responses } from "../Invitation";
+import { Scheduling, ResponseType, type Responses } from "../IMIP";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { OWACalendar } from "./OWACalendar";
 import WindowsTimezones from "../EWS/WindowsTimezones";

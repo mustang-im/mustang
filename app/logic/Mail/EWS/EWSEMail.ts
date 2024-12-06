@@ -7,7 +7,7 @@ import EWSCreateItemRequest from "./EWSCreateItemRequest";
 import EWSDeleteItemRequest from "./EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "./EWSUpdateItemRequest";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { Scheduling, type Responses } from "../../Calendar/Invitation";
+import { Scheduling, type Responses } from "../../Calendar/IMIP";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { base64ToArrayBuffer, assert, ensureArray } from "../../util/util";

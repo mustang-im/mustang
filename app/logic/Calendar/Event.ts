@@ -1,7 +1,7 @@
 import type { PersonUID } from "../Abstract/PersonUID";
 import type { Calendar } from "./Calendar";
 import type { RecurrenceRule } from "./RecurrenceRule";
-import { ResponseType, type Responses } from "./Invitation";
+import { ResponseType, type Responses } from "./IMIP";
 import { ArrayColl } from "svelte-collections";
 import { assert, randomID, AbstractFunction } from "../util/util";
 import { Observable, notifyChangedProperty } from "../util/Observable";

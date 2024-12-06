@@ -2,7 +2,7 @@
   <MessageHeader {message} />
   <MessageAttachments {message} />
   {#if $message.event || $message.scheduling}
-    <Invitation {message} />
+    <IMIP {message} />
   {/if}
   <Paper>
     <MessageBody {message} />
@@ -14,7 +14,7 @@
   import MessageHeader from "./MessageHeader.svelte";
   import MessageAttachments from "./AttachmentsUI.svelte";
   import MessageBody from "./MessageBody.svelte";
-  import Invitation from "../../Calendar/Invitation.svelte";
+  import IMIP from "../../Calendar/IMIP.svelte";
   import Paper from "../../Shared/Paper.svelte";
 
   export let message: EMail;
