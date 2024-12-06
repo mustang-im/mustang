@@ -16,7 +16,7 @@ import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { Throttle } from "../../util/Throttle";
 import { Semaphore } from "../../util/Semaphore";
-import { assert, blobToBase64, ensureArray } from "../../util/util";
+import { assert, blobToBase64, ensureArray, NotSupported } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { SetColl } from "svelte-collections";
 
@@ -28,6 +28,7 @@ export class EWSAccount extends MailAccount {
   readonly protocol: string = "ews";
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
+  readonly canSendInvitations: boolean = false;
   readonly folderMap = new Map<string, EWSFolder>;
   throttle = new Throttle(50, 1);
   semaphore = new Semaphore(20);
@@ -91,6 +92,9 @@ export class EWSAccount extends MailAccount {
   }
 
   async send(email: EMail): Promise<void> {
+    if (email.method) {
+      throw new NotSupported("Please use Exchange APIs to send iMIP messages");
+    }
     let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
     request.addField("Message", "Subject", email.subject, "item:Subject");

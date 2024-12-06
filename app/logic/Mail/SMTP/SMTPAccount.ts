@@ -81,6 +81,7 @@ export class SMTPAccount extends MailAccount {
       bcc: SMTPAccount.getRecipients(email.bcc),
       text: email.text,
       html: doHTML ? email.html : null,
+      icalEvent: email.event?.getNMical(email.method),
       attachDataUrls: true,
       attachments: await SMTPAccount.getAttachments(email),
       headers: email.headers.contentKeyValues(),

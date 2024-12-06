@@ -2,6 +2,8 @@ import { Account } from "../Abstract/Account";
 import { MailIdentity } from "./MailIdentity";
 import { Folder, SpecialFolder } from "./Folder";
 import type { EMail } from "./EMail";
+import { Event, Participant } from "../Calendar/Event";
+import type { Responses } from "../Calendar/IMIP";
 import type { Person } from "../Abstract/Person";
 import { OAuth2 } from "../Auth/OAuth2";
 import { appGlobal } from "../app";
@@ -12,6 +14,7 @@ import { Collection, ArrayColl, MapColl } from 'svelte-collections';
 
 export class MailAccount extends Account {
   readonly protocol: string = "mail";
+  readonly canSendInvitations: boolean = true;
   @notifyChangedProperty
   hostname: string | null = null; /** only for some account types */
   @notifyChangedProperty
@@ -74,7 +77,21 @@ export class MailAccount extends Account {
 
   async send(email: EMail): Promise<void> {
     throw new AbstractFunction();
-  };
+  }
+
+  async sendInvitationResponse(invitation: Event, response: Responses): Promise<void> {
+    let email = this.newEMailFrom();
+    email.method = "REPLY";
+    email.event = new Event();
+    email.event.copyFrom(invitation);
+    email.event.recurrenceRule = invitation.recurrenceRule;
+    email.event.participants.replaceAll([new Participant(this.emailAddress, null, response)]);
+    if (email.event.descriptionText) {
+      email.text = email.event.descriptionText;
+      email.html = email.event.descriptionHTML;
+    }
+    await this.send(email);
+  }
 
   newFolder(): Folder {
     return new Folder(this);

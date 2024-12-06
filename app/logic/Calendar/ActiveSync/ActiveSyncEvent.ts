@@ -181,7 +181,7 @@ export class ActiveSyncEvent extends Event {
       },
     };
     await this.calendar.account.callEAS("MeetingResponse", request);
-    await super.sendInvitationResponse(response); // needs 16.x to do this automatically
+    await this.calendar.account.sendInvitationResponse(this, response); // needs 16.x to do this automatically
   }
 }
 
