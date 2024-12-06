@@ -1,5 +1,5 @@
 import { Event } from "../Event";
-import { Scheduling, ResponseType, type Responses } from "../IMIP";
+import { ResponseType, type Responses } from "../IMIP";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { OWACalendar } from "./OWACalendar";
 import WindowsTimezones from "../EWS/WindowsTimezones";
@@ -12,9 +12,9 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 
 const ResponseTypes: Record<Responses, string> = {
-  [Scheduling.Accepted]: "AcceptItem",
-  [Scheduling.Tentative]: "TentativelyAcceptItem",
-  [Scheduling.Declined]: "DeclineItem",
+  [ResponseType.Accept]: "AcceptItem",
+  [ResponseType.Tentative]: "TentativelyAcceptItem",
+  [ResponseType.Decline]: "DeclineItem",
 };
 
 const gTimeZone = WindowsTimezones[Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
