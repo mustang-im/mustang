@@ -22,7 +22,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../logic/Mail/EMail";
-  import { Scheduling, type Responses } from "../../logic/Calendar/IMIP";
+  import { Scheduling, ResponseType, type Responses } from "../../logic/Calendar/IMIP";
   import DisplayEvent from "./DisplayEvent.svelte";
   import Button from "../Shared/Button.svelte";
   import { t } from "../../l10n/l10n";
@@ -33,13 +33,13 @@
     await message.respondToInvitation(response);
   }
   async function onAccept() {
-    await respond(Scheduling.Accepted);
+    await respond(ResponseType.Accept);
   }
   async function onTentative() {
-    await respond(Scheduling.Tentative);
+    await respond(ResponseType.Tentative);
   }
   async function onDecline() {
-    await respond(Scheduling.Declined);
+    await respond(ResponseType.Decline);
   }
 </script>
 

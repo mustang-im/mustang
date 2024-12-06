@@ -7,7 +7,7 @@ import EWSCreateItemRequest from "./EWSCreateItemRequest";
 import EWSDeleteItemRequest from "./EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "./EWSUpdateItemRequest";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { Scheduling, type Responses } from "../../Calendar/IMIP";
+import { Scheduling, ResponseType, type Responses } from "../../Calendar/IMIP";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { base64ToArrayBuffer, assert, ensureArray } from "../../util/util";
@@ -22,9 +22,9 @@ const ExchangeScheduling: Record<string, number> = {
 };
 
 const ResponseTypes: Record<Responses, string> = {
-  [Scheduling.Accepted]: "AcceptItem",
-  [Scheduling.Tentative]: "TentativelyAcceptItem",
-  [Scheduling.Declined]: "DeclineItem",
+  [ResponseType.Accept]: "AcceptItem",
+  [ResponseType.Tentative]: "TentativelyAcceptItem",
+  [ResponseType.Decline]: "DeclineItem",
 };
 
 export class EWSEMail extends EMail {
