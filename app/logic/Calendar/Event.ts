@@ -1,7 +1,8 @@
 import { PersonUID, findPerson } from "../Abstract/PersonUID";
 import type { Calendar } from "./Calendar";
 import type { RecurrenceRule } from "./RecurrenceRule";
-import { ResponseType, type Responses } from "./IMIP";
+import { ResponseType, type Responses, ParticipationStatus, type iCalMethod } from "./IMIP";
+import { appGlobal } from "../app";
 import { ArrayColl } from "svelte-collections";
 import { assert, randomID, AbstractFunction } from "../util/util";
 import { Observable, notifyChangedProperty } from "../util/Observable";
@@ -190,11 +191,59 @@ export class Event extends Observable {
 
   async respondToInvitation(response: Responses): Promise<void> {
     assert(this.response > ResponseType.Organizer, "Only invitations can be responded to");
-    throw new AbstractFunction();
+    let accounts = appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations && this.participants.some(participant => participant.response != ResponseType.Organizer && participant.emailAddress == account.emailAddress));
+    assert(accounts.length == 1, "Failed to find matching account for invitation");
+    let participant = this.participants.find(participant => participant.emailAddress == accounts[0].emailAddress);
+    participant.response = response;
+    await this.save();
+    await accounts[0].sendInvitationResponse(this, response);
   }
 
-  protected async sendInvitationResponse(response: Responses): Promise<void> {
-    throw new Error("Implement me!"); // TODO
+  /* Returns an icalEvent object suitable for NodeMailer */
+  getNMical(method?: iCalMethod): { method: iCalMethod, content: string } | null {
+    if (!method) {
+      return null;
+    }
+    const lines: (string | string[])[] = [];
+    lines.push(["BEGIN", "VCALENDAR"]);
+    lines.push(["METHOD", method]);
+    lines.push(["VERSION", "2.0"]);
+    lines.push(["PRODID", "-//Beonex//Parula//EN"]);
+    lines.push(["BEGIN", "VEVENT"]);
+    lines.push(["DTSTAMP", date2ical(new Date(), false)]);
+    lines.push(["UID", this.calUID]);
+    lines.push(["SUMMARY", this.title]);
+    lines.push(["DESCRIPTION", this.descriptionText]);
+    const dateParts = ["VALUE", this.allDay ? "DATE" : "DATE-TIME", "TZID", Intl.DateTimeFormat().resolvedOptions().timeZone];
+    lines.push(["DTSTART", ...dateParts, date2ical(this.startTime, this.allDay)]);
+    lines.push(["DTEND", ...dateParts, date2ical(this.endTime, this.allDay)]);
+    lines.push(["LOCATION", this.location]);
+    let organizer = this.participants.find(participant => participant.response == ResponseType.Organizer);
+    if (organizer) {
+      lines.push(["ORGANIZER", "MAILTO:" + organizer.emailAddress]);
+    }
+    if (this.recurrenceRule) {
+      lines.push(this.recurrenceRule.getCalString() + "\r\n");
+    }
+    for (let participant of this.participants) {
+      switch (participant.response) {
+      case ResponseType.Organizer:
+        lines.push(["ATTENDEE", "ROLE", "CHAIR", "PARTSTAT", "ACCEPTED", "CN", participant.name, "MAILTO:" + participant.emailAddress]);
+        break;
+      case ResponseType.Tentative:
+      case ResponseType.Accept:
+      case ResponseType.Decline:
+        lines.push(["ATTENDEE", "PARTSTAT", ParticipationStatus[participant.response], "CN", participant.name, "MAILTO:" + participant.emailAddress]);
+        break;
+      default:
+        lines.push(["ATTENDEE", "RSVP", "TRUE", "CN", participant.name, "MAILTO:" + participant.emailAddress]);
+        break;
+      }
+    }
+    lines.push(["END", "VEVENT"]);
+    lines.push(["END", "VCALENDAR"]);
+    const content = lines.map(line2ical).join("");
+    return { method, content };
   }
 
   /**
@@ -252,4 +301,37 @@ export class Event extends Observable {
       this.calendar.storage.deleteEvent(previous).catch(this.calendar.errorCallback);
     }
   }
+}
+
+function line2ical(line: string | string[]): string {
+  if (typeof line == "string") {
+    return line;
+  }
+  let text = line.shift();
+  let value = line.pop();
+  while (line.length) {
+    text += ";" + line.shift() + "=" + encode(line.shift(), true);
+  }
+  text += ":" + encode(value, false);
+  // Lines longer than 75 octets should be folded.
+  // XXX should use TextEncoder to count octets.
+  return text.match(/.{1,75}/gu).join("\r\n ") + "\r\n";
+}
+
+function date2ical(date: Date, allDay: boolean): string {
+  if (!allDay) {
+    return date.toISOString().replace(/-|:|\..../g, "");
+  }
+  return String(date.getFullYear()) + String(date.getMonth() + 1).padStart(2, "0") + String(date.getDate()).padStart(2, "0");
+}
+
+function encode(s: string, quote: boolean): string {
+  s = s.replace(/\\/g, "\\\\").replace(/\r\n?|\n/g, "\\n");
+  if (quote) {
+    s = s.replace(/"/g, "\\\"");
+    if (/[";,]/.test(s)) {
+      s = `"${s}"`;
+    }
+  }
+  return s;
 }

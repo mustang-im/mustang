@@ -1,3 +1,4 @@
+export type iCalMethod = "CANCEL" | "REQUEST" | "REPLY";
 
 /**
  * For an inbox item that represents a scheduling message, the type of message:

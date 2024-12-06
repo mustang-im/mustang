@@ -19,7 +19,7 @@ import { appGlobal } from "../../app";
 import { Semaphore } from "../../util/Semaphore";
 import { Throttle } from "../../util/Throttle";
 import { notifyChangedProperty } from "../../util/Observable";
-import { blobToBase64 } from "../../util/util";
+import { blobToBase64, NotSupported } from "../../util/util";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 
@@ -27,6 +27,7 @@ export class OWAAccount extends MailAccount {
   readonly protocol: string = "owa";
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
+  readonly canSendInvitations: boolean = false;
   readonly folderMap = new Map<string, OWAFolder>;
   /**
    * We get notifications for folders we're not interested in.
@@ -126,6 +127,9 @@ export class OWAAccount extends MailAccount {
   }
 
   async send(email: EMail): Promise<void> {
+    if (email.method) {
+      throw new NotSupported("Please use Exchange APIs to send iMIP messages");
+    }
     let request = new OWACreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
     request.addField("Message", "Subject", email.subject, "item:Subject");
