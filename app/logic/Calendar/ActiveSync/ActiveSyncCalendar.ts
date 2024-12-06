@@ -8,6 +8,7 @@ import type { ArrayColl } from "svelte-collections";
 export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
   readonly protocol: string = "calendar-activesync";
   readonly events: ArrayColl<ActiveSyncEvent>;
+  readonly canUpdateFromResponse: boolean = false;
   account: ActiveSyncAccount;
   syncKeyBusy: Promise<any> | null;
   readonly folderClass = "Calendar";

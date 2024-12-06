@@ -1,5 +1,6 @@
 import { EMail, Scheduling } from "../EMail";
 import type { OWAFolder } from "./OWAFolder";
+import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import { OWAEvent } from "../../Calendar/OWA/OWAEvent";
 import { ResponseType, type Responses } from "../../Calendar/Event";
 import { Tag, getTagByName } from "../Tag";
@@ -191,78 +192,18 @@ export class OWAEMail extends EMail {
     await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
   }
 
-  async loadEvent() {
-    assert(this.scheduling, "This is not an invitation or response");
-    assert(!this.event, "Event has already been loaded");
-    let request = {
-      __type: "GetItemJsonRequest:#Exchange",
-      Header: {
-        __type: "JsonRequestHeaders:#Exchange",
-        RequestServerVersion: "Exchange2013",
-      },
-      Body: {
-        __type: "GetItemRequest:#Exchange",
-        ItemShape: {
-          __type: "ItemResponseShape:#Exchange",
-          BaseShape: "Default",
-          BodyType: "Best",
-          AdditionalProperties: [{
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "item:Body",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "item:ReminderIsSet",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "item:ReminderMinutesBeforeStart",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "item:LastModifiedTime",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "item:TextBody",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:IsAllDayEvent",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:EnhancedLocation",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:MyResponseType",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:RequiredAttendees",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:OptionalAttendees",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:Recurrence",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:ModifiedOccurrences",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:DeletedOccurrences",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:UID",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:RecurrenceId",
-          }],
-        },
-        ItemIds: [{
-          __type: "ItemId:#Exchange",
-          Id: this.itemID,
-        }],
-      },
-    };
-    let result = await this.folder.account.callOWA(request);
-    let event = new OWAEvent();
-    event.fromJSON(result.Items[0]);
-    this.event = event;
+  getUpdateCalendars(): OWACalendar[] {
+    if (!this.scheduling || this.scheduling == Scheduling.Request || !this.event) {
+      return [];
+    }
+    if (this.folder.account.calendar?.events.some(event => event.calUID == this.event.calUID)) {
+      return [this.folder.account.calendar];
+    }
+    return [];
+  }
+
+  async updateCalendar(calendar: OWACalendar): Promise<void> {
+    await calendar.updateFromResponse(this.scheduling, this.event);
   }
 }
 

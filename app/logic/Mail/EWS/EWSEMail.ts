@@ -1,5 +1,6 @@
 import { EMail, Scheduling } from "../EMail";
 import { type EWSFolder, getEWSItem } from "./EWSFolder";
+import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import { EWSEvent } from "../../Calendar/EWS/EWSEvent";
 import { ResponseType, type Responses } from "../../Calendar/Event";
 import { type Tag, getTagByName } from "../Tag";
@@ -221,57 +222,19 @@ export class EWSEMail extends EMail {
     await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
   }
 
-  async loadEvent() {
-    assert(this.scheduling, "This is not an invitation or response");
-    assert(!this.event, "Event has already been loaded");
-    let request = {
-      m$GetItem: {
-        m$ItemShape: {
-          t$BaseShape: "Default",
-          t$BodyType: "Best",
-          t$AdditionalProperties: {
-            t$FieldURI: [{
-              FieldURI: "item:Body",
-            }, {
-              FieldURI: "item:ReminderIsSet",
-            }, {
-              FieldURI: "item:ReminderMinutesBeforeStart",
-            }, {
-              FieldURI: "item:LastModifiedTime",
-            }, {
-              FieldURI: "item:TextBody",
-            }, {
-              FieldURI: "calendar:IsAllDayEvent",
-            }, {
-              FieldURI: "calendar:MyResponseType",
-            }, {
-              FieldURI: "calendar:RequiredAttendees",
-            }, {
-              FieldURI: "calendar:OptionalAttendees",
-            }, {
-              FieldURI: "calendar:Recurrence",
-            }, {
-              FieldURI: "calendar:ModifiedOccurrences",
-            }, {
-              FieldURI: "calendar:DeletedOccurrences",
-            }, {
-              FieldURI: "calendar:UID",
-            }, {
-              FieldURI: "calendar:RecurrenceId",
-            }],
-          },
-        },
-        m$ItemIds: {
-          t$ItemId: {
-            Id: this.itemID,
-          },
-        },
-      },
-    };
-    let result = await this.folder.account.callEWS(request);
-    let event = new EWSEvent();
-    event.fromXML(getEWSItem(result.Items));
-    this.event = event;
+  /* Returns the reason string if the calendar can't be updated. */
+  getUpdateCalendars(): EWSCalendar[] {
+    if (!this.scheduling || this.scheduling == Scheduling.Request || !this.event) {
+      return [];
+    }
+    if (this.folder.account.calendar?.events.some(event => event.calUID == this.event.calUID)) {
+      return [this.folder.account.calendar];
+    }
+    return [];
+  }
+
+  async updateCalendar(calendar: EWSCalendar): Promise<void> {
+    await calendar.listEvents();
   }
 }
 

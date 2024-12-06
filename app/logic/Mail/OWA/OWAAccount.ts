@@ -41,6 +41,7 @@ export class OWAAccount extends MailAccount {
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
   readonly folderMap = new Map<string, OWAFolder>;
+  calendar: OWACalendar;
   /**
    * We get notifications for folders we're not interested in.
    * We filter them out by checking that the parent exists.
@@ -107,17 +108,17 @@ export class OWAAccount extends MailAccount {
     addressbook.account = this;
     await addressbook.listContacts();
 
-    let calendar = appGlobal.calendars.find((calendar: OWACalendar) => calendar.protocol == "calendar-owa" && calendar.url == this.url && calendar.username == this.username) as OWACalendar | void;
-    if (!calendar) {
-      calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
-      calendar.name = this.name;
-      calendar.url = this.url;
-      calendar.username = this.emailAddress;
-      calendar.workspace = this.workspace;
-      appGlobal.calendars.add(calendar);
+    this.calendar = appGlobal.calendars.find((calendar: OWACalendar) => calendar.protocol == "calendar-owa" && calendar.url == this.url && calendar.username == this.username) as OWACalendar;
+    if (!this.calendar) {
+      this.calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
+      this.calendar.name = this.name;
+      this.calendar.url = this.url;
+      this.calendar.username = this.emailAddress;
+      this.calendar.workspace = this.workspace;
+      appGlobal.calendars.add(this.calendar);
     }
-    calendar.account = this;
-    await calendar.listEvents();
+    this.calendar.account = this;
+    await this.calendar.listEvents();
 
     this.listenForEvents();
     let request = new OWASubscribeToNotificationRequest();

@@ -4,6 +4,7 @@ import { Attachment, ContentDisposition } from "./Attachment";
 import type { Tag } from "./Tag";
 import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
+import type { Calendar } from "../Calendar/Calendar";
 import { Event, type iCalMethod, ResponseType, type Responses, ParticipationStatus, Participant } from "../Calendar/Event";
 import { RecurrenceRule } from "../Calendar/RecurrenceRule";
 import { appGlobal } from "../app";
@@ -210,6 +211,17 @@ export class EMail extends Message {
 
   protected async sendInvitationResponse(response: Responses): Promise<void> {
     await this.folder.account.sendInvitationResponse(this.event, response);
+  }
+
+  getUpdateCalendars(): Calendar[] {
+    if (!this.scheduling || this.scheduling == Scheduling.Request || !this.event) {
+      return [];
+    }
+    return appGlobal.calendars.contents.filter(calendar => calendar.canUpdateFromResponse && calendar.events.some(event => event.calUID == this.event.calUID));
+  }
+
+  async updateCalendar(calendar: Calendar): Promise<void> {
+    calendar.updateFromResponse(this.scheduling, this.event);
   }
 
   async loadEvent() {

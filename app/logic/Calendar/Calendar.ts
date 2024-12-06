@@ -1,11 +1,14 @@
 import { Account } from "../Abstract/Account";
-import { Event } from "./Event";
+import { Event, ResponseType } from "./Event";
+import { Scheduling } from "../Mail/EMail";
 import { appGlobal } from "../app";
+import { assert } from "../util/util";
 import { Collection, ArrayColl } from "svelte-collections";
 
 export class Calendar extends Account {
   readonly protocol: string = "calendar-local";
   readonly events = new ArrayColl<Event>();
+  readonly canUpdateFromResponse: boolean = true;
   storage: CalendarStorage | null = null;
   syncState: string | null = null;
 
@@ -22,6 +25,30 @@ export class Calendar extends Account {
       event.fillRecurrences(endDate);
     }
     return this.events;
+  }
+
+  async updateFromResponse(scheduling: Scheduling, response: Event) {
+    let event = this.events.find(p => p.calUID == response.calUID);
+    let attendee = response.participants.find(participant => participant.response != ResponseType.Organizer);
+    let participant = event.participants.find(participant => participant.emailAddress == attendee.emailAddress);
+    switch (scheduling) {
+    case Scheduling.Cancellation:
+      await event.deleteIt();
+      return;
+    case Scheduling.Accepted:
+      participant.response = ResponseType.Accept;
+      break;
+    case Scheduling.Tentative:
+      participant.response = ResponseType.Tentative;
+      break;
+    case Scheduling.Declined:
+      participant.response = ResponseType.Decline;
+      break;
+    default:
+      assert(false, "trying to update from an invitation, not a response");
+      return;
+    }
+    await event.save();
   }
 
   async save(): Promise<void> {

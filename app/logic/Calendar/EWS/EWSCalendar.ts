@@ -9,6 +9,7 @@ import type { ArrayColl } from "svelte-collections";
 export class EWSCalendar extends Calendar {
   readonly protocol: string = "calendar-ews";
   readonly events: ArrayColl<EWSEvent>;
+  readonly canUpdateFromResponse: boolean = false;
   account: EWSAccount;
 
   newEvent(parentEvent?: EWSEvent): EWSEvent {

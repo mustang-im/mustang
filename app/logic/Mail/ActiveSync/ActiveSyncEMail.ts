@@ -1,7 +1,9 @@
 import { EMail, Scheduling } from "../EMail";
 import type { ActiveSyncFolder } from "./ActiveSyncFolder";
 import { EASError } from "./ActiveSyncAccount";
+import type { Calendar } from "../../Calendar/Calendar";
 import { ResponseType, type Responses } from "../../Calendar/Event";
+import type { ActiveSyncCalendar } from "../../Calendar/ActiveSync/ActiveSyncCalendar";
 import { ActiveSyncEvent } from "../../Calendar/ActiveSync/ActiveSyncEvent";
 import { type Tag, getTagByName } from "../Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
@@ -199,32 +201,16 @@ export class ActiveSyncEMail extends EMail {
     await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
   }
 
-  async loadEvent() {
-    assert(this.scheduling, "This is not an invitation or response");
-    assert(!this.event, "Event has already been loaded");
-    let request = {
-      Fetch: {
-        Store: "Mailbox",
-        ServerId: this.serverID,
-        CollectionId: this.folder.id,
-        Options: {
-          BodyPreference: {
-            Type: "2",
-          },
-        },
-      },
-    };
-    let result = await this.folder.account.callEAS("ItemOperations", request);
-    if (result.Response.Fetch.Status != "1") {
-      throw new EASError("ItemOperations", result.Response.Fetch.Status);
+  /* Returns the reason string if the calendar can't be updated. */
+  getUpdateCalendars(): Calendar[] {
+    if (!this.scheduling || this.scheduling == Scheduling.Request || !this.event) {
+      return [];
     }
-    let event = new ActiveSyncEvent();
-    // When fetching an invitation or response, ActiveSync splits up the
-    // calendar-specific properties, so we need to merge them again.
-    event.fromWBXML({ ...result.Response.Fetch.Properties.MeetingRequest, ...result.Response.Fetch.Properties });
-    // ActiveSync only tells us the organiser, not the full list of attendees
-    setPersons(event.participants, result.Response.Fetch.Properties.MeetingRequest.Organizer);
-    this.event = event;
+    return appGlobal.calendars.contents.filter(calendar => calendar.protocol == "calendar-activesync" && calendar.url.startsWith(this.folder.account.url) && calendar.username == this.folder.account.username && calendar.events.some(event => event.calUID == this.event.calUID));
+  }
+
+  async updateCalendar(calendar: ActiveSyncCalendar): Promise<void> {
+    await calendar.listEvents();
   }
 }
 

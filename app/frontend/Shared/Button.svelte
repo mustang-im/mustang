@@ -72,7 +72,9 @@
     } catch (ex) {
       errorCallback(ex);
     }
-    disabled = previousDisabled;
+    if (disabled == true) {
+      disabled = previousDisabled;
+    }
   }
 </script>
 

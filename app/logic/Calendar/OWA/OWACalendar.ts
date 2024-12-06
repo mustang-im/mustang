@@ -1,6 +1,8 @@
 import { Calendar } from "../Calendar";
+import type { Event } from "../Event";
 import { OWAEvent } from "./OWAEvent";
 import type { OWAAccount } from "../../Mail/OWA/OWAAccount";
+import type { Scheduling } from "../../Mail/EMail";
 import { kMaxCount } from "../../Mail/OWA/OWAFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
@@ -8,10 +10,16 @@ import { ArrayColl } from "svelte-collections";
 export class OWACalendar extends Calendar {
   readonly protocol: string = "calendar-owa";
   readonly events: ArrayColl<OWAEvent>;
+  readonly canUpdateFromResponse: boolean = false;
   account: OWAAccount;
 
   newEvent(parentEvent?: OWAEvent): OWAEvent {
     return new OWAEvent(this, parentEvent);
+  }
+
+  async updateFromResponse(scheduling: Scheduling, response: Event) {
+    let event = this.events.find(p => p.calUID == response.calUID);
+    await this.getEvents([event.itemID], new ArrayColl<OWAEvent>());
   }
 
   getEventByItemID(id: string): OWAEvent | void {
