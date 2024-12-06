@@ -16,7 +16,6 @@
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <vbox class="day"
         class:selected={day.getTime() == $selectedDate?.getTime()}
-        on:click={selectDay(day)}
         >
         <DayLabel {day} />
         <EventsCell start={day} {events} intervalInHours={24}
@@ -57,10 +56,6 @@
       days.push(new Date(startTime));
       startTime.setDate(startTime.getDate() + 1)
     }
-  }
-
-  function selectDay(day: Date) {
-    $selectedDate = day;
   }
 </script>
 
