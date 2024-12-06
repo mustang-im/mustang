@@ -18,10 +18,7 @@
     let now = new Date();
     let tomorrow = new Date();
     tomorrow.setDate(now.getDate() + 1);
-    tomorrow.setHours(0);
-    tomorrow.setMinutes(0);
-    tomorrow.setSeconds(0);
-    tomorrow.setMilliseconds(0);
+    tomorrow.setHours(0, 0, 0, 0);
     let nextUpdate = tomorrow.getTime() - now.getTime();
     setTimeout(() => {
       day = new Date().getDate();
