@@ -1,8 +1,7 @@
-import { Event, ResponseType } from "../Event";
+import { Event, ResponseType, Participant } from "../Event";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { OWACalendar } from "./OWACalendar";
 import WindowsTimezones from "../EWS/WindowsTimezones";
-import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { Scheduling, type Responses } from "../../Mail/EMail";
 import OWACreateItemRequest from "../../Mail/OWA/OWACreateItemRequest";
 import OWADeleteItemRequest from "../../Mail/OWA/OWADeleteItemRequest";
@@ -82,7 +81,7 @@ export class OWAEvent extends Event {
       this.alarm = null;
     }
     this.location = sanitize.nonemptystring(json.Location?.DisplayName, "");
-    let participants: PersonUID[] = [];
+    let participants: Participant[] = [];
     if (json.RequiredAttendees) {
       addParticipants(json.RequiredAttendees, participants);
     }
@@ -307,9 +306,9 @@ export class OWAEvent extends Event {
   }
 }
 
-function addParticipants(attendees, participants: PersonUID[]) {
+function addParticipants(attendees, participants: Participant[]) {
   for (let attendee of attendees) {
-    participants.push(findOrCreatePersonUID(sanitize.emailAddress(attendee.Mailbox.EmailAddress), sanitize.nonemptystring(attendee.Mailbox.Name, null)));
+    participants.push(new Participant(sanitize.emailAddress(attendee.Mailbox.EmailAddress), sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(ResponseType[attendee.ResponseType], ResponseType.Unknown)));
   }
 }
 

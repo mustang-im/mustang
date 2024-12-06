@@ -4,7 +4,7 @@ import { Attachment, ContentDisposition } from "./Attachment";
 import type { Tag } from "./Tag";
 import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
-import { Event, ParticipationStatus } from "../Calendar/Event";
+import { Event, ResponseType, ParticipationStatus, Participant } from "../Calendar/Event";
 import { RecurrenceRule } from "../Calendar/RecurrenceRule";
 import { appGlobal } from "../app";
 import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
@@ -744,21 +744,22 @@ function convertEvent(ics: icalParser): Event | null {
   if (vevent.LOCATION) {
     event.location = vevent.LOCATION[0].value;
   }
-  let organizer: PersonUID | undefined;
+  let organizer: Participant | undefined;
   if (vevent.ORGANIZER) {
     let value = vevent.ORGANIZER[0].value.replace(/^MAILTO:/i, "");
-    organizer = findOrCreatePersonUID(sanitize.emailAddress(value), sanitize.label(vevent.ORGANIZER[0].CN, null));
+    organizer = new Participant(sanitize.emailAddress(value), sanitize.label(vevent.ORGANIZER[0].CN, null), ResponseType.Organizer);
     event.participants.add(organizer);
   }
   if (vevent.ATTENDEE) {
-    for (let { value, ROLE, CN } of vevent.ATTENDEE) {
+    for (let { value, ROLE, PARTSTAT, CN } of vevent.ATTENDEE) {
       value = value.replace(/^MAILTO:/i, "");
+      let participant = new Participant(sanitize.emailAddress(value), sanitize.label(CN, null), sanitize.integer(ParticipationStatus[PARTSTAT] || ResponseType.Unknown));
       if (value == organizer?.emailAddress || /^CHAIR$/i.test(ROLE)) {
+        participant.response = ResponseType.Organizer;
         // Remove the organizer as it has less detail than an attendee
         event.participants.remove(organizer);
       }
-      let attendee = findOrCreatePersonUID(sanitize.emailAddress(value), sanitize.label(CN, null));
-      event.participants.add(attendee);
+      event.participants.add(participant);
     }
   }
   return event;

@@ -12,6 +12,10 @@ export class PersonUID extends Observable {
   emailAddress: string;
   @notifyChangedProperty
   person?: Person;
+  // Used so that autocompleted meeting participants have a default value.
+  // They should really be Attendee objects, but I'm cheating, for now at least.
+  @notifyChangedProperty
+  protected response = 0;
 
   constructor(emailAddress?: string, name?: string) {
     super();

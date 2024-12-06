@@ -1,9 +1,8 @@
-import { Event, ResponseType } from "../Event";
+import { Event, ResponseType, Participant } from "../Event";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { ActiveSyncCalendar } from "./ActiveSyncCalendar";
 import WindowsTimezones from "../EWS/WindowsTimezones";
 import type { Responses } from "../../Mail/EMail";
-import { findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { EASError } from "../../Mail/ActiveSync/ActiveSyncAccount";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
@@ -56,7 +55,7 @@ export class ActiveSyncEvent extends Event {
     }
     this.alarm = wbxmljs.Reminder ? new Date(this.startTime.getTime() - 60 * sanitize.integer(wbxmljs.Reminder)) : null;
     this.location = sanitize.nonemptystring(wbxmljs.Location, "");
-    this.participants.replaceAll(ensureArray(wbxmljs.Attendees?.Attendee).map(attendee => findOrCreatePersonUID(sanitize.emailAddress(attendee.Email), sanitize.nonemptystring(attendee.Name, null))));
+    this.participants.replaceAll(ensureArray(wbxmljs.Attendees?.Attendee).map(attendee => new Participant(sanitize.emailAddress(attendee.Email), sanitize.nonemptystring(attendee.Name, null), sanitize.integer(attendee.AttendeeStatus, ResponseType.Unknown))));
     this.response = sanitize.integer(wbxmljs.ResponseType, ResponseType.Unknown);
   }
 
