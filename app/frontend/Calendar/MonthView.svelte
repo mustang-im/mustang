@@ -45,6 +45,12 @@
   $: start, setDays();
   function setDays() {
     weekDays = getWeekDays(start);
+    if (showDays == 35) {
+      while (weekDays[6].getDate() > 7) {
+        start.setDate(start.getDate() - 7);
+        weekDays = getWeekDays(start);
+      }
+    }
     let startTime = weekDays[0]; // Always start with Monday
     days = [];
     for (let i = 0; i < showDays; i++) {
