@@ -28,6 +28,3 @@
     onContinue();
   }
 </script>
-
-<style>
-</style>

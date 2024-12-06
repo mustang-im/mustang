@@ -39,6 +39,3 @@
     { value: "0", label: dateIntervalLabel(0) },
   ];
 </script>
-
-<style>
-</style>
