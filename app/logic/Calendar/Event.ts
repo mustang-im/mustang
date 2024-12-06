@@ -1,10 +1,22 @@
-import type { PersonUID } from "../Abstract/PersonUID";
+import { PersonUID, findPerson } from "../Abstract/PersonUID";
 import type { Calendar } from "./Calendar";
 import type { RecurrenceRule } from "./RecurrenceRule";
 import { ResponseType, type Responses } from "./IMIP";
 import { ArrayColl } from "svelte-collections";
 import { assert, randomID, AbstractFunction } from "../util/util";
 import { Observable, notifyChangedProperty } from "../util/Observable";
+
+export class Participant extends PersonUID {
+  @notifyChangedProperty
+  response: ResponseType;
+
+  constructor(emailAddress: string, name: string, response: ResponseType) {
+    let person = findPerson(emailAddress);
+    super(emailAddress, name ?? person?.name ?? emailAddress);
+    this.person = person;
+    this.response = response;
+  }
+}
 
 export class Event extends Observable {
   id: string;
@@ -65,7 +77,7 @@ export class Event extends Observable {
   @notifyChangedProperty
   onlineMeetingURL: string;
   @notifyChangedProperty
-  readonly participants = new ArrayColl<PersonUID>();
+  readonly participants = new ArrayColl<Participant>();
   @notifyChangedProperty
   response = ResponseType.Unknown;
   @notifyChangedProperty
