@@ -1,5 +1,6 @@
 import { EMail } from "../EMail";
 import type { OWAFolder } from "./OWAFolder";
+import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import { OWAEvent } from "../../Calendar/OWA/OWAEvent";
 import { Tag, getTagByName } from "../Tag";
 import OWACreateItemRequest from "./OWACreateItemRequest";
@@ -185,6 +186,16 @@ export class OWAEMail extends EMail {
     });
     await this.folder.account.callOWA(request);
     await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
+  }
+
+  getUpdateCalendars(): OWACalendar[] {
+    if (!this.scheduling || this.scheduling == Scheduling.REQUEST || !this.event) {
+      return [];
+    }
+    if (this.folder.account.calendar?.events.some(event => event.calUID == this.event.calUID)) {
+      return [this.folder.account.calendar];
+    }
+    return [];
   }
 
   /** OWA only provides event data for invitations,

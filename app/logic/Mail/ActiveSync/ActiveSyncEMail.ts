@@ -1,6 +1,8 @@
 import { EMail } from "../EMail";
 import type { ActiveSyncFolder } from "./ActiveSyncFolder";
 import { ActiveSyncError } from "./ActiveSyncError";
+import type { Calendar } from "../../Calendar/Calendar";
+import type { ActiveSyncCalendar } from "../../Calendar/ActiveSync/ActiveSyncCalendar";
 import { ActiveSyncEvent } from "../../Calendar/ActiveSync/ActiveSyncEvent";
 import { type Tag, getTagByName } from "../Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
@@ -197,6 +199,13 @@ export class ActiveSyncEMail extends EMail {
     await this.folder.account.callEAS("MeetingResponse", request);
     await super.sendInvitationResponse(response); // needs 16.x to do this automatically
     await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
+  }
+
+  getUpdateCalendars(): Calendar[] {
+    if (!this.scheduling || this.scheduling == Scheduling.REQUEST || !this.event) {
+      return [];
+    }
+    return appGlobal.calendars.contents.filter(calendar => calendar.protocol == "calendar-activesync" && calendar.url.startsWith(this.folder.account.url) && calendar.username == this.folder.account.username && calendar.events.some(event => event.calUID == this.event.calUID));
   }
 
   /** ActiveSync only does not provide complete event data.

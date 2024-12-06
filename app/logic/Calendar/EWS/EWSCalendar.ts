@@ -1,4 +1,6 @@
 import { Calendar } from "../Calendar";
+import type { Event } from "../Event";
+import type { Scheduling } from "../IMIP";
 import { EWSEvent } from "./EWSEvent";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
@@ -9,10 +11,15 @@ import type { ArrayColl } from "svelte-collections";
 export class EWSCalendar extends Calendar {
   readonly protocol: string = "calendar-ews";
   readonly events: ArrayColl<EWSEvent>;
+  readonly canUpdateFromResponse: boolean = false;
   account: EWSAccount;
 
   newEvent(parentEvent?: EWSEvent): EWSEvent {
     return new EWSEvent(this, parentEvent);
+  }
+
+  async updateFromResponse(scheduling: Scheduling, response: Event) {
+    await this.listEvents();
   }
 
   async listEvents() {

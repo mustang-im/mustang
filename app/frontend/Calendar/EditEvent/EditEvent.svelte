@@ -130,12 +130,22 @@
             disabled={!canSave}
             onClick={onSave}
             />
-        {:else}
+        {:elif event.participants.some(participant => participant.response == ResponseType.Organizer)}
+          <!-- This is an invitation -->
           <Button label={$t`Accept`} onClick={onAccept} />
           <hbox class="spacer" />
           <Button label={$t`Decline`} onClick={onDecline} />
           <hbox class="spacer" />
           <Button label={$t`Tentative`} onClick={onTentative} />
+        {:else}
+          <!-- The organizer cancelled the meeting -->
+          <Button
+            label={$t`Delete Event`}
+            classes="delete"
+            icon={DeleteIcon}
+            iconSize="16px"
+            onClick={onDelete}
+            />
         {/if}
       </hbox>
     </vbox>
