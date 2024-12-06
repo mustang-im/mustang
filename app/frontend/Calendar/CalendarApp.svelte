@@ -1,6 +1,6 @@
 <vbox flex class="calendar-app">
   <vbox flex class="main">
-    <MainView {events} bind:start={$selectedDate} {dateInterval}>
+    <MainView {events} dateInterval={$selectedDateInterval}>
       <TitleBarLeft on:addEvent={() => catchErrors(addEvent)} slot="top-left" />
       <ViewSelector bind:dateInterval slot="top-right" />
     </MainView>
