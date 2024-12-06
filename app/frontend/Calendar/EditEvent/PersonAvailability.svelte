@@ -5,9 +5,9 @@
 </hbox>
 
 <script lang="ts">
-  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import type { Participant } from "../../../logic/Calendar/Event";
 
-  export let person: PersonUID;
+  export let person: Participant;
 
   let yes = true;
 </script>

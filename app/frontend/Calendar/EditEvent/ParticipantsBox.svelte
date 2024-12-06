@@ -14,8 +14,8 @@
   -->
 </SectionTitle>
 <PersonsAutocomplete persons={event.participants} placeholder={$t`Add participants`}>
-  <hbox slot="display-bottom-row" let:person>
-    <PersonAvailability {person} />
+  <hbox slot="person-popup-buttons" let:person>
+    <PersonResponse {person} />
   </hbox>
   <hbox slot="result-bottom-row" let:person>
     <PersonAvailability {person} />
@@ -26,6 +26,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import PersonsAutocomplete from "../../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
   import PersonAvailability from "./PersonAvailability.svelte";
+  import PersonResponse from "./PersonResponse.svelte";
   import SectionTitle from "./SectionTitle.svelte";
   // import RoundButton from "../../Shared/RoundButton.svelte";
   // import OptionalParticipantsIcon from "lucide-svelte/icons/circle-dashed";

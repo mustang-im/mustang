@@ -1,6 +1,6 @@
-import { Event } from "./Event";
+import { Event, Participant } from "./Event";
 import { RecurrenceRule } from "./RecurrenceRule";
-import { Scheduling } from "./Invitation";
+import { Scheduling, ParticipationStatus, ResponseType } from "./Invitation";
 import ICalParser from "./ICalParser";
 import type { EMail } from "../Mail/EMail";
 import { EMailProcessor, ProcessingStartOn } from "../Mail/EMailProccessor";
@@ -72,21 +72,22 @@ function convertICSToEvent(ics: ICalParser): Event | null {
   if (vevent.entries.location) {
     event.location = vevent.entries.location[0].value;
   }
-  let organizer: PersonUID | undefined;
+  let organizer: Participant | undefined;
   if (vevent.entries.organizer) {
     let value = vevent.entries.organizer[0].value.replace(/^MAILTO:/i, "");
-    organizer = findOrCreatePersonUID(sanitize.emailAddress(value), sanitize.label(vevent.entries.organizer[0].properties.cn, null));
+    organizer = new Participant(sanitize.emailAddress(value), sanitize.label(vevent.entries.organizer[0].properties.cn, null), ResponseType.Organizer);
     event.participants.add(organizer);
   }
   if (vevent.entries.attendee) {
-    for (let { value, properties: { role, cn } } of vevent.entries.attendee) {
+    for (let { value, properties: { role, partstat, cn } } of vevent.entries.attendee) {
       value = value.replace(/^MAILTO:/i, "");
+      let participant = new Participant(sanitize.emailAddress(value), sanitize.label(cn, null), sanitize.integer(ParticipationStatus[partstat?.toUpperCase()] || ResponseType.Unknown));
       if (value == organizer?.emailAddress || /^CHAIR$/i.test(role)) {
+        participant.response = ResponseType.Organizer;
         // Remove the organizer as it has less detail than an attendee
         event.participants.remove(organizer);
       }
-      let attendee = findOrCreatePersonUID(sanitize.emailAddress(value), sanitize.label(cn, null));
-      event.participants.add(attendee);
+      event.participants.add(participant);
     }
   }
   return event;
