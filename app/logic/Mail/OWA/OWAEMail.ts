@@ -1,6 +1,7 @@
-import { EMail, Scheduling, type Responses } from "../EMail";
+import { EMail, Scheduling } from "../EMail";
 import type { OWAFolder } from "./OWAFolder";
 import { OWAEvent } from "../../Calendar/OWA/OWAEvent";
+import { ResponseType, type Responses } from "../../Calendar/Event";
 import { Tag, getTagByName } from "../Tag";
 import OWACreateItemRequest from "./OWACreateItemRequest";
 import OWADeleteItemRequest from "./OWADeleteItemRequest";
@@ -20,9 +21,9 @@ const ExchangeScheduling: Record<string, number> = {
 };
 
 const ResponseTypes: Record<Responses, string> = {
-  [Scheduling.Accepted]: "AcceptItem",
-  [Scheduling.Tentative]: "TentativelyAcceptItem",
-  [Scheduling.Declined]: "DeclineItem",
+  [ResponseType.Accept]: "AcceptItem",
+  [ResponseType.Tentative]: "TentativelyAcceptItem",
+  [ResponseType.Decline]: "DeclineItem",
 };
 
 export class OWAEMail extends EMail {

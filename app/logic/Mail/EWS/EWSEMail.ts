@@ -1,6 +1,7 @@
-import { EMail, Scheduling, type Responses } from "../EMail";
+import { EMail, Scheduling } from "../EMail";
 import { type EWSFolder, getEWSItem } from "./EWSFolder";
 import { EWSEvent } from "../../Calendar/EWS/EWSEvent";
+import { ResponseType, type Responses } from "../../Calendar/Event";
 import { type Tag, getTagByName } from "../Tag";
 import { Attachment, ContentDisposition } from "../Attachment";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
@@ -21,9 +22,9 @@ const ExchangeScheduling: Record<string, number> = {
 };
 
 const ResponseTypes: Record<Responses, string> = {
-  [Scheduling.Accepted]: "AcceptItem",
-  [Scheduling.Tentative]: "TentativelyAcceptItem",
-  [Scheduling.Declined]: "DeclineItem",
+  [ResponseType.Accept]: "AcceptItem",
+  [ResponseType.Tentative]: "TentativelyAcceptItem",
+  [ResponseType.Decline]: "DeclineItem",
 };
 
 export class EWSEMail extends EMail {

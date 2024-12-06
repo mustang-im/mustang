@@ -4,7 +4,7 @@ import { Attachment, ContentDisposition } from "./Attachment";
 import type { Tag } from "./Tag";
 import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
-import { Event, ResponseType, ParticipationStatus, Participant } from "../Calendar/Event";
+import { Event, ResponseType, type Responses, ParticipationStatus, Participant } from "../Calendar/Event";
 import { RecurrenceRule } from "../Calendar/RecurrenceRule";
 import { appGlobal } from "../app";
 import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
@@ -30,9 +30,6 @@ export enum Scheduling {
   Request = 4,
   Cancellation = 5,
 }
-
-/** Just the values used by meeting responses. */
-export type Responses = Scheduling.Accepted | Scheduling.Tentative | Scheduling.Declined;
 
 export class EMail extends Message {
   @notifyChangedProperty

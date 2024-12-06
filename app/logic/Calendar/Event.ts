@@ -1,7 +1,6 @@
 import { PersonUID, findPerson } from "../Abstract/PersonUID";
 import type { Calendar } from "./Calendar";
 import type { RecurrenceRule } from "./RecurrenceRule";
-import type { Responses } from "../Mail/EMail";
 import { ArrayColl } from "svelte-collections";
 import { assert, randomID, AbstractFunction } from "../util/util";
 import { Observable, notifyChangedProperty } from "../util/Observable";
@@ -15,6 +14,9 @@ export enum ResponseType {
   Decline = 4,
   NoResponseReceived = 5,
 }
+
+/** Just the values used by meeting responses. */
+export type Responses = ResponseType.Accept | ResponseType.Tentative | ResponseType.Decline;
 
 export enum ParticipationStatus {
   TENTATIVE = ResponseType.Tentative,

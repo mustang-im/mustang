@@ -1,6 +1,7 @@
-import { EMail, Scheduling, type Responses } from "../EMail";
+import { EMail, Scheduling } from "../EMail";
 import type { ActiveSyncFolder } from "./ActiveSyncFolder";
 import { EASError } from "./ActiveSyncAccount";
+import { ResponseType, type Responses } from "../../Calendar/Event";
 import { ActiveSyncEvent } from "../../Calendar/ActiveSync/ActiveSyncEvent";
 import { type Tag, getTagByName } from "../Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
@@ -19,9 +20,9 @@ const ExchangeScheduling: Record<string, number> = {
 };
 
 const ActiveSyncResponse: Record<Responses, number> = {
-  [Scheduling.Accepted]: 1,
-  [Scheduling.Tentative]: 2,
-  [Scheduling.Declined]: 3,
+  [ResponseType.Accept]: 1,
+  [ResponseType.Tentative]: 2,
+  [ResponseType.Decline]: 3,
 };
 
 export class ActiveSyncEMail extends EMail {
