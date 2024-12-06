@@ -22,7 +22,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../logic/Mail/EMail";
-  import { Scheduling, type Responses } from "../../logic/Calendar/Invitation";
+  import { Scheduling, type Responses } from "../../logic/Calendar/IMIP";
   import DisplayEvent from "./DisplayEvent.svelte";
   import Button from "../Shared/Button.svelte";
   import { t } from "../../l10n/l10n";

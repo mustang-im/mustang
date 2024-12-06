@@ -1,5 +1,5 @@
 import { Event } from "../Event";
-import { ResponseType, type Responses } from "../Invitation";
+import { ResponseType, type Responses } from "../IMIP";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { ActiveSyncCalendar } from "./ActiveSyncCalendar";
 import WindowsTimezones from "../EWS/WindowsTimezones";

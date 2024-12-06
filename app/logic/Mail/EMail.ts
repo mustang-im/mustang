@@ -6,7 +6,7 @@ import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { MailIdentity } from "./MailIdentity";
 import { Event } from "../Calendar/Event";
-import { Scheduling, type Responses } from "../Calendar/Invitation";
+import { Scheduling, type Responses } from "../Calendar/IMIP";
 import { EMailProcessorList, ProcessingStartOn } from "./EMailProccessor";
 import { appGlobal } from "../app";
 import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";

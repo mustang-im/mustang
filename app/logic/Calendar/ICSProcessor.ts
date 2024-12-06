@@ -1,6 +1,6 @@
 import { Event } from "./Event";
 import { RecurrenceRule } from "./RecurrenceRule";
-import { Scheduling } from "./Invitation";
+import { Scheduling } from "./IMIP";
 import type { EMail } from "../Mail/EMail";
 import { EMailProcessor, ProcessingStartOn } from "../Mail/EMailProccessor";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
