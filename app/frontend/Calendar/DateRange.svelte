@@ -5,12 +5,13 @@
 </hbox>
 
 <script lang="ts">
+  import { selectedDate } from "./selected";
   import Button from "../Shared/Button.svelte";
   import ChevronLeftIcon from "lucide-svelte/icons/chevron-left";
   import ChevronRightIcon from "lucide-svelte/icons/chevron-right";
   import { getUILocale, t } from "../../l10n/l10n";
 
-  export let date = new Date(); /* in/out */
+  export let date = new Date($selectedDate); /* in/out */
   export let dateInterval: number; /* in */
 
   function pageNext() {
