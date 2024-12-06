@@ -26,6 +26,3 @@
     mailAddressEl.focus();
   });
 </script>
-
-<style>
-</style>

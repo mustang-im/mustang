@@ -9,6 +9,3 @@
   $: meetings = appGlobal.meetings;
   $: meeting = $meetings.first;
 </script>
-
-<style>
-</style>

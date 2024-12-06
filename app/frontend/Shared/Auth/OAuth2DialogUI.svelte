@@ -31,6 +31,3 @@
     dialog.failed(new UserCancelled($t`Authentication dialog was closed due to inaction`));
   });
 </script>
-
-<style>
-</style>
