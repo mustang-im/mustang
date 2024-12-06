@@ -26,10 +26,7 @@ export function getDateString(date: Date): string {
 
 export function getToday() {
   const today = new Date();
-  today.setHours(0);
-  today.setMinutes(0);
-  today.setSeconds(0);
-  today.setMilliseconds(0);
+  today.setHours(0, 0, 0, 0);
   return today;
 }
 
@@ -38,10 +35,7 @@ export function getWeekDays(start: Date): Date[] {
   let startTime = new Date(start);
   // Always start with Monday
   startTime.setDate(startTime.getDate() - startTime.getDay() + 1);
-  startTime.setHours(0);
-  startTime.setMinutes(0);
-  startTime.setSeconds(0);
-  startTime.setMilliseconds(0);
+  startTime.setHours(0, 0, 0, 0);
   let weekDays = [];
   for (let i = 0; i < 7; i++) {
     weekDays.push(new Date(startTime));

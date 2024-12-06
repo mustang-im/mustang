@@ -42,14 +42,11 @@
   $: start, setStartTimes();
   function setStartTimes() {
     let startTime = new Date(start);
-    startTime.setHours(new Date().getHours()); // start with current hour
-    startTime.setMinutes(0);
-    startTime.setSeconds(0);
-    startTime.setMilliseconds(0);
+    startTime.setHours(new Date().getHours(), 0, 0, 0); // start with current hour
     startTimes = [];
     for (let i = 0; i < showHours; i++) {
       startTimes.push(new Date(startTime));
-      startTime.setHours(startTime.getHours() + 1)
+      startTime.setHours(startTime.getHours() + 1);
     }
   }
 
@@ -60,10 +57,7 @@
     if (showDays > 3) {
       startTime.setDate(startTime.getDate() - 1);
     }
-    startTime.setHours(0);
-    startTime.setMinutes(0);
-    startTime.setSeconds(0);
-    startTime.setMilliseconds(0);
+    startTime.setHours(0, 0, 0, 0);
     days = [];
     for (let i = 0; i < showDays; i++) {
       days.push(new Date(startTime));
