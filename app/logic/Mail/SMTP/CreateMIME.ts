@@ -28,6 +28,7 @@ export class CreateMIME {
       bcc: CreateMIME.getRecipients(email.bcc),
       text: email.text,
       html: doHTML ? email.html : null,
+      icalEvent: email.event?.getNMical(email.method),
       attachDataUrls: true,
       attachments: await CreateMIME.getAttachments(email),
       headers: email.headers.contentKeyValues(),
