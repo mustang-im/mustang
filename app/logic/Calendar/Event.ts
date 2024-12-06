@@ -16,6 +16,12 @@ export enum ResponseType {
   NoResponseReceived = 5,
 }
 
+export enum ParticipationStatus {
+  TENTATIVE = ResponseType.Tentative,
+  ACCEPTED = ResponseType.Accept,
+  DECLINED = ResponseType.Decline,
+}
+
 export class Event extends Observable {
   id: string;
   dbID: number;
