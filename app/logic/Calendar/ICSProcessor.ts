@@ -4,9 +4,9 @@ import { Scheduling } from "./IMIP";
 import type { EMail } from "../Mail/EMail";
 import { EMailProcessor, ProcessingStartOn } from "../Mail/EMailProccessor";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
+import { assert } from "../util/util";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import PostalMime from "postal-mime";
-import ical from "node-ical";
 
 export class ICSProcessor extends EMailProcessor {
   runOn: ProcessingStartOn.Parse;
@@ -14,11 +14,8 @@ export class ICSProcessor extends EMailProcessor {
     if (email.event && !postalMIME.textContent?.calendar) {
       return;
     }
-    let ics = ical.sync.parseICS(postalMIME.textContent.calendar);
-    if (!ics) {
-      return;
-    }
-    email.scheduling = Scheduling[(ics.vcalendar as ical.VCalendar)?.method] || Scheduling.NONE;
+    let ics = new icalParser(postalMIME.textContent.calendar);
+    email.scheduling = Scheduling[ics.VCALENDAR[0]?.METHOD?.[0].value] || Scheduling.NONE;
     email.event = convertICSToEvent(ics);
     if (email.event && !email.event.descriptionHTML && email.html) {
       email.event.descriptionHTML = email.html;
@@ -26,66 +23,120 @@ export class ICSProcessor extends EMailProcessor {
   }
 }
 
-function convertICSToEvent(ics: any): Event | null {
-  let vevent = Object.values(ics).find((event: any) => event.type == "VEVENT") as any;
-  if (!vevent) {
+declare global {
+  interface String {
+    toUpperCase<T extends string>(this: T): Uppercase<T>;
+  }
+}
+
+function unescaped(value: string): string {
+  return value.replace(/\\(?:n|(.))/gi, (_, c) => c || "\n");
+}
+
+class icalEntry {
+  [s: Uppercase<string>]: string;
+  name: Uppercase<string>;
+  value: string;
+  line: string;
+  constructor(line: string) {
+    this.line = line;
+    let pos = line.search(/[;:]/);
+    this.name = line.slice(0, pos).toUpperCase();
+    line = line.slice(pos);
+    while (/^;([-\w]+)=("?)((\\?.)*?)\2(?=[;:])/.test(line)) {
+      this[RegExp.$1.toUpperCase()] = unescaped(RegExp.$3);
+      line = RegExp.rightContext;
+    }
+    this.value = unescaped(line.slice(1));
+  }
+}
+
+class icalContainer {
+  [s: Uppercase<string>]: icalEntry[];
+  parent: icalContainer | icalParser;
+  constructor(parent: icalContainer | icalParser) {
+    this.parent = parent;
+  }
+}
+
+class icalParser {
+  [s: Uppercase<string>]: icalContainer[];
+  constructor(calendar: string) {
+    let current: icalContainer | icalParser = this;
+    for (let line of calendar.replace(/[\r\n]+/g, "\n").replace(/\n\s|\n$/g, "").split("\n")) {
+      if (/^BEGIN:([-\w]+)$/.test(line)) {
+        let name = RegExp.$1.toUpperCase();
+        current = new icalContainer(current);
+        this[name] = append(this[name], current);
+      } else if (/^END:([-\w]+)$/.test(line)) {
+        let name = RegExp.$1.toUpperCase();
+        assert(this[name] && this[name].at(-1) == current, "END without matching BEGIN");
+        assert(current instanceof icalContainer, "END without BEGIN");
+        current = current.parent;
+      } else {
+        assert(current instanceof icalContainer, "item outside container");
+        let item = new icalEntry(line);
+        current[item.name] = append(current[item.name], item);
+      }
+    }
+  }
+}
+
+function append<T>(values: T[] | undefined, value: T): T[] {
+  values ||= [];
+  values.push(value);
+  return values;
+}
+
+function parseDate(icalDate: string): Date {
+  return new Date(icalDate.replace(/^(\d{4})(\d\d)(\d\d)/, "$1-$2-$3").replace(/(T\d\d)(\d\d)(\d\dZ?)$/, "$1:$2:$3"));
+}
+
+function convertICSToEvent(ics: icalParser): Event | null {
+  if (!ics.VEVENT[0]) {
     return null;
   }
-  // Parser tries to simplify simple properties for us...
-  for (let prop in vevent) {
-    if (typeof vevent[prop] == "string") {
-      vevent[prop] = { params: {}, val: vevent[prop] };
-    }
-  }
+  let vevent = ics.VEVENT[0];
   let event = new Event();
-  if (vevent.uid) {
-    event.calUID = vevent.uid.val;
+  if (vevent.UID) {
+    event.calUID = vevent.UID[0].value;
   }
-  if (vevent.summary) {
-    event.title = vevent.summary.val;
+  if (vevent.SUMMARY) {
+    event.title = vevent.SUMMARY[0].value;
   }
-  if (vevent.description) {
-    event.descriptionText = vevent.description.val;
+  if (vevent.DESCRIPTION) {
+    event.descriptionText = vevent.DESCRIPTION[0].value;
   }
-  if (vevent.start) {
-    event.startTime = vevent.start;
+  if (vevent.DTSTART) {
+    event.startTime = parseDate(vevent.DTSTART[0].value);
   }
-  if (vevent.end) {
-    event.endTime = vevent.end;
+  if (vevent.DTEND) {
+    event.endTime = parseDate(vevent.DTEND[0].value);
   }
-  if (vevent.datetype.val == "date") {
+  if (vevent.DTSTART?.[0].VALUE == "date") {
     event.allDay = true;
-    // Start and end time will be in UTC, but we want local time,
-    // so that we can display it to the user in their locale.
-    event.startTime?.setFullYear(event.startTime.getUTCFullYear(), event.startTime.getUTCMonth(), event.startTime.getUTCDate());
-    event.startTime?.setHours(0, 0, 0, 0);
-    event.endTime?.setFullYear(event.endTime.getUTCFullYear(), event.endTime.getUTCMonth(), event.endTime.getUTCDate());
-    event.endTime?.setHours(0, 0, 0, 0);
   }
-  if (vevent.rrule) {
+  if (vevent.RRULE) {
     event.repeat = true;
-    // rrule object might contain DTSTART, remove in that case
-    let rrule = vevent.rrule.toString().split("\n").pop();
-    event.recurrenceRule = RecurrenceRule.fromCalString(event.startTime, rrule);
+    event.recurrenceRule = RecurrenceRule.fromCalString(event.startTime, vevent.RRULE[0].line);
   }
-  if (vevent.location) {
-    event.location = vevent.location.val;
+  if (vevent.LOCATION) {
+    event.location = vevent.LOCATION[0].value;
   }
   let organizer: PersonUID | undefined;
-  if (vevent.organizer) {
-    organizer = findOrCreatePersonUID(sanitize.nonemptystring(vevent.organizer.val), sanitize.label(vevent.organizer.params.CN, null));
+  if (vevent.ORGANIZER) {
+    let value = vevent.ORGANIZER[0].value.replace(/^MAILTO:/i, "");
+    organizer = findOrCreatePersonUID(sanitize.emailAddress(value), sanitize.label(vevent.ORGANIZER[0].CN, null));
     event.participants.add(organizer);
   }
-  if (vevent.attendee) {
-    if (!Array.isArray(vevent.attendee)) {
-      vevent.attendee = [vevent.attendee];
-    }
-    for (let { val, params: { CN }} of vevent.attendee) {
-      if (val == organizer?.emailAddress) {
+  if (vevent.ATTENDEE) {
+    for (let { value, ROLE, CN } of vevent.ATTENDEE) {
+      value = value.replace(/^MAILTO:/i, "");
+      if (value == organizer?.emailAddress || /^CHAIR$/i.test(ROLE)) {
         // Remove the organizer as it has less detail than an attendee
         event.participants.remove(organizer);
       }
-      let attendee = findOrCreatePersonUID(sanitize.nonemptystring(val), sanitize.label(CN, null));
+      let attendee = findOrCreatePersonUID(sanitize.emailAddress(value), sanitize.label(CN, null));
       event.participants.add(attendee);
     }
   }
