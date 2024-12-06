@@ -123,6 +123,3 @@
     throw new NotImplemented();
   }
 </script>
-
-<style>
-</style>
