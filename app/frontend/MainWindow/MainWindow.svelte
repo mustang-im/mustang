@@ -31,7 +31,7 @@
   import { loadMustangApps } from "../AppsBar/loadMustangApps";
   import { mailMustangApp } from "../Mail/MailMustangApp";
   import { meetMustangApp } from "../Meet/MeetMustangApp";
-  import { SetupMustangApp } from "../Settings/Setup/SetupMustangApp";
+  import { SetupMustangApp } from "../Setup/SetupMustangApp";
   import AppBar from "../AppsBar/AppBar.svelte";
   import AppContent from "../AppsBar/AppContent.svelte";
   import NotificationBar from "./NotificationBar.svelte";
@@ -39,7 +39,7 @@
   import Splitter from "../Shared/Splitter.svelte";
   import MailInBackground from "../Mail/MailInBackground.svelte";
   import MeetBackground from "../Meet/MeetBackground.svelte";
-  import InitialSetup from "../Settings/Setup/Import/InitialSetup.svelte";
+  import InitialSetup from "../Setup/Import/InitialSetup.svelte";
   import { catchErrors, backgroundError } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { onMount } from "svelte";
