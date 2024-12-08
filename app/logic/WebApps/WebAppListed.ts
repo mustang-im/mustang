@@ -1,27 +1,23 @@
-import type AppListed from "./AppListed";
-import { ArrayColl } from "svelte-collections";
 import { getUILocale } from "../../l10n/l10n";
 import { sourceLocale } from "../../l10n/list";
 
-export default class AppCategory {
-  /** Internal ID, without parent categories.
-   * E.g. `"word-processing"` */
+/**
+ * A third party web app listed in our app store.
+ * The user can select and use this app.
+ */
+export default class WebAppListed {
+  /** e.g. "microsoft-word" */
   id: string;
-  /** ID of the parent category.
-   * E.g. `"productivity"` */
-  parentID: string;
-  /** full path of ID, with parent categories, from top level.
-   * Separated by `/`.
-   * E.g. `"productivity/word-processing"` */
-  fullID: string;
+  /** Categories to which this app belongs.
+   * E.g. `[ "productivity|word-processing" ]` */
+  categoryFullIDs: string[];
   /** Human-readable name,
    * translated into the user's language.
    * Must be short, i.e. 1-2 words.
    * Use "en" as fallback.
    * iso 2-letter lang code -> name
    * e.g. `{
-   *   "en": "Word processing",
-   *   "de": "Textverarbeitung",
+   *   "en": "Microsoft Word",
    * }`
    */
   name: Record<string, string>;
@@ -32,8 +28,15 @@ export default class AppCategory {
   /** URL path to an icon for this category.
    * Either absolute, or relative to the UI path. */
   icon: string;
-
-  readonly apps = new ArrayColl<AppListed>();
+  /** Description of the application, by the vendor itself.
+   * URL */
+  homepage: string;
+  /** Page which describes the pricing options.
+   * URL */
+  pricePage: string;
+  /** Launch the application itself.
+   * URL */
+  start: string;
 
   /** The name in the user's language, or a fallback when not available */
   get nameTranslated(): string {
@@ -48,9 +51,9 @@ export default class AppCategory {
       "";
   }
 
-  static fromJSON(json: any): AppCategory {
-    let result = new AppCategory();
-    const props = ['id', 'parentID', 'fullID', 'name', 'description', 'icon',];
+  static fromJSON(json: any): WebAppListed {
+    let result = new WebAppListed();
+    const props = ['id', 'categoryFullIDs', 'name', 'description', 'icon', 'homepage', 'pricePage', 'start',];
     for (let name in json) {
       if (!props.includes(name)) {
         continue;

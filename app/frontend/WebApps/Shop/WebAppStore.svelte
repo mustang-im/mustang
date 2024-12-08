@@ -14,8 +14,8 @@
 </hbox>
 
 <script lang="ts">
-  import type AppCategory from "../../../logic/Apps/AppCategory";
-  import type AppListed from "../../../logic/Apps/AppListed";
+  import type WebAppCategory from "../../../logic/WebApps/WebAppCategory";
+  import type WebAppListed from "../../../logic/WebApps/WebAppListed";
   import { appGlobal } from "../../../logic/app";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Categories from "./Categories.svelte";
@@ -26,10 +26,10 @@
 
   export let showStore = true; /* in/out */
 
-  let appStore = appGlobal.apps;
+  let appStore = appGlobal.webApps;
   let categories = appStore.categories;
-  let selectedCategory: AppCategory;
-  let selectedApp: AppListed;
+  let selectedCategory: WebAppCategory;
+  let selectedApp: WebAppListed;
 
   let topLevelCategories = $categories.filter(cat => !cat.parentID);
 

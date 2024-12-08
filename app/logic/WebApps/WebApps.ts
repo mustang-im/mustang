@@ -1,26 +1,26 @@
-import AppCategory from "./AppCategory";
-import AppListed from "./AppListed";
-import appStore from "./appStore.json";
+import WebAppCategory from "./WebAppCategory";
+import WebAppListed from "./WebAppListed";
+import appStore from "./webAppStore.json";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { MapColl, ArrayColl } from 'svelte-collections';
 import { showError } from "../../frontend/Util/error";
 
-export default class Apps {
+export default class WebApps {
   /** fullID -> AppCategory */
-  readonly categories = new MapColl<string, AppCategory>();
-  readonly apps = new MapColl<string, AppListed>();
-  readonly myApps = new ArrayColl<AppListed>();
-  readonly runningApps = new ArrayColl<AppListed>();
+  readonly categories = new MapColl<string, WebAppCategory>();
+  readonly apps = new MapColl<string, WebAppListed>();
+  readonly myApps = new ArrayColl<WebAppListed>();
+  readonly runningApps = new ArrayColl<WebAppListed>();
 
   async load() {
     if (this.apps.hasItems) {
       return;
     }
     for (let json of appStore.categories) {
-      let cat = AppCategory.fromJSON(json);
+      let cat = WebAppCategory.fromJSON(json);
       this.categories.set(cat.fullID, cat);
     }
-    this.apps.addAll(appStore.apps.map(json => AppListed.fromJSON(json)));
+    this.apps.addAll(appStore.apps.map(json => WebAppListed.fromJSON(json)));
     for (let category of this.categories) {
       let apps = this.apps.contents.filter(app => app.categoryFullIDs.includes(category.fullID));
       category.apps.addAll(apps);

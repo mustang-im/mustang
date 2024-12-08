@@ -9,10 +9,10 @@
 </vbox>
 
 <script lang="ts">
-  import type AppListed from "../../../logic/Apps/AppListed";
+  import type WebAppListed from "../../../logic/WebApps/WebAppListed";
 
-  export let app: AppListed;
-  export let runningApp: AppListed; /* in/out */
+  export let app: WebAppListed;
+  export let runningApp: WebAppListed; /* in/out */
 
   function startApp() {
     runningApp = app;

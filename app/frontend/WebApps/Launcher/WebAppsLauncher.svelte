@@ -19,14 +19,14 @@
 </vbox>
 
 <script lang="ts">
-  import type AppListed from "../../../logic/Apps/AppListed";
-  import AppLaunchButton from "./AppLaunchButton.svelte";
+  import type WebAppListed from "../../../logic/WebApps/WebAppListed";
+  import AppLaunchButton from "./WebAppLaunchButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import type { Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
-  export let apps: Collection<AppListed>;
-  export let runningApp: AppListed; /* in/out */
+  export let apps: Collection<WebAppListed>;
+  export let runningApp: WebAppListed; /* in/out */
   export let showStore = false; /* in/out */
 
   function startStore() {

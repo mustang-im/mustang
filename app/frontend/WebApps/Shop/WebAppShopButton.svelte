@@ -25,19 +25,19 @@
 </vbox>
 
 <script lang="ts">
-  import type AppListed from "../../../logic/Apps/AppListed";
+  import type WebAppListed from "../../../logic/WebApps/WebAppListed";
   import { appGlobal } from "../../../logic/app";
   import Button from "../../Shared/Button.svelte";
   import { t } from "../../../l10n/l10n";
 
-  export let app: AppListed;
-  export let selectedApp: AppListed; /* in/out */
+  export let app: WebAppListed;
+  export let selectedApp: WebAppListed; /* in/out */
 
   function onSelect() {
     selectedApp = app;
   }
 
-  $: myApps = appGlobal.apps.myApps;
+  $: myApps = appGlobal.webApps.myApps;
 
   function add() {
     myApps.add(app);

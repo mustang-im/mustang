@@ -2,24 +2,24 @@
   <AppRunner {runningApp} />
 {:else if showStore}
   <AppStore bind:showStore />
-{:else if appGlobal.apps.myApps}
-  <AppsLauncher bind:showStore apps={appGlobal.apps.myApps} bind:runningApp />
+{:else if appGlobal.webApps.myApps}
+  <AppsLauncher bind:showStore apps={appGlobal.webApps.myApps} bind:runningApp />
 {:else}
   Loading...
 {/if}
 
 <script lang="ts">
-  import type AppListed from "../../logic/Apps/AppListed";
+  import type WebAppListed from "../../logic/WebApps/WebAppListed";
   import { appGlobal } from "../../logic/app";
-  import AppRunner from "./Launcher/AppRunner.svelte";
-  import AppStore from "./Shop/AppStore.svelte";
-  import AppsLauncher from "./Launcher/AppsLauncher.svelte";
+  import AppRunner from "./Launcher/WebAppRunner.svelte";
+  import AppStore from "./Shop/WebAppStore.svelte";
+  import AppsLauncher from "./Launcher/WebAppsLauncher.svelte";
   import { onMount } from "svelte";
 
   let showStore = false;
-  let runningApp: AppListed;
+  let runningApp: WebAppListed;
 
   onMount(async () => {
-    await appGlobal.apps.load();
+    await appGlobal.webApps.load();
   });
 </script>
