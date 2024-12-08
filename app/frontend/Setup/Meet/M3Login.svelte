@@ -5,8 +5,9 @@
 <vbox flex class="account">
   <grid>
     <label for="username">{$t`Your ${appName} email address`}</label>
+    <!-- svelte-ignore a11y-autofocus -->
     <input type="text" bind:value={config.username} name="username"
-      placeholder="fred@example.com" />
+      placeholder="fred@example.com" autofocus />
     <label for="password">{$t`Password`}</label>
     <Password bind:password={config.password} />
   </grid>
