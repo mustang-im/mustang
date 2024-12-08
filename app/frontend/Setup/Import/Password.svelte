@@ -3,12 +3,7 @@
 
   {#if account?.oAuth2}
     <hbox class="buttons login">
-      <Button label={$t`Login`}
-        classes="filled large"
-        onClick={loginOAuth2}
-        errorCallback={showError}
-        disabled={oAuth2Succeeded}
-        />
+      <OAuth2LoginButton {account} bind:oAuth2Succeeded allowConfigChange={true} />
     </hbox>
   {:else}
     <hbox class="password-row">
@@ -50,6 +45,7 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { checkConfig } from "../../../logic/Mail/AutoConfig/checkConfig";
   import { saveAndInitConfig } from "../../../logic/Mail/AutoConfig/saveConfig";
+  import OAuth2LoginButton from "./OAuth2LoginButton.svelte";
   import Password from "../Shared/Password.svelte";
   import Header from "../Shared/Header.svelte";
   import StatusMessage from "../Shared/StatusMessage.svelte";
@@ -79,11 +75,7 @@
     validated = false;
   }
 
-  async function loginOAuth2() {
-    await account.oAuth2.login(true);
-    oAuth2Succeeded = true;
-    await validateAccount();
-  }
+  $: oAuth2Succeeded && catchErrors(validateAccount, showError);
 
   async function validateAccount() {
     try {
