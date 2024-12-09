@@ -83,6 +83,7 @@ export const mailDatabaseSchema = sql`
     "isDraft" BOOLEAN default false,
     "isSpam" BOOLEAN default false,
     "downloadComplete" BOOLEAN default false,
+    UNIQUE("messageID", "pID", "folderID"),
     -- FOREIGN KEY (parentMsgID)
     --   REFERENCES email (messageID)
     --   ON DELETE SET NULL,
