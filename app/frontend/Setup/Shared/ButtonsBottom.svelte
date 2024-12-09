@@ -50,6 +50,8 @@
     background-color: inherit;
     padding: 3px 8px;
     font-weight: 300;
-    color: #455468;
+  }
+  .buttons :global(button.secondary:not(.disabled)) {
+    opacity: 85%;
   }
 </style>

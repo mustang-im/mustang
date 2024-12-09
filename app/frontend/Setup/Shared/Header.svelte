@@ -15,6 +15,7 @@
   h1 {
     margin: 0px;
     font-size: 28px;
+    letter-spacing: -0.5px;
   }
   .subtitle {
     margin-block-start: 2px;

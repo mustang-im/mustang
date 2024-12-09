@@ -39,7 +39,7 @@
   }
   .success .box {
     background-color: #E7F9EC;
-    color: #048300;
+    color: #06842C;
     border: 1px solid #0BC241;
   }
   .processing .box {
@@ -49,9 +49,12 @@
   }
   .warning .box,
   .error .box {
-    background-color: #FFFAEC;
+    background-color: #F8FFD2;
     color: #DD0000;
     border: 1px solid #FFC83A;
+  }
+  .error .box :global(.button) {
+    color: #AA0000;
   }
   @media (prefers-color-scheme: dark) {
     .success .box,
@@ -59,6 +62,16 @@
     .warning .box,
     .error .box {
       background-color: unset;
+    }
+    .success .box {
+      color: #0BC241;
+    }
+    .warning .box,
+    .error .box {
+      color: #FF3333;
+    }
+    .error .box :global(.button) {
+      color: #FFC83A;
     }
   }
   .icon {
