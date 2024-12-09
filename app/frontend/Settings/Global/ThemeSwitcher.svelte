@@ -1,11 +1,11 @@
-<hbox class="darkmode buttons">
+<hbox class="theme buttons">
   <Button
     label={$t`System`}
     icon={SystemIcon}
     iconSize="16px"
     plain
     onClick={() => switchTo('system')}
-    selected={mode == "system"}
+    selected={theme == "system"}
     />
   <Button
     label={$t`Light`}
@@ -13,7 +13,7 @@
     iconSize="16px"
     plain
     onClick={() => switchTo('light')}
-    selected={mode == "light"}
+    selected={theme == "light"}
     />
   <Button
     label={$t`Dark`}
@@ -22,7 +22,7 @@
     iconSize="16px"
     plain
     onClick={() => switchTo('dark')}
-    selected={mode == "dark"}
+    selected={theme == "dark"}
     />
 </hbox>
 
@@ -34,11 +34,11 @@
   import SystemIcon from "lucide-svelte/icons/app-window";
   import { t } from "../../../l10n/l10n";
 
-  let modeSetting = getLocalStorage("appearance.darkmode", "system");
-  $: mode = $modeSetting.value;
+  let themeSetting = getLocalStorage("appearance.theme", "system");
+  $: theme = $themeSetting.value;
 
-  function switchTo(newMode: "system" | "light" | "dark") {
-    modeSetting.value = newMode;
+  function switchTo(newTheme: "system" | "light" | "dark") {
+    themeSetting.value = newTheme;
   }
 </script>
 

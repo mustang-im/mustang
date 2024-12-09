@@ -56,7 +56,7 @@
   async function startup() {
     loadMustangApps();
     await getStartObjects();
-    changeDarkMode($darkModeSetting.value);
+    changeTheme($themeSetting.value);
     if (appGlobal.emailAccounts.isEmpty && appGlobal.chatAccounts.isEmpty) {
       setup();
     } else {
@@ -73,14 +73,14 @@
     openApp(setupApp);
   }
 
-  let darkModeSetting = getLocalStorage("appearance.darkmode", "system");
-  $: changeDarkMode($darkModeSetting.value);
-  function changeDarkMode(mode: string) {
+  let themeSetting = getLocalStorage("appearance.theme", "system");
+  $: changeTheme($themeSetting.value);
+  function changeTheme(theme: string) {
     if (!appGlobal?.remoteApp) {
       return;
     }
-    assert(["system", "light", "dark"].includes(mode), $t`Bad dark mode ` + mode);
-    appGlobal.remoteApp.setDarkMode(mode);
+    assert(["system", "light", "dark"].includes(theme), $t`Bad theme name ` + theme);
+    appGlobal.remoteApp.setTheme(theme);
   }
 
 </script>

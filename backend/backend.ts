@@ -38,7 +38,7 @@ async function createSharedAppObject() {
     unminimizeMainWindow,
     shell,
     restartApp,
-    setDarkMode,
+    setTheme,
     openMenu,
     getConfigDir,
     getFilesDir,
@@ -260,11 +260,11 @@ function restartApp() {
   app.quit();
 }
 
-function setDarkMode(mode: "system" | "light" | "dark") {
-  if (!["system", "light", "dark"].includes(mode)) {
-    throw new Error("Bad dark mode " + mode);
+function setTheme(theme: "system" | "light" | "dark") {
+  if (!["system", "light", "dark"].includes(theme)) {
+    throw new Error("Bad theme name " + theme);
   }
-  nativeTheme.themeSource = mode;
+  nativeTheme.themeSource = theme;
 }
 
 function openMenu(menuItems: MenuItemConstructorOptions[]): void {

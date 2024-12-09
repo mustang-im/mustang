@@ -1,7 +1,7 @@
 <vbox class="appearance">
   <HeaderGroupBox>
     <hbox slot="header">{$t`Dark mode`}</hbox>
-    <DarkMode />
+    <ThemeSwitcher />
   </HeaderGroupBox>
 
   <HeaderGroupBox>
@@ -23,7 +23,7 @@
 <script lang="ts">
   import { getUILocale, getUILocalePref, saveUILocale, setUILocale, t } from "../../../l10n/l10n";
   import { appGlobal } from "../../../logic/app";
-  import DarkMode from "./DarkMode.svelte";
+  import ThemeSwitcher from "./ThemeSwitcher.svelte";
   import LanguageDropDown from "./LanguageDropDown.svelte";
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import Button from "../../Shared/Button.svelte";
@@ -39,7 +39,7 @@
 </script>
 
 <style>
-  .appearance :global(.darkmode svg) {
+  .appearance :global(.theme svg) {
     width: 32px;
     height: 32px;
   }
