@@ -38,8 +38,9 @@
           onClick={onManualSetup}
           />
       {/if}
-      {#if step == Step.EmailAddress}
-        <Button label={$t`Get new email address`} classes="secondary"
+      <!-- Enable once we offer hosting service -->
+      {#if false && step == Step.EmailAddress}
+        <Button label={$t`New email address`} classes="secondary"
           onClick={onNewEmailAddress}
           />
       {/if}
