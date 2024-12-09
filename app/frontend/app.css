@@ -93,7 +93,7 @@
     --input-focus: #20AE9E;
     --link-fg: #646cff;
     --link-hover-fg: #535bf2;
-    --button-bg: #6B6B6C;
+    --button-bg: transparent;
     --button-fg: #CDCDCD;
     --button-border: #CDCDCD;
     --button-secondary-line: #A1E4DA;
