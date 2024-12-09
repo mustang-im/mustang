@@ -11,7 +11,7 @@
   <SearchField bind:searchTerm={$globalSearchTerm} />
   <hbox class="right">
     <Button label={$t`Settings`}
-      icon={SettingsIcon} iconSize="24px" plain iconOnly classes="settings"
+      icon={SettingsIcon} iconSize="16px" plain iconOnly classes="settings"
       onClick={onOpenSettings}
       />
     <Button label={$t`Minimize`}
@@ -37,7 +37,7 @@
   import Button from "../Shared/Button.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
   import logo from '../asset/icon/general/logo.svg?raw';
-  import SettingsIcon from 'lucide-svelte/icons/settings-2';
+  import SettingsIcon from 'lucide-svelte/icons/settings';
   import MinimizeIcon from 'lucide-svelte/icons/minus';
   import XIcon from 'lucide-svelte/icons/x';
   import { t } from "../../l10n/l10n";
