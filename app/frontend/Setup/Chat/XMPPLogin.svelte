@@ -1,6 +1,6 @@
 <Header
   title={$t`Set up your existing XMPP account`}
-  subtitle={$t`You can use ${appName} with your existing XMPP or Jabber account.`}
+  subtitle={$t`Import your existing XMPP or Jabber account`}
 />
 <vbox flex class="account">
   <grid>
@@ -26,7 +26,6 @@
   import Password from "../Shared/Password.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
-  import { appName } from "../../../logic/build";
   import { t } from "../../../l10n/l10n";
 
   /** in/out */
