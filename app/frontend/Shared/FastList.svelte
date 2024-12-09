@@ -357,7 +357,7 @@
     overflow-x: hidden;
     position: absolute;
     right: 0px;
-    width: 20px;
+    width: 10px;
     /* top: and height: set in style="" */
   }
   /* .scrollbar :dir(rtl) Doesn't work */
