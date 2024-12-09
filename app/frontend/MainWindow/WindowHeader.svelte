@@ -10,6 +10,10 @@
   <vbox flex class="free" />
   <SearchField bind:searchTerm={$globalSearchTerm} />
   <hbox class="right">
+    <Button label={$t`Settings`}
+      icon={SettingsIcon} iconSize="16px" plain iconOnly classes="settings"
+      onClick={onOpenSettings}
+      />
     <Button label={$t`Minimize`}
       icon={MinimizeIcon} iconSize="24px" plain iconOnly classes="minimize"
       onClick={onMinimize}
@@ -23,18 +27,27 @@
 
 <script lang="ts">
   import type { MustangApp } from "../AppsBar/MustangApp";
-  import { globalSearchTerm } from "../AppsBar/selectedApp";
+  import { globalSearchTerm, openApp } from "../AppsBar/selectedApp";
+  import { settingsMustangApp } from "../Settings/Window/SettingsMustangApp";
+  import { getSettingsCategoryForApp } from "../Settings/Window/CategoriesUtils";
+  import { selectedCategory } from "../Settings/Window/selected";
   import { appGlobal } from "../../logic/app";
   import { appName } from "../../logic/build";
   import SearchField from "../Shared/SearchField.svelte";
   import Button from "../Shared/Button.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
   import logo from '../asset/icon/general/logo.svg?raw';
+  import SettingsIcon from 'lucide-svelte/icons/settings';
   import MinimizeIcon from 'lucide-svelte/icons/minus';
   import XIcon from 'lucide-svelte/icons/x';
   import { t } from "../../l10n/l10n";
 
   export let selectedApp: MustangApp;
+
+  function onOpenSettings() {
+    $selectedCategory = getSettingsCategoryForApp($selectedApp);
+    openApp(settingsMustangApp);
+  }
 
   function onMinimize() {
     appGlobal.remoteApp.minimizeMainWindow();
