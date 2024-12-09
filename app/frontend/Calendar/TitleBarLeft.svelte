@@ -1,5 +1,4 @@
 <hbox class="title-bar">
-  <AccountSelectorRound bind:selectedAccount={$selectedCalendar} accounts={appGlobal.calendars} icon={CalendarIcon} />
   <RoundButton classes="add-button create" label={$t`New event`} icon={AddToCalendarIcon} on:click={addEvent} iconSize="22px" padding="6px" />
 </hbox>
 
