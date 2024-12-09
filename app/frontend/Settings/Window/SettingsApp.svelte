@@ -1,7 +1,5 @@
 <Splitter name="settings-categories" initialRightRatio={4}>
-  <Scroll slot="left">
-    <SettingsCategoriesPane {categories} />
-  </Scroll>
+  <SettingsCategoriesPane {categories} slot="left" />
   <Scroll slot="right">
     <hbox class="settings-title-bar">
       <hbox flex class="spacer" />
