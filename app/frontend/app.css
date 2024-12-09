@@ -289,10 +289,17 @@ a:hover {
 
 div.svelteui-Menu-root div.svelteui-Paper-root {
   padding: 4px 0px;
+  /* dark theme - but breaks red buttons - see below
+  color: var(--leftbar-fg);
+  background-color: var(--leftbar-bg);
+  */
 }
 
 button.svelteui-MenuItem-root {
   border-radius: 0px;
+  /* dark theme - but breaks red buttons
+  color: unset;
+  */
 }
 
 button.svelteui-MenuItem-root[classname="selected"] {
