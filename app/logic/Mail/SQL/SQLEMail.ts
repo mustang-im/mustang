@@ -232,6 +232,7 @@ export class SQLEMail {
             continue;
           }
           this.saveMainProperties(db, email);
+          this.savePersons(db, email);
         }
       });
     } finally {
@@ -279,6 +280,31 @@ export class SQLEMail {
         threadID = excluded.threadID,
         downloadComplete = excluded.downloadComplete
         `);
+  }
+
+  protected static savePersons(db: Database, email: EMail) {
+    this.savePerson(db, email.from);
+    for (let p of email.to) {
+      this.savePerson(db, p);
+    }
+    for (let p of email.cc) {
+      this.savePerson(db, p);
+    }
+    for (let p of email.bcc) {
+      this.savePerson(db, p);
+    }
+    if (email.replyTo?.emailAddress) {
+      this.savePerson(db, email.replyTo);
+    }
+  }
+
+  protected static savePerson(db: Database, person: PersonUID) {
+    db.run(sql`
+      INSERT OR IGNORE INTO emailPerson (
+        name, emailAddress, personID
+      ) VALUES (
+        ${person.name}, ${person.emailAddress}, ${person.person?.dbID}
+      )`);
   }
 
   static async read(dbID: number, email: EMail, row?: any, recipientRows?: any[], attachmentRows?: any[], tagRows?: any[]): Promise<EMail> {
