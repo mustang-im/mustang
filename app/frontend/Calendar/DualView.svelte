@@ -2,7 +2,7 @@
   <WeekView bind:start {events} showDays={2}>
     <slot name="top-left" slot="top-left" />
   </WeekView>
-  <MonthView start={monthStart} {events} showDays={28}>
+  <MonthView start={monthStart} {events} showDays={35}>
     <slot name="top-right" slot="top-right" />
   </MonthView>
 </hbox>
