@@ -6,7 +6,7 @@
       <hbox flex />
       <hbox class="buttons">
         {#if activeTab == SearchView.Folder}
-          <GetMailButton folder={selectedFolder ?? selectedAccount?.getSpecialFolder(SpecialFolder.Inbox)} />
+          <GetMailButton folder={selectedFolder ?? selectedAccount?.inbox} />
         {/if}
         {#if activeTab == SearchView.Folder || activeTab == SearchView.Person}
           <WriteButton {selectedAccount} />
