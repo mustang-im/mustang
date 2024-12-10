@@ -5,7 +5,6 @@ import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder } from "../Folder";
 import { assert, SpecificError } from "../../util/util";
-import { notifyChangedProperty } from "../../util/Observable";
 import { Lock } from "../../util/Lock";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { appName, appVersion, siteRoot } from "../../build";
@@ -21,7 +20,6 @@ export class IMAPAccount extends MailAccount {
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
-  @notifyChangedProperty
   protected connections = new Map<ConnectionPurpose, ImapFlow>();
   protected connectLock = new Map<ConnectionPurpose, Lock>();
 
@@ -46,6 +44,7 @@ export class IMAPAccount extends MailAccount {
 
     await this.connection(interactive);
     await this.listFolders();
+    this.notifyObservers();
     (this.inbox as IMAPFolder).startPolling();
   }
 
@@ -128,6 +127,9 @@ export class IMAPAccount extends MailAccount {
         }
       }
       this.connections.set(purpose, connection);
+      if (purpose == ConnectionPurpose.Main) {
+        this.notifyObservers();
+      }
       this.attachListeners(connection);
       return connection;
     } finally {
@@ -206,6 +208,7 @@ export class IMAPAccount extends MailAccount {
       return;
     }
     this.connections.set(purpose, null);
+    this.notifyObservers();
 
     if (!(this.password || this.oAuth2?.isLoggedIn)) {
       return;
