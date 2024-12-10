@@ -235,7 +235,8 @@ export class IMAPAccount extends MailAccount {
     });
     // console.log("folders", foldersFlat);
     let currentFolders = new ArrayColl<IMAPFolder>();
-    this.readFolders(foldersInfo, null, this.rootFolders as ArrayColl<IMAPFolder>, currentFolders);
+    let subFoldersInfo = foldersInfo.filter(folderInfo => folderInfo.parentPath == "");
+    this.readFolders(null, this.rootFolders as ArrayColl<IMAPFolder>, subFoldersInfo, foldersInfo, currentFolders);
 
     for (let folder of this.getAllFolders()) {
       if (!currentFolders.includes(folder as IMAPFolder)) {
@@ -250,28 +251,36 @@ export class IMAPAccount extends MailAccount {
     }
   }
 
-  readFolders(allFoldersInfo: any[], parent: IMAPFolder, subFolders: Collection<IMAPFolder>, resultAllFolders: Collection<IMAPFolder>): void {
-    let subFoldersInfo = allFoldersInfo.filter(folderInfo => folderInfo.parentPath == (parent?.path ?? ""));
+  /**
+   * @param parent parent folder, to which to add the subfolders. null, if root.
+   * @param addTo Array to add the subfolders to. Either `parent.subFolders` or `rootFolders`.
+   * @param subFoldersInfo Source info of the subfolders that are to be created
+   * @param allFoldersInfo Source info of all folders
+   * @param resultAllFolders All result folders created so far
+   */
+  readFolders(parent: IMAPFolder, addTo: Collection<IMAPFolder>, subFoldersInfo: any[], allFoldersInfo: any[], resultAllFolders: Collection<IMAPFolder>): void {
     for (let folderInfo of subFoldersInfo) {
-      let subFolder = subFolders.find(folder => folder.path == folderInfo.path);
+      let subFolder = addTo.find(folder => folder.path == folderInfo.path);
       if (subFolder) {
         if (folderInfo.status) {
           subFolder.fromFlow(folderInfo); // update with new info
         }
       } else if (folderInfo.path == "[Gmail]" || folderInfo.flags.has("\\NoSelect")) {
-        this.readFolders(allFoldersInfo, parent, subFolders, resultAllFolders);
+        let subFoldersInfo = allFoldersInfo.filter(folderInfo => folderInfo.parentPath == folderInfo.path);
+        this.readFolders(parent, addTo, subFoldersInfo, allFoldersInfo, resultAllFolders);
         continue;
       } else {
         subFolder = new IMAPFolder(this);
         subFolder.fromFlow(folderInfo);
-        subFolders.add(subFolder);
+        addTo.add(subFolder);
         subFolder.parent = parent;
       }
       resultAllFolders.add(subFolder);
       if (!this.pathDelimiter && folderInfo.delimiter) {
         this.pathDelimiter = folderInfo.delimiter;
       }
-      this.readFolders(allFoldersInfo, subFolder, subFolder.subFolders as ArrayColl<IMAPFolder>, resultAllFolders);
+      let subFoldersInfo = allFoldersInfo.filter(folderInfo => folderInfo.parentPath == subFolder.path);
+      this.readFolders(subFolder, subFolder.subFolders as ArrayColl<IMAPFolder>, subFoldersInfo, allFoldersInfo, resultAllFolders);
     }
   }
 
