@@ -49,7 +49,6 @@
 ## Elena
 * Clear profile
 * Debug dump of settings
-* Gmail: IMAP namename `[Gmail]`
 * Composer
   * PersonEntry: Delete key
   * Remove added attachment (needs menu item)
@@ -58,12 +57,11 @@
   * After login, waiting too long before moving to next dialog
   * OAuth2 login: Close window. Login button disabled.
 * Mail composer: Send: Waiting too long
+* Mail Persons view: Sort by recency or by name
 * Images, remote
 * Saved Searches delete: Update list
 * List view: Sort order
 * MailChat/Thread: Jail HTML: Styles and size
-* Calendar
-  * Tuesday first day
 ## Nick
 * Mac: M1 needs 50s to start, 30s for second start
 * Mac: Use Mac Password manager
