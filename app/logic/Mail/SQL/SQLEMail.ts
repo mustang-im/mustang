@@ -9,7 +9,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Lock } from "../../util/Lock";
 import { assert, fileExtensionForMIMEType } from "../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
-import sql from "../../../../lib/rs-sqlite";
+import sql, { type Database } from "../../../../lib/rs-sqlite";
 
 export class SQLEMail {
   /**
@@ -225,32 +225,13 @@ export class SQLEMail {
     try {
       // We need to save all persons before the email transaction
       // otherwise it will not appear in the database
-      await (await getDatabase()).executeTransaction(() => {
+      let db = await getDatabase();
+      await db.executeTransaction(() => {
         for (let email of emails) {
           if (!email.subject) {
             continue;
           }
-          this.savePerson(email.from);
-          for (let p of email.to) {
-            this.savePerson(p);
-          }
-          for (let cc of email.cc) {
-            this.savePerson(cc);
-          }
-          for (let bcc of email.bcc) {
-            this.savePerson(bcc);
-          }
-          if (email.replyTo) {
-            this.savePerson(email.replyTo);
-          }
-        }
-      });
-      await (await getDatabase()).executeTransaction(() => {
-        for (let email of emails) {
-          if (!email.subject) {
-            continue;
-          }
-          this.save(email);
+          this.saveMainProperties(db, email);
         }
       });
     } finally {
@@ -258,13 +239,46 @@ export class SQLEMail {
     }
   }
 
-  protected static async savePerson(puid: PersonUID) {
-    await (await getDatabase()).run(sql`
-      INSERT OR IGNORE INTO emailPerson (
-        name, emailAddress, personID
+  protected static saveMainProperties(db: Database, email: EMail) {
+    let contact = email.contact as PersonUID;
+    db.run(sql`
+      INSERT INTO email (
+        messageID, folderID, pID, parentMsgID,
+        size, dateSent, dateReceived,
+        scheduling,
+        outgoing, contactEmail, contactName,
+        subject, plaintext, html, isRead,
+        isStarred, isReplied, isDraft, isSpam,
+        threadID, downloadComplete
       ) VALUES (
-        ${puid.name}, ${puid.emailAddress}, ${puid.person?.dbID}
-      )`);
+        ${email.id}, ${email.folder.dbID}, ${email.pID}, ${email.inReplyTo},
+        ${email.size}, ${email.sent.getTime() / 1000}, ${email.received.getTime() / 1000},
+        ${email.scheduling},
+        ${email.outgoing ? 1 : 0}, ${contact?.emailAddress}, ${email.contact?.name},
+        ${email.subject}, ${email.rawText}, ${email.rawHTMLDangerous}, ${email.isRead ? 1 : 0},
+        ${email.isStarred ? 1 : 0}, ${email.isReplied ? 1 : 0}, ${email.isDraft ? 1 : 0}, ${email.isSpam ? 1 : 0},
+        ${email.threadID}, ${email.downloadComplete ? 1 : 0}
+      ) ON CONFLICT (messageID, folderID, pID) DO UPDATE SET
+        messageID = excluded.messageID,
+        folderID = excluded.folderID,
+        pID = excluded.pID,
+        parentMsgID = excluded.parentMsgID,
+        size = excluded.size,
+        dateSent = excluded.dateSent,
+        dateReceived = excluded.dateReceived,
+        outgoing = excluded.outgoing,
+        scheduling = excluded.scheduling,
+        subject = excluded.subject,
+        plaintext = excluded.plaintext,
+        html = excluded.html,
+        isRead = excluded.isRead,
+        isStarred = excluded.isStarred,
+        isReplied = excluded.isReplied,
+        isDraft = excluded.isDraft,
+        isSpam = excluded.isSpam,
+        threadID = excluded.threadID,
+        downloadComplete = excluded.downloadComplete
+        `);
   }
 
   static async read(dbID: number, email: EMail, row?: any, recipientRows?: any[], attachmentRows?: any[], tagRows?: any[]): Promise<EMail> {
