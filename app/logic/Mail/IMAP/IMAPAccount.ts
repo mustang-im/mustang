@@ -6,7 +6,7 @@ import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder } from "../Folder";
 import { assert, SpecificError } from "../../util/util";
 import { notifyChangedProperty } from "../../util/Observable";
-import { Lock, type Locked } from "../../util/Lock";
+import { Lock } from "../../util/Lock";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { appName, appVersion, siteRoot } from "../../build";
 import { ArrayColl, type Collection } from "svelte-collections";
@@ -22,19 +22,20 @@ export class IMAPAccount extends MailAccount {
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
   @notifyChangedProperty
-  protected connectionMain: ImapFlow;
-  protected connectionFetch: ImapFlow;
-  protected connectMainLock = new Lock();
-  protected connectFetchLock = new Lock();
+  protected connections = new Map<ConnectionPurpose, ImapFlow>();
+  protected connectLock = new Map<ConnectionPurpose, Lock>();
 
   constructor() {
     super();
     assert(appGlobal.remoteApp.createIMAPFlowConnection, "IMAP: Need backend");
+    for (let purpose of connectionPurposes) {
+      this.connectLock.set(purpose, new Lock());
+    }
   }
 
   get isLoggedIn(): boolean {
     // return !!this.connectionMain?.authenticated; TODO authenticated is always false
-    return !!this.connectionMain || this.oAuth2?.isLoggedIn;
+    return !!this.connections.get(ConnectionPurpose.Main) || this.oAuth2?.isLoggedIn;
   }
 
   async login(interactive: boolean): Promise<void> {
@@ -53,19 +54,12 @@ export class IMAPAccount extends MailAccount {
     this.logout(false);
   }
 
-  async connection(interactive = false, isMain = true): Promise<ImapFlow> {
-    if (isMain && this.connectionMain) {
-      return this.connectionMain;
+  async connection(interactive = false, purpose = ConnectionPurpose.Main): Promise<ImapFlow> {
+    let conn = this.connections.get(purpose);
+    if (conn) {
+      return conn;
     }
-    if (!isMain && this.connectionFetch) {
-      return this.connectionFetch;
-    }
-    let lock: Locked;
-    if (isMain) {
-      lock = await this.connectMainLock.lock();
-    } else {
-      lock = await this.connectFetchLock.lock();
-    }
+    let lock = await this.connectLock.get(purpose).lock();
     try {
 
       this.fatalError = null;
@@ -104,7 +98,7 @@ export class IMAPAccount extends MailAccount {
           minVersion: this.acceptOldTLS ? 'TLSv1' : undefined,
           rejectUnauthorized: !this.acceptBrokenTLSCerts,
         },
-        disableAutoIdle: !isMain,
+        disableAutoIdle: purpose != ConnectionPurpose.Main,
         maxIdleTime: 30 * 1000, // 30 s, refresh IDLE
         connectionTimeout: 5 * 1000, // 5 s connection timeout
         greetingTimeout: 5 * 1000, // 5 s greeting timeout
@@ -133,11 +127,7 @@ export class IMAPAccount extends MailAccount {
           throw this.fatalError = new ConnectError(ex, msg);
         }
       }
-      if (isMain) {
-        this.connectionMain = connection;
-      } else {
-        this.connectionFetch = connection;
-      }
+      this.connections.set(purpose, connection);
       this.attachListeners(connection);
       return connection;
     } finally {
@@ -211,18 +201,23 @@ export class IMAPAccount extends MailAccount {
       // Sometimes gives "Connection not available". Do nothing.
     }
 
-    let isMain = this.connectionMain == connection;
-    if (isMain) {
-      this.connectionMain = null;
-    } else if (this.connectionFetch == connection) {
-      this.connectionFetch = null;
+    let purpose: ConnectionPurpose;
+    for (let p of connectionPurposes) {
+      if (this.connections.get(p) == connection) {
+        purpose = p;
+        break;
+      }
     }
+    if (!purpose) {
+      return;
+    }
+    this.connections.set(purpose, null);
 
     if (!(this.password || this.oAuth2?.isLoggedIn)) {
       return;
     }
 
-    return await this.connection(false, isMain);
+    return await this.connection(false, purpose);
   }
 
   async hasCapability(capa: string): Promise<boolean> {
@@ -294,8 +289,9 @@ export class IMAPAccount extends MailAccount {
 
   async logout(alsoOAuth2 = true): Promise<void> {
     this.stopPolling();
-    await this.connectionMain?.logout();
-    await this.connectionFetch?.logout();
+    for (let purpose of connectionPurposes) {
+      await this.connections.get(purpose)?.logout();
+    }
     if (this.oAuth2 && alsoOAuth2) {
       await this.oAuth2.logout();
     }
@@ -332,6 +328,13 @@ export class IMAPAccount extends MailAccount {
     return new IMAPFolder(this);
   }
 }
+
+export enum ConnectionPurpose {
+  Main = "main",
+  Fetch = "fetch",
+  Display = "display",
+}
+const connectionPurposes = [ConnectionPurpose.Main, ConnectionPurpose.Fetch, ConnectionPurpose.Display];
 
 export class IMAPCommandError extends SpecificError {
 }

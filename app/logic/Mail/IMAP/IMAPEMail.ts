@@ -8,6 +8,7 @@ import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, NotReached } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
+import { ConnectionPurpose } from "./IMAPAccount";
 
 export class IMAPEMail extends EMail {
   folder: IMAPFolder;
@@ -37,7 +38,7 @@ export class IMAPEMail extends EMail {
         source: true,
         flags: true,
       }, { uid: true });
-    }, true);
+    }, ConnectionPurpose.Display);
     this.fromFlow(msgInfo);
     await this.parseMIME();
     await this.saveCompleteMessage();
@@ -135,7 +136,7 @@ export class IMAPEMail extends EMail {
       } else {
         await conn.messageFlagsRemove(this.uid, [name], { uid: true });
       }
-    }, true);
+    });
     this.flagsChanging = false;
   }
 
@@ -154,7 +155,7 @@ export class IMAPEMail extends EMail {
       if (strategy == DeleteStrategy.DeleteImmediately) {
         await this.folder.runCommand(async (conn) => {
           await conn.messageDelete(this.uid, { uid: true });
-        }, true);
+        });
       } else if (strategy == DeleteStrategy.MoveToTrash) {
         let trash = this.folder.account.getSpecialFolder(SpecialFolder.Trash);
         assert(trash, gt`Trash folder is not set. Cannot delete the email. Please go to folder properties and set Use As: Trash.`);

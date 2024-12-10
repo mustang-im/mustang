@@ -1,6 +1,6 @@
 import { Folder, SpecialFolder } from "../Folder";
 import { IMAPEMail } from "./IMAPEMail";
-import { type IMAPAccount, IMAPCommandError } from "./IMAPAccount";
+import { type IMAPAccount, IMAPCommandError, ConnectionPurpose } from "./IMAPAccount";
 import type { EMail } from "../EMail";
 import { ArrayColl, Collection } from "svelte-collections";
 import { assert } from "../../util/util";
@@ -54,10 +54,10 @@ export class IMAPFolder extends Folder {
     }
   }
 
-  async runCommand<T>(imapFunc: (conn: any) => Promise<T>, isMain: boolean, connection: ImapFlow = null, doLock = true): Promise<T> {
+  async runCommand<T>(imapFunc: (conn: any) => Promise<T>, purpose = ConnectionPurpose.Main, connection: ImapFlow = null, doLock = true): Promise<T> {
     let lock;
     try {
-      let conn = connection ?? await this.account.connection(isMain);
+      let conn = connection ?? await this.account.connection(false, purpose);
       try {
         if (doLock) {
           lock = await conn.getMailboxLock(this.path);
@@ -228,7 +228,7 @@ export class IMAPFolder extends Folder {
         }
         this.updateModSeq(msgInfo.modseq);
       }
-    }, false);
+    }, ConnectionPurpose.Fetch);
     return { newMessages, updatedMessages };
   }
 
@@ -252,7 +252,7 @@ export class IMAPFolder extends Folder {
         msg.setFlagsLocal(msgInfo.flags);
         updatedMessages.add(msg);
       }
-    }, false, connection);
+    }, ConnectionPurpose.Fetch, connection);
     return { updatedMessages };
   }
 
@@ -261,7 +261,7 @@ export class IMAPFolder extends Folder {
     let ids: number[];
     await this.runCommand(async (conn) => {
       ids = await conn.search(range, { uid: true });
-    }, false, connection);
+    }, ConnectionPurpose.Fetch, connection);
     return new ArrayColl(ids);
   }
 
@@ -333,7 +333,7 @@ export class IMAPFolder extends Folder {
             this.account.errorCallback(ex);
           }
         }
-      }, false);
+      }, ConnectionPurpose.Fetch);
     }
 
     /*for (let msg of this.messages) {
@@ -509,7 +509,7 @@ export class IMAPFolder extends Folder {
     await this.runCommand(async (conn) => {
       let flags = ["\\Seen"]; // TODO
       await conn.append(this.path, Buffer.from(email.mime), flags); // TODO hangs
-    }, true);
+    });
   }
 
   async moveMessagesHere(messages: Collection<IMAPEMail>) {
@@ -550,7 +550,7 @@ export class IMAPFolder extends Folder {
     */
     await this.runCommand(async (conn) => {
       await conn.mailboxRename(folder.path, [this.path, folder.getPathComponents().pop()]);
-    }, true);
+    });
   }
 
   async createSubFolder(name: string): Promise<IMAPFolder> {
@@ -558,7 +558,7 @@ export class IMAPFolder extends Folder {
     await this.runCommand(async (conn) => {
       let created = await conn.mailboxCreate([this.path, name]);
       newFolder.path = created.path;
-    }, true);
+    });
     console.log("IMAP folder created", name, newFolder.path);
     await newFolder.listMessages();
     return newFolder;
@@ -569,7 +569,7 @@ export class IMAPFolder extends Folder {
     let parentPath = this.parent ? this.parent.path : this.getPathComponents().slice(0, -1);
     await this.runCommand(async (conn) => {
       await conn.mailboxRename(this.path, [...parentPath, newName]);
-    }, true);
+    });
     console.log("renamed", this.path, "to parent", parentPath, [...parentPath, newName]);
   }
 
@@ -577,7 +577,7 @@ export class IMAPFolder extends Folder {
   protected async deleteItOnServer(): Promise<void> {
     await this.runCommand(async (conn) => {
       await conn.mailboxDelete(this.path);
-    }, true);
+    });
     console.log("IMAP folder deleted", this.name, this.path);
   }
 
@@ -585,7 +585,7 @@ export class IMAPFolder extends Folder {
     await super.markAllRead();
     await this.runCommand(async (conn) => {
       await conn.messageFlagsAdd("1:*", ["\\Seen"], { uid: true });
-    }, true);
+    });
   }
 
   /** @param specialUse From RFC 6154, e.g. `\Sent`
