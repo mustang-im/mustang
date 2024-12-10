@@ -153,6 +153,7 @@
   }
 
   onMount(() => {
+    selectedItems.registerObserver(singleSelectionObserver);
     if (selectedItem) {
       selectedItems.add(selectedItem);
     }
@@ -323,7 +324,6 @@
   singleSelectionObserver.onSelectedItem = item => {
     selectedItem = item;
   };
-  selectedItems.registerObserver(singleSelectionObserver);
 </script>
 
 <style>
