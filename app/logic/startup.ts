@@ -49,7 +49,7 @@ export async function loginOnStartup(startupErrorCallback: (ex) => void, backgro
     //if (!(await account.isLoggedIn) && (await account.haveStoredLogin())) {
     account.errorCallback = backgroundErrorCallback;
     if (account.loginOnStartup) {
-      await account.login(false).catch(startupErrorCallback);
+      account.login(false).catch(startupErrorCallback);
       // account.inbox.getNewMessages().catch(startupErrorCallback);
     }
   }
