@@ -135,7 +135,7 @@
   "n3yji4": "Ctrl-Y",
   "W/kPjn": "Ctrl-Z",
   "pvnfJD": "Donker",
-  "yB1YpA": "Duistere modus",
+  "yB1YpA": "Persoonlijk adresboek",
   "mYGY3B": "Datum",
   "H7OUPr": "Dag",
   "yRdqWH": "Dag/Maand",
@@ -511,10 +511,10 @@
   "io0G93": "Delete Event",
   "peNkNL": "Wil je dit label helemaal wissen?",
   "Kijdjh": "Download alle berichten",
-  "hy+Mfg": "eerst",
+  "hy+Mfg": "Alle rekeningen",
   "3waNb/": "Voor ",
   "9ZP9cc": "♪",
-  "1hxId5": "vierde",
+  "1hxId5": "Voor",
   "3M2GaA": "Haal nieuwe berichten",
   "Ylq7PY": "Hoe vaak om te controleren op nieuwe en verwijderde berichten. Als de server PUSH-mail ondersteunt, zullen er nieuwe e-mails onafhankelijk zijn van deze setting.",
   "lw9Uqd": "Login",
@@ -538,5 +538,5 @@
   "1HiY/0": "Deze verandering zal al je series herstarten tot defecte waarden.",
   "IBpYJj": "Trash map is niet klaar. Ik kan de e-mail niet verwijderen. Ga alsjeblieft naar vouwende eigenschappen en zet Use As:.",
   "c73bE8": "Behandel deze e-mail als spam: Verplaats het naar de Spam map en train de spamfilter",
-  "zDfdMJ": "Tot ziens"
+  "zDfdMJ": "Advies account"
 }
