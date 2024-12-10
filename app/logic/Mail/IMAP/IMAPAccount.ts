@@ -222,7 +222,7 @@ export class IMAPAccount extends MailAccount {
       return;
     }
 
-    return await this.connection(isMain);
+    return await this.connection(false, isMain);
   }
 
   async hasCapability(capa: string): Promise<boolean> {
