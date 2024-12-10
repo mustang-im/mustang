@@ -1,21 +1,20 @@
 # Next
 * Mail
-  * SQL
-    * email table: Add column for contact
   * Main/Dependent accounts
     * Calendar
     * SMTP
     * OAuth2
+  * OAuth2 login UI with window/browser/URL options
+  * Calendar
+    * Edit event UI
+    * Move to other calendar
   * Move multiple emails at once
-  * IMAP: See below
-  * AceBase: Stable DB
   * Inline images send
   * Context menu for content: Copy text, link, image
   * Bug: Search and persons view: Disable until search bug fixed
   * Bug: Thunderbird AB import misses ABs and fields
-  * Calendar
-    * Edit event UI
-    * Move to other calendar
+  * Import Outlook PST
+  * IMAP: See below
   * FastTree
     * Drag&Drop: Open on drag over - for: Move messages to deep subfolders -> Rewrite FastTree
   * Bugs: FastList doesn't update some rows #66
@@ -33,7 +32,7 @@
     * Edit
     * Run
   * Tags: Shrink tag list when not enough space
-  * OAuth2: Popup dialog - for setup
+  * AceBase: Stable DB
   * All accounts
     * Fix mergeColls() #72
     * Use search folder
