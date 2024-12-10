@@ -6,6 +6,7 @@ import { readCalendars } from './Calendar/AccountsList/Calendars';
 import { readMeetAccounts } from './Meet/AccountsList/MeetAccounts';
 import { readSavedSearches } from './Mail/Virtual/SavedSearchFolder';
 import { loadTagsList } from './Mail/Tag';
+import type { MailAccount } from './Mail/MailAccount';
 import JPCWebSocket from '../../lib/jpc-ws';
 
 const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
@@ -46,11 +47,16 @@ export async function loginOnStartup(startupErrorCallback: (ex) => void, backgro
   }
 
   for (let account of appGlobal.emailAccounts) {
-    //if (!(await account.isLoggedIn) && (await account.haveStoredLogin())) {
     account.errorCallback = backgroundErrorCallback;
     if (account.loginOnStartup) {
-      account.login(false).catch(startupErrorCallback);
-      // account.inbox.getNewMessages().catch(startupErrorCallback);
+      emailAccountLogin(account).catch(startupErrorCallback);
     }
+  }
+}
+
+async function emailAccountLogin(account: MailAccount) {
+  await account.login(false);
+  if (account.isLoggedIn) {
+    await account.inbox.getNewMessages();
   }
 }
