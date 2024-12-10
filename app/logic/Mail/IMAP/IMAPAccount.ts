@@ -8,7 +8,7 @@ import { assert, SpecificError } from "../../util/util";
 import { Lock } from "../../util/Lock";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { appName, appVersion, siteRoot } from "../../build";
-import { ArrayColl, type Collection } from "svelte-collections";
+import { ArrayColl, MapColl, type Collection } from "svelte-collections";
 import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
 import { gt } from "../../../l10n/l10n";
 
@@ -20,8 +20,8 @@ export class IMAPAccount extends MailAccount {
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
-  protected connections = new Map<ConnectionPurpose, ImapFlow>();
-  protected connectLock = new Map<ConnectionPurpose, Lock>();
+  protected connections = new MapColl<ConnectionPurpose, ImapFlow>();
+  protected connectLock = new MapColl<ConnectionPurpose, Lock>();
 
   constructor() {
     super();
@@ -203,7 +203,7 @@ export class IMAPAccount extends MailAccount {
       // Sometimes gives "Connection not available". Do nothing.
     }
 
-    let purpose = [...this.connections.keys()].find(key => this.connections.get(key) == connection);
+    let purpose = this.connections.getKeyForValue(connection);
     if (!purpose) {
       return;
     }
