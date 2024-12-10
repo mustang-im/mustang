@@ -45,7 +45,13 @@
       border-right: 1px dotted grey;
     }
   }
-  .app-bar :global(.app-button.settings:not(.selected)) {
+  .app-bar :global(.app-button.settings) {
+    position: fixed;
+    width: 63px;
+    bottom: 10px;
+    margin: 0 auto;
+  }
+  .app-bar :global(.app-button.settings:not(.selected) .label .label) {
     display: none;
   }
 </style>

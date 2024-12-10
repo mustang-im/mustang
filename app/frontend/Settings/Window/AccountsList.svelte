@@ -24,7 +24,7 @@
   import type { SettingsCategory } from "./SettingsCategory";
   import { openApp } from "../../AppsBar/selectedApp";
   import { selectedCategory } from "./selected";
-  import { SetupMustangApp } from "../Setup/SetupMustangApp";
+  import { SetupMustangApp } from "../../Setup/SetupMustangApp";
   import { settingsMustangApp } from "./SettingsMustangApp";
   import AccountItem from "./AccountItem.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";

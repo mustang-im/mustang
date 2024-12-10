@@ -36,7 +36,7 @@
   }
   .tag.unselected {
     background-color: color-mix(in srgb, var(--color) 30%, transparent);
-    color: black;
+    color: var(--button-fg);
   }
   .tag.selected {
     border: 1px solid var(--button-border);

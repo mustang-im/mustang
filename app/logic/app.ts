@@ -8,7 +8,7 @@ import type { MeetAccount } from './Meet/MeetAccount';
 import type { VideoConfMeeting } from './Meet/VideoConfMeeting';
 import type { Directory } from './Files/File';
 import type { Workspace } from './Abstract/Workspace';
-import Apps from './Apps/Apps';
+import WebApps from './WebApps/WebApps';
 import { ArrayColl, Collection, mergeColls } from 'svelte-collections';
 
 class AppGlobal {
@@ -20,7 +20,7 @@ class AppGlobal {
   readonly meetings = new ArrayColl<VideoConfMeeting>();
   readonly files = new ArrayColl<Directory>();
   readonly workspaces = new ArrayColl<Workspace>();
-  readonly apps = new Apps();
+  readonly webApps = new WebApps();
 
   personalAddressbook: Addressbook;
   collectedAddressbook: Addressbook;

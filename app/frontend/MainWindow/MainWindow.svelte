@@ -31,7 +31,7 @@
   import { loadMustangApps } from "../AppsBar/loadMustangApps";
   import { mailMustangApp } from "../Mail/MailMustangApp";
   import { meetMustangApp } from "../Meet/MeetMustangApp";
-  import { SetupMustangApp } from "../Settings/Setup/SetupMustangApp";
+  import { SetupMustangApp } from "../Setup/SetupMustangApp";
   import AppBar from "../AppsBar/AppBar.svelte";
   import AppContent from "../AppsBar/AppContent.svelte";
   import NotificationBar from "./NotificationBar.svelte";
@@ -39,7 +39,7 @@
   import Splitter from "../Shared/Splitter.svelte";
   import MailInBackground from "../Mail/MailInBackground.svelte";
   import MeetBackground from "../Meet/MeetBackground.svelte";
-  import InitialSetup from "../Settings/Setup/Import/InitialSetup.svelte";
+  import InitialSetup from "../Setup/Import/InitialSetup.svelte";
   import { catchErrors, backgroundError } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { onMount } from "svelte";
@@ -56,7 +56,7 @@
   async function startup() {
     loadMustangApps();
     await getStartObjects();
-    changeDarkMode($darkModeSetting.value);
+    changeTheme($themeSetting.value);
     if (appGlobal.emailAccounts.isEmpty && appGlobal.chatAccounts.isEmpty) {
       setup();
     } else {
@@ -73,14 +73,14 @@
     openApp(setupApp);
   }
 
-  let darkModeSetting = getLocalStorage("appearance.darkmode", "system");
-  $: changeDarkMode($darkModeSetting.value);
-  function changeDarkMode(mode: string) {
+  let themeSetting = getLocalStorage("appearance.theme", "system");
+  $: changeTheme($themeSetting.value);
+  function changeTheme(theme: string) {
     if (!appGlobal?.remoteApp) {
       return;
     }
-    assert(["system", "light", "dark"].includes(mode), $t`Bad dark mode ` + mode);
-    appGlobal.remoteApp.setDarkMode(mode);
+    assert(["system", "light", "dark"].includes(theme), $t`Bad theme name ` + theme);
+    appGlobal.remoteApp.setTheme(theme);
   }
 
 </script>

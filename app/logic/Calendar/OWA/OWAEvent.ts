@@ -76,7 +76,7 @@ export class OWAEvent extends Event {
         }
       }
     }
-    if (json.ReminderIsSet == "true") {
+    if (json.ReminderIsSet) {
       this.alarm = new Date(this.startTime.getTime() - 60 * sanitize.integer(json.ReminderMinutesBeforeStart));
     } else {
       this.alarm = null;

@@ -14,7 +14,7 @@
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
   import { IMAPAccount } from "../../../../logic/Mail/IMAP/IMAPAccount";
   import { catchErrors } from "../../../Util/error";
-  import ManualConfig from "../../Setup/Mail/manual/ManualConfig.svelte";
+  import ManualConfig from "../Manual/ManualConfig.svelte";
   import ServerIMAPAdvanced from "./ServerIMAPAdvanced.svelte";
   import { t } from "../../../../l10n/l10n";
 

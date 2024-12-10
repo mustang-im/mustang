@@ -13,12 +13,12 @@
 </vbox>
 
 <script lang="ts">
-  import type AppCategory from "../../../logic/Apps/AppCategory";
-  import type AppListed from "../../../logic/Apps/AppListed";
-  import AppShopButton from "./AppShopButton.svelte";
+  import type WebAppCategory from "../../../logic/WebApps/WebAppCategory";
+  import type WebAppListed from "../../../logic/WebApps/WebAppListed";
+  import AppShopButton from "./WebAppShopButton.svelte";
 
-  export let category: AppCategory;
-  export let selectedApp: AppListed; /* in/out */
+  export let category: WebAppCategory;
+  export let selectedApp: WebAppListed; /* in/out */
 
   $: apps = category.apps;
 </script>

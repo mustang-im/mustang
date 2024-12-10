@@ -5,13 +5,13 @@
 </vbox>
 
 <script lang="ts">
-  import type AppCategory from "../../../logic/Apps/AppCategory";
+  import type WebAppCategory from "../../../logic/WebApps/WebAppCategory";
   import CategoryEntry from "./CategoryEntry.svelte";
   import type { MapColl, Collection } from "svelte-collections";
 
-  export let allCategories: MapColl<string, AppCategory>;
-  export let showCategories: Collection<AppCategory>;
-  export let selected: AppCategory; /* in/out */
+  export let allCategories: MapColl<string, WebAppCategory>;
+  export let showCategories: Collection<WebAppCategory>;
+  export let selected: WebAppCategory; /* in/out */
 </script>
 
 <style>

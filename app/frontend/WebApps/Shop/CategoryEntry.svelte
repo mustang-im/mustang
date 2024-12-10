@@ -12,16 +12,16 @@
 {/if}
 
 <script lang="ts">
-  import type AppCategory from "../../../logic/Apps/AppCategory";
+  import type WebAppCategory from "../../../logic/WebApps/WebAppCategory";
   import Categories from "./Categories.svelte";
   import Button from "../../Shared/Button.svelte";
   import ChevronUpIcon from "lucide-svelte/icons/chevron-up";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
   import type { MapColl } from "svelte-collections";
 
-  export let allCategories: MapColl<string, AppCategory>;
-  export let category: AppCategory;
-  export let selected: AppCategory; /* in/out */
+  export let allCategories: MapColl<string, WebAppCategory>;
+  export let category: WebAppCategory;
+  export let selected: WebAppCategory; /* in/out */
 
   let childCategories = allCategories.filter(cat => cat.parentID == category.id);
   $: hasChildCategories = !$childCategories.isEmpty;

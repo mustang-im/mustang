@@ -1,5 +1,5 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<vbox class="message-popup" on:click={onClickInside}>
+<vbox class="message-popup" on:click={onClickInside} on:mousewheel={onClickInside}>
   <hbox class="top buttons">
     <Button plain
       label={$t`Delete`}
@@ -59,7 +59,7 @@
       />
   </hbox>
 </vbox>
-<svelte:window on:click={onClickOutside} />
+<svelte:window on:click={onClickOutside} on:mousewheel={onClickOutside} />
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
@@ -88,10 +88,10 @@
   function onClose() {
     dispatch("close");
   }
-  function onClickInside(event: MouseEvent) {
+  function onClickInside(event: Event) {
     event.stopPropagation();
   }
-  function onClickOutside(event: MouseEvent) {
+  function onClickOutside() {
     onClose();
   }
 

@@ -92,11 +92,14 @@
   }
   .notification-bar :global(button) {
     margin: 4px;
+    background-color: #6B6B6C;
   }
   .notification-bar :global(button.action) {
     padding: 4px 10px;
   }
   .notification-bar :global(button.error-info:not(:hover)) {
+    border-color: #6B6B6C77;
+    color: #6B6B6CAA;
     background-color: transparent;
   }
 </style>

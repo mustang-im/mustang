@@ -45,6 +45,7 @@
   --input-bg: field;
   --input-fg: fieldtext;
   --input-line: #DFDFDF;
+  --input-placeholder: #707070;
   --input-focus: #20AE9E;
   --link-fg: #747bff;
   --link-hover-fg: #535bf2;
@@ -88,10 +89,11 @@
     --input-bg: transparent;
     --input-fg: fieldtext;
     --input-line: #3A3A3B;
+    --input-placeholder: #909090; /* or #AAAAAA */
     --input-focus: #20AE9E;
     --link-fg: #646cff;
     --link-hover-fg: #535bf2;
-    --button-bg: #6B6B6C;
+    --button-bg: transparent;
     --button-fg: #CDCDCD;
     --button-border: #CDCDCD;
     --button-secondary-line: #A1E4DA;
@@ -212,7 +214,7 @@ input:focus {
   border-bottom: 1px solid var(--input-focus);
 }
 input::placeholder {
-  color: #0C0F27BB;
+  color: var(--input-placeholder);
 }
 
 select {
@@ -287,10 +289,17 @@ a:hover {
 
 div.svelteui-Menu-root div.svelteui-Paper-root {
   padding: 4px 0px;
+  /* dark theme - but breaks red buttons - see below
+  color: var(--leftbar-fg);
+  background-color: var(--leftbar-bg);
+  */
 }
 
 button.svelteui-MenuItem-root {
   border-radius: 0px;
+  /* dark theme - but breaks red buttons
+  color: unset;
+  */
 }
 
 button.svelteui-MenuItem-root[classname="selected"] {

@@ -13,6 +13,7 @@ import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 import childProcess from 'node:child_process';
 import * as OWA from './owa';
+import { appName, production } from '../app/logic/build';
 
 export async function startupBackend() {
   let appGlobal = await createSharedAppObject();
@@ -37,7 +38,7 @@ async function createSharedAppObject() {
     unminimizeMainWindow,
     shell,
     restartApp,
-    setDarkMode,
+    setTheme,
     openMenu,
     getConfigDir,
     getFilesDir,
@@ -259,11 +260,11 @@ function restartApp() {
   app.quit();
 }
 
-function setDarkMode(mode: "system" | "light" | "dark") {
-  if (!["system", "light", "dark"].includes(mode)) {
-    throw new Error("Bad dark mode " + mode);
+function setTheme(theme: "system" | "light" | "dark") {
+  if (!["system", "light", "dark"].includes(theme)) {
+    throw new Error("Bad theme name " + theme);
   }
-  nativeTheme.themeSource = mode;
+  nativeTheme.themeSource = theme;
 }
 
 function openMenu(menuItems: MenuItemConstructorOptions[]): void {
@@ -331,7 +332,7 @@ function directory(type: string): string {
   return app.getPath(type as any);
 }
 
-const kAppDir = "Mustang";
+const kAppDir = production ? appName : appName + "Dev"; // e.g. "Mustang" or "Parula"
 
 /**
  * Get the user config directory on disk.

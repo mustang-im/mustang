@@ -1,14 +1,15 @@
 <vbox flex class="settings-categories-pane">
-  {#each $categories.each as category}
-    <CategoryItem {category} />
-  {/each}
-  <vbox flex class="bottom">
-  </vbox>
+  <Scroll>
+    {#each $categories.each as category}
+      <CategoryItem {category} />
+    {/each}
+  </Scroll>
 </vbox>
 
 <script lang="ts">
   import type { SettingsCategory } from "./SettingsCategory";
   import CategoryItem from "./CategoryItem.svelte";
+  import Scroll from "../../Shared/Scroll.svelte";
   import type { Collection } from "svelte-collections";
 
   /* Which apps to show on the app bar
