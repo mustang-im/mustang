@@ -54,7 +54,7 @@ export class IMAPFolder extends Folder {
     }
   }
 
-  async runCommand<T>(imapFunc: (conn: any) => Promise<T>, purpose = ConnectionPurpose.Main, connection: ImapFlow = null, doLock = true): Promise<T> {
+  async runCommand<T>(imapFunc: (conn: ImapFlow) => Promise<T>, purpose = ConnectionPurpose.Main, connection: ImapFlow = null, doLock = true): Promise<T> {
     let lock;
     try {
       let conn = connection ?? await this.account.connection(false, purpose);

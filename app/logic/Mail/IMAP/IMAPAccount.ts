@@ -201,13 +201,7 @@ export class IMAPAccount extends MailAccount {
       // Sometimes gives "Connection not available". Do nothing.
     }
 
-    let purpose: ConnectionPurpose;
-    for (let p of connectionPurposes) {
-      if (this.connections.get(p) == connection) {
-        purpose = p;
-        break;
-      }
-    }
+    let purpose = [...this.connections.keys()].find(key => this.connections.get(key) == connection);
     if (!purpose) {
       return;
     }
@@ -216,7 +210,6 @@ export class IMAPAccount extends MailAccount {
     if (!(this.password || this.oAuth2?.isLoggedIn)) {
       return;
     }
-
     return await this.connection(false, purpose);
   }
 
