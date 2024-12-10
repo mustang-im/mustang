@@ -64,6 +64,12 @@
 * MailChat/Thread: Jail HTML: Styles and size
 * Calendar
   * Tuesday first day
+## Nick
+* Mac: M1 needs 50s to start, 30s for second start
+* Mac: Use Mac Password manager
+* Gmail: JavaScript disabled in OAuth2 window
+* Gmail: Log in with browser
+* Manual setup: OAuth2 UI: "Browser" goes back to "Seperate window"
 ## Freshness
 * Account colors
 * Icons for accounts, based on favicon or user-set
