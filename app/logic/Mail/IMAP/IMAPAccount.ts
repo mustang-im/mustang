@@ -251,6 +251,10 @@ export class IMAPAccount extends MailAccount {
   }
 
   readFolders(allFoldersInfo: any[], parent: IMAPFolder, subFolders: Collection<IMAPFolder>, resultAllFolders: Collection<IMAPFolder>): void {
+    const excludeFolder = "[Gmail]";
+    if (parent?.path == excludeFolder) {
+      subFolders = this.rootFolders as ArrayColl<IMAPFolder>;
+    }
     let subFoldersInfo = allFoldersInfo.filter(folderInfo => folderInfo.parentPath == (parent?.path ?? ""));
     for (let folderInfo of subFoldersInfo) {
       let subFolder = subFolders.find(folder => folder.path == folderInfo.path);
@@ -261,10 +265,16 @@ export class IMAPAccount extends MailAccount {
       } else {
         subFolder = new IMAPFolder(this);
         subFolder.fromFlow(folderInfo);
-        subFolders.add(subFolder);
-        subFolder.parent = parent;
+        if (subFolder.path == excludeFolder) {
+          subFolder.parent = null;
+        } else {
+          subFolder.parent = parent;
+          subFolders.add(subFolder);
+        }
       }
-      resultAllFolders.add(subFolder);
+      if (subFolder.path != excludeFolder) {
+        resultAllFolders.add(subFolder);
+      }
       if (!this.pathDelimiter && folderInfo.delimiter) {
         this.pathDelimiter = folderInfo.delimiter;
       }
