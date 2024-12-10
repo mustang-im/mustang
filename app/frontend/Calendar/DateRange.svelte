@@ -54,5 +54,6 @@
     font-size: 18px;
     margin-inline-start: 8px;
     margin-inline-end: 8px;
+    min-width: 9em;
   }
 </style>
