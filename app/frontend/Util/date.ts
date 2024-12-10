@@ -33,7 +33,7 @@ export function getToday() {
   return today;
 }
 
-/** @returns Mon-Sun */
+/** @returns Mon-Sun around `start` */
 export function getWeekDays(start: Date): Date[] {
   let startTime = new Date(start);
   // Always start with Monday

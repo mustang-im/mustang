@@ -17,6 +17,11 @@
   export let events: Collection<Event>;
 
   let monthStart: Date;
+
+  $: start, syncMonth();
+  function syncMonth() {
+    monthStart = start;
+  }
 </script>
 
 <style>
