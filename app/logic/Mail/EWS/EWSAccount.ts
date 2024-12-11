@@ -15,6 +15,7 @@ import { ContentDisposition } from "../Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { assert, sleep, blobToBase64, throttleConnectionsPerSecond, ensureArray } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import { SetColl } from "svelte-collections";
 
 type Json = string | number | boolean | null | Json[] | {[key: string]: Json};
@@ -45,9 +46,12 @@ export class EWSAccount extends MailAccount {
 
   async login(interactive: boolean): Promise<void> {
     if (this.authMethod == AuthMethod.OAuth2) {
-      let urls = OAuth2URLs.find(a => a.hostnames.includes(this.hostname));
-      this.oAuth2 = new OAuth2(this, urls.tokenURL, urls.authURL, urls.authDoneURL, urls.scope, urls.clientID, urls.clientSecret, urls.doPKCE);
-      this.oAuth2.setTokenURLPasswordAuth(urls.tokenURLPasswordAuth);
+      if (!this.oAuth2) {
+        let urls = OAuth2URLs.find(a => a.hostnames.includes(this.hostname));
+        assert(urls, gt`Could not find OAuth2 config for ${this.hostname}`);
+        this.oAuth2 = new OAuth2(this, urls.tokenURL, urls.authURL, urls.authDoneURL, urls.scope, urls.clientID, urls.clientSecret, urls.doPKCE);
+        this.oAuth2.setTokenURLPasswordAuth(urls.tokenURLPasswordAuth);
+      }
       this.oAuth2.subscribe(() => this.notifyObservers());
       await this.oAuth2.login(interactive);
     }
