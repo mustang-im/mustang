@@ -53,7 +53,7 @@
   import Password from "../Shared/Password.svelte";
   import Header from "../Shared/Header.svelte";
   import StatusMessage from "../Shared/StatusMessage.svelte";
-  import ErrorMessage, { ErrorGravity } from "../Shared/ErrorMessage.svelte";
+  import ErrorMessage, { ErrorGravity } from "../../Shared/ErrorMessage.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Button from "../../Shared/Button.svelte";
   import { Cancelled } from "../../../logic/util/Abortable";

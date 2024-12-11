@@ -68,7 +68,7 @@
   import FinalizeConfig from "./FinalizeConfig.svelte";
   import ManualConfigPage from "../../Settings/Mail/Manual/ManualConfigPage.svelte";
   import Instructions from "./Instructions.svelte";
-  import ErrorMessage, { ErrorGravity } from "../Shared/ErrorMessage.svelte";
+  import ErrorMessage, { ErrorGravity } from "../../Shared/ErrorMessage.svelte";
   import Footer from "../Shared/Footer.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import BackgroundVideo from "../Shared/BackgroundVideo.svelte";

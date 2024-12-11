@@ -56,14 +56,13 @@
   import VideoIcon from 'lucide-svelte/icons/video';
   import AddToCalendarIcon from "lucide-svelte/icons/calendar-plus";
   import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
-  import ErrorMessage, { ErrorGravity } from "../../Setup/Shared/ErrorMessage.svelte";
-  import { onKeyEnter } from "../../Util/util";
-  import { catchErrors, logError } from "../../Util/error";
+  import ErrorMessage, { ErrorGravity } from "../../Shared/ErrorMessage.svelte";
   import { t } from "../../../l10n/l10n";
+  import { catchErrors, logError } from "../../Util/error";
+  import { onKeyEnter } from "../../Util/util";
+  import { sleep } from "../../../logic/util/util";
   import { mergeColls } from "svelte-collections";
   import { faker } from "@faker-js/faker";
-  import { tick } from "svelte";
-  import { sleep } from "../../../logic/util/util";
 
   const allEvents = mergeColls(appGlobal.calendars.map(calendar => calendar.events));
   const now = new Date();

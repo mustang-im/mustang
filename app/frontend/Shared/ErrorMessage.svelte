@@ -23,8 +23,8 @@
 </script>
 
 <script lang="ts">
-  import StatusMessage from "./StatusMessage.svelte";
-  import RoundButton from "../../Shared/RoundButton.svelte";
+  import StatusMessage from "../Setup/Shared/StatusMessage.svelte";
+  import RoundButton from "./RoundButton.svelte";
   import ErrorIcon from "lucide-svelte/icons/triangle-alert";
   import WarningIcon from "lucide-svelte/icons/circle-alert";
   import CloseIcon from "lucide-svelte/icons/x";
