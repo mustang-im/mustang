@@ -15,7 +15,7 @@
     {#each days as day}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <vbox class="day"
-        class:selected={day.getTime() == $selectedDate.getTime()}
+        class:selected={day.getTime() == $selectedDate?.getTime()}
         on:click={selectDay(day)}
         >
         <DayLabel {day} />
