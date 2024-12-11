@@ -50,15 +50,19 @@
 * Clear profile
 * Debug dump of settings
 * Composer
+  * Send: Waiting too long
   * PersonEntry: Delete key
   * Remove added attachment (needs menu item)
   * Open attachment
 * Setup
   * After login, waiting too long before moving to next dialog
   * OAuth2 login: Close window. Login button disabled.
-* Mail composer: Send: Waiting too long
+  * Icons based on provider or domain
 * Mail Persons view: Sort by recency or by name
 * Images, remote
+* Contacts
+  * Merge: too many clicks, with confirmation dialog
+  * Delete: requires 2 clicks: Edit, then Delete. Too slow.
 * Saved Searches delete: Update list
 * List view: Sort order
 * MailChat/Thread: Jail HTML: Styles and size
