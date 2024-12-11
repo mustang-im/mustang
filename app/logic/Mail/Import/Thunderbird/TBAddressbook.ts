@@ -3,7 +3,7 @@ import type { ThunderbirdProfile } from "./TBProfile";
 import { ContactEntry, Person } from "../../../Abstract/Person";
 import { appGlobal } from "../../../app";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
-import { assert, NotReached } from "../../../util/util";
+import { NotReached, UserError } from "../../../util/util";
 import { ArrayColl, SetColl } from "svelte-collections";
 import sql, { Database } from "../../../../../lib/rs-sqlite";
 
@@ -36,7 +36,9 @@ export class ThunderbirdAddressbook extends Addressbook {
       }
     }
 
-    assert(ab.persons.hasItems, "No persons found");
+    if (ab.persons.isEmpty) {
+      throw new UserError("No persons found");
+    }
     return ab;
   }
 
