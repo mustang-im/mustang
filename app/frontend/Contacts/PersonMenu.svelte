@@ -38,13 +38,12 @@
     await person.save();
   }
   async function deleteIt() {
-    let addressbook = person.addressbook;
-    let posInAddressbook = person.addressbook.persons.indexOf(person);
-
     await person.deleteFromServer();
     await person.deleteIt();
 
     if (person == $selectedPerson) {
+      let addressbook = person.addressbook;
+      let posInAddressbook = addressbook.persons.indexOf(person);
       let next = addressbook.persons.getIndex(posInAddressbook)
         ?? addressbook.persons.first;
       $selectedPerson = next;
