@@ -9,6 +9,8 @@
 <script lang="ts">
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
   import { newAccountForProtocol, listMailProtocols, labelForMailProtocol } from "../../../../logic/Mail/AccountsList/MailAccounts";
+  import { createEventDispatcher } from "svelte";
+  const dispatchEvent = createEventDispatcher();
 
   /** in/out */
   export let config: MailAccount;
@@ -22,6 +24,7 @@
     newConfig.cloneFrom(config);
     newConfig.url = "";
     config = newConfig;
+    dispatchEvent("newProtocol", protocol);
   }
 </script>
 

@@ -19,7 +19,7 @@
     <hbox class="protocol outgoing">{config.protocol}</hbox>
   {:else}
     <hbox>
-      <ProtocolSelector bind:config {isSetup} />
+      <ProtocolSelector bind:config {isSetup} on:newProtocol={onProtocolChanged} />
     </hbox>
   {/if}
 
@@ -99,7 +99,8 @@
   import ShieldQuestionIcon from "lucide-svelte/icons/shield-question";
   import ArrowLeftIcon from "lucide-svelte/icons/move-left";
   import ArrowRightIcon from "lucide-svelte/icons/move-right";
-  import { t } from "../../../../l10n/l10n";
+  import { gt, t } from "../../../../l10n/l10n";
+  import { UserError } from "../../../../logic/util/util";
 
   /** in/out */
   export let config: MailAccount;
@@ -153,11 +154,11 @@
    */
   export async function onContinue(): Promise<boolean> {
     if (!config.emailAddress) {
-      throw new Error("Please enter the email address");
+      throw new UserError(gt`Please enter the email address`);
     }
     let domain = getDomainForEmailAddress(config.emailAddress);
     if (!config.hostname || config.hostname == dummyHostname(domain)) {
-      hostnameError = new Error("Please enter the correct hostname");
+      hostnameError = new UserError(gt`Please enter the correct hostname`);
       throw hostnameError;
     } else {
       hostnameError = null;
@@ -168,19 +169,19 @@
     }
     // TODO validate hostname (throw if not reachable), guess config, cache the result, and fill in the fields
     if (config.tls == TLSSocketType.Unknown) {
-      tlsError = new Error("Please set the correct connection encryption");
+      tlsError = new UserError(gt`Please set the correct connection encryption`);
       throw tlsError;
     } else {
       tlsError = null;
     }
     if (!config.port) {
-      portError = new Error("Please enter the correct port number");
+      portError = new UserError(gt`Please enter the correct port number`);
       throw portError;
     } else {
       portError = null;
     }
     if (config.authMethod == AuthMethod.Unknown) {
-      authError = new Error("Please enter the authentication method");
+      authError = new UserError(gt`Please enter the authentication method`);
       throw authError;
     } else if (config.authMethod == AuthMethod.OAuth2) {
       let oAuth = OAuth2URLs.find(o => o.hostnames.some(h => h == config.hostname));
@@ -191,7 +192,7 @@
       authError = null;
     }
     if (config.hostname?.endsWith("example.com")) { // TODO replace with real checks
-      throw new Error("example.com is not a real domain");
+      throw new UserError(gt`Please enter the correct hostname`);
     }
     return true;
   }
