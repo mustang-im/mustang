@@ -4,8 +4,8 @@ import { MeetingParticipant as Participant, ParticipantRole } from "./Participan
 import { M3Account } from "./M3Account";
 import { appGlobal } from "../app";
 import { notifyChangedProperty } from "../util/Observable";
-import { assert, sleep, type URLString } from "../util/util";
-import { getUILocale } from "../../l10n/l10n";
+import { assert, sleep, UserError, type URLString } from "../util/util";
+import { getUILocale, gt } from "../../l10n/l10n";
 
 export class M3Conf extends VideoConfMeeting {
   controllerBaseURL: string;
@@ -40,7 +40,9 @@ export class M3Conf extends VideoConfMeeting {
   async login(relogin = false): Promise<void> {
     // TODO Multi-account
     this.account = appGlobal.meetAccounts.find(acc => acc instanceof M3Account) as M3Account;
-    assert(this.account, "Please configure an matching meeting account first");
+    if (!this.account) {
+      throw new UserError(gt`Please configure a matching meeting account first`);
+    }
     assert(this.account.controllerBaseURL, "Need controller URL");
     this.controllerBaseURL = this.account.controllerBaseURL;
     this.controllerWebSocketURL = this.account.controllerWebSocketURL;

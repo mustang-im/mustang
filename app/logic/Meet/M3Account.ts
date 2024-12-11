@@ -1,7 +1,8 @@
 import { MeetAccount } from "./MeetAccount";
 import { OAuth2 } from "../Auth/OAuth2";
-import { assert } from "../util/util";
+import { UserError, assert } from "../util/util";
 import { OAuth2URLs } from "../Auth/OAuth2URLs";
+import { gt } from "../../l10n/l10n";
 
 export class M3Account extends MeetAccount {
   readonly protocol: string = "m3";
@@ -23,7 +24,9 @@ export class M3Account extends MeetAccount {
     if (this.oauth2?.accessToken && !relogin) {
       return;
     }
-    assert(this.username, `Please configure the M3 account ${this.name}`);
+    if (!this.username) {
+      throw new UserError(gt`Please configure a matching meeting account first`);
+    }
 
     if (this.oauth2) {
       this.oauth2.stop();
