@@ -16,7 +16,7 @@ export class SQLEMail {
    * Save only fully downloaded emails
    */
   static async save(email: EMail) {
-    assert(!(email.downloadComplete && email.rawText == null && email.rawHTMLDangerous == null), "An email without body is not complete");
+    assert(!(email.downloadComplete && !email.rawText && !email.rawHTMLDangerous), "An email without body is not complete");
     if (!email.folder.dbID) {
       await email.folder.save();
     }
@@ -33,6 +33,9 @@ export class SQLEMail {
       if (existing?.id) {
         email.dbID = existing.id;
       }
+    }
+    if (!email.sent) {
+      email.sent = new Date();
     }
     let contact = email.contact as PersonUID;
     if (!email.dbID) {
