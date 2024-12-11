@@ -214,9 +214,6 @@ export class EWSAccount extends MailAccount {
   }
 
   async checkMaxConcurrency(ex: EWSItemError) {
-    if (ex.type != "ErrorServerBusy") {
-      throw ex;
-    }
     // Check whether the ConcurrentSyncCalls policy was exceeded.
     if (/'ConcurrentSyncCalls'.*'(\d+)'.*'Ews'/.test(ex.message) && Number(RegExp.$1) < this.maxConcurrency) {
       this.maxConcurrency = Number(RegExp.$1);
@@ -257,8 +254,12 @@ export class EWSAccount extends MailAccount {
       try {
         return this.checkResponse(response, aRequest);
       } catch (ex) {
-        await this.checkMaxConcurrency(ex);
-        return await this.callEWS(aRequest);
+        if (ex.type == "ErrorServerBusy") {
+          await this.checkMaxConcurrency(ex);
+          return await this.callEWS(aRequest);
+        } else {
+          throw ex;
+        }
       }
     }
     if (response.status == 401) {
