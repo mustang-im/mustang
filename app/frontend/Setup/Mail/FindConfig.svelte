@@ -4,11 +4,12 @@
 <script lang="ts">
   import { findConfig } from "../../../logic/Mail/AutoConfig/findConfig";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { getDomainForEmailAddress } from "../../../logic/util/netUtil";
   import StatusMessage from "../Shared/StatusMessage.svelte";
+  import { t } from "../../../l10n/l10n";
   import { assert } from "../../../logic/util/util";
   import type { ArrayColl } from "svelte-collections";
   import { createEventDispatcher, onMount } from 'svelte';
-  import { t } from "../../../l10n/l10n";
   const dispatchEvent = createEventDispatcher();
 
   /** in */
@@ -25,7 +26,7 @@
   onMount(async () => {
     try {
       altConfigs = await findConfig(emailAddress, password, exchangeConfirmCallback, abort);
-      assert(altConfigs?.length, $t`We could not find a configuration for ${emailAddress}`);
+      assert(altConfigs?.length, $t`We could not find a configuration for ${getDomainForEmailAddress(emailAddress)}`);
       config = altConfigs.slice().shift();
       dispatchEvent("continue");
     } catch (ex) {

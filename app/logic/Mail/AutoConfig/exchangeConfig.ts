@@ -208,7 +208,7 @@ export async function exchangeAutoDiscoverV2JSON(domain: string, emailAddress: s
     console.log("Exchange AutoDiscover V2 JSON results:\n" + priorityOrder.printResults);
     return config;
   } catch (ex) {
-    throw new Error(`Could not find a config for ${emailAddress}`);
+    throw new Error(`Could not find a config for ${domain}`);
   }
 }
 

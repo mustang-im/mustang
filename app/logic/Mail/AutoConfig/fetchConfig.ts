@@ -20,7 +20,7 @@ export async function fetchConfig(domain: string, emailAddress: string, abort: A
     console.log("Fetch config results:\n" + priorityOrder.printResults);
     return config;
   } catch (ex) {
-    throw new Error(`Could not find a config for ${emailAddress}`);
+    throw new Error(`Could not find a config for ${domain}`);
   }
 }
 
