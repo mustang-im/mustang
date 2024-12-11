@@ -86,7 +86,7 @@ export class EWSCalendar extends Calendar {
       syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
     }
     this.events.addAll(events);
-    return syncState!;
+    return sanitize.string(syncState);
   }
 
   getEventByItemID(id: string): EWSEvent | void {

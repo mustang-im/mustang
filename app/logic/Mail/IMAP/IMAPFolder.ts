@@ -2,11 +2,12 @@ import { Folder, SpecialFolder } from "../Folder";
 import { IMAPEMail } from "./IMAPEMail";
 import { type IMAPAccount, IMAPCommandError, ConnectionPurpose } from "./IMAPAccount";
 import type { EMail } from "../EMail";
-import { ArrayColl, Collection } from "svelte-collections";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
+import { ArrayColl, Collection } from "svelte-collections";
 import { Buffer } from "buffer";
 import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
-import { gt } from "../../../l10n/l10n";
 
 export class IMAPFolder extends Folder {
   account: IMAPAccount;
@@ -36,7 +37,7 @@ export class IMAPFolder extends Folder {
   }
   set lastModSeq(val: number) {
     assert(typeof (val) == "number", "IMAP Folder modseq must be a number");
-    this.syncState = val;
+    this.syncState = sanitize.integer(val);
     this.storage.saveFolderProperties(this).catch(this.account.errorCallback);
   }
 

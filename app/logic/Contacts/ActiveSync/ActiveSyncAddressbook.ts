@@ -2,9 +2,10 @@ import { Addressbook } from "../Addressbook";
 import { ActiveSyncPerson } from "./ActiveSyncPerson";
 import { EASError, type ActiveSyncAccount, type ActiveSyncPingable } from "../../Mail/ActiveSync/ActiveSyncAccount";
 import { kMaxCount } from "../../Mail/ActiveSync/ActiveSyncFolder";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { Lock } from "../../util/Lock";
 import { ensureArray, NotSupported } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
-import { Lock } from "../../util/Lock";
 
 export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPingable {
   readonly protocol: string = "addressbook-activesync";
@@ -68,7 +69,7 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
           throw new EASError("Sync", response.Collections.Collection.Status);
         }
         await responseFunc?.(response.Collections.Collection);
-        this.syncState = response.Collections.Collection.SyncKey;
+        this.syncState = sanitize.string(response.Collections.Collection.SyncKey, null);
         await this.save();
       } while (responseFunc && response.Collections.Collection.MoreAvailable == "");
       return response.Collections.Collection;
