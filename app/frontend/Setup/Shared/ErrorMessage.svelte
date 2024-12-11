@@ -37,6 +37,7 @@
   export let errorGravity: ErrorGravity;
 
   function onClose() {
+    errorMessage = null;
     dispatchEvent("continue");
   }
 

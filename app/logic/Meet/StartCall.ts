@@ -8,7 +8,8 @@ import { M3Conf } from "./M3Conf";
 import { MatrixAccount } from "../Chat/Matrix/MatrixAccount";
 import { MatrixVideoConf } from "./MatrixVideoConf";
 import { appGlobal } from "../app";
-import type { URLString } from "../util/util";
+import { UserError, type URLString, assert } from "../util/util";
+import { gt } from "../../l10n/l10n";
 
 export async function startVideoCall(to: Person | Group): Promise<VideoConfMeeting> {
   // TODO test code
@@ -135,11 +136,17 @@ export function isConferenceURL(url: URLString): boolean {
  * @see isConferenceURL();
  */
 export async function joinConferenceByURL(url: URLString): Promise<VideoConfMeeting> {
-  let urlParsed = new URL(url);
+  assert(url, "Need URL");
+  let urlParsed: URL;
+  try {
+    urlParsed = new URL(url);
+  } catch (ex) {
+    throw new UserError(gt`This is not a meeting URL`);
+  }
   if (urlParsed.pathname.startsWith("/room/") || urlParsed.pathname.startsWith("/invite/")) {
     let conf = new M3Conf();
     await conf.join(url);
     return conf;
   }
-  throw new Error("This meeting URL is not supported");
+  throw new UserError(gt`This meeting URL is not supported`);
 }
