@@ -33,7 +33,7 @@ export class SavedSearchFolder extends Folder {
     throw new NotReached();
   }
 
-  async listMessages(): Promise<ArrayColl<EMail>> {
+  async listMessages(): Promise<Collection<EMail>> {
     let messages = await this.search.startSearch();
     this.messages.clear();
     this.messages.addAll(messages);

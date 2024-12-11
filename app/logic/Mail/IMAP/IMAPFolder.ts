@@ -97,7 +97,7 @@ export class IMAPFolder extends Folder {
 
   /** Lists all messages in this folder.
    * But doesn't download their contents. @see downloadMessages() */
-  async listMessages(): Promise<ArrayColl<IMAPEMail>>  {
+  async listMessages(): Promise<Collection<IMAPEMail>>  {
     await this.readFolder();
     let lock = await this.listMessagesLock.lock();
     try {
@@ -278,7 +278,7 @@ export class IMAPFolder extends Folder {
   }
 
   /** Lists new messages, and downloads them */
-  async getNewMessages(): Promise<ArrayColl<IMAPEMail>> {
+  async getNewMessages(): Promise<Collection<IMAPEMail>> {
     await this.checkDeletedMessages(this.getRecentMsg()?.uid);
     let newMsgs = await this.listNewMessages();
     await this.downloadMessages(newMsgs);

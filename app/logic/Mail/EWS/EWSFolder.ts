@@ -39,7 +39,7 @@ export class EWSFolder extends Folder {
     }
   }
 
-  async listMessages(): Promise<ArrayColl<EWSEMail>> {
+  async listMessages(): Promise<Collection<EWSEMail>> {
     await this.readFolder();
     return await this.updateChangedMessages();
   }
@@ -343,7 +343,7 @@ export class EWSFolder extends Folder {
 
   /** Lists only the new messages, and downloads them.
    * @returns the new messages */
-  async getNewMessages(): Promise<ArrayColl<EWSEMail>> {
+  async getNewMessages(): Promise<Collection<EWSEMail>> {
     let newMsgs = await this.listMessages(); // uses syncState and should be fast
     await this.downloadMessages(newMsgs);
     return newMsgs;

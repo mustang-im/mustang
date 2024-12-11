@@ -129,7 +129,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
     }
   }
 
-  async listMessages(): Promise<ArrayColl<ActiveSyncEMail>> {
+  async listMessages(): Promise<Collection<ActiveSyncEMail>> {
     await this.readFolder();
     let newMsgs = new ArrayColl<ActiveSyncEMail>();
     let data = {
@@ -213,7 +213,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
     return downloadedEmail;
   }
 
-  async getNewMessages(): Promise<ArrayColl<ActiveSyncEMail>> {
+  async getNewMessages(): Promise<Collection<ActiveSyncEMail>> {
     let newMsgs = await this.listMessages();
     await this.downloadMessages(newMsgs);
     return newMsgs;

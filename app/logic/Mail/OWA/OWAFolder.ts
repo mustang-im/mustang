@@ -87,7 +87,7 @@ export class OWAFolder extends Folder {
     return true;
   }
 
-  async listMessages(): Promise<ArrayColl<OWAEMail>> {
+  async listMessages(): Promise<Collection<OWAEMail>> {
     await this.readFolder();
     let lock = await this.listMessagesLock.lock();
     try {
@@ -347,7 +347,7 @@ export class OWAFolder extends Folder {
    * Should be implemented as fast as possible (a few seconds),
    * so that the action can be repeated routinely every few minutes.
    * @returns the new messages */
-  async getNewMessages(): Promise<ArrayColl<OWAEMail>> {
+  async getNewMessages(): Promise<Collection<OWAEMail>> {
     let newMsgs = await this.listMessages(); // TODO get only the msgs from the last 4 weeks
     await this.downloadMessages(newMsgs);
     return newMsgs;
