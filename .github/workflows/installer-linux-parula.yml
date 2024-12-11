@@ -27,6 +27,7 @@ jobs:
     - run: cd e2; npm run build:release:linux
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
