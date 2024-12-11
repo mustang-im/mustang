@@ -159,7 +159,12 @@ export class ThunderbirdAddressbook extends Addressbook {
     abErrorCallback: (ex: Error) => void,
     entryErrorCallback: (ex: Error) => void):
     Promise<ArrayColl<ThunderbirdAddressbook>> {
-    await profile.readPrefs();
+    try {
+      await profile.readPrefs();
+    } catch (ex) {
+      console.log(ex);
+      return new ArrayColl();
+    }
     let addressbooks = new ArrayColl<ThunderbirdAddressbook>();
     for (let key in profile.prefs) {
       if (!(key.startsWith("ldap_2.servers.") && key.endsWith(".filename"))) {
