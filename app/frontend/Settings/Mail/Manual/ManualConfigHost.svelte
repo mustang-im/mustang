@@ -26,7 +26,7 @@
    * are we able to move on?
    * @returns true = can continue, false or exception: Don't continue */
   export async function onContinue(): Promise<boolean> {
-    return await incomingEl.onContinue() && await outgoingEl.onContinue();
+    return await incomingEl.onContinue() && (!outgoing || await outgoingEl.onContinue());
   }
 </script>
 
