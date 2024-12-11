@@ -64,11 +64,12 @@
     if (!(onClick && typeof(onClick) == "function")) {
       return;
     }
+    event.stopPropagation();
+    event.preventDefault();
     let previousDisabled = disabled;
     disabled = true;
     try {
       await onClick(event);
-      event.stopPropagation();
     } catch (ex) {
       errorCallback(ex);
     }
