@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <vbox flex class="device-setup">
   <vbox class="self-video" flex>
     <!-- svelte-ignore a11y-media-has-caption -->

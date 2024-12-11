@@ -1,4 +1,10 @@
 <!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
+<!--
   Svelte's bind:group only works for literal <input type=checkbox> (issue 2308).
   This isn't a true bind:group because it can't react to changes in group.
   TODO: support other Svelteui <Checkbox> properties

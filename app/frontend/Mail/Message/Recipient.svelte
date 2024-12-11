@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <AppObject obj={recipient.person} createObject={() => recipient.createPerson()}>
   <value class="name" title={recipient.name + "\n" + recipient.emailAddress}>
     {personDisplayName(recipient).replace(/@.*/, "")}

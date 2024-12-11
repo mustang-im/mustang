@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import { newOAuth2UI, OAuth2UIMethod } from "./OAuth2UIMethod";
 import { OAuth2Error, OAuth2LoginNeeded, OAuth2ServerError } from "./OAuth2Error";
 import { basicAuth } from "./httpAuth";

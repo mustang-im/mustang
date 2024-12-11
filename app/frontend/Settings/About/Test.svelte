@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <hbox class="buttons">
   <Button label={$t`Load test data`}
     onClick={loadTest}

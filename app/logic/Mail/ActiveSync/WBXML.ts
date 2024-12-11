@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 const kWBXMLVersion = 0x03; // WBXML 1.3
 const kDTD = 0x01; // unspecified
 const kUTF8 = 0x6A;

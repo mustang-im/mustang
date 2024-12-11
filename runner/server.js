@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import process from 'node:process';
 import path from 'node:path';
 import url from 'node:url';

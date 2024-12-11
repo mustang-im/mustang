@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <hbox class="sub-app-button" class:selected on:click title={$title}>
   <hbox class="icon">

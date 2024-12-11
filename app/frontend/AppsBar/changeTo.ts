@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import { selectedApp } from "../AppsBar/selectedApp";
 import { contactsMustangApp } from "../Contacts/ContactsMustangApp";
 import type { Observable } from "../../logic/util/Observable";

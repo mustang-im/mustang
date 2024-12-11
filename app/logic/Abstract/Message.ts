@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import type { Contact } from "./Contact";
 import type { Person } from "./Person";
 import type { PersonUID } from "../Abstract/PersonUID";

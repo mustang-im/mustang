@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <vbox flex class="filetypes">
   <FastList items={new ArrayColl(genericFileTypes)} bind:selectedItem={selectedFileType} bind:selectedItems={selectedFileTypes}
     columns="auto">

@@ -1,4 +1,10 @@
 <!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
+<!--
   Svelte's bind:group only works for literal <input type=radio> (issue 2308).
   Svelteui's <RadioGroup> doesn't seem to work at all.
   Svelteui's <Radio bind:group> doesn't seem to work properly either.

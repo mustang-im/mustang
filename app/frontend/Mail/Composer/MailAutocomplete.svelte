@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <PersonsAutocomplete persons={addresses} {placeholder} {tabindex} {autofocus}
   on:addPerson={(event) => onAddPerson(event.detail)}
   on:removePerson={(event) => onRemovePerson(event.detail)}

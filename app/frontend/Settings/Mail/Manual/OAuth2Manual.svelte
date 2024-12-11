@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <HeaderGroupBox>
   <hbox slot="header">{$t`OAuth2`}</hbox>
   <vbox class="content">

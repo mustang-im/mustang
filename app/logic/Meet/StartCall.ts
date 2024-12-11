@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import { MeetingState, VideoConfMeeting } from "./VideoConfMeeting";
 import { Person, ContactEntry } from "../Abstract/Person";
 import { Group } from "../Abstract/Group";

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <vbox class="account-list">
   <FastList items={accounts} bind:selectedItem={selectedAccount} columns="1fr">
     <svelte:fragment slot="header">

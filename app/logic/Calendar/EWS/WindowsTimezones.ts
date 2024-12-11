@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 /* Generated from curl https://raw.githubusercontent.com/unicode-org/cldr-json/main/cldr-json/cldr-core/supplemental/windowsZones.json | jq '.supplemental.windowsZones.mapTimezones | map(select(.mapZone._territory == "001")) | map({(.mapZone._type): .mapZone._other}) | add' */
 export default {
   "Asia/Kabul": "Afghanistan Standard Time",

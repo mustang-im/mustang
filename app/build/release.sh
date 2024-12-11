@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+#
+# SPDX-License-Identifier: EUPL-1.2
+
 # Run from app/ directory
 [ ! -e build/release.sh ] && echo "Please run from app/ directory" 1>&2 && exit 1
 [ ! -z "`git status --porcelain`" ] && echo "Source tree not clean" 1>&2 && exit 1

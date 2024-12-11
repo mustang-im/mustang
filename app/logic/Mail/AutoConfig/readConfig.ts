@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import { AuthMethod, MailAccount, TLSSocketType, type ConfigSource } from "../MailAccount";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import type { SMTPAccount } from "../SMTP/SMTPAccount";

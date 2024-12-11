@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import { SelfVideo, type VideoStream } from "./VideoStream";
 import type { MeetingParticipant as Participant } from "./Participant";
 import type { Event } from "../Calendar/Event";

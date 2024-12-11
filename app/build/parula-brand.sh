@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+#
+# SPDX-License-Identifier: EUPL-1.2
+
 # Run from app/build/ directory
 VERSION=`grep "\"version\"" ../../app/package.json | sed -e "s|^.*\"version\": \"||" -e "s|\",$||"`
 echo Building version $VERSION

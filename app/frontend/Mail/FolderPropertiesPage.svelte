@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <Splitter name="mail.3pane.folders" initialRightRatio={4}>
   <vbox flex class="folder-pane" slot="left">
     <AccountList accounts={$accounts} bind:selectedAccount>

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <hbox class="folder" flex
   on:drop={(event) => catchErrors(() => onDropMail(event, folder))}
   on:dragover={(event) => catchErrors(() => onDragOverMail(event, folder))}

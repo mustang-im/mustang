@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import type { Calendar, CalendarStorage } from "../Calendar";
 import { SQLCalendar } from "./SQLCalendar";
 import type { Event } from "../Event";

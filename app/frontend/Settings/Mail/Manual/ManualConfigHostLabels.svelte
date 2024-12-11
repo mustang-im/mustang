@@ -1,4 +1,10 @@
-  <hbox class="header"></hbox>
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
+<hbox class="header"></hbox>
   <hbox class="label">{$t`Protocol`}</hbox>
   <hbox class="label">{$t`Hostname`}</hbox>
   {#if stepFull}

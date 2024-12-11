@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import { appGlobal } from './app';
 import { MailAccount } from './Mail/MailAccount';
 import { Folder, SpecialFolder } from './Mail/Folder';

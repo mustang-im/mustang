@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <Icon data={calendar} {size}>
   <text text-anchor="middle" x="64" y="100" class="date-calendar-icon">
     {day}

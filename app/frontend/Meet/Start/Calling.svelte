@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <vbox flex class="calling" state={$meeting.state}>
   <hbox flex />
   <hbox class="boxes" flex>

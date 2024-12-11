@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <vbox class="message-header" class:outgoing={$message.outgoing}>
   <hbox>
     {#if $message.contact instanceof Person && $message.contact.picture}

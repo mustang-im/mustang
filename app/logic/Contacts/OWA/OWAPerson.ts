@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import { Person, ContactEntry } from '../../Abstract/Person';
 import type { OWAAddressbook } from './OWAAddressbook';
 import OWACreatePersonaRequest from "./OWACreatePersonaRequest";

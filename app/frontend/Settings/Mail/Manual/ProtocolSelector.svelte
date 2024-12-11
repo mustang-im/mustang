@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <select value={config.protocol} required disabled={!isSetup}
   on:change={onProtocolChanged}
   class="protocol">

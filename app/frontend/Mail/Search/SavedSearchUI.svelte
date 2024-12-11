@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <vbox class="saved-search">
   <input type="text" bind:value={name} placeholder={$t`Name of the folder`} />
   <hbox class="buttons">

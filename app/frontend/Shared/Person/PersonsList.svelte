@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <vbox flex class="persons" {size}>
   <SearchField bind:searchTerm placeholder={$t`Search for a person or group`} />
   <FastList items={personsFiltered} columns="auto">

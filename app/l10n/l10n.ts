@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import { sanitize } from '../../lib/util/sanitizeDatatypes';
 import { locale, gt as translateString } from 'svelte-i18n-lingui';
 import { derived } from 'svelte/store';

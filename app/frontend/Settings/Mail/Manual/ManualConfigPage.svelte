@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <vbox>
   <h2>{$t`Manual configuration`}</h2>
   <hbox class="subtitle">{$t`Your email provider or company can tell you these details.`}</hbox>

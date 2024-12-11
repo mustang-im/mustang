@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <vbox class="appearance">
   <HeaderGroupBox>
     <hbox slot="header">{$t`Dark mode`}</hbox>

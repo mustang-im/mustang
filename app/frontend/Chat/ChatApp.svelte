@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox class="left-pane" slot="left">
     <Header />

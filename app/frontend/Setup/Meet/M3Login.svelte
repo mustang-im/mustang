@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <Header
   title={$t`Set up your existing ${appName} account for meetings`}
   subtitle={$t`If you don't have an account yet, you can subscribe on our website.`}

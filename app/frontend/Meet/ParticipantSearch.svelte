@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <hbox class="persons-toolbar">
   <input type="search" bind:value={searchText} placeholder={$t`Add or search a participant`} />
   <hbox class="buttons">

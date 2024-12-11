@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 # jpc - Remote procedure calls between JS objects in different processes
 
 jpc allows you to call JS objects in other processes. From your JS objects, it automatically

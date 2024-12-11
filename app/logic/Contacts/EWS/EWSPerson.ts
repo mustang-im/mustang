@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import { Person, ContactEntry } from '../../Abstract/Person';
 import type { EWSAddressbook } from './EWSAddressbook';
 import EWSCreateItemRequest from "../../Mail/EWS/EWSCreateItemRequest";

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <select id="duration-unit" bind:value={unitStr} {disabled}>
   <option value="60">{$t`Minutes`}</option>
   <option value="3600">{$t`Hours`}</option>

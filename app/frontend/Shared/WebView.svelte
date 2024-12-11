@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
 
 <!-- TODO Security: Test that this <webview> is untrusted and jailed -->
 <webview bind:this={webviewE} src={url} {title} />

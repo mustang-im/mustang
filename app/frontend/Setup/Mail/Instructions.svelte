@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <Header
   title={$t`Set up email address`}
   subtitle={$t`${config.name} requires you to do some manual steps for initial set up`} />

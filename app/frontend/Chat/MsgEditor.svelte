@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <FileDropTarget on:add-files={onAddAttachment} on:inline-files={onAddInline} allowInline={true}>
   <hbox flex class="msg-editor">
     <vbox flex class="editor-wrapper">

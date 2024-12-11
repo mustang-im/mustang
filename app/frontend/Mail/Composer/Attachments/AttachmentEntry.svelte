@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <hbox class="attachment">
   <hbox class="icon">
     <FileIcon ext={$attachment.filename?.split(".").pop()} size={32} />

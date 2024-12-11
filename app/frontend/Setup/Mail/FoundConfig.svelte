@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 {#if !haveError}
   <StatusMessage status="success" message={successMessage}>
     <CheckIcon slot="icon" />
