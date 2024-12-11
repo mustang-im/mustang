@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import { getBaseDomainFromHost } from "./netUtil";
 import DOMPurify from "dompurify"; // https://github.com/cure53/DOMPurify
 import { convert as htmlToText } from "html-to-text";

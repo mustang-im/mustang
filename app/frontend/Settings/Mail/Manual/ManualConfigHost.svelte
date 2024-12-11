@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <grid class="manual-config" full={stepFull}>
   <ManualConfigLabels {stepFull} />
   <ManualConfigServer bind:config bind:stepFull {isSetup} bind:this={incomingEl} />

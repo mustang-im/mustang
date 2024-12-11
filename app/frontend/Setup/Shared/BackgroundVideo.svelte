@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <video class="background-video" autoplay loop muted poster={fallbackPicURL} bind:this={videoEl}>
   <source src={videoURL} type="video/mp4">
 </video>

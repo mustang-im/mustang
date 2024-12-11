@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <hbox class="account" title={$account.fatalError ? account.fatalError.message : ""}>
   {#if $account.isLoggedIn}
     <hbox class="icon"><Icon data={MailIcon} size="16px" /></hbox>

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import type { SettingsCategory } from "./SettingsCategory";
 import { settingsCategories } from "../SettingsCategories";
 import type { MustangApp } from "../../AppsBar/MustangApp";

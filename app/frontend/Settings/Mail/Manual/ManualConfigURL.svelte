@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <grid class="manual-config" full={stepFull}>
   <hbox class="header"></hbox>
   <hbox class="label">{$t`Protocol`}</hbox>

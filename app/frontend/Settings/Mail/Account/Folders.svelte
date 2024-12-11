@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <vbox flex>
   <h2>{$t`Folders`}</h2>
   <hbox class="subtitle">{$t`Rename folders, set special folders, share them with others`}</hbox>

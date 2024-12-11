@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 # M3 Protocol
 
 This documents the on-the-wire protocol that is needed to login, set up a video conference, join, and administrate it.

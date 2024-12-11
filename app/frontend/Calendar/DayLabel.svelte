@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <hbox class="day" on:dblclick={changeToDay} class:today={day.getTime() == today.getTime()}>
   <hbox class="date-number">
     {day.toLocaleDateString(getUILocale(), { day: "numeric" })}

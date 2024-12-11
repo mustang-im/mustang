@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import { MustangApp } from "../AppsBar/MustangApp";
 import FilesApp from "../Files/FilesApp.svelte";
 import fileShareIcon from '../asset/icon/appBar/fileShare.svg?raw';

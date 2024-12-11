@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import type { Addressbook, AddressbookStorage } from "../Addressbook";
 import { SQLAddressbook } from "./SQLAddressbook";
 import type { Person } from "../../Abstract/Person";

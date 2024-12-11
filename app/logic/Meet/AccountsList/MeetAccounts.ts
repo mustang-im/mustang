@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import { MeetAccount } from '../MeetAccount';
 import { M3Account } from '../M3Account';
 import { SQLMeetStorage } from '../SQL/SQLMeetStorage';

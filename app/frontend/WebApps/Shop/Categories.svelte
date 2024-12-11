@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <vbox class="categories">
   {#each $showCategories.each as category}
     <CategoryEntry {category} {allCategories} bind:selected />

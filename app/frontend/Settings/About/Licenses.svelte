@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <div>
   <T msg={`You can find the source code of ${appName} core at # under an #.`}>
     <!-- Slot 0 doesn't need explicit declaration `slot="0"`, it breaks the code. -->

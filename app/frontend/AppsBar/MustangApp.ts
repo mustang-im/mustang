@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import { Observable, notifyChangedProperty } from "../../logic/util/Observable";
 import { ArrayColl, Collection } from "svelte-collections";
 import type { ComponentType, SvelteComponentTyped } from "svelte";

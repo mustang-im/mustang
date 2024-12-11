@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import type { MailAccount } from "../MailAccount";
 import { TLSSocketType } from "../MailAccount";
 import { assert, NotReached, type URLString } from "../../util/util";

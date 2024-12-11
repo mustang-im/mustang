@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <button on:click on:dblclick on:click={myOnClick} bind:this={buttonEl}
   title={typeof(disabled) == "string" ? disabled : tooltip} class="button {classes}" class:plain
   disabled={!!disabled} class:disabled class:selected

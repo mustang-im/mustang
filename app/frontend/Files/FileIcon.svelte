@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 {#if ext == "doc" || ext == "docx" || ext == "odt" || ext == "pdf"}
   <DocIcon {size} />
 {:else if ext == "html" || ext == "htm" || ext == "shtml"}

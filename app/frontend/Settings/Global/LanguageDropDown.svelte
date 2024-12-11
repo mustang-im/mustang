@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <select bind:value={language} on:change>
   <option value="">{$t`System`}</option>
   {#each Object.keys(localeNames) as langCode }

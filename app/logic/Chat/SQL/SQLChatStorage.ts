@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import { SQLChatAccount } from "./SQLChatAccount";
 import type { ChatAccount, ChatAccountStorage } from "../ChatAccount";
 import type { Chat } from "../Chat";

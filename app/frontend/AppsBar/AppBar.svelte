@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <vbox class="app-bar">
   {#each $showApps.each as app}
     <AppButton on:click={() => selectedApp = app} selected={selectedApp == app} classes={app.id}>

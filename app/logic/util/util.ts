@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
 
 export function assert(test, errorMessage): asserts test {
   if (!test) {

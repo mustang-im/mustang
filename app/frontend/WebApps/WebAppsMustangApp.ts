@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import { MustangApp } from "../AppsBar/MustangApp";
 import { appGlobal } from "../../logic/app";
 import type WebAppListed from "../../logic/WebApps/WebAppListed";

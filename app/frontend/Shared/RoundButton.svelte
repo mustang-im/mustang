@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <button on:click on:dblclick on:click={myOnClick}
   title={label} class="button {classes}" class:filled class:border
   {disabled} class:disabled class:selected

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <Header
   title={$t`Set up your existing chat account`}
   subtitle={$t`Import your existing chat account or create a new one`}

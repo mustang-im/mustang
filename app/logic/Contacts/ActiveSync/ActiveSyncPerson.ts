@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import { Person, ContactEntry } from '../../Abstract/Person';
 import type { ActiveSyncAddressbook } from './ActiveSyncAddressbook';
 import { EASError } from "../../Mail/ActiveSync/ActiveSyncAccount";

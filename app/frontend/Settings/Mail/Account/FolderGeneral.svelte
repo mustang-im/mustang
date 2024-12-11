@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <grid class="main">
   <label for="name">{$t`Folder name`}</label>
   <input type="text" bind:value={folderName} name="name" readonly={!!disableRename} />

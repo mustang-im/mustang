@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <hbox class="title-bar">
   <RoundButton classes="add-button create" label={$t`New event`} icon={AddToCalendarIcon} on:click={addEvent} iconSize="22px" padding="6px" />
 </hbox>

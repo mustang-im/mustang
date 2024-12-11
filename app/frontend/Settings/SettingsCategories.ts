@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import { SettingsCategory, AccountSettingsCategory as AccSetting } from "./Window/SettingsCategory";
 import { mailMustangApp } from "../Mail/MailMustangApp";
 import { webAppsMustangApp } from "../WebApps/WebAppsMustangApp";

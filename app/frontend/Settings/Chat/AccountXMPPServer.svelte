@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <grid>
   <label for="hostname">{$t`Server`}</label>
   <hbox class="value">{account.hostname}:{account.port}</hbox>

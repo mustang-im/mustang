@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <WebView {html} {headHTML} allowServerCalls={allowExternalImages} title={$t`Text`} on:webview />
 
 <script lang="ts">

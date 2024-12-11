@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import type { ChatMessage } from "../Message";
 import type { Chat } from "../Chat";
 import { Person } from "../../Abstract/Person";

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 {#if $subApps.hasItems}
   <!-- A list of parts of the app,
     shown in the AppBar underneath the app button -->

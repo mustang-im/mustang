@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import WorkIcon from "lucide-svelte/icons/briefcase";
 import PrivateIcon from "lucide-svelte/icons/book-heart";

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import prettyBytes from 'pretty-bytes';
 import { getUILocale } from '../../l10n/l10n';
 

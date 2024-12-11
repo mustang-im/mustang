@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import type { ChatAccount } from '../ChatAccount';
 import { ArrayColl } from 'svelte-collections';
 import { MatrixAccount } from '../Matrix/MatrixAccount';

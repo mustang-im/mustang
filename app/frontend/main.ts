@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import './app.css';
 import MainWindow from './MainWindow/MainWindow.svelte';
 import { appName, appVersion, production } from '../logic/build';

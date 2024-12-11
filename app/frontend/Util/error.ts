@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import { notifications, Notification, NotificationSeverity } from "../MainWindow/Notification";
 import { production } from "../../logic/build";
 import * as Sentry from "@sentry/svelte";

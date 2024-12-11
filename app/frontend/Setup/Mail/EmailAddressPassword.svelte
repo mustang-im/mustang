@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <Header title={$t`Set up existing email address`} subtitle={$t`Import your existing email address or create a new one`} />
 <MailAddress bind:emailAddress bind:this={mailAddressEl} on:continue={doFocusPassword} />
 <Password bind:password bind:this={passwordEl} on:continue />

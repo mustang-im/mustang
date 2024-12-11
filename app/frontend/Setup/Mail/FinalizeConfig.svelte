@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <StatusMessage status="success"
   message={$t`Your email account ${config.emailAddress} is working and ready to be used.`}>
   <CheckIcon slot="icon"/>

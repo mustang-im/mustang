@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import type { MustangApp } from "./MustangApp";
 import { ArrayColl } from "svelte-collections";
 import { writable, type Writable } from "svelte/store";

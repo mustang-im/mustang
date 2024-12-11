@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Mustang GmbH <contact@mustang.im>>
+
+SPDX-License-Identifier: EUPL-1.2
+-->
+
 <hbox class={classes} class:on={checked === true} class:off={checked === false} class:indetermined={checked === undefined || checked === null}>
   {#if checked === true}
     <Checkbox
