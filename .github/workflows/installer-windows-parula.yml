@@ -27,6 +27,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        NODE_OPTIONS: --max-old-space-size=32768
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
