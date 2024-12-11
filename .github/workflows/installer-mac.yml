@@ -36,6 +36,8 @@ jobs:
         APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
         APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        # For Vite build out of memory error when building
+        # sourcemap for Sentry
         NODE_OPTIONS: '--max-old-space-size=32768'
     - name: Upload
       uses: actions/upload-artifact@v4
