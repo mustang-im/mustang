@@ -52,7 +52,9 @@ export class Person extends ContactBase {
       return;
     }
     this.addressbook.persons.remove(this);
-    await this.addressbook.storage.deletePerson(this);
+    if (this.dbID) {
+      await this.addressbook.storage.deletePerson(this);
+    }
   }
 
   async deleteFromServer(): Promise<void> {
