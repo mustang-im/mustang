@@ -3,6 +3,7 @@ import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import replace from '@rollup/plugin-replace';
+import { production } from '../app/logic/build';
 
 export default defineConfig({
   main: {
@@ -20,7 +21,7 @@ export default defineConfig({
   },
   renderer: {
     build: {
-      sourcemap: true,
+      sourcemap: production,
     },
     plugins: [
       nodePolyfills({include: ['buffer'], globals: {global: false, process: false}}),
@@ -29,6 +30,7 @@ export default defineConfig({
         org: "mustang-jq",
         project: "mustang",
         authToken: process.env.SENTRY_AUTH_TOKEN,
+        disable: !production,
       }),
     ],
   }
