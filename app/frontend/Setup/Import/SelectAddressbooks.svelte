@@ -104,6 +104,7 @@
     let code = (ex as any)?.code;
     if (code == "SQLITE_BUSY" || code == "SQLITE_LOCKED") {
       isThunderbirdRunning = true;
+      return;
     }
     logError(ex);
   }
