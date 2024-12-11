@@ -1,11 +1,12 @@
+import { UserError } from "../util/util";
+
 export class OAuth2Error extends Error {
   authFail = true;
   isUserError = true;
 }
 
-export class OAuth2LoginNeeded extends Error {
+export class OAuth2LoginNeeded extends UserError {
   authFail = true;
-  isUserError = true;
   constructor() {
     super("Please login");
   }
