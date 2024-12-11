@@ -1,7 +1,7 @@
 <hbox class="tag"
   style="--color: {$tag.color}">
-  <input type="text" bind:value={$tag.name} required autofocus />
-  <input type="color" bind:value={$tag.color} required />
+  <input type="text" bind:value={tag.name} required autofocus />
+  <input type="color" bind:value={tag.color} required />
 
   <RoundButton
     label={$t`Add`}
