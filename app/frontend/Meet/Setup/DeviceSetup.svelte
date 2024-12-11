@@ -25,7 +25,7 @@
   $: restartCamMic($cameraOn, $micOn, $selectedCamera, $selectedMic);
 
   async function restartCamMic(...dummy: any[]) {
-    console.log("restart");
+    console.log("restart camera");
     await stopCamMic();
     await startCamMic();
   }
