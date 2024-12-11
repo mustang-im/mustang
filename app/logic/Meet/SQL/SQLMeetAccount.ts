@@ -30,14 +30,14 @@ export class SQLMeetAccount {
           workspace
         ) VALUES (
           ${acc.id}, ${acc.name}, ${acc.protocol}, ${acc.url}, ${acc.username},
-          ${acc.workspace}
+          ${acc.workspace?.id}
         )`);
       acc.dbID = insert.lastInsertRowid;
     } else {
       await (await getDatabase()).run(sql`
         UPDATE meetAccount SET
           name = ${acc.name}, url = ${acc.url}, username = ${acc.username},
-          workspace = ${acc.workspace}
+          workspace = ${acc.workspace?.id}
         WHERE id = ${acc.dbID}
         `);
     }

@@ -30,14 +30,14 @@ export class SQLAddressbook {
           userRealname, workspace, syncState
         ) VALUES (
           ${acc.id}, ${acc.name}, ${acc.protocol}, ${acc.url}, ${acc.username},
-          ${acc.userRealname}, ${acc.workspace}, ${acc.syncState}
+          ${acc.userRealname}, ${acc.workspace?.id}, ${acc.syncState}
         )`);
       acc.dbID = insert.lastInsertRowid;
     } else {
       await (await getDatabase()).run(sql`
         UPDATE addressbook SET
           name = ${acc.name}, url = ${acc.url}, username = ${acc.username},
-          userRealname = ${acc.userRealname}, workspace = ${acc.workspace},
+          userRealname = ${acc.userRealname}, workspace = ${acc.workspace?.id},
           syncState = ${acc.syncState}
         WHERE id = ${acc.dbID}
         `);

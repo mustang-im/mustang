@@ -36,7 +36,7 @@ export class SQLChatAccount {
           ${acc.id}, ${acc.name}, ${acc.protocol},
           ${acc.username},
           ${acc.hostname}, ${acc.port}, ${acc.tls}, ${acc.url},
-          ${acc.userRealname}, ${acc.workspace}
+          ${acc.userRealname}, ${acc.workspace?.id}
         )`);
       acc.dbID = insert.lastInsertRowid;
     } else {
@@ -45,7 +45,7 @@ export class SQLChatAccount {
           name = ${acc.name},
           username = ${acc.username},
           hostname = ${acc.hostname}, port = ${acc.port}, tls = ${acc.tls}, url = ${acc.url},
-          userRealname = ${acc.userRealname}, workspace = ${acc.workspace}
+          userRealname = ${acc.userRealname}, workspace = ${acc.workspace?.id}
         WHERE id = ${acc.dbID}
         `);
     }

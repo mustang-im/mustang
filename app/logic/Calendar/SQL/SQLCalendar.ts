@@ -30,14 +30,14 @@ export class SQLCalendar {
           workspace, syncState
         ) VALUES (
           ${cal.id}, ${cal.name}, ${cal.protocol}, ${cal.url}, ${cal.username},
-          ${cal.workspace}, ${cal.syncState}
+          ${cal.workspace?.id}, ${cal.syncState}
         )`);
       cal.dbID = insert.lastInsertRowid;
     } else {
       await (await getDatabase()).run(sql`
         UPDATE calendar SET
           name = ${cal.name}, url = ${cal.url}, username = ${cal.username},
-          workspace = ${cal.workspace}, syncState = ${cal.syncState}
+          workspace = ${cal.workspace?.id}, syncState = ${cal.syncState}
         WHERE id = ${cal.dbID}
         `);
     }
