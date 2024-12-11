@@ -157,7 +157,7 @@
       step = Step.FindConfig;
     } else if (step == Step.FindConfig) {
       step = Step.FoundConfig;
-      if (config.source == "local") {
+      if (config?.source == "local") {
         await onContinue();
       }
     } else if (step == Step.FoundConfig) {
