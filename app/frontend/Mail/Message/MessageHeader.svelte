@@ -106,8 +106,7 @@
       return;
     }
     if (readDelay == 0) {
-      message.markRead(true).catch(backgroundError);
-      return;
+      readDelay = 0.2; // Avoid that normal scrolling marks all msgs as read
     }
     clearTimeout(readTimeout);
     readTimeout = setTimeout(() => {
