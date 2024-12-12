@@ -135,7 +135,7 @@
   "n3yji4": "Ctrl-Y",
   "W/kPjn": "Ctrl-Z",
   "pvnfJD": "Ciemny",
-  "yB1YpA": "Adresa osobista",
+  "yB1YpA": "Dark mode",
   "mYGY3B": "Data",
   "H7OUPr": "Dzień",
   "yRdqWH": "Dzień/Miesiąc",
@@ -511,10 +511,10 @@
   "io0G93": "Delete Event",
   "peNkNL": "Czy chcesz usunąć ten znak całkowicie?",
   "Kijdjh": "Download all messages",
-  "hy+Mfg": "Wszystkie opisy",
+  "hy+Mfg": "pierwszy",
   "3waNb/": "For ",
   "9ZP9cc": "Forever Forever (ang.)",
-  "1hxId5": "For",
+  "1hxId5": "czwarty",
   "3M2GaA": "Nowe wiadomości",
   "Ylq7PY": "Jak często sprawdzać nowe i usuwane wiadomości. Jeśli serwer obsługuje pocztę PUSH, nowe e-maile wydają się bezpośrednio niezależne od tego otoczenia.\\nTherefore, przedział powinien być wysoki.",
   "lw9Uqd": "Login startup",
@@ -538,5 +538,5 @@
   "1HiY/0": "Ta zmiana polega na resetowaniu wszystkich serii do domyślnych wartości.",
   "IBpYJj": "Nie ustalono. Cannot usunął e-mail. Załóżmy, że pochłaniają się domy i ugruntowali się w niej: Trash.",
   "c73bE8": "Traktat ten jako spam. Move it to the Spam folder i trenuje spam",
-  "zDfdMJ": "Strona internetowa"
+  "zDfdMJ": "Do końca"
 }
