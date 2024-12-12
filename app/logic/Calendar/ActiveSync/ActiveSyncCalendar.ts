@@ -1,7 +1,8 @@
 import { Calendar } from "../Calendar";
 import { ActiveSyncEvent, fromCompact } from "./ActiveSyncEvent";
-import { EASError, type ActiveSyncAccount, type ActiveSyncPingable } from "../../Mail/ActiveSync/ActiveSyncAccount";
+import type { ActiveSyncAccount, ActiveSyncPingable } from "../../Mail/ActiveSync/ActiveSyncAccount";
 import { kMaxCount } from "../../Mail/ActiveSync/ActiveSyncFolder";
+import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Lock } from "../../util/Lock";
 import { ensureArray } from "../../util/util";
@@ -63,7 +64,7 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
           await this.save();
         }
         if (response.Collections.Collection.Status != "1") {
-          throw new EASError("Sync", response.Collections.Collection.Status);
+          throw new ActiveSyncError("Sync", response.Collections.Collection.Status);
         }
         await responseFunc?.(response.Collections.Collection);
         this.syncState = sanitize.string(response.Collections.Collection.SyncKey, null);

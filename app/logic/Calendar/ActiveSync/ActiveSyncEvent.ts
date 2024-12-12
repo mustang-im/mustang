@@ -4,7 +4,7 @@ import type { ActiveSyncCalendar } from "./ActiveSyncCalendar";
 import WindowsTimezones from "../EWS/WindowsTimezones";
 import { ResponseType, type Responses } from "../../Calendar/Invitation";
 import { findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { EASError } from "../../Mail/ActiveSync/ActiveSyncAccount";
+import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
@@ -132,11 +132,11 @@ export class ActiveSyncEvent extends Event {
     let response = await this.calendar.makeSyncRequest(data);
     if (response.Responses) {
       if (response.Responses.Change) {
-        throw new EASError("Sync", response.Responses.Change.Status);
+        throw new ActiveSyncError("Sync", response.Responses.Change.Status);
       }
       if (response.Responses.Add) {
         if (response.Responses.Add.Status != "1") {
-          throw new EASError("Sync", response.Responses.Add.Status);
+          throw new ActiveSyncError("Sync", response.Responses.Add.Status);
         }
         this.serverID = response.Responses.Add.ServerId;
       }
@@ -161,7 +161,7 @@ export class ActiveSyncEvent extends Event {
       };
       let response = await this.calendar.makeSyncRequest(data);
       if (response.Responses) {
-        throw new EASError("Sync", response.Responses.Delete.Status);
+        throw new ActiveSyncError("Sync", response.Responses.Delete.Status);
       }
     }
   }

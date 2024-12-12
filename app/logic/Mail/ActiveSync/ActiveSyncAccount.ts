@@ -1,6 +1,7 @@
 import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { kMaxCount, ActiveSyncFolder, FolderType } from "./ActiveSyncFolder";
+import { ActiveSyncError } from "./ActiveSyncError";
 import { SMTPAccount } from "../SMTP/SMTPAccount";
 import { newAddressbookForProtocol} from "../../Contacts/AccountsList/Addressbooks";
 import type { ActiveSyncAddressbook } from "../../Contacts/ActiveSync/ActiveSyncAddressbook";
@@ -80,7 +81,7 @@ export class ActiveSyncAccount extends MailAccount {
       };
       let response = await this.callEAS("Settings", request);
       if (response.DeviceInformation.Status != "1") {
-        throw new EASError("Settings", response.DeviceInformation.Status);
+        throw new ActiveSyncError("Settings", response.DeviceInformation.Status);
       }
     }
 
@@ -243,7 +244,7 @@ export class ActiveSyncAccount extends MailAccount {
       if (!wbxmljs.Status || wbxmljs.Status == "1" || aCommand == "Ping") {
         return wbxmljs;
       }
-      throw new EASError(aCommand, wbxmljs.Status);
+      throw new ActiveSyncError(aCommand, wbxmljs.Status);
     }
     if (response.status == 401) {
       if (this.oAuth2) {
@@ -282,14 +283,14 @@ export class ActiveSyncAccount extends MailAccount {
     }
     let policy = await this.callEAS("Provision", request);
     if (policy.Policies.Policy.Status != "1") {
-      throw new EASError("Provision", policy.Policies.Policy.Status);
+      throw new ActiveSyncError("Provision", policy.Policies.Policy.Status);
     }
     delete request.DeviceInformation;
     request.Policies.Policy.PolicyKey = policy.Policies.Policy.PolicyKey;
     request.Policies.Policy.Status = "1";
     policy = await this.callEAS("Provision", request);
     if (policy.Policies.Policy.Status != "1") {
-      throw new EASError("Provision", policy.Policies.Policy.Status);
+      throw new ActiveSyncError("Provision", policy.Policies.Policy.Status);
     }
     let policyKey = policy.Policies.Policy.PolicyKey;
     this.setStorageItem("policy_key", policyKey);
@@ -477,7 +478,7 @@ export class ActiveSyncAccount extends MailAccount {
           this.trimPings();
           continue;
         default:
-          throw new EASError("Ping", response.Status);
+          throw new ActiveSyncError("Ping", response.Status);
         }
       }
     } catch (ex) {
@@ -485,15 +486,5 @@ export class ActiveSyncAccount extends MailAccount {
     } finally {
       this.listening = false;
     }
-  }
-}
-
-export class EASError extends Error {
-  type: string;
-  code: string;
-  constructor(aCommand: string, aStatus: string) {
-    super(`ActiveSync ${aCommand} status ${aStatus}`);
-    this.type = aCommand;
-    this.code = aStatus;
   }
 }

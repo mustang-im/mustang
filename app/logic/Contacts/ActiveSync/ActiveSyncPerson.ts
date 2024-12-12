@@ -1,6 +1,6 @@
 import { Person, ContactEntry } from '../../Abstract/Person';
 import type { ActiveSyncAddressbook } from './ActiveSyncAddressbook';
-import { EASError } from "../../Mail/ActiveSync/ActiveSyncAccount";
+import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { parseOneAddress, type ParsedMailbox } from "email-addresses";
@@ -91,11 +91,11 @@ export class ActiveSyncPerson extends Person {
     let response = await this.addressbook.makeSyncRequest(data);
     if (response.Responses) {
       if (response.Responses.Change) {
-        throw new EASError("Sync", response.Responses.Change.Status);
+        throw new ActiveSyncError("Sync", response.Responses.Change.Status);
       }
       if (response.Responses.Add) {
         if (response.Responses.Add.Status != "1") {
-          throw new EASError("Sync", response.Responses.Add.Status);
+          throw new ActiveSyncError("Sync", response.Responses.Add.Status);
         }
         this.serverID = response.Responses.Add.ServerId;
       }
@@ -114,7 +114,7 @@ export class ActiveSyncPerson extends Person {
     };
     let response = await this.addressbook.makeSyncRequest(data);
     if (response.Responses) {
-      throw new EASError("Sync", response.Responses.Delete.Status);
+      throw new ActiveSyncError("Sync", response.Responses.Delete.Status);
     }
   }
 }
