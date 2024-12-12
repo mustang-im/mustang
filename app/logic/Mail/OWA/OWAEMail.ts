@@ -108,11 +108,7 @@ export class OWAEMail extends EMail {
     this.isStarred = json.Flag?.FlagStatus == "Flagged";
     // can't work out how to find junk status
     this.isDraft = sanitize.boolean(json.IsDraft);
-    // `replaceAll` doesn't work for a `SetColl`
-    this.tags.clear();
-    if (json.Categories) {
-      this.tags.addAll(json.Categories.map(name => getTagByName(name)));
-    }
+    this.tags.replaceAll((json.Categories || []).map(name => getTagByName(name)));
   }
 
   async markRead(read = true) {

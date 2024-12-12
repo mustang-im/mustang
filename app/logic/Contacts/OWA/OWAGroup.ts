@@ -20,11 +20,7 @@ export class OWAGroup extends Group {
     this.personaID = sanitize.nonemptystring(json.PersonaId.Id);
     this.name = sanitize.nonemptystring(json.DisplayName, "");
     this.description = sanitize.nonemptystring(json.Notes, "");
-    if (json.Members?.length) {
-      // `replaceAll` doesn't work for a `SetColl`
-      this.participants.clear();
-      this.participants.addAll(json.Members.map(member => findOrCreatePerson(sanitize.emailAddress(member.EmailAddress.EmailAddress), sanitize.nonemptystring(member.EmailAddress.Name, null))));
-    }
+    this.participants.replaceAll((json.Members || []).map(member => findOrCreatePerson(sanitize.emailAddress(member.EmailAddress.EmailAddress), sanitize.nonemptystring(member.EmailAddress.Name, null))));
     return this;
   }
 

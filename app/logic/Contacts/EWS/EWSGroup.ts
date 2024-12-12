@@ -23,11 +23,7 @@ export class EWSGroup extends Group {
     this.itemID = sanitize.nonemptystring(xmljs.ItemId.Id);
     this.name = sanitize.nonemptystring(xmljs.DisplayName, "");
     this.description = sanitize.nonemptystring(xmljs.Body?.Value, "");
-    if (xmljs.Members?.Member) {
-      // `replaceAll` doesn't work for a `SetColl`
-      this.participants.clear();
-      this.participants.addAll(ensureArray(xmljs.Members.Member).map(member => findOrCreatePerson(sanitize.emailAddress(member.Mailbox.EmailAddress), sanitize.nonemptystring(member.Mailbox.Name, null))));
-    }
+    this.participants.replaceAll(ensureArray(xmljs.Members?.Member).map(member => findOrCreatePerson(sanitize.emailAddress(member.Mailbox.EmailAddress), sanitize.nonemptystring(member.Mailbox.Name, null))));
   }
 
   async saveToServer() {
