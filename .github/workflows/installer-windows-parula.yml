@@ -27,8 +27,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        # For Vite build out of memory error when building
-        # sourcemap for Sentry
+        # For Sentry source maps. Otherwise, vite build is out of memory
         NODE_OPTIONS: '--max-old-space-size=32768'
     - name: Upload
       uses: actions/upload-artifact@v4
