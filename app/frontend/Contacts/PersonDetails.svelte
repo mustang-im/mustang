@@ -5,32 +5,32 @@
         <PersonPicture {person} size={128} />
         <vbox flex class="main-info">
           <hbox class="name">
-            <EditableSimpleText bind:value={$person.name}
+            <EditableSimpleText bind:value={person.name}
               on:save={save}
               bind:isEditing={isEditingName}
               placeholder={$t`First name Last name`} />
           </hbox>
           {#if isEditingName}
             <vbox class="names">
-              <input type="text" bind:value={$person.firstName}
+              <input type="text" bind:value={person.firstName}
                 class="firstname" placeholder={$t`First name`} />
-              <input type="text" bind:value={$person.lastName}
+              <input type="text" bind:value={person.lastName}
                 class="lastname" placeholder={$t`Last name`} />
             </vbox>
           {:else}
             {#if $person.position}
               <hbox class="position">
-                <EditableSimpleText bind:value={$person.position} on:save={save} placeholder={$t`Position`} />
+                <EditableSimpleText bind:value={person.position} on:save={save} placeholder={$t`Position`} />
               </hbox>
             {/if}
             {#if $person.department}
               <hbox class="department">
-                <EditableSimpleText bind:value={$person.department} on:save={save} placeholder={$t`Department`} />
+                <EditableSimpleText bind:value={person.department} on:save={save} placeholder={$t`Department`} />
               </hbox>
             {/if}
             {#if $person.company}
               <hbox class="company">
-                <EditableSimpleText bind:value={$person.company} on:save={save} placeholder={$t`First name Last name`} />
+                <EditableSimpleText bind:value={person.company} on:save={save} placeholder={$t`First name Last name`} />
               </hbox>
             {/if}
           {/if}

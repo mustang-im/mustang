@@ -15,13 +15,13 @@
     {#if isEditing}
       <vbox class="name-primary-mail" flex>
         <input class="name" type="text"
-          bind:value={$personUID.name}
+          bind:value={personUID.name}
           bind:this={nameInputEl}
           on:input={onSaveDebounced}
           on:keydown={(event) => onKeyEnter(event, onClose)}
           placeholder={$t`Enter a name for the person`} />
         <input class="email" type="email"
-          bind:value={$personUID.emailAddress}
+          bind:value={personUID.emailAddress}
           on:input={onSaveDebounced}
           placeholder={$t`Email address to be used here`} />
       </vbox>
