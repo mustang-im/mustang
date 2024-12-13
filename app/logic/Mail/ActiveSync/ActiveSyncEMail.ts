@@ -1,6 +1,6 @@
 import { EMail } from "../EMail";
 import type { ActiveSyncFolder } from "./ActiveSyncFolder";
-import { EASError } from "./ActiveSyncAccount";
+import { ActiveSyncError } from "./ActiveSyncError";
 import { ActiveSyncEvent } from "../../Calendar/ActiveSync/ActiveSyncEvent";
 import { type Tag, getTagByName } from "../Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
@@ -46,7 +46,7 @@ export class ActiveSyncEMail extends EMail {
     };
     let response = await this.folder.account.callEAS("ItemOperations", request);
     if (response.Response.Fetch.Status != "1") {
-      throw new EASError("ItemOperations", response.Response.Fetch.Status);
+      throw new ActiveSyncError("ItemOperations", response.Response.Fetch.Status);
     }
     this.mime = response.Response.Fetch.Properties.Body.RawData;
     await this.parseMIME();
@@ -102,7 +102,7 @@ export class ActiveSyncEMail extends EMail {
     };
     let response = await this.folder.makeSyncRequest(data);
     if (response.Responses) {
-      throw new EASError("Sync", response.Responses.Change.Status);
+      throw new ActiveSyncError("Sync", response.Responses.Change.Status);
     }
     await super.markRead(read);
   }
@@ -121,7 +121,7 @@ export class ActiveSyncEMail extends EMail {
     };
     let response = await this.folder.makeSyncRequest(data);
     if (response.Responses) {
-      throw new EASError("Sync", response.Responses.Change.Status);
+      throw new ActiveSyncError("Sync", response.Responses.Change.Status);
     }
     await super.markStarred(starred);
   }
@@ -147,7 +147,7 @@ export class ActiveSyncEMail extends EMail {
     };
     let response = await this.folder.makeSyncRequest(data);
     if (response.Responses) {
-      throw new EASError("Sync", response.Responses.Delete.Status);
+      throw new ActiveSyncError("Sync", response.Responses.Delete.Status);
     }
   }
 
@@ -175,7 +175,7 @@ export class ActiveSyncEMail extends EMail {
     };
     let response = await this.folder.makeSyncRequest(data);
     if (response.Responses) {
-      throw new EASError("Sync", response.Responses.Change.Status);
+      throw new ActiveSyncError("Sync", response.Responses.Change.Status);
     }
   }
 
@@ -210,7 +210,7 @@ export class ActiveSyncEMail extends EMail {
     };
     let result = await this.folder.account.callEAS("ItemOperations", request);
     if (result.Response.Fetch.Status != "1") {
-      throw new EASError("ItemOperations", result.Response.Fetch.Status);
+      throw new ActiveSyncError("ItemOperations", result.Response.Fetch.Status);
     }
     let event = new ActiveSyncEvent();
     // When fetching an invitation or response, ActiveSync splits up the
