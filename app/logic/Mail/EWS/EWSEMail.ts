@@ -129,11 +129,7 @@ export class EWSEMail extends EMail {
     this.isStarred = xmljs.Flag?.FlagStatus == "Flagged";
     // can't work out how to find junk status
     this.isDraft = sanitize.boolean(xmljs.IsDraft);
-    // `replaceAll` doesn't work for a `SetColl`
-    this.tags.clear();
-    if (xmljs.Categories) {
-      this.tags.addAll(ensureArray(xmljs.Categories.String).map(name => getTagByName(name)));
-    }
+    this.tags.replaceAll(ensureArray(xmljs.Categories?.String).map(name => getTagByName(name)));
   }
 
   async markRead(read = true) {
