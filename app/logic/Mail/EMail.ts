@@ -291,7 +291,7 @@ export class EMail extends Message {
    * Do this only exactly once per email `dbID`.
    * This typically happens immediately after`parseMIME()`. */
   async saveCompleteMessage() {
-    if (this.isDeleted || await this.isDownloadCompleteDoublecheck()) {
+    if (this.isDeleted || !this.mime || await this.isDownloadCompleteDoublecheck()) {
       return;
     }
     await this.storage.saveMessage(this);
@@ -307,9 +307,6 @@ export class EMail extends Message {
   protected async isDownloadCompleteDoublecheck(): Promise<boolean> {
     if (this.downloadComplete) {
       return true;
-    }
-    if (!this.mime) {
-      return false;
     }
     // Double-check for concurrent downloads
     let check = this.folder.newEMail();
