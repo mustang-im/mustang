@@ -82,7 +82,7 @@
         />
     </HTMLEditorToolbar>
     {#if loading}
-      <Spinner />
+      <Spinner size="64px" />
     {/if}
     <hbox flex class="editor-and-attachments">
       <vbox flex class="editor-wrapper">

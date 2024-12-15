@@ -5,7 +5,9 @@
   style="--padding: {padding}"
   >
   <hbox class="icon">
-    {#if typeof(icon) == "string"}
+    {#if loading}
+      <Spinner size={iconSize} />
+    {:else if typeof(icon) == "string"}
       <Icon data={icon} size={iconSize} />
     {:else if icon}
       <svelte:component this={icon} size={iconSize} />
@@ -16,9 +18,10 @@
 </button>
 
 <script lang="ts">
-  import Icon from 'svelte-icon/Icon.svelte';
-  import type { ComponentType } from 'svelte';
   import { showError } from '../Util/error';
+  import Icon from 'svelte-icon/Icon.svelte';
+  import Spinner from '../Setup/Shared/Spinner.svelte';
+  import type { ComponentType } from 'svelte';
 
   export let label: string = null;
   export let icon: ComponentType | string = null;
@@ -40,16 +43,23 @@
   export let onClick: (event: Event) => void = null;
   export let errorCallback = showError;
 
+  let loading = false;
   async function myOnClick(event: Event) {
     if (!(onClick && typeof(onClick) == "function")) {
       return;
     }
     let previousDisabled = disabled;
     disabled = true;
+    let loadTimeout = setTimeout(() => {
+      loading = true;
+    }, 500);
     try {
       await onClick(event);
     } catch (ex) {
       errorCallback(ex);
+    } finally {
+      clearTimeout(loadTimeout);
+      loading = false;
     }
     disabled = previousDisabled;
   }

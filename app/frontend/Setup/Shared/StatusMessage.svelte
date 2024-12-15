@@ -1,6 +1,8 @@
 <hbox flex class="status {status}">
   {#if status == "processing"}
-    <Spinner size="24px" />
+    <hbox class="spinner">
+      <Spinner size="24px" />
+    </hbox>
   {/if}
   <hbox flex class="box">
     <hbox class="icon">
@@ -33,6 +35,12 @@
     margin-inline-start: 8px;
     margin-inline-end: 24px;
     padding: 6px 16px 6px 12px;
+  }
+  .spinner {
+    margin: 4px;
+  }
+  .spinner :global(.loader::after) {
+    margin: 8px;
   }
   .message {
     overflow-wrap: anywhere;

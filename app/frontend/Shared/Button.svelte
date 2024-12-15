@@ -4,7 +4,9 @@
   {tabindex}
   >
   <hbox class="icon">
-    {#if typeof(icon) == "string"}
+    {#if loading}
+      <Spinner size={iconSize} />
+    {:else if typeof(icon) == "string"}
       <Icon data={icon} size={iconSize} />
     {:else if icon}
       <svelte:component this={icon} size={iconSize} />
@@ -25,9 +27,10 @@
 </button>
 
 <script lang="ts">
-  import Icon from 'svelte-icon/Icon.svelte';
-  import type { ComponentType } from 'svelte';
   import { showError } from '../Util/error';
+  import Icon from 'svelte-icon/Icon.svelte';
+  import Spinner from '../Setup/Shared/Spinner.svelte';
+  import type { ComponentType } from 'svelte';
   import { t } from '../../l10n/l10n';
 
   /** Show this label below the icon (unless `iconOnly` or label slot).
@@ -60,6 +63,7 @@
   $: hasIcon = !!icon || $$slots.icon;
   $: hasLabel = (!!label || $$slots.label) && !iconOnly;
 
+  let loading = false;
   async function myOnClick(event: Event) {
     if (!(onClick && typeof(onClick) == "function")) {
       return;
@@ -68,10 +72,16 @@
     event.preventDefault();
     let previousDisabled = disabled;
     disabled = true;
+    let loadTimeout = setTimeout(() => {
+      loading = true;
+    }, 500);
     try {
       await onClick(event);
     } catch (ex) {
       errorCallback(ex);
+    } finally {
+      clearTimeout(loadTimeout);
+      loading = false;
     }
     disabled = previousDisabled;
   }

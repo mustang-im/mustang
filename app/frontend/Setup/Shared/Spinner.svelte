@@ -8,6 +8,7 @@
     aspect-ratio: 1;
     display: grid;
     border: 4px solid white;
+    margin: -4px;
     border-radius: 50%;
     border-right-color: #20AE9E;
     animation: l15 1s infinite linear;
@@ -22,7 +23,7 @@
     animation: l15 2s infinite;
   }
   .loader::after {
-    margin: 8px;
+    /* margin: 8px; TODO Makes inner part better on <StatusMessage>, but completely breaks layout in other sizes, e.g. in <RoundButton> */
     animation-duration: 3s;
   }
   @keyframes l15 {
