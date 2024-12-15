@@ -29,16 +29,30 @@ export class IMAPEMail extends EMail {
   }
 
   async download() {
-    let msgInfo = await this.folder.runCommand(async (conn) => {
-      return await conn.fetchOne(this.uid + "", {
-        uid: true,
-        size: true,
-        threadId: true,
-        envelope: true,
-        source: true,
-        flags: true,
-      }, { uid: true });
-    }, ConnectionPurpose.Display);
+    let msgInfo: any;
+    try {
+      msgInfo = await this.folder.runCommand(async (conn) => {
+        return await conn.fetchOne(this.uid + "", {
+          uid: true,
+          size: true,
+          threadId: true,
+          envelope: true,
+          source: true,
+          flags: true,
+        }, { uid: true });
+      }, ConnectionPurpose.Display);
+    } catch (ex) {
+      if (ex.message == "IMAP UID FETCH: Invalid uidset") {
+        this.deleteMessageLocally();
+        return;
+      } else {
+        throw ex;
+      }
+    }
+    if (!msgInfo.envelope) {
+      this.deleteMessageLocally();
+      return;
+    }
     this.fromFlow(msgInfo);
     await this.parseMIME();
     await this.saveCompleteMessage();
