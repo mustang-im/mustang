@@ -1,4 +1,14 @@
 <hbox class="buttons">
+  {#if message.folder?.specialFolder == SpecialFolder.Drafts }
+    <hbox class="draft">
+      <Button
+        icon={WriteIcon}
+        iconSize="24px"
+        label={$t`Edit draft`}
+        onClick={editDraft}
+        />
+    </hbox>
+  {/if}
   <hbox class="reply">
     <Button
       icon={ReplyIcon}
@@ -92,8 +102,10 @@
   import ReplyAllIcon from "lucide-svelte/icons/reply-all";
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
+  import WriteIcon from "lucide-svelte/icons/pencil";
   import FolderActionsIcon from "lucide-svelte/icons/folder-dot";
   import { t } from "../../../l10n/l10n";
+  import { SpecialFolder } from "../../../logic/Mail/Folder";
 
   export let message: EMail;
 
@@ -118,6 +130,9 @@
   }
   async function markAsSpam() {
     await message.treatSpam(true);
+  }
+  function editDraft() {
+    mailMustangApp.writeMail(message);
   }
 
   // Folder Popup
@@ -147,5 +162,8 @@
   }
   .unread:not(.read) :global(svg) {
     fill: green;
+  }
+  hbox.draft {
+    margin-right: 32px;
   }
 </style>
