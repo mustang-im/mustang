@@ -1,6 +1,10 @@
-<vbox flex class="invitation">
+<vbox class="invitation">
   {#if $message.event}
-    <DisplayEvent event={message.event} />
+    {#if $message.event.startTime}
+      <DisplayEvent event={message.event} />
+    {:else}
+      <!-- TODO Properly fill the event object with all event data -->
+    {/if}
   {:else if message.scheduling}
     {#await message.loadEvent()}
       Loading event...
