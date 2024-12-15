@@ -60,7 +60,7 @@
    * out */
   export let buttonEl: HTMLButtonElement = null;
 
-  $: hasIcon = !!icon || $$slots.icon;
+  $: hasIcon = !!icon || $$slots.icon || loading;
   $: hasLabel = (!!label || $$slots.label) && !iconOnly;
 
   let loading = false;
