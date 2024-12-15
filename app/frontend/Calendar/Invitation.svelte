@@ -1,9 +1,8 @@
 <vbox class="invitation">
   {#if $message.event}
+    <!-- TODO Properly fill the event object with all event data -->
     {#if $message.event.startTime}
       <DisplayEvent event={message.event} />
-    {:else}
-      <!-- TODO Properly fill the event object with all event data -->
     {/if}
   {:else if message.scheduling}
     {#await message.loadEvent()}
