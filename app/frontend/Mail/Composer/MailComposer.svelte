@@ -81,6 +81,9 @@
         slot="end"
         />
     </HTMLEditorToolbar>
+    {#if loading}
+      <Spinner />
+    {/if}
     <hbox flex class="editor-and-attachments">
       <vbox flex class="editor-wrapper">
         <vbox flex class="paper">
@@ -131,7 +134,8 @@
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
   import { UserError } from "../../../logic/util/util";
-  import { showUserError } from "../../Util/error";
+  import { backgroundError, showUserError } from "../../Util/error";
+  import { appName, appVersion } from "../../../logic/build";
   import MailAutocomplete from "./MailAutocomplete.svelte";
   import AttachmentsPane from "./Attachments/AttachmentsPane.svelte";
   import FileSelector from "./Attachments/FileSelector.svelte";
@@ -139,6 +143,7 @@
   import HTMLEditor from "../../Shared/Editor/HTMLEditor.svelte";
   import HTMLEditorToolbar from "../../Shared/Editor/HTMLEditorToolbar.svelte";
   import IdentitySelector from "./IdentitySelector.svelte";
+  import Spinner from "../../Setup/Shared/Spinner.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
@@ -147,7 +152,7 @@
   import TrashIcon from "lucide-svelte/icons/trash";
   import CloseIcon from "lucide-svelte/icons/x";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
-  import { appName, appVersion } from "../../../logic/build";
+  import { tick } from "svelte";
   import { t, gt } from "../../../l10n/l10n";
 
   export let mail: EMail;
@@ -183,9 +188,18 @@
     }
     lastMail = mail;
 
-    if (editor) {
-      editor.commands.setContent(mail.html);
+    loadText().catch(backgroundError);
+  }
+
+  let loading = false;
+  async function loadText() {
+    loading = true;
+    await mail.loadBody();
+    loading = false;
+    if (!editor) {
+      await tick();
     }
+    editor.commands.setContent(mail.html);
   }
 
   $: fromIdentity && setAuthor()
