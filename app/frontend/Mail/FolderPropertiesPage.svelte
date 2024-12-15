@@ -1,6 +1,6 @@
 <Splitter name="mail.3pane.folders" initialRightRatio={4}>
   <vbox flex class="folder-pane" slot="left">
-    <AccountList accounts={$accounts} bind:selectedAccount>
+    <AccountList {accounts} bind:selectedAccount>
       <hbox class="above-accounts" slot="top-right" />
     </AccountList>
     <FolderList bind:selectedFolder={folder}  folders={selectedAccount ? selectedAccount.rootFolders : new ArrayColl()} bind:selectedFolders />

@@ -1,5 +1,5 @@
 <Splitter name="mail.3pane.folders" initialRightRatio={4}>
-  <LeftPane accounts={$accounts} bind:selectedAccount
+  <LeftPane {accounts} bind:selectedAccount
     {folders} bind:selectedFolder bind:selectedFolders bind:searchMessages
     slot="left" />
   <SplitterHorizontal slot="right" name="mail.3pane.msgs" initialBottomRatio={2}>

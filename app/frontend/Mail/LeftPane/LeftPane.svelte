@@ -21,7 +21,7 @@
     <SearchPane bind:searchMessages on:clear={onClearSearch} />
   {:else}
     <!--<ProjectList />-->
-    <AccountList accounts={$accounts} bind:selectedAccount />
+    <AccountList {accounts} bind:selectedAccount />
     <FolderList {folders} bind:selectedFolder bind:selectedFolders />
     {#if selectedFolder && !(selectedFolder instanceof SavedSearchFolder)}
       <TagsList folder={selectedFolder} bind:searchMessages />
@@ -33,7 +33,7 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import { type Folder, SpecialFolder } from "../../../logic/Mail/Folder";
+  import { type Folder } from "../../../logic/Mail/Folder";
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { Person } from "../../../logic/Abstract/Person";
   import { selectedPerson } from "../../Shared/Person/Selected";
