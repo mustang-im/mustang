@@ -81,7 +81,7 @@ export class ActiveSyncAccount extends MailAccount {
       };
       let response = await this.callEAS("Settings", request);
       if (response.DeviceInformation.Status != "1") {
-        throw new ActiveSyncError("Settings", response.DeviceInformation.Status);
+        throw new ActiveSyncError("Settings", response.DeviceInformation.Status, this);
       }
     }
 
@@ -244,7 +244,7 @@ export class ActiveSyncAccount extends MailAccount {
       if (!wbxmljs.Status || wbxmljs.Status == "1" || aCommand == "Ping") {
         return wbxmljs;
       }
-      throw new ActiveSyncError(aCommand, wbxmljs.Status);
+      throw new ActiveSyncError(aCommand, wbxmljs.Status, this);
     }
     if (response.status == 401) {
       if (this.oAuth2) {
@@ -283,14 +283,14 @@ export class ActiveSyncAccount extends MailAccount {
     }
     let policy = await this.callEAS("Provision", request);
     if (policy.Policies.Policy.Status != "1") {
-      throw new ActiveSyncError("Provision", policy.Policies.Policy.Status);
+      throw new ActiveSyncError("Provision", policy.Policies.Policy.Status, this);
     }
     delete request.DeviceInformation;
     request.Policies.Policy.PolicyKey = policy.Policies.Policy.PolicyKey;
     request.Policies.Policy.Status = "1";
     policy = await this.callEAS("Provision", request);
     if (policy.Policies.Policy.Status != "1") {
-      throw new ActiveSyncError("Provision", policy.Policies.Policy.Status);
+      throw new ActiveSyncError("Provision", policy.Policies.Policy.Status, this);
     }
     let policyKey = policy.Policies.Policy.PolicyKey;
     this.setStorageItem("policy_key", policyKey);
@@ -478,7 +478,7 @@ export class ActiveSyncAccount extends MailAccount {
           this.trimPings();
           continue;
         default:
-          throw new ActiveSyncError("Ping", response.Status);
+          throw new ActiveSyncError("Ping", response.Status, this);
         }
       }
     } catch (ex) {

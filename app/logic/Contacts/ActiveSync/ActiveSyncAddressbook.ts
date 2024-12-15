@@ -67,7 +67,7 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
           await this.save();
         }
         if (response.Collections.Collection.Status != "1") {
-          throw new ActiveSyncError("Sync", response.Collections.Collection.Status);
+          throw new ActiveSyncError("Sync", response.Collections.Collection.Status, this);
         }
         await responseFunc?.(response.Collections.Collection);
         this.syncState = sanitize.string(response.Collections.Collection.SyncKey, null);

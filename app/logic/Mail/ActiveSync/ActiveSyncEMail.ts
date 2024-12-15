@@ -46,7 +46,7 @@ export class ActiveSyncEMail extends EMail {
     };
     let response = await this.folder.account.callEAS("ItemOperations", request);
     if (response.Response.Fetch.Status != "1") {
-      throw new ActiveSyncError("ItemOperations", response.Response.Fetch.Status);
+      throw new ActiveSyncError("ItemOperations", response.Response.Fetch.Status, this.folder?.account);
     }
     this.mime = response.Response.Fetch.Properties.Body.RawData;
     await this.parseMIME();
@@ -121,7 +121,7 @@ export class ActiveSyncEMail extends EMail {
     };
     let response = await this.folder.makeSyncRequest(data);
     if (response.Responses) {
-      throw new ActiveSyncError("Sync", response.Responses.Change.Status);
+      throw new ActiveSyncError("Sync", response.Responses.Change.Status, this.folder?.account);
     }
     await super.markStarred(starred);
   }
@@ -147,7 +147,7 @@ export class ActiveSyncEMail extends EMail {
     };
     let response = await this.folder.makeSyncRequest(data);
     if (response.Responses) {
-      throw new ActiveSyncError("Sync", response.Responses.Delete.Status);
+      throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.folder?.account);
     }
   }
 
@@ -175,7 +175,7 @@ export class ActiveSyncEMail extends EMail {
     };
     let response = await this.folder.makeSyncRequest(data);
     if (response.Responses) {
-      throw new ActiveSyncError("Sync", response.Responses.Change.Status);
+      throw new ActiveSyncError("Sync", response.Responses.Change.Status, this.folder?.account);
     }
   }
 
@@ -210,7 +210,7 @@ export class ActiveSyncEMail extends EMail {
     };
     let result = await this.folder.account.callEAS("ItemOperations", request);
     if (result.Response.Fetch.Status != "1") {
-      throw new ActiveSyncError("ItemOperations", result.Response.Fetch.Status);
+      throw new ActiveSyncError("ItemOperations", result.Response.Fetch.Status, this.folder?.account);
     }
     let event = new ActiveSyncEvent();
     // When fetching an invitation or response, ActiveSync splits up the

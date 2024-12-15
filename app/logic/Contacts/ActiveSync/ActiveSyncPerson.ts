@@ -91,11 +91,11 @@ export class ActiveSyncPerson extends Person {
     let response = await this.addressbook.makeSyncRequest(data);
     if (response.Responses) {
       if (response.Responses.Change) {
-        throw new ActiveSyncError("Sync", response.Responses.Change.Status);
+        throw new ActiveSyncError("Sync", response.Responses.Change.Status, this.addressbook);
       }
       if (response.Responses.Add) {
         if (response.Responses.Add.Status != "1") {
-          throw new ActiveSyncError("Sync", response.Responses.Add.Status);
+          throw new ActiveSyncError("Sync", response.Responses.Add.Status, this.addressbook);
         }
         this.serverID = response.Responses.Add.ServerId;
       }
@@ -114,7 +114,7 @@ export class ActiveSyncPerson extends Person {
     };
     let response = await this.addressbook.makeSyncRequest(data);
     if (response.Responses) {
-      throw new ActiveSyncError("Sync", response.Responses.Delete.Status);
+      throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.addressbook);
     }
   }
 }

@@ -132,11 +132,11 @@ export class ActiveSyncEvent extends Event {
     let response = await this.calendar.makeSyncRequest(data);
     if (response.Responses) {
       if (response.Responses.Change) {
-        throw new ActiveSyncError("Sync", response.Responses.Change.Status);
+        throw new ActiveSyncError("Sync", response.Responses.Change.Status, this.calendar);
       }
       if (response.Responses.Add) {
         if (response.Responses.Add.Status != "1") {
-          throw new ActiveSyncError("Sync", response.Responses.Add.Status);
+          throw new ActiveSyncError("Sync", response.Responses.Add.Status, this.calendar);
         }
         this.serverID = response.Responses.Add.ServerId;
       }
@@ -161,7 +161,7 @@ export class ActiveSyncEvent extends Event {
       };
       let response = await this.calendar.makeSyncRequest(data);
       if (response.Responses) {
-        throw new ActiveSyncError("Sync", response.Responses.Delete.Status);
+        throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.calendar);
       }
     }
   }

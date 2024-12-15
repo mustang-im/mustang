@@ -118,7 +118,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
           await this.storage.saveFolder(this);
         }
         if (response.Collections.Collection.Status != "1") {
-          throw new ActiveSyncError("Sync", response.Collections.Collection.Status);
+          throw new ActiveSyncError("Sync", response.Collections.Collection.Status, this.account);
         }
         await responseFunc?.(response.Collections.Collection);
         this.syncState = sanitize.string(response.Collections.Collection.SyncKey, null);
@@ -198,7 +198,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
       let results = await this.account.callEAS("ItemOperations", request);
       for (let result of ensureArray(results.Response.Fetch)) try {
         if (result.Status != "1") {
-          throw new ActiveSyncError("ItemOperations", result.Status);
+          throw new ActiveSyncError("ItemOperations", result.Status, this.account);
         }
         let email = emailsToDownload.find(email => email.serverID == result.ServerID);
         if (email && !email.downloadComplete) {
