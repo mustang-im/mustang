@@ -224,7 +224,7 @@ export class SQLEMail {
   protected static transactionLock = new Lock();
 
   static async saveMultiple(emails: Collection<EMail>) {
-    let lock = await this.transactionLock.lock();
+    let lock = await SQLEMail.transactionLock.lock();
     try {
       await (await getDatabase()).run(sql`BEGIN TRANSACTION`);
       for (let email of emails) {
