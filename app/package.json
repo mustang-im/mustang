@@ -55,7 +55,7 @@
     "postal-mime": "^2.1.2",
     "pretty-bytes": "^6.1.1",
     "psl": "https://github.com/lupomontero/psl",
-    "svelte-collections": "^1.2.2",
+    "svelte-collections": "^1.2.4",
     "svelte-i18n-lingui": "^0.1.7",
     "svelte-icon": "^2.0.0",
     "ws": "^8.16.0"
