@@ -1,6 +1,7 @@
 import { appGlobal } from "../../app";
-import sql, { type Database } from "../../../../lib/rs-sqlite/index";
 import { mailDatabaseSchema } from "./createDatabase";
+import { Lock, type Locked } from "../../util/Lock";
+import sql, { type Database } from "../../../../lib/rs-sqlite/index";
 
 let mailDatabase: Database;
 
@@ -10,16 +11,29 @@ let mailDatabase: Database;
 // https://www.sqlite.org/lang.html
 // <copied to="Contacts/SQL/SQLDatabase.ts">
 
+const dbLock = new Lock();
+
 export async function getDatabase(): Promise<Database> {
-  if (mailDatabase) {
+  let lock = await dbLock.lock(); // also protects transactions via `getDatabaseLock()`
+  try {
+    if (mailDatabase) {
+      return mailDatabase;
+    }
+    const getDatabase = appGlobal.remoteApp.getSQLiteDatabase;
+    mailDatabase = await getDatabase("mail.db");
+    await mailDatabase.migrate(mailDatabaseSchema);
+    await mailDatabase.pragma('foreign_keys = true');
+    await mailDatabase.pragma('journal_mode = DELETE');
     return mailDatabase;
+  } finally {
+    lock.release();
   }
-  const getDatabase = appGlobal.remoteApp.getSQLiteDatabase;
-  mailDatabase = await getDatabase("mail.db");
-  await mailDatabase.migrate(mailDatabaseSchema);
-  await mailDatabase.pragma('foreign_keys = true');
-  await mailDatabase.pragma('journal_mode = DELETE');
-  return mailDatabase;
+}
+
+export async function getDatabaseLock(): Promise<{ db: Database, lock: Locked }> {
+  let lock = await dbLock.lock();
+  let db = await getDatabase();
+  return { db, lock };
 }
 
 /**

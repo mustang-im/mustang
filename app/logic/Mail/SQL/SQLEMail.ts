@@ -4,7 +4,7 @@ import type { Folder } from "../Folder";
 import { Attachment, ContentDisposition } from "../Attachment";
 import { getTagByName, Tag } from "../Tag";
 import { JSONEMail } from "../JSON/JSONEMail";
-import { getDatabase } from "./SQLDatabase";
+import { getDatabase, getDatabaseLock } from "./SQLDatabase";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Lock } from "../../util/Lock";
 import { assert, fileExtensionForMIMEType } from "../../util/util";
@@ -221,19 +221,17 @@ export class SQLEMail {
       )`);
   }
 
-  protected static transactionLock = new Lock();
-
   static async saveMultiple(emails: Collection<EMail>) {
-    let lock = await SQLEMail.transactionLock.lock();
+    let { db, lock } = await getDatabaseLock();
     try {
-      await (await getDatabase()).run(sql`BEGIN TRANSACTION`);
+      db.run(sql`BEGIN TRANSACTION`);
       for (let email of emails) {
         if (!email.subject) {
           continue;
         }
         await this.save(email);
       }
-      await (await getDatabase()).run(sql`END TRANSACTION`);
+      db.run(sql`END TRANSACTION`);
     } finally {
       lock.release();
     }
