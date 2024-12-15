@@ -99,6 +99,7 @@
     try {
       await asyncFunc();
     } finally {
+      refreshTrigger++;
       clearInterval(interval);
     }
   }
