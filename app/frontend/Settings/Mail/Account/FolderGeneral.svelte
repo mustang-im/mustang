@@ -42,7 +42,7 @@
       onClick={onGetNew}
       />
     <Button label={$t`Download all messages`}
-      onClick={onDownloadAll}
+      onClick={() => refreshHack(onDownloadAll)}
       />
     <Button label={$t`Mark all read`}
       onClick={onMarkAllRead}
@@ -56,13 +56,16 @@
   import Button from "../../../Shared/Button.svelte";
   import { assert } from "../../../../logic/util/util";
   import { t } from "../../../../l10n/l10n";
+  import { EMail } from "../../../../logic/Mail/EMail";
+  import { Collection } from "svelte-collections";
 
   export let folder: Folder;
 
   $: init($folder);
 
+  let downloadedMessages: Collection<EMail>;
   $: messages = $folder.messages;
-  $: downloadedMessages = $messages.filter(msg => msg.downloadComplete);
+  $: downloadedMessages = $messages.filter(msg => msg.downloadComplete), refreshTrigger;
   $: disableSpecial = $folder.disableChangeSpecial();
   $: disableRename = $folder.disableRename();
 
@@ -83,6 +86,21 @@
   async function onDownloadAll() {
     await folder.listMessages();
     await folder.downloadAllMessages();
+  }
+
+  /** `downloadedMessages` depends on `.downloadComplete`
+   * property of emails, not list of emails (emails added and removed),
+   * Would need to observe all emails. Instead, use this hack for now. */
+  let refreshTrigger = 0;
+  async function refreshHack(asyncFunc: () => Promise<void>) {
+    let interval = setInterval(() => {
+      refreshTrigger++;
+    }, 1000);
+    try {
+      await asyncFunc();
+    } finally {
+      clearInterval(interval);
+    }
   }
 
   async function onMarkAllRead() {
