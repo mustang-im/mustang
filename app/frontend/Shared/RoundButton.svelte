@@ -20,7 +20,7 @@
 <script lang="ts">
   import { showError } from '../Util/error';
   import Icon from 'svelte-icon/Icon.svelte';
-  import Spinner from '../Setup/Shared/Spinner.svelte';
+  import Spinner from './Spinner.svelte';
   import type { ComponentType } from 'svelte';
 
   export let label: string = null;

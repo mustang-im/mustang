@@ -18,7 +18,7 @@
 </hbox>
 
 <script lang="ts">
-  import Spinner from "./Spinner.svelte";
+  import Spinner from "../../Shared/Spinner.svelte";
 
   export let message: string = null;
   export let status: "success" | "processing" | "error" | "warning" | "" = "";
