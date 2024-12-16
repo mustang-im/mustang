@@ -13,8 +13,8 @@ let mailDatabase: Database;
 
 const dbLock = new Lock();
 
-export async function getDatabase(): Promise<Database> {
-  let lock = await dbLock.lock(); // also protects transactions via `getDatabaseLock()`
+export async function getDatabase(withLock = true): Promise<Database> {
+  let lock = withLock ? await dbLock.lock() : null; // also protects transactions via `getDatabaseLock()`
   try {
     if (mailDatabase) {
       return mailDatabase;
@@ -26,13 +26,13 @@ export async function getDatabase(): Promise<Database> {
     await mailDatabase.pragma('journal_mode = DELETE');
     return mailDatabase;
   } finally {
-    lock.release();
+    lock?.release();
   }
 }
 
 export async function getDatabaseLock(): Promise<{ db: Database, lock: Locked }> {
   let lock = await dbLock.lock();
-  let db = await getDatabase();
+  let db = await getDatabase(false);
   return { db, lock };
 }
 
