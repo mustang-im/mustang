@@ -154,6 +154,7 @@ block
       iconSize="16px"
       iconOnly
       />
+    <slot name="before-undo" />
 
     <Button
       label={$t`Undo the last change`}

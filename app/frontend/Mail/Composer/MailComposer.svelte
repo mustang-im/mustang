@@ -74,6 +74,14 @@
     </grid>
     <HTMLEditorToolbar {editor}>
       <Button
+        label={$t`Spell check`}
+        icon={SpellCheckIcon}
+        iconOnly
+        onClick={() => spellcheckEnabled.value = !spellcheckEnabled.value}
+        selected={$spellcheckEnabled.value}
+        slot="before-undo"
+        />
+      <Button
         label={$t`Attachments`}
         icon={AttachmentIcon}
         iconOnly
@@ -153,6 +161,7 @@
   import TrashIcon from "lucide-svelte/icons/trash";
   import CloseIcon from "lucide-svelte/icons/x";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
+  import SpellCheckIcon from "lucide-svelte/icons/square-check-big";
   import { tick } from "svelte";
   import { t, gt } from "../../../l10n/l10n";
 
