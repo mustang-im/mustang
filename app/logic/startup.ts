@@ -7,6 +7,7 @@ import { readMeetAccounts } from './Meet/AccountsList/MeetAccounts';
 import { readSavedSearches } from './Mail/Virtual/SavedSearchFolder';
 import { loadTagsList } from './Mail/Tag';
 import type { MailAccount } from './Mail/MailAccount';
+import type { Account } from './Abstract/Account';
 import JPCWebSocket from '../../lib/jpc-ws';
 
 const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
@@ -40,16 +41,18 @@ export async function getStartObjects(): Promise<void> {
  */
 export async function loginOnStartup(startupErrorCallback: (ex) => void, backgroundErrorCallback: (ex) => void): Promise<void> {
   for (let account of appGlobal.chatAccounts) {
-    account.errorCallback = backgroundErrorCallback;
+    account.errorCallback = errorWithAccount(account, backgroundErrorCallback);
     if (account.loginOnStartup) {
-      account.login(false).catch(startupErrorCallback);
+      account.login(false)
+        .catch(errorWithAccount(account, startupErrorCallback));
     }
   }
 
   for (let account of appGlobal.emailAccounts) {
-    account.errorCallback = backgroundErrorCallback;
+    account.errorCallback = errorWithAccount(account, backgroundErrorCallback);
     if (account.loginOnStartup) {
-      emailAccountLogin(account).catch(startupErrorCallback);
+      emailAccountLogin(account)
+        .catch(errorWithAccount(account, startupErrorCallback));
     }
   }
 }
@@ -59,4 +62,13 @@ async function emailAccountLogin(account: MailAccount) {
   if (account.isLoggedIn) {
     await account.inbox.getNewMessages();
   }
+}
+
+function errorWithAccount(account: Account, errorCallback: (ex: Error) => void) {
+  return (ex: Error) => {
+    if (ex?.message) {
+      ex.message = `${account.name}: ${ex.message}`;
+    }
+    errorCallback(ex);
+  };
 }
