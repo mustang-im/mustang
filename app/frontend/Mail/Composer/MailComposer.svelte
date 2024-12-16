@@ -31,7 +31,7 @@
       </hbox>
       <hbox flex>
         <hbox flex>
-          <MailAutocomplete addresses={mail.to} placeholder={$t`Add recipient`} tabindex={1} autofocus={true}>
+          <MailAutocomplete addresses={mail.to} placeholder={$t`Add recipient`} tabindex={1} autofocus={mail.to.isEmpty}>
             <svelte:fragment slot="person-popup-buttons" let:personUID>
               <Button plain label={$t`CC`} onClick={() => onMoveToCC(personUID)} />
               <Button plain label={$t`BCC`} onClick={() => onMoveToBCC(personUID)} />
@@ -133,6 +133,7 @@
   import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
+  import { getLocalStorage } from "../../Util/LocalStorage";
   import { UserError } from "../../../logic/util/util";
   import { backgroundError, showUserError } from "../../Util/error";
   import { appName, appVersion } from "../../../logic/build";
@@ -164,12 +165,16 @@
 
   // HACK to reload the HTMLEditor to force it to load the new text
   // See <https://github.com/ueberdosis/tiptap/issues/4918>
-  let lastMail = mail;
+  let lastMail = null;
   $: differentMailLoaded(mail);
   function differentMailLoaded(_dummy: any) {
     if (closing) {
       return;
     }
+    if (mail == lastMail || !mail) {
+      return;
+    }
+    lastMail = mail;
 
     if (mail.from?.emailAddress) {
       recipients = [mail.from, ...mail.to.contents, ...mail.cc.contents, ...mail.bcc.contents];
@@ -183,11 +188,6 @@
       doOnClose.push(() => notification.remove());
     }
 
-    if (mail == lastMail || !mail) {
-      return;
-    }
-    lastMail = mail;
-
     loadText().catch(backgroundError);
   }
 
@@ -200,6 +200,16 @@
       await tick();
     }
     editor.commands.setContent(mail.html);
+    setCursorDefault();
+  }
+
+  function setCursorDefault() {
+    if (mail.to.isEmpty && !mail.rawHTMLDangerous) {
+      return;
+    }
+    let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
+    let below = quoteSetting == "below";
+    editor.commands.focus(below ? 'start' : 'end');
   }
 
   $: fromIdentity && setAuthor()
