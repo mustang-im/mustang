@@ -88,7 +88,7 @@
       <vbox flex class="editor-wrapper">
         <vbox flex class="paper">
           <Scroll>
-            <vbox flex class="editor">
+            <vbox flex class="editor" spellcheck={$spellcheckEnabled.value}>
               <!-- The html in the mail passed in MUST already be sanitized HTML.
               Using `rawHTMLDangerous` avoids that we're sanitizing on every keypress. -->
               <HTMLEditor bind:html={mail.rawHTMLDangerous} bind:editor tabindex={1} />
@@ -162,6 +162,7 @@
   $: to = mail.to;
   let fromIdentity: MailIdentity;
   let recipients: PersonUID[] = [];
+  let spellcheckEnabled = getLocalStorage("mail.send.spellcheck.enabled", false);
 
   // HACK to reload the HTMLEditor to force it to load the new text
   // See <https://github.com/ueberdosis/tiptap/issues/4918>

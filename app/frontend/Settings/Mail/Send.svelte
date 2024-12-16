@@ -35,7 +35,7 @@
 
 <HeaderGroupBox>
   <hbox slot="header">
-    {$t`Composition`}
+    {$t`Formatting`}
   </hbox>
   <hbox class="format">
     <vbox>
@@ -56,6 +56,18 @@
   </hbox>
 </HeaderGroupBox>
 
+<HeaderGroupBox>
+  <hbox slot="header">
+    {$t`Composition`}
+  </hbox>
+  <hbox class="composition">
+    <input type="checkbox" bind:checked={spellcheckEnabledSetting.value} name="spellcheck" />
+    <label class="spellcheck" for="spellcheck">
+      {$t`Spell check`}
+    </label>
+  </hbox>
+</HeaderGroupBox>
+
 <script lang="ts">
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import { getLocalStorage } from "../../Util/LocalStorage";
@@ -67,6 +79,7 @@
 
   let formatSetting = getLocalStorage("mail.send.format", "html");
   let quoteSetting = getLocalStorage("mail.send.quote", "below");
+  let spellcheckEnabledSetting = getLocalStorage("mail.send.spellcheck.enabled", false);
 </script>
 
 <style>
@@ -83,8 +96,16 @@
   .format img {
     margin: 16px 32px 24px 28px;
   }
+  label.spellcheck {
+    text-decoration: underline;
+    text-decoration-style: wavy;
+    text-decoration-color: red;
+  }
   .radio {
     align-items: center;
+  }
+  input[type="checkbox"] {
+    margin-inline-end: 12px;
   }
   label {
     margin-inline-start: 8px;
