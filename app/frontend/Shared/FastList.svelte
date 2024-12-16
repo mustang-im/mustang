@@ -360,6 +360,9 @@
     width: 10px;
     /* top: and height: set in style="" */
   }
+  .scrollbar::-webkit-scrollbar-thumb {
+    min-height: 60px;
+  }
   /* .scrollbar :dir(rtl) Doesn't work */
   :global([dir="rtl"]) .scrollbar {
     left: 0px;
