@@ -102,12 +102,12 @@ export class Person extends ContactBase {
     this.department = this.department ?? other.department;
     this.position = this.position ?? other.position;
     this.notes = ((this.notes || "") + (other.notes || "")) || null;
-    this.emailAddresses.addAll(other.emailAddresses);
-    this.phoneNumbers.addAll(other.phoneNumbers);
-    this.chatAccounts.addAll(other.chatAccounts);
-    this.streetAddresses.addAll(other.streetAddresses);
-    this.urls.addAll(other.urls);
-    this.groups.addAll(other.groups);
+    this.emailAddresses.addAll(other.emailAddresses.filter(o => !this.emailAddresses.find(t => t.value == o.value)));
+    this.chatAccounts.addAll(other.chatAccounts.filter(o => !this.chatAccounts.find(t => t.value == o.value)));
+    this.phoneNumbers.addAll(other.phoneNumbers.filter(o => !this.phoneNumbers.find(t => t.value == o.value)));
+    this.streetAddresses.addAll(other.streetAddresses.filter(o => !this.streetAddresses.find(t => t.value == o.value)));
+    this.urls.addAll(other.urls.filter(o => !this.urls.find(t => t.value == o.value)));
+    this.groups.addAll(other.groups.filter(o => !this.groups.find(t => t.value == o.value)));
     await other.deleteIt();
   }
 }
