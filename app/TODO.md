@@ -10,7 +10,6 @@
     * Move to other calendar
   * Move multiple emails at once
   * Context menu for content: Copy text, link, image
-  * Bug: Search and persons view: Disable until search bug fixed
   * Bug: Thunderbird AB import misses ABs and fields
   * Import Outlook PST
   * IMAP: See below

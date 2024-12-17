@@ -24,13 +24,16 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { t } from "../../l10n/l10n";
   import HeaderGroupBox from "../Shared/HeaderGroupBox.svelte";
+  import { SavedSearchFolder } from "../../logic/Mail/Virtual/SavedSearchFolder";
 
   export let folder: Folder;
 
   async function onDelete() {
-    let confirmed = confirm($t`Are you sure that you want to the delete folder ${folder.name} and all messages in it? This will also delete it on the server.`);
-    if (!confirmed) {
-      return;
+    if (!(folder instanceof SavedSearchFolder)) {
+      let confirmed = confirm($t`Are you sure that you want to the delete folder ${folder.name} and all messages in it? This will also delete it on the server.`);
+      if (!confirmed) {
+        return;
+      }
     }
     await folder.deleteIt();
   }
