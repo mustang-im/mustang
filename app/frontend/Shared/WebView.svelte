@@ -97,12 +97,22 @@
       if (autoSize) {
         webviewE.addEventListener("did-finish-load", onLoadResize);
       }
+      addClickListener();
     }, { once: true });
 
     // <https://www.electronjs.org/docs/latest/api/webview-tag/#event-context-menu>
     webviewE.addEventListener("context-menu", event => catchErrors(() => {
       onContextMenu((event as any).params);
     }));
+  }
+
+  function addClickListener() {
+    let id = (webviewE as any).getWebContentsId();
+    appGlobal.remoteApp.addEventListenerWebContents(id, "input-event", (event) => {
+      if (event.type == "mouseDown") {
+        webviewE.click();
+      }
+    });
   }
 
   let contextMenuItems: ArrayColl<MenuItem>;
