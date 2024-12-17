@@ -235,7 +235,8 @@ export class OWAAccount extends MailAccount {
   }
 
   isOffice365(): boolean {
-    return this.url == "https://outlook.office.com";
+    let hostname = new URL(this.url).hostname;
+    return hostname == "outlook.office.com";
   }
 
   async listenForEventsOffice365() {

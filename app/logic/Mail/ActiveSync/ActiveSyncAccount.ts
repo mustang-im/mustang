@@ -489,6 +489,7 @@ export class ActiveSyncAccount extends MailAccount {
   }
 
   isOffice365(): boolean {
-    return this.url == "https://outlook.office365.com";
+    let hostname = new URL(this.url).hostname;
+    return hostname == "outlook.office365.com";
   }
 }
