@@ -44,7 +44,8 @@ linux:
     - deb
     - rpm
   maintainer: Mustang
-  category: Utility
+  # <https://specifications.freedesktop.org/menu-spec/latest/additional-category-registry.html>
+  category: Email
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: true
