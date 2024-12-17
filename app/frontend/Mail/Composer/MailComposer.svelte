@@ -2,7 +2,7 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <vbox flex class="mail-composer-window">
     <hbox class="window-title-bar">
-      <IdentitySelector bind:selectedIdentity={fromIdentity} chooseFromPersons={recipients} />
+      <IdentitySelector bind:selectedIdentity={fromIdentity} />
       <hbox flex class="spacer" />
       <hbox class="close buttons">
         <RoundButton
@@ -138,7 +138,7 @@
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { Attachment } from "../../../logic/Mail/Attachment";
   import { insertImage } from "../../Shared/Editor/InsertImage";
-  import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
+  import { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
   import { getLocalStorage } from "../../Util/LocalStorage";
@@ -164,6 +164,8 @@
   import SpellCheckIcon from "lucide-svelte/icons/square-check-big";
   import { tick } from "svelte";
   import { t, gt } from "../../../l10n/l10n";
+  import { appGlobal } from "../../../logic/app";
+  import { selectedAccount } from "../Selected";
 
   export let mail: EMail;
 
@@ -190,13 +192,8 @@
       recipients = [mail.from, ...mail.to.contents, ...mail.cc.contents, ...mail.bcc.contents];
     }
 
-    const kNoReplyRegExp = /no[\-_t]*reply@|invalid$/;
-    let invalidTo = recipients.find(person =>
-      !person.emailAddress || kNoReplyRegExp.test(person.emailAddress));
-    if (invalidTo) {
-      let notification = showUserError(new UserError(gt`The recipient ${invalidTo.emailAddress} does not accept email`));
-      doOnClose.push(() => notification.remove());
-    }
+    fromIdentity = MailIdentity.findIdentity(recipients, mail.folder?.account ?? $selectedAccount);
+    checkInvalidRecipients(recipients);
 
     loadText().catch(backgroundError);
   }
@@ -227,6 +224,16 @@
     mail.from = new PersonUID(fromIdentity.emailAddress, fromIdentity.userRealname);
     mail.folder = fromIdentity.account.getSpecialFolder(SpecialFolder.Sent)
       ?? fromIdentity.account.inbox;
+  }
+
+  function checkInvalidRecipients(recipients: PersonUID[]) {
+    const kNoReplyRegExp = /no[\-_t]*reply@|invalid$/;
+    let invalidTo = recipients.find(person =>
+      !person.emailAddress || kNoReplyRegExp.test(person.emailAddress));
+    if (invalidTo) {
+      let notification = showUserError(new UserError(gt`The recipient ${invalidTo.emailAddress} does not accept email`));
+      doOnClose.push(() => notification.remove());
+    }
   }
 
   function onMoveToCC(person: PersonUID) {

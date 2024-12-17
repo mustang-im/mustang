@@ -1,8 +1,10 @@
 import type { MailAccount } from "./MailAccount";
+import type { PersonUID } from "../Abstract/PersonUID";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { assert } from "../util/util";
 import { ArrayColl } from "svelte-collections";
+import { appGlobal } from "../app";
 
 export class MailIdentity extends Observable {
   id = crypto.randomUUID();
@@ -74,5 +76,21 @@ export class MailIdentity extends Observable {
       sendCC: this.sendCC.contents,
       sendBCC: this.sendBCC.contents,
     };
+  }
+
+  /**
+   * @param addresses If any identity matches one of these emailAddresses,
+   * select that identity by default.
+   * In decreasing order of preference. */
+  static findIdentity(addresses: PersonUID[], defaultAccount: MailAccount): MailIdentity | null {
+    let identities = appGlobal.emailAccounts.contents.map(acc => acc.identities.contents).flat();
+    for (let identity of identities) {
+      for (let candidate of addresses) {
+        if (identity.isEMailAddress(candidate.emailAddress)) {
+          return identity;
+        }
+      }
+    }
+    return defaultAccount.identities.first;
   }
 }
