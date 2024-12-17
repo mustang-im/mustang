@@ -15,10 +15,17 @@ import childProcess from 'node:child_process';
 import * as OWA from './owa';
 import { appName, production } from '../app/logic/build';
 
+let jpc: JPCWebSocket | null = null;
+
 export async function startupBackend() {
   let appGlobal = await createSharedAppObject();
-  let jpc = new JPCWebSocket(appGlobal);
+  jpc = new JPCWebSocket(appGlobal);
   await jpc.listen(kSecret, 5455, false);
+}
+
+export async function shutdownBackend() {
+  await jpc.stopListening();
+  jpc = null;
 }
 
 const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
