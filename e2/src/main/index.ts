@@ -1,5 +1,6 @@
 import { setMainWindow, startupBackend } from '../../../backend/backend';
 import { app, shell, BrowserWindow } from 'electron'
+import { ipcMain } from 'electron/main';
 import { join } from 'path'
 import electronUpdater from 'electron-updater';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -67,6 +68,10 @@ function createWindow(): void {
       });
       child.webContents.on('did-navigate', (_event, url) => {
         mainWindow.webContents.send('oauth2-navigate', url);
+      });
+      // Workaround for window.close() not closing in some cases
+      ipcMain.on('oauth2-close', () => {
+        child.close();
       });
     });
 

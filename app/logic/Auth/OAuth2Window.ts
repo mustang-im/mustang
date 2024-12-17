@@ -25,13 +25,15 @@ export class OAuth2Window extends OAuth2UI {
             ipcRenderer.removeListener('oauth2-navigate', handleNavigation);
             ipcRenderer.removeListener('oauth2-close', handleClose);
             weClosed = true;
-            popup.close();
+            // Workaround for window.close() not closing in some cases
+            ipcRenderer.send('oauth2-close');
             resolve(this.oAuth2.getAuthCodeFromDoneURL(url));
           }
         } catch (ex) {
           reject(ex);
           weClosed = true;
-          popup.close();
+          // Workaround for window.close() not closing in some cases
+          ipcRenderer.send('oauth2-close');
         }
       }
       let handleClose = (event, value) => {
