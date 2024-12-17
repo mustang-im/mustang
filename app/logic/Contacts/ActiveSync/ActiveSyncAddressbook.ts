@@ -114,7 +114,7 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
         try {
          let person = this.getPersonByServerID(item.ServerId);
           if (person) {
-            await person.deleteIt();
+            await person.deleteLocally();
           }
         } catch (ex) {
           this.account.errorCallback(ex);

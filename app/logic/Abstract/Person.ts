@@ -45,9 +45,17 @@ export class Person extends ContactBase {
   }
 
   /**
-   * Deletes the contact locally from the database.
+   * Deletes the contact from our database and on the server.
     */
   async deleteIt() {
+    await this.deleteFromServer();
+    await this.deleteLocally();
+  }
+
+  /**
+   * Deletes the contact locally from the database.
+    */
+  async deleteLocally() {
     if (!this.addressbook) {
       return;
     }

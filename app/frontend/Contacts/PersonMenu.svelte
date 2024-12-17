@@ -46,7 +46,6 @@
       $selectedPerson = next;
     }
 
-    await person.deleteFromServer();
     await person.deleteIt();
 }
 </script>

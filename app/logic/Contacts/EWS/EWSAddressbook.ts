@@ -76,7 +76,7 @@ export class EWSAddressbook extends Addressbook {
           let person = this.getPersonByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
           if (person) {
             this.persons.remove(person);
-            await person.deleteIt();
+            await person.deleteLocally();
           }
           let group = this.getGroupByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
           if (group) {

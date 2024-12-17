@@ -82,7 +82,7 @@ export class OWAAddressbook extends Addressbook {
   async listPersons(persons: any[]) {
     for (let person of this.persons.contents.filter(person => !persons.some(result => result.PersonaId.Id == person.personaID))) {
       this.persons.remove(person);
-      await person.deleteIt();
+      await person.deleteLocally();
     }
     for (let result of persons) {
       try {
