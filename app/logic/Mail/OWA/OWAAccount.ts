@@ -121,7 +121,7 @@ export class OWAAccount extends MailAccount {
 
     let request = new OWASubscribeToNotificationRequest();
     this.callOWA(request);
-    if (this.authMethod == AuthMethod.OAuth2) {
+    if (this.isOffice365()) {
       this.listenForEventsOffice365();
     } else {
       this.listenForEventsExchange();
@@ -234,7 +234,12 @@ export class OWAAccount extends MailAccount {
     }
   }
 
+  isOffice365(): boolean {
+    return this.url == "https://outlook.office.com";
+  }
+
   async listenForEventsOffice365() {
+    return; // TODO Doesn't work yet
     try {
       // The `connect` endpoint seems to need an access token.
       let request = new OWAGetAccessTokenforResourceRequest(this.url + "notificationchannel/");
@@ -269,6 +274,8 @@ export class OWAAccount extends MailAccount {
 
   async listenForEventsExchange() {
     try {
+      // handle logout
+      // add throttle
       let url = this.url + "ev.owa2?ns=PendingRequest&ev=FinishNotificationRequest&UA=0";
       let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url);
       let json = response.json;

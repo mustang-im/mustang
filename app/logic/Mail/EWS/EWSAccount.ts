@@ -483,6 +483,10 @@ export class EWSAccount extends MailAccount {
       }
     }
   }
+
+  isOffice365(): boolean {
+    return this.url == "https://outlook.office365.com";
+  }
 }
 
 
