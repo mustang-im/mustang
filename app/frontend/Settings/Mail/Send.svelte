@@ -8,7 +8,7 @@
     <hbox class="quote">
       <vbox>
         <label class="radio">
-          <input type="radio" value="below" bind:group={$quoteSetting.value} />
+          <input type="radio" value="below" bind:group={quoteSetting.value} />
           {$t`Quote below, Reply above`}
         </label>
         <img src={quoteBelowImg} title={$t`Quote below`} alt={$t`Quote below`} width="166" height="94" />
@@ -16,7 +16,7 @@
 
       <vbox>
         <label class="radio">
-          <input type="radio" value="above" bind:group={$quoteSetting.value} />
+          <input type="radio" value="above" bind:group={quoteSetting.value} />
           {$t`Quote above, Reply below`}
         </label>
         <img src={quoteAboveImg} title={$t`Quote above`} alt={$t`Quote above`} width="163" height="99" />
@@ -24,7 +24,7 @@
 
       <vbox>
         <label class="radio">
-          <input type="radio" value="none" bind:group={$quoteSetting.value} />
+          <input type="radio" value="none" bind:group={quoteSetting.value} />
           {$t`Do not quote`}
         </label>
         <hbox />
@@ -40,7 +40,7 @@
   <hbox class="format">
     <vbox>
       <label class="radio">
-        <input type="radio" value="html" bind:group={$formatSetting.value} />
+        <input type="radio" value="html" bind:group={formatSetting.value} />
         {$t`Send as HTML and Plaintext`}
       </label>
       <img src={htmlImg} title={$t`HTML`} alt={$t`HTML`} width="248" height="96" />
@@ -48,7 +48,7 @@
 
     <vbox>
       <label class="radio">
-        <input type="radio" value="plaintext" bind:group={$formatSetting.value} />
+        <input type="radio" value="plaintext" bind:group={formatSetting.value} />
         {$t`Send as Plaintext only`}
       </label>
       <img src={plaintextImg} title={$t`Plaintext`} alt={$t`Plaintext`} width="290" height="77" />
