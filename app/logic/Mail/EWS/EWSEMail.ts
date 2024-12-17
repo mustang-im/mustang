@@ -217,9 +217,13 @@ export class EWSEMail extends EMail {
     await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
   }
 
-  /* Disabling because EWS only provides event data for invitations,
-   * as opposed to EMail::loadEvent which works for all iTIP messages.
-  async loadEvent() {
+  /** EWS only provides event data for invitations,
+   * but not responses to invitations.
+   * Disabled, but keeping the code, in case it will be useful later.
+   *
+   * `EMail.loadEvent()` works for all iTIP messages.
+   * By not overriding `loadEvent()` here, `EMail.loadEvent()` will be called. */
+  async loadEvent_disabled() {
     assert(this.scheduling == Scheduling.Request, "This is not an invitation");
     assert(!this.event, "Event has already been loaded");
     let request = {
@@ -271,7 +275,6 @@ export class EWSEMail extends EMail {
     event.fromXML(getEWSItem(result.Items));
     this.event = event;
   }
-  */
 }
 
 function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {
