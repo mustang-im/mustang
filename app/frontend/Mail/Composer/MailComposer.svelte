@@ -1,4 +1,4 @@
-<FileDropTarget on:add-files={onFilesDrop} on:inline-files={onFileInlineDrop} allowInline={true}>
+<FileDropTarget on:add-files={(event) => catchErrors(() => onFilesDrop(event))} on:inline-files={(event) => catchErrors(() => onFileInlineDrop(event))} allowInline={true}>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <vbox flex class="mail-composer-window">
     <hbox class="window-title-bar">
@@ -143,7 +143,7 @@
   import { SpecialFolder } from "../../../logic/Mail/Folder";
   import { getLocalStorage } from "../../Util/LocalStorage";
   import { UserError } from "../../../logic/util/util";
-  import { backgroundError, showUserError } from "../../Util/error";
+  import { backgroundError, catchErrors, showUserError } from "../../Util/error";
   import { appName, appVersion } from "../../../logic/build";
   import MailAutocomplete from "./MailAutocomplete.svelte";
   import AttachmentsPane from "./Attachments/AttachmentsPane.svelte";
@@ -261,10 +261,10 @@
     mail.attachments.addAll(files.map(file => Attachment.fromFile(file)));
   }
 
-  function onFileInlineDrop(event: CustomEvent) {
+  async function onFileInlineDrop(event: CustomEvent) {
     let files = event.detail.files as File[];
     for (let file of files) {
-      insertImage(editor, file);
+      await insertImage(editor, file);
     }
   }
 
