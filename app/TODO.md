@@ -9,12 +9,14 @@
     * Edit event UI
     * Move to other calendar
   * Move multiple emails at once
-  * Inline images send
   * Context menu for content: Copy text, link, image
   * Bug: Search and persons view: Disable until search bug fixed
   * Bug: Thunderbird AB import misses ABs and fields
   * Import Outlook PST
   * IMAP: See below
+  * Inline images
+    * Send as attachment cid:, not data: URL
+    * Scale
   * FastTree
     * Drag&Drop: Open on drag over - for: Move messages to deep subfolders -> Rewrite FastTree
   * Bugs: FastList doesn't update some rows #66
