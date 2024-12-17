@@ -1,10 +1,12 @@
 import { HTTPServer } from './HTTPServer';
 import JPCWebSocket from '../lib/jpc-ws';
+import * as OWA from './owa';
+import { appName, production } from '../app/logic/build';
 import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, Menu, MenuItemConstructorOptions, webContents } from "electron";
+import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions } from "electron";
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
 import path from "node:path";
@@ -12,8 +14,6 @@ import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 import childProcess from 'node:child_process';
-import * as OWA from './owa';
-import { appName, production } from '../app/logic/build';
 
 export async function startupBackend() {
   let appGlobal = await createSharedAppObject();
@@ -36,7 +36,7 @@ async function createSharedAppObject() {
     setBadgeCount,
     minimizeMainWindow,
     unminimizeMainWindow,
-    clickListener,
+    addEventListenerWebContents,
     shell,
     restartApp,
     setTheme,
@@ -318,12 +318,11 @@ function unminimizeMainWindow() {
   mainWindow.restore();
 }
 
-function clickListener(id: number) {
-  const win = webContents.fromId(id);
-  win?.on("input-event", (_, e) => {
-    if (e.type == "mouseDown") {
-      mainWindow.webContents.send("click", { id: id });
-    }
+function addEventListenerWebContents(webContentsID: number, webviewEvent: string, eventHandler: (event: Event) => void) {
+  const win = webContents.fromId(webContentsID);
+  assert(win, `WebContents ID ${webContentsID} not found`);
+  win.on(webviewEvent as any, (_: any, event: Event) => {
+    eventHandler(event);
   });
 }
 
@@ -395,4 +394,10 @@ function getFilesDir(): string {
     filesDirCreated = true;
   }
   return dir;
+}
+
+function assert(test, errorMessage): asserts test {
+  if (!test) {
+    throw new Error(errorMessage);
+  }
 }

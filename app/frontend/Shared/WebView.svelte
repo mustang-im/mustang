@@ -97,7 +97,7 @@
       if (autoSize) {
         webviewE.addEventListener("did-finish-load", onLoadResize);
       }
-      inputListener();
+      addClickListener();
     }, { once: true });
 
     // <https://www.electronjs.org/docs/latest/api/webview-tag/#event-context-menu>
@@ -106,11 +106,10 @@
     }));
   }
 
-  function inputListener() {
-    let id = webviewE.getWebContentsId();
-    appGlobal.remoteApp.clickListener(id);
-    window.electron.ipcRenderer.on("click", (_, v) => {
-      if (v.id == id) {
+  function addClickListener() {
+    let id = (webviewE as any).getWebContentsId();
+    appGlobal.remoteApp.addEventListenerWebContents(id, "input-event", (event) => {
+      if (event.type == "mouseDown") {
         webviewE.click();
       }
     });
