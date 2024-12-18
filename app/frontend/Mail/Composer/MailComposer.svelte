@@ -291,10 +291,10 @@
     mail.headers.set("User-Agent", (appName == "Mustang" ? "" : `Mustang/${appVersion} `) + `${appName}/${appVersion}`);
 
     if (fromIdentity.isCatchAll && mail.from.emailAddress.includes("*")) {
-      throw new Error(gt`Please fill out * in catch-all From address ${mail.from.emailAddress}`);
+      throw new UserError(gt`Please fill out * in catch-all From address ${mail.from.emailAddress}`);
     }
     if (fromIdentity.isCatchAll && !fromIdentity.isEMailAddress(mail.from.emailAddress)) {
-      throw new Error(gt`From address ${mail.from.emailAddress} does not match the catch-all identity ${fromIdentity.emailAddress}`);
+      throw new UserError(gt`From address ${mail.from.emailAddress} does not match the catch-all identity ${fromIdentity.emailAddress}`);
     }
 
     await mail.send();
