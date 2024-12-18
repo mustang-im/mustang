@@ -26,7 +26,7 @@ const globalMessages: Record<number, string> = {
   109: "Missing or invalid device type",
   110: "Server error",
   111: "Retryable server error",
-  112: "Active directory access deined",
+  112: "Active directory access denied",
   113: "Mailbox quota exceeded",
   114: "Mailbox server offline",
   115: "Send quota exceeded",
