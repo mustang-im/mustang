@@ -58,6 +58,7 @@ export class AllAccounts extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
+    super.login(interactive);
     for (let account of this.accounts) {
       await account.login(interactive);
     }

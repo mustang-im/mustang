@@ -20,7 +20,8 @@ export class M3Account extends MeetAccount {
    * @param relogin if true: Force a new login in any case.
    * @throws OAuth2Error
    */
-  async login(relogin = false): Promise<void> {
+  async login(interactive: boolean, relogin = false): Promise<void> {
+    super.login(interactive);
     if (this.oauth2?.accessToken && !relogin) {
       return;
     }

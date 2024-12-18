@@ -9,6 +9,7 @@ import { loadTagsList } from './Mail/Tag';
 import type { MailAccount } from './Mail/MailAccount';
 import type { Account } from './Abstract/Account';
 import JPCWebSocket from '../../lib/jpc-ws';
+import { logError } from '../frontend/Util/error';
 
 const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
 
@@ -39,20 +40,20 @@ export async function getStartObjects(): Promise<void> {
  *   Called later on, if there are errors on processing server responses,
  *   e.g. the account being logged out, malformed data etc..
  */
-export async function loginOnStartup(startupErrorCallback: (ex) => void, backgroundErrorCallback: (ex) => void): Promise<void> {
+export async function loginOnStartup(startupErrorCallback: (ex: Error) => void, backgroundErrorCallback: (ex) => void): Promise<void> {
   for (let account of appGlobal.chatAccounts) {
-    account.errorCallback = errorWithAccount(account, backgroundErrorCallback);
+    account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
     if (account.loginOnStartup) {
       account.login(false)
-        .catch(errorWithAccount(account, startupErrorCallback));
+        .catch(errorWithAccountName(account, startupErrorCallback));
     }
   }
 
   for (let account of appGlobal.emailAccounts) {
-    account.errorCallback = errorWithAccount(account, backgroundErrorCallback);
+    account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
     if (account.loginOnStartup) {
       emailAccountLogin(account)
-        .catch(errorWithAccount(account, startupErrorCallback));
+        .catch(errorWithAccountName(account, startupErrorCallback));
     }
   }
 }
@@ -64,11 +65,18 @@ async function emailAccountLogin(account: MailAccount) {
   }
 }
 
-function errorWithAccount(account: Account, errorCallback: (ex: Error) => void) {
+function errorWithAccountName(account: Account, errorCallback: (ex: Error) => void) {
   return (ex: Error) => {
+    account.errors.add(ex);
     if (ex?.message) {
       ex.message = `${account.name}: ${ex.message}`;
     }
     errorCallback(ex);
   };
+}
+
+function backgroundErrorInAccount(ex: Error, account: Account) {
+  account.errors.add(ex);
+  console.error(ex);
+  logError(ex);
 }

@@ -63,6 +63,7 @@ export class ActiveSyncAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
+    super.login(interactive);
     if (this.authMethod == AuthMethod.OAuth2) {
       let urls = OAuth2URLs.find(a => a.hostnames.includes(this.hostname));
       this.oAuth2 = new OAuth2(this, urls.tokenURL, urls.authURL, urls.authDoneURL, urls.scope, urls.clientID, urls.clientSecret, urls.doPKCE);

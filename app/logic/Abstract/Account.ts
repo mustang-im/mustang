@@ -30,6 +30,10 @@ export class Account extends Observable {
   acceptBrokenTLSCerts = false;
   @notifyChangedProperty
   loginOnStartup = true;
+  /** Error that broke the server connection, unrecoverable, including login failures. */
+  fatalError: Error = null;
+  /** Non-fatal errors, including when processing a single email */
+  readonly errors = new ArrayColl<Error>();
 
   /** Will be called, when there are errors on the connection
    * which cannot be attributed directly to an API function called,
@@ -59,6 +63,7 @@ export class Account extends Observable {
    *     (Typically for reasons other than expiry.)
    */
   async login(interactive: boolean): Promise<void> {
+    this.errors.clear();
   }
 
   /** For setup only. Test that the login works. */

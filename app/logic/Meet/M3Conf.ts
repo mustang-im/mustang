@@ -37,7 +37,7 @@ export class M3Conf extends VideoConfMeeting {
    * @param relogin if true: Force a new login in any case.
    * @throws OAuth2Error
    */
-  async login(relogin = false): Promise<void> {
+  async login(interactive: boolean, relogin = false): Promise<void> {
     // TODO Multi-account
     this.account = appGlobal.meetAccounts.find(acc => acc instanceof M3Account) as M3Account;
     if (!this.account) {
@@ -50,7 +50,7 @@ export class M3Conf extends VideoConfMeeting {
       return;
     }
 
-    await this.account.login(relogin);
+    await this.account.login(interactive, relogin);
     // TODO fails with: type=REFRESH_TOKEN_ERROR, error=invalid_token, grant_type=refresh_token, client_auth_method=client-secret
     await this.httpPost("auth/login", {
       id_token: this.account.oauth2.idToken,
@@ -84,7 +84,7 @@ export class M3Conf extends VideoConfMeeting {
   }
 
   async createNewConference() {
-    await this.login();
+    await this.login(true);
     let time = new Date().toLocaleString(getUILocale(), { hour: "numeric", minute: "numeric" });
     let event = await this.httpPost("events", {
       title: `Meeting ${time}`,

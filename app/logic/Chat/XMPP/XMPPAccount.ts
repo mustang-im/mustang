@@ -21,6 +21,7 @@ export class XMPPAccount extends ChatAccount {
    * You must call this after creating the object and having set its properties.
    * This will populate `persons` and `chats`. */
   async login() {
+    super.login(false);
     this.globalUserID = `${this.username}@${this.serverDomain}`;
     this.client = client({
       username: this.globalUserID,

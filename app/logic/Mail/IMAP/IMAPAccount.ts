@@ -37,6 +37,7 @@ export class IMAPAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
+    super.login(interactive);
     if (!this.dbID) {
       await this.storage.saveAccount(this);
     }

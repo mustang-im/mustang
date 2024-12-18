@@ -1,4 +1,4 @@
-<hbox class="account" title={$account.fatalError ? account.fatalError.message : ""}>
+<hbox class="account" title={errorMsg}>
   {#if $account.isLoggedIn}
     <hbox class="icon"><Icon data={MailIcon} size="16px" /></hbox>
   {:else}
@@ -29,6 +29,13 @@
   async function login() {
     await account.login(true);
   }
+
+  $: errors = $account.errors;
+  $: errorMsg = $account.fatalError
+    ? account.fatalError.message
+    : $errors.hasItems
+      ? errors.first.message
+      : "";
 </script>
 
 <style>

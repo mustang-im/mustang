@@ -26,6 +26,7 @@ export class MatrixAccount extends ChatAccount {
    * You must call this after creating the object and having set its properties.
    * This will populate `persons` and `chats`. */
   async login() {
+    super.login(false);
     (window as any).global = window; // Fix Matrix
     let serverID = this.baseURL.replace("https://", "");
     let userID = `@${this.username}:${serverID}`;
