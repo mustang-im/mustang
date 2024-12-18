@@ -1,4 +1,6 @@
 import type { MailAccount } from "./MailAccount";
+import { PersonUID } from "../Abstract/PersonUID";
+import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { assert } from "../util/util";
@@ -35,9 +37,14 @@ export class MailIdentity extends Observable {
     return this.emailAddress;
   }
 
+  asPersonUID(): PersonUID {
+    return new PersonUID(this.emailAddress, this.userRealname);
+  }
+
   isEMailAddress(emailAddress: string): boolean {
     if (this.emailAddress.includes("*")) {
       let sp = this.emailAddress.split("*");
+      // Deliberately supporting only 1 `*` placeholder
       return emailAddress.startsWith(sp[0]) && emailAddress.endsWith(sp[1]);
     } else {
       return this.emailAddress == emailAddress;
@@ -49,9 +56,10 @@ export class MailIdentity extends Observable {
   static fromConfigJSON(config: any, account: MailAccount): MailIdentity {
     assert(typeof (config) == "object", "Config must be a JSON object");
     let thiss = new MailIdentity(account);
-    thiss.id = sanitize.nonemptystring(config.id);
+    thiss.id = sanitize.nonemptystring(config.id) as any;
     thiss.userRealname = sanitize.label(config.userRealname);
-    thiss.emailAddress = sanitize.emailAddress(config.emailAddress);
+    sanitize.emailAddress(config.emailAddress.replace("*", ""));
+    thiss.emailAddress = config.emailAddress;
     thiss.replyTo = sanitize.emailAddress(config.replyTo, null);
     thiss.organisation = sanitize.label(config.organisation, null);
     thiss.signatureHTML = sanitize.string(config.signatureHTML, null);
@@ -74,5 +82,29 @@ export class MailIdentity extends Observable {
       sendCC: this.sendCC.contents,
       sendBCC: this.sendBCC.contents,
     };
+  }
+
+  /**
+   * Finds our user's identity which matches one of the the passed-in email addresses
+   * @param addresses If any identity matches one of these emailAddresses,
+   * select that identity by default.
+   * In decreasing order of preference.
+   */
+  static findIdentity(addresses: PersonUID[], defaultAccount: MailAccount): { identity: MailIdentity, personUID: PersonUID } | null {
+    let identities = appGlobal.emailAccounts.contents.map(acc => acc.identities.contents).flat();
+    // console.log(`Checking ${addresses.join(", ")} for matches with identities ${identities.map(i => i.emailAddress).join(", ")}`);
+    for (let candidate of addresses) {
+      for (let identity of identities) {
+        // console.log(`Checking whether ${candidate} matches identity ${identity.emailAddress} of account ${identity.account.name}`);
+        if (identity.isEMailAddress(candidate.emailAddress)) {
+          // console.log(`MATCH: ${candidate} matches identity ${identity.emailAddress} of account ${identity.account.name}`);
+          let personUID = new PersonUID(candidate.emailAddress, identity.userRealname);
+          return { identity, personUID };
+        }
+      }
+    }
+    let identity = defaultAccount.identities.first;
+    // console.log("None match, choosing default account", defaultAccount.name, "identity", identity.emailAddress);
+    return { identity, personUID: identity.asPersonUID() };
   }
 }

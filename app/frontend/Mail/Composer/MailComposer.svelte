@@ -2,7 +2,7 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <vbox flex class="mail-composer-window">
     <hbox class="window-title-bar">
-      <IdentitySelector bind:selectedIdentity={fromIdentity} chooseFromPersons={recipients} />
+      <IdentitySelector bind:selectedIdentity={fromIdentity} />
       <hbox flex class="spacer" />
       <hbox class="close buttons">
         <RoundButton
@@ -138,9 +138,10 @@
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { Attachment } from "../../../logic/Mail/Attachment";
   import { insertImage } from "../../Shared/Editor/InsertImage";
-  import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
+  import { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
+  import { selectedAccount } from "../Selected";
   import { getLocalStorage } from "../../Util/LocalStorage";
   import { UserError } from "../../../logic/util/util";
   import { backgroundError, catchErrors, showUserError } from "../../Util/error";
@@ -170,7 +171,6 @@
   let editor: Editor;
   $: to = mail.to;
   let fromIdentity: MailIdentity;
-  let recipients: PersonUID[] = [];
   let spellcheckEnabled = getLocalStorage("mail.send.spellcheck.enabled", false);
 
   // HACK to reload the HTMLEditor to force it to load the new text
@@ -186,16 +186,12 @@
     }
     lastMail = mail;
 
-    if (mail.from?.emailAddress) {
-      recipients = [mail.from, ...mail.to.contents, ...mail.cc.contents, ...mail.bcc.contents];
-    }
+    fromIdentity = mail.identity ?? $selectedAccount.identities.first;
+    // setAuthor() called
 
-    const kNoReplyRegExp = /no[\-_t]*reply@|invalid$/;
-    let invalidTo = recipients.find(person =>
-      !person.emailAddress || kNoReplyRegExp.test(person.emailAddress));
-    if (invalidTo) {
-      let notification = showUserError(new UserError(gt`The recipient ${invalidTo.emailAddress} does not accept email`));
-      doOnClose.push(() => notification.remove());
+    if (mail.from?.emailAddress) {
+      let recipients = [mail.from, ...mail.to.contents, ...mail.cc.contents, ...mail.bcc.contents];
+      checkInvalidRecipients(recipients);
     }
 
     loadText().catch(backgroundError);
@@ -224,9 +220,22 @@
 
   $: fromIdentity && setAuthor()
   function setAuthor() {
-    mail.from = new PersonUID(fromIdentity.emailAddress, fromIdentity.userRealname);
     mail.folder = fromIdentity.account.getSpecialFolder(SpecialFolder.Sent)
       ?? fromIdentity.account.inbox;
+    if (fromIdentity == mail.identity) {
+      return; // don't overwrite concrete email address for catch-all identity
+    }
+    mail.from = fromIdentity.asPersonUID();
+  }
+
+  function checkInvalidRecipients(recipients: PersonUID[]) {
+    const kNoReplyRegExp = /no[\-_t]*reply@|invalid$/;
+    let invalidTo = recipients.find(person =>
+      !person.emailAddress || kNoReplyRegExp.test(person.emailAddress));
+    if (invalidTo) {
+      let notification = showUserError(new UserError(gt`The recipient ${invalidTo.emailAddress} does not accept email`));
+      doOnClose.push(() => notification.remove());
+    }
   }
 
   function onMoveToCC(person: PersonUID) {
