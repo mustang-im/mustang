@@ -208,6 +208,7 @@ input[type="text"] {
   border: none;
   border-bottom: 1px solid var(--input-line);
   width: 100%;
+  font-size: 14px;
 }
 input:focus {
   outline: none;

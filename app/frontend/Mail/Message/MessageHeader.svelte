@@ -158,11 +158,11 @@
     color: grey;
   }
   .to {
-    font-size: 13px;
+    font-size: 14px;
     color: grey;
   }
   .cc, .bcc {
-    font-size: 13px;
+    font-size: 14px;
     color: grey;
   }
   .outgoing .to {

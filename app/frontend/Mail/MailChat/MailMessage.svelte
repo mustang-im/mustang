@@ -35,7 +35,7 @@
 <style>
   .subject {
     font-weight: bold;
-    font-size: 13px;
+    font-size: 14px;
     line-height: normal;
     margin: 8px 0 4px 0;
   }

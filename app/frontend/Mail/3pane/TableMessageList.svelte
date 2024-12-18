@@ -60,6 +60,6 @@
     height: 32px;
   }
   .message-list :global(.row hbox) {
-    font-size: 13px;
+    font-size: 14px;
   }
 </style>

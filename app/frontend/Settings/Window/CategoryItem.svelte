@@ -43,7 +43,7 @@
     color:  var(--selected-fg);
   }
   .label {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--fg);
     white-space: nowrap;
     overflow: hidden;

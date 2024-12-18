@@ -38,7 +38,7 @@ ${event.participants.hasItems ? event.participants.getIndexRange(0, 4).map(perso
     white-space: nowrap;
     text-overflow: ellipsis;
     max-height: 1.4em;
-    font-size: 13px;
+    font-size: 14px;
 
     background-color: #20AF9E50;
     color: black;
