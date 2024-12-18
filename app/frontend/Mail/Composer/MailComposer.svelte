@@ -2,7 +2,8 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <vbox flex class="mail-composer-window">
     <hbox class="window-title-bar">
-      <IdentitySelector bind:selectedIdentity={fromIdentity} />
+      <IdentitySelector bind:selectedIdentity={fromIdentity}
+        customFromAddress={fromIdentity?.emailAddress == mail.from?.emailAddress ? null : mail.from?.emailAddress} />
       <hbox flex class="spacer" />
       <hbox class="close buttons">
         <RoundButton

@@ -2,7 +2,9 @@
   <select bind:value={selectedIdentity}>
     {#each $identities.each as identity }
       <option value={identity}>
-        {identity.name}
+        {customFromAddress && identity == selectedIdentity
+          ? customFromAddress
+          : identity.name}
       </option>
     {/each}
   </select>
@@ -18,6 +20,9 @@
     * Default: all identities of all accounts
     * in */
   export let identities: Collection<MailIdentity> = new ArrayColl(appGlobal.emailAccounts.contents.map(acc => acc.identities.contents).flat());
+  /** Allows the user to override the From address with a custom email address.
+   * This allows for catch-all email addresses to be used as From: */
+  export let customFromAddress: string;
 </script>
 
 <style>
