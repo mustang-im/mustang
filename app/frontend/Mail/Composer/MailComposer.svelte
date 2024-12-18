@@ -141,6 +141,7 @@
   import { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
+  import { selectedAccount } from "../Selected";
   import { getLocalStorage } from "../../Util/LocalStorage";
   import { UserError } from "../../../logic/util/util";
   import { backgroundError, catchErrors, showUserError } from "../../Util/error";
@@ -164,15 +165,12 @@
   import SpellCheckIcon from "lucide-svelte/icons/square-check-big";
   import { tick } from "svelte";
   import { t, gt } from "../../../l10n/l10n";
-  import { appGlobal } from "../../../logic/app";
-  import { selectedAccount } from "../Selected";
 
   export let mail: EMail;
 
   let editor: Editor;
   $: to = mail.to;
   let fromIdentity: MailIdentity;
-  let recipients: PersonUID[] = [];
   let spellcheckEnabled = getLocalStorage("mail.send.spellcheck.enabled", false);
 
   // HACK to reload the HTMLEditor to force it to load the new text
@@ -188,12 +186,13 @@
     }
     lastMail = mail;
 
-    if (mail.from?.emailAddress) {
-      recipients = [mail.from, ...mail.to.contents, ...mail.cc.contents, ...mail.bcc.contents];
-    }
+    fromIdentity = mail.identity ?? $selectedAccount.identities.first;
+    // setAuthor() called
 
-    fromIdentity = MailIdentity.findIdentity(recipients, mail.folder?.account ?? $selectedAccount);
-    checkInvalidRecipients(recipients);
+    if (mail.from?.emailAddress) {
+      let recipients = [mail.from, ...mail.to.contents, ...mail.cc.contents, ...mail.bcc.contents];
+      checkInvalidRecipients(recipients);
+    }
 
     loadText().catch(backgroundError);
   }
@@ -221,9 +220,12 @@
 
   $: fromIdentity && setAuthor()
   function setAuthor() {
-    mail.from = new PersonUID(fromIdentity.emailAddress, fromIdentity.userRealname);
     mail.folder = fromIdentity.account.getSpecialFolder(SpecialFolder.Sent)
       ?? fromIdentity.account.inbox;
+    if (fromIdentity == mail.identity) {
+      return; // don't overwrite concrete email address for catch-all identity
+    }
+    mail.from = fromIdentity.asPersonUID();
   }
 
   function checkInvalidRecipients(recipients: PersonUID[]) {

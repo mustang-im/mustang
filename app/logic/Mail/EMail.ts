@@ -4,6 +4,7 @@ import { Attachment, ContentDisposition } from "./Attachment";
 import type { Tag } from "./Tag";
 import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
+import { MailIdentity } from "./MailIdentity";
 import { Event } from "../Calendar/Event";
 import { Scheduling, type Responses } from "../Calendar/Invitation";
 import { EMailProcessorList, ProcessingStartOn } from "./EMailProccessor";
@@ -79,6 +80,8 @@ export class EMail extends Message {
   needToLoadBody = true;
   @notifyChangedProperty
   haveCID = false;
+  /** For composer only. Optional. */
+  identity: MailIdentity;
 
   constructor(folder: Folder) {
     super();
@@ -474,11 +477,23 @@ export class EMailActions {
     return `${this.email.contact.name} wrote on ${getDate(this.email.sent)}:`;
   }
 
-  _reply(): EMail {
-    this.email.markReplied().catch(this.email.folder.account.errorCallback);
-    let reply = this.email.folder.account.newEMailFrom();
+  protected _reply(): EMail {
+    this.email.markReplied()
+      .catch(this.email.folder.account.errorCallback);
+
+    let account = this.email.folder.account;
+    let reply = account.newEMailFrom();
+    let mail = this.email;
+    let recipients = mail.from?.emailAddress
+      ? [mail.from, ...mail.to.contents, ...mail.cc.contents, ...mail.bcc.contents]
+      : [];
+    let from = MailIdentity.findIdentity(recipients, account);
+    reply.identity = from.identity;
+    reply.from = from.personUID;
+
     reply.subject = "Re: " + this.email.baseSubject; // Do *not* localize "Re: "
     reply.inReplyTo = this.email.messageID;
+
     let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
     let quote = `<p class="quote-header">${this.quotePrefixLine()}</p>
     <blockquote cite="mid:${this.email.id}">
