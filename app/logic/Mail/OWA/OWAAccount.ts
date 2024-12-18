@@ -182,8 +182,14 @@ export class OWAAccount extends MailAccount {
       throw new LoginError(null, "Please login");
     }
     let url = this.url + 'service.svc';
-    // Need to ensure the request gets passed as a regular object
-    let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, aRequest.type || aRequest.__type.slice(0, -21), Object.assign({}, aRequest));
+    let options = {
+      headers: {
+        Action: aRequest.type || aRequest.__type.slice(0, -21),
+      },
+    };
+    // Body needs to get passed via JPC as a regular object, not an object instance
+    let bodyJSON = Object.assign({}, aRequest);
+    let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, options, bodyJSON);
     if ([401, 440].includes(response.status)) {
       await this.logout();
       throw new LoginError(null, "Please login");
@@ -241,12 +247,20 @@ export class OWAAccount extends MailAccount {
   }
 
   async listenForEventsOffice365() {
-    return; // TODO Doesn't work yet
     try {
       // The `connect` endpoint seems to need an access token.
       let request = new OWAGetAccessTokenforResourceRequest(this.url + "notificationchannel/");
       let response = await this.callOWA(request);
-      let options = {
+      let negotiateOptions = {
+        Headers: {
+          Authorization: `Bearer ${response.AccessToken}`,
+        },
+      };
+      let cid = "00000000-0000-0000-0000-000000000000".replace(/0/g, () => Math.floor(Math.random() * 16).toString(16));
+      let url = this.url + "notificationchannel/negotiate?cid=" + cid;
+      response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, negotiateOptions);
+      let json = response.json;
+      let connectOptions = {
         Headers: {
           Accept: "text/event-stream",
           "Cache-Control": "no-cache",
@@ -257,13 +271,13 @@ export class OWAAccount extends MailAccount {
           // (data obtained from the session data object)
         },
       };
-      let cid = "00000000-0000-0000-0000-000000000000".replace(/0/g, () => Math.floor(Math.random() * 16).toString(16));
-      let url = this.url + "notificationchannel/negotiate?cid=" + cid;
-      response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url);
-      let json = response.json;
-      url = `${this.url}notificationchannel/connect?transport=serverSentEvents&cid=${cid}&connectionToken=${json.ConnectionToken}`;
+      url = `${this.url}notificationchannel/start?transport=serverSentEvents&cid=${cid}&connectionToken=${json.ConnectionToken}`;
       // Also tried: url = `${this.url}notificationchannel/connect?transport=serverSentEvents&clientProtocol=1.5&UA=0&cid=${cid}&app=Mail&connectionToken=${json.ConnectionToken}&tid=2`;
-      let stream = await appGlobal.remoteApp.OWA.streamEvents(this.partition, url, options);
+      let stream = await appGlobal.remoteApp.OWA.streamEvents(this.partition, url, connectOptions);
+      console.log("stream", stream.ok ? "OK" : "Failed", "status", stream.status, "statusText", stream.statusText, "stream obj", stream);
+      if (!stream.ok) {
+        throw new Error(stream.status);
+      }
       // At this point, stream.status is always 449 Insufficient client information
       for await (let chunk of stream.body) {
         // This is just a generic error message

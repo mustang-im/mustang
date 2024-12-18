@@ -103,7 +103,7 @@ export async function fetchSessionData(partition: string, url: string, interacti
   return await response.json();
 }
 
-export async function fetchJSON(partition: string, url: string, action: string, request: any) {
+export async function fetchJSON(partition: string, url: string, options: any, bodyJSON: any) {
   let result = {
     ok: false,
     status: 0,
@@ -118,17 +118,13 @@ export async function fetchJSON(partition: string, url: string, action: string, 
     result.status = 401;
     return result;
   }
-  let options = {
-    method: "POST",
-    headers: {},
-  };
+  options ??= {};
+  options.method ??= "POST";
+  options.headers ??= {};
   options.headers[kCanaryName] = cookies[0].value;
-  if (action) {
-    options.headers.Action = action;
-  }
-  if (request) {
+  if (bodyJSON) {
     options.headers["Content-Type"] = "application/json";
-    options.body = JSON.stringify(request);
+    options.body = JSON.stringify(bodyJSON);
   }
   let response = await session.fetch(url, options);
   result.ok = response.ok;
