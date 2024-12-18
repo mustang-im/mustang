@@ -1,4 +1,4 @@
-import { setMainWindow, startupBackend } from '../../../backend/backend';
+import { setMainWindow, startupBackend, shutdownBackend } from '../../../backend/backend';
 import { app, shell, BrowserWindow } from 'electron'
 import { ipcMain } from 'electron/main';
 import { join } from 'path'
@@ -37,6 +37,8 @@ function createWindow(): void {
     mainWindow.on('ready-to-show', () => {
       mainWindow.show()
     })
+
+    mainWindow.on('closed', shutdownBackend);
 
     /** Ensure that new web windows are opened in the browser, not inside our app.
      *
