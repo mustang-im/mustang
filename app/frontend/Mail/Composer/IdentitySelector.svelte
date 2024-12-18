@@ -29,6 +29,13 @@
   /** Allows the user to override the From address with a custom email address.
    * This allows for catch-all email addresses to be used as From: */
   export let customFromAddress: string;
+
+  $: $selectedIdentity?.isCatchAll && setCatchAll($selectedIdentity)
+  function setCatchAll(identity: MailIdentity) {
+    if (identity?.isCatchAll && !identity.isEMailAddress(customFromAddress)) {
+      customFromAddress = identity.emailAddress;
+    }
+  }
 </script>
 
 <style>
