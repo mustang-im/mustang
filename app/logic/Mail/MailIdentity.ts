@@ -41,8 +41,12 @@ export class MailIdentity extends Observable {
     return new PersonUID(this.emailAddress, this.userRealname);
   }
 
+  get isCatchAll(): boolean {
+    return this.emailAddress?.includes("*");
+  }
+
   isEMailAddress(emailAddress: string): boolean {
-    if (this.emailAddress.includes("*")) {
+    if (this.isCatchAll) {
       let sp = this.emailAddress.split("*");
       // Deliberately supporting only 1 `*` placeholder
       return emailAddress.startsWith(sp[0]) && emailAddress.endsWith(sp[1]);

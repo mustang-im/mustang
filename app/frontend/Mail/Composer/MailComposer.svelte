@@ -3,7 +3,7 @@
   <vbox flex class="mail-composer-window">
     <hbox class="window-title-bar">
       <IdentitySelector bind:selectedIdentity={fromIdentity}
-        customFromAddress={fromIdentity?.emailAddress == mail.from?.emailAddress ? null : mail.from?.emailAddress} />
+        bind:customFromAddress={mail.from.emailAddress} />
       <hbox flex class="spacer" />
       <hbox class="close buttons">
         <RoundButton
@@ -289,6 +289,13 @@
       mail.html += `<footer class="signature">${sig}</footer>`;
     }
     mail.headers.set("User-Agent", (appName == "Mustang" ? "" : `Mustang/${appVersion} `) + `${appName}/${appVersion}`);
+
+    if (fromIdentity.isCatchAll && mail.from.emailAddress.includes("*")) {
+      throw new Error(gt`Please fill out * in catch-all From address ${mail.from.emailAddress}`);
+    }
+    if (fromIdentity.isCatchAll && !fromIdentity.isEMailAddress(mail.from.emailAddress)) {
+      throw new Error(gt`From address ${mail.from.emailAddress} does not match the catch-all identity ${fromIdentity.emailAddress}`);
+    }
 
     await mail.send();
     onClose();

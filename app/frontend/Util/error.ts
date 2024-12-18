@@ -38,7 +38,6 @@ export function showUserError(ex: Error, autoDisappearAfterSeconds?: number): { 
 
 function shouldShow(ex: Error): boolean {
   return ex?.message &&
-    !(ex as any).isUserError &&
     !notifications.find(noti => noti.message == ex.message); // don't repeat
 }
 

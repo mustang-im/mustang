@@ -20,7 +20,7 @@
         autofocus={!identity.emailAddress}
         name="emailaddress" class="emailaddress" />
 
-      {#if identity?.emailAddress?.includes("*")}
+      {#if identity?.isCatchAll}
         <hbox />
         <hbox>
           <hbox class="catch-all">{$t`This is a catch-all email address.`}</hbox>

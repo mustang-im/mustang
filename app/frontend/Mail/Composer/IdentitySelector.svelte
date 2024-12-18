@@ -1,8 +1,13 @@
 <hbox class="identity-selector">
-  <select bind:value={selectedIdentity}>
+  {#if selectedIdentity.isCatchAll}
+    <label for="customFrom">{$t`From`}</label>
+    <input type="email" bind:value={customFromAddress}
+      name="customFrom" spellcheck="false" />
+  {/if}
+  <select bind:value={selectedIdentity} class:catch-all={selectedIdentity.isCatchAll}>
     {#each $identities.each as identity }
       <option value={identity}>
-        {customFromAddress && identity == selectedIdentity
+        {identity == selectedIdentity && identity.emailAddress != customFromAddress
           ? customFromAddress
           : identity.name}
       </option>
@@ -12,8 +17,9 @@
 
 <script lang="ts">
   import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
-  import { ArrayColl, type Collection } from "svelte-collections";
   import { appGlobal } from "../../../logic/app";
+  import { ArrayColl, type Collection } from "svelte-collections";
+  import { t } from "../../../l10n/l10n";
 
   export let selectedIdentity: MailIdentity; /* in/out */
    /** Which identities to select from.
@@ -26,9 +32,22 @@
 </script>
 
 <style>
-  .identity-selector :global(select) {
+  .identity-selector {
+    align-items: center;
+  }
+  .identity-selector select {
     border: none;
     color: inherit;
     background-color: transparent;
+  }
+  label {
+    margin-inline-end: 12px;
+  }
+  input {
+    width: 20em;
+  }
+  select.catch-all {
+    width: 20px;
+    height: 100%;
   }
 </style>
