@@ -270,6 +270,10 @@ a:hover {
   text-decoration: underline;
 }
 
+:focus-visible {
+  outline: 2px solid var(--selected-bg);
+}
+
 /* Fastlist */
 
 .fast-list .row.selected > * {
