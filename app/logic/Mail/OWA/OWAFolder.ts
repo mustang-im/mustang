@@ -17,10 +17,9 @@ export class OWAFolder extends Folder {
   }
 
   fromJSON(json: any) {
-    if (this.countTotal != sanitize.integer(json.TotalCount) ||
-        this.countUnread != sanitize.integer(json.UnreadCount)) {
-      this.dirty = true;
-    }
+    // We get hierachy notifications for e.g. flag changes,
+    // so we should always refresh a folder after a notification.
+    this.dirty = true;
     this.id = sanitize.nonemptystring(json.FolderId.Id);
     this.name = sanitize.nonemptystring(json.DisplayName);
     this.countTotal = sanitize.integer(json.TotalCount);
