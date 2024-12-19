@@ -1,0 +1,26 @@
+name: auto-translate
+
+on:
+  workflow_dispatch # manually triggered
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+     
+      - name: Translate strings
+        uses: actions/setup-node@v3
+        with:
+          # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+          node-version: 20.x
+  #        cache: 'npm'
+      - run: cd app/l10n; bash ./auto-translate.sh
+      - name: Commit changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "Auto translations"
+          git push
+      
+  
