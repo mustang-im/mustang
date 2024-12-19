@@ -4,6 +4,7 @@
     slot="left" />
   <SplitterHorizontal slot="right" name="mail.3pane.msgs" initialBottomRatio={2}>
     <vbox flex class="message-list-pane" slot="top">
+      <FolderHeader folder={selectedFolder} {searchMessages} />
       <TableMessageList {messages} bind:selectedMessage bind:selectedMessages />
     </vbox>
     <vbox flex class="message-display-pane" slot="bottom">
@@ -23,6 +24,8 @@
 
   import TableMessageList from "./TableMessageList.svelte";
   import LeftPane from "../LeftPane/LeftPane.svelte";
+  import FolderFooter from "../LeftPane/FolderFooter.svelte";
+  import FolderHeader from "../LeftPane/FolderHeader.svelte";
   import MessageDisplay from "../Message/MessageDisplay.svelte";
   import StartPage from "../StartPage.svelte";
   import Splitter from "../../Shared/Splitter.svelte";

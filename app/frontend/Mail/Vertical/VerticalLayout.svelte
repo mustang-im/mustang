@@ -4,7 +4,9 @@
     slot="left" />
   <Splitter slot="right" name="mail.vertical.msgs" initialRightRatio={2}>
     <vbox flex class="message-list-pane" slot="left">
+      <FolderHeader folder={selectedFolder} {searchMessages} />
       <VerticalMessageList {messages} bind:selectedMessage bind:selectedMessages />
+      <FolderFooter folder={selectedFolder} bind:searchMessages />
     </vbox>
     <vbox flex class="message-display-pane" slot="right">
       {#if selectedMessage}
@@ -25,6 +27,8 @@
   import LeftPane from "../LeftPane/LeftPane.svelte";
   import MessageDisplay from "../Message/MessageDisplay.svelte";
   import StartPage from "../StartPage.svelte";
+  import FolderHeader from "../LeftPane/FolderHeader.svelte";
+  import FolderFooter from "../LeftPane/FolderFooter.svelte";
   import Splitter from "../../Shared/Splitter.svelte";
   import type { ArrayColl, Collection } from 'svelte-collections';
 
