@@ -42,8 +42,8 @@
       await folder.listMessages();
     } catch (ex) {
       if (ex.authFail) {
-        await folder.account.login(true);
-        await folder.listMessages();
+        // await folder.account.login(true);
+        // await folder.listMessages();
       } else {
         showError(ex);
       }

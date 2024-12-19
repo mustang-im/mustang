@@ -1,21 +1,24 @@
-<hbox class="toolbar">
-  <hbox class="urlbar" flex>
-    {getDomain(webviewE?.src ?? " original" + url)}
-  </hbox>
-  <hbox class="buttons right">
-    <hbox class="loading">
-      {#if isLoading}
-        <Loader size="sm" />
-      {/if}
+{#if withURLbar}
+  <hbox class="toolbar">
+    <slot name="urlbar-left" />
+    <hbox class="urlbar" flex>
+      {getDomain(currentURL)}
     </hbox>
-    <RoundButton
-      label={$t`Close`}
-      icon={CloseIcon}
-      on:click={onClose}
-      classes="small"
-      />
+    <hbox class="buttons right">
+      <hbox class="loading">
+        {#if isLoading}
+          <Loader size="sm" />
+        {/if}
+      </hbox>
+      <RoundButton
+        label={$t`Close`}
+        icon={CloseIcon}
+        on:click={onClose}
+        classes="small"
+        />
+    </hbox>
   </hbox>
-</hbox>
+{/if}
 
 <webview bind:this={webviewE} src={url} {title} {partition} />
 
@@ -34,10 +37,11 @@
    */
 
   /** The start webpage to show. */
-  export let url = "";
+  export let url: URLString = "";
   /** Tooltip when hovering */
   export let title: string;
   export let sessionSaveID: string;
+  export let withURLbar = true;
 
   $: partition = sessionSaveID ? "persist:" + sessionSaveID : undefined;
 
@@ -49,11 +53,13 @@
   }
 
   let isLoading = true;
+  let currentURL: URLString = url;
 
   let webviewE: HTMLIFrameElement = null;
   $: webviewE && haveWebView();
   function haveWebView () {
     webviewE.addEventListener("dom-ready", () => {
+      currentURL = webviewE.src;
       dispatch("page-change", webviewE.src);
     });
     webviewE.addEventListener("did-start-loading", () => {
@@ -77,9 +83,10 @@
     background-color: var(--leftbar-bg);
     color: var(--leftbar-fg);
     border-bottom: 1px solid var(--border);
+    align-items: center;
+    padding: 2px 12px;
   }
   .urlbar {
-    align-items: start;
     justify-content: center;
     overflow: hidden;
     overflow-wrap: anywhere;

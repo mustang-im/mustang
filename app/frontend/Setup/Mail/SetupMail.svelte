@@ -16,6 +16,8 @@
       <FoundConfig bind:config {altConfigs} haveError={!!errorMessage} />
     {:else if step == Step.Instructions}
       <Instructions bind:config bind:password />
+    {:else if step == Step.Login}
+      <LoginPage account={config} onContinue={onLoginSucceeded} />
     {:else if step == Step.CheckConfig}
       <CheckConfig {config} {emailAddress} {password}
         on:continue={onCheckConfigSucceeded} on:fail={onCheckConfigFailed} {abort} />
@@ -29,6 +31,7 @@
       errorCallback={showError}
       onReset={reset}
       showReset={step != Step.EmailAddress}
+      showContinue={step != Step.Login}
       canCancel={true}
       onCancel={onClose}
       >
@@ -64,6 +67,7 @@
   import EmailAddressPassword from "./EmailAddressPassword.svelte";
   import FindConfig from "./FindConfig.svelte";
   import FoundConfig from "./FoundConfig.svelte";
+  import LoginPage from "./LoginPage.svelte";
   import CheckConfig from "./CheckConfig.svelte";
   import FinalizeConfig from "./FinalizeConfig.svelte";
   import ManualConfigPage from "../../Settings/Mail/Manual/ManualConfigPage.svelte";
@@ -94,6 +98,7 @@
     RegisterNew = 7,
     ManualConfig = 8,
     Instructions = 9,
+    Login = 10,
   }
   let step: Step = Step.EmailAddress;
   let abort = new AbortController();
@@ -115,6 +120,9 @@
       showError(ex);
       onManualSetup();
     }
+  }
+  function onLoginSucceeded() {
+    step = Step.CheckConfig;
   }
   function onCheckConfigSucceeded() {
     if (step != Step.CheckConfig) {
@@ -165,6 +173,8 @@
       errorMessage = null;
       if (config.setupInstructions) {
         step = Step.Instructions;
+      } else if (config.oAuth2) {
+        step = Step.Login;
       } else {
         step = Step.CheckConfig;
       }

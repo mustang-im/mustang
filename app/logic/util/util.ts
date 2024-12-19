@@ -130,6 +130,7 @@ export class UserError extends Error {
 }
 
 export class UserCancelled extends UserError {
+  doNotShow = true;
   constructor(msg?: string) {
     super(msg ?? "Cancelled");
   }

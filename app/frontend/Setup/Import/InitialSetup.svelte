@@ -3,8 +3,8 @@
   <vbox class="page-box">
     {#if step == Step.SelectAccounts}
       <SelectAccounts bind:accounts={accountCandidates} onContinue={onSelectAccountsContinue} />
-    {:else if step == Step.Password}
-      <Password {account} onContinue={onPasswordContinue} onBack={onPasswordBack} onSkip={onAccountSkip} />
+    {:else if step == Step.Login}
+      <LoginPage {account} onContinue={onPasswordContinue} onBack={onPasswordBack} onSkip={onAccountSkip} />
     {:else if step == Step.FinalizeAccount}
       <FinalizeAccount {account} onContinue={onFinalizeContinue} onBack={onFinalizeBack} />
     {:else if step == Step.SelectAddressBooks}
@@ -22,7 +22,7 @@
   import { openApp } from "../../AppsBar/selectedApp";
   import { mailMustangApp } from "../../Mail/MailMustangApp";
   import SelectAccounts from "./SelectAccounts.svelte";
-  import Password from "./Password.svelte";
+  import LoginPage from "./LoginPage.svelte";
   import FinalizeAccount from "./FinalizeAccount.svelte";
   import BackgroundVideo from "../Shared/BackgroundVideo.svelte";
   import SelectAddressbooks from "./SelectAddressbooks.svelte";
@@ -35,7 +35,7 @@
 
   enum Step {
     SelectAccounts = 1,
-    Password = 2,
+    Login = 2,
     FinalizeAccount = 3,
     SelectAddressBooks = 4,
     Done = 5,
@@ -47,7 +47,7 @@
     if (accounts.length) {
       currentAccountIndex = 0;
       account = accounts[currentAccountIndex];
-      step = Step.Password;
+      step = Step.Login;
     } else {
       step = Step.SelectAddressBooks;
     }
@@ -71,7 +71,7 @@
   }
 
   function onFinalizeBack() {
-    step = Step.Password;
+    step = Step.Login;
   }
 
   function onFinalizeContinue() {
@@ -92,7 +92,7 @@
       return;
     }
     account = accounts[currentAccountIndex];
-    step = Step.Password;
+    step = Step.Login;
   }
 
   function previousAccount() {
@@ -101,7 +101,7 @@
       return;
     }
     account = accounts[currentAccountIndex];
-    step = Step.Password;
+    step = Step.Login;
   }
 </script>
 

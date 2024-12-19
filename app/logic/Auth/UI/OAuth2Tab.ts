@@ -1,6 +1,6 @@
 import { OAuth2UI } from "./OAuth2UI";
 import type { LoginDialogMustangApp } from "../../../frontend/Mail/MailMustangApp";
-import type { URLString } from "../../util/util";
+import { assert, type URLString } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 
 /**
@@ -20,29 +20,35 @@ export class OAuth2Tab extends OAuth2UI {
    */
   async login(): Promise<string> {
     this.startURL = await this.oAuth2.getAuthURL();
-    // console.log("OAuth2 start url", dialog.startURL);
+    // console.log("OAuth2 start url", this.startURL);
+    assert(oAuth2TabsOpen._observers.size, "OAuth2 tab: Observer got lost"); // mailMustangApp.tabsObserver is gone
     oAuth2TabsOpen.add(this);
     return new Promise((resolve, reject) => {
       this.doneFunc = resolve;
       this.failFunc = reject;
     });
   }
-  urlChange(url: URLString) {
+  urlChanged(url: URLString) {
     // console.log("OAuth2 page change to", url);
-    if (this.oAuth2.isAuthDoneURL(url) && this.doneFunc) {
-      try {
-        this.doneFunc(this.oAuth2.getAuthCodeFromDoneURL(url));
-        oAuth2TabsOpen.remove(this);
-      } catch (ex) {
-        this.failed(ex);
-      }
+    if (this.oAuth2.isAuthDoneURL(url)) {
+      this.success(url);
+    }
+  }
+  close() {
+    oAuth2TabsOpen.remove(this);
+  }
+  success(finalURL: URLString) {
+    assert(this.doneFunc, "Need doneFunc");
+    this.close();
+    try {
+      this.doneFunc(this.oAuth2.getAuthCodeFromDoneURL(finalURL));
+    } catch (ex) {
+      this.failed(ex);
     }
   }
   failed(ex: Error) {
-    if (!this.failFunc) {
-      return;
-    }
-    oAuth2TabsOpen.remove(this);
+    assert(this.failFunc, "Need failFunc");
+    this.close();
     this.failFunc(ex);
     this.failFunc = null;
     this.doneFunc = null;

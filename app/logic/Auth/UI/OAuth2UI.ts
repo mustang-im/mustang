@@ -1,5 +1,6 @@
 import { OAuth2 } from "../OAuth2";
-import { assert, AbstractFunction, type URLString } from "../../util/util";
+import { assert, AbstractFunction } from "../../util/util";
+import { Observable } from "../../util/Observable";
 
 /**
  * Shows a login page for OAuth2,
@@ -11,10 +12,11 @@ import { assert, AbstractFunction, type URLString } from "../../util/util";
  * - Opening the system browser, with the login website
  * These mechanisms are implemented as subclasses.
  */
-export class OAuth2UI {
+export class OAuth2UI extends Observable {
   oAuth2: OAuth2;
 
   constructor(oAuth2: OAuth2) {
+    super();
     assert(oAuth2 instanceof OAuth2, "Need OAuth2 object");
     this.oAuth2 = oAuth2;
   }

@@ -2,9 +2,10 @@ import type { EMail } from "../../logic/Mail/EMail";
 import { MustangApp } from "../AppsBar/MustangApp";
 import { openApp } from "../AppsBar/selectedApp";
 import { OAuth2Tab, oAuth2TabsOpen } from "../../logic/Auth/UI/OAuth2Tab";
+import { appGlobal } from "../../logic/app";
 import MailApp from "./MailApp.svelte";
 import MailComposer from "./Composer/MailComposer.svelte";
-import OAuth2TabUI from "../Shared/Auth/OAuth2TabUI.svelte";
+import OAuth2EmbeddedBrowser from "../Shared/Auth/OAuth2EmbeddedBrowser.svelte";
 import mailIcon from '../asset/icon/appBar/mail.svg?raw';
 import EditIcon from "lucide-svelte/icons/pencil";
 import AuthIcon from "lucide-svelte/icons/key-round";
@@ -27,18 +28,20 @@ export class MailMustangApp extends MustangApp {
     openApp(composerApp);
   }
 
-  login(dialog: OAuth2Tab): LoginDialogMustangApp {
+  login(tab: OAuth2Tab): LoginDialogMustangApp {
     let loginApp = new LoginDialogMustangApp();
-    let account = dialog.oAuth2.account;
+    let account = tab.oAuth2.account;
     loginApp.title = derived(account, () => gt`Login to ${account.name}`);
     loginApp.mainWindowProperties = {
-      dialog: dialog,
+      dialog: tab,
     };
     mailMustangApp.subApps.add(loginApp);
     openApp(loginApp);
     return loginApp;
   }
 }
+
+export const mailMustangApp = new MailMustangApp();
 
 export class WriteMailMustangApp extends MustangApp {
   id = "mail-write";
@@ -51,20 +54,20 @@ export class LoginDialogMustangApp extends MustangApp {
   id = "auth-login";
   name = gt`Login`;
   icon = AuthIcon;
-  mainWindow = OAuth2TabUI;
+  mainWindow = OAuth2EmbeddedBrowser;
 }
 
-export const mailMustangApp = new MailMustangApp();
-
-oAuth2TabsOpen.registerObserver({
-  added(dialogs: OAuth2Tab[]) {
-    for (let dialog of dialogs) {
-      dialog.mustangApp = mailMustangApp.login(dialog);
+const tabsObserver = {
+  added(tabs: OAuth2Tab[]) {
+    for (let tab of tabs) {
+      tab.mustangApp = mailMustangApp.login(tab);
     }
   },
-  removed(dialogs) {
-    for (let dialog of dialogs) {
-      mailMustangApp.subApps.remove(dialog.mustangApp);
+  removed(tabs: OAuth2Tab[]) {
+    for (let tab of tabs) {
+      mailMustangApp.subApps.remove(tab.mustangApp);
     }
   },
-});
+};
+oAuth2TabsOpen.registerObserver(tabsObserver);
+(appGlobal as any)._oAuth2TabsObserver = tabsObserver; // HACK to keep it alive
