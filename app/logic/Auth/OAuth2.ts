@@ -1,4 +1,4 @@
-import { newOAuth2UI, OAuth2UIMethod } from "./OAuth2UIMethod";
+import { newOAuth2UI, OAuth2UIMethod } from "./UI/OAuth2UIMethod";
 import { OAuth2Error, OAuth2LoginNeeded, OAuth2ServerError } from "./OAuth2Error";
 import { basicAuth } from "./httpAuth";
 import pkceChallenge from "pkce-challenge";
@@ -321,7 +321,7 @@ export class OAuth2 extends Observable {
     o.uiMethod = sanitize.translate(json.uiMethod, {
       "browser": OAuth2UIMethod.SystemBrowser,
       "window": OAuth2UIMethod.Window,
-      "dialog": OAuth2UIMethod.Dialog,
+      "dialog": OAuth2UIMethod.Tab,
     }, o.uiMethod);
     // You have to set username and password in caller
     return o;

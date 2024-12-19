@@ -1,6 +1,6 @@
 import { OAuth2UI } from "./OAuth2UI";
-import { appGlobal } from "../app";
-import type { URLString } from "../util/util";
+import { appGlobal } from "../../app";
+import type { URLString } from "../../util/util";
 
 /**
  * Opens the OS default browser with the OAuth2 login page,

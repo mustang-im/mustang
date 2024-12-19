@@ -1,5 +1,5 @@
-import { OAuth2 } from "./OAuth2";
-import { assert, AbstractFunction, type URLString } from "../util/util";
+import { OAuth2 } from "../OAuth2";
+import { assert, AbstractFunction, type URLString } from "../../util/util";
 
 /**
  * Shows a login page for OAuth2,

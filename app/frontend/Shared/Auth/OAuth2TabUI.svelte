@@ -7,13 +7,13 @@
   />
 
 <script lang="ts">
-  import type { OAuth2Dialog } from "../../../logic/Auth/OAuth2Dialog";
+  import type { OAuth2Tab } from "../../../logic/Auth/UI/OAuth2Tab";
   import Browser from "../Browser.svelte";
   import { UserCancelled, type URLString, sleep } from "../../../logic/util/util";
   import { onMount } from "svelte";
   import { t } from "../../../l10n/l10n";
 
-  export let dialog: OAuth2Dialog;
+  export let dialog: OAuth2Tab;
 
   let sessionSaveID = "login:" + dialog.oAuth2.account?.id;
 

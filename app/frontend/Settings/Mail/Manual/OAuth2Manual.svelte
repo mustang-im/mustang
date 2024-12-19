@@ -5,7 +5,7 @@
       <label for="ui">{$t`Login UI`}</label>
       <hbox class="ui">
         <select bind:value={oAuth2.uiMethod} required name="ui">
-          <option value={OAuth2UIMethod.Dialog}>{$t`Inside app UI`}</option>
+          <option value={OAuth2UIMethod.Tab}>{$t`Inside app UI`}</option>
           <option value={OAuth2UIMethod.Window}>{$t`Separate window`}</option>
           <option value={OAuth2UIMethod.SystemBrowser}>{$t`Browser`}</option>
         </select>
@@ -38,7 +38,7 @@
 </HeaderGroupBox>
 
 <script lang="ts">
-  import { OAuth2UIMethod } from "../../../../logic/Auth/OAuth2UIMethod";
+  import { OAuth2UIMethod } from "../../../../logic/Auth/UI/OAuth2UIMethod";
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
   import HeaderGroupBox from "../../../Shared/HeaderGroupBox.svelte";
   import { t } from "../../../../l10n/l10n";

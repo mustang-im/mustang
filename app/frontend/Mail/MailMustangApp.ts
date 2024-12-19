@@ -1,10 +1,10 @@
 import type { EMail } from "../../logic/Mail/EMail";
 import { MustangApp } from "../AppsBar/MustangApp";
 import { openApp } from "../AppsBar/selectedApp";
-import { OAuth2Dialog, oAuth2DialogOpen } from "../../logic/Auth/OAuth2Dialog";
+import { OAuth2Tab, oAuth2TabsOpen } from "../../logic/Auth/UI/OAuth2Tab";
 import MailApp from "./MailApp.svelte";
 import MailComposer from "./Composer/MailComposer.svelte";
-import OAuth2DialogUI from "../Shared/Auth/OAuth2DialogUI.svelte";
+import OAuth2TabUI from "../Shared/Auth/OAuth2TabUI.svelte";
 import mailIcon from '../asset/icon/appBar/mail.svg?raw';
 import EditIcon from "lucide-svelte/icons/pencil";
 import AuthIcon from "lucide-svelte/icons/key-round";
@@ -27,7 +27,7 @@ export class MailMustangApp extends MustangApp {
     openApp(composerApp);
   }
 
-  login(dialog: OAuth2Dialog): LoginDialogMustangApp {
+  login(dialog: OAuth2Tab): LoginDialogMustangApp {
     let loginApp = new LoginDialogMustangApp();
     let account = dialog.oAuth2.account;
     loginApp.title = derived(account, () => gt`Login to ${account.name}`);
@@ -51,13 +51,13 @@ export class LoginDialogMustangApp extends MustangApp {
   id = "auth-login";
   name = gt`Login`;
   icon = AuthIcon;
-  mainWindow = OAuth2DialogUI;
+  mainWindow = OAuth2TabUI;
 }
 
 export const mailMustangApp = new MailMustangApp();
 
-oAuth2DialogOpen.registerObserver({
-  added(dialogs: OAuth2Dialog[]) {
+oAuth2TabsOpen.registerObserver({
+  added(dialogs: OAuth2Tab[]) {
     for (let dialog of dialogs) {
       dialog.mustangApp = mailMustangApp.login(dialog);
     }

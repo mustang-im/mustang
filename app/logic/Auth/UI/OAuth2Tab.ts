@@ -1,13 +1,13 @@
 import { OAuth2UI } from "./OAuth2UI";
-import type { LoginDialogMustangApp } from "../../frontend/Mail/MailMustangApp";
-import type { URLString } from "../util/util";
+import type { LoginDialogMustangApp } from "../../../frontend/Mail/MailMustangApp";
+import type { URLString } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 
 /**
  * Opens the OAuth2 login webpage in a dialog within the app main window,
  * monitors the URL changes, and returns the `authCode`.
  */
-export class OAuth2Dialog extends OAuth2UI {
+export class OAuth2Tab extends OAuth2UI {
   startURL: URLString;
   protected doneFunc: (authCode: string) => void;
   protected failFunc: (ex: Error) => void;
@@ -21,7 +21,7 @@ export class OAuth2Dialog extends OAuth2UI {
   async login(): Promise<string> {
     this.startURL = await this.oAuth2.getAuthURL();
     // console.log("OAuth2 start url", dialog.startURL);
-    oAuth2DialogOpen.add(this);
+    oAuth2TabsOpen.add(this);
     return new Promise((resolve, reject) => {
       this.doneFunc = resolve;
       this.failFunc = reject;
@@ -32,7 +32,7 @@ export class OAuth2Dialog extends OAuth2UI {
     if (this.oAuth2.isAuthDoneURL(url) && this.doneFunc) {
       try {
         this.doneFunc(this.oAuth2.getAuthCodeFromDoneURL(url));
-        oAuth2DialogOpen.remove(this);
+        oAuth2TabsOpen.remove(this);
       } catch (ex) {
         this.failed(ex);
       }
@@ -42,11 +42,11 @@ export class OAuth2Dialog extends OAuth2UI {
     if (!this.failFunc) {
       return;
     }
-    oAuth2DialogOpen.remove(this);
+    oAuth2TabsOpen.remove(this);
     this.failFunc(ex);
     this.failFunc = null;
     this.doneFunc = null;
   }
 }
 
-export const oAuth2DialogOpen = new ArrayColl<OAuth2Dialog>();
+export const oAuth2TabsOpen = new ArrayColl<OAuth2Tab>();

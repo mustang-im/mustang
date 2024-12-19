@@ -1,5 +1,5 @@
 import { OAuth2UI } from "./OAuth2UI";
-import { UserCancelled, type URLString, assert } from "../util/util";
+import { UserCancelled, type URLString, assert } from "../../util/util";
 
 /**
  * Opens a new window for OAuth2 login,
