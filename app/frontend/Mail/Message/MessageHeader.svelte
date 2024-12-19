@@ -53,15 +53,15 @@
             </TagSelector>
           </hbox>
         {/if}
-        <value class="date" title={$message.sent?.toLocaleString(getUILocale())}>
-          {getDateString($message.sent)}
-        </value>
       </hbox>
     </vbox>
   </hbox>
   <hbox class="subject-line">
     <value class="subject">{$message.subject}</value>
     <hbox flex />
+    <value class="date" title={$message.sent?.toLocaleString(getUILocale())}>
+      {getDateString($message.sent)}
+    </value>
     <vbox class="display-mode">
       <DisplayModeSwitcher />
     </vbox>
@@ -137,7 +137,7 @@
 <style>
   .message-header {
     min-height: 5em;
-    padding: 12px 20px 8px 20px;
+    padding: 12px 20px 2px 20px;
     box-shadow: 0px -1px 5px 0px rgba(0, 0, 0, 8%);
     z-index: 1;
   }
@@ -149,7 +149,6 @@
   }
   .subject {
     font-weight: 700;
-    margin-block-start: 12px;
   }
   .from {
     font-weight: bold;
@@ -174,11 +173,13 @@
     color: inherit;
   }
   .date {
-    align-self: end;
+    align-self: center;
+    margin-inline-end: 16px;
   }
   .subject-line {
     flex-wrap: wrap;
     justify-content: end;
+    margin-block-start: 8px;
   }
   .display-mode {
     justify-content: end;
