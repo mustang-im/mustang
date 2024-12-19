@@ -102,6 +102,9 @@
   $: catchErrors(() => markMessageAsRead(message, readDelay), backgroundError);
   let readTimeout: NodeJS.Timeout;
   function markMessageAsRead(message: EMail, readDelay: number) {
+    if (message.isRead) {
+      return;
+    }
     if (readDelay < 0) {
       return;
     }
@@ -110,7 +113,8 @@
     }
     clearTimeout(readTimeout);
     readTimeout = setTimeout(() => {
-      message.markRead(true).catch(backgroundError);
+      message.markRead(true)
+        .catch(message.folder.account.errorCallback);
     }, readDelay * 1000);
   }
   onDestroy(() => {
