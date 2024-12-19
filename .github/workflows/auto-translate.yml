@@ -20,7 +20,7 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m "Auto translations"
+          git commit -am "Auto translations"
           git push
       
   
