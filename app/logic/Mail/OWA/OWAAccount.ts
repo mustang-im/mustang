@@ -121,7 +121,7 @@ export class OWAAccount extends MailAccount {
     await calendar.listEvents();
 
     let request = new OWASubscribeToNotificationRequest();
-    this.callOWA(request);
+    await this.callOWA(request);
     if (this.isOffice365()) {
       this.listenForEventsOffice365();
     } else {
@@ -251,34 +251,30 @@ export class OWAAccount extends MailAccount {
       // The `connect` endpoint seems to need an access token.
       let request = new OWAGetAccessTokenforResourceRequest(this.url + "notificationchannel/");
       let response = await this.callOWA(request);
-      let negotiateOptions = {
-        Headers: {
+      let options = {
+        headers: {
+          Accept: "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Last-Event-ID": "null", // TODO Will be needed for reconnection
           Authorization: `Bearer ${response.AccessToken}`,
         },
       };
       let cid = "00000000-0000-0000-0000-000000000000".replace(/0/g, () => Math.floor(Math.random() * 16).toString(16));
       let url = this.url + "notificationchannel/negotiate?cid=" + cid;
-      response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, negotiateOptions);
+      response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url);
       let json = response.json;
-      let connectOptions = {
-        Headers: {
-          Accept: "text/event-stream",
-          "Cache-Control": "no-cache",
-          "Last-Event-ID": "null", // TODO Will be needed for reconnection
-          Authorization: `Bearer ${response.AccessToken}`,
-          // I have also tried this header:
-          // X-AnchorMailbox: PUID:{PUID}@{TID}
-          // (data obtained from the session data object)
-        },
-      };
-      url = `${this.url}notificationchannel/start?transport=serverSentEvents&cid=${cid}&connectionToken=${json.ConnectionToken}`;
-      // Also tried: url = `${this.url}notificationchannel/connect?transport=serverSentEvents&clientProtocol=1.5&UA=0&cid=${cid}&app=Mail&connectionToken=${json.ConnectionToken}&tid=2`;
-      let stream = await appGlobal.remoteApp.OWA.streamEvents(this.partition, url, connectOptions);
+      url = `${this.url}notificationchannel/start?transport=serverSentEvents&cid=${cid}&connectionToken=${encodeURIComponent(json.ConnectionToken)}`;
+      response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url);
+      console.log("response", response.ok ? "OK" : "Failed", "status", response.status, "statusText", response.statusText, "response obj", response);
+      if (!response.ok) {
+        throw new Error(`fetchJSON failed with HTTP {stream.status} {stream.statusText}`);
+      }
+      url = `${this.url}notificationchannel/connect?transport=serverSentEvents&cid=${cid}&connectionToken=${encodeURIComponent(json.ConnectionToken)}`;
+      let stream = await appGlobal.remoteApp.OWA.streamEvents(this.partition, url, options);
       console.log("stream", stream.ok ? "OK" : "Failed", "status", stream.status, "statusText", stream.statusText, "stream obj", stream);
       if (!stream.ok) {
-        throw new Error(stream.status);
+        throw new Error(`streamEvents failed with HTTP {stream.status} {stream.statusText}`);
       }
-      // At this point, stream.status is always 449 Insufficient client information
       for await (let chunk of stream.body) {
         // This is just a generic error message
         console.log("event stream text chunk", chunk);
