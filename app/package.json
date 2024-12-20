@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test": "vitest",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "l10n:extract": "lingui extract",
+    "l10n:extract": "lingui extract --clean",
     "l10n:extract:template": "lingui extract-template",
     "l10n:compile": "lingui compile",
     "l10n:crowdin": "cd l10n && crowdin",
