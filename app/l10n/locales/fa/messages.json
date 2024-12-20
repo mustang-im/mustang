@@ -46,7 +46,7 @@
   "o7dGee": "{0, plural, one { # mail } other { # mails }}",
   "C2EZrZ": "{0}",
   "Gqf8Mi": "",
-  "miUdjW": "{0} new,\n          {1} unread,\n          {2, plural, one { # total message. } other { # total messages. }}",
+  "miUdjW": "{0, plural, other { # new}},\n          {1, plural, other { # unread}},\n          {2, plural, one { # total message. } other { # total messages. }}",
   "EclUNy": "{0} شما نیاز به انجام برخی از مراحل دستی برای تنظیم اولیه",
   "ZDPwq6": "",
   "6y7ykp": "{0} حساب کنفرانس ویدئویی",
