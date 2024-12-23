@@ -88,7 +88,19 @@ export class ActiveSyncPerson extends Person {
         },
       },
     };
-    let response = await this.addressbook.makeSyncRequest(data);
+    let response;
+    try {
+      response = await this.addressbook.makeSyncRequest(data);
+    } catch (ex) {
+      if (ex.type != "Sync" || ex.code != "3") {
+        throw ex;
+      }
+      await this.addressbook.syncContacts();
+      if (this.serverID && !this.addressbook.persons.includes(this)) {
+        throw ex;
+      }
+      response = await this.addressbook.makeSyncRequest(data);
+    }
     if (response.Responses) {
       if (response.Responses.Change) {
         throw new ActiveSyncError("Sync", response.Responses.Change.Status, this.addressbook);
@@ -112,7 +124,19 @@ export class ActiveSyncPerson extends Person {
         },
       },
     };
-    let response = await this.addressbook.makeSyncRequest(data);
+    let response;
+    try {
+      response = await this.addressbook.makeSyncRequest(data);
+    } catch (ex) {
+      if (ex.type != "Sync" || ex.code != "3") {
+        throw ex;
+      }
+      await this.addressbook.syncContacts();
+      if (!this.addressbook.persons.includes(this)) {
+        return; // already deleted
+      }
+      response = await this.addressbook.makeSyncRequest(data);
+    }
     if (response.Responses) {
       throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.addressbook);
     }

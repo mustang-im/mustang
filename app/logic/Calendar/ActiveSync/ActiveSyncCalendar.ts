@@ -20,7 +20,7 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
   }
 
   async ping() {
-    await this.listEvents();
+    await this.syncEvents();
   }
 
   newEvent(parentEvent?: ActiveSyncEvent): ActiveSyncEvent {
@@ -81,6 +81,19 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
       await this.save();
     }
 
+    try {
+      await this.syncEvents();
+    } catch (ex) {
+      if (ex.type != "Sync" || ex.code != "3") {
+        throw ex;
+      }
+      await this.syncEvents();
+    } finally {
+      this.account.addPingable(this);
+    }
+  }
+
+  async syncEvents() {
     let data = {
       WindowSize: String(kMaxCount),
       Options: {

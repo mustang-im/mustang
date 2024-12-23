@@ -20,7 +20,7 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
   }
 
   async ping() {
-    await this.listContacts();
+    await this.syncContacts();
   }
 
   newPerson(): ActiveSyncPerson {
@@ -84,6 +84,19 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
       await this.save();
     }
 
+    try {
+      await this.syncContacts();
+    } catch (ex) {
+      if (ex.type != "Sync" || ex.code != "3") {
+        throw ex;
+      }
+      await this.syncContacts();
+    } finally {
+      this.account.addPingable(this);
+    }
+  }
+
+  async syncContacts() {
     let data = {
       WindowSize: String(kMaxCount),
       Options: {
@@ -121,7 +134,6 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
         }
       }
     });
-    this.account.addPingable(this);
   }
 
   getPersonByServerID(id: string): ActiveSyncPerson | void {

@@ -88,6 +88,20 @@ export class ActiveSyncEMail extends EMail {
     }
   }
 
+  async makeSyncRequest(data: any) {
+    try {
+      return await this.folder.makeSyncRequest(data);
+    } catch (ex) {
+      if (ex.type == "Sync" && ex.code == "3") {
+        await this.folder.syncMessages();
+        if (this.folder.messages.includes(this)) {
+          return await this.folder.makeSyncRequest(data);
+        }
+      }
+      throw ex;
+    }
+  }
+
   async markRead(read = true) {
     let data = {
       GetChanges: "0",
@@ -100,7 +114,7 @@ export class ActiveSyncEMail extends EMail {
         },
       },
     };
-    let response = await this.folder.makeSyncRequest(data);
+    let response = await this.makeSyncRequest(data);
     if (response.Responses) {
       throw new ActiveSyncError("Sync", response.Responses.Change.Status);
     }
@@ -119,7 +133,7 @@ export class ActiveSyncEMail extends EMail {
         },
       },
     };
-    let response = await this.folder.makeSyncRequest(data);
+    let response = await this.makeSyncRequest(data);
     if (response.Responses) {
       throw new ActiveSyncError("Sync", response.Responses.Change.Status, this.folder?.account);
     }
@@ -145,7 +159,19 @@ export class ActiveSyncEMail extends EMail {
         },
       },
     };
-    let response = await this.folder.makeSyncRequest(data);
+    let response;
+    try {
+      response = await this.folder.makeSyncRequest(data);
+    } catch (ex) {
+      if (ex.type != "Sync" || ex.code != "3") {
+        throw ex;
+      }
+      await this.folder.syncMessages();
+      if (!this.folder.messages.includes(this)) {
+        return; // already deleted
+      }
+      response = await this.folder.makeSyncRequest(data);
+    }
     if (response.Responses) {
       throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.folder?.account);
     }
@@ -173,7 +199,7 @@ export class ActiveSyncEMail extends EMail {
         },
       },
     };
-    let response = await this.folder.makeSyncRequest(data);
+    let response = await this.makeSyncRequest(data);
     if (response.Responses) {
       throw new ActiveSyncError("Sync", response.Responses.Change.Status, this.folder?.account);
     }

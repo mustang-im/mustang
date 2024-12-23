@@ -129,7 +129,19 @@ export class ActiveSyncEvent extends Event {
         },
       },
     };
-    let response = await this.calendar.makeSyncRequest(data);
+    let response;
+    try {
+      response = await this.calendar.makeSyncRequest(data);
+    } catch (ex) {
+      if (ex.type != "Sync" || ex.code != "3") {
+        throw ex;
+      }
+      await this.calendar.syncEvents();
+      if (this.serverID && !this.calendar.events.includes(this)) {
+        throw ex;
+      }
+      response = await this.calendar.makeSyncRequest(data);
+    }
     if (response.Responses) {
       if (response.Responses.Change) {
         throw new ActiveSyncError("Sync", response.Responses.Change.Status, this.calendar);
@@ -159,7 +171,19 @@ export class ActiveSyncEvent extends Event {
           },
         },
       };
-      let response = await this.calendar.makeSyncRequest(data);
+      let response;
+      try {
+        response = await this.calendar.makeSyncRequest(data);
+      } catch (ex) {
+        if (ex.type != "Sync" || ex.code != "3") {
+          throw ex;
+        }
+        await this.calendar.syncEvents();
+        if (!this.calendar.events.includes(this)) {
+          return; // already deleted
+        }
+        response = await this.calendar.makeSyncRequest(data);
+      }
       if (response.Responses) {
         throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.calendar);
       }

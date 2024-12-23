@@ -38,7 +38,7 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
   }
 
   async ping() {
-    await this.listMessages();
+    await this.syncMessages();
   }
 
   newEMail(): ActiveSyncEMail {
@@ -132,6 +132,19 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
 
   async listMessages(): Promise<Collection<ActiveSyncEMail>> {
     await this.readFolder();
+    try {
+      return await this.syncMessages();
+    } catch (ex) {
+      if (ex.type != "Sync" || ex.code != "3") {
+        throw ex;
+      }
+      return await this.syncMessages();
+    } finally {
+      this.account.addPingable(this);
+    }
+  }
+
+  async syncMessages(): Promise<Collection<ActiveSyncEMail>> {
     let newMsgs = new ArrayColl<ActiveSyncEMail>();
     let data = {
       WindowSize: String(kMaxCount),
@@ -173,7 +186,6 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
       }
     });
     this.messages.addAll(newMsgs);
-    this.account.addPingable(this);
     return newMsgs;
   }
 
