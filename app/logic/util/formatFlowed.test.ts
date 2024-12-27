@@ -1,4 +1,5 @@
 import { convertFormatFlowedToHTML } from './formatFlowed';
+import markdownit from "markdown-it";
 import formatHTML from 'html-formatter';
 import { expect, test } from 'vitest';
 // @vitest-environment happy-dom
@@ -48,22 +49,42 @@ It works. Feel free to create branches, if you prefer.
 ============== ============ ============ ============ =========<br>
 </p></blockquote>
 </body></html>`,
-    formatFlowed: `
-> Here's some ASCII-art for you:
+    formatFlowed: `> Here's some ASCII-art for you:
 > ============== ============ ============ ============ =========
 > ============== ============ ============ ============ =========
 > ============== ============ ============ ============ =========
 `,
   },
   */
+  {
+    html: `
+  <html><body>
+  <p>Hi</p>
+  <blockquote type="cite">
+  <p><strong>Bold</strong> <em>emphasis</em></p>
+  </blockquote>
+  <p><strong>Bold</strong> <em>emphasis over multiple lines dfgkhgf kfg kjsgfkhg dshgf kahgskfjgds kdjkajsdgkjafkjfkj</em></p>
+</body></html>`,
+    formatFlowed: `Hi
+
+> **Bold** *emphasis*
+
+**Bold** *emphasis over multiple lines dfgkhgf kfg kjsgfkhg dshgf 
+kahgskfjgds kdjkajsdgkjafkjfkj*
+`,
+  },
 ];
 
 test("Convert HTML to format=flowed", () => {
 });
 
 test("Convert format=flowed to HTML", () => {
+  let markdownitInstance = markdownit({
+    linkify: true,
+    breaks: true,
+  });
   for (let testMail of testMails) {
-    let html = convertFormatFlowedToHTML(testMail.formatFlowed, null, false, true);
+    let html = convertFormatFlowedToHTML(testMail.formatFlowed, (plaintext) => markdownitInstance.render(plaintext), false, true);
     expect(formatHTML.render(html)).toBe(formatHTML.render(testMail.html));
   }
 });

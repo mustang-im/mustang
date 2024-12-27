@@ -30,7 +30,7 @@ export function convertHTMLToFormatFlowed(html: string,
  * @param options
  *   @param inlineTextToHTMLConverter Function to run for each paragraph.
  *   @param inline {string} The part within a `<p>`, <div>`, `<br>`.
- *   @returns HTML,
+ *   @returns HTML string,
  *     possibly with inline HTML elements, like `<bold>`, `<a href="">` etc.,
  *     but without block-level elements.
  *   @param delSp {boolean} (Optional, default false)
@@ -115,13 +115,13 @@ export function convertFormatFlowedToHTML(formatFlowed: string,
       continue;
     }
 
-    let pE = document.createElement("p");
-    if (inlineTextToHTMLConverter) {
-      pE.innerHTML = inlineTextToHTMLConverter(textBlock);
+    if (inlineTextToHTMLConverter && line) {
+      currentE.innerHTML += inlineTextToHTMLConverter(textBlock);
     } else {
+      let pE = document.createElement("p");
       pE.textContent = textBlock;
+      currentE.appendChild(pE);
     }
-    currentE.appendChild(pE);
     textBlock = "";
     pClosed = true;
   }
