@@ -54,13 +54,15 @@ export function convertFormatFlowedToHTML(formatFlowed: string,
       }
       line = line.slice(quoteLevel);
       let quoteLevelDifference = quoteLevel - previousQuoteLevel;
+      // console.log("quote level", quoteLevel, "previous", previousQuoteLevel, "diff", quoteLevelDifference);
+      previousQuoteLevel = quoteLevel;
       if (quoteLevelDifference == 0) {
         // do nothing
       } else if (quoteLevelDifference > 0) {
         // add `<blockquote>`
         for (let i = 0; i < quoteLevelDifference; i++) {
           // Close any other block level elements before the quote, e.g. signatures
-          while (currentE.nodeName != "blockquote" && currentE.nodeName != "body" && currentE.parentElement) {
+          while (currentE.nodeName != "BLOCKQUOTE" && currentE.nodeName != "BODY" && currentE.parentElement) {
             currentE = currentE.parentElement;
           }
           let blockquoteE = document.createElement("blockquote");
@@ -72,7 +74,7 @@ export function convertFormatFlowedToHTML(formatFlowed: string,
         // close `<blockquote>`
         for (let i = 0; i < -quoteLevelDifference; i++) {
           // Close any other block level elements within the quote
-          while (currentE.nodeName != "blockquote" && currentE.nodeName != "body" && currentE.parentElement) {
+          while (currentE.nodeName != "BLOCKQUOTE" && currentE.nodeName != "BODY" && currentE.parentElement) {
             currentE = currentE.parentElement;
           }
           assert(currentE.parentElement, "Not enough <blockquote>s");
