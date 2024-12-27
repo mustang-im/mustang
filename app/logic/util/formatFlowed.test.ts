@@ -73,6 +73,47 @@ It works. Feel free to create branches, if you prefer.
 kahgskfjgds kdjkajsdgkjafkjfkj*
 `,
   },
+  /*
+  {
+    html: `
+  <html><body>
+  <p>Hi</p>
+  <blockquote type="cite">
+  <ul>
+  <li>One</li>
+  <li>Two over multiple lines dfgkhgf kfg kjsgfkhg dshgf kahgskfjgds kdjkajsdgkjafkjfkj</li>
+  <li>Three really long word DshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsdDshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsdDshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsd</li>
+  </ul>
+  </blockquote>
+  <p>Start</p>
+  <ul>
+  <li>One</li>
+  <li>Two over multiple lines dfgkhgf kfg kjsgfkhg dshgf kahgskfjgds kdjkajsdgkjafkjfkj</li>
+  <li>Three really long word DshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsdDshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsdDshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsd</li>
+  </ul>
+  <p>End</p>
+</body></html>`,
+    formatFlowed: `Hi
+
+> * One
+> * Two over multiple lines dfgkhgf kfg kjsgfkhg dshgf kahgskfjgds
+>    kdjkajsdgkjafkjfkj
+> * Three really long word
+>    DshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsdDshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsdDshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsd
+  </ul>
+
+Start
+
+* One
+* Two over multiple lines dfgkhgf kfg kjsgfkhg dshgf kahgskfjgds
+   kdjkajsdgkjafkjfkj
+* Three really long word
+   DshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsdDshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsdDshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsd
+
+End
+`,
+  },
+  */
 ];
 
 test("Convert HTML to format=flowed", () => {
