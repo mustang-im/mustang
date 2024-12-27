@@ -46,10 +46,15 @@ function processHTMLElement(currentE: HTMLElement | null, quoteLevel: number, op
   if (tag == "footer") {
     return "-- \n" + processChildNodes(currentE, quoteLevel, options);
   }
-  /*if (tag == "p") {
-    return processChildNodes(currentE, quoteLevel, options) +
-      (options.emptyLineAfterP ? getQuotePrefix(quoteLevel) + " \n" : "");
-  }*/
+  if (tag == "p") {
+    let previousTag = currentE.previousElementSibling?.nodeName?.toLowerCase();
+    let prefixLine = options.emptyLineAfterP && (previousTag == "p" || previousTag == "blockquote");
+    // let nextTag = currentE.nextElementSibling?.nodeName?.toLowerCase();
+    // let suffixLine = false && options.emptyLineAfterP && nextTag != "p" && nextTag != "blockquote";
+    let emptyLine = getQuotePrefix(quoteLevel).trimEnd() + "\n";
+    return (prefixLine ? emptyLine : "") +
+      processChildNodes(currentE, quoteLevel, options);
+  }
   if (tag == "blockquote") {
     quoteLevel++;
   }
