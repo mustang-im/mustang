@@ -58,14 +58,12 @@ export function convertFormatFlowedToHTML(formatFlowed: string,
       line = line.slice(quoteLevel);
     }
     let quoteLevelDifference = quoteLevel - previousQuoteLevel;
-    console.log("quote level", quoteLevel, "previous", previousQuoteLevel, "diff", quoteLevelDifference);
     previousQuoteLevel = quoteLevel;
     if (quoteLevelDifference == 0) {
       // do nothing
     } else if (quoteLevelDifference > 0) {
       // add `<blockquote>`
       for (let i = 0; i < quoteLevelDifference; i++) {
-        console.log("adding quote to", getPath(currentE));
         // Close any other block level elements before the quote, e.g. signatures
         while (currentE.nodeName != "BLOCKQUOTE" && currentE.nodeName != "BODY" && currentE.parentElement) {
           currentE = currentE.parentElement;
@@ -74,20 +72,16 @@ export function convertFormatFlowedToHTML(formatFlowed: string,
         blockquoteE.setAttribute("type", "cite");
         currentE.appendChild(blockquoteE);
         currentE = blockquoteE;
-        console.log("added quote", getPath(currentE));
       }
     } else if (quoteLevelDifference < 0) {
       // close `<blockquote>`
       for (let i = 0; i < -quoteLevelDifference; i++) {
         // Close any other block level elements within the quote
-        console.log("closing quote", getPath(currentE));
         while (currentE.nodeName != "BLOCKQUOTE" && currentE.nodeName != "BODY" && currentE.parentElement) {
           currentE = currentE.parentElement;
         }
         assert(currentE.parentElement, "Not enough <blockquote>s");
-        //console.log("closing blockquote", currentE.parentElement.nodeName, "parent", currentE.parentElement.parentElement.nodeName);
         currentE = currentE.parentElement;
-        console.log("closed quote, now", getPath(currentE));
       }
     }
 
@@ -127,14 +121,14 @@ export function convertFormatFlowedToHTML(formatFlowed: string,
     } else {
       pE.textContent = textBlock;
     }
-    console.log("p", textBlock);
     currentE.appendChild(pE);
     textBlock = "";
     pClosed = true;
   }
 
   // Convert HTML DOM to HTML string
-  return new XMLSerializer().serializeToString(htmlE);
+  return new XMLSerializer().serializeToString(htmlE)
+    .replace(/^<html xmlns="[^"]+">/, "<html>");
 }
 
 function getPath(currentE: HTMLElement): string {
