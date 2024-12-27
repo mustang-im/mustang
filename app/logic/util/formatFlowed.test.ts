@@ -1,5 +1,6 @@
-import { convertFormatFlowedToHTML } from './formatFlowed';
+import { convertFormatFlowedToHTML, convertHTMLToFormatFlowed } from './formatFlowed';
 import markdownit from "markdown-it";
+import { convert as htmlToText } from "html-to-text";
 import formatHTML from 'html-formatter';
 import { expect, test } from 'vitest';
 // @vitest-environment happy-dom
@@ -117,6 +118,26 @@ End
 ];
 
 test("Convert HTML to format=flowed", () => {
+  let formatter = html => htmlToText(html, {
+    formatters: {
+      removeFormatter: () => { },
+    },
+    selectors: [
+      {
+        selector: "img",
+        format: "removeFormatter",
+      },
+      {
+        selector: "style",
+        format: "removeFormatter",
+      },
+    ],
+  });
+
+  for (let testMail of testMails) {
+    let formatFlowed = convertHTMLToFormatFlowed(testMail.html, formatter, true);
+    expect(formatFlowed).toBe(testMail.formatFlowed);
+  }
 });
 
 test("Convert format=flowed to HTML", () => {
@@ -124,8 +145,9 @@ test("Convert format=flowed to HTML", () => {
     linkify: true,
     breaks: true,
   });
+  let formatter = plaintext => markdownitInstance.render(plaintext);
   for (let testMail of testMails) {
-    let html = convertFormatFlowedToHTML(testMail.formatFlowed, (plaintext) => markdownitInstance.render(plaintext), false, true);
+    let html = convertFormatFlowedToHTML(testMail.formatFlowed, formatter, false, true);
     expect(formatHTML.render(html)).toBe(formatHTML.render(testMail.html));
   }
 });

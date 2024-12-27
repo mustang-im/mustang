@@ -19,8 +19,108 @@ export function convertHTMLToFormatFlowed(html: string,
   inlineHTMLToTextConverter: ((inline: any) => string) | null,
   emptyLineAfterP = false,
 ): string {
-
+  let options: ToTextOptions = {
+    inlineHTMLToTextConverter,
+    emptyLineAfterP,
+  };
+  let doc = new DOMParser().parseFromString(html, "text/html");
+  let htmlE = doc.documentElement;
+  return processHTMLElement(htmlE, 0, options);
 }
+
+function processHTMLElement(currentE: HTMLElement | null, quoteLevel: number, options: ToTextOptions): string {
+  if (!currentE) {
+    return "";
+  }
+  let tag = currentE.nodeName.toLowerCase();
+  if (tag == "html") {
+    return processHTMLElement(currentE.querySelector("body"), quoteLevel, options);
+  }
+  if (tag == "b" || tag == "strong") {
+    return "**" + processChildNodes(currentE, quoteLevel, options) + "**";
+  }
+  if (tag == "i" || tag == "em") {
+    return "*" + processChildNodes(currentE, quoteLevel, options) + "*";
+  }
+  if (tag == "footer") {
+    return "-- \n" + processChildNodes(currentE, quoteLevel, options);
+  }
+  /*if (tag == "p") {
+    return processChildNodes(currentE, quoteLevel, options) +
+      (options.emptyLineAfterP ? getQuotePrefix(quoteLevel) + " \n" : "");
+  }*/
+  if (tag == "blockquote") {
+    quoteLevel++;
+  }
+  return processChildNodes(currentE, quoteLevel, options);
+}
+
+function processTextNode(node: Node, quoteLevel: number, options: ToTextOptions): string {
+  if (!node) {
+    return "";
+  }
+  let text: string;
+  if (false && options.inlineHTMLToTextConverter) {
+    text = options.inlineHTMLToTextConverter(node);
+  } else {
+    text = node.textContent?.replaceAll("\n", "") ?? "";
+  }
+
+  let lines: string[] = [];
+  const kMaxLineLength = 75;
+  let maxLength = kMaxLineLength - quoteLevel - (quoteLevel ? 1 : 0);
+  while (text.length > maxLength) {
+    let spacePos = text.lastIndexOf(" ", maxLength);
+    if (spacePos == -1) {
+      spacePos = text.indexOf(" ");
+    }
+    if (spacePos == -1) {
+      break;
+    }
+    let line = text.slice(0, spacePos + 1); // ends with space = flowed line
+    lines.push(line);
+    text = text.slice(spacePos + 1);
+  }
+  lines.push(text.trimEnd()); // does not end with space = paragraph end
+  let quotePrefix = getQuotePrefix(quoteLevel);
+  return quotePrefix + lines.join("\n" + quotePrefix) + "\n";
+}
+
+function processChildNodes(node: Node, quoteLevel: number, options: ToTextOptions): string {
+  let text = "";
+  for (let child of node.childNodes) {
+    if (child.nodeType == child.ELEMENT_NODE) {
+      text += processHTMLElement(child as HTMLElement, quoteLevel, options);
+    } else if (child.nodeType == child.TEXT_NODE) {
+      text += processTextNode(child, quoteLevel, options);
+    }
+  }
+  return text;
+}
+
+function getQuotePrefix(quoteLevel: number): string {
+  let quotePrefix = "";
+  for (let i = 0; i < quoteLevel; i++) {
+    quotePrefix += ">";
+  }
+  if (quoteLevel) {
+    quotePrefix += " ";
+  }
+  return quotePrefix;
+}
+
+
+type ToTextOptions = {
+  inlineHTMLToTextConverter: ((inline: any) => string) | null,
+  emptyLineAfterP: boolean,
+};
+
+type ToHTMLOptions = {
+  inlineTextToHTMLConverter: ((inline: string) => string) | null,
+  delSp: boolean,
+  emptyLineAfterP: boolean,
+};
+
 
 /**
  * Implements format=flowed (RFC 2646, RFC 3676),
