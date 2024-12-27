@@ -8,8 +8,8 @@ import { expect, test } from 'vitest';
 const testMails = [
   {
     html: `
-  <html><body><p>Fred wrote on 19.12.2024, 11:50:</p>
-  <blockquote type="cite"><blockquote type="cite"><p>Yes, that time works for me. Thanks! dfgd sfggsjhj gd lsglskdhg öshdkjgfh sdglkjsdg kshdlkjfgh slkjdhg lkjsdglkj hdsflkjgh slkjhglkjdsh gj ahfgökjh aflgh alkjhg lkjag lkjhadsökjgh adfghkjdg lkjh dgflkh dflkjgh dslhglkjsdhg lkdhgk shdflkjgk</p></blockquote><p>Added to my calendar.
+<html><body><p>Fred wrote on 19.12.2024, 11:50:</p>
+<blockquote type="cite"><blockquote type="cite"><p>Yes, that time works for me. Thanks! dfgd sfggsjhj gd lsglskdhg öshdkjgfh sdglkjsdg kshdlkjfgh slkjdhg lkjsdglkj hdsflkjgh slkjhglkjdsh gj ahfgökjh aflgh alkjhg lkjag lkjhadsökjgh adfghkjdg lkjh dgflkh dflkjgh dslhglkjsdhg lkdhgk shdflkjgk</p></blockquote><p>Added to my calendar.
 </p></blockquote>
 <p>ditto</p>
 <blockquote type="cite"><blockquote type="cite">

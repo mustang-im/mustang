@@ -33,6 +33,7 @@ function processHTMLElement(currentE: HTMLElement | null, quoteLevel: number, op
     return "";
   }
   let tag = currentE.nodeName.toLowerCase();
+  // console.log("processing <" + tag + ">");
   if (tag == "html") {
     return processHTMLElement(currentE.querySelector("body"), quoteLevel, options);
   }
@@ -56,9 +57,10 @@ function processHTMLElement(currentE: HTMLElement | null, quoteLevel: number, op
 }
 
 function processTextNode(node: Node, quoteLevel: number, options: ToTextOptions): string {
-  if (!node) {
+  if (!node || node.textContent?.trim() == "") {
     return "";
   }
+  // console.log("processing text node -" + node.textContent + "-");
   let text: string;
   if (false && options.inlineHTMLToTextConverter) {
     text = options.inlineHTMLToTextConverter(node);
@@ -66,6 +68,7 @@ function processTextNode(node: Node, quoteLevel: number, options: ToTextOptions)
     text = node.textContent?.replaceAll("\n", "") ?? "";
   }
 
+  // Line breaks
   let lines: string[] = [];
   const kMaxLineLength = 75;
   let maxLength = kMaxLineLength - quoteLevel - (quoteLevel ? 1 : 0);
@@ -82,7 +85,18 @@ function processTextNode(node: Node, quoteLevel: number, options: ToTextOptions)
     text = text.slice(spacePos + 1);
   }
   lines.push(text.trimEnd()); // does not end with space = paragraph end
+
+  // Space stuffing of "From"
+  if (!quoteLevel) {
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].startsWith("From")) {
+        lines[i] = " " + lines[i];
+      }
+    }
+  }
+
   let quotePrefix = getQuotePrefix(quoteLevel);
+  // console.log("text " + quotePrefix + lines.join("\n" + quotePrefix));
   return quotePrefix + lines.join("\n" + quotePrefix) + "\n";
 }
 
