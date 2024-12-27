@@ -11,12 +11,9 @@ const testMails = [
 </p></blockquote>
 <p>ditto</p><p>Here's some ASCII-art for you:</p>
 <p>
-
-
 ============== ============ ============ ============ =========<br>
 ============== ============ ============ ============ =========<br>
 ============== ============ ============ ============ =========<br>
-
 </p><blockquote type="cite"><blockquote type="cite">
 <p>What's your name? I tried, but couldn't find you based 
 on your name Dshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsd DshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsdDshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsdDshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsd</p></blockquote><p>fred</p></blockquote><p>It works. Feel free to create branches, if you prefer.</p>
@@ -31,9 +28,9 @@ on your name Dshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsd Ds
 
 ditto
 Here's some ASCII-art for you:
-============== ============ ============ ============ =========<br>
-============== ============ ============ ============ =========<br>
-============== ============ ============ ============ =========<br>
+============== ============ ============ ============ =========
+============== ============ ============ ============ =========
+============== ============ ============ ============ =========
 
 >> What's your name? I tried, but couldn't find you based on your name 
 >> Dshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsd 
@@ -42,6 +39,7 @@ Here's some ASCII-art for you:
 > fred
 
 It works. Feel free to create branches, if you prefer.
+
 
  From Marcha
 `,
@@ -53,7 +51,7 @@ test("Convert HTML to format=flowed", () => {
 
 test("Convert format=flowed to HTML", () => {
   for (let testMail of testMails) {
-    let html = convertFormatFlowedToHTML(testMail.formatFlowed, null);
+    let html = convertFormatFlowedToHTML(testMail.formatFlowed, null, false, true);
     expect(formatHTML.render(html)).toBe(formatHTML.render(testMail.html));
   }
 });

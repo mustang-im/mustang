@@ -39,14 +39,17 @@ export function convertHTMLToFormatFlowed(html: string,
  */
 export function convertFormatFlowedToHTML(formatFlowed: string,
   inlineTextToHTMLConverter: ((inline: string) => string) | null,
-  delSp = false): string {
+  delSp = false,
+  emptyLineAfterP = false
+): string {
   let lines = formatFlowed.split("\n");
   let htmlE: HTMLElement = document.createElement("html");
   let bodyE: HTMLElement = document.createElement("body");
   htmlE.appendChild(bodyE);
+  let currentE: HTMLElement = bodyE;
   let textBlock = ""; // flowing lines wrapped into a single string
   let previousQuoteLevel = 0;
-  let currentE: HTMLElement = bodyE;
+  let pClosed = false;
   for (let line of lines) {
     let quoteLevel = 0;
     if (line.startsWith(">")) {
@@ -113,6 +116,11 @@ export function convertFormatFlowedToHTML(formatFlowed: string,
     // End of flowed lines, or fixed line
     textBlock += line;
 
+    if (emptyLineAfterP && pClosed && !line) {
+      pClosed = false;
+      continue;
+    }
+
     let pE = document.createElement("p");
     if (inlineTextToHTMLConverter) {
       pE.innerHTML = inlineTextToHTMLConverter(textBlock);
@@ -122,6 +130,7 @@ export function convertFormatFlowedToHTML(formatFlowed: string,
     console.log("p", textBlock);
     currentE.appendChild(pE);
     textBlock = "";
+    pClosed = true;
   }
 
   // Convert HTML DOM to HTML string
