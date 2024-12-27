@@ -43,7 +43,7 @@ Here's some ASCII-art for you:
 
 It works. Feel free to create branches, if you prefer.
 
->From Marcha
+ From Marcha
 `,
   }
 ];
