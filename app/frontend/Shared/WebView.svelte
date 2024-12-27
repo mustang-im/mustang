@@ -118,7 +118,7 @@
 
   function addLinkListener() {
     let id = (webviewE as any).getWebContentsId();
-    let url;
+    let url: string;
     appGlobal.remoteApp.addEventListenerWebContents(id, "update-target-url", (eventURL) => {
       url = eventURL;
     });
