@@ -12,9 +12,9 @@ import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { request2WBXML, WBXML2JSON } from "./WBXML";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
-import { ensureArray, assert, NotSupported } from "../../util/util";
+import { ensureArray, assert, NotSupported, sleep, throttleConnectionsPerSecond } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { ArrayColl } from "svelte-collections";
+import { ArrayColl, SetColl } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
 
 const kFolderSyncKeyError = "9";
@@ -36,6 +36,9 @@ export class ActiveSyncAccount extends MailAccount {
   heartbeat = 60;
   maxPings = kMaxCount;
   listening = false;
+  maxConcurrency: number = 20;
+  connections = new SetColl<Promise<any>>;
+  nextConnectionTime = new Array(50).fill(0);
   policyKey: Promise<string> | string;
   syncKeyBusy: Promise<any> | null;
   protocolVersion: string;
@@ -199,6 +202,14 @@ export class ActiveSyncAccount extends MailAccount {
   }
 
   async callEAS(aCommand: string, aRequest: any, heartbeat = 0): Promise<any> {
+    await throttleConnectionsPerSecond(this.nextConnectionTime);
+    while (this.connections.length >= this.maxConcurrency) {
+      console.log(`Throttling because there are ${this.maxConcurrency} pending connections`);
+      try {
+        await Promise.race(this.connections);
+      } catch (ex) {
+      }
+    }
     let url = new URL(this.url);
     url.searchParams.append("Cmd", aCommand);
     url.searchParams.append("User", this.username);
@@ -222,7 +233,14 @@ export class ActiveSyncAccount extends MailAccount {
       options.headers["X-MS-PolicyKey"] = await this.policyKey;
     }
     let wbxml = await request2WBXML({ [aCommand]: aRequest });
-    let response = await appGlobal.remoteApp.postHTTP(String(url), wbxml, "arrayBuffer", options);
+    let connection = appGlobal.remoteApp.postHTTP(String(url), wbxml, "arrayBuffer", options);
+    this.connections.add(connection);
+    let response;
+    try {
+      response = await connection;
+    } finally {
+      this.connections.remove(connection);
+    }
     this.fatalError = null;
     if (response.ok) {
       // ActiveSync short cut for when there are no changes to sync
@@ -244,6 +262,10 @@ export class ActiveSyncAccount extends MailAccount {
       // The Ping command has its own status codes for some reason.
       if (!wbxmljs.Status || wbxmljs.Status == "1" || aCommand == "Ping") {
         return wbxmljs;
+      }
+      if (wbxmljs.Status == "111") {
+        await sleep(5);
+        return await this.callEAS(aCommand, aRequest, heartbeat);
       }
       throw new ActiveSyncError(aCommand, wbxmljs.Status, this);
     }
