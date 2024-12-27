@@ -18,13 +18,13 @@ const testMails = [
 ============== ============ ============ ============ =========<br>
 
 </p><blockquote type="cite"><blockquote type="cite">
-<p>What's your name? I tried, but couldn't find you based
+<p>What's your name? I tried, but couldn't find you based 
 on your name Dshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsd DshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsdDshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsdDshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsd</p></blockquote><p>fred</p></blockquote><p>It works. Feel free to create branches, if you prefer.</p>
 <p></p><p>From Marcha</p></body></html>`,
     formatFlowed: `Fred wrote on 19.12.2024, 11:50:
->> Yes, that time works for me. Thanks! dfgd sfggsjhj gd lsglskdhg
->> öshdkjgfh sdglkjsdg kshdlkjfgh slkjdhg lkjsdglkj hdsflkjgh slkjhglkjdsh
->> gj ahfgökjh aflgh alkjhg lkjag lkjhadsökjgh adfghkjdg lkjh dgflkh
+>> Yes, that time works for me. Thanks! dfgd sfggsjhj gd lsglskdhg 
+>> öshdkjgfh sdglkjsdg kshdlkjfgh slkjdhg lkjsdglkj hdsflkjgh slkjhglkjdsh 
+>> gj ahfgökjh aflgh alkjhg lkjag lkjhadsökjgh adfghkjdg lkjh dgflkh 
 >> dflkjgh dslhglkjsdhg lkdhgk shdflkjgk
 >
 > Added to my calendar.
@@ -35,8 +35,8 @@ Here's some ASCII-art for you:
 ============== ============ ============ ============ =========<br>
 ============== ============ ============ ============ =========<br>
 
->> What's your name? I tried, but couldn't find you based on your name
->> Dshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsd
+>> What's your name? I tried, but couldn't find you based on your name 
+>> Dshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsd 
 >> DshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsdDshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsdDshgsdgsgsdfsdgfhfgjdsghfghjahjgsfhjhjydfhgskdgfkgfkgkhgsdkfhgsd
 >
 > fred
