@@ -48,40 +48,46 @@ export function convertFormatFlowedToHTML(formatFlowed: string,
   let previousQuoteLevel = 0;
   let currentE: HTMLElement = bodyE;
   for (let line of lines) {
+    let quoteLevel = 0;
     if (line.startsWith(">")) {
-      let quoteLevel = 0;
       for (; line[quoteLevel] == ">"; quoteLevel++) {
       }
       line = line.slice(quoteLevel);
-      let quoteLevelDifference = quoteLevel - previousQuoteLevel;
-      // console.log("quote level", quoteLevel, "previous", previousQuoteLevel, "diff", quoteLevelDifference);
-      previousQuoteLevel = quoteLevel;
-      if (quoteLevelDifference == 0) {
-        // do nothing
-      } else if (quoteLevelDifference > 0) {
-        // add `<blockquote>`
-        for (let i = 0; i < quoteLevelDifference; i++) {
-          // Close any other block level elements before the quote, e.g. signatures
-          while (currentE.nodeName != "BLOCKQUOTE" && currentE.nodeName != "BODY" && currentE.parentElement) {
-            currentE = currentE.parentElement;
-          }
-          let blockquoteE = document.createElement("blockquote");
-          blockquoteE.setAttribute("type", "cite");
-          currentE.appendChild(blockquoteE);
-          currentE = blockquoteE;
-        }
-      } else if (quoteLevelDifference < 0) {
-        // close `<blockquote>`
-        for (let i = 0; i < -quoteLevelDifference; i++) {
-          // Close any other block level elements within the quote
-          while (currentE.nodeName != "BLOCKQUOTE" && currentE.nodeName != "BODY" && currentE.parentElement) {
-            currentE = currentE.parentElement;
-          }
-          assert(currentE.parentElement, "Not enough <blockquote>s");
+    }
+    let quoteLevelDifference = quoteLevel - previousQuoteLevel;
+    console.log("quote level", quoteLevel, "previous", previousQuoteLevel, "diff", quoteLevelDifference);
+    previousQuoteLevel = quoteLevel;
+    if (quoteLevelDifference == 0) {
+      // do nothing
+    } else if (quoteLevelDifference > 0) {
+      // add `<blockquote>`
+      for (let i = 0; i < quoteLevelDifference; i++) {
+        console.log("adding quote to", getPath(currentE));
+        // Close any other block level elements before the quote, e.g. signatures
+        while (currentE.nodeName != "BLOCKQUOTE" && currentE.nodeName != "BODY" && currentE.parentElement) {
           currentE = currentE.parentElement;
         }
+        let blockquoteE = document.createElement("blockquote");
+        blockquoteE.setAttribute("type", "cite");
+        currentE.appendChild(blockquoteE);
+        currentE = blockquoteE;
+        console.log("added quote", getPath(currentE));
+      }
+    } else if (quoteLevelDifference < 0) {
+      // close `<blockquote>`
+      for (let i = 0; i < -quoteLevelDifference; i++) {
+        // Close any other block level elements within the quote
+        console.log("closing quote", getPath(currentE));
+        while (currentE.nodeName != "BLOCKQUOTE" && currentE.nodeName != "BODY" && currentE.parentElement) {
+          currentE = currentE.parentElement;
+        }
+        assert(currentE.parentElement, "Not enough <blockquote>s");
+        //console.log("closing blockquote", currentE.parentElement.nodeName, "parent", currentE.parentElement.parentElement.nodeName);
+        currentE = currentE.parentElement;
+        console.log("closed quote, now", getPath(currentE));
       }
     }
+
     if (line == "-- ") {
       let signatureE = document.createElement("footer");
       currentE.appendChild(signatureE);
@@ -113,10 +119,22 @@ export function convertFormatFlowedToHTML(formatFlowed: string,
     } else {
       pE.textContent = textBlock;
     }
+    console.log("p", textBlock);
     currentE.appendChild(pE);
     textBlock = "";
   }
 
   // Convert HTML DOM to HTML string
   return new XMLSerializer().serializeToString(htmlE);
+}
+
+function getPath(currentE: HTMLElement): string {
+  let path: string[] = [];
+  let walkerE = currentE;
+  path.push(walkerE.nodeName);
+  while (walkerE.parentElement) {
+    walkerE = walkerE.parentElement;
+    path.push(walkerE.nodeName);
+  }
+  return path.reverse().join(" > ");
 }
