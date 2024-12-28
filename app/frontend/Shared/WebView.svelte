@@ -98,6 +98,7 @@
         webviewE.addEventListener("did-finish-load", onLoadResize);
       }
       addClickListener();
+      addLinkListener();
     }, { once: true });
 
     // <https://www.electronjs.org/docs/latest/api/webview-tag/#event-context-menu>
@@ -111,6 +112,24 @@
     appGlobal.remoteApp.addEventListenerWebContents(id, "input-event", (event) => {
       if (event.type == "mouseDown") {
         webviewE.click();
+      }
+    });
+  }
+
+  function addLinkListener() {
+    let id = (webviewE as any).getWebContentsId();
+    let url: string;
+    appGlobal.remoteApp.addEventListenerWebContents(id, "update-target-url", (eventURL) => {
+      url = eventURL; // Can also reset `eventURL` to null
+    });
+    appGlobal.remoteApp.addEventListenerWebContents(id, "input-event", (event) => {
+      if (!url) {
+        return;
+      }
+      let modifiers = event.modifiers.map(m => m.toLowerCase());
+      let isLeft = ["left", "leftbuttondown"].some(left => modifiers.some(mod => mod == left));
+      if (isLeft && event.type == "mouseDown") {
+        appGlobal.remoteApp.shell.openExternal(url);
       }
     });
   }
