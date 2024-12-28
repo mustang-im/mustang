@@ -14,7 +14,8 @@ import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { ContentDisposition } from "../Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
-import { assert, sleep, blobToBase64, throttleConnectionsPerSecond, ensureArray } from "../../util/util";
+import { Throttle } from "../../util/Throttle";
+import { assert, sleep, blobToBase64, ensureArray } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { SetColl } from "svelte-collections";
 
@@ -29,7 +30,7 @@ export class EWSAccount extends MailAccount {
   readonly folderMap = new Map<string, EWSFolder>;
   maxConcurrency: number = 20;
   connections = new SetColl<Promise<any>>;
-  nextConnectionTime = new Array(50).fill(0);
+  throttle = new Throttle(50, 1);
 
   constructor() {
     super();
@@ -237,7 +238,7 @@ export class EWSAccount extends MailAccount {
   }
 
   async callEWS(aRequest: JsonRequest): Promise<any> {
-    await throttleConnectionsPerSecond(this.nextConnectionTime);
+    await this.throttle.throttle();
     while (this.connections.length >= this.maxConcurrency) {
       console.log(`Throttling because there are ${this.maxConcurrency} pending connections`);
       try {
