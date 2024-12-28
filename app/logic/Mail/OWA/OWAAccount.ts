@@ -1,6 +1,7 @@
 import { MailAccount, AuthMethod, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { OWAFolder } from "./OWAFolder";
+import { OWAError } from "./OWAError";
 import { newAddressbookForProtocol} from "../../Contacts/AccountsList/Addressbooks";
 import type { OWAAddressbook } from "../../Contacts/OWA/OWAAddressbook";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
@@ -18,25 +19,6 @@ import { notifyChangedProperty } from "../../util/Observable";
 import { blobToBase64 } from "../../util/util";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-
-class OWAError extends Error {
-  constructor(response) {
-    let message = response.message || `HTTP ${response.status} ${response.statusText}`;
-    if (response.json) {
-      let body = response.json.Body || response.json;
-      if (body.FaultMessage) {
-        message = body.FaultMessage;
-      }
-      if (body.ResponseMessages?.Items?.[0]) {
-        body = body.ResponseMessages.Items[0];
-      }
-      if (body.MessageText) {
-        message = body.MessageText;
-      }
-    }
-    super(message);
-  }
-}
 
 export class OWAAccount extends MailAccount {
   readonly protocol: string = "owa";
