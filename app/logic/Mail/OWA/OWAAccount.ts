@@ -202,7 +202,6 @@ export class OWAAccount extends MailAccount {
       result = result.ResponseMessages.Items[0];
     }
     if (this.isThrottleError(result)) {
-      this.throttle.waitForSecond(5);
       return await this.callOWA(aRequest);
     }
     if (result.MessageText) {
@@ -230,7 +229,6 @@ export class OWAAccount extends MailAccount {
     this.url = sessionData.owaURL ?? this.url;
     let result = sessionData.findFolders.Body.ResponseMessages.Items[0];
     if (this.isThrottleError(result)) {
-      this.throttle.waitForSecond(5);
       return await this.listFolders();
     }
     if (result.MessageText) {
@@ -264,6 +262,7 @@ export class OWAAccount extends MailAccount {
         this.semaphore.maxParallel = Math.max(maxConcurrency, minConcurrency);
         console.log(`Server busy, reduced max concurrency to ${this.semaphore.maxParallel}`);
       }
+      this.throttle.waitForSecond(5);
       return true;
     }
     return false;

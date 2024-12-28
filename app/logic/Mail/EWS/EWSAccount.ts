@@ -219,7 +219,10 @@ export class EWSAccount extends MailAccount {
     return options;
   }
 
-  async checkMaxConcurrency(ex: EWSItemError) {
+  isThrottleError(ex: EWSItemError): boolean {
+    if (ex.type != "ErrorServerBusy") {
+      return false;
+    }
     // Check whether the ConcurrentSyncCalls policy was exceeded.
     if (/'ConcurrentSyncCalls'.*'(\d+)'.*'Ews'/.test(ex.message) && Number(RegExp.$1) < this.maxConcurrency) {
       this.maxConcurrency = Number(RegExp.$1);
@@ -234,7 +237,8 @@ export class EWSAccount extends MailAccount {
       milliseconds = 20000; // Sensible upper limit
     }
     console.log(`Server busy, using ${milliseconds}ms backoff time`);
-    await sleep(milliseconds / 1000);
+    this.throttle.waitForSecond(milliseconds / 1000);
+    return true;
   }
 
   async callEWS(aRequest: JsonRequest): Promise<any> {
@@ -260,8 +264,7 @@ export class EWSAccount extends MailAccount {
       try {
         return this.checkResponse(response, aRequest);
       } catch (ex) {
-        if (ex.type == "ErrorServerBusy") {
-          await this.checkMaxConcurrency(ex);
+        if (this.isThrottleError(ex)) {
           return await this.callEWS(aRequest);
         } else {
           throw ex;
