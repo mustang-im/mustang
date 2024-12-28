@@ -120,12 +120,15 @@
     let id = (webviewE as any).getWebContentsId();
     let url: string;
     appGlobal.remoteApp.addEventListenerWebContents(id, "update-target-url", (eventURL) => {
-      url = eventURL;
+      url = eventURL; // Can also reset `eventURL` to null
     });
     appGlobal.remoteApp.addEventListenerWebContents(id, "input-event", (event) => {
+      if (!url) {
+        return;
+      }
       let modifiers = event.modifiers.map(m => m.toLowerCase());
-      let isLeft = ["left", "leftbuttondown"].some(l => modifiers.some(m => m == l));
-      if (event.type == "mouseDown" && isLeft && url) {
+      let isLeft = ["left", "leftbuttondown"].some(left => modifiers.some(mod => mod == left));
+      if (isLeft && event.type == "mouseDown") {
         appGlobal.remoteApp.shell.openExternal(url);
       }
     });
