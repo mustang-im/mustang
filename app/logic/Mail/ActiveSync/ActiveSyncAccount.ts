@@ -43,6 +43,7 @@ export class ActiveSyncAccount extends MailAccount {
   protocolVersion: string;
   throttle = new Throttle(50, 1);
   semaphore = new Semaphore(20);
+  retries = 0;
 
   constructor() {
     super();
@@ -256,6 +257,9 @@ export class ActiveSyncAccount extends MailAccount {
       if (!wbxmljs.Status || wbxmljs.Status == "1" || aCommand == "Ping") {
         return wbxmljs;
       }
+      if (this.isThrottleError(wbxmljs.Status)) {
+        return await this.callEAS(aCommand, aRequest, heartbeat);
+      }
       throw new ActiveSyncError(aCommand, wbxmljs.Status, this);
     }
     if (response.status == 401) {
@@ -272,6 +276,18 @@ export class ActiveSyncAccount extends MailAccount {
       }
     }
     throw new Error(`HTTP ${response.status} ${response.statusText}`);
+  }
+
+  isThrottleError(status: string): boolean {
+    if (status == "111") { // Retryable server error
+      if (++this.retries > 5) {
+        return false;
+      }
+      this.throttle.waitForSecond(5);
+      return true;
+    }
+    this.retries = 0;
+    return false;
   }
 
   /**
