@@ -324,6 +324,9 @@ export class OWAAccount extends MailAccount {
         TotalCount: notification.itemCount,
         UnreadCount: notification.unreadCount,
       });
+      // We get hierachy notifications for e.g. flag changes,
+      // so we should always refresh a folder after a notification.
+      folder.dirty = true;
     } catch (ex) {
       this.errorCallback(ex);
     }
