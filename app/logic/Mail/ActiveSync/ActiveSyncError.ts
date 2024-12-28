@@ -59,7 +59,7 @@ const globalMessages: Record<number, string> = {
   142: "Application not provisioned",
   143: "Policy refresh required",
   144: "Policy key invalid",
-  145: "Applcation not allowed",
+  145: "Application not allowed",
   146: "No such occurrence in calendar",
   147: "Unexpected item class",
   148: "Back end server requires SSL",
