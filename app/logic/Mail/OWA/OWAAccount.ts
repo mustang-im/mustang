@@ -197,6 +197,7 @@ export class OWAAccount extends MailAccount {
       throw new Error(response.message);
     }
     if (!response.ok) {
+      this.throttle.waitForSecond(1);
       throw new OWAError(response);
     }
     let result = response.json;
@@ -210,6 +211,7 @@ export class OWAAccount extends MailAccount {
       return await this.callOWA(aRequest);
     }
     if (result.MessageText) {
+      this.throttle.waitForSecond(1);
       throw new OWAError(response);
     }
     return result;

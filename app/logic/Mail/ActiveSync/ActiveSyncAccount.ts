@@ -260,6 +260,7 @@ export class ActiveSyncAccount extends MailAccount {
       if (this.isThrottleError(wbxmljs.Status)) {
         return await this.callEAS(aCommand, aRequest, heartbeat);
       }
+      this.throttle.waitForSecond(1);
       throw new ActiveSyncError(aCommand, wbxmljs.Status, this);
     }
     if (response.status == 401) {
@@ -275,6 +276,7 @@ export class ActiveSyncAccount extends MailAccount {
           "Password incorrect");
       }
     }
+    this.throttle.waitForSecond(1);
     throw new Error(`HTTP ${response.status} ${response.statusText}`);
   }
 

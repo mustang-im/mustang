@@ -259,6 +259,7 @@ export class EWSAccount extends MailAccount {
         if (this.isThrottleError(ex)) {
           return await this.callEWS(aRequest);
         } else {
+          this.throttle.waitForSecond(1);
           throw ex;
         }
       }
@@ -276,6 +277,7 @@ export class EWSAccount extends MailAccount {
           "Password incorrect");
       }
     } else {
+      this.throttle.waitForSecond(1);
       throw new EWSError(response, aRequest);
     }
   }
