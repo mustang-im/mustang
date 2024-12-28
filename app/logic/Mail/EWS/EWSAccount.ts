@@ -15,7 +15,8 @@ import { ContentDisposition } from "../Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { Throttle } from "../../util/Throttle";
-import { assert, sleep, blobToBase64, ensureArray } from "../../util/util";
+import { Semaphore } from "../../util/Semaphore";
+import { assert, blobToBase64, ensureArray } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { SetColl } from "svelte-collections";
 
@@ -28,9 +29,8 @@ export class EWSAccount extends MailAccount {
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
   readonly folderMap = new Map<string, EWSFolder>;
-  maxConcurrency: number = 20;
-  connections = new SetColl<Promise<any>>;
   throttle = new Throttle(50, 1);
+  semaphore = new Semaphore(20);
 
   constructor() {
     super();
@@ -243,20 +243,12 @@ export class EWSAccount extends MailAccount {
 
   async callEWS(aRequest: JsonRequest): Promise<any> {
     await this.throttle.throttle();
-    while (this.connections.length >= this.maxConcurrency) {
-      console.log(`Throttling because there are ${this.maxConcurrency} pending connections`);
-      try {
-        await Promise.race(this.connections);
-      } catch (ex) {
-      }
-    }
-    let connection = appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions());
-    this.connections.add(connection);
-    let response;
+    let lock = await this.semaphore.lock();
+    let response: any;
     try {
-      response = await connection;
+      response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions());
     } finally {
-      this.connections.remove(connection);
+      lock.release();
     }
     response.responseXML = this.parseXML(response.data);
     this.fatalError = null;
