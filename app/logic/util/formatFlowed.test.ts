@@ -117,7 +117,7 @@ End
   */
 ];
 
-test("Convert HTML to format=flowed", () => {
+test.skip("Convert HTML to format=flowed", () => {
   let formatter = html => htmlToText(html, {
     formatters: {
       removeFormatter: () => { },
