@@ -230,11 +230,62 @@ export async function streamEvents(partition: string, url: string, options: any)
   result.ok = response.ok;
   result.status = response.status;
   result.statusText = response.statusText;
-  // XXX TODO pipe through event decoder stream
-  result.body = response.body.pipeThrough(new TextDecoderStream());
+  result.body = response.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()));
   return result;
 }
 
 export async function clearStorageData(partition: string) {
   await Session.fromPartition(partition).clearStorageData();
+}
+
+function newEvent() {
+  return {
+    name: 'message',
+    data: '',
+    id: '',
+    retry: 0,
+  };
+}
+
+class EventDecoder {
+  data = '';
+  event = newEvent();
+  transform(chunk, controller) {
+    this.data += chunk;
+    let lines = this.data.split(/\r\n?|\n/);
+    this.data = lines.pop();
+    for (let line of lines) {
+      if (!line) {
+        this.event.data = this.event.data.slice(0, -1);
+        controller.enqueue(this.event);
+        this.event = newEvent();
+        continue;
+      }
+      let value = '';
+      let pos = line.indexOf(":");
+      if (pos != -1) {
+        value = line.slice(pos + 1);
+        if (value[0] == ' ') {
+          value = value.slice(1);
+        }
+        line = line.slice(0, pos);
+      }
+      switch (line) {
+      case 'event':
+        this.event.name = value;
+        break;
+      case 'data':
+        this.event.data += value + "\n";
+        break;
+      case 'id':
+        this.event.id = value;
+        break;
+      case 'retry':
+        if (!Number.isInteger(value)) {
+          this.event.retry = Number(value);
+        }
+        break;
+      }
+    }
+  }
 }

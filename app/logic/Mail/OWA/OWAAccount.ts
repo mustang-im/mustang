@@ -2,6 +2,9 @@ import { MailAccount, AuthMethod, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { OWAFolder } from "./OWAFolder";
 import { OWAError } from "./OWAError";
+import type { OWANotifications } from "./OWANotifications";
+import { OWAExchangeNotifications } from "./OWAExchangeNotifications";
+import { OWAOffice365Notifications } from "./OWAOffice365Notifications";
 import { newAddressbookForProtocol} from "../../Contacts/AccountsList/Addressbooks";
 import type { OWAAddressbook } from "../../Contacts/OWA/OWAAddressbook";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
@@ -34,6 +37,7 @@ export class OWAAccount extends MailAccount {
   msgFolderRootID: string | void;
   @notifyChangedProperty
   hasLoggedIn = false;
+  protected notifications: OWANotifications;
   throttle = new Throttle(50, 1);
   semaphore = new Semaphore(20);
 
@@ -107,12 +111,13 @@ export class OWAAccount extends MailAccount {
     await calendar.listEvents();
 
     let request = new OWASubscribeToNotificationRequest();
-    this.callOWA(request);
-    if (this.isOffice365()) {
-      this.listenForEventsOffice365();
-    } else {
-      this.listenForEventsExchange();
-    }
+    await this.callOWA(request);
+
+    this.notifications = this.isOffice365()
+      ? new OWAOffice365Notifications(this)
+      : new OWAExchangeNotifications(this);
+    this.notifications.start()
+      .catch(this.errorCallback);
   }
 
   async logout(): Promise<void> {
@@ -273,97 +278,29 @@ export class OWAAccount extends MailAccount {
     return hostname == "outlook.office.com" || hostname == "outlook.live.com";
   }
 
-  async listenForEventsOffice365() {
-    try {
-      // The `connect` endpoint seems to need an access token.
-      let request = new OWAGetAccessTokenforResourceRequest(this.url + "notificationchannel/");
-      let response = await this.callOWA(request);
-      let negotiateOptions = {
-        Headers: {
-          Authorization: `Bearer ${response.AccessToken}`,
-        },
-      };
-      let cid = "00000000-0000-0000-0000-000000000000".replace(/0/g, () => Math.floor(Math.random() * 16).toString(16));
-      let url = this.url + "notificationchannel/negotiate?cid=" + cid;
-      response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, negotiateOptions);
-      let json = response.json;
-      let connectOptions = {
-        Headers: {
-          Accept: "text/event-stream",
-          "Cache-Control": "no-cache",
-          "Last-Event-ID": "null", // TODO Will be needed for reconnection
-          Authorization: `Bearer ${response.AccessToken}`,
-          // I have also tried this header:
-          // X-AnchorMailbox: PUID:{PUID}@{TID}
-          // (data obtained from the session data object)
-        },
-      };
-      url = `${this.url}notificationchannel/start?transport=serverSentEvents&cid=${cid}&connectionToken=${json.ConnectionToken}`;
-      // Also tried: url = `${this.url}notificationchannel/connect?transport=serverSentEvents&clientProtocol=1.5&UA=0&cid=${cid}&app=Mail&connectionToken=${json.ConnectionToken}&tid=2`;
-      let stream = await appGlobal.remoteApp.OWA.streamEvents(this.partition, url, connectOptions);
-      console.log("stream", stream.ok ? "OK" : "Failed", "status", stream.status, "statusText", stream.statusText, "stream obj", stream);
-      if (!stream.ok) {
-        throw new Error(stream.status);
-      }
-      // At this point, stream.status is always 449 Insufficient client information
-      for await (let chunk of stream.body) {
-        // This is just a generic error message
-        console.log("event stream text chunk", chunk);
-      }
-    } catch (ex) {
-      this.errorCallback(ex);
-    }
-  }
-
-  async listenForEventsExchange() {
-    try {
-      // handle logout
-      // add throttle
-      let url = this.url + "ev.owa2?ns=PendingRequest&ev=FinishNotificationRequest&UA=0";
-      let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url);
-      let json = response.json;
-      let cid = json.cid;
-      // This loop only ends by exception (e.g. logout) or app shutdown.
-      while (true) {
-        url = this.url + "ev.owa2?ns=PendingRequest&ev=PendingNotificationRequest&UA=0&cid=" + cid + "&X-OWA-CANARY=";
-        let stream = await appGlobal.remoteApp.OWA.streamJSON(this.partition, url);
-        if (!stream.ok) {
-          console.error(`streamJSON failed with HTTP {stream.status} {stream.statusText}`);
+  async onNotificationMessages(messages: any[][]) {
+    let newMessageIDs: string[] = [];
+    for (let message of messages) {
+      for (let notification of message) {
+        switch (notification.id) {
+        case "HierarchyNotification":
+          this.handleHierarchyNotification(notification);
+          break;
+        case "NewMailNotification":
+          newMessageIDs.push(notification.ItemId);
+          break;
+        default:
+          //console.log(notification);
           break;
         }
-        for await (let chunk of stream.body) {
-          // Avoid racing with ourselves, if we caused the notification.
-          await new Promise(resolve => setTimeout(resolve, 100));
-          let matches = chunk.match(/<script>.*?<\/script>/g);
-          if (matches) {
-            let newMessageIDs: string[] = [];
-            for (let match of matches) {
-              let script = match.slice(8, -9);
-              if (script.startsWith("[")) {
-                for (let notification of JSON.parse(script)) {
-                  switch (notification.id) {
-                  case "HierarchyNotification":
-                    this.handleHierarchyNotification(notification);
-                    break;
-                  case "NewMailNotification":
-                    newMessageIDs.push(notification.ItemId);
-                    break;
-                  }
-                }
-              }
-            }
-            if (newMessageIDs.length) {
-              let inbox = this.inbox as OWAFolder;
-              let newMessages = await inbox.getNewMessageHeaders(newMessageIDs);
-              inbox.messages.addAll(newMessages);
-              inbox.downloadMessages(newMessages);
-              inbox.dirty = false; // probably
-            }
-          }
-        }
       }
-    } catch (ex) {
-      this.errorCallback(ex);
+    }
+    if (newMessageIDs.length) {
+      let inbox = this.inbox as OWAFolder;
+      let newMessages = await inbox.getNewMessageHeaders(newMessageIDs);
+      inbox.messages.addAll(newMessages);
+      inbox.downloadMessages(newMessages);
+      inbox.dirty = false; // probably
     }
   }
 
@@ -429,18 +366,5 @@ class OWASubscribeToNotificationRequest {
 
   get type() {
     return "SubscribeToNotification";
-  }
-}
-
-class OWAGetAccessTokenforResourceRequest {
-  readonly __type = "TokenRequest:#Exchange";
-  readonly Resource: string;
-
-  constructor(url: string) {
-    this.Resource = url;
-  }
-
-  get type() {
-    return "GetAccessTokenforResource";
   }
 }
