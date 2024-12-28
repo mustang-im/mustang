@@ -22,7 +22,6 @@ import { notifyChangedProperty } from "../../util/Observable";
 import { blobToBase64 } from "../../util/util";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { notifications } from "../../../frontend/MainWindow/Notification";
 
 export class OWAAccount extends MailAccount {
   readonly protocol: string = "owa";
@@ -38,6 +37,7 @@ export class OWAAccount extends MailAccount {
   msgFolderRootID: string | void;
   @notifyChangedProperty
   hasLoggedIn = false;
+  protected notifications: OWANotifications;
   throttle = new Throttle(50, 1);
   semaphore = new Semaphore(20);
 
@@ -113,11 +113,10 @@ export class OWAAccount extends MailAccount {
     let request = new OWASubscribeToNotificationRequest();
     await this.callOWA(request);
 
-    let notifications: OWANotifications =
-      this.isOffice365()
+    this.notifications = this.isOffice365()
       ? new OWAOffice365Notifications(this)
       : new OWAExchangeNotifications(this);
-    notifications.start()
+    this.notifications.start()
       .catch(this.errorCallback);
   }
 
