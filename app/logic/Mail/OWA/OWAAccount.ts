@@ -1,7 +1,9 @@
 import { MailAccount, AuthMethod, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { OWAFolder } from "./OWAFolder";
-import { Office365Notifications, ExchangeNotifications } from "./OWANotifications";
+import type { OWANotifications } from "./OWANotifications";
+import { OWAExchangeNotifications } from "./OWAExchangeNotifications";
+import { OWAOffice365Notifications } from "./OWAOffice365Notifications";
 import { newAddressbookForProtocol} from "../../Contacts/AccountsList/Addressbooks";
 import type { OWAAddressbook } from "../../Contacts/OWA/OWAAddressbook";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
@@ -17,6 +19,7 @@ import { notifyChangedProperty } from "../../util/Observable";
 import { blobToBase64 } from "../../util/util";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
+import { notifications } from "../../../frontend/MainWindow/Notification";
 
 class OWAError extends Error {
   constructor(response) {
@@ -123,7 +126,13 @@ export class OWAAccount extends MailAccount {
 
     let request = new OWASubscribeToNotificationRequest();
     await this.callOWA(request);
-    new (this.isOffice365() ? Office365Notifications : ExchangeNotifications)(this).start().catch(this.errorCallback);
+
+    let notifications: OWANotifications =
+      this.isOffice365()
+      ? new OWAOffice365Notifications(this)
+      : new OWAExchangeNotifications(this);
+    notifications.start()
+      .catch(this.errorCallback);
   }
 
   async logout(): Promise<void> {
