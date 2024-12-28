@@ -67,16 +67,6 @@ export function fileExtensionForMIMEType(mimetype: string) {
   return ".ext";
 }
 
-export async function throttleConnectionsPerSecond(nextConnectionTime: number[]) {
-  let milliseconds = Date.now();
-  nextConnectionTime.push(milliseconds + 1000);
-  milliseconds = nextConnectionTime.shift() - milliseconds;
-  if (milliseconds > 0) {
-    console.log(`Throttling for ${milliseconds}ms because there were ${nextConnectionTime.length} connections in the last second`);
-    await sleep(milliseconds / 1000);
-  }
-}
-
 /** Abstract class as base class for allowing more specific error classes */
 export class SpecificError extends Error {
   constructor(ex: Error, message: string) {

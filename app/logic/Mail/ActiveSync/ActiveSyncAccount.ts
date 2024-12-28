@@ -12,7 +12,9 @@ import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { request2WBXML, WBXML2JSON } from "./WBXML";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
-import { ensureArray, assert, NotSupported } from "../../util/util";
+import { Throttle } from "../../util/Throttle";
+import { Semaphore } from "../../util/Semaphore";
+import { ensureArray, assert, NotSupported, sleep } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
@@ -39,6 +41,9 @@ export class ActiveSyncAccount extends MailAccount {
   policyKey: Promise<string> | string;
   syncKeyBusy: Promise<any> | null;
   protocolVersion: string;
+  throttle = new Throttle(50, 1);
+  semaphore = new Semaphore(20);
+  retries = 0;
 
   constructor() {
     super();
@@ -222,7 +227,14 @@ export class ActiveSyncAccount extends MailAccount {
       options.headers["X-MS-PolicyKey"] = await this.policyKey;
     }
     let wbxml = await request2WBXML({ [aCommand]: aRequest });
-    let response = await appGlobal.remoteApp.postHTTP(String(url), wbxml, "arrayBuffer", options);
+    await this.throttle.throttle();
+    let lock = await this.semaphore.lock();
+    let response: any;
+    try {
+      response = await appGlobal.remoteApp.postHTTP(String(url), wbxml, "arrayBuffer", options);
+    } finally {
+      lock.release();
+    }
     this.fatalError = null;
     if (response.ok) {
       // ActiveSync short cut for when there are no changes to sync
@@ -245,6 +257,9 @@ export class ActiveSyncAccount extends MailAccount {
       if (!wbxmljs.Status || wbxmljs.Status == "1" || aCommand == "Ping") {
         return wbxmljs;
       }
+      if (this.isThrottleError(wbxmljs.Status)) {
+        return await this.callEAS(aCommand, aRequest, heartbeat);
+      }
       throw new ActiveSyncError(aCommand, wbxmljs.Status, this);
     }
     if (response.status == 401) {
@@ -261,6 +276,18 @@ export class ActiveSyncAccount extends MailAccount {
       }
     }
     throw new Error(`HTTP ${response.status} ${response.statusText}`);
+  }
+
+  isThrottleError(status: string): boolean {
+    if (status == "111") { // Retryable server error
+      if (++this.retries > 5) {
+        return false;
+      }
+      this.throttle.waitForSecond(5);
+      return true;
+    }
+    this.retries = 0;
+    return false;
   }
 
   /**

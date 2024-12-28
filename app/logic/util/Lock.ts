@@ -55,13 +55,10 @@ export class Lock {
   async lock(): Promise<Locked> {
     let locked = new Locked();
     locked.wasWaiting = this.haveWaiting;
-    locked._promise = new Promise(resolve => {
-      locked._resolve = resolve;
-    });
     let lastWaiting = this.waiting[this.waiting.length - 1];
     this.waiting.push(locked);
-    // `resolve()` in `Locked.release()`
     if (locked.wasWaiting) {
+      // `resolve()` in `Locked.release()`
       await lastWaiting._promise; // wait for `release()` to be called on the other lock
       let removed = this.waiting.shift(); // remove next
       assert(removed == lastWaiting, "Lock implementation logic error: I am not the currently waiting lock");
@@ -79,6 +76,12 @@ export class Locked {
   wasWaiting: boolean;
   _promise: Promise<null>;
   _resolve: (value: null) => void;
+
+  constructor() {
+    this._promise = new Promise(resolve => {
+      this._resolve = resolve;
+    });
+  }
 
   release(): void {
     this._resolve(null);

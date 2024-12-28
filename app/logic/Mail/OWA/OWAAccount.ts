@@ -1,6 +1,7 @@
 import { MailAccount, AuthMethod, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { OWAFolder } from "./OWAFolder";
+import { OWAError } from "./OWAError";
 import type { OWANotifications } from "./OWANotifications";
 import { OWAExchangeNotifications } from "./OWAExchangeNotifications";
 import { OWAOffice365Notifications } from "./OWAOffice365Notifications";
@@ -15,30 +16,13 @@ import type { PersonUID } from "../../Abstract/PersonUID";
 import { ContentDisposition } from "../Attachment";
 import { LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
+import { Semaphore } from "../../util/Semaphore";
+import { Throttle } from "../../util/Throttle";
 import { notifyChangedProperty } from "../../util/Observable";
 import { blobToBase64 } from "../../util/util";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { notifications } from "../../../frontend/MainWindow/Notification";
-
-class OWAError extends Error {
-  constructor(response) {
-    let message = response.message || `HTTP ${response.status} ${response.statusText}`;
-    if (response.json) {
-      let body = response.json.Body || response.json;
-      if (body.FaultMessage) {
-        message = body.FaultMessage;
-      }
-      if (body.ResponseMessages?.Items?.[0]) {
-        body = body.ResponseMessages.Items[0];
-      }
-      if (body.MessageText) {
-        message = body.MessageText;
-      }
-    }
-    super(message);
-  }
-}
 
 export class OWAAccount extends MailAccount {
   readonly protocol: string = "owa";
@@ -54,6 +38,8 @@ export class OWAAccount extends MailAccount {
   msgFolderRootID: string | void;
   @notifyChangedProperty
   hasLoggedIn = false;
+  throttle = new Throttle(50, 1);
+  semaphore = new Semaphore(20);
 
   constructor() {
     super();
@@ -195,7 +181,14 @@ export class OWAAccount extends MailAccount {
     };
     // Body needs to get passed via JPC as a regular object, not an object instance
     let bodyJSON = Object.assign({}, aRequest);
-    let response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, options, bodyJSON);
+    await this.throttle.throttle();
+    let lock = await this.semaphore.lock();
+    let response: any;
+    try {
+      response = await appGlobal.remoteApp.OWA.fetchJSON(this.partition, url, options, bodyJSON);
+    } finally {
+      lock.release();
+    }
     if ([401, 440].includes(response.status)) {
       await this.logout();
       throw new LoginError(null, "Please login");
@@ -214,6 +207,9 @@ export class OWAAccount extends MailAccount {
     if (result.ResponseMessages?.Items?.length == 1) {
       result = result.ResponseMessages.Items[0];
     }
+    if (this.isThrottleError(result)) {
+      return await this.callOWA(aRequest);
+    }
     if (result.MessageText) {
       throw new OWAError(response);
     }
@@ -225,12 +221,26 @@ export class OWAAccount extends MailAccount {
     if (interactive) {
       autofillJS = owaAutoFillLoginPage(this.username, this.password);
     }
-    let sessionData = await appGlobal.remoteApp.OWA.fetchSessionData(this.partition, this.url, interactive, autofillJS);
+    await this.throttle.throttle();
+    let lock = await this.semaphore.lock();
+    let sessionData: any;
+    try {
+      sessionData = await appGlobal.remoteApp.OWA.fetchSessionData(this.partition, this.url, interactive, autofillJS);
+    } finally {
+      lock.release();
+    }
     if (!sessionData) {
       throw new Error("Authentication window was closed by user");
     }
     this.url = sessionData.owaURL ?? this.url;
-    this.msgFolderRootID = sessionData.findFolders.Body.ResponseMessages.Items[0].RootFolder.ParentFolder.FolderId.Id;
+    let result = sessionData.findFolders.Body.ResponseMessages.Items[0];
+    if (this.isThrottleError(result)) {
+      return await this.listFolders();
+    }
+    if (result.MessageText) {
+      throw new Error(result.MessageText);
+    }
+    this.msgFolderRootID = result.RootFolder.ParentFolder.FolderId.Id;
     for (let folder of sessionData.findFolders.Body.ResponseMessages.Items[0].RootFolder.Folders) {
       if (!folder.FolderClass || folder.FolderClass == "IPF.Note" || folder.FolderClass.startsWith("IPF.Note.")) {
         let parent = this.folderMap.get(folder.ParentFolderId.Id);
@@ -245,6 +255,23 @@ export class OWAAccount extends MailAccount {
         this.folderMap.set(folder.FolderId.Id, owaFolder);
       }
     }
+  }
+
+  protected isThrottleError(result: any): boolean {
+    if (result.MessageText &&
+        (result.ResponseCode == "OverBudgetException" ||
+         result.ResponseCode == "ErrorTooManyObjectsOpened")) {
+      let match = result.MessageText.match(/'MaxConcurrency'.*'(\d+)'.*'Owa'/);
+      let maxConcurrency = match ? Number(match[1]) : this.semaphore.countRunning + 1;
+      if (maxConcurrency < this.semaphore.maxParallel) {
+        const minConcurrency = 3;
+        this.semaphore.maxParallel = Math.max(maxConcurrency, minConcurrency);
+        console.log(`Server busy, reduced max concurrency to ${this.semaphore.maxParallel}`);
+      }
+      this.throttle.waitForSecond(5);
+      return true;
+    }
+    return false;
   }
 
   isOffice365(): boolean {
