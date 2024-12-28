@@ -14,7 +14,9 @@ import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { ContentDisposition } from "../Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
-import { assert, sleep, blobToBase64, throttleConnectionsPerSecond, ensureArray } from "../../util/util";
+import { Throttle } from "../../util/Throttle";
+import { Semaphore } from "../../util/Semaphore";
+import { assert, blobToBase64, ensureArray } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { SetColl } from "svelte-collections";
 
@@ -27,9 +29,8 @@ export class EWSAccount extends MailAccount {
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
   readonly folderMap = new Map<string, EWSFolder>;
-  maxConcurrency: number = 20;
-  connections = new SetColl<Promise<any>>;
-  nextConnectionTime = new Array(50).fill(0);
+  throttle = new Throttle(50, 1);
+  semaphore = new Semaphore(20);
 
   constructor() {
     super();
@@ -218,7 +219,10 @@ export class EWSAccount extends MailAccount {
     return options;
   }
 
-  async checkMaxConcurrency(ex: EWSItemError) {
+  isThrottleError(ex: EWSItemError): boolean {
+    if (ex.type != "ErrorServerBusy") {
+      return false;
+    }
     // Check whether the ConcurrentSyncCalls policy was exceeded.
     if (/'ConcurrentSyncCalls'.*'(\d+)'.*'Ews'/.test(ex.message) && Number(RegExp.$1) < this.maxConcurrency) {
       this.maxConcurrency = Number(RegExp.$1);
@@ -233,25 +237,18 @@ export class EWSAccount extends MailAccount {
       milliseconds = 20000; // Sensible upper limit
     }
     console.log(`Server busy, using ${milliseconds}ms backoff time`);
-    await sleep(milliseconds / 1000);
+    this.throttle.waitForSecond(milliseconds / 1000);
+    return true;
   }
 
   async callEWS(aRequest: JsonRequest): Promise<any> {
-    await throttleConnectionsPerSecond(this.nextConnectionTime);
-    while (this.connections.length >= this.maxConcurrency) {
-      console.log(`Throttling because there are ${this.maxConcurrency} pending connections`);
-      try {
-        await Promise.race(this.connections);
-      } catch (ex) {
-      }
-    }
-    let connection = appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions());
-    this.connections.add(connection);
-    let response;
+    await this.throttle.throttle();
+    let lock = await this.semaphore.lock();
+    let response: any;
     try {
-      response = await connection;
+      response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions());
     } finally {
-      this.connections.remove(connection);
+      lock.release();
     }
     response.responseXML = this.parseXML(response.data);
     this.fatalError = null;
@@ -259,8 +256,7 @@ export class EWSAccount extends MailAccount {
       try {
         return this.checkResponse(response, aRequest);
       } catch (ex) {
-        if (ex.type == "ErrorServerBusy") {
-          await this.checkMaxConcurrency(ex);
+        if (this.isThrottleError(ex)) {
           return await this.callEWS(aRequest);
         } else {
           throw ex;
