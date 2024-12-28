@@ -123,7 +123,9 @@
       url = eventURL;
     });
     appGlobal.remoteApp.addEventListenerWebContents(id, "input-event", (event) => {
-      if (event.type == "mouseDown" && url) {
+      let modifiers = event.modifiers.map(m => m.toLowerCase());
+      let isLeft = ["left", "leftbuttondown"].some(l => modifiers.some(m => m == l));
+      if (event.type == "mouseDown" && isLeft && url) {
         appGlobal.remoteApp.shell.openExternal(url);
       }
     });
