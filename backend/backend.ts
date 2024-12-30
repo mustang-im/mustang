@@ -53,6 +53,7 @@ async function createSharedAppObject() {
     getFilesDir,
     openFileInExternalApp,
     createIMAPFlowConnection,
+    createStanzaXMPPClient,
     getSQLiteDatabase,
     sendMailNodemailer,
     verifyServerNodemailer,
@@ -68,7 +69,6 @@ async function createSharedAppObject() {
       dirname: path.dirname,
       join: path.join,
     },
-    createStanzaXMPPClient,
   };
 }
 
@@ -286,6 +286,10 @@ function createIMAPFlowConnection(...args): ImapFlow {
   return new ImapFlow(...args);
 }
 
+function createStanzaXMPPClient(options) {
+  return StanzaXMPP.createClient(options);
+}
+
 function getSQLiteDatabase(filename: string, options: any): Database {
   if (!filename.startsWith("/")) {
     filename = path.join(getConfigDir(), filename);
@@ -301,10 +305,6 @@ async function sendMailNodemailer(transport, mail) {
 async function verifyServerNodemailer(transport) {
   let transporter = nodemailer.createTransport(transport);
   await transporter.verify();
-}
-
-function createStanzaXMPPClient(options) {
-  return StanzaXMPP.createClient(options);
 }
 
 async function getMIMENodemailer(mail): Promise<Uint8Array> {
