@@ -81,11 +81,10 @@ export class MenuItem {
   label: string;
   icon: string;
   /** 
-   * Roles allow menu items to have predefined behaviors.
+   * String can be used for predefined actions, functions for custom actions
    * @see <https://www.electronjs.org/docs/latest/api/menu-item#roles> 
    */
-  role: string;
-  click: Function;
+  action: string | Function;
   /** Menu item should show up, but cannot be invoked.
    * When to use:
    * - Use `disabled = true` for menu items that apply, but cannot be used, for whatever reason.
@@ -97,13 +96,7 @@ export class MenuItem {
     this.id = id;
     this.label = label;
     this.icon = icon;
-    if (typeof action === 'string') {
-      this.role = action;
-    } else if ( typeof action === 'function') {
-      this.click = action;
-    } else {
-      throw new Error("Invalid action type");
-    }
+    this.action = action;
   }
 }
 
