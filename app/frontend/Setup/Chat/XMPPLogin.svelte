@@ -15,7 +15,7 @@
 
 <ButtonsBottom
   onContinue={onContinue}
-  canContinue={!!config.username && !!config.serverDomain && !!config.password}
+  canContinue={!!config.username && !!config.password}
   canCancel={true}
   onCancel={onCancel}
   />
@@ -35,14 +35,9 @@
   export let onCancel = (event: Event) => undefined;
 
   let jid: string;
-  $: splitJID(jid);
-  function splitJID(_dummy: any) {
-    let sp = jid?.split("@");
-    if (!sp || sp.length != 2) {
-      return;
-    }
-    config.username = sp[0];
-    config.serverDomain = sp[1];
+  $: setUsername(jid);
+  function setUsername(_dummy: any) {
+    config.username = jid;
     config.name = jid;
     config.userRealname = appGlobal.me.name;
   }

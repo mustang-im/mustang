@@ -2,9 +2,10 @@ import { ChatAccount } from '../ChatAccount';
 import { XMPPChatRoom } from './XMPPChatRoom';
 import { ChatMessage, DeliveryStatus, UserChatMessage } from '../Message';
 import { Group } from '../../Abstract/Group';
-import { appGlobal } from '../../app';
 import { ChatPerson } from '../Person';
 import { ContactEntry } from '../../Abstract/Person';
+import { appGlobal } from '../../app';
+import { getDomainForEmailAddress } from '../../util/netUtil';
 import { MapColl } from 'svelte-collections';
 import type * as XMPP from 'stanza';
 
@@ -12,25 +13,25 @@ export class XMPPAccount extends ChatAccount {
   readonly protocol: string = "xmpp";
   readonly chats = new MapColl<ChatPerson | Group, XMPPChatRoom>;
   client: XMPP.Agent;
-  serverDomain: string;
   deviceID: string;
-  globalUserID: string;
+  jid: string;
 
   /** Login to this account on the server. Opens network connection.
    * You must call this after creating the object and having set its properties.
    * This will populate `persons` and `chats`. */
   async login() {
     super.login(false);
-    this.globalUserID = `${this.username}@${this.serverDomain}`;
+    this.jid = this.username;
+    let serverDomain = getDomainForEmailAddress(this.username);
     this.client = await appGlobal.remoteApp.createStanzaXMPPClient({
-      jid: this.globalUserID,
+      jid: this.jid,
       password: this.password,
 
       // If you have a .well-known/host-meta.json file for your
       // domain, the connection transport config can be skipped.
       transports: {
-        websocket: `wss://${this.serverDomain}:5281/xmpp-websocket`,
-        bosh: `https://${this.serverDomain}:5281/http-bind`,
+        websocket: `wss://${serverDomain}:5281/xmpp-websocket`,
+        bosh: `https://${serverDomain}:5281/http-bind`,
       }
     });
     await this.client.connect();
@@ -68,8 +69,8 @@ export class XMPPAccount extends ChatAccount {
     let persons = await Promise.all(members.filter(m => m.jid).map(member =>
       this.getPerson(member.jid ?? '', member.nick ?? '')));
     group.participants.addAll(persons);
-    chatRoom.contact = group.participants.length <= 2 && group.participants.find(person => person.id == this.globalUserID)
-      ? (group.participants.find(person => person.id != this.globalUserID) ?? group.participants.first)
+    chatRoom.contact = group.participants.length <= 2 && group.participants.find(person => person.id == this.jid)
+      ? (group.participants.find(person => person.id != this.jid) ?? group.participants.first)
       : group;
     this.chats.set(chatRoom.contact as Group | ChatPerson, chatRoom);
 
