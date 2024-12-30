@@ -191,6 +191,7 @@ export enum AuthMethod {
   GSSAPI = 3,
   CRAMMD5 = 5,
   NTLM = 6,
+  None = 7, // No authentication at all. E.g. SMTP
 }
 
 export type ConfigSource = "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | "manual" | "local" | null;

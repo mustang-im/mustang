@@ -71,15 +71,22 @@
         <option value={AuthMethod.GSSAPI}>Kerberos / GSSAPI</option>
         <option value={AuthMethod.CRAMMD5}>CRAM MD5</option>
         <option value={AuthMethod.NTLM}>NTLM</option>
+        {#if config.protocol == "smtp"}
+          <option value={AuthMethod.None}>{$t`Keine`}</option>
+        {/if}
       </select>
     </hbox>
 
     <hbox class="username">
-      <input type="text" bind:value={config.username} />
+      {#if config.authMethod != AuthMethod.None}
+        <input type="text" bind:value={config.username} />
+      {/if}
     </hbox>
 
     <hbox class="password">
-      <PasswordChange bind:password={config.password}  />
+      {#if config.authMethod != AuthMethod.None}
+        <PasswordChange bind:password={config.password}  />
+      {/if}
     </hbox>
   {/if}
 

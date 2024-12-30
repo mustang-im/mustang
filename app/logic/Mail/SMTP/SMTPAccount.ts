@@ -16,9 +16,7 @@ export class SMTPAccount extends MailAccount {
     // Auth method
     let usePassword = [
       AuthMethod.Password,
-      AuthMethod.GSSAPI,
       AuthMethod.NTLM,
-      AuthMethod.Unknown,
     ].includes(this.authMethod);
     let useOAuth2 = [
       AuthMethod.OAuth2,
@@ -26,6 +24,7 @@ export class SMTPAccount extends MailAccount {
     if (useOAuth2) {
       assert(this.oAuth2?.accessToken, `${this.name} SMTP: Need OAuth2 login from IMAP`);
     }
+    let noAuth = this.authMethod == AuthMethod.None;
 
     return {
       host: this.hostname,
@@ -38,7 +37,7 @@ export class SMTPAccount extends MailAccount {
         rejectUnauthorized: !this.acceptBrokenTLSCerts,
       },
       auth: {
-        user: this.username,
+        user: noAuth ? undefined : this.username,
         pass: usePassword ? this.password : undefined,
         accessToken: useOAuth2 ? this.oAuth2.accessToken : null,
         type: useOAuth2 ? "OAuth2" : undefined,
