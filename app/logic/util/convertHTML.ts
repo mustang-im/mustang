@@ -126,6 +126,11 @@ function addCSSRules(output, cssRules = []) {
   }
 };
 
+if (!DOMPurify.addHook) { // for unit tests only. TODO Load it in vitests as well
+  DOMPurify.addHook = () => null;
+  console.log("Warning: DOMPurify not loaded. Normal in unit tests, otherwise dangerous.");
+}
+
 DOMPurify.addHook('uponSanitizeElement', (node, data) => {
   if (data.tagName === 'style') {
     const output = [];

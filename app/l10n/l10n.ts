@@ -112,7 +112,11 @@ let cachedUILocale: string;
 /** @returns ISO code for the locale that we are using */
 export function getUILocale(): string {
   if (!cachedUILocale) {
-    cachedUILocale = sanitize.nonemptystring(localStorage.getItem("ui.locale"), navigator.language);
+    if ("localStorage" in global) {
+      cachedUILocale = sanitize.nonemptystring(localStorage.getItem("ui.locale"), navigator.language);
+    } else {
+      cachedUILocale = "en-US";
+    }
   }
   return cachedUILocale;
 }
