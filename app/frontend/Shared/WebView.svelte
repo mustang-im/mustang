@@ -142,7 +142,8 @@
       id: item.id,
       label: item.label,
       icon: item.icon,
-      click: () => catchErrors(item.action),
+      role: item.role,
+      click: () => catchErrors(item.click),
     })));
   }
 

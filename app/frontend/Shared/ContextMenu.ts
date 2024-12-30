@@ -34,8 +34,9 @@ export function buildContextMenu(context: ContextInfo, win: any): ArrayColl<Menu
   context.isLink = !!context.linkURL;
 
   let menuItems = new ArrayColl<MenuItem>();
-  function add(id: string, label, icon: string, action: Function, disabled: boolean = false) {
-    let menuItem = new MenuItem(id, label, icon, () => action(context, win));
+  function add(id: string, label, icon: string, action: string | Function, disabled: boolean = false) {
+    action = typeof action === 'string' ? action : () => action(context, win);
+    let menuItem = new MenuItem(id, label, icon, action);
     menuItem.disabled = disabled;
     menuItems.add(menuItem);
   }
@@ -49,11 +50,11 @@ export function buildContextMenu(context: ContextInfo, win: any): ArrayColl<Menu
     add("saveLink", gt`Save link target as…`, null, saveLinkAs);
   }
   if (context.isText || context.isEditable) {
-    add("copy", gt`Copy`, null, copyText, context.isText && context.editFlags.canCopy);
+    add("copy", gt`Copy`, null, "copy", context.isText && context.editFlags.canCopy);
   }
   if (context.isEditable) {
-    add("cut", gt`Cut`, null, cutText, context.editFlags.canCut);
-    add("paste", gt`Paste`, null, pasteText, context.editFlags.canPaste);
+    add("cut", gt`Cut`, null, "cut", context.editFlags.canCut);
+    add("paste", gt`Paste`, null, "paste", context.editFlags.canPaste);
   }
   if (context.isText && !context.isLink) {
     add("search", gt`Search the web`, null, searchWeb);
@@ -79,7 +80,12 @@ export class MenuItem {
   id: string;
   label: string;
   icon: string;
-  action: Function;
+  /** 
+   * Roles allow menu items to have predefined behaviors.
+   * @see <https://www.electronjs.org/docs/latest/api/menu-item#roles> 
+   */
+  role: string;
+  click: Function;
   /** Menu item should show up, but cannot be invoked.
    * When to use:
    * - Use `disabled = true` for menu items that apply, but cannot be used, for whatever reason.
@@ -87,11 +93,17 @@ export class MenuItem {
    *   should not be listed at all. */
   disabled: boolean = false;
 
-  constructor(id: string, label: string, icon: string, action: Function) {
+  constructor(id: string, label: string, icon: string, action: string | Function) {
     this.id = id;
     this.label = label;
     this.icon = icon;
-    this.action = action;
+    if (typeof action === 'string') {
+      this.role = action;
+    } else if ( typeof action === 'function') {
+      this.click = action;
+    } else {
+      throw new Error("Invalid action type");
+    }
   }
 }
 
