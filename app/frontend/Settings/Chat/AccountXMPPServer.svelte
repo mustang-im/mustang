@@ -2,7 +2,7 @@
   <label for="hostname">{$t`Server`}</label>
   <hbox class="value">{account.hostname}:{account.port}</hbox>
   <label for="username">{$t`Username JID`}</label>
-  <hbox class="value">{account.username}@{account.serverDomain}</hbox>
+  <hbox class="value">{account.username}</hbox>
 </grid>
 
 <script lang="ts">
