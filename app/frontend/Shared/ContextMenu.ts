@@ -180,8 +180,8 @@ export interface ContextInfo {
 }
 
 export function copyText(context: ContextInfo, win: any) {
-  win.copy();
-  // or: copyToClipboard(context.selectionText);
+  // or: win.copy();
+  copyToClipboard(context.selectionText);
 }
 
 export function cutText(context: ContextInfo, win: any) {
@@ -268,7 +268,7 @@ export function copyToClipboard(text: string | Object) {
 }
 
 export async function openBrowser(url: URLString) {
-  await appGlobal.remoteApp.shell.shell.openExternal(url);
+  await appGlobal.remoteApp.shell.openExternal(url);
 }
 
 export function download(url: URLString, window: any, howSaveAsDialog: boolean, filename?: string) {

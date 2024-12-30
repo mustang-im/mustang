@@ -2,12 +2,11 @@
 <!-- TODO Security: Test that this <webview> is untrusted and jailed -->
 <webview bind:this={webviewE} src={url} {title} />
 
-<!--
 {#if contextMenuItems && contextMenuItems.hasItems}
   <Menu opened={true} position="bottom" placement="end" on:close={() => contextMenuItems = null}>
     {#each contextMenuItems.each as menuItem}
       <Menu.Item
-        on:click={() => catchErrors(() =>menuItem.action)}
+        on:click={() => catchErrors(menuItem.action)}
         title={menuItem.label}
         icon={menuItem.icon}>
         {menuItem.label}
@@ -15,11 +14,10 @@
     {/each}
   </Menu>
 {/if}
--->
 
 <script lang="ts">
   import { buildContextMenu, MenuItem, type ContextInfo } from "./ContextMenu";
-  // import { Menu } from "@svelteuidev/core";
+  import { Menu } from "@svelteuidev/core";
   import { stringToDataURL } from "../Util/util";
   import { createEventDispatcher, onMount } from 'svelte';
   import type { ArrayColl } from "svelte-collections";
