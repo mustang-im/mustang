@@ -34,13 +34,13 @@ export class Throttle {
     return this.nextTime.length;
   }
   set maxTasks(max: number) {
-    let oldLength = this.nextTime.length;
-    if (max == oldLength) {
+    let oldMax = this.nextTime.length;
+    if (max == oldMax) {
       return;
     }
     this.nextTime.length = max;
-    if (oldLength < max) {
-      this.nextTime.fill(0, oldLength);
+    if (oldMax < max) {
+      this.nextTime.fill(0, oldMax);
     }
   }
 }
