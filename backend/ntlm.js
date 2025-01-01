@@ -267,18 +267,13 @@ function create_LM_hashed_password_v1(password) {
   var passwordBytes = Buffer.from(password, "ascii");
 
   var passwordBytesPadded = Buffer.alloc(14);
-  passwordBytesPadded.fill("\0");
-  var sourceEnd = 14;
-  if (passwordBytes.length < 14) {
-    sourceEnd = passwordBytes.length;
-  }
-  passwordBytes.copy(passwordBytesPadded, 0, 0, sourceEnd);
+  passwordBytes.copy(passwordBytesPadded);
 
   // split into 2 parts of 7 bytes:
   var firstPart = passwordBytesPadded.slice(0, 7);
   var secondPart = passwordBytesPadded.slice(7);
 
-  function encrypt(buf){
+  function encrypt(buf) {
     var key = insertZerosEvery7Bits(buf);
     var des = DES.create({type: "encrypt", key: key});
     var magicKey = Buffer.from("KGS!@#$%", "ascii"); // page 57 in [MS-NLMP]
@@ -383,8 +378,7 @@ function create_NT_hashed_password_v1(password) {
 function calc_resp(password_hash, server_challenge) {
   // padding with zeros to make the hash 21 bytes long
   var passHashPadded = Buffer.alloc(21);
-  passHashPadded.fill("\0");
-  password_hash.copy(passHashPadded, 0, 0, password_hash.length);
+  password_hash.copy(passHashPadded);
 
   var resArray = [];
 
@@ -409,8 +403,7 @@ function hmac_md5(key, data) {
 function ntlm2sr_calc_resp(responseKeyNT, serverChallenge, clientChallenge) {
   // padding with zeros to make the hash 16 bytes longer
   var lmChallengeResponse = Buffer.alloc(clientChallenge.length + 16);
-  lmChallengeResponse.fill("\0");
-  clientChallenge.copy(lmChallengeResponse, 0, 0, clientChallenge.length);
+  clientChallenge.copy(lmChallengeResponse);
 
   var buf = Buffer.concat([serverChallenge, clientChallenge]);
   var md5 = createHash('md5');
