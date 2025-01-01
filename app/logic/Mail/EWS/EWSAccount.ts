@@ -30,6 +30,7 @@ export class EWSAccount extends MailAccount {
   readonly folderMap = new Map<string, EWSFolder>;
   throttle = new Throttle(50, 1);
   semaphore = new Semaphore(20);
+  NTLMauthorization: string | undefined;
   isRepeating = false;
 
   constructor() {
@@ -204,15 +205,19 @@ export class EWSAccount extends MailAccount {
     return document.getElementsByTagName('parsererror').length ? null : document;
   }
 
-  createRequestOptions(throwHttpErrors = false): Promise<any> {
+  createRequestOptions(authorization?: string): any {
     let options: any = {
-      throwHttpErrors,
+      throwHttpErrors: false,
       headers: {
         'Content-Type': "text/xml; charset=utf-8",
       },
     };
-    if (this.oAuth2) {
+    if (authorization) {
+      options.headers.Authorization = authorization;
+    } else if (this.oAuth2) {
       options.headers.Authorization = this.oAuth2.authorizationHeader;
+    } else if (this.NTLMauthorization) {
+      options.headers.Authorization = this.NTLMauthorization;
     } else {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
     }
@@ -241,12 +246,12 @@ export class EWSAccount extends MailAccount {
     return true;
   }
 
-  async callEWS(aRequest: JsonRequest): Promise<any> {
+  async callEWS(aRequest: JsonRequest, authorization?: string): Promise<any> {
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
     let response: any;
     try {
-      response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions());
+      response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions(authorization));
     } finally {
       lock.release();
     }
@@ -278,9 +283,14 @@ export class EWSAccount extends MailAccount {
         await this.oAuth2.reset();
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return repeat();
+      } else if (this.NTLMauthorization && !authorization) {
+        return await this.callEWS(aRequest, await appGlobal.remoteApp.createType3MessageFromType2Message(response.WWWAuthenticate, this.username, this.password));
+      } else if (/\bNTLM\b/.test(response.WWWAuthenticate) && !this.NTLMauthorization) {
+        this.NTLMauthorization = await appGlobal.remoteApp.createType1Message();
+        return await this.callEWS(aRequest); // repeat the call
       } else if (!/\bBasic\b/.test(response.WWWAuthenticate)) {
         throw this.fatalError = new ConnectError(null,
-          "Unsupported authentication protocol(s): " + response.WWWAuthenticate);
+          "Failed or unsupported authentication protocol(s): " + response.WWWAuthenticate);
       } else {
         throw this.fatalError = new LoginError(null,
           "Password incorrect");
@@ -299,7 +309,16 @@ export class EWSAccount extends MailAccount {
         const endEnvelope = "</Envelope>";
         let requestXML = this.request2XML(request);
         let data = "";
-        let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions(true));
+        let authorization;
+        if (this.NTLMauthorization) {
+          let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions());
+          if (response.status != 401) {
+            console.error("Unexpected NTLM negotiation failure in callStream");
+            return;
+          }
+          authorization = await appGlobal.remoteApp.createType3MessageFromType2Message(response.WWWAuthenticate, this.username, this.password);
+        }
+        let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions(authorization));
         if (!response.ok) {
           console.error(`streamHTTP failed with HTTP ${response.status} ${response.statusText}`);
           return;
