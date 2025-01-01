@@ -224,9 +224,9 @@ export class EWSAccount extends MailAccount {
       return false;
     }
     // Check whether the ConcurrentSyncCalls policy was exceeded.
-    if (/'ConcurrentSyncCalls'.*'(\d+)'.*'Ews'/.test(ex.message) && Number(RegExp.$1) < this.maxConcurrency) {
-      this.maxConcurrency = Number(RegExp.$1);
-      console.log(`Server busy, reduced max concurrency to ${this.maxConcurrency}`);
+    if (/'ConcurrentSyncCalls'.*'(\d+)'.*'Ews'/.test(ex.message) && Number(RegExp.$1) < this.throttle.maxTasks) {
+      this.throttle.maxTasks = Number(RegExp.$1);
+      console.log(`Server busy, reduced max concurrency to ${this.throttle.maxTasks}`);
     }
     let milliseconds = Number(ex.error.MessageXml?.Value?.Value);
     if (!milliseconds) {

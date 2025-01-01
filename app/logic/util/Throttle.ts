@@ -29,4 +29,18 @@ export class Throttle {
   waitForSecond(seconds: number) {
     this.nextTime.unshift(Date.now() + seconds * 1000);
   }
+
+  get maxTasks(): number {
+    return this.nextTime.length;
+  }
+  set maxTasks(max: number) {
+    let oldLength = this.nextTime.length;
+    if (max == oldLength) {
+      return;
+    }
+    this.nextTime.length = max;
+    if (oldLength < max) {
+      this.nextTime.fill(0, oldLength);
+    }
+  }
 }
