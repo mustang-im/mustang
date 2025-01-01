@@ -283,8 +283,8 @@ export class EWSAccount extends MailAccount {
   }
 
   async callStream(request: Json, responseCallback) {
-    let lastAttempt = Date.now();
-    while (Date.now() - lastAttempt > 10000) { // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
+    let lastAttempt;
+    do {
       try {
         lastAttempt = Date.now();
         const endEnvelope = "</Envelope>";
@@ -292,7 +292,7 @@ export class EWSAccount extends MailAccount {
         let data = "";
         let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions(true));
         if (!response.ok) {
-          console.error(`streamHTTP failed with HTTP {response.status} {response.statusText}`);
+          console.error(`streamHTTP failed with HTTP ${response.status} ${response.statusText}`);
           return;
         }
         for await (let chunk of response.body) {
@@ -332,7 +332,7 @@ export class EWSAccount extends MailAccount {
         this.errorCallback(ex);
         break;
       }
-    }
+    } while (Date.now() - lastAttempt > 10000) // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
   }
 
   async streamNotifications() {
