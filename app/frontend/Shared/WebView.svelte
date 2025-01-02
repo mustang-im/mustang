@@ -136,7 +136,7 @@
 
   let contextMenuItems: ArrayColl<MenuItem>;
   async function onContextMenu(contextInfo: ContextInfo) {
-    contextMenuItems = buildContextMenu(contextInfo, webviewE.contentWindow);
+    contextMenuItems = buildContextMenu(contextInfo, webviewE);
     console.log("Context menu items:", contextMenuItems.contents.map(i => i.id).join(", "), contextMenuItems.contents);
     await appGlobal.remoteApp.openMenu(contextMenuItems.contents.map(item => ({
       id: item.id,
