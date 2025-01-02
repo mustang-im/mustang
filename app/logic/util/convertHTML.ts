@@ -37,6 +37,7 @@ export function sanitizeHTML(html: string): string {
   if (!html) {
     return null;
   }
+  includeExternal = false;
   return DOMPurify.sanitize(html, {
     USE_PROFILES: { html: true },
     FORBID_TAGS: ["svg", "mathml"],
@@ -44,6 +45,17 @@ export function sanitizeHTML(html: string): string {
   });
 }
 
+export function sanitizeHTMLExternal(html: string): string {
+  if (!html) {
+    return null;
+  }
+  includeExternal = true;
+  return DOMPurify.sanitize(html, {
+    USE_PROFILES: { html: true },
+    FORBID_TAGS: ["svg", "mathml"],
+    WHOLE_DOCUMENT: true,
+  });
+}
 
 // <copied from="https://github.com/cure53/DOMPurify/blob/main/demos/hooks-proxy-demo.html" modified="true" license="Apache 2.0">
 const proxy = 'http://localhost:5454/proxy?url=';
@@ -55,6 +67,10 @@ function urlAttribute(url) {
     ? url
     // : `${proxy}${escape(url)}`;
     : "";
+}
+
+function externalSrc(url) {
+  return url.startsWith('http://') || url.startsWith('https://') ? url : "";
 }
 
 function addStyles(output, styles) {
@@ -115,6 +131,7 @@ DOMPurify.addHook('uponSanitizeElement', (node, data) => {
   }
 });
 
+let includeExternal = false;
 DOMPurify.addHook('afterSanitizeAttributes', node => {
   for (let attribute of urlAttributes) {
     if (node.hasAttribute(attribute)) {
@@ -133,6 +150,12 @@ DOMPurify.addHook('afterSanitizeAttributes', node => {
           node.setAttribute(attribute, "");
           node.setAttribute("title", ex.message ?? ex + "");
         }
+      } else if ((node.tagName.toLocaleLowerCase() == "img" && attribute == "src") ||
+          (node.tagName.toLocaleLowerCase() == "link" && node.getAttribute("rel") == "stylesheet" && attribute =="href")
+          && includeExternal) {
+        let url = node.getAttribute(attribute);
+        let newURL = externalSrc(url);
+        node.setAttribute(attribute, newURL);
       } else {
         let orgURL = node.getAttribute(attribute);
         let newURL = urlAttribute(orgURL);
