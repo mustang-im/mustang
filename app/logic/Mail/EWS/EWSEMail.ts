@@ -14,11 +14,11 @@ import { base64ToArrayBuffer, assert, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 const ExchangeScheduling: Record<string, number> = {
-  "IPM.Schedule.Meeting.Resp.Pos": Scheduling.Accepted,
-  "IPM.Schedule.Meeting.Resp.Tent": Scheduling.Tentative,
-  "IPM.Schedule.Meeting.Resp.Neg": Scheduling.Declined,
-  "IPM.Schedule.Meeting.Request": Scheduling.Request,
-  "IPM.Schedule.Meeting.Canceled": Scheduling.Cancellation,
+  "IPM.Schedule.Meeting.Resp.Pos": Scheduling.REPLY,
+  "IPM.Schedule.Meeting.Resp.Tent": Scheduling.REPLY,
+  "IPM.Schedule.Meeting.Resp.Neg": Scheduling.REPLY,
+  "IPM.Schedule.Meeting.Request": Scheduling.REQUEST,
+  "IPM.Schedule.Meeting.Canceled": Scheduling.CANCEL,
 };
 
 const ResponseTypes: Record<Responses, string> = {
@@ -82,7 +82,7 @@ export class EWSEMail extends EMail {
     setPersons(this.cc, xmljs.CcRecipients?.Mailbox);
     setPersons(this.bcc, xmljs.BccRecipients?.Mailbox);
     this.contact = this.outgoing ? this.to.first : this.from;
-    this.scheduling = ExchangeScheduling[xmljs.ItemClass] || Scheduling.None;
+    this.scheduling = ExchangeScheduling[xmljs.ItemClass] || Scheduling.NONE;
   }
 
   /** Get body and attachments from Exchange.
@@ -202,7 +202,7 @@ export class EWSEMail extends EMail {
   }
 
   async respondToInvitation(response: Responses): Promise<void> {
-    assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
+    assert(this.scheduling == Scheduling.REQUEST, "Only invitations can be responded to");
     let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.itemID });
     await this.folder.account.callEWS(request);
@@ -216,7 +216,7 @@ export class EWSEMail extends EMail {
    * `EMail.loadEvent()` works for all iTIP messages.
    * By not overriding `loadEvent()` here, `EMail.loadEvent()` will be called. */
   async loadEvent_disabled() {
-    assert(this.scheduling == Scheduling.Request, "This is not an invitation");
+    assert(this.scheduling == Scheduling.REQUEST, "This is not an invitation");
     assert(!this.event, "Event has already been loaded");
     let request = {
       m$GetItem: {

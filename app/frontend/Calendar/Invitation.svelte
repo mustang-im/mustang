@@ -14,7 +14,7 @@
       {ex}
     {/await}
   {/if}
-  {#if message.scheduling == Scheduling.Request}
+  {#if message.scheduling == Scheduling.REQUEST}
     <hbox>
       <Button label={$t`Accept`} onClick={onAccept} />
       <Button label={$t`Tentative`} onClick={onTentative} />

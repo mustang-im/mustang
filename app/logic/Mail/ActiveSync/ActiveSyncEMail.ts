@@ -12,11 +12,11 @@ import type { ArrayColl } from "svelte-collections";
 import { parseOneAddress, parseAddressList, type ParsedMailbox } from "email-addresses";
 
 const ExchangeScheduling: Record<string, number> = {
-  "IPM.Schedule.Meeting.Resp.Pos": Scheduling.Accepted,
-  "IPM.Schedule.Meeting.Resp.Tent": Scheduling.Tentative,
-  "IPM.Schedule.Meeting.Resp.Neg": Scheduling.Declined,
-  "IPM.Schedule.Meeting.Request": Scheduling.Request,
-  "IPM.Schedule.Meeting.Canceled": Scheduling.Cancellation,
+  "IPM.Schedule.Meeting.Resp.Pos": Scheduling.REPLY,
+  "IPM.Schedule.Meeting.Resp.Tent": Scheduling.REPLY,
+  "IPM.Schedule.Meeting.Resp.Neg": Scheduling.REPLY,
+  "IPM.Schedule.Meeting.Request": Scheduling.REQUEST,
+  "IPM.Schedule.Meeting.Canceled": Scheduling.CANCEL,
 };
 
 const ActiveSyncResponse: Record<Responses, number> = {
@@ -71,7 +71,7 @@ export class ActiveSyncEMail extends EMail {
     setPersons(this.cc, wbxmljs.Cc);
     setPersons(this.bcc, wbxmljs.Bcc);
     this.contact = this.outgoing ? this.to.first : this.from;
-    this.scheduling = ExchangeScheduling[wbxmljs.MessageClass] || Scheduling.None;
+    this.scheduling = ExchangeScheduling[wbxmljs.MessageClass] || Scheduling.NONE;
     /* Can't use this data because the description is missing.
     if (wbxmljs.MeetingRequest) {
       let event = new ActiveSyncEvent();
@@ -182,7 +182,7 @@ export class ActiveSyncEMail extends EMail {
   }
 
   async respondToInvitation(response: Responses): Promise<void> {
-    assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
+    assert(this.scheduling == Scheduling.REQUEST, "Only invitations can be responded to");
     let request = {
       Request: {
         UserResponse: ActiveSyncResponse[response],
