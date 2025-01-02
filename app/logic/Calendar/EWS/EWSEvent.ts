@@ -1,9 +1,9 @@
 import { Event } from "../Event";
+import { Scheduling, ResponseType, type Responses } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { EWSCalendar } from "./EWSCalendar";
 import WindowsTimezones from "./WindowsTimezones";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { Scheduling, ResponseType, type Responses } from "../../Calendar/Invitation";
 import EWSCreateItemRequest from "../../Mail/EWS/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "../../Mail/EWS/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/EWSUpdateItemRequest";
