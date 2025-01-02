@@ -1,7 +1,7 @@
 import type { Contact } from "./Contact";
 import type { Person } from "./Person";
 import type { PersonUID } from "../Abstract/PersonUID";
-import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
+import { convertHTMLToText, convertTextToHTML, sanitizeHTML, sanitizeHTMLExternal } from "../util/convertHTML";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { backgroundError } from "../../frontend/Util/error";
 import { MapColl } from "svelte-collections";
@@ -68,6 +68,11 @@ export class Message extends Observable {
    * so that we can change the sanitization. */
   protected _sanitizedHTML: string = null;
   /** HTML version of the message.
+   * Sanitized with external images and css.
+   * This is only cached here in RAM, but not saved on disk,
+   * so that we can change the sanitization. */
+  protected _sanitizedHTMLWithExternal: string = null;
+  /** HTML version of the message.
    * Sanitized. */
   get html(): string {
     if (this._sanitizedHTML) {
@@ -85,6 +90,24 @@ export class Message extends Observable {
     }
     return null;
   }
+
+  get htmlWithExternal(): string {
+    if (this._sanitizedHTMLWithExternal) {
+      return this._sanitizedHTMLWithExternal;
+    }
+    try {
+      if (this._rawHTML) {
+        return this._sanitizedHTMLWithExternal = sanitizeHTMLExternal(this._rawHTML);
+      }
+      if (this._text) {
+        return this._sanitizedHTMLWithExternal = convertTextToHTML(this._text);
+      }
+    } catch (ex) {
+      backgroundError(ex);
+    }
+    return null;
+  }
+
   /** Must also set `.text` (or at least get `.text` to auto-generate it),
    * to keep them in sync. */
   set html(val: string) {

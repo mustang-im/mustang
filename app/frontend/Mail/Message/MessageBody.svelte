@@ -14,8 +14,10 @@
 
   {#if $message.needToLoadBody}
     <hbox></hbox>
-  {:else if mode == DisplayMode.HTML || mode == DisplayMode.HTMLWithExternal}
-    <HTMLDisplay html={$message.html} allowExternalImages={mode == DisplayMode.HTMLWithExternal} />
+  {:else if mode == DisplayMode.HTML}
+    <HTMLDisplay html={$message.html} allowExternalImages={false} />
+  {:else if mode == DisplayMode.HTMLWithExternal}
+    <HTMLDisplay html={$message.htmlWithExternal} allowExternalImages={true} />
   {:else if mode == DisplayMode.Plaintext}
     <PlaintextDisplay plaintext={$message.text} />
     <!--<HTMLDisplay html={convertTextToHTML($message.text)} />-->
