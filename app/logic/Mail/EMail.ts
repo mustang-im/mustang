@@ -57,7 +57,7 @@ export class EMail extends Message {
   @notifyChangedProperty
   mime: Uint8Array | undefined;
   @notifyChangedProperty
-  scheduling: Scheduling = Scheduling.None;
+  scheduling: Scheduling = Scheduling.NONE;
   @notifyChangedProperty
   event: Event | null = null;
   folder: Folder;
@@ -191,7 +191,7 @@ export class EMail extends Message {
   }
 
   async respondToInvitation(response: Responses): Promise<void> {
-    assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
+    assert(this.scheduling == Scheduling.REQUEST, "Only invitations can be responded to");
     throw new AbstractFunction();
   }
 

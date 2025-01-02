@@ -1,15 +1,14 @@
 
 /**
  * For an inbox item that represents a scheduling message, the type of message:
- * Accepted/Tentative/Declined responses, invitations, or cancellations.
+ * invitations, responses or cancellations.
+ * XXX values are chosen for compatibility with existing messages.
  */
 export enum Scheduling {
-  None = 0,
-  Accepted = 1,
-  Tentative = 2,
-  Declined = 3,
-  Request = 4,
-  Cancellation = 5,
+  NONE = 0,
+  REQUEST = 4,
+  REPLY = 6,
+  CANCEL = 5,
 }
 
 /* Note: These are EWS/OWA names and ActiveSync values. */

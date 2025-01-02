@@ -18,33 +18,12 @@ export class ICSProcessor extends EMailProcessor {
     if (!ics) {
       return;
     }
-    email.scheduling = iTIPMethod(ics);
+    email.scheduling = Scheduling[(ics.vcalendar as ical.VCalendar)?.method] || Scheduling.NONE;
     email.event = convertICSToEvent(ics);
     if (email.event && !email.event.descriptionHTML && email.html) {
       email.event.descriptionHTML = email.html;
     }
   }
-}
-
-/* Find the iTIP method from a parsed vcalendar part */
-function iTIPMethod(ics: any): Scheduling {
-  switch (ics.vcalendar.method) {
-  case "CANCEL":
-    return Scheduling.Cancellation;
-  case "REQUEST":
-    return Scheduling.Request;
-  case "REPLY":
-    let vevent = Object.values(ics).find((event: any) => event.type == "VEVENT") as any;
-    switch (vevent?.attendee?.params?.PARTSTAT) {
-    case "DECLINED":
-      return Scheduling.Declined;
-    case "TENTATIVE":
-      return Scheduling.Tentative;
-    case "ACCEPTED":
-      return Scheduling.Accepted;
-    }
-  }
-  return Scheduling.None;
 }
 
 function convertICSToEvent(ics: any): Event | null {

@@ -67,11 +67,10 @@ export const mailDatabaseSchema = sql`
     -- RFC822 header Subject:
     "subject" TEXT not null,
     -- If not zero, then one of the following values:
-    -- 1 - Request - Either an update to or a new invitation
-    -- 2 - Cancellation - Organiser cancelled the event
-    -- 3 - Accepted - Attendee accepted the invitation
-    -- 4 - Tentative - Attendee acknowledged the invitation
-    -- 5 - Declined - Attendee declined the invitation
+    -- 4 - Request - Either an update to or a new invitation
+    -- 5 - Cancellation - Organiser cancelled the event
+    -- 6 - Response - Attendee accepted, acknowledged or declined the invitation
+    -- XXX values are chosen for compatibility with existing messages.
     "scheduling" INTEGER default 0,
     -- plaintext content of the email body. May be converted or post-processed.
     "plaintext" TEXT default null,
