@@ -142,8 +142,7 @@
       id: item.id,
       label: item.label,
       icon: item.icon,
-      role: typeof item.action == "string" ? item.action : undefined,
-      click: typeof item.action == "function" ? () => catchErrors(item.action) : undefined,
+      click: () => catchErrors(item.action),
     })));
   }
 
