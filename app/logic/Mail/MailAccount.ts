@@ -79,6 +79,28 @@ export class MailAccount extends Account {
     throw new AbstractFunction();
   }
 
+  async sendInvitation(meeting: Event, participant: Participant) {
+    let email = this.newEMailFrom();
+    email.method = "REQUEST";
+    email.event = meeting;
+    if (meeting.descriptionText) {
+      email.text = meeting.descriptionText;
+      email.html = meeting.descriptionHTML;
+    }
+    await this.send(email);
+  }
+
+  async sendCancellation(meeting: Event, participant: Participant) {
+    let email = this.newEMailFrom();
+    email.method = "CANCEL";
+    email.event = meeting;
+    if (meeting.descriptionText) {
+      email.text = meeting.descriptionText;
+      email.html = meeting.descriptionHTML;
+    }
+    await this.send(email);
+  }
+
   async sendInvitationResponse(invitation: Event, response: Responses): Promise<void> {
     let email = this.newEMailFrom();
     email.method = "REPLY";
