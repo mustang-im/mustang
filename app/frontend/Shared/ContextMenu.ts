@@ -268,7 +268,7 @@ export function copyToClipboard(text: string | Object) {
 }
 
 export async function openBrowser(url: URLString) {
-  await appGlobal.remoteApp.shell.shell.openExternal(url);
+  await appGlobal.remoteApp.shell.openExternal(url);
 }
 
 export function download(url: URLString, window: any, howSaveAsDialog: boolean, filename?: string) {
