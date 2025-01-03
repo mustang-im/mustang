@@ -9,6 +9,7 @@ import ky from 'ky';
 import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions } from "electron";
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
+import { createType1Message, decodeType2Message, createType3Message } from "./ntlm";
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
@@ -56,6 +57,8 @@ async function createSharedAppObject() {
     sendMailNodemailer,
     verifyServerNodemailer,
     getMIMENodemailer,
+    createType1Message,
+    createType3MessageFromType2Message,
     newAdmZIP,
     newHTTPServer,
     readFile,
@@ -68,6 +71,10 @@ async function createSharedAppObject() {
       join: path.join,
     },
   };
+}
+
+function createType3MessageFromType2Message(WWWAuthenticate, username, password) {
+  return createType3Message(decodeType2Message(WWWAuthenticate), username, password);
 }
 
 async function readFile(path: string): Promise<Uint8Array> {
@@ -242,6 +249,7 @@ async function streamHTTP(url: string, data: any, config: any) {
     status: response.status,
     statusText: response.statusText,
     body: response.body.pipeThrough(new TextDecoderStream()),
+    WWWAuthenticate: response.headers.get("WWW-Authenticate"),
   };
 }
 
