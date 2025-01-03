@@ -75,7 +75,7 @@
       }
     </style>`;
     let servers = allowServerCalls === true ? "* 'unsafe-inline'" :
-      allowServerCalls === false ? "'self' 'unsafe-inline'" : allowServerCalls;
+      allowServerCalls === false ? "'unsafe-inline'" : allowServerCalls;
     const head = `<meta http-equiv="Content-Security-Policy" content="default-src 'none';
       style-src ${servers}; img-src ${servers}">\n\n` + headHTML + `\n\n`;
     let displayHTML = html;
