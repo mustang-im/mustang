@@ -111,12 +111,23 @@ export class ActiveSyncEvent extends Event {
   }
 
   async saveToServer(): Promise<void> {
+    let organizer;
+    if (this.participants.length) {
+      organizer = this.participants.find(participant => participant.emailAddress == this.calendar.account.emailAddress);
+      if (organizer) {
+        organizer.response = ResponseType.Organizer;
+      } else {
+        organizer = new Participant(this.calendar.account.emailAddress, null, ResponseType.Organizer);
+        this.participants.add(organizer);
+      }
+    }
     // Not supporting tasks for now.
     if (this.parentEvent) {
       this.parentEvent.saveFields(this.parentEvent.toFields(this.toFields()));
     } else {
       await this.saveFields(this.toFields());
     }
+    await this.outgoingActions.sendInvitations(this.calendar.account);
   }
 
   async saveFields(fields: any): Promise<void> {
@@ -172,6 +183,15 @@ export class ActiveSyncEvent extends Event {
         throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.calendar);
       }
     }
+    if (this.response <= ResponseType.Organizer) {
+      await this.outgoingActions.sendCancellations(this.calendar.account);
+    } else {
+      for (let participant of this.participants) {
+        if (participant.response == ResponseType.Organizer) {
+          await this.sendInvitationResponse(ResponseType.Decline, this.calendar.account);
+        }
+      }
+    }
   }
 
   async respondToInvitation(response: Responses): Promise<void> {
@@ -184,7 +204,7 @@ export class ActiveSyncEvent extends Event {
       },
     };
     await this.calendar.account.callEAS("MeetingResponse", request);
-    await this.calendar.account.sendInvitationResponse(this, response); // needs 16.x to do this automatically
+    await this.sendInvitationResponse(response, this.calendar.account); // needs 16.x to do this automatically
   }
 }
 
