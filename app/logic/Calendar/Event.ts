@@ -162,7 +162,20 @@ export class Event extends Observable {
   }
 
   async saveToServer(): Promise<void> {
-    // nothing to do for local events
+    if (!this.participants.length) {
+      return;
+    }
+    let accounts = appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations && this.participants.some(participant => participant.emailAddress == account.emailAddress));
+    assert(accounts.length == 1, "Failed to find matching account for meeting");
+    let organizer = this.participants.find(participant => participant.emailAddress == accounts[0].emailAddress);
+    organizer.response = ResponseType.Organizer;
+    for (let participant of this.participants) {
+      if (participant != organizer) {
+        participant.response ||= ResponseType.NoResponseReceived;
+        accounts[0].sendInvitation(this, participant);
+      }
+    }
+    await this.save();
   }
 
   /**
@@ -186,7 +199,16 @@ export class Event extends Observable {
   }
 
   async deleteFromServer(): Promise<void> {
-    // nothing to do for local events
+    if (!this.participants.length) {
+      return;
+    }
+    let accounts = appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations && this.participants.some(participant => participant.emailAddress == account.emailAddress));
+    assert(accounts.length == 1, "Failed to find matching account for meeting");
+    for (let participant of this.participants) {
+      if (participant.response > ResponseType.Organizer) {
+        accounts[0].sendCancellation(this, participant);
+      }
+    }
   }
 
   async respondToInvitation(response: Responses): Promise<void> {

@@ -108,11 +108,27 @@ export class ActiveSyncEvent extends Event {
   }
 
   async saveToServer(): Promise<void> {
+    let organizer;
+    if (this.participants.length) {
+      organizer = this.participants.find(participant => participant.emailAddress == this.calendar.account.emailAddress);
+      if (organizer) {
+        organizer.response = ResponseType.Organizer;
+      } else {
+        organizer = new Participant(this.calendar.account.emailAddress, null, ResponseType.Organizer);
+        this.participants.add(organizer);
+      }
+    }
     // Not supporting tasks for now.
     if (this.parentEvent) {
       this.parentEvent.saveFields(this.parentEvent.toFields(this.toFields()));
     } else {
       await this.saveFields(this.toFields());
+    }
+    for (let participant of this.participants) {
+      if (participant != organizer) {
+        participant.response ||= ResponseType.NoResponseReceived;
+        this.calendar.account.sendInvitation(this, participant);
+      }
     }
   }
 
@@ -167,6 +183,11 @@ export class ActiveSyncEvent extends Event {
       let response = await this.calendar.makeSyncRequest(data);
       if (response.Responses) {
         throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.calendar);
+      }
+    }
+    for (let participant of this.participants) {
+      if (participant.response > ResponseType.Organizer) {
+        this.calendar.account.sendCancellation(this, participant);
       }
     }
   }
