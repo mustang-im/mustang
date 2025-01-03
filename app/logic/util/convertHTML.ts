@@ -151,7 +151,7 @@ DOMPurify.addHook('afterSanitizeAttributes', node => {
           node.setAttribute("title", ex.message ?? ex + "");
         }
       } else if ((node.tagName.toLocaleLowerCase() == "img" && attribute == "src") ||
-          (node.tagName.toLocaleLowerCase() == "link" && node.getAttribute("rel") == "stylesheet" && attribute =="href")
+          (node.tagName.toLocaleLowerCase() == "link" && node.getAttribute("rel") == "stylesheet" && attribute == "href")
           && includeExternal) {
         let url = node.getAttribute(attribute);
         let newURL = externalSrc(url);
