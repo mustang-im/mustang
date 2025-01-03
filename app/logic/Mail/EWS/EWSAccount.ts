@@ -11,12 +11,13 @@ import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
+import { NTLM } from "../../Auth/NTLM";
 import { ContentDisposition } from "../Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { Throttle } from "../../util/Throttle";
 import { Semaphore } from "../../util/Semaphore";
-import { assert, blobToBase64, ensureArray } from "../../util/util";
+import { assert, blobToBase64, ensureArray, NotImplemented, NotReached } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 
 type Json = string | number | boolean | null | Json[] | {[key: string]: Json};
@@ -31,7 +32,7 @@ export class EWSAccount extends MailAccount {
   throttle = new Throttle(50, 1);
   semaphore = new Semaphore(20);
   isRepeating = false;
-  NTLMauthorization: string | undefined;
+  authNTLM: NTLM;
 
   constructor() {
     super();
@@ -205,21 +206,24 @@ export class EWSAccount extends MailAccount {
     return document.getElementsByTagName('parsererror').length ? null : document;
   }
 
-  createRequestOptions(authorization?: string): any {
+  createRequestOptions(): any {
     let options: any = {
       throwHttpErrors: false,
       headers: {
         'Content-Type': "text/xml; charset=utf-8",
       },
     };
-    if (authorization) {
-      options.headers.Authorization = authorization;
-    } else if (this.oAuth2) {
+    if (this.authMethod == AuthMethod.NTLM || !this.authNTLM) {
+      this.authNTLM = new NTLM();
+    }
+    if (this.oAuth2) {
       options.headers.Authorization = this.oAuth2.authorizationHeader;
-    } else if (this.NTLMauthorization) {
-      options.headers.Authorization = this.NTLMauthorization;
-    } else {
+    } else if (this.authNTLM) {
+      options.headers.Authorization = this.authNTLM.authorizationHeader;
+    } else if (this.authMethod == AuthMethod.Password) {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
+    } else {
+      throw new NotReached(`Unknown authentication method ${this.authMethod}`);
     }
     return options;
   }
@@ -246,12 +250,12 @@ export class EWSAccount extends MailAccount {
     return true;
   }
 
-  async callEWS(aRequest: JsonRequest, authorization?: string): Promise<any> {
+  async callEWS(aRequest: JsonRequest): Promise<any> {
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
     let response: any;
     try {
-      response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions(authorization));
+      response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions());
     } finally {
       lock.release();
     }
@@ -283,17 +287,17 @@ export class EWSAccount extends MailAccount {
         await this.oAuth2.reset();
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return repeat();
-      } else if (this.NTLMauthorization && !authorization) {
-        return await this.callEWS(aRequest, await appGlobal.remoteApp.createType3MessageFromType2Message(response.WWWAuthenticate, this.username, this.password));
-      } else if (/\bNTLM\b/.test(response.WWWAuthenticate) && !this.NTLMauthorization) {
-        this.NTLMauthorization = await appGlobal.remoteApp.createType1Message();
+      } else if (this.authNTLM) {
+        assert(/\bNTLM\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${"NTLM"} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
+        await this.authNTLM.loginWithPassword(this.username, this.password, response.WWWAuthenticate);
         return await this.callEWS(aRequest); // repeat the call
-      } else if (!/\bBasic\b/.test(response.WWWAuthenticate)) {
-        throw this.fatalError = new ConnectError(null,
-          "Failed or unsupported authentication protocol(s): " + response.WWWAuthenticate);
-      } else {
+      } else if (this.authMethod == AuthMethod.Password) {
+        assert(/\bBasic\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${gt`Password`} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
         throw this.fatalError = new LoginError(null,
-          "Password incorrect");
+          gt`Password incorrect`);
+      } else {
+        throw this.fatalError = new ConnectError(null,
+          gt`Unsupported authentication protocol(s): ${response.WWWAuthenticate}`);
       }
     } else {
       this.throttle.waitForSecond(1);
@@ -310,13 +314,13 @@ export class EWSAccount extends MailAccount {
         let requestXML = this.request2XML(request);
         let data = "";
         let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions());
-        if (this.NTLMauthorization) {
-          if (response.status != 401) {
-            console.error("Unexpected NTLM negotiation failure in callStream");
+        if (this.authNTLM) {
+          if (response.status != 401) { // First step in NTLM is always a 401
+            console.error(`Unexpected NTLM negotiation failure ${response.status} in callStream`);
             return;
           }
-          let authorization = await appGlobal.remoteApp.createType3MessageFromType2Message(response.WWWAuthenticate, this.username, this.password);
-          response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions(authorization));
+          await this.authNTLM.loginWithPassword(this.username, this.password, response.WWWAuthenticate);
+          response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions()); // Repeat the call
         }
         if (!response.ok) {
           console.error(`streamHTTP failed with HTTP ${response.status} ${response.statusText}`);
