@@ -102,7 +102,7 @@ export class ActiveSyncEMail extends EMail {
     };
     let response = await this.folder.makeSyncRequest(data);
     if (response.Responses) {
-      throw new ActiveSyncError("Sync", response.Responses.Change.Status);
+      throw new ActiveSyncError("Sync", response.Responses.Change.Status, this.folder?.account);
     }
     await super.markRead(read);
   }
