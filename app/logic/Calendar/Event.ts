@@ -1,7 +1,9 @@
 import type { Calendar } from "./Calendar";
-import type { Participant } from "./Participant";
+import { Participant } from "./Participant";
 import type { RecurrenceRule } from "./RecurrenceRule";
+import OutgoingActions from "./OutgoingActions";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation";
+import type { MailAccount } from "../Mail/MailAccount";
 import { appGlobal } from "../app";
 import { k1DayS, k1HourS, k1MinuteS } from "../../frontend/Util/date";
 import { Observable, notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
@@ -194,6 +196,10 @@ export class Event extends Observable {
     this.response = original.response;
   }
 
+  get outgoingActions() {
+    return new OutgoingActions(this);
+  }
+
   /**
    * Assumes that the `original` property was set before
    */
@@ -248,7 +254,18 @@ export class Event extends Observable {
   }
 
   async saveToServer(): Promise<void> {
-    // nothing to do for local events
+    if (!this.participants.length) {
+      return;
+    }
+    if (!this.calUID) {
+      this.calUID = crypto.randomUUID();
+    }
+    let accounts = appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations && this.participants.some(participant => participant.emailAddress == account.emailAddress));
+    assert(accounts.length == 1, "Failed to find matching account for meeting");
+    let organizer = this.participants.find(participant => participant.emailAddress == accounts[0].emailAddress);
+    organizer.response = InvitationResponse.Organizer;
+    await this.outgoingActions.sendInvitations(accounts[0]);
+    await this.save();
   }
 
   get isNew(): boolean {
@@ -276,7 +293,20 @@ export class Event extends Observable {
   }
 
   async deleteFromServer(): Promise<void> {
-    // nothing to do for local events
+    if (!this.participants.length) {
+      return;
+    }
+    let accounts = appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations && this.participants.some(participant => participant.emailAddress == account.emailAddress));
+    assert(accounts.length == 1, "Failed to find matching account for meeting");
+    if (this.response <= InvitationResponse.Organizer) {
+      await this.outgoingActions.sendCancellations(accounts[0]);
+    } else {
+      for (let participant of this.participants) {
+        if (participant.response == InvitationResponse.Organizer) {
+          await this.respondToInvitation(InvitationResponse.Decline);
+        }
+      }
+    }
   }
 
   /** Person class needs to match account class, so need to clone.
@@ -308,7 +338,23 @@ export class Event extends Observable {
     let participant = this.participants.find(participant => participant.emailAddress == accounts[0].emailAddress);
     participant.response = response;
     await this.save();
-    await accounts[0].sendInvitationResponse(this, response);
+    await this.sendInvitationResponse(response, accounts[0]);
+  }
+
+  async sendInvitationResponse(response: InvitationResponseInMessage, account: MailAccount) {
+    let organizer = this.participants.find(participant => participant.response == InvitationResponse.Organizer);
+    assert(organizer, "Invitation should have an organizer");
+    let email = account.newEMailFrom();
+    email.to.add(organizer);
+    email.iCalMethod = "REPLY";
+    email.event = new Event();
+    email.event.copyFrom(this);
+    email.event.participants.replaceAll([new Participant(account.emailAddress, null, response)]);
+    if (email.event.descriptionText) {
+      email.text = email.event.descriptionText;
+      email.html = email.event.descriptionHTML;
+    }
+    await account.send(email);
   }
 
   /**

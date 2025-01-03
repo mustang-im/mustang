@@ -84,22 +84,6 @@ export class MailAccount extends TCPAccount {
     throw new AbstractFunction();
   }
 
-  async sendInvitationResponse(invitation: Event, response: InvitationResponseInMessage): Promise<void> {
-    let organizer = invitation.participants.find(participant => participant.response == InvitationResponse.Organizer);
-    assert(organizer, "Invitation should have an organizer");
-    let email = this.newEMailFrom();
-    email.to.add(organizer);
-    email.iCalMethod = "REPLY";
-    email.event = new Event();
-    email.event.copyFrom(invitation);
-    email.event.participants.replaceAll([new Participant(this.emailAddress, null, response)]);
-    if (email.event.descriptionText) {
-      email.text = email.event.descriptionText;
-      email.html = email.event.descriptionHTML;
-    }
-    await this.send(email);
-  }
-
   /** Create a folder on the top level, sibling of Inbox.
    * @see Folder.createSubFolder() */
   async createToplevelFolder(name: string): Promise<Folder> {

@@ -9,7 +9,7 @@ import EWSCreateItemRequest from "../../Mail/EWS/Request/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "../../Mail/EWS/Request/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/Request/EWSUpdateItemRequest";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, ensureArray } from "../../util/util";
+import { assert, ensureArray, NotReached } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 const ResponseTypes: Record<InvitationResponseInMessage, string> = {
@@ -133,6 +133,10 @@ export class EWSEvent extends Event {
     let week = sanitize.integer(WeekOfMonth[pattern.DayOfWeekIndex], 0);
     let first = sanitize.integer(Weekday[pattern.FirstDayOfWeek], Weekday.Monday);
     return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
+  }
+
+  get outgoingActions(): never {
+    throw new NotReached("Exchange automatically sends meeting invitations and cancellations");
   }
 
   async saveToServer() {

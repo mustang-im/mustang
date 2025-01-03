@@ -15,7 +15,7 @@ import OWAUpdateItemRequest from "../../Mail/OWA/Request/OWAUpdateItemRequest";
 import { owaCreateExclusionRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest } from "./Request/OWAEventRequests";
 import type { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert } from "../../util/util";
+import { assert, NotReached } from "../../util/util";
 
 const ResponseTypes: Record<InvitationResponseInMessage, string> = {
   [InvitationResponse.Accept]: "AcceptItem",
@@ -130,6 +130,10 @@ export class OWAEvent extends Event {
     let week = sanitize.integer(WeekOfMonth[pattern.DayOfWeekIndex], 0);
     let first = sanitize.integer(Weekday[pattern.FirstDayOfWeek], Weekday.Monday);
     return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
+  }
+
+  get outgoingActions(): never {
+    throw new NotReached("Exchange automatically sends meeting invitations and cancellations");
   }
 
   async saveToServer() {

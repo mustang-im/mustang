@@ -230,7 +230,7 @@ export class EMail extends Message {
   }
 
   protected async sendInvitationResponse(response: InvitationResponseInMessage): Promise<void> {
-    await this.folder.account.sendInvitationResponse(this.event, response);
+    return this.event.sendInvitationResponse(response, this.folder.account);
   }
 
   async loadEvent() {
