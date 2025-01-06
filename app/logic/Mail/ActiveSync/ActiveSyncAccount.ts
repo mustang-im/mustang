@@ -399,7 +399,7 @@ export class ActiveSyncAccount extends MailAccount {
             break;
           case FolderType.Calendar:
           case FolderType.UserCalendar:
-            let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.protocol == "addressbook-activesync" && calendar.url == url.toString() && calendar.username == this.username) as ActiveSyncCalendar | void;
+            let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.protocol == "calendar-activesync" && calendar.url == url.toString() && calendar.username == this.username) as ActiveSyncCalendar | void;
             if (calendar) {
               calendar.name = change.DisplayName;
             } else {
