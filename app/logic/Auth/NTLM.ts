@@ -22,18 +22,22 @@ export class NTLM extends Observable {
   }
 
   /**
-   * @returns the value for the 'Authentication' HTTP header
+   * @returns the value for the `Authentication` HTTP header
    */
   get authorizationHeader(): string {
     return this.authorization ?? "";
   }
 
   /**
-   * After calling init(), you need to make an empty call to the server and pass in the WWWAuthenticate HTTP header here
+   * After calling init(), you first need to make an empty call to the server and then
+   * pass in the `WWWAuthenticate` HTTP response header here.
+   * This will generate the `authorizationHeader` for the next call.
+   *
    * @param WWWAuthenticate  HTTP response header from the first call
    * @throws
    */
-  async loginWithPassword(username: string, password: string, WWWAuthenticate: string): Promise<void> {
+  async loginFromPassword(username: string, password: string, WWWAuthenticate: string): Promise<void> {
+    assert(!this.isLoggedIn, "NTLM: Already logged in");
     assert(this.step == Step.Step1, "NTLM: Please make an empty call first");
     assert(username && password, "Need username and password");
     this.authorization = await appGlobal.remoteApp.

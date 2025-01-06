@@ -249,22 +249,29 @@ export class EWSAccount extends MailAccount {
     return true;
   }
 
+  async loginWithNTLM(): Promise<void> {
+    if (this.authNTLM) {
+      let lock = await this.authNTLM.lock.lock();
+      lock.release();
+    } else {
+      this.authNTLM = new NTLM();
+      let lock = await this.authNTLM.lock.lock();
+      await this.authNTLM.init();
+      let response = await appGlobal.remoteApp.postHTTP(this.url, "", "text", this.createRequestOptions()); // dummy call, start step 2
+      assert(/\bNTLM\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${"NTLM"} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
+      await this.authNTLM.loginFromPassword(this.username, this.password, response.WWWAuthenticate);
+      response = await appGlobal.remoteApp.postHTTP(this.url, "", "text", this.createRequestOptions()); // dummy call, test login
+      if (!response.ok && response.status == 401) {
+        throw this.fatalError = new LoginError(null, gt`Password incorrect`);
+      }
+      lock.release();
+    }
+  }
+
   async callEWS(aRequest: JsonRequest): Promise<any> {
     if (this.authMethod == AuthMethod.NTLM) {
-      if (this.authNTLM) {
-        let lock = await this.authNTLM.lock.lock();
-        lock.release();
-      } else {
-        this.authNTLM = new NTLM();
-        let lock = await this.authNTLM.lock.lock();
-        await this.authNTLM.init();
-        let response = await appGlobal.remoteApp.postHTTP(this.url, "", "text", this.createRequestOptions()); // dummy call, for NTLM
-        assert(/\bNTLM\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${"NTLM"} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
-        await this.authNTLM.loginWithPassword(this.username, this.password, response.WWWAuthenticate);
-        lock.release();
-      }
+      await this.loginWithNTLM();
     }
-
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
     let response: any;
@@ -341,7 +348,7 @@ export class EWSAccount extends MailAccount {
             console.error(`Unexpected NTLM negotiation failure ${response.status} in callStream`);
             return;
           }
-          await this.authNTLM.loginWithPassword(this.username, this.password, response.WWWAuthenticate);
+          await this.authNTLM.loginFromPassword(this.username, this.password, response.WWWAuthenticate);
           response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions()); // Repeat the call
         }
         if (!response.ok) {
