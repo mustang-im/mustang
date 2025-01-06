@@ -44,11 +44,6 @@ export class NTLM extends Observable {
   async logout(): Promise<void> {
     this.step = Step.LoggedOut;
     this.authorization = null;
-    await this.init();
-  }
-
-  async reset(): Promise<void> {
-    await this.logout();
   }
 }
 

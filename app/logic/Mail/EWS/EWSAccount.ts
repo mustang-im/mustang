@@ -219,6 +219,8 @@ export class EWSAccount extends MailAccount {
       options.headers.Authorization = this.authNTLM.authorizationHeader;
     } else if (this.authMethod == AuthMethod.Password) {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
+    } else if (this.authMethod == AuthMethod.Unknown) {
+      // triggers 401, which gives us WWWAuthenticate HTTP response header, which lists the login methods supported by the server
     } else {
       throw new NotReached(`Unknown authentication method ${this.authMethod}`);
     }
@@ -300,15 +302,24 @@ export class EWSAccount extends MailAccount {
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return repeat();
       } else if (this.authMethod == AuthMethod.NTLM) {
-        await this.authNTLM.reset();
+        this.authNTLM = null;
         return repeat();
       } else if (this.authMethod == AuthMethod.Password) {
         assert(/\bBasic\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${gt`Password`} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
-        throw this.fatalError = new LoginError(null,
-          gt`Password incorrect`);
+        throw this.fatalError = new LoginError(null, gt`Password incorrect`);
+      } else if (this.authMethod == AuthMethod.Unknown) {
+        if (/\bBasic\b/.test(response.WWWAuthenticate)) {
+          this.authMethod = AuthMethod.Password;
+        } else if (/\NTLM\b/.test(response.WWWAuthenticate)) {
+          this.authMethod = AuthMethod.NTLM;
+        } else {
+          throw this.fatalError = new ConnectError(null,
+            gt`Unsupported authentication protocol(s): ${response.WWWAuthenticate}`);
+        }
+        return await this.callEWS(aRequest); // repeat the call
       } else {
         throw this.fatalError = new ConnectError(null,
-          gt`Unsupported authentication protocol(s): ${response.WWWAuthenticate}`);
+          gt`Server supports authentication protocol(s): ${response.WWWAuthenticate}. Please check your account configuration.`);
       }
     } else {
       this.throttle.waitForSecond(1);
