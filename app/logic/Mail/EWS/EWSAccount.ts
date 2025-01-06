@@ -216,9 +216,7 @@ export class EWSAccount extends MailAccount {
       options.headers.Authorization = authorization;
     } else if (this.oAuth2) {
       options.headers.Authorization = this.oAuth2.authorizationHeader;
-    } else if (this.NTLMauthorization) {
-      options.headers.Authorization = this.NTLMauthorization;
-    } else {
+    } else if (!this.NTLMauthorization) {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
     }
     return options;
@@ -246,12 +244,20 @@ export class EWSAccount extends MailAccount {
     return true;
   }
 
-  async callEWS(aRequest: JsonRequest, authorization?: string): Promise<any> {
+  async callEWS(aRequest: JsonRequest): Promise<any> {
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
     let response: any;
     try {
-      response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions(authorization));
+      response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions());
+      if (response.status == 401 && this.NTLMauthorization) {
+        response = await appGlobal.remoteApp.postHTTP(this.url, "", "text", this.createRequestOptions(this.NTLMauthorization));
+        if (response.status != 401) {
+          throw new Error("Unexpected NTLM negotitation failure in callEWS");
+        }
+        let authorization = await appGlobal.remoteApp.createType3MessageFromType2Message(response.WWWAuthenticate, this.username, this.password);
+        response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions(authorization));
+      }
     } finally {
       lock.release();
     }
@@ -283,8 +289,6 @@ export class EWSAccount extends MailAccount {
         await this.oAuth2.reset();
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return repeat();
-      } else if (this.NTLMauthorization && !authorization) {
-        return await this.callEWS(aRequest, await appGlobal.remoteApp.createType3MessageFromType2Message(response.WWWAuthenticate, this.username, this.password));
       } else if (/\bNTLM\b/.test(response.WWWAuthenticate) && !this.NTLMauthorization) {
         this.NTLMauthorization = await appGlobal.remoteApp.createType1Message();
         return await this.callEWS(aRequest); // repeat the call
@@ -310,7 +314,8 @@ export class EWSAccount extends MailAccount {
         let requestXML = this.request2XML(request);
         let data = "";
         let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions());
-        if (this.NTLMauthorization) {
+        if (response.status == 401 && this.NTLMauthorization) {
+          response = await appGlobal.remoteApp.streamHTTP(this.url, "", this.createRequestOptions(this.NTLMauthorization));
           if (response.status != 401) {
             console.error("Unexpected NTLM negotiation failure in callStream");
             return;
