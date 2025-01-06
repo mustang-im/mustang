@@ -256,10 +256,10 @@ export class EWSAccount extends MailAccount {
     } else {
       this.authNTLM = new NTLM();
       let lock = await this.authNTLM.lock.lock();
-      await this.authNTLM.init();
+      await this.authNTLM.init(); // step 1
       let response = await appGlobal.remoteApp.postHTTP(this.url, "", "text", this.createRequestOptions()); // dummy call, start step 2
       assert(/\bNTLM\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${"NTLM"} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
-      await this.authNTLM.loginFromPassword(this.username, this.password, response.WWWAuthenticate);
+      await this.authNTLM.loginFromPassword(this.username, this.password, response.WWWAuthenticate); // step 3
       response = await appGlobal.remoteApp.postHTTP(this.url, "", "text", this.createRequestOptions()); // dummy call, test login
       if (!response.ok && response.status == 401) {
         throw this.fatalError = new LoginError(null, gt`Password incorrect`);
