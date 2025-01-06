@@ -234,6 +234,9 @@ export class SQLEMail {
         await this.save(email);
       }
       await (await getDatabase()).run(sql`END TRANSACTION`);
+    } catch (ex) {
+      await (await getDatabase()).run(sql`ROLLBACK TRANSACTION`);
+      throw ex;
     } finally {
       lock.release();
     }
