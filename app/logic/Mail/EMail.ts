@@ -202,7 +202,11 @@ export class EMail extends Message {
   async loadEvent() {
     assert(this.scheduling, "This is not an invitation or response");
     assert(!this.event, "Event has already been loaded");
-    await this.mime ? this.parseMIME() : this.loadMIME();
+    if (this.mime) {
+      await this.parseMIME();
+    } else {
+      await this.loadMIME();
+    }
   }
 
   async parseMIME() {
