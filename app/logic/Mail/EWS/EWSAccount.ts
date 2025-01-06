@@ -213,12 +213,9 @@ export class EWSAccount extends MailAccount {
         'Content-Type': "text/xml; charset=utf-8",
       },
     };
-    if (this.authMethod == AuthMethod.NTLM || !this.authNTLM) {
-      this.authNTLM = new NTLM();
-    }
     if (this.oAuth2) {
       options.headers.Authorization = this.oAuth2.authorizationHeader;
-    } else if (this.authNTLM) {
+    } else if (this.authMethod == AuthMethod.NTLM) {
       options.headers.Authorization = this.authNTLM.authorizationHeader;
     } else if (this.authMethod == AuthMethod.Password) {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
@@ -251,6 +248,14 @@ export class EWSAccount extends MailAccount {
   }
 
   async callEWS(aRequest: JsonRequest): Promise<any> {
+    if (this.authMethod == AuthMethod.NTLM && !this.authNTLM) {
+      this.authNTLM = new NTLM();
+      await this.authNTLM.init();
+      let response = await appGlobal.remoteApp.postHTTP(this.url, "", "text", this.createRequestOptions()); // dummy call, for NTLM
+      assert(/\bNTLM\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${"NTLM"} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
+      await this.authNTLM.loginWithPassword(this.username, this.password, response.WWWAuthenticate);
+    }
+
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
     let response: any;
@@ -287,10 +292,9 @@ export class EWSAccount extends MailAccount {
         await this.oAuth2.reset();
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return repeat();
-      } else if (this.authNTLM) {
-        assert(/\bNTLM\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${"NTLM"} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
-        await this.authNTLM.loginWithPassword(this.username, this.password, response.WWWAuthenticate);
-        return await this.callEWS(aRequest); // repeat the call
+      } else if (this.authMethod == AuthMethod.NTLM) {
+        await this.authNTLM.reset();
+        return repeat();
       } else if (this.authMethod == AuthMethod.Password) {
         assert(/\bBasic\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${gt`Password`} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
         throw this.fatalError = new LoginError(null,
@@ -314,7 +318,7 @@ export class EWSAccount extends MailAccount {
         let requestXML = this.request2XML(request);
         let data = "";
         let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions());
-        if (this.authNTLM) {
+        if (this.authMethod == AuthMethod.NTLM) {
           if (response.status != 401) { // First step in NTLM is always a 401
             console.error(`Unexpected NTLM negotiation failure ${response.status} in callStream`);
             return;
