@@ -30,7 +30,7 @@ export class EWSAccount extends MailAccount {
   readonly folderMap = new Map<string, EWSFolder>;
   throttle = new Throttle(50, 1);
   semaphore = new Semaphore(20);
-  NTLMauthorization: string | undefined;
+  NTLMauthorization: string = "";
   isRepeating = false;
 
   constructor() {
@@ -216,9 +216,7 @@ export class EWSAccount extends MailAccount {
       options.headers.Authorization = authorization;
     } else if (this.oAuth2) {
       options.headers.Authorization = this.oAuth2.authorizationHeader;
-    } else if (this.NTLMauthorization) {
-      options.headers.Authorization = this.NTLMauthorization;
-    } else {
+    } else if (!this.NTLMauthorization) {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
     }
     return options;
@@ -283,11 +281,15 @@ export class EWSAccount extends MailAccount {
         await this.oAuth2.reset();
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return repeat();
-      } else if (this.NTLMauthorization && !authorization) {
+      } else if (authorization == this.NTLMauthorization) {
+        // We just performed step 1 of the NTLM challlenge; now perform step 2.
         return await this.callEWS(aRequest, await appGlobal.remoteApp.createType3MessageFromType2Message(response.WWWAuthenticate, this.username, this.password));
+      } else if (!authorization && this.NTLMauthorization) {
+        // We didn't reuse a connection so we need to start the NTLM challenge.
+        return await this.callEWS(aRequest, this.NTLMauthorization);
       } else if (/\bNTLM\b/.test(response.WWWAuthenticate) && !this.NTLMauthorization) {
         this.NTLMauthorization = await appGlobal.remoteApp.createType1Message();
-        return await this.callEWS(aRequest); // repeat the call
+        return await this.callEWS(aRequest, this.NTLMauthorization); // start the NTLM challenge
       } else if (!/\bBasic\b/.test(response.WWWAuthenticate)) {
         throw this.fatalError = new ConnectError(null,
           "Failed or unsupported authentication protocol(s): " + response.WWWAuthenticate);
@@ -310,7 +312,8 @@ export class EWSAccount extends MailAccount {
         let requestXML = this.request2XML(request);
         let data = "";
         let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions());
-        if (this.NTLMauthorization) {
+        if (response.status == 401 && this.NTLMauthorization) {
+          response = await appGlobal.remoteApp.streamHTTP(this.url, "", this.createRequestOptions(this.NTLMauthorization));
           if (response.status != 401) {
             console.error("Unexpected NTLM negotiation failure in callStream");
             return;
