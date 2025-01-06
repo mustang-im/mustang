@@ -16,6 +16,7 @@ import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { Throttle } from "../../util/Throttle";
 import { Semaphore } from "../../util/Semaphore";
+import { Lock } from "../../util/Lock";
 import { assert, blobToBase64, ensureArray } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { SetColl } from "svelte-collections";
@@ -31,6 +32,7 @@ export class EWSAccount extends MailAccount {
   readonly folderMap = new Map<string, EWSFolder>;
   throttle = new Throttle(50, 1);
   semaphore = new Semaphore(20);
+  NTLMlock: Lock;
   NTLMauthorization: string | undefined;
 
   constructor() {
@@ -246,12 +248,30 @@ export class EWSAccount extends MailAccount {
     return true;
   }
 
-  async callEWS(aRequest: JsonRequest, authorization?: string): Promise<any> {
+  async callEWS(aRequest: JsonRequest): Promise<any> {
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
     let response: any;
     try {
-      response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions(authorization));
+      if (this.NTLMauthorization) {
+        let ntlm = await this.NTLMlock.lock();
+        let connection;
+        try {
+          response = await appGlobal.remoteApp.postHTTP(this.url, "", "text", this.createRequestOptions());
+          if (response.status != 401) {
+            throw new Error("Unexpected NTLM negotitation failure in callEWS");
+          }
+          let authorization = await appGlobal.remoteApp.createType3MessageFromType2Message(response.WWWAuthenticate, this.username, this.password);
+          // postHTTP waits for the server to finish sending data.
+          // Just connect for now, and wait for the data outside of the lock.
+          connection = appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions(authorization));
+        } finally {
+          ntlm.release();
+        }
+        response = await connection;
+      } else {
+        response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions());
+      }
     } finally {
       lock.release();
     }
@@ -274,9 +294,8 @@ export class EWSAccount extends MailAccount {
         await this.oAuth2.reset();
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return await this.callEWS(aRequest); // repeat the call
-      } else if (this.NTLMauthorization && !authorization) {
-        return await this.callEWS(aRequest, await appGlobal.remoteApp.createType3MessageFromType2Message(response.WWWAuthenticate, this.username, this.password));
       } else if (/\bNTLM\b/.test(response.WWWAuthenticate) && !this.NTLMauthorization) {
+        this.NTLMlock = new Lock();
         this.NTLMauthorization = await appGlobal.remoteApp.createType1Message();
         return await this.callEWS(aRequest); // repeat the call
       } else if (!/\bBasic\b/.test(response.WWWAuthenticate)) {
@@ -300,14 +319,22 @@ export class EWSAccount extends MailAccount {
         const endEnvelope = "</Envelope>";
         let requestXML = this.request2XML(request);
         let data = "";
-        let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions());
+        let response;
         if (this.NTLMauthorization) {
-          if (response.status != 401) {
-            console.error("Unexpected NTLM negotiation failure in callStream");
-            return;
+          let ntlm = await this.NTLMlock.lock();
+          try {
+            response = await appGlobal.remoteApp.streamHTTP(this.url, "", this.createRequestOptions());
+            if (response.status != 401) {
+              console.error("Unexpected NTLM negotiation failure in callStream");
+              return;
+            }
+            let authorization = await appGlobal.remoteApp.createType3MessageFromType2Message(response.WWWAuthenticate, this.username, this.password);
+            response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions(authorization));
+          } finally {
+            ntlm.release();
           }
-          let authorization = await appGlobal.remoteApp.createType3MessageFromType2Message(response.WWWAuthenticate, this.username, this.password);
-          response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions(authorization));
+        } else {
+          response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions());
         }
         if (!response.ok) {
           console.error(`streamHTTP failed with HTTP ${response.status} ${response.statusText}`);
