@@ -248,12 +248,19 @@ export class EWSAccount extends MailAccount {
   }
 
   async callEWS(aRequest: JsonRequest): Promise<any> {
-    if (this.authMethod == AuthMethod.NTLM && !this.authNTLM) {
-      this.authNTLM = new NTLM();
-      await this.authNTLM.init();
-      let response = await appGlobal.remoteApp.postHTTP(this.url, "", "text", this.createRequestOptions()); // dummy call, for NTLM
-      assert(/\bNTLM\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${"NTLM"} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
-      await this.authNTLM.loginWithPassword(this.username, this.password, response.WWWAuthenticate);
+    if (this.authMethod == AuthMethod.NTLM) {
+      if (this.authNTLM) {
+        let lock = await this.authNTLM.lock.lock();
+        lock.release();
+      } else {
+        this.authNTLM = new NTLM();
+        let lock = await this.authNTLM.lock.lock();
+        await this.authNTLM.init();
+        let response = await appGlobal.remoteApp.postHTTP(this.url, "", "text", this.createRequestOptions()); // dummy call, for NTLM
+        assert(/\bNTLM\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${"NTLM"} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
+        await this.authNTLM.loginWithPassword(this.username, this.password, response.WWWAuthenticate);
+        lock.release();
+      }
     }
 
     await this.throttle.throttle();

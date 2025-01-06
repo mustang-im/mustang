@@ -1,4 +1,5 @@
 import { appGlobal } from "../app";
+import { Lock } from "../util/Lock";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { assert } from "../util/util";
 
@@ -9,9 +10,11 @@ export class NTLM extends Observable {
   authorization: string | null = null;
   @notifyChangedProperty
   protected step: Step = Step.LoggedOut;
+  lock = new Lock();
 
   async init() {
     this.authorization = await appGlobal.remoteApp.createType1Message();
+    this.step = Step.Step1;
   }
 
   get isLoggedIn(): boolean {
@@ -31,6 +34,7 @@ export class NTLM extends Observable {
    * @throws
    */
   async loginWithPassword(username: string, password: string, WWWAuthenticate: string): Promise<void> {
+    assert(this.step == Step.Step1, "NTLM: Please make an empty call first");
     assert(username && password, "Need username and password");
     this.authorization = await appGlobal.remoteApp.
       createType3MessageFromType2Message(WWWAuthenticate, username, password);
