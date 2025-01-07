@@ -9,13 +9,14 @@ import { loadTagsList } from './Mail/Tag';
 import type { MailAccount } from './Mail/MailAccount';
 import type { Account } from './Abstract/Account';
 import JPCWebSocket from '../../lib/jpc-ws';
+import { production } from './build';
 import { logError } from '../frontend/Util/error';
 
 const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
 
 export async function getStartObjects(): Promise<void> {
   let jpc = new JPCWebSocket(null);
-  await jpc.connect(kSecret, "localhost", 5455);
+  await jpc.connect(kSecret, "localhost", production ? 5455 : 5453);
   console.log("Connected to backend");
   appGlobal.remoteApp = await jpc.getRemoteStartObject();
   appGlobal.addressbooks.addAll(await readAddressbooks());

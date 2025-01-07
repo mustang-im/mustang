@@ -20,7 +20,7 @@ let jpc: JPCWebSocket | null = null;
 export async function startupBackend() {
   let appGlobal = await createSharedAppObject();
   jpc = new JPCWebSocket(appGlobal);
-  await jpc.listen(kSecret, 5455, false);
+  await jpc.listen(kSecret, production ? 5455 : 5453, false);
 }
 
 export async function shutdownBackend() {
