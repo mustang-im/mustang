@@ -29,9 +29,11 @@ import { appGlobal } from "../../logic/app";
  * });
  * ```
  */
-export function buildContextMenu(context: ContextInfo, win: any): ArrayColl<MenuItem> {
+export async function buildContextMenu(context: ContextInfo, webview: any): Promise<ArrayColl<MenuItem>> {
   context.isText = context.selectionText?.length > 0;
   context.isLink = !!context.linkURL;
+
+  const win = await appGlobal.remoteApp.getWebContents(webview.getWebContentsId());
 
   let menuItems = new ArrayColl<MenuItem>();
   function add(id: string, label, icon: string, action: Function, disabled: boolean = false) {
@@ -252,9 +254,9 @@ export function learnSpelling(context: ContextInfo, win: any) {
   win.session.addWordToSpellCheckerDictionary(context.misspelledWord);
 }
 
-export function inspect(context: ContextInfo, win: any) {
+export async function inspect(context: ContextInfo, win: any) {
   win.inspectElement(context.x, context.y);
-  if (win.isDevToolsOpened()) {
+  if (await win.isDevToolsOpened()) {
     win.devToolsWebContents.focus();
   }
 }

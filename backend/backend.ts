@@ -45,6 +45,7 @@ async function createSharedAppObject() {
     minimizeMainWindow,
     unminimizeMainWindow,
     addEventListenerWebContents,
+    getWebContents,
     shell,
     restartApp,
     setTheme,
@@ -339,6 +340,45 @@ function addEventListenerWebContents(webContentsID: number, webviewEvent: string
   win.on(webviewEvent as any, (_: any, event: Event) => {
     eventHandler(event);
   });
+}
+
+class WebContents {
+  private _win: Electron.WebContents;
+
+  constructor(win: Electron.WebContents) {
+    this._win = win;
+  }
+
+  copy() {
+    this._win.copy();
+  }
+  cut() {
+    this._win.cut();
+  }
+  paste() {
+    this._win.paste();
+  }
+  selectAll() {
+    this._win.selectAll();
+  }
+  copyImageAt(x: number, y: number ) {
+    this._win.copyImageAt(x, y);
+  }
+  showDefinitionForSelection() {
+    this._win.showDefinitionForSelection();
+  }
+  inspectElement(x: number, y: number) {
+    this._win.inspectElement(x, y);
+  }
+  isDevToolsOpened() {
+    return this._win.isDevToolsOpened();
+  }
+}
+
+function getWebContents(webContentsID: number) {
+  const win = webContents.fromId(webContentsID);
+  assert(win, `WebContents ID ${webContentsID} not found`);
+  return new WebContents(win);
 }
 
 function setBadgeCount(count: number) {
