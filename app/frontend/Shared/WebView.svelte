@@ -74,9 +74,9 @@
         over-flow: visible !important;
       }
     </style>`;
-    const head = headHTML; /*`<meta http-equiv="Content-Security-Policy" content="default-src '${
-      allowServerCalls === true ? "*" : allowServerCalls === false ? "none" : allowServerCalls
-    }'">\n\n` + headHTML + `\n\n`; */
+    let servers = allowServerCalls ? `* 'unsafe-inline'` : `'unsafe-inline'` ;
+    const head = `<meta http-equiv="Content-Security-Policy" content="default-src 'none';
+      style-src ${servers}; img-src ${servers}">\n\n` + headHTML + `\n\n`;
     let displayHTML = html;
     let headPos = displayHTML.indexOf("<head>");
     headPos = headPos < 0 ? 0 : headPos + 6;
