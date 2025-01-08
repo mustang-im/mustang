@@ -17,7 +17,7 @@ import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { Throttle } from "../../util/Throttle";
 import { Semaphore } from "../../util/Semaphore";
-import { assert, blobToBase64, ensureArray, NotImplemented, NotReached } from "../../util/util";
+import { assert, blobToBase64, ensureArray, NotReached } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 
 type Json = string | number | boolean | null | Json[] | {[key: string]: Json};
@@ -323,7 +323,7 @@ export class EWSAccount extends MailAccount {
           throw this.fatalError = new ConnectError(null,
             gt`Unsupported authentication protocol(s): ${response.WWWAuthenticate}`);
         }
-        return await this.callEWS(aRequest); // repeat the call
+        return repeat();
       } else {
         throw this.fatalError = new ConnectError(null,
           gt`Server supports authentication protocol(s): ${response.WWWAuthenticate}. Please check your account configuration.`);
