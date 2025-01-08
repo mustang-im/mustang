@@ -309,16 +309,15 @@ export class EWSAccount extends MailAccount {
         const endEnvelope = "</Envelope>";
         let requestXML = this.request2XML(request);
         let data = "";
-        let authorization;
+        let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions());
         if (this.NTLMauthorization) {
-          let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions());
           if (response.status != 401) {
             console.error("Unexpected NTLM negotiation failure in callStream");
             return;
           }
-          authorization = await appGlobal.remoteApp.createType3MessageFromType2Message(response.WWWAuthenticate, this.username, this.password);
+          let authorization = await appGlobal.remoteApp.createType3MessageFromType2Message(response.WWWAuthenticate, this.username, this.password);
+          response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions(authorization));
         }
-        let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions(authorization));
         if (!response.ok) {
           console.error(`streamHTTP failed with HTTP ${response.status} ${response.statusText}`);
           return;
