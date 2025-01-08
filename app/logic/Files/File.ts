@@ -4,7 +4,8 @@ import { assert } from "../util/util";
 
 export class FileOrDirectory {
   id: string; /** Full file path and name */
-  name: string; /** Excluding directory. For files, including file ext. */
+  /** Excluding directory path. For files, including file ext. */
+  name: string;
   lastMod = new Date();
 
   setParent(directory: Directory) {
@@ -20,6 +21,18 @@ export class File extends FileOrDirectory {
   mimetype: string;
   length: number; /* in bytes */
   contents: Blob; /** may be undefined = not loaded. Does not mean that the file is empty. */
+
+  setFileName(val: string) {
+    this.name = val;
+    let pos = val.lastIndexOf(".");
+    if (pos == -1) {
+      this.ext = "";
+      this.nameWithoutExt = val;
+      return;
+    }
+    this.nameWithoutExt = val.substring(0, pos);
+    this.ext = val.substring(pos + 1);
+  }
 }
 
 export class Directory extends FileOrDirectory {

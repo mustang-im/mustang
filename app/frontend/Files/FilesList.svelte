@@ -7,7 +7,7 @@
     <hbox class="time">Last Mod</hbox>
     -->
 
-    {#each files.each as file (file.id) }
+    {#each $files.each as file }
       <FileOrDirectoryLine {file} />
     {/each}
   </grid>
