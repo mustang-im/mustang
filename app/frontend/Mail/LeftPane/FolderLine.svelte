@@ -5,7 +5,13 @@
   <hbox class="icon">
     <FolderIcon {folder} size="14px" />
   </hbox>
-  <hbox class="label">{$folder.name}</hbox>
+  <hbox class="label">
+    {#if !folder.specialFolder || folder.specialFolder == SpecialFolder.Normal}
+      {$folder.name}
+    {:else}
+      {specialFolderNames[folder.specialFolder]}
+    {/if}
+  </hbox>
   <hbox class="buttons" flex>
     <GetMailButton {folder} />
     <Button label={$t`Folder properties`} icon={MoreIcon} iconOnly plain
@@ -14,7 +20,7 @@
 </hbox>
 
 <script lang="ts">
-  import type { Folder } from '../../../logic/Mail/Folder';
+  import { type Folder, SpecialFolder, specialFolderNames } from '../../../logic/Mail/Folder';
   import { onDropMail, onDragOverMail } from '../Message/drag';
   import GetMailButton from './GetMailButton.svelte';
   import Button from '../../Shared/Button.svelte';
