@@ -1,6 +1,9 @@
 import { MailAccount } from "../MailAccount";
 import { Folder, SpecialFolder } from "../Folder";
 import { AllFolders } from "./AllFolders";
+import type { EMail } from "../EMail";
+import { appGlobal } from "../../app";
+import { assert } from "../../util/util";
 import { ArrayColl, Collection, mergeColl, mergeColls } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
 
@@ -74,6 +77,12 @@ export class AllAccounts extends MailAccount {
     for (let account of this.accounts) {
       await account.logout();
     }
+  }
+
+  newEMailFrom(): EMail {
+    let account = appGlobal.emailAccounts.first;
+    assert(account, gt`Please set up a mail account first`);
+    return account.newEMailFrom();
   }
 
   newFolder(): Folder {

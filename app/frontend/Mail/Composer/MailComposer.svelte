@@ -142,9 +142,9 @@
   import { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
-  import { selectedAccount } from "../Selected";
   import { getLocalStorage } from "../../Util/LocalStorage";
-  import { UserError } from "../../../logic/util/util";
+  import { appGlobal } from "../../../logic/app";
+  import { UserError, assert } from "../../../logic/util/util";
   import { backgroundError, catchErrors, showUserError } from "../../Util/error";
   import { appName, appVersion } from "../../../logic/build";
   import MailAutocomplete from "./MailAutocomplete.svelte";
@@ -187,7 +187,10 @@
     }
     lastMail = mail;
 
-    fromIdentity = mail.identity ?? $selectedAccount.identities.first;
+    fromIdentity = mail.identity
+      ?? mail.folder?.account.identities.first
+      ?? appGlobal.emailAccounts.first?.identities.first;
+    assert(fromIdentity, "Composer: Need identity or account for email");
     // setAuthor() called
 
     if (mail.from?.emailAddress) {
@@ -221,7 +224,7 @@
 
   $: fromIdentity && setAuthor()
   function setAuthor() {
-    mail.folder = fromIdentity.account.getSpecialFolder(SpecialFolder.Sent)
+    mail.folder ??= fromIdentity.account.getSpecialFolder(SpecialFolder.Sent)
       ?? fromIdentity.account.inbox;
     if (fromIdentity == mail.identity) {
       return; // don't overwrite concrete email address for catch-all identity
