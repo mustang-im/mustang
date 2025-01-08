@@ -185,6 +185,10 @@
     try {
       let searchTerm = $globalSearchTerm;
       $selectedMessage = null;
+      if (!searchTerm) {
+        searchMessages = null;
+        return;
+      }
       searchMessages = new ArrayColl<EMail>();
 
       search.bodyText = searchTerm;
