@@ -74,8 +74,7 @@
         over-flow: visible !important;
       }
     </style>`;
-    let servers = allowServerCalls === true ? "* 'unsafe-inline'" :
-      allowServerCalls === false ? "'unsafe-inline'" : allowServerCalls;
+    let servers = allowServerCalls ? `* 'unsafe-inline'` : `'unsafe-inline'` ;
     const head = `<meta http-equiv="Content-Security-Policy" content="default-src 'none';
       style-src ${servers}; img-src ${servers}">\n\n` + headHTML + `\n\n`;
     let displayHTML = html;

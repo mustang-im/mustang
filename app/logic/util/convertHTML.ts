@@ -1,4 +1,5 @@
 import { getBaseDomainFromHost } from "./netUtil";
+import type { URLString } from "./util";
 import DOMPurify from "dompurify"; // https://github.com/cure53/DOMPurify
 import { convert as htmlToText } from "html-to-text";
 import markdownit from "markdown-it";
@@ -50,11 +51,13 @@ export function sanitizeHTMLExternal(html: string): string {
     return null;
   }
   includeExternal = true;
-  return DOMPurify.sanitize(html, {
+  let sanitized = DOMPurify.sanitize(html, {
     USE_PROFILES: { html: true },
     FORBID_TAGS: ["svg", "mathml"],
     WHOLE_DOCUMENT: true,
   });
+  includeExternal = false;
+  return sanitized;
 }
 
 // <copied from="https://github.com/cure53/DOMPurify/blob/main/demos/hooks-proxy-demo.html" modified="true" license="Apache 2.0">
@@ -62,15 +65,15 @@ const proxy = 'http://localhost:5454/proxy?url=';
 const cssURLRegex = /(url\("?)(?!data:)/gim;
 const urlAttributes = ['action', 'background', 'href', 'poster', 'src', 'srcset'];
 
-function urlAttribute(url) {
-  return /^data:image\//.test(url) || /^cid:/.test(url)
-    ? url
-    // : `${proxy}${escape(url)}`;
-    : "";
-}
-
-function externalSrc(url) {
-  return url.startsWith('http://') || url.startsWith('https://') ? url : "";
+function urlAttribute(url: URLString, includeExternal = false) {
+  if (!url) {
+    return "";
+  }
+  if (url.startsWith("data:image/") || url.startsWith("cid:") ||
+    includeExternal && (url.startsWith("https://") || url.startsWith("http://"))) {
+    return url; // or `${proxy}${escape(url)}`;
+  }
+  return "";
 }
 
 function addStyles(output, styles) {
@@ -151,10 +154,9 @@ DOMPurify.addHook('afterSanitizeAttributes', node => {
           node.setAttribute("title", ex.message ?? ex + "");
         }
       } else if ((node.tagName.toLocaleLowerCase() == "img" && attribute == "src") ||
-          (node.tagName.toLocaleLowerCase() == "link" && node.getAttribute("rel") == "stylesheet" && attribute == "href")
-          && includeExternal) {
-        let url = node.getAttribute(attribute);
-        let newURL = externalSrc(url);
+          (node.tagName.toLocaleLowerCase() == "link" && node.getAttribute("rel") == "stylesheet" && attribute == "href")) {
+        let orgURL = node.getAttribute(attribute);
+        let newURL = urlAttribute(orgURL, includeExternal);
         node.setAttribute(attribute, newURL);
       } else {
         let orgURL = node.getAttribute(attribute);

@@ -67,11 +67,10 @@ export class Message extends Observable {
    * This is only cached here in RAM, but not saved on disk,
    * so that we can change the sanitization. */
   protected _sanitizedHTML: string = null;
-  /** HTML version of the message.
-   * Sanitized with external images and css.
-   * This is only cached here in RAM, but not saved on disk,
-   * so that we can change the sanitization. */
-  protected _sanitizedHTMLWithExternal: string = null;
+  /** Allow HTTPS? */
+  @notifyChangedProperty
+  protected _loadExternalImages = false;
+
   /** HTML version of the message.
    * Sanitized. */
   get html(): string {
@@ -80,27 +79,12 @@ export class Message extends Observable {
     }
     try {
       if (this._rawHTML) {
-        return this._sanitizedHTML = sanitizeHTML(this._rawHTML);
+        return this._sanitizedHTML = this.loadExternalImages
+          ? sanitizeHTMLExternal(this._rawHTML)
+          : sanitizeHTML(this._rawHTML);
       }
       if (this._text) {
         return this._sanitizedHTML = convertTextToHTML(this._text);
-      }
-    } catch (ex) {
-      backgroundError(ex);
-    }
-    return null;
-  }
-
-  get htmlWithExternal(): string {
-    if (this._sanitizedHTMLWithExternal) {
-      return this._sanitizedHTMLWithExternal;
-    }
-    try {
-      if (this._rawHTML) {
-        return this._sanitizedHTMLWithExternal = sanitizeHTMLExternal(this._rawHTML);
-      }
-      if (this._text) {
-        return this._sanitizedHTMLWithExternal = convertTextToHTML(this._text);
       }
     } catch (ex) {
       backgroundError(ex);
@@ -126,6 +110,18 @@ export class Message extends Observable {
   }
   get rawText(): string {
     return this._text;
+  }
+
+  /** Allow images and stylesheets to load from https: ? */
+  get loadExternalImages(): boolean {
+    return this._loadExternalImages;
+  }
+  set loadExternalImages(val: boolean) {
+    if (this._loadExternalImages == val) {
+      return;
+    }
+    this._sanitizedHTML = null; // forces re-rendering
+    this._loadExternalImages = val; // notifyChangedProperty triggers update
   }
 
   readonly reactions = new MapColl<Person, string>();

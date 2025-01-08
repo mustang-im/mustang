@@ -17,7 +17,7 @@
   {:else if mode == DisplayMode.HTML}
     <HTMLDisplay html={$message.html} allowExternalImages={false} />
   {:else if mode == DisplayMode.HTMLWithExternal}
-    <HTMLDisplay html={$message.htmlWithExternal} allowExternalImages={true} />
+    <HTMLDisplay html={$message.html} allowExternalImages={true} />
   {:else if mode == DisplayMode.Plaintext}
     <PlaintextDisplay plaintext={$message.text} />
     <!--<HTMLDisplay html={convertTextToHTML($message.text)} />-->
@@ -48,6 +48,8 @@
 
   let modeSetting = getLocalStorage("mail.contentRendering", "html");
   $: mode = $modeSetting.value as DisplayMode;
+
+  $: message.loadExternalImages = mode == DisplayMode.HTMLWithExternal;
 
   function getSource(message: EMail): string {
     if (!message.mime) {
