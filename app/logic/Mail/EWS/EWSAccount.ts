@@ -18,7 +18,6 @@ import { Throttle } from "../../util/Throttle";
 import { Semaphore } from "../../util/Semaphore";
 import { assert, blobToBase64, ensureArray } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { SetColl } from "svelte-collections";
 
 type Json = string | number | boolean | null | Json[] | {[key: string]: Json};
 
@@ -31,6 +30,7 @@ export class EWSAccount extends MailAccount {
   readonly folderMap = new Map<string, EWSFolder>;
   throttle = new Throttle(50, 1);
   semaphore = new Semaphore(20);
+  isRepeating = false;
 
   constructor() {
     super();
@@ -265,10 +265,19 @@ export class EWSAccount extends MailAccount {
       }
     }
     if (response.status == 401) {
-      if (this.oAuth2) {
+      const repeat = async () => {
+        this.isRepeating = true;
+        let result = await this.callEWS(aRequest); // repeat the call
+        this.isRepeating = false;
+        return result;
+      }
+      if (this.isRepeating) {
+        let ex = new EWSError(response, aRequest);
+        throw new LoginError(ex, gt`Login failed`);
+      } else if (this.oAuth2) {
         await this.oAuth2.reset();
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
-        return await this.callEWS(aRequest); // repeat the call
+        return repeat();
       } else if (!/\bBasic\b/.test(response.WWWAuthenticate)) {
         throw this.fatalError = new ConnectError(null,
           "Unsupported authentication protocol(s): " + response.WWWAuthenticate);
