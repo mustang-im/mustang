@@ -6,4 +6,5 @@ blockquote {
 
 img[src=""] {
   visibility: hidden;
+  max-height: 0px;
 }
