@@ -159,7 +159,7 @@
     margin-inline-end: 16px;
   }
   .text {
-    font-size: 13.3px;
+    font-size: 15px;
     overflow-wrap: anywhere;
   }
 
