@@ -40,6 +40,7 @@
       for (let attachment of email.attachments) {
         let file = new File();
         file.setFileName(attachment.filename);
+        file.filepathLocal = attachment.filepathLocal;
         file.length = attachment.size;
         file.mimetype = attachment.mimeType;
         file.contents = attachment.content;

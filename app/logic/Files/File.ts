@@ -1,4 +1,5 @@
 import type { Person } from "../Abstract/Person";
+import { appGlobal } from "../app";
 import { ArrayColl } from "svelte-collections";
 import { assert } from "../util/util";
 
@@ -21,6 +22,8 @@ export class File extends FileOrDirectory {
   mimetype: string;
   length: number; /* in bytes */
   contents: Blob; /** may be undefined = not loaded. Does not mean that the file is empty. */
+  /** Full path to the local file on user's disk. May be null */
+  filepathLocal: string;
 
   setFileName(val: string) {
     this.name = val;
@@ -32,6 +35,11 @@ export class File extends FileOrDirectory {
     }
     this.nameWithoutExt = val.substring(0, pos);
     this.ext = val.substring(pos + 1);
+  }
+
+  /** Open the native desktop app with this file */
+  async openOSApp() {
+    await appGlobal.remoteApp.shell.openPath(this.filepathLocal);
   }
 }
 

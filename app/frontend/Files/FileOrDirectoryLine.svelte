@@ -1,12 +1,15 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <hbox class="file line"
   class:selected={file == $selectedFile}
-  on:click={file instanceof File ? selectThis : toggleOpen}>
+  on:click={file instanceof File ? selectThis : toggleOpen}
+  >
   <hbox class="firstColumn">
     {#each {length: indent} as _}
       <hbox class="indention" />
     {/each}
-    <button class="icon" >
+    <button class="icon"
+      on:click={file instanceof File ? () => catchErrors(openFile) : () => null}
+      >
       {#if file instanceof File}
         <FileIcon ext={file.ext} />
       {:else if file instanceof Directory}
@@ -17,7 +20,9 @@
         {/if}
       {/if}
     </button>
-    <hbox class="name">
+    <hbox class="name"
+      on:click={file instanceof File ? () => catchErrors(openFile) : () => null}
+      >
       {#if file instanceof File}
         {file.nameWithoutExt}
       {:else if file instanceof Directory}
@@ -54,12 +59,14 @@
 
 <script lang="ts">
   import { File, Directory, FileOrDirectory } from "../../logic/Files/File";
+  import { fileSize } from "./fileSize";
   import { selectedFile } from "./selected";
+  import { getDateString } from "../Util/date";
   import FileIcon from "./FileIcon.svelte";
   import FolderClosedIcon from "lucide-svelte/icons/folder";
   import FolderOpenIcon from "lucide-svelte/icons/folder-open";
-  import { getDateString } from "../Util/date";
-  import { fileSize } from "./fileSize";
+  import { catchErrors } from "../Util/error";
+  import { assert } from "../../logic/util/util";
   import { t } from "../../l10n/l10n";
 
   export let file: FileOrDirectory;
@@ -67,6 +74,12 @@
 
   function selectThis() {
     $selectedFile = file;
+  }
+
+  async function openFile() {
+    assert(file instanceof File, "Need file");
+    console.log("open", file.filepathLocal);
+    await file.openOSApp();
   }
 
   let open = false;
