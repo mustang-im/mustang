@@ -1,7 +1,7 @@
 @import url('../../asset/font/Karla.css');
 
 body {
-  height: 100%;
+  height: calc(100% - 2*16px);
   margin: 16px;
 
   font-family: Karla, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
