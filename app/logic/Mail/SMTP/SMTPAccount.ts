@@ -36,8 +36,8 @@ export class SMTPAccount extends MailAccount {
         //minVersion: this.acceptOldTLS ? 'TLSv1' : undefined,
         rejectUnauthorized: !this.acceptBrokenTLSCerts,
       },
-      auth: {
-        user: noAuth ? undefined : this.username,
+      auth: noAuth ? undefined : {
+        user: this.username,
         pass: usePassword ? this.password : undefined,
         accessToken: useOAuth2 ? this.oAuth2.accessToken : null,
         type: useOAuth2 ? "OAuth2" : undefined,
