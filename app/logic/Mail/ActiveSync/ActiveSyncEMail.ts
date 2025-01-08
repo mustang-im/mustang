@@ -19,6 +19,12 @@ const ExchangeScheduling: Record<string, number> = {
   "IPM.Schedule.Meeting.Canceled": Scheduling.Cancellation,
 };
 
+const ActiveSyncResponse: Record<Responses, number> = {
+  [Scheduling.Accepted]: 1,
+  [Scheduling.Tentative]: 2,
+  [Scheduling.Declined]: 3,
+};
+
 export class ActiveSyncEMail extends EMail {
   folder: ActiveSyncFolder;
 
@@ -183,7 +189,7 @@ export class ActiveSyncEMail extends EMail {
     assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
     let request = {
       Request: {
-        UserResponse: response,
+        UserResponse: ActiveSyncResponse[response],
         CollectionId: this.folder.id,
         ReqeustId: this.serverID,
       },
