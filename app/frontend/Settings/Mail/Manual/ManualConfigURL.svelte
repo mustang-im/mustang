@@ -29,6 +29,9 @@
     <hbox class="authMethod" class:error={authError}>
       <select bind:value={config.authMethod} required>
         <option value={AuthMethod.Password}>{$t`Password`}</option>
+        {#if config.protocol == "ews"}
+          <option value={AuthMethod.NTLM}>NTLM</option>
+        {/if}
         <option value={AuthMethod.OAuth2}>OAuth2 / {$t`MFA`}</option>
       </select>
     </hbox>
