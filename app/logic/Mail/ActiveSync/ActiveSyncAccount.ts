@@ -172,10 +172,19 @@ export class ActiveSyncAccount extends MailAccount {
       throw new Error(`ActiveSync version(s) ${response.MSASProtocolVersions} not supported`);
     }
     if (response.status == 401) {
-      if (this.oAuth2) {
+      const repeat = async () => {
+        this.retries++;
+        let result = await this.verifyLogin(); // repeat the call
+        this.retries = 0;
+        return result;
+      }
+      if (this.retries) {
+        let ex = Error(`HTTP ${response.status} ${response.statusText}`);
+        throw new LoginError(ex, gt`Login failed`);
+      } else if (this.oAuth2) {
         this.oAuth2.reset();
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
-        return await this.verifyLogin(); // repeat the call
+        return repeat();
       } else if (!/\bBasic\b/.test(response.WWWAuthenticate)) {
         throw this.fatalError = new ConnectError(null,
           "Unsupported authentication protocol(s): " + response.WWWAuthenticate);
@@ -264,10 +273,19 @@ export class ActiveSyncAccount extends MailAccount {
       throw new ActiveSyncError(aCommand, wbxmljs.Status, this);
     }
     if (response.status == 401) {
-      if (this.oAuth2) {
+      const repeat = async () => {
+        this.retries++;
+        let result = await this.callEAS(aCommand, aRequest); // repeat the call
+        this.retries = 0;
+        return result;
+      }
+      if (this.retries) {
+        let ex = Error(`HTTP ${response.status} ${response.statusText}`);
+        throw new LoginError(ex, gt`Login failed`);
+      } else if (this.oAuth2) {
         this.oAuth2.reset();
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
-        return await this.callEAS(aCommand, aRequest); // repeat the call
+        return repeat();
       } else if (!/\bBasic\b/.test(response.WWWAuthenticate)) {
         throw this.fatalError = new ConnectError(null,
           "Unsupported authentication protocol(s): " + response.WWWAuthenticate);
