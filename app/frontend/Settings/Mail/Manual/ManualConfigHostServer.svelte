@@ -68,9 +68,11 @@
       <select bind:value={config.authMethod} required>
         <option value={AuthMethod.Password}>{$t`Password`}</option>
         <option value={AuthMethod.OAuth2}>OAuth2 / {$t`MFA`}</option>
+        <!--
         <option value={AuthMethod.GSSAPI}>Kerberos / GSSAPI</option>
         <option value={AuthMethod.CRAMMD5}>CRAM MD5</option>
         <option value={AuthMethod.NTLM}>NTLM</option>
+        -->
         {#if config.protocol == "smtp"}
           <option value={AuthMethod.None}>{$t`Keine`}</option>
         {/if}

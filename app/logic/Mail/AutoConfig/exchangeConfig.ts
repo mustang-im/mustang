@@ -255,7 +255,9 @@ function newURLAccount(url: URLString, protocol: string, source: ConfigSource): 
   acc.tls = TLSSocketType.TLS;
   acc.authMethod = OAuth2URLs.some(oauth => oauth.domains.includes(acc.hostname))
     ? AuthMethod.OAuth2
-    : AuthMethod.Password;
+    : protocol == "ews"
+      ? AuthMethod.Unknown
+      : AuthMethod.Password;
   // emailAddress, username and password will be filled in by `fillConfig()` later
   acc.source = source;
   return acc;

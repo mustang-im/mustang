@@ -16,7 +16,7 @@ import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { Throttle } from "../../util/Throttle";
 import { Semaphore } from "../../util/Semaphore";
-import { assert, blobToBase64, ensureArray } from "../../util/util";
+import { assert, blobToBase64, ensureArray, NotReached } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 
 type Json = string | number | boolean | null | Json[] | {[key: string]: Json};
@@ -30,7 +30,6 @@ export class EWSAccount extends MailAccount {
   readonly folderMap = new Map<string, EWSFolder>;
   throttle = new Throttle(50, 1);
   semaphore = new Semaphore(20);
-  isRepeating = false;
 
   constructor() {
     super();
@@ -204,21 +203,6 @@ export class EWSAccount extends MailAccount {
     return document.getElementsByTagName('parsererror').length ? null : document;
   }
 
-  createRequestOptions(throwHttpErrors = false): Promise<any> {
-    let options: any = {
-      throwHttpErrors,
-      headers: {
-        'Content-Type': "text/xml; charset=utf-8",
-      },
-    };
-    if (this.oAuth2) {
-      options.headers.Authorization = this.oAuth2.authorizationHeader;
-    } else {
-      options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
-    }
-    return options;
-  }
-
   isThrottleError(ex: EWSItemError): boolean {
     if (ex.type != "ErrorServerBusy") {
       return false;
@@ -241,12 +225,47 @@ export class EWSAccount extends MailAccount {
     return true;
   }
 
-  async callEWS(aRequest: JsonRequest): Promise<any> {
+  /** @returns `Authorization` HTTP request header - usable only for a single call */
+  async loginWithNTLM(): Promise<string> {
+    let response = await appGlobal.remoteApp.postHTTP(this.url, "", "text", this.createRequestOptions(await appGlobal.remoteApp.createType1Message()));
+    assert(/\bNTLM\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${"NTLM"} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
+    return await appGlobal.remoteApp.createType3MessageFromType2Message(response.WWWAuthenticate, this.username, this.password);
+  }
+
+  createRequestOptions(authorizationHeader?: string): any {
+    let options: any = {
+      throwHttpErrors: false,
+      headers: {
+        'Content-Type': "text/xml; charset=utf-8",
+      },
+    };
+    if (this.authMethod == AuthMethod.OAuth2) {
+      options.headers.Authorization = this.oAuth2.authorizationHeader;
+    } else if (this.authMethod == AuthMethod.NTLM) {
+      if (authorizationHeader) {
+        options.headers.Authorization = authorizationHeader;
+      }
+    } else if (this.authMethod == AuthMethod.Password) {
+      options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
+    } else if (this.authMethod == AuthMethod.Unknown) {
+      // triggers 401, which gives us WWWAuthenticate HTTP response header, which lists the login methods supported by the server
+    } else {
+      throw new NotReached(`Unknown authentication method ${this.authMethod}`);
+    }
+    return options;
+  }
+
+  /**
+   * Make a HTTP call to the server.
+   * @param options for internal use only
+   * @returns XML2JSON = XML as JSON. What the server returned.
+   */
+  async callEWS(aRequest: JsonRequest, options?: any): Promise<any> {
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
     let response: any;
     try {
-      response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions());
+      response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions(options?.authorizationHeader));
     } finally {
       lock.release();
     }
@@ -265,25 +284,36 @@ export class EWSAccount extends MailAccount {
       }
     }
     if (response.status == 401) {
-      const repeat = async () => {
-        this.isRepeating = true;
-        let result = await this.callEWS(aRequest); // repeat the call
-        this.isRepeating = false;
-        return result;
+      const repeat = async (options: any = {}) => {
+        options.isRepeating = true;
+        return await this.callEWS(aRequest, options); // repeat the call
       }
-      if (this.isRepeating) {
+      if (options?.isRepeating) {
         let ex = new EWSError(response, aRequest);
         throw new LoginError(ex, gt`Login failed`);
       } else if (this.oAuth2) {
         await this.oAuth2.reset();
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return repeat();
-      } else if (!/\bBasic\b/.test(response.WWWAuthenticate)) {
-        throw this.fatalError = new ConnectError(null,
-          "Unsupported authentication protocol(s): " + response.WWWAuthenticate);
+      } else if (this.authMethod == AuthMethod.NTLM) {
+        let authorizationHeader = await this.loginWithNTLM();
+        return repeat({ authorizationHeader });
+      } else if (this.authMethod == AuthMethod.Password) {
+        assert(/\bBasic\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${gt`Password`} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
+        throw this.fatalError = new LoginError(null, gt`Password incorrect`);
+      } else if (this.authMethod == AuthMethod.Unknown) {
+        if (/\bBasic\b/.test(response.WWWAuthenticate)) {
+          this.authMethod = AuthMethod.Password;
+        } else if (/\NTLM\b/.test(response.WWWAuthenticate)) {
+          this.authMethod = AuthMethod.NTLM;
+        } else {
+          throw this.fatalError = new ConnectError(null,
+            gt`Unsupported authentication protocol(s): ${response.WWWAuthenticate}`);
+        }
+        return repeat();
       } else {
-        throw this.fatalError = new LoginError(null,
-          "Password incorrect");
+        throw this.fatalError = new ConnectError(null,
+          gt`Server supports authentication protocol(s): ${response.WWWAuthenticate}. Please check your account configuration.`);
       }
     } else {
       this.throttle.waitForSecond(1);
@@ -299,7 +329,11 @@ export class EWSAccount extends MailAccount {
         const endEnvelope = "</Envelope>";
         let requestXML = this.request2XML(request);
         let data = "";
-        let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions(true));
+        let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions());
+        if (this.authMethod == AuthMethod.NTLM && response.status == 401) {
+          let authorizationHeader = await this.loginWithNTLM();
+          response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions(authorizationHeader)); // Repeat the call
+        }
         if (!response.ok) {
           console.error(`streamHTTP failed with HTTP ${response.status} ${response.statusText}`);
           return;
