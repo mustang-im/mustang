@@ -203,29 +203,6 @@ export class EWSAccount extends MailAccount {
     return document.getElementsByTagName('parsererror').length ? null : document;
   }
 
-  createRequestOptions(authorizationHeader?: string): any {
-    let options: any = {
-      throwHttpErrors: false,
-      headers: {
-        'Content-Type': "text/xml; charset=utf-8",
-      },
-    };
-    if (this.authMethod == AuthMethod.OAuth2) {
-      options.headers.Authorization = this.oAuth2.authorizationHeader;
-    } else if (this.authMethod == AuthMethod.NTLM) {
-      if (authorizationHeader) {
-        options.headers.Authorization = authorizationHeader;
-      }
-    } else if (this.authMethod == AuthMethod.Password) {
-      options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
-    } else if (this.authMethod == AuthMethod.Unknown) {
-      // triggers 401, which gives us WWWAuthenticate HTTP response header, which lists the login methods supported by the server
-    } else {
-      throw new NotReached(`Unknown authentication method ${this.authMethod}`);
-    }
-    return options;
-  }
-
   isThrottleError(ex: EWSItemError): boolean {
     if (ex.type != "ErrorServerBusy") {
       return false;
@@ -253,6 +230,29 @@ export class EWSAccount extends MailAccount {
     let response = await appGlobal.remoteApp.postHTTP(this.url, "", "text", this.createRequestOptions(await appGlobal.remoteApp.createType1Message()));
     assert(/\bNTLM\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${"NTLM"} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
     return await appGlobal.remoteApp.createType3MessageFromType2Message(response.WWWAuthenticate, this.username, this.password);
+  }
+
+  createRequestOptions(authorizationHeader?: string): any {
+    let options: any = {
+      throwHttpErrors: false,
+      headers: {
+        'Content-Type': "text/xml; charset=utf-8",
+      },
+    };
+    if (this.authMethod == AuthMethod.OAuth2) {
+      options.headers.Authorization = this.oAuth2.authorizationHeader;
+    } else if (this.authMethod == AuthMethod.NTLM) {
+      if (authorizationHeader) {
+        options.headers.Authorization = authorizationHeader;
+      }
+    } else if (this.authMethod == AuthMethod.Password) {
+      options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
+    } else if (this.authMethod == AuthMethod.Unknown) {
+      // triggers 401, which gives us WWWAuthenticate HTTP response header, which lists the login methods supported by the server
+    } else {
+      throw new NotReached(`Unknown authentication method ${this.authMethod}`);
+    }
+    return options;
   }
 
   /**
