@@ -227,6 +227,7 @@ export class EWSAccount extends MailAccount {
 
   /** @returns `Authorization` HTTP request header - usable only for a single call */
   async loginWithNTLM(): Promise<string> {
+    assert(this.username && this.password, gt`Need username and password`);
     let response = await appGlobal.remoteApp.postHTTP(this.url, "", "text", this.createRequestOptions(await appGlobal.remoteApp.createType1Message()));
     assert(/\bNTLM\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${"NTLM"} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
     return await appGlobal.remoteApp.createType3MessageFromType2Message(response.WWWAuthenticate, this.username, this.password);
