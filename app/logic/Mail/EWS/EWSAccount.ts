@@ -248,25 +248,23 @@ export class EWSAccount extends MailAccount {
     return true;
   }
 
-  async loginWithNTLM(): Promise<void> {
+  /** @returns `Authorization` HTTP request header - usable only for a single call */
+  async loginWithNTLM(): Promise<string> {
     let response = await appGlobal.remoteApp.postHTTP(this.url, "", "text", this.createRequestOptions(await appGlobal.remoteApp.createType1Message()));
     assert(/\bNTLM\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${"NTLM"} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
-    let authorization = await appGlobal.remoteApp.createType3MessageFromType2Message(response.WWWAuthenticate, this.username, this.password);
-    response = await appGlobal.remoteApp.postHTTP(this.url, "", "text", this.createRequestOptions(authorization)); // dummy call, test login
-    if (response.status == 401) {
-      throw this.fatalError = new LoginError(null, gt`Password incorrect`);
-    }
+    return await appGlobal.remoteApp.createType3MessageFromType2Message(response.WWWAuthenticate, this.username, this.password);
   }
 
   async callEWS(aRequest: JsonRequest): Promise<any> {
     let arg = aRequest as any; // trick to avoid public function param
     let isRepeating = arg.isRepeating;
+    let authenticationHeader = arg.authenticationHeader;
     delete arg.isRepeating;
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
     let response: any;
     try {
-      response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions());
+      response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions(authenticationHeader));
     } finally {
       lock.release();
     }
@@ -297,7 +295,7 @@ export class EWSAccount extends MailAccount {
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return repeat();
       } else if (this.authMethod == AuthMethod.NTLM) {
-        await this.loginWithNTLM();
+        (aRequest as any).authenticationHeader = await this.loginWithNTLM();
         return repeat();
       } else if (this.authMethod == AuthMethod.Password) {
         assert(/\bBasic\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${gt`Password`} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
