@@ -212,12 +212,18 @@ export class ActiveSyncAccount extends MailAccount {
     return deviceID;
   }
 
-  async callEAS(aCommand: string, aRequest: any, heartbeat = 0): Promise<any> {
+  /**
+   * Make HTTP call to server
+   * @param aOptions for internal use only
+   * @returns JSON returned from the server
+   */
+  async callEAS(aCommand: string, aRequest: any, aOptions: any = {}): Promise<any> {
     let url = new URL(this.url);
     url.searchParams.append("Cmd", aCommand);
     url.searchParams.append("User", this.username);
     url.searchParams.append("DeviceID", this.getDeviceID());
     url.searchParams.append("DeviceType", "UniversalOutlook");
+    let heartbeat = aOptions?.heartbeat ?? 0;
     let options: any = {
       throwHttpErrors: false,
       headers: {
@@ -267,19 +273,16 @@ export class ActiveSyncAccount extends MailAccount {
         return wbxmljs;
       }
       if (this.isThrottleError(wbxmljs.Status)) {
-        return await this.callEAS(aCommand, aRequest, heartbeat);
+        return await this.callEAS(aCommand, aRequest, { heartbeat });
       }
       this.throttle.waitForSecond(1);
       throw new ActiveSyncError(aCommand, wbxmljs.Status, this);
     }
     if (response.status == 401) {
       const repeat = async () => {
-        this.retries++;
-        let result = await this.callEAS(aCommand, aRequest); // repeat the call
-        this.retries = 0;
-        return result;
+        return await this.callEAS(aCommand, aRequest, { isRepeating: true }); // repeat the call
       }
-      if (this.retries) {
+      if (aOptions?.isRepeating) {
         let ex = Error(`HTTP ${response.status} ${response.statusText}`);
         throw new LoginError(ex, gt`Login failed`);
       } else if (this.oAuth2) {
@@ -366,7 +369,8 @@ export class ActiveSyncAccount extends MailAccount {
   protected async makeRequest(command: string, request: any, callback?: (response: any) => Promise<void>): Promise<any> {
     try {
       // The SyncKey must be the first element of the request.
-      let response = await this.callEAS(command, Object.assign({ SyncKey: this.getStorageItem("sync_key") || "0" }, request));
+      request = Object.assign({ SyncKey: this.getStorageItem("sync_key") || "0" }, request);
+      let response = await this.callEAS(command, request);
       await callback?.(response);
       this.setStorageItem("sync_key", response.SyncKey);
       return response;
@@ -508,7 +512,7 @@ export class ActiveSyncAccount extends MailAccount {
             Folder: this.pingsMRU.contents.map(pingable => ({ Id: pingable.serverID, Class: pingable.folderClass })),
           },
         };
-        let response = await this.callEAS("Ping", request, this.heartbeat);
+        let response = await this.callEAS("Ping", request, { heartbeat: this.heartbeat });
         switch (response.Status) {
         case "1":
           continue;
