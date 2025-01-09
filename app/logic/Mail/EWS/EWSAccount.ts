@@ -204,30 +204,25 @@ export class EWSAccount extends MailAccount {
     return document.getElementsByTagName('parsererror').length ? null : document;
   }
 
-  createRequestOptions(authorization?: string): any {
+  createRequestOptions(authorizationHeader?: string): any {
     let options: any = {
       throwHttpErrors: false,
       headers: {
         'Content-Type': "text/xml; charset=utf-8",
       },
     };
-    switch (this.authMethod) {
-    case AuthMethod.OAuth2:
+    if (this.authMethod == AuthMethod.OAuth2) {
       options.headers.Authorization = this.oAuth2.authorizationHeader;
-      break;
-    case AuthMethod.NTLM:
-      if (authorization) {
-        options.headers.Authorization = authorization;
+    } else if (this.authMethod == AuthMethod.NTLM) {
+      if (authorizationHeader) {
+        options.headers.Authorization = authorizationHeader;
       }
-      break;
-    case AuthMethod.Password:
+    } else if (this.authMethod == AuthMethod.Password) {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
-      break;
-    case AuthMethod.Unknown:
+    } else if (this.authMethod == AuthMethod.Unknown) {
       // triggers 401, which gives us WWWAuthenticate HTTP response header, which lists the login methods supported by the server
-      break;
-    default:
-      throw new NotReached(`Unexpected authentication method ${this.authMethod}`);
+    } else {
+      throw new NotReached(`Unknown authentication method ${this.authMethod}`);
     }
     return options;
   }
