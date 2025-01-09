@@ -265,7 +265,7 @@ export class EWSAccount extends MailAccount {
     let lock = await this.semaphore.lock();
     let response: any;
     try {
-      response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions(options?.authenticationHeader));
+      response = await appGlobal.remoteApp.postHTTP(this.url, this.request2XML(aRequest), "text", this.createRequestOptions(options?.authorizationHeader));
     } finally {
       lock.release();
     }
@@ -296,8 +296,8 @@ export class EWSAccount extends MailAccount {
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return repeat();
       } else if (this.authMethod == AuthMethod.NTLM) {
-        let authenticationHeader = await this.loginWithNTLM();
-        return repeat({ authenticationHeader });
+        let authorizationHeader = await this.loginWithNTLM();
+        return repeat({ authorizationHeader });
       } else if (this.authMethod == AuthMethod.Password) {
         assert(/\bBasic\b/.test(response.WWWAuthenticate), gt`Your account is configured to use ${gt`Password`} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
         throw this.fatalError = new LoginError(null, gt`Password incorrect`);
@@ -331,8 +331,8 @@ export class EWSAccount extends MailAccount {
         let data = "";
         let response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions());
         if (this.authMethod == AuthMethod.NTLM && response.status == 401) {
-          await this.loginWithNTLM();
-          response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions()); // Repeat the call
+          let authorizationHeader = await this.loginWithNTLM();
+          response = await appGlobal.remoteApp.streamHTTP(this.url, requestXML, this.createRequestOptions(authorizationHeader)); // Repeat the call
         }
         if (!response.ok) {
           console.error(`streamHTTP failed with HTTP ${response.status} ${response.statusText}`);
