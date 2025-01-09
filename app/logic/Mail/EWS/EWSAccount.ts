@@ -30,7 +30,6 @@ export class EWSAccount extends MailAccount {
   readonly folderMap = new Map<string, EWSFolder>;
   throttle = new Throttle(50, 1);
   semaphore = new Semaphore(20);
-  isRepeating = false;
 
   constructor() {
     super();
@@ -260,6 +259,9 @@ export class EWSAccount extends MailAccount {
   }
 
   async callEWS(aRequest: JsonRequest): Promise<any> {
+    let arg = aRequest as any; // trick to avoid public function param
+    let isRepeating = arg.isRepeating;
+    delete arg.isRepeating;
     await this.throttle.throttle();
     let lock = await this.semaphore.lock();
     let response: any;
@@ -284,12 +286,10 @@ export class EWSAccount extends MailAccount {
     }
     if (response.status == 401) {
       const repeat = async () => {
-        this.isRepeating = true;
-        let result = await this.callEWS(aRequest); // repeat the call
-        this.isRepeating = false;
-        return result;
+        (aRequest as any).isRepeating = true;
+        return await this.callEWS(aRequest); // repeat the call
       }
-      if (this.isRepeating) {
+      if (isRepeating) {
         let ex = new EWSError(response, aRequest);
         throw new LoginError(ex, gt`Login failed`);
       } else if (this.oAuth2) {
