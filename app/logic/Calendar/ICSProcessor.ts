@@ -9,7 +9,7 @@ import PostalMime from "postal-mime";
 import ical from "node-ical";
 
 export class ICSProcessor extends EMailProcessor {
-  runOn: ProcessingStartOn.Parse;
+  runOn = ProcessingStartOn.Parse;
   process(email: EMail, postalMIME: any) {
     if (email.event && !postalMIME.textContent?.calendar) {
       return;
