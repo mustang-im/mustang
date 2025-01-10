@@ -147,7 +147,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { Frequency, RecurrenceRule, type RecurrenceInit } from "../../../logic/Calendar/RecurrenceRule";
   import { EventEditMustangApp, calendarMustangApp } from "../CalendarMustangApp";
-  import { Scheduling, ResponseType, type Responses } from "../../../logic/Calendar/Invitation";
+  import { ResponseType, type Responses } from "../../../logic/Calendar/Invitation";
   import PersonsAutocomplete from "../../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
   import PersonAvailability from "./PersonAvailability.svelte";
   import DateInput from "./DateInput.svelte";
@@ -323,13 +323,13 @@
     event.respondToInvitation(response).catch(backgroundError);
   }
   function onAccept() {
-    respond(Scheduling.Accepted);
+    respond(ResponseType.Accept);
   }
   function onTentative() {
-    respond(Scheduling.Tentative);
+    respond(ResponseType.Tentative);
   }
   function onDecline() {
-    respond(Scheduling.Declined);
+    respond(ResponseType.Decline);
   }
 
   function onClose() {
