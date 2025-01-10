@@ -1,5 +1,5 @@
 import { Event } from "../Event";
-import { ResponseType, type Responses } from "../Invitation";
+import { Scheduling, ResponseType, type Responses } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { ActiveSyncCalendar } from "./ActiveSyncCalendar";
 import WindowsTimezones from "../EWS/WindowsTimezones";
@@ -11,6 +11,12 @@ import type { ArrayColl } from "svelte-collections";
 
 const kRequiredAttendee = "1";
 const kRecurrenceTypes = [Frequency.Daily, Frequency.Weekly, Frequency.Monthly, Frequency.Monthly, /* don't know why Microsoft left this one out */, Frequency.Yearly, Frequency.Yearly];
+
+const ActiveSyncResponse: Record<Responses, number> = {
+  [Scheduling.Accepted]: 1,
+  [Scheduling.Tentative]: 2,
+  [Scheduling.Declined]: 3,
+};
 
 export class ActiveSyncEvent extends Event {
   calendar: ActiveSyncCalendar;
@@ -170,7 +176,7 @@ export class ActiveSyncEvent extends Event {
     assert(this.response > ResponseType.Organizer, "Only invitations can be responded to");
     let request = {
       Request: {
-        UserResponse: response,
+        UserResponse: ActiveSyncResponse[response],
         CollectionId: this.calendar.serverID,
         ReqeustId: this.serverID,
       },
