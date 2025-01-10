@@ -1,8 +1,8 @@
 <vbox flex class="calendar-app">
   <vbox flex class="main">
-    <MainView {events} bind:start={$selectedDate} {dateInterval}>
+    <MainView {events} bind:start={$selectedDate} dateInterval={$selectedDateInterval}>
       <TitleBarLeft on:addEvent={() => catchErrors(addEvent)} slot="top-left" />
-      <ViewSelector bind:dateInterval slot="top-right" />
+      <ViewSelector bind:dateInterval={$selectedDateInterval} slot="top-right" />
     </MainView>
   </vbox>
 </vbox>
@@ -20,7 +20,6 @@
   import { mergeColls } from "svelte-collections";
   import { t } from "../../l10n/l10n";
 
-  $: dateInterval = $selectedDateInterval;
   $: events = mergeColls(appGlobal.calendars.map(cal => cal.fillRecurrences(new Date(Date.now() + 1e11)))).sortBy(ev => ev.startTime);
   $: if (!$selectedCalendar) { $selectedCalendar = appGlobal.calendars.first; }
 
