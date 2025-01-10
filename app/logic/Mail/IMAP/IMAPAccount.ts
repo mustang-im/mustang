@@ -6,6 +6,7 @@ import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder } from "../Folder";
 import { assert, SpecificError } from "../../util/util";
 import { Lock } from "../../util/Lock";
+import { Throttle } from "../../util/Throttle";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { appName, appVersion, siteRoot } from "../../build";
 import { ArrayColl, MapColl, type Collection } from "svelte-collections";
@@ -22,6 +23,7 @@ export class IMAPAccount extends MailAccount {
   pollIntervalMinutes = 10;
   protected connections = new MapColl<ConnectionPurpose, ImapFlow>();
   protected connectLock = new MapColl<ConnectionPurpose, Lock>();
+  throttle = new Throttle(50, 1);
 
   constructor() {
     super();
@@ -55,6 +57,7 @@ export class IMAPAccount extends MailAccount {
   }
 
   async connection(interactive = false, purpose = ConnectionPurpose.Main): Promise<ImapFlow> {
+    await this.throttle.throttle();
     let conn = this.connections.get(purpose);
     if (conn) {
       return conn;
