@@ -1,5 +1,5 @@
 import { Event } from "../Event";
-import { Scheduling, ResponseType, type Responses } from "../Invitation";
+import { ResponseType, type Responses } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { ActiveSyncCalendar } from "./ActiveSyncCalendar";
 import WindowsTimezones from "../EWS/WindowsTimezones";
@@ -13,9 +13,9 @@ const kRequiredAttendee = "1";
 const kRecurrenceTypes = [Frequency.Daily, Frequency.Weekly, Frequency.Monthly, Frequency.Monthly, /* don't know why Microsoft left this one out */, Frequency.Yearly, Frequency.Yearly];
 
 const ActiveSyncResponse: Record<Responses, number> = {
-  [Scheduling.Accepted]: 1,
-  [Scheduling.Tentative]: 2,
-  [Scheduling.Declined]: 3,
+  [ResponseType.Accept]: 1,
+  [ResponseType.Tentative]: 2,
+  [ResponseType.Decline]: 3,
 };
 
 export class ActiveSyncEvent extends Event {
