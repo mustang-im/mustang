@@ -1,6 +1,6 @@
 <vbox flex class="calendar-app">
   <vbox flex class="main">
-    <MainView {events} bind:start={$selectedDate} dateInterval={$selectedDateInterval}>
+    <MainView {events} bind:start={$startDate} dateInterval={$selectedDateInterval}>
       <TitleBarLeft on:addEvent={() => catchErrors(addEvent)} slot="top-left" />
       <ViewSelector bind:dateInterval={$selectedDateInterval} slot="top-right" />
     </MainView>
@@ -9,7 +9,7 @@
 
 <script lang="ts">
   import { Event } from "../../logic/Calendar/Event";
-  import { selectedCalendar, selectedDate, selectedDateInterval } from "./selected";
+  import { selectedCalendar, selectedDate, selectedDateInterval, startDate } from "./selected";
   import { calendarMustangApp } from "./CalendarMustangApp";
   import { appGlobal } from "../../logic/app";
   import MainView from "./MainView.svelte";
