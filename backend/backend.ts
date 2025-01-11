@@ -2,6 +2,7 @@ import { HTTPServer } from './HTTPServer';
 import JPCWebSocket from '../lib/jpc-ws';
 import * as OWA from './owa';
 import { appName, production } from '../app/logic/build';
+import { WebContents } from './WebContents';
 import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
@@ -45,6 +46,7 @@ async function createSharedAppObject() {
     minimizeMainWindow,
     unminimizeMainWindow,
     addEventListenerWebContents,
+    getWebContents,
     shell,
     restartApp,
     setTheme,
@@ -339,6 +341,12 @@ function addEventListenerWebContents(webContentsID: number, webviewEvent: string
   win.on(webviewEvent as any, (_: any, event: Event) => {
     eventHandler(event);
   });
+}
+
+function getWebContents(webContentsID: number) {
+  const win = webContents.fromId(webContentsID);
+  assert(win, `WebContents ID ${webContentsID} not found`);
+  return new WebContents(win);
 }
 
 function setBadgeCount(count: number) {

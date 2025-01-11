@@ -29,7 +29,7 @@ import { appGlobal } from "../../logic/app";
  * });
  * ```
  */
-export function buildContextMenu(context: ContextInfo, win: any): ArrayColl<MenuItem> {
+export async function buildContextMenu(context: ContextInfo, win: any): Promise<ArrayColl<MenuItem>> {
   context.isText = context.selectionText?.length > 0;
   context.isLink = !!context.linkURL;
 
@@ -62,6 +62,7 @@ export function buildContextMenu(context: ContextInfo, win: any): ArrayColl<Menu
     } */
   }
   if (context.mediaType == "image") {
+    add("copyImage", gt`Copy image`, null, copyImage);
     add("copyImageURL", gt`Copy image address`, null, copyImageURL);
     add("saveImage", gt`Save image`, null, saveImage);
     add("saveImageAs", gt`Save image as…`, null, saveImageAs);
@@ -236,7 +237,8 @@ export function saveLinkAs(context: ContextInfo, win: any) {
   download(context.linkURL, win, true, context.suggestedFilename);
 }
 
-export function copyImage(context: ContextInfo, win: any) {
+export async function copyImage(context: ContextInfo, win: any) {
+  win = await appGlobal.remoteApp.getWebContents(win.getWebContentsId());
   win.copyImageAt(context.x, context.y);
 }
 
