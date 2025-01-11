@@ -223,8 +223,8 @@ export function saveVideoAs(context: ContextInfo, win: any) {
   download(context.srcURL, win, true);
 }
 
-export function copyLink(context: ContextInfo, win: any) {
-  copyToClipboard(context.linkURL);
+export async function copyLink(context: ContextInfo, win: any) {
+  await copyToClipboard(context.linkURL);
   /* or:
   copyToClipboard({
     bookmark: context.linkText,
@@ -242,12 +242,12 @@ export async function copyImage(context: ContextInfo, win: any) {
   win.copyImageAt(context.x, context.y);
 }
 
-export function copyImageURL(context: ContextInfo, win: any) {
-  copyToClipboard(context.srcURL);
+export async function copyImageURL(context: ContextInfo, win: any) {
+  await copyToClipboard(context.srcURL);
 }
 
-export function copyVideoURL(context: ContextInfo, win: any) {
-  copyToClipboard(context.srcURL);
+export async function copyVideoURL(context: ContextInfo, win: any) {
+  await copyToClipboard(context.srcURL);
 }
 
 export function learnSpelling(context: ContextInfo, win: any) {
@@ -261,9 +261,9 @@ export function inspect(context: ContextInfo, win: any) {
   }
 }
 
-export function copyToClipboard(text: string | Object) {
+export async function copyToClipboard(text: string | Object) {
   if (typeof (text) == "string") {
-    navigator.clipboard.writeText(text);
+    await appGlobal.remoteApp.writeTextToClipboard(text);
   } else {
     throw new NotImplemented();
   }
