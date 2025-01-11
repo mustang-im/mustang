@@ -64,6 +64,7 @@ export async function buildContextMenu(context: ContextInfo, webview: any): Prom
     } */
   }
   if (context.mediaType == "image") {
+    add("copyImage", gt`Copy image`, null, copyImage);
     add("copyImageURL", gt`Copy image address`, null, copyImageURL);
     add("saveImage", gt`Save image`, null, saveImage);
     add("saveImageAs", gt`Save image as…`, null, saveImageAs);
