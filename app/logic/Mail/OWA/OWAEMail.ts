@@ -6,7 +6,7 @@ import OWACreateItemRequest from "./OWACreateItemRequest";
 import OWADeleteItemRequest from "./OWADeleteItemRequest";
 import OWAUpdateItemRequest from "./OWAUpdateItemRequest";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { Scheduling, type Responses } from "../../Calendar/Invitation";
+import { Scheduling, ResponseType, type Responses } from "../../Calendar/Invitation";
 import { appGlobal } from "../../app";
 import { base64ToArrayBuffer, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -21,9 +21,9 @@ const ExchangeScheduling: Record<string, number> = {
 };
 
 const ResponseTypes: Record<Responses, string> = {
-  [Scheduling.Accepted]: "AcceptItem",
-  [Scheduling.Tentative]: "TentativelyAcceptItem",
-  [Scheduling.Declined]: "DeclineItem",
+  [ResponseType.Accept]: "AcceptItem",
+  [ResponseType.Tentative]: "TentativelyAcceptItem",
+  [ResponseType.Decline]: "DeclineItem",
 };
 
 export class OWAEMail extends EMail {

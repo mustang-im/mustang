@@ -1,5 +1,5 @@
 import { Event } from "../Event";
-import { Scheduling, ResponseType, type Responses } from "../Invitation";
+import { ResponseType, type Responses } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { EWSCalendar } from "./EWSCalendar";
 import WindowsTimezones from "./WindowsTimezones";
@@ -12,9 +12,9 @@ import { assert, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 const ResponseTypes: Record<Responses, string> = {
-  [Scheduling.Accepted]: "AcceptItem",
-  [Scheduling.Tentative]: "TentativelyAcceptItem",
-  [Scheduling.Declined]: "DeclineItem",
+  [ResponseType.Accept]: "AcceptItem",
+  [ResponseType.Tentative]: "TentativelyAcceptItem",
+  [ResponseType.Decline]: "DeclineItem",
 };
 
 enum WeekOfMonth {
