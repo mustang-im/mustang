@@ -13,32 +13,17 @@
     {/if}
   </hbox>
   <hbox class="buttons" flex>
-    <GetMailButton {folder} />
-    <Button label={$t`Folder properties`} icon={MoreIcon} iconOnly plain
-      onClick={onSettings} />
+    <slot name="buttons" {folder} />
   </hbox>
 </hbox>
 
 <script lang="ts">
   import { type Folder, SpecialFolder, specialFolderNames } from '../../../logic/Mail/Folder';
   import { onDropMail, onDragOverMail } from '../Message/drag';
-  import GetMailButton from './GetMailButton.svelte';
-  import Button from '../../Shared/Button.svelte';
   import FolderIcon from './FolderIcon.svelte';
-  import MoreIcon from "lucide-svelte/icons/ellipsis";
   import { catchErrors } from '../../Util/error';
-  import { openFolderProperties } from '../FolderPropertiesPage.svelte';
-  import { selectedFolder } from '../Selected';
-  import { t } from '../../../l10n/l10n';
 
   export let folder: Folder;
-
-  // $: console.log("FolderLine for folder", folder.name, folder);
-
-  function onSettings() {
-    $selectedFolder = folder;
-    $openFolderProperties = true;
-  }
 </script>
 
 <style>

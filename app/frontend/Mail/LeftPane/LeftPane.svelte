@@ -22,7 +22,13 @@
   {:else}
     <!--<ProjectList />-->
     <AccountList {accounts} bind:selectedAccount />
-    <FolderList {folders} bind:selectedFolder bind:selectedFolders />
+    <FolderList {folders} bind:selectedFolder bind:selectedFolders>
+      <svelte:fragment slot="buttons" let:folder>
+          <GetMailButton {folder} />
+          <Button label={$t`Folder properties`} icon={MoreIcon} iconOnly plain
+            onClick={() => onFolderSettings(folder)} />
+      </svelte:fragment>
+    </FolderList>
     {#if selectedFolder && !(selectedFolder instanceof SavedSearchFolder)}
       <TagsList folder={selectedFolder} bind:searchMessages />
     {/if}
@@ -40,6 +46,7 @@
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
   import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
+  import { openFolderProperties } from '../FolderPropertiesPage.svelte';
   import { appGlobal } from "../../../logic/app";
   import AccountList from "./AccountList.svelte";
   import FolderList from "./FolderList.svelte";
@@ -48,11 +55,14 @@
   import PersonsList from "../../Shared/Person/PersonsList.svelte";
   import ProjectList from "./ProjectList.svelte";
   import GetMailButton from "./GetMailButton.svelte";
+  import Button from '../../Shared/Button.svelte';
   import WriteButton from "./WriteButton.svelte";
   import ViewSwitcher from "./ViewSwitcher.svelte";
   import SearchSwitcher, { SearchView } from "./SearchSwitcher.svelte";
+  import MoreIcon from "lucide-svelte/icons/ellipsis";
   import { catchErrors } from "../../Util/error";
   import type { ArrayColl, Collection } from 'svelte-collections';
+  import { t } from '../../../l10n/l10n';
 
   export let accounts: Collection<MailAccount>; /** in */
   export let folders: Collection<Folder>; /** in */
@@ -98,6 +108,10 @@
     searchMessages = messages;
   }
 
+  function onFolderSettings(folder: Folder) {
+    selectedFolder = folder;
+    $openFolderProperties = true;
+  }
 </script>
 
 <style>

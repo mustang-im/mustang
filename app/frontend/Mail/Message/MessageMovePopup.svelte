@@ -39,26 +39,26 @@
       />
   </vbox>
   <vbox class="folders">
-    <FolderList folders={availableFolders} bind:selectedFolder bind:selectedFolders />
+    <FolderList folders={availableFolders} bind:selectedFolder bind:selectedFolders>
+      <svelte:fragment slot="buttons" let:folder>
+        {#if folder != sourceFolder}
+          <Button plain
+            label={$t`Copy`}
+            tooltip={$t`Copy this email to folder ${folder.name}`}
+            onClick={() => onCopyTo(folder)}
+            icon={CopyIcon}
+            iconOnly
+            />
+          <Button plain
+            label={$t`Move`}
+            tooltip={$t`Move this email to folder ${folder.name}`}
+            onClick={() => onMoveTo(folder)}
+            icon={MoveIcon}
+            />
+        {/if}
+      </svelte:fragment>
+    </FolderList>
   </vbox>
-  <hbox class="bottom buttons">
-    <hbox flex />
-    <Button plain
-      label={$t`Copy`}
-      tooltip={$t`Copy this email to folder ${selectedFolder.name}`}
-      onClick={onCopy}
-      icon={CopyIcon}
-      iconOnly
-      disabled={selectedFolder == sourceFolder}
-      />
-    <Button plain
-      label={$t`Move`}
-      tooltip={$t`Move this email to folder ${selectedFolder.name}`}
-      onClick={onMove}
-      icon={MoveIcon}
-      disabled={selectedFolder == sourceFolder}
-      />
-  </hbox>
 </vbox>
 <svelte:window on:click={onClickOutside} on:mousewheel={onClickOutside} />
 
@@ -116,13 +116,13 @@
       await message.moveToArchive();
     }
   }
-  async function onMove() {
+  async function onMoveTo(folder: Folder) {
     onClose();
-    await selectedFolder.moveMessagesHere(messages);
+    await folder.moveMessagesHere(messages);
   }
-  async function onCopy() {
+  async function onCopyTo(folder: Folder) {
     onClose();
-    await selectedFolder.copyMessagesHere(messages);
+    await folder.copyMessagesHere(messages);
   }
 </script>
 
@@ -161,4 +161,9 @@
     padding: 8px 16px;
     border-radius: 0px;
   }
+  /* TODO fix colors on hover
+  .buttons > :global(.selected button:hover:not(.disabled)) {
+    background-color: unset;
+    color: green;
+  }*/
 </style>

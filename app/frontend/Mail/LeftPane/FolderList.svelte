@@ -5,7 +5,9 @@
       <hbox class="header">{$t`Folders`}</hbox>
     </svelte:fragment>
     <TreeItemLine slot="row" let:item={folder} item={folder}>
-      <FolderLine {folder} slot="row" />
+      <FolderLine {folder} slot="row">
+        <slot name="buttons" slot="buttons" let:folder {folder} />
+      </FolderLine>
     </TreeItemLine>
   </FastTree>
 </vbox>
