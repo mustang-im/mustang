@@ -364,17 +364,17 @@ export class OWAFolder extends Folder {
     if (await this.moveOrCopyMessages("move", messages)) {
       return;
     }
-    await this.moveOrCopyMessages(messages, "Move");
+    await this.moveOrCopyMessagesOnServer("Move", messages);
   }
 
   async copyMessagesHere(messages: Collection<OWAEMail>) {
     if (await this.moveOrCopyMessages("copy", messages)) {
       return;
     }
-    await this.moveOrCopyMessages(messages, "Copy");
+    await this.moveOrCopyMessagesOnServer("Copy", messages);
   }
 
-  async moveOrCopyMessages(messages: Collection<OWAEMail>, action: string) {
+  async moveOrCopyMessagesOnServer(action: "Move" | "Copy", messages: Collection<OWAEMail>) {
     let request = {
       __type: action + "ItemJsonRequest:#Exchange",
       Header: {

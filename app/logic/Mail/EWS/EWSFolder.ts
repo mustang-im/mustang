@@ -360,17 +360,17 @@ export class EWSFolder extends Folder {
     if (await this.moveOrCopyMessages("move", messages)) {
       return;
     }
-    await this.moveOrCopyMessages(messages, "Move");
+    await this.moveOrCopyMessagesOnServer("Move", messages);
   }
 
   async copyMessagesHere(messages: Collection<EWSEMail>) {
     if (await this.moveOrCopyMessages("copy", messages)) {
       return;
     }
-    await this.moveOrCopyMessages(messages, "Copy");
+    await this.moveOrCopyMessagesOnServer("Copy", messages);
   }
 
-  async moveOrCopyMessages(messages: Collection<EWSEMail>, action: string) {
+  async moveOrCopyMessagesOnServer(action: "Move" | "Copy", messages: Collection<EWSEMail>) {
     let request = {
       ["m$" + action + "Item"]: {
         m$ToFolderId: {
