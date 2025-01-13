@@ -70,13 +70,18 @@
   </hbox>
 </hbox>
 <Popup bind:popupOpen {popupAnchor} placement="bottom" boundaryElSel=".message-list-pane">
-    <MessageMovePopup {message} on:close={onPopupClose} />
+  {#if $selectedMessages.length > 1 && $selectedMessages.contains(message)}
+    <MessageMovePopup messages={$selectedMessages} on:close={onPopupClose} />
+  {:else}
+    <MessageMovePopup messages={new ArrayColl([message])} on:close={onPopupClose} />
+  {/if}
 </Popup>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { onDragStartMail } from "../Message/drag";
+  import { selectedMessages } from "../Selected";
   import TagSelector from "../Tag/TagSelector.svelte";
   import MessageMovePopup from "../Message/MessageMovePopup.svelte";
   import Popup from "../../Shared/Popup.svelte";
@@ -90,6 +95,7 @@
   import FolderActionsIcon from "lucide-svelte/icons/folder-dot";
   import { getDateString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
+  import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
   export let message: EMail;

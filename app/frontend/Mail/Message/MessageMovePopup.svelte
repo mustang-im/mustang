@@ -19,7 +19,7 @@
       icon={ArchiveIcon}
       iconOnly
       />
-    <slot name="buttons" {message} />
+    <slot name="buttons" {messages} />
     <Button plain
       label={$t`Close`}
       onClick={onClose}
@@ -29,10 +29,11 @@
   </hbox>
   <vbox class="tags">
     <hbox class="header">{$t`Tags`}</hbox>
+    <!-- TODO make work with multiple selected messages -->
     <TagSelector
       tags={availableTags}
-      selectedTags={message.tags}
-      {message}
+      selectedTags={messages.first.tags}
+      message={messages.first}
       on:select={onClose}
       on:unselect={onClose}
       />
@@ -48,14 +49,14 @@
       onClick={onCopy}
       icon={CopyIcon}
       iconOnly
-      disabled={selectedFolder == message.folder}
+      disabled={selectedFolder == sourceFolder}
       />
     <Button plain
       label={$t`Move`}
       tooltip={$t`Move this email to folder ${selectedFolder.name}`}
       onClick={onMove}
       icon={MoveIcon}
-      disabled={selectedFolder == message.folder}
+      disabled={selectedFolder == sourceFolder}
       />
   </hbox>
 </vbox>
@@ -74,15 +75,16 @@
   import MoveIcon from "lucide-svelte/icons/folder-input";
   import CopyIcon from "lucide-svelte/icons/mails";
   import CloseIcon from "lucide-svelte/icons/x";
-  import { ArrayColl } from "svelte-collections";
+  import { ArrayColl, Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher<{ close: void }>();
 
-  export let message: EMail;
+  export let messages: Collection<EMail>;
 
-  let availableFolders = message.folder.account.rootFolders;
-  let selectedFolder = message.folder;
+  let sourceFolder = messages.first.folder;
+  let availableFolders = sourceFolder.account.rootFolders;
+  let selectedFolder = sourceFolder;
   let selectedFolders = new ArrayColl<Folder>();
 
   function onClose() {
@@ -97,24 +99,30 @@
 
   async function onDelete() {
     onClose();
-    await message.deleteMessage();
+    for (let message of messages) {
+      await message.deleteMessage();
+    }
   }
   async function onSpam() {
     onClose();
-    await message.treatSpam();
+    for (let message of messages) {
+      await message.treatSpam();
+    }
   }
 
   async function onArchive() {
     onClose();
-    await message.moveToArchive();
+    for (let message of messages) {
+      await message.moveToArchive();
+    }
   }
   async function onMove() {
     onClose();
-    await selectedFolder.moveMessageHere(message);
+    await selectedFolder.moveMessagesHere(messages);
   }
   async function onCopy() {
     onClose();
-    await selectedFolder.copyMessageHere(message);
+    await selectedFolder.copyMessagesHere(messages);
   }
 </script>
 

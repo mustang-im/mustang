@@ -86,12 +86,13 @@
   </hbox>
 </hbox>
 <Popup bind:popupOpen {popupAnchor} placement="bottom" boundaryElSel=".message-list-pane">
-    <MessageMovePopup {message} on:close={onPopupClose} />
+  <MessageMovePopup messages={new ArrayColl([message])} on:close={onPopupClose} />
 </Popup>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { mailMustangApp } from "../MailMustangApp";
+  import { SpecialFolder } from "../../../logic/Mail/Folder";
   import MessageMenu from "./MessageMenu.svelte";
   import MessageMovePopup from "../Message/MessageMovePopup.svelte";
   import Popup from "../../Shared/Popup.svelte";
@@ -104,8 +105,8 @@
   import SpamIcon from "lucide-svelte/icons/shield-x";
   import WriteIcon from "lucide-svelte/icons/pencil";
   import FolderActionsIcon from "lucide-svelte/icons/folder-dot";
+  import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
-  import { SpecialFolder } from "../../../logic/Mail/Folder";
 
   export let message: EMail;
 
