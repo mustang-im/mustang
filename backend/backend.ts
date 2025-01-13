@@ -7,7 +7,7 @@ import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions } from "electron";
+import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard } from "electron";
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
 import { createType1Message, decodeType2Message, createType3Message } from "./ntlm";
@@ -47,6 +47,7 @@ async function createSharedAppObject() {
     unminimizeMainWindow,
     addEventListenerWebContents,
     getWebContents,
+    writeTextToClipboard,
     shell,
     restartApp,
     setTheme,
@@ -347,6 +348,15 @@ function getWebContents(webContentsID: number) {
   const win = webContents.fromId(webContentsID);
   assert(win, `WebContents ID ${webContentsID} not found`);
   return new WebContents(win);
+}
+
+/**
+ * Writes to system clipboard
+ * Don't expose reading the clipboard because the user may have sensitive data
+ * on their system clipboard e.g. passwords
+ */
+function writeTextToClipboard(text: string) {
+  clipboard.writeText(text);
 }
 
 function setBadgeCount(count: number) {
