@@ -18,7 +18,7 @@
     <PersonsList persons={appGlobal.persons}  bind:selected={$selectedPerson} size="small" />
     <ViewSwitcher />
   {:else if activeTab == SearchView.Search}
-    <SearchPane bind:searchMessages on:clear={onEndSearchMode} />
+    <SearchPane bind:searchMessages on:clear={endSearchMode} />
   {:else}
     <!--<ProjectList />-->
     <AccountList {accounts} bind:selectedAccount />
@@ -74,8 +74,8 @@
 
   // Search.svelte is removed here above, and therefore cannot react anymore, so have to do it here.
   // Reproduction: window title | search field | (x) button
-  $: if (!$globalSearchTerm) onEndSearchMode();
-  function onEndSearchMode() {
+  $: if (!$globalSearchTerm) endSearchMode();
+  function endSearchMode() {
     activeTab = SearchView.Folder;
     clearSearchMessages();
   }
