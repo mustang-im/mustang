@@ -18,7 +18,7 @@
     <PersonsList persons={appGlobal.persons}  bind:selected={$selectedPerson} size="small" />
     <ViewSwitcher />
   {:else if activeTab == SearchView.Search}
-    <SearchPane bind:searchMessages on:clear={onClearSearch} />
+    <SearchPane bind:searchMessages on:clear={endSearchMode} />
   {:else}
     <!--<ProjectList />-->
     <AccountList {accounts} bind:selectedAccount />
@@ -62,28 +62,42 @@
   export let selectedFolders: ArrayColl<Folder>;
 
   let activeTab = SearchView.Folder;
-  $: if (!!$globalSearchTerm) {
+  $: if (!!$globalSearchTerm) openSearchPane();
+  function openSearchPane() {
     activeTab = SearchView.Search;
   }
-  $: if (activeTab != SearchView.Search) {
+  $: activeTab, clearSearchMessages();
+  function clearSearchMessages() {
     searchMessages = null;
-  }
-
-  function onClearSearch() {
-    activeTab = SearchView.Folder;
-  }
-  $: activeTab == SearchView.Person && $selectedPerson && catchErrors(() => showPerson($selectedPerson))
-  async function showPerson(person: Person) {
-    let search = newSearchEMail();
-    search.includesPerson = person;
-    //let folder = new SavedSearchFolder(search);
-    //selectedFolder = folder;
-    searchMessages = await search.startSearch();
+    lastPerson = null;
   }
 
   // Search.svelte is removed here above, and therefore cannot react anymore, so have to do it here.
   // Reproduction: window title | search field | (x) button
-  $: if (!$globalSearchTerm) onClearSearch();
+  $: if (!$globalSearchTerm) endSearchMode();
+  function endSearchMode() {
+    activeTab = SearchView.Folder;
+    clearSearchMessages();
+  }
+
+  let lastPerson: Person;
+  $: activeTab == SearchView.Person && $selectedPerson && catchErrors(() => showPerson($selectedPerson))
+  async function showPerson(person: Person) {
+    if (lastPerson == person) {
+      return;
+    }
+    lastPerson = person;
+
+    let search = newSearchEMail();
+    search.includesPerson = person;
+    let messages = await search.startSearch();
+
+    if (lastPerson != person) { // User already clicked elsewhere.
+      return;
+    }
+    searchMessages = messages;
+  }
+
 </script>
 
 <style>
