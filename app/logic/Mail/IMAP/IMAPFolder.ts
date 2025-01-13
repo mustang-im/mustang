@@ -533,9 +533,6 @@ export class IMAPFolder extends Folder {
     let conn = await this.account.connection(); // Don't lock: 2 mailboxes involved
     await conn.messageCopy(ids, this.path, { uid: true });
     this.countTotal += messages.length;
-    for (let sourceMsg of messages) {
-      await sourceMsg.deleteMessageLocally();
-    }
     await this.listNewMessages();
   }
 
