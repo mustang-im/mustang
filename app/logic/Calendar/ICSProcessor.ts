@@ -11,7 +11,7 @@ import ical from "node-ical";
 export class ICSProcessor extends EMailProcessor {
   runOn = ProcessingStartOn.Parse;
   process(email: EMail, postalMIME: any) {
-    if (email.event && !postalMIME.textContent?.calendar) {
+    if (!postalMIME.textContent?.calendar) {
       return;
     }
     let ics = ical.sync.parseICS(postalMIME.textContent.calendar);
