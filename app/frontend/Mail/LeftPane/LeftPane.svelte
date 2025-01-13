@@ -62,18 +62,31 @@
   export let selectedFolders: ArrayColl<Folder>;
 
   let activeTab = SearchView.Folder;
-  $: if (!!$globalSearchTerm) {
+  $: if (!!$globalSearchTerm) openSearchPane();
+  function openSearchPane() {
     activeTab = SearchView.Search;
   }
-  $: if (activeTab != SearchView.Search) {
+  $: if (activeTab != SearchView.Search) clearSearchMessages();
+  function clearSearchMessages() {
     searchMessages = null;
+    lastPerson = null;
   }
 
+  // Search.svelte is removed here above, and therefore cannot react anymore, so have to do it here.
+  // Reproduction: window title | search field | (x) button
+  $: if (!$globalSearchTerm) onClearSearch();
   function onClearSearch() {
     activeTab = SearchView.Folder;
   }
+
+  let lastPerson: Person;
   $: activeTab == SearchView.Person && $selectedPerson && catchErrors(() => showPerson($selectedPerson))
   async function showPerson(person: Person) {
+    if (person == lastPerson) {
+      return;
+    }
+    lastPerson = person;
+    console.log("Searching for person", person.name);
     let search = newSearchEMail();
     search.includesPerson = person;
     //let folder = new SavedSearchFolder(search);
@@ -81,9 +94,6 @@
     searchMessages = await search.startSearch();
   }
 
-  // Search.svelte is removed here above, and therefore cannot react anymore, so have to do it here.
-  // Reproduction: window title | search field | (x) button
-  $: if (!$globalSearchTerm) onClearSearch();
 </script>
 
 <style>

@@ -31,9 +31,10 @@
     ? persons.filter(p => p.name?.toLowerCase().includes(searchTerm))
     : persons;
 
-  $: if (selected instanceof Person) {
-    $selectedPerson = selected
-  };
+  $: if (selected instanceof Person) setSelectedPerson(selected);
+  function setSelectedPerson(person: Person) {
+    $selectedPerson = person;
+  }
 </script>
 
 <style>
