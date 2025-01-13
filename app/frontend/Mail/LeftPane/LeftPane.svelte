@@ -83,7 +83,7 @@
   let lastPerson: Person;
   $: activeTab == SearchView.Person && $selectedPerson && catchErrors(() => showPerson($selectedPerson))
   async function showPerson(person: Person) {
-    if (person == lastPerson) {
+    if (lastPerson == person) {
       return;
     }
     lastPerson = person;
