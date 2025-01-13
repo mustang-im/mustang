@@ -87,14 +87,15 @@
       return;
     }
     lastPerson = person;
+
     let search = newSearchEMail();
     search.includesPerson = person;
-    //let folder = new SavedSearchFolder(search);
-    //selectedFolder = folder;
+    let messages = await search.startSearch();
+
     if (lastPerson != person) { // User already clicked elsewhere.
       return;
     }
-    searchMessages = await search.startSearch();
+    searchMessages = messages;
   }
 
 </script>
