@@ -233,7 +233,9 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
   }
 
   async moveMessagesHere(messages: Collection<ActiveSyncEMail>) {
-    assert(messages.contents.every(message => message.folder.account == this.account), "Cannot move messages between accounts");
+    if (await this.moveOrCopyMessages("move", messages)) {
+      return;
+    }
     let request = {
       Move: messages.contents.map(msg => ({
         SrcMsgId: msg.serverID,
@@ -252,7 +254,17 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
   }
 
   async copyMessagesHere(messages: Collection<ActiveSyncEMail>) {
+    // ActiveSync does not permit messages to be copied. Workaround: Upload the messages.
+    // TODO Trigger cross-account code path: Clone message, then set account = null;
+    if (await this.moveOrCopyMessages("copy", messages)) {
+      return;
+    }
     throw new NotSupported(gt`ActiveSync does not permit messages to be copied`);
+  }
+
+  async uploadMessage(message: ActiveSyncEMail) {
+    assert(message.mime, "Call loadMIME() first");
+    throw new NotImplemented();
   }
 
   async moveFolderHere(folder: ActiveSyncFolder) {

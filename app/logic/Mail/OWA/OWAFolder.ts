@@ -1,7 +1,7 @@
 import { Folder, SpecialFolder } from "../Folder";
 import { OWAEMail } from "./OWAEMail";
 import type { OWAAccount } from "./OWAAccount";
-import { base64ToArrayBuffer, assert } from "../../util/util";
+import { base64ToArrayBuffer, assert, NotImplemented } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
 
@@ -361,15 +361,17 @@ export class OWAFolder extends Folder {
   }
 
   async moveMessagesHere(messages: Collection<OWAEMail>) {
-    assert(messages.contents.every(message => message.folder.account == this.account), "Cannot move messages between accounts");
+    if (await this.moveOrCopyMessages("move", messages)) {
+      return;
+    }
     await this.moveOrCopyMessages(messages, "Move");
-    await super.moveMessagesHere(messages);
   }
 
   async copyMessagesHere(messages: Collection<OWAEMail>) {
-    assert(messages.contents.every(message => message.folder.account == this.account), "Cannot copy messages between accounts");
+    if (await this.moveOrCopyMessages("copy", messages)) {
+      return;
+    }
     await this.moveOrCopyMessages(messages, "Copy");
-    await super.copyMessagesHere(messages);
   }
 
   async moveOrCopyMessages(messages: Collection<OWAEMail>, action: string) {
@@ -396,6 +398,11 @@ export class OWAFolder extends Folder {
       },
     };
     await this.account.callOWA(request);
+  }
+
+  async uploadMessage(message: OWAEMail) {
+    assert(message.mime, "Call loadMIME() first");
+    throw new NotImplemented();
   }
 
   async moveFolderHere(folder: OWAFolder) {

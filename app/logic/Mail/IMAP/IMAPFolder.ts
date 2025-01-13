@@ -514,7 +514,9 @@ export class IMAPFolder extends Folder {
   }
 
   async moveMessagesHere(messages: Collection<IMAPEMail>) {
-    await super.moveMessagesHere(messages);
+    if (await this.moveOrCopyMessages("move", messages)) {
+      return;
+    }
     let ids = messages.contents.map(msg => msg.uid).join(",");
     let conn = await this.account.connection(); // Don't lock: 2 mailboxes involved
     await conn.messageMove(ids, this.path, { uid: true });
@@ -528,12 +530,21 @@ export class IMAPFolder extends Folder {
   }
 
   async copyMessagesHere(messages: Collection<IMAPEMail>) {
-    await super.copyMessagesHere(messages);
+    if (await this.moveOrCopyMessages("copy", messages)) {
+      return;
+    }
     let ids = messages.contents.map(msg => msg.uid).join(",");
     let conn = await this.account.connection(); // Don't lock: 2 mailboxes involved
     await conn.messageCopy(ids, this.path, { uid: true });
     this.countTotal += messages.length;
     await this.listNewMessages();
+  }
+
+  async uploadMessage(message: EMail) {
+    assert(message.mime, "Call loadMIME() first");
+    await this.runCommand(async (conn) => {
+      await conn.append(this.path, message.mime, IMAPEMail.getIMAPFlags(message), message.received);
+    });
   }
 
   async moveFolderHere(folder: IMAPFolder) {

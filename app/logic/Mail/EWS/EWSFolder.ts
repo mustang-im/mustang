@@ -1,7 +1,7 @@
 import { Folder, SpecialFolder } from "../Folder";
 import { EWSEMail } from "./EWSEMail";
 import type { EWSAccount } from "./EWSAccount";
-import { base64ToArrayBuffer, ensureArray, assert } from "../../util/util";
+import { base64ToArrayBuffer, ensureArray, assert, NotImplemented } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
 
@@ -357,15 +357,17 @@ export class EWSFolder extends Folder {
   }
 
   async moveMessagesHere(messages: Collection<EWSEMail>) {
-    assert(messages.contents.every(message => message.folder.account == this.account), "Cannot move messages between accounts");
+    if (await this.moveOrCopyMessages("move", messages)) {
+      return;
+    }
     await this.moveOrCopyMessages(messages, "Move");
-    await super.moveMessagesHere(messages);
   }
 
   async copyMessagesHere(messages: Collection<EWSEMail>) {
-    assert(messages.contents.every(message => message.folder.account == this.account), "Cannot copy messages between accounts");
+    if (await this.moveOrCopyMessages("copy", messages)) {
+      return;
+    }
     await this.moveOrCopyMessages(messages, "Copy");
-    await super.copyMessagesHere(messages);
   }
 
   async moveOrCopyMessages(messages: Collection<EWSEMail>, action: string) {
@@ -385,6 +387,11 @@ export class EWSFolder extends Folder {
       },
     };
     await this.account.callEWS(request);
+  }
+
+  async uploadMessage(message: EWSEMail) {
+    assert(message.mime, "Call loadMIME() first");
+    throw new NotImplemented();
   }
 
   async moveFolderHere(folder: EWSFolder) {

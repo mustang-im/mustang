@@ -5,7 +5,7 @@ import { EMailCollection } from "./Store/EMailCollection";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, Collection } from 'svelte-collections';
 import { Lock } from "../util/Lock";
-import { assert, AbstractFunction } from "../util/util";
+import { assert, AbstractFunction, NotImplemented } from "../util/util";
 import { gt } from "../../l10n/l10n";
 
 export class Folder extends Observable implements TreeItem<Folder> {
@@ -135,18 +135,42 @@ export class Folder extends Observable implements TreeItem<Folder> {
   }
 
   async moveMessagesHere(messages: Collection<EMail>) {
-    let sourceFolder = messages.first.folder;
-    assert(sourceFolder, "Need source folder");
-    assert(messages.contents.every(msg => msg.folder === sourceFolder), "All messages must be from the same folder");
-    sourceFolder.messages.removeAll(messages);
-    // Both folders need refresh
+    throw new AbstractFunction();
   }
 
   async copyMessagesHere(messages: Collection<EMail>) {
+    throw new AbstractFunction();
+  }
+
+  /**
+   * Helper function for `copyMessagesHere()` and `moveMessagesHere()`
+   * @returns
+   * true = Move has already been done (across accounts)
+   * false = Caller needs to move messages (within the same account) */
+  protected async moveOrCopyMessages(action: "move" | "copy", messages: Collection<EMail>): Promise<boolean> {
     let sourceFolder = messages.first.folder;
     assert(sourceFolder, "Need source folder");
     assert(messages.contents.every(msg => msg.folder === sourceFolder), "All messages must be from the same folder");
+    if (action == "move") {
+      sourceFolder.messages.removeAll(messages);
+    }
+    if (this.account != sourceFolder.account) {
+      for (let message of messages) {
+        await message.loadMIME();
+        await this.uploadMessage(message);
+        if (action == "move") {
+          await message.deleteMessage();
+        }
+      }
+      return true;
+    }
     // Both folders need refresh
+    return false;
+  }
+
+  async uploadMessage(message: EMail) {
+    assert(message.mime, "Call loadMIME() first");
+    throw new NotImplemented();
   }
 
   async moveFolderHere(folder: Folder) {

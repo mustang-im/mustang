@@ -111,6 +111,32 @@ export class IMAPEMail extends EMail {
     }
   }
 
+  static getIMAPFlags(message: EMail): Array<string> {
+    let flags = new Array<string>();
+    if (message.isRead) {
+      flags.push("\\Seen");
+    }
+    if (message.isNewArrived) {
+      flags.push("\\Recent");
+    }
+    if (message.isStarred) {
+      flags.push("\\Flagged");
+    }
+    if (message.isReplied) {
+      flags.push("\\Answered");
+    }
+    if (message.isDraft) {
+      flags.push("\\Draft");
+    }
+    if (message.isSpam) {
+      flags.push("$Junk");
+    }
+    for (let tag of message.tags) {
+      flags.push(tag.name);
+    }
+    return flags;
+  }
+
   async markRead(read = true) {
     await super.markRead(read);
     await this.setFlagServer("\\Seen", read);
