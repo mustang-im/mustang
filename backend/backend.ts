@@ -322,13 +322,9 @@ function newAdmZIP(filepath: string) {
   try {
     return new Zip(filepath);
   } catch (ex) {
-    let e = {};
-    for (let name in ex) {
-      e[name] = ex[name];
-    }
     // ZIP file does not exist yet
     // Relying on the message is fragile, but AdmZip unfortunately doesn't give us error codes.
-    if (ex.message.contains("Invalid filename")) {
+    if (ex.message?.contains("Invalid filename")) {
       // Create a new ZIP file.
       let zip = new Zip();
       zip.writeZip(filepath);
