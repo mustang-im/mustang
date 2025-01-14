@@ -494,6 +494,9 @@ export class EMailActions {
     let from = MailIdentity.findIdentity(recipients, account);
     reply.identity = from.identity;
     reply.from = from.personUID;
+    reply.folder = this.email.folder == account.inbox
+      ? account.getSpecialFolder(SpecialFolder.Sent)
+      : this.email.folder;
 
     reply.subject = "Re: " + this.email.baseSubject; // Do *not* localize "Re: "
     reply.inReplyTo = this.email.messageID;

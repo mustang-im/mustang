@@ -322,7 +322,7 @@ export class IMAPAccount extends MailAccount {
   };
 
   protected async saveSent(email: EMail): Promise<void> {
-    let sentFolder = this.getSpecialFolder(SpecialFolder.Sent);
+    let sentFolder = email.folder ?? this.getSpecialFolder(SpecialFolder.Sent);
     await sentFolder.addMessage(email);
   }
 
