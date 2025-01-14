@@ -504,15 +504,6 @@ export class IMAPFolder extends Folder {
     }
   }
 
-  async addMessage(email: EMail) {
-    // Do *not* call super.addMessage();
-    assert(email.mime, "Need MIME to upload it to a folder");
-    await this.runCommand(async (conn) => {
-      let flags = ["\\Seen"]; // TODO
-      await conn.append(this.path, Buffer.from(email.mime), flags); // TODO hangs
-    });
-  }
-
   async moveMessagesHere(messages: Collection<IMAPEMail>) {
     if (await this.moveOrCopyMessages("move", messages)) {
       return;
@@ -540,10 +531,10 @@ export class IMAPFolder extends Folder {
     await this.listNewMessages();
   }
 
-  async uploadMessage(message: EMail) {
+  async addMessage(message: EMail) {
     assert(message.mime, "Call loadMIME() first");
     await this.runCommand(async (conn) => {
-      await conn.append(this.path, message.mime, IMAPEMail.getIMAPFlags(message), message.received);
+      await conn.append(this.path, Buffer.from(message.mime), IMAPEMail.getIMAPFlags(message), message.received);
     });
   }
 

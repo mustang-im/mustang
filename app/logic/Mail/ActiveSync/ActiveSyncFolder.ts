@@ -220,11 +220,6 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
     return newMsgs;
   }
 
-  async addMessage(email: ActiveSyncEMail) {
-    throw new NotSupported("Drafts are not supported by ActiveSync 14.1");
-    // ActiveSync 16 apparently does let you create drafts.
-  }
-
   getEmailByServerID(id: string): ActiveSyncEMail | undefined {
     if (!id) {
       return undefined;
@@ -254,21 +249,20 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
   }
 
   async copyMessagesHere(messages: Collection<ActiveSyncEMail>) {
-    // ActiveSync does not permit messages to be copied. Workaround: Upload the messages.
-    // TODO Trigger cross-account code path: Clone message, then set account = null;
-    if (await this.moveOrCopyMessages("copy", messages)) {
-      return;
-    }
     throw new NotSupported(gt`ActiveSync does not permit messages to be copied`);
   }
 
-  async uploadMessage(message: ActiveSyncEMail) {
+  async addMessage(message: ActiveSyncEMail) {
     assert(message.mime, "Call loadMIME() first");
-    throw new NotImplemented();
+    if (!message.isDraft) {
+      throw new NotSupported(gt`ActiveSync does not permit messages to be copied`);
+    }
+    // ActiveSync 16 apparently does let you create drafts
+    throw new NotSupported(gt`Drafts are not supported by ActiveSync 14.1`);
   }
 
   async moveFolderHere(folder: ActiveSyncFolder) {
-    assert(folder.account == this.account, "Cannot move folders between accounts");
+    assert(folder.account == this.account, gt`Cannot move folders between accounts`);
     let request = {
       ServerId: this.id,
       ParentId: folder.id,

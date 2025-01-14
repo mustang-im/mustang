@@ -389,7 +389,7 @@ export class EWSFolder extends Folder {
     await this.account.callEWS(request);
   }
 
-  async uploadMessage(message: EWSEMail) {
+  async addMessage(message: EWSEMail) {
     assert(message.mime, "Call loadMIME() first");
     throw new NotImplemented();
   }

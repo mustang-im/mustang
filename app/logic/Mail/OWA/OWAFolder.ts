@@ -400,7 +400,7 @@ export class OWAFolder extends Folder {
     await this.account.callOWA(request);
   }
 
-  async uploadMessage(message: OWAEMail) {
+  async addMessage(message: OWAEMail) {
     assert(message.mime, "Call loadMIME() first");
     throw new NotImplemented();
   }

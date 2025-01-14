@@ -117,15 +117,6 @@ export class Folder extends Observable implements TreeItem<Folder> {
     throw new AbstractFunction();
   }
 
-  async addMessage(email: EMail) {
-    if (!email.mime) {
-      await email.download();
-    }
-    assert(email.mime, "Need MIME to upload it to a folder");
-    email.folder = this;
-    this.messages.add(email);
-  }
-
   async moveMessageHere(message: EMail) {
     await this.moveMessagesHere(new ArrayColl([message]));
   }
@@ -157,7 +148,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
     if (this.account != sourceFolder.account) {
       for (let message of messages) {
         await message.loadMIME();
-        await this.uploadMessage(message);
+        await this.addMessage(message);
         if (action == "move") {
           await message.deleteMessage();
         }
@@ -168,7 +159,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
     return false;
   }
 
-  async uploadMessage(message: EMail) {
+  async addMessage(message: EMail) {
     assert(message.mime, "Call loadMIME() first");
     throw new NotImplemented();
   }
