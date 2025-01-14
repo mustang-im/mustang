@@ -56,3 +56,6 @@ publish:
     channel: mustang
 #  - provider generic
 #    url: https://mustang.im/auto-updates
+extraMetadata:
+  # <https://github.com/electron-userland/electron-builder/issues/6714#issuecomment-2150777424>
+  productName: Mustang

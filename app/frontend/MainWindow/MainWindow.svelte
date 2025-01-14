@@ -1,3 +1,6 @@
+<svelte:head>
+  <title>{ appName }</title>
+</svelte:head>
 <vbox flex class="main-window" dir={rtl}>
   <WindowHeader selectedApp={$selectedApp} />
   <hbox flex>
@@ -45,6 +48,7 @@
   import { onMount } from "svelte";
   import { getUILocale, t } from "../../l10n/l10n";
   import { rtlLocales } from "../../l10n/list";
+  import { appName } from "../../logic/build";
 
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;
