@@ -86,15 +86,8 @@ export class MailZIP implements MailContentStorage {
     if (zip) {
       return zip;
     }
-    try {
-      // Opens the existing ZIP file. Throws when the file doesn't exist.
-      zip = await appGlobal.remoteApp.newAdmZIP(filename);
-    } catch (ex) {
-      // Create a new ZIP file.
-      zip = await appGlobal.remoteApp.newAdmZIP();
-      await zip.writeZip(filename);
-      zip = await appGlobal.remoteApp.newAdmZIP(filename);
-    }
+    // Opens the existing ZIP file, or creates it when it doesn't exist.
+    zip = await appGlobal.remoteApp.newAdmZIP(filename);
     haveZips.set(filename, zip);
     return zip;
   }
