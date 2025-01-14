@@ -1,7 +1,9 @@
 import { Folder, SpecialFolder } from "../Folder";
+import type { EMail } from "../EMail";
 import { EWSEMail } from "./EWSEMail";
 import type { EWSAccount } from "./EWSAccount";
-import { base64ToArrayBuffer, ensureArray, assert, NotImplemented } from "../../util/util";
+import EWSCreateItemRequest from "./EWSCreateItemRequest";
+import { base64ToArrayBuffer, blobToBase64, ensureArray, assert, NotImplemented } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
 
@@ -356,18 +358,18 @@ export class EWSFolder extends Folder {
     return this.messages.find((m: EWSEMail) => m.itemID == id) as EWSEMail | undefined;
   }
 
-  async moveMessagesHere(messages: Collection<EWSEMail>) {
+  async moveMessagesHere(messages: Collection<EMail>) {
     if (await this.moveOrCopyMessages("move", messages)) {
       return;
     }
-    await this.moveOrCopyMessagesOnServer("Move", messages);
+    await this.moveOrCopyMessagesOnServer("Move", messages as Collection<EWSEMail>);
   }
 
-  async copyMessagesHere(messages: Collection<EWSEMail>) {
+  async copyMessagesHere(messages: Collection<EMail>) {
     if (await this.moveOrCopyMessages("copy", messages)) {
       return;
     }
-    await this.moveOrCopyMessagesOnServer("Copy", messages);
+    await this.moveOrCopyMessagesOnServer("Copy", messages as Collection<EWSEMail>);
   }
 
   async moveOrCopyMessagesOnServer(action: "Move" | "Copy", messages: Collection<EWSEMail>) {
@@ -389,9 +391,26 @@ export class EWSFolder extends Folder {
     await this.account.callEWS(request);
   }
 
-  async addMessage(message: EWSEMail) {
+  async addMessage(message: EMail) {
     assert(message.mime, "Call loadMIME() first");
-    throw new NotImplemented();
+    let request = new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: this.id } }, MessageDisposition: "SaveOnly" });
+    request.addField("Message", "MimeContent", await blobToBase64(new Blob([message.mime])));
+    if (message.tags.hasItems) {
+      request.addField("Message", "Categories", { t$String: message.tags.contents.map(tag => tag.name) });
+    }
+    if (!message.isDraft) {
+      request.addField("Message", "ExtendedProperty", { t$ExtendedFieldURI: { PropertyTag: "0x0E07", PropertyType: "Integer" }, t$Value: 0 });
+    }
+    if (message.isStarred) {
+      request.addField("Message", "Flag", {
+        t$CompleteDate: null,
+        t$DueDate: null,
+        t$StartDate: null,
+        t$FlagStatus: "Flagged",
+      });
+    }
+    request.addField("Message", "IsRead", message.isRead);
+    await this.account.callEWS(request);
   }
 
   async moveFolderHere(folder: EWSFolder) {

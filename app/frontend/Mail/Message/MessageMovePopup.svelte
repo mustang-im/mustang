@@ -39,7 +39,8 @@
       />
   </vbox>
   <vbox class="folders">
-    <FolderList folders={availableFolders} bind:selectedFolder bind:selectedFolders>
+    <AccountList accounts={appGlobal.emailAccounts} bind:selectedAccount />
+    <FolderList folders={selectedAccount.rootFolders} bind:selectedFolder bind:selectedFolders>
       <svelte:fragment slot="buttons" let:folder>
         {#if folder != sourceFolder}
           <Button plain
@@ -66,7 +67,9 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { Folder } from "../../../logic/Mail/Folder";
   import { availableTags } from "../../../logic/Mail/Tag";
+  import { appGlobal } from "../../../logic/app";
   import TagSelector from "../Tag/TagSelector.svelte";
+  import AccountList from "../LeftPane/AccountList.svelte";
   import FolderList from "../LeftPane/FolderList.svelte";
   import Button from "../../Shared/Button.svelte";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
@@ -83,9 +86,9 @@
   export let messages: Collection<EMail>;
 
   let sourceFolder = messages.first.folder;
-  let availableFolders = sourceFolder.account.rootFolders;
   let selectedFolder = sourceFolder;
   let selectedFolders = new ArrayColl<Folder>();
+  let selectedAccount = sourceFolder.account;
 
   function onClose() {
     dispatch("close");

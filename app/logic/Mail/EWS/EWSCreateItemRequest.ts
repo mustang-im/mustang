@@ -3,7 +3,7 @@ export default class EWSCreateItemRequest {
     m$Items: {},
   };
 
-  constructor(attributes?: {[key: string]: string | boolean}) {
+  constructor(attributes?: {[key: string]: string | boolean | object}) {
     Object.assign(this.m$CreateItem, attributes);
   }
 
