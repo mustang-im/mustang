@@ -63,16 +63,8 @@ export class EWSEMail extends EMail {
     this.itemID = sanitize.nonemptystring(xmljs.ItemId.Id);
     this.id = sanitize.nonemptystring(xmljs.InternetMessageId, "");
     this.subject = sanitize.nonemptystring(xmljs.Subject, "");
-    if ("DateTimeSent" in xmljs) {
-      this.sent = sanitize.date(xmljs.DateTimeSent);
-    } else {
-      this.sent = new Date();
-    }
-    if ("DateTimeReceived" in xmljs) {
-      this.received = sanitize.date(xmljs.DateTimeReceived);
-    } else {
-      this.received = new Date();
-    }
+    this.sent = sanitize.date(xmljs.DateTimeSent, new Date());
+    this.received = sanitize.date(xmljs.DateTimeReceived, new Date());
     this.setFlags(xmljs);
     this.inReplyTo = sanitize.nonemptystring(xmljs.InReplyTo, null);
     this.references = sanitize.nonemptystring(xmljs.References, null)?.split(" ");

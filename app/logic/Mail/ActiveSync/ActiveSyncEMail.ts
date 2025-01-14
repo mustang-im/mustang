@@ -61,11 +61,7 @@ export class ActiveSyncEMail extends EMail {
 
   fromWBXML(wbxmljs: any) {
     this.subject = sanitize.nonemptystring(wbxmljs.Subject, "");
-    if (wbxmljs.DateReceived) {
-      this.received = sanitize.date(wbxmljs.DateReceived);
-    } else {
-      this.received = new Date();
-    }
+    this.received = sanitize.date(wbxmljs.DateReceived, new Date());
     this.sent = this.received; // ActiveSync only supports received date
     this.setFlags(wbxmljs);
     let from = (parseOneAddress(wbxmljs.From) || parseOneAddress(wbxmljs.Sender) || { name: "Unknown", address: "unknown@invalid" }) as ParsedMailbox;

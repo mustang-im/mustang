@@ -72,16 +72,8 @@ export class OWAEMail extends EMail {
     this.itemID = sanitize.nonemptystring(json.ItemId.Id);
     this.id = sanitize.nonemptystring(json.InternetMessageId, "");
     this.subject = sanitize.nonemptystring(json.Subject, "");
-    if ("DateTimeSent" in json) {
-      this.sent = sanitize.date(json.DateTimeSent);
-    } else {
-      this.sent = new Date();
-    }
-    if ("DateTimeReceived" in json) {
-      this.received = sanitize.date(json.DateTimeReceived);
-    } else {
-      this.received = new Date();
-    }
+    this.sent = sanitize.date(json.DateTimeSent, new Date());
+    this.received = sanitize.date(json.DateTimeReceived, new Date());
     this.setFlags(json);
     this.inReplyTo = sanitize.nonemptystring(json.InReplyTo, null);
     this.references = sanitize.nonemptystring(json.References, null)?.split(" ");
