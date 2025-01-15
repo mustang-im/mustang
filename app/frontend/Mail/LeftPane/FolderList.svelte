@@ -2,7 +2,9 @@
   <FastTree items={foldersSorted} bind:selectedItem={selectedFolder} bind:selectedItems={selectedFolders}
     columns="auto">
     <svelte:fragment slot="header">
-      <hbox class="header">{$t`Folders`}</hbox>
+      <slot name="header">
+        <hbox class="header">{$t`Folders`}</hbox>
+      </slot>
     </svelte:fragment>
     <TreeItemLine slot="row" let:item={folder} item={folder}>
       <FolderLine {folder} slot="row">

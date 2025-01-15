@@ -27,19 +27,26 @@
       icon={CloseIcon}
       />
   </hbox>
-  <vbox class="tags">
-    <hbox class="header">{$t`Tags`}</hbox>
-    <!-- TODO make work with multiple selected messages -->
-    <TagSelector
-      tags={availableTags}
-      selectedTags={messages.first.tags}
-      message={messages.first}
-      on:select={onClose}
-      on:unselect={onClose}
-      />
-  </vbox>
+  {#if !showAccounts}
+    <vbox class="tags">
+      <hbox class="header">{$t`Tags`}</hbox>
+      <!-- TODO make work with multiple selected messages -->
+      <TagSelector
+        tags={availableTags}
+        selectedTags={messages.first.tags}
+        message={messages.first}
+        on:select={onClose}
+        on:unselect={onClose}
+        />
+    </vbox>
+  {/if}
+  {#if showAccounts}
+    <vbox class="accounts">
+      <AccountList accounts={appGlobal.emailAccounts} bind:selectedAccount />
+    </vbox>
+  {/if}
   <vbox class="folders">
-    <FolderList folders={availableFolders} bind:selectedFolder bind:selectedFolders>
+    <FolderList folders={selectedAccount.rootFolders} bind:selectedFolder bind:selectedFolders>
       <svelte:fragment slot="buttons" let:folder>
         {#if folder != sourceFolder}
           <Button plain
@@ -57,6 +64,20 @@
             />
         {/if}
       </svelte:fragment>
+      <svelte:fragment slot="header">
+        <hbox class="folders-header" flex>
+          {$t`Folder`}
+          <hbox flex />
+          <Button
+            label={$t`Move to other mail account`}
+            icon={AccountsIcon}
+            iconOnly
+            plain
+            selected={showAccounts}
+            onClick={() => showAccounts = !showAccounts}
+           />
+        </hbox>
+      </svelte:fragment>
     </FolderList>
   </vbox>
 </vbox>
@@ -66,7 +87,9 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { Folder } from "../../../logic/Mail/Folder";
   import { availableTags } from "../../../logic/Mail/Tag";
+  import { appGlobal } from "../../../logic/app";
   import TagSelector from "../Tag/TagSelector.svelte";
+  import AccountList from "../LeftPane/AccountList.svelte";
   import FolderList from "../LeftPane/FolderList.svelte";
   import Button from "../../Shared/Button.svelte";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
@@ -74,6 +97,7 @@
   import ArchiveIcon from "lucide-svelte/icons/archive";
   import MoveIcon from "lucide-svelte/icons/folder-input";
   import CopyIcon from "lucide-svelte/icons/mails";
+  import AccountsIcon from "lucide-svelte/icons/share";
   import CloseIcon from "lucide-svelte/icons/x";
   import { ArrayColl, Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
@@ -83,9 +107,10 @@
   export let messages: Collection<EMail>;
 
   let sourceFolder = messages.first.folder;
-  let availableFolders = sourceFolder.account.rootFolders;
   let selectedFolder = sourceFolder;
   let selectedFolders = new ArrayColl<Folder>();
+  let selectedAccount = sourceFolder.account;
+  let showAccounts = false;
 
   function onClose() {
     dispatch("close");
@@ -148,8 +173,11 @@
     margin: 10px;
     max-width: 300px;
   }
+  .accounts {
+    height: 10em;
+  }
   .folders {
-    height: 20em;
+    height: 22em;
   }
   .buttons {
     border-top: 1px solid var(--border);

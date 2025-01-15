@@ -4,22 +4,18 @@
     * Calendar
     * SMTP
     * OAuth2
-  * OAuth2 login UI with window/browser/URL options
+  * OAuth2 login UI with browser/URL options
   * Calendar
     * Edit event UI
     * Move to other calendar
-  * Move multiple emails at once
-  * Context menu for content: Copy text, link, image
   * Bug: Thunderbird AB import misses ABs and fields
   * Import Outlook PST
-  * IMAP: See below
   * Inline images
-    * Send as attachment cid:, not data: URL
     * Scale
   * FastTree
     * Drag&Drop: Open on drag over - for: Move messages to deep subfolders -> Rewrite FastTree
   * Bugs: FastList doesn't update some rows #66
-  * Move messages to other accounts
+  * Bug: FastList misses last row (off-by-1)
   * Main window
     * Save window size
   * Threads
@@ -33,7 +29,6 @@
     * Edit
     * Run
   * Tags: Shrink tag list when not enough space
-  * AceBase: Stable DB
   * All accounts
     * Fix mergeColls() #72
     * Use search folder
@@ -51,16 +46,13 @@
 * Clear profile
 * Debug dump of settings
 * Composer
-  * Send: Waiting too long
   * PersonEntry: Delete key
   * Remove added attachment (needs menu item)
   * Open attachment
 * Setup
-  * After login, waiting too long before moving to next dialog
   * OAuth2 login: Close window. Login button disabled.
   * Icons based on provider or domain
 * Mail Persons view: Sort by recency or by name
-* Images, remote
 * Contacts
   * Merge: too many clicks, with confirmation dialog
   * Delete: requires 2 clicks: Edit, then Delete. Too slow.
@@ -70,7 +62,6 @@
 ## Nick
 * Mac: M1 needs 50s to start, 30s for second start
 * Mac: Use Mac Password manager
-* Gmail: JavaScript disabled in OAuth2 window
 * Gmail: Log in with browser
 * Manual setup: OAuth2 UI: "Browser" goes back to "Seperate window"
 ## Freshness
@@ -170,26 +161,6 @@
 * Zoom
 
 # Mail
-* Body
-  * Link: Right-click menu, copy
-* Filter actions
-* Special folders
-  * Better detection based on flags
-  * Based on common names
-  * Manually in settings - DONE
-  * Set on server after manually changing
-* Import
-  * Thunderbird
-     * Account settings - DONE
-     * Mails
-     * Contacts - Partially implemented
-     * Calendar
-  * Outlook
-     * Account settings
-     * Contacts
-     * Calendar
-     * Mails
-* Move emails between accounts
 
 ## IMAP
 * UIDONLY (if available): Enable and test
@@ -208,14 +179,14 @@
 * Undo
 * IMAP Quota
 * IMAP ACL: Share mailbox/folders with colleages
-* Spellcheck
 * Thread pane sort
 * Threading in Thread pane
 * Save/Load mail as .eml file
+* OS mailto: and send file as email
 * Encryption
 
 ## Composer
-* Add new email address and person from To: line
+* Bug (Regression): Modify name in Person popup: Input exits popup
 
 ### Editor
 * First Enter keypress: newline, second Enter keypress: paragraph -  #35 DONE
@@ -269,9 +240,17 @@
 * Refactor IMAP orchestration?: Separate IMAP protocol folder object and IMAP orcestration folder object. The latter does folder cache, IMAP poll/refresh, offline cache etc.
 * JMAP
 
-# Setup
-* Chat & Video conf
-* Combined: Mail, chat, fileshare, calendar, contacts with single login/setup
+## Import
+* Thunderbird
+  * Account settings - DONE
+  * Mails
+  * Contacts - Partially implemented
+  * Calendar
+* Outlook
+  * Account settings
+  * Contacts
+  * Calendar
+  * Mails
 
 # Later
 * mailto handler

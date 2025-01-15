@@ -1,7 +1,9 @@
 import { Folder, SpecialFolder } from "../Folder";
+import type { EMail } from "../EMail";
 import { OWAEMail } from "./OWAEMail";
 import type { OWAAccount } from "./OWAAccount";
-import { base64ToArrayBuffer, assert, NotImplemented } from "../../util/util";
+import OWACreateItemRequest from "./OWACreateItemRequest";
+import { base64ToArrayBuffer, blobToBase64, assert, NotImplemented } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
 
@@ -360,18 +362,18 @@ export class OWAFolder extends Folder {
     return this.messages.find((m: OWAEMail) => m.itemID == id) as OWAEMail | undefined;
   }
 
-  async moveMessagesHere(messages: Collection<OWAEMail>) {
+  async moveMessagesHere(messages: Collection<EMail>) {
     if (await this.moveOrCopyMessages("move", messages)) {
       return;
     }
-    await this.moveOrCopyMessagesOnServer("Move", messages);
+    await this.moveOrCopyMessagesOnServer("Move", messages as Collection<OWAEMail>);
   }
 
-  async copyMessagesHere(messages: Collection<OWAEMail>) {
+  async copyMessagesHere(messages: Collection<EMail>) {
     if (await this.moveOrCopyMessages("copy", messages)) {
       return;
     }
-    await this.moveOrCopyMessagesOnServer("Copy", messages);
+    await this.moveOrCopyMessagesOnServer("Copy", messages as Collection<OWAEMail>);
   }
 
   async moveOrCopyMessagesOnServer(action: "Move" | "Copy", messages: Collection<OWAEMail>) {
@@ -379,13 +381,13 @@ export class OWAFolder extends Folder {
       __type: action + "ItemJsonRequest:#Exchange",
       Header: {
         __type: "JsonRequestHeaders:#Exchange",
-        ReqestServerVersion: "Exchange2013",
+        RequestServerVersion: "Exchange2013",
       },
       Body: {
-        __type: action + "itemRequest:#Exchange",
+        __type: action + "ItemRequest:#Exchange",
         ItemIds: messages.contents.map(message => ({
           __type: "ItemId:#Exchange",
-          Id: message.id,
+          Id: message.itemID,
         })),
         ToFolderId: {
           __type: "TargetFolderId:#Exchange",
@@ -400,9 +402,48 @@ export class OWAFolder extends Folder {
     await this.account.callOWA(request);
   }
 
-  async addMessage(message: OWAEMail) {
+  async addMessage(message: EMail) {
     assert(message.mime, "Call loadMIME() first");
-    throw new NotImplemented();
+    let request = new OWACreateItemRequest({ MessageDisposition: "SaveOnly" });
+    request.addField("Message", "MimeContent", { CharacterSet: "UTF-8", Value: await blobToBase64(new Blob([message.mime])) });
+    if (message.tags.hasItems) {
+      request.addField("Message", "Categories", message.tags.contents.map(tag => tag.name));
+    }
+    if (!message.isDraft) {
+      request.addField("Message", "ExtendedProperty", [{ ExtendedFieldURI: { PropertyTag: "0x0E07", PropertyType: "Integer" }, Value: "0" }]);
+    }
+    if (message.isStarred) {
+      request.addField("Message", "Flag", {
+        __type: "FlagType:#Exchange",
+        CompleteDate: null,
+        DueDate: null,
+        StartDate: null,
+        FlagStatus: "Flagged",
+      });
+    }
+    request.addField("Message", "IsRead", message.isRead);
+    let response = await this.account.callOWA(request);
+    if (this.specialFolder != SpecialFolder.Drafts) {
+      let request = {
+        __type: "MoveItemJsonRequest:#Exchange",
+        Header: {
+          __type: "JsonRequestHeaders:#Exchange",
+          RequestServerVersion: "Exchange2013",
+        },
+        Body: {
+          __type: "MoveItemRequest:#Exchange",
+          ItemIds: [response.Items[0].ItemId],
+          ToFolderId: {
+            __type: "TargetFolderId:#Exchange",
+            BaseFolderId: {
+              __type: "FolderId:#Exchange",
+              Id: this.id,
+            },
+          },
+        },
+      };
+      await this.account.callOWA(request);
+    }
   }
 
   async moveFolderHere(folder: OWAFolder) {
