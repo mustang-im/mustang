@@ -102,21 +102,26 @@ export class MailZIP implements MailContentStorage {
 
   async getFolderZIP(folder: Folder): Promise<Zip> {
     let filename = await this.getFolderZIPFilePath(folder);
-    let zip = haveZips.get(filename);
-    if (zip) {
-      return zip;
-    }
+    let lock = await MailZIP.lockForFile(filename);
     try {
-      // Opens the existing ZIP file. Throws when the file doesn't exist.
-      zip = await appGlobal.remoteApp.newAdmZIP(filename);
-    } catch (ex) {
-      // Create a new ZIP file.
-      zip = await appGlobal.remoteApp.newAdmZIP();
-      await zip.writeZip(filename);
-      zip = await appGlobal.remoteApp.newAdmZIP(filename);
+      let zip = haveZips.get(filename);
+      if (zip) {
+        return zip;
+      }
+      try {
+        // Opens the existing ZIP file. Throws when the file doesn't exist.
+        zip = await appGlobal.remoteApp.newAdmZIP(filename);
+      } catch (ex) {
+        // Create a new ZIP file.
+        zip = await appGlobal.remoteApp.newAdmZIP();
+        await zip.writeZip(filename);
+        zip = await appGlobal.remoteApp.newAdmZIP(filename);
+      }
+      haveZips.set(filename, zip);
+      return zip;
+    } finally {
+      lock.release();
     }
-    haveZips.set(filename, zip);
-    return zip;
   }
 
   filesDir: string | null = null;
