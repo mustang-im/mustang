@@ -55,8 +55,8 @@ export class MailZIP implements MailContentStorage {
     try {
       await zip.writeZip();
     } finally {
-      lock.release();
       haveZips.removeKey(haveZips.getKeyForValue(zip));
+      lock.release();
     }
   }
 
