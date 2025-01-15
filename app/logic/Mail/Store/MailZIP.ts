@@ -43,7 +43,7 @@ export class MailZIP implements MailContentStorage {
     }
     zip.writeTimer = setTimeout(async () => {
       try {
-        this.writeZip(zip, filename);
+        await this.writeZip(zip, filename);
       } catch (ex) {
         errorCallback(ex);
       }
