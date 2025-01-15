@@ -1,4 +1,4 @@
-<vbox class="account-list">
+<vbox class="account-list" flex>
   <FastList items={accounts} bind:selectedItem={selectedAccount} columns="1fr">
     <svelte:fragment slot="header">
       <hbox class="header">
