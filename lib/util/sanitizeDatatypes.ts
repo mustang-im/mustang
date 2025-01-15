@@ -168,14 +168,21 @@ class Sanitize {
    * @return {Date}
    */
   date(unchecked: Date | string | number | null, fallback: Date | null | Symbol = throwErrors): Date {
+    function newDate(val) {
+      let date = new Date(val);
+      if (isNaN(date.getTime())) {
+        return haveError("Invalid date", unchecked, fallback);
+      }
+      return date;
+    }
     if (!unchecked) {
       return haveError("Date is empty", unchecked, fallback);
     } else if (typeof (unchecked) == "string") {
-      return new Date(unchecked); // ISO or RFC822 format
+      return newDate(unchecked); // ISO or RFC822 format
     } else if (typeof (unchecked) == "number") {
-      return new Date(unchecked); // Unixtime in milliseconds
+      return newDate(unchecked); // Unixtime in milliseconds
     } else if (typeof (unchecked) == "object" && unchecked instanceof Date) {
-      return new Date(unchecked); // ISO or RFC822 format
+      return newDate(unchecked); // ISO or RFC822 format
     } else {
       return haveError("Date not string or number", unchecked, fallback);
     }
