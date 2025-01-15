@@ -50,7 +50,7 @@ export class MailZIP implements MailContentStorage {
     }, 3000);
   }
 
-  protected async writeZip(zip: Zip, filename: string) {
+  async writeZip(zip: Zip, filename: string) {
     let lock = await MailZIP.lockForFile(filename);
     try {
       await zip.writeZip();
