@@ -324,7 +324,7 @@ function newAdmZIP(filepath: string) {
   } catch (ex) {
     // ZIP file does not exist yet
     // Relying on the message is fragile, but AdmZip unfortunately doesn't give us error codes.
-    if (ex.message?.includes("Invalid filename")) {
+    if (ex.message?.includes("Invalid filename") || ex.stack?.includes("Object.INVALID_FILENAME")) {
       // Create a new ZIP file.
       let zip = new Zip();
       zip.writeZip(filepath);
