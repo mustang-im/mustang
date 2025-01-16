@@ -201,7 +201,6 @@ export class IMAPFolder extends Folder {
   }
 
   protected async fetchMessageList(range: any, options: any): Promise<{ newMessages: ArrayColl<IMAPEMail>, updatedMessages: ArrayColl<IMAPEMail> }> {
-    console.log("IMAP fetch", range);
     let newMessages = new ArrayColl<IMAPEMail>();
     let updatedMessages = new ArrayColl<IMAPEMail>();
     await this.runCommand(async (conn) => {
@@ -377,6 +376,9 @@ export class IMAPFolder extends Folder {
    * Note: Completely downloaded emails are not saved here, but in
    * `downloadMessages()` -> `msg.saveCompleteMessage()` */
   protected async saveNewMsgs(msgs: Collection<IMAPEMail>) {
+    if (msgs.isEmpty) {
+      return;
+    }
     let startTime = Date.now();
     await this.storage.saveMessages(msgs);
     let saveTime = Date.now() - startTime;
