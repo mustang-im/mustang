@@ -15,6 +15,7 @@ import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { PromiseAllDone } from "../util/PromiseAllDone";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { notifyChangedProperty } from "../util/Observable";
+import { Lock } from "../util/Lock";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
 
@@ -80,6 +81,8 @@ export class EMail extends Message {
   needToLoadBody = true;
   @notifyChangedProperty
   haveCID = false;
+  /** For SQLEMail and alternatives only */
+  storageLock = new Lock();
   /** For composer only. Optional. */
   identity: MailIdentity;
 
