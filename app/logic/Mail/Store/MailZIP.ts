@@ -22,7 +22,7 @@ export class MailZIP implements MailContentStorage {
     assert(email.mime, "Need MIME source to save the email as mail.zip");
     let zip = await this.getFolderZIP(email.folder);
     let filename = this.getEMailFilename(email);
-    if (zip.getEntry(filename)) {
+    if (await zip.getEntry(filename)) {
       return;
     }
     // https://github.com/cthackers/adm-zip/wiki/ADM-ZIP-Introduction
@@ -33,16 +33,17 @@ export class MailZIP implements MailContentStorage {
     // because we're writing many emails at the same time, and each re-writes the ZIP file.
     // Without `await`, we risk a race condition that overwrites the recently changed ZIP file.
     await zip.addFile(filename, Buffer.from(email.mime), email.id);
-    this.writeZipDelayed(zip, filename, email.folder.account.errorCallback);
+    this.writeZipDelayed(zip, email.folder, email.folder.account.errorCallback);
   }
 
   /** Write the file to disk n seconds after the last call to this function */
-  protected writeZipDelayed(zip: Zip, filename: string, errorCallback: (ex) => void) {
+  protected writeZipDelayed(zip: Zip, folder: Folder, errorCallback: (ex) => void) {
     if (zip.writeTimer) {
       clearTimeout(zip.writeTimer);
     }
     zip.writeTimer = setTimeout(async () => {
       try {
+        let filename = await this.getFolderZIPFilePath(folder);
         await this.writeZip(zip, filename);
       } catch (ex) {
         errorCallback(ex);
@@ -55,7 +56,7 @@ export class MailZIP implements MailContentStorage {
     try {
       await zip.writeZip();
     } finally {
-      haveZips.removeKey(haveZips.getKeyForValue(zip));
+      haveZips.removeKey(filename);
       lock.release();
     }
   }
