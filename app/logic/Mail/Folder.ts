@@ -178,6 +178,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
     this.subFolders.add(folder);
   }
 
+  /** @see MailAccount.createToplevelFolder() */
   async createSubFolder(name: string): Promise<Folder> {
     let disableSubfolders = this.disableSubfolders();
     assert(!disableSubfolders, disableSubfolders ?? "This folder cannot have subfolders");

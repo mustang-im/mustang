@@ -293,6 +293,18 @@ export class IMAPAccount extends MailAccount {
     return super.getFolderByPath(path) as IMAPFolder | null;
   }
 
+  async createToplevelFolder(name: string): Promise<IMAPFolder> {
+    let newFolder = await super.createToplevelFolder(name) as IMAPFolder;
+    await (this.inbox as IMAPFolder).runCommand(async (conn) => {
+      let created = await conn.mailboxCreate(name);
+      newFolder.path = created.path;
+    });
+    console.log("IMAP folder created", name, newFolder.path);
+    await newFolder.listMessages();
+    return newFolder;
+  }
+
+
   protected stopPolling() {
     for (let folder of this.getAllFolders()) {
       (folder as IMAPFolder).stopPolling();

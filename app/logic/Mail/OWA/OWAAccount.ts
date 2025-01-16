@@ -19,6 +19,7 @@ import { appGlobal } from "../../app";
 import { Semaphore } from "../../util/Semaphore";
 import { Throttle } from "../../util/Throttle";
 import { notifyChangedProperty } from "../../util/Observable";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { blobToBase64 } from "../../util/util";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -278,6 +279,35 @@ export class OWAAccount extends MailAccount {
   isOffice365(): boolean {
     let hostname = new URL(this.url).hostname;
     return hostname == "outlook.office.com" || hostname == "outlook.live.com";
+  }
+
+  async createToplevelFolder(name: string): Promise<OWAFolder> {
+    let request = {
+      __type: "CreateFolderJsonRequest:#Exchange",
+      ParentFolderId: {
+        __type: "TargetFolderId:#Exchange",
+        FolderId: {
+          __type: "FolderId:#Exchange",
+          Id: this.msgFolderRootID,
+        },
+      },
+      Header: {
+        __type: "JsonRequestHeaders:#Exchange",
+        RequestServerVersion: "Exchange2013",
+      },
+      Body: {
+        __type: "CreateFolderRequest:#Exchange",
+        Folders: [{
+          __type: "Folder:#Exchange",
+          FolderClass: "IPF.Note",
+          DisplayName: name,
+        }],
+      },
+    };
+    let result = await this.callOWA(request);
+    let folder = await super.createToplevelFolder(name) as OWAFolder;
+    folder.id = sanitize.nonemptystring(result.Folders[0].FolderId.Id);
+    return folder;
   }
 
   async onNotificationMessages(messages: any[][]) {

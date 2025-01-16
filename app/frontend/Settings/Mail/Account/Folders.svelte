@@ -4,10 +4,27 @@
 
   {#if $mailAccount?.isLoggedIn && $mailAccount.rootFolders.hasItems}
     <Splitter name="settings-mail-folders" initialRightRatio={4}>
-      <FolderList folders={mailAccount.rootFolders} bind:selectedFolder={folder} bind:selectedFolders slot="left" />
+      <FolderList folders={mailAccount.rootFolders} bind:selectedFolder={folder} bind:selectedFolders slot="left">
+        <hbox class="header" slot="header">
+          {$t`Folders`}
+          <hbox flex />
+          <hbox class="buttons">
+            <RoundButton
+              icon={AddIcon}
+              iconSize="10px"
+              padding="3px"
+              classes="small"
+              label={$t`Create folder`}
+              on:click={() => isCreating = "toplevel"}
+              />
+          </hbox>
+        </hbox>
+      </FolderList>
       <vbox class="right" slot="right">
-        {#if folder}
-          <FolderProperties {folder} />
+        {#if isCreating && folder}
+          <CreateFolder parentFolder={folder} location={isCreating} on:close={() => isCreating = false} />
+        {:else if folder}
+          <FolderProperties {folder} on:createFolder={() => isCreating = "subfolder"} />
         {/if}
       </vbox>
     </Splitter>
@@ -22,17 +39,22 @@
   import type { Account } from "../../../../logic/Abstract/Account";
   import type { Folder } from "../../../../logic/Mail/Folder";
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
+  import { selectedFolder } from "../../../Mail/Selected";
   import FolderProperties from "../../../Mail/FolderProperties.svelte";
   import FolderList from "../../../Mail/LeftPane/FolderList.svelte";
+  import CreateFolder from "./CreateFolder.svelte";
   import Splitter from "../../../Shared/Splitter.svelte";
+  import RoundButton from "../../../Shared/RoundButton.svelte";
+  import AddIcon from "lucide-svelte/icons/plus";
   import type { ArrayColl } from "svelte-collections";
   import { t } from "../../../../l10n/l10n";
 
-  export let folder: Folder = null;
+  export let folder: Folder = $selectedFolder;
   export let account: Account = folder?.account;
 
   $: mailAccount = account as MailAccount;
   let selectedFolders: ArrayColl<Folder>;
+  let isCreating: "toplevel" | "subfolder" | false = false;
 </script>
 
 <style>
@@ -46,5 +68,8 @@
   .right {
     margin: 0px 32px;
     max-width: 55em;
+  }
+  .buttons {
+    align-items: center;
   }
 </style>

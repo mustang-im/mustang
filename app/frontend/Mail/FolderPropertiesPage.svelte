@@ -22,7 +22,11 @@
         </hbox>
     </hbox>
     <vbox class="properties">
-      <FolderProperties {folder} />
+      {#if isCreating}
+        <CreateFolder parentFolder={folder} location="subfolder" on:close={() => isCreating = false} />
+      {:else if folder}
+        <FolderProperties {folder} on:createFolder={() => isCreating = true} />
+      {/if}
     </vbox>
     <hbox flex />
     <hbox class="buttons">
@@ -43,6 +47,7 @@
   import type { Folder } from "../../logic/Mail/Folder";
   import type { MailAccount } from "../../logic/Mail/MailAccount";
   import FolderProperties from "./FolderProperties.svelte";
+  import CreateFolder from "../Settings/Mail/Account/CreateFolder.svelte";
   import AccountList from "./LeftPane/AccountList.svelte";
   import FolderList from "./LeftPane/FolderList.svelte";
   import Splitter from "../Shared/Splitter.svelte";
@@ -59,6 +64,7 @@
   export let selectedAccount: MailAccount; /** in/out */
 
   let selectedFolders: ArrayColl<Folder>;
+  let isCreating = false;
 
   function onClose() {
     $openFolderProperties = false;

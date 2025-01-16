@@ -544,4 +544,21 @@ export class ActiveSyncAccount extends MailAccount {
     let hostname = new URL(this.url).hostname;
     return hostname == "outlook.office365.com";
   }
+
+  async createToplevelFolder(name: string): Promise<ActiveSyncFolder> {
+    let request = {
+      ParentId: null,
+      DisplayName: name,
+      Type: "1",
+    };
+    let result = await this.queuedRequest("FolderCreate", request);
+    // We're required to sync the folder hierarchy after creating a folder.
+    // This would normally perform the folder creation steps for us,
+    // but unfortunately the API wants us to return the new folder,
+    // even though nobody ever uses it, so we have to jump through hoops.
+    let folder = await super.createToplevelFolder(name) as ActiveSyncFolder;
+    folder.id = sanitize.nonemptystring(result.ServerId);
+    await this.listFolders();
+    return folder;
+  }
 }

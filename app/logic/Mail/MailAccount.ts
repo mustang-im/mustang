@@ -76,6 +76,17 @@ export class MailAccount extends Account {
     throw new AbstractFunction();
   };
 
+  /** Create a folder on the top level, sibling of Inbox.
+   * @see Folder.createSubFolder() */
+  async createToplevelFolder(name: string): Promise<Folder> {
+    let folder = this.newFolder();
+    folder.name = name;
+    folder.parent = null;
+    folder.path = name;
+    this.rootFolders.add(folder);
+    return folder;
+  }
+
   newFolder(): Folder {
     return new Folder(this);
   }

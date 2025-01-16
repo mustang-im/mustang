@@ -16,6 +16,7 @@ import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { Throttle } from "../../util/Throttle";
 import { Semaphore } from "../../util/Semaphore";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64, ensureArray, NotReached } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 
@@ -530,6 +531,28 @@ export class EWSAccount extends MailAccount {
   isOffice365(): boolean {
     let hostname = new URL(this.url).hostname;
     return hostname == "outlook.office365.com";
+  }
+
+  async createToplevelFolder(name: string): Promise<EWSFolder> {
+    let request = {
+      m$CreateFolder: {
+        m$ParentFolderId: {
+          t$DistinguishedFolderId: {
+            Id: "msgfolderroot",
+          },
+        },
+        m$Folders: {
+          t$Folder: {
+            t$FolderClass: "IPF.Note",
+            t$DisplayName: name,
+          },
+        },
+      },
+    };
+    let result = await this.callEWS(request);
+    let folder = await super.createToplevelFolder(name) as EWSFolder;
+    folder.id = sanitize.nonemptystring(result.Folders.Folder.FolderId.Id);
+    return folder;
   }
 }
 
