@@ -486,7 +486,7 @@ export class OWAFolder extends Folder {
         __type: "CreateFolderRequest:#Exchange",
         ParentFolderId: {
           __type: "TargetFolderId:#Exchange",
-          FolderId: {
+          BaseFolderId: {
             __type: "FolderId:#Exchange",
             Id: this.id,
           },

@@ -547,7 +547,7 @@ export class ActiveSyncAccount extends MailAccount {
 
   async createToplevelFolder(name: string): Promise<ActiveSyncFolder> {
     let request = {
-      ParentId: null,
+      ParentId: "0",
       DisplayName: name,
       Type: "1",
     };
