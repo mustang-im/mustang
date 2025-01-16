@@ -13,28 +13,34 @@ import { appGlobal } from "../../app";
 export class SQLGroup extends Group {
   static async save(group: Group) {
     assert(group.addressbook?.dbID, "Need address book ID to save the group");
-    if (!group.dbID) {
-      let insert = await (await getDatabase()).run(sql`
-        INSERT INTO "group" (
-          name, description, pID, addressbookID
-        ) VALUES (
-          ${group.name}, ${group.description},
-          ${group.id}, ${group.addressbook?.dbID}
-        )`);
-      group.dbID = insert.lastInsertRowid;
-    } else {
-      await (await getDatabase()).run(sql`
-        UPDATE "group" SET
-          name = ${group.name}, description = ${group.description},
-          pID = ${group.id}, addressbookID = ${group.addressbook?.dbID}
-        WHERE id = ${group.dbID}
-        `);
-    }
+    let lock = await group.storageLock.lock();
+    try {
+      if (!group.dbID) {
+        let insert = await (await getDatabase()).run(sql`
+          INSERT INTO "group" (
+            name, description, pID, addressbookID
+          ) VALUES (
+            ${group.name}, ${group.description},
+            ${group.id}, ${group.addressbook?.dbID}
+          )`);
+        group.dbID = insert.lastInsertRowid;
+      } else {
+        await (await getDatabase()).run(sql`
+          UPDATE "group" SET
+            name = ${group.name}, description = ${group.description},
+            pID = ${group.id}, addressbookID = ${group.addressbook?.dbID}
+          WHERE id = ${group.dbID}
+          `);
+      }
 
-    await this.saveMembers(group);
+      await this.saveMembers(group);
+
+    } finally {
+      lock.release();
+    }
   }
 
-  static async saveMembers(group: Group) {
+  protected static async saveMembers(group: Group) {
     await (await getDatabase()).run(sql`
       DELETE FROM groupMember
       WHERE groupID = ${group.dbID}
@@ -45,7 +51,7 @@ export class SQLGroup extends Group {
     }
   }
 
-  static async saveMember(group: Group, person: Person) {
+  protected static async saveMember(group: Group, person: Person) {
     if (!person.dbID) {
       await SQLPerson.save(person);
     }
@@ -60,10 +66,17 @@ export class SQLGroup extends Group {
   /** Will also delete all group memberships, but not the persons itself */
   static async deleteIt(group: Group) {
     assert(group.dbID, "Need Group DB ID to delete");
-    await (await getDatabase()).run(sql`
-      DELETE FROM "group"
-      WHERE id = ${group.dbID}
-      `);
+    let lock = await group.storageLock.lock();
+    try {
+      let dbID = group.dbID;
+      group.dbID = null;
+      await (await getDatabase()).run(sql`
+        DELETE FROM "group"
+        WHERE id = ${dbID}
+        `);
+    } finally {
+      lock.release();
+    }
   }
 
   static async read(dbID: number, group: Group, row?: any): Promise<Group> {

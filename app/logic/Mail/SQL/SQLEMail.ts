@@ -262,11 +262,12 @@ export class SQLEMail {
     }
     let lock = await email.storageLock.lock();
     try {
+      let dbID = email.dbID;
+      email.dbID = null;
       await (await getDatabase()).run(sql`
         DELETE FROM email
-        WHERE id = ${email.dbID}
+        WHERE id = ${dbID}
         `);
-      email.dbID = null;
     } finally {
       lock.release();
     }

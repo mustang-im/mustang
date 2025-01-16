@@ -32,6 +32,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
    * EWS: Sync state, as string
    */
   syncState: number | string | null = null;
+  storageLock = new Lock();
   protected readFolderLock = new Lock();
   protected listMessagesLock = new Lock();
 

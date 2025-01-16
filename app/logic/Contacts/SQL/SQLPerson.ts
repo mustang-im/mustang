@@ -10,38 +10,43 @@ import sql from "../../../../lib/rs-sqlite";
 export class SQLPerson {
   static async save(person: Person) {
     assert(person.addressbook?.dbID, "Need address book ID to save the person");
-    if (!person.dbID) {
-      let insert = await (await getDatabase()).run(sql`
-        INSERT INTO person (
-          name, firstName, lastName,
-          picture, notes, popularity,
-          pID, addressbookID
-        ) VALUES (
-          ${person.name}, ${person.firstName}, ${person.lastName},
-          ${person.picture}, ${person.notes}, ${person.popularity},
-          ${person.id}, ${person.addressbook?.dbID}
-        )`);
-      person.dbID = insert.lastInsertRowid;
-    } else {
-      await (await getDatabase()).run(sql`
-        UPDATE person SET
-          name = ${person.name},
-          firstName = ${person.firstName},
-          lastName = ${person.lastName},
-          picture = ${person.picture},
-          notes = ${person.notes},
-          popularity = ${person.popularity},
-          pID = ${person.id},
-          addressbookID = ${person.addressbook?.dbID}
-        WHERE id = ${person.dbID}
-        `);
+    let lock = await person.storageLock.lock();
+    try {
+      if (!person.dbID) {
+        let insert = await (await getDatabase()).run(sql`
+          INSERT INTO person (
+            name, firstName, lastName,
+            picture, notes, popularity,
+            pID, addressbookID
+          ) VALUES (
+            ${person.name}, ${person.firstName}, ${person.lastName},
+            ${person.picture}, ${person.notes}, ${person.popularity},
+            ${person.id}, ${person.addressbook?.dbID}
+          )`);
+        person.dbID = insert.lastInsertRowid;
+      } else {
+        await (await getDatabase()).run(sql`
+          UPDATE person SET
+            name = ${person.name},
+            firstName = ${person.firstName},
+            lastName = ${person.lastName},
+            picture = ${person.picture},
+            notes = ${person.notes},
+            popularity = ${person.popularity},
+            pID = ${person.id},
+            addressbookID = ${person.addressbook?.dbID}
+          WHERE id = ${person.dbID}
+          `);
+      }
+      SQLPerson.saveContacts(person, person.emailAddresses, ContactType.EMailAddress);
+      SQLPerson.saveContacts(person, person.chatAccounts, ContactType.Chat);
+      SQLPerson.saveContacts(person, person.phoneNumbers, ContactType.Phone);
+      SQLPerson.saveContacts(person, person.streetAddresses, ContactType.StreetAddress);
+      SQLPerson.saveContacts(person, person.urls, ContactType.URL);
+      SQLPerson.saveContacts(person, person.custom, ContactType.Custom);
+    } finally {
+      lock.release();
     }
-    SQLPerson.saveContacts(person, person.emailAddresses, ContactType.EMailAddress);
-    SQLPerson.saveContacts(person, person.chatAccounts, ContactType.Chat);
-    SQLPerson.saveContacts(person, person.phoneNumbers, ContactType.Phone);
-    SQLPerson.saveContacts(person, person.streetAddresses, ContactType.StreetAddress);
-    SQLPerson.saveContacts(person, person.urls, ContactType.URL);
-    SQLPerson.saveContacts(person, person.custom, ContactType.Custom);
   }
 
   protected static async saveContacts(person: Person, contacts: Collection<ContactEntry>, contactType: ContactType) {
@@ -70,6 +75,21 @@ export class SQLPerson {
         ${person.dbID}, ${contactType}, ${contact.value},
         ${contact.protocol}, ${contact.purpose}, ${contact.preference}
       )`);
+  }
+
+  static async deleteIt(person: Person) {
+    assert(person.dbID, "Need Person DB ID to delete");
+    let lock = await person.storageLock.lock();
+    try {
+      let dbID = person.dbID;
+      person.dbID = null;
+      await (await getDatabase()).run(sql`
+        DELETE FROM person
+        WHERE id = ${dbID}
+        `);
+    } finally {
+      lock.release();
+    }
   }
 
   static async read(dbID: number, person: Person, row?: any): Promise<Person> {
@@ -134,14 +154,6 @@ export class SQLPerson {
         return; // Forward compatibility. Do not throw.
       }
     }
-  }
-
-  static async deleteIt(person: Person) {
-    assert(person.dbID, "Need Person DB ID to delete");
-    await (await getDatabase()).run(sql`
-      DELETE FROM person
-      WHERE id = ${person.dbID}
-      `);
   }
 
   static async readAll(addressbook: Addressbook): Promise<void> {

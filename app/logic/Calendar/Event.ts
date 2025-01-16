@@ -2,9 +2,10 @@ import type { PersonUID } from "../Abstract/PersonUID";
 import type { Calendar } from "./Calendar";
 import type { RecurrenceRule } from "./RecurrenceRule";
 import { ResponseType, type Responses } from "./Invitation";
-import { ArrayColl } from "svelte-collections";
-import { assert, randomID, AbstractFunction } from "../util/util";
 import { Observable, notifyChangedProperty } from "../util/Observable";
+import { Lock } from "../util/Lock";
+import { assert, randomID, AbstractFunction } from "../util/util";
+import { ArrayColl } from "svelte-collections";
 
 export class Event extends Observable {
   id: string;
@@ -72,6 +73,7 @@ export class Event extends Observable {
   lastMod = new Date();
   @notifyChangedProperty
   calendar: Calendar;
+  storageLock = new Lock();
 
   constructor(calendar?: Calendar, parentEvent?: Event) {
     super();

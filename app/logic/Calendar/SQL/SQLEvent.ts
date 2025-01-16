@@ -13,48 +13,53 @@ import sql from "../../../../lib/rs-sqlite";
 export class SQLEvent extends Event {
   static async save(event: Event) {
     assert(event.calendar?.dbID, "Need calendar DB ID to save the event");
-    if (!event.dbID) {
-      let insert = await (await getDatabase()).run(sql`
-        INSERT INTO event (
-          title, descriptionText, descriptionHTML,
-          startTime, endTime,
-          calUID, responseToOrganizer, pID, calendarID,
-          recurrenceRule, recurrenceMasterEventID,
-          recurrenceStartTime, recurrenceIsException
-        ) VALUES (
-          ${event.title}, ${event.descriptionText}, ${event.descriptionHTML},
-          ${event.startTime.toISOString()}, ${event.endTime.toISOString()},
-          ${event.calUID}, ${event.response}, ${event.pID}, ${event.calendar?.dbID},
-          ${event.recurrenceRule?.getCalString()}, ${event.parentEvent?.dbID},
-          ${event.recurrenceStartTime?.toISOString()},
-          ${+!!event.parentEvent?.dbID}
-        )`);
-      event.dbID = insert.lastInsertRowid;
-    } else {
-      await (await getDatabase()).run(sql`
-        UPDATE event SET
-          title = ${event.title},
-          descriptionText = ${event.descriptionText},
-          descriptionHTML = ${event.descriptionHTML},
-          startTime = ${event.startTime.toISOString()},
-          endTime = ${event.endTime.toISOString()},
-          calUID = ${event.calUID},
-          responseToOrganizer = ${event.response},
-          pID = ${event.pID},
-          calendarID = ${event.calendar?.dbID},
-          recurrenceRule = ${event.recurrenceRule?.getCalString()},
-          recurrenceMasterEventID = ${event.parentEvent?.dbID},
-          recurrenceStartTime = ${event.recurrenceStartTime?.toISOString()},
-          recurrenceIsException = ${+!!event.parentEvent?.dbID}
-        WHERE id = ${event.dbID}
-        `);
-    }
+    let lock = await event.storageLock.lock();
+    try {
+      if (!event.dbID) {
+        let insert = await (await getDatabase()).run(sql`
+          INSERT INTO event (
+            title, descriptionText, descriptionHTML,
+            startTime, endTime,
+            calUID, responseToOrganizer, pID, calendarID,
+            recurrenceRule, recurrenceMasterEventID,
+            recurrenceStartTime, recurrenceIsException
+          ) VALUES (
+            ${event.title}, ${event.descriptionText}, ${event.descriptionHTML},
+            ${event.startTime.toISOString()}, ${event.endTime.toISOString()},
+            ${event.calUID}, ${event.response}, ${event.pID}, ${event.calendar?.dbID},
+            ${event.recurrenceRule?.getCalString()}, ${event.parentEvent?.dbID},
+            ${event.recurrenceStartTime?.toISOString()},
+            ${+!!event.parentEvent?.dbID}
+          )`);
+        event.dbID = insert.lastInsertRowid;
+      } else {
+        await (await getDatabase()).run(sql`
+          UPDATE event SET
+            title = ${event.title},
+            descriptionText = ${event.descriptionText},
+            descriptionHTML = ${event.descriptionHTML},
+            startTime = ${event.startTime.toISOString()},
+            endTime = ${event.endTime.toISOString()},
+            calUID = ${event.calUID},
+            responseToOrganizer = ${event.response},
+            pID = ${event.pID},
+            calendarID = ${event.calendar?.dbID},
+            recurrenceRule = ${event.recurrenceRule?.getCalString()},
+            recurrenceMasterEventID = ${event.parentEvent?.dbID},
+            recurrenceStartTime = ${event.recurrenceStartTime?.toISOString()},
+            recurrenceIsException = ${+!!event.parentEvent?.dbID}
+          WHERE id = ${event.dbID}
+          `);
+      }
 
-    await this.saveExclusions(event);
-    await this.saveParticipants(event);
+      await this.saveExclusions(event);
+      await this.saveParticipants(event);
+    } finally {
+      lock.release();
+    }
   }
 
-  static async saveExclusions(event: Event) {
+  protected static async saveExclusions(event: Event) {
     await (await getDatabase()).run(sql`
       DELETE FROM eventExclusion
       WHERE recurrenceMasterEventID = ${event.dbID}
@@ -72,7 +77,7 @@ export class SQLEvent extends Event {
     }
   }
 
-  static async saveParticipants(event: Event) {
+  protected static async saveParticipants(event: Event) {
     await (await getDatabase()).run(sql`
       DELETE FROM eventParticipant
       WHERE eventID = ${event.dbID}
@@ -83,7 +88,7 @@ export class SQLEvent extends Event {
     }
   }
 
-  static async saveParticipant(event: Event, personUID: PersonUID) {
+  protected static async saveParticipant(event: Event, personUID: PersonUID) {
     await (await getDatabase()).run(sql`
       INSERT INTO eventParticipant (
         eventID, emailAddress, name, confirmed
@@ -95,10 +100,17 @@ export class SQLEvent extends Event {
   /** Will also delete all event participant entries, but not the persons itself */
   static async deleteIt(event: Event) {
     assert(event.dbID, "Need Event DB ID to delete");
-    await (await getDatabase()).run(sql`
-      DELETE FROM event
-      WHERE id = ${event.dbID}
-      `);
+    let lock = await event.storageLock.lock();
+    try {
+      let dbID = event.dbID;
+      event.dbID = null;
+      await (await getDatabase()).run(sql`
+        DELETE FROM event
+        WHERE id = ${dbID}
+        `);
+    } finally {
+      lock.release();
+    }
   }
 
   static async read(dbID: number, event: Event, row?: any, events?: Collection<Event>): Promise<Event> {

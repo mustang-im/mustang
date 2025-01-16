@@ -2,7 +2,6 @@ import { Folder, type SpecialFolder } from "../Folder";
 import type { IMAPFolder } from "../IMAP/IMAPFolder";
 import type { MailAccount } from "../MailAccount";
 import { getDatabase } from "./SQLDatabase";
-import { appGlobal } from "../../app";
 import type { Collection } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
@@ -10,60 +9,78 @@ import sql from "../../../../lib/rs-sqlite";
 
 export class SQLFolder extends Folder {
   static async save(folder: Folder) {
-    if (!folder.dbID) {
-      let existing = await (await getDatabase()).get(sql`
-        SELECT
-          id
-        FROM folder
-        WHERE
-          path = ${folder.path} AND
-          accountID = ${folder.account.dbID}
-        `) as any;
-      if (existing?.id) {
-        folder.dbID = existing.id;
+    let lock = await folder.storageLock.lock();
+    try {
+      if (!folder.dbID) {
+        let existing = await (await getDatabase()).get(sql`
+          SELECT
+            id
+          FROM folder
+          WHERE
+            path = ${folder.path} AND
+            accountID = ${folder.account.dbID}
+          `) as any;
+        if (existing?.id) {
+          folder.dbID = existing.id;
+        }
       }
-    }
-    if (!folder.dbID) {
-      let insert = await (await getDatabase()).run(sql`
-        INSERT INTO folder(
-          accountID, name, path,
-          parent, specialUse
-        ) VALUES(
-          ${folder.account.dbID}, ${folder.name}, ${folder.path},
-          ${folder.parent?.dbID}, ${folder.specialFolder}
-        )`);
-      folder.dbID = insert.lastInsertRowid;
-    } else {
-      await (await getDatabase()).run(sql`
-        UPDATE folder SET
-          name = ${folder.name}, path = ${folder.path},
-          parent = ${folder.parent?.dbID}, specialUse = ${folder.specialFolder}
-        WHERE id = ${folder.dbID}
-        `);
-    }
+      if (!folder.dbID) {
+        let insert = await (await getDatabase()).run(sql`
+          INSERT INTO folder(
+            accountID, name, path,
+            parent, specialUse
+          ) VALUES(
+            ${folder.account.dbID}, ${folder.name}, ${folder.path},
+            ${folder.parent?.dbID}, ${folder.specialFolder}
+          )`);
+        folder.dbID = insert.lastInsertRowid;
+      } else {
+        await (await getDatabase()).run(sql`
+          UPDATE folder SET
+            name = ${folder.name}, path = ${folder.path},
+            parent = ${folder.parent?.dbID}, specialUse = ${folder.specialFolder}
+          WHERE id = ${folder.dbID}
+          `);
+      }
 
-    await this.saveProperties(folder);
+      await this.saveProperties(folder, false);
+
+    } finally {
+      lock.release();
+    }
   }
 
-  static async saveProperties(folder: Folder) {
-    await (await getDatabase()).run(sql`
-      UPDATE folder SET
-        countTotal = ${folder.countTotal},
-        countUnread = ${folder.countUnread},
-        countNewArrived = ${folder.countNewArrived},
-        uidvalidity = ${(folder as IMAPFolder).uidvalidity},
-        syncState = ${folder.syncState}
-      WHERE id = ${folder.dbID}
-      `);
+  static async saveProperties(folder: Folder, doLock = true) {
+    let lock = doLock ? await folder.storageLock.lock() : null;
+    try {
+      await (await getDatabase()).run(sql`
+        UPDATE folder SET
+          countTotal = ${folder.countTotal},
+          countUnread = ${folder.countUnread},
+          countNewArrived = ${folder.countNewArrived},
+          uidvalidity = ${(folder as IMAPFolder).uidvalidity},
+          syncState = ${folder.syncState}
+        WHERE id = ${folder.dbID}
+        `);
+    } finally {
+      lock?.release();
+    }
   }
 
   /** Also deletes all messages in this folder */
   static async deleteIt(folder: Folder) {
     assert(folder.dbID, "Need folder DB ID to delete");
-    await (await getDatabase()).run(sql`
-      DELETE FROM folder
-      WHERE id = ${folder.dbID}
-      `);
+    let lock = await folder.storageLock.lock();
+    try {
+      let dbID = folder.dbID;
+      folder.dbID = null;
+      await (await getDatabase()).run(sql`
+        DELETE FROM folder
+        WHERE id = ${dbID}
+        `);
+    } finally {
+      lock.release();
+    }
   }
 
   static async read(dbID: number, folder: Folder): Promise<Folder> {
