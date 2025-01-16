@@ -12,7 +12,7 @@ test("Create ZIP", async () => {
   let zip = await appGlobal.remoteApp.newAdmZIP(filename);
 
   // Test that the file exists
-  await fs.access(filename); // throws when it doesn't exist
+  await fs.rm(filename); // throws when it doesn't exist
 });
 
 test("Write email to ZIP", async () => {
@@ -26,13 +26,13 @@ test("Write email to ZIP", async () => {
   email.subject = "Info";
   email.sent = new Date();
   email.dbID = 1234;
-  email.mime = new TextEncoder().encode("Hello World");
+  email.mime = Buffer.from("Hello World");
 
   let zipper = new MailZIP();
   await zipper.save(email);
 
   let zip = await zipper.getFolderZIP(folder);
-  let filename = zipper.getEMailFilename(email);
+  let filename = await zipper.getFolderZIPFilePath(folder);
   await zipper.writeZip(zip, filename);
   // Now it should be written to disk
 
@@ -42,5 +42,6 @@ test("Write email to ZIP", async () => {
   let file = await zipFile.getEntry(zipper.getEMailFilename(email));
   let mime = await zipFile.readFile(file) as Uint8Array;
   // </copied>
-  expect(mime).toBe(email.mime);
+  expect(mime).toStrictEqual(email.mime);
+  await fs.rm(filename);
 });
