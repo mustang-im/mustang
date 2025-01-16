@@ -28,3 +28,15 @@ export async function deletePassword(account: string): Promise<void> {
 function getKey(account: string): string {
   return "password." + account;
 }
+
+if (!("localStorage" in globalThis)) {
+  console.log("There is no localStorage. This is normal in tests.");
+  globalThis.localStorage = {
+    getItem: () => null,
+    setItem: () => null,
+    removeItem: () => null,
+    key: () => null,
+    clear: () => null,
+    length: 0,
+  };
+}
