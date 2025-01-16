@@ -1,26 +1,33 @@
-<grid>
-  <label for="name">{$t`Account name`}</label>
-  <input type="text" bind:value={account.name} name="name" on:change={() => catchErrors(onNameChange)}/>
-</grid>
-<hbox flex />
-<hbox class="buttons">
-  <Button label={$t`Delete account`}
-    classes="delete"
-    onClick={onDelete}
-    />
-</hbox>
+<vbox class="account-general">
+  <HeaderGroupBox>
+    <hbox slot="header">{$account.name}</hbox>
+    <svelte:fragment slot="buttons-top-right">
+      <RoundButton
+        label={$t`Delete account`}
+        onClick={onDelete}
+        icon={DeleteIcon}
+        />
+    </svelte:fragment>
+    <vbox class="content">
+      <grid>
+        <label for="name">{$t`Account name`}</label>
+        <input type="text" bind:value={account.name} name="name" on:change={() => useDebounce(() => catchErrors(onNameChange), 3000)}/>
+      </grid>
+    </vbox>
+  </HeaderGroupBox>
+</vbox>
 
 <script lang="ts">
   import type { Account } from "../../logic/Abstract/Account";
-  import type { MailAccount } from "../../logic/Mail/MailAccount";
-  import Button from "../Shared/Button.svelte";
   import { catchErrors } from "../Util/error";
   import { appName } from "../../logic/build";
+  import HeaderGroupBox from "../Shared/HeaderGroupBox.svelte";
+  import RoundButton from "../Shared/RoundButton.svelte";
+  import DeleteIcon from "lucide-svelte/icons/trash-2";
+  import { useDebounce } from '@svelteuidev/composables';
   import { t } from "../../l10n/l10n";
 
   export let account: Account;
-
-  $: mailAccount = account as MailAccount;
 
   async function onNameChange() {
     await account.save();
@@ -35,18 +42,12 @@
 </script>
 
 <style>
+  .account-general {
+    max-width: 40em;
+  }
+
   grid {
     grid-template-columns: max-content auto;
     gap: 8px 24px;
-  }
-  .buttons {
-    justify-content: end;
-  }
-  .buttons :global(button) {
-    margin-inline-start: 8px;
-  }
-  .buttons :global(button.delete) {
-    background-color: lightsalmon;
-    color: black;
   }
 </style>
