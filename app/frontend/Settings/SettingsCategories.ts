@@ -54,7 +54,7 @@ mailSettings.subCategories.addAll([
   new SettingsCategory("mail-notifications", gt`Notifications`, MailNotifications),
   new SettingsCategory("mail-read", gt`Read`, MailRead),
   new SettingsCategory("mail-send", gt`Send`, MailSend),
-  new SettingsCategory("mail-send", gt`Tags`, MailTags),
+  new SettingsCategory("mail-tags", gt`Tags`, MailTags),
 ]);
 mailSettings.accounts = appGlobal.emailAccounts;
 mailSettings.newAccountUI = SetupMail;
