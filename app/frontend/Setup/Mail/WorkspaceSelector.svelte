@@ -61,5 +61,6 @@
   }
   .name {
     margin-inline-start: 8px;
+    color: black;
   }
 </style>
