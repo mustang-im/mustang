@@ -2,7 +2,7 @@ import { Message } from "../Abstract/Message";
 import { SpecialFolder, type Folder } from "./Folder";
 import { Attachment, ContentDisposition } from "./Attachment";
 import type { Tag } from "./Tag";
-import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
+import { DeleteStrategy, NMUtils, type MailAccountStorage } from "./MailAccount";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { MailIdentity } from "./MailIdentity";
 import { Event } from "../Calendar/Event";
@@ -412,7 +412,7 @@ export class EMail extends Message {
 
   async download() {
     throw new AbstractFunction();
-    //this.mime = await SMTPAccount.getMIME(this);
+    //this.mime = await NMUtils.getMIME(this);
   }
 
   async findThread(messages: Collection<EMail>): Promise<string | null>{
@@ -607,8 +607,7 @@ export class EMailActions {
     }
     let previousDraft = this.getDraftOnServer();
 
-    return; // TODO
-    this.email.mime = await appGlobal.remoteApp.getMIMENodemailer(this.email);
+    this.email.mime = await NMUtils.getMIME(this.email);
     await draftFolder.addMessage(this.email);
     previousDraft?.deleteMessage();
   }

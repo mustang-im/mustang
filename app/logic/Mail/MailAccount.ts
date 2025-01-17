@@ -2,13 +2,18 @@ import { Account } from "../Abstract/Account";
 import { MailIdentity } from "./MailIdentity";
 import { Folder, SpecialFolder } from "./Folder";
 import type { EMail } from "./EMail";
+import { Attachment , ContentDisposition } from "./Attachment";
 import type { Person } from "../Abstract/Person";
+import type { PersonUID } from "../Abstract/PersonUID";
 import { OAuth2 } from "../Auth/OAuth2";
 import { appGlobal } from "../app";
+import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { AbstractFunction, type URLString } from "../util/util";
+import { blobToBase64, AbstractFunction, type URLString } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
 import { Collection, ArrayColl, MapColl } from 'svelte-collections';
+import type { default as Mail, Attachment as NMAttachment, Address as NMAddress } from "nodemailer/lib/mailer";
+type NMMail = Mail.Options;
 
 export class MailAccount extends Account {
   readonly protocol: string = "mail";
@@ -244,3 +249,55 @@ export class SetupInstruction {
   enterPassword: boolean = false;
   enterUsername: boolean = false;
 }
+
+export const NMUtils = {
+  async getNMMail(email: EMail): Promise<NMMail> {
+    let doHTML = getLocalStorage("mail.send.format", "html").value == "html";
+    // <https://nodemailer.com/message/>
+    return {
+      subject: email.subject,
+      inReplyTo: email.inReplyTo,
+      from: this.getRecipient(email.from),
+      replyTo: email.replyTo ? this.getRecipient(email.replyTo) : null,
+      to: this.getRecipients(email.to),
+      cc: this.getRecipients(email.cc),
+      bcc: this.getRecipients(email.bcc),
+      text: email.text,
+      html: doHTML ? email.html : null,
+      attachDataUrls: true,
+      attachments: await this.getAttachments(email),
+      headers: email.headers.contentKeyValues(),
+      disableFileAccess: true,
+      disableUrlAccess: true,
+    };
+  },
+
+  async getMIME(email: EMail): Promise<Uint8Array> {
+    let mail = await this.getNMMail(email);
+    return await appGlobal.remoteApp.getMIMENodemailer(mail);
+  },
+
+  getRecipients(recipients: ArrayColl<PersonUID>): NMAddress[] {
+    return recipients.contents.map(this.getRecipient);
+  },
+  getRecipient(to: PersonUID): NMAddress {
+    // `${to.name} <${to.emailAddress}>` created by nodemailer, with quotes
+    return {
+      name: to.name,
+      address: to.emailAddress,
+    };
+  },
+  async getAttachments(email: EMail): Promise<NMAttachment[]> {
+    return await Promise.all(email.attachments.contents.map(this.getAttachment));
+  },
+  async getAttachment(a: Attachment): Promise<NMAttachment> {
+    return {
+      filename: a.filename,
+      content: await blobToBase64(a.content),
+      encoding: "base64",
+      contentType: a.mimeType,
+      contentDisposition: a.disposition == ContentDisposition.inline ? 'inline' : 'attachment',
+      cid: a.contentID,
+    };
+  },
+};
