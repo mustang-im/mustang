@@ -501,6 +501,7 @@ export class OWAFolder extends Folder {
     let result = await this.account.callOWA(request);
     let folder = await super.createSubFolder(name) as OWAFolder;
     folder.id = sanitize.nonemptystring(result.Folders[0].FolderId.Id);
+    this.account.folderMap.set(folder.id, folder);
     return folder;
   }
 

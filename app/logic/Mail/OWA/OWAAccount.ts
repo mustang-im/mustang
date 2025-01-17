@@ -307,6 +307,7 @@ export class OWAAccount extends MailAccount {
     let result = await this.callOWA(request);
     let folder = await super.createToplevelFolder(name) as OWAFolder;
     folder.id = sanitize.nonemptystring(result.Folders[0].FolderId.Id);
+    this.folderMap.set(folder.id, folder);
     return folder;
   }
 
