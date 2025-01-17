@@ -19,8 +19,12 @@
 
 <script lang="ts">
   import type { Account } from "../../logic/Abstract/Account";
-  import { catchErrors } from "../Util/error";
+  import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "../Mail/Selected";
+  import { selectedCategory } from "./Window/selected";
+  import { settingsCategories } from "./SettingsCategories";
+  import { appGlobal } from "../../logic/app";
   import { appName } from "../../logic/build";
+  import { catchErrors } from "../Util/error";
   import HeaderGroupBox from "../Shared/HeaderGroupBox.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
@@ -38,6 +42,15 @@
       return;
     }
     await account.deleteIt();
+
+    // Reset selected
+    $selectedCategory = settingsCategories.first;
+    if ($selectedAccount == account) {
+      $selectedAccount = appGlobal.emailAccounts.first;
+      $selectedFolder = $selectedAccount.inbox;
+      $selectedMessage = null;
+      $selectedMessages.clear();
+    }
   }
 </script>
 
