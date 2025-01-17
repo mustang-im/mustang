@@ -595,6 +595,29 @@ export class EMailActions {
     redirect.attachments.addAll(this.email.attachments.map(a => a.clone()));
     return redirect;
   }
+
+  async saveAsDraft(): Promise<void> {
+    let account = this.email.folder?.account ?? this.email.identity?.account;
+    assert(account, "Need mail account to save draft");
+    let draftFolder = account.getSpecialFolder(SpecialFolder.Drafts);
+    if (!draftFolder) {
+      draftFolder = await account.createToplevelFolder("Drafts");
+      draftFolder.specialFolder = SpecialFolder.Drafts;
+      await draftFolder.storage.saveFolderProperties(draftFolder);
+    }
+    let previousDraft = this.getDraftOnServer();
+
+    return; // TODO
+    this.email.mime = await appGlobal.remoteApp.getMIMENodemailer(this.email);
+    await draftFolder.addMessage(this.email);
+    previousDraft?.deleteMessage();
+  }
+
+  getDraftOnServer(): EMail | null {
+    let account = this.email.folder?.account ?? this.email.identity?.account;
+    let draftFolder = account.getSpecialFolder(SpecialFolder.Drafts);
+    return draftFolder.messages.find(mail => mail.messageID == mail.messageID);
+  }
 }
 
 /** For inline images, convert `cid:` URIs into `data:` URIs. */

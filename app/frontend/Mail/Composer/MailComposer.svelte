@@ -224,6 +224,7 @@
 
   $: fromIdentity && setAuthor()
   function setAuthor() {
+    mail.identity = fromIdentity;
     mail.folder ??= fromIdentity.account.getSpecialFolder(SpecialFolder.Sent)
       ?? fromIdentity.account.inbox;
     if (fromIdentity == mail.identity) {
@@ -293,11 +294,13 @@
     }
     mail.headers.set("User-Agent", (appName == "Mustang" ? "" : `Mustang/${appVersion} `) + `${appName}/${appVersion}`);
 
-    if (fromIdentity.isCatchAll && mail.from.emailAddress.includes("*")) {
-      throw new UserError(gt`Please fill out * in catch-all From address ${mail.from.emailAddress}`);
-    }
-    if (fromIdentity.isCatchAll && !fromIdentity.isEMailAddress(mail.from.emailAddress)) {
-      throw new UserError(gt`From address ${mail.from.emailAddress} does not match the catch-all identity ${fromIdentity.emailAddress}`);
+    if (fromIdentity.isCatchAll) {
+      if (mail.from.emailAddress.includes("*")) {
+        throw new UserError(gt`Please fill out * in catch-all From address ${mail.from.emailAddress}`);
+      }
+      if (!fromIdentity.isEMailAddress(mail.from.emailAddress)) {
+        throw new UserError(gt`From address ${mail.from.emailAddress} does not match the catch-all identity ${fromIdentity.emailAddress}`);
+      }
     }
 
     await mail.send();
@@ -305,11 +308,11 @@
   }
 
   async function onSave() {
-    mail.text = null;
-    // TODO upload to Drafts folder, and delete old draft
+    await mail.action.saveAsDraft();
     onClose();
   }
   async function onDelete() {
+    await mail.action.getDraftOnServer()?.deleteMessage();
     await mail.deleteMessage();
     onClose();
   }
