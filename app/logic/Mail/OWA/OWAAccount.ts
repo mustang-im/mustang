@@ -284,19 +284,19 @@ export class OWAAccount extends MailAccount {
   async createToplevelFolder(name: string): Promise<OWAFolder> {
     let request = {
       __type: "CreateFolderJsonRequest:#Exchange",
-      ParentFolderId: {
-        __type: "TargetFolderId:#Exchange",
-        FolderId: {
-          __type: "FolderId:#Exchange",
-          Id: this.msgFolderRootID,
-        },
-      },
       Header: {
         __type: "JsonRequestHeaders:#Exchange",
         RequestServerVersion: "Exchange2013",
       },
       Body: {
         __type: "CreateFolderRequest:#Exchange",
+        ParentFolderId: {
+          __type: "TargetFolderId:#Exchange",
+          BaseFolderId: {
+            __type: "DistinguishedFolderId:#Exchange",
+            Id: "msgfolderroot",
+          },
+        },
         Folders: [{
           __type: "Folder:#Exchange",
           FolderClass: "IPF.Note",
