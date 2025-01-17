@@ -99,10 +99,14 @@ export class IMAPFolder extends Folder {
    * But doesn't download their contents. @see downloadMessages() */
   async listMessages(): Promise<Collection<IMAPEMail>>  {
     await this.readFolder();
+    if (this.countTotal === 0) {
+      return;
+    }
     let lock = await this.listMessagesLock.lock();
     try {
-      if (this.countTotal === 0) {
-        return;
+      if (this.countNewArrived) {
+        this.countNewArrived = 0;
+        await this.storage.saveFolderProperties(this);
       }
       let newMsgs: ArrayColl<IMAPEMail>;
       if (await this.account.hasCapability("CONDSTORE")) {
