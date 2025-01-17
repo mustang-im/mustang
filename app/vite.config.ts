@@ -25,5 +25,11 @@ export default defineConfig({
 
   build: {
     sourcemap: true
-  }
+  },
+
+  test: {
+    setupFiles: [
+      "test/logic/util/setup.ts",
+    ],
+  },
 });
