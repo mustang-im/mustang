@@ -42,6 +42,7 @@
     border: 1px solid var(--button-border);
   }
   .buttons-right :global(button) {
+    align-self: center;
     margin-inline-start: -8px;
     margin-inline-end: -6px;
   }

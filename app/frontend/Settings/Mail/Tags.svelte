@@ -50,4 +50,7 @@
   .tags :global(.tag) {
     font-size: 18px;
   }
+  .tags :global(.remove) {
+    padding: 2px;
+  }
 </style>
