@@ -132,7 +132,8 @@
   async function markAsSpam() {
     await message.treatSpam(true);
   }
-  function editDraft() {
+  async function editDraft() {
+    await message.loadMIME();
     mailMustangApp.writeMail(message);
   }
 
