@@ -2,7 +2,7 @@ import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
 import { kMaxCount, ActiveSyncFolder, FolderType } from "./ActiveSyncFolder";
 import { ActiveSyncError } from "./ActiveSyncError";
-import { SMTPAccount } from "../SMTP/SMTPAccount";
+import { CreateMIME } from "../SMTP/CreateMIME";
 import { newAddressbookForProtocol} from "../../Contacts/AccountsList/Addressbooks";
 import type { ActiveSyncAddressbook } from "../../Contacts/ActiveSync/ActiveSyncAddressbook";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
@@ -119,7 +119,7 @@ export class ActiveSyncAccount extends MailAccount {
     let request = {
       ClientId: await this.nextClientID(),
       SaveInSentItems: {},
-      Mime: await SMTPAccount.getMIME(email),
+      Mime: await CreateMIME.getMIME(email),
     };
     await this.callEAS("SendMail", request);
   }

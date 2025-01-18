@@ -1,7 +1,8 @@
 import type { EMail } from "./EMail";
-import { SpecialFolder, type Folder } from "./Folder";
+import { SpecialFolder } from "./Folder";
 import { Attachment, ContentDisposition } from "./Attachment";
 import { MailIdentity } from "./MailIdentity";
+import { CreateMIME } from "./SMTP/CreateMIME";
 import { appGlobal } from "../app";
 import { assert } from "../util/util";
 import { getUILocale } from "../../l10n/l10n";
@@ -163,8 +164,7 @@ export class EMailActions {
     }
     let previousDraft = this.getDraftOnServer();
 
-    return; // TODO
-    this.email.mime = await appGlobal.remoteApp.getMIMENodemailer(this.email);
+    this.email.mime = await CreateMIME.getMIME(this.email);
     await draftFolder.addMessage(this.email);
     previousDraft?.deleteMessage();
   }
