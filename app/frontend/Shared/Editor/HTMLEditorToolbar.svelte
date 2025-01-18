@@ -129,21 +129,21 @@ block
     </Button>
     <Button
       label={$t`Link to webpage`}
-      on:click={createLink}
+      onClick={onLinkOpen}
       selected={editor.isActive('link')}
       icon={LinkIcon}
       iconOnly
       />
     <Button
       label={$t`Remove link`}
-      on:click={() => editor.chain().focus().unsetLink().run()}
+      onClick={() => { editor.chain().focus().unsetLink().run(); isEditingLink = false; }}
       disabled={!editor.can().chain().focus().unsetLink().run()}
       icon={LinkRemoveIcon}
       iconOnly
       />
     <Button
       label={$t`Insert image`}
-      on:click={createImage}
+      onClick={() => isEditingImage = true}
       icon={ImageIcon}
       iconOnly
       />
@@ -179,6 +179,44 @@ block
   </Toolbar>
 {/if}
 
+{#if isEditingLink}
+  <Toolbar>
+    <hbox flex class="link-dialog">
+      <!-- <label for="linktext">Link text</label>
+      <input type="text" bind:value={linkText} id="linktext" /> -->
+      <label for="linktargeturl">Link target URL</label>
+      <input type="url" bind:value={linkTargetURL} id="linktargeturl" />
+      <Button
+        onClick={onLinkOK}
+        label={$t`OK`}
+        icon={OKIcon}
+        iconOnly
+        />
+      <Button
+        label={$t`Remove link`}
+        onClick={() => { editor.chain().focus().unsetLink().run(); isEditingLink = false; }}
+        disabled={!editor.can().chain().focus().unsetLink().run()}
+        icon={LinkRemoveIcon}
+        iconOnly
+        />
+    </hbox>
+  </Toolbar>
+{/if}
+{#if isEditingImage}
+  <Toolbar>
+    <hbox flex class="link-dialog">
+      <label for="imageurl">Image URL</label>
+      <input type="url" bind:value={imageURL} id="imageurl" />
+      <Button
+        onClick={onImageOK}
+        label={$t`OK`}
+        icon={OKIcon}
+        iconOnly
+        />
+    </hbox>
+  </Toolbar>
+{/if}
+
 <script lang="ts">
   import Toolbar from '../../Shared/Toolbar/Toolbar.svelte';
   import Button from '../../Shared/Button.svelte';
@@ -190,6 +228,7 @@ block
   import LinkIcon from "lucide-svelte/icons/link";
   import LinkRemoveIcon from "lucide-svelte/icons/unlink";
   import ImageIcon from "lucide-svelte/icons/image-plus";
+  import OKIcon from "lucide-svelte/icons/check";
   import ListBulletedIcon from "lucide-svelte/icons/list";
   import ListNumberedIcon from "lucide-svelte/icons/list-ordered";
   import ClearIcon from "lucide-svelte/icons/remove-formatting";
@@ -201,14 +240,23 @@ block
   /* in only */
   export let editor: Editor;
 
-  function createLink() {
-    let url = window.prompt($t`Location`);
-    editor.chain().focus().setLink({ href: url }).run();
+  let isEditingLink = false;
+  let linkTargetURL: string = null;
+  function onLinkOpen() {
+    isEditingLink = true;
+    linkTargetURL = editor.getAttributes('link').href
+  }
+  function onLinkOK() {
+    editor.chain().focus().setLink({ href: linkTargetURL }).run();
+    isEditingLink = false;
   }
 
-  function createImage() {
-    let url = window.prompt($t`Image URL`);
-    editor.chain().focus().setImage({ src: url }).run();
+  let isEditingImage = false;
+  let imageURL: string = null;
+  function onImageOK() {
+    imageURL = "";
+    editor.chain().focus().setImage({ src: imageURL }).run();
+    isEditingImage = false;
   }
 </script>
 
@@ -227,5 +275,15 @@ block
   }
   .header-icon {
     font-weight: bold;
+  }
+  .link-dialog {
+    align-items: baseline;
+  }
+  .link-dialog input {
+    max-width: 30em;
+    margin-inline-end: 32px;
+  }
+  .link-dialog label {
+    margin-inline-end: 8px;
   }
 </style>
