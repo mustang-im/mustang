@@ -146,7 +146,6 @@
   import { appGlobal } from "../../../logic/app";
   import { UserError, assert } from "../../../logic/util/util";
   import { backgroundError, catchErrors, showUserError } from "../../Util/error";
-  import { appName, appVersion } from "../../../logic/build";
   import MailAutocomplete from "./MailAutocomplete.svelte";
   import AttachmentsPane from "./Attachments/AttachmentsPane.svelte";
   import FileSelector from "./Attachments/FileSelector.svelte";
@@ -160,8 +159,8 @@
   import Scroll from "../../Shared/Scroll.svelte";
   import type { Editor } from '@tiptap/core';
   import SendIcon from "lucide-svelte/icons/send";
-  import TrashIcon from "lucide-svelte/icons/trash";
-  import CloseIcon from "lucide-svelte/icons/x";
+  import TrashIcon from "lucide-svelte/icons/trash-2";
+  import CloseIcon from "lucide-svelte/icons/save";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
   import SpellCheckIcon from "lucide-svelte/icons/square-check-big";
   import { tick } from "svelte";
@@ -284,26 +283,7 @@
 
   async function onSend() {
     mail.text = null;
-
-    if (fromIdentity.replyTo) {
-      mail.replyTo = new PersonUID(fromIdentity.replyTo, fromIdentity.userRealname);
-    }
-    let sig = fromIdentity.signatureHTML;
-    if (sig) {
-      mail.html += `<footer class="signature">${sig}</footer>`;
-    }
-    mail.headers.set("User-Agent", (appName == "Mustang" ? "" : `Mustang/${appVersion} `) + `${appName}/${appVersion}`);
-
-    if (fromIdentity.isCatchAll) {
-      if (mail.from.emailAddress.includes("*")) {
-        throw new UserError(gt`Please fill out * in catch-all From address ${mail.from.emailAddress}`);
-      }
-      if (!fromIdentity.isEMailAddress(mail.from.emailAddress)) {
-        throw new UserError(gt`From address ${mail.from.emailAddress} does not match the catch-all identity ${fromIdentity.emailAddress}`);
-      }
-    }
-
-    await mail.send();
+    await mail.action.send();
     onClose();
   }
 
@@ -312,9 +292,8 @@
     onClose();
   }
   async function onDelete() {
-    await mail.action.getDraftOnServer()?.deleteMessage();
-    await mail.deleteMessage();
     onClose();
+    await mail.action.deleteDraftOnServer();
   }
 
   let closing = false;

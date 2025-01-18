@@ -1,12 +1,15 @@
 import type { EMail } from "./EMail";
 import { SpecialFolder } from "./Folder";
 import { Attachment, ContentDisposition } from "./Attachment";
+import { PersonUID } from "../Abstract/PersonUID";
 import { MailIdentity } from "./MailIdentity";
 import { CreateMIME } from "./SMTP/CreateMIME";
 import { appGlobal } from "../app";
-import { assert } from "../util/util";
-import { getUILocale } from "../../l10n/l10n";
+import { appName, appVersion } from "../build";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
+import { UserError, assert } from "../util/util";
+import { getUILocale, gt } from "../../l10n/l10n";
+import { faker } from "@faker-js/faker";
 
 /** Functions based on the email, which are either
  * not changing the email itself, but are based on the email,
@@ -39,6 +42,13 @@ export class EMailActions {
     return `${this.email.contact.name} wrote on ${getDate(this.email.sent)}:`;
   }
 
+  generateMessageID(): void {
+    /* let hostname = appGlobal.remoteApp.hostname();
+    if (hostname == "localhost") { */
+    let hostname = /* faker.hacker.adjective() + "." +*/ faker.internet.domainName();
+    this.email.messageID = crypto.randomUUID() + "@" + hostname;
+  }
+
   protected _reply(): EMail {
     this.email.markReplied()
       .catch(this.email.folder.account.errorCallback);
@@ -46,6 +56,8 @@ export class EMailActions {
     let account = this.email.folder.account;
     let reply = account.newEMailFrom();
     let mail = this.email;
+    mail.action.generateMessageID();
+
     let recipients = mail.from?.emailAddress
       ? [mail.from, ...mail.to.contents, ...mail.cc.contents, ...mail.bcc.contents]
       : [];
@@ -60,6 +72,8 @@ export class EMailActions {
 
     reply.subject = "Re: " + this.email.baseSubject; // Do *not* localize "Re: "
     reply.inReplyTo = this.email.messageID;
+    reply.references = this.email.references?.slice() ?? [];
+    reply.references.push(this.email.messageID);
 
     let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
     let quote = `<p class="quote-header">${this.quotePrefixLine()}</p>
@@ -153,6 +167,38 @@ export class EMailActions {
     return redirect;
   }
 
+  /**
+   * Sets up the email for sending, with all the headers, signature etc.
+   * Called by composer.
+   * The actual send on the protocol level is done by `EMail.send()`
+   */
+  async send(): Promise<void> {
+    let fromIdentity = this.email.identity;
+    assert(fromIdentity, "Need identity set on mail");
+    if (fromIdentity.replyTo) {
+      this.email.replyTo = new PersonUID(fromIdentity.replyTo, fromIdentity.userRealname);
+    }
+    let sig = fromIdentity.signatureHTML;
+    if (sig) {
+      this.email.html += `<footer class="signature">${sig}</footer>`;
+    }
+    this.email.headers.set("User-Agent", (appName == "Mustang" ? "" : `Mustang/${appVersion} `) + `${appName}/${appVersion}`);
+
+    if (fromIdentity.isCatchAll) {
+      if (this.email.from.emailAddress.includes("*")) {
+        throw new UserError(gt`Please fill out * in catch-all From address ${this.email.from.emailAddress}`);
+      }
+      if (!fromIdentity.isEMailAddress(this.email.from.emailAddress)) {
+        throw new UserError(gt`From address ${this.email.from.emailAddress} does not match the catch-all identity ${fromIdentity.emailAddress}`);
+      }
+    }
+
+    await this.email.deleteMessage(); // TODO doesn't work, leaves draft on server
+    await this.deleteDraftOnServer();
+
+    await this.email.send();
+  }
+
   async saveAsDraft(): Promise<void> {
     let account = this.email.folder?.account ?? this.email.identity?.account;
     assert(account, "Need mail account to save draft");
@@ -162,16 +208,26 @@ export class EMailActions {
       draftFolder.specialFolder = SpecialFolder.Drafts;
       await draftFolder.storage.saveFolderProperties(draftFolder);
     }
-    let previousDraft = this.getDraftOnServer();
+    let previousDraft = await this.getDraftOnServer();
 
     this.email.mime = await CreateMIME.getMIME(this.email);
+    console.log("saving draft", this.email.messageID);
     await draftFolder.addMessage(this.email);
-    previousDraft?.deleteMessage();
+    await draftFolder.listMessages();
+    await previousDraft?.deleteMessage();
   }
 
-  getDraftOnServer(): EMail | null {
+  async deleteDraftOnServer(): Promise<void> {
+    let previousDraft = await this.getDraftOnServer();
+    await previousDraft?.deleteMessage();
+  }
+
+  async getDraftOnServer(): Promise<EMail | null> {
     let account = this.email.folder?.account ?? this.email.identity?.account;
     let draftFolder = account.getSpecialFolder(SpecialFolder.Drafts);
-    return draftFolder.messages.find(mail => mail.messageID == mail.messageID);
+    await draftFolder.listMessages();
+    let msg = draftFolder.messages.find(mail => mail.messageID == mail.messageID);
+    console.log("found draft", msg.messageID);
+    return msg;
   }
 }

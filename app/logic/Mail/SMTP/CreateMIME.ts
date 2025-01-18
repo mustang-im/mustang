@@ -22,6 +22,7 @@ export class CreateMIME {
       inReplyTo: email.inReplyTo,
       from: CreateMIME.getRecipient(email.from),
       replyTo: email.replyTo ? CreateMIME.getRecipient(email.replyTo) : null,
+      references: email.references,
       to: CreateMIME.getRecipients(email.to),
       cc: CreateMIME.getRecipients(email.cc),
       bcc: CreateMIME.getRecipients(email.bcc),
