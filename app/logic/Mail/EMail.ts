@@ -1,19 +1,19 @@
 import { Message } from "../Abstract/Message";
 import { SpecialFolder, type Folder } from "./Folder";
+import { EMailActions } from "./EMailActions";
 import { Attachment, ContentDisposition } from "./Attachment";
 import type { Tag } from "./Tag";
 import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
-import { MailIdentity } from "./MailIdentity";
+import type { MailIdentity } from "./MailIdentity";
 import { Event } from "../Calendar/Event";
 import { Scheduling, type Responses } from "../Calendar/Invitation";
 import { EMailProcessorList, ProcessingStartOn } from "./EMailProccessor";
 import { appGlobal } from "../app";
 import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
-import { getUILocale, gt } from "../../l10n/l10n";
+import { gt } from "../../l10n/l10n";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { PromiseAllDone } from "../util/PromiseAllDone";
-import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/Lock";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
@@ -449,174 +449,6 @@ export class EMail extends Message {
     assert(server, "Cannot send: Server for draft email is not configured");
     await server.send(this);
     // TODO move to Sent or target folder?
-  }
-}
-
-
-/** Functions based on the email, which are either
- * not changing the email itself, but are based on the email,
- * or are higher-level functions not inherently about the email object. */
-export class EMailActions {
-  readonly email: EMail;
-
-  constructor(email: EMail) {
-    this.email = email;
-  }
-
-  /**
-   * @param up
-   * true: older message
-   * false: newer message
-   * null: Same list position, after deleting this message
-   */
-  nextMessage(up?: boolean): EMail {
-    let i = this.email.folder.messages.getKeyForValue(this.email);
-    if (typeof (up) == "boolean") {
-      up ? --i : ++i;
-    }
-    return this.email.folder.messages.getIndex(i);
-  }
-
-  quotePrefixLine(): string {
-    function getDate(date: Date) {
-      return date.toLocaleString(getUILocale(), { year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" });
-    }
-    return `${this.email.contact.name} wrote on ${getDate(this.email.sent)}:`;
-  }
-
-  protected _reply(): EMail {
-    this.email.markReplied()
-      .catch(this.email.folder.account.errorCallback);
-
-    let account = this.email.folder.account;
-    let reply = account.newEMailFrom();
-    let mail = this.email;
-    let recipients = mail.from?.emailAddress
-      ? [mail.from, ...mail.to.contents, ...mail.cc.contents, ...mail.bcc.contents]
-      : [];
-    let from = MailIdentity.findIdentity(recipients, account);
-    reply.identity = from.identity;
-    reply.from = from.personUID;
-    reply.folder = this.email.folder?.specialFolder == SpecialFolder.Inbox
-      ? account.getSpecialFolder(SpecialFolder.Sent)
-      : this.email.folder;
-
-    reply.subject = "Re: " + this.email.baseSubject; // Do *not* localize "Re: "
-    reply.inReplyTo = this.email.messageID;
-
-    let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
-    let quote = `<p class="quote-header">${this.quotePrefixLine()}</p>
-    <blockquote cite="mid:${this.email.id}">
-      ${this.email.html}
-    </blockquote>`;
-    reply.html = quoteSetting == "none" ? `<p></p>` :
-      quoteSetting == "below" ? `<p></p>
-    <p></p>
-    ${quote}`
-        : `${quote}
-    <p></p>
-    <p></p>`;
-    return reply;
-  }
-
-  replyToAuthor(): EMail {
-    let reply = this._reply();
-    reply.to.add(this.email.replyTo ?? this.email.from);
-    return reply;
-  }
-
-  replyAll(): EMail {
-    let reply = this.replyToAuthor();
-    reply.to.addAll(this.email.to.contents.filter(pe => !appGlobal.me.emailAddresses.some(em => em.value == pe.emailAddress)));
-    reply.cc.addAll(this.email.cc.contents.filter(pe => !appGlobal.me.emailAddresses.some(em => em.value == pe.emailAddress)));
-    return reply;
-  }
-
-  async forward(): Promise<EMail> {
-    let setting = getLocalStorage("mail.send.forward", "inline").value;
-    if (setting == "attachment") {
-      return await this.forwardAsAttachment();
-    } else {
-      return await this.forwardInline();
-    }
-  }
-
-  async forwardInline(): Promise<EMail> {
-    await this.email.loadAttachments();
-    let forward = this.email.folder.account.newEMailFrom();
-    forward.subject = "Fwd: " + this.email.subject;
-    forward.html = `<p></p>
-    <p></p>
-    <p></p>
-    <hr />
-    <p class="forward-header">
-      <div>
-        <span class="field">From:</span> <span class="value">
-          ${this.email.from?.name ?? this.email.from.emailAddress}${this.email.from?.name != this.email.from?.emailAddress ? ' <' + this.email.from.emailAddress + '>' : ''}
-        </span>
-      </div>
-      <div>
-        <span class="field">Date:</span> <span class="value">
-          ${this.email.sent.toLocaleString(getUILocale(), { year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" })}
-        </span>
-      </div>
-      <div>
-        <span class="field">Subject:</span> <span class="value">
-          ${this.email.subject}
-        </span>
-      </div>
-    </p>
-    <p></p>
-    ${ this.email.html}`;
-    forward.attachments.addAll(this.email.attachments.map(a => a.clone()));
-    return forward;
-  }
-
-  async forwardAsAttachment(): Promise<EMail> {
-    await this.email.loadAttachments();
-    let forward = this.email.folder.account.newEMailFrom();
-    forward.subject = "Fwd: " + this.email.subject;
-    let a = new Attachment();
-    a.mimeType = "message/rfc822";
-    a.disposition = ContentDisposition.inline;
-    a.filename = this.email.subject + ".eml";
-    a.content = new File([this.email.mime], a.filename);
-    a.size = this.email.size;
-    forward.attachments.add(a);
-    return forward;
-  }
-
-  async redirect(): Promise<EMail> {
-    await this.email.loadAttachments();
-    let redirect = this.email.folder.account.newEMailFrom();
-    redirect.replyTo = this.email.from;
-    redirect.subject = this.email.subject;
-    redirect.html = this.email.html;
-    redirect.attachments.addAll(this.email.attachments.map(a => a.clone()));
-    return redirect;
-  }
-
-  async saveAsDraft(): Promise<void> {
-    let account = this.email.folder?.account ?? this.email.identity?.account;
-    assert(account, "Need mail account to save draft");
-    let draftFolder = account.getSpecialFolder(SpecialFolder.Drafts);
-    if (!draftFolder) {
-      draftFolder = await account.createToplevelFolder("Drafts");
-      draftFolder.specialFolder = SpecialFolder.Drafts;
-      await draftFolder.storage.saveFolderProperties(draftFolder);
-    }
-    let previousDraft = this.getDraftOnServer();
-
-    return; // TODO
-    this.email.mime = await appGlobal.remoteApp.getMIMENodemailer(this.email);
-    await draftFolder.addMessage(this.email);
-    previousDraft?.deleteMessage();
-  }
-
-  getDraftOnServer(): EMail | null {
-    let account = this.email.folder?.account ?? this.email.identity?.account;
-    let draftFolder = account.getSpecialFolder(SpecialFolder.Drafts);
-    return draftFolder.messages.find(mail => mail.messageID == mail.messageID);
   }
 }
 
