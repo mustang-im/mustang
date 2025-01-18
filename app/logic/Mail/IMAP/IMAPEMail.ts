@@ -190,6 +190,9 @@ export class IMAPEMail extends EMail {
 
   async deleteMessageOnServer() {
     try {
+      if (!this.uid) {
+        return;
+      }
       this.folder.deletions.add(this.uid);
       let strategy = this.folder.account.deleteStrategy;
       if (strategy == DeleteStrategy.DeleteImmediately) {
