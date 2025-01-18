@@ -192,11 +192,11 @@ export class EMailActions {
         throw new UserError(gt`From address ${this.email.from.emailAddress} does not match the catch-all identity ${fromIdentity.emailAddress}`);
       }
     }
-
-    await this.email.deleteMessage(); // TODO doesn't work, leaves draft on server
-    await this.deleteDraftOnServer();
+    let previousDraft = await this.getDraftOnServer();
 
     await this.email.send();
+
+    await previousDraft?.deleteMessage(); // TODO doesn't work, leaves draft on server
   }
 
   async saveAsDraft(): Promise<void> {
@@ -213,7 +213,7 @@ export class EMailActions {
     this.email.mime = await CreateMIME.getMIME(this.email);
     console.log("saving draft", this.email.messageID);
     await draftFolder.addMessage(this.email);
-    await draftFolder.listMessages();
+    // await draftFolder.listMessages();
     await previousDraft?.deleteMessage();
   }
 
@@ -227,7 +227,7 @@ export class EMailActions {
     let draftFolder = account.getSpecialFolder(SpecialFolder.Drafts);
     await draftFolder.listMessages();
     let msg = draftFolder.messages.find(mail => mail.messageID == mail.messageID);
-    console.log("found draft", msg.messageID);
+    console.log("found draft", msg?.messageID);
     return msg;
   }
 }
