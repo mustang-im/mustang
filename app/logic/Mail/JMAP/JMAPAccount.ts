@@ -109,15 +109,24 @@ export class JMAPAccount extends MailAccount {
 
     let responsesJSON: TJMAPAPIResponse | TJMAPAPIErrorResponse;
     try {
-      responsesJSON = await this.httpPost(this.session.apiUrl, requestJSON);
+      console.log("Calling", this.session.apiUrl, "using", requestJSON.using);
+      for (let method of requestJSON?.methodCalls) {
+        console.log(method[0], method[1], method[2]);
+      }
+      responsesJSON = await this.httpPost(this.session.apiUrl, requestJSON) as TJMAPAPIResponse;
     } catch (ex) {
       if ((ex as any).httpCode) { // HTTPFetchError from backend.ts
+        console.log("POST", this.session.apiUrl, "with payload\n" + JSON.stringify(requestJSON, null, 2), "\nfailed with error", JSON.stringify(responsesJSON, null, 2));
         let errorJSON = responsesJSON as TJMAPAPIErrorResponse;
-        ex.message = errorJSON.detail ?? ex.message;
-        ex.code = errorJSON.type;
+        ex.message = errorJSON?.detail ?? ex.message;
+        ex.code = errorJSON?.type;
         throw ex;
       }
       throw ex;
+    }
+    console.log("Response");
+    for (let method of responsesJSON?.methodResponses) {
+      console.log(method[0], method[1], method[2]);
     }
     responsesJSON = responsesJSON as TJMAPAPIResponse;
 
@@ -139,6 +148,7 @@ export class JMAPAccount extends MailAccount {
   protected async ky() {
     const headers: any = {
       "Content-Type": "application/json",
+      "Accept": "application/json",
       "User-Agent": `${appName}/${appVersion}`,
     };
 
@@ -151,7 +161,7 @@ export class JMAPAccount extends MailAccount {
       assert(this.oAuth2?.isLoggedIn, this.name + `: ` + gt`OAuth: Need login`);
       headers.Authorization = this.oAuth2.authorizationHeader;
     }
-    console.log("JMAP headers", headers);
+    // console.log("JMAP headers", headers);
 
     return appGlobal.remoteApp.kyCreate({
       headers: headers,
