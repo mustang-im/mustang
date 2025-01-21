@@ -52,7 +52,7 @@ export class MailAccount extends Account {
     throw new AbstractFunction();
   }
 
-  getAllFolders() {
+  getAllFolders(): ArrayColl<Folder> {
     let allFolders = new ArrayColl<Folder>();
     function iterateFolders(folders: Collection<Folder>) {
       allFolders.addAll(folders);

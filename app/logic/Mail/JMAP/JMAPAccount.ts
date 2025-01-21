@@ -23,6 +23,7 @@ export class JMAPAccount extends MailAccount {
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
+  logging = false;
 
   constructor() {
     super();
@@ -42,7 +43,9 @@ export class JMAPAccount extends MailAccount {
 
     await this.getSession(interactive);
     await this.listFolders();
-    (this.inbox as JMAPFolder).startPolling();
+    let inbox = this.inbox as JMAPFolder;
+    assert(inbox, "Inbox not found");
+    inbox.startPolling();
   }
 
   async verifyLogin(): Promise<void> {
@@ -62,7 +65,9 @@ export class JMAPAccount extends MailAccount {
     }
 
     let session: TJMAPSession = await this.httpGet(this.url);
-    console.log("JMAP session", session);
+    if (this.logging) {
+      console.log("JMAP session", session);
+    }
     assert(session.capabilities, "Need capabilities in session");
     assert(session.accounts, "Need accounts list in session");
     assert(session.primaryAccounts, "Need primaryAccount ID in session");
@@ -109,9 +114,11 @@ export class JMAPAccount extends MailAccount {
 
     let responsesJSON: TJMAPAPIResponse | TJMAPAPIErrorResponse;
     try {
-      console.log("Calling", this.session.apiUrl, "using", requestJSON.using);
-      for (let method of requestJSON?.methodCalls) {
-        console.log(method[0], method[1], method[2]);
+      if (this.logging) {
+        console.log("Calling", this.session.apiUrl, "using", requestJSON.using);
+        for (let method of requestJSON?.methodCalls) {
+          console.log(method[0], method[1], method[2]);
+        }
       }
       responsesJSON = await this.httpPost(this.session.apiUrl, requestJSON) as TJMAPAPIResponse;
     } catch (ex) {
@@ -124,9 +131,11 @@ export class JMAPAccount extends MailAccount {
       }
       throw ex;
     }
-    console.log("Response");
-    for (let method of responsesJSON?.methodResponses) {
-      console.log(method[0], method[1], method[2]);
+    if (this.logging) {
+      console.log("Response");
+      for (let method of responsesJSON?.methodResponses) {
+        console.log(method[0], method[1], method[2]);
+      }
     }
     responsesJSON = responsesJSON as TJMAPAPIResponse;
 
@@ -196,11 +205,20 @@ export class JMAPAccount extends MailAccount {
     for (let folderJSON of serverFoldersResponse.list as TJMAPFolder[]) {
       let folder = this.getFolderByID(folderJSON.id) ?? this.newFolder();
       // Assumes that parent folders will be listed first
-      folder.parent = this.getFolderByID(folderJSON.parentId);
+      folder.parent = folderJSON.parentId ? this.getFolderByID(folderJSON.parentId) : null;
       folder.fromJMAP(folderJSON);
+      this.allFolders.set(folder.id, folder);
+      if (folder.parent) {
+        folder.parent.subFolders.add(folder);
+      } else {
+        this.rootFolders.add(folder);
+      }
     }
 
-    // TODO
+    if (this.logging) {
+      // console.log("super.getAllFolders()", super.getAllFolders().contents.map(f => f.name).join(","));
+      console.log("All folders", this.getAllFolders().contents.map(f => f.name).join(", "));
+    }
 
     for (let folder of this.getAllFolders()) {
       if (!currentFolders.includes(folder as JMAPFolder)) {
@@ -217,6 +235,12 @@ export class JMAPAccount extends MailAccount {
 
   getFolderByID(id: string): JMAPFolder | null {
     return this.allFolders.get(id);
+  }
+  getAllFolders(): ArrayColl<JMAPFolder> {
+    return new ArrayColl(this.allFolders.contents);
+  }
+  findFolder(findFunc: (folder: JMAPFolder) => boolean): JMAPFolder | null {
+    return this.allFolders.contents.find(findFunc);
   }
 
   protected stopPolling() {
