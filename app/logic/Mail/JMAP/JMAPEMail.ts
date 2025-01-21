@@ -176,7 +176,7 @@ export class JMAPEMail extends EMail {
     try {
       this.folder.deletions.add(this.pID);
       let strategy = this.folder.account.deleteStrategy;
-      if (strategy == DeleteStrategy.DeleteImmediately) {
+      if (strategy == DeleteStrategy.DeleteImmediately || this.folder.specialFolder == SpecialFolder.Trash) {
         await this.folder.account.makeSingleCall("Email/set", {
           accountId: this.folder.account.accountID,
           destroy: [ this.pID ],
