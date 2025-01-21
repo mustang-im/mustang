@@ -128,6 +128,7 @@ function addCSSRules(output, cssRules = []) {
 
 if (!DOMPurify.addHook) { // for unit tests only. TODO Load it in vitests as well
   DOMPurify.addHook = () => null;
+  DOMPurify.sanitize = (html: string) => html;
   console.log("Warning: DOMPurify not loaded. Normal in unit tests, otherwise dangerous.");
 }
 
