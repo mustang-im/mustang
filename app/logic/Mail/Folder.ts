@@ -69,7 +69,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
       if (!this.dbID) {
         await this.save();
       }
-      let log = "Reading msgs from DB, for folder " + this.account.name + " " + this.path;
+      let log = "Reading msgs from DB, for folder " + this.account.name + " " + this.name;
       console.time(log + " first 200");
       await this.storage.readAllMessagesMainProperties(this, 200);
       console.timeEnd(log + " first 200");
@@ -166,6 +166,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
   }
 
   async moveFolderHere(folder: Folder) {
+    assert(folder.account == this.account, gt`Cannot move folders between accounts yet. You can create a new folder and move the messages`);
     assert(folder != folder.account.getSpecialFolder(SpecialFolder.Inbox), "Cannot move the inbox");
     assert(!folder.specialFolder, "Should not move special folders");
     assert(folder != this, "Cannot move a folder into itself. Neither physics nor logic allow that. We would run into a circle and run and run and run...");
@@ -185,7 +186,6 @@ export class Folder extends Observable implements TreeItem<Folder> {
     let folder = this.account.newFolder();
     folder.name = name;
     folder.parent = this;
-    folder.path = this.path + "/" + name;
     this.subFolders.add(folder);
     return folder;
   }
@@ -244,7 +244,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
 
   /** @return false, if renaming is possible. If not, a string with the reason why it's not possible. */
   disableRename(): string | false {
-    if (this.specialFolder == SpecialFolder.Inbox || this.path?.toUpperCase() == "INBOX") {
+    if (this.specialFolder == SpecialFolder.Inbox || this.name.toUpperCase() == "INBOX") {
       return gt(`You cannot rename the inbox.`);
     }
     return false;
@@ -257,7 +257,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
 
   /** @return false, if changing the special folder is possible. If not, a string with the reason why it's not possible. */
   disableChangeSpecial(): string | false {
-    if (this.path.toUpperCase() == "INBOX") {
+    if (this.specialFolder == SpecialFolder.Inbox || this.name.toUpperCase() == "INBOX") {
       return gt(`You cannot change the Inbox folder.`);
     }
     return false;

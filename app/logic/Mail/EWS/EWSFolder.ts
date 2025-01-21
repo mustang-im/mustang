@@ -414,7 +414,7 @@ export class EWSFolder extends Folder {
   }
 
   async moveFolderHere(folder: EWSFolder) {
-    assert(folder.account == this.account, "Cannot move folders between accounts");
+    await super.moveFolderHere(folder);
     let request = {
       m$MoveFolder: {
         m$ToFolderId: {
@@ -430,10 +430,10 @@ export class EWSFolder extends Folder {
       },
     };
     await this.account.callEWS(request);
-    await super.moveFolderHere(folder);
   }
 
   async createSubFolder(name: string): Promise<EWSFolder> {
+    let folder = await super.createSubFolder(name) as EWSFolder;
     let request = {
       m$CreateFolder: {
         m$ParentFolderId: {
@@ -450,12 +450,13 @@ export class EWSFolder extends Folder {
       },
     };
     let result = await this.account.callEWS(request);
-    let folder = await super.createSubFolder(name) as EWSFolder;
     folder.id = sanitize.nonemptystring(result.Folders.Folder.FolderId.Id);
+    this.account.folderMap.set(folder.id, folder);
     return folder;
   }
 
   async rename(name: string) {
+    await super.rename(name);
     let request = {
       m$UpdateFolder: {
         m$FolderChanges: {
@@ -478,7 +479,6 @@ export class EWSFolder extends Folder {
       },
     };
     await this.account.callEWS(request);
-    await super.rename(name);
   }
 
   async deleteItOnServer() {

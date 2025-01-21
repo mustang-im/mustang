@@ -3,9 +3,10 @@ import type { EMail } from "../EMail";
 import { OWAEMail } from "./OWAEMail";
 import type { OWAAccount } from "./OWAAccount";
 import OWACreateItemRequest from "./OWACreateItemRequest";
-import { base64ToArrayBuffer, blobToBase64, assert, NotImplemented } from "../../util/util";
+import { base64ToArrayBuffer, blobToBase64, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
+import { gt } from "../../../l10n/l10n";
 
 export const kMaxCount = 50;
 
@@ -447,7 +448,7 @@ export class OWAFolder extends Folder {
   }
 
   async moveFolderHere(folder: OWAFolder) {
-    assert(folder.account == this.account, "Cannot move folders between accounts");
+    await super.moveFolderHere(folder);
     let request = {
       __type: "MoveFolderJsonRequest:#Exchange",
       Header: {
@@ -472,10 +473,10 @@ export class OWAFolder extends Folder {
       },
     };
     await this.account.callOWA(request);
-    await super.moveFolderHere(folder);
   }
 
   async createSubFolder(name: string): Promise<OWAFolder> {
+    let folder = await super.createSubFolder(name) as OWAFolder;
     let request = {
       __type: "CreateFolderJsonRequest:#Exchange",
       Header: {
@@ -499,13 +500,13 @@ export class OWAFolder extends Folder {
       },
     };
     let result = await this.account.callOWA(request);
-    let folder = await super.createSubFolder(name) as OWAFolder;
     folder.id = sanitize.nonemptystring(result.Folders[0].FolderId.Id);
     this.account.folderMap.set(folder.id, folder);
     return folder;
   }
 
   async rename(name: string) {
+    await super.rename(name);
     let request = {
       __type: "UpdateFolderJsonRequest:#Exchange",
       Header: {
@@ -535,7 +536,6 @@ export class OWAFolder extends Folder {
       },
     };
     await this.account.callOWA(request);
-    await super.rename(name);
   }
 
   protected async deleteItOnServer() {
@@ -558,6 +558,7 @@ export class OWAFolder extends Folder {
   }
 
   async markAllRead() {
+    await super.markAllRead();
     let request = {
       __type: "MarkAllItemsAsReadJsonRequest:#Exchange",
       Header: {
@@ -576,10 +577,9 @@ export class OWAFolder extends Folder {
       },
     };
     await this.account.callOWA(request);
-    await super.markAllRead();
   }
 
   disableChangeSpecial(): string | false {
-    return "You cannot change Exchange special folders.";
+    return gt`You cannot change special folders on the Exchange server`;
   }
 }

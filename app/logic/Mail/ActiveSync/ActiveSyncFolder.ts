@@ -262,54 +262,51 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
   }
 
   async moveFolderHere(folder: ActiveSyncFolder) {
-    assert(folder.account == this.account, gt`Cannot move folders between accounts`);
+    await super.moveFolderHere(folder);
     let request = {
       ServerId: this.id,
       ParentId: folder.id,
       DisplayName: this.name,
     };
     await this.account.queuedRequest("FolderUpdate", request);
-    await super.moveFolderHere(folder);
     // We're required to sync which should be a no-op at this point.
     await this.account.listFolders();
   }
 
   async createSubFolder(name: string): Promise<ActiveSyncFolder> {
+    let folder = await super.createSubFolder(name) as ActiveSyncFolder;
     let request = {
       ParentId: this.id,
       DisplayName: name,
       Type: "1",
     };
     let result = await this.account.queuedRequest("FolderCreate", request);
-    // We're required to sync the folder hierarchy after creating a folder.
-    // This would normally perform the folder creation steps for us,
-    // but unfortunately the API wants us to return the new folder,
-    // even though nobody ever uses it, so we have to jump through hoops.
-    let folder = await super.createSubFolder(name) as ActiveSyncFolder;
     folder.id = sanitize.nonemptystring(result.ServerId);
+    // We're required to sync the folder hierarchy after creating a folder.
+    // This performs the folder creation steps for us.
     await this.account.listFolders();
     return folder;
   }
 
   async rename(name: string) {
+    await super.rename(name);
     let request = {
       ServerId: this.id,
       ParentId: this.parent?.id || "0",
       DisplayName: name,
     };
     await this.account.queuedRequest("FolderUpdate", request);
-    await super.rename(name);
     // We're required to sync which should be a no-op at this point.
     await this.account.listFolders();
   }
 
   async deleteIt() {
+    await this.storage.deleteFolder(this);
+    this.removeFromParent();
     let request = {
       ServerId: this.id,
     };
     await this.account.queuedRequest("FolderDelete", request);
-    await this.storage.deleteFolder(this);
-    this.removeFromParent();
     // We're required to sync which should be a no-op at this point.
     await this.account.listFolders();
   }

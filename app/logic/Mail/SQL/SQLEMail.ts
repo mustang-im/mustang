@@ -288,6 +288,7 @@ export class SQLEMail {
       WHERE id = ${dbID}
       `) as any;
       // contactEmail, contactName, myEmail
+      assert(row, `EMail DB ID ${dbID} not found`);
     }
     email.dbID = sanitize.integer(dbID);
     email.pID = typeof(row.pID) == "number"
