@@ -98,8 +98,8 @@ export class EMailActions {
 
   replyAll(): EMail {
     let reply = this.replyToAuthor();
-    reply.to.addAll(this.email.to.contents.filter(pe => !appGlobal.me.emailAddresses.some(em => em.value == pe.emailAddress)));
-    reply.cc.addAll(this.email.cc.contents.filter(pe => !appGlobal.me.emailAddresses.some(em => em.value == pe.emailAddress)));
+    reply.to.addAll(this.email.to.contents.filter(pe => !this.email.folder?.account.identities.some(id => id.isEMailAddress(pe.emailAddress))));
+    reply.cc.addAll(this.email.cc.contents.filter(pe => !this.email.folder?.account.identities.some(id => id.isEMailAddress(pe.emailAddress))));
     return reply;
   }
 

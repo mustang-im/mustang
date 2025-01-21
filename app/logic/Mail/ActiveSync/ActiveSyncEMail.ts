@@ -66,7 +66,7 @@ export class ActiveSyncEMail extends EMail {
     this.setFlags(wbxmljs);
     let from = (parseOneAddress(wbxmljs.From) || parseOneAddress(wbxmljs.Sender) || { name: "Unknown", address: "unknown@invalid" }) as ParsedMailbox;
     this.from = findOrCreatePersonUID(from.address, from.name);
-    this.outgoing = appGlobal.me.emailAddresses.some(e => e.value == this.from.emailAddress);
+    this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from.emailAddress));
     setPersons(this.to, wbxmljs.To);
     setPersons(this.cc, wbxmljs.Cc);
     setPersons(this.bcc, wbxmljs.Bcc);

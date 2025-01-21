@@ -243,7 +243,7 @@ export class EMail extends Message {
     setPersons(this.to, mail.to);
     setPersons(this.cc, mail.cc);
     setPersons(this.bcc, mail.bcc);
-    this.outgoing = appGlobal.me.emailAddresses.some(e => e.value == this.from.emailAddress);
+    this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from.emailAddress));
     this.contact = this.outgoing ? this.to.first : this.from;
     if (!this.replyTo && mail.replyTo?.length) {
       let p = mail.replyTo[0];

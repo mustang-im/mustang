@@ -82,11 +82,10 @@ export class OWAEMail extends EMail {
     }*/
     if ("From" in json) {
       this.from = findOrCreatePersonUID(sanitize.emailAddress(json.From.Mailbox.EmailAddress), sanitize.nonemptystring(json.From.Mailbox.Name, null));
-      this.outgoing = appGlobal.me.emailAddresses.some(e => e.value == this.from.emailAddress);
     } else if ("Sender" in json) {
       this.from = findOrCreatePersonUID(sanitize.emailAddress(json.Sender.Mailbox.EmailAddress), sanitize.nonemptystring(json.Sender.Mailbox.Name, null));
-      this.outgoing = appGlobal.me.emailAddresses.some(e => e.value == this.from.emailAddress);
     }
+    this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from?.emailAddress));
     setPersons(this.to, json.ToRecipients);
     setPersons(this.cc, json.CcRecipients);
     setPersons(this.bcc, json.BccRecipients);

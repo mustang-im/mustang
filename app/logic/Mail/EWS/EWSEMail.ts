@@ -73,11 +73,10 @@ export class EWSEMail extends EMail {
     }
     if ("From" in xmljs) {
       this.from = findOrCreatePersonUID(sanitize.emailAddress(xmljs.From.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.From.Mailbox.Name, null));
-      this.outgoing = appGlobal.me.emailAddresses.some(e => e.value == this.from.emailAddress);
     } else if ("Sender" in xmljs) {
       this.from = findOrCreatePersonUID(sanitize.emailAddress(xmljs.Sender.Mailbox.EmailAddress), sanitize.nonemptystring(xmljs.Sender.Mailbox.Name, null));
-      this.outgoing = appGlobal.me.emailAddresses.some(e => e.value == this.from.emailAddress);
     }
+    this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from?.emailAddress));
     setPersons(this.to, xmljs.ToRecipients?.Mailbox);
     setPersons(this.cc, xmljs.CcRecipients?.Mailbox);
     setPersons(this.bcc, xmljs.BccRecipients?.Mailbox);

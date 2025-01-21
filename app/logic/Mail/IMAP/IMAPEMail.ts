@@ -83,7 +83,7 @@ export class IMAPEMail extends EMail {
     setPersons(this.to, env.to);
     setPersons(this.cc, env.cc);
     setPersons(this.bcc, env.bcc);
-    this.outgoing = appGlobal.me.emailAddresses.some(e => e.value == this.from.emailAddress);
+    this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from.emailAddress));
     this.contact = this.outgoing ? this.to.first : this.from;
     this.needToLoadBody = this._text == null && this._rawHTML == null;
     assert(!msgInfo.source || msgInfo.source instanceof Uint8Array, "MIME source needs to be a buffer");
