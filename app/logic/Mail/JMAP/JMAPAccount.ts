@@ -23,7 +23,7 @@ export class JMAPAccount extends MailAccount {
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
-  logging = true;
+  logging = false;
 
   constructor() {
     super();
@@ -36,12 +36,14 @@ export class JMAPAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
+    super.login(interactive);
     if (!this.dbID) {
       await this.storage.saveAccount(this);
     }
     await this.storage.readFolderHierarchy(this);
 
-    await this.getSession(interactive);
+    await this.loginOAuth2(interactive);
+    await this.getSession();
     await this.listFolders();
     let inbox = this.inbox as JMAPFolder;
     assert(inbox, "Inbox not found");
@@ -49,12 +51,12 @@ export class JMAPAccount extends MailAccount {
   }
 
   async verifyLogin(): Promise<void> {
-    await this.getSession(true);
+    await this.loginOAuth2(true);
+    await this.getSession();
     await this.logout();
   }
 
-  async getSession(interactive: boolean): Promise<void> {
-    // Auth method
+  protected async loginOAuth2(interactive: boolean): Promise<void> {
     let useOAuth2 = [AuthMethod.OAuth2].includes(this.authMethod);
     if (useOAuth2) {
       assert(this.oAuth2, this.name + `: ` + gt`Need OAuth2 configuration`);
@@ -63,7 +65,9 @@ export class JMAPAccount extends MailAccount {
         assert(this.oAuth2.isLoggedIn, this.name + `: ` + gt`OAuth2: Login failed`);
       }
     }
+  }
 
+  async getSession(): Promise<void> {
     let session: TJMAPSession = await this.httpGet(this.url);
     if (this.logging) {
       console.log("JMAP session", session);
@@ -158,6 +162,15 @@ export class JMAPAccount extends MailAccount {
         console.log(method[0], method[1], method[2]);
       }
     }
+    let errorResult = responsesJSON?.methodResponses.find(method => method[0] == "error");
+    if (errorResult) {
+      let error = errorResult[1];
+      let ex = new Error(error.description) as any;
+      ex.code = error.type;
+      ex.call = requestJSON;
+      ex.response = responsesJSON?.methodResponses;
+      throw ex;
+    }
     responsesJSON = responsesJSON as TJMAPAPIResponse;
 
     let callNumbers = requestJSON.methodCalls.map(call => call[2]);
@@ -175,12 +188,15 @@ export class JMAPAccount extends MailAccount {
     return responsesJSON.methodResponses;
   }
 
-  protected async ky() {
-    const headers: any = {
+  protected async ky(options: Record<string, any> = {}) {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
       "Accept": "application/json",
       "User-Agent": `${appName}/${appVersion}`,
     };
+    for (let name in options.headers) {
+      headers[name] = options.headers[name];
+    }
 
     // Auth method
     let usePassword = [AuthMethod.Password].includes(this.authMethod);
@@ -196,12 +212,12 @@ export class JMAPAccount extends MailAccount {
     return appGlobal.remoteApp.kyCreate({
       headers: headers,
       timeout: 3000,
-      result: "json",
+      result: options.result ?? "json",
     });
   }
 
-  protected async httpGet(url: string): Promise<any> {
-    let ky = await this.ky();
+  async httpGet(url: string, options?: any): Promise<any> {
+    let ky = await this.ky(options);
     return await ky.get(url);
   }
 

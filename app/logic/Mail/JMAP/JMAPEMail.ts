@@ -1,21 +1,19 @@
-import { EMail, setPersons } from "../EMail";
+import { EMail } from "../EMail";
 import type { JMAPFolder } from "./JMAPFolder";
 import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
 import { getTagByName, type Tag } from "../Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, NotReached } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import type { TJMAPEMailHeaders, TJMAPPerson } from "./JMAPTypes";
+import type { TJMAPEMailHeaders, TJMAPGetResponse, TJMAPPerson } from "./JMAPTypes";
 import type { ArrayColl } from "svelte-collections";
 
 export class JMAPEMail extends EMail {
   pID: string | null = null;
   folder: JMAPFolder;
-  /** From JMAP server */
-  seq: number | null = null;
+  mimeBlobId: string | null = null; // TODO Save in DB
   flagsChanging = false;
 
   constructor(folder: JMAPFolder) {
@@ -46,7 +44,9 @@ export class JMAPEMail extends EMail {
     setPersons(this.bcc, json.bcc);
     this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from.emailAddress));
     this.contact = this.outgoing ? this.to.first : this.from;
+    this.size = sanitize.integer(json.size, null);
     this.needToLoadBody = this._text == null && this._rawHTML == null;
+    this.mimeBlobId = sanitize.string(json.blobId, null);
     //assert(!json.source || json.source instanceof Uint8Array, "MIME source needs to be a buffer");
     // this.mime = json.source;
   }
@@ -73,17 +73,34 @@ export class JMAPEMail extends EMail {
   }
 
   async download() {
-    let msgInfo = await this.folder.runCommand(async (conn) => {
-      return await conn.fetchOne(this.uid + "", {
-        uid: true,
-        size: true,
-        threadId: true,
-        envelope: true,
-        source: true,
-        flags: true,
-      }, { uid: true });
+    let account = this.folder.account;
+    if (!this.mimeBlobId) {
+      let response = await account.makeSingleCall(
+        "Email/get", {
+        accountId: account.accountID,
+        "ids": [this.pID],
+        properties: ["blobId"],
+      },
+      ) as TJMAPGetResponse<TJMAPEMailHeaders>;
+      let json = response.list[0];
+      assert(json, "JMAP: EMail no longer on server");
+      this.mimeBlobId = sanitize.string(json.blobId);
+    }
+
+    let url = account.session.downloadUrl;
+    url = url
+      .replace("{accountId}", account.accountID)
+      .replace("{blobId}", this.mimeBlobId)
+      .replace("{name}", "email")
+      .replace("{type}", "message/rfc822");
+    let response = await account.httpGet(url, {
+      headers: {
+        "Accept": "message/ rfc822",
+        "Content-Type": undefined,
+      },
+      result: "arrayBuffer",
     });
-    this.fromFlow(msgInfo);
+    this.mime = new Uint8Array(await response.arrayBuffer());
     await this.parseMIME();
     await this.saveCompleteMessage();
   }

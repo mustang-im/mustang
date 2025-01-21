@@ -5,6 +5,7 @@ import type { EMail } from "../EMail";
 import type { EMailCollection } from "../Store/EMailCollection";
 import type { TJMAPChangeResponse, TJMAPEMailHeaders, TJMAPFolder, TJMAPGetResponse } from "./JMAPTypes";
 import { Lock } from "../../util/Lock";
+import { Semaphore } from "../../util/Semaphore";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -60,7 +61,7 @@ export class JMAPFolder extends Folder {
 
   /** Lists all messages in this folder that are new or updated since the last fetch. */
   protected async listChangedMessages(): Promise<ArrayColl<JMAPEMail>> {
-    let { newMessages, removedMessages, updatedMessages } = await this.fetchNewMessages();
+    let { newMessages, removedMessages, updatedMessages } = await this.fetchChangedMessages();
     this.messages.removeAll(removedMessages);
     this.messages.addAll(newMessages);
 
@@ -112,7 +113,7 @@ export class JMAPFolder extends Folder {
     }
   }
 
-  protected async fetchNewMessages(): Promise<{ newMessages: ArrayColl<JMAPEMail>, removedMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail> }> {
+  protected async fetchChangedMessages(): Promise<{ newMessages: ArrayColl<JMAPEMail>, removedMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail> }> {
     console.log("JMAP fetch changes");
     let lock = await this.listLock.lock();
     try {
@@ -134,7 +135,7 @@ export class JMAPFolder extends Folder {
           "Email/get", {
             accountId: this.account.accountID,
             "#ids": {
-              name: "Email/queryChanges",
+              name: "Email/changes",
               path: "created/*",
               resultOf: "changes",
             },
@@ -144,8 +145,8 @@ export class JMAPFolder extends Folder {
           "Email/get", {
             accountId: this.account.accountID,
             "#ids": {
-              name: "Email/queryChanges",
-              path: "changed/*",
+              name: "Email/changes",
+              path: "updated/*",
               resultOf: "changes",
             },
           },
@@ -205,7 +206,7 @@ export class JMAPFolder extends Folder {
 
   /** Lists new messages, and downloads them */
   async getNewMessages(): Promise<ArrayColl<JMAPEMail>> {
-    let newMsgs = await this.listChangedMessages();
+    let newMsgs = await this.listMessages();
     this.messages.addAll(newMsgs);
     await this.downloadMessages(newMsgs);
     return newMsgs;
@@ -225,51 +226,23 @@ export class JMAPFolder extends Folder {
    * @return Actually newly downloaded msgs
    */
   async downloadMessages(emails: Collection<JMAPEMail>): Promise<Collection<JMAPEMail>> {
-    let needMsgs = new ArrayColl(emails.sortBy(msg => -msg.uid));
+    let needMsgs = new ArrayColl(emails);
     let downloadedMsgs = new ArrayColl<JMAPEMail>();
-    const kMaxCount = 50;
+    const kMaxParallelCount = 5;
+    let semaphore = new Semaphore(kMaxParallelCount);
     while (needMsgs.hasItems) {
-      let downloadingMsgs = needMsgs.getIndexRange(needMsgs.length - kMaxCount, kMaxCount) as any as JMAPEMail[];
-      needMsgs.removeAll(downloadingMsgs);
-      let uids = downloadingMsgs.map(msg => msg.uid).join(",");
-      await this.runCommand(async (conn) => {
-        let msgInfos = await conn.fetch({ uid: uids }, {
-          uid: true,
-          size: true,
-          threadId: true,
-          envelope: true,
-          source: true,
-          flags: true,
-          // headers: true,
-        }, { uid: true });
-        for await (let msgInfo of msgInfos) {
-          try {
-            if (this.deletions.has(msgInfo.uid)) {
-              continue;
-            }
-            let msg = this.getEMailByPID(msgInfo.uid);
-            if (msg?.downloadComplete) {
-              continue;
-            } else if (msg) {
-              msg.fromFlow(msgInfo);
-              this.updateModSeq(msgInfo.modseq);
-              await msg.parseMIME();
-              await msg.saveCompleteMessage();
-              downloadedMsgs.add(msg);
-            }
-          } catch (ex) {
-            this.account.errorCallback(ex);
-          }
+      let msg = needMsgs.pop();
+      let lock = await semaphore.lock();
+      (async () => {
+        try {
+          await msg.download();
+        } catch (ex) {
+          this.account.errorCallback(ex);
+        } finally {
+          lock.release();
         }
-      });
+      })();
     }
-
-    /*for (let msg of this.messages) {
-      if (!msg.threadID && msg.dbID) {
-        await msg.findThread(this.messages);
-      }
-    }*/
-
     return downloadedMsgs;
   }
 

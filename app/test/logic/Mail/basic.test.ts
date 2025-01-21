@@ -40,9 +40,16 @@ test.each(kMailAccounts)("Test $protocol account $username", async (config) => {
   acc.contentStorage.clear();
 
   await acc.login(false);
+  assert(acc.inbox, "Inbox not found");
 
-  let newMsgs = await acc.inbox?.listMessages();
-  console.log("msgs", newMsgs?.getIndexRange(0, 10).map(msg => msg.subject));
+  let newMsgs = await acc.inbox.listMessages();
+  console.log("msgs", newMsgs.getIndexRange(0, 10).map(msg => msg.subject));
+
+  let msg = newMsgs.first;
+  if (msg) {
+    await msg.download();
+    console.log("body", msg.text);
+  }
 });
 
 afterAll(stopBackend);
