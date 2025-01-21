@@ -100,7 +100,7 @@ export class IMAPFolder extends Folder {
   async listMessages(): Promise<Collection<IMAPEMail>>  {
     await this.readFolder();
     if (this.countTotal === 0) {
-      return;
+      return new ArrayColl<IMAPEMail>();
     }
     let lock = await this.listMessagesLock.lock();
     try {
