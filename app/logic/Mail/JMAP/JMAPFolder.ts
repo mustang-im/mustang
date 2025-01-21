@@ -132,7 +132,7 @@ export class JMAPFolder extends Folder {
             sort: [
               { property: "receivedAt", isAscending: false }
             ],
-            sinceQueryState: this.syncState,
+            sinceState: this.syncState,
           },
           "changes",
         ], [
@@ -211,7 +211,6 @@ export class JMAPFolder extends Folder {
   /** Lists new messages, and downloads them */
   async getNewMessages(): Promise<ArrayColl<JMAPEMail>> {
     let newMsgs = await this.listMessages();
-    this.messages.addAll(newMsgs);
     await this.downloadMessages(newMsgs);
     return newMsgs;
   }
