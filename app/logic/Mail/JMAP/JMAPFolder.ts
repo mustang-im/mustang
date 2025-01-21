@@ -65,6 +65,10 @@ export class JMAPFolder extends Folder {
 
   /** Lists all messages in this folder that are new or updated since the last fetch. */
   protected async listChangedMessages(): Promise<ArrayColl<JMAPEMail>> {
+    if (!this.syncState) {
+      return await this.listAllMessages();
+    }
+
     let { newMessages, removedMessages, updatedMessages } = await this.fetchChangedMessages();
     this.messages.removeAll(removedMessages);
     this.messages.addAll(newMessages);
@@ -118,6 +122,7 @@ export class JMAPFolder extends Folder {
   }
 
   protected async fetchChangedMessages(): Promise<{ newMessages: ArrayColl<JMAPEMail>, removedMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail> }> {
+    assert(this.syncState, "No sync state");
     console.log("JMAP fetch changes");
     let lock = await this.listLock.lock();
     try {
