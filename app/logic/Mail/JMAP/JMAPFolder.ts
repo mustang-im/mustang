@@ -8,23 +8,18 @@ import { assert } from "../../util/util";
 import { Buffer } from "buffer";
 import { gt } from "../../../l10n/l10n";
 import type { TJMAPFolder } from "./JMAPTypes";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export class JMAPFolder extends Folder {
   account: JMAPAccount;
   readonly messages: EMailCollection<JMAPEMail>;
-  uidvalidity: number = 0;
+  isSubscribed: boolean = true;
+  sortOrder: number = Infinity;
   protected poller: ReturnType<typeof setInterval>;
   readonly deletions = new Set<number>();
 
   constructor(account: JMAPAccount) {
     super(account);
-  }
-
-  get path(): string {
-    return this.id;
-  }
-  set path(val: string) {
-    this.id = val;
   }
 
   /** Last sequence number seen */
@@ -37,11 +32,14 @@ export class JMAPFolder extends Folder {
     this.storage.saveFolderProperties(this).catch(this.account.errorCallback);
   }
 
-  fromJMAP(folderJSON: TJMAPFolder) {
-    this.name = folderJSON.name;
-    this.countTotal = folderJSON.totalEmails;
-    this.countUnread = folderJSON.unreadEmails;
-    this.setSpecialUse(folderJSON.role);
+  fromJMAP(json: TJMAPFolder) {
+    this.id = sanitize.nonemptystring(json.id);
+    this.name = sanitize.nonemptystring(json.name);
+    this.countTotal = sanitize.integer(json.totalEmails);
+    this.countUnread = sanitize.integer(json.unreadEmails);
+    this.isSubscribed = sanitize.boolean(json.isSubscribed);
+    this.sortOrder = sanitize.integer(json.sortOrder);
+    this.setSpecialUse(json.role);
   }
 
   async runCommand<T>(jmapFunc: (conn: any) => Promise<T>, doLock = false): Promise<T> {
