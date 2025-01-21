@@ -1,6 +1,6 @@
 import { MailAccount, TLSSocketType, AuthMethod, DeleteStrategy } from "../MailAccount";
 import { JMAPFolder } from "./JMAPFolder";
-import type { TJMAPAPIErrorResponse, TJMAPAPIRequest, TJMAPAPIResponse, TJMAPFolder, TJMAPMethodResponse, TJMAPSession } from "./JMAPTypes";
+import type { TJMAPAPIErrorResponse, TJMAPAPIRequest, TJMAPAPIResponse, TJMAPFolder, TJMAPGetResponse, TJMAPMethodResponse, TJMAPSession } from "./JMAPTypes";
 import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder } from "../Folder";
@@ -23,7 +23,7 @@ export class JMAPAccount extends MailAccount {
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
-  logging = false;
+  logging = true;
 
   constructor() {
     super();
@@ -89,6 +89,27 @@ export class JMAPAccount extends MailAccount {
     let response = responses[0];
     assert(response[0] == method, "Method in response does not match");
     return response[1];
+  }
+
+  /** Make multiple calls in one request, and return only the last result.
+   * @calls Array of calls.
+   *   Each call is an array with 3 entries:
+   *   0: Method name
+   *   1: Aguments
+   *   2: Call name
+   *   E.g. `[ "Email/get", { arg1: "value1", arg2: true, arg3: 45 }, "list" ]`
+   * @returns Object with the last result for each call. The key is the "Call name" from the input.
+   *   E.g. {
+   *     list: [ { id: "", subject: "" }, ... ]
+   *   }
+   *   If a call returns multiple results, only the last result of that call is returned. */
+  async makeCombinedCall(calls: [string, Record<string, any>, string?][]): Promise<Record<string, any>> {
+    let responses = await this.makeCalls(calls);
+    let results = {};
+    for (let response of responses) {
+      results[response[2]] = response[1];
+    }
+    return results;
   }
 
   /** Make multiple calls in one request
@@ -201,8 +222,8 @@ export class JMAPAccount extends MailAccount {
     let serverFoldersResponse = await this.makeSingleCall("Mailbox/get", {
       "accountId": this.accountID,
       "ids": null,
-    });
-    for (let folderJSON of serverFoldersResponse.list as TJMAPFolder[]) {
+    }) as TJMAPGetResponse<TJMAPFolder>;
+    for (let folderJSON of serverFoldersResponse.list) {
       let folder = this.getFolderByID(folderJSON.id) ?? this.newFolder();
       // Assumes that parent folders will be listed first
       folder.parent = folderJSON.parentId ? this.getFolderByID(folderJSON.parentId) : null;

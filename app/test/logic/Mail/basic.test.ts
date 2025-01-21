@@ -40,6 +40,9 @@ test.each(kMailAccounts)("Test $protocol account $username", async (config) => {
   acc.contentStorage.clear();
 
   await acc.login(false);
+
+  let newMsgs = await acc.inbox?.listMessages();
+  console.log("msgs", newMsgs?.getIndexRange(0, 10).map(msg => msg.subject));
 });
 
 afterAll(stopBackend);

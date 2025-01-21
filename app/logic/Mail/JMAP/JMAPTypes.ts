@@ -39,6 +39,23 @@ export interface TJMAPAPIResponse {
   sessionState: string;
 }
 
+/** <https://www.rfc-editor.org/rfc/rfc8620#section-5.1> */
+export interface TJMAPGetResponse<T> {
+  accountId: string;
+  state: string;
+  list: T[];
+  notFound: string[];
+}
+
+/** <https://www.rfc-editor.org/rfc/rfc8620#section-5.2> */
+export interface TJMAPChangeResponse {
+  accountId: string;
+  newState: string;
+  created: string[];
+  updated: string[];
+  destroyed: string[];
+}
+
 /** <https://www.rfc-editor.org/rfc/rfc8620.html#section-3.6.1> */
 export interface TJMAPAPIErrorResponse {
   type: string;
@@ -82,4 +99,35 @@ export interface TJMAPFolder {
     maySetSeen: boolean,
     mayReadItems: boolean,
   },
+}
+
+
+/** <https://www.rfc-editor.org/rfc/rfc8621.html#section-4.2.1> */
+export interface TJMAPEMailHeaders {
+  id: string,
+  messageId: string,
+  blobId: string,
+  mailboxIds: Record<string, boolean>,
+  subject: string,
+  inReplyTo: string,
+  threadId: string,
+
+  sender: string,
+  from: TJMAPPerson[],
+  to: TJMAPPerson[],
+  cc: TJMAPPerson[],
+  bcc: TJMAPPerson[],
+  replyTo: string,
+
+  receivedAt: string,
+  sentAt: string,
+  hasAttachment: boolean,
+  size: number,
+  keywords: Record<string, boolean>,
+  preview: string,
+}
+
+export interface TJMAPPerson {
+  name: string | null,
+  email: string,
 }
