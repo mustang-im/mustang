@@ -3,7 +3,7 @@ import { JMAPFolder } from "./JMAPFolder";
 import type { TJMAPAPIErrorResponse, TJMAPAPIRequest, TJMAPAPIResponse, TJMAPFolder, TJMAPGetResponse, TJMAPMethodResponse, TJMAPSession } from "./JMAPTypes";
 import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
-import { SpecialFolder } from "../Folder";
+import { Folder, SpecialFolder } from "../Folder";
 import { appGlobal } from "../../app";
 import { assert, SpecificError, type URLString } from "../../util/util";
 import { notifyChangedProperty } from "../../util/Observable";
@@ -237,8 +237,7 @@ export class JMAPAccount extends MailAccount {
 
   async listFolders(): Promise<void> {
     await this.storage.readFolderHierarchy(this);
-
-    let currentFolders = new ArrayColl<JMAPFolder>();
+    let oldFolders = this.getAllFoldersIterate();
 
     let serverFoldersResponse = await this.makeSingleCall("Mailbox/get", {
       "accountId": this.accountID,
@@ -248,13 +247,18 @@ export class JMAPAccount extends MailAccount {
       let folder = this.getFolderByID(folderJSON.id) ?? this.newFolder();
       // Assumes that parent folders will be listed first
       folder.parent = folderJSON.parentId ? this.getFolderByID(folderJSON.parentId) : null;
+
+      let parentGroup = folder.parent
+        ? folder.parent.subFolders
+        : this.rootFolders;
+      let existing = parentGroup.find(folder => folder.id == folderJSON.id) as JMAPFolder;
+      if (existing) {
+        folder = existing;
+      } else {
+        parentGroup.add(folder);
+      }
       folder.fromJMAP(folderJSON);
       this.allFolders.set(folder.id, folder);
-      if (folder.parent) {
-        folder.parent.subFolders.add(folder);
-      } else {
-        this.rootFolders.add(folder);
-      }
     }
 
     if (this.logging) {
@@ -262,15 +266,18 @@ export class JMAPAccount extends MailAccount {
       console.log("All folders", this.getAllFolders().contents.map(f => f.name).join(", "));
     }
 
-    for (let folder of this.getAllFolders()) {
-      if (!currentFolders.includes(folder as JMAPFolder)) {
-        await folder.deleteItLocally();
+    let currentFolders = this.getAllFolders();
+    for (let oldFolder of oldFolders) {
+      if (!currentFolders.includes(oldFolder as JMAPFolder)) {
+        await oldFolder.deleteItLocally();
         continue;
       }
-      if (!folder.dbID) {
-        await this.storage.saveFolder(folder);
-      } else {
+    }
+    for (let folder of currentFolders) {
+      if (folder.dbID) {
         await this.storage.saveFolderProperties(folder);
+      } else {
+        await this.storage.saveFolder(folder);
       }
     }
   }
@@ -280,6 +287,20 @@ export class JMAPAccount extends MailAccount {
   }
   getAllFolders(): ArrayColl<JMAPFolder> {
     return new ArrayColl(this.allFolders.contents);
+  }
+  getAllFoldersIterate(): ArrayColl<JMAPFolder> {
+    let allFolders = new ArrayColl<JMAPFolder>();
+    function iterate(list: Collection<Folder>) {
+      if (list.isEmpty) {
+        return;
+      }
+      allFolders.addAll(list as Collection<JMAPFolder>);
+      for (let folder of list) {
+        iterate(folder.subFolders);
+      }
+    }
+    iterate(this.rootFolders);
+    return allFolders;
   }
   findFolder(findFunc: (folder: JMAPFolder) => boolean): JMAPFolder | null {
     return this.allFolders.contents.find(findFunc);
