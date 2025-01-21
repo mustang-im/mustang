@@ -101,7 +101,6 @@ export interface TJMAPFolder {
   },
 }
 
-
 /** <https://www.rfc-editor.org/rfc/rfc8621.html#section-4.2.1> */
 export interface TJMAPEMailHeaders {
   id: string,
@@ -130,4 +129,12 @@ export interface TJMAPEMailHeaders {
 export interface TJMAPPerson {
   name: string | null,
   email: string,
+}
+
+/** <https://www.rfc-editor.org/rfc/rfc8620.html#section-6.1> */
+export interface TJMAPUpload {
+  accountId: string,
+  blobId: string,
+  type: string,
+  size: number,
 }

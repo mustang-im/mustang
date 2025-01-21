@@ -72,6 +72,19 @@ export class JMAPEMail extends EMail {
     }
   }
 
+  static getJMAPFlags(message: EMail): Record<string, boolean> {
+    let flags = {};
+    flags["$seen"] = message.isRead;
+    flags["$flagged"] = message.isStarred;
+    flags["$answered"] = message.isReplied;
+    flags["$draft"] = message.isDraft;
+    flags["$junk"] = message.isSpam;
+    for (let tag of message.tags) {
+      flags[tag.name] = true;
+    }
+    return flags;
+  }
+
   async download() {
     let account = this.folder.account;
     if (!this.mimeBlobId) {
@@ -95,8 +108,8 @@ export class JMAPEMail extends EMail {
       .replace("{type}", "message/rfc822");
     let response = await account.httpGet(url, {
       headers: {
-        "Accept": "message/ rfc822",
-        "Content-Type": undefined,
+        "Accept": "message/rfc822",
+        "Content-Type": undefined, // override
       },
       result: "blob",
     });
@@ -142,7 +155,6 @@ export class JMAPEMail extends EMail {
       accountId: this.folder.account.accountID,
       update: {
         [this.pID]: {
-          id: this.pID,
           keywords: {
             [name]: set,
           }
@@ -167,7 +179,7 @@ export class JMAPEMail extends EMail {
       if (strategy == DeleteStrategy.DeleteImmediately) {
         await this.folder.account.makeSingleCall("Email/set", {
           accountId: this.folder.account.accountID,
-          destroyed: [ this.pID ],
+          destroy: [ this.pID ],
         });
       } else if (strategy == DeleteStrategy.MoveToTrash || strategy == DeleteStrategy.Flag) {
         let trash = this.folder.account.getSpecialFolder(SpecialFolder.Trash);

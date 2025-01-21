@@ -3,11 +3,11 @@ import { JMAPEMail } from "./JMAPEMail";
 import type { JMAPAccount } from "./JMAPAccount";
 import type { EMail } from "../EMail";
 import type { EMailCollection } from "../Store/EMailCollection";
-import type { TJMAPChangeResponse, TJMAPEMailHeaders, TJMAPFolder, TJMAPGetResponse } from "./JMAPTypes";
+import type { TJMAPChangeResponse, TJMAPEMailHeaders, TJMAPFolder, TJMAPGetResponse, TJMAPUpload } from "./JMAPTypes";
 import { Lock } from "../../util/Lock";
 import { Semaphore } from "../../util/Semaphore";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert } from "../../util/util";
+import { NotImplemented, assert } from "../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 import { Buffer } from "buffer";
 import { gt } from "../../../l10n/l10n";
@@ -17,6 +17,7 @@ export class JMAPFolder extends Folder {
   readonly messages: EMailCollection<JMAPEMail>;
   isSubscribed: boolean = true;
   sortOrder: number = Infinity;
+  myRights = {} as TJMAPFolder["myRights"];
   protected poller: ReturnType<typeof setInterval>;
   protected listLock = new Lock(); /** protects this.syncState */
   readonly deletions = new Set<string>();
@@ -32,6 +33,9 @@ export class JMAPFolder extends Folder {
     this.countUnread = sanitize.integer(json.unreadEmails);
     this.isSubscribed = sanitize.boolean(json.isSubscribed);
     this.sortOrder = sanitize.integer(json.sortOrder);
+    for (let right in json.myRights) {
+      this.myRights[right] = sanitize.boolean(json.myRights[right], true);
+    }
     this.setSpecialUse(json.role);
   }
 
@@ -307,84 +311,175 @@ export class JMAPFolder extends Folder {
   async addMessage(email: EMail) {
     // Do *not* call super.addMessage();
     assert(email.mime, "Need MIME to upload it to a folder");
-    await this.runCommand(async (conn) => {
-      let flags = ["\\Seen"]; // TODO
-      await conn.append(this.path, Buffer.from(email.mime), flags); // TODO hangs
-    });
+    let url = this.account.session.uploadUrl;
+    url = url
+      .replace("{accountId}", this.account.accountID)
+      .replace("{name}", "email")
+      .replace("{type}", "message/rfc822");
+    let uploadResponse = await this.account.httpPostBinary(url, Buffer.from(email.mime), {
+      headers: {
+        "Content-Type": "message/rfc822",
+      },
+    }) as TJMAPUpload;
+    let blobId = uploadResponse.blobId;
+    assert(uploadResponse.size == email.mime.length, `Storing message failed: Sent ${email.mime.length} bytes, received: ${uploadResponse.size} bytes`);
+    let createResponse = await this.account.makeSingleCall("Email/set", {
+      accountId: this.account.accountID,
+      create: {
+        "addMessage": {
+          mailboxIds: {
+            [this.id]: true
+          },
+          blobId: blobId,
+          keywords: JMAPEMail.getJMAPFlags(email),
+          receivedAt: email.received.toISOString(),
+          /*
+          sentAt: email.sent.toISOString(),
+          subject: email.subject,
+          from: [{ name: email.from.name, email: email.from.emailAddress }],
+          replyTo: email.replyTo ? [{ name: email.replyTo.name ?? email.from.name, email: email.replyTo.emailAddress }] : undefined,
+          cc: email.cc.map(p => ({ name: p.name, email: p.emailAddress })),
+          bcc: email.bcc.map(p => ({ name: p.name, email: p.emailAddress })),
+          size: email.mime.length,
+          */
+        },
+      },
+    }) as TJMAPChangeResponse;
+    email.pID = createResponse.created["addMessage"].id;
   }
 
   async moveMessagesHere(messages: Collection<JMAPEMail>) {
-    await super.moveMessagesHere(messages);
-    let ids = messages.contents.map(msg => msg.uid).join(",");
-    let conn = await this.account.connection(); // Don't lock: 2 mailboxes involved
-    await conn.messageMove(ids, this.path, { uid: true });
-    let sourceFolder = messages.first.folder;
-    sourceFolder.countTotal -= messages.length;
-    this.countTotal += messages.length;
-    for (let sourceMsg of messages) {
-      await sourceMsg.deleteMessageLocally();
+    if (await this.moveOrCopyMessages("move", messages)) {
+      return;
     }
-    await this.listNewMessages();
+    return await this.moveOrCopyMessagesOnServer("move", messages);
   }
 
   async copyMessagesHere(messages: Collection<JMAPEMail>) {
-    await super.copyMessagesHere(messages);
-    let ids = messages.contents.map(msg => msg.uid).join(",");
-    let conn = await this.account.connection(); // Don't lock: 2 mailboxes involved
-    await conn.messageCopy(ids, this.path, { uid: true });
-    this.countTotal += messages.length;
-    for (let sourceMsg of messages) {
-      await sourceMsg.deleteMessageLocally();
+    if (await this.moveOrCopyMessages("copy", messages)) {
+      return;
     }
-    await this.listNewMessages();
+    return await this.moveOrCopyMessagesOnServer("copy", messages);
+  }
+
+  async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<JMAPEMail>) {
+    let targetFolderID = this.id;
+    let updates = {};
+    for (let msg of messages) {
+      let id = msg.pID;
+      let sourceFolderID = msg.folder.id;
+      updates[id] = {
+        mailboxIds: {
+          [targetFolderID]: true,
+          [sourceFolderID]: action == "copy",
+        },
+      };
+    }
+    await this.account.makeSingleCall("Email/set", {
+      accountId: this.account.accountID,
+      update: updates,
+    });
+
+    this.countTotal += messages.length;
+    let sourceFolder = messages.first.folder;
+    if (action == "move") {
+      sourceFolder.countTotal -= messages.length;
+      for (let sourceMsg of messages) {
+        await sourceMsg.deleteMessageLocally();
+      }
+    }
+
+    await this.listChangedMessages();
+    if (action == "move") {
+      sourceFolder.listChangedMessages();
+    }
   }
 
   async moveFolderHere(folder: JMAPFolder) {
-    assert(folder.account == this.account, "Cannot move folders between accounts yet. You can create a new folder and move the messages");
     await super.moveFolderHere(folder);
-    /*
-    assert(folder.subFolders.isEmpty, `Folder ${folder.name} has sub-folders. Cannot yet move entire folder hierarchies. You may move the folders individually.`);
-    let newFolder = await this.createSubFolder(folder.name);
-    await newFolder.moveMessagesHere(folder.messages as any as Collection<JMAPEMail>);
-    await folder.deleteIt();
-    console.log("Folder moved from", folder.path, "to", newFolder.path);
-    */
-    await this.runCommand(async (conn) => {
-      // Set this.JSON.parentId = folder.id;
+    await this.account.makeSingleCall("Mailbox/set", {
+      accountId: this.account.accountID,
+      update: {
+        [folder.id]: {
+          parentId: this.id,
+        },
+      },
     });
+    await this.account.listFolders();
   }
 
   async createSubFolder(name: string): Promise<JMAPFolder> {
     let newFolder = await super.createSubFolder(name) as JMAPFolder;
-    await this.runCommand(async (conn) => {
-      let created = await conn.mailboxCreate([this.path, name]);
-      newFolder.path = created.path;
-    });
-    console.log("JMAP folder created", name, newFolder.path);
+    let response = await this.account.makeSingleCall("Mailbox/set", {
+      accountId: this.account.accountID,
+      create: {
+        "newFolder": {
+          parentId: this.id,
+          name: name,
+          isSubscribed: true,
+        },
+      },
+    }) as TJMAPChangeResponse;
+    newFolder.id = response.created["newFolder"].id;
+    this.account.allFolders.set(newFolder.id, newFolder);
+    console.log("JMAP folder created", name);
+    await this.account.listFolders();
     await newFolder.listMessages();
     return newFolder;
   }
 
   async rename(newName: string): Promise<void> {
     await super.rename(newName);
-    await this.runCommand(async (conn) => {
-      // Set this.JSON.name = newName;
+    await this.account.makeSingleCall("Mailbox/set", {
+      accountId: this.account.accountID,
+      update: {
+        [this.id]: {
+          name: newName,
+        },
+      },
     });
   }
 
   /** Warning: Also deletes all messages in the folder, also on the server */
   protected async deleteItOnServer(): Promise<void> {
-    await this.runCommand(async (conn) => {
-      await conn.mailboxDelete(this.path);
+    await this.account.makeSingleCall("Mailbox/set", {
+      accountId: this.account.accountID,
+      destroy: [this.id],
     });
     console.log("JMAP folder deleted", this.name, this.path);
   }
 
   async markAllRead(): Promise<void> {
     await super.markAllRead();
-    await this.runCommand(async (conn) => {
-      await conn.messageFlagsAdd("1:*", ["\\Seen"], { uid: true });
-    });
+    throw new NotImplemented();
+    await this.account.makeCombinedCall([
+      [
+        "Email/query", {
+          accountId: this.account.accountID,
+          filter: {
+            inMailbox: this.id,
+          },
+        },
+        "list",
+      ], [
+        "Email/set", {
+          accountId: this.account.accountID,
+          update: {
+            "#ids": {
+              name: "Email/query",
+              path: "/ids",
+              resultOf: "list",
+            },
+            idFromResultTODO: {
+              keywords: {
+                ["$seen"]: true,
+              }
+            }
+          }
+        },
+        "markRead",
+      ],
+    ]);
   }
 
   /** @param specialUse From RFC 6154, e.g. `\Sent`
@@ -410,6 +505,27 @@ export class JMAPFolder extends Folder {
         this.specialFolder = SpecialFolder.Archive;
         break;
     }
+  }
+
+  disableDelete(): string | false {
+    return super.disableDelete() ??
+      this.myRights.mayDelete
+      ? gt(`You cannot delete this folder, because the server forbids it.`)
+      : null;
+  }
+
+  disableRename(): string | false {
+    return super.disableRename() ??
+      this.myRights.mayRename
+      ? gt(`You cannot rename this folder, because the server forbids it.`)
+      : null;
+  }
+
+  disableSubfolders(): string | false {
+    return super.disableSubfolders() ??
+      this.myRights.mayCreateChild
+      ? gt(`You cannot create subfolders of this folder, because the server forbids it.`)
+      : null;
   }
 
   newEMail(): JMAPEMail {

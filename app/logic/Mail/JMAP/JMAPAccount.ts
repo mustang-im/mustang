@@ -221,9 +221,14 @@ export class JMAPAccount extends MailAccount {
     return await ky.get(url);
   }
 
-  protected async httpPost(url: string, sendJSON: any): Promise<any> {
+  async httpPost(url: string, sendJSON: any): Promise<any> {
     let ky = await this.ky();
     return await ky.post(url, { json: sendJSON });
+  }
+
+  async httpPostBinary(url: string, body: any, options?: any): Promise<any> {
+    let ky = await this.ky(options);
+    return await ky.post(url, { body: body });
   }
 
   /** dummy, remove later */
