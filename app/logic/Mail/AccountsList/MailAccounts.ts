@@ -55,7 +55,7 @@ const kProtocolLabel = {
 }
 
 export function listMailProtocols(): string[] {
-  return Object.keys(kProtocolLabel);
+  return Object.keys(kProtocolLabel).filter(p => p != "smtp");
 }
 
 export function labelForMailProtocol(protocol: string): string {
