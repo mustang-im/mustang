@@ -98,7 +98,7 @@ export class JMAPEMail extends EMail {
         "Accept": "message/ rfc822",
         "Content-Type": undefined,
       },
-      result: "arrayBuffer",
+      result: "blob",
     });
     this.mime = new Uint8Array(await response.arrayBuffer());
     await this.parseMIME();
