@@ -327,9 +327,9 @@ export class JMAPFolder extends Folder {
     let blobId = uploadResponse.blobId;
     console.log("Uploaded message to", url, "and got blobID", blobId);
     assert(uploadResponse.size == email.mime.length, `Storing message failed: Sent ${email.mime.length} bytes, received: ${uploadResponse.size} bytes`);
-    let createResponse = await this.account.makeSingleCall("Email/set", {
+    let createResponse = await this.account.makeSingleCall("Email/import", {
       accountId: this.account.accountID,
-      create: {
+      emails: {
         "addMessage": {
           mailboxIds: {
             [this.id]: true
@@ -337,16 +337,6 @@ export class JMAPFolder extends Folder {
           blobId: blobId,
           keywords: JMAPEMail.getJMAPFlags(email),
           receivedAt: email.received.toISOString(),
-          /*
-          sentAt: email.sent.toISOString(),
-          subject: email.subject,
-          from: [{ name: email.from.name, email: email.from.emailAddress }],
-          replyTo: email.replyTo ? [{ name: email.replyTo.name ?? email.from.name, email: email.replyTo.emailAddress }] : undefined,
-          cc: email.cc.contents.map(p => ({ name: p.name, email: p.emailAddress })),
-          bcc: email.bcc.contents.map(p => ({ name: p.name, email: p.emailAddress })),
-          textBody: // email.text,
-          htmlBody: // email.html,
-          */
         },
       },
     }) as TJMAPChangeResponse;
