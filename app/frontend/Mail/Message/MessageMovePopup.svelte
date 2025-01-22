@@ -176,6 +176,9 @@
   .accounts {
     height: 10em;
   }
+  .accounts :global(.account-list) {
+    flex: 1;
+  }
   .folders {
     height: 22em;
   }
