@@ -7,7 +7,7 @@
   "ZXxoL2": "{0, plural, one { # local message. } other { # local messages. }}",
   "o7dGee": "{0, plural, one { # mail } other { # mails }}",
   "C2EZrZ": "{0}",
-  "miUdjW": "{0} new,\n          {1} unread,\n          {2, plural, one { # total message. } other { # total messages. }}",
+  "miUdjW": "{0, plural, other { # new}},\n          {1, plural, other { # unread}},\n          {2, plural, one { # total message. } other { # total messages. }}",
   "6y7ykp": "{0} حساب کنفرانس ویدئویی",
   "KFAdPX": "*",
   "KJIWi5": "*bold* یا **bold **",
