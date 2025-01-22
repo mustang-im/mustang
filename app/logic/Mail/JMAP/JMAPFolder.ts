@@ -19,7 +19,6 @@ export class JMAPFolder extends Folder {
   sortOrder: number = Infinity;
   myRights = {} as TJMAPFolder["myRights"];
   protected poller: ReturnType<typeof setInterval>;
-  protected listLock = new Lock(); /** protects this.syncState */
   readonly deletions = new Set<string>();
 
   constructor(account: JMAPAccount) {
@@ -65,7 +64,7 @@ export class JMAPFolder extends Folder {
 
   /** Lists all messages in this folder that are new or updated since the last fetch. */
   protected async listChangedMessages(): Promise<ArrayColl<JMAPEMail>> {
-    if (!this.syncState) {
+    if (!this.account.syncState) {
       return await this.listAllMessages();
     }
 
@@ -82,7 +81,7 @@ export class JMAPFolder extends Folder {
   protected async fetchMessageList(start?: number, limit?: number, options?: any): Promise<{ newMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail> }> {
     console.log("JMAP fetch", limit || start ? `start ${start} limit ${limit}` : "all");
     let listResponse: TJMAPGetResponse<TJMAPEMailHeaders>;
-    let lock = await this.listLock.lock();
+    let lock = await this.account.stateLock.lock();
     try {
       // <https://www.rfc-editor.org/rfc/rfc8621.html#section-4.4>
       let response = await this.account.makeCombinedCall([
@@ -114,7 +113,7 @@ export class JMAPFolder extends Folder {
       listResponse = response["emails"];
 
       let result = await this.parseMessageList(listResponse);
-      this.syncState = listResponse.state;
+      this.account.syncState = listResponse.state;
       return result;
     } finally {
       lock.release();
@@ -122,9 +121,9 @@ export class JMAPFolder extends Folder {
   }
 
   protected async fetchChangedMessages(): Promise<{ newMessages: ArrayColl<JMAPEMail>, removedMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail> }> {
-    assert(this.syncState, "No sync state");
+    assert(this.account.syncState, "No sync state");
     console.log("JMAP fetch changes");
-    let lock = await this.listLock.lock();
+    let lock = await this.account.stateLock.lock();
     try {
       // <https://www.rfc-editor.org/rfc/rfc8620#section-5.2>
       let response = await this.account.makeCombinedCall([
@@ -137,7 +136,7 @@ export class JMAPFolder extends Folder {
             sort: [
               { property: "receivedAt", isAscending: false }
             ],
-            sinceState: this.syncState,
+            sinceState: this.account.syncState,
           },
           "changes",
         ], [
@@ -181,7 +180,7 @@ export class JMAPFolder extends Folder {
       let changedResult = await this.parseMessageList(listChangedResponse);
       addedResult.newMessages.addAll(changedResult.newMessages);
 
-      this.syncState = changes.newState;
+      this.account.syncState = changes.newState;
       return {
         newMessages: addedResult.newMessages,
         updatedMessages: changedResult.updatedMessages,

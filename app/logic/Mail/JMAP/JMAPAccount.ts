@@ -1,17 +1,18 @@
-import { MailAccount, TLSSocketType, AuthMethod, DeleteStrategy } from "../MailAccount";
+import { MailAccount, AuthMethod, DeleteStrategy } from "../MailAccount";
 import { JMAPFolder } from "./JMAPFolder";
 import type { TJMAPAPIErrorResponse, TJMAPAPIRequest, TJMAPAPIResponse, TJMAPFolder, TJMAPGetResponse, TJMAPMethodResponse, TJMAPSession } from "./JMAPTypes";
 import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { Folder, SpecialFolder } from "../Folder";
 import { appGlobal } from "../../app";
-import { assert, SpecificError, type URLString } from "../../util/util";
-import { notifyChangedProperty } from "../../util/Observable";
-import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { appName, appVersion } from "../../build";
-import { ArrayColl, MapColl, type Collection } from "svelte-collections";
-import { gt } from "../../../l10n/l10n";
 import { basicAuth } from "../../Auth/httpAuth";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { notifyChangedProperty } from "../../util/Observable";
+import { Lock } from "../../util/Lock";
+import { assert, SpecificError } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
+import { ArrayColl, MapColl, type Collection } from "svelte-collections";
 
 export class JMAPAccount extends MailAccount {
   readonly protocol: string = "jmap";
@@ -23,6 +24,8 @@ export class JMAPAccount extends MailAccount {
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
+  syncState: string | null = null; /** JMAP state is account-global. Use stateLock. */
+  stateLock = new Lock(); /** Protects syncState */
   logging = false;
 
   constructor() {
@@ -346,10 +349,12 @@ export class JMAPAccount extends MailAccount {
   fromConfigJSON(config: any) {
     super.fromConfigJSON(config);
     this.pollIntervalMinutes = sanitize.integer(config.pollIntervalMinutes, this.pollIntervalMinutes);
+    this.syncState = sanitize.string(config.syncState, this.syncState);
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.pollIntervalMinutes = this.pollIntervalMinutes;
+    json.syncState = this.syncState;
     return json;
   }
 
