@@ -241,7 +241,7 @@ export class JMAPAccount extends MailAccount {
 
   async listFolders(): Promise<void> {
     await this.storage.readFolderHierarchy(this);
-    let oldFolders = this.getAllFoldersIterate();
+    let oldFolders = this.getAllFolders();
 
     let serverFoldersResponse = await this.makeSingleCall("Mailbox/get", {
       "accountId": this.accountID,
@@ -270,7 +270,7 @@ export class JMAPAccount extends MailAccount {
       console.log("All folders", this.getAllFolders().contents.map(f => f.name).join(", "));
     }
 
-    let currentFolders = this.getAllFolders();
+    let currentFolders = new ArrayColl(this.allFolders.contents);
     for (let oldFolder of oldFolders) {
       if (!currentFolders.includes(oldFolder as JMAPFolder)) {
         await oldFolder.deleteItLocally();
@@ -288,26 +288,6 @@ export class JMAPAccount extends MailAccount {
 
   getFolderByID(id: string): JMAPFolder | null {
     return this.allFolders.get(id);
-  }
-  getAllFolders(): ArrayColl<JMAPFolder> {
-    return new ArrayColl(this.allFolders.contents);
-  }
-  getAllFoldersIterate(): ArrayColl<JMAPFolder> {
-    let allFolders = new ArrayColl<JMAPFolder>();
-    function iterate(list: Collection<Folder>) {
-      if (list.isEmpty) {
-        return;
-      }
-      allFolders.addAll(list as Collection<JMAPFolder>);
-      for (let folder of list) {
-        iterate(folder.subFolders);
-      }
-    }
-    iterate(this.rootFolders);
-    return allFolders;
-  }
-  findFolder(findFunc: (folder: JMAPFolder) => boolean): JMAPFolder | null {
-    return this.allFolders.contents.find(findFunc);
   }
 
   async createToplevelFolder(name: string): Promise<JMAPFolder> {
