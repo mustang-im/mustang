@@ -325,6 +325,7 @@ export class JMAPFolder extends Folder {
       },
     }) as TJMAPUpload;
     let blobId = uploadResponse.blobId;
+    console.log("Uploaded message to", url, "and got blobID", blobId);
     assert(uploadResponse.size == email.mime.length, `Storing message failed: Sent ${email.mime.length} bytes, received: ${uploadResponse.size} bytes`);
     let createResponse = await this.account.makeSingleCall("Email/set", {
       accountId: this.account.accountID,
@@ -341,13 +342,18 @@ export class JMAPFolder extends Folder {
           subject: email.subject,
           from: [{ name: email.from.name, email: email.from.emailAddress }],
           replyTo: email.replyTo ? [{ name: email.replyTo.name ?? email.from.name, email: email.replyTo.emailAddress }] : undefined,
-          cc: email.cc.map(p => ({ name: p.name, email: p.emailAddress })),
-          bcc: email.bcc.map(p => ({ name: p.name, email: p.emailAddress })),
-          size: email.mime.length,
+          cc: email.cc.contents.map(p => ({ name: p.name, email: p.emailAddress })),
+          bcc: email.bcc.contents.map(p => ({ name: p.name, email: p.emailAddress })),
+          textBody: // email.text,
+          htmlBody: // email.html,
           */
         },
       },
     }) as TJMAPChangeResponse;
+    let error = createResponse["notCreated"] as any;
+    if (error) {
+      throw new Error("Upload of message to server failed: " + (error.addMessage?.description ?? "") + " " + (error.addMessage?.properties?.join(", ") ?? ""));
+    }
     email.pID = createResponse.created["addMessage"].id;
   }
 
