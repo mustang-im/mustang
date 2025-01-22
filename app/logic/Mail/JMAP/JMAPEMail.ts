@@ -149,7 +149,7 @@ export class JMAPEMail extends EMail {
    * @param name -- the flag, e.g. "\Seen", "\Recent", "$Junk" etc., or a user-set tag
    * @param set -- true = add the flag, false = remove the flag
    */
-  async setFlagServer(name: string, set = true) {
+  async setFlagServer(name: string, set: boolean) {
     this.flagsChanging = true;
     await this.folder.account.makeSingleCall("Email/set", {
       accountId: this.folder.account.accountID,
