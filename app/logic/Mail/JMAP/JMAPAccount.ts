@@ -1,6 +1,6 @@
 import { MailAccount, AuthMethod, DeleteStrategy } from "../MailAccount";
 import { JMAPFolder } from "./JMAPFolder";
-import type { TJMAPAPIErrorResponse, TJMAPAPIRequest, TJMAPAPIResponse, TJMAPFolder, TJMAPGetResponse, TJMAPMethodResponse, TJMAPSession } from "./JMAPTypes";
+import type { TJMAPAPIErrorResponse, TJMAPAPIRequest, TJMAPAPIResponse, TJMAPChangeResponse, TJMAPFolder, TJMAPGetResponse, TJMAPMethodResponse, TJMAPSession } from "./JMAPTypes";
 import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { Folder, SpecialFolder } from "../Folder";
@@ -308,6 +308,25 @@ export class JMAPAccount extends MailAccount {
   }
   findFolder(findFunc: (folder: JMAPFolder) => boolean): JMAPFolder | null {
     return this.allFolders.contents.find(findFunc);
+  }
+
+  async createToplevelFolder(name: string): Promise<JMAPFolder> {
+    let newFolder = await super.createToplevelFolder(name) as JMAPFolder;
+    let response = await this.makeSingleCall("Mailbox/set", {
+      accountId: this.accountID,
+      create: {
+        "newFolder": {
+          name: name,
+          isSubscribed: true,
+        },
+      },
+    }) as TJMAPChangeResponse;
+    newFolder.id = response.created["newFolder"].id;
+    this.allFolders.set(newFolder.id, newFolder);
+    console.log("JMAP folder created", name);
+    await this.listFolders();
+    await newFolder.listMessages();
+    return newFolder;
   }
 
   protected stopPolling() {
