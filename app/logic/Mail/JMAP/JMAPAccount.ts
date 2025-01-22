@@ -26,7 +26,7 @@ export class JMAPAccount extends MailAccount {
   pollIntervalMinutes = 10;
   syncState: string | null = null; /** JMAP state is account-global. Use stateLock. */
   stateLock = new Lock(); /** Protects syncState */
-  logging = false;
+  logging = true;
 
   constructor() {
     super();
@@ -139,31 +139,31 @@ export class JMAPAccount extends MailAccount {
       call[2] ??= `c${++callCounter}`;
       requestJSON.methodCalls.push([call[0], call[1], call[2]]);
     }
+    let log: any[] = [ "Calling" ];
+    for (let method of requestJSON?.methodCalls) {
+      log.push(method[0], method[1], method[2]);
+    }
 
     let responsesJSON: TJMAPAPIResponse | TJMAPAPIErrorResponse;
     try {
-      if (this.logging) {
-        console.log("Calling", this.session.apiUrl, "using", requestJSON.using);
-        for (let method of requestJSON?.methodCalls) {
-          console.log(method[0], method[1], method[2]);
-        }
-      }
       responsesJSON = await this.httpPost(this.session.apiUrl, requestJSON) as TJMAPAPIResponse;
     } catch (ex) {
       if ((ex as any).httpCode) { // HTTPFetchError from backend.ts
-        console.log("POST", this.session.apiUrl, "with payload\n" + JSON.stringify(requestJSON, null, 2), "\nfailed with error", JSON.stringify(responsesJSON, null, 2));
+        console.error("POST", this.session.apiUrl, "with payload\n" + JSON.stringify(requestJSON, null, 2), "\nfailed with error", JSON.stringify(responsesJSON, null, 2), "while", ...log);
         let errorJSON = responsesJSON as TJMAPAPIErrorResponse;
         ex.message = errorJSON?.detail ?? ex.message;
         ex.code = errorJSON?.type;
         throw ex;
       }
+      console.error("Error", ex?.message ?? ex, ...log);
       throw ex;
     }
+    log.push("Response");
+    for (let method of responsesJSON?.methodResponses) {
+      log.push(method[0], method[1], method[2]);
+    }
     if (this.logging) {
-      console.log("Response");
-      for (let method of responsesJSON?.methodResponses) {
-        console.log(method[0], method[1], method[2]);
-      }
+      console.log(...log);
     }
     let errorResult = responsesJSON?.methodResponses.find(method => method[0] == "error");
     if (errorResult) {
@@ -172,6 +172,7 @@ export class JMAPAccount extends MailAccount {
       ex.code = error.type;
       ex.call = requestJSON;
       ex.response = responsesJSON?.methodResponses;
+      ex.debug = log.join(" ");
       throw ex;
     }
     responsesJSON = responsesJSON as TJMAPAPIResponse;
