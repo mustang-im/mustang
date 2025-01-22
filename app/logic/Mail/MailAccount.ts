@@ -29,6 +29,7 @@ export class MailAccount extends Account {
   /** Error that broke the server connection, unrecoverable, including login failures. */
   fatalError: Error | null = null;
   spamStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
+  protected _inbox: Folder;
   /** Where we got the config from, during setup */
   source: ConfigSource = null;
   storage: MailAccountStorage;
@@ -71,7 +72,9 @@ export class MailAccount extends Account {
   }
 
   get inbox(): Folder | null {
-    return this.getSpecialFolder(SpecialFolder.Inbox) ?? this.rootFolders.first;
+    return this._inbox ??
+      (this._inbox = this.getSpecialFolder(SpecialFolder.Inbox)) ??
+      this.rootFolders.first;
   }
 
   async send(email: EMail): Promise<void> {
