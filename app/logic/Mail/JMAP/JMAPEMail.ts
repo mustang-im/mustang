@@ -56,8 +56,8 @@ export class JMAPEMail extends EMail {
       return;
     }
     // <https://www.rfc-editor.org/rfc/rfc8621.html#section-4.1.1>
-    this.isRead = sanitize.boolean(flags["$seen"], false);
-     // isNewArrived not supported
+    // isNewArrived not supported
+    this.isRead = sanitize.boolean(flags["$seen"], true);
     this.isStarred = sanitize.boolean(flags["$flagged"], false);
     this.isReplied = sanitize.boolean(flags["$answered"], false);
     this.isDraft = sanitize.boolean(flags["$draft"], false);
