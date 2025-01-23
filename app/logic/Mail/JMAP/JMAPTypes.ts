@@ -50,7 +50,9 @@ export interface TJMAPGetResponse<T> {
 /** <https://www.rfc-editor.org/rfc/rfc8620#section-5.2> */
 export interface TJMAPChangeResponse {
   accountId: string;
+  oldState: string;
   newState: string;
+  hasMoreChanges: boolean;
   created: string[];
   updated: string[];
   destroyed: string[];
@@ -75,6 +77,9 @@ export interface TJMAPAPICallError {
 export type TJMAPMethodCall = [string, Record<string, any>, string];
 /** Contents: method name, arguments, call number */
 export type TJMAPMethodResponse = [string, Record<string, any>, string];
+export type TJMAPObjectType = "Mailbox" | "Email" | "EmailSubmission" | "Thread";
+export const TJMAPObjectTypes = [ "Mailbox", "Email", "EmailSubmission", "Thread" ];
+
 
 /** <https://www.rfc-editor.org/rfc/rfc8621.html#section-2.6> */
 export interface TJMAPFolder {

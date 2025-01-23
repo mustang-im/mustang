@@ -64,7 +64,7 @@ export class JMAPFolder extends Folder {
 
   /** Lists all messages in this folder that are new or updated since the last fetch. */
   protected async listChangedMessages(): Promise<ArrayColl<JMAPEMail>> {
-    if (!this.account.syncState) {
+    if (!this.account.syncState.has("Email")) {
       return await this.listAllMessages();
     }
 
@@ -113,7 +113,7 @@ export class JMAPFolder extends Folder {
       listResponse = response["emails"];
 
       let result = await this.parseMessageList(listResponse);
-      this.account.syncState = listResponse.state;
+      this.account.setState("Email", listResponse.state);
       return result;
     } finally {
       lock.release();
@@ -121,7 +121,7 @@ export class JMAPFolder extends Folder {
   }
 
   protected async fetchChangedMessages(): Promise<{ newMessages: ArrayColl<JMAPEMail>, removedMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail> }> {
-    assert(this.account.syncState, "No sync state");
+    assert(this.account.syncState.has("Email"), "No sync state");
     console.log("JMAP fetch changes");
     let lock = await this.account.stateLock.lock();
     try {
@@ -136,7 +136,7 @@ export class JMAPFolder extends Folder {
             sort: [
               { property: "receivedAt", isAscending: false }
             ],
-            sinceState: this.account.syncState,
+            sinceState: this.account.syncState.get("Email"),
           },
           "changes",
         ], [
@@ -180,7 +180,7 @@ export class JMAPFolder extends Folder {
       let changedResult = await this.parseMessageList(listChangedResponse);
       addedResult.newMessages.addAll(changedResult.newMessages);
 
-      this.account.syncState = changes.newState;
+      this.account.setState("Email", changes.newState, changes.oldState);
       return {
         newMessages: addedResult.newMessages,
         updatedMessages: changedResult.updatedMessages,

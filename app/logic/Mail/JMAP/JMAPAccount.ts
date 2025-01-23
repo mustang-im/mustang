@@ -1,6 +1,6 @@
 import { MailAccount, AuthMethod, DeleteStrategy } from "../MailAccount";
 import { JMAPFolder } from "./JMAPFolder";
-import type { TJMAPAPIErrorResponse, TJMAPAPIRequest, TJMAPAPIResponse, TJMAPChangeResponse, TJMAPFolder, TJMAPGetResponse, TJMAPIdentity, TJMAPMethodResponse, TJMAPSession } from "./JMAPTypes";
+import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPFolder, type TJMAPGetResponse, type TJMAPIdentity, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPSession } from "./JMAPTypes";
 import type { EMail } from "../EMail";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { CreateMIME } from "../SMTP/CreateMIME";
@@ -26,7 +26,7 @@ export class JMAPAccount extends MailAccount {
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
-  syncState: string | null = null; /** JMAP state is account-global. Use stateLock. */
+  syncState = new MapColl<TJMAPObjectType, string>(); /** JMAP state is account-global. Use stateLock. */
   stateLock = new Lock(); /** Protects syncState */
   logging = true;
 
@@ -390,6 +390,33 @@ export class JMAPAccount extends MailAccount {
     return null;
   }
 
+  /**
+   * Call this when the server state changed and the server told us.
+   * This may be in result of a `get`, `set` or push call.
+   * Triggers an update, as needed.
+   *
+   * @param type What object type the sync state is for.
+   *  The state is account-global (i.e. across folders), but specific to an
+   *  object type. 
+   * @param newState The sync state that the server returned after a server call.
+   * @param oldState
+   *  Empty, if this was a `get` operation and we're now up to date
+   *  If this was a `set` operation, this is the state that the server
+   *  returned as the old state before the operation.
+   */
+  setState(type: TJMAPObjectType, newState: string, oldState?: string) {
+    let knownState = this.syncState.get(type);
+    this.syncState.set(type, newState);
+    if (knownState != newState && knownState != oldState && oldState) {
+      this.sync(type, knownState)
+        .catch(this.errorCallback);
+    }
+  }
+
+  async sync(type: TJMAPObjectType, fromState: string) {
+    // TODO
+  }
+
   hasCapability(capa: string): boolean {
     if (!this.session) {
       return false;
@@ -407,12 +434,22 @@ export class JMAPAccount extends MailAccount {
   fromConfigJSON(config: any) {
     super.fromConfigJSON(config);
     this.pollIntervalMinutes = sanitize.integer(config.pollIntervalMinutes, this.pollIntervalMinutes);
-    this.syncState = sanitize.string(config.syncState, this.syncState);
+
+    if (config.syncState && config.syncState instanceof Object) {
+      for (let typeName in config.syncState) {
+        try {
+          let type = sanitize.enum(typeName, TJMAPObjectTypes) as TJMAPObjectType;
+          this.syncState.set(type, sanitize.string(config.syncState[type]));
+        } catch (ex) {
+          this.errorCallback(ex);
+        }
+      }
+    }
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.pollIntervalMinutes = this.pollIntervalMinutes;
-    json.syncState = this.syncState;
+    json.syncState = this.syncState.contentKeyValues();
     return json;
   }
 
