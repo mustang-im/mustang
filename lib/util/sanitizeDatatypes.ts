@@ -143,7 +143,7 @@ class Sanitize {
    * but there are many others. */
   filename(unchecked: string | null, fallback: string | null | Symbol = throwErrors): string {
     let filename = this.nonemptystring(unchecked, fallback);
-    filename = filename.replace(/[^\p{Letter}\p{Number}\.\-\_] /g, "").trim();
+    filename = filename.replace(/[^\p{Letter}\p{Number}\.\-_ ]/gu, "").trim();
     if (!filename) {
       return haveError("Filename cannot have punctuation and control characters", unchecked, fallback);
     }
