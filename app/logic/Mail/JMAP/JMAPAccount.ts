@@ -1,7 +1,7 @@
 import { MailAccount, DeleteStrategy } from "../MailAccount";
 import { AuthMethod } from "../../Abstract/Account";
 import { JMAPFolder } from "./JMAPFolder";
-import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPFolder, type TJMAPGetResponse, type TJMAPIdentity, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPSession, type TJMAPUpload } from "./TJMAPGeneric";
+import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPFolder, type TJMAPGetResponse, type TJMAPIdentity, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPSession, type TJMAPUpload, type TJMAPStateChange } from "./TJMAPGeneric";
 import type { EMail } from "../EMail";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { ConnectError, LoginError } from "../../Abstract/Account";
@@ -26,6 +26,7 @@ export class JMAPAccount extends MailAccount {
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
+  eventSource: EventSource;
   syncState = new MapColl<TJMAPObjectType, string>(); /** JMAP state is account-global. Use stateLock. */
   readonly stateLock = new Lock(); /** Protects syncState */
   logging = true;
@@ -52,6 +53,7 @@ export class JMAPAccount extends MailAccount {
     await this.listFolders();
     let inbox = this.inbox as JMAPFolder;
     assert(inbox, "Inbox not found");
+    await this.startPushListener();
     inbox.startPolling();
 
     for (let addressbook of appGlobal.addressbooks) {
@@ -466,8 +468,46 @@ export class JMAPAccount extends MailAccount {
     if (toState && toState == fromState) {
       return;
     }
+
     await (this.inbox as JMAPFolder).fetchChangedMessagesForAllFolders();
     // TODO folder changes, email flags changes, calendar & contacts
+  }
+
+  async startPushListener() {
+    let url = this.session.eventSourceUrl;
+    if (!url) {
+      return;
+    }
+    this.eventSource = new EventSource(url, { withCredentials: true });
+    url = url
+      .replace("{accountId}", this.accountID)
+      .replace("{types}", "EMail")
+      .replace("{ping}", "500")
+      .replace("{closeafter}", "no");
+    // TODO HTTP Authentication header
+    // Maybe switch to <https://github.com/EventSource/eventsource>
+    this.eventSource.addEventListener("state", async (event) => {
+      try {
+        let data = event.data as TJMAPStateChange;
+        console.log("JMAP push state change", data);
+        assert(data.changed, "Need state changes");
+        let changes = data.changed[this.accountID];
+        for (let typename in changes) {
+          // let newState = changes[typename];
+          let type = typename as TJMAPObjectType;
+          await this.sync(type, this.syncState.get(type));
+        }
+      } catch (ex) {
+        this.errorCallback(ex);
+      }
+    });
+    return new Promise((resolve, reject) => {
+      this.eventSource.addEventListener("open", resolve);
+      this.eventSource.addEventListener("error", event => {
+        console.error("JMAP push connect error", event);
+        reject(new ConnectError(new Error(), "JMAP push mail failed to open"));
+      });
+    });
   }
 
   hasCapability(capa: string): boolean {
