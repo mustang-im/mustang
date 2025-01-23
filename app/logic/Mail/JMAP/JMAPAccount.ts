@@ -1,9 +1,11 @@
 import { MailAccount, AuthMethod, DeleteStrategy } from "../MailAccount";
 import { JMAPFolder } from "./JMAPFolder";
-import type { TJMAPAPIErrorResponse, TJMAPAPIRequest, TJMAPAPIResponse, TJMAPChangeResponse, TJMAPFolder, TJMAPGetResponse, TJMAPMethodResponse, TJMAPSession } from "./JMAPTypes";
+import type { TJMAPAPIErrorResponse, TJMAPAPIRequest, TJMAPAPIResponse, TJMAPChangeResponse, TJMAPFolder, TJMAPGetResponse, TJMAPIdentity, TJMAPMethodResponse, TJMAPSession } from "./JMAPTypes";
 import type { EMail } from "../EMail";
+import type { PersonUID } from "../../Abstract/PersonUID";
+import { CreateMIME } from "../SMTP/CreateMIME";
 import { ConnectError, LoginError } from "../../Abstract/Account";
-import { Folder, SpecialFolder } from "../Folder";
+import { SpecialFolder } from "../Folder";
 import { appGlobal } from "../../app";
 import { appName, appVersion } from "../../build";
 import { basicAuth } from "../../Auth/httpAuth";
@@ -12,7 +14,7 @@ import { notifyChangedProperty } from "../../util/Observable";
 import { Lock } from "../../util/Lock";
 import { assert, SpecificError } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { ArrayColl, MapColl, type Collection } from "svelte-collections";
+import { ArrayColl, MapColl } from "svelte-collections";
 
 export class JMAPAccount extends MailAccount {
   readonly protocol: string = "jmap";
@@ -323,13 +325,69 @@ export class JMAPAccount extends MailAccount {
   }
 
   async send(email: EMail): Promise<void> {
-    // TODO
-    await this.saveSent(email);
-  };
+    let outboxFolder = this.getSpecialFolder(SpecialFolder.Outbox) ??
+      this.getSpecialFolder(SpecialFolder.Drafts);
+    let sentFolder = email.folder ??
+      this.getSpecialFolder(SpecialFolder.Sent);
 
-  protected async saveSent(email: EMail): Promise<void> {
-    let sentFolder = this.getSpecialFolder(SpecialFolder.Sent);
-    await sentFolder.addMessage(email);
+    email.mime ??= await CreateMIME.getMIME(email);
+    await outboxFolder.addMessage(email);
+
+    let recipients = new ArrayColl<PersonUID>();
+    recipients.addAll(email.to);
+    recipients.addAll(email.cc);
+    recipients.addAll(email.bcc);
+    let recipientsAddrs = recipients.map(p => ({ email: p.emailAddress })).contents;
+    let identityID = await this.findIdentityOnServer(email);
+
+    let sendResponse = await this.makeSingleCall("EmailSubmission/set", {
+      accountId: this.accountID,
+      create: {
+        "sendMessage": {
+          emailId: email.pID,
+          identityId: identityID,
+          envelope: {
+            mailFrom: { email: email.from.emailAddress },
+            rcptTo: recipientsAddrs,
+          }
+        },
+      },
+      onSuccessUpdateEmail: {
+        "#sendMessage": {
+          mailboxIds: {
+            [sentFolder.id]: true,
+            [outboxFolder.id]: false,
+          },
+          keywords: {
+            "$draft": false,
+          },
+        }
+      }
+    });
+    let error = sendResponse["notCreated"] as any;
+    if (error) {
+      error = error["sendMessage"];
+      throw new Error("Upload of message to server failed: " + (error?.description ?? "") + " " + (error?.properties?.join(", ") ?? ""));
+    }
+  }
+
+  protected async findIdentityOnServer(email: EMail): Promise<string | null> {
+    assert(email.identity, `${this.name}: Please set the email identity before sending`);
+    if (email.identity.pID) {
+      return email.identity.pID as string;
+    }
+
+    let listResponse = await this.makeSingleCall("Identity/get", {
+      accountId: this.accountID,
+    }) as TJMAPGetResponse<TJMAPIdentity>;
+    for (let jmapIdentity of listResponse.list) {
+      if (email.from.emailAddress == jmapIdentity.email ||
+          email.identity.emailAddress == jmapIdentity.email ||
+          email.identity.isEMailAddress(jmapIdentity.email)) {
+        return email.identity.pID = jmapIdentity.id;
+      }
+    }
+    return null;
   }
 
   hasCapability(capa: string): boolean {

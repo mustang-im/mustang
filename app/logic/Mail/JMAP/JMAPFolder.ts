@@ -336,7 +336,7 @@ export class JMAPFolder extends Folder {
           },
           blobId: blobId,
           keywords: JMAPEMail.getJMAPFlags(email),
-          receivedAt: email.received.toISOString(),
+          receivedAt: email.received?.toISOString(),
         },
       },
     }) as TJMAPChangeResponse;
@@ -344,7 +344,11 @@ export class JMAPFolder extends Folder {
     if (error) {
       throw new Error("Upload of message to server failed: " + (error.addMessage?.description ?? "") + " " + (error.addMessage?.properties?.join(", ") ?? ""));
     }
+    // TODO need to clone email into a new JMAPEMail, esp. when copying (not moving) from EWS to JMAP.
     email.pID = createResponse.created["addMessage"].id;
+    email.folder = this;
+    // this.messages.add(email); -- see above
+    await this.listChangedMessages();
   }
 
   async moveMessagesHere(messages: Collection<JMAPEMail>) {

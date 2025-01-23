@@ -131,6 +131,18 @@ export interface TJMAPPerson {
   email: string,
 }
 
+/** <https://www.rfc-editor.org/rfc/rfc8621.html#section-6> */
+export interface TJMAPIdentity {
+  id: string,
+  name: string,
+  email: string,
+  replyTo: string[],
+  bcc: string[],
+  textSignature: string,
+  htmlSignature: string,
+  mayDelete: boolean,
+}
+
 /** <https://www.rfc-editor.org/rfc/rfc8620.html#section-6.1> */
 export interface TJMAPUpload {
   accountId: string,

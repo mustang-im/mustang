@@ -9,6 +9,7 @@ import { ArrayColl } from "svelte-collections";
 export class MailIdentity extends Observable {
   id = crypto.randomUUID();
   readonly account: MailAccount;
+  pID: string | number;
   @notifyChangedProperty
   userRealname: string;
   @notifyChangedProperty
