@@ -405,7 +405,7 @@ export class OWAFolder extends Folder {
 
   async addMessage(message: EMail) {
     assert(message.mime, "Call loadMIME() first");
-    let request = new OWACreateItemRequest({ MessageDisposition: "SaveOnly" });
+    let request = new OWACreateItemRequest({ SavedItemFolderId: { __type: "TargetFolderId:#Exchange", BaseFolderId: { __type: "FolderId:#Exchange", Id: this.id } }, MessageDisposition: "SaveOnly" });
     request.addField("Message", "MimeContent", { CharacterSet: "UTF-8", Value: await blobToBase64(new Blob([message.mime])) });
     if (message.tags.hasItems) {
       request.addField("Message", "Categories", message.tags.contents.map(tag => tag.name));
@@ -423,28 +423,7 @@ export class OWAFolder extends Folder {
       });
     }
     request.addField("Message", "IsRead", message.isRead);
-    let response = await this.account.callOWA(request);
-    if (this.specialFolder != SpecialFolder.Drafts) {
-      let request = {
-        __type: "MoveItemJsonRequest:#Exchange",
-        Header: {
-          __type: "JsonRequestHeaders:#Exchange",
-          RequestServerVersion: "Exchange2013",
-        },
-        Body: {
-          __type: "MoveItemRequest:#Exchange",
-          ItemIds: [response.Items[0].ItemId],
-          ToFolderId: {
-            __type: "TargetFolderId:#Exchange",
-            BaseFolderId: {
-              __type: "FolderId:#Exchange",
-              Id: this.id,
-            },
-          },
-        },
-      };
-      await this.account.callOWA(request);
-    }
+    await this.account.callOWA(request);
   }
 
   async moveFolderHere(folder: OWAFolder) {
