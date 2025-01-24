@@ -1,5 +1,5 @@
 import { setMainWindow, startupBackend, shutdownBackend } from '../../../backend/backend';
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, BrowserWindow, session } from 'electron'
 import { ipcMain } from 'electron/main';
 import { join } from 'path'
 import electronUpdater from 'electron-updater';
@@ -10,6 +10,18 @@ const { autoUpdater } = electronUpdater;
 function createWindow(): void {
   try {
     startupBackend();
+    
+    // Allow frontend to contact all servers
+    session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+      callback({
+        responseHeaders: {
+          ...details.responseHeaders,
+          "Content-Security-Policy": ["connect-src *"],
+          "Access-Control-Allow-Origin": ["http://localhost:5454"],
+          "Access-Control-Allow-Credentials": "true",
+        }
+      });
+    });
 
     // Create the browser window.
     const mainWindow = new BrowserWindow({
