@@ -207,6 +207,19 @@ export class JMAPAccount extends MailAccount {
     return responsesJSON.methodResponses;
   }
 
+  protected authorizationHeader(): string {
+    // Auth method
+    let usePassword = [AuthMethod.Password].includes(this.authMethod);
+    let useOAuth2 = [AuthMethod.OAuth2].includes(this.authMethod);
+    if (usePassword) {
+      return basicAuth(this.username, this.password);
+    } else if (useOAuth2) {
+      assert(this.oAuth2?.isLoggedIn, this.name + `: ` + gt`OAuth: Need login`);
+      return this.oAuth2.authorizationHeader;
+    }
+    return undefined;
+  }
+
   protected async ky(options: Record<string, any> = {}) {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -216,16 +229,7 @@ export class JMAPAccount extends MailAccount {
     for (let name in options.headers) {
       headers[name] = options.headers[name];
     }
-
-    // Auth method
-    let usePassword = [AuthMethod.Password].includes(this.authMethod);
-    let useOAuth2 = [AuthMethod.OAuth2].includes(this.authMethod);
-    if (usePassword) {
-      headers.Authorization = basicAuth(this.username, this.password);
-    } else if (useOAuth2) {
-      assert(this.oAuth2?.isLoggedIn, this.name + `: ` + gt`OAuth: Need login`);
-      headers.Authorization = this.oAuth2.authorizationHeader;
-    }
+    headers.Authorization = this.authorizationHeader();
     // console.log("JMAP headers", headers);
 
     return appGlobal.remoteApp.kyCreate({
@@ -478,18 +482,25 @@ export class JMAPAccount extends MailAccount {
     if (!url) {
       return;
     }
-    this.eventSource = new EventSource(url, { withCredentials: true });
     url = url
       .replace("{accountId}", this.accountID)
-      .replace("{types}", "EMail")
+      .replace("{types}", "Email") // TJMAPObjectTypes.join(","))
       .replace("{ping}", "500")
       .replace("{closeafter}", "no");
-    // TODO HTTP Authentication header
-    // Maybe switch to <https://github.com/EventSource/eventsource>
+    console.log("JMAP push mail URL", url);
+    this.eventSource = await appGlobal.remoteApp.newEventSource(url, {
+      headers: {
+        Authorization: this.authorizationHeader(),
+      }
+    });
     this.eventSource.addEventListener("state", async (event) => {
       try {
-        let data = event.data as TJMAPStateChange;
-        console.log("JMAP push state change", data);
+        console.log(this.name, "push event arrived");
+        let type = "Email" as TJMAPObjectType;
+        await this.sync(type, this.syncState.get(type));
+        /* TODO Not getting any data. Maybe due to npm eventsource ?
+        console.log("JMAP push state change", event);
+        let data = event as TJMAPStateChange;
         assert(data.changed, "Need state changes");
         let changes = data.changed[this.accountID];
         for (let typename in changes) {
@@ -497,15 +508,17 @@ export class JMAPAccount extends MailAccount {
           let type = typename as TJMAPObjectType;
           await this.sync(type, this.syncState.get(type));
         }
+        */
       } catch (ex) {
         this.errorCallback(ex);
       }
     });
     return new Promise((resolve, reject) => {
       this.eventSource.addEventListener("open", resolve);
-      this.eventSource.addEventListener("error", event => {
-        console.error("JMAP push connect error", event);
-        reject(new ConnectError(new Error(), "JMAP push mail failed to open"));
+      this.eventSource.addEventListener("error", (error: any) => {
+        let ex = new Error(error.message) as any;
+        ex.code = error.code;
+        reject(new ConnectError(ex, "JMAP push mail failed to open: " + error.message));
       });
     });
   }
