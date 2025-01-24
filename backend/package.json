@@ -9,6 +9,7 @@
     "adm-zip": "^0.5.12",
     "bufferutil": "^4.0.8",
     "des.js": "^1.0.1",
+    "eventsource": "^3.0.2",
     "express": "^4.19.2",
     "imapflow": "^1.0.171",
     "js-md4": "^0.3.2",
