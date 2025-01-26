@@ -1,7 +1,9 @@
 import { MailAccount, DeleteStrategy } from "../MailAccount";
 import { AuthMethod } from "../../Abstract/Account";
 import { JMAPFolder } from "./JMAPFolder";
+import type { JMAPEMail } from "./JMAPEMail";
 import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPFolder, type TJMAPGetResponse, type TJMAPIdentity, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPSession, type TJMAPUpload, type TJMAPStateChange } from "./TJMAPGeneric";
+import type { TJMAPEMailHeaders } from "./TJMAPMail";
 import type { EMail } from "../EMail";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { ConnectError, LoginError } from "../../Abstract/Account";
@@ -156,7 +158,7 @@ export class JMAPAccount extends MailAccount {
     }
     let log: any[] = [ "Calling" ];
     for (let method of requestJSON?.methodCalls) {
-      log.push(method[0], method[1], method[2]);
+      log.push(method[2], method[0], method[1]);
     }
 
     let responsesJSON: TJMAPAPIResponse | TJMAPAPIErrorResponse;
@@ -175,7 +177,7 @@ export class JMAPAccount extends MailAccount {
     }
     log.push("Response");
     for (let method of responsesJSON?.methodResponses) {
-      log.push(method[0], method[1], method[2]);
+      log.push(method[2], method[0], method[1]);
     }
     if (this.logging) {
       console.log(...log);
@@ -473,6 +475,17 @@ export class JMAPAccount extends MailAccount {
       return;
     }
 
+    let lock = await this.stateLock.lock();
+    try {
+      if (type == "Mailbox") {
+        await this.syncMailboxes(fromState);
+      } else if (type == "Email") {
+        await this.syncEmails(fromState);
+      }
+    } finally {
+      lock.release();
+    }
+
     await (this.inbox as JMAPFolder).fetchChangedMessagesForAllFolders();
     // TODO folder changes, email flags changes, calendar & contacts
   }
@@ -521,6 +534,110 @@ export class JMAPAccount extends MailAccount {
         reject(new ConnectError(ex, "JMAP push mail failed to open: " + error.message));
       });
     });
+  }
+
+  protected async syncMailboxes(fromState: string) {
+    /*
+    let changeResponse = await this.makeSingleCall("Mailbox/changes", {
+      accountId: this.accountID,
+      sinceState: fromState,
+    }) as TJMAPChangeResponse;
+    console.log(this.name, "mailbox sync response", changeResponse);
+    */
+    await this.listFolders();
+    this.setState("Mailbox", fromState);
+  }
+
+  protected async syncEmails(fromState: string) {
+    let response = await this.makeCombinedCall([
+      [
+        "Email/changes", {
+          accountId: this.accountID,
+          sinceState: fromState,
+          sort: [
+            { property: "receivedAt", isAscending: false }
+          ],
+        }, "changes",
+      ], [
+        "Email/get", {
+          accountId: this.accountID,
+          "#ids": {
+            resultOf: "changes",
+            name: "Email/changes",
+            path: "created/*",
+          },
+        }, "added",
+      ], [
+        "Email/get", {
+          accountId: this.accountID,
+          "#ids": {
+            resultOf: "changes",
+            name: "Email/changes",
+            path: "updated/*",
+          },
+        }, "changed",
+      ], [
+        "Email/get", {
+          accountId: this.accountID,
+          properties: "MailboxIds",
+          "#ids": {
+            resultOf: "changes",
+            name: "Email/changes",
+            path: "destroyed/*",
+          },
+        }, "removed"
+      ],
+    ]);
+    console.log(this.name, "email sync response", response);
+
+    let changes = response["changes"] as TJMAPChangeResponse;
+    let addedResponse = response["added"] as TJMAPGetResponse<TJMAPEMailHeaders>;
+    let changedResponse = response["changed"] as TJMAPGetResponse<TJMAPEMailHeaders>;
+    let removedResponse = response["removed"] as TJMAPGetResponse<TJMAPEMailHeaders>;
+
+    for (let added of this.findFoldersForMsgs(addedResponse.list)) {
+      if (added.msg) {
+        continue;
+      }
+      let msg = added.folder.newEMail();
+      await msg.fromJMAP(added.msgJSON);
+      msg.folder.messages.add(msg);
+    }
+
+    for (let changed of this.findFoldersForMsgs(changedResponse.list)) {
+      let msg = changed.msg;
+      if (!msg) {
+        msg = changed.folder.newEMail();
+        changed.folder.messages.add(msg);
+      }
+      await msg.fromJMAP(changed.msgJSON);
+    }
+
+    for (let removed of this.findFoldersForMsgs(removedResponse.list)) {
+      let msg = removed.msg;
+      if (!msg) {
+        continue;
+      }
+      await msg.deleteMessageLocally();
+    }
+
+    this.setState("Email", changes.newState);
+  }
+
+  protected findFoldersForMsgs(msgs: TJMAPEMailHeaders[]):
+    ArrayColl<{ msgJSON: TJMAPEMailHeaders, folder: JMAPFolder, msg: JMAPEMail | null }> {
+    let results = new ArrayColl<{ msgJSON: TJMAPEMailHeaders, folder: JMAPFolder, msg: JMAPEMail | null }>();
+    for (let msgJSON of msgs) {
+      for (let mailboxId in msgJSON.mailboxIds) {
+        let folder = this.getFolderByID(mailboxId);
+        if (!folder) {
+          continue;
+        }
+        let msg = folder.getEMailByPID(msgJSON.id);
+        results.push({ folder, msg, msgJSON });
+      }
+    }
+    return results;
   }
 
   hasCapability(capa: string): boolean {

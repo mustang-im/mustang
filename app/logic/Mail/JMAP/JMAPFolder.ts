@@ -287,7 +287,7 @@ export class JMAPFolder extends Folder {
     return downloadedMsgs;
   }
 
-  protected getEMailByPID(pID: string): JMAPEMail {
+  getEMailByPID(pID: string): JMAPEMail {
     return this.messages.find((m: JMAPEMail) => m.pID == pID) as JMAPEMail;
   }
 
