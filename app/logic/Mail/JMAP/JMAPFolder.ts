@@ -112,7 +112,7 @@ export class JMAPFolder extends Folder {
       ]) as TJMAPGetResponse<TJMAPEMailHeaders>;
       listResponse = response["emails"];
 
-      let result = await this.parseMessageList(listResponse);
+      let result = await this.parseMessageList(listResponse.list);
       this.account.setState("Email", listResponse.state);
       return result;
     } finally {
@@ -163,23 +163,14 @@ export class JMAPFolder extends Folder {
       ]);
 
       let changes = response["changes"] as TJMAPChangeResponse;
-      let listNewResponse = response["added"] as TJMAPGetResponse<TJMAPEMailHeaders>;
-      let listChangedResponse = response["changed"] as TJMAPGetResponse<TJMAPEMailHeaders>;
+      let addedResponse = response["added"] as TJMAPGetResponse<TJMAPEMailHeaders>;
+      let changedResponse = response["changed"] as TJMAPGetResponse<TJMAPEMailHeaders>;
 
-      let removedMessages = new ArrayColl<JMAPEMail>();
-      for (let removedID of changes.destroyed) {
-        let msg = this.getEMailByPID(removedID);
-        if (!msg) {
-          continue;
-        }
-        removedMessages.add(msg);
-        await msg.deleteMessageLocally();
-      }
-
-      let addedResult = await this.parseMessageList(listNewResponse, false);
-      let changedResult = await this.parseMessageList(listChangedResponse);
+      let removedMessages = await this.parseRemovedMessages(changes.destroyed)
+      let addedResult = await this.parseMessageList(addedResponse.list, false);
+      let changedResult = await this.parseMessageList(changedResponse.list);
       addedResult.newMessages.addAll(changedResult.newMessages);
-
+  
       this.account.setState("Email", changes.newState, changes.oldState);
       return {
         newMessages: addedResult.newMessages,
@@ -191,10 +182,23 @@ export class JMAPFolder extends Folder {
     }
   }
 
-  protected async parseMessageList(listResponse: TJMAPGetResponse<TJMAPEMailHeaders>, checkUpdates = true): Promise<{ newMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail> }> {
+  async parseRemovedMessages(messageIDs: string[]): Promise<ArrayColl<JMAPEMail>> {
+    let removedMessages = new ArrayColl<JMAPEMail>();
+    for (let removedID of messageIDs) {
+      let msg = this.getEMailByPID(removedID);
+      if (!msg) {
+        continue;
+      }
+      removedMessages.add(msg);
+      await msg.deleteMessageLocally();
+    }
+    return removedMessages;
+  }
+
+  protected async parseMessageList(msgs: TJMAPEMailHeaders[], checkUpdates = true): Promise<{ newMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail> }> {
     let newMessages = new ArrayColl<JMAPEMail>();
     let updatedMessages = new ArrayColl<JMAPEMail>();
-    for (let json of listResponse.list) {
+    for (let json of msgs) {
       let pID = sanitize.nonemptystring(json.id);
       if (this.deletions.has(pID)) {
         continue;
