@@ -498,9 +498,6 @@ export class JMAPAccount extends MailAccount {
         "Email/changes", {
           accountId: this.accountID,
           sinceState: fromState,
-          sort: [
-            { property: "receivedAt", isAscending: false }
-          ],
         }, "changes",
       ], [
         "Email/get", {
@@ -508,7 +505,7 @@ export class JMAPAccount extends MailAccount {
           "#ids": {
             resultOf: "changes",
             name: "Email/changes",
-            path: "created/*",
+            path: "/created",
           },
         }, "added",
       ], [
@@ -517,7 +514,7 @@ export class JMAPAccount extends MailAccount {
           "#ids": {
             resultOf: "changes",
             name: "Email/changes",
-            path: "updated/*",
+            path: "/updated",
           },
         }, "changed",
       ], [
@@ -527,7 +524,7 @@ export class JMAPAccount extends MailAccount {
           "#ids": {
             resultOf: "changes",
             name: "Email/changes",
-            path: "destroyed/*",
+            path: "/destroyed",
           },
         }, "removed"
       ],
