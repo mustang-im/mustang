@@ -49,11 +49,15 @@
     padding-inline-start: 8px;
   }
   .count {
-    background-color: var(--headerbar-bg);
+    background-color: red;
+    color: white;
+    border-radius: 20px;
     border: 1px solid var(--border);
-    border-radius: 5px;
-    padding-inline: 4px;
+    height: 100%;
+    aspect-ratio: 1/1;
+    justify-content: center;
     margin-inline-end: 8px;
+    font-weight: bold;
   }
   .folder:hover .count {
     display: none;

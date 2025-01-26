@@ -24,9 +24,9 @@
     <AccountList {accounts} bind:selectedAccount />
     <FolderList {folders} bind:selectedFolder bind:selectedFolders>
       <svelte:fragment slot="buttons" let:folder>
-          <GetMailButton {folder} />
-          <Button label={$t`Folder properties`} icon={MoreIcon} iconOnly plain
-            onClick={() => onFolderSettings(folder)} />
+        <GetMailButton {folder} />
+        <Button label={$t`Folder properties`} icon={MoreIcon} iconOnly plain
+          onClick={() => onFolderSettings(folder)} />
       </svelte:fragment>
     </FolderList>
     {#if selectedFolder && !(selectedFolder instanceof SavedSearchFolder)}
