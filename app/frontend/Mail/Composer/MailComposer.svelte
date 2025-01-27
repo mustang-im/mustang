@@ -293,7 +293,7 @@
   }
   async function onDelete() {
     onClose();
-    await mail.action.deleteDraftOnServer();
+    await mail.action.deleteDrafts();
   }
 
   let closing = false;

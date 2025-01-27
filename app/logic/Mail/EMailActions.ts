@@ -4,11 +4,12 @@ import { Attachment, ContentDisposition } from "./Attachment";
 import { PersonUID } from "../Abstract/PersonUID";
 import { MailIdentity } from "./MailIdentity";
 import { CreateMIME } from "./SMTP/CreateMIME";
-import { appGlobal } from "../app";
 import { appName, appVersion } from "../build";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
+import { backgroundError } from "../../frontend/Util/error";
 import { UserError, assert } from "../util/util";
 import { getUILocale, gt } from "../../l10n/l10n";
+import type { Collection } from "svelte-collections";
 import { faker } from "@faker-js/faker";
 
 /** Functions based on the email, which are either
@@ -192,11 +193,12 @@ export class EMailActions {
         throw new UserError(gt`From address ${this.email.from.emailAddress} does not match the catch-all identity ${fromIdentity.emailAddress}`);
       }
     }
-    let previousDraft = await this.getDraftOnServer();
+    let previousDrafts = this.getDrafts();
 
     await this.email.send();
 
-    await previousDraft?.deleteMessage(); // TODO doesn't work, leaves draft on server
+    this.deleteDrafts(previousDrafts) // TODO doesn't work, leaves draft behind
+      .catch(backgroundError);
   }
 
   async saveAsDraft(): Promise<void> {
@@ -208,26 +210,25 @@ export class EMailActions {
       draftFolder.specialFolder = SpecialFolder.Drafts;
       await draftFolder.storage.saveFolderProperties(draftFolder);
     }
-    let previousDraft = await this.getDraftOnServer();
+    let previousDrafts = this.getDrafts();
 
     this.email.mime = await CreateMIME.getMIME(this.email);
     console.log("saving draft", this.email.messageID);
     await draftFolder.addMessage(this.email);
-    // await draftFolder.listMessages();
-    await previousDraft?.deleteMessage();
+
+    await this.deleteDrafts(previousDrafts);
   }
 
-  async deleteDraftOnServer(): Promise<void> {
-    let previousDraft = await this.getDraftOnServer();
-    await previousDraft?.deleteMessage();
-  }
-
-  async getDraftOnServer(): Promise<EMail | null> {
+  getDrafts(): Collection<EMail> {
     let account = this.email.folder?.account ?? this.email.identity?.account;
     let draftFolder = account.getSpecialFolder(SpecialFolder.Drafts);
-    await draftFolder.listMessages();
-    let msg = draftFolder.messages.find(mail => mail.messageID == mail.messageID);
-    console.log("found draft", msg?.messageID);
-    return msg;
+    return draftFolder.messages.filter(mail => mail.messageID == this.email.messageID);
+  }
+
+  async deleteDrafts(previousDrafts?: Collection<EMail>): Promise<void> {
+    previousDrafts ??= this.getDrafts();
+    for (let previousDraft of previousDrafts) {
+      await previousDraft.deleteMessage();
+    }
   }
 }
