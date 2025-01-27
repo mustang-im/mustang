@@ -7,7 +7,7 @@
   <select bind:value={selectedIdentity} class:catch-all={selectedIdentity.isCatchAll}>
     {#each $identities.each as identity }
       <option value={identity}>
-        {identity == selectedIdentity && identity.emailAddress != customFromAddress
+        {identity.isCatchAll && identity.isEMailAddress(customFromAddress) && identity.emailAddress != customFromAddress
           ? customFromAddress
           : identity.name}
       </option>
