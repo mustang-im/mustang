@@ -512,6 +512,7 @@ export class EWSAccount extends MailAccount {
       },
     };
     let result = await this.callEWS(query);
+    this.folderMap.clear();
     for (let folder of result.RootFolder.Folders.Folder) {
       if (!folder.FolderClass || folder.FolderClass == "IPF.Note" || folder.FolderClass.startsWith("IPF.Note.")) {
         let parent = this.folderMap.get(folder.ParentFolderId.Id);
@@ -524,6 +525,12 @@ export class EWSAccount extends MailAccount {
         }
         ewsFolder.fromXML(folder);
         this.folderMap.set(folder.FolderId.Id, ewsFolder);
+      }
+    }
+    // Iterate from deepest to shallowest
+    for (let folder of this.getAllFolders().reverse()) {
+      if (this.folderMap.get(folder.id) != folder) {
+        await folder.deleteItLocally();
       }
     }
   }
