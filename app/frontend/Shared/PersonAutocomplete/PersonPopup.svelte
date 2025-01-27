@@ -17,12 +17,10 @@
         <input class="name" type="text"
           bind:value={personUID.name}
           bind:this={nameInputEl}
-          on:input={onSaveDebounced}
           on:keydown={(event) => onKeyEnter(event, onClose)}
           placeholder={$t`Enter a name for the person`} />
         <input class="email" type="email"
           bind:value={personUID.emailAddress}
-          on:input={onSaveDebounced}
           placeholder={$t`Email address to be used here`} />
       </vbox>
       <!--
@@ -95,8 +93,7 @@
   import CheckIcon from "lucide-svelte/icons/check";
   import MailIcon from "lucide-svelte/icons/mail";
   import { onKeyEnter } from "../../Util/util";
-  import { catchErrors } from "../../Util/error";
-  import { useDebounce } from "@svelteuidev/composables";
+  import { backgroundError, catchErrors } from "../../Util/error";
   import { createEventDispatcher, onMount } from 'svelte';
   import { t } from "../../../l10n/l10n";
   const dispatch = createEventDispatcher<{ removePerson: PersonUID, close: void }>();
@@ -126,6 +123,8 @@
   }
 
   function onClose() {
+    onSave()
+      .catch(backgroundError);
     dispatch("close");
   }
   function onClickInside(event: MouseEvent) {
@@ -134,7 +133,6 @@
   function onClickOutside(event: MouseEvent) {
     onClose();
   }
-  const onSaveDebounced = useDebounce(() => catchErrors(onSave), 1000);
   async function onSave() {
     let person = personUID.createPerson();
     person.name = personUID.name;
