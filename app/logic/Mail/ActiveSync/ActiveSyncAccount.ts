@@ -366,7 +366,7 @@ export class ActiveSyncAccount extends MailAccount {
     }
   }
 
-  protected async makeRequest(command: string, request: any, callback?: (response: any) => Promise<void>): Promise<any> {
+  protected async makeRequest(command: string, request: any, callback?: (response: any, resync?: true) => Promise<void>): Promise<any> {
     try {
       // The SyncKey must be the first element of the request.
       request = Object.assign({ SyncKey: this.getStorageItem("sync_key") || "0" }, request);
@@ -378,7 +378,7 @@ export class ActiveSyncAccount extends MailAccount {
       if (callback && ex.code == kFolderSyncKeyError) {
         // Try to resync from start.
         let response = await this.callEAS(command, { SyncKey: "0" });
-        await callback(response);
+        await callback(response, true);
         this.setStorageItem("sync_key", response.SyncKey);
         return response;
       }
@@ -392,7 +392,11 @@ export class ActiveSyncAccount extends MailAccount {
       this.setStorageItem("sync_key", "0");
     }
 
-    await this.queuedRequest("FolderSync", {}, async response => {
+    let missingFolders = new ArrayColl<Folder>();
+    await this.queuedRequest("FolderSync", {}, async (response, resync) => {
+      if (resync) {
+        missingFolders = this.getAllFolders();
+      }
       let url = new URL(this.url);
       for (let change of ensureArray(response.Changes?.Add).concat(ensureArray(response.Changes?.Update))) {
         try {
@@ -414,6 +418,7 @@ export class ActiveSyncAccount extends MailAccount {
             }
             folder.addToParent();
             await folder.save();
+            missingFolders.remove(folder);
             break;
           case FolderType.Tasks:
           case FolderType.UserTasks:
@@ -477,6 +482,10 @@ export class ActiveSyncAccount extends MailAccount {
         }
       }
     });
+    // Iterate from deepest to shallowest
+    for (let folder of missingFolders.reverse()) {
+      await folder.deleteItLocally();
+    }
   }
 
   findFolderById(id: string): ActiveSyncFolder | null {
