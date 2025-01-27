@@ -10,6 +10,8 @@
         {identity.isCatchAll && identity.isEMailAddress(customFromAddress) && identity.emailAddress != customFromAddress
           ? customFromAddress
           : identity.name}
+        -
+        {identity.account?.name}
       </option>
     {/each}
   </select>
