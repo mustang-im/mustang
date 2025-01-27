@@ -23,6 +23,7 @@
 <script lang="ts">
   import type { Folder } from "../../logic/Mail/Folder";
   import { SavedSearchFolder } from "../../logic/Mail/Virtual/SavedSearchFolder";
+  import { selectedFolder } from "./Selected";
   import FolderGeneral from "../Settings/Mail/Account/FolderGeneral.svelte";
   import FolderActions from "../Settings/Mail/Account/FolderActions.svelte";
   import HeaderGroupBox from "../Shared/HeaderGroupBox.svelte";
@@ -46,6 +47,7 @@
         return;
       }
     }
+    $selectedFolder = folder.parent ?? folder.account.inbox;
     await folder.deleteIt();
   }
 </script>
