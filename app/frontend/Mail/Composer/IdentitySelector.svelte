@@ -4,10 +4,13 @@
     {beforeCustom}
     <input type="email" bind:value={editableCustom}
       name="customFrom" spellcheck="false"
-      on:change={() => catchErrors(onCustomEdited)} />
+      on:change={() => catchErrors(onCustomEdited)}
+      size={editableCustom?.length}
+      />
     {afterCustom}
-    -
-    {selectedIdentity.account?.name}
+    <hbox class="account">
+      {selectedIdentity.account?.name}
+    </hbox>
   {/if}
   <select bind:value={selectedIdentity} class:catch-all={selectedIdentity.isCatchAll}>
     {#each $identities.each as identity }
@@ -74,11 +77,13 @@
   label {
     margin-inline-end: 12px;
   }
-  input {
-    width: 12em;
-  }
   select.catch-all {
     width: 20px;
     height: 100%;
+  }
+  .account {
+    margin-inline-start: 16px;
+    font-style: italic;
+    opacity: 75%;
   }
 </style>
