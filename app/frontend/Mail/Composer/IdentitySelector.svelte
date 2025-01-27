@@ -1,8 +1,13 @@
 <hbox class="identity-selector">
   {#if selectedIdentity.isCatchAll}
     <label for="customFrom">{$t`From`}</label>
-    <input type="email" bind:value={customFromAddress}
-      name="customFrom" spellcheck="false" />
+    {beforeCustom}
+    <input type="email" bind:value={editableCustom}
+      name="customFrom" spellcheck="false"
+      on:change={() => catchErrors(onCustomEdited)} />
+    {afterCustom}
+    -
+    {selectedIdentity.account?.name}
   {/if}
   <select bind:value={selectedIdentity} class:catch-all={selectedIdentity.isCatchAll}>
     {#each $identities.each as identity }
@@ -20,6 +25,7 @@
 <script lang="ts">
   import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { appGlobal } from "../../../logic/app";
+  import { catchErrors } from "../../Util/error";
   import { ArrayColl, type Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
@@ -32,11 +38,27 @@
    * This allows for catch-all email addresses to be used as From: */
   export let customFromAddress: string;
 
+  let beforeCustom: string;
+  let afterCustom: string;
+  let editableCustom: string;
+
   $: $selectedIdentity?.isCatchAll && setCatchAll($selectedIdentity)
   function setCatchAll(identity: MailIdentity) {
-    if (identity?.isCatchAll && !identity.isEMailAddress(customFromAddress)) {
+    if (!identity?.isCatchAll) {
+      return;
+    }
+    if (!identity.isEMailAddress(customFromAddress)) {
       customFromAddress = identity.emailAddress;
     }
+
+    let parts = identity.emailAddress.split("*");
+    beforeCustom = parts[0];
+    afterCustom = parts[1];
+    editableCustom = customFromAddress.substring(beforeCustom.length, customFromAddress.length - afterCustom.length);
+  }
+
+  function onCustomEdited() {
+    customFromAddress = beforeCustom + editableCustom + afterCustom;
   }
 </script>
 
@@ -53,7 +75,7 @@
     margin-inline-end: 12px;
   }
   input {
-    width: 20em;
+    width: 12em;
   }
   select.catch-all {
     width: 20px;
