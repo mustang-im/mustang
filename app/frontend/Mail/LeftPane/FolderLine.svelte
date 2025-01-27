@@ -14,7 +14,7 @@
     {/if}
   </hbox>
   <hbox flex />
-  {#if $folder.countNewArrived}
+  {#if $folder.countNewArrived && isNormalFolderOrInbox}
     <hbox class="count">
       {$folder.countNewArrived}
     </hbox>
@@ -34,6 +34,7 @@
   export let folder: Folder;
 
   $: tooltip = gt`${folder.name}\n\n${$folder.countNewArrived} new, ${folder.countUnread} unread, ${folder.countTotal} total`;
+  $: isNormalFolderOrInbox = !folder.specialFolder || folder.specialFolder == SpecialFolder.Normal || folder.specialFolder == SpecialFolder.Inbox;
 </script>
 
 <style>
