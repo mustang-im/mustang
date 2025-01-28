@@ -242,6 +242,7 @@ export class OWAAccount extends MailAccount {
     if (result.MessageText) {
       throw new Error(result.MessageText);
     }
+    this.folderMap.clear();
     this.msgFolderRootID = result.RootFolder.ParentFolder.FolderId.Id;
     for (let folder of sessionData.findFolders.Body.ResponseMessages.Items[0].RootFolder.Folders) {
       if (!folder.FolderClass || folder.FolderClass == "IPF.Note" || folder.FolderClass.startsWith("IPF.Note.")) {
@@ -255,6 +256,12 @@ export class OWAAccount extends MailAccount {
         }
         owaFolder.fromJSON(folder);
         this.folderMap.set(folder.FolderId.Id, owaFolder);
+      }
+    }
+    // Iterate from deepest to shallowest
+    for (let folder of this.getAllFolders().reverse()) {
+      if (!this.folderMap.has(folder.id)) {
+        await folder.deleteItLocally();
       }
     }
   }
