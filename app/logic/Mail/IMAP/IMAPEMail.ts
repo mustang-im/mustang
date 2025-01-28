@@ -43,14 +43,14 @@ export class IMAPEMail extends EMail {
       }, ConnectionPurpose.Display);
     } catch (ex) {
       if (ex.message == "IMAP UID FETCH: Invalid uidset") {
-        this.deleteMessageLocally();
+        await this.disappeared();
         return;
       } else {
         throw ex;
       }
     }
     if (!msgInfo.envelope) {
-      this.deleteMessageLocally();
+      await this.disappeared();
       return;
     }
     this.fromFlow(msgInfo);
@@ -88,6 +88,13 @@ export class IMAPEMail extends EMail {
     this.needToLoadBody = this._text == null && this._rawHTML == null;
     assert(!msgInfo.source || msgInfo.source instanceof Uint8Array, "MIME source needs to be a buffer");
     this.mime = msgInfo.source;
+  }
+
+  /** Can happen when another client deleted the email and we didn't get the news yet. */
+  protected async disappeared() {
+    await this.deleteMessageLocally();
+    this.folder.listMessages()
+      .catch(this.folder.account.errorCallback);
   }
 
   setFlagsLocal(flags: Set<string>) {
