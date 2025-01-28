@@ -529,7 +529,7 @@ export class EWSAccount extends MailAccount {
     }
     // Iterate from deepest to shallowest
     for (let folder of this.getAllFolders().reverse()) {
-      if (this.folderMap.get(folder.id) != folder) {
+      if (!this.folderMap.has(folder.id)) {
         await folder.deleteItLocally();
       }
     }
