@@ -366,7 +366,7 @@ export class ActiveSyncAccount extends MailAccount {
     }
   }
 
-  protected async makeRequest(command: string, request: any, callback?: (response: any, resync?: true) => Promise<void>): Promise<any> {
+  protected async makeRequest(command: string, request: any, callback?: (response: any) => Promise<void>): Promise<any> {
     try {
       // The SyncKey must be the first element of the request.
       request = Object.assign({ SyncKey: this.getStorageItem("sync_key") || "0" }, request);
@@ -378,7 +378,8 @@ export class ActiveSyncAccount extends MailAccount {
       if (callback && ex.code == kFolderSyncKeyError) {
         // Try to resync from start.
         let response = await this.callEAS(command, { SyncKey: "0" });
-        await callback(response, true);
+        response.errorCode = ex.code;
+        await callback(response);
         this.setStorageItem("sync_key", response.SyncKey);
         return response;
       }
@@ -393,8 +394,8 @@ export class ActiveSyncAccount extends MailAccount {
     }
 
     let missingFolders = new ArrayColl<Folder>();
-    await this.queuedRequest("FolderSync", {}, async (response, resync) => {
-      if (resync) {
+    await this.queuedRequest("FolderSync", {}, async (response) => {
+      if (response.errorCode == kFolderSyncKeyError) {
         missingFolders = this.getAllFolders();
       }
       let url = new URL(this.url);
