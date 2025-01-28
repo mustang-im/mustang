@@ -17,7 +17,7 @@ export function onDragStartMail(event: DragEvent, message: EMail) {
   event.dataTransfer.effectAllowed = "copyMove";
   let icon = new Image();
   icon.src = "icon/mails.png"; // TODO Loads too late
-  event.dataTransfer.setDragImage(icon, -16, -16);
+  event.dataTransfer.setDragImage(icon, 8, 8);
 }
 
 export async function onDropMail(event: DragEvent, folder: Folder) {
