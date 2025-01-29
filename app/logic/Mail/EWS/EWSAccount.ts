@@ -519,7 +519,10 @@ export class EWSAccount extends MailAccount {
         let parentFolders = parent ? parent.subFolders : this.rootFolders;
         let ewsFolder = parentFolders.find(ewsFolder => ewsFolder.id == folder.FolderId.Id) as EWSFolder;
         if (!ewsFolder) {
-          ewsFolder = this.newFolder();
+          ewsFolder = this.findFolder(ewsFolder => ewsFolder.id == folder.FolderId.Id) as EWSFolder
+            ?? this.newFolder();
+          let oldParentFolders = ewsFolder.parent?.subFolders || this.rootFolders;
+          oldParentFolders.remove(ewsFolder);
           ewsFolder.parent = parent || null;
           parentFolders.push(ewsFolder);
         }
