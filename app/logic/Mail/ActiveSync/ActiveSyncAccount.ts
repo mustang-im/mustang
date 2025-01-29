@@ -378,6 +378,7 @@ export class ActiveSyncAccount extends MailAccount {
       if (callback && ex.code == kFolderSyncKeyError) {
         // Try to resync from start.
         let response = await this.callEAS(command, { SyncKey: "0" });
+        response.errorCode = ex.code;
         await callback(response);
         this.setStorageItem("sync_key", response.SyncKey);
         return response;
@@ -392,7 +393,11 @@ export class ActiveSyncAccount extends MailAccount {
       this.setStorageItem("sync_key", "0");
     }
 
+    let missingFolders = new ArrayColl<Folder>();
     await this.queuedRequest("FolderSync", {}, async response => {
+      if (response.errorCode == kFolderSyncKeyError) {
+        missingFolders = this.getAllFolders();
+      }
       let url = new URL(this.url);
       for (let change of ensureArray(response.Changes?.Add).concat(ensureArray(response.Changes?.Update))) {
         try {
@@ -414,6 +419,7 @@ export class ActiveSyncAccount extends MailAccount {
             }
             folder.addToParent();
             await folder.save();
+            missingFolders.remove(folder);
             break;
           case FolderType.Tasks:
           case FolderType.UserTasks:
@@ -477,6 +483,10 @@ export class ActiveSyncAccount extends MailAccount {
         }
       }
     });
+    // Iterate from deepest to shallowest
+    for (let folder of missingFolders.reverse()) {
+      await folder.deleteItLocally();
+    }
   }
 
   findFolderById(id: string): ActiveSyncFolder | null {
