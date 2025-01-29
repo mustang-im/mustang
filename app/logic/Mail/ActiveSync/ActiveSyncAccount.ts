@@ -539,6 +539,9 @@ export class ActiveSyncAccount extends MailAccount {
           this.maxPings = sanitize.integer(response.MaxFolders);
           this.trimPings();
           continue;
+        case "7":
+          await this.listFolders();
+          continue;
         default:
           throw new ActiveSyncError("Ping", response.Status, this);
         }
