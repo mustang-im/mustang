@@ -394,7 +394,7 @@ export class ActiveSyncAccount extends MailAccount {
     }
 
     let missingFolders = new ArrayColl<Folder>();
-    await this.queuedRequest("FolderSync", {}, async (response) => {
+    await this.queuedRequest("FolderSync", {}, async response => {
       if (response.errorCode == kFolderSyncKeyError) {
         missingFolders = this.getAllFolders();
       }
