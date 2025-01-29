@@ -250,7 +250,9 @@ export class OWAAccount extends MailAccount {
         let parentFolders = parent ? parent.subFolders : this.rootFolders;
         let owaFolder = parentFolders.find(owaFolder => owaFolder.id == folder.FolderId.Id) as OWAFolder;
         if (!owaFolder) {
-          owaFolder = this.newFolder();
+          owaFolder = this.findFolder(owaFolder => owaFolder.id == folder.FolderId.Id) as EWSFolder || this.newFolder();
+          let oldParentFolders = owaFolder.parent?.subFolders || this.rootFolders;
+          oldParentFolders.remove(owaFolder);
           owaFolder.parent = parent || null;
           parentFolders.push(owaFolder);
         }
