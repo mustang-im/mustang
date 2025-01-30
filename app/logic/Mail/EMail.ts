@@ -442,14 +442,6 @@ export class EMail extends Message {
   get action(): EMailActions {
     return new EMailActions(this);
   }
-
-  async send(): Promise<void> {
-    this.isDraft = false;
-    let server = this.folder?.account;
-    assert(server, "Cannot send: Server for draft email is not configured");
-    await server.send(this);
-    // TODO move to Sent or target folder?
-  }
 }
 
 /** For inline images, convert `cid:` URIs into `data:` URIs. */

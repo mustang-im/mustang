@@ -146,7 +146,7 @@ async function reply(msg: EMail, replyText: string) {
     let replyMsg = msg.action.replyToAuthor();
     replyMsg.html = null;
     replyMsg.text = replyText;
-    await replyMsg.send();
+    await replyMsg.action.send();
   } catch (ex) {
     showError(ex);
   }

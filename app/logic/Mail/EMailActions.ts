@@ -63,13 +63,12 @@ export class EMailActions {
       ? [mail.from, ...mail.to.contents, ...mail.cc.contents, ...mail.bcc.contents]
       : [];
     let from = MailIdentity.findIdentity(recipients, account);
-    if (from) {
-      reply.identity = from.identity;
-      reply.from = from.personUID;
-    }
-    reply.folder = this.email.folder?.specialFolder == SpecialFolder.Inbox
-      ? account.getSpecialFolder(SpecialFolder.Sent)
-      : this.email.folder;
+    reply.identity = from.identity;
+    reply.from = from.personUID;
+
+    reply.folder = this.email.folder?.specialFolder == SpecialFolder.Normal
+      ? this.email.folder
+      : account.getSpecialFolder(SpecialFolder.Sent);
 
     reply.subject = "Re: " + this.email.baseSubject; // Do *not* localize "Re: "
     reply.inReplyTo = this.email.messageID;
@@ -179,6 +178,7 @@ export class EMailActions {
     if (fromIdentity.replyTo) {
       this.email.replyTo = new PersonUID(fromIdentity.replyTo, fromIdentity.userRealname);
     }
+    let account = fromIdentity.account;
     let sig = fromIdentity.signatureHTML;
     if (sig) {
       this.email.html += `<footer class="signature">${sig}</footer>`;
@@ -195,12 +195,12 @@ export class EMailActions {
     }
 
     if (this.email.folder?.specialFolder != SpecialFolder.Normal) {
-      this.email.folder = null;
+      this.email.folder = account.getSpecialFolder(SpecialFolder.Sent);
     }
-
+    this.email.isDraft = false;
     let previousDrafts = this.getDrafts();
 
-    await this.email.send();
+    await account.send(this.email);
 
     this.deleteDrafts(previousDrafts) // TODO doesn't work, leaves draft behind
       .catch(backgroundError);
