@@ -127,7 +127,8 @@ export class OWAAccount extends MailAccount {
   }
 
   async send(email: EMail): Promise<void> {
-    let request = new OWACreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
+    assert(email.folder.id, "Bad Sent folder");
+    let request = new OWACreateItemRequest({ SavedItemFolderId: { __type: "TargetFolderId:#Exchange", BaseFolderId: { __type: "FolderId:#Exchange", Id: email.folder.id } }, MessageDisposition: "SendAndSaveCopy" });
     request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
     request.addField("Message", "Subject", email.subject, "item:Subject");
     request.addField("Message", "Body", {
