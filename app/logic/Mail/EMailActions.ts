@@ -193,6 +193,11 @@ export class EMailActions {
         throw new UserError(gt`From address ${this.email.from.emailAddress} does not match the catch-all identity ${fromIdentity.emailAddress}`);
       }
     }
+
+    if (this.email.folder?.specialFolder != SpecialFolder.Normal) {
+      this.email.folder = null;
+    }
+
     let previousDrafts = this.getDrafts();
 
     await this.email.send();
