@@ -9,7 +9,7 @@ export default class OWACreateItemRequest {
     Items: [{}],
   };
 
-  constructor(attributes?: {[key: string]: string | boolean}) {
+  constructor(attributes?: {[key: string]: string | boolean | object}) {
     Object.assign(this.Body, attributes);
   }
 
