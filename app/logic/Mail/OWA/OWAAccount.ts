@@ -1,5 +1,6 @@
 import { MailAccount, AuthMethod, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
+import { SpecialFolder } from "../Folder";
 import { OWAFolder } from "./OWAFolder";
 import { OWAError } from "./OWAError";
 import type { OWANotifications } from "./OWANotifications";
@@ -127,7 +128,10 @@ export class OWAAccount extends MailAccount {
   }
 
   async send(email: EMail): Promise<void> {
-    assert(email.folder.id, "Bad Sent folder");
+    if (email.folder?.account != this) {
+      // Bad sent folder. Ideally this would be an assertion...
+      email.folder = this.getSpecialFolder(SpecialFolder.Sent);
+    }
     let request = new OWACreateItemRequest({ SavedItemFolderId: { __type: "TargetFolderId:#Exchange", BaseFolderId: { __type: "FolderId:#Exchange", Id: email.folder.id } }, MessageDisposition: "SendAndSaveCopy" });
     request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
     request.addField("Message", "Subject", email.subject, "item:Subject");

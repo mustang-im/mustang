@@ -1,5 +1,6 @@
 import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
+import { SpecialFolder } from "../Folder";
 import { EWSFolder } from "./EWSFolder";
 import EWSCreateItemRequest from "./EWSCreateItemRequest";
 import type EWSDeleteItemRequest from "./EWSDeleteItemRequest";
@@ -91,7 +92,10 @@ export class EWSAccount extends MailAccount {
   }
 
   async send(email: EMail): Promise<void> {
-    assert(email.folder.id, "Bad Sent folder");
+    if (email.folder?.account != this) {
+      // Bad sent folder. Ideally this would be an assertion...
+      email.folder = this.getSpecialFolder(SpecialFolder.Sent);
+    }
     let request = new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: email.folder.id } }, MessageDisposition: "SendAndSaveCopy" });
     request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
     request.addField("Message", "Subject", email.subject, "item:Subject");
