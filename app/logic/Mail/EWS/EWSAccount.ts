@@ -92,9 +92,7 @@ export class EWSAccount extends MailAccount {
   }
 
   async send(email: EMail): Promise<void> {
-    if (email.folder?.account != this) {
-      email.folder = this.getSpecialFolder(SpecialFolder.Sent);
-    }
+    assert(email.folder?.id, "Need folder to save the sent email in");
     let request = new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: email.folder.id } }, MessageDisposition: "SendAndSaveCopy" });
     request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
     request.addField("Message", "Subject", email.subject, "item:Subject");
