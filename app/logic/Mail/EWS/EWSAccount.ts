@@ -93,7 +93,6 @@ export class EWSAccount extends MailAccount {
 
   async send(email: EMail): Promise<void> {
     if (email.folder?.account != this) {
-      // Bad sent folder. Ideally this would be an assertion...
       email.folder = this.getSpecialFolder(SpecialFolder.Sent);
     }
     let request = new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: email.folder.id } }, MessageDisposition: "SendAndSaveCopy" });
