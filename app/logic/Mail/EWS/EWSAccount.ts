@@ -1,5 +1,6 @@
 import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
+import { SpecialFolder } from "../Folder";
 import { EWSFolder } from "./EWSFolder";
 import EWSCreateItemRequest from "./EWSCreateItemRequest";
 import type EWSDeleteItemRequest from "./EWSDeleteItemRequest";
@@ -91,7 +92,8 @@ export class EWSAccount extends MailAccount {
   }
 
   async send(email: EMail): Promise<void> {
-    let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
+    assert(email.folder?.id, "Need folder to save the sent email in");
+    let request = new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: email.folder.id } }, MessageDisposition: "SendAndSaveCopy" });
     request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");
     request.addField("Message", "Subject", email.subject, "item:Subject");
     request.addField("Message", "Body", {
