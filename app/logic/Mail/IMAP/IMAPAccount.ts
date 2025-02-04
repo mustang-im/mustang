@@ -153,7 +153,7 @@ export class IMAPAccount extends MailAccount {
     });
     connection.on("error", async (ex) => {
       try {
-        console.log(`${new Date().toISOString()} Connection to server for ${this.name} failed:\n${ex.message}`);
+        console.log(`${new Date().toISOString()} IMAP connection to server for ${this.name} failed:\n${ex.message}`);
         await this.reconnect(connection);
       } catch (ex) {
         this.fatalError = new ConnectError(ex,

@@ -68,8 +68,8 @@ export class IMAPFolder extends Folder {
           await conn.mailboxOpen(this.path);
         }
       } catch (ex) {
-        console.log("Opening IMAP folder failed", ex);
         if (ex.code == "NoConnection") {
+          console.log(`${new Date().toISOString()} IMAP connection to server for ${this.name} failed:\n${ex.message}`);
           conn = await this.account.reconnect(conn);
           if (doLock) {
             lock = await conn.getMailboxLock(this.path);
@@ -78,6 +78,7 @@ export class IMAPFolder extends Folder {
           }
           // Re-try only once (to open mailbox)
         } else {
+          console.log(this.account.name, this.name, "Opening IMAP folder failed", ex);
           throw ex;
         }
       }
