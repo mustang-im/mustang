@@ -208,15 +208,17 @@ export class IMAPAccount extends MailAccount {
     }
 
     let purpose = this.connections.getKeyForValue(connection);
-    if (!purpose) {
-      return;
-    }
+    assert(purpose, "Connection purpose unknown");
     this.connections.set(purpose, null);
     this.notifyObservers();
 
-    if (!(this.password || this.oAuth2?.isLoggedIn)) {
-      return;
+    if (!this.oAuth2?.isLoggedIn) {
+      await this.oAuth2.login(false);
     }
+    if (!(this.password || this.oAuth2?.isLoggedIn)) {
+      throw new LoginError(new Error(), "Reconnect failed due to missing login");
+    }
+
     return await this.connection(false, purpose);
   }
 
