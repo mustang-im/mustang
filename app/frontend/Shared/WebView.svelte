@@ -62,7 +62,7 @@
     }
   });
 
-  $: html && setURL();
+  $: html, setURL();
   async function setURL() {
     url = "";
     const autoSizeCSS = `<style>
@@ -77,7 +77,7 @@
     let servers = allowServerCalls ? `* 'unsafe-inline'` : `'unsafe-inline'` ;
     const head = `<meta http-equiv="Content-Security-Policy" content="default-src 'none';
       style-src ${servers}; img-src ${servers}">\n\n` + headHTML + `\n\n`;
-    let displayHTML = html;
+    let displayHTML = html ?? "";
     let headPos = displayHTML.indexOf("<head>");
     headPos = headPos < 0 ? 0 : headPos + 6;
     displayHTML =
