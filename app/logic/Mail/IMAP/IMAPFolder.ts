@@ -515,8 +515,9 @@ export class IMAPFolder extends Folder {
       return;
     }
     let ids = messages.contents.map(msg => msg.uid).join(",");
-    let conn = await this.account.connection(); // Don't lock: 2 mailboxes involved
-    await conn.messageMove(ids, this.path, { uid: true });
+    await this.runCommand(async conn => {
+      await conn.messageMove(ids, this.path, { uid: true });
+    });
     let sourceFolder = messages.first.folder;
     sourceFolder.countTotal -= messages.length;
     this.countTotal += messages.length;
@@ -531,8 +532,9 @@ export class IMAPFolder extends Folder {
       return;
     }
     let ids = messages.contents.map(msg => msg.uid).join(",");
-    let conn = await this.account.connection(); // Don't lock: 2 mailboxes involved
-    await conn.messageCopy(ids, this.path, { uid: true });
+    await this.runCommand(async conn => {
+      await conn.messageCopy(ids, this.path, { uid: true });
+    });
     this.countTotal += messages.length;
     await this.listNewMessages();
   }
