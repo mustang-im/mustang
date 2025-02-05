@@ -93,7 +93,7 @@ export class IMAPEMail extends EMail {
   /** Can happen when another client deleted the email and we didn't get the news yet. */
   protected async disappeared() {
     await this.deleteMessageLocally();
-    this.folder.listMessages()
+    this.folder.checkDeletedMessages()
       .catch(this.folder.account.errorCallback);
   }
 
