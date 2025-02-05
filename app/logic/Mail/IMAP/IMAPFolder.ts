@@ -366,11 +366,11 @@ export class IMAPFolder extends Folder {
 
   /** @returns message from n days ago */
   protected getRecentMsg(): IMAPEMail {
-    const kDaysPast = 14;
+    const kDaysPast = 7;
     let recently = new Date();
     recently.setDate(recently.getDate() - kDaysPast);
     return this.messages
-      .filter(msg => msg.received.getTime() < recently.getTime()) // last n days
+      .filter(msg => msg.received.getTime() > recently.getTime()) // last n days
       .sortBy((msg: IMAPEMail) => msg.uid)
       .first as IMAPEMail; // oldest
   }
