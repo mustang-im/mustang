@@ -514,15 +514,16 @@ export class IMAPFolder extends Folder {
     if (await this.moveOrCopyMessages("move", messages)) {
       return;
     }
-    let ids = messages.contents.map(msg => msg.uid).join(",");
-    let conn = await this.account.connection(); // Don't lock: 2 mailboxes involved
-    await conn.messageMove(ids, this.path, { uid: true });
     let sourceFolder = messages.first.folder;
     sourceFolder.countTotal -= messages.length;
     this.countTotal += messages.length;
     for (let sourceMsg of messages) {
       await sourceMsg.deleteMessageLocally();
     }
+    let ids = messages.contents.map(msg => msg.uid).join(",");
+    await sourceFolder.runCommand(async conn => {
+      await conn.messageMove(ids, this.path, { uid: true });
+    });
     await this.listNewMessages();
   }
 
@@ -530,10 +531,12 @@ export class IMAPFolder extends Folder {
     if (await this.moveOrCopyMessages("copy", messages)) {
       return;
     }
-    let ids = messages.contents.map(msg => msg.uid).join(",");
-    let conn = await this.account.connection(); // Don't lock: 2 mailboxes involved
-    await conn.messageCopy(ids, this.path, { uid: true });
     this.countTotal += messages.length;
+    let sourceFolder = messages.first.folder;
+    let ids = messages.contents.map(msg => msg.uid).join(",");
+    await sourceFolder.runCommand(async conn => {
+      await conn.messageCopy(ids, this.path, { uid: true });
+    });
     await this.listNewMessages();
   }
 
