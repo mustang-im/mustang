@@ -23,11 +23,14 @@ import Devices from "./Meet/Devices.svelte";
 import About from "./About/About.svelte";
 import Licenses from "./About/Licenses.svelte";
 import Test from "./About/Test.svelte";
+// #if [WEBMAIL]
+// #else
 import SetupMail from "../Setup/Mail/SetupMail.svelte";
 import SetupChat from "../Setup/Chat/SetupChat.svelte";
 import SetupCalendar from "../Setup/Calendar/SetupCalendar.svelte";
 import SetupContacts from "../Setup/Contacts/SetupContacts.svelte";
 import SetupMeetAccount from "../Setup/Meet/SetupMeetAccount.svelte";
+// #endif
 import { Account } from "../../logic/Abstract/Account";
 import { MailAccount } from "../../logic/Mail/MailAccount";
 import { XMPPAccount } from "../../logic/Chat/XMPP/XMPPAccount";
@@ -57,7 +60,10 @@ mailSettings.subCategories.addAll([
   new SettingsCategory("mail-tags", gt`Tags`, MailTags),
 ]);
 mailSettings.accounts = appGlobal.emailAccounts;
+// #if [WEBMAIL]
+// #else
 mailSettings.newAccountUI = SetupMail;
+// #endif
 mailSettings.forApp = mailMustangApp;
 settingsCategories.add(mailSettings);
 
@@ -71,7 +77,10 @@ chatSettings.subCategories.addAll([
   new SettingsCategory("chat-notifications", gt`Notifications`, ChatNotifications),
 ]);
 chatSettings.accounts = appGlobal.chatAccounts;
+// #if [WEBMAIL]
+// #else
 chatSettings.newAccountUI = SetupChat;
+// #endif
 chatSettings.forApp = chatMustangApp;
 settingsCategories.add(chatSettings);
 
@@ -84,7 +93,10 @@ const calendarSettings = new SettingsCategory("calendar", gt`Calendar`, null, tr
 calendarSettings.subCategories.addAll([
 ]);
 calendarSettings.accounts = appGlobal.calendars;
+// #if [WEBMAIL]
+// #else
 calendarSettings.newAccountUI = SetupCalendar;
+// #endif
 calendarSettings.forApp = calendarMustangApp;
 settingsCategories.add(calendarSettings);
 
@@ -92,7 +104,10 @@ const contactsSettings = new SettingsCategory("contacts", gt`Contacts`, null, tr
 contactsSettings.subCategories.addAll([
 ]);
 contactsSettings.accounts = appGlobal.addressbooks;
+// #if [WEBMAIL]
+// #else
 contactsSettings.newAccountUI = SetupContacts;
+// #endif
 contactsSettings.forApp = contactsMustangApp;
 settingsCategories.add(contactsSettings);
 
@@ -102,7 +117,10 @@ meetSettings.subCategories.addAll([
   new SettingsCategory("meet-devices", gt`Devices`, Devices),
 ]);
 meetSettings.accounts = appGlobal.meetAccounts;
+// #if [WEBMAIL]
+// #else
 meetSettings.newAccountUI = SetupMeetAccount;
+// #endif
 meetSettings.forApp = meetMustangApp;
 settingsCategories.add(meetSettings);
 

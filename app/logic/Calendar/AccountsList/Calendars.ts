@@ -3,7 +3,8 @@ import { EWSCalendar } from '../EWS/EWSCalendar';
 import { OWACalendar } from '../OWA/OWACalendar';
 import { ActiveSyncCalendar } from '../ActiveSync/ActiveSyncCalendar';
 import { SQLCalendarStorage } from '../SQL/SQLCalendarStorage';
-import { NotReached } from '../../util/util';
+import { isWebMail } from '../../build';
+import { NotReached, assert } from '../../util/util';
 import { ArrayColl, type Collection } from 'svelte-collections';
 import { gt } from '../../../l10n/l10n';
 
@@ -14,6 +15,12 @@ export function newCalendarForProtocol(protocol: string): Calendar {
 }
 
 function _newCalendarForProtocol(protocol: string): Calendar {
+  // #if [WEBMAIL]
+  if (isWebMail) {
+    assert(protocol == "jmap", "Need JMAP account for webmail");
+    // return new JMAPCalendar();
+  }
+  // #else
   if (protocol == "calendar-local") {
     return new Calendar();
   } else if (protocol == "calendar-ews") {
@@ -24,8 +31,11 @@ function _newCalendarForProtocol(protocol: string): Calendar {
     return new ActiveSyncCalendar();
   }
   throw new NotReached(`Unknown calendar type ${protocol}`);
+  // #endif
 }
 
+// #if [WEBMAIL]
+// #else
 export async function readCalendars(): Promise<Collection<Calendar>> {
   let calendars = await SQLCalendarStorage.readCalendars();
   if (calendars.isEmpty) {
@@ -33,6 +43,7 @@ export async function readCalendars(): Promise<Collection<Calendar>> {
   }
   return calendars;
 }
+// #endif
 
 async function createDefaultCalendars(): Promise<Collection<Calendar>> {
   console.log("Creating default calendars");

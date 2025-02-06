@@ -4,3 +4,4 @@ export const production = false;
 export const appVersion: string = '0.8.1-dev';
 export const appName: string = 'Mustang';
 export const siteRoot: string = 'https://mustang.im';
+export const isWebMail: boolean = true;

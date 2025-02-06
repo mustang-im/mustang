@@ -19,6 +19,9 @@ function _newMeetAccountForProtocol(protocol: string): MeetAccount {
   throw new NotReached(`Unknown meet account type ${protocol}`);
 }
 
+// #if [WEBMAIL]
+// #else
 export async function readMeetAccounts(): Promise<Collection<MeetAccount>> {
   return await SQLMeetStorage.readMeetAccounts();
 }
+// #endif

@@ -8,7 +8,8 @@ import { OWAAccount } from '../OWA/OWAAccount';
 import { ActiveSyncAccount } from '../ActiveSync/ActiveSyncAccount';
 import { SQLMailStorage } from '../SQL/SQLMailStorage';
 import { setStorage } from '../Store/setStorage';
-import { NotReached } from '../../util/util';
+import { isWebMail } from '../../build';
+import { NotReached, assert } from '../../util/util';
 import type { Collection } from 'svelte-collections';
 
 export function newAccountForProtocol(protocol: string): MailAccount {
@@ -18,6 +19,13 @@ export function newAccountForProtocol(protocol: string): MailAccount {
 }
 
 function _newAccountForProtocol(protocol: string): MailAccount {
+  // #if [WEBMAIL]
+  if (isWebMail) {
+    assert(protocol == "jmap", "Need JMAP account for webmail");
+    return new JMAPAccount();
+  }
+  // #else
+
   if (protocol == "imap") {
     return new IMAPAccount();
   } else if (protocol == "pop3") {
@@ -36,11 +44,15 @@ function _newAccountForProtocol(protocol: string): MailAccount {
     return new MailAccount();
   }
   throw new NotReached(`Unknown account type ${protocol}`);
+  // #endif
 }
 
+// #if [WEBMAIL]
+// #else
 export async function readMailAccounts(): Promise<Collection<MailAccount>> {
   return await SQLMailStorage.readMailAccounts();
 }
+// #endif
 
 
 const kProtocolLabel = {

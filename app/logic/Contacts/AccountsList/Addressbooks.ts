@@ -3,7 +3,8 @@ import { EWSAddressbook } from '../EWS/EWSAddressbook';
 import { OWAAddressbook } from '../OWA/OWAAddressbook';
 import { ActiveSyncAddressbook } from '../ActiveSync/ActiveSyncAddressbook';
 import { SQLAddressbookStorage } from '../SQL/SQLAddressbookStorage';
-import { NotReached } from '../../util/util';
+import { isWebMail } from '../../build';
+import { NotReached, assert } from '../../util/util';
 import { ArrayColl, type Collection } from 'svelte-collections';
 import { gt } from '../../../l10n/l10n';
 
@@ -14,6 +15,12 @@ export function newAddressbookForProtocol(protocol: string): Addressbook {
 }
 
 function _newAddressbookForProtocol(protocol: string): Addressbook {
+  // #if [WEBMAIL]
+  if (isWebMail) {
+    assert(protocol == "jmap", "Need JMAP account for webmail");
+    // return new JMAPAddressbook();
+  }
+  // #else
   if (protocol == "addressbook-local") {
     return new Addressbook();
   } else if (protocol == "addressbook-ews") {
@@ -24,8 +31,11 @@ function _newAddressbookForProtocol(protocol: string): Addressbook {
     return new ActiveSyncAddressbook();
   }
   throw new NotReached(`Unknown addressbook type ${protocol}`);
+  // #endif
 }
 
+// #if [WEBMAIL]
+// #else
 export async function readAddressbooks(): Promise<Collection<Addressbook>> {
   let addressbooks = await SQLAddressbookStorage.readAddressbooks();
   if (addressbooks.isEmpty) {
@@ -33,6 +43,7 @@ export async function readAddressbooks(): Promise<Collection<Addressbook>> {
   }
   return addressbooks;
 }
+// #endif
 
 async function createDefaultAddressbooks(): Promise<Collection<Addressbook>> {
   console.log("Creating default address books");

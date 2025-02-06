@@ -28,7 +28,13 @@
 <script lang="ts">
   import { selectedApp, sidebarApp, mustangApps, openApp } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
+  // #if [WEBMAIL]
+  // @ts-ignore ts2300
+  import { getStartObjects, loginOnStartup } from "../../logic/webMailStartup";
+  // #else
+  // @ts-ignore ts2300
   import { getStartObjects, loginOnStartup } from "../../logic/startup";
+  // #endif
   import { selectedAccount, selectedFolder } from "../Mail/Selected";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { loadMustangApps } from "../AppsBar/loadMustangApps";
@@ -42,13 +48,16 @@
   import Splitter from "../Shared/Splitter.svelte";
   import MailInBackground from "../Mail/MailInBackground.svelte";
   import MeetBackground from "../Meet/MeetBackground.svelte";
+  // #if [WEBMAIL]
+  // #else
   import InitialSetup from "../Setup/Import/InitialSetup.svelte";
+  // #endif
   import { catchErrors, backgroundError } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { onMount } from "svelte";
   import { getUILocale, t } from "../../l10n/l10n";
   import { rtlLocales } from "../../l10n/list";
-  import { appName } from "../../logic/build";
+  import { appName, isWebMail } from "../../logic/build";
 
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;
@@ -72,9 +81,12 @@
   }
 
   function setup() {
+    // #if [WEBMAIL]
+    // #else
     let setupApp = new SetupMustangApp();
     setupApp.mainWindow = InitialSetup;
     openApp(setupApp);
+    // #endif
   }
 
   let themeSetting = getLocalStorage("appearance.theme", "system");
