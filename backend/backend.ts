@@ -54,7 +54,7 @@ async function createSharedAppObject() {
     openMenu,
     getConfigDir,
     getFilesDir,
-    openFileInExternalApp,
+    // openFileInExternalApp,
     createIMAPFlowConnection,
     getSQLiteDatabase,
     sendMailNodemailer,
@@ -106,7 +106,7 @@ async function openFile(path: string, write: boolean, mode?: string | number): P
 async function closeFile(handle: FileHandle): Promise<void> {
   await handle.close(); // for some reason, only this function doesn't appear on FileHandle in JPC client
 }*/
-
+/*
 async function openFileInExternalApp(filepath: string, appEXE: string): Promise<void> {
   let launcher = appEXE ??
     os.platform() == "win32" ? "explorer.exe" :
@@ -115,6 +115,7 @@ async function openFileInExternalApp(filepath: string, appEXE: string): Promise<
   //console.log("Launching", launcher, filepath);
   childProcess.spawn(launcher, [ filepath ], { shell: false });
 }
+*/
 
 /**
  * @param defaultOptions
