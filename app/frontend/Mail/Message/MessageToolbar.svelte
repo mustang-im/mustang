@@ -1,5 +1,5 @@
 <hbox class="buttons">
-  {#if message.folder?.specialFolder == SpecialFolder.Drafts }
+  {#if message.isDraft || message.folder?.specialFolder == SpecialFolder.Drafts }
     <hbox class="draft">
       <Button
         icon={WriteIcon}

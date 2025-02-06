@@ -194,11 +194,11 @@ export class EMailActions {
       }
     }
 
+    let previousDrafts = this.getDrafts();
     if (this.email.folder?.specialFolder != SpecialFolder.Normal) {
       this.email.folder = account.getSpecialFolder(SpecialFolder.Sent);
     }
     this.email.isDraft = false;
-    let previousDrafts = this.getDrafts();
 
     await account.send(this.email);
 
@@ -217,6 +217,7 @@ export class EMailActions {
     }
     let previousDrafts = this.getDrafts();
 
+    this.email.isDraft = true;
     this.email.mime = await CreateMIME.getMIME(this.email);
     console.log("saving draft", this.email.messageID);
     await draftFolder.addMessage(this.email);
