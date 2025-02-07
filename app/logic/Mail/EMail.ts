@@ -147,8 +147,9 @@ export class EMail extends Message {
     this.isReplied = true;
   }
 
-  async markDraft() {
-    this.isDraft = true;
+  async markDraft(isDraft = true) {
+    this.isDraft = isDraft;
+    await this.storage.saveMessageWritableProps(this);
   }
 
   async moveToArchive() {

@@ -131,7 +131,7 @@ export class ActiveSyncEMail extends EMail {
   //markSpam(spam = true) {
   //}
 
-  async markDraft() {
+  async markDraft(isDraft = true) {
     throw new NotSupported("Drafts are not supported by ActiveSync 14.1");
     // ActiveSync 16 apparently does let you create drafts.
     // And only drafts.

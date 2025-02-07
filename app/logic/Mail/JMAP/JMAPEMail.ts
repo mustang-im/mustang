@@ -138,9 +138,9 @@ export class JMAPEMail extends EMail {
     await this.setFlagServer("$answered", true);
   }
 
-  async markDraft() {
-    await super.markDraft();
-    await this.setFlagServer("$draft", true);
+  async markDraft(isDraft = true) {
+    await super.markDraft(isDraft);
+    await this.setFlagServer("$draft", isDraft);
   }
 
   /**

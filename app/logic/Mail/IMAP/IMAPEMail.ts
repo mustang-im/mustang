@@ -164,8 +164,8 @@ export class IMAPEMail extends EMail {
     await this.setFlagServer("\\Answered", true);
   }
 
-  async markDraft() {
-    await super.markDraft();
+  async markDraft(isDraft = true) {
+    await super.markDraft(isDraft);
     await this.setFlagServer("\\Draft", true);
   }
 

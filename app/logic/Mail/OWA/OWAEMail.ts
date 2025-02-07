@@ -133,15 +133,15 @@ export class OWAEMail extends EMail {
   //async markSpam(spam = true) {
   //} Don't know how to do this in OWA
 
-  async markDraft() {
+  async markDraft(isDraft = true) {
+    await super.markDraft(isDraft);
     let request = new OWAUpdateItemRequest(this.itemID, {
       MessageDisposition: "SaveOnly",
       SendCalendarInvitationsOrCancellations: "SendToNone",
       SuppressReadReceipts: true,
     });
-    request.addField("Message", "IsDraft", true, "message:IsDraft");
+    request.addField("Message", "IsDraft", isDraft, "message:IsDraft");
     await this.folder.account.callOWA(request);
-    await super.markDraft();
   }
 
   async deleteMessageOnServer() {

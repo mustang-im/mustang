@@ -166,15 +166,15 @@ export class EWSEMail extends EMail {
     await super.markSpam(spam);
   }
 
-  async markDraft() {
+  async markDraft(isDraft = true) {
+    await super.markDraft(isDraft);
     let request = new EWSUpdateItemRequest(this.itemID, {
       MessageDisposition: "SaveOnly",
       SendMeetingInvitationsOrCancellations: "SendToNone",
       SuppressReadReceipts: true,
     });
-    request.addField("Message", "IsDraft", true, "message:IsDraft");
+    request.addField("Message", "IsDraft", isDraft, "message:IsDraft");
     await this.folder.account.callEWS(request);
-    await super.markDraft();
   }
 
   async deleteMessageOnServer() {
