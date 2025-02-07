@@ -48,7 +48,9 @@ async function createSharedAppObject() {
     addEventListenerWebContents,
     getWebContents,
     writeTextToClipboard,
-    shell,
+    openExternalURL,
+    openFileInNativeApp,
+    showFileInFolder,
     restartApp,
     setTheme,
     openMenu,
@@ -286,6 +288,19 @@ function setTheme(theme: "system" | "light" | "dark") {
   }
   nativeTheme.themeSource = theme;
 }
+
+function openExternalURL(url: string) {
+  shell.openExternal(url);
+}
+
+function openFileInNativeApp(filePath: string) {
+  shell.openPath(filePath);
+}
+
+function showFileInFolder(filePath: string) {
+  shell.showItemInFolder(filePath);
+}
+
 
 function openMenu(menuItems: MenuItemConstructorOptions[]): void {
   let menu = Menu.buildFromTemplate(menuItems);

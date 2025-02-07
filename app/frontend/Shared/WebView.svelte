@@ -23,7 +23,7 @@
   import { stringToDataURL } from "../Util/util";
   import { createEventDispatcher, onMount } from 'svelte';
   import type { ArrayColl } from "svelte-collections";
-  import { catchErrors } from "../Util/error";
+  import { backgroundError, catchErrors } from "../Util/error";
   import { appGlobal } from "../../logic/app";
   const dispatch = createEventDispatcher();
 
@@ -92,13 +92,17 @@
   let webviewE: HTMLIFrameElement = null;
   $: webviewE && haveWebView();
   function haveWebView () {
-    webviewE.addEventListener("dom-ready", () => {
-      dispatch("webview", webviewE);
-      if (autoSize) {
-        webviewE.addEventListener("did-finish-load", onLoadResize);
+    webviewE.addEventListener("dom-ready", async () => {
+      try {
+        dispatch("webview", webviewE);
+        if (autoSize) {
+          webviewE.addEventListener("did-finish-load", onLoadResize);
+        }
+        await addClickListener();
+        await addLinkListener();
+      } catch (ex) {
+        backgroundError(ex);
       }
-      addClickListener();
-      addLinkListener();
     }, { once: true });
 
     // <https://www.electronjs.org/docs/latest/api/webview-tag/#event-context-menu>
@@ -107,29 +111,29 @@
     }));
   }
 
-  function addClickListener() {
+  async function addClickListener() {
     let id = (webviewE as any).getWebContentsId();
-    appGlobal.remoteApp.addEventListenerWebContents(id, "input-event", (event) => {
+    await appGlobal.remoteApp.addEventListenerWebContents(id, "input-event", (event) => {
       if (event.type == "mouseDown") {
         webviewE.click();
       }
     });
   }
 
-  function addLinkListener() {
+  async function addLinkListener() {
     let id = (webviewE as any).getWebContentsId();
     let url: string;
-    appGlobal.remoteApp.addEventListenerWebContents(id, "update-target-url", (eventURL) => {
+    await appGlobal.remoteApp.addEventListenerWebContents(id, "update-target-url", (eventURL) => {
       url = eventURL; // Can also reset `eventURL` to null
     });
-    appGlobal.remoteApp.addEventListenerWebContents(id, "input-event", (event) => {
+    await appGlobal.remoteApp.addEventListenerWebContents(id, "input-event", async (event) => {
       if (!url) {
         return;
       }
       let modifiers = event.modifiers.map(m => m.toLowerCase());
       let isLeft = ["left", "leftbuttondown"].some(left => modifiers.some(mod => mod == left));
       if (isLeft && event.type == "mouseDown") {
-        appGlobal.remoteApp.shell.openExternal(url);
+        await appGlobal.remoteApp.openExternalURL(url);
       }
     });
   }

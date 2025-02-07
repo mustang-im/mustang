@@ -45,7 +45,7 @@
     }
     alert($t`Save the trees!`);
     const kVideoURL = "https://youtube.com/embed/jEI-0PjE3-g?start=22";
-    await appGlobal.remoteApp.shell.openExternal(kVideoURL);
+    await appGlobal.remoteApp.openExternalURL(kVideoURL);
   }
 
   let gotWebView: (webview: any) => void;

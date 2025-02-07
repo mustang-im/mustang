@@ -48,12 +48,12 @@ export class Attachment extends Observable {
 
   /** Open the native desktop app with this file */
   async openOSApp() {
-    await appGlobal.remoteApp.shell.openPath(this.filepathLocal);
+    await appGlobal.remoteApp.openFileInNativeApp(this.filepathLocal);
   }
   /** Open the native file manager with the folder
    * where this file is, and select this file. */
   async openOSFolder() {
-    await appGlobal.remoteApp.shell.showItemInFolder(this.filepathLocal);
+    await appGlobal.remoteApp.showFileInFolder(this.filepathLocal);
   }
   async saveFile() {
     throw new NotImplemented();

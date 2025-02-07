@@ -19,7 +19,7 @@
 
   const kSubscribeURL = `${siteRoot}#plans`;
   /*async function onSubscribeClick() {
-    await appGlobal.remoteApp.shell.openExternal(kSubscribeURL);
+    await appGlobal.remoteApp.openExternalURL(kSubscribeURL);
   }*/
 </script>
 

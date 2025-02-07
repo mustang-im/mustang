@@ -270,7 +270,7 @@ export async function copyToClipboard(text: string | Object) {
 }
 
 export async function openBrowser(url: URLString) {
-  await appGlobal.remoteApp.shell.openExternal(url);
+  await appGlobal.remoteApp.openExternalURL(url);
 }
 
 export function download(url: URLString, window: any, howSaveAsDialog: boolean, filename?: string) {

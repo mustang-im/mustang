@@ -39,7 +39,7 @@ export class File extends FileOrDirectory {
 
   /** Open the native desktop app with this file */
   async openOSApp() {
-    await appGlobal.remoteApp.shell.openPath(this.filepathLocal);
+    await appGlobal.remoteApp.openFileInNativeApp(this.filepathLocal);
   }
 }
 
