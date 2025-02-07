@@ -1,12 +1,15 @@
 import { MailAccount } from '../MailAccount';
-import { IMAPAccount } from '../IMAP/IMAPAccount';
 import { JMAPAccount } from '../JMAP/JMAPAccount';
+// #if [WEBMAIL]
+// #else
+import { IMAPAccount } from '../IMAP/IMAPAccount';
 import { POP3Account } from '../POP3/POP3Account';
 import { SMTPAccount } from '../SMTP/SMTPAccount';
 import { EWSAccount } from '../EWS/EWSAccount';
 import { OWAAccount } from '../OWA/OWAAccount';
 import { ActiveSyncAccount } from '../ActiveSync/ActiveSyncAccount';
 import { SQLMailStorage } from '../SQL/SQLMailStorage';
+// #endif
 import { setStorage } from '../Store/setStorage';
 import { isWebMail } from '../../build';
 import { NotReached, assert } from '../../util/util';

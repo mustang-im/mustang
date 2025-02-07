@@ -1,6 +1,9 @@
 import { MeetAccount } from '../MeetAccount';
 import { M3Account } from '../M3Account';
+// #if [WEBMAIL]
+// #else
 import { SQLMeetStorage } from '../SQL/SQLMeetStorage';
+// #endif
 import { NotReached } from '../../util/util';
 import type { Collection } from 'svelte-collections';
 

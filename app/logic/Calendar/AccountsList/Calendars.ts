@@ -1,8 +1,11 @@
 import { Calendar } from '../Calendar';
+// #if [WEBMAIL]
+// #else
 import { EWSCalendar } from '../EWS/EWSCalendar';
 import { OWACalendar } from '../OWA/OWACalendar';
 import { ActiveSyncCalendar } from '../ActiveSync/ActiveSyncCalendar';
 import { SQLCalendarStorage } from '../SQL/SQLCalendarStorage';
+// #endif
 import { isWebMail } from '../../build';
 import { NotReached, assert } from '../../util/util';
 import { ArrayColl, type Collection } from 'svelte-collections';

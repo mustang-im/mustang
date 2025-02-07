@@ -1,8 +1,11 @@
 import { Addressbook } from '../Addressbook';
+// #if [WEBMAIL]
+// #else
 import { EWSAddressbook } from '../EWS/EWSAddressbook';
 import { OWAAddressbook } from '../OWA/OWAAddressbook';
 import { ActiveSyncAddressbook } from '../ActiveSync/ActiveSyncAddressbook';
 import { SQLAddressbookStorage } from '../SQL/SQLAddressbookStorage';
+// #endif
 import { isWebMail } from '../../build';
 import { NotReached, assert } from '../../util/util';
 import { ArrayColl, type Collection } from 'svelte-collections';

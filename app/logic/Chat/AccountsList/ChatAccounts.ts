@@ -1,7 +1,10 @@
 import { ChatAccount } from '../ChatAccount';
 import { XMPPAccount } from '../XMPP/XMPPAccount';
 import { MatrixAccount } from '../Matrix/MatrixAccount';
+// #if [WEBMAIL]
+// #else
 import { SQLChatStorage } from '../SQL/SQLChatStorage';
+// #endif
 import { NotReached } from '../../util/util';
 import type { Collection } from 'svelte-collections';
 import { isWebMail } from '../../build';
