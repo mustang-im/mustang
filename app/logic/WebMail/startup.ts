@@ -1,13 +1,13 @@
-import { appGlobal } from './app';
-import { WebMailBackend } from './webMailBackend';
-import type { Account } from './Abstract/Account';
-import { JMAPAccount } from './Mail/JMAP/JMAPAccount';
-import type { ChatAccount } from './Chat/ChatAccount';
-import type { MeetAccount } from './Meet/MeetAccount';
-import { readSavedSearches } from './Mail/Virtual/SavedSearchFolder';
-import { loadTagsList } from './Mail/Tag';
-import { assert } from './util/util';
-import { logError } from '../frontend/Util/error';
+import { appGlobal } from '../app';
+import { WebMailBackend } from './backend';
+import type { Account } from '../Abstract/Account';
+import { JMAPAccount } from '../Mail/JMAP/JMAPAccount';
+import type { ChatAccount } from '../Chat/ChatAccount';
+import type { MeetAccount } from '../Meet/MeetAccount';
+import { readSavedSearches } from '../Mail/Virtual/SavedSearchFolder';
+import { loadTagsList } from '../Mail/Tag';
+import { assert } from '../util/util';
+import { logError } from '../../frontend/Util/error';
 
 export async function getStartObjects(): Promise<void> {
   appGlobal.remoteApp = new WebMailBackend();

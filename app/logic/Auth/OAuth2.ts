@@ -1,13 +1,13 @@
 import { newOAuth2UI, OAuth2UIMethod, mapBackOAuth2UIMethod } from "./UI/OAuth2UIMethod";
 import { OAuth2Error, OAuth2LoginNeeded, OAuth2ServerError } from "./OAuth2Error";
 import { basicAuth } from "./httpAuth";
-import pkceChallenge from "pkce-challenge";
 import type { Account } from "../Abstract/Account";
 import { getPassword, setPassword, deletePassword } from "./passwordStore";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { assert, type URLString } from "../util/util";
+import pkceChallenge from "pkce-challenge";
 
 /**
  * Implements login via OAuth2

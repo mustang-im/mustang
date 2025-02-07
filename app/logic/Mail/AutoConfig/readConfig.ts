@@ -1,6 +1,5 @@
 import { AuthMethod, MailAccount, TLSSocketType, type ConfigSource } from "../MailAccount";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
-import type { SMTPAccount } from "../SMTP/SMTPAccount";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import JXON from "../../../../lib/util/JXON";
@@ -19,7 +18,7 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string, s
   let xml = autoconfigXML.clientConfig.emailProvider;
 
   let configs = new ArrayColl<MailAccount>();
-  let outgoingConfigs = new ArrayColl<SMTPAccount>();
+  let outgoingConfigs = new ArrayColl<MailAccount>();
 
   let displayName = sanitize.label(xml.displayName, sanitize.label(xml["@id"], forDomain));
   //let domains = xml.$domain.map(domain => sanitize.hostname(domain));
@@ -42,7 +41,7 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string, s
   // Outgoing server
   for (let oX of ensureArray(xml.$outgoingServer)) {
     try {
-      outgoingConfigs.push(readServer(oX, displayName, fullXML, source) as SMTPAccount);
+      outgoingConfigs.push(readServer(oX, displayName, fullXML, source));
     } catch (ex) {
       firstError = ex;
     }

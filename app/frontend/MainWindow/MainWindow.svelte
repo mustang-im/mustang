@@ -30,7 +30,7 @@
   import { appGlobal } from "../../logic/app";
   // #if [WEBMAIL]
   // @ts-ignore ts2300
-  import { getStartObjects, loginOnStartup } from "../../logic/webMailStartup";
+  import { getStartObjects, loginOnStartup } from "../../logic/WebMail/startup";
   // #else
   // @ts-ignore ts2300
   import { getStartObjects, loginOnStartup } from "../../logic/startup";
