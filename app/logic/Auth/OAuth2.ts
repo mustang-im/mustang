@@ -32,7 +32,7 @@ export class OAuth2 extends Observable {
   authURL: URLString;
   authDoneURL: URLString = "http://localhost:5455/login-success";
   scope: string;
-  clientID = "mail";
+  clientID = "open";
   clientSecret: string | null = null;
   doPKCE = false;
   protected codeVerifierPKCE?: string;
