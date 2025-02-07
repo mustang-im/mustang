@@ -34,7 +34,10 @@ import SetupMeetAccount from "../Setup/Meet/SetupMeetAccount.svelte";
 import { Account } from "../../logic/Abstract/Account";
 import { MailAccount } from "../../logic/Mail/MailAccount";
 import { XMPPAccount } from "../../logic/Chat/XMPP/XMPPAccount";
+// #if [WEBMAIL]
+// #else
 import { MatrixAccount } from "../../logic/Chat/Matrix/MatrixAccount";
+// #endif
 import { M3Account } from "../../logic/Meet/M3Account";
 import { ArrayColl } from "svelte-collections";
 import { ChatAccount } from "../../logic/Chat/ChatAccount";
@@ -85,7 +88,10 @@ chatSettings.forApp = chatMustangApp;
 settingsCategories.add(chatSettings);
 
 accountSettings.add(new AccSetting(XMPPAccount, "xmpp-server", gt`Server`, AccountXMPPServer));
+// #if [WEBMAIL]
+// #else
 accountSettings.add(new AccSetting(MatrixAccount, "matrix-server", gt`Server`, AccountURLServer));
+// #endif
 accountSettings.add(new AccSetting(ChatAccount, "chat-send", gt`Send`, null));
 accountSettings.add(new AccSetting(ChatAccount, "chat-identity", gt`Identity`, null));
 
