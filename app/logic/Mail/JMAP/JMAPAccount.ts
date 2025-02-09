@@ -224,17 +224,44 @@ export class JMAPAccount extends MailAccount {
 
   async httpGet(url: string, options?: any): Promise<any> {
     let ky = await this.ky(options);
-    return await ky.get(url);
+    try {
+      return await ky.get(url);
+    } catch (ex) {
+      await this.httpError(ex);
+    }
   }
 
   async httpPost(url: string, sendJSON: any): Promise<any> {
     let ky = await this.ky();
-    return await ky.post(url, { json: sendJSON });
+    try {
+      return await ky.post(url, { json: sendJSON });
+    } catch (ex) {
+      await this.httpError(ex);
+    }
   }
 
   async httpPostBinary(url: string, body: any, options?: any): Promise<any> {
     let ky = await this.ky(options);
-    return await ky.post(url, { body: body });
+    try {
+      return await ky.post(url, { body: body });
+    } catch (ex) {
+      await this.httpError(ex);
+    }
+  }
+
+  /** @throws an appropriate exception (always throws) */
+  protected async httpError(ex: Error) {
+    if (ex.name == "HTTPError") {
+      let ext = ex as any;
+      let json = await ext.response.json();
+      let msg = json.title + ": " + json.detail;
+      if (ext.status == 401) {
+        throw new LoginError(ex, msg);
+      } else {
+        throw new ConnectError(ex, msg);
+      }
+    }
+    throw ex;
   }
 
   /** dummy, remove later */
@@ -397,7 +424,7 @@ export class JMAPAccount extends MailAccount {
    *
    * @param type What object type the sync state is for.
    *  The state is account-global (i.e. across folders), but specific to an
-   *  object type. 
+   *  object type.
    * @param newState The sync state that the server returned after a server call.
    * @param oldState
    *  Empty, if this was a `get` operation and we're now up to date
