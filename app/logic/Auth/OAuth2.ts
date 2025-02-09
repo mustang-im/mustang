@@ -195,16 +195,14 @@ export class OAuth2 extends Observable {
       params.code_verifier = this.codeVerifierPKCE;
     }
 
-    let response = await appGlobal.remoteApp.postHTTP(tokenURL, params, "json", {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'application/json',
-        ...additionalHeaders,
-      },
+    let ky = await appGlobal.remoteApp.kyCreate();
+    let data = await ky.post(tokenURL, {
+      // Send 'application/x-www-form-urlencoded',
+      body: new URLSearchParams(params),
+      headers: additionalHeaders,
       timeout: 3000,
       throwHttpErrors: false,
-    });
-    let data = response.data;
+    }).json();
     if (data.error) {
       throw new OAuth2ServerError(data);
     }

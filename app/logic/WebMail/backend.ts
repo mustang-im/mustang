@@ -1,39 +1,41 @@
 import { NotImplemented } from "util/util";
+import ky from "ky";
 
 /** Implements the same functions as backend/backend.ts ,
  * but for the web browser.
  * Some of the functions are disabled in this case.
  */
 export class WebMailBackend {
-  kyCreate() {
+  async kyCreate(defaultOptions: any): Promise<any> {
+    return ky.create(defaultOptions);
   }
-  isOSNotificationSupported(): boolean {
+  async isOSNotificationSupported(): Promise<boolean> {
     return false;
   }
-  newTrayIcon() {
+  async newTrayIcon() {
   }
-  setBadgeCount() {
+  async setBadgeCount() {
   }
-  minimizeMainWindow() {
+  async minimizeMainWindow() {
   }
-  unminimizeMainWindow() {
+  async unminimizeMainWindow() {
   }
-  writeTextToClipboard(text: string) {
+  async writeTextToClipboard(text: string) {
     navigator.clipboard.writeText(text);
   }
-  openExternalURL(url: string) {
+  async openExternalURL(url: string) {
     window.open(url, "_blank", "noopener");
   }
-  openFileInNativeApp(filePath: string) {
+  async openFileInNativeApp(filePath: string) {
     let url = "file://" + filePath;
     window.open(url, "_blank", "noopener");
   }
-  showFileInFolder(filePath: string) {
+  async showFileInFolder(filePath: string) {
     throw new NotImplemented("Cannot open file path in browser");
   }
-  restartApp() {
+  async restartApp() {
     window.location.reload();
   }
-  setTheme() {
+  async setTheme() {
   }
 }
