@@ -1,9 +1,7 @@
 import { appGlobal } from '../app';
 import { WebMailBackend } from './backend';
+import { login } from './config';
 import type { Account } from '../Abstract/Account';
-import { JMAPAccount } from '../Mail/JMAP/JMAPAccount';
-import type { ChatAccount } from '../Chat/ChatAccount';
-import type { MeetAccount } from '../Meet/MeetAccount';
 import { readSavedSearches } from '../Mail/Virtual/SavedSearchFolder';
 import { loadTagsList } from '../Mail/Tag';
 import { assert } from '../util/util';
@@ -12,32 +10,13 @@ import { logError } from '../../frontend/Util/error';
 export async function getStartObjects(): Promise<void> {
   appGlobal.remoteApp = new WebMailBackend();
 
-  await getMainAccount();
-  await getChatAccount();
-  await getMeetAccount();
+  await login();
 
   appGlobal.personalAddressbook = appGlobal.addressbooks.first;
   appGlobal.collectedAddressbook = appGlobal.addressbooks.get(1);
   readSavedSearches();
   await loadTagsList();
 }
-
-async function getMainAccount(): Promise<void> {
-  /*
-  appGlobal.addressbooks.add(new JMAPAccount());
-  appGlobal.calendars.add(new JMAPCalendar());
-  appGlobal.emailAccounts.add(new JMAPAddressbook());
-  */
-}
-
-async function getChatAccount(): Promise<void> {
-  // appGlobal.chatAccounts.add(...);
-}
-
-async function getMeetAccount(): Promise<void> {
-  // appGlobal.meetAccounts.add(...);
-}
-
 
 /**
  * Logs in to all accounts for which we have the credentials stored.
