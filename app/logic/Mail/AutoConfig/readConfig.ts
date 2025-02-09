@@ -7,7 +7,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray, assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 
-export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string, source: ConfigSource): ArrayColl<MailAccount> {
+export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string | null, source: ConfigSource): ArrayColl<MailAccount> {
   let autoconfigXML = JXON.parse(autoconfigXMLStr);
   if (typeof (autoconfigXML) != "object" ||
     !autoconfigXML?.clientConfig?.emailProvider) {
@@ -22,7 +22,7 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string, s
 
   let displayName = sanitize.label(xml.displayName, sanitize.label(xml["@id"], forDomain));
   //let domains = xml.$domain.map(domain => sanitize.hostname(domain));
-  assert(ensureArray(xml.$domain).includes(forDomain), "Need proper <domain> in XML");
+  assert(!forDomain || ensureArray(xml.$domain).includes(forDomain), "Need proper <domain> in XML");
   let firstError: Error;
 
   // Incoming server
@@ -46,12 +46,13 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string, s
       firstError = ex;
     }
   }
-  if (!outgoingConfigs.length) {
-    throw firstError ?? new Error(`No working <outgoingServer> in autoconfig XML for ${forDomain} found`);
-  }
-  let outgoing = outgoingConfigs.first;
-  for (let config of configs) {
-    if (config.protocol == "imap" || config.protocol == "pop3") {
+  let imapConfigs = configs.filter(config => config.protocol == "imap" || config.protocol == "pop3");
+  if (imapConfigs.hasItems) {
+    let outgoing = outgoingConfigs.first;
+    if (!outgoing) {
+      throw firstError ?? new Error(`No working <outgoingServer> in autoconfig XML for ${forDomain} found`);
+    }
+    for (let config of imapConfigs) {
       config.outgoing = outgoing;
     }
   }
