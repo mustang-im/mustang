@@ -44,7 +44,7 @@ function shouldShow(ex: Error): boolean {
 
 export function logError(ex: Error) {
   try {
-    if ((ex as any)?.isUserError) {
+    if ((ex as any)?.isUserError || (ex as any)?.doNotLog) {
       return;
     }
     if (production) {
