@@ -355,7 +355,7 @@ export class OAuth2 extends Observable {
   }
   protected get storageKey(): string {
     let host = new URL(this.tokenURL).host.replaceAll(".", "-");
-    let username = this.account.username.replace(/@.*/, "").replaceAll(".", "-");
-    return `oauth2.refreshToken.${username}.${host}`;
+    let username = this.account.username.replace(/@/, "-").replaceAll(".", "-");
+    return `oauth2.refreshToken.${host}.${username}`;
   }
 }
