@@ -1,16 +1,17 @@
 import type { MailAccount } from '../Mail/MailAccount';
+import { OAuth2 } from '../Auth/OAuth2';
+import { OAuth2UIMethod } from '../Auth/UI/OAuth2UIMethod';
+import { saveAndInitConfig } from '../Mail/AutoConfig/saveConfig';
+import { OAuth2Redirect, WaitForRedirect } from '../Auth/UI/OAuth2Redirect';
 import { JMAPAccount } from '../Mail/JMAP/JMAPAccount';
-import { appGlobal } from '../app';
-import { accountConfigWebMail } from '../build';
-import { readConfigFromXML } from '../Mail/AutoConfig/readConfig';
-import { assert } from '../util/util';
 import type { Addressbook } from '../Contacts/Addressbook';
 import type { Calendar } from '../Calendar/Calendar';
 import type { ChatAccount } from '../Chat/ChatAccount';
 import type { MeetAccount } from '../Meet/MeetAccount';
-import { OAuth2 } from '../Auth/OAuth2';
-import { OAuth2UIMethod } from '../Auth/UI/OAuth2UIMethod';
-import { saveAndInitConfig } from '../Mail/AutoConfig/saveConfig';
+import { appGlobal } from '../app';
+import { accountConfigWebMail } from '../build';
+import { readConfigFromXML } from '../Mail/AutoConfig/readConfig';
+import { assert } from '../util/util';
 
 /**
  * Reads the account config, and logs the user in
@@ -24,10 +25,18 @@ export async function login(): Promise<MailAccount> {
   let mail = configs.mail;
   let oAuth2 = mail.oAuth2;
   oAuth2.uiMethod = OAuth2UIMethod.Redirect;
-  await oAuth2.login(true);
+  OAuth2Redirect.load(oAuth2);
+  try {
+    await oAuth2.login(true);
+  } catch (ex) {
+    if (ex instanceof WaitForRedirect) {
+      return; // page will unload
+    }
+    throw ex;
+  }
 
   // replaces placeholders, logs in, fetches, and adds to `appGlobal.emailAccounts`
-  saveAndInitConfig(mail, mail.username, null);
+  saveAndInitConfig(mail, oAuth2.account.username, null);
 
   /*
   appGlobal.addressbooks.add(new JMAPAddressbook());

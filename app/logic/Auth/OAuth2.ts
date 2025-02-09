@@ -48,6 +48,7 @@ export class OAuth2 extends Observable {
   expiresAt: Date | null = null;
   protected expiryTimout: NodeJS.Timeout;
   refreshErrorCallback = (ex: Error) => console.error(ex);
+  idTokenCallback: (idToken: string, oAuth2: OAuth2) => void;
 
   constructor(account: Account, tokenURL: string, authURL: string, authDoneURL: string | null | undefined, scope: string, clientID: string, clientSecret?: string | null, doPKCE = false) {
     super();
@@ -211,12 +212,16 @@ export class OAuth2 extends Observable {
       throw new OAuth2Error(data);
     }
     this.accessToken = data.access_token;
+    if (data.id_token) {
+      this.idToken = data.id_token;
+      if (this.idTokenCallback) {
+        // Allows to set `this.account.username`, needed by `storeRefreshToken()`
+        this.idTokenCallback(this.idToken, this);
+      }
+    }
     if (data.refresh_token) {
       this.refreshToken = data.refresh_token;
       await this.storeRefreshToken(this.refreshToken);
-    }
-    if (data.id_token) {
-      this.idToken = data.id_token;
     }
     if (data.expires_in) {
       let seconds = parseInt(data.expires_in);
