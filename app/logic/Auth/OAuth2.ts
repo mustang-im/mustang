@@ -35,7 +35,7 @@ export class OAuth2 extends Observable {
   clientID = "open";
   clientSecret: string | null = null;
   doPKCE = false;
-  protected codeVerifierPKCE?: string;
+  codeVerifierPKCE?: string;
   @notifyChangedProperty
   accessToken?: string;
   @notifyChangedProperty
@@ -188,8 +188,9 @@ export class OAuth2 extends Observable {
   protected async getAccessTokenFromParams(params: any, additionalHeaders?: any, tokenURL: string | void = this.tokenURL): Promise<string> {
     params.scope = this.scope;
     params.client_id = this.clientID;
-    params.client_secret = this.clientSecret || undefined;
-
+    if (this.clientSecret) {
+      params.client_secret = this.clientSecret;
+    }
     if (this.doPKCE && params.grant_type == "authorization_code") {
       assert(!!this.codeVerifierPKCE, "Missing code verifier");
       params.code_verifier = this.codeVerifierPKCE;
