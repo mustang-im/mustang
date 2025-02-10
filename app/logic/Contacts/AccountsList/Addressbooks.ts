@@ -1,5 +1,6 @@
 import { Addressbook } from '../Addressbook';
 // #if [WEBMAIL]
+import { DummyAddressbookStorage } from '../SQL/DummyAddressbookStorage';
 // #else
 import { EWSAddressbook } from '../EWS/EWSAddressbook';
 import { OWAAddressbook } from '../OWA/OWAAddressbook';
@@ -7,13 +8,17 @@ import { ActiveSyncAddressbook } from '../ActiveSync/ActiveSyncAddressbook';
 import { SQLAddressbookStorage } from '../SQL/SQLAddressbookStorage';
 // #endif
 import { isWebMail } from '../../build';
-import { NotReached, assert } from '../../util/util';
+import { NotReached } from '../../util/util';
 import type { Collection } from 'svelte-collections';
 import { gt } from '../../../l10n/l10n';
 
 export function newAddressbookForProtocol(protocol: string): Addressbook {
   let ab = _newAddressbookForProtocol(protocol);
+  // #if [WEBMAIL]
+  ab.storage = new DummyAddressbookStorage();
+   // #else
   ab.storage = new SQLAddressbookStorage();
+  // #endif
   return ab;
 }
 

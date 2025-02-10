@@ -2,7 +2,7 @@ import { appGlobal } from '../app';
 import { WebMailBackend } from './backend';
 import { login } from './config';
 import type { Account } from '../Abstract/Account';
-import { createCollectedAddressbook, createDefaultAddressbooks } from '../Contacts/AccountsList/Addressbooks';
+import { createCollectedAddressbook } from '../Contacts/AccountsList/Addressbooks';
 import { readSavedSearches } from '../Mail/Virtual/SavedSearchFolder';
 import { loadTagsList } from '../Mail/Tag';
 import { assert } from '../util/util';

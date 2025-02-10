@@ -1,5 +1,6 @@
 import { Calendar } from '../Calendar';
 // #if [WEBMAIL]
+import { DummyCalendarStorage } from '../SQL/DummyCalendarStorage';
 // #else
 import { EWSCalendar } from '../EWS/EWSCalendar';
 import { OWACalendar } from '../OWA/OWACalendar';
@@ -13,7 +14,11 @@ import { gt } from '../../../l10n/l10n';
 
 export function newCalendarForProtocol(protocol: string): Calendar {
   let calendar = _newCalendarForProtocol(protocol);
+  // #if [WEBMAIL]
+  calendar.storage = new DummyCalendarStorage();
+  // #else
   calendar.storage = new SQLCalendarStorage();
+  // #endif
   return calendar;
 }
 
