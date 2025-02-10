@@ -39,6 +39,8 @@ import { messages as sk } from './locales/sk/messages-compiled.json';
 import { messages as th } from './locales/th/messages-compiled.json';
 import { messages as tr } from './locales/tr/messages-compiled.json';
 
+window.global = window; // Fix Stanza and getUILocale()
+
 /** Map of lang code to messages.
  * Lang codes: <https://www.wikiwand.com/en/List_of_ISO_639_language_codes> */
 const languageMessages = {
