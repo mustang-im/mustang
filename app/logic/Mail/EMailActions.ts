@@ -195,6 +195,7 @@ export class EMailActions {
     }
 
     let previousDrafts = this.getDrafts();
+    let previousFolder = this.email.folder;
     if (this.email.folder?.specialFolder != SpecialFolder.Normal) {
       this.email.folder = account.getSpecialFolder(SpecialFolder.Sent);
     }
@@ -202,7 +203,8 @@ export class EMailActions {
 
     await account.send(this.email);
 
-    this.deleteDrafts(previousDrafts) // TODO doesn't work, leaves draft behind
+    this.email.folder = previousFolder;
+    this.deleteDrafts(previousDrafts)
       .catch(backgroundError);
   }
 

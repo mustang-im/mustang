@@ -149,7 +149,9 @@ export class EMail extends Message {
 
   async markDraft(isDraft = true) {
     this.isDraft = isDraft;
-    await this.storage.saveMessageWritableProps(this);
+    if (this.dbID) {
+      await this.storage.saveMessageWritableProps(this);
+    }
   }
 
   async moveToArchive() {
