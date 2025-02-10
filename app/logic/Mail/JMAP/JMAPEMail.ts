@@ -155,9 +155,7 @@ export class JMAPEMail extends EMail {
       accountId: this.folder.account.accountID,
       update: {
         [this.pID]: {
-          keywords: {
-            [name]: set,
-          }
+          [`keywords/${name}`]: set ? true : null,
         },
       },
     });
