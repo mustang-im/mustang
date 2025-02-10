@@ -6,7 +6,6 @@ import type { PersonUID } from "../../Abstract/PersonUID";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder } from "../Folder";
-import { appGlobal } from "../../app";
 import { appName, appVersion } from "../../build";
 import { basicAuth } from "../../Auth/httpAuth";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -15,6 +14,7 @@ import { Lock } from "../../util/Lock";
 import { assert, SpecificError } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, MapColl } from "svelte-collections";
+import ky from "ky";
 
 export class JMAPAccount extends MailAccount {
   readonly protocol: string = "jmap";
@@ -29,11 +29,6 @@ export class JMAPAccount extends MailAccount {
   syncState = new MapColl<TJMAPObjectType, string>(); /** JMAP state is account-global. Use stateLock. */
   stateLock = new Lock(); /** Protects syncState */
   logging = true;
-
-  constructor() {
-    super();
-    assert(appGlobal.remoteApp.kyCreate, "JMAP: Need backend");
-  }
 
   get isLoggedIn(): boolean {
     return this.session &&
@@ -215,17 +210,16 @@ export class JMAPAccount extends MailAccount {
     }
     // console.log("JMAP headers", headers);
 
-    return appGlobal.remoteApp.kyCreate({
+    return ky.create({
       headers: headers,
       timeout: 3000,
-      result: options.result ?? "json",
     });
   }
 
   async httpGet(url: string, options?: any): Promise<any> {
     let ky = await this.ky(options);
     try {
-      return await ky.get(url);
+      return await ky.get(url).json();
     } catch (ex) {
       await this.httpError(ex);
     }
@@ -234,7 +228,16 @@ export class JMAPAccount extends MailAccount {
   async httpPost(url: string, sendJSON: any): Promise<any> {
     let ky = await this.ky();
     try {
-      return await ky.post(url, { json: sendJSON });
+      return await ky.post(url, { json: sendJSON }).json();
+    } catch (ex) {
+      await this.httpError(ex);
+    }
+  }
+
+  async httpGetBinary(url: string, options?: any): Promise<Blob> {
+    let ky = await this.ky(options);
+    try {
+      return await ky.get(url).blob();
     } catch (ex) {
       await this.httpError(ex);
     }
@@ -243,7 +246,7 @@ export class JMAPAccount extends MailAccount {
   async httpPostBinary(url: string, body: any, options?: any): Promise<any> {
     let ky = await this.ky(options);
     try {
-      return await ky.post(url, { body: body });
+      return await ky.post(url, { body: body }).json();
     } catch (ex) {
       await this.httpError(ex);
     }

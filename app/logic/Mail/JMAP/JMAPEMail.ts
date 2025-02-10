@@ -106,12 +106,11 @@ export class JMAPEMail extends EMail {
       .replace("{blobId}", this.mimeBlobId)
       .replace("{name}", "email")
       .replace("{type}", "message/rfc822");
-    let response = await account.httpGet(url, {
+    let response = await account.httpGetBinary(url, {
       headers: {
         "Accept": "message/rfc822",
         "Content-Type": undefined, // override
       },
-      result: "blob",
     });
     this.mime = new Uint8Array(await response.arrayBuffer());
     await this.parseMIME();
