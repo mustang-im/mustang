@@ -1,5 +1,5 @@
 import { setMainWindow, startupBackend, shutdownBackend } from '../../../backend/backend';
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, BrowserWindow, session } from 'electron'
 import { ipcMain } from 'electron/main';
 import { join } from 'path'
 import electronUpdater from 'electron-updater';
@@ -94,6 +94,8 @@ app.whenReady().then(async () => {
   // <https://learn.microsoft.com/en-us/windows/win32/shell/appids>
   electronApp.setAppUserModelId('im.mustang');
 
+  allowCrossDomainRequestsFromFrontend();
+
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
@@ -124,6 +126,21 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
+
+function allowCrossDomainRequestsFromFrontend() {
+  const filter = { urls: ["https://*/*"] };
+  session.defaultSession.webRequest.onHeadersReceived(
+    filter,
+    (details, callback) => {
+      let responseHeaders = details.responseHeaders ?? {};
+      responseHeaders["Access-Control-Allow-Origin"] = ["*"];
+      responseHeaders["Access-Control-Allow-Methods"] = ["*"];
+      responseHeaders["Access-Control-Allow-Headers"] = ["*"];
+      // console.log("Response", details.url, responseHeaders);
+      callback({ responseHeaders });
+    }
+  );
+}
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
