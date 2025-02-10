@@ -350,6 +350,7 @@
   }
   .left-pane {
     flex: 2 0 0;
+    width: 0px;
   }
   .right-pane {
     flex: 1 0 0;
@@ -393,6 +394,7 @@
   .editor {
     font-family: unset;
     padding: 8px 12px;
+    min-width: fit-content;
   }
   grid.time {
     grid-template-columns: max-content max-content;
