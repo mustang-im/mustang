@@ -2,6 +2,7 @@ import { appGlobal } from '../app';
 import { WebMailBackend } from './backend';
 import { login } from './config';
 import type { Account } from '../Abstract/Account';
+import { createCollectedAddressbook, createDefaultAddressbooks } from '../Contacts/AccountsList/Addressbooks';
 import { readSavedSearches } from '../Mail/Virtual/SavedSearchFolder';
 import { loadTagsList } from '../Mail/Tag';
 import { assert } from '../util/util';
@@ -9,11 +10,12 @@ import { logError } from '../../frontend/Util/error';
 
 export async function getStartObjects(): Promise<void> {
   appGlobal.remoteApp = new WebMailBackend();
+  appGlobal.collectedAddressbook = await createCollectedAddressbook();
+  appGlobal.personalAddressbook = appGlobal.collectedAddressbook;
+  appGlobal.addressbooks.add(appGlobal.collectedAddressbook);
 
   await login();
 
-  appGlobal.personalAddressbook = appGlobal.addressbooks.first;
-  appGlobal.collectedAddressbook = appGlobal.addressbooks.get(1);
   readSavedSearches();
   await loadTagsList();
 }

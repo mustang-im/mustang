@@ -8,7 +8,7 @@ import { SQLAddressbookStorage } from '../SQL/SQLAddressbookStorage';
 // #endif
 import { isWebMail } from '../../build';
 import { NotReached, assert } from '../../util/util';
-import { ArrayColl, type Collection } from 'svelte-collections';
+import type { Collection } from 'svelte-collections';
 import { gt } from '../../../l10n/l10n';
 
 export function newAddressbookForProtocol(protocol: string): Addressbook {
@@ -20,13 +20,15 @@ export function newAddressbookForProtocol(protocol: string): Addressbook {
 function _newAddressbookForProtocol(protocol: string): Addressbook {
   // #if [WEBMAIL]
   if (isWebMail) {
-    assert(protocol == "jmap", "Need JMAP account for webmail");
-    // return new JMAPAddressbook();
+    if (protocol == "addressbook-local") {
+      return new Addressbook();
+    } else if (protocol == "jmap-addressbook") {
+      // return new JMAPAddressbook();
+    }
+    throw new NotReached(`Need JMAP account for webmail. ${protocol} is not supported here.`);
   }
   // #else
-  if (protocol == "addressbook-local") {
-    return new Addressbook();
-  } else if (protocol == "addressbook-ews") {
+  if (protocol == "addressbook-ews") {
     return new EWSAddressbook();
   } else if (protocol == "addressbook-owa") {
     return new OWAAddressbook();
@@ -42,22 +44,24 @@ function _newAddressbookForProtocol(protocol: string): Addressbook {
 export async function readAddressbooks(): Promise<Collection<Addressbook>> {
   let addressbooks = await SQLAddressbookStorage.readAddressbooks();
   if (addressbooks.isEmpty) {
-    addressbooks.addAll(await createDefaultAddressbooks());
+    addressbooks.add(await createPersonalAddressbook());
+    addressbooks.add(await createCollectedAddressbook());
   }
   return addressbooks;
 }
 // #endif
 
-async function createDefaultAddressbooks(): Promise<Collection<Addressbook>> {
-  console.log("Creating default address books");
-  let addressbooks = new ArrayColl<Addressbook>();
+export async function createPersonalAddressbook(): Promise<Addressbook> {
+  console.log("Creating personal address book");
   let personal = newAddressbookForProtocol("addressbook-local");
   personal.name = gt`Personal addressbook`;
-  addressbooks.add(personal);
   await personal.save();
+  return personal;
+}
+
+export async function createCollectedAddressbook(): Promise<Addressbook> {
   let collected = newAddressbookForProtocol("addressbook-local");
   collected.name = gt`Collected contacts`;
-  addressbooks.add(collected);
   await collected.save();
-  return addressbooks;
+  return collected;
 }
