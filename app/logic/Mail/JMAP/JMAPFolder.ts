@@ -170,7 +170,7 @@ export class JMAPFolder extends Folder {
       let addedResult = await this.parseMessageList(addedResponse.list, false);
       let changedResult = await this.parseMessageList(changedResponse.list);
       addedResult.newMessages.addAll(changedResult.newMessages);
-  
+
       this.account.setState("Email", changes.newState, changes.oldState);
       return {
         newMessages: addedResult.newMessages,
@@ -376,10 +376,8 @@ export class JMAPFolder extends Folder {
       let id = msg.pID;
       let sourceFolderID = msg.folder.id;
       updates[id] = {
-        mailboxIds: {
-          [targetFolderID]: true,
-          [sourceFolderID]: action == "copy",
-        },
+        [`mailboxIds/${targetFolderID}`]: true,
+        [`mailboxIds/${sourceFolderID}`]: action == "copy" ? true : null,
       };
     }
     await this.account.makeSingleCall("Email/set", {

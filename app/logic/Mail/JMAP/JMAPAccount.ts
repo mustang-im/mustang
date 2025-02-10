@@ -384,13 +384,12 @@ export class JMAPAccount extends MailAccount {
       },
       onSuccessUpdateEmail: {
         "#sendMessage": {
+          // Intentionally delete all other folders
           mailboxIds: {
             [sentFolder.id]: true,
-            [outboxFolder.id]: false,
+            [outboxFolder.id]: null,
           },
-          keywords: {
-            "$draft": false,
-          },
+          ["keywords/$draft"]: null,
         }
       }
     });
