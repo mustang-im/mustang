@@ -1,6 +1,9 @@
-
+// #if [WEBMAIL]
 <!-- TODO Security: Test that this <webview> is untrusted and jailed -->
+<iframe bind:this={webviewE} src={url} {title} />
+// #else
 <webview bind:this={webviewE} src={url} {title} />
+// #endif
 
 <!--
 {#if contextMenuItems && contextMenuItems.hasItems}
@@ -18,13 +21,16 @@
 -->
 
 <script lang="ts">
+  // #if [WEBMAIL]
+  // #else
   import { buildContextMenu, MenuItem, type ContextInfo } from "./ContextMenu";
-  // import { Menu } from "@svelteuidev/core";
-  import { stringToDataURL } from "../Util/util";
-  import { createEventDispatcher, onMount } from 'svelte';
-  import type { ArrayColl } from "svelte-collections";
-  import { backgroundError, catchErrors } from "../Util/error";
   import { appGlobal } from "../../logic/app";
+  // import { Menu } from "@svelteuidev/core";
+  // #endif
+  import { stringToDataURL } from "../Util/util";
+  import { backgroundError, catchErrors } from "../Util/error";
+  import type { ArrayColl } from "svelte-collections";
+  import { createEventDispatcher, onMount } from 'svelte';
   const dispatch = createEventDispatcher();
 
   /**
@@ -95,22 +101,30 @@
     webviewE.addEventListener("dom-ready", async () => {
       try {
         dispatch("webview", webviewE);
+        // #if [WEBMAIL]
+        // #else
         if (autoSize) {
           webviewE.addEventListener("did-finish-load", onLoadResize);
         }
         await addClickListener();
         await addLinkListener();
+        // #endif
       } catch (ex) {
         backgroundError(ex);
       }
     }, { once: true });
 
+    // #if [WEBMAIL]
+    // #else
     // <https://www.electronjs.org/docs/latest/api/webview-tag/#event-context-menu>
     webviewE.addEventListener("context-menu", event => catchErrors(() => {
       onContextMenu((event as any).params);
     }));
+    // #endif
   }
 
+  // #if [WEBMAIL]
+  // #else
   async function addClickListener() {
     let id = (webviewE as any).getWebContentsId();
     await appGlobal.remoteApp.addEventListenerWebContents(id, "input-event", (event) => {
@@ -180,6 +194,7 @@
     await getContentSize();
     resizeWebview();
   }
+  // #endif
 
   const heightBuffer = 10;
   let maxWidth: number;
@@ -222,9 +237,12 @@
 </script>
 
 <style>
-  webview {
+  webview, iframe {
     flex: 1 0 0;
     width: 100%;
     height: auto;
+  }
+  iframe {
+    border: none;
   }
 </style>
