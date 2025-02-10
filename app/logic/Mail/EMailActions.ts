@@ -194,6 +194,8 @@ export class EMailActions {
       }
     }
 
+    let fromDraftsFolder = this.email.folder?.specialFolder == SpecialFolder.Drafts;
+
     let previousDrafts = this.getDrafts();
     if (this.email.folder?.specialFolder != SpecialFolder.Normal) {
       this.email.folder = account.getSpecialFolder(SpecialFolder.Sent);
@@ -202,8 +204,10 @@ export class EMailActions {
 
     await account.send(this.email);
 
-    this.deleteDrafts(previousDrafts) // TODO doesn't work, leaves draft behind
-      .catch(backgroundError);
+    if (fromDraftsFolder) {
+      this.email.folder = account.getSpecialFolder(SpecialFolder.Drafts);
+    }
+    await this.deleteDrafts(previousDrafts).catch(backgroundError);
   }
 
   async saveAsDraft(): Promise<void> {
@@ -217,7 +221,7 @@ export class EMailActions {
     }
     let previousDrafts = this.getDrafts();
 
-    this.email.isDraft = true;
+    await this.email.markDraft();
     this.email.mime = await CreateMIME.getMIME(this.email);
     console.log("saving draft", this.email.messageID);
     await draftFolder.addMessage(this.email);
