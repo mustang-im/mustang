@@ -90,8 +90,9 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
-  // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+  // Set app user model id for MS Windows
+  // <https://learn.microsoft.com/en-us/windows/win32/shell/appids>
+  electronApp.setAppUserModelId('im.mustang');
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
