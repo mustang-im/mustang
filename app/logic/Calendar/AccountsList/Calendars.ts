@@ -7,8 +7,7 @@ import { OWACalendar } from '../OWA/OWACalendar';
 import { ActiveSyncCalendar } from '../ActiveSync/ActiveSyncCalendar';
 import { SQLCalendarStorage } from '../SQL/SQLCalendarStorage';
 // #endif
-import { isWebMail } from '../../build';
-import { NotReached, assert } from '../../util/util';
+import { NotReached, NotImplemented } from '../../util/util';
 import { ArrayColl, type Collection } from 'svelte-collections';
 import { gt } from '../../../l10n/l10n';
 
@@ -23,14 +22,15 @@ export function newCalendarForProtocol(protocol: string): Calendar {
 }
 
 function _newCalendarForProtocol(protocol: string): Calendar {
-  // #if [WEBMAIL]
-  if (isWebMail) {
-    assert(protocol == "jmap", "Need JMAP account for webmail");
-    // return new JMAPCalendar();
-  }
-  // #else
   if (protocol == "calendar-local") {
     return new Calendar();
+  } else if (protocol == "calendar-jmap") {
+    throw new NotImplemented("JMAP Calendar not implemented"); // return new JMAPCalendar();
+  }
+  // #if [WEBMAIL]
+  // #else
+  if (protocol == "calendar-ews") {
+    return new EWSCalendar();
   } else if (protocol == "calendar-ews") {
     return new EWSCalendar();
   } else if (protocol == "calendar-owa") {
@@ -38,8 +38,8 @@ function _newCalendarForProtocol(protocol: string): Calendar {
   } else if (protocol == "calendar-activesync") {
     return new ActiveSyncCalendar();
   }
-  throw new NotReached(`Unknown calendar type ${protocol}`);
   // #endif
+  throw new NotReached(`Unknown calendar type ${protocol}`);
 }
 
 // #if [WEBMAIL]

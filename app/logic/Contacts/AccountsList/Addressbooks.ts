@@ -7,8 +7,7 @@ import { OWAAddressbook } from '../OWA/OWAAddressbook';
 import { ActiveSyncAddressbook } from '../ActiveSync/ActiveSyncAddressbook';
 import { SQLAddressbookStorage } from '../SQL/SQLAddressbookStorage';
 // #endif
-import { isWebMail } from '../../build';
-import { NotReached } from '../../util/util';
+import { NotReached, NotImplemented } from '../../util/util';
 import type { Collection } from 'svelte-collections';
 import { gt } from '../../../l10n/l10n';
 
@@ -23,15 +22,12 @@ export function newAddressbookForProtocol(protocol: string): Addressbook {
 }
 
 function _newAddressbookForProtocol(protocol: string): Addressbook {
-  // #if [WEBMAIL]
-  if (isWebMail) {
-    if (protocol == "addressbook-local") {
-      return new Addressbook();
-    } else if (protocol == "jmap-addressbook") {
-      // return new JMAPAddressbook();
-    }
-    throw new NotReached(`Need JMAP account for webmail. ${protocol} is not supported here.`);
+  if (protocol == "addressbook-local") {
+    return new Addressbook();
+  } else if (protocol == "addressbook-jmap") {
+    throw new NotImplemented("JMAP Addressbook not implemented"); // return new JMAPAddressbook();
   }
+  // #if [WEBMAIL]
   // #else
   if (protocol == "addressbook-ews") {
     return new EWSAddressbook();
@@ -40,8 +36,8 @@ function _newAddressbookForProtocol(protocol: string): Addressbook {
   } else if (protocol == "addressbook-activesync") {
     return new ActiveSyncAddressbook();
   }
-  throw new NotReached(`Unknown addressbook type ${protocol}`);
   // #endif
+  throw new NotReached(`Unknown addressbook type ${protocol}`);
 }
 
 // #if [WEBMAIL]
