@@ -344,13 +344,16 @@ the trademark is mentioned, including in the app user interface for
 end users. Any such notices must be at least as prominent as your own
 notices, brand names, statements of origin or copyright statements.
 
-This also includes the signature and footer text that is appended to
+These also includes the signature and footer text that is appended to
 outgoing emails, and the web link that it contains. You must not remove
-it nor alter it without explicit permission.
+it, suppress it, nor alter it without explicit permission.
+
+The above notices must be displayed in the same manner and prominence,
+independent of any program code changes that you make.
 
 You may rename the application, as long as it's clear to all users that
 your application is based on this work and its authors, e.g.
-by stating that your work is "based on Mustang" or "powered by Mustang",
+by stating that your work is "based on" or "powered by" this app,
 and these statements are as prominent as your own branding and notices.
 This applies both in the application as it presents itself to its users,
 as well as on the corresponding website.
