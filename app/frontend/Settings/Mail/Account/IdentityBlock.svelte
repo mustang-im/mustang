@@ -54,7 +54,7 @@
             <hbox class="sentBy">
               <div>
                 <!--<Icon data={logo} size="20px" />-->
-                {@html $t`Sent by ${`<a href=${siteRoot} target="_blank" style="color: #20AE9E"><strong><em>${appName}</em></strong></a>`}`}
+                {@html $t`Sent by © ${`<a href=${siteRoot} target="_blank" style="color: #20AE9E"><strong><em>${appName}</em></strong></a>`}`}
               </div>
               {#if !showSentByExplainer}
                 <RoundButton

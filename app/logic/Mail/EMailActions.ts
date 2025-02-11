@@ -179,6 +179,7 @@ export class EMailActions {
     }
     let account = fromIdentity.account;
     let sig = fromIdentity.signatureHTML;
+    this.email.html += `<p></p><footer class="signature" style="color: #777777">Sent by © <a href="https://parula.app" style="color: #20AE9E; text-decoration: none"><strong><em>Parula</em></strong></a></footer>`;
     if (sig) {
       this.email.html += `<footer class="signature">${sig}</footer>`;
     }
