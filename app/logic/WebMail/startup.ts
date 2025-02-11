@@ -3,6 +3,7 @@ import { WebMailBackend } from './backend';
 import { login } from './config';
 import type { Account } from '../Abstract/Account';
 import { createCollectedAddressbook } from '../Contacts/AccountsList/Addressbooks';
+import { createPersonalCalendar } from '../Calendar/AccountsList/Calendars';
 import { readSavedSearches } from '../Mail/Virtual/SavedSearchFolder';
 import { loadTagsList } from '../Mail/Tag';
 import { assert } from '../util/util';
@@ -13,6 +14,7 @@ export async function getStartObjects(): Promise<void> {
   appGlobal.collectedAddressbook = await createCollectedAddressbook();
   appGlobal.personalAddressbook = appGlobal.collectedAddressbook;
   appGlobal.addressbooks.add(appGlobal.collectedAddressbook);
+  appGlobal.calendars.add(await createPersonalCalendar());
 
   await login();
 

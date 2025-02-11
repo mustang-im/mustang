@@ -47,18 +47,16 @@ function _newCalendarForProtocol(protocol: string): Calendar {
 export async function readCalendars(): Promise<Collection<Calendar>> {
   let calendars = await SQLCalendarStorage.readCalendars();
   if (calendars.isEmpty) {
-    calendars.addAll(await createDefaultCalendars());
+    calendars.add(await createPersonalCalendar());
   }
   return calendars;
 }
 // #endif
 
-async function createDefaultCalendars(): Promise<Collection<Calendar>> {
+export async function createPersonalCalendar(): Promise<Calendar> {
   console.log("Creating default calendars");
-  let calendars = new ArrayColl<Calendar>();
   let personal = newCalendarForProtocol("calendar-local");
   personal.name = gt`Personal calendar`;
-  calendars.add(personal);
   await personal.save();
-  return calendars;
+  return personal;
 }
