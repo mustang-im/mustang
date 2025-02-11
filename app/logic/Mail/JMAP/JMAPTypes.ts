@@ -155,3 +155,36 @@ export interface TJMAPUpload {
   type: string,
   size: number,
 }
+
+/** <https://www.rfc-editor.org/rfc/rfc8621.html#section-4.1.4> */
+export interface TJMAPEmailBodyPart {
+  partId?: string;
+  blobId: string;
+  size: number;
+  name?: string | null;
+  type: string;
+  charset?: string | null;
+  disposition?: string | null;
+  cid?: string | null;
+  headers?: TJMAPEmailHeader[];
+  language?: string[] | null;
+  location?: string | null;
+  subParts?: TJMAPEmailBodyPart[] | null;
+  bodyStructure?: TJMAPEmailBodyPart;
+  bodyValues?: { [key: string]: TJMAPEmailBodyPart };
+  textBody?: TJMAPEmailBodyPart[];
+  htmlBody?: TJMAPEmailBodyPart[];
+  attachments?: TJMAPEmailBodyPart[];
+  hasAttachment?: boolean;
+  preview?: string;
+}
+
+export interface TJMAPEmailHeader {
+  name: string,
+  value: string,
+}
+
+export interface TJMAPEmailAddress {
+  name: string,
+  email: string,
+}

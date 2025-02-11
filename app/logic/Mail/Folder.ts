@@ -160,6 +160,16 @@ export class Folder extends Observable implements TreeItem<Folder> {
     return false;
   }
 
+  /**
+   * Uploads a message to this folder on the server.
+   *
+   * MIME:
+   * - If this is an existing message, e.g. from another
+   *   server or from an .eml file, make sure that
+   *   `.mime` is populated with the RFC5322 message.
+   * - If this is a new message that you just created,
+   *   then this function will create the MIME from the properties.
+   */
   async addMessage(message: EMail) {
     assert(message.mime, "Call loadMIME() first");
     throw new NotImplemented();

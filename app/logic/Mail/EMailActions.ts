@@ -3,7 +3,6 @@ import { SpecialFolder } from "./Folder";
 import { Attachment, ContentDisposition } from "./Attachment";
 import { PersonUID } from "../Abstract/PersonUID";
 import { MailIdentity } from "./MailIdentity";
-import { CreateMIME } from "./SMTP/CreateMIME";
 import { appName, appVersion } from "../build";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { backgroundError } from "../../frontend/Util/error";
@@ -220,8 +219,6 @@ export class EMailActions {
     let previousDrafts = this.getDrafts();
 
     this.email.isDraft = true;
-    this.email.mime = await CreateMIME.getMIME(this.email);
-    console.log("saving draft", this.email.messageID);
     await draftFolder.addMessage(this.email);
 
     await this.deleteDrafts(previousDrafts);

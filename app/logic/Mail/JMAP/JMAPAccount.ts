@@ -1,9 +1,8 @@
 import { MailAccount, AuthMethod, DeleteStrategy } from "../MailAccount";
 import { JMAPFolder } from "./JMAPFolder";
-import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPFolder, type TJMAPGetResponse, type TJMAPIdentity, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPSession } from "./JMAPTypes";
+import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPFolder, type TJMAPGetResponse, type TJMAPIdentity, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPSession, type TJMAPUpload } from "./JMAPTypes";
 import type { EMail } from "../EMail";
 import type { PersonUID } from "../../Abstract/PersonUID";
-import { CreateMIME } from "../SMTP/CreateMIME";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder } from "../Folder";
 import { appName, appVersion } from "../../build";
@@ -267,8 +266,20 @@ export class JMAPAccount extends MailAccount {
     throw ex;
   }
 
-  /** dummy, remove later */
-  async connection(): Promise<any> {
+  async uploadBlob(blob: Buffer, mimeType: string, filename: string): Promise<TJMAPUpload> {
+    let url = this.session.uploadUrl;
+    url = url
+      .replace("{accountId}", this.accountID)
+      .replace("{name}", filename)
+      .replace("{type}", mimeType);
+    let uploadResponse = await this.httpPostBinary(url, blob, {
+      headers: {
+        "Content-Type": mimeType,
+      },
+    }) as TJMAPUpload;
+    let blobId = uploadResponse.blobId;
+    console.log("Uploaded message to", url, "and got blobID", blobId);
+    return uploadResponse;
   }
 
   async listFolders(): Promise<void> {
@@ -360,7 +371,6 @@ export class JMAPAccount extends MailAccount {
     let sentFolder = email.folder ??
       this.getSpecialFolder(SpecialFolder.Sent);
 
-    email.mime ??= await CreateMIME.getMIME(email);
     await outboxFolder.addMessage(email);
 
     let recipients = new ArrayColl<PersonUID>();

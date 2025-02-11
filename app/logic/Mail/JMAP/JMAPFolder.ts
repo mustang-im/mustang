@@ -4,7 +4,7 @@ import type { JMAPAccount } from "./JMAPAccount";
 import type { EMail } from "../EMail";
 import type { EMailCollection } from "../Store/EMailCollection";
 import type { TJMAPChangeResponse, TJMAPEMailHeaders, TJMAPFolder, TJMAPGetResponse, TJMAPUpload } from "./JMAPTypes";
-import { Lock } from "../../util/Lock";
+import { CreateMIME } from "../SMTP/CreateMIME";
 import { Semaphore } from "../../util/Semaphore";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotImplemented, assert } from "../../util/util";
@@ -316,20 +316,19 @@ export class JMAPFolder extends Folder {
   }
 
   async addMessage(email: EMail) {
-    // Do *not* call super.addMessage();
-    assert(email.mime, "Need MIME to upload it to a folder");
-    let url = this.account.session.uploadUrl;
-    url = url
-      .replace("{accountId}", this.account.accountID)
-      .replace("{name}", "email")
-      .replace("{type}", "message/rfc822");
-    let uploadResponse = await this.account.httpPostBinary(url, Buffer.from(email.mime), {
-      headers: {
-        "Content-Type": "message/rfc822",
-      },
-    }) as TJMAPUpload;
+    // #if [WEBMAIL]
+    await this.addMessageFromProperties(email);
+    // #else
+    await this.addMessageFromMIME(email);
+    // #endif
+  }
+
+  /** Creates a MIME message locally and uploads that to the JMAP server */
+  async addMessageFromMIME(email: EMail) {
+    email.mime ??= await CreateMIME.getMIME(email);
+
+    let uploadResponse = await this.account.uploadBlob(Buffer.from(email.mime), "message/rfc822", "email");
     let blobId = uploadResponse.blobId;
-    console.log("Uploaded message to", url, "and got blobID", blobId);
     assert(uploadResponse.size == email.mime.length, `Storing message failed: Sent ${email.mime.length} bytes, received: ${uploadResponse.size} bytes`);
     let createResponse = await this.account.makeSingleCall("Email/import", {
       accountId: this.account.accountID,
@@ -351,6 +350,25 @@ export class JMAPFolder extends Folder {
     // TODO need to clone email into a new JMAPEMail, esp. when copying (not moving) from EWS to JMAP.
     email.pID = createResponse.created["addMessage"].id;
     email.folder = this;
+    // this.messages.add(email); -- see above
+    await this.listChangedMessages();
+  }
+
+  /** Uploads the email as individual properties and body parts to the JMAP server */
+  async addMessageFromProperties(email: EMail) {
+    email.folder = this;
+    let createResponse = await this.account.makeSingleCall("Email/set", {
+      accountId: this.account.accountID,
+      create: {
+        "addMessage": await JMAPEMail.getJMAPEmailObject(email, this.account),
+      },
+    }) as TJMAPChangeResponse;
+    let error = createResponse["notCreated"] as any;
+    if (error) {
+      throw new Error("Upload of message to server failed: " + (error.addMessage?.description ?? "") + " " + (error.addMessage?.properties?.join(", ") ?? ""));
+    }
+    // need to clone email -- see above
+    email.pID = createResponse.created["addMessage"].id;
     // this.messages.add(email); -- see above
     await this.listChangedMessages();
   }

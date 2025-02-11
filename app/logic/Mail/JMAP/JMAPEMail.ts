@@ -1,14 +1,16 @@
 import { EMail } from "../EMail";
 import type { JMAPFolder } from "./JMAPFolder";
+import type { JMAPAccount } from "./JMAPAccount";
 import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
 import { getTagByName, type Tag } from "../Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import type { TJMAPEmailAddress, TJMAPEmailBodyPart, TJMAPEMailHeaders, TJMAPGetResponse, TJMAPPerson } from "./JMAPTypes";
+import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, NotReached } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import type { TJMAPEMailHeaders, TJMAPGetResponse, TJMAPPerson } from "./JMAPTypes";
-import type { ArrayColl } from "svelte-collections";
+import type { ArrayColl, Collection } from "svelte-collections";
 
 export class JMAPEMail extends EMail {
   pID: string | null = null;
@@ -72,17 +74,74 @@ export class JMAPEMail extends EMail {
     }
   }
 
-  static getJMAPFlags(message: EMail): Record<string, boolean> {
+  static getJMAPFlags(email: EMail): Record<string, boolean> {
     let flags = {};
-    flags["$seen"] = message.isRead;
-    flags["$flagged"] = message.isStarred;
-    flags["$answered"] = message.isReplied;
-    flags["$draft"] = message.isDraft;
-    flags["$junk"] = message.isSpam;
-    for (let tag of message.tags) {
+    flags["$seen"] = email.isRead ? true : null;
+    flags["$flagged"] = email.isStarred ? true : null;
+    flags["$answered"] = email.isReplied ? true : null;
+    flags["$draft"] = email.isDraft ? true : null;
+    flags["$junk"] = email.isSpam ? true : null;
+    for (let tag of email.tags) {
       flags[tag.name] = true;
     }
     return flags;
+  }
+
+  protected static getJMAPEmailAddress(puid: PersonUID): TJMAPEmailAddress {
+    return {
+      name: puid.name,
+      email: puid.emailAddress,
+    };
+  }
+  protected static getJMAPEmailAddresses(puids: Collection<PersonUID>): TJMAPEmailAddress[] | undefined {
+    let emails = puids.contents.map(r => JMAPEMail.getJMAPEmailAddress(r));
+    return emails.length ? emails : undefined;
+  }
+
+  protected static async uploadEmailBodyPart(blob: Buffer, mimeType: string, filename: string = null, account: JMAPAccount): Promise<TJMAPEmailBodyPart> {
+    let upload = await account.uploadBlob(blob, mimeType, filename);
+    return {
+      blobId: upload.blobId,
+      size: upload.size,
+      type: mimeType,
+      name: filename,
+      charset: mimeType.startsWith("text/") ? "utf-8" : null,
+    };
+  }
+
+  static async getJMAPEmailObject(email: EMail, account: JMAPAccount): Promise<any> {
+    assert(email.folder.id, "need folder");
+    let doHTML = getLocalStorage("mail.send.format", "html").value == "html";
+    let e = {
+      subject: email.subject,
+      messageId: [email.messageID],
+      from: [JMAPEMail.getJMAPEmailAddress(email.from)],
+      replyTo: email.replyTo ? [JMAPEMail.getJMAPEmailAddress(email.replyTo)] : undefined,
+      inReplyTo: email.inReplyTo ? [email.inReplyTo] : undefined,
+      references: email.references ?? undefined,
+      to: JMAPEMail.getJMAPEmailAddresses(email.to),
+      cc: JMAPEMail.getJMAPEmailAddresses(email.cc),
+      bcc: JMAPEMail.getJMAPEmailAddresses(email.bcc),
+      textBody: [await JMAPEMail.uploadEmailBodyPart(Buffer.from(email.text), "text/plain", null, account)],
+      htmlBody: doHTML ? [await JMAPEMail.uploadEmailBodyPart(Buffer.from(email.html), "text/html", null, account)] : null,
+      attachments: [],
+      sentAt: email.sent?.toISOString(),
+      receivedAt: email.received?.toISOString(),
+      keywords: JMAPEMail.getJMAPFlags(email),
+      mailboxIds: {
+        [email.folder.id]: true,
+      },
+    };
+    for (let name of email.headers.contentKeys()) {
+      e["header:" + name] = email.headers.get(name);
+    }
+    for (let attachment of email.attachments) {
+      e.attachments.push(await JMAPEMail.uploadEmailBodyPart(
+        Buffer.from(await attachment.content.arrayBuffer()),
+        attachment.mimeType,
+        attachment.filename, account));
+    }
+    return e;
   }
 
   async download() {
