@@ -10,7 +10,7 @@ import { basicAuth } from "../../Auth/httpAuth";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
 import { Lock } from "../../util/Lock";
-import { assert, SpecificError } from "../../util/util";
+import { assert, NotReached, SpecificError } from "../../util/util";
 import { HTTPFetchError } from "../../util/http";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, MapColl } from "svelte-collections";
@@ -23,6 +23,8 @@ export class JMAPAccount extends MailAccount {
   accountID: string;
   allFolders = new MapColl<string, JMAPFolder>();
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
+  webSocketURL: string | null = null;
+  webSocket: WebSocket;
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
@@ -44,6 +46,7 @@ export class JMAPAccount extends MailAccount {
 
     await this.loginOAuth2(interactive);
     await this.getSession();
+    await this.connectWebSocket();
     await this.listFolders();
     let inbox = this.inbox as JMAPFolder;
     assert(inbox, "Inbox not found");
@@ -83,8 +86,17 @@ export class JMAPAccount extends MailAccount {
     assert(this.accountID, "JMAP Session: No primary mail account");
     let mailAccount = session.accounts[this.accountID];
     assert(mailAccount, "JMAP Session: Account not found");
+    let webSocketCapa = session.capabilities["urn:ietf:params:jmap:websocket"];
+    if (webSocketCapa && webSocketCapa.url && webSocketCapa.supportsPush) {
+      this.webSocketURL = sanitize.url(webSocketCapa.url, null);
+      assert(new URL(this.webSocketURL).protocol == "wss", `Must be a TLS Websocket with wss: URL scheme: ${this.webSocketURL}`);
+    }
 
     this.session = session;
+  }
+
+  protected async connectWebSocket(): Promise<void> {
+    headers.Authorization = this.getAuthHeader();
   }
 
   /** A single API call, with a single result */
@@ -141,21 +153,7 @@ export class JMAPAccount extends MailAccount {
       log.push(method[0], method[1], method[2]);
     }
 
-    let responsesJSON: TJMAPAPIResponse | TJMAPAPIErrorResponse;
-    try {
-      responsesJSON = await this.httpPost(this.session.apiUrl, requestJSON) as TJMAPAPIResponse;
-    } catch (ex) {
-      let httpEx = new HTTPFetchError(ex);
-      if (httpEx.httpCode) {
-        console.error("POST", this.session.apiUrl, "with payload\n" + JSON.stringify(requestJSON, null, 2), "\nfailed with error", JSON.stringify(responsesJSON, null, 2), "while", ...log);
-        let errorJSON = responsesJSON as TJMAPAPIErrorResponse;
-        httpEx.message = errorJSON?.detail ?? ex.message;
-        httpEx.code = errorJSON?.type;
-        throw httpEx;
-      }
-      console.error("Error", httpEx?.message ?? httpEx, ...log);
-      throw httpEx;
-    }
+    let responsesJSON = await this.callServer(requestJSON);
     log.push("Response");
     for (let method of responsesJSON?.methodResponses) {
       log.push(method[0], method[1], method[2]);
@@ -190,6 +188,40 @@ export class JMAPAccount extends MailAccount {
     return responsesJSON.methodResponses;
   }
 
+  protected async callServer(requestJSON: TJMAPAPIRequest): Promise<TJMAPAPIResponse | TJMAPAPIErrorResponse> {
+    if (this.webSocketURL) {
+    } else {
+      try {
+        return await this.httpPost(this.session.apiUrl, requestJSON) as TJMAPAPIResponse;
+      } catch (ex) {
+        let httpEx = new HTTPFetchError(ex);
+        if (httpEx.httpCode) {
+          console.error("POST", this.session.apiUrl, "with payload\n" + JSON.stringify(requestJSON, null, 2), "\nfailed with error", JSON.stringify(responsesJSON, null, 2), "while", ...log);
+          let errorJSON = responsesJSON as TJMAPAPIErrorResponse;
+          httpEx.message = errorJSON?.detail ?? ex.message;
+          httpEx.code = errorJSON?.type;
+          throw httpEx;
+        }
+        console.error("Error", httpEx?.message ?? httpEx, ...log);
+        throw httpEx;
+      }
+    }
+  }
+
+  protected getAuthHeader(): string {
+    // Auth method
+    let usePassword = [AuthMethod.Password].includes(this.authMethod);
+    let useOAuth2 = [AuthMethod.OAuth2].includes(this.authMethod);
+    if (usePassword) {
+      return basicAuth(this.username, this.password);
+    } else if (useOAuth2) {
+      assert(this.oAuth2?.isLoggedIn, this.name + `: ` + gt`OAuth: Need login`);
+      return this.oAuth2.authorizationHeader;
+    } else {
+      throw new NotReached(`Unknown authentication method ${this.authMethod}`);
+    }
+  }
+
   protected async ky(options: Record<string, any> = {}) {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -199,16 +231,7 @@ export class JMAPAccount extends MailAccount {
     for (let name in options.headers) {
       headers[name] = options.headers[name];
     }
-
-    // Auth method
-    let usePassword = [AuthMethod.Password].includes(this.authMethod);
-    let useOAuth2 = [AuthMethod.OAuth2].includes(this.authMethod);
-    if (usePassword) {
-      headers.Authorization = basicAuth(this.username, this.password);
-    } else if (useOAuth2) {
-      assert(this.oAuth2?.isLoggedIn, this.name + `: ` + gt`OAuth: Need login`);
-      headers.Authorization = this.oAuth2.authorizationHeader;
-    }
+    headers.Authorization = this.getAuthHeader();
     // console.log("JMAP headers", headers);
 
     return ky.create({
