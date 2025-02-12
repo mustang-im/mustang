@@ -22,6 +22,8 @@
 
 <script lang="ts">
   import type { XMPPAccount } from "../../../logic/Chat/XMPP/XMPPAccount";
+  import { TLSSocketType } from "../../../logic/Mail/MailAccount";
+  import { getDomainForEmailAddress } from "../../../logic/util/netUtil";
   import { appGlobal } from "../../../logic/app";
   import Password from "../Shared/Password.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
@@ -45,6 +47,10 @@
     config.serverDomain = sp[1];
     config.name = jid;
     config.userRealname = appGlobal.me.name;
+    // Fake data, not needed for XMPP lib. Just make the database happy.
+    config.hostname = jid ? getDomainForEmailAddress(jid) : null;
+    config.port = 5222;
+    config.tls = TLSSocketType.TLS;
   }
 
   async function onContinue() {
