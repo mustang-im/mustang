@@ -128,15 +128,38 @@ app.on('window-all-closed', () => {
 })
 
 function allowCrossDomainRequestsFromFrontend() {
-  const filter = { urls: ["https://*/*", "http://*/*"] };
+  session.defaultSession.webRequest.onBeforeSendHeaders(
+    // no filter
+    (details, callback) => {
+      let requestHeaders = details.requestHeaders ?? {};
+      let origin = new URL(details.url).origin;
+      for (let name in details.requestHeaders) {
+        let lowercase = name.toLowerCase();
+        if (lowercase == "origin" || lowercase == "Referer") {
+          // delete requestHeaders[lowercase]; -- Doesn't delete it
+          requestHeaders[lowercase] = origin;
+        }
+      }
+      console.log("Request", details.url, requestHeaders);
+      callback({ requestHeaders: requestHeaders });
+    }
+  );
   session.defaultSession.webRequest.onHeadersReceived(
-    filter,
+    // no filter
     (details, callback) => {
       let responseHeaders = details.responseHeaders ?? {};
+      // Remove server response
+      for (let name in responseHeaders) {
+        let lowercase = name.toLowerCase();
+        if (lowercase.startsWith("access-control-allow-")) {
+          delete responseHeaders[lowercase];
+        }
+      }
+      // Allow frontend to access other servers
       responseHeaders["Access-Control-Allow-Origin"] = ["*"];
       responseHeaders["Access-Control-Allow-Methods"] = ["*"];
       responseHeaders["Access-Control-Allow-Headers"] = ["*"];
-      // console.log("Response", details.url, responseHeaders);
+      console.log("Response", details.url, responseHeaders);
       callback({ responseHeaders });
     }
   );
