@@ -26,6 +26,7 @@ export class XMPPAccount extends ChatAccount {
     this.client = await appGlobal.remoteApp.createStanzaXMPPClient({
       jid: this.jid,
       password: this.password,
+      // credentials: { token: ... }, TODO OAuth2
 
       // If you have a .well-known/host-meta.json file for your
       // domain, the connection transport config can be skipped.
