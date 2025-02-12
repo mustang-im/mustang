@@ -186,7 +186,7 @@ export class OAuth2 extends Observable {
    * @returns accessToken
    * @throws OAuth2Error
    */
-  protected async getAccessTokenFromParams(params: any, additionalHeaders?: any, tokenURL: string | void = this.tokenURL): Promise<string> {
+  protected async getAccessTokenFromParams(params: any, additionalHeaders?: any, tokenURL: string = this.tokenURL): Promise<string> {
     params.scope = this.scope;
     params.client_id = this.clientID;
     if (this.clientSecret) {
@@ -204,7 +204,7 @@ export class OAuth2 extends Observable {
       headers: additionalHeaders,
       timeout: 3000,
       throwHttpErrors: false,
-    }).json();
+    });
     if (data.error) {
       throw new OAuth2ServerError(data);
     }
