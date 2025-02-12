@@ -34,6 +34,7 @@
     classes?.includes("create") ? "8px" :
     classes?.includes("large") ? "10px" :
     classes?.includes("small") ? "4px" :
+    classes?.includes("smallest") ? "2px" :
     "8px";
   export let filled = classes?.includes("create");
   export let border = true;

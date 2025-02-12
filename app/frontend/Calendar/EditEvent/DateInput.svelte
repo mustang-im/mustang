@@ -34,9 +34,4 @@
 </script>
 
 <style>
-  input {
-    border-top: none;
-    border-left: none;
-    border-right: none;
-  }
 </style>

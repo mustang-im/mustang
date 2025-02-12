@@ -202,6 +202,8 @@ input[type="number"],
 input[type="password"],
 input[type="email"],
 input[type="url"],
+input[type="date"],
+input[type="time"],
 input[type="text"] {
   background-color: var(--input-bg);
   color: var(--input-fg);

@@ -46,7 +46,7 @@
     "ky": "^1.7.4",
     "lodash": "^4.17.21",
     "lowlight": "^3.1.0",
-    "lucide-svelte": "^0.368.0",
+    "lucide-svelte": "^0.475.0",
     "markdown-it": "^14.1.0",
     "matrix-js-sdk": "^30.0.1",
     "node-ical": "^0.20.1",
@@ -59,6 +59,7 @@
     "svelte-collections": "^1.2.4",
     "svelte-i18n-lingui": "^0.1.7",
     "svelte-icon": "^2.0.0",
+    "timezone-picker-svelte": "^1.0.2",
     "ws": "^8.16.0"
   },
   "devDependencies": {

@@ -1,4 +1,4 @@
-<input bind:value={userValue} on:change={onChange} bind:this={inputE} {disabled} />
+<input type="time" bind:value={userValue} on:change={onChange} bind:this={inputE} {disabled} />
 
 <script lang="ts">
   import { getUILocale, t } from "../../../l10n/l10n";
@@ -53,11 +53,4 @@
 </script>
 
 <style>
-input {
-  border-top: none;
-  border-left: none;
-  border-right: none;
-  width: 100%;
-}
 </style>
-

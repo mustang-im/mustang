@@ -1,7 +1,12 @@
 {#if !expanded}
   <hbox class="expander-button">
-    <Button plain {icon} onClick={onExpand}>
+    <Button plain onClick={onExpand}>
       <hbox class="content" slot="label">
+        {#if icon}
+          <hbox class="icon">
+            <svelte:component this={icon} size="20px" />
+          </hbox>
+        {/if}
         {label}
         <AddIcon size="16px" />
       </hbox>
@@ -23,7 +28,7 @@
   /** in/out */
   export let expanded = false;
   export let label: string;
-  export let icon: ComponentType | string = null;
+  export let icon: ComponentType = null;
 
   function onExpand() {
     expanded = true;
@@ -32,13 +37,15 @@
 </script>
 
 <style>
+  .expander-button {
+  }
   .content {
     align-items: center;
     background-color: var(--main-bg);
     color: var(--main-fg);
     border: 1px solid var(--border);
     border-radius: 5px;
-    padding: 2px 6px 2px 10px;
+    padding: 2px 6px 2px 4px;
   }
   .content :global(svg) {
     margin-inline-start: 8px;
@@ -50,5 +57,9 @@
   :global(button:hover:not(.disabled)) .content {
     background-color: var(--hover-bg);
     color: var(--hover-fg);
+  }
+  .icon {
+    margin-inline-start: 0px;
+    margin-inline-end: 8px;
   }
 </style>

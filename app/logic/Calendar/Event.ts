@@ -27,8 +27,11 @@ export class Event extends Observable {
   endTime: Date;
   @notifyChangedProperty
   allDay = false;
+  /** IANA timezone name, e.g. "Europe/Berlin" */
   @notifyChangedProperty
-  repeat = false;
+  timezone: string | null = null;
+  @notifyChangedProperty
+  repeat = false; // TODO remove
   /** If `repeat` is set, should be the rule which describes the pattern. */
   @notifyChangedProperty
   recurrenceRule: RecurrenceRule | undefined;
@@ -60,11 +63,11 @@ export class Event extends Observable {
   @notifyChangedProperty
   location: string;
   @notifyChangedProperty
-  isOnline = false;
-  @notifyChangedProperty
-  isPresence = false;
-  @notifyChangedProperty
   onlineMeetingURL: string;
+  // @notifyChangedProperty
+  // isOnline = false;
+  // @notifyChangedProperty
+  // isPresence = false;
   @notifyChangedProperty
   readonly participants = new ArrayColl<PersonUID>();
   @notifyChangedProperty
@@ -129,8 +132,8 @@ export class Event extends Observable {
     this.descriptionHTML = original.descriptionHTML;
     this.allDay = original.allDay;
     this.location = original.location;
-    this.isOnline = original.isOnline;
-    this.isPresence = original.isPresence;
+    // this.isOnline = original.isOnline;
+    // this.isPresence = original.isPresence;
     this.onlineMeetingURL = original.onlineMeetingURL;
     this.participants.replaceAll(original.participants);
     this.response = original.response;
