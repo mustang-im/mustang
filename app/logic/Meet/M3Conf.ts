@@ -6,6 +6,7 @@ import { appGlobal } from "../app";
 import { notifyChangedProperty } from "../util/Observable";
 import { assert, sleep, UserError, type URLString } from "../util/util";
 import { getUILocale, gt } from "../../l10n/l10n";
+import ky from "ky";
 
 export class M3Conf extends VideoConfMeeting {
   controllerBaseURL: string;
@@ -65,22 +66,21 @@ export class M3Conf extends VideoConfMeeting {
     if (this.account.oauth2?.isLoggedIn) {
       headers.Authorization = this.account.oauth2.authorizationHeader;
     }
-    return appGlobal.remoteApp.kyCreate({
+    return ky.create({
       prefixUrl: `${this.controllerBaseURL}/v1/`,
       headers: headers,
       timeout: 3000,
-      result: "json",
     });
   }
 
   protected async httpPost(urlSuffix: string, sendJSON: any): Promise<any> {
     let ky = await this.ky();
-    return await ky.post(urlSuffix, { json: sendJSON });
+    return await ky.post(urlSuffix, { json: sendJSON }).json();
   }
 
   protected async httpGet(urlSuffix: string): Promise<any> {
     let ky = await this.ky();
-    return await ky.get(urlSuffix);
+    return await ky.get(urlSuffix).json();
   }
 
   async createNewConference() {

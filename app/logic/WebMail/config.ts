@@ -8,10 +8,10 @@ import type { Addressbook } from '../Contacts/Addressbook';
 import type { Calendar } from '../Calendar/Calendar';
 import type { ChatAccount } from '../Chat/ChatAccount';
 import type { MeetAccount } from '../Meet/MeetAccount';
-import { appGlobal } from '../app';
 import { accountConfigWebMail } from '../build';
 import { readConfigFromXML } from '../Mail/AutoConfig/readConfig';
 import { assert } from '../util/util';
+import ky from 'ky';
 
 /**
  * Reads the account config, and logs the user in
@@ -48,7 +48,6 @@ export async function login(): Promise<MailAccount> {
 }
 
 async function getConfig(): Promise<{ mail: JMAPAccount, addressbook?: Addressbook, calendar?: Calendar, chat?: ChatAccount, meet?: MeetAccount }> {
-  let ky = await appGlobal.remoteApp.kyCreate();
   let configFile = await ky.get(accountConfigWebMail).text() as string;
   let configs = readConfigFromXML(configFile, null, "autoconfig-isp");
   let mailConfig = configs.first;

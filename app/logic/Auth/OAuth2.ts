@@ -3,11 +3,11 @@ import { OAuth2Error, OAuth2LoginNeeded, OAuth2ServerError } from "./OAuth2Error
 import { basicAuth } from "./httpAuth";
 import type { Account } from "../Abstract/Account";
 import { getPassword, setPassword, deletePassword } from "./passwordStore";
-import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { assert, type URLString } from "../util/util";
 import pkceChallenge from "pkce-challenge";
+import ky from "ky";
 
 /**
  * Implements login via OAuth2
@@ -186,7 +186,7 @@ export class OAuth2 extends Observable {
    * @returns accessToken
    * @throws OAuth2Error
    */
-  protected async getAccessTokenFromParams(params: any, additionalHeaders?: any, tokenURL: string | void = this.tokenURL): Promise<string> {
+  protected async getAccessTokenFromParams(params: any, additionalHeaders?: any, tokenURL: string = this.tokenURL): Promise<string> {
     params.scope = this.scope;
     params.client_id = this.clientID;
     if (this.clientSecret) {
@@ -197,14 +197,13 @@ export class OAuth2 extends Observable {
       params.code_verifier = this.codeVerifierPKCE;
     }
 
-    let ky = await appGlobal.remoteApp.kyCreate();
     let data = await ky.post(tokenURL, {
       // Send 'application/x-www-form-urlencoded',
       body: new URLSearchParams(params),
       headers: additionalHeaders,
       timeout: 3000,
       throwHttpErrors: false,
-    }).json();
+    }).json() as any;
     if (data.error) {
       throw new OAuth2ServerError(data);
     }

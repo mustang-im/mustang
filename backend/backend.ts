@@ -15,7 +15,6 @@ import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
-import childProcess from 'node:child_process';
 
 let jpc: JPCWebSocket | null = null;
 
@@ -34,7 +33,6 @@ const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save
 
 async function createSharedAppObject() {
   return {
-    kyCreate,
     optionsHTTP,
     postHTTP,
     streamHTTP,
@@ -118,86 +116,6 @@ async function openFileInExternalApp(filepath: string, appEXE: string): Promise<
   childProcess.spawn(launcher, [ filepath ], { shell: false });
 }
 */
-
-/**
- * @param defaultOptions
- * @return Object with get(url, options), post(), put() etc. functions
- *   Either options or defaultOptions contain
- *   `result = "text"` or "json", "formData", "blob", "arrayBuffer",
- *   then directly calls `text()`, so that you can do fetch in one step with a single `await`.
- *
- * E.g.
- * ```js
- * let ky = await remoteApp.kyCreate({ prefixUrl: "https://api.example.com", result: "json" });
- * let json = await ky.get("users/");
- * ```
- * or (identical)
- * ```js
- * let ky = await remoteApp.kyCreate();
- * let json = await ky.get(https://api.example.com/users", { result: "json" });
- * ```
- */
-function kyCreate(defaultOptions) {
-  /* `ky` (like axios) is both a function and acts like an object with functions get(), post() etc. as properties,
-   * which confuses jpc, so make it only an object. */
-  let kyObj = {};
-  let kyFunc = ky.create(defaultOptions);
-  for (let name in kyFunc) {
-    kyObj[name] = async (input, options) => {
-      // let resultKy = ky.post(input, options);
-      let kyFetch = kyFunc[name](input, options);
-      let resultType = options?.result || defaultOptions?.result;
-      if (resultType &&
-          ["text", "json", "formData", "blob", "arrayBuffer"].includes(resultType) &&
-          ["get", "put", "post", "patch", "delete", "head"].includes(name)) {
-        try {
-          // console.log("Calling server", "input", input, "options", options, "defaults", defaultOptions);
-          // let json = await resultKy.json();
-          return await kyFetch[resultType]();
-        } catch (ex) {
-          throw new HTTPFetchError(ex);
-        }
-      } else {
-        return kyFetch;
-      }
-    }
-  }
-  return kyObj;
-}
-
-export class HTTPFetchError extends Error {
-  url: string;
-  redirectedURL: string;
-  code: string;
-  httpCode: number;
-  httpStatusText: string;
-  httpMethod: string;
-  hostname: string;
-
-  constructor(ex: Error) {
-    super(ex?.message ?? ex + "");
-    let request = (ex as any).request;
-    let response = (ex as any).response;
-    let cause = (ex as any).cause
-    if (request && response) {
-      this.url = request.url;
-      this.redirectedURL = response.url != request.url ? response.url : undefined;
-      this.httpCode = response.status;
-      this.httpStatusText = response.statusText;
-      this.httpMethod = request.method;
-      this.hostname = new URL(this.url).hostname;
-      this.message = `HTTP ${this.httpMethod} <${this.url}>${this.redirectedURL ? ` redirected to <${this.redirectedURL}>` : ''} failed with ${this.httpCode} ${this.httpStatusText}`;
-    } else if (cause) {
-      this.code = cause.code;
-      this.hostname = cause.hostname;
-      if (cause.code == "ENOTFOUND") {
-        this.message = `HTTP host ${cause.hostname} not found`;
-      } else if (cause.code == "ECONNREFUSED") {
-        this.message = `HTTP host ${cause.hostname} connection refused`;
-      }
-    }
-  }
-}
 
 /**
  * Perform an OPTIONS request to check the ActiveSync version.

@@ -1,11 +1,11 @@
 import type { MailAccount } from "../MailAccount";
 import { readConfigFromXML } from "./readConfig";
-import { appGlobal } from "../../app";
 import { PriorityAbortable, makeAbortable } from "../../util/Abortable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { getBaseDomainFromHost } from "../../util/netUtil";
 import { assert, type URLString } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
+import ky from "ky";
 
 export async function fetchConfig(domain: string, emailAddress: string, abort: AbortController): Promise<ArrayColl<MailAccount>> {
   domain = sanitize.hostname(domain);
@@ -105,13 +105,8 @@ export async function getMX(domain: string, abort: AbortController): Promise<str
   return sanitize.hostname(mx);
 }
 
-let ky;
-
 async function fetchText(url: URLString, abort: AbortController) {
-  if (!ky) {
-    ky = await appGlobal.remoteApp.kyCreate();
-  }
-  let text = await makeAbortable(ky.get(url, { result: "text", retry: 0 }), abort);
+  let text = await makeAbortable(ky.get(url, { retry: 0 }).text(), abort);
   assert(text && typeof (text) == "string", "Did not receive text");
   return text;
 }

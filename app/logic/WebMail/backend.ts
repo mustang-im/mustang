@@ -6,9 +6,6 @@ import ky from "ky";
  * Some of the functions are disabled in this case.
  */
 export class WebMailBackend {
-  async kyCreate(defaultOptions: any): Promise<any> {
-    return ky.create(defaultOptions);
-  }
   async isOSNotificationSupported(): Promise<boolean> {
     return false;
   }

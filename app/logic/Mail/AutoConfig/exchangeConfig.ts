@@ -2,13 +2,13 @@ import { AuthMethod, MailAccount, TLSSocketType, type ConfigSource } from "../Ma
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { kStandardPorts } from "./configInfo";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
-import { appGlobal } from "../../app";
 import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import JXON from "../../../../lib/util/JXON";
 import { PriorityAbortable, makeAbortable } from "../../util/Abortable";
 import { assert, type URLString } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
+import ky from "ky";
 
 /** Implements the Exchange AutoDiscover V1 (XML-SOAP-based) protocol */
 export async function exchangeAutoDiscoverV1XML(domain: string, emailAddress: string, username: string | null, password: string, abort: AbortController): Promise<ArrayColl<MailAccount>> {
@@ -263,21 +263,11 @@ function newURLAccount(url: URLString, protocol: string, source: ConfigSource): 
   return acc;
 }
 
-let ky;
-
 /**
  * @return {JSON}
  */
 async function fetchJSON(url: URLString, abort: AbortController): Promise<any> {
-  if (!ky) {
-    ky = await appGlobal.remoteApp.kyCreate();
-  }
-  let params = {
-    result: "json",
-    "Content-Type": "text/json; charset=uft8",
-    retry: 0,
-  };
-  let json = await makeAbortable(ky.get(url, params), abort);
+  let json = await makeAbortable(ky.get(url, { retry: 0 }).json(), abort);
   assert(json && typeof (json) == "object", "Did not receive JSON");
   return json;
 }
@@ -314,9 +304,6 @@ async function fetchXML(url: URLString, params: any, abort: AbortController): Pr
  * @return Response as remoted by JPC (type isn't exactly correct)
  */
 async function fetchHTTP(url: URLString, params: any, abort: AbortController): Promise<Response> {
-  if (!ky) {
-    ky = await appGlobal.remoteApp.kyCreate();
-  }
   params = Object.assign({ throwHttpErrors: false }, params);
   return await makeAbortable(ky.post(url, params), abort);
 }

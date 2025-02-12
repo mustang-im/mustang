@@ -11,6 +11,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
 import { Lock } from "../../util/Lock";
 import { assert, SpecificError } from "../../util/util";
+import { HTTPFetchError } from "../../util/http";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, MapColl } from "svelte-collections";
 import ky from "ky";
@@ -144,15 +145,16 @@ export class JMAPAccount extends MailAccount {
     try {
       responsesJSON = await this.httpPost(this.session.apiUrl, requestJSON) as TJMAPAPIResponse;
     } catch (ex) {
-      if ((ex as any).httpCode) { // HTTPFetchError from backend.ts
+      let httpEx = new HTTPFetchError(ex);
+      if (httpEx.httpCode) {
         console.error("POST", this.session.apiUrl, "with payload\n" + JSON.stringify(requestJSON, null, 2), "\nfailed with error", JSON.stringify(responsesJSON, null, 2), "while", ...log);
         let errorJSON = responsesJSON as TJMAPAPIErrorResponse;
-        ex.message = errorJSON?.detail ?? ex.message;
-        ex.code = errorJSON?.type;
-        throw ex;
+        httpEx.message = errorJSON?.detail ?? ex.message;
+        httpEx.code = errorJSON?.type;
+        throw httpEx;
       }
-      console.error("Error", ex?.message ?? ex, ...log);
-      throw ex;
+      console.error("Error", httpEx?.message ?? httpEx, ...log);
+      throw httpEx;
     }
     log.push("Response");
     for (let method of responsesJSON?.methodResponses) {
