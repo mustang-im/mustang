@@ -96,7 +96,13 @@ export class JMAPAccount extends MailAccount {
   }
 
   protected async connectWebSocket(): Promise<void> {
-    headers.Authorization = this.getAuthHeader();
+    headers.Authorization = this.getAuthHeader(); // TODO Web API doesn't allow to send headers with WebSocket opening
+    this.webSocket = new WebSocket(this.webSocketURL, "jmap");
+    await new Promise((resolve, reject) => { // wait for connection to be established
+      this.webSocket.onopen = resolve;
+      this.webSocket.onerror = reject;
+    });
+    this.webSocket.onmessage = (event) => ...;
   }
 
   /** A single API call, with a single result */
