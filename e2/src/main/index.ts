@@ -128,7 +128,7 @@ app.on('window-all-closed', () => {
 })
 
 function allowCrossDomainRequestsFromFrontend() {
-  const filter = { urls: ["https://*/*"] };
+  const filter = { urls: ["https://*/*", "http://*/*"] };
   session.defaultSession.webRequest.onHeadersReceived(
     filter,
     (details, callback) => {
