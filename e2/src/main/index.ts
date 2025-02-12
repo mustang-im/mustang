@@ -128,8 +128,9 @@ app.on('window-all-closed', () => {
 })
 
 function allowCrossDomainRequestsFromFrontend() {
+  const filter = { urls: ["https://*/*", "http://*/*"] };
   session.defaultSession.webRequest.onBeforeSendHeaders(
-    // no filter
+    filter,
     (details, callback) => {
       let requestHeaders = details.requestHeaders ?? {};
       let origin = new URL(details.url).origin;
@@ -145,7 +146,7 @@ function allowCrossDomainRequestsFromFrontend() {
     }
   );
   session.defaultSession.webRequest.onHeadersReceived(
-    // no filter
+    filter,
     (details, callback) => {
       let responseHeaders = details.responseHeaders ?? {};
       // Remove server response
