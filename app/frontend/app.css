@@ -220,6 +220,12 @@ input::placeholder {
   color: var(--input-placeholder);
 }
 
+input[type="radio"],
+input[type="checkbox"] {
+  accent-color: var(--fg);
+}
+
+
 select {
   border: none;
   background-color: var(--leftbar-bg);

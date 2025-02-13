@@ -1,18 +1,37 @@
-<!--
-  Svelte's bind:group only works for literal <input type=radio> (issue 2308).
-  Svelteui's <RadioGroup> doesn't seem to work at all.
-  Svelteui's <Radio bind:group> doesn't seem to work properly either.
-  TODO: support other Svelteui <Radio> properties
--->
-<vbox>
-  {#each items as item}
-    <Radio {...item} checked={item.value === group} on:change={() => group = item.value} {disabled} />
+<!-- Svelte's bind:group only works for literal <input type=radio>
+ https://github.com/sveltejs/svelte/issues/2308 -->
+<radiogroup class:vertical>
+  {#each items as item, i}
+    <hbox>
+      <input type="radio"
+        value={item.value}
+        checked={item.value === group}
+        on:change={() => group = item.value}
+        on:change
+        {disabled}
+        id={"radio" + i}
+        />
+      <label for={"radio" + i}>{item.label}</label>
+    </hbox>
   {/each}
-</vbox>
+</radiogroup>
 
 <script lang="ts">
-  import { Radio } from "@svelteuidev/core";
-  export let items = [];
-  export let group;
+  export let items: RadioOption[] = [];
+  export let group: any;
   export let disabled = false;
+  export let vertical = false;
 </script>
+<script lang="ts" context="module">
+  export type RadioOption = {label: string, value: any, disabled?: boolean};
+</script>
+
+<style>
+  radiogroup {
+    display: flex;
+    flex-direction: row;
+  }
+  radiogroup.vertical {
+    flex-direction: column;
+  }
+</style>

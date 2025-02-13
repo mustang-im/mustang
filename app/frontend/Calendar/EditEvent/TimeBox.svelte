@@ -12,18 +12,18 @@
       <!--<ClockIcon size="16px" />-->
     </hbox>
     <hbox class="date-input start" title={$t`Start date`}>
-      <DateInput date={event.startTime} on:change={updateDateUI} />
+      <DateInput date={$event.startTime} on:change={updateDateUI} />
     </hbox>
     <hbox class="time-input start" title={$t`Start time`}>
-      {#if !event.allDay}
-        <TimeInput time={event.startTime} />
+      {#if !$event.allDay}
+        <TimeInput time={$event.startTime} />
       {/if}
     </hbox>
 
     <hbox />
     <hbox class="date-input end" title={$t`End date`}>
       {#if isMultipleDays}
-        <DateInput date={event.endTime} />
+        <DateInput date={$event.endTime} />
       {:else}
         <hbox class="buttons">
           <RoundButton
@@ -38,13 +38,13 @@
       {/if}
     </hbox>
     <hbox class="time-input end" title={$t`End time`}>
-      {#if !event.allDay}
-        <TimeInput time={event.endTime} />
+      {#if !$event.allDay}
+        <TimeInput time={$event.endTime} />
       {/if}
       <hbox class="buttons">
         <RoundButton
           label={$t`All day`}
-          icon={event.allDay ? ClockIcon : AllDayIcon}
+          icon={$event.allDay ? ClockIcon : AllDayIcon}
           onClick={onAllDayToggle}
           classes="plain smallest"
           border={false}
@@ -56,7 +56,7 @@
     <hbox />
     {#if showTimezone}
       <hbox class="timezone">
-        <TimezonePicker bind:timezone={event.timezone} />
+        <TimezonePicker bind:timezone={$event.timezone} />
         <hbox class="buttons">
           <RoundButton
             label={$t`Back to local timezone`}
@@ -105,8 +105,8 @@
 
   export let event: Event;
 
-  $: showTimezone = event.timezone != myTimezone();
-  let isMultipleDays = event.startTime && event.endTime && event.endTime.getUTCDate() != event.startTime.getUTCDate();
+  $: showTimezone = $event.timezone != myTimezone();
+  let isMultipleDays = $event.startTime &&$event.endTime && $event.endTime.getUTCDate() != $event.startTime.getUTCDate();
   let durationUnit: DurationUnit;
   let durationInUnit: number;
   let previousTimezone: string = null;

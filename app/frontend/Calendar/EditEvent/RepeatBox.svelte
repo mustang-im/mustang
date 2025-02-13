@@ -8,9 +8,39 @@
     </select>
   </hbox>
 </SectionTitle>
+
+<vbox class="frequency">
+  {#if frequency == Frequency.Daily }
+    <RadioGroup bind:group={daily} items={dailyOptions} vertical={true}
+      on:change={onDailyOptionChanged}
+      disabled={$event.startTime.getDay() == 0 || $event.startTime.getDay() == 6}
+      />
+  {:else if frequency == Frequency.Weekly }
+    <hbox class="weekdays">
+      <hbox class="label">{$t`On days`}</hbox>
+      {#each weekdayOptions as weekday}
+        <RoundButton
+          label={weekday.label}
+          selected={weekdays.includes(weekday.value)}
+          onClick={() => onWeekdayChanged(weekday.value)}
+          disabled={weekday.disabled}
+          border={false}
+          classes="plain weekday"
+          >
+          <hbox class="weekday-content" slot="icon">{weekday.label}</hbox>
+        </RoundButton>
+      {/each}
+    </hbox>
+  {:else if frequency == Frequency.Monthly }
+    <RadioGroup bind:group={week} items={monthWeekOptions} vertical={true} />
+  {:else if frequency == Frequency.Yearly }
+    <RadioGroup bind:group={week} items={yearWeekOptions} vertical={true} />
+  {/if}
+</vbox>
+
 <hbox class="every">
   <label for="every">{$t`Every`}</label>
-  <input class="auto" type="number" min={1} max={99} bind:value={interval} name="every" />
+  <input class="auto" type="number" min={1} max={99} bind:value={interval} id="every" />
   <select bind:value={frequency} class="selector">
     <option value="{Frequency.Daily}">{$plural(interval, { one: 'day', other: 'days' })}</option>
     <option value="{Frequency.Weekly}">{$plural(interval, { one: 'week', other: 'weeks' })}</option>
@@ -18,13 +48,6 @@
     <option value="{Frequency.Yearly}">{$plural(interval, { one: 'year', other: 'years' })}</option>
   </select>
 </hbox>
-{#if frequency == Frequency.Yearly }
-  <RadioGroup bind:group={week} items={yearWeekOptions} />
-{:else if frequency == Frequency.Monthly }
-  <RadioGroup bind:group={week} items={monthWeekOptions} />
-{:else if frequency == Frequency.Weekly }
-  <CheckboxGroup size="sm" radius="xl" bind:group={weekdays} label={$t`On days`} items={weekdayOptions} />
-{/if}
 
 <!-- end
 <hbox>
@@ -48,9 +71,10 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { Frequency, RecurrenceRule, type RecurrenceInit } from "../../../logic/Calendar/RecurrenceRule";
   import SectionTitle from './SectionTitle.svelte';
-  import RadioGroup from "./RadioGroup.svelte";
-  import CheckboxGroup from "./CheckboxGroup.svelte";
+  import RadioGroup, { type RadioOption } from "./RadioGroup.svelte";
   import { getUILocale, t } from "../../../l10n/l10n";
+  import RoundButton from '../../Shared/RoundButton.svelte';
+  import { arrayRemove } from '../../../logic/util/util';
 
   export let event: Event;
 
@@ -62,9 +86,16 @@
   let end = event.recurrenceRule?.endDate ? "date" : Number.isFinite(event.recurrenceRule?.count) ? "count" : "none";
   let endDate = event.recurrenceRule?.endDate || event.startTime;
   let minDate = event.startTime;
-  let yearWeekOptions, monthWeekOptions, weekdayOptions;
+  let daily = "everyday";
+  let dailyOptions: RadioOption[] = [
+    { label: $t`Every day`, value: "everyday" },
+    { label: $t`Monday to Friday`, value: "weekday" },
+  ];
+  let weekdayOptions: RadioOption[];
+  let monthWeekOptions: RadioOption[];
+  let yearWeekOptions: RadioOption[];
 
-  updateDateUI();
+  $: $event.startTime, updateDateUI();
   function updateDateUI() {
     yearWeekOptions = [{ label: $t`On ${event.startTime.toLocaleDateString(getUILocale(), { day: "numeric", month: "long" })}`, value: 0 }];
     monthWeekOptions = [{ label: $t`On day ${event.startTime.getDate()}`, value: 0 }];
@@ -88,7 +119,6 @@
 
     weekdayOptions = [1, 2, 3, 4, 5, 6, 7].map(day => new Date(2010, 2, day)).map(date => ({
       value: date.getDay(),
-      checked: date.getDay() == event.startTime.getDay() || weekdays.includes(date.getDay()),
       disabled: date.getDay() == event.startTime.getDay(),
       label: date.toLocaleDateString(getUILocale(), { weekday: "narrow" }),
     }));
@@ -101,10 +131,30 @@
     event.endTime.setFullYear(event.startTime.getFullYear(), event.startTime.getMonth(), event.startTime.getDate());
   }
 
-  function isLastWeekOfMonth(date) {
+  function isLastWeekOfMonth(date: Date) {
     date = new Date(date);
     date.setDate(date.getDate() + 7);
     return date.getDate() < 8;
+  }
+
+  function onDailyOptionChanged() {
+    if (daily == "everyday") {
+      return;
+    }
+    weekdays = [1, 2, 3, 4, 5];
+    interval = 1;
+    frequency = Frequency.Weekly;
+    daily = "everyday";
+  }
+
+  function onWeekdayChanged(weekday: number) {
+    console.log("weekdays changed", weekday, weekdays);
+    if (weekdays.includes(weekday)) {
+      arrayRemove(weekdays, weekday);
+    } else {
+      weekdays.push(weekday);
+    }
+    weekdayOptions = weekdayOptions; // force UI update
   }
 
   function newRecurrenceRule(): RecurrenceRule {
@@ -158,8 +208,9 @@
 </script>
 
 <style>
-  .every {
-    margin-block-start: 8px;
+  .frequency {
+    margin-block-start: 14px;
+    margin-block-end: 14px;
   }
   label {
     margin-inline-end: 8px;
@@ -173,6 +224,23 @@
   }
   input.auto {
     width: auto;
+  }
+  .weekdays .label {
+    margin-inline-end: 12px;
+  }
+  .weekdays :global(.weekday) {
+    width: 24px;
+    height: 24px;
+    background-color: var(--headerbar-bg);
+    color: var(--headerbar-fg);
+    margin-inline-end: 4px;
+  }
+  .weekdays :global(.weekday.selected:not(:hover)) {
+    background-color: var(--selected-bg);
+    color: var(--selected-fg);
+  }
+  .weekdays :global(.weekday.disabled) {
+    opacity: inherit;
   }
   :global(.inline) {
     display: inline-flex !important;
