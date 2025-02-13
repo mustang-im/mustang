@@ -1,8 +1,8 @@
 <hbox title={$t`Reminder`} flex>
   <input class="duration" type="number" bind:value={durationInUnit} on:input={durationUnit.onChange} min={0} />
   <DurationUnit bind:durationInSeconds={beforeInSec} bind:durationInUnit bind:this={durationUnit} on:change={onChanged} />
-  <hbox class="label suffix">{$t`before, at`}</hbox>
   {#if $event.alarm}
+    <hbox class="label suffix">{$t`before, at`}</hbox>
     <hbox class="label time">{$event.alarm.toLocaleTimeString(getUILocale(), { hour: "numeric", minute: "numeric" })}</hbox>
     <!--<TimeInput bind:time={$event.alarm} />-->
   {/if}

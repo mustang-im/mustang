@@ -46,17 +46,17 @@
       {/if}
       {#if canSave}
         <RoundButton
-          label={$t`Close`}
-          icon={CloseIcon}
-          onClick={onClose}
+          label={$t`Save`}
+          icon={SaveIcon}
+          onClick={onSave}
           classes="plain save-or-close"
           iconSize="16px"
           />
       {:else}
         <RoundButton
-          label={$t`Save`}
-          icon={SaveIcon}
-          onClick={onSave}
+          label={$t`Close`}
+          icon={CloseIcon}
+          onClick={onClose}
           classes="plain save-or-close"
           iconSize="16px"
           />
@@ -180,8 +180,9 @@
   let showDescription = !!event.descriptionText;
 
   let repeatBox: RepeatBox;
-  $: canSave = event && event.title && event.startTime && event.endTime &&
+  $: canSave = event && $event.title && $event.startTime && $event.endTime &&
       event.startTime.getTime() <= event.endTime.getTime();
+  $: oldTitle = event?.title || $t`Event`;
 
   async function onSave() {
     if (repeatBox && !repeatBox.confirmAndChangeRule()) {
@@ -220,6 +221,7 @@
   }
 
   function onClose() {
+    event.title ||= oldTitle;
     let me = calendarMustangApp.subApps.find(app => app instanceof EventEditMustangApp && app.mainWindowProperties.event == event);
     calendarMustangApp.subApps.remove(me);
   }
