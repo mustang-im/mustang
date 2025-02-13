@@ -8,7 +8,7 @@
   />
 
 <script lang="ts">
-  export let date: Date = new Date();
+  export let date: Date;
   export let min: Date | null = null;
   export let max: Date | null = null;
   export let disabled = false;

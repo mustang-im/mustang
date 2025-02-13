@@ -6,6 +6,8 @@
 
 <script lang="ts">
   import { t } from "../../../l10n/l10n";
+  import { createEventDispatcher } from 'svelte';
+  const dispatch = createEventDispatcher<{ change: number }>();
 
   export let durationInSeconds: number; /* in/out */
   export let durationInUnit: number; /* in/out */
@@ -18,14 +20,9 @@
 
   export function onChange() {
     durationInSeconds = durationInUnit * unitInSeconds;
+    dispatch("change", durationInSeconds);
   }
 </script>
 
 <style>
-  input {
-    border-top: none;
-    border-left: none;
-    border-right: none;
-    width: 100%;
-  }
 </style>
