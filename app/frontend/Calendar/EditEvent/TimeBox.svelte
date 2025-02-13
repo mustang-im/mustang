@@ -155,7 +155,7 @@
   }
   .date-input,
   .time-input {
-    min-height: 32px;
+    min-height: 34px;
   }
   .start :global(input) {
     font-weight: bold;

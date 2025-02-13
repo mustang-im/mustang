@@ -236,7 +236,9 @@ input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="time"]::-webkit-calendar-picker-indicator {
   opacity: 0;
 }
-
+input[type="number"]::-webkit-inner-spin-button {
+  margin-left: 8px;
+}
 select {
   border: none;
   background-color: var(--leftbar-bg);
