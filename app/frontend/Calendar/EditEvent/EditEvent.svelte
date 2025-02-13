@@ -71,20 +71,12 @@
       </Section>
       <Section>
         <ExpanderButtons>
-          <ExpanderButton bind:expanded={showRepeat} label={$t`Repeat`} icon={RepeatIcon} />
-          <ExpanderButton bind:expanded={showReminder} label={$t`Reminder`} icon={ReminderIcon} />
-          <ExpanderButton bind:expanded={showParticipants} label={$t`Invite`} icon={ParticipantsIcon} />
-          <ExpanderButton bind:expanded={showLocation} label={$t`Location`} icon={LocationIcon} />
-          <ExpanderButton bind:expanded={showOnlineMeeting} label={$t`Online meeting`} icon={OnlineMeetingIcon} />
-          <ExpanderButton bind:expanded={showDescription} label={$t`Description`} icon={DescriptionIcon} />
-          <!--
-          <ExpanderButton bind:expanded={showRepeat} label={$t`Mail`} on:expand={expandRepeat} />
-          <ExpanderButton bind:expanded={showReminder} label={$t`Chat`} on:expand={expandReminder} />
-          <ExpanderButton bind:expanded={showParticipants} label={$t`Phone`} on:expand={expandParticipants} />
-          <ExpanderButton bind:expanded={showLocation} label={$t`Street address`} on:expand={expandLocation} />
-          <ExpanderButton bind:expanded={showOnlineMeeting} label={$t`Notes`} on:expand={expandOnlineMeeting} />
-          <ExpanderButton bind:expanded={showDescription} label={$t`Notes`} on:expand={expandDescription} />
-          -->
+          <ExpanderButton bind:expanded={showRepeat} label={$t`Repeat`} icon={RepeatIcon} on:expand={expandRepeat} />
+          <ExpanderButton bind:expanded={showReminder} label={$t`Reminder`} icon={ReminderIcon} on:expand={expandReminder} />
+          <ExpanderButton bind:expanded={showParticipants} label={$t`Invite`} icon={ParticipantsIcon} on:expand={expandParticipants} />
+          <ExpanderButton bind:expanded={showLocation} label={$t`Location`} icon={LocationIcon} on:expand={expandLocation} />
+          <ExpanderButton bind:expanded={showOnlineMeeting} label={$t`Online meeting`} icon={OnlineMeetingIcon} on:expand={expandOnlineMeeting} />
+          <ExpanderButton bind:expanded={showDescription} label={$t`Description`} icon={DescriptionIcon} on:expand={expandDescription} />
         </ExpanderButtons>
       </Section>
       {#if showRepeat}
@@ -172,12 +164,12 @@
   export let event: Event;
 
   let isFullWindow = false;
-  let showRepeat = event.repeat;
-  let showReminder = !!event.alarm;
-  let showParticipants = event.participants.hasItems;
-  let showLocation = !!event.location;
-  let showOnlineMeeting = !!event.onlineMeetingURL;
-  let showDescription = !!event.descriptionText;
+  $: showRepeat = $event.repeat;
+  $: showReminder = !!$event.alarm;
+  $: showParticipants = $event.participants.hasItems || $event.response == ResponseType.Organizer;
+  $: showLocation = $event.location;
+  $: showOnlineMeeting = $event.onlineMeetingURL;
+  $: showDescription = $event.descriptionHTML;
 
   let repeatBox: RepeatBox;
   $: canSave = event && $event.title && $event.startTime && $event.endTime &&
@@ -224,6 +216,32 @@
     event.title ||= oldTitle;
     let me = calendarMustangApp.subApps.find(app => app instanceof EventEditMustangApp && app.mainWindowProperties.event == event);
     calendarMustangApp.subApps.remove(me);
+  }
+
+
+  function expandRepeat(): void {
+    event.repeat = true;
+  }
+
+  const kDefaultReminderMins = 5;
+  function expandReminder(): void {
+    event.alarm = new Date(event.startTime.getTime() - kDefaultReminderMins * 60 * 1000);
+  }
+
+  function expandParticipants(): void {
+    event.response = ResponseType.Organizer;
+  }
+
+  function expandLocation(): void {
+    event.location = " ";
+  }
+
+  function expandOnlineMeeting(): void {
+    event.onlineMeetingURL = " ";
+  }
+
+  function expandDescription(): void {
+    event.descriptionHTML = " ";
   }
 </script>
 
