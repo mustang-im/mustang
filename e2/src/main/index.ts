@@ -141,7 +141,7 @@ function allowCrossDomainRequestsFromFrontend() {
           requestHeaders[lowercase] = origin;
         }
       }
-      console.log("Request", details.url, requestHeaders);
+      // console.log("Request", details.url, requestHeaders);
       callback({ requestHeaders: requestHeaders });
     }
   );
@@ -160,7 +160,7 @@ function allowCrossDomainRequestsFromFrontend() {
       responseHeaders["Access-Control-Allow-Origin"] = ["*"];
       responseHeaders["Access-Control-Allow-Methods"] = ["*"];
       responseHeaders["Access-Control-Allow-Headers"] = ["*"];
-      console.log("Response", details.url, responseHeaders);
+      // console.log("Response", details.url, responseHeaders);
       callback({ responseHeaders });
     }
   );
