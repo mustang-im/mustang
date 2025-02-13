@@ -8,8 +8,8 @@
 </vbox>
 
 <script lang="ts">
-  import { Event } from "../../logic/Calendar/Event";
   import { selectedCalendar, selectedDate, selectedDateInterval, startDate } from "./selected";
+  import { getLocalStorage } from "../Util/LocalStorage";
   import { calendarMustangApp } from "./CalendarMustangApp";
   import { appGlobal } from "../../logic/app";
   import MainView from "./MainView.svelte";
@@ -23,11 +23,17 @@
   $: events = mergeColls(appGlobal.calendars.map(cal => cal.fillRecurrences(new Date(Date.now() + 1e11)))).sortBy(ev => ev.startTime);
   $: if (!$selectedCalendar) { $selectedCalendar = appGlobal.calendars.first; }
 
+  let defaultLengthInMinutes = Math.max(getLocalStorage("calendar.defaultEventLengthInMinutes", 60).value, 1);
+
   function addEvent() {
     assert($selectedCalendar, $t`Please select a calendar first`);
     let event = $selectedCalendar.newEvent();
     event.startTime = new Date($selectedDate);
-    event.endTime = new Date($selectedDate);
+    event.startTime.setMinutes(0);
+    event.startTime.setSeconds(0);
+    event.startTime.setMilliseconds(0);
+    event.endTime = new Date(event.startTime.getTime());
+    event.endTime.setMinutes(event.startTime.getMinutes() + defaultLengthInMinutes);
     calendarMustangApp.editEvent(event);
   }
 </script>

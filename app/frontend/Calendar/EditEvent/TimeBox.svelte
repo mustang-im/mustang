@@ -32,7 +32,7 @@
       {/if}
       <hbox class="buttons">
         <RoundButton
-          label={$t`All day`}
+          label={$event.allDay ? $t`Specify time` : $t`All day`}
           icon={$event.allDay ? ClockIcon : AllDayIcon}
           onClick={onAllDayToggle}
           classes="plain smallest"
@@ -70,8 +70,8 @@
       </hbox>
     {/if}
     <hbox title={$t`Duration`}>
-      <input class="duration" type="number" bind:value={durationInUnit} on:input={durationUnit.onChange} min={0} />
-      <DurationUnit bind:durationInSeconds={event.duration} bind:durationInUnit bind:this={durationUnit} />
+      <input class="duration" type="number" bind:value={durationInUnit} on:input={durationUnit.onDurationInUnitChanged} min={1} max={2000} />
+      <DurationUnit bind:durationInSeconds={event.duration} bind:durationInUnit bind:this={durationUnit} onlyDays={$event.allDay} />
     </hbox>
   </grid>
 </vbox>
@@ -84,7 +84,7 @@
   import RoundButton from "../../Shared/RoundButton.svelte";
   import ClockIcon from "lucide-svelte/icons/clock";
   import GlobeIcon from "lucide-svelte/icons/globe";
-  import MultipleDaysIcon from "lucide-svelte/icons/calendar-plus-2";
+  import MultipleDaysIcon from "lucide-svelte/icons/circle-plus";
   import AllDayIcon from "lucide-svelte/icons/clock-arrow-down";
   import XIcon from "lucide-svelte/icons/x";
   import TimezonePicker from "timezone-picker-svelte";
@@ -93,18 +93,44 @@
   export let event: Event;
 
   $: showTimezone = $event.timezone != myTimezone();
-  let isMultipleDays = $event.startTime &&$event.endTime && $event.endTime.getUTCDate() != $event.startTime.getUTCDate();
+  $: isMultipleDays = $event.startTime && $event.endTime && $event.endTime.toLocaleDateString() != $event.startTime.toLocaleDateString();
   let durationUnit: DurationUnit;
   let durationInUnit: number;
   let previousTimezone: string = null;
+  let previousStartTime: Date = null;
+  let previousEndTime: Date = null;
 
   function onAllDayToggle() {
     event.allDay = !event.allDay;
     if (event.allDay) {
       previousTimezone = event.timezone;
       event.timezone = null;
-    } else if (previousTimezone && !event.timezone) {
-      event.timezone = previousTimezone;
+      previousStartTime = new Date(event.startTime);
+      previousEndTime = new Date(event.endTime);
+      clearTime(event.startTime);
+      clearTime(event.endTime);
+      event.endTime.setHours(23)
+      event.endTime.setMinutes(59);
+      event.endTime.setSeconds(59);
+      event.endTime.setMilliseconds(0);
+    } else {
+      copyTimeOnly(event.startTime, previousStartTime);
+      copyTimeOnly(event.endTime, previousEndTime);
+      if (previousTimezone && !event.timezone) {
+        event.timezone = previousTimezone;
+      }
+    }
+  }
+
+  $: $event.endTime, checkEndTime()
+  function checkEndTime() {
+    if (event.endTime.getTime() <= event.startTime.getTime()) {
+      event.endTime.setTime(event.startTime.getTime() + 1);
+      if (event.allDay) {
+        event.durationDays += 1;
+      } else {
+        event.durationHours += 1;
+      }
     }
   }
 
@@ -117,6 +143,22 @@
   }
   function myTimezone(): string {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }
+
+  // Generic Date util
+
+  function copyTimeOnly(target: Date, source: Date) {
+    target.setHours(source.getHours());
+    target.setMinutes(source.getMinutes());
+    target.setSeconds(source.getSeconds());
+    target.setMilliseconds(source.getMilliseconds());
+  }
+
+  function clearTime(target: Date) {
+    target.setHours(0);
+    target.setMinutes(0);
+    target.setSeconds(0);
+    target.setMilliseconds(0);
   }
 </script>
 
