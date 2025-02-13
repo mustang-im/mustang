@@ -1,18 +1,8 @@
 <vbox class="time-box">
   <grid class="time">
-    <hbox class="icon start" title={$t`When`}>
-      <RoundButton
-        label={$t`Start`}
-        icon={ClockMainIcon}
-        disabled={true}
-        classes="plain small"
-        border={false}
-        iconSize="16px"
-        />
-      <!--<ClockIcon size="16px" />-->
-    </hbox>
+    <!--{$t`When`} {$t`Start`} import ClockMainIcon from "lucide-svelte/icons/clock-8"; -->
     <hbox class="date-input start" title={$t`Start date`}>
-      <DateInput date={$event.startTime} on:change={updateDateUI} />
+      <DateInput date={$event.startTime} />
     </hbox>
     <hbox class="time-input start" title={$t`Start time`}>
       {#if !$event.allDay}
@@ -20,7 +10,6 @@
       {/if}
     </hbox>
 
-    <hbox />
     <hbox class="date-input end" title={$t`End date`}>
       {#if isMultipleDays}
         <DateInput date={$event.endTime} />
@@ -53,10 +42,9 @@
       </hbox>
     </hbox>
 
-    <hbox />
     {#if showTimezone}
       <hbox class="timezone">
-        <TimezonePicker bind:timezone={$event.timezone} />
+        <TimezonePicker bind:timezone={event.timezone} />
         <hbox class="buttons">
           <RoundButton
             label={$t`Back to local timezone`}
@@ -75,7 +63,7 @@
           label={$t`Timezone`}
           icon={GlobeIcon}
           onClick={onTimezoneToggle}
-          classes="plain small"
+          classes="plain smallest"
           border={false}
           iconSize="16px"
           />
@@ -94,7 +82,6 @@
   import TimeInput from "./TimeInput.svelte";
   import DurationUnit from "./DurationUnit.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
-  import ClockMainIcon from "lucide-svelte/icons/clock-8";
   import ClockIcon from "lucide-svelte/icons/clock";
   import GlobeIcon from "lucide-svelte/icons/globe";
   import MultipleDaysIcon from "lucide-svelte/icons/calendar-plus-2";
@@ -126,13 +113,10 @@
   }
   function onResetTimezone() {
     event.timezone = myTimezone();
+    showTimezone = false;
   }
   function myTimezone(): string {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
-  }
-
-  function updateDateUI() {
-    // TODO send to RepeatBox
   }
 </script>
 
@@ -140,23 +124,16 @@
   .time-box {
     border: 1px solid var(--border);
     border-radius: 5px;
-    padding: 12px 12px;
-  }
-  .icon.start {
-    display: none;
+    padding: 12px 16px;
   }
   .date-input {
-    margin-inline-start: 8px;
     margin-inline-end: 8px;
-  }
-  .icon.start :global(button.disabled) {
-    opacity: inherit;
   }
   input {
     width: 100%;
   }
   grid.time {
-    grid-template-columns: max-content max-content max-content;
+    grid-template-columns: max-content max-content;
     justify-items: start;
     align-items: center;
     margin-block-end: 12px;
@@ -192,6 +169,8 @@
   }
   .timezone {
     align-items: center;
+    margin-inline-start: 6px;
+    margin-block-start: 6px;
   }
   :global(.inline) {
     display: inline-flex !important;

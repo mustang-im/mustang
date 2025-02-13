@@ -224,7 +224,18 @@ input[type="radio"],
 input[type="checkbox"] {
   accent-color: var(--fg);
 }
-
+input[type="radio"],
+input[type="checkbox"] {
+  accent-color: var(--fg);
+}
+input[type="date"],
+input[type="time"] {
+  background: url('/icon/chevron-down.svg') no-repeat right center;
+}
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+}
 
 select {
   border: none;
