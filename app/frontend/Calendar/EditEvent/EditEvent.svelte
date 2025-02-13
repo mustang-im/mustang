@@ -176,7 +176,7 @@
   let showReminder = !!event.alarm;
   let showParticipants = event.participants.hasItems;
   let showLocation = !!event.location;
-  let showOnlineMeeting = event.isOnline;
+  let showOnlineMeeting = !!event.onlineMeetingURL;
   let showDescription = !!event.descriptionText;
 
   let repeatBox: RepeatBox;

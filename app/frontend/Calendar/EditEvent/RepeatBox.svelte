@@ -1,6 +1,7 @@
 <SectionTitle label={$t`Repeat`}>
   <hbox>
-    <select bind:value={frequency} class="selector">
+    <select bind:value={frequency} class="selector" on:change={onFrequencyChanged}>
+      <option value="{Frequency.None}">{$t`none`}</option>
       <option value="{Frequency.Daily}">{$t`daily`}</option>
       <option value="{Frequency.Weekly}">{$t`weekly`}</option>
       <option value="{Frequency.Monthly}">{$t`monthly`}</option>
@@ -9,45 +10,47 @@
   </hbox>
 </SectionTitle>
 
-<vbox class="frequency">
-  {#if frequency == Frequency.Daily }
-    <RadioGroup bind:group={daily} items={dailyOptions} vertical={true}
-      on:change={onDailyOptionChanged}
-      disabled={$event.startTime.getDay() == 0 || $event.startTime.getDay() == 6}
-      />
-  {:else if frequency == Frequency.Weekly }
-    <hbox class="weekdays">
-      <hbox class="label">{$t`On days`}</hbox>
-      {#each weekdayOptions as weekday}
-        <RoundButton
-          label={weekday.label}
-          selected={weekdays.includes(weekday.value)}
-          onClick={() => onWeekdayChanged(weekday.value)}
-          disabled={weekday.disabled}
-          border={false}
-          classes="plain weekday"
-          >
-          <hbox class="weekday-content" slot="icon">{weekday.label}</hbox>
-        </RoundButton>
-      {/each}
-    </hbox>
-  {:else if frequency == Frequency.Monthly }
-    <RadioGroup bind:group={week} items={monthWeekOptions} vertical={true} />
-  {:else if frequency == Frequency.Yearly }
-    <RadioGroup bind:group={week} items={yearWeekOptions} vertical={true} />
-  {/if}
-</vbox>
+{#if frequency != Frequency.None }
+  <vbox class="frequency">
+    {#if frequency == Frequency.Daily }
+      <RadioGroup bind:group={daily} items={dailyOptions} vertical={true}
+        on:change={onDailyOptionChanged}
+        disabled={$event.startTime.getDay() == 0 || $event.startTime.getDay() == 6}
+        />
+    {:else if frequency == Frequency.Weekly }
+      <hbox class="weekdays">
+        <hbox class="label">{$t`On days`}</hbox>
+        {#each weekdayOptions as weekday}
+          <RoundButton
+            label={weekday.label}
+            selected={weekdays.includes(weekday.value)}
+            onClick={() => onWeekdayChanged(weekday.value)}
+            disabled={weekday.disabled}
+            border={false}
+            classes="plain weekday"
+            >
+            <hbox class="weekday-content" slot="icon">{weekday.label}</hbox>
+          </RoundButton>
+        {/each}
+      </hbox>
+    {:else if frequency == Frequency.Monthly }
+      <RadioGroup bind:group={week} items={monthWeekOptions} vertical={true} />
+    {:else if frequency == Frequency.Yearly }
+      <RadioGroup bind:group={week} items={yearWeekOptions} vertical={true} />
+    {/if}
+  </vbox>
 
-<hbox class="every">
-  <label for="every">{$t`Every`}</label>
-  <input class="auto" type="number" min={1} max={99} bind:value={interval} id="every" />
-  <select bind:value={frequency} class="selector">
-    <option value="{Frequency.Daily}">{$plural(interval, { one: 'day', other: 'days' })}</option>
-    <option value="{Frequency.Weekly}">{$plural(interval, { one: 'week', other: 'weeks' })}</option>
-    <option value="{Frequency.Monthly}">{$plural(interval, { one: 'month', other: 'months' })}</option>
-    <option value="{Frequency.Yearly}">{$plural(interval, { one: 'year', other: 'years' })}</option>
-  </select>
-</hbox>
+  <hbox class="every">
+    <label for="every">{$t`Every`}</label>
+    <input class="auto" type="number" min={1} max={99} bind:value={interval} id="every" />
+    <select bind:value={frequency} class="selector">
+      <option value="{Frequency.Daily}">{$plural(interval, { one: 'day', other: 'days' })}</option>
+      <option value="{Frequency.Weekly}">{$plural(interval, { one: 'week', other: 'weeks' })}</option>
+      <option value="{Frequency.Monthly}">{$plural(interval, { one: 'month', other: 'months' })}</option>
+      <option value="{Frequency.Yearly}">{$plural(interval, { one: 'year', other: 'years' })}</option>
+    </select>
+  </hbox>
+{/if}
 
 <!-- end
 <hbox>
@@ -155,6 +158,13 @@
       weekdays.push(weekday);
     }
     weekdayOptions = weekdayOptions; // force UI update
+  }
+
+  function onFrequencyChanged() {
+    if (frequency == Frequency.None) {
+      event.repeat = false;
+      event.recurrenceRule = null;
+    }
   }
 
   function newRecurrenceRule(): RecurrenceRule {

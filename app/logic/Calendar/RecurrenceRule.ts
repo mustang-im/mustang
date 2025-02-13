@@ -1,6 +1,7 @@
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 
 export enum Frequency {
+  None = "NONE",
   Daily = "DAILY",
   Weekly = "WEEKLY",
   Monthly = "MONTHLY",
