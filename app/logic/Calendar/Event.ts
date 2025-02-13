@@ -157,6 +157,10 @@ export class Event extends Observable {
     // nothing to do for local events
   }
 
+  get isNew(): boolean {
+    return !this.dbID;
+  }
+
   /**
    * Deletes the event locally from the database.
    */

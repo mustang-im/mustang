@@ -2,15 +2,6 @@
   <input type="url" bind:value={event.onlineMeetingURL} placeholder={$t`Meeting URL`} />
   <hbox class="buttons">
     <Button
-      label={$t`Delete`}
-      icon={XIcon}
-      iconSize="16px"
-      iconOnly
-      plain
-      disabled={!event.onlineMeetingURL}
-      on:click={onRemove}
-      />
-    <Button
       label={$t`Copy`}
       icon={CopyIcon}
       iconSize="16px"
@@ -28,6 +19,15 @@
       disabled={!event.onlineMeetingURL}
       on:click={onOpenMeetingURL}
       />
+    <Button
+      label={$t`Delete`}
+      icon={DeleteIcon}
+      iconSize="16px"
+      iconOnly
+      plain
+      disabled={!event.onlineMeetingURL}
+      on:click={onRemove}
+      />
   </hbox>
 </hbox>
 
@@ -36,7 +36,7 @@
   import Button from "../../Shared/Button.svelte";
   import CopyIcon from "lucide-svelte/icons/copy";
   import BrowserIcon from "lucide-svelte/icons/globe";
-  import XIcon from "lucide-svelte/icons/x";
+  import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { t } from "../../../l10n/l10n";
   import { appGlobal } from "../../../logic/app";
 
@@ -56,6 +56,9 @@
   }
 
   function onRemove() {
+    if (event.participants.hasItems && !event.isNew && !confirm($t`Changing the meeting URL might cause some participants to miss the meeting. Are you sure?`)) {
+      return;
+    }
     // TODO Remove meeting from server
     event.onlineMeetingURL = null;
   }
