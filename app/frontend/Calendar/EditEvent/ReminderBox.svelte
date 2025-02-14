@@ -35,6 +35,7 @@
       event.alarm = new Date();
     }
     event.alarm.setTime(event.startTime.getTime() - seconds * 1000);
+    event.notifyObservers();
   }
 
   function onRemove() {

@@ -132,6 +132,7 @@
     }
     minDate = event.startTime;
     event.endTime.setFullYear(event.startTime.getFullYear(), event.startTime.getMonth(), event.startTime.getDate());
+    event.notifyObservers();
   }
 
   function isLastWeekOfMonth(date: Date) {
