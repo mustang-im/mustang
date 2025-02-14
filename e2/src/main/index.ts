@@ -136,8 +136,8 @@ function allowCrossDomainRequestsFromFrontend() {
       let origin = new URL(details.url).origin;
       for (let name in details.requestHeaders) {
         let lowercase = name.toLowerCase();
-        if (lowercase == "origin" || lowercase == "Referer") {
-          // delete requestHeaders[lowercase]; -- Doesn't delete it
+        if (lowercase == "origin" || lowercase == "referer") {
+          // delete requestHeaders[lowercase]; // TODO Doesn't delete it
           requestHeaders[lowercase] = origin;
         }
       }
