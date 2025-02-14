@@ -2,23 +2,23 @@
   <grid class="time">
     <!--{$t`When`} {$t`Start`} import ClockMainIcon from "lucide-svelte/icons/clock-8"; -->
     <hbox class="date-input start" title={$t`Start date`}>
-      <DateInput date={$event.startTime} />
+      <DateInput bind:date={event.startTime} />
     </hbox>
     <hbox class="time-input start" title={$t`Start time`}>
       {#if !$event.allDay}
-        <TimeInput time={$event.startTime} />
+        <TimeInput bind:time={event.startTime} />
       {/if}
     </hbox>
 
     <hbox class="date-input end" title={$t`End date`}>
       {#if isMultipleDays}
-        <DateInput date={$event.endTime} />
+        <DateInput bind:date={event.endTime} />
       {:else}
         <hbox class="buttons">
           <RoundButton
             label={$t`Multiple days`}
             icon={MultipleDaysIcon}
-            onClick={() => isMultipleDays = true}
+            onClick={onMultipleDays}
             classes="plain smallest"
             border={false}
             iconSize="16px"
@@ -28,7 +28,7 @@
     </hbox>
     <hbox class="time-input end" title={$t`End time`}>
       {#if !$event.allDay}
-        <TimeInput time={$event.endTime} />
+        <TimeInput bind:time={event.endTime} />
       {/if}
       <hbox class="buttons">
         <RoundButton
@@ -100,8 +100,22 @@
   let previousStartTime: Date = null;
   let previousEndTime: Date = null;
 
+  function onMultipleDays() {
+    console.log("endtime before", event.endTime.toLocaleString());
+    event.allDay = true;
+    setAllDay();
+    event.durationDays += 1;
+    console.log("endtime after", event.endTime.toLocaleString());
+    // event.notifyObservers();
+  }
+
   function onAllDayToggle() {
     event.allDay = !event.allDay;
+    setAllDay();
+  }
+
+  // Move into `Event.allDay` setter?
+  function setAllDay() {
     if (event.allDay) {
       previousTimezone = event.timezone;
       event.timezone = null;
@@ -114,8 +128,10 @@
       event.endTime.setSeconds(59);
       event.endTime.setMilliseconds(0);
     } else {
-      copyTimeOnly(event.startTime, previousStartTime);
-      copyTimeOnly(event.endTime, previousEndTime);
+      if (previousStartTime && previousEndTime) {
+        copyTimeOnly(event.startTime, previousStartTime);
+        copyTimeOnly(event.endTime, previousEndTime);
+      }
       if (previousTimezone && !event.timezone) {
         event.timezone = previousTimezone;
       }

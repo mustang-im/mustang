@@ -90,7 +90,7 @@ export class Event extends Observable {
 
   /** in seconds */
   get duration(): number {
-    let seconds = (this.endTime.getTime() - this.startTime.getTime()) / 1000;
+    let seconds = Math.round((this.endTime.getTime() - this.startTime.getTime()) / 1000);
     if (this.allDay) {
       return Math.round(Math.ceil(seconds / k1Day) * k1Day); // return entire days, not 1 second less
     }
