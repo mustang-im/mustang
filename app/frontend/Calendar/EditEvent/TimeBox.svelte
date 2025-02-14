@@ -101,12 +101,11 @@
   let previousEndTime: Date = null;
 
   function onMultipleDays() {
-    console.log("endtime before", event.endTime.toLocaleString());
-    event.allDay = true;
-    setAllDay();
+    if (!event.allDay) {
+      event.allDay = true;
+      setAllDay();
+    }
     event.durationDays += 1;
-    console.log("endtime after", event.endTime.toLocaleString());
-    // event.notifyObservers();
   }
 
   function onAllDayToggle() {
@@ -136,6 +135,7 @@
         event.timezone = previousTimezone;
       }
     }
+    event.notifyObservers();
   }
 
   $: $event.endTime, checkEndTime()
