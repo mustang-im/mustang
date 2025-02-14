@@ -1,14 +1,13 @@
 <select id="duration-unit" bind:value={unitInSeconds} {disabled}>
   {#if !onlyDays}
-    <option value={k1Minute}>{$plural(durationInUnit, { one: $t`Minute`, other: $t`Minutes` })}</option>
-    <option value={k1Hour}>{$plural(durationInUnit, { one: $t`Hour`, other: $t`Hours` })}</option>
+    <option value={k1Minute}>{$t`Minutes`}</option>
+    <option value={k1Hour}>{$t`Hours`}</option>
   {/if}
-  <option value={k1Day}>{$plural(durationInUnit, { one: $t`Day`, other: $t`Days` })}</option>
+  <option value={k1Day}>{$t`Days`}</option>
 </select>
 
 <script lang="ts">
   import { t } from "../../../l10n/l10n";
-  import { plural } from "svelte-i18n-lingui";
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher<{ change: number }>();
 
