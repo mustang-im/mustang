@@ -82,10 +82,10 @@
   import TimeInput from "./TimeInput.svelte";
   import DurationUnit from "./DurationUnit.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
+  import AllDayIcon from '../../asset/icon/calendar/24h.svg?raw';
   import ClockIcon from "lucide-svelte/icons/clock";
   import GlobeIcon from "lucide-svelte/icons/globe";
   import MultipleDaysIcon from "lucide-svelte/icons/circle-plus";
-  import AllDayIcon from "lucide-svelte/icons/clock-arrow-down";
   import XIcon from "lucide-svelte/icons/x";
   import TimezonePicker from "timezone-picker-svelte";
   import { t } from "../../../l10n/l10n";
