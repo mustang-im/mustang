@@ -2,7 +2,7 @@ import type { PersonUID } from "../Abstract/PersonUID";
 import type { Calendar } from "./Calendar";
 import type { RecurrenceRule } from "./RecurrenceRule";
 import { ResponseType, type Responses } from "./Invitation";
-import { Observable, notifyChangedProperty } from "../util/Observable";
+import { Observable, notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/Lock";
 import { assert, randomID, AbstractFunction } from "../util/util";
 import { ArrayColl } from "svelte-collections";
@@ -96,6 +96,7 @@ export class Event extends Observable {
     }
     return seconds;
   }
+  @notifyChangedAccessor
   set duration(seconds: number) {
     assert(seconds >= 0, "Duration must be >= 0");
     if (this.allDay) {
