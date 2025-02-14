@@ -62,10 +62,10 @@
     <hbox>
       <label>{`Every`}</label>&nbsp;<input class="auto" type="number" disabled bind:value={interval} />&nbsp;
       <select bind:value={frequency} disabled>
-        <option value="{Frequency.Daily}">{$plural(interval, { one: 'day', other: 'days' })}</option>
-        <option value="{Frequency.Weekly}">{$plural(interval, { one: 'week', other: 'weeks' })}</option>
-        <option value="{Frequency.Monthly}">{$plural(interval, { one: 'month', other: 'months' })}</option>
-        <option value="{Frequency.Yearly}">{$plural(interval, { one: 'year', other: 'years' })}</option>
+        <option value="{Frequency.Daily}">{$plural(interval, { one: $t`day`, other: $t`days` })}</option>
+        <option value="{Frequency.Weekly}">{$plural(interval, { one: $t`week`, other: $t`weeks` })}</option>
+        <option value="{Frequency.Monthly}">{$plural(interval, { one: $t`month`, other: $t`months` })}</option>
+        <option value="{Frequency.Yearly}">{$plural(interval, { one: $t`year`, other: $t`years` })}</option>
       </select>
     </hbox>
     {#if frequency == Frequency.Yearly }
@@ -89,7 +89,6 @@
 </vbox>
 
 <script lang="ts">
-  import { plural } from 'svelte-i18n-lingui';
   import type { Event } from "../../logic/Calendar/Event";
   import { Frequency, RecurrenceRule, type RecurrenceInit } from "../../logic/Calendar/RecurrenceRule";
   import PersonsAutocomplete from "../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
@@ -104,6 +103,7 @@
   import CopyIcon from "lucide-svelte/icons/copy";
   import BrowserIcon from "lucide-svelte/icons/globe";
   import { getUILocale, t } from "../../l10n/l10n";
+  import { plural } from 'svelte-i18n-lingui';
 
   export let event: Event;
 

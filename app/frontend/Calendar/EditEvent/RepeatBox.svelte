@@ -44,10 +44,10 @@
     <label for="every">{$t`Every`}</label>
     <input class="auto" type="number" min={1} max={99} bind:value={interval} id="every" />
     <select bind:value={frequency} class="selector">
-      <option value="{Frequency.Daily}">{$plural(interval, { one: 'day', other: 'days' })}</option>
-      <option value="{Frequency.Weekly}">{$plural(interval, { one: 'week', other: 'weeks' })}</option>
-      <option value="{Frequency.Monthly}">{$plural(interval, { one: 'month', other: 'months' })}</option>
-      <option value="{Frequency.Yearly}">{$plural(interval, { one: 'year', other: 'years' })}</option>
+      <option value="{Frequency.Daily}">{$plural(interval, { one: $t`day`, other: $t`days` })}</option>
+      <option value="{Frequency.Weekly}">{$plural(interval, { one: $t`week`, other: $t`weeks` })}</option>
+      <option value="{Frequency.Monthly}">{$plural(interval, { one: $t`month`, other: $t`months` })}</option>
+      <option value="{Frequency.Yearly}">{$plural(interval, { one: $t`year`, other: $t`years` })}</option>
     </select>
   </hbox>
 {/if}
@@ -70,14 +70,14 @@
 -->
 
 <script lang="ts">
-  import { plural } from 'svelte-i18n-lingui';
   import type { Event } from "../../../logic/Calendar/Event";
   import { Frequency, RecurrenceRule, type RecurrenceInit } from "../../../logic/Calendar/RecurrenceRule";
   import SectionTitle from './SectionTitle.svelte';
   import RadioGroup, { type RadioOption } from "./RadioGroup.svelte";
-  import { getUILocale, t } from "../../../l10n/l10n";
   import RoundButton from '../../Shared/RoundButton.svelte';
   import { arrayRemove } from '../../../logic/util/util';
+  import { getUILocale, t } from "../../../l10n/l10n";
+  import { plural } from 'svelte-i18n-lingui';
 
   export let event: Event;
 
