@@ -55,7 +55,7 @@
           />
       {:else}
         <RoundButton
-          label={$t`Close`}
+          label={$t`Cancel`}
           icon={CloseIcon}
           onClick={onClose}
           classes="plain save-or-close"
