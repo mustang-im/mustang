@@ -1,6 +1,6 @@
 {#if icon}
-  <hbox class="outer" flex>
-    <hbox class="icon" title={label}>
+  <hbox class="outer" {flex}>
+    <hbox class="icon" title={label} >
       <svelte:component this={icon} size="20px" />
     </hbox>
     <vbox class="section" title={label} flex>
@@ -8,7 +8,7 @@
     </vbox>
   </hbox>
 {:else}
-  <vbox class="section outer" title={label} flex>
+  <vbox class="section outer" title={label} {flex}>
     <slot />
   </vbox>
 {/if}
@@ -18,6 +18,7 @@
 
   export let label: string = "";
   export let icon: ComponentType = null;
+  export let flex = null;
 </script>
 
 <style>

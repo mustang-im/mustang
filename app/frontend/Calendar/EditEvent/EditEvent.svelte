@@ -64,7 +64,7 @@
     </hbox>
   </hbox>
   <Scroll>
-    <vbox class="columns">
+    <vbox class="columns" flex>
       <TimeBox {event} />
       <Section label={$t`Title`}>
         <TitleBox {event} />
@@ -111,17 +111,17 @@
         </Section>
       {/if}
       {#if showDescription}
-        <Section label={$t`Description`} icon={DescriptionIcon}>
+        <Section label={$t`Description`} icon={DescriptionIcon} flex>
           <DescriptionBox {event} />
         </Section>
       {/if}
     </vbox>
   </Scroll>
-  <hbox class="buttons">
-    {#if event.response != ResponseType.Unknown && event.response != ResponseType.Organizer}
+  {#if event.response != ResponseType.Unknown && event.response != ResponseType.Organizer}
+    <hbox class="buttons">
       <InvitationResponseButtons {event} />
-    {/if}
-  </hbox>
+    </hbox>
+  {/if}
 </vbox>
 
 <script lang="ts">
@@ -246,8 +246,6 @@
 </script>
 
 <style>
-  .event-edit-window {
-  }
   .window-title-bar {
     height: 48px;
     background-color: burlywood;
@@ -283,7 +281,7 @@
     justify-content: center;
   }
   .columns {
-    padding: 12px 16px;
+    padding: 12px 16px 4px 16px;
   }
   .event-edit-window :global(.svelteui-Checkbox-label) {
     padding-inline-start: 8px;
