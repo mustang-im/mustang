@@ -95,7 +95,7 @@
     {/if}
     <hbox flex class="editor-and-attachments">
       <vbox flex class="editor-wrapper">
-        <vbox flex class="paper">
+        <Paper>
           <Scroll>
             <vbox flex class="editor" spellcheck={$spellcheckEnabled.value}>
               <!-- The html in the mail passed in MUST already be sanitized HTML.
@@ -121,7 +121,7 @@
                 />
             </hbox>
           </hbox>
-        </vbox>
+        </Paper>
       </vbox>
       {#if showAttachments}
         <vbox class="attachments">
@@ -153,6 +153,7 @@
   import HTMLEditor from "../../Shared/Editor/HTMLEditor.svelte";
   import HTMLEditorToolbar from "../../Shared/Editor/HTMLEditorToolbar.svelte";
   import IdentitySelector from "./IdentitySelector.svelte";
+  import Paper from "../../Shared/Paper.svelte";
   import Spinner from "../../Shared/Spinner.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
@@ -364,18 +365,12 @@
     margin-inline-start: 2px;
     min-width: 1.7em;
   }
-  .paper {
-    background-color: var(--main-bg);
-    color: var(--main-fg);
-    border-radius: 5px;
-    box-shadow: -1px 0px 5px 0.5px rgb(0, 0, 0, 10%);
-    margin-block-start: 4px;
-  }
   .editor {
     margin: 12px 12px;
   }
   .editor-wrapper {
     flex: 3 0 0;
+    margin-block-start: 4px;
   }
   .attachments {
     min-width: 120px;

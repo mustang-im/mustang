@@ -4,9 +4,11 @@
   {#if $message.event || $message.scheduling}
     <Invitation {message} />
   {/if}
-  <Paper>
-    <MessageBody {message} />
-  </Paper>
+  <vbox class="body" flex>
+    <Paper>
+      <MessageBody {message} />
+    </Paper>
+  </vbox>
 </vbox>
 
 <script lang="ts">
@@ -21,8 +23,12 @@
 </script>
 
 <style>
-.message-display {
-  background-color: var(--leftbar-bg);
-  color: var(--leftbar-fg);
-}
+  .message-display {
+    background-color: var(--leftbar-bg);
+    color: var(--leftbar-fg);
+  }
+  .body {
+    margin-inline-start: 8px;
+    margin-block-end: 2px;
+  }
 </style>
