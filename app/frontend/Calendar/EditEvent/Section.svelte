@@ -1,9 +1,9 @@
 {#if icon}
-  <hbox class="outer" {flex}>
+  <hbox class="section outer" {flex}>
     <hbox class="icon" title={label} >
       <svelte:component this={icon} size="20px" />
     </hbox>
-    <vbox class="section" title={label} flex>
+    <vbox class="inner" title={label} flex>
       <slot />
     </vbox>
   </hbox>

@@ -64,57 +64,61 @@
     </hbox>
   </hbox>
   <Scroll>
-    <vbox class="columns" flex>
-      <TimeBox {event} />
-      <Section label={$t`Title`}>
-        <TitleBox {event} />
-      </Section>
-      <Section>
-        <ExpanderButtons>
-          <ExpanderButton bind:expanded={showRepeat} label={$t`Repeat`} icon={RepeatIcon} on:expand={expandRepeat} />
-          <ExpanderButton bind:expanded={showReminder} label={$t`Reminder`} icon={ReminderIcon} on:expand={expandReminder} />
-          <ExpanderButton bind:expanded={showParticipants} label={$t`Invite`} icon={ParticipantsIcon} on:expand={expandParticipants} />
-          <ExpanderButton bind:expanded={showLocation} label={$t`Location`} icon={LocationIcon} on:expand={expandLocation} />
-          <ExpanderButton bind:expanded={showOnlineMeeting} label={$t`Online meeting`} icon={OnlineMeetingIcon} on:expand={expandOnlineMeeting} />
-          <ExpanderButton bind:expanded={showDescription} label={$t`Description`} icon={DescriptionIcon} on:expand={expandDescription} />
-        </ExpanderButtons>
-      </Section>
-      {#if showRepeat}
-        <Section label={$t`Repeat`} icon={RepeatIcon}>
-          <RepeatBox {event} bind:this={repeatBox}/>
+    <vbox class="columns" flex class:show-description={showDescription}>
+      <vbox class="column1">
+        <TimeBox {event} />
+        <Section label={$t`Title`}>
+          <TitleBox {event} />
         </Section>
-      {/if}
-      {#if showReminder}
-        <Section label={$t`Reminder`} icon={ReminderIcon}>
-          <SectionTitle label={$t`Reminder`}>
-            <ReminderBox {event} />
-          </SectionTitle>
+        <Section>
+          <ExpanderButtons>
+            <ExpanderButton bind:expanded={showRepeat} label={$t`Repeat`} icon={RepeatIcon} on:expand={expandRepeat} />
+            <ExpanderButton bind:expanded={showReminder} label={$t`Reminder`} icon={ReminderIcon} on:expand={expandReminder} />
+            <ExpanderButton bind:expanded={showParticipants} label={$t`Invite`} icon={ParticipantsIcon} on:expand={expandParticipants} />
+            <ExpanderButton bind:expanded={showLocation} label={$t`Location`} icon={LocationIcon} on:expand={expandLocation} />
+            <ExpanderButton bind:expanded={showOnlineMeeting} label={$t`Online meeting`} icon={OnlineMeetingIcon} on:expand={expandOnlineMeeting} />
+            <ExpanderButton bind:expanded={showDescription} label={$t`Description`} icon={DescriptionIcon} on:expand={expandDescription} />
+          </ExpanderButtons>
         </Section>
-      {/if}
-      {#if showParticipants}
-        <Section label={$t`Invite`} icon={ParticipantsIcon}>
-          <ParticipantsBox {event} />
-        </Section>
-      {/if}
-      {#if showLocation}
-        <Section label={$t`Location`} icon={LocationIcon}>
-          <SectionTitle label={$t`Location`}>
-            <LocationBox {event} />
-          </SectionTitle>
-        </Section>
-      {/if}
-      {#if showOnlineMeeting}
-        <Section label={$t`Online meeting`} icon={OnlineMeetingIcon}>
-          <SectionTitle label={$t`Online meeting`}>
-            <OnlineMeetingBox {event} />
-          </SectionTitle>
-        </Section>
-      {/if}
-      {#if showDescription}
-        <Section label={$t`Description`} icon={DescriptionIcon} flex>
-          <DescriptionBox {event} />
-        </Section>
-      {/if}
+        {#if showRepeat}
+          <Section label={$t`Repeat`} icon={RepeatIcon}>
+            <RepeatBox {event} bind:this={repeatBox}/>
+          </Section>
+        {/if}
+        {#if showReminder}
+          <Section label={$t`Reminder`} icon={ReminderIcon}>
+            <SectionTitle label={$t`Reminder`}>
+              <ReminderBox {event} />
+            </SectionTitle>
+          </Section>
+        {/if}
+        {#if showParticipants}
+          <Section label={$t`Invite`} icon={ParticipantsIcon}>
+            <ParticipantsBox {event} />
+          </Section>
+        {/if}
+        {#if showLocation}
+          <Section label={$t`Location`} icon={LocationIcon}>
+            <SectionTitle label={$t`Location`}>
+              <LocationBox {event} />
+            </SectionTitle>
+          </Section>
+        {/if}
+        {#if showOnlineMeeting}
+          <Section label={$t`Online meeting`} icon={OnlineMeetingIcon}>
+            <SectionTitle label={$t`Online meeting`}>
+              <OnlineMeetingBox {event} />
+            </SectionTitle>
+          </Section>
+        {/if}
+      </vbox>
+      <vbox class="column2" flex>
+        {#if showDescription}
+          <Section label={$t`Description`} icon={DescriptionIcon} flex>
+            <DescriptionBox {event} />
+          </Section>
+        {/if}
+      </vbox>
     </vbox>
   </Scroll>
   {#if event.response != ResponseType.Unknown && event.response != ResponseType.Organizer}
@@ -282,6 +286,25 @@
   }
   .columns {
     padding: 12px 16px 4px 16px;
+  }
+  @media screen and (min-width: 1000px) {
+    .columns.show-description {
+      flex-direction: row;
+    }
+    .column2 {
+      margin-block-start: -8px;
+      margin-inline-start: 24px;
+    }
+    .column2 :global(.section > .icon) {
+      display: none;
+    }
+    /*.columns.show-description .column1 {
+      order: 2;
+    }
+    .columns.show-description .column2 {
+      order: 1;
+      margin-inline-end: 24px;
+    }*/
   }
   .event-edit-window :global(.svelteui-Checkbox-label) {
     padding-inline-start: 8px;
