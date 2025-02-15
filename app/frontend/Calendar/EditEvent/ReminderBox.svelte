@@ -1,5 +1,5 @@
 <hbox title={$t`Reminder`} flex>
-  <input class="duration" type="number" bind:value={durationInUnit} on:input={durationUnit.onChange} min={0} />
+  <input class="duration" type="number" bind:value={durationInUnit} on:input={durationUnit.onDurationChanged} min={0} />
   <DurationUnit bind:durationInSeconds={beforeInSec} bind:durationInUnit bind:this={durationUnit} on:change={onChanged} />
   {#if $event.alarm}
     <hbox class="label suffix">{$t`before, at`}</hbox>

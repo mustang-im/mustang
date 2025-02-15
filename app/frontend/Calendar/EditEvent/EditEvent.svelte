@@ -50,6 +50,7 @@
           icon={SaveIcon}
           onClick={onSave}
           classes="plain save-or-close"
+          filled={true}
           iconSize="16px"
           />
       {:else}
