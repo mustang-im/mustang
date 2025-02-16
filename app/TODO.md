@@ -6,18 +6,21 @@
     * OAuth2
   * OAuth2 login UI with browser/URL options
   * Calendar
-    * Edit event UI
+    * Invitation UI
+    * Participants
+    * Free/Busy
     * Move to other calendar
+  * Main window
+    * Save window size
   * Bug: Thunderbird AB import misses ABs and fields
   * Import Outlook PST
   * Inline images
-    * Scale
+    * Display cid:
+    * Scale when sending
   * FastTree
     * Drag&Drop: Open on drag over - for: Move messages to deep subfolders -> Rewrite FastTree
-  * Bugs: FastList doesn't update some rows #66
+  * Bug: FastList doesn't update some rows #66
   * Bug: FastList misses last row (off-by-1)
-  * Main window
-    * Save window size
   * Threads
     * Search all folders
     * Hide quotes
@@ -169,6 +172,10 @@
 * Subscribed folders only, and subscription UI
 * Move folder
 
+## JMAP
+* EventSource
+* WebSocket
+
 ### Intentionally not implemented
 * Expunge on quit
 
@@ -192,7 +199,6 @@
 * First Enter keypress: newline, second Enter keypress: paragraph -  #35 DONE
 * blockquote cite vs. third party
 * Insert link
-* Insert image
 * Emojis
 
 ## Filters
@@ -238,7 +244,6 @@
 
 ## Later
 * Refactor IMAP orchestration?: Separate IMAP protocol folder object and IMAP orcestration folder object. The latter does folder cache, IMAP poll/refresh, offline cache etc.
-* JMAP
 
 ## Import
 * Thunderbird
