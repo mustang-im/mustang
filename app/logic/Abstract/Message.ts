@@ -1,6 +1,7 @@
 import type { Contact } from "./Contact";
 import type { Person } from "./Person";
 import type { PersonUID } from "../Abstract/PersonUID";
+import type { Attachment } from "./Attachment";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML, sanitizeHTMLExternal } from "../util/convertHTML";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { backgroundError } from "../../frontend/Util/error";
