@@ -281,7 +281,7 @@
   async function onFileInlineDrop(event: CustomEvent) {
     let files = event.detail.files as File[];
     for (let file of files) {
-      await insertImage(editor, file);
+      await insertImage(editor, file, mail.attachments);
     }
   }
 

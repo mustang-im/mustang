@@ -80,7 +80,7 @@
   function onAddInline(event: CustomEvent) {
     let files = event.detail.files as File[];
     for (let file of files) {
-      insertImage(editor, file);
+      insertImage(editor, file, attachments);
     }
   }
 </script>
