@@ -2,7 +2,6 @@ import type { EMail } from "../EMail";
 import type { Person } from "../../Abstract/Person";
 import type { MailAccount } from "../MailAccount";
 import type { Folder } from "../Folder";
-import { newSearchEMail } from "./setStorage";
 import { getTagByName, type Tag } from "../Tag";
 import { findPerson } from "../../Abstract/PersonUID";
 import { appGlobal } from "../../app";
@@ -24,8 +23,8 @@ export class SearchEMail extends Observable {
 
   messageID: string | null = null;
   threadID: string | null = null;
-  dateSentFrom: Date | null = null;
-  dateSentTo: Date | null = null;
+  sentDateMin: Date | null = null;
+  sentDateMax: Date | null = null;
   sizeMin: number | null = null;
   sizeMax: number | null = null;
 
@@ -64,12 +63,12 @@ export class SearchEMail extends Observable {
     this.sizeMax = sanitize.integer(json.sizeMax, null) ?? undefined;
     this.messageID = sanitize.string(json.messageID, null) ?? undefined;
     this.threadID = sanitize.string(json.threadID, null) ?? undefined;
-    this.dateSentFrom = sanitize.date(json.dateSentFrom, null) ?? undefined;
-    this.dateSentTo = sanitize.date(json.dateSentTo, null) ?? undefined;
+    this.sentDateMin = sanitize.date(json.sentDateMin, null) ?? undefined;
+    this.sentDateMax = sanitize.date(json.sentDateMax, null) ?? undefined;
 
     this.includesPerson = findPerson(json.includesPersonEMail);
     this.account = appGlobal.emailAccounts.find(acc => acc.id == json.accountID);
-    this.folder = this.account?.findFolder(folder => folder.path == json.folderPath) ?? undefined;
+    this.folder = this.account?.findFolder(folder => folder.id == json.folderID) ?? undefined;
     this.tags = createSetColl(sanitize.array(json.tags, [])?.map(name => getTagByName(name)));
   }
 
@@ -86,11 +85,11 @@ export class SearchEMail extends Observable {
       sizeMax: this.sizeMax,
       messageID: this.messageID,
       threadID: this.threadID,
-      dateSentFrom: this.dateSentFrom?.toISOString(),
-      dateSentTo: this.dateSentTo?.toISOString(),
+      sentDateMin: this.sentDateMin?.toISOString(),
+      sentDateMax: this.sentDateMax?.toISOString(),
       includesPersonEMail: this.includesPerson?.emailAddresses.first?.value ?? null,
       accountID: this.account?.id ?? this.folder?.account?.id,
-      folderPath: this.folder?.path,
+      folderID: this.folder?.id,
       tags: this.tags?.contents.map(tag => tag.name),
     };
   }
@@ -100,18 +99,75 @@ export class SearchEMail extends Observable {
     clone.fromJSON(this.toJSON());
     return clone;
   }
-}
 
-export async function findMessageByID(msgid: string): Promise<EMail | undefined> {
-  let search = newSearchEMail();
-  search.messageID = msgid;
-  let results = await search.startSearch();
-  if (results.isEmpty) {
-    return undefined;
+  matches(email: EMail): boolean {
+    if (this.messageID && this.messageID != email.messageID) {
+      return false;
+    }
+    if (this.threadID && this.threadID != email.threadID) {
+      return false;
+    }
+    if (this.folder && this.folder != email.folder) {
+      return false;
+    }
+    if (this.account && this.account != email.folder?.account) {
+      return false;
+    }
+    function matchesBoolean(search: boolean | undefined, value: boolean) {
+      return search === undefined || search === value;
+    }
+    if (!matchesBoolean(this.isOutgoing, email.outgoing)) {
+      return false;
+    }
+    if (!matchesBoolean(this.isRead, email.isRead)) {
+      return false;
+    }
+    if (!matchesBoolean(this.isStarred, email.isStarred)) {
+      return false;
+    }
+    if (!matchesBoolean(this.isReplied, email.isReplied)) {
+      return false;
+    }
+    if (!matchesBoolean(this.hasAttachment, email.attachments.hasItems)) {
+      return false;
+    }
+    if (this.sizeMin && !(this.sizeMin <= email.size)) {
+      return false;
+    }
+    if (this.sizeMax && !(this.sizeMax >= email.size)) {
+      return false;
+    }
+    if (this.sentDateMin && !(this.sentDateMin.getTime() <= email.sent.getTime())) {
+      return false;
+    }
+    if (this.sentDateMax && !(this.sentDateMax.getTime() >= email.sent.getTime())) {
+      return false;
+    }
+    if (this.bodyText && !email.rawText?.includes(this.bodyText)) { // TODO `.text`? Avoid triggering a full load
+      return false;
+    }
+    if (this.tags) {
+      if (!email.tags?.hasItems) {
+        return false;
+      }
+      for (let tag of this.tags) {
+        if (!email.tags.has(tag)) {
+          return false;
+        }
+      }
+    }
+    if (this.includesPerson) {
+      let person = this.includesPerson;
+      if (!email.from.matchesPerson(person) &&
+          !email.to.find(uid => uid.matchesPerson(person)) &&
+          !email.cc.find(uid => uid.matchesPerson(person)) &&
+          !email.bcc.find(uid => uid.matchesPerson(person))) {
+        return false;
+      }
+    }
+    return true;
   }
-  return results.first;
 }
-
 
 // TODO Move into SetColl() ctor
 function createSetColl<Item>(initial: Item[]): SetColl<Item> {

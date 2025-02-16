@@ -3,6 +3,7 @@ import { MailIdentity } from "./MailIdentity";
 import { Folder, SpecialFolder } from "./Folder";
 import type { EMail } from "./EMail";
 import type { Person } from "../Abstract/Person";
+import { FilterRuleAction } from "./FilterRules/FilterRuleAction";
 import { OAuth2 } from "../Auth/OAuth2";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
@@ -40,6 +41,8 @@ export class MailAccount extends Account {
   emailAddress: string;
   @notifyChangedProperty
   readonly identities = new ArrayColl<MailIdentity>();
+  @notifyChangedProperty
+  readonly filterRuleActions = new ArrayColl<FilterRuleAction>();
   /** Only for setup. We know a config, but the user needs to do some manual steps for this ISP */
   setupInstructions: SetupInstruction[] | null = null;
 
@@ -128,6 +131,12 @@ export class MailAccount extends Account {
     this.identities.clear();
     this.identities.addAll(sanitize.array(config.identities, []).map(json =>
       MailIdentity.fromConfigJSON(json, this)));
+    this.filterRuleActions.clear();
+    this.filterRuleActions.addAll(sanitize.array(config.filterRuleActions, []).map(json => {
+      let rule = new FilterRuleAction();
+      rule.fromJSON(json);
+      return rule;
+    }));
     if (config.oAuth2) {
       this.oAuth2 = OAuth2.fromConfigJSON(config.oAuth2, this);
       this.oAuth2.subscribe(() => this.notifyObservers());
@@ -136,6 +145,7 @@ export class MailAccount extends Account {
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.identities = this.identities.contents.map(id => id.toConfigJSON());
+    json.filterRuleActions = this.filterRuleActions.contents.map(rule => rule.toJSON());
     json.oAuth2 = this.oAuth2 ? this.oAuth2.toConfigJSON() : undefined;
     return json;
   }

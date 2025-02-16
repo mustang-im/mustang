@@ -43,6 +43,10 @@ export class PersonUID extends Observable {
     return this.person;
   }
 
+  matchesPerson(person: Person): boolean {
+    return person && !!person.emailAddresses.find(e => e.value == this.emailAddress);
+  }
+
   toString() {
     return this.name + " <" + this.emailAddress + ">";
   }

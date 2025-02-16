@@ -7,6 +7,7 @@ import { SQLMailStorage } from "../SQL/SQLMailStorage";
 import { SQLSearchEMail } from "../SQL/SQLSearchEMail";
 import { SQLSourceEMail } from "../SQL/Source/SQLSourceEMail";
 // #endif
+import type { EMail } from "../EMail";
 import { SearchEMail } from "./SearchEMail";
 import type { MailAccount } from "../MailAccount";
 import { isWebMail } from "../../build";
@@ -43,4 +44,14 @@ export function newSearchEMail(): SearchEMail {
   // #else
   return new SQLSearchEMail();
   // #endif
+}
+
+export async function findMessageByID(msgid: string): Promise<EMail | undefined> {
+  let search = newSearchEMail();
+  search.messageID = msgid;
+  let results = await search.startSearch();
+  if (results.isEmpty) {
+    return undefined;
+  }
+  return results.first;
 }
