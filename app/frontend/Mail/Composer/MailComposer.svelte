@@ -367,6 +367,7 @@
   }
   .editor {
     margin: 12px 12px;
+    max-width: 50em;
   }
   .editor-wrapper {
     flex: 3 0 0;

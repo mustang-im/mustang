@@ -118,4 +118,7 @@
     padding-inline-start: 20px;
     margin-inline-start: 0px;
   }
+  .html-editor :global(img) {
+    max-width: 100%;
+  }
 </style>

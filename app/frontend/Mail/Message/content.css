@@ -1,3 +1,7 @@
+body {
+  max-width: 50em;
+}
+
 blockquote {
   border-left: 3px solid blue;
   padding-inline-start: 20px;
@@ -7,4 +11,7 @@ blockquote {
 img[src=""] {
   visibility: hidden;
   max-height: 0px;
+}
+img {
+  max-width: 100%;
 }
