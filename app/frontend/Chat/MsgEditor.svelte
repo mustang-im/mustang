@@ -1,4 +1,7 @@
-<FileDropTarget on:add-files={onAddAttachment} on:inline-files={onAddInline} allowInline={true}>
+<FileDropTarget
+  on:add-files={onAddAttachment}
+  on:inline-files={onAddInline}
+  allowInline={true}>
   <hbox flex class="msg-editor">
     <vbox flex class="editor-wrapper">
       <HTMLEditorToolbar {editor} />
@@ -30,6 +33,7 @@
 <script lang="ts">
   import type { Chat } from "../../logic/Chat/Chat";
   import { UserChatMessage } from "../../logic/Chat/Message";
+  import { Attachment } from "../../logic/Abstract/Attachment";
   import { insertImage } from "../Shared/Editor/InsertImage";
   import HTMLEditorToolbar from "../Shared/Editor/HTMLEditorToolbar.svelte";
   import HTMLEditor from "../Shared/Editor/HTMLEditor.svelte";
@@ -45,18 +49,17 @@
 
   let editor: Editor;
 
-  let attachments = new ArrayColl<File>();
+  let attachments = new ArrayColl<Attachment>();
   $: to && attachments.clear(); // TODO save as draft
 
   function send() {
     if (!to.draftMessage) {
       return;
     }
-    let msg = new UserChatMessage();
+    let msg = new UserChatMessage(to);
     msg.outgoing = true;
     msg.html = to.draftMessage;
     msg.text; // Generate to keep in sync
-    msg.to = to;
     msg.contact = to.contact;
     msg.sent = new Date();
     to.sendMessage(msg);
@@ -71,7 +74,7 @@
 
   function onAddAttachment(event: CustomEvent) {
     let files = event.detail.files as File[];
-    attachments.addAll(files);
+    attachments.addAll(files.map(file => Attachment.fromFile(file)));
   }
 
   function onAddInline(event: CustomEvent) {

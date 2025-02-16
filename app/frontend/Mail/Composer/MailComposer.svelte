@@ -1,4 +1,7 @@
-<FileDropTarget on:add-files={(event) => catchErrors(() => onFilesDrop(event))} on:inline-files={(event) => catchErrors(() => onFileInlineDrop(event))} allowInline={true}>
+<FileDropTarget
+  on:add-files={(event) => catchErrors(() => onFilesDrop(event))}
+  on:inline-files={(event) => catchErrors(() => onFileInlineDrop(event))}
+  allowInline={true}>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <vbox flex class="mail-composer-window">
     <hbox class="window-title-bar">
