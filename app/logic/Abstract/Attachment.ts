@@ -1,7 +1,7 @@
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { saveURLAsFile } from "../../frontend/Util/util";
-import { NotImplemented } from "../util/util";
+import { NotImplemented, type URLString } from "../util/util";
 
 export class Attachment extends Observable {
   /** filename with extension, as given by the sender of the email */
@@ -26,6 +26,11 @@ export class Attachment extends Observable {
   /** File contents. Not populated, if we have the attachment saved on disk */
   @notifyChangedProperty
   content: File;
+  /** Exists while editing or displaying.
+   * Created using `URL.createObjectURL(this.content)`.
+   * Must be cleared using `URL.revokeObjectURL()` when the window closes,
+   * otherwise we leak the entire attachment. */
+  blobURL: URLString;
 
   static fromFile(file: File): Attachment {
     let attachment = new Attachment();

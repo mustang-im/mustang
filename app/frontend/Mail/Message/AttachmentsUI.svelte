@@ -9,7 +9,7 @@
 {/if}
 
 <script lang="ts">
-  import { ContentDisposition } from "../../../logic/Mail/Attachment";
+  import { ContentDisposition } from "../../../logic/Abstract/Attachment";
   import type { EMail } from "../../../logic/Mail/EMail";
   import MessageAttachment from "./AttachmentUI.svelte";
 

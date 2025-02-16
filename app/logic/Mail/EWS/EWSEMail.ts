@@ -2,7 +2,7 @@ import { EMail } from "../EMail";
 import { type EWSFolder, getEWSItem } from "./EWSFolder";
 import { EWSEvent } from "../../Calendar/EWS/EWSEvent";
 import { type Tag, getTagByName } from "../Tag";
-import { Attachment, ContentDisposition } from "../Attachment";
+import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import EWSCreateItemRequest from "./EWSCreateItemRequest";
 import EWSDeleteItemRequest from "./EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "./EWSUpdateItemRequest";

@@ -137,7 +137,7 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
-  import { Attachment } from "../../../logic/Mail/Attachment";
+  import { Attachment } from "../../../logic/Abstract/Attachment";
   import { insertImage } from "../../Shared/Editor/InsertImage";
   import { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";

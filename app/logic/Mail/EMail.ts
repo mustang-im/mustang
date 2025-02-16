@@ -1,7 +1,7 @@
 import { Message } from "../Abstract/Message";
 import { SpecialFolder, type Folder } from "./Folder";
 import { EMailActions } from "./EMailActions";
-import { Attachment, ContentDisposition } from "./Attachment";
+import { Attachment, ContentDisposition } from "../Abstract/Attachment";
 import type { Tag } from "./Tag";
 import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
@@ -29,7 +29,6 @@ export class EMail extends Message {
   readonly to = new ArrayColl<PersonUID>();
   readonly cc = new ArrayColl<PersonUID>();
   readonly bcc = new ArrayColl<PersonUID>();
-  readonly attachments = new ArrayColl<Attachment>();
   /** Tags/keywords that apply to this message.
    * To modify them (based on user input, not reading), use addTag()/removeTag()
    * @see Tag */

@@ -14,7 +14,7 @@ import OWACreateItemRequest from "./OWACreateItemRequest";
 import { OWALoginBackground } from "./OWALoginBackground";
 import { owaAutoFillLoginPage } from "./OWALoginAutoFill";
 import type { PersonUID } from "../../Abstract/PersonUID";
-import { ContentDisposition } from "../Attachment";
+import { ContentDisposition } from "../../Abstract/Attachment";
 import { LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { Semaphore } from "../../util/Semaphore";

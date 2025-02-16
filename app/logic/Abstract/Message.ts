@@ -4,7 +4,7 @@ import type { PersonUID } from "../Abstract/PersonUID";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML, sanitizeHTMLExternal } from "../util/convertHTML";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { backgroundError } from "../../frontend/Util/error";
-import { MapColl } from "svelte-collections";
+import { ArrayColl, MapColl } from "svelte-collections";
 
 export class Message extends Observable {
   /** protocol-specific ID for this message.
@@ -36,6 +36,7 @@ export class Message extends Observable {
   isStarred = false;
   /** Msg ID of another message that this one is a reply of */
   inReplyTo: string | null = null;
+  readonly attachments = new ArrayColl<Attachment>();
 
   @notifyChangedProperty
   protected _text: string = null;

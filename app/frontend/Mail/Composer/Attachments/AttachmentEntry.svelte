@@ -16,7 +16,7 @@
 </hbox>
 
 <script lang="ts">
-  import type { Attachment } from "../../../../logic/Mail/Attachment";
+  import type { Attachment } from "../../../../logic/Abstract/Attachment";
   import FileIcon from "../../../Files/FileIcon.svelte";
   import Button from "../../../Shared/Button.svelte";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";

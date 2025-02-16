@@ -1,6 +1,6 @@
 import type { EMail } from "../EMail";
 import type { PersonUID } from "../../Abstract/PersonUID";
-import { Attachment , ContentDisposition } from "../Attachment";
+import { Attachment , ContentDisposition } from "../../Abstract/Attachment";
 import { appGlobal } from "../../app";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { blobToBase64 } from "../../util/util";

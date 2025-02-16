@@ -1,5 +1,5 @@
 import type { MailContentStorage } from "../MailAccount";
-import type { Attachment } from "../Attachment";
+import type { Attachment } from "../../Abstract/Attachment";
 import type { EMail } from "../EMail";
 import { SQLEMail } from "../SQL/SQLEMail";
 import { appGlobal } from "../../app";

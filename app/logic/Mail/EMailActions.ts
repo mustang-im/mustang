@@ -1,6 +1,6 @@
 import type { EMail } from "./EMail";
 import { SpecialFolder } from "./Folder";
-import { Attachment, ContentDisposition } from "./Attachment";
+import { Attachment, ContentDisposition } from "../Abstract/Attachment";
 import { PersonUID } from "../Abstract/PersonUID";
 import { MailIdentity } from "./MailIdentity";
 import { appName, appVersion } from "../build";

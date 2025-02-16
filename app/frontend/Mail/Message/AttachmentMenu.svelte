@@ -31,7 +31,7 @@
 </Menu>
 
 <script lang="ts">
-  import type { Attachment } from "../../../logic/Mail/Attachment";
+  import type { Attachment } from "../../../logic/Abstract/Attachment";
   import { Menu } from "@svelteuidev/core";
   import DotsIcon from "lucide-svelte/icons/ellipsis";
   import OpenIcon from "lucide-svelte/icons/external-link";

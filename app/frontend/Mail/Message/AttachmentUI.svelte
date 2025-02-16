@@ -23,7 +23,7 @@
 </hbox>
 
 <script lang="ts">
-  import type { Attachment } from "../../../logic/Mail/Attachment";
+  import type { Attachment } from "../../../logic/Abstract/Attachment";
   import type { EMail } from "../../../logic/Mail/EMail";
   import { assert } from "../../../logic/util/util";
   import AttachmentMenu from "./AttachmentMenu.svelte";

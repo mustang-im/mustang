@@ -16,7 +16,7 @@
 <FileSelector bind:this={fileSelector} />
 
 <script lang="ts">
-  import { Attachment, ContentDisposition } from "../../../../logic/Mail/Attachment";
+  import { Attachment } from "../../../../logic/Abstract/Attachment";
   import AttachmentEntry from "./AttachmentEntry.svelte";
   import FileSelector from "./FileSelector.svelte";
   import RoundButton from "../../../Shared/RoundButton.svelte";
