@@ -6,7 +6,7 @@ import { MailIdentity } from "./MailIdentity";
 import { appName, appVersion } from "../build";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { backgroundError } from "../../frontend/Util/error";
-import { UserError, assert } from "../util/util";
+import { UserError, assert, type URLString, dataURLToBlob } from "../util/util";
 import { getUILocale, gt } from "../../l10n/l10n";
 import type { Collection } from "svelte-collections";
 import { faker } from "@faker-js/faker";
@@ -166,6 +166,51 @@ export class EMailActions {
     return redirect;
   }
 
+  convertInlineAttachmentsURLs() {
+    let html = new DOMParser().parseFromString(this.email.rawHTMLDangerous, "text/html");
+    console.log("in HTML", html, this.email.rawHTMLDangerous);
+    for (let node of html.querySelectorAll("img[src]")) {
+      let img = node as HTMLImageElement;
+      // img.src = this.convertBlobURLToCIDURL(img.src);
+      img.src = this.convertDataURLToCIDURL(img.src);
+    }
+    this.email.rawHTMLDangerous = html.documentElement.outerHTML;
+    console.log("out HTML", html, this.email.rawHTMLDangerous);
+  }
+
+  protected convertDataURLToCIDURL(url: URLString): URLString {
+    if (!url?.startsWith("data:")) {
+      return url;
+    }
+    let attachment = this.email.attachments.find(a => a.dataURL == url);
+    if (!attachment) {
+      /*let blob = await dataURLToBlob(url);
+      attachment = Attachment.fromFile(new File([blob], "image"));*/
+      console.warn(attachment, "Attachment for data URL not found", url.substring(0, 20));
+      return url;
+    }
+
+    attachment.contentID ??= crypto.randomUUID();
+    return "cid:" + attachment.contentID;
+  }
+
+  protected convertBlobURLToCIDURL(url: URLString): URLString {
+    if (!url?.startsWith("blob:")) {
+      return url;
+    }
+    let attachment = this.email.attachments.find(a => a.blobURL == url);
+    if (!attachment) {
+      console.warn(attachment, "Attachment for blob URL not found", url, this.email.attachments.contents);
+      return url;
+    }
+
+    URL.revokeObjectURL(url);
+    attachment.blobURL = null;
+
+    attachment.contentID ??= crypto.randomUUID();
+    return "cid:" + attachment.contentID;
+  }
+
   /**
    * Sets up the email for sending, with all the headers, signature etc.
    * Called by composer.
@@ -201,6 +246,7 @@ export class EMailActions {
     }
     this.email.isDraft = false;
 
+    this.convertInlineAttachmentsURLs();
     await account.send(this.email);
 
     this.email.folder = previousFolder;

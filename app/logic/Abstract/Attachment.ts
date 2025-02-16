@@ -31,6 +31,8 @@ export class Attachment extends Observable {
    * Must be cleared using `URL.revokeObjectURL()` when the window closes,
    * otherwise we leak the entire attachment. */
   blobURL: URLString;
+  /** Exists while editing or displaying. */
+  dataURL: URLString;
 
   static fromFile(file: File): Attachment {
     let attachment = new Attachment();

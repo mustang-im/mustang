@@ -57,6 +57,11 @@ export async function base64ToArrayBuffer(base64: string, mimetype: string): Pro
   return await res.arrayBuffer();
 }
 
+export async function dataURLToBlob(dataURL: URLString): Promise<Blob> {
+  let res = await fetch(dataURL);
+  return await res.blob();
+}
+
 export function fileExtensionForMIMEType(mimetype: string) {
   if (typeof (mimetype) == "string" && mimetype != "application/octet-stream") {
     let type = mimetype.split("/")[1];
