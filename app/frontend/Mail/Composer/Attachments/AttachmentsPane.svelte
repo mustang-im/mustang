@@ -2,7 +2,7 @@
 <vbox flex class="attachments-pane">
   <Scroll>
     {#each $attachments.each as attachment}
-      <AttachmentEntry {attachment} />
+      <AttachmentEntry {attachment} {attachments} />
     {/each}
     <hbox class="buttons">
       <RoundButton

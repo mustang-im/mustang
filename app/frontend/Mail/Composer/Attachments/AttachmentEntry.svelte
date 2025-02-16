@@ -12,6 +12,7 @@
   </vbox>
   <vbox class="buttons">
     <Button plain icon={ChevronDownIcon} iconSize="16px" iconOnly />
+    <Button plain icon={DeleteIcon} iconSize="16px" iconOnly onClick={onDelete} />
   </vbox>
 </hbox>
 
@@ -20,9 +21,16 @@
   import FileIcon from "../../../Files/FileIcon.svelte";
   import Button from "../../../Shared/Button.svelte";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
+  import DeleteIcon from "lucide-svelte/icons/trash-2";
+  import { Collection } from "svelte-collections";
   import { t } from "../../../../l10n/l10n";
 
   export let attachment: Attachment;
+  export let attachments: Collection<Attachment>;
+
+  async function onDelete() {
+    attachments.remove(attachment);
+  }
 </script>
 
 <style>
