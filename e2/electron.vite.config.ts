@@ -3,7 +3,8 @@ import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import replace from '@rollup/plugin-replace';
-import { production } from '../app/logic/build';
+import conditionalCompile from "vite-plugin-conditional-compile";
+import { production, isWebMail } from '../app/logic/build';
 
 export default defineConfig({
   main: {
@@ -24,6 +25,13 @@ export default defineConfig({
       sourcemap: production,
     },
     plugins: [
+      conditionalCompile({
+        // <https://github.com/LZS911/vite-plugin-conditional-compile/blob/master/README.md>
+        env: {
+          // For conditional `// #if FOO` statements in the code
+          WEBMAIL: isWebMail ? true : undefined,
+        },
+      }),
       nodePolyfills({include: ['buffer'], globals: {global: false, process: false}}),
       svelte(),
       sentryVitePlugin({

@@ -53,6 +53,7 @@
     "tslib": "^2.6.2",
     "typescript": "^5.1.6",
     "vite": "^5.0.0",
+    "vite-plugin-conditional-compile": "^1.4.5",
     "vite-plugin-node-polyfills": "^0.22.0"
   },
   "repository": {
