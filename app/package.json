@@ -74,7 +74,6 @@
     "happy-dom": "^16.0.0",
     "html-formatter": "^0.1.9",
     "json-autotranslate": "^1.14.5",
-    "json-translate": "^0.0.2",
     "simple-svelte-autocomplete": "^2.5.2",
     "svelte": "^3.55.1",
     "svelte-check": "^2.10.3",
