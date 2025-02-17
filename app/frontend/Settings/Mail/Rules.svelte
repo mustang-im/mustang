@@ -19,9 +19,9 @@
             />
         </hbox>
       </hbox>
-      <hbox class="rule-item" slot="row">
-        {rule.name}
-      </hbox>
+      <svelte:fragment slot="row" let:item={ruleRow}>
+        <RulesListItem rule={ruleRow} />
+      </svelte:fragment>
     </FastList>
     <vbox class="right" slot="right">
       {#if rule}
@@ -75,16 +75,18 @@
   import { MailAccount } from "../../../logic/Mail/MailAccount";
   import { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
   import { FilterMoment } from "../../../logic/Mail/FilterRules/FilterMoments";
-  import FastList from "../../Shared/FastList.svelte";
+  import SearchCriteria from "../../Mail/Search/SearchCriteria.svelte";
+  import RuleActions from "../../Mail/Search/RuleActions.svelte";
+  import RulesListItem from "./RulesListItem.svelte";
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
+  import FastList from "../../Shared/FastList.svelte";
   import Splitter from "../../Shared/Splitter.svelte";
+  import Scroll from "../../Shared/Scroll.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
+  import { useDebounce } from '@svelteuidev/composables';
   import { t } from "../../../l10n/l10n";
-  import SearchCriteria from "../../Mail/Search/SearchCriteria.svelte";
-  import RuleActions from "../../Mail/Search/RuleActions.svelte";
-  import Scroll from "../../Shared/Scroll.svelte";
 
   export let account: MailAccount;
 
@@ -99,6 +101,7 @@
 
   function onAdd() {
     let newRule = new FilterRuleAction(account);
+    newRule.name = "-";
     rules.add(newRule);
     rule = newRule;
   }
@@ -110,6 +113,12 @@
 
     account.filterRuleActions.remove(rule);
     rule = null;
+  }
+
+  $: $rule, saveDebounced();
+  const saveDebounced = useDebounce(() => save(), 3000);
+  async function save() {
+    await account.save();
   }
 </script>
 

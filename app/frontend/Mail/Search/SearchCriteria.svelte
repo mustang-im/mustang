@@ -198,8 +198,6 @@
       search.hasAttachmentMIMETypes.clear();
     }
   }
-
-  $: console.log("isFolder", hasFolder, "folder", folder?.name, "search folder", search.folder?.name);
 </script>
 
 <style>
