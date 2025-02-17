@@ -28,3 +28,6 @@ l10n/locales/*/messages-compiled.json
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# json-autotranslate
+.json-autotranslate-cache
