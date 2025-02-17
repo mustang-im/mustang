@@ -1,31 +1,29 @@
-// #if [WEBMAIL]
-import { DummyMailStorage } from "../Store/DummyMailStorage";
-// #else
+// #if [!WEBMAIL]
 import { MailZIP } from "./MailZIP";
 import { RawFilesAttachment } from "./RawFilesAttachment";
 import { SQLMailStorage } from "../SQL/SQLMailStorage";
 import { SQLSearchEMail } from "../SQL/SQLSearchEMail";
 import { SQLSourceEMail } from "../SQL/Source/SQLSourceEMail";
+// #else
+import { DummyMailStorage } from "../Store/DummyMailStorage";
 // #endif
 import type { EMail } from "../EMail";
 import { SearchEMail } from "./SearchEMail";
 import type { MailAccount } from "../MailAccount";
-import { isWebMail } from "../../build";
 
 export function setStorage(acc: MailAccount) {
   if (!acc.storage) {
-    // #if [WEBMAIL]
-    acc.storage = new DummyMailStorage();
-    // #else
+    // #if [!WEBMAIL]
     acc.storage = new SQLMailStorage();
+    // #else
+    acc.storage = new DummyMailStorage();
     // #endif
   }
   setContentStorage(acc);
 }
 
 export function setContentStorage(acc: MailAccount) {
-  // #if [WEBMAIL]
-  // #else
+  // #if [!WEBMAIL]
   if (acc.contentStorage.isEmpty) {
     // First entry will be used for reading
     acc.contentStorage.add(new SQLSourceEMail());
@@ -37,12 +35,10 @@ export function setContentStorage(acc: MailAccount) {
 }
 
 export function newSearchEMail(): SearchEMail {
-  // #if [WEBMAIL]
-  if (isWebMail) {
-    return new SearchEMail(); // TODO server-side search
-  }
-  // #else
+  // #if [!WEBMAIL]
   return new SQLSearchEMail();
+  // #else
+  return new SearchEMail(); // TODO server-side search
   // #endif
 }
 

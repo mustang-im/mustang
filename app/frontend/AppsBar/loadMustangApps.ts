@@ -1,6 +1,8 @@
 import { contactsMustangApp } from "../Contacts/ContactsMustangApp";
 import { chatMustangApp } from "../Chat/ChatMustangApp";
+// #if [PROPRIETARY]
 import { meetMustangApp } from "../Meet/MeetMustangApp";
+// #endif
 import { mailMustangApp } from "../Mail/MailMustangApp";
 import { calendarMustangApp } from "../Calendar/CalendarMustangApp";
 import { filesMustangApp } from "../Files/FilesMustangApp";
@@ -13,7 +15,9 @@ export function loadMustangApps() {
     contactsMustangApp,
     mailMustangApp,
     chatMustangApp,
+    // #if [PROPRIETARY]
     meetMustangApp,
+    // #endif
     calendarMustangApp,
     filesMustangApp,
     webAppsMustangApp,

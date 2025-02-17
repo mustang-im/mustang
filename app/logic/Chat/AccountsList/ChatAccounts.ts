@@ -1,20 +1,20 @@
 import { ChatAccount } from '../ChatAccount';
 import { XMPPAccount } from '../XMPP/XMPPAccount';
-// #if [WEBMAIL]
-import { DummyChatStorage } from '../SQL/DummyChatStorage';
-// #else
+// #if [!WEBMAIL]
 import { MatrixAccount } from '../Matrix/MatrixAccount';
 import { SQLChatStorage } from '../SQL/SQLChatStorage';
+// #else
+import { DummyChatStorage } from '../SQL/DummyChatStorage';
 // #endif
 import { NotReached } from '../../util/util';
 import type { Collection } from 'svelte-collections';
 
 export function newChatAccountForProtocol(protocol: string): ChatAccount {
   let acc = _newChatAccountForProtocol(protocol);
-  // #if [WEBMAIL]
-  acc.storage = new DummyChatStorage();
-  // #else
+  // #if [!WEBMAIL]
   acc.storage = new SQLChatStorage();
+  // #else
+  acc.storage = new DummyChatStorage();
   // #endif
   return acc;
 }
@@ -23,8 +23,7 @@ function _newChatAccountForProtocol(protocol: string): ChatAccount {
   if (protocol == "xmpp") {
     return new XMPPAccount() as any as ChatAccount;
   }
-  // #if [WEBMAIL]
-  // #else
+  // #if [!WEBMAIL]
   if (protocol == "matrix") {
     return new MatrixAccount() as any as ChatAccount;
   } else if (protocol == "chat") {
@@ -34,8 +33,7 @@ function _newChatAccountForProtocol(protocol: string): ChatAccount {
   throw new NotReached(`Unsupported chat account type ${protocol}`);
 }
 
-// #if [WEBMAIL]
-// #else
+// #if [!WEBMAIL]
 export async function readChatAccounts(): Promise<Collection<ChatAccount>> {
   return await SQLChatStorage.readChatAccounts();
 }

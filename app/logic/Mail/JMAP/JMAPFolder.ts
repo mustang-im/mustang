@@ -316,10 +316,10 @@ export class JMAPFolder extends Folder {
   }
 
   async addMessage(email: EMail) {
-    // #if [WEBMAIL]
-    await this.addMessageFromProperties(email);
-    // #else
+    // #if [!WEBMAIL]
     await this.addMessageFromMIME(email);
+    // #else
+    await this.addMessageFromProperties(email);
     // #endif
   }
 

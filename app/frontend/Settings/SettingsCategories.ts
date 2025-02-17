@@ -1,7 +1,6 @@
 import { SettingsCategory, AccountSettingsCategory as AccSetting } from "./Window/SettingsCategory";
 import { mailMustangApp } from "../Mail/MailMustangApp";
 import { webAppsMustangApp } from "../WebApps/WebAppsMustangApp";
-import { meetMustangApp } from "../Meet/MeetMustangApp";
 import { contactsMustangApp } from "../Contacts/ContactsMustangApp";
 import { calendarMustangApp } from "../Calendar/CalendarMustangApp";
 import { chatMustangApp } from "../Chat/ChatMustangApp";
@@ -20,26 +19,27 @@ import AccountFolders from "./Mail/Account/Folders.svelte";
 import AccountIdentity from "./Mail/Account/Identity.svelte";
 import AccountXMPPServer from "./Chat/AccountXMPPServer.svelte";
 import ChatNotifications from "./Chat/Notifications.svelte";
-import Devices from "./Meet/Devices.svelte";
 import About from "./About/About.svelte";
 import Licenses from "./About/Licenses.svelte";
 import Test from "./About/Test.svelte";
-// #if [WEBMAIL]
-// #else
+// #if [!WEBMAIL]
 import SetupMail from "../Setup/Mail/SetupMail.svelte";
 import SetupChat from "../Setup/Chat/SetupChat.svelte";
 import SetupCalendar from "../Setup/Calendar/SetupCalendar.svelte";
 import SetupContacts from "../Setup/Contacts/SetupContacts.svelte";
-import SetupMeetAccount from "../Setup/Meet/SetupMeetAccount.svelte";
 // #endif
 import { Account } from "../../logic/Abstract/Account";
 import { MailAccount } from "../../logic/Mail/MailAccount";
 import { XMPPAccount } from "../../logic/Chat/XMPP/XMPPAccount";
-// #if [WEBMAIL]
-// #else
+// #if [!WEBMAIL]
 import { MatrixAccount } from "../../logic/Chat/Matrix/MatrixAccount";
 // #endif
+// #if [PROPRIETARY]
+import { meetMustangApp } from "../Meet/MeetMustangApp";
+import SetupMeetAccount from "../Setup/Meet/SetupMeetAccount.svelte";
 import { M3Account } from "../../logic/Meet/M3Account";
+import Devices from "./Meet/Devices.svelte";
+// #endif
 import { ArrayColl } from "svelte-collections";
 import { ChatAccount } from "../../logic/Chat/ChatAccount";
 import { gt } from "../../l10n/l10n";
@@ -64,8 +64,7 @@ mailSettings.subCategories.addAll([
   new SettingsCategory("mail-tags", gt`Tags`, MailTags),
 ]);
 mailSettings.accounts = appGlobal.emailAccounts;
-// #if [WEBMAIL]
-// #else
+// #if [!WEBMAIL]
 mailSettings.newAccountUI = SetupMail;
 // #endif
 mailSettings.forApp = mailMustangApp;
@@ -82,16 +81,14 @@ chatSettings.subCategories.addAll([
   new SettingsCategory("chat-notifications", gt`Notifications`, ChatNotifications),
 ]);
 chatSettings.accounts = appGlobal.chatAccounts;
-// #if [WEBMAIL]
-// #else
+// #if [!WEBMAIL]
 chatSettings.newAccountUI = SetupChat;
 // #endif
 chatSettings.forApp = chatMustangApp;
 settingsCategories.add(chatSettings);
 
 accountSettings.add(new AccSetting(XMPPAccount, "xmpp-server", gt`Server`, AccountXMPPServer));
-// #if [WEBMAIL]
-// #else
+// #if [!WEBMAIL]
 accountSettings.add(new AccSetting(MatrixAccount, "matrix-server", gt`Server`, AccountURLServer));
 // #endif
 accountSettings.add(new AccSetting(ChatAccount, "chat-send", gt`Send`, null));
@@ -101,8 +98,7 @@ const calendarSettings = new SettingsCategory("calendar", gt`Calendar`, null, tr
 calendarSettings.subCategories.addAll([
 ]);
 calendarSettings.accounts = appGlobal.calendars;
-// #if [WEBMAIL]
-// #else
+// #if [!WEBMAIL]
 calendarSettings.newAccountUI = SetupCalendar;
 // #endif
 calendarSettings.forApp = calendarMustangApp;
@@ -112,25 +108,27 @@ const contactsSettings = new SettingsCategory("contacts", gt`Contacts`, null, tr
 contactsSettings.subCategories.addAll([
 ]);
 contactsSettings.accounts = appGlobal.addressbooks;
-// #if [WEBMAIL]
-// #else
+// #if [!WEBMAIL]
 contactsSettings.newAccountUI = SetupContacts;
 // #endif
 contactsSettings.forApp = contactsMustangApp;
 settingsCategories.add(contactsSettings);
 
+// #if [PROPRIETARY]
 const meetSettings = new SettingsCategory("meet", gt`Meet`, null, true);
 meetSettings.subCategories.addAll([
   new SettingsCategory("meet-appearance", gt`Appearance`),
   new SettingsCategory("meet-devices", gt`Devices`, Devices),
 ]);
 meetSettings.accounts = appGlobal.meetAccounts;
-// #if [WEBMAIL]
-// #else
+// #endif
+// #if [!WEBMAIL && PROPRIETARY]
 meetSettings.newAccountUI = SetupMeetAccount;
 // #endif
+// #if [PROPRIETARY]
 meetSettings.forApp = meetMustangApp;
 settingsCategories.add(meetSettings);
+// #endif
 
 accountSettings.add(new AccSetting(M3Account, "m3-server", gt`Server`, AccountURLServer, true));
 

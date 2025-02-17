@@ -1,11 +1,11 @@
 import { Addressbook } from '../Addressbook';
-// #if [WEBMAIL]
-import { DummyAddressbookStorage } from '../SQL/DummyAddressbookStorage';
-// #else
+// #if [!WEBMAIL]
 import { EWSAddressbook } from '../EWS/EWSAddressbook';
 import { OWAAddressbook } from '../OWA/OWAAddressbook';
 import { ActiveSyncAddressbook } from '../ActiveSync/ActiveSyncAddressbook';
 import { SQLAddressbookStorage } from '../SQL/SQLAddressbookStorage';
+// #else
+import { DummyAddressbookStorage } from '../SQL/DummyAddressbookStorage';
 // #endif
 import { NotReached, NotImplemented } from '../../util/util';
 import type { Collection } from 'svelte-collections';
@@ -13,10 +13,10 @@ import { gt } from '../../../l10n/l10n';
 
 export function newAddressbookForProtocol(protocol: string): Addressbook {
   let ab = _newAddressbookForProtocol(protocol);
-  // #if [WEBMAIL]
-  ab.storage = new DummyAddressbookStorage();
-   // #else
+  // #if [!WEBMAIL]
   ab.storage = new SQLAddressbookStorage();
+   // #else
+  ab.storage = new DummyAddressbookStorage();
   // #endif
   return ab;
 }
@@ -24,14 +24,19 @@ export function newAddressbookForProtocol(protocol: string): Addressbook {
 function _newAddressbookForProtocol(protocol: string): Addressbook {
   if (protocol == "addressbook-local") {
     return new Addressbook();
-  } else if (protocol == "addressbook-jmap") {
+  }
+  // #if [!WEBMAIL || WEBMAIL=JMAP]
+  if (protocol == "addressbook-jmap") {
     throw new NotImplemented("JMAP Addressbook not implemented"); // return new JMAPAddressbook();
   }
-  // #if [WEBMAIL]
-  // #else
+  // #endif
+  // #if [(!WEBMAIL || WEBMAIL=EWS) && PROPRIETARY]
   if (protocol == "addressbook-ews") {
     return new EWSAddressbook();
-  } else if (protocol == "addressbook-owa") {
+  }
+  // #endif
+  // #if [!WEBMAIL && PROPRIETARY]
+  if (protocol == "addressbook-owa") {
     return new OWAAddressbook();
   } else if (protocol == "addressbook-activesync") {
     return new ActiveSyncAddressbook();
@@ -40,8 +45,7 @@ function _newAddressbookForProtocol(protocol: string): Addressbook {
   throw new NotReached(`Unknown addressbook type ${protocol}`);
 }
 
-// #if [WEBMAIL]
-// #else
+// #if [!WEBMAIL]
 export async function readAddressbooks(): Promise<Collection<Addressbook>> {
   let addressbooks = await SQLAddressbookStorage.readAddressbooks();
   if (addressbooks.isEmpty) {

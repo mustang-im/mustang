@@ -48,8 +48,9 @@ export async function login(): Promise<MailAccount> {
 }
 
 async function getConfig(): Promise<{ mail: JMAPAccount, addressbook?: Addressbook, calendar?: Calendar, chat?: ChatAccount, meet?: MeetAccount }> {
+  const kAccountConfigURL = "/config/autoconfig.xml";
   let ky = await appGlobal.remoteApp.kyCreate();
-  let configFile = await ky.get(accountConfigWebMail).text() as string;
+  let configFile = await ky.get(kAccountConfigURL).text() as string;
   let configs = readConfigFromXML(configFile, null, "autoconfig-isp");
   let mailConfig = configs.first;
   assert(mailConfig instanceof JMAPAccount, "Mail, contacts and calendar account must be JMAP");

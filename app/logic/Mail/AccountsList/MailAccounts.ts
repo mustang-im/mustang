@@ -1,18 +1,22 @@
 import { MailAccount } from '../MailAccount';
+// #if [!WEBMAIL || WEBMAIL=JMAP]
 import { JMAPAccount } from '../JMAP/JMAPAccount';
-// #if [WEBMAIL]
-// #else
+// #endif
+// #if [(!WEBMAIL || WEBMAIL=EWS) && PROPRIETARY]
+import { EWSAccount } from '../EWS/EWSAccount';
+// #endif
+// #if [!WEBMAIL]
 import { IMAPAccount } from '../IMAP/IMAPAccount';
 import { POP3Account } from '../POP3/POP3Account';
 import { SMTPAccount } from '../SMTP/SMTPAccount';
-import { EWSAccount } from '../EWS/EWSAccount';
-import { OWAAccount } from '../OWA/OWAAccount';
-import { ActiveSyncAccount } from '../ActiveSync/ActiveSyncAccount';
 import { SQLMailStorage } from '../SQL/SQLMailStorage';
 // #endif
+// #if [!WEBMAIL && PROPRIETARY]
+import { OWAAccount } from '../OWA/OWAAccount';
+import { ActiveSyncAccount } from '../ActiveSync/ActiveSyncAccount';
+// #endif
 import { setStorage } from '../Store/setStorage';
-import { isWebMail } from '../../build';
-import { NotReached, assert } from '../../util/util';
+import { NotReached } from '../../util/util';
 import type { Collection } from 'svelte-collections';
 
 export function newAccountForProtocol(protocol: string): MailAccount {
@@ -22,36 +26,40 @@ export function newAccountForProtocol(protocol: string): MailAccount {
 }
 
 function _newAccountForProtocol(protocol: string): MailAccount {
-  // #if [WEBMAIL]
-  if (isWebMail) {
-    assert(protocol == "jmap", "Need JMAP account for webmail");
+  // #if [!WEBMAIL || WEBMAIL=JMAP]
+  if (protocol == "jmap") {
     return new JMAPAccount();
   }
-  // #else
-
+  // #endif
+  // #if [(!WEBMAIL || WEBMAIL=EWS) && PROPRIETARY]
+  if (protocol == "ews") {
+    return new EWSAccount();
+  }
+  // #endif
+  // #if [!WEBMAIL]
   if (protocol == "imap") {
     return new IMAPAccount();
   } else if (protocol == "pop3") {
     return new POP3Account();
-  } else if (protocol == "jmap") {
-    return new JMAPAccount();
   } else if (protocol == "smtp") {
     return new SMTPAccount();
-  } else if (protocol == "ews") {
-    return new EWSAccount();
-  } else if (protocol == "owa") {
+  }
+  // #endif
+  // #if [!WEBMAIL && PROPRIETARY]
+  if (protocol == "owa") {
     return new OWAAccount();
   } else if (protocol == "activesync") {
     return new ActiveSyncAccount();
-  } else if (protocol == "mail") {
+  }
+  // #endif
+  if (protocol == "mail") {
     return new MailAccount();
   }
   throw new NotReached(`Unknown account type ${protocol}`);
   // #endif
 }
 
-// #if [WEBMAIL]
-// #else
+// #if [!WEBMAIL]
 export async function readMailAccounts(): Promise<Collection<MailAccount>> {
   return await SQLMailStorage.readMailAccounts();
 }

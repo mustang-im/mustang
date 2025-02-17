@@ -1,8 +1,8 @@
-// #if [WEBMAIL]
+// #if [!WEBMAIL]
+<webview bind:this={webviewE} src={url} {title} />
+// #else
 <!-- TODO Security: Test that this <webview> is untrusted and jailed -->
 <iframe bind:this={webviewE} src={url} {title} />
-// #else
-<webview bind:this={webviewE} src={url} {title} />
 // #endif
 
 <!--
@@ -21,8 +21,7 @@
 -->
 
 <script lang="ts">
-  // #if [WEBMAIL]
-  // #else
+  // #if [!WEBMAIL]
   import { buildContextMenu, MenuItem, type ContextInfo } from "./ContextMenu";
   import { appGlobal } from "../../logic/app";
   // import { Menu } from "@svelteuidev/core";
@@ -101,8 +100,7 @@
     webviewE.addEventListener("dom-ready", async () => {
       try {
         dispatch("webview", webviewE);
-        // #if [WEBMAIL]
-        // #else
+        // #if [!WEBMAIL]
         if (autoSize) {
           webviewE.addEventListener("did-finish-load", onLoadResize);
         }
@@ -114,8 +112,7 @@
       }
     }, { once: true });
 
-    // #if [WEBMAIL]
-    // #else
+    // #if [!WEBMAIL]
     // <https://www.electronjs.org/docs/latest/api/webview-tag/#event-context-menu>
     webviewE.addEventListener("context-menu", event => catchErrors(() => {
       onContextMenu((event as any).params);
@@ -123,8 +120,7 @@
     // #endif
   }
 
-  // #if [WEBMAIL]
-  // #else
+  // #if [!WEBMAIL]
   async function addClickListener() {
     let id = (webviewE as any).getWebContentsId();
     await appGlobal.remoteApp.addEventListenerWebContents(id, "input-event", (event) => {

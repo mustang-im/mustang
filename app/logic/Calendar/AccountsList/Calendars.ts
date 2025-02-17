@@ -1,22 +1,22 @@
 import { Calendar } from '../Calendar';
-// #if [WEBMAIL]
-import { DummyCalendarStorage } from '../SQL/DummyCalendarStorage';
-// #else
+// #if [!WEBMAIL]
 import { EWSCalendar } from '../EWS/EWSCalendar';
 import { OWACalendar } from '../OWA/OWACalendar';
 import { ActiveSyncCalendar } from '../ActiveSync/ActiveSyncCalendar';
 import { SQLCalendarStorage } from '../SQL/SQLCalendarStorage';
+// #else
+import { DummyCalendarStorage } from '../SQL/DummyCalendarStorage';
 // #endif
 import { NotReached, NotImplemented } from '../../util/util';
-import { ArrayColl, type Collection } from 'svelte-collections';
+import type { Collection } from 'svelte-collections';
 import { gt } from '../../../l10n/l10n';
 
 export function newCalendarForProtocol(protocol: string): Calendar {
   let calendar = _newCalendarForProtocol(protocol);
-  // #if [WEBMAIL]
-  calendar.storage = new DummyCalendarStorage();
-  // #else
+  // #if [!WEBMAIL]
   calendar.storage = new SQLCalendarStorage();
+  // #else
+  calendar.storage = new DummyCalendarStorage();
   // #endif
   return calendar;
 }
@@ -24,16 +24,19 @@ export function newCalendarForProtocol(protocol: string): Calendar {
 function _newCalendarForProtocol(protocol: string): Calendar {
   if (protocol == "calendar-local") {
     return new Calendar();
-  } else if (protocol == "calendar-jmap") {
+  }
+  // #if [!WEBMAIL || WEBMAIL=JMAP]
+  if (protocol == "calendar-jmap") {
     throw new NotImplemented("JMAP Calendar not implemented"); // return new JMAPCalendar();
   }
-  // #if [WEBMAIL]
-  // #else
+  // #endif
+  // #if [(!WEBMAIL || WEBMAIL=EWS) && PROPRIETARY]
   if (protocol == "calendar-ews") {
     return new EWSCalendar();
-  } else if (protocol == "calendar-ews") {
-    return new EWSCalendar();
-  } else if (protocol == "calendar-owa") {
+  }
+  // #endif
+  // #if [!WEBMAIL && PROPRIETARY]
+  if (protocol == "calendar-owa") {
     return new OWACalendar();
   } else if (protocol == "calendar-activesync") {
     return new ActiveSyncCalendar();
@@ -42,8 +45,7 @@ function _newCalendarForProtocol(protocol: string): Calendar {
   throw new NotReached(`Unknown calendar type ${protocol}`);
 }
 
-// #if [WEBMAIL]
-// #else
+// #if [!WEBMAIL]
 export async function readCalendars(): Promise<Collection<Calendar>> {
   let calendars = await SQLCalendarStorage.readCalendars();
   if (calendars.isEmpty) {
