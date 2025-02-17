@@ -17,6 +17,7 @@ import { notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/Lock";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
+import { FilterMoment } from "./FilterRules/FilterMoments";
 
 export class EMail extends Message {
   @notifyChangedProperty
@@ -305,6 +306,7 @@ export class EMail extends Message {
     if (this.isDeleted || !this.mime || await this.isDownloadCompleteDoublecheck()) {
       return;
     }
+    await this.processMessage();
     await this.storage.saveMessage(this);
     let contentSaves = new PromiseAllDone();
     for (let contentStorage of this.folder.account.contentStorage) {
@@ -414,6 +416,20 @@ export class EMail extends Message {
   async download() {
     throw new AbstractFunction();
     //this.mime = await SMTPAccount.getMIME(this);
+  }
+
+  /**
+   * Runs filters, spam filter, and content interpreters on the message.
+   *
+   * Should be called after the entire message has been downloaded,
+   * and before it is stored.
+   */
+  async processMessage() {
+    let rules = this.folder?.account?.filterRuleActions.contents;
+    rules = rules?.filter(rule => rule.when == FilterMoment.IncomingBeforeSpam || rule.when == FilterMoment.IncomingAfterSpam);
+    for (let rule of rules) {
+      await rule.run(this);
+    }
   }
 
   async findThread(messages: Collection<EMail>): Promise<string | null>{
