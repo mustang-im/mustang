@@ -38,7 +38,7 @@
   }
 
   /** Property to UI control */
-  $: selectedMIMETypes, notInSetter(toFileTypes, inSetter);
+  $: selectedMIMETypes, avoidLoop(toFileTypes, inSetter);
   function toFileTypes() {
     selectedFileTypes.clear();
     if (!selectedMIMETypes.length) {
