@@ -155,7 +155,8 @@ export class SearchEMail extends Observable {
     if (this.sentDateMax && !(this.sentDateMax.getTime() >= email.sent.getTime())) {
       return false;
     }
-    if (this.bodyText && !email.rawText?.includes(this.bodyText)) { // TODO `.text`? Avoid triggering a full load
+    if (this.bodyText && !email.rawText?.includes(this.bodyText) && // TODO `.text`? Avoid triggering a full load
+        !email.subject.includes(this.bodyText)) {
       return false;
     }
     if (this.tags.hasItems) {
