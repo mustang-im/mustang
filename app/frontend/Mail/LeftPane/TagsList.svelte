@@ -30,7 +30,7 @@
     if (selectedTags.hasItems) {
       let search = newSearchEMail();
       search.folder = folder;
-      search.tags = selectedTags;
+      search.tags.replaceAll(selectedTags);
       searchMessages = await search.startSearch();
     } else {
       clear();

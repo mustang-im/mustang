@@ -16,7 +16,7 @@ export class SQLSearchEMail extends SearchEMail {
     if (this.folder && this.account) {
       assert(this.account == this.folder.account, "Folder and account need to match");
     }
-    if (this.hasAttachmentMIMETypes) {
+    if (this.hasAttachmentMIMETypes?.hasItems) {
       this.hasAttachment = true;
     }
     // TODO 1:n relations attachments and recipients
@@ -44,7 +44,7 @@ export class SQLSearchEMail extends SearchEMail {
         $${this.includesPerson?.emailAddresses.hasItems ? sql` AND emailPerson.emailAddress IN ${this.includesPerson.emailAddresses.contents.map(c => c.value)} ` : sql``}
         $${this.hasAttachment === true ? sql` AND emailAttachment.disposition = 'attachment' ` : sql``}
         $${this.hasAttachment === false ? sql` AND emailAttachment.id IS NULL ` : sql``}
-        $${this.hasAttachmentMIMETypes ? sql` AND emailAttachment.mimeType IN ${this.hasAttachmentMIMETypes} ` : sql``}
+        $${this.hasAttachmentMIMETypes?.hasItems ? sql` AND emailAttachment.mimeType IN ${this.hasAttachmentMIMETypes.contents} ` : sql``}
         $${this.tags?.hasItems ? sql` AND emailTag.tagName IN ${this.tags.contents.map(tag => tag.name)} ` : sql``}
         $${this.bodyText ? sql` AND (LOWER(subject) LIKE ${'%' + this.bodyText.toLowerCase() + '%'} OR LOWER(plaintext) LIKE ${'%' + this.bodyText.toLowerCase() + '%'}) ` : sql``}
       GROUP BY email.id

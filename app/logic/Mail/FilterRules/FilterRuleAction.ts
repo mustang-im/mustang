@@ -1,40 +1,56 @@
 import type { EMail } from "../EMail";
 import { FilterMoment } from "./FilterMoments";
 import { SearchEMail } from "../Store/SearchEMail";
+import type { MailAccount } from "../MailAccount";
 import type { Folder } from "../Folder";
 import { getTagByName, type Tag } from "../Tag";
-import { Observable } from "../../util/Observable";
+import { notifyChangedProperty, Observable } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { gt } from "../../../l10n/l10n";
+import { SetColl } from "svelte-collections";
 
 /** Does automatic user-defined actions on emails,
  * on defined moments (e.g. new email arrived, email sent etc.),
  * for emails that match user-defined criteria. */
 export class FilterRuleAction extends Observable {
-  name: string = gt`New rule`;
+  @notifyChangedProperty
+  name: string = "";
   /** For which email and at which moment the filter should be run */
+  @notifyChangedProperty
   when: FilterMoment = FilterMoment.IncomingBeforeSpam;
   /** For which subset of emails the filter should run */
-  criteria = new SearchEMail();
+  readonly criteria = new SearchEMail();
 
   /** The following actions cannot be combined:
    * - Delete/spam actions with toFolder or markAsStarred
    */
   /** Move or copy (`copyToFolder`) the email to this folder. */
-  toFolder: Folder | undefined = undefined;
+  @notifyChangedProperty
+  toFolder: Folder | null = null;
   /** If `toFolder` and `copyToFolder`, then copy the email. instead of moving. */
-  copy: boolean | undefined = undefined;
-  addTag: Tag | undefined = undefined;
+  @notifyChangedProperty
+  copy: boolean | null = null;
+  readonly account: MailAccount;
+  readonly addTags = new SetColl<Tag>();
 
-  markAsRead: boolean | undefined = undefined;
-  markAsStarred: boolean | undefined = undefined;
+  @notifyChangedProperty
+  markAsRead: boolean | null = null;
+  @notifyChangedProperty
+  markAsStarred: boolean | null = null;
 
   /** Marks the message as spam, and maybe moves it to the spam folder */
-  markAsSpam: boolean | undefined = undefined;
+  @notifyChangedProperty
+  markAsSpam: boolean | null = null;
   /** Move the message to the trash folder */
-  deleteTrash: boolean | undefined = undefined;
+  @notifyChangedProperty
+  deleteTrash: boolean | null = null;
   /** Make this message disappear immediately. Do not move to trash. Use with care. */
-  deleteImmediately: boolean | undefined = undefined;
+  @notifyChangedProperty
+  deleteImmediately: boolean | null = null;
+
+  constructor(account: MailAccount) {
+    super();
+    this.account = account;
+  }
 
   /** Checks for a match, and runs the filter action, as needed. */
   async run(email: EMail): Promise<void> {
@@ -47,16 +63,28 @@ export class FilterRuleAction extends Observable {
   /** Executes the filter action.
    * Unconditionally, i.e. does not check for match. */
   async doAction(email: EMail): Promise<void> {
-    if (this.markAsRead !== undefined) {
+    if (booleanHasValue(this.markAsRead)) {
       await email.markRead(this.markAsRead);
     }
-    if (this.markAsStarred !== undefined) {
+    if (booleanHasValue(this.markAsStarred)) {
       await email.markStarred(this.markAsStarred);
     }
-    if (this.addTag !== undefined) {
-      await email.addTag(this.addTag);
+    if (this.addTags.hasItems) {
+      for (let tag of this.addTags) {
+        await email.addTag(tag);
+      }
     }
-    if (this.toFolder !== undefined) {
+    if (booleanHasValue(this.markAsSpam)) {
+      await email.treatSpam(this.markAsSpam);
+      if (this.markAsSpam) {
+        return;
+      }
+    }
+    if (booleanHasValue(this.deleteTrash) || booleanHasValue(this.deleteImmediately)) {
+      await email.deleteMessage();
+      return;
+    }
+    if (this.toFolder) {
       if (this.copy) {
         await this.toFolder.copyMessageHere(email);
       } else {
@@ -64,23 +92,10 @@ export class FilterRuleAction extends Observable {
       }
       return;
     }
-    if (this.markAsSpam !== undefined) {
-      await email.treatSpam(this.markAsSpam);
-      return;
-    }
-    if (this.deleteTrash !== undefined) {
-      await email.deleteMessage();
-      return;
-    }
-    if (this.deleteImmediately !== undefined) {
-      await email.deleteMessage(); // TODO immediately
-      return;
-    }
   }
 
   fromJSON(json: any) {
     this.when = sanitize.enum<FilterMoment>(json.when, Object.values(FilterMoment));
-    this.criteria = new SearchEMail();
     this.criteria.fromJSON(json.criteria);
     function boolean(value: boolean | undefined): boolean | undefined {
       return typeof (value) == "boolean" ? value : undefined;
@@ -92,8 +107,8 @@ export class FilterRuleAction extends Observable {
     this.deleteImmediately = boolean(json.deleteImmediately);
     this.copy = boolean(json.copy);
     // let folderAccount = appGlobal.emailAccounts.find(acc => acc.id == json.toFolderAccountID);
-    // this.toFolder = folderAccount?.findFolder(folder => folder.id == json.toFolder) ?? undefined;
-    this.addTag = getTagByName(json.addTag);
+    this.toFolder = this.account.findFolder(folder => folder.id == json.toFolder) ?? undefined;
+    this.addTags.replaceAll(sanitize.array(json.addTags, [])?.map(name => getTagByName(name)));
   }
 
   toJSON() {
@@ -106,9 +121,9 @@ export class FilterRuleAction extends Observable {
       deleteTrash: this.deleteTrash,
       deleteImmediately: this.deleteImmediately,
       copy: this.copy,
-      toFolderAccountID: this.toFolder?.account?.id,
+      // toFolderAccountID: this.toFolder?.account?.id,
       toFolder: this.toFolder?.id,
-      addTag: this.addTag?.name,
+      tags: this.addTags.contents.map(tag => tag.name),
     };
   }
 
@@ -117,4 +132,8 @@ export class FilterRuleAction extends Observable {
     clone.fromJSON(this.toJSON());
     return clone;
   }
+}
+
+function booleanHasValue(value: boolean | null | undefined): boolean {
+  return value === true || value === false;
 }

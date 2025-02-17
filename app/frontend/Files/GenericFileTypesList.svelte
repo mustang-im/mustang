@@ -13,11 +13,47 @@
 <script lang="ts">
   import { genericFileTypes, FileType } from '../../logic/Files/MIMETypes';
   import FastList from '../Shared/FastList.svelte';
-  import { ArrayColl, type Collection } from 'svelte-collections';
+  import { avoidLoop } from '../Util/svelte';
+  import { assert } from '../../logic/util/util';
+  import { ArrayColl, SetColl } from 'svelte-collections';
   import { t } from '../../l10n/l10n';
 
+  /** in/out */
+  export let selectedMIMETypes: SetColl<string> | null;
+
   let selectedFileType: FileType; /* in/out */
-  export let selectedFileTypes: Collection<FileType>;
+  let selectedFileTypes = new ArrayColl<FileType>();
+  let inSetter;
+
+  // UI control to in/out property
+  $: $selectedFileTypes, avoidLoop(toMIMEType, inSetter);
+  function toMIMEType() {
+    let mimetypes = $selectedFileTypes.contents.flatMap(type => type.mimeTypes);
+    if (mimetypes) {
+      selectedMIMETypes ??= new SetColl<string>();
+      selectedMIMETypes.replaceAll(mimetypes);
+    } else {
+      selectedMIMETypes = null;
+    }
+  }
+
+  /** Property to UI control */
+  $: selectedMIMETypes, notInSetter(toFileTypes, inSetter);
+  function toFileTypes() {
+    selectedFileTypes.clear();
+    if (!selectedMIMETypes.length) {
+      return;
+    }
+    for (let fileType of genericFileTypes) {
+      for (let mimeType of selectedMIMETypes) {
+        if (fileType.mimeTypes.includes(mimeType)) {
+          selectedFileTypes.add(fileType);
+          break;
+        }
+      }
+    }
+    assert(selectedFileTypes.hasItems, `Selected mime types ${selectedMIMETypes} not found in file types`);
+  }
 </script>
 
 <style>

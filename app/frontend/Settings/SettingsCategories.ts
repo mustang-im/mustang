@@ -12,6 +12,7 @@ import MailNotifications from "./Mail/Notifications.svelte";
 import MailRead from "./Mail/Read.svelte";
 import MailSend from "./Mail/Send.svelte";
 import MailTags from "./Mail/Tags.svelte";
+import MailRules from "./Mail/Rules.svelte";
 import AccountGeneral from "./AccountGeneral.svelte";
 import AccountURLServer from "./AccountURLServer.svelte";
 import AccountMailServer from "./Mail/Account/Server.svelte";
@@ -73,6 +74,7 @@ settingsCategories.add(mailSettings);
 accountSettings.add(new AccSetting(MailAccount, "mail-server", gt`Server`, AccountMailServer));
 accountSettings.add(new AccSetting(MailAccount, "mail-folders", gt`Folders`, AccountFolders));
 accountSettings.add(new AccSetting(MailAccount, "mail-identity", gt`Identity`, AccountIdentity));
+accountSettings.add(new AccSetting(MailAccount, "mail-identity", gt`Rules`, MailRules));
 
 const chatSettings = new SettingsCategory("chat", gt`Chat`, null, true);
 chatSettings.subCategories.addAll([

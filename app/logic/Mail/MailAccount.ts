@@ -133,7 +133,7 @@ export class MailAccount extends Account {
       MailIdentity.fromConfigJSON(json, this)));
     this.filterRuleActions.clear();
     this.filterRuleActions.addAll(sanitize.array(config.filterRuleActions, []).map(json => {
-      let rule = new FilterRuleAction();
+      let rule = new FilterRuleAction(this);
       rule.fromJSON(json);
       return rule;
     }));
