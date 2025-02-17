@@ -186,7 +186,7 @@ export class OAuth2 extends Observable {
    * @returns accessToken
    * @throws OAuth2Error
    */
-  protected async getAccessTokenFromParams(params: any, additionalHeaders?: any, tokenURL: string | void = this.tokenURL): Promise<string> {
+  protected async getAccessTokenFromParams(params: any, additionalHeaders?: any, tokenURL: string = this.tokenURL): Promise<string> {
     params.scope = this.scope;
     params.client_id = this.clientID;
     if (this.clientSecret) {
@@ -197,14 +197,16 @@ export class OAuth2 extends Observable {
       params.code_verifier = this.codeVerifierPKCE;
     }
 
-    let ky = await appGlobal.remoteApp.kyCreate();
-    let data = await ky.post(tokenURL, {
-      // Send 'application/x-www-form-urlencoded',
-      body: new URLSearchParams(params),
-      headers: additionalHeaders,
-      timeout: 3000,
-      throwHttpErrors: false,
-    }).json();
+    let response = await appGlobal.remoteApp.postHTTP(tokenURL, params, "json", {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json',
+        ...additionalHeaders,
+        timeout: 3000,
+        throwHttpErrors: false,
+      },
+    });
+    let data = response.data;
     if (data.error) {
       throw new OAuth2ServerError(data);
     }
