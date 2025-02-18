@@ -27,12 +27,22 @@
       {$t`${searchMessages?.length} mails`}
     {/if}
   </hbox>
-  <ExpandSection headerBox={false}>
-    <hbox class="header" slot="header">
-      {$t`Save search as folder`}
-    </hbox>
-    <SavedSearchUI {search} on:close={onClear} />
-  </ExpandSection>
+  {#if !expandedCreateRule}
+    <ExpandSection headerBox={false} bind:expanded={expandedSavedSearch}>
+      <hbox class="header" slot="header">
+        {$t`Save search as folder`}
+      </hbox>
+      <SavedSearchUI {search} on:close={onClear} />
+    </ExpandSection>
+  {/if}
+  {#if !expandedSavedSearch}
+    <ExpandSection headerBox={false} bind:expanded={expandedCreateRule}>
+      <hbox class="header" slot="header">
+        {$t`Create rule`}
+      </hbox>
+      <RulesFromSearchUI {search} on:close={onClear} />
+    </ExpandSection>
+  {/if}
 </vbox>
 
 <script lang="ts">
@@ -42,6 +52,7 @@
   import { selectedMessage } from "../Selected";
   import SearchCriteria from "./SearchCriteria.svelte";
   import SavedSearchUI from "./SavedSearchUI.svelte";
+  import RulesFromSearchUI from "./RulesFromSearchUI.svelte";
   import SearchField from "../../Shared/SearchField.svelte";
   import ExpandSection from "../../Shared/ExpandSection.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
@@ -101,6 +112,9 @@
       searchFieldEl.focus();
     }
   });
+
+  let expandedSavedSearch = false;
+  let expandedCreateRule = false;
 </script>
 
 <style>

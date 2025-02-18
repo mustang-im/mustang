@@ -47,9 +47,12 @@ export class FilterRuleAction extends Observable {
   @notifyChangedProperty
   deleteImmediately: boolean | null = null;
 
-  constructor(account: MailAccount) {
+  constructor(account: MailAccount, criteria?: SearchEMail) {
     super();
     this.account = account;
+    if (criteria) {
+      this.criteria = criteria;
+    }
   }
 
   /** Checks for a match, and runs the filter action, as needed. */
