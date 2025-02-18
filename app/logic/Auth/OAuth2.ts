@@ -202,9 +202,9 @@ export class OAuth2 extends Observable {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': 'application/json',
         ...additionalHeaders,
-        timeout: 3000,
-        throwHttpErrors: false,
       },
+      timeout: 3000,
+      throwHttpErrors: false,
     });
     let data = response.data;
     if (data.error) {
