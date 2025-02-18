@@ -11,6 +11,7 @@
     <OutgoingIcon size="16px" slot="icon" />
   </Checkbox>
   <Checkbox bind:checked={isUnread} allowIndetermined={true}
+    on:change={updateUnread}
     label={isUnread === false ? $t`read` : $t`Unread`}
     classes="unread {isUnread ? "is-unread" : ""}">
     <CircleIcon size="16px" slot="icon" />
@@ -20,22 +21,25 @@
     classes="star {search.isStarred ? "starred" : ""}">
     <StarIcon size="16px" slot="icon" />
   </Checkbox>
-  <Checkbox bind:checked={hasAttachment} allowIndetermined={true}
+  <Checkbox bind:checked={search.hasAttachment} allowIndetermined={true}
+    on:change={updateAttachment}
     label={$t`Attachment`}>
     <AttachmentIcon size="16px" slot="icon" />
   </Checkbox>
-  {#if hasAttachment}
+  {#if search.hasAttachment}
     <vbox flex class="listbox">
       <GenericFileTypesList bind:selectedMIMETypes={search.hasAttachmentMIMETypes} />
     </vbox>
     <!-- TODO use Slider --
     <grid class="size">
       <Checkbox bind:checked={isMinSize}
+        on:change={updateSizeMin}
         label="At least " />
       <input type="number" bind:value={minSizeMB}
         min={1} max={20} disabled={!isMinSize} />
       MB
       <Checkbox bind:checked={isMaxSize}
+        on:change={updateSizeMax}
         label="Less than " />
       <input type="number" bind:value={maxSizeMB}
         min={1} max={20} maxlength="2" disabled={!isMaxSize} />
@@ -44,6 +48,7 @@
     -->
   {/if}
   <Checkbox bind:checked={hasPerson} allowFalse={false} allowIndetermined={true}
+    on:change={updatePerson}
     label="{hasPerson ? search.includesPerson?.name ?? $t`Person` : $t`Person`}">
     <PersonIcon size="16px" slot="icon" />
   </Checkbox>
@@ -53,6 +58,7 @@
     </vbox>
   {/if}
   <Checkbox bind:checked={hasTag} allowFalse={false} allowIndetermined={true}
+    on:change={updateTag}
     label={$t`Tags`}>
     <TagIcon size="16px" slot="icon" />
   </Checkbox>
@@ -63,23 +69,25 @@
   {/if}
   {#if appGlobal.emailAccounts.length > 1}
     <Checkbox bind:checked={hasAccount} allowFalse={false} allowIndetermined={true}
-      label={$t`${account?.name} account only`}>
+      on:change={updateAccount}
+      label={$t`${search.account?.name} account only`}>
       <AccountIcon size="16px" slot="icon" />
     </Checkbox>
     {#if hasAccount || hasFolder}
       <vbox class="listbox">
-        <AccountList accounts={appGlobal.emailAccounts} bind:selectedAccount={account} />
+        <AccountList accounts={appGlobal.emailAccounts} bind:selectedAccount={search.account} />
       </vbox>
     {/if}
   {/if}
-  {#if account}
+  {#if search.account}
     <Checkbox bind:checked={hasFolder} allowFalse={false} allowIndetermined={true}
-      label={$t`${folder?.name} folder only`}>
+      on:change={updateFolder}
+      label={$t`${search.folder?.name} folder only`}>
       <FolderIcon size="16px" slot="icon" />
     </Checkbox>
     {#if hasFolder}
       <vbox flex class="listbox">
-        <FolderList folders={account.rootFolders} bind:selectedFolder={folder} bind:selectedFolders />
+        <FolderList folders={search.account.rootFolders} bind:selectedFolder={search.folder} bind:selectedFolders />
       </vbox>
     {/if}
   {/if}
@@ -126,7 +134,6 @@
   let hasSizeMin: boolean | null = null;
   let hasSizeMax: boolean | null = null;
   let hasPerson: boolean | null = null;
-  let hasAttachment: boolean | null = null;
 
   // Translate values from `SearchEMail` to how the UI controls show it
   let isUnread: boolean | null = null;
@@ -136,12 +143,11 @@
   // $: search, loadSearch() // only when a different search is loaded, *not* `$search` when its contents change -- TODO Unfortunately, triggers when anything in this file does `search.foo =`
   onMount(loadSearch);
   function loadSearch() {
-    console.log("loadSearch", search);
+    console.log("loadSearch", search.toJSON(), search);
     // Enable/disable: `SearchEmail` to controls
     hasAccount = search.account ? true : null;
     hasFolder = search.folder ? true : null;
     hasPerson = search.includesPerson ? true : null;
-    hasAttachment = search.hasAttachment;
     hasTag = search.tags.hasItems ? true : null;
     hasSizeMax = search.sizeMax ? true : null;
     hasSizeMin = search.sizeMin ? true : null;
@@ -153,48 +159,39 @@
   }
 
   // Translate values from UI controls to `SearchEMail`
-  $: isUnread, updateUnread()
   function updateUnread() {
     search.isRead = isUnread === null ? null : !isUnread;
   }
-  $: hasSizeMin, sizeMinMB, updateSizeMin();
+  $: sizeMinMB, updateSizeMin();
   function updateSizeMin() {
     search.sizeMin = hasSizeMin ? sizeMinMB * 1048576 : null;
   }
-  $: hasSizeMax, sizeMaxMB, updateSizeMax();
+  $: sizeMaxMB, updateSizeMax();
   function updateSizeMax() {
     search.sizeMax = hasSizeMax ? sizeMaxMB * 1048576 : null;
   }
 
   // Enable/disable: From UI controls to `SearchEMail`
-  let account = $selectedAccount;
-  let folder = $selectedFolder;
   let selectedFolders: ArrayColl<Folder>;
-  $: hasAccount, account, updateAccount()
   function updateAccount() {
-    search.account = hasAccount ? account : null;
+    search.account = hasAccount ? $selectedAccount : null;
   }
-  $: hasFolder, folder, updateFolder()
   function updateFolder() {
-    search.folder = hasFolder ? folder : null;
+    search.folder = hasFolder ? $selectedFolder : null;
   }
   $: availablePersons = hasPerson && searchMessages ? personsInEMails(searchMessages) : appGlobal.personalAddressbook.persons;
-  $: hasPerson, updatePerson()
   function updatePerson() {
     if (!hasPerson) {
       search.includesPerson = null;
     }
   }
-  $: hasTag, updateTag()
   function updateTag() {
     if (!hasTag) {
       search.tags?.clear();
     }
   }
-  $: hasAttachment, updateAttachment()
   function updateAttachment() {
-    search.hasAttachment = hasAttachment;
-    if (!hasAttachment) {
+    if (!search.hasAttachment) {
       search.hasAttachmentMIMETypes.clear();
     }
   }

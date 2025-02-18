@@ -28,6 +28,8 @@
 
 <script lang="ts">
   import { Checkbox } from "@svelteuidev/core";
+  import { createEventDispatcher } from "svelte";
+  const dispatch = createEventDispatcher<{ change: boolean }>();
 
   export let checked;
   export let label = "";
@@ -51,6 +53,7 @@
     } else {
       checked = true;
     }
+    dispatch("change", checked);
   }
 </script>
 
