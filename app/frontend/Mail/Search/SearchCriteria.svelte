@@ -73,7 +73,7 @@
       label={$t`${search.account?.name} account only`}>
       <AccountIcon size="16px" slot="icon" />
     </Checkbox>
-    {#if hasAccount || hasFolder}
+    {#if search.account || search.folder}
       <vbox class="listbox">
         <AccountList accounts={appGlobal.emailAccounts} bind:selectedAccount={search.account} />
       </vbox>
@@ -117,7 +117,6 @@
   import TagIcon from "lucide-svelte/icons/tag";
   import PersonIcon from "lucide-svelte/icons/user-round";
   import { ArrayColl, Collection } from "svelte-collections";
-  import { onMount } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   /** The search criteria
@@ -140,10 +139,8 @@
   let sizeMinMB: number;
   let sizeMaxMB: number;
 
-  // $: search, loadSearch() // only when a different search is loaded, *not* `$search` when its contents change -- TODO Unfortunately, triggers when anything in this file does `search.foo =`
-  onMount(loadSearch);
+  $: $search, loadSearch() // only when a different search is loaded, *not* `$search` when its contents change
   function loadSearch() {
-    console.log("loadSearch", search.toJSON(), search);
     // Enable/disable: `SearchEmail` to controls
     hasAccount = search.account ? true : null;
     hasFolder = search.folder ? true : null;
@@ -153,14 +150,14 @@
     hasSizeMin = search.sizeMin ? true : null;
 
     // Translate values from `SearchEMail` to UI controls
-    isUnread = search.isRead === null ? null : !search.isRead;
+    isUnread = search.isRead === false ? true : (search.isRead === true ? false : null);
     sizeMinMB = search.sizeMin / 1048576;
     sizeMaxMB = search.sizeMax / 1048576;
   }
 
   // Translate values from UI controls to `SearchEMail`
   function updateUnread() {
-    search.isRead = isUnread === null ? null : !isUnread;
+    search.isRead = isUnread === false ? true : (isUnread == true ? false : null);
   }
   $: sizeMinMB, updateSizeMin();
   function updateSizeMin() {
@@ -175,6 +172,9 @@
   let selectedFolders: ArrayColl<Folder>;
   function updateAccount() {
     search.account = hasAccount ? $selectedAccount : null;
+    if (!search.account) {
+      search.folder = null;
+    }
   }
   function updateFolder() {
     search.folder = hasFolder ? $selectedFolder : null;

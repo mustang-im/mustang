@@ -54,12 +54,7 @@
             <HeaderGroupBox>
               <hbox slot="header">{$t`Criteria`}</hbox>
               <vbox class="content">
-                <!-- Force reload, due to difficult reactivity within the component -->
-                {#await sleep(rule.addTags.length * 0)}
-                  <SearchCriteria search={new SearchEMail()} />
-                {:then}
-                  <SearchCriteria search={rule.criteria} />
-                {/await}
+                <SearchCriteria search={rule.criteria} />
               </vbox>
             </HeaderGroupBox>
 
@@ -87,7 +82,6 @@
   import { MailAccount } from "../../../logic/Mail/MailAccount";
   import { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
   import { FilterMoment } from "../../../logic/Mail/FilterRules/FilterMoments";
-  import { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
   import SearchCriteria from "../../Mail/Search/SearchCriteria.svelte";
   import RuleActions from "../../Mail/Search/RuleActions.svelte";
   import RulesListItem from "./RulesListItem.svelte";
@@ -100,7 +94,6 @@
   import AddIcon from "lucide-svelte/icons/plus";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import SaveIcon from "lucide-svelte/icons/save";
-  import { sleep } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
 
   export let account: MailAccount;

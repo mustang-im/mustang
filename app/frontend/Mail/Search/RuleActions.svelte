@@ -5,11 +5,13 @@
     <CircleIcon size="16px" slot="icon" />
   </Checkbox>
   <Checkbox bind:checked={rule.markAsStarred} allowFalse={false} allowIndetermined={true}
+    on:change={updateStar}
     label={$t`Add star`}
     classes="star {rule.markAsStarred ? "starred" : ""}">
     <StarIcon size="16px" slot="icon" />
   </Checkbox>
   <Checkbox bind:checked={hasAddTag} allowFalse={false} allowIndetermined={true}
+    on:change={updateTag}
     label={$t`Tags`}>
     <TagIcon size="16px" slot="icon" />
   </Checkbox>
@@ -19,6 +21,7 @@
     </vbox>
   {/if}
   <Checkbox bind:checked={hasFolder} allowFalse={false} allowIndetermined={true}
+    on:change={updateFolder}
     label={rule.copy ? $t`Copy to folder ${rule.toFolder?.name}` : $t`Move to folder ${rule.toFolder?.name}`}>
     <FolderIcon size="16px" slot="icon" />
   </Checkbox>
@@ -39,6 +42,7 @@
     <SpamIcon size="16px" slot="icon" />
   </Checkbox>
   <Checkbox bind:checked={rule.deleteTrash} allowFalse={false} allowIndetermined={true}
+    on:change={updateDelete}
     label={$t`Delete`}
     classes="delete">
     <TrashIcon size="16px" slot="icon" />
@@ -59,7 +63,6 @@
   import TagIcon from "lucide-svelte/icons/tag";
   import SpamIcon from "lucide-svelte/icons/shield-x";
   import TrashIcon from "lucide-svelte/icons/trash-2";
-  import { avoidLoop } from "../../Util/svelte";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
@@ -67,19 +70,23 @@
    * in/out */
   export let rule: FilterRuleAction;
 
-  let hasAddTag: boolean | undefined = undefined;
-  let hasFolder: boolean | undefined = undefined;
+  let hasAddTag: boolean | null = null;
+  let hasFolder: boolean | null = null;
+  $: $rule, load()
+  function load() {
+    hasAddTag = rule.addTags.hasItems ? true : undefined;
+    hasFolder = rule.toFolder ? true : undefined;
+  }
   let selectedFolders: ArrayColl<Folder>; // unused
 
-  $: hasAddTag, updateTag()
   function updateTag() {
     if (!hasAddTag) {
       rule.addTags.clear();
     } else {
       removeDelete();
+      hasAddTag = true;
     }
   }
-  $: hasFolder, updateFolder()
   function updateFolder() {
     if (!hasFolder) {
       rule.toFolder = null;
@@ -87,18 +94,17 @@
       removeDelete();
     }
   }
-  let inSetter;
-  // $: if ($rule.markAsStarred) avoidLoop(removeDelete, inSetter);
-
-  $: $rule, avoidLoop(updateDelete, inSetter);
   function updateDelete() {
     if (rule.deleteTrash === true || rule.deleteImmediately === true) {
-      hasFolder = null;
-      hasAddTag = null;
       rule.markAsSpam = rule.markAsSpam ? true : null;
       rule.markAsStarred = null;
       rule.copy = null;
+      rule.toFolder = null;
+      rule.addTags.clear();
     }
+  }
+  function updateStar() {
+    removeDelete();
   }
   function removeDelete() {
     rule.deleteTrash = null;

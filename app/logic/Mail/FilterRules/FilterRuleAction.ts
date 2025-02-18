@@ -98,6 +98,7 @@ export class FilterRuleAction extends Observable {
   }
 
   fromJSON(json: any) {
+    this.name = sanitize.nonemptystring(json.name, "-");
     this.when = sanitize.enum<FilterMoment>(json.when, Object.values(FilterMoment));
     this.criteria.fromJSON(json.criteria);
     function boolean(value: boolean | undefined): boolean | undefined {
@@ -116,6 +117,7 @@ export class FilterRuleAction extends Observable {
 
   toJSON() {
     return {
+      name: this.name,
       when: this.when,
       criteria: this.criteria.toJSON(),
       markAsRead: this.markAsRead,
