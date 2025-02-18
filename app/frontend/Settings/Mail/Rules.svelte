@@ -54,7 +54,11 @@
             <HeaderGroupBox>
               <hbox slot="header">{$t`Criteria`}</hbox>
               <vbox class="content">
-                <SearchCriteria search={rule.criteria} />
+                {#await sleep(rule.addTags.length * 0)}
+                  <hbox /><!-- Force reload, due to difficult reactivity within the component -->
+                {:then}
+                  <SearchCriteria search={rule.criteria} />
+                {/await}
               </vbox>
             </HeaderGroupBox>
 
@@ -66,16 +70,16 @@
             </HeaderGroupBox>
           </vbox>
         </Scroll>
+        <hbox class="buttons bottom">
+          <Button
+            icon={SaveIcon}
+            label={$t`Save`}
+            onClick={onSave}
+          />
+        </hbox>
       {/if}
     </vbox>
   </Splitter>
-  <hbox class="buttons">
-    <Button
-      icon={SaveIcon}
-      label={$t`Save`}
-      onClick={onSave}
-    />
-  </hbox>
 </vbox>
 
 <script lang="ts">
@@ -94,6 +98,7 @@
   import AddIcon from "lucide-svelte/icons/plus";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import SaveIcon from "lucide-svelte/icons/save";
+  import { sleep } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
 
   export let account: MailAccount;
@@ -108,28 +113,20 @@
   }
 
   function onAdd() {
-    let rule = new FilterRuleAction(account);
+    rule = new FilterRuleAction(account);
     rule.name = "-";
-    // rules.add(rule);
   }
 
-  function onDelete() {
+  async function onDelete() {
     if (rule.name && !confirm($t`Do you want to delete the rule '${rule.name}'?`)) {
       return;
     }
 
     account.filterRuleActions.remove(rule);
+    await account.save();
     rule = null;
   }
 
-  /*
-  import { useDebounce } from '@svelteuidev/composables';
-  $: $rule, saveDebounced();
-  const saveDebounced = useDebounce(() => save(), 3000);
-  async function save() {
-    await account.save();
-  }
-  */
   async function onSave() {
     if (!rule.account.filterRuleActions.contains(rule)) {
       rule.account.filterRuleActions.add(rule);
@@ -162,9 +159,11 @@
   .buttons {
     justify-content: end;
     align-items: center;
+  }
+  .buttons.bottom {
     margin-block-start: 16px;
   }
-  .buttons :global(button) {
+  .buttons.bottom :global(button) {
     margin-inline-start: 8px;
   }
 </style>
