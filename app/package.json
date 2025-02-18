@@ -2,7 +2,7 @@
   "name": "mustang-frontend",
   "description": "Mustang UI",
   "private": true,
-  "version": "0.8.2-dev",
+  "version": "0.8.2",
   "scripts": {
     "dev": "npm run l10n && vite",
     "build": "npm run l10n && vite build",
