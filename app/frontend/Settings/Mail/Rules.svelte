@@ -54,8 +54,9 @@
             <HeaderGroupBox>
               <hbox slot="header">{$t`Criteria`}</hbox>
               <vbox class="content">
+                <!-- Force reload, due to difficult reactivity within the component -->
                 {#await sleep(rule.addTags.length * 0)}
-                  <hbox /><!-- Force reload, due to difficult reactivity within the component -->
+                  <SearchCriteria search={new SearchEMail()} />
                 {:then}
                   <SearchCriteria search={rule.criteria} />
                 {/await}
@@ -86,6 +87,7 @@
   import { MailAccount } from "../../../logic/Mail/MailAccount";
   import { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
   import { FilterMoment } from "../../../logic/Mail/FilterRules/FilterMoments";
+  import { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
   import SearchCriteria from "../../Mail/Search/SearchCriteria.svelte";
   import RuleActions from "../../Mail/Search/RuleActions.svelte";
   import RulesListItem from "./RulesListItem.svelte";
