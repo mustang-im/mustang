@@ -137,6 +137,9 @@ export class OWACalendar extends Calendar {
             FieldURI: "calendar:RecurrenceId",
           }, {
             __type: "PropertyUri:#Exchange",
+            FieldURI: "calendar:IsOnlineMeeting",
+          }, {
+            __type: "PropertyUri:#Exchange",
             FieldURI: "task:Recurrence",
           }],
         },
@@ -148,6 +151,32 @@ export class OWACalendar extends Calendar {
     };
     let results = await this.account.callOWA(request);
     let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
+    let online = items.filter(item => item.IsOnlineMeeting);
+    if (online.length) {
+      let request = {
+        __type: "GetCalendarEventJsonRequest:#Exchange",
+        Header: {
+          __type: "JsonRequestHeaders:#Exchange",
+          RequestServerVersion: "Exchange2013",
+        },
+        Body: {
+          __type: "GetCalendarEventRequest:#Exchange",
+          EventIds: online.map(item => ({
+            __type: "ItemId:#Exchange",
+            Id: item.ItemId.Id,
+          })),
+          ItemShape: {
+          __type: "ItemResponseShape:#Exchange",
+            BaseShape: "IdOnly",
+          },
+        }
+      };
+      let results = await this.account.callOWA(request);
+      let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
+      for (let i = 0; i < items.length; i++) {
+        online[i].OnlineMeetingJoinUrl = items[i].OnlineMeetingJoinUrl;
+      }
+    }
     for (let item of items) {
       try {
         let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id)) || this.newEvent(parentEvent);
