@@ -9,6 +9,7 @@
   import Button from "../../Shared/Button.svelte";
   import PauseIcon from "lucide-svelte/icons/pause";
   import PlayIcon from "lucide-svelte/icons/play";
+  import { onMount } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   let videoURL: string = "https://www.mustang.im/videos/ocean-birds.mp4";
@@ -25,6 +26,11 @@
       videoEl.play();
     }
   }
+
+  // Stop on inactivity, to avoid using CPU resources in background
+  onMount(() => setTimeout(() => {
+    videoEl?.pause();
+  }, 10 * 60 * 1000)); // 10 minutes
 </script>
 
 <style>
