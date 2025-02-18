@@ -69,6 +69,13 @@
       {/if}
     </vbox>
   </Splitter>
+  <hbox class="buttons">
+    <Button
+      icon={SaveIcon}
+      label={$t`Save`}
+      onClick={onSave}
+    />
+  </hbox>
 </vbox>
 
 <script lang="ts">
@@ -83,9 +90,10 @@
   import Splitter from "../../Shared/Splitter.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
+  import Button from "../../Shared/Button.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
-  import { useDebounce } from '@svelteuidev/composables';
+  import SaveIcon from "lucide-svelte/icons/save";
   import { t } from "../../../l10n/l10n";
 
   export let account: MailAccount;
@@ -100,10 +108,9 @@
   }
 
   function onAdd() {
-    let newRule = new FilterRuleAction(account);
-    newRule.name = "-";
-    rules.add(newRule);
-    rule = newRule;
+    let rule = new FilterRuleAction(account);
+    rule.name = "-";
+    // rules.add(rule);
   }
 
   function onDelete() {
@@ -115,10 +122,19 @@
     rule = null;
   }
 
+  /*
+  import { useDebounce } from '@svelteuidev/composables';
   $: $rule, saveDebounced();
   const saveDebounced = useDebounce(() => save(), 3000);
   async function save() {
     await account.save();
+  }
+  */
+  async function onSave() {
+    if (!rule.account.filterRuleActions.contains(rule)) {
+      rule.account.filterRuleActions.add(rule);
+    }
+    await rule.account.save();
   }
 </script>
 
@@ -146,6 +162,7 @@
   .buttons {
     justify-content: end;
     align-items: center;
+    margin-block-start: 16px;
   }
   .buttons :global(button) {
     margin-inline-start: 8px;
