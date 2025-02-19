@@ -8,10 +8,10 @@
 </hbox>
 
 <script lang="ts">
-  import type { Event } from "../../logic/Calendar/Event";
-  import { calendarMustangApp } from "./CalendarMustangApp";
-  import { selectedEvent } from "./selected";
-  import { getUILocale, t } from "../../l10n/l10n";
+  import type { Event } from "../../../logic/Calendar/Event";
+  import { calendarMustangApp } from "../CalendarMustangApp";
+  import { selectedEvent } from "../selected";
+  import { getUILocale, t } from "../../../l10n/l10n";
 
   export let event: Event;
 

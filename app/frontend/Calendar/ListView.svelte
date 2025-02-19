@@ -16,7 +16,7 @@
 
 <script lang="ts">
   import type { Event } from "../../logic/Calendar/Event";
-  import EventLine from "./EventLine.svelte";
+  import EventLine from "./MonthView/EventLine.svelte";
   import FastList from "../Shared/FastList.svelte";
   import type { Collection } from "svelte-collections";
   import { globalSearchTerm } from "../AppsBar/selectedApp";

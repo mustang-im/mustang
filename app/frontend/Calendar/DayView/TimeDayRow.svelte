@@ -3,10 +3,10 @@
 {/each}
 
 <script lang="ts">
-  import type { Event } from "../../logic/Calendar/Event";
-  import EventsCell from "./EventsCell.svelte";
+  import type { Event } from "../../../logic/Calendar/Event";
+  import EventsCell from "../MonthView/EventsCell.svelte";
   import type { Collection } from "svelte-collections";
-  
+
   export let days: Date[];
   export let time: Date;
   export let events: Collection<Event>;

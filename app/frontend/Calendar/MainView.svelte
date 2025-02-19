@@ -39,8 +39,8 @@
   import type { Event } from "../../logic/Calendar/Event";
   import type { DateInterval } from "./selected";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
-  import WeekView from "./WeekView.svelte";
-  import MonthView from "./MonthView.svelte";
+  import WeekView from "./DayView/WeekView.svelte";
+  import MonthView from "./MonthView/MonthView.svelte";
   import DualView from "./DualView.svelte";
   import ListView from "./ListView.svelte";
   import type { Collection } from "svelte-collections";

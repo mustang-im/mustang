@@ -3,7 +3,7 @@
 </hbox>
 
 <script lang="ts">
-  import { getUILocale } from "../../l10n/l10n";
+  import { getUILocale } from "../../../l10n/l10n";
 
   export let time: Date
 </script>

@@ -26,14 +26,14 @@
 </vbox>
 
 <script lang="ts">
-  import type { Event } from "../../logic/Calendar/Event";
+  import type { Event } from "../../../logic/Calendar/Event";
   import DayLabel from "./DayLabel.svelte";
   import EventsCell from "./EventsCell.svelte";
-  import DateRange from "./DateRange.svelte";
-  import { selectedDate } from "./selected";
-  import { getWeekDays } from "../Util/date";
+  import DateRange from "../DateRange.svelte";
+  import { selectedDate } from "../selected";
+  import { getWeekDays } from "../../Util/date";
   import type { Collection } from "svelte-collections";
-  import { getUILocale } from "../../l10n/l10n";
+  import { getUILocale } from "../../../l10n/l10n";
 
   export let start: Date;
   export let events: Collection<Event>;

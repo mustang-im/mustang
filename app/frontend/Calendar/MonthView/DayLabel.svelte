@@ -14,10 +14,10 @@
 </hbox>
 
 <script lang="ts">
-  import { selectedDate, selectedDateInterval } from "./selected";
-  import { getToday } from "../Util/date";
+  import { selectedDate, selectedDateInterval } from "../selected";
+  import { getToday } from "../../Util/date";
   import TodayIcon from "lucide-svelte/icons/home";
-  import { getUILocale } from "../../l10n/l10n";
+  import { getUILocale } from "../../../l10n/l10n";
 
   export let day: Date
   export let withMonthOnMonday = true;

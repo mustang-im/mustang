@@ -1,3 +1,4 @@
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <vbox flex class="events" on:click={selectDay} on:dblclick={addEvent}>
   {#if displayEvents && !displayEvents.isEmpty}
     <Scroll>
@@ -16,13 +17,13 @@
 
 <script lang="ts">
   import type { Collection } from "svelte-collections";
-  import { selectedCalendar, selectedDate } from "./selected";
-  import { calendarMustangApp } from "./CalendarMustangApp";
-  import type { Event } from "../../logic/Calendar/Event";
-  import Scroll from "../Shared/Scroll.svelte";
+  import { selectedCalendar, selectedDate } from "../selected";
+  import { calendarMustangApp } from "../CalendarMustangApp";
+  import type { Event } from "../../../logic/Calendar/Event";
   import EventLine from "./EventLine.svelte";
-  import { assert } from "../../logic/util/util";
-  import { t, getUILocale } from "../../l10n/l10n";
+  import Scroll from "../../Shared/Scroll.svelte";
+  import { assert } from "../../../logic/util/util";
+  import { t, getUILocale } from "../../../l10n/l10n";
 
   export let start: Date;
   export let intervalInHours: number;

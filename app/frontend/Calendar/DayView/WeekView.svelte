@@ -27,16 +27,16 @@
 </vbox>
 
 <script lang="ts">
-  import type { Event } from "../../logic/Calendar/Event";
-  import { getToday } from "../Util/date";
+  import type { Event } from "../../../logic/Calendar/Event";
+  import { getToday } from "../../Util/date";
   import TimeLabel from "./TimeLabel.svelte";
   import TimeDayRow from "./TimeDayRow.svelte";
-  import DateRange from "./DateRange.svelte";
-  import Button from "../Shared/Button.svelte";
-  import Scroll from "../Shared/Scroll.svelte";
+  import DateRange from "../DateRange.svelte";
+  import Button from "../../Shared/Button.svelte";
+  import Scroll from "../../Shared/Scroll.svelte";
   import TodayIcon from "lucide-svelte/icons/home";
   import type { Collection } from "svelte-collections";
-  import { getUILocale, t } from "../../l10n/l10n";
+  import { getUILocale, t } from "../../../l10n/l10n";
 
   export let start: Date;
   export let events: Collection<Event>;
