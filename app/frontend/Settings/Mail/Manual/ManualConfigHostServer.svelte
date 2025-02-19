@@ -50,7 +50,7 @@
         <select bind:value={config.tls} required on:change={onTLSChanged}>
           <option value={TLSSocketType.TLS}>TLS</option>
           <option value={TLSSocketType.STARTTLS}>STARTTLS</option>
-          <option value={TLSSocketType.Plain}>{$t`Plain`}</option>
+          <option value={TLSSocketType.Plain}>{$t`Unprotected`}</option>
         </select>
         <hbox class="tls-icon">
           {#if config.tls == TLSSocketType.Unknown}
