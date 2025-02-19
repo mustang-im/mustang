@@ -18,4 +18,5 @@ export default {
   catalogsMergePath: 'l10n/locales/{locale}/messages-compiled',
   compileNamespace: 'json',
   extractors: [jstsExtractor, svelteExtractor],
+  runtimeConfigModule: ["@formatjs/intl", "createIntl"],
 };
