@@ -20,8 +20,8 @@ export class ICSProcessor extends EMailProcessor {
     }
     email.scheduling = iTIPMethod(ics);
     email.event = convertICSToEvent(ics);
-    if (email.event && !email.event.descriptionHTML && email.html) {
-      email.event.descriptionHTML = email.html;
+    if (email.event && email.html) {
+      email.event.rawHTMLDangerous = email.html;
     }
   }
 }
