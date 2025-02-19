@@ -1,0 +1,31 @@
+name: Auto Translate
+
+on:
+  workflow_dispatch: # manually triggered
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Auto Translate
+      uses: actions/setup-node@v3
+      with:
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        node-version: 20.x
+#        cache: 'npm'
+    - run: cd lib; npm install
+    - run: cd app; npm install --legacy-peer-deps
+    - run: cd app; npm run l10n
+    - run: cd app; npm run l10n:auto-translate
+      env:
+        DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+    - name: Commit translations
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git commit -am "Auto Translations"
+        git push
