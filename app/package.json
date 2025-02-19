@@ -4,8 +4,8 @@
   "private": true,
   "version": "0.8.3-dev",
   "scripts": {
-    "dev": "npm run l10n && vite",
-    "build": "npm run l10n && vite build",
+    "dev": "vite",
+    "build": "vite build",
     "preview": "vite preview",
     "test": "vitest",
     "check": "svelte-check --tsconfig ./tsconfig.json",
