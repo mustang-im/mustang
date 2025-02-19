@@ -18,5 +18,6 @@
     position: relative;
     overflow: auto;
     overflow-wrap: anywhere;
+    word-break: break-all;
   }
 </style>
