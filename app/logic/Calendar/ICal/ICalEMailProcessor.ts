@@ -19,8 +19,8 @@ export class ICalEMailProcessor extends EMailProcessor {
     let ics = new ICalParser(invitationStr);
     email.invitationMessage = iTIPMethod(ics);
     email.event = convertICalToEvent(ics);
-    if (email.event && !email.event.descriptionHTML && email.html) {
-      email.event.descriptionHTML = email.html;
+    if (email.event && email.html) {
+      email.event.rawHTMLDangerous = email.html;
     }
   }
 }

@@ -52,11 +52,14 @@ export class EWSEvent extends Event {
     this.calUID = sanitize.nonemptystring(xmljs.UID, null);
     this.title = sanitize.nonemptystring(xmljs.Subject, "");
     if (xmljs.Body?.BodyType == "Text") {
-      this.descriptionText = sanitize.nonemptystring(xmljs.Body.Value, "");
+      this.rawText = sanitize.nonemptystring(xmljs.Body.Value, "");
+      this.rawHTMLDangerous = null;
     } else {
-      this.descriptionText = sanitize.nonemptystring(xmljs.TextBody?.Value, "");
+      this.rawText = sanitize.nonemptystring(xmljs.TextBody?.Value, "");
       if (xmljs.Body?.BodyType == "HTML") {
-        this.descriptionHTML = sanitize.nonemptystring(xmljs.Body.Value, "");
+        this.rawHTMLDangerous = sanitize.nonemptystring(xmljs.Body.Value, "");
+      } else {
+        this.rawHTMLDangerous = null;
       }
     }
     if (xmljs.RecurrenceId) {
@@ -154,7 +157,7 @@ export class EWSEvent extends Event {
       new EWSUpdateOccurrenceRequest(this, {SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
       new EWSCreateItemRequest({SendMeetingInvitations: "SendToAllAndSaveCopy"});
     request.addField("CalendarItem", "Subject", this.title, "item:Subject");
-    request.addField("CalendarItem", "Body", this.descriptionHTML ? { BodyType: "HTML", _TextContent_: this.descriptionHTML } : this.descriptionText ? { BodyType: "Text", _TextContent_: this.descriptionText } : "", "item:Body");
+    request.addField("CalendarItem", "Body", this.rawHTMLDangerous ? { BodyType: "HTML", _TextContent_: this.rawHTMLDangerous } : { BodyType: "Text", _TextContent_: this.descriptionText }, "item:Body");
     request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
     request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
     if (!this.parentEvent) { // Exchange Online requires not to write the `Recurrence` prop for recurrence instances
