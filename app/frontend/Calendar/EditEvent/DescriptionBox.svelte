@@ -36,5 +36,6 @@
   .editor {
     font-family: unset;
     padding: 8px 12px;
+    word-break: break-all;
   }
 </style>
