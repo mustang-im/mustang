@@ -74,7 +74,7 @@
         <option value={AuthMethod.NTLM}>NTLM</option>
         -->
         {#if config.protocol == "smtp"}
-          <option value={AuthMethod.None}>{$t`Keine`}</option>
+          <option value={AuthMethod.None}>{$t`No authentication`}</option>
         {/if}
       </select>
     </hbox>
