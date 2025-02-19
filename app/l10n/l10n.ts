@@ -4,40 +4,40 @@ import { derived } from 'svelte/store';
 
 import { sourceLocale } from './list';
 
-import { messages as en } from './locales/en/messages-compiled.json';
-import { messages as de } from './locales/de/messages-compiled.json';
-import { messages as fr } from './locales/fr/messages-compiled.json';
-import { messages as it } from './locales/it/messages-compiled.json';
-import { messages as es } from './locales/es/messages-compiled.json';
-import { messages as pt } from './locales/pt/messages-compiled.json';
-import { messages as pl } from './locales/pl/messages-compiled.json';
-import { messages as ja } from './locales/ja/messages-compiled.json';
-import { messages as zh } from './locales/zh/messages-compiled.json';
+import en from './locales/en/messages.json';
+import de from './locales/de/messages.json';
+import fr from './locales/fr/messages.json';
+import it from './locales/it/messages.json';
+import es from './locales/es/messages.json';
+import pt from './locales/pt/messages.json';
+import pl from './locales/pl/messages.json';
+import ja from './locales/ja/messages.json';
+import zh from './locales/zh/messages.json';
 
-import { messages as ar } from './locales/ar/messages-compiled.json';
-import { messages as cs } from './locales/cs/messages-compiled.json';
-import { messages as da } from './locales/da/messages-compiled.json';
-import { messages as el } from './locales/el/messages-compiled.json';
-import { messages as fi } from './locales/fi/messages-compiled.json';
-import { messages as nl } from './locales/nl/messages-compiled.json';
-import { messages as no } from './locales/no/messages-compiled.json';
-import { messages as ro } from './locales/ro/messages-compiled.json';
-import { messages as ru } from './locales/ru/messages-compiled.json';
-import { messages as sv } from './locales/sv/messages-compiled.json';
-import { messages as uk } from './locales/uk/messages-compiled.json';
+import ar from './locales/ar/messages.json';
+import cs from './locales/cs/messages.json';
+import da from './locales/da/messages.json';
+import el from './locales/el/messages.json';
+import fi from './locales/fi/messages.json';
+import nl from './locales/nl/messages.json';
+import no from './locales/no/messages.json';
+import ro from './locales/ro/messages.json';
+import ru from './locales/ru/messages.json';
+import sv from './locales/sv/messages.json';
+import uk from './locales/uk/messages.json';
 
-import { messages as az } from './locales/az/messages-compiled.json';
-import { messages as eo } from './locales/eo/messages-compiled.json';
-import { messages as fa } from './locales/fa/messages-compiled.json';
-import { messages as ga } from './locales/ga/messages-compiled.json';
-import { messages as he } from './locales/he/messages-compiled.json';
-import { messages as hi } from './locales/hi/messages-compiled.json';
-import { messages as hu } from './locales/hu/messages-compiled.json';
-import { messages as id } from './locales/id/messages-compiled.json';
-import { messages as ko } from './locales/ko/messages-compiled.json';
-import { messages as sk } from './locales/sk/messages-compiled.json';
-import { messages as th } from './locales/th/messages-compiled.json';
-import { messages as tr } from './locales/tr/messages-compiled.json';
+import az from './locales/az/messages.json';
+import eo from './locales/eo/messages.json';
+import fa from './locales/fa/messages.json';
+import ga from './locales/ga/messages.json';
+import he from './locales/he/messages.json';
+import hi from './locales/hi/messages.json';
+import hu from './locales/hu/messages.json';
+import id from './locales/id/messages.json';
+import ko from './locales/ko/messages.json';
+import sk from './locales/sk/messages.json';
+import th from './locales/th/messages.json';
+import tr from './locales/tr/messages.json';
 
 window.global = window; // Fix Stanza and getUILocale()
 
