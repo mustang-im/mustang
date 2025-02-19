@@ -4,8 +4,8 @@
   "private": true,
   "version": "0.8.3-dev",
   "scripts": {
-    "dev": "npm run l10n && vite",
-    "build": "npm run l10n && vite build",
+    "dev": "vite",
+    "build": "vite build",
     "preview": "vite preview",
     "test": "vitest",
     "check": "svelte-check --tsconfig ./tsconfig.json",
@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@faker-js/faker": "^9.0.0",
+    "@formatjs/intl": "^3.1.4",
     "@lingui/core": "^4.11.1",
     "@lingui/vite-plugin": "^4.11.1",
     "@popperjs/core": "^2.11.8",
