@@ -15,8 +15,8 @@
   <select bind:value={selectedIdentity} class:catch-all={selectedIdentity.isCatchAll}>
     {#each $identities.each as identity }
       <option value={identity}>
-        {identity.isCatchAll && identity.isEMailAddress(customFromAddress) && identity.emailAddress != customFromAddress
-          ? customFromAddress
+        {identity.isCatchAll && identity.isEMailAddress(fromAddress) && identity.emailAddress != fromAddress
+          ? fromAddress
           : identity.name}
         -
         {identity.account?.name}
@@ -39,29 +39,32 @@
   export let identities: Collection<MailIdentity> = new ArrayColl(appGlobal.emailAccounts.contents.map(acc => acc.identities.contents).flat());
   /** Allows the user to override the From address with a custom email address.
    * This allows for catch-all email addresses to be used as From: */
-  export let customFromAddress: string;
+  export let fromAddress: string;
+  export let fromName: string;
 
   let beforeCustom: string;
   let afterCustom: string;
   let editableCustom: string;
 
-  $: $selectedIdentity?.isCatchAll && setCatchAll($selectedIdentity)
-  function setCatchAll(identity: MailIdentity) {
+  $: $selectedIdentity && setIdentity($selectedIdentity)
+  function setIdentity(identity: MailIdentity) {
+    fromName = identity.userRealname;
     if (!identity?.isCatchAll) {
+      fromAddress = identity.emailAddress;
       return;
     }
-    if (!identity.isEMailAddress(customFromAddress)) {
-      customFromAddress = identity.emailAddress;
+    if (!identity.isEMailAddress(fromAddress)) {
+      fromAddress = identity.emailAddress;
     }
 
     let parts = identity.emailAddress.split("*");
     beforeCustom = parts[0];
     afterCustom = parts[1];
-    editableCustom = customFromAddress.substring(beforeCustom.length, customFromAddress.length - afterCustom.length);
+    editableCustom = fromAddress.substring(beforeCustom.length, fromAddress.length - afterCustom.length);
   }
 
   function onCustomEdited() {
-    customFromAddress = beforeCustom + editableCustom + afterCustom;
+    fromAddress = beforeCustom + editableCustom + afterCustom;
   }
 </script>
 
