@@ -174,6 +174,17 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
     });
     this.messages.addAll(newMsgs);
     this.account.addPingable(this);
+    if (this.specialFolder == SpecialFolder.Sent) {
+      for (let email of newMsgs) {
+        let customSentFolder = this.account.customSentFolders.shift();
+        if (!customSentFolder) {
+          break;
+        }
+        if (customSentFolder != this) {
+          customSentFolder.moveMessageHere(email).catch(this.account.errorCallback);
+        }
+      }
+    }
     return newMsgs;
   }
 
