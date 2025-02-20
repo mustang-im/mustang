@@ -6,7 +6,8 @@
   <vbox flex class="mail-composer-window">
     <hbox class="window-title-bar">
       <IdentitySelector bind:selectedIdentity={fromIdentity}
-        bind:customFromAddress={mail.from.emailAddress} />
+        bind:fromAddress={mail.from.emailAddress}
+        bind:fromName={mail.from.name} />
       <hbox flex class="spacer" />
       <hbox class="close buttons">
         <RoundButton
