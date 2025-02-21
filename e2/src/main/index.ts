@@ -133,15 +133,13 @@ function allowCrossDomainRequestsFromFrontend() {
     filter,
     (details, callback) => {
       let requestHeaders = details.requestHeaders ?? {};
-      let origin = new URL(details.url).origin;
-      for (let name in details.requestHeaders) {
-        let lowercase = name.toLowerCase();
-        if (lowercase == "origin" || lowercase == "referer") {
-          // delete requestHeaders[lowercase]; // TODO Doesn't delete it
-          requestHeaders[lowercase] = origin;
+      for (let name in requestHeaders) {
+        switch (name.toLowerCase()) {
+        case "origin":
+        case "referer":
+          delete requestHeaders[name];
         }
       }
-      // console.log("Request", details.url, requestHeaders);
       callback({ requestHeaders: requestHeaders });
     }
   );
