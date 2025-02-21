@@ -1,12 +1,12 @@
 import { Event } from "./Event";
 import { RecurrenceRule } from "./RecurrenceRule";
 import { Scheduling } from "./Invitation";
+import ICalParser from "./ICalParser";
 import type { EMail } from "../Mail/EMail";
 import { EMailProcessor, ProcessingStartOn } from "../Mail/EMailProccessor";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import PostalMime from "postal-mime";
-import ical from "node-ical";
 
 export class ICSProcessor extends EMailProcessor {
   runOn = ProcessingStartOn.Parse;
@@ -14,10 +14,7 @@ export class ICSProcessor extends EMailProcessor {
     if (!postalMIME.textContent?.calendar) {
       return;
     }
-    let ics = ical.sync.parseICS(postalMIME.textContent.calendar);
-    if (!ics) {
-      return;
-    }
+    let ics = new ICalParser(postalMIME.textContent.calendar);
     email.scheduling = iTIPMethod(ics);
     email.event = convertICSToEvent(ics);
     if (email.event && !email.event.descriptionHTML && email.html) {
@@ -28,85 +25,67 @@ export class ICSProcessor extends EMailProcessor {
 
 /* Find the iTIP method from a parsed vcalendar part */
 function iTIPMethod(ics: any): Scheduling {
-  switch (ics.vcalendar.method) {
+  switch (ics.containers.vcalendar?.[0].entries.method?.[0].value) {
   case "CANCEL":
     return Scheduling.Cancellation;
   case "REQUEST":
     return Scheduling.Request;
   case "REPLY":
-    let vevent = Object.values(ics).find((event: any) => event.type == "VEVENT") as any;
-    switch (vevent?.attendee?.params?.PARTSTAT) {
-    case "DECLINED":
-      return Scheduling.Declined;
-    case "TENTATIVE":
-      return Scheduling.Tentative;
-    case "ACCEPTED":
-      return Scheduling.Accepted;
-    }
+    // Any other value will do, just make something up
+    return Scheduling.Declined + Scheduling.Tentative + Scheduling.Accepted;
   }
   return Scheduling.None;
 }
 
-function convertICSToEvent(ics: any): Event | null {
-  let vevent = Object.values(ics).find((event: any) => event.type == "VEVENT") as any;
-  if (!vevent) {
+function parseDate(icalDate: string): Date {
+  return new Date(icalDate.replace(/^(\d{4})(\d\d)(\d\d)/, "$1-$2-$3").replace(/(T\d\d)(\d\d)(\d\dZ?)$/, "$1:$2:$3"));
+}
+
+function convertICSToEvent(ics: ICalParser): Event | null {
+  if (!ics.containers.vevent) {
     return null;
   }
-  // Parser tries to simplify simple properties for us...
-  for (let prop in vevent) {
-    if (typeof vevent[prop] == "string") {
-      vevent[prop] = { params: {}, val: vevent[prop] };
-    }
-  }
+  let vevent = ics.containers.vevent[0];
   let event = new Event();
-  if (vevent.uid) {
-    event.calUID = vevent.uid.val;
+  if (vevent.entries.uid) {
+    event.calUID = vevent.entries.uid[0].value;
   }
-  if (vevent.summary) {
-    event.title = vevent.summary.val;
+  if (vevent.entries.summary) {
+    event.title = vevent.entries.summary[0].value;
   }
-  if (vevent.description) {
-    event.descriptionText = vevent.description.val;
+  if (vevent.entries.description) {
+    event.descriptionText = vevent.entries.description[0].value;
   }
-  if (vevent.start) {
-    event.startTime = vevent.start;
+  if (vevent.entries.dtstart) {
+    event.startTime = parseDate(vevent.entries.dtstart[0].value);
   }
-  if (vevent.end) {
-    event.endTime = vevent.end;
+  if (vevent.entries.dtend) {
+    event.endTime = parseDate(vevent.entries.dtend[0].value);
   }
-  if (vevent.datetype.val == "date") {
+  if (vevent.entries.dtstart?.[0].properties.value == "date") {
     event.allDay = true;
-    // Start and end time will be in UTC, but we want local time,
-    // so that we can display it to the user in their locale.
-    event.startTime?.setFullYear(event.startTime.getUTCFullYear(), event.startTime.getUTCMonth(), event.startTime.getUTCDate());
-    event.startTime?.setHours(0, 0, 0, 0);
-    event.endTime?.setFullYear(event.endTime.getUTCFullYear(), event.endTime.getUTCMonth(), event.endTime.getUTCDate());
-    event.endTime?.setHours(0, 0, 0, 0);
   }
-  if (vevent.rrule) {
+  if (vevent.entries.rrule) {
     event.repeat = true;
-    // rrule object might contain DTSTART, remove in that case
-    let rrule = vevent.rrule.toString().split("\n").pop();
-    event.recurrenceRule = RecurrenceRule.fromCalString(event.startTime, rrule);
+    event.recurrenceRule = RecurrenceRule.fromCalString(event.startTime, vevent.entries.rrule[0].line);
   }
-  if (vevent.location) {
-    event.location = vevent.location.val;
+  if (vevent.entries.location) {
+    event.location = vevent.entries.location[0].value;
   }
   let organizer: PersonUID | undefined;
-  if (vevent.organizer) {
-    organizer = findOrCreatePersonUID(sanitize.nonemptystring(vevent.organizer.val), sanitize.label(vevent.organizer.params.CN, null));
+  if (vevent.entries.organizer) {
+    let value = vevent.entries.organizer[0].value.replace(/^MAILTO:/i, "");
+    organizer = findOrCreatePersonUID(sanitize.emailAddress(value), sanitize.label(vevent.entries.organizer[0].properties.cn, null));
     event.participants.add(organizer);
   }
-  if (vevent.attendee) {
-    if (!Array.isArray(vevent.attendee)) {
-      vevent.attendee = [vevent.attendee];
-    }
-    for (let { val, params: { CN }} of vevent.attendee) {
-      if (val == organizer?.emailAddress) {
+  if (vevent.entries.attendee) {
+    for (let { value, properties: { role, cn } } of vevent.entries.attendee) {
+      value = value.replace(/^MAILTO:/i, "");
+      if (value == organizer?.emailAddress || /^CHAIR$/i.test(role)) {
         // Remove the organizer as it has less detail than an attendee
         event.participants.remove(organizer);
       }
-      let attendee = findOrCreatePersonUID(sanitize.nonemptystring(val), sanitize.label(CN, null));
+      let attendee = findOrCreatePersonUID(sanitize.emailAddress(value), sanitize.label(cn, null));
       event.participants.add(attendee);
     }
   }
