@@ -1,6 +1,6 @@
 import { sanitize } from '../../lib/util/sanitizeDatatypes';
-import { locale, gt as translateString } from 'svelte-i18n-lingui';
-import { derived } from 'svelte/store';
+import { derived, writable } from 'svelte/store';
+import { setLocale, t as translateString } from "svelte-icu-l10n";
 
 import { sourceLocale } from './list';
 
@@ -91,6 +91,19 @@ export function setUILocale(lang: string) {
   let messages = languageMessages[availableLang];
   locale.set(availableLang, messages);
 }
+
+function createLocale(defaultLocale = 'en-US', defaultMessages = {}) {
+	const { subscribe, set } = writable(defaultLocale);
+  
+	return {
+		subscribe,
+		set: (locale, messages) => {
+      setLocale(locale, messages);
+			set(locale);
+		},
+	};
+};
+const locale = createLocale();
 
 /** Alternative implementation with dynamic loading of locale files. Not used. */
 /*
