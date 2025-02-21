@@ -2,6 +2,7 @@ import type { PersonUID } from "../Abstract/PersonUID";
 import type { Calendar } from "./Calendar";
 import type { RecurrenceRule } from "./RecurrenceRule";
 import { ResponseType, type Responses } from "./Invitation";
+import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
 import { Observable, notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/Lock";
 import { assert, randomID, AbstractFunction } from "../util/util";
@@ -17,9 +18,69 @@ export class Event extends Observable {
   @notifyChangedProperty
   title: string;
   @notifyChangedProperty
-  descriptionText: string;
+  protected _text: string | null = null;
+  /** Plaintext version of the description */
+  get descriptionText(): string {
+    if (this._text != null) {
+      return this._text;
+    }
+    if (this._rawHTML != null) {
+      return this._text = convertHTMLToText(this._rawHTML);
+    }
+    return "";
+  }
+  set descriptionText(val: string | null) {
+    this._text = val;
+    this._rawHTML = null;
+    this._sanitizedHTML = null;
+  }
+  get rawText(): string | null {
+    return this._text;
+  }
+  /* Only use in combination with setting `.rawHTMLDangerous` */
+  set rawText(val: string | null) {
+    this._text = val;
+  }
+  /**
+   * HTML version of the description.
+   * Directly from the network.
+   * Attention: Untrusted. MUST be sanitized before using it.
+   * This is the version that will be saved on disk.
+   * @see _sanitizedHTML
+   */
   @notifyChangedProperty
-  descriptionHTML: string;
+  protected _rawHTML: string | null = null;
+  /** HTML version of the description.
+   * Sanitized.
+   * This is only cached here in RAM, but not saved on disk,
+   * so that we can change the sanitization. */
+  protected _sanitizedHTML: string | null = null;
+  /** Sanitized HTML version of the description. */
+  get descriptionHTML(): string {
+    if (this._sanitizedHTML != null) {
+      return this._sanitizedHTML;
+    }
+    if (this._rawHTML != null) {
+      return this._sanitizedHTML = sanitizeHTML(this._rawHTML);
+    }
+    if (this._text != null) {
+      return this._sanitizedHTML = convertTextToHTML(this._text);
+    }
+    return "";
+  }
+  set descriptionHTML(val: string | null) {
+    this._rawHTML = val;
+    this._sanitizedHTML = null;
+    this._text = null;
+  }
+  get rawHTMLDangerous(): string | null {
+    return this._rawHTML;
+  }
+  /* Only use in combination with setting `.rawText` */
+  set rawHTMLDangerous(val: string | null) {
+    this._rawHTML = val;
+    this._sanitizedHTML = null;
+  }
 
   @notifyChangedProperty
   startTime: Date;
@@ -136,8 +197,8 @@ export class Event extends Observable {
   copyFrom(original: Event) {
     this.calUID = original.calUID;
     this.title = original.title;
-    this.descriptionText = original.descriptionText;
-    this.descriptionHTML = original.descriptionHTML;
+    this.rawText = original.rawText;
+    this.rawHTMLDangerous = original.rawHTMLDangerous;
     this.allDay = original.allDay;
     this.location = original.location;
     // this.isOnline = original.isOnline;

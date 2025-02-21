@@ -17,8 +17,8 @@ export class ICSProcessor extends EMailProcessor {
     let ics = new ICalParser(postalMIME.textContent.calendar);
     email.scheduling = iTIPMethod(ics);
     email.event = convertICSToEvent(ics);
-    if (email.event && !email.event.descriptionHTML && email.html) {
-      email.event.descriptionHTML = email.html;
+    if (email.event && email.html) {
+      email.event.rawHTMLDangerous = email.html;
     }
   }
 }

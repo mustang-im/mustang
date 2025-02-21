@@ -44,11 +44,14 @@ export class OWAEvent extends Event {
     this.calUID = sanitize.nonemptystring(json.UID, null);
     this.title = sanitize.nonemptystring(json.Subject, "");
     if (json.Body?.BodyType == "Text") {
-      this.descriptionText = sanitize.nonemptystring(json.Body.Value, "");
+      this.rawText = sanitize.nonemptystring(json.Body.Value, "");
+      this.rawHTMLDangerous = null;
     } else {
-      this.descriptionText = sanitize.nonemptystring(json.TextBody?.Value, "");
+      this.rawText = sanitize.nonemptystring(json.TextBody?.Value, "");
       if (json.Body?.BodyType == "HTML") {
-        this.descriptionHTML = sanitize.nonemptystring(json.Body.Value, "");
+        this.rawHTMLDangerous = sanitize.nonemptystring(json.Body.Value, "");
+      } else {
+        this.rawHTMLDangerous = null;
       }
     }
     if (json.RecurrenceId) {
@@ -140,7 +143,7 @@ export class OWAEvent extends Event {
       new OWAUpdateOccurrenceRequest(this, {SendCalendarInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
       new OWACreateItemRequest({SendMeetingInvitations: "SendToAllAndSaveCopy"});
     request.addField("CalendarItem", "Subject", this.title, "item:Subject");
-    request.addField("CalendarItem", "Body", this.descriptionHTML ? { __type: "BodyContentType:#Exchange", BodyType: "HTML", Value: this.descriptionHTML } : this.descriptionText ? { __type: "BodyContentType:#Exchange", BodyType: "Text", Value: this.descriptionText } : null, "item:Body");
+    request.addField("CalendarItem", "Body", this.rawHTMLDangerous ? { __type: "BodyContentType:#Exchange", BodyType: "HTML", Value: this.rawHTMLDangerous } : { __type: "BodyContentType:#Exchange", BodyType: "Text", Value: this.descriptionText }, "item:Body");
     request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
     request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
     request.addField("CalendarItem", "Recurrence", this.recurrenceRule ? this.saveRule(this.recurrenceRule) : null, "calendar:Recurrence");
