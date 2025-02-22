@@ -1,6 +1,6 @@
 {#if !expanded}
   <hbox class="expander-button">
-    <Button plain onClick={onExpand}>
+    <Button plain onClick={onExpand} tooltip={label}>
       <hbox class="content" slot="label">
         {#if icon}
           <hbox class="icon">
