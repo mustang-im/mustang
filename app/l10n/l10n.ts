@@ -1,6 +1,5 @@
 import { sanitize } from '../../lib/util/sanitizeDatatypes';
-import { derived, writable } from 'svelte/store';
-import { setLocale, t as translateString } from "svelte-icu-l10n";
+import { locale, t as _t, gt as _gt} from "svelte-icu-l10n";
 
 import { sourceLocale } from './list';
 
@@ -92,19 +91,6 @@ export function setUILocale(lang: string) {
   locale.set(availableLang, messages);
 }
 
-function createLocale(defaultLocale = 'en-US', defaultMessages = {}) {
-	const { subscribe, set } = writable(defaultLocale);
-  
-	return {
-		subscribe,
-		set: (locale, messages) => {
-      setLocale(locale, messages);
-			set(locale);
-		},
-	};
-};
-const locale = createLocale();
-
 /** Alternative implementation with dynamic loading of locale files. Not used. */
 /*
 export async function setUILocaleAsync(lang: string) {
@@ -152,7 +138,7 @@ function initLocale() {
 
 /** Used in Svelte files, e.g.
  * $t`Hello World!` or $t`Hello ${username}!` */
-export const t = derived(locale, () => gt);
+export const t = _t;
 
 /** Used in .ts modules, e.g.
  * gt`Hello World!` or gt`Hello ${username}!` */
@@ -161,5 +147,5 @@ export function gt(descriptor, ...args) {
     initLocale(); // `setUILocale()` must be sync for this to work
     loadedLocale = true;
   }
-  return translateString(descriptor, ...args);
+  return _gt(descriptor, ...args);
 }
