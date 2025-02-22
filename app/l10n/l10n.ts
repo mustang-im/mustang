@@ -1,5 +1,7 @@
+import { MessageFormatter, pluralTypeHandler, type FormatValues } from "@ultraq/icu-message-formatter";
+import { derived, writable } from "svelte/store";
+import { generateMessageId } from "./generateMessageId";
 import { sanitize } from '../../lib/util/sanitizeDatatypes';
-import { locale, t as _t, gt as _gt} from "svelte-icu-l10n";
 
 import { sourceLocale } from './list';
 
@@ -91,6 +93,27 @@ export function setUILocale(lang: string) {
   locale.set(availableLang, messages);
 }
 
+const handlers = { plural: pluralTypeHandler };
+let formatter: MessageFormatter;
+let messages: Record<string, string>;
+function createLocale(defaultLocale = 'en-US', defaultMessages = {}) {
+	const { subscribe, set } = writable(defaultLocale);
+
+	// Necessary for plural to work; it expects a locale to be set.
+  formatter = new MessageFormatter(defaultLocale, handlers);
+  messages = defaultMessages;
+
+	return {
+		subscribe,
+		set: (locale: string, msgs: Record<string, string>) => {
+      formatter = new MessageFormatter(locale, handlers);
+      messages = msgs;
+			set(locale);
+		},
+	};
+}
+export const locale = createLocale();
+
 /** Alternative implementation with dynamic loading of locale files. Not used. */
 /*
 export async function setUILocaleAsync(lang: string) {
@@ -138,7 +161,7 @@ function initLocale() {
 
 /** Used in Svelte files, e.g.
  * $t`Hello World!` or $t`Hello ${username}!` */
-export const t = _t;
+export const t = derived(locale, () => gt);
 
 /** Used in .ts modules, e.g.
  * gt`Hello World!` or gt`Hello ${username}!` */
@@ -147,5 +170,77 @@ export function gt(descriptor, ...args) {
     initLocale(); // `setUILocale()` must be sync for this to work
     loadedLocale = true;
   }
-  return _gt(descriptor, ...args);
+  let str: string = "";
+  str = descriptor[0];
+  args.forEach((_arg, i) => {
+    str += `{${i}}` + descriptor[i + 1];
+  });
+  let msg: MessageDescriptor = {
+    id: generateMessageId(str),
+    defaultMessage: str,
+  }
+  let values = { ...args };
+
+  return translateString(msg, values);
+}
+
+/**
+ * Translates a plural message based on a number and variations
+ * @param num
+ * @param variations
+ * @returns translated string
+ */
+export const plural = derived(locale, () => gPlural);
+
+/**
+ * Translates a plural message based on a number and variations
+ * @param num
+ * @param variations
+ * @returns translated string
+ */
+export function gPlural(num: number, variations: Record<string, string>) {
+  let pluralOptions = "";
+  Object.entries(variations).forEach(([key, value]) => {
+    pluralOptions += ` ${key} {${value}}`;
+  });
+  let str = `{num, plural,${pluralOptions}}`;
+  let message: MessageDescriptor = {
+    id: generateMessageId(str),
+    defaultMessage: str,
+  };
+  return translateString(message, { num });
+}
+
+
+/**
+ * Translates based on a message descriptor and values
+ * @param descriptor
+ * @param values 
+ * @returns translated string
+ */
+export function translateString(descriptor: MessageDescriptor, values: FormatValues): string {
+  if (!formatter) {
+    throw new Error("Locale not set");
+  }
+  let message: string = messages[descriptor.id] ?? descriptor.defaultMessage;
+  if (message == descriptor.id) {
+    message = descriptor.defaultMessage;
+  }
+  try {
+    return formatter.format(message, values);
+  } catch (ex) {
+    if (message != descriptor.defaultMessage) try {
+      return formatter.format(message, values);
+    } catch (ex) {
+      return message;
+    }
+  }
+}
+
+export { default as T } from "./T.svelte";
+
+export interface MessageDescriptor {
+  id: string;
+  defaultMessage: string;
+  description?: string;
 }

@@ -42,7 +42,7 @@
   import ThreadDisplay from "./ThreadDisplay.svelte";
   import { logError } from "../../Util/error";
   import { sleep } from "../../../logic/util/util";
-  import { t } from "svelte-i18n-lingui";
+  import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
 

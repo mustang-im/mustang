@@ -13,7 +13,7 @@
   import Icon from 'svelte-icon/Icon.svelte';
   import logo from '../../asset/icon/general/logo.svg?raw';
   import { appName, appVersion, siteRoot } from '../../../logic/build';
-  import { T } from 'svelte-i18n-lingui';
+  import { T } from '../../../l10n/l10n';
 </script>
 
 <style>

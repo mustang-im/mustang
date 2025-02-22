@@ -70,12 +70,11 @@
 -->
 
 <script lang="ts">
-  import { plural } from 'svelte-i18n-lingui';
   import type { Event } from "../../../logic/Calendar/Event";
   import { Frequency, RecurrenceRule, type RecurrenceInit } from "../../../logic/Calendar/RecurrenceRule";
   import SectionTitle from './SectionTitle.svelte';
   import RadioGroup, { type RadioOption } from "./RadioGroup.svelte";
-  import { getUILocale, t } from "../../../l10n/l10n";
+  import { getUILocale, t, plural } from "../../../l10n/l10n";
   import RoundButton from '../../Shared/RoundButton.svelte';
   import { arrayRemove } from '../../../logic/util/util';
 
