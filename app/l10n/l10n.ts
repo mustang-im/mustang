@@ -96,6 +96,12 @@ export function setUILocale(lang: string) {
 const handlers = { plural: pluralTypeHandler };
 let formatter: MessageFormatter;
 let messages: Record<string, string>;
+/**
+ * Cache is not needed since the all messages are loaded
+ * on load and also the `@ultraq/icu-messageformatter`
+ * caches the results of formatted messages
+ * <https://github.com/ultraq/icu-message-formatter/blob/main/source/MessageFormatter.js#L78>
+ */
 function createLocale(defaultLocale = 'en-US', defaultMessages = {}) {
 	const { subscribe, set } = writable(defaultLocale);
 
@@ -105,6 +111,11 @@ function createLocale(defaultLocale = 'en-US', defaultMessages = {}) {
 
 	return {
 		subscribe,
+    /**
+     * Sets the locale and loads the messages
+     * @param locale 
+     * @param msgs 
+     */
 		set: (locale: string, msgs: Record<string, string>) => {
       formatter = new MessageFormatter(locale, handlers);
       messages = msgs;
@@ -166,10 +177,6 @@ export const t = derived(locale, () => gt);
 /** Used in .ts modules, e.g.
  * gt`Hello World!` or gt`Hello ${username}!` */
 export function gt(descriptor, ...args) {
-  if (!loadedLocale) {
-    initLocale(); // `setUILocale()` must be sync for this to work
-    loadedLocale = true;
-  }
   let str: string = "";
   str = descriptor[0];
   args.forEach((_arg, i) => {
@@ -194,6 +201,14 @@ export const plural = derived(locale, () => gPlural);
 
 /**
  * Translates a plural message based on a number and variations
+ * 
+ * We need this to generate and match the variation according
+ * to the number provided, we could just manually write ICU format
+ * manually `{num, plural, variations}` but we're using this 
+ * to avoid changing the entire code and also the manually written
+ * on would be `{0, plural, variations}` because the placeholders
+ * are numbers and that also changes the hashID and would require
+ * us to retranslate.
  * @param num
  * @param variations
  * @returns translated string
@@ -214,24 +229,38 @@ export function gPlural(num: number, variations: Record<string, string>) {
 
 /**
  * Translates based on a message descriptor and values
+ * 
+ * This default translation function that does the translation
+ * and fallback handling for `t()` and `plural()`. Without
+ * it the other function would not work. Since it is the entry point
+ * for all translation functions, the `initLocale()` function is
+ * called here instead
  * @param descriptor
  * @param values 
  * @returns translated string
  */
 export function translateString(descriptor: MessageDescriptor, values: FormatValues): string {
-  if (!formatter) {
-    throw new Error("Locale not set");
+  if (!loadedLocale) {
+    initLocale(); // `setUILocale()` must be sync for this to work
+    loadedLocale = true;
   }
   let message: string = messages[descriptor.id] ?? descriptor.defaultMessage;
+  // This condition is for the <T> component extract error
+  // where the message is the same as id which renders the id
   if (message == descriptor.id) {
     message = descriptor.defaultMessage;
   }
   try {
+    // Throws an error if there's an syntax error
+    // which returns undefined
     return formatter.format(message, values);
   } catch (ex) {
+    // Fallback to parsing the defualt message
+    // if the default message was not used to parse
     if (message != descriptor.defaultMessage) try {
       return formatter.format(message, values);
     } catch (ex) {
+      // Fallback to unparsed message if the previous messages failed
       return message;
     }
   }
