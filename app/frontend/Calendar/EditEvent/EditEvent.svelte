@@ -173,7 +173,7 @@
   $: showReminder = !!$event.alarm;
   $: showParticipants = $event.participants.hasItems || $event.response == ResponseType.Organizer;
   $: showLocation = $event.location;
-  $: showOnlineMeeting = $event.onlineMeetingURL;
+  $: showOnlineMeeting = $event.isOnline;
   $: showDescription = $event.descriptionHTML;
 
   let repeatBox: RepeatBox;
@@ -242,7 +242,9 @@
   }
 
   function expandOnlineMeeting(): void {
-    event.onlineMeetingURL = " ";
+    event.isOnline = true;
+    event.onlineMeetingURL = $t`will be created`;
+    expandParticipants();
   }
 
   function expandDescription(): void {

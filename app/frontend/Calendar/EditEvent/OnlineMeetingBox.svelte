@@ -7,7 +7,7 @@
       iconSize="16px"
       iconOnly
       plain
-      disabled={!event.onlineMeetingURL}
+      disabled={!hasURL}
       on:click={onCopyMeetingURL}
       />
     <Button
@@ -16,7 +16,7 @@
       iconSize="16px"
       iconOnly
       plain
-      disabled={!event.onlineMeetingURL}
+      disabled={!hasURL}
       on:click={onOpenMeetingURL}
       />
     <Button
@@ -25,7 +25,7 @@
       iconSize="16px"
       iconOnly
       plain
-      disabled={!event.onlineMeetingURL}
+      disabled={!event.isOnline}
       on:click={onRemove}
       />
   </hbox>
@@ -33,14 +33,16 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
+  import { appGlobal } from "../../../logic/app";
   import Button from "../../Shared/Button.svelte";
   import CopyIcon from "lucide-svelte/icons/copy";
   import BrowserIcon from "lucide-svelte/icons/globe";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { t } from "../../../l10n/l10n";
-  import { appGlobal } from "../../../logic/app";
 
   export let event: Event;
+
+  $: hasURL = event.onlineMeetingURL?.startsWith("https://");
 
   function onCopyMeetingURL() {
     navigator.clipboard.writeText(event.onlineMeetingURL);
@@ -51,14 +53,16 @@
   }
 
   function onAdd() {
+    event.isOnline = true;
     // TODO Create meeting on server
-    // event.onlineMeetingURL = ;
+    event.onlineMeetingURL = $t`will be created`;
   }
 
   function onRemove() {
     if (event.participants.hasItems && !event.isNew && !confirm($t`Changing the meeting URL might cause some participants to miss the meeting. Are you sure?`)) {
       return;
     }
+    event.isOnline = false;
     // TODO Remove meeting from server
     event.onlineMeetingURL = null;
   }

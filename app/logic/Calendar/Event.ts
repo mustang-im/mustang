@@ -64,10 +64,8 @@ export class Event extends Observable {
   location: string;
   @notifyChangedProperty
   onlineMeetingURL: string;
-  // @notifyChangedProperty
-  // isOnline = false;
-  // @notifyChangedProperty
-  // isPresence = false;
+  @notifyChangedProperty
+  isOnline = false;
   @notifyChangedProperty
   readonly participants = new ArrayColl<PersonUID>();
   @notifyChangedProperty
@@ -140,8 +138,7 @@ export class Event extends Observable {
     this.descriptionHTML = original.descriptionHTML;
     this.allDay = original.allDay;
     this.location = original.location;
-    // this.isOnline = original.isOnline;
-    // this.isPresence = original.isPresence;
+    this.isOnline = original.isOnline;
     this.onlineMeetingURL = original.onlineMeetingURL;
     this.participants.replaceAll(original.participants);
     this.response = original.response;
