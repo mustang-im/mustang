@@ -63,7 +63,6 @@
     "@crowdin/cli": "^4.0.0",
     "@lingui/cli": "^4.11.1",
     "@lingui/format-json": "^4.11.1",
-    "@rollup/plugin-replace": "^6.0.2",
     "@sveltejs/vite-plugin-svelte": "^2.0.3",
     "@tsconfig/svelte": "^3.0.0",
     "adm-zip": "^0.5.12",

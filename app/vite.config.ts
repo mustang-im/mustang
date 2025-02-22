@@ -3,7 +3,6 @@ import { defineConfig } from 'vite'
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 import conditionalCompile from "vite-plugin-conditional-compile";
-import replace from '@rollup/plugin-replace';
 import { olm } from './build/olm';
 import { webMail, includeProprietary } from './logic/build';
 
@@ -15,9 +14,6 @@ export default defineConfig({
   },
 
   plugins: [
-    replace({
-      'svelte-i18n-lingui': 'svelte-icu-l10n',
-    }),
     conditionalCompile({
       // <https://github.com/LZS911/vite-plugin-conditional-compile/blob/master/README.md>
       env: {
