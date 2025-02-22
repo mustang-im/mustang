@@ -10,7 +10,7 @@
 
 	let strings = [];
 
-  onMount(() => parse);
+  onMount(parse);
 
   $: parse();
 
