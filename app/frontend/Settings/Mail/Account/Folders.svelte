@@ -29,8 +29,10 @@
       </vbox>
     </Splitter>
   {:else if !$mailAccount?.isLoggedIn}
-    {$t`Please log in to account ${mailAccount?.name} first`}
-    <!--<Button label="Login" onClick={() => mailAccount.login(true)} />-->
+    <vbox class="login">
+      <hbox class="label">{$t`Please log in to account ${mailAccount?.name} first`}</hbox>
+      <Button label={$t`Login`} onClick={async () => await mailAccount.login(true)} />
+    </vbox>
   {/if}
 </vbox>
 
@@ -45,6 +47,7 @@
   import CreateFolder from "./CreateFolder.svelte";
   import Splitter from "../../../Shared/Splitter.svelte";
   import RoundButton from "../../../Shared/RoundButton.svelte";
+  import Button from "../../../Shared/Button.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
   import type { ArrayColl } from "svelte-collections";
   import { t } from "../../../../l10n/l10n";
@@ -71,5 +74,12 @@
   }
   .buttons {
     align-items: center;
+  }
+  .login {
+    align-items: start;
+  }
+  .login .label {
+    margin-block-start: 16px;
+    margin-block-end: 8px;
   }
 </style>
