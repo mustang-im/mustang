@@ -58,6 +58,7 @@
     "psl": "https://github.com/lupomontero/psl",
     "svelte-collections": "^1.2.4",
     "svelte-icon": "^2.0.0",
+    "svelte-icu-l10n": "https://github.com/mustang-im/svelte-icu-l10n",
     "timezone-picker-svelte": "^1.0.2",
     "ws": "^8.16.0"
   },
