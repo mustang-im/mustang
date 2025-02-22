@@ -3,7 +3,7 @@
   {#if displayEvents && !displayEvents.isEmpty}
     <Scroll>
       {#each displayEvents.each as event (event.id)}
-        <EventLine {event} />
+        <EventLine {event} {start} />
       {/each}
     </Scroll>
   {/if}
@@ -16,14 +16,14 @@
 </vbox>
 
 <script lang="ts">
-  import type { Collection } from "svelte-collections";
+  import type { Event } from "../../../logic/Calendar/Event";
   import { selectedCalendar, selectedDate } from "../selected";
   import { calendarMustangApp } from "../CalendarMustangApp";
-  import type { Event } from "../../../logic/Calendar/Event";
   import EventLine from "./EventLine.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import { assert } from "../../../logic/util/util";
   import { t, getUILocale } from "../../../l10n/l10n";
+  import type { Collection } from "svelte-collections";
 
   export let start: Date;
   export let intervalInHours: number;
@@ -37,7 +37,7 @@
   function setEnd() {
     end = new Date(start);
     end.setHours(end.getHours() + intervalInHours);
-    displayEvents = events.filter(ev => ev.startTime >= start && ev.startTime < end);
+    displayEvents = events.filter(ev => ev.startTime < end && ev.endTime > start);
   }
 
   function selectDay() {

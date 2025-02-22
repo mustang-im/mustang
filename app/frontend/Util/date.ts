@@ -1,4 +1,5 @@
 import { getUILocale } from "../../l10n/l10n";
+import { gPlural } from 'svelte-i18n-lingui';
 
 /**
 * Returns:
@@ -49,3 +50,23 @@ export function getWeekDays(start: Date): Date[] {
   }
   return weekDays;
 }
+
+export function getDurationString(durationInMS: number): string {
+  let durationInSec = durationInMS / 1000;
+  if (!durationInMS) {
+    return "";
+  } else if (durationInSec % k1Day == 0) {
+    let days = durationInSec / k1Day;
+    return Math.round(days) + " " + gPlural(days, { one: 'day', other: 'days' });
+  } else if (durationInSec % k1Hour == 0) {
+    let hours = durationInSec / k1Hour;
+    return Math.round(hours) + " " + gPlural(hours, { one: 'hour', other: 'hours' });
+  } else {
+    let minutes = durationInSec / k1Minute;
+    return Math.round(minutes) + " " + gPlural(minutes, { one: 'min', other: 'mins' });
+  }
+}
+
+export const k1Day = 86400;
+export const k1Hour = 3600;
+export const k1Minute = 60;

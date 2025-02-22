@@ -1,10 +1,10 @@
 {#each startTimes as start}
-  <EventsCell {start} {events} intervalInHours={1} />
+  <EventsBlockCell {start} {events} intervalInHours={1} />
 {/each}
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import EventsCell from "../MonthView/EventsCell.svelte";
+  import EventsBlockCell from "./EventsBlockCell.svelte";
   import type { Collection } from "svelte-collections";
 
   export let days: Date[];
