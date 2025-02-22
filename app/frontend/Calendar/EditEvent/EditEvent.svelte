@@ -243,7 +243,6 @@
 
   function expandOnlineMeeting(): void {
     event.isOnline = true;
-    event.onlineMeetingURL = $t`will be created`;
     expandParticipants();
   }
 

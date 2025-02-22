@@ -1,5 +1,5 @@
 <hbox class="online-meeting" flex>
-  <input type="url" bind:value={event.onlineMeetingURL} placeholder={$t`Meeting URL`} />
+  <input type="url" bind:value={event.onlineMeetingURL} placeholder={$t`Meeting URL will be created`} />
   <hbox class="buttons">
     <Button
       label={$t`Copy`}
@@ -55,7 +55,7 @@
   function onAdd() {
     event.isOnline = true;
     // TODO Create meeting on server
-    event.onlineMeetingURL = $t`will be created`;
+    // event.onlineMeetingURL = ...;
   }
 
   function onRemove() {
