@@ -266,6 +266,10 @@ export function translateString(descriptor: MessageDescriptor, values: FormatVal
   }
 }
 
+// This is needed because:
+// $t`Press {@html "<button type="button">button</button>"}`
+// does not work, @html can only called at the top level
+// and the parser also may not support and render the elements
 export { default as T } from "./T.svelte";
 
 export interface MessageDescriptor {
