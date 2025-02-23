@@ -89,7 +89,6 @@
 </vbox>
 
 <script lang="ts">
-  import { plural } from 'svelte-i18n-lingui';
   import type { Event } from "../../logic/Calendar/Event";
   import { Frequency, RecurrenceRule, type RecurrenceInit } from "../../logic/Calendar/RecurrenceRule";
   import PersonsAutocomplete from "../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
@@ -103,7 +102,7 @@
   import { Checkbox, Radio } from "@svelteuidev/core";
   import CopyIcon from "lucide-svelte/icons/copy";
   import BrowserIcon from "lucide-svelte/icons/globe";
-  import { getUILocale, t } from "../../l10n/l10n";
+  import { getUILocale, t, plural } from "../../l10n/l10n";
 
   export let event: Event;
 

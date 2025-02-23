@@ -1,5 +1,4 @@
-import { getUILocale } from "../../l10n/l10n";
-import { gPlural } from 'svelte-i18n-lingui';
+import { getUILocale, gPlural } from "../../l10n/l10n";
 
 /**
 * Returns:

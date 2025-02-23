@@ -16,8 +16,8 @@
 
 <script>
   import { appName } from "../../../logic/build";
-  import { T } from "svelte-i18n-lingui";
   import { t } from "../../../l10n/l10n";
+  import T from '../../../l10n/T.svelte';
 </script>
 
 <style>

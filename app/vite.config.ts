@@ -2,7 +2,6 @@ import { sentryVitePlugin } from "@sentry/vite-plugin";
 import { defineConfig } from 'vite'
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { svelte } from '@sveltejs/vite-plugin-svelte'
-import { lingui } from '@lingui/vite-plugin';
 import conditionalCompile from "vite-plugin-conditional-compile";
 import { olm } from './build/olm';
 import { webMail, includeProprietary } from './logic/build';
@@ -26,7 +25,6 @@ export default defineConfig({
     nodePolyfills({ include: ['buffer'], globals: { global: false, process: webMail } }),
     svelte(),
     olm,
-    lingui(),
     sentryVitePlugin({
       org: "mustang-jq",
       project: "mustang"
