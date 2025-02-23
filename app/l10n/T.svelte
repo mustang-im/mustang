@@ -2,10 +2,10 @@
 	import { t } from './l10n';
   import { onMount } from "svelte";
 
-	/**
-	 * Allows to add Svelte components and HTML elements in the middle of a translated string.
-	 * Usage:
-	 * ```svelte
+  /**
+   * Allows to add Svelte components and HTML elements in the middle of a translated string.
+   * Usage:
+   * ```svelte
    * <T msg="Read our # or # for more information">
    *   <a href="https://help.example.com">{$t`help`}`</a>
    *   <a href="https://docs.example.com" slot="2">{$t`docs`}`</a>
