@@ -106,8 +106,8 @@
     let weekno = Math.ceil(event.startTime.getDate() / 7);
     if (weekno < 5) {
       let weekname = [$t`first`, $t`second`, $t`third`, $t`fourth`][weekno - 1];
-      yearWeekOptions.push({ label: `On the ${weekname} ${weekday} in ${event.startTime.toLocaleDateString(getUILocale(), { month: "long" })}`, value: weekno });
-      monthWeekOptions.push({ label: `On the ${weekname} ${weekday}`, value: weekno });
+      yearWeekOptions.push({ label: $t`On the ${weekname} ${weekday} in ${event.startTime.toLocaleDateString(getUILocale(), { month: "long" })}`, value: weekno });
+      monthWeekOptions.push({ label: $t`On the ${weekname} ${weekday}`, value: weekno });
     }
 
     if (isLastWeekOfMonth(event.startTime)) {
