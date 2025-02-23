@@ -19,7 +19,7 @@ jobs:
 #        cache: 'npm'
     - run: cd lib; npm install
     - run: cd app; npm install --legacy-peer-deps
-    - run: cd app; npm run l10n
+    - run: cd app; npm run l10n:extract
     - run: cd app; npm run l10n:auto-translate
       env:
         DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
