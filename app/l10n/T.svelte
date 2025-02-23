@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { t } from './l10n';
+  import { t } from './l10n';
   import { onMount } from "svelte";
 
   /**
@@ -12,16 +12,16 @@
    * </T>
    * ``` */
 
-	export let msg: string;
+  export let msg: string;
 
-	let strings: string[] = [];
+  let strings: string[] = [];
   onMount(split);
-	function split() {
-		strings = $t([msg]).split('#');
-		if (strings.length > 5) {
-			console.error('<T> component can only have a maximum of 5 slots. Bad string is:', ...strings);
-		}
-	};
+  function split() {
+    strings = $t([msg]).split('#');
+    if (strings.length > 5) {
+      console.error('<T> component can only have a maximum of 5 slots. Bad string is:', ...strings);
+    }
+  };
 </script>
 
 <!-- No newlines, to avoid whitespaces inserted into the string -->
