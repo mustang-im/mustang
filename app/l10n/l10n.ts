@@ -1,6 +1,6 @@
 import { MessageFormatter, pluralTypeHandler, type FormatValues } from "@ultraq/icu-message-formatter";
 import { derived, writable } from "svelte/store";
-import { generateMessageId } from "./generateMessageId";
+import { generateMessageID } from "./generateMessageID";
 import { sanitize } from '../../lib/util/sanitizeDatatypes';
 
 import { sourceLocale } from './list';
@@ -96,6 +96,7 @@ export function setUILocale(lang: string) {
 const handlers = { plural: pluralTypeHandler };
 let formatter: MessageFormatter;
 let messages: Record<string, string>;
+
 /**
  * Cache is not needed since the all messages are loaded
  * on load and also the `@ultraq/icu-messageformatter`
@@ -183,7 +184,7 @@ export function gt(descriptor, ...args) {
     str += `{${i}}` + descriptor[i + 1];
   });
   let msg: MessageDescriptor = {
-    id: generateMessageId(str),
+    id: generateMessageID(str),
     defaultMessage: str,
   }
   let values = { ...args };
@@ -220,7 +221,7 @@ export function gPlural(num: number, variations: Record<string, string>) {
   });
   let str = `{num, plural,${pluralOptions}}`;
   let message: MessageDescriptor = {
-    id: generateMessageId(str),
+    id: generateMessageID(str),
     defaultMessage: str,
   };
   return translateString(message, { num });
@@ -265,12 +266,6 @@ export function translateString(descriptor: MessageDescriptor, values: FormatVal
     }
   }
 }
-
-// This is needed because:
-// $t`Press {@html "<button type="button">button</button>"}`
-// does not work, @html can only called at the top level
-// and the parser also may not support and render the elements
-export { default as T } from "./T.svelte";
 
 export interface MessageDescriptor {
   id: string;

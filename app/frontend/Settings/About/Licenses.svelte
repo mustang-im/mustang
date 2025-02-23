@@ -16,7 +16,8 @@
 
 <script>
   import { appName } from "../../../logic/build";
-  import { t, T } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
+  import T from '../../../l10n/T.svelte';
 </script>
 
 <style>
