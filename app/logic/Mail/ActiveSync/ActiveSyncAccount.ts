@@ -36,7 +36,6 @@ export class ActiveSyncAccount extends MailAccount {
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
   readonly pingsMRU = new ArrayColl<ActiveSyncPingable>();
-  readonly customSentFolders: Folder[] = [];
   heartbeat = 60;
   maxPings = kMaxCount;
   listening = false;
@@ -119,11 +118,19 @@ export class ActiveSyncAccount extends MailAccount {
       throw new NotSupported("ActiveSync does not support BCC");
     }
     assert(email.folder?.id, "Need folder to save the sent email in");
+    let defaultSentFolder = this.getSpecialFolder(SpecialFolder.Sent) as ActiveSyncFolder;
     if (email.folder.specialFolder != SpecialFolder.Sent) {
-      let defaultSentFolder = this.getSpecialFolder(SpecialFolder.Sent);
       await defaultSentFolder.listMessages();
     }
-    this.customSentFolders.push(email.folder);
+    defaultSentFolder.newMessageCallbacks.add(message => {
+      if (message.subject != email.subject) {
+        return false;
+      }
+      if (email.folder.specialFolder != SpecialFolder.Sent) {
+        email.folder.moveMessageHere(message).catch(this.errorCallback);
+      }
+      return true;
+    });
     let request = {
       ClientId: await this.nextClientID(),
       SaveInSentItems: {},

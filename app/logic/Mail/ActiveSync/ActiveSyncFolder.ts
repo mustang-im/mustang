@@ -31,6 +31,7 @@ export enum FolderType {
 export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
   account: ActiveSyncAccount;
   messages: EMailCollection<ActiveSyncEMail>;
+  readonly newMessageCallbacks = new ArrayColl<{(message: ActiveSyncEMail): boolean}>();
   readonly folderClass = "Email";
 
   get serverID() {
@@ -174,14 +175,11 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
     });
     this.messages.addAll(newMsgs);
     this.account.addPingable(this);
-    if (this.specialFolder == SpecialFolder.Sent) {
-      for (let email of newMsgs) {
-        let customSentFolder = this.account.customSentFolders.shift();
-        if (!customSentFolder) {
-          break;
-        }
-        if (customSentFolder != this) {
-          customSentFolder.moveMessageHere(email).catch(this.account.errorCallback);
+    for (let email of newMsgs) {
+      for (let callback of this.newMessageCallbacks) {
+        if (callback(email)) {
+          this.newMessageCallbacks.remove(callback);
+          break; // out of inner loop only
         }
       }
     }
