@@ -183,9 +183,17 @@ export function gt(descriptor, ...args) {
   args.forEach((_arg, i) => {
     str += `{${i}}` + descriptor[i + 1];
   });
+  let context: string;
+  // If the string is a single word generate an ID
+  // based on the the fileName as context
+  if (str.split(" ").length == 1) {
+    context = URL.parse(getCallerFile()).pathname.split("/").pop().split(".").shift();
+    console.log(context);
+  }
   let msg: MessageDescriptor = {
-    id: generateMessageID(str),
+    id: generateMessageID(str, context),
     defaultMessage: str,
+    description: context,
   }
   let values = { ...args };
 
@@ -265,6 +273,37 @@ export function translateString(descriptor: MessageDescriptor, values: FormatVal
       return message;
     }
   }
+}
+
+/**
+ * Gets the fileName where the function is called.
+ * We need this to get the more context for single word translations.
+ * @returns fileName
+ */
+function getCallerFile(): string {
+  let filename: string;
+
+  let _pst = Error.prepareStackTrace
+  Error.prepareStackTrace = function (err, stack) { return stack; };
+  try {
+      let err: Error = new Error();
+      let callerfile: string;
+      let currentfile: string;
+
+      currentfile = err.stack.shift().getFileName();
+
+      while (err.stack.length) {
+          callerfile = err.stack.shift().getFileName();
+
+          if(currentfile !== callerfile) {
+              filename = callerfile;
+              break;
+          }
+      }
+  } catch (ex) {}
+  Error.prepareStackTrace = _pst;
+
+  return filename;
 }
 
 export interface MessageDescriptor {
