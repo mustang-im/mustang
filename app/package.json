@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test": "vitest",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "l10n:extract": "lingui extract",
+    "l10n:extract": "lingui extract --clean",
     "l10n:placeholder": "npx json-autotranslate --input l10n/locales --service dry-run --delete-unused-strings --type key-based --exclude **/*-compiled.json",
     "l10n:auto-translate": "npx json-autotranslate --input l10n/locales --service deepl-free --config $DEEPL_API_KEY,default,1000 --delete-unused-strings --type key-based --exclude **/*-compiled.json",
     "l10n:crowdin": "cd l10n && crowdin",
