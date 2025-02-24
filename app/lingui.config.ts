@@ -1,4 +1,4 @@
-import { jstsExtractor, svelteExtractor } from 'svelte-i18n-lingui/extractor';
+import { jstsExtractor, svelteExtractor } from './l10n/extractor';
 import {formatter} from "@lingui/format-json";
 import { locales, sourceLocale } from './l10n/list';
 
