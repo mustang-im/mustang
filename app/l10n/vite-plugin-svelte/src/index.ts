@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { build, HmrContext, ModuleNode, Plugin, ResolvedConfig, UserConfig } from 'vite';
+import { HmrContext, ModuleNode, Plugin, ResolvedConfig, UserConfig } from 'vite';
 // eslint-disable-next-line node/no-missing-import
 import { isDepExcluded } from 'vitefu';
 import { handleHotUpdate } from './handle-hot-update';
@@ -194,7 +194,7 @@ export function svelte(inlineOptions?: Partial<Options>): Plugin[] {
 				try {
 					compileData = await compileSvelte(svelteRequest, code, options);
           let ast = compileData.compiled.ast;
-          let strings = [];
+          const strings: string[] = [];
 
           walk(ast, {
             enter(node, _parent, _prop, _index) {
