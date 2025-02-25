@@ -10,6 +10,12 @@ export class MatrixVideoConf extends VideoConfMeeting {
   protected _call: MatrixCall;
   client: MatrixClient;
 
+  canVideo = true;
+  canAudio = true;
+  canScreenShare = false;
+  canMultipleParticipants = false;
+  canCreateURL = false;
+
   /**
    * You probably want to call function `call()` instead of the ctor.
    *

@@ -14,6 +14,12 @@ export class M3Account extends MeetAccount {
   /** Where guests would go to join the meeting without Mustang app */
   webFrontendBaseURL: string = "https://meet.mustang.im";
 
+  canVideo = true;
+  canAudio = true;
+  canScreenShare = true;
+  canMultipleParticipants = true;
+  canCreateURL = true;
+
   /**
    * Login using OAuth2
    * If already logged in, does nothing.
@@ -28,10 +34,7 @@ export class M3Account extends MeetAccount {
     if (!this.username) {
       throw new UserError(gt`Please configure a matching meeting account first`);
     }
-
-    if (this.oauth2) {
-      this.oauth2.stop();
-    }
+    this.oauth2?.stop();
     let controllerHostname = new URL(this.controllerBaseURL).hostname;
     let urls = OAuth2URLs.find(urls => urls.hostnames.includes(controllerHostname));
     assert(urls, "Need OAuth2 config for Mustang video conference");
