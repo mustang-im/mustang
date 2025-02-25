@@ -10,7 +10,7 @@ import { walk } from 'estree-walker-ts';
 import { parse as tsParse } from '@typescript-eslint/typescript-estree';
 import { generateMessageID } from './generateMessageID';
 
-const extractFromTaggedTemplate = (node, filename, onMessageExtracted) => {
+export const extractFromTaggedTemplate = (node, filename, onMessageExtracted) => {
 	// `node.quasi.loc` is for extraction from svelte files, and `node.quasi` is for extraction from js/ts files
 	const { start } = node.quasi.loc;
 	const rawQuasis = node.quasi.quasis.map((q) => q.value.raw);
@@ -32,7 +32,7 @@ const extractFromTaggedTemplate = (node, filename, onMessageExtracted) => {
 	});
 };
 
-const extractFromCallExpression = (node, filename, onMessageExtracted) => {
+export const extractFromCallExpression = (node, filename, onMessageExtracted) => {
 	const { start } = node.loc;
 	const { properties } = node.arguments[0];
 	const messageProperty = properties.find((p) => p.key.name === 'message');
@@ -56,7 +56,7 @@ const extractFromCallExpression = (node, filename, onMessageExtracted) => {
 	}
 };
 
-const extractTags = (tags, node, filename, onMessageExtracted) => {
+export const extractTags = (tags, node, filename, onMessageExtracted) => {
 	if (node.type === 'TaggedTemplateExpression' && tags.includes(node.tag.name)) {
 		extractFromTaggedTemplate(node, filename, onMessageExtracted);
 	} else if (
@@ -68,7 +68,7 @@ const extractTags = (tags, node, filename, onMessageExtracted) => {
 	}
 };
 
-const extractPlurals = (tags, node, filename, onMessageExtracted) => {
+export const extractPlurals = (tags, node, filename, onMessageExtracted) => {
 	if (
 		node.type === 'CallExpression' &&
 		tags.includes(node.callee.name) &&
@@ -92,7 +92,7 @@ const extractPlurals = (tags, node, filename, onMessageExtracted) => {
 	}
 };
 
-const extractPluralMessages = (tags, node, filename, onMessageExtracted) => {
+export const extractPluralMessages = (tags, node, filename, onMessageExtracted) => {
 	if (
 		node.type === 'CallExpression' &&
 		tags.includes(node.callee.name) &&
@@ -115,7 +115,7 @@ const extractPluralMessages = (tags, node, filename, onMessageExtracted) => {
 	}
 };
 
-const extractComponent = (node, filename, onMessageExtracted) => {
+export const extractComponent = (node, filename, onMessageExtracted) => {
 	if (node.type === 'Component' && node.name === 'T') {
 		const { start } = node; // FIXME: Find out why Loc is not printed here, causing this to be incorrect
 		const { attributes } = node;
