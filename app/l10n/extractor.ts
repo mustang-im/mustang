@@ -22,7 +22,7 @@ const extractFromTaggedTemplate = (node, filename, onMessageExtracted) => {
   // If the string is a single word generate an ID
   // based on the the fileName as context
   if (message.split(" ").length == 1) {
-    context = filename.split("/").pop().split(".")[0];
+    context = filename.split("/").pop();
   }
 	onMessageExtracted({
 		id: generateMessageID(message, context),

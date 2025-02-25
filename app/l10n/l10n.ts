@@ -187,8 +187,7 @@ export function gt(descriptor, ...args) {
   // If the string is a single word generate an ID
   // based on the the fileName as context
   if (str.split(" ").length == 1) {
-    context = URL.parse(getCallerFile()).pathname.split("/").pop().split(".").shift();
-    console.log(context);
+    context = URL.parse(getCallerFile()).pathname.split("/").pop().split("?").shift();
   }
   let msg: MessageDescriptor = {
     id: generateMessageID(str, context),
