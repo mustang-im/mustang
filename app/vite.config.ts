@@ -2,6 +2,8 @@ import { sentryVitePlugin } from "@sentry/vite-plugin";
 import { defineConfig } from 'vite'
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { svelte } from './l10n/vite-plugin-svelte/src/index';
+import { jsTsExtractor } from "./l10n/extractor/tsExtractor";
+import { extractStrings } from "./l10n/extractor/extractor";
 import conditionalCompile from "vite-plugin-conditional-compile";
 import { olm } from './build/olm';
 import { webMail, includeProprietary } from './logic/build';
@@ -24,11 +26,13 @@ export default defineConfig({
     }),
     nodePolyfills({ include: ['buffer'], globals: { global: false, process: webMail } }),
     svelte(),
-    olm,
-    sentryVitePlugin({
-      org: "mustang-jq",
-      project: "mustang"
-    })
+    jsTsExtractor(),
+    extractStrings(),
+    // olm,
+    // sentryVitePlugin({
+    //   org: "mustang-jq",
+    //   project: "mustang"
+    // })
   ],
 
   build: {
