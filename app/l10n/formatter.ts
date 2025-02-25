@@ -5,11 +5,12 @@ export function formatter() {
       let json = JSON.parse(content);
       return json;
     },
-    serialize: (json, { existing }) => {
+    serialize: (json,{ existing }) => {
       let catalog = {};
+      existing = JSON.parse(existing);
       for (let key in json) {
         catalog[key] = {
-          message: json[key]["message"],
+          message: existing[key] ?? json[key]["message"],
           source: json[key].origin?.[0][0].split("/").pop(),
         }
       }
