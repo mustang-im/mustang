@@ -7,7 +7,7 @@ export function formatter() {
     },
     serialize: (json,{ existing }) => {
       let catalog = {};
-      existing = JSON.parse(existing);
+      existing = JSON.parse(existing ?? "{}");
       for (let key in json) {
         catalog[key] = {
           message: existing[key] ?? json[key]["message"],
