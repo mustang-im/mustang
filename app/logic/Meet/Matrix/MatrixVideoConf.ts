@@ -1,8 +1,8 @@
-import { MeetingState, VideoConfMeeting } from "./VideoConfMeeting";
-import { ParticipantVideo, SelfVideo } from "./VideoStream";
-import { MeetingParticipant } from "./Participant";
-import { Chat } from "../Chat/Chat";
-import { assert } from "../util/util";
+import { MeetingState, VideoConfMeeting } from "../VideoConfMeeting";
+import { ParticipantVideo, SelfVideo } from "../VideoStream";
+import { MeetingParticipant } from "../Participant";
+import { Chat } from "../../Chat/Chat";
+import { assert } from "../../util/util";
 import type { MatrixCall, MatrixClient } from "matrix-js-sdk";
 import { CallErrorCode, createNewMatrixCall } from "matrix-js-sdk/lib/webrtc/call";
 

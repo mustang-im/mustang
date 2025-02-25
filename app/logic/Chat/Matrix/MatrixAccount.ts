@@ -1,6 +1,6 @@
 import { ChatAccount } from '../ChatAccount';
 import { MatrixChatRoom } from './MatrixChatRoom';
-import { MatrixVideoConf } from '../../Meet/MatrixVideoConf';
+import { MatrixVideoConf } from '../../Meet/Matrix/MatrixVideoConf';
 import { ChatMessage, DeliveryStatus, UserChatMessage } from '../Message';
 import { ChatRoomEvent, IncomingCall, Invite, JoinLeave } from '../RoomEvent';
 import { Group } from '../../Abstract/Group';

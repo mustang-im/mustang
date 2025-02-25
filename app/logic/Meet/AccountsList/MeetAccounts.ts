@@ -1,5 +1,5 @@
 import { MeetAccount } from '../MeetAccount';
-import { M3Account } from '../M3Account';
+import { M3Account } from '../M3/M3Account';
 // #if [!WEBMAIL]
 import { SQLMeetStorage } from '../SQL/SQLMeetStorage';
 // #else

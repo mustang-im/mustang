@@ -45,8 +45,8 @@
 <script lang="ts">
   import { MeetingState, VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
   import { ParticipantVideo, SelfVideo } from "../../../logic/Meet/VideoStream";
-  import { MeetingParticipant, ParticipantRole } from "../../../logic/Meet/Participant";
-  import { M3Conf } from "../../../logic/Meet/M3Conf";
+  import { MeetingParticipant } from "../../../logic/Meet/Participant";
+  import { M3Conf } from "../../../logic/Meet/M3/M3Conf";
   import { Event } from "../../../logic/Calendar/Event";
   import { joinConferenceByURL } from "../../../logic/Meet/StartCall";
   import { selectedPerson } from "../../Shared/Person/Selected";

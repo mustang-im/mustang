@@ -1,11 +1,11 @@
-import { VideoConfMeeting, MeetingState } from "./VideoConfMeeting";
-import { ParticipantVideo, ScreenShare, SelfVideo } from "./VideoStream";
-import { MeetingParticipant as Participant, ParticipantRole } from "./Participant";
+import { VideoConfMeeting, MeetingState } from "../VideoConfMeeting";
+import { ParticipantVideo, ScreenShare, SelfVideo } from "../VideoStream";
+import { MeetingParticipant as Participant, ParticipantRole } from "../Participant";
 import { M3Account } from "./M3Account";
-import { appGlobal } from "../app";
-import { notifyChangedProperty } from "../util/Observable";
-import { assert, sleep, UserError, type URLString } from "../util/util";
-import { getUILocale, gt } from "../../l10n/l10n";
+import { appGlobal } from "../../app";
+import { notifyChangedProperty } from "../../util/Observable";
+import { assert, sleep, UserError, type URLString } from "../../util/util";
+import { getUILocale, gt } from "../../../l10n/l10n";
 
 export class M3Conf extends VideoConfMeeting {
   controllerBaseURL: string;

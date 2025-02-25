@@ -19,7 +19,7 @@
 
 <script lang="ts">
   import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
-  import { M3Conf } from "../../logic/Meet/M3Conf";
+  import { M3Conf } from "../../logic/Meet/M3/M3Conf";
   import { MeetingParticipant } from "../../logic/Meet/Participant";
   import { ParticipantVideo } from "../../logic/Meet/VideoStream";
   import { appGlobal } from "../../logic/app";

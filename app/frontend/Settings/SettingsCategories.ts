@@ -37,7 +37,7 @@ import { MatrixAccount } from "../../logic/Chat/Matrix/MatrixAccount";
 // #if [PROPRIETARY]
 import { meetMustangApp } from "../Meet/MeetMustangApp";
 import SetupMeetAccount from "../Setup/Meet/SetupMeetAccount.svelte";
-import { M3Account } from "../../logic/Meet/M3Account";
+import { M3Account } from "../../logic/Meet/M3/M3Account";
 import Devices from "./Meet/Devices.svelte";
 // #endif
 import { ArrayColl } from "svelte-collections";

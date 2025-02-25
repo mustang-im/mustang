@@ -1,8 +1,8 @@
-import { MeetAccount } from "./MeetAccount";
-import { OAuth2 } from "../Auth/OAuth2";
-import { UserError, assert } from "../util/util";
-import { OAuth2URLs } from "../Auth/OAuth2URLs";
-import { gt } from "../../l10n/l10n";
+import { MeetAccount } from "../MeetAccount";
+import { OAuth2 } from "../../Auth/OAuth2";
+import { UserError, assert } from "../../util/util";
+import { OAuth2URLs } from "../../Auth/OAuth2URLs";
+import { gt } from "../../../l10n/l10n";
 
 export class M3Account extends MeetAccount {
   readonly protocol: string = "m3";
