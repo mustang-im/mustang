@@ -1,5 +1,5 @@
 import { jstsExtractor, svelteExtractor } from './l10n/extractor';
-import {formatter} from "@lingui/format-json";
+import { formatter } from "./l10n/formatter";
 import { locales, sourceLocale } from './l10n/list';
 
 export default {
@@ -14,6 +14,6 @@ export default {
       ]
     }
   ],
-  format: formatter({style: 'minimal'}),
+  format: formatter(),
   extractors: [jstsExtractor, svelteExtractor],
 };
