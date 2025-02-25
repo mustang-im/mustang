@@ -26,6 +26,7 @@ import { VitePluginSvelteCache } from './utils/vite-plugin-svelte-cache';
 import { loadRaw } from './utils/load-raw';
 import { walk } from 'svelte/compiler';
 import { extractComponent, extractPluralMessages, extractPlurals, extractTags } from '../../extractor';
+import { strings } from "../../extractor/extractor";
 
 interface PluginAPI {
 	/**
@@ -194,7 +195,6 @@ export function svelte(inlineOptions?: Partial<Options>): Plugin[] {
 				try {
 					compileData = await compileSvelte(svelteRequest, code, options);
           let ast = compileData.compiled.ast;
-          const strings: string[] = [];
 
           walk(ast, {
             enter(node, _parent, _prop, _index) {
