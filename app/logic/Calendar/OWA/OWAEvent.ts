@@ -4,7 +4,9 @@ import { ResponseType, type Responses } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { OWACalendar } from "./OWACalendar";
 import WindowsTimezones from "../EWS/WindowsTimezones";
+import OWACreateOffice365EventRequest from "./Request/OWACreateOffice365EventRequest";
 import OWAUpdateOffice365EventRequest from "./Request/OWAUpdateOffice365EventRequest";
+import OWAUpdateOccurrenceRequest from "./Request/OWAUpdateOccurrenceRequest";
 import OWAUpdateOffice365OccurrenceRequest from "./Request/OWAUpdateOffice365OccurrenceRequest";
 import OWACreateItemRequest from "../../Mail/OWA/OWACreateItemRequest";
 import OWADeleteItemRequest from "../../Mail/OWA/OWADeleteItemRequest";
@@ -415,64 +417,4 @@ function addParticipants(attendees, participants: Participant[]) {
 
 function extractWeekdays(daysOfWeek: string): Weekday[] | null {
   return daysOfWeek ? daysOfWeek.split(" ").map(day => sanitize.integer(Weekday[day])) : null;
-}
-
-// This class is similar to the UpdateItem request
-// but the format of the item id is different.
-class OWAUpdateOccurrenceRequest {
-  readonly __type = "UpdateItemJsonRequest:#Exchange";
-  readonly Header = {
-    __type: "JsonRequestHeaders:#Exchange",
-    RequestServerVersion: "Exchange2013",
-  };
-  Body: any = {
-    __type: "UpdateItemRequest:#Exchange",
-    ConflictResolution: "AlwaysOverwrite",
-    ItemChanges: [{
-      __type: "ItemChange:#Exchange",
-      ItemId: {
-        __type: "OccurrenceItemId:#Exchange",
-      },
-      Updates: []
-    }],
-  };
-
-  constructor(event: OWAEvent, attributes?: {[key: string]: string | boolean}) {
-    this.itemChange.ItemId.RecurringMasterId = event.parentEvent.itemID;
-    this.itemChange.ItemId.InstanceIndex = event.parentEvent.instances.indexOf(event) + 1;
-    Object.assign(this.Body, attributes);
-  }
-
-  protected get itemChange() {
-    return this.Body.ItemChanges[0];
-  }
-
-  addField(type: string, key: string, value: any, FieldURI: string) {
-    let field = {
-      __type: "DeleteItemField:#Exchange",
-      Path: {
-        __type: "PropertyUri:#Exchange",
-        FieldURI: FieldURI,
-      },
-    } as any;
-    if (value != null) {
-      field.__type = "SetItemField:#Exchange";
-      field.Item = {
-        __type: type + ":#Exchange",
-      };
-      field.Item[key] = value;
-    }
-    this.itemChange.Updates.push(field);
-  }
-}
-
-class OWACreateOffice365EventRequest extends OWACreateItemRequest {
-  readonly Header = {
-    __type: "JsonRequestHeaders:#Exchange",
-    RequestServerVersion: "V2018_01_08",
-  };
-
-  get type() {
-    return "CreateCalendarEvent";
-  }
 }
