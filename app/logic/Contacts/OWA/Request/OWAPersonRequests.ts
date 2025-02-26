@@ -33,33 +33,3 @@ export function owaGetPersonasRequest(personaIDs: string[]): OWARequest {
     },
   });
 }
-
-export function owaPersonRequest(folderID: string): OWARequest {
-  return new OWARequest("", {
-  });
-}
-
-export function owaPersonRequest(folderID: string): OWARequest {
-  return new OWARequest("", {
-  });
-}
-
-export function owaPersonRequest(folderID: string): OWARequest {
-  return new OWARequest("", {
-  });
-}
-
-export function owaPersonRequest(folderID: string): OWARequest {
-  return new OWARequest("", {
-  });
-}
-
-export function owaPersonRequest(folderID: string): OWARequest {
-  return new OWARequest("", {
-  });
-}
-
-export function owaPersonRequest(folderID: string): OWARequest {
-  return new OWARequest("", {
-  });
-}
