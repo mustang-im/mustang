@@ -1,6 +1,5 @@
 import { MailAccount, AuthMethod, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
-import { SpecialFolder } from "../Folder";
 import { OWAFolder } from "./OWAFolder";
 import { OWAError } from "./OWAError";
 import type { OWANotifications } from "./OWANotifications";

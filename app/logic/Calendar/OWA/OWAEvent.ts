@@ -4,6 +4,8 @@ import { ResponseType, type Responses } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { OWACalendar } from "./OWACalendar";
 import WindowsTimezones from "../EWS/WindowsTimezones";
+import OWAUpdateOffice365EventRequest from "./Request/OWAUpdateOffice365EventRequest";
+import OWAUpdateOffice365OccurrenceRequest from "./Request/OWAUpdateOffice365OccurrenceRequest";
 import OWACreateItemRequest from "../../Mail/OWA/OWACreateItemRequest";
 import OWADeleteItemRequest from "../../Mail/OWA/OWADeleteItemRequest";
 import OWAUpdateItemRequest from "../../Mail/OWA/OWAUpdateItemRequest";
@@ -90,15 +92,15 @@ export class OWAEvent extends Event {
       addParticipants(json.OptionalAttendees, participants);
     }
     this.participants.replaceAll(participants);
-    if (json.MyResponseType) {
-      this.response = sanitize.integer(ResponseType[json.MyResponseType], ResponseType.Unknown);
+    if (json.ResponseType) {
+      this.response = sanitize.integer(ResponseType[json.ResponseType], ResponseType.Unknown);
     }
     if (json.LastModifiedTime) {
       this.lastMod = sanitize.date(json.LastModifiedTime);
     }
   }
 
-  newRecurrenceRule(json: any): RecurrenceRule {
+  protected newRecurrenceRule(json: any): RecurrenceRule {
     let startDate = this.startTime;
     let endDate: Date | null = null;
     if (json.RecurrenceRange.EndDate) {
@@ -133,14 +135,27 @@ export class OWAEvent extends Event {
     */
   }
 
-  async saveCalendarItem() {
-    let request: any = this.itemID ?
+  protected getExchangeSaveRequest() {
+    return this.itemID ?
       new OWAUpdateItemRequest(this.itemID, {SendCalendarInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
       this.parentEvent ?
       new OWAUpdateOccurrenceRequest(this, {SendCalendarInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
       new OWACreateItemRequest({SendMeetingInvitations: "SendToAllAndSaveCopy"});
+  }
+
+  protected getOffice365SaveRequest() {
+    return this.itemID ?
+      new OWAUpdateOffice365EventRequest(this.itemID) :
+      this.parentEvent ?
+      new OWAUpdateOffice365OccurrenceRequest(this) :
+      // Office 365 requires an explicit saved item folder id
+      new OWACreateOffice365EventRequest({ SavedItemFolderId: { __type: "TargetFolderId:#Exchange", BaseFolderId: { __type: "DistinguishedFolderId:#Exchange", Id: "calendar" } } });
+  }
+
+  async saveCalendarItem() {
+    let request = this.calendar.account.isOffice365() ? this.getOffice365SaveRequest() : this.getExchangeSaveRequest();
     request.addField("CalendarItem", "Subject", this.title, "item:Subject");
-    request.addField("CalendarItem", "Body", this.descriptionHTML ? { __type: "BodyContentType:#Exchange", BodyType: "HTML", Value: this.descriptionHTML } : this.descriptionText ? { __type: "BodyContentType:#Exchange", BodyType: "Text", Value: this.descriptionText } : null, "item:Body");
+    request.addField("CalendarItem", "Body", this.descriptionHTML ? { __type: "BodyContentType:#Exchange", BodyType: "HTML", Value: this.descriptionHTML } : { __type: "BodyContentType:#Exchange", BodyType: "Text", Value: this.descriptionText ?? "" }, "item:Body");
     request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
     request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
     request.addField("CalendarItem", "Recurrence", this.recurrenceRule ? this.saveRule(this.recurrenceRule) : null, "calendar:Recurrence");
@@ -152,7 +167,7 @@ export class OWAEvent extends Event {
     request.addField("CalendarItem", "Start", this.dateString(this.startTime), "calendar:Start");
     request.addField("CalendarItem", "End", this.dateString(this.endTime), "calendar:End");
     request.addField("CalendarItem", "IsAllDayEvent", this.allDay, "calendar:IsAllDayEvent");
-    request.addField("CalendarItem", "Location", { __type: "EnhancedLocation:#Exchange", DisplayName: this.location, PostalAddress: { __type: "PersonaPostalAddress:#Exchange", Type: "Business", LocationSource: "None", } }, "EnhancedLocation");
+    request.addField("CalendarItem", "Location", { __type: "EnhancedLocation:#Exchange", DisplayName: this.location || "", PostalAddress: { __type: "PersonaPostalAddress:#Exchange", Type: "Business", LocationSource: "None", } }, "EnhancedLocation");
     request.addField("CalendarItem", "RequiredAttendees", this.participants.hasItems ? this.participants.contents.map(entry => ({
       __type: "AttendeeType:#Exchange",
       Mailbox: {
@@ -163,15 +178,99 @@ export class OWAEvent extends Event {
     // No support for optional attendees in mustang;
     // all attendees get converted to be required for now.
     request.addField("CalendarItem", "OptionalAttendees", null, "calendar:OptionalAttendees");
-    request.addField("CalendarItem", "StartTimeZone", { Id: gTimeZone }, "calendar:StartTimeZone");
-    request.addField("CalendarItem", "EndTimeZone", { Id: gTimeZone }, "calendar:EndTimeZone");
+    request.addField("CalendarItem", "StartTimeZone", { __type: "TimeZoneDefinitionType:#Exchange", Id: gTimeZone }, "calendar:StartTimeZone");
+    request.addField("CalendarItem", "EndTimeZone", { __type: "TimeZoneDefinitionType:#Exchange", Id: gTimeZone }, "calendar:EndTimeZone");
+    if (this.calendar.account.isOffice365() && this.isOnline && !this.onlineMeetingURL) {
+      request.addField("CalendarItem", "IsOnlineMeeting", true, "IsOnlineMeeting");
+      request.addField("CalendarItem", "OnlineMeetingProvider", "TeamsForBusiness", "OnlineMeetingProvider");
+    }
     let response = await this.calendar.account.callOWA(request);
     this.itemID = sanitize.nonemptystring(response.Items[0].ItemId.Id);
-    if (this.calUID) {
-      return;
+
+    // The server will set the online meeting URL and append the description.
+    // Get the new values back from the server.
+    if (this.calendar.account.isOffice365() && this.isOnline && !this.onlineMeetingURL) {
+      // Sadly we can't get all of the changes in one API call
+      await this.getOnlineMeetingDescription();
+      await this.getOnlineMeetingURL();
     }
-    // Need an extra server roundtrip to get the UID
-    request = {
+    if (!this.calUID) {
+      // Need an extra server roundtrip to get the UID
+      await this.updateUID();
+    }
+  }
+
+  protected async getOnlineMeetingDescription() {
+    let request = {
+      __type: "GetItemJsonRequest:#Exchange",
+      Header: {
+        __type: "JsonRequestHeaders:#Exchange",
+        RequestServerVersion: "Exchange2013",
+      },
+      Body: {
+        __type: "GetItemRequest:#Exchange",
+        ItemShape: {
+          __type: "ItemResponseShape:#Exchange",
+          BaseShape: "IdOnly",
+          AdditionalProperties: [{
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "item:Body",
+          }, {
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "item:TextBody",
+          }, {
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "calendar:EnhancedLocation",
+          }, { // Might as well include this in case we don't have it yet
+            __type: "PropertyUri:#Exchange",
+            FieldURI: "calendar:UID",
+          }],
+        },
+        ItemIds: [{
+          __type: "ItemId:#Exchange",
+          Id: this.itemID,
+        }],
+      },
+    };
+    let response = await this.calendar.account.callOWA(request);
+    let item = response.Items[0];
+    this.calUID = sanitize.nonemptystring(item.UID);
+    this.location = sanitize.nonemptystring(item.Location?.DisplayName, "");
+    if (item.Body?.BodyType == "Text") {
+      this.descriptionText = sanitize.nonemptystring(item.Body.Value, "");
+    } else {
+      this.descriptionText = sanitize.nonemptystring(item.TextBody?.Value, "");
+      if (item.Body?.BodyType == "HTML") {
+        this.descriptionHTML = sanitize.nonemptystring(item.Body.Value, "");
+      }
+    }
+  }
+
+  protected async getOnlineMeetingURL() {
+    let request = {
+      __type: "GetCalendarEventJsonRequest:#Exchange",
+      Header: {
+        __type: "JsonRequestHeaders:#Exchange",
+        RequestServerVersion: "Exchange2013",
+      },
+      Body: {
+        __type: "GetCalendarEventRequest:#Exchange",
+        ItemShape: {
+          __type: "ItemResponseShape:#Exchange",
+          BaseShape: "IdOnly",
+        },
+        EventIds: [{
+          __type: "ItemId:#Exchange",
+          Id: this.itemID,
+        }],
+      },
+    };
+    let response = await this.calendar.account.callOWA(request);
+    this.onlineMeetingURL = sanitize.url(response.Items[0].OnlineMeetingJoinUrl, null);
+  }
+
+  protected async updateUID() {
+    let request = {
       __type: "GetItemJsonRequest:#Exchange",
       Header: {
         __type: "JsonRequestHeaders:#Exchange",
@@ -189,11 +288,11 @@ export class OWAEvent extends Event {
         },
         ItemIds: [{
           __type: "ItemId:#Exchange",
-          Id: response.Items[0].ItemId.Id,
+          Id: this.itemID,
         }],
       },
     };
-    response = await this.calendar.account.callOWA(request);
+    let response = await this.calendar.account.callOWA(request);
     this.calUID = sanitize.nonemptystring(response.Items[0].UID);
   }
 
@@ -208,14 +307,14 @@ export class OWAEvent extends Event {
     this.itemID = sanitize.nonemptystring(response.Items[0].ItemId.Id);
   }
 
-  dateString(date: Date, day: boolean = this.allDay): string {
+  protected dateString(date: Date, day: boolean = this.allDay): string {
     if (day) {
       return date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0");
     }
     return date.toISOString();
   }
 
-  alarmMinutesBeforeStart(): number {
+  protected alarmMinutesBeforeStart(): number {
     if (!this.alarm) {
       // Exchange requires a value, even if there is no alarm.
       // It uses a separate flag for whether the alarm is set.
@@ -224,7 +323,7 @@ export class OWAEvent extends Event {
     return (this.alarm.getTime() - this.startTime.getTime()) / -60 | 0;
   }
 
-  saveRule(rule: RecurrenceRule) {
+  protected saveRule(rule: RecurrenceRule) {
     let recurrenceType = rule.frequency[0] + rule.frequency.slice(1).toLowerCase();
     if (recurrenceType == "Yearly" || recurrenceType == "Monthly") {
       recurrenceType = (rule.week ? "Relative" : "Absolute") + recurrenceType;
@@ -307,6 +406,7 @@ export class OWAEvent extends Event {
   }
 }
 
+
 function addParticipants(attendees, participants: Participant[]) {
   for (let attendee of attendees) {
     participants.push(new Participant(sanitize.emailAddress(attendee.Mailbox.EmailAddress), sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(ResponseType[attendee.ResponseType], ResponseType.Unknown)));
@@ -317,6 +417,8 @@ function extractWeekdays(daysOfWeek: string): Weekday[] | null {
   return daysOfWeek ? daysOfWeek.split(" ").map(day => sanitize.integer(Weekday[day])) : null;
 }
 
+// This class is similar to the UpdateItem request
+// but the format of the item id is different.
 class OWAUpdateOccurrenceRequest {
   readonly __type = "UpdateItemJsonRequest:#Exchange";
   readonly Header = {
@@ -361,5 +463,16 @@ class OWAUpdateOccurrenceRequest {
       field.Item[key] = value;
     }
     this.itemChange.Updates.push(field);
+  }
+}
+
+class OWACreateOffice365EventRequest extends OWACreateItemRequest {
+  readonly Header = {
+    __type: "JsonRequestHeaders:#Exchange",
+    RequestServerVersion: "V2018_01_08",
+  };
+
+  get type() {
+    return "CreateCalendarEvent";
   }
 }
