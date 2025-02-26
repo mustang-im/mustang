@@ -132,11 +132,13 @@ export const calendarDatabaseSchema = sql`
     "eventID" INTEGER not null,
     "emailAddress" TEXT not null,
     "name" TEXT,
-    -- 1 = accepted
-    -- 2 = rejected
-    -- 3 = tentative accepted
-    -- null = not responded
-    "confirmed" INTEGER default null,
+    -- 0 = unknown
+    -- 1 = organizer
+    -- 2 = tentative
+    -- 3 = accepted
+    -- 4 = rejected
+    -- 5 = not responded
+    "confirmed" INTEGER default 0,
     FOREIGN KEY (eventID)
       REFERENCES event (id)
       ON DELETE CASCADE

@@ -1,9 +1,9 @@
 import { Event } from "../Event";
+import { Participant } from "../Participant";
 import { ResponseType, type Responses } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { EWSCalendar } from "./EWSCalendar";
 import WindowsTimezones from "./WindowsTimezones";
-import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import EWSCreateItemRequest from "../../Mail/EWS/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "../../Mail/EWS/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/EWSUpdateItemRequest";
@@ -91,7 +91,7 @@ export class EWSEvent extends Event {
       this.alarm = null;
     }
     this.location = sanitize.nonemptystring(xmljs.Location, "");
-    let participants: PersonUID[] = [];
+    let participants: Participant[] = [];
     if (xmljs.RequiredAttendees?.Attendee) {
       addParticipants(xmljs.RequiredAttendees.Attendee, participants);
     }
@@ -304,9 +304,9 @@ export class EWSEvent extends Event {
   }
 }
 
-function addParticipants(attendees, participants: PersonUID[]) {
+function addParticipants(attendees, participants: Participant[]) {
   for (let attendee of ensureArray(attendees)) {
-    participants.push(findOrCreatePersonUID(sanitize.emailAddress(attendee.Mailbox.EmailAddress), sanitize.nonemptystring(attendee.Mailbox.Name, null)));
+    participants.push(new Participant(sanitize.emailAddress(attendee.Mailbox.EmailAddress), sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(ResponseType[attendee.ResponseType], ResponseType.Unknown)));
   }
 }
 

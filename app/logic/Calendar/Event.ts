@@ -1,4 +1,3 @@
-import type { PersonUID } from "../Abstract/PersonUID";
 import type { Calendar } from "./Calendar";
 import type { RecurrenceRule } from "./RecurrenceRule";
 import { ResponseType, type Responses } from "./Invitation";
@@ -67,7 +66,7 @@ export class Event extends Observable {
   @notifyChangedProperty
   isOnline = false;
   @notifyChangedProperty
-  readonly participants = new ArrayColl<PersonUID>();
+  readonly participants = new ArrayColl<Participant>();
   @notifyChangedProperty
   response = ResponseType.Unknown;
   @notifyChangedProperty

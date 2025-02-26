@@ -1,7 +1,7 @@
 import { Event } from "../Event";
+import { Participant } from "../Participant";
 import { RecurrenceRule } from "../RecurrenceRule";
 import type { Calendar } from "../Calendar";
-import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { getDatabase } from "./SQLDatabase";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -88,12 +88,12 @@ export class SQLEvent extends Event {
     }
   }
 
-  protected static async saveParticipant(event: Event, personUID: PersonUID) {
+  protected static async saveParticipant(event: Event, participant: Participant) {
     await (await getDatabase()).run(sql`
       INSERT INTO eventParticipant (
         eventID, emailAddress, name, confirmed
       ) VALUES (
-        ${event.dbID},  ${personUID.emailAddress}, ${personUID.name}, null
+        ${event.dbID}, ${participant.emailAddress}, ${participant.name}, ${participant.response}
       )`);
   }
 
@@ -186,8 +186,7 @@ export class SQLEvent extends Event {
       `) as any;
     for (let row of rows) {
       try {
-        let personUID = findOrCreatePersonUID(row.emailAddress, row.name);
-        event.participants.add(personUID);
+        event.participants.add(new Participant(row.emailAddress, row.name, row.confirmed));
       } catch (ex) {
         backgroundError(ex);
       }

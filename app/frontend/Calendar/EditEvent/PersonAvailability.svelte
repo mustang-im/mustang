@@ -1,15 +1,20 @@
-<hbox class="availability" class:yes class:no={!yes}>
-  <!--
-  {yes ? "Available" : "Not available"}
-  -->
+<hbox class="availability" class:yes={available} class:no={available === false}>
+  {#if available }
+    <span class="yes">{$t`Available`}</span>
+  {:else if available === false }
+    <span class="no">{$t`Not available`}</span>
+  {:else}
+    <span class="unknown">{$t`Unknown`}</span>
+  {/if}
 </hbox>
 
 <script lang="ts">
-  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import type { Participant } from "../../../logic/Calendar/Participant";
+  import { t } from "../../../l10n/l10n";
 
-  export let person: PersonUID;
+  export let person: Participant;
 
-  let yes = true;
+  let available: boolean = true;
 </script>
 
 <style>
@@ -20,7 +25,7 @@
   .availability.yes {
     color: green;
   }
-  .availability.no {
+  .availability:no {
     color: red;
   }
 </style>

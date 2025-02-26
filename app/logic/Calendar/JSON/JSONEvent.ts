@@ -1,6 +1,6 @@
 import { Event } from "../Event";
+import { Participant } from "../Participant";
 import { RecurrenceRule } from "../RecurrenceRule";
-import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
@@ -46,11 +46,11 @@ export class JSONEvent {
     return json;
   }
 
-  static saveParticipant(personUID: PersonUID): any {
+  static saveParticipant(participant: Participant): any {
     let json: any = {};
-    json.name = personUID.name;
-    json.emailAddress = personUID.emailAddress;
-    json.confirmed = null;
+    json.name = participant.name;
+    json.emailAddress = participant.emailAddress;
+    json.response = participant.response;
     return json;
   }
 
@@ -102,8 +102,7 @@ export class JSONEvent {
 
   static readParticipants(event: Event, json: any) {
     for (let participant of json.participants) {
-      let personUID = findOrCreatePersonUID(participant.emailAddress, participant.name);
-      event.participants.add(personUID);
+      event.participants.add(new Participant(participant.emailAddress, participant.name, participant.response));
     }
   }
 }
