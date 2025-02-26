@@ -1,4 +1,3 @@
-import { kMaxFetchCount } from "../../../Mail/OWA/OWAFolder";
 import OWARequest from "../../../Mail/OWA/Request/OWARequest";
 import type { OWAEvent } from "../OWAEvent";
 
@@ -83,7 +82,7 @@ export function owaGetCalendarEventsRequest(eventIDs: string[]): OWARequest {
   });
 }
 
-export function owaFindEventsRequest(folderID: string): OWARequest {
+export function owaFindEventsRequest(folderID: string, maxFetchCount: number): OWARequest {
   return new OWARequest("FindItemJsonRequest", {
     __type: "FindItemRequest:#Exchange",
     ItemShape: {
@@ -99,13 +98,12 @@ export function owaFindEventsRequest(folderID: string): OWARequest {
       __type: "IndexedPageView:#Exchange",
       BasePoint: "Beginning",
       Offset: 0,
-      MaxEntriesReturned: kMaxFetchCount,
+      MaxEntriesReturned: maxFetchCount,
     },
   });
 }
 
-
-export function owaOnlineMeetingDescriptionRequest(eventID: string): OWARequest {
+export function owaOnlineMeetingDescriptionRequest(eventIDs: string[]): OWARequest {
   return new OWARequest("GetItemJsonRequest", {
     __type: "GetItemRequest:#Exchange",
     ItemShape: {
@@ -125,28 +123,28 @@ export function owaOnlineMeetingDescriptionRequest(eventID: string): OWARequest 
         FieldURI: "calendar:UID",
       }],
     },
-    ItemIds: [{
+    ItemIds: eventIDs.map(id => ({
       __type: "ItemId:#Exchange",
-      Id: eventID,
-    }],
+      Id: id,
+    })),
   });
 }
 
-export function owaOnlineMeetingURLRequest(eventID: string): OWARequest {
+export function owaOnlineMeetingURLRequest(eventIDs: string[]): OWARequest {
   return new OWARequest("GetCalendarEventJsonRequest", {
     __type: "GetCalendarEventRequest:#Exchange",
     ItemShape: {
       __type: "ItemResponseShape:#Exchange",
       BaseShape: "IdOnly",
     },
-    EventIds: [{
+    EventIds: eventIDs.map(id => ({
       __type: "ItemId:#Exchange",
-      Id: eventID,
-    }],
+      Id: id,
+    })),
   });
 }
 
-export function owaGetEventUIDRequest(eventID: string): OWARequest {
+export function owaGetEventUIDsRequest(eventIDs: string[]): OWARequest {
   return new OWARequest("GetItemJsonRequest", {
     __type: "GetItemRequest:#Exchange",
     ItemShape: {
@@ -157,20 +155,20 @@ export function owaGetEventUIDRequest(eventID: string): OWARequest {
         FieldURI: "calendar:UID",
       }],
     },
-    ItemIds: [{
+    ItemIds: eventIDs.map(id => ({
       __type: "ItemId:#Exchange",
-      Id: eventID,
-    }],
+      Id: id,
+    })),
   });
 }
 
-export function owaCreateExclusionRequest(parentEvent: OWAEvent): OWARequest {
+export function owaCreateExclusionRequest(excludeEvent: OWAEvent, parentEvent: OWAEvent): OWARequest {
   return new OWARequest("DeleteItemJsonRequest", {
     __type: "DeleteItemRequest:#Exchange",
     ItemIds: [{
       __type: "OccurrenceItemId:#Exchange",
       RecurringMasterId: parentEvent.itemID,
-      InstanceIndex: parentEvent.instances.indexOf(this) + 1,
+      InstanceIndex: parentEvent.instances.indexOf(excludeEvent) + 1,
     }],
     DeleteType: "MoveToDeletedItems",
     SendMeetingCancellations: "SendToAllAndSaveCopy",

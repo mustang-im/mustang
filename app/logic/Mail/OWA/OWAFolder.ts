@@ -1,9 +1,16 @@
 import { Folder, SpecialFolder } from "../Folder";
 import type { EMail } from "../EMail";
 import { OWAEMail } from "./OWAEMail";
-import type { OWAAccount } from "./OWAAccount";
+import { type OWAAccount, kMaxFetchCount } from "./OWAAccount";
 import OWACreateItemRequest from "./Request/OWACreateItemRequest";
-import { owaCreateNewSubFolderRequest, owaDeleteFolderRequest, owaDownloadMsgsInFolderRequest, owaFindMsgsInFolderRequest, owaFolderCountsRequests, owaFolderMarkAllMsgsReadRequest, owaGetNewMessageHeadersInFolderRequest as owaGetNewMsgHeadersInFolderRequest, owaMoveEntireFolderRequest, owaMoveOrCopyMsgsIntoFolderRequest, owaRenameFolderRequest } from "./Request/OWAFolderRequests";
+import {
+  owaCreateNewSubFolderRequest, owaDeleteFolderRequest,
+  owaDownloadMsgsRequest, owaFindMsgsInFolderRequest,
+  owaFolderCountsRequest, owaFolderMarkAllMsgsReadRequest,
+  owaGetNewMsgHeadersRequest as owaGetNewMsgHeadersRequest,
+  owaMoveEntireFolderRequest, owaMoveOrCopyMsgsIntoFolderRequest,
+  owaRenameFolderRequest
+} from "./Request/OWAFolderRequests";
 import { base64ToArrayBuffer, blobToBase64, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -52,7 +59,7 @@ export class OWAFolder extends Folder {
       this.dirty = false;
       return true;
     }
-    let result = await this.account.callOWA(owaFolderCountsRequests(this.id));
+    let result = await this.account.callOWA(owaFolderCountsRequest(this.id));
     let countTotal = sanitize.integer(result.Folders[0].TotalCount);
     let countUnread = sanitize.integer(result.Folders[0].UnreadCount);
     if (this.countTotal == countTotal && this.countUnread == countUnread) {
@@ -75,7 +82,7 @@ export class OWAFolder extends Folder {
 
       let allMsgs = new ArrayColl<OWAEMail>();
       let newMsgs = new ArrayColl<OWAEMail>();
-      let request = owaFindMsgsInFolderRequest(this.id);
+      let request = owaFindMsgsInFolderRequest(this.id, kMaxFetchCount);
       let result: any = { RootFolder: { IncludesLastItemInRange: false } };
       while (result?.RootFolder?.IncludesLastItemInRange === false) {
         result = await this.account.callOWA(request);
@@ -114,7 +121,7 @@ export class OWAFolder extends Folder {
   async getNewMessageHeaders(newMessageIDs: string[]): Promise<ArrayColl<OWAEMail>> {
     let newMsgs = new ArrayColl<OWAEMail>();
     if (newMessageIDs.length) {
-      let results = await this.account.callOWA(owaGetNewMsgHeadersInFolderRequest(newMessageIDs));
+      let results = await this.account.callOWA(owaGetNewMsgHeadersRequest(newMessageIDs));
       let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
       for (let item of items) {
         try {
@@ -135,7 +142,7 @@ export class OWAFolder extends Folder {
     let emailsToDownload = emails.contents;
     for (let i = 0; i < emailsToDownload.length; i += kMaxFetchCount) {
       let batch = emailsToDownload.slice(i, i + kMaxFetchCount);
-      let results = await this.account.callOWA(owaDownloadMsgsInFolderRequest(batch));
+      let results = await this.account.callOWA(owaDownloadMsgsRequest(batch));
       let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
       for (let item of items) {
         let email = emailsToDownload.find(email => email.itemID == item.ItemId.Id);
@@ -252,6 +259,3 @@ export class OWAFolder extends Folder {
     return gt`You cannot change special folders on the Exchange server`;
   }
 }
-
-
-export const kMaxFetchCount = 50;

@@ -11,6 +11,7 @@ import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import OWACreateItemRequest from "./Request/OWACreateItemRequest";
 import OWASubscribeToNotificationRequest from "./Request/OWASubscribeToNotificationRequest";
+import { owaCreateNewTopLevelFolderRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
 import { owaAutoFillLoginPage } from "./Login/OWALoginAutoFill";
 import type { PersonUID } from "../../Abstract/PersonUID";
@@ -23,7 +24,6 @@ import { notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64 } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { owaCreateNewTopLevelFolderRequest } from "./Request/OWAFolderRequests";
 
 export class OWAAccount extends MailAccount {
   readonly protocol: string = "owa";
@@ -364,3 +364,5 @@ function addRecipients(aRequest: any, aType: string, aRecipients: PersonUID[]): 
     EmailAddress: recipient.emailAddress,
   })), "message:" + aType);
 }
+
+export const kMaxFetchCount = 50;
