@@ -1,14 +1,13 @@
 import OWARequest from "../../../Mail/OWA/Request/OWARequest";
-import { kMaxFetchCount } from "../../../Mail/OWA/OWAFolder";
 
-export function owaFindPersonsRequest(folderID: string): OWARequest {
+export function owaFindPersonsRequest(folderID: string, maxFetchCount: number): OWARequest {
   return new OWARequest("FindPeopleJsonRequest", {
     __type: "FindPeopleRequest:#Exchange",
     IndexedPageItemView: {
       __type: "IndexedPageView:#Exchange",
       BasePoint: "Beginning",
       Offset: 0,
-      MaxEntriesReturned: kMaxFetchCount,
+      MaxEntriesReturned: maxFetchCount,
     },
     ParentFolderId: {
       __type: "TargetFolderId:#Exchange",
@@ -24,12 +23,12 @@ export function owaFindPersonsRequest(folderID: string): OWARequest {
   });
 }
 
-export function owaGetPersonasRequest(personaIDs: string[]): OWARequest {
+export function owaGetPersonaRequest(personaID: string): OWARequest {
   return new OWARequest("GetPersonaJsonRequest", {
     __type: "GetPersonaRequest:#Exchange",
     PersonaId: {
       __type: "ItemId:#Exchange",
-      Id: personaIDs,
+      Id: personaID,
     },
   });
 }

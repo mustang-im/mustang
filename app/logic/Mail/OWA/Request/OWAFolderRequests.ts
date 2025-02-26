@@ -1,8 +1,7 @@
 import OWARequest from "./OWARequest";
 import type { OWAEMail } from "../OWAEMail";
-import { kMaxFetchCount } from "../OWAFolder";
 
-export function owaFindMsgsInFolderRequest(folderID: string): OWARequest {
+export function owaFindMsgsInFolderRequest(folderID: string, maxFetchCount: number): OWARequest {
   return new OWARequest("FindItemJsonRequest", {
     __type: "FindItemRequest:#Exchange",
     ItemShape: {
@@ -37,12 +36,12 @@ export function owaFindMsgsInFolderRequest(folderID: string): OWARequest {
       __type: "IndexedPageView:#Exchange",
       BasePoint: "Beginning",
       Offset: 0,
-      MaxEntriesReturned: kMaxFetchCount,
+      MaxEntriesReturned: maxFetchCount,
     },
   });
 }
 
-export function owaGetNewMessageHeadersInFolderRequest(newMessageIDs: string[]): OWARequest {
+export function owaGetNewMsgHeadersRequest(newMessageIDs: string[]): OWARequest {
   return new OWARequest("GetItemJsonRequest", {
     __type: "GetItemRequest:#Exchange",
     ItemShape: {
@@ -129,7 +128,7 @@ export function owaGetNewMessageHeadersInFolderRequest(newMessageIDs: string[]):
   });
 }
 
-export function owaDownloadMsgsInFolderRequest(messages: OWAEMail[]): OWARequest {
+export function owaDownloadMsgsRequest(messages: OWAEMail[]): OWARequest {
   return new OWARequest("GetItemJsonRequest", {
     __type: "GetItemRequest:#Exchange",
     ItemShape: {
@@ -245,7 +244,7 @@ export function owaRenameFolderRequest(name: string, folderID: string): OWAReque
   });
 }
 
-export function owaFolderCountsRequests(folderID: string): OWARequest {
+export function owaFolderCountsRequest(folderID: string): OWARequest {
   return new OWARequest("GetFolderJsonRequest", {
     __type: "GetFolderRequest:#Exchange",
     FolderShape: {

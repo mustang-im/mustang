@@ -5,7 +5,7 @@ import { Tag, getTagByName } from "../Tag";
 import OWACreateItemRequest from "./Request/OWACreateItemRequest";
 import OWADeleteItemRequest from "./Request/OWADeleteItemRequest";
 import OWAUpdateItemRequest from "./Request/OWAUpdateItemRequest";
-import { owaDownloadMsgsInFolderRequest } from "./Request/OWAFolderRequests";
+import { owaDownloadMsgsRequest } from "./Request/OWAFolderRequests";
 import { owaGetEventsRequest } from "../../Calendar/OWA/Request/OWAEventRequests";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { Scheduling, ResponseType, type Responses } from "../../Calendar/Invitation";
@@ -25,7 +25,7 @@ export class OWAEMail extends EMail {
   }
 
   async download() {
-    let result = await this.folder.account.callOWA(owaDownloadMsgsInFolderRequest([ this ]));
+    let result = await this.folder.account.callOWA(owaDownloadMsgsRequest([ this ]));
     let mimeBase64 = sanitize.nonemptystring(result.Items[0].MimeContent.Value);
     this.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
     await this.parseMIME();
@@ -151,7 +151,7 @@ export class OWAEMail extends EMail {
   async loadEvent_disabled() {
     assert(this.scheduling == Scheduling.Request, "This is not an invitation");
     assert(!this.event, "Event has already been loaded");
-    let result = await this.folder.account.callOWA(owaGetEventsRequest([this.itemID ]));
+    let result = await this.folder.account.callOWA(owaGetEventsRequest([ this.itemID ]));
     let event = new OWAEvent();
     event.fromJSON(result.Items[0]);
     this.event = event;

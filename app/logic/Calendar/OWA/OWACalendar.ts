@@ -1,7 +1,7 @@
 import { Calendar } from "../Calendar";
 import { OWAEvent } from "./OWAEvent";
-import type { OWAAccount } from "../../Mail/OWA/OWAAccount";
-import { owaFindEventsRequest, owaGetCalendarEventsRequest as owaGetCalendarEventsRequest, owaGetEventsRequest } from "./Request/OWAEventRequests";
+import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
+import { owaFindEventsRequest, owaGetCalendarEventsRequest, owaGetEventsRequest } from "./Request/OWAEventRequests";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
 
@@ -38,7 +38,7 @@ export class OWACalendar extends Calendar {
   }
 
   protected async listFolder(folderID: string, events: ArrayColl<OWAEvent>) {
-    let request = owaFindEventsRequest(folderID);
+    let request = owaFindEventsRequest(folderID, kMaxFetchCount);
     let result: any = { RootFolder: { IncludesLastItemInRange: false } };
     while (result?.RootFolder?.IncludesLastItemInRange === false) {
       result = await this.account.callOWA(request);

@@ -1,11 +1,9 @@
 import { Addressbook } from "../Addressbook";
 import { OWAPerson } from "./OWAPerson";
 import { OWAGroup } from "./OWAGroup";
-import type { OWAAccount } from "../../Mail/OWA/OWAAccount";
-import { owaFindPersonsRequest, owaGetPersonasRequest } from "./Request/OWAPersonRequests";
-import { kMaxFetchCount } from "../../Mail/OWA/OWAFolder";
+import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
+import { owaFindPersonsRequest, owaGetPersonaRequest } from "./Request/OWAPersonRequests";
 import type { ArrayColl } from "svelte-collections";
-
 
 export class OWAAddressbook extends Addressbook {
   readonly protocol: string = "addressbook-owa";
@@ -37,7 +35,7 @@ export class OWAAddressbook extends Addressbook {
 
     let persons = [];
     let groups = [];
-    let request = owaFindPersonsRequest(contacts.FolderId);
+    let request = owaFindPersonsRequest(contacts.FolderId, kMaxFetchCount);
     do {
       response = await this.account.callOWA(request);
       for (let result of response.ResultSet) {
@@ -62,7 +60,7 @@ export class OWAAddressbook extends Addressbook {
     }
     for (let result of persons) {
       try {
-        let request = owaGetPersonasRequest(result.PersonaId.Id);
+        let request = owaGetPersonaRequest(result.PersonaId.Id);
         let response = await this.account.callOWA(request);
         Object.assign(result, response.Persona);
         let requestNotes = new OWAGetNotesForPersonaRequest(result.PersonaId.Id);
