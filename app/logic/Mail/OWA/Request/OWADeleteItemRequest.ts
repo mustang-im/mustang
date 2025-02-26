@@ -1,9 +1,6 @@
-export default class OWADeleteItemRequest {
-  readonly __type = "DeleteItemJsonRequest:#Exchange";
-  readonly Header = {
-    __type: "JsonRequestHeaders:#Exchange",
-    RequestServerVersion: "Exchange2013",
-  };
+import OWARequest from "./OWARequest";
+
+export default class OWADeleteItemRequest extends OWARequest {
   Body: any = {
     __type: "DeleteItemRequest:#Exchange",
     ItemIds: [{
@@ -12,7 +9,8 @@ export default class OWADeleteItemRequest {
     DeleteType: "MoveToDeletedItems",
   };
 
-  constructor(id: string, attributes?: {[key: string]: string | boolean}) {
+  constructor(id: string, attributes?: { [key: string]: string | boolean }) {
+    super("DeleteItemJsonRequest");
     this.Body.ItemIds[0].Id = id;
     Object.assign(this.Body, attributes);
   }
