@@ -99,7 +99,7 @@ export class FilterRuleAction extends Observable {
 
   fromJSON(json: any) {
     this.name = sanitize.nonemptystring(json.name, "-");
-    this.when = sanitize.enum<FilterMoment>(json.when, Object.values(FilterMoment));
+    this.when = sanitize.enum(json.when, FilterMoment);
     this.criteria.fromJSON(json.criteria);
     function boolean(value: boolean | undefined): boolean | undefined {
       return typeof (value) == "boolean" ? value : undefined;

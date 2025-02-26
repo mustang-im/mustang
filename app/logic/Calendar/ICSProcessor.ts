@@ -1,7 +1,7 @@
 import { Event } from "./Event";
 import { Participant } from "./Participant";
 import { RecurrenceRule } from "./RecurrenceRule";
-import { Scheduling, ParticipationStatus, ResponseType } from "./Invitation";
+import { Scheduling, ParticipationStatusICal, ResponseType } from "./Invitation";
 import ICalParser from "./ICalParser";
 import type { EMail } from "../Mail/EMail";
 import { EMailProcessor, ProcessingStartOn } from "../Mail/EMailProccessor";
@@ -80,7 +80,10 @@ function convertICSToEvent(ics: ICalParser): Event | null {
   if (vevent.entries.attendee) {
     for (let { value, properties: { role, partstat, cn } } of vevent.entries.attendee) {
       value = value.replace(/^MAILTO:/i, "");
-      let participant = new Participant(sanitize.emailAddress(value), sanitize.label(cn, null), sanitize.integer(ParticipationStatus[partstat?.toUpperCase()] || ResponseType.Unknown));
+      let participant = new Participant(
+        sanitize.emailAddress(value),
+        sanitize.label(cn, null),
+        sanitize.enum(partstat?.toUpperCase(), ParticipationStatusICal, ResponseType.Unknown));
       if (value == organizer?.emailAddress || /^CHAIR$/i.test(role)) {
         participant.response = ResponseType.Organizer;
         // Remove the organizer as it has less detail than an attendee

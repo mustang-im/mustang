@@ -1,4 +1,5 @@
 import { MailAccount, MailAccountStorage, TLSSocketType } from '../MailAccount';
+import { listMailProtocols } from '../AccountsList/MailAccounts';
 import { IMAPAccount } from '../IMAP/IMAPAccount';
 import { POP3Account } from '../POP3/POP3Account';
 import { SMTPAccount } from '../SMTP/SMTPAccount';
@@ -24,7 +25,7 @@ export async function readMailAccounts(): Promise<ArrayColl<MailAccount>> {
     let id = `account${i}`;
     let prefBranch = `mail.account${i}.`;
     try {
-      let protocol = sanitize.enum(localStorage.getItem(prefBranch + "protocol"), ["imap", "jmap", "pop3", "smtp", "ews", "activesync", "owa"]);
+      let protocol = sanitize.enum(localStorage.getItem(prefBranch + "protocol"), [...listMailProtocols(), "smtp"], null);
       if (!protocol) {
         break;
       } else if (protocol == "imap") {

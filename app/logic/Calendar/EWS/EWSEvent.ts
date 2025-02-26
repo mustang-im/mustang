@@ -100,7 +100,7 @@ export class EWSEvent extends Event {
     }
     this.participants.replaceAll(participants);
     if (xmljs.MyResponseType) {
-      this.response = sanitize.integer(ResponseType[xmljs.MyResponseType], ResponseType.Unknown);
+      this.response = sanitize.enum(xmljs.MyResponseType, ResponseType, ResponseType.Unknown);
     }
     if (xmljs.LastModifiedTime) {
       this.lastMod = sanitize.date(xmljs.LastModifiedTime);
@@ -306,7 +306,10 @@ export class EWSEvent extends Event {
 
 function addParticipants(attendees, participants: Participant[]) {
   for (let attendee of ensureArray(attendees)) {
-    participants.push(new Participant(sanitize.emailAddress(attendee.Mailbox.EmailAddress), sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(ResponseType[attendee.ResponseType], ResponseType.Unknown)));
+    participants.push(new Participant(
+      sanitize.emailAddress(attendee.Mailbox.EmailAddress),
+      sanitize.nonemptystring(attendee.Mailbox.Name, null),
+      sanitize.enum(attendee.ResponseType, ResponseType, ResponseType.Unknown)));
   }
 }
 

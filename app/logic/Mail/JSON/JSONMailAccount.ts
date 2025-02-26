@@ -35,7 +35,7 @@ export class JSONMailAccount {
     acc.username = sanitize.string(json.username, null);
     acc.hostname = sanitize.hostname(json.hostname, null);
     acc.port = sanitize.portTCP(json.port, null);
-    acc.tls = sanitize.enum(json.tls, [TLSSocketType.Plain, TLSSocketType.TLS, TLSSocketType.STARTTLS], TLSSocketType.Unknown);
+    acc.tls = sanitize.enum(json.tls, TLSSocketType, TLSSocketType.Unknown);
     acc.authMethod = sanitize.integerRange(json.authMethod, 0, 20);
     acc.url = sanitize.url(json.url, null);
     acc.userRealname = sanitize.label(json.userRealname, appGlobal.me.name);

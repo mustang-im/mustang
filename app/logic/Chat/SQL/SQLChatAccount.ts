@@ -80,7 +80,7 @@ export class SQLChatAccount {
     acc.username = sanitize.string(row.username, null);
     acc.hostname = sanitize.hostname(row.hostname, null);
     acc.port = sanitize.portTCP(row.port, null);
-    acc.tls = sanitize.enum(row.tls, [TLSSocketType.Plain, TLSSocketType.TLS, TLSSocketType.STARTTLS], TLSSocketType.Unknown);
+    acc.tls = sanitize.enum(row.tls, TLSSocketType, TLSSocketType.Unknown);
     acc.url = sanitize.url(row.url, null);
     acc.userRealname = sanitize.label(row.userRealname, appGlobal.me.name);
     acc.workspace = row.workspace

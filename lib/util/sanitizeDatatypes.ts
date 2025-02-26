@@ -1,5 +1,7 @@
 // import { StringBundle } from "./stringbundle";
 
+import { NotReached } from "../../app/logic/util/util";
+
 let throwErrors = Symbol("Throw");
 
 /**
@@ -210,8 +212,16 @@ class Sanitize {
    *       no |defaultValue| is passed.
    * @throws MalformedException
    */
-  enum<T>(unchecked: T | null, allowedValues: T[], fallback: T | null | Symbol = throwErrors): T {
-    return allowedValues.find(allowedValue => allowedValue == unchecked) ??
+  enum<T>(unchecked: T | string | number | null, allowedValues: T | T[], fallback: T | null | Symbol = throwErrors): T {
+    let allowedValuesArray: T[];
+    if (Array.isArray(allowedValues)) {
+      allowedValuesArray = allowedValues
+    } else if (typeof (allowedValues) == "object") {
+      allowedValuesArray = Object.values(allowedValues);
+    } else {
+      throw new MalformedException("Allowed values malformed", allowedValues);
+    }
+    return allowedValuesArray.find(allowedValue => allowedValue == unchecked) ??
       haveError("Allowed value", unchecked, fallback);
   }
 

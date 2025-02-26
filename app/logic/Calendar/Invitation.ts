@@ -26,7 +26,7 @@ export enum ResponseType {
 export type Responses = ResponseType.Accept | ResponseType.Tentative | ResponseType.Decline;
 
 /** Map from iCal PARTSTAT to Responses */
-export enum ParticipationStatus {
+export enum ParticipationStatusICal {
   TENTATIVE = ResponseType.Tentative,
   ACCEPTED = ResponseType.Accept,
   DECLINED = ResponseType.Decline,
