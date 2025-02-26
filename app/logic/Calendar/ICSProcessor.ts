@@ -1,12 +1,11 @@
-import { Event, Participant } from "./Event";
+import { Event } from "./Event";
+import { Participant } from "./Participant";
 import { RecurrenceRule } from "./RecurrenceRule";
 import { Scheduling, ParticipationStatus, ResponseType } from "./Invitation";
 import ICalParser from "./ICalParser";
 import type { EMail } from "../Mail/EMail";
 import { EMailProcessor, ProcessingStartOn } from "../Mail/EMailProccessor";
-import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import PostalMime from "postal-mime";
 
 export class ICSProcessor extends EMailProcessor {
   runOn = ProcessingStartOn.Parse;

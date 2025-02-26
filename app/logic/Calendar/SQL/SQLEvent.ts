@@ -1,4 +1,5 @@
-import { Event, Participant } from "../Event";
+import { Event } from "../Event";
+import { Participant } from "../Participant";
 import { RecurrenceRule } from "../RecurrenceRule";
 import type { Calendar } from "../Calendar";
 import { getDatabase } from "./SQLDatabase";

@@ -1,4 +1,5 @@
-import { Event, Participant } from "../Event";
+import { Event } from "../Event";
+import { Participant } from "../Participant";
 import { ResponseType, type Responses } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { OWACalendar } from "./OWACalendar";

@@ -13,7 +13,7 @@
 </hbox>
 
 <script lang="ts">
-  import type { Participant } from "../../../logic/Calendar/Event";
+  import type { Participant } from "../../../logic/Calendar/Participant";
   import { ResponseType } from "../../../logic/Calendar/Invitation";
   import { t } from "../../../l10n/l10n";
 

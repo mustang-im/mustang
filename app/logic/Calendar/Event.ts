@@ -1,4 +1,3 @@
-import { PersonUID, findPerson } from "../Abstract/PersonUID";
 import type { Calendar } from "./Calendar";
 import type { RecurrenceRule } from "./RecurrenceRule";
 import { ResponseType, type Responses } from "./Invitation";
@@ -6,18 +5,6 @@ import { Observable, notifyChangedAccessor, notifyChangedProperty } from "../uti
 import { Lock } from "../util/Lock";
 import { assert, randomID, AbstractFunction } from "../util/util";
 import { ArrayColl } from "svelte-collections";
-
-export class Participant extends PersonUID {
-  @notifyChangedProperty
-  response: ResponseType;
-
-  constructor(emailAddress: string, name: string, response: ResponseType) {
-    let person = findPerson(emailAddress);
-    super(emailAddress, name ?? person?.name ?? emailAddress);
-    this.person = person;
-    this.response = response;
-  }
-}
 
 export class Event extends Observable {
   id: string;
