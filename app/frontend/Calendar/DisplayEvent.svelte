@@ -5,9 +5,9 @@
   </hbox>
   <vbox class="participants">
     <PersonsAutocomplete persons={event.participants} disabled>
-      <hbox slot="display-bottom-row" let:person>
-        <PersonAvailability {person} />
-      </hbox>
+    <hbox slot="person-popup-buttons" let:person>
+      <PersonResponse {person} />
+    </hbox>
       <hbox slot="result-bottom-row" let:person>
         <PersonAvailability {person} />
       </hbox>
@@ -90,9 +90,10 @@
 
 <script lang="ts">
   import type { Event } from "../../logic/Calendar/Event";
-  import { Frequency, RecurrenceRule, type RecurrenceInit } from "../../logic/Calendar/RecurrenceRule";
+  import { Frequency } from "../../logic/Calendar/RecurrenceRule";
   import PersonsAutocomplete from "../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
   import PersonAvailability from "./EditEvent/PersonAvailability.svelte";
+  import PersonResponse from "./EditEvent/PersonResponse.svelte";
   import DateInput from "./EditEvent/DateInput.svelte";
   import TimeInput from "./EditEvent/TimeInput.svelte";
   import DurationUnit from "./EditEvent/DurationUnit.svelte";
