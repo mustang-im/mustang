@@ -14,7 +14,7 @@ export class OWACalendar extends Calendar {
     return new OWAEvent(this, parentEvent);
   }
 
-  getEventByItemID(id: string): OWAEvent | void {
+  protected getEventByItemID(id: string): OWAEvent | void {
     return this.events.find(p => p.itemID == id);
   }
 
@@ -37,7 +37,7 @@ export class OWACalendar extends Calendar {
     this.events.replaceAll(events);
   }
 
-  async listFolder(folder: string, events: ArrayColl<OWAEvent>) {
+  protected async listFolder(folder: string, events: ArrayColl<OWAEvent>) {
     let request = {
       __type: "FindItemJsonRequest:#Exchange",
       Header: {
@@ -74,7 +74,7 @@ export class OWACalendar extends Calendar {
     }
   }
 
-  async getEvents(eventIDs: string[], events: ArrayColl<OWAEvent>, parentEvent?: OWAEvent) {
+  protected async getEvents(eventIDs: string[], events: ArrayColl<OWAEvent>, parentEvent?: OWAEvent) {
     if (!eventIDs.length) {
       return;
     }

@@ -98,7 +98,7 @@ export class OWAEvent extends Event {
     }
   }
 
-  newRecurrenceRule(json: any): RecurrenceRule {
+  protected newRecurrenceRule(json: any): RecurrenceRule {
     let startDate = this.startTime;
     let endDate: Date | null = null;
     if (json.RecurrenceRange.EndDate) {
@@ -133,7 +133,7 @@ export class OWAEvent extends Event {
     */
   }
 
-  getItemRequest() {
+  protected getExchangeSaveRequest() {
     return this.itemID ?
       new OWAUpdateItemRequest(this.itemID, {SendCalendarInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
       this.parentEvent ?
@@ -141,7 +141,7 @@ export class OWAEvent extends Event {
       new OWACreateItemRequest({SendMeetingInvitations: "SendToAllAndSaveCopy"});
   }
 
-  getOffice365Request() {
+  protected getOffice365SaveRequest() {
     return this.itemID ?
       new OWAUpdateOffice365EventRequest(this.itemID) :
       this.parentEvent ?
@@ -151,9 +151,9 @@ export class OWAEvent extends Event {
   }
 
   async saveCalendarItem() {
-    let request = this.calendar.account.isOffice365() ? this.getOffice365Request() : this.getItemRequest();
+    let request = this.calendar.account.isOffice365() ? this.getOffice365SaveRequest() : this.getExchangeSaveRequest();
     request.addField("CalendarItem", "Subject", this.title, "item:Subject");
-    request.addField("CalendarItem", "Body", this.descriptionHTML ? { __type: "BodyContentType:#Exchange", BodyType: "HTML", Value: this.descriptionHTML } : { __type: "BodyContentType:#Exchange", BodyType: "Text", Value: this.descriptionText || "" }, "item:Body");
+    request.addField("CalendarItem", "Body", this.descriptionHTML ? { __type: "BodyContentType:#Exchange", BodyType: "HTML", Value: this.descriptionHTML } : { __type: "BodyContentType:#Exchange", BodyType: "Text", Value: this.descriptionText ?? "" }, "item:Body");
     request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
     request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
     request.addField("CalendarItem", "Recurrence", this.recurrenceRule ? this.saveRule(this.recurrenceRule) : null, "calendar:Recurrence");
@@ -195,7 +195,7 @@ export class OWAEvent extends Event {
     }
   }
 
-  async updateOnlineMeeting() {
+  protected async updateOnlineMeeting() {
     let request = {
       __type: "GetItemJsonRequest:#Exchange",
       Header: {
@@ -241,7 +241,7 @@ export class OWAEvent extends Event {
     }
   }
 
-  async updateOnlineMeetingURL() {
+  protected async updateOnlineMeetingURL() {
     let request = {
       __type: "GetCalendarEventJsonRequest:#Exchange",
       Header: {
@@ -264,7 +264,7 @@ export class OWAEvent extends Event {
     this.onlineMeetingURL = sanitize.nonemptystring(response.Items[0].OnlineMeetingJoinUrl, "");
   }
 
-  async updateUID() {
+  protected async updateUID() {
     let request = {
       __type: "GetItemJsonRequest:#Exchange",
       Header: {
@@ -302,14 +302,14 @@ export class OWAEvent extends Event {
     this.itemID = sanitize.nonemptystring(response.Items[0].ItemId.Id);
   }
 
-  dateString(date: Date, day: boolean = this.allDay): string {
+  protected dateString(date: Date, day: boolean = this.allDay): string {
     if (day) {
       return date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0");
     }
     return date.toISOString();
   }
 
-  alarmMinutesBeforeStart(): number {
+  protected alarmMinutesBeforeStart(): number {
     if (!this.alarm) {
       // Exchange requires a value, even if there is no alarm.
       // It uses a separate flag for whether the alarm is set.
@@ -318,7 +318,7 @@ export class OWAEvent extends Event {
     return (this.alarm.getTime() - this.startTime.getTime()) / -60 | 0;
   }
 
-  saveRule(rule: RecurrenceRule) {
+  protected saveRule(rule: RecurrenceRule) {
     let recurrenceType = rule.frequency[0] + rule.frequency.slice(1).toLowerCase();
     if (recurrenceType == "Yearly" || recurrenceType == "Monthly") {
       recurrenceType = (rule.week ? "Relative" : "Absolute") + recurrenceType;
@@ -400,6 +400,7 @@ export class OWAEvent extends Event {
     await this.calendar.account.callOWA(request);
   }
 }
+
 
 function addParticipants(attendees, participants: Participant[]) {
   for (let attendee of attendees) {
