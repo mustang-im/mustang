@@ -129,7 +129,6 @@
 * New event dialog
 * Protocol implementation
   * CalDav
-  * ical
   * JMAP
   * JSCalendar
 * Invitation send
@@ -175,6 +174,11 @@
 ## JMAP
 * EventSource
 * WebSocket
+
+## Graph
+* Notification
+
+## POP3
 
 ### Intentionally not implemented
 * Expunge on quit
