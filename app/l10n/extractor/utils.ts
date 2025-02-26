@@ -14,14 +14,8 @@ export const extractFromTaggedTemplate = (node, filename, onMessageExtracted) =>
 	rawQuasis.slice(1).forEach((q, i) => {
 		message += `{${i}}${q}`;
 	});
-  let context: string;
-  // If the string is a single word generate an ID
-  // based on the the fileName as context
-  if (message.split(" ").length == 1) {
-    context = filename.split("/").pop();
-  }
 	onMessageExtracted({
-		id: generateMessageID(message, context),
+		id: generateMessageID(message),
 		message,
 		origin: [filename, start.line, start.column],
 		placeholders: {},
