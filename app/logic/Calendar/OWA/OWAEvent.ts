@@ -4,6 +4,8 @@ import { ResponseType, type Responses } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { OWACalendar } from "./OWACalendar";
 import WindowsTimezones from "../EWS/WindowsTimezones";
+import OWAUpdateOffice365EventRequest from "./Request/OWAUpdateOffice365EventRequest";
+import OWAUpdateOffice365OccurrenceRequest from "./Request/OWAUpdateOffice365OccurrenceRequest";
 import OWACreateItemRequest from "../../Mail/OWA/OWACreateItemRequest";
 import OWADeleteItemRequest from "../../Mail/OWA/OWADeleteItemRequest";
 import OWAUpdateItemRequest from "../../Mail/OWA/OWAUpdateItemRequest";
@@ -469,101 +471,5 @@ class OWACreateOffice365EventRequest extends OWACreateItemRequest {
 
   get type() {
     return "CreateCalendarEvent";
-  }
-}
-
-// The UpdateCalendarEvent and UpdateItem APIs are similar but subtly different,
-// so some parts of the code are duplicated but other parts are not.
-// To properly reflect the inheritance would require three additional classes.
-class OWAUpdateOffice365EventRequest {
-  readonly __type = "UpdateCalendarEventJsonRequest:#Exchange";
-  readonly Header = {
-    __type: "JsonRequestHeaders:#Exchange",
-    RequestServerVersion: "V2018_01_08",
-  };
-  Body: any = {
-    __type: "UpdateCalendarEventRequest:#Exchange",
-    ItemChange: {
-      __type: "ItemChange:#Exchange",
-      ItemId: {
-        __type: "ItemId:#Exchange",
-      },
-      Updates: []
-    },
-  };
-
-  constructor(id: string, attributes?: {[key: string]: string | boolean}) {
-    this.itemChange.ItemId.Id = id;
-    this.Body.EventId = this.itemChange.ItemId;
-    // XXX Support for attributes is unknown at this time.
-  }
-
-  protected get itemChange() {
-    return this.Body.ItemChange;
-  }
-
-  addField(type: string, key: string, value: any, FieldURI: string) {
-    let field = {
-      __type: "DeleteItemField:#Exchange",
-      Path: {
-        __type: "PropertyUri:#Exchange",
-        FieldURI: FieldURI,
-      },
-    } as any;
-    if (value != null) {
-      field.__type = "SetItemField:#Exchange";
-      field.Item = {
-        __type: type + ":#Exchange",
-      };
-      field.Item[key] = value;
-    }
-    this.itemChange.Updates.push(field);
-  }
-}
-
-class OWAUpdateOffice365OccurrenceRequest {
-  readonly __type = "UpdateCalendarEventJsonRequest:#Exchange";
-  readonly Header = {
-    __type: "JsonRequestHeaders:#Exchange",
-    RequestServerVersion: "V2018_01_08",
-  };
-  Body: any = {
-    __type: "UpdateCalendarEventRequest:#Exchange",
-    ItemChange: {
-      __type: "ItemChange:#Exchange",
-      ItemId: {
-        __type: "OccurrenceItemId:#Exchange",
-      },
-      Updates: []
-    },
-  };
-
-  constructor(event: OWAEvent, attributes?: {[key: string]: string | boolean}) {
-    this.itemChange.ItemId.RecurringMasterId = event.parentEvent.itemID;
-    this.itemChange.ItemId.InstanceIndex = event.parentEvent.instances.indexOf(event) + 1;
-    this.Body.EventId = this.itemChange.ItemId;
-    // XXX Support for attributes is unknown at this time.
-  }
-
-  protected get itemChange() {
-    return this.Body.ItemChange;
-  }
-
-  addField(type: string, key: string, value: any, FieldURI: string) {
-    let field = {
-      __type: "DeleteItemField:#Exchange",
-      Path: {
-        __type: "PropertyUri:#Exchange",
-        FieldURI: FieldURI,
-      },
-    } as any;
-    if (value != null) {
-      field.__type = "SetItemField:#Exchange";
-      field.Item = {
-        __type: type + ":#Exchange",
-      };
-      field.Item[key] = value;
-    }
-    this.itemChange.Updates.push(field);
   }
 }
