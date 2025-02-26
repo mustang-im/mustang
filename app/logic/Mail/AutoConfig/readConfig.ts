@@ -64,7 +64,7 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string | 
  * @param {JXON} xml <incomingServer> or <outgoingServer>
  */
 function readServer(xml: any, displayName: string, fullXML: any, source: ConfigSource): MailAccount {
-  let protocol = sanitize.enum(xml["@type"], ["pop3", "imap", "jmap", "smtp", "ews", "owa", "activesync", "exchange"], null);
+  let protocol = sanitize.enum(xml["@type"], ["pop3", "imap", "jmap", "smtp", "ews", "owa", "activesync", "graph", "exchange"], null);
   assert(protocol, `Need type for <incomingServer> in autoconfig XML for ${displayName}`);
 
   if (protocol == "exchange") { // Backwards compat

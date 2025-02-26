@@ -14,6 +14,7 @@ import { SQLMailStorage } from '../SQL/SQLMailStorage';
 // #if [!WEBMAIL && PROPRIETARY]
 import { OWAAccount } from '../OWA/OWAAccount';
 import { ActiveSyncAccount } from '../ActiveSync/ActiveSyncAccount';
+import { GraphAccount } from '../Graph/GraphAccount';
 // #endif
 import { setStorage } from '../Store/setStorage';
 import { NotReached } from '../../util/util';
@@ -50,6 +51,8 @@ function _newAccountForProtocol(protocol: string): MailAccount {
     return new OWAAccount();
   } else if (protocol == "activesync") {
     return new ActiveSyncAccount();
+  } else if (protocol == "graph") {
+    return new GraphAccount();
   }
   // #endif
   if (protocol == "mail") {
@@ -75,6 +78,7 @@ const kProtocolLabel = {
   "ews": "EWS",
   "owa": "OWA",
   "activesync": "ActiveSync",
+  "graph": "MS Graph",
 }
 
 export function listMailProtocols(): string[] {

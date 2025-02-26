@@ -10,7 +10,7 @@
  */
 export const OAuth2URLs = [
   {
-    domains: ["outlook.com", "outlook.office365.com", ],
+    domains: ["outlook.com", "outlook.office365.com"],
     hostnames: ["outlook.office365.com", "outlook.office.com"],
     authURL: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
     authDoneURL: "https://login.microsoftonline.com/common/oauth2/nativeclient",
@@ -18,6 +18,18 @@ export const OAuth2URLs = [
     // tokenURLPasswordAuth: "https://login.microsoftonline.com/organizations/oauth2/v2.0/token", works only for some business accounts
     logoutURL: "https://login.microsoftonline.com/common/oauth2/logout",
     scope: "offline_access EWS.AccessAsUser.All EAS.AccessAsUser.All https://outlook.office.com/IMAP.AccessAsUser.All https://outlook.office.com/POP.AccessAsUser.All https://outlook.office.com/SMTP.Send",
+    clientID: "1d01f7d4-334b-475a-9176-a0d504c6a38a",
+    clientSecret: null,
+    doPKCE: false,
+  },
+  {
+    domains: ["graph.microsoft.com"],
+    hostnames: ["graph.microsoft.com"],
+    authURL: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+    authDoneURL: "https://login.microsoftonline.com/common/oauth2/nativeclient",
+    tokenURL: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+    logoutURL: "https://login.microsoftonline.com/common/oauth2/logout",
+    scope: "Mail.ReadWrite Mail.ReadWrite.Shared Mail.Send Mail.Send.Shared Calendars.ReadWrite Calendars.ReadWrite.Shared Contacts.ReadWrite Contacts.ReadWrite.Shared Chat.ReadWrite OnlineMeetings.ReadWrite Files.ReadWrite.All offline_access openid profile",
     clientID: "1d01f7d4-334b-475a-9176-a0d504c6a38a",
     clientSecret: null,
     doPKCE: false,
