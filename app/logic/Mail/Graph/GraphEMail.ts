@@ -147,7 +147,7 @@ export class GraphEMail extends EMail {
 
   async download() {
     let account = this.folder.account;
-    let mime = await account.httpCall(`${this.path}/$value`, { method: "get", result: "text" }) as string;
+    let mime = await account.graphCall(`${this.path}/$value`, { method: "get", result: "text" }) as string;
     assert(mime, "EMail no longer on server");
     this.mime = new TextEncoder().encode(mime);
     await this.parseMIME();
@@ -245,5 +245,5 @@ function setPersons(targetList: ArrayColl<PersonUID>, personList: TGraphPersonUI
 }
 
 function getPersonUID(p: TGraphPersonUID): PersonUID {
-  return findOrCreatePersonUID(sanitize.string(p.emailAddress.address, null), sanitize.label(p.emailAddress.name, null));
+  return findOrCreatePersonUID(sanitize.string(p?.emailAddress.address, null), sanitize.label(p?.emailAddress.name, null));
 }

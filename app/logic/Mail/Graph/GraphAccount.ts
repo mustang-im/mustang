@@ -79,10 +79,9 @@ export class GraphAccount extends MailAccount {
    *
    */
   async graphGet(path: string, args?: Record<string, any>, options?: any): Promise<Record<string, any>[]> {
-    args ??= {};
-    args["$top"] ??= kMaxFetchCount;
-    options ??= {};
-    options.searchParams = args;
+    // Avoid using options.searchParams, because it deletes all existing ones in the URL
+    path = path + (path.includes("?") ? "&" : "?") + "$top=" + kMaxFetchCount;
+
     let responses = await this.graphCall(path, options);
     let array = responses.value;
     assert(Array.isArray(array), this.name + ": " + `${path} did not return a result`);
@@ -136,6 +135,9 @@ export class GraphAccount extends MailAccount {
    * @returns JSON result
    */
   async graphCall(path: string, options?: any): Promise<any> {
+    if (path.startsWith("https://")) {
+      return await this.httpCall(path, options);
+    }
     let user = options?.user ? "user/" + options.user : "me";
     let version = options?.beta ? "beta" : "v1.0";
     return await this.httpCall(`${this.url}/${version}/${user}/${path}`, options);
@@ -179,7 +181,7 @@ export class GraphAccount extends MailAccount {
     let ky = await this.ky(options);
     try {
       let method = options?.method?.toLowerCase() ?? "get";
-      console.log("Calling <" + url + ">", method.toUpperCase());
+      console.log("Calling <" + url + ">", method.toUpperCase(), "with options", options);
       return await ky[method](url);
       // let result = options?.result ?? "json";
       // return await ky[method](url)[result](options); // e.g. await ky.get(url).json();
@@ -242,7 +244,7 @@ export class GraphAccount extends MailAccount {
    * Also query all descendant folders, recursively. */
   protected async listSubFolders(parentFolder: GraphFolder | null): Promise<ArrayColl<GraphFolder>> {
     let foldersJSON = await this.graphGet(
-      parentFolder.id ? `mailFolders/${parentFolder.id}/childFolders` : `mailFolders`,
+      parentFolder ? `mailFolders/${parentFolder.id}/childFolders` : `mailFolders`,
       null, { beta: true }
     ) as TGraphFolder[];
     let result = new ArrayColl<GraphFolder>();
@@ -308,13 +310,6 @@ export class GraphAccount extends MailAccount {
       },
     });
     console.log("send response", sendResponse);
-  }
-
-  async makeSingleCall(method: string, argumentsJSON: Record<string, any>): Promise<Record<string, any>> {
-    return {};
-  }
-  async makeCombinedCall(calls: [string, Record<string, any>, string?][]): Promise<Record<string, any>> {
-    return {};
   }
 
   fromConfigJSON(config: any) {
