@@ -185,7 +185,7 @@ export function owaMoveEntireFolderRequest(sourceFolderID: string, newParentFold
   });
 }
 
-export function owaCreateNewFolderRequest(name: string, parentFolderID: string): OWARequest {
+export function owaCreateNewSubFolderRequest(name: string, parentFolderID: string): OWARequest {
   return new OWARequest("CreateFolderJsonRequest", {
     __type: "CreateFolderRequest:#Exchange",
     ParentFolderId: {
@@ -193,6 +193,24 @@ export function owaCreateNewFolderRequest(name: string, parentFolderID: string):
       BaseFolderId: {
         __type: "FolderId:#Exchange",
         Id: parentFolderID,
+      },
+    },
+    Folders: [{
+      __type: "Folder:#Exchange",
+      FolderClass: "IPF.Note",
+      DisplayName: name,
+    }],
+  });
+}
+
+export function owaCreateNewTopLevelFolderRequest(name: string): OWARequest {
+  return new OWARequest("CreateFolderJsonRequest", {
+    __type: "CreateFolderRequest:#Exchange",
+    ParentFolderId: {
+      __type: "TargetFolderId:#Exchange",
+      BaseFolderId: {
+        __type: "DistinguishedFolderId:#Exchange",
+        Id: "msgfolderroot",
       },
     },
     Folders: [{

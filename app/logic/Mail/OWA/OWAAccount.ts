@@ -23,6 +23,7 @@ import { notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64 } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
+import { owaCreateNewTopLevelFolderRequest } from "./Request/OWAFolderRequests";
 
 export class OWAAccount extends MailAccount {
   readonly protocol: string = "owa";
@@ -292,29 +293,7 @@ export class OWAAccount extends MailAccount {
   }
 
   async createToplevelFolder(name: string): Promise<OWAFolder> {
-    let request = {
-      __type: "CreateFolderJsonRequest:#Exchange",
-      Header: {
-        __type: "JsonRequestHeaders:#Exchange",
-        RequestServerVersion: "Exchange2013",
-      },
-      Body: {
-        __type: "CreateFolderRequest:#Exchange",
-        ParentFolderId: {
-          __type: "TargetFolderId:#Exchange",
-          BaseFolderId: {
-            __type: "DistinguishedFolderId:#Exchange",
-            Id: "msgfolderroot",
-          },
-        },
-        Folders: [{
-          __type: "Folder:#Exchange",
-          FolderClass: "IPF.Note",
-          DisplayName: name,
-        }],
-      },
-    };
-    let result = await this.callOWA(request);
+    let result = await this.callOWA(owaCreateNewTopLevelFolderRequest(name));
     let folder = await super.createToplevelFolder(name) as OWAFolder;
     folder.id = sanitize.nonemptystring(result.Folders[0].FolderId.Id);
     this.folderMap.set(folder.id, folder);

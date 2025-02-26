@@ -2,8 +2,10 @@ import { Addressbook } from "../Addressbook";
 import { OWAPerson } from "./OWAPerson";
 import { OWAGroup } from "./OWAGroup";
 import type { OWAAccount } from "../../Mail/OWA/OWAAccount";
+import { owaFindPersonsRequest, owaGetPersonasRequest } from "./Request/OWAPersonRequests";
 import { kMaxFetchCount } from "../../Mail/OWA/OWAFolder";
 import type { ArrayColl } from "svelte-collections";
+
 
 export class OWAAddressbook extends Addressbook {
   readonly protocol: string = "addressbook-owa";
@@ -35,35 +37,9 @@ export class OWAAddressbook extends Addressbook {
 
     let persons = [];
     let groups = [];
-    let query = {
-      __type: "FindPeopleJsonRequest:#Exchange",
-      Header: {
-        __type: "JsonRequestHeaders:#Exchange",
-        RequestServerVersion: "Exchange2013",
-      },
-      Body: {
-        __type: "FindPeopleRequest:#Exchange",
-        IndexedPageItemView: {
-          __type: "IndexedPageView:#Exchange",
-          BasePoint: "Beginning",
-          Offset: 0,
-          MaxEntriesReturned: kMaxFetchCount,
-        },
-        ParentFolderId: {
-          __type: "TargetFolderId:#Exchange",
-          BaseFolderId: contacts.FolderId,
-        },
-        PersonaShape: {
-          __type: "PersonaResponseShape:#Exchange",
-          BaseShape: "Default",
-        },
-        QueryString: null,
-        SearchPeopleSuggestionIndex: false,
-        ShouldResolveOneOffEmailAddress: false,
-      },
-    };
+    let request = owaFindPersonsRequest(contacts.FolderId);
     do {
-      response = await this.account.callOWA(query);
+      response = await this.account.callOWA(request);
       for (let result of response.ResultSet) {
         if (result.EmailAddress?.EmailAddress) {
           persons.push(result);
@@ -73,7 +49,7 @@ export class OWAAddressbook extends Addressbook {
           persons.push(result);
         }
       }
-      query.Body.IndexedPageItemView.Offset += kMaxFetchCount;
+      request.Body.IndexedPageItemView.Offset += kMaxFetchCount;
     } while (response.ResultSet.length == kMaxFetchCount);
     await this.listPersons(persons);
     await this.listGroups(groups);
@@ -86,25 +62,12 @@ export class OWAAddressbook extends Addressbook {
     }
     for (let result of persons) {
       try {
-        let request: any = {
-          __type: "GetPersonaJsonRequest:#Exchange",
-          Header: {
-            __type: "JsonRequestHeaders:#Exchange",
-            RequestServerVersion: "Exchange2013",
-          },
-          Body: {
-            __type: "GetPersonaRequest:#Exchange",
-            PersonaId: {
-              __type: "ItemId:#Exchange",
-              Id: result.PersonaId.Id,
-            },
-          },
-        };
+        let request = owaGetPersonasRequest(result.PersonaId.Id);
         let response = await this.account.callOWA(request);
         Object.assign(result, response.Persona);
-        request = new OWAGetNotesForPersonaRequest(result.PersonaId.Id);
-        response = await this.account.callOWA(request);
-        result.Notes = response.PersonaWithNotes?.BodiesArray[0].Value.Value;
+        let requestNotes = new OWAGetNotesForPersonaRequest(result.PersonaId.Id);
+        let responseNotes = await this.account.callOWA(requestNotes);
+        result.Notes = responseNotes.PersonaWithNotes?.BodiesArray[0].Value.Value;
         let person = this.getPersonByPersonaID(result.PersonaId.Id);
         if (person) {
           person.fromJSON(result);
