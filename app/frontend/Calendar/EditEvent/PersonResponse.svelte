@@ -1,14 +1,14 @@
 <hbox class="response">
   {#if person.response == ResponseType.Decline }
-    <span class="no">{$t`Not available`}</span>
+    <span class="no">{$t`Declined`}</span>
   {:else if person.response == ResponseType.Accept }
-    <span class="yes">{$t`Available`}</span>
+    <span class="yes">{$t`Accepted`}</span>
   {:else if person.response == ResponseType.Tentative }
-    {$t`Tentatively available`}
+    <span class="yes">{$t`Tentatively available`}</span>
   {:else if person.response == ResponseType.Organizer }
-    {$t`Available`}
+    <span class="yes">{$t`Organizer`}</span>
   {:else}
-    {$t`No response received`}
+    <span class="unknown">{$t`No response yet`}</span>
   {/if}
 </hbox>
 
@@ -31,5 +31,8 @@
   }
   .no {
     color: red;
+  }
+  .unknown {
+    color: yellow;
   }
 </style>
