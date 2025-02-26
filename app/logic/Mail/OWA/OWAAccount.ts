@@ -193,13 +193,13 @@ export class OWAAccount extends MailAccount {
       await this.logout();
       throw new LoginError(null, "Please login");
     }
-    if (!response.json && response.url != url && response.contentType.toLowerCase().split(";")[0].trim() == "text/html") {
-      await this.logout();
-      throw new Error(response.message);
-    }
     if (!response.ok) {
       this.throttle.waitForSecond(1);
       throw new OWAError(response);
+    }
+    if (!response.json && response.url != url && response.contentType?.toLowerCase().split(";")[0].trim() == "text/html") {
+      await this.logout();
+      throw new Error(response.message);
     }
     let result = response.json;
     if (result.Body) {
