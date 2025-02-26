@@ -3,7 +3,7 @@ import type { EMail } from "../EMail";
 import { OWAEMail } from "./OWAEMail";
 import type { OWAAccount } from "./OWAAccount";
 import OWACreateItemRequest from "./Request/OWACreateItemRequest";
-import { owaCreateNewFolderRequest, owaDeleteFolderRequest, owaDownloadMsgsInFolderRequest, owaFindMsgsInFolderRequest, owaFolderCountsRequests, owaFolderMarkAllMsgsReadRequest, owaGetNewMessageHeadersInFolderRequest as owaGetNewMsgHeadersInFolderRequest, owaMoveEntireFolderRequest, owaMoveOrCopyMsgsIntoFolderRequest, owaRenameFolderRequest } from "./Request/OWAFolderRequests";
+import { owaCreateNewSubFolderRequest, owaDeleteFolderRequest, owaDownloadMsgsInFolderRequest, owaFindMsgsInFolderRequest, owaFolderCountsRequests, owaFolderMarkAllMsgsReadRequest, owaGetNewMessageHeadersInFolderRequest as owaGetNewMsgHeadersInFolderRequest, owaMoveEntireFolderRequest, owaMoveOrCopyMsgsIntoFolderRequest, owaRenameFolderRequest } from "./Request/OWAFolderRequests";
 import { base64ToArrayBuffer, blobToBase64, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -228,7 +228,7 @@ export class OWAFolder extends Folder {
 
   async createSubFolder(name: string): Promise<OWAFolder> {
     let folder = await super.createSubFolder(name) as OWAFolder;
-    let result = await this.account.callOWA(owaCreateNewFolderRequest(name, this.id));
+    let result = await this.account.callOWA(owaCreateNewSubFolderRequest(name, this.id));
     folder.id = sanitize.nonemptystring(result.Folders[0].FolderId.Id);
     this.account.folderMap.set(folder.id, folder);
     return folder;

@@ -5,6 +5,8 @@ import { Tag, getTagByName } from "../Tag";
 import OWACreateItemRequest from "./Request/OWACreateItemRequest";
 import OWADeleteItemRequest from "./Request/OWADeleteItemRequest";
 import OWAUpdateItemRequest from "./Request/OWAUpdateItemRequest";
+import { owaDownloadMsgsInFolderRequest } from "./Request/OWAFolderRequests";
+import { owaGetEventsRequest } from "../../Calendar/OWA/Request/OWAEventRequests";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { Scheduling, ResponseType, type Responses } from "../../Calendar/Invitation";
 import { base64ToArrayBuffer, assert } from "../../util/util";
@@ -23,30 +25,7 @@ export class OWAEMail extends EMail {
   }
 
   async download() {
-    let request = {
-      __type: "GetItemJsonRequest:#Exchange",
-      Header: {
-        __type: "JsonRequestHeaders:#Exchange",
-        RequestServerVersion: "Exchange2013",
-      },
-      Body: {
-        __type: "GetItemRequest:#Exchange",
-        ItemShape: {
-          __type: "ItemResponseShape:#Exchange",
-          BaseShape: "IdOnly",
-          AdditionalProperties: [{ // Work around Office365 bug
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "item:Size"
-          }],
-          IncludeMimeContent: true,
-        },
-        ItemIds: [{
-          __type: "ItemId:#Exchange",
-          Id: this.itemID,
-        }],
-      },
-    };
-    let result = await this.folder.account.callOWA(request);
+    let result = await this.folder.account.callOWA(owaDownloadMsgsInFolderRequest([ this ]));
     let mimeBase64 = sanitize.nonemptystring(result.Items[0].MimeContent.Value);
     this.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
     await this.parseMIME();
@@ -172,72 +151,7 @@ export class OWAEMail extends EMail {
   async loadEvent_disabled() {
     assert(this.scheduling == Scheduling.Request, "This is not an invitation");
     assert(!this.event, "Event has already been loaded");
-    let request = {
-      __type: "GetItemJsonRequest:#Exchange",
-      Header: {
-        __type: "JsonRequestHeaders:#Exchange",
-        RequestServerVersion: "Exchange2013",
-      },
-      Body: {
-        __type: "GetItemRequest:#Exchange",
-        ItemShape: {
-          __type: "ItemResponseShape:#Exchange",
-          BaseShape: "Default",
-          BodyType: "Best",
-          AdditionalProperties: [{
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "item:Body",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "item:ReminderIsSet",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "item:ReminderMinutesBeforeStart",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "item:LastModifiedTime",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "item:TextBody",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:IsAllDayEvent",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:EnhancedLocation",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:MyResponseType",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:RequiredAttendees",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:OptionalAttendees",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:Recurrence",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:ModifiedOccurrences",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:DeletedOccurrences",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:UID",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:RecurrenceId",
-          }],
-        },
-        ItemIds: [{
-          __type: "ItemId:#Exchange",
-          Id: this.itemID,
-        }],
-      },
-    };
-    let result = await this.folder.account.callOWA(request);
+    let result = await this.folder.account.callOWA(owaGetEventsRequest([this.itemID ]));
     let event = new OWAEvent();
     event.fromJSON(result.Items[0]);
     this.event = event;

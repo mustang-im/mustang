@@ -11,6 +11,7 @@ import OWAUpdateOffice365OccurrenceRequest from "./Request/OWAUpdateOffice365Occ
 import OWACreateItemRequest from "../../Mail/OWA/Request/OWACreateItemRequest";
 import OWADeleteItemRequest from "../../Mail/OWA/Request/OWADeleteItemRequest";
 import OWAUpdateItemRequest from "../../Mail/OWA/Request/OWAUpdateItemRequest";
+import { owaCreateExclusionRequest, owaGetEventUIDRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest } from "./Request/OWAEventRequests";
 import type { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
@@ -203,38 +204,7 @@ export class OWAEvent extends Event {
   }
 
   protected async getOnlineMeetingDescription() {
-    let request = {
-      __type: "GetItemJsonRequest:#Exchange",
-      Header: {
-        __type: "JsonRequestHeaders:#Exchange",
-        RequestServerVersion: "Exchange2013",
-      },
-      Body: {
-        __type: "GetItemRequest:#Exchange",
-        ItemShape: {
-          __type: "ItemResponseShape:#Exchange",
-          BaseShape: "IdOnly",
-          AdditionalProperties: [{
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "item:Body",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "item:TextBody",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:EnhancedLocation",
-          }, { // Might as well include this in case we don't have it yet
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:UID",
-          }],
-        },
-        ItemIds: [{
-          __type: "ItemId:#Exchange",
-          Id: this.itemID,
-        }],
-      },
-    };
-    let response = await this.calendar.account.callOWA(request);
+    let response = await this.calendar.account.callOWA(owaOnlineMeetingDescriptionRequest(this.itemID));
     let item = response.Items[0];
     this.calUID = sanitize.nonemptystring(item.UID);
     this.location = sanitize.nonemptystring(item.Location?.DisplayName, "");
@@ -249,52 +219,12 @@ export class OWAEvent extends Event {
   }
 
   protected async getOnlineMeetingURL() {
-    let request = {
-      __type: "GetCalendarEventJsonRequest:#Exchange",
-      Header: {
-        __type: "JsonRequestHeaders:#Exchange",
-        RequestServerVersion: "Exchange2013",
-      },
-      Body: {
-        __type: "GetCalendarEventRequest:#Exchange",
-        ItemShape: {
-          __type: "ItemResponseShape:#Exchange",
-          BaseShape: "IdOnly",
-        },
-        EventIds: [{
-          __type: "ItemId:#Exchange",
-          Id: this.itemID,
-        }],
-      },
-    };
-    let response = await this.calendar.account.callOWA(request);
+    let response = await this.calendar.account.callOWA(owaOnlineMeetingURLRequest(this.itemID));
     this.onlineMeetingURL = sanitize.url(response.Items[0].OnlineMeetingJoinUrl, null);
   }
 
   protected async updateUID() {
-    let request = {
-      __type: "GetItemJsonRequest:#Exchange",
-      Header: {
-        __type: "JsonRequestHeaders:#Exchange",
-        RequestServerVersion: "Exchange2013",
-      },
-      Body: {
-        __type: "GetItemRequest:#Exchange",
-        ItemShape: {
-          __type: "ItemResponseShape:#Exchange",
-          BaseShape: "IdOnly",
-          AdditionalProperties: [{
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "calendar:UID",
-          }],
-        },
-        ItemIds: [{
-          __type: "ItemId:#Exchange",
-          Id: this.itemID,
-        }],
-      },
-    };
-    let response = await this.calendar.account.callOWA(request);
+    let response = await this.calendar.account.callOWA(owaGetEventUIDRequest(this.itemID));
     this.calUID = sanitize.nonemptystring(response.Items[0].UID);
   }
 
@@ -375,25 +305,7 @@ export class OWAEvent extends Event {
       let request = new OWADeleteItemRequest(this.itemID, {SendMeetingCancellations: "SendToAllAndSaveCopy"});
       await this.calendar.account.callOWA(request);
     } else if (this.parentEvent) {
-      // Create an exclusion.
-      let request = {
-        __type: "DeleteItemJsonRequest:#Exchange",
-        Header: {
-          __type: "JsonRequestHeaders:#Exchange",
-          RequestServerVersion: "Exchange2013",
-        },
-        Body: {
-          __type: "DeleteItemRequest:#Exchange",
-          ItemIds: [{
-            __type: "OccurrenceItemId:#Exchange",
-            RecurringMasterId: this.parentEvent.itemID,
-            InstanceIndex: this.parentEvent.instances.indexOf(this) + 1,
-          }],
-          DeleteType: "MoveToDeletedItems",
-          SendMeetingCancellations: "SendToAllAndSaveCopy",
-        },
-      };
-      await this.calendar.account.callOWA(request);
+      await this.calendar.account.callOWA(owaCreateExclusionRequest(this.parentEvent));
     }
   }
 
