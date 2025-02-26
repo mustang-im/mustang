@@ -29,7 +29,7 @@ export class EWSAddressbook extends Addressbook {
   }
 
   // Uses the sync state to get just the contats that changed since last time.
-  async updateChangedContacts() {
+  protected async updateChangedContacts() {
     let sync = {
       m$SyncFolderItems: {
         m$ItemShape: {
@@ -178,7 +178,7 @@ export class EWSAddressbook extends Addressbook {
     }
   }
 
-  getPersonByItemID(id: string): EWSPerson | void {
+  protected getPersonByItemID(id: string): EWSPerson | void {
     return this.persons.find(p => p.itemID == id);
   }
 
@@ -225,7 +225,7 @@ export class EWSAddressbook extends Addressbook {
     }
   }
 
-  getGroupByItemID(id: string): EWSGroup | void {
+  protected getGroupByItemID(id: string): EWSGroup | void {
     return this.groups.find(p => p.itemID == id);
   }
 }

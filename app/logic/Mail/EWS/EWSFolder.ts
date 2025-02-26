@@ -2,9 +2,9 @@ import { Folder, SpecialFolder } from "../Folder";
 import type { EMail } from "../EMail";
 import { EWSEMail } from "./EWSEMail";
 import type { EWSAccount } from "./EWSAccount";
-import EWSCreateItemRequest from "./EWSCreateItemRequest";
-import { base64ToArrayBuffer, blobToBase64, ensureArray, assert, NotImplemented } from "../../util/util";
+import EWSCreateItemRequest from "./Request/EWSCreateItemRequest";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { base64ToArrayBuffer, blobToBase64, ensureArray, assert } from "../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 
 export const kMaxCount = 50;

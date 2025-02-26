@@ -1,5 +1,5 @@
 import { OWANotifications } from "./OWANotifications";
-import { appGlobal } from "../../app";
+import { appGlobal } from "../../../app";
 
 export class OWAOffice365Notifications extends OWANotifications {
   async start(): Promise<never> {

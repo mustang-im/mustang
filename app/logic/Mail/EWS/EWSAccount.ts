@@ -1,29 +1,26 @@
 import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
-import { SpecialFolder } from "../Folder";
 import { EWSFolder } from "./EWSFolder";
-import EWSCreateItemRequest from "./EWSCreateItemRequest";
-import type EWSDeleteItemRequest from "./EWSDeleteItemRequest";
-import type EWSUpdateItemRequest from "./EWSUpdateItemRequest";
-import { newAddressbookForProtocol} from "../../Contacts/AccountsList/Addressbooks";
+import EWSCreateItemRequest from "./Request/EWSCreateItemRequest";
+import type EWSDeleteItemRequest from "./Request/EWSDeleteItemRequest";
+import type EWSUpdateItemRequest from "./Request/EWSUpdateItemRequest";
+import { EWSError, EWSItemError } from "./EWSError";
 import type { EWSAddressbook } from "../../Contacts/EWS/EWSAddressbook";
-import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
+import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
+import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
+import { XML2JSON, type Json, JSON2XML } from "./XML2JSON";
 import { Throttle } from "../../util/Throttle";
 import { Semaphore } from "../../util/Semaphore";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64, ensureArray, NotReached } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-
-type Json = string | number | boolean | null | Json[] | {[key: string]: Json};
-
-type JsonRequest = Json | EWSCreateItemRequest | EWSDeleteItemRequest | EWSUpdateItemRequest;
 
 export class EWSAccount extends MailAccount {
   readonly protocol: string = "ews";
@@ -136,41 +133,12 @@ export class EWSAccount extends MailAccount {
     await this.callEWS(request);
   }
 
-  JSON2XML(aJSON: JsonRequest, aParent: Element, aNS: string, aTag: string): void {
-    if (aJSON == null) {
-      return;
-    }
-    if (Array.isArray(aJSON)) {
-      for (let value of aJSON) {
-        this.JSON2XML(value, aParent, aNS, aTag);
-      }
-      return;
-    }
-    let element = aParent.ownerDocument.createElementNS(aNS, aTag);
-    aParent.appendChild(element);
-    if (typeof aJSON != "object") {
-      element.textContent = String(aJSON);
-      return;
-    }
-    for (let key in aJSON) {
-      if (key == "_TextContent_") {
-        element.textContent = String(aJSON[key]);
-      } else if (key.includes("$")) {
-        let ns = aParent.ownerDocument.documentElement.getAttributeNS("http://www.w3.org/2000/xmlns/", key.slice(0, key.indexOf("$")));
-        let tagName = key.replace("$", ":");
-        this.JSON2XML(aJSON[key], element, ns, tagName);
-      } else {
-        element.setAttribute(key, String(aJSON[key]));
-      }
-    }
-  }
-
   request2XML(aRequest: JsonRequest): string {
     let xml = document.implementation.createDocument("http://schemas.xmlsoap.org/soap/envelope/", "s:Envelope");
     xml.documentElement.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:s", "http://schemas.xmlsoap.org/soap/envelope/");
     xml.documentElement.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:m", "http://schemas.microsoft.com/exchange/services/2006/messages");
     xml.documentElement.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:t", "http://schemas.microsoft.com/exchange/services/2006/types");
-    this.JSON2XML({
+    JSON2XML({
       t$RequestServerVersion: {
         Version: "Exchange2013",
       },
@@ -180,7 +148,7 @@ export class EWSAccount extends MailAccount {
         },
       },
     }, xml.documentElement, "http://schemas.xmlsoap.org/soap/envelope/", "s:Header");
-    this.JSON2XML(aRequest, xml.documentElement, "http://schemas.xmlsoap.org/soap/envelope/", "s:Body");
+    JSON2XML(aRequest, xml.documentElement, "http://schemas.xmlsoap.org/soap/envelope/", "s:Body");
     return new XMLSerializer().serializeToString(xml);
   }
 
@@ -569,109 +537,7 @@ export class EWSAccount extends MailAccount {
 }
 
 
-function XML2JSON(aNode: Element): Json {
-  if (!aNode.children.length && !aNode.attributes.length) {
-    return aNode.textContent;
-  }
-  let result: Json = {};
-  for (let { name, value } of aNode.attributes) {
-    result[name] = value;
-  }
-  if (aNode.childNodes.length && !aNode.children.length) {
-    result.Value = aNode.textContent;
-  }
-  for (let child of aNode.children) {
-    if (result[child.localName]) {
-      if (!Array.isArray(result[child.localName])) {
-        result[child.localName] = [result[child.localName]];
-      }
-      (result[child.localName] as Json[]).push(XML2JSON(child));
-    } else {
-      result[child.localName] = XML2JSON(child);
-    }
-  }
-  return result;
-}
-
-class EWSError extends Error {
-  readonly request: Json;
-  readonly status: number;
-  readonly statusText: string;
-  readonly type: string;
-  readonly XML: Json | undefined;
-  readonly error: Json | undefined;
-  readonly responseText: string | undefined;
-  constructor(aResponse, aRequest) {
-    let message = aResponse.statusText;
-    try {
-      let responseXML = aResponse.responseXML;
-      let messageNode = responseXML.querySelector("Message");
-      if (messageNode) {
-        message = messageNode.textContent;
-      }
-      let errorNode = responseXML.querySelector("[ResponseClass=\"Error\"]");
-      if (errorNode) {
-        let errorResponse = XML2JSON(errorNode) as any;
-        message = errorResponse.MessageText;
-      }
-      let innerErrorNode = responseXML.querySelector("[Name=\"InnerErrorMessageText\"]");
-      if (innerErrorNode) {
-        message = innerErrorNode.textContent;
-      }
-    } catch (ex) {
-    }
-    super(message);
-    this.request = aRequest;
-    this.status = aResponse.status;
-    this.statusText = aResponse.statusText;
-    this.type = 'HTTP ' + aResponse.status;
-    try {
-      let responseXML = aResponse.responseXML;
-      let messageNode = responseXML.querySelector("Message");
-      let responseCode = responseXML.querySelector("ResponseCode");
-      if (responseCode) {
-        this.type = responseCode.textContent;
-      }
-      let errorNode = responseXML.querySelector("[ResponseClass=\"Error\"]");
-      if (errorNode) {
-        let errorResponse = XML2JSON(errorNode) as any;
-        this.type = errorResponse.ResponseCode;
-      }
-      let innerErrorNode = responseXML.querySelector("[Name=\"InnerErrorResponseCode\"]");
-      if (innerErrorNode) {
-        this.type = innerErrorNode.textContent;
-      }
-      let xmlNode = responseXML.querySelector("MessageXml");
-      if (xmlNode) {
-        // This identifies the XML element causing the error.
-        this.XML = XML2JSON(xmlNode);
-      }
-      if (messageNode || responseCode || errorNode || xmlNode) {
-        this.error = XML2JSON(responseXML.documentElement);
-      }
-    } catch (ex) {
-      // The response wasn't XML, so we can't extract an error message.
-      this.responseText = aResponse.data;
-    }
-  }
-}
-
-class EWSItemError extends Error {
-  readonly request: JsonRequest;
-  readonly error: any;
-  readonly type: string;
-  constructor(errorResponseJSON: any, aRequest: JsonRequest) {
-    if (Array.isArray(errorResponseJSON.MessageXml?.Value)) {
-      for (let { Name, Value } of errorResponseJSON.MessageXml.Value) {
-        errorResponseJSON[Name.replace(/^InnerError/, "")] = Value;
-      }
-    }
-    super(errorResponseJSON.MessageText);
-    this.request = aRequest;
-    this.error = errorResponseJSON;
-    this.type = errorResponseJSON.ResponseCode;
-  }
-}
+export type JsonRequest = Json | EWSCreateItemRequest | EWSDeleteItemRequest | EWSUpdateItemRequest;
 
 function addRecipients(aRequest: any, aType: string, aRecipients: PersonUID[]): void {
   if (!aRecipients.length) {

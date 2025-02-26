@@ -1,7 +1,7 @@
 import { Calendar } from "../Calendar";
 import { OWAEvent } from "./OWAEvent";
 import type { OWAAccount } from "../../Mail/OWA/OWAAccount";
-import { kMaxCount } from "../../Mail/OWA/OWAFolder";
+import { kMaxFetchCount } from "../../Mail/OWA/OWAFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
 
@@ -59,7 +59,7 @@ export class OWACalendar extends Calendar {
           __type: "IndexedPageView:#Exchange",
           BasePoint: "Beginning",
           Offset: 0,
-          MaxEntriesReturned: kMaxCount,
+          MaxEntriesReturned: kMaxFetchCount,
         },
       },
     };

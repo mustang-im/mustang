@@ -2,7 +2,7 @@ import { Addressbook } from "../Addressbook";
 import { OWAPerson } from "./OWAPerson";
 import { OWAGroup } from "./OWAGroup";
 import type { OWAAccount } from "../../Mail/OWA/OWAAccount";
-import { kMaxCount } from "../../Mail/OWA/OWAFolder";
+import { kMaxFetchCount } from "../../Mail/OWA/OWAFolder";
 import type { ArrayColl } from "svelte-collections";
 
 export class OWAAddressbook extends Addressbook {
@@ -47,7 +47,7 @@ export class OWAAddressbook extends Addressbook {
           __type: "IndexedPageView:#Exchange",
           BasePoint: "Beginning",
           Offset: 0,
-          MaxEntriesReturned: kMaxCount,
+          MaxEntriesReturned: kMaxFetchCount,
         },
         ParentFolderId: {
           __type: "TargetFolderId:#Exchange",
@@ -73,8 +73,8 @@ export class OWAAddressbook extends Addressbook {
           persons.push(result);
         }
       }
-      query.Body.IndexedPageItemView.Offset += kMaxCount;
-    } while (response.ResultSet.length == kMaxCount);
+      query.Body.IndexedPageItemView.Offset += kMaxFetchCount;
+    } while (response.ResultSet.length == kMaxFetchCount);
     await this.listPersons(persons);
     await this.listGroups(groups);
   }
@@ -189,7 +189,7 @@ class OWAGetGroupInfoRequest {
     Paging: {
       __type: "IndexedPageView:#Exchange",
       BasePoint: "Beginning",
-      MaxEntriesReturned: kMaxCount,
+      MaxEntriesReturned: kMaxFetchCount,
       Offset: 0,
     },
     ParentFolderId: {

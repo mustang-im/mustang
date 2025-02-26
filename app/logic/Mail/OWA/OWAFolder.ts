@@ -2,13 +2,11 @@ import { Folder, SpecialFolder } from "../Folder";
 import type { EMail } from "../EMail";
 import { OWAEMail } from "./OWAEMail";
 import type { OWAAccount } from "./OWAAccount";
-import OWACreateItemRequest from "./OWACreateItemRequest";
+import OWACreateItemRequest from "./Request/OWACreateItemRequest";
 import { base64ToArrayBuffer, blobToBase64, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
-
-export const kMaxCount = 50;
 
 export class OWAFolder extends Folder {
   account: OWAAccount;
@@ -141,7 +139,7 @@ export class OWAFolder extends Folder {
             __type: "IndexedPageView:#Exchange",
             BasePoint: "Beginning",
             Offset: 0,
-            MaxEntriesReturned: kMaxCount,
+            MaxEntriesReturned: kMaxFetchCount,
           },
         },
       };
@@ -293,8 +291,8 @@ export class OWAFolder extends Folder {
   async downloadMessages(emails: Collection<OWAEMail>): Promise<Collection<OWAEMail>> {
     let downloadedEmail = new ArrayColl<OWAEMail>();
     let emailsToDownload = emails.contents;
-    for (let i = 0; i < emailsToDownload.length; i += kMaxCount) {
-      let batch = emailsToDownload.slice(i, i + kMaxCount);
+    for (let i = 0; i < emailsToDownload.length; i += kMaxFetchCount) {
+      let batch = emailsToDownload.slice(i, i + kMaxFetchCount);
       let request = {
         __type: "GetItemJsonRequest:#Exchange",
         Header: {
@@ -562,3 +560,6 @@ export class OWAFolder extends Folder {
     return gt`You cannot change special folders on the Exchange server`;
   }
 }
+
+
+export const kMaxFetchCount = 50;

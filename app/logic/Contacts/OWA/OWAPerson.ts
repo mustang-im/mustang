@@ -1,8 +1,8 @@
 import { Person, ContactEntry } from '../../Abstract/Person';
 import type { OWAAddressbook } from './OWAAddressbook';
-import OWACreatePersonaRequest from "./OWACreatePersonaRequest";
-import OWADeletePersonaRequest from "./OWADeletePersonaRequest";
-import OWAUpdatePersonaRequest from "./OWAUpdatePersonaRequest";
+import OWACreatePersonaRequest from "./Request/OWACreatePersonaRequest";
+import OWADeletePersonaRequest from "./Request/OWADeletePersonaRequest";
+import OWAUpdatePersonaRequest from "./Request/OWAUpdatePersonaRequest";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 const PhysicalAddressElements = ["Street", "City", "State", "PostalCode", "Country"];
@@ -57,7 +57,7 @@ export class OWAPerson extends Person {
     this.fields = fields;
   }
 
-  toFields(): Record<string, string> {
+  protected toFields(): Record<string, string> {
     let fields: Record<string, string> = {};
     //fields.PersonaDisplayName = this.name;
     fields.PersonaGivenNames = this.firstName;

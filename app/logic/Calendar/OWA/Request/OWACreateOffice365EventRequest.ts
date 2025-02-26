@@ -1,4 +1,4 @@
-import OWACreateItemRequest from "../../../Mail/OWA/OWACreateItemRequest";
+import OWACreateItemRequest from "../../../Mail/OWA/Request/OWACreateItemRequest";
 
 export default class OWACreateOffice365EventRequest extends OWACreateItemRequest {
   readonly Header = {

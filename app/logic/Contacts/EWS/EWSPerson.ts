@@ -1,8 +1,8 @@
 import { Person, ContactEntry } from '../../Abstract/Person';
 import type { EWSAddressbook } from './EWSAddressbook';
-import EWSCreateItemRequest from "../../Mail/EWS/EWSCreateItemRequest";
-import EWSDeleteItemRequest from "../../Mail/EWS/EWSDeleteItemRequest";
-import EWSUpdateItemRequest from "../../Mail/EWS/EWSUpdateItemRequest";
+import EWSCreateItemRequest from "../../Mail/EWS/Request/EWSCreateItemRequest";
+import EWSDeleteItemRequest from "../../Mail/EWS/Request/EWSDeleteItemRequest";
+import EWSUpdateItemRequest from "../../Mail/EWS/Request/EWSUpdateItemRequest";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray, assert } from "../../util/util";
 

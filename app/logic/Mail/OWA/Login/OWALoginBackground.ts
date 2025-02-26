@@ -1,4 +1,4 @@
-import { appGlobal } from "../../app";
+import { appGlobal } from "../../../app";
 
 export class OWALoginBackground {
   static async submitLoginForm(username: string, password: string, partition: string, elements: OWALoginFormElements) {

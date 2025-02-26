@@ -2,29 +2,14 @@ import { EMail } from "../EMail";
 import type { OWAFolder } from "./OWAFolder";
 import { OWAEvent } from "../../Calendar/OWA/OWAEvent";
 import { Tag, getTagByName } from "../Tag";
-import OWACreateItemRequest from "./OWACreateItemRequest";
-import OWADeleteItemRequest from "./OWADeleteItemRequest";
-import OWAUpdateItemRequest from "./OWAUpdateItemRequest";
+import OWACreateItemRequest from "./Request/OWACreateItemRequest";
+import OWADeleteItemRequest from "./Request/OWADeleteItemRequest";
+import OWAUpdateItemRequest from "./Request/OWAUpdateItemRequest";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { Scheduling, ResponseType, type Responses } from "../../Calendar/Invitation";
-import { appGlobal } from "../../app";
 import { base64ToArrayBuffer, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
-
-const ExchangeScheduling: Record<string, number> = {
-  "IPM.Schedule.Meeting.Resp.Pos": Scheduling.Accepted,
-  "IPM.Schedule.Meeting.Resp.Tent": Scheduling.Tentative,
-  "IPM.Schedule.Meeting.Resp.Neg": Scheduling.Declined,
-  "IPM.Schedule.Meeting.Request": Scheduling.Request,
-  "IPM.Schedule.Meeting.Canceled": Scheduling.Cancellation,
-};
-
-const ResponseTypes: Record<Responses, string> = {
-  [ResponseType.Accept]: "AcceptItem",
-  [ResponseType.Tentative]: "TentativelyAcceptItem",
-  [ResponseType.Decline]: "DeclineItem",
-};
 
 export class OWAEMail extends EMail {
   folder: OWAFolder;
@@ -258,6 +243,21 @@ export class OWAEMail extends EMail {
     this.event = event;
   }
 }
+
+
+const ExchangeScheduling: Record<string, number> = {
+  "IPM.Schedule.Meeting.Resp.Pos": Scheduling.Accepted,
+  "IPM.Schedule.Meeting.Resp.Tent": Scheduling.Tentative,
+  "IPM.Schedule.Meeting.Resp.Neg": Scheduling.Declined,
+  "IPM.Schedule.Meeting.Request": Scheduling.Request,
+  "IPM.Schedule.Meeting.Canceled": Scheduling.Cancellation,
+};
+
+const ResponseTypes: Record<Responses, string> = {
+  [ResponseType.Accept]: "AcceptItem",
+  [ResponseType.Tentative]: "TentativelyAcceptItem",
+  [ResponseType.Decline]: "DeclineItem",
+};
 
 function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {
   if (!mailboxes) {

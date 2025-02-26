@@ -8,9 +8,9 @@ import OWACreateOffice365EventRequest from "./Request/OWACreateOffice365EventReq
 import OWAUpdateOffice365EventRequest from "./Request/OWAUpdateOffice365EventRequest";
 import OWAUpdateOccurrenceRequest from "./Request/OWAUpdateOccurrenceRequest";
 import OWAUpdateOffice365OccurrenceRequest from "./Request/OWAUpdateOffice365OccurrenceRequest";
-import OWACreateItemRequest from "../../Mail/OWA/OWACreateItemRequest";
-import OWADeleteItemRequest from "../../Mail/OWA/OWADeleteItemRequest";
-import OWAUpdateItemRequest from "../../Mail/OWA/OWAUpdateItemRequest";
+import OWACreateItemRequest from "../../Mail/OWA/Request/OWACreateItemRequest";
+import OWADeleteItemRequest from "../../Mail/OWA/Request/OWADeleteItemRequest";
+import OWAUpdateItemRequest from "../../Mail/OWA/Request/OWAUpdateItemRequest";
 import type { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";

@@ -1,5 +1,5 @@
-import type { OWAAccount } from "./OWAAccount";
-import { AbstractFunction } from "../../util/util";
+import type { OWAAccount } from "../OWAAccount";
+import { AbstractFunction } from "../../../util/util";
 
 export class OWANotifications {
   account: OWAAccount;
