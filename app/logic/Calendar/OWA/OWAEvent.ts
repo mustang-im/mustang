@@ -186,10 +186,13 @@ export class OWAEvent extends Event {
     }
     let response = await this.calendar.account.callOWA(request);
     this.itemID = sanitize.nonemptystring(response.Items[0].ItemId.Id);
+
+    // The server will set the online meeting URL and append the description.
+    // Get the new values back from the server.
     if (this.calendar.account.isOffice365() && this.isOnline && !this.onlineMeetingURL) {
       // Sadly we can't get all of the changes in one API call
-      await this.updateOnlineMeeting();
-      await this.updateOnlineMeetingURL();
+      await this.getOnlineMeetingDescription();
+      await this.getOnlineMeetingURL();
     }
     if (!this.calUID) {
       // Need an extra server roundtrip to get the UID
@@ -197,7 +200,7 @@ export class OWAEvent extends Event {
     }
   }
 
-  protected async updateOnlineMeeting() {
+  protected async getOnlineMeetingDescription() {
     let request = {
       __type: "GetItemJsonRequest:#Exchange",
       Header: {
@@ -243,7 +246,7 @@ export class OWAEvent extends Event {
     }
   }
 
-  protected async updateOnlineMeetingURL() {
+  protected async getOnlineMeetingURL() {
     let request = {
       __type: "GetCalendarEventJsonRequest:#Exchange",
       Header: {
@@ -263,7 +266,7 @@ export class OWAEvent extends Event {
       },
     };
     let response = await this.calendar.account.callOWA(request);
-    this.onlineMeetingURL = sanitize.nonemptystring(response.Items[0].OnlineMeetingJoinUrl, "");
+    this.onlineMeetingURL = sanitize.url(response.Items[0].OnlineMeetingJoinUrl, null);
   }
 
   protected async updateUID() {
