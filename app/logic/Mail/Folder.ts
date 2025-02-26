@@ -41,12 +41,14 @@ export class Folder extends Observable implements TreeItem<Folder> {
     this.account = account;
   }
 
-  // TODO remove, and adapt SQLFolder to use folder.id instead (but keep column name "path" in the DB)
-  get path(): string {
-    return this.id;
-  }
-  set path(val: string) {
-    this.id = val;
+  get fullPath(): string {
+    let path = this.name;
+    let cur = this.parent;
+    while (cur) {
+      path = cur.name + "/" + path;
+      cur = cur.parent;
+    }
+    return path;
   }
 
   get orderPos(): string {

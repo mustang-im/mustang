@@ -130,6 +130,7 @@ export const mailDatabaseSchema = sql`
     -- User-visible name
     "name" TEXT not null,
     -- Server name for the folder, relative to the account root, with delimiters
+    -- TODO Rename to folderID, but need to migrate
     "path" TEXT not null,
     -- Which (parent) folder this (sub) folder is in
     "parent" INTEGER default null,

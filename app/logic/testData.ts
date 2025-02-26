@@ -113,7 +113,7 @@ export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCoun
   for (let name of ['Inbox', 'Sent', 'Drafts', 'Trash', 'Spam']) {
     let folder = account.newFolder();
     folder.name = name;
-    folder.path = name.toLowerCase();
+    folder.id = name.toLowerCase();
     folder.specialFolder = folder.name.toLowerCase() as SpecialFolder;
     account.rootFolders.push(folder);
   }

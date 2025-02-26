@@ -17,7 +17,7 @@ export class SQLFolder extends Folder {
             id
           FROM folder
           WHERE
-            path = ${folder.path} AND
+            path = ${folder.id} AND
             accountID = ${folder.account.dbID}
           `) as any;
         if (existing?.id) {
@@ -30,14 +30,14 @@ export class SQLFolder extends Folder {
             accountID, name, path,
             parent, specialUse
           ) VALUES(
-            ${folder.account.dbID}, ${folder.name}, ${folder.path},
+            ${folder.account.dbID}, ${folder.name}, ${folder.id},
             ${folder.parent?.dbID}, ${folder.specialFolder}
           )`);
         folder.dbID = insert.lastInsertRowid;
       } else {
         await (await getDatabase()).run(sql`
           UPDATE folder SET
-            name = ${folder.name}, path = ${folder.path},
+            name = ${folder.name}, path = ${folder.id},
             parent = ${folder.parent?.dbID}, specialUse = ${folder.specialFolder}
           WHERE id = ${folder.dbID}
           `);
@@ -95,7 +95,7 @@ export class SQLFolder extends Folder {
       `) as any;
     folder.dbID = sanitize.integer(dbID);
     folder.name = sanitize.label(row.name);
-    folder.path = sanitize.label(row.path);
+    folder.id = sanitize.label(row.path);
     folder.countTotal = sanitize.integer(row.countTotal, 0);
     folder.countUnread = sanitize.integer(row.countUnread, 0);
     folder.countNewArrived = sanitize.integer(row.countNewArrived, 0);

@@ -125,7 +125,7 @@ export class MailZIP implements MailContentStorage {
     this.filesDir = this.filesDir ?? await appGlobal.remoteApp.getFilesDir();
     let dir = `${this.filesDir}/backup/email/${sanitize.filename(folder.account.emailAddress.replace("@", "-"))}-${sanitize.filename(folder.account.id)}`;
     if (folder.parent) {
-      dir += `/${sanitize.filename(folder.parent.path, "unknownFolder")}`;
+      dir += `/${sanitize.filename(folder.parent.fullPath, "unknownFolder")}`;
     }
     if (!this.haveDirs.contains(dir)) {
       // Permissions: Only user can read and write the dir.

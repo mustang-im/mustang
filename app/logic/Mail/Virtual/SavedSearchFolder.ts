@@ -18,14 +18,9 @@ export class SavedSearchFolder extends Folder {
   constructor(search: SearchEMail) {
     super(allAccountsAccount);
     this.search = search;
+    this.id = crypto.randomUUID();
   }
 
-  get path(): string {
-    return this.name;
-  }
-  set path(val: string) {
-    this.name = val;
-  }
   get folders(): Collection<Folder> {
     return this._foldersDummy;
   }

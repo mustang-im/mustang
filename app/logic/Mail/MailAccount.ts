@@ -70,9 +70,6 @@ export class MailAccount extends Account {
   findFolder(findFunc: (folder: Folder) => boolean): Folder | null {
     return findSubFolderFromList(this.rootFolders, findFunc);
   }
-  getFolderByPath(path: string): Folder | null {
-    return this.findFolder(folder => folder.path == path);
-  }
 
   get inbox(): Folder | null {
     return this._inbox ??
@@ -90,7 +87,6 @@ export class MailAccount extends Account {
     let folder = this.newFolder();
     folder.name = name;
     folder.parent = null;
-    folder.path = name;
     this.rootFolders.add(folder);
     return folder;
   }

@@ -291,8 +291,7 @@ export class IMAPAccount extends MailAccount {
   }
 
   getFolderByPath(path: string): IMAPFolder | null {
-    // only for casting the type
-    return super.getFolderByPath(path) as IMAPFolder | null;
+    return this.findFolder(folder => folder.path == path) as IMAPFolder | null;
   }
 
   async createToplevelFolder(name: string): Promise<IMAPFolder> {

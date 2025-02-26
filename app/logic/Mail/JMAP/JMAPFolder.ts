@@ -469,7 +469,7 @@ export class JMAPFolder extends Folder {
       accountId: this.account.accountID,
       destroy: [this.id],
     });
-    console.log("JMAP folder deleted", this.name, this.path);
+    console.log("JMAP folder deleted", this.name, this.id);
   }
 
   async markAllRead(): Promise<void> {
