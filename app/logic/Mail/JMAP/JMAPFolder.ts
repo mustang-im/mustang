@@ -112,7 +112,7 @@ export class JMAPFolder extends Folder {
       ]) as TJMAPGetResponse<TJMAPEMailHeaders>;
       listResponse = response["emails"];
 
-      let result = await this.parseMessageList(listResponse.list);
+      let result = this.parseMessageList(listResponse.list);
       this.account.setState("Email", listResponse.state);
       return result;
     } finally {
@@ -167,8 +167,8 @@ export class JMAPFolder extends Folder {
       let changedResponse = response["changed"] as TJMAPGetResponse<TJMAPEMailHeaders>;
 
       let removedMessages = await this.parseRemovedMessages(changes.destroyed)
-      let addedResult = await this.parseMessageList(addedResponse.list, false);
-      let changedResult = await this.parseMessageList(changedResponse.list);
+      let addedResult = this.parseMessageList(addedResponse.list, false);
+      let changedResult = this.parseMessageList(changedResponse.list);
       addedResult.newMessages.addAll(changedResult.newMessages);
 
       this.account.setState("Email", changes.newState, changes.oldState);
@@ -182,7 +182,7 @@ export class JMAPFolder extends Folder {
     }
   }
 
-  async parseRemovedMessages(messageIDs: string[]): Promise<ArrayColl<JMAPEMail>> {
+  protected async parseRemovedMessages(messageIDs: string[]): Promise<ArrayColl<JMAPEMail>> {
     let removedMessages = new ArrayColl<JMAPEMail>();
     for (let removedID of messageIDs) {
       let msg = this.getEMailByPID(removedID);
@@ -195,7 +195,7 @@ export class JMAPFolder extends Folder {
     return removedMessages;
   }
 
-  protected async parseMessageList(msgs: TJMAPEMailHeaders[], checkUpdates = true): Promise<{ newMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail> }> {
+  protected parseMessageList(msgs: TJMAPEMailHeaders[], checkUpdates = true): { newMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail> } {
     let newMessages = new ArrayColl<JMAPEMail>();
     let updatedMessages = new ArrayColl<JMAPEMail>();
     for (let json of msgs) {
@@ -257,7 +257,7 @@ export class JMAPFolder extends Folder {
     return downloadedMsgs;
   }
 
-  getEMailByPID(pID: string): JMAPEMail {
+  protected getEMailByPID(pID: string): JMAPEMail {
     return this.messages.find((m: JMAPEMail) => m.pID == pID) as JMAPEMail;
   }
 

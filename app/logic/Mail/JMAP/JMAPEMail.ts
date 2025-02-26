@@ -16,7 +16,7 @@ export class JMAPEMail extends EMail {
   pID: string | null = null;
   folder: JMAPFolder;
   mimeBlobId: string | null = null; // TODO Save in DB
-  flagsChanging = false;
+  protected flagsChanging = false;
 
   constructor(folder: JMAPFolder) {
     super(folder);
@@ -35,12 +35,7 @@ export class JMAPEMail extends EMail {
     this.sent = sanitize.date(json.sentAt, this.received);
     this.inReplyTo = sanitize.string(json.inReplyTo, null);
     this.threadID = sanitize.string(json.threadId, null);
-    if (json.from?.length && json.from[0]?.email) {
-      let firstFrom = json.from[0];
-      this.from = findOrCreatePersonUID(sanitize.nonemptystring(firstFrom.email), sanitize.label(firstFrom.name, null));
-    } else {
-      this.from = findOrCreatePersonUID("unknown@invalid", "Unknown");
-    }
+    this.from = getPersonUID(json.from[0]);
     setPersons(this.to, json.to);
     setPersons(this.cc, json.cc);
     setPersons(this.bcc, json.bcc);
@@ -66,11 +61,12 @@ export class JMAPEMail extends EMail {
     this.isSpam = sanitize.boolean(flags["$junk"], false);
 
     for (let customTag in flags) {
-      if (customTag.startsWith("$") ||
+      if (!customTag ||
+          customTag.startsWith("$") ||
           ["nonjunk", "junk"].includes(customTag.toLowerCase())) {
         continue;
       }
-      this.tags.add(getTagByName(customTag));
+      this.tags.add(getTagByName(sanitize.string(customTag)));
     }
   }
 
@@ -256,6 +252,9 @@ function setPersons(targetList: ArrayColl<PersonUID>, personList: TJMAPPerson[])
   if (!personList?.length) {
     return;
   }
-  targetList.addAll(personList.map(p =>
-    findOrCreatePersonUID(sanitize.nonemptystring(p.email, "unknown@invalid"), sanitize.label(p.name, null))));
+  targetList.addAll(personList.map(p => getPersonUID(p)));
+}
+
+function getPersonUID(p: TJMAPPerson): PersonUID {
+  return findOrCreatePersonUID(sanitize.string(p.email, null), sanitize.label(p.name, null));
 }
