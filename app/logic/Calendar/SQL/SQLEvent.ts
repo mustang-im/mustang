@@ -91,7 +91,7 @@ export class SQLEvent extends Event {
   protected static async saveParticipant(event: Event, participant: Participant) {
     await (await getDatabase()).run(sql`
       INSERT INTO eventParticipant (
-        eventID, emailAddress, name, response
+        eventID, emailAddress, name, confirmed
       ) VALUES (
         ${event.dbID}, ${participant.emailAddress}, ${participant.name}, ${participant.response}
       )`);
@@ -180,13 +180,13 @@ export class SQLEvent extends Event {
   protected static async readParticipants(event: Event) {
     let rows = await (await getDatabase()).all(sql`
       SELECT
-        emailAddress, name, response
+        emailAddress, name, confirmed
       FROM eventParticipant
       WHERE eventID = ${event.dbID}
       `) as any;
     for (let row of rows) {
       try {
-        event.participants.add(new Participant(row.emailAddress, row.name, row.response));
+        event.participants.add(new Participant(row.emailAddress, row.name, row.confirmed));
       } catch (ex) {
         backgroundError(ex);
       }
