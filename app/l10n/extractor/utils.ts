@@ -109,7 +109,8 @@ export const extractComponent = (node, filename, onMessageExtracted) => {
   if (node.type === 'InlineComponent' && node.name === 'T') {
     const { start } = node; // FIXME: Find out why Loc is not printed here, causing this to be incorrect
     const { attributes } = node;
-    const message = attributes.find((a) => a.name === 'msg')?.value[0].data;
+    let messageNode = attributes.find((a) => a.name === 'msg')?.value[0];
+    let message = messageNode?.data ?? generateMessageFromTemplate(messageNode.expression);
     if (!message) {
       console.error(`Message not found for <T> in ${filename}`);
       return;
@@ -123,3 +124,12 @@ export const extractComponent = (node, filename, onMessageExtracted) => {
     });
   }
 };
+
+function generateMessageFromTemplate(node): string {
+  const rawQuasis = node.quasis.map((q) => q.value.raw);
+  let message = rawQuasis[0];
+  rawQuasis.slice(1).forEach((q, i) => {
+    message += `{${i}}${q}`;
+  });
+  return message;
+}
