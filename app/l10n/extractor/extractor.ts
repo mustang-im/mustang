@@ -56,7 +56,7 @@ async function writeResults() {
   }
 
   let existingKeys = Object.keys(existingMessages);
-  let newKeys = Object.keys(JSON.parse(sourceJSON)).filter((k) => existingKeys.includes(k));
+  let newKeys = Object.keys(JSON.parse(sourceJSON)).filter((k) => !existingKeys.includes(k));
 
   console.log(`${newKeys.length} new strings extracted.`);
 }
