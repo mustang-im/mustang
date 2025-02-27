@@ -81,7 +81,7 @@ function formatMessageSimple(messages: any[], existingMessages: any) {
   return JSON.stringify(obj, null, 2);
 }
 
-function formatMessageDetailed(messages: any[], existingMessages: any){
+function formatMessageByFile(messages: any[], existingMessages: any){
   let sources = new Set<string>();
   let obj = {};
   for (let message of messages) {
