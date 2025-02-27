@@ -1,4 +1,5 @@
 import type { Calendar } from "./Calendar";
+import type { Participant } from "./Participant";
 import type { RecurrenceRule } from "./RecurrenceRule";
 import { ResponseType, type Responses } from "./Invitation";
 import { Observable, notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
