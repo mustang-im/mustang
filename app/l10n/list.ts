@@ -55,3 +55,5 @@ export const localeNames = {
 export const locales = Object.keys(localeNames);
 
 export const rtlLocales = [ 'ar', 'fa', 'he', 'ur' ];
+
+export const commentSymbol = " *=> ";
