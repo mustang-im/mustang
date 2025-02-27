@@ -6,7 +6,7 @@ export default class OWACreateOffice365EventRequest extends OWACreateItemRequest
     RequestServerVersion: "V2018_01_08",
   };
 
-  get type() {
+  get action() {
     return "CreateCalendarEvent";
   }
 }

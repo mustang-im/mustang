@@ -90,7 +90,7 @@ class OWAGetAccessTokenforResourceRequest {
     this.Resource = url;
   }
 
-  get type() {
+  get action() {
     return "GetAccessTokenforResource";
   }
 }
