@@ -26,5 +26,5 @@
 
 <!-- No newlines, to avoid whitespaces inserted into the string -->
 {strings[0] ?? ''}<slot />{strings[1] ?? ''}<slot name="2" />{strings[2] ?? ''}<slot
-ame="3" />{strings[3] ?? ''}<slot name="4" />{strings[4] ?? ''}<slot
+name="3" />{strings[3] ?? ''}<slot name="4" />{strings[4] ?? ''}<slot
 name="5" />{strings[5] ?? ''}
