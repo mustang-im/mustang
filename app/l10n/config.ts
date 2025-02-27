@@ -3,6 +3,7 @@ import { webMail, includeProprietary } from "../logic/build";
 import { sourceLocale, locales } from "./list";
 
 export default {
+  commentSymbol: " *=> ",
   include: [
     "frontend/**/*.{ts,js,svelte}",
     "logic/**/*.{ts,js}",

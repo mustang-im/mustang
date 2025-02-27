@@ -5,6 +5,7 @@
 /** @typedef {{ match(filename: string) => boolean, extract(filename: string, code: string, onMessageExtracted: (msg: ExtractedMessage) => void, ctx?: ExtractorCtx)=> Promise<void> | void }} ExtractorType */
 
 import { generateMessageID } from '../generateMessageID';
+import config from '../config';
 
 export const extractFromTaggedTemplate = (node, filename, onMessageExtracted) => {
   // `node.quasi.loc` is for extraction from svelte files, and `node.quasi` is for extraction from js/ts files
@@ -14,9 +15,11 @@ export const extractFromTaggedTemplate = (node, filename, onMessageExtracted) =>
   rawQuasis.slice(1).forEach((q, i) => {
     message += `{${i}}${q}`;
   });
+  let segments = message.split(config.commentSymbol);
   onMessageExtracted({
-    id: generateMessageID(message),
-    message,
+    id: generateMessageID(segments[0], segments[1]),
+    message: segments[0],
+    comment: segments[1],
     origin: [filename, start.line, start.column],
     placeholders: {},
   });

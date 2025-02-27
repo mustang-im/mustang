@@ -33,7 +33,7 @@ async function writeResults() {
   let existingMessages = JSON.parse((await readFile(join(cwd(), sourceFile))).toString());
   let templateFile = join(dirname(sourceFile), config.templateFile);
   
-  let templateJSON = formatMessageDetailed(strings, existingMessages);
+  let templateJSON = formatMessageWithComment(strings, existingMessages);
   await writeFile(join(cwd(), templateFile), templateJSON);
 
   let sourceJSON = formatMessageSimple(strings, existingMessages);
@@ -81,7 +81,7 @@ function formatMessageSimple(messages: any[], existingMessages: any) {
   return JSON.stringify(obj, null, 2);
 }
 
-function formatMessageByFile(messages: any[], existingMessages: any){
+function formatMessageByFile(messages: any[], existingMessages: any) {
   let sources = new Set<string>();
   let obj = {};
   for (let message of messages) {
@@ -95,6 +95,26 @@ function formatMessageByFile(messages: any[], existingMessages: any){
       srcObj[message.id] = existingMessages[message.id] ?? message.message;
     }
     obj[source] = srcObj;
+  }
+  return JSON.stringify(obj, null, 2);
+}
+
+function formatMessageWithComment(messages: any[], existingMessages: any) {
+  let msgs: any[] = [];
+  for (let message of messages) {
+    msgs.push({
+      id: message.id,
+      message: existingMessages[message.id] ?? message.message,
+      description: message.comment ?? undefined,
+    });
+  }
+  msgs.sort((a, b) => a.message.localeCompare(b.message));
+  let obj = {};
+  for (let message of msgs) {
+    obj[message.id] = {
+      message: message.message,
+      description: message.description,
+    };
   }
   return JSON.stringify(obj, null, 2);
 }
