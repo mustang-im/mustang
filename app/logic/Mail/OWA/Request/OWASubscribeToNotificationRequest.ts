@@ -22,7 +22,7 @@ export default class OWASubscribeToNotificationRequest {
     },
   }];
 
-  get type() {
+  get action() {
     return "SubscribeToNotification";
   }
 }

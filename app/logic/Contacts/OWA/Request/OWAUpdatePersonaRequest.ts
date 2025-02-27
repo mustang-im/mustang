@@ -28,7 +28,7 @@ export default class OWAUpdatePersonaRequest {
     }));
   }
 
-  get type() {
+  get action() {
     return "UpdatePersona";
   }
 }

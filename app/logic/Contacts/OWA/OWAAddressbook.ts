@@ -121,7 +121,7 @@ export class OWAAddressbook extends Addressbook {
 }
 
 class OWAGetPeopleFiltersRequest {
-  get type() {
+  get action() {
     return "GetPeopleFilters";
   }
 }
@@ -136,7 +136,7 @@ class OWAGetNotesForPersonaRequest {
     this.getNotesForPersonaRequest.PersonaId = id;
   }
 
-  get type() {
+  get action() {
     return "GetNotesForPersona";
   }
 }
@@ -164,7 +164,7 @@ class OWAGetGroupInfoRequest {
     this.getGroupInfoRequest.ItemId.Id = id;
   }
 
-  get type() {
+  get action() {
     return "GetGroupInfo";
   }
 }

@@ -10,7 +10,7 @@ export default class OWADeletePersonaRequest {
     this.request.ItemIds[0].Id = id;
   }
 
-  get type() {
+  get action() {
     return "DeletePersonas";
   }
 }

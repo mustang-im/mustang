@@ -32,7 +32,7 @@ export default class OWACreatePersonaRequest {
     }));
   }
 
-  get type() {
+  get action() {
     return "CreatePersona";
   }
 }
