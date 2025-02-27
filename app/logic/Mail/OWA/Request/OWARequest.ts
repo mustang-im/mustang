@@ -11,7 +11,7 @@ export default class OWARequest {
    * @param body Body
    */
   constructor(type: string, body?: any) {
-    this.__type = type + ":#Exchange";
+    this.__type = type + "JsonRequest:#Exchange";
     this.Body = body;
   }
 }
