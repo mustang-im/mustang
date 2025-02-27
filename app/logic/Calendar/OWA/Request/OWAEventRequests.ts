@@ -3,7 +3,7 @@ import type { OWAEvent } from "../OWAEvent";
 
 export function owaGetEventsRequest(eventIDs: string[]): OWARequest {
   return new OWARequest("GetItemJsonRequest", {
-    __type: "GetItemJsonRequest:#Exchange",
+    __type: "GetItemRequest:#Exchange",
     ItemShape: {
       __type: "ItemResponseShape:#Exchange",
       BaseShape: "Default",
