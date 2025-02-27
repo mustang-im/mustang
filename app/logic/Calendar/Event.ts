@@ -8,6 +8,7 @@ import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/conv
 import { Observable, notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/Lock";
 import { assert, randomID } from "../util/util";
+import { backgroundError } from "../../frontend/Util/error";
 import { ArrayColl } from "svelte-collections";
 
 export class Event extends Observable {
@@ -26,8 +27,12 @@ export class Event extends Observable {
     if (this._text != null) {
       return this._text;
     }
-    if (this._rawHTML != null) {
-      return this._text = convertHTMLToText(this._rawHTML);
+    try {
+      if (this._rawHTML != null) {
+        return this._text = convertHTMLToText(this._rawHTML);
+      }
+    } catch (ex) {
+      backgroundError(ex);
     }
     return "";
   }
@@ -62,11 +67,15 @@ export class Event extends Observable {
     if (this._sanitizedHTML != null) {
       return this._sanitizedHTML;
     }
-    if (this._rawHTML != null) {
-      return this._sanitizedHTML = sanitizeHTML(this._rawHTML);
-    }
-    if (this._text != null) {
-      return this._sanitizedHTML = convertTextToHTML(this._text);
+    try {
+      if (this._rawHTML != null) {
+        return this._sanitizedHTML = sanitizeHTML(this._rawHTML);
+      }
+      if (this._text != null) {
+        return this._sanitizedHTML = convertTextToHTML(this._text);
+      }
+    } catch (ex) {
+      backgroundError(ex);
     }
     return "";
   }
