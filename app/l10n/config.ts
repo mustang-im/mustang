@@ -12,6 +12,7 @@ export default {
   templateFile: "messages.template.json",
   sourceLocale: sourceLocale,
   locales: locales,
+  // Add necessary preprocessors from vite.config.ts
   preprocessors: [
     conditionalCompile({
       // <https://github.com/LZS911/vite-plugin-conditional-compile/blob/master/README.md>
