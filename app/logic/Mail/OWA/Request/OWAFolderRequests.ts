@@ -148,7 +148,7 @@ export function owaDownloadMsgsRequest(messages: OWAEMail[]): OWARequest {
 }
 
 export function owaMoveOrCopyMsgsIntoFolderRequest(action: "Move" | "Copy", folderID: string, messages: OWAEMail[]): OWARequest {
-  return new OWARequest("ItemJsonRequest", {
+  return new OWARequest(action + "ItemJsonRequest", {
     __type: action + "ItemRequest:#Exchange",
     ItemIds: messages.map(message => ({
       __type: "ItemId:#Exchange",
