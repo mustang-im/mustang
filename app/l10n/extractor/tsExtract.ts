@@ -12,11 +12,15 @@ export function tsExtract(code: string, filename: string) {
     loc: true,
   });
 
-  walk(ast, {
-    enter(node, _parent, _prop, _index) {
-      extractTags(['gt', 'msg'], node, filename, onMessageExtracted);
-      extractPlurals(['gPlural'], node, filename, onMessageExtracted);
-      extractPluralMessages(['msgPlural'], node, filename, onMessageExtracted);
-    },
-  });
+  try {
+    walk(ast, {
+      enter(node, _parent, _prop, _index) {
+        extractTags(['gt', 'msg'], node, filename, onMessageExtracted);
+        extractPlurals(['gPlural'], node, filename, onMessageExtracted);
+        extractPluralMessages(['msgPlural'], node, filename, onMessageExtracted);
+      },
+    });
+  } catch (ex) {
+    console.error(ex);
+  }
 }

@@ -13,11 +13,14 @@ export const strings: any[] = [];
 await extractStrings();
 
 async function extractStrings() {
-  let files = await glob(config.include, { cwd: cwd() });
+  let files = await glob(config.include, { cwd: cwd(), ignore: config.exclude });
   for (let file of files) {
     let content = (await readFile(file)).toString();
     if (!content) {
       throw new Error("File not found: " + files[file]);
+    }
+    for (let processor of config.preprocessors) {
+      content = (await processor.transform(content, file)).code;
     }
     await svelteExtract(content, file);
     tsExtract(content, file);
