@@ -186,7 +186,7 @@ export function gt(descriptor, ...args) {
   });
   let segments: string[] = str.split(config.commentSymbol);
   let msg: MessageDescriptor = {
-    id: generateMessageID(segments[0]),
+    id: generateMessageID(segments[0], segments[1]),
     defaultMessage: segments[0],
     description: segments[1],
   }
