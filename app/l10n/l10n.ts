@@ -3,7 +3,7 @@ import { derived, writable } from "svelte/store";
 import { generateMessageID } from "./generateMessageID";
 import { sanitize } from '../../lib/util/sanitizeDatatypes';
 
-import { sourceLocale } from './list';
+import { commentSymbol, sourceLocale } from './list';
 
 import en from './locales/en/messages.json';
 import de from './locales/de/messages.json';
@@ -183,9 +183,11 @@ export function gt(descriptor, ...args) {
   args.forEach((_arg, i) => {
     str += `{${i}}` + descriptor[i + 1];
   });
+  let segments: string[] = str.split(commentSymbol);
   let msg: MessageDescriptor = {
-    id: generateMessageID(str),
-    defaultMessage: str,
+    id: generateMessageID(segments[0], segments[1]),
+    defaultMessage: segments[0],
+    description: segments[1],
   }
   let values = { ...args };
 

@@ -1,9 +1,9 @@
 <div>
   <T msg={`You can find the source code of ${appName} core at # under an #.`}>
-    <!-- Slot 0 doesn't need explicit declaration `slot="0"`, it breaks the code. -->
+    <!-- Slot 1 doesn't need explicit declaration `slot="1"`, it breaks the code. -->
     <a href="https://github.com/mustang-im/mustang" target="_blank">GitHub</a>
-    <!-- Slot 1 -->
-    <a href="https://raw.githubusercontent.com/mustang-im/mustang/master/LICENSE" target="_blank" slot="1">{$t`Open-Source license`}</a>
+    <!-- Slot 2 -->
+    <a href="https://raw.githubusercontent.com/mustang-im/mustang/master/LICENSE" target="_blank" slot="2">{$t`Open-Source license`}</a>
   </T>
 </div>
 <div>

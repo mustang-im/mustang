@@ -1,7 +1,7 @@
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import { defineConfig } from 'vite'
 import { nodePolyfills } from "vite-plugin-node-polyfills";
-import { svelte } from '@sveltejs/vite-plugin-svelte'
+import { svelte } from '@sveltejs/vite-plugin-svelte';
 import conditionalCompile from "vite-plugin-conditional-compile";
 import { olm } from './build/olm';
 import { webMail, includeProprietary } from './logic/build';
