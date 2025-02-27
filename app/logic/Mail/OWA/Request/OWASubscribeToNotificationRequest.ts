@@ -1,6 +1,11 @@
-import OWARequest from "./OWARequest";
-
-export default class OWASubscribeToNotificationRequest extends OWARequest {
+export default class OWASubscribeToNotificationRequest {
+  readonly request = {
+    __type: "NotificationSubscriptionJsonRequest:#Exchange",
+    Header: {
+      __type: "JsonRequestHeaders:#Exchange",
+      RequestServerVersion: "Exchange2013",
+    },
+  };
   readonly subscriptionData = [{
     __type: "SubscriptionData:#Exchange",
     SubscriptionId: "HierarchyNotification",
@@ -19,9 +24,5 @@ export default class OWASubscribeToNotificationRequest extends OWARequest {
 
   get type() {
     return "SubscribeToNotification";
-  }
-
-  constructor() {
-    super("NotificationSubscribeJsonRequest");
   }
 }
