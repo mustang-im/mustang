@@ -45,7 +45,7 @@ export class OWAEvent extends Event {
 
   fromJSON(json: any) {
     this.itemID = sanitize.nonemptystring(json.ItemId.Id);
-    this.calUID = sanitize.nonemptystring(json.UID, null);
+    this.calUID = sanitize.alphanumdash(json.UID, null);
     this.title = sanitize.nonemptystring(json.Subject, "");
     if (json.Body?.BodyType == "Text") {
       this.descriptionText = sanitize.nonemptystring(json.Body.Value, "");

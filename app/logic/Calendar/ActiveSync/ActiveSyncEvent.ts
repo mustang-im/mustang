@@ -31,7 +31,7 @@ export class ActiveSyncEvent extends Event {
   }
 
   fromWBXML(wbxmljs) {
-    this.calUID = sanitize.nonemptystring(wbxmljs.UID, null);
+    this.calUID = sanitize.alphanumdash(wbxmljs.UID, null);
     this.title = sanitize.nonemptystring(wbxmljs.Subject, "");
     if (wbxmljs.Body?.Type == "2") {
       this.descriptionHTML = sanitize.nonemptystring(wbxmljs.Body.Data, "");
