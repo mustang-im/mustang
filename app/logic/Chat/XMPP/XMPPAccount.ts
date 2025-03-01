@@ -35,6 +35,9 @@ export class XMPPAccount extends ChatAccount {
         bosh: `https://${serverDomain}:5281/http-bind`,
       }
     });
+    this.client.on("*", console.log);
+    this.client.on("raw:*", (direction, log) => console.log(direction, log));
+    this.client.on("error", console.error);
     await this.client.connect();
     this.waitForEvent("session:started");
     await this.getRoster();
