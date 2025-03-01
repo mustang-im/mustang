@@ -40,6 +40,7 @@ export class XMPPAccount extends ChatAccount {
     this.client.on("error", console.error);
     await this.client.connect();
     this.waitForEvent("session:started");
+    console.log("logged in", this.jid);
     await this.getRoster();
     let presence = await this.client.sendPresence();
 
