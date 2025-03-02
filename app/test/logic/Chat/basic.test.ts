@@ -1,9 +1,6 @@
 import { newChatAccountForProtocol } from '../../../logic/Chat/AccountsList/ChatAccounts';
 import { kChatAccounts } from './logins';
-import { connectToBackend, stopBackend } from '../util/backend.test';
-import { afterAll, beforeAll, expect, test } from 'vitest';
-
-beforeAll(connectToBackend);
+import { test } from 'vitest';
 
 test.each(kChatAccounts)("Test $protocol account $username", async (config) => {
   if (config.disabled) { // <https://github.com/jestjs/jest/issues/7695>
@@ -16,5 +13,3 @@ test.each(kChatAccounts)("Test $protocol account $username", async (config) => {
 
   await acc.login(false);
 });
-
-afterAll(stopBackend);
