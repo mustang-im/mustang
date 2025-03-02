@@ -8,6 +8,7 @@ import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
 import { Buffer } from "buffer";
 import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
+import { CreateMIME } from "../SMTP/CreateMIME";
 
 export class IMAPFolder extends Folder {
   account: IMAPAccount;
@@ -541,7 +542,7 @@ export class IMAPFolder extends Folder {
   }
 
   async addMessage(message: EMail) {
-    assert(message.mime, "Call loadMIME() first");
+    message.mime ??= await CreateMIME.getMIME(message);
     await this.runCommand(async (conn) => {
       await conn.append(this.path, Buffer.from(message.mime), IMAPEMail.getIMAPFlags(message), message.received);
     });
