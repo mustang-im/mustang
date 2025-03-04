@@ -1,4 +1,4 @@
-<hbox class="window-header" class:mac={isMacOS}>
+<hbox class="window-header" class:mac>
   <vbox class="app-logo">
     {#if appName == "Mustang"}
     <Icon data={logo} size="20px" />
@@ -33,17 +33,13 @@
   import MinimizeIcon from 'lucide-svelte/icons/minus';
   import XIcon from 'lucide-svelte/icons/x';
   import { getOSName } from "../Util/util";
+  import { webMail } from "../../logic/build";
   import { t } from "../../l10n/l10n";
 
   export let selectedApp: MustangApp;
 
-  // #if [WEBMAIL]
-  // @ts-ignore
-  const isMacOS = false; // don't style for Web Mail
-  // #else
-  // @ts-ignore
-  const isMacOS = getOSName() == "macintosh" ? true : false;
-  // #endif
+  // Enable Mac Styles
+  const mac = (!webMail && getOSName() == "macintosh") ? true : false;
 
   function onMinimize() {
     appGlobal.remoteApp.minimizeMainWindow();
