@@ -46,10 +46,6 @@ linux:
   maintainer: Mustang
   # <https://specifications.freedesktop.org/menu-spec/latest/additional-category-registry.html>
   category: Email
-  icon: icon.png
-  extraResources:
-    - from: 'build/icon.png'
-      to: 'icon.png'
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: true
