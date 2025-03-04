@@ -16,11 +16,12 @@
     "build": "electron-vite build",
     "build:win": "npm run build && electron-builder --win --config",
     "build:mac": "npm run build && electron-builder --mac --config",
-    "build:linux": "npm run build && electron-builder --linux --config",
+    "build:linux": "npm run build && npm run icon:icns && electron-builder --linux --config",
     "build:release:win": "npm run build && electron-builder --win --config --publish always",
     "build:release:mac": "npm run build && electron-builder --mac --config --publish always",
     "build:release:linux": "npm run build && electron-builder --linux --config --publish always",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "icon:icns": "npx icon-gen --input build/icon.png --output build --icns --icns-name icon"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^2.0.0",
@@ -46,6 +47,7 @@
     "eslint": "^8.47.0",
     "eslint-plugin-svelte": "^2.32.4",
     "i18n": "^0.8.3",
+    "icon-gen": "^5.0.0",
     "node-gyp": "^11.1.0",
     "prettier": "^3.0.2",
     "prettier-plugin-svelte": "^3.0.3",

@@ -46,6 +46,7 @@ linux:
   maintainer: Mustang
   # <https://specifications.freedesktop.org/menu-spec/latest/additional-category-registry.html>
   category: Email
+  icon: build/icon.icns
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: true
