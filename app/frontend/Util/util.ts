@@ -39,3 +39,21 @@ export async function stringToDataURL(mimetype: string, content: string): Promis
     reader.readAsDataURL(new Blob([bytes], { type: mimetype + ";charset=utf-8" }));
   });
 }
+
+/**
+ * Gets the OS using the userAgent string.
+ * @returns os name
+ */
+export function getOSName() {
+  let userAgent = navigator.userAgent.toLocaleLowerCase();
+  if (userAgent.includes("windows")) {
+    return "windows";
+  }
+  if (userAgent.includes("macintosh")) {
+    return "macintosh";
+  }
+  if (userAgent.includes("linux")) {
+    return "linux";
+  }
+  return "unknown";
+}
