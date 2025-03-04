@@ -2,17 +2,21 @@ import { Account } from "../Abstract/Account";
 import { MailIdentity } from "./MailIdentity";
 import { Folder, SpecialFolder } from "./Folder";
 import type { EMail } from "./EMail";
+import { Event } from "../Calendar/Event";
+import { Participant } from "../Calendar/Participant";
+import { ResponseType, type Responses } from "../Calendar/Invitation";
 import type { Person } from "../Abstract/Person";
 import { FilterRuleAction } from "./FilterRules/FilterRuleAction";
 import { OAuth2 } from "../Auth/OAuth2";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { AbstractFunction, type URLString } from "../util/util";
+import { assert, AbstractFunction, type URLString } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
 import { Collection, ArrayColl, MapColl } from 'svelte-collections';
 
 export class MailAccount extends Account {
   readonly protocol: string = "mail";
+  readonly canSendInvitations: boolean = true;
   @notifyChangedProperty
   hostname: string | null = null; /** only for some account types */
   @notifyChangedProperty
@@ -79,7 +83,26 @@ export class MailAccount extends Account {
 
   async send(email: EMail): Promise<void> {
     throw new AbstractFunction();
-  };
+  }
+
+  async sendInvitationResponse(invitation: Event, response: Responses): Promise<void> {
+    let organizer = invitation.participants.find(participant => participant.response == ResponseType.Organizer);
+    assert(organizer, "Invitation should have an organizer");
+    let email = this.newEMailFrom();
+    email.to.add(organizer);
+    email.method = "REPLY";
+    email.event = new Event();
+    email.event.copyFrom(invitation);
+    email.event.startTime = invitation.startTime;
+    email.event.endTime = invitation.startTime;
+    email.event.recurrenceRule = invitation.recurrenceRule;
+    email.event.participants.replaceAll([new Participant(this.emailAddress, null, response)]);
+    if (email.event.descriptionText) {
+      email.text = email.event.descriptionText;
+      email.html = email.event.descriptionHTML;
+    }
+    await this.send(email);
+  }
 
   /** Create a folder on the top level, sibling of Inbox.
    * @see Folder.createSubFolder() */
