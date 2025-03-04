@@ -39,10 +39,10 @@
 
   // #if [WEBMAIL]
   // @ts-ignore
-  let isMacOS = false; // don't style for Web Mail
+  const isMacOS = false; // don't style for Web Mail
   // #else
   // @ts-ignore
-  let isMacOS = getOSName() == "macintosh" ? true : false;
+  const isMacOS = getOSName() == "macintosh" ? true : false;
   // #endif
 
   function onMinimize() {
