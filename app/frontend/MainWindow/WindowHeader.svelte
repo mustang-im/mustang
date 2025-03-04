@@ -102,6 +102,7 @@
     color: var(--inverted-fg);
   }
 
+  /* Styles for Mac */
   .mac .app-logo {
     margin-inline-start: 80px;
     width: 15px;
