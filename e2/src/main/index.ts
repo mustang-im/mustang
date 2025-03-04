@@ -17,7 +17,7 @@ function createWindow(): void {
       height: 950,
       show: false,
       autoHideMenuBar: true,
-      titleBarStyle: process.platform == 'darwin'? 'hiddenInset' : 'customButtonsOnHover',
+      titleBarStyle: process.platform == 'darwin' ? 'hiddenInset' : 'customButtonsOnHover',
       titleBarOverlay: true,
       frame: false,
       ...(process.platform === 'linux' ? { icon } : {}),
