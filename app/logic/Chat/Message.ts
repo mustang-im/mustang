@@ -11,6 +11,7 @@ export class ChatMessage extends Message {
   constructor(chat: Chat) {
     super();
     this.to = chat;
+    this.contact = chat.contact;
   }
 }
 

@@ -5,8 +5,9 @@ import { Chat } from "./Chat";
 import type { ChatMessage } from "./Message";
 import { TLSSocketType } from "../Mail/MailAccount";
 import { appGlobal } from "../app";
-import { ArrayColl, MapColl } from 'svelte-collections';
+import { AbstractFunction } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
+import { ArrayColl, MapColl } from 'svelte-collections';
 
 export class ChatAccount extends Account {
   readonly protocol: string = "chat";
@@ -23,6 +24,10 @@ export class ChatAccount extends Account {
 
   @notifyChangedProperty
   isOnline = false;
+
+  async listChats(): Promise<void> {
+    throw new AbstractFunction();
+  }
 
   newChat(): Chat {
     return new Chat(this);

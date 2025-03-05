@@ -1,8 +1,10 @@
 import { ChatMessage, DeliveryStatus, UserChatMessage } from "./Message";
 import type { ChatAccount } from "./ChatAccount";
 import type { Contact } from "../Abstract/Contact";
+import type { ChatPerson } from "./Person";
 import { Group } from "../Abstract/Group";
 import { Observable, notifyChangedProperty } from "../util/Observable";
+import { AbstractFunction } from "../util/util";
 import { ArrayColl } from 'svelte-collections';
 
 export class Chat extends Observable {
@@ -14,6 +16,10 @@ export class Chat extends Observable {
   contact: Contact;
   @notifyChangedProperty
   _name: string;
+  /** The people in this chat room.
+   * If this is a 1:1 chat, contains only 1.
+   * Not including our own user. */
+  readonly members = new ArrayColl<ChatPerson>();
   /** The messages in this chat room.
    * This is also used for the MailChat view, so this may also contain EMails */
   readonly messages = new ArrayColl<ChatMessage>();
@@ -41,6 +47,14 @@ export class Chat extends Observable {
   }
   get picture(): string {
     return this.contact.picture;
+  }
+
+  async listMembers(): Promise<void> {
+    throw new AbstractFunction();
+  }
+
+  async listMessages(): Promise<void> {
+    throw new AbstractFunction();
   }
 
   /** Our user wants to send this message out.

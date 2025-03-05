@@ -3,6 +3,7 @@ import { notifyChangedProperty, Observable } from '../util/Observable';
 import { ArrayColl } from 'svelte-collections';
 
 export class Person extends ContactBase {
+  id: string;
   @notifyChangedProperty
   firstName: string | null;
   @notifyChangedProperty
