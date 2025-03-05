@@ -1,31 +1,30 @@
 import { ChatMessage, DeliveryStatus, UserChatMessage } from "./Message";
-import type { Message } from "../Abstract/Message";
+import type { ChatAccount } from "./ChatAccount";
 import type { Contact } from "../Abstract/Contact";
-import type { Account } from "../Abstract/Account";
 import { Group } from "../Abstract/Group";
-import { ArrayColl } from 'svelte-collections';
 import { Observable, notifyChangedProperty } from "../util/Observable";
+import { ArrayColl } from 'svelte-collections';
 
 export class Chat extends Observable {
   /** Protocol-specific ID. For Matrix, it's the event_id */
   id: string;
   dbID: number;
-  account: Account;
+  account: ChatAccount;
   @notifyChangedProperty
   contact: Contact;
   @notifyChangedProperty
   _name: string;
   /** The messages in this chat room.
    * This is also used for the MailChat view, so this may also contain EMails */
-  readonly messages = new ArrayColl<Message>();
+  readonly messages = new ArrayColl<ChatMessage>();
   @notifyChangedProperty
-  lastMessage: Message = null; // Calculating this would be very slow
+  lastMessage: ChatMessage = null; // Calculating this would be very slow
   /** Message that our user is currently composing, to this chat room */
   @notifyChangedProperty
   draftMessage: string;
   syncState: string | null = null;
 
-  constructor(account: Account) {
+  constructor(account: ChatAccount) {
     super();
     this.account = account;
   }
@@ -52,7 +51,7 @@ export class Chat extends Observable {
     throw new Error("not implemented for this protocol");
   }
 
-  newMessage(): Message {
+  newMessage(): ChatMessage {
     return new ChatMessage(this);
   }
 }
