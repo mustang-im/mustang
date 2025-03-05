@@ -94,19 +94,29 @@ export class ActiveSyncAccount extends MailAccount {
 
     await this.listFolders();
 
-    for (let addressbook of appGlobal.addressbooks) {
-      if (addressbook.protocol == "addressbook-activesync" && addressbook.url.startsWith(this.url + "?") && addressbook.username == this.username) {
-        (addressbook as ActiveSyncAddressbook).account = this;
-        await (addressbook as ActiveSyncAddressbook).listContacts();
-      }
+    let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.protocol == "addressbook-activesync" && addressbook.url.startsWith(this.url + "?") && addressbook.username == this.username) as ActiveSyncAddressbook | void;
+    if (!addressbook) {
+      addressbook = newAddressbookForProtocol("addressbook-activesync") as ActiveSyncAddressbook;
+      addressbook.name = this.name;
+      addressbook.url = this.url;
+      addressbook.username = this.emailAddress;
+      addressbook.workspace = this.workspace;
+      appGlobal.addressbooks.add(addressbook);
     }
+    addressbook.account = this;
+    await addressbook.listContacts();
 
-    for (let calendar of appGlobal.calendars) {
-      if (calendar.protocol == "calendar-activesync" && calendar.url.startsWith(this.url + "?") && calendar.username == this.username) {
-        (calendar as ActiveSyncCalendar).account = this;
-        await (calendar as ActiveSyncCalendar).listEvents();
-      }
+    let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.protocol == "calendar-activesync" && calendar.url.startsWith(this.url + "?") && calendar.username == this.username) as ActiveSyncCalendar | void;
+    if (!calendar) {
+      calendar = newCalendarForProtocol("calendar-activesync") as ActiveSyncCalendar;
+      calendar.name = this.name;
+      calendar.url = this.url;
+      calendar.username = this.emailAddress;
+      calendar.workspace = this.workspace;
+      appGlobal.calendars.add(calendar);
     }
+    calendar.account = this;
+    await calendar.listEvents();
   }
 
   async logout(): Promise<void> {
