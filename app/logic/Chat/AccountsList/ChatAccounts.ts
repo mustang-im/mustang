@@ -1,5 +1,8 @@
 import { ChatAccount } from '../ChatAccount';
 import { XMPPAccount } from '../XMPP/XMPPAccount';
+// #if [!WEBMAIL && PROPRIETARY]
+import { GraphChatAccount } from '../Graph/GraphChatAccount';
+// #endif
 // #if [!WEBMAIL]
 import { MatrixAccount } from '../Matrix/MatrixAccount';
 import { SQLChatStorage } from '../SQL/SQLChatStorage';
@@ -28,6 +31,11 @@ function _newChatAccountForProtocol(protocol: string): ChatAccount {
     return new MatrixAccount() as any as ChatAccount;
   } else if (protocol == "chat") {
     return new ChatAccount() as any as ChatAccount;
+  }
+  // #endif
+  // #if [!WEBMAIL && PROPRIETARY]
+  if (protocol == "chat-graph") {
+    return new GraphChatAccount();
   }
   // #endif
   throw new NotReached(`Unsupported chat account type ${protocol}`);
