@@ -1,8 +1,10 @@
 import { Calendar } from '../Calendar';
-// #if [!WEBMAIL]
+// #if [!WEBMAIL && PROPRIETARY]
 import { EWSCalendar } from '../EWS/EWSCalendar';
 import { OWACalendar } from '../OWA/OWACalendar';
 import { ActiveSyncCalendar } from '../ActiveSync/ActiveSyncCalendar';
+// #endif
+// #if [!WEBMAIL]
 import { SQLCalendarStorage } from '../SQL/SQLCalendarStorage';
 // #else
 import { DummyCalendarStorage } from '../SQL/DummyCalendarStorage';

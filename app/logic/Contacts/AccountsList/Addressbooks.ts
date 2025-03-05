@@ -1,8 +1,10 @@
 import { Addressbook } from '../Addressbook';
-// #if [!WEBMAIL]
+// #if [!WEBMAIL && PROPRIETARY]
 import { EWSAddressbook } from '../EWS/EWSAddressbook';
 import { OWAAddressbook } from '../OWA/OWAAddressbook';
 import { ActiveSyncAddressbook } from '../ActiveSync/ActiveSyncAddressbook';
+// #endif
+// #if [!WEBMAIL]
 import { SQLAddressbookStorage } from '../SQL/SQLAddressbookStorage';
 // #else
 import { DummyAddressbookStorage } from '../SQL/DummyAddressbookStorage';
