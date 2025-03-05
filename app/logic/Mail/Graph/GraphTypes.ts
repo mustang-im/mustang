@@ -15,9 +15,9 @@ export interface TGraphAPICallError {
 
 /** <https://learn.microsoft.com/en-us/graph/api/resources/mailfolder> */
 export interface TGraphFolder {
-  id: string,
+  id: UUID,
   displayName: string,
-  parentFolderId: string,
+  parentFolderId: UUID,
   wellKnownName: string, // only available in beta
   childFolderCount: number,
   unreadItemCount: number,
@@ -29,15 +29,15 @@ export interface TGraphFolder {
 
 /** <https://learn.microsoft.com/en-us/graph/api/resources/message> */
 export interface TGraphEMail {
-  id: string,
-  parentFolderId?: string,
-  conversationId?: string,
+  id: IDString,
+  parentFolderId?: IDString,
+  conversationId?: IDString,
   conversationIndex?: string,
   subject: string,
-  createdDateTime?: string,
-  sentDateTime?: string,
-  receivedDateTime?: string,
-  lastModifiedDateTime?: string,
+  createdDateTime?: DateTimeString,
+  sentDateTime?: DateTimeString,
+  receivedDateTime?: DateTimeString,
+  lastModifiedDateTime?: DateTimeString,
   changeKey?: string,
   hasAttachments: boolean,
   isRead: boolean,
@@ -66,11 +66,11 @@ export interface TGraphEMail {
   webLink?: URLString,
   flag?: {
     flagStatus: "notFlagged" | "flagged" | "complete",
-    startDateTime: string,
-    dueDateTime: string,
-    completedDateTime: string,
+    startDateTime: DateTimeString,
+    dueDateTime: DateTimeString,
+    completedDateTime: DateTimeString,
   },
-  attachments?: TGraphAttachment[];
+  attachments?: TGraphMailAttachment[];
 }
 export const TGraphEMailHeaderProperties = [
   "id",
@@ -93,16 +93,16 @@ export const TGraphEMailHeaderProperties = [
   "flag",
 ];
 
-export interface TGraphAttachment {
-  id: string;
+export interface TGraphMailAttachment {
+  id: IDString;
   /** file name */
   name: string,
   /** MIME type */
-  contentType: string,
+  contentType: MIMEType,
   isInline: boolean,
   /** in bytes */
   size: number,
-  lastModifiedDateTime?: string,
+  lastModifiedDateTime?: DateTimeString,
   contentId: string,
   contentLocation?: null,
   /** content of the attachment
@@ -125,3 +125,13 @@ export interface TGraphPersonUID {
 
 export interface TGraphFolderChanges {
 }
+
+/** ISO date time string, with "Z" as timezone,
+ * e.g. "2023-01-04T11:24:48.999Z" */
+export type DateTimeString = string;
+/** E.g. "18e9526c-2286-41a1-aeeb-4badee766063" */
+export type UUID = string;
+/** E.g. "MGItNGEzM2E3OTZiZTMGItNGEzM2E3OTZiZTMGItNGEzM2E3OTZiZT" */
+export type IDString = string;
+/** E.g. "text/html" or "multipart/related" */
+export type MIMEType = string;

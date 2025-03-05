@@ -5,7 +5,7 @@ import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
 import { getTagByName, type Tag } from "../Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import type { TGraphEMail, TGraphPersonUID, TGraphEMailHeader, TGraphAttachment } from "./GraphTypes";
+import type { TGraphEMail, TGraphPersonUID, TGraphEMailHeader, TGraphMailAttachment } from "./GraphTypes";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { arrayRemove, assert, blobToBase64, NotReached } from "../../util/util";
@@ -45,6 +45,7 @@ export class GraphEMail extends EMail {
     setPersons(this.bcc, json.bccRecipients);
     this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from.emailAddress));
     this.contact = this.outgoing ? this.to.first : this.from;
+    // Content, attachments etc will be parsed from RFC822 MIME
   }
 
   setFlagsLocal(json: TGraphEMail) {
@@ -123,7 +124,7 @@ export class GraphEMail extends EMail {
       isRead: email.isRead,
       isDraft: email.isDraft,
       hasAttachments: email.attachments.hasItems,
-      attachments: [] as TGraphAttachment[],
+      attachments: [] as TGraphMailAttachment[],
     };
     for (let name of email.headers.contentKeys()) {
       e.internetMessageHeaders.push({

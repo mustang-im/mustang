@@ -66,13 +66,13 @@ export class GraphFolder extends Folder {
       } else if (nextURL) {
         hadNext = true;
         // nextURL already includes the $select. And ky searchParams would overwrite the skip token.
-        newMessagesJSON = await this.account.graphGet(nextURL) as TGraphEMail[];
+        newMessagesJSON = await this.account.graphGet<TGraphEMail>(nextURL);
       } else {
-        newMessagesJSON = await this.account.graphGet(`${this.path}/messages`, {
-          "$top": batchSize,
+        newMessagesJSON = await this.account.graphGet<TGraphEMail>(`${this.path}/messages`, {
+          top: batchSize,
           "$skip": i || undefined,
           "$select": TGraphEMailHeaderProperties.join(","),
-        }) as TGraphEMail[];
+        });
       }
       let extra = newMessagesJSON as any;
       nextURL = extra.nextURL;
@@ -97,38 +97,22 @@ export class GraphFolder extends Folder {
     if (!this.deltaURL) {
       return await this.listAllMessages();
     }
-    let allNewMessages = new ArrayColl<GraphEMail>();
-    let allMissingMessagesJSON = new ArrayColl<TGraphEMail>();
     let lock = await this.syncLock.lock();
     try {
-      let nextURL = this.deltaURL;
-      let i = 0;
-      while (nextURL) {
-        if (i++ > 30000) { // loop protection
-          return;
-        }
-        // <https://learn.microsoft.com/en-us/graph/delta-query-overview>
-        // deltaURL already includes the $select. And ky searchParams would overwrite the skip token.
-        let messagesJSON = await this.account.graphGet(this.deltaURL) as TGraphEMail[];
-        let extra = messagesJSON as any;
-        nextURL = extra.nextURL;
-        if (!nextURL) {
-          this.deltaURL = extra.deltaURL;
-        }
-
-        let { newMessages, missingMessagesJSON } = await this.processChangedMessages(messagesJSON);
-        allNewMessages.addAll(newMessages);
-        allMissingMessagesJSON.addAll(missingMessagesJSON);
-      }
+      // <https://learn.microsoft.com/en-us/graph/delta-query-overview>
+      // deltaURL already includes the $select. And ky searchParams would overwrite the skip token.
+      let messagesJSON = await this.account.graphGetAll<TGraphEMail>(this.deltaURL);
+      this.deltaURL = (messagesJSON as any).deltaURL;
+      let { newMessages, missingMessagesJSON } = await this.processChangedMessages(messagesJSON);
       await this.storage.saveFolderProperties(this);
 
-      if (allMissingMessagesJSON.hasItems) {
-        console.log("Missing", allMissingMessagesJSON.length, "messages, found during sync. Starting all message fetch again");
+      if (missingMessagesJSON.hasItems) {
+        console.log("Missing", missingMessagesJSON.length, "messages, found during sync. Starting all message fetch again");
          // TODO fetch only those messages
         await this.listAllMessages();
       }
 
-      return allNewMessages;
+      return newMessages;
     } finally {
       lock.release();
     }

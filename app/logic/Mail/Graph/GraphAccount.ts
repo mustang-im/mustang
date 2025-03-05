@@ -3,10 +3,14 @@ import { GraphFolder } from "./GraphFolder";
 import type { TGraphFolder } from "./GraphTypes";
 import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
+import type { GraphChatAccount } from "../../Chat/Graph/GraphChatAccount";
+import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
+import { newCalendarForProtocol } from "../../Calendar/AccountsList/Calendars";
+import { newChatAccountForProtocol } from "../../Chat/AccountsList/ChatAccounts";
 import { appGlobal } from "../../app";
 import { appName, appVersion } from "../../build";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, blobToBase64 } from "../../util/util";
+import { assert, blobToBase64, type URLString } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, MapColl } from "svelte-collections";
 import { CreateMIME } from "../SMTP/CreateMIME";
@@ -43,6 +47,44 @@ export class GraphAccount extends MailAccount {
     let inbox = this.inbox as GraphFolder;
     assert(inbox, "Inbox not found");
     inbox.startPolling();
+
+    /*
+    let addressbook = appGlobal.addressbooks.find((addressbook: GraphAddressbook) => addressbook.protocol == "addressbook-graph" && addressbook.url == this.url && addressbook.username == this.username) as GraphAddressbook | void;
+    if (!addressbook) {
+      addressbook = newAddressbookForProtocol("addressbook-graph") as GraphAddressbook;
+      addressbook.name = this.name;
+      addressbook.url = this.url;
+      addressbook.username = this.emailAddress;
+      addressbook.workspace = this.workspace;
+      appGlobal.addressbooks.add(addressbook);
+    }
+    addressbook.account = this;
+    await addressbook.listContacts();
+
+    let calendar = appGlobal.calendars.find((calendar: GraphCalendar) => calendar.protocol == "calendar-graph" && calendar.url == this.url && calendar.username == this.username) as GraphCalendar | void;
+    if (!calendar) {
+      calendar = newCalendarForProtocol("calendar-graph") as GraphCalendar;
+      calendar.name = this.name;
+      calendar.url = this.url;
+      calendar.username = this.emailAddress;
+      calendar.workspace = this.workspace;
+      appGlobal.calendars.add(calendar);
+    }
+    calendar.account = this;
+    await calendar.listEvents();
+    */
+
+    let chatAccount = appGlobal.chatAccounts.find((calendar: GraphChatAccount) => calendar.protocol == "chat-graph" && calendar.url == this.url && calendar.username == this.username) as GraphChatAccount | void;
+    if (!chatAccount) {
+      chatAccount = newChatAccountForProtocol("chat-graph") as GraphChatAccount;
+      chatAccount.name = this.name;
+      chatAccount.url = this.url;
+      chatAccount.username = this.emailAddress;
+      chatAccount.workspace = this.workspace;
+      appGlobal.chatAccounts.add(chatAccount);
+    }
+    chatAccount.account = this;
+    await chatAccount.listChats();
   }
 
   async verifyLogin(): Promise<void> {
@@ -64,8 +106,8 @@ export class GraphAccount extends MailAccount {
    * @param args URL query parameters. Will be appended after "?"
    * @returns The single object that the server returned in `.value`, or null
    */
-  async graphGet1(path: string, args?: Record<string, any>): Promise<Record<string, any> | null> {
-    let responses = await this.graphGet(path, args);
+  async graphGet1<T>(path: string, args?: Record<string, any>): Promise<T | null> {
+    let responses = await this.graphGet<T>(path, args);
     assert(responses.length > 1, this.name + ": " + `${path} returned multiple results, but only 1 was expected`);
     return responses[0];
   }
@@ -75,12 +117,14 @@ export class GraphAccount extends MailAccount {
    * @param args URL query parameters. Will be appended after "?". Optional.
    * @param options @see graphCall()
    * @returns The list of objects that the server returned in `.value`, as array
-   *   If not the entire list was returned, `.next` contains the URL to retrieve the next batch
-   *
+   *   If not the entire list was returned, `.nextURL` contains the URL to retrieve the next batch.
+   *   Otherwise, `.deltaURL` (optional) contains the URL to retrieve changes in the future.
    */
-  async graphGet(path: string, args?: Record<string, any>, options?: any): Promise<Record<string, any>[]> {
-    // Avoid using options.searchParams, because it deletes all existing ones in the URL
-    path = path + (path.includes("?") ? "&" : "?") + "$top=" + kMaxFetchCount;
+  async graphGet<T>(path: string, args?: Record<string, any>, options?: any): Promise<T[]> {
+    if (args?.top) {
+      // Avoid using options.searchParams, because it deletes all existing ones in the URL
+      path += (path.includes("?") ? "&" : "?") + "$top=" + args.top;
+    }
 
     let responses = await this.graphCall(path, options);
     let array = responses.value;
@@ -88,6 +132,32 @@ export class GraphAccount extends MailAccount {
     let extra = array as any;
     extra.nextURL = responses["@odata.nextLink"];
     extra.deltaURL = responses["@odata.deltaLink"];
+    return array;
+  }
+
+  /**
+   * Same as graphGet(), but when there are many results and only partial results are returned,
+   * iterate through the remaining results, to get all results, and then return them.
+   */
+  async graphGetAll<T>(path: string, args?: Record<string, any>, options?: any): Promise<T[]> {
+    let allResults = new ArrayColl<T>();
+    let firstResults = await this.graphGet<T>(path, args, options);
+    allResults.addAll(firstResults);
+    let deltaURL: URLString;
+    let i = 0;
+    let nextURL = (firstResults as any).nextURL;
+    while (nextURL) {
+      if (i++ > 30000) { // loop protection
+        return;
+      }
+      // nextURL already includes the $select. And ky searchParams would overwrite the skip token.
+      let nextResults = await this.graphGet<T>(nextURL);
+      allResults.addAll(nextResults);
+      nextURL = (nextResults as any).nextLink;
+      deltaURL = (nextResults as any).deltaLink;
+    }
+    let array = allResults.contents;
+    (array as any).deltaURL = deltaURL;
     return array;
   }
 
@@ -243,10 +313,11 @@ export class GraphAccount extends MailAccount {
   /** List the subfolders of the given parent (or root, if null).
    * Also query all descendant folders, recursively. */
   protected async listSubFolders(parentFolder: GraphFolder | null): Promise<ArrayColl<GraphFolder>> {
-    let foldersJSON = await this.graphGet(
+    let foldersJSON = await this.graphGetAll<TGraphFolder>(
       parentFolder ? `mailFolders/${parentFolder.id}/childFolders` : `mailFolders`,
-      null, { beta: true }
-    ) as TGraphFolder[];
+      { top: kMaxFetchCount },
+      { beta: true }
+    );
     let result = new ArrayColl<GraphFolder>();
     for (let folderJSON of foldersJSON) {
       let folder = this.newFolder();
@@ -303,7 +374,8 @@ export class GraphAccount extends MailAccount {
     let mime = await CreateMIME.getMIME(email);
     let base64 = await blobToBase64(new Blob([mime]));
 
-    let sendResponse = await this.httpCall("sendMail", {
+    let sendResponse = await this.graphCall("sendMail", {
+      method: "post",
       body: base64,
       headers: {
         "Content-Type": "text/plain",
