@@ -43,7 +43,7 @@
       {/if}
       {#if hasCertError || config.acceptBrokenTLSCerts}
         <vbox class="cert-error-override" class:checked={config.acceptBrokenTLSCerts}>
-          <Checkbox bind:checked={config.acceptBrokenTLSCerts} label={$t(`Do not check where you connect to`)} />
+          <Checkbox bind:checked={config.acceptBrokenTLSCerts} label={$t`Do not check where you connect to`} />
         </vbox>
       {/if}
       <hbox class="row">

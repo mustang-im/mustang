@@ -10,10 +10,10 @@
           <Button label="Go to setup" classes="filled" />
         </a>
       {:else if step.enterPassword}
-        {step.instruction || $t(`Password`)}
+        {step.instruction || $t`Password`}
         <Password bind:password />
       {:else if step.enterUsername}
-        {step.instruction || $t(`Username`)}
+        {step.instruction || $t`Username`}
         <input type="text" bind:value={config.username} />
       {:else if step.instruction}
         {step.instruction}

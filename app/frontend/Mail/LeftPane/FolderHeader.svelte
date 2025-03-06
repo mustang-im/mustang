@@ -10,7 +10,7 @@
         iconSize="16px" />
     {/if}
     {#if searchMessages}
-      {$t(`Search results`)}
+      {$t`Search results`}
     {/if}
     <hbox flex />
   </hbox>

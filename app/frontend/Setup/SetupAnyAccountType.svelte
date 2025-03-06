@@ -1,4 +1,4 @@
-<Header title={$t(`Set up another account`)} />
+<Header title={$t`Set up another account`} />
 
 <hbox class="add-buttons">
   <ExpanderButton

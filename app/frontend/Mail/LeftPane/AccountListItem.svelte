@@ -9,7 +9,7 @@
       {#if $account.isLoggedIn}
         <GetMailButton folder={account.inbox} />
       {:else}
-        <Button plain iconOnly icon={DisconnectedIcon} onClick={login} label={$t(`Login`)} iconSize="16px" />
+        <Button plain iconOnly icon={DisconnectedIcon} onClick={login} label={$t`Login`} iconSize="16px" />
       {/if}
     </hbox>
 </hbox>
