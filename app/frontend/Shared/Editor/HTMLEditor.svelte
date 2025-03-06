@@ -8,6 +8,7 @@
   import LinkFeature from '@tiptap/extension-link';
   import ImageFeature from '@tiptap/extension-image';
   import CodeWordFeature from '@tiptap/extension-code';
+  import ImageResize from 'tiptap-extension-resize-image';
   import { SplitBlockquote } from './SplitBlockquote';
   import { Footer } from './Footer';
   import { BoldStar, ItalicSlash } from './StdConventions';
@@ -39,9 +40,12 @@
         CodeWordFeature,
         SplitBlockquote,
         Footer,
-        ImageFeature.configure({
+        ImageResize.configure({
           allowBase64: true,
           inline: true,
+          HTMLAttributes: {
+            style: "max-width: 90%; height: auto; margin: 10px;"
+          },
         }),
         BoldStar,
         ItalicSlash,
