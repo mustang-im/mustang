@@ -36,7 +36,7 @@ export class GraphChatRoom extends Chat {
     for (let memberJSON of membersJSON) {
       let person = new GraphChatPerson();
       person.id = sanitize.nonemptystring(memberJSON.id);
-      person.name = sanitize.label(memberJSON.displayName);
+      person.name = sanitize.label(memberJSON.displayName, null);
       if (memberJSON.email) {
         person.emailAddresses.add(new ContactEntry(sanitize.emailAddress(memberJSON.email), "main"));
       }
