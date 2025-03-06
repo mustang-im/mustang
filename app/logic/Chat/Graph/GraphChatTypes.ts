@@ -16,12 +16,7 @@ export interface TGraphChat {
   createdBy: {
     application: null,
     device: null,
-    user: {
-      id: UUID,
-      displayName: string,
-      userIdentityType: "aadUser",
-      tenantId: UUID,
-    }
+    user: TGraphChatPerson,
   },
   viewpoint: {
     isHidden: boolean,
@@ -41,12 +36,20 @@ export type TGraphChatType =
 
 export interface TGraphChatMember {
   id: IDString,
-  roles: string[],
+  roles?: string[],
   displayName: string,
-  visibleHistoryStartDateTime: DateTimeString,
-  userId: UUID,
-  email: string,
+  visibleHistoryStartDateTime?: DateTimeString,
+  userId?: UUID,
+  email?: string,
   tenantId: UUID,
+}
+
+/** teamworkUserIdentity */
+export interface TGraphChatPerson {
+  id: IDString,
+  displayName: string,
+  tenantId: UUID,
+  userIdentityType: "aadUser",
 }
 
 /** TODO move to meet */
@@ -62,7 +65,11 @@ export interface TGraphChatMessage {
   /** version number of the message */
   etag?: string,
   chatId: IDString,
-  from?: null,
+  from?: {
+    user: TGraphChatMember,
+    device: null,
+    application: null,
+  },
   replyToId?: null,
   messageType: TGraphChatMessageType,
   subject: string,
@@ -83,23 +90,13 @@ export interface TGraphChatMessage {
   policyViolation?: null,
   attachments: TGraphChatAttachment[],
   mentions: [],
-  reaction: TGraphChatReaction[],
+  reactions: TGraphChatReaction[],
   eventDetail: {
-    members: [
-      { // membersDeletedEventMessageDetail
-        id: UUID,
-        displayName: string,
-        userIdentityType: "aadUser",
-      },
-    ],
+    members: TGraphChatPerson[],
     initiator: {
-      application: null,
+      user: TGraphChatPerson,
       device: null,
-      user: { // teamworkUserIdentity
-        id: UUID,
-        displayName: string,
-        userIdentityTyp: "aadUser"
-      },
+      application: null,
     },
   },
 }

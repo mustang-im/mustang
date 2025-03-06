@@ -3,7 +3,7 @@
     <PersonPicture {person} />
   {/if}
   <vbox flex class="name-box">
-    <hbox class="name">{person.name}</hbox>
+    <hbox class="name">{$person.name}</hbox>
   </vbox>
   <hbox class="actions">
     <RoundButton label={$t`Video call`} icon={VideoCallIcon} classes="secondary large"

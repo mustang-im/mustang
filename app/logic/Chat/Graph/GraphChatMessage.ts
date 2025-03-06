@@ -1,12 +1,12 @@
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Attachment } from "../../Abstract/Attachment";
 import { NotReached } from "../../util/util";
-import { ChatMessage } from "../Message";
+import { UserChatMessage } from "../Message";
 import type { GraphChatRoom } from "./GraphChatRoom";
 import type { TGraphChatMessage } from "./GraphChatTypes";
 
-export class GraphChatMessage extends ChatMessage {
-  chatRoom: GraphChatRoom;
+export class GraphChatMessage extends UserChatMessage {
+  to: GraphChatRoom;
   info: TGraphChatMessage;
   constructor(chat: GraphChatRoom) {
     super(chat);
@@ -15,7 +15,9 @@ export class GraphChatMessage extends ChatMessage {
   fromGraph(info: TGraphChatMessage) {
     this.info = info;
     this.id = sanitize.nonemptystring(info.id);
-    // TODO this.contact = find info.from in this.chatRoom.members;
+    let userID = info.from?.user?.id;
+    this.contact = this.to.members.find(person => person.id == userID) ?? this.to.contact;
+    this.outgoing = userID != this.to.account.account.userID;
     if (info.body) {
       if (info.body.contentType == "html") {
         this.html = sanitize.string(info.body.content);
@@ -26,7 +28,7 @@ export class GraphChatMessage extends ChatMessage {
       }
     }
     this.inReplyTo = sanitize.nonemptystring(info.replyToId, null);
-    this.sent = sanitize.date(info.createdDateTime, null);
+    this.sent = this.received = sanitize.date(info.createdDateTime, null);
     for (let attachmentJSON of info.attachments) {
       let a = new Attachment();
       a.contentID = attachmentJSON.id;
@@ -36,7 +38,7 @@ export class GraphChatMessage extends ChatMessage {
       // TODO a.contentUrl
       this.attachments.push(a);
     }
-    for (let reactionJSON of info.reaction) {
+    for (let reactionJSON of info.reactions) {
       let sender = null; // TODO find reactionJSON.user in this.chatRoom.members;
       if (sender) {
         this.reactions.set(sender, reactionJSON.reactionType);

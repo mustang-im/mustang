@@ -40,6 +40,7 @@
   import PersonHeader from "./PersonHeader.svelte";
   import PersonsList from "./PersonsList.svelte";
   import Splitter from "../Shared/Splitter.svelte";
+  import { catchErrors } from "../Util/error";
   import { mergeColls } from "svelte-collections";
   import { onMount } from "svelte";
 
@@ -48,6 +49,12 @@
   $: messages = $globalSearchTerm
     ? selectedChat?.messages.filter(msg => msg.text?.toLowerCase().includes($globalSearchTerm))
     : selectedChat?.messages;
+
+  $: selectedChat && catchErrors(loadMessages)
+  async function loadMessages() {
+    await selectedChat.listMembers();
+    await selectedChat.listMessages();
+  }
 
   onMount(() => {
     selectedChat = $selectedPerson && chatRooms.find(chat => chat.contact == $selectedPerson);

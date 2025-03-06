@@ -24,6 +24,7 @@ export class GraphChatRoom extends Chat {
   fromGraph(info: TGraphChat) {
     this.info = info;
     this.id = sanitize.nonemptystring(info.id);
+    this._name = sanitize.label(info.topic, null);
     this.lastReadTime = sanitize.date(info.viewpoint?.lastMessageReadDateTime, null);
     this.updatedLastRead();
   }
@@ -53,8 +54,12 @@ export class GraphChatRoom extends Chat {
 
   async listMessages(): Promise<void> {
     assert(this.info, "call fromGraph() first");
-    let messagesJSON = await this.account.account.graphGetAll<TGraphChatMessage>(this.path + "/messages", { top: 1000 });
+    let messagesJSON = await this.account.account.graphGetAll<TGraphChatMessage>(this.path + "/messages");
+    this.messages.clear();
     for (let messageJSON of messagesJSON) {
+      if (messageJSON.messageType != "message") {
+        continue;
+      }
       let msg = this.newMessage();
       msg.fromGraph(messageJSON);
       msg.isRead = this.lastReadTime && msg.received && this.lastReadTime > msg.received;

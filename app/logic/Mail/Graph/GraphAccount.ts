@@ -1,6 +1,6 @@
 import { MailAccount, AuthMethod, DeleteStrategy } from "../MailAccount";
 import { GraphFolder } from "./GraphFolder";
-import type { TGraphFolder } from "./GraphTypes";
+import type { TGraphFolder, UUID } from "./GraphTypes";
 import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import type { GraphChatAccount } from "../../Chat/Graph/GraphChatAccount";
@@ -18,6 +18,7 @@ import { CreateMIME } from "../SMTP/CreateMIME";
 export class GraphAccount extends MailAccount {
   readonly protocol: string = "graph";
   accountID: string;
+  userID: UUID;
   allFolders = new MapColl<string, GraphFolder>();
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   /** if polling is enabled, how often to poll.
@@ -127,6 +128,7 @@ export class GraphAccount extends MailAccount {
     }
 
     let responses = await this.graphCall(path, options);
+    this.getMyID(responses);
     let array = responses.value;
     assert(Array.isArray(array), this.name + ": " + `${path} did not return a result`);
     let extra = array as any;
@@ -335,6 +337,15 @@ export class GraphAccount extends MailAccount {
 
   getFolderByID(id: string): GraphFolder | null {
     return this.allFolders.get(id);
+  }
+
+  getMyID(json: any) {
+    if (this.userID) {
+      return;
+    }
+    let url = json["@odata.context"];
+    this.userID = url.replace(/.*metadata#users\('/, "").replace(/'\)\/.*/, "");
+    // console.log("my user id", this.userID);
   }
 
   async createToplevelFolder(name: string): Promise<GraphFolder> {

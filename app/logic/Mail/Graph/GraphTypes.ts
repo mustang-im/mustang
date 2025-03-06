@@ -126,6 +126,24 @@ export interface TGraphPersonUID {
 export interface TGraphFolderChanges {
 }
 
+/** Information about our own user */
+export interface TGraphMe {
+  id: UUID,
+  displayName: string,
+  givenName: string,
+  surname: string,
+  jobTitle: string,
+  /** email address */
+  userPrincipalName: string,
+  /** email address */
+  mail: string,
+  businessPhones: string[],
+  mobilePhone: string,
+  officeLocation: string,
+  /** locale, e.g. "en-US" */
+  preferredLanguage: string,
+}
+
 /** ISO date time string, with "Z" as timezone,
  * e.g. "2023-01-04T11:24:48.999Z" */
 export type DateTimeString = string;

@@ -36,7 +36,7 @@ export class Chat extends Observable {
   }
 
   get name(): string {
-    return this.contact instanceof Group
+    return this.contact instanceof Group && this._name
       ? this._name
       : this.contact.name;
   }
