@@ -87,16 +87,18 @@
 
 <style>
   .msg-editor {
-    background-color: #EEEEEE;
+    background-color: var(--leftbar-bg);
+    color: var(--leftbar-fg);
     padding: 4px 4px 10px 10px;
   }
   .editor-wrapper {
     flex: 3 0 0;
   }
   .editor-scroll-wrapper {
-    border: 1px solid lightgray;
+    background-color: var(--main-bg);
+    color: var(--main-bf);
+    border: 1px solid var(--border);
     border-radius: 8px;
-    background-color: white;
   }
   .editor {
     font-family: unset;
