@@ -20,13 +20,13 @@
 
 <style>
   .date-separator {
-    width: 50%;
+    width: 40%;
     align-self: center;
     justify-content: center;
     margin: 20px 20px 0px 20px;
     padding: 5px;
     font-size: small;
-    color: #999999;
-    border-top: 1px dotted lightgray;
+    color: var(--main-pattern-fg);
+    opacity: 60%; /* TODO Should change only text color */
   }
 </style>
