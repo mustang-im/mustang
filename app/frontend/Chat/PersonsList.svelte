@@ -1,4 +1,4 @@
-<PersonsList persons={chatRoomsSorted} bind:selected={selectedChat}>
+<PersonsList persons={chatRoomsSorted} bind:selected={selectedChat} pictureSize={32}>
   <hbox slot="top-right" class="last-time" let:person={chatRoom}>
     {#if chatRoom instanceof Chat && chatRoom.lastMessage}
       {getDateString(chatRoom.lastMessage.sent)}
