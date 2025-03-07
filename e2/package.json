@@ -19,7 +19,7 @@
     "build:linux": "npm run build && npm run icon:icns && electron-builder --linux --config",
     "build:release:win": "npm run build && electron-builder --win --config --publish always",
     "build:release:mac": "npm run build && electron-builder --mac --config --publish always",
-    "build:release:linux": "npm run build && electron-builder --linux --config --publish always",
+    "build:release:linux": "npm run build && npm run icon:icns && electron-builder --linux --config --publish always",
     "postinstall": "electron-builder install-app-deps",
     "icon:icns": "npx icon-gen --input build/icon.png --output build --icns --icns-name icon --icns-sizes 16,32,48,64,128,256,512"
   },
