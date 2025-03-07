@@ -1,6 +1,12 @@
 <svelte:head>
   <title>{ appName }</title>
 </svelte:head>
+<svelte:window
+  bind:outerWidth={windowWidth}
+  bind:outerHeight={windowHeight}
+  on:resize={saveWindowSize}
+  on:load={loadWindowSize}
+/>
 <vbox flex class="main-window" dir={rtl}>
   <WindowHeader selectedApp={$selectedApp} />
   <hbox flex>
@@ -97,6 +103,17 @@
     appGlobal.remoteApp.setTheme(theme);
   }
 
+  let windowWidth: number;
+  let windowHeight: number;
+  let windowSize = getLocalStorage("window.size", [ windowWidth, windowHeight ]);
+  function saveWindowSize() {
+    windowSize.value = [ window.outerWidth, window.outerHeight ];
+  }
+  function loadWindowSize() {
+    assert($windowSize.value.length == 2 && $windowSize.value.every((e) => typeof(e) == "number"),
+      $t`Bad window size` + $windowSize.value);
+    window.resizeTo(windowSize.value[0], windowSize.value[1]);
+  }
 </script>
 
 <style>
