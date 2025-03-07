@@ -111,6 +111,7 @@
     padding-inline-end: 4px;
     color: var(--leftbar-fg);
     background-color: var(--leftbar-bg);
+    overflow: auto;
   }
   .folder-header :global(.get-mail button) {
     height: 20px;
