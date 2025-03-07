@@ -74,9 +74,3 @@
     }
   }
 </script>
-
-<style>
-  .buttons :global(button) {
-    padding: 4px;
-  }
-</style>

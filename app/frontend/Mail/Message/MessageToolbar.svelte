@@ -12,7 +12,7 @@
   <hbox class="reply">
     <Button
       icon={ReplyIcon}
-      iconSize="24px"
+      iconSize="22px"
       iconOnly
       label={$t`Reply to author`}
       onClick={reply}
@@ -22,7 +22,7 @@
   <hbox class="reply-all">
     <Button
       icon={ReplyAllIcon}
-      iconSize="24px"
+      iconSize="22px"
       iconOnly
       label={$t`Reply to all`}
       onClick={replyAll}
@@ -64,7 +64,7 @@
   <hbox class="star" class:starred={$message.isStarred}>
     <Button
       icon={StarIcon}
-      iconSize="20px"
+      iconSize="18px"
       iconOnly
       label={$t`Remember this message`}
       onClick={toggleStar}
@@ -157,7 +157,7 @@
     margin-inline-start: 2px;
   }
   .buttons :global(svg) {
-    stroke-width: 1.5px;
+    stroke-width: 1.3px;
   }
   .star.starred :global(svg) {
     fill: orange;

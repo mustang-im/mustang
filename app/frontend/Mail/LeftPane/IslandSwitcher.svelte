@@ -38,6 +38,7 @@
   }
   .island :global(svg) {
     fill: transparent;
+    stroke-width: 1.2px;
   }
   @media (max-width: 800px)  {
     .island.large {
