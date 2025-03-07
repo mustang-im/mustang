@@ -50,7 +50,7 @@
     font-size: 14px;
 
     background-color: #20AF9E50;
-    color: black;
+    color: var(--fg);
   }
   .event:hover {
     background-color: #20AF9E70;
@@ -58,12 +58,5 @@
   .time {
     margin-inline-end: 4px;
     font-weight: 600;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .event {
-      background-color: #ff7c0e;
-      color: black;
-    }
   }
 </style>
