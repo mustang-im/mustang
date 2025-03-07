@@ -66,30 +66,30 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #141416;
-    --fg: #D1D1D2;
-    --inverted-bg: #D1D1D2;
+    --fg: #C1C1C2;
+    --inverted-bg: #C1C1C2;
     --inverted-fg: #141416;
     --selected-bg: #20AE9E;
     --selected-fg: white;
     --hover-bg: #1E6A63;
-    --hover-fg: #D1D1D2;
+    --hover-fg: #C1C1C2;
     --selected-hover-bg: #1C998B;
     --selected-hover-fg: white;
     --main-bg: var(--bg);
     --main-fg: var(--fg);
     --main-pattern-bg: #141416;
-    --main-pattern-fg: #D1D1D2;
+    --main-pattern-fg: #C1C1C2;
     --leftbar-bg: #1B1A1E;
-    --leftbar-fg: #D1D1D2;
+    --leftbar-fg: #C1C1C2;
     --windowheader-bg: #202022;
-    --windowheader-fg: #D1D1D2;
+    --windowheader-fg: #C1C1C2;
     --headerbar-bg: #202022;
-    --headerbar-fg: #D1D1D2;
+    --headerbar-fg: #C1C1C2;
     --appbar-bg: #2C2930;
     --appbar-fg: white;
     --border: #3A3A3B;
     --outstanding-bg: #666666;
-    --outstanding-fg: #D1D1D2;
+    --outstanding-fg: #C1C1C2;
     --input-bg: transparent;
     --input-fg: fieldtext;
     --input-line: #3A3A3B;

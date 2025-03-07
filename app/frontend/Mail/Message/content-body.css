@@ -17,11 +17,11 @@ body {
 
 @media (prefers-color-scheme: dark) {
   body {
-    color: white;
+    color: #D1D1D2;
     background-color: #141416;
   }
   * {
-    color: white !important;
+    color: #D1D1D2 !important;
     background-color: #141416 !important;
   }
 }
