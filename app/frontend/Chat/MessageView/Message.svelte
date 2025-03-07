@@ -96,12 +96,14 @@
     padding: 7px 15px;
   }
   .incoming .bubble {
-    background-color: rgba(255, 255, 255, 90%);
+    background-color: var(--chat-bubble-incoming-bg);
+    color: var(--chat-bubble-incoming-fg);
     border-top-right-radius: 12px;
     box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 7%);
   }
   .outgoing .bubble {
-    background-color: #CDECE1;
+    background-color: var(--chat-bubble-outgoing-bg);
+    color: var(--chat-bubble-outgoing-fg);
     border-top-left-radius: 12px;
     box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 15%);
   }
@@ -119,13 +121,13 @@
     top: 0;
     left: -10px;
     border-width: 10px 0 0 10px;
-    border-color: white transparent transparent transparent;
+    border-color: var(--chat-bubble-incoming-bg) transparent transparent transparent;
   }
   .outgoing .bubble::before {
     top: 0;
     left: 100%;
     border-width: 10px 10px 0 0;
-    border-color: #CDECE1 transparent transparent transparent;
+    border-color: var(--chat-bubble-outgoing-bg) transparent transparent transparent;
   }
   .incoming.followup .bubble {
     border-top-left-radius: 12px;

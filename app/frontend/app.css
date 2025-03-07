@@ -54,6 +54,10 @@
   --button-border: #B2ADB8;
   --button-secondary-line: #A1E4DA;
   --shadow-color: 22, 12, 39; /* #160C27 */
+  --chat-bubble-incoming-bg: #fdfefe;
+  --chat-bubble-incoming-fg: inherit;
+  --chat-bubble-outgoing-bg: #CDECE1;
+  --chat-bubble-outgoing-fg: inherit;
 
   color: var(--fg);
   background-color: var(--bg);
@@ -98,6 +102,10 @@
     --button-border: #CDCDCD;
     --button-secondary-line: #A1E4DA;
     --shadow-color: 107, 107, 108; /* #6B6B6C */
+    --chat-bubble-incoming-bg: #1d2628;
+    --chat-bubble-incoming-fg: #CCCCCC;
+    --chat-bubble-outgoing-bg: #1b5954;
+    --chat-bubble-outgoing-fg: #CCCCCC;
 
     color: var(--fg);
     background-color: var(--bg);
