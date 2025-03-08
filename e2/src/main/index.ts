@@ -30,7 +30,9 @@ function createWindow(): void {
     setMainWindow(mainWindow);
 
     mainWindow.on('ready-to-show', () => {
-      mainWindow.show()
+      mainWindow.webContents.once('did-finish-load', () => {
+        mainWindow.show()
+      });
     })
 
     mainWindow.on('closed', shutdownBackend);
