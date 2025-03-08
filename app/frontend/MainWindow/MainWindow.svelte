@@ -1,10 +1,8 @@
 <svelte:head>
   <title>{ appName }</title>
 </svelte:head>
-<svelte:window
-  on:visibilitychange={saveWindowSettings}
-  on:load={loadWindowSettings}
-/>
+<svelte:window on:visibilitychange={saveWindowSettings} />
+
 <vbox flex class="main-window" dir={rtl}>
   <WindowHeader selectedApp={$selectedApp} />
   <hbox flex>
@@ -103,21 +101,13 @@
     appGlobal.remoteApp.setTheme(theme);
   }
 
-  let windowSize = getLocalStorage("window.size", [ window.outerWidth, window.outerHeight ]);
-  let windowPosition = getLocalStorage("window.position", [ window.screenX, window.screenY ]);
-  function loadWindowSettings() {
-    assert($windowSize.value.length == 2 && $windowSize.value.every((e) => typeof(e) == "number"),
-      $t`Bad window size` + $windowSize.value);
-    window.resizeTo($windowSize.value[0], $windowSize.value[1]);
-    assert($windowPosition.value.length == 2 && $windowPosition.value.every((e) => typeof(e) == "number"),
-      $t`Bad window position` + $windowPosition.value);
-    window.moveTo($windowPosition.value[0], $windowPosition.value[1]);
-  }
   function saveWindowSettings() {
-    // Don't save settings unless previous size is loaded
     if (!loaded) {
+      // Don't save settings unless previous size is loaded
       return;
     }
+    let windowSize = getLocalStorage("window.size", [ window.outerWidth, window.outerHeight ]);
+    let windowPosition = getLocalStorage("window.position", [ window.screenX, window.screenY ]);
     windowSize.value = [ window.outerWidth, window.outerHeight ];
     windowPosition.value = [ window.screenX, window.screenY ];
   }
