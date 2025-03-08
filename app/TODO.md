@@ -10,13 +10,10 @@
     * Participants
     * Free/Busy
     * Move to other calendar
-  * Main window
-    * Save window size
   * Bug: Thunderbird AB import misses ABs and fields
   * Import Outlook PST
   * Inline images
     * Display cid:
-    * Scale when sending
   * FastTree
     * Drag&Drop: Open on drag over - for: Move messages to deep subfolders -> Rewrite FastTree
   * Bug: FastList doesn't update some rows #66
