@@ -45,7 +45,7 @@ linux:
     - rpm
   maintainer: Mustang
   # <https://specifications.freedesktop.org/menu-spec/latest/additional-category-registry.html>
-  category: Email
+  category: Network
   icon: build/icon.icns
 appImage:
   artifactName: ${name}-${version}.${ext}
