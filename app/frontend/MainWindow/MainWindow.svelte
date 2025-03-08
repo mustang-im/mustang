@@ -1,6 +1,8 @@
 <svelte:head>
   <title>{ appName }</title>
 </svelte:head>
+<svelte:window on:visibilitychange={() => catchErrors(saveWindowSettings)} />
+
 <vbox flex class="main-window" dir={rtl}>
   <WindowHeader selectedApp={$selectedApp} />
   <hbox flex>
@@ -97,6 +99,12 @@
     appGlobal.remoteApp.setTheme(theme);
   }
 
+  function saveWindowSettings() {
+    let windowSize = getLocalStorage("window.size", [ window.outerWidth, window.outerHeight ]);
+    let windowPosition = getLocalStorage("window.position", [ window.screenX, window.screenY ]);
+    windowSize.value = [ window.outerWidth, window.outerHeight ];
+    windowPosition.value = [ window.screenX, window.screenY ];
+  }
 </script>
 
 <style>
