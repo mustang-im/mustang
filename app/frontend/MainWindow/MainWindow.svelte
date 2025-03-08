@@ -2,10 +2,8 @@
   <title>{ appName }</title>
 </svelte:head>
 <svelte:window
-  bind:outerWidth={windowWidth}
-  bind:outerHeight={windowHeight}
-  on:resize={saveWindowSize}
-  on:load={loadWindowSize}
+  on:visibilitychange={saveWindowSettings}
+  on:load={loadWindowSettings}
 />
 <vbox flex class="main-window" dir={rtl}>
   <WindowHeader selectedApp={$selectedApp} />
@@ -105,20 +103,41 @@
     appGlobal.remoteApp.setTheme(theme);
   }
 
-  let windowWidth: number;
-  let windowHeight: number;
+  function loadWindowSettings() {
+    loadWindowSize();
+    loadWindowPosition();
+  }
+  function saveWindowSettings() {
+    saveWindowSize();
+    saveWindowPosition();
+  }
+
   let windowSize = getLocalStorage("window.size", [ window.outerWidth, window.outerHeight ]);
   function saveWindowSize() {
     // Don't save size unless previous size is loaded
     if (!loaded) {
       return;
     }
-    windowSize.value = [ windowWidth, windowHeight ];
+    windowSize.value = [ window.outerWidth, window.outerHeight ];
   }
   function loadWindowSize() {
     assert($windowSize.value.length == 2 && $windowSize.value.every((e) => typeof(e) == "number"),
       $t`Bad window size` + $windowSize.value);
     window.resizeTo($windowSize.value[0], $windowSize.value[1]);
+  }
+
+  let windowPosition = getLocalStorage("window.position", [ window.screenX, window.screenY ]);
+  function saveWindowPosition() {
+    // Don't save position unless previous position is loaded
+    if (!loaded) {
+      return;
+    }
+    windowPosition.value = [ window.screenX, window.screenY ];
+  }
+  function loadWindowPosition() {
+    assert($windowPosition.value.length == 2 && $windowPosition.value.every((e) => typeof(e) == "number"),
+      $t`Bad window position` + $windowPosition.value);
+    window.moveTo($windowPosition.value[0], $windowPosition.value[1]);
   }
 </script>
 
