@@ -1,7 +1,7 @@
 <svelte:head>
   <title>{ appName }</title>
 </svelte:head>
-<svelte:window on:visibilitychange={saveWindowSettings} />
+<svelte:window on:visibilitychange={() => catchErrors(saveWindowSettings)} />
 
 <vbox flex class="main-window" dir={rtl}>
   <WindowHeader selectedApp={$selectedApp} />

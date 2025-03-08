@@ -4,6 +4,7 @@ import { appName, appVersion, production } from '../logic/build';
 import { getLocalStorage } from './Util/LocalStorage';
 import { sanitize } from '../../lib/util/sanitizeDatatypes';
 import { assert } from '../logic/util/util';
+import { catchErrors } from './Util/error';
 import { gt } from '../l10n/l10n';
 import * as Sentry from "@sentry/svelte";
 
@@ -29,4 +30,4 @@ function loadWindowSettings() {
   window.resizeTo(windowSize[0], windowSize[1]);
   window.moveTo(windowPosition[0], windowPosition[1]);
 }
-window.addEventListener("DOMContentLoaded", loadWindowSettings, false);
+window.addEventListener("DOMContentLoaded", () => catchErrors(loadWindowSettings, console.error), false);
