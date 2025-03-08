@@ -71,6 +71,7 @@
 
   onMount(() => catchErrors(startup));
 
+  let loaded = false;
   async function startup() {
     loadMustangApps();
     await getStartObjects();
@@ -83,6 +84,7 @@
       await loginOnStartup(console.error, backgroundError);
       // $selectedFolder = $selectedAccount.inbox;
     }
+    loaded = true;
   }
 
   function setup() {
@@ -105,14 +107,18 @@
 
   let windowWidth: number;
   let windowHeight: number;
-  let windowSize = getLocalStorage("window.size", [ windowWidth, windowHeight ]);
+  let windowSize = getLocalStorage("window.size", [ window.outerWidth, window.outerHeight ]);
   function saveWindowSize() {
-    windowSize.value = [ window.outerWidth, window.outerHeight ];
+    // Don't save size unless previous size is loaded
+    if (!loaded) {
+      return;
+    }
+    windowSize.value = [ windowWidth, windowHeight ];
   }
   function loadWindowSize() {
     assert($windowSize.value.length == 2 && $windowSize.value.every((e) => typeof(e) == "number"),
       $t`Bad window size` + $windowSize.value);
-    window.resizeTo(windowSize.value[0], windowSize.value[1]);
+    window.resizeTo($windowSize.value[0], $windowSize.value[1]);
   }
 </script>
 
