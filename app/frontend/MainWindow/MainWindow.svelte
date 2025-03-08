@@ -67,7 +67,6 @@
 
   onMount(() => catchErrors(startup));
 
-  let loaded = false;
   async function startup() {
     loadMustangApps();
     await getStartObjects();
@@ -80,7 +79,6 @@
       await loginOnStartup(console.error, backgroundError);
       // $selectedFolder = $selectedAccount.inbox;
     }
-    loaded = true;
   }
 
   function setup() {
@@ -102,10 +100,6 @@
   }
 
   function saveWindowSettings() {
-    if (!loaded) {
-      // Don't save settings unless previous size is loaded
-      return;
-    }
     let windowSize = getLocalStorage("window.size", [ window.outerWidth, window.outerHeight ]);
     let windowPosition = getLocalStorage("window.position", [ window.screenX, window.screenY ]);
     windowSize.value = [ window.outerWidth, window.outerHeight ];
