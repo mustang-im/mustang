@@ -33,9 +33,9 @@ function createWindow(): void {
       // Extra condition to ensure the window size and position
       // are set before showing the window
       mainWindow.webContents.once('did-finish-load', () => {
-        mainWindow.show()
+        mainWindow.show();
       });
-    })
+    });
 
     mainWindow.on('closed', shutdownBackend);
 
