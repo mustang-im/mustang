@@ -1,4 +1,5 @@
 export default class OWACreatePersonaRequest {
+  /** Persona requests are wrapped in an additional object for some reason. */
   readonly request: any = {
     __type: "CreatePersonaJsonRequest:#Exchange",
     Header: {
@@ -32,7 +33,7 @@ export default class OWACreatePersonaRequest {
     }));
   }
 
-  get type() {
+  get action() {
     return "CreatePersona";
   }
 }
