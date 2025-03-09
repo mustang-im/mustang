@@ -1,6 +1,6 @@
 
 <HeaderGroupBox>
-  <hbox slot="header">{$t`IMAP`} - {$t`Advanced`}</hbox>
+  <hbox slot="header">IMAP - {$t`Advanced`}</hbox>
 
   <Checkbox bind:checked={account.loginOnStartup} label={$t`Login on startup`} allowIndetermined={false} />
 

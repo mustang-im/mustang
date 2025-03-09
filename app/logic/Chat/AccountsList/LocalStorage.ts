@@ -52,7 +52,7 @@ function readMatrixAccount(prefBranch: string): MatrixAccount {
     account.deviceID = crypto.randomUUID();
     localStorage.setItem(prefBranch + "deviceID", account.deviceID);
   }
-  account.name = `Matrix ${account.username}`; // Do not translate "Matrix"
+  account.name = "Matrix " + account.username;
   return account;
 }
 
