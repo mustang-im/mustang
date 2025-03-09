@@ -64,7 +64,28 @@
 * Mac: Use Mac Password manager
 * Gmail: Log in with browser
 * Manual setup: OAuth2 UI: "Browser" goes back to "Seperate window"
-## Freshness
+## mjl
+* Compose Person popup, need to confirm recipient
+* Context menus
+* Back button (after clicking on an email address in an email, want to go back to email)
+* Selected message: After switching back to email, email is not longer selected
+* Tags in "Move to folder" button - icon not obvious. change tooltip.
+* "Saved search" folder name
+* Keyboard shortcuts
+* How to show keyboard shortcuts
+  * When selected, show on bottom right
+  * When hovering, show in tooltip
+  * Shortcut help window
+  * Press Windows key, show shortcuts on all elements
+* Unread vs. new mails
+   * way to show unread mails in folder panel
+   * Show new unread messages instead of imap recent
+* Search on top right, contacts, doesn't show search mode
+* Icon for HTML formatted view is not clear
+* Threading
+* Good
+  * modern feeling
+ ## Freshness
 * Account colors
 * Icons for accounts, based on favicon or user-set
 * Pic for users, in identities
