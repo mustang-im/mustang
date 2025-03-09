@@ -11,6 +11,7 @@ export class SMTPAccount extends MailAccount {
     // Auth method
     let usePassword = [
       AuthMethod.Password,
+      AuthMethod.CRAMMD5,
       AuthMethod.NTLM,
     ].includes(this.authMethod);
     let useOAuth2 = [
@@ -36,6 +37,7 @@ export class SMTPAccount extends MailAccount {
         pass: usePassword ? this.password : undefined,
         accessToken: useOAuth2 ? this.oAuth2.accessToken : null,
         type: useOAuth2 ? "OAuth2" : undefined,
+        authMethod: this.authMethod == AuthMethod.CRAMMD5 ? "CRAM-MD5" : undefined,
       },
       dnsTimeout: 5000,
       connectionTimeout: 5000,
