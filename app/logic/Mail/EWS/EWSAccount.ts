@@ -19,13 +19,14 @@ import { XML2JSON, type Json, JSON2XML } from "./XML2JSON";
 import { Throttle } from "../../util/Throttle";
 import { Semaphore } from "../../util/Semaphore";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, blobToBase64, ensureArray, NotReached } from "../../util/util";
+import { assert, blobToBase64, ensureArray, NotReached, NotSupported } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 
 export class EWSAccount extends MailAccount {
   readonly protocol: string = "ews";
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
+  readonly canSendInvitations: boolean = false;
   readonly folderMap = new Map<string, EWSFolder>;
   throttle = new Throttle(50, 1);
   semaphore = new Semaphore(20);
@@ -89,6 +90,9 @@ export class EWSAccount extends MailAccount {
   }
 
   async send(email: EMail): Promise<void> {
+    if (email.method) {
+      throw new NotSupported("Please use Exchange APIs to send iMIP messages");
+    }
     assert(email.folder?.id, "Need folder to save the sent email in");
     let request = new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: email.folder.id } }, MessageDisposition: "SendAndSaveCopy" });
     request.addField("Message", "ItemClass", "IPM.Note", "item:ItemClass");

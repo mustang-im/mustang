@@ -7,10 +7,11 @@ import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import type { MailIdentity } from "./MailIdentity";
 import { Event } from "../Calendar/Event";
-import { Scheduling, type Responses } from "../Calendar/Invitation";
+import { Scheduling, ResponseType, type Responses, type iCalMethod } from "../Calendar/Invitation";
 import { EMailProcessorList, ProcessingStartOn } from "./EMailProccessor";
 import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
 import { gt } from "../../l10n/l10n";
+import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { PromiseAllDone } from "../util/PromiseAllDone";
 import { notifyChangedProperty } from "../util/Observable";
@@ -84,6 +85,8 @@ export class EMail extends Message {
   storageLock = new Lock();
   /** For composer only. Optional. */
   identity: MailIdentity;
+  /* Only used when constructing iMIP outgoing messages */
+  method: iCalMethod | undefined;
 
   constructor(folder: Folder) {
     super();
@@ -197,11 +200,37 @@ export class EMail extends Message {
 
   async respondToInvitation(response: Responses): Promise<void> {
     assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
-    throw new AbstractFunction();
+    let event: Event;
+    for (let calendar of appGlobal.calendars) {
+      event = calendar.events.find(event => event.calUID == this.event.calUID);
+      if (event) {
+        break;
+      }
+    }
+    if (!event) {
+      let calendar = appGlobal.calendars.first;
+      event = calendar.newEvent();
+      event.copyFrom(this.event);
+      event.startTime = this.event.startTime;
+      event.endTime = this.event.endTime;
+      event.recurrenceRule = this.event.recurrenceRule;
+      event.response = ResponseType.NoResponseReceived;
+      calendar.events.add(event);
+      if (event.recurrenceRule) {
+        event.fillRecurrences(new Date(Date.now() + 1e11));
+      }
+    }
+    let participant = event.participants.find(participant => participant.emailAddress == this.folder.account.emailAddress);
+    if (participant) {
+      event.response = participant.response = response;
+      await event.save();
+      await this.sendInvitationResponse(response);
+    }
+    /* else add participant? */
   }
 
   protected async sendInvitationResponse(response: Responses): Promise<void> {
-    throw new Error("Implement me!"); // TODO
+    await this.folder.account.sendInvitationResponse(this.event, response);
   }
 
   async loadEvent() {
