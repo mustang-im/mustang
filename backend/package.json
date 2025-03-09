@@ -10,7 +10,7 @@
     "bufferutil": "^4.0.8",
     "des.js": "^1.0.1",
     "express": "^4.19.2",
-    "imapflow": "^1.0.171",
+    "imapflow": "https://github.com/mustang-im/imapflow/",
     "js-md4": "^0.3.2",
     "ky": "^1.2.3",
     "nodemailer": "^6.9.13",

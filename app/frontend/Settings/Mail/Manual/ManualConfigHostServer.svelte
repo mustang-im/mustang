@@ -70,9 +70,9 @@
         <option value={AuthMethod.OAuth2}>OAuth2 / {$t`MFA`}</option>
         <!--
         <option value={AuthMethod.GSSAPI}>Kerberos / GSSAPI</option>
-        <option value={AuthMethod.CRAMMD5}>CRAM MD5</option>
         <option value={AuthMethod.NTLM}>NTLM</option>
         -->
+        <option value={AuthMethod.CRAMMD5}>CRAM-MD5</option>
         {#if config.protocol == "smtp"}
           <option value={AuthMethod.None}>{$t`No authentication`}</option>
         {/if}

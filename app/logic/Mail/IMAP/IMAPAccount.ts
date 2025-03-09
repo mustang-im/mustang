@@ -70,6 +70,7 @@ export class IMAPAccount extends MailAccount {
       // Auth method
       let usePassword = [
         AuthMethod.Password,
+        AuthMethod.CRAMMD5,
         AuthMethod.GSSAPI,
         AuthMethod.NTLM,
         AuthMethod.Unknown,
@@ -95,6 +96,7 @@ export class IMAPAccount extends MailAccount {
           user: this.username,
           pass: usePassword ? this.password : undefined,
           accessToken: useOAuth2 ? this.oAuth2.accessToken : undefined,
+          loginMethod: usePassword && this.authMethod == AuthMethod.CRAMMD5 ? "AUTH=CRAM-MD5" : undefined,
         },
         clientInfo: useragent,
         tls: {
