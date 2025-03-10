@@ -1,15 +1,15 @@
 <grid class="manual-config" full={stepFull}>
-  <ManualConfigLabels {stepFull} />
-  <ManualConfigServer bind:config bind:stepFull {isSetup} bind:this={incomingEl} />
+  <ManualConfigHostLabels {stepFull} />
+  <ManualConfigHostServer bind:config bind:stepFull {isSetup} bind:this={incomingEl} on:continue={onContinue} />
   {#if outgoing}
-    <ManualConfigServer bind:config={outgoing} {stepFull} {isSetup} bind:this={outgoingEl} />
+    <ManualConfigHostServer bind:config={outgoing} {stepFull} {isSetup} bind:this={outgoingEl} on:continue={onContinue} />
   {/if}
 </grid>
 
 <script lang="ts">
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
-  import ManualConfigLabels from "./ManualConfigHostLabels.svelte";
-  import ManualConfigServer from "./ManualConfigHostServer.svelte";
+  import ManualConfigHostLabels from "./ManualConfigHostLabels.svelte";
+  import ManualConfigHostServer from "./ManualConfigHostServer.svelte";
 
   /** in/out */
   export let config: MailAccount;
@@ -19,8 +19,8 @@
   export let isSetup = false;
 
   $: outgoing = $config.outgoing;
-  let incomingEl: ManualConfigServer = null;
-  let outgoingEl: ManualConfigServer = null;
+  let incomingEl: ManualConfigHostServer = null;
+  let outgoingEl: ManualConfigHostServer = null;
 
   /** If the user pressed the [Next] button,
    * are we able to move on?
