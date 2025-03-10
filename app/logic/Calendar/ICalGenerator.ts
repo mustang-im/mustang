@@ -1,5 +1,6 @@
 import type { Event } from "./Event";
 import { ResponseType, ParticipationStatus, type iCalMethod } from "./Invitation";
+import { appName } from "../build";
 
 export function getNMical(event: Event, method?: iCalMethod): { method: iCalMethod, content: string } | null {
   if (!event || !method) {
@@ -11,7 +12,7 @@ export function getNMical(event: Event, method?: iCalMethod): { method: iCalMeth
   lines.push(["BEGIN", "VCALENDAR"]);
   lines.push(["METHOD", method]);
   lines.push(["VERSION", "2.0"]);
-  lines.push(["PRODID", "-//Beonex//Parula//EN"]);
+  lines.push(["PRODID", `-//Beonex//${appName}//EN`]);
   lines.push(["BEGIN", "VEVENT"]);
   lines.push(["DTSTAMP", date2ical(new Date(), false)]);
   lines.push(["UID", event.calUID]);
