@@ -11,7 +11,8 @@
     <vbox class="content">
       <grid>
         <label for="name">{$t`Account name`}</label>
-        <input type="text" bind:value={account.name} name="name" on:change={() => useDebounce(() => catchErrors(onNameChange), 3000)}/>
+        <input type="text" bind:value={account.name} name="name" on:change={onChange} />
+        <input type="color" bind:value={account.color} name="color" on:change={onChange} />
       </grid>
     </vbox>
   </HeaderGroupBox>
@@ -33,9 +34,13 @@
 
   export let account: Account;
 
-  async function onNameChange() {
+  const onChange = useDebounce(() => catchErrors(() => onSave()), 500);
+  async function onSave() {
+    console.log("account saving", account.name, account.color);
     await account.save();
+    console.log("account saved", account.name, account.color);
   }
+
   async function onDelete() {
     let confirmed = confirm($t`Are you sure that you want to the delete account ${account.name} from ${appName} and all related data?`);
     if (!confirmed) {
@@ -60,7 +65,7 @@
   }
 
   grid {
-    grid-template-columns: max-content auto;
+    grid-template-columns: max-content auto max-content;
     gap: 8px 24px;
   }
 </style>

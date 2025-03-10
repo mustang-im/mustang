@@ -1,4 +1,4 @@
-import { Workspace } from "./Workspace";
+import { Workspace, randomAccountColor } from "./Workspace";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { SpecificError, AbstractFunction, assert } from "../util/util";
@@ -13,6 +13,8 @@ export class Account extends Observable {
   name: string;
   @notifyChangedProperty
   icon: ComponentType | string | null = null;
+  @notifyChangedProperty
+  color: string = "#FFFFFF";
   /** Class ID. Must be overwritten by subclasses. Written to account prefs. */
   readonly protocol: string = null;
   /** Protocol-specific address for the sync server. Only only for some types of accounts. */
@@ -43,6 +45,7 @@ export class Account extends Observable {
   constructor() {
     super();
     this.id = findFreeAccountID();
+    this.color = randomAccountColor();
   }
 
   get isLoggedIn(): boolean {
@@ -89,14 +92,18 @@ export class Account extends Observable {
   }
 
   fromConfigJSON(config: any) {
+    console.log("account config json reading", config);
     assert(typeof (config) == "object", "Config must be a JSON object");
     this.acceptBrokenTLSCerts = sanitize.boolean(config.acceptBrokenTLSCerts, false);
     this.loginOnStartup = sanitize.boolean(config.loginOnStartup, this.loginOnStartup);
+    this.color = sanitize.nonemptystring(config.color, this.color);
   }
   toConfigJSON(): any {
     let json: any = {};
     json.acceptBrokenTLSCerts = this.acceptBrokenTLSCerts;
     json.loginOnStartup = this.loginOnStartup;
+    json.color = this.color;
+    console.log("account config json saving", json);
     return json;
   }
 

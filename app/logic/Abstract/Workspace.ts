@@ -16,7 +16,7 @@ export class Workspace extends Observable {
     super();
     this.id = name;
     this.name = name;
-    this.color = color;
+    this.color = color ?? randomAccountColor();
     this.icon = icon;
   }
 }
@@ -26,3 +26,20 @@ export let workspaces = [
   new Workspace("Private", "lightgreen", PrivateIcon),
   new Workspace("Other", "lightyellow", OtherIcon),
 ];
+
+export let accountColors = [
+  "#F6CC41", // yellow
+  "#1FA89A", // turquoise
+  "#1E7296", // light blue
+  "#E56D0B", // orange
+  "#8CCA3B", // light green
+  "#19417C", // blue
+  "#DEB6C5", // pink
+  "#2E7815", // dark green
+  "#B20000", // red
+  "#32256A", // dark blue
+];
+
+export function randomAccountColor() {
+  return accountColors[Math.floor(Math.random() * accountColors.length)];
+}
