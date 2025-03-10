@@ -12,7 +12,7 @@
   </T>
 </div>
 
-<iframe src="public/attribution.txt.gz" title="Licenses" sandbox="" />
+<iframe src="attribution.txt.gz" title="Licenses" sandbox="" />
 
 <script>
   import { appName } from "../../../logic/build";
