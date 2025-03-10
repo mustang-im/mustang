@@ -90,7 +90,7 @@ export class MailAccount extends Account {
     assert(organizer, "Invitation should have an organizer");
     let email = this.newEMailFrom();
     email.to.add(organizer);
-    email.method = "REPLY";
+    email.iCalMethod = "REPLY";
     email.event = new Event();
     email.event.copyFrom(invitation);
     email.event.startTime = invitation.startTime;

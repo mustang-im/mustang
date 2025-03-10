@@ -90,7 +90,7 @@ export class EWSAccount extends MailAccount {
   }
 
   async send(email: EMail): Promise<void> {
-    if (email.method) {
+    if (email.iCalMethod) {
       throw new NotSupported("Please use Exchange APIs to send iMIP messages");
     }
     assert(email.folder?.id, "Need folder to save the sent email in");

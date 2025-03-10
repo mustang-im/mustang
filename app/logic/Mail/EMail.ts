@@ -86,7 +86,7 @@ export class EMail extends Message {
   /** For composer only. Optional. */
   identity: MailIdentity;
   /* Only used when constructing iMIP outgoing messages */
-  method: iCalMethod | undefined;
+  iCalMethod: iCalMethod | undefined;
 
   constructor(folder: Folder) {
     super();
