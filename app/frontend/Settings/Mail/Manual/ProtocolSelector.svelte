@@ -26,6 +26,10 @@
     let newConfig = newAccountForProtocol(protocol);
     newConfig.cloneFrom(config);
     newConfig.url = "";
+    if ((protocol == "imap" || protocol == "pop3") && !newConfig.outgoing) {
+      newConfig.outgoing = newAccountForProtocol("smtp");
+      newConfig.outgoing.cloneFrom(newConfig);
+    }
     config = newConfig;
     dispatchEvent("newProtocol", protocol);
   }
