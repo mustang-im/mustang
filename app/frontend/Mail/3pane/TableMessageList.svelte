@@ -22,7 +22,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { onKeyOnList } from "./MessageList";
+  import { onKeyOnList } from "../Message/MessageKeyboard";
   import { EMailCollection } from "../../../logic/Mail/Store/EMailCollection";
   import FastList from "../../Shared/FastList.svelte";
   import TableMessageListItem from "./TableMessageListItem.svelte";

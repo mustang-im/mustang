@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { onKeyOnList } from "../3pane/MessageList";
+  import { onKeyOnList } from "../Message/MessageKeyboard";
   import { EMailCollection } from "../../../logic/Mail/Store/EMailCollection";
   import FastList from "../../Shared/FastList.svelte";
   import VerticalMessageListItem from "./VerticalMessageListItem.svelte";

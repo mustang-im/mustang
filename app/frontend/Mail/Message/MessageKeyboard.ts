@@ -2,7 +2,7 @@ import { selectedMessage, selectedMessages } from "../Selected";
 import { get } from "svelte/store";
 
 export async function onKeyOnList(event: KeyboardEvent) {
-  let selectedMessagesColl = get(selectedMessages)
+  let selectedMessagesColl = get(selectedMessages);
   /** Important to use normal static array here. If were were to use `selectedMessages` Collection,
    * it would observe changes to selection even in the future and keep triggering
    * the action for all future selections. */
@@ -22,7 +22,7 @@ export async function onKeyOnList(event: KeyboardEvent) {
       event.stopPropagation();
       let isStarred = message.isStarred;
       await Promise.allSettled(messages.map(msg =>
-        msg.markStarred(isStarred)));
+        msg.markStarred(!isStarred)));
       return;
     } else if (event.key == "j") {
       event.stopPropagation();
@@ -40,4 +40,37 @@ export async function onKeyOnList(event: KeyboardEvent) {
       return;
     }
   }
+}
+
+export async function onKeyOnMessage(event: KeyboardEvent) {
+  onKeyOnList(event);
+  /*
+  let message = get(selectedMessage);
+  let selectedMessagesColl = get(selectedMessages);
+  if (!event.altKey && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
+    if (event.key == "m") {
+      event.stopPropagation();
+      let isRead = message.isRead;
+      await message.markRead(!isRead);
+      return;
+    } else if (event.key == "s") {
+      event.stopPropagation();
+      let isStarred = message.isStarred;
+      await message.markStarred(!isStarred);
+      return;
+    } else if (event.key == "j") {
+      event.stopPropagation();
+      selectedMessagesColl.clear();
+      selectedMessagesColl.add(message.action.nextMessage(false));
+      await message.treatSpam();
+      return;
+    } else if (event.key == "Delete") {
+      event.stopPropagation();
+      selectedMessagesColl.clear();
+      selectedMessagesColl.add(message.action.nextMessage(false));
+      await message.deleteMessage();
+      return;
+    }
+  }
+  */
 }
