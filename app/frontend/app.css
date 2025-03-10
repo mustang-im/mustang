@@ -267,6 +267,15 @@ select option:hover {
   background-color: var(--hover-bg);
   color: var(--hover-fg);
 }
+/*
+select option:checked {
+  background-color: var(--selected-bg);
+  color: var(--selected-fg);
+}
+select option:checked:hover {
+  background-color: var(--selected-hover-bg);
+  color: var(--selected-hover-fg);
+}*/
 /* most of these classes are for specificity. ditto below. */
 .autocomplete.select.is-fullwidth .autocomplete-list .autocomplete-list-item {
   background-color: var(--main-bg);
