@@ -1,6 +1,6 @@
 import type { MailAccount } from "../MailAccount";
 import { TLSSocketType } from "../MailAccount";
-import { assert, NotReached, type URLString } from "../../util/util";
+import type { URLString } from "../../util/util";
 
 export function hasEncryption(tls: TLSSocketType): boolean {
   return tls == TLSSocketType.TLS || tls == TLSSocketType.STARTTLS;
@@ -38,6 +38,8 @@ export function getStandardURL(protocol: string, domain: string): URLString {
     return `https://mail.${domain}/owa/`;
   } else if (protocol == "activesync") {
     return `https://mail.${domain}/Microsoft-Server-ActiveSync`;
+  } else if (protocol == "graph") {
+    return `https://graph.microsoft.com`;
   } else {
     return "";
   }
