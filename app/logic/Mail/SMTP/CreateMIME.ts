@@ -1,6 +1,7 @@
 import type { EMail } from "../EMail";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { Attachment , ContentDisposition } from "../../Abstract/Attachment";
+import { getNMical } from "../../Calendar/ICalGenerator";
 import { appGlobal } from "../../app";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { blobToBase64 } from "../../util/util";
@@ -28,7 +29,7 @@ export class CreateMIME {
       bcc: CreateMIME.getRecipients(email.bcc),
       text: email.text,
       html: doHTML ? email.html : null,
-      icalEvent: email.event?.getNMical(email.method),
+      icalEvent: getNMical(email.event, email.iCalMethod),
       attachDataUrls: true,
       attachments: await CreateMIME.getAttachments(email),
       headers: email.headers.contentKeyValues(),
