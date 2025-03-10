@@ -23,12 +23,15 @@
     </hbox>
   {/if}
 
-  <hbox class="hostname" class:error={hostnameError}>
-    <input type="text" bind:value={config.hostname} required />
+  <hbox class="hostname" class:error={hostnameError} class:outgoing>
+    <input type="text" bind:value={config.hostname} required
+      autofocus={!outgoing}
+      on:keydown={event => onKeyInHostname(event)}
+      />
   </hbox>
 
   {#if stepFull}
-    <hbox class="port" class:error={portError}>
+    <hbox class="port" class:error={portError} class:outgoing class:incoming={!outgoing}>
       <input type="number" bind:value={config.port} required on:change={onPortChanged} />
       {#if !isStandardPort && defaultPort}
         <hbox class="default">{$t`Default: ${defaultPort}`}</hbox>
@@ -110,6 +113,8 @@
   import ArrowRightIcon from "lucide-svelte/icons/move-right";
   import { gt, t } from "../../../../l10n/l10n";
   import { UserError } from "../../../../logic/util/util";
+  import { createEventDispatcher, tick } from 'svelte';
+  const dispatchEvent = createEventDispatcher<{ continue: void }>();
 
   /** in/out */
   export let config: MailAccount;
@@ -151,6 +156,30 @@
   function onProtocolChanged() {
     onTLSChanged();
     onPortChanged();
+  }
+
+  async function onKeyInHostname(event: KeyboardEvent) {
+    if (!(event.key == "Enter" || event.key == "Tab") || event.shiftKey || event.ctrlKey || event.altKey) {
+      return;
+    }
+    event.preventDefault();
+    if (!stepFull && outgoing) {
+      // Expand all fields
+      // `onContinue()` here only expands one of outgoing/incoming, not both, so need to call parent
+      dispatchEvent("continue");
+      await tick();
+    }
+    // Move to next field: outgoing hostname, or corresponding port
+    let selector = stepFull
+      ? ".incoming.port input"
+      : ".outgoing.hostname input";
+    let inputE = document.querySelector(selector) as HTMLInputElement;
+    console.log("next field", selector, inputE);
+    if (!inputE) {
+      return;
+    }
+    inputE.focus();
+    inputE.select();
   }
 
   let hostnameError: Error | null = null;
