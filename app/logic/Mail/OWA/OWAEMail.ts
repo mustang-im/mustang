@@ -1,12 +1,13 @@
 import { EMail } from "../EMail";
 import type { OWAFolder } from "./OWAFolder";
+import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import { OWAEvent } from "../../Calendar/OWA/OWAEvent";
 import { Tag, getTagByName } from "../Tag";
 import OWACreateItemRequest from "./Request/OWACreateItemRequest";
 import OWADeleteItemRequest from "./Request/OWADeleteItemRequest";
 import OWAUpdateItemRequest from "./Request/OWAUpdateItemRequest";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { Scheduling, ResponseType, type Responses } from "../../Calendar/Invitation";
+import { Scheduling } from "../../Calendar/Invitation";
 import { base64ToArrayBuffer, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
@@ -152,15 +153,12 @@ export class OWAEMail extends EMail {
     await this.folder.account.callOWA(request);
   }
 
-  async respondToInvitation(response: Responses): Promise<void> {
-    assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
-    let request = new OWACreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
-    request.addField(ResponseTypes[response], "ReferenceItemId", {
-      __type: "ItemId:#Exchange",
-      Id: this.itemID,
-    });
-    await this.folder.account.callOWA(request);
-    await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
+  getUpdateCalendars(): OWACalendar[] {
+    assert(this.scheduling && this.event, "Must have event to find calendar");
+    if (this.folder.account.calendar && (this.scheduling == Scheduling.Request || this.folder.account.calendar.events.some(event => event.calUID == this.event.calUID))) {
+      return [this.folder.account.calendar];
+    }
+    return [];
   }
 
   /** OWA only provides event data for invitations,
@@ -251,12 +249,6 @@ const ExchangeScheduling: Record<string, number> = {
   "IPM.Schedule.Meeting.Resp.Neg": Scheduling.Declined,
   "IPM.Schedule.Meeting.Request": Scheduling.Request,
   "IPM.Schedule.Meeting.Canceled": Scheduling.Cancellation,
-};
-
-const ResponseTypes: Record<Responses, string> = {
-  [ResponseType.Accept]: "AcceptItem",
-  [ResponseType.Tentative]: "TentativelyAcceptItem",
-  [ResponseType.Decline]: "DeclineItem",
 };
 
 function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {

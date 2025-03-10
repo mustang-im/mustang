@@ -1,5 +1,6 @@
 import { EMail } from "../EMail";
 import { type EWSFolder, getEWSItem } from "./EWSFolder";
+import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import { EWSEvent } from "../../Calendar/EWS/EWSEvent";
 import { type Tag, getTagByName } from "../Tag";
 import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
@@ -7,7 +8,7 @@ import EWSCreateItemRequest from "./Request/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "./Request/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "./Request/EWSUpdateItemRequest";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { Scheduling, ResponseType, type Responses } from "../../Calendar/Invitation";
+import { Scheduling } from "../../Calendar/Invitation";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { base64ToArrayBuffer, assert, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
@@ -18,12 +19,6 @@ const ExchangeScheduling: Record<string, number> = {
   "IPM.Schedule.Meeting.Resp.Neg": Scheduling.Declined,
   "IPM.Schedule.Meeting.Request": Scheduling.Request,
   "IPM.Schedule.Meeting.Canceled": Scheduling.Cancellation,
-};
-
-const ResponseTypes: Record<Responses, string> = {
-  [ResponseType.Accept]: "AcceptItem",
-  [ResponseType.Tentative]: "TentativelyAcceptItem",
-  [ResponseType.Decline]: "DeclineItem",
 };
 
 export class EWSEMail extends EMail {
@@ -199,12 +194,12 @@ export class EWSEMail extends EMail {
     await this.folder.account.callEWS(request);
   }
 
-  async respondToInvitation(response: Responses): Promise<void> {
-    assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
-    let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
-    request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.itemID });
-    await this.folder.account.callEWS(request);
-    await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
+  getUpdateCalendars(): EWSCalendar[] {
+    assert(this.scheduling && this.event, "Must have event to find calendar");
+    if (this.folder.account.calendar && (this.scheduling == Scheduling.Request || this.folder.account.calendar.events.some(event => event.calUID == this.event.calUID))) {
+      return [this.folder.account.calendar];
+    }
+    return [];
   }
 
   /** EWS only provides event data for invitations,

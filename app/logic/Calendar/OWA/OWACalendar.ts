@@ -1,9 +1,19 @@
 import { Calendar } from "../Calendar";
+import { Scheduling, ResponseType, type Responses } from "../Invitation";
 import { OWAEvent } from "./OWAEvent";
 import type { OWAAccount } from "../../Mail/OWA/OWAAccount";
+import type { OWAEMail } from "../../Mail/OWA/OWAEMail";
+import OWACreateItemRequest from "../../Mail/OWA/Request/OWACreateItemRequest";
 import { kMaxFetchCount } from "../../Mail/OWA/OWAFolder";
+import { assert, NotSupported } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
+
+const ResponseTypes: Record<Responses, string> = {
+  [ResponseType.Accept]: "AcceptItem",
+  [ResponseType.Tentative]: "TentativelyAcceptItem",
+  [ResponseType.Decline]: "DeclineItem",
+};
 
 export class OWACalendar extends Calendar {
   readonly protocol: string = "calendar-owa";
@@ -12,6 +22,17 @@ export class OWACalendar extends Calendar {
 
   newEvent(parentEvent?: OWAEvent): OWAEvent {
     return new OWAEvent(this, parentEvent);
+  }
+
+  async respondToInvitation(email: OWAEMail, response: Responses) {
+    assert(email.scheduling == Scheduling.Request, "Only invitations can be responded to");
+    let request = new OWACreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
+    request.addField(ResponseTypes[response], "ReferenceItemId", {
+      __type: "ItemId:#Exchange",
+      Id: email.itemID,
+    });
+    await this.account.callOWA(request);
+    await email.deleteMessageLocally(); // Exchange deletes the message from the inbox
   }
 
   protected getEventByItemID(id: string): OWAEvent | void {
