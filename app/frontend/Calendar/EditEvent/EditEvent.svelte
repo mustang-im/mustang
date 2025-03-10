@@ -1,72 +1,6 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <vbox flex class="event-edit-window">
-  <Stack>
-    <hbox class="title-background" style="--header-color: {$selectedCalendar.color}" />
-    <hbox class="window-title-bar">
-      <hbox class="buttons">
-        {#if !isFullWindow}
-          <RoundButton
-            label={$t`Expand dialog size to full window`}
-            icon={ExpandDialogIcon}
-            onClick={onExpand}
-            classes="plain"
-            border={false}
-            iconSize="16px"
-            />
-        {/if}
-        {#if event.response == ResponseType.Unknown || event.response == ResponseType.Organizer}
-          <RoundButton
-            label={$t`Delete Event`}
-            icon={DeleteIcon}
-            onClick={onDelete}
-            disabled={!event.dbID && !event.parentEvent}
-            classes="plain delete"
-            border={false}
-            iconSize="16px"
-            />
-        {/if}
-      </hbox>
-      <hbox class="account-icon">
-        <hbox class="account-icon-dummy">
-          <Button icon={ParticipantsIcon} />
-        </hbox>
-      </hbox>
-      <hbox class="account-selector">
-        <AccountDropDown bind:selectedAccount={$selectedCalendar} accounts={appGlobal.calendars} />
-      </hbox>
-      <hbox flex class="spacer" />
-      <hbox class="buttons">
-        {#if isFullWindow}
-          <RoundButton
-            label={$t`Shrink dialog to sidebar`}
-            icon={ShrinkDialogIcon}
-            onClick={onShrink}
-            classes="plain"
-            border={false}
-            iconSize="16px"
-            />
-        {/if}
-        {#if canSave}
-          <RoundButton
-            label={$t`Save`}
-            icon={SaveIcon}
-            onClick={onSave}
-            classes="plain save-or-close"
-            filled={true}
-            iconSize="16px"
-            />
-        {:else}
-          <RoundButton
-            label={$t`Cancel`}
-            icon={CloseIcon}
-            onClick={onClose}
-            classes="plain save-or-close"
-            iconSize="16px"
-            />
-        {/if}
-      </hbox>
-    </hbox>
-  </Stack>
+  <DialogHeader {event} {repeatBox} />
   <Scroll>
     <vbox class="columns" flex class:show-description={showDescription}>
       <vbox class="column1">
@@ -134,10 +68,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { EventEditMustangApp, calendarMustangApp } from "../CalendarMustangApp";
   import { ResponseType } from "../../../logic/Calendar/Invitation";
-  import { selectedCalendar } from "../selected";
-  import { appGlobal } from "../../../logic/app";
   import TitleBox from "./TitleBox.svelte";
   import TimeBox from "./TimeBox.svelte";
   import RepeatBox from './RepeatBox.svelte';
@@ -148,11 +79,10 @@
   import DescriptionBox from './DescriptionBox.svelte';
   import InvitationResponseButtons from "./InvitationResponseButtons.svelte";
   import Section from "./Section.svelte";
-  import AccountDropDown from "../../Shared/AccountDropDown.svelte";
+  import SectionTitle from "./SectionTitle.svelte";
+  import DialogHeader from "./DialogHeader.svelte";
   import ExpanderButtons from "../../Shared/ExpanderButtons.svelte";
   import ExpanderButton from "../../Shared/ExpanderButton.svelte";
-  import RoundButton from "../../Shared/RoundButton.svelte";
-  import Button from "../../Shared/Button.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import RepeatIcon from "lucide-svelte/icons/repeat-2";
   import ReminderIcon from "lucide-svelte/icons/bell";
@@ -160,19 +90,10 @@
   import OnlineMeetingIcon from "lucide-svelte/icons/video";
   import LocationIcon from "lucide-svelte/icons/map-pin";
   import DescriptionIcon from "lucide-svelte/icons/notebook-pen";
-  import ExpandDialogIcon from "lucide-svelte/icons/chevrons-left";
-  import ShrinkDialogIcon from "lucide-svelte/icons/chevrons-right";
-  import DeleteIcon from "lucide-svelte/icons/trash-2";
-  import SaveIcon from "lucide-svelte/icons/check";
-  import CloseIcon from "lucide-svelte/icons/x";
-  import { NotImplemented } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
-  import SectionTitle from "./SectionTitle.svelte";
-  import Stack from "../../Shared/Stack.svelte";
 
   export let event: Event;
 
-  let isFullWindow = false;
   $: showRepeat = $event.repeat;
   $: showReminder = !!$event.alarm;
   $: showParticipants = $event.participants.hasItems || $event.response == ResponseType.Organizer;
@@ -181,52 +102,6 @@
   $: showDescription = !!$event.descriptionHTML;
 
   let repeatBox: RepeatBox;
-  $: canSave = event && $event.title && $event.startTime && $event.endTime &&
-      event.startTime.getTime() <= event.endTime.getTime();
-  $: oldTitle = event?.title || $t`Event`;
-
-  async function onSave() {
-    if (repeatBox && !repeatBox.confirmAndChangeRule()) {
-      return;
-    }
-    await event.saveToServer();
-    await event.save();
-    if (!event.calendar.events.contains(event)) {
-      event.calendar.events.add(event);
-    }
-    if (event.recurrenceRule) {
-      event.fillRecurrences(new Date(Date.now() + 1e11));
-    }
-    onClose();
-  }
-
-  async function onDelete() {
-    if (event.recurrenceRule) {
-      if (!confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
-        return;
-      }
-    }
-    await event.deleteFromServer();
-    await event.deleteIt();
-    onClose();
-  }
-
-  function onExpand() {
-    isFullWindow = true;
-    throw new NotImplemented("Cannot expand the dialog to full window yet");
-  }
-
-  function onShrink() {
-    isFullWindow = false;
-    throw new NotImplemented("Cannot shrink the dialog to side bar yet");
-  }
-
-  function onClose() {
-    event.title ||= oldTitle;
-    let me = calendarMustangApp.subApps.find(app => app instanceof EventEditMustangApp && app.mainWindowProperties.event == event);
-    calendarMustangApp.subApps.remove(me);
-  }
-
 
   function expandRepeat(): void {
     event.repeat = true;
@@ -256,51 +131,6 @@
 </script>
 
 <style>
-  .window-title-bar,
-  .title-background,
-  .event-edit-window :global(.stack) {
-    height: 48px;
-    color: white;
-    margin-block-end: 8px;
-    flex: none;
-  }
-  .title-background {
-    background:
-      linear-gradient(var(--header-color), var(--header-color)),
-      linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
-      url("../../asset/header-background.jpeg");
-    background-blend-mode: multiply;
-    background-repeat: repeat-x;
-  }
-  /*  background-image: url("../../asset/header-background.jpeg");*/
-  .window-title-bar .buttons :global(button) {
-    color: white;
-  }
-  .window-title-bar .buttons :global(button.save-or-close) {
-    border-color: white;
-  }
-  .window-title-bar .buttons :global(.save-or-close path) {
-    stroke-width: 3px;
-  }
-
-  .account-icon {
-    margin-inline-start: 32px;
-    margin-inline-end: 8px;
-    align-self: end;
-    position: relative;
-    left: 0;
-    top: 4px;
-  }
-  .account-selector {
-    align-items: end;
-    margin-block-end: 4px;
-  }
-  .account-icon-dummy {
-    height: 24px;
-    width: 24px;
-    align-items: center;
-    justify-content: center;
-  }
   .columns {
     padding: 12px 16px 4px 16px;
   }
@@ -329,9 +159,6 @@
   .buttons {
     align-items: center;
     padding: 8px;
-  }
-  .buttons :global(button.delete) {
-    background-color: lightsalmon;
   }
   :global(.inline) {
     display: inline-flex !important;
