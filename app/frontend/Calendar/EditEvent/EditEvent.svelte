@@ -1,69 +1,72 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <vbox flex class="event-edit-window">
-  <hbox class="window-title-bar">
-    <hbox class="buttons">
-      {#if !isFullWindow}
-        <RoundButton
-          label={$t`Expand dialog size to full window`}
-          icon={ExpandDialogIcon}
-          onClick={onExpand}
-          classes="plain"
-          border={false}
-          iconSize="16px"
-          />
-      {/if}
-      {#if event.response == ResponseType.Unknown || event.response == ResponseType.Organizer}
-        <RoundButton
-          label={$t`Delete Event`}
-          icon={DeleteIcon}
-          onClick={onDelete}
-          disabled={!event.dbID && !event.parentEvent}
-          classes="plain delete"
-          border={false}
-          iconSize="16px"
-          />
-      {/if}
-    </hbox>
-    <hbox class="account-icon">
-      <hbox class="account-icon-dummy">
-        <Button icon={ParticipantsIcon} />
+  <Stack>
+    <hbox class="title-background" style="--header-color: {$selectedCalendar.color}" />
+    <hbox class="window-title-bar">
+      <hbox class="buttons">
+        {#if !isFullWindow}
+          <RoundButton
+            label={$t`Expand dialog size to full window`}
+            icon={ExpandDialogIcon}
+            onClick={onExpand}
+            classes="plain"
+            border={false}
+            iconSize="16px"
+            />
+        {/if}
+        {#if event.response == ResponseType.Unknown || event.response == ResponseType.Organizer}
+          <RoundButton
+            label={$t`Delete Event`}
+            icon={DeleteIcon}
+            onClick={onDelete}
+            disabled={!event.dbID && !event.parentEvent}
+            classes="plain delete"
+            border={false}
+            iconSize="16px"
+            />
+        {/if}
+      </hbox>
+      <hbox class="account-icon">
+        <hbox class="account-icon-dummy">
+          <Button icon={ParticipantsIcon} />
+        </hbox>
+      </hbox>
+      <hbox class="account-selector">
+        <AccountDropDown bind:selectedAccount={$selectedCalendar} accounts={appGlobal.calendars} />
+      </hbox>
+      <hbox flex class="spacer" />
+      <hbox class="buttons">
+        {#if isFullWindow}
+          <RoundButton
+            label={$t`Shrink dialog to sidebar`}
+            icon={ShrinkDialogIcon}
+            onClick={onShrink}
+            classes="plain"
+            border={false}
+            iconSize="16px"
+            />
+        {/if}
+        {#if canSave}
+          <RoundButton
+            label={$t`Save`}
+            icon={SaveIcon}
+            onClick={onSave}
+            classes="plain save-or-close"
+            filled={true}
+            iconSize="16px"
+            />
+        {:else}
+          <RoundButton
+            label={$t`Cancel`}
+            icon={CloseIcon}
+            onClick={onClose}
+            classes="plain save-or-close"
+            iconSize="16px"
+            />
+        {/if}
       </hbox>
     </hbox>
-    <hbox class="account-selector">
-      <AccountDropDown bind:selectedAccount={$selectedCalendar} accounts={appGlobal.calendars} />
-    </hbox>
-    <hbox flex class="spacer" />
-    <hbox class="buttons">
-      {#if isFullWindow}
-        <RoundButton
-          label={$t`Shrink dialog to sidebar`}
-          icon={ShrinkDialogIcon}
-          onClick={onShrink}
-          classes="plain"
-          border={false}
-          iconSize="16px"
-          />
-      {/if}
-      {#if canSave}
-        <RoundButton
-          label={$t`Save`}
-          icon={SaveIcon}
-          onClick={onSave}
-          classes="plain save-or-close"
-          filled={true}
-          iconSize="16px"
-          />
-      {:else}
-        <RoundButton
-          label={$t`Cancel`}
-          icon={CloseIcon}
-          onClick={onClose}
-          classes="plain save-or-close"
-          iconSize="16px"
-          />
-      {/if}
-    </hbox>
-  </hbox>
+  </Stack>
   <Scroll>
     <vbox class="columns" flex class:show-description={showDescription}>
       <vbox class="column1">
@@ -165,6 +168,7 @@
   import { NotImplemented } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
   import SectionTitle from "./SectionTitle.svelte";
+  import Stack from "../../Shared/Stack.svelte";
 
   export let event: Event;
 
@@ -172,9 +176,9 @@
   $: showRepeat = $event.repeat;
   $: showReminder = !!$event.alarm;
   $: showParticipants = $event.participants.hasItems || $event.response == ResponseType.Organizer;
-  $: showLocation = $event.location;
+  $: showLocation = !!$event.location;
   $: showOnlineMeeting = $event.isOnline;
-  $: showDescription = $event.descriptionHTML;
+  $: showDescription = !!$event.descriptionHTML;
 
   let repeatBox: RepeatBox;
   $: canSave = event && $event.title && $event.startTime && $event.endTime &&
@@ -252,12 +256,23 @@
 </script>
 
 <style>
-  .window-title-bar {
+  .window-title-bar,
+  .title-background,
+  .event-edit-window :global(.stack) {
     height: 48px;
-    background-color: burlywood;
     color: white;
     margin-block-end: 8px;
+    flex: none;
   }
+  .title-background {
+    background:
+      linear-gradient(var(--header-color), var(--header-color)),
+      linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
+      url("../../asset/header-background.jpeg");
+    background-blend-mode: multiply;
+    background-repeat: repeat-x;
+  }
+  /*  background-image: url("../../asset/header-background.jpeg");*/
   .window-title-bar .buttons :global(button) {
     color: white;
   }
