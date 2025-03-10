@@ -152,12 +152,16 @@
   async function onContextMenu(contextInfo: ContextInfo) {
     contextMenuItems = await buildContextMenu(contextInfo, webviewE);
     console.log("Context menu items:", contextMenuItems.contents.map(i => i.id).join(", "), contextMenuItems.contents);
-    await appGlobal.remoteApp.openMenu(contextMenuItems.contents.map(item => ({
+    let menuItems = contextMenuItems.contents.map(item => ({
       id: item.id,
       label: item.label,
       icon: item.icon,
       click: () => catchErrors(item.action),
-    })));
+    }));
+    if (!menuItems.length) {
+      return;
+    }
+    await appGlobal.remoteApp.openMenu(menuItems);
   }
 
   let size: { width: number; height: number };
