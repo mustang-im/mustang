@@ -5,7 +5,7 @@
 
 <hbox class="header">{$t`Account name`}</hbox>
 <hbox class="subtitle">{$t`How do you want to call the account?`} - {config.emailAddress}</hbox>
-<input type="text" bind:value={config.name} />
+<input type="text" bind:value={config.name} autofocus />
 
 <hbox class="header">{$t`Select the workspace`}</hbox>
 <WorkspaceSelector {config} horizontal={true} />

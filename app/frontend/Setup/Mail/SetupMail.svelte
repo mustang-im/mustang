@@ -3,7 +3,7 @@
   <vbox class="page-box" step={step}>
     {#if step == Step.EmailAddress || step == Step.FindConfig || step == Step.FoundConfig || step == Step.CheckConfig || step == Step.Error}
       <EmailAddressPassword bind:emailAddress bind:password
-        on:continue={onEmailAddressSucceeded} />
+        on:continue={onContinue} />
     {/if}
     {#if errorMessage}
       <ErrorMessage {errorMessage} {errorGravity}
@@ -103,9 +103,6 @@
   let step: Step = Step.EmailAddress;
   let abort = new AbortController();
 
-  async function onEmailAddressSucceeded() {
-    step = Step.FindConfig;
-  }
   function onFindConfigSucceeded() {
     if (step != Step.FindConfig) {
       return;
