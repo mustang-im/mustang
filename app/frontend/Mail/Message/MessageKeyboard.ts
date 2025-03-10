@@ -14,13 +14,13 @@ export async function onKeyOnList(event: KeyboardEvent) {
   if (!event.altKey && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
     if (event.key == "m") {
       event.stopPropagation();
-      let isRead = message.isRead;
+      let isRead = majority(messages, msg => msg.isRead);
       await Promise.allSettled(messages.map(msg =>
         msg.markRead(!isRead)));
       return;
     } else if (event.key == "s") {
       event.stopPropagation();
-      let isStarred = message.isStarred;
+      let isStarred = majority(messages, msg => msg.isStarred);
       await Promise.allSettled(messages.map(msg =>
         msg.markStarred(!isStarred)));
       return;
@@ -73,4 +73,8 @@ export async function onKeyOnMessage(event: KeyboardEvent) {
     }
   }
   */
+}
+
+function majority<T>(array: Array<T>, condition: (item: T) => boolean): boolean {
+  return array.filter(condition).length / array.length > 0.5;
 }
