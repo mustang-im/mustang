@@ -3,7 +3,7 @@ body {
 }
 
 blockquote {
-  border-left: 3px solid blue;
+  border-left: 3px solid #20AE9E;
   padding-inline-start: 20px;
   margin-inline-start: 0px;
 }
