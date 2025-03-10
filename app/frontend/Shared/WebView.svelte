@@ -23,6 +23,7 @@
 <script lang="ts">
   // #if [!WEBMAIL]
   import { buildContextMenu, MenuItem, type ContextInfo } from "./ContextMenu";
+  import { onKeyOnMessage } from "../Mail/Message/MessageKeyboard";
   import { appGlobal } from "../../logic/app";
   // import { Menu } from "@svelteuidev/core";
   // #endif
@@ -104,7 +105,7 @@
         if (autoSize) {
           webviewE.addEventListener("did-finish-load", onLoadResize);
         }
-        await addClickListener();
+        await addInputListener();
         await addLinkListener();
         // #endif
       } catch (ex) {
@@ -121,11 +122,13 @@
   }
 
   // #if [!WEBMAIL]
-  async function addClickListener() {
+  async function addInputListener() {
     let id = (webviewE as any).getWebContentsId();
     await appGlobal.remoteApp.addEventListenerWebContents(id, "input-event", (event) => {
       if (event.type == "mouseDown") {
         webviewE.click();
+      } else if (event.type == "rawKeyDown") {
+        onKeyOnMessage(new KeyboardEvent("keydown", event));
       }
     });
   }
