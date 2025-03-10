@@ -38,7 +38,7 @@ async function fetchConfigFromISPDB(domain: string, abort: AbortController) {
 async function fetchConfigFromISP(domain: string, emailAddress: string | null, abort: AbortController) {
   let url1 = `https://autoconfig.${domain}/mail/config-v1.1.xml`;
   if (emailAddress) {
-    url1 += `?emailaddress=${emailAddress}`;
+    url1 += `?emailaddress=${encodeURIComponent(emailAddress)}`;
   }
   let url2 = `https://${domain}/.well-known/autoconfig/mail/config-v1.1.xml`;
   let url3 = `http://autoconfig.${domain}/mail/config-v1.1.xml`; // TODO HTTP needed, given MX?
