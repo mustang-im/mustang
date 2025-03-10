@@ -27,18 +27,20 @@ export class SQLAddressbook {
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO addressbook (
           idStr, name, protocol, url, username,
-          userRealname, workspace, syncState
+          userRealname, workspace, syncState, configJSON
         ) VALUES (
           ${acc.id}, ${acc.name}, ${acc.protocol}, ${acc.url}, ${acc.username},
-          ${acc.userRealname}, ${acc.workspace?.id}, ${acc.syncState}
+          ${acc.userRealname}, ${acc.workspace?.id}, ${acc.syncState},
+          ${JSON.stringify(acc.toConfigJSON(), null, 2)}
         )`);
       acc.dbID = insert.lastInsertRowid;
     } else {
       await (await getDatabase()).run(sql`
         UPDATE addressbook SET
           name = ${acc.name}, url = ${acc.url}, username = ${acc.username},
-          userRealname = ${acc.userRealname}, workspace = ${acc.workspace?.id},
-          syncState = ${acc.syncState}
+          userRealname = ${acc.userRealname},
+          workspace = ${acc.workspace?.id}, syncState = ${acc.syncState},
+          configJSON = ${JSON.stringify(acc.toConfigJSON(), null, 2)}
         WHERE id = ${acc.dbID}
         `);
     }
@@ -58,7 +60,7 @@ export class SQLAddressbook {
     let row = await (await getDatabase()).get(sql`
       SELECT
         idStr, name, protocol, url, username,
-        userRealname, workspace, syncState
+        userRealname, workspace, syncState, configJSON
       FROM addressbook
       WHERE id = ${dbID}
       `) as any;
@@ -69,6 +71,7 @@ export class SQLAddressbook {
     acc.username = sanitize.string(row.username, null);
     acc.url = sanitize.url(row.url, null);
     acc.userRealname = sanitize.label(row.userRealname, appGlobal.me.name ?? "You");
+    acc.fromConfigJSON(sanitize.json(row.configJSON, {}));
     acc.workspace = row.workspace
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
       : null;

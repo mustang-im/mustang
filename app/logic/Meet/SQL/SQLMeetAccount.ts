@@ -1,5 +1,6 @@
 import type { MeetAccount } from "../MeetAccount";
 import { getDatabase } from "./SQLDatabase";
+import { SQLMeetStorage } from "./SQLMeetStorage";
 import { newMeetAccountForProtocol } from "../AccountsList/MeetAccounts";
 import { getPassword, setPassword, deletePassword } from "../../Auth/passwordStore";
 import { appGlobal } from "../../app";
@@ -27,17 +28,19 @@ export class SQLMeetAccount {
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO meetAccount (
           idStr, name, protocol, url, username,
-          workspace
+          workspace, configJSON
         ) VALUES (
           ${acc.id}, ${acc.name}, ${acc.protocol}, ${acc.url}, ${acc.username},
-          ${acc.workspace?.id}
+          ${acc.workspace?.id},
+          ${JSON.stringify(acc.toConfigJSON(), null, 2)}
         )`);
       acc.dbID = insert.lastInsertRowid;
     } else {
       await (await getDatabase()).run(sql`
         UPDATE meetAccount SET
           name = ${acc.name}, url = ${acc.url}, username = ${acc.username},
-          workspace = ${acc.workspace?.id}
+          workspace = ${acc.workspace?.id},
+          configJSON = ${JSON.stringify(acc.toConfigJSON(), null, 2)}
         WHERE id = ${acc.dbID}
         `);
     }
@@ -59,7 +62,7 @@ export class SQLMeetAccount {
     let row = await (await getDatabase()).get(sql`
       SELECT
         idStr, name, protocol, url, username,
-        workspace
+        workspace, configJSON
       FROM meetAccount
       WHERE id = ${dbID}
       `) as any;
@@ -69,11 +72,12 @@ export class SQLMeetAccount {
     assert(acc.protocol == sanitize.alphanumdash(row.protocol), "Meet account object of wrong type passed in");
     acc.username = sanitize.string(row.username, null);
     acc.url = sanitize.url(row.url, null);
+    acc.fromConfigJSON(sanitize.json(row.configJSON, {}));
     acc.workspace = row.workspace
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
       : null;
     acc.password = await getPassword("chat." + acc.id);
-    acc.storage = new SQLMeetAccount();
+    acc.storage = new SQLMeetStorage();
     return acc;
   }
 

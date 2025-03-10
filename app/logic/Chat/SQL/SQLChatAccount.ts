@@ -31,12 +31,13 @@ export class SQLChatAccount {
           idStr, name, protocol,
           username,
           hostname, port, tls, url,
-          userRealname, workspace
+          userRealname, workspace, configJSON
         ) VALUES (
           ${acc.id}, ${acc.name}, ${acc.protocol},
           ${acc.username},
           ${acc.hostname}, ${acc.port}, ${acc.tls}, ${acc.url},
-          ${acc.userRealname}, ${acc.workspace?.id}
+          ${acc.userRealname}, ${acc.workspace?.id},
+          ${JSON.stringify(acc.toConfigJSON(), null, 2)}
         )`);
       acc.dbID = insert.lastInsertRowid;
     } else {
@@ -45,7 +46,8 @@ export class SQLChatAccount {
           name = ${acc.name},
           username = ${acc.username},
           hostname = ${acc.hostname}, port = ${acc.port}, tls = ${acc.tls}, url = ${acc.url},
-          userRealname = ${acc.userRealname}, workspace = ${acc.workspace?.id}
+          userRealname = ${acc.userRealname}, workspace = ${acc.workspace?.id},
+          configJSON = ${JSON.stringify(acc.toConfigJSON(), null, 2)}
         WHERE id = ${acc.dbID}
         `);
     }
@@ -69,7 +71,7 @@ export class SQLChatAccount {
         idStr, name, protocol,
         username,
         hostname, port, tls, url,
-        userRealname, workspace
+        userRealname, workspace, configJSON
       FROM chatAccount
       WHERE id = ${dbID}
       `) as any;
@@ -83,6 +85,7 @@ export class SQLChatAccount {
     acc.tls = sanitize.enum(row.tls, [TLSSocketType.Plain, TLSSocketType.TLS, TLSSocketType.STARTTLS], TLSSocketType.Unknown);
     acc.url = sanitize.url(row.url, null);
     acc.userRealname = sanitize.label(row.userRealname, appGlobal.me.name);
+    acc.fromConfigJSON(sanitize.json(row.configJSON, {}));
     acc.workspace = row.workspace
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
       : null;

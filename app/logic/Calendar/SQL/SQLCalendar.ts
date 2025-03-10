@@ -27,17 +27,19 @@ export class SQLCalendar {
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO calendar (
           idStr, name, protocol, url, username,
-          workspace, syncState
+          workspace, syncState, configJSON
         ) VALUES (
           ${cal.id}, ${cal.name}, ${cal.protocol}, ${cal.url}, ${cal.username},
-          ${cal.workspace?.id}, ${cal.syncState}
+          ${cal.workspace?.id}, ${cal.syncState},
+          ${JSON.stringify(cal.toConfigJSON(), null, 2)}
         )`);
       cal.dbID = insert.lastInsertRowid;
     } else {
       await (await getDatabase()).run(sql`
         UPDATE calendar SET
           name = ${cal.name}, url = ${cal.url}, username = ${cal.username},
-          workspace = ${cal.workspace?.id}, syncState = ${cal.syncState}
+          workspace = ${cal.workspace?.id}, syncState = ${cal.syncState},
+          configJSON = ${JSON.stringify(cal.toConfigJSON(), null, 2)}
         WHERE id = ${cal.dbID}
         `);
     }
@@ -57,7 +59,7 @@ export class SQLCalendar {
     let row = await (await getDatabase()).get(sql`
       SELECT
         idStr, name, protocol, url, username,
-        workspace, syncState
+        workspace, syncState, configJSON
       FROM calendar
       WHERE id = ${dbID}
       `) as any;
@@ -67,6 +69,7 @@ export class SQLCalendar {
     assert(cal.protocol == sanitize.alphanumdash(row.protocol), "Calendar object of wrong type passed in");
     cal.username = sanitize.string(row.username, null);
     cal.url = sanitize.url(row.url, null);
+    cal.fromConfigJSON(sanitize.json(row.configJSON, {}));
     cal.workspace = row.workspace
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
       : null;

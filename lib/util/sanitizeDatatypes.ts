@@ -240,6 +240,22 @@ class Sanitize {
     }
     return haveError("Allowed value", unchecked, fallback);
   }
+
+  json(unchecked: string | Object, fallback: Object | Symbol = throwErrors): Object {
+    if (!unchecked) {
+      return haveError("JSON is empty", unchecked, fallback);
+    } else if (typeof (unchecked) == "object") {
+      return unchecked;
+    } else if (typeof (unchecked) == "string") {
+      try {
+        return JSON.parse(unchecked);
+      } catch (ex) {
+        return haveError("Malformed JSON string", unchecked, fallback);
+      }
+    } else {
+      return haveError("Should be JSON, but got wrong data type " + typeof(unchecked), unchecked, fallback);
+    }
+  }
 }
 
 function haveError(errorMsg: string, unchecked: any, fallback: any): any {

@@ -83,7 +83,7 @@ export class SQLMailAccount {
       `) as any;
     acc.dbID = dbID;
     row.id = row.idStr;
-    row.config = JSON.parse(sanitize.nonemptystring(row.configJSON, "{}"));
+    row.config = sanitize.json(row.configJSON, {});
     JSONMailAccount.read(acc, row);
     acc.password = await getPassword("mail." + acc.id);
     acc.storage = new SQLMailStorage();
