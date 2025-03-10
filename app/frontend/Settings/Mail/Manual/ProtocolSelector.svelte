@@ -1,6 +1,8 @@
 <select value={config.protocol} required disabled={!isSetup}
   on:change={onProtocolChanged}
-  class="protocol">
+  class="protocol"
+  {tabindex}
+  >
   {#each listMailProtocols() as protocol}
     <option value={protocol}>{labelForMailProtocol(protocol)}</option>
   {/each}
@@ -15,6 +17,7 @@
   /** in/out */
   export let config: MailAccount;
   export let isSetup: boolean;
+  export let tabindex: number | undefined = undefined;
 
   function onProtocolChanged(event: Event) {
     let el = event.target as HTMLSelectElement;

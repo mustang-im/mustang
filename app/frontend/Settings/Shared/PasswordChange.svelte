@@ -1,4 +1,9 @@
-<input type="password" bind:value={newPassword} on:change={onPasswordChanged} placeholder="••••••••" />
+<input type="password"
+  bind:value={newPassword}
+  on:change={onPasswordChanged}
+  placeholder="••••••••"
+  {tabindex}
+  />
 
 <script lang="ts">
   /** Does not populate the existing password into the text field,
@@ -7,6 +12,7 @@
 
   /** out only */
   export let password: string;
+  export let tabindex: number | undefined = undefined;
 
   let newPassword: string;
   function onPasswordChanged() {

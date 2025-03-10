@@ -19,12 +19,13 @@
     <hbox class="protocol outgoing">{config.protocol}</hbox>
   {:else}
     <hbox>
-      <ProtocolSelector bind:config {isSetup} on:newProtocol={onProtocolChanged} />
+      <ProtocolSelector bind:config {isSetup} on:newProtocol={onProtocolChanged} tabindex={1} />
     </hbox>
   {/if}
 
   <hbox class="hostname" class:error={hostnameError} class:outgoing>
     <input type="text" bind:value={config.hostname} required
+      tabindex={2}
       autofocus={!outgoing}
       on:keydown={event => onKeyInHostname(event)}
       />
@@ -32,7 +33,7 @@
 
   {#if stepFull}
     <hbox class="port" class:error={portError} class:outgoing class:incoming={!outgoing}>
-      <input type="number" bind:value={config.port} required on:change={onPortChanged} />
+      <input type="number" bind:value={config.port} required on:change={onPortChanged} tabindex={3} />
       {#if !isStandardPort && defaultPort}
         <hbox class="default">{$t`Default: ${defaultPort}`}</hbox>
       {/if}
@@ -50,7 +51,7 @@
         </vbox>
       {/if}
       <hbox class="row">
-        <select bind:value={config.tls} required on:change={onTLSChanged}>
+        <select bind:value={config.tls} required on:change={onTLSChanged} tabindex={4}>
           <option value={TLSSocketType.TLS}>TLS</option>
           <option value={TLSSocketType.STARTTLS}>STARTTLS</option>
           <option value={TLSSocketType.Plain}>{$t`Unprotected`}</option>
@@ -68,7 +69,7 @@
     </vbox>
 
     <hbox class="authMethod" class:error={authError}>
-      <select bind:value={config.authMethod} required>
+      <select bind:value={config.authMethod} required tabindex={5}>
         <option value={AuthMethod.Password}>{$t`Password`}</option>
         <option value={AuthMethod.OAuth2}>OAuth2 / {$t`MFA`}</option>
         <!--
@@ -84,13 +85,13 @@
 
     <hbox class="username">
       {#if config.authMethod != AuthMethod.None}
-        <input type="text" bind:value={config.username} />
+        <input type="text" bind:value={config.username} tabindex={6} />
       {/if}
     </hbox>
 
     <hbox class="password">
       {#if config.authMethod != AuthMethod.None}
-        <PasswordChange bind:password={config.password}  />
+        <PasswordChange bind:password={config.password} tabindex={7} />
       {/if}
     </hbox>
   {/if}
