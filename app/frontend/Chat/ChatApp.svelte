@@ -1,28 +1,30 @@
-<Splitter name="persons-list" initialRightRatio={4}>
-  <vbox class="left-pane" slot="left">
-    <Header />
-    <PersonsList {chatRooms} bind:selectedChat />
-  </vbox>
-  <vbox class="right-pane" slot="right">
-    {#if messages && selectedChat }
-      <PersonHeader person={selectedChat.contact} />
-      <vbox flex class="messages">
-        <MessageList {messages}>
-          <svelte:fragment slot="message" let:message let:previousMessage>
-            {#if message instanceof UserChatMessage }
-              <Message {message} {previousMessage} hideHeaderFollowup={true} />
-            {:else if message instanceof ChatRoomEvent}
-              <ChatRoomEventUI {message} />
-            {/if}
-            </svelte:fragment>
-        </MessageList>
-      </vbox>
-      <vbox class="editor">
-        <MsgEditor to={selectedChat} />
-      </vbox>
-    {/if}
-  </vbox>
-</Splitter>
+<vbox class="chat-app" style="--account-color: {selectedChat?.account.color}" flex>
+  <Splitter name="persons-list" initialRightRatio={4}>
+    <vbox class="left-pane" slot="left">
+      <Header />
+      <PersonsList {chatRooms} bind:selectedChat />
+    </vbox>
+    <vbox class="right-pane" slot="right">
+      {#if messages && selectedChat }
+        <PersonHeader person={selectedChat.contact} />
+        <vbox flex class="messages">
+          <MessageList {messages}>
+            <svelte:fragment slot="message" let:message let:previousMessage>
+              {#if message instanceof UserChatMessage }
+                <Message {message} {previousMessage} hideHeaderFollowup={true} />
+              {:else if message instanceof ChatRoomEvent}
+                <ChatRoomEventUI {message} />
+              {/if}
+              </svelte:fragment>
+          </MessageList>
+        </vbox>
+        <vbox class="editor">
+          <MsgEditor to={selectedChat} />
+        </vbox>
+      {/if}
+    </vbox>
+  </Splitter>
+</vbox>
 
 <script lang="ts">
   import type { Chat } from "../../logic/Chat/Chat";
@@ -67,8 +69,11 @@
 <style>
   .left-pane {
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on MessageList */
-    background-color: var(--leftbar-bg);
-    color: var(--leftbar-fg);
+    background-image:
+      linear-gradient(var(--account-color), var(--account-color)),
+      linear-gradient(var(--account-bg-overlay), var(--account-bg-overlay));
+    background-blend-mode: overlay;
+    color: var(--account-fg);
   }
   .messages {
     background: url(../asset/background-repeat.png) repeat;
