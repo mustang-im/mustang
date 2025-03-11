@@ -1,9 +1,10 @@
 <hbox class="window-header" class:mac>
   <vbox class="app-logo">
     {#if appName == "Mustang"}
-    <Icon data={logo} size="20px" />
+      <Icon data={logo} size="20px" />
     {/if}
   </vbox>
+  <WorkspaceHeader {selectedApp} />
   <hbox class="app-title">
     {$titleStore ?? selectedApp?.name ?? appName}
   </hbox>
@@ -26,6 +27,7 @@
   import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import { appName } from "../../logic/build";
+  import WorkspaceHeader from "./WorkspaceHeader.svelte";
   import SearchField from "../Shared/SearchField.svelte";
   import Button from "../Shared/Button.svelte";
   import Icon from 'svelte-icon/Icon.svelte';
@@ -68,7 +70,7 @@
   .app-title {
     font-size: 18px;
     align-items: center;
-    margin-inline-start: 12px;
+    margin-inline-start: 4px;
     app-region: drag;
   }
   .right :global(.close),
