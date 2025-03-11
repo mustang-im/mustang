@@ -99,7 +99,7 @@ export class EWSAccount extends MailAccount {
     }, "item:Body");
     if (email.attachments.hasItems) {
       request.addField("Message", "Attachments", {
-        t$ItemAttachment: await Promise.all(email.attachments.contents.map(async attachment => ({
+        t$FileAttachment: await Promise.all(email.attachments.contents.map(async attachment => ({
           t$Name: attachment.filename,
           t$ContentType: attachment.mimeType,
           t$ContentID: attachment.contentID,
