@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <hbox class="attachment"
   draggable="true"
   on:dragstart={onDragStart}

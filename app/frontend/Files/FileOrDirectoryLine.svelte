@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <hbox class="file line"
   class:selected={file == $selectedFile}
   on:click={file instanceof File ? selectThis : toggleOpen}

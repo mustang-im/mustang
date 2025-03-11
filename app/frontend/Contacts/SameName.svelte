@@ -7,7 +7,6 @@
     <vbox class="merge" slot="content">
       {#each $sameName.each as other}
         <hbox class="other-person">
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <hbox on:click={() => catchErrors(() => openPerson(other))} class="linked-object">
             <PersonPicture {person} size={24} />
             <hbox class="name">{other.name}</hbox>

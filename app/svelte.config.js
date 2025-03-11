@@ -16,4 +16,6 @@ export default {
 const ignoreSvelteCompilerWarnings = [
   "a11y-autofocus",
   "a11y-mouse-events-have-key-events",
+  "a11y-click-events-have-key-events",
+  "a11y-no-noninteractive-tabindex",
 ];

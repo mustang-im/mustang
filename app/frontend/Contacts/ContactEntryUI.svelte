@@ -6,7 +6,6 @@
       {/each}
     </select>
   </hbox>
-  <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
   <hbox class="value edit"
     bind:this={inputWrapperEl}
     tabindex="0" on:keydown={(event) => onKeyEnter(event, onEnter)}>
@@ -17,9 +16,7 @@
     <Button on:click={remove} icon={DeleteIcon} iconOnly plain iconSize="14px" label={$t`Delete this information`} />
   </hbox>
 {:else}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <hbox class="purpose display" on:click={startEditing}>{displayPurpose(entry.purpose)}</hbox>
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <hbox class="value" on:click={startEditing}>
     <slot name="display" />
   </hbox>

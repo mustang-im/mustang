@@ -15,7 +15,6 @@
       <input type="text" bind:value={identity.userRealname} name="realname" />
 
       <label for="emailaddress">{$t`Your email address`}</label>
-      <!-- svelte-ignore a11y-autofocus -->
       <input type="email" bind:value={identity.emailAddress} required
         autofocus={!identity.emailAddress}
         name="emailaddress" class="emailaddress" />

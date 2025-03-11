@@ -1,5 +1,4 @@
 <vbox flex class="category-page">
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <hbox class="header">
     <h1 class="name">{category.nameTranslated}</h1>
   </hbox>

@@ -5,7 +5,6 @@
 <vbox flex class="account">
   <grid>
     <label for="name">{$t`Name of the addressbook`}</label>
-    <!-- svelte-ignore a11y-autofocus -->
     <input type="text" bind:value={config.name} name="name"
       placeholder={$t`Private`} autofocus />
   </grid>

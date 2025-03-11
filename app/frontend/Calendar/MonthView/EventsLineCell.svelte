@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <vbox flex class="events" on:click={selectDay} on:dblclick={addEvent}>
   {#if displayEvents && !displayEvents.isEmpty}
     <Scroll>

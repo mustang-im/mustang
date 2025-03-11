@@ -1,5 +1,4 @@
 <vbox class="expander">
-   <!-- svelte-ignore a11y-click-events-have-key-events -->
    <hbox class="header" class:box={headerBox}
       on:click={onExpandToggle}>
     <slot name="header" />

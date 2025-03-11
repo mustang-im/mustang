@@ -17,7 +17,6 @@
       <AttachmentsPane {attachments} />
     {/if}
     <vbox class="send-buttons">
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <RoundButton classes="send-button"
         on:click={send}
         icon={SendIcon}

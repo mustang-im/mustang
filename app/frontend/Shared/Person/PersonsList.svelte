@@ -1,7 +1,6 @@
 <vbox flex class="persons" {size}>
   <SearchField bind:searchTerm placeholder={$t`Search for a person or group`} />
   <FastList items={personsFiltered} columns="auto">
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <vbox class="person" slot="row" let:item={person} on:click={() => selected = person}>
       <PersonLine {person} isSelected={person == selected} {pictureSize} {size}>
         <slot name="top-right" slot="top-right" {person} />

@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <vbox class="account" class:selected={itemSelected} on:click={onSelect}>
   <hbox class="label">
     {$account.name}

@@ -2,7 +2,6 @@
   <vbox class="workspaces-box" class:horizontal>
     <vbox class="workspaces">
       {#each $workspaces.each as workspace}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <hbox class="workspace"
           on:click={event => onChange(workspace, event)}
           style="background-color: {workspace.color}"

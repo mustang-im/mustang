@@ -13,7 +13,6 @@
       </hbox>
     {/each}
     {#each days as day}
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <vbox class="day"
         class:selected={day.getTime() == $selectedDate?.getTime()}
         >

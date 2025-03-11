@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <vbox class="workspace-selector">
   {#each [null, ...appGlobal.workspaces.each] as workspace}
     <hbox class="workspace"

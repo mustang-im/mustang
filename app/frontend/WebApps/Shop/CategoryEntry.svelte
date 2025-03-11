@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <hbox class="category">
   <hbox flex class="name" on:click={onSelect}>{category.nameTranslated}</hbox>
   {#if hasChildCategories}

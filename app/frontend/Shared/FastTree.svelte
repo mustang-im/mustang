@@ -1,6 +1,5 @@
 <FastList items={showItems} {columns} bind:selectedItem bind:selectedItems>
   <slot name="header" slot="header" />
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div slot="row" class="tree-row" let:item>
     <slot name="row" {item}
       indentionLevel={getIndentionLevelFor(item)}

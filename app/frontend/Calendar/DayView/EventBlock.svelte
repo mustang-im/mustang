@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <hbox class="event" on:click on:click={onSelect} on:dblclick={onOpen}
   title={eventAsText}
   style={`top: ${startPosInPercent}%; height: ${heightInPercent}%`}

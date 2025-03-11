@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-autofocus -->
 <input type="tel" bind:value={value} size={20} maxlength={20} autofocus={!value} />
 
 <script lang="ts">

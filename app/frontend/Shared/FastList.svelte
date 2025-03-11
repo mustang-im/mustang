@@ -1,5 +1,3 @@
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <hbox class="fast-list"
   on:wheel={event => onScrollWheel(event)}
   on:keydown={event => onKey(event)}

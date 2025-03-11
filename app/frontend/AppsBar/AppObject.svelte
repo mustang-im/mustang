@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <hbox class="app-object" on:click={() => catchErrors(onOpen)}>
   <slot />
 </hbox>

@@ -12,7 +12,6 @@
   <vbox class="configs">
     {#each $uniqueConfigs.each as altConfig}
       <vbox class="alt">
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <hbox class="protocol-header" on:click={event => onChange(altConfig, event)}>
           <input type="radio"
             checked={altConfig == config}

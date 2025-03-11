@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-autofocus -->
 <input type="email" bind:value maxlength={100} autofocus={!value} />
 
 <script lang="ts">

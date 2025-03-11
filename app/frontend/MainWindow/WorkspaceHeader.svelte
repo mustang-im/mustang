@@ -1,9 +1,7 @@
 {#if $selectedApp != settingsMustangApp}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <hbox class="workspace" bind:this={workspaceE}
     on:click={onWorkspaceToggle}>
     {#if $selectedWorkspace}
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <hbox class="label">
         {$selectedWorkspace.name}
       </hbox>

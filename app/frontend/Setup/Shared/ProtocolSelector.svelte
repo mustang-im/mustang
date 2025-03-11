@@ -1,6 +1,5 @@
 <vbox class="protocol-selector">
   {#each protocols as protocol}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <hbox class="protocol"
       on:click={event => onChange(protocol, event)}
       >

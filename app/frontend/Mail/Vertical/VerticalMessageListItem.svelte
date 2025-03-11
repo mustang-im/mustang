@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <vbox class="message"
   class:unread={!$message.isRead}
   draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}

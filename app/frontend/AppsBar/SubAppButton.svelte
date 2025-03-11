@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <hbox class="sub-app-button" class:selected on:click title={$title}>
   <hbox class="icon">
     <slot name="icon" />

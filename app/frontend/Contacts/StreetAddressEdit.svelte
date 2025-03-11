@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-autofocus -->
 <textarea bind:value rows={5} cols={40} autofocus={!value} />
 
 <script lang="ts">

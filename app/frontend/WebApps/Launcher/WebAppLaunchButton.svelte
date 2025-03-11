@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <vbox class="app" on:click={startApp}>
   <vbox class="icon">
     <img src={app.icon} width="96" height="96" alt="" />

@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <vbox flex class="event-edit-window">
   <DialogHeader {event} {repeatBox} />
   <Scroll>

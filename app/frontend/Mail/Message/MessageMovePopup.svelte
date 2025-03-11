@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <vbox class="message-popup" on:click={onClickInside} on:mousewheel={onClickInside}>
   <hbox class="top buttons">
     <Button plain

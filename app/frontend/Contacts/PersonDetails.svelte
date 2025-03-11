@@ -195,7 +195,6 @@
 
   {#if showNotes}
     <vbox flex class="notes">
-      <!-- svelte-ignore a11y-autofocus -->
       <textarea bind:value={person.notes} placeholder={$t`Personal notes`} autofocus={person.notes == " "} />
     </vbox>
   {/if}

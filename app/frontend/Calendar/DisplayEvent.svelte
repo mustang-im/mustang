@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <vbox flex>
   <hbox class="title">
     <input disabled bind:value={event.title} />

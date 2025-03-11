@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <hbox class="person"
   class:selected={popupOpen}
   class:no-pic={!$person.person?.picture}

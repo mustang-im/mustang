@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <vbox class="person-popup" on:click={onClickInside}>
   <hbox class="picture-name">
     <vbox class="picture">
@@ -52,7 +51,6 @@
       <vbox class="other-email-addresses">
         {#each person.emailAddresses.each as altContactEntry}
           {#if contactEntry != altContactEntry}
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
             <hbox class="other-email-address" on:click={() => catchErrors(() => useOtherEmailAddress(altContactEntry.value))}>
               <MailIcon size={12} />
               {altContactEntry.value}

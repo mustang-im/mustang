@@ -1,6 +1,5 @@
 <hbox class="accounts">
   {#each $accounts.each as acc}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <vbox class="account" title={acc.name}
       on:click={() => onSelect(acc)}
       >

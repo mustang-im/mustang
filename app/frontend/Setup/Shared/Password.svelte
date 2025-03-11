@@ -1,5 +1,4 @@
 <hbox class="password">
-  <!-- svelte-ignore a11y-autofocus -->
   <input type="password"
     placeholder={$t`Your password`}
     bind:value={password}

@@ -5,7 +5,6 @@
 <vbox flex class="account">
   <grid>
     <label for="username">{$t`Your Matrix ID`}</label>
-    <!-- svelte-ignore a11y-autofocus -->
     <input type="text" bind:value={userID} name="username"
       placeholder="@fred:matrix.org" autofocus />
     <label for="password">{$t`Password`}</label>

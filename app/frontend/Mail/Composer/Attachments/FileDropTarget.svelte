@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <hbox flex class="container"
   on:dragenter={onDragEnter}
   on:dragleave={onDragLeave}

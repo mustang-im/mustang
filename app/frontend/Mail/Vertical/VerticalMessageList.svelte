@@ -1,4 +1,3 @@
-<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <vbox flex class="message-list"
   on:keydown={event => catchErrors(() => onKeyOnList(event))}
   tabindex={0}
