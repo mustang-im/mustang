@@ -1,7 +1,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <hbox class="event" on:click on:click={onSelect} on:dblclick={onOpen}
   title={eventAsText}
-  style={`top: ${startPosInPercent}%; height: ${heightInPercent}%`}
+  style="top: {startPosInPercent}%; height: {heightInPercent}%; --account-color: {event.calendar?.color}"
   class:selected={$selectedEvent == event}>
   {#if showLabel}
     <!--{event.startTime.toLocaleTimeString(getUILocale(), { hour: "numeric", minute: "numeric" })}-->
@@ -51,7 +51,7 @@
     text-overflow: ellipsis;
     font-size: 14px;
 
-    background-color: #20AF9E50;
+    background-color: var(--account-color);
     color: var(--fg);
   }
   .event:hover {
