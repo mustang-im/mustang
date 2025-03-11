@@ -2,6 +2,7 @@ import type { Addressbook } from "../Addressbook";
 import { getDatabase } from "./SQLDatabase";
 import { newAddressbookForProtocol } from "../AccountsList/Addressbooks";
 import { SQLAddressbookStorage } from "./SQLAddressbookStorage";
+import { getWorkspaceByID } from "../../Abstract/Workspace";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -72,9 +73,7 @@ export class SQLAddressbook {
     acc.url = sanitize.url(row.url, null);
     acc.userRealname = sanitize.label(row.userRealname, appGlobal.me.name ?? "You");
     acc.fromConfigJSON(sanitize.json(row.configJSON, {}));
-    acc.workspace = row.workspace
-      ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
-      : null;
+    acc.workspace = getWorkspaceByID(sanitize.string(row.workspaceID, null));
     acc.syncState = row.syncState;
     acc.storage = new SQLAddressbookStorage();
     return acc;

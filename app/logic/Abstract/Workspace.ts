@@ -1,4 +1,6 @@
 import { Observable, notifyChangedProperty } from "../util/Observable";
+import { appGlobal } from "../app";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import WorkIcon from "lucide-svelte/icons/briefcase";
 import PrivateIcon from "lucide-svelte/icons/book-heart";
 import OtherIcon from "lucide-svelte/icons/shapes";
@@ -21,7 +23,41 @@ export class Workspace extends Observable {
   }
 }
 
-export let workspaces = [
+export function getWorkspaceByID(workspaceID: string): Workspace | null {
+  if (!workspaceID) {
+    return null;
+  }
+  return appGlobal.workspaces.find(w => w.id == sanitize.string(workspaceID, null)) ??
+    new Workspace(workspaceID, randomAccountColor(), null);
+}
+
+/** Must be called before `getWorkspaceByID()` or `appGlobal.workspaces`
+ * TODO Load from SQL? */
+export async function loadWorkspaces() {
+  if (appGlobal.workspaces.hasItems) {
+    return;
+  }
+  let json: any[] = sanitize.array(JSON.parse(sanitize.nonemptystring(localStorage.getItem("workspaces"), "[]")), []);
+  for (let workspaceJSON of json) {
+    let name = sanitize.label(workspaceJSON.name);
+    let color = sanitize.string(workspaceJSON.color, "#00FF00");
+    let workspace = new Workspace(name, color, null);
+    appGlobal.workspaces.add(workspace);
+  }
+  if (appGlobal.workspaces.isEmpty) {
+    appGlobal.workspaces.addAll(defaultWorkspaces);
+  }
+}
+
+export async function saveWorkspaces() {
+  let json = appGlobal.workspaces.contents.map(tag => ({
+    name: tag.name,
+    color: tag.color,
+  }));
+  localStorage.setItem("workspaces", JSON.stringify(json));
+}
+
+let defaultWorkspaces = [
   new Workspace("Work", "lightblue", WorkIcon),
   new Workspace("Private", "lightgreen", PrivateIcon),
   new Workspace("Other", "lightyellow", OtherIcon),

@@ -2,7 +2,7 @@ import type { Calendar } from "../Calendar";
 import { getDatabase } from "./SQLDatabase";
 import { newCalendarForProtocol } from "../AccountsList/Calendars";
 import { SQLCalendarStorage } from "./SQLCalendarStorage";
-import { appGlobal } from "../../app";
+import { getWorkspaceByID } from "../../Abstract/Workspace";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
@@ -70,9 +70,7 @@ export class SQLCalendar {
     cal.username = sanitize.string(row.username, null);
     cal.url = sanitize.url(row.url, null);
     cal.fromConfigJSON(sanitize.json(row.configJSON, {}));
-    cal.workspace = row.workspace
-      ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
-      : null;
+    cal.workspace = getWorkspaceByID(sanitize.string(row.workspaceID, null));
     cal.syncState = row.syncState;
     cal.storage = new SQLCalendarStorage();
     return cal;

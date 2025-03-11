@@ -1,7 +1,7 @@
 <vbox class="workspace-selector">
   <vbox class="workspaces-box" class:horizontal>
     <vbox class="workspaces">
-      {#each workspaces as workspace}
+      {#each $workspaces.each as workspace}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <hbox class="workspace"
           on:click={event => onChange(workspace, event)}
@@ -22,15 +22,17 @@
 </vbox>
 
 <script lang="ts">
-  import { workspaces, type Workspace } from "../../../logic/Abstract/Workspace";
+  import type { Workspace } from "../../../logic/Abstract/Workspace";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { appGlobal } from "../../../logic/app";
   import { t } from "../../../l10n/l10n";
 
   export let config: MailAccount;
-  export let selectedWorkspace: Workspace = config.workspace ?? workspaces[workspaces.length - 1];
+  export let selectedWorkspace: Workspace = config.workspace ?? appGlobal.workspaces.last;
   export let horizontal = false;
 
   $: config.workspace = selectedWorkspace;
+  let workspaces = appGlobal.workspaces;
 
   function onChange(newWorkspace: Workspace, event: Event) {
     selectedWorkspace = newWorkspace;

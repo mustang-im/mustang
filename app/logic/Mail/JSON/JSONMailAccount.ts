@@ -1,5 +1,6 @@
 import { TLSSocketType, type MailAccount } from "../MailAccount";
 import { ContactEntry } from "../../Abstract/Person";
+import { getWorkspaceByID } from "../../Abstract/Workspace";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
@@ -42,9 +43,7 @@ export class JSONMailAccount {
     acc.name = sanitize.label(json.name, acc.emailAddress);
 
     acc.fromConfigJSON(json.config ?? {});
-    acc.workspace = json.workspaceID
-      ? appGlobal.workspaces.find(w => w.id == sanitize.string(json.workspaceID, null))
-      : null;
+    acc.workspace = getWorkspaceByID(sanitize.string(json.workspaceID, null));
     if (!appGlobal.me.name && acc.userRealname) {
       appGlobal.me.name = acc.userRealname;
     }

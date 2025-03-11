@@ -3,7 +3,7 @@ import { getDatabase } from "./SQLDatabase";
 import { SQLMeetStorage } from "./SQLMeetStorage";
 import { newMeetAccountForProtocol } from "../AccountsList/MeetAccounts";
 import { getPassword, setPassword, deletePassword } from "../../Auth/passwordStore";
-import { appGlobal } from "../../app";
+import { getWorkspaceByID } from "../../Abstract/Workspace";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
@@ -73,9 +73,7 @@ export class SQLMeetAccount {
     acc.username = sanitize.string(row.username, null);
     acc.url = sanitize.url(row.url, null);
     acc.fromConfigJSON(sanitize.json(row.configJSON, {}));
-    acc.workspace = row.workspace
-      ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
-      : null;
+    acc.workspace = getWorkspaceByID(sanitize.string(row.workspaceID, null));
     acc.password = await getPassword("chat." + acc.id);
     acc.storage = new SQLMeetStorage();
     return acc;

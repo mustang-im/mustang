@@ -5,6 +5,7 @@ import { readAddressbooks } from './Contacts/AccountsList/Addressbooks';
 import { readCalendars } from './Calendar/AccountsList/Calendars';
 import { readMeetAccounts } from './Meet/AccountsList/MeetAccounts';
 import { readSavedSearches } from './Mail/Virtual/SavedSearchFolder';
+import { loadWorkspaces } from './Abstract/Workspace';
 import { loadTagsList } from './Mail/Tag';
 import type { MailAccount } from './Mail/MailAccount';
 import type { Account } from './Abstract/Account';
@@ -19,6 +20,7 @@ export async function getStartObjects(): Promise<void> {
   await jpc.connect(kSecret, "localhost", production ? 5455 : 5453);
   console.log("Connected to backend");
   appGlobal.remoteApp = await jpc.getRemoteStartObject();
+  await loadWorkspaces();
   appGlobal.addressbooks.addAll(await readAddressbooks());
   appGlobal.calendars.addAll(await readCalendars());
   appGlobal.emailAccounts.addAll(await readMailAccounts());

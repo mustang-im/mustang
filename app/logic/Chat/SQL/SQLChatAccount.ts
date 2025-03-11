@@ -4,6 +4,7 @@ import { newChatAccountForProtocol } from "../AccountsList/ChatAccounts";
 import { SQLChatStorage } from "./SQLChatStorage";
 import { getPassword, setPassword, deletePassword } from "../../Auth/passwordStore";
 import { TLSSocketType } from "../../Mail/MailAccount";
+import { getWorkspaceByID } from "../../Abstract/Workspace";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -86,9 +87,7 @@ export class SQLChatAccount {
     acc.url = sanitize.url(row.url, null);
     acc.userRealname = sanitize.label(row.userRealname, appGlobal.me.name);
     acc.fromConfigJSON(sanitize.json(row.configJSON, {}));
-    acc.workspace = row.workspace
-      ? appGlobal.workspaces.find(w => w.id == sanitize.string(row.workspace, null))
-      : null;
+    acc.workspace = getWorkspaceByID(sanitize.string(row.workspaceID, null));
     acc.password = await getPassword("chat." + acc.id);
     acc.storage = new SQLChatStorage();
     if (!appGlobal.me.name && acc.userRealname) {
