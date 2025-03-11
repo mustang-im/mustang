@@ -43,5 +43,6 @@ export default defineConfig({
       }),
     ],
     publicDir: '../../../app/public',
+    base: './',
   }
 })

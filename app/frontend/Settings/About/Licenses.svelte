@@ -13,7 +13,7 @@
 </div>
 
 <iframe 
-  src="" 
+  src={attributionURL}
   title="Licenses" sandbox=""
   bind:this={iframeE}
 />
@@ -24,11 +24,12 @@
   import T from '../../../l10n/T.svelte';
   import { fetchGzip } from "../../Util/util";
   import { onMount } from "svelte";
+  import attributionURL from "../../../public/attribution.txt.gz?url";
 
   let iframeE: HTMLIFrameElement;
 
   onMount(async () => {
-    iframeE.src = await fetchGzip(new URL("../attribution.txt.gz", import.meta.url).href);
+    iframeE.src = await fetchGzip(iframeE.src);
   });
 </script>
 
