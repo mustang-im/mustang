@@ -14,6 +14,7 @@ export class Account extends Observable {
   @notifyChangedProperty
   icon: ComponentType | string | null = null;
   @notifyChangedProperty
+  /** Helping the user to identify the account */
   color: string = "#FFFFFF";
   /** Class ID. Must be overwritten by subclasses. Written to account prefs. */
   readonly protocol: string = null;

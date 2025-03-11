@@ -51,8 +51,8 @@
   .message-list :global(.row hbox) {
     font-size: 14px;
   }
-  .message-list :global(.row:nth-child(even):not(.selected):not(:hover) .message) {
-    background-color: var(--leftbar-bg);
-    color: var(--leftbar-fg);
+  .message-list :global(.row:nth-child(odd):not(.selected):not(:hover) .message) {
+    background-color: var(--main-bg);
+    color: var(--main-fg);
   }
 </style>

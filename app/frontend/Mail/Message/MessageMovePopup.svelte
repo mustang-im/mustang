@@ -152,10 +152,6 @@
 </script>
 
 <style>
-  .message-popup {
-    background-color: var(--leftbar-bg);
-    color: var(--leftbar-fg);
-  }
   .message-popup :global(.header) {
     display: flex !important;
     height: unset !important;

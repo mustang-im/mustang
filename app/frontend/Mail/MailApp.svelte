@@ -1,12 +1,14 @@
-{#if $openFolderProperties}
- <FolderPropertiesPage bind:folder={$selectedFolder} {accounts} bind:selectedAccount={$selectedAccount} />
-{:else if view == "chat"}
-  <MailChat {accounts} />
-{:else if view == "vertical"}
- <VerticalLayout {accounts} {folders} {messages} bind:searchMessages bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} />
-{:else}
-  <ThreePane {accounts} {folders} {messages} bind:searchMessages bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} />
-{/if}
+<vbox class="mail-app" style="--account-color: {$selectedAccount.color}" flex>
+  {#if $openFolderProperties}
+    <FolderPropertiesPage bind:folder={$selectedFolder} {accounts} bind:selectedAccount={$selectedAccount} />
+  {:else if view == "chat"}
+    <MailChat {accounts} />
+  {:else if view == "vertical"}
+    <VerticalLayout {accounts} {folders} {messages} bind:searchMessages bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} />
+  {:else}
+    <ThreePane {accounts} {folders} {messages} bind:searchMessages bind:selectedAccount={$selectedAccount} bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} />
+  {/if}
+</vbox>
 
 <script lang="ts">
   import { showAccounts } from "../../logic/Mail/AccountsList/ShowAccounts";
@@ -70,3 +72,13 @@
   let viewSetting = getLocalStorage("mail.view", "vertical");
   $: view = $viewSetting.value;
 </script>
+
+<style>
+  .mail-app {
+    background-image:
+      linear-gradient(var(--account-color), var(--account-color)),
+      linear-gradient(var(--account-bg-overlay), var(--account-bg-overlay));
+    background-blend-mode: overlay;
+    color: var(--account-fg);
+  }
+</style>

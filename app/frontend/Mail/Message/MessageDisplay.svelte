@@ -29,10 +29,6 @@
 </script>
 
 <style>
-  .message-display {
-    background-color: var(--leftbar-bg);
-    color: var(--leftbar-fg);
-  }
   .body {
     margin-inline-start: 8px;
     margin-block-end: 2px;

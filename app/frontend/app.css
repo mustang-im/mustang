@@ -32,6 +32,8 @@
   --main-pattern-fg: #160C27;
   --leftbar-bg: #F9F9FD; /* #F9F9FD, #F9F9F9, #716E7D */
   --leftbar-fg: #160C27;
+  --account-bg-overlay: #FFFFFFEE;
+  --account-fg: #160C27;
   --headerbar-bg: #EEEEEE;
   --headerbar-fg: #160C27;
   --windowheader-bg: #160C27;
@@ -81,6 +83,8 @@
     --main-pattern-fg: #C1C1C2;
     --leftbar-bg: #1B1A1E;
     --leftbar-fg: #C1C1C2;
+    --account-bg-overlay: #111111FF;
+    --account-fg: #C1C1C2;
     --windowheader-bg: #202022;
     --windowheader-fg: #C1C1C2;
     --headerbar-bg: #202022;

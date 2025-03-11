@@ -109,8 +109,6 @@
     padding-block-end: 2px;
     padding-inline-start: 4px;
     padding-inline-end: 4px;
-    color: var(--leftbar-fg);
-    background-color: var(--leftbar-bg);
     overflow: auto;
   }
   .folder-header :global(.get-mail button) {
