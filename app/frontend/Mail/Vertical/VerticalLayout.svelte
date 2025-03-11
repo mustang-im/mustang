@@ -44,8 +44,7 @@
 </script>
 
 <style>
-  .message-list-pane,
-  .message-display-pane {
+  .message-list-pane {
     background-color: var(--main-bg);
     color: var(--main-fg);
   }

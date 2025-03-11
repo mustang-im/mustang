@@ -51,8 +51,11 @@
   .message-list :global(.row hbox) {
     font-size: 14px;
   }
-  .message-list :global(.row:nth-child(odd):not(.selected):not(:hover) .message) {
-    background-color: var(--main-bg);
-    color: var(--main-fg);
+  .message-list :global(.row:nth-child(even):not(.selected):not(:hover) .message) {
+    background-image:
+      linear-gradient(var(--account-color), var(--account-color)),
+      linear-gradient(var(--account-bg-overlay), var(--account-bg-overlay));
+    background-blend-mode: overlay;
+    color: var(--account-fg);
   }
 </style>
