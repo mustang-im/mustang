@@ -12,17 +12,23 @@
       <grid>
         <label for="name">{$t`Account name`}</label>
         <input type="text" bind:value={account.name} name="name" on:change={onChange} />
-        <input type="color" bind:value={account.color} name="color" on:change={onChange} />
+        <input type="color" bind:value={account.color} name="color" on:change={onChange} list="proposed-colors" />
       </grid>
     </vbox>
   </HeaderGroupBox>
 </vbox>
+<datalist id="proposed-colors">
+  {#each accountColors as color}
+    <option value={color}></option>
+  {/each}
+</datalist>
 
 <script lang="ts">
   import type { Account } from "../../logic/Abstract/Account";
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "../Mail/Selected";
   import { selectedCategory } from "./Window/selected";
   import { settingsCategories } from "./SettingsCategories";
+  import { accountColors } from "../../logic/Abstract/Workspace";
   import { appGlobal } from "../../logic/app";
   import { appName } from "../../logic/build";
   import { catchErrors } from "../Util/error";
