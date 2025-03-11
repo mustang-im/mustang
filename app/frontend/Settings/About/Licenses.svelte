@@ -12,12 +12,24 @@
   </T>
 </div>
 
-<iframe src="attribution.txt.gz" title="Licenses" sandbox="" />
+<iframe 
+  src="" 
+  title="Licenses" sandbox=""
+  bind:this={iframeE}
+/>
 
-<script>
+<script lang="ts">
   import { appName } from "../../../logic/build";
   import { t } from "../../../l10n/l10n";
   import T from '../../../l10n/T.svelte';
+  import { fetchGzip } from "../../Util/util";
+  import { onMount } from "svelte";
+
+  let iframeE: HTMLIFrameElement;
+
+  onMount(async () => {
+    iframeE.src = await fetchGzip(new URL("../attribution.txt.gz", import.meta.url).href);
+  });
 </script>
 
 <style>
