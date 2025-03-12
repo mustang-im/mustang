@@ -22,21 +22,12 @@
         </hbox>
         <hbox class="spacer" flex />
         <hbox class="buttons">
-          <RoundButton
-            label={$t`Open the settings of this account`}
-            icon={OpenIcon}
-            iconSize="10px"
-            padding="3px"
-            border={false}
-            classes="small"
-            onClick={() => onOpenAccount(account)}
-            />
           {#if $workspaces.length > 1}
             <Menu position="bottom" placement="end">
               <RoundButton
                 slot="control"
                 label={$t`Move`}
-                icon={MoveIcon}
+                icon={DotsIcon}
                 iconSize="10px"
                 padding="3px"
                 border={false}
@@ -52,6 +43,12 @@
                 </Menu.Item>
                 {/if}
               {/each}
+              <Divider />
+              <Menu.Item
+                on:click={() => catchErrors(() => onOpenAccount(account))}
+                title={$t`Open settings of this account`}>
+                {$t`Account settings`}
+              </Menu.Item>
             </Menu>
           {/if}
         </hbox>
@@ -71,10 +68,9 @@
   import { appGlobal } from "../../../logic/app";
   import { changedWorkspace, selectedWorkspace } from "../../MainWindow/Selected";
   import RoundButton from "../../Shared/RoundButton.svelte";
-  import { Menu } from "@svelteuidev/core";
+  import { Menu, Divider } from "@svelteuidev/core";
   import AddIcon from "lucide-svelte/icons/plus";
-  import MoveIcon from "lucide-svelte/icons/arrow-down-up";
-  import OpenIcon from "lucide-svelte/icons/arrow-right";
+  import DotsIcon from "lucide-svelte/icons/ellipsis";
   import { catchErrors } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
   import { Collection } from "svelte-collections";
