@@ -1,5 +1,5 @@
 <select bind:value={language} on:change>
-  <option value="">{$t`System`}</option>
+  <option value="">System default / {$t`System`}</option>
   {#each Object.keys(localeNames) as langCode }
     <option value={langCode}>
       {localeNames[langCode]}
