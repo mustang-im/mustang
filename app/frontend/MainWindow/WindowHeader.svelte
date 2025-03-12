@@ -1,15 +1,20 @@
-<hbox class="window-header" class:mac>
+<hbox class="window-header" class:mac
+  style="--workspace-color: {$selectedWorkspace?.color ?? "var(--windowheader-bg)"}">
   <vbox class="app-logo">
     {#if appName == "Mustang"}
       <Icon data={logo} size="20px" />
     {/if}
   </vbox>
-  <WorkspaceHeader {selectedApp} />
+  <hbox class="workspace">
+    <WorkspaceHeader {selectedApp} />
+  </hbox>
   <hbox class="app-title">
     {$titleStore ?? selectedApp?.name ?? appName}
   </hbox>
   <vbox flex class="free" />
-  <SearchField bind:searchTerm={$globalSearchTerm} />
+  <hbox class="search-box">
+    <SearchField bind:searchTerm={$globalSearchTerm} />
+  </hbox>
   <hbox class="right">
     <Button label={$t`Minimize`}
       icon={MinimizeIcon} iconSize="24px" plain iconOnly classes="minimize"
@@ -37,6 +42,7 @@
   import { getOSName } from "../Util/util";
   import { webMail } from "../../logic/build";
   import { t } from "../../l10n/l10n";
+  import { selectedWorkspace } from "./Selected";
 
   export let selectedApp: MustangApp;
 
@@ -60,8 +66,8 @@
     color: var(--windowheader-fg);
   }
   .app-logo {
-    margin: 8px;
-    margin-inline-start: 12px;
+    padding: 8px;
+    padding-inline-start: 12px;
     width: 60px;
     align-items: start;
     justify-content: center;
@@ -90,7 +96,9 @@
     border: none;
   }
   .window-header :global(.search:not(.has-search)) {
-    background-color: rgb(255, 255, 255, 10%);
+    background-color: var(--windowheader-bg);
+    /*background-color: rgb(255, 255, 255, 10%);
+    background-blend-mode: multiply;*/
   }
   .window-header :global(.search :has(input:focus)) {
     background-color: var(--inverted-bg);
@@ -98,6 +106,13 @@
   .window-header :global(.search:not(.has-search) input) {
     background-color: transparent;
     color: var(--inverted-fg);
+  }
+
+  .search-box {
+    background-image: linear-gradient(135deg, var(--windowheader-bg) 10%, var(--workspace-color) 85%);
+  }
+  .right {
+    background-color: var(--workspace-color);
   }
 
   /* Styles for Mac */
