@@ -69,7 +69,7 @@
   import { openApp } from "../../AppsBar/selectedApp";
   import { settingsMustangApp } from "../Window/SettingsMustangApp";
   import { appGlobal } from "../../../logic/app";
-  import { changedWorkspace } from "./Workspaces.svelte";
+  import { changedWorkspace, selectedWorkspace } from "../../MainWindow/Selected";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import { Menu } from "@svelteuidev/core";
   import AddIcon from "lucide-svelte/icons/plus";
@@ -96,6 +96,7 @@
   async function onMove(account: Account, otherWorkspace: Workspace) {
     account.workspace = otherWorkspace;
     $changedWorkspace++;
+    $selectedWorkspace = $selectedWorkspace;
     await account.save();
   }
 

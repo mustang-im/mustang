@@ -39,6 +39,7 @@
 <script lang="ts">
   import { Workspace, randomAccountColor, saveWorkspaces } from "../../../logic/Abstract/Workspace";
   import { appGlobal } from "../../../logic/app";
+  import { changedWorkspace } from "../../MainWindow/Selected";
   import WorkspaceBlock from "./WorkspaceBlock.svelte";
   import WorkspaceAccounts from "./WorkspaceAccounts.svelte";
   import PageHeader from "../Shared/PageHeader.svelte";
@@ -50,7 +51,6 @@
   import { catchErrors } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
   import { useDebounce } from '@svelteuidev/composables';
-  import { writable } from "svelte/store";
   import { t } from "../../../l10n/l10n";
 
   $: workspaces = appGlobal.workspaces;
@@ -75,13 +75,6 @@
     await saveWorkspaces();
   }
   const onSaveDelayed = useDebounce(() => catchErrors(onSave), 500);
-</script>
-
-<script lang="ts" context="module">
-  /** Hack. Modify this store when you change the `Account.workspace`
-   * of any account. This signals the UI to refresh the account lists.
-   * The value of the store does not matter. */
-  export const changedWorkspace = writable(1);
 </script>
 
 <style>
