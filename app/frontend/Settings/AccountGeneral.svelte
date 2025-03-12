@@ -13,6 +13,14 @@
         <label for="name">{$t`Account name`}</label>
         <input type="text" bind:value={account.name} name="name" on:change={onChange} />
         <input type="color" bind:value={account.color} name="color" on:change={onChange} list="proposed-colors" />
+
+        <label for="name">{$t`Workspace`}</label>
+        <select bind:value={account.workspace}>
+          {#each appGlobal.workspaces.each as workspace}
+            <option value={workspace}>{workspace.name}</option>
+          {/each}
+        </select>
+        <hbox />
       </grid>
     </vbox>
   </HeaderGroupBox>
