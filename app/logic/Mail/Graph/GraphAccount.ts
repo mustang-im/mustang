@@ -24,7 +24,7 @@ export class GraphAccount extends MailAccount {
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
-  logging = true;
+  logging = false;
 
   constructor() {
     super();
@@ -253,7 +253,9 @@ export class GraphAccount extends MailAccount {
     let ky = await this.ky(options);
     try {
       let method = options?.method?.toLowerCase() ?? "get";
-      console.log("Calling <" + url + ">", method.toUpperCase(), "with options", options);
+      if (this.logging) {
+        console.log("Calling <" + url + ">", method.toUpperCase(), "with options", options);
+      }
       return await ky[method](url);
       // let result = options?.result ?? "json";
       // return await ky[method](url)[result](options); // e.g. await ky.get(url).json();
