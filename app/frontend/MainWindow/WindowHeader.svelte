@@ -93,6 +93,7 @@
 
   .window-header :global(.search) {
     margin: 6px 12px;
+    outline: 1px solid rgb(255, 255, 255, 7%);
     border: none;
   }
   .window-header :global(.search:not(.has-search)) {
