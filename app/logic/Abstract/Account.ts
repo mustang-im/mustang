@@ -92,7 +92,6 @@ export class Account extends Observable {
   }
 
   fromConfigJSON(config: any) {
-    console.log("account config json reading", config);
     assert(typeof (config) == "object", "Config must be a JSON object");
     this.acceptBrokenTLSCerts = sanitize.boolean(config.acceptBrokenTLSCerts, false);
     this.loginOnStartup = sanitize.boolean(config.loginOnStartup, this.loginOnStartup);
