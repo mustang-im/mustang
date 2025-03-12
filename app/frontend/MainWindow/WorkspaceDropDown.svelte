@@ -54,10 +54,12 @@
     margin-inline-start: 12px;
   }
   .workspace .button {
-    margin: 3px 0px;
-    min-width: 32px;
-    min-height: 20px;
     background-color: var(--workspace-color);
+    margin: 3px 0px;
+    min-width: 18px;
+    min-height: 18px;
+    border-radius: 18px;
+    align-self: center;
   }
   .workspace:hover {
     background-color: var(--hover-bg);
