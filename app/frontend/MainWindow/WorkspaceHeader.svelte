@@ -1,6 +1,6 @@
 <hbox class="workspace" bind:this={workspaceE}
   class:in-settings={$selectedApp == settingsMustangApp}
-  class:in-settings-workspaces={$selectedApp == settingsMustangApp && $selectedCategory.id == "global-workspaces"}
+  class:in-settings-workspaces={$selectedApp == settingsMustangApp && $selectedCategory?.id == "global-workspaces"}
   on:click={onWorkspaceToggle}>
   {#if $selectedWorkspace}
     <hbox class="label">
