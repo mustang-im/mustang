@@ -7,7 +7,7 @@
     <FolderIcon {folder} size="14px" />
   </hbox>
   <hbox class="label">
-    {#if !folder.specialFolder || folder.specialFolder == SpecialFolder.Normal}
+    {#if !folder.specialFolder || folder.specialFolder == SpecialFolder.Normal || folder.specialFolder == SpecialFolder.Search}
       {$folder.name}
     {:else}
       {specialFolderNames[folder.specialFolder]}
