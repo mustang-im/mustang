@@ -7,7 +7,7 @@ import type { ChatPerson } from '../Person';
 import { MapColl } from 'svelte-collections';
 
 export class GraphChatAccount extends ChatAccount {
-  readonly protocol: string = "Graph";
+  readonly protocol: string = "chat-graph";
   account: GraphAccount;
   readonly chats = new MapColl<ChatPerson | Group, GraphChatRoom>;
 

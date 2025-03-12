@@ -92,7 +92,7 @@ class Sanitize {
     if (!/^[\p{Letter}\p{Number}\-\.%]*$/u.test(str)) {
       return haveError("Hostname syntax", unchecked, fallback);
     }
-    return str.toLowerCase();
+    return str?.toLowerCase();
   }
 
   portTCP(unchecked: number | string | null, fallback: number | null | Symbol = throwErrors): number {
