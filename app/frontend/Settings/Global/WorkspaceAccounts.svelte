@@ -69,6 +69,7 @@
   import { openApp } from "../../AppsBar/selectedApp";
   import { settingsMustangApp } from "../Window/SettingsMustangApp";
   import { appGlobal } from "../../../logic/app";
+  import { changedWorkspace } from "./Workspaces.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import { Menu } from "@svelteuidev/core";
   import AddIcon from "lucide-svelte/icons/plus";
@@ -85,7 +86,7 @@
   /** ID of settings category with `.newAccountUI`, see SettingsCategories.ts */
   export let accountSettingsID: string;
 
-  $: accounts = allAccounts.filter(acc => acc.workspace == workspace);
+  $: accounts = $changedWorkspace && allAccounts.filter(acc => acc.workspace == workspace);
   let workspaces = appGlobal.workspaces;
 
   function onOpenAccount(account: Account) {
@@ -94,7 +95,7 @@
   }
   async function onMove(account: Account, otherWorkspace: Workspace) {
     account.workspace = otherWorkspace;
-    accounts = accounts;
+    $changedWorkspace++;
     await account.save();
   }
 

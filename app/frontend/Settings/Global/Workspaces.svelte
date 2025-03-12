@@ -40,7 +40,9 @@
   import { Workspace, randomAccountColor, saveWorkspaces } from "../../../logic/Abstract/Workspace";
   import { appGlobal } from "../../../logic/app";
   import WorkspaceBlock from "./WorkspaceBlock.svelte";
+  import WorkspaceAccounts from "./WorkspaceAccounts.svelte";
   import PageHeader from "../Shared/PageHeader.svelte";
+  import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
@@ -48,9 +50,8 @@
   import { catchErrors } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
   import { useDebounce } from '@svelteuidev/composables';
+  import { writable } from "svelte/store";
   import { t } from "../../../l10n/l10n";
-  import WorkspaceAccounts from "./WorkspaceAccounts.svelte";
-  import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
 
   $: workspaces = appGlobal.workspaces;
 
@@ -59,7 +60,8 @@
     appGlobal.chatAccounts.find(acc => !acc.workspace) ||
     appGlobal.meetAccounts.find(acc => !acc.workspace) ||
     appGlobal.calendars.find(acc => !acc.workspace) ||
-    appGlobal.addressbooks.find(acc => !acc.workspace);
+    appGlobal.addressbooks.find(acc => !acc.workspace) ||
+    $changedWorkspace < 0; // Just to trigger refresh
 
   function onAdd() {
     let workspace = new Workspace("", randomAccountColor(), null);
@@ -73,6 +75,13 @@
     await saveWorkspaces();
   }
   const onSaveDelayed = useDebounce(() => catchErrors(onSave), 500);
+</script>
+
+<script lang="ts" context="module">
+  /** Hack. Modify this store when you change the `Account.workspace`
+   * of any account. This signals the UI to refresh the account lists.
+   * The value of the store does not matter. */
+  export const changedWorkspace = writable(1);
 </script>
 
 <style>
