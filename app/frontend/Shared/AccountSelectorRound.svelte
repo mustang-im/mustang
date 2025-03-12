@@ -35,6 +35,13 @@
     selectedAccount = acc;
     dispatch("select", acc);
   }
+
+  $: accounts, onAccountsListChanged();
+  function onAccountsListChanged() {
+    if (!accounts.includes(selectedAccount)) {
+      selectedAccount = accounts.first;
+    }
+  }
 </script>
 
 <style>

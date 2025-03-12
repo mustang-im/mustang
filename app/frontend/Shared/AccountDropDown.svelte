@@ -21,6 +21,13 @@
       selectedAccount = accounts.first;
     }
   }
+
+  $: accounts, onAccountsListChanged();
+  function onAccountsListChanged() {
+    if (!accounts.includes(selectedAccount)) {
+      selectedAccount = accounts.first;
+    }
+  }
 </script>
 
 <style>

@@ -1,11 +1,11 @@
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox class="left-pane" slot="left">
-    <Header />
-    <PersonsList {chatRooms} bind:selectedChat />
+    <Header bind:selectedAccount={$selectedAccount} {accounts} />
+    <PersonsList {chatRooms} bind:selectedChat={$selectedChat} />
   </vbox>
   <vbox class="right-pane" slot="right">
     {#if messages && selectedChat }
-      <PersonHeader person={selectedChat.contact} />
+      <PersonHeader person={$selectedChat.contact} />
       <vbox flex class="messages">
         <MessageList {messages}>
           <svelte:fragment slot="message" let:message let:previousMessage>
@@ -18,17 +18,18 @@
         </MessageList>
       </vbox>
       <vbox class="editor">
-        <MsgEditor to={selectedChat} />
+        <MsgEditor to={$selectedChat} />
       </vbox>
     {/if}
   </vbox>
 </Splitter>
 
 <script lang="ts">
-  import type { Chat } from "../../logic/Chat/Chat";
   import { Person } from "../../logic/Abstract/Person";
   import { UserChatMessage } from "../../logic/Chat/Message";
   import { ChatRoomEvent } from "../../logic/Chat/RoomEvent";
+  import { selectedAccount, selectedChat } from "./selected";
+  import { selectedWorkspace } from "../MainWindow/Selected";
   import { selectedPerson } from "../Shared/Person/Selected";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
@@ -44,23 +45,23 @@
   import { mergeColls } from "svelte-collections";
   import { onMount } from "svelte";
 
-  let selectedChat: Chat;
-  let chatRooms = mergeColls(appGlobal.chatAccounts.map(a => a.chats));
+  $: accounts = appGlobal.chatAccounts.filter(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace);
+  $: chatRooms = $selectedAccount ? $selectedAccount.chats : mergeColls(accounts.map(a => a.chats));
   $: messages = $globalSearchTerm
-    ? selectedChat?.messages.filter(msg => msg.text?.toLowerCase().includes($globalSearchTerm))
-    : selectedChat?.messages;
+    ? $selectedChat?.messages.filter(msg => msg.text?.toLowerCase().includes($globalSearchTerm))
+    : $selectedChat?.messages;
 
-  $: selectedChat && catchErrors(loadMessages)
+  $: $selectedChat && catchErrors(loadMessages)
   async function loadMessages() {
-    await selectedChat.listMembers();
-    await selectedChat.listMessages();
+    await $selectedChat?.listMembers();
+    await $selectedChat?.listMessages();
   }
 
   onMount(() => {
-    selectedChat = $selectedPerson && chatRooms.find(chat => chat.contact == $selectedPerson);
+    $selectedChat = $selectedPerson && chatRooms.find(chat => chat.contact == $selectedPerson);
   });
-  $: if (selectedChat?.contact instanceof Person) {
-    $selectedPerson = selectedChat.contact;
+  $: if ($selectedChat?.contact instanceof Person) {
+    $selectedPerson = $selectedChat.contact;
   }
 </script>
 

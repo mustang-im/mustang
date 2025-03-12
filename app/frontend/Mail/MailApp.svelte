@@ -14,9 +14,9 @@
   import type { EMail } from "../../logic/Mail/EMail";
   import { Person } from "../../logic/Abstract/Person";
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "./Selected";
+  import { selectedWorkspace } from "../MainWindow/Selected";
   import { selectedPerson } from "../Shared/Person/Selected";
   import { getLocalStorage } from "../Util/LocalStorage";
-  import { LoginError } from "../../logic/Abstract/Account";
   import { showError } from "../Util/error";
   import ThreePane from "./3pane/3Pane.svelte";
   import VerticalLayout from "./Vertical/VerticalLayout.svelte";
@@ -24,7 +24,7 @@
   import FolderPropertiesPage, { openFolderProperties } from "./FolderPropertiesPage.svelte";
   import { ArrayColl } from "svelte-collections";
 
-  $: accounts = showAccounts;
+  $: accounts = showAccounts.filter(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace); // || acc == allAccountsAccount
   $: folders = $selectedAccount?.rootFolders ?? new ArrayColl<Folder>();
   $: messages = searchMessages ?? $selectedFolder?.messages ?? new ArrayColl<EMail>();
 

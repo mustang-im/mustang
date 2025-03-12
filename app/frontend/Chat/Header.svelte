@@ -1,5 +1,5 @@
 <hbox class="persons-toolbar">
-  <AccountDropDown bind:selectedAccount accounts={appGlobal.chatAccounts} />
+  <AccountSelectorRound bind:selectedAccount {accounts} iconDefault={ChatIcon} />
   <hbox flex />
   <hbox class="buttons">
     <RoundButton label={$t`New group`} icon={NewGroupIcon} iconSize="22px" padding="9px" classes="large create" on:click={() => catchErrors(addGroup)} />
@@ -8,15 +8,17 @@
 
 <script lang="ts">
   import type { ChatAccount } from "../../logic/Chat/ChatAccount";
-  import { appGlobal } from "../../logic/app";
-  import AccountDropDown from "../Shared/AccountDropDown.svelte";
+  import AccountSelectorRound from "../Shared/AccountSelectorRound.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import NewGroupIcon from "lucide-svelte/icons/plus";
+  import ChatIcon from "lucide-svelte/icons/message-square-text";
   import { catchErrors } from "../Util/error";
   import { NotImplemented } from "../../logic/util/util";
+  import { Collection } from "svelte-collections";
   import { t } from "../../l10n/l10n";
 
-  let selectedAccount: ChatAccount;
+  export let accounts: Collection<ChatAccount>;
+  export let selectedAccount: ChatAccount;
 
   function addGroup() {
     throw new NotImplemented("Creating chat groups is not yet implemented");
