@@ -14,6 +14,7 @@
         />
       -->
       <!--<Icon data={workspace?.icon} />-->
+      <hbox class="button" />
       <label for="workspace" class="name">{workspace?.name ?? "All"}</label>
     </hbox>
   {/each}
@@ -35,14 +36,28 @@
 
 <style>
   .workspace-selector {
-    padding: 4px 4px;
-    border-radius: 5px;
-    background-color: var(--windowheader-bg);
+    margin-block-start: -4px;
+    padding: 12px 16px 16px 16px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    background-color: var(--appbar-bg);
+    color: var(--appbar-fg);
   }
   .workspace {
+    padding: 0px 8px;
+  }
+  /*.workspace {
     background-color: var(--workspace-color);
     color: lch(from var(--workspace-color) calc((49.44 - l) * infinity) 0 0);
-    padding: 2px 16px 2px 12px;
+  }*/
+  .workspace label {
+    margin-inline-start: 12px;
+  }
+  .workspace .button {
+    margin: 3px 0px;
+    min-width: 32px;
+    min-height: 20px;
+    background-color: var(--workspace-color);
   }
   .workspace:hover {
     background-color: var(--hover-bg);
