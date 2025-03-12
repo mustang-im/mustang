@@ -47,4 +47,8 @@ export default class OWAUpdateOffice365OccurrenceRequest {
     }
     this.itemChange.Updates.push(field);
   }
+
+  get action() {
+    return "UpdateCalendarEvent";
+  }
 }
