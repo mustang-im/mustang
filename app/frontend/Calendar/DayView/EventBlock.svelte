@@ -1,6 +1,6 @@
 <hbox class="event" on:click on:click={onSelect} on:dblclick={onOpen}
   title={eventAsText}
-  style={`top: ${startPosInPercent}%; height: ${heightInPercent}%`}
+  style="top: {startPosInPercent}%; height: {heightInPercent}%; --account-color: {event.calendar?.color}"
   class:selected={$selectedEvent == event}>
   {#if showLabel}
     <!--{event.startTime.toLocaleTimeString(getUILocale(), { hour: "numeric", minute: "numeric" })}-->
@@ -50,8 +50,18 @@
     text-overflow: ellipsis;
     font-size: 14px;
 
-    background-color: #20AF9E50;
-    color: var(--fg);
+    background-color: var(--account-color);
+    color: lch(from var(--account-color) calc((49.44 - l) * infinity) 0 0);
+  }
+  @media (prefers-color-scheme: dark) {
+    .event {
+      background-image:
+        linear-gradient(var(--account-color), var(--account-color)),
+        linear-gradient(#000000BB, #000000BB);
+      background-blend-mode: overlay;
+      background-color: unset;
+      color: unset;
+    }
   }
   .event:hover {
     background-color: #20AF9E70;
