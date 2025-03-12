@@ -1,5 +1,5 @@
 <vbox flex class="page">
-  <PageHeader title={$t`Workspaces`} subtitle={$t`Your work-life balance: Mute some accounts at times to focus or relax.\nThe circle on the left of the window header allows you to choose which workspace to focus on.`}>
+  <PageHeader title={$t`Workspaces`} subtitle={$t`Your work-life balance: Mute some accounts at times to focus or relax.\nThe circle in the window header allows you to choose which workspace to focus on.`}>
     <RoundButton
       label={$t`Add`}
       onClick={onAdd}
@@ -12,18 +12,20 @@
     <WorkspaceBlock {workspace} on:change={onSaveDelayed}/>
   {/each}
 
-  <HeaderGroupBox>
-    <hbox slot="header">
-      {$t`Unassigned`}
-    </hbox>
-    <hbox class="accounts">
-      <WorkspaceAccounts title={$t`Mail`} allAccounts={appGlobal.emailAccounts} accountSettingsID="mail" workspace={null} />
-      <WorkspaceAccounts title={$t`Chat`} allAccounts={appGlobal.chatAccounts} accountSettingsID="chat" workspace={null} />
-      <WorkspaceAccounts title={$t`Meet`} allAccounts={appGlobal.meetAccounts} accountSettingsID="meet" workspace={null} />
-      <WorkspaceAccounts title={$t`Calendar`} allAccounts={appGlobal.calendars} accountSettingsID="calendar" workspace={null} />
-      <WorkspaceAccounts title={$t`Addressbook`} allAccounts={appGlobal.addressbooks} accountSettingsID="contacts" workspace={null} />
-    </hbox>
-  </HeaderGroupBox>
+  {#if haveUnassigned}
+    <HeaderGroupBox>
+      <hbox slot="header">
+        {$t`Unassigned`}
+      </hbox>
+      <hbox class="accounts">
+        <WorkspaceAccounts title={$t`Mail`} allAccounts={appGlobal.emailAccounts} accountSettingsID="mail" workspace={null} />
+        <WorkspaceAccounts title={$t`Chat`} allAccounts={appGlobal.chatAccounts} accountSettingsID="chat" workspace={null} />
+        <WorkspaceAccounts title={$t`Meet`} allAccounts={appGlobal.meetAccounts} accountSettingsID="meet" workspace={null} />
+        <WorkspaceAccounts title={$t`Calendar`} allAccounts={appGlobal.calendars} accountSettingsID="calendar" workspace={null} />
+        <WorkspaceAccounts title={$t`Addressbook`} allAccounts={appGlobal.addressbooks} accountSettingsID="contacts" workspace={null} />
+      </hbox>
+    </HeaderGroupBox>
+  {/if}
 
   <hbox class="buttons">
     <Button label={$t`Save`}
@@ -52,6 +54,13 @@
 
   $: workspaces = appGlobal.workspaces;
 
+  $: haveUnassigned =
+    appGlobal.emailAccounts.find(acc => !acc.workspace) ||
+    appGlobal.chatAccounts.find(acc => !acc.workspace) ||
+    appGlobal.meetAccounts.find(acc => !acc.workspace) ||
+    appGlobal.calendars.find(acc => !acc.workspace) ||
+    appGlobal.addressbooks.find(acc => !acc.workspace);
+
   function onAdd() {
     let workspace = new Workspace("", randomAccountColor(), null);
     workspaces.add(workspace);
@@ -68,7 +77,7 @@
 
 <style>
   .page {
-    max-width: 40em;
+    max-width: 45em;
   }
   .buttons {
     justify-content: end;

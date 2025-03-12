@@ -16,7 +16,10 @@
   <vbox class="accounts-list">
     {#each $accounts.each as account}
       <hbox class="account">
-        <hbox class="label">{account.name}</hbox>
+        <hbox class="name page-link"
+          on:click={() => catchErrors(() => onOpenAccount(account))}>
+          {account.name}
+        </hbox>
         <hbox class="spacer" flex />
         <hbox class="buttons">
           <RoundButton
@@ -26,7 +29,7 @@
             padding="3px"
             border={false}
             classes="small"
-            onClick={() => catchErrors(() => onOpenAccount(account))}
+            onClick={() => onOpenAccount(account)}
             />
           {#if $workspaces.length > 1}
             <Menu position="bottom" placement="end">
@@ -84,7 +87,6 @@
 
   $: accounts = allAccounts.filter(acc => acc.workspace == workspace);
   let workspaces = appGlobal.workspaces;
-  console.log("Workspace", workspace?.name, title, "accounts", accounts?.contents, allAccounts?.contents);
 
   function onOpenAccount(account: Account) {
     $selectedAccount = account;
@@ -117,7 +119,7 @@
 
 <style>
   .account-type {
-    margin: 8px 24px 8px 0px;
+    margin: 8px 48px 8px 0px;
   }
   .header .title {
     opacity: 70%;
@@ -128,8 +130,12 @@
   .spacer {
     min-width: 12px;
   }
-  .account .label {
+  .account .name {
     min-width: max-content;
+  }
+  .account .name {
+    min-width: max-content;
+    color: var(--link-fg);
   }
   .buttons {
     align-items: center;

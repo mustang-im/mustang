@@ -302,11 +302,13 @@ select option:checked:hover {
 a[href] {
   text-decoration: none;
 }
+hbox.page-link,
 a {
   font-weight: 500;
   color: var(--link-fg);
   text-decoration: inherit;
 }
+hbox.page-link:hover,
 a:hover {
   color: var(--link-hover-fg);
   cursor: pointer;
