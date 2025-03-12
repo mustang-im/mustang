@@ -40,7 +40,7 @@ export async function loadWorkspaces() {
   let json: any[] = sanitize.array(JSON.parse(sanitize.nonemptystring(localStorage.getItem("workspaces"), "[]")), []);
   for (let workspaceJSON of json) {
     let name = sanitize.label(workspaceJSON.name);
-    let color = sanitize.string(workspaceJSON.color, "#00FF00");
+    let color = sanitize.string(workspaceJSON.color, randomAccountColor());
     let workspace = new Workspace(name, color, null);
     appGlobal.workspaces.add(workspace);
   }

@@ -87,7 +87,7 @@ export class SQLChatAccount {
     acc.url = sanitize.url(row.url, null);
     acc.userRealname = sanitize.label(row.userRealname, appGlobal.me.name);
     acc.fromConfigJSON(sanitize.json(row.configJSON, {}));
-    acc.workspace = getWorkspaceByID(sanitize.string(row.workspaceID, null));
+    acc.workspace = getWorkspaceByID(sanitize.string(row.workspace, null));
     acc.password = await getPassword("chat." + acc.id);
     acc.storage = new SQLChatStorage();
     if (!appGlobal.me.name && acc.userRealname) {

@@ -5,6 +5,7 @@ import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { SQLMailStorage } from "./SQLMailStorage";
 import { SMTPAccount } from "../SMTP/SMTPAccount";
 import { getPassword, setPassword, deletePassword } from "../../Auth/passwordStore";
+import { getWorkspaceByID } from "../../Abstract/Workspace";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
@@ -85,6 +86,7 @@ export class SQLMailAccount {
     row.id = row.idStr;
     row.config = sanitize.json(row.configJSON, {});
     JSONMailAccount.read(acc, row);
+    acc.workspace = getWorkspaceByID(sanitize.string(row.workspace, null)) ?? acc.workspace;
     acc.password = await getPassword("mail." + acc.id);
     acc.storage = new SQLMailStorage();
     let outgoingAccountID = sanitize.integer(row.outgoingAccountID, null);

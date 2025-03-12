@@ -73,7 +73,7 @@ export class SQLMeetAccount {
     acc.username = sanitize.string(row.username, null);
     acc.url = sanitize.url(row.url, null);
     acc.fromConfigJSON(sanitize.json(row.configJSON, {}));
-    acc.workspace = getWorkspaceByID(sanitize.string(row.workspaceID, null));
+    acc.workspace = getWorkspaceByID(sanitize.string(row.workspace, null));
     acc.password = await getPassword("chat." + acc.id);
     acc.storage = new SQLMeetStorage();
     return acc;

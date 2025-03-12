@@ -73,7 +73,7 @@ export class SQLAddressbook {
     acc.url = sanitize.url(row.url, null);
     acc.userRealname = sanitize.label(row.userRealname, appGlobal.me.name ?? "You");
     acc.fromConfigJSON(sanitize.json(row.configJSON, {}));
-    acc.workspace = getWorkspaceByID(sanitize.string(row.workspaceID, null));
+    acc.workspace = getWorkspaceByID(sanitize.string(row.workspace, null));
     acc.syncState = row.syncState;
     acc.storage = new SQLAddressbookStorage();
     return acc;

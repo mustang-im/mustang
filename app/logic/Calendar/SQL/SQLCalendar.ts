@@ -70,7 +70,7 @@ export class SQLCalendar {
     cal.username = sanitize.string(row.username, null);
     cal.url = sanitize.url(row.url, null);
     cal.fromConfigJSON(sanitize.json(row.configJSON, {}));
-    cal.workspace = getWorkspaceByID(sanitize.string(row.workspaceID, null));
+    cal.workspace = getWorkspaceByID(sanitize.string(row.workspace, null));
     cal.syncState = row.syncState;
     cal.storage = new SQLCalendarStorage();
     return cal;
