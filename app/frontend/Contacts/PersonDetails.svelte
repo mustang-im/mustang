@@ -320,6 +320,7 @@
   .main-right-bottom {
     justify-content: end;
     align-items: center;
+    margin-block-start: 16px;
   }
   .main-right-bottom :global(.svelteui-Menu-root) {
     margin-inline-start: 12px;
