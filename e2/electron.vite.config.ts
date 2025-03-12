@@ -42,5 +42,6 @@ export default defineConfig({
         disable: !production,
       }),
     ],
+    publicDir: '../../../app/public',
   }
 })

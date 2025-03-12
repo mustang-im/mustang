@@ -57,3 +57,17 @@ export function getOSName() {
   }
   return "unknown";
 }
+
+/**
+ * Fetches and decompresses gzip files that are compressed
+ * @param url 
+ * @returns 
+ */
+export async function fetchGzip(url: string) {
+  let stream = (await fetch(url)).body;
+  let decompressedStream = stream.pipeThrough(
+    new DecompressionStream('gzip')
+  );
+  let blob = await new Response(decompressedStream).blob();
+  return URL.createObjectURL(blob);
+}
