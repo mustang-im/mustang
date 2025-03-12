@@ -12,7 +12,7 @@
           border={false}
         />
       </hbox>
-      <div class="name">{acc.name}</div>
+      <div class="name" title={acc.name}>{acc.name}</div>
     </vbox>
   {/each}
 </hbox>
@@ -56,5 +56,8 @@
   .name {
     font-size: 10px;
     text-align: center;
+    overflow: hidden;
+    text-overflow: clip;
+    max-height: 18px;
   }
 </style>
