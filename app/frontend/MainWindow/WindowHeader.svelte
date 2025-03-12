@@ -110,7 +110,11 @@
   }
 
   .search-box {
-    background-image: linear-gradient(135deg, var(--windowheader-bg) 10%, var(--workspace-color) 85%);
+    --gradient-direction: 135deg;
+    background-image: linear-gradient(var(--gradient-direction), var(--windowheader-bg) 10%, var(--workspace-color) 85%);
+  }
+  :global([dir="rtl"]) .search-box {
+    --gradient-direction: 225deg;
   }
   .right {
     background-color: var(--workspace-color);
