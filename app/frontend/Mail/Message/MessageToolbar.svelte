@@ -76,7 +76,7 @@
       icon={FolderActionsIcon}
       iconSize="16px"
       iconOnly
-      label={$t`Move to folder`}
+      label={$t`Move to folder, or add tag`}
       onClick={onPopupToggle}
       plain
       />

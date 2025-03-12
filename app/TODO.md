@@ -72,7 +72,6 @@
 * Back button (after clicking on an email address in an email, want to go back to email)
 * Selected message: After switching back to email, email is not longer selected
 * Tags in "Move to folder" button - icon not obvious. change tooltip.
-* "Saved search" folder name
 * Keyboard shortcuts
 * How to show keyboard shortcuts
   * When selected, show on bottom right

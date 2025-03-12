@@ -51,7 +51,7 @@
         icon={FolderActionsIcon}
         iconSize="16px"
         iconOnly
-        label={$t`Move or delete`}
+        label={$t`Move, tag, or delete`}
         onClick={onPopupToggle}
         plain
         />
