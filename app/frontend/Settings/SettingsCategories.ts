@@ -6,6 +6,7 @@ import { calendarMustangApp } from "../Calendar/CalendarMustangApp";
 import { chatMustangApp } from "../Chat/ChatMustangApp";
 import { appGlobal } from "../../logic/app";
 import GlobalAppearance from "./Global/Appearance.svelte";
+import GlobalWorkspaces from "./Global/Workspaces.svelte";
 import MailAppearance from "./Mail/Appearance.svelte";
 import MailNotifications from "./Mail/Notifications.svelte";
 import MailRead from "./Mail/Read.svelte";
@@ -52,6 +53,7 @@ accountSettings.add(new AccSetting(Account, "acc-general", gt`General`, AccountG
 const globalSettings = new SettingsCategory("global", gt`All`, null, true);
 globalSettings.subCategories.addAll([
   new SettingsCategory("global-appearance", gt`Appearance`, GlobalAppearance),
+  new SettingsCategory("global-workspaces", gt`Workspaces`, GlobalWorkspaces),
 ]);
 settingsCategories.add(globalSettings);
 

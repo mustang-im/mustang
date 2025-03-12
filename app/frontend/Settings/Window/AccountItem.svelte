@@ -20,8 +20,8 @@
 
   $: accountSelected = account == $selectedAccount;
   $: itemSelected = account == $selectedAccount && $selectedCategory == mainAccountCategory;
-  $: mainAccountCategory = accountSettings.find(ad => account instanceof ad.type && ad.isMain);
-  $: subCategories = accountSettings.filter(ad => account instanceof ad.type && !ad.isMain);
+  $: mainAccountCategory = accountSettings.find(cat => account instanceof cat.type && cat.isMain);
+  $: subCategories = accountSettings.filter(cat => account instanceof cat.type && !cat.isMain);
 
   function onSelect() {
     $selectedAccount = account;

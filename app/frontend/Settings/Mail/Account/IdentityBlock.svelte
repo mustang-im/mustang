@@ -1,5 +1,5 @@
 <HeaderGroupBox>
-  <hbox slot="header">{identity.emailAddress || $t`New`}</hbox>
+  <hbox slot="header">{$identity.emailAddress || $t`New`}</hbox>
   <svelte:fragment slot="buttons-top-right">
     {#if canRemove}
       <RoundButton
@@ -16,10 +16,10 @@
 
       <label for="emailaddress">{$t`Your email address`}</label>
       <input type="email" bind:value={identity.emailAddress} required
-        autofocus={!identity.emailAddress}
+        autofocus={!$identity.emailAddress}
         name="emailaddress" class="emailaddress" />
 
-      {#if identity?.isCatchAll}
+      {#if identity.isCatchAll}
         <hbox />
         <hbox>
           <hbox class="catch-all">{$t`This is a catch-all email address.`}</hbox>

@@ -228,6 +228,11 @@ input::placeholder {
   color: var(--input-placeholder);
 }
 
+input[type="color"] {
+  border: none;
+  background-color: inherit;
+  color: inherit;
+}
 input[type="radio"],
 input[type="checkbox"] {
   accent-color: var(--fg);

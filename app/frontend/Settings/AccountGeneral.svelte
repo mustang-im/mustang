@@ -17,6 +17,8 @@
     </vbox>
   </HeaderGroupBox>
 </vbox>
+
+<!-- <copied to="WorkspaceBlock.svelte" /> -->
 <datalist id="proposed-colors">
   {#each accountColors as color}
     <option value={color}></option>
@@ -40,11 +42,9 @@
 
   export let account: Account;
 
-  const onChange = useDebounce(() => catchErrors(() => onSave()), 500);
+  const onChange = useDebounce(() => catchErrors(onSave), 500);
   async function onSave() {
-    console.log("account saving", account.name, account.color);
     await account.save();
-    console.log("account saved", account.name, account.color);
   }
 
   async function onDelete() {
