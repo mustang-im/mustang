@@ -43,7 +43,6 @@
   }
   .label {
     font-size: 14px;
-    color: var(--fg);
     white-space: nowrap;
     overflow: hidden;
     margin-block-start: 4px;
