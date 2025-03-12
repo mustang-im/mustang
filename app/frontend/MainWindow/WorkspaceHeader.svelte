@@ -1,8 +1,11 @@
 <hbox class="workspace" bind:this={workspaceE}
   class:in-settings={$selectedApp == settingsMustangApp}
   class:in-settings-workspaces={$selectedApp == settingsMustangApp && $selectedCategory?.id == "global-workspaces"}
+  style="--workspace-color: {$selectedWorkspace?.color ?? "inherit" }"
+  class:is-workspace-selected={$selectedWorkspace}
   on:click={onWorkspaceToggle}>
   {#if $selectedWorkspace}
+    <hbox class="dot" />
     <hbox class="label">
       {$selectedWorkspace.name}
     </hbox>
@@ -40,16 +43,27 @@
     font-size: 18px;
     align-items: center;
     padding-inline-start: 8px;
-    padding-inline-end: 8px;
+    padding-inline-end: 6px;
   }
   .workspace :global(button) {
     background-color: inherit;
     color: inherit;
+    margin-inline-end: 2px;
   }
   .workspace:hover {
     background-color: var(--hover-bg);
     color: var(--hover-fg);
   }
+
+  .dot {
+    background-color: var(--workspace-color);
+    margin-inline-end: 12px;
+    min-width: 11px;
+    min-height: 11px;
+    border-radius: 11px;
+    align-self: center;
+  }
+
   .workspace.in-settings:not(.in-settings-workspaces) {
     display: none;
   }
