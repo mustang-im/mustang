@@ -383,7 +383,7 @@ export class EMail extends Message {
   }
 
   get html(): string {
-    if (this.needToLoadBody) {
+    if (this.needToLoadBody || !this.haveCID) {
       // observers will trigger reload
       this.loadBody().catch(this.folder.account.errorCallback);
       return this.downloadingMsg();
