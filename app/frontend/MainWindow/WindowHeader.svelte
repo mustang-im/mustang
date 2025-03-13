@@ -128,4 +128,10 @@
   .mac .right {
     display: none;
   }
+  :global([dir="rtl"]) .mac .app-logo {
+    margin-inline-start: 0px;
+  }
+  :global([dir="rtl"]) .mac .search-box {
+    padding-inline-end: 80px;
+  }
 </style>
