@@ -4,11 +4,12 @@ import { ActiveSyncError } from "./ActiveSyncError";
 import { ActiveSyncEvent } from "../../Calendar/ActiveSync/ActiveSyncEvent";
 import { type Tag, getTagByName } from "../Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../Calendar/Invitation/InvitationStatus";
+import type { Calendar } from "../../Calendar/Calendar";
+import { InvitationMessage  } from "../../Calendar/Invitation/InvitationStatus";
 import { ensureArray, assert, NotSupported } from "../../util/util";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import type { ArrayColl } from "svelte-collections";
+import type { Collection, ArrayColl } from "svelte-collections";
 import { parseOneAddress, parseAddressList, type ParsedMailbox } from "email-addresses";
 
 const ExchangeScheduling: Record<string, number> = {
@@ -17,12 +18,6 @@ const ExchangeScheduling: Record<string, number> = {
   "IPM.Schedule.Meeting.Resp.Neg": InvitationMessage.ParticipantReply,
   "IPM.Schedule.Meeting.Request": InvitationMessage.Invitation,
   "IPM.Schedule.Meeting.Canceled": InvitationMessage.CancelledEvent,
-};
-
-const ActiveSyncResponse: Record<InvitationResponseInMessage, number> = {
-  [InvitationResponse.Accept]: 1,
-  [InvitationResponse.Tentative]: 2,
-  [InvitationResponse.Decline]: 3,
 };
 
 export class ActiveSyncEMail extends EMail {
@@ -184,18 +179,13 @@ export class ActiveSyncEMail extends EMail {
     }
   }
 
-  async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.invitationMessage == InvitationMessage.Invitation, "Only invitations can be responded to");
-    let request = {
-      Request: {
-        UserResponse: ActiveSyncResponse[response],
-        CollectionId: this.folder.id,
-        ReqeustId: this.serverID,
-      },
-    };
-    await this.folder.account.callEAS("MeetingResponse", request);
-    await super.sendInvitationResponse(response); // needs 16.x to do this automatically
-    await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
+  getUpdateCalendars(): Collection<Calendar> {
+    assert(this.invitationMessage && this.event, "Must have event to find calendar");
+    if (this.invitationMessage == InvitationMessage.Invitation) {
+      // ActiveSync always puts invitations in the default calendar.
+      return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account).slice(0, 1);
+    }
+    return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && calendar.events.some(event => event.calUID == this.event.calUID));
   }
 
   /** ActiveSync only does not provide complete event data.

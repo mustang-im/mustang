@@ -6,12 +6,6 @@
       {/if}
     </hbox>
     <hbox flex />
-    <AccountDropDown
-      selectedAccount={calendar}
-      accounts={appGlobal.calendars}
-      filterByWorkspace={false}
-      withIcon={true} withLabel={false}
-      />
   </hbox>
   <vbox class="details-grid">
     <DetailsGrid {event} />
@@ -20,13 +14,9 @@
 
 <script lang="ts">
   import { Event } from "../../../logic/Calendar/Event";
-  import { Calendar } from "../../../logic/Calendar/Calendar";
-  import AccountDropDown from "../../Shared/AccountDropDown.svelte";
   import DetailsGrid from "./DetailsGrid.svelte";
-  import { appGlobal } from "../../../logic/app";
 
   export let event: Event;
-  export let calendar: Calendar = event?.calendar ?? appGlobal.calendars.first;
 </script>
 
 <style>
