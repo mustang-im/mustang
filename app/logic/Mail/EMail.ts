@@ -412,7 +412,7 @@ export class EMail extends Message {
   }
 
   get html(): string {
-    if (this.needToLoadBody || !this.haveCID) {
+    if (this.needToLoadBody) {
       // observers will trigger reload
       this.loadBody().catch(this.folder.account.errorCallback);
       return this.downloadingMsg();
