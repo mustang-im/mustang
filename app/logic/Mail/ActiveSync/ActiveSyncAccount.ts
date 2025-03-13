@@ -35,6 +35,7 @@ export class ActiveSyncAccount extends MailAccount {
   readonly protocol: string = "activesync";
   readonly port: number = 443;
   readonly tls = TLSSocketType.TLS;
+  readonly canSendInvitations: boolean = false;
   readonly pingsMRU = new ArrayColl<ActiveSyncPingable>();
   heartbeat = 60;
   maxPings = kMaxCount;
