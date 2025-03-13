@@ -2,6 +2,7 @@ import type { Calendar } from "./Calendar";
 import type { Participant } from "./Participant";
 import type { RecurrenceRule } from "./RecurrenceRule";
 import { ResponseType, type Responses } from "./Invitation";
+import { appGlobal } from "../app";
 import { Observable, notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/Lock";
 import { assert, randomID, AbstractFunction } from "../util/util";
@@ -192,11 +193,12 @@ export class Event extends Observable {
 
   async respondToInvitation(response: Responses): Promise<void> {
     assert(this.response > ResponseType.Organizer, "Only invitations can be responded to");
-    throw new AbstractFunction();
-  }
-
-  protected async sendInvitationResponse(response: Responses): Promise<void> {
-    throw new Error("Implement me!"); // TODO
+    let accounts = appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations && this.participants.some(participant => participant.response != ResponseType.Organizer && participant.emailAddress == account.emailAddress));
+    assert(accounts.length == 1, "Failed to find matching account for invitation");
+    let participant = this.participants.find(participant => participant.emailAddress == accounts[0].emailAddress);
+    participant.response = response;
+    await this.save();
+    await accounts[0].sendInvitationResponse(this, response);
   }
 
   /**
