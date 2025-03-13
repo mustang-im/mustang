@@ -36,7 +36,7 @@
   import { Scheduling, ResponseType, type Responses } from "../../logic/Calendar/Invitation";
   import DisplayEvent from "./DisplayEvent.svelte";
   import Button from "../Shared/Button.svelte";
-  import { gt, t } from "../../l10n/l10n";
+  import { t } from "../../l10n/l10n";
 
   export let message: EMail;
   let calendars: Calendar[] = [];
