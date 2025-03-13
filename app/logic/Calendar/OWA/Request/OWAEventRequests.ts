@@ -2,8 +2,8 @@ import OWARequest from "../../../Mail/OWA/Request/OWARequest";
 import type { OWAEvent } from "../OWAEvent";
 
 export function owaGetEventsRequest(eventIDs: string[]): OWARequest {
-  return new OWARequest("GetItemJsonRequest", {
-    __type: "GetItemJsonRequest:#Exchange",
+  return new OWARequest("GetItem", {
+    __type: "GetItemRequest:#Exchange",
     ItemShape: {
       __type: "ItemResponseShape:#Exchange",
       BaseShape: "Default",
@@ -69,7 +69,7 @@ export function owaGetEventsRequest(eventIDs: string[]): OWARequest {
 }
 
 export function owaGetCalendarEventsRequest(eventIDs: string[]): OWARequest {
-  return new OWARequest("GetCalendarEventJsonRequest", {
+  return new OWARequest("GetCalendarEvent", {
     __type: "GetCalendarEventRequest:#Exchange",
     EventIds: eventIDs.map(id => ({
       __type: "ItemId:#Exchange",
@@ -83,7 +83,7 @@ export function owaGetCalendarEventsRequest(eventIDs: string[]): OWARequest {
 }
 
 export function owaFindEventsRequest(folderID: string, maxFetchCount: number): OWARequest {
-  return new OWARequest("FindItemJsonRequest", {
+  return new OWARequest("FindItem", {
     __type: "FindItemRequest:#Exchange",
     ItemShape: {
       __type: "ItemResponseShape:#Exchange",
@@ -104,7 +104,7 @@ export function owaFindEventsRequest(folderID: string, maxFetchCount: number): O
 }
 
 export function owaOnlineMeetingDescriptionRequest(eventIDs: string[]): OWARequest {
-  return new OWARequest("GetItemJsonRequest", {
+  return new OWARequest("GetItem", {
     __type: "GetItemRequest:#Exchange",
     ItemShape: {
       __type: "ItemResponseShape:#Exchange",
@@ -131,7 +131,7 @@ export function owaOnlineMeetingDescriptionRequest(eventIDs: string[]): OWAReque
 }
 
 export function owaOnlineMeetingURLRequest(eventIDs: string[]): OWARequest {
-  return new OWARequest("GetCalendarEventJsonRequest", {
+  return new OWARequest("GetCalendarEvent", {
     __type: "GetCalendarEventRequest:#Exchange",
     ItemShape: {
       __type: "ItemResponseShape:#Exchange",
@@ -145,7 +145,7 @@ export function owaOnlineMeetingURLRequest(eventIDs: string[]): OWARequest {
 }
 
 export function owaGetEventUIDsRequest(eventIDs: string[]): OWARequest {
-  return new OWARequest("GetItemJsonRequest", {
+  return new OWARequest("GetItem", {
     __type: "GetItemRequest:#Exchange",
     ItemShape: {
       __type: "ItemResponseShape:#Exchange",
@@ -163,7 +163,7 @@ export function owaGetEventUIDsRequest(eventIDs: string[]): OWARequest {
 }
 
 export function owaCreateExclusionRequest(excludeEvent: OWAEvent, parentEvent: OWAEvent): OWARequest {
-  return new OWARequest("DeleteItemJsonRequest", {
+  return new OWARequest("DeleteItem", {
     __type: "DeleteItemRequest:#Exchange",
     ItemIds: [{
       __type: "OccurrenceItemId:#Exchange",

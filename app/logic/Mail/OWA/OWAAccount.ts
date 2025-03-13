@@ -181,7 +181,7 @@ export class OWAAccount extends MailAccount {
     let url = this.url + 'service.svc';
     let options = {
       headers: {
-        Action: aRequest.type || aRequest.__type.slice(0, -21),
+        Action: aRequest.action,
       },
     };
     // Body needs to get passed via JPC as a regular object, not an object instance

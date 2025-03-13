@@ -1,5 +1,7 @@
 import type { OWAEvent } from "../OWAEvent";
 
+/** As with OWAUpdateOccurenceRequest, this is similar to the
+ * OWAUpdateOffice365EventRequest but the format of the item id is different. */
 export default class OWAUpdateOffice365OccurrenceRequest {
   readonly __type = "UpdateCalendarEventJsonRequest:#Exchange";
   readonly Header = {
@@ -44,5 +46,9 @@ export default class OWAUpdateOffice365OccurrenceRequest {
       field.Item[key] = value;
     }
     this.itemChange.Updates.push(field);
+  }
+
+  get action() {
+    return "UpdateCalendarEvent";
   }
 }

@@ -1,6 +1,14 @@
-import OWARequest from "./OWARequest";
-
-export default class OWASubscribeToNotificationRequest extends OWARequest {
+export default class OWASubscribeToNotificationRequest {
+  /** This request is a special snowflake. Not only did they copy the Persona
+   * approach of wrapping the request in an object, they then put their data
+   * in a separate property of that object rather than in the request. */
+  readonly request = {
+    __type: "NotificationSubscriptionJsonRequest:#Exchange",
+    Header: {
+      __type: "JsonRequestHeaders:#Exchange",
+      RequestServerVersion: "Exchange2013",
+    },
+  };
   readonly subscriptionData = [{
     __type: "SubscriptionData:#Exchange",
     SubscriptionId: "HierarchyNotification",
@@ -17,11 +25,7 @@ export default class OWASubscribeToNotificationRequest extends OWARequest {
     },
   }];
 
-  get type() {
+  get action() {
     return "SubscribeToNotification";
-  }
-
-  constructor() {
-    super("NotificationSubscribeJsonRequest");
   }
 }

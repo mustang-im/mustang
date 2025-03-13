@@ -1,4 +1,5 @@
 export default class OWADeletePersonaRequest {
+  /** Persona requests are wrapped in an additional object for some reason. */
   readonly request: any = {
     __type: "DeletePersonasRequest:#Exchange",
     ItemIds: [{
@@ -10,7 +11,7 @@ export default class OWADeletePersonaRequest {
     this.request.ItemIds[0].Id = id;
   }
 
-  get type() {
+  get action() {
     return "DeletePersonas";
   }
 }

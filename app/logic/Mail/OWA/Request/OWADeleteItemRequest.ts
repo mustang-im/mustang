@@ -10,7 +10,7 @@ export default class OWADeleteItemRequest extends OWARequest {
   };
 
   constructor(id: string, attributes?: { [key: string]: string | boolean }) {
-    super("DeleteItemJsonRequest");
+    super("DeleteItem");
     this.Body.ItemIds[0].Id = id;
     Object.assign(this.Body, attributes);
   }

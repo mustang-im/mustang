@@ -2,7 +2,7 @@ import OWARequest from "./OWARequest";
 import type { OWAEMail } from "../OWAEMail";
 
 export function owaFindMsgsInFolderRequest(folderID: string, maxFetchCount: number): OWARequest {
-  return new OWARequest("FindItemJsonRequest", {
+  return new OWARequest("FindItem", {
     __type: "FindItemRequest:#Exchange",
     ItemShape: {
       __type: "ItemResponseShape:#Exchange",
@@ -42,7 +42,7 @@ export function owaFindMsgsInFolderRequest(folderID: string, maxFetchCount: numb
 }
 
 export function owaGetNewMsgHeadersRequest(newMessageIDs: string[]): OWARequest {
-  return new OWARequest("GetItemJsonRequest", {
+  return new OWARequest("GetItem", {
     __type: "GetItemRequest:#Exchange",
     ItemShape: {
       __type: "ItemResponseShape:#Exchange",
@@ -129,7 +129,7 @@ export function owaGetNewMsgHeadersRequest(newMessageIDs: string[]): OWARequest 
 }
 
 export function owaDownloadMsgsRequest(messages: OWAEMail[]): OWARequest {
-  return new OWARequest("GetItemJsonRequest", {
+  return new OWARequest("GetItem", {
     __type: "GetItemRequest:#Exchange",
     ItemShape: {
       __type: "ItemResponseShape:#Exchange",
@@ -148,7 +148,7 @@ export function owaDownloadMsgsRequest(messages: OWAEMail[]): OWARequest {
 }
 
 export function owaMoveOrCopyMsgsIntoFolderRequest(action: "Move" | "Copy", folderID: string, messages: OWAEMail[]): OWARequest {
-  return new OWARequest("ItemJsonRequest", {
+  return new OWARequest(action + "Item", {
     __type: action + "ItemRequest:#Exchange",
     ItemIds: messages.map(message => ({
       __type: "ItemId:#Exchange",
@@ -166,7 +166,7 @@ export function owaMoveOrCopyMsgsIntoFolderRequest(action: "Move" | "Copy", fold
 }
 
 export function owaMoveEntireFolderRequest(sourceFolderID: string, newParentFolderId: string): OWARequest {
-  return new OWARequest("MoveFolderJsonRequest", {
+  return new OWARequest("MoveFolder", {
     __type: "MoveFolderRequest:#Exchange",
     FolderIds: [{
       FolderId: {
@@ -185,7 +185,7 @@ export function owaMoveEntireFolderRequest(sourceFolderID: string, newParentFold
 }
 
 export function owaCreateNewSubFolderRequest(name: string, parentFolderID: string): OWARequest {
-  return new OWARequest("CreateFolderJsonRequest", {
+  return new OWARequest("CreateFolder", {
     __type: "CreateFolderRequest:#Exchange",
     ParentFolderId: {
       __type: "TargetFolderId:#Exchange",
@@ -203,7 +203,7 @@ export function owaCreateNewSubFolderRequest(name: string, parentFolderID: strin
 }
 
 export function owaCreateNewTopLevelFolderRequest(name: string): OWARequest {
-  return new OWARequest("CreateFolderJsonRequest", {
+  return new OWARequest("CreateFolder", {
     __type: "CreateFolderRequest:#Exchange",
     ParentFolderId: {
       __type: "TargetFolderId:#Exchange",
@@ -221,7 +221,7 @@ export function owaCreateNewTopLevelFolderRequest(name: string): OWARequest {
 }
 
 export function owaRenameFolderRequest(name: string, folderID: string): OWARequest {
-  return new OWARequest("UpdateFolderJsonRequest", {
+  return new OWARequest("UpdateFolder", {
     __type: "UpdateFolderRequest:#Exchange",
     FolderChanges: [{
       __type: "FolderChange:#Exchange",
@@ -245,7 +245,7 @@ export function owaRenameFolderRequest(name: string, folderID: string): OWAReque
 }
 
 export function owaFolderCountsRequest(folderID: string): OWARequest {
-  return new OWARequest("GetFolderJsonRequest", {
+  return new OWARequest("GetFolder", {
     __type: "GetFolderRequest:#Exchange",
     FolderShape: {
       __type: "FolderResponseShape:#Exchange",
@@ -266,7 +266,7 @@ export function owaFolderCountsRequest(folderID: string): OWARequest {
 }
 
 export function owaDeleteFolderRequest(folderID: string): OWARequest {
-  return new OWARequest("DeleteFolderJsonRequest", {
+  return new OWARequest("DeleteFolder", {
     __type: "DeleteFolderRequest:#Exchange",
     FolderIds: [{
       __type: "FolderId:#Exchange",
@@ -277,7 +277,7 @@ export function owaDeleteFolderRequest(folderID: string): OWARequest {
 }
 
 export function owaFolderMarkAllMsgsReadRequest(folderID: string): OWARequest {
-  return new OWARequest("MarkAllItemsAsReadJsonRequest", {
+  return new OWARequest("MarkAllItemsAsRead", {
     __type: "MarkAllItemsAsReadRequest:#Exchange",
     ReadFlag: true,
     SuppressReadReceipts: true,
