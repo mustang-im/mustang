@@ -83,6 +83,7 @@ export class OWAOffice365Notifications extends OWANotifications {
 }
 
 class OWAGetAccessTokenforResourceRequest {
+  /* This request doesn't have the header and body that most requests have. */
   readonly __type = "TokenRequest:#Exchange";
   readonly Resource: string;
 
@@ -90,7 +91,7 @@ class OWAGetAccessTokenforResourceRequest {
     this.Resource = url;
   }
 
-  get type() {
+  get action() {
     return "GetAccessTokenforResource";
   }
 }

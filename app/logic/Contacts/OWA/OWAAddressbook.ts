@@ -121,12 +121,14 @@ export class OWAAddressbook extends Addressbook {
 }
 
 class OWAGetPeopleFiltersRequest {
-  get type() {
+  /** This is an empty request, but it still needs an action. */
+  get action() {
     return "GetPeopleFilters";
   }
 }
 
 class OWAGetNotesForPersonaRequest {
+  /** This is what would normally be the body of a request */
   readonly getNotesForPersonaRequest: any = {
     __type: "GetNotesForPersonaRequest:#Exchange",
     MaxBytesToFetch: 512000,
@@ -136,12 +138,13 @@ class OWAGetNotesForPersonaRequest {
     this.getNotesForPersonaRequest.PersonaId = id;
   }
 
-  get type() {
+  get action() {
     return "GetNotesForPersona";
   }
 }
 
 class OWAGetGroupInfoRequest {
+  /** This is what would normally be the body of a request */
   readonly getGroupInfoRequest: any = {
     __type: "GetGroupInfoRequest:#Exchange",
     ItemId: {
@@ -164,7 +167,7 @@ class OWAGetGroupInfoRequest {
     this.getGroupInfoRequest.ItemId.Id = id;
   }
 
-  get type() {
+  get action() {
     return "GetGroupInfo";
   }
 }

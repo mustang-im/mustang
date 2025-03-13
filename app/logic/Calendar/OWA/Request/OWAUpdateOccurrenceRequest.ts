@@ -1,13 +1,9 @@
 import type { OWAEvent } from "../OWAEvent";
+import OWARequest from "../../../Mail/OWA/Request/OWARequest";
 
 /** This is similar to the UpdateItem request,
  * but the format of the item id is different. */
-export default class OWAUpdateOccurrenceRequest {
-  readonly __type = "UpdateItemJsonRequest:#Exchange";
-  readonly Header = {
-    __type: "JsonRequestHeaders:#Exchange",
-    RequestServerVersion: "Exchange2013",
-  };
+export default class OWAUpdateOccurrenceRequest extends OWARequest {
   Body: any = {
     __type: "UpdateItemRequest:#Exchange",
     ConflictResolution: "AlwaysOverwrite",
@@ -21,6 +17,7 @@ export default class OWAUpdateOccurrenceRequest {
   };
 
   constructor(event: OWAEvent, attributes?: { [key: string]: string | boolean }) {
+    super("UpdateItem");
     this.itemChange.ItemId.RecurringMasterId = event.parentEvent.itemID;
     this.itemChange.ItemId.InstanceIndex = event.parentEvent.instances.indexOf(event) + 1;
     Object.assign(this.Body, attributes);

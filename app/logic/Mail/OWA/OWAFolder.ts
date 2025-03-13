@@ -7,9 +7,8 @@ import {
   owaCreateNewSubFolderRequest, owaDeleteFolderRequest,
   owaDownloadMsgsRequest, owaFindMsgsInFolderRequest,
   owaFolderCountsRequest, owaFolderMarkAllMsgsReadRequest,
-  owaGetNewMsgHeadersRequest as owaGetNewMsgHeadersRequest,
-  owaMoveEntireFolderRequest, owaMoveOrCopyMsgsIntoFolderRequest,
-  owaRenameFolderRequest
+  owaGetNewMsgHeadersRequest, owaMoveEntireFolderRequest,
+  owaMoveOrCopyMsgsIntoFolderRequest, owaRenameFolderRequest
 } from "./Request/OWAFolderRequests";
 import { base64ToArrayBuffer, blobToBase64, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";

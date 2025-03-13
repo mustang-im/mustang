@@ -7,7 +7,7 @@ export default class OWACreateItemRequest extends OWARequest {
   };
 
   constructor(attributes?: { [key: string]: string | boolean | object }) {
-    super("CreateItemJsonRequest");
+    super("CreateItem");
     Object.assign(this.Body, attributes);
   }
 

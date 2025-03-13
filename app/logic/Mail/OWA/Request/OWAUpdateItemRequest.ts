@@ -14,7 +14,7 @@ export default class OWAUpdateItemRequest extends OWARequest {
   };
 
   constructor(id: string, attributes?: { [key: string]: string | boolean }) {
-    super("UpdateItemJsonRequest", "JsonRequestHeaders");
+    super("UpdateItem");
     this.itemChange.ItemId.Id = id;
     Object.assign(this.Body, attributes);
   }
