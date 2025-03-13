@@ -57,6 +57,8 @@ export class ActiveSyncAccount extends MailAccount {
     return new ActiveSyncFolder(this);
   }
 
+  // Currently storing the folder sync key, protocol version and policy key
+  // (if any) in local storage. Should this migrate to configJSON?
   getStorageItem(key) {
     return localStorage.getItem(`mail.${this.id}.${key}`);
   }
@@ -95,6 +97,8 @@ export class ActiveSyncAccount extends MailAccount {
 
     await this.listFolders();
 
+    // `listFolders` will subscribe to new user address books,
+    // but until #155 is fixed we need to link existing ones manually.
     for (let addressbook of appGlobal.addressbooks) {
       if (addressbook.protocol == "addressbook-activesync" && addressbook.url.startsWith(this.url + "?") && addressbook.username == this.username) {
         (addressbook as ActiveSyncAddressbook).account = this;
@@ -102,12 +106,19 @@ export class ActiveSyncAccount extends MailAccount {
       }
     }
 
+    // `listFolders` will subscribe to new user calendars,
+    // but until #155 is fixed we need to link existing ones manually.
     for (let calendar of appGlobal.calendars) {
       if (calendar.protocol == "calendar-activesync" && calendar.url.startsWith(this.url + "?") && calendar.username == this.username) {
         (calendar as ActiveSyncCalendar).account = this;
         await (calendar as ActiveSyncCalendar).listEvents();
       }
     }
+
+    // ActiveSync doesn't have streaming notifications, instead it
+    // can tell us when a pingable needs to resync again. There's no
+    // point asking about pingables that we know aren't in sync, so
+    // each pingable triggers listening once it has completed its resync.
   }
 
   async logout(): Promise<void> {
@@ -398,6 +409,7 @@ export class ActiveSyncAccount extends MailAccount {
     let missingFolders = new ArrayColl<Folder>();
     await this.queuedRequest("FolderSync", {}, async response => {
       if (response.errorCode == kFolderSyncKeyError) {
+        // We're syncing from scratch, so we may have stale folders.
         missingFolders = this.getAllFolders();
       }
       let url = new URL(this.url);

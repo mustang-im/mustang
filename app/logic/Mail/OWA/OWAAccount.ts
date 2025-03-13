@@ -53,10 +53,14 @@ export class OWAAccount extends MailAccount {
     return new OWAFolder(this);
   }
 
+  // The cookie jar used for OWA requests. This allows you to have
+  // multiple OWA accounts for the same host.
   get partition(): string {
     return 'persist:login:' + this.id;
   }
 
+  // OWA full page login resembles OAuth2, so we label it as such,
+  // although it's actually Office 365 itself doing its own OAuth2.
   get isLoggedIn(): boolean {
     return this.hasLoggedIn;
   }
@@ -64,6 +68,8 @@ export class OWAAccount extends MailAccount {
   async login(interactive: boolean): Promise<void> {
     super.login(interactive);
     if (this.authMethod == AuthMethod.OAuth2) {
+      // The backend has the logic for posing the login page
+      // using the correct cookie jar and auto-filling it.
       await this.listFolders(interactive);
     } else {
       try {
@@ -90,6 +96,8 @@ export class OWAAccount extends MailAccount {
     }
     this.hasLoggedIn = true;
 
+    // Link (until #155) or create the default address book.
+    // TODO: Support user address books.
     let addressbook = appGlobal.addressbooks.find((addressbook: OWAAddressbook) => addressbook.protocol == "addressbook-owa" && addressbook.url == this.url && addressbook.username == this.username) as OWAAddressbook | void;
     if (!addressbook) {
       addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
@@ -101,6 +109,8 @@ export class OWAAccount extends MailAccount {
     addressbook.account = this;
     await addressbook.listContacts();
 
+    // Link (until #155) or create the default calendar.
+    // TODO: Support user calendars.
     let calendar = appGlobal.calendars.find((calendar: OWACalendar) => calendar.protocol == "calendar-owa" && calendar.url == this.url && calendar.username == this.username) as OWACalendar | void;
     if (!calendar) {
       calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
@@ -127,6 +137,8 @@ export class OWAAccount extends MailAccount {
     return appGlobal.remoteApp.OWA.clearStorageData(this.partition);
   }
 
+  // This uses Exchange to construct the message rather than
+  // building the MIME ourselves.
   async send(email: EMail): Promise<void> {
     if (email.iCalMethod) {
       throw new NotSupported("Please use Exchange APIs to send iMIP messages");
