@@ -4,7 +4,8 @@ import { ActiveSyncError } from "./ActiveSyncError";
 import { ActiveSyncEvent } from "../../Calendar/ActiveSync/ActiveSyncEvent";
 import { type Tag, getTagByName } from "../Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { Scheduling, ResponseType, type Responses } from "../../Calendar/Invitation";
+import type { Calendar } from "../../Calendar/Calendar";
+import { Scheduling } from "../../Calendar/Invitation";
 import { ensureArray, assert, NotSupported } from "../../util/util";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -17,12 +18,6 @@ const ExchangeScheduling: Record<string, number> = {
   "IPM.Schedule.Meeting.Resp.Neg": Scheduling.Declined,
   "IPM.Schedule.Meeting.Request": Scheduling.Request,
   "IPM.Schedule.Meeting.Canceled": Scheduling.Cancellation,
-};
-
-const ActiveSyncResponse: Record<Responses, number> = {
-  [ResponseType.Accept]: 1,
-  [ResponseType.Tentative]: 2,
-  [ResponseType.Decline]: 3,
 };
 
 export class ActiveSyncEMail extends EMail {
@@ -181,18 +176,13 @@ export class ActiveSyncEMail extends EMail {
     }
   }
 
-  async respondToInvitation(response: Responses): Promise<void> {
-    assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
-    let request = {
-      Request: {
-        UserResponse: ActiveSyncResponse[response],
-        CollectionId: this.folder.id,
-        ReqeustId: this.serverID,
-      },
-    };
-    await this.folder.account.callEAS("MeetingResponse", request);
-    await super.sendInvitationResponse(response); // needs 16.x to do this automatically
-    await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
+  getUpdateCalendars(): Calendar[] {
+    assert(this.scheduling && this.event, "Must have event to find calendar");
+    if (this.scheduling == Scheduling.Request) {
+      // ActiveSync always puts invitations in the default calendar.
+      return appGlobal.calendars.contents.filter(calendar => calendar.protocol == "calendar-activesync" && calendar.url.startsWith(this.folder.account.url + "?") && calendar.username == this.folder.account.username).slice(0, 1);
+    }
+    return appGlobal.calendars.contents.filter(calendar => calendar.protocol == "calendar-activesync" && calendar.url.startsWith(this.folder.account.url + "?") && calendar.username == this.folder.account.username && calendar.events.some(event => event.calUID == this.event.calUID));
   }
 
   /** ActiveSync only does not provide complete event data.

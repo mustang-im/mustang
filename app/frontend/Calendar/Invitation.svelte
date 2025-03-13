@@ -5,7 +5,7 @@
       <DisplayEvent event={message.event} />
     {/if}
   {:else if message.scheduling}
-    {#await message.loadEvent()}
+    {#await loadEvent()}
       Loading event...
     {:then}
       Event loaded
@@ -16,6 +16,13 @@
   {/if}
   {#if message.scheduling == Scheduling.Request}
     <hbox>
+      {#if selectedCalendar}
+        <select value={selectedCalendar} disabled={calendars.length < 2}>
+          {#each calendars as calendar}
+            <option value={calendar}>{calendar.name}</option>
+          {/each}
+        </select>
+      {/if}
       <Button label={$t`Accept`} onClick={onAccept} />
       <Button label={$t`Tentative`} onClick={onTentative} />
       <Button label={$t`Decline`} onClick={onDecline} />
@@ -29,12 +36,27 @@
   import { Scheduling, ResponseType, type Responses } from "../../logic/Calendar/Invitation";
   import DisplayEvent from "./DisplayEvent.svelte";
   import Button from "../Shared/Button.svelte";
-  import { t } from "../../l10n/l10n";
+  import { gt, t } from "../../l10n/l10n";
 
   export let message: EMail;
+  let calendars: Calendar[] = [];
+  let selectedCalendar: Calendar | undefined;
+
+  $: if (message.event) {
+    loadCalendars();
+  }
+
+  async function loadEvent() {
+    await message.loadEvent();
+    loadCalendars();
+  }
+  function loadCalendars() {
+    calendars = message.getUpdateCalendars();
+    selectedCalendar = calendars[0];
+  }
 
   async function respond(response: Responses) {
-    await message.respondToInvitation(response);
+    await selectedCalendar.respondToInvitation(message, response);
   }
   async function onAccept() {
     await respond(ResponseType.Accept);
