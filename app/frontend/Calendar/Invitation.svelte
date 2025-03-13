@@ -48,7 +48,9 @@
 
   async function loadEvent() {
     await message.loadEvent();
-    loadCalendars();
+    if (message.event) {
+      loadCalendars();
+    }
   }
   function loadCalendars() {
     calendars = message.getUpdateCalendars();

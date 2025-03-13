@@ -14,8 +14,8 @@ export class ICalEMailProcessor extends EMailProcessor {
       return;
     }
     let ics = new ICalParser(postalMIME.textContent.calendar);
-    email.scheduling = iTIPMethod(ics);
     email.event = convertICalToEvent(ics);
+    email.scheduling = email.event ? iTIPMethod(ics) : Scheduling.None;
     if (email.event && !email.event.descriptionHTML && email.html) {
       email.event.descriptionHTML = email.html;
     }
