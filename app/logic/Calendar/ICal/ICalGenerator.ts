@@ -1,8 +1,8 @@
-import type { Event } from "./Event";
-import { ResponseType, ParticipationStatus, type iCalMethod } from "./Invitation";
-import { appName } from "../build";
+import type { Event } from "../Event";
+import { ResponseType, ParticipationStatus, type iCalMethod } from "../Invitation";
+import { appName } from "../../build";
 
-export function getNMical(event: Event, method?: iCalMethod): { method: iCalMethod, content: string } | null {
+export function getICal(event: Event, method?: iCalMethod): { method: iCalMethod, content: string } | null {
   if (!event || !method) {
     return null;
   }

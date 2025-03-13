@@ -1,4 +1,4 @@
-import { assert } from "../util/util";
+import { assert } from "../../util/util";
 
 function unescaped(value: string): string {
   return value.replace(/\\n|\\(.)/gi, (_, c) => c || "\n");

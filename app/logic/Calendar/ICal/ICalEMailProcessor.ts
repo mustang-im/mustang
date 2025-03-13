@@ -1,13 +1,13 @@
-import { Event } from "./Event";
-import { Participant } from "./Participant";
-import { RecurrenceRule } from "./RecurrenceRule";
-import { Scheduling, ParticipationStatus, ResponseType } from "./Invitation";
+import { Event } from "../Event";
+import { Participant } from "../Participant";
+import { RecurrenceRule } from "../RecurrenceRule";
+import { Scheduling, ParticipationStatus, ResponseType } from "../Invitation";
 import ICalParser from "./ICalParser";
-import type { EMail } from "../Mail/EMail";
-import { EMailProcessor, ProcessingStartOn } from "../Mail/EMailProccessor";
-import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+import type { EMail } from "../../Mail/EMail";
+import { EMailProcessor, ProcessingStartOn } from "../../Mail/EMailProccessor";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
-export class ICSProcessor extends EMailProcessor {
+export class ICalEMailProcessor extends EMailProcessor {
   runOn = ProcessingStartOn.Parse;
   process(email: EMail, postalMIME: any) {
     if (!postalMIME.textContent?.calendar) {
@@ -15,7 +15,7 @@ export class ICSProcessor extends EMailProcessor {
     }
     let ics = new ICalParser(postalMIME.textContent.calendar);
     email.scheduling = iTIPMethod(ics);
-    email.event = convertICSToEvent(ics);
+    email.event = convertICalToEvent(ics);
     if (email.event && !email.event.descriptionHTML && email.html) {
       email.event.descriptionHTML = email.html;
     }
@@ -40,7 +40,7 @@ function parseDate(icalDate: string): Date {
   return new Date(icalDate.replace(/^(\d{4})(\d\d)(\d\d)/, "$1-$2-$3").replace(/(T\d\d)(\d\d)(\d\dZ?)$/, "$1:$2:$3"));
 }
 
-function convertICSToEvent(ics: ICalParser): Event | null {
+function convertICalToEvent(ics: ICalParser): Event | null {
   if (!ics.containers.vevent) {
     return null;
   }
