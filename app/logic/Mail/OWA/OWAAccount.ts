@@ -34,6 +34,7 @@ export class OWAAccount extends MailAccount {
   readonly tls = TLSSocketType.TLS;
   readonly canSendInvitations: boolean = false;
   readonly folderMap = new Map<string, OWAFolder>;
+  calendar: OWACalendar | void;
   /**
    * We get notifications for folders we're not interested in.
    * We filter them out by checking that the parent exists.
@@ -129,18 +130,18 @@ export class OWAAccount extends MailAccount {
 
     // Link (until #155) or create the default calendar.
     // TODO: Support user-added calendars. Compare calendar ID.
-    let calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this) as OWACalendar | null;
-    console.log("found the OWA cal again", calendar?.name);
-    if (!calendar) {
-      calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
-      calendar.name = this.name;
-      calendar.url = this.url;
-      calendar.username = this.username;
-      calendar.workspace = this.workspace;
-      calendar.mainAccount = this;
-      appGlobal.calendars.add(calendar);
+    this.calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this) as OWACalendar | null;
+    console.log("found the OWA cal again", this.calendar?.name);
+    if (!this.calendar) {
+      this.calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
+      this.calendar.name = this.name;
+      this.calendar.url = this.url;
+      this.calendar.username = this.username;
+      this.calendar.workspace = this.workspace;
+      this.calendar.mainAccount = this;
+      appGlobal.calendars.add(this.calendar);
     }
-    await calendar.listEvents();
+    await this.calendar.listEvents();
 
     await this.callOWA(new OWASubscribeToNotificationRequest());
 

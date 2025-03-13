@@ -1,5 +1,6 @@
 import { EMail } from "../EMail";
 import { type EWSFolder, getEWSItem } from "./EWSFolder";
+import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import { EWSEvent } from "../../Calendar/EWS/EWSEvent";
 import { type Tag, getTagByName } from "../Tag";
 import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
@@ -7,10 +8,10 @@ import EWSCreateItemRequest from "./Request/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "./Request/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "./Request/EWSUpdateItemRequest";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../Calendar/Invitation/InvitationStatus";
+import { InvitationMessage } from "../../Calendar/Invitation/InvitationStatus";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { base64ToArrayBuffer, assert, ensureArray } from "../../util/util";
-import type { ArrayColl } from "svelte-collections";
+import { type Collection, ArrayColl } from "svelte-collections";
 
 const ExchangeScheduling: Record<string, number> = {
   "IPM.Schedule.Meeting.Resp.Pos": InvitationMessage.ParticipantReply,
@@ -18,12 +19,6 @@ const ExchangeScheduling: Record<string, number> = {
   "IPM.Schedule.Meeting.Resp.Neg": InvitationMessage.ParticipantReply,
   "IPM.Schedule.Meeting.Request": InvitationMessage.Invitation,
   "IPM.Schedule.Meeting.Canceled": InvitationMessage.CancelledEvent,
-};
-
-const ResponseTypes: Record<InvitationResponseInMessage, string> = {
-  [InvitationResponse.Accept]: "AcceptItem",
-  [InvitationResponse.Tentative]: "TentativelyAcceptItem",
-  [InvitationResponse.Decline]: "DeclineItem",
 };
 
 export class EWSEMail extends EMail {
@@ -199,12 +194,12 @@ export class EWSEMail extends EMail {
     await this.folder.account.callEWS(request);
   }
 
-  async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.invitationMessage == InvitationMessage.Invitation, "Only invitations can be responded to");
-    let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
-    request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.itemID });
-    await this.folder.account.callEWS(request);
-    await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
+  getUpdateCalendars(): Collection<EWSCalendar> {
+    assert(this.invitationMessage && this.event, "Must have event to find calendar");
+    if (this.folder.account.calendar && (this.invitationMessage == InvitationMessage.Invitation || this.folder.account.calendar.events.some(event => event.calUID == this.event.calUID))) {
+      return new ArrayColl([this.folder.account.calendar]);
+    }
+    return new ArrayColl();
   }
 
   /** EWS only provides event data for invitations,
