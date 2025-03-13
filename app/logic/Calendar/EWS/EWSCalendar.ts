@@ -1,11 +1,21 @@
 import { Calendar } from "../Calendar";
+import type { Event } from "../Event";
+import { Scheduling, ResponseType, type Responses } from "../Invitation";
 import type { Participant } from "../Participant";
 import { EWSEvent } from "./EWSEvent";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
+import type { EWSEMail } from "../../Mail/EWS/EWSEMail";
+import EWSCreateItemRequest from "../../Mail/EWS/Request/EWSCreateItemRequest";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
-import { ensureArray } from "../../util/util";
+import { assert, ensureArray, NotSupported } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
+
+const ResponseTypes: Record<Responses, string> = {
+  [ResponseType.Accept]: "AcceptItem",
+  [ResponseType.Tentative]: "TentativelyAcceptItem",
+  [ResponseType.Decline]: "DeclineItem",
+};
 
 export class EWSCalendar extends Calendar {
   readonly protocol: string = "calendar-ews";
@@ -14,6 +24,10 @@ export class EWSCalendar extends Calendar {
 
   newEvent(parentEvent?: EWSEvent): EWSEvent {
     return new EWSEvent(this, parentEvent);
+  }
+
+  async updateFromResponse(scheduling: Scheduling, response: Event) {
+    await this.listEvents();
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
@@ -38,6 +52,14 @@ export class EWSCalendar extends Calendar {
     };
     let results = await this.account.callEWS(request);
     return participants.map((participant, i) => ({ participant, availability: ensureArray(results[i].FreeBusyView.CalendarEventArray?.CalendarEvent).map(event => ({ from: new Date(event.StartTime + "Z"), to: new Date(event.EndTime + "Z"), free: event.BusyType == "Free" })) }));
+  }
+
+  async respondToInvitation(email: EWSEMail, response: Responses) {
+    assert(email.scheduling == Scheduling.Request, "Only invitations can be responded to");
+    let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
+    request.addField(ResponseTypes[response], "ReferenceItemId", { Id: email.itemID });
+    await this.account.callEWS(request);
+    await email.deleteMessageLocally(); // Exchange deletes the message from the inbox
   }
 
   async listEvents() {

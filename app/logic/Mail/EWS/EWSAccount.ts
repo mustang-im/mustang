@@ -29,6 +29,7 @@ export class EWSAccount extends MailAccount {
   readonly tls = TLSSocketType.TLS;
   readonly canSendInvitations: boolean = false;
   readonly folderMap = new Map<string, EWSFolder>;
+  calendar: EWSCalendar | void;
   throttle = new Throttle(50, 1);
   semaphore = new Semaphore(20);
 
@@ -76,17 +77,17 @@ export class EWSAccount extends MailAccount {
 
     // Link (until #155) or create the default calendar.
     // TODO: Support user-added calendars.
-    let calendar = appGlobal.calendars.find((calendar: EWSCalendar) => calendar.protocol == "calendar-ews" && calendar.url == this.url && calendar.username == this.username) as EWSCalendar | void;
-    if (!calendar) {
-      calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
-      calendar.name = this.name;
-      calendar.url = this.url;
-      calendar.username = this.emailAddress;
-      calendar.workspace = this.workspace;
-      appGlobal.calendars.add(calendar);
+    this.calendar = appGlobal.calendars.find((calendar: EWSCalendar) => calendar.protocol == "calendar-ews" && calendar.url == this.url && calendar.username == this.username) as EWSCalendar | void;
+    if (!this.calendar) {
+      this.calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
+      this.calendar.name = this.name;
+      this.calendar.url = this.url;
+      this.calendar.username = this.emailAddress;
+      this.calendar.workspace = this.workspace;
+      appGlobal.calendars.add(this.calendar);
     }
-    calendar.account = this;
-    await calendar.listEvents();
+    this.calendar.account = this;
+    await this.calendar.listEvents();
 
     await this.streamNotifications();
   }

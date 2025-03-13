@@ -2,7 +2,7 @@
   {#if $message.event}
     <InvitationDisplay event={message.event} />
   {:else if message.scheduling}
-    {#await message.loadEvent()}
+    {#await loadEvent()}
       {$t`Loading event...`}
     {:then}
       {#if message.event}
@@ -14,88 +14,67 @@
       {ex?.message ?? ex}
     {/await}
   {/if}
-  {#if message.scheduling == Scheduling.Request}
-    <hbox class="buttons">
+  <hbox class="buttons">
+    {#if selectedCalendar}
+      <AccountDropDown selectedAccount={selectedCalendar} accounts={calendars} withIcon={true} withLabel={true} disabled={calendars.length < 2} />
+    {/if}
+    {#if message.scheduling == Scheduling.Request}
       <Button
         label={$t`Confirm *=> Confirm to attend the meeting`}
         onClick={onAccept}
         icon={AcceptIcon}
         classes="accept" />
       <Button
+        label={$t`Maybe *=> Maybe attend the meeting`}
+        onClick={onTentative}
+        icon={MaybeIcon}
+        classes="maybe secondary" />
+      <Button
         label={$t`Reject *=> Decline to attend the meeting`}
         onClick={onDecline}
         icon={DeclineIcon}
         classes="decline secondary" />
-      <ButtonMenu buttonIcon={ChevronDownIcon}>
-        <MenuItem
-          label={$t`Maybe *=> Maybe attend the meeting`}
-          onClick={onTentative}
-          icon={MaybeIcon}
-          classes="maybe" />
-      </ButtonMenu>
-    </hbox>
-  {:else if message.scheduling == Scheduling.Accepted}
-    <hbox class="buttons">
-      <Button
-        label={$t`Confirmed *=> A meeting request has been confirmed by you`}
-        icon={AcceptIcon}
-        selected={true}
-        disabled={true}
-        classes="accept done" />
-      <ButtonMenu buttonIcon={ChevronDownIcon}>
-        <MenuItem
-          label={$t`Change to Reject *=> not attend the meeting`}
-          onClick={onDecline}
-          icon={DeclineIcon}
-          classes="decline" />
-        <MenuItem
-          label={$t`Change to Maybe *=> Maybe attend the meeting`}
-          onClick={onTentative}
-          icon={MaybeIcon}
-          classes="maybe" />
-      </ButtonMenu>
-    </hbox>
-  {:else if message.scheduling == Scheduling.Declined}
-    <hbox class="buttons">
-      <Button
-        label={$t`Rejected *=> A meeting request has been declined by you`}
-        icon={DeclineIcon}
-        selected={true}
-        disabled={true}
-        classes="decline done" />
-      <ButtonMenu buttonIcon={ChevronDownIcon}>
-        <MenuItem
-          label={$t`Change to Accept *=> attend the meeting`}
-          onClick={onAccept}
-          icon={AcceptIcon}
-          classes="accept" />
-        <MenuItem
-          label={$t`Change to Maybe *=> Maybe attend the meeting`}
-          onClick={onTentative}
-          icon={MaybeIcon}
-          classes="maybe" />
-      </ButtonMenu>
-    </hbox>
-  {/if}
+    {:else if message.scheduling}
+      <Button label={$t`Update calendar`} disabled={updateDisabled} onClick={onUpdate} />
+    {/if}
+  </hbox>
 </vbox>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { Scheduling, ResponseType, type Responses } from "../../../logic/Calendar/Invitation";
   import InvitationDisplay from "./InvitationDisplay.svelte";
+  import AccountDropDown from "../../Shared/AccountDropDown.svelte";
   import Button from "../../Shared/Button.svelte";
   import AcceptIcon from "lucide-svelte/icons/check-check";
   import DeclineIcon from "lucide-svelte/icons/x";
   import MaybeIcon from "lucide-svelte/icons/circle-help";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
-  import { t } from "../../../l10n/l10n";
+  import { gt, t } from "../../../l10n/l10n";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
 
   export let message: EMail;
+  let calendars: Collection<Calendar>;
+  let selectedCalendar: Calendar | undefined;
+  let updateDisabled: boolean | string = false;
+
+  $: if (message.event) {
+    loadCalendars();
+  }
+
+  async function loadEvent() {
+    await message.loadEvent();
+    loadCalendars();
+  }
+  function loadCalendars() {
+    calendars = message.getUpdateCalendars();
+    selectedCalendar = calendars.first;
+    updateDisabled = calendars.length ? false : gt`This event is not in your calendar`;
+  }
 
   async function respond(response: Responses) {
-    await message.respondToInvitation(response);
+    await selectedCalendar.respondToInvitation(message, response);
   }
   async function onAccept() {
     await respond(ResponseType.Accept);
@@ -105,6 +84,10 @@
   }
   async function onDecline() {
     await respond(ResponseType.Decline);
+  }
+  async function onUpdate() {
+    await selectedCalendar.updateFromResponse(message.scheduling, message.event);
+    updateDisabled = gt`This update has already been processed`;
   }
 </script>
 

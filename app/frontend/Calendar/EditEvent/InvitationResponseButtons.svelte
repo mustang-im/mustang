@@ -1,5 +1,5 @@
 <hbox class="buttons">
-  {#if event.response == ResponseType.Unknown || event.response == ResponseType.Organizer}
+  {#if event.response > ResponseType.Organizer && event.participants.some(participant => participant.response == ResponseType.Organizer)}
     <Button label={$t`Accept`} onClick={onAccept} />
     <hbox class="spacer" />
     <Button label={$t`Reject`} onClick={onDecline} />
