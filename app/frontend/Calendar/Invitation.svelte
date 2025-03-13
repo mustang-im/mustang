@@ -25,6 +25,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../logic/Mail/EMail";
+  import { Calendar } from "../../logic/Calendar/Calendar";
   import { Scheduling, ResponseType, type Responses } from "../../logic/Calendar/Invitation";
   import DisplayEvent from "./DisplayEvent.svelte";
   import Button from "../Shared/Button.svelte";
