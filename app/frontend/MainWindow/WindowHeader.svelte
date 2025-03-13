@@ -1,4 +1,4 @@
-<hbox class="window-header" class:mac
+<hbox class="window-header" class:mac class:rtl
   style="--workspace-color: {$selectedWorkspace?.color ?? "var(--windowheader-bg)"}">
   <vbox class="app-logo">
     {#if appName == "Mustang"}
@@ -42,12 +42,15 @@
   import { getOSName } from "../Util/util";
   import { webMail } from "../../logic/build";
   import { t } from "../../l10n/l10n";
+  import { rtlLocales } from "../../l10n/list";
   import { selectedWorkspace } from "./Selected";
 
   export let selectedApp: MustangApp;
 
   // Enable Mac Styles
   const mac = (!webMail && getOSName() == "macintosh") ? true : false;
+  // Check mac system text direction
+  const rtl = (rtlLocales.includes(navigator.language) && mac) ? true : false;
 
   function onMinimize() {
     appGlobal.remoteApp.minimizeMainWindow();
@@ -121,17 +124,23 @@
   }
 
   /* Styles for Mac */
-  .mac .app-logo {
+  .mac .app-logo,
+  :global([dir="rtl"]) .mac.rtl .app-logo {
     margin-inline-start: 80px;
     width: 15px;
   }
   .mac .right {
     display: none;
   }
-  :global([dir="rtl"]) .mac .app-logo {
+  :global([dir="rtl"]) .mac:not(.rtl) .app-logo,
+  .mac.rtl .app-logo {
     margin-inline-start: 0px;
   }
-  :global([dir="rtl"]) .mac .search-box {
+  :global([dir="rtl"]) .mac:not(.rtl) .search-box,
+  .mac.rtl .search-box {
     padding-inline-end: 80px;
+  }
+  :global([dir="rtl"]) .mac .search-box {
+    padding-inline-end: 0px;
   }
 </style>
