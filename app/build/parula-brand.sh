@@ -22,5 +22,6 @@ perl -p -i \
   -e "s|Mustang GmbH|Beonex GmbH|g;" \
   -e "s|Mustang|Parula|g;" \
   -e "s|mustang|parula|g;" \
+  -e "s|mustang-mail|parula|g;" \
   ../../e2/electron-builder.yml
 perl -MFile::Copy -e "copy('../../e2/build/icon-parula.png', '../../e2/build/icon.png')"
