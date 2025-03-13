@@ -49,6 +49,8 @@ linux:
   icon: build/icon.icns
 appImage:
   artifactName: ${name}-${version}.${ext}
+deb:
+  packageName: mustang-mail
 npmRebuild: true
 publish:
   - provider: github
