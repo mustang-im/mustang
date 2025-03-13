@@ -10,6 +10,8 @@ import type { OWAAddressbook } from "../../Contacts/OWA/OWAAddressbook";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import OWACreateItemRequest from "./Request/OWACreateItemRequest";
+import OWASubscribeToNotificationRequest from "./Request/OWASubscribeToNotificationRequest";
+import { owaCreateNewTopLevelFolderRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
 import { owaAutoFillLoginPage } from "./Login/OWALoginAutoFill";
 import type { PersonUID } from "../../Abstract/PersonUID";
@@ -110,8 +112,7 @@ export class OWAAccount extends MailAccount {
     calendar.account = this;
     await calendar.listEvents();
 
-    let request = new OWASubscribeToNotificationRequest();
-    await this.callOWA(request);
+    await this.callOWA(new OWASubscribeToNotificationRequest());
 
     this.notifications = this.isOffice365()
       ? new OWAOffice365Notifications(this)
@@ -292,29 +293,7 @@ export class OWAAccount extends MailAccount {
   }
 
   async createToplevelFolder(name: string): Promise<OWAFolder> {
-    let request = {
-      __type: "CreateFolderJsonRequest:#Exchange",
-      Header: {
-        __type: "JsonRequestHeaders:#Exchange",
-        RequestServerVersion: "Exchange2013",
-      },
-      Body: {
-        __type: "CreateFolderRequest:#Exchange",
-        ParentFolderId: {
-          __type: "TargetFolderId:#Exchange",
-          BaseFolderId: {
-            __type: "DistinguishedFolderId:#Exchange",
-            Id: "msgfolderroot",
-          },
-        },
-        Folders: [{
-          __type: "Folder:#Exchange",
-          FolderClass: "IPF.Note",
-          DisplayName: name,
-        }],
-      },
-    };
-    let result = await this.callOWA(request);
+    let result = await this.callOWA(owaCreateNewTopLevelFolderRequest(name));
     let folder = await super.createToplevelFolder(name) as OWAFolder;
     folder.id = sanitize.nonemptystring(result.Folders[0].FolderId.Id);
     this.folderMap.set(folder.id, folder);
@@ -347,7 +326,7 @@ export class OWAAccount extends MailAccount {
     }
   }
 
-  handleHierarchyNotification(notification: any) {
+  protected handleHierarchyNotification(notification: any) {
     try {
       let parent = this.folderMap.get(notification.parentFolderId);
       if (!parent && notification.parentFolderId != this.msgFolderRootID) {
@@ -386,31 +365,4 @@ function addRecipients(aRequest: any, aType: string, aRecipients: PersonUID[]): 
   })), "message:" + aType);
 }
 
-class OWASubscribeToNotificationRequest {
-  readonly request = {
-    __type: "NotificationSubscribeJsonRequest:#Exchange",
-    Header: {
-      __type: "JsonRequestHeaders:#Exchange",
-      RequestServerVersion: "Exchange2013",
-    },
-  };
-  readonly subscriptionData = [{
-    __type: "SubscriptionData:#Exchange",
-    SubscriptionId: "HierarchyNotification",
-    Parameters: {
-      __type: "SubscriptionParameters:#Exchange",
-      NotificationType: "HierarchyNotification",
-    },
-  }, {
-    __type: "SubscriptionData:#Exchange",
-    SubscriptionId: "NewMailNotification",
-    Parameters: {
-      __type: "SubscriptionParameters:#Exchange",
-      NotificationType: "NewMailNotification",
-    },
-  }];
-
-  get type() {
-    return "SubscribeToNotification";
-  }
-}
+export const kMaxFetchCount = 50;

@@ -1,8 +1,16 @@
 import { Folder, SpecialFolder } from "../Folder";
 import type { EMail } from "../EMail";
 import { OWAEMail } from "./OWAEMail";
-import type { OWAAccount } from "./OWAAccount";
+import { type OWAAccount, kMaxFetchCount } from "./OWAAccount";
 import OWACreateItemRequest from "./Request/OWACreateItemRequest";
+import {
+  owaCreateNewSubFolderRequest, owaDeleteFolderRequest,
+  owaDownloadMsgsRequest, owaFindMsgsInFolderRequest,
+  owaFolderCountsRequest, owaFolderMarkAllMsgsReadRequest,
+  owaGetNewMsgHeadersRequest as owaGetNewMsgHeadersRequest,
+  owaMoveEntireFolderRequest, owaMoveOrCopyMsgsIntoFolderRequest,
+  owaRenameFolderRequest
+} from "./Request/OWAFolderRequests";
 import { base64ToArrayBuffer, blobToBase64, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -51,32 +59,7 @@ export class OWAFolder extends Folder {
       this.dirty = false;
       return true;
     }
-    let request = {
-      __type: "GetFolderJsonRequest:#Exchange",
-      Header: {
-        __type: "JsonRequestHeaders:#Exchange",
-        RequestServerVersion: "Exchange2013",
-      },
-      Body: {
-        __type: "GetFolderRequest:#Exchange",
-        FolderShape: {
-          __type: "FolderResponseShape:#Exchange",
-          BaseShape: "IdOnly",
-          AdditionalProperties: [{
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "folder:UnreadCount",
-          }, {
-            __type: "PropertyUri:#Exchange",
-            FieldURI: "folder:TotalCount",
-          }],
-        },
-        FolderIds: [{
-          __type: "FolderId:#Exchange",
-          Id: this.id,
-        }],
-      },
-    };
-    let result = await this.account.callOWA(request);
+    let result = await this.account.callOWA(owaFolderCountsRequest(this.id));
     let countTotal = sanitize.integer(result.Folders[0].TotalCount);
     let countUnread = sanitize.integer(result.Folders[0].UnreadCount);
     if (this.countTotal == countTotal && this.countUnread == countUnread) {
@@ -99,50 +82,7 @@ export class OWAFolder extends Folder {
 
       let allMsgs = new ArrayColl<OWAEMail>();
       let newMsgs = new ArrayColl<OWAEMail>();
-      let request = {
-        __type: "FindItemJsonRequest:#Exchange",
-        Header: {
-          __type: "JsonRequestHeaders:#Exchange",
-          RequestServerVersion: "Exchange2013",
-        },
-        Body: {
-          __type: "FindItemRequest:#Exchange",
-          ItemShape: {
-            __type: "ItemResponseShape:#Exchange",
-            BaseShape: "IdOnly",
-            AdditionalProperties: [{
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "message:IsRead",
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "item:IsDraft",
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "item:Categories",
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "item:Flag",
-              /*}, {
-                __type: "PropertyUri:#Exchange",
-                ExtendedFieldURI: {
-                  PropertyTag: "0x1080",
-                  PropertyType: "Integer",
-                },*/
-            }],
-          },
-          ParentFolderIds: [{
-            __type: "FolderId:#Exchange",
-            Id: this.id,
-          }],
-          Traversal: "Shallow",
-          Paging: {
-            __type: "IndexedPageView:#Exchange",
-            BasePoint: "Beginning",
-            Offset: 0,
-            MaxEntriesReturned: kMaxFetchCount,
-          },
-        },
-      };
+      let request = owaFindMsgsInFolderRequest(this.id, kMaxFetchCount);
       let result: any = { RootFolder: { IncludesLastItemInRange: false } };
       while (result?.RootFolder?.IncludesLastItemInRange === false) {
         result = await this.account.callOWA(request);
@@ -181,98 +121,7 @@ export class OWAFolder extends Folder {
   async getNewMessageHeaders(newMessageIDs: string[]): Promise<ArrayColl<OWAEMail>> {
     let newMsgs = new ArrayColl<OWAEMail>();
     if (newMessageIDs.length) {
-      let request = {
-        __type: "GetItemJsonRequest:#Exchange",
-        Header: {
-          __type: "JsonRequestHeaders:#Exchange",
-          RequestServerVersion: "Exchange2013",
-        },
-        Body: {
-          __type: "GetItemRequest:#Exchange",
-          ItemShape: {
-            __type: "ItemResponseShape:#Exchange",
-            BaseShape: "IdOnly",
-            AdditionalProperties: [{
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "message:InternetMessageId",
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "message:IsRead",
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "message:References",
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "message:ReplyTo",
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "message:From",
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "message:Sender",
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "message:ToRecipients",
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "message:CcRecipients",
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "message:BccRecipients",
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "item:ItemClass",
-            /* Non-MIME @see OWAEMail.bodyAndAttachmentsFromJson()
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "item:Attachments",
-            */
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "item:Subject",
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "item:DateTimeReceived",
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "item:InReplyTo",
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "item:IsDraft",
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "item:DateTimeSent",
-            /* Non-MIME
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "item:Body",
-            */
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "item:Categories",
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "item:Flag",
-            /* Non-MIME
-            }, {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "item:TextBody",
-            */
-            /*}, {
-              __type: "PropertyUri:#Exchange",
-              ExtendedFieldURI: {
-                PropertyTag: "0x1080",
-                PropertyType: "Integer",
-              },*/
-            }],
-          },
-          ItemIds: newMessageIDs.map(id => ({
-            __type: "ItemId:#Exchange",
-            Id: id,
-          })),
-        },
-      };
-      let results = await this.account.callOWA(request);
+      let results = await this.account.callOWA(owaGetNewMsgHeadersRequest(newMessageIDs));
       let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
       for (let item of items) {
         try {
@@ -293,30 +142,7 @@ export class OWAFolder extends Folder {
     let emailsToDownload = emails.contents;
     for (let i = 0; i < emailsToDownload.length; i += kMaxFetchCount) {
       let batch = emailsToDownload.slice(i, i + kMaxFetchCount);
-      let request = {
-        __type: "GetItemJsonRequest:#Exchange",
-        Header: {
-          __type: "JsonRequestHeaders:#Exchange",
-          RequestServerVersion: "Exchange2013",
-        },
-        Body: {
-          __type: "GetItemRequest:#Exchange",
-          ItemShape: {
-            __type: "ItemResponseShape:#Exchange",
-            BaseShape: "IdOnly",
-            AdditionalProperties: [{ // Work around Office365 bug
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "item:Size"
-            }],
-            IncludeMimeContent: true,
-          },
-          ItemIds: batch.map(message => ({
-            __type: "ItemId:#Exchange",
-            Id: message.itemID,
-          })),
-        },
-      };
-      let results = await this.account.callOWA(request);
+      let results = await this.account.callOWA(owaDownloadMsgsRequest(batch));
       let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
       for (let item of items) {
         let email = emailsToDownload.find(email => email.itemID == item.ItemId.Id);
@@ -376,29 +202,7 @@ export class OWAFolder extends Folder {
   }
 
   async moveOrCopyMessagesOnServer(action: "Move" | "Copy", messages: Collection<OWAEMail>) {
-    let request = {
-      __type: action + "ItemJsonRequest:#Exchange",
-      Header: {
-        __type: "JsonRequestHeaders:#Exchange",
-        RequestServerVersion: "Exchange2013",
-      },
-      Body: {
-        __type: action + "ItemRequest:#Exchange",
-        ItemIds: messages.contents.map(message => ({
-          __type: "ItemId:#Exchange",
-          Id: message.itemID,
-        })),
-        ToFolderId: {
-          __type: "TargetFolderId:#Exchange",
-          BaseFolderId: {
-            __type: "FolderId:#Exchange",
-            Id: this.id,
-          },
-        },
-        // ReturnNewItemIds: false,
-      },
-    };
-    await this.account.callOWA(request);
+    await this.account.callOWA(owaMoveOrCopyMsgsIntoFolderRequest(action, this.id, messages.contents));
   }
 
   async addMessage(message: EMail) {
@@ -426,57 +230,12 @@ export class OWAFolder extends Folder {
 
   async moveFolderHere(folder: OWAFolder) {
     await super.moveFolderHere(folder);
-    let request = {
-      __type: "MoveFolderJsonRequest:#Exchange",
-      Header: {
-        __type: "JsonRequestHeaders:#Exchange",
-        RequestServerVersion: "Exchange2013",
-      },
-      Body: {
-        __type: "MoveFolderRequest:#Exchange",
-        FolderIds: [{
-          FolderId: {
-            __type: "FolderId:#Exchange",
-            Id: folder.id,
-          },
-        }],
-        ToFolderId: {
-          __type: "TargetFolderId:#Exchange",
-          FolderId: {
-            __type: "FolderId:#Exchange",
-            Id: this.id,
-          },
-        },
-      },
-    };
-    await this.account.callOWA(request);
+    await this.account.callOWA(owaMoveEntireFolderRequest(folder.id, this.id));
   }
 
   async createSubFolder(name: string): Promise<OWAFolder> {
     let folder = await super.createSubFolder(name) as OWAFolder;
-    let request = {
-      __type: "CreateFolderJsonRequest:#Exchange",
-      Header: {
-        __type: "JsonRequestHeaders:#Exchange",
-        RequestServerVersion: "Exchange2013",
-      },
-      Body: {
-        __type: "CreateFolderRequest:#Exchange",
-        ParentFolderId: {
-          __type: "TargetFolderId:#Exchange",
-          BaseFolderId: {
-            __type: "FolderId:#Exchange",
-            Id: this.id,
-          },
-        },
-        Folders: [{
-          __type: "Folder:#Exchange",
-          FolderClass: "IPF.Note",
-          DisplayName: name,
-        }],
-      },
-    };
-    let result = await this.account.callOWA(request);
+    let result = await this.account.callOWA(owaCreateNewSubFolderRequest(name, this.id));
     folder.id = sanitize.nonemptystring(result.Folders[0].FolderId.Id);
     this.account.folderMap.set(folder.id, folder);
     return folder;
@@ -484,82 +243,19 @@ export class OWAFolder extends Folder {
 
   async rename(name: string) {
     await super.rename(name);
-    let request = {
-      __type: "UpdateFolderJsonRequest:#Exchange",
-      Header: {
-        __type: "JsonRequestHeaders:#Exchange",
-        RequestServerVersion: "Exchange2013",
-      },
-      Body: {
-        __type: "UpdateFolderRequest:#Exchange",
-        FolderChanges: [{
-          __type: "FolderChange:#Exchange",
-          FolderId: {
-            __type: "FolderId:#Exchange",
-            Id: this.id,
-          },
-          Updates: [{
-            __type: "SetFolderField:#Exchange",
-            Folder: {
-              __type: "Folder:#Exchange",
-              DisplayName: name,
-            },
-            Path: {
-              __type: "PropertyUri:#Exchange",
-              FieldURI: "FolderDisplayName",
-            },
-          }],
-        }],
-      },
-    };
-    await this.account.callOWA(request);
+    await this.account.callOWA(owaRenameFolderRequest(name, this.id));
   }
 
   protected async deleteItOnServer() {
-    let request = {
-      __type: "DeleteFolderJsonRequest:#Exchange",
-      Header: {
-        __type: "JsonRequestHeaders:#Exchange",
-        RequestServerVersion: "Exchange2013",
-      },
-      Body: {
-        __type: "DeleteFolderRequest:#Exchange",
-        FolderIds: [{
-          __type: "FolderId:#Exchange",
-          Id: this.id,
-        }],
-        DeleteType: "SoftDelete",
-      },
-    };
-    await this.account.callOWA(request);
+    await this.account.callOWA(owaDeleteFolderRequest(this.id));
   }
 
   async markAllRead() {
     await super.markAllRead();
-    let request = {
-      __type: "MarkAllItemsAsReadJsonRequest:#Exchange",
-      Header: {
-        __type: "JsonRequestHeaders:#Exchange",
-        RequestServerVersion: "Exchange2013",
-      },
-      Body: {
-        __type: "MarkAllItemsAsReadRequest:#Exchange",
-        ReadFlag: true,
-        SuppressReadReceipts: true,
-        FolderIds: [{
-          __type: "FolderId:#Exchange",
-          Id: this.id,
-        }],
-        ItemIdsToExclude: [],
-      },
-    };
-    await this.account.callOWA(request);
+    await this.account.callOWA(owaFolderMarkAllMsgsReadRequest(this.id));
   }
 
   disableChangeSpecial(): string | false {
     return gt`You cannot change special folders on the Exchange server`;
   }
 }
-
-
-export const kMaxFetchCount = 50;
