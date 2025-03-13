@@ -1,9 +1,6 @@
-export default class OWAUpdateItemRequest {
-  readonly __type = "UpdateItemJsonRequest:#Exchange";
-  readonly Header = {
-    __type: "JsonRequestHeaders:#Exchange",
-    RequestServerVersion: "Exchange2013",
-  };
+import OWARequest from "./OWARequest";
+
+export default class OWAUpdateItemRequest extends OWARequest {
   Body: any = {
     __type: "UpdateItemRequest:#Exchange",
     ConflictResolution: "AlwaysOverwrite",
@@ -16,7 +13,8 @@ export default class OWAUpdateItemRequest {
     }],
   };
 
-  constructor(id: string, attributes?: {[key: string]: string | boolean}) {
+  constructor(id: string, attributes?: { [key: string]: string | boolean }) {
+    super("UpdateItemJsonRequest", "JsonRequestHeaders");
     this.itemChange.ItemId.Id = id;
     Object.assign(this.Body, attributes);
   }

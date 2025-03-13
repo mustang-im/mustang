@@ -1,15 +1,13 @@
-export default class OWACreateItemRequest {
-  readonly __type = "CreateItemJsonRequest:#Exchange";
-  readonly Header = {
-    __type: "JsonRequestHeaders:#Exchange",
-    RequestServerVersion: "Exchange2013",
-  };
+import OWARequest from "./OWARequest";
+
+export default class OWACreateItemRequest extends OWARequest {
   Body: any = {
     __type: "CreateItemRequest:#Exchange",
     Items: [{}],
   };
 
-  constructor(attributes?: {[key: string]: string | boolean | object}) {
+  constructor(attributes?: { [key: string]: string | boolean | object }) {
+    super("CreateItemJsonRequest");
     Object.assign(this.Body, attributes);
   }
 
