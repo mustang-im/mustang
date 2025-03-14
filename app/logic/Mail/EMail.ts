@@ -79,8 +79,6 @@ export class EMail extends Message {
   /** Body hasn't been loaded yet */
   @notifyChangedProperty
   needToLoadBody = true;
-  @notifyChangedProperty
-  haveCID = false;
   /** For SQLEMail and alternatives only */
   storageLock = new Lock();
   /** For composer only. Optional. */
@@ -297,8 +295,6 @@ export class EMail extends Message {
       }
       await processor.process(this, postalMIME);
     }
-    this.needToLoadBody = false;
-    this.haveCID = false;
 
     // Attachments
     let fallbackID = 0;
@@ -392,54 +388,28 @@ export class EMail extends Message {
   }
 
   async loadBody() {
-    if (this.needToLoadBody) {
+    if (!this._rawHTML && !this._text) {
       if (this.dbID) {
         await this.storage.readMessageBody(this);
       }
-      if (this.needToLoadBody) {
+      if (!this._rawHTML && !this._text) {
         await this.download();
       }
     }
-    if (this.haveCID) {
-      return;
-    }
 
-    let html = super.html;
-    if (html && this.attachments.hasItems) {
+    let html = this.html;
+    if (html?.includes("cid:")) {
       this._sanitizedHTML = await addCID(html, this);
     }
-    this.haveCID = true; // triggers reload
+    this.needToLoadBody = false; // triggers reload
   }
 
   get html(): string {
-    if (this.needToLoadBody) {
-      // observers will trigger reload
-      this.loadBody().catch(this.folder.account.errorCallback);
-      return this.downloadingMsg();
-    }
     return super.html;
   }
   set html(val: string) {
     super.html = val;
-  }
-
-  get text(): string {
-    if (this.needToLoadBody) {
-      // observers will trigger reload
-      this.loadBody().catch(this.folder.account.errorCallback);
-      return this.downloadingMsg();
-    }
-
-    return super.text;
-  }
-  set text(val: string) {
-    super.text = val;
-  }
-
-  protected downloadingMsg(): string {
-    return this.dbID
-      ? "Message content not downloaded yet"
-      : "Message not loaded yet";
+    this.needToLoadBody = true;
   }
 
   async download() {

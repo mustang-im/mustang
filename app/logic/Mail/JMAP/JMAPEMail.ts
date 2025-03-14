@@ -42,7 +42,6 @@ export class JMAPEMail extends EMail {
     this.outgoing = this.folder?.account.identities.some(id => id.isEMailAddress(this.from.emailAddress));
     this.contact = this.outgoing ? this.to.first : this.from;
     this.size = sanitize.integer(json.size, null);
-    this.needToLoadBody = this._text == null && this._rawHTML == null;
     this.mimeBlobId = sanitize.string(json.blobId, null);
     //assert(!json.source || json.source instanceof Uint8Array, "MIME source needs to be a buffer");
     // this.mime = json.source;
