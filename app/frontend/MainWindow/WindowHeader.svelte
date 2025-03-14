@@ -71,7 +71,7 @@
   .app-logo {
     padding: 8px;
     padding-inline-start: 12px;
-    width: 60px;
+    width: 48px;
     align-items: start;
     justify-content: center;
     app-region: drag;
@@ -124,13 +124,13 @@
   }
 
   /* Styles for Mac */
+  .mac .right {
+    display: none;
+  }
   .mac .app-logo,
   :global([dir="rtl"]) .mac.os-rtl .app-logo {
     margin-inline-start: 80px;
     width: 15px;
-  }
-  .mac .right {
-    display: none;
   }
   :global([dir="rtl"]) .mac:not(.os-rtl) .app-logo,
   .mac.os-rtl .app-logo {
