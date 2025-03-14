@@ -21,7 +21,6 @@ import da from './locales/da/messages.json';
 import el from './locales/el/messages.json';
 import fi from './locales/fi/messages.json';
 import nl from './locales/nl/messages.json';
-// import no from './locales/no/messages.json';
 import ro from './locales/ro/messages.json';
 import ru from './locales/ru/messages.json';
 import sv from './locales/sv/messages.json';
@@ -58,7 +57,6 @@ const languageMessages = {
   el: el,
   fi: fi,
   nl: nl,
-  // no: no,
   ro: ro,
   ru: ru,
   sv: sv,
