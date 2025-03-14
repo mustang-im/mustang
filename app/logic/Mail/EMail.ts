@@ -407,8 +407,9 @@ export class EMail extends Message {
     let html = super.html;
     if (html?.includes("cid:")) {
       if (this.attachments.isEmpty) {
-        await this.loadMIME();
+        await this.storage.readMessage(this);
       }
+      await this.loadAttachments();
       this._sanitizedHTML = await addCID(html, this);
     }
     this.haveCID = true; // triggers reload
