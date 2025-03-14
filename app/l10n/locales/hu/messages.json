@@ -49,7 +49,6 @@
   "pVpLbt": "Adjon hozzá személy",
   "sJqK1O": "Add hozzá a címzett",
   "4FYyfj": "Csillag hozzáadása",
-  "KzRwi/": "Add hozzá ezt a személyt",
   "M6xyI9": "Video konferencia fiók hozzáadása",
   "sxkWRg": "Fejlett",
   "rhIUmV": "Miután megjelenítette a # másodperceket",
@@ -658,5 +657,8 @@
   "xeiujy": "Szöveg",
   "EbMPZJ": "Nem kijelölt",
   "AvRKb/": "A {0} core forráskódja megtalálható a # alatt egy #.",
-  "Jp2AY/": "A munka és a magánélet egyensúlya: Időnként némítson el néhány fiókot, hogy koncentrálni vagy pihenni tudjon. Az ablak fejlécében kiválaszthatja a munkaterületet."
+  "Jp2AY/": "A munka és a magánélet egyensúlya: Időnként némítson el néhány fiókot, hogy koncentrálni vagy pihenni tudjon. Az ablak fejlécében kiválaszthatja a munkaterületet.",
+  "PKesIj": "Adja hozzá a személy nevét, és nyomja meg az ENTER billentyűt.",
+  "7QQ2my": "Adja hozzá ezt a személyt (Nyomja meg az ENTER-t)",
+  "zpDKSV": "Adjon meg egy személyt a címjegyzékből vagy egy e-mail címet."
 }

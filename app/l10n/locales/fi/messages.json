@@ -49,7 +49,6 @@
   "pVpLbt": "Lisää henkilö",
   "sJqK1O": "Lisää vastaanottaja",
   "4FYyfj": "Lisää tähti",
-  "KzRwi/": "Lisää tämä henkilö",
   "M6xyI9": "Lisää videokonferenssitili",
   "sxkWRg": "Edistynyt",
   "rhIUmV": "# sekunnin näytön jälkeen",
@@ -658,5 +657,8 @@
   "xeiujy": "Teksti",
   "EbMPZJ": "Käyttämätön",
   "AvRKb/": "Löydät {0} ytimen lähdekoodin osoitteesta # osoitteesta #.",
-  "Jp2AY/": "Työ- ja yksityiselämän tasapaino: Voit valita työtilan ikkunan otsikosta."
+  "Jp2AY/": "Työ- ja yksityiselämän tasapaino: Voit valita työtilan ikkunan otsikosta.",
+  "PKesIj": "Lisää henkilön nimi ja paina ENTER.",
+  "7QQ2my": "Lisää tämä henkilö (Paina ENTER)",
+  "zpDKSV": "Kirjoita henkilö osoitekirjastasi tai sähköpostiosoite."
 }

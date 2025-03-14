@@ -49,7 +49,6 @@
   "pVpLbt": "Aggiungi persona",
   "sJqK1O": "Aggiungi destinatario",
   "4FYyfj": "Aggiungi stella",
-  "KzRwi/": "Aggiungi questa persona",
   "M6xyI9": "Aggiungi account video conferenza",
   "sxkWRg": "Avanzato",
   "rhIUmV": "Dopo la visualizzazione per # secondi",
@@ -658,5 +657,8 @@
   "xeiujy": "Testo",
   "EbMPZJ": "Non assegnato",
   "AvRKb/": "Il codice sorgente di {0} core è disponibile all'indirizzo # sotto un #.",
-  "Jp2AY/": "L'equilibrio tra lavoro e vita privata: È possibile scegliere l'area di lavoro nell'intestazione della finestra."
+  "Jp2AY/": "L'equilibrio tra lavoro e vita privata: È possibile scegliere l'area di lavoro nell'intestazione della finestra.",
+  "PKesIj": "Aggiungere il nome della persona e premere INVIO.",
+  "7QQ2my": "Aggiungere questa persona (premere INVIO)",
+  "zpDKSV": "Inserite una persona dalla vostra rubrica o un indirizzo e-mail."
 }

@@ -49,7 +49,6 @@
   "pVpLbt": "Person hinzufügen",
   "sJqK1O": "Empfänger hinzufügen",
   "4FYyfj": "Stern hinzufügen",
-  "KzRwi/": "Person hinzufügen",
   "M6xyI9": "Videokonferenz-Konto hinzufügen",
   "sxkWRg": "Weitere Optionen",
   "rhIUmV": "Nach # Sekunden",
@@ -658,5 +657,8 @@
   "xeiujy": "Text",
   "EbMPZJ": "Nicht zugewiesen",
   "AvRKb/": "Den Quellcode von {0} core finden Sie unter # unter einem #.",
-  "Jp2AY/": "Ihre Work-Life-Balance: Schalten Sie einige Konten stumm, um sich zu konzentrieren oder zu entspannen. Sie können den Arbeitsbereich in der Kopfzeile des Fensters auswählen."
+  "Jp2AY/": "Ihre Work-Life-Balance: Schalten Sie einige Konten stumm, um sich zu konzentrieren oder zu entspannen. Sie können den Arbeitsbereich in der Kopfzeile des Fensters auswählen.",
+  "PKesIj": "Fügen Sie den Namen der Person hinzu und drücken Sie ENTER.",
+  "7QQ2my": "Diese Person hinzufügen (ENTER drücken)",
+  "zpDKSV": "Geben Sie eine Person aus Ihrem Adressbuch oder eine E-Mail-Adresse ein."
 }

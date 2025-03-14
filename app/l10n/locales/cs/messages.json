@@ -49,7 +49,6 @@
   "pVpLbt": "Přidat osobu",
   "sJqK1O": "Přidat příjemce",
   "4FYyfj": "Přidat hvězdu",
-  "KzRwi/": "Přidat tuto osobu",
   "M6xyI9": "Přidat video konferenční účet",
   "sxkWRg": "Pokročilí",
   "rhIUmV": "Po zobrazení na # sekund",
@@ -658,5 +657,8 @@
   "xeiujy": "Text",
   "EbMPZJ": "Nepřidělené",
   "AvRKb/": "Zdrojový kód jádra {0} najdete na adrese # pod #.",
-  "Jp2AY/": "rovnováha mezi pracovním a soukromým životem: V záhlaví okna si můžete vybrat pracovní prostor."
+  "Jp2AY/": "rovnováha mezi pracovním a soukromým životem: V záhlaví okna si můžete vybrat pracovní prostor.",
+  "PKesIj": "Přidejte jméno osoby a stiskněte klávesu ENTER.",
+  "7QQ2my": "Přidat tuto osobu (stiskněte ENTER)",
+  "zpDKSV": "Zadejte osobu z adresáře nebo e-mailovou adresu."
 }
