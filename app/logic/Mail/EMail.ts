@@ -412,6 +412,14 @@ export class EMail extends Message {
     this.needToLoadBody = true;
   }
 
+  get loadExternalImages(): boolean {
+    return super.loadExternalImages;
+  }
+  set loadExternalImages(val: boolean) {
+    this.needToLoadBody = true;
+    super.loadExternalImages = val;
+  }
+
   async download() {
     throw new AbstractFunction();
     //this.mime = await SMTPAccount.getMIME(this);
