@@ -85,12 +85,12 @@ export const OAuth2URLs = [
   },
   {
     domains: ["fastmail.com", "fastmail.fm"],
-    hostnames: ["api.fastmail.com", "fastmail.com"],
+    hostnames: ["api.fastmail.com", "fastmail.com", "imap.fastmail.com"],
     authURL: "https://api.fastmail.com/oauth/authorize",
-    authDoneURL: "https://mustang.im/loggedin",
+    authDoneURL: null,
     tokenURL: "https://api.fastmail.com/oauth/refresh",
-    scope: "https://www.fastmail.com/dev/protocol-imap https://www.fastmail.com/dev/protocol-pop https://www.fastmail.com/dev/protocol-smtp https://www.fastmail.com/dev/protocol-carddav https://www.fastmail.com/dev/protocol-caldav urn:ietf:params:jmap:core urn:ietf:params:jmap:mail urn:ietf:params:jmap:submission",
-    clientID: "35f141ae", // TODO get clientID from Fastmail
+    scope: "https://www.fastmail.com/dev/protocol-imap https://www.fastmail.com/dev/protocol-pop https://www.fastmail.com/dev/protocol-smtp https://www.fastmail.com/dev/protocol-carddav https://www.fastmail.com/dev/protocol-caldav https://www.fastmail.com/dev/protocol-webdav urn:ietf:params:jmap:core urn:ietf:params:jmap:mail urn:ietf:params:jmap:submission urn:ietf:params:jmap:vacationresponse",
+    clientID: "352641ae", // Parula
     clientSecret: null,
     doPKCE: true,
   },
