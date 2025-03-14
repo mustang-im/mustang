@@ -4,6 +4,7 @@ import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import WorkIcon from "lucide-svelte/icons/briefcase";
 import PrivateIcon from "lucide-svelte/icons/book-heart";
 import OtherIcon from "lucide-svelte/icons/shapes";
+import { gt } from "../../l10n/l10n";
 
 export class Workspace extends Observable {
   id: string;
@@ -58,9 +59,9 @@ export async function saveWorkspaces() {
 }
 
 let defaultWorkspaces = [
-  new Workspace("Work", "lightblue", WorkIcon),
-  new Workspace("Private", "lightgreen", PrivateIcon),
-  new Workspace("Other", "lightyellow", OtherIcon),
+  new Workspace(gt`Work`, "lightblue", WorkIcon),
+  new Workspace(gt`Private`, "lightgreen", PrivateIcon),
+  new Workspace(gt`Other`, "lightyellow", OtherIcon),
 ];
 
 export let accountColors = [
