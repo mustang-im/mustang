@@ -1,4 +1,4 @@
-<hbox class="window-header" class:mac class:rtl
+<hbox class="window-header {osRTL ? "os-rtl" : ""}" class:mac
   style="--workspace-color: {$selectedWorkspace?.color ?? "var(--windowheader-bg)"}">
   <vbox class="app-logo">
     {#if appName == "Mustang"}
@@ -50,7 +50,7 @@
   // Enable Mac Styles
   const mac = (!webMail && getOSName() == "macintosh") ? true : false;
   // Check mac system text direction
-  const rtl = (rtlLocales.includes(navigator.language) && mac) ? true : false;
+  const osRTL = (rtlLocales.includes(navigator.language) && mac) ? true : false;
 
   function onMinimize() {
     appGlobal.remoteApp.minimizeMainWindow();
@@ -125,19 +125,19 @@
 
   /* Styles for Mac */
   .mac .app-logo,
-  :global([dir="rtl"]) .mac.rtl .app-logo {
+  :global([dir="rtl"]) .mac.os-rtl .app-logo {
     margin-inline-start: 80px;
     width: 15px;
   }
   .mac .right {
     display: none;
   }
-  :global([dir="rtl"]) .mac:not(.rtl) .app-logo,
-  .mac.rtl .app-logo {
+  :global([dir="rtl"]) .mac:not(.os-rtl) .app-logo,
+  .mac.os-rtl .app-logo {
     margin-inline-start: 0px;
   }
-  :global([dir="rtl"]) .mac:not(.rtl) .search-box,
-  .mac.rtl .search-box {
+  :global([dir="rtl"]) .mac:not(.os-rtl) .search-box,
+  .mac.os-rtl .search-box {
     padding-inline-end: 80px;
   }
   :global([dir="rtl"]) .mac .search-box {
