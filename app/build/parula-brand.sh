@@ -17,11 +17,12 @@ perl -p -i \
   -e "s|Mustang|Parula|g;" \
   -e "s|https://mustang.im|https://parula.beonex.com|g;" \
   -e "s|\"name\": \"mustang\"|\"name\": \"parula\"|;" \
-  ../../app/package.json
+  ../package.json
 perl -p -i \
   -e "s|Mustang GmbH|Beonex GmbH|g;" \
   -e "s|Mustang|Parula|g;" \
   -e "s|mustang-mail|parula|g;" \
   -e "s|mustang|parula|g;" \
   ../../e2/electron-builder.yml
+perl -MFile::Copy -e "copy('../frontend/asset/icon/general/logo-parula.svg', '../frontend/asset/icon/general/logo.svg')"
 perl -MFile::Copy -e "copy('../../e2/build/icon-parula.png', '../../e2/build/icon.png')"
