@@ -127,4 +127,6 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
   getPersonByServerID(id: string): ActiveSyncPerson | void {
     return this.persons.find(p => p.serverID == id);
   }
+
+  // ActiveSync does not support groups.
 }
