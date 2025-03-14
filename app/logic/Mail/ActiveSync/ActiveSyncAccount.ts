@@ -57,8 +57,10 @@ export class ActiveSyncAccount extends MailAccount {
     return new ActiveSyncFolder(this);
   }
 
-  // Currently storing the folder sync key, protocol version and policy key
-  // (if any) in local storage. Should this migrate to configJSON?
+  /**
+   * Currently storing the folder sync key, protocol version and policy key
+   * (if any) in local storage. Should this migrate to configJSON?
+   */
   getStorageItem(key) {
     return localStorage.getItem(`mail.${this.id}.${key}`);
   }
@@ -97,7 +99,7 @@ export class ActiveSyncAccount extends MailAccount {
 
     await this.listFolders();
 
-    // `listFolders` will subscribe to new user address books,
+    // `listFolders` will subscribe to new user-added address books,
     // but until #155 is fixed we need to link existing ones manually.
     for (let addressbook of appGlobal.addressbooks) {
       if (addressbook.protocol == "addressbook-activesync" && addressbook.url.startsWith(this.url + "?") && addressbook.username == this.username) {
@@ -106,7 +108,7 @@ export class ActiveSyncAccount extends MailAccount {
       }
     }
 
-    // `listFolders` will subscribe to new user calendars,
+    // `listFolders` will subscribe to new user-added calendars,
     // but until #155 is fixed we need to link existing ones manually.
     for (let calendar of appGlobal.calendars) {
       if (calendar.protocol == "calendar-activesync" && calendar.url.startsWith(this.url + "?") && calendar.username == this.username) {
@@ -116,9 +118,10 @@ export class ActiveSyncAccount extends MailAccount {
     }
 
     // ActiveSync doesn't have streaming notifications, instead it
-    // can tell us when a pingable needs to resync again. There's no
-    // point asking about pingables that we know aren't in sync, so
-    // each pingable triggers listening once it has completed its resync.
+    // provides the Ping operation which will tell us when a pingable
+    // has gone out of sync. This only makes sense once the pingable
+    // is in sync, so each pingable registers with the account when
+    // it's ready to be specified in the Ping operation.
   }
 
   async logout(): Promise<void> {

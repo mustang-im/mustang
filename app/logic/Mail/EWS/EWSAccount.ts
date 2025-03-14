@@ -59,7 +59,7 @@ export class EWSAccount extends MailAccount {
     await this.listFolders();
 
     // Link (until #155) or create the default address book.
-    // TODO: Support user address books.
+    // TODO: Support user-added address books.
     let addressbook = appGlobal.addressbooks.find((addressbook: EWSAddressbook) => addressbook.protocol == "addressbook-ews" && addressbook.url == this.url && addressbook.username == this.username) as EWSAddressbook | void;
     if (!addressbook) {
       addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
@@ -73,7 +73,7 @@ export class EWSAccount extends MailAccount {
     await addressbook.listContacts();
 
     // Link (until #155) or create the default calendar.
-    // TODO: Support user calendars.
+    // TODO: Support user-added calendars.
     let calendar = appGlobal.calendars.find((calendar: EWSCalendar) => calendar.protocol == "calendar-ews" && calendar.url == this.url && calendar.username == this.username) as EWSCalendar | void;
     if (!calendar) {
       calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
@@ -93,8 +93,10 @@ export class EWSAccount extends MailAccount {
     await this.oAuth2?.logout();
   }
 
-  // This uses Exchange to construct the message rather than
-  // building the MIME ourselves.
+  /**
+   * This uses Exchange to construct the message rather than
+   * building the MIME ourselves.
+   */
   async send(email: EMail): Promise<void> {
     if (email.iCalMethod) {
       throw new NotSupported("Please use Exchange APIs to send iMIP messages");
