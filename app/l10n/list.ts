@@ -33,7 +33,7 @@ export const localeNames = {
 //  'ms': "Malay / بهاس ملايو",
   'nb': "Norwegian Bokmål / Norsk Bokmål",
   'nl': "Dutch / Nederlands",
-  'no': "Norwegian / Norsk",
+  // 'no': "Norwegian / Norsk",
   'pl': "Polish / Polski",
   'pt': "Portuguese / Português",
   'ro': "Romanian / Românește",
