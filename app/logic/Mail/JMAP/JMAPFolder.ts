@@ -41,6 +41,10 @@ export class JMAPFolder extends Folder {
   /** Lists messages in this folder. Updates are efficient.
    * But doesn't download their contents. @see downloadMessages() */
   async listMessages(): Promise<ArrayColl<JMAPEMail>> {
+    if (!this.account.isLoggedIn) {
+      await this.account.login(false);
+    }
+
     await this.readFolder();
     return this.messages.isEmpty
       ? await this.listAllMessages()
