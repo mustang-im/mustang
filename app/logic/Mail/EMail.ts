@@ -405,7 +405,10 @@ export class EMail extends Message {
     }
 
     let html = super.html;
-    if (html && this.attachments.hasItems) {
+    if (html?.includes("cid:")) {
+      if (this.attachments.isEmpty) {
+        await this.loadMIME();
+      }
       this._sanitizedHTML = await addCID(html, this);
     }
     this.haveCID = true; // triggers reload
