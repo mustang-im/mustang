@@ -31,7 +31,7 @@ export const localeNames = {
   'lt': "Lithuanian / Lietuviškai",
   'lv': "Latvian / Latviski",
 //  'ms': "Malay / بهاس ملايو",
-  'nb': "Norwegian Bokmål/ Norsk Bokmål",
+  'nb': "Norwegian Bokmål / Norsk Bokmål",
   'nl': "Dutch / Nederlands",
   'no': "Norwegian / Norsk",
   'pl': "Polish / Polski",
