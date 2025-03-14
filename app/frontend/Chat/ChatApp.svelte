@@ -4,7 +4,7 @@
     <PersonsList {chatRooms} bind:selectedChat={$selectedChat} />
   </vbox>
   <vbox class="right-pane" slot="right">
-    {#if messages && selectedChat }
+    {#if messages && $selectedChat }
       <PersonHeader person={$selectedChat.contact} />
       <vbox flex class="messages">
         <MessageList {messages}>
@@ -62,6 +62,12 @@
   });
   $: if ($selectedChat?.contact instanceof Person) {
     $selectedPerson = $selectedChat.contact;
+  }
+  $: chatRooms, clearSelectedChat()
+  function clearSelectedChat() {
+    if (!chatRooms.contains($selectedChat)) {
+      $selectedChat = chatRooms.last;
+    }
   }
 </script>
 
