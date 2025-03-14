@@ -11,7 +11,9 @@
     noResultsText={$t`No person found`}
     bind:text={typedText}
     create={() => catchErrors(() => canCreate(typedText))}
-    createText={$t`Add this person`}
+    createText={sanitize.emailAddress(typedText, "")
+      ? $t`Add this person (Press ENTER)`
+      : $t`Enter a person from your address book, or an email address`}
     onCreate={(text) => catchErrors(() => onCreate(text))}
     {placeholder}
     {autofocus}
@@ -154,7 +156,14 @@
 .person-autocomplete :global(input::placeholder) {
   color: #7D7886;
 }
-
+.person-autocomplete :global(.autocomplete-list) {
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+.person-autocomplete :global(.autocomplete-list-item-create) {
+  opacity: 50%;
+  font-size: 14px;
+}
 .person-autocomplete :global(.mdc-deprecated-list-item--activated) {
   border: 1px solid red;
   background-color: green;

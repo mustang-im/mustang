@@ -46,6 +46,9 @@
       </vbox>
     {/if}
   </hbox>
+  {#if $personUID.name == $personUID.emailAddress && nameInputEl == document.activeElement}
+    <hbox class="helptext">{$t`Add the name of the person, and press ENTER`}</hbox>
+  {/if}
   {#if !disabled}
     {#if person?.emailAddresses.hasItems}
       <vbox class="other-email-addresses">
@@ -184,6 +187,12 @@
   input {
     font-size: 15px;
     min-width: 15em;
+  }
+  .helptext {
+    font-size: 14px;
+    max-width: 15em;
+    margin: 0px 24px;
+    opacity: 50%;
   }
   .top-right.buttons {
     justify-content: start;
