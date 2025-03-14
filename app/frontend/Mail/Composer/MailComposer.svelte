@@ -36,10 +36,10 @@
       <hbox flex>
         <hbox flex>
           <MailAutocomplete addresses={mail.to} placeholder={$t`Add recipient`} tabindex={1} autofocus={mail.to.isEmpty}>
-            <svelte:fragment slot="person-popup-buttons" let:personUID>
+            <!--<svelte:fragment slot="person-popup-buttons" let:personUID>
               <Button plain label={$t`CC`} onClick={() => onMoveToCC(personUID)} />
               <Button plain label={$t`BCC`} onClick={() => onMoveToBCC(personUID)} />
-            </svelte:fragment>
+            </svelte:fragment>-->
           </MailAutocomplete>
         </hbox>
         <hbox class="cc buttons">
@@ -60,19 +60,19 @@
     {#if showCC}
       <hbox class="label">{$t`Cc`}</hbox>
       <MailAutocomplete addresses={mail.cc} placeholder={$t`Add CC recipient`} tabindex={1}>
-        <svelte:fragment slot="person-popup-buttons" let:personUID>
+        <!--<svelte:fragment slot="person-popup-buttons" let:personUID>
           <Button plain label={$t`To`} onClick={() => onMoveToTo(personUID)} />
           <Button plain label={$t`BCC`} onClick={() => onMoveToBCC(personUID)} />
-        </svelte:fragment>
+        </svelte:fragment>-->
       </MailAutocomplete>
     {/if}
     {#if showBCC}
       <hbox class="label">{$t`Bcc`}</hbox>
       <MailAutocomplete addresses={mail.bcc} placeholder={$t`Add BCC recipient`} tabindex={1}>
-        <svelte:fragment slot="person-popup-buttons" let:personUID>
+        <!--<svelte:fragment slot="person-popup-buttons" let:personUID>
           <Button plain label={$t`To`} onClick={() => onMoveToTo(personUID)} />
           <Button plain label={$t`CC`} onClick={() => onMoveToCC(personUID)} />
-        </svelte:fragment>
+        </svelte:fragment>-->
       </MailAutocomplete>
     {/if}
     </grid>
@@ -247,11 +247,15 @@
   }
 
   function onMoveToCC(person: PersonUID) {
+    // TODO `{#if person}<PersonEntry {person}/>` in PersonsAutocomplete.svelte ?
+    // TODO Does not actually add it to CC, or at least that doesn't show.
+    showCCForce = true;
     mail.bcc.remove(person);
     mail.to.remove(person);
     mail.cc.add(person);
   }
   function onMoveToBCC(person: PersonUID) {
+    showBCCForce = true;
     mail.cc.remove(person);
     mail.to.remove(person);
     mail.bcc.add(person);
