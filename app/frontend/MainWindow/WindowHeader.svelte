@@ -1,9 +1,7 @@
 <hbox class="window-header" class:os-rtl={osRTL} class:mac
   style="--workspace-color: {$selectedWorkspace?.color ?? "var(--windowheader-bg)"}">
   <vbox class="app-logo">
-    {#if appName == "Mustang"}
-      <Icon data={logo} size="20px" />
-    {/if}
+    <Icon data={logo} size="20px" />
   </vbox>
   <hbox class="workspace">
     <WorkspaceHeader {selectedApp} />
