@@ -411,6 +411,14 @@ export class EMail extends Message {
     super.html = val;
     this.needToLoadBody = true;
   }
+  
+  set loadExternalImages(val: boolean) {
+    if (this._loadExternalImages == val) {
+      return;
+    }
+    this.loadBody();
+    this._loadExternalImages = val; // notifyChangedProperty triggers update
+  }
 
   async download() {
     throw new AbstractFunction();
