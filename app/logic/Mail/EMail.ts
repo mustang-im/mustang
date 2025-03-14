@@ -416,6 +416,8 @@ export class EMail extends Message {
     if (this._loadExternalImages == val) {
       return;
     }
+    // Load body again instead of setting _sanitizedHTML to null
+    // For adding CID specifically
     this.loadBody();
     this._loadExternalImages = val; // notifyChangedProperty triggers update
   }
