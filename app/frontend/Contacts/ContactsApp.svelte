@@ -38,6 +38,7 @@
     : persons;
 
   $: $globalSearchTerm && clearSelected();
+  $: selectedAddressbook, clearSelected();
   function clearSelected() {
     if (!filteredPersons.contains($selectedPerson)) {
       $selectedPerson = filteredPersons.first;
