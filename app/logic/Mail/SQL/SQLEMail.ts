@@ -303,7 +303,6 @@ export class SQLEMail {
     email.scheduling = sanitize.integer(row.scheduling, 0);
     email.subject = sanitize.string(row.subject, null);
     if (row.plaintext != null || row.html != null) {
-      email.needToLoadBody = false;
       email.text = sanitize.string(row.plaintext, null);
       let html = sanitize.string(row.html, null);
       if (html) {
@@ -480,7 +479,6 @@ export class SQLEMail {
     if (html) {
       email.html = html;
     }
-    email.needToLoadBody = text == null && html == null;
   }
 
   /**

@@ -10,10 +10,6 @@
       {console.error(ex), logError(ex), ""}
       {ex.message ?? ex + ""}
     {/await}
-  {/if}
-
-  {#if $message.needToLoadBody}
-    <hbox></hbox>
   {:else if mode == DisplayMode.HTML}
     <HTMLDisplay html={$message.html} allowExternalImages={false} />
   {:else if mode == DisplayMode.HTMLWithExternal}

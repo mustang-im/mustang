@@ -106,7 +106,6 @@ export class JSONEMail {
     email.outgoing = sanitize.boolean(!!json.outgoing);
     email.subject = sanitize.string(json.subject, null);
     if (json.plaintext != null || json.html != null) {
-      email.needToLoadBody = false;
       email.text = sanitize.string(json.plaintext, null);
       let html = sanitize.string(json.html, null);
       if (html) {
@@ -253,6 +252,5 @@ export class JSONEMail {
     if (html) {
       email.html = html;
     }
-    email.needToLoadBody = text == null && html == null;
   }
 }

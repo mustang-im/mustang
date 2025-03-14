@@ -10,8 +10,6 @@
     * Participants
     * Free/Busy
     * Move to other calendar
-  * Inline images
-    * Display cid:
   * Editor: newlines
   * format/flowed
   * Bug: Thunderbird AB import misses ABs and fields
