@@ -49,7 +49,6 @@
   "pVpLbt": "Añadir persona",
   "sJqK1O": "Añadir destinatario",
   "4FYyfj": "Añadir estrella",
-  "KzRwi/": "Añadir a esta persona",
   "M6xyI9": "Añadir una cuenta para videoconferencia",
   "sxkWRg": "Avanzado",
   "rhIUmV": "Mostrar después de # segundos",
@@ -658,5 +657,8 @@
   "xeiujy": "Texto",
   "EbMPZJ": "Sin asignar",
   "AvRKb/": "Puede encontrar el código fuente de {0} core en # bajo un #.",
-  "Jp2AY/": "Tu equilibrio entre trabajo y vida privada: Silencia algunas cuentas a veces para concentrarte o relajarte. Puedes elegir el espacio de trabajo en la cabecera de la ventana."
+  "Jp2AY/": "Tu equilibrio entre trabajo y vida privada: Silencia algunas cuentas a veces para concentrarte o relajarte. Puedes elegir el espacio de trabajo en la cabecera de la ventana.",
+  "PKesIj": "Añada el nombre de la persona y pulse ENTER",
+  "7QQ2my": "Añadir a esta persona (Pulse ENTER)",
+  "zpDKSV": "Introduzca una persona de su libreta de direcciones o una dirección de correo electrónico"
 }

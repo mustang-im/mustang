@@ -49,7 +49,6 @@
   "pVpLbt": "Tilføj person",
   "sJqK1O": "Tilføj modtager",
   "4FYyfj": "Tilføj stjerne",
-  "KzRwi/": "Tilføj denne person",
   "M6xyI9": "Tilføj videokonference",
   "sxkWRg": "Avanceret avanceret",
   "rhIUmV": "Efter visning i # sekunder",
@@ -658,5 +657,8 @@
   "xeiujy": "Tekst",
   "EbMPZJ": "Ikke tildelt",
   "AvRKb/": "Du kan finde kildekoden til {0} core på # under en #.",
-  "Jp2AY/": "Din balance mellem arbejde og privatliv: Slå nogle konti fra i perioder for at fokusere eller slappe af. Du kan vælge arbejdsområde i vinduesoverskriften."
+  "Jp2AY/": "Din balance mellem arbejde og privatliv: Slå nogle konti fra i perioder for at fokusere eller slappe af. Du kan vælge arbejdsområde i vinduesoverskriften.",
+  "PKesIj": "Tilføj navnet på personen, og tryk på ENTER",
+  "7QQ2my": "Tilføj denne person (tryk på ENTER)",
+  "zpDKSV": "Indtast en person fra din adressebog eller en e-mailadresse"
 }

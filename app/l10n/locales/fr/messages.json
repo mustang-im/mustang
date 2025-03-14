@@ -49,7 +49,6 @@
   "pVpLbt": "Ajouter une personne",
   "sJqK1O": "Ajouter un destinataire",
   "4FYyfj": "Ajouter une étoile",
-  "KzRwi/": "Ajouter cette personne",
   "M6xyI9": "Ajouter un compte vidéo conférence",
   "sxkWRg": "Avancé",
   "rhIUmV": "Après # secondes d'affichage",
@@ -658,5 +657,8 @@
   "xeiujy": "Texte",
   "EbMPZJ": "Non attribué",
   "AvRKb/": "Vous pouvez trouver le code source de {0} core à l'adresse # sous un #.",
-  "Jp2AY/": "L'équilibre entre vie professionnelle et vie privée : Mettez certains comptes en sourdine pour vous concentrer ou vous détendre. Vous pouvez choisir l'espace de travail dans l'en-tête de la fenêtre."
+  "Jp2AY/": "L'équilibre entre vie professionnelle et vie privée : Mettez certains comptes en sourdine pour vous concentrer ou vous détendre. Vous pouvez choisir l'espace de travail dans l'en-tête de la fenêtre.",
+  "PKesIj": "Ajoutez le nom de la personne et appuyez sur ENTER",
+  "7QQ2my": "Ajouter cette personne (appuyer sur ENTER)",
+  "zpDKSV": "Saisissez une personne de votre carnet d'adresses ou une adresse électronique."
 }

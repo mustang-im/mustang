@@ -49,7 +49,6 @@
   "pVpLbt": "Lägg till person",
   "sJqK1O": "Lägg till mottagare",
   "4FYyfj": "Lägg till stjärna",
-  "KzRwi/": "Lägg till denna person",
   "M6xyI9": "Lägga till videokonferenskonto",
   "sxkWRg": "Avancerad",
   "rhIUmV": "Efter visning i # sekunder",
@@ -658,5 +657,8 @@
   "xeiujy": "Text",
   "EbMPZJ": "Ej tilldelad",
   "AvRKb/": "Du kan hitta källkoden för {0} core på # under en #.",
-  "Jp2AY/": "Balans mellan arbete och fritid: Stäng av vissa konton ibland för att fokusera eller koppla av. Du kan välja arbetsyta i fönsterhuvudet."
+  "Jp2AY/": "Balans mellan arbete och fritid: Stäng av vissa konton ibland för att fokusera eller koppla av. Du kan välja arbetsyta i fönsterhuvudet.",
+  "PKesIj": "Lägg till namnet på personen och tryck på ENTER",
+  "7QQ2my": "Lägg till denna person (tryck på ENTER)",
+  "zpDKSV": "Ange en person från din adressbok eller en e-postadress"
 }

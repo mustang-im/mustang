@@ -49,7 +49,6 @@
   "pVpLbt": "Persoon toevoegen",
   "sJqK1O": "Ontvanger toevoegen",
   "4FYyfj": "Ster toevoegen",
-  "KzRwi/": "Voeg deze persoon toe",
   "M6xyI9": "Voeg videoconferentie account toe",
   "sxkWRg": "Vertaling:",
   "rhIUmV": "Na weergave voor # seconden",
@@ -658,5 +657,8 @@
   "xeiujy": "Tekst",
   "EbMPZJ": "Niet toegewezen",
   "AvRKb/": "Je kunt de broncode van {0} core vinden op # onder een #.",
-  "Jp2AY/": "De balans tussen werk en privé: Je kunt de werkruimte kiezen in de koptekst van het venster."
+  "Jp2AY/": "De balans tussen werk en privé: Je kunt de werkruimte kiezen in de koptekst van het venster.",
+  "PKesIj": "Voeg de naam van de persoon toe en druk op ENTER",
+  "7QQ2my": "Voeg deze persoon toe (Druk op ENTER)",
+  "zpDKSV": "Voer een persoon uit je adresboek of een e-mailadres in"
 }
