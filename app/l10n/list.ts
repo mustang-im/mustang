@@ -139,6 +139,19 @@ export const localeNames = {
   'zh-Hant': "Chinese (Traditional) / 繁體中文",
 };
 
+/** key: locale code from navigator.language, in lower case
+ * value: our lang code, from the above lists. */
+export const localeMapping = {
+  "en-gb": "en-GB",
+  "en-ie": "en-GB",
+  "en-au": "en-GB",
+  "en-nz": "en-GB",
+  "en-za": "en-GB",
+  "zh-tw": "zh-Hant",
+  "zh-hk": "zh-Hant",
+  "zh-sg": "zh",
+};
+
 /** List of available locales in this build.
  * Must match ./locales/<locale>/* files and
  * the imports in ./l10n.ts. */

@@ -3,13 +3,14 @@ import { derived, writable } from "svelte/store";
 import { generateMessageID } from "./generateMessageID";
 import { sanitize } from '../../lib/util/sanitizeDatatypes';
 
-import { languageMessages, sourceLocale, commentSymbol } from './list';
+import { languageMessages, sourceLocale, localeMapping, commentSymbol } from './list';
 
 /** @lang Either 2-letter ISO lang code, or 5-letter ISO locale code
  * Must match list.ts */
 export function setUILocale(lang: string) {
   // This function *must* be sync, for gt() to work in TS modules
 
+  lang = localeMapping[lang.toLowerCase()] ?? lang;
   // e.g. 'en' for 'en-US'
   let lang2 = lang.substring(0, 2);
 
