@@ -158,9 +158,3 @@ export const localeMapping = {
 export const locales = Object.keys(localeNames);
 
 export const rtlLocales = [ 'ar', 'fa', 'he', 'ur' ];
-
-// Cannot be placed in l10n.ts because
-// `window.global = window;` causes an error
-// also in config.ts because of the plugin
-// TODO move it back to l10n.ts, now that `window.global` was removed
-export const commentSymbol = " *=> ";
