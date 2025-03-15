@@ -7,9 +7,7 @@
   </T>
 </div>
 <div>
-  <T msg={`${appName} is built using the following #. We sincerely thank those authors and contributors.`}>
-    <a href="https://github.com/mustang-im/mustang/raw/master/app/public/attribution.txt.gz">{$t`Open-Source components`}</a>
-  </T>
+ {$t`${appName} is built using the following Open-Source components. We sincerely thank those authors and contributors.`}
 </div>
 
 <iframe 
