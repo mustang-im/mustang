@@ -7,17 +7,25 @@ import pt from './locales/pt/messages.json';
 import pl from './locales/pl/messages.json';
 import ja from './locales/ja/messages.json';
 import zh from './locales/zh/messages.json';
+import zhHant from './locales/zh-Hant/messages.json';
+import enGB from './locales/en-GB/messages.json';
 
 import ar from './locales/ar/messages.json';
 import cs from './locales/cs/messages.json';
 import da from './locales/da/messages.json';
 import el from './locales/el/messages.json';
 import fi from './locales/fi/messages.json';
+import nb from './locales/nb/messages.json';
 import nl from './locales/nl/messages.json';
 import ro from './locales/ro/messages.json';
 import ru from './locales/ru/messages.json';
 import sv from './locales/sv/messages.json';
 import uk from './locales/uk/messages.json';
+import et from './locales/et/messages.json';
+import lt from './locales/lt/messages.json';
+import lv from './locales/lv/messages.json';
+import bg from './locales/bg/messages.json';
+import sl from './locales/sl/messages.json';
 
 import az from './locales/az/messages.json';
 import eo from './locales/eo/messages.json';
@@ -44,16 +52,24 @@ export const languageMessages = {
   pl: pl,
   ja: ja,
   zh: zh,
+  "zh-Hant": zhHant,
+  "en-GB": enGB,
   ar: ar,
   cs: cs,
   da: da,
   el: el,
   fi: fi,
+  nb: nb,
   nl: nl,
   ro: ro,
   ru: ru,
   sv: sv,
   uk: uk,
+  et: et,
+  lt: lt,
+  lv: lv,
+  bg: bg,
+  sl: sl,
   az: az,
   eo: eo,
   fa: fa,
@@ -84,6 +100,7 @@ export const localeNames = {
   'de': "German / Deutsch",
   'el': "Greek / Ελληνικά",
   'en': "English",
+  'en-GB': "English (British)",
   'eo': "Esperanto",
   'es': "Spanish / Español",
   'et': "Estonian / Eesti keel",
@@ -101,7 +118,7 @@ export const localeNames = {
   'lt': "Lithuanian / Lietuviškai",
   'lv': "Latvian / Latviski",
   //'ms': "Malay / بهاس ملايو",
-  'nb': "Norwegian Bokmål / Norsk Bokmål",
+  'nb': "Norwegian / Norsk", // Bokmål
   'nl': "Dutch / Nederlands",
   //'no': "Norwegian / Norsk",
   'pl': "Polish / Polski",
@@ -118,7 +135,8 @@ export const localeNames = {
   'uk': "Ukranian / Українська",
   //'ur': "Urdu / اُردُو",
   //'vi': "Vietnamese / tiếng Việt",
-  'zh': "Simplified Chinese / 简体中文",
+  'zh': "Chinese (Simplified, China) / 简体中文",
+  'zh-Hant': "Chinese (Traditional) / 繁體中文",
 };
 
 /** List of available locales in this build.
