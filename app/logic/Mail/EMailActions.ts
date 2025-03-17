@@ -50,34 +50,34 @@ export class EMailActions {
   }
 
   protected _reply(): EMail {
-    this.email.markReplied()
-      .catch(this.email.folder.account.errorCallback);
+    let original = this.email;
+    original.markReplied()
+      .catch(original.folder.account.errorCallback);
 
-    let account = this.email.folder.account;
+    let account = original.folder.account;
     let reply = account.newEMailFrom();
-    let mail = this.email;
-    mail.action.generateMessageID();
+    original.action.generateMessageID();
 
-    let recipients = mail.from?.emailAddress
-      ? [mail.from, ...mail.to.contents, ...mail.cc.contents, ...mail.bcc.contents]
+    let recipients = original.from?.emailAddress
+      ? [original.from, ...original.to.contents, ...original.cc.contents, ...original.bcc.contents]
       : [];
     let from = MailIdentity.findIdentity(recipients, account);
     reply.identity = from.identity;
     reply.from = from.personUID;
 
-    reply.folder = this.email.folder?.specialFolder == SpecialFolder.Normal
-      ? this.email.folder
+    reply.folder = original.folder?.specialFolder == SpecialFolder.Normal
+      ? original.folder
       : account.getSpecialFolder(SpecialFolder.Sent);
 
-    reply.subject = "Re: " + this.email.baseSubject; // Do *not* localize "Re: "
-    reply.inReplyTo = this.email.messageID;
-    reply.references = this.email.references?.slice() ?? [];
-    reply.references.push(this.email.messageID);
+    reply.subject = "Re: " + original.baseSubject; // Do *not* localize "Re: "
+    reply.inReplyTo = original.messageID;
+    reply.references = original.references?.slice() ?? [];
+    reply.references.push(original.messageID);
 
     let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
     let quote = `<p class="quote-header">${this.quotePrefixLine()}</p>
-    <blockquote cite="mid:${this.email.id}">
-      ${this.email.html}
+    <blockquote cite="mid:${original.id}">
+      ${original.html}
     </blockquote>`;
     reply.html = quoteSetting == "none" ? `<p></p>` :
       quoteSetting == "below" ? `<p></p>
