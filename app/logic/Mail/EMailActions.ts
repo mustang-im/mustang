@@ -56,7 +56,7 @@ export class EMailActions {
 
     let account = original.folder.account;
     let reply = account.newEMailFrom();
-    original.action.generateMessageID();
+    reply.action.generateMessageID();
 
     let recipients = original.from?.emailAddress
       ? [original.from, ...original.to.contents, ...original.cc.contents, ...original.bcc.contents]
