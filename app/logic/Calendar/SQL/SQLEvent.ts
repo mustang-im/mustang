@@ -27,7 +27,7 @@ export class SQLEvent extends Event {
             ${event.title}, ${event.descriptionText}, ${event.descriptionHTML},
             ${event.startTime.toISOString()}, ${event.endTime.toISOString()},
             ${event.calUID}, ${event.response}, ${event.pID}, ${event.calendar?.dbID},
-            ${event.recurrenceRule?.getCalString()}, ${event.parentEvent?.dbID},
+            ${event.recurrenceRule?.getCalString(event.allDay)}, ${event.parentEvent?.dbID},
             ${event.recurrenceStartTime?.toISOString()},
             ${+!!event.parentEvent?.dbID}
           )`);
@@ -44,7 +44,7 @@ export class SQLEvent extends Event {
             responseToOrganizer = ${event.response},
             pID = ${event.pID},
             calendarID = ${event.calendar?.dbID},
-            recurrenceRule = ${event.recurrenceRule?.getCalString()},
+            recurrenceRule = ${event.recurrenceRule?.getCalString(event.allDay)},
             recurrenceMasterEventID = ${event.parentEvent?.dbID},
             recurrenceStartTime = ${event.recurrenceStartTime?.toISOString()},
             recurrenceIsException = ${+!!event.parentEvent?.dbID}

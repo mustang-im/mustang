@@ -33,7 +33,7 @@ export function getICal(event: Event, method?: iCalMethod): { method: iCalMethod
     lines.push(["ORGANIZER", "MAILTO:" + organizer.emailAddress]);
   }
   if (event.recurrenceRule) {
-    lines.push(event.recurrenceRule.getCalString() + "\r\n");
+    lines.push(event.recurrenceRule.getCalString(event.allDay) + "\r\n");
   }
   for (let participant of event.participants) {
     switch (participant.response) {
