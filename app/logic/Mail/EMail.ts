@@ -463,6 +463,32 @@ export class EMail extends Message {
     return this.threadID;
   }
 
+  copyFrom(other: EMail): void {
+    super.copyFrom(other);
+    other.subject = this.subject;
+    other.from = this.from;
+    other.replyTo = this.replyTo;
+    other.to.replaceAll(this.to);
+    other.cc.replaceAll(this.cc);
+    other.bcc.replaceAll(this.bcc);
+    other.tags.replaceAll(this.tags);
+    other.headers.replaceAll(this.headers);
+    other.size = this.size;
+    if (this.references) {
+      other.references = this.references.slice();
+    }
+    other.isSpam = this.isSpam;
+    other.isReplied = this.isReplied;
+    other.isDraft = this.isDraft;
+    other.isDeleted = this.isDeleted;
+    other.mime = this.mime;
+    other.scheduling = this.scheduling;
+    other.event = this.event;
+    other.folder = this.folder;
+    other.threadID = this.threadID;
+    other.identity = this.identity;
+  }
+
   get action(): EMailActions {
     return new EMailActions(this);
   }

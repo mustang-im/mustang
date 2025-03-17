@@ -138,4 +138,22 @@ export class Message extends Observable {
   async deleteMessage() {
     console.log("Delete message");
   }
+
+  copyFrom(other: Message, withAttachments: boolean = false): void {
+    other.outgoing = this.outgoing;
+    other.contact = this.contact;
+    other.sent.setTime(this.sent.getTime());
+    other.received.setTime(this.received.getTime());
+    other.isNewArrived = this.isNewArrived;
+    other.isRead = this.isRead;
+    other.isStarred = this.isStarred;
+    other.inReplyTo = this.inReplyTo;
+    other._text = this._text;
+    other._rawHTML = this._rawHTML;
+    // _sanitizedHTML and _loadExternalImages not copied
+    if (withAttachments) {
+      // TODO Clone `Attachment` objects
+      other.attachments.replaceAll(this.attachments);
+    }
+  }
 }
