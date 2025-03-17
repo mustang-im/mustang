@@ -85,6 +85,7 @@ function convertICalToEvent(ics: ICalParser): Event | null {
         participant.response = ResponseType.Organizer;
         // Remove the organizer as it has less detail than an attendee
         event.participants.remove(organizer);
+        organizer = null;
       }
       event.participants.add(participant);
     }
