@@ -161,10 +161,10 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     return new RecurrenceRule(data);
   }
 
-  getCalString(): string {
+  getCalString(allDay: boolean): string {
     let rule: { FREQ: string, UNTIL?: string, COUNT?: number, INTERVAL?: number, BYDAY?: string, WKST?: string } = { FREQ: this.frequency };
     if (this.endDate) {
-      rule.UNTIL = this.endDate.toISOString().replace(/\W/g, "").slice(0, 15);
+      rule.UNTIL = this.endDate.toISOString().replace(/-|:|\..../g, "").slice(0, allDay ? 8 : 16);
     }
     if (this.count != Infinity) {
       rule.COUNT = this.count;
