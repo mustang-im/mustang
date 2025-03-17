@@ -81,7 +81,7 @@ function convertICalToEvent(ics: ICalParser): Event | null {
     for (let { value, properties: { role, partstat, cn } } of vevent.entries.attendee) {
       value = value.replace(/^MAILTO:/i, "");
       let participant = new Participant(sanitize.emailAddress(value), sanitize.label(cn, null), sanitize.integer(ParticipationStatus[partstat?.toUpperCase()] || ResponseType.Unknown));
-      if (value == organizer?.emailAddress || /^CHAIR$/i.test(role)) {
+      if (participant.emailAddress == organizer?.emailAddress || /^CHAIR$/i.test(role)) {
         participant.response = ResponseType.Organizer;
         // Remove the organizer as it has less detail than an attendee
         event.participants.remove(organizer);
