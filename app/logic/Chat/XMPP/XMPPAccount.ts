@@ -31,7 +31,6 @@ export class XMPPAccount extends ChatAccount {
   };
   async connect() {
     this.jid = this.username;
-    let serverDomain = getDomainForEmailAddress(this.username);
     this.client = await XMPP.createClient({
       jid: this.jid,
       password: this.password,
@@ -40,8 +39,8 @@ export class XMPPAccount extends ChatAccount {
       // If you have a .well-known/host-meta.json file for your
       // domain, the connection transport config can be skipped.
       transports: {
-        websocket: `wss://${serverDomain}:5281/xmpp-websocket`,
-        // bosh: `https://${serverDomain}:5281/http-bind`,
+        websocket: this.url?.startsWith("wss:") ? this.url : undefined,
+        // bosh: this.url.startsWith("https:") ? this.url : undefined,
       }
     });
     this.client.on("*", console.log);

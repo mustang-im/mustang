@@ -38,13 +38,16 @@
   let jid: string;
   $: setUsername(jid);
   function setUsername(_dummy: any) {
+    if (!jid) {
+      return;
+    }
     config.username = jid;
     config.name = jid;
-    config.userRealname = appGlobal.me.name;
-    // Fake data, not needed for XMPP lib. Just make the database happy.
-    config.hostname = jid ? getDomainForEmailAddress(jid) : null;
-    config.port = 5222;
+    config.userRealname = appGlobal.me.name ?? config.username;
+    config.hostname = getDomainForEmailAddress(jid);
+    config.port = 5281;
     config.tls = TLSSocketType.TLS;
+    config.url = `wss://${config.hostname}:${config.port}/xmpp-websocket`;
   }
 
   async function onContinue() {
