@@ -19,8 +19,17 @@ export class XMPPAccount extends ChatAccount {
   /** Login to this account on the server. Opens network connection.
    * You must call this after creating the object and having set its properties.
    * This will populate `persons` and `chats`. */
-  async login() {
-    super.login(false);
+  async login(interactive: boolean) {
+    super.login(interactive);
+    await this.connect();
+    await this.getRoster();
+    let presence = await this.client.sendPresence();
+
+    await this.getRooms();
+    await this.client.enableKeepAlive();
+    this.listenToChatMessages();
+  };
+  async connect() {
     this.jid = this.username;
     let serverDomain = getDomainForEmailAddress(this.username);
     this.client = await XMPP.createClient({
@@ -41,20 +50,19 @@ export class XMPPAccount extends ChatAccount {
     await this.client.connect();
     await this.waitForEvent("session:started");
     console.log("logged in", this.jid);
-    await this.getRoster();
-    let presence = await this.client.sendPresence();
-
-    await this.getRooms();
-    await this.client.enableKeepAlive();
-    this.listenToChatMessages();
-  };
+  }
   async waitForEvent(eventName: keyof XMPP.AgentEvents) {
     await new Promise(async resolve => {
       await this.client.on(eventName, (...results) => resolve(results));
     });
   }
+  /** For setup only. Test that the login works. */
+  async verifyLogin(): Promise<void> {
+    await this.connect();
+  }
   async getRoster() {
     let roster = await this.client.getRoster();
+    console.log("Roster", roster)
     Promise.all(roster.items.map(p => this.getPerson(p.jid, p.name ?? '')));
   }
   async getRooms() {
