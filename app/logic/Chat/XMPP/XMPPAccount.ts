@@ -12,6 +12,7 @@ import * as XMPP from 'stanza';
 export class XMPPAccount extends ChatAccount {
   readonly protocol: string = "xmpp";
   readonly chats = new MapColl<ChatPerson | Group, XMPPChatRoom>;
+  readonly roster = new MapColl<string, ChatPerson>();
   client: XMPP.Agent;
   deviceID: string;
   jid: string;
@@ -62,7 +63,10 @@ export class XMPPAccount extends ChatAccount {
   async getRoster() {
     let roster = await this.client.getRoster();
     console.log("Roster", roster)
-    Promise.all(roster.items.map(p => this.getPerson(p.jid, p.name ?? '')));
+    await Promise.all(roster.items.map(p => this.getPerson(p.jid, p.name ?? ''))); // sets this.roster
+    for (let jid of this.roster.keys()) {
+      let chatRoom = new XMPPChatRoom(this, jid);
+    }
   }
   async getRooms() {
     // TODO Get list of rooms
@@ -70,35 +74,14 @@ export class XMPPAccount extends ChatAccount {
     //Promise.all(allRooms.map(room => this.getNewRoom(room)));
   }
   async getNewRoom(room: string) {
-    let chatRoom = new XMPPChatRoom(this);
-    chatRoom.id = room;
-    console.log("Added room", room);
-    let group = new Group();
-    group.name = room; // TODO
-    //let config = await this.client.getRoomConfig(room);
-    let membersResult = await this.client.getRoomMembers(room);
-    let members = membersResult.muc.users || [];
-    let persons = await Promise.all(members.filter(m => m.jid).map(member =>
-      this.getPerson(member.jid ?? '', member.nick ?? '')));
-    group.participants.addAll(persons);
-    chatRoom.contact = group.participants.length <= 2 && group.participants.find(person => person.id == this.jid)
-      ? (group.participants.find(person => person.id != this.jid) ?? group.participants.first)
-      : group;
-    this.chats.set(chatRoom.contact as Group | ChatPerson, chatRoom);
-
-    // TODO Get message history
-    chatRoom.lastMessage = chatRoom.messages.get(chatRoom.messages.length - 1);
-
-    // TODO Listen to chat messages
-    await this.client.on('muc:other', xmppMsg => {
-      console.log("MUC other message", xmppMsg);
-    });
+    let chatRoom = new XMPPChatRoom(this, room);
   }
   getExistingRoom(roomID: string): XMPPChatRoom {
     return this.chats.find(chat => chat.id == roomID);
   }
-  getExistingPerson(userId: string) {
-    return appGlobal.persons.find(person => person.chatAccounts.some(acc => acc.value == userId));
+  getExistingPerson(jid: string) {
+    return this.roster.get(jid) ??
+      appGlobal.persons.find(person => person.chatAccounts.some(acc => acc.value == jid));
   }
   async getPerson(jid: string, name: string) {
     let existing = this.getExistingPerson(jid);
@@ -118,13 +101,14 @@ export class XMPPAccount extends ChatAccount {
       person.phoneNumbers.add(new ContactEntry(info.phone, "unknown"));
     }
     person.notes = info.text ?? '';
-    let avatar = await this.client.getAvatar(jid, 'pubsub');
+    /*let avatar = await this.client.getAvatar(jid, 'pubsub');
     let avatarBuffer = avatar?.content?.data;
     if (avatarBuffer) {
       let blob = new Blob([avatarBuffer], { type: "image/png" });
       person.picture = URL.createObjectURL(blob);
       // Cannot save blobs to database. Use data URL? Don't save XMPP users?
-    }
+    }*/
+    this.roster.set(jid, person);
     return person;
   }
   async listenToChatMessages() {
