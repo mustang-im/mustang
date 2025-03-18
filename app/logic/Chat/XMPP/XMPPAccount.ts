@@ -7,7 +7,7 @@ import { ContactEntry } from '../../Abstract/Person';
 import { appGlobal } from '../../app';
 import { getDomainForEmailAddress } from '../../util/netUtil';
 import { MapColl } from 'svelte-collections';
-import type * as XMPP from 'stanza';
+import * as XMPP from 'stanza';
 
 export class XMPPAccount extends ChatAccount {
   readonly protocol: string = "xmpp";
@@ -23,7 +23,7 @@ export class XMPPAccount extends ChatAccount {
     super.login(false);
     this.jid = this.username;
     let serverDomain = getDomainForEmailAddress(this.username);
-    this.client = await appGlobal.remoteApp.createStanzaXMPPClient({
+    this.client = await XMPP.createClient({
       jid: this.jid,
       password: this.password,
       // credentials: { token: ... }, TODO OAuth2
@@ -32,7 +32,7 @@ export class XMPPAccount extends ChatAccount {
       // domain, the connection transport config can be skipped.
       transports: {
         websocket: `wss://${serverDomain}:5281/xmpp-websocket`,
-        bosh: `https://${serverDomain}:5281/http-bind`,
+        // bosh: `https://${serverDomain}:5281/http-bind`,
       }
     });
     this.client.on("*", console.log);

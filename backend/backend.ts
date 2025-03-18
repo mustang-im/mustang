@@ -10,13 +10,11 @@ import ky from 'ky';
 import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard } from "electron";
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
-import * as StanzaXMPP from 'stanza';
 import { createType1Message, decodeType2Message, createType3Message } from "./ntlm";
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
-import childProcess from 'node:child_process';
 
 let jpc: JPCWebSocket | null = null;
 
@@ -59,7 +57,6 @@ async function createSharedAppObject() {
     getFilesDir,
     // openFileInExternalApp,
     createIMAPFlowConnection,
-    createStanzaXMPPClient,
     getSQLiteDatabase,
     sendMailNodemailer,
     verifyServerNodemailer,
@@ -311,10 +308,6 @@ function openMenu(menuItems: MenuItemConstructorOptions[]): void {
 
 function createIMAPFlowConnection(...args): ImapFlow {
   return new ImapFlow(...args);
-}
-
-function createStanzaXMPPClient(options) {
-  return StanzaXMPP.createClient(options);
 }
 
 function getSQLiteDatabase(filename: string, options: any): Database {
