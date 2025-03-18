@@ -73,7 +73,6 @@
   "FanM/V": "Torna al fuso orario locale",
   "tX7W4e": "bcc",
   "/xLNEx": "Bcc",
-  "PFohi3": "BCC",
   "E4djnN": "prima, a",
   "KmydK6": "In grassetto",
   "0DGrp8": "Browser",
@@ -87,7 +86,6 @@
   "Op2Ugv": "Impossibile rimuovere l'ultima identità",
   "gUjA6J": "cc",
   "RpYfjZ": "Cc",
-  "XdZeJk": "CC",
   "JRl6dQ": "La modifica dell'URL della riunione potrebbe far perdere la riunione ad alcuni partecipanti. Ne è sicuro?",
   "BUK4Ur": "Visualizzazione mail simile a chat",
   "ln7Ghc": "Visualizzazione classica a 3 pannelli",
@@ -562,7 +560,6 @@
   "Am2VzK": "OAuth: serve il login",
   "EK1sJV": "OAuth2: Accesso fallito",
   "X1fI0A": "Open-Source",
-  "fo7yWA": "Componenti Open-Source",
   "YOQquW": "Licenza Open-Source",
   "/x2S4u": "Posta in uscita",
   "8ZsakT": "Password",
@@ -624,7 +621,6 @@
   "L85gHs": "Non è possibile modificare una cartella speciale Tutti gli account.",
   "xl1BJ0": "Non è possibile modificare le cartelle speciali sul server di Exchange.",
   "iybKgr": "L'account è configurato per utilizzare l'autenticazione {0}, ma il server non la supporta. Modificare le impostazioni dell'account o configurarlo nuovamente.",
-  "2b26OK": "{0} è costruito utilizzando il seguente #. Ringraziamo sinceramente gli autori e i collaboratori.",
   "bzMKg7": "Accettato",
   "T3FM0r": "Impostazioni dell'account",
   "qpg6c1": "Per spostare un conto in questa area di lavoro, individuarlo nell'area di lavoro corrente e fare clic sul pulsante [Sposta] accanto al conto.",
@@ -660,5 +656,6 @@
   "Jp2AY/": "L'equilibrio tra lavoro e vita privata: È possibile scegliere l'area di lavoro nell'intestazione della finestra.",
   "PKesIj": "Aggiungere il nome della persona e premere INVIO.",
   "7QQ2my": "Aggiungere questa persona (premere INVIO)",
-  "zpDKSV": "Inserite una persona dalla vostra rubrica o un indirizzo e-mail."
+  "zpDKSV": "Inserite una persona dalla vostra rubrica o un indirizzo e-mail.",
+  "sDNZ6y": "{0} è costruito utilizzando i seguenti componenti Open-Source. Ringraziamo sinceramente questi autori e collaboratori."
 }

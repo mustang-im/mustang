@@ -73,7 +73,6 @@
   "FanM/V": "Tilbage til lokal tidszone",
   "tX7W4e": "bcc",
   "/xLNEx": "Bcc",
-  "PFohi3": "BCC",
   "E4djnN": "før, på",
   "KmydK6": "Fed skrift",
   "0DGrp8": "Browser",
@@ -87,7 +86,6 @@
   "Op2Ugv": "Kan ikke fjerne den sidste identitet",
   "gUjA6J": "cc",
   "RpYfjZ": "Cc",
-  "XdZeJk": "CC",
   "JRl6dQ": "Hvis du ændrer mødets URL, kan det betyde, at nogle deltagere går glip af mødet. Er du sikker på det?",
   "BUK4Ur": "Chat-lignende mail visning",
   "ln7Ghc": "Klassisk 3-rude visning",
@@ -562,7 +560,6 @@
   "Am2VzK": "OAuth: Brug for login",
   "EK1sJV": "OAuth2: Login mislykkedes",
   "X1fI0A": "Open- Source",
-  "fo7yWA": "Open Source komponenter",
   "YOQquW": "Open Source licens",
   "/x2S4u": "Udbakke",
   "8ZsakT": "Adgangskode",
@@ -624,7 +621,6 @@
   "L85gHs": "Du kan ikke ændre en særlig mappe for Alle konti.",
   "xl1BJ0": "Du kan ikke ændre særlige mapper på Exchange-serveren",
   "iybKgr": "Din konto er konfigureret til at bruge {0} -godkendelse, men din server understøtter det ikke. Ændr venligst dine kontoindstillinger, eller opret kontoen igen.",
-  "2b26OK": "{0} er bygget ved hjælp af følgende #. Vi takker oprigtigt disse forfattere og bidragydere.",
   "bzMKg7": "Accepteret",
   "T3FM0r": "Kontoindstillinger",
   "qpg6c1": "Tilføj en ny konto.\\nFor at flytte en konto til dette arbejdsområde skal du finde den i dens nuværende arbejdsområde og klikke på knappen [Flyt] ved siden af kontoen.",
@@ -660,5 +656,6 @@
   "Jp2AY/": "Din balance mellem arbejde og privatliv: Slå nogle konti fra i perioder for at fokusere eller slappe af. Du kan vælge arbejdsområde i vinduesoverskriften.",
   "PKesIj": "Tilføj navnet på personen, og tryk på ENTER",
   "7QQ2my": "Tilføj denne person (tryk på ENTER)",
-  "zpDKSV": "Indtast en person fra din adressebog eller en e-mailadresse"
+  "zpDKSV": "Indtast en person fra din adressebog eller en e-mailadresse",
+  "sDNZ6y": "{0} er bygget ved hjælp af følgende open source-komponenter. Vi takker oprigtigt disse forfattere og bidragydere."
 }

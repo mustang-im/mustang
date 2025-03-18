@@ -73,7 +73,6 @@
   "FanM/V": "Volver a la zona horaria local",
   "tX7W4e": "Cco",
   "/xLNEx": "Cco",
-  "PFohi3": "CCO",
   "E4djnN": "antes, en",
   "KmydK6": "Negrita",
   "0DGrp8": "Navegador",
@@ -87,7 +86,6 @@
   "Op2Ugv": "No se puede eliminar la última identidad",
   "gUjA6J": "cc",
   "RpYfjZ": "Cc",
-  "XdZeJk": "CC",
   "JRl6dQ": "El cambio de la URL de la reunión podría hacer que algunos participantes se perdieran la reunión. ¿Está usted seguro?",
   "BUK4Ur": "Vista de correo similar al chat",
   "ln7Ghc": "Vista clásica de 3 paneles",
@@ -562,7 +560,6 @@
   "Am2VzK": "OAuth2: Inicio de sesión necesario",
   "EK1sJV": "OAuth2: Login failed",
   "X1fI0A": "Código abierto",
-  "fo7yWA": "Componentes del Código abierto",
   "YOQquW": "Licencia del Código abierto",
   "/x2S4u": "Elementos enviados",
   "8ZsakT": "Contraseña",
@@ -624,7 +621,6 @@
   "L85gHs": "No se puede modificar una carpeta especial Todas las cuentas.",
   "xl1BJ0": "No se pueden modificar las carpetas especiales del servidor Exchange",
   "iybKgr": "Su cuenta está configurada para utilizar la autenticación {0}, pero su servidor no la admite. Por favor, cambia la configuración de tu cuenta o configúrala de nuevo.",
-  "2b26OK": "{0} se construye utilizando el siguiente #. Agradecemos sinceramente a los autores y colaboradores.",
   "bzMKg7": "Aceptado",
   "T3FM0r": "Configuración de la cuenta",
   "qpg6c1": "Para mover una cuenta a este espacio de trabajo, búsquela en su espacio de trabajo actual y haga clic en el botón [Mover] situado junto a la cuenta.",
@@ -660,5 +656,6 @@
   "Jp2AY/": "Tu equilibrio entre trabajo y vida privada: Silencia algunas cuentas a veces para concentrarte o relajarte. Puedes elegir el espacio de trabajo en la cabecera de la ventana.",
   "PKesIj": "Añada el nombre de la persona y pulse ENTER",
   "7QQ2my": "Añadir a esta persona (Pulse ENTER)",
-  "zpDKSV": "Introduzca una persona de su libreta de direcciones o una dirección de correo electrónico"
+  "zpDKSV": "Introduzca una persona de su libreta de direcciones o una dirección de correo electrónico",
+  "sDNZ6y": "{0} se ha creado utilizando los siguientes componentes de código abierto. Nuestro más sincero agradecimiento a los autores y colaboradores."
 }

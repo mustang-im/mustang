@@ -73,7 +73,6 @@
   "FanM/V": "Vissza a helyi időzónába",
   "tX7W4e": "bcc",
   "/xLNEx": "Bcc",
-  "PFohi3": "BCC",
   "E4djnN": "korábban, a",
   "KmydK6": "Boldog",
   "0DGrp8": "Böngésző",
@@ -87,7 +86,6 @@
   "Op2Ugv": "Nem lehet eltávolítani az utolsó identitást",
   "gUjA6J": "cc",
   "RpYfjZ": "Cc",
-  "XdZeJk": "CC",
   "JRl6dQ": "A megbeszélés URL-címének megváltoztatása miatt néhány résztvevő lemaradhat a megbeszélésről. Biztos benne?",
   "BUK4Ur": "Chat-like mail nézet",
   "ln7Ghc": "Klasszikus 3-pane nézet",
@@ -562,7 +560,6 @@
   "Am2VzK": "OAuth: Bejelentkezés szükséges",
   "EK1sJV": "OAuth2: Bejelentkezés sikertelen",
   "X1fI0A": "Open-Source",
-  "fo7yWA": "Open-Source komponensek",
   "YOQquW": "Open-Source licenc",
   "/x2S4u": "Kimenő postaláda",
   "8ZsakT": "Jelszó",
@@ -624,7 +621,6 @@
   "L85gHs": "A Minden fiók speciális mappa nem módosítható.",
   "xl1BJ0": "Nem módosíthatja a speciális mappákat az Exchange-kiszolgálón",
   "iybKgr": "A fiókja a {0} hitelesítés használatára van beállítva, de a kiszolgáló nem támogatja azt. Kérjük, módosítsa a fiók beállításait, vagy állítsa be újra a fiókot.",
-  "2b26OK": "{0} a következő # segítségével épül fel. Őszintén köszönjük a szerzőknek és a közreműködőknek.",
   "bzMKg7": "Elfogadva",
   "T3FM0r": "Fiókbeállítások",
   "qpg6c1": "Új fiók hozzáadása.\\nA fiók áthelyezéséhez keresse meg a fiókot a jelenlegi munkaterületén, és kattintson a fiók melletti [Áthelyezés] gombra.",
@@ -660,5 +656,6 @@
   "Jp2AY/": "A munka és a magánélet egyensúlya: Időnként némítson el néhány fiókot, hogy koncentrálni vagy pihenni tudjon. Az ablak fejlécében kiválaszthatja a munkaterületet.",
   "PKesIj": "Adja hozzá a személy nevét, és nyomja meg az ENTER billentyűt.",
   "7QQ2my": "Adja hozzá ezt a személyt (Nyomja meg az ENTER-t)",
-  "zpDKSV": "Adjon meg egy személyt a címjegyzékből vagy egy e-mail címet."
+  "zpDKSV": "Adjon meg egy személyt a címjegyzékből vagy egy e-mail címet.",
+  "sDNZ6y": "{0} a következő nyílt forráskódú komponensek felhasználásával készült. Őszintén köszönjük a szerzőknek és a közreműködőknek."
 }

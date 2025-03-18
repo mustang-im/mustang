@@ -73,7 +73,6 @@
   "FanM/V": "Zpět na místní časové pásmo",
   "tX7W4e": "bcc",
   "/xLNEx": "Bcc",
-  "PFohi3": "BCC",
   "E4djnN": "předtím, v",
   "KmydK6": "Tučný",
   "0DGrp8": "Prohlížeč",
@@ -87,7 +86,6 @@
   "Op2Ugv": "Nelze odstranit poslední identitu",
   "gUjA6J": "cc",
   "RpYfjZ": "Cc",
-  "XdZeJk": "CC",
   "JRl6dQ": "Změna adresy URL schůzky může způsobit, že někteří účastníci schůzku zmeškají. Jste si jisti?",
   "BUK4Ur": "Zobrazení pošty jako v chatu",
   "ln7Ghc": "Klasické zobrazení ve 3 panelech",
@@ -562,7 +560,6 @@
   "Am2VzK": "OAuth: Potřeba přihlášení",
   "EK1sJV": "OAuth2: Přihlášení se nezdařilo",
   "X1fI0A": "Otevřený zdrojový kód",
-  "fo7yWA": "Koponenty s otevřeným zdrojovým kódem",
   "YOQquW": "Licence otevřeného zdrojového kódu",
   "/x2S4u": "Čeština",
   "8ZsakT": "Heslo",
@@ -624,7 +621,6 @@
   "L85gHs": "Speciální složku Všechny účty nelze změnit.",
   "xl1BJ0": "Speciální složky na serveru Exchange nelze měnit.",
   "iybKgr": "Váš účet je nakonfigurován tak, aby používal ověřování {0}, ale váš server ho nepodporuje. Změňte prosím nastavení účtu nebo účet nastavte znovu.",
-  "2b26OK": "{0} je sestaven pomocí následujícího #. Těmto autorům a přispěvatelům upřímně děkujeme.",
   "bzMKg7": "Přijato",
   "T3FM0r": "Nastavení účtu",
   "qpg6c1": "Chcete-li účet přesunout do této pracovní oblasti, najděte jeho aktuální pracovní oblast a klikněte na tlačítko [Přesunout] vedle účtu.",
@@ -660,5 +656,6 @@
   "Jp2AY/": "rovnováha mezi pracovním a soukromým životem: V záhlaví okna si můžete vybrat pracovní prostor.",
   "PKesIj": "Přidejte jméno osoby a stiskněte klávesu ENTER.",
   "7QQ2my": "Přidat tuto osobu (stiskněte ENTER)",
-  "zpDKSV": "Zadejte osobu z adresáře nebo e-mailovou adresu."
+  "zpDKSV": "Zadejte osobu z adresáře nebo e-mailovou adresu.",
+  "sDNZ6y": "{0} je vytvořen s použitím následujících komponent Open-Source. Těmto autorům a přispěvatelům upřímně děkujeme."
 }

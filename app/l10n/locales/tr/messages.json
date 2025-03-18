@@ -73,7 +73,6 @@
   "FanM/V": "Yerel saat dilimine geri dön",
   "tX7W4e": "bcc",
   "/xLNEx": "Bcc",
-  "PFohi3": "BCC",
   "E4djnN": "önce, at",
   "KmydK6": "Kalın",
   "0DGrp8": "Tarayıcı",
@@ -87,7 +86,6 @@
   "Op2Ugv": "Son kimliği kaldıramaz",
   "gUjA6J": "cc",
   "RpYfjZ": "Cc",
-  "XdZeJk": "CC",
   "JRl6dQ": "Toplantı URL'sini değiştirmek bazı katılımcıların toplantıyı kaçırmasına neden olabilir. Emin misiniz?",
   "BUK4Ur": "Chat-like posta görünümü",
   "ln7Ghc": "Klasik 3 bölmeli görünüm",
@@ -562,7 +560,6 @@
   "Am2VzK": "OAuth: Giriş yapmanız gerekiyor",
   "EK1sJV": "OAuth2: Giriş başarısız oldu",
   "X1fI0A": "Open- Source",
-  "fo7yWA": "Açık kaynak bileşenleri",
   "YOQquW": "Açık kaynak lisansı",
   "/x2S4u": "Giden Kutusu",
   "8ZsakT": "Şifre",
@@ -624,7 +621,6 @@
   "L85gHs": "Tüm hesaplar özel klasörünü değiştiremezsiniz.",
   "xl1BJ0": "Exchange sunucusundaki özel klasörleri değiştiremezsiniz",
   "iybKgr": "Hesabınız {0} kimlik doğrulamasını kullanacak şekilde yapılandırılmış, ancak sunucunuz bunu desteklemiyor. Lütfen hesap ayarlarınızı değiştirin veya hesabı yeniden kurun.",
-  "2b26OK": "{0} aşağıdaki # kullanılarak oluşturulmuştur. Yazarlara ve katkıda bulunanlara içtenlikle teşekkür ederiz.",
   "bzMKg7": "Kabul Edildi",
   "T3FM0r": "Hesap ayarları",
   "qpg6c1": "Yeni bir hesap ekleyin.\\nBir hesabı bu çalışma alanına taşımak için, hesabı geçerli çalışma alanında bulun ve hesabın yanındaki [Taşı] düğmesine tıklayın.",
@@ -660,5 +656,6 @@
   "Jp2AY/": "İş-yaşam dengeniz: Odaklanmak veya rahatlamak için zaman zaman bazı hesapların sesini kapatın. Pencere başlığından çalışma alanını seçebilirsiniz.",
   "PKesIj": "Kişinin adını ekleyin ve ENTER tuşuna basın",
   "7QQ2my": "Bu kişiyi ekleyin (ENTER'a basın)",
-  "zpDKSV": "Adres defterinizden bir kişi veya bir e-posta adresi girin"
+  "zpDKSV": "Adres defterinizden bir kişi veya bir e-posta adresi girin",
+  "sDNZ6y": "{0} aşağıdaki Açık Kaynak bileşenleri kullanılarak oluşturulmuştur. Bu yazarlara ve katkıda bulunanlara içtenlikle teşekkür ederiz."
 }

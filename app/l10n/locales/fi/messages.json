@@ -73,7 +73,6 @@
   "FanM/V": "Takaisin paikalliseen aikavyöhykkeeseen",
   "tX7W4e": "bcc",
   "/xLNEx": "Bcc",
-  "PFohi3": "Piilokopio",
   "E4djnN": "ennen, klo",
   "KmydK6": "Lihavoitu",
   "0DGrp8": "Selain",
@@ -87,7 +86,6 @@
   "Op2Ugv": "Viimeisintä henkilöllisyyttä ei voi poistaa",
   "gUjA6J": "cc",
   "RpYfjZ": "Cc",
-  "XdZeJk": "CC",
   "JRl6dQ": "Kokouksen URL-osoitteen muuttaminen saattaa aiheuttaa sen, että jotkut osallistujat eivät pääse kokoukseen. Oletko varma?",
   "BUK4Ur": "Chat-tyyppinen sähköpostinäkymä",
   "ln7Ghc": "Klassinen 3-paneelin näkymä",
@@ -562,7 +560,6 @@
   "Am2VzK": "OAuth: Tarvitaan kirjautuminen",
   "EK1sJV": "OAuth2: Kirjautuminen epäonnistui",
   "X1fI0A": "Avoin-Lähdekoodi",
-  "fo7yWA": "Avoin-Lähdekoodi komponentit",
   "YOQquW": "Avoin-Lähdekoodi lisenssi",
   "/x2S4u": "Lähtevä postilaatikko",
   "8ZsakT": "Salasana",
@@ -624,7 +621,6 @@
   "L85gHs": "Et voi muuttaa Kaikki tilit -erityiskansiota.",
   "xl1BJ0": "Exchange-palvelimen erikoiskansioita ei voi muuttaa.",
   "iybKgr": "Tilisi on määritetty käyttämään {0} -todennusta, mutta palvelimesi ei tue sitä. Muuta tilisi asetuksia tai määritä tili uudelleen.",
-  "2b26OK": "{0} rakennetaan käyttämällä seuraavaa #. Kiitämme vilpittömästi näitä kirjoittajia ja avustajia.",
   "bzMKg7": "Hyväksytty",
   "T3FM0r": "Tilin asetukset",
   "qpg6c1": "Lisää uusi tili.\\nTilin siirtämiseksi tähän työtilaan etsi tili sen nykyisestä työtilasta ja napsauta tilin vieressä olevaa [Siirrä]-painiketta.",
@@ -660,5 +656,6 @@
   "Jp2AY/": "Työ- ja yksityiselämän tasapaino: Voit valita työtilan ikkunan otsikosta.",
   "PKesIj": "Lisää henkilön nimi ja paina ENTER.",
   "7QQ2my": "Lisää tämä henkilö (Paina ENTER)",
-  "zpDKSV": "Kirjoita henkilö osoitekirjastasi tai sähköpostiosoite."
+  "zpDKSV": "Kirjoita henkilö osoitekirjastasi tai sähköpostiosoite.",
+  "sDNZ6y": "{0} on rakennettu käyttäen seuraavia avoimen lähdekoodin komponentteja. Kiitämme vilpittömästi näitä kirjoittajia ja avustajia."
 }

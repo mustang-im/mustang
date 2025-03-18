@@ -73,7 +73,6 @@
   "FanM/V": "Terug naar lokale tijdzone",
   "tX7W4e": "bcc",
   "/xLNEx": "Bcc",
-  "PFohi3": "BCC",
   "E4djnN": "voor, op",
   "KmydK6": "Vet",
   "0DGrp8": "Browser",
@@ -87,7 +86,6 @@
   "Op2Ugv": "Kan de laatste identiteit niet verwijderen",
   "gUjA6J": "cc",
   "RpYfjZ": "Cc",
-  "XdZeJk": "CC",
   "JRl6dQ": "Het wijzigen van de URL van de vergadering kan ertoe leiden dat sommige deelnemers de vergadering missen. Weet u dit zeker?",
   "BUK4Ur": "Chat mailweergave",
   "ln7Ghc": "Klassieke 3-vensterweergave",
@@ -562,7 +560,6 @@
   "Am2VzK": "OAuth: Aanmelden nodig",
   "EK1sJV": "OAuth2: Inloggen mislukt",
   "X1fI0A": "Open-Source",
-  "fo7yWA": "Open-Source componenten",
   "YOQquW": "Open-Source licentie",
   "/x2S4u": "Outbox",
   "8ZsakT": "Wachtwoord",
@@ -624,7 +621,6 @@
   "L85gHs": "Je kunt een speciale map Alle accounts niet wijzigen.",
   "xl1BJ0": "U kunt speciale mappen op de Exchange-server niet wijzigen",
   "iybKgr": "Uw account is geconfigureerd om {0} authenticatie te gebruiken, maar uw server ondersteunt dit niet. Wijzig uw accountinstellingen of stel de account opnieuw in.",
-  "2b26OK": "{0} is gebouwd met behulp van de volgende #. We danken deze auteurs en medewerkers hartelijk.",
   "bzMKg7": "Geaccepteerd",
   "T3FM0r": "Accountinstellingen",
   "qpg6c1": "Voeg een nieuw account toe.\\Om een account naar deze werkruimte te verplaatsen, zoek het in de huidige werkruimte en klik op de knop [Verplaatsen] naast het account.",
@@ -660,5 +656,6 @@
   "Jp2AY/": "De balans tussen werk en privé: Je kunt de werkruimte kiezen in de koptekst van het venster.",
   "PKesIj": "Voeg de naam van de persoon toe en druk op ENTER",
   "7QQ2my": "Voeg deze persoon toe (Druk op ENTER)",
-  "zpDKSV": "Voer een persoon uit je adresboek of een e-mailadres in"
+  "zpDKSV": "Voer een persoon uit je adresboek of een e-mailadres in",
+  "sDNZ6y": "{0} is gebouwd met behulp van de volgende Open-Source componenten. Onze oprechte dank gaat uit naar deze auteurs en medewerkers."
 }

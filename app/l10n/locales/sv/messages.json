@@ -73,7 +73,6 @@
   "FanM/V": "Tillbaka till lokal tidszon",
   "tX7W4e": "bcc",
   "/xLNEx": "Bcc",
-  "PFohi3": "BCC",
   "E4djnN": "före, vid",
   "KmydK6": "Fet stil",
   "0DGrp8": "Webbläsare",
@@ -87,7 +86,6 @@
   "Op2Ugv": "Kan inte ta bort den sista identiteten",
   "gUjA6J": "cc",
   "RpYfjZ": "Cc",
-  "XdZeJk": "CC",
   "JRl6dQ": "Om du ändrar mötesadressen kan det hända att vissa deltagare missar mötet. Är du säker på det?",
   "BUK4Ur": "Chattliknande e-postvy",
   "ln7Ghc": "Klassisk 3-ruta vy",
@@ -562,7 +560,6 @@
   "Am2VzK": "OAuth: Behöver inloggning",
   "EK1sJV": "OAuth2: Inloggning misslyckades",
   "X1fI0A": "Öppen källkod",
-  "fo7yWA": "Open-Source komponenter",
   "YOQquW": "Open-Source licens",
   "/x2S4u": "Utkorgen",
   "8ZsakT": "Lösenord",
@@ -624,7 +621,6 @@
   "L85gHs": "Du kan inte ändra en specialmapp för Alla konton.",
   "xl1BJ0": "Du kan inte ändra specialmappar på Exchange-servern",
   "iybKgr": "Ditt konto är konfigurerat för att använda {0} -autentisering, men din server stöder inte det. Vänligen ändra dina kontoinställningar eller konfigurera kontot igen.",
-  "2b26OK": "{0} är byggd med hjälp av följande #. Vi tackar uppriktigt dessa författare och bidragsgivare.",
   "bzMKg7": "Accepterad",
   "T3FM0r": "Inställningar för konto",
   "qpg6c1": "Lägg till ett nytt konto.\\nFör att flytta ett konto till den här arbetsytan, leta upp det på dess nuvarande arbetsyta och klicka på knappen [Flytta] bredvid kontot.",
@@ -660,5 +656,6 @@
   "Jp2AY/": "Balans mellan arbete och fritid: Stäng av vissa konton ibland för att fokusera eller koppla av. Du kan välja arbetsyta i fönsterhuvudet.",
   "PKesIj": "Lägg till namnet på personen och tryck på ENTER",
   "7QQ2my": "Lägg till denna person (tryck på ENTER)",
-  "zpDKSV": "Ange en person från din adressbok eller en e-postadress"
+  "zpDKSV": "Ange en person från din adressbok eller en e-postadress",
+  "sDNZ6y": "{0} är byggd med hjälp av följande komponenter med öppen källkod. Vi tackar uppriktigt dessa författare och bidragsgivare."
 }

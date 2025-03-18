@@ -73,7 +73,6 @@
   "FanM/V": "Zurück zur lokalen Zeitzone",
   "tX7W4e": "bcc",
   "/xLNEx": "Bcc",
-  "PFohi3": "BCC",
   "E4djnN": "vorher, um",
   "KmydK6": "Fett",
   "0DGrp8": "Browser",
@@ -87,7 +86,6 @@
   "Op2Ugv": "Die einzige Identität kann nicht entfernt werden",
   "gUjA6J": "cc",
   "RpYfjZ": "Cc",
-  "XdZeJk": "CC",
   "JRl6dQ": "Das Ändern der Besprechungs-URL könnte dazu führen, dass einige Teilnehmer die Besprechung verpassen. Sind Sie sicher?",
   "BUK4Ur": "Chat-ähnliche Mail-Ansicht",
   "ln7Ghc": "Klassische 3-Fenster-Ansicht",
@@ -562,7 +560,6 @@
   "Am2VzK": "OAuth2: Anmeldung erforderlich",
   "EK1sJV": "OAuth2: Anmeldung fehlgeschlagen",
   "X1fI0A": "Open-Source",
-  "fo7yWA": "Open-Source-Komponenten",
   "YOQquW": "Open-Source-Lizenz",
   "/x2S4u": "Im Versand",
   "8ZsakT": "Passwort",
@@ -624,7 +621,6 @@
   "L85gHs": "Sie können einen speziellen Ordner Alle Konten nicht ändern.",
   "xl1BJ0": "Sie können spezielle Ordner auf dem Exchange-Server nicht ändern",
   "iybKgr": "Ihr Konto ist für die Verwendung der Authentifizierung {0} konfiguriert, aber Ihr Server unterstützt diese nicht. Bitte ändern Sie Ihre Kontoeinstellungen oder richten Sie das Konto neu ein.",
-  "2b26OK": "{0} wird unter Verwendung der folgenden # erstellt. Wir danken den Autoren und Mitwirkenden herzlich.",
   "bzMKg7": "Angenommen",
   "T3FM0r": "Kontoeinstellungen",
   "qpg6c1": "Fügen Sie ein neues Konto hinzu.\\nUm ein Konto in diesen Arbeitsbereich zu verschieben, suchen Sie es in seinem aktuellen Arbeitsbereich und klicken Sie auf die Schaltfläche [Verschieben] neben dem Konto.",
@@ -660,5 +656,6 @@
   "Jp2AY/": "Ihre Work-Life-Balance: Schalten Sie einige Konten stumm, um sich zu konzentrieren oder zu entspannen. Sie können den Arbeitsbereich in der Kopfzeile des Fensters auswählen.",
   "PKesIj": "Fügen Sie den Namen der Person hinzu und drücken Sie ENTER.",
   "7QQ2my": "Diese Person hinzufügen (ENTER drücken)",
-  "zpDKSV": "Geben Sie eine Person aus Ihrem Adressbuch oder eine E-Mail-Adresse ein."
+  "zpDKSV": "Geben Sie eine Person aus Ihrem Adressbuch oder eine E-Mail-Adresse ein.",
+  "sDNZ6y": "{0} wurde unter Verwendung der folgenden Open-Source-Komponenten erstellt. Wir danken diesen Autoren und Mitwirkenden herzlichst."
 }

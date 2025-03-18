@@ -73,7 +73,6 @@
   "FanM/V": "Voltar ao fuso horário local",
   "tX7W4e": "cco",
   "/xLNEx": "Cco",
-  "PFohi3": "CCO",
   "E4djnN": "antes, em",
   "KmydK6": "Negrito",
   "0DGrp8": "Navegador",
@@ -87,7 +86,6 @@
   "Op2Ugv": "Não é possível remover a última identidade",
   "gUjA6J": "cc",
   "RpYfjZ": "Cc",
-  "XdZeJk": "CC",
   "JRl6dQ": "Alterar o URL da reunião pode fazer com que alguns participantes percam a reunião. Tem a certeza?",
   "BUK4Ur": "Visualização de e-mail semelhante ao chat",
   "ln7Ghc": "Visualização clássica 3-painéis",
@@ -562,7 +560,6 @@
   "Am2VzK": "OAuth: Precisa de login",
   "EK1sJV": "OAuth2: Falha no login",
   "X1fI0A": "Código aberto",
-  "fo7yWA": "Componentes Open-Source",
   "YOQquW": "Licença de Open-Source",
   "/x2S4u": "Caixa de saída",
   "8ZsakT": "Senha",
@@ -624,7 +621,6 @@
   "L85gHs": "Não é possível modificar uma pasta especial Todas as contas.",
   "xl1BJ0": "Não é possível alterar pastas especiais no servidor do Exchange",
   "iybKgr": "A sua conta está configurada para utilizar a autenticação {0}, mas o seu servidor não a suporta. Altere as definições da sua conta ou configure-a novamente.",
-  "2b26OK": "{0} é construído utilizando o seguinte #. Agradecemos sinceramente aos autores e colaboradores.",
   "bzMKg7": "Aceite",
   "T3FM0r": "Definições da conta",
   "qpg6c1": "Adicionar uma nova conta.\\nPara mover uma conta para este espaço de trabalho, localize-a no seu espaço de trabalho atual e clique no botão [Mover] junto à conta.",
@@ -660,5 +656,6 @@
   "Jp2AY/": "O equilíbrio entre a vida profissional e pessoal: Silencie algumas contas para se concentrar ou relaxar. Pode escolher o espaço de trabalho no cabeçalho da janela.",
   "PKesIj": "Acrescentar o nome da pessoa e premir ENTER",
   "7QQ2my": "Adicionar esta pessoa (premir ENTER)",
-  "zpDKSV": "Introduzir uma pessoa do seu livro de endereços ou um endereço de correio eletrónico"
+  "zpDKSV": "Introduzir uma pessoa do seu livro de endereços ou um endereço de correio eletrónico",
+  "sDNZ6y": "{0} é construído utilizando os seguintes componentes Open-Source. Agradecemos sinceramente a esses autores e colaboradores."
 }

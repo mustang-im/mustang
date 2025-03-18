@@ -73,7 +73,6 @@
   "FanM/V": "Späť na miestne časové pásmo",
   "tX7W4e": "slovenčina",
   "/xLNEx": "Všeobecný",
-  "PFohi3": "BCC",
   "E4djnN": "pred, na",
   "KmydK6": "Odvážne",
   "0DGrp8": "Aktuality",
@@ -87,7 +86,6 @@
   "Op2Ugv": "Nemožno odstrániť poslednú identitu",
   "gUjA6J": "cc",
   "RpYfjZ": "Všeobecný",
-  "XdZeJk": "SLOVENČINA",
   "JRl6dQ": "Zmena adresy URL schôdze môže spôsobiť, že niektorí účastníci schôdzu zmeškajú. Ste si istí?",
   "BUK4Ur": "Chat-like mailový pohľad",
   "ln7Ghc": "Klasické 3-pane pohľad",
@@ -562,7 +560,6 @@
   "Am2VzK": "OAuth: Potrebujete prihlásenie",
   "EK1sJV": "OAuth2: Prihlásenie zlyhalo",
   "X1fI0A": "Otvoriť-Zdroj",
-  "fo7yWA": "Open-Source komponenty",
   "YOQquW": "Open-Zdroj licencie",
   "/x2S4u": "Odoslaná pošta",
   "8ZsakT": "Heslo",
@@ -624,7 +621,6 @@
   "L85gHs": "Špeciálny priečinok Všetky účty nie je možné zmeniť.",
   "xl1BJ0": "Špeciálne priečinky na serveri Exchange nie je možné meniť",
   "iybKgr": "Vaše konto je nakonfigurované na používanie overovania {0}, ale váš server ho nepodporuje. Zmeňte nastavenia účtu alebo účet nastavte znova.",
-  "2b26OK": "{0} je vytvorený pomocou nasledujúceho #. Týmto autorom a prispievate om úprimne ďakujeme.",
   "bzMKg7": "Prijaté",
   "T3FM0r": "Nastavenia účtu",
   "qpg6c1": "Ak chcete presunúť účet do tohto pracovného priestoru, nájdite jeho aktuálny pracovný priestor a kliknite na tlačidlo [Presunúť] vedľa účtu.",
@@ -660,5 +656,6 @@
   "Jp2AY/": "Vaša rovnováha medzi pracovným a súkromným životom: V záhlaví okna si môžete vybrať pracovný priestor.",
   "PKesIj": "Pridajte meno osoby a stlačte tlačidlo ENTER",
   "7QQ2my": "Pridať túto osobu (Stlačte tlačidlo ENTER)",
-  "zpDKSV": "Zadajte osobu z adresára alebo e-mailovú adresu"
+  "zpDKSV": "Zadajte osobu z adresára alebo e-mailovú adresu",
+  "sDNZ6y": "{0} je vytvorený s použitím nasledujúcich komponentov Open-Source. Týmto autorom a prispievateľom úprimne ďakujeme."
 }

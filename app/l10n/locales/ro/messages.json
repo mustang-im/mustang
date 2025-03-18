@@ -73,7 +73,6 @@
   "FanM/V": "Înapoi la fusul orar local",
   "tX7W4e": "bcc",
   "/xLNEx": "Bcc",
-  "PFohi3": "BCC",
   "E4djnN": "înainte, la",
   "KmydK6": "Bold",
   "0DGrp8": "Browser",
@@ -87,7 +86,6 @@
   "Op2Ugv": "Nu se poate elimina ultima identitate",
   "gUjA6J": "cc",
   "RpYfjZ": "Cc",
-  "XdZeJk": "CC",
   "JRl6dQ": "Schimbarea adresei URL a reuniunii ar putea face ca unii participanți să rateze reuniunea. Sunteți sigur?",
   "BUK4Ur": "Vizualizare mail tip chat",
   "ln7Ghc": "Vedere clasică 3-panou",
@@ -562,7 +560,6 @@
   "Am2VzK": "OAuth: Necesită autentificare",
   "EK1sJV": "OAuth2: Autentificare eșuată",
   "X1fI0A": "Open-Source",
-  "fo7yWA": "Componente Open-Source",
   "YOQquW": "Licență Open-Source",
   "/x2S4u": "Coș de ieșire",
   "8ZsakT": "Parolă",
@@ -624,7 +621,6 @@
   "L85gHs": "Nu puteți modifica un dosar special Toate conturile.",
   "xl1BJ0": "Nu puteți modifica folderele speciale de pe serverul Exchange",
   "iybKgr": "Contul dvs. este configurat pentru a utiliza autentificarea {0}, dar serverul dvs. nu o acceptă. Vă rugăm să modificați setările contului dvs. sau să configurați din nou contul.",
-  "2b26OK": "{0} este construit folosind următorul #. Le mulțumim sincer autorilor și colaboratorilor.",
   "bzMKg7": "Acceptat",
   "T3FM0r": "Setări cont",
   "qpg6c1": "Adăugați un cont nou.\\nPentru a muta un cont în acest spațiu de lucru, găsiți-l în spațiul său de lucru curent și faceți clic pe butonul [Mutare] din dreptul contului.",
@@ -660,5 +656,6 @@
   "Jp2AY/": "Echilibrul dintre viața profesională și cea privată: Dezactivați uneori unele conturi pentru a vă concentra sau pentru a vă relaxa. Puteți alege spațiul de lucru în antetul ferestrei.",
   "PKesIj": "Adăugați numele persoanei și apăsați ENTER",
   "7QQ2my": "Adăugați această persoană (apăsați ENTER)",
-  "zpDKSV": "Introduceți o persoană din agenda dvs. de adrese sau o adresă de e-mail"
+  "zpDKSV": "Introduceți o persoană din agenda dvs. de adrese sau o adresă de e-mail",
+  "sDNZ6y": "{0} este construit folosind următoarele componente Open-Source. Le mulțumim sincer autorilor și colaboratorilor."
 }

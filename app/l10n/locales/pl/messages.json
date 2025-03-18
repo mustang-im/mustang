@@ -73,7 +73,6 @@
   "FanM/V": "Powrót do lokalnej strefy czasowej",
   "tX7W4e": "udw",
   "/xLNEx": "Udw",
-  "PFohi3": "UDW",
   "E4djnN": "przed, w",
   "KmydK6": "Pogrubienie",
   "0DGrp8": "Przeglądarka",
@@ -87,7 +86,6 @@
   "Op2Ugv": "Nie można usunąć ostatniej tożsamości",
   "gUjA6J": "dw",
   "RpYfjZ": "Dw",
-  "XdZeJk": "DW",
   "JRl6dQ": "Zmiana adresu URL spotkania może spowodować, że niektórzy uczestnicy opuszczą spotkanie. Czy na pewno?",
   "BUK4Ur": "Widok pocztowy podobny do czatu",
   "ln7Ghc": "Klasyczny 3-ramkowy widok",
@@ -562,7 +560,6 @@
   "Am2VzK": "OAuth: Wymagane logowanie",
   "EK1sJV": "OAuth2: Logowanie nie powiodło się",
   "X1fI0A": "Open-Source",
-  "fo7yWA": "Składniki Open-Source",
   "YOQquW": "Licencja Open-Source",
   "/x2S4u": "Skrzynka nadawcza",
   "8ZsakT": "Hasło",
@@ -624,7 +621,6 @@
   "L85gHs": "Nie można zmienić folderu specjalnego Wszystkie konta.",
   "xl1BJ0": "Nie można zmieniać folderów specjalnych na serwerze Exchange",
   "iybKgr": "Twoje konto jest skonfigurowane do korzystania z uwierzytelniania {0}, ale serwer go nie obsługuje. Zmień ustawienia konta lub skonfiguruj je ponownie.",
-  "2b26OK": "{0} został zbudowany przy użyciu następującego #. Serdecznie dziękujemy tym autorom i współpracownikom.",
   "bzMKg7": "Przyjęte",
   "T3FM0r": "Ustawienia konta",
   "qpg6c1": "Aby przenieść konto do tego obszaru roboczego, znajdź je w bieżącym obszarze roboczym i kliknij przycisk [Przenieś] obok konta.",
@@ -660,5 +656,6 @@
   "Jp2AY/": "Równowaga między pracą a życiem prywatnym: Wycisz niektóre konta, aby się skupić lub zrelaksować. Możesz wybrać obszar roboczy w nagłówku okna.",
   "PKesIj": "Dodaj imię i nazwisko osoby i naciśnij ENTER",
   "7QQ2my": "Dodaj tę osobę (naciśnij ENTER)",
-  "zpDKSV": "Wprowadź osobę z książki adresowej lub adres e-mail."
+  "zpDKSV": "Wprowadź osobę z książki adresowej lub adres e-mail.",
+  "sDNZ6y": "{0} jest zbudowany przy użyciu następujących komponentów Open-Source. Serdecznie dziękujemy tym autorom i współpracownikom."
 }

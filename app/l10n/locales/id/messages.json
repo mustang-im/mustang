@@ -73,7 +73,6 @@
   "FanM/V": "Kembali ke zona waktu setempat",
   "tX7W4e": "bcc",
   "/xLNEx": "Bcc",
-  "PFohi3": "BCC",
   "E4djnN": "sebelum, di",
   "KmydK6": "Tebal",
   "0DGrp8": "Browser",
@@ -87,7 +86,6 @@
   "Op2Ugv": "Tidak dapat menghapus identitas terakhir",
   "gUjA6J": "cc",
   "RpYfjZ": "Cc",
-  "XdZeJk": "CC",
   "JRl6dQ": "Mengubah URL rapat dapat menyebabkan beberapa peserta tidak dapat mengikuti rapat. Apakah Anda yakin?",
   "BUK4Ur": "Tampilan surat seperti obrolan",
   "ln7Ghc": "Klasik 3-pane view",
@@ -562,7 +560,6 @@
   "Am2VzK": "OAuth: Perlu login",
   "EK1sJV": "OAuth2: Login gagal",
   "X1fI0A": "Sumber Terbuka",
-  "fo7yWA": "Komponen Open-Source",
   "YOQquW": "Lisensi Terbuka",
   "/x2S4u": "Kotak keluar",
   "8ZsakT": "Kata sandi",
@@ -624,7 +621,6 @@
   "L85gHs": "Anda tidak dapat mengubah folder khusus Semua akun.",
   "xl1BJ0": "Anda tidak dapat mengubah folder khusus di server Exchange",
   "iybKgr": "Akun Anda dikonfigurasikan untuk menggunakan autentikasi {0}, tetapi server Anda tidak mendukungnya. Harap ubah pengaturan akun Anda atau atur kembali akun tersebut.",
-  "2b26OK": "{0} dibangun dengan menggunakan # berikut ini. Kami mengucapkan terima kasih kepada para penulis dan kontributor.",
   "bzMKg7": "Diterima",
   "T3FM0r": "Pengaturan akun",
   "qpg6c1": "Menambahkan akun baru.\\nUntuk memindahkan akun ke ruang kerja ini, cari ruang kerja saat ini dan klik tombol [Pindahkan] di samping akun.",
@@ -660,5 +656,6 @@
   "Jp2AY/": "Keseimbangan kehidupan kerja Anda: Membisukan beberapa akun pada saat tertentu untuk fokus atau bersantai. Anda dapat memilih ruang kerja di tajuk jendela.",
   "PKesIj": "Tambahkan nama orang tersebut, lalu tekan ENTER",
   "7QQ2my": "Tambahkan orang ini (Tekan ENTER)",
-  "zpDKSV": "Masukkan seseorang dari buku alamat Anda, atau alamat email"
+  "zpDKSV": "Masukkan seseorang dari buku alamat Anda, atau alamat email",
+  "sDNZ6y": "{0} dibangun dengan menggunakan komponen-komponen Sumber Terbuka berikut ini. Kami mengucapkan terima kasih kepada para penulis dan kontributor."
 }
