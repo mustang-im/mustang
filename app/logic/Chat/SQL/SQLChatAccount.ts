@@ -84,7 +84,7 @@ export class SQLChatAccount {
     acc.hostname = sanitize.hostname(row.hostname, null);
     acc.port = sanitize.portTCP(row.port, null);
     acc.tls = sanitize.enum(row.tls, [TLSSocketType.Plain, TLSSocketType.TLS, TLSSocketType.STARTTLS], TLSSocketType.Unknown);
-    acc.url = sanitize.url(row.url, null);
+    acc.url = sanitize.url(row.url, null, ["wss", "ws", "https", "http", "xmpp", "xmpps"]);
     acc.userRealname = sanitize.label(row.userRealname, appGlobal.me.name);
     acc.fromConfigJSON(sanitize.json(row.configJSON, {}));
     acc.workspace = getWorkspaceByID(sanitize.string(row.workspace, null));

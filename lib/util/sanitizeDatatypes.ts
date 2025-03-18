@@ -102,10 +102,13 @@ class Sanitize {
   /**
    * A non-chrome URL that's safe to request.
    */
-  url(unchecked: string | null, fallback: string | null | Symbol = throwErrors): string {
+  url(unchecked: string | null, fallback: string | null | Symbol = throwErrors,
+    allowedURLSchemes: string[] = ["https", "http"]): string {
     let str = this.nonemptystring(unchecked, fallback);
-    if (!str || str.substring(0, 5) != "http:" && str.substring(0, 6) != "https:" &&
-      str.substring(0, 4) != "ftp:") {
+    if (!str) { // in case of fallback
+      return haveError("URL is empty", unchecked, fallback);
+    }
+    if (!allowedURLSchemes.find(scheme => str.startsWith(scheme))) {
       return haveError("URL scheme", unchecked, fallback);
     }
     //TODO security-check URL
