@@ -3,13 +3,22 @@ import type { XMPPAccount } from "./XMPPAccount";
 import { Group } from "../../Abstract/Group";
 import { DeliveryStatus, UserChatMessage } from "../Message";
 import { JXT } from "stanza";
+import { ChatPerson } from "../Person";
 
 export class XMPPChatRoom extends Chat {
   account: XMPPAccount;
   constructor(account: XMPPAccount, id: string) {
     super(account);
     this.id = id;
+    this.contact = new ChatPerson();
+    this.contact.id = id;
+    this.contact.name = id;
+    this.account.chats.set(this.contact, this);
     console.log("Added room", id);
+    // TODO Listen to chat messages
+    /*this.account.client.on('muc:other', xmppMsg => {
+      console.log("MUC other message", xmppMsg);
+    });*/
   }
   async listMembers() {
     // let config = await this.account.client.getRoomConfig(room);
@@ -26,16 +35,10 @@ export class XMPPChatRoom extends Chat {
       this.contact = group;
     }
     this.members.addAll(persons);
-    this.account.chats.set(this.contact, this);
   }
   async listMessages() {
     // TODO Get message history
     this.lastMessage = this.messages.get(this.messages.length - 1);
-
-    // TODO Listen to chat messages
-    await this.account.client.on('muc:other', xmppMsg => {
-      console.log("MUC other message", xmppMsg);
-    });
   }
   /** Our user wants to send this message out.
    * Data like recipient etc. is in the message object. */

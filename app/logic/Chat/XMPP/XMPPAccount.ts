@@ -66,6 +66,8 @@ export class XMPPAccount extends ChatAccount {
     await Promise.all(roster.items.map(p => this.getPerson(p.jid, p.name ?? ''))); // sets this.roster
     for (let jid of this.roster.keys()) {
       let chatRoom = new XMPPChatRoom(this, jid);
+      chatRoom.listMembers()
+        .catch(this.errorCallback);
     }
   }
   async getRooms() {
@@ -116,16 +118,15 @@ export class XMPPAccount extends ChatAccount {
   }
   processChatMessage(xmppMsg: XMPP.Stanzas.ReceivedMessage): void {
     let chatRoom = this.getExistingRoom(xmppMsg.to);
-    let message = this.getUserMessage(xmppMsg);
-    message.to = chatRoom;
+    let message = this.getUserMessage(chatRoom, xmppMsg);
     if (!message) {
       return;
     }
     chatRoom.messages.add(message);
     chatRoom.lastMessage = message;
   }
-  getUserMessage(xmppMsg: XMPP.Stanzas.ReceivedMessage): ChatMessage {
-    let msg = new UserChatMessage();
+  getUserMessage(room: XMPPChatRoom, xmppMsg: XMPP.Stanzas.ReceivedMessage): ChatMessage {
+    let msg = new UserChatMessage(room);
     msg.contact = this.getExistingPerson(xmppMsg.from);
     msg.outgoing = false;
     msg.deliveryStatus = DeliveryStatus.User;
