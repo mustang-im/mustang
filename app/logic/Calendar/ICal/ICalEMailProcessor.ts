@@ -36,8 +36,15 @@ function iTIPMethod(ics: any): Scheduling {
   return Scheduling.None;
 }
 
+const icalDateRegex = /^(\d{4})(\d\d)(\d\dT\d\d)(\d\d)(\d\dZ?)$/;
+
 function parseDate(icalDate: string): Date {
-  return new Date(icalDate.replace(/^(\d{4})(\d\d)(\d\d)/, "$1-$2-$3").replace(/(T\d\d)(\d\d)(\d\dZ?)$/, "$1:$2:$3"));
+  if (icalDate.length == 8) {
+    icalDate += "T000000";
+  }
+  if (icalDateRegex.test(icalDate)) {
+    return new Date(icalDate.replace(icalDateRegex, "$1-$2-$3:$4:$5"));
+  }
 }
 
 function convertICalToEvent(ics: ICalParser): Event | null {
@@ -61,7 +68,7 @@ function convertICalToEvent(ics: ICalParser): Event | null {
   if (vevent.entries.dtend) {
     event.endTime = parseDate(vevent.entries.dtend[0].value);
   }
-  if (vevent.entries.dtstart?.[0].properties.value == "date") {
+  if (vevent.entries.dtstart?.[0].properties.value?.toLowerCase() == "date") {
     event.allDay = true;
   }
   if (vevent.entries.rrule) {
