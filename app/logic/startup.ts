@@ -80,6 +80,5 @@ function errorWithAccountName(account: Account, errorCallback: (ex: Error) => vo
 
 function backgroundErrorInAccount(ex: Error, account: Account) {
   account.errors.add(ex);
-  console.error(ex);
   logError(ex);
 }

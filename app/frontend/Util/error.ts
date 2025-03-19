@@ -6,7 +6,7 @@ export function showError(ex: Error) {
   console.error(ex);
   if (shouldShow(ex)) {
     notifications.add(new Notification(ex.message, NotificationSeverity.Error, ex));
-    logError(ex);
+    logErrorToServer(ex);
   }
 }
 
@@ -17,7 +17,7 @@ export function backgroundError(ex: Error) {
   }
   if (shouldShow(ex)) {
     notifications.add(new Notification(ex.message, NotificationSeverity.Warning, ex));
-    logError(ex);
+    logErrorToServer(ex);
   }
 }
 
@@ -43,6 +43,11 @@ function shouldShow(ex: Error): boolean {
 }
 
 export function logError(ex: Error) {
+  console.error(ex);
+  logErrorToServer(ex);
+}
+
+function logErrorToServer(ex: Error) {
   try {
     if ((ex as any)?.isUserError || (ex as any)?.doNotLog) {
       return;
