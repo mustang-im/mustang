@@ -164,6 +164,9 @@
     font-size: 15px;
     overflow-wrap: anywhere;
   }
+  .text > :global(p) {
+    margin: 0;
+  }
 
   .text :global(blockquote) {
     border-left: 3px solid grey;
