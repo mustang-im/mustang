@@ -20,11 +20,6 @@ export class XMPPChat extends Chat {
     this.contact.id = jid;
     this.contact.name = jid;
     this.account.chats.set(this.contact, this);
-    console.log("Added room", jid);
-    // TODO Listen to chat messages
-    /*this.account.client.on('muc:other', xmppMsg => {
-      console.log("MUC other message", xmppMsg);
-    });*/
   }
 
   addMessage(json: Message, wrapper: Forward = null, isLast: boolean = true): XMPPChatMessage {

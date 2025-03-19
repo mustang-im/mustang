@@ -46,7 +46,6 @@ export class XMPPAccount extends ChatAccount {
     this.addListeners();
     await this.client.connect();
     await this.waitForEvent("session:started");
-    console.log("logged in", this.jid);
   }
   async waitForEvent(eventName: keyof XMPP.AgentEvents) {
     await new Promise(async resolve => {
@@ -59,7 +58,6 @@ export class XMPPAccount extends ChatAccount {
   }
   async getRoster() {
     let roster = await this.client.getRoster();
-    console.log("Roster", roster)
     await Promise.all(roster.items.map(p => this.getPerson(p.jid, p.name ?? ''))); // sets this.roster
     for (let jid of this.roster.keys()) {
       this.getNew1to1Chat(jid)
@@ -128,7 +126,7 @@ export class XMPPAccount extends ChatAccount {
     return person;
   }
   protected addListeners() {
-    this.client.on("*", console.log);
+    //this.client.on("*", console.log);
     //this.client.on("raw:*", (direction, log) => console.log(direction, log));
     this.client.on("stream:error", this.errorCallback);
     this.client.on("muc:error", this.errorCallback);
@@ -139,12 +137,10 @@ export class XMPPAccount extends ChatAccount {
     this.client.on("chat", msg => this.process1to1ChatMessage(msg));
   }
   process1to1ChatMessage(xmppMsg: XMPP.Stanzas.ReceivedMessage): void {
-    console.log("message from 1:1 chat listener", xmppMsg);
     let chatRoom = this.getExistingChat(xmppMsg.from);
     chatRoom.addMessage(xmppMsg);
   }
   processGroupChatMessage(xmppMsg: XMPP.Stanzas.ReceivedMessage): void {
-    console.log("message from group chat listener", xmppMsg);
     let chatRoom = this.getExistingChat(xmppMsg.to);
     chatRoom.addMessage(xmppMsg);
   }
