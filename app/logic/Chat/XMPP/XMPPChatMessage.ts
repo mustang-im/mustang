@@ -14,7 +14,7 @@ export class XMPPChatMessage extends UserChatMessage {
   fromStanzaJS(json: Message, wrapper: Forward) {
     assert(json, "No message");
     this.id = getJID(json.id) ?? crypto.randomUUID();
-    this.sent = wrapper.iq?.time?.utc ?? wrapper.delay?.timestamp ?? json.delay?.timestamp ?? new Date();
+    this.sent = wrapper?.iq?.time?.utc ?? wrapper?.delay?.timestamp ?? json.delay?.timestamp ?? new Date();
     let me = this.chatRoom.account.jid;
     let from = getJID(json.from);
     let to = getJID(json.to);
