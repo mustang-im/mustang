@@ -2,7 +2,7 @@ import { assert } from "../../util/util";
 import { UserChatMessage } from "../Message";
 import { getJID } from "./XMPPAccount";
 import { XMPPChat } from "./XMPPChat";
-import type { Message } from "stanza/protocol";
+import type { Message, Forward } from "stanza/protocol";
 
 export class XMPPChatMessage extends UserChatMessage {
   constructor(chatRoom: XMPPChat) {
@@ -11,11 +11,11 @@ export class XMPPChatMessage extends UserChatMessage {
   get chatRoom(): XMPPChat {
     return this.to as XMPPChat;
   }
-  fromStanzaJS(json: Message) {
+  fromStanzaJS(json: Message, wrapper: Forward) {
     assert(json, "No message");
     console.log("got chat message", json);
     this.id = getJID(json.id) ?? crypto.randomUUID();
-    this.sent = json.delay?.timestamp ?? new Date();
+    this.sent = wrapper.iq?.time?.utc ?? wrapper.delay?.timestamp ?? json.delay?.timestamp ?? new Date();
     let me = this.chatRoom.account.jid;
     let from = getJID(json.from);
     let to = getJID(json.to);

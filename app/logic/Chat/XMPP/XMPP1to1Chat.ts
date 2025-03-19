@@ -16,7 +16,7 @@ export class XMPP1to1Chat extends XMPPChat {
         break;
       }
       for (let itemJSON of resultJSON.results) {
-        this.addMessage(itemJSON.item.message, false);
+        this.addMessage(itemJSON.item.message, itemJSON.item, false);
       }
       index += resultJSON.results.length;
       complete = !!resultJSON.complete;
@@ -36,7 +36,7 @@ export class XMPP1to1Chat extends XMPPChat {
     if (!itemJSON) {
       return;
     }
-    let msg = this.addMessage(itemJSON.item.message);
+    let msg = this.addMessage(itemJSON.item.message, itemJSON.item);
     this.lastMessage = msg;
   }
 }

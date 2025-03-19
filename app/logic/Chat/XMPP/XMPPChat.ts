@@ -7,7 +7,7 @@ import { ContactBase } from "../../Abstract/Contact";
 import { logError } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
 import { JXT } from "stanza";
-import { Message } from "stanza/protocol";
+import { Message, Forward } from "stanza/protocol";
 
 export class XMPPChat extends Chat {
   account: XMPPAccount;
@@ -27,14 +27,14 @@ export class XMPPChat extends Chat {
     });*/
   }
 
-  addMessage(json: Message, isLast: boolean = true): XMPPChatMessage {
+  addMessage(json: Message, wrapper: Forward = null, isLast: boolean = true): XMPPChatMessage {
     let jid = getJID(json.id);
     if (!jid || this.messages.find(msg => msg.id == jid)) {
       return;
     }
     let msg = new XMPPChatMessage(this);
     try {
-      msg.fromStanzaJS(json);
+      msg.fromStanzaJS(json, wrapper);
     } catch (ex) {
       logError(ex);
       return;
