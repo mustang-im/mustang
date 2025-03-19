@@ -6,7 +6,6 @@
   import { Editor } from '@tiptap/core';
   import StarterKit from '@tiptap/starter-kit';
   import LinkFeature from '@tiptap/extension-link';
-  import ImageFeature from '@tiptap/extension-image';
   import CodeWordFeature from '@tiptap/extension-code';
   import ImageResize from 'tiptap-extension-resize-image';
   import { SplitBlockquote } from './SplitBlockquote';
