@@ -24,7 +24,7 @@ export const ParagraphNewLine = Paragraph.extend({
     return {
       onParagraphEnter: () => ({ tr, commands, chain }) => {
         let { $from, $to } = tr.selection;
-        if ($from.parent.type.name != 'paragraph' && $from.depth > 1) {
+        if ($from.parent.type.name != 'paragraph' || $from.depth > 1) {
           return false;
         }
         if ($from.nodeBefore?.type.name == "hardBreak") {
