@@ -40,6 +40,8 @@ export class Message extends Observable {
   readonly attachments = new ArrayColl<Attachment>();
 
   @notifyChangedProperty
+  subject: string = "";
+  @notifyChangedProperty
   protected _text: string = null;
   /** Plaintext version of the message */
   get text(): string {
@@ -148,6 +150,7 @@ export class Message extends Observable {
     other.isRead = this.isRead;
     other.isStarred = this.isStarred;
     other.inReplyTo = this.inReplyTo;
+    other.subject = this.subject;
     other._text = this._text;
     other._rawHTML = this._rawHTML;
     // _sanitizedHTML and _loadExternalImages not copied

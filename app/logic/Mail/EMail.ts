@@ -22,8 +22,6 @@ import { FilterMoment } from "./FilterRules/FilterMoments";
 
 export class EMail extends Message {
   @notifyChangedProperty
-  subject: string = "";
-  @notifyChangedProperty
   from = new PersonUID();
   @notifyChangedProperty
   replyTo: PersonUID | null = null;
@@ -465,7 +463,6 @@ export class EMail extends Message {
 
   copyFrom(other: EMail): void {
     super.copyFrom(other);
-    other.subject = this.subject;
     other.from = this.from;
     other.replyTo = this.replyTo;
     other.to.replaceAll(this.to);
