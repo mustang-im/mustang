@@ -126,4 +126,15 @@
   .html-editor :global(img) {
     max-width: 100%;
   }
+
+  /* Only change styling for first level <p> */
+  .html-editor :global(.tiptap) > :global(p) {
+    margin: 1.5em 0;
+  }
+  .html-editor :global(.tiptap) > :global(:first(p)) {
+    margin-top: 0;
+  }
+  .html-editor :global(.tiptap) > :global(:last-of-type) {
+    margin-bottom: 0;
+  }
 </style>
