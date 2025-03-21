@@ -1,5 +1,5 @@
 import { ArrayColl } from "svelte-collections";
-import { NotImplemented, type URLString } from "../../logic/util/util";
+import { dataURLToBlob, NotImplemented, type URLString } from "../../logic/util/util";
 import { gt } from "../../l10n/l10n";
 import { appGlobal } from "../../logic/app";
 
@@ -273,10 +273,17 @@ export async function openBrowser(url: URLString) {
   await appGlobal.remoteApp.openExternalURL(url);
 }
 
-export function download(url: URLString, window: any, howSaveAsDialog: boolean, filename?: string) {
+export async function download(url: URLString, win: any, howSaveAsDialog: boolean, filename?: string) {
   let a: HTMLAnchorElement = document.createElement("a");
   a.href = url;
   a.target = "_blank" // for non-same-origin images
+  if (howSaveAsDialog) {
+    let fileHandle: FileSystemFileHandle = await window.showSaveFilePicker();
+    let writeStream = await fileHandle.createWritable();
+    writeStream.write(await dataURLToBlob(url));
+    writeStream.close();
+    return;
+  }
   a.download = "image.png";  // TODO sanitize filename
   a.click();
   a.href = "";
