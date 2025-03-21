@@ -2,6 +2,7 @@ import { Folder, SpecialFolder } from "../Folder";
 import { ActiveSyncEMail } from "./ActiveSyncEMail";
 import type { ActiveSyncAccount, ActiveSyncPingable } from "./ActiveSyncAccount";
 import { ActiveSyncError } from "./ActiveSyncError";
+import { CreateMIME } from "../SMTP/CreateMIME";
 import type { EMailCollection } from "../Store/EMailCollection";
 import { ensureArray, assert, NotImplemented, NotSupported } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -253,12 +254,41 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
   }
 
   async addMessage(message: ActiveSyncEMail) {
-    assert(message.mime, "Call loadMIME() first");
-    if (!message.isDraft) {
+    message.mime ??= await CreateMIME.getMIME(message);
+    if (!message.isDraft || this.specialFolder != SpecialFolder.Drafts) {
       throw new NotSupported(gt`ActiveSync does not permit messages to be copied`);
     }
-    // ActiveSync 16 apparently does let you create drafts
-    throw new NotSupported(gt`Drafts are not supported by ActiveSync 14.1`);
+    if (this.account.protocolVersion != "16.1") {
+      throw new NotSupported(gt`Drafts are not supported by ActiveSync ${this.account.protocolVersion}`);
+    }
+    let data = {
+      GetChanges: "0",
+      Commands: {
+        Add: {
+          ClientId: await this.account.nextClientID(),
+          ApplicationData: {
+            Body: {
+              Type: "4",
+              Data: message.mime,
+            },
+          },
+        },
+      },
+    };
+    let response = await this.makeSyncRequest(data);
+    if (response.Responses.Add.Status != "1") {
+      throw new ActiveSyncError("Sync", response.Responses.Add.Status, this.account);
+    }
+    let email = this.newEMail();
+    // email.copyFrom didn't work
+    email.mime = message.mime;
+    await email.parseMIME();
+    email.serverID = response.Responses.Add.ServerId;
+    email.sent = email.received = new Date();
+    email.isRead = true;
+    await email.saveCompleteMessage();
+    await this.readFolder();
+    this.messages.add(email);
   }
 
   async moveFolderHere(folder: ActiveSyncFolder) {
