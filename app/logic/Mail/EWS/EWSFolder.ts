@@ -3,6 +3,7 @@ import type { EMail } from "../EMail";
 import { EWSEMail } from "./EWSEMail";
 import type { EWSAccount } from "./EWSAccount";
 import EWSCreateItemRequest from "./Request/EWSCreateItemRequest";
+import { CreateMIME } from "../SMTP/CreateMIME";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { base64ToArrayBuffer, blobToBase64, ensureArray, assert } from "../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -392,7 +393,7 @@ export class EWSFolder extends Folder {
   }
 
   async addMessage(message: EMail) {
-    assert(message.mime, "Call loadMIME() first");
+    message.mime ??= await CreateMIME.getMIME(message);
     let request = new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: this.id } }, MessageDisposition: "SaveOnly" });
     request.addField("Message", "MimeContent", await blobToBase64(new Blob([message.mime])));
     if (message.tags.hasItems) {

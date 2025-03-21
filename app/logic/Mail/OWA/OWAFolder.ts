@@ -10,6 +10,7 @@ import {
   owaGetNewMsgHeadersRequest, owaMoveEntireFolderRequest,
   owaMoveOrCopyMsgsIntoFolderRequest, owaRenameFolderRequest
 } from "./Request/OWAFolderRequests";
+import { CreateMIME } from "../SMTP/CreateMIME";
 import { base64ToArrayBuffer, blobToBase64, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -205,7 +206,7 @@ export class OWAFolder extends Folder {
   }
 
   async addMessage(message: EMail) {
-    assert(message.mime, "Call loadMIME() first");
+    message.mime ??= await CreateMIME.getMIME(message);
     let request = new OWACreateItemRequest({ SavedItemFolderId: { __type: "TargetFolderId:#Exchange", BaseFolderId: { __type: "FolderId:#Exchange", Id: this.id } }, MessageDisposition: "SaveOnly" });
     request.addField("Message", "MimeContent", { CharacterSet: "UTF-8", Value: await blobToBase64(new Blob([message.mime])) });
     if (message.tags.hasItems) {

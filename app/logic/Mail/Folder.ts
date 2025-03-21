@@ -173,8 +173,7 @@ export class Folder extends Observable implements TreeItem<Folder> {
    *   then this function will create the MIME from the properties.
    */
   async addMessage(message: EMail) {
-    assert(message.mime, "Call loadMIME() first");
-    throw new NotImplemented();
+    throw new AbstractFunction();
   }
 
   async moveFolderHere(folder: Folder) {
