@@ -277,7 +277,7 @@ export function download(url: URLString, window: any, howSaveAsDialog: boolean, 
   let a: HTMLAnchorElement = document.createElement("a");
   a.href = url;
   a.target = "_blank" // for non-same-origin images
-  a.download = "image.png";
+  a.download = "image.png";  // TODO sanitize filename
   a.click();
   a.href = "";
 }
