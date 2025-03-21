@@ -27,6 +27,11 @@ export const ParagraphNewLine = Paragraph.extend({
         if ($from.parent.type.name != 'paragraph' || $from.depth > 1) {
           return false;
         }
+        /*
+         * Deletes the <br> then splits the paragraph into two paragraphs
+         * This is becauase just splitting creates <p><br></br><p></p>
+         * instead of <p></p><p></p>
+         */
         if ($from.nodeBefore?.type.name == "hardBreak") {
           return chain()
             .deleteRange({ 
