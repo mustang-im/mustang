@@ -24,7 +24,7 @@ export function saveBlobAsFile(blob: Blob, filename?: string) {
 export function saveURLAsFile(url: URLString, filename: string) {
   let a = document.createElement("a");
   a.href = url;
-  a.setAttribute("filename", sanitize.filename(filename, "file"));
+  a.setAttribute("download", sanitize.filename(filename, "file"));
   a.setAttribute("target", "_blank");
   a.click();
   a.href = '';
