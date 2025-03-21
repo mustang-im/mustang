@@ -274,12 +274,10 @@ export async function openBrowser(url: URLString) {
 }
 
 export function download(url: URLString, window: any, howSaveAsDialog: boolean, filename?: string) {
-  let a = document.createElement("a");
+  let a: HTMLAnchorElement = document.createElement("a");
   a.href = url;
-  a.setAttribute("target", "_blank"); // for non-same-origin images
-  if (filename) {
-    a.setAttribute("download", filename); // TODO sanitize filename
-  }
+  a.target = "_blank" // for non-same-origin images
+  a.download = "image.png";
   a.click();
   a.href = "";
 }
