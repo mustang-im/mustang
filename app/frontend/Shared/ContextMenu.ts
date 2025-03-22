@@ -292,6 +292,7 @@ export async function download(url: URLString, win: any, howSaveAsDialog: boolea
   if (howSaveAsDialog) {
     saveBlobAsFile(blob, filename);
   } else {
-    saveBlobAsFile(blob, filename);
+    let filePath = await appGlobal.remoteApp.path.join(await appGlobal.remoteApp.getHomeDir(), "Downloads", filename);
+    await appGlobal.remoteApp.writeFile(filePath, 0o666, await blob.arrayBuffer());
   }
 }
