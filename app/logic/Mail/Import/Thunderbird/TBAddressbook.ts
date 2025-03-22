@@ -5,7 +5,7 @@ import { appGlobal } from "../../../app";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { NotReached, UserError } from "../../../util/util";
 import { ArrayColl, SetColl } from "svelte-collections";
-import sql, { Database } from "../../../../../lib/rs-sqlite";
+import sql, { type Database } from "../../../../../lib/rs-sqlite";
 
 export class ThunderbirdAddressbook extends Addressbook {
   static async read(profile: ThunderbirdProfile, dbFilename: string, name: string,
