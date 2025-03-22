@@ -18,8 +18,7 @@
 
   export let messages: Collection<Message>;
 
-  // $: sortedMessages = messages.sortBy(msg => msg.sent);
-  $: sortedMessages = messages;
+  $: sortedMessages = messages.sortBy(msg => msg.sent);
 
   let scroller: Scroll;
   $: $messages && scroller && scrollDown();

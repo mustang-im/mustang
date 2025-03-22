@@ -1,5 +1,5 @@
 <div>
-  <T msg={`You can find the source code of ${appName} core at # under an #.`}>
+  <T msg={$t`You can find the source code of ${appName} core at # under an #.`}>
     <!-- Slot 1 doesn't need explicit declaration `slot="1"`, it breaks the code. -->
     <a href="https://github.com/mustang-im/mustang" target="_blank">GitHub</a>
     <!-- Slot 2 -->
