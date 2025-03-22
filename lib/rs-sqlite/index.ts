@@ -13,26 +13,22 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 /** This only has the sql`` template string function,
  * and exports the type `Database`.
  * All actual functions, which use better-sqlite3, are removed. */
+import type BetterSQLite3Database from "better-sqlite3";
 
-export class Database  {
-  async migrate(
+export interface Database {
+  migrate(
     ...migrations: (Query | ((database: this) => void | Promise<void>))[]
-  ): Promise<this> {
-    return this;
-  }
+  ): Promise<this>;
 
   /**
    * Execute DDL statements, for example, `CREATE TABLE`, `DROP INDEX`, and so forth. Multiple statements may be included in the same query.
    */
-  execute(query: Query): this {
-    return this;
-  }
+  execute(query: Query): this;
 
   /**
    * Run a DML statement, for example, `INSERT`, `UPDATE`, `DELETE`, and so forth.
    */
-  run(query: Query): any {
-  }
+  run(query: Query): any;
 
   /**
    * Run a `SELECT` statement that returns a single result.
@@ -43,9 +39,7 @@ export class Database  {
    *
    * > **Note:** The `Type` parameter is [an assertion](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-assertions). If you’d like to make sure that the values returned from the database are of a certain type, you must implement a runtime check instead. See <https://github.com/DefinitelyTyped/DefinitelyTyped/issues/50794>, <https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/62205>, and <https://github.com/DefinitelyTyped/DefinitelyTyped/pull/65035>. Note that the `get() as ___` pattern also works because by default `Type` is `unknown`.
    */
-  get<Type>(query: Query): Type | undefined {
-    return;
-  }
+  get<Type>(query: Query): Type | undefined;
 
   /**
    * Run a `SELECT` statement that returns multiple results as an Array.
@@ -54,16 +48,14 @@ export class Database  {
    *
    * > **Note:** If the results are big and you don’t want to load them all at once, then use `iterate()` instead.
    */
-  all<Type>(query: Query): Type[] {
-  }
+  all<Type>(query: Query): Type[];
 
   /**
    * Run a `SELECT` statement that returns multiple results as an iterator.
    *
    * > **Note:** If the results are small and you may load them all at once, then use `all()` instead.
    */
-  iterate<Type>(query: Query): IterableIterator<Type> {
-  }
+  iterate<Type>(query: Query): IterableIterator<Type>;
 
   /**
    * Run a `PRAGMA`. Similar to `better-sqlite3`’s `pragma()`, but includes the `Type` assertion similar to other methods.
@@ -71,32 +63,27 @@ export class Database  {
   pragma<Type>(
     source: string,
     options?: BetterSQLite3Database.PragmaOptions,
-  ): Type {
-  }
+  ): Type;
 
   /**
    * Execute a function in a transaction. All the [caveats](https://github.com/WiseLibs/better-sqlite3/blob/bd55c76c1520c7796aa9d904fe65b3fb4fe7aac0/docs/api.md#caveats) about `better-sqlite3`’s transactions still apply. The type of transaction isn’t specified, so it defaults to `DEFERRED`.
    */
-  executeTransaction<Type>(fn: () => Type): Type {
-  }
+  executeTransaction<Type>(fn: () => Type): Type;
 
   /**
    * Execute a function in an `IMMEDIATE` transaction.
    */
-  executeTransactionImmediate<Type>(fn: () => Type): Type {
-  }
+  executeTransactionImmediate<Type>(fn: () => Type): Type;
 
   /**
    * Execute a function in an `EXCLUSIVE` transaction.
    */
-  executeTransactionExclusive<Type>(fn: () => Type): Type {
-  }
+  executeTransactionExclusive<Type>(fn: () => Type): Type;
 
   /**
    * An internal method that returns a `better-sqlite3` prepared statement for a given query. Normally you don’t have to use this, but it’s available for advanced use-cases in which you’d like to manipulate a prepared statement (for example, to set [`safeIntegers()`](https://github.com/WiseLibs/better-sqlite3/blob/bd55c76c1520c7796aa9d904fe65b3fb4fe7aac0/docs/integer.md#getting-bigints-from-the-database)).
    */
-  getStatement(query: Query): BetterSQLite3Database.Statement {
-  }
+  getStatement(query: Query): BetterSQLite3Database.Statement;
 }
 
 /**
