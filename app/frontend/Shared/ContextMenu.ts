@@ -1,7 +1,9 @@
 import { ArrayColl } from "svelte-collections";
-import { dataURLToBlob, NotImplemented, type URLString } from "../../logic/util/util";
+import { saveBlobAsFile } from "../Util/util";
+import { dataURLToBlob, fileExtensionForMIMEType, NotImplemented, type URLString } from "../../logic/util/util";
 import { gt } from "../../l10n/l10n";
 import { appGlobal } from "../../logic/app";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 
 /**
  * Handles the Electron `<webview>` `"context-menu"` event.
@@ -274,17 +276,22 @@ export async function openBrowser(url: URLString) {
 }
 
 export async function download(url: URLString, win: any, howSaveAsDialog: boolean, filename?: string) {
-  let a: HTMLAnchorElement = document.createElement("a");
-  a.href = url;
-  a.target = "_blank" // for non-same-origin images
-  if (howSaveAsDialog) {
-    let fileHandle: FileSystemFileHandle = await window.showSaveFilePicker();
-    let writeStream = await fileHandle.createWritable();
-    writeStream.write(await dataURLToBlob(url));
-    writeStream.close();
-    return;
+  let urlObj = new URL(url);
+  let blob: Blob;
+  if (urlObj.protocol == "http:" || urlObj.protocol == "https:") {
+    let res = await fetch(urlObj.href);
+    filename = urlObj.pathname.split("/").pop();
+    blob = await res.blob();
+  } else if (urlObj.protocol == "data:") {
+    blob = await dataURLToBlob(url);
+  } else {
+    console.error("Unsupported protocol: " + urlObj.protocol);
   }
-  a.download = "image.png";  // TODO sanitize filename
-  a.click();
-  a.href = "";
+  let ext = fileExtensionForMIMEType(blob.type);
+  filename = sanitize.filename(filename, `${filename ?? "untitled"}.${ext}`);
+  if (howSaveAsDialog) {
+    saveBlobAsFile(blob, filename);
+  } else {
+    saveBlobAsFile(blob, filename);
+  }
 }
