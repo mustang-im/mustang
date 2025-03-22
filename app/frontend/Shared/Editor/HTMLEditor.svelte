@@ -6,12 +6,12 @@
   import { Editor } from '@tiptap/core';
   import StarterKit from '@tiptap/starter-kit';
   import LinkFeature from '@tiptap/extension-link';
-  import ImageFeature from '@tiptap/extension-image';
   import CodeWordFeature from '@tiptap/extension-code';
   import ImageResize from 'tiptap-extension-resize-image';
   import { SplitBlockquote } from './SplitBlockquote';
   import { Footer } from './Footer';
   import { BoldStar, ItalicSlash } from './StdConventions';
+  import { ParagraphNewLine } from './ParagraphNewLine';
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
   // import { common as lowlightCommon, createLowlight } from 'lowlight'
   import { onMount, onDestroy } from 'svelte';
@@ -49,6 +49,7 @@
         }),
         BoldStar,
         ItalicSlash,
+        ParagraphNewLine,
         // CodeBlockLowlightFeature.configure({
         //  lowlight: createLowlight(lowlightCommon),
         // }),
@@ -114,9 +115,6 @@
   /* Content styles
      TODO @import url(../Message/content.css); into iframe */
 
-  .html-editor :global(p) {
-    margin: 0px;
-  }
   .html-editor :global(blockquote) {
     border-left: 3px solid blue;
     padding-inline-start: 20px;
@@ -124,5 +122,11 @@
   }
   .html-editor :global(img) {
     max-width: 100%;
+  }
+
+  /** Undo the default margin of first/last <p> */
+  .html-editor :global(.tiptap) {
+    margin-top: -1em;
+    margin-bottom: -1em;
   }
 </style>
