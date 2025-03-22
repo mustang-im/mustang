@@ -1,10 +1,15 @@
 # Next
 * Mail
+  * Search
+    * Without text
+    * Results miss From
+  * SQL
+    * Accounts in separate DB
+    * Non-search properties as JSON
   * Main/Dependent accounts
     * Calendar
     * SMTP
     * OAuth2
-  * OAuth2 login UI with browser/URL options
   * Calendar
     * Invitation UI
     * Participants
@@ -14,6 +19,7 @@
   * format/flowed
   * Bug: Thunderbird AB import misses ABs and fields
   * Import Outlook PST
+  * OAuth2 login UI with browser/URL options
   * FastTree
     * Drag&Drop: Open on drag over - for: Move messages to deep subfolders -> Rewrite FastTree
   * Bug: FastList doesn't update some rows #66
