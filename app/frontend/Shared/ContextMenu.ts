@@ -285,7 +285,7 @@ export async function download(url: URLString, win: any, howSaveAsDialog: boolea
   } else if (urlObj.protocol == "data:") {
     blob = await dataURLToBlob(url);
   } else {
-    console.error("Unsupported protocol: " + urlObj.protocol);
+    throw new Error("Unsupported protocol: " + urlObj.protocol);
   }
   let ext = fileExtensionForMIMEType(blob.type);
   filename = sanitize.filename(filename, `${filename ?? "untitled"}.${ext}`);
