@@ -34,14 +34,14 @@ export const ParagraphNewLine = Paragraph.extend({
          */
         if ($from.nodeBefore?.type.name == "hardBreak") {
           return chain()
-            .deleteRange({ 
+            .deleteRange({
               from: $from.pos - $from.nodeBefore.nodeSize,
               to: $from.pos
             }).splitBlock().scrollIntoView().run();
         }
         if ($to.nodeAfter?.type.name == "hardBreak") {
           return chain()
-            .deleteRange({ 
+            .deleteRange({
               from: $to.pos,
               to: $to.pos + $to.nodeAfter.nodeSize
             }).splitBlock().scrollIntoView().run();
