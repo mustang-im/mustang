@@ -115,9 +115,6 @@
   /* Content styles
      TODO @import url(../Message/content.css); into iframe */
 
-  .html-editor :global(p) {
-    margin: 0px;
-  }
   .html-editor :global(blockquote) {
     border-left: 3px solid blue;
     padding-inline-start: 20px;
@@ -127,14 +124,9 @@
     max-width: 100%;
   }
 
-  /* Only change styling for first level <p> */
-  .html-editor :global(.tiptap) > :global(p) {
-    margin: 1.5em 0;
-  }
-  .html-editor :global(.tiptap) > :global(:first(p)) {
-    margin-top: 0;
-  }
-  .html-editor :global(.tiptap) > :global(:last-of-type) {
-    margin-bottom: 0;
+  /** Undo the default margin of first/last <p> */
+  .html-editor :global(.tiptap) {
+    margin-top: -1em;
+    margin-bottom: -1em;
   }
 </style>
