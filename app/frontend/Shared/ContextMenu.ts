@@ -1,7 +1,9 @@
 import { ArrayColl } from "svelte-collections";
-import { NotImplemented, type URLString } from "../../logic/util/util";
+import { saveBlobAsFile } from "../Util/util";
+import { dataURLToBlob, fileExtensionForMIMEType, NotImplemented, type URLString } from "../../logic/util/util";
 import { gt } from "../../l10n/l10n";
 import { appGlobal } from "../../logic/app";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 
 /**
  * Handles the Electron `<webview>` `"context-menu"` event.
@@ -273,13 +275,24 @@ export async function openBrowser(url: URLString) {
   await appGlobal.remoteApp.openExternalURL(url);
 }
 
-export function download(url: URLString, window: any, howSaveAsDialog: boolean, filename?: string) {
-  let a = document.createElement("a");
-  a.href = url;
-  a.setAttribute("target", "_blank"); // for non-same-origin images
-  if (filename) {
-    a.setAttribute("download", filename); // TODO sanitize filename
+export async function download(url: URLString, win: any, howSaveAsDialog: boolean, filename?: string) {
+  let urlObj = new URL(url);
+  let blob: Blob;
+  if (urlObj.protocol == "http:" || urlObj.protocol == "https:") {
+    let res = await fetch(urlObj.href);
+    filename = urlObj.pathname.split("/").pop();
+    blob = await res.blob();
+  } else if (urlObj.protocol == "data:") {
+    blob = await dataURLToBlob(url);
+  } else {
+    throw new Error("Unsupported protocol: " + urlObj.protocol);
   }
-  a.click();
-  a.href = "";
+  let ext = fileExtensionForMIMEType(blob.type);
+  filename = sanitize.filename(filename, `${filename ?? "untitled"}.${ext}`);
+  if (howSaveAsDialog) {
+    saveBlobAsFile(blob, filename);
+  } else {
+    let filePath = await appGlobal.remoteApp.path.join(await appGlobal.remoteApp.getHomeDir(), "Downloads", filename);
+    await appGlobal.remoteApp.writeFile(filePath, 0o666, await blob.arrayBuffer());
+  }
 }
