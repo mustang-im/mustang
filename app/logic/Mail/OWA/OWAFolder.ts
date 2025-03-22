@@ -54,6 +54,10 @@ export class OWAFolder extends Folder {
     }
   }
 
+  /**
+   * OWA doesn't do sync, so we only read the folder if the counts have changed,
+   * either by a notification setting the `dirty` flag or by a manual check.
+   */
   async folderCountsChanged() {
     if (this.dirty) {
       this.dirty = false;
