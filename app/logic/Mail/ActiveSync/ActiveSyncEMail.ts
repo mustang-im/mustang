@@ -84,6 +84,9 @@ export class ActiveSyncEMail extends EMail {
   setFlags(wbxmljs: any) {
     this.isRead = wbxmljs.Read != "0";
     this.isStarred = wbxmljs.Flag?.Status == "2";
+    if (this.folder.account.protocolVersion == "16.1") {
+      this.isDraft = wbxmljs.IsDraft != "0";
+    }
     this.tags.clear();
     if (wbxmljs.Categories) {
       this.tags.addAll(ensureArray(wbxmljs.Categories.Category).map(name => getTagByName(name)));

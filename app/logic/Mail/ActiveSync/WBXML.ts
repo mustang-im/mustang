@@ -29,7 +29,7 @@ const kTags = [
   [],
   [,,,,, "ItemOperations", "Fetch", "Store", "Options",,, "Properties",, "Status", "Response",,,, "EmptyFolderContents", "DeleteSubFolders"],
   [,,,,, "SendMail",,, "SaveInSentItems",,,,,,,, "Mime", "ClientId", "Status"],
-  [,,,,,,,,, "ConversationId", "ConversationIndex", "LastVerbExecuted", "LastVerbExecutionTime",, "Sender",,,,"FirstDayOfWeek", "MeetingMessageType"],
+  [,,,,,,,,, "ConversationId", "ConversationIndex", "LastVerbExecuted", "LastVerbExecutionTime",, "Sender",,,,"FirstDayOfWeek", "MeetingMessageType", "IsDraft", "Bcc"],
 ];
 
 /**

@@ -163,7 +163,7 @@ export class ActiveSyncAccount extends MailAccount {
     if (response.ok) {
       let versions = (response.MSASProtocolVersions || "").split(",");
       if (versions.includes("14.1")) {
-        this.protocolVersion = "14.1";
+        this.protocolVersion = versions.includes("16.1") ? "16.1" : "14.1";
         this.setStorageItem("protocolVersion", this.protocolVersion);
         return;
       } else if (versions.includes("14.0")) {
@@ -216,7 +216,7 @@ export class ActiveSyncAccount extends MailAccount {
 
   /**
    * Make HTTP call to server
-   * @param aOptions for internal use only
+   * @param aOptions.allowV16 Don't auto-downgrade 16.1 to 14.1
    * @returns JSON returned from the server
    */
   async callEAS(aCommand: string, aRequest: any, aOptions: any = {}): Promise<any> {
@@ -225,12 +225,12 @@ export class ActiveSyncAccount extends MailAccount {
     url.searchParams.append("User", this.username);
     url.searchParams.append("DeviceID", this.getDeviceID());
     url.searchParams.append("DeviceType", "UniversalOutlook");
-    let heartbeat = aOptions?.heartbeat ?? 0;
+    let heartbeat = aOptions.heartbeat ?? 0;
     let options: any = {
       throwHttpErrors: false,
       headers: {
         "Content-Type": "application/vnd.ms-sync.wbxml",
-        "MS-ASProtocolVersion": this.protocolVersion,
+        "MS-ASProtocolVersion": this.protocolVersion == "16.1" && !aOptions.allowV16 ? "14.1" : this.protocolVersion,
         Cookie: `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for 14.0
       },
       timeout: heartbeat * 1000 + 10000, // extra timeout for Ping commands
@@ -275,16 +275,18 @@ export class ActiveSyncAccount extends MailAccount {
         return wbxmljs;
       }
       if (this.isThrottleError(wbxmljs.Status)) {
-        return await this.callEAS(aCommand, aRequest, { heartbeat });
+        aOptions.heartbeat = heartbeat;
+        return await this.callEAS(aCommand, aRequest, aOptions);
       }
       this.throttle.waitForSecond(1);
       throw new ActiveSyncError(aCommand, wbxmljs.Status, this);
     }
     if (response.status == 401) {
       const repeat = async () => {
-        return await this.callEAS(aCommand, aRequest, { isRepeating: true }); // repeat the call
+        aOptions.isRepeating = true;
+        return await this.callEAS(aCommand, aRequest, aOptions); // repeat the call
       }
-      if (aOptions?.isRepeating) {
+      if (aOptions.isRepeating) {
         let ex = Error(`HTTP ${response.status} ${response.statusText}`);
         throw new LoginError(ex, gt`Login failed`);
       } else if (this.oAuth2) {
