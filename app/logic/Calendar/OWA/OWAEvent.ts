@@ -87,6 +87,8 @@ export class OWAEvent extends Event {
       this.alarm = null;
     }
     this.location = sanitize.nonemptystring(json.Location?.DisplayName, "");
+    this.onlineMeetingURL = sanitize.url(json.OnlineMeetingJoinUrl, null);
+    this.isOnline = !!json.IsOnlineMeeting;
     let participants: Participant[] = [];
     if (json.RequiredAttendees) {
       addParticipants(json.RequiredAttendees, participants);
