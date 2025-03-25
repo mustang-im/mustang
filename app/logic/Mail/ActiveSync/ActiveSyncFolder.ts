@@ -46,6 +46,8 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
     return new ActiveSyncEMail(this);
   }
 
+  // These three functions are used to handle ActiveSync folder move updates;
+  // now we support that for EWS and OWA, maybe they belong in Folder.ts?
   get parentFolderList() {
     return this.parent?.subFolders || this.account.rootFolders;
   }
