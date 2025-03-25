@@ -1,4 +1,5 @@
-<hbox class="account" title={errorMsg}>
+<hbox class="account" title={errorMsg}
+  on:contextmenu={contextMenu.onContextMenu}>
   {#if $account.isLoggedIn}
     <hbox class="icon"><Icon data={MailIcon} size="16px" /></hbox>
   {:else}
@@ -14,10 +15,16 @@
     </hbox>
 </hbox>
 
+<ContextMenu bind:this={contextMenu}>
+  <AccountMenu {account} />
+</ContextMenu>
+
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import Icon from 'svelte-icon/Icon.svelte';
   import GetMailButton from "./GetMailButton.svelte";
+  import AccountMenu from "../../Mail/LeftPane/AccountMenu.svelte";
+  import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import Button from "../../Shared/Button.svelte";
   import MailIcon from '../../asset/icon/appBar/mail.svg?raw';
   import MailXIcon from '../../asset/icon/mail/mail-question.svg?raw';
@@ -29,6 +36,8 @@
   async function login() {
     await account.login(true);
   }
+
+  let contextMenu: ContextMenu;
 
   $: errors = $account.errors;
   $: errorMsg = $account.fatalError
