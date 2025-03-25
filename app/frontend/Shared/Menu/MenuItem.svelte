@@ -78,6 +78,7 @@
 
 <style>
   .menuitem {
+    align-items: center;
     padding: 7px 14px;
 
     /* button */
@@ -88,7 +89,7 @@
     width: 100%;
   }
   .menuitem:hover:not(.disabled) {
-    background-color: var(--hover-bg);
+    background-color: var(--hover-bg) !important;
     color: var(--hover-fg);
   }
   .menuitem:hover.selected:not(.disabled) {
@@ -101,6 +102,10 @@
   }
   .disabled {
     opacity: 50%;
+  }
+  .icon {
+    justify-content: center;
+    align-items: center;
   }
   .gap {
     width: 8px;

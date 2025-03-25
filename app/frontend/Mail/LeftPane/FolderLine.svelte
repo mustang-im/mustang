@@ -1,6 +1,7 @@
 <hbox class="folder" flex
   on:drop={(event) => catchErrors(() => onDropMail(event, folder))}
   on:dragover={(event) => catchErrors(() => onDragOverMail(event, folder))}
+  on:contextmenu={contextMenu.onContextMenu}
   title={tooltip}
   >
   <hbox class="icon">
@@ -24,10 +25,16 @@
   </hbox>
 </hbox>
 
+<ContextMenu bind:this={contextMenu}>
+  <FolderMenu {folder} />
+</ContextMenu>
+
 <script lang="ts">
   import { type Folder, SpecialFolder, specialFolderNames } from '../../../logic/Mail/Folder';
   import { onDropMail, onDragOverMail } from '../Message/drag';
   import FolderIcon from './FolderIcon.svelte';
+  import FolderMenu from './FolderMenu.svelte';
+  import ContextMenu from '../../Shared/Menu/ContextMenu.svelte';
   import { catchErrors } from '../../Util/error';
   import { gt } from '../../../l10n/l10n';
 
@@ -35,6 +42,8 @@
 
   $: tooltip = gt`${folder.name}\n\n${$folder.countNewArrived} new, ${folder.countUnread} unread, ${folder.countTotal} total`;
   $: isNormalFolderOrInbox = !folder.specialFolder || folder.specialFolder == SpecialFolder.Normal || folder.specialFolder == SpecialFolder.Inbox;
+
+  let contextMenu: ContextMenu;
 </script>
 
 <style>
