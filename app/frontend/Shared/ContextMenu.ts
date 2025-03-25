@@ -276,6 +276,17 @@ export async function openBrowser(url: URLString) {
 }
 
 export async function download(url: URLString, win: any, howSaveAsDialog: boolean, filename?: string) {
+  let a = document.createElement("a");
+  a.href = url;
+  a.setAttribute("target", "_blank"); // for non-same-origin images
+  if (filename) {
+    a.setAttribute("download", filename); // TODO sanitize filename
+  }
+  a.click();
+  a.href = "";
+}
+
+export async function downloadWebView(url: URLString, win: any, howSaveAsDialog: boolean, filename?: string) {
   let urlObj = new URL(url);
   let blob: Blob;
   if (urlObj.protocol == "http:" || urlObj.protocol == "https:") {
@@ -290,7 +301,12 @@ export async function download(url: URLString, win: any, howSaveAsDialog: boolea
   let ext = fileExtensionForMIMEType(blob.type);
   filename = sanitize.filename(filename, `${filename ?? "untitled"}.${ext}`);
   if (howSaveAsDialog) {
-    saveBlobAsFile(blob, filename);
+    let a = document.createElement("a");
+    a.href = url;
+    a.setAttribute("target", "_blank"); // for non-same-origin images
+    a.setAttribute("download", filename);
+    a.click();
+    a.href = "";
   } else {
     let filePath = await appGlobal.remoteApp.path.join(await appGlobal.remoteApp.getHomeDir(), "Downloads", filename);
     await appGlobal.remoteApp.writeFile(filePath, 0o666, await blob.arrayBuffer());
