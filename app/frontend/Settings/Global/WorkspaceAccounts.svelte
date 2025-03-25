@@ -22,35 +22,7 @@
         </hbox>
         <hbox class="spacer" flex />
         <hbox class="buttons">
-          {#if $workspaces.length > 1}
-            <Menu position="bottom" placement="end">
-              <RoundButton
-                slot="control"
-                label={$t`Move`}
-                icon={DotsIcon}
-                iconSize="10px"
-                padding="3px"
-                border={false}
-                classes="small"
-                />
-              <Menu.Label>{$t`Move to workspace`}</Menu.Label>
-              {#each workspaces.each as otherWorkspace}
-                {#if otherWorkspace != workspace}
-                <Menu.Item
-                  on:click={() => catchErrors(() => onMove(account, otherWorkspace))}
-                  title={$t`Move the account to this workspace`}>
-                  {otherWorkspace.name}
-                </Menu.Item>
-                {/if}
-              {/each}
-              <Divider />
-              <Menu.Item
-                on:click={() => catchErrors(() => onOpenAccount(account))}
-                title={$t`Open settings of this account`}>
-                {$t`Account settings`}
-              </Menu.Item>
-            </Menu>
-          {/if}
+          <WorkspaceAccountMenu {account} {workspace} />
         </hbox>
       </hbox>
     {/each}
@@ -65,12 +37,10 @@
   import { SetupMustangApp } from "../../Setup/SetupMustangApp";
   import { openApp } from "../../AppsBar/selectedApp";
   import { settingsMustangApp } from "../Window/SettingsMustangApp";
-  import { appGlobal } from "../../../logic/app";
-  import { changedWorkspace, selectedWorkspace } from "../../MainWindow/Selected";
+  import { changedWorkspace } from "../../MainWindow/Selected";
+  import WorkspaceAccountMenu from "./WorkspaceAccountMenu.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
-  import { Menu, Divider } from "@svelteuidev/core";
   import AddIcon from "lucide-svelte/icons/plus";
-  import DotsIcon from "lucide-svelte/icons/ellipsis";
   import { catchErrors } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
   import { Collection } from "svelte-collections";
@@ -83,17 +53,10 @@
   export let accountSettingsID: string;
 
   $: accounts = $changedWorkspace && allAccounts.filter(acc => acc.workspace == workspace);
-  let workspaces = appGlobal.workspaces;
 
   function onOpenAccount(account: Account) {
     $selectedAccount = account;
     $selectedCategory = accountSettings.find(cat => account instanceof cat.type && cat.isMain);
-  }
-  async function onMove(account: Account, otherWorkspace: Workspace) {
-    account.workspace = otherWorkspace;
-    $changedWorkspace++;
-    $selectedWorkspace = $selectedWorkspace;
-    await account.save();
   }
 
   function onNewAccount() {

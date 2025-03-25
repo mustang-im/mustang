@@ -1,69 +1,56 @@
-<Menu gutter={padding}>
-  <Menu.Item
-    on:click={() => catchErrors(() => reply())}
-    title={$t`Reply to the person who sent this message`}
-    icon={ReplyIcon}>
-    {$t`Reply to author`}
-  </Menu.Item>
-  <Menu.Item
-    on:click={() => catchErrors(() => replyAll())}
-    title={$t`Reply to all recipients of this message`}
-    icon={ReplyAllIcon}>
-    {$t`Reply to all`}
-  </Menu.Item>
-  <Menu.Item
-    on:click={event => catchErrors(() => forward(event))}
-    title={$t`Send this message to somebody else`}
-    icon={ForwardIcon}>
-    {$t`Forward`}
-  </Menu.Item>
-  <Menu.Item
-    on:click={() => catchErrors(() => redirect())}
-    title={$t`Send this message to somebody else, who can reply to the original sender`}
-    icon={RedirectIcon}>
-    {$t`Redirect`}
-  </Menu.Item>
-  <Menu.Item
-    on:click={() => catchErrors(() => deleteMessage())}
-    color="red"
-    icon={TrashIcon}>
-    {$t`Delete`}
-  </Menu.Item>
-  <Menu.Item
-    on:click={() => catchErrors(() => markAsSpam())}
-    color="red"
-    title={$t`Treat this email as spam: Move it to the Spam folder, and train the spam filter`}
-    icon={SpamIcon}>
-    {$t`Mark as spam`}
-  </Menu.Item>
-  <Menu.Item
-    on:click={() => catchErrors(() => translate())}
-    title={$t`Use an online translation service to translate this message to your default language.`}
-    icon={TranslateIcon}>
-    {$t`Translate`}
-  </Menu.Item>
-  <Menu.Item
-    on:click={() => catchErrors(() => print())}
-    title={$t`Put ink on dead trees which were artificially made white. Save the trees!`}
-    icon={PrintIcon}>
-    {$t`Print`}
-  </Menu.Item>
-  <Menu.Item
-    on:click={() => catchErrors(() => showSource())}
-    title={$t`Show the on-the-wire format of this message`}
-    icon={SourceIcon}>
-    {$t`Show source`}
-  </Menu.Item>
-</Menu>
-
-<Print {message} bind:this={printE} />
+<MenuItem
+  onClick={reply}
+  label={$t`Reply to author`}
+  tooltip={$t`Reply to the person who sent this message`}
+  icon={ReplyIcon} />
+<MenuItem
+  onClick={replyAll}
+  label={$t`Reply to all`}
+  tooltip={$t`Reply to all recipients of this message`}
+  icon={ReplyAllIcon} />
+<MenuItem
+  onClick={forward}
+  label={$t`Forward`}
+  tooltip={$t`Send this message to somebody else`}
+  icon={ForwardIcon} />
+<MenuItem
+  onClick={redirect}
+  label={$t`Redirect`}
+  tooltip={$t`Send this message to somebody else, who can reply to the original sender`}
+  icon={RedirectIcon} />
+<MenuItem
+  onClick={deleteMessage}
+  classes="danger"
+  label={$t`Delete`}
+  icon={TrashIcon} />
+<MenuItem
+  onClick={markAsSpam}
+  classes="danger"
+  label={$t`Mark as spam`}
+  tooltip={$t`Treat this email as spam: Move it to the Spam folder, and train the spam filter`}
+  icon={SpamIcon} />
+<MenuItem
+  onClick={translate}
+  label={$t`Translate`}
+  tooltip={$t`Use an online translation service to translate this message to your default language.`}
+  icon={TranslateIcon} />
+<MenuItem
+  onClick={print}
+  label={$t`Print`}
+  tooltip={$t`Put ink on dead trees which were artificially made white. Save the trees!`}
+  icon={PrintIcon} />
+<MenuItem
+  onClick={showSource}
+  label={$t`Show source`}
+  tooltip={$t`Show the on-the-wire format of this message`}
+  icon={SourceIcon} />
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { mailMustangApp } from "../MailMustangApp";
   import { getLocalStorage } from "../../Util/LocalStorage";
-  import Print from "./MessagePrint.svelte";
-  import { Menu } from "@svelteuidev/core";
+  import type Print from "./MessagePrint.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import ReplyIcon from "lucide-svelte/icons/reply";
   import ReplyAllIcon from "lucide-svelte/icons/reply-all";
   import ForwardIcon from "lucide-svelte/icons/forward";
@@ -73,12 +60,12 @@
   import TranslateIcon from "lucide-svelte/icons/languages";
   import PrintIcon from "lucide-svelte/icons/printer";
   import SourceIcon from "lucide-svelte/icons/code-xml";
-  import { catchErrors } from "../../Util/error";
+  import { showError } from "../../Util/error";
   import { NotImplemented } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
-  export let padding = 5;
+  export let printE: Print;
 
   function reply() {
     let reply = message.action.replyToAuthor();
@@ -111,9 +98,9 @@
     await message.treatSpam(true);
   }
 
-  let printE: Print;
   async function print() {
-    await printE.print();
+    printE.print()
+      .catch(showError);
   }
   function showSource() {
     let setting = getLocalStorage("mail.contentRendering", "html");
@@ -123,6 +110,3 @@
     throw new NotImplemented();
   }
 </script>
-
-<style>
-</style>

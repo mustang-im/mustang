@@ -31,14 +31,13 @@
         icon={$participant.cameraOn ? CameraIcon : CameraOffIcon}
         disabled={!userIsModerator}
         iconOnly />
-      <Menu>
-        <Menu.Item
-          on:click={() => catchErrors(() => startPrivateChat(participant))}
-          title={$t`Start a chat with only this person`}
-          icon={ChatIcon}>
-          {$t`Private chat`}
-        </Menu.Item>
-      </Menu>
+      <ButtonMenu>
+        <MenuItem
+          onClick={() => startPrivateChat(participant)}
+          label={$t`Private chat`}
+          tooltip={$t`Start a chat with only this person`}
+          icon={ChatIcon} />
+      </ButtonMenu>
     </hbox>
   {/if}
 </hbox>
@@ -46,7 +45,8 @@
 <script lang="ts">
   import { MeetingParticipant } from "../../logic/Meet/Participant";
   import Button from "../Shared/Button.svelte";
-  import { Menu } from "@svelteuidev/core";
+  import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
+  import MenuItem from "../Shared/Menu/MenuItem.svelte";
   import HandIcon from '../asset/icon/meet/hand.svg?raw';
   import HandDownIcon from "lucide-svelte/icons/grab";
   import CameraIcon from "lucide-svelte/icons/video";
@@ -55,14 +55,14 @@
   import MicrophoneOffIcon from "lucide-svelte/icons/mic-off";
   import ChatIcon from "lucide-svelte/icons/message-square";
   import ScreenSharingIcon from "lucide-svelte/icons/monitor";
-  import { catchErrors } from "../Util/error";
-  import { assert } from "../../logic/util/util";
+  import { assert, NotImplemented } from "../../logic/util/util";
   import { t } from "../../l10n/l10n";
 
   export let participant: MeetingParticipant;
   export let userIsModerator = false;
 
   function startPrivateChat(participant: MeetingParticipant) {
+    throw new NotImplemented();
   }
 
   /////////////

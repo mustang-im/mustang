@@ -2,43 +2,44 @@
   <RoundButton
     label={video ? (on ? $t`Turn camera off` : $t`Turn camera on`) : (on ? $t`Mute` : $t`Unmute`)}
     classes="toggle"
-    onClick={toggle}
+    onClick={onToggleDevice}
     icon={video ? (on ? CameraIcon : CameraOffIcon) : (on ? MicrophoneIcon : MicrophoneOffIcon)}
     iconSize="24px"
     />
-  <Menu>
+  <ButtonMenu bind:isMenuOpen>
     <RoundButton
       slot="control"
+      onClick={onMenuToggle}
       classes="select-device"
       label={video ? $t`Select camera` : $t`Select microphone`}
       icon={DownIcon}
       iconSize="16px"
       disabled={!on}
       />
-    <Menu.Label>{video ? $t`Your cameras` : $t`Your microphones`}</Menu.Label>
+    <MenuLabel label={video ? $t`Your cameras` : $t`Your microphones`} />
     {#if devices}
       {#each availableDevices as device (device.deviceId)}
-        <Menu.Item
-          on:click={() => catchErrors(() => selectDevice(device))}
+        <MenuItem
+          onClick={() => selectDevice(device)}
           icon={video ? CameraIcon : MicrophoneIcon}
-          className={device.deviceId == selectedId ? "selected" : ""}
-          >
-          {device.label}
-        </Menu.Item>
+          label={device.label}
+          selected={device.deviceId == selectedId}
+          />
       {/each}
     {/if}
-  </Menu>
+  </ButtonMenu>
 </hbox>
 
 <script lang="ts">
   import RoundButton from "../../Shared/RoundButton.svelte";
-  import { Menu } from "@svelteuidev/core";
+  import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import MenuLabel from "../../Shared/Menu/MenuLabel.svelte";
   import CameraIcon from "lucide-svelte/icons/video";
   import CameraOffIcon from "lucide-svelte/icons/video-off";
   import MicrophoneIcon from "lucide-svelte/icons/mic";
   import MicrophoneOffIcon from "lucide-svelte/icons/mic-off";
   import DownIcon from "lucide-svelte/icons/chevron-down";
-  import { catchErrors } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
 
@@ -49,7 +50,7 @@
 
   $: availableDevices = devices?.filter(d => d.kind == (video ? "videoinput" : "audioinput")) ?? [];
 
-  async function toggle() {
+  async function onToggleDevice() {
     on = !on;
   }
 
@@ -57,16 +58,24 @@
     assert(device?.kind == (video ? "videoinput" : "audioinput"), "Need camera/mic");
     selectedId = device.deviceId;
   }
+
+  let isMenuOpen: boolean;
+  function onMenuToggle(event: Event) {
+    event.stopPropagation();
+    isMenuOpen = !isMenuOpen;
+  }
 </script>
 
 <style>
-  .device-button :global(button.select-device[role=button]) {
+  .device-button :global(button.select-device) {
     margin-inline-start: -14px;
     margin-block-start: 20px;
     padding: 2px;
   }
-  .device-button :global(.svelteui-Paper-root) {
-    width: 20em;
+  .device-button :global(button.select-device:not(:hover)) {
+    background-color: var(--bg);
   }
-  /* Other overrides for svelte-ui menu in app.css */
+  .device-button :global(button.select-device.disabled) {
+    visibility: hidden;
+  }
 </style>

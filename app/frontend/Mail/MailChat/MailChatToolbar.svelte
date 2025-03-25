@@ -48,16 +48,30 @@
     plain
     />
 </hbox>
-<hbox class="menu">
-  <hbox class="menu-inner">
-    <MessageMenu {message} padding={0} />
-  </hbox>
+<hbox class="open">
+  <Button
+    icon={OpenIcon}
+    iconSize="20px"
+    iconOnly
+    label={$t`Open this message alone`}
+    onClick={openMessageAlone}
+    plain
+    />
 </hbox>
+<hbox class="menu button">
+  <ButtonMenu bind:isMenuOpen>
+    <MessageMenu {message} {printE} />
+  </ButtonMenu>
+</hbox>
+
+<Print {message} bind:this={printE} />
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { mailMustangApp } from "../MailMustangApp";
   import MessageMenu from "../Message/MessageMenu.svelte";
+  import Print from "../Message/MessagePrint.svelte";
+  import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import Button from "../../Shared/Button.svelte";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
@@ -91,6 +105,9 @@
     let modeSetting = getLocalStorage("mail.contentRendering", "html");
     modeSetting.value = "html";
   }
+
+  let isMenuOpen = false;
+  let printE: Print;
 </script>
 
 <style>

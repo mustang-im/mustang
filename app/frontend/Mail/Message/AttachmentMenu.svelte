@@ -1,44 +1,36 @@
-<Menu position="bottom" placement="end">
-  <hbox class="button" slot="control">
-    <DotsIcon size={16} />
-  </hbox>
-  <Menu.Item
-    on:click={() => catchErrors(() => openExternal())}
-    title={$t`Open in external application`}
-    icon={OpenIcon}>
-    {$t`Open in external app`}
-  </Menu.Item>
-  <Menu.Item
-    on:click={() => catchErrors(() => openFolder())}
-    title={$t`Open containing folder`}
-    icon={FolderIcon}>
-    {$t`Open folder`}
-  </Menu.Item>
+<ButtonMenu>
+  <MenuItem
+    onClick={openExternal}
+    label={$t`Open in external app`}
+    tooltip={$t`Open in external application`}
+    icon={OpenIcon} />
+  <MenuItem
+    onClick={openFolder}
+    label={$t`Open folder`}
+    tooltip={$t`Open containing folder`}
+    icon={FolderIcon} />
   <!--
-  <Menu.Item
-    on:click={() => catchErrors(() => saveFile())}
-    title="Save as"
+  <MenuItem
+    on:click={saveFile}
+    label=$t`Save as`
+    tooltip=$t`Save as`
     icon={SaveIcon}>
-    Save as
-  </Menu.Item>
-  <Menu.Item
-    on:click={() => catchErrors(() => deleteIt())}
-    title="Delete"
-    icon={DeleteIcon}>
-    Delete this attachment
-  </Menu.Item>
+  <MenuItem
+    on:click={deleteIt}
+    label=$t`Delete this attachment`
+    tooltip=$t`Delete`
+    icon={DeleteIcon} />
   -->
-</Menu>
+</ButtonMenu>
 
 <script lang="ts">
   import type { Attachment } from "../../../logic/Abstract/Attachment";
-  import { Menu } from "@svelteuidev/core";
-  import DotsIcon from "lucide-svelte/icons/ellipsis";
+  import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import OpenIcon from "lucide-svelte/icons/external-link";
   import FolderIcon from "lucide-svelte/icons/folder";
   import SaveIcon from "lucide-svelte/icons/save";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
-  import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
   export let attachment: Attachment;

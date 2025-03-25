@@ -1,30 +1,24 @@
-<Menu position="bottom" placement="end">
-  <hbox class="button" slot="control">
-    <DotsIcon size={16} />
-  </hbox>
-  <Menu.Item
-    on:click={() => catchErrors(() => save())}
-    title={$t`Save`}
-    icon={SaveIcon}>
-    {$t`Save`}
-  </Menu.Item>
-  <Menu.Item
-    on:click={() => catchErrors(() => deleteIt())}
-    title={$t`Delete`}
-    icon={DeleteIcon}>
-    {$t`Delete this contact`}
-  </Menu.Item>
-</Menu>
+<ButtonMenu>
+  <MenuItem
+    onClick={save}
+    label={$t`Save`}
+    tooltip={$t`Save`}
+    icon={SaveIcon} />
+  <MenuItem
+    onClick={deleteIt}
+    label={$t`Delete this contact`}
+    tooltip={$t`Delete`}
+    icon={DeleteIcon} />
+</ButtonMenu>
 
 <script lang="ts">
   import type { Person } from "../../logic/Abstract/Person";
   import { selectedPerson } from "../Shared/Person/Selected";
   import { appGlobal } from "../../logic/app";
-  import DotsIcon from "lucide-svelte/icons/ellipsis";
+  import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
+  import MenuItem from "../Shared/Menu/MenuItem.svelte";
   import SaveIcon from "lucide-svelte/icons/save";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
-  import { Menu } from "@svelteuidev/core";
-  import { catchErrors } from "../Util/error";
   import { t } from "../../l10n/l10n";
 
   export let person: Person;
@@ -47,5 +41,5 @@
     }
 
     await person.deleteIt();
-}
+  }
 </script>

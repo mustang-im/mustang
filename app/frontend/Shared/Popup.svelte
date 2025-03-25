@@ -9,7 +9,7 @@
 <svelte:window on:click={onClickOutside} on:mousewheel={onClickOutside} />
 
 <script lang="ts">
-  import { createPopperActions, type ReferenceAction } from 'svelte-popperjs';
+  import { createPopperActions } from 'svelte-popperjs';
   import type { Placement } from '@popperjs/core';
   import { onDestroy } from 'svelte';
 

@@ -71,7 +71,7 @@
       plain
       />
   </hbox>
-  <hbox class="move button" bind:this={popupAnchor}>
+  <hbox class="move button" bind:this={popupAnchorE}>
     <Button
       icon={FolderActionsIcon}
       iconSize="16px"
@@ -81,13 +81,17 @@
       plain
       />
   </hbox>
-  <hbox>
-    <MessageMenu {message} />
+  <hbox class="menu button">
+    <ButtonMenu bind:isMenuOpen>
+      <MessageMenu {message} {printE} />
+    </ButtonMenu>
   </hbox>
 </hbox>
-<Popup bind:popupOpen {popupAnchor} placement="bottom" boundaryElSel=".message-list-pane">
+<Popup bind:popupOpen popupAnchor={popupAnchorE} placement="bottom" boundaryElSel=".message-list-pane">
   <MessageMovePopup messages={new ArrayColl([message])} on:close={onPopupClose} />
 </Popup>
+
+<Print {message} bind:this={printE} />
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
@@ -95,6 +99,8 @@
   import { SpecialFolder } from "../../../logic/Mail/Folder";
   import MessageMenu from "./MessageMenu.svelte";
   import MessageMovePopup from "../Message/MessageMovePopup.svelte";
+  import Print from "./MessagePrint.svelte";
+  import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import Popup from "../../Shared/Popup.svelte";
   import Button from "../../Shared/Button.svelte";
   import StarIcon from "lucide-svelte/icons/star";
@@ -137,8 +143,11 @@
     mailMustangApp.writeMail(message);
   }
 
+  let isMenuOpen = false;
+  let printE: Print;
+
   // Folder Popup
-  let popupAnchor: HTMLElement;
+  let popupAnchorE: HTMLElement;
   let popupOpen = false;
   function onPopupToggle(event) {
     popupOpen = !popupOpen;

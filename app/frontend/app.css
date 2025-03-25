@@ -336,33 +336,6 @@ a:hover {
   color: var(--selected-hover-fg);
 }
 
-/* Fix svelte-ui menu */
-
-div.svelteui-Menu-root div.svelteui-Paper-root {
-  padding: 4px 0px;
-  /* dark theme - but breaks red buttons - see below
-  color: var(--leftbar-fg);
-  background-color: var(--leftbar-bg);
-  */
-}
-
-button.svelteui-MenuItem-root {
-  border-radius: 0px;
-  /* dark theme - but breaks red buttons
-  color: unset;
-  */
-}
-
-button.svelteui-MenuItem-root[classname="selected"] {
-  background-color: var(--selected-bg);
-  color: var(--selected-fg);
-}
-
-button.svelteui-MenuItem-root:hover:not([classname="selected"]) {
-  background-color: var(--hover-bg);
-  color: var(--hover-fg);
-}
-
 /* Fix svelte-ui dropdown */
 
 .svelteui-NativeSelect-root select option:hover {
