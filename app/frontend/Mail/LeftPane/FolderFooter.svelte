@@ -63,16 +63,14 @@
           {/if}
         {:else}
           {#if $folder.countTotal > 0}
-            {$t`${$folder.countNewArrived} new,
-                ${$folder.countUnread} unread,
-                ${$folder.countTotal} total`}
-          {/if}
-          {#if $folder.countTotal > 0 && $folder.countTotal != $messages.length}
             {#if $messages.length == 0}
               {$t`Loading...`}
             {:else}
-              {$t`${$messages.length} displayed.`}
+              {$t`${$folder.countUnread} unread`},
+              {$t`${$messages.length} shown`}
             {/if}
+          {:else}
+            {$t`Empty folder`}
           {/if}
         {/if}
       </hbox>
