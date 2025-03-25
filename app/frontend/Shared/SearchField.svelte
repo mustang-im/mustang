@@ -1,7 +1,7 @@
 <hbox class="search" class:has-search={searchInput}>
   <SearchIcon size="16px" />
-  <input type="search" bind:value={searchInput} placeholder={placeholder ?? $t`Search`} on:input={onInput} bind:this={inputEl} />
-  {#if searchInput}
+  <input type="search" bind:value={searchInput} placeholder={placeholder ?? $t`Search`} on:input={onInput} {autofocus} bind:this={inputEl} spellcheck={false} />
+  {#if showX || searchInput && showX === null }
     <RoundButton icon={XIcon} iconSize="16px" padding="2px" border={false}
       on:click={onClear} />
   {/if}
@@ -13,13 +13,15 @@
   import XIcon from "lucide-svelte/icons/x";
   import { createEventDispatcher } from "svelte";
   import { t } from "../../l10n/l10n";
-  const dispatchEvent = createEventDispatcher();
+  const dispatchEvent = createEventDispatcher<{ input: string, clear: void }>();
 
   /** out only */
   export let searchTerm: string;
   /** Text to show in the empty search field.
    * Default "Search" */
   export let placeholder: string = null;
+  export let autofocus: boolean = false;
+  export let showX: boolean | null = null; /** null = only when text entered */
 
   let searchInput: string;
   $: searchInput = searchTerm;
@@ -32,6 +34,7 @@
       return;
     }
     searchTerm = searchInput?.toLowerCase();
+    dispatchEvent("input", searchTerm);
   }
   function onClear() {
     searchTerm = null;
