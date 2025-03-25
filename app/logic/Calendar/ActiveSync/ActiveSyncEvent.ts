@@ -49,6 +49,7 @@ export class ActiveSyncEvent extends Event {
     if (wbxmljs.EndTime) {
       this.endTime = fromCompact(wbxmljs.EndTime);
     }
+    this.timezone = fromActiveSyncZone(wbxmljs.Timezone);
     this.allDay = sanitize.boolean(wbxmljs.AllDayEvent);
     if (wbxmljs.Recurrence) {
       this.repeat = true;
@@ -213,4 +214,18 @@ function getTimeZoneActiveSync(): string {
     gTimeZone = btoa(String.fromCharCode(...new Uint8Array(unicode.buffer)));
   }
   return gTimeZone;
+}
+
+function fromActiveSyncZone(zone): string | null {
+  if (!zone) {
+    return null;
+  }
+  let buffer = Uint8Array.from(atob(zone), c => c.charCodeAt(0)).buffer;
+  zone = String.fromCharCode(...new Uint16Array(buffer, 4, 32)).replace(/\0+$/, "") || String.fromCharCode(...new Uint16Array(buffer, 88, 32)).replace(/\0+$/, "");
+  for (let iana in WindowsTimezones) {
+    if (WindowsTimezones[iana] == zone) {
+      return iana;
+    }
+  }
+  return null;
 }
