@@ -1,4 +1,4 @@
-<vbox class="message-popup" on:click={onClickInside} on:mousewheel={onClickInside}>
+<vbox class="message-popup">
   <hbox class="top buttons">
     <Button plain
       label={$t`Delete`}
@@ -80,7 +80,6 @@
     </FolderList>
   </vbox>
 </vbox>
-<svelte:window on:click={onClickOutside} on:mousewheel={onClickOutside} />
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
@@ -113,12 +112,6 @@
 
   function onClose() {
     dispatch("close");
-  }
-  function onClickInside(event: Event) {
-    event.stopPropagation();
-  }
-  function onClickOutside() {
-    onClose();
   }
 
   async function onDelete() {

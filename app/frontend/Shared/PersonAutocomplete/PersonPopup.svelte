@@ -1,4 +1,4 @@
-<vbox class="person-popup" on:click={onClickInside}>
+<vbox class="person-popup">
   <hbox class="picture-name">
     <vbox class="picture">
       {#if person?.picture}
@@ -78,7 +78,6 @@
     </hbox>
   {/if}
 </vbox>
-<svelte:window on:click={onClickOutside} />
 
 <script lang="ts">
   import { kDummyPerson, PersonUID } from "../../../logic/Abstract/PersonUID";
@@ -100,11 +99,11 @@
   const dispatch = createEventDispatcher<{ removePerson: PersonUID, close: void }>();
 
   export let personUID: PersonUID;
+  export let disabled = false;
 
   let person: Person;
   let contactEntry: ContactEntry;
   let isEditing = false;
-  let disabled = false;
   let nameInputEl: HTMLInputElement;
 
   onMount(() => {
@@ -127,12 +126,6 @@
     onSave()
       .catch(backgroundError);
     dispatch("close");
-  }
-  function onClickInside(event: MouseEvent) {
-    event.stopPropagation();
-  }
-  function onClickOutside(event: MouseEvent) {
-    onClose();
   }
   async function onSave() {
     let person = personUID.createPerson();

@@ -1,9 +1,12 @@
 {#if popupOpen}
-  <vbox class="popup" on:close
+  <vbox class="popup"
+    on:close
+    on:click={onClickInside} on:mousewheel={onClickInside}
     use:popupContent={popupOptions}>
     <slot />
   </vbox>
 {/if}
+<svelte:window on:click={onClickOutside} on:mousewheel={onClickOutside} />
 
 <script lang="ts">
   import { createPopperActions, type ReferenceAction } from 'svelte-popperjs';
@@ -30,6 +33,7 @@
    * Document element selector, e.g. '.mail-composer-window'
    * in */
   export let boundaryElSel: string;
+  export let autoClose: boolean = true;
 
   const [popupRef, popupContent] = createPopperActions({
     placement: placement,
@@ -66,6 +70,19 @@
   onDestroy(() => {
     popupHook?.destroy();
   });
+
+  function onClickOutside() {
+    if (!autoClose || !popupOpen) {
+      return;
+    }
+    popupOpen = false;
+  }
+  function onClickInside(event: Event) {
+    if (!autoClose || !popupOpen) {
+      return;
+    }
+    event.stopPropagation();
+  }
 </script>
 
 <style>
