@@ -1,6 +1,13 @@
 <hbox class="search" class:has-search={searchInput}>
   <SearchIcon size="16px" />
-  <input type="search" bind:value={searchInput} placeholder={placeholder ?? $t`Search`} on:input={onInput} {autofocus} bind:this={inputEl} spellcheck={false} />
+  <input type="search"
+    bind:value={searchInput}
+    on:input={onInput}
+    on:keydown={onKeyPress}
+    placeholder={placeholder ?? $t`Search`}
+    bind:this={inputEl}
+    {autofocus}
+    spellcheck={false} />
   {#if showX || searchInput && showX === null }
     <RoundButton icon={XIcon} iconSize="16px" padding="2px" border={false}
       on:click={onClear} />
@@ -44,6 +51,14 @@
   let inputEl: HTMLInputElement;
   export function focus() {
     inputEl.focus();
+  }
+
+  function onKeyPress(event: KeyboardEvent, onEnter: () => void) {
+    if (event.key == "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      onClear();
+    }
   }
 </script>
 
