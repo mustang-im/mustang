@@ -6,9 +6,7 @@
   {tabindex}
   >
   <hbox class="icon">
-    {#if loading}
-      <Spinner size={iconSize} />
-    {:else if typeof(icon) == "string"}
+    {#if typeof(icon) == "string"}
       <Icon data={icon} size={iconSize} />
     {:else if icon}
       <svelte:component this={icon} size={iconSize} />
@@ -30,7 +28,6 @@
 
 <script lang="ts">
   import Icon from 'svelte-icon/Icon.svelte';
-  import Spinner from '../Spinner.svelte';
   import { showError } from '../../Util/error';
   import { getContext, type ComponentType } from 'svelte';
   import { t } from '../../../l10n/l10n';
@@ -58,34 +55,24 @@
   export let onClick: (event: Event) => void = null;
   export let errorCallback = showError;
 
-  $: hasIcon = !!icon || $$slots.icon || loading;
+  $: hasIcon = !!icon || $$slots.icon;
   $: hasLabel = (!!label || $$slots.label) && !iconOnly;
 
   let onMenuClose = getContext("onMenuClose") as () => void;
-  let loading = false;
   async function myOnClick(event: Event) {
     if (!(onClick && typeof(onClick) == "function")) {
       return;
     }
     event.stopPropagation();
     event.preventDefault();
-    let previousDisabled = disabled;
-    disabled = true;
-    let loadTimeout = setTimeout(() => {
-      loading = true;
-    }, 500);
+    if (onMenuClose) {
+      onMenuClose();
+    }
     try {
       await onClick(event);
     } catch (ex) {
       errorCallback(ex);
-    } finally {
-      clearTimeout(loadTimeout);
-      loading = false;
     }
-    if (onMenuClose) {
-      onMenuClose();
-    }
-    disabled = previousDisabled;
   }
 </script>
 
