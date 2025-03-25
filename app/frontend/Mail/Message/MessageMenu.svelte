@@ -34,11 +34,13 @@
   label={$t`Translate`}
   tooltip={$t`Use an online translation service to translate this message to your default language.`}
   icon={TranslateIcon} />
-<MenuItem
-  onClick={print}
-  label={$t`Print`}
-  tooltip={$t`Put ink on dead trees which were artificially made white. Save the trees!`}
-  icon={PrintIcon} />
+{#if printE}
+  <MenuItem
+    onClick={print}
+    label={$t`Print`}
+    tooltip={$t`Put ink on dead trees which were artificially made white. Save the trees!`}
+    icon={PrintIcon} />
+{/if}
 <MenuItem
   onClick={showSource}
   label={$t`Show source`}
@@ -65,7 +67,7 @@
   import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
-  export let printE: Print;
+  export let printE: Print | null = null;
 
   function reply() {
     let reply = message.action.replyToAuthor();

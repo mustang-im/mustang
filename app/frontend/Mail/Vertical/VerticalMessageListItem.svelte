@@ -1,6 +1,7 @@
 <vbox class="message"
   class:unread={!$message.isRead}
   draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
+  on:contextmenu={contextMenu.onContextMenu}
   bind:this={popupAnchor}
   >
   <hbox class="top-row">
@@ -83,6 +84,9 @@
     </hbox>
   </hbox>
 </vbox>
+<ContextMenu bind:this={contextMenu}>
+  <MessageMenu {message} />
+</ContextMenu>
 <Popup bind:popupOpen {popupAnchor} placement="bottom-end" boundaryElSel=".message-list-pane">
   {#if $selectedMessages.length > 1 && $selectedMessages.contains(message)}
     <MessageMovePopup messages={$selectedMessages} on:close={onPopupClose} />
@@ -97,8 +101,10 @@
   import { onDragStartMail } from "../Message/drag";
   import { selectedMessages } from "../Selected";
   import TagSelector from "../Tag/TagSelector.svelte";
+  import MessageMenu from "../Message/MessageMenu.svelte";
   import MessageMovePopup from "../Message/MessageMovePopup.svelte";
   import Popup from "../../Shared/Popup.svelte";
+  import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import Button from "../../Shared/Button.svelte";
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
   import StarIcon from "lucide-svelte/icons/star";
@@ -130,6 +136,8 @@
   async function markAsSpam() {
     await message.treatSpam(true);
   }
+
+  let contextMenu: ContextMenu;
 
   // Popup
   let popupAnchor: HTMLElement;

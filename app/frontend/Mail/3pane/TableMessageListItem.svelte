@@ -28,14 +28,14 @@
     <OutgoingIcon size={16} />
   {/if}
 </hbox>
-<hbox class="correspondent" draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}>{contactName}</hbox>
-<hbox class="subject" class:unread={!$message.isRead} draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}>{$message.subject}</hbox>
+<hbox class="correspondent" draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))} on:contextmenu={contextMenu.onContextMenu}>{contactName}</hbox>
+<hbox class="subject" class:unread={!$message.isRead} draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))} on:contextmenu={contextMenu.onContextMenu}>{$message.subject}</hbox>
 <hbox class="tags">
   {#if $tags.hasItems}
     <TagSelector tags={$tags} {message} canAdd={false} />
   {/if}
 </hbox>
-<hbox class="date" class:unread={!$message.isRead} draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}>{getDateString($message.sent)}</hbox>
+<hbox class="date" class:unread={!$message.isRead} draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))} on:contextmenu={contextMenu.onContextMenu}>{getDateString($message.sent)}</hbox>
 <hbox class="buttons hover">
   <hbox class="move button" bind:this={popupAnchor}>
     <Button
@@ -69,6 +69,10 @@
       />
   </hbox>
 </hbox>
+
+<ContextMenu bind:this={contextMenu}>
+  <MessageMenu {message} />
+</ContextMenu>
 <Popup bind:popupOpen {popupAnchor} placement="bottom" boundaryElSel=".message-list-pane">
   {#if $selectedMessages.length > 1 && $selectedMessages.contains(message)}
     <MessageMovePopup messages={$selectedMessages} on:close={onPopupClose} />
@@ -82,8 +86,10 @@
   import { personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { onDragStartMail } from "../Message/drag";
   import { selectedMessages } from "../Selected";
+  import MessageMenu from "../Message/MessageMenu.svelte";
   import TagSelector from "../Tag/TagSelector.svelte";
   import MessageMovePopup from "../Message/MessageMovePopup.svelte";
+  import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import Popup from "../../Shared/Popup.svelte";
   import Button from "../../Shared/Button.svelte";
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
@@ -116,6 +122,8 @@
   async function markAsSpam() {
     await message.treatSpam(true);
   }
+
+  let contextMenu: ContextMenu;
 
   // Popup
   let popupAnchor: HTMLElement;
