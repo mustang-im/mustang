@@ -82,7 +82,28 @@
     await startSearch();
   }
 
+  /** Filters the folder.messages array */
   async function startSearch() {
+    if (!isShowStarred && !isShowUnread) {
+      searchMessages = null;
+      return;
+    }
+    let search = newSearchEMail();
+    if (isShowStarred) { // undefined != false
+      search.isStarred = true;
+    }
+    if (isShowUnread) {
+      search.isRead = false;
+    }
+    search.folder = folder;
+    searchMessages = await folder.messages.filter(msg =>
+      (!isShowStarred || msg.isStarred === true) &&
+      (!isShowUnread || msg.isRead === false)
+    );
+  }
+
+  /** Uses the DB to make a global search */
+  async function startSearchGlobal() {
     if (!isShowStarred && !isShowUnread) {
       searchMessages = null;
       return;
