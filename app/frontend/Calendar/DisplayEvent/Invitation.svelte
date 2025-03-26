@@ -22,7 +22,7 @@
         icon={AcceptIcon}
         classes="accept" />
       <Button
-        label={$t`Decline *=> Decline to attend the meeting`}
+        label={$t`Refuse *=> Decline to attend the meeting`}
         onClick={onDecline}
         icon={DeclineIcon}
         classes="decline secondary" />
@@ -44,7 +44,7 @@
         classes="accept done" />
       <ButtonMenu buttonIcon={ChevronDownIcon}>
         <MenuItem
-          label={$t`Change to Decline *=> not attend the meeting`}
+          label={$t`Change to Refuse *=> not attend the meeting`}
           onClick={onDecline}
           icon={DeclineIcon}
           classes="decline" />
@@ -58,7 +58,7 @@
   {:else if message.scheduling == Scheduling.Declined}
     <hbox class="buttons">
       <Button
-        label={$t`Declined *=> A meeting request has been declined by you`}
+        label={$t`Refused *=> A meeting request has been declined by you`}
         icon={DeclineIcon}
         selected={true}
         disabled={true}
