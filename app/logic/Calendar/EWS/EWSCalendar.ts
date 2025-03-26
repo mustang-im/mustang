@@ -163,6 +163,8 @@ export class EWSCalendar extends Calendar {
             }, {
               FieldURI: "item:TextBody",
             }, {
+              FieldURI: "calendar:StartTimeZoneId",
+            }, {
               FieldURI: "calendar:IsAllDayEvent",
             }, {
               FieldURI: "calendar:MyResponseType",

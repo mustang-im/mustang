@@ -38,12 +38,40 @@ function iTIPMethod(ics: any): Scheduling {
 
 const icalDateRegex = /^(\d{4})(\d\d)(\d\dT\d\d)(\d\d)(\d\dZ?)$/;
 
-function parseDate(icalDate: string): Date {
-  if (icalDate.length == 8) {
-    icalDate += "T000000";
+function parseDate(icalDate: { value: string, properties: { tzid?: string } }): [Date | null, string | null] {
+  let value = icalDate.value;
+  let tzid = icalDate.properties.tzid || null;
+  if (value.length == 8) {
+    // Represent dates as 00:00:00 local time.
+    value += "T000000";
   }
-  if (icalDateRegex.test(icalDate)) {
-    return new Date(icalDate.replace(icalDateRegex, "$1-$2-$3:$4:$5"));
+  // Sanity check.
+  if (!icalDateRegex.test(value)) {
+    return [null, null];
+  }
+  // Convert to regular Date string format.
+  value = value.replace(icalDateRegex, "$1-$2-$3:$4:$5");
+  if (value.endsWith("Z") || !tzid) {
+    // Either UTC or floating.
+    return [new Date(value), tzid];
+  }
+  value += "Z";
+  let utc = new Date(value);
+  try {
+    // Work out the time zone offset for the time given as UTC.
+    // "zu" locale has date format YYYY-MM-DD hh:mm:ss,
+    // which we can easily convert into ISO format.
+    let offset = new Date(utc.toLocaleString("zu", { timeZone: tzid }).replace(" ", "T") + "Z").getTime() - utc.getTime();
+    let local = new Date(utc.getTime() - offset);
+    // Check the time zone offset at this local time,
+    // as that may have jumped across a DST change.
+    offset = new Date(local.toLocaleString("zu", { timeZone: tzid }).replace(" ", "T") + "Z").getTime() - utc.getTime();
+    if (offset) {
+      local = new Date(local.getTime() - offset);
+    }
+    return [local, tzid];
+  } catch (ex) {
+    return [null, null];
   }
 }
 
@@ -63,10 +91,10 @@ function convertICalToEvent(ics: ICalParser): Event | null {
     event.descriptionText = vevent.entries.description[0].value;
   }
   if (vevent.entries.dtstart) {
-    event.startTime = parseDate(vevent.entries.dtstart[0].value);
+    [event.startTime, event.timezone] = parseDate(vevent.entries.dtstart[0]);
   }
   if (vevent.entries.dtend) {
-    event.endTime = parseDate(vevent.entries.dtend[0].value);
+    [event.endTime] = parseDate(vevent.entries.dtend[0]);
   }
   if (vevent.entries.dtstart?.[0].properties.value?.toLowerCase() == "date") {
     event.allDay = true;

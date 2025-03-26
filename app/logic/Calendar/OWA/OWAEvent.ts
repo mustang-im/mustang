@@ -70,6 +70,7 @@ export class OWAEvent extends Event {
     if (json.DueDate) {
       this.endTime = sanitize.date(json.DueDate);
     }
+    this.timezone = fromWindowsZone(json.StartTimeZoneId);
     this.allDay = sanitize.boolean(json.IsAllDayEvent);
     if (json.Recurrence) {
       this.repeat = true;
@@ -331,4 +332,13 @@ function addParticipants(attendees, participants: Participant[]) {
 
 function extractWeekdays(daysOfWeek: string): Weekday[] | null {
   return daysOfWeek ? daysOfWeek.split(" ").map(day => sanitize.integer(Weekday[day])) : null;
+}
+
+function fromWindowsZone(windowsZone): string | null {
+  for (let iana in WindowsTimezones) {
+    if (WindowsTimezones[iana] == windowsZone) {
+      return iana;
+    }
+  }
+  return null;
 }

@@ -74,6 +74,7 @@ export class EWSEvent extends Event {
     if (xmljs.DueDate) {
       this.endTime = sanitize.date(xmljs.DueDate);
     }
+    this.timezone = fromWindowsZone(xmljs.StartTimezoneId);
     this.allDay = sanitize.boolean(xmljs.IsAllDayEvent);
     if (xmljs.Recurrence) {
       this.repeat = true;
@@ -352,4 +353,13 @@ class EWSUpdateOccurrenceRequest {
       this.itemChange.t$Updates.t$SetItemField.push(field);
     }
   }
+}
+
+function fromWindowsZone(windowsZone): string | null {
+  for (let iana in WindowsTimezones) {
+    if (WindowsTimezones[iana] == windowsZone) {
+      return iana;
+    }
+  }
+  return null;
 }

@@ -25,6 +25,9 @@ export function owaGetEventsRequest(eventIDs: string[]): OWARequest {
         FieldURI: "item:TextBody",
       }, {
         __type: "PropertyUri:#Exchange",
+        FieldURI: "calendar:StartTimeZoneId",
+      }, {
+        __type: "PropertyUri:#Exchange",
         FieldURI: "calendar:IsAllDayEvent",
       }, {
         __type: "PropertyUri:#Exchange",
