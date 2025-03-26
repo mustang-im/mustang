@@ -275,6 +275,8 @@ export async function openBrowser(url: URLString) {
   await appGlobal.remoteApp.openExternalURL(url);
 }
 
+// #if [WEBMAIL]
+// @ts-ignore ts2300
 export async function download(url: URLString, win: any, howSaveAsDialog: boolean, filename?: string) {
   let a = document.createElement("a");
   a.href = url;
@@ -285,8 +287,9 @@ export async function download(url: URLString, win: any, howSaveAsDialog: boolea
   a.click();
   a.href = "";
 }
-
-export async function downloadWebView(url: URLString, win: any, howSaveAsDialog: boolean, filename?: string) {
+// #else
+// @ts-ignore ts2300
+export async function download(url: URLString, win: any, howSaveAsDialog: boolean, filename?: string) {
   let urlObj = new URL(url);
   let blob: Blob;
   if (urlObj.protocol == "http:" || urlObj.protocol == "https:") {
@@ -312,3 +315,4 @@ export async function downloadWebView(url: URLString, win: any, howSaveAsDialog:
     await appGlobal.remoteApp.writeFile(filePath, 0o666, await blob.arrayBuffer());
   }
 }
+// #endif
