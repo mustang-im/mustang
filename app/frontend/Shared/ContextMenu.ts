@@ -66,8 +66,7 @@ export async function buildContextMenu(context: ContextInfo, win: any): Promise<
   if (context.mediaType == "image") {
     add("copyImage", gt`Copy image`, null, copyImage);
     add("copyImageURL", gt`Copy image address`, null, copyImageURL);
-    add("saveImage", gt`Save image`, null, saveImage);
-    add("saveImageAs", gt`Save image as…`, null, saveImageAs);
+    add("saveImage", gt`Save image...`, null, saveImage);
   }
   if (context.mediaType == "video") {
     add("copyVideoURL", gt`Copy video address`, null, copyVideoURL);
@@ -211,10 +210,6 @@ export function lookUpSelection(context: ContextInfo, win: any) {
 
 export function saveImage(context: ContextInfo, win: any) {
   download(context.srcURL, win, false);
-}
-
-export function saveImageAs(context: ContextInfo, win: any) {
-  download(context.srcURL, win, true);
 }
 
 export function saveVideo(context: ContextInfo, win: any) {
