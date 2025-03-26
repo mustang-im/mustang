@@ -3,6 +3,7 @@ import { Group } from "./Group";
 import { ContactEntry, Person } from "./Person";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
+import { ArrayColl } from "svelte-collections";
 
 export class PersonUID extends Observable {
   @notifyChangedProperty
@@ -77,6 +78,14 @@ export function findPerson(emailAddress: string): Person | undefined {
   return undefined;
 }
 
+export function findPersonsWithName(name: string): ArrayColl<Person> {
+  let results = new ArrayColl<Person>();
+  for (let ab of appGlobal.addressbooks) {
+    results.addAll(ab.persons.contents.filter(p => p.name == name));
+  }
+  return results;
+}
+
 export function personDisplayName(person: PersonOrGroup | PersonUID) {
   if (!person) {
     return "";
@@ -88,7 +97,7 @@ export function personDisplayName(person: PersonOrGroup | PersonUID) {
       return person.person.name;
     }
     if (!person.name) {
-      return person.emailAddress ?? "";
+      return person.emailAddress?.replace(/@.*/, "") ?? "";
     }
     return person.name?.
       replace(/@.*/, "").
