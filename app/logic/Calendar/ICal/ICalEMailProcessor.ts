@@ -9,11 +9,13 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export class ICalEMailProcessor extends EMailProcessor {
   runOn = ProcessingStartOn.Parse;
-  process(email: EMail, postalMIME: any) {
-    if (!postalMIME.textContent?.calendar) {
+  async process(email: EMail, postalMIME: any) {
+    let invitationBlob = email.attachments.find(a => a.mimeType == "text/calendar")?.content;
+    if (!invitationBlob) {
       return;
     }
-    let ics = new ICalParser(postalMIME.textContent.calendar);
+    let invitationStr = await invitationBlob.text();
+    let ics = new ICalParser(invitationStr);
     email.scheduling = iTIPMethod(ics);
     email.event = convertICalToEvent(ics);
     if (email.event && !email.event.descriptionHTML && email.html) {

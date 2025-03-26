@@ -52,7 +52,7 @@
     "olm": "https://packages.matrix.org/npm/olm/olm-3.2.1.tgz",
     "password-salt": "^5.0.1",
     "pkce-challenge": "^4.1.0",
-    "postal-mime": "^2.1.2",
+    "postal-mime": "^2.4.3",
     "pretty-bytes": "^6.1.1",
     "psl": "https://github.com/lupomontero/psl",
     "stanza": "^12.21.0",

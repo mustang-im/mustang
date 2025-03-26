@@ -287,12 +287,6 @@ export class EMail extends Message {
     if (html) {
       this.html = html;
     }
-    for (let processor of EMailProcessorList.processors) {
-      if (processor.runOn != ProcessingStartOn.Parse) {
-        continue;
-      }
-      await processor.process(this, postalMIME);
-    }
 
     // Attachments
     let fallbackID = 0;
@@ -315,6 +309,14 @@ export class EMail extends Message {
         this.folder.account.errorCallback(ex);
       }
     }).filter(attachment => !!attachment));
+
+    // Run processors, filters, calendar invitations, SML, etc.
+    for (let processor of EMailProcessorList.processors) {
+      if (processor.runOn != ProcessingStartOn.Parse) {
+        continue;
+      }
+      await processor.process(this, postalMIME);
+    }
   }
 
   /**
