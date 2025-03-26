@@ -277,7 +277,7 @@ async function download(url: URLString, win: any, howSaveAsDialog: boolean, file
     let res = await fetch(urlObj.href);
     filename = urlObj.pathname.split("/").pop();
     blob = await res.blob();
-  } else if (urlObj.protocol == "data:") {
+  } else if (urlObj.protocol == "data:" || urlObj.protocol == "blob:") {
     blob = await dataURLToBlob(url);
   } else {
     throw new Error("Unsupported protocol: " + urlObj.protocol);
