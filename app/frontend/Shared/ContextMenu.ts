@@ -181,46 +181,46 @@ export interface ContextInfo {
   };
 }
 
-export function copyText(context: ContextInfo, win: any) {
+function copyText(context: ContextInfo, win: any) {
   win.copy();
   // or: copyToClipboard(context.selectionText);
 }
 
-export function cutText(context: ContextInfo, win: any) {
+function cutText(context: ContextInfo, win: any) {
   win.cut();
 }
 
-export function pasteText(context: ContextInfo, win: any) {
+function pasteText(context: ContextInfo, win: any) {
   win.paste();
 }
 
-export function selectAll(context: ContextInfo, win: any) {
+function selectAll(context: ContextInfo, win: any) {
   win.selectAll();
 }
 
-export function searchWeb(context: ContextInfo, win: any) {
+function searchWeb(context: ContextInfo, win: any) {
   const url = new URL('https://www.google.com/search');
   url.searchParams.set('q', context.selectionText);
   openBrowser(url.toString());
 }
 
-export function lookUpSelection(context: ContextInfo, win: any) {
+function lookUpSelection(context: ContextInfo, win: any) {
   win.showDefinitionForSelection();
 }
 
-export function saveImage(context: ContextInfo, win: any) {
+function saveImage(context: ContextInfo, win: any) {
   download(context.srcURL, win, false);
 }
 
-export function saveVideo(context: ContextInfo, win: any) {
+function saveVideo(context: ContextInfo, win: any) {
   download(context.srcURL, win, false);
 }
 
-export function saveVideoAs(context: ContextInfo, win: any) {
+function saveVideoAs(context: ContextInfo, win: any) {
   download(context.srcURL, win, true);
 }
 
-export async function copyLink(context: ContextInfo, win: any) {
+async function copyLink(context: ContextInfo, win: any) {
   await copyToClipboard(context.linkURL);
   /* or:
   copyToClipboard({
@@ -230,35 +230,35 @@ export async function copyLink(context: ContextInfo, win: any) {
   */
 }
 
-export function saveLinkAs(context: ContextInfo, win: any) {
+function saveLinkAs(context: ContextInfo, win: any) {
   download(context.linkURL, win, true, context.suggestedFilename);
 }
 
-export async function copyImage(context: ContextInfo, win: any) {
+async function copyImage(context: ContextInfo, win: any) {
   win = await appGlobal.remoteApp.getWebContents(win.getWebContentsId());
   win.copyImageAt(context.x, context.y);
 }
 
-export async function copyImageURL(context: ContextInfo, win: any) {
+async function copyImageURL(context: ContextInfo, win: any) {
   await copyToClipboard(context.srcURL);
 }
 
-export async function copyVideoURL(context: ContextInfo, win: any) {
+async function copyVideoURL(context: ContextInfo, win: any) {
   await copyToClipboard(context.srcURL);
 }
 
-export function learnSpelling(context: ContextInfo, win: any) {
+function learnSpelling(context: ContextInfo, win: any) {
   win.session.addWordToSpellCheckerDictionary(context.misspelledWord);
 }
 
-export function inspect(context: ContextInfo, win: any) {
+function inspect(context: ContextInfo, win: any) {
   win.inspectElement(context.x, context.y);
   if (win.isDevToolsOpened()) {
     win.devToolsWebContents.focus();
   }
 }
 
-export async function copyToClipboard(text: string | Object) {
+async function copyToClipboard(text: string | Object) {
   if (typeof (text) == "string") {
     await appGlobal.remoteApp.writeTextToClipboard(text);
   } else {
@@ -266,11 +266,11 @@ export async function copyToClipboard(text: string | Object) {
   }
 }
 
-export async function openBrowser(url: URLString) {
+async function openBrowser(url: URLString) {
   await appGlobal.remoteApp.openExternalURL(url);
 }
 
-export async function download(url: URLString, win: any, howSaveAsDialog: boolean, filename?: string) {
+async function download(url: URLString, win: any, howSaveAsDialog: boolean, filename?: string) {
   let urlObj = new URL(url);
   let blob: Blob;
   if (urlObj.protocol == "http:" || urlObj.protocol == "https:") {
