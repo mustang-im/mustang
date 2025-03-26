@@ -70,7 +70,7 @@
           icon={AcceptIcon}
           classes="accept" />
         <MenuItem
-          label={$t`Change to Maybe *=> maybe attend the meeting`}
+          label={$t`Change to Maybe *=> Maybe attend the meeting`}
           onClick={onTentative}
           icon={MaybeIcon}
           classes="maybe" />
