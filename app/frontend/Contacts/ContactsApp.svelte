@@ -24,7 +24,7 @@
   import Splitter from "../Shared/Splitter.svelte";
   import type { Collection } from "svelte-collections";
 
-  let selectedAddressbook = appGlobal.addressbooks.first;
+  let selectedAddressbook = $selectedPerson?.addressbook ?? appGlobal.addressbooks.first;
 
   $: persons = (selectedAddressbook?.persons ?? appGlobal.persons) as Collection<Person>;
   $: filteredPersons = $globalSearchTerm
