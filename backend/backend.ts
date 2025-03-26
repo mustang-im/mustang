@@ -53,7 +53,6 @@ async function createSharedAppObject() {
     restartApp,
     setTheme,
     openMenu,
-    getHomeDir,
     getConfigDir,
     getFilesDir,
     // openFileInExternalApp,
@@ -401,14 +400,6 @@ function platform(): string {
  *   @see <https://www.electronjs.org/docs/latest/api/app#appgetpathname> */
 function directory(type: string): string {
   return app.getPath(type as any);
-}
-
-
-/**
- * Get the user's home directory.
- */
-function getHomeDir() {
-  return os.homedir();
 }
 
 const kAppDir = production ? appName : appName + "Dev"; // e.g. "Mustang" or "Parula"

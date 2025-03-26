@@ -306,8 +306,7 @@ export async function download(url: URLString, win: any, howSaveAsDialog: boolea
     a.click();
     a.href = "";
   } else {
-    let filePath = await appGlobal.remoteApp.path.join(await appGlobal.remoteApp.getHomeDir(), "Downloads", filename);
-    await appGlobal.remoteApp.writeFile(filePath, 0o666, await blob.arrayBuffer());
+    saveBlobAsFile(blob, filename);
   }
 }
 // #endif
