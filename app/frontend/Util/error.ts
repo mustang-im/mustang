@@ -67,3 +67,12 @@ export async function catchErrors(func: Function, errorFunc = showError) {
     errorFunc(ex);
   }
 }
+
+/** In case of errors/exceptions, return a fallback value */
+export function catchFallback<T>(func: () => T, fallbackResult: T): T {
+  try {
+    return func();
+  } catch (ex) {
+    return fallbackResult;
+  }
+}
