@@ -15,7 +15,6 @@
     * Participants
     * Free/Busy
     * Move to other calendar
-  * Editor: newlines
   * format/flowed
   * Bug: Thunderbird AB import misses ABs and fields
   * Import Outlook PST
@@ -29,10 +28,7 @@
     * Hide quotes
     * Message list: Threaded view?
     * Mail Chat view: Open thread
-  * Actions (Filters) (after search)
-    * Create
-    * List
-    * Edit
+  * Actions (Filters)
     * Run
   * Tags: Shrink tag list when not enough space
   * All accounts
@@ -66,13 +62,10 @@
 * List view: Sort order
 * MailChat/Thread: Jail HTML: Styles and size
 ## Nick
-* Mac: M1 needs 50s to start, 30s for second start
 * Mac: Use Mac Password manager
 * Gmail: Log in with browser
 * Manual setup: OAuth2 UI: "Browser" goes back to "Seperate window"
 ## mjl
-* Compose Person popup, need to confirm recipient
-* Context menus
 * Back button (after clicking on an email address in an email, want to go back to email)
 * Selected message: After switching back to email, email is not longer selected
 * Tags in "Move to folder" button - icon not obvious. change tooltip.
@@ -95,9 +88,6 @@
 * Icons for accounts, based on favicon or user-set
 * Pic for users, in identities
 * Unified inbox: Show account as tag or icon
-
-# UI
-* Close menu when clicking inside message
 
 # Chat
 ## Bugs
@@ -138,22 +128,21 @@
 
 ## Other protocols
 * Teams
+  * Have partial impl
 * Signal
 * WhatsApp
 * DIM <https://www.dim.chat>
 * Discord
-* Find a suitable open protocol
 
 # Contacts
 * Groups
 * Placeholder when we have no image for a person
 
 # Calendar
-* New event dialog
+* Time/Date entry fields
 * Protocol implementation
   * CalDav
-  * JMAP
-  * JSCalendar
+  * JMAP JSCalendar
 * Invitation send
 * Invitation receive
 * Free/busy dialog
@@ -194,6 +183,9 @@
 * Subscribed folders only, and subscription UI
 * Move folder
 
+### Intentionally not implemented
+* Expunge on quit
+
 ## JMAP
 * EventSource
 * WebSocket
@@ -203,11 +195,9 @@
 
 ## POP3
 
-### Intentionally not implemented
-* Expunge on quit
-
 ## Missing features
 * Filters / Actions
+  * Fix apply filter
 * Spam filter
 * Archive
 * Undo
@@ -223,7 +213,6 @@
 * Bug (Regression): Modify name in Person popup: Input exits popup
 
 ### Editor
-* First Enter keypress: newline, second Enter keypress: paragraph -  #35 DONE
 * blockquote cite vs. third party
 * Insert link
 * Emojis
