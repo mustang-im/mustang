@@ -66,8 +66,8 @@
             {#if $messages.length == 0}
               {$t`Loading...`}
             {:else}
-              {$t`${$folder.countUnread} unread`},
-              {$t`${$messages.length} shown`}
+              {$t`${$folder.countUnread} unread *=> number of messages that have not been read yet`},
+              {$t`${$messages.length} shown *=> number of messages displayed`}
             {/if}
           {:else}
             {$t`Empty folder`}

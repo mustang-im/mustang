@@ -17,18 +17,18 @@
   {#if message.scheduling == Scheduling.Request}
     <hbox class="buttons">
       <Button
-        label={$t`Confirm`}
+        label={$t`Confirm *=> Confirm to attend the meeting`}
         onClick={onAccept}
         icon={AcceptIcon}
         classes="accept" />
       <Button
-        label={$t`Decline`}
+        label={$t`Decline *=> Decline to attend the meeting`}
         onClick={onDecline}
         icon={DeclineIcon}
         classes="decline secondary" />
       <ButtonMenu buttonIcon={ChevronDownIcon}>
         <MenuItem
-          label={$t`Maybe`}
+          label={$t`Maybe *=> Maybe attend the meeting`}
           onClick={onTentative}
           icon={MaybeIcon}
           classes="maybe" />
@@ -37,19 +37,19 @@
   {:else if message.scheduling == Scheduling.Accepted}
     <hbox class="buttons">
       <Button
-        label={$t`Confirmed`}
+        label={$t`Confirmed *=> A meeting request has been confirmed by you`}
         icon={AcceptIcon}
         selected={true}
         disabled={true}
         classes="accept done" />
       <ButtonMenu buttonIcon={ChevronDownIcon}>
         <MenuItem
-          label={$t`Change to Decline`}
+          label={$t`Change to Decline *=> not attend the meeting`}
           onClick={onDecline}
           icon={DeclineIcon}
           classes="decline" />
         <MenuItem
-          label={$t`Change to Maybe`}
+          label={$t`Change to Maybe *=> Maybe attend the meeting`}
           onClick={onTentative}
           icon={MaybeIcon}
           classes="maybe" />
@@ -58,19 +58,19 @@
   {:else if message.scheduling == Scheduling.Declined}
     <hbox class="buttons">
       <Button
-        label={$t`Declined`}
+        label={$t`Declined *=> A meeting request has been declined by you`}
         icon={DeclineIcon}
         selected={true}
         disabled={true}
         classes="decline done" />
       <ButtonMenu buttonIcon={ChevronDownIcon}>
         <MenuItem
-          label={$t`Change to Accept`}
+          label={$t`Change to Accept *=> attend the meeting`}
           onClick={onAccept}
           icon={AcceptIcon}
           classes="accept" />
         <MenuItem
-          label={$t`Change to Maybe`}
+          label={$t`Change to Maybe *=> maybe attend the meeting`}
           onClick={onTentative}
           icon={MaybeIcon}
           classes="maybe" />

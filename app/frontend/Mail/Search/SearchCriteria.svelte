@@ -12,7 +12,7 @@
   </Checkbox>
   <Checkbox bind:checked={isUnread} allowIndetermined={true}
     on:change={updateUnread}
-    label={isUnread === false ? $t`read` : $t`Unread`}
+    label={isUnread === false ? $t`Read *=> State of the message that has been read` : $t`Unread *=> State of the message that has not been read`}
     classes="unread {isUnread ? "is-unread" : ""}">
     <CircleIcon size="16px" slot="icon" />
   </Checkbox>

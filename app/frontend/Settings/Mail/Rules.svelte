@@ -1,11 +1,11 @@
 <vbox class="tags-rule-actions" flex>
-  <h2>{$t`Rules`}</h2>
+  <h2>{$t`Rules *=> Criteria after which emails should be sorted`}</h2>
   <hbox class="subtitle">{$t`Perform routine actions once messages arrive`}</hbox>
 
   <Splitter name="settings-mail-folders" initialRightRatio={4}>
     <FastList items={rules} bind:selectedItem={rule} slot="left">
       <hbox class="header" slot="header">
-        {$t`Rules`}
+        {$t`Rules *=> Criteria after which emails should be sorted`}
         <!--{" (" + $rules.length + ")"}-->
         <hbox flex />
         <hbox class="buttons">

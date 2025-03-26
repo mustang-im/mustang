@@ -61,8 +61,8 @@ const mailSettings = new SettingsCategory("mail", gt`Mail`, null, true);
 mailSettings.subCategories.addAll([
   new SettingsCategory("mail-appearance", gt`Appearance`, MailAppearance),
   new SettingsCategory("mail-notifications", gt`Notifications`, MailNotifications),
-  new SettingsCategory("mail-read", gt`Read`, MailRead),
-  new SettingsCategory("mail-send", gt`Send`, MailSend),
+  new SettingsCategory("mail-read", gt`Read *=> in the sense of to read emails`, MailRead),
+  new SettingsCategory("mail-send", gt`Send *=> send emails`, MailSend),
   new SettingsCategory("mail-tags", gt`Tags`, MailTags),
 ]);
 mailSettings.accounts = appGlobal.emailAccounts;
@@ -75,7 +75,7 @@ settingsCategories.add(mailSettings);
 accountSettings.add(new AccSetting(MailAccount, "mail-server", gt`Server`, AccountMailServer));
 accountSettings.add(new AccSetting(MailAccount, "mail-folders", gt`Folders`, AccountFolders));
 accountSettings.add(new AccSetting(MailAccount, "mail-identity", gt`Identity`, AccountIdentity));
-accountSettings.add(new AccSetting(MailAccount, "mail-identity", gt`Rules`, MailRules));
+accountSettings.add(new AccSetting(MailAccount, "mail-identity", gt`Rules *=> Criteria after which emails should be sorted`, MailRules));
 
 const chatSettings = new SettingsCategory("chat", gt`Chat`, null, true);
 chatSettings.subCategories.addAll([
