@@ -52,6 +52,12 @@ export class PersonUID extends Observable {
     return person && !!person.emailAddresses.find(e => e.value == this.emailAddress);
   }
 
+  /** The email address does not belong to the end user,
+   * but a mailling list or messaging system */
+  get isProxyAddress(): boolean {
+    return this.name?.includes(" via ") || this.name?.endsWith("@invalid");
+  }
+
   toString() {
     return this.name + " <" + this.emailAddress + ">";
   }

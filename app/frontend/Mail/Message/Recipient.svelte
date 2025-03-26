@@ -58,7 +58,7 @@
       openUIFor(person);
       return;
     }
-    if (recipient.emailAddress.endsWith("@invalid")) {
+    if (recipient.isProxyAddress) {
       return;
     }
     existingPersons = recipient.name ? findPersonsWithName(recipient.name) : null;
