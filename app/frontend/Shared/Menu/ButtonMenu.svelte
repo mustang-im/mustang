@@ -5,12 +5,13 @@
 {:else}
   <hbox class="menu button" bind:this={menuAnchorE}>
     <Button
-      icon={MenuIcon}
+      icon={buttonIcon}
       iconSize="16px"
       iconOnly
       {label}
       onClick={onMenuToggle}
       plain
+      classes="menu-button"
       />
   </hbox>
 {/if}
@@ -36,6 +37,7 @@
    * in */
   export let boundaryElSel: string = "body";
   export let label: string = "";
+  export let buttonIcon = MenuIcon;
 
   let menuAnchorE: HTMLElement;
   function onMenuToggle() {

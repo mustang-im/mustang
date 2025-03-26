@@ -1,6 +1,6 @@
 <vbox flex>
-  <hbox class="title">
-    <input disabled bind:value={event.title} />
+  <hbox class="title selectable">
+    {event.title}
   </hbox>
   <vbox class="participants">
     <PersonsAutocomplete persons={event.participants} disabled>
@@ -88,21 +88,22 @@
 </vbox>
 
 <script lang="ts">
-  import type { Event } from "../../logic/Calendar/Event";
-  import { Frequency } from "../../logic/Calendar/RecurrenceRule";
-  import PersonsAutocomplete from "../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
-  import PersonAvailability from "./EditEvent/PersonAvailability.svelte";
-  import PersonResponse from "./EditEvent/PersonResponse.svelte";
-  import DateInput from "./EditEvent/DateInput.svelte";
-  import TimeInput from "./EditEvent/TimeInput.svelte";
-  import DurationUnit from "./EditEvent/DurationUnit.svelte";
-  import RadioGroup from "./EditEvent/RadioGroup.svelte";
-  import CheckboxGroup from "./EditEvent/CheckboxGroup.svelte";
-  import Button from "../Shared/Button.svelte";
+  import type { Event } from "../../../logic/Calendar/Event";
+  import { Frequency } from "../../../logic/Calendar/RecurrenceRule";
+  import { appGlobal } from "../../../logic/app";
+  import PersonsAutocomplete from "../../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
+  import PersonAvailability from "../EditEvent/PersonAvailability.svelte";
+  import PersonResponse from "../EditEvent/PersonResponse.svelte";
+  import DateInput from "../EditEvent/DateInput.svelte";
+  import TimeInput from "../EditEvent/TimeInput.svelte";
+  import DurationUnit from "../EditEvent/DurationUnit.svelte";
+  import RadioGroup from "../EditEvent/RadioGroup.svelte";
+  import CheckboxGroup from "../EditEvent/CheckboxGroup.svelte";
+  import Button from "../../Shared/Button.svelte";
   import { Checkbox, Radio } from "@svelteuidev/core";
   import CopyIcon from "lucide-svelte/icons/copy";
   import BrowserIcon from "lucide-svelte/icons/globe";
-  import { getUILocale, t, plural } from "../../l10n/l10n";
+  import { getUILocale, t, plural } from "../../../l10n/l10n";
 
   export let event: Event;
 
@@ -162,11 +163,11 @@
   }
 
   function onCopyMeetingURL() {
-    new Clipboard().writeText(event.onlineMeetingURL);
+    navigator.clipboard.writeText(event.onlineMeetingURL);
   }
 
   function onOpenMeetingURL() {
-    // event.onlineMeetingURL
+    appGlobal.remoteApp.openExternalURL(event.onlineMeetingURL);
   }
 </script>
 

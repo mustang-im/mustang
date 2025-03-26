@@ -20,7 +20,7 @@
   import MessageHeader from "./MessageHeader.svelte";
   import MessageAttachments from "./AttachmentsUI.svelte";
   import MessageBody from "./MessageBody.svelte";
-  import Invitation from "../../Calendar/Invitation.svelte";
+  import Invitation from "../../Calendar/DisplayEvent/Invitation.svelte";
   import Paper from "../../Shared/Paper.svelte";
   import { catchErrors } from "../../Util/error";
 
