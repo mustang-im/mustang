@@ -14,3 +14,15 @@ export function getDomainForEmailAddress(emailAddress): string {
 export function getBaseDomainFromHost(hostname: string): string {
   return psl.get(hostname);
 }
+
+/**
+ * Returns the base domain of a URL.
+ * E.g. for "https://www2.static.amazon.co.uk/foo/bar.html"
+ * returns "amazon.co.uk".
+ * @throws in case the URL is malformed or is a
+ * @throws for relative URLs like "/foo/bar.html"
+ */
+export function getBaseDomainFromURL(url: string): string {
+  let hostname = new URL(url).hostname;
+  return getBaseDomainFromHost(hostname);
+}

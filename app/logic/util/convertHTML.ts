@@ -1,8 +1,9 @@
-import { getBaseDomainFromHost } from "./netUtil";
+import { getBaseDomainFromURL } from "./netUtil";
 import type { URLString } from "./util";
 import DOMPurify from "dompurify"; // https://github.com/cure53/DOMPurify
 import { convert as htmlToText } from "html-to-text";
 import markdownit from "markdown-it";
+import { gt } from "../../l10n/l10n";
 
 export function convertHTMLToText(html: string): string {
   return htmlToText(sanitizeHTML(html), {
@@ -152,12 +153,11 @@ DOMPurify.addHook('afterSanitizeAttributes', node => {
           if (!url) {
             continue;
           }
-          let hostname = new URL(url).hostname;
-          let domain = getBaseDomainFromHost(hostname);
+          let domain = getBaseDomainFromURL(url);
           node.setAttribute("title", domain + "\n\n" + url.substring(0, 120));
         } catch (ex) {
           node.setAttribute(attribute, "");
-          node.setAttribute("title", ex.message ?? ex + "");
+          node.setAttribute("title", gt`Broken URL`);
         }
       } else if ((node.tagName.toLocaleLowerCase() == "img" && attribute == "src") ||
           (node.tagName.toLocaleLowerCase() == "link" && node.getAttribute("rel") == "stylesheet" && attribute == "href")) {
