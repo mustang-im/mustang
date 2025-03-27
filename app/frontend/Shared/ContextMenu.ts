@@ -269,7 +269,7 @@ async function openBrowser(url: URLString) {
   await appGlobal.remoteApp.openExternalURL(url);
 }
 
-async function download(url: URLString, win: any, howSaveAsDialog: boolean, filename?: string) {
+async function download(url: URLString, window: any, howSaveAsDialog: boolean, filename?: string) {
   let urlObj = new URL(url);
   if (urlObj.protocol == "http:" || urlObj.protocol == "https:") {
     let blob = await (await fetch(url)).blob();
