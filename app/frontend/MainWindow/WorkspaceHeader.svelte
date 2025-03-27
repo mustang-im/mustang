@@ -33,7 +33,8 @@
 
   let workspaceE: HTMLDivElement;
   let showWorkspaceDropdown: boolean = false;
-  function onWorkspaceToggle() {
+  function onWorkspaceToggle(event: Event) {
+    event.stopPropagation();
     showWorkspaceDropdown = !showWorkspaceDropdown;
   }
 </script>
