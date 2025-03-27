@@ -238,10 +238,15 @@ export class Event extends Observable {
    * @param email The email with the invitation that this event represents and
    *   that you want to respond to
    * @param response Whether you want to attend
+   * @param addToCalendar Which calendar to add the event to.
+   *  This does not work for Exchange calendars, they will always add it to the main calendar
+   *  of the email account where the invitation arrived.
+   *  Optional, default to connected calendar for Exchange accounts, and
+   *  to first calendar for IMAP accounts.
    */
-  async respondToInvitationEMail(response: Responses, email: EMail): Promise<void> {
+  async respondToInvitationEMail(response: Responses, email: EMail, addToCalendar?: Calendar): Promise<void> {
     assert(email.scheduling == Scheduling.Request, "Only invitations can be responded to");
-    let event = findEventInCalendar(true); // adds, if needed
+    let event = findEventInCalendar(addToCalendar ?? appGlobal.calendars.first); // adds, if needed
     let mailAccount = email.folder.account;
     let me = event.participantMe(mailAccount);
     event.response = me.response = response;
@@ -334,23 +339,22 @@ const k1Day = 86400;
 
 /** If this is an event without calendar, find a matching event in
  * any of the user's calendars */
-function findEventInCalendar(add: boolean = true): Event | null {
+function findEventInCalendar(addToCalendar: Calendar = null): Event | null {
   for (let calendar of appGlobal.calendars) {
     let eventInOtherCal = calendar.events.find(event => event.calUID == this.calUID);
     if (eventInOtherCal) {
       return eventInOtherCal;
     }
   }
-  if (add) {
+  if (addToCalendar) {
     // Create event
-    let calendar = appGlobal.calendars.first; // TODO which calendar?
-    let event = calendar.newEvent();
+    let event = addToCalendar.newEvent();
     event.copyFrom(this);
     event.startTime = this.startTime;
     event.endTime = this.endTime;
     event.recurrenceRule = this.recurrenceRule;
     event.response = ResponseType.NoResponseReceived;
-    calendar.events.add(event);
+    addToCalendar.events.add(event);
     if (event.recurrenceRule) {
       event.fillRecurrences(new Date(Date.now() + 1e11));
     }

@@ -1,12 +1,12 @@
 <vbox class="invitation">
   {#if $message.event}
-    <InvitationDisplay event={message.event} />
+    <InvitationDisplay event={message.event} bind:addToCalendar />
   {:else if message.scheduling}
     {#await message.loadEvent()}
       {$t`Loading event...`}
     {:then}
       {#if message.event}
-        <InvitationDisplay event={message.event} />
+        <InvitationDisplay event={message.event} bind:addToCalendar />
       {:else}
         No event found
       {/if}
@@ -91,11 +91,14 @@
   import { t } from "../../../l10n/l10n";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import { Calendar } from "../../../logic/Calendar/Calendar";
 
   export let message: EMail;
 
+  let addToCalendar: Calendar;
+
   async function respond(response: Responses) {
-    await message.event.respondToInvitationEMail(response, message);
+    await message.event.respondToInvitationEMail(response, message, addToCalendar);
   }
   async function onAccept() {
     await respond(ResponseType.Accept);
