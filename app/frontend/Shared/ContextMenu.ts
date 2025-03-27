@@ -280,12 +280,7 @@ async function download(url: URLString, win: any, howSaveAsDialog: boolean, file
     a.href = url;
   }
   a.setAttribute("target", "_blank"); // for non-same-origin images
-  if (filename) {
-    sanitize.filename(filename);
-    a.setAttribute("download", filename); // TODO sanitize filename
-  } else {
-    a.setAttribute("download", "");
-  }
+  a.setAttribute("download", sanitize.filename(filename, ""));
   a.click();
   a.href = "";
 }
