@@ -270,15 +270,15 @@ async function openBrowser(url: URLString) {
 }
 
 async function download(url: URLString, win: any, howSaveAsDialog: boolean, filename?: string) {
-  let a = document.createElement("a");
   let urlObj = new URL(url);
   if (urlObj.protocol == "http:" || urlObj.protocol == "https:") {
     let blob = await (await fetch(url)).blob();
-    a.href = await blobToDataURL(blob);
+    url = await blobToDataURL(blob);
     filename = filename ?? urlObj.pathname.split("/").pop();
-  } else {
-    a.href = url;
   }
+
+  let a = document.createElement("a");
+  a.href = url;
   a.setAttribute("target", "_blank"); // for non-same-origin images
   a.setAttribute("download", sanitize.filename(filename, ""));
   a.click();
