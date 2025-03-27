@@ -195,6 +195,9 @@ export class Event extends Observable {
     // nothing to do for local events
   }
 
+  ////////////////////////
+  // Invitations
+
   /**
    * @param addMe If our user is not yet in the participants list, then add it. (Optional, default false)
    * @returns the entry from `this.participants` that is our own user
@@ -214,6 +217,11 @@ export class Event extends Observable {
     }
   }
 
+  /**
+   * Tell the organizer whether you will attend the meeting.
+   * Use this function when `this` event is part of a calendar.
+   * @param response Whether you want to attend
+   */
   async respondToInvitation(response: Responses): Promise<void> {
     assert(this.response > ResponseType.Organizer, "Only invitations can be responded to");
     let me = this.participantMe(appGlobal.emailAccounts.first);
@@ -223,6 +231,14 @@ export class Event extends Observable {
     await this.sendInvitationResponse(response, me, identity.account);
   }
 
+  /**
+   * Tell the organizer whether you will attend the meeting.
+   * Use this function when `this` event is part of an email with an invitation,
+   * but not part of a calendar yet.
+   * @param email The email with the invitation that this event represents and
+   *   that you want to respond to
+   * @param response Whether you want to attend
+   */
   async respondToInvitationEMail(response: Responses, email: EMail): Promise<void> {
     assert(email.scheduling == Scheduling.Request, "Only invitations can be responded to");
     let event = findEventInCalendar(true); // adds, if needed
@@ -252,6 +268,9 @@ export class Event extends Observable {
     }
     await mailAccount.send(email);
   }
+
+  ////////////////////////
+  // Recurring events
 
   /**
    * Ensures that all recurring instances exist up to the provided date.
