@@ -93,9 +93,6 @@ export class MailAccount extends Account {
     email.iCalMethod = "REPLY";
     email.event = new Event();
     email.event.copyFrom(invitation);
-    email.event.startTime = invitation.startTime;
-    email.event.endTime = invitation.startTime;
-    email.event.recurrenceRule = invitation.recurrenceRule;
     email.event.participants.replaceAll([new Participant(this.emailAddress, null, response)]);
     if (email.event.descriptionText) {
       email.text = email.event.descriptionText;

@@ -207,9 +207,6 @@ export class EMail extends Message {
       let calendar = appGlobal.calendars.first;
       event = calendar.newEvent();
       event.copyFrom(this.event);
-      event.startTime = this.event.startTime;
-      event.endTime = this.event.endTime;
-      event.recurrenceRule = this.event.recurrenceRule;
       event.response = ResponseType.NoResponseReceived;
       calendar.events.add(event);
       if (event.recurrenceRule) {

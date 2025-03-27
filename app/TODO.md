@@ -11,10 +11,8 @@
     * SMTP
     * OAuth2
   * Calendar
-    * Invitation UI
-    * Participants
+    * Invitations
     * Free/Busy
-    * Move to other calendar
   * format/flowed
   * Bug: Thunderbird AB import misses ABs and fields
   * Import Outlook PST

@@ -31,7 +31,10 @@
         </hbox>
       </hbox>
       <hbox class="account-selector">
-        <AccountDropDown bind:selectedAccount={$selectedCalendar} accounts={appGlobal.calendars} />
+        <AccountDropDown
+          bind:selectedAccount={$selectedCalendar}
+          accounts={appGlobal.calendars}
+          on:select={(event) => catchErrors(() => onChangeCalendar(event.detail))} />
       </hbox>
       <hbox flex class="spacer" />
       <hbox class="buttons">
@@ -70,6 +73,8 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
+  import { Calendar } from "../../../logic/Calendar/Calendar";
+  import { Account } from "../../../logic/Abstract/Account";
   import { EventEditMustangApp, calendarMustangApp } from "../CalendarMustangApp";
   import { ResponseType } from "../../../logic/Calendar/Invitation";
   import { selectedCalendar } from "../selected";
@@ -85,6 +90,7 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import SaveIcon from "lucide-svelte/icons/check";
   import CloseIcon from "lucide-svelte/icons/x";
+  import { catchErrors } from "../../Util/error";
   import { NotImplemented } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
 
@@ -121,6 +127,11 @@
     await event.deleteFromServer();
     await event.deleteIt();
     onClose();
+  }
+
+  function onChangeCalendar(newCalendar: Account) {
+    console.log("new calendar", newCalendar?.name, "old", event?.calendar?.name);
+    event.moveToCalendar(newCalendar as Calendar);
   }
 
   function onExpandToWindow() {

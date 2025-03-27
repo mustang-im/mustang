@@ -83,7 +83,7 @@ export class Event extends Observable {
     this.calendar = calendar;
     if (parentEvent) {
       this.parentEvent = parentEvent;
-      this.copyFrom(parentEvent);
+      this.copyFromRecurrenceMaster(parentEvent);
     }
   }
 
@@ -128,11 +128,25 @@ export class Event extends Observable {
     this.duration = days * 86400;
   }
 
+  /** Create a new instance of the same event.
+   * Copy all data of the `original` event into this new Event object */
+  copyFrom(original: Event) {
+    this.copyFromRecurrenceMaster(original);
+    this.startTime = original.startTime ? new Date(original.startTime.getTime()) : null;
+    this.endTime = original.endTime ? new Date(original.endTime.getTime()) : null;
+    this.alarm = original.alarm ? new Date(original.alarm.getTime()) : null;
+    this.recurrenceStartTime = original.recurrenceStartTime ? new Date(original.recurrenceStartTime.getTime()) : null;
+    this.timezone = original.timezone;
+    this.repeat = original.repeat;
+    this.recurrenceRule = original.recurrenceRule;
+    this.parentEvent = original.parentEvent;
+  }
+
   /**
    * Used to update placeholder instances from their recurring master.
    * Copies the event properties that are shared between recurring instances.
    */
-  copyFrom(original: Event) {
+  protected copyFromRecurrenceMaster(original: Event) {
     this.calUID = original.calUID;
     this.title = original.title;
     this.descriptionText = original.descriptionText;
@@ -154,7 +168,7 @@ export class Event extends Observable {
     await this.calendar.storage.saveEvent(this);
     for (let occurrence of this.instances) {
       if (occurrence && !occurrence.dbID) {
-        occurrence.copyFrom(this);
+        occurrence.copyFromRecurrenceMaster(this);
       }
     }
   }
@@ -189,6 +203,28 @@ export class Event extends Observable {
 
   async deleteFromServer(): Promise<void> {
     // nothing to do for local events
+  }
+
+  /** Person class needs to match account class, so need to clone.
+   * @returns the new Person object */
+  async moveToCalendar(newCalendar: Calendar): Promise<void> {
+    if (this.calendar == newCalendar || !newCalendar) {
+      return;
+    }
+    let newEvent = newCalendar.newEvent();
+    if (Object.getPrototypeOf(this) == Object.getPrototypeOf(newEvent)) {
+      this.calendar?.events.remove(this);
+      this.calendar = newCalendar;
+      newCalendar.events.add(this);
+      await this.save();
+      return;
+    }
+    newEvent.copyFrom(this);
+    newEvent.calendar = newCalendar;
+    this.calendar?.events.remove(this);
+    newCalendar.events.add(newEvent);
+    await this.deleteIt();
+    await newEvent.save();
   }
 
   async respondToInvitation(response: Responses): Promise<void> {

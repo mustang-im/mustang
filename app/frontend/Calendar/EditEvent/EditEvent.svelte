@@ -85,7 +85,7 @@
   import Scroll from "../../Shared/Scroll.svelte";
   import RepeatIcon from "lucide-svelte/icons/repeat-2";
   import ReminderIcon from "lucide-svelte/icons/bell";
-  import ParticipantsIcon from "lucide-svelte/icons/user-round";
+  import ParticipantsIcon from "lucide-svelte/icons/users-round";
   import OnlineMeetingIcon from "lucide-svelte/icons/video";
   import LocationIcon from "lucide-svelte/icons/map-pin";
   import DescriptionIcon from "lucide-svelte/icons/notebook-pen";
