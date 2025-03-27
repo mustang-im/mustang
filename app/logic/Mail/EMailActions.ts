@@ -2,7 +2,7 @@ import type { EMail } from "./EMail";
 import { SpecialFolder } from "./Folder";
 import { Attachment, ContentDisposition } from "../Abstract/Attachment";
 import { PersonUID } from "../Abstract/PersonUID";
-import { MailIdentity } from "./MailIdentity";
+import { findIdentityInRecipients } from "./MailIdentity";
 import { appName, appVersion } from "../build";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { backgroundError } from "../../frontend/Util/error";
@@ -61,7 +61,7 @@ export class EMailActions {
     let recipients = original.from?.emailAddress
       ? [original.from, ...original.to.contents, ...original.cc.contents, ...original.bcc.contents]
       : [];
-    let from = MailIdentity.findIdentity(recipients, account);
+    let from = findIdentityInRecipients(recipients, account);
     reply.identity = from.identity;
     reply.from = from.personUID;
 

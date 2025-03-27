@@ -89,28 +89,37 @@ export class MailIdentity extends Observable {
       sendBCC: this.sendBCC.contents,
     };
   }
+}
 
-  /**
-   * Finds our user's identity which matches one of the the passed-in email addresses
-   * @param addresses If any identity matches one of these emailAddresses,
-   * select that identity by default.
-   * In decreasing order of preference.
-   */
-  static findIdentity(addresses: PersonUID[], defaultAccount: MailAccount): { identity: MailIdentity, personUID: PersonUID } | null {
-    let identities = appGlobal.emailAccounts.contents.map(acc => acc.identities.contents).flat();
-    // console.log(`Checking ${addresses.join(", ")} for matches with identities ${identities.map(i => i.emailAddress).join(", ")}`);
-    for (let candidate of addresses) {
-      for (let identity of identities) {
-        // console.log(`Checking whether ${candidate} matches identity ${identity.emailAddress} of account ${identity.account.name}`);
+export function findIdentityForEMailAddress(emailAddress: string): MailIdentity | null {
+  for (let account of appGlobal.emailAccounts) {
+    for (let identity of account.identities) {
+      if (identity.isEMailAddress(emailAddress)) {
+        return identity;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Finds our user's identity which matches one of the the passed-in email addresses
+ * @param addresses If any identity matches one of these emailAddresses,
+ * select that identity by default.
+ * In decreasing order of preference.
+ */
+export function findIdentityInRecipients(addresses: PersonUID[], defaultAccount: MailAccount): { identity: MailIdentity, personUID: PersonUID } | null {
+  for (let candidate of addresses) {
+    for (let account of appGlobal.emailAccounts) {
+      for (let identity of account.identities) {
         if (identity.isEMailAddress(candidate.emailAddress)) {
-          // console.log(`MATCH: ${candidate} matches identity ${identity.emailAddress} of account ${identity.account.name}`);
           let personUID = new PersonUID(candidate.emailAddress, identity.userRealname);
           return { identity, personUID };
         }
       }
     }
-    let identity = defaultAccount.identities.first;
-    // console.log("None match, choosing default account", defaultAccount.name, "identity", identity.emailAddress);
-    return { identity, personUID: identity.asPersonUID() };
   }
+  let identity = defaultAccount.identities.first;
+  // console.log("None match, choosing default account", defaultAccount.name, "identity", identity.emailAddress);
+  return { identity, personUID: identity.asPersonUID() };
 }

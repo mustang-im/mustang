@@ -3,7 +3,7 @@ import { Participant } from "./Participant";
 import type { RecurrenceRule } from "./RecurrenceRule";
 import { ResponseType, Scheduling, type Responses } from "./Invitation";
 import type { MailAccount } from "../Mail/MailAccount";
-import type { MailIdentity } from "../Mail/MailIdentity";
+import { findIdentityForEMailAddress } from "../Mail/MailIdentity";
 import type { EMail } from "../Mail/EMail";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
@@ -331,17 +331,6 @@ export class Event extends Observable {
 
 const k1Day = 86400;
 
-
-function findIdentityForEMailAddress(emailAddress: string): MailIdentity | null {
-  for (let account of appGlobal.emailAccounts) {
-    for (let identity of account.identities) {
-      if (identity.isEMailAddress(emailAddress)) {
-        return identity;
-      }
-    }
-  }
-  return null;
-}
 
 /** If this is an event without calendar, find a matching event in
  * any of the user's calendars */
