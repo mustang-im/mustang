@@ -246,7 +246,7 @@ export class Event extends Observable {
    */
   async respondToInvitationEMail(response: Responses, email: EMail, addToCalendar?: Calendar): Promise<void> {
     assert(email.scheduling == Scheduling.Request, "Only invitations can be responded to");
-    let event = findEventInCalendar(addToCalendar ?? appGlobal.calendars.first); // adds, if needed
+    let event = this.findSameEventInCalendar(addToCalendar ?? appGlobal.calendars.first); // adds, if needed
     let mailAccount = email.folder.account;
     let me = event.participantMe(mailAccount);
     event.response = me.response = response;
@@ -272,6 +272,33 @@ export class Event extends Observable {
       email.html = email.event.descriptionHTML;
     }
     await mailAccount.send(email);
+  }
+
+  /** If this is an event without calendar, find a the same event (same UID)
+   * in any of the user's calendars */
+  findSameEventInCalendar(addToCalendar: Calendar = null): Event | null {
+    for (let calendar of appGlobal.calendars) {
+      let eventInOtherCal = calendar.events.find(event => event.calUID == this.calUID);
+      if (eventInOtherCal) {
+        return eventInOtherCal;
+      }
+    }
+    if (addToCalendar) {
+      // Create event
+      let event = addToCalendar.newEvent();
+      event.copyFrom(this);
+      event.startTime = this.startTime;
+      event.endTime = this.endTime;
+      event.recurrenceRule = this.recurrenceRule;
+      event.response = ResponseType.NoResponseReceived;
+      addToCalendar.events.add(event);
+      if (event.recurrenceRule) {
+        event.fillRecurrences(new Date(Date.now() + 1e11));
+      }
+      return event;
+    } else {
+      return null;
+    }
   }
 
   ////////////////////////
@@ -335,31 +362,3 @@ export class Event extends Observable {
 }
 
 const k1Day = 86400;
-
-
-/** If this is an event without calendar, find a matching event in
- * any of the user's calendars */
-function findEventInCalendar(addToCalendar: Calendar = null): Event | null {
-  for (let calendar of appGlobal.calendars) {
-    let eventInOtherCal = calendar.events.find(event => event.calUID == this.calUID);
-    if (eventInOtherCal) {
-      return eventInOtherCal;
-    }
-  }
-  if (addToCalendar) {
-    // Create event
-    let event = addToCalendar.newEvent();
-    event.copyFrom(this);
-    event.startTime = this.startTime;
-    event.endTime = this.endTime;
-    event.recurrenceRule = this.recurrenceRule;
-    event.response = ResponseType.NoResponseReceived;
-    addToCalendar.events.add(event);
-    if (event.recurrenceRule) {
-      event.fillRecurrences(new Date(Date.now() + 1e11));
-    }
-    return event;
-  } else {
-    return null;
-  }
-}
