@@ -1,5 +1,6 @@
 import { ContactBase } from './Contact';
 import type { Person } from './Person';
+import type { Addressbook } from '../Contacts/Addressbook';
 import { notifyChangedProperty } from '../util/Observable';
 import { SetColl } from 'svelte-collections';
 
@@ -33,5 +34,28 @@ export class Group extends ContactBase {
 
   async deleteFromServer(): Promise<void> {
     // nothing to do for local groups
+  }
+
+  /** Group class needs to match account class, so need to clone.
+   * @returns the new Group object */
+  async moveToAddressbook(newAddressbook: Addressbook): Promise<Group> {
+    if (this.addressbook == newAddressbook || !newAddressbook) {
+      return;
+    }
+    let newGroup = newAddressbook.newGroup();
+    if (Object.getPrototypeOf(this) == Object.getPrototypeOf(newGroup)) {
+      this.addressbook?.groups.remove(this);
+      this.addressbook = newAddressbook;
+      newAddressbook.groups.add(this);
+      await this.save();
+      return this;
+    }
+    Object.assign(newGroup, this);
+    newGroup.addressbook = newAddressbook;
+    this.addressbook?.groups.remove(this);
+    newAddressbook.groups.add(newGroup);
+    await this.deleteIt();
+    await newGroup.save();
+    return newGroup;
   }
 }

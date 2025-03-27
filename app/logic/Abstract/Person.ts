@@ -1,4 +1,5 @@
 import { ContactBase } from './Contact';
+import type { Addressbook } from '../Contacts/Addressbook';
 import { notifyChangedProperty, Observable } from '../util/Observable';
 import { ArrayColl } from 'svelte-collections';
 
@@ -119,6 +120,28 @@ export class Person extends ContactBase {
     this.groups.addAll(other.groups.filter(o => !this.groups.find(t => t.value == o.value)));
     this.custom.addAll(other.custom.filter(o => !this.custom.find(t => t.value == o.value)));
     await other.deleteIt();
+  }
+
+  /** Person class needs to match account class, so need to clone.
+ * @returns the new Person object */
+  async moveToAddressbook(newAddressbook: Addressbook): Promise<void> {
+    if (this.addressbook == newAddressbook || !newAddressbook) {
+      return;
+    }
+    let newPerson = newAddressbook.newPerson();
+    if (Object.getPrototypeOf(this) == Object.getPrototypeOf(newPerson)) {
+      this.addressbook?.persons.remove(this);
+      this.addressbook = newAddressbook;
+      newAddressbook.persons.add(this);
+      await this.save();
+      return;
+    }
+    newPerson.copyFrom(this);
+    newPerson.addressbook = newAddressbook;
+    this.addressbook?.persons.remove(this);
+    newAddressbook.persons.add(newPerson);
+    await this.deleteIt();
+    await newPerson.save();
   }
 
   copyFrom(other: Person): void {

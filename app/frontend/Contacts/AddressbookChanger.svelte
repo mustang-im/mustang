@@ -21,9 +21,6 @@
 
   async function onChangeAddressbook(newAddressbook: Addressbook) {
     console.log("Selected addressbook", newAddressbook?.name, "old", person?.addressbook?.name);
-    if (person?.addressbook == newAddressbook || !newAddressbook) {
-      return;
-    }
-    newAddressbook.movePersonHere(person);
+    person.moveToAddressbook(newAddressbook);
   }
 </script>
