@@ -17,7 +17,7 @@
   let strings: string[] = [];
   onMount(split);
   function split() {
-    strings = $t([msg]).split('#');
+    strings = msg.split('#');
     if (strings.length > 5) {
       console.error('<T> component can only have a maximum of 5 slots. Bad string is:', ...strings);
     }
