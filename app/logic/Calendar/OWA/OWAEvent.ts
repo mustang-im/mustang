@@ -1,6 +1,6 @@
 import { Event } from "../Event";
 import { Participant } from "../Participant";
-import { ResponseType, type Responses } from "../Invitation";
+import { ResponseType, Scheduling, type Responses } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { OWACalendar } from "./OWACalendar";
 import WindowsTimezones from "../EWS/WindowsTimezones";
@@ -12,6 +12,7 @@ import OWACreateItemRequest from "../../Mail/OWA/Request/OWACreateItemRequest";
 import OWADeleteItemRequest from "../../Mail/OWA/Request/OWADeleteItemRequest";
 import OWAUpdateItemRequest from "../../Mail/OWA/Request/OWAUpdateItemRequest";
 import { owaCreateExclusionRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest } from "./Request/OWAEventRequests";
+import type { OWAEMail } from "../../Mail/OWA/OWAEMail";
 import type { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
@@ -320,6 +321,18 @@ export class OWAEvent extends Event {
       Id: this.itemID,
     });
     await this.calendar.account.callOWA(request);
+  }
+
+  async respondToInvitationEMail(response: Responses, email: OWAEMail): Promise<void> {
+    assert(email.scheduling == Scheduling.Request, "Only invitations can be responded to");
+    let request = new OWACreateItemRequest({ MessageDisposition: "SendAndSaveCopy" });
+    request.addField(ResponseTypes[response], "ReferenceItemId", {
+      __type: "ItemId:#Exchange",
+      Id: email.itemID,
+    });
+    let account = email.folder.account;
+    await account.callOWA(request);
+    await email.deleteMessageLocally(); // Exchange deletes the message from the inbox
   }
 }
 

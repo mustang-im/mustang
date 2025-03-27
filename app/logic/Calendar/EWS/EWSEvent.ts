@@ -1,12 +1,13 @@
 import { Event } from "../Event";
 import { Participant } from "../Participant";
-import { ResponseType, type Responses } from "../Invitation";
+import { ResponseType, Scheduling, type Responses } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { EWSCalendar } from "./EWSCalendar";
 import WindowsTimezones from "./WindowsTimezones";
 import EWSCreateItemRequest from "../../Mail/EWS/Request/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "../../Mail/EWS/Request/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/Request/EWSUpdateItemRequest";
+import type { EWSEMail } from "../../Mail/EWS/EWSEMail";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
@@ -302,6 +303,15 @@ export class EWSEvent extends Event {
     let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.itemID });
     await this.calendar.account.callEWS(request);
+  }
+
+  async respondToInvitationEMail(response: Responses, email: EWSEMail): Promise<void> {
+    assert(email.scheduling == Scheduling.Request, "Only invitations can be responded to");
+    let request = new EWSCreateItemRequest({ MessageDisposition: "SendAndSaveCopy" });
+    request.addField(ResponseTypes[response], "ReferenceItemId", { Id: email.itemID });
+    let account = email.folder.account;
+    await account.callEWS(request);
+    await email.deleteMessageLocally(); // Exchange deletes the message from the inbox
   }
 }
 

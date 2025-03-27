@@ -95,7 +95,7 @@
   export let message: EMail;
 
   async function respond(response: Responses) {
-    await message.respondToInvitation(response);
+    await message.event.respondToInvitationEMail(response, message);
   }
   async function onAccept() {
     await respond(ResponseType.Accept);

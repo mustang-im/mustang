@@ -1,12 +1,16 @@
 import type { Calendar } from "./Calendar";
-import type { Participant } from "./Participant";
+import { Participant } from "./Participant";
 import type { RecurrenceRule } from "./RecurrenceRule";
-import { ResponseType, type Responses } from "./Invitation";
+import { ResponseType, Scheduling, type Responses } from "./Invitation";
+import type { MailAccount } from "../Mail/MailAccount";
+import type { MailIdentity } from "../Mail/MailIdentity";
+import type { EMail } from "../Mail/EMail";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/Lock";
-import { assert, randomID, AbstractFunction } from "../util/util";
+import { assert, randomID } from "../util/util";
 import { ArrayColl } from "svelte-collections";
+import { gt } from "../../l10n/l10n";
 
 export class Event extends Observable {
   id: string;
@@ -191,14 +195,62 @@ export class Event extends Observable {
     // nothing to do for local events
   }
 
+  /**
+   * @param addMe If our user is not yet in the participants list, then add it. (Optional, default false)
+   * @returns the entry from `this.participants` that is our own user
+   */
+  participantMe(addMe: MailAccount): Participant | null {
+    let me = this.participants.find(participant => !!findIdentityForEMailAddress(participant.emailAddress));
+    if (me) {
+      return me;
+    } else if (addMe) {
+      let identity = addMe.identities.first;
+      assert(identity, "Please set up some email accounts, with identities");
+      let me = new Participant(identity.emailAddress, identity.name, ResponseType.Unknown);
+      this.participants.add(me);
+      return me;
+    } else {
+      return null;
+    }
+  }
+
   async respondToInvitation(response: Responses): Promise<void> {
     assert(this.response > ResponseType.Organizer, "Only invitations can be responded to");
-    let accounts = appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations && this.participants.some(participant => participant.response != ResponseType.Organizer && participant.emailAddress == account.emailAddress));
-    assert(accounts.length == 1, "Failed to find matching account for invitation");
-    let participant = this.participants.find(participant => participant.emailAddress == accounts[0].emailAddress);
-    participant.response = response;
+    let me = this.participantMe(appGlobal.emailAccounts.first);
+    let identity = findIdentityForEMailAddress(me.emailAddress);
+    this.response = me.response = response;
     await this.save();
-    await accounts[0].sendInvitationResponse(this, response);
+    await this.sendInvitationResponse(response, me, identity.account);
+  }
+
+  async respondToInvitationEMail(response: Responses, email: EMail): Promise<void> {
+    assert(email.scheduling == Scheduling.Request, "Only invitations can be responded to");
+    let event = findEventInCalendar(true); // adds, if needed
+    let mailAccount = email.folder.account;
+    let me = event.participantMe(mailAccount);
+    event.response = me.response = response;
+    await event.save();
+    await this.sendInvitationResponse(response, me, mailAccount);
+  }
+
+  protected async sendInvitationResponse(response: Responses, me: Participant, mailAccount: MailAccount): Promise<void> {
+    assert(me, gt`Cound not find out which meeting participant is you`);
+    let organizer = this.participants.find(participant => participant.response == ResponseType.Organizer);
+    assert(organizer, "Invitation should have an organizer");
+    let email = mailAccount.newEMailFrom();
+    email.to.add(organizer);
+    email.iCalMethod = "REPLY";
+    email.event = new Event();
+    email.event.copyFrom(this);
+    email.event.startTime = this.startTime;
+    email.event.endTime = this.startTime;
+    email.event.recurrenceRule = this.recurrenceRule;
+    email.event.participants.replaceAll([new Participant(me.emailAddress, null, response)]);
+    if (email.event.descriptionText) {
+      email.text = email.event.descriptionText;
+      email.html = email.event.descriptionHTML;
+    }
+    await mailAccount.send(email);
   }
 
   /**
@@ -259,3 +311,43 @@ export class Event extends Observable {
 }
 
 const k1Day = 86400;
+
+
+function findIdentityForEMailAddress(emailAddress: string): MailIdentity | null {
+  for (let account of appGlobal.emailAccounts) {
+    for (let identity of account.identities) {
+      if (identity.isEMailAddress(emailAddress)) {
+        return identity;
+      }
+    }
+  }
+  return null;
+}
+
+/** If this is an event without calendar, find a matching event in
+ * any of the user's calendars */
+function findEventInCalendar(add: boolean = true): Event | null {
+  for (let calendar of appGlobal.calendars) {
+    let eventInOtherCal = calendar.events.find(event => event.calUID == this.calUID);
+    if (eventInOtherCal) {
+      return eventInOtherCal;
+    }
+  }
+  if (add) {
+    // Create event
+    let calendar = appGlobal.calendars.first; // TODO which calendar?
+    let event = calendar.newEvent();
+    event.copyFrom(this);
+    event.startTime = this.startTime;
+    event.endTime = this.endTime;
+    event.recurrenceRule = this.recurrenceRule;
+    event.response = ResponseType.NoResponseReceived;
+    calendar.events.add(event);
+    if (event.recurrenceRule) {
+      event.fillRecurrences(new Date(Date.now() + 1e11));
+    }
+    return event;
+  } else {
+    return null;
+  }
+}
