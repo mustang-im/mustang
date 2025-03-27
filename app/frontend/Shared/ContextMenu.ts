@@ -1,6 +1,5 @@
 import { ArrayColl } from "svelte-collections";
-import { saveBlobAsFile } from "../Util/util";
-import { dataURLToBlob, fileExtensionForMIMEType, NotImplemented, type URLString } from "../../logic/util/util";
+import { blobToDataURL, NotImplemented, type URLString } from "../../logic/util/util";
 import { gt } from "../../l10n/l10n";
 import { appGlobal } from "../../logic/app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
@@ -271,22 +270,22 @@ async function openBrowser(url: URLString) {
 }
 
 async function download(url: URLString, win: any, howSaveAsDialog: boolean, filename?: string) {
+  let a = document.createElement("a");
   let urlObj = new URL(url);
-  let blob: Blob;
   if (urlObj.protocol == "http:" || urlObj.protocol == "https:") {
-    let res = await fetch(urlObj.href);
-    filename = urlObj.pathname.split("/").pop();
-    blob = await res.blob();
-  } else if (urlObj.protocol == "data:" || urlObj.protocol == "blob:") {
-    blob = await dataURLToBlob(url);
+    let blob = await (await fetch(url)).blob();
+    a.href = await blobToDataURL(blob);
+    filename = filename ?? urlObj.pathname.split("/").pop();
   } else {
-    throw new Error("Unsupported protocol: " + urlObj.protocol);
+    a.href = url;
   }
-  let ext = fileExtensionForMIMEType(blob.type);
-  filename = sanitize.filename(filename, `${filename ?? "untitled"}.${ext}`);
-  if (howSaveAsDialog) {
-    saveBlobAsFile(blob, filename);
+  a.setAttribute("target", "_blank"); // for non-same-origin images
+  if (filename) {
+    sanitize.filename(filename);
+    a.setAttribute("download", filename); // TODO sanitize filename
   } else {
-    saveBlobAsFile(blob, filename);
+    a.setAttribute("download", "");
   }
+  a.click();
+  a.href = "";
 }
