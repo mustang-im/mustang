@@ -23,7 +23,7 @@
   import type { Collection } from "svelte-collections";
   import type { ComponentType } from "svelte";
   import { createEventDispatcher } from 'svelte';
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{ select: Account }>();
 
   /** in */
   export let accounts: Collection<Account>;

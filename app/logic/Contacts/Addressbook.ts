@@ -28,9 +28,10 @@ export class Addressbook extends Account {
       person.addressbook?.persons.remove(person);
       person.addressbook = this;
       this.persons.add(person);
+      await person.save();
       return person;
     }
-    Object.assign(newPerson, person);
+    newPerson.copyFrom(person);
     newPerson.addressbook = this;
     person.addressbook?.persons.remove(person);
     this.persons.add(newPerson);

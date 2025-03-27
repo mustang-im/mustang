@@ -36,7 +36,7 @@
           {/if}
         </vbox>
       </hbox>
-      <vbox flex class="main-right">
+      <hbox flex class="main-right">
         <hbox class="main-call">
           <RoundButton label={$t`Video call`} icon={CameraIcon} classes="large secondary action"
             onClick={() => startVideoCall(person)} />
@@ -53,11 +53,11 @@
           {/if}
         </hbox>
         <hbox flex />
-        <hbox class="main-right-bottom">
+        <hbox class="main-right-top">
           <AddressbookChanger {person} />
           <PersonMenu {person} />
         </hbox>
-      </vbox>
+      </hbox>
     </hbox>
   </GroupBox>
 
@@ -316,22 +316,24 @@
   }
   .main-right {
     margin: 16px;
+    flex-wrap: wrap;
   }
-  .main-right-bottom {
+  .main-call {
+    align-items: start;
+    margin-inline-end: 10px;
+  }
+  .main-call :global(> *) {
+    margin-inline-end: 10px;
+  }
+  .main-right-top {
     justify-content: end;
-    align-items: center;
-    margin-block-start: 16px;
-  }
-  .main-right-bottom :global(.svelteui-Menu-root) {
-    margin-inline-start: 12px;
+    align-items: start;
+    margin-block-start: px;
   }
   .preferred {
     margin-block-start: 8px;
     margin-block-end: 8px;
     font-size: 13px;
-  }
-  .main-call :global(> *) {
-    margin-inline-end: 10px;
   }
   .phone-call :global(.icon) {
     /* because the icon is 1px smaller */

@@ -117,7 +117,26 @@ export class Person extends ContactBase {
     this.streetAddresses.addAll(other.streetAddresses.filter(o => !this.streetAddresses.find(t => t.value == o.value)));
     this.urls.addAll(other.urls.filter(o => !this.urls.find(t => t.value == o.value)));
     this.groups.addAll(other.groups.filter(o => !this.groups.find(t => t.value == o.value)));
+    this.custom.addAll(other.custom.filter(o => !this.custom.find(t => t.value == o.value)));
     await other.deleteIt();
+  }
+
+  copyFrom(other: Person): void {
+    this.name = other.name;
+    this.firstName = other.firstName;
+    this.lastName = other.lastName;
+    this.picture = other.picture;
+    this.company = other.company;
+    this.department = other.department;
+    this.position = other.position;
+    this.notes = other.notes;
+    this.emailAddresses.addAll(other.emailAddresses.map(ce => ce.clone()));
+    this.chatAccounts.addAll(other.chatAccounts.map(ce => ce.clone()));
+    this.phoneNumbers.addAll(other.phoneNumbers.map(ce => ce.clone()));
+    this.streetAddresses.addAll(other.streetAddresses.map(ce => ce.clone()));
+    this.urls.addAll(other.urls.map(ce => ce.clone()));
+    this.groups.addAll(other.groups.map(ce => ce.clone()));
+    this.custom.addAll(other.custom.map(ce => ce.clone()));
   }
 }
 
@@ -137,5 +156,11 @@ export class ContactEntry extends Observable {
     this.value = value;
     this.purpose = purpose;
     this.protocol = protocol;
+  }
+
+  clone(): ContactEntry {
+    let copy = new ContactEntry(this.value, this.purpose, this.protocol);
+    copy.preference = this.preference;
+    return copy;
   }
 }

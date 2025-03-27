@@ -4,7 +4,7 @@
       <AccountIcon />
     </hbox>
   {/if}
-  <select bind:value={selectedAccount} class:withLabel>
+  <select bind:value={selectedAccount} class:withLabel on:change={onSelect}>
     {#each $accounts.each as account }
       <option value={account}>
         {account.name}
@@ -17,6 +17,8 @@
   import type { Account } from "../../logic/Abstract/Account";
   import type { Collection } from "svelte-collections";
   import AccountIcon from "lucide-svelte/icons/rabbit";
+  import { createEventDispatcher } from 'svelte';
+  const dispatch = createEventDispatcher<{ select: Account }>();
 
   export let selectedAccount: Account; /* in/out */
   export let accounts: Collection<Account>;
@@ -35,6 +37,10 @@
     if (!accounts.includes(selectedAccount)) {
       selectedAccount = accounts.first;
     }
+  }
+
+  function onSelect() {
+    dispatch("select", selectedAccount);
   }
 </script>
 
