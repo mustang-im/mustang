@@ -47,12 +47,13 @@ export class MailIdentity extends Observable {
   }
 
   isEMailAddress(emailAddress: string): boolean {
+    emailAddress = emailAddress.toLowerCase();
     if (this.isCatchAll) {
-      let sp = this.emailAddress.split("*");
+      let sp = this.emailAddress.toLowerCase().split("*");
       // Deliberately supporting only 1 `*` placeholder
       return emailAddress.startsWith(sp[0]) && emailAddress.endsWith(sp[1]);
     } else {
-      return this.emailAddress == emailAddress;
+      return this.emailAddress.toLowerCase() == emailAddress;
     }
   }
 
