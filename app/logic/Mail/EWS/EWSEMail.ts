@@ -199,14 +199,6 @@ export class EWSEMail extends EMail {
     await this.folder.account.callEWS(request);
   }
 
-  async respondToInvitation(response: Responses): Promise<void> {
-    assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
-    let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
-    request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.itemID });
-    await this.folder.account.callEWS(request);
-    await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
-  }
-
   /** EWS only provides event data for invitations,
    * but not responses to invitations.
    * Disabled, but keeping the code, in case it will be useful later.

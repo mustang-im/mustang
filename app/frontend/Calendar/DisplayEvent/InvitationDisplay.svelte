@@ -6,7 +6,7 @@
       {/if}
     </hbox>
     <hbox flex />
-    <AccountDropDown selectedAccount={calendar} accounts={appGlobal.calendars} withIcon={true} withLabel={false} />
+    <AccountDropDown selectedAccount={addToCalendar} accounts={appGlobal.calendars} withIcon={true} withLabel={false} />
   </hbox>
   <vbox class="details-grid">
     <DetailsGrid {event} />
@@ -21,7 +21,7 @@
   import { appGlobal } from "../../../logic/app";
 
   export let event: Event;
-  export let calendar: Calendar = event?.calendar ?? appGlobal.calendars.first;
+  export let addToCalendar: Calendar = event?.calendar ?? appGlobal.calendars.first;
 </script>
 
 <style>

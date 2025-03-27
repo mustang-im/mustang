@@ -1,10 +1,11 @@
 import { Event } from "../Event";
 import { Participant } from "../Participant";
-import { ResponseType, type Responses } from "../Invitation";
+import { ResponseType, Scheduling, type Responses } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import type { ActiveSyncCalendar } from "./ActiveSyncCalendar";
 import WindowsTimezones from "../EWS/WindowsTimezones";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
+import type { ActiveSyncEMail } from "../../Mail/ActiveSync/ActiveSyncEMail";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
@@ -179,13 +180,30 @@ export class ActiveSyncEvent extends Event {
       Request: {
         UserResponse: ActiveSyncResponse[response],
         CollectionId: this.calendar.serverID,
-        ReqeustId: this.serverID,
+        RequestId: this.serverID,
       },
     };
+    let mailAccount = this.calendar.account;
     await this.calendar.account.callEAS("MeetingResponse", request);
-    await this.calendar.account.sendInvitationResponse(this, response); // needs 16.x to do this automatically
+    await this.sendInvitationResponse(response, this.participantMe(mailAccount), mailAccount); // needs 16.x to do this automatically
+  }
+
+  async respondToInvitationEMail(response: Responses, email: ActiveSyncEMail): Promise<void> {
+    assert(email.scheduling == Scheduling.Request, "Only invitations can be responded to");
+    let request = {
+      Request: {
+        UserResponse: ActiveSyncResponse[response],
+        CollectionId: email.folder.id,
+        RequestId: this.serverID,
+      },
+    };
+    let mailAccount = email.folder.account;
+    await mailAccount.callEAS("MeetingResponse", request);
+    await this.sendInvitationResponse(response, this.participantMe(mailAccount), mailAccount); // needs 16.x to do this automatically
+    await email.deleteMessageLocally(); // Exchange deletes the message from the inbox
   }
 }
+
 
 function extractWeekdays(dayOfWeek: string): Weekday[] | null {
   let daysOfWeek = sanitize.integer(dayOfWeek, 0);

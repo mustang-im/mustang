@@ -131,17 +131,6 @@ export class OWAEMail extends EMail {
     await this.folder.account.callOWA(request);
   }
 
-  async respondToInvitation(response: Responses): Promise<void> {
-    assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
-    let request = new OWACreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
-    request.addField(ResponseTypes[response], "ReferenceItemId", {
-      __type: "ItemId:#Exchange",
-      Id: this.itemID,
-    });
-    await this.folder.account.callOWA(request);
-    await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
-  }
-
   /** OWA only provides event data for invitations,
    * but not responses to invitations.
    * Disabled, but keeping the code, in case it will be useful later.

@@ -184,20 +184,6 @@ export class ActiveSyncEMail extends EMail {
     }
   }
 
-  async respondToInvitation(response: Responses): Promise<void> {
-    assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
-    let request = {
-      Request: {
-        UserResponse: ActiveSyncResponse[response],
-        CollectionId: this.folder.id,
-        ReqeustId: this.serverID,
-      },
-    };
-    await this.folder.account.callEAS("MeetingResponse", request);
-    await super.sendInvitationResponse(response); // needs 16.x to do this automatically
-    await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
-  }
-
   /** ActiveSync only does not provide complete event data.
    * At least attendees are missing.
    * Disabled, but keeping the code, in case it will be useful later.

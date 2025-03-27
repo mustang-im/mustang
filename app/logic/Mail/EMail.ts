@@ -194,41 +194,6 @@ export class EMail extends Message {
   async removeTagOnServer(tag: Tag) {
   }
 
-  async respondToInvitation(response: Responses): Promise<void> {
-    assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
-    let event: Event;
-    for (let calendar of appGlobal.calendars) {
-      event = calendar.events.find(event => event.calUID == this.event.calUID);
-      if (event) {
-        break;
-      }
-    }
-    if (!event) {
-      let calendar = appGlobal.calendars.first;
-      event = calendar.newEvent();
-      event.copyFrom(this.event);
-      event.startTime = this.event.startTime;
-      event.endTime = this.event.endTime;
-      event.recurrenceRule = this.event.recurrenceRule;
-      event.response = ResponseType.NoResponseReceived;
-      calendar.events.add(event);
-      if (event.recurrenceRule) {
-        event.fillRecurrences(new Date(Date.now() + 1e11));
-      }
-    }
-    let participant = event.participants.find(participant => participant.emailAddress == this.folder.account.emailAddress);
-    if (participant) {
-      event.response = participant.response = response;
-      await event.save();
-      await this.sendInvitationResponse(response);
-    }
-    /* else add participant? */
-  }
-
-  protected async sendInvitationResponse(response: Responses): Promise<void> {
-    await this.folder.account.sendInvitationResponse(this.event, response);
-  }
-
   async loadEvent() {
     assert(this.scheduling, "This is not an invitation or response");
     assert(!this.event, "Event has already been loaded");
