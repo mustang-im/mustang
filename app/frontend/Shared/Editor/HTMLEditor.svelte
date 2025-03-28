@@ -12,6 +12,7 @@
   import { Footer } from './Footer';
   import { BoldStar, ItalicSlash } from './StdConventions';
   import { ParagraphNewLine } from './ParagraphNewLine';
+  import { ListConvention } from './ListConventions';
   // import CodeBlockLowlightFeature from '@tiptap/extension-code-block-lowlight';
   // import { common as lowlightCommon, createLowlight } from 'lowlight'
   import { onMount, onDestroy } from 'svelte';
@@ -50,6 +51,7 @@
         BoldStar,
         ItalicSlash,
         ParagraphNewLine,
+        ListConvention,
         // CodeBlockLowlightFeature.configure({
         //  lowlight: createLowlight(lowlightCommon),
         // }),
