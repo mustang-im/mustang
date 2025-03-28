@@ -21,7 +21,7 @@
 
       <label class="radio">
         <input type="radio" value={readSeconds} bind:group={readAfter.value} />
-        <T msg="After displaying for # seconds">
+        <T msg={$t`After displaying for # seconds`}>
           <input type="number" bind:value={readSeconds} min={1} max={20} maxlength={2} on:change={onReadSecondsChanged} />
         </T>
       </label>

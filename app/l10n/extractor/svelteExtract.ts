@@ -3,7 +3,7 @@ import { parse } from "svelte/compiler";
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 import { preprocess } from "svelte/compiler";
 import { onMessageExtracted } from "./extractor";
-import { extractComponent, extractPluralMessages, extractPlurals, extractTags } from "./utils";
+import { extractPluralMessages, extractPlurals, extractTags } from "./utils";
 
 export async function svelteExtract(code: string, filename: string) {
   if (!filename.endsWith(".svelte")) {
@@ -18,7 +18,6 @@ export async function svelteExtract(code: string, filename: string) {
         extractTags(['$t', 'msg'], node, filename, onMessageExtracted);
         extractPlurals(['$plural'], node, filename, onMessageExtracted);
         extractPluralMessages(['msgPlural'], node, filename, onMessageExtracted);
-        extractComponent(node, filename, onMessageExtracted);
       },
     });
   } catch (ex) {
