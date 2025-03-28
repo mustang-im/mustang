@@ -81,7 +81,7 @@ block
     <Button
       label={$t`Bulleted list`}
       shortCutInfo={$t`* Item`}
-      on:click={() => editor.chain().focus().toggleBulletList().run()}
+      on:click={() => editor.chain().focus().toggleBulletListExt().run()}
       disabled={!editor.can().chain().focus().toggleBulletList().run()}
       selected={editor.isActive('bulletList')}
       icon={ListBulletedIcon}
