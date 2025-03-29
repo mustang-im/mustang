@@ -113,7 +113,8 @@
             </hbox>
             <hbox class="buttons">
               <RoundButton
-                label={$t`Send`}
+                classes="send"
+                label={sendDisabledTooltip ?? $t`Send`}
                 icon={SendIcon}
                 iconSize="20px"
                 padding="6px"
@@ -289,6 +290,10 @@
     }
   }
 
+  $: sendDisabledTooltip =
+    !mail.subject ? $t`Please enter a subject` :
+    $to.isEmpty ? $t`Please add some recipients` : null;
+
   async function onSend() {
     mail.text = null;
     await mail.action.send();
@@ -398,5 +403,8 @@
   }
   .footer .buttons {
     margin: 0px 8px;
+  }
+  .buttons :global(.send.disabled) {
+    opacity: 30%;
   }
 </style>

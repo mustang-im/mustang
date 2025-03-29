@@ -83,7 +83,7 @@
   button.border {
     border: 1px solid var(--button-border);
   }
-  .filled:not(:hover) {
+  .filled:not(:hover):not(.disabled) {
     background-color: var(--inverted-bg);
     color: var(--inverted-fg);
     border: none;
