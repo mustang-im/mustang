@@ -37,9 +37,7 @@
     * Scroll inside dialog, not whole window
 
 # Initial release
-* Beta notification bar
-* Beta time-bomb
-* License client
+* License notification bar
 
 # Feedback
 ## Elena

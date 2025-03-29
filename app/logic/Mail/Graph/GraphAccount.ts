@@ -7,6 +7,7 @@ import type { GraphChatAccount } from "../../Chat/Graph/GraphChatAccount";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
 import { newCalendarForProtocol } from "../../Calendar/AccountsList/Calendars";
 import { newChatAccountForProtocol } from "../../Chat/AccountsList/ChatAccounts";
+import { ensureLicensed } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
 import { appName, appVersion } from "../../build";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -36,7 +37,8 @@ export class GraphAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
-    super.login(interactive);
+    await ensureLicensed();
+    await super.login(interactive);
     if (!this.dbID) {
       await this.storage.saveAccount(this);
     }

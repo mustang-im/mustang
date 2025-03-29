@@ -16,6 +16,7 @@ import { ContentDisposition } from "../../Abstract/Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { XML2JSON, type Json, JSON2XML } from "./XML2JSON";
+import { ensureLicensed } from "../../util/LicenseClient";
 import { Throttle } from "../../util/Throttle";
 import { Semaphore } from "../../util/Semaphore";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -45,7 +46,8 @@ export class EWSAccount extends MailAccount {
   }
 
   async login(interactive: boolean): Promise<void> {
-    super.login(interactive);
+    await ensureLicensed();
+    await super.login(interactive);
     if (this.authMethod == AuthMethod.OAuth2) {
       if (!this.oAuth2) {
         let urls = OAuth2URLs.find(a => a.hostnames.includes(this.hostname));

@@ -17,6 +17,7 @@ import { owaAutoFillLoginPage } from "./Login/OWALoginAutoFill";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { LoginError } from "../../Abstract/Account";
+import { ensureLicensed } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
 import { Semaphore } from "../../util/Semaphore";
 import { Throttle } from "../../util/Throttle";
@@ -71,7 +72,8 @@ export class OWAAccount extends MailAccount {
    * although it's actually Office 365 itself doing its own OAuth2.
    */
   async login(interactive: boolean): Promise<void> {
-    super.login(interactive);
+    await ensureLicensed();
+    await super.login(interactive);
     if (this.authMethod == AuthMethod.OAuth2) {
       // The backend has the logic for posing the login page
       // using the correct cookie jar and auto-filling it.

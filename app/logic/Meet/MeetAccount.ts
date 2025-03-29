@@ -1,4 +1,5 @@
 import { Account } from "../Abstract/Account";
+import { ensureLicensed } from "../util/LicenseClient";
 import { appGlobal } from "../app";
 
 export class MeetAccount extends Account {
@@ -18,6 +19,11 @@ export class MeetAccount extends Account {
   /** The meeting will have a https: URL that allows other
    * parties to join - even with only a web browser. */
   canCreateURL: boolean;
+
+  async login(interactive: boolean) {
+    await ensureLicensed();
+    await super.login(interactive);
+  }
 
   async save(): Promise<void> {
     await this.storage?.saveAccount(this);

@@ -27,7 +27,7 @@ export class M3Account extends MeetAccount {
    * @throws OAuth2Error
    */
   async login(interactive: boolean, relogin = false): Promise<void> {
-    super.login(interactive);
+    await super.login(interactive);
     if (this.oauth2?.accessToken && !relogin) {
       return;
     }

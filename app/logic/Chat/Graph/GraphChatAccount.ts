@@ -15,7 +15,7 @@ export class GraphChatAccount extends ChatAccount {
    * You must call this after creating the object and having set its properties.
    * This will populate `persons` and `chats`. */
   async login(interactive: boolean) {
-    super.login(interactive);
+    await super.login(interactive);
     if (!this.account.isLoggedIn) {
       await this.account.login(interactive);
     }
