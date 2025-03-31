@@ -3,7 +3,7 @@ export default class OWASubscribeToNotificationRequest {
    * approach of wrapping the request in an object, they then put their data
    * in a separate property of that object rather than in the request. */
   readonly request = {
-    __type: "NotificationSubscriptionJsonRequest:#Exchange",
+    __type: "NotificationSubscribeJsonRequest:#Exchange",
     Header: {
       __type: "JsonRequestHeaders:#Exchange",
       RequestServerVersion: "Exchange2013",
