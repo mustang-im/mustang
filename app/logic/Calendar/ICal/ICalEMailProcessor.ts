@@ -3,6 +3,7 @@ import { Participant } from "../Participant";
 import { RecurrenceRule } from "../RecurrenceRule";
 import { Scheduling, ParticipationStatus, ResponseType } from "../Invitation";
 import ICalParser from "./ICalParser";
+import WindowsToIANATimezone from "./WindowsToIANATimezone";
 import type { EMail } from "../../Mail/EMail";
 import { EMailProcessor, ProcessingStartOn } from "../../Mail/EMailProccessor";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -57,17 +58,20 @@ function parseDate(icalDate: { value: string, properties: { tzid?: string } }): 
     // Either UTC or floating.
     return [new Date(value), tzid];
   }
+  if (tzid in WindowsToIANATimezone) {
+    tzid = WindowsToIANATimezone[tzid];
+  }
   value += "Z";
   let utc = new Date(value);
   try {
     // Work out the time zone offset for the time given as UTC.
-    // "zu" locale has date format YYYY-MM-DD hh:mm:ss,
+    // "lt" locale has date format YYYY-MM-DD hh:mm:ss,
     // which we can easily convert into ISO format.
-    let offset = new Date(utc.toLocaleString("zu", { timeZone: tzid }).replace(" ", "T") + "Z").getTime() - utc.getTime();
+    let offset = new Date(utc.toLocaleString("lt", { timeZone: tzid }).replace(" ", "T") + "Z").getTime() - utc.getTime();
     let local = new Date(utc.getTime() - offset);
     // Check the time zone offset at this local time,
     // as that may have jumped across a DST change.
-    offset = new Date(local.toLocaleString("zu", { timeZone: tzid }).replace(" ", "T") + "Z").getTime() - utc.getTime();
+    offset = new Date(local.toLocaleString("lt", { timeZone: tzid }).replace(" ", "T") + "Z").getTime() - utc.getTime();
     if (offset) {
       local = new Date(local.getTime() - offset);
     }

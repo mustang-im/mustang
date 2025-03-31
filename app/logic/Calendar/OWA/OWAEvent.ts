@@ -2,8 +2,9 @@ import { Event } from "../Event";
 import { Participant } from "../Participant";
 import { ResponseType, type Responses } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
+import IANAToWindowsTimezone from "../ICal/IANAToWindowsTimezone";
+import WindowsToIANATimezone from "../ICal/WindowsToIANATimezone";
 import type { OWACalendar } from "./OWACalendar";
-import WindowsTimezones from "../EWS/WindowsTimezones";
 import OWACreateOffice365EventRequest from "./Request/OWACreateOffice365EventRequest";
 import OWAUpdateOffice365EventRequest from "./Request/OWAUpdateOffice365EventRequest";
 import OWAUpdateOccurrenceRequest from "./Request/OWAUpdateOccurrenceRequest";
@@ -22,7 +23,7 @@ const ResponseTypes: Record<Responses, string> = {
   [ResponseType.Decline]: "DeclineItem",
 };
 
-const gTimeZone = WindowsTimezones[Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
+const gTimeZone = IANAToWindowsTimezone[Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
 
 enum WeekOfMonth {
   'First' = 1,
@@ -334,11 +335,6 @@ function extractWeekdays(daysOfWeek: string): Weekday[] | null {
   return daysOfWeek ? daysOfWeek.split(" ").map(day => sanitize.integer(Weekday[day])) : null;
 }
 
-function fromWindowsZone(windowsZone): string | null {
-  for (let iana in WindowsTimezones) {
-    if (WindowsTimezones[iana] == windowsZone) {
-      return iana;
-    }
-  }
-  return null;
+function fromWindowsZone(zone): string | null {
+  return zone in IANAToWindowsTimezone ? zone : WindowsToIANATimezone[zone] ?? null;
 }
