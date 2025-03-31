@@ -75,8 +75,12 @@ export function findOrCreatePersonUID(emailAddress: string, realname: string): P
 }
 
 export function findPerson(emailAddress: string): Person | undefined {
+  if (!emailAddress) {
+    return undefined;
+  }
+  emailAddress = emailAddress.toLowerCase();
   for (let ab of appGlobal.addressbooks) {
-    let existing = ab.persons.find(p => p.emailAddresses.some(e => e.value == emailAddress));
+    let existing = ab.persons.find(p => p.emailAddresses.some(e => e.value?.toLowerCase() == emailAddress));
     if (existing) {
       return existing;
     }
@@ -85,9 +89,13 @@ export function findPerson(emailAddress: string): Person | undefined {
 }
 
 export function findPersonsWithName(name: string): ArrayColl<Person> {
+  if (!name) {
+    return undefined;
+  }
+  name = name.toLowerCase();
   let results = new ArrayColl<Person>();
   for (let ab of appGlobal.addressbooks) {
-    results.addAll(ab.persons.contents.filter(p => p.name == name));
+    results.addAll(ab.persons.contents.filter(p => p.name?.toLowerCase() == name));
   }
   return results;
 }
