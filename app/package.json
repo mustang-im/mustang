@@ -11,7 +11,7 @@
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "l10n:extract": "npx tsx l10n/extractor/extractor.ts",
     "l10n:placeholder": "npx mustang-autotranslate --input l10n/locales --service dry-run --delete-unused-strings --type key-based --exclude **/*.template.json",
-    "l10n:auto-translate": "npx mustang-autotranslate --input l10n/locales --service deepl-free --config $DEEPL_API_KEY,default,1000 --delete-unused-strings --type key-based --exclude **/*.template.json",
+    "l10n:auto-translate": "npx mustang-autotranslate --input l10n/locales --service deepl-free --config $DEEPL_API_KEY,default,1000 --delete-unused-strings --type key-based --template messages.template.json",
     "l10n:crowdin": "cd l10n && crowdin",
     "l10n:sync": "cd l10n && crowdin push && crowdin pull",
     "l10n:sync:sources": "cd l10n && crowdin push",

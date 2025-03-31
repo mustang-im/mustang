@@ -12,8 +12,6 @@ dist
 dist-ssr
 public/olm.wasm
 *.local
-# Temp workaround for bug #112
-l10n/locales/*/messages-compiled.json
 
 # Editor directories and files
 .vscode/*
@@ -29,5 +27,6 @@ l10n/locales/*/messages-compiled.json
 # Sentry Config File
 .env.sentry-build-plugin
 
-# json-autotranslate
+# autotranslate
 .json-autotranslate-cache
+l10n/locales/en/messages.template.json
