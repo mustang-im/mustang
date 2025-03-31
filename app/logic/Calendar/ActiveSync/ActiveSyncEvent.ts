@@ -184,7 +184,7 @@ export class ActiveSyncEvent extends Event {
       },
     };
     let mailAccount = this.calendar.account;
-    await this.calendar.account.callEAS("MeetingResponse", request);
+    await mailAccount.callEAS("MeetingResponse", request);
     await this.sendInvitationResponse(response, this.participantMe(mailAccount), mailAccount); // needs 16.x to do this automatically
   }
 
@@ -194,7 +194,7 @@ export class ActiveSyncEvent extends Event {
       Request: {
         UserResponse: ActiveSyncResponse[response],
         CollectionId: email.folder.id,
-        RequestId: this.serverID,
+        RequestId: email.serverID,
       },
     };
     let mailAccount = email.folder.account;

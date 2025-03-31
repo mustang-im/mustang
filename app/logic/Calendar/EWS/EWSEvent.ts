@@ -309,8 +309,8 @@ export class EWSEvent extends Event {
     assert(email.scheduling == Scheduling.Request, "Only invitations can be responded to");
     let request = new EWSCreateItemRequest({ MessageDisposition: "SendAndSaveCopy" });
     request.addField(ResponseTypes[response], "ReferenceItemId", { Id: email.itemID });
-    let account = email.folder.account;
-    await account.callEWS(request);
+    let mailAccount = email.folder.account;
+    await mailAccount.callEWS(request);
     await email.deleteMessageLocally(); // Exchange deletes the message from the inbox
   }
 }

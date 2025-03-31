@@ -330,8 +330,8 @@ export class OWAEvent extends Event {
       __type: "ItemId:#Exchange",
       Id: email.itemID,
     });
-    let account = email.folder.account;
-    await account.callOWA(request);
+    let mailAccount = email.folder.account;
+    await mailAccount.callOWA(request);
     await email.deleteMessageLocally(); // Exchange deletes the message from the inbox
   }
 }
