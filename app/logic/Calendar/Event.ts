@@ -132,11 +132,10 @@ export class Event extends Observable {
    * Copy all data of the `original` event into this new Event object */
   copyFrom(original: Event) {
     this.copyFromRecurrenceMaster(original);
-    this.startTime = original.startTime ? new Date(original.startTime.getTime()) : null;
-    this.endTime = original.endTime ? new Date(original.endTime.getTime()) : null;
-    this.alarm = original.alarm ? new Date(original.alarm.getTime()) : null;
-    this.recurrenceStartTime = original.recurrenceStartTime ? new Date(original.recurrenceStartTime.getTime()) : null;
-    this.timezone = original.timezone;
+    this.startTime = original.startTime ? new Date(original.startTime) : null;
+    this.endTime = original.endTime ? new Date(original.endTime) : null;
+    this.alarm = original.alarm ? new Date(original.alarm) : null;
+    this.recurrenceStartTime = original.recurrenceStartTime ? new Date(original.recurrenceStartTime) : null;
     this.repeat = original.repeat;
     this.recurrenceRule = original.recurrenceRule;
     this.parentEvent = original.parentEvent;
@@ -151,6 +150,7 @@ export class Event extends Observable {
     this.title = original.title;
     this.descriptionText = original.descriptionText;
     this.descriptionHTML = original.descriptionHTML;
+    this.timezone = original.timezone;
     this.allDay = original.allDay;
     this.location = original.location;
     this.isOnline = original.isOnline;
