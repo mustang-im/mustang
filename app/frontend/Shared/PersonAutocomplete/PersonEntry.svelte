@@ -28,7 +28,7 @@
   import PersonPopup from "./PersonPopup.svelte";
   import PersonPicture from "../Person/PersonPicture.svelte";
   import Popup from "../Popup.svelte";
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   const dispatchEvent = createEventDispatcher<{ focusNext: void }>();
 
   export let person: PersonUID;
@@ -38,8 +38,11 @@
   let popupOpen = false;
   let popupAnchor: HTMLElement;
 
-  if ((person as any).openPopup) {
-    popupOpen = true;
+  onMount(checkPopup);
+  function checkPopup() {
+    if ((person as any).openPopup) {
+      popupOpen = true;
+    }
   }
 
   function onPopupToggle(event: MouseEvent) {
