@@ -29,4 +29,4 @@ public/olm.wasm
 
 # autotranslate
 .json-autotranslate-cache
-*.template.json
+l10n/locales/en/messages.template.json
