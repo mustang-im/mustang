@@ -36,7 +36,7 @@
       <hbox flex>
         <hbox flex>
           <MailAutocomplete addresses={mail.to} placeholder={$t`Add recipient`} tabindex={1} autofocus={mail.to.isEmpty}>
-            <svelte:fragment slot="person-popup-buttons" let:personUID>
+            <svelte:fragment slot="person-popup-buttons" let:person={personUID}>
               <Button plain label={$t`CC`} onClick={() => onMoveToCC(personUID)} />
               <Button plain label={$t`BCC`} onClick={() => onMoveToBCC(personUID)} />
             </svelte:fragment>
@@ -60,7 +60,7 @@
     {#if showCC}
       <hbox class="label">{$t`Cc`}</hbox>
       <MailAutocomplete addresses={mail.cc} placeholder={$t`Add CC recipient`} tabindex={1}>
-        <svelte:fragment slot="person-popup-buttons" let:personUID>
+        <svelte:fragment slot="person-popup-buttons" let:person={personUID}>
           <Button plain label={$t`To`} onClick={() => onMoveToTo(personUID)} />
           <Button plain label={$t`BCC`} onClick={() => onMoveToBCC(personUID)} />
         </svelte:fragment>
@@ -69,7 +69,7 @@
     {#if showBCC}
       <hbox class="label">{$t`Bcc`}</hbox>
       <MailAutocomplete addresses={mail.bcc} placeholder={$t`Add BCC recipient`} tabindex={1}>
-        <svelte:fragment slot="person-popup-buttons" let:personUID>
+        <svelte:fragment slot="person-popup-buttons" let:person={personUID}>
           <Button plain label={$t`To`} onClick={() => onMoveToTo(personUID)} />
           <Button plain label={$t`CC`} onClick={() => onMoveToCC(personUID)} />
         </svelte:fragment>
