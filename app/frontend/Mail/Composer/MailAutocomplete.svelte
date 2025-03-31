@@ -6,7 +6,7 @@
     {person.emailAddress}
   </hbox>
   <slot name="end" slot="end" />
-  <slot name="person-popup-buttons" slot="person-popup-buttons" let:personUID {personUID} />
+  <slot name="person-popup-buttons" slot="person-popup-buttons" let:person {person} />
 </PersonsAutocomplete>
 
 <script lang="ts">
