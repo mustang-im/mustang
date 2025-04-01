@@ -2,7 +2,7 @@ import type { EMail } from "./EMail";
 import { SpecialFolder } from "./Folder";
 import { Attachment, ContentDisposition } from "../Abstract/Attachment";
 import { PersonUID } from "../Abstract/PersonUID";
-import { MailIdentity } from "./MailIdentity";
+import { MailIdentity, findIdentityForEMailAddress } from "./MailIdentity";
 import { appName, appVersion, siteRoot } from "../build";
 import { gLicense } from "../util/License";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
@@ -76,14 +76,18 @@ export class ComposeActions {
 
   replyToAuthor(): EMail {
     let reply = this._reply();
-    reply.to.add(this.email.replyTo ?? this.email.from);
+    let to = this.email.replyTo ?? this.email.from;
+    if (findIdentityForEMailAddress(to.emailAddress) && this.email.to.first) {
+      to = this.email.to.first;
+    }
+    reply.to.add(to);
     return reply;
   }
 
   replyAll(): EMail {
     let reply = this.replyToAuthor();
-    reply.to.addAll(this.email.to.contents.filter(pe => !this.email.folder?.account.identities.some(id => id.isEMailAddress(pe.emailAddress))));
-    reply.cc.addAll(this.email.cc.contents.filter(pe => !this.email.folder?.account.identities.some(id => id.isEMailAddress(pe.emailAddress))));
+    reply.to.addAll(this.email.to.contents.filter(pe => !findIdentityForEMailAddress(pe.emailAddress) && pe != reply.to.first));
+    reply.cc.addAll(this.email.cc.contents.filter(pe => !findIdentityForEMailAddress(pe.emailAddress) && pe != reply.to.first));
     return reply;
   }
 

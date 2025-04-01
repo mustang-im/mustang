@@ -114,3 +114,14 @@ export class MailIdentity extends Observable {
     return { identity, personUID: identity.asPersonUID() };
   }
 }
+
+export function findIdentityForEMailAddress(emailAddress: string): MailIdentity | null {
+  for (let account of appGlobal.emailAccounts) {
+    for (let identity of account.identities) {
+      if (identity.isEMailAddress(emailAddress)) {
+        return identity;
+      }
+    }
+  }
+  return null;
+}
