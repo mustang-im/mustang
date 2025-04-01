@@ -3,14 +3,13 @@ import { SpecialFolder } from "./Folder";
 import { Attachment, ContentDisposition } from "../Abstract/Attachment";
 import { PersonUID } from "../Abstract/PersonUID";
 import { MailIdentity } from "./MailIdentity";
-import { appName, appVersion } from "../build";
+import { appName, appVersion, siteRoot } from "../build";
 import { gLicense } from "../util/License";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { backgroundError } from "../../frontend/Util/error";
-import { UserError, assert, type URLString, dataURLToBlob } from "../util/util";
+import { UserError, assert, type URLString } from "../util/util";
 import { getUILocale, gt } from "../../l10n/l10n";
 import type { Collection } from "svelte-collections";
-import { faker } from "@faker-js/faker";
 
 /** Functions based on the email, which are either
  * not changing the email itself, but are based on the email,
@@ -30,9 +29,8 @@ export class ComposeActions {
   }
 
   generateMessageID(): void {
-    /* let hostname = appGlobal.remoteApp.hostname();
-    if (hostname == "localhost") { */
-    let hostname = /* faker.hacker.adjective() + "." +*/ faker.internet.domainName();
+    let hostname = this.email.from?.emailAddress?.split("@")[1]
+      ?? "msgid." + new URL(siteRoot).hostname;
     this.email.messageID = crypto.randomUUID() + "@" + hostname;
   }
 
