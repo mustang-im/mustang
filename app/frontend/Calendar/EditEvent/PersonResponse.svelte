@@ -33,6 +33,6 @@
     color: red;
   }
   .unknown {
-    color: yellow;
+    color: rgb(113, 113, 52);
   }
 </style>
