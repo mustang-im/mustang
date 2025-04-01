@@ -60,8 +60,6 @@ export function getOSName() {
 
 /**
  * Fetches and decompresses gzip files that are compressed
- * @param url 
- * @returns 
  */
 export async function fetchGzip(url: string) {
   let stream = (await fetch(url)).body;
@@ -70,4 +68,34 @@ export async function fetchGzip(url: string) {
   );
   let blob = await new Response(decompressedStream).blob();
   return URL.createObjectURL(blob);
+}
+
+/** @returns a new
+ * `function isSame(check: T): boolean`
+ * which returns
+ * - true, if `check` is the same object or value as last time
+ * - false, if it's different from the last call
+ * - false, if `check` was null/undefined last time
+ * - false, for the first call
+ *
+ * Usage:
+ * ```
+ * const isSamePerson = createIsSame<Person>();
+ * function onInit(person: Person) {
+ *   if (isSamePerson(person)) {
+ *     return;
+ *   }
+ *   // do init...
+ * }
+ * ```
+ */
+export function createIsSame<T>() {
+  let last: T;
+  return (check: T) => {
+    if (last === check && last !== null && last !== undefined) {
+      return true;
+    }
+    last = check;
+    return true;
+  };
 }

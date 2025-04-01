@@ -92,7 +92,7 @@
   import EditIcon from "lucide-svelte/icons/pencil";
   import CheckIcon from "lucide-svelte/icons/check";
   import MailIcon from "lucide-svelte/icons/mail";
-  import { onKeyEnter } from "../../Util/util";
+  import { createIsSame, onKeyEnter } from "../../Util/util";
   import { backgroundError, catchErrors } from "../../Util/error";
   import { createEventDispatcher, onMount } from 'svelte';
   import { t } from "../../../l10n/l10n";
@@ -114,7 +114,11 @@
   $: nameInputEl?.focus();
 
   $: onLoad(personUID);
+  const isSamePerson = createIsSame<Person>();
   function onLoad(personUID: PersonUID) {
+    if (isSamePerson(person)) {
+      return;
+    }
     personUID ??= new PersonUID();
     personUID.emailAddress ??= kDummyPerson.emailAddress;
     person = personUID.createPerson();

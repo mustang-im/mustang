@@ -205,9 +205,6 @@
 * OS mailto: and send file as email
 * Encryption
 
-## Composer
-* Bug (Regression): Modify name in Person popup: Input exits popup
-
 ### Editor
 * blockquote cite vs. third party
 * Insert link
