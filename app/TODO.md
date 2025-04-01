@@ -1,7 +1,6 @@
 # Next
 * Mail
   * Search
-    * Without text
     * Results miss From
   * SQL
     * Accounts in separate DB

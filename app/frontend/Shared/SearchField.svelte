@@ -33,10 +33,6 @@
   let searchInput: string;
   $: searchInput = searchTerm;
   function onInput() {
-    if (!searchInput) {
-      searchTerm = null;
-      return;
-    }
     if (searchTerm == searchInput) {
       return;
     }

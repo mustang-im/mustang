@@ -13,7 +13,7 @@
       {$t`Search for`}
       <SearchField bind:searchTerm={$globalSearchTerm}
         placeholder={$t`Mail content or subject`}
-        on:clear={onClear} bind:this={searchFieldEl} />
+        bind:this={searchFieldEl} />
     </hbox>
     <hbox class="search-criteria">
       <SearchCriteria {search} showSearchTerm={false} {searchMessages} />
@@ -81,7 +81,7 @@
     try {
       let searchTerm = $globalSearchTerm;
       $selectedMessage = null;
-      if (!searchTerm) {
+      if (searchTerm == null) {
         searchMessages = null;
         return;
       }
