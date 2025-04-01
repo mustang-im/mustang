@@ -2,7 +2,7 @@ import { selectedApp } from "../AppsBar/selectedApp";
 import { contactsMustangApp } from "../Contacts/ContactsMustangApp";
 import type { Observable } from "../../logic/util/Observable";
 import { Person } from "../../logic/Abstract/Person";
-import { selectedPerson } from "../Shared/Person/Selected";
+import { selectedPerson } from "../Contacts/Person/Selected";
 import { NotImplemented } from "../../logic/util/util";
 
 export function openUIFor(obj: Observable) {

@@ -16,8 +16,8 @@
   import { selectedPerson } from "./Selected";
   import type { Collection } from "svelte-collections";
   import PersonLine from "./PersonLine.svelte";
-  import SearchField from "../SearchField.svelte";
-  import FastList from "../FastList.svelte";
+  import SearchField from "../../Shared/SearchField.svelte";
+  import FastList from "../../Shared/FastList.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let persons: Collection<PersonOrGroup>;

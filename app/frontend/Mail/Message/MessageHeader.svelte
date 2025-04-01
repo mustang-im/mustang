@@ -72,13 +72,13 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { Person } from "../../../logic/Abstract/Person";
-  import type { PersonOrGroup } from "../../Shared/Person/PersonOrGroup";
-  import { selectedPerson } from "../../Shared/Person/Selected";
+  import type { PersonOrGroup } from "../../Contacts/Person/PersonOrGroup";
+  import { selectedPerson } from "../../Contacts/Person/Selected";
   import type { Tag } from "../../../logic/Mail/Tag";
   import MessageToolbar from "./MessageToolbar.svelte";
   import RecipientList from "./RecipientList.svelte";
   import Recipient from "./Recipient.svelte";
-  import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
+  import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
   import DisplayModeSwitcher from "./DisplayModeSwitcher.svelte";
   import TagSelector from "../Tag/TagSelector.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";

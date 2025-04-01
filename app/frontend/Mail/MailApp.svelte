@@ -15,7 +15,7 @@
   import { Person } from "../../logic/Abstract/Person";
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "./Selected";
   import { selectedWorkspace } from "../MainWindow/Selected";
-  import { selectedPerson } from "../Shared/Person/Selected";
+  import { selectedPerson } from "../Contacts/Person/Selected";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { showError } from "../Util/error";
   import ThreePane from "./3pane/3Pane.svelte";

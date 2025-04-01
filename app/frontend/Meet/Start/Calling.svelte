@@ -97,8 +97,8 @@
   import { MeetingState, type VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
   import { appGlobal } from "../../../logic/app";
   import RoundButton from "../../Shared/RoundButton.svelte";
-  import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
-  import GroupPicture from "../../Shared/Person/GroupPicture.svelte";
+  import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
+  import GroupPicture from "../../Contacts/Person/GroupPicture.svelte";
   import DeviceSetup from "../Setup/DeviceSetup.svelte";
   import CallIcon from "lucide-svelte/icons/phone-call";
   import HangUpIcon from "lucide-svelte/icons/phone";

@@ -1,4 +1,4 @@
-import type { PersonOrGroup } from "../../frontend/Shared/Person/PersonOrGroup";
+import type { PersonOrGroup } from "../../frontend/Contacts/Person/PersonOrGroup";
 import { Group } from "./Group";
 import { ContactEntry, Person } from "./Person";
 import { appGlobal } from "../app";

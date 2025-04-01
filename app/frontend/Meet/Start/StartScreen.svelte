@@ -49,13 +49,13 @@
   import { M3Conf } from "../../../logic/Meet/M3/M3Conf";
   import { Event } from "../../../logic/Calendar/Event";
   import { joinConferenceByURL } from "../../../logic/Meet/StartCall";
-  import { selectedPerson } from "../../Shared/Person/Selected";
+  import { selectedPerson } from "../../Contacts/Person/Selected";
   import { appGlobal } from "../../../logic/app";
   import MeetingList from "./MeetingList.svelte";
   import Button from "../../Shared/Button.svelte";
   import VideoIcon from 'lucide-svelte/icons/video';
   import AddToCalendarIcon from "lucide-svelte/icons/calendar-plus";
-  import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
+  import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
   import ErrorMessage, { ErrorGravity } from "../../Shared/ErrorMessage.svelte";
   import { t } from "../../../l10n/l10n";
   import { catchErrors, logError } from "../../Util/error";

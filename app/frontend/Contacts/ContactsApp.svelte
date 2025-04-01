@@ -14,10 +14,10 @@
 
 <script lang="ts">
   import { Person } from "../../logic/Abstract/Person";
-  import { selectedPerson } from "../Shared/Person/Selected";
+  import { selectedPerson } from "./Person/Selected";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
-  import PersonsList from "../Shared/Person/PersonsList.svelte";
+  import PersonsList from "./Person/PersonsList.svelte";
   import PersonDetails from "./PersonDetails.svelte";
   import PersonsToolbar from "./PersonsToolbar.svelte";
   import Scroll from "../Shared/Scroll.svelte";

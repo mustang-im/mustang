@@ -24,7 +24,7 @@
 <script lang="ts">
   import type { Person } from "../../logic/Abstract/Person";
   import GroupBox from "./GroupBox.svelte";
-  import PersonPicture from "../Shared/Person/PersonPicture.svelte";
+  import PersonPicture from "./Person/PersonPicture.svelte";
   import Button from "../Shared/Button.svelte";
   import MergeIcon from "lucide-svelte/icons/combine";
   import PersonsIcon from "lucide-svelte/icons/users";

@@ -13,7 +13,7 @@
 
 <script lang="ts">
   import type { Person } from "../../logic/Abstract/Person";
-  import { selectedPerson } from "../Shared/Person/Selected";
+  import { selectedPerson } from "./Person/Selected";
   import { appGlobal } from "../../logic/app";
   import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
   import MenuItem from "../Shared/Menu/MenuItem.svelte";

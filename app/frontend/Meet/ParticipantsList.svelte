@@ -11,7 +11,7 @@
 <script lang="ts">
   import { MeetingParticipant } from "../../logic/Meet/Participant";
   import ParticipantListItem from "./ParticipantListItem.svelte";
-  import PersonsList from "../Shared/Person/PersonsList.svelte";
+  import PersonsList from "../Contacts/Person/PersonsList.svelte";
   import type { Collection } from "svelte-collections";
 
   export let participants: Collection<MeetingParticipant>;

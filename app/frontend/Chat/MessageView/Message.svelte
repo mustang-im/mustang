@@ -57,7 +57,7 @@
   import cssContent from "../../Mail/Message/content.css?inline";
   import cssBody from "../../Mail/Message/content-body.css?inline";
   import cssFont from "../../asset/font/Karla.css?inline";
-  import PersonPicture from "../../Shared/Person/PersonPicture.svelte";
+  import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
   import WebView from "../../Shared/WebView.svelte";
   import { getDateString } from "../../Util/date";
   import { t } from "../../../l10n/l10n";

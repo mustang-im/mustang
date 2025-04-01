@@ -27,7 +27,7 @@
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import PersonPopup from "./PersonPopup.svelte";
   import PersonPicture from "../Person/PersonPicture.svelte";
-  import Popup from "../Popup.svelte";
+  import Popup from "../../Shared/Popup.svelte";
   import { createEventDispatcher, onMount } from 'svelte';
   const dispatchEvent = createEventDispatcher<{ focusNext: void }>();
 

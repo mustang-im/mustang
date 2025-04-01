@@ -214,7 +214,7 @@
   import StreetAddressEdit from "./StreetAddressEdit.svelte";
   import SameName from "./SameName.svelte";
   import PersonMenu from "./PersonMenu.svelte";
-  import PersonPicture from "../Shared/Person/PersonPicture.svelte";
+  import PersonPicture from "./Person/PersonPicture.svelte";
   import AddressbookChanger from "./AddressbookChanger.svelte";
   import ExpanderButtons from "../Shared/ExpanderButtons.svelte";
   import ExpanderButton from "../Shared/ExpanderButton.svelte";

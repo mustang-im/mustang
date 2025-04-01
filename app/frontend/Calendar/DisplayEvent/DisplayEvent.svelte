@@ -91,7 +91,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { Frequency } from "../../../logic/Calendar/RecurrenceRule";
   import { appGlobal } from "../../../logic/app";
-  import PersonsAutocomplete from "../../Shared/PersonAutocomplete/PersonsAutocomplete.svelte";
+  import PersonsAutocomplete from "../../Contacts/PersonAutocomplete/PersonsAutocomplete.svelte";
   import PersonAvailability from "../EditEvent/PersonAvailability.svelte";
   import PersonResponse from "../EditEvent/PersonResponse.svelte";
   import DateInput from "../EditEvent/DateInput.svelte";

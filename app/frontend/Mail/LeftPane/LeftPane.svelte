@@ -39,7 +39,7 @@
   import { type Folder } from "../../../logic/Mail/Folder";
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { Person } from "../../../logic/Abstract/Person";
-  import { selectedPerson } from "../../Shared/Person/Selected";
+  import { selectedPerson } from "../../Contacts/Person/Selected";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
   import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
@@ -49,7 +49,7 @@
   import FolderList from "./FolderList.svelte";
   import TagsList from "./TagsList.svelte";
   import SearchPane from "../Search/SearchPane.svelte";
-  import PersonsList from "../../Shared/Person/PersonsList.svelte";
+  import PersonsList from "../../Contacts/Person/PersonsList.svelte";
   import ProjectList from "./ProjectList.svelte";
   import GetMailButton from "./GetMailButton.svelte";
   import Button from '../../Shared/Button.svelte';

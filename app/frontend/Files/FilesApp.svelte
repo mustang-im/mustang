@@ -15,7 +15,7 @@
   import { newSearchEMail } from "../../logic/Mail/Store/setStorage";
   import { appGlobal } from "../../logic/app";
   import FilesList from "./FilesList.svelte";
-  import PersonsList from "../Shared/Person/PersonsList.svelte";
+  import PersonsList from "../Contacts/Person/PersonsList.svelte";
   import Splitter from "../Shared/Splitter.svelte";
   import { ArrayColl } from "svelte-collections";
   import { catchErrors } from "../Util/error";

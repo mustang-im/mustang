@@ -30,7 +30,7 @@
   import { ChatRoomEvent } from "../../logic/Chat/RoomEvent";
   import { selectedAccount, selectedChat } from "./selected";
   import { selectedWorkspace } from "../MainWindow/Selected";
-  import { selectedPerson } from "../Shared/Person/Selected";
+  import { selectedPerson } from "../Contacts/Person/Selected";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import MessageList from "./MessageView/MessageList.svelte";

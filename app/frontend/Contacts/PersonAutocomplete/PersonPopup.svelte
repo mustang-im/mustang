@@ -86,8 +86,8 @@
   import { appGlobal } from "../../../logic/app";
   import AddressbookChanger from "../../Contacts/AddressbookChanger.svelte";
   import PersonPicture from "../Person/PersonPicture.svelte";
-  import Button from "../Button.svelte";
-  import RoundButton from "../RoundButton.svelte";
+  import Button from "../../Shared/Button.svelte";
+  import RoundButton from "../../Shared/RoundButton.svelte";
   import AvatarFallbackIcon from "lucide-svelte/icons/user";
   import EditIcon from "lucide-svelte/icons/pencil";
   import CheckIcon from "lucide-svelte/icons/check";
@@ -114,9 +114,9 @@
   $: nameInputEl?.focus();
 
   $: onLoad(personUID);
-  const isSamePerson = createIsSame<Person>();
+  const isSamePerson = createIsSame<PersonUID>();
   function onLoad(personUID: PersonUID) {
-    if (isSamePerson(person)) {
+    if (isSamePerson(personUID)) {
       return;
     }
     personUID ??= new PersonUID();

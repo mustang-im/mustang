@@ -29,7 +29,7 @@
 </hbox>
 
 <script lang="ts">
-  import { PersonUID, nameFromEmailAddress } from "../../../logic/Abstract/PersonUID";
+  import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import type { Person } from "../../../logic/Abstract/Person";
   import { appGlobal } from "../../../logic/app";
   import PersonAutocompleteResult from "./PersonAutocompleteResult.svelte";

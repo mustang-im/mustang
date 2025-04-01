@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import type { Person } from "../../logic/Abstract/Person";
-  import { selectedPerson } from "../Shared/Person/Selected";
+  import { selectedPerson } from "./Person/Selected";
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import AddressbookSelector from "./AddressbookSelector.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";

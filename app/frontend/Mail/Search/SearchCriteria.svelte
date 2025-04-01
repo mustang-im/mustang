@@ -103,7 +103,7 @@
   import { appGlobal } from "../../../logic/app";
   import SearchField from "../../Shared/SearchField.svelte";
   import GenericFileTypesList from "../../Files/GenericFileTypesList.svelte";
-  import PersonsList from "../../Shared/Person/PersonsList.svelte";
+  import PersonsList from "../../Contacts/Person/PersonsList.svelte";
   import AccountList from "../LeftPane/AccountList.svelte";
   import FolderList from "../LeftPane/FolderList.svelte";
   import TagSelector from "../Tag/TagSelector.svelte";

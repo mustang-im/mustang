@@ -36,7 +36,7 @@
   import { appGlobal } from "../../../logic/app";
   import { selectedAccount } from "../Selected";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
-  import PersonsList from "../../Shared/Person/PersonsList.svelte";
+  import PersonsList from "../../Contacts/Person/PersonsList.svelte";
   import Header from "../../Chat/PersonHeader.svelte";
   import MessageList from "../../Chat/MessageView/MessageList.svelte";
   import MailMessage from "./MailMessage.svelte";
