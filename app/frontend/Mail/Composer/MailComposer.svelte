@@ -202,11 +202,15 @@
       checkInvalidRecipients(recipients);
     }
 
-    loadText().catch(backgroundError);
+    loadText()
+      .catch(backgroundError);
   }
 
   let loading = false;
   async function loadText() {
+    if (!mail.isDraft) {
+      return;
+    }
     loading = true;
     await mail.loadBody();
     loading = false;
