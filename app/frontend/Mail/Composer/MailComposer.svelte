@@ -296,17 +296,17 @@
 
   async function onSend() {
     mail.text = null;
-    await mail.action.send();
+    await mail.compose.send();
     onClose();
   }
 
   async function onSave() {
-    await mail.action.saveAsDraft();
+    await mail.compose.saveAsDraft();
     onClose();
   }
   async function onDelete() {
     onClose();
-    await mail.action.deleteDrafts();
+    await mail.compose.deleteDrafts();
   }
 
   let closing = false;

@@ -118,7 +118,7 @@ export class MailAccount extends Account {
   newEMailFrom(): EMail {
     let folder = this.getSpecialFolder(SpecialFolder.Drafts);
     let email = folder.newEMail();
-    email.action.generateMessageID();
+    email.compose.generateMessageID();
     email.needToLoadBody = false;
     email.from.emailAddress = this.emailAddress;
     email.from.name = this.userRealname;

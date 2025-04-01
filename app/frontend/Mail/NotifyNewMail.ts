@@ -143,10 +143,10 @@ async function openMessage(msg: EMail) {
 async function reply(msg: EMail, replyText: string) {
   try {
     console.log("Reply with:\n" + replyText + "\nto msg\n" + msg.subject);
-    let replyMsg = msg.action.replyToAuthor();
+    let replyMsg = msg.compose.replyToAuthor();
     replyMsg.html = null;
     replyMsg.text = replyText;
-    await replyMsg.action.send();
+    await replyMsg.compose.send();
   } catch (ex) {
     showError(ex);
   }

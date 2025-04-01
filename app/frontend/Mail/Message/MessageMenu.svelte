@@ -70,11 +70,11 @@
   export let printE: Print | null = null;
 
   function reply() {
-    let reply = message.action.replyToAuthor();
+    let reply = message.compose.replyToAuthor();
     mailMustangApp.writeMail(reply);
   }
   function replyAll() {
-    let reply = message.action.replyAll();
+    let reply = message.compose.replyAll();
     mailMustangApp.writeMail(reply);
   }
   async function forward(event: MouseEvent) {
@@ -82,14 +82,14 @@
     let shift = !!event?.shiftKey;
     let forward: EMail;
     if (setting == "attachment" && !shift || setting == "inline" && shift) {
-      forward = await message.action.forwardAsAttachment();
+      forward = await message.compose.forwardAsAttachment();
     } else {
-      forward = await message.action.forwardInline();
+      forward = await message.compose.forwardInline();
     }
     mailMustangApp.writeMail(forward);
   }
   async function redirect() {
-    let redirect = await message.action.redirect();
+    let redirect = await message.compose.redirect();
     mailMustangApp.writeMail(redirect);
   }
 

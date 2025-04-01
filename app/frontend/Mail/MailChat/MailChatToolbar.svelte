@@ -93,11 +93,11 @@
     await message.markStarred(!message.isStarred);
   }
   function reply() {
-    let reply = message.action.replyToAuthor();
+    let reply = message.compose.replyToAuthor();
     mailMustangApp.writeMail(reply);
   }
   function replyAll() {
-    let reply = message.action.replyAll();
+    let reply = message.compose.replyAll();
     mailMustangApp.writeMail(reply);
   }
   function openMessageAlone() {

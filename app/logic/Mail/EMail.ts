@@ -1,6 +1,6 @@
 import { Message } from "../Abstract/Message";
 import { SpecialFolder, type Folder } from "./Folder";
-import { EMailActions } from "./EMailActions";
+import { ComposeActions } from "./ComposeActions";
 import { Attachment, ContentDisposition } from "../Abstract/Attachment";
 import type { Tag } from "./Tag";
 import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
@@ -485,8 +485,27 @@ export class EMail extends Message {
     other.identity = this.identity;
   }
 
-  get action(): EMailActions {
-    return new EMailActions(this);
+  /**
+   * @param up
+   * true: older message
+   * false: newer message
+   * null: Same list position, after deleting this message
+   *
+   * Implementation: If there are more functions that are
+   * not about the email itself, this might move to an `EMailActions` class,
+   * like `ComposeActions`.
+   * For now, given that it's just 1 function and small, keep it here.
+   */
+  nextMessage(up?: boolean): EMail {
+    let i = this.folder.messages.getKeyForValue(this);
+    if (typeof (up) == "boolean") {
+      up ? --i : ++i;
+    }
+    return this.folder.messages.getIndex(i);
+  }
+
+  get compose(): ComposeActions {
+    return new ComposeActions(this);
   }
 }
 

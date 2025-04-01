@@ -15,25 +15,11 @@ import { faker } from "@faker-js/faker";
 /** Functions based on the email, which are either
  * not changing the email itself, but are based on the email,
  * or are higher-level functions not inherently about the email object. */
-export class EMailActions {
+export class ComposeActions {
   readonly email: EMail;
 
   constructor(email: EMail) {
     this.email = email;
-  }
-
-  /**
-   * @param up
-   * true: older message
-   * false: newer message
-   * null: Same list position, after deleting this message
-   */
-  nextMessage(up?: boolean): EMail {
-    let i = this.email.folder.messages.getKeyForValue(this.email);
-    if (typeof (up) == "boolean") {
-      up ? --i : ++i;
-    }
-    return this.email.folder.messages.getIndex(i);
   }
 
   quotePrefixLine(): string {
@@ -57,7 +43,7 @@ export class EMailActions {
 
     let account = original.folder.account;
     let reply = account.newEMailFrom();
-    reply.action.generateMessageID();
+    reply.compose.generateMessageID();
 
     let recipients = original.from?.emailAddress
       ? [original.from, ...original.to.contents, ...original.cc.contents, ...original.bcc.contents]

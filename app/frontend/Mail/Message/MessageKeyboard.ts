@@ -29,14 +29,14 @@ export async function onKeyOnList(event: KeyboardEvent) {
     } else if (event.key == "j") {
       event.stopPropagation();
       selectedMessagesColl.clear();
-      selectedMessagesColl.add(message.action.nextMessage(false));
+      selectedMessagesColl.add(message.nextMessage(false));
       await Promise.allSettled(messages.map(msg =>
         msg.treatSpam()));
       return;
     } else if (event.key == "Delete") {
       event.stopPropagation();
       selectedMessagesColl.clear();
-      selectedMessagesColl.add(message.action.nextMessage(false));
+      selectedMessagesColl.add(message.nextMessage(false));
       await Promise.allSettled(messages.map(msg =>
         msg.deleteMessage()));
       return;
@@ -52,7 +52,7 @@ export async function onKeyOnMessage(event: KeyboardEvent) {
   if (!event.altKey && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
     if (event.key == "ArrowDown" || event.key == "ArrowUp") {
       event.stopPropagation();
-      let next = message.action.nextMessage(event.key == "ArrowUp");
+      let next = message.nextMessage(event.key == "ArrowUp");
       if (!next) {
         return;
       }
