@@ -113,6 +113,14 @@ app.whenReady().then(async () => {
 
   try {
     await autoUpdater.checkForUpdatesAndNotify();
+    setInterval(async () => {
+      try {
+        console.log("Routinely checking for app updates...");
+        await autoUpdater.checkForUpdatesAndNotify();
+      } catch (ex) {
+        console.error(ex);
+      }
+    }, 60 * 60 * 1000); // once per hour - TODO Change to once per day, when we make less frequent releases
   } catch (ex) {
     console.error(ex);
   }
