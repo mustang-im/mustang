@@ -2,8 +2,9 @@ import { Event } from "../Event";
 import { Participant } from "../Participant";
 import { ResponseType, type Responses } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
+import IANAToWindowsTimezone from "../ICal/IANAToWindowsTimezone";
+import WindowsToIANATimezone from "../ICal/WindowsToIANATimezone";
 import type { ActiveSyncCalendar } from "./ActiveSyncCalendar";
-import WindowsTimezones from "../EWS/WindowsTimezones";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
@@ -205,7 +206,7 @@ export function fromCompact(date: string): Date {
 let gTimeZone: string = "";
 function getTimeZoneActiveSync(): string {
   if (!gTimeZone) {
-    let timezone = WindowsTimezones[Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
+    let timezone = IANAToWindowsTimezone[Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
     let unicode = new Uint16Array(86);
     let pos = 2;
     for (let c of timezone) {
@@ -222,10 +223,5 @@ function fromActiveSyncZone(zone): string | null {
   }
   let buffer = Uint8Array.from(atob(zone), c => c.charCodeAt(0)).buffer;
   zone = String.fromCharCode(...new Uint16Array(buffer, 4, 32)).replace(/\0+$/, "") || String.fromCharCode(...new Uint16Array(buffer, 88, 32)).replace(/\0+$/, "");
-  for (let iana in WindowsTimezones) {
-    if (WindowsTimezones[iana] == zone) {
-      return iana;
-    }
-  }
-  return null;
+  return zone in IANAToWindowsTimezone ? zone : WindowsToIANATimezone[zone] ?? null;
 }

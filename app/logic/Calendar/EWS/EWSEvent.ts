@@ -2,8 +2,9 @@ import { Event } from "../Event";
 import { Participant } from "../Participant";
 import { ResponseType, type Responses } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
+import IANAToWindowsTimezone from "../ICal/IANAToWindowsTimezone";
+import WindowsToIANATimezone from "../ICal/WindowsToIANATimezone";
 import type { EWSCalendar } from "./EWSCalendar";
-import WindowsTimezones from "./WindowsTimezones";
 import EWSCreateItemRequest from "../../Mail/EWS/Request/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "../../Mail/EWS/Request/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/Request/EWSUpdateItemRequest";
@@ -34,7 +35,7 @@ const RecurrenceType = {
   DailyRecurrence: Frequency.Daily,
 };
 
-const gTimeZone = WindowsTimezones[Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
+const gTimeZone = IANAToWindowsTimezone[Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
 
 export class EWSEvent extends Event {
   calendar: EWSCalendar;
@@ -355,11 +356,6 @@ class EWSUpdateOccurrenceRequest {
   }
 }
 
-function fromWindowsZone(windowsZone): string | null {
-  for (let iana in WindowsTimezones) {
-    if (WindowsTimezones[iana] == windowsZone) {
-      return iana;
-    }
-  }
-  return null;
+function fromWindowsZone(zone): string | null {
+  return zone in IANAToWindowsTimezone ? zone : WindowsToIANATimezone[zone] ?? null;
 }
