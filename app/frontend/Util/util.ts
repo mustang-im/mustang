@@ -96,6 +96,6 @@ export function createIsSame<T>() {
       return true;
     }
     last = check;
-    return true;
+    return false;
   };
 }

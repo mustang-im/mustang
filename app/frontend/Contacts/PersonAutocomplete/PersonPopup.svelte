@@ -132,7 +132,7 @@
     dispatch("close");
   }
   async function onSave() {
-    let person = personUID.createPerson();
+    person ??= personUID.createPerson();
     person.name = personUID.name;
     contactEntry.value = personUID.emailAddress;
     if (!person.addressbook) {
