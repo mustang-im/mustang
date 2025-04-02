@@ -50,7 +50,7 @@ export const accountSettings = new ArrayColl<AccSetting>();
 
 accountSettings.add(new AccSetting(Account, "acc-general", gt`General`, AccountGeneral, true));
 
-const globalSettings = new SettingsCategory("global", gt`All`, null, true);
+const globalSettings = new SettingsCategory("global", gt`General`, null, true);
 globalSettings.subCategories.addAll([
   new SettingsCategory("global-appearance", gt`Appearance`, GlobalAppearance),
   new SettingsCategory("global-workspaces", gt`Workspaces`, GlobalWorkspaces),
