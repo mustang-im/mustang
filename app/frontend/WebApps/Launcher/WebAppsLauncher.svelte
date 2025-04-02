@@ -12,7 +12,7 @@
 
     <hbox class="actions">
       <hbox flex />
-      <Button on:click={startStore} label={$t`More apps`} />
+      <Button on:click={startStore} label={apps.hasItems ? $t`More apps` : $t`Choose which apps you want to use`} />
     </hbox>
   </vbox>
   <vbox flex />
