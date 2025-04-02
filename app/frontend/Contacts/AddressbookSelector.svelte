@@ -1,6 +1,7 @@
 <AccountSelectorRound
   {accounts}
   bind:selectedAccount={selectedAddressbook}
+  showAllOption={true}
   iconDefault={AddressbookIcon}
   on:select
   />

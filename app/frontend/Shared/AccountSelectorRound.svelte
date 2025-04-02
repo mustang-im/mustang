@@ -1,4 +1,20 @@
 <hbox class="accounts">
+  {#if showAllOption}
+    <vbox class="account" title={$t`All`}
+      on:click={() => onSelect(null)}
+      >
+      <hbox>
+        <RoundButton
+          label={$t`All`}
+          selected={selectedAccount == null}
+          onClick={() => onSelect(null)}
+          icon={iconDefault}
+          border={false}
+        />
+      </hbox>
+      <div class="name">{$t`All`}</div>
+    </vbox>
+  {/if}
   {#each $accounts.each as acc}
     <vbox class="account" title={acc.name}
       on:click={() => onSelect(acc)}
@@ -7,7 +23,7 @@
         <RoundButton
           label={acc.name}
           selected={acc == selectedAccount}
-          on:click={() => onSelect(acc)}
+          onClick={() => onSelect(acc)}
           icon={acc.icon ?? iconDefault}
           border={false}
         />
@@ -22,11 +38,14 @@
   import RoundButton from "./RoundButton.svelte";
   import type { Collection } from "svelte-collections";
   import type { ComponentType } from "svelte";
+  import { t } from "../../l10n/l10n";
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher<{ select: Account }>();
 
   /** in */
   export let accounts: Collection<Account>;
+  /** Shows an additional account "All". If chosen, selectedAccount will be null */
+  export let showAllOption = false;
   /** in/out */
   export let selectedAccount: Account;
   export let iconDefault: ComponentType | string;

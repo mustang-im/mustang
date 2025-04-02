@@ -14,6 +14,7 @@
 
 <script lang="ts">
   import { Person } from "../../logic/Abstract/Person";
+  import { Addressbook } from "../../logic/Contacts/Addressbook";
   import { selectedPerson } from "./Person/Selected";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
@@ -24,7 +25,13 @@
   import Splitter from "../Shared/Splitter.svelte";
   import type { Collection } from "svelte-collections";
 
-  let selectedAddressbook = $selectedPerson?.addressbook ?? appGlobal.addressbooks.first;
+  let selectedAddressbook: Addressbook | null = null; /** null = show all */
+
+  $: $globalSearchTerm && showAll()
+  function showAll() {
+    selectedAddressbook = null;
+    // This must be above the `$: persons` statement, so that `persons` will be adapted and then the search happens
+  }
 
   $: persons = (selectedAddressbook?.persons ?? appGlobal.persons) as Collection<Person>;
 </script>
