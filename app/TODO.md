@@ -19,7 +19,6 @@
   * Actions (Filters)
     * Run
   * Calendar
-    * Day View: Conflicts should be side by side, not on top
     * Edit Event:
       * Buttons: Recurring
       * Buttons: Cancel?

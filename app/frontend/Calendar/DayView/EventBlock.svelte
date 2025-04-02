@@ -1,10 +1,18 @@
 <hbox class="event" on:click on:click={onSelect} on:dblclick={onOpen}
   title={eventAsText}
-  style="top: {startPosInPercent}%; height: {heightInPercent}%; --account-color: {event.calendar?.color}"
+  style="
+    top: {startPosInPercent}%;
+    left: {conflicts.indexOf(event) / conflicts.length * 100}%;
+    height: {heightInPercent}%;
+    width: {100 / conflicts.length}%;
+    --account-color: {event.calendar?.color}"
+  class:conflict={conflicts.length > 1}
   class:selected={$selectedEvent == event}>
-  {#if showLabel}
+  {#if showTime}
     <!--{event.startTime.toLocaleTimeString(getUILocale(), { hour: "numeric", minute: "numeric" })}-->
     <hbox class="time">{startTime}</hbox>
+  {/if}
+  {#if showTitle}
     <hbox class="title">{event.title}</hbox>
   {/if}
 </hbox>
@@ -15,21 +23,26 @@
   import { selectedEvent } from "../selected";
   import { getDurationString } from "../../Util/date";
   import { getUILocale } from "../../../l10n/l10n";
+  import { Collection } from "svelte-collections";
 
   export let event: Event;
   /** Time where the cell (not the event) starts */
   export let start: Date;
   /** Time where the cell (not the event) end */
   export let end: Date;
+  export let otherEvents: Collection<Event>;
 
   $: startTime = event.startTime.toLocaleString(getUILocale(), { hour: "2-digit", minute: "2-digit" });
   $: eventAsText = (event.allDay ? "" : `${startTime} – ${getDurationString(event.endTime.getTime() - event.startTime.getTime())}\n`) +
      event.title +
      (event.participants.isEmpty ? "" : "\n" + event.participants.getIndexRange(0, 4).map(person => person.name).join(", "));
-  $: heightInMS = end.getTime() - start.getTime();
-  $: startPosInPercent = Math.max(0, (event.startTime.getTime() - start.getTime()) / heightInMS * 100);
-  $: heightInPercent = Math.min(100, (event.endTime.getTime() - start.getTime()) / heightInMS * 100 - startPosInPercent);
-  $: showLabel = start <= event.startTime && event.startTime < end || start.getHours() == 0;
+  $: blockHeightInMS = end.getTime() - start.getTime();
+  $: startPosInPercent = Math.max(0, (event.startTime.getTime() - start.getTime()) / blockHeightInMS * 100);
+  $: heightInPercent = Math.min(100, (event.endTime.getTime() - start.getTime()) / blockHeightInMS * 100 - startPosInPercent);
+  /** Other events that run at the same time. Includes this event */
+  $: conflicts = otherEvents.filter(ev => ev.startTime < end && ev.endTime > start && !ev.allDay);
+  $: showTime = start <= event.startTime && event.startTime < end || start.getHours() == 0;
+  $: showTitle = showTime || conflicts.length > 1;
 
   function onSelect() {
     $selectedEvent = event;
@@ -43,8 +56,7 @@
 
 <style>
   .event {
-    position: relative;
-    padding: 4px;
+    position: absolute;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -66,8 +78,16 @@
   .event:hover {
     background-color: #20AF9E70;
   }
+  .event.conflict {
+    margin-block-start: -4px;
+    margin-inline-start: -2px;
+    border: 2px solid red;
+  }
   .time {
-    margin-inline-end: 4px;
     font-weight: 600;
+  }
+  .time, .title {
+    margin-inline-start: 6px;
+    margin-block-start: 5px;
   }
 </style>
