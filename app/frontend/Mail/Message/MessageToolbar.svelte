@@ -19,16 +19,18 @@
       plain
       />
   </hbox>
-  <hbox class="reply-all">
-    <Button
-      icon={ReplyAllIcon}
-      iconSize="22px"
-      iconOnly
-      label={$t`Reply to all`}
-      onClick={replyAll}
-      plain
-      />
-  </hbox>
+  {#if recipients.length > 1 && message.bcc.isEmpty}
+    <hbox class="reply-all">
+      <Button
+        icon={ReplyAllIcon}
+        iconSize="22px"
+        iconOnly
+        label={$t`Reply to all`}
+        onClick={replyAll}
+        plain
+        />
+    </hbox>
+  {/if}
   <hbox class="trash">
     <Button
       icon={TrashIcon}
@@ -117,6 +119,7 @@
   export let message: EMail;
 
   /* <copied to="MailChatToolbar.svelte" /> */
+  $: recipients = message.allRecipients();
 
   async function toggleRead() {
     await message.markRead(!message.isRead);

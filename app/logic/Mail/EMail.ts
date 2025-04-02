@@ -104,6 +104,13 @@ export class EMail extends Message {
     return this.folder.account.storage;
   }
 
+  allRecipients(): Collection<PersonUID> {
+    let recipients = new ArrayColl<PersonUID>();
+    recipients.addAll(this.to);
+    recipients.addAll(this.cc);
+    return recipients;
+  }
+
   /** Marks as spam, and deletes or moves the message, as configured */
   async treatSpam(isSpam = true) {
     let strategy = this.folder.account.spamStrategy;

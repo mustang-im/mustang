@@ -7,6 +7,7 @@
   onClick={replyAll}
   label={$t`Reply to all`}
   tooltip={$t`Reply to all recipients of this message`}
+  disabled={recipients.length <= 1 || message.bcc.hasItems}
   icon={ReplyAllIcon} />
 <MenuItem
   onClick={forward}
@@ -68,6 +69,8 @@
 
   export let message: EMail;
   export let printE: Print | null = null;
+
+  $: recipients = message.allRecipients();
 
   function reply() {
     let reply = message.compose.replyToAuthor();
