@@ -12,20 +12,20 @@
         <Button
           label={$t`Discard`}
           icon={TrashIcon}
-          iconSize="16px"
+          iconSize="15px"
           onClick={onDelete}
           />
         <Button
           label={$t`Save`}
           icon={CloseIcon}
-          iconSize="16px"
+          iconSize="15px"
           onClick={onSave}
           />
         <Button
           label={$t`Send`}
           tooltip={sendDisabledTooltip ?? $t`Send`}
           icon={SendIcon}
-          iconSize="16px"
+          iconSize="15px"
           onClick={onSend}
           disabled={!mail.subject || $to.isEmpty}
           />
@@ -363,8 +363,14 @@
   .cc.buttons > :global(button.selected) {
     background-color: rgb(0, 0, 0, 5%);
   }
-  .window-title-bar .close.buttons > :global(*){
+  .close.buttons > :global(*){
     margin-inline-start: 8px;
+  }
+  .close.buttons :global(svg) {
+    stroke-width: 1.5px;
+  }
+  .close.buttons :global(button) {
+    border: 1px solid var(--border);
   }
   grid.recipients {
     grid-template-columns: max-content 1fr;
