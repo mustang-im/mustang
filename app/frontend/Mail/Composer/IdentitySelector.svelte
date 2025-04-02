@@ -12,17 +12,19 @@
       {selectedIdentity.account?.name}
     </hbox>
   {/if}
-  <select bind:value={selectedIdentity} class:catch-all={selectedIdentity.isCatchAll}>
-    {#each $identities.each as identity }
-      <option value={identity}>
-        {identity.isCatchAll && identity.isEMailAddress(fromAddress) && identity.emailAddress != fromAddress
-          ? fromAddress
-          : identity.name}
-        -
-        {identity.account?.name}
-      </option>
-    {/each}
-  </select>
+  {#if $identities.length > 1}
+    <select bind:value={selectedIdentity} class:catch-all={selectedIdentity.isCatchAll}>
+      {#each $identities.each as identity }
+        <option value={identity}>
+          {identity.isCatchAll && identity.isEMailAddress(fromAddress) && identity.emailAddress != fromAddress
+            ? fromAddress
+            : identity.name}
+          -
+          {identity.account?.name}
+        </option>
+      {/each}
+    </select>
+  {/if}
 </hbox>
 
 <script lang="ts">
