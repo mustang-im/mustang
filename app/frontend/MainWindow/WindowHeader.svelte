@@ -16,15 +16,16 @@
   {#if !webMail}
     <hbox class="right">
       <Button label={$t`Minimize`}
-        icon={MinimizeIcon} iconSize="24px" plain iconOnly classes="minimize"
+        icon={MinimizeIcon} iconSize="16px" plain iconOnly classes="minimize"
         onClick={onMinimize}
         />
-      <Button label={$t`Maximize`}
-        icon={MaximizeIcon} iconSize="19px" plain iconOnly classes="maximize"
-        onClick={onMaximize}
+      <Button label={canMaximize ? $t`Maximize` : $t`Restore window`}
+        icon={canMaximize ? MaximizeIcon : UnmaximizeIcon}
+        iconSize="12px" plain iconOnly classes="restore-window"
+        onClick={onMaximizeOrRestore}
         />
       <Button label={$t`Close entire app`}
-        icon={XIcon} iconSize="24px" plain iconOnly classes="close"
+        icon={XIcon} iconSize="16px" plain iconOnly classes="close"
         onClick={onCloseApp}
         />
     </hbox>
@@ -43,6 +44,7 @@
   import logo from '../asset/icon/general/logo.svg?raw';
   import MinimizeIcon from 'lucide-svelte/icons/minus';
   import MaximizeIcon from 'lucide-svelte/icons/square';
+  import UnmaximizeIcon from 'lucide-svelte/icons/copy';
   import XIcon from 'lucide-svelte/icons/x';
   import { getOSName } from "../Util/util";
   import { t } from "../../l10n/l10n";
@@ -60,8 +62,14 @@
     appGlobal.remoteApp.minimizeMainWindow();
   }
 
-  function onMaximize() {
-    appGlobal.remoteApp.maximizeMainWindow();
+  let canMaximize = true;
+  function onMaximizeOrRestore() {
+    if (canMaximize) {
+      appGlobal.remoteApp.maximizeMainWindow();
+    } else {
+      appGlobal.remoteApp.unminimizeMainWindow();
+    }
+    canMaximize = !canMaximize;
   }
 
   function onCloseApp() {
@@ -90,14 +98,20 @@
     margin-inline-start: 4px;
     app-region: drag;
   }
-  .right :global(.close),
-  .right :global(.minimize),
-  .right :global(.maximize),
-  .right :global(.settings) {
+  .right {
+    padding-inline-end: 8px;
+  }
+  .right :global(button) {
     color: white;
+    padding-inline-start: 8px;
+    padding-inline-end: 8px;
+  }
+  .right :global(.maximize) {
+    padding-inline-start: 10px;
+    padding-inline-end: 10px;
   }
   .right :global(.minimize svg) {
-    margin-block-start: 10px; /* Find better icon */
+    margin-block-start: 8px; /* Find better icon */
   }
   .free {
     app-region: drag;
