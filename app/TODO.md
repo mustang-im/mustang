@@ -1,7 +1,22 @@
 # Next
 * Mail
+  * Contacts
+    * All addressbooks
+    * Search switches to all addresbooks
+    * Breakpoints
+      * Header
+      * Similar names
+  * Beta banner
   * Search
+    * Without text
+    * Include from/to (both content of messages, and name of recipients/sender)
+      * Email
+      * Chat
     * Results miss From
+  * App
+    * URLs of apps
+  * Contacts
+    * Header of person
   * SQL
     * Accounts in separate DB
     * Non-search properties as JSON
@@ -9,10 +24,22 @@
     * Calendar
     * SMTP
     * OAuth2
+  * Actions (Filters)
+    * Run
   * Calendar
+    * Day View: Conflicts should be side by side, not on top
+    * Day View: mult-day events only in the header
+    * Month View: multi-day events: opacity, smaller height, margin at bottom
+    * Edit Event:
+      * Buttons: Recurring
+      * Buttons: Cancel?
+      * Sidebar
     * Invitations
     * Free/Busy
-  * format/flowed
+  * Chat
+    * Fix group button
+  * Files
+    * Files (attachments) don't open
   * Bug: Thunderbird AB import misses ABs and fields
   * Import Outlook PST
   * OAuth2 login UI with browser/URL options
@@ -25,12 +52,10 @@
     * Hide quotes
     * Message list: Threaded view?
     * Mail Chat view: Open thread
-  * Actions (Filters)
-    * Run
   * Tags: Shrink tag list when not enough space
   * All accounts
-    * Fix mergeColls() #72
     * Use search folder
+    * Fix mergeColls() #72
   * Setup mail
     * After account delete: remove general panel
     * Scroll inside dialog, not whole window
@@ -202,7 +227,10 @@
 * Threading in Thread pane
 * Save/Load mail as .eml file
 * OS mailto: and send file as email
+* Format/flowed
 * Encryption
+  * PGP
+  * S/MIME
 
 ### Editor
 * blockquote cite vs. third party
