@@ -7,16 +7,16 @@
     />
   <hbox class="icon" class:valid>
     {#if !emailAddress}
-      <Icon data={GMailIcon} size="16px" />
-      <Icon data={Microsoft365Icon} size="16px" />
-      <Icon data={YahooIcon} size="16px" />
+      <Icon data={GMailIcon} title="Google" size="16px" />
+      <Icon data={Microsoft365Icon} title="Microsoft" size="16px" />
+      <Icon data={YahooIcon} title="Yahoo" size="16px" />
     {:else if valid}
       {#if emailAddress.endsWith("@gmail.com")}
-        <Icon data={GMailIcon} size="16px" />
+        <Icon data={GMailIcon} title="Google" size="16px" />
       {:else if emailAddress.includes("@yahoo.")}
-        <Icon data={YahooIcon} size="16px" />
+        <Icon data={YahooIcon} title="Yahoo" size="16px" />
       {:else if emailAddress.includes("@outlook.") || emailAddress.includes("@hotmail.") || emailAddress.includes("@live.")}
-        <Icon data={Microsoft365Icon} size="16px" />
+        <Icon data={Microsoft365Icon} title="Microsoft" size="16px" />
       {:else}
         <CheckIcon />
       {/if}
