@@ -19,7 +19,7 @@
         icon={MinimizeIcon} iconSize="16px" plain iconOnly classes="minimize"
         onClick={onMinimize}
         />
-      <Button label={canMaximize ? $t`Maximize` : $t`Restore window`}
+      <Button label={$t`Maximize`} tooltip={canMaximize ? $t`Maximize` : $t`Restore window`}
         icon={canMaximize ? MaximizeIcon : UnmaximizeIcon}
         iconSize="12px" plain iconOnly classes="restore-window"
         onClick={onMaximizeOrRestore}
