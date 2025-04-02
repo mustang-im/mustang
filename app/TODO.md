@@ -20,7 +20,6 @@
     * Run
   * Calendar
     * Day View: Conflicts should be side by side, not on top
-    * Day View: mult-day events only in the header
     * Edit Event:
       * Buttons: Recurring
       * Buttons: Cancel?

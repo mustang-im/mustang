@@ -15,6 +15,11 @@
           <vbox class="day-header header">
             <hbox class="date">{day.toLocaleDateString(getUILocale(), { day: "numeric" })}</hbox>
             <hbox class="weekday">{day.toLocaleDateString(getUILocale(), { weekday: "long" })}</hbox>
+            <vbox class="all-day-events">
+              {#each allDayEvents.contents.filter(ev => ev.startTime <= day && day <= ev.endTime) as event (event.id)}
+                <AllDayEvent {event} {start} />
+              {/each}
+            </vbox>
           </vbox>
         {/each}
         {#each startTimes as start}
@@ -28,9 +33,10 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { getToday } from "../../Util/date";
+  import { getToday, k1Day } from "../../Util/date";
   import TimeLabel from "./TimeLabel.svelte";
   import TimeDayRow from "./TimeDayRow.svelte";
+  import AllDayEvent from "./AllDayEvent.svelte";
   import DateRange from "../DateRange.svelte";
   import Button from "../../Shared/Button.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
@@ -91,6 +97,13 @@
     }
   }
 
+  let allDayEvents: Collection<Event>;
+  $: start, $events, setAllDayEvents();
+  function setAllDayEvents() {
+    let end = new Date(start.getTime() + showDays * k1Day);
+    allDayEvents = events.filter(ev => ev.allDay && ev.startTime < end && start < ev.endTime);
+  }
+
   function goToToday() {
     start = getToday();
   }
@@ -129,6 +142,10 @@
   }
   .day-header .date {
     font-size: 180%;
+  }
+  .all-day-events {
+    margin: 10px -16px -10px -16px;
+    opacity: 85%;
   }
   .weekday {
     margin-block-start: -4px;
