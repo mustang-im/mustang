@@ -21,7 +21,6 @@
   * Calendar
     * Day View: Conflicts should be side by side, not on top
     * Day View: mult-day events only in the header
-    * Month View: multi-day events: opacity, smaller height, margin at bottom
     * Edit Event:
       * Buttons: Recurring
       * Buttons: Cancel?

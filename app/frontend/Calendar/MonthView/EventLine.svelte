@@ -1,14 +1,15 @@
 <hbox class="event" on:click on:click={onSelect} on:dblclick={onOpen}
   title={eventAsText}
   style="--account-color: {event.calendar?.color}"
+  class:all-day={$event.allDay}
   class:selected={$selectedEvent == event}>
-  {#if !event.allDay && !isContinued}
+  {#if !$event.allDay && !isContinued}
     <hbox class="time">
       <!--{event.startTime.toLocaleTimeString(getUILocale(), { hour: "numeric", minute: "numeric" })}-->
       {startTime}
     </hbox>
   {/if}
-  <hbox class="title">{event.title}</hbox>
+  <hbox class="title">{$event.title}</hbox>
 </hbox>
 
 <script lang="ts">
@@ -64,6 +65,11 @@
   }
   .event:hover {
     background-color: #20AF9E70;
+  }
+  .event.all-day {
+    margin-block-end: 6px;
+    padding: 0px 4px;
+    opacity: 85%;
   }
   .time {
     margin-inline-end: 4px;
