@@ -7,7 +7,7 @@
   />
 
 <script lang="ts">
-  import { getUILocale, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let time: Date; /* in/out */
   export let disabled = false;
@@ -18,9 +18,11 @@
   $: updateUserValue(time);
   function updateUserValue(time: Date) {
     try {
-      userValue = time.toLocaleString(getUILocale(), {
-        hour: "numeric",
-        minute: "numeric",
+      // <input type="time" value="14:23" />, independent of user locale, as string
+      userValue = time.toLocaleTimeString("de", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
       });
     } catch (ex) {
       inputE.setCustomValidity(ex.message);
