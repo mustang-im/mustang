@@ -2,8 +2,8 @@
   <GroupBox classes="person">
     <hbox flex class="main-left" slot="content">
       <hbox flex>
-        <PersonPicture {person} size={128} />
-        <vbox flex class="main-info">
+        <PersonPicture {person} size={64} allowPlaceholder={true} />
+        <vbox class="main-info">
           <hbox class="name">
             <EditableSimpleText bind:value={person.name}
               on:save={save}
@@ -17,35 +17,40 @@
               <input type="text" bind:value={person.lastName}
                 class="lastname" placeholder={$t`Last name`} />
             </vbox>
-          {:else}
-            {#if $person.position}
+          {/if}
+          <vbox class="job-company">
+            {#if $person.position || isEditingName}
               <hbox class="position">
                 <EditableSimpleText bind:value={person.position} on:save={save} placeholder={$t`Position`} />
               </hbox>
             {/if}
-            {#if $person.department}
+            {#if $person.department || isEditingName}
               <hbox class="department">
                 <EditableSimpleText bind:value={person.department} on:save={save} placeholder={$t`Department`} />
               </hbox>
             {/if}
-            {#if $person.company}
+            {#if $person.company || isEditingName}
               <hbox class="company">
                 <EditableSimpleText bind:value={person.company} on:save={save} placeholder={$t`First name Last name`} />
               </hbox>
             {/if}
-          {/if}
+          </vbox>
         </vbox>
       </hbox>
       <hbox flex class="main-right">
         <hbox class="main-call">
-          <RoundButton label={$t`Video call`} icon={CameraIcon} classes="large secondary action"
-            onClick={() => startVideoCall(person)} />
+          {#if preferredVideoCall}
+            <RoundButton label={$t`Video call`} icon={CameraIcon} classes="large secondary action"
+              onClick={() => startVideoCall(person)} />
+          {/if}
           {#if preferredPhoneNumber}
             <a href="tel:{preferredPhoneNumber}" class="phone-call">
               <RoundButton label={$t`Call`} icon={CallIcon} iconSize="19px" classes="large secondary action" />
             </a>
           {/if}
-          <RoundButton label={$t`Message`} icon={ChatIcon} classes="large secondary action" />
+          {#if preferredChatAccount}
+            <RoundButton label={$t`Message`} icon={ChatIcon} classes="large secondary action" />
+          {/if}
           {#if preferredEmailAddress}
             <a href="mailto:{preferredEmailAddress}">
               <RoundButton label={$t`Send mail`} icon={MailIcon} classes="large secondary action" />
@@ -245,6 +250,10 @@
   $: preferredEmailAddress = $emailAddresses.isEmpty ? null :
       emailAddresses.sortBy(p => p.preference).first?.value ??
       emailAddresses.first.value;
+  $: preferredVideoCall = null;
+  $: preferredChatAccount = $chatAccounts.isEmpty ? null :
+      chatAccounts.sortBy(p => p.preference).first?.value ??
+      chatAccounts.first.value;
 
   let isEditingName: boolean;
   $: showEmail = $emailAddresses.hasItems;
@@ -288,9 +297,14 @@
     font-size: 14px;
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%) inset;
   }
+  .main-left {
+    margin-inline-start: -16px;
+    margin-inline-end: -8px;
+    margin-block-end: -8px;
+  }
   .main-info {
-    margin-inline-start: 24px;
-    margin-block-start: 8px;
+    margin-inline-start: 12px;
+    margin-block-start: 16px;
     margin-block-end: 16px;
   }
   .name :global(input),
@@ -309,17 +323,20 @@
   .person-page[language="fr"] .names input.lastname {
     text-transform: uppercase;
   }
-  .position,
-  .department,
-  .company {
+  .job-company {
     color: grey;
   }
+  .job-company :global(.actions),
+  .job-company :global(.value) {
+    margin-block-start: 2px;
+  }
   .main-right {
-    margin: 16px;
+    margin: 8px;
     flex-wrap: wrap;
   }
   .main-call {
     align-items: start;
+    margin-block-start: 8px;
     margin-inline-end: 10px;
   }
   .main-call :global(> *) {
