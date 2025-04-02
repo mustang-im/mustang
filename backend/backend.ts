@@ -44,6 +44,7 @@ async function createSharedAppObject() {
     setBadgeCount,
     minimizeMainWindow,
     unminimizeMainWindow,
+    maximizeMainWindow,
     addEventListenerWebContents,
     getWebContents,
     writeTextToClipboard,
@@ -362,6 +363,10 @@ function minimizeMainWindow() {
 
 function unminimizeMainWindow() {
   mainWindow.restore();
+}
+
+function maximizeMainWindow() {
+  mainWindow.maximize();
 }
 
 function addEventListenerWebContents(webContentsID: number, webviewEvent: string, eventHandler: (event: Event) => void) {

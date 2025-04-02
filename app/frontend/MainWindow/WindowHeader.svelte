@@ -18,6 +18,10 @@
       icon={MinimizeIcon} iconSize="24px" plain iconOnly classes="minimize"
       onClick={onMinimize}
       />
+    <Button label={$t`Maximize`}
+      icon={MaximizeIcon} iconSize="19px" plain iconOnly classes="maximize"
+      onClick={onMaximize}
+      />
     <Button label={$t`Close entire app`}
       icon={XIcon} iconSize="24px" plain iconOnly classes="close"
       onClick={onCloseApp}
@@ -36,6 +40,7 @@
   import Icon from 'svelte-icon/Icon.svelte';
   import logo from '../asset/icon/general/logo.svg?raw';
   import MinimizeIcon from 'lucide-svelte/icons/minus';
+  import MaximizeIcon from 'lucide-svelte/icons/square';
   import XIcon from 'lucide-svelte/icons/x';
   import { getOSName } from "../Util/util";
   import { webMail } from "../../logic/build";
@@ -52,6 +57,10 @@
 
   function onMinimize() {
     appGlobal.remoteApp.minimizeMainWindow();
+  }
+
+  function onMaximize() {
+    appGlobal.remoteApp.maximizeMainWindow();
   }
 
   function onCloseApp() {
@@ -82,6 +91,7 @@
   }
   .right :global(.close),
   .right :global(.minimize),
+  .right :global(.maximize),
   .right :global(.settings) {
     color: white;
   }

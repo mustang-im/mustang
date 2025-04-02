@@ -44,6 +44,8 @@ export class WebMailBackend {
   }
   async unminimizeMainWindow() {
   }
+  async maximizeMainWindow() {
+  }
   async writeTextToClipboard(text: string) {
     navigator.clipboard.writeText(text);
   }
