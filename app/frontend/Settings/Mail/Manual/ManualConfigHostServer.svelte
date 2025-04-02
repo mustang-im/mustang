@@ -133,7 +133,7 @@
     return tls != TLSSocketType.Unknown && tls != TLSSocketType.TLS && tls != TLSSocketType.STARTTLS || config.acceptBrokenTLSCerts;
   }
 
-  $: tlsWarning = noEncryption(config.tls) ? "Attackers can read your password and mails" : null;
+  $: tlsWarning = noEncryption(config.tls) ? gt`Attackers can read your password and mails` : null;
 
   function onTLSChanged() {
     let newP = kStandardPorts.find(p => p.protocol == config.protocol && p.tls == config.tls);
