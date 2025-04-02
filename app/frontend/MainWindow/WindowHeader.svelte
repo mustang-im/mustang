@@ -13,27 +13,29 @@
   <hbox class="search-box">
     <SearchField bind:searchTerm={$globalSearchTerm} />
   </hbox>
-  <hbox class="right">
-    <Button label={$t`Minimize`}
-      icon={MinimizeIcon} iconSize="24px" plain iconOnly classes="minimize"
-      onClick={onMinimize}
-      />
-    <Button label={$t`Maximize`}
-      icon={MaximizeIcon} iconSize="19px" plain iconOnly classes="maximize"
-      onClick={onMaximize}
-      />
-    <Button label={$t`Close entire app`}
-      icon={XIcon} iconSize="24px" plain iconOnly classes="close"
-      onClick={onCloseApp}
-      />
-  </hbox>
+  {#if !webMail}
+    <hbox class="right">
+      <Button label={$t`Minimize`}
+        icon={MinimizeIcon} iconSize="24px" plain iconOnly classes="minimize"
+        onClick={onMinimize}
+        />
+      <Button label={$t`Maximize`}
+        icon={MaximizeIcon} iconSize="19px" plain iconOnly classes="maximize"
+        onClick={onMaximize}
+        />
+      <Button label={$t`Close entire app`}
+        icon={XIcon} iconSize="24px" plain iconOnly classes="close"
+        onClick={onCloseApp}
+        />
+    </hbox>
+  {/if}
 </hbox>
 
 <script lang="ts">
   import type { MustangApp } from "../AppsBar/MustangApp";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
-  import { appName } from "../../logic/build";
+  import { appName, webMail } from "../../logic/build";
   import WorkspaceHeader from "./WorkspaceHeader.svelte";
   import SearchField from "../Shared/SearchField.svelte";
   import Button from "../Shared/Button.svelte";
@@ -43,7 +45,6 @@
   import MaximizeIcon from 'lucide-svelte/icons/square';
   import XIcon from 'lucide-svelte/icons/x';
   import { getOSName } from "../Util/util";
-  import { webMail } from "../../logic/build";
   import { t } from "../../l10n/l10n";
   import { rtlLocales } from "../../l10n/list";
   import { selectedWorkspace } from "./Selected";
