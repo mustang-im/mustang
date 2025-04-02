@@ -1,7 +1,7 @@
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox flex class="left-pane" slot="left">
     <PersonsToolbar {persons} bind:selectedAddressbook />
-    <PersonsList persons={filteredPersons} bind:selected={$selectedPerson} size="small" />
+    <PersonsList {persons} bind:selected={$selectedPerson} size="small" bind:searchTerm={$globalSearchTerm} />
   </vbox>
   <vbox flex class="right-pane" slot="right">
     {#if $selectedPerson && $selectedPerson instanceof Person}
@@ -27,23 +27,6 @@
   let selectedAddressbook = $selectedPerson?.addressbook ?? appGlobal.addressbooks.first;
 
   $: persons = (selectedAddressbook?.persons ?? appGlobal.persons) as Collection<Person>;
-  $: filteredPersons = $globalSearchTerm
-    ? persons.filter(p =>
-      p.name?.toLowerCase().includes($globalSearchTerm) ||
-      p.emailAddresses.some(e => e.value.toLowerCase().includes($globalSearchTerm)) ||
-      p.phoneNumbers.some(e => e.value.toLowerCase().includes($globalSearchTerm)) ||
-      p.chatAccounts.some(e => e.value.toLowerCase().includes($globalSearchTerm)) ||
-      p.streetAddresses.some(e => e.value.toLowerCase().includes($globalSearchTerm)) ||
-      p.notes?.toLowerCase().includes($globalSearchTerm))
-    : persons;
-
-  $: $globalSearchTerm && clearSelected();
-  $: selectedAddressbook, clearSelected();
-  function clearSelected() {
-    if (!filteredPersons.contains($selectedPerson)) {
-      $selectedPerson = filteredPersons.first;
-    }
-  }
 </script>
 
 <style>

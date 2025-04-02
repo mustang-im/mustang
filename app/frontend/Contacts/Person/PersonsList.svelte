@@ -1,6 +1,6 @@
 <vbox flex class="persons" {size}>
   <SearchField bind:searchTerm placeholder={$t`Search for a person or group`} />
-  <FastList items={personsFiltered} columns="auto">
+  <FastList items={filteredPersons} columns="auto">
     <vbox class="person" slot="row" let:item={person} on:click={() => selected = person}>
       <PersonLine {person} isSelected={person == selected} {pictureSize} {size}>
         <slot name="top-right" slot="top-right" {person} />
@@ -24,15 +24,33 @@
   export let selected: PersonOrGroup = $selectedPerson;
   export let size: "large" | "small" = "large";
   export let pictureSize = size == "large" ? 56 : 20;
+  /** in/out */
+  export let searchTerm: string | null = null;
 
-  let searchTerm: string;
-  $: personsFiltered = searchTerm
-    ? persons.filter(p => p.name?.toLowerCase().includes(searchTerm))
+  $: filteredPersons = searchTerm
+    ? persons.filter(p =>
+      p.name?.toLowerCase().includes(searchTerm) ||
+      p instanceof Person && (
+        p.emailAddresses.some(e => e.value.toLowerCase().includes(searchTerm)) ||
+        p.phoneNumbers.some(e => e.value.toLowerCase().includes(searchTerm)) ||
+        p.chatAccounts.some(e => e.value.toLowerCase().includes(searchTerm)) ||
+        p.streetAddresses.some(e => e.value.toLowerCase().includes(searchTerm)) ||
+        p.notes?.toLowerCase().includes(searchTerm))
+    )
     : persons;
 
-  $: if (selected instanceof Person) setSelectedPerson(selected);
-  function setSelectedPerson(person: Person) {
-    $selectedPerson = person;
+  $: searchTerm && adaptSelected();
+  function adaptSelected() {
+    if (!filteredPersons.contains(selected)) {
+      selected = filteredPersons.first;
+    }
+  }
+
+  $: selected && setSelectedPerson();
+  function setSelectedPerson() {
+    if (selected instanceof Person) {
+      $selectedPerson = selected;
+    }
   }
 </script>
 
