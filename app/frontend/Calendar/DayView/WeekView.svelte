@@ -100,7 +100,7 @@
   let allDayEvents: Collection<Event>;
   $: start, $events, setAllDayEvents();
   function setAllDayEvents() {
-    let end = new Date(start.getTime() + showDays * k1Day);
+    let end = new Date(start.getTime() + showDays * k1Day * 1000);
     allDayEvents = events.filter(ev => ev.allDay && ev.startTime < end && start < ev.endTime);
   }
 

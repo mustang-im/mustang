@@ -16,8 +16,9 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { selectedCalendar, selectedDate } from "../selected";
+  import { selectedCalendar, selectedDate, selectedDateInterval } from "../selected";
   import { calendarMustangApp } from "../CalendarMustangApp";
+  import { k1Hour } from "../../Util/date";
   import EventLine from "./EventLine.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import { assert } from "../../../logic/util/util";
@@ -46,8 +47,8 @@
   function addEvent() {
     assert($selectedCalendar, $t`Please select a calendar first`);
     let event = $selectedCalendar.newEvent();
-    event.startTime = new Date(start);
-    event.endTime = new Date(start);
+    event.startTime = new Date(start.getTime() + 10 * k1Hour * 1000);
+    event.endTime = new Date(start.getTime() + 11 * k1Hour * 1000);
     calendarMustangApp.editEvent(event);
   }
 </script>

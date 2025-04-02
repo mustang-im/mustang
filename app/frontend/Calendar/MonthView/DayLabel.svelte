@@ -1,4 +1,4 @@
-<hbox class="day" on:dblclick={changeToDay} class:today={day.getTime() == today.getTime()}>
+<hbox class="day" on:click={selectDay} on:dblclick={changeToDay} class:today={day.getTime() == today.getTime()}>
   <hbox class="date-number">
     {day.toLocaleDateString(getUILocale(), { day: "numeric" })}
   </hbox>
@@ -25,9 +25,13 @@
 
   const today = getToday();
 
+  function selectDay() {
+    $selectedDate = day;
+  }
+
   function changeToDay() {
     $selectedDate = day;
-    $selectedDateInterval = 1;
+    $selectedDateInterval = 2;
   }
 </script>
 
