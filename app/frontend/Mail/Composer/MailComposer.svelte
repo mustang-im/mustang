@@ -9,19 +9,25 @@
         bind:fromName={mail.from.name} />
       <hbox flex class="spacer" />
       <hbox class="close buttons">
-        <RoundButton
-          label={$t`Discard and close`}
+        <Button
+          label={$t`Discard`}
           icon={TrashIcon}
           iconSize="16px"
-          padding="6px"
           onClick={onDelete}
           />
-        <RoundButton
-          label={$t`Save and close`}
+        <Button
+          label={$t`Save`}
           icon={CloseIcon}
           iconSize="16px"
-          padding="6px"
           onClick={onSave}
+          />
+        <Button
+          label={$t`Send`}
+          tooltip={sendDisabledTooltip ?? $t`Send`}
+          icon={SendIcon}
+          iconSize="16px"
+          onClick={onSend}
+          disabled={!mail.subject || $to.isEmpty}
           />
       </hbox>
     </hbox>

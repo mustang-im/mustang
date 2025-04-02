@@ -26,6 +26,7 @@
       * Buttons: Recurring
       * Buttons: Cancel?
       * Sidebar
+    * List view: FastList missing scrollbar
     * Invitations
     * Free/Busy
   * Files
