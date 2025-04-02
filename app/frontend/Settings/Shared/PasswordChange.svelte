@@ -14,8 +14,10 @@
   export let password: string;
   export let tabindex: number | undefined = undefined;
 
-  let newPassword: string;
+  let newPassword = "";
   function onPasswordChanged() {
-    password = newPassword;
+    if (newPassword) {
+      password = newPassword;
+    }
   }
 </script>
