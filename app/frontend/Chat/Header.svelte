@@ -2,7 +2,9 @@
   <AccountSelectorRound bind:selectedAccount {accounts} iconDefault={ChatIcon} />
   <hbox flex />
   <hbox class="buttons">
+    <!--
     <RoundButton label={$t`New group`} icon={NewGroupIcon} iconSize="22px" padding="9px" classes="large create" on:click={() => catchErrors(addGroup)} />
+    -->
   </hbox>
 </hbox>
 

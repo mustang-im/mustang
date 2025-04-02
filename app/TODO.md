@@ -36,8 +36,6 @@
       * Sidebar
     * Invitations
     * Free/Busy
-  * Chat
-    * Fix group button
   * Files
     * Files (attachments) don't open
   * Bug: Thunderbird AB import misses ABs and fields
