@@ -296,6 +296,10 @@
     padding: 8px;
     font-size: 14px;
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%) inset;
+
+    /** for media query */
+    container-type: inline-size;
+    container-name: right-page;
   }
   .main-left {
     margin-inline-start: -16px;
@@ -388,9 +392,15 @@
   .notes textarea:focus {
     outline: 2px solid var(--input-focus);
   }
-  grid {
+  grid.boxes {
     display: grid;
-    grid-template-columns: 1fr 2fr;
+    grid-template-columns: 1fr 1fr;
+  }
+  @container right-page (max-width: 600px) {
+    grid.boxes {
+      display: grid;
+      grid-template-columns: 1fr;
+    }
   }
   grid.items {
     display: grid;
