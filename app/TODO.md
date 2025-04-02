@@ -1,11 +1,5 @@
 # Next
 * Mail
-  * Contacts
-    * All addressbooks
-    * Search switches to all addresbooks
-    * Breakpoints
-      * Header
-      * Similar names
   * Beta banner
   * Search
     * Without text
@@ -15,8 +9,6 @@
     * Results miss From
   * App
     * URLs of apps
-  * Contacts
-    * Header of person
   * SQL
     * Accounts in separate DB
     * Non-search properties as JSON

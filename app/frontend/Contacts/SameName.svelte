@@ -8,12 +8,14 @@
       {#each $sameName.each as other}
         <hbox class="other-person">
           <hbox on:click={() => catchErrors(() => openPerson(other))} class="linked-object">
-            <PersonPicture {person} size={24} />
+            {#if other?.picture}
+              <PersonPicture person={other} size={24} />
+            {/if}
             <hbox class="name">{other.name}</hbox>
           </hbox>
           <hbox class="email-address">{other.emailAddresses.first?.value ?? ""}</hbox>
           <hbox class="buttons">
-            <Button label={$t`Merge`} icon={MergeIcon} plain onClick={() => merge(other)} />
+            <Button label={$t`Merge`} iconOnly icon={MergeIcon} plain onClick={() => merge(other)} />
           </hbox>
         </hbox>
       {/each}
@@ -28,7 +30,7 @@
   import Button from "../Shared/Button.svelte";
   import MergeIcon from "lucide-svelte/icons/combine";
   import PersonsIcon from "lucide-svelte/icons/users";
-  import { catchErrors, showError } from "../Util/error";
+  import { catchErrors } from "../Util/error";
   import { appGlobal } from "../../logic/app";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../l10n/l10n";
@@ -80,11 +82,16 @@
     text-decoration: underline;
   }
   .email-address {
-    margin-inline-start: 24px;
+    margin-inline-start: 16px;
+  }
+  .other-person,
+  .email-address {
+    white-space: nowrap;
+    overflow: hidden;
   }
   .buttons {
     align-items: right;
-    margin-inline-start: 24px;
+    margin-inline-start: 16px;
   }
   .other-person:not(:hover) .buttons {
     visibility: hidden;
