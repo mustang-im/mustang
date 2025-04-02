@@ -71,7 +71,8 @@
 <style>
   .other-person {
     align-items: center;
-    height: 24px;
+    margin-block-end: 4px;
+    flex-wrap: wrap;
   }
   .linked-object {
     align-items: center;
@@ -90,7 +91,7 @@
     overflow: hidden;
   }
   .buttons {
-    align-items: right;
+    align-items: end;
     margin-inline-start: 16px;
   }
   .other-person:not(:hover) .buttons {
