@@ -113,9 +113,8 @@
             </vbox>
           </Scroll>
           <hbox class="footer">
-            <hbox class="label">{$t`Subject`}</hbox>
             <hbox class="subject" flex>
-              <input type="text" bind:value={mail.subject} tabindex={1} />
+              <input type="text" bind:value={mail.subject} tabindex={1} placeholder={$t`Subject`} />
             </hbox>
             <hbox class="buttons">
               <RoundButton
@@ -395,6 +394,13 @@
     min-width: 120px;
     max-width: 350px;
     margin-inline-end: -12px;
+  }
+  .subject {
+    margin-inline-start: 18px;
+    margin-inline-end: 8px;
+  }
+  .subject input {
+    font-size: 16px;
   }
   .footer {
     margin-block-start: 8px;
