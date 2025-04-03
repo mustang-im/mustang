@@ -53,26 +53,14 @@
       }
     },
     {
-      "id": "word-processing",
-      "parentID": "productivity",
-      "fullID": "productivity/word-processing",
-      "name": {
-        "en": "Word processing",
-        "de": "Text-Verarbeitung"
-      },
-      "description": {}
-    },
-    {
       "id": "text-editor",
       "parentID": "productivity",
       "fullID": "productivity/text-editor",
       "name": {
         "en": "Text editor",
-        "de": "Einfacher Text-Editor"
+        "de": "Text-Verarbeitung"
       },
       "description": {
-        "en": "Edit simple text files without formatting, or markup as used in Wikipedia and Markdown",
-        "de": "Bearbeiten von einfachen Text-Dateien ohne Formattierung, oder ähnlich Markdown und Wikipedia-Texten"
       }
     },
     {
@@ -156,6 +144,7 @@
         "de": "Visuelles Arbeitsblatt mit unbegrenztem Zoom für Mind Maps, Illustrationen, Diagramme, Fluss-Diagramme, und Geschäftsmodelle."
       },
       "homepage": "https://www.miro.com",
+      "start": "https://miro.com/login/",
       "icon": "https://miro.com/blog/wp-content/uploads/2019/10/icon.svg"
     },
     {
@@ -171,6 +160,7 @@
         "de": "Gestalte Benutzeroberflächen, Websites und Icons"
       },
       "homepage": "https://www.figma.com",
+      "start": "https://www.figma.com/login",
       "icon": "https://s3-alpha.figma.com/hub/file/1481185752/fa4cd070-6a79-4e1b-b079-8b9b76408595-cover.png"
     },
     {
@@ -184,16 +174,15 @@
       "description": {
         "en": "Your own private office suite in the Cloud that supports all major document, spreadsheet and presentation file formats"
       },
-      "homepage": "https://www.collaboraoffice.com/collabora-online/",
-      "pricePage": "https://www.collaboraoffice.com/subscriptions/",
-      "start": "https://www.collaboraoffice.com",
+      "homepage": "https://www.collaboraonline.com/collabora-online/",
+      "pricePage": "https://www.collaboraonline.com/subscriptions/",
+      "start": "https://www.collaboraonline.com",
       "icon": "https://wiki.calculate-linux.org/download_images/original/xcollabora-logo.png.pagespeed.ic.acN5E7XQKT.png"
     },
     {
       "id": "ox-docs",
       "categoryFullIDs": [
-        "productivity/office-suite",
-        "recommended"
+        "productivity/office-suite"
       ],
       "name": {
         "en": "OX Docs"
@@ -202,7 +191,38 @@
         "en": "Create and edit text documents, spreadsheets and presentations with OX Documents, which power up office capabilities for private and small business users."
       },
       "homepage": "https://www.open-xchange.com/products/ox-documents/",
+      "start": "https://www.open-xchange.com/products/ox-drive/",
       "icon": "https://avatars.githubusercontent.com/u/5494836?s=200&v=4"
+    },
+    {
+      "id": "onlyoffice",
+      "categoryFullIDs": [
+        "productivity/office-suite"
+      ],
+      "name": {
+        "en": "OnlyOffice"
+      },
+      "description": {
+        "en": "Editor for text documents, spreadsheets, presentations, forms and PDF. Originated in/around Russia."
+      },
+      "homepage": "hhttps://www.onlyoffice.com/office-suite.aspx",
+      "start": "https://www.onlyoffice.com/signin.aspx",
+      "icon": "https://static-www.onlyoffice.com/v9.5.0/images/logo_130_24.svg"
+    },
+    {
+      "id": "wpsoffice",
+      "categoryFullIDs": [
+        "productivity/office-suite"
+      ],
+      "name": {
+        "en": "WPS Office"
+      },
+      "description": {
+        "en": "Read and edit documents at the same time as your mates. You can track exact edit time, history version and even editors. Originated in China."
+      },
+      "homepage": "https://www.wps.com/wpsdocs/",
+      "start": "https://account.wps.com/",
+      "icon": "https://cloud.cache.wpscdn.com/ovs-beta/account/libs/img/v1/pro/wps.d6f53e0f.svg"
     },
     {
       "id": "google-docs",
@@ -217,12 +237,14 @@
         "de": "Nahtlos zusammenarbeiten – von überall aus. Sie können Dokumente ganz einfach freigeben und in Echtzeit gemeinsam bearbeiten, mit Kommentaren, Vorschlägen und zugewiesenen Aufgaben."
       },
       "homepage": "https://www.google.com/docs/about/",
+      "start": "https://docs.google.com/",
       "icon": "https://upload.wikimedia.org/wikipedia/commons/0/01/Google_Docs_logo_%282014-2020%29.svg"
     },
     {
       "id": "microsoft-office",
       "categoryFullIDs": [
-        "productivity/office-suite"
+        "productivity/office-suite",
+        "recommended"
       ],
       "name": {
         "en": "Microsoft Office 365"
@@ -232,12 +254,13 @@
         "de": "Die bekannte Microsoft Office-Suite läuft jetzt im Web"
       },
       "homepage": "https://www.microsoft.com/microsoft-365/free-office-online-for-the-web",
-      "icon": "https://vstpatch.net/wp-content/uploads/2021/07/Microsoft_Office_logo_2013%E2%80%932019.svg_.png"
+      "start": "https://m365.cloud.microsoft/launch/Word/",
+      "icon": "https://raw.githubusercontent.com/mustang-im/mustang/refs/heads/master/app/frontend/asset/icon/brand/microsoft365.svg"
     },
     {
       "id": "cryptpad",
       "categoryFullIDs": [
-        "productivity/office-suite",
+        "productivity/text-editor",
         "recommended"
       ],
       "name": {
