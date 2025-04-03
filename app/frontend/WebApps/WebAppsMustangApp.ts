@@ -10,7 +10,7 @@ export class WebAppsMustangApp extends MustangApp {
   name = gt`Apps`;
   icon = appsLauncherIcon;
   mainWindow = AppsApp;
-  subApps = appGlobal.webApps.myApps.map(app => new WebAppSubMustangApp(app));
+  //subApps = appGlobal.webApps.myApps.map(app => new WebAppSubMustangApp(app));
 }
 
 export const webAppsMustangApp = new WebAppsMustangApp();
