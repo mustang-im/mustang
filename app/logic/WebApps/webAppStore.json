@@ -205,7 +205,7 @@
       "description": {
         "en": "Editor for text documents, spreadsheets, presentations, forms and PDF. Originated in/around Russia."
       },
-      "homepage": "hhttps://www.onlyoffice.com/office-suite.aspx",
+      "homepage": "https://www.onlyoffice.com/office-suite.aspx",
       "start": "https://www.onlyoffice.com/signin.aspx",
       "icon": "https://static-www.onlyoffice.com/v9.5.0/images/logo_130_24.svg"
     },
