@@ -7,8 +7,6 @@
       * Email
       * Chat
     * Results miss From
-  * App
-    * URLs of apps
   * SQL
     * Accounts in separate DB
     * Non-search properties as JSON
