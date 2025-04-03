@@ -47,7 +47,7 @@
   export let headHTML = "";
   /** The webpage to show.
    * Alternative to `html` - set only one of them. */
-  export let url = "";
+  export let url: string | null = null;
   /** Tooltip when hovering */
   export let title: string;
   /** Size the <WebView> to the size of the content */
