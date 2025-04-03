@@ -1,8 +1,8 @@
 // #if [!WEBMAIL]
-<webview bind:this={webviewE} src={url} {title} />
+<webview bind:this={webviewE} src={url ?? dataURL} {title} />
 // #else
 <!-- TODO Security: Test that this <webview> is untrusted and jailed -->
-<iframe bind:this={webviewE} src={url} {title} />
+<iframe bind:this={webviewE} src={url ?? dataURL} {title} />
 // #endif
 
 <!--
@@ -28,6 +28,7 @@
   // import { Menu } from "@svelteuidev/core";
   // #endif
   import { stringToDataURL } from "../Util/util";
+  import type { URLString } from "../../logic/util/util";
   import { backgroundError, catchErrors } from "../Util/error";
   import type { ArrayColl } from "svelte-collections";
   import { createEventDispatcher, onMount } from 'svelte';
@@ -68,9 +69,13 @@
     }
   });
 
+  let dataURL: URLString;
   $: html, setURL();
   async function setURL() {
-    url = "";
+    if (url) {
+      return;
+    }
+    dataURL = "";
     const autoSizeCSS = `<style>
       body {
         min-height: 0px !important;
@@ -92,7 +97,7 @@
       (autoSize ? autoSizeCSS: "") +
       displayHTML.substring(headPos);
     // console.log("html", displayHTML);
-    url = await stringToDataURL("text/html", displayHTML);
+    dataURL = await stringToDataURL("text/html", displayHTML);
   }
 
   let webviewE: HTMLIFrameElement = null;
