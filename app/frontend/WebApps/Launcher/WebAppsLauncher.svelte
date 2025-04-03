@@ -1,27 +1,29 @@
-<vbox flex class="apps-launcher">
-  <vbox flex />
+<Scroll>
+  <vbox flex class="apps-launcher">
+    <vbox flex />
+    <vbox class="center">
+      <div class="apps">
+        {#each $apps.each as app}
+          <span class="app">
+            <AppLaunchButton {app} bind:runningApp />
+          </span>
+        {/each}
+      </div>
 
-  <vbox class="center">
-    <div class="apps">
-      {#each $apps.each as app}
-        <span class="app">
-          <AppLaunchButton {app} bind:runningApp />
-        </span>
-      {/each}
-    </div>
-
-    <hbox class="actions">
-      <hbox flex />
-      <Button on:click={startStore} label={apps.hasItems ? $t`More apps` : $t`Choose which apps you want to use`} />
-    </hbox>
+      <hbox class="actions">
+        <hbox flex />
+        <Button on:click={startStore} label={apps.hasItems ? $t`More apps` : $t`Choose which apps you want to use`} />
+      </hbox>
+    </vbox>
+    <vbox flex />
   </vbox>
-  <vbox flex />
-</vbox>
+</Scroll>
 
 <script lang="ts">
   import type WebAppListed from "../../../logic/WebApps/WebAppListed";
   import AppLaunchButton from "./WebAppLaunchButton.svelte";
   import Button from "../../Shared/Button.svelte";
+  import Scroll from "../../Shared/Scroll.svelte";
   import type { Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
@@ -35,6 +37,9 @@
 </script>
 
 <style>
+  .apps-launcher {
+    position: relative;
+  }
   .center {
     align-self: center;
   }

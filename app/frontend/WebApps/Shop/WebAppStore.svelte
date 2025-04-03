@@ -1,15 +1,19 @@
 <hbox flex class="app-store">
   <vbox flex class="categories">
-    <Categories showCategories={topLevelCategories} allCategories={categories} bind:selected={selectedCategory} />
+    <Scroll>
+      <Categories showCategories={topLevelCategories} allCategories={categories} bind:selected={selectedCategory} />
+    </Scroll>
   </vbox>
   <vbox flex class="apps">
-    <hbox class="toolbar">
-      <hbox flex />
-      <RoundButton on:click={closeStore} icon={XIcon} label={$t`Close`} />
-    </hbox>
-    {#if selectedCategory}
-      <CategoryPage category={selectedCategory} bind:selectedApp />
-    {/if}
+    <Scroll>
+      <hbox class="toolbar">
+        <hbox flex />
+        <RoundButton on:click={closeStore} icon={XIcon} label={$t`Close`} />
+      </hbox>
+      {#if selectedCategory}
+        <CategoryPage category={selectedCategory} bind:selectedApp />
+      {/if}
+    </Scroll>
   </vbox>
 </hbox>
 
@@ -20,6 +24,7 @@
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Categories from "./Categories.svelte";
   import CategoryPage from "./CategoryPage.svelte";
+  import Scroll from "../../Shared/Scroll.svelte";
   import XIcon from "lucide-svelte/icons/x";
   import { onMount } from "svelte";
   import { t } from "../../../l10n/l10n";
@@ -44,6 +49,9 @@
 </script>
 
 <style>
+  .app-store {
+    position: relative;
+  }
   .categories {
     background-color: var(--leftbar-bg);
     color: var(--leftbar-fg);
