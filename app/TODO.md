@@ -2,11 +2,9 @@
 * Mail
   * Beta banner
   * Search
-    * Without text
-    * Include from/to (both content of messages, and name of recipients/sender)
+    * Results miss From - Include from/to (both content of messages, and name of recipients/sender)
       * Email
       * Chat
-    * Results miss From
   * SQL
     * Accounts in separate DB
     * Non-search properties as JSON

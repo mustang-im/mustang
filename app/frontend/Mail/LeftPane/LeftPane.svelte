@@ -73,10 +73,16 @@
   function openSearchPane() {
     activeTab = SearchView.Search;
   }
-  $: activeTab, clearSearchMessages();
-  function clearSearchMessages() {
-    searchMessages = null;
+  $: activeTab, changeTab();
+  function changeTab() {
     lastPerson = null;
+    if (activeTab == SearchView.Search) {
+      if ($globalSearchTerm == null) {
+        $globalSearchTerm = "";
+      }
+    } else {
+      searchMessages = null;
+    }
   }
 
   // Search.svelte is removed here above, and therefore cannot react anymore, so have to do it here.
@@ -84,7 +90,6 @@
   $: if ($globalSearchTerm == null) endSearchMode();
   function endSearchMode() {
     activeTab = SearchView.Folder;
-    clearSearchMessages();
   }
 
   let lastPerson: Person;
