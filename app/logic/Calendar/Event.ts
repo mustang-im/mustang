@@ -31,12 +31,13 @@ export class Event extends Observable {
   /** IANA timezone name, e.g. "Europe/Berlin" */
   @notifyChangedProperty
   timezone: string | null = null;
+  /** Only used by the editing UI. */
   @notifyChangedProperty
   repeat = false; // TODO remove
-  /** If `repeat` is set, should be the rule which describes the pattern. */
+  /** Only used by recurring masters, describes the recurrence pattern. */
   @notifyChangedProperty
   recurrenceRule: RecurrenceRule | undefined;
-  /** Links back to the recurring master from an instance. */
+  /** Only used by instances, links back to the recurring master. */
   @notifyChangedProperty
   parentEvent: Event | undefined;
   /**
