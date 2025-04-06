@@ -7,10 +7,11 @@ import WindowsToIANATimezone from "./WindowsToIANATimezone";
 import type { EMail } from "../../Mail/EMail";
 import { EMailProcessor, ProcessingStartOn } from "../../Mail/EMailProccessor";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import type { Email as MIME} from "postal-mime";
 
 export class ICalEMailProcessor extends EMailProcessor {
   runOn = ProcessingStartOn.Parse;
-  async process(email: EMail, postalMIME: any) {
+  async process(email: EMail, mime: MIME) {
     let invitationBlob = email.attachments.find(a => a.mimeType == "text/calendar")?.content;
     if (!invitationBlob) {
       return;
