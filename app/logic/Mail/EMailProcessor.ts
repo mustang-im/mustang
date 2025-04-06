@@ -2,7 +2,7 @@ import type { EMail } from "./EMail";
 import type { ExtraData } from "./ExtraData";
 import { AbstractFunction } from "../util/util";
 import { ArrayColl, MapColl } from "svelte-collections";
-import type PostalMime from "postal-mime";
+import type { Email as PostalMime } from "postal-mime";
 
 export class EMailProcessorList {
   static processors = new ArrayColl<EMailProcessor>();
