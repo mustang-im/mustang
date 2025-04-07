@@ -266,7 +266,7 @@
   .page-box[step="8"] {
     max-width: 90%;
   }
-  .page-box :global(.password) {
+  .page-box[step="1"] :global(.password) {
     margin-block-end: 32px;
   }
   .setup-mail-window :global(input) {
