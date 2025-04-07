@@ -1,4 +1,5 @@
 <vbox class="workspace-selector">
+  <hbox class="hint">{$t`Workspaces allow you to organize yourself. You can change this at any time, by going to Settings in the title bar.`}</hbox>
   <vbox class="workspaces-box" class:horizontal>
     <vbox class="workspaces">
       {#each $workspaces.each as workspace}
@@ -17,7 +18,6 @@
       {/each}
     </vbox>
   </vbox>
-  <hbox class="hint">{$t`Workspaces allow you organize yourself. You can change this at any time, by going to Settings in the title bar.`}</hbox>
 </vbox>
 
 <script lang="ts">
@@ -47,7 +47,7 @@
   .workspaces-box {
     margin-inline-end: 32px;
     padding-block-start: 4px;
-    margin-block-end: 16px;
+    margin-block-start: 12px;
   }
   .workspaces-box:not(.horizontal) {
     align-items: center;

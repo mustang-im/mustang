@@ -3,17 +3,21 @@
   <CheckIcon slot="icon"/>
 </StatusMessage>
 
-<hbox class="header">{$t`Account name`}</hbox>
-<hbox class="subtitle">{$t`How do you want to call the account?`} - {config.emailAddress}</hbox>
 <input type="text" bind:value={config.name} autofocus />
+<hbox class="subtitle">{$t`How do you want to call the account ${config.emailAddress}?`}</hbox>
 
-<hbox class="header">{$t`Select the workspace`}</hbox>
-<WorkspaceSelector {config} horizontal={true} />
+<vbox class="workspace">
+  <ExpandSection>
+    <hbox class="expander" slot="header">{$t`Workspace`}</hbox>
+    <WorkspaceSelector {config} horizontal={true} />
+  </ExpandSection>
+</vbox>
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import WorkspaceSelector from "./WorkspaceSelector.svelte";
   import StatusMessage from "../Shared/StatusMessage.svelte";
+  import ExpandSection from "../../Shared/ExpandSection.svelte";
   import CheckIcon from "lucide-svelte/icons/check";
   import { t } from "../../../l10n/l10n";
 
@@ -21,18 +25,20 @@
 </script>
 
 <style>
-  .header {
-    font-size: 20px;
-    font-weight: bold;
-    margin-block-start: 48px;
-    margin-block-end: 8px;
-  }
   .subtitle {
     font-size: 12px;
-    margin-block-start: -8px;
-    margin-block-end: 24px;
   }
   input {
     font-size: 20px !important;
+    margin-block-start: 32px;
+    padding-inline-start: 0px;
+    margin-inline-start: -1px;
+  }
+  .workspace {
+    margin-block-start: 8px;
+  }
+  .workspace .expander {
+    font-size: 12px;
+    margin-block-end: 4px;
   }
 </style>

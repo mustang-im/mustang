@@ -1,7 +1,7 @@
 <vbox class="expander">
    <hbox class="header" class:box={headerBox}
       on:click={onExpandToggle}>
-    <slot name="header" />
+      <slot name="header" />
     <hbox flex />
     <hbox class="buttons top-right">
       <Button plain
