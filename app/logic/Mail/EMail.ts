@@ -17,7 +17,7 @@ import { PromiseAllDone } from "../util/PromiseAllDone";
 import { notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/Lock";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
-import PostalMIME from "postal-mime";
+import PostalMIME, { type Email as MIME } from "postal-mime";
 import { FilterMoment } from "./FilterRules/FilterMoments";
 
 export class EMail extends Message {
@@ -243,12 +243,12 @@ export class EMail extends Message {
     }
   }
 
-  async parseMIME() {
+  async parseMIME(): Promise<MIME> {
     assert(this.mime?.length, "MIME source not yet downloaded");
     assert(this.mime instanceof Uint8Array, "MIME source should be a byte array");
     //console.log("MIME source", this.mime, new TextDecoder("utf-8").decode(this.mime));
     // We may need access to internal PostalMIME data.
-    let postalMIME: any = new PostalMIME();
+    let postalMIME = new PostalMIME();
     let mail = await postalMIME.parse(this.mime);
 
     // Headers
@@ -319,8 +319,9 @@ export class EMail extends Message {
       if (processor.runOn != ProcessingStartOn.Parse) {
         continue;
       }
-      await processor.process(this, postalMIME);
+      await processor.process(this, mail);
     }
+    return mail;
   }
 
   /**
