@@ -13,6 +13,11 @@
         <label for="name">{$t`Account name`}</label>
         <input type="text" bind:value={account.name} name="name" on:change={onChange} />
         <input type="color" bind:value={account.color} name="color" on:change={onChange} list="proposed-colors" />
+        {#if account.icon && typeof(account.icon) == "string"}
+          <img src={account.icon} width="24px" height="24px" alt="" />
+        {:else}
+          <hbox class="icon placeholder" />
+        {/if}
 
         <label for="name">{$t`Workspace`}</label>
         <select bind:value={account.workspace}>
@@ -20,6 +25,7 @@
             <option value={workspace}>{workspace.name}</option>
           {/each}
         </select>
+        <hbox />
         <hbox />
       </grid>
     </vbox>
@@ -79,7 +85,12 @@
   }
 
   grid {
-    grid-template-columns: max-content auto max-content;
+    grid-template-columns: max-content auto max-content max-content;
     gap: 8px 24px;
+  }
+
+  .icon.placeholder {
+    width: 24px;
+    height: 24px;
   }
 </style>

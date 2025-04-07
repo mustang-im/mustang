@@ -8,7 +8,13 @@
     {#if loading}
       <Spinner size={iconSize} />
     {:else if typeof(icon) == "string"}
-      <Icon data={icon} size={iconSize} />
+      {#if icon.startsWith("data:")}
+        <img src={icon} width={iconSize} height={iconSize} alt={label} />
+      {:else if icon.includes("<svg")}
+        <Icon data={icon} size={iconSize} />
+      {:else}
+        <!-- Unknown icon file -->No
+      {/if}
     {:else if icon}
       <svelte:component this={icon} size={iconSize} />
     {:else}

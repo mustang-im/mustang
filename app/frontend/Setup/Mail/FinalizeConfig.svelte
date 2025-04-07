@@ -3,7 +3,12 @@
   <CheckIcon slot="icon"/>
 </StatusMessage>
 
-<input type="text" bind:value={config.name} autofocus />
+<hbox class="name">
+  <input type="text" bind:value={config.name} autofocus />
+  {#if typeof(config.icon) == "string" && config.icon.startsWith("data:")}
+    <img src={config.icon} width="24px" height="24px" alt="" />
+  {/if}
+</hbox>
 <hbox class="subtitle">{$t`How do you want to call the account ${config.emailAddress}?`}</hbox>
 
 <vbox class="workspace">
@@ -25,6 +30,12 @@
 </script>
 
 <style>
+  .name {
+    align-items: end;
+  }
+  .name img {
+    margin-inline-start: 8px;
+  }
   .subtitle {
     font-size: 12px;
   }

@@ -11,8 +11,10 @@ export class Account extends Observable {
   dbID: number | string | null = null;
   @notifyChangedProperty
   name: string;
+  /** A `data:` URL to an image that represents this account.
+   * E.g. the company logo. */
   @notifyChangedProperty
-  icon: ComponentType | string | null = null;
+  icon: string | ComponentType | null = null;
   @notifyChangedProperty
   color: string = "#FFFFFF";
   /** Class ID. Must be overwritten by subclasses. Written to account prefs. */
@@ -96,12 +98,14 @@ export class Account extends Observable {
     this.acceptBrokenTLSCerts = sanitize.boolean(config.acceptBrokenTLSCerts, false);
     this.loginOnStartup = sanitize.boolean(config.loginOnStartup, this.loginOnStartup);
     this.color = sanitize.nonemptystring(config.color, this.color);
+    this.icon = sanitize.url(config.icon, null, ["data"]);
   }
   toConfigJSON(): any {
     let json: any = {};
     json.acceptBrokenTLSCerts = this.acceptBrokenTLSCerts;
     json.loginOnStartup = this.loginOnStartup;
     json.color = this.color;
+    json.icon = this.icon;
     console.log("account config json saving", json);
     return json;
   }

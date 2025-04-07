@@ -4,6 +4,7 @@
 <script lang="ts">
   import { findConfig } from "../../../logic/Mail/AutoConfig/findConfig";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { getFavIcon } from "../Shared/favicon";
   import { getDomainForEmailAddress } from "../../../logic/util/netUtil";
   import StatusMessage from "../Shared/StatusMessage.svelte";
   import { t } from "../../../l10n/l10n";
@@ -26,8 +27,10 @@
   onMount(async () => {
     try {
       altConfigs = await findConfig(emailAddress, password, exchangeConfirmCallback, abort);
-      assert(altConfigs?.length, $t`We could not find a configuration for ${getDomainForEmailAddress(emailAddress)}`);
+      let domain = getDomainForEmailAddress(emailAddress);
+      assert(altConfigs?.length, $t`We could not find a configuration for ${domain}`);
       config = altConfigs.slice().shift();
+      config.icon = await getFavIcon(domain);
       dispatchEvent("continue");
     } catch (ex) {
       dispatchEvent("fail", ex);
