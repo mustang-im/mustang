@@ -23,7 +23,7 @@ import { Lock } from "../util/flow/Lock";
 import { RunOnce } from "../util/flow/RunOnce";
 import { logError } from "../../frontend/Util/error";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
-import PostalMIME from "postal-mime";
+import PostalMIME, { type Email as MIME } from "postal-mime";
 
 export class EMail extends Message {
   @notifyChangedProperty
@@ -251,7 +251,7 @@ export class EMail extends Message {
     // indirectly calls @see `ICalEMailProcessor.process()`
   }
 
-  async parseMIME() {
+  async parseMIME(): Promise<MIME> {
     assert(this.mime?.length, "MIME source not yet downloaded");
     assert(this.mime instanceof Uint8Array, "MIME source should be a byte array");
     //console.log("MIME source", this.mime, new TextDecoder("utf-8").decode(this.mime));
@@ -330,9 +330,9 @@ export class EMail extends Message {
       if (processor.runOn != ProcessingStartOn.Parse) {
         continue;
       }
-      processor.process(this, postalMIME)
-        .catch(logError);
+      await processor.process(this, mail);
     }
+    return mail;
   }
 
   /**
