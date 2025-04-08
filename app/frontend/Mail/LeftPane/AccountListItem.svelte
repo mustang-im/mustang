@@ -3,7 +3,7 @@
   {#if $account.isLoggedIn}
     <hbox class="icon">
       {#if account.icon && typeof(account.icon) == "string" }
-        <img src={account.icon} width="24px" height="24px" alt="" />
+        <img src={account.icon} width="18px" height="18px" alt="" class="logo" />
       {:else}
         <Icon data={MailIcon} size="16px" />
       {/if}
@@ -71,6 +71,9 @@
   .icon :global(path),
   .icon :global(.cls-2) {
     stroke: var(--leftpane-fg);
+  }
+  .logo {
+    border-radius: 2px;
   }
   .label {
     margin-inline-start: 8px;
