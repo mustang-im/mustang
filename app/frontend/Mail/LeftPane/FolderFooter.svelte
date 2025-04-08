@@ -134,10 +134,13 @@
       (!isShowStarred || msg.isStarred === true) &&
       (!isShowUnread || msg.isRead === false) &&
       (!searchTerm || searchTerm.length > 1) &&
-      (!searchTerm || msg.subject?.toLowerCase().includes(searchTerm) ||
+      (!searchTerm ||
+        msg.subject?.toLowerCase().includes(searchTerm) ||
         msg.from?.name?.toLowerCase().includes(searchTerm) ||
-        msg.to?.some(to => to.name?.toLowerCase().includes(searchTerm)) ||
-        msg.rawText?.toLowerCase().includes(searchTerm))
+        msg.from?.emailAddress?.toLowerCase().includes(searchTerm) ||
+        msg.to?.some(to => to.name?.toLowerCase().includes(searchTerm) ||
+          to.emailAddress?.toLowerCase().includes(searchTerm)) ||
+        msg.text?.toLowerCase().includes(searchTerm))
     );
   }
 
