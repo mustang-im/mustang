@@ -28,14 +28,29 @@
     <OutgoingIcon size={16} />
   {/if}
 </hbox>
-<hbox class="correspondent" draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))} on:contextmenu={contextMenu.onContextMenu}>{contactName}</hbox>
-<hbox class="subject" class:unread={!$message.isRead} draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))} on:contextmenu={contextMenu.onContextMenu}>{$message.subject}</hbox>
+<hbox class="correspondent"
+  class:unread={!$message.isRead}
+  draggable="true"
+  on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
+  on:contextmenu={contextMenu.onContextMenu}
+  >{contactName}</hbox>
+<hbox class="subject"
+  class:unread={!$message.isRead}
+  draggable="true"
+  on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
+  on:contextmenu={contextMenu.onContextMenu}
+  >{$message.subject}</hbox>
 <hbox class="tags">
   {#if $tags.hasItems}
     <TagSelector tags={$tags} {message} canAdd={false} />
   {/if}
 </hbox>
-<hbox class="date" class:unread={!$message.isRead} draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))} on:contextmenu={contextMenu.onContextMenu}>{getDateString($message.sent)}</hbox>
+<hbox class="date"
+  class:unread={!$message.isRead}
+  draggable="true"
+  on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
+  on:contextmenu={contextMenu.onContextMenu}
+  >{getDateString($message.sent)}</hbox>
 <hbox class="buttons hover">
   <hbox class="move button" bind:this={popupAnchor}>
     <Button
@@ -138,8 +153,10 @@
 
 <style>
   .correspondent,
-  .subject {
+  .subject,
+  .date {
     white-space: nowrap;
+    font-weight: 300;
   }
   .date,
   .buttons.hover {
@@ -151,6 +168,7 @@
     font-size: 12px !important;
     font-family: Helvetica, Arial, sans-serif;
   }
+  .correspondent.unread,
   .subject.unread,
   .date.unread {
     font-weight: bold;

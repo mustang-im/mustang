@@ -76,7 +76,8 @@
     border-radius: 2px;
   }
   .label {
-    margin-inline-start: 8px;
+    margin-inline-start: 6px;
+    font-weight: 300;
   }
   .account:not(:hover) .buttons {
     display: none;

@@ -169,17 +169,22 @@
     height: 1.3em;
   }
   .contact {
-    font-weight: bold;
+    font-weight: 500;
+  }
+  .subject,
+  .date {
+    font-weight: 300;
+  }
+  .unread .contact,
+  .unread .subject,
+  .unread .date {
+    font-weight: 700;
   }
   .date {
     min-width: 8em;
     justify-content: start;
     font-size: 12px !important;
     font-family: Helvetica, Arial, sans-serif;
-  }
-  .message.unread .subject,
-  .message.unread .date {
-    font-weight: bold;
   }
   .subject {
     line-height: 1.3;

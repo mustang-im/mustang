@@ -175,6 +175,8 @@
   .date {
     align-self: center;
     margin-inline-end: 16px;
+    font-size: 14px;
+    font-weight: 300;
   }
   .subject-line {
     flex-wrap: wrap;

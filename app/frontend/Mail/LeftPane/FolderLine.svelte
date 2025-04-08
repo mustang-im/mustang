@@ -57,6 +57,7 @@
   }
   .label {
     padding-inline-start: 8px;
+    font-weight: 300;
   }
   .count {
     background-color: red;
