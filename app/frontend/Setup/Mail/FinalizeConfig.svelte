@@ -1,5 +1,5 @@
 <StatusMessage status="success"
-  message={$t`Your email account ${config.emailAddress} is working and ready to be used.`}>
+  message={$t`${config.emailAddress} is working and ready`}>
   <CheckIcon slot="icon"/>
 </StatusMessage>
 
@@ -35,9 +35,12 @@
   }
   .name img {
     margin-inline-start: 8px;
+    border-radius: 3px;
   }
+  .workspace .expander,
   .subtitle {
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 300;
   }
   input {
     font-size: 20px !important;
@@ -49,7 +52,6 @@
     margin-block-start: 8px;
   }
   .workspace .expander {
-    font-size: 12px;
     margin-block-end: 4px;
   }
 </style>

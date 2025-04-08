@@ -30,7 +30,7 @@
     margin-block-end: 8px;
   }
   .box {
-    border-radius: 15px;
+    border-radius: 8px;
     justify-content: start;
     margin-inline-start: 8px;
     margin-inline-end: 24px;
@@ -47,8 +47,8 @@
   }
   .success .box {
     background-color: #E7F9EC;
-    color: #06842C;
-    border: 1px solid #0BC241;
+    color: #044f1a;
+    border: 1px solid #0BC24180;
   }
   .processing .box {
     background-color: #F0F9F8;
@@ -71,9 +71,6 @@
     .error .box {
       background-color: unset;
     }
-    .success .box {
-      color: #0BC241;
-    }
     .warning .box,
     .error .box {
       color: #FF3333;
@@ -83,6 +80,6 @@
     }
   }
   .icon {
-    margin-inline-end: 8px;
+    margin-inline-end: 6px;
   }
 </style>
