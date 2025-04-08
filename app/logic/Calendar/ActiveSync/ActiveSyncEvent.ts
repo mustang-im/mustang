@@ -116,7 +116,7 @@ export class ActiveSyncEvent extends Event {
 
   async saveToServer(): Promise<void> {
     let organizer;
-    if (this.participants.length) {
+    if (this.participants.length && this.response <= InvitationResponse.Organizer) {
       organizer = this.participants.find(participant => participant.emailAddress == this.calendar.account.emailAddress);
       if (organizer) {
         organizer.response = InvitationResponse.Organizer;
@@ -131,7 +131,9 @@ export class ActiveSyncEvent extends Event {
     } else {
       await this.saveFields(this.toFields());
     }
-    await this.outgoingActions.sendInvitations(this.calendar.account);
+    if (organizer) {
+      await this.outgoingActions.sendInvitations(this.calendar.account);
+    }
   }
 
   async saveFields(fields: any): Promise<void> {

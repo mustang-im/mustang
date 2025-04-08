@@ -4,6 +4,8 @@ import type { RecurrenceRule } from "./RecurrenceRule";
 import OutgoingActions from "./OutgoingActions";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation";
 import type { MailAccount } from "../Mail/MailAccount";
+import type { MailIdentity } from "../Mail/MailIdentity";
+import { PersonUID } from "../Abstract/PersonUID";
 import { appGlobal } from "../app";
 import { k1DayS, k1HourS, k1MinuteS } from "../../frontend/Util/date";
 import { Observable, notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
@@ -200,6 +202,25 @@ export class Event extends Observable {
     return new OutgoingActions(this);
   }
 
+  protected participantMe(): { identity: MailIdentity, participant: Participant, person: PersonUID } {
+    let results = [];
+    for (let account of appGlobal.emailAccounts) {
+      if (!account.canSendInvitations) {
+        continue;
+      }
+      for (let identity of account.identities) {
+        for (let participant of this.participants) {
+          if (identity.isEMailAddress(participant.emailAddress)) {
+            let person = new PersonUID(participant.emailAddress, identity.realname);
+            results.push({ identity, participant, person });
+          }
+        }
+      }
+    }
+    assert(results.length == 1, "Failed to find matching identity for meeting");
+    return results[0];
+  }
+
   /**
    * Assumes that the `original` property was set before
    */
@@ -254,18 +275,15 @@ export class Event extends Observable {
   }
 
   async saveToServer(): Promise<void> {
-    if (!this.participants.length) {
+    if (!this.participants.length || this.response > InvitationResponse.Organizer) {
       return;
     }
     if (!this.calUID) {
       this.calUID = crypto.randomUUID();
     }
-    let accounts = appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations && this.participants.some(participant => participant.emailAddress == account.emailAddress));
-    assert(accounts.length == 1, "Failed to find matching account for meeting");
-    let organizer = this.participants.find(participant => participant.emailAddress == accounts[0].emailAddress);
-    organizer.response = InvitationResponse.Organizer;
-    await this.outgoingActions.sendInvitations(accounts[0]);
-    await this.save();
+    let { identity, participant, person } = this.participantMe();
+    participant.response = InvitationResponse.Organizer;
+    await this.outgoingActions.sendInvitations(identity.account, person);
   }
 
   get isNew(): boolean {
@@ -296,10 +314,9 @@ export class Event extends Observable {
     if (!this.participants.length) {
       return;
     }
-    let accounts = appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations && this.participants.some(participant => participant.emailAddress == account.emailAddress));
-    assert(accounts.length == 1, "Failed to find matching account for meeting");
     if (this.response <= InvitationResponse.Organizer) {
-      await this.outgoingActions.sendCancellations(accounts[0]);
+      let { identity, person } = this.participantMe();
+      await this.outgoingActions.sendCancellations(identity.account, person);
     } else {
       for (let participant of this.participants) {
         if (participant.response == InvitationResponse.Organizer) {

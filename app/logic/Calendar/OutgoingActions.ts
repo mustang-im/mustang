@@ -2,6 +2,7 @@ import type { Event } from "./Event";
 import type { Participant } from "./Participant";
 import { InvitationResponse, type iCalMethod } from "./Invitation";
 import type { MailAccount } from "../Mail/MailAccount";
+import type { PersonUID } from "../Abstract/PersonUID";
 
 export default class OutgoingActions {
   event: Event;
@@ -10,25 +11,28 @@ export default class OutgoingActions {
     this.event = event;
   }
 
-  async sendInvitations(account: MailAccount) {
+  async sendInvitations(account: MailAccount, from?: PersonUID) {
     for (let participant of this.event.participants) {
       if (participant.response != InvitationResponse.Organizer) {
         participant.response ||= InvitationResponse.NoResponseReceived;
-        await this.send(participant, account, "REQUEST");
+        await this.send("REQUEST", participant, account, from);
       }
     }
   }
 
-  async sendCancellations(account: MailAccount) {
+  async sendCancellations(account: MailAccount, from?: PersonUID) {
     for (let participant of this.event.participants) {
       if (participant.response > InvitationResponse.Organizer) {
-        await this.send(participant, account, "CANCEL");
+        await this.send("CANCEL", participant, account, from);
       }
     }
   }
 
-  protected async send(participant: Participant, account: MailAccount, method: iCalMethod) {
+  protected async send(method: iCalMethod, participant: Participant, account: MailAccount, from?: PersonUID) {
     let email = account.newEMailFrom();
+    if (from) {
+      email.from = from;
+    }
     email.to.add(participant);
     email.iCalMethod = method;
     email.event = this.event;
