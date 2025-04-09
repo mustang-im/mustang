@@ -1,6 +1,6 @@
 import type { Calendar } from "./Calendar";
 import { Participant } from "./Participant";
-import type { RecurrenceRule } from "./RecurrenceRule";
+import { RecurrenceRule } from "./RecurrenceRule";
 import OutgoingInvitation from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
@@ -313,6 +313,22 @@ export class Event extends Observable {
     }
   }
 
+  /** Delete multiple instances */
+  async makeExclusions(indices: number[]) {
+    let exclusions = [];
+    for (let index of indices) {
+      let previous = this.instances.get(index);
+      this.instances.set(index, null);
+      if (previous) {
+        exclusions.push(previous);
+      }
+    }
+    this.calendar.events.removeAll(exclusions);
+    for (let exclusion of exclusions) {
+      await this.calendar.storage.deleteEvent(exclusion);
+    }
+  }
+
   /** Person class needs to match account class, so need to clone.
    * @returns the new Person object */
   async moveToCalendar(newCalendar: Calendar): Promise<void> {
@@ -418,6 +434,13 @@ export class Event extends Observable {
     if (previous.dbID) {
       this.calendar.storage.deleteEvent(previous).catch(this.calendar.errorCallback);
     }
+  }
+
+  /** Don't use this to remove exceptions */
+  truncateRecurrence(count: number) {
+    this.calendar.events.removeAll(this.instances.splice(count).contents.filter(Boolean));
+    let { startDate, frequency, interval, weekdays, week, first } = this.recurrenceRule;
+    this.recurrenceRule = new RecurrenceRule({ startDate, count, frequency, interval, weekdays, week, first });
   }
 }
 

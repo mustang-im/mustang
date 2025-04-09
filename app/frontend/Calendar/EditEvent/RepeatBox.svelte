@@ -169,7 +169,7 @@
     } // else: leave unchanged
   }
 
-  function newRecurrenceRule(): RecurrenceRule {
+  export function newRecurrenceRule(): RecurrenceRule {
     let init: RecurrenceInit = { startDate: event.startTime, frequency, interval };
     if (end == "count") {
       init.count = count;
@@ -187,35 +187,6 @@
       }
     }
     return new RecurrenceRule(init);
-  }
-
-  // TODO Call from save()
-  export function confirmAndChangeRule(): boolean {
-    if (event.recurrenceCase == RecurrenceCase.Normal) {
-      if (!event.recurrenceRule) {
-        // Never a recurring event.
-        return true;
-      }
-      if (!confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
-        return false;
-      }
-      event.recurrenceRule = null;
-    } else {
-      let rule = newRecurrenceRule();
-      if (event.recurrenceRule) {
-        if (event.startTime.getTime() == event.recurrenceRule.startDate.getTime() &&
-            rule.getCalString() == event.recurrenceRule.getCalString()) {
-          // Rule hasn't actually changed.
-          return true;
-        }
-        if (!confirm($t`This change will reset all of your series to default values.`)) {
-          return false;
-        }
-      }
-      event.recurrenceRule = rule;
-    }
-    event.clearExceptions();
-    return true;
   }
 </script>
 
