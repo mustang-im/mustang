@@ -23,6 +23,25 @@
             border={false}
             iconSize="16px"
             />
+          {#if seriesStatus == "first"}
+            <RoundButton
+             label={$t`Delete entire series`}
+             icon={DeleteIcon}
+             onClick={onDeleteAll}
+             classes="plain delete"
+             border={false}
+             iconSize="16px"
+             />
+          {:else if seriesStatus == "middle"}
+            <RoundButton
+             label={$t`Delete remainder of series`}
+             icon={DeleteIcon}
+             onClick={onDeleteForward}
+             classes="plain delete"
+             border={false}
+             iconSize="16px"
+             />
+          {/if}
         {/if}
       </hbox>
       <hbox class="account-icon">
@@ -49,6 +68,27 @@
             />
         {/if}
         {#if canSave}
+          {#if seriesStatus == "first"}
+            <RoundButton
+             label={$t`Change entire series`}
+             icon={SaveIcon}
+             onClick={onChangeAll}
+             classes="plain save-or-close"
+             filled={true}
+             iconSize="16px"
+             />
+          {:else if seriesStatus == "middle"}
+            <RoundButton
+             label={$t`Change remainder of series`}
+             icon={SaveIcon}
+             onClick={onChangeForward}
+             classes="plain save-or-close"
+             filled={true}
+             iconSize="16px"
+             />
+          {/if}
+        {/if}
+        {#if canSave && !(event.parentEvent && event.repeat)}
           <RoundButton
             label={$t`Save`}
             icon={SaveIcon}
@@ -102,10 +142,42 @@
   $: canSave = event && $event.title && $event.startTime && $event.endTime &&
       event.startTime.getTime() <= event.endTime.getTime();
   $: oldTitle = event?.title || $t`Event`;
+  $: seriesStatus = event.seriesStatus;
+
+  function confirmAndChangeRule(): boolean {
+    let master = event.parentEvent || event;
+    if (!event.repeat) {
+      if (!master.recurrenceRule) {
+        // Never a recurring event.
+        return true;
+      }
+      if (!confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
+        return false;
+      }
+      master.recurrenceRule = null;
+      master.repeat = false;
+    } else {
+      let rule = repeatBox.newRecurrenceRule();
+      if (master.recurrenceRule) {
+        if (rule.isCompatible(master.recurrenceRule)) {
+          return true;
+        }
+        if (!confirm($t`This change will reset all of your series to default values.`)) {
+          return false;
+        }
+      }
+      master.recurrenceRule = rule;
+      master.repeat = true;
+    }
+    master.clearExceptions();
+    return true;
+  }
 
   async function onSave() {
-    if (repeatBox && !repeatBox.confirmAndChangeRule()) {
-      return;
+    // Turning a single event into a series.
+    // (The reverse is done in `onChangeAll`.)
+    if (event.repeat) {
+      event.recurrenceRule = repeatBox.newRecurrenceRule();
     }
     await event.saveToServer();
     await event.save();
@@ -118,14 +190,52 @@
     onClose();
   }
 
-  async function onDelete() {
-    if (event.recurrenceRule) {
-      if (!confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
-        return;
-      }
+  async function onChangeAll() {
+    if (!confirmAndChangeRule()) {
+      return;
     }
-    await event.deleteFromServer();
-    await event.deleteIt();
+    let master = event.parentEvent;
+    master.copyFrom(event);
+    await master.saveToServer();
+    await master.save();
+    onClose();
+  }
+
+  async function onChangeForward() {
+    let master = event.calendar.newEvent();
+    master.copyFrom(event);
+    master.repeat = true;
+    master.recurrenceRule = repeatBox.newRecurrenceRule();
+    master.fillRecurrences(new Date(Date.now() + 1e11));
+    await master.saveToServer();
+    await master.save();
+    await event.truncateRecurrence();
+    onClose();
+  }
+
+  async function onDelete() {
+    if (seriesStatus == "only") {
+      await event.parentEvent.deleteFromServer();
+      await event.parentEvent.deleteIt();
+    } else {
+      await event.deleteFromServer();
+      await event.deleteIt();
+    }
+    onClose();
+  }
+
+  async function onDeleteAll() {
+    if (!confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
+      return;
+    }
+    let master = event.parentEvent;
+    await master.deleteFromServer();
+    await master.deleteIt();
+    onClose();
+  }
+
+  async function onDeleteForward() {
+    await event.truncateRecurrence();
     onClose();
   }
 
@@ -146,6 +256,9 @@
 
   function onClose() {
     event.title ||= oldTitle;
+    if (event.parentEvent) {
+      event.repeat = false;
+    }
     let me = calendarMustangApp.subApps.find(app => app instanceof EventEditMustangApp && app.mainWindowProperties.event == event);
     calendarMustangApp.subApps.remove(me);
   }

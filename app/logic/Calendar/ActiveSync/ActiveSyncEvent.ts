@@ -80,7 +80,7 @@ export class ActiveSyncEvent extends Event {
     return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
   }
 
-  toFields(exception?: any) {
+  toFields(exceptions: { Exception: any } | { Exception: any }[] = []) {
     return {
       ExceptionStartTime: toCompact(this.recurrenceStartTime) || [],
       Timezone: this.recurrenceStartTime ? [] : getTimeZoneActiveSync(),
@@ -106,14 +106,14 @@ export class ActiveSyncEvent extends Event {
       } : [],
       Subject: this.title,
       Body: this.descriptionHTML ? { Type: "2", Data: this.descriptionHTML } : { Type: "1", Data: [this.descriptionText || ""] },
-      Exceptions: exception ? { Exception: exception } : [],
+      Exceptions: exceptions,
     };
   }
 
   async saveToServer(): Promise<void> {
     // Not supporting tasks for now.
     if (this.parentEvent) {
-      this.parentEvent.saveFields(this.parentEvent.toFields(this.toFields()));
+      this.parentEvent.saveFields(this.parentEvent.toFields({ Exception: this.toFields() }));
     } else {
       await this.saveFields(this.toFields());
     }
@@ -154,8 +154,10 @@ export class ActiveSyncEvent extends Event {
   async deleteFromServer(): Promise<void> {
     if (this.parentEvent) {
       await this.parentEvent.saveFields(this.parentEvent.toFields({
-        Deleted: "1",
-        ExceptionStartTime: toCompact(this.recurrenceStartTime),
+        Exception: {
+          Deleted: "1",
+          ExceptionStartTime: toCompact(this.recurrenceStartTime),
+        }
       }));
     } else {
       let data = {
@@ -172,6 +174,15 @@ export class ActiveSyncEvent extends Event {
         throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.calendar);
       }
     }
+  }
+
+  async makeExclusion(indices: number[]) {
+    await this.saveFields(this.toFields(indices.map(index => ({
+      Exception: {
+        Deleted: "1",
+        ExceptionStartTime: toCompact(this.recurrenceRule.getOccurrenceByIndex(index + 1) as Date),
+      },
+    }))));
   }
 
   async respondToInvitation(response: Responses): Promise<void> {
