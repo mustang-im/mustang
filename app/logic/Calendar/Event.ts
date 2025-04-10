@@ -128,17 +128,16 @@ export class Event extends Observable {
     this.duration = days * 86400;
   }
 
-  /** Create a new instance of the same event.
-   * Copy all data of the `original` event into this new Event object */
+  /**
+   * Create a new instance of the same event.
+   * Copy most data of the `original` event into this new Event object.
+   * The new event is still a single event, not a series or part of one.
+   */
   copyFrom(original: Event) {
     this.copyFromRecurrenceMaster(original);
     this.startTime = original.startTime ? new Date(original.startTime) : null;
     this.endTime = original.endTime ? new Date(original.endTime) : null;
     this.alarm = original.alarm ? new Date(original.alarm) : null;
-    this.recurrenceStartTime = original.recurrenceStartTime ? new Date(original.recurrenceStartTime) : null;
-    this.repeat = original.repeat;
-    this.recurrenceRule = original.recurrenceRule;
-    this.parentEvent = original.parentEvent;
   }
 
   /**
@@ -181,6 +180,20 @@ export class Event extends Observable {
     return !this.dbID;
   }
 
+  get seriesStatus() {
+    // Normally the parent of an instance would always have a
+    // recurrence rule, but this might get removed during saving,
+    // and would cause Svelte to crash if we didn't handle it.
+    let rule = this.parentEvent?.recurrenceRule;
+    if (!rule) {
+      return "none";
+    }
+    let pos = this.parentEvent.instances.indexOf(this);
+    let isFirst = this.parentEvent.instances.getIndexRange(0, pos).every(instance => instance === null);
+    let isLast = (rule.count != Infinity || rule.endDate) && this.parentEvent.instances.contents.slice(pos + 1).every(instance => instance === null || instance?.dbID) && !rule.getOccurrenceByIndex(this.parentEvent.instances.length + 1);
+    return isLast ? isFirst ? "only" : "last" : isFirst ? "first" : "middle";
+  }
+
   /**
    * Deletes the event locally from the database.
    */
@@ -217,7 +230,9 @@ export class Event extends Observable {
     }
     this.calendar.events.removeAll(exclusions);
     for (let exclusion of exclusions) {
-      await this.calendar.storage.deleteEvent(exclusion);
+      if (!exclusion.isNew()) {
+        await this.calendar.storage.deleteEvent(exclusion);
+      }
     }
   }
 
@@ -309,11 +324,33 @@ export class Event extends Observable {
     }
   }
 
-  /** Don't use this to remove exceptions */
-  truncateRecurrence(count: number) {
-    this.calendar.events.removeAll(this.instances.splice(count).contents.filter(Boolean));
-    let { startDate, frequency, interval, weekdays, week, first } = this.recurrenceRule;
-    this.recurrenceRule = new RecurrenceRule({ startDate, count, frequency, interval, weekdays, week, first });
+  /**
+   * Deletes the event and any subsequent instances that are not exceptions.
+   */
+  async truncateRecurrence() {
+    let master = this.parentEvent;
+    let pos = master.instances.indexOf(this);
+    let count = master.instances.contents.slice(pos + 1).findLastIndex(event => event?.dbID) + pos + 1;
+    this.calendar.events.removeAll(master.instances.splice(count).contents.filter(Boolean));
+    if (master.recurrenceRule.getOccurrenceByIndex(count + 1)) {
+      let { startDate, frequency, interval, weekdays, week, first } = master.recurrenceRule;
+      master.recurrenceRule = new RecurrenceRule({ startDate, count, frequency, interval, weekdays, week, first });
+      await master.saveToServer();
+    }
+    let exclusions = [];
+    for (let i = pos; i < count; i++) {
+      let instance = master.instances.get(i);
+      // Always delete this event, unless it got truncated above
+      if (instance == this || instance === undefined || instance?.isNew) {
+        exclusions.push(i);
+      }
+    }
+    if (exclusions.length) {
+      await master.makeExclusions(exclusions);
+    } else {
+      await this.calendar.storage.deleteEvent(this);
+    }
+    await master.save();
   }
 }
 
