@@ -150,20 +150,7 @@
   $: event.startEditing(); // not `$event`
   $: canSave = event && $event.title && $event.startTime && $event.endTime &&
       event.startTime.getTime() <= event.endTime.getTime() && $event.hasChanged();
-  $: oldTitle = event?.title || $t`Event`;
-  $: seriesStatus = isInstance(event);
-
-  function isInstance(event) {
-    let master = event.parentEvent;
-    if (!master?.recurrenceRule) {
-      return "none";
-    }
-    let pos = master.instances.indexOf(event);
-    let isFirst = master.instances.getIndexRange(0, pos).every(instance => instance === null);
-    let rule = master.recurrenceRule;
-    let isLast = (rule.count != Infinity || rule.endDate) && master.instances.contents.slice(pos + 1).every(instance => instance === null || instance?.dbID) && !rule.getOccurrenceByIndex(master.instances.length + 1);
-    return isLast ? isFirst ? "only" : "last" : isFirst ? "first" : "middle";
-  }
+  $: seriesStatus = event.seriesStatus;
 
   function confirmAndChangeRule(): boolean {
     let master = event.parentEvent || event;
@@ -180,9 +167,7 @@
     } else {
       let rule = repeatBox.newRecurrenceRule();
       if (master.recurrenceRule) {
-        if (event.startTime.getTime() == master.recurrenceRule.startDate.getTime() &&
-            rule.getCalString() == master.recurrenceRule.getCalString()) {
-          // Rule hasn't actually changed.
+        if (rule.isCompatible(master.recurrenceRule)) {
           return true;
         }
         if (!confirm($t`This change will reset all of your series to default values.`)) {
@@ -226,11 +211,7 @@
       return;
     }
     let master = event.parentEvent;
-    let recurrenceRule = master.recurrenceRule;
     master.copyFrom(event);
-    master.recurrenceStartTime = null;
-    master.recurrenceRule = recurrenceRule;
-    master.recurrenceCase = RecurrenceCase.Master;
     await master.saveToServer();
     await master.save();
     onClose();
@@ -239,13 +220,13 @@
   async function onChangeForward() {
     let master = event.calendar.newEvent();
     master.copyFrom(event);
-    master.recurrenceStartTime = null;
     master.recurrenceRule = repeatBox.newRecurrenceRule();
     master.recurrenceCase = RecurrenceCase.Master;
     master.fillRecurrences(new Date(Date.now() + 1e11));
     await master.saveToServer();
     await master.save();
-    await onDeleteForward();
+    await event.truncateRecurrence();
+    onClose();
   }
 
   async function onDelete() {
@@ -270,25 +251,7 @@
   }
 
   async function onDeleteForward() {
-    let master = event.parentEvent;
-    let pos = master.instances.indexOf(event);
-    let count = master.instances.contents.slice(pos).findLastIndex(event => event?.dbID) + pos + 1;
-    if (master.recurrenceRule.getOccurrenceByIndex(count + 1)) {
-      master.truncateRecurrence(count);
-      await master.saveToServer();
-    }
-    let exclusions = [];
-    for (let i = pos; i < count; i++) {
-      let instance = master.instances.get(i);
-      // Always delete this event, unless it got truncated above
-      if (instance == event || instance === undefined || instance && !instance.dbID) {
-        exclusions.push(pos);
-      }
-    }
-    if (exclusions.length) {
-      await master.makeExclusions(exclusions);
-    }
-    await master.save();
+    await event.truncateRecurrence();
     onClose();
   }
 
@@ -309,7 +272,6 @@
 
   function onClose() {
     event.finishEditing();
-    event.title ||= oldTitle;
     let me = calendarMustangApp.subApps.find(app => app instanceof EventEditMustangApp && app.mainWindowProperties.event == event);
     calendarMustangApp.subApps.remove(me);
   }
