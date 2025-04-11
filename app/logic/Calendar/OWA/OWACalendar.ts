@@ -1,7 +1,10 @@
 import { Calendar } from "../Calendar";
+import type { Participant } from "../Participant";
 import { OWAEvent } from "./OWAEvent";
 import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
+import OWAGetUserAvailabilityRequest from "./Request/OWAGetUserAvailabilityRequest";
 import { owaFindEventsRequest, owaGetCalendarEventsRequest, owaGetEventsRequest } from "./Request/OWAEventRequests";
+import { ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
 
@@ -12,6 +15,11 @@ export class OWACalendar extends Calendar {
 
   newEvent(parentEvent?: OWAEvent): OWAEvent {
     return new OWAEvent(this, parentEvent);
+  }
+
+  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
+    let results = await this.account.callOWA(new OWAGetUserAvailabilityRequest(participants, from, to));
+    return participants.map((participant, i) => ({ participant, availability: ensureArray(results.Responses[i].CalendarView.Items).map(event => ({ from: new Date(event.Start + "Z"), to: new Date(event.End + "Z"), free: event.FreeBusyType == "Free" })) }));
   }
 
   protected getEventByItemID(id: string): OWAEvent | void {

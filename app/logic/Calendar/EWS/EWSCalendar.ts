@@ -1,4 +1,5 @@
 import { Calendar } from "../Calendar";
+import type { Participant } from "../Participant";
 import { EWSEvent } from "./EWSEvent";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
@@ -13,6 +14,30 @@ export class EWSCalendar extends Calendar {
 
   newEvent(parentEvent?: EWSEvent): EWSEvent {
     return new EWSEvent(this, parentEvent);
+  }
+
+  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
+    let request = {
+      m$GetUserAvailabilityRequest: {
+        m$MailboxDataArray: {
+          t$MailboxData: participants.map(participant => ({
+            t$Email: {
+              t$Address: participant.emailAddress,
+            },
+            t$AttendeeType: "Required",
+          })),
+        },
+        t$FreeBusyViewOptions: {
+          t$TimeWindow: {
+            t$StartTime: from.toISOString(),
+            t$EndTime: to.toISOString(),
+          },
+          t$RequestedView: "FreeBusy",
+        },
+      },
+    };
+    let results = await this.account.callEWS(request);
+    return participants.map((participant, i) => ({ participant, availability: ensureArray(results[i].FreeBusyView.CalendarEventArray?.CalendarEvent).map(event => ({ from: new Date(event.StartTime + "Z"), to: new Date(event.EndTime + "Z"), free: event.BusyType == "Free" })) }));
   }
 
   async listEvents() {

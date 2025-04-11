@@ -1,5 +1,6 @@
 import { Account } from "../Abstract/Account";
 import { Event } from "./Event";
+import type { Participant } from "./Participant";
 import { appGlobal } from "../app";
 import { Collection, ArrayColl } from "svelte-collections";
 import { ICalEMailProcessor } from "./ICal/ICalEMailProcessor";
@@ -12,6 +13,10 @@ export class Calendar extends Account {
 
   newEvent(parentEvent?: Event): Event {
     return new Event(this, parentEvent);
+  }
+
+  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
+    return participants.map(participant => ({ participant, availability: [] }));
   }
 
   /**

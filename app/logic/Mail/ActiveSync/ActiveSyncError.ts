@@ -160,6 +160,10 @@ const messages: Record<string, Record<number, string>> = {
     2: "Protocol error",
     3: "Server error",
   },
+  ResolveRecipients: {
+    5: "Invalid parameters",
+    6: "Retryable server error",
+  },
   Settings: {
     2: "Protocol error",
     3: "Access is deined",
