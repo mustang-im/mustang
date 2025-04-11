@@ -3,7 +3,7 @@
     <!-- <label for="linktext">Link text</label>
     <input type="text" bind:value={linkText} id="linktext" /> -->
     <!-- <label for="linktargeturl">Link target URL</label> -->
-    <input type="url" bind:value={linkTargetURL} id="linktargeturl" />
+    <input type="url" bind:value={linkTargetURL} id="linktargeturl" placeholder={$t`Link target URL`}/>
     <Button
       onClick={onLinkOK}
       label={$t`OK`}
