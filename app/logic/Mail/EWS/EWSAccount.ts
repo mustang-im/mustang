@@ -1,6 +1,6 @@
 import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
 import type { EMail } from "../EMail";
-import { EWSFolder } from "./EWSFolder";
+import { EWSFolder, getEWSItem } from "./EWSFolder";
 import EWSCreateItemRequest from "./Request/EWSCreateItemRequest";
 import type EWSDeleteItemRequest from "./Request/EWSDeleteItemRequest";
 import type EWSUpdateItemRequest from "./Request/EWSUpdateItemRequest";
@@ -170,6 +170,11 @@ export class EWSAccount extends MailAccount {
     let responseXML = aResponse.responseXML;
     if (!responseXML) {
       throw new EWSError(aResponse, aRequest);
+    }
+    // Free/Busy is a special snowflake and has its own element.
+    let freebusy = responseXML.querySelector("FreeBusyResponseArray");
+    if (freebusy) {
+      return ensureArray(getEWSItem(XML2JSON(freebusy)));
     }
     let messages = responseXML.querySelector("ResponseMessages");
     if (!messages) {

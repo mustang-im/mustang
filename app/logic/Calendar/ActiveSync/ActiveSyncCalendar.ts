@@ -1,4 +1,5 @@
 import { Calendar } from "../Calendar";
+import type { Participant } from "../Participant";
 import { ActiveSyncEvent, fromCompact } from "./ActiveSyncEvent";
 import type { ActiveSyncAccount, ActiveSyncPingable } from "../../Mail/ActiveSync/ActiveSyncAccount";
 import { kMaxCount } from "../../Mail/ActiveSync/ActiveSyncFolder";
@@ -7,6 +8,8 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Lock } from "../../util/Lock";
 import { ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
+
+const kHalfHour = 30 * 60 * 1000; // milliseconds
 
 export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
   readonly protocol: string = "calendar-activesync";
@@ -25,6 +28,31 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
 
   newEvent(parentEvent?: ActiveSyncEvent): ActiveSyncEvent {
     return new ActiveSyncEvent(this, parentEvent);
+  }
+
+  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
+    return Promise.all(participants.map(async participant => {
+      let request = {
+        To: participant.emailAddress,
+        Options: {
+          Availability: { // Yes these are regular dates.
+            StartTime: from.toISOString(),
+            EndTime: to.toISOString(),
+          },
+        },
+      };
+      let result = await this.account.callEAS("ResolveRecipients", request);
+      if (result.Response.Status != "1") {
+        throw new ActiveSyncError("ResolveRecipients", result.Response.Status, this);
+      }
+      let freebusy = result.Response.Recipient.Availability.MergedFreeBusy || "";
+      let availability = freebusy.split("").map((c, i) => ({
+        from: new Date(from.getTime() + i * kHalfHour),
+        to: new Date(from.getTime() + (i + 1) * kHalfHour),
+        free: c == "0",
+      }));
+      return { participant, availability };
+    }));
   }
 
   /**

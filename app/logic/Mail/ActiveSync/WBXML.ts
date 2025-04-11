@@ -17,7 +17,7 @@ const kTags = [
   [,,,,,,, "DisplayName", "ServerId", "ParentId", "Type",, "Status",, "Changes", "Add", "Delete", "Update", "SyncKey", "FolderCreate", "FolderDelete", "FolderUpdate", "FolderSync", "Count"],
   [,,,,, "CalendarId", "CollectionId", "MeetingResponse", "RequestId", "Request", "Result", "Status", "UserResponse",, "InstanceId"],
   [,,,,,,,, "Categories", "Category", "Complete", "DateCompleted", "DueDate", "UtcDueDate", "Importance", "Recurrence", "Type", "Start", "Until", "Occurrences", "Interval", "DayOfMonth", "DayOfWeek", "WeekOfMonth", "MonthOfYear", "Regenerate", "DeadOccur", "ReminderSet", "ReminderTime", "Sensitivity", "StartDate", "UtcStartDate", "Subject",, "OrdinalDate", "SubOrdinalDate", "CalendarType", "IsLeapMonth", "FirstDayOfWeek"],
-  [,,,,, "ResolveRecipients", "Response", "Status", "Type", "Recipient", "DisplayName", "EmailAddress",,,, "Options", "To",,,,,, "Availability", "StartTime", "EndTime", "MergedFreeBusy"],
+  [,,,,, "ResolveRecipients", "Response", "Status", "Type", "Recipient", "DisplayName", "EmailAddress",,,, "Options", "To",, "RecipientCount",,,, "Availability", "StartTime", "EndTime", "MergedFreeBusy"],
   [],
   [,,,,,,, "IMAddress", "IMAddress2", "IMAddress3",,,, "NickName"],
   [,,,,, "Ping",, "Status", "HeartbeatInterval", "Folders", "Folder", "Id", "Class", "MaxFolders"],
