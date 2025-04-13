@@ -17,7 +17,6 @@
   {:else if activeTab == SearchView.Search}
     <SearchPane bind:searchMessages on:clear={endSearchMode} />
   {:else}
-    <!--<ProjectList />-->
     <AccountList {accounts} bind:selectedAccount />
     <FolderList {folders} bind:selectedFolder bind:selectedFolders>
       <svelte:fragment slot="buttons" let:folder>
@@ -50,7 +49,6 @@
   import TagsList from "./TagsList.svelte";
   import SearchPane from "../Search/SearchPane.svelte";
   import PersonsList from "../../Contacts/Person/PersonsList.svelte";
-  import ProjectList from "./ProjectList.svelte";
   import GetMailButton from "./GetMailButton.svelte";
   import Button from '../../Shared/Button.svelte';
   import WriteButton from "./WriteButton.svelte";
