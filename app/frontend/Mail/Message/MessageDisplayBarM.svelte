@@ -6,7 +6,7 @@
     <!-- left -->
     <hbox class="accounts">
       <Button
-        icon={message?.folder?.account?.icon ?? AccountIcon}
+        icon={message?.folder?.account?.icon ?? InboxIcon}
         iconSize="32px"
         iconOnly
         label={$t`Select account or folder`}
@@ -20,17 +20,11 @@
       <Button
         label={$t`Show messages in folder ${message.folder.name}`}
         onClick={goToMsgList}
+        icon={ListIcon}
+        iconSize="32px"
         iconOnly
         plain
-        >
-        <hbox slot="icon">
-          {#if message.folder.specialFolder == SpecialFolder.Inbox || message.folder.specialFolder == SpecialFolder.Normal }
-            <FolderIcon folder={message.folder} size="32px" />
-          {:else}
-            <NormalFolderIcon size="32px" />
-          {/if}
-        </hbox>
-      </Button>
+        />
     </hbox>
 
     <!-- left center extra -->
@@ -111,15 +105,14 @@
   import AppBarM from "../../AppsBar/AppBarM.svelte";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import AppMenuButton from "../../AppsBar/AppMenuM/AppMenuButton.svelte";
-  import FolderIcon from "../LeftPane/FolderIcon.svelte";
   import Popup from "../../Shared/Popup.svelte";
   import Button from "../../Shared/Button.svelte";
-  import AccountIcon from "lucide-svelte/icons/rabbit";
+  import InboxIcon from "lucide-svelte/icons/inbox";
+  import ListIcon from "lucide-svelte/icons/list";
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
   import WriteIcon from "lucide-svelte/icons/pencil";
   import FolderActionsIcon from "lucide-svelte/icons/folder-dot";
-  import NormalFolderIcon from "lucide-svelte/icons/folder";
   import { Swipe } from "../../Shared/Gesture";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
