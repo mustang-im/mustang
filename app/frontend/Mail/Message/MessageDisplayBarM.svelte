@@ -130,7 +130,7 @@
     goTo("/mail/");
   }
   function goToMsgList() {
-    goTo("/mail/folder/message-list");
+    goTo(`/mail/folder/${message.folder.account.id}/${message.folder.id}/message-list`);
   }
   async function deleteMessage() {
     await message.deleteMessage();
