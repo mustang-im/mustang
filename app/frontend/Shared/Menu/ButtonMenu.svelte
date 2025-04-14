@@ -21,9 +21,10 @@
 
 <script lang="ts">
   import { appGlobal } from "../../../logic/app";
-import Button from "../Button.svelte";
+  import Button from "../Button.svelte";
   import Menu from "./Menu.svelte";
   import MenuIcon from "lucide-svelte/icons/ellipsis";
+  import VerticalMenuIcon from "lucide-svelte/icons/ellipsis-vertical";
 
   /** in/out */
   export let isMenuOpen: boolean = false;
@@ -38,7 +39,7 @@ import Button from "../Button.svelte";
    * in */
   export let boundaryElSel: string = "body";
   export let label: string = "";
-  export let buttonIcon = MenuIcon;
+  export let buttonIcon = appGlobal.isMobile ? VerticalMenuIcon : MenuIcon;
 
   let menuAnchorE: HTMLElement;
   function onMenuToggle() {
