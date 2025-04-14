@@ -1,5 +1,5 @@
-<AccountButton account={appGlobal.addressbooks.get(1)} page={acc => `/contacts/account/${acc.id}/persons`} />
-<AccountButton account={appGlobal.addressbooks.get(0)} page={acc => `/contacts/account/${acc.id}/persons`} />
+<AccountButton account={appGlobal.addressbooks.get(1)} page={acc => `/contacts/account/${acc.id}/persons`} defaultIcon={AccountIcon} />
+<AccountButton account={appGlobal.addressbooks.get(0)} page={acc => `/contacts/account/${acc.id}/persons`} defaultIcon={AccountIcon} />
 <AppButton app={contactsMustangApp} page="/contacts/" />
 <CombinedButton icon1={contactsMustangApp.icon} icon2={SearchIcon} page="/contacts/search" />
 <CombinedButton icon1={contactsMustangApp.icon} icon2={PlusIcon} page="/contacts/create-person" />
@@ -12,4 +12,5 @@
   import CombinedButton from "../CombinedButton.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
   import PlusIcon from "lucide-svelte/icons/plus-circle";
+  import AccountIcon from "lucide-svelte/icons/users";
 </script>
