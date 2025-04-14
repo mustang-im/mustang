@@ -3,7 +3,8 @@
     <hbox class="draft">
       <Button
         icon={WriteIcon}
-        iconSize="24px"
+        iconSize={$appGlobal.isSmall ? "32px" : "24px" }
+        iconOnly={$appGlobal.isSmall}
         label={$t`Edit draft`}
         onClick={editDraft}
         />
@@ -56,7 +57,7 @@
   <hbox class="unread" class:read={$message.isRead}>
     <Button
       icon={CircleIcon}
-      iconSize="16px"
+      iconSize={$appGlobal.isSmall ? "20px" : "16px" }
       iconOnly
       label={$message.isRead ? $t`Mark this message as unread` : $t`Mark this message as read`}
       onClick={toggleRead}
@@ -66,7 +67,7 @@
   <hbox class="star" class:starred={$message.isStarred}>
     <Button
       icon={StarIcon}
-      iconSize="18px"
+      iconSize={$appGlobal.isSmall ? "28px" : "18px" }
       iconOnly
       label={$t`Remember this message`}
       onClick={toggleStar}
@@ -115,6 +116,7 @@
   import FolderActionsIcon from "lucide-svelte/icons/folder-dot";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
+  import { appGlobal } from "../../../logic/app";
 
   export let message: EMail;
 
@@ -179,5 +181,10 @@
   }
   hbox.draft {
     margin-right: 32px;
+  }
+  @media (max-width: 600px)  {
+    .reply, .reply-all, .spam, .trash, .move, .menu {
+      display: none;
+    }
   }
 </style>

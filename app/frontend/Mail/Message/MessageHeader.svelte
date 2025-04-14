@@ -62,9 +62,11 @@
     <value class="date font-small" title={$message.sent?.toLocaleString(getUILocale())}>
       {getDateTimeString($message.sent)}
     </value>
-    <vbox class="display-mode">
-      <DisplayModeSwitcher />
-    </vbox>
+    {#if !$appGlobal.isSmall}
+      <vbox class="display-mode">
+        <DisplayModeSwitcher />
+      </vbox>
+    {/if}
   </hbox>
 </vbox>
 
@@ -88,6 +90,7 @@
   import { getDateTimeString } from "../../Util/date";
   import { onDestroy } from "svelte";
   import { getUILocale, t } from "../../../l10n/l10n";
+  import { appGlobal } from "../../../logic/app";
 
   export let message: EMail;
 
@@ -182,5 +185,17 @@
   }
   .display-mode {
     justify-content: end;
+  }
+  @media (max-width: 600px)  {
+    .message-header {
+      min-height: 0;
+      padding: 8px 6px 2px 16px;
+    }
+    .display-mode {
+      display: none;
+    }
+    .date {
+      margin-inline-end: 6px;
+    }
   }
 </style>

@@ -58,6 +58,7 @@
     "stanza": "^12.21.0",
     "svelte-collections": "^1.2.4",
     "svelte-icon": "^2.0.0",
+    "svelte-navigator": "^3.2.2",
     "timezone-picker-svelte": "^1.0.2",
     "tiptap-extension-resize-image": "^1.2.1",
     "ws": "^8.16.0"

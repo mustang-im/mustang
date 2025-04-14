@@ -1,6 +1,6 @@
 <!-- Appears below the msg list -->
  {#if folder}
-  <hbox class="folder-header font-smallest">
+  <hbox class="folder-header font-smallest" class:mobile={$appGlobal.isMobile}>
     {#if $account?.isLoggedIn}
       <GetMailButton {folder} />
     {/if}
@@ -8,7 +8,7 @@
       <hbox class="star button" class:starred={isShowStarred}>
         <Button
           icon={StarIcon}
-          iconSize="16px"
+          iconSize={$appGlobal.isMobile ? "32px" : "16px"}
           iconOnly
           label={$t`Show only starred messages`}
           onClick={toggleStarred}
@@ -18,7 +18,7 @@
       <hbox class="unread-dot button" class:unread={isShowUnread}>
         <Button
           icon={CircleIcon}
-          iconSize="7px"
+          iconSize={$appGlobal.isMobile ? "20px" : "7px"}
           iconOnly
           label={$t`Show only unread messages`}
           onClick={toggleUnread}
@@ -29,7 +29,7 @@
         <hbox class="show-search button">
           <Button
             icon={SearchIcon}
-            iconSize="16px"
+            iconSize={$appGlobal.isMobile ? "32px" : "16px"}
             iconOnly
             label={$t`Search only the currently displayed folder for a keyword`}
             onClick={toggleShowSearchField}
@@ -92,6 +92,7 @@
   import { catchErrors } from '../../Util/error';
   import type { ArrayColl } from 'svelte-collections';
   import { t } from '../../../l10n/l10n';
+  import { appGlobal } from '../../../logic/app';
 
   export let folder: Folder;
   export let searchMessages: ArrayColl<EMail> | null; /** out */
@@ -183,6 +184,10 @@
     background-color: var(--leftbar-bg);
     overflow: auto;
   }
+  .folder-header.mobile {
+    height: 40px;
+    font-size: 16px;
+  }
   .folder-header :global(.get-mail button) {
     height: 20px;
     width: 20px;
@@ -194,6 +199,11 @@
   }
   .folder-header :global(input[type="search"]) {
     height: 18px;
+  }
+  .folder-header.mobile :global(.search),
+  .folder-header.mobile :global(input[type="search"]) {
+    height: 32px;
+    font-size: 16px;
   }
   .msg-count {
     padding-inline-start: 4px;
