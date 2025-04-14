@@ -6,34 +6,31 @@
     {/if}
     <hbox class="buttons">
       <hbox class="star button" class:starred={isShowStarred}>
-        <Button
+        <RoundButton
           icon={StarIcon}
           iconSize="16px"
-          iconOnly
+          border={false}
           label={$t`Show only starred messages`}
           onClick={toggleStarred}
-          plain
           />
       </hbox>
       <hbox class="unread-dot button" class:unread={isShowUnread}>
-        <Button
+        <RoundButton
           icon={CircleIcon}
           iconSize="7px"
-          iconOnly
+          border={false}
           label={$t`Show only unread messages`}
           onClick={toggleUnread}
-          plain
           />
       </hbox>
       {#if !isShowSearchField}
         <hbox class="show-search button">
-          <Button
+          <RoundButton
             icon={SearchIcon}
             iconSize="16px"
-            iconOnly
+            border={false}
             label={$t`Search only the currently displayed folder for a keyword`}
             onClick={toggleShowSearchField}
-            plain
             />
         </hbox>
       {/if}
@@ -85,7 +82,7 @@
   import { newSearchEMail } from '../../../logic/Mail/Store/setStorage';
   import SearchField from '../../Shared/SearchField.svelte';
   import GetMailButton from './GetMailButton.svelte';
-  import Button from '../../Shared/Button.svelte';
+  import RoundButton from '../../Shared/RoundButton.svelte';
   import SearchIcon from "lucide-svelte/icons/search";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
