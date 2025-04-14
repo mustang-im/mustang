@@ -1,4 +1,7 @@
-<hbox class="buttons">
+<hbox class="buttons"
+  on:touchstart={ev => swipe.touchStart(ev)}
+  on:touchend={ev => swipe.touchEnd(ev)}
+  >
   <AppBarM>
     <!-- left -->
     <hbox class="accounts">
@@ -101,6 +104,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { mailMustangApp } from "../MailMustangApp";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
+  import { goTo } from "../../AppsBar/selectedApp";
   import MessageMenu from "./MessageMenu.svelte";
   import MessageMovePopup from "./MessageMovePopup.svelte";
   import Print from "./MessagePrint.svelte";
@@ -116,9 +120,9 @@
   import WriteIcon from "lucide-svelte/icons/pencil";
   import FolderActionsIcon from "lucide-svelte/icons/folder-dot";
   import NormalFolderIcon from "lucide-svelte/icons/folder";
+  import { Swipe } from "../../Shared/Gesture";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
-  import { goTo } from "../../AppsBar/selectedApp";
 
   export let message: EMail;
 
@@ -139,6 +143,16 @@
     mailMustangApp.writeMail(message);
   }
 
+  function onNextMessage() {
+    message = message.nextMessage();
+  }
+  function onPreviousMessage() {
+    message = message.nextMessage(true);
+  }
+  let swipe = new Swipe();
+  swipe.onLeft = onPreviousMessage;
+  swipe.onRight = onNextMessage;
+
   let isMenuOpen = false;
   let printE: Print;
 
@@ -151,4 +165,17 @@
   function onPopupClose() {
     popupOpen = false;
   }
+
+  /*
+  use:swipe={{ minSwipeDistance: 50 }}
+  on:swipe={(ev) => onSwipe(ev.detail.direction)}
+  import { swipe } from "svelte-gestures";
+    function onSwipe(direction: "top" | "right" | "bottom" | "left") {
+    if (direction == "left") {
+      onPreviousMessage();
+    } else if (direction == "right") {
+      onNextMessage();
+    }
+  }
+  */
 </script>
