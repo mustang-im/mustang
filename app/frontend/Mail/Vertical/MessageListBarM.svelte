@@ -64,7 +64,7 @@
   let isMenuOpen = false;
 
   function goToAccounts() {
-    goTo("/");
+    goTo("/mail/");
   }
   function goToSearch() {
     goTo("/mail/search");

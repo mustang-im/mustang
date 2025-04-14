@@ -44,7 +44,7 @@
   import { t } from "../../../l10n/l10n";
 
   function goToAccounts() {
-    goTo("/");
+    goTo("/mail/");
   }
   function goToSearch() {
     goTo("/mail/search");

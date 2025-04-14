@@ -1,7 +1,9 @@
-<Route path="folder/message-list">
+<Route path="/folder/:accountID/:folderID/message-list">
+  {ensureLoaded(selectedFolder, "/mail/")}
   <MsgListM {messages} bind:searchMessages bind:selectedFolder={$selectedFolder} bind:selectedMessage={$selectedMessage} bind:selectedMessages={$selectedMessages} />
 </Route>
-<Route path="message">
+<Route path="/message/:accountID/:folderID/:messageID/display">
+  {ensureLoaded(selectedMessage, "/mail/")}
   <MessageDisplay message={$selectedMessage} />
 </Route>
 <Route path="search">
@@ -27,6 +29,7 @@
   import { showError } from "../Util/error";
   import { ArrayColl } from "svelte-collections";
   import { Route } from "svelte-navigator";
+  import { get, type Writable } from "svelte/store";
 
   $: accounts = showAccounts.filter(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace); // || acc == allAccountsAccount
   $: folders = $selectedAccount?.rootFolders ?? new ArrayColl<Folder>();
@@ -73,4 +76,44 @@
 
   let viewSetting = getLocalStorage("mail.view", "vertical");
   $: view = $viewSetting.value;
+
+  function ensureLoaded(obj: Writable<any>, fallbackURL: string): string {
+    if (get(obj)) {
+      return "";
+    }
+    window.location.href = fallbackURL;
+  }
+  /*
+  function ensureFolder(folder: Writable<Folder>, params: any): string {
+    if (get(folder)) {
+      return "";
+    }
+    folder.set(getFolderByID(params.accountID, params.folderID));
+    return "";
+  }
+  function ensureMessage(message: Writable<EMail>, params: any): string {
+    if (get(message)) {
+      return "";
+    }
+    message.set(getMessageByID(params.accountID, params.folderID, params.messageID));
+    return "";
+  }
+  function getAccountByID(accountID: string): MailAccount {
+    let account = appGlobal.emailAccounts.find(acc => acc.id == accountID);
+    assert(account, `Account ID ${accountID} not found`);
+    return account;
+  }
+  function getFolderByID(accountID: string, folderID: string): Folder {
+    let account = getAccountByID(accountID);
+    let folder = account.findFolder(folder => folder.id == folderID);
+    assert(folder, `Folder ID ${folderID} in account ${account.name} not found`);
+    return folder;
+  }
+  function getMessageByID(accountID: string, folderID: string, messageID: string): EMail {
+    let folder = getFolderByID(accountID, folderID);
+    let message = folder.messages.find(msg => msg.id == messageID);
+    assert(message, `Message ID ${messageID} in folder ${folder.name} in account ${folder.account.name} not found`);
+    return message;
+  }
+  */
 </script>
