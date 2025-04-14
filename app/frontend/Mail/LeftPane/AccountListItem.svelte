@@ -1,16 +1,21 @@
 <hbox class="account" title={errorMsg}
-  on:contextmenu={contextMenu.onContextMenu}>
+  on:contextmenu={contextMenu.onContextMenu} {iconSize}>
   {#if $account.isLoggedIn}
     <hbox class="icon">
       {#if account.icon && typeof(account.icon) == "string" }
-        <img src={account.icon} width="18px" height="18px" alt="" class="logo" />
+        <img src={account.icon}
+          width={iconLogoSize}
+          height={iconLogoSize}
+          alt=""
+          class="logo"
+          />
       {:else}
-        <Icon data={MailIcon} size="16px" />
+        <Icon data={MailIcon} size={iconSize} />
       {/if}
     </hbox>
   {:else}
     <hbox class="icon">
-      <Icon data={MailXIcon} size="16px" />
+      <Icon data={MailXIcon} size={iconSize} />
     </hbox>
   {/if}
   <hbox class="label">{$account.name}</hbox>
@@ -18,7 +23,7 @@
       {#if $account.isLoggedIn}
         <GetMailButton folder={account.inbox} />
       {:else}
-        <Button plain iconOnly icon={DisconnectedIcon} onClick={login} label={$t`Login`} iconSize="16px" />
+        <Button plain iconOnly icon={DisconnectedIcon} onClick={login} label={$t`Login`} {iconSize} />
       {/if}
     </hbox>
 </hbox>
@@ -38,6 +43,7 @@
   import MailXIcon from '../../asset/icon/mail/mail-question.svg?raw';
   import DisconnectedIcon from "lucide-svelte/icons/unplug";
   import { t } from "../../../l10n/l10n";
+  import { appGlobal } from "../../../logic/app";
 
   export let account: MailAccount;
 
@@ -53,6 +59,8 @@
     : $errors.hasItems
       ? errors.first.message
       : "";
+  $: iconSize = $appGlobal.isMobile ? "32px" : "16px";
+  $: iconLogoSize = $appGlobal.isMobile ? "32px" : "18px";
 </script>
 
 <style>

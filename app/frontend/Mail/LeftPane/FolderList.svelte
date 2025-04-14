@@ -7,7 +7,7 @@
       </slot>
     </svelte:fragment>
     <TreeItemLine slot="row" let:item={folder} item={folder}>
-      <FolderLine {folder} slot="row">
+      <FolderLine {folder} slot="row" on:click>
         <slot name="buttons" slot="buttons" let:folder {folder} />
       </FolderLine>
     </TreeItemLine>
@@ -30,9 +30,6 @@
 </script>
 
 <style>
-  .folder-list :global(.row hbox) {
-    font-size: 14px;
-  }
   .header {
     padding-inline-start: 10px !important;
     color: grey;

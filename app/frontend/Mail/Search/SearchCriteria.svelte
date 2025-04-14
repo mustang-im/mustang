@@ -179,7 +179,7 @@
   function updateFolder() {
     search.folder = hasFolder ? $selectedFolder : null;
   }
-  $: availablePersons = hasPerson && searchMessages ? personsInEMails(searchMessages) : appGlobal.personalAddressbook.persons;
+  $: availablePersons = hasPerson && searchMessages ? personsInEMails(searchMessages) : appGlobal.personalAddressbook?.persons;
   function updatePerson() {
     if (!hasPerson) {
       search.includesPerson = null;

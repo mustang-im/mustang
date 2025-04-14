@@ -8,7 +8,7 @@
     columns="auto">
     <svelte:fragment slot="header">
     </svelte:fragment>
-    <VerticalMessageListItem slot="row" let:item message={item} />
+    <VerticalMessageListItem slot="row" let:item message={item} on:click />
   </FastList>
 </vbox>
 

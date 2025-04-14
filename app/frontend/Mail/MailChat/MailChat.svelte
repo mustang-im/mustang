@@ -3,7 +3,7 @@
     <hbox class="buttons">
       <AccountDropDown bind:selectedAccount={$selectedAccount} accounts={accounts} />
       <hbox flex class="spacer" />
-      <WriteButton selectedAccount={$selectedAccount} />
+      <WriteButton account={$selectedAccount} />
     </hbox>
     <PersonsList persons={appGlobal.persons} bind:selected={selectedPerson} />
     <ViewSwitcher />

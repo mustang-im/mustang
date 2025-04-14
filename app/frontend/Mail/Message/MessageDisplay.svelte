@@ -12,15 +12,20 @@
       <MessageBody {message} />
     </Paper>
   </vbox>
+  {#if $appGlobal.isSmall}
+    <MessageDisplayBarM {message} />
+  {/if}
 </vbox>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { onKeyOnList } from "./MessageKeyboard";
+  import { appGlobal } from "../../../logic/app";
   import MessageHeader from "./MessageHeader.svelte";
   import MessageAttachments from "./AttachmentsUI.svelte";
   import MessageBody from "./MessageBody.svelte";
   import Invitation from "../../Calendar/DisplayEvent/Invitation.svelte";
+  import MessageDisplayBarM from "./MessageDisplayBarM.svelte";
   import Paper from "../../Shared/Paper.svelte";
   import { catchErrors } from "../../Util/error";
 
@@ -35,5 +40,12 @@
   .body {
     margin-inline-start: 8px;
     margin-block-end: 2px;
+  }
+  @media (max-width: 600px)  {
+    .body {
+      margin-inline-start: 4px;
+      margin-inline-end: 1px;
+      margin-block-end: 1px;
+    }
   }
 </style>

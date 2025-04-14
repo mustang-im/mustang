@@ -6,7 +6,7 @@
   <hbox class="menu button" bind:this={menuAnchorE}>
     <Button
       icon={buttonIcon}
-      iconSize="16px"
+      iconSize={$appGlobal.isMobile ? "32px" : "16px"}
       iconOnly
       {label}
       onClick={onMenuToggle}
@@ -20,7 +20,8 @@
 </Menu>
 
 <script lang="ts">
-  import Button from "../Button.svelte";
+  import { appGlobal } from "../../../logic/app";
+import Button from "../Button.svelte";
   import Menu from "./Menu.svelte";
   import MenuIcon from "lucide-svelte/icons/ellipsis";
 
