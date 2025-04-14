@@ -21,12 +21,6 @@
   .app-bar :global(button) {
     width: 48px;
     margin-inline-start: 2px;
-    border-top: 1px dotted var(--border);
-  }
-  @media (prefers-color-scheme: light) {
-    .app-bar :global(.app-button) {
-      border-top: 1px dotted grey;
-    }
   }
   .app-bar :global(svg) {
     stroke-width: 1.3px;

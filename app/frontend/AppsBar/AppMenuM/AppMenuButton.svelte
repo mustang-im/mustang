@@ -4,23 +4,31 @@
     iconSize="32px"
     label="Switch apps"
     classes="plain small"
-    border={true}
+    border={false}
     padding="6px"
+    {onClick}
     />
 </hbox>
 
 <script lang="ts">
+  import { goTo } from "../selectedApp";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import logo from '../../asset/icon/general/logo.svg?raw';
+
+  export let onClick = onOpen;
+
+  function onOpen() {
+    goTo("/app-menu/");
+  }
 </script>
 
 <style>
-  .app-menu-button.no {
-    width: 40px;
-    height: 40px;
+  .app-menu-button {
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
     margin: 1px;
     padding: 2px;
-    border: 1px solid white;
-    border-radius: 50px;
   }
 </style>

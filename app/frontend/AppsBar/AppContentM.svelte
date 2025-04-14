@@ -14,6 +14,9 @@
   <Route path="meet/*">
     <MeetAppM />
   </Route>
+  <Route path="/app-menu/">
+    <AppMenuM />
+  </Route>
   <Route path="/">
     <MailAppM />
   </Route>
@@ -26,4 +29,5 @@
   import CalendarAppM from "../Calendar/CalendarAppM.svelte";
   import FilesAppM from "../Files/FilesAppM.svelte";
   import MeetAppM from "../Meet/MeetAppM.svelte";
+  import AppMenuM from "./AppMenuM/AppMenu.svelte";
 </script>
