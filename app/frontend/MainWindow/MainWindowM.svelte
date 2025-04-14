@@ -3,19 +3,25 @@
 </svelte:head>
 
 <vbox flex class="main-window" dir={rtl} class:mobile={$appGlobal.isMobile}>
-  <Router primary={false}>
-    <NotificationBar />
-    {#if sidebar}
-      <SplitterHorizontal name="sidebar" initialBottomRatio={0.3}>
-        <vbox flex class="sidebar" slot="top">
-          <svelte:component this={sidebar} />
-        </vbox>
-        <AppContentM slot="bottom" />
-      </SplitterHorizontal>
-    {:else}
-      <AppContentM />
-    {/if}
-  </Router>
+  {#await startup()}
+    <hbox />
+  {:then}
+    <Router primary={false}>
+      <NotificationBar />
+      {#if sidebar}
+        <SplitterHorizontal name="sidebar" initialBottomRatio={0.3}>
+          <vbox flex class="sidebar" slot="top">
+            <svelte:component this={sidebar} />
+          </vbox>
+          <AppContentM slot="bottom" />
+        </SplitterHorizontal>
+      {:else}
+        <AppContentM />
+      {/if}
+    </Router>
+  {:catch ex}
+    {showError(ex)}
+  {/await}
 </vbox>
 <MeetBackground />
 <MailInBackground />
@@ -39,7 +45,7 @@
   import SplitterHorizontal from "../Shared/SplitterHorizontal.svelte";
   import MailInBackground from "../Mail/MailInBackground.svelte";
   import MeetBackground from "../Meet/MeetBackground.svelte";
-  import { catchErrors, backgroundError } from "../Util/error";
+  import { catchErrors, backgroundError, showError } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { onMount } from "svelte";
   import { getUILocale, t } from "../../l10n/l10n";
@@ -51,8 +57,6 @@
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;
   $: sidebar = $sidebarApp?.sidebar;
   $: rtl = rtlLocales.includes(getUILocale()) ? 'rtl' : null;
-
-  onMount(() => catchErrors(startup));
 
   async function startup() {
     loadMustangApps();
