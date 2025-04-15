@@ -61,7 +61,7 @@
           <RoundButton
             label={$t`Cancel`}
             icon={CloseIcon}
-            onClick={onClose}
+            onClick={onCancel}
             classes="plain save-or-close"
             iconSize="16px"
             />
@@ -91,7 +91,7 @@
   import SaveIcon from "lucide-svelte/icons/check";
   import CloseIcon from "lucide-svelte/icons/x";
   import { catchErrors } from "../../Util/error";
-  import { NotImplemented } from "../../../logic/util/util";
+  import { assert, NotImplemented } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
@@ -99,9 +99,17 @@
 
   let isFullWindow = false;
 
+  $: event.startEditing(); // not `$event`
   $: canSave = event && $event.title && $event.startTime && $event.endTime &&
-      event.startTime.getTime() <= event.endTime.getTime();
+      event.startTime.getTime() <= event.endTime.getTime() && $event.hasChanged();
   $: oldTitle = event?.title || $t`Event`;
+
+  function onCancel() {
+    assert(event.unedited, "need unedited state");
+    event.copyFrom(event.unedited);
+    event.finishEditing();
+    onClose();
+  }
 
   async function onSave() {
     if (repeatBox && !repeatBox.confirmAndChangeRule()) {
@@ -145,6 +153,7 @@
   }
 
   function onClose() {
+    event.finishEditing();
     event.title ||= oldTitle;
     let me = calendarMustangApp.subApps.find(app => app instanceof EventEditMustangApp && app.mainWindowProperties.event == event);
     calendarMustangApp.subApps.remove(me);

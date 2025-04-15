@@ -5,7 +5,7 @@ import { ResponseType, type Responses } from "./Invitation";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/Lock";
-import { assert, randomID, AbstractFunction } from "../util/util";
+import { assert, randomID } from "../util/util";
 import { ArrayColl } from "svelte-collections";
 
 export class Event extends Observable {
@@ -50,11 +50,11 @@ export class Event extends Observable {
   /** Describes the recurrence pattern.
    * Only for RecurrenceCase == Master */
   @notifyChangedProperty
-  recurrenceRule: RecurrenceRule | undefined;
+  recurrenceRule: RecurrenceRule | null = null;
   /** Links back to the recurring master.
    * Only for RecurrenceCase == Instance or Exception */
   @notifyChangedProperty
-  parentEvent: Event | undefined;
+  parentEvent: Event | null = null;
   /**
    * Only for RecurrenceCase == Exception (or Instance)
    *
@@ -66,7 +66,7 @@ export class Event extends Observable {
    *
    * For RecurrenceCase == Instance, it's identical to `startTime`. TODO Remove it in this case?
    */
-  recurrenceStartTime: Date | undefined;
+  recurrenceStartTime: Date | null = null;
   /**
    * Only for RecurrenceCase == Master
    *
@@ -84,7 +84,7 @@ export class Event extends Observable {
   readonly instances = new ArrayColl<Event | null | undefined>;
 
   @notifyChangedProperty
-  alarm: Date = null;
+  alarm: Date | null = null;
 
   @notifyChangedProperty
   location: string;
@@ -96,6 +96,14 @@ export class Event extends Observable {
   readonly participants = new ArrayColl<Participant>();
   @notifyChangedProperty
   response = ResponseType.Unknown;
+  /** If we're currently editing this event,
+   * saves the original state before the editing.
+   *
+   * Allows to calculate `hasChanged()`, revert changes,
+   * and to implement full editable offline support.
+   * Set be `startEditing()` and `stopEditing()` */
+  @notifyChangedProperty
+  unedited: Event | null = null;
   @notifyChangedProperty
   lastMod = new Date();
   @notifyChangedProperty
@@ -183,6 +191,41 @@ export class Event extends Observable {
     this.onlineMeetingURL = original.onlineMeetingURL;
     this.participants.replaceAll(original.participants);
     this.response = original.response;
+  }
+
+  /**
+   * Assumes that the `original` property was set before
+   */
+  hasChanged(): boolean {
+    return !!this.unedited && (
+      this.calUID != this.unedited.calUID ||
+      this.startTime?.getTime() != this.unedited.startTime?.getTime() ||
+      this.endTime?.getTime() != this.unedited.endTime?.getTime() ||
+      this.timezone != this.unedited.timezone  && !!this.unedited.timezone ||
+      this.allDay != this.unedited.allDay ||
+      this.title != this.unedited.title ||
+      this.descriptionText != this.unedited.descriptionText ||
+      this.descriptionHTML != this.unedited.descriptionHTML ||
+      this.location != this.unedited.location ||
+      this.isOnline != this.unedited.isOnline ||
+      this.onlineMeetingURL != this.unedited.onlineMeetingURL ||
+      this.response != this.unedited.response ||
+      this.participants.hasItems && (
+        this.participants.length != this.unedited.participants.length ||
+        this.participants.contents.some((pThis, i) =>
+          pThis.emailAddress != this.unedited.participants.get(i).emailAddress)) ||
+      this.recurrenceCase != this.unedited.recurrenceCase ||
+      this.recurrenceRule != this.unedited.recurrenceRule ||
+      this.alarm?.getTime() != this.unedited.alarm?.getTime()
+    );
+  }
+
+  startEditing() {
+    this.unedited = this.calendar.newEvent();
+    this.unedited.copyFrom(this);
+  }
+  finishEditing() {
+    this.unedited = null;
   }
 
   /**
