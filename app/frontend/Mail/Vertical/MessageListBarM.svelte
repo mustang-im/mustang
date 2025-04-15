@@ -4,7 +4,7 @@
     <hbox class="accounts">
       <Button
         icon={folder.account?.icon ?? InboxIcon}
-        iconSize="32px"
+        iconSize="24px"
         iconOnly
         label={$t`Select account or folder`}
         onClick={goToAccounts}
@@ -16,7 +16,7 @@
     <hbox class="msglist">
       <Button
         icon={SearchIcon}
-        iconSize="32px"
+        iconSize="24px"
         iconOnly
         label={$t`Search messages`}
         onClick={goToSearch}
@@ -30,7 +30,7 @@
     <hbox class="write">
       <Button
         icon={WriteIcon}
-        iconSize="32px"
+        iconSize="24px"
         iconOnly
         label={$t`Write new email`}
         onClick={newMail}

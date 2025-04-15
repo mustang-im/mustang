@@ -6,7 +6,7 @@
   <hbox class="menu button" bind:this={menuAnchorE}>
     <Button
       icon={buttonIcon}
-      iconSize={$appGlobal.isMobile ? "32px" : "16px"}
+      iconSize={$appGlobal.isMobile ? "24px" : "16px"}
       iconOnly
       {label}
       onClick={onMenuToggle}
