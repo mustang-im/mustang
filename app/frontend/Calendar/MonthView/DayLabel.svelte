@@ -39,6 +39,12 @@
   .day {
     padding: 4px 8px;
     border-left: 1px dotted var(--border);
+    background-color: var(--bg);
+  }
+  @container (max-height: 400px) {
+    .day {
+      padding: 2px 6px 0px 6px;
+    }
   }
   .today {
     padding: 0px 8px;

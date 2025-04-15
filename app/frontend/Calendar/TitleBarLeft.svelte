@@ -3,13 +3,9 @@
 </hbox>
 
 <script lang="ts">
-  import { selectedCalendar, type DateInterval } from "./selected";
-  import AccountSelectorRound from "../Shared/AccountSelectorRound.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
-  import CalendarIcon from "lucide-svelte/icons/calendar";
   import AddToCalendarIcon from "lucide-svelte/icons/plus";
   import { createEventDispatcher } from 'svelte';
-  import { appGlobal } from "../../logic/app";
   import { t } from "../../l10n/l10n";
 
   const dispatch = createEventDispatcher();
