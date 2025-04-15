@@ -19,13 +19,13 @@ export class SQLEvent extends Event {
         let insert = await (await getDatabase()).run(sql`
           INSERT INTO event (
             title, descriptionText, descriptionHTML,
-            startTime, endTime,
+            startTime, endTime, allDay,
             calUID, responseToOrganizer, pID, calendarID,
             recurrenceRule, recurrenceMasterEventID,
             recurrenceStartTime, recurrenceIsException
           ) VALUES (
             ${event.title}, ${event.descriptionText}, ${event.descriptionHTML},
-            ${event.startTime.toISOString()}, ${event.endTime.toISOString()},
+            ${event.startTime.toISOString()}, ${event.endTime.toISOString()}, ${event.allDay ? 1 : 0},
             ${event.calUID}, ${event.response}, ${event.pID}, ${event.calendar?.dbID},
             ${event.recurrenceRule?.getCalString(event.allDay)}, ${event.parentEvent?.dbID},
             ${event.recurrenceStartTime?.toISOString()},
@@ -40,6 +40,7 @@ export class SQLEvent extends Event {
             descriptionHTML = ${event.descriptionHTML},
             startTime = ${event.startTime.toISOString()},
             endTime = ${event.endTime.toISOString()},
+            allDay = ${event.allDay ? 1 : 0},
             calUID = ${event.calUID},
             responseToOrganizer = ${event.response},
             pID = ${event.pID},
@@ -115,10 +116,11 @@ export class SQLEvent extends Event {
 
   static async read(dbID: number, event: Event, row?: any, events?: Collection<Event>): Promise<Event> {
     if (!row) {
+      // <copied to="readAll()" />
       row = await (await getDatabase()).get(sql`
         SELECT
           title, descriptionText, descriptionHTML,
-          startTime, endTime,
+          startTime, endTime, allDay,
           calUID, responseToOrganizer, pID, calendarID,
           recurrenceRule, recurrenceMasterEventID, recurrenceStartTime
         FROM event
@@ -134,6 +136,7 @@ export class SQLEvent extends Event {
     }
     event.startTime = sanitize.date(row.startTime);
     event.endTime = sanitize.date(row.endTime, event.startTime);
+    event.allDay = sanitize.boolean(row.allDay, false);
     event.calUID = row.calUID;
     event.response = sanitize.integerRange(row.responseToOrganizer, 0, 5);
     event.pID = row.pID;
@@ -203,10 +206,11 @@ export class SQLEvent extends Event {
   static async readAll(calendar: Calendar): Promise<void> {
     assert(calendar.dbID, "Need calendar ID to read events from SQL database");
 
+    // <copied from="read()" />
     let rows = await (await getDatabase()).all(sql`
       SELECT
         title, descriptionText, descriptionHTML,
-        startTime, endTime,
+        startTime, endTime, allDay,
         calUID, responseToOrganizer, pID, id,
         recurrenceRule, recurrenceMasterEventID, recurrenceStartTime
       FROM event
