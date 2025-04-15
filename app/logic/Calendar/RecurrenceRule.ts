@@ -182,7 +182,7 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     return 'RRULE:' + Object.entries(rule).map(entry => entry.join("=")).join(";");
   }
 
-  getOccurrencesByDate(endDate: Date, startDate: Date = this.startDate) {
+  getOccurrencesByDate(endDate: Date, startDate: Date = this.startDate): Date[] {
     if (this.endDate && this.endDate < endDate) {
       endDate = this.endDate;
     }

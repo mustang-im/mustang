@@ -31,44 +31,58 @@ export class Event extends Observable {
   /** IANA timezone name, e.g. "Europe/Berlin" */
   @notifyChangedProperty
   timezone: string | null = null;
-  /** Only used by the editing UI. */
-  @notifyChangedProperty
-  repeat = false; // TODO remove
-  /** Only used by recurring masters, describes the recurrence pattern.
+
+  /**
+   * Shows whether this is a normal non-recurring event,
+   * recurrence master, generated instance, or exception.
    *
-   * | `Event.parentEvent` | `Event.recurrenceRule` | Event type
-   * | ------------------- | ---------------------- | -----
-   * | without             | without                | Normal event
-   * | without             | with                   | Recurrence master
-   * | with                | with                   | Invalid state
-   * | with                | without                | Recurrence instance or exception
+   * | `Event.recurrenceCase` | `Event.parentEvent` | `Event.recurrenceRule` |
+   * | ---------------------- | ------------------- | ---------------------- |
+   * | Normal                 | without             | without                |
+   * | Master                 | without             | with                   |
+   * | Instance               | with                | without                |
+   * | Exception              | with                | without                |
    *
-   * TODO differentiate between generated instance and exception #551
+   * Other state combinations are invalid.
    */
   @notifyChangedProperty
+  recurrenceCase = RecurrenceCase.Normal;
+  /** Describes the recurrence pattern.
+   * Only for RecurrenceCase == Master */
+  @notifyChangedProperty
   recurrenceRule: RecurrenceRule | undefined;
-  /** Only used by instances, links back to the recurring master. */
+  /** Links back to the recurring master.
+   * Only for RecurrenceCase == Instance or Exception */
   @notifyChangedProperty
   parentEvent: Event | undefined;
   /**
-   * If this is an instance of a recurring meeting (not the master),
+   * Only for RecurrenceCase == Exception (or Instance)
+   *
+   * If this is an instance or exception of a recurring meeting (not the master),
    * then this is the instance's original start time.
    * The `startTime` may contain a modified time as an exception.
    * This allows us to work out the instance index of an exception,
    * even if its actual start time has been modified.
+   *
+   * For RecurrenceCase == Instance, it's identical to `startTime`. TODO Remove it in this case?
    */
   recurrenceStartTime: Date | undefined;
   /**
+   * Only for RecurrenceCase == Master
+   *
    * Holds child instances of a recurring event:
    * - undefined means that a recurring instance hasn't been generated yet
    * - null means that that the instance was excluded
-   * - a saved event means that the instance is an exception
-   * - an unsaved event means that the instance was auto-generated
+   * - otherwise, it's an instance or exception
    *
-   * Note that the array may not be complete but `fillRecurrences`
-   * will auto-generate additional instances if necessary.
+   * Load and save:
+   * - We do not save instances, only exceptions.
+   * - Instances are generated on load, using `fillRecurrences()`
+   * - The array here may not be complete, but `fillRecurrences()`
+   *   will auto-generate additional instances if necessary.
    */
   readonly instances = new ArrayColl<Event | null | undefined>;
+
   @notifyChangedProperty
   alarm: Date = null;
 
@@ -95,6 +109,7 @@ export class Event extends Observable {
     if (parentEvent) {
       this.parentEvent = parentEvent;
       this.copyFromRecurrenceMaster(parentEvent);
+      this.recurrenceCase = RecurrenceCase.Instance;
     }
   }
 
@@ -147,7 +162,7 @@ export class Event extends Observable {
     this.endTime = original.endTime ? new Date(original.endTime) : null;
     this.alarm = original.alarm ? new Date(original.alarm) : null;
     this.recurrenceStartTime = original.recurrenceStartTime ? new Date(original.recurrenceStartTime) : null;
-    this.repeat = original.repeat;
+    this.recurrenceCase = original.recurrenceCase;
     this.recurrenceRule = original.recurrenceRule;
     this.parentEvent = original.parentEvent;
   }
@@ -258,6 +273,7 @@ export class Event extends Observable {
     for (let i = 0; i < occurrences.length; i++) {
       if (this.instances.get(i) === undefined) {
         let occurrence = this.calendar.newEvent(this);
+        occurrence.recurrenceCase = RecurrenceCase.Instance;
         occurrence.recurrenceStartTime = occurrences[i];
         occurrence.startTime = new Date(occurrences[i]); // Clone in case of exception
         occurrence.endTime = new Date(this.endTime.getTime() + occurrence.startTime.getTime() - this.startTime.getTime());
@@ -306,3 +322,19 @@ export class Event extends Observable {
 }
 
 const k1Day = 86400;
+
+enum RecurrenceCase {
+  /** Not recurring */
+  Normal = "normal",
+  /** Recurring master event.
+   * Contains the rules how to create the recurrence instances.
+   * Not directly shown in the UI. */
+  Master = "master",
+  /** Recurrence instance, generated from the master.
+   * Only exists in RAM objects, not saved on server and in DB. */
+  Instance = "instance",
+  /** Recurrence exception. Like an instance, but at a different time
+   * or with modified properties.
+   * Overrides a specific instance. */
+  Exception = "exception",
+}
