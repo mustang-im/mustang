@@ -30,7 +30,7 @@ export class JMAPFolder extends Folder {
     this.name = sanitize.nonemptystring(json.name);
     this.countTotal = sanitize.integer(json.totalEmails);
     this.countUnread = sanitize.integer(json.unreadEmails);
-    this.isSubscribed = sanitize.boolean(json.isSubscribed);
+    this.isSubscribed = sanitize.boolean(json.isSubscribed, true);
     this.sortOrder = sanitize.integer(json.sortOrder);
     for (let right in json.myRights) {
       this.myRights[right] = sanitize.boolean(json.myRights[right], true);

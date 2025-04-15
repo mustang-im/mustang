@@ -39,7 +39,7 @@ export class GraphFolder extends Folder {
     this.name = sanitize.nonemptystring(json.displayName);
     this.countTotal = sanitize.integer(json.totalItemCount);
     this.countUnread = sanitize.integer(json.unreadItemCount);
-    this.isSubscribed = sanitize.boolean(!json.isHidden);
+    this.isSubscribed = !sanitize.boolean(json.isHidden, false);
     this.setSpecialUse(json.wellKnownName);
   }
 

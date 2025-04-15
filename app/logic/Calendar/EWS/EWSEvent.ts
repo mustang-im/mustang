@@ -76,7 +76,7 @@ export class EWSEvent extends Event {
       this.endTime = sanitize.date(xmljs.DueDate);
     }
     this.timezone = fromWindowsZone(xmljs.StartTimezoneId);
-    this.allDay = sanitize.boolean(xmljs.IsAllDayEvent);
+    this.allDay = sanitize.boolean(xmljs.IsAllDayEvent, false);
     if (xmljs.Recurrence) {
       this.recurrenceCase = RecurrenceCase.Master;
       this.recurrenceRule = this.newRecurrenceRule(xmljs.Recurrence);

@@ -132,7 +132,7 @@ export class EWSFolder extends Folder {
   }
 
   protected async processSyncReadFlagChange(email: EWSEMail, change: any) {
-    email.isRead = sanitize.boolean(change.IsRead);
+    email.isRead = sanitize.boolean(change.IsRead, false);
     await this.storage.saveMessageWritableProps(email);
   }
 

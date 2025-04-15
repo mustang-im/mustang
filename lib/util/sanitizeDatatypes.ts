@@ -41,13 +41,17 @@ class Sanitize {
     if (typeof (unchecked) == "boolean") {
       return unchecked;
     }
-    if (unchecked === "true" || unchecked === "1" || unchecked === 1) {
+    if (unchecked === 0 || unchecked === null || unchecked === undefined) {
+      return false;
+    }
+    if (unchecked === 1) {
       return true;
     }
-    if (unchecked === "false" || unchecked === "0" ||
-      unchecked === 0 ||
-      unchecked === null || unchecked === undefined) {
+    if (unchecked === "false" || unchecked === "0") {
       return false;
+    }
+    if (unchecked === "true" || unchecked === "1") {
+      return true;
     }
     return haveError("Boolean", unchecked, fallback);
   }

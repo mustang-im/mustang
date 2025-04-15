@@ -118,7 +118,7 @@ export class EWSEMail extends EMail {
     this.isReplied = xmljs.ExtendedProperty?.Value == 0x105;
     this.isStarred = xmljs.Flag?.FlagStatus == "Flagged";
     // can't work out how to find junk status
-    this.isDraft = sanitize.boolean(xmljs.IsDraft);
+    this.isDraft = sanitize.boolean(xmljs.IsDraft, false);
     this.tags.replaceAll(ensureArray(xmljs.Categories?.String).map(name => getTagByName(name)));
   }
 

@@ -103,7 +103,7 @@ export class JSONEMail {
     email.size = sanitize.integer(json.size, null);
     email.received = sanitize.date(json.received * 1000, new Date());
     email.sent = sanitize.date(json.sent * 1000, email.received);
-    email.outgoing = sanitize.boolean(!!json.outgoing);
+    email.outgoing = sanitize.boolean(json.outgoing, false);
     email.subject = sanitize.string(json.subject, null);
     if (json.plaintext != null || json.html != null) {
       email.text = sanitize.string(json.plaintext, null);
@@ -133,13 +133,13 @@ export class JSONEMail {
     email.size = sanitize.integer(json.size, null);
     email.sent = sanitize.date(json.sent * 1000, new Date());
     email.received = sanitize.date(json.received * 1000, new Date());
-    email.outgoing = sanitize.boolean(json.outgoing);
+    email.outgoing = sanitize.boolean(json.outgoing, false);
     email.subject = sanitize.string(json.subject, null);
 
-    email.isRead = sanitize.boolean(json.isRead);
-    email.isStarred = sanitize.boolean(json.isStarred);
-    email.isReplied = sanitize.boolean(json.isReplied);
-    email.isSpam = sanitize.boolean(json.isSpam);
+    email.isRead = sanitize.boolean(json.isRead, false);
+    email.isStarred = sanitize.boolean(json.isStarred, false);
+    email.isReplied = sanitize.boolean(json.isReplied, false);
+    email.isSpam = sanitize.boolean(json.isSpam, false);
     email.threadID = sanitize.string(json.threadID ?? json.inReplyTo, null);
     email.downloadComplete = sanitize.boolean(json.downloadComplete);
 
@@ -147,13 +147,13 @@ export class JSONEMail {
   }
 
   static readWritableProps(email: EMail, json: any): void {
-    email.isRead = sanitize.boolean(json.isRead);
-    email.isStarred = sanitize.boolean(json.isStarred);
-    email.isReplied = sanitize.boolean(json.isReplied);
-    email.isDraft = sanitize.boolean(json.isDraft);
-    email.isSpam = sanitize.boolean(json.isSpam);
+    email.isRead = sanitize.boolean(json.isRead, false);
+    email.isStarred = sanitize.boolean(json.isStarred, false);
+    email.isReplied = sanitize.boolean(json.isReplied, false);
+    email.isDraft = sanitize.boolean(json.isDraft, false);
+    email.isSpam = sanitize.boolean(json.isSpam, false);
     email.threadID = sanitize.string(json.threadID ?? json.inReplyTo, null);
-    email.downloadComplete = sanitize.boolean(!!json.downloadComplete);
+    email.downloadComplete = sanitize.boolean(json.downloadComplete, false);
     this.readTags(email, json);
   }
 
@@ -211,7 +211,7 @@ export class JSONEMail {
         attachment: ContentDisposition.attachment,
         inline: ContentDisposition.inline,
       }, ContentDisposition.unknown);
-      a.related = sanitize.boolean(!!json.related);
+      a.related = sanitize.boolean(json.related, false);
       email.attachments.add(a);
       return a;
     } catch (ex) {

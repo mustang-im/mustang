@@ -299,7 +299,7 @@ export class SQLEMail {
     email.size = sanitize.integer(row.size, null);
     email.received = sanitize.date(row.dateReceived * 1000, new Date());
     email.sent = sanitize.date(row.dateSent * 1000, email.received);
-    email.outgoing = sanitize.boolean(!!row.outgoing);
+    email.outgoing = sanitize.boolean(row.outgoing, false);
     email.scheduling = sanitize.integer(row.scheduling, 0);
     email.subject = sanitize.string(row.subject, null);
     if (row.plaintext != null || row.html != null) {
@@ -328,16 +328,16 @@ export class SQLEMail {
     email.size = sanitize.integer(row.size, null);
     email.sent = sanitize.date(row.dateSent * 1000, new Date());
     email.received = sanitize.date(row.dateReceived * 1000, new Date());
-    email.outgoing = sanitize.boolean(!!row.outgoing);
+    email.outgoing = sanitize.boolean(row.outgoing, false);
     email.scheduling = sanitize.integer(row.scheduling, 0);
     email.subject = sanitize.string(row.subject, null);
 
-    email.isRead = sanitize.boolean(!!row.isRead);
-    email.isStarred = sanitize.boolean(!!row.isStarred);
-    email.isReplied = sanitize.boolean(!!row.isReplied);
-    email.isSpam = sanitize.boolean(!!row.isSpam);
+    email.isRead = sanitize.boolean(row.isRead, false);
+    email.isStarred = sanitize.boolean(row.isStarred, false);
+    email.isReplied = sanitize.boolean(row.isReplied, false);
+    email.isSpam = sanitize.boolean(row.isSpam, false);
     email.threadID = sanitize.string(row.threadID ?? row.parentMsgID, null);
-    email.downloadComplete = sanitize.boolean(!!row.downloadComplete);
+    email.downloadComplete = sanitize.boolean(row.downloadComplete, false);
 
     email.contact = findOrCreatePersonUID(
       sanitize.emailAddress(row.contactEmail, "must@n.g"),
@@ -356,13 +356,13 @@ export class SQLEMail {
     if (!row) {
       return;
     }
-    email.isRead = sanitize.boolean(!!row.isRead);
-    email.isStarred = sanitize.boolean(!!row.isStarred);
-    email.isReplied = sanitize.boolean(!!row.isReplied);
-    email.isDraft = sanitize.boolean(!!row.isDraft);
-    email.isSpam = sanitize.boolean(!!row.isSpam);
+    email.isRead = sanitize.boolean(row.isRead, false);
+    email.isStarred = sanitize.boolean(row.isStarred, false);
+    email.isReplied = sanitize.boolean(row.isReplied, false);
+    email.isDraft = sanitize.boolean(row.isDraft, false);
+    email.isSpam = sanitize.boolean(row.isSpam, false);
     email.threadID = sanitize.string(row.threadID ?? row.parentMsgID, null);
-    email.downloadComplete = sanitize.boolean(!!row.downloadComplete);
+    email.downloadComplete = sanitize.boolean(row.downloadComplete, false);
 
     await this.readTags(email);
   }
@@ -432,7 +432,7 @@ export class SQLEMail {
           attachment: ContentDisposition.attachment,
           inline: ContentDisposition.inline,
         }, ContentDisposition.unknown);
-        a.related = sanitize.boolean(!!row.related);
+        a.related = sanitize.boolean(row.related, false);
         email.attachments.add(a);
       } catch (ex) {
         email.folder.account.errorCallback(ex);

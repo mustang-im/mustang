@@ -79,7 +79,7 @@ export class SQLChatMessage {
     }
     msg.dbID = sanitize.integer(dbID);
     msg.id = sanitize.nonemptystring(row.idStr);
-    msg.outgoing = sanitize.boolean(!!row.outgoing);
+    msg.outgoing = sanitize.boolean(row.outgoing, false);
     msg.inReplyTo = sanitize.string(row.parentMsgID, null);
     msg.sent = sanitize.date(row.dateSent * 1000, new Date());
     msg.received = sanitize.date(row.dateReceived * 1000, new Date());

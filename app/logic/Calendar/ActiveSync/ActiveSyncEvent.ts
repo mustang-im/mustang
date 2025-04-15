@@ -51,7 +51,7 @@ export class ActiveSyncEvent extends Event {
       this.endTime = fromCompact(wbxmljs.EndTime);
     }
     this.timezone = fromActiveSyncZone(wbxmljs.Timezone);
-    this.allDay = sanitize.boolean(wbxmljs.AllDayEvent);
+    this.allDay = sanitize.boolean(wbxmljs.AllDayEvent, false);
     if (wbxmljs.Recurrence) {
       this.recurrenceCase = RecurrenceCase.Master;
       this.recurrenceRule = this.newRecurrenceRule(wbxmljs.Recurrence);
