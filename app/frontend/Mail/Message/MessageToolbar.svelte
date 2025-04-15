@@ -7,6 +7,7 @@
         iconOnly={$appGlobal.isSmall}
         label={$t`Edit draft`}
         onClick={editDraft}
+        classes="primary"
         />
     </hbox>
   {/if}

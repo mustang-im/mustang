@@ -7,7 +7,7 @@
     <hbox class="accounts">
       <Button
         icon={message?.folder?.account?.icon ?? InboxIcon}
-        iconSize="32px"
+        iconSize="24px"
         iconOnly
         label={$t`Select account or folder`}
         onClick={goToAccounts}
@@ -21,7 +21,7 @@
         label={$t`Show messages in folder ${message.folder.name}`}
         onClick={goToMsgList}
         icon={ListIcon}
-        iconSize="32px"
+        iconSize="24px"
         iconOnly
         plain
         />
@@ -31,7 +31,7 @@
     <hbox class="spam extra">
       <Button
         icon={SpamIcon}
-        iconSize="32px"
+        iconSize="24px"
         iconOnly
         label={$t`Treat this email as spam: Move it to the Spam folder, and train the spam filter`}
         onClick={markAsSpam}
@@ -46,7 +46,7 @@
     <hbox class="trash extra">
       <Button
         icon={TrashIcon}
-        iconSize="32px"
+        iconSize="24px"
         iconOnly
         label={$t`Delete this message`}
         onClick={deleteMessage}
@@ -60,7 +60,7 @@
       <hbox class="draft">
         <Button
           icon={WriteIcon}
-          iconSize="32px"
+          iconSize="24px"
           iconOnly
           label={$t`Edit draft`}
           onClick={editDraft}
@@ -71,7 +71,7 @@
       <hbox class="move button" bind:this={popupAnchorE}>
         <Button
           icon={FolderActionsIcon}
-          iconSize="32px"
+          iconSize="24px"
           iconOnly
           label={$t`Move to folder, or add tag`}
           onClick={onPopupToggle}

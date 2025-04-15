@@ -8,7 +8,7 @@
       <hbox class="star button" class:starred={isShowStarred}>
         <Button
           icon={StarIcon}
-          iconSize={$appGlobal.isMobile ? "32px" : "16px"}
+          iconSize={$appGlobal.isMobile ? "24px" : "16px"}
           iconOnly
           label={$t`Show only starred messages`}
           onClick={toggleStarred}
@@ -29,7 +29,7 @@
         <hbox class="show-search button">
           <Button
             icon={SearchIcon}
-            iconSize={$appGlobal.isMobile ? "32px" : "16px"}
+            iconSize={$appGlobal.isMobile ? "24px" : "16px"}
             iconOnly
             label={$t`Search only the currently displayed folder for a keyword`}
             onClick={toggleShowSearchField}

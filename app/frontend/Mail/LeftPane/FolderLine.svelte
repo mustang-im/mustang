@@ -6,7 +6,7 @@
   title={tooltip}
   >
   <hbox class="icon">
-    <FolderIcon {folder} size={$appGlobal.isMobile ? "32px" : "14px"} />
+    <FolderIcon {folder} size={$appGlobal.isMobile ? "24px" : "14px"} />
   </hbox>
   <hbox class="label">
     {#if !folder.specialFolder || folder.specialFolder == SpecialFolder.Normal || folder.specialFolder == SpecialFolder.Search}

@@ -7,7 +7,7 @@
     <hbox class="search">
       <Button
         icon={SearchIcon}
-        iconSize="32px"
+        iconSize="24px"
         iconOnly
         label={$t`Search messages`}
         onClick={goToSearch}
@@ -21,7 +21,7 @@
     <hbox class="write">
       <Button
         icon={WriteIcon}
-        iconSize="32px"
+        iconSize="24px"
         iconOnly
         label={$t`Write new email`}
         onClick={newMail}

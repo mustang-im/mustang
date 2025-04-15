@@ -14,6 +14,9 @@
     z-index: 4;
     justify-content: center;
   }
+  .app-bar :global(svg) {
+    stroke: var(--appbar-fg);
+  }
   .app-bar > :global(*) {
     flex: 1 0 0;
     justify-content: center;
