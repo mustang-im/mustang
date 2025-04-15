@@ -154,7 +154,7 @@ export class EWSEvent extends Event {
     request.addField("CalendarItem", "Body", this.descriptionHTML ? { BodyType: "HTML", _TextContent_: this.descriptionHTML } : this.descriptionText ? { BodyType: "Text", _TextContent_: this.descriptionText } : "", "item:Body");
     request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
     request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
-    if (!this.parentEvent) { // Exchange Online now requires this for EWS
+    if (!this.parentEvent) { // Exchange Online requires not to write the `Recurrence` prop for recurrence instances
       request.addField("CalendarItem", "Recurrence", this.recurrenceRule ? this.saveRule(this.recurrenceRule) : null, "calendar:Recurrence");
     }
     if (this.calUID && !this.itemID && !this.parentEvent) {

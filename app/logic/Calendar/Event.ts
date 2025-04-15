@@ -34,7 +34,17 @@ export class Event extends Observable {
   /** Only used by the editing UI. */
   @notifyChangedProperty
   repeat = false; // TODO remove
-  /** Only used by recurring masters, describes the recurrence pattern. */
+  /** Only used by recurring masters, describes the recurrence pattern.
+   *
+   * | `Event.parentEvent` | `Event.recurrenceRule` | Event type
+   * | ------------------- | ---------------------- | -----
+   * | without             | without                | Normal event
+   * | without             | with                   | Recurrence master
+   * | with                | with                   | Invalid state
+   * | with                | without                | Recurrence instance or exception
+   *
+   * TODO differentiate between generated instance and exception #551
+   */
   @notifyChangedProperty
   recurrenceRule: RecurrenceRule | undefined;
   /** Only used by instances, links back to the recurring master. */
