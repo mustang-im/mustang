@@ -1,4 +1,4 @@
-import { Event } from "../Event";
+import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
 import { RecurrenceRule } from "../RecurrenceRule";
 import { Scheduling, ParticipationStatus, ResponseType } from "../Invitation";
@@ -106,7 +106,7 @@ function convertICalToEvent(ics: ICalParser): Event | null {
     event.allDay = true;
   }
   if (vevent.entries.rrule) {
-    event.repeat = true;
+    event.recurrenceCase = RecurrenceCase.Master;
     event.recurrenceRule = RecurrenceRule.fromCalString(event.startTime, vevent.entries.rrule[0].line);
   }
   if (vevent.entries.location) {

@@ -66,7 +66,7 @@
 </vbox>
 
 <script lang="ts">
-  import type { Event } from "../../../logic/Calendar/Event";
+  import { type Event, RecurrenceCase } from "../../../logic/Calendar/Event";
   import { ResponseType } from "../../../logic/Calendar/Invitation";
   import TitleBox from "./TitleBox.svelte";
   import TimeBox from "./TimeBox.svelte";
@@ -93,7 +93,7 @@
 
   export let event: Event;
 
-  $: showRepeat = $event.repeat;
+  $: showRepeat = $event.recurrenceCase != RecurrenceCase.Normal;
   $: showReminder = !!$event.alarm;
   $: showParticipants = $event.participants.hasItems || $event.response == ResponseType.Organizer;
   $: showLocation = !!$event.location;
@@ -103,7 +103,7 @@
   let repeatBox: RepeatBox;
 
   function expandRepeat(): void {
-    event.repeat = true;
+    event.recurrenceCase = RecurrenceCase.Master;
   }
 
   const kDefaultReminderMins = 5;

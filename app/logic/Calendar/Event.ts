@@ -323,18 +323,18 @@ export class Event extends Observable {
 
 const k1Day = 86400;
 
-enum RecurrenceCase {
+export enum RecurrenceCase {
   /** Not recurring */
   Normal = "normal",
-  /** Recurring master event.
+  /** Recurring Master event.
    * Contains the rules how to create the recurrence instances.
    * Not directly shown in the UI. */
   Master = "master",
-  /** Recurrence instance, generated from the master.
+  /** Recurrence Instance, generated from the master.
    * Only exists in RAM objects, not saved on server and in DB. */
   Instance = "instance",
-  /** Recurrence exception. Like an instance, but at a different time
-   * or with modified properties.
+  /** Recurrence Exception.
+   * Like an instance, but at a different time or with modified properties.
    * Overrides a specific instance. */
   Exception = "exception",
 }

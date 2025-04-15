@@ -1,4 +1,4 @@
-import { Event } from "../Event";
+import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
 import { ResponseType, type Responses } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
@@ -74,7 +74,7 @@ export class OWAEvent extends Event {
     this.timezone = fromWindowsZone(json.StartTimeZoneId);
     this.allDay = sanitize.boolean(json.IsAllDayEvent);
     if (json.Recurrence) {
-      this.repeat = true;
+      this.recurrenceCase = RecurrenceCase.Master;
       this.recurrenceRule = this.newRecurrenceRule(json.Recurrence);
       if (json.DeletedOccurrences) {
         for (let deletion of json.DeletedOccurrences) {

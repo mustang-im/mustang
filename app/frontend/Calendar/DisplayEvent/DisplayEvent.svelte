@@ -56,8 +56,8 @@
     </hbox>
   </grid>
   <Checkbox label={$t`All day`} bind:checked={event.allDay} disabled />
-  <Checkbox label={$t`Repeated`} bind:checked={event.repeat} disabled />
-  {#if event.repeat}
+  <Checkbox label={$t`Repeated`} checked={event.recurrenceCase != RecurrenceCase.Normal} disabled />
+  {#if event.recurrenceCase != RecurrenceCase.Normal}
     <hbox>
       <label>{`Every`}</label>&nbsp;<input class="auto" type="number" disabled bind:value={interval} />&nbsp;
       <select bind:value={frequency} disabled>
@@ -88,7 +88,7 @@
 </vbox>
 
 <script lang="ts">
-  import type { Event } from "../../../logic/Calendar/Event";
+  import { RecurrenceCase, type Event } from "../../../logic/Calendar/Event";
   import { Frequency } from "../../../logic/Calendar/RecurrenceRule";
   import { appGlobal } from "../../../logic/app";
   import PersonsAutocomplete from "../../Contacts/PersonAutocomplete/PersonsAutocomplete.svelte";

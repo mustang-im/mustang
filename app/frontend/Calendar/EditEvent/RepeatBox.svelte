@@ -70,7 +70,7 @@
 -->
 
 <script lang="ts">
-  import type { Event } from "../../../logic/Calendar/Event";
+  import { RecurrenceCase, type Event } from "../../../logic/Calendar/Event";
   import { Frequency, RecurrenceRule, type RecurrenceInit } from "../../../logic/Calendar/RecurrenceRule";
   import SectionTitle from './SectionTitle.svelte';
   import RadioGroup, { type RadioOption } from "./RadioGroup.svelte";
@@ -162,9 +162,11 @@
 
   function onFrequencyChanged() {
     if (frequency == Frequency.None) {
-      event.repeat = false;
+      event.recurrenceCase = RecurrenceCase.Normal;
       event.recurrenceRule = null;
-    }
+    } else if (event.recurrenceCase == RecurrenceCase.Normal) {
+      event.recurrenceCase = RecurrenceCase.Master;
+    } // else: leave unchanged
   }
 
   function newRecurrenceRule(): RecurrenceRule {
@@ -189,7 +191,7 @@
 
   // TODO Call from save()
   export function confirmAndChangeRule(): boolean {
-    if (!event.repeat) {
+    if (event.recurrenceCase == RecurrenceCase.Normal) {
       if (!event.recurrenceRule) {
         // Never a recurring event.
         return true;

@@ -1,4 +1,4 @@
-import { Event } from "../Event";
+import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
 import { RecurrenceRule } from "../RecurrenceRule";
 import type { Calendar } from "../Calendar";
@@ -149,14 +149,17 @@ export class SQLEvent extends Event {
       let masterID = sanitize.integer(row.recurrenceMasterEventID);
       let parentEvent = events?.find(event => event.dbID == masterID);
       if (parentEvent?.recurrenceRule) {
+        event.recurrenceCase = RecurrenceCase.Exception;
         event.parentEvent = parentEvent;
         event.recurrenceStartTime = sanitize.date(row.recurrenceStartTime);
+        // TODO Expensive
         let occurrences = event.parentEvent.recurrenceRule.getOccurrencesByDate(event.recurrenceStartTime);
+        // TODO assumes that the master is read before the exception
         event.parentEvent.instances.set(occurrences.length - 1, event);
       }
     }
     if (row.recurrenceRule) {
-      event.repeat = true;
+      event.recurrenceCase = RecurrenceCase.Master;
       event.recurrenceRule = RecurrenceRule.fromCalString(event.startTime, row.recurrenceRule);
       await SQLEvent.readExclusions(event);
     }

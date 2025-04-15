@@ -1,4 +1,4 @@
-import { Event } from "../Event";
+import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
 import { ResponseType, type Responses } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
@@ -53,7 +53,7 @@ export class ActiveSyncEvent extends Event {
     this.timezone = fromActiveSyncZone(wbxmljs.Timezone);
     this.allDay = sanitize.boolean(wbxmljs.AllDayEvent);
     if (wbxmljs.Recurrence) {
-      this.repeat = true;
+      this.recurrenceCase = RecurrenceCase.Master;
       this.recurrenceRule = this.newRecurrenceRule(wbxmljs.Recurrence);
       for (let exception of ensureArray(wbxmljs.Exceptions?.Exception)) {
         if (exception.Deleted == "1") {

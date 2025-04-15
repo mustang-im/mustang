@@ -1,4 +1,4 @@
-import { Event } from "../Event";
+import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
 import { ResponseType, type Responses } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
@@ -78,7 +78,7 @@ export class EWSEvent extends Event {
     this.timezone = fromWindowsZone(xmljs.StartTimezoneId);
     this.allDay = sanitize.boolean(xmljs.IsAllDayEvent);
     if (xmljs.Recurrence) {
-      this.repeat = true;
+      this.recurrenceCase = RecurrenceCase.Master;
       this.recurrenceRule = this.newRecurrenceRule(xmljs.Recurrence);
       if (xmljs.DeletedOccurrences?.DeletedOccurrence) {
         for (let deletion of ensureArray(xmljs.DeletedOccurrences.DeletedOccurrence)) {
