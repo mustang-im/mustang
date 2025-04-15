@@ -61,6 +61,10 @@ export class ActiveSyncEvent extends Event {
           this.replaceInstance(occurrences.length - 1, null);
         }
       }
+    } else if (this.recurrenceRule) {
+      this.recurrenceCase = RecurrenceCase.Normal;
+      this.recurrenceRule = null;
+      this.clearExceptions();
     }
     this.alarm = wbxmljs.Reminder ? new Date(this.startTime.getTime() - 60 * sanitize.integer(wbxmljs.Reminder)) : null;
     this.location = sanitize.nonemptystring(wbxmljs.Location, "");

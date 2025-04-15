@@ -240,6 +240,9 @@ export class Event extends Observable {
         occurrence.copyFromRecurrenceMaster(this);
       }
     }
+    if (this.recurrenceCase == RecurrenceCase.Instance) {
+      this.recurrenceCase = RecurrenceCase.Exception;
+    }
   }
 
   async saveToServer(): Promise<void> {

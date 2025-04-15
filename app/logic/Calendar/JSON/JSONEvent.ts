@@ -1,4 +1,4 @@
-import { Event } from "../Event";
+import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
 import { RecurrenceRule } from "../RecurrenceRule";
 import { appGlobal } from "../../app";
@@ -78,6 +78,7 @@ export class JSONEvent {
       let masterID = sanitize.string(json.recurrenceMasterEventID);
       let parentEvent = events?.find(event => event.pID == masterID);
       if (parentEvent?.recurrenceRule) {
+        event.recurrenceCase = RecurrenceCase.Exception;
         event.parentEvent = parentEvent;
         event.recurrenceStartTime = sanitize.date(json.recurrenceStartTime);
         let occurrences = event.parentEvent.recurrenceRule?.getOccurrencesByDate(event.recurrenceStartTime) as Date[];
@@ -85,7 +86,7 @@ export class JSONEvent {
       }
     }
     if (json.recurrenceRule) {
-      event.repeat = true;
+      event.recurrenceCase = RecurrenceCase.Master;
       event.recurrenceRule = RecurrenceRule.fromCalString(event.startTime, json.recurrenceRule);
       JSONEvent.readExclusions(event, json);
     }
