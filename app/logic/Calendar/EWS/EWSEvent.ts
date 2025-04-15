@@ -86,6 +86,10 @@ export class EWSEvent extends Event {
           this.replaceInstance(occurrences.length - 1, null);
         }
       }
+    } else if (this.recurrenceRule) {
+      this.recurrenceCase = RecurrenceCase.Normal;
+      this.recurrenceRule = null;
+      this.clearExceptions();
     }
     if (xmljs.ReminderIsSet == "true") {
       this.alarm = new Date(this.startTime.getTime() - 60 * sanitize.integer(xmljs.ReminderMinutesBeforeStart));
