@@ -36,8 +36,8 @@
 
   let inputTextE: HTMLInputElement;
   function onAdd() {
-    let valid = inputTextE.reportValidity();
-    if (valid) {
+    let isValid = inputTextE.reportValidity();
+    if (isValid) {
       dispatch("add", tag);
     }
   }
