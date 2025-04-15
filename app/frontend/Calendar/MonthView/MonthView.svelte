@@ -65,6 +65,7 @@
     grid-template-rows: max-content;
     grid-auto-rows: 1fr;
     border-right: 1px dotted var(--border);
+    container-type: size;
   }
   .weekday {
     border-top: 1px dotted var(--border);

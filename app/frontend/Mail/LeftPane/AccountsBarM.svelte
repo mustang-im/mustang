@@ -4,7 +4,7 @@
     <hbox class="empty" />
 
     <!-- left middle -->
-    <hbox class="msglist">
+    <hbox class="search">
       <Button
         icon={SearchIcon}
         iconSize="32px"
