@@ -44,6 +44,7 @@
     dispatchEvent("clear");
   }
 
+  $: autofocus && inputEl && focus();
   let inputEl: HTMLInputElement;
   export function focus() {
     inputEl.focus();

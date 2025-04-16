@@ -1,4 +1,4 @@
-<hbox flex class="person" class:selected={isSelected} {size}>
+<hbox flex class="person" class:selected={isSelected} {size} on:click>
   <PersonPicture {person} size={pictureSize} />
   <vbox flex class="main">
     <hbox class="first-row">

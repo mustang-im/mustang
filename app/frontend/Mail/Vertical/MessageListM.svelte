@@ -32,8 +32,8 @@
   async function goToMessage() {
     await sleep(0.1); // wait for `<VerticalMessageList>` to set `selectedMessage`
     assert(selectedMessage, "Need message");
-    const e = encodeURIComponent;
-    goTo(`/mail/message/${e(selectedMessage.folder.account.id)}/${e(selectedMessage.folder.id)}/${e(selectedMessage.id)}/display`);
+    const en = encodeURIComponent;
+    goTo(`/mail/message/${en(selectedMessage.folder.account.id)}/${en(selectedMessage.folder.id)}/${en(selectedMessage.id)}/display`);
   }
 </script>
 

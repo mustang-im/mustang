@@ -27,9 +27,9 @@
   import MessageDisplay from "./Message/MessageDisplay.svelte";
   import AccountsM from "./LeftPane/AccountsM.svelte";
   import { showError } from "../Util/error";
+  import { ensureLoaded } from "../Util/svelte";
   import { ArrayColl } from "svelte-collections";
   import { Route } from "svelte-navigator";
-  import { get, type Writable } from "svelte/store";
 
   $: accounts = showAccounts.filter(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace); // || acc == allAccountsAccount
   $: folders = $selectedAccount?.rootFolders ?? new ArrayColl<Folder>();
@@ -77,12 +77,6 @@
   let viewSetting = getLocalStorage("mail.view", "vertical");
   $: view = $viewSetting.value;
 
-  function ensureLoaded(obj: Writable<any>, fallbackURL: string): string {
-    if (get(obj)) {
-      return "";
-    }
-    window.location.href = fallbackURL;
-  }
   /*
   function ensureFolder(folder: Writable<Folder>, params: any): string {
     if (get(folder)) {
