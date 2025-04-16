@@ -1,4 +1,4 @@
-<vbox flex class="person-page" language={getUILocale()}>
+<vbox flex class="person-page font-small" language={getUILocale()}>
   <GroupBox classes="person">
     <hbox flex class="main-left" slot="content">
       <hbox flex>
@@ -294,7 +294,6 @@
 <style>
   .person-page {
     padding: 8px;
-    font-size: 14px;
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%) inset;
 
     /** for media query */

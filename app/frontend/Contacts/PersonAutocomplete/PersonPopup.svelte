@@ -47,14 +47,14 @@
     {/if}
   </hbox>
   {#if $personUID.name == $personUID.emailAddress && nameInputEl == document.activeElement}
-    <hbox class="helptext">{$t`Add the name of the person, and press ENTER`}</hbox>
+    <hbox class="helptext font-small">{$t`Add the name of the person, and press ENTER`}</hbox>
   {/if}
   {#if !disabled}
     {#if person?.emailAddresses.hasItems}
       <vbox class="other-email-addresses">
         {#each person.emailAddresses.each as altContactEntry}
           {#if contactEntry != altContactEntry}
-            <hbox class="other-email-address" on:click={() => catchErrors(() => useOtherEmailAddress(altContactEntry.value))}>
+            <hbox class="other-email-address font-small" on:click={() => catchErrors(() => useOtherEmailAddress(altContactEntry.value))}>
               <MailIcon size={12} />
               {altContactEntry.value}
             </hbox>
@@ -186,7 +186,6 @@
     min-width: 15em;
   }
   .helptext {
-    font-size: 14px;
     max-width: 15em;
     margin: 0px 24px;
     opacity: 50%;
@@ -201,7 +200,6 @@
   }
   .other-email-address {
     align-items: center;
-    font-size: 13px;
     color: #555555;
     cursor: pointer;
   }
