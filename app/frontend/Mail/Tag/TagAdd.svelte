@@ -1,6 +1,6 @@
 <hbox class="tag"
   style="--color: {$tag.color}">
-  <input type="text" bind:value={tag.name} required autofocus />
+  <input type="text" bind:value={tag.name} bind:this={inputTextE} required autofocus />
   <input type="color" bind:value={tag.color} required />
 
   <RoundButton
@@ -34,8 +34,12 @@
   export let tag = new Tag();
   tag.color = "#108310";
 
+  let inputTextE: HTMLInputElement;
   function onAdd() {
-    dispatch("add", tag);
+    let isValid = inputTextE.reportValidity();
+    if (isValid) {
+      dispatch("add", tag);
+    }
   }
   function onCancel() {
     dispatch("cancel");
