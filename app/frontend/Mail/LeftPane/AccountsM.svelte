@@ -1,6 +1,8 @@
 <vbox flex class="accounts-pane">
-  <AccountList {accounts} bind:selectedAccount />
   <FolderList {folders} bind:selectedFolder bind:selectedFolders on:click={() => catchErrors(onFolderSelected)} />
+  <vbox class="accounts">
+    <AccountSelectorRound {accounts} bind:selectedAccount iconDefault={AccountIcon} iconSize="32px" />
+  </vbox>
   <AccountsBarM {selectedAccount} {selectedFolder} />
 </vbox>
 
@@ -8,9 +10,10 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { type Folder } from "../../../logic/Mail/Folder";
   import { goTo } from "../../AppsBar/selectedApp";
-  import AccountList from "./AccountList.svelte";
+  import AccountSelectorRound from "../../Shared/AccountSelectorRound.svelte";
   import FolderList from "./FolderList.svelte";
   import AccountsBarM from "./AccountsBarM.svelte";
+  import AccountIcon from "lucide-svelte/icons/mail";
   import { catchErrors } from "../../Util/error";
   import type { ArrayColl, Collection } from 'svelte-collections';
   import { sleep, assert } from "../../../logic/util/util";
@@ -38,5 +41,13 @@
 
   .accounts-pane :global(.account-list) {
     margin-block-start: -4px;
+  }
+
+  .accounts {
+    align-items: center;
+    margin-block: 20px;
+  }
+  .accounts :global(.account) {
+    margin-inline-end: 12px;
   }
 </style>
