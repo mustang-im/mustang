@@ -2,6 +2,9 @@
   <Route path="mail/*">
     <MailAppM />
   </Route>
+  <Route path="chat/*">
+    <ChatAppM />
+  </Route>
   <Route path="contacts/*">
     <ContactsAppM />
   </Route>
@@ -25,6 +28,7 @@
 <script lang="ts">
   import { Route } from "svelte-navigator";
   import MailAppM from "../Mail/MailAppM.svelte";
+  import ChatAppM from "../Chat/ChatAppM.svelte";
   import ContactsAppM from "../Contacts/ContactsAppM.svelte";
   import CalendarAppM from "../Calendar/CalendarAppM.svelte";
   import FilesAppM from "../Files/FilesAppM.svelte";
