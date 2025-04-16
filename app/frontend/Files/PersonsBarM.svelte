@@ -8,7 +8,7 @@
           iconSize="24px"
           iconOnly
           label={$t`List persons`}
-          onClick={goToList}
+          onClick={goToPersons}
           plain
           />
       </hbox>
@@ -59,7 +59,7 @@
 
   let isMenuOpen = false;
 
-  function goToList() {
+  function goToPersons() {
     doingSearch = false;
   }
 

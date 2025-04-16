@@ -1,7 +1,7 @@
 <hbox class="buttons">
   <AppBarM>
     <!-- left -->
-    <hbox class="search">
+    <hbox class="list">
       <Button
         icon={PersonsIcon}
         iconSize="24px"
@@ -13,13 +13,13 @@
     </hbox>
 
     <!-- left middle -->
-    <hbox class="search">
+    <hbox class="list">
       <Button
-        icon={SearchIcon}
+        icon={PictureIcon}
         iconSize="24px"
         iconOnly
-        label={$t`Search a person`}
-        onClick={goToSearch}
+        label={$t`Upload picture`}
+        onClick={uploadPicture}
         plain
         />
     </hbox>
@@ -27,14 +27,13 @@
     <AppMenuButton />
 
     <!-- right middle -->
-    <hbox class="new">
+    <hbox class="list">
       <Button
-        icon={PlusIcon}
+        icon={FileIcon}
         iconSize="24px"
         iconOnly
-        label={$t`Upload a file`}
-        onClick={goToUpload}
-        disabled={!$selectedPerson}
+        label={$t`Upload file`}
+        onClick={uploadFile}
         plain
         />
     </hbox>
@@ -51,28 +50,32 @@
 </hbox>
 
 <script lang="ts">
-  import { selectedPerson } from "../Contacts/Person/Selected";
+  import { Person } from "../../logic/Abstract/Person";
   import AppBarM from "../AppsBar/AppBarM.svelte";
   import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
   import Button from "../Shared/Button.svelte";
   import AppMenuButton from "../AppsBar/AppMenuM/AppMenuButton.svelte";
   import PersonsIcon from "lucide-svelte/icons/users";
-  import SearchIcon from "lucide-svelte/icons/search";
-  import PlusIcon from "lucide-svelte/icons/plus";
-  import { goTo } from "../AppsBar/selectedApp";
+  import PictureIcon from "lucide-svelte/icons/picture";
+  import FileIcon from "lucide-svelte/icons/file";
   import { t } from "../../l10n/l10n";
+  import { createEventDispatcher, onMount } from 'svelte';
+  const dispatchEvent = createEventDispatcher<{ uploadFile: void, uploadPicture: void }>();
+
+  export let person: Person;
+  export let doingSearch = false;
 
   let isMenuOpen = false;
 
   function goToPersons() {
-    goTo("/files/");
+    doingSearch = false;
   }
 
-  function goToSearch() {
-    goTo("/files/search");
+  function uploadFile() {
+    dispatchEvent("uploadFile");
   }
 
-  function goToUpload() {
-    goTo(`/files/person/${$selectedPerson.id}/upload`);
+  function uploadPicture() {
+    dispatchEvent("uploadPicture");
   }
 </script>
