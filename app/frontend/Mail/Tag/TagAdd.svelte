@@ -1,4 +1,4 @@
-<hbox class="tag"
+<hbox class="tag font-smallest"
   style="--color: {$tag.color}">
   <input type="text" bind:value={tag.name} bind:this={inputTextE} required autofocus />
   <input type="color" bind:value={tag.color} required />
@@ -49,7 +49,6 @@
 <style>
   .tag {
     min-height: 16px;
-    font-size: 12px;
     margin: 2px;
   }
   input[type="text"] {
