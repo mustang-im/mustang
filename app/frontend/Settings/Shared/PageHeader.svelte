@@ -6,7 +6,7 @@
     <slot name="buttons-top-right" />
   </hbox>
 </hbox>
-<hbox class="subtitle">
+<hbox class="subtitle font-normal">
   <slot name="subtitle" />
   {subtitle}
 </hbox>
@@ -21,7 +21,6 @@
     font-size: 32px;
   }
   .subtitle {
-    font-size: 15px;
   }
   .buttons {
     justify-content: center;

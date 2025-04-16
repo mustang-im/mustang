@@ -10,7 +10,7 @@
       selected={editor.isActive('bold')}
       iconOnly
       >
-      <hbox slot="icon" class="bold-icon">B</hbox>
+      <hbox slot="icon" class="bold-icon font-normal">B</hbox>
     </Button>
     <Button
       label={$t`Italic`}
@@ -263,7 +263,6 @@ block
 <style>
   .bold-icon {
     font-weight: bold;
-    font-size: 16px;
     height: 16px;
     align-items: center;
   }

@@ -1,5 +1,5 @@
 <vbox class="tags">
-  <hbox class="header">{$t`Tags`}</hbox>
+  <hbox class="header font-smallest">{$t`Tags`}</hbox>
   <vbox class="list">
     <TagSelector tags={availableTags} {selectedTags} canAdd={false}
       on:select={() => catchErrors(onSelect)}
@@ -52,7 +52,6 @@
   .header {
     padding-inline-start: 10px !important;
     color: grey;
-    font-size: 12px;
   }
   .list {
     margin-block-start: 8px;

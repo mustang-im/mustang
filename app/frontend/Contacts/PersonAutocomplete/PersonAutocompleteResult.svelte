@@ -2,7 +2,7 @@
   <PersonPicture person={person?.person} size={32} />
   <vbox flex class="right">
     <hbox class="top-row">
-      <hbox flex class="name">{person.name}</hbox>
+      <hbox flex class="name font-normal">{person.name}</hbox>
     </hbox>
     <hbox class="bottom-row">
       <slot name="bottom-row" />
@@ -23,7 +23,6 @@
     align-items: center;
   }
   .name {
-    font-size: 16px;
   }
   .person :global(.avatar) {
     margin: 0px;

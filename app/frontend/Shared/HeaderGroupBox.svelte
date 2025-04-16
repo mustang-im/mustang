@@ -1,5 +1,5 @@
 <vbox class="group {classes}">
-  <hbox class="header">
+  <hbox class="header font-normal">
     <slot name="header" />
     <hbox flex />
     <hbox class="buttons">
@@ -26,7 +26,6 @@
     color: var(--headerbar-fg);
     border-bottom: 1px solid var(--border);
     padding: 12px 20px;
-    font-size: 16px;
     font-weight: 500;
     align-items: center;
   }

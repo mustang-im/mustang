@@ -1,6 +1,6 @@
 <!-- Appears below the msg list -->
  {#if folder}
-  <hbox class="folder-header">
+  <hbox class="folder-header font-smallest">
     {#if $account?.isLoggedIn}
       <GetMailButton {folder} />
     {/if}
@@ -175,7 +175,6 @@
     align-items: center;
     justify-content: center;
     height: 20px;
-    font-size: 12px;
     padding-block-start: 2px;
     padding-block-end: 2px;
     padding-inline-start: 4px;

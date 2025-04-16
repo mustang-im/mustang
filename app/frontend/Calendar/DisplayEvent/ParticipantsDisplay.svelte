@@ -1,4 +1,4 @@
-<hbox class="participants">
+<hbox class="participants font-normal">
   {#each $participants.each as participant, i}
     {#if showAllParticipants || i < showNumParticipants}
       {#if i > 0}
@@ -50,7 +50,6 @@
 <style>
   .participants {
     flex-wrap: wrap;
-    font-size: 16px;
     max-width: 100%; /* TODO */
   }
   .participants .separator {

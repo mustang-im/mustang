@@ -1,4 +1,4 @@
-<vbox flex class="participants-list">
+<vbox flex class="participants-list font-normal">
   <PersonsList persons={$participantsSorted} bind:selected pictureSize={24}>
     <ParticipantListItem
       slot="top-right"
@@ -27,7 +27,6 @@
 <style>
   .participants-list {
     margin: 8px 0;
-    font-size: 15px;
   }
   .participants-list :global(.person .main) {
     justify-content: center;

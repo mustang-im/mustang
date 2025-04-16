@@ -1,4 +1,4 @@
-<hbox class="event" on:click on:click={onSelect} on:dblclick={onOpen}
+<hbox class="event font-small" on:click on:click={onSelect} on:dblclick={onOpen}
   title={eventAsText}
   style="--account-color: {event.calendar?.color}"
   class:all-day={$event.allDay}
@@ -48,7 +48,6 @@
     text-overflow: ellipsis;
     max-height: 1.4em;
     min-height: 1.4em;
-    font-size: 14px;
 
     background-color: var(--account-color);
     color: lch(from var(--account-color) calc((49.44 - l) * infinity) 0 0);

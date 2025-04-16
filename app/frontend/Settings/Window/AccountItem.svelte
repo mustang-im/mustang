@@ -1,5 +1,5 @@
 <vbox class="account" class:selected={itemSelected} on:click={onSelect}>
-  <hbox class="label">
+  <hbox class="label font-small">
     {$account.name}
   </hbox>
 </vbox>
@@ -43,7 +43,6 @@
     color:  var(--selected-fg);
   }
   .label {
-    font-size: 13px;
     color: var(--fg);
     white-space: nowrap;
     overflow: hidden;

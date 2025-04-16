@@ -31,7 +31,7 @@
         </hbox>
       {/if}
       <slot name="inner-top" />
-      <div class="text selectable">
+      <div class="text selectable font-normal">
         {@html $message.html || ""}
         <!-- TODO Security: Jail HTML into untrusted <iframe> for additional protection.
         <WebView title={$t`Text`} html={$message.html || ""} {headHTML} autoSize />
@@ -161,7 +161,6 @@
     margin-inline-end: 16px;
   }
   .text {
-    font-size: 15px;
     overflow-wrap: anywhere;
   }
   .text > :global(p) {

@@ -14,19 +14,19 @@
         {/if}
       </hbox>
       {#if $message.to.hasItems}
-        <hbox class="to">
+        <hbox class="to font-small">
           {$t`to`}&nbsp;
           <RecipientList recipients={$message.to} />
         </hbox>
       {/if}
       {#if $message.cc.hasItems}
-        <hbox class="cc">
+        <hbox class="cc font-small">
           {$t`cc`}&nbsp;
           <RecipientList recipients={$message.cc} />
         </hbox>
       {/if}
       {#if $message.bcc.hasItems}
-        <hbox class="bcc">
+        <hbox class="bcc font-small">
           {$t`bcc`}&nbsp;
           <RecipientList recipients={$message.bcc} />
         </hbox>
@@ -59,7 +59,7 @@
   <hbox class="subject-line">
     <value class="subject">{$message.subject}</value>
     <hbox flex />
-    <value class="date" title={$message.sent?.toLocaleString(getUILocale())}>
+    <value class="date font-small" title={$message.sent?.toLocaleString(getUILocale())}>
       {getDateString($message.sent)}
     </value>
     <vbox class="display-mode">
@@ -161,11 +161,9 @@
     color: grey;
   }
   .to {
-    font-size: 14px;
     color: grey;
   }
   .cc, .bcc {
-    font-size: 14px;
     color: grey;
   }
   .outgoing .to {
@@ -175,7 +173,6 @@
   .date {
     align-self: center;
     margin-inline-end: 16px;
-    font-size: 14px;
     font-weight: 300;
   }
   .subject-line {

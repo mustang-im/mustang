@@ -3,7 +3,7 @@
     <img src={app.icon} width="96" height="96" alt="" />
   </vbox>
   <vbox class="nameDescr">
-    <h2 class="name">{app.nameTranslated}</h2>
+    <h2 class="name font-normal">{app.nameTranslated}</h2>
   </vbox>
 </vbox>
 
@@ -34,7 +34,6 @@
     overflow-x: hidden;
   }
   .name {
-    font-size: 16px;
     margin: 0px;
     text-align: center;
   }

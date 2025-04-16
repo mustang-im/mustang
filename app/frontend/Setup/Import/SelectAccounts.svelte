@@ -14,7 +14,7 @@
           <grid class="protocol-grid">
             {#each accounts as account}
               <Checkbox label={account.name} bind:checked={account.import} />
-              <hbox class="protocol {account.protocol}">{account.protocol.toUpperCase()}</hbox>
+              <hbox class="protocol {account.protocol} font-small">{account.protocol.toUpperCase()}</hbox>
             {/each}
           </grid>
         </Scroll>
@@ -109,7 +109,6 @@
 
   .protocol {
     min-height: 16px;
-    font-size: 14px;
     border-radius: 8px;
     color: white;
     border: 1px solid transparent;

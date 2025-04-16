@@ -2,7 +2,7 @@
   {#if progress}
     <hbox class="progressbar" style="width: {progress * 100}%" />
   {/if}
-  <hbox class="time">
+  <hbox class="time font-small">
     {duration}
   </hbox>
   <!--hbox class="debug">
@@ -46,6 +46,5 @@
   .time {
     align-self: flex-end;
     margin: 4px 16px -4px 0;
-    font-size: 14px;
   }
 </style>

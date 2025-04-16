@@ -19,7 +19,7 @@
   {/if}
   {#if !iconOnly}
     {#if label}
-      <hbox class="label">{label}</hbox>
+      <hbox class="label font-small">{label}</hbox>
     {:else}
       <slot name="label" />
     {/if}
@@ -112,7 +112,6 @@
   }
   .label {
     white-space: nowrap;
-    font-size: 14px;
   }
   .menuitem.danger {
     color: red;
