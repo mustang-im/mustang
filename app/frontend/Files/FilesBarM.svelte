@@ -32,9 +32,9 @@
         icon={PlusIcon}
         iconSize="24px"
         iconOnly
-        label={$t`Create a contact`}
-        onClick={newContact}
-        disabled={!selectedAddressbook}
+        label={$t`Upload a file`}
+        onClick={goToUpload}
+        disabled={!$selectedPerson}
         plain
         />
     </hbox>
@@ -51,8 +51,7 @@
 </hbox>
 
 <script lang="ts">
-  import { Addressbook } from "../../logic/Contacts/Addressbook";
-  import { selectedPerson } from "./Person/Selected";
+  import { selectedPerson } from "../Contacts/Person/Selected";
   import AppBarM from "../AppsBar/AppBarM.svelte";
   import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
   import Button from "../Shared/Button.svelte";
@@ -63,21 +62,17 @@
   import { goTo } from "../AppsBar/selectedApp";
   import { t } from "../../l10n/l10n";
 
-  export let selectedAddressbook: Addressbook;
-
   let isMenuOpen = false;
 
   function goToPersons() {
-    goTo("/contacts/");
+    goTo("/");
   }
 
   function goToSearch() {
-    goTo("/contacts/search");
+    goTo("search");
   }
 
-  function newContact() {
-    let contact = selectedAddressbook.newPerson();
-    $selectedPerson = contact;
-    goTo(`/contacts/person/${contact.id}/edit`);
+  function goToUpload() {
+    goTo(`${$selectedPerson.id}/upload`);
   }
 </script>

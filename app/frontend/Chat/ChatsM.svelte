@@ -3,7 +3,7 @@
   <PersonsList {chatRooms} bind:selectedChat={$selectedChat} {doSearch} />
 </vbox>
 {#if $appGlobal.isMobile}
-  <ChatsBarM />
+  <ChatsBarM bind:doingSearch={doSearch} />
 {/if}
 
 <script lang="ts">

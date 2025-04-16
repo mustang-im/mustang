@@ -3,7 +3,7 @@
     <!-- left -->
     <hbox class="search">
       <Button
-        icon={ListIcon}
+        icon={PersonsIcon}
         iconSize="24px"
         iconOnly
         label={$t`List persons`}
@@ -45,7 +45,7 @@
   import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
   import Button from "../Shared/Button.svelte";
   import AppMenuButton from "../AppsBar/AppMenuM/AppMenuButton.svelte";
-  import ListIcon from "lucide-svelte/icons/list";
+  import PersonsIcon from "lucide-svelte/icons/users";
   import SearchIcon from "lucide-svelte/icons/search";
   import { goTo } from "../AppsBar/selectedApp";
   import { t } from "../../l10n/l10n";

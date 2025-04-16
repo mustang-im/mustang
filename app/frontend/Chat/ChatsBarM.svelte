@@ -4,7 +4,7 @@
     {#if doingSearch}
       <hbox class="list">
         <Button
-          icon={ListIcon}
+          icon={PersonsIcon}
           iconSize="24px"
           iconOnly
           label={$t`List persons`}
@@ -13,20 +13,20 @@
           />
       </hbox>
     {:else}
-      <hbox class="empty" />
+      <hbox class="search">
+        <Button
+          icon={SearchIcon}
+          iconSize="24px"
+          iconOnly
+          label={$t`Search persons`}
+          onClick={goToSearch}
+          plain
+          />
+      </hbox>
     {/if}
 
     <!-- left middle -->
-    <hbox class="search">
-      <Button
-        icon={SearchIcon}
-        iconSize="24px"
-        iconOnly
-        label={$t`Search persons`}
-        onClick={goToSearch}
-        plain
-        />
-    </hbox>
+      <hbox class="empty" />
 
     <AppMenuButton />
 
@@ -49,7 +49,7 @@
   import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
   import Button from "../Shared/Button.svelte";
   import AppMenuButton from "../AppsBar/AppMenuM/AppMenuButton.svelte";
-  import ListIcon from "lucide-svelte/icons/list";
+  import PersonsIcon from "lucide-svelte/icons/users";
   import SearchIcon from "lucide-svelte/icons/search";
   import { t } from "../../l10n/l10n";
 
