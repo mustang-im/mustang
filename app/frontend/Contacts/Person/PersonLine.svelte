@@ -29,6 +29,7 @@
     color: var(--hover-fg);
   }
   .main {
+    justify-content: center;
     margin-block-start: 0px;
     padding: 10px 16px 10px 4px;
   }

@@ -24,7 +24,7 @@
   export let persons: Collection<PersonOrGroup>;
   export let selected: PersonOrGroup = $selectedPerson;
   export let size: "large" | "small" = "large";
-  export let pictureSize = size == "large" ? 56 : 20;
+  export let pictureSize = size == "large" ? 56 : appGlobal.isMobile ? 32 : 20;
   /** in/out */
   export let searchTerm: string | null = null;
   export let doSearch = false;
