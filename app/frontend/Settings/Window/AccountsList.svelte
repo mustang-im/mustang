@@ -1,6 +1,6 @@
 {#if $accounts.hasItems || category.newAccountUI}
   <vbox class="accounts" app={category.id}>
-    <hbox class="header">
+    <hbox class="header font-smallest">
       {$t`Accounts`}
       <hbox flex />
       {#if category.newAccountUI}
@@ -62,7 +62,6 @@
   }
   .header {
     align-items: center;
-    font-size: 12px;
     color: darkgray;
     margin-inline-start: 22px;
     margin-inline-end: 12px;
