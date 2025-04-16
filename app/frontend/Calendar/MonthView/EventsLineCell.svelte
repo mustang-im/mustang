@@ -8,7 +8,7 @@
   {/if}
   {#if withMonthOnFirst && start.getDate() == 1 ||
     withMonthOnMonday && start.getDay() == 1 }
-    <hbox class="month-name">
+    <hbox class="month-name font-normal">
       {start.toLocaleDateString(getUILocale(), { month: "long" })}
     </hbox>
   {/if}
@@ -74,7 +74,6 @@
     color: #8B8B8B;
     opacity: 50%;
     letter-spacing: 0.378px;
-    font-size: 16px;
     text-transform: uppercase;
     font-weight: 300;
   }

@@ -4,7 +4,7 @@
       {getDateString(chatRoom.lastMessage.sent)}
     {/if}
   </hbox>
-  <hbox slot="second-row" flex class="last-msg" let:person={chatRoom}>
+  <hbox slot="second-row" flex class="last-msg font-smallest" let:person={chatRoom}>
     {#if chatRoom instanceof Chat && chatRoom.lastMessage}
       {chatRoom.lastMessage.text?.substring(0, 50)}
     {/if}
@@ -32,7 +32,6 @@
   .last-msg {
     opacity: 50%;
     margin-block-start: 5px;
-    font-size: 11.5px;
     max-height: 1.8em;
     overflow: hidden;
     text-overflow: ellipsis;
