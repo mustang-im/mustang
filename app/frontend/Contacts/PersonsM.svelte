@@ -21,7 +21,7 @@
 
   export let doSearch = false;
 
-  let selectedAddressbook: Addressbook | null = null; /** null = show all */
+  export let selectedAddressbook: Addressbook | null = null; /** null = show all */
 
   $: $globalSearchTerm && showAll()
   function showAll() {
