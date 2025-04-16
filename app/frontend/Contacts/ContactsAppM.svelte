@@ -3,7 +3,7 @@
   <PersonM person={$selectedPerson} />
 </Route>
 <Route path="account/:accountID/persons" let:params>
-  <PersonsM selectedAddressbook={appGlobal.addressbooks.find(ab => ab.id == params.accountID)} doSearch={true} />
+  <PersonsM selectedAddressbook={appGlobal.addressbooks.find(ab => ab.id == params.accountID)} />
 </Route>
 <Route path="search">
   <PersonsM doSearch={true} />
