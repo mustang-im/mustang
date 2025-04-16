@@ -3,12 +3,12 @@
     <img src={app.icon} width="96" height="96" alt="" />
   </vbox>
   <vbox class="nameDescr">
-    <h2 class="name">{app.nameTranslated}</h2>
-    <div class="description">{app.descriptionTranslated}</div>
+    <h2 class="name font-normal">{app.nameTranslated}</h2>
+    <div class="description font-smallest">{app.descriptionTranslated}</div>
   </vbox>
   <hbox class="actions">
     {#if app.homepage}
-      <a class="homepage" href={app.homepage} target="_blank">{$t`Website`}</a>
+      <a class="homepage font-smallest" href={app.homepage} target="_blank">{$t`Website`}</a>
     {/if}
     <hbox flex />
     {#if $myApps.includes(app)}
@@ -64,16 +64,13 @@
     overflow-x: hidden;
   }
   .name {
-    font-size: 16px;
     margin-block-start: 16px;
   }
   .description {
-    font-size: 11px;
   }
   .actions {
     align-items: center;
   }
   .homepage {
-    font-size: 12px;
   }
 </style>

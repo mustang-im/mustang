@@ -3,7 +3,7 @@
   bind:this={menuItemE}
   >
   {#if label}
-    <hbox class="label">{label}</hbox>
+    <hbox class="label font-small">{label}</hbox>
   {:else}
     <slot />
   {/if}
@@ -24,7 +24,6 @@
   }
   .label {
     white-space: nowrap;
-    font-size: 14px;
     opacity: 50%;
   }
 </style>
