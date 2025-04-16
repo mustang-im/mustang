@@ -5,10 +5,13 @@
     </Scroll>
   {/if}
 </vbox>
-<PersonBarM selectedAddressbook={person?.addressbook} />
+{#if $appGlobal.isMobile}
+  <PersonBarM selectedAddressbook={person?.addressbook} />
+{/if}
 
 <script lang="ts">
   import { Person } from "../../logic/Abstract/Person";
+  import { appGlobal } from "../../logic/app";
   import PersonDetails from "./PersonDetails.svelte";
   import PersonBarM from "./PersonBarM.svelte";
   import Scroll from "../Shared/Scroll.svelte";

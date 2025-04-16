@@ -2,7 +2,9 @@
   <Header bind:selectedAccount={$selectedAccount} {accounts} />
   <PersonsList {chatRooms} bind:selectedChat={$selectedChat} {doSearch} />
 </vbox>
-<ChatsBarM />
+{#if $appGlobal.isMobile}
+  <ChatsBarM />
+{/if}
 
 <script lang="ts">
   import { Person } from "../../logic/Abstract/Person";
