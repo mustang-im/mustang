@@ -3,7 +3,7 @@
     columns="auto">
     <svelte:fragment slot="header">
       <slot name="header">
-        <hbox class="header">{$t`Folders`}</hbox>
+        <hbox class="header font-smallest">{$t`Folders`}</hbox>
       </slot>
     </svelte:fragment>
     <TreeItemLine slot="row" let:item={folder} item={folder}>
@@ -36,6 +36,5 @@
   .header {
     padding-inline-start: 10px !important;
     color: grey;
-    font-size: 12px;
   }
 </style>

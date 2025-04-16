@@ -7,10 +7,10 @@
       <FileIcon {ext} size={24} />
     </hbox>
     <vbox class="info">
-      <hbox title={$attachment.filename} class="filename top-row">
+      <hbox title={$attachment.filename} class="filename top-row font-normal">
         {$attachment.filename}
       </hbox>
-      <hbox class="bottom-row">
+      <hbox class="bottom-row font-smallest">
         <hbox class="size">
           {$attachment.size ? fileSize($attachment.size) : $t`Not downloaded`}
         </hbox>
@@ -92,12 +92,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-  .top-row {
-    font-size: 16px;
-  }
-  .bottom-row {
-    font-size: 12px;
   }
   .bottom-row :global(.svelteui-Popper-root) {
     position: fixed;
