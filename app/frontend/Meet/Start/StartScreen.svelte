@@ -28,15 +28,15 @@
   </vbox>
   <vbox flex class="meetings">
     <vbox flex class="upcoming">
-      <hbox class="title">{$t`Today's next meetings`}</hbox>
+      <hbox class="title font-small">{$t`Today's next meetings`}</hbox>
       <MeetingList meetings={upcomingMeetings}>
-        <div slot="emptyMsg" class="emptyMsg">{$t`No meetings coming up`}</div>
+        <div slot="emptyMsg" class="emptyMsg font-smallest">{$t`No meetings coming up`}</div>
       </MeetingList>
     </vbox>
     <vbox flex class="previous">
-      <hbox class="title">{$t`Previous meetings`}</hbox>
+      <hbox class="title font-small">{$t`Previous meetings`}</hbox>
       <MeetingList meetings={previousMeetings}>
-        <div slot="emptyMsg" class="emptyMsg">{$t`No recent meetings`}</div>
+        <div slot="emptyMsg" class="emptyMsg font-smallest">{$t`No recent meetings`}</div>
       </MeetingList>
     </vbox>
   </vbox>
@@ -169,12 +169,10 @@
     justify-content: center;
   }
   .title {
-    font-size: 14px;
     font-weight: bold;
     margin-block-end: 12px;
   }
   .emptyMsg {
-    font-size: 12px;
     color: grey;
   }
 </style>
