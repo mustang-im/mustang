@@ -1,16 +1,29 @@
 <hbox class="buttons">
   <AppBarM>
     <!-- left -->
-    <hbox class="list">
-      <Button
-        icon={PersonsIcon}
-        iconSize="24px"
-        iconOnly
-        label={$t`List persons`}
-        onClick={goToPersons}
-        plain
-        />
-    </hbox>
+    {#if person}
+      <hbox class="list">
+        <Button
+          icon={PersonIcon}
+          iconSize="24px"
+          iconOnly
+          label={person.name}
+          onClick={goToPerson}
+          plain
+          />
+      </hbox>
+    {:else}
+      <hbox class="list">
+        <Button
+          icon={PersonsIcon}
+          iconSize="24px"
+          iconOnly
+          label={$t`List persons`}
+          onClick={goToPersons}
+          plain
+          />
+      </hbox>
+    {/if}
 
     <!-- left middle -->
     <hbox class="list">
@@ -55,20 +68,25 @@
   import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
   import Button from "../Shared/Button.svelte";
   import AppMenuButton from "../AppsBar/AppMenuM/AppMenuButton.svelte";
+  import PersonIcon from "lucide-svelte/icons/user";
   import PersonsIcon from "lucide-svelte/icons/users";
-  import PictureIcon from "lucide-svelte/icons/picture";
-  import FileIcon from "lucide-svelte/icons/file";
+  import PictureIcon from "lucide-svelte/icons/image-plus";
+  import FileIcon from "lucide-svelte/icons/file-plus";
+  import { goTo } from "../AppsBar/selectedApp";
   import { t } from "../../l10n/l10n";
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
   const dispatchEvent = createEventDispatcher<{ uploadFile: void, uploadPicture: void }>();
 
   export let person: Person;
-  export let doingSearch = false;
 
   let isMenuOpen = false;
 
+  function goToPerson() {
+    goTo(`/files/person/${person.id}/files`);
+  }
+
   function goToPersons() {
-    doingSearch = false;
+    goTo("/files/");
   }
 
   function uploadFile() {
