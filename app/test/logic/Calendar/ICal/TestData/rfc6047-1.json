@@ -1,0 +1,23 @@
+[
+  4,
+  {
+    "title": "Phone call to discuss your last visit",
+    "startTime": "2008-07-01T16:00:00.000Z",
+    "endTime": "2008-07-01T16:30:00.000Z",
+    "allDay": false,
+    "calUID": "calsvr.example.com-8739701987387998",
+    "descriptionText": "ты как - доволен поездкой?",
+    "participants": [
+      {
+        "emailAddress": "user1@example.com",
+        "name": "user1@example.com",
+        "response": 1
+      },
+      {
+        "emailAddress": "user2@example.com",
+        "name": "user2@example.com",
+        "response": 0
+      }
+    ]
+  }
+]

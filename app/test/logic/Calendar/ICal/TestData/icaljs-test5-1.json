@@ -1,0 +1,14 @@
+[
+  0,
+  {
+    "title": "Phoenix Drupal User Group Monthly Meetup",
+    "startTime": "2011-11-10T02:00:00.000Z",
+    "endTime": "2011-11-10T04:00:00.000Z",
+    "timezone": "America/Phoenix",
+    "allDay": false,
+    "calUID": "event_nsmxnyppbfc@meetup.com",
+    "location": "Open Source Project Tempe (1415 E University Dr. #103A, Tempe, AZ 85281)",
+    "descriptionText": "Phoenix Drupal User Group\nWednesday, November 9 at 7:00 PM\n\nCustomizing node display with template pages in Drupal 6\n\n Jon Sheehan and Matthew Berry of the Office of Knowledge Enterprise Development (OKED) Knowledge...\n\nDetails: http://www.meetup.com/Phoenix-Drupal-User-Group/events/33627272/",
+    "participants": []
+  }
+]
