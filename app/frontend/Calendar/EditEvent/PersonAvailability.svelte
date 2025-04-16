@@ -1,4 +1,4 @@
-<hbox class="availability" class:yes={available} class:no={available === false}>
+<hbox class="availability font-smallest" class:yes={available} class:no={available === false}>
   {#if available }
     <span class="yes">{$t`Available`}</span>
   {:else if available === false }
@@ -19,7 +19,6 @@
 
 <style>
   .availability {
-    font-size: 12px;
     margin-block-start: -1px;
   }
   .availability.yes {

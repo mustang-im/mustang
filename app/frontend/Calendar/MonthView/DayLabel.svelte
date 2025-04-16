@@ -1,4 +1,4 @@
-<hbox class="day" on:click={selectDay} on:dblclick={changeToDay} class:today={day.getTime() == today.getTime()}>
+<hbox class="day font-small" on:click={selectDay} on:dblclick={changeToDay} class:today={day.getTime() == today.getTime()}>
   <hbox class="date-number">
     {day.toLocaleDateString(getUILocale(), { day: "numeric" })}
   </hbox>
@@ -39,7 +39,6 @@
   .day {
     padding: 4px 8px;
     border-left: 1px dotted var(--border);
-    font-size: 13px;
   }
   .today {
     padding: 0px 8px;
