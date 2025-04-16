@@ -1,5 +1,5 @@
 <Route path="person/:personID/edit">
-  {ensureLoaded(selectedPerson, "/mail/")}
+  {ensureLoaded(selectedPerson, "/contacts/")}
   <PersonM person={$selectedPerson} />
 </Route>
 <Route path="search">
@@ -11,8 +11,8 @@
 
 <script lang="ts">
   import { selectedPerson } from "./Person/Selected";
+  import PersonsM from "./PersonsM.svelte";
+  import PersonM from "./PersonM.svelte";
   import { ensureLoaded } from "../Util/svelte";
   import { Route } from "svelte-navigator";
-  import PersonM from "./PersonM.svelte";
-  import PersonsM from "./PersonsM.svelte";
 </script>
