@@ -6,34 +6,32 @@
     {/if}
     <hbox class="buttons">
       <hbox class="star button" class:starred={isShowStarred}>
-        <Button
+        <RoundButton
           icon={StarIcon}
           iconSize={$appGlobal.isMobile ? "24px" : "16px"}
-          iconOnly
           label={$t`Show only starred messages`}
           onClick={toggleStarred}
-          plain
+          border={false}
           />
       </hbox>
       <hbox class="unread-dot button" class:unread={isShowUnread}>
-        <Button
+        <RoundButton
           icon={CircleIcon}
-          iconSize={$appGlobal.isMobile ? "20px" : "7px"}
-          iconOnly
+          iconSize={$appGlobal.isMobile ? "18px" : "7px"}
+          padding={$appGlobal.isMobile ? "11px" : "12px"}
           label={$t`Show only unread messages`}
           onClick={toggleUnread}
-          plain
+          border={false}
           />
       </hbox>
       {#if !isShowSearchField}
         <hbox class="show-search button">
-          <Button
+        <RoundButton
             icon={SearchIcon}
             iconSize={$appGlobal.isMobile ? "24px" : "16px"}
-            iconOnly
             label={$t`Search only the currently displayed folder for a keyword`}
             onClick={toggleShowSearchField}
-            plain
+            border={false}
             />
         </hbox>
       {/if}
@@ -83,16 +81,16 @@
   import type { Folder } from '../../../logic/Mail/Folder';
   import type { EMail } from '../../../logic/Mail/EMail';
   import { newSearchEMail } from '../../../logic/Mail/Store/setStorage';
+  import { appGlobal } from '../../../logic/app';
   import SearchField from '../../Shared/SearchField.svelte';
   import GetMailButton from './GetMailButton.svelte';
-  import Button from '../../Shared/Button.svelte';
+  import RoundButton from '../../Shared/RoundButton.svelte';
   import SearchIcon from "lucide-svelte/icons/search";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";
   import { catchErrors } from '../../Util/error';
   import type { ArrayColl } from 'svelte-collections';
   import { t } from '../../../l10n/l10n';
-  import { appGlobal } from '../../../logic/app';
 
   export let folder: Folder;
   export let searchMessages: ArrayColl<EMail> | null; /** out */
@@ -192,6 +190,7 @@
     height: 20px;
     width: 20px;
     border: none;
+    margin-inline-end: 8px;
   }
   .folder-header :global(.search) {
     height: 18px;
@@ -211,6 +210,9 @@
   }
   .star.starred :global(svg) {
     fill: orange;
+  }
+  .unread-dot {
+    margin-inline: -4px;
   }
   .unread-dot.unread :global(svg) {
     fill: green;

@@ -21,9 +21,9 @@
   <hbox class="label">{$account.name}</hbox>
     <hbox flex class="buttons">
       {#if $account.isLoggedIn}
-        <GetMailButton folder={account.inbox} />
+        <GetMailButton folder={account.inbox} iconSize="18px" />
       {:else}
-        <Button plain iconOnly icon={DisconnectedIcon} onClick={login} label={$t`Login`} {iconSize} />
+        <Button plain iconOnly icon={DisconnectedIcon} onClick={login} label={$t`Login`} iconSize="20px" />
       {/if}
     </hbox>
 </hbox>
@@ -59,8 +59,8 @@
     : $errors.hasItems
       ? errors.first.message
       : "";
-  $: iconSize = $appGlobal.isMobile ? "32px" : "16px";
-  $: iconLogoSize = $appGlobal.isMobile ? "32px" : "18px";
+  $: iconSize = $appGlobal.isMobile ? "24px" : "16px";
+  $: iconLogoSize = $appGlobal.isMobile ? "24px" : "18px";
 </script>
 
 <style>
