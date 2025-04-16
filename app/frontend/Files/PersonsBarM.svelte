@@ -31,17 +31,7 @@
     <AppMenuButton />
 
     <!-- right middle -->
-    <hbox class="new">
-      <Button
-        icon={PlusIcon}
-        iconSize="24px"
-        iconOnly
-        label={$t`Create a contact`}
-        onClick={newContact}
-        disabled={!selectedAddressbook}
-        plain
-        />
-    </hbox>
+    <hbox class="empty" />
 
     <!-- right -->
     <hbox class="menu button">
@@ -55,19 +45,16 @@
 </hbox>
 
 <script lang="ts">
-  import { Addressbook } from "../../logic/Contacts/Addressbook";
-  import { selectedPerson } from "./Person/Selected";
+  import { selectedPerson } from "../Contacts/Person/Selected";
   import AppBarM from "../AppsBar/AppBarM.svelte";
   import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
   import Button from "../Shared/Button.svelte";
   import AppMenuButton from "../AppsBar/AppMenuM/AppMenuButton.svelte";
   import PersonsIcon from "lucide-svelte/icons/users";
   import SearchIcon from "lucide-svelte/icons/search";
-  import PlusIcon from "lucide-svelte/icons/plus";
   import { goTo } from "../AppsBar/selectedApp";
   import { t } from "../../l10n/l10n";
 
-  export let selectedAddressbook: Addressbook;
   export let doingSearch = false;
 
   let isMenuOpen = false;
@@ -80,9 +67,7 @@
     doingSearch = true;
   }
 
-  function newContact() {
-    let contact = selectedAddressbook.newPerson();
-    $selectedPerson = contact;
-    goTo(`/contacts/person/${contact.id}/edit`);
+  function goToUpload() {
+    goTo(`${$selectedPerson.id}/upload`);
   }
 </script>
