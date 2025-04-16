@@ -4,7 +4,7 @@
   class:outgoing={message.outgoing}
   >
   <vbox class="right">
-    <hbox class="text selectable">{@html message.html }</hbox>
+    <hbox class="text selectable font-smallest">{@html message.html }</hbox>
   </vbox>
 </hbox>
 
@@ -27,7 +27,6 @@
   }
 
   .text {
-    font-size: 9px;
   }
   .text :global(.person) {
     color: blue;
