@@ -93,6 +93,10 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  .top-row {
+  }
+  .bottom-row {
+  }
   .bottom-row :global(.svelteui-Popper-root) {
     position: fixed;
   }
