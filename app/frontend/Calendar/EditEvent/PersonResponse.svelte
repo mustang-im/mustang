@@ -1,4 +1,4 @@
-<hbox class="response">
+<hbox class="response font-smallest">
   {#if person.response == ResponseType.Decline }
     <span class="no">{$t`Declined`}</span>
   {:else if person.response == ResponseType.Accept }
@@ -22,7 +22,6 @@
 
 <style>
   .response {
-    font-size: 12px;
     padding: 8px 16px;
     border-left: 1px sold var(--border);
   }

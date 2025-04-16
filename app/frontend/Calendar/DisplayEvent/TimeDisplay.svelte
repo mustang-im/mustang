@@ -1,4 +1,4 @@
-<hbox class="time">
+<hbox class="time font-normal">
   <hbox class="starttime">
     {getDateString($event.startTime)}
   </hbox>
@@ -23,7 +23,6 @@
 <style>
   .time {
     flex-wrap: wrap;
-    font-size: 16px;
   }
   .starttime {
     font-weight: bold;
