@@ -14,7 +14,7 @@
           <grid class="protocol-grid">
             {#each $addressbooks.each as addressbook}
               <Checkbox label={addressbook.name} bind:checked={addressbook.import} />
-              <hbox class="protocol thunderbird-local">Thunderbird</hbox>
+              <hbox class="protocol thunderbird-local font-smallest">Thunderbird</hbox>
             {/each}
           </grid>
         </Scroll>
@@ -159,7 +159,6 @@
 
   .protocol {
     min-height: 16px;
-    font-size: 12px;
     border-radius: 8px;
     color: white;
     border: 1px solid transparent;

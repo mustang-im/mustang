@@ -1,5 +1,5 @@
 <vbox class="settings-category" class:selected on:click={onSelect}>
-  <hbox class="label" class:main={category.isMain}>
+  <hbox class="label font-small" class:main={category.isMain}>
     {category.name}
   </hbox>
 </vbox>
@@ -42,7 +42,6 @@
     color:  var(--selected-fg);
   }
   .label {
-    font-size: 14px;
     white-space: nowrap;
     overflow: hidden;
     margin-block-start: 4px;
