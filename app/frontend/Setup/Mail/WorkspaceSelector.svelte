@@ -1,5 +1,5 @@
 <vbox class="workspace-selector">
-  <hbox class="hint">{$t`Workspaces allow you to organize yourself. You can change this at any time, by going to Settings in the title bar.`}</hbox>
+  <hbox class="hint font-smallest">{$t`Workspaces allow you to organize yourself. You can change this at any time, by going to Settings in the title bar.`}</hbox>
   <vbox class="workspaces-box" class:horizontal>
     <vbox class="workspaces">
       {#each $workspaces.each as workspace}
@@ -41,7 +41,6 @@
 
 <style>
   .hint {
-    font-size: 12px;
     opacity: 70%;
   }
   .workspaces-box {

@@ -12,7 +12,7 @@
           border={false}
         />
       </hbox>
-      <div class="name">{$t`All`}</div>
+      <div class="name font-smallest">{$t`All`}</div>
     </vbox>
   {/if}
   {#each $accounts.each as acc}
@@ -28,7 +28,7 @@
           border={false}
         />
       </hbox>
-      <div class="name" title={acc.name}>{acc.name}</div>
+      <div class="name font-smallest" title={acc.name}>{acc.name}</div>
     </vbox>
   {/each}
 </hbox>
@@ -73,7 +73,6 @@
     width: 48px;
   }
   .name {
-    font-size: 10px;
     text-align: center;
     overflow: hidden;
     text-overflow: clip;
