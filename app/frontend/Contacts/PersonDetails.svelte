@@ -71,7 +71,7 @@
       <GroupBox classes="email">
         <svelte:fragment slot="header">
           <Icon data={MailIcon} size="16px" />
-          <h3>{$t`Mail`}</h3>
+          <h3 class="font-small">{$t`Mail`}</h3>
           <hbox flex class="actions">
             <Button on:click={addEmail} icon={AddIcon} iconOnly plain classes="add" />
           </hbox>
@@ -91,7 +91,7 @@
       <GroupBox classes="chat">
         <svelte:fragment slot="header">
           <Icon data={ChatIcon} size="16px" />
-          <h3>{$t`Chat`}</h3>
+          <h3 class="font-small">{$t`Chat`}</h3>
           <hbox flex class="actions">
             <Button on:click={addChatAccount} icon={AddIcon} iconOnly plain classes="add" />
           </hbox>
@@ -113,7 +113,7 @@
           <hbox class="phone">
             <Icon data={PhoneIcon} size="16px" />
           </hbox>
-          <h3>{$t`Phone numbers`}</h3>
+          <h3 class="font-small">{$t`Phone numbers`}</h3>
           <hbox flex class="actions">
             <Button on:click={addPhoneNumber} icon={AddIcon} iconOnly plain classes="add" />
           </hbox>
@@ -133,7 +133,7 @@
       <GroupBox classes="street-addresses">
         <svelte:fragment slot="header">
           <Icon data={MailIcon} size="16px" />
-          <h3>{$t`Street addresses`}</h3>
+          <h3 class="font-small">{$t`Street addresses`}</h3>
           <hbox flex class="actions">
             <Button on:click={addStreetAddress} icon={AddIcon} iconOnly plain classes="add" />
           </hbox>
@@ -153,7 +153,7 @@
       <GroupBox classes="categories">
         <svelte:fragment slot="header">
           <Icon data={ContactsIcon} size="16px" />
-          <h3>{$t`Groups`}</h3>
+          <h3 class="font-small">{$t`Groups`}</h3>
           <hbox flex class="actions">
             <!--
             <Button on:click={addEmail} icon={AddIcon} iconOnly plain classes="add" />
@@ -174,7 +174,7 @@
     <GroupBox classes="preferences">
       <svelte:fragment slot="header">
         <Icon data={ChatIcon} size="16px" />
-        <h3>Preferences</h3>
+        <h3 class="font-small">Preferences</h3>
       </svelte:fragment>
       <vbox class="preferred" slot="content">
         <hbox>Preferred communication tool</hbox>
@@ -200,7 +200,7 @@
 
   {#if showNotes}
     <vbox flex class="notes">
-      <textarea bind:value={person.notes} placeholder={$t`Personal notes`} autofocus={person.notes == " "} />
+      <textarea bind:value={person.notes} placeholder={$t`Personal notes`} autofocus={person.notes == " "} class="font-small" />
     </vbox>
   {/if}
 </vbox>
@@ -381,7 +381,6 @@
     background-color: var(--main-bg);
     color: var(--main-fg);
     font-family: sans-serif;
-    font-size: 14px;
     border: 1px solid var(--border);
     padding: 8px;
   }

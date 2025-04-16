@@ -1,7 +1,9 @@
 <hbox class="more-bubble a b">
   <Button {onClick} iconSize="10px"
     label="+ {plusNum}"
-    tooltip={$t`Show ${plusNum} more`} />
+    tooltip={$t`Show ${plusNum} more`}
+    classes="font-small"
+    />
 </hbox>
 
 <script lang="ts">
@@ -15,7 +17,6 @@
 <style>
   .more-bubble.a.b :global(button) {
     border: none;
-    font-size: 14px;
     padding: 0px 8px;
   }
   .more-bubble :global(button:not(:hover)) {

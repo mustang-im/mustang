@@ -16,7 +16,7 @@
         icon={ChevronUpIcon}
         label={$t`Collapse`}
         onClick={() => showAllParticipants = false}
-        classes="small collapse"
+        classes="small collapse font-small"
         iconOnly
         />
     {:else if $participants?.length > showNumParticipants}
@@ -65,7 +65,6 @@
   }
   .participants .buttons :global(button.collapse) {
     border: none;
-    font-size: 14px;
     padding: 0px 4px;
   }
 </style>
