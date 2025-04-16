@@ -2,7 +2,9 @@
   <PersonsToolbar {persons} bind:selectedAddressbook />
   <PersonsList {persons} bind:selected={$selectedPerson} size="small" bind:searchTerm={$globalSearchTerm} {doSearch} on:click={() => catchErrors(onPersonSelected)} />
 </vbox>
-<PersonsBarM {selectedAddressbook} bind:doingSearch={doSearch} />
+{#if $appGlobal.isMobile}
+  <PersonsBarM {selectedAddressbook} bind:doingSearch={doSearch} />
+{/if}
 
 <script lang="ts">
   import { Person } from "../../logic/Abstract/Person";

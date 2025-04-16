@@ -17,13 +17,16 @@
     </vbox>
   {/if}
 </vbox>
-<ChatBarM />
+{#if $appGlobal.isMobile}
+  <ChatBarM />
+{/if}
 
 <script lang="ts">
   import { Chat } from "../../logic/Chat/Chat";
   import { UserChatMessage } from "../../logic/Chat/Message";
   import { ChatRoomEvent } from "../../logic/Chat/RoomEvent";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
+  import { appGlobal } from "../../logic/app";
   import MessageList from "./MessageView/MessageList.svelte";
   import Message from "./MessageView/Message.svelte";
   import ChatRoomEventUI from "./MessageView/ChatRoomEventUI.svelte";
