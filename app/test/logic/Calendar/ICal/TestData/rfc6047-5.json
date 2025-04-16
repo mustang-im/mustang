@@ -1,0 +1,26 @@
+[
+  4,
+  {
+    "title": "Let's discuss the attached document",
+    "startTime": "1997-06-21T17:00:00.000Z",
+    "allDay": false,
+    "calUID": "calsvr.example.com-873970198738777-8aa",
+    "participants": [
+      {
+        "emailAddress": "foo1@example.com",
+        "name": "foo1@example.com",
+        "response": 1
+      },
+      {
+        "emailAddress": "foo2@example.com",
+        "name": "foo2@example.com",
+        "response": 0
+      },
+      {
+        "emailAddress": "foo3@example.com",
+        "name": "foo3@example.com",
+        "response": 0
+      }
+    ]
+  }
+]

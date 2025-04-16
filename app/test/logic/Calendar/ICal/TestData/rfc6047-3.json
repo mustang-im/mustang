@@ -1,0 +1,22 @@
+[
+  4,
+  {
+    "title": "Phone Conference",
+    "startTime": "1997-07-01T17:00:00.000Z",
+    "endTime": "1997-07-01T17:30:00.000Z",
+    "allDay": false,
+    "calUID": "calsvr.example.com-8739701987387771",
+    "participants": [
+      {
+        "emailAddress": "foo1@example.com",
+        "name": "foo1@example.com",
+        "response": 1
+      },
+      {
+        "emailAddress": "foo2@example.com",
+        "name": "foo2@example.com",
+        "response": 0
+      }
+    ]
+  }
+]

@@ -1,0 +1,18 @@
+BEGIN:VCALENDAR
+PRODID:-//Example/ExampleCalendarClient//EN
+METHOD:REQUEST
+VERSION:2.0
+BEGIN:VEVENT
+ORGANIZER:mailto:man@netscape.example.com
+ATTENDEE;ROLE=CHAIR;PARTSTAT=ACCEPTED:mailto:man@netscape.example.com
+ATTENDEE;RSVP=YES:mailto:stevesil@microsoft.example.com
+DTSTAMP:19970611T190000Z
+DTSTART:19970701T210000Z
+DTEND:19970701T230000Z
+SUMMARY:Phone Conference
+DESCRIPTION:Please review the attached document.
+UID:calsvr.example.com-873970198738777
+ATTACH:ftp://ftp.bar.example.com/pub/docs/foo.doc
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR
