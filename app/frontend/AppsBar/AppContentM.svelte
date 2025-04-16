@@ -9,7 +9,7 @@
     <ContactsAppM />
   </Route>
   <Route path="calendar/*">
-    <CalendarAppM />
+    <CalendarApp />
   </Route>
   <Route path="files/*">
     <FilesAppM />
@@ -30,7 +30,7 @@
   import MailAppM from "../Mail/MailAppM.svelte";
   import ChatAppM from "../Chat/ChatAppM.svelte";
   import ContactsAppM from "../Contacts/ContactsAppM.svelte";
-  import CalendarAppM from "../Calendar/CalendarAppM.svelte";
+  import CalendarApp from "../Calendar/CalendarApp.svelte";
   import FilesAppM from "../Files/FilesAppM.svelte";
   import MeetAppM from "../Meet/MeetAppM.svelte";
   import AppMenuM from "./AppMenuM/AppMenu.svelte";
