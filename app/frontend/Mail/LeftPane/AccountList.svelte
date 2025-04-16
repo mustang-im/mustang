@@ -2,7 +2,7 @@
   <FastList items={accounts} bind:selectedItem={selectedAccount} columns="1fr">
     <svelte:fragment slot="header">
       <hbox class="header">
-        <hbox class="header-label">{$t`Accounts`}</hbox>
+        <hbox class="header-label font-smallest">{$t`Accounts`}</hbox>
         <hbox flex />
         <slot name="top-right" />
       </hbox>
@@ -38,7 +38,6 @@
   }
   .header-label {
     color: grey;
-    font-size: 12px;
   }
   .header :global(button) {
     margin-inline-start: 4px;

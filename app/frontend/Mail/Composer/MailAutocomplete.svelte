@@ -2,7 +2,7 @@
   on:addPerson={(event) => onAddPerson(event.detail)}
   on:removePerson={(event) => onRemovePerson(event.detail)}
   >
-  <hbox slot="result-bottom-row" class="recipient-email-address" let:person>
+  <hbox slot="result-bottom-row" class="recipient-email-address font-small" let:person>
     {person.emailAddress}
   </hbox>
   <slot name="end" slot="end" />
@@ -31,7 +31,6 @@
 
 <style>
   .recipient-email-address {
-    font-size: 14px;
     opacity: 50%;
     overflow: hidden;
     align-items: center;
