@@ -3,9 +3,11 @@
     initialRightRatio={0.25}
     rightMinWidth={350}
     >
-    <vbox flex class="main" slot="left">
+    <vbox flex class="main" slot="left" class:mobile={$appGlobal.isMobile}>
       <MainView events={appGlobal.calendarEvents} bind:start={$startDate} dateInterval={$selectedDateInterval}>
-        <TitleBarLeft on:addEvent={() => catchErrors(addEvent)} slot="top-left" />
+        {#if !$appGlobal.isMobile}
+          <TitleBarLeft on:addEvent={() => catchErrors(addEvent)} slot="top-left" />
+        {/if}
         <TitleBarRight bind:dateInterval={$selectedDateInterval} slot="top-right" />
       </MainView>
     </vbox>
@@ -17,6 +19,9 @@
       {/if}
     </vbox>
   </Splitter>
+  {#if $appGlobal.isMobile}
+    <CalendarViewBarM />
+  {/if}
 </vbox>
 <CalendarInBackground />
 
@@ -26,6 +31,7 @@
   import { selectedCalendar, selectedDate, selectedDateInterval, selectedEvent, startDate } from "./selected";
   import { getLocalStorage } from "../Util/LocalStorage";
   import MainView from "./MainView.svelte";
+  import CalendarViewBarM from "./MonthView/CalenderViewBarM.svelte";
   import TitleBarLeft from "./TitleBarLeft.svelte";
   import TitleBarRight from "./TitleBarRight.svelte";
   import ShowEvent from "./DisplayEvent/ShowEvent.svelte";
@@ -60,5 +66,11 @@
   .main :global(.range-header) {
     height: 58px;
     align-items: center;
+  }
+  .main.mobile {
+    margin-inline-end: 0px;
+  }
+  .main.mobile :global(.range-header) {
+    height: 36px;
   }
 </style>

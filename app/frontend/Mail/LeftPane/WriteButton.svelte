@@ -1,7 +1,8 @@
 <RoundButton
   label={$t`Write new email`}
-  icon={WriteIcon} classes="create"
-  disabled={!selectedAccount}
+  icon={WriteIcon}
+  classes="create"
+  disabled={!account}
   onClick={newMail}
   />
 
@@ -14,12 +15,12 @@
   import { assert } from "../../../logic/util/util";
   import { gt, t } from "../../../l10n/l10n";
 
-  export let selectedAccount: MailAccount; /* in/out */
+  export let account: MailAccount; /* in/out */
   export let to: PersonUID | null = null;
 
   function newMail() {
-    assert(selectedAccount, gt`Please select a mail account first`);
-    let email = selectedAccount.newEMailFrom();
+    assert(account, gt`Please select a mail account first`);
+    let email = account.newEMailFrom();
     if (to) {
       email.to.add(to);
     }

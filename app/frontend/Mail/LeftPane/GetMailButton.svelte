@@ -10,7 +10,7 @@
       DownloadIcon
     }
     classes="small"
-    iconSize="12px"
+    {iconSize}
     padding="0px"
     disabled={!folder?.account || status != Status.Waiting}
     on:click={() => catchErrors(getMail)}
@@ -19,6 +19,7 @@
 
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
+  import { appGlobal } from "../../../logic/app";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import DownloadIcon from "lucide-svelte/icons/refresh-cw";
   import FetchingIcon from "lucide-svelte/icons/arrow-big-down-dash";
@@ -31,6 +32,7 @@
   import { t } from "../../../l10n/l10n";
 
   export let folder: Folder; /* in */
+  export let iconSize = appGlobal.isMobile ? "24px" : "12px";
 
   enum Status {
     Waiting = "waiting",

@@ -1,10 +1,10 @@
-<vbox flex class="persons" {size}>
+<vbox flex class="persons" {size} class:mobile={appGlobal.isMobile}>
   {#if showSearch}
-    <SearchField bind:searchTerm placeholder={$t`Search for a person or group`} />
+    <SearchField bind:searchTerm placeholder={$t`Search for a person or group`} autofocus={doSearch} />
   {/if}
   <FastList items={filteredPersons} columns="auto">
     <vbox class="person" slot="row" let:item={person} on:click={() => selected = person}>
-      <PersonLine {person} isSelected={person == selected} {pictureSize} {size}>
+      <PersonLine {person} isSelected={person == selected} {pictureSize} {size} on:click>
         <slot name="top-right" slot="top-right" {person} />
         <slot name="second-row" slot="second-row" {person} />
       </PersonLine>
@@ -16,6 +16,7 @@
   import { Person } from "../../../logic/Abstract/Person";
   import type { PersonOrGroup } from "./PersonOrGroup";
   import { selectedPerson } from "./Selected";
+  import { appGlobal } from "../../../logic/app";
   import type { Collection } from "svelte-collections";
   import PersonLine from "./PersonLine.svelte";
   import SearchField from "../../Shared/SearchField.svelte";
@@ -25,10 +26,13 @@
   export let persons: Collection<PersonOrGroup>;
   export let selected: PersonOrGroup = $selectedPerson;
   export let size: "large" | "small" = "large";
-  export let pictureSize = size == "large" ? 56 : 20;
+  export let pictureSize = size == "large" ? 56 : appGlobal.isMobile ? 32 : 20;
   /** in/out */
   export let searchTerm: string | null = null;
+  /* Show or entirely remove the search field -- in */
   export let showSearch = true;
+  /** focus the search field when this component loads -- in */
+  export let doSearch = false;
 
   $: filteredPersons = searchTerm
     ? persons.filter(p =>
@@ -63,5 +67,8 @@
   }
   .persons :global(.search) {
     margin: 0px 12px 8px 12px;
+  }
+  .persons.mobile :global(.search) {
+    order: 1;
   }
 </style>

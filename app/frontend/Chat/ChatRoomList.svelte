@@ -1,4 +1,4 @@
-<PersonsList persons={chatRoomsSorted} bind:selected={selectedChat} pictureSize={32}>
+<PersonsList persons={chatRoomsSorted} bind:selected={selectedChat} pictureSize={32} {doSearch}>
   <hbox slot="top-right" class="last-time" let:person={chatRoom}>
     {#if chatRoom instanceof Chat && chatRoom.lastMessage}
       {getDateTimeString(chatRoom.lastMessage.sent)}
@@ -19,6 +19,7 @@
 
   export let chatRooms: Collection<Chat>;
   export let selectedChat: Chat;
+  export let doSearch = false;
 
   $: chatRoomsSorted = $chatRooms.sortBy(chat => -chat.lastMessage?.sent);
 </script>

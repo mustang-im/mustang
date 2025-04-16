@@ -9,9 +9,10 @@ import type { VideoConfMeeting } from './Meet/VideoConfMeeting';
 import type { FileSharingAccount } from './Files/FileSharingAccount';
 import type { Workspace } from './Abstract/Workspace';
 import { WebApps } from './WebApps/WebApps';
+import { Observable, notifyChangedProperty } from './util/Observable';
 import { ArrayColl, Collection, mergeColls } from 'svelte-collections';
 
-class AppGlobal {
+class AppGlobal extends Observable {
   readonly emailAccounts = new ArrayColl<MailAccount>();
   readonly chatAccounts = new ArrayColl<ChatAccount>();
   readonly addressbooks = new ArrayColl<Addressbook>();
@@ -29,6 +30,11 @@ class AppGlobal {
   //readonly allContacts: Collection<Contact> = mergeColls(this.addressbooks.map(ab => ab.contacts));
   remoteApp: any;
   me = new Person();
+
+  @notifyChangedProperty
+  isSmall = false;
+  @notifyChangedProperty
+  isMobile = false;
 }
 
 export const appGlobal = new AppGlobal();

@@ -2,10 +2,11 @@
   on:drop={(event) => catchErrors(() => onDropMail(event, folder))}
   on:dragover={(event) => catchErrors(() => onDragOverMail(event, folder))}
   on:contextmenu={contextMenu.onContextMenu}
+  on:click
   title={tooltip}
   >
   <hbox class="icon">
-    <FolderIcon {folder} size="14px" />
+    <FolderIcon {folder} size={$appGlobal.isMobile ? "20px" : "14px"} />
   </hbox>
   <hbox class="label">
     {#if !folder.specialFolder || folder.specialFolder == SpecialFolder.Normal || folder.specialFolder == SpecialFolder.Search}
@@ -37,6 +38,7 @@
   import ContextMenu from '../../Shared/Menu/ContextMenu.svelte';
   import { catchErrors } from '../../Util/error';
   import { gt } from '../../../l10n/l10n';
+  import { appGlobal } from '../../../logic/app';
 
   export let folder: Folder;
 

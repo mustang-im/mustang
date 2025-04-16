@@ -1,4 +1,4 @@
-<hbox flex>
+<hbox flex class="main">
   <vbox flex class="actions-container">
     <vbox class="actions">
       {#if $selectedPerson}
@@ -52,6 +52,10 @@
     </hbox>
   </vbox>
 </hbox>
+{#if $appGlobal.isMobile}
+  <StartBarM selectedAccount={appGlobal.meetAccounts.first} />
+{/if}
+
 
 <script lang="ts">
   import { MeetingState, VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
@@ -67,6 +71,7 @@
   import { MeetAccount } from "../../../logic/Meet/MeetAccount";
   import { LocalMediaDeviceStreams } from "../../../logic/Meet/LocalMediaDeviceStreams";
   import MeetingList from "./MeetingList.svelte";
+  import StartBarM from "./StartBarM.svelte";
   import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
   import ExpandSection from "../../Shared/ExpandSection.svelte";
   import ErrorMessage, { ErrorGravity } from "../../Shared/ErrorMessage.svelte";
@@ -251,5 +256,17 @@
   }
   .emptyMsg {
     color: grey;
+  }
+  @media (max-width: 800px) {
+    .main {
+      flex-direction: column;
+    }
+    .meetings {
+      order: 1;
+      align-items: center;
+    }
+    .actions-container {
+      order: 2;
+    }
   }
 </style>

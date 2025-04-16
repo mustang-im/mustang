@@ -1,4 +1,4 @@
-<hbox flex class="person" class:selected={isSelected} {size}>
+<hbox flex class="person" class:selected={isSelected} {size} on:click>
   <PersonPicture {person} size={pictureSize} />
   <vbox flex class="main">
     <hbox class="first-row">
@@ -37,6 +37,7 @@
     max-height: 1.3em;
   }
   .main {
+    justify-content: center;
     margin-block-start: 0px;
     padding: 10px 16px 10px 4px;
   }

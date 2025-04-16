@@ -4,7 +4,7 @@
   {:else}
     <Button
       icon={buttonIcon}
-      iconSize="16px"
+      iconSize={$appGlobal.isMobile ? "24px" : "16px"}
       iconOnly
       {label}
       onClick={onMenuToggle}
@@ -18,9 +18,11 @@
 </Menu>
 
 <script lang="ts">
+  import { appGlobal } from "../../../logic/app";
   import Button from "../Button.svelte";
   import Menu from "./Menu.svelte";
   import MenuIcon from "lucide-svelte/icons/ellipsis";
+  import VerticalMenuIcon from "lucide-svelte/icons/ellipsis-vertical";
   import type { Placement } from "@popperjs/core";
 
   /** in/out */
@@ -36,7 +38,7 @@
    * in */
   export let boundaryElSel: string = "body";
   export let label: string = "";
-  export let buttonIcon = MenuIcon;
+  export let buttonIcon = appGlobal.isMobile ? VerticalMenuIcon : MenuIcon;
   /** Where the popup should appear in relation to the anchor.
    * above/below ("top"/"bottom") and left/right ("start"/"end")
    * in */

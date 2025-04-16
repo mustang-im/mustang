@@ -117,8 +117,6 @@ body {
   margin: 0;
   display: flex;
   place-items: center;
-  min-width: 640px;
-  min-height: 100vh;
 }
 
 /* <copied from="content-body.css"> */
@@ -219,6 +217,15 @@ value,
 }
 .font-normal {
   font-size: 16px;
+}
+.mobile .font-smallest {
+  font-size: 14px;
+}
+.mobile .font-small {
+  font-size: 16px;
+}
+.mobile .font-normal {
+  font-size: 18px;
 }
 
 input[type="number"],

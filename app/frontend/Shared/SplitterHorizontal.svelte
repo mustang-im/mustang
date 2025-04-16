@@ -1,5 +1,5 @@
 {#if hasTop && hasBottom}
-  <vbox class="splitter" bind:clientHeight={containerHeight}>
+  <vbox class="splitter" bind:clientHeight={containerHeight} class:mobile={appGlobal.isMobile}>
     <hbox class="top" bind:clientHeight={currentTopHeight}>
       <slot name="top" />
     </hbox>
@@ -27,6 +27,7 @@
 
 <script lang="ts">
   import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+  import { appGlobal } from "../../logic/app";
 
   /** Copy of <Splitter> */
 
@@ -45,8 +46,8 @@
   /** If set, will save the ratio in localStorage as preference and restore it */
   export let name: string = null;
 
-  const barHeight = 2;
-  let bottomRatio = JSON.parse(sanitize.nonemptystring(localStorage?.getItem("ui.splitter." + name), null)) ?? initialBottomRatio;
+	const barHeight = appGlobal.isMobile ? 6 : 2;
+	let bottomRatio = JSON.parse(sanitize.nonemptystring(localStorage?.getItem("ui.splitter." + name), null)) ?? initialBottomRatio;
 
   let isMouseDown = false;
   let previousMousePosY: number;
@@ -97,6 +98,9 @@
     cursor: row-resize;
     z-index: 100;
   }
+	.mobile .splitter-bar {
+		background-color: var(--headerbar-bg);
+	}
   .splitter-bar:hover {
     background-color: var(--hover-bg);
   }

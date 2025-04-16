@@ -13,8 +13,10 @@
         <hbox class="top-left header" />
         {#each days as day}
           <vbox class="day-header header">
-            <hbox class="date">{day.toLocaleDateString(getDateTimeFormatPref(), { day: "numeric" })}</hbox>
-            <hbox class="weekday">{day.toLocaleDateString(getDateTimeFormatPref(), { weekday: "long" })}</hbox>
+            <vbox class="date-day">
+              <hbox class="date">{day.toLocaleDateString(getDateTimeFormatPref(), { day: "numeric" })}</hbox>
+              <hbox class="weekday">{day.toLocaleDateString(getDateTimeFormatPref(), { weekday: appGlobal.isSmall ? "short" : "long" })}</hbox>
+            </vbox>
             <vbox class="all-day-events">
               {#each $allDayEvents.contents.filter(ev => ev.startTime <= day && day < ev.endTime) as event (event.id)}
                 <AllDayEvent {event} {start} />
@@ -33,6 +35,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
+  import { appGlobal } from "../../../logic/app";
   import { getToday, k1DayMS } from "../../Util/date";
   import TimeLabel from "./TimeLabel.svelte";
   import TimeDayRow from "./TimeDayRow.svelte";
@@ -114,6 +117,7 @@
     display: grid;
     grid-template-rows: max-content;
     grid-auto-rows: 1fr;
+    container-type: size;
   }
   .week[columns="1"] {
     grid-template-columns: max-content auto;
@@ -153,6 +157,24 @@
     margin-block-end: 4px;
     max-height: 1.3em;
     overflow: hidden;
+  }
+  @container (max-height: 1000px)  {
+    .day-header {
+      padding: 4px 8px;
+    }
+    .day-header .date {
+      font-size: 120%;
+    }
+    .day-header .weekday {
+      font-size: 90%;
+      align-items: center;
+      flex: 1 0 0;
+      margin-block-start: 1px;
+      margin-inline-start: 8px;
+    }
+    .day-header .date-day {
+      flex-direction: row;
+    }
   }
   .range-header {
     align-items: center;

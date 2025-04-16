@@ -2,6 +2,7 @@
   class:unread={!$message.isRead}
   draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
   on:contextmenu={contextMenu.onContextMenu}
+  on:click
   bind:this={popupAnchor}
   >
   <hbox class="top-row">

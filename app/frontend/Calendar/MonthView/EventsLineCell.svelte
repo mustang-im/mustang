@@ -80,4 +80,9 @@
     text-transform: uppercase;
     font-weight: 300;
   }
+  @container (max-height: 400px)  {
+    .month-name {
+      display: none;
+    }
+  }
 </style>

@@ -9,7 +9,7 @@
           <GetMailButton folder={selectedFolder ?? selectedAccount?.inbox} />
         {/if}
         {#if activeTab == SearchView.Folder || activeTab == SearchView.Person}
-          <WriteButton {selectedAccount}
+          <WriteButton account={selectedAccount}
             to={activeTab == SearchView.Person && $selectedPerson ? PersonUID.fromPerson($selectedPerson) : null } />
         {/if}
       </hbox>
