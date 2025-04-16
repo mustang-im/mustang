@@ -2,7 +2,7 @@
   <FastList items={new ArrayColl(genericFileTypes)} bind:selectedItem={selectedFileType} bind:selectedItems={selectedFileTypes}
     columns="auto">
     <svelte:fragment slot="header">
-      <hbox class="header">{$t`File type`}</hbox>
+      <hbox class="header font-smallest">{$t`File type`}</hbox>
     </svelte:fragment>
     <svelte:fragment slot="row" let:item={fileType}>
       <hbox class="row">{fileType.name}</hbox>
@@ -63,6 +63,5 @@
   .header {
     padding-inline-start: 10px !important;
     color: grey;
-    font-size: 12px;
   }
 </style>

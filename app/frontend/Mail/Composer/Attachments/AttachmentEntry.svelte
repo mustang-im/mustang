@@ -3,10 +3,10 @@
     <FileIcon ext={$attachment.filename?.split(".").pop()} size={32} />
   </hbox>
   <vbox flex class="right">
-    <hbox class="name">
+    <hbox class="name font-small">
       {attachment.filename}
     </hbox>
-    <hbox class="size">
+    <hbox class="size font-small">
       {$t`${Math.ceil($attachment.size / 1024)} KB`}
     </hbox>
   </vbox>
@@ -54,12 +54,10 @@
   }
   .name {
     flex-wrap: wrap;
-    font-size: 14px;
     font-weight: 500;
     line-height: 1.2;
   }
   .size {
-    font-size: 14px;
     color: lightgray;
   }
   .buttons {
