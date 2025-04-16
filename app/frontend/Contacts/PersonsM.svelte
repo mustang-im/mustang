@@ -3,7 +3,7 @@
   <PersonsList {persons} bind:selected={$selectedPerson} size="small" bind:searchTerm={$globalSearchTerm} {doSearch} on:click={() => catchErrors(onPersonSelected)} />
 </vbox>
 {#if $appGlobal.isMobile}
-  <PersonsBarM {selectedAddressbook} bind:doingSearch={doSearch} />
+  <PersonsBarM {selectedAddressbook} />
 {/if}
 
 <script lang="ts">

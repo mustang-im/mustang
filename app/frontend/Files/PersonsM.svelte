@@ -5,7 +5,7 @@
     />
 </vbox>
 {#if $appGlobal.isMobile}
-  <PersonsBarM bind:doingSearch={doSearch} />
+  <PersonsBarM />
 {/if}
 
 <script lang="ts">

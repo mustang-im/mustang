@@ -1,32 +1,10 @@
 <hbox class="buttons">
   <AppBarM>
     <!-- left -->
-    {#if doingSearch}
-      <hbox class="list">
-        <Button
-          icon={PersonsIcon}
-          iconSize="24px"
-          iconOnly
-          label={$t`List persons`}
-          onClick={goToList}
-          plain
-          />
-      </hbox>
-    {:else}
-      <hbox class="search">
-        <Button
-          icon={SearchIcon}
-          iconSize="24px"
-          iconOnly
-          label={$t`Search persons`}
-          onClick={goToSearch}
-          plain
-          />
-      </hbox>
-    {/if}
+    <hbox class="empty" />
 
     <!-- left middle -->
-      <hbox class="empty" />
+    <hbox class="empty" />
 
     <AppMenuButton />
 
@@ -49,19 +27,7 @@
   import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
   import Button from "../Shared/Button.svelte";
   import AppMenuButton from "../AppsBar/AppMenuM/AppMenuButton.svelte";
-  import PersonsIcon from "lucide-svelte/icons/users";
-  import SearchIcon from "lucide-svelte/icons/search";
   import { t } from "../../l10n/l10n";
 
-  export let doingSearch = false;
-
   let isMenuOpen = false;
-
-  function goToList() {
-    doingSearch = false;
-  }
-
-  function goToSearch() {
-    doingSearch = true;
-  }
 </script>
