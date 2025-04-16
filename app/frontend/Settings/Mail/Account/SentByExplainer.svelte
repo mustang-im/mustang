@@ -2,7 +2,7 @@
   <hbox class="help">
     {$t`Help us spread the word about ${appName}!`}
   </hbox>
-  <vbox class="sub-box">
+  <vbox class="sub-box font-small">
     <hbox>{$t`To use ${appName} professionally and remove this note, you can subscribe to one of our plans.`}</hbox>
     <a href={kSubscribeURL} target="_blank">
       <Button
@@ -35,7 +35,6 @@
   .sub-box {
     background-color: var(--appbar-bg);
     color: var(--appbar-fg);
-    font-size: 14px;
     border-radius: 5px;
     padding: 6px 12px;
     max-width: 24em;

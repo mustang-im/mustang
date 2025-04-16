@@ -1,6 +1,6 @@
 <vbox class="account-type">
   <hbox class="header">
-    <hbox class="title">{title}</hbox>
+    <hbox class="title font-normal">{title}</hbox>
     <hbox class="spacer" flex />
     <hbox class="buttons">
       <RoundButton
@@ -85,7 +85,6 @@
   .header .title {
     opacity: 70%;
     font-style: italic;
-    font-size: 16px;
     min-width: max-content;
   }
   .spacer {

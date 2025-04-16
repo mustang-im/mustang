@@ -4,7 +4,7 @@
 
   <Splitter name="settings-mail-folders" initialRightRatio={4}>
     <FastList items={rules} bind:selectedItem={rule} slot="left">
-      <hbox class="header" slot="header">
+      <hbox class="header font-small" slot="header">
         {$t`Rules *=> Criteria after which emails should be sorted`}
         <!--{" (" + $rules.length + ")"}-->
         <hbox flex />
@@ -140,7 +140,6 @@
     margin-inline-start: 1px;
   }
   .header {
-    font-size: 14px;
   }
   .rule-details {
     margin-block-start: -24px;
