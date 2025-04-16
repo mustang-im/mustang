@@ -50,6 +50,13 @@
         {/if}
         {#if canSave}
           <RoundButton
+            label={$t`Revert`}
+            icon={RevertIcon}
+            onClick={onCancel}
+            classes="plain save-or-close"
+            iconSize="16px"
+            />
+          <RoundButton
             label={$t`Save`}
             icon={SaveIcon}
             onClick={onSave}
@@ -90,6 +97,7 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import SaveIcon from "lucide-svelte/icons/check";
   import CloseIcon from "lucide-svelte/icons/x";
+  import RevertIcon from "lucide-svelte/icons/undo-2";
   import { catchErrors } from "../../Util/error";
   import { assert, NotImplemented } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
@@ -207,6 +215,9 @@
   .buttons {
     align-items: center;
     padding: 8px;
+  }
+  .buttons :global(button) {
+    margin-inline-start: 8px;
   }
   .buttons :global(button.delete) {
     background-color: lightsalmon;
