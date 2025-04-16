@@ -2,7 +2,7 @@
   <hbox class="icon">
     <slot name="icon" />
   </hbox>
-  <hbox class="label">
+  <hbox class="label font-smallest">
     <slot name="label" />
   </hbox>
 </vbox>
@@ -48,7 +48,6 @@
     fill: #494558 /* var(--appbar-bg) */;
   }
   .label {
-    font-size: 11px;
     color: #999999;
     overflow: hidden;
     overflow-wrap: anywhere;

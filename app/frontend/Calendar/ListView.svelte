@@ -9,7 +9,7 @@
     <hbox>
       <SearchField bind:searchTerm={$globalSearchTerm} />
     </hbox>
-    <hbox class="result-count">{$t`Found ${filteredEvents.length} events`}</hbox>
+    <hbox class="result-count font-normal">{$t`Found ${filteredEvents.length} events`}</hbox>
   </vbox>
 {/if}
 
@@ -46,7 +46,6 @@
   .result-count {
     margin-block-start: 8px;
     margin-inline-start: 4px;
-    font-size: 15px;
     opacity: 80%;
   }
   .list-view {

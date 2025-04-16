@@ -11,7 +11,7 @@
 
   {#if event.location}
     <LocationIcon size="16px" />
-    <hbox class="location">
+    <hbox class="location font-normal">
       {$event.location}
     </hbox>
   {/if}
@@ -46,6 +46,5 @@
   }
   .location {
     flex-wrap: wrap;
-    font-size: 16px;
   }
 </style>
