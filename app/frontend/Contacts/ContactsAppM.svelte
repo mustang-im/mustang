@@ -2,6 +2,9 @@
   {ensureLoaded(selectedPerson, "/contacts/")}
   <PersonM person={$selectedPerson} />
 </Route>
+<Route path="account/:accountID/persons" let:params>
+  <PersonsM selectedAddressbook={appGlobal.addressbooks.find(ab => ab.id == params.accountID)} doSearch={true} />
+</Route>
 <Route path="search">
   <PersonsM doSearch={true} />
 </Route>
@@ -15,4 +18,5 @@
   import PersonM from "./PersonM.svelte";
   import { ensureLoaded } from "../Util/svelte";
   import { Route } from "svelte-navigator";
+  import { appGlobal } from "../../logic/app";
 </script>
