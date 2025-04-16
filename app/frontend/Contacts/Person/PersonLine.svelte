@@ -2,7 +2,7 @@
   <PersonPicture {person} size={pictureSize} />
   <vbox flex class="main">
     <hbox class="first-row">
-      <hbox flex class="name">{$person.name}</hbox>
+      <hbox flex class="name font-small">{$person.name}</hbox>
       <slot name="top-right" {person} />
     </hbox>
     <slot name="second-row" {person} />
@@ -33,7 +33,6 @@
     padding: 10px 16px 10px 4px;
   }
   .name {
-    font-size: 14px;
   }
   .person[size="small"] .main {
     padding: 1px 20px 0px 0px;
