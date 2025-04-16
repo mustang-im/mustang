@@ -1,5 +1,6 @@
 import { catchErrors } from "./error";
 import { tick } from "svelte";
+import { get, type Writable } from "svelte/store";
 
 /** Protect against loops: A changes B, triggers B change, B changes A, triggers A change, and so on */
 export async function avoidLoop(func: () => void, state: { inSetter: boolean }) {
@@ -11,4 +12,11 @@ export async function avoidLoop(func: () => void, state: { inSetter: boolean }) 
   await catchErrors(func);
   await tick();
   state.inSetter = false;
+}
+
+export function ensureLoaded(obj: Writable<any>, fallbackURL: string): string {
+  if (get(obj)) {
+    return "";
+  }
+  window.location.href = fallbackURL;
 }
