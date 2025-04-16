@@ -1,8 +1,8 @@
 {#if event}
-  <vbox class="meeting-header" class:showDescription>
+  <vbox class="meeting-header font-normal" class:showDescription>
     <hbox class="title-row">
       <hbox class="title-container">
-        <div class="title value">
+        <div class="title value font-normal">
           {event.title}
         </div>
       </hbox>
@@ -17,7 +17,7 @@
     </hbox>
     {#if showDescription}
       <Scroll>
-        <div class="description value">
+        <div class="description value font-small">
           {#if event.descriptionHTML}
             {@html event.descriptionHTML}
           {:else}
@@ -49,7 +49,6 @@
   }
   .meeting-header {
     align-items: center;
-    font-size: 15px;
   }
   .title-row {
     margin-block-start: 8px;
@@ -62,9 +61,7 @@
   }
   .title {
     font-weight: bold;
-    font-size: 16px;
   }
   .description {
-    font-size: 14px;
   }
 </style>

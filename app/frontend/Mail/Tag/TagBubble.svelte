@@ -1,4 +1,4 @@
-<hbox class="tag"
+<hbox class="tag font-smallest"
   style="--color: {$tag.color}"
   on:click
   class:selected={selected == true}
@@ -21,7 +21,6 @@
 <style>
   .tag {
     min-height: 16px;
-    font-size: 12px;
     border-radius: 8px;
     background-color: var(--color);
     color: white;
