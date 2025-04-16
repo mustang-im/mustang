@@ -1,4 +1,4 @@
-<vbox flex class="persons" {size}>
+<vbox flex class="persons" {size} class:mobile={appGlobal.isMobile}>
   <SearchField bind:searchTerm placeholder={$t`Search for a person or group`} autofocus={doSearch} />
   <FastList items={filteredPersons} columns="auto">
     <vbox class="person" slot="row" let:item={person} on:click={() => selected = person}>
@@ -14,6 +14,7 @@
   import { Person } from "../../../logic/Abstract/Person";
   import type { PersonOrGroup } from "./PersonOrGroup";
   import { selectedPerson } from "./Selected";
+  import { appGlobal } from "../../../logic/app";
   import type { Collection } from "svelte-collections";
   import PersonLine from "./PersonLine.svelte";
   import SearchField from "../../Shared/SearchField.svelte";
@@ -61,5 +62,8 @@
   }
   .persons :global(.search) {
     margin: 0px 12px 8px 12px;
+  }
+  .persons.mobile :global(.search) {
+    order: 1;
   }
 </style>
