@@ -47,7 +47,7 @@
     justify-content: center;
   }
   grid :global(.empty) {
-    width: 32px;
+    width: 50px;
     height: 32px;
   }
   grid :global(.button) {
