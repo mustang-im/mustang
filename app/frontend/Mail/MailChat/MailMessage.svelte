@@ -8,7 +8,7 @@
   </svelte:fragment>
   <svelte:fragment slot="inner-top">
     {#if !(previousMessage instanceof EMail && message.subject == previousMessage.subject)}
-      <h2 class="subject">
+      <h2 class="subject font-small">
         {$message.subject}
       </h2>
     {/if}
@@ -35,7 +35,6 @@
 <style>
   .subject {
     font-weight: bold;
-    font-size: 14px;
     line-height: normal;
     margin: 8px 0 4px 0;
   }

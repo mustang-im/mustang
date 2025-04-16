@@ -1,6 +1,6 @@
 <!-- Appears above the msg list -->
 {#if account && !$account?.isLoggedIn || searchMessages}
-  <hbox class="folder-header">
+  <hbox class="folder-header font-smallest">
     <hbox flex />
     {#if account && !$account?.isLoggedIn}
       <Button plain
@@ -42,7 +42,6 @@
     padding-block-end: 2px;
     padding-inline-start: 4px;
     padding-inline-end: 4px;
-    font-size: 12px;
     color: var(--leftbar-fg);
     background-color: var(--leftbar-bg);
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%);
