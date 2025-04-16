@@ -28,7 +28,7 @@
   </hbox>
   {#if !showAccounts}
     <vbox class="tags">
-      <hbox class="header">{$t`Tags`}</hbox>
+      <hbox class="header font-smallest">{$t`Tags`}</hbox>
       <!-- TODO make work with multiple selected messages -->
       <TagSelector
         tags={availableTags}
@@ -154,7 +154,6 @@
   }
   .header {
     color: grey;
-    font-size: 12px;
   }
   .header,
   .message-popup :global(grid > .header) {

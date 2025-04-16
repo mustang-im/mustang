@@ -1,6 +1,6 @@
 {#if rule}
   <vbox class="create-rule">
-    <hbox class="account">
+    <hbox class="account font-small">
       <label for="rule-account-name">{$t`Runs in account`}</label>
       <hbox id="rule-account-name">{rule.account.name}</hbox>
     </hbox>
@@ -49,7 +49,6 @@
 
 <style>
   .account {
-    font-size: 14px;
     opacity: 80%;
   }
   label {

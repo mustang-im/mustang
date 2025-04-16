@@ -9,7 +9,7 @@
   </hbox>
 
   <Scroll>
-    <hbox class="term">
+    <hbox class="term font-normal">
       {$t`Search for`}
       <SearchField bind:searchTerm={$globalSearchTerm}
         placeholder={$t`Mail content or subject`}
@@ -136,7 +136,6 @@
   }
   .term {
     margin: 8px 0px;
-    font-size: 16px;
     align-items: center;
   }
   .term :global(.search) {

@@ -1,6 +1,6 @@
 <vbox flex class="search-criteria">
   {#if showSearchTerm}
-    <hbox class="term">
+    <hbox class="term font-normal">
       {$t`Search for`}
       <SearchField bind:searchTerm={search.bodyText}
         placeholder={$t`Mail content or subject`} />
@@ -201,7 +201,6 @@
   .term {
     margin-block-start: 8px;
     margin-block-end: 24px;
-    font-size: 16px;
     align-items: center;
   }
   .term :global(.search) {
