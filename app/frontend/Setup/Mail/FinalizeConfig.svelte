@@ -9,11 +9,11 @@
     <img src={config.icon} width="24px" height="24px" alt="" />
   {/if}
 </hbox>
-<hbox class="subtitle">{$t`How do you want to call the account ${config.emailAddress}?`}</hbox>
+<hbox class="subtitle font-small">{$t`How do you want to call the account ${config.emailAddress}?`}</hbox>
 
-<vbox class="workspace">
+<vbox class="workspace font-small">
   <ExpandSection>
-    <hbox class="expander" slot="header">{$t`Workspace`}</hbox>
+    <hbox class="expander font-small" slot="header">{$t`Workspace`}</hbox>
     <WorkspaceSelector {config} horizontal={true} />
   </ExpandSection>
 </vbox>
@@ -39,7 +39,6 @@
   }
   .workspace .expander,
   .subtitle {
-    font-size: 13px;
     font-weight: 300;
   }
   input {

@@ -1,6 +1,6 @@
 <vbox flex>
   <hbox class="header">
-    <hbox class="emailAddress">{$account.emailAddress}</hbox>
+    <hbox class="emailAddress font-small">{$account.emailAddress}</hbox>
     <hbox flex />
     <!--
     {#if oAuth2Running != OAuth2UIMethod.Embed}
@@ -127,7 +127,6 @@
     margin-inline-end: 12px;
   }
   .emailAddress {
-    font-size: 14px;
     word-wrap: break-word;
     margin-inline-end: 24px;
   }
