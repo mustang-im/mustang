@@ -1,11 +1,16 @@
 <vbox flex class="calendar-app">
-  <vbox flex class="main">
+  <vbox flex class="main" class:mobile={$appGlobal.isMobile}>
     <MainView {events} bind:start={$startDate} dateInterval={$selectedDateInterval}>
-      <TitleBarLeft on:addEvent={() => catchErrors(addEvent)} slot="top-left" />
+      {#if !$appGlobal.isMobile}
+        <TitleBarLeft on:addEvent={() => catchErrors(addEvent)} slot="top-left" />
+      {/if}
       <ViewSelector bind:dateInterval={$selectedDateInterval} slot="top-right" />
     </MainView>
   </vbox>
 </vbox>
+{#if $appGlobal.isMobile}
+  <CalendarViewBarM />
+{/if}
 
 <script lang="ts">
   import { selectedCalendar, selectedDate, selectedDateInterval, startDate } from "./selected";
@@ -13,6 +18,7 @@
   import { calendarMustangApp } from "./CalendarMustangApp";
   import { appGlobal } from "../../logic/app";
   import MainView from "./MainView.svelte";
+  import CalendarViewBarM from "./MonthView/CalenderViewBarM.svelte";
   import ViewSelector from "./ViewSelector.svelte";
   import TitleBarLeft from "./TitleBarLeft.svelte";
   import { catchErrors } from "../Util/error";
@@ -45,5 +51,11 @@
   .main :global(.range-header) {
     height: 58px;
     align-items: center;
+  }
+  .main.mobile {
+    margin-inline-end: 0px;
+  }
+  .main.mobile :global(.range-header) {
+    height: 36px;
   }
 </style>
