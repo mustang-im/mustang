@@ -30,6 +30,9 @@ export const ToggleListExt = Extension.create({
           let content = nodePos.content;
           if (content) {
             content.forEach((node, offset, index) => {
+              if (offset + nodePos.pos > to) {
+                return;
+              }
               if (node.type.name == "hardBreak") {
                 console.log(node.type.name, offset);
                 runCommands
