@@ -25,6 +25,7 @@
           selected={acc == selectedAccount}
           onClick={() => onSelect(acc)}
           icon={acc.icon ?? iconDefault}
+          {iconSize}
           border={false}
         />
       </hbox>
@@ -49,6 +50,7 @@
   /** in/out */
   export let selectedAccount: Account;
   export let iconDefault: ComponentType | string;
+  export let iconSize: string = undefined;
 
   function onSelect(acc: Account) {
     selectedAccount = acc;
