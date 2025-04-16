@@ -1,5 +1,6 @@
 <hbox
   class="splitter"
+  class:mobile={appGlobal.isMobile}
   bind:clientWidth={containerWidth}
   >
 	<hbox class="left"
@@ -25,6 +26,7 @@
 
 <script lang="ts">
 	import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+	import { appGlobal } from "../../logic/app";
 
 	/** Left pane cannot be made smaller than this
 	 * in px */
@@ -37,7 +39,7 @@
 	/** If set, will save the ratio in localStorage as preference and restore it */
 	export let name: string = null;
 
-  const barWidth = 2;
+	const barWidth = appGlobal.isMobile ? 6 : 2;
 	let rightRatio = JSON.parse(sanitize.nonemptystring(localStorage?.getItem("ui.splitter." + name), null)) ?? initialRightRatio;
 
 	let isMouseDown = false;
@@ -91,6 +93,9 @@
 	.splitter-bar {
 		cursor: col-resize;
 		z-index: 100;
+	}
+	.mobile .splitter-bar {
+		background-color: var(--headerbar-bg);
 	}
 
 	.left {
