@@ -1,4 +1,4 @@
-<hbox flex>
+<hbox flex class="main">
   <vbox flex class="actions-container">
     <vbox class="actions">
       {#if $selectedPerson}
@@ -41,6 +41,10 @@
     </vbox>
   </vbox>
 </hbox>
+{#if $appGlobal.isMobile}
+  <StartBarM selectedAccount={appGlobal.meetAccounts.first} />
+{/if}
+
 
 <script lang="ts">
   import { MeetingState, VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
@@ -52,11 +56,12 @@
   import { selectedPerson } from "../../Contacts/Person/Selected";
   import { appGlobal } from "../../../logic/app";
   import MeetingList from "./MeetingList.svelte";
+  import StartBarM from "./StartBarM.svelte";
+  import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
+  import ErrorMessage, { ErrorGravity } from "../../Shared/ErrorMessage.svelte";
   import Button from "../../Shared/Button.svelte";
   import VideoIcon from 'lucide-svelte/icons/video';
   import AddToCalendarIcon from "lucide-svelte/icons/calendar-plus";
-  import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
-  import ErrorMessage, { ErrorGravity } from "../../Shared/ErrorMessage.svelte";
   import { t } from "../../../l10n/l10n";
   import { catchErrors, logError } from "../../Util/error";
   import { onKeyEnter } from "../../Util/util";
@@ -174,5 +179,17 @@
   }
   .emptyMsg {
     color: grey;
+  }
+  @media (max-width: 800px) {
+    .main {
+      flex-direction: column;
+    }
+    .meetings {
+      order: 1;
+      align-items: center;
+    }
+    .actions-container {
+      order: 2;
+    }
   }
 </style>
