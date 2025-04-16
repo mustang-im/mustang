@@ -240,6 +240,7 @@ async function postHTTP(url: string, data: any, responseType: string, config: an
     status: response.status,
     statusText: response.statusText,
     data: await response[responseType](),
+    RetryAfter: response.headers.get("Retry-After"),
     WWWAuthenticate: response.headers.get("WWW-Authenticate"),
   };
 }
