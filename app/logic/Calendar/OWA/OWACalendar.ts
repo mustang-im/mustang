@@ -1,8 +1,11 @@
 import { Calendar } from "../Calendar";
+import type { Event } from "../Event";
 import type { Participant } from "../Participant";
 import { OWAEvent } from "./OWAEvent";
+import { OWAIncomingActions } from "./OWAIncomingActions";
 import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
 import OWAGetUserAvailabilityRequest from "./Request/OWAGetUserAvailabilityRequest";
+import type { OWAEMail } from "../../Mail/OWA/OWAEMail";
 import { owaFindEventsRequest, owaGetCalendarEventsRequest, owaGetEventsRequest } from "./Request/OWAEventRequests";
 import { ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -15,6 +18,10 @@ export class OWACalendar extends Calendar {
 
   newEvent(parentEvent?: OWAEvent): OWAEvent {
     return new OWAEvent(this, parentEvent);
+  }
+
+  getIncomingActionsFor(message: OWAEMail) {
+    return new OWAIncomingActions(this, message);
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
@@ -58,7 +65,7 @@ export class OWACalendar extends Calendar {
     }
   }
 
-  protected async getEvents(eventIDs: string[], events: ArrayColl<OWAEvent>, parentEvent?: OWAEvent) {
+  async getEvents(eventIDs: string[], events: ArrayColl<OWAEvent>, parentEvent?: OWAEvent) {
     if (!eventIDs.length) {
       return;
     }

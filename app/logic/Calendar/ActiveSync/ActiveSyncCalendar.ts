@@ -1,12 +1,15 @@
 import { Calendar } from "../Calendar";
+import type { Event } from "../Event";
 import type { Participant } from "../Participant";
 import { ActiveSyncEvent, fromCompact } from "./ActiveSyncEvent";
+import { ActiveSyncIncomingActions } from "./ActiveSyncIncomingActions";
 import type { ActiveSyncAccount, ActiveSyncPingable } from "../../Mail/ActiveSync/ActiveSyncAccount";
+import type { ActiveSyncEMail } from "../../Mail/ActiveSync/ActiveSyncEMail";
 import { kMaxCount } from "../../Mail/ActiveSync/ActiveSyncFolder";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Lock } from "../../util/Lock";
-import { ensureArray } from "../../util/util";
+import { assert, ensureArray, NotSupported } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 const kHalfHour = 30 * 60 * 1000; // milliseconds
@@ -28,6 +31,10 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
 
   newEvent(parentEvent?: ActiveSyncEvent): ActiveSyncEvent {
     return new ActiveSyncEvent(this, parentEvent);
+  }
+
+  getIncomingActionsFor(message: ActiveSyncEMail) {
+    return new ActiveSyncIncomingActions(this, message);
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {

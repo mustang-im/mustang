@@ -1,7 +1,10 @@
 import { Calendar } from "../Calendar";
+import type { Event } from "../Event";
 import type { Participant } from "../Participant";
 import { EWSEvent } from "./EWSEvent";
+import { EWSIncomingActions } from "./EWSIncomingActions";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
+import type { EWSEMail } from "../../Mail/EWS/EWSEMail";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -14,6 +17,10 @@ export class EWSCalendar extends Calendar {
 
   newEvent(parentEvent?: EWSEvent): EWSEvent {
     return new EWSEvent(this, parentEvent);
+  }
+
+  getIncomingActionsFor(message: EWSEMail) {
+    return new EWSIncomingActions(this, message);
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {

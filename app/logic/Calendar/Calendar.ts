@@ -1,18 +1,27 @@
 import { Account } from "../Abstract/Account";
 import { Event } from "./Event";
+import { Scheduling, ResponseType, type Responses } from "./Invitation";
 import type { Participant } from "./Participant";
+import { IncomingActions } from "./IncomingActions";
+import type { EMail } from "../Mail/EMail";
 import { appGlobal } from "../app";
+import { assert } from "../util/util";
 import { Collection, ArrayColl } from "svelte-collections";
 import { ICalEMailProcessor } from "./ICal/ICalEMailProcessor";
 
 export class Calendar extends Account {
   readonly protocol: string = "calendar-local";
   readonly events = new ArrayColl<Event>();
+  readonly account: Account = null;
   storage: CalendarStorage | null = null;
   syncState: string | null = null;
 
   newEvent(parentEvent?: Event): Event {
     return new Event(this, parentEvent);
+  }
+
+  getIncomingActionsFor(message: EMail) {
+    return new IncomingActions(this, message);
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
