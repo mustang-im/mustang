@@ -25,17 +25,57 @@
         icon={AcceptIcon}
         classes="accept font-normal" />
       <Button
-        label={$t`Maybe *=> Maybe attend the meeting`}
-        onClick={onTentative}
-        icon={MaybeIcon}
-        classes="maybe secondary font-normal" />
-      <Button
         label={$t`Reject *=> Decline to attend the meeting`}
         onClick={onDecline}
         icon={DeclineIcon}
         classes="decline secondary font-normal" />
+      <ButtonMenu buttonIcon={ChevronDownIcon}>
+        <MenuItem
+          label={$t`Maybe *=> Maybe attend the meeting`}
+          onClick={onTentative}
+          icon={MaybeIcon}
+          classes="maybe font-normal" />
+      </ButtonMenu>
     {:else if message.invitationMessage}
       <Button label={$t`Update calendar`} disabled={updateDisabled} onClick={onUpdate} classes="font-normal" />
+    {:else if false}
+      <Button
+        label={$t`Confirmed *=> A meeting request has been confirmed by you`}
+        icon={AcceptIcon}
+        selected={true}
+        disabled={true}
+        classes="accept done font-normal" />
+      <ButtonMenu buttonIcon={ChevronDownIcon}>
+        <MenuItem
+          label={$t`Change to Reject *=> not attend the meeting`}
+          onClick={onDecline}
+          icon={DeclineIcon}
+          classes="decline font-normal" />
+        <MenuItem
+          label={$t`Change to Maybe *=> Maybe attend the meeting`}
+          onClick={onTentative}
+          icon={MaybeIcon}
+          classes="maybe font-normal" />
+      </ButtonMenu>
+    {:else if false}
+      <Button
+        label={$t`Rejected *=> A meeting request has been declined by you`}
+        icon={DeclineIcon}
+        selected={true}
+        disabled={true}
+        classes="decline done font-normal" />
+      <ButtonMenu buttonIcon={ChevronDownIcon}>
+        <MenuItem
+          label={$t`Change to Accept *=> attend the meeting`}
+          onClick={onAccept}
+          icon={AcceptIcon}
+          classes="accept font-normal" />
+        <MenuItem
+          label={$t`Change to Maybe *=> Maybe attend the meeting`}
+          onClick={onTentative}
+          icon={MaybeIcon}
+          classes="maybe font-normal" />
+      </ButtonMenu>
     {/if}
   </hbox>
 </vbox>
