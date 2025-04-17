@@ -12,13 +12,13 @@
       {/if}
     </vbox>
     {#if isEditing}
-      <vbox class="name-primary-mail" flex>
-        <input class="name" type="text"
+      <vbox class="name-primary-mail font-normal" flex>
+        <input class="name font-normal" type="text"
           bind:value={personUID.name}
           bind:this={nameInputEl}
           on:keydown={(event) => onKeyEnter(event, onClose)}
           placeholder={$t`Enter a name for the person`} />
-        <input class="email" type="email"
+        <input class="email font-normal" type="email"
           bind:value={personUID.emailAddress}
           placeholder={$t`Email address to be used here`} />
       </vbox>
@@ -179,10 +179,8 @@
   }
   .name-primary-mail,
   .name-primary-mail input {
-    font-size: 15px;
   }
   input {
-    font-size: 15px;
     min-width: 15em;
   }
   .helptext {
