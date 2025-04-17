@@ -25,17 +25,57 @@
         icon={AcceptIcon}
         classes="accept" />
       <Button
-        label={$t`Maybe *=> Maybe attend the meeting`}
-        onClick={onTentative}
-        icon={MaybeIcon}
-        classes="maybe secondary" />
-      <Button
         label={$t`Reject *=> Decline to attend the meeting`}
         onClick={onDecline}
         icon={DeclineIcon}
         classes="decline secondary" />
+      <ButtonMenu buttonIcon={ChevronDownIcon}>
+        <MenuItem
+          label={$t`Maybe *=> Maybe attend the meeting`}
+          onClick={onTentative}
+          icon={MaybeIcon}
+          classes="maybe" />
+      </ButtonMenu>
     {:else if message.scheduling}
       <Button label={$t`Update calendar`} disabled={updateDisabled} onClick={onUpdate} />
+    {:else if false}
+      <Button
+        label={$t`Confirmed *=> A meeting request has been confirmed by you`}
+        icon={AcceptIcon}
+        selected={true}
+        disabled={true}
+        classes="accept done" />
+      <ButtonMenu buttonIcon={ChevronDownIcon}>
+        <MenuItem
+          label={$t`Change to Reject *=> not attend the meeting`}
+          onClick={onDecline}
+          icon={DeclineIcon}
+          classes="decline" />
+        <MenuItem
+          label={$t`Change to Maybe *=> Maybe attend the meeting`}
+          onClick={onTentative}
+          icon={MaybeIcon}
+          classes="maybe" />
+      </ButtonMenu>
+    {:else if false}
+      <Button
+        label={$t`Rejected *=> A meeting request has been declined by you`}
+        icon={DeclineIcon}
+        selected={true}
+        disabled={true}
+        classes="decline done" />
+      <ButtonMenu buttonIcon={ChevronDownIcon}>
+        <MenuItem
+          label={$t`Change to Accept *=> attend the meeting`}
+          onClick={onAccept}
+          icon={AcceptIcon}
+          classes="accept" />
+        <MenuItem
+          label={$t`Change to Maybe *=> Maybe attend the meeting`}
+          onClick={onTentative}
+          icon={MaybeIcon}
+          classes="maybe" />
+      </ButtonMenu>
     {/if}
   </hbox>
 </vbox>
