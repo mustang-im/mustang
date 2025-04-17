@@ -165,12 +165,26 @@ export class Event extends Observable {
     this.duration = days * k1DayS;
   }
 
-  /**
-   * Create a new instance of the same event.
-   * Copy most data of the `original` event into this new Event object.
-   * The new event is still a single event, not a series or part of one.
-   */
+  /** Create a new instance of the same event.
+   * Copy all data of the `original` event into this new Event object.
+   * Not sure why anyone would need this; editing code can use
+   * copyEditableFieldsFrom and recurring events need extra care. */
   copyFrom(original: Event) {
+    this.copyEditableFieldsFrom(original);
+    this.recurrenceStartTime = original.recurrenceStartTime ? new Date(original.recurrenceStartTime) : null;
+    this.recurrenceCase = original.recurrenceCase;
+    this.recurrenceRule = original.recurrenceRule;
+    this.parentEvent = original.parentEvent;
+  }
+
+  /**
+   * Copy editable data between events. Can be used to make temporary copies
+   * to see how they have been changed by editing, or in case you actually
+   * end up wanting to change a different event, e.g. by applying changes
+   * to the rest of the series. Does not copy recurrence data; use
+   * `confirmAndChangeRecurrenceRule` to update edited recurrence data.
+   */
+  copyEditableFieldsFrom(original: Event) {
     this.copyFromRecurrenceMaster(original);
     this.startTime = original.startTime ? new Date(original.startTime) : null;
     this.endTime = original.endTime ? new Date(original.endTime) : null;
@@ -276,7 +290,19 @@ export class Event extends Observable {
     return true;
   }
 
-  get seriesStatus() {
+  /**
+   * Calculates the position of this instance in a recurring series.
+   * "none" - event isn't an instance or exception
+   * "only" - event is the only instance or exception remaining
+   * "first" - event is the earliest instance or exception remaining
+   * "last" - event is the last instance, but there may be more exceptions
+   * "middle" - event is an instance, but none of the above apply
+   * In particular:
+   * "only" - don't delete the event, delete the master instead
+   * "first" - offer to edit the whole series
+   * "middle" - offer to edit the remainder of the series
+   */
+  get seriesStatus(): "none" | "only" | "first" | "last" | "middle" {
     // Normally the parent of an instance would always have a
     // recurrence rule, but this might get removed during saving,
     // and would cause Svelte to crash if we didn't handle it.
@@ -285,9 +311,10 @@ export class Event extends Observable {
       return "none";
     }
     let pos = this.parentEvent.instances.indexOf(this);
+    let slice = this.parentEvent.instances.contents.slice(pos + 1);
     let isFirst = this.parentEvent.instances.getIndexRange(0, pos).every(instance => instance === null);
-    let isLast = (rule.count != Infinity || rule.endDate) && this.parentEvent.instances.contents.slice(pos + 1).every(instance => instance === null || instance?.dbID) && !rule.getOccurrenceByIndex(this.parentEvent.instances.length + 1);
-    return isLast ? isFirst ? "only" : "last" : isFirst ? "first" : "middle";
+    let isLast = (rule.count != Infinity || rule.endDate) && slice.every(instance => instance === null || instance?.dbID) && !rule.getOccurrenceByIndex(this.parentEvent.instances.length + 1);
+    return isLast ? isFirst && slice.every(instance => instance === null) ? "only" : "last" : isFirst ? "first" : "middle";
   }
 
   /**
