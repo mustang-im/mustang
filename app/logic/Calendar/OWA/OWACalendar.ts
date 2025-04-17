@@ -1,22 +1,14 @@
 import { Calendar } from "../Calendar";
-import type { Event } from "../Event";
-import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import type { Participant } from "../Participant";
 import { OWAEvent } from "./OWAEvent";
+import { OWAIncomingInvitation } from "./OWAIncomingInvitation";
 import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
 import OWAGetUserAvailabilityRequest from "./Request/OWAGetUserAvailabilityRequest";
 import type { OWAEMail } from "../../Mail/OWA/OWAEMail";
-import OWACreateItemRequest from "../../Mail/OWA/Request/OWACreateItemRequest";
 import { owaFindEventsRequest, owaGetCalendarEventsRequest, owaGetEventsRequest } from "./Request/OWAEventRequests";
-import { assert, ensureArray, NotSupported } from "../../util/util";
+import { ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
-
-const ResponseTypes: Record<InvitationResponseInMessage, string> = {
-  [InvitationResponse.Accept]: "AcceptItem",
-  [InvitationResponse.Tentative]: "TentativelyAcceptItem",
-  [InvitationResponse.Decline]: "DeclineItem",
-};
 
 export class OWACalendar extends Calendar {
   readonly protocol: string = "calendar-owa";
@@ -30,25 +22,13 @@ export class OWACalendar extends Calendar {
     return new OWAEvent(this, parentEvent);
   }
 
-  async updateFromResponse(invitationMessage: InvitationMessage, response: Event) {
-    let event = this.events.find(p => p.calUID == response.calUID);
-    await this.getEvents([event.itemID], new ArrayColl<OWAEvent>());
+  getIncomingInvitationFor(message: OWAEMail) {
+    return new OWAIncomingInvitation(this, message);
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
     let results = await this.account.callOWA(new OWAGetUserAvailabilityRequest(participants, from, to));
     return participants.map((participant, i) => ({ participant, availability: ensureArray(results.Responses[i].CalendarView.Items).map(event => ({ from: new Date(event.Start + "Z"), to: new Date(event.End + "Z"), free: event.FreeBusyType == "Free" })) }));
-  }
-
-  async respondToInvitation(email: OWAEMail, response: InvitationResponseInMessage) {
-    assert(email.invitationMessage == InvitationMessage.Invitation, "Only invitations can be responded to");
-    let request = new OWACreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
-    request.addField(ResponseTypes[response], "ReferenceItemId", {
-      __type: "ItemId:#Exchange",
-      Id: email.itemID,
-    });
-    await this.account.callOWA(request);
-    await email.deleteMessageLocally(); // Exchange deletes the message from the inbox
   }
 
   protected getEventByItemID(id: string): OWAEvent | void {
@@ -87,7 +67,7 @@ export class OWACalendar extends Calendar {
     }
   }
 
-  protected async getEvents(eventIDs: string[], events: ArrayColl<OWAEvent>, parentEvent?: OWAEvent) {
+  async getEvents(eventIDs: string[], events: ArrayColl<OWAEvent>, parentEvent?: OWAEvent) {
     if (!eventIDs.length) {
       return;
     }
