@@ -213,6 +213,15 @@ value,
 .font-normal {
   font-size: 16px;
 }
+.mobile .font-smallest {
+  font-size: 14px;
+}
+.mobile .font-small {
+  font-size: 16px;
+}
+.mobile .font-normal {
+  font-size: 18px;
+}
 
 input[type="number"],
 input[type="password"],
