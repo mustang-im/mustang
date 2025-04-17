@@ -1,24 +1,17 @@
 import { Calendar } from "../Calendar";
-import type { Event } from "../Event";
-import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import type { Participant } from "../Participant";
 import { ActiveSyncEvent, fromCompact } from "./ActiveSyncEvent";
+import { ActiveSyncIncomingInvitation } from "./ActiveSyncIncomingInvitation";
 import type { ActiveSyncAccount, ActiveSyncPingable } from "../../Mail/ActiveSync/ActiveSyncAccount";
 import type { ActiveSyncEMail } from "../../Mail/ActiveSync/ActiveSyncEMail";
 import { kMaxCount } from "../../Mail/ActiveSync/ActiveSyncFolder";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Lock } from "../../util/Lock";
-import { assert, ensureArray, NotSupported } from "../../util/util";
+import { ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 const kHalfHour = 30 * 60 * 1000; // milliseconds
-
-const ActiveSyncResponse: Record<InvitationResponseInMessage, number> = {
-  [InvitationResponse.Accept]: 1,
-  [InvitationResponse.Tentative]: 2,
-  [InvitationResponse.Decline]: 3,
-};
 
 export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
   readonly protocol: string = "calendar-activesync";
@@ -40,6 +33,10 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
 
   newEvent(parentEvent?: ActiveSyncEvent): ActiveSyncEvent {
     return new ActiveSyncEvent(this, parentEvent);
+  }
+
+  getIncomingInvitationFor(message: ActiveSyncEMail) {
+    return new ActiveSyncIncomingInvitation(this, message);
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
@@ -65,24 +62,6 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
       }));
       return { participant, availability };
     }));
-  }
-
-  async respondToInvitation(email: ActiveSyncEMail, response: InvitationResponseInMessage) {
-    assert(email.invitationMessage == InvitationMessage.Invitation, "Only invitations can be responded to");
-    let request = {
-      Request: {
-        UserResponse: ActiveSyncResponse[response],
-        CollectionId: email.folder.id,
-        RequestId: email.serverID,
-      },
-    };
-    await this.account.callEAS("MeetingResponse", request);
-    await email.event.sendInvitationResponse(response, this.account); // needs 16.x to do this automatically
-    await email.deleteMessageLocally(); // Exchange deletes the message from the inbox
-  }
-
-  async updateFromResponse(scheduling: InvitationMessage, response: Event) {
-    await this.listEvents();
   }
 
   /**
