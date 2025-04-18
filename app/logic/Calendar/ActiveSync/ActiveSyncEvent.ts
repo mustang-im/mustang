@@ -176,7 +176,7 @@ export class ActiveSyncEvent extends Event {
     }
   }
 
-  async makeExclusion(indices: number[]) {
+  async makeExclusions(indices: number[]) {
     await this.saveFields(this.toFields(indices.map(index => ({
       Exception: {
         Deleted: "1",
