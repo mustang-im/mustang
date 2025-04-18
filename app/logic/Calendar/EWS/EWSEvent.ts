@@ -304,6 +304,23 @@ export class EWSEvent extends Event {
     }
   }
 
+  async makeExclusions(indices: number[]) {
+    let request = {
+      m$DeleteItem: {
+        m$ItemIds: indices.map(index => ({
+          t$OccurrenceItemId: {
+            RecurringMasterId: this.parentEvent.itemID,
+            InstanceIndex: index + 1,
+          },
+        })),
+        DeleteType: "MoveToDeletedItems",
+        SendMeetingCancellations: "SendToAllAndSaveCopy",
+      },
+    };
+    await this.calendar.account.callEWS(request);
+    await super.makeExclusions(indices);
+  }
+
   async respondToInvitation(response: Responses): Promise<void> {
     assert(this.response > ResponseType.Organizer, "Only invitations can be responded to");
     let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});

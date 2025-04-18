@@ -79,6 +79,7 @@
   import { arrayRemove } from '../../../logic/util/util';
 
   export let event: Event;
+  export let showRepeat: boolean;
 
   let frequency = event.recurrenceRule?.frequency || Frequency.Daily;
   let interval = event.recurrenceRule?.interval || 1;
@@ -162,14 +163,11 @@
 
   function onFrequencyChanged() {
     if (frequency == Frequency.None) {
-      event.recurrenceCase = RecurrenceCase.Normal;
-      event.recurrenceRule = null;
-    } else if (event.recurrenceCase == RecurrenceCase.Normal) {
-      event.recurrenceCase = RecurrenceCase.Master;
-    } // else: leave unchanged
+      showRepeat = false;
+    }
   }
 
-  function newRecurrenceRule(): RecurrenceRule {
+  export function newRecurrenceRule(): RecurrenceRule {
     let init: RecurrenceInit = { startDate: event.startTime, frequency, interval };
     if (end == "count") {
       init.count = count;
@@ -177,9 +175,7 @@
       init.endDate = endDate;
     }
     if (frequency == Frequency.Weekly) {
-      if (weekdays.length > 1) {
-        init.weekdays = weekdays;
-      }
+      init.weekdays = weekdays;
     } else if (frequency == Frequency.Monthly || frequency == Frequency.Yearly) {
       init.week = week;
       if (week) {
@@ -187,35 +183,6 @@
       }
     }
     return new RecurrenceRule(init);
-  }
-
-  // TODO Call from save()
-  export function confirmAndChangeRule(): boolean {
-    if (event.recurrenceCase == RecurrenceCase.Normal) {
-      if (!event.recurrenceRule) {
-        // Never a recurring event.
-        return true;
-      }
-      if (!confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
-        return false;
-      }
-      event.recurrenceRule = null;
-    } else {
-      let rule = newRecurrenceRule();
-      if (event.recurrenceRule) {
-        if (event.startTime.getTime() == event.recurrenceRule.startDate.getTime() &&
-            rule.getCalString() == event.recurrenceRule.getCalString()) {
-          // Rule hasn't actually changed.
-          return true;
-        }
-        if (!confirm($t`This change will reset all of your series to default values.`)) {
-          return false;
-        }
-      }
-      event.recurrenceRule = rule;
-    }
-    event.clearExceptions();
-    return true;
   }
 </script>
 
