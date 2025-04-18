@@ -20,18 +20,18 @@
         label={$t`Confirm *=> Confirm to attend the meeting`}
         onClick={onAccept}
         icon={AcceptIcon}
-        classes="accept" />
+        classes="accept font-normal" />
       <Button
         label={$t`Reject *=> Decline to attend the meeting`}
         onClick={onDecline}
         icon={DeclineIcon}
-        classes="decline secondary" />
+        classes="decline secondary font-normal" />
       <ButtonMenu buttonIcon={ChevronDownIcon}>
         <MenuItem
           label={$t`Maybe *=> Maybe attend the meeting`}
           onClick={onTentative}
           icon={MaybeIcon}
-          classes="maybe" />
+          classes="maybe font-normal" />
       </ButtonMenu>
     </hbox>
   {:else if message.scheduling == Scheduling.Accepted}
@@ -41,18 +41,18 @@
         icon={AcceptIcon}
         selected={true}
         disabled={true}
-        classes="accept done" />
+        classes="accept done font-normal" />
       <ButtonMenu buttonIcon={ChevronDownIcon}>
         <MenuItem
           label={$t`Change to Reject *=> not attend the meeting`}
           onClick={onDecline}
           icon={DeclineIcon}
-          classes="decline" />
+          classes="decline font-normal" />
         <MenuItem
           label={$t`Change to Maybe *=> Maybe attend the meeting`}
           onClick={onTentative}
           icon={MaybeIcon}
-          classes="maybe" />
+          classes="maybe font-normal" />
       </ButtonMenu>
     </hbox>
   {:else if message.scheduling == Scheduling.Declined}
@@ -62,18 +62,18 @@
         icon={DeclineIcon}
         selected={true}
         disabled={true}
-        classes="decline done" />
+        classes="decline done font-normal" />
       <ButtonMenu buttonIcon={ChevronDownIcon}>
         <MenuItem
           label={$t`Change to Accept *=> attend the meeting`}
           onClick={onAccept}
           icon={AcceptIcon}
-          classes="accept" />
+          classes="accept font-normal" />
         <MenuItem
           label={$t`Change to Maybe *=> Maybe attend the meeting`}
           onClick={onTentative}
           icon={MaybeIcon}
-          classes="maybe" />
+          classes="maybe font-normal" />
       </ButtonMenu>
     </hbox>
   {/if}
@@ -119,11 +119,9 @@
   }
   .buttons > :global(button) {
     margin-inline-start: 12px;
-    font-size: 15px;
   }
   .buttons :global(button.menu-button) {
     margin-inline-start: 4px;
-    font-size: 15px;
   }
   .buttons :global(button .label) {
     margin-inline-end: 6px;

@@ -1,5 +1,5 @@
 <grid class="manual-config" full={stepFull}>
-  <hbox class="header"></hbox>
+  <hbox class="header font-small"></hbox>
   <hbox class="label">{$t`Protocol`}</hbox>
   <hbox class="label">{$t`URL`}</hbox>
   {#if stepFull}
@@ -8,7 +8,7 @@
     <hbox class="label">{$t`Password`}</hbox>
   {/if}
 
-  <hbox class="header">
+  <hbox class="header font-small">
     <hbox class="direction">
       <ServerIcon size={14} />
     </hbox>
@@ -168,7 +168,6 @@
     padding-block-start: 8px;
     padding-block-end: 8px;
     padding-inline-start: 8px;
-    font-size: 14px;
     border-bottom: 1px solid var(--border);
   }
   grid :global(> *) {

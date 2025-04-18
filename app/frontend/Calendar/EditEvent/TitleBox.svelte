@@ -1,5 +1,5 @@
 <hbox class="title">
-  <input type="text" placeholder={$t`Title - Enter the topic of the meeting`} bind:value={event.title} />
+  <input type="text" placeholder={$t`Title - Enter the topic of the meeting`} bind:value={event.title} class="font-normal"/>
 </hbox>
 
 <script lang="ts">
@@ -13,7 +13,6 @@
   .title input {
     font-size: 100%;
     font-weight: bold;
-    font-size: 16px;
     padding: 6px 12px;
     max-width: 40em;
   }
