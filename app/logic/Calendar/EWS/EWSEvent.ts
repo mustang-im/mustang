@@ -35,8 +35,6 @@ const RecurrenceType = {
   DailyRecurrence: Frequency.Daily,
 };
 
-const gTimeZone = IANAToWindowsTimezone[Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
-
 export class EWSEvent extends Event {
   calendar: EWSCalendar;
   parentEvent: EWSEvent;
@@ -75,7 +73,7 @@ export class EWSEvent extends Event {
     if (xmljs.DueDate) {
       this.endTime = sanitize.date(xmljs.DueDate);
     }
-    this.timezone = fromWindowsZone(xmljs.StartTimezoneId);
+    this.timezone = fromWindowsZone(xmljs.StartTimeZoneId);
     this.allDay = sanitize.boolean(xmljs.IsAllDayEvent, false);
     if (xmljs.Recurrence) {
       this.recurrenceCase = RecurrenceCase.Master;
@@ -182,8 +180,9 @@ export class EWSEvent extends Event {
     // No support for optional attendees in mustang;
     // all attendees get converted to be required for now.
     request.addField("CalendarItem", "OptionalAttendees", null, "calendar:OptionalAttendees");
-    request.addField("CalendarItem", "StartTimeZone", { Id: gTimeZone }, "calendar:StartTimeZone");
-    request.addField("CalendarItem", "EndTimeZone", { Id: gTimeZone }, "calendar:EndTimeZone");
+    let timezone = IANAToWindowsTimezone[this.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
+    request.addField("CalendarItem", "StartTimeZone", { Id: timezone }, "calendar:StartTimeZone");
+    request.addField("CalendarItem", "EndTimeZone", { Id: timezone }, "calendar:EndTimeZone");
     let response = await this.calendar.account.callEWS(request);
     this.itemID = sanitize.nonemptystring(response.Items.CalendarItem.ItemId.Id);
     if (this.calUID) {
