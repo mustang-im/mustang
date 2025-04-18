@@ -201,7 +201,7 @@ export class Event extends Observable {
       this.calUID != this.unedited.calUID ||
       this.startTime?.getTime() != this.unedited.startTime?.getTime() ||
       this.endTime?.getTime() != this.unedited.endTime?.getTime() ||
-      this.timezone != this.unedited.timezone  && !!this.unedited.timezone ||
+      this.timezone != this.unedited.timezone ||
       this.allDay != this.unedited.allDay ||
       this.title != this.unedited.title ||
       this.descriptionText != this.unedited.descriptionText ||
@@ -221,6 +221,7 @@ export class Event extends Observable {
   }
 
   startEditing() {
+    this.timezone ||= Intl.DateTimeFormat().resolvedOptions().timeZone;
     this.unedited = this.calendar.newEvent();
     this.unedited.copyFrom(this);
   }
