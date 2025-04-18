@@ -1,5 +1,5 @@
 <vbox class="saved-search">
-  <input type="text" bind:value={name} placeholder={$t`Name of the folder`} />
+  <input type="text" bind:value={name} placeholder={$t`Name of the folder`} class="font-normal" />
   <hbox class="buttons">
     <Button
       icon={SaveIcon}
@@ -40,7 +40,6 @@
   input {
     margin: 12px;
     padding: 2px 4px;
-    font-size: 16px;
   }
   .buttons {
     margin: 12px;
