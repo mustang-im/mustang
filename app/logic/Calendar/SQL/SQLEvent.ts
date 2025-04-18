@@ -19,13 +19,13 @@ export class SQLEvent extends Event {
         let insert = await (await getDatabase()).run(sql`
           INSERT INTO event (
             title, descriptionText, descriptionHTML,
-            startTime, endTime, allDay,
+            startTime, endTime, allDay, startTimeTZ,
             calUID, responseToOrganizer, pID, calendarID,
             recurrenceRule, recurrenceMasterEventID,
             recurrenceStartTime, recurrenceIsException
           ) VALUES (
             ${event.title}, ${event.descriptionText}, ${event.descriptionHTML},
-            ${event.startTime.toISOString()}, ${event.endTime.toISOString()}, ${event.allDay ? 1 : 0},
+            ${event.startTime.toISOString()}, ${event.endTime.toISOString()}, ${event.allDay ? 1 : 0}, ${event.timezone},
             ${event.calUID}, ${event.response}, ${event.pID}, ${event.calendar?.dbID},
             ${event.recurrenceRule?.getCalString(event.allDay)}, ${event.parentEvent?.dbID},
             ${event.recurrenceStartTime?.toISOString()},
@@ -41,6 +41,7 @@ export class SQLEvent extends Event {
             startTime = ${event.startTime.toISOString()},
             endTime = ${event.endTime.toISOString()},
             allDay = ${event.allDay ? 1 : 0},
+            startTimeTZ = ${event.timezone},
             calUID = ${event.calUID},
             responseToOrganizer = ${event.response},
             pID = ${event.pID},
@@ -120,7 +121,7 @@ export class SQLEvent extends Event {
       row = await (await getDatabase()).get(sql`
         SELECT
           title, descriptionText, descriptionHTML,
-          startTime, endTime, allDay,
+          startTime, endTime, allDay, startTimeTZ,
           calUID, responseToOrganizer, pID, calendarID,
           recurrenceRule, recurrenceMasterEventID, recurrenceStartTime
         FROM event
@@ -137,6 +138,7 @@ export class SQLEvent extends Event {
     event.startTime = sanitize.date(row.startTime);
     event.endTime = sanitize.date(row.endTime, event.startTime);
     event.allDay = sanitize.boolean(row.allDay, false);
+    event.timezone = sanitize.string(row.startTimeTZ, null);
     event.calUID = row.calUID;
     event.response = sanitize.integerRange(row.responseToOrganizer, 0, 5);
     event.pID = row.pID;
@@ -210,7 +212,7 @@ export class SQLEvent extends Event {
     let rows = await (await getDatabase()).all(sql`
       SELECT
         title, descriptionText, descriptionHTML,
-        startTime, endTime, allDay,
+        startTime, endTime, allDay, startTimeTZ,
         calUID, responseToOrganizer, pID, id,
         recurrenceRule, recurrenceMasterEventID, recurrenceStartTime
       FROM event
