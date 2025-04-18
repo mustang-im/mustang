@@ -501,7 +501,7 @@ export class Event extends Observable {
     }
     if (exclusions.length) {
       await master.makeExclusions(exclusions);
-    } else {
+    } else if (!this.isNew) {
       await this.calendar.storage.deleteEvent(this);
     }
     await master.save();

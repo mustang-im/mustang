@@ -79,6 +79,7 @@
   import { arrayRemove } from '../../../logic/util/util';
 
   export let event: Event;
+  export let showRepeat: boolean;
 
   let frequency = event.recurrenceRule?.frequency || Frequency.Daily;
   let interval = event.recurrenceRule?.interval || 1;
@@ -162,11 +163,8 @@
 
   function onFrequencyChanged() {
     if (frequency == Frequency.None) {
-      event.recurrenceCase = RecurrenceCase.Normal;
-      event.recurrenceRule = null;
-    } else if (event.recurrenceCase == RecurrenceCase.Normal) {
-      event.recurrenceCase = RecurrenceCase.Master;
-    } // else: leave unchanged
+      showRepeat = false;
+    }
   }
 
   export function newRecurrenceRule(): RecurrenceRule {
@@ -177,9 +175,7 @@
       init.endDate = endDate;
     }
     if (frequency == Frequency.Weekly) {
-      if (weekdays.length > 1) {
-        init.weekdays = weekdays;
-      }
+      init.weekdays = weekdays;
     } else if (frequency == Frequency.Monthly || frequency == Frequency.Yearly) {
       init.week = week;
       if (week) {

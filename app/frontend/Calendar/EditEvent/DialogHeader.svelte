@@ -149,7 +149,7 @@
 
   $: event.startEditing(); // not `$event`
   $: canSave = event && $event.title && $event.startTime && $event.endTime &&
-      event.startTime.getTime() <= event.endTime.getTime() && $event.hasChanged();
+      event.startTime.getTime() <= event.endTime.getTime() && (repeatBox || $event.hasChanged());
   $: seriesStatus = event.seriesStatus;
 
   function confirmAndChangeRecurrenceRule(): boolean {
@@ -220,6 +220,7 @@
   async function onChangeForward() {
     let master = event.calendar.newEvent();
     master.copyEditableFieldsFrom(event);
+    master.calUID = null;
     master.recurrenceRule = repeatBox.newRecurrenceRule();
     master.recurrenceCase = RecurrenceCase.Master;
     master.fillRecurrences(new Date(Date.now() + 1e11));

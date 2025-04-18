@@ -19,7 +19,7 @@
         </Section>
         {#if showRepeat}
           <Section label={$t`Repeat`} icon={RepeatIcon}>
-            <RepeatBox {event} bind:this={repeatBox}/>
+            <RepeatBox {event} bind:this={repeatBox} bind:showRepeat/>
           </Section>
         {/if}
         {#if showReminder}
@@ -93,7 +93,7 @@
 
   export let event: Event;
 
-  $: showRepeat = $event.recurrenceCase != RecurrenceCase.Normal;
+  $: showRepeat = false;
   $: showReminder = !!$event.alarm;
   $: showParticipants = $event.participants.hasItems;
   $: showLocation = !!$event.location;
@@ -103,7 +103,6 @@
   let repeatBox: RepeatBox;
 
   function expandRepeat(): void {
-    event.recurrenceCase = RecurrenceCase.Master;
   }
 
   const kDefaultReminderMins = 5;

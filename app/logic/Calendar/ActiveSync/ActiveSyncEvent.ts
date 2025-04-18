@@ -80,7 +80,7 @@ export class ActiveSyncEvent extends Event {
     let frequency = kRecurrenceTypes[wbxmljs.Type];
     let interval = sanitize.integer(wbxmljs.Interval, 1);
     let weekdays = extractWeekdays(wbxmljs.DayOfWeek);
-    let week = sanitize.integer(wbxmljs.DayOfWeek, 0);
+    let week = sanitize.integer(wbxmljs.WeekOfMonth, 0);
     let first = sanitize.integer(wbxmljs.FirstDayOfWeek, Weekday.Monday);
     return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
   }
@@ -192,7 +192,7 @@ export class ActiveSyncEvent extends Event {
     await super.deleteFromServer();
   }
 
-  async makeExclusion(indices: number[]) {
+  async makeExclusions(indices: number[]) {
     await this.saveFields(this.toFields(indices.map(index => ({
       Exception: {
         Deleted: "1",
