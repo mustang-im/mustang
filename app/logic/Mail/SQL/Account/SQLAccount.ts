@@ -7,41 +7,36 @@ import { assert } from "../../../util/util";
 import sql from "../../../../../lib/rs-sqlite";
 
 export class SQLAccount {
-  static async save(acc: Account, type: AccountType): Promise<number> {
+  static async save(acc: Account, type: AccountType) {
     if (acc instanceof MailAccount && acc.outgoing) {
       acc.outgoing.emailAddress ??= acc.emailAddress;
       await SQLAccount.save(acc.outgoing as any as Account, type);
     }
-    if (!acc.dbID) {
-      let existing = await (await getDatabase()).get(sql`
-        SELECT
-          id
-        FROM account
-        WHERE
-          idStr = ${acc.id}
-        `) as any;
-      if (existing?.id) {
-        acc.dbID = existing.id;
-      }
-    }
-    if (!acc.dbID) {
-      let insert = await (await getDatabase()).run(sql`
+    let existing = await (await getDatabase()).get(sql`
+      SELECT
+        protocol
+      FROM account
+      WHERE
+        idStr = ${acc.id}
+      `) as any;
+    if (!existing) {
+      await (await getDatabase()).run(sql`
         INSERT INTO account (
-          idStr, type, protocol, configJSON
+          idStr, type, protocol, mainAccountIDStr, configJSON
         ) VALUES (
-          ${acc.id}, ${type}, ${acc.protocol},
+          ${acc.id}, ${type}, ${acc.protocol}, ${acc.mainAccount?.id},
           ${JSON.stringify(acc.toConfigJSON(), null, 2)}
         )`);
-      acc.dbID = insert.lastInsertRowid;
     } else {
+      assert(existing.protocol == acc.protocol, "Protocol in accounts DB does not match");
       await (await getDatabase()).run(sql`
         UPDATE account SET
+          mainAccountIDStr = ${acc.mainAccount?.id},
           configJSON = ${JSON.stringify(acc.toConfigJSON(), null, 2)}
-        WHERE id = ${acc.dbID}
+        WHERE idStr = ${acc.id}
         `);
     }
     await setPassword("account." + acc.id, acc.password);
-    return acc.dbID as number;
   }
 
   /** Also deletes all folders and messages in this account */

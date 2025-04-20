@@ -115,7 +115,7 @@ export class Account extends Observable {
     this.username = sanitize.string(json.username, null);
     this.authMethod = sanitize.integerRange(json.authMethod, 0, 20);
     this.url = sanitize.url(json.url, null);
-    this.realname = sanitize.label(json.realname, appGlobal.me.name);
+    this.realname = sanitize.label(json.realname, appGlobal.me.name ?? "");
     this.name = sanitize.label(json.name, this.username);
 
     this.acceptBrokenTLSCerts = sanitize.boolean(json.acceptBrokenTLSCerts, false);

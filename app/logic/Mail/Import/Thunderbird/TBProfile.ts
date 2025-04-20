@@ -1,5 +1,7 @@
 import type { MailAccount } from "../../MailAccount";
+import type { Account } from "../../../Abstract/Account";
 import { AuthMethod } from "../../../Abstract/Account";
+import { TLSSocketType } from "../../../Abstract/TCPAccount";
 import { MailIdentity } from "../../MailIdentity";
 import { SMTPAccount } from "../../SMTP/SMTPAccount";
 import { IMAPAccount } from "../../IMAP/IMAPAccount";
@@ -9,7 +11,6 @@ import { OWAAccount } from "../../OWA/OWAAccount";
 import { ActiveSyncAccount } from "../../ActiveSync/ActiveSyncAccount";
 import { newAccountForProtocol } from "../../AccountsList/MailAccounts";
 import { kStandardPorts } from "../../AutoConfig/configInfo";
-import type { Account } from "../../../Abstract/Account";
 import { OAuth2URLs } from "../../../Auth/OAuth2URLs";
 import { OAuth2 } from "../../../Auth/OAuth2";
 import { appGlobal } from "../../../app";

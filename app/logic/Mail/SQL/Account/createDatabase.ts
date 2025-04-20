@@ -8,8 +8,6 @@ export const accountsDatabaseSchema = sql`
   -- Each data-type-specific database also has a dummy entry for the account,
   -- but the data here is authorative. It will sync from here to the other DBs.
   CREATE TABLE "account" (
-    -- Not important. Will differ from the other DB files.
-    "id" INTEGER PRIMARY KEY,
     -- Same ID as in the other DB files
     "idStr" TEXT not null UNIQUE,
     -- e.g. 1 = mail or 2 = chat or calendar etc.
@@ -19,11 +17,11 @@ export const accountsDatabaseSchema = sql`
     -- Must fit to type"
     "protocol" TEXT not null,
     -- Account.mainAccount
-    "mainAccountID" integer default null,
+    "mainAccountIDStr" integer default null,
 
     "configJSON" TEXT default null,
-    FOREIGN KEY (mainAccountID)
-      REFERENCES account (id)
+    FOREIGN KEY (mainAccountIDStr)
+      REFERENCES account (idStr)
       ON DELETE CASCADE
   );
 `;
