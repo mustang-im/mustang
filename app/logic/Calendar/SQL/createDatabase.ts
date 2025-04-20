@@ -4,21 +4,7 @@ export const calendarDatabaseSchema = sql`
   CREATE TABLE "calendar" (
     "id" INTEGER PRIMARY KEY,
     "idStr" TEXT not null UNIQUE,
-    "name" TEXT not null,
-    "protocol" TEXT not null,
-    "url" TEXT default null,
-    "username" TEXT default null,
-    -- Email address to use when sending invitations to other participants.
-    -- Optional. Defaults to the user's default email address.
-    "from" TEXT default null,
-    -- Background color to use when displaying events from this calendar.
-    -- Can be overridden by a specific event.
-    -- Format: HTML hex code without "#"
-    -- Optional. Defaults to the default color for events.
-    "color" TEXT default null,
-    "configJSON" TEXT default null,
-    "workspace" TEXT default null,
-    "syncState" ANY default null
+    "protocol" TEXT not null
   );
 
   --- Meetings scheduled at a specific date/time

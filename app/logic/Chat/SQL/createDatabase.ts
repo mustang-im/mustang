@@ -63,19 +63,10 @@ export const chatDatabaseSchema = sql`
       ON DELETE CASCADE
   );
 
+  -- Must match the data in accounts DB
   CREATE TABLE "chatAccount" (
-    -- Same ID as in the preferences file
     "id" INTEGER PRIMARY KEY,
     "idStr" TEXT not null UNIQUE,
-    "name" TEXT not null,
-    "protocol" TEXT not null,
-    "username" TEXT default null,
-    "realname" TEXT not null,
-    "hostname" TEXT default null,
-    "port" INTEGER default null,
-    "tls" INTEGER default 0,
-    "url" TEXT default null,
-    "configJSON" TEXT default null,
-    "workspace" TEXT default null
+    "protocol" TEXT not null
   );
 `;

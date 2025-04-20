@@ -35,6 +35,13 @@ export class ChatAccount extends TCPAccount {
     await this.storage?.deleteAccount(this);
     appGlobal.chatAccounts.remove(this);
   }
+
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    if (!appGlobal.me.name && this.realname) {
+      appGlobal.me.name = this.realname;
+    }
+  }
 }
 
 export interface ChatAccountStorage {

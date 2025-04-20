@@ -1,16 +1,16 @@
 import type { Calendar } from "../Calendar";
+import { AccountType, SQLAccount } from "../../Mail/SQL/Account/SQLAccount";
 import { getDatabase } from "./SQLDatabase";
 import { newCalendarForProtocol } from "../AccountsList/Calendars";
 import { SQLCalendarStorage } from "./SQLCalendarStorage";
-import { getWorkspaceByID } from "../../Abstract/Workspace";
 import { backgroundError } from "../../../frontend/Util/error";
-import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 
 export class SQLCalendar {
   static async save(cal: Calendar) {
+    await SQLAccount.save(cal, AccountType.Calendar);
+
     if (!cal.dbID) {
       let existing = await (await getDatabase()).get(sql`
         SELECT
@@ -26,67 +26,49 @@ export class SQLCalendar {
     if (!cal.dbID) {
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO calendar (
-          idStr, name, protocol, url, username,
-          workspace, syncState, configJSON
+          idStr, protocol
         ) VALUES (
-          ${cal.id}, ${cal.name}, ${cal.protocol}, ${cal.url}, ${cal.username},
-          ${cal.workspace?.id}, ${cal.syncState},
-          ${JSON.stringify(cal.toConfigJSON(), null, 2)}
+          ${cal.id}, ${cal.protocol}
         )`);
       cal.dbID = insert.lastInsertRowid;
-    } else {
-      await (await getDatabase()).run(sql`
-        UPDATE calendar SET
-          name = ${cal.name}, url = ${cal.url}, username = ${cal.username},
-          workspace = ${cal.workspace?.id}, syncState = ${cal.syncState},
-          configJSON = ${JSON.stringify(cal.toConfigJSON(), null, 2)}
-        WHERE id = ${cal.dbID}
-        `);
     }
   }
 
   /** Also deletes all persons and groups in this address book */
-  static async deleteIt(calendar: Calendar) {
-    assert(calendar.dbID, "Need calendar DB ID to delete");
+  static async deleteIt(cal: Calendar) {
+    await SQLAccount.deleteIt(cal);
     await (await getDatabase()).run(sql`
       DELETE FROM calendar
-      WHERE id = ${calendar.dbID}
+      WHERE id = ${cal.dbID}
       `);
   }
 
-  static async read(dbID: number, cal: Calendar) {
-    assert(dbID, "Need calendar DB ID to read it");
+  static async read(idStr: string, protocol: string, configJSON: string, cal: Calendar) {
+    await SQLAccount.read(idStr, protocol, configJSON, cal);
+
     let row = await (await getDatabase()).get(sql`
       SELECT
-        idStr, name, protocol, url, username,
-        workspace, syncState, configJSON
+        id, protocol
       FROM calendar
-      WHERE id = ${dbID}
+      WHERE idStr = ${idStr}
       `) as any;
-    cal.dbID = dbID;
-    (cal.id as any) = sanitize.alphanumdash(row.idStr);
-    cal.name = sanitize.label(row.name);
-    assert(cal.protocol == sanitize.alphanumdash(row.protocol), "Calendar object of wrong type passed in");
-    cal.username = sanitize.string(row.username, null);
-    cal.url = sanitize.url(row.url, null);
-    cal.fromConfigJSON(sanitize.json(row.configJSON, {}));
-    cal.workspace = getWorkspaceByID(sanitize.string(row.workspace, null));
-    cal.syncState = row.syncState;
+    if (row.id) {
+      cal.dbID = row.id;
+    } else {
+      // When the type-specific DB has been deleted, but not the accounts DB.
+      await SQLCalendar.save(cal);
+    }
     cal.storage = new SQLCalendarStorage();
     return cal;
   }
 
   static async readAll(): Promise<ArrayColl<Calendar>> {
-    let rows = await (await getDatabase()).all(sql`
-      SELECT
-        id, protocol
-      FROM calendar
-      `) as any;
+    let rows = await SQLAccount.readAll(AccountType.Calendar);
     let calendars = new ArrayColl<Calendar>();
     for (let row of rows) {
       try {
         let calendar = newCalendarForProtocol(row.protocol);
-        await SQLCalendar.read(row.id, calendar);
+        await SQLCalendar.read(row.idStr, row.protocol, row.configJSON, calendar);
         calendars.add(calendar);
       } catch (ex) {
         backgroundError(ex);

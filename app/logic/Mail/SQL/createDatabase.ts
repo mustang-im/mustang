@@ -158,7 +158,6 @@ export const mailDatabaseSchema = sql`
   -- The email account of our user
   -- Must match the data in accounts DB
   CREATE TABLE "emailAccount" (
-    -- Same ID as in the preferences file
     "id" INTEGER PRIMARY KEY,
     "idStr" TEXT not null UNIQUE,
     "protocol" TEXT not null

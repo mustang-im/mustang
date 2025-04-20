@@ -44,6 +44,10 @@ export class SQLMailAccount {
   /** Also deletes all folders and messages in this account */
   static async deleteIt(acc: MailAccount) {
     await SQLAccount.deleteIt(acc);
+    await (await getDatabase()).run(sql`
+      DELETE FROM emailAccount
+      WHERE id = ${acc.dbID}
+      `);
   }
 
   static async read(idStr: string, protocol: string, configJSON: string, acc: MailAccount) {

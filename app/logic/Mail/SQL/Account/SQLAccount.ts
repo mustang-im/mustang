@@ -77,7 +77,7 @@ export class SQLAccount {
 export enum AccountType {
   Mail = 1,
   Chat = 2,
-  Contacts = 3,
+  Addressbook = 3,
   Calendar = 4,
   Files = 5,
   Apps = 6,
