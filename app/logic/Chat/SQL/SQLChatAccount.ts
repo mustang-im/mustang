@@ -1,19 +1,16 @@
 import type { ChatAccount } from "../ChatAccount";
+import { AccountType, SQLAccount } from "../../Mail/SQL/Account/SQLAccount";
 import { getDatabase } from "./SQLDatabase";
 import { newChatAccountForProtocol } from "../AccountsList/ChatAccounts";
 import { SQLChatStorage } from "./SQLChatStorage";
-import { getPassword, setPassword, deletePassword } from "../../Auth/passwordStore";
-import { TLSSocketType } from "../../Abstract/TCPAccount";
-import { getWorkspaceByID } from "../../Abstract/Workspace";
-import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
-import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 
 export class SQLChatAccount {
   static async save(acc: ChatAccount) {
+    await SQLAccount.save(acc, AccountType.Chat);
+
     if (!acc.dbID) {
       let existing = await (await getDatabase()).get(sql`
         SELECT
@@ -29,84 +26,49 @@ export class SQLChatAccount {
     if (!acc.dbID) {
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO chatAccount (
-          idStr, name, protocol,
-          username,
-          hostname, port, tls, url,
-          userRealname, workspace, configJSON
+          idStr, protocol
         ) VALUES (
-          ${acc.id}, ${acc.name}, ${acc.protocol},
-          ${acc.username},
-          ${acc.hostname}, ${acc.port}, ${acc.tls}, ${acc.url},
-          ${acc.realname}, ${acc.workspace?.id},
-          ${JSON.stringify(acc.toConfigJSON(), null, 2)}
+          ${acc.id}, ${acc.protocol}
         )`);
       acc.dbID = insert.lastInsertRowid;
-    } else {
-      await (await getDatabase()).run(sql`
-        UPDATE chatAccount SET
-          name = ${acc.name},
-          username = ${acc.username},
-          hostname = ${acc.hostname}, port = ${acc.port}, tls = ${acc.tls}, url = ${acc.url},
-          userRealname = ${acc.realname}, workspace = ${acc.workspace?.id},
-          configJSON = ${JSON.stringify(acc.toConfigJSON(), null, 2)}
-        WHERE id = ${acc.dbID}
-        `);
     }
-    await setPassword("chat." + acc.id, acc.password);
   }
 
   /** Also deletes all folders and messages in this account */
-  static async deleteIt(account: ChatAccount) {
-    assert(account.dbID, "Need account DB ID to delete");
+  static async deleteIt(acc: ChatAccount) {
+    await SQLAccount.deleteIt(acc);
     await (await getDatabase()).run(sql`
       DELETE FROM chatAccount
-      WHERE id = ${account.dbID}
+      WHERE id = ${acc.dbID}
       `);
-    await deletePassword("chat." + account.id);
   }
 
-  static async read(dbID: number, acc: ChatAccount) {
-    assert(dbID, "Need chat account DB ID to read it");
+  static async read(idStr: string, protocol: string, configJSON: string, acc: ChatAccount) {
+    await SQLAccount.read(idStr, protocol, configJSON, acc);
+
     let row = await (await getDatabase()).get(sql`
       SELECT
-        idStr, name, protocol,
-        username,
-        hostname, port, tls, url,
-        userRealname, workspace, configJSON
+        id, protocol
       FROM chatAccount
-      WHERE id = ${dbID}
+      WHERE idStr = ${idStr}
       `) as any;
-    acc.dbID = dbID;
-    (acc.id as any) = sanitize.alphanumdash(row.idStr);
-    acc.name = sanitize.label(row.name);
-    assert(acc.protocol == sanitize.alphanumdash(row.protocol), "MailAccount object of wrong type passed in");
-    acc.username = sanitize.string(row.username, null);
-    acc.hostname = sanitize.hostname(row.hostname, null);
-    acc.port = sanitize.portTCP(row.port, null);
-    acc.tls = sanitize.enum(row.tls, [TLSSocketType.Plain, TLSSocketType.TLS, TLSSocketType.STARTTLS], TLSSocketType.Unknown);
-    acc.url = sanitize.url(row.url, null, ["wss", "ws", "https", "http", "xmpp", "xmpps"]);
-    acc.realname = sanitize.label(row.userRealname, appGlobal.me.name);
-    acc.fromConfigJSON(sanitize.json(row.configJSON, {}));
-    acc.workspace = getWorkspaceByID(sanitize.string(row.workspace, null));
-    acc.password = await getPassword("chat." + acc.id);
     acc.storage = new SQLChatStorage();
-    if (!appGlobal.me.name && acc.realname) {
-      appGlobal.me.name = acc.realname;
+    if (row.id) {
+      acc.dbID = row.id;
+    } else {
+      // When the type-specific DB has been deleted, but not the accounts DB.
+      await SQLChatAccount.save(acc);
     }
     return acc;
   }
 
   static async readAll(): Promise<ArrayColl<ChatAccount>> {
-    let rows = await (await getDatabase()).all(sql`
-      SELECT
-        id, protocol
-      FROM chatAccount
-      `) as any;
+    let rows = await SQLAccount.readAll(AccountType.Chat);
     let accounts = new ArrayColl<ChatAccount>();
     for (let row of rows) {
       try {
         let account = newChatAccountForProtocol(row.protocol);
-        await SQLChatAccount.read(row.id, account);
+        await SQLChatAccount.read(row.idStr, row.protocol, row.configJSON, account);
         accounts.add(account);
       } catch (ex) {
         backgroundError(ex);

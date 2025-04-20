@@ -38,6 +38,16 @@ export class Calendar extends Account {
     await this.storage?.deleteCalendar(this);
     appGlobal.calendars.remove(this);
   }
+
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    this.syncState = json.syncState;
+  }
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.syncState = this.syncState;
+    return json;
+  }
 }
 
 export interface CalendarStorage {

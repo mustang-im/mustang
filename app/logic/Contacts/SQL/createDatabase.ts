@@ -4,14 +4,7 @@ export const contactsDatabaseSchema = sql`
   CREATE TABLE "addressbook" (
     "id" INTEGER PRIMARY KEY,
     "idStr" TEXT not null UNIQUE,
-    "name" TEXT not null,
-    "protocol" TEXT not null,
-    "url" TEXT default null,
-    "username" TEXT default null,
-    "userRealname" TEXT default null,
-    "configJSON" TEXT default null,
-    "workspace" TEXT default null,
-    "syncState" ANY default null
+    "protocol" TEXT not null
   );
 
   --- Persons in the personal address books

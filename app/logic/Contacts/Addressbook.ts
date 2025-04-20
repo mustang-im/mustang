@@ -28,6 +28,16 @@ export class Addressbook extends Account {
     await this.storage?.deleteAddressbook(this);
     appGlobal.addressbooks.remove(this);
   }
+
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    this.syncState = json.syncState;
+  }
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.syncState = this.syncState;
+    return json;
+  }
 }
 
 export interface AddressbookStorage {
