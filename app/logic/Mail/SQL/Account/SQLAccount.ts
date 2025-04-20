@@ -14,7 +14,7 @@ export class SQLAccount {
     }
     let json = acc.toConfigJSON();
     json.passwordEncrypted = await passwordEncrypt(acc.password);
-    // acc.oAuth2.refreshToken changes every few minutes so should not save in configJSON
+    // acc.oAuth2.refreshToken changes every few minutes, so should not save in configJSON
     let jsonStr = JSON.stringify(json, null, 2);
 
     let existing = await (await getDatabase()).get(sql`

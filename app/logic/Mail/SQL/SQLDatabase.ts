@@ -45,6 +45,6 @@ export async function deleteDatabase(): Promise<void> {
     await mailDatabase.execute(sql`DROP TABLE IF EXISTS ${table};`);
   }
   await mailDatabase.pragma('user_version = 0');
-  (mailDatabase as any).close(); // any, because function exists, but not in TypeScript definitions
+  (mailDatabase as any).close();
   mailDatabase = null;
 }

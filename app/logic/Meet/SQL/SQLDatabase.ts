@@ -32,11 +32,16 @@ export async function makeTestDatabase(): Promise<Database> {
   return meetDatabase;
 }
 
-async function deleteDatabase(): Promise<void> {
+export async function deleteDatabase(): Promise<void> {
   let tables = await meetDatabase.all(sql`SELECT name FROM sqlite_schema WHERE type='table'`) as any[];
   for (let row of tables) {
     let table = row.name;
+    if (table?.startsWith("sqlite_")) {
+      continue;
+    }
     await meetDatabase.execute(sql`DROP TABLE IF EXISTS ${table};`);
   }
   await meetDatabase.pragma('user_version = 0');
+  (meetDatabase as any).close();
+  meetDatabase = null;
 }
