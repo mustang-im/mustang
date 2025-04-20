@@ -12,7 +12,7 @@ export class JSONAddressbook {
     json.protocol = acc.protocol;
     json.url = acc.url;
     json.username = acc.username;
-    json.userRealname = acc.userRealname;
+    json.realname = acc.realname;
     json.workspaceID = acc.workspace?.id;
     json.syncState = acc.syncState;
     return json;
@@ -25,7 +25,7 @@ export class JSONAddressbook {
     assert(acc.protocol == sanitize.alphanumdash(json.protocol), "Addressbook object of wrong type passed in");
     acc.username = sanitize.string(json.username, null);
     acc.url = sanitize.url(json.url, null);
-    acc.userRealname = sanitize.label(json.userRealname, appGlobal.me.name ?? "You");
+    acc.realname = sanitize.label(json.realname, appGlobal.me.name ?? "You");
     acc.workspace = json.workspaceID
       ? appGlobal.workspaces.find(w => w.id == sanitize.string(json.workspaceID, null))
       : null;

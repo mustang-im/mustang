@@ -1,5 +1,5 @@
 import { ChatAccount } from "../ChatAccount";
-import { TLSSocketType } from "../../Mail/MailAccount";
+import { TLSSocketType } from "../../Abstract/TCPAccount";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
@@ -11,7 +11,7 @@ export class JSONChatAccount {
     json.id = acc.id;
     json.protocol = acc.protocol;
     json.name = acc.name;
-    json.userRealname = acc.userRealname;
+    json.realname = acc.realname;
     json.username = acc.username;
     json.url = acc.url;
     json.hostname = acc.hostname;
@@ -30,7 +30,7 @@ export class JSONChatAccount {
     acc.port = sanitize.portTCP(json.port, null);
     acc.tls = sanitize.enum(json.tls, [TLSSocketType.Plain, TLSSocketType.TLS, TLSSocketType.STARTTLS], TLSSocketType.Unknown);
     acc.url = sanitize.url(json.url, null);
-    acc.userRealname = sanitize.label(json.userRealname, appGlobal.me.name);
+    acc.realname = sanitize.label(json.realname, appGlobal.me.name);
     acc.name = sanitize.label(json.name, acc.username);
 
     acc.fromConfigJSON(json.config ?? {});

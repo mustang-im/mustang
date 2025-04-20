@@ -1,4 +1,6 @@
-import { MailAccount, TLSSocketType, AuthMethod, DeleteStrategy } from "../MailAccount";
+import { MailAccount, DeleteStrategy } from "../MailAccount";
+import { AuthMethod } from "../../Abstract/Account";
+import { TLSSocketType } from "../../Abstract/TCPAccount";
 import { IMAPFolder } from "./IMAPFolder";
 import { appGlobal } from "../../app";
 import type { EMail } from "../EMail";

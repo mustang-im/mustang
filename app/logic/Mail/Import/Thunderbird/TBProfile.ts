@@ -1,4 +1,5 @@
-import { AuthMethod, MailAccount, TLSSocketType } from "../../MailAccount";
+import type { MailAccount } from "../../MailAccount";
+import { AuthMethod } from "../../../Abstract/Account";
 import { MailIdentity } from "../../MailIdentity";
 import { SMTPAccount } from "../../SMTP/SMTPAccount";
 import { IMAPAccount } from "../../IMAP/IMAPAccount";
@@ -120,7 +121,7 @@ export class ThunderbirdProfile {
       assert(acc.identities.hasItems, "Identities missing for account " + accountID);
       let mainIdentity = acc.identities.first;
       acc.emailAddress = mainIdentity.emailAddress;
-      acc.userRealname = mainIdentity.userRealname;
+      acc.realname = mainIdentity.realname;
 
       return acc as any as MailAccount;
     } catch (ex) {
@@ -132,7 +133,7 @@ export class ThunderbirdProfile {
   readMailServer(serverID: string, acc: MailAccount): void {
     let prefBranch = `mail.server.${serverID}`;
     acc.username = sanitize.string(this.prefs[`${prefBranch}.userName`]);
-    acc.name = sanitize.label(this.prefs[`${prefBranch}.name`], acc.userRealname);
+    acc.name = sanitize.label(this.prefs[`${prefBranch}.name`], acc.realname);
 
     if (acc instanceof EWSAccount) {
       // ewsURL from ExQuilla, and ews_url from Owl in EWS mode
@@ -164,7 +165,7 @@ export class ThunderbirdProfile {
       identity.id = "tb-" + identityID;
       let prefBranch = `mail.identity.${identityID}`;
       assert(this.prefs[`${prefBranch}.valid`] !== false, "Identity marked as invalid");
-      identity.userRealname = sanitize.label(this.prefs[`${prefBranch}.fullName`]);
+      identity.realname = sanitize.label(this.prefs[`${prefBranch}.fullName`]);
       identity.emailAddress = sanitize.emailAddress(this.prefs[`${prefBranch}.useremail`]);
       let signatureHTML = sanitize.string(this.prefs[`${prefBranch}.htmlSigText`], null);
       if (signatureHTML) {

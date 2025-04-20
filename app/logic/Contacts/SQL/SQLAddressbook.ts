@@ -31,7 +31,7 @@ export class SQLAddressbook {
           userRealname, workspace, syncState, configJSON
         ) VALUES (
           ${acc.id}, ${acc.name}, ${acc.protocol}, ${acc.url}, ${acc.username},
-          ${acc.userRealname}, ${acc.workspace?.id}, ${acc.syncState},
+          ${acc.realname}, ${acc.workspace?.id}, ${acc.syncState},
           ${JSON.stringify(acc.toConfigJSON(), null, 2)}
         )`);
       acc.dbID = insert.lastInsertRowid;
@@ -39,7 +39,7 @@ export class SQLAddressbook {
       await (await getDatabase()).run(sql`
         UPDATE addressbook SET
           name = ${acc.name}, url = ${acc.url}, username = ${acc.username},
-          userRealname = ${acc.userRealname},
+          userRealname = ${acc.realname},
           workspace = ${acc.workspace?.id}, syncState = ${acc.syncState},
           configJSON = ${JSON.stringify(acc.toConfigJSON(), null, 2)}
         WHERE id = ${acc.dbID}
@@ -71,7 +71,7 @@ export class SQLAddressbook {
     assert(acc.protocol == sanitize.alphanumdash(row.protocol), "Addressbook object of wrong type passed in");
     acc.username = sanitize.string(row.username, null);
     acc.url = sanitize.url(row.url, null);
-    acc.userRealname = sanitize.label(row.userRealname, appGlobal.me.name ?? "You");
+    acc.realname = sanitize.label(row.userRealname, appGlobal.me.name ?? "You");
     acc.fromConfigJSON(sanitize.json(row.configJSON, {}));
     acc.workspace = getWorkspaceByID(sanitize.string(row.workspace, null));
     acc.syncState = row.syncState;

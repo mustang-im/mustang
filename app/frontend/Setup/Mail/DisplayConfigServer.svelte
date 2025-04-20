@@ -22,7 +22,8 @@
 </hbox>
 
 <script lang="ts">
-  import { type MailAccount, TLSSocketType } from "../../../logic/Mail/MailAccount";
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { TLSSocketType } from "../../../logic/Abstract/TCPAccount";
   import { isStandardPort, hasEncryption } from "../../../logic/Mail/AutoConfig/configInfo";
   import { labelForMailProtocol } from "../../../logic/Mail/AccountsList/MailAccounts";
   import HostnameDomain from "../Shared/HostnameDomain.svelte";

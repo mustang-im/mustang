@@ -40,7 +40,7 @@ test("Save and read meet accounts from SQL database", { timeout: 10000 }, async 
   expect(readAccount.protocol).toEqual(originalAccount.protocol);
   expect(readAccount.name).toEqual(originalAccount.name);
   expect(readAccount.username).toEqual(originalAccount.username);
-  expect(readAccount.userRealname).toEqual(originalAccount.userRealname);
+  expect(readAccount.realname).toEqual(originalAccount.realname);
   expect(readAccount.url).toEqual(originalAccount.url);
 });
 

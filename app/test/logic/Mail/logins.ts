@@ -2,7 +2,7 @@
 // git update-index --assume-unchanged logins.ts
 
 /** Test accounts
- * Format: As read by `JSONMailAccount` */
+ * Format: As read by `Account.fromConfigJSON()` */
 export const kMailAccounts = [
   {
     protocol: "imap",

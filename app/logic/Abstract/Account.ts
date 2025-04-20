@@ -1,13 +1,15 @@
-import { Workspace, randomAccountColor } from "./Workspace";
+import { Workspace, getWorkspaceByID, randomAccountColor } from "./Workspace";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { SpecificError, AbstractFunction, assert } from "../util/util";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
 import type { ComponentType } from "svelte";
+import type { OAuth2 } from "../Auth/OAuth2";
 
 export class Account extends Observable {
   id: string;
+  /** The primary ID in the type-specific database (not in accounts DB) */
   dbID: number | string | null = null;
   @notifyChangedProperty
   name: string;
@@ -25,11 +27,24 @@ export class Account extends Observable {
   @notifyChangedProperty
   username: string | null = null;
   @notifyChangedProperty
+  authMethod = AuthMethod.Unknown;
+  @notifyChangedProperty
+  oAuth2: OAuth2 = null;
+  @notifyChangedProperty
   password: string | null = null;
+  /**
+   * If the main account is loaded, this child account should be loaded automatically after.
+   * If the main account is deleted, then this account should be deleted as well.
+   * Child accounts share the OAuth2 login with their main accounts.
+   * If this is e.g. a calendar that belongs to an email account,
+   * this property references the email account.
+   * Also used for SMTP accounts to reference the IMAP or POP3 account.
+   */
+  mainAccount: Account | null = null;
   @notifyChangedProperty
   workspace: Workspace | null = null;
   @notifyChangedProperty
-  userRealname: string = appGlobal.me?.name;
+  realname: string = appGlobal.me?.name;
   @notifyChangedProperty
   acceptBrokenTLSCerts = false;
   @notifyChangedProperty
@@ -93,15 +108,33 @@ export class Account extends Observable {
     throw new AbstractFunction();
   }
 
-  fromConfigJSON(config: any) {
-    assert(typeof (config) == "object", "Config must be a JSON object");
-    this.acceptBrokenTLSCerts = sanitize.boolean(config.acceptBrokenTLSCerts, false);
-    this.loginOnStartup = sanitize.boolean(config.loginOnStartup, this.loginOnStartup);
-    this.color = sanitize.nonemptystring(config.color, this.color);
-    this.icon = sanitize.url(config.icon, null, ["data"]);
+  fromConfigJSON(json: any) {
+    assert(typeof (json) == "object", "Config must be a JSON object");
+    (this.id as any) = sanitize.alphanumdash(json.id);
+    assert(this.protocol == sanitize.alphanumdash(json.protocol), "MailAccount object of wrong type passed in");
+    this.username = sanitize.string(json.username, null);
+    this.authMethod = sanitize.integerRange(json.authMethod, 0, 20);
+    this.url = sanitize.url(json.url, null);
+    this.realname = sanitize.label(json.realname, appGlobal.me.name);
+    this.name = sanitize.label(json.name, this.username);
+
+    this.acceptBrokenTLSCerts = sanitize.boolean(json.acceptBrokenTLSCerts, false);
+    this.loginOnStartup = sanitize.boolean(json.loginOnStartup, this.loginOnStartup);
+    this.color = sanitize.nonemptystring(json.color, this.color);
+    this.icon = sanitize.url(json.icon, null, ["data"]);
+    this.workspace = getWorkspaceByID(sanitize.string(json.workspaceID, null));
   }
   toConfigJSON(): any {
+    assert(this.id, "Need account ID to save");
     let json: any = {};
+    json.id = this.id;
+    json.protocol = this.protocol;
+    json.name = this.name;
+    json.realname = this.realname;
+    json.username = this.username;
+    json.authMethod = this.authMethod;
+    json.url = this.url;
+    json.workspaceID = this.workspace?.id;
     json.acceptBrokenTLSCerts = this.acceptBrokenTLSCerts;
     json.loginOnStartup = this.loginOnStartup;
     json.color = this.color;
@@ -113,6 +146,16 @@ export class Account extends Observable {
   toString(): string {
     return `${this.protocol.toUpperCase()} account: ${this.name}, username ${this.username}, username ${this.username}, URL ${this.url}`;
   }
+}
+
+export enum AuthMethod {
+  Unknown = 0,
+  Password = 1,
+  OAuth2 = 2,
+  GSSAPI = 3,
+  CRAMMD5 = 5,
+  NTLM = 6,
+  None = 7, // No authentication at all. E.g. SMTP
 }
 
 let lastID = 0;

@@ -6,7 +6,6 @@
       * Email
       * Chat
   * SQL
-    * Accounts in separate DB
     * Non-search properties as JSON
   * Main/Dependent accounts
     * Calendar
@@ -94,8 +93,6 @@
 * Unified inbox: Show account as tag or icon
 
 # Chat
-## Bugs
-* SqliteError: NOT NULL constraint failed: chatAccount.userRealname
 
 ## UI
 * Message menu

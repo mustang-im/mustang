@@ -101,14 +101,14 @@ export function fakeMailAccount(persons: Collection<Person>, me: Person, msgCoun
   let account = new MailAccount();
   account.name = "Yahoo";
   account.emailAddress = me.emailAddresses.first.value;
-  account.userRealname = me.name;
+  account.realname = me.name;
   account.username = account.emailAddress;
   account.password = faker.internet.password();
   account.hostname = "imap." + faker.internet.domainName();
   account.port = 993;
   account.tls = 2;
   me.emailAddresses.add(new ContactEntry(account.emailAddress, "Primary"));
-  let meUID = new PersonUID(account.emailAddress, account.userRealname);
+  let meUID = new PersonUID(account.emailAddress, account.realname);
 
   for (let name of ['Inbox', 'Sent', 'Drafts', 'Trash', 'Spam']) {
     let folder = account.newFolder();
@@ -181,7 +181,7 @@ export function fakeMailPerson(): PersonUID {
 export function fakeChatAccount(persons: Collection<Person>, me: Person, msgCount = 300): ChatAccount {
   let chatAccount = new ChatAccount();
   chatAccount.name = "Test chat 1";
-  chatAccount.userRealname = me.name;
+  chatAccount.realname = me.name;
 
   for (let person of persons) {
     let chat = new Chat(chatAccount);

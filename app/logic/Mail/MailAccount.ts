@@ -1,11 +1,11 @@
-import { Account } from "../Abstract/Account";
+import { TCPAccount } from "../Abstract/TCPAccount";
 import { MailIdentity } from "./MailIdentity";
 import { Folder, SpecialFolder } from "./Folder";
 import type { EMail } from "./EMail";
 import { Event } from "../Calendar/Event";
 import { Participant } from "../Calendar/Participant";
 import { ResponseType, type Responses } from "../Calendar/Invitation";
-import type { Person } from "../Abstract/Person";
+import { ContactEntry, type Person } from "../Abstract/Person";
 import { FilterRuleAction } from "./FilterRules/FilterRuleAction";
 import { OAuth2 } from "../Auth/OAuth2";
 import { appGlobal } from "../app";
@@ -14,21 +14,11 @@ import { assert, AbstractFunction, type URLString } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
 import { Collection, ArrayColl, MapColl } from 'svelte-collections';
 
-export class MailAccount extends Account {
+export class MailAccount extends TCPAccount {
   readonly protocol: string = "mail";
   readonly canSendInvitations: boolean = true;
-  @notifyChangedProperty
-  hostname: string | null = null; /** only for some account types */
-  @notifyChangedProperty
-  port: number | null = null;
-  @notifyChangedProperty
-  tls = TLSSocketType.Unknown;
-  @notifyChangedProperty
-  authMethod = AuthMethod.Unknown;
-  @notifyChangedProperty
-  oAuth2: OAuth2 = null;
   /** SMTP server
-   * Only set for IMAP and POP3. null for JMAP, Exchange etc. */
+   * Only set for IMAP and POP3, but null for JMAP, Exchange etc. */
   @notifyChangedProperty
   outgoing: MailAccount = null;
   /** Error that broke the server connection, unrecoverable, including login failures. */
@@ -121,7 +111,7 @@ export class MailAccount extends Account {
     email.compose.generateMessageID();
     email.needToLoadBody = false;
     email.from.emailAddress = this.emailAddress;
-    email.from.name = this.userRealname;
+    email.from.name = this.realname;
     return email;
   }
 
@@ -142,30 +132,6 @@ export class MailAccount extends Account {
       this.identities.some(id => id.emailAddress == emailAddress);
   }
 
-  fromConfigJSON(config: any) {
-    super.fromConfigJSON(config);
-    this.identities.clear();
-    this.identities.addAll(sanitize.array(config.identities, []).map(json =>
-      MailIdentity.fromConfigJSON(json, this)));
-    this.filterRuleActions.clear();
-    this.filterRuleActions.addAll(sanitize.array(config.filterRuleActions, []).map(json => {
-      let rule = new FilterRuleAction(this);
-      rule.fromJSON(json);
-      return rule;
-    }));
-    if (config.oAuth2) {
-      this.oAuth2 = OAuth2.fromConfigJSON(config.oAuth2, this);
-      this.oAuth2.subscribe(() => this.notifyObservers());
-    }
-  }
-  toConfigJSON(): any {
-    let json = super.toConfigJSON();
-    json.identities = this.identities.contents.map(id => id.toConfigJSON());
-    json.filterRuleActions = this.filterRuleActions.contents.map(rule => rule.toJSON());
-    json.oAuth2 = this.oAuth2 ? this.oAuth2.toConfigJSON() : undefined;
-    return json;
-  }
-
   /** Get the `specialFolder` in this account. */
   getSpecialFolder(specialFolder: SpecialFolder): Folder {
     let folder = this.getAllFolders().find(folder => folder.specialFolder == specialFolder);
@@ -181,6 +147,40 @@ export class MailAccount extends Account {
     return this.rootFolders.first;
   }
 
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    this.emailAddress = sanitize.emailAddress(json.emailAddress);
+
+    this.identities.clear();
+    this.identities.addAll(sanitize.array(json.identities, []).map(json =>
+      MailIdentity.fromConfigJSON(json, this)));
+    this.filterRuleActions.clear();
+    this.filterRuleActions.addAll(sanitize.array(json.filterRuleActions, []).map(json => {
+      let rule = new FilterRuleAction(this);
+      rule.fromJSON(json);
+      return rule;
+    }));
+    if (json.oAuth2) {
+      this.oAuth2 = OAuth2.fromConfigJSON(json.oAuth2, this);
+      this.oAuth2.subscribe(() => this.notifyObservers());
+    }
+
+    if (!appGlobal.me.name && this.realname) {
+      appGlobal.me.name = this.realname;
+    }
+    if (!appGlobal.me.emailAddresses.find(c => c.value == this.emailAddress)) {
+      appGlobal.me.emailAddresses.add(new ContactEntry(this.emailAddress, "account"));
+    }
+  }
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.identities = this.identities.contents.map(id => id.toConfigJSON());
+    json.filterRuleActions = this.filterRuleActions.contents.map(rule => rule.toJSON());
+    json.oAuth2 = this.oAuth2 ? this.oAuth2.toConfigJSON() : undefined;
+    json.outgoingAccountID = this.outgoing?.id;
+    return json;
+  }
+
   /** Fills this object with the config values from the other config */
   cloneFrom(other: MailAccount) {
     this.url = other.url;
@@ -190,7 +190,7 @@ export class MailAccount extends Account {
     this.authMethod = other.authMethod;
     this.username = other.username;
     this.emailAddress = other.emailAddress;
-    this.userRealname = other.userRealname;
+    this.realname = other.realname;
 
     // objects
     this.oAuth2 = other.oAuth2;
@@ -218,23 +218,6 @@ function findSubFolderFromList(folders: Collection<Folder>, findFunc: (folder: F
     }
   }
   return null;
-}
-
-export enum TLSSocketType {
-  Unknown = 0,
-  Plain = 1,
-  TLS = 2,
-  STARTTLS = 3,
-}
-
-export enum AuthMethod {
-  Unknown = 0,
-  Password = 1,
-  OAuth2 = 2,
-  GSSAPI = 3,
-  CRAMMD5 = 5,
-  NTLM = 6,
-  None = 7, // No authentication at all. E.g. SMTP
 }
 
 export type ConfigSource = "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | "manual" | "local" | null;

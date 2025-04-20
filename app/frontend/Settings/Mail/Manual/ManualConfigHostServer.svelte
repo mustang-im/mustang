@@ -97,7 +97,9 @@
   {/if}
 
 <script lang="ts">
-  import { type MailAccount, AuthMethod, TLSSocketType } from "../../../../logic/Mail/MailAccount";
+  import type { MailAccount } from "../../../../logic/Mail/MailAccount";
+  import { AuthMethod } from "../../../../logic/Abstract/Account";
+  import { TLSSocketType } from "../../../../logic/Abstract/TCPAccount";
   import { kStandardPorts } from "../../../../logic/Mail/AutoConfig/configInfo";
   import { dummyHostname } from "../../../../logic/Mail/AutoConfig/manualConfig";
   import { getDomainForEmailAddress } from "../../../../logic/util/netUtil";

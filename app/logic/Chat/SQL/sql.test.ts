@@ -56,7 +56,7 @@ test("Save and read chats from SQL database", { timeout: 10000 }, async () => {
   let readAccount = appGlobal.chatAccounts.first;
   expect(readAccount).toBeDefined();
   expect(readAccount.username).toEqual(originalAccount.username);
-  expect(readAccount.userRealname).toEqual(originalAccount.userRealname);
+  expect(readAccount.realname).toEqual(originalAccount.realname);
   expect(readAccount.hostname).toEqual(originalAccount.hostname);
   expect(readAccount.port).toEqual(originalAccount.port);
   expect(readAccount.tls).toEqual(originalAccount.tls);

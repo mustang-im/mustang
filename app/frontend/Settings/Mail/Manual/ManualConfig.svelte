@@ -21,7 +21,8 @@
 {/if}
 
 <script lang="ts">
-  import { AuthMethod, type MailAccount } from "../../../../logic/Mail/MailAccount";
+  import type { MailAccount } from "../../../../logic/Mail/MailAccount";
+  import { AuthMethod } from "../../../../logic/Abstract/Account";
   import ManualConfigURL from "./ManualConfigURL.svelte";
   import ManualConfigHost from "./ManualConfigHost.svelte";
   import OAuth2Manual from "./OAuth2Manual.svelte";

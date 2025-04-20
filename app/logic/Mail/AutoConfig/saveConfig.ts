@@ -20,7 +20,7 @@ export async function saveConfig(config: MailAccount, emailAddress: string, pass
   fillConfig(config, emailAddress, password);
 
   let identity = new MailIdentity(config);
-  identity.userRealname = config.userRealname;
+  identity.realname = config.realname;
   identity.emailAddress = config.emailAddress;
   config.identities.add(identity);
 
@@ -42,7 +42,7 @@ export async function saveConfig(config: MailAccount, emailAddress: string, pass
  */
 export function fillConfig(config: MailAccount, emailAddress: string, password: string) {
   assert(emailAddress, `${config.name}: Need email address`);
-  config.userRealname = appGlobal.me.name ?? nameFromEmailAddress(emailAddress); // may be overwritten in setRealname()
+  config.realname = appGlobal.me.name ?? nameFromEmailAddress(emailAddress); // may be overwritten in setRealname()
   config.emailAddress = emailAddress;
   config.password = password;
   config.username = config.username ? replaceVar(config.username, emailAddress) : emailAddress;
@@ -100,7 +100,7 @@ async function setRealname(sentFolder: Folder, config: MailAccount) {
   if (!emailFromMe) {
     return;
   }
-  appGlobal.me.name = config.userRealname = emailFromMe.from.name;
+  appGlobal.me.name = config.realname = emailFromMe.from.name;
   await config.save();
 }
 

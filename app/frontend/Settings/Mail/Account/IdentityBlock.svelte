@@ -12,7 +12,7 @@
   <vbox class="content">
     <grid>
       <label for="realname">{$t`Your name`}</label>
-      <input type="text" bind:value={identity.userRealname} name="realname" />
+      <input type="text" bind:value={identity.realname} name="realname" />
 
       <label for="emailaddress">{$t`Your email address`}</label>
       <input type="email" bind:value={identity.emailAddress} required

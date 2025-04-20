@@ -1,7 +1,7 @@
 import { kMailAccounts } from './logins';
 import { newAccountForProtocol } from '../../../logic/Mail/AccountsList/MailAccounts';
-import { Account } from '../../../logic/Abstract/Account';
-import { AuthMethod, TLSSocketType } from '../../../logic/Mail/MailAccount';
+import { Account, AuthMethod } from '../../../logic/Abstract/Account';
+import { TLSSocketType } from '../../../logic/Abstract/TCPAccount';
 import { OAuth2 } from '../../../logic/Auth/OAuth2';
 import { OAuth2URLs } from '../../../logic/Auth/OAuth2URLs';
 import { DummyMailStorage } from '../../../logic/Mail/Store/DummyMailStorage';
@@ -22,7 +22,7 @@ test.each(kMailAccounts)("Test $protocol account $username", async (config) => {
   acc.password = config.password;
   acc.name = config.username;
   acc.emailAddress = config.username;
-  acc.userRealname = config.username;
+  acc.realname = config.username;
   let domain = getDomainForEmailAddress(acc.username);
   acc.hostname = config.hostname ?? config.url ? new URL(config.url).hostname : "imap." + domain;
   acc.port = kStandardPorts.find(p => p.protocol == config.protocol && p.tls == TLSSocketType.TLS)?.port ?? 443;

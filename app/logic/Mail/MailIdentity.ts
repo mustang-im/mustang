@@ -11,7 +11,7 @@ export class MailIdentity extends Observable {
   readonly account: MailAccount;
   pID: string | number;
   @notifyChangedProperty
-  userRealname: string;
+  realname: string;
   @notifyChangedProperty
   emailAddress: string;
   @notifyChangedProperty
@@ -39,7 +39,7 @@ export class MailIdentity extends Observable {
   }
 
   asPersonUID(): PersonUID {
-    return new PersonUID(this.emailAddress, this.userRealname);
+    return new PersonUID(this.emailAddress, this.realname);
   }
 
   get isCatchAll(): boolean {
@@ -63,7 +63,7 @@ export class MailIdentity extends Observable {
     assert(typeof (config) == "object", "Config must be a JSON object");
     let thiss = new MailIdentity(account);
     thiss.id = sanitize.nonemptystring(config.id) as any;
-    thiss.userRealname = sanitize.label(config.userRealname);
+    thiss.realname = sanitize.label(config.realname);
     sanitize.emailAddress(config.emailAddress.replace("*", ""));
     thiss.emailAddress = config.emailAddress;
     thiss.replyTo = sanitize.emailAddress(config.replyTo, null);
@@ -80,7 +80,7 @@ export class MailIdentity extends Observable {
   toConfigJSON(): any {
     return {
       id: this.id,
-      userRealname: this.userRealname,
+      realname: this.realname,
       emailAddress: this.emailAddress,
       replyTo: this.replyTo,
       organisation: this.organisation,
@@ -104,7 +104,7 @@ export class MailIdentity extends Observable {
         // console.log(`Checking whether ${candidate} matches identity ${identity.emailAddress} of account ${identity.account.name}`);
         if (identity.isEMailAddress(candidate.emailAddress)) {
           // console.log(`MATCH: ${candidate} matches identity ${identity.emailAddress} of account ${identity.account.name}`);
-          let personUID = new PersonUID(candidate.emailAddress, identity.userRealname);
+          let personUID = new PersonUID(candidate.emailAddress, identity.realname);
           return { identity, personUID };
         }
       }

@@ -1,4 +1,5 @@
-import { AuthMethod, type MailAccount } from "../MailAccount";
+import type { MailAccount } from "../MailAccount";
+import { AuthMethod } from "../../Abstract/Account";
 import { IMAPAccount } from "../IMAP/IMAPAccount";
 import { SMTPAccount } from "../SMTP/SMTPAccount";
 import { getDomainForEmailAddress } from "../../util/netUtil";

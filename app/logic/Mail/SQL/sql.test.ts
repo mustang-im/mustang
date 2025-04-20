@@ -64,7 +64,7 @@ test("Save and read mails from SQL database", { timeout: 10000 }, async () => {
   expect(readAccount).toBeDefined();
   expect(readAccount.emailAddress).toEqual(originalAccount.emailAddress);
   expect(readAccount.username).toEqual(originalAccount.username);
-  expect(readAccount.userRealname).toEqual(originalAccount.userRealname);
+  expect(readAccount.realname).toEqual(originalAccount.realname);
   expect(readAccount.hostname).toEqual(originalAccount.hostname);
   expect(readAccount.port).toEqual(originalAccount.port);
   expect(readAccount.tls).toEqual(originalAccount.tls);

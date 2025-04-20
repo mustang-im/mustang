@@ -47,7 +47,9 @@
 </grid>
 
 <script lang="ts">
-  import { type MailAccount, AuthMethod, TLSSocketType } from "../../../../logic/Mail/MailAccount";
+  import type { MailAccount } from "../../../../logic/Mail/MailAccount";
+  import { AuthMethod } from "../../../../logic/Abstract/Account";
+  import { TLSSocketType } from "../../../../logic/Abstract/TCPAccount";
   import ProtocolSelector from "./ProtocolSelector.svelte";
   import PasswordChange from "../../Shared/PasswordChange.svelte";
   import ServerIcon from "lucide-svelte/icons/server";
