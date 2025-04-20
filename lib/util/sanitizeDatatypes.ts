@@ -248,7 +248,7 @@ class Sanitize {
     return haveError("Allowed value", unchecked, fallback);
   }
 
-  json(unchecked: string | Object, fallback: Object | Symbol = throwErrors): Object {
+  json(unchecked: string | Object, fallback: Object | Symbol = throwErrors): any {
     if (!unchecked) {
       return haveError("JSON is empty", unchecked, fallback);
     } else if (typeof (unchecked) == "object") {

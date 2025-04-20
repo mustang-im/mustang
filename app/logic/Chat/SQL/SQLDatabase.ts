@@ -2,9 +2,9 @@ import { appGlobal } from "../../app";
 import sql, { type Database } from "../../../../lib/rs-sqlite/index";
 import { chatDatabaseSchema } from "./createDatabase";
 
-let chatDatabase: Database;
+// <copied from="Mail/SQL/Account/SQLDatabase.ts">
 
-// <copied from="Mail/SQL/SQLDatabase.ts">
+let chatDatabase: Database;
 
 export async function getDatabase(): Promise<Database> {
   if (chatDatabase) {
