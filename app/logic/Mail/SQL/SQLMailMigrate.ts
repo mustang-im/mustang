@@ -60,7 +60,8 @@ export async function migrateToAccountsDB(): Promise<void> {
     await account.save();
     console.log("Saved mail account", account);
   }
-  appGlobal.emailAccounts.addAll(accounts);
+
+  appGlobal.emailAccounts.addAll(incomingAccounts);
 }
 
 function migrateAccount(row: any): MailAccount {
