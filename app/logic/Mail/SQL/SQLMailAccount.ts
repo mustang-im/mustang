@@ -92,6 +92,9 @@ export class SQLMailAccount {
         backgroundError(ex);
       }
     }
+    if (accounts.isEmpty) {
+      await getDatabase(); // for migration only
+    }
     return accounts;
   }
 }

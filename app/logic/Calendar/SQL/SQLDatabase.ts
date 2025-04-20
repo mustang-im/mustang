@@ -2,9 +2,9 @@ import { appGlobal } from "../../app";
 import sql, { type Database } from "../../../../lib/rs-sqlite/index";
 import { calendarDatabaseSchema } from "./createDatabase";
 
-let calendarDatabase: Database;
+// <copied from="Mail/SQL/Account/SQLDatabase.ts">
 
-// <copied from="Mail/SQL/SQLDatabase.ts">
+let calendarDatabase: Database;
 
 export async function getDatabase(): Promise<Database> {
   if (calendarDatabase) {
@@ -32,11 +32,16 @@ export async function makeTestDatabase(): Promise<Database> {
   return calendarDatabase;
 }
 
-async function deleteDatabase(): Promise<void> {
+export async function deleteDatabase(): Promise<void> {
   let tables = await calendarDatabase.all(sql`SELECT name FROM sqlite_schema WHERE type='table'`) as any[];
   for (let row of tables) {
     let table = row.name;
+    if (table?.startsWith("sqlite_")) {
+      continue;
+    }
     await calendarDatabase.execute(sql`DROP TABLE IF EXISTS ${table};`);
   }
   await calendarDatabase.pragma('user_version = 0');
+  (calendarDatabase as any).close();
+  calendarDatabase = null;
 }

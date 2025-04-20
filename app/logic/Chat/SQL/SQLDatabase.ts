@@ -2,9 +2,9 @@ import { appGlobal } from "../../app";
 import sql, { type Database } from "../../../../lib/rs-sqlite/index";
 import { chatDatabaseSchema } from "./createDatabase";
 
-let chatDatabase: Database;
+// <copied from="Mail/SQL/Account/SQLDatabase.ts">
 
-// <copied from="Mail/SQL/SQLDatabase.ts">
+let chatDatabase: Database;
 
 export async function getDatabase(): Promise<Database> {
   if (chatDatabase) {
@@ -32,11 +32,16 @@ export async function makeTestDatabase(): Promise<Database> {
   return chatDatabase;
 }
 
-async function deleteDatabase(): Promise<void> {
+export async function deleteDatabase(): Promise<void> {
   let tables = await chatDatabase.all(sql`SELECT name FROM sqlite_schema WHERE type='table'`) as any[];
   for (let row of tables) {
     let table = row.name;
+    if (table?.startsWith("sqlite_")) {
+      continue;
+    }
     await chatDatabase.execute(sql`DROP TABLE IF EXISTS ${table};`);
   }
   await chatDatabase.pragma('user_version = 0');
+  (chatDatabase as any).close();
+  chatDatabase = null;
 }

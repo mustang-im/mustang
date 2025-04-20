@@ -2,9 +2,9 @@ import { appGlobal } from "../../app";
 import sql, { type Database } from "../../../../lib/rs-sqlite/index";
 import { contactsDatabaseSchema } from "./createDatabase";
 
-let contactsDatabase: Database;
+// <copied from="Mail/SQL/Account/SQLDatabase.ts">
 
-// <copied from="Mail/SQL/SQLDatabase.ts">
+let contactsDatabase: Database;
 
 export async function getDatabase(): Promise<Database> {
   if (contactsDatabase) {
@@ -32,7 +32,7 @@ export async function makeTestDatabase(): Promise<Database> {
   return contactsDatabase;
 }
 
-async function deleteDatabase(): Promise<void> {
+export async function deleteDatabase(): Promise<void> {
   let tables = await contactsDatabase.all(sql`SELECT name FROM sqlite_schema WHERE type='table'`) as any[];
 
   // REFERENCES causes "Table 'person' does not exist" when deleting table 'groupp',
@@ -41,7 +41,12 @@ async function deleteDatabase(): Promise<void> {
 
   for (let row of tables) {
     let table = row.name;
+    if (table?.startsWith("sqlite_")) {
+      continue;
+    }
     await contactsDatabase.execute(sql`DROP TABLE IF EXISTS ${table};`);
   }
   await contactsDatabase.pragma('user_version = 0');
+  (contactsDatabase as any).close();
+  contactsDatabase = null;
 }

@@ -1,7 +1,7 @@
 import type { Account } from "../../../Abstract/Account";
 import { MailAccount } from "../../MailAccount";
 import { getDatabase } from "./SQLDatabase";
-import { getPassword, setPassword, deletePassword } from "../../../Auth/passwordStore";
+import { passwordDecrypt, passwordEncrypt } from "../../../Auth/passwordEncrypt";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../../util/util";
 import sql from "../../../../../lib/rs-sqlite";
@@ -12,6 +12,11 @@ export class SQLAccount {
       acc.outgoing.emailAddress ??= acc.emailAddress;
       await SQLAccount.save(acc.outgoing as any as Account, type);
     }
+    let json = acc.toConfigJSON();
+    json.passwordEncrypted = await passwordEncrypt(acc.password);
+    // acc.oAuth2.refreshToken changes every few minutes, so should not save in configJSON
+    let jsonStr = JSON.stringify(json, null, 2);
+
     let existing = await (await getDatabase()).get(sql`
       SELECT
         protocol
@@ -25,18 +30,17 @@ export class SQLAccount {
           idStr, type, protocol, mainAccountIDStr, configJSON
         ) VALUES (
           ${acc.id}, ${type}, ${acc.protocol}, ${acc.mainAccount?.id},
-          ${JSON.stringify(acc.toConfigJSON(), null, 2)}
+          ${jsonStr}
         )`);
     } else {
       assert(existing.protocol == acc.protocol, "Protocol in accounts DB does not match");
       await (await getDatabase()).run(sql`
         UPDATE account SET
           mainAccountIDStr = ${acc.mainAccount?.id},
-          configJSON = ${JSON.stringify(acc.toConfigJSON(), null, 2)}
+          configJSON = ${jsonStr}
         WHERE idStr = ${acc.id}
         `);
     }
-    await setPassword("account." + acc.id, acc.password);
   }
 
   /** Also deletes all folders and messages in this account */
@@ -46,7 +50,6 @@ export class SQLAccount {
       DELETE FROM account
       WHERE id = ${account.dbID}
       `);
-    await deletePassword("account." + account.id);
   }
 
   static async read(idStr: string, protocol: string, configJSON: string, acc: Account) {
@@ -54,9 +57,9 @@ export class SQLAccount {
     assert(protocol == acc.protocol, "Protocol doesn't match between the 2 databases");
     // Note: acc.dbID and acc.storage are not yet set
     let json = sanitize.json(configJSON, {});
-    (json as any).id = idStr;
+    json.id = idStr;
     acc.fromConfigJSON(json);
-    acc.password = await getPassword("account." + acc.id);
+    acc.password = await passwordDecrypt(json.passwordEncrypted);
     return acc;
   }
 

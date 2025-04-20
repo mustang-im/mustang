@@ -1,14 +1,11 @@
 import { appGlobal } from "../../app";
-import sql, { type Database } from "../../../../lib/rs-sqlite/index";
 import { mailDatabaseSchema } from "./createDatabase";
+import { migrateToAccountsDB } from "./SQLMailMigrate";
+import sql, { type Database } from "../../../../lib/rs-sqlite/index";
+
+// <copied from="Mail/SQL/Account/SQLDatabase.ts">
 
 let mailDatabase: Database;
-
-// Lib docs:
-// https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md
-// https://github.com/radically-straightforward/radically-straightforward/tree/main/sqlite
-// https://www.sqlite.org/lang.html
-// <copied to="Contacts/SQL/SQLDatabase.ts">
 
 export async function getDatabase(): Promise<Database> {
   if (mailDatabase) {
@@ -17,6 +14,8 @@ export async function getDatabase(): Promise<Database> {
   const getDatabase = appGlobal.remoteApp.getSQLiteDatabase;
   mailDatabase = await getDatabase("mail.db");
   await mailDatabase.migrate(mailDatabaseSchema);
+  console.log("migrate");
+  await migrateToAccountsDB();
   await mailDatabase.pragma('foreign_keys = true');
   await mailDatabase.pragma('journal_mode = DELETE');
   return mailDatabase;
@@ -36,11 +35,16 @@ export async function makeTestDatabase(): Promise<Database> {
   return mailDatabase;
 }
 
-async function deleteDatabase(): Promise<void> {
+export async function deleteDatabase(): Promise<void> {
   let tables = await mailDatabase.all(sql`SELECT name FROM sqlite_schema WHERE type='table'`) as any[];
   for (let row of tables) {
     let table = row.name;
+    if (table?.startsWith("sqlite_")) {
+      continue;
+    }
     await mailDatabase.execute(sql`DROP TABLE IF EXISTS ${table};`);
   }
   await mailDatabase.pragma('user_version = 0');
+  (mailDatabase as any).close();
+  mailDatabase = null;
 }

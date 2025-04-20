@@ -1,15 +1,9 @@
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { encrypt, decrypt } from 'password-salt';
-
-const secret = 'anything'; // Lib adds a 32-byte salt, which acts as password
-// 32^256 values should be sufficient against rainbow tables
+import { passwordEncrypt, passwordDecrypt } from "./passwordEncrypt";
 
 export async function getPassword(account: string): Promise<string | null> {
   let encrypted = sanitize.string(localStorage.getItem(getKey(account)), null);
-  if (!encrypted) {
-    return null;
-  }
-  return sanitize.string(await decrypt(secret, encrypted) as string, null);
+  return await passwordDecrypt(encrypted);
 }
 
 export async function setPassword(account: string, password: string | null): Promise<void> {
@@ -17,7 +11,7 @@ export async function setPassword(account: string, password: string | null): Pro
     await deletePassword(account);
     return;
   }
-  let encrypted = await encrypt(secret, password);
+  let encrypted = await passwordEncrypt(password);
   localStorage.setItem(getKey(account), encrypted);
 }
 
