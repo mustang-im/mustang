@@ -16,6 +16,8 @@ export class JSONEvent {
     json.descriptionHTML = event.descriptionHTML;
     json.startTime = event.startTime.toISOString();
     json.endTime = event.endTime.toISOString();
+    json.allDay = event.allDay;
+    json.timezone = event.timezone;
     json.calUID = event.calUID;
     json.pID = event.pID;
     json.calendarID = event.calendar.id;
@@ -64,6 +66,8 @@ export class JSONEvent {
     }
     event.startTime = sanitize.date(json.startTime);
     event.endTime = sanitize.date(json.endTime, event.startTime);
+    event.allDay = sanitize.boolean(json.allDay, false);
+    event.timezone = sanitize.string(json.timezone, null);
     event.calUID = json.calUID;
     event.pID = json.pID;
     if (json.calendarID) {
