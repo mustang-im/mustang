@@ -53,7 +53,7 @@ export class SQLMailAccount {
       SELECT
         id, protocol
       FROM emailAccount
-      WHERE isStr = ${idStr}
+      WHERE idStr = ${idStr}
       `) as any;
     if (row.id) {
       acc.dbID = row.id;
@@ -79,7 +79,11 @@ export class SQLMailAccount {
       try {
         let account = newAccountForProtocol(row.protocol);
         await SQLMailAccount.read(row.idStr, row.protocol, row.configJSON, account);
-        accounts.add(account);
+        if (row.protocol == "smtp") {
+          // TODO
+        } else {
+          accounts.add(account);
+        }
       } catch (ex) {
         backgroundError(ex);
       }

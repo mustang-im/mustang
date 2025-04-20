@@ -150,7 +150,6 @@ export class MailAccount extends TCPAccount {
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.emailAddress = sanitize.emailAddress(json.emailAddress);
-
     this.identities.clear();
     this.identities.addAll(sanitize.array(json.identities, []).map(json =>
       MailIdentity.fromConfigJSON(json, this)));
@@ -178,6 +177,7 @@ export class MailAccount extends TCPAccount {
     json.filterRuleActions = this.filterRuleActions.contents.map(rule => rule.toJSON());
     json.oAuth2 = this.oAuth2 ? this.oAuth2.toConfigJSON() : undefined;
     json.outgoingAccountID = this.outgoing?.id;
+    json.emailAddress = this.emailAddress;
     return json;
   }
 
