@@ -47,6 +47,9 @@ export async function migrateToAccountsDB(): Promise<void> {
   for (let incoming of incomingAccounts) {
     let id = (incoming as any)._outgoingAccountID;
     let smtp = smtpAccounts.find(acc => acc.id == id);
+    if (!smtp) {
+      continue;
+    }
     incoming.outgoing = smtp;
   }
 
