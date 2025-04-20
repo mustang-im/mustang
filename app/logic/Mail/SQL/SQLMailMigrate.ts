@@ -3,7 +3,7 @@ import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import type { MailAccount } from "../MailAccount";
 import { SQLMailStorage } from "./SQLMailStorage";
 import { appGlobal } from "../../app";
-import { deletePassword, getPassword } from "../../Auth/passwordLocalStore";
+import { deletePassword, getPassword } from "../../Auth/passwordLocalStorage";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import sql from "../../../../lib/rs-sqlite/index";
 

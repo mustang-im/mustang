@@ -2,7 +2,7 @@ import { newOAuth2UI, OAuth2UIMethod, mapBackOAuth2UIMethod } from "./UI/OAuth2U
 import { OAuth2Error, OAuth2LoginNeeded, OAuth2ServerError } from "./OAuth2Error";
 import { basicAuth } from "./httpAuth";
 import type { Account } from "../Abstract/Account";
-import { getPassword, setPassword, deletePassword } from "./passwordLocalStore";
+import { getPassword, setPassword, deletePassword } from "./passwordLocalStorage";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
