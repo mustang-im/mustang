@@ -58,7 +58,7 @@ export class GraphAccount extends MailAccount {
       addressbook = newAddressbookForProtocol("addressbook-graph") as GraphAddressbook;
       addressbook.name = this.name;
       addressbook.url = this.url;
-      addressbook.username = this.emailAddress;
+      addressbook.username = this.username;
       addressbook.workspace = this.workspace;
       appGlobal.addressbooks.add(addressbook);
     }
@@ -70,7 +70,7 @@ export class GraphAccount extends MailAccount {
       calendar = newCalendarForProtocol("calendar-graph") as GraphCalendar;
       calendar.name = this.name;
       calendar.url = this.url;
-      calendar.username = this.emailAddress;
+      calendar.username = this.username;
       calendar.workspace = this.workspace;
       appGlobal.calendars.add(calendar);
     }
@@ -83,7 +83,7 @@ export class GraphAccount extends MailAccount {
       chatAccount = newChatAccountForProtocol("chat-graph") as GraphChatAccount;
       chatAccount.name = this.name;
       chatAccount.url = this.url;
-      chatAccount.username = this.emailAddress;
+      chatAccount.username = this.username;
       chatAccount.workspace = this.workspace;
       appGlobal.chatAccounts.add(chatAccount);
     }

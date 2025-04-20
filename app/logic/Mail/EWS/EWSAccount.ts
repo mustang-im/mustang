@@ -69,7 +69,7 @@ export class EWSAccount extends MailAccount {
       addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
       addressbook.name = this.name;
       addressbook.url = this.url;
-      addressbook.username = this.emailAddress;
+      addressbook.username = this.username;
       addressbook.workspace = this.workspace;
       appGlobal.addressbooks.add(addressbook);
     }
@@ -83,7 +83,7 @@ export class EWSAccount extends MailAccount {
       calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
       calendar.name = this.name;
       calendar.url = this.url;
-      calendar.username = this.emailAddress;
+      calendar.username = this.username;
       calendar.workspace = this.workspace;
       appGlobal.calendars.add(calendar);
     }

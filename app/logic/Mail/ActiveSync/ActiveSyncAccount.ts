@@ -457,7 +457,7 @@ export class ActiveSyncAccount extends MailAccount {
               calendar = newCalendarForProtocol("calendar-activesync") as ActiveSyncCalendar;
               calendar.name = change.DisplayName;
               calendar.url = url.toString();
-              calendar.username = this.emailAddress;
+              calendar.username = this.username;
               calendar.workspace = this.workspace;
               appGlobal.calendars.add(calendar);
             }
@@ -471,7 +471,7 @@ export class ActiveSyncAccount extends MailAccount {
               addressbook = newAddressbookForProtocol("addressbook-activesync") as ActiveSyncAddressbook;
               addressbook.name = change.DisplayName;
               addressbook.url = url.toString();
-              addressbook.username = this.emailAddress;
+              addressbook.username = this.username;
               addressbook.workspace = this.workspace;
               appGlobal.addressbooks.add(addressbook);
             }

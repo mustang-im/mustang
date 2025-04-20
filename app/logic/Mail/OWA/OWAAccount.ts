@@ -111,7 +111,7 @@ export class OWAAccount extends MailAccount {
     if (!addressbook) {
       addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
       addressbook.url = this.url;
-      addressbook.username = this.emailAddress;
+      addressbook.username = this.username;
       addressbook.workspace = this.workspace;
       appGlobal.addressbooks.add(addressbook);
     }
@@ -125,7 +125,7 @@ export class OWAAccount extends MailAccount {
       calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
       calendar.name = this.name;
       calendar.url = this.url;
-      calendar.username = this.emailAddress;
+      calendar.username = this.username;
       calendar.workspace = this.workspace;
       appGlobal.calendars.add(calendar);
     }
