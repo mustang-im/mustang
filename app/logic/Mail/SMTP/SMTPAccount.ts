@@ -1,4 +1,6 @@
-import { MailAccount, TLSSocketType, AuthMethod } from "../MailAccount";
+import { MailAccount } from "../MailAccount";
+import { AuthMethod } from "../../Abstract/Account";
+import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
 import { CreateMIME } from "./CreateMIME";
 import { appGlobal } from "../../app";
@@ -74,6 +76,13 @@ export class SMTPAccount extends MailAccount {
         ex.authFail = true;
       }
       throw ex;
+    }
+  }
+
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    if (this.mainAccount) {
+      (this.mainAccount as MailAccount).outgoing = this;
     }
   }
 }

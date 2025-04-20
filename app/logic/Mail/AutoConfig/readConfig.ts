@@ -1,4 +1,6 @@
-import { AuthMethod, MailAccount, TLSSocketType, type ConfigSource } from "../MailAccount";
+import type { MailAccount, ConfigSource } from "../MailAccount";
+import { AuthMethod } from "../../Abstract/Account";
+import { TLSSocketType } from "../../Abstract/TCPAccount";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";

@@ -59,7 +59,7 @@ test("Save and read calendars from SQL database", { timeout: 10000 }, async () =
   expect(readCalendar.protocol).toEqual(originalCalendar.protocol);
   expect(readCalendar.name).toEqual(originalCalendar.name);
   expect(readCalendar.username).toEqual(originalCalendar.username);
-  expect(readCalendar.userRealname).toEqual(originalCalendar.userRealname);
+  expect(readCalendar.realname).toEqual(originalCalendar.realname);
   expect(readCalendar.url).toEqual(originalCalendar.url);
 
   // Event

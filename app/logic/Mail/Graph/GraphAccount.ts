@@ -1,4 +1,5 @@
-import { MailAccount, AuthMethod, DeleteStrategy } from "../MailAccount";
+import { MailAccount, DeleteStrategy } from "../MailAccount";
+import { AuthMethod } from "../../Abstract/Account";
 import { GraphFolder } from "./GraphFolder";
 import type { TGraphFolder, UUID } from "./GraphTypes";
 import type { EMail } from "../EMail";

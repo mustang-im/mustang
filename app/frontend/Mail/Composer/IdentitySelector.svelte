@@ -50,7 +50,7 @@
 
   $: $selectedIdentity && setIdentity($selectedIdentity)
   function setIdentity(identity: MailIdentity) {
-    fromName = identity.userRealname;
+    fromName = identity.realname;
     if (!identity?.isCatchAll) {
       fromAddress = identity.emailAddress;
       return;

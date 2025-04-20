@@ -162,7 +162,7 @@ async function fetchTicketUnqueued(): Promise<Ticket> {
       }
       emailAddresses.push(emailAddress);
       if (!name) {
-        name = identity.userRealname;
+        name = identity.realname;
       }
     }
   }
@@ -338,7 +338,7 @@ async function openPurchasePage(mode: "welcome" | "purchase" = "purchase") {
   let primaryIdentity = appGlobal.emailAccounts.first?.identities.first;
   let pageURL = kGetLicenseURL + new URLSearchParams({
     email: primaryIdentity.emailAddress,
-    name: primaryIdentity.userRealname,
+    name: primaryIdentity.realname,
     lang: getUILocale(),
     goal: mode,
   }) + "#" + mode;

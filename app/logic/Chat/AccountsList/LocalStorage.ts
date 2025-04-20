@@ -70,8 +70,8 @@ function readXMPPAccount(prefBranch: string): XMPPAccount {
 }
 
 function readMe(account: ChatAccount) {
-  if (!appGlobal.me.name && account.userRealname) {
-    appGlobal.me.name = account.userRealname;
+  if (!appGlobal.me.name && account.realname) {
+    appGlobal.me.name = account.realname;
   }
   appGlobal.me.chatAccounts.add(new ContactEntry(account.id, "account"));
 }

@@ -36,7 +36,7 @@
 
   async function onContinue() {
     config.name = config.username;
-    config.userRealname = appGlobal.me.name;
+    config.realname = appGlobal.me.name;
     await config.save();
     appGlobal.meetAccounts.add(config);
     showPage = null;

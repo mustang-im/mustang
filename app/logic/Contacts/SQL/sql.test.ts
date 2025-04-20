@@ -57,7 +57,7 @@ test("Save and read contacts from SQL database", { timeout: 10000 }, async () =>
   expect(readAddressbook.protocol).toEqual(originalAddressbook.protocol);
   expect(readAddressbook.name).toEqual(originalAddressbook.name);
   expect(readAddressbook.username).toEqual(originalAddressbook.username);
-  expect(readAddressbook.userRealname).toEqual(originalAddressbook.userRealname);
+  expect(readAddressbook.realname).toEqual(originalAddressbook.realname);
   expect(readAddressbook.url).toEqual(originalAddressbook.url);
 
   // Person

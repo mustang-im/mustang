@@ -48,7 +48,7 @@
     config.baseURL = sp[1] ? "https://" + sp[1] : "https://matrix.org";
     config.password = password;
     config.name = userID;
-    config.userRealname = appGlobal.me.name;
+    config.realname = appGlobal.me.name;
   }
 
   async function onContinue() {

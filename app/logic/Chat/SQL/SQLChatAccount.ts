@@ -3,7 +3,7 @@ import { getDatabase } from "./SQLDatabase";
 import { newChatAccountForProtocol } from "../AccountsList/ChatAccounts";
 import { SQLChatStorage } from "./SQLChatStorage";
 import { getPassword, setPassword, deletePassword } from "../../Auth/passwordStore";
-import { TLSSocketType } from "../../Mail/MailAccount";
+import { TLSSocketType } from "../../Abstract/TCPAccount";
 import { getWorkspaceByID } from "../../Abstract/Workspace";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
@@ -37,7 +37,7 @@ export class SQLChatAccount {
           ${acc.id}, ${acc.name}, ${acc.protocol},
           ${acc.username},
           ${acc.hostname}, ${acc.port}, ${acc.tls}, ${acc.url},
-          ${acc.userRealname}, ${acc.workspace?.id},
+          ${acc.realname}, ${acc.workspace?.id},
           ${JSON.stringify(acc.toConfigJSON(), null, 2)}
         )`);
       acc.dbID = insert.lastInsertRowid;
@@ -47,7 +47,7 @@ export class SQLChatAccount {
           name = ${acc.name},
           username = ${acc.username},
           hostname = ${acc.hostname}, port = ${acc.port}, tls = ${acc.tls}, url = ${acc.url},
-          userRealname = ${acc.userRealname}, workspace = ${acc.workspace?.id},
+          userRealname = ${acc.realname}, workspace = ${acc.workspace?.id},
           configJSON = ${JSON.stringify(acc.toConfigJSON(), null, 2)}
         WHERE id = ${acc.dbID}
         `);
@@ -85,13 +85,13 @@ export class SQLChatAccount {
     acc.port = sanitize.portTCP(row.port, null);
     acc.tls = sanitize.enum(row.tls, [TLSSocketType.Plain, TLSSocketType.TLS, TLSSocketType.STARTTLS], TLSSocketType.Unknown);
     acc.url = sanitize.url(row.url, null, ["wss", "ws", "https", "http", "xmpp", "xmpps"]);
-    acc.userRealname = sanitize.label(row.userRealname, appGlobal.me.name);
+    acc.realname = sanitize.label(row.userRealname, appGlobal.me.name);
     acc.fromConfigJSON(sanitize.json(row.configJSON, {}));
     acc.workspace = getWorkspaceByID(sanitize.string(row.workspace, null));
     acc.password = await getPassword("chat." + acc.id);
     acc.storage = new SQLChatStorage();
-    if (!appGlobal.me.name && acc.userRealname) {
-      appGlobal.me.name = acc.userRealname;
+    if (!appGlobal.me.name && acc.realname) {
+      appGlobal.me.name = acc.realname;
     }
     return acc;
   }

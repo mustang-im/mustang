@@ -1,4 +1,6 @@
-import { AuthMethod, MailAccount, TLSSocketType } from "../MailAccount";
+import { MailAccount } from "../MailAccount";
+import { AuthMethod } from "../../Abstract/Account";
+import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
 import { EWSFolder, getEWSItem } from "./EWSFolder";
 import EWSCreateItemRequest from "./Request/EWSCreateItemRequest";

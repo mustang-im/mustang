@@ -44,7 +44,7 @@
 
   function onAdd() {
     let id = new MailIdentity(account);
-    id.userRealname = account.userRealname;
+    id.realname = account.realname;
     identities.add(id);
   }
   async function onDelete(identity) {
@@ -55,7 +55,7 @@
   async function onSave() {
     assert(identities.hasItems, $t`Need at least 1 identity`);
     account.emailAddress = identities.first.emailAddress;
-    account.userRealname = identities.first.userRealname;
+    account.realname = identities.first.realname;
     await account.save();
   }
 </script>

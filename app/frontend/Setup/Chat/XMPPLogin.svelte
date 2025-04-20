@@ -21,7 +21,7 @@
 
 <script lang="ts">
   import type { XMPPAccount } from "../../../logic/Chat/XMPP/XMPPAccount";
-  import { TLSSocketType } from "../../../logic/Mail/MailAccount";
+  import { TLSSocketType } from "../../../logic/Abstract/TCPAccount";
   import { getDomainForEmailAddress } from "../../../logic/util/netUtil";
   import { appGlobal } from "../../../logic/app";
   import Password from "../Shared/Password.svelte";
@@ -43,7 +43,7 @@
     }
     config.username = jid;
     config.name = jid;
-    config.userRealname = appGlobal.me.name ?? config.username;
+    config.realname = appGlobal.me.name ?? config.username;
     config.hostname = getDomainForEmailAddress(jid);
     config.port = 5281;
     config.tls = TLSSocketType.TLS;

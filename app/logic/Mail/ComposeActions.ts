@@ -209,7 +209,7 @@ export class ComposeActions {
     let fromIdentity = this.email.identity;
     assert(fromIdentity, "Need identity set on mail");
     if (fromIdentity.replyTo) {
-      this.email.replyTo = new PersonUID(fromIdentity.replyTo, fromIdentity.userRealname);
+      this.email.replyTo = new PersonUID(fromIdentity.replyTo, fromIdentity.realname);
     }
     let account = fromIdentity.account;
     let sig = fromIdentity.signatureHTML;

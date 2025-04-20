@@ -1,4 +1,6 @@
-import { MailAccount, AuthMethod, TLSSocketType } from "../MailAccount";
+import { MailAccount } from "../MailAccount";
+import { AuthMethod } from "../../Abstract/Account";
+import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { EMail } from "../EMail";
 import { OWAFolder } from "./OWAFolder";
 import { OWAError } from "./OWAError";

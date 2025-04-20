@@ -1,5 +1,5 @@
 import type { MailAccount } from "../MailAccount";
-import { TLSSocketType } from "../MailAccount";
+import { TLSSocketType } from "../../Abstract/TCPAccount";
 import type { URLString } from "../../util/util";
 
 export function hasEncryption(tls: TLSSocketType): boolean {

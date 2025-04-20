@@ -1,7 +1,8 @@
 import { IMAPAccount } from "../IMAP/IMAPAccount";
 import { POP3Account } from "../POP3/POP3Account";
 import { SMTPAccount } from "../SMTP/SMTPAccount";
-import { AuthMethod, TLSSocketType } from "../MailAccount";
+import { AuthMethod } from "../../Abstract/Account";
+import { TLSSocketType } from "../../Abstract/TCPAccount";
 import { kStandardPorts } from "./configInfo";
 import { getMX } from "./fetchConfig";
 import { PriorityAbortable, ParallelAbortable } from "../../util/Abortable";

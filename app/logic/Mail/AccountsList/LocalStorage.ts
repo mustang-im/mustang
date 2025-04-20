@@ -72,7 +72,7 @@ async function readStandardAccountFromLocalStorage(account: MailAccount, prefBra
   account.emailAddress = sanitize.nonemptystring(localStorage.getItem(prefBranch + "emailAddress"));
   account.username = sanitize.nonemptystring(localStorage.getItem(prefBranch + "username"));
   // unused code - account.password = sanitize.string(localStorage.getItem(prefBranch + "password"));
-  account.userRealname = sanitize.nonemptystring(localStorage.getItem(prefBranch + "userRealname") ??
+  account.realname = sanitize.nonemptystring(localStorage.getItem(prefBranch + "realname") ??
     appGlobal.me.name ?? sanitize.label(localStorage.getItem("me.realname")));
   account.tls = sanitize.translate(localStorage.getItem(prefBranch + "tls"), {
     plain: TLSSocketType.Plain,
@@ -98,7 +98,7 @@ async function readSMTPAccount(prefBranchBase: string, idBase: string): Promise<
     starttls: TLSSocketType.STARTTLS,
   }, TLSSocketType.TLS);
   account.emailAddress = sanitize.nonemptystring(localStorage.getItem(prefBranchBase + "emailAddress"));
-  account.userRealname = sanitize.nonemptystring(localStorage.getItem(prefBranchBase + "userRealname") ??
+  account.realname = sanitize.nonemptystring(localStorage.getItem(prefBranchBase + "realname") ??
     appGlobal.me.name ?? sanitize.label(localStorage.getItem("me.realname")));
   account.name = account.emailAddress;
   account.storage = new MailAccountLocalStorage();
@@ -113,7 +113,7 @@ async function readEWSAccount(prefBranch: string, id: string): Promise<EWSAccoun
   account.emailAddress = sanitize.nonemptystring(localStorage.getItem(prefBranch + "emailAddress"));
   account.username = sanitize.nonemptystring(localStorage.getItem(prefBranch + "username") || account.emailAddress);
   // unused code - account.password = sanitize.string(localStorage.getItem(prefBranch + "password"), null); // not required to exist
-  account.userRealname = sanitize.nonemptystring(localStorage.getItem(prefBranch + "userRealname") ??
+  account.realname = sanitize.nonemptystring(localStorage.getItem(prefBranch + "realname") ??
     appGlobal.me.name ?? sanitize.label(localStorage.getItem("me.realname")));
   account.name = account.emailAddress;
   account.storage = new MailAccountLocalStorage();
@@ -131,8 +131,8 @@ export function saveAccountToLocalStorage(account: MailAccount): void {
   localStorage.setItem(prefBranch + "emailAddress", sanitize.emailAddress(account.emailAddress));
   localStorage.setItem(prefBranch + "username", sanitize.nonemptystring(account.username));
   // unused code - localStorage.setItem(prefBranch + "password", sanitize.string(account.password));
-  localStorage.setItem(prefBranch + "userRealname", sanitize.nonemptystring(
-    account.userRealname ?? appGlobal.me.name ?? sanitize.label(localStorage.getItem("me.realname"))));
+  localStorage.setItem(prefBranch + "realname", sanitize.nonemptystring(
+    account.realname ?? appGlobal.me.name ?? sanitize.label(localStorage.getItem("me.realname"))));
   localStorage.setItem(prefBranch + "tls", sanitize.alphanumdash(account.tls.toString().toLowerCase()));
   account.name = sanitize.emailAddress(account.emailAddress);
 }
@@ -160,8 +160,8 @@ function nextFreeAccountID(): string {
 }
 
 function readMe(account: MailAccount) {
-  if (!appGlobal.me.name && account.userRealname) {
-    appGlobal.me.name = account.userRealname;
+  if (!appGlobal.me.name && account.realname) {
+    appGlobal.me.name = account.realname;
   }
   if (!appGlobal.me.emailAddresses.find(c => c.value == account.emailAddress)) {
     appGlobal.me.emailAddresses.add(new ContactEntry(account.emailAddress, "account"));
