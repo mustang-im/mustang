@@ -1,6 +1,7 @@
 import { appGlobal } from "../../app";
 import sql, { type Database } from "../../../../lib/rs-sqlite/index";
 import { chatDatabaseSchema } from "./createDatabase";
+import { migrateToAccountsDB } from "./SQLChatMigrate";
 
 // <copied from="Mail/SQL/Account/SQLDatabase.ts">
 
@@ -13,6 +14,7 @@ export async function getDatabase(): Promise<Database> {
   const getDatabase = appGlobal.remoteApp.getSQLiteDatabase;
   chatDatabase = await getDatabase("chat.db");
   await chatDatabase.migrate(chatDatabaseSchema);
+  await migrateToAccountsDB();
   await chatDatabase.pragma('foreign_keys = true');
   await chatDatabase.pragma('journal_mode = DELETE');
   return chatDatabase;

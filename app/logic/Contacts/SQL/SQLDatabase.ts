@@ -14,6 +14,7 @@ export async function getDatabase(): Promise<Database> {
   const getDatabase = appGlobal.remoteApp.getSQLiteDatabase;
   contactsDatabase = await getDatabase("contacts.db");
   await contactsDatabase.migrate(contactsDatabaseSchema);
+  await migrateToAccountsDB();
   await contactsDatabase.pragma('foreign_keys = true');
   await contactsDatabase.pragma('journal_mode = DELETE');
   return contactsDatabase;
@@ -29,7 +30,6 @@ export async function makeTestDatabase(): Promise<Database> {
   contactsDatabase = await getDatabase("test-contacts.db");
   await deleteDatabase();
   await contactsDatabase.migrate(contactsDatabaseSchema);
-  await migrateToAccountsDB();
   await contactsDatabase.pragma('foreign_keys = true');
   return contactsDatabase;
 }
