@@ -87,7 +87,7 @@ export class ActiveSyncEvent extends Event {
   toFields(exception?: any) {
     return {
       ExceptionStartTime: toCompact(this.recurrenceStartTime) || [],
-      Timezone: this.recurrenceStartTime ? [] : getTimeZoneActiveSync(),
+      Timezone: this.recurrenceStartTime ? [] : getTimeZoneActiveSync(this.timezone),
       AllDayEvent: this.allDay ? "1" : "0",
       Attendees: (!this.recurrenceStartTime || this.participants.hasItems) ? {
         Attendee: this.participants.contents.map(entry => ({ Email: entry.emailAddress, Name: entry.name, AttendeeType: kRequiredAttendee })),
@@ -207,18 +207,15 @@ export function fromCompact(date: string): Date {
   return new Date(date.replace(/-|:|\..../g, "").replace(/(..)(..T..)(..)/, "-$1-$2:$3:"));
 }
 
-let gTimeZone: string = "";
-function getTimeZoneActiveSync(): string {
-  if (!gTimeZone) {
-    let timezone = IANAToWindowsTimezone[Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
-    let unicode = new Uint16Array(86);
-    let pos = 2;
-    for (let c of timezone) {
-      unicode[pos++] = c.charCodeAt();
-    }
-    gTimeZone = btoa(String.fromCharCode(...new Uint8Array(unicode.buffer)));
+function getTimeZoneActiveSync(timezone): string {
+  timezone ||= Intl.DateTimeFormat().resolvedOptions().timeZone;
+  timezone = IANAToWindowsTimezone[timezone] || "UTC";
+  let unicode = new Uint16Array(86);
+  let pos = 2;
+  for (let c of timezone) {
+    unicode[pos++] = c.charCodeAt();
   }
-  return gTimeZone;
+  return btoa(String.fromCharCode(...new Uint8Array(unicode.buffer)));
 }
 
 function fromActiveSyncZone(zone): string | null {

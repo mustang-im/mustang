@@ -23,8 +23,6 @@ const ResponseTypes: Record<Responses, string> = {
   [ResponseType.Decline]: "DeclineItem",
 };
 
-const gTimeZone = IANAToWindowsTimezone[Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
-
 enum WeekOfMonth {
   'First' = 1,
   'Second' = 2,
@@ -189,8 +187,14 @@ export class OWAEvent extends Event {
     // No support for optional attendees in mustang;
     // all attendees get converted to be required for now.
     request.addField("CalendarItem", "OptionalAttendees", null, "calendar:OptionalAttendees");
-    request.addField("CalendarItem", "StartTimeZone", { __type: "TimeZoneDefinitionType:#Exchange", Id: gTimeZone }, "calendar:StartTimeZone");
-    request.addField("CalendarItem", "EndTimeZone", { __type: "TimeZoneDefinitionType:#Exchange", Id: gTimeZone }, "calendar:EndTimeZone");
+    let timezone = IANAToWindowsTimezone[this.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
+    if (this.calendar.account.isOffice365()) {
+      request.addField("CalendarItem", "StartTimeZoneId", timezone, "calendar:StartTimeZoneId");
+      request.addField("CalendarItem", "EndTimeZoneId", timezone, "calendar:EndTimeZoneId");
+    } else {
+      request.addField("CalendarItem", "StartTimeZone", { __type: "TimeZoneDefinitionType:#Exchange", Id: timezone }, "calendar:StartTimeZone");
+      request.addField("CalendarItem", "EndTimeZone", { __type: "TimeZoneDefinitionType:#Exchange", Id: timezone }, "calendar:EndTimeZone");
+    }
     if (this.calendar.account.isOffice365() && this.isOnline && !this.onlineMeetingURL) {
       request.addField("CalendarItem", "IsOnlineMeeting", true, "IsOnlineMeeting");
       request.addField("CalendarItem", "OnlineMeetingProvider", "TeamsForBusiness", "OnlineMeetingProvider");
