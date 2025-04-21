@@ -5,7 +5,7 @@ import type { EMail } from "./EMail";
 import type { SMTPAccount } from "./SMTP/SMTPAccount";
 import { Event } from "../Calendar/Event";
 import { Participant } from "../Calendar/Participant";
-import { InvitationResponse, type InvitationResponseInMessage } from "../Calendar/Invitation";
+import { InvitationResponse, type InvitationResponseInMessage } from "../Calendar/Invitation/InvitationStatus";
 import { ContactEntry, type Person } from "../Abstract/Person";
 import { FilterRuleAction } from "./FilterRules/FilterRuleAction";
 import { OAuth2 } from "../Auth/OAuth2";

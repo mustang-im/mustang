@@ -7,7 +7,7 @@ import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import type { MailIdentity } from "./MailIdentity";
 import { Event } from "../Calendar/Event";
-import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage, type iCalMethod } from "../Calendar/Invitation";
+import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { EMailProcessorList, ProcessingStartOn } from "./EMailProccessor";
 import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
 import { gt } from "../../l10n/l10n";

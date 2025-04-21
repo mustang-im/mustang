@@ -67,7 +67,7 @@
 
 <script lang="ts">
   import { type Event, RecurrenceCase } from "../../../logic/Calendar/Event";
-  import { InvitationResponse } from "../../../logic/Calendar/Invitation";
+  import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import TitleBox from "./TitleBox.svelte";
   import TimeBox from "./TimeBox.svelte";
   import RepeatBox from './RepeatBox.svelte';

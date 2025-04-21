@@ -1,7 +1,7 @@
 import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
 import { RecurrenceRule } from "../RecurrenceRule";
-import { InvitationMessage, ParticipationStatus, InvitationResponse } from "../Invitation";
+import { InvitationMessage, ParticipationStatus, InvitationResponse } from "../Invitation/InvitationStatus";
 import ICalParser from "./ICalParser";
 import WindowsToIANATimezone from "./WindowsToIANATimezone";
 import type { EMail } from "../../Mail/EMail";

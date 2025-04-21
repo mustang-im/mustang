@@ -1,6 +1,6 @@
 import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
-import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation";
+import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import IANAToWindowsTimezone from "../ICal/IANAToWindowsTimezone";
 import WindowsToIANATimezone from "../ICal/WindowsToIANATimezone";
@@ -116,7 +116,7 @@ export class ActiveSyncEvent extends Event {
 
   async saveToServer(): Promise<void> {
     let organizer;
-    if (this.participants.length && this.response <= InvitationResponse.Organizer) {
+    if (this.participants.length && this.response == InvitationResponse.Organizer) {
       organizer = this.participants.find(participant => participant.emailAddress == this.calendar.account.emailAddress);
       if (organizer) {
         organizer.response = InvitationResponse.Organizer;
@@ -132,7 +132,7 @@ export class ActiveSyncEvent extends Event {
       await this.saveFields(this.toFields());
     }
     if (organizer) {
-      await this.outgoingActions.sendInvitations(this.calendar.account);
+      await this.outgoingInvitation.sendInvitations(this.calendar.account);
     }
   }
 
@@ -189,9 +189,9 @@ export class ActiveSyncEvent extends Event {
         throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.calendar);
       }
     }
-    if (this.response <= InvitationResponse.Organizer) {
-      await this.outgoingActions.sendCancellations(this.calendar.account);
-    } else {
+    if (this.response == InvitationResponse.Organizer) {
+      await this.outgoingInvitation.sendCancellations(this.calendar.account);
+    } else if (this.response) {
       for (let participant of this.participants) {
         if (participant.response == InvitationResponse.Organizer) {
           await this.sendInvitationResponse(InvitationResponse.Decline, this.calendar.account);

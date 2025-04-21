@@ -1,5 +1,5 @@
 import { PersonUID, findPerson } from "../Abstract/PersonUID";
-import { InvitationResponse } from "./Invitation";
+import { InvitationResponse } from "./Invitation/InvitationStatus";
 import { notifyChangedProperty } from "../util/Observable";
 
 export class Participant extends PersonUID {

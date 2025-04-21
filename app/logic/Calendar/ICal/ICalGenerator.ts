@@ -1,5 +1,5 @@
 import type { Event } from "../Event";
-import { InvitationResponse, ParticipationStatus, type iCalMethod } from "../Invitation";
+import { InvitationResponse, ParticipationStatus, type iCalMethod } from "../Invitation/InvitationStatus";
 import { appName } from "../../build";
 
 export function getICal(event: Event, method?: iCalMethod): { method: iCalMethod, content: string } | null {

@@ -10,7 +10,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation";
+  import { InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import Button from "../../Shared/Button.svelte";
   import { t } from "../../../l10n/l10n";
 

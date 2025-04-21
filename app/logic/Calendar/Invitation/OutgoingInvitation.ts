@@ -1,10 +1,10 @@
-import type { Event } from "./Event";
-import type { Participant } from "./Participant";
-import { InvitationResponse, type iCalMethod } from "./Invitation";
-import type { MailAccount } from "../Mail/MailAccount";
-import type { PersonUID } from "../Abstract/PersonUID";
+import type { Event } from "../Event";
+import type { Participant } from "../Participant";
+import { InvitationResponse, type iCalMethod } from "./InvitationStatus";
+import type { MailAccount } from "../../Mail/MailAccount";
+import type { PersonUID } from "../../Abstract/PersonUID";
 
-export default class OutgoingActions {
+export default class OutgoingInvitation {
   event: Event;
 
   constructor(event: Event) {

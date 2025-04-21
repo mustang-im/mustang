@@ -1,8 +1,8 @@
 import type { Calendar } from "./Calendar";
 import { Participant } from "./Participant";
 import type { RecurrenceRule } from "./RecurrenceRule";
-import OutgoingActions from "./OutgoingActions";
-import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation";
+import OutgoingInvitation from "./Invitation/OutgoingInvitation";
+import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
 import type { MailIdentity } from "../Mail/MailIdentity";
 import { PersonUID } from "../Abstract/PersonUID";
@@ -198,8 +198,8 @@ export class Event extends Observable {
     this.response = original.response;
   }
 
-  get outgoingActions() {
-    return new OutgoingActions(this);
+  get outgoingInvitation() {
+    return new OutgoingInvitation(this);
   }
 
   protected participantMe(): { identity: MailIdentity, participant: Participant, person: PersonUID } {
@@ -283,7 +283,7 @@ export class Event extends Observable {
     }
     let { identity, participant, person } = this.participantMe();
     participant.response = InvitationResponse.Organizer;
-    await this.outgoingActions.sendInvitations(identity.account, person);
+    await this.outgoingInvitation.sendInvitations(identity.account, person);
   }
 
   get isNew(): boolean {
@@ -314,10 +314,10 @@ export class Event extends Observable {
     if (!this.participants.length) {
       return;
     }
-    if (this.response <= InvitationResponse.Organizer) {
+    if (this.response == InvitationResponse.Organizer) {
       let { identity, person } = this.participantMe();
-      await this.outgoingActions.sendCancellations(identity.account, person);
-    } else {
+      await this.outgoingInvitation.sendCancellations(identity.account, person);
+    } else if (this.response) {
       for (let participant of this.participants) {
         if (participant.response == InvitationResponse.Organizer) {
           await this.respondToInvitation(InvitationResponse.Decline);
