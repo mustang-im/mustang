@@ -4,7 +4,7 @@
       <label for="rule-account-name">{$t`Runs in account`}</label>
       <hbox id="rule-account-name">{rule.account.name}</hbox>
     </hbox>
-    <input type="text" bind:value={rule.name} placeholder={$t`Name of the rule`} />
+    <input type="text" bind:value={rule.name} placeholder={$t`Name of the rule`} class="font-normal" />
 
     <RuleActions {rule} />
 
@@ -57,7 +57,6 @@
   input {
     margin: 12px;
     padding: 2px 4px;
-    font-size: 16px;
   }
   .buttons {
     margin: 12px;

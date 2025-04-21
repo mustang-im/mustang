@@ -1,6 +1,6 @@
 <hbox class="footer">
-  <a href="{siteRoot}/eula" target="_blank">{$t`Terms of use`}</a>
-  <a href="{siteRoot}/privacy" target="_blank">{$t`Privacy`}</a>
+  <a href="{siteRoot}/eula" target="_blank" class="font-smallest">{$t`Terms of use`}</a>
+  <a href="{siteRoot}/privacy" target="_blank" class="font-smallest">{$t`Privacy`}</a>
 </hbox>
 
 <script lang="ts">
@@ -16,6 +16,5 @@
     margin-inline-end: 24px;
     color: #8583A8;
     font-weight: 300;
-    font-size: 12px;
   }
 </style>

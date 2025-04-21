@@ -114,7 +114,7 @@
           </Scroll>
           <hbox class="footer">
             <hbox class="subject" flex>
-              <input type="text" bind:value={mail.subject} tabindex={1} placeholder={$t`Subject`} />
+              <input type="text" bind:value={mail.subject} tabindex={1} placeholder={$t`Subject`} class="font-normal" />
             </hbox>
             <hbox class="buttons">
               <RoundButton
@@ -406,7 +406,6 @@
     margin-inline-end: 8px;
   }
   .subject input {
-    font-size: 16px;
   }
   .footer {
     margin-block-start: 8px;
