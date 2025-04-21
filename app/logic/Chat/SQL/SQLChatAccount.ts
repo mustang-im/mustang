@@ -68,7 +68,7 @@ export class SQLChatAccount {
     for (let row of rows) {
       try {
         let account = newChatAccountForProtocol(row.protocol);
-        await SQLChatAccount.read(row.idStr, row.protocol, row.configJSON, account);
+        await SQLChatAccount.read(row.idStr, row.protocol, row.json, account);
         accounts.add(account);
       } catch (ex) {
         backgroundError(ex);

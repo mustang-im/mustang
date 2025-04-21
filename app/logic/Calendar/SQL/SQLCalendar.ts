@@ -68,7 +68,7 @@ export class SQLCalendar {
     for (let row of rows) {
       try {
         let calendar = newCalendarForProtocol(row.protocol);
-        await SQLCalendar.read(row.idStr, row.protocol, row.configJSON, calendar);
+        await SQLCalendar.read(row.idStr, row.protocol, row.json, calendar);
         calendars.add(calendar);
       } catch (ex) {
         backgroundError(ex);

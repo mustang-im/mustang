@@ -68,7 +68,7 @@ export class SQLAddressbook {
     for (let row of rows) {
       try {
         let account = newAddressbookForProtocol(row.protocol);
-        await SQLAddressbook.read(row.idStr, row.protocol, row.configJSON, account);
+        await SQLAddressbook.read(row.idStr, row.protocol, row.json, account);
         accounts.add(account);
       } catch (ex) {
         backgroundError(ex);

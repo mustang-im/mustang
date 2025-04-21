@@ -66,7 +66,7 @@ export class SQLAccount {
   /**
    * Called by SQLMailAccount.readAll() etc.
    */
-  static async readAll(type: AccountType): Promise<{ idStr: string, protocol: string, configJSON: string }[]> {
+  static async readAll(type: AccountType): Promise<{ idStr: string, protocol: string, json: string }[]> {
     let rows = await (await getDatabase()).all(sql`
       SELECT
         idStr, protocol, json
