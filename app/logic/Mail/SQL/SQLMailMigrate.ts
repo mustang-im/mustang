@@ -12,7 +12,7 @@ export async function migrateToAccountsDB(): Promise<void> {
   try {
     rows = await (await getDatabase()).all(sql`
       SELECT
-        idStr, name, protocol, emailAddress,
+        id, idStr, name, protocol, emailAddress,
         username,
         hostname, port, tls, authMethod, url,
         outgoingAccountID,
@@ -26,7 +26,6 @@ export async function migrateToAccountsDB(): Promise<void> {
       throw ex;
     }
   }
-  console.log("existing accounts in DB", rows);
   if (!rows?.length) {
     return;
   }
@@ -34,9 +33,7 @@ export async function migrateToAccountsDB(): Promise<void> {
   if (!rows.length) {
     return;
   }
-  console.log("existing accounts in old format", rows);
   let accounts = rows.map(migrateAccount);
-  console.log("accounts", accounts);
 
   await deleteDatabase();
   await getDatabase();
@@ -45,12 +42,11 @@ export async function migrateToAccountsDB(): Promise<void> {
   let smtpAccounts = accounts.filter(acc => acc.protocol == "smtp");
   let incomingAccounts = accounts.filter(acc => acc.protocol != "smtp");
   for (let incoming of incomingAccounts) {
-    let id = (incoming as any)._outgoingAccountID;
-    let smtp = smtpAccounts.find(acc => acc.id == id);
-    if (!smtp) {
-      continue;
+    let dbID = (incoming as any)._outgoingDBID;
+    let smtp = smtpAccounts.find(acc => (acc as any)._dbID == dbID);
+    if (smtp) {
+      incoming.outgoing = smtp;
     }
-    incoming.outgoing = smtp;
   }
 
   for (let account of accounts) {
@@ -58,7 +54,6 @@ export async function migrateToAccountsDB(): Promise<void> {
     await deletePassword("mail." + account.id);
     account.storage = new SQLMailStorage();
     await account.save();
-    console.log("Saved mail account", account);
   }
 
   appGlobal.emailAccounts.addAll(incomingAccounts);
@@ -76,6 +71,7 @@ function migrateAccount(row: any): MailAccount {
     }
   }
   account.fromConfigJSON(json);
-  (account as any)._outgoingAccountID = json.outgoingAccountID;
+  (account as any)._outgoingDBID = row.outgoingAccountID;
+  (account as any)._dbID = row.id;
   return account;
 }

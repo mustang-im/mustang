@@ -3,7 +3,6 @@ import { getDatabase } from "./SQLDatabase";
 import { AccountType, SQLAccount } from "./Account/SQLAccount";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { SQLMailStorage } from "./SQLMailStorage";
-import { SMTPAccount } from "../SMTP/SMTPAccount";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
@@ -66,30 +65,32 @@ export class SQLMailAccount {
       await SQLMailAccount.save(acc);
     }
     acc.storage = new SQLMailStorage();
-
-    let outgoingAccountID = sanitize.integer(row.outgoingAccountID, null);
-    /* TODO
-    if (outgoingAccountID) {
-      acc.outgoing = new SMTPAccount();
-      await SQLMailAccount.read(outgoingAccountID, acc.outgoing);
-    }*/
     return acc;
   }
 
   static async readAll(): Promise<ArrayColl<MailAccount>> {
     let rows = await SQLAccount.readAll(AccountType.Mail);
     let accounts = new ArrayColl<MailAccount>();
+    let smtpAccounts = new ArrayColl<MailAccount>();
     for (let row of rows) {
       try {
         let account = newAccountForProtocol(row.protocol);
         await SQLMailAccount.read(row.idStr, row.protocol, row.configJSON, account);
         if (row.protocol == "smtp") {
-          // TODO
+          smtpAccounts.add(account);
         } else {
           accounts.add(account);
         }
       } catch (ex) {
         backgroundError(ex);
+      }
+    }
+    // Set SMTP accounts
+    for (let account of accounts) {
+      let id = account.outgoingAccountID;
+      delete account.outgoingAccountID;
+      if (id) {
+        account.outgoing = smtpAccounts.find(acc => acc.id == id);
       }
     }
     if (accounts.isEmpty) {

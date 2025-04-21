@@ -139,7 +139,6 @@ export class Account extends Observable {
     json.loginOnStartup = this.loginOnStartup;
     json.color = this.color;
     json.icon = this.icon;
-    console.log("account config json saving", json);
     return json;
   }
 

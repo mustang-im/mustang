@@ -21,6 +21,8 @@ export class MailAccount extends TCPAccount {
    * Only set for IMAP and POP3, but null for JMAP, Exchange etc. */
   @notifyChangedProperty
   outgoing: MailAccount = null;
+  /** Only for reading from DB. SMTP server ID. */
+  outgoingAccountID: string | null = null;
   /** Error that broke the server connection, unrecoverable, including login failures. */
   fatalError: Error | null = null;
   spamStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
@@ -150,6 +152,7 @@ export class MailAccount extends TCPAccount {
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.emailAddress = sanitize.emailAddress(json.emailAddress);
+    this.outgoingAccountID = sanitize.alphanumdash(json.outgoingAccountID, null);
     this.identities.clear();
     this.identities.addAll(sanitize.array(json.identities, []).map(json =>
       MailIdentity.fromConfigJSON(json, this)));

@@ -14,7 +14,6 @@ export async function getDatabase(): Promise<Database> {
   const getDatabase = appGlobal.remoteApp.getSQLiteDatabase;
   mailDatabase = await getDatabase("mail.db");
   await mailDatabase.migrate(mailDatabaseSchema);
-  console.log("migrate");
   await migrateToAccountsDB();
   await mailDatabase.pragma('foreign_keys = true');
   await mailDatabase.pragma('journal_mode = DELETE');
