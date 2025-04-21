@@ -5,8 +5,6 @@
     * Results miss From - Include from/to (both content of messages, and name of recipients/sender)
       * Email
       * Chat
-  * SQL
-    * Non-search properties as JSON
   * Main/Dependent accounts
     * Calendar
     * SMTP
@@ -16,7 +14,6 @@
   * Calendar
     * Edit Event:
       * Buttons: Recurring
-      * Buttons: Cancel?
       * Sidebar
     * List view: FastList missing scrollbar
     * Invitations
