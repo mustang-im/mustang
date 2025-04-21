@@ -1,6 +1,6 @@
 import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
-import { ResponseType, type Responses } from "../Invitation";
+import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import IANAToWindowsTimezone from "../ICal/IANAToWindowsTimezone";
 import WindowsToIANATimezone from "../ICal/WindowsToIANATimezone";
@@ -13,10 +13,10 @@ import type { ArrayColl } from "svelte-collections";
 const kRequiredAttendee = "1";
 const kRecurrenceTypes = [Frequency.Daily, Frequency.Weekly, Frequency.Monthly, Frequency.Monthly, /* don't know why Microsoft left this one out */, Frequency.Yearly, Frequency.Yearly];
 
-const ActiveSyncResponse: Record<Responses, number> = {
-  [ResponseType.Accept]: 1,
-  [ResponseType.Tentative]: 2,
-  [ResponseType.Decline]: 3,
+const ActiveSyncResponse: Record<InvitationResponseInMessage, number> = {
+  [InvitationResponse.Accept]: 1,
+  [InvitationResponse.Tentative]: 2,
+  [InvitationResponse.Decline]: 3,
 };
 
 export class ActiveSyncEvent extends Event {
@@ -68,8 +68,8 @@ export class ActiveSyncEvent extends Event {
     }
     this.alarm = wbxmljs.Reminder ? new Date(this.startTime.getTime() - 60 * sanitize.integer(wbxmljs.Reminder)) : null;
     this.location = sanitize.nonemptystring(wbxmljs.Location, "");
-    this.participants.replaceAll(ensureArray(wbxmljs.Attendees?.Attendee).map(attendee => new Participant(sanitize.emailAddress(attendee.Email), sanitize.nonemptystring(attendee.Name, null), sanitize.integer(attendee.AttendeeStatus, ResponseType.Unknown))));
-    this.response = sanitize.integer(wbxmljs.ResponseType, ResponseType.Unknown);
+    this.participants.replaceAll(ensureArray(wbxmljs.Attendees?.Attendee).map(attendee => new Participant(sanitize.emailAddress(attendee.Email), sanitize.nonemptystring(attendee.Name, null), sanitize.integer(attendee.AttendeeStatus, InvitationResponse.Unknown))));
+    this.response = sanitize.integer(wbxmljs.ResponseType, InvitationResponse.Unknown);
   }
 
   newRecurrenceRule(wbxmljs: any): RecurrenceRule {
@@ -178,8 +178,8 @@ export class ActiveSyncEvent extends Event {
     }
   }
 
-  async respondToInvitation(response: Responses): Promise<void> {
-    assert(this.response > ResponseType.Organizer, "Only invitations can be responded to");
+  async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
+    assert(this.response > InvitationResponse.Organizer, "Only invitations can be responded to");
     let request = {
       Request: {
         UserResponse: ActiveSyncResponse[response],

@@ -1,20 +1,24 @@
 export type iCalMethod = "CANCEL" | "REQUEST" | "REPLY";
 
 /**
- * For an inbox item that represents a scheduling message, the type of message:
- * Accepted/Tentative/Declined responses, invitations, or cancellations.
+ * For an inbox item that represents a scheduling message, the type of message.
  */
-export enum Scheduling {
+export enum InvitationMessage {
   None = 0,
-  Accepted = 1,
-  Tentative = 2,
-  Declined = 3,
-  Request = 4,
-  Cancellation = 5,
+  Invitation = 4, // METHOD:REQUEST, an incoming invitation
+  CancelledEvent = 5, // METHOD:CANCEL, a follow-up cancellation
+  ParticipantReply = 6, // METHOD:REPLY, a reply to your outgoing invitation
 }
 
-/* Note: These are EWS/OWA names and ActiveSync values. */
-export enum ResponseType {
+/**
+ * For meetings only, these values indicate the status of either:
+ * - For any given participant, their participation in an event
+ * - The user's own participation in an event
+ *   In particular, this identifies whether the user organised this meeting.
+ *
+ * Note: These are EWS/OWA names and ActiveSync values.
+ */
+export enum InvitationResponse {
   Unknown = 0,
   Organizer = 1,
   Tentative = 2,
@@ -23,12 +27,12 @@ export enum ResponseType {
   NoResponseReceived = 5,
 }
 
-/** Just the values used by meeting responses. */
-export type Responses = ResponseType.Accept | ResponseType.Tentative | ResponseType.Decline;
+/** Just the values that can appear in iTip messages */
+export type InvitationResponseInMessage = InvitationResponse.Accept | InvitationResponse.Tentative | InvitationResponse.Decline;
 
-/** Map from iCal PARTSTAT to Responses */
+/** Map from iCal PARTSTAT to InvitationResponseInMessage */
 export enum ParticipationStatus {
-  TENTATIVE = ResponseType.Tentative,
-  ACCEPTED = ResponseType.Accept,
-  DECLINED = ResponseType.Decline,
+  TENTATIVE = InvitationResponse.Tentative,
+  ACCEPTED = InvitationResponse.Accept,
+  DECLINED = InvitationResponse.Decline,
 }

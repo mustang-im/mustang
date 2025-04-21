@@ -4,7 +4,7 @@ import { ActiveSyncError } from "./ActiveSyncError";
 import { ActiveSyncEvent } from "../../Calendar/ActiveSync/ActiveSyncEvent";
 import { type Tag, getTagByName } from "../Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { Scheduling, ResponseType, type Responses } from "../../Calendar/Invitation";
+import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../Calendar/Invitation";
 import { ensureArray, assert, NotSupported } from "../../util/util";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -12,17 +12,17 @@ import type { ArrayColl } from "svelte-collections";
 import { parseOneAddress, parseAddressList, type ParsedMailbox } from "email-addresses";
 
 const ExchangeScheduling: Record<string, number> = {
-  "IPM.Schedule.Meeting.Resp.Pos": Scheduling.Accepted,
-  "IPM.Schedule.Meeting.Resp.Tent": Scheduling.Tentative,
-  "IPM.Schedule.Meeting.Resp.Neg": Scheduling.Declined,
-  "IPM.Schedule.Meeting.Request": Scheduling.Request,
-  "IPM.Schedule.Meeting.Canceled": Scheduling.Cancellation,
+  "IPM.Schedule.Meeting.Resp.Pos": InvitationMessage.ParticipantReply,
+  "IPM.Schedule.Meeting.Resp.Tent": InvitationMessage.ParticipantReply,
+  "IPM.Schedule.Meeting.Resp.Neg": InvitationMessage.ParticipantReply,
+  "IPM.Schedule.Meeting.Request": InvitationMessage.Invitation,
+  "IPM.Schedule.Meeting.Canceled": InvitationMessage.CancelledEvent,
 };
 
-const ActiveSyncResponse: Record<Responses, number> = {
-  [ResponseType.Accept]: 1,
-  [ResponseType.Tentative]: 2,
-  [ResponseType.Decline]: 3,
+const ActiveSyncResponse: Record<InvitationResponseInMessage, number> = {
+  [InvitationResponse.Accept]: 1,
+  [InvitationResponse.Tentative]: 2,
+  [InvitationResponse.Decline]: 3,
 };
 
 export class ActiveSyncEMail extends EMail {
@@ -71,7 +71,7 @@ export class ActiveSyncEMail extends EMail {
     setPersons(this.cc, wbxmljs.Cc);
     setPersons(this.bcc, wbxmljs.Bcc);
     this.contact = this.outgoing ? this.to.first : this.from;
-    this.scheduling = ExchangeScheduling[wbxmljs.MessageClass] || Scheduling.None;
+    this.scheduling = ExchangeScheduling[wbxmljs.MessageClass] || InvitationMessage.None;
     /* Can't use this data because the description is missing.
     if (wbxmljs.MeetingRequest) {
       let event = new ActiveSyncEvent();
@@ -184,8 +184,8 @@ export class ActiveSyncEMail extends EMail {
     }
   }
 
-  async respondToInvitation(response: Responses): Promise<void> {
-    assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
+  async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
+    assert(this.scheduling == InvitationMessage.Invitation, "Only invitations can be responded to");
     let request = {
       Request: {
         UserResponse: ActiveSyncResponse[response],

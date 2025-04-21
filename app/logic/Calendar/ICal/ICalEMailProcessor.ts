@@ -1,7 +1,7 @@
 import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
 import { RecurrenceRule } from "../RecurrenceRule";
-import { Scheduling, ParticipationStatus, ResponseType } from "../Invitation";
+import { InvitationMessage, ParticipationStatus, InvitationResponse } from "../Invitation";
 import ICalParser from "./ICalParser";
 import WindowsToIANATimezone from "./WindowsToIANATimezone";
 import type { EMail } from "../../Mail/EMail";
@@ -26,17 +26,16 @@ export class ICalEMailProcessor extends EMailProcessor {
 }
 
 /* Find the iTIP method from a parsed vcalendar part */
-function iTIPMethod(ics: any): Scheduling {
+function iTIPMethod(ics: any): InvitationMessage {
   switch (ics.containers.vcalendar?.[0].entries.method?.[0].value) {
   case "CANCEL":
-    return Scheduling.Cancellation;
+    return InvitationMessage.CancelledEvent;
   case "REQUEST":
-    return Scheduling.Request;
+    return InvitationMessage.Invitation;
   case "REPLY":
-    // Any other value will do, just make something up
-    return Scheduling.Declined + Scheduling.Tentative + Scheduling.Accepted;
+    return InvitationMessage.ParticipantReply;
   }
-  return Scheduling.None;
+  return InvitationMessage.None;
 }
 
 const icalDateRegex = /^(\d{4})(\d\d)(\d\dT\d\d)(\d\d)(\d\dZ?)$/;
@@ -115,15 +114,15 @@ function convertICalToEvent(ics: ICalParser): Event | null {
   let organizer: Participant | undefined;
   if (vevent.entries.organizer) {
     let value = vevent.entries.organizer[0].value.replace(/^MAILTO:/i, "");
-    organizer = new Participant(sanitize.emailAddress(value), sanitize.label(vevent.entries.organizer[0].properties.cn, null), ResponseType.Organizer);
+    organizer = new Participant(sanitize.emailAddress(value), sanitize.label(vevent.entries.organizer[0].properties.cn, null), InvitationResponse.Organizer);
     event.participants.add(organizer);
   }
   if (vevent.entries.attendee) {
     for (let { value, properties: { role, partstat, cn } } of vevent.entries.attendee) {
       value = value.replace(/^MAILTO:/i, "");
-      let participant = new Participant(sanitize.emailAddress(value), sanitize.label(cn, null), sanitize.integer(ParticipationStatus[partstat?.toUpperCase()] || ResponseType.Unknown));
+      let participant = new Participant(sanitize.emailAddress(value), sanitize.label(cn, null), sanitize.integer(ParticipationStatus[partstat?.toUpperCase()] || InvitationResponse.Unknown));
       if (participant.emailAddress == organizer?.emailAddress || /^CHAIR$/i.test(role)) {
-        participant.response = ResponseType.Organizer;
+        participant.response = InvitationResponse.Organizer;
         // Remove the organizer as it has less detail than an attendee
         event.participants.remove(organizer);
         organizer = null;

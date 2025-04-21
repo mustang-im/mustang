@@ -14,7 +14,7 @@
       {ex?.message ?? ex}
     {/await}
   {/if}
-  {#if message.scheduling == Scheduling.Request}
+  {#if message.scheduling == InvitationMessage.Invitation}
     <hbox class="buttons">
       <Button
         label={$t`Confirm *=> Confirm to attend the meeting`}
@@ -34,7 +34,7 @@
           classes="maybe font-normal" />
       </ButtonMenu>
     </hbox>
-  {:else if message.scheduling == Scheduling.Accepted}
+  {:else if false}
     <hbox class="buttons">
       <Button
         label={$t`Confirmed *=> A meeting request has been confirmed by you`}
@@ -55,7 +55,7 @@
           classes="maybe font-normal" />
       </ButtonMenu>
     </hbox>
-  {:else if message.scheduling == Scheduling.Declined}
+  {:else if false}
     <hbox class="buttons">
       <Button
         label={$t`Rejected *=> A meeting request has been declined by you`}
@@ -81,7 +81,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { Scheduling, ResponseType, type Responses } from "../../../logic/Calendar/Invitation";
+  import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation";
   import InvitationDisplay from "./InvitationDisplay.svelte";
   import Button from "../../Shared/Button.svelte";
   import AcceptIcon from "lucide-svelte/icons/check-check";
@@ -94,17 +94,17 @@
 
   export let message: EMail;
 
-  async function respond(response: Responses) {
+  async function respond(response: InvitationResponseInMessage) {
     await message.respondToInvitation(response);
   }
   async function onAccept() {
-    await respond(ResponseType.Accept);
+    await respond(InvitationResponse.Accept);
   }
   async function onTentative() {
-    await respond(ResponseType.Tentative);
+    await respond(InvitationResponse.Tentative);
   }
   async function onDecline() {
-    await respond(ResponseType.Decline);
+    await respond(InvitationResponse.Decline);
   }
 </script>
 

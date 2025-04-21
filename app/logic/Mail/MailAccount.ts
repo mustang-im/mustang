@@ -4,7 +4,7 @@ import { Folder, SpecialFolder } from "./Folder";
 import type { EMail } from "./EMail";
 import { Event } from "../Calendar/Event";
 import { Participant } from "../Calendar/Participant";
-import { ResponseType, type Responses } from "../Calendar/Invitation";
+import { InvitationResponse, type InvitationResponseInMessage } from "../Calendar/Invitation";
 import { ContactEntry, type Person } from "../Abstract/Person";
 import { FilterRuleAction } from "./FilterRules/FilterRuleAction";
 import { OAuth2 } from "../Auth/OAuth2";
@@ -77,8 +77,8 @@ export class MailAccount extends TCPAccount {
     throw new AbstractFunction();
   }
 
-  async sendInvitationResponse(invitation: Event, response: Responses): Promise<void> {
-    let organizer = invitation.participants.find(participant => participant.response == ResponseType.Organizer);
+  async sendInvitationResponse(invitation: Event, response: InvitationResponseInMessage): Promise<void> {
+    let organizer = invitation.participants.find(participant => participant.response == InvitationResponse.Organizer);
     assert(organizer, "Invitation should have an organizer");
     let email = this.newEMailFrom();
     email.to.add(organizer);

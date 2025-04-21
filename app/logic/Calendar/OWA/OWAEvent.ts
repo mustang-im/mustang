@@ -1,6 +1,6 @@
 import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
-import { ResponseType, type Responses } from "../Invitation";
+import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import IANAToWindowsTimezone from "../ICal/IANAToWindowsTimezone";
 import WindowsToIANATimezone from "../ICal/WindowsToIANATimezone";
@@ -17,10 +17,10 @@ import type { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 
-const ResponseTypes: Record<Responses, string> = {
-  [ResponseType.Accept]: "AcceptItem",
-  [ResponseType.Tentative]: "TentativelyAcceptItem",
-  [ResponseType.Decline]: "DeclineItem",
+const ResponseTypes: Record<InvitationResponseInMessage, string> = {
+  [InvitationResponse.Accept]: "AcceptItem",
+  [InvitationResponse.Tentative]: "TentativelyAcceptItem",
+  [InvitationResponse.Decline]: "DeclineItem",
 };
 
 enum WeekOfMonth {
@@ -102,7 +102,7 @@ export class OWAEvent extends Event {
     }
     this.participants.replaceAll(participants);
     if (json.ResponseType) {
-      this.response = sanitize.integer(ResponseType[json.ResponseType], ResponseType.Unknown);
+      this.response = sanitize.integer(InvitationResponse[json.ResponseType], InvitationResponse.Unknown);
     }
     if (json.LastModifiedTime) {
       this.lastMod = sanitize.date(json.LastModifiedTime);
@@ -321,8 +321,8 @@ export class OWAEvent extends Event {
     }
   }
 
-  async respondToInvitation(response: Responses): Promise<void> {
-    assert(this.response > ResponseType.Organizer, "Only invitations can be responded to");
+  async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
+    assert(this.response > InvitationResponse.Organizer, "Only invitations can be responded to");
     let request = new OWACreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField(ResponseTypes[response], "ReferenceItemId", {
       __type: "ItemId:#Exchange",
@@ -335,7 +335,7 @@ export class OWAEvent extends Event {
 
 function addParticipants(attendees, participants: Participant[]) {
   for (let attendee of attendees) {
-    participants.push(new Participant(sanitize.emailAddress(attendee.Mailbox.EmailAddress), sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(ResponseType[attendee.ResponseType], ResponseType.Unknown)));
+    participants.push(new Participant(sanitize.emailAddress(attendee.Mailbox.EmailAddress), sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType], InvitationResponse.Unknown)));
   }
 }
 

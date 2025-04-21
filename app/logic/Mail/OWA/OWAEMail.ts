@@ -8,7 +8,7 @@ import OWAUpdateItemRequest from "./Request/OWAUpdateItemRequest";
 import { owaDownloadMsgsRequest } from "./Request/OWAFolderRequests";
 import { owaGetEventsRequest } from "../../Calendar/OWA/Request/OWAEventRequests";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { Scheduling, ResponseType, type Responses } from "../../Calendar/Invitation";
+import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../Calendar/Invitation";
 import { base64ToArrayBuffer, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
@@ -54,7 +54,7 @@ export class OWAEMail extends EMail {
     setPersons(this.cc, json.CcRecipients);
     setPersons(this.bcc, json.BccRecipients);
     this.contact = this.outgoing ? this.to.first : this.from;
-    this.scheduling = ExchangeScheduling[json.ItemClass] || Scheduling.None;
+    this.scheduling = ExchangeScheduling[json.ItemClass] || InvitationMessage.None;
   }
 
   setFlags(json) {
@@ -131,8 +131,8 @@ export class OWAEMail extends EMail {
     await this.folder.account.callOWA(request);
   }
 
-  async respondToInvitation(response: Responses): Promise<void> {
-    assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
+  async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
+    assert(this.scheduling == InvitationMessage.Invitation, "Only invitations can be responded to");
     let request = new OWACreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField(ResponseTypes[response], "ReferenceItemId", {
       __type: "ItemId:#Exchange",
@@ -149,7 +149,7 @@ export class OWAEMail extends EMail {
    * `EMail.loadEvent()` works for all iTIP messages.
    * By not overriding `loadEvent()` here, `EMail.loadEvent()` will be called. */
   async loadEvent_disabled() {
-    assert(this.scheduling == Scheduling.Request, "This is not an invitation");
+    assert(this.scheduling == InvitationMessage.Invitation, "This is not an invitation");
     assert(!this.event, "Event has already been loaded");
     let result = await this.folder.account.callOWA(owaGetEventsRequest([ this.itemID ]));
     let event = new OWAEvent();
@@ -160,17 +160,17 @@ export class OWAEMail extends EMail {
 
 
 const ExchangeScheduling: Record<string, number> = {
-  "IPM.Schedule.Meeting.Resp.Pos": Scheduling.Accepted,
-  "IPM.Schedule.Meeting.Resp.Tent": Scheduling.Tentative,
-  "IPM.Schedule.Meeting.Resp.Neg": Scheduling.Declined,
-  "IPM.Schedule.Meeting.Request": Scheduling.Request,
-  "IPM.Schedule.Meeting.Canceled": Scheduling.Cancellation,
+  "IPM.Schedule.Meeting.Resp.Pos": InvitationMessage.ParticipantReply,
+  "IPM.Schedule.Meeting.Resp.Tent": InvitationMessage.ParticipantReply,
+  "IPM.Schedule.Meeting.Resp.Neg": InvitationMessage.ParticipantReply,
+  "IPM.Schedule.Meeting.Request": InvitationMessage.Invitation,
+  "IPM.Schedule.Meeting.Canceled": InvitationMessage.CancelledEvent,
 };
 
-const ResponseTypes: Record<Responses, string> = {
-  [ResponseType.Accept]: "AcceptItem",
-  [ResponseType.Tentative]: "TentativelyAcceptItem",
-  [ResponseType.Decline]: "DeclineItem",
+const ResponseTypes: Record<InvitationResponseInMessage, string> = {
+  [InvitationResponse.Accept]: "AcceptItem",
+  [InvitationResponse.Tentative]: "TentativelyAcceptItem",
+  [InvitationResponse.Decline]: "DeclineItem",
 };
 
 function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {
