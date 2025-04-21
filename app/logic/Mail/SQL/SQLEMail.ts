@@ -45,13 +45,11 @@ export class SQLEMail {
           INSERT INTO email (
             messageID, folderID, pID, parentMsgID,
             size, dateSent, dateReceived,
-            scheduling,
             outgoing, contactEmail, contactName,
             subject, plaintext, html
           ) VALUES (
             ${email.id}, ${email.folder.dbID}, ${email.pID}, ${email.inReplyTo},
             ${email.size}, ${email.sent.getTime() / 1000}, ${email.received.getTime() / 1000},
-            ${email.scheduling},
             ${email.outgoing ? 1 : 0}, ${contact?.emailAddress}, ${email.contact?.name},
             ${email.subject}, ${email.rawText}, ${email.rawHTMLDangerous}
           )`);
@@ -67,7 +65,6 @@ export class SQLEMail {
             size = ${email.size},
             dateSent = ${email.sent.getTime() / 1000},
             dateReceived = ${email.received.getTime() / 1000},
-            scheduling = ${email.scheduling},
             outgoing = ${email.outgoing ? 1 : 0},
             contactEmail = ${contact?.emailAddress},
             contactName = ${email.contact?.name},
@@ -89,6 +86,12 @@ export class SQLEMail {
     assert(email.dbID, "Need Email DB ID to save props");
     let lock = doLock ? await email.storageLock.lock() : null;
     try {
+      let jsonStr: string | null = null;
+      if (email.scheduling) {
+        let json = {} as any;
+        json.invitationMessage = email.scheduling;
+        jsonStr = JSON.stringify(json, null, 2);
+      }
       await (await getDatabase()).run(sql`
         UPDATE email SET
           isRead = ${email.isRead ? 1 : 0},
@@ -97,7 +100,8 @@ export class SQLEMail {
           isSpam = ${email.isSpam ? 1 : 0},
           isDraft = ${email.isDraft ? 1 : 0},
           threadID = ${email.threadID},
-          downloadComplete = ${email.downloadComplete ? 1 : 0}
+          downloadComplete = ${email.downloadComplete ? 1 : 0},
+          json = ${jsonStr}
         WHERE id = ${email.dbID}
         `);
 
@@ -280,9 +284,9 @@ export class SQLEMail {
       SELECT
         pID, messageID, parentMsgID,
         size, dateSent, dateReceived,
-        outgoing, scheduling,
+        outgoing,
         subject, plaintext, html,
-        threadID, downloadComplete,
+        threadID, downloadComplete, json,
         isRead, isStarred, isReplied, isDraft, isSpam
       FROM email
       WHERE id = ${dbID}
@@ -300,7 +304,6 @@ export class SQLEMail {
     email.received = sanitize.date(row.dateReceived * 1000, new Date());
     email.sent = sanitize.date(row.dateSent * 1000, email.received);
     email.outgoing = sanitize.boolean(row.outgoing, false);
-    email.scheduling = sanitize.integer(row.scheduling, 0);
     email.subject = sanitize.string(row.subject, null);
     if (row.plaintext != null || row.html != null) {
       email.text = sanitize.string(row.plaintext, null);
@@ -329,7 +332,6 @@ export class SQLEMail {
     email.sent = sanitize.date(row.dateSent * 1000, new Date());
     email.received = sanitize.date(row.dateReceived * 1000, new Date());
     email.outgoing = sanitize.boolean(row.outgoing, false);
-    email.scheduling = sanitize.integer(row.scheduling, 0);
     email.subject = sanitize.string(row.subject, null);
 
     email.isRead = sanitize.boolean(row.isRead, false);
@@ -348,7 +350,7 @@ export class SQLEMail {
     if (!row) {
       row = await (await getDatabase()).get(sql`
       SELECT
-        isRead, isStarred, isReplied, isDraft, isSpam, threadID, downloadComplete
+        isRead, isStarred, isReplied, isDraft, isSpam, threadID, downloadComplete, json
       FROM email
       WHERE id = ${email.dbID}
       `) as any;
@@ -363,6 +365,8 @@ export class SQLEMail {
     email.isSpam = sanitize.boolean(row.isSpam, false);
     email.threadID = sanitize.string(row.threadID ?? row.parentMsgID, null);
     email.downloadComplete = sanitize.boolean(row.downloadComplete, false);
+    let json = sanitize.json(row.json, {});
+    email.scheduling = sanitize.integer(json.scheduling, 0);
 
     await this.readTags(email);
   }
@@ -498,9 +502,8 @@ export class SQLEMail {
         id, pID, messageID, parentMsgID,
         size, dateSent, dateReceived,
         outgoing,
-        scheduling,
         subject,
-        threadID, downloadComplete,
+        threadID, downloadComplete, json,
         isRead, isStarred, isReplied, isDraft, isSpam
       FROM email
       WHERE folderID = ${folder.dbID}
@@ -567,11 +570,8 @@ export class SQLEMail {
     let emailRows = await (await getDatabase()).all(sql`
       SELECT
         id, pID, messageID, parentMsgID,
-        size, dateSent, dateReceived,
-        outgoing,
-        scheduling,
-        subject,
-        threadID, downloadComplete,
+        size, dateSent, dateReceived, outgoing,
+        subject, threadID, downloadComplete,
         isRead, isStarred, isReplied, isSpam,
         (SELECT name
          FROM emailPersonRel

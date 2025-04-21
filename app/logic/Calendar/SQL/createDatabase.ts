@@ -95,6 +95,8 @@ export const calendarDatabaseSchema = sql`
     -- Format of the "source"
     -- As MIME type, e.g. "text/calendar" for iCalendar as defined by RFC 9253
     "sourceMimetype" TEXT default null,
+    -- Additional data
+    "json" TEXT default null,
     FOREIGN KEY (calendarID)
       REFERENCES calendar (id)
       ON DELETE CASCADE,
@@ -125,6 +127,8 @@ export const calendarDatabaseSchema = sql`
     -- 4 = rejected
     -- 5 = not responded
     "confirmed" INTEGER default 0,
+    -- Additional data
+    "json" TEXT default null,
     FOREIGN KEY (eventID)
       REFERENCES event (id)
       ON DELETE CASCADE

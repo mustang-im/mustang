@@ -3,7 +3,9 @@ import sql from "../../../../lib/rs-sqlite/index";
 export const chatDatabaseSchema = sql`
   CREATE TABLE "message" (
     "id" INTEGER PRIMARY KEY,
+    -- Chat room (or 1:1 chat) where this message was posted
     "chatID" INTEGER not null,
+    -- Protocol-specific message ID
     "idStr" TEXT default null,
     -- When this email was sent, according to RFC822 Header Date:. Unixtime, in seconds (not milliseconds as JS Date).
     "dateSent" INTEGER not null,
@@ -18,10 +20,14 @@ export const chatDatabaseSchema = sql`
     "plaintext" TEXT default null,
     -- HTML content of the email body. May be converted or post-processed.
     "html" TEXT default null,
+    -- This message is a reply to the parent message.
+    -- References "message.idStr"
+    "inReplyToIDStr" INTEGER default null,
     -- Emoji reactions
     -- Format: { personID: number, emoji: string }[]
     "reactionsJSON" TEXT default null,
-    "inReplyToMsgID" INTEGER default null,
+    -- Additional data
+    "json" TEXT default null,
     FOREIGN KEY (chatID)
       REFERENCES chat (ID)
       ON DELETE CASCADE
@@ -39,6 +45,8 @@ export const chatDatabaseSchema = sql`
     -- file size in bytes. null, if not yet downloaded
     "size" INTEGER default null,
     "related" BOOLEAN default 0,
+    -- Additional data
+    "json" TEXT default null,
     UNIQUE("messageID", "filename"),
     FOREIGN KEY (messageID)
       REFERENCES message (ID)
@@ -57,6 +65,8 @@ export const chatDatabaseSchema = sql`
     "contactID" INTEGER not null,
     -- Last update from server we for this folder.
     "syncState" TEXT default null,
+    -- Additional data
+    "json" TEXT default null,
     UNIQUE("accountID", "idStr"),
     FOREIGN KEY (accountID)
       REFERENCES chatAccount (id)

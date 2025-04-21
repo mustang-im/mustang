@@ -20,6 +20,8 @@ export const contactsDatabaseSchema = sql`
     "picture" TEXT default null,
     "notes" TEXT default null,
     "popularity" INTEGER default null,
+    -- Additional data
+    "json" TEXT default null,
     FOREIGN KEY (addressbookID)
       REFERENCES addressbook (id)
       ON DELETE SET NULL
@@ -40,6 +42,8 @@ export const contactsDatabaseSchema = sql`
     -- Lower is more preferred.
     -- Number across all contact methods. Preference value should be unique per person.
     "preference" INTEGER default 0,
+    -- Additional data
+    "json" TEXT default null,
     -- UNIQUE("personID", "value", "protocol", "purpose"),
     FOREIGN KEY (personID)
       REFERENCES person (id)
@@ -56,6 +60,8 @@ export const contactsDatabaseSchema = sql`
     "pID" ANY default null,
     "name" TEXT not null,
     "description" TEXT default null,
+    -- Additional data
+    "json" TEXT default null,
     FOREIGN KEY (addressbookID)
       REFERENCES addressbook (id)
       ON DELETE SET NULL
@@ -65,6 +71,8 @@ export const contactsDatabaseSchema = sql`
   CREATE TABLE "groupMember" (
     "groupID" INTEGER not null,
     "personID" INTEGER not null,
+    -- Additional data
+    "json" TEXT default null,
     FOREIGN KEY (groupID)
       REFERENCES "group" (id)
       ON DELETE CASCADE,

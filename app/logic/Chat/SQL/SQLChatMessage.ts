@@ -36,7 +36,7 @@ export class SQLChatMessage {
     if (!msg.dbID) {
       let insert = await (await getDatabase()).run(sql`
         INSERT INTO message (
-          outgoing, fromPersonID, inReplyToMsgID,
+          outgoing, fromPersonID, inReplyToIDStr,
           dateSent, dateReceived,
           plaintext, html, reactionsJSON,
           chatID, idStr
@@ -51,7 +51,7 @@ export class SQLChatMessage {
       await (await getDatabase()).run(sql`
         UPDATE message SET
           fromPersonID = ${msg.contact.dbID},
-          inReplyToMsgID = ${msg.inReplyTo},
+          inReplyToIDStr = ${msg.inReplyTo},
           dateSent = ${msg.sent.getTime() / 1000},
           dateReceived = ${msg.received.getTime() / 1000},
           outgoing = ${msg.outgoing ? 1 : 0},
@@ -69,7 +69,7 @@ export class SQLChatMessage {
     if (!row) {
       row = await (await getDatabase()).get(sql`
         SELECT
-          outgoing, fromPersonID, inReplyToMsgID,
+          outgoing, fromPersonID, inReplyToIDStr,
           dateSent, dateReceived,
           plaintext, html, reactionsJSON,
           chatID, idStr
@@ -143,7 +143,7 @@ export class SQLChatMessage {
     let rows = await (await getDatabase()).all(sql`
       SELECT
         id,
-        outgoing, fromPersonID, inReplyToMsgID,
+        outgoing, fromPersonID, inReplyToIDStr,
         dateSent, dateReceived,
         plaintext, html, reactionsJSON,
         chatID, idStr

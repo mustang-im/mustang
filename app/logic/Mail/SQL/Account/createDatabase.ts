@@ -18,8 +18,11 @@ export const accountsDatabaseSchema = sql`
     "protocol" TEXT not null,
     -- Account.mainAccount
     "mainAccountIDStr" integer default null,
-
-    "configJSON" TEXT default null,
+    -- Most account parameters are stored in here.
+    -- This includes the URL or hostname, port,
+    -- auth method, username, password etc.,
+    -- as well as protocol-specific config options.
+    "json" TEXT default null,
     FOREIGN KEY (mainAccountIDStr)
       REFERENCES account (idStr)
       ON DELETE CASCADE
