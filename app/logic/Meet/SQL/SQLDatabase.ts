@@ -1,7 +1,6 @@
 import { appGlobal } from "../../app";
 import sql, { type Database } from "../../../../lib/rs-sqlite/index";
 import { meetDatabaseSchema } from "./createDatabase";
-import { migrateToAccountsDB } from "./SQLMeetMigrate";
 
 // <copied from="Mail/SQL/Account/SQLDatabase.ts">
 
@@ -14,7 +13,6 @@ export async function getDatabase(): Promise<Database> {
   const getDatabase = appGlobal.remoteApp.getSQLiteDatabase;
   meetDatabase = await getDatabase("meet.db");
   await meetDatabase.migrate(meetDatabaseSchema);
-  await migrateToAccountsDB();
   await meetDatabase.pragma('foreign_keys = true');
   await meetDatabase.pragma('journal_mode = DELETE');
   return meetDatabase;

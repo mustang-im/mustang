@@ -1,6 +1,5 @@
 import { appGlobal } from "../../app";
 import { mailDatabaseSchema } from "./createDatabase";
-import { migrateToAccountsDB } from "./SQLMailMigrate";
 import sql, { type Database } from "../../../../lib/rs-sqlite/index";
 
 // <copied from="Mail/SQL/Account/SQLDatabase.ts">
@@ -14,7 +13,6 @@ export async function getDatabase(): Promise<Database> {
   const getDatabase = appGlobal.remoteApp.getSQLiteDatabase;
   mailDatabase = await getDatabase("mail.db");
   await mailDatabase.migrate(mailDatabaseSchema);
-  await migrateToAccountsDB();
   await mailDatabase.pragma('foreign_keys = true');
   await mailDatabase.pragma('journal_mode = DELETE');
   return mailDatabase;
