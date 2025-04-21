@@ -53,13 +53,19 @@ export class SQLFolder extends Folder {
   static async saveProperties(folder: Folder, doLock = true) {
     let lock = doLock ? await folder.storageLock.lock() : null;
     try {
+      let jsonStr: string | null = null;
+      if ((folder as IMAPFolder).uidvalidity) {
+        let json = {} as any;
+        json.uidvalidity = (folder as IMAPFolder).uidvalidity;
+        jsonStr = JSON.stringify(json, null, 2);
+      }
       await (await getDatabase()).run(sql`
         UPDATE folder SET
           countTotal = ${folder.countTotal},
           countUnread = ${folder.countUnread},
           countNewArrived = ${folder.countNewArrived},
-          uidvalidity = ${(folder as IMAPFolder).uidvalidity},
-          syncState = ${folder.syncState}
+          syncState = ${folder.syncState},
+          json = ${jsonStr}
         WHERE id = ${folder.dbID}
         `);
     } finally {
@@ -89,7 +95,7 @@ export class SQLFolder extends Folder {
       SELECT
         accountID, name, path, parent,
         countTotal, countUnread, countNewArrived,
-        specialUse, uidvalidity, syncState
+        specialUse, syncState, json
       FROM folder
       WHERE id = ${dbID}
       `) as any;
@@ -100,10 +106,11 @@ export class SQLFolder extends Folder {
     folder.countUnread = sanitize.integer(row.countUnread, 0);
     folder.countNewArrived = sanitize.integer(row.countNewArrived, 0);
     folder.specialFolder = sanitize.alphanumdash(row.specialUse, null) as SpecialFolder;
-    (folder as any as IMAPFolder).uidvalidity = sanitize.integer(row.uidvalidity, 0);
     folder.syncState = typeof(row.syncState) == "number"
       ? sanitize.integer(row.syncState, null)
       : sanitize.string(row.syncState, null);
+    let json = sanitize.json(row.json, {});
+    (folder as any as IMAPFolder).uidvalidity = sanitize.integer(json.uidvalidity, 0);
     let accountID = sanitize.integer(row.accountID);
     assert(folder.account.dbID == accountID, "Folder: Account does not match");
     if (row.parent) {

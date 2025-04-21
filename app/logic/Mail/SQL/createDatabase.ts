@@ -66,11 +66,6 @@ export const mailDatabaseSchema = sql`
     "contactName" TEXT default null,
     -- RFC822 header Subject:
     "subject" TEXT not null,
-    -- If not zero, then one of the following values:
-    -- 4 - Invitation - Either an update to or a new invitation
-    -- 5 - CancelledEvent - Organiser cancelled the event
-    -- 6 - ParticipantReply - Attendee repied to your invitation
-    "scheduling" INTEGER default 0,
     -- plaintext content of the email body. May be converted or post-processed.
     "plaintext" TEXT default null,
     -- HTML content of the email body. May be converted or post-processed.
@@ -80,7 +75,10 @@ export const mailDatabaseSchema = sql`
     "isReplied" BOOLEAN default false,
     "isDraft" BOOLEAN default false,
     "isSpam" BOOLEAN default false,
+    -- We have the full MIME source and saved it locally on disk, and parsed it into the DB.
     "downloadComplete" BOOLEAN default false,
+    -- Additional data
+    "json" TEXT default null,
     -- FOREIGN KEY (parentMsgID)
     --   REFERENCES email (messageID)
     --   ON DELETE SET NULL,
@@ -92,6 +90,7 @@ export const mailDatabaseSchema = sql`
   CREATE TABLE "emailAttachment" (
     "id" INTEGER PRIMARY KEY,
     "emailID" INTEGER not null,
+    "contentID" TEXT default null,
     -- filename with extension, as given my the email sender
     "filename" TEXT not null,
     -- filename and path where the attachment is stored on the user's local disk, after download
@@ -100,9 +99,11 @@ export const mailDatabaseSchema = sql`
     "mimeType" TEXT not null,
     -- file size in bytes. null, if not yet downloaded
     "size" INTEGER default null,
+    -- Content-Disposition header: "attachment", "inline", ...
     "disposition" TEXT default "attachment",
-    "contentID" TEXT default null,
     "related" BOOLEAN default 0,
+    -- Additional data
+    "json" TEXT default null,
     UNIQUE("emailID", "filename"),
     FOREIGN KEY (emailID)
       REFERENCES email (ID)
@@ -113,6 +114,8 @@ export const mailDatabaseSchema = sql`
     "id" INTEGER PRIMARY KEY,
     "emailID" INTEGER not null,
     "tagName" TEXT not null,
+    -- Additional data
+    "json" TEXT default null,
     FOREIGN KEY (emailID)
       REFERENCES email (ID)
       ON DELETE CASCADE
@@ -145,8 +148,8 @@ export const mailDatabaseSchema = sql`
     -- ActiveSync and EWS: The last sync state.
     -- Data type can be either string or integer or null (sqlite supports dynamic typing, per cell).
     "syncState" ANY default null,
-    -- <https://www.rfc-editor.org/rfc/rfc3501#section-2.3.1.1>
-    "uidvalidity" INTEGER default null,
+    -- Additional data
+    "json" TEXT default null,
     UNIQUE("accountID", "path"),
     FOREIGN KEY (accountID)
       REFERENCES emailAccount (id)

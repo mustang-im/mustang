@@ -27,7 +27,7 @@ export class SQLAccount {
     if (!existing) {
       await (await getDatabase()).run(sql`
         INSERT INTO account (
-          idStr, type, protocol, mainAccountIDStr, configJSON
+          idStr, type, protocol, mainAccountIDStr, json
         ) VALUES (
           ${acc.id}, ${type}, ${acc.protocol}, ${acc.mainAccount?.id},
           ${jsonStr}
@@ -37,7 +37,7 @@ export class SQLAccount {
       await (await getDatabase()).run(sql`
         UPDATE account SET
           mainAccountIDStr = ${acc.mainAccount?.id},
-          configJSON = ${jsonStr}
+          json = ${jsonStr}
         WHERE idStr = ${acc.id}
         `);
     }
@@ -66,10 +66,10 @@ export class SQLAccount {
   /**
    * Called by SQLMailAccount.readAll() etc.
    */
-  static async readAll(type: AccountType): Promise<{ idStr: string, protocol: string, configJSON: string }[]> {
+  static async readAll(type: AccountType): Promise<{ idStr: string, protocol: string, json: string }[]> {
     let rows = await (await getDatabase()).all(sql`
       SELECT
-        idStr, protocol, configJSON
+        idStr, protocol, json
       FROM account
       WHERE type = ${type}
       `) as any;

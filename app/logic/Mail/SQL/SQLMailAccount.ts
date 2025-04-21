@@ -75,7 +75,7 @@ export class SQLMailAccount {
     for (let row of rows) {
       try {
         let account = newAccountForProtocol(row.protocol);
-        await SQLMailAccount.read(row.idStr, row.protocol, row.configJSON, account);
+        await SQLMailAccount.read(row.idStr, row.protocol, row.json, account);
         if (row.protocol == "smtp") {
           smtpAccounts.add(account);
         } else {

@@ -67,7 +67,7 @@ export class SQLMeetAccount {
     for (let row of rows) {
       try {
         let account = newMeetAccountForProtocol(row.protocol);
-        await SQLMeetAccount.read(row.idStr, row.protocol, row.configJSON, account);
+        await SQLMeetAccount.read(row.idStr, row.protocol, row.json, account);
         accounts.add(account);
       } catch (ex) {
         backgroundError(ex);
