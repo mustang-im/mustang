@@ -1,6 +1,7 @@
 import { appGlobal } from "../../app";
 import sql, { type Database } from "../../../../lib/rs-sqlite/index";
 import { contactsDatabaseSchema } from "./createDatabase";
+import { migrateToAccountsDB } from "./SQLAddressbookMigrate";
 
 // <copied from="Mail/SQL/Account/SQLDatabase.ts">
 
@@ -28,6 +29,7 @@ export async function makeTestDatabase(): Promise<Database> {
   contactsDatabase = await getDatabase("test-contacts.db");
   await deleteDatabase();
   await contactsDatabase.migrate(contactsDatabaseSchema);
+  await migrateToAccountsDB();
   await contactsDatabase.pragma('foreign_keys = true');
   return contactsDatabase;
 }
