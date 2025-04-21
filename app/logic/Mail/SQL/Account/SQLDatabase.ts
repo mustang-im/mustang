@@ -14,7 +14,7 @@ export async function getDatabase(): Promise<Database> {
     return accountsDatabase;
   }
   const getDatabase = appGlobal.remoteApp.getSQLiteDatabase;
-  accountsDatabase = await getDatabase("accounts.db");
+  accountsDatabase = await getDatabase("account.db");
   await accountsDatabase.migrate(accountsDatabaseSchema);
   await accountsDatabase.pragma('foreign_keys = true');
   await accountsDatabase.pragma('journal_mode = DELETE');
@@ -28,7 +28,7 @@ export async function getDatabase(): Promise<Database> {
  */
 export async function makeTestDatabase(): Promise<Database> {
   const getDatabase = appGlobal.remoteApp.getSQLiteDatabase;
-  accountsDatabase = await getDatabase("test-accounts.db");
+  accountsDatabase = await getDatabase("test-account.db");
   await deleteDatabase();
   await accountsDatabase.migrate(accountsDatabaseSchema);
   await accountsDatabase.pragma('foreign_keys = true');
