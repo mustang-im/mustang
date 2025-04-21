@@ -7,7 +7,7 @@ import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import type { MailIdentity } from "./MailIdentity";
 import { Event } from "../Calendar/Event";
-import { Scheduling, ResponseType, type Responses, type iCalMethod } from "../Calendar/Invitation";
+import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage, type iCalMethod } from "../Calendar/Invitation";
 import { EMailProcessorList, ProcessingStartOn } from "./EMailProccessor";
 import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
 import { gt } from "../../l10n/l10n";
@@ -56,7 +56,7 @@ export class EMail extends Message {
   @notifyChangedProperty
   mime: Uint8Array | undefined;
   @notifyChangedProperty
-  scheduling: Scheduling = Scheduling.None;
+  scheduling: InvitationMessage = InvitationMessage.None;
   @notifyChangedProperty
   event: Event | null = null;
   folder: Folder;
@@ -201,8 +201,8 @@ export class EMail extends Message {
   async removeTagOnServer(tag: Tag) {
   }
 
-  async respondToInvitation(response: Responses): Promise<void> {
-    assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
+  async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
+    assert(this.scheduling == InvitationMessage.Invitation, "Only invitations can be responded to");
     let event: Event;
     for (let calendar of appGlobal.calendars) {
       event = calendar.events.find(event => event.calUID == this.event.calUID);
@@ -214,7 +214,7 @@ export class EMail extends Message {
       let calendar = appGlobal.calendars.first;
       event = calendar.newEvent();
       event.copyFrom(this.event);
-      event.response = ResponseType.NoResponseReceived;
+      event.response = InvitationResponse.NoResponseReceived;
       calendar.events.add(event);
       if (event.recurrenceRule) {
         event.fillRecurrences(new Date(Date.now() + 1e11));
@@ -229,7 +229,7 @@ export class EMail extends Message {
     /* else add participant? */
   }
 
-  protected async sendInvitationResponse(response: Responses): Promise<void> {
+  protected async sendInvitationResponse(response: InvitationResponseInMessage): Promise<void> {
     await this.folder.account.sendInvitationResponse(this.event, response);
   }
 

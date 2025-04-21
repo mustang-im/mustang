@@ -1,5 +1,5 @@
 import type { Event } from "../Event";
-import { ResponseType, ParticipationStatus, type iCalMethod } from "../Invitation";
+import { InvitationResponse, ParticipationStatus, type iCalMethod } from "../Invitation";
 import { appName } from "../../build";
 
 export function getICal(event: Event, method?: iCalMethod): { method: iCalMethod, content: string } | null {
@@ -28,7 +28,7 @@ export function getICal(event: Event, method?: iCalMethod): { method: iCalMethod
   if (event.location) {
     lines.push(["LOCATION", event.location]);
   }
-  let organizer = event.participants.find(participant => participant.response == ResponseType.Organizer);
+  let organizer = event.participants.find(participant => participant.response == InvitationResponse.Organizer);
   if (organizer) {
     lines.push(["ORGANIZER", "MAILTO:" + organizer.emailAddress]);
   }
@@ -37,12 +37,12 @@ export function getICal(event: Event, method?: iCalMethod): { method: iCalMethod
   }
   for (let participant of event.participants) {
     switch (participant.response) {
-    case ResponseType.Organizer:
+    case InvitationResponse.Organizer:
       lines.push(["ATTENDEE", "ROLE", "CHAIR", "PARTSTAT", "ACCEPTED", "CN", participant.name, "MAILTO:" + participant.emailAddress]);
       break;
-    case ResponseType.Tentative:
-    case ResponseType.Accept:
-    case ResponseType.Decline:
+    case InvitationResponse.Tentative:
+    case InvitationResponse.Accept:
+    case InvitationResponse.Decline:
       lines.push(["ATTENDEE", "PARTSTAT", ParticipationStatus[participant.response], "CN", participant.name, "MAILTO:" + participant.emailAddress]);
       break;
     default:

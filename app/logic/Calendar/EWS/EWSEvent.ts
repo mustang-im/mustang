@@ -1,6 +1,6 @@
 import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
-import { ResponseType, type Responses } from "../Invitation";
+import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import IANAToWindowsTimezone from "../ICal/IANAToWindowsTimezone";
 import WindowsToIANATimezone from "../ICal/WindowsToIANATimezone";
@@ -12,10 +12,10 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
-const ResponseTypes: Record<Responses, string> = {
-  [ResponseType.Accept]: "AcceptItem",
-  [ResponseType.Tentative]: "TentativelyAcceptItem",
-  [ResponseType.Decline]: "DeclineItem",
+const ResponseTypes: Record<InvitationResponseInMessage, string> = {
+  [InvitationResponse.Accept]: "AcceptItem",
+  [InvitationResponse.Tentative]: "TentativelyAcceptItem",
+  [InvitationResponse.Decline]: "DeclineItem",
 };
 
 enum WeekOfMonth {
@@ -104,7 +104,7 @@ export class EWSEvent extends Event {
     }
     this.participants.replaceAll(participants);
     if (xmljs.MyResponseType) {
-      this.response = sanitize.integer(ResponseType[xmljs.MyResponseType], ResponseType.Unknown);
+      this.response = sanitize.integer(InvitationResponse[xmljs.MyResponseType], InvitationResponse.Unknown);
     }
     if (xmljs.LastModifiedTime) {
       this.lastMod = sanitize.date(xmljs.LastModifiedTime);
@@ -303,8 +303,8 @@ export class EWSEvent extends Event {
     }
   }
 
-  async respondToInvitation(response: Responses): Promise<void> {
-    assert(this.response > ResponseType.Organizer, "Only invitations can be responded to");
+  async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
+    assert(this.response > InvitationResponse.Organizer, "Only invitations can be responded to");
     let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.itemID });
     await this.calendar.account.callEWS(request);
@@ -313,7 +313,7 @@ export class EWSEvent extends Event {
 
 function addParticipants(attendees, participants: Participant[]) {
   for (let attendee of ensureArray(attendees)) {
-    participants.push(new Participant(sanitize.emailAddress(attendee.Mailbox.EmailAddress), sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(ResponseType[attendee.ResponseType], ResponseType.Unknown)));
+    participants.push(new Participant(sanitize.emailAddress(attendee.Mailbox.EmailAddress), sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType], InvitationResponse.Unknown)));
   }
 }
 

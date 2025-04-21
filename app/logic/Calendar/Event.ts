@@ -1,7 +1,7 @@
 import type { Calendar } from "./Calendar";
 import type { Participant } from "./Participant";
 import type { RecurrenceRule } from "./RecurrenceRule";
-import { ResponseType, type Responses } from "./Invitation";
+import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/Lock";
@@ -95,7 +95,7 @@ export class Event extends Observable {
   @notifyChangedProperty
   readonly participants = new ArrayColl<Participant>();
   @notifyChangedProperty
-  response = ResponseType.Unknown;
+  response = InvitationResponse.Unknown;
   /** If we're currently editing this event,
    * saves the original state before the editing.
    *
@@ -300,9 +300,9 @@ export class Event extends Observable {
     await newEvent.save();
   }
 
-  async respondToInvitation(response: Responses): Promise<void> {
-    assert(this.response > ResponseType.Organizer, "Only invitations can be responded to");
-    let accounts = appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations && this.participants.some(participant => participant.response != ResponseType.Organizer && participant.emailAddress == account.emailAddress));
+  async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
+    assert(this.response > InvitationResponse.Organizer, "Only invitations can be responded to");
+    let accounts = appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations && this.participants.some(participant => participant.response != InvitationResponse.Organizer && participant.emailAddress == account.emailAddress));
     assert(accounts.length == 1, "Failed to find matching account for invitation");
     let participant = this.participants.find(participant => participant.emailAddress == accounts[0].emailAddress);
     participant.response = response;

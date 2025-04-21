@@ -1,11 +1,11 @@
 <hbox class="response font-smallest">
-  {#if person.response == ResponseType.Decline }
+  {#if person.response == InvitationResponse.Decline }
     <span class="no">{$t`Declined`}</span>
-  {:else if person.response == ResponseType.Accept }
+  {:else if person.response == InvitationResponse.Accept }
     <span class="yes">{$t`Accepted`}</span>
-  {:else if person.response == ResponseType.Tentative }
+  {:else if person.response == InvitationResponse.Tentative }
     <span class="yes">{$t`Tentatively available`}</span>
-  {:else if person.response == ResponseType.Organizer }
+  {:else if person.response == InvitationResponse.Organizer }
     <span class="yes">{$t`Organizer`}</span>
   {:else}
     <span class="unknown">{$t`No response yet`}</span>
@@ -14,7 +14,7 @@
 
 <script lang="ts">
   import type { Participant } from "../../../logic/Calendar/Participant";
-  import { ResponseType } from "../../../logic/Calendar/Invitation";
+  import { InvitationResponse } from "../../../logic/Calendar/Invitation";
   import { t } from "../../../l10n/l10n";
 
   export let person: Participant;

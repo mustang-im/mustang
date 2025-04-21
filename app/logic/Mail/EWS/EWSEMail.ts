@@ -7,23 +7,23 @@ import EWSCreateItemRequest from "./Request/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "./Request/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "./Request/EWSUpdateItemRequest";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { Scheduling, ResponseType, type Responses } from "../../Calendar/Invitation";
+import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../Calendar/Invitation";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { base64ToArrayBuffer, assert, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 const ExchangeScheduling: Record<string, number> = {
-  "IPM.Schedule.Meeting.Resp.Pos": Scheduling.Accepted,
-  "IPM.Schedule.Meeting.Resp.Tent": Scheduling.Tentative,
-  "IPM.Schedule.Meeting.Resp.Neg": Scheduling.Declined,
-  "IPM.Schedule.Meeting.Request": Scheduling.Request,
-  "IPM.Schedule.Meeting.Canceled": Scheduling.Cancellation,
+  "IPM.Schedule.Meeting.Resp.Pos": InvitationMessage.ParticipantReply,
+  "IPM.Schedule.Meeting.Resp.Tent": InvitationMessage.ParticipantReply,
+  "IPM.Schedule.Meeting.Resp.Neg": InvitationMessage.ParticipantReply,
+  "IPM.Schedule.Meeting.Request": InvitationMessage.Invitation,
+  "IPM.Schedule.Meeting.Canceled": InvitationMessage.CancelledEvent,
 };
 
-const ResponseTypes: Record<Responses, string> = {
-  [ResponseType.Accept]: "AcceptItem",
-  [ResponseType.Tentative]: "TentativelyAcceptItem",
-  [ResponseType.Decline]: "DeclineItem",
+const ResponseTypes: Record<InvitationResponseInMessage, string> = {
+  [InvitationResponse.Accept]: "AcceptItem",
+  [InvitationResponse.Tentative]: "TentativelyAcceptItem",
+  [InvitationResponse.Decline]: "DeclineItem",
 };
 
 export class EWSEMail extends EMail {
@@ -80,7 +80,7 @@ export class EWSEMail extends EMail {
     setPersons(this.cc, xmljs.CcRecipients?.Mailbox);
     setPersons(this.bcc, xmljs.BccRecipients?.Mailbox);
     this.contact = this.outgoing ? this.to.first : this.from;
-    this.scheduling = ExchangeScheduling[xmljs.ItemClass] || Scheduling.None;
+    this.scheduling = ExchangeScheduling[xmljs.ItemClass] || InvitationMessage.None;
   }
 
   /** Get body and attachments from Exchange.
@@ -199,8 +199,8 @@ export class EWSEMail extends EMail {
     await this.folder.account.callEWS(request);
   }
 
-  async respondToInvitation(response: Responses): Promise<void> {
-    assert(this.scheduling == Scheduling.Request, "Only invitations can be responded to");
+  async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
+    assert(this.scheduling == InvitationMessage.Invitation, "Only invitations can be responded to");
     let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.itemID });
     await this.folder.account.callEWS(request);
@@ -214,7 +214,7 @@ export class EWSEMail extends EMail {
    * `EMail.loadEvent()` works for all iTIP messages.
    * By not overriding `loadEvent()` here, `EMail.loadEvent()` will be called. */
   async loadEvent_disabled() {
-    assert(this.scheduling == Scheduling.Request, "This is not an invitation");
+    assert(this.scheduling == InvitationMessage.Invitation, "This is not an invitation");
     assert(!this.event, "Event has already been loaded");
     let request = {
       m$GetItem: {
