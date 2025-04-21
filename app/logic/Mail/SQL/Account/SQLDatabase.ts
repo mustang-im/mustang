@@ -1,6 +1,7 @@
 import { appGlobal } from "../../../app";
 import sql, { type Database } from "../../../../../lib/rs-sqlite/index";
 import { accountsDatabaseSchema } from "./createDatabase";
+import { migrateToAccountsDB } from "./SQLAccountsMigrate";
 
 let accountsDatabase: Database;
 
@@ -13,6 +14,7 @@ export async function getDatabase(): Promise<Database> {
   if (accountsDatabase) {
     return accountsDatabase;
   }
+  await migrateToAccountsDB();
   const getDatabase = appGlobal.remoteApp.getSQLiteDatabase;
   accountsDatabase = await getDatabase("account.db");
   await accountsDatabase.migrate(accountsDatabaseSchema);
