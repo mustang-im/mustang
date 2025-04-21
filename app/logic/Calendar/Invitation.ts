@@ -5,9 +5,17 @@ export type iCalMethod = "CANCEL" | "REQUEST" | "REPLY";
  */
 export enum InvitationMessage {
   None = 0,
-  Invitation = 4, // METHOD:REQUEST, an incoming invitation
-  CancelledEvent = 5, // METHOD:CANCEL, a follow-up cancellation
-  ParticipantReply = 6, // METHOD:REPLY, a reply to your outgoing invitation
+  /** Creates an incoming invitation.
+   * iCal METHOD: REQUEST */
+  Invitation = 4,
+  /** In incoming invitation is being nullified.
+   * Only valid for incoming invitations.
+   * iCal METHOD: CANCEL */
+  CancelledEvent = 5,
+  /** A reply to your outgoing invitation.
+   * Only valid for outgoing invitations.
+   * iCal METHOD: REPLY */
+  ParticipantReply = 6,
 }
 
 /**
@@ -19,11 +27,16 @@ export enum InvitationMessage {
  * Note: These are EWS/OWA names and ActiveSync values.
  */
 export enum InvitationResponse {
+  /** The event is not an invitation, neither incoming nor outgoing. */
   Unknown = 0,
   Organizer = 1,
+  /** The participant has notified us that he is unsure whether he will attend or not.
+   For incoming invitations only. */
   Tentative = 2,
   Accept = 3,
   Decline = 4,
+  /** The participant has not yet answered.
+   For incoming invitations only. */
   NoResponseReceived = 5,
 }
 
