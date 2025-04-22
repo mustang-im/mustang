@@ -72,7 +72,7 @@
     $selectedCategory = settingsCategories.first;
     if ($selectedAccount == account) {
       $selectedAccount = appGlobal.emailAccounts.first;
-      $selectedFolder = $selectedAccount.inbox;
+      $selectedFolder = $selectedAccount?.inbox;
       $selectedMessage = null;
       $selectedMessages.clear();
     }
