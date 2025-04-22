@@ -64,6 +64,9 @@ export function fillConfig(config: MailAccount, emailAddress: string, password: 
 }
 
 function replaceVar(str: string, emailAddress: string): string {
+  if (!str) {
+    return str;
+  }
   let emailParts = emailAddress.split("@");
   assert(emailParts.length == 2, `Email address ${emailAddress} is malformed`);
   return (str
