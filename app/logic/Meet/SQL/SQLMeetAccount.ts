@@ -1,5 +1,5 @@
 import type { MeetAccount } from "../MeetAccount";
-import { AccountType, SQLAccount } from "../../Mail/SQL/Account/SQLAccount";
+import { AccountType, SQLAccount, type AccountDBRow } from "../../Mail/SQL/Account/SQLAccount";
 import { getDatabase } from "./SQLDatabase";
 import { SQLMeetStorage } from "./SQLMeetStorage";
 import { newMeetAccountForProtocol } from "../AccountsList/MeetAccounts";
@@ -43,13 +43,14 @@ export class SQLMeetAccount {
       `);
   }
 
-  static async read(idStr: string, protocol: string, configJSON: string, acc: MeetAccount) {
-    await SQLAccount.read(idStr, protocol, configJSON, acc);
+  static async read(accountRow: AccountDBRow, acc: MeetAccount) {
+    await SQLAccount.read(accountRow, acc);
+
     let row = await (await getDatabase()).get(sql`
       SELECT
         id, protocol
       FROM meetAccount
-      WHERE idStr = ${idStr}
+      WHERE idStr = ${accountRow.idStr}
       `) as any;
     if (row.id) {
       acc.dbID = row.id;
@@ -67,7 +68,7 @@ export class SQLMeetAccount {
     for (let row of rows) {
       try {
         let account = newMeetAccountForProtocol(row.protocol);
-        await SQLMeetAccount.read(row.idStr, row.protocol, row.json, account);
+        await SQLMeetAccount.read(row, account);
         accounts.add(account);
       } catch (ex) {
         backgroundError(ex);

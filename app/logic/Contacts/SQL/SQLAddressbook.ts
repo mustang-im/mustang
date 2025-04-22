@@ -1,5 +1,5 @@
 import type { Addressbook } from "../Addressbook";
-import { AccountType, SQLAccount } from "../../Mail/SQL/Account/SQLAccount";
+import { AccountType, SQLAccount, type AccountDBRow } from "../../Mail/SQL/Account/SQLAccount";
 import { getDatabase } from "./SQLDatabase";
 import { newAddressbookForProtocol } from "../AccountsList/Addressbooks";
 import { SQLAddressbookStorage } from "./SQLAddressbookStorage";
@@ -43,14 +43,14 @@ export class SQLAddressbook {
       `);
   }
 
-  static async read(idStr: string, protocol: string, configJSON: string, acc: Addressbook) {
-    await SQLAccount.read(idStr, protocol, configJSON, acc);
+  static async read(accountRow: AccountDBRow, acc: Addressbook) {
+    await SQLAccount.read(accountRow, acc);
 
     let row = await (await getDatabase()).get(sql`
       SELECT
         id, protocol
       FROM addressbook
-      WHERE idStr = ${idStr}
+      WHERE idStr = ${accountRow.idStr}
       `) as any;
     if (row.id) {
       acc.dbID = row.id;
@@ -68,7 +68,7 @@ export class SQLAddressbook {
     for (let row of rows) {
       try {
         let account = newAddressbookForProtocol(row.protocol);
-        await SQLAddressbook.read(row.idStr, row.protocol, row.json, account);
+        await SQLAddressbook.read(row, account);
         accounts.add(account);
       } catch (ex) {
         backgroundError(ex);

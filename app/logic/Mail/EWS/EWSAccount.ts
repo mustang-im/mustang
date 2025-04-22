@@ -64,30 +64,32 @@ export class EWSAccount extends MailAccount {
 
     // Link (until #155) or create the default address book.
     // TODO: Support user-added address books.
-    let addressbook = appGlobal.addressbooks.find((addressbook: EWSAddressbook) => addressbook.protocol == "addressbook-ews" && addressbook.url == this.url && addressbook.username == this.username) as EWSAddressbook | void;
+    let addressbook = appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this) as EWSAddressbook | null;
+    console.log("found the EWS AB again", addressbook?.name);
     if (!addressbook) {
       addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
       addressbook.name = this.name;
       addressbook.url = this.url;
       addressbook.username = this.username;
       addressbook.workspace = this.workspace;
+      addressbook.mainAccount = this;
       appGlobal.addressbooks.add(addressbook);
     }
-    addressbook.account = this;
     await addressbook.listContacts();
 
     // Link (until #155) or create the default calendar.
     // TODO: Support user-added calendars.
-    let calendar = appGlobal.calendars.find((calendar: EWSCalendar) => calendar.protocol == "calendar-ews" && calendar.url == this.url && calendar.username == this.username) as EWSCalendar | void;
+    let calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this) as EWSCalendar | null;
+    console.log("found the EWS cal again", calendar?.name);
     if (!calendar) {
       calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
       calendar.name = this.name;
       calendar.url = this.url;
       calendar.username = this.username;
       calendar.workspace = this.workspace;
+      calendar.mainAccount = this;
       appGlobal.calendars.add(calendar);
     }
-    calendar.account = this;
     await calendar.listEvents();
 
     await this.streamNotifications();

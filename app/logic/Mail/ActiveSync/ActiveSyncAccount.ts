@@ -7,9 +7,9 @@ import { kMaxCount, ActiveSyncFolder, FolderType } from "./ActiveSyncFolder";
 import { ActiveSyncError } from "./ActiveSyncError";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { newAddressbookForProtocol} from "../../Contacts/AccountsList/Addressbooks";
-import type { ActiveSyncAddressbook } from "../../Contacts/ActiveSync/ActiveSyncAddressbook";
+import { ActiveSyncAddressbook } from "../../Contacts/ActiveSync/ActiveSyncAddressbook";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
-import type { ActiveSyncCalendar } from "../../Calendar/ActiveSync/ActiveSyncCalendar";
+import { ActiveSyncCalendar } from "../../Calendar/ActiveSync/ActiveSyncCalendar";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
 import { request2WBXML, WBXML2JSON } from "./WBXML";
@@ -103,21 +103,12 @@ export class ActiveSyncAccount extends MailAccount {
 
     await this.listFolders();
 
-    // `listFolders` will subscribe to new user-added address books,
-    // but until #155 is fixed we need to link existing ones manually.
-    for (let addressbook of appGlobal.addressbooks) {
-      if (addressbook.protocol == "addressbook-activesync" && addressbook.url.startsWith(this.url + "?") && addressbook.username == this.username) {
-        (addressbook as ActiveSyncAddressbook).account = this;
-        await (addressbook as ActiveSyncAddressbook).listContacts();
-      }
-    }
-
-    // `listFolders` will subscribe to new user-added calendars,
-    // but until #155 is fixed we need to link existing ones manually.
-    for (let calendar of appGlobal.calendars) {
-      if (calendar.protocol == "calendar-activesync" && calendar.url.startsWith(this.url + "?") && calendar.username == this.username) {
-        (calendar as ActiveSyncCalendar).account = this;
-        await (calendar as ActiveSyncCalendar).listEvents();
+    // `listFolders` will subscribe to new user-added address books and calendars
+    for (let account of this.dependentAccounts()) {
+      if (account instanceof ActiveSyncAddressbook) {
+        account.listContacts();
+      } else if (account instanceof ActiveSyncCalendar) {
+        account.listEvents();
       }
     }
 
@@ -450,7 +441,9 @@ export class ActiveSyncAccount extends MailAccount {
             break;
           case FolderType.Calendar:
           case FolderType.UserCalendar:
-            let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.protocol == "calendar-activesync" && calendar.url == url.toString() && calendar.username == this.username) as ActiveSyncCalendar | void;
+            // TODO compare calendar ID
+            let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.mainAccount == this) as ActiveSyncCalendar | null;
+            console.log("found the ActS cal again", calendar?.name);
             if (calendar) {
               calendar.name = change.DisplayName;
             } else {
@@ -459,12 +452,15 @@ export class ActiveSyncAccount extends MailAccount {
               calendar.url = url.toString();
               calendar.username = this.username;
               calendar.workspace = this.workspace;
+              calendar.mainAccount = this;
               appGlobal.calendars.add(calendar);
             }
             break;
           case FolderType.Contacts:
           case FolderType.UserContacts:
-            let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.protocol == "addressbook-activesync" && addressbook.url == url.toString() && addressbook.username == this.username) as ActiveSyncAddressbook | void;
+            // TODO compare addressbook ID
+            let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.mainAccount == this) as ActiveSyncAddressbook | null;
+            console.log("found the ActS AB again", addressbook?.name);
             if (addressbook) {
               addressbook.name = change.DisplayName;
             } else {
@@ -473,6 +469,7 @@ export class ActiveSyncAccount extends MailAccount {
               addressbook.url = url.toString();
               addressbook.username = this.username;
               addressbook.workspace = this.workspace;
+              addressbook.mainAccount = this;
               appGlobal.addressbooks.add(addressbook);
             }
             break;

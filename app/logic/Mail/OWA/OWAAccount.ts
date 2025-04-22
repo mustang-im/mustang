@@ -107,29 +107,32 @@ export class OWAAccount extends MailAccount {
 
     // Link (until #155) or create the default address book.
     // TODO: Support user-added address books.
-    let addressbook = appGlobal.addressbooks.find((addressbook: OWAAddressbook) => addressbook.protocol == "addressbook-owa" && addressbook.url == this.url && addressbook.username == this.username) as OWAAddressbook | void;
+    let addressbook = appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this) as OWAAddressbook | null;
+    console.log("found the OWA AB again", addressbook?.name);
     if (!addressbook) {
       addressbook = newAddressbookForProtocol("addressbook-owa") as OWAAddressbook;
       addressbook.url = this.url;
       addressbook.username = this.username;
       addressbook.workspace = this.workspace;
+      addressbook.mainAccount = this;
       appGlobal.addressbooks.add(addressbook);
     }
-    addressbook.account = this;
     await addressbook.listContacts();
 
     // Link (until #155) or create the default calendar.
     // TODO: Support user-added calendars.
-    let calendar = appGlobal.calendars.find((calendar: OWACalendar) => calendar.protocol == "calendar-owa" && calendar.url == this.url && calendar.username == this.username) as OWACalendar | void;
+    // TODO: Compare ID
+    let calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this) as OWACalendar | null;
+    console.log("found the OWA cal again", calendar?.name);
     if (!calendar) {
       calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
       calendar.name = this.name;
       calendar.url = this.url;
       calendar.username = this.username;
       calendar.workspace = this.workspace;
+      calendar.mainAccount = this;
       appGlobal.calendars.add(calendar);
     }
-    calendar.account = this;
     await calendar.listEvents();
 
     await this.callOWA(new OWASubscribeToNotificationRequest());

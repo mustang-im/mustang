@@ -1,5 +1,5 @@
 import type { ChatAccount } from "../ChatAccount";
-import { AccountType, SQLAccount } from "../../Mail/SQL/Account/SQLAccount";
+import { AccountType, SQLAccount, type AccountDBRow } from "../../Mail/SQL/Account/SQLAccount";
 import { getDatabase } from "./SQLDatabase";
 import { newChatAccountForProtocol } from "../AccountsList/ChatAccounts";
 import { SQLChatStorage } from "./SQLChatStorage";
@@ -43,14 +43,14 @@ export class SQLChatAccount {
       `);
   }
 
-  static async read(idStr: string, protocol: string, configJSON: string, acc: ChatAccount) {
-    await SQLAccount.read(idStr, protocol, configJSON, acc);
+  static async read(accountRow: AccountDBRow, acc: ChatAccount) {
+    await SQLAccount.read(accountRow, acc);
 
     let row = await (await getDatabase()).get(sql`
       SELECT
         id, protocol
       FROM chatAccount
-      WHERE idStr = ${idStr}
+      WHERE idStr = ${accountRow.idStr}
       `) as any;
     acc.storage = new SQLChatStorage();
     if (row.id) {
@@ -68,7 +68,7 @@ export class SQLChatAccount {
     for (let row of rows) {
       try {
         let account = newChatAccountForProtocol(row.protocol);
-        await SQLChatAccount.read(row.idStr, row.protocol, row.json, account);
+        await SQLChatAccount.read(row, account);
         accounts.add(account);
       } catch (ex) {
         backgroundError(ex);
