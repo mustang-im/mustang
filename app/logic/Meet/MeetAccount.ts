@@ -30,6 +30,7 @@ export class MeetAccount extends Account {
   }
 
   async deleteIt(): Promise<void> {
+    await super.deleteIt();
     await this.storage?.deleteAccount(this);
     appGlobal.meetAccounts.remove(this);
   }

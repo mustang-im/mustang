@@ -25,6 +25,7 @@ export class Addressbook extends Account {
   }
 
   async deleteIt(): Promise<void> {
+    await super.deleteIt();
     await this.storage?.deleteAddressbook(this);
     appGlobal.addressbooks.remove(this);
   }

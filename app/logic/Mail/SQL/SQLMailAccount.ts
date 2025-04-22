@@ -4,17 +4,11 @@ import { AccountType, SQLAccount, type AccountDBRow } from "./Account/SQLAccount
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { SQLMailStorage } from "./SQLMailStorage";
 import { backgroundError } from "../../../frontend/Util/error";
-import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 
 export class SQLMailAccount {
   static async save(acc: MailAccount) {
-    if (acc.outgoing) {
-      acc.outgoing.emailAddress ??= acc.emailAddress;
-      await SQLMailAccount.save(acc.outgoing);
-    }
-
     await SQLAccount.save(acc, AccountType.Mail);
 
     if (!acc.dbID) {
@@ -83,14 +77,6 @@ export class SQLMailAccount {
         }
       } catch (ex) {
         backgroundError(ex);
-      }
-    }
-    // Set SMTP accounts
-    for (let account of accounts) {
-      let id = account.outgoingAccountID;
-      delete account.outgoingAccountID;
-      if (id) {
-        account.outgoing = smtpAccounts.find(acc => acc.id == id);
       }
     }
     if (accounts.isEmpty) {

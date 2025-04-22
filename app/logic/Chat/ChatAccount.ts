@@ -32,6 +32,7 @@ export class ChatAccount extends TCPAccount {
   }
 
   async deleteIt(): Promise<void> {
+    await super.deleteIt();
     await this.storage?.deleteAccount(this);
     appGlobal.chatAccounts.remove(this);
   }

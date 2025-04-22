@@ -8,10 +8,6 @@ import sql from "../../../../../lib/rs-sqlite";
 
 export class SQLAccount {
   static async save(acc: Account, type: AccountType) {
-    if (acc instanceof MailAccount && acc.outgoing) {
-      acc.outgoing.emailAddress ??= acc.emailAddress;
-      await SQLAccount.save(acc.outgoing as any as Account, type);
-    }
     let json = acc.toConfigJSON();
     json.passwordEncrypted = await passwordEncrypt(acc.password);
     // acc.oAuth2.refreshToken changes every few minutes, so should not save in configJSON
@@ -46,9 +42,6 @@ export class SQLAccount {
   /** Also deletes all folders and messages in this account */
   static async deleteIt(account: Account) {
     assert(account.dbID, "Need account DB ID to delete");
-    for (let dependent of account.dependentAccounts()) {
-      await dependent.deleteIt();
-    }
     await (await getDatabase()).run(sql`
       DELETE FROM account
       WHERE idStr = ${account.id}

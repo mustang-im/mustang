@@ -441,8 +441,7 @@ export class ActiveSyncAccount extends MailAccount {
             break;
           case FolderType.Calendar:
           case FolderType.UserCalendar:
-            // TODO compare calendar ID
-            let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.mainAccount == this) as ActiveSyncCalendar | null;
+            let calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this && calendar.url == url.toString()) as ActiveSyncCalendar | null;
             console.log("found the ActS cal again", calendar?.name);
             if (calendar) {
               calendar.name = change.DisplayName;
@@ -450,6 +449,7 @@ export class ActiveSyncAccount extends MailAccount {
               calendar = newCalendarForProtocol("calendar-activesync") as ActiveSyncCalendar;
               calendar.name = change.DisplayName;
               calendar.url = url.toString();
+              // TODO save calendar ID
               calendar.username = this.username;
               calendar.workspace = this.workspace;
               calendar.mainAccount = this;
@@ -458,8 +458,7 @@ export class ActiveSyncAccount extends MailAccount {
             break;
           case FolderType.Contacts:
           case FolderType.UserContacts:
-            // TODO compare addressbook ID
-            let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.mainAccount == this) as ActiveSyncAddressbook | null;
+            let addressbook = appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this && addressbook.url == url.toString()) as ActiveSyncAddressbook | null;
             console.log("found the ActS AB again", addressbook?.name);
             if (addressbook) {
               addressbook.name = change.DisplayName;
@@ -467,6 +466,7 @@ export class ActiveSyncAccount extends MailAccount {
               addressbook = newAddressbookForProtocol("addressbook-activesync") as ActiveSyncAddressbook;
               addressbook.name = change.DisplayName;
               addressbook.url = url.toString();
+              // TODO save addressbook ID
               addressbook.username = this.username;
               addressbook.workspace = this.workspace;
               addressbook.mainAccount = this;
@@ -488,12 +488,12 @@ export class ActiveSyncAccount extends MailAccount {
           }
           let url = new URL(this.url);
           url.searchParams.set("serverID", deletion.ServerId);
-          let addressbook = appGlobal.addressbooks.find((addressbook: ActiveSyncAddressbook) => addressbook.protocol == "addressbook-activesync" && addressbook.url == url.toString() && addressbook.username == this.username) as ActiveSyncAddressbook | void;
+          let addressbook = appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this && addressbook.url == url.toString()) as ActiveSyncAddressbook | void;
           if (addressbook) {
             this.removePingable(addressbook);
             addressbook.deleteIt();
           }
-          let calendar = appGlobal.calendars.find((calendar: ActiveSyncCalendar) => calendar.protocol == "calendar-activesync" && calendar.url == url.toString() && calendar.username == this.username) as ActiveSyncCalendar | void;
+          let calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this && calendar.url == url.toString()) as ActiveSyncCalendar | void;
           if (calendar) {
             this.removePingable(calendar);
             calendar.deleteIt();

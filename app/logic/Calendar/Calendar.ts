@@ -35,6 +35,7 @@ export class Calendar extends Account {
   }
 
   async deleteIt(): Promise<void> {
+    await super.deleteIt();
     await this.storage?.deleteCalendar(this);
     appGlobal.calendars.remove(this);
   }
