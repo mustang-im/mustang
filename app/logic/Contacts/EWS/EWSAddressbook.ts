@@ -11,7 +11,10 @@ export class EWSAddressbook extends Addressbook {
   readonly protocol: string = "addressbook-ews";
   readonly persons: ArrayColl<EWSPerson>;
   readonly groups: ArrayColl<EWSGroup>;
-  account: EWSAccount;
+
+  get account(): EWSAccount {
+    return this.mainAccount as EWSAccount;
+  }
 
   newPerson(): EWSPerson {
     return new EWSPerson(this);

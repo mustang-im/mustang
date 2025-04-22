@@ -41,6 +41,8 @@ export class Account extends Observable {
    * Also used for SMTP accounts to reference the IMAP or POP3 account.
    */
   mainAccount: Account | null = null;
+  /** Internal. Used only during load. */
+  _mainAccountID: string | null = null;
   @notifyChangedProperty
   workspace: Workspace | null = null;
   @notifyChangedProperty
@@ -92,6 +94,10 @@ export class Account extends Observable {
   }
 
   async logout(): Promise<void> {
+  }
+
+  dependentAccounts(): Collection<Account> {
+    return getAllAccounts().filter(acc => acc.mainAccount == this);
   }
 
 
@@ -170,7 +176,7 @@ function findFreeAccountID(): string {
   }
 }
 
-function getAllAccounts(): Collection<Account> {
+export function getAllAccounts(): Collection<Account> {
   let allAccounts = new ArrayColl<Account>();
   allAccounts.addAll(appGlobal.emailAccounts);
   allAccounts.addAll(appGlobal.emailAccounts.map(acc => acc.outgoing).filter(o => !!o));
@@ -179,6 +185,20 @@ function getAllAccounts(): Collection<Account> {
   allAccounts.addAll(appGlobal.calendars);
   allAccounts.addAll(appGlobal.meetAccounts);
   return allAccounts;
+}
+
+/**
+ * Sets Account.mainAccount, for all accounts.
+ * Called after all the account objects have been created.
+ */
+export function setMainAccounts(): void {
+  let accounts = getAllAccounts();
+  for (let account of accounts) {
+    let mainID = account._mainAccountID;
+    if (mainID && !account.mainAccount) {
+      account.mainAccount = accounts.find(acc => acc.id == mainID);
+    }
+  }
 }
 
 export class ConnectError extends SpecificError {

@@ -46,33 +46,37 @@ export class SQLAccount {
   /** Also deletes all folders and messages in this account */
   static async deleteIt(account: Account) {
     assert(account.dbID, "Need account DB ID to delete");
+    for (let dependent of account.dependentAccounts()) {
+      await dependent.deleteIt();
+    }
     await (await getDatabase()).run(sql`
       DELETE FROM account
-      WHERE id = ${account.dbID}
+      WHERE idStr = ${account.id}
       `);
   }
 
-  static async read(idStr: string, protocol: string, configJSON: string, acc: Account) {
-    assert(idStr, "Need account ID to read it");
-    assert(protocol == acc.protocol, "Protocol doesn't match between the 2 databases");
+  static async read(row: AccountDBRow, acc: Account) {
+    assert(row.idStr, "Need account ID to read it");
+    assert(row.protocol == acc.protocol, "Protocol doesn't match between the 2 databases");
     // Note: acc.dbID and acc.storage are not yet set
-    let json = sanitize.json(configJSON, {});
-    json.id = idStr;
+    let json = sanitize.json(row.json, {});
+    json.id = row.idStr;
     acc.fromConfigJSON(json);
     acc.password = await passwordDecrypt(json.passwordEncrypted);
+    acc._mainAccountID = sanitize.alphanumdash(row.mainAccountIDStr, null);
     return acc;
   }
 
   /**
    * Called by SQLMailAccount.readAll() etc.
    */
-  static async readAll(type: AccountType): Promise<{ idStr: string, protocol: string, json: string }[]> {
+  static async readAll(type: AccountType): Promise<AccountDBRow[]> {
     let rows = await (await getDatabase()).all(sql`
       SELECT
-        idStr, protocol, json
+        idStr, protocol, json, mainAccountIDStr
       FROM account
       WHERE type = ${type}
-      `) as any;
+      `) as AccountDBRow[];
     return rows;
   }
 }
@@ -85,4 +89,11 @@ export enum AccountType {
   Files = 5,
   Apps = 6,
   Meet = 7,
+}
+
+export type AccountDBRow = {
+  idStr: string;
+  protocol: string;
+  json: string;
+  mainAccountIDStr: string;
 }

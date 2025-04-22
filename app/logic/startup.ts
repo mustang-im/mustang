@@ -8,7 +8,7 @@ import { readSavedSearches } from './Mail/Virtual/SavedSearchFolder';
 import { loadWorkspaces } from './Abstract/Workspace';
 import { loadTagsList } from './Mail/Tag';
 import type { MailAccount } from './Mail/MailAccount';
-import type { Account } from './Abstract/Account';
+import { type Account, setMainAccounts } from './Abstract/Account';
 import JPCWebSocket from '../../lib/jpc-ws';
 import { production } from './build';
 import { logError } from '../frontend/Util/error';
@@ -21,11 +21,12 @@ export async function getStartObjects(): Promise<void> {
   console.log("Connected to backend");
   appGlobal.remoteApp = await jpc.getRemoteStartObject();
   await loadWorkspaces();
-  appGlobal.addressbooks.addAll(await readAddressbooks());
-  appGlobal.calendars.addAll(await readCalendars());
   appGlobal.emailAccounts.addAll(await readMailAccounts());
   appGlobal.chatAccounts.addAll(await readChatAccounts());
   appGlobal.meetAccounts.addAll(await readMeetAccounts());
+  appGlobal.calendars.addAll(await readCalendars());
+  appGlobal.addressbooks.addAll(await readAddressbooks());
+  setMainAccounts();
 
   // TODO Save the address book type and ensure that they are of the right type
   appGlobal.personalAddressbook = appGlobal.addressbooks.first;

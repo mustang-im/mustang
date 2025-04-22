@@ -1,5 +1,5 @@
 import type { Calendar } from "../Calendar";
-import { AccountType, SQLAccount } from "../../Mail/SQL/Account/SQLAccount";
+import { AccountType, SQLAccount, type AccountDBRow } from "../../Mail/SQL/Account/SQLAccount";
 import { getDatabase } from "./SQLDatabase";
 import { newCalendarForProtocol } from "../AccountsList/Calendars";
 import { SQLCalendarStorage } from "./SQLCalendarStorage";
@@ -43,14 +43,14 @@ export class SQLCalendar {
       `);
   }
 
-  static async read(idStr: string, protocol: string, configJSON: string, cal: Calendar) {
-    await SQLAccount.read(idStr, protocol, configJSON, cal);
+  static async read(accountRow: AccountDBRow, cal: Calendar) {
+    await SQLAccount.read(accountRow, cal);
 
     let row = await (await getDatabase()).get(sql`
       SELECT
         id, protocol
       FROM calendar
-      WHERE idStr = ${idStr}
+      WHERE idStr = ${accountRow.idStr}
       `) as any;
     if (row.id) {
       cal.dbID = row.id;
@@ -68,7 +68,7 @@ export class SQLCalendar {
     for (let row of rows) {
       try {
         let calendar = newCalendarForProtocol(row.protocol);
-        await SQLCalendar.read(row.idStr, row.protocol, row.json, calendar);
+        await SQLCalendar.read(row, calendar);
         calendars.add(calendar);
       } catch (ex) {
         backgroundError(ex);

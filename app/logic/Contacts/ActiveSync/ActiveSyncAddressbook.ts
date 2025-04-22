@@ -11,9 +11,12 @@ import type { ArrayColl } from "svelte-collections";
 export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPingable {
   readonly protocol: string = "addressbook-activesync";
   readonly persons: ArrayColl<ActiveSyncPerson>;
-  account: ActiveSyncAccount;
   readonly folderClass = "Contacts";
   protected requestLock = new Lock();
+
+  get account(): ActiveSyncAccount {
+    return this.mainAccount as ActiveSyncAccount;
+  }
 
   get serverID() {
     return new URL(this.url).searchParams.get("serverID");

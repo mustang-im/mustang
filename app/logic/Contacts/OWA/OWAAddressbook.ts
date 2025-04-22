@@ -9,7 +9,10 @@ export class OWAAddressbook extends Addressbook {
   readonly protocol: string = "addressbook-owa";
   readonly persons: ArrayColl<OWAPerson>;
   readonly groups: ArrayColl<OWAGroup>;
-  account: OWAAccount;
+
+  get account(): OWAAccount {
+    return this.mainAccount as OWAAccount;
+  }
 
   newPerson(): OWAPerson {
     return new OWAPerson(this);

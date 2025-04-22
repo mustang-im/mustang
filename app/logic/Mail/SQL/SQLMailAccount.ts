@@ -1,6 +1,6 @@
 import type { MailAccount } from "../MailAccount";
 import { getDatabase } from "./SQLDatabase";
-import { AccountType, SQLAccount } from "./Account/SQLAccount";
+import { AccountType, SQLAccount, type AccountDBRow } from "./Account/SQLAccount";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { SQLMailStorage } from "./SQLMailStorage";
 import { backgroundError } from "../../../frontend/Util/error";
@@ -49,14 +49,14 @@ export class SQLMailAccount {
       `);
   }
 
-  static async read(idStr: string, protocol: string, configJSON: string, acc: MailAccount) {
-    await SQLAccount.read(idStr, protocol, configJSON, acc);
+  static async read(accountRow: AccountDBRow, acc: MailAccount) {
+    await SQLAccount.read(accountRow, acc);
 
     let row = await (await getDatabase()).get(sql`
       SELECT
         id, protocol
       FROM emailAccount
-      WHERE idStr = ${idStr}
+      WHERE idStr = ${accountRow.idStr}
       `) as any;
     if (row.id) {
       acc.dbID = row.id;
@@ -75,7 +75,7 @@ export class SQLMailAccount {
     for (let row of rows) {
       try {
         let account = newAccountForProtocol(row.protocol);
-        await SQLMailAccount.read(row.idStr, row.protocol, row.json, account);
+        await SQLMailAccount.read(row, account);
         if (row.protocol == "smtp") {
           smtpAccounts.add(account);
         } else {
