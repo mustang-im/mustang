@@ -21,10 +21,12 @@ export class Addressbook extends Account {
   }
 
   async save(): Promise<void> {
+    await super.save();
     await this.storage?.saveAddressbook(this);
   }
 
   async deleteIt(): Promise<void> {
+    await super.deleteIt();
     await this.storage?.deleteAddressbook(this);
     appGlobal.addressbooks.remove(this);
   }

@@ -106,7 +106,7 @@ export class OWAAccount extends MailAccount {
     this.hasLoggedIn = true;
 
     // Link (until #155) or create the default address book.
-    // TODO: Support user-added address books.
+    // TODO: Support user-added address books. Compare addressbook ID.
     let addressbook = appGlobal.addressbooks.find(addressbook => addressbook.mainAccount == this) as OWAAddressbook | null;
     console.log("found the OWA AB again", addressbook?.name);
     if (!addressbook) {
@@ -120,8 +120,7 @@ export class OWAAccount extends MailAccount {
     await addressbook.listContacts();
 
     // Link (until #155) or create the default calendar.
-    // TODO: Support user-added calendars.
-    // TODO: Compare ID
+    // TODO: Support user-added calendars. Compare calendar ID.
     let calendar = appGlobal.calendars.find(calendar => calendar.mainAccount == this) as OWACalendar | null;
     console.log("found the OWA cal again", calendar?.name);
     if (!calendar) {

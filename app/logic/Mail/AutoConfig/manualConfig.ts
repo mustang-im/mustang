@@ -1,12 +1,12 @@
 import type { MailAccount } from "../MailAccount";
+import type { SMTPAccount } from "../SMTP/SMTPAccount";
 import { AuthMethod } from "../../Abstract/Account";
-import { IMAPAccount } from "../IMAP/IMAPAccount";
-import { SMTPAccount } from "../SMTP/SMTPAccount";
+import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { getDomainForEmailAddress } from "../../util/netUtil";
 
 export function makeManualConfig(emailAddress: string, password: string): MailAccount {
   let domain = getDomainForEmailAddress(emailAddress)
-  let config = new IMAPAccount();
+  let config = newAccountForProtocol("imap");
   config.emailAddress = emailAddress;
   config.username = emailAddress;
   config.password = password;
@@ -16,7 +16,7 @@ export function makeManualConfig(emailAddress: string, password: string): MailAc
   config.authMethod = AuthMethod.Password;
   config.source = "manual";
 
-  let outgoing = new SMTPAccount();
+  let outgoing = newAccountForProtocol("smtp") as any as SMTPAccount;
   outgoing.emailAddress = emailAddress;
   outgoing.username = emailAddress;
   outgoing.password = password;

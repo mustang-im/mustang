@@ -331,9 +331,6 @@ export class IMAPAccount extends MailAccount {
     if (!this.isLoggedIn) {
       await this.login(true);
     }
-    // Assume that SMTP and IMAP server have the same oAuth2 login
-    this.outgoing.oAuth2 = this.oAuth2;
-
     await this.outgoing.send(email);
     await this.saveSent(email);
   };

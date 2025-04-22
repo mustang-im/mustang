@@ -59,7 +59,7 @@ export class ThunderbirdProfile {
         }
         if (account.username == smtp.username &&
             (account instanceof IMAPAccount || account instanceof POP3Account)) {
-          account.outgoing = smtp as any as MailAccount;
+          account.outgoing = smtp;
           smtp.id = account.id + "-" + smtp.id.replace("tb-", "");
         }
       }
@@ -181,7 +181,7 @@ export class ThunderbirdProfile {
         if (id) {
           let smtp = this.readSMTPServer(id);
           if (smtp) {
-            account.outgoing = smtp as any as MailAccount;
+            account.outgoing = smtp;
             smtp.id = sanitize.nonemptystring(account.id + "-" + smtp.id.replace("tb-", ""));
           }
         }
@@ -195,7 +195,7 @@ export class ThunderbirdProfile {
 
   readSMTPServer(serverID: string): SMTPAccount | null {
     try {
-      let acc = new SMTPAccount();
+      let acc = newAccountForProtocol("smtp") as any as SMTPAccount;
       acc.id = "tb-" + serverID;
       let prefBranch = `mail.smtpserver.${serverID}`;
       acc.hostname = this.prefs[`${prefBranch}.hostname`];

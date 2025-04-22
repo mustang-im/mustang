@@ -4,17 +4,11 @@ import { AccountType, SQLAccount, type AccountDBRow } from "./Account/SQLAccount
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { SQLMailStorage } from "./SQLMailStorage";
 import { backgroundError } from "../../../frontend/Util/error";
-import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
 
 export class SQLMailAccount {
   static async save(acc: MailAccount) {
-    if (acc.outgoing) {
-      acc.outgoing.emailAddress ??= acc.emailAddress;
-      await SQLMailAccount.save(acc.outgoing);
-    }
-
     await SQLAccount.save(acc, AccountType.Mail);
 
     if (!acc.dbID) {
@@ -85,13 +79,10 @@ export class SQLMailAccount {
         backgroundError(ex);
       }
     }
-    // Set SMTP accounts
-    for (let account of accounts) {
-      let id = account.outgoingAccountID;
-      delete account.outgoingAccountID;
-      if (id) {
-        account.outgoing = smtpAccounts.find(acc => acc.id == id);
-      }
+    // Need to special-case it here, because SMTP accounts
+    // aren't in `appGlobal.emailAccounts`, so `setMainAccounts()` won't find them.
+    for (let smtp of smtpAccounts) {
+      smtp.mainAccount = accounts.find(acc => acc.id == smtp._mainAccountID);
     }
     if (accounts.isEmpty) {
       await getDatabase(); // for migration only

@@ -32,30 +32,22 @@ export class Account extends Observable {
   oAuth2: OAuth2 = null;
   @notifyChangedProperty
   password: string | null = null;
-  /**
-   * If the main account is loaded, this child account should be loaded automatically after.
-   * If the main account is deleted, then this account should be deleted as well.
-   * Child accounts share the OAuth2 login with their main accounts.
-   * If this is e.g. a calendar that belongs to an email account,
-   * this property references the email account.
-   * Also used for SMTP accounts to reference the IMAP or POP3 account.
-   */
-  mainAccount: Account | null = null;
-  /** Internal. Used only during load. */
-  _mainAccountID: string | null = null;
   @notifyChangedProperty
   workspace: Workspace | null = null;
   @notifyChangedProperty
   realname: string = appGlobal.me?.name;
+  /** @see `mainAccount` */
+  _mainAccount: Account | null = null;
+  /** Internal. Used only during load. */
+  _mainAccountID: string | null = null;
   @notifyChangedProperty
   acceptBrokenTLSCerts = false;
   @notifyChangedProperty
   loginOnStartup = true;
   /** Error that broke the server connection, unrecoverable, including login failures. */
-  fatalError: Error = null;
+  fatalError: Error | null = null;
   /** Non-fatal errors, including when processing a single email */
   readonly errors = new ArrayColl<Error>();
-
   /** Will be called, when there are errors on the connection
    * which cannot be attributed directly to an API function called,
    * e.g. errors while processing server messages. */
@@ -96,6 +88,20 @@ export class Account extends Observable {
   async logout(): Promise<void> {
   }
 
+  /**
+   * If the main account is loaded, this child account should be loaded automatically after.
+   * If the main account is deleted, then this account should be deleted as well.
+   * Child accounts share the OAuth2 login with their main accounts.
+   * If this is e.g. a calendar that belongs to an email account,
+   * this property references the email account.
+   * Also used for SMTP accounts to reference the IMAP or POP3 account.
+   */
+  get mainAccount(): Account {
+    return this._mainAccount;
+  }
+  set mainAccount(val: Account) {
+    this._mainAccount = val;
+  }
   dependentAccounts(): Collection<Account> {
     return getAllAccounts().filter(acc => acc.mainAccount == this);
   }
@@ -104,14 +110,18 @@ export class Account extends Observable {
   /** Saves the config in this account to disk.
    * Does not save the contents, e.g. messages. */
   async save(): Promise<void> {
-    throw new AbstractFunction();
+    for (let dependent of this.dependentAccounts()) {
+      await dependent.save();
+    }
   }
 
   /** Deletes this account from the configuration,
    * and likely deletes all local information from this account.
    * Does not delete the account on the server. */
   async deleteIt(): Promise<void> {
-    throw new AbstractFunction();
+    for (let dependent of this.dependentAccounts()) {
+      await dependent.deleteIt();
+    }
   }
 
   fromConfigJSON(json: any) {
@@ -123,7 +133,6 @@ export class Account extends Observable {
     this.url = sanitize.url(json.url, null);
     this.realname = sanitize.label(json.realname, appGlobal.me.name ?? "");
     this.name = sanitize.label(json.name, this.username);
-
     this.acceptBrokenTLSCerts = sanitize.boolean(json.acceptBrokenTLSCerts, false);
     this.loginOnStartup = sanitize.boolean(json.loginOnStartup, this.loginOnStartup);
     this.color = sanitize.nonemptystring(json.color, this.color);

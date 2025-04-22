@@ -2,6 +2,7 @@ import { TCPAccount } from "../Abstract/TCPAccount";
 import { MailIdentity } from "./MailIdentity";
 import { Folder, SpecialFolder } from "./Folder";
 import type { EMail } from "./EMail";
+import type { SMTPAccount } from "./SMTP/SMTPAccount";
 import { Event } from "../Calendar/Event";
 import { Participant } from "../Calendar/Participant";
 import { InvitationResponse, type InvitationResponseInMessage } from "../Calendar/Invitation";
@@ -20,11 +21,7 @@ export class MailAccount extends TCPAccount {
   /** SMTP server
    * Only set for IMAP and POP3, but null for JMAP, Exchange etc. */
   @notifyChangedProperty
-  outgoing: MailAccount = null;
-  /** Only for reading from DB. SMTP server ID. */
-  outgoingAccountID: string | null = null;
-  /** Error that broke the server connection, unrecoverable, including login failures. */
-  fatalError: Error | null = null;
+  outgoing: SMTPAccount = null;
   spamStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   protected _inbox: Folder;
   /** Where we got the config from, during setup */
@@ -118,13 +115,16 @@ export class MailAccount extends TCPAccount {
   }
 
   async save(): Promise<void> {
+    if (this.outgoing) {
+      this.outgoing.mainAccount = this;
+    }
+    console.log("mail account save", this.protocol, this.name, this, "outgoing", this.outgoing, "mainaccount", this.mainAccount, "storage", this.storage);
+    await super.save();
     await this.storage?.saveAccount(this);
   }
 
   async deleteIt(): Promise<void> {
-    if (this.outgoing) {
-      await this.storage?.deleteAccount(this.outgoing);
-    }
+    await super.deleteIt();
     await this.storage?.deleteAccount(this);
     appGlobal.emailAccounts.remove(this);
   }
@@ -152,7 +152,6 @@ export class MailAccount extends TCPAccount {
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.emailAddress = sanitize.emailAddress(json.emailAddress);
-    this.outgoingAccountID = sanitize.alphanumdash(json.outgoingAccountID, null);
     this.identities.clear();
     this.identities.addAll(sanitize.array(json.identities, []).map(json =>
       MailIdentity.fromConfigJSON(json, this)));
@@ -179,7 +178,6 @@ export class MailAccount extends TCPAccount {
     json.identities = this.identities.contents.map(id => id.toConfigJSON());
     json.filterRuleActions = this.filterRuleActions.contents.map(rule => rule.toJSON());
     json.oAuth2 = this.oAuth2 ? this.oAuth2.toConfigJSON() : undefined;
-    json.outgoingAccountID = this.outgoing?.id;
     json.emailAddress = this.emailAddress;
     return json;
   }

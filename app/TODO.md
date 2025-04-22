@@ -5,10 +5,6 @@
     * Results miss From - Include from/to (both content of messages, and name of recipients/sender)
       * Email
       * Chat
-  * Main/Dependent accounts
-    * Calendar
-    * SMTP
-    * OAuth2
   * Actions (Filters)
     * Run
   * Calendar

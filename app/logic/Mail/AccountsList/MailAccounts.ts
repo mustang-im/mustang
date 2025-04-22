@@ -16,7 +16,6 @@ import { OWAAccount } from '../OWA/OWAAccount';
 import { ActiveSyncAccount } from '../ActiveSync/ActiveSyncAccount';
 import { GraphAccount } from '../Graph/GraphAccount';
 // #endif
-import { getAllAccounts } from '../../Abstract/Account';
 import { setStorage } from '../Store/setStorage';
 import { NotReached } from '../../util/util';
 import type { Collection } from 'svelte-collections';

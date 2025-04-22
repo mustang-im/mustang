@@ -9,6 +9,14 @@ import { assert } from "../../util/util";
 export class SMTPAccount extends MailAccount {
   readonly protocol: string = "smtp";
 
+  get mainAccount(): MailAccount {
+    return super.mainAccount as MailAccount;
+  }
+  set mainAccount(imap: MailAccount) {
+    super.mainAccount = imap;
+    imap.outgoing = this;
+  }
+
   protected getTransportOptions() {
     // Auth method
     let usePassword = [
@@ -20,7 +28,9 @@ export class SMTPAccount extends MailAccount {
       AuthMethod.OAuth2,
     ].includes(this.authMethod);
     if (useOAuth2) {
-      assert(this.oAuth2?.accessToken, `${this.name} SMTP: Need OAuth2 login from IMAP`);
+      assert(this.mainAccount, `${this.name} SMTP: Need main account`);
+      this.oAuth2 = this.mainAccount.oAuth2;
+      assert(this.oAuth2?.accessToken, `${this.mainAccount.name} SMTP: Need OAuth2 login from IMAP`);
     }
     let noAuth = this.authMethod == AuthMethod.None;
 
@@ -76,13 +86,6 @@ export class SMTPAccount extends MailAccount {
         ex.authFail = true;
       }
       throw ex;
-    }
-  }
-
-  fromConfigJSON(json: any) {
-    super.fromConfigJSON(json);
-    if (this.mainAccount) {
-      (this.mainAccount as MailAccount).outgoing = this;
     }
   }
 }

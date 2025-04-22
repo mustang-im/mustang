@@ -26,10 +26,12 @@ export class MeetAccount extends Account {
   }
 
   async save(): Promise<void> {
+    await super.save();
     await this.storage?.saveAccount(this);
   }
 
   async deleteIt(): Promise<void> {
+    await super.deleteIt();
     await this.storage?.deleteAccount(this);
     appGlobal.meetAccounts.remove(this);
   }
