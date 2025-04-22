@@ -79,6 +79,9 @@ export class SQLMailAccount {
         backgroundError(ex);
       }
     }
+    for (let smtp of smtpAccounts) {
+      smtp.mainAccount = accounts.find(acc => acc.id == smtp._mainAccountID);
+    }
     if (accounts.isEmpty) {
       await getDatabase(); // for migration only
     }
