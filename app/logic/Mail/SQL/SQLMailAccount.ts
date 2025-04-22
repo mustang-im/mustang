@@ -79,6 +79,8 @@ export class SQLMailAccount {
         backgroundError(ex);
       }
     }
+    // Need to special-case it here, because SMTP accounts
+    // aren't in `appGlobal.emailAccounts`, so `setMainAccounts()` won't find them.
     for (let smtp of smtpAccounts) {
       smtp.mainAccount = accounts.find(acc => acc.id == smtp._mainAccountID);
     }
