@@ -30,6 +30,7 @@ export class SMTPAccount extends MailAccount {
     if (useOAuth2) {
       assert(this.mainAccount, `${this.name} SMTP: Need main account`);
       this.oAuth2 = this.mainAccount.oAuth2;
+      assert(this.oAuth2?.accessToken, `${this.mainAccount.name} SMTP: Need OAuth2 login from IMAP`);
     }
     let noAuth = this.authMethod == AuthMethod.None;
 
@@ -61,9 +62,6 @@ export class SMTPAccount extends MailAccount {
 
   async send(email: EMail): Promise<void> {
     try {
-      if (this.oAuth2 && !this.oAuth2.isLoggedIn) {
-        await this.oAuth2.login(true);
-      }
       let mail = await CreateMIME.getNMMail(email);
       let result = await appGlobal.remoteApp.sendMailNodemailer(
         this.getTransportOptions(), mail);

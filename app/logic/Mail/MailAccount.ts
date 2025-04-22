@@ -115,6 +115,11 @@ export class MailAccount extends TCPAccount {
   }
 
   async save(): Promise<void> {
+    if (this.outgoing) {
+      this.outgoing.mainAccount = this;
+    }
+    console.log("mail account save", this.protocol, this.name, this, "outgoing", this.outgoing, "mainaccount", this.mainAccount, "storage", this.storage);
+    await super.save();
     await this.storage?.saveAccount(this);
   }
 

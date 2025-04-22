@@ -4,6 +4,7 @@ import { SMTPAccount } from "../SMTP/SMTPAccount";
 import { AuthMethod } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import { kStandardPorts } from "./configInfo";
+import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { getMX } from "./fetchConfig";
 import { PriorityAbortable, ParallelAbortable } from "../../util/Abortable";
 import { getBaseDomainFromHost } from "../../util/netUtil";
@@ -88,11 +89,10 @@ async function tryMXDomain(domain: string, emailAddress: string, abort: AbortCon
 }
 
 async function tryIMAP(hostname: string, tls: TLSSocketType, abort: AbortController): Promise<IMAPAccount | POP3Account> {
-  let port = kStandardPorts.find(p => p.protocol == "imap" && p.tls == tls)?.port;
+  let port = kStandardPorts.find(p => p.protocol == "imap" && p.tls == tls)?.port ?? null;
   assert(port, "Need port");
-  const acceptBrokenTLSCerts = false;
 
-  let config = new IMAPAccount();
+  let config = newAccountForProtocol("imap");
   config.hostname = hostname;
   config.port = port;
   config.tls = tls;
@@ -115,11 +115,10 @@ async function tryIMAP(hostname: string, tls: TLSSocketType, abort: AbortControl
 }
 
 async function trySMTP(hostname: string, tls: TLSSocketType, port: number | null, abort: AbortController): Promise<SMTPAccount> {
-  port = port ?? kStandardPorts.find(p => p.protocol == "smtp" && p.tls == tls)?.port;
+  port = port ?? kStandardPorts.find(p => p.protocol == "smtp" && p.tls == tls)?.port ?? null;
   assert(port, "Need port");
-  const acceptBrokenTLSCerts = false;
 
-  let config = new SMTPAccount();
+  let config = newAccountForProtocol("smtp");
   config.hostname = hostname;
   config.port = port;
   config.tls = tls;

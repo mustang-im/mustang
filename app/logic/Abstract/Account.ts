@@ -110,7 +110,9 @@ export class Account extends Observable {
   /** Saves the config in this account to disk.
    * Does not save the contents, e.g. messages. */
   async save(): Promise<void> {
-    throw new AbstractFunction();
+    for (let dependent of this.dependentAccounts()) {
+      await dependent.save();
+    }
   }
 
   /** Deletes this account from the configuration,
@@ -131,7 +133,6 @@ export class Account extends Observable {
     this.url = sanitize.url(json.url, null);
     this.realname = sanitize.label(json.realname, appGlobal.me.name ?? "");
     this.name = sanitize.label(json.name, this.username);
-
     this.acceptBrokenTLSCerts = sanitize.boolean(json.acceptBrokenTLSCerts, false);
     this.loginOnStartup = sanitize.boolean(json.loginOnStartup, this.loginOnStartup);
     this.color = sanitize.nonemptystring(json.color, this.color);

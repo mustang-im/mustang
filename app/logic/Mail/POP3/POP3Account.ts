@@ -14,6 +14,9 @@ export class POP3Account extends MailAccount {
 
   async send(email: EMail): Promise<void> {
     assert(this.outgoing, "SMTP server is not set up for POP3 account " + this.name);
+    if (this.oAuth2 && !this.oAuth2.isLoggedIn) {
+      await this.oAuth2.login(true);
+    }
     await this.outgoing.send(email);
     await this.saveSent(email);
   };
