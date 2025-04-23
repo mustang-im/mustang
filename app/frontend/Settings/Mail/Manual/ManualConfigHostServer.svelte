@@ -27,6 +27,7 @@
     <input type="text" bind:value={config.hostname} required
       tabindex={2}
       autofocus={!outgoing}
+      on:input={onHostnameChanged}
       on:keydown={event => onKeyInHostname(event)}
       />
   </hbox>
@@ -159,6 +160,12 @@
   function onProtocolChanged() {
     onTLSChanged();
     onPortChanged();
+  }
+
+  function onHostnameChanged() {
+    if (!stepFull && config.outgoing && !outgoing) {
+      config.outgoing.hostname = config.hostname;
+    }
   }
 
   async function onKeyInHostname(event: KeyboardEvent) {
