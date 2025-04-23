@@ -52,7 +52,6 @@
           {#if showSentBy}
             <hbox class="sentBy">
               <div>
-                <!--<Icon data={logo} size="20px" />-->
                 {@html $t`Sent by © ${`<a href=${siteRoot} target="_blank" style="color: #20AE9E"><strong><em>${appName}</em></strong></a>`}`}
               </div>
               {#if !showSentByExplainer}
@@ -85,6 +84,7 @@
 
 <script lang="ts">
   import type { MailIdentity } from "../../../../logic/Mail/MailIdentity";
+  import { isLicensed } from "../../../../logic/util/LicenseClient";
   import SentByExplainer from "./SentByExplainer.svelte";
   import HTMLEditor from "../../../Shared/Editor/HTMLEditor.svelte";
   import HTMLEditorToolbar from "../../../Shared/Editor/HTMLEditorToolbar.svelte";
@@ -94,10 +94,8 @@
   import RoundButton from "../../../Shared/RoundButton.svelte";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import RemoveIcon from "lucide-svelte/icons/circle-x";
-  import Icon from 'svelte-icon/Icon.svelte';
-  import logo from '../../../asset/icon/general/logo.svg?raw';
   import type { Editor } from "@tiptap/core";
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { appName, siteRoot } from "../../../../logic/build";
   import { t } from "../../../../l10n/l10n";
   const dispatchEvent = createEventDispatcher();
@@ -122,6 +120,10 @@
       identity.signatureHTML = null;
     }
   }
+
+  onMount(async () => {
+    showSentBy = !await isLicensed();
+  });
 </script>
 
 <style>

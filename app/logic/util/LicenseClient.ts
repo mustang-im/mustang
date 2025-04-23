@@ -109,6 +109,15 @@ export async function ensureLicensed() {
   }
 }
 
+export async function isLicensed(): Promise<boolean> {
+  try {
+    await ensureLicensed();
+    return true;
+  } catch (ex) {
+    return false;
+  }
+}
+
 /** Whether we started the poller that refreshes the license */
 let gPolling: boolean = false;
 
