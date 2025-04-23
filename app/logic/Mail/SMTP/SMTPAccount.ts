@@ -14,7 +14,9 @@ export class SMTPAccount extends MailAccount {
   }
   set mainAccount(imap: MailAccount) {
     super.mainAccount = imap;
-    imap.outgoing = this;
+    if (imap.outgoing != this) {
+      imap.outgoing = this;
+    }
   }
 
   protected getTransportOptions() {

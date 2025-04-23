@@ -21,7 +21,7 @@ export class MailAccount extends TCPAccount {
   /** SMTP server
    * Only set for IMAP and POP3, but null for JMAP, Exchange etc. */
   @notifyChangedProperty
-  outgoing: SMTPAccount = null;
+  _outgoing: SMTPAccount = null;
   spamStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   protected _inbox: Folder;
   /** Where we got the config from, during setup */
@@ -70,6 +70,16 @@ export class MailAccount extends TCPAccount {
       this.rootFolders.first;
   }
 
+  get outgoing(): SMTPAccount {
+    return this._outgoing;
+  }
+  set outgoing(smtp: SMTPAccount) {
+    this._outgoing = smtp;
+    if (smtp && smtp.mainAccount != this) {
+      smtp.mainAccount = this;
+    }
+  }
+
   async send(email: EMail): Promise<void> {
     throw new AbstractFunction();
   }
@@ -115,9 +125,6 @@ export class MailAccount extends TCPAccount {
   }
 
   async save(): Promise<void> {
-    if (this.outgoing) {
-      this.outgoing.mainAccount = this;
-    }
     console.log("mail account save", this.protocol, this.name, this, "outgoing", this.outgoing, "mainaccount", this.mainAccount, "storage", this.storage);
     await super.save();
     await this.storage?.saveAccount(this);
@@ -196,7 +203,6 @@ export class MailAccount extends TCPAccount {
     // objects
     this.oAuth2 = other.oAuth2;
     this.identities.addAll(other.identities);
-    this.outgoing = other.outgoing;
   }
 
   toDebugString() {

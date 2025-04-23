@@ -1,6 +1,7 @@
 import type { MailAccount, ConfigSource } from "../MailAccount";
 import { AuthMethod } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
+import type { SMTPAccount } from "../SMTP/SMTPAccount";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
@@ -55,7 +56,9 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string | 
       throw firstError ?? new Error(`No working <outgoingServer> in autoconfig XML for ${forDomain} found`);
     }
     for (let config of imapConfigs) {
-      config.outgoing = outgoing;
+      let outgoingClone = newAccountForProtocol(outgoing.protocol);
+      outgoingClone.cloneFrom(outgoing);
+      config.outgoing = outgoingClone as any as SMTPAccount;
     }
   }
 

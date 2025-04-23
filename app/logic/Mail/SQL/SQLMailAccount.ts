@@ -3,6 +3,7 @@ import { getDatabase } from "./SQLDatabase";
 import { AccountType, SQLAccount, type AccountDBRow } from "./Account/SQLAccount";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { SQLMailStorage } from "./SQLMailStorage";
+import type { SMTPAccount } from "../SMTP/SMTPAccount";
 import { backgroundError } from "../../../frontend/Util/error";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
@@ -65,13 +66,13 @@ export class SQLMailAccount {
   static async readAll(): Promise<ArrayColl<MailAccount>> {
     let rows = await SQLAccount.readAll(AccountType.Mail);
     let accounts = new ArrayColl<MailAccount>();
-    let smtpAccounts = new ArrayColl<MailAccount>();
+    let smtpAccounts = new ArrayColl<SMTPAccount>();
     for (let row of rows) {
       try {
         let account = newAccountForProtocol(row.protocol);
         await SQLMailAccount.read(row, account);
         if (row.protocol == "smtp") {
-          smtpAccounts.add(account);
+          smtpAccounts.add(account as SMTPAccount);
         } else {
           accounts.add(account);
         }
