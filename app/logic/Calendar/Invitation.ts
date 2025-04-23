@@ -26,22 +26,30 @@ export enum InvitationMessage {
  * Note: These are EWS/OWA names and ActiveSync values.
  */
 export enum InvitationResponse {
-  /** Event: This is not an invitation, neither incoming nor outgoing.
-   *  User participant entry: You are still creating the invitation.
-   *  Other participant of outgoing invitation: You are adding the participant to the invitation. */
+  /** In Event: This is not a meeting, neither incoming nor outgoing.
+   *  In Participant entry of event: The meeting is in the process of being created. */
   Unknown = 0,
-  /** Event: This is an outgoing invitation.
-   *  User participant entry: You are the organiser of this outgoing invitation.
-   *  Other participant of incoming invitation: This participant is the organiser of this incoming invitation. */
+  /** In Event: This is an meeting where you are the organizer.
+   *  In participant entry of event or outgoing invitation:
+   *    This participant is the organiser of this meeting.
+   *    If you're the organizer, one of the participants will be you with this status.
+   *    If you're not the organizer, this shows who is the organizer.
+   *  Other participant of outgoing invitation: N/A
+   *  Other participant of incoming invitation: This participant is the organiser of this incoming invitation.
+   */
   Organizer = 1,
-  /** Event/User participant entry: This is an incoming invitation which you are unsure whether you will attend or not.
-   *  Other participant of outgoing invitation: The participant has notified us that he is unsure whether he will attend or not. */
+  /** This participant is unsure whether he will attend or not.
+   * This response may appear in the same places as Accept. */
   Tentative = 2,
-  /** Event/User participant entry: This is an incoming invitation which you are sure you will attend.
-   *  Other participant of outgoing invitation: The participant has notified us that he is sure that he will attend. */
+  /** The participant plans to join the meeting.
+   *  May appear in:
+   *  - Event created from an incoming invitation (your own status),
+   *  - Participant entry of meeting (esp. if you're the organiser of the meeting),
+   *  - your response to an incoming invitation, or
+   *  - a participant's response to your outgoing invitation. */
   Accept = 3,
-  /** Event/User participant entry: This is an incoming invitation that you will not attend.
-   *  Other participant of outgoing invitation: The participant has notified us that he will not attend. */
+  /** The participant will not attend the meeting.
+   *  This response may appear in the same places as Accept. */
   Decline = 4,
   /** Event/User participant entry: Not used.
    *  Other participant of outgoing invitation: The participant has not yet answered your outgoing invitation. */
