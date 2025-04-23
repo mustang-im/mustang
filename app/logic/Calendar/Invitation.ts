@@ -6,37 +6,53 @@ export type iCalMethod = "CANCEL" | "REQUEST" | "REPLY";
 export enum InvitationMessage {
   None = 0,
   /** Creates an incoming invitation.
-   * iCal METHOD: REQUEST */
+   * Corresponds to an iCal method of REQUEST */
   Invitation = 4,
   /** In incoming invitation is being nullified.
    * Only valid for incoming invitations.
-   * iCal METHOD: CANCEL */
+   * Corresponds to an iCal method of CANCEL */
   CancelledEvent = 5,
   /** A reply to your outgoing invitation.
    * Only valid for outgoing invitations.
-   * iCal METHOD: REPLY */
+   * Corresponds to an iCal method of REPLY */
   ParticipantReply = 6,
 }
 
 /**
- * For meetings only, these values indicate the status of either:
- * - For any given participant, their participation in an event
- * - The user's own participation in an event
- *   In particular, this identifies whether the user organised this meeting.
+ * Indicates the status of participants in invitations.
+ * For convenience, the user's status also appears directly on the event.
+ * This readily identifies whether the user organised this invitation.
  *
  * Note: These are EWS/OWA names and ActiveSync values.
  */
 export enum InvitationResponse {
-  /** The event is not an invitation, neither incoming nor outgoing. */
+  /** In Event: This is not a meeting, neither incoming nor outgoing.
+   *  In Participant entry of event: The meeting is in the process of being created. */
   Unknown = 0,
+  /** In Event: This is an meeting where you are the organizer.
+   *  In participant entry of event or outgoing invitation:
+   *    This participant is the organiser of this meeting.
+   *    If you're the organizer, one of the participants will be you with this status.
+   *    If you're not the organizer, this shows who is the organizer.
+   *  Other participant of outgoing invitation: N/A
+   *  Other participant of incoming invitation: This participant is the organiser of this incoming invitation.
+   */
   Organizer = 1,
-  /** The participant has notified us that he is unsure whether he will attend or not.
-   For incoming invitations only. */
+  /** This participant is unsure whether he will attend or not.
+   * This response may appear in the same places as Accept. */
   Tentative = 2,
+  /** The participant plans to join the meeting.
+   *  May appear in:
+   *  - Event created from an incoming invitation (your own status),
+   *  - Participant entry of meeting (esp. if you're the organiser of the meeting),
+   *  - your response to an incoming invitation, or
+   *  - a participant's response to your outgoing invitation. */
   Accept = 3,
+  /** The participant will not attend the meeting.
+   *  This response may appear in the same places as Accept. */
   Decline = 4,
-  /** The participant has not yet answered.
-   For incoming invitations only. */
+  /** Event/User participant entry: Not used.
+   *  Other participant of outgoing invitation: The participant has not yet answered your outgoing invitation. */
   NoResponseReceived = 5,
 }
 
