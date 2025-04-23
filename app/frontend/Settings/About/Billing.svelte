@@ -3,14 +3,16 @@
     {error?.message ?? error}
   {:else if license.valid}
     <div>{$t`Your license is valid until ${getDateString(license.expiresOn)}.`}</div>
-    <hbox class="thankyou">
-      <div>{$t`Thank you for your purchase.`}</div>
-      <HeartIcon />
-    </hbox>
+    {#if license.expiredIn > kSoonExpiring}
+      <hbox class="thankyou">
+        <div>{$t`Thank you for your purchase.`}</div>
+        <HeartIcon />
+      </hbox>
+    {/if}
   {:else if license.expiredIn < 0}
     <div>{$t`Your license has expired on ${getDateString(license.expiresOn)}`}</div>
   {/if}
-  {#if !license.valid}
+  {#if !license.valid || license.expiredIn < kSoonExpiring}
     <div>{$t`You can buy a license for ${appName} at our website:`}</div>
     <hbox class="buttons">
       <Button
@@ -33,6 +35,7 @@
 
   let license: Ticket = new BadTicket();
   let error: Error;
+  const kSoonExpiring = 14 * 24 * 60 * 60 * 1000; // 2 weeks
 
   onMount(async () => {
     await getLicense();
