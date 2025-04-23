@@ -1,6 +1,8 @@
 import type { MailAccount } from "../MailAccount";
 import type { SMTPAccount } from "../SMTP/SMTPAccount";
+import { TLSSocketType } from "../../Abstract/TCPAccount";
 import { AuthMethod } from "../../Abstract/Account";
+import { kStandardPorts } from "../AutoConfig/configInfo";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { getDomainForEmailAddress } from "../../util/netUtil";
 
@@ -11,8 +13,8 @@ export function makeManualConfig(emailAddress: string, password: string): MailAc
   config.username = emailAddress;
   config.password = password;
   config.hostname = dummyHostname(domain);
-  //config.tls = TLSSocketType.TLS;
-  //config.port = kStandardPorts.find(p => p.protocol == config.protocol && p.tls == config.tls)?.port ?? 0;
+  config.tls = TLSSocketType.TLS;
+  config.port = kStandardPorts.find(p => p.protocol == config.protocol && p.tls == config.tls)?.port ?? 993;
   config.authMethod = AuthMethod.Password;
   config.source = "manual";
 
@@ -21,8 +23,8 @@ export function makeManualConfig(emailAddress: string, password: string): MailAc
   outgoing.username = emailAddress;
   outgoing.password = password;
   outgoing.hostname = dummyHostname(domain);
-  //config.tls = TLSSocketType.TLS;
-  //outgoing.port = kStandardPorts.find(p => p.protocol == outgoing.protocol && p.tls == outgoing.tls)?.port ?? 0;
+  outgoing.tls = TLSSocketType.TLS;
+  outgoing.port = kStandardPorts.find(p => p.protocol == outgoing.protocol && p.tls == outgoing.tls)?.port ?? 465;
   outgoing.authMethod = AuthMethod.Password;
   outgoing.source = "manual";
 
