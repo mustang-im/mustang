@@ -41,7 +41,7 @@
 
   async function getLicense() {
     try {
-      //license = await checkLicense();
+      license = await checkLicense();
       error = null;
       console.log("License ticket", license);
     } catch (ex) {
