@@ -44,14 +44,18 @@ const kGetLicenseURL = `${siteRoot}/?`;
 const kLicenseServerURL = `https://api.beonex.com/parula-license/`;
 const kPublicKey = `data:application/octet-stream;base64,MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6OOUqJLzc/q4b4Djfv091QCSA1QwS4scXQltt+WDSiiXI2DwyIA6bY4khJERDxrTdOQ+izx8SdVwwx7LQezRhnTi+Sls+sV7arkWiRz+13Y7LLApPvRZ1Db/nohue6lop3pjdAeudeVkWAViYdBQOv5A6U9uPl3Oki4CzJnHHiM8ojWVUte3HgyINzcIR4gdTH2aB4a97tUSq/sTbluQ2+7H4HLOjuUtaroIvR5Oq4tuAVKvhdO1UUi0JFXAbnOhljKWTsHdcsncB72pj3rUjrHyK8gViy6xDYycV81Rhq299QhQDmeX9zBAlr1YA2D72EzogxbS3gGUVnt05XR+rwIDAQAB`;
 
-class Ticket {
+export class Ticket {
   valid: boolean = false;
   status: string = "missing";
+  /** When this ticket expires */
+  expiresOn: Date = new Date();
+  /** How much time is left until this ticket expires
+   * in milliseconds */
   expiredIn: number = 0;
   requiresRefresh: boolean = false;
 }
 
-class BadTicket extends Ticket {
+export class BadTicket extends Ticket {
   constructor(status: string = "missing") {
     super();
     this.status = status;
@@ -248,7 +252,7 @@ export async function addTicketFromString(signedTicketStr: string) {
 /**
  * Checks the saved ticket to see whether it is valid.
  */
-async function checkLicense(): Promise<Ticket> {
+export async function checkLicense(): Promise<Ticket> {
   let signedTicket = getSavedTicket();
   if (!signedTicket) {
     return new BadTicket();
@@ -265,6 +269,7 @@ async function checkLicense(): Promise<Ticket> {
   let ticket = new Ticket();
   let end = Date.parse(ticketJSON.end);
   let refresh = Date.parse(ticketJSON.refresh);
+  ticket.expiresOn = new Date(end);
   ticket.expiredIn = end - Date.now();
   ticket.valid = ticket.expiredIn > 0;
   ticket.requiresRefresh = ticket.valid && refresh < Date.now(); // ticket expired. poll on every call.

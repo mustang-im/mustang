@@ -21,6 +21,7 @@ import AccountIdentity from "./Mail/Account/Identity.svelte";
 import AccountXMPPServer from "./Chat/AccountXMPPServer.svelte";
 import ChatNotifications from "./Chat/Notifications.svelte";
 import About from "./About/About.svelte";
+import Billing from "./About/Billing.svelte";
 import OpenSource from "./About/OpenSource.svelte";
 import Test from "./About/Test.svelte";
 // #if [!WEBMAIL]
@@ -140,13 +141,9 @@ appSettings.subCategories.addAll([
 appSettings.forApp = webAppsMustangApp;
 settingsCategories.add(appSettings);
 
-const customer = new SettingsCategory("customer", gt`Billing`, null, true);
-customer.subCategories.addAll([
-]);
-settingsCategories.add(customer);
-
 const about = new SettingsCategory("about", gt`About`, About, true);
 about.subCategories.addAll([
+  new SettingsCategory("billing", gt`Billing`, Billing),
   new SettingsCategory("opensource", gt`Open-Source`, OpenSource),
   new SettingsCategory("test", gt`Test`, Test),
 ]);
