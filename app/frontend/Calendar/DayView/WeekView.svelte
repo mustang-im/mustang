@@ -33,7 +33,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { getToday, k1Day } from "../../Util/date";
+  import { getToday, k1DayMS } from "../../Util/date";
   import TimeLabel from "./TimeLabel.svelte";
   import TimeDayRow from "./TimeDayRow.svelte";
   import AllDayEvent from "./AllDayEvent.svelte";
@@ -100,7 +100,7 @@
   let allDayEvents: Collection<Event>;
   $: start, $events, setAllDayEvents();
   function setAllDayEvents() {
-    let end = new Date(start.getTime() + showDays * k1Day * 1000);
+    let end = new Date(start.getTime() + showDays * k1DayMS);
     allDayEvents = events.filter(ev => ev.allDay && ev.startTime < end && start < ev.endTime);
   }
 

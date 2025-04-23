@@ -3,6 +3,7 @@ import type { Participant } from "./Participant";
 import type { RecurrenceRule } from "./RecurrenceRule";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation";
 import { appGlobal } from "../app";
+import { k1DayS, k1HourS, k1MinuteS } from "../../frontend/Util/date";
 import { Observable, notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/Lock";
 import { assert, randomID } from "../util/util";
@@ -125,7 +126,7 @@ export class Event extends Observable {
   get duration(): number {
     let seconds = Math.round((this.endTime.getTime() - this.startTime.getTime()) / 1000);
     if (this.allDay) {
-      return Math.round(Math.ceil(seconds / k1Day) * k1Day); // return entire days, not 1 second less
+      return Math.round(Math.ceil(seconds / k1DayS) * k1DayS); // return entire days, not 1 second less
     }
     return seconds;
   }
@@ -133,33 +134,33 @@ export class Event extends Observable {
   set duration(seconds: number) {
     assert(seconds >= 0, "Duration must be >= 0");
     if (this.allDay) {
-      seconds = Math.round(Math.ceil(seconds / k1Day) * k1Day) - 1; // set to 23:59:59
+      seconds = Math.round(Math.ceil(seconds / k1DayS) * k1DayS) - 1; // set to 23:59:59
     }
     this.endTime.setTime(this.startTime.getTime() + seconds * 1000);
   }
 
   /** in minutes */
   get durationMinutes(): number {
-    return this.duration / 60;
+    return this.duration / k1MinuteS;
   }
   set durationMinutes(minutes: number) {
-    this.duration = minutes * 60;
+    this.duration = minutes * k1MinuteS;
   }
 
   /** in hours */
   get durationHours(): number {
-    return this.duration / 3600;
+    return this.duration / k1HourS;
   }
   set durationHours(hours: number) {
-    this.duration = hours * 3600;
+    this.duration = hours * k1HourS;
   }
 
   /** in days */
   get durationDays(): number {
-    return this.duration / 86400;
+    return this.duration / k1DayS;
   }
   set durationDays(days: number) {
-    this.duration = days * 86400;
+    this.duration = days * k1DayS;
   }
 
   /** Create a new instance of the same event.
@@ -367,8 +368,6 @@ export class Event extends Observable {
     }
   }
 }
-
-const k1Day = 86400;
 
 export enum RecurrenceCase {
   /** Not recurring */

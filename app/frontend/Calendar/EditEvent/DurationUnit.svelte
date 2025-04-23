@@ -1,14 +1,15 @@
 <select id="duration-unit" bind:value={unitInSeconds} {disabled}>
   {#if !onlyDays}
-    <option value={k1Minute}>{$t`Minutes`}</option>
-    <option value={k1Hour}>{$t`Hours`}</option>
+    <option value={k1MinuteS}>{$t`Minutes`}</option>
+    <option value={k1HourS}>{$t`Hours`}</option>
   {/if}
-  <option value={k1Day}>{$t`Days`}</option>
+  <option value={k1DayS}>{$t`Days`}</option>
 </select>
 
 <script lang="ts">
   import { t } from "../../../l10n/l10n";
   import { createEventDispatcher } from 'svelte';
+  import { k1DayS, k1HourS, k1MinuteS } from "../../Util/date";
   const dispatch = createEventDispatcher<{ change: number }>();
 
   export let durationInSeconds: number; /* in/out */
@@ -40,8 +41,8 @@
 
   $: onlyDays && onDaysOnly()
   function onDaysOnly() {
-    durationInSeconds = Math.round(Math.ceil(Math.max(durationInSeconds, 1) / k1Day) * k1Day);
-    newUnit(k1Day);
+    durationInSeconds = Math.round(Math.ceil(Math.max(durationInSeconds, 1) / k1DayS) * k1DayS);
+    newUnit(k1DayS);
   }
 
   $: durationInSeconds, onDurationChanged()
@@ -51,12 +52,12 @@
     }
 
     // Adapt unit
-    if (durationInSeconds % k1Day == 0) {
-      newUnit(k1Day);
-    } else if (durationInSeconds % k1Hour == 0) {
-      newUnit(k1Hour);
-    } else if (unitInSeconds != k1Minute) {
-      newUnit(k1Minute);
+    if (durationInSeconds % k1DayS == 0) {
+      newUnit(k1DayS);
+    } else if (durationInSeconds % k1HourS == 0) {
+      newUnit(k1HourS);
+    } else if (unitInSeconds != k1MinuteS) {
+      newUnit(k1MinuteS);
     }
     dispatch("change", durationInSeconds);
   }
@@ -65,10 +66,6 @@
     unitInSeconds = aUnitInSeconds;
     durationInUnit = durationInSeconds / aUnitInSeconds;
   }
-
-  const k1Day = 86400;
-  const k1Hour = 3600;
-  const k1Minute = 60;
 </script>
 
 <style>

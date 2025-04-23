@@ -12,13 +12,14 @@ import { getUILocale, gPlural, gt } from "../../l10n/l10n";
 export function getDateTimeString(date: Date): string {
   var dateDetails = null;
   let today = new Date();
-  if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < 24 * 60 * 60 * 1000) {
+  if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < k1DayMS) { // today
     dateDetails = { hour: "numeric", minute: "numeric" };
-  } else if (today.getTime() - date.getTime() < 7 * 24 * 60 * 60 * 1000) { // this week
+  } else if (today.getTime() - date.getTime() < 7 * k1DayMS &&
+      today.getTime() - date.getTime() > -7 * k1DayMS) { // this week
     dateDetails = { weekday: "short", hour: "numeric", minute: "numeric" };
   } else if (date.getFullYear() == today.getFullYear()) { // this year
     dateDetails = { month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" };
-  } else {
+  } else { // full date
     dateDetails = { year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" };
   }
   return date.toLocaleString(getUILocale(), dateDetails);
@@ -36,13 +37,14 @@ export function getDateTimeString(date: Date): string {
 export function getDateString(date: Date): string {
   var dateDetails = null;
   let today = new Date();
-  if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < 24 * 60 * 60 * 1000) {
+  if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < k1DayMS) { // today
     return gt`Today`;
-  } else if (today.getTime() - date.getTime() < 7 * 24 * 60 * 60 * 1000) { // this week
+  } else if (today.getTime() - date.getTime() < 7 * k1DayMS &&
+      today.getTime() - date.getTime() > -7 * k1DayMS) { // this week
     dateDetails = { weekday: "long" };
   } else if (date.getFullYear() == today.getFullYear()) { // this year
     dateDetails = { month: "2-digit", day: "2-digit" };
-  } else {
+  } else { // full date
     dateDetails = { year: "numeric", month: "2-digit", day: "2-digit" };
   }
   return date.toLocaleString(getUILocale(), dateDetails);
@@ -78,18 +80,23 @@ export function getDurationString(durationInMS: number): string {
   let durationInSec = durationInMS / 1000;
   if (!durationInMS) {
     return "";
-  } else if (durationInSec % k1Day == 0) {
-    let days = durationInSec / k1Day;
+  } else if (durationInSec % k1DayS == 0) {
+    let days = durationInSec / k1DayS;
     return Math.round(days) + " " + gPlural(days, { one: 'day', other: 'days' });
-  } else if (durationInSec % k1Hour == 0) {
-    let hours = durationInSec / k1Hour;
+  } else if (durationInSec % k1HourS == 0) {
+    let hours = durationInSec / k1HourS;
     return Math.round(hours) + " " + gPlural(hours, { one: 'hour', other: 'hours' });
   } else {
-    let minutes = durationInSec / k1Minute;
+    let minutes = durationInSec / k1MinuteS;
     return Math.round(minutes) + " " + gPlural(minutes, { one: 'min', other: 'mins' });
   }
 }
 
-export const k1Day = 86400;
-export const k1Hour = 3600;
-export const k1Minute = 60;
+/** 1 day, in seconds */
+export const k1DayS = 86400;
+export const k1HourS = 3600;
+export const k1MinuteS = 60;
+/** 1 day, in milliseconds */
+export const k1DayMS = 86400 * 1000;
+export const k1HourMS = 3600 * 1000;
+export const k1MinuteMS = 60 * 1000;
