@@ -37,6 +37,6 @@
 
 <style>
   .buttons {
-    justify-content: start;
+    justify-content: end;
   }
 </style>
