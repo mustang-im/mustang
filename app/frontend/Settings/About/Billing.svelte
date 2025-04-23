@@ -2,7 +2,7 @@
   {#if error}
     {error?.message ?? error}
   {:else if license.valid}
-    <div>{$t`Your license is valid until ${getDateString(license.expiresOn)}`}</div>
+    <div>{$t`Your license is valid until ${getDateString(license.expiresOn)}.`}</div>
     <hbox class="thankyou">
       <div>{$t`Thank you for your purchase.`}</div>
       <HeartIcon />

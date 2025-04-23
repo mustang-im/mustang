@@ -60,7 +60,7 @@
     <value class="subject">{$message.subject}</value>
     <hbox flex />
     <value class="date font-small" title={$message.sent?.toLocaleString(getUILocale())}>
-      {getDateString($message.sent)}
+      {getDateTimeString($message.sent)}
     </value>
     <vbox class="display-mode">
       <DisplayModeSwitcher />
@@ -85,7 +85,7 @@
   import RemoveIcon from "lucide-svelte/icons/x";
   import { getLocalStorage } from "../../Util/LocalStorage";
   import { catchErrors, backgroundError } from "../../Util/error";
-  import { getDateString } from "../../Util/date";
+  import { getDateTimeString } from "../../Util/date";
   import { onDestroy } from "svelte";
   import { getUILocale, t } from "../../../l10n/l10n";
 

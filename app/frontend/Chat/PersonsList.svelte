@@ -1,7 +1,7 @@
 <PersonsList persons={chatRoomsSorted} bind:selected={selectedChat} pictureSize={32}>
   <hbox slot="top-right" class="last-time" let:person={chatRoom}>
     {#if chatRoom instanceof Chat && chatRoom.lastMessage}
-      {getDateString(chatRoom.lastMessage.sent)}
+      {getDateTimeString(chatRoom.lastMessage.sent)}
     {/if}
   </hbox>
   <hbox slot="second-row" flex class="last-msg font-smallest" let:person={chatRoom}>
@@ -15,7 +15,7 @@
   import { Chat } from "../../logic/Chat/Chat";
   import type { Collection } from "svelte-collections";
   import PersonsList from "../Contacts/Person/PersonsList.svelte";
-  import { getDateString } from "../Util/date";
+  import { getDateTimeString } from "../Util/date";
 
   export let chatRooms: Collection<Chat>;
   export let selectedChat: Chat;

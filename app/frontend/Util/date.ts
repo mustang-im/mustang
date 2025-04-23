@@ -1,4 +1,4 @@
-import { getUILocale, gPlural } from "../../l10n/l10n";
+import { getUILocale, gPlural, gt } from "../../l10n/l10n";
 
 /**
 * Returns:
@@ -9,7 +9,7 @@ import { getUILocale, gPlural } from "../../l10n/l10n";
 * Each in locale
 * See also <https://momentjs.com> for relative time
 */
-export function getDateString(date: Date): string {
+export function getDateTimeString(date: Date): string {
   var dateDetails = null;
   let today = new Date();
   if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < 24 * 60 * 60 * 1000) {
@@ -20,6 +20,30 @@ export function getDateString(date: Date): string {
     dateDetails = { month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" };
   } else {
     dateDetails = { year: "numeric", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric" };
+  }
+  return date.toLocaleString(getUILocale(), dateDetails);
+}
+
+/**
+* Returns:
+* For today: "Today"
+* This week: Weekday, long, e.g. "Wednesday"
+* Other this year: Date, without year, e.g. "23.11."
+* Other: Full Date, e.g. "23.11.2018"
+* Each in locale
+* See also <https://momentjs.com> for relative time
+*/
+export function getDateString(date: Date): string {
+  var dateDetails = null;
+  let today = new Date();
+  if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < 24 * 60 * 60 * 1000) {
+    return gt`Today`;
+  } else if (today.getTime() - date.getTime() < 7 * 24 * 60 * 60 * 1000) { // this week
+    dateDetails = { weekday: "long" };
+  } else if (date.getFullYear() == today.getFullYear()) { // this year
+    dateDetails = { month: "2-digit", day: "2-digit" };
+  } else {
+    dateDetails = { year: "numeric", month: "2-digit", day: "2-digit" };
   }
   return date.toLocaleString(getUILocale(), dateDetails);
 }

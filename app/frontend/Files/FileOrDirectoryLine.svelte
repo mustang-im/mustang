@@ -44,7 +44,7 @@
     {/if}
   </hbox>
   <hbox class="time">
-    {getDateString(file.lastMod)}
+    {getDateTimeString(file.lastMod)}
   </hbox>
 </hbox>
 
@@ -60,7 +60,7 @@
   import { File, Directory, FileOrDirectory } from "../../logic/Files/File";
   import { fileSize } from "./fileSize";
   import { selectedFile } from "./selected";
-  import { getDateString } from "../Util/date";
+  import { getDateTimeString } from "../Util/date";
   import FileIcon from "./FileIcon.svelte";
   import FolderClosedIcon from "lucide-svelte/icons/folder";
   import FolderOpenIcon from "lucide-svelte/icons/folder-open";

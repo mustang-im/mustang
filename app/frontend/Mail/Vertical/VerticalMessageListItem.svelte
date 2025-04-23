@@ -17,7 +17,7 @@
         <TagSelector tags={$tags} {message} canAdd={false} />
       </hbox>
     {/if}
-    <hbox class="date">{getDateString($message.sent)}</hbox>
+    <hbox class="date">{getDateTimeString($message.sent)}</hbox>
     <!--
     <hbox class="buttons hover">
       <hbox class="spam button">
@@ -113,7 +113,7 @@
   import FolderActionsIcon from "lucide-svelte/icons/folder-dot";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import SpamIcon from "lucide-svelte/icons/shield-x";
-  import { getDateString } from "../../Util/date";
+  import { getDateTimeString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";

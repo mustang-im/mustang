@@ -21,7 +21,7 @@
         <hbox flex>
           <slot name="above-center" />
         </hbox>
-        <hbox class="time">{getDateString($message.sent)}</hbox>
+        <hbox class="time">{getDateTimeString($message.sent)}</hbox>
       </hbox>
     {/if}
     <vbox class="bubble">
@@ -59,7 +59,7 @@
   import cssFont from "../../asset/font/Karla.css?inline";
   import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
   import WebView from "../../Shared/WebView.svelte";
-  import { getDateString } from "../../Util/date";
+  import { getDateTimeString } from "../../Util/date";
   import { t } from "../../../l10n/l10n";
 
   export let message: Message;

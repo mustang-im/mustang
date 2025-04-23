@@ -1,6 +1,6 @@
 <hbox class="time font-normal">
   <hbox class="starttime">
-    {getDateString($event.startTime)}
+    {getDateTimeString($event.startTime)}
   </hbox>
   {#if $event.endTime}
     <hbox class="duration-prefix">
@@ -14,7 +14,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { getDateString, getDurationString } from "../../Util/date";
+  import { getDateTimeString, getDurationString } from "../../Util/date";
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
