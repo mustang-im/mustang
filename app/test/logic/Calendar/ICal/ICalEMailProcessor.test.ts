@@ -27,7 +27,7 @@ const allFiles = await fs.readdir(dataDir);
 const testFiles = allFiles.filter(name => name.endsWith(".ics")).map(name => name.slice(0, -4));
 test.each(testFiles)("Parse %s", async name => {
   const calendar = await fs.readFile(new URL(name + ".ics", dataDir), { encoding: 'utf-8' });
-  const [scheduling, event] = JSON.parse(await fs.readFile(new URL(name + ".json", dataDir, { encoding: 'utf-8' })));
+  const [invitationMessage, event] = JSON.parse(await fs.readFile(new URL(name + ".json", dataDir, { encoding: 'utf-8' })));
   const processor = new ICalEMailProcessor();
   const email = {
     attachments: [{
@@ -40,6 +40,6 @@ test.each(testFiles)("Parse %s", async name => {
     }],
   };
   await processor.process(email, null);
-  expect(email.scheduling).toEqual(scheduling);
+  expect(email.invitationMessage).toEqual(invitationMessage);
   expect(toJSON(email.event)).toEqual(event);
 });

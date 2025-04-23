@@ -87,9 +87,9 @@ export class SQLEMail {
     let lock = doLock ? await email.storageLock.lock() : null;
     try {
       let jsonStr: string | null = null;
-      if (email.scheduling) {
+      if (email.invitationMessage) {
         let json = {} as any;
-        json.invitationMessage = email.scheduling;
+        json.invitationMessage = email.invitationMessage;
         jsonStr = JSON.stringify(json, null, 2);
       }
       await (await getDatabase()).run(sql`
@@ -366,7 +366,7 @@ export class SQLEMail {
     email.threadID = sanitize.string(row.threadID ?? row.parentMsgID, null);
     email.downloadComplete = sanitize.boolean(row.downloadComplete, false);
     let json = sanitize.json(row.json, {});
-    email.scheduling = sanitize.integer(json.scheduling, 0);
+    email.invitationMessage = sanitize.integer(json.invitationMessage, 0);
 
     await this.readTags(email);
   }

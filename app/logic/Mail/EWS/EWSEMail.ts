@@ -80,7 +80,7 @@ export class EWSEMail extends EMail {
     setPersons(this.cc, xmljs.CcRecipients?.Mailbox);
     setPersons(this.bcc, xmljs.BccRecipients?.Mailbox);
     this.contact = this.outgoing ? this.to.first : this.from;
-    this.scheduling = ExchangeScheduling[xmljs.ItemClass] || InvitationMessage.None;
+    this.invitationMessage = ExchangeScheduling[xmljs.ItemClass] || InvitationMessage.None;
   }
 
   /** Get body and attachments from Exchange.
@@ -200,7 +200,7 @@ export class EWSEMail extends EMail {
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.scheduling == InvitationMessage.Invitation, "Only invitations can be responded to");
+    assert(this.invitationMessage == InvitationMessage.Invitation, "Only invitations can be responded to");
     let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.itemID });
     await this.folder.account.callEWS(request);
@@ -214,7 +214,7 @@ export class EWSEMail extends EMail {
    * `EMail.loadEvent()` works for all iTIP messages.
    * By not overriding `loadEvent()` here, `EMail.loadEvent()` will be called. */
   async loadEvent_disabled() {
-    assert(this.scheduling == InvitationMessage.Invitation, "This is not an invitation");
+    assert(this.invitationMessage == InvitationMessage.Invitation, "This is not an invitation");
     assert(!this.event, "Event has already been loaded");
     let request = {
       m$GetItem: {

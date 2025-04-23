@@ -71,7 +71,7 @@ export class ActiveSyncEMail extends EMail {
     setPersons(this.cc, wbxmljs.Cc);
     setPersons(this.bcc, wbxmljs.Bcc);
     this.contact = this.outgoing ? this.to.first : this.from;
-    this.scheduling = ExchangeScheduling[wbxmljs.MessageClass] || InvitationMessage.None;
+    this.invitationMessage = ExchangeScheduling[wbxmljs.MessageClass] || InvitationMessage.None;
     /* Can't use this data because the description is missing.
     if (wbxmljs.MeetingRequest) {
       let event = new ActiveSyncEvent();
@@ -185,7 +185,7 @@ export class ActiveSyncEMail extends EMail {
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.scheduling == InvitationMessage.Invitation, "Only invitations can be responded to");
+    assert(this.invitationMessage == InvitationMessage.Invitation, "Only invitations can be responded to");
     let request = {
       Request: {
         UserResponse: ActiveSyncResponse[response],
@@ -205,7 +205,7 @@ export class ActiveSyncEMail extends EMail {
    * `EMail.loadEvent()` works for all iTIP messages.
    * By not overriding `loadEvent()` here, `EMail.loadEvent()` will be called. */
   async loadEvent_disabled() {
-    assert(this.scheduling, "This is not an invitation or response");
+    assert(this.invitationMessage, "This is not an invitation or response");
     assert(!this.event, "Event has already been loaded");
     let request = {
       Fetch: {

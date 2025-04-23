@@ -17,7 +17,7 @@ export class ICalEMailProcessor extends EMailProcessor {
     }
     let invitationStr = await invitationBlob.text();
     let ics = new ICalParser(invitationStr);
-    email.scheduling = iTIPMethod(ics);
+    email.invitationMessage = iTIPMethod(ics);
     email.event = convertICalToEvent(ics);
     if (email.event && !email.event.descriptionHTML && email.html) {
       email.event.descriptionHTML = email.html;

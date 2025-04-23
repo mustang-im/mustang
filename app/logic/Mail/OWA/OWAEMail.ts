@@ -54,7 +54,7 @@ export class OWAEMail extends EMail {
     setPersons(this.cc, json.CcRecipients);
     setPersons(this.bcc, json.BccRecipients);
     this.contact = this.outgoing ? this.to.first : this.from;
-    this.scheduling = ExchangeScheduling[json.ItemClass] || InvitationMessage.None;
+    this.invitationMessage = ExchangeScheduling[json.ItemClass] || InvitationMessage.None;
   }
 
   setFlags(json) {
@@ -132,7 +132,7 @@ export class OWAEMail extends EMail {
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.scheduling == InvitationMessage.Invitation, "Only invitations can be responded to");
+    assert(this.invitationMessage == InvitationMessage.Invitation, "Only invitations can be responded to");
     let request = new OWACreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField(ResponseTypes[response], "ReferenceItemId", {
       __type: "ItemId:#Exchange",
@@ -149,7 +149,7 @@ export class OWAEMail extends EMail {
    * `EMail.loadEvent()` works for all iTIP messages.
    * By not overriding `loadEvent()` here, `EMail.loadEvent()` will be called. */
   async loadEvent_disabled() {
-    assert(this.scheduling == InvitationMessage.Invitation, "This is not an invitation");
+    assert(this.invitationMessage == InvitationMessage.Invitation, "This is not an invitation");
     assert(!this.event, "Event has already been loaded");
     let result = await this.folder.account.callOWA(owaGetEventsRequest([ this.itemID ]));
     let event = new OWAEvent();

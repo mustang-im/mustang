@@ -56,7 +56,7 @@ export class EMail extends Message {
   @notifyChangedProperty
   mime: Uint8Array | undefined;
   @notifyChangedProperty
-  scheduling: InvitationMessage = InvitationMessage.None;
+  invitationMessage: InvitationMessage = InvitationMessage.None;
   @notifyChangedProperty
   event: Event | null = null;
   folder: Folder;
@@ -202,7 +202,7 @@ export class EMail extends Message {
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.scheduling == InvitationMessage.Invitation, "Only invitations can be responded to");
+    assert(this.invitationMessage == InvitationMessage.Invitation, "Only invitations can be responded to");
     let event: Event;
     for (let calendar of appGlobal.calendars) {
       event = calendar.events.find(event => event.calUID == this.event.calUID);
@@ -234,7 +234,7 @@ export class EMail extends Message {
   }
 
   async loadEvent() {
-    assert(this.scheduling, "This is not an invitation or response");
+    assert(this.invitationMessage, "This is not an invitation or response");
     assert(!this.event, "Event has already been loaded");
     if (this.mime) {
       await this.parseMIME();
@@ -485,7 +485,7 @@ export class EMail extends Message {
     other.isDraft = this.isDraft;
     other.isDeleted = this.isDeleted;
     other.mime = this.mime;
-    other.scheduling = this.scheduling;
+    other.invitationMessage = this.invitationMessage;
     other.event = this.event;
     other.folder = this.folder;
     other.threadID = this.threadID;
