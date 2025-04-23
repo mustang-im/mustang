@@ -10,6 +10,9 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
+  import { SMTPAccount } from "../../../../logic/Mail/SMTP/SMTPAccount";
+  import { TLSSocketType } from "../../../../logic/Abstract/TCPAccount";
+  import { kStandardPorts } from "../../../../logic/Mail/AutoConfig/configInfo";
   import { newAccountForProtocol, listMailProtocols, labelForMailProtocol } from "../../../../logic/Mail/AccountsList/MailAccounts";
   import { createEventDispatcher } from "svelte";
   const dispatchEvent = createEventDispatcher();
@@ -25,10 +28,19 @@
     console.log("new protocol", protocol);
     let newConfig = newAccountForProtocol(protocol);
     newConfig.cloneFrom(config);
+    if (!kStandardPorts.find(p => p.protocol == newConfig.protocol && p.tls == newConfig.tls)) {
+      newConfig.tls = TLSSocketType.TLS;
+    }
+    newConfig.port = kStandardPorts.find(p => p.protocol == newConfig.protocol && p.tls == newConfig.tls)?.port ?? 443;
     newConfig.url = "";
     if ((protocol == "imap" || protocol == "pop3") && !newConfig.outgoing) {
-      newConfig.outgoing = newAccountForProtocol("smtp");
-      newConfig.outgoing.cloneFrom(newConfig);
+      let lastOutgoing = config.outgoing;
+      let outgoing = newAccountForProtocol("smtp");
+      outgoing.cloneFrom(lastOutgoing ?? newConfig);
+      if (!lastOutgoing) {
+        outgoing.port = kStandardPorts.find(p => p.protocol == outgoing.protocol && p.tls == outgoing.tls)?.port ?? 587;
+      }
+      newConfig.outgoing = outgoing as SMTPAccount;
     }
     config = newConfig;
     dispatchEvent("newProtocol", protocol);
