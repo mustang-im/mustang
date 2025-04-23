@@ -21,7 +21,7 @@ import AccountIdentity from "./Mail/Account/Identity.svelte";
 import AccountXMPPServer from "./Chat/AccountXMPPServer.svelte";
 import ChatNotifications from "./Chat/Notifications.svelte";
 import About from "./About/About.svelte";
-import Licenses from "./About/Licenses.svelte";
+import OpenSource from "./About/OpenSource.svelte";
 import Test from "./About/Test.svelte";
 // #if [!WEBMAIL]
 import SetupMail from "../Setup/Mail/SetupMail.svelte";
@@ -147,7 +147,7 @@ settingsCategories.add(customer);
 
 const about = new SettingsCategory("about", gt`About`, About, true);
 about.subCategories.addAll([
-  new SettingsCategory("license", gt`Open-Source`, Licenses),
+  new SettingsCategory("opensource", gt`Open-Source`, OpenSource),
   new SettingsCategory("test", gt`Test`, Test),
 ]);
 settingsCategories.add(about);
