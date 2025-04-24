@@ -73,9 +73,7 @@ export class OWAAccount extends MailAccount {
    * OWA full page login resembles OAuth2, so we label it as such,
    * although it's actually Office 365 itself doing its own OAuth2.
    */
-  async login(interactive: boolean): Promise<void> {
-    await ensureLicensed();
-    await super.login(interactive);
+  async verifyLogin(interactive = true): Promise<void> {
     if (this.authMethod == AuthMethod.OAuth2) {
       // The backend has the logic for posing the login page
       // using the correct cookie jar and auto-filling it.
@@ -103,6 +101,12 @@ export class OWAAccount extends MailAccount {
         await this.listFolders();
       }
     }
+  }
+
+  async login(interactive: boolean, verifyOnly?: boolean): Promise<void> {
+    await ensureLicensed();
+    await super.login(interactive);
+    await this.verifyLogin(interactive);
     this.hasLoggedIn = true;
 
     // Link (until #155) or create the default address book.
