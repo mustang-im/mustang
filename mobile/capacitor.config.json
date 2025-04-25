@@ -4,6 +4,9 @@
   "webDir": "../app/dist",
   "bundleWebRuntime": false,
   "plugins": {
+    "CapacitorNodeJS": {
+      "nodeDir": "nodejs"
+    },
     "SplashScreen": {
       "launchAutoHide": true
     }
