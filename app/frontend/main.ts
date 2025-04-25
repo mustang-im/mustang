@@ -25,8 +25,6 @@ export default app;
 function loadWindowSettings() {
   let windowSize = getLocalStorage("window.size", [window.outerWidth, window.outerHeight]).value;
   let windowPosition = getLocalStorage("window.position", [window.screenX, window.screenY]).value;
-  console.log("window position", windowPosition, typeof(windowPosition), "isarray", Array.isArray(windowPosition));
-  return;
   assert(windowSize.length == 2 && windowSize.every(i => sanitize.integer(i)), gt`Bad window size` + windowSize);
   assert(windowPosition.length == 2 && windowPosition.every(i => sanitize.integer(i)), gt`Bad window position` + windowPosition);
   windowSize[0] = Math.min(windowSize[0], screen.width);
