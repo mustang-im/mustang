@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "start": "vite",
-    "build": "vite build",
+    "build": "(cd ../app; yarn build); npx cap sync; vite build",
     "preview": "vite preview"
   },
   "dependencies": {
