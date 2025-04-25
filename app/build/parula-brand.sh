@@ -17,6 +17,12 @@ perl -p -i \
   -e "s|Mustang|Parula|g;" \
   -e "s|https://mustang.im|https://parula.beonex.com|g;" \
   -e "s|\"name\": \"mustang\"|\"name\": \"parula\"|;" \
+  -e "s|\"version\": \".*\"|\"version\": \"$VERSION\"|;" \
+  ../../mobile/package.json
+perl -p -i \
+  -e "s|Mustang|Parula|g;" \
+  -e "s|https://mustang.im|https://parula.beonex.com|g;" \
+  -e "s|\"name\": \"mustang\"|\"name\": \"parula\"|;" \
   ../package.json
 perl -p -i \
   -e "s|Mustang GmbH|Beonex GmbH|g;" \
