@@ -51,7 +51,7 @@ export class EWSAccount extends MailAccount {
     await this.commonLogin(true);
   }
 
-  async commonLogin(interactive): Promise<void> {
+  private async commonLogin(interactive): Promise<void> {
     if (this.authMethod == AuthMethod.OAuth2) {
       if (!this.oAuth2) {
         let urls = OAuth2URLs.find(a => a.hostnames.includes(this.hostname));

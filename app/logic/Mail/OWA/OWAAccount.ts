@@ -77,7 +77,7 @@ export class OWAAccount extends MailAccount {
    * OWA full page login resembles OAuth2, so we label it as such,
    * although it's actually Office 365 itself doing its own OAuth2.
    */
-  async commonLogin(interactive): Promise<void> {
+  private async commonLogin(interactive): Promise<void> {
     if (this.authMethod == AuthMethod.OAuth2) {
       // The backend has the logic for posing the login page
       // using the correct cookie jar and auto-filling it.
