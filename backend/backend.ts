@@ -1,13 +1,10 @@
 import { HTTPServer } from './HTTPServer';
 import JPCWebSocket from '../lib/jpc-ws';
-import * as OWA from './owa';
 import { appName, production } from '../app/logic/build';
-import { WebContents } from './WebContents';
 import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard } from "electron";
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
 import { createType1Message, decodeType2Message, createType3Message } from "./ntlm";
@@ -15,6 +12,12 @@ import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
+
+const OWA = {
+  fetchSessionData() {
+    return null;
+  }
+};
 
 let jpc: JPCWebSocket | null = null;
 
@@ -264,8 +267,7 @@ function newHTTPServer() {
 }
 
 /** <https://www.electronjs.org/docs/latest/api/tray> */
-function newTrayIcon(imgDataURL: string): Tray {
-  return new Tray(nativeImage.createFromDataURL(imgDataURL));
+function newTrayIcon(imgDataURL: string): null {
 }
 
 /** <https://www.electronjs.org/docs/latest/api/notification> */
@@ -278,33 +280,25 @@ function isOSNotificationSupported(): boolean {
 }
 
 function restartApp() {
-  app.relaunch();
-  app.quit();
 }
 
 function setTheme(theme: "system" | "light" | "dark") {
   if (!["system", "light", "dark"].includes(theme)) {
     throw new Error("Bad theme name " + theme);
   }
-  nativeTheme.themeSource = theme;
 }
 
 function openExternalURL(url: string) {
-  shell.openExternal(url);
 }
 
 function openFileInNativeApp(filePath: string) {
-  shell.openPath(filePath);
 }
 
 function showFileInFolder(filePath: string) {
-  shell.showItemInFolder(filePath);
 }
 
 
 function openMenu(menuItems: MenuItemConstructorOptions[]): void {
-  let menu = Menu.buildFromTemplate(menuItems);
-  menu.popup();
 }
 
 function createIMAPFlowConnection(...args): ImapFlow {
@@ -351,36 +345,22 @@ function newAdmZIP(filepath: string) {
   }
 }
 
-let mainWindow: BrowserWindow;
-
-export function setMainWindow(mainWin: BrowserWindow) {
-  mainWindow = mainWin;
+export function setMainWindow(mainWin) {
 }
 
 function minimizeMainWindow() {
-  mainWindow.minimize();
 }
 
 function unminimizeMainWindow() {
-  mainWindow.restore();
 }
 
 function maximizeMainWindow() {
-  mainWindow.maximize();
 }
 
 function addEventListenerWebContents(webContentsID: number, webviewEvent: string, eventHandler: (event: Event) => void) {
-  const win = webContents.fromId(webContentsID);
-  assert(win, `WebContents ID ${webContentsID} not found`);
-  win.on(webviewEvent as any, (_: any, event: Event) => {
-    eventHandler(event);
-  });
 }
 
 function getWebContents(webContentsID: number) {
-  const win = webContents.fromId(webContentsID);
-  assert(win, `WebContents ID ${webContentsID} not found`);
-  return new WebContents(win);
 }
 
 /**
@@ -389,11 +369,9 @@ function getWebContents(webContentsID: number) {
  * on their system clipboard e.g. passwords
  */
 function writeTextToClipboard(text: string) {
-  clipboard.writeText(text);
 }
 
 function setBadgeCount(count: number) {
-  app.setBadgeCount(count);
 }
 
 function platform(): string {
@@ -404,10 +382,8 @@ function platform(): string {
  *   e.g. "home", "appData" (`.config` and `%APPDATA%`), "userData" (app config)
  *   @see <https://www.electronjs.org/docs/latest/api/app#appgetpathname> */
 function directory(type: string): string {
-  return app.getPath(type as any);
+  return os.homedir();
 }
-
-const kAppDir = production ? appName : appName + "Dev"; // e.g. "Mustang" or "Parula"
 
 /**
  * Get the user config directory on disk.
@@ -422,19 +398,8 @@ const kAppDir = production ? appName : appName + "Dev"; // e.g. "Mustang" or "Pa
  * Mac OS: /Users/USER/Library/Application Support/Mustang
  */
 function getConfigDir(): string {
-  let platform = os.platform();
-  let datadir = platform == "win32" || platform == "darwin"
-    ? app.getPath("appData")
-    : app.getPath("home");
-  let dirname = platform == "win32" || platform == "darwin"
-    ? kAppDir
-    : "." + kAppDir.toLowerCase();
-  let dir = path.join(datadir, dirname);
-  fs.mkdirSync(dir, { recursive: true });
-  return dir;
+  return os.homedir();
 }
-
-let filesDirCreated = false;
 
 /**
  * Get the directory on disk where we store the files that our user exchanged with others.
@@ -449,17 +414,7 @@ let filesDirCreated = false;
  * Mac OS: /Users/USER/Library/Mustang
  */
 function getFilesDir(): string {
-  let platform = os.platform();
-  let dirname =
-    platform == "win32" ? kAppDir :
-    platform == "darwin" ? "Library/" + kAppDir :
-    "." + kAppDir.toLowerCase();
-  let dir = path.join(os.homedir(), dirname);
-  if (!filesDirCreated) {
-    fs.mkdirSync(dir, { recursive: true });
-    filesDirCreated = true;
-  }
-  return dir;
+  return os.homedir();
 }
 
 function assert(test, errorMessage): asserts test {
