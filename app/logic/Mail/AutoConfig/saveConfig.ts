@@ -31,8 +31,7 @@ export async function saveConfig(config: MailAccount, emailAddress: string, pass
   appGlobal.emailAccounts.add(config);
   console.log("Saving new mail account", config);
   // saveAccountToLocalStorage(config);
-  setStorage(config);
-  await config.save();
+  await config.saveAll();
 }
 
 /**
