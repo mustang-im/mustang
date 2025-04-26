@@ -5,6 +5,7 @@
   "main": "./index.ts",
   "type": "module",
   "dependencies": {
+    "vite-plugin-static-copy": "^2.3.1",
     "ws": "^8.16.0"
   },
   "resolutions": {

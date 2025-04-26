@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import nodeExternals from 'rollup-plugin-node-externals';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig({
   ssr: { noExternal: true },
@@ -7,12 +8,13 @@ export default defineConfig({
     target: 'node18',
     lib: {
       name: 'index',
-      fileName: () => 'indexs.js',
       formats: ['es'],
       entry: './index.ts'
     },
-    outDir: '../android/app/src/main/assets/public/nodejs',
-    emptyOutDir: false,
+    //outDir: '../android/app/src/main/assets/public/nodejs',
+    //emptyOutDir: false,
+    outDir: 'dist',
+    emptyOutDir: true,
     minify: false,
     ssr: true,
   },
@@ -20,6 +22,20 @@ export default defineConfig({
     nodeExternals({
       deps: false,
       devDeps: true, // Use node.js internal modules
-    })
+    }),
+    viteStaticCopy({
+      targets: [
+        {
+          src: 'dist/index.js',
+          dest: '../../android/app/src/main/assets/public/nodejs',
+          rename: 'index.mjs',
+        },
+        {
+          src: 'package-deploy.json',
+          dest: '../../android/app/src/main/assets/public/nodejs',
+          rename: 'package.json',
+        },
+      ]
+    }),
   ],
 });
