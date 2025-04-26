@@ -6,6 +6,8 @@
   "scripts": {
     "start": "vite",
     "build": "(cd ../app; yarn build); cap sync; vite build; (cd backend; vite build)",
+    "start-android": "cap run android",
+    "start-ios": "cap run ios",
     "preview": "vite preview"
   },
   "dependencies": {
