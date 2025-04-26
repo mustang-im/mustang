@@ -48,10 +48,10 @@ export class EWSAccount extends MailAccount {
   }
 
   async verifyLogin(): Promise<void> {
-    await this.commonLogin(true);
+    await this.loginCommon(true);
   }
 
-  private async commonLogin(interactive): Promise<void> {
+  protected async loginCommon(interactive: boolean): Promise<void> {
     if (this.authMethod == AuthMethod.OAuth2) {
       if (!this.oAuth2) {
         let urls = OAuth2URLs.find(a => a.hostnames.includes(this.hostname));
@@ -68,7 +68,7 @@ export class EWSAccount extends MailAccount {
   async login(interactive: boolean): Promise<void> {
     await ensureLicensed();
     await super.login(interactive);
-    await this.commonLogin(interactive);
+    await this.loginCommon(interactive);
 
     // Link (until #155) or create the default address book.
     // TODO: Support user-added address books. Compare addressbook ID.
