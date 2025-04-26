@@ -7,7 +7,7 @@ export default defineConfig({
     target: 'node18',
     lib: {
       name: 'index',
-      fileName: () => 'index.js',
+      fileName: () => 'indexs.js',
       formats: ['es'],
       entry: './index.ts'
     },
