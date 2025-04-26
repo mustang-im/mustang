@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "vite",
-    "build": "(cd ../app; yarn build); cap sync; vite build; (cd backend; vite build)",
+    "build": "(cd ../app; yarn build); cap sync; vite build; (cd backend; npx vite build)",
     "start-android": "cap run android",
     "start-ios": "cap run ios",
     "preview": "vite preview"
