@@ -110,6 +110,8 @@
 <style>
   .main-window {
     border: 1px solid gray;
+    min-width: 640px;
+    min-height: 100vh;
   }
   .sidebar {
     box-shadow: inset 1px 0px 5px 0px rgba(0, 0, 0, 10%);

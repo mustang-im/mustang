@@ -110,6 +110,12 @@ export class Account extends Observable {
   /** Saves the config in this account to disk.
    * Does not save the contents, e.g. messages. */
   async save(): Promise<void> {
+    throw new AbstractFunction();
+  }
+
+  /** Saves the config in this account and its dependent accounts to disk. */
+  async saveAll(): Promise<void> {
+    await this.save(); // must be first, because of foreign key constraint
     for (let dependent of this.dependentAccounts()) {
       await dependent.save();
     }

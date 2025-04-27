@@ -1,4 +1,8 @@
-<vbox class="message-header" class:outgoing={$message.outgoing}>
+<vbox class="message-header"
+  class:outgoing={$message.outgoing}
+  on:touchstart={ev => swipe.touchStart(ev)}
+  on:touchend={ev => swipe.touchEnd(ev)}
+  >
   <hbox>
     {#if $message.contact instanceof Person && $message.contact.picture}
       <PersonPicture person={$message.contact} />
@@ -62,9 +66,11 @@
     <value class="date font-small" title={$message.sent?.toLocaleString(getUILocale())}>
       {getDateTimeString($message.sent)}
     </value>
-    <vbox class="display-mode">
-      <DisplayModeSwitcher />
-    </vbox>
+    {#if !$appGlobal.isSmall}
+      <vbox class="display-mode">
+        <DisplayModeSwitcher />
+      </vbox>
+    {/if}
   </hbox>
 </vbox>
 
@@ -75,6 +81,7 @@
   import type { PersonOrGroup } from "../../Contacts/Person/PersonOrGroup";
   import { selectedPerson } from "../../Contacts/Person/Selected";
   import type { Tag } from "../../../logic/Mail/Tag";
+  import { appGlobal } from "../../../logic/app";
   import MessageToolbar from "./MessageToolbar.svelte";
   import RecipientList from "./RecipientList.svelte";
   import Recipient from "./Recipient.svelte";
@@ -83,6 +90,7 @@
   import TagSelector from "../Tag/TagSelector.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import RemoveIcon from "lucide-svelte/icons/x";
+  import { Swipe } from "../../Shared/Gesture";
   import { getLocalStorage } from "../../Util/LocalStorage";
   import { catchErrors, backgroundError } from "../../Util/error";
   import { getDateTimeString } from "../../Util/date";
@@ -132,6 +140,16 @@
   async function onTagRemove(tag: Tag) {
     await message.removeTag(tag);
   }
+
+  function onNextMessage() {
+    message = message.nextMessage();
+  }
+  function onPreviousMessage() {
+    message = message.nextMessage(true);
+  }
+  let swipe = new Swipe();
+  swipe.onLeft = onPreviousMessage;
+  swipe.onRight = onNextMessage;
 </script>
 
 <style>
@@ -182,5 +200,17 @@
   }
   .display-mode {
     justify-content: end;
+  }
+  @media (max-width: 600px)  {
+    .message-header {
+      min-height: 0;
+      padding: 8px 6px 2px 16px;
+    }
+    .display-mode {
+      display: none;
+    }
+    .date {
+      margin-inline-end: 6px;
+    }
   }
 </style>

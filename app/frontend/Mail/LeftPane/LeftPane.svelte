@@ -6,7 +6,7 @@
       <hbox flex />
       <hbox class="buttons">
         {#if activeTab == SearchView.Folder || activeTab == SearchView.Person}
-          <WriteButton {selectedAccount} />
+          <WriteButton account={selectedAccount} />
         {/if}
       </hbox>
     </hbox>

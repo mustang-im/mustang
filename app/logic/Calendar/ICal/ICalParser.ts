@@ -8,6 +8,7 @@ class ICalEntry {
   properties: Record<string, string> = Object.create(null);
   name: string;
   value: string;
+  values: string[];
   line: string;
   constructor(line: string) {
     this.line = line;
@@ -19,6 +20,7 @@ class ICalEntry {
       line = RegExp.rightContext;
     }
     this.value = unescaped(line.slice(1));
+    this.values = line.match(/(^:|;)(\\?.)*?(?=;|$)/g).map(value => unescaped(value.slice(1)));
   }
 }
 

@@ -46,6 +46,11 @@
 
   async function onSave() {
     await config.save();
+    // config.saveAll() would save all dependent accounts,
+    // but we're only interested in the outgoing account.
+    if (config.outgoing) {
+      await config.outgoing.save();
+    }
   }
 
   let el: ManualConfigURL | ManualConfigHost  = null;

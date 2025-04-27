@@ -31,7 +31,6 @@ export class Calendar extends Account {
   }
 
   async save(): Promise<void> {
-    await super.save();
     await this.storage?.saveCalendar(this);
   }
 

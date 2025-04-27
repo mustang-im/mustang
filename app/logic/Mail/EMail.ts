@@ -493,7 +493,7 @@ export class EMail extends Message {
   }
 
   /**
-   * @param up
+   * @param previous
    * true: older message
    * false: newer message
    * null: Same list position, after deleting this message
@@ -503,10 +503,10 @@ export class EMail extends Message {
    * like `ComposeActions`.
    * For now, given that it's just 1 function and small, keep it here.
    */
-  nextMessage(up?: boolean): EMail {
+  nextMessage(previous?: boolean): EMail {
     let i = this.folder.messages.getKeyForValue(this);
-    if (typeof (up) == "boolean") {
-      up ? --i : ++i;
+    if (typeof (previous) == "boolean") {
+      previous ? --i : ++i;
     }
     return this.folder.messages.getIndex(i);
   }
