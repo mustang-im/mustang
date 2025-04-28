@@ -237,8 +237,6 @@ export class Event extends Observable {
   }
 
   createMeeting() {
-    assert(this.participants.isEmpty, "This is already a meeting");
-    assert(this.myParticipation <= InvitationResponse.Organizer, "Incoming invitation should already have participants");
     this.outgoingInvitation.createOrganizer();
   }
 
@@ -260,13 +258,10 @@ export class Event extends Observable {
   }
 
   async saveToServer(): Promise<void> {
-    if (!this.participants.length || this.myParticipation > InvitationResponse.Organizer) {
-      return;
+    if (this.myParticipation == InvitationResponse.Organizer && this.participants.hasItems) {
+      this.calUID ??= crypto.randomUUID();
+      await this.outgoingInvitation.sendInvitations();
     }
-    if (!this.calUID) {
-      this.calUID = crypto.randomUUID();
-    }
-    await this.outgoingInvitation.sendInvitations();
   }
 
   get isNew(): boolean {
