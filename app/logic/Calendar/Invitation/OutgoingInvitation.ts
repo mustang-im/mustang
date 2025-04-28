@@ -22,7 +22,7 @@ export default class OutgoingInvitation {
 
   get identity(): MailIdentity {
     let account = appGlobal.emailAccounts.find(account => account.canSendInvitations);
-    assert(account, gt`No suitable identity to organise this meeting`);
+    assert(account, gt`No suitable email identity to organise this meeting`);
     return account.identities.first;
   }
 

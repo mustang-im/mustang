@@ -300,6 +300,7 @@ export class Event extends Observable {
     if (this.myParticipation == InvitationResponse.Organizer) {
       await this.outgoingInvitation.sendCancellations();
     } else if (this.myParticipation) {
+      // TODO Move code to `IncomingInvitation` class
       for (let participant of this.participants) {
         if (participant.response == InvitationResponse.Organizer) {
           await this.respondToInvitation(InvitationResponse.Decline);
@@ -330,6 +331,7 @@ export class Event extends Observable {
     await newEvent.save();
   }
 
+  // TODO Move code to `IncomingInvitation` class
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
     assert(this.myParticipation > InvitationResponse.Organizer, "Only invitations can be responded to");
     let accounts = appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations && this.participants.some(participant => participant.response != InvitationResponse.Organizer && participant.emailAddress == account.emailAddress));
@@ -340,6 +342,7 @@ export class Event extends Observable {
     await this.sendInvitationResponse(response, accounts[0]);
   }
 
+  // TODO Move code to `IncomingInvitation` class
   async sendInvitationResponse(response: InvitationResponseInMessage, account: MailAccount) {
     let organizer = this.participants.find(participant => participant.response == InvitationResponse.Organizer);
     assert(organizer, "Invitation should have an organizer");

@@ -127,7 +127,7 @@ export class ActiveSyncEvent extends Event {
       await this.saveFields(this.toFields());
       if (!this.calUID) {
         // If we haven't set a UID yet, Exchange will auto-generate one,
-        // so sync up to find out what it is.
+        // so sync up (and match using `serverID`) to find out what `calUID` is.
         await this.calendar.listEvents();
       }
     }
