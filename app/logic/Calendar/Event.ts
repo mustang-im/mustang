@@ -257,6 +257,12 @@ export class Event extends Observable {
     this.unedited = null;
   }
 
+  createMeeting() {
+    assert(this.participants.isEmpty, "This is already a meeting");
+    assert(this.myParticipation <= InvitationResponse.Organizer, "Incoming invitation should already have participants");
+    this.outgoingInvitation.createOrganizer();
+  }
+
   /**
    * Saves the event locally to the database.
    */

@@ -95,7 +95,7 @@
 
   $: showRepeat = $event.recurrenceCase != RecurrenceCase.Normal;
   $: showReminder = !!$event.alarm;
-  $: showParticipants = $event.participants.hasItems || $event.myParticipation == InvitationResponse.Organizer;
+  $: showParticipants = $event.participants.hasItems;
   $: showLocation = !!$event.location;
   $: showOnlineMeeting = $event.isOnline;
   $: showDescription = !!$event.descriptionHTML;
@@ -112,7 +112,7 @@
   }
 
   function expandParticipants(): void {
-    event.myParticipation = InvitationResponse.Organizer;
+    event.createMeeting();
   }
 
   function expandLocation(): void {

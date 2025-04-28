@@ -1,5 +1,5 @@
 import type { Event } from "../Event";
-import type { Participant } from "../Participant";
+import { Participant } from "../Participant";
 import { InvitationResponse, type iCalMethod } from "./InvitationStatus";
 import type { MailAccount } from "../../Mail/MailAccount";
 import type { MailIdentity } from "../../Mail/MailIdentity";
@@ -13,6 +13,12 @@ export default class OutgoingInvitation {
 
   constructor(event: Event) {
     this.event = event;
+  }
+
+  createOrganizer() {
+    let identity = this.identity;
+    this.event.participants.add(new Participant(identity.emailAddress, identity.realname, InvitationResponse.Organizer));
+    this.event.myParticipation = InvitationResponse.Organizer;
   }
 
   get identity(): MailIdentity {
