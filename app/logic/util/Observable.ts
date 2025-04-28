@@ -1,7 +1,7 @@
 import { arrayRemove, assert } from "./util";
 
 export class Observable {
-  _observers: Array<observerFunc<this>> = [];
+  _observers: Array<observerFunc<any>> = [];
   _properties = {};
   subscribe(observer: observerFunc<this>): () => void {
     this.callObserver(observer, null, null);
