@@ -1,15 +1,16 @@
 import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
-import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation";
+import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import IANAToWindowsTimezone from "../ICal/IANAToWindowsTimezone";
 import WindowsToIANATimezone from "../ICal/WindowsToIANATimezone";
 import type { EWSCalendar } from "./EWSCalendar";
+import EWSOutgoingInvitation from "./EWSOutgoingInvitation";
 import EWSCreateItemRequest from "../../Mail/EWS/Request/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "../../Mail/EWS/Request/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/Request/EWSUpdateItemRequest";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, ensureArray } from "../../util/util";
+import { assert, ensureArray, NotReached } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 const ResponseTypes: Record<InvitationResponseInMessage, string> = {
@@ -104,7 +105,7 @@ export class EWSEvent extends Event {
     }
     this.participants.replaceAll(participants);
     if (xmljs.MyResponseType) {
-      this.response = sanitize.integer(InvitationResponse[xmljs.MyResponseType], InvitationResponse.Unknown);
+      this.myParticipation = sanitize.integer(InvitationResponse[xmljs.MyResponseType], InvitationResponse.Unknown);
     }
     if (xmljs.LastModifiedTime) {
       this.lastMod = sanitize.date(xmljs.LastModifiedTime);
@@ -133,6 +134,10 @@ export class EWSEvent extends Event {
     let week = sanitize.integer(WeekOfMonth[pattern.DayOfWeekIndex], 0);
     let first = sanitize.integer(Weekday[pattern.FirstDayOfWeek], Weekday.Monday);
     return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
+  }
+
+  get outgoingInvitation() {
+    return new EWSOutgoingInvitation(this);
   }
 
   async saveToServer() {
@@ -304,7 +309,7 @@ export class EWSEvent extends Event {
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.response > InvitationResponse.Organizer, "Only invitations can be responded to");
+    assert(this.myParticipation > InvitationResponse.Organizer, "Only invitations can be responded to");
     let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.itemID });
     await this.calendar.account.callEWS(request);

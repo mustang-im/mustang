@@ -1,7 +1,9 @@
 import type { Calendar } from "./Calendar";
-import type { Participant } from "./Participant";
+import { Participant } from "./Participant";
 import type { RecurrenceRule } from "./RecurrenceRule";
-import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation";
+import OutgoingInvitation from "./Invitation/OutgoingInvitation";
+import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
+import type { MailAccount } from "../Mail/MailAccount";
 import { appGlobal } from "../app";
 import { k1DayS, k1HourS, k1MinuteS } from "../../frontend/Util/date";
 import { Observable, notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
@@ -96,7 +98,7 @@ export class Event extends Observable {
   @notifyChangedProperty
   readonly participants = new ArrayColl<Participant>();
   @notifyChangedProperty
-  response = InvitationResponse.Unknown;
+  myParticipation = InvitationResponse.Unknown;
   /** If we're currently editing this event,
    * saves the original state before the editing.
    *
@@ -191,7 +193,11 @@ export class Event extends Observable {
     this.isOnline = original.isOnline;
     this.onlineMeetingURL = original.onlineMeetingURL;
     this.participants.replaceAll(original.participants);
-    this.response = original.response;
+    this.myParticipation = original.myParticipation;
+  }
+
+  get outgoingInvitation() {
+    return new OutgoingInvitation(this);
   }
 
   /**
@@ -210,7 +216,7 @@ export class Event extends Observable {
       this.location != this.unedited.location ||
       this.isOnline != this.unedited.isOnline ||
       this.onlineMeetingURL != this.unedited.onlineMeetingURL ||
-      this.response != this.unedited.response ||
+      this.myParticipation != this.unedited.myParticipation ||
       this.participants.hasItems && (
         this.participants.length != this.unedited.participants.length ||
         this.participants.contents.some((pThis, i) =>
@@ -228,6 +234,12 @@ export class Event extends Observable {
   }
   finishEditing() {
     this.unedited = null;
+  }
+
+  createMeeting() {
+    assert(this.participants.isEmpty, "This is already a meeting");
+    assert(this.myParticipation <= InvitationResponse.Organizer, "Incoming invitation should already have participants");
+    this.outgoingInvitation.createOrganizer();
   }
 
   /**
@@ -248,7 +260,13 @@ export class Event extends Observable {
   }
 
   async saveToServer(): Promise<void> {
-    // nothing to do for local events
+    if (!this.participants.length || this.myParticipation > InvitationResponse.Organizer) {
+      return;
+    }
+    if (!this.calUID) {
+      this.calUID = crypto.randomUUID();
+    }
+    await this.outgoingInvitation.sendInvitations();
   }
 
   get isNew(): boolean {
@@ -276,7 +294,19 @@ export class Event extends Observable {
   }
 
   async deleteFromServer(): Promise<void> {
-    // nothing to do for local events
+    if (!this.participants.length) {
+      return;
+    }
+    if (this.myParticipation == InvitationResponse.Organizer) {
+      await this.outgoingInvitation.sendCancellations();
+    } else if (this.myParticipation) {
+      // TODO Move code to `IncomingInvitation` class
+      for (let participant of this.participants) {
+        if (participant.response == InvitationResponse.Organizer) {
+          await this.respondToInvitation(InvitationResponse.Decline);
+        }
+      }
+    }
   }
 
   /** Person class needs to match account class, so need to clone.
@@ -301,14 +331,32 @@ export class Event extends Observable {
     await newEvent.save();
   }
 
+  // TODO Move code to `IncomingInvitation` class
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.response > InvitationResponse.Organizer, "Only invitations can be responded to");
+    assert(this.myParticipation > InvitationResponse.Organizer, "Only invitations can be responded to");
     let accounts = appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations && this.participants.some(participant => participant.response != InvitationResponse.Organizer && participant.emailAddress == account.emailAddress));
     assert(accounts.length == 1, "Failed to find matching account for invitation");
     let participant = this.participants.find(participant => participant.emailAddress == accounts[0].emailAddress);
     participant.response = response;
     await this.save();
-    await accounts[0].sendInvitationResponse(this, response);
+    await this.sendInvitationResponse(response, accounts[0]);
+  }
+
+  // TODO Move code to `IncomingInvitation` class
+  async sendInvitationResponse(response: InvitationResponseInMessage, account: MailAccount) {
+    let organizer = this.participants.find(participant => participant.response == InvitationResponse.Organizer);
+    assert(organizer, "Invitation should have an organizer");
+    let email = account.newEMailFrom();
+    email.to.add(organizer);
+    email.iCalMethod = "REPLY";
+    email.event = new Event();
+    email.event.copyFrom(this);
+    email.event.participants.replaceAll([new Participant(account.emailAddress, null, response)]);
+    if (email.event.descriptionText) {
+      email.text = email.event.descriptionText;
+      email.html = email.event.descriptionHTML;
+    }
+    await account.send(email);
   }
 
   /**

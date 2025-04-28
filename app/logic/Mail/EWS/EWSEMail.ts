@@ -7,7 +7,7 @@ import EWSCreateItemRequest from "./Request/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "./Request/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "./Request/EWSUpdateItemRequest";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../Calendar/Invitation";
+import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../Calendar/Invitation/InvitationStatus";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { base64ToArrayBuffer, assert, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";

@@ -5,7 +5,7 @@ import type { EMail } from "./EMail";
 import type { SMTPAccount } from "./SMTP/SMTPAccount";
 import { Event } from "../Calendar/Event";
 import { Participant } from "../Calendar/Participant";
-import { InvitationResponse, type InvitationResponseInMessage } from "../Calendar/Invitation";
+import { InvitationResponse, type InvitationResponseInMessage } from "../Calendar/Invitation/InvitationStatus";
 import { ContactEntry, type Person } from "../Abstract/Person";
 import { FilterRuleAction } from "./FilterRules/FilterRuleAction";
 import { OAuth2 } from "../Auth/OAuth2";
@@ -82,22 +82,6 @@ export class MailAccount extends TCPAccount {
 
   async send(email: EMail): Promise<void> {
     throw new AbstractFunction();
-  }
-
-  async sendInvitationResponse(invitation: Event, response: InvitationResponseInMessage): Promise<void> {
-    let organizer = invitation.participants.find(participant => participant.response == InvitationResponse.Organizer);
-    assert(organizer, "Invitation should have an organizer");
-    let email = this.newEMailFrom();
-    email.to.add(organizer);
-    email.iCalMethod = "REPLY";
-    email.event = new Event();
-    email.event.copyFrom(invitation);
-    email.event.participants.replaceAll([new Participant(this.emailAddress, null, response)]);
-    if (email.event.descriptionText) {
-      email.text = email.event.descriptionText;
-      email.html = email.event.descriptionHTML;
-    }
-    await this.send(email);
   }
 
   /** Create a folder on the top level, sibling of Inbox.

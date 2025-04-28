@@ -58,7 +58,7 @@
       </vbox>
     </vbox>
   </Scroll>
-  {#if event.response != InvitationResponse.Unknown && event.response != InvitationResponse.Organizer}
+  {#if event.myParticipation != InvitationResponse.Unknown && event.myParticipation != InvitationResponse.Organizer}
     <hbox class="buttons">
       <InvitationResponseButtons {event} />
     </hbox>
@@ -67,7 +67,7 @@
 
 <script lang="ts">
   import { type Event, RecurrenceCase } from "../../../logic/Calendar/Event";
-  import { InvitationResponse } from "../../../logic/Calendar/Invitation";
+  import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import TitleBox from "./TitleBox.svelte";
   import TimeBox from "./TimeBox.svelte";
   import RepeatBox from './RepeatBox.svelte';
@@ -95,7 +95,7 @@
 
   $: showRepeat = $event.recurrenceCase != RecurrenceCase.Normal;
   $: showReminder = !!$event.alarm;
-  $: showParticipants = $event.participants.hasItems || $event.response == InvitationResponse.Organizer;
+  $: showParticipants = $event.participants.hasItems;
   $: showLocation = !!$event.location;
   $: showOnlineMeeting = $event.isOnline;
   $: showDescription = !!$event.descriptionHTML;
@@ -112,7 +112,7 @@
   }
 
   function expandParticipants(): void {
-    event.response = InvitationResponse.Organizer;
+    event.createMeeting();
   }
 
   function expandLocation(): void {

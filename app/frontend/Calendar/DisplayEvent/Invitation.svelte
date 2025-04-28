@@ -81,7 +81,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation";
+  import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import InvitationDisplay from "./InvitationDisplay.svelte";
   import Button from "../../Shared/Button.svelte";
   import AcceptIcon from "lucide-svelte/icons/check-check";

@@ -1,10 +1,11 @@
 import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
-import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation";
+import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import IANAToWindowsTimezone from "../ICal/IANAToWindowsTimezone";
 import WindowsToIANATimezone from "../ICal/WindowsToIANATimezone";
 import type { ActiveSyncCalendar } from "./ActiveSyncCalendar";
+import ActiveSyncOutgoingInvitation from "./ActiveSyncOutgoingInvitation";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
@@ -69,7 +70,7 @@ export class ActiveSyncEvent extends Event {
     this.alarm = wbxmljs.Reminder ? new Date(this.startTime.getTime() - 60 * sanitize.integer(wbxmljs.Reminder)) : null;
     this.location = sanitize.nonemptystring(wbxmljs.Location, "");
     this.participants.replaceAll(ensureArray(wbxmljs.Attendees?.Attendee).map(attendee => new Participant(sanitize.emailAddress(attendee.Email), sanitize.nonemptystring(attendee.Name, null), sanitize.integer(attendee.AttendeeStatus, InvitationResponse.Unknown))));
-    this.response = sanitize.integer(wbxmljs.ResponseType, InvitationResponse.Unknown);
+    this.myParticipation = sanitize.integer(wbxmljs.ResponseType, InvitationResponse.Unknown);
   }
 
   newRecurrenceRule(wbxmljs: any): RecurrenceRule {
@@ -114,13 +115,23 @@ export class ActiveSyncEvent extends Event {
     };
   }
 
+  get outgoingInvitation() {
+    return new ActiveSyncOutgoingInvitation(this);
+  }
+
   async saveToServer(): Promise<void> {
     // Not supporting tasks for now.
     if (this.parentEvent) {
       this.parentEvent.saveFields(this.parentEvent.toFields(this.toFields()));
     } else {
       await this.saveFields(this.toFields());
+      if (!this.calUID) {
+        // If we haven't set a UID yet, Exchange will auto-generate one,
+        // so sync up (and match using `serverID`) to find out what `calUID` is.
+        await this.calendar.listEvents();
+      }
     }
+    super.saveToServer();
   }
 
   async saveFields(fields: any): Promise<void> {
@@ -176,10 +187,11 @@ export class ActiveSyncEvent extends Event {
         throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.calendar);
       }
     }
+    await super.deleteFromServer();
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.response > InvitationResponse.Organizer, "Only invitations can be responded to");
+    assert(this.myParticipation > InvitationResponse.Organizer, "Only invitations can be responded to");
     let request = {
       Request: {
         UserResponse: ActiveSyncResponse[response],
@@ -188,7 +200,7 @@ export class ActiveSyncEvent extends Event {
       },
     };
     await this.calendar.account.callEAS("MeetingResponse", request);
-    await this.calendar.account.sendInvitationResponse(this, response); // needs 16.x to do this automatically
+    await this.sendInvitationResponse(response, this.calendar.account); // needs 16.x to do this automatically
   }
 }
 

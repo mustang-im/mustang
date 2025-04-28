@@ -1,10 +1,11 @@
 import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
-import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation";
+import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import IANAToWindowsTimezone from "../ICal/IANAToWindowsTimezone";
 import WindowsToIANATimezone from "../ICal/WindowsToIANATimezone";
 import type { OWACalendar } from "./OWACalendar";
+import OWAOutgoingInvitation from "./OWAOutgoingInvitation";
 import OWACreateOffice365EventRequest from "./Request/OWACreateOffice365EventRequest";
 import OWAUpdateOffice365EventRequest from "./Request/OWAUpdateOffice365EventRequest";
 import OWAUpdateOccurrenceRequest from "./Request/OWAUpdateOccurrenceRequest";
@@ -15,7 +16,7 @@ import OWAUpdateItemRequest from "../../Mail/OWA/Request/OWAUpdateItemRequest";
 import { owaCreateExclusionRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest } from "./Request/OWAEventRequests";
 import type { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert } from "../../util/util";
+import { assert, NotReached } from "../../util/util";
 
 const ResponseTypes: Record<InvitationResponseInMessage, string> = {
   [InvitationResponse.Accept]: "AcceptItem",
@@ -102,7 +103,7 @@ export class OWAEvent extends Event {
     }
     this.participants.replaceAll(participants);
     if (json.ResponseType) {
-      this.response = sanitize.integer(InvitationResponse[json.ResponseType], InvitationResponse.Unknown);
+      this.myParticipation = sanitize.integer(InvitationResponse[json.ResponseType], InvitationResponse.Unknown);
     }
     if (json.LastModifiedTime) {
       this.lastMod = sanitize.date(json.LastModifiedTime);
@@ -130,6 +131,10 @@ export class OWAEvent extends Event {
     let week = sanitize.integer(WeekOfMonth[pattern.DayOfWeekIndex], 0);
     let first = sanitize.integer(Weekday[pattern.FirstDayOfWeek], Weekday.Monday);
     return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
+  }
+
+  get outgoingInvitation() {
+    return new OWAOutgoingInvitation(this);
   }
 
   async saveToServer() {
@@ -322,7 +327,7 @@ export class OWAEvent extends Event {
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.response > InvitationResponse.Organizer, "Only invitations can be responded to");
+    assert(this.myParticipation > InvitationResponse.Organizer, "Only invitations can be responded to");
     let request = new OWACreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField(ResponseTypes[response], "ReferenceItemId", {
       __type: "ItemId:#Exchange",

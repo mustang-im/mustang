@@ -13,7 +13,7 @@
             iconSize="16px"
             />
         {/if}
-        {#if event.response == InvitationResponse.Unknown || event.response == InvitationResponse.Organizer}
+        {#if event.myParticipation == InvitationResponse.Unknown || event.myParticipation == InvitationResponse.Organizer}
           <RoundButton
             label={$t`Delete Event`}
             icon={DeleteIcon}
@@ -83,7 +83,7 @@
   import { Calendar } from "../../../logic/Calendar/Calendar";
   import { Account } from "../../../logic/Abstract/Account";
   import { EventEditMustangApp, calendarMustangApp } from "../CalendarMustangApp";
-  import { InvitationResponse } from "../../../logic/Calendar/Invitation";
+  import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { selectedCalendar } from "../selected";
   import { appGlobal } from "../../../logic/app";
   import Stack from "../../Shared/Stack.svelte";
