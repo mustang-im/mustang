@@ -120,25 +120,18 @@ export class ActiveSyncEvent extends Event {
   }
 
   async saveToServer(): Promise<void> {
-    let organizer;
-    if (this.participants.length && this.myParticipation == InvitationResponse.Organizer) {
-      organizer = this.participants.find(participant => participant.emailAddress == this.calendar.account.emailAddress);
-      if (organizer) {
-        organizer.response = InvitationResponse.Organizer;
-      } else {
-        organizer = new Participant(this.calendar.account.emailAddress, null, InvitationResponse.Organizer);
-        this.participants.add(organizer);
-      }
-    }
     // Not supporting tasks for now.
     if (this.parentEvent) {
       this.parentEvent.saveFields(this.parentEvent.toFields(this.toFields()));
     } else {
       await this.saveFields(this.toFields());
+      if (!this.calUID) {
+        // If we haven't set a UID yet, Exchange will auto-generate one,
+        // so sync up to find out what it is.
+        await this.calendar.listEvents();
+      }
     }
-    if (organizer) {
-      await this.outgoingInvitation.sendInvitations(this.calendar.account);
-    }
+    super.saveToServer();
   }
 
   async saveFields(fields: any): Promise<void> {
@@ -194,15 +187,7 @@ export class ActiveSyncEvent extends Event {
         throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.calendar);
       }
     }
-    if (this.myParticipation == InvitationResponse.Organizer) {
-      await this.outgoingInvitation.sendCancellations(this.calendar.account);
-    } else if (this.myParticipation) {
-      for (let participant of this.participants) {
-        if (participant.response == InvitationResponse.Organizer) {
-          await this.sendInvitationResponse(InvitationResponse.Decline, this.calendar.account);
-        }
-      }
-    }
+    await super.deleteFromServer();
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {

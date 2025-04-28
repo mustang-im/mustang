@@ -4,8 +4,6 @@ import type { RecurrenceRule } from "./RecurrenceRule";
 import OutgoingInvitation from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
-import type { MailIdentity } from "../Mail/MailIdentity";
-import { PersonUID } from "../Abstract/PersonUID";
 import { appGlobal } from "../app";
 import { k1DayS, k1HourS, k1MinuteS } from "../../frontend/Util/date";
 import { Observable, notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
@@ -202,25 +200,6 @@ export class Event extends Observable {
     return new OutgoingInvitation(this);
   }
 
-  protected participantMe(): { identity: MailIdentity, participant: Participant, person: PersonUID } {
-    let results = [];
-    for (let account of appGlobal.emailAccounts) {
-      if (!account.canSendInvitations) {
-        continue;
-      }
-      for (let identity of account.identities) {
-        for (let participant of this.participants) {
-          if (identity.isEMailAddress(participant.emailAddress)) {
-            let person = new PersonUID(participant.emailAddress, identity.realname);
-            results.push({ identity, participant, person });
-          }
-        }
-      }
-    }
-    assert(results.length == 1, "Failed to find matching identity for meeting");
-    return results[0];
-  }
-
   /**
    * Assumes that the `original` property was set before
    */
@@ -287,9 +266,7 @@ export class Event extends Observable {
     if (!this.calUID) {
       this.calUID = crypto.randomUUID();
     }
-    let { identity, participant, person } = this.participantMe();
-    participant.response = InvitationResponse.Organizer;
-    await this.outgoingInvitation.sendInvitations(identity.account, person);
+    await this.outgoingInvitation.sendInvitations();
   }
 
   get isNew(): boolean {
@@ -321,8 +298,7 @@ export class Event extends Observable {
       return;
     }
     if (this.myParticipation == InvitationResponse.Organizer) {
-      let { identity, person } = this.participantMe();
-      await this.outgoingInvitation.sendCancellations(identity.account, person);
+      await this.outgoingInvitation.sendCancellations();
     } else if (this.myParticipation) {
       for (let participant of this.participants) {
         if (participant.response == InvitationResponse.Organizer) {
