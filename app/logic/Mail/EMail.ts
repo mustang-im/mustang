@@ -214,7 +214,7 @@ export class EMail extends Message {
       let calendar = appGlobal.calendars.first;
       event = calendar.newEvent();
       event.copyFrom(this.event);
-      event.response = InvitationResponse.NoResponseReceived;
+      event.myParticipation = InvitationResponse.NoResponseReceived;
       calendar.events.add(event);
       if (event.recurrenceRule) {
         event.fillRecurrences(new Date(Date.now() + 1e11));
@@ -222,7 +222,7 @@ export class EMail extends Message {
     }
     let participant = event.participants.find(participant => participant.emailAddress == this.folder.account.emailAddress);
     if (participant) {
-      event.response = participant.response = response;
+      event.myParticipation = participant.response = response;
       await event.save();
       await this.sendInvitationResponse(response);
     }

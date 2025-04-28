@@ -100,7 +100,7 @@ export class Event extends Observable {
   @notifyChangedProperty
   readonly participants = new ArrayColl<Participant>();
   @notifyChangedProperty
-  response = InvitationResponse.Unknown;
+  myParticipation = InvitationResponse.Unknown;
   /** If we're currently editing this event,
    * saves the original state before the editing.
    *
@@ -195,7 +195,7 @@ export class Event extends Observable {
     this.isOnline = original.isOnline;
     this.onlineMeetingURL = original.onlineMeetingURL;
     this.participants.replaceAll(original.participants);
-    this.response = original.response;
+    this.myParticipation = original.myParticipation;
   }
 
   get outgoingInvitation() {
@@ -237,7 +237,7 @@ export class Event extends Observable {
       this.location != this.unedited.location ||
       this.isOnline != this.unedited.isOnline ||
       this.onlineMeetingURL != this.unedited.onlineMeetingURL ||
-      this.response != this.unedited.response ||
+      this.myParticipation != this.unedited.myParticipation ||
       this.participants.hasItems && (
         this.participants.length != this.unedited.participants.length ||
         this.participants.contents.some((pThis, i) =>
@@ -275,7 +275,7 @@ export class Event extends Observable {
   }
 
   async saveToServer(): Promise<void> {
-    if (!this.participants.length || this.response > InvitationResponse.Organizer) {
+    if (!this.participants.length || this.myParticipation > InvitationResponse.Organizer) {
       return;
     }
     if (!this.calUID) {
@@ -314,10 +314,10 @@ export class Event extends Observable {
     if (!this.participants.length) {
       return;
     }
-    if (this.response == InvitationResponse.Organizer) {
+    if (this.myParticipation == InvitationResponse.Organizer) {
       let { identity, person } = this.participantMe();
       await this.outgoingInvitation.sendCancellations(identity.account, person);
-    } else if (this.response) {
+    } else if (this.myParticipation) {
       for (let participant of this.participants) {
         if (participant.response == InvitationResponse.Organizer) {
           await this.respondToInvitation(InvitationResponse.Decline);
@@ -349,7 +349,7 @@ export class Event extends Observable {
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.response > InvitationResponse.Organizer, "Only invitations can be responded to");
+    assert(this.myParticipation > InvitationResponse.Organizer, "Only invitations can be responded to");
     let accounts = appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations && this.participants.some(participant => participant.response != InvitationResponse.Organizer && participant.emailAddress == account.emailAddress));
     assert(accounts.length == 1, "Failed to find matching account for invitation");
     let participant = this.participants.find(participant => participant.emailAddress == accounts[0].emailAddress);

@@ -104,7 +104,7 @@ export class EWSEvent extends Event {
     }
     this.participants.replaceAll(participants);
     if (xmljs.MyResponseType) {
-      this.response = sanitize.integer(InvitationResponse[xmljs.MyResponseType], InvitationResponse.Unknown);
+      this.myParticipation = sanitize.integer(InvitationResponse[xmljs.MyResponseType], InvitationResponse.Unknown);
     }
     if (xmljs.LastModifiedTime) {
       this.lastMod = sanitize.date(xmljs.LastModifiedTime);
@@ -308,7 +308,7 @@ export class EWSEvent extends Event {
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.response > InvitationResponse.Organizer, "Only invitations can be responded to");
+    assert(this.myParticipation > InvitationResponse.Organizer, "Only invitations can be responded to");
     let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.itemID });
     await this.calendar.account.callEWS(request);

@@ -58,7 +58,7 @@
       </vbox>
     </vbox>
   </Scroll>
-  {#if event.response != InvitationResponse.Unknown && event.response != InvitationResponse.Organizer}
+  {#if event.myParticipation != InvitationResponse.Unknown && event.myParticipation != InvitationResponse.Organizer}
     <hbox class="buttons">
       <InvitationResponseButtons {event} />
     </hbox>
@@ -95,7 +95,7 @@
 
   $: showRepeat = $event.recurrenceCase != RecurrenceCase.Normal;
   $: showReminder = !!$event.alarm;
-  $: showParticipants = $event.participants.hasItems || $event.response == InvitationResponse.Organizer;
+  $: showParticipants = $event.participants.hasItems || $event.myParticipation == InvitationResponse.Organizer;
   $: showLocation = !!$event.location;
   $: showOnlineMeeting = $event.isOnline;
   $: showDescription = !!$event.descriptionHTML;
@@ -112,7 +112,7 @@
   }
 
   function expandParticipants(): void {
-    event.response = InvitationResponse.Organizer;
+    event.myParticipation = InvitationResponse.Organizer;
   }
 
   function expandLocation(): void {

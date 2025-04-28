@@ -69,7 +69,7 @@ export class ActiveSyncEvent extends Event {
     this.alarm = wbxmljs.Reminder ? new Date(this.startTime.getTime() - 60 * sanitize.integer(wbxmljs.Reminder)) : null;
     this.location = sanitize.nonemptystring(wbxmljs.Location, "");
     this.participants.replaceAll(ensureArray(wbxmljs.Attendees?.Attendee).map(attendee => new Participant(sanitize.emailAddress(attendee.Email), sanitize.nonemptystring(attendee.Name, null), sanitize.integer(attendee.AttendeeStatus, InvitationResponse.Unknown))));
-    this.response = sanitize.integer(wbxmljs.ResponseType, InvitationResponse.Unknown);
+    this.myParticipation = sanitize.integer(wbxmljs.ResponseType, InvitationResponse.Unknown);
   }
 
   newRecurrenceRule(wbxmljs: any): RecurrenceRule {
@@ -116,7 +116,7 @@ export class ActiveSyncEvent extends Event {
 
   async saveToServer(): Promise<void> {
     let organizer;
-    if (this.participants.length && this.response == InvitationResponse.Organizer) {
+    if (this.participants.length && this.myParticipation == InvitationResponse.Organizer) {
       organizer = this.participants.find(participant => participant.emailAddress == this.calendar.account.emailAddress);
       if (organizer) {
         organizer.response = InvitationResponse.Organizer;
@@ -189,9 +189,9 @@ export class ActiveSyncEvent extends Event {
         throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.calendar);
       }
     }
-    if (this.response == InvitationResponse.Organizer) {
+    if (this.myParticipation == InvitationResponse.Organizer) {
       await this.outgoingInvitation.sendCancellations(this.calendar.account);
-    } else if (this.response) {
+    } else if (this.myParticipation) {
       for (let participant of this.participants) {
         if (participant.response == InvitationResponse.Organizer) {
           await this.sendInvitationResponse(InvitationResponse.Decline, this.calendar.account);
@@ -201,7 +201,7 @@ export class ActiveSyncEvent extends Event {
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.response > InvitationResponse.Organizer, "Only invitations can be responded to");
+    assert(this.myParticipation > InvitationResponse.Organizer, "Only invitations can be responded to");
     let request = {
       Request: {
         UserResponse: ActiveSyncResponse[response],

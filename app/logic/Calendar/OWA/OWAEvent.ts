@@ -102,7 +102,7 @@ export class OWAEvent extends Event {
     }
     this.participants.replaceAll(participants);
     if (json.ResponseType) {
-      this.response = sanitize.integer(InvitationResponse[json.ResponseType], InvitationResponse.Unknown);
+      this.myParticipation = sanitize.integer(InvitationResponse[json.ResponseType], InvitationResponse.Unknown);
     }
     if (json.LastModifiedTime) {
       this.lastMod = sanitize.date(json.LastModifiedTime);
@@ -326,7 +326,7 @@ export class OWAEvent extends Event {
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.response > InvitationResponse.Organizer, "Only invitations can be responded to");
+    assert(this.myParticipation > InvitationResponse.Organizer, "Only invitations can be responded to");
     let request = new OWACreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField(ResponseTypes[response], "ReferenceItemId", {
       __type: "ItemId:#Exchange",

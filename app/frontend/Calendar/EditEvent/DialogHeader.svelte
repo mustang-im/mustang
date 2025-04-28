@@ -13,7 +13,7 @@
             iconSize="16px"
             />
         {/if}
-        {#if event.response == InvitationResponse.Unknown || event.response == InvitationResponse.Organizer}
+        {#if event.myParticipation == InvitationResponse.Unknown || event.myParticipation == InvitationResponse.Organizer}
           <RoundButton
             label={$t`Delete Event`}
             icon={DeleteIcon}
