@@ -5,6 +5,7 @@ import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import IANAToWindowsTimezone from "../ICal/IANAToWindowsTimezone";
 import WindowsToIANATimezone from "../ICal/WindowsToIANATimezone";
 import type { OWACalendar } from "./OWACalendar";
+import OWAOutgoingInvitation from "./OWAOutgoingInvitation";
 import OWACreateOffice365EventRequest from "./Request/OWACreateOffice365EventRequest";
 import OWAUpdateOffice365EventRequest from "./Request/OWAUpdateOffice365EventRequest";
 import OWAUpdateOccurrenceRequest from "./Request/OWAUpdateOccurrenceRequest";
@@ -132,8 +133,8 @@ export class OWAEvent extends Event {
     return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
   }
 
-  get outgoingInvitation(): never {
-    throw new NotReached("Exchange automatically sends meeting invitations and cancellations");
+  get outgoingInvitation() {
+    return new OWAOutgoingInvitation(this);
   }
 
   async saveToServer() {

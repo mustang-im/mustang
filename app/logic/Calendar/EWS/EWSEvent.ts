@@ -5,6 +5,7 @@ import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import IANAToWindowsTimezone from "../ICal/IANAToWindowsTimezone";
 import WindowsToIANATimezone from "../ICal/WindowsToIANATimezone";
 import type { EWSCalendar } from "./EWSCalendar";
+import EWSOutgoingInvitation from "./EWSOutgoingInvitation";
 import EWSCreateItemRequest from "../../Mail/EWS/Request/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "../../Mail/EWS/Request/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/Request/EWSUpdateItemRequest";
@@ -135,8 +136,8 @@ export class EWSEvent extends Event {
     return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
   }
 
-  get outgoingInvitation(): never {
-    throw new NotReached("Exchange automatically sends meeting invitations and cancellations");
+  get outgoingInvitation() {
+    return new EWSOutgoingInvitation(this);
   }
 
   async saveToServer() {

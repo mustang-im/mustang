@@ -5,6 +5,7 @@ import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import IANAToWindowsTimezone from "../ICal/IANAToWindowsTimezone";
 import WindowsToIANATimezone from "../ICal/WindowsToIANATimezone";
 import type { ActiveSyncCalendar } from "./ActiveSyncCalendar";
+import ActiveSyncOutgoingInvitation from "./ActiveSyncOutgoingInvitation";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
@@ -112,6 +113,10 @@ export class ActiveSyncEvent extends Event {
       Body: this.descriptionHTML ? { Type: "2", Data: this.descriptionHTML } : { Type: "1", Data: [this.descriptionText || ""] },
       Exceptions: exception ? { Exception: exception } : [],
     };
+  }
+
+  get outgoingInvitation() {
+    return new ActiveSyncOutgoingInvitation(this);
   }
 
   async saveToServer(): Promise<void> {
