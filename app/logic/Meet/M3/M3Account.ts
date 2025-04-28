@@ -45,6 +45,6 @@ export class M3Account extends MeetAccount {
   }
 
   get isLoggedIn(): boolean {
-    return this.oauth2?.isLoggedIn;
+    return this.oauth2?.isLoggedIn ?? false;
   }
 }
