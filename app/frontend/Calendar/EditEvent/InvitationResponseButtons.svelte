@@ -1,5 +1,5 @@
 <hbox class="buttons">
-  {#if event.myParticipation == InvitationResponse.Unknown || event.myParticipation == InvitationResponse.Organizer}
+  {#if event.isIncomingMeeting}
     <Button label={$t`Accept`} onClick={onAccept} />
     <hbox class="spacer" />
     <Button label={$t`Reject`} onClick={onDecline} />

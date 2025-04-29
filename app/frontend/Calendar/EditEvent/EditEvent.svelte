@@ -58,7 +58,7 @@
       </vbox>
     </vbox>
   </Scroll>
-  {#if event.myParticipation != InvitationResponse.Unknown && event.myParticipation != InvitationResponse.Organizer}
+  {#if event.isIncomingMeeting}
     <hbox class="buttons">
       <InvitationResponseButtons {event} />
     </hbox>

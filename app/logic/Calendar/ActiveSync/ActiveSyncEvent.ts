@@ -191,7 +191,7 @@ export class ActiveSyncEvent extends Event {
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.myParticipation > InvitationResponse.Organizer, "Only invitations can be responded to");
+    assert(this.isIncomingMeeting, "Only invitations can be responded to");
     let request = {
       Request: {
         UserResponse: ActiveSyncResponse[response],

@@ -16,7 +16,7 @@ export default class OutgoingInvitation {
 
   createOrganizer() {
     assert(this.event.participants.isEmpty, "This is already a meeting");
-    assert(this.event.myParticipation <= InvitationResponse.Organizer, "This is a meeting you have been invitated to. You cannot be the organizer.");
+    assert(!this.event.isIncomingMeeting, "This is a meeting you have been invitated to. You cannot be the organizer.");
     this.event.myParticipation = InvitationResponse.Organizer;
     let identity = this.identity;
     this.event.participants.add(new Participant(identity.emailAddress, identity.realname, InvitationResponse.Organizer));
