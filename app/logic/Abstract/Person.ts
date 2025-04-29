@@ -172,18 +172,17 @@ export class ContactEntry extends Observable {
   purpose: string | null; // "work", "home", "mobile", "other", "Teams", "WhatsApp", or any other text
   /** Lower is more preferred */
   @notifyChangedProperty
-  preference = 0;
+  preference: number;
 
-  constructor(value: string, purpose: string | null = null, protocol: string | null = null) {
+  constructor(value: string, purpose: string | null = null, protocol: string | null = null, preference = 0) {
     super();
     this.value = value;
     this.purpose = purpose;
     this.protocol = protocol;
+    this.preference = preference;
   }
 
   clone(): ContactEntry {
-    let copy = new ContactEntry(this.value, this.purpose, this.protocol);
-    copy.preference = this.preference;
-    return copy;
+    return new ContactEntry(this.value, this.purpose, this.protocol, this.preference);
   }
 }

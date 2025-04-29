@@ -1,6 +1,45 @@
 {
+  "name": "John Doe - TB",
+  "lastName": "Doe",
+  "firstName": "John",
+  "emailAddresses": [{
+    "value": "myemailaddress@example.com",
+    "purpose": "other",
+    "protocol": "mailto",
+    "preference": 1
+  }],
+  "phoneNumbers": [{
+    "value": "0123456789",
+    "purpose": "other",
+    "protocol": "tel",
+    "preference": 0
+  }],
+  "chatAccounts": [{
+    "value": "matrix:u/john:example.org",
+    "purpose": "other",
+    "protocol": "matrix",
+    "preference": 0
+  }],
+  "urls": [{
+    "value": "https://website.com",
+    "purpose": "other",
+    "protocol": "https",
+    "preference": 0
+  }],
+  "streetAddresses": [{
+    "value": "My Street\nMy City\n00000\nMy State\nGermany",
+    "purpose": "other",
+    "protocol": null,
+    "preference": 0
+  }],
   "notes": "Some notes",
   "company": "Mustang",
   "department": "Admin",
-  "position": "CEO"
+  "position": "CEO",
+  "custom": [{
+    "value": "Custom prop",
+    "purpose": null,
+    "protocol": null,
+    "preference": 0
+  }]
 }

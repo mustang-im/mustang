@@ -1,4 +1,34 @@
 {
+  "name": "Proton John Doe",
+  "lastName": "Doe",
+  "firstName": "John",
+  "emailAddresses": [{
+    "value": "myemailaddress@example.com",
+    "purpose": "other",
+    "protocol": "mailto",
+    "preference": 1
+  }],
+  "phoneNumbers": [{
+    "value": "0123456789",
+    "purpose": "other",
+    "protocol": "tel",
+    "preference": 1
+  }],
+  "chatAccounts": [],
+  "urls": [{
+    "value": "https://www.mustang.im/",
+    "purpose": "other",
+    "protocol": "https",
+    "preference": 0
+  }],
+  "streetAddresses": [{
+    "value": "My Street\nMy City\n00000\nMy Region\nGermany",
+    "purpose": "other",
+    "protocol": null,
+    "preference": 1
+  }],
   "notes": "Some notes",
-  "company": "Mustang"
+  "company": "Mustang",
+  "position": "CEO",
+  "custom": []
 }
