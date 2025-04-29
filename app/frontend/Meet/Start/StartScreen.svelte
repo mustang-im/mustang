@@ -57,12 +57,13 @@
   import AddToCalendarIcon from "lucide-svelte/icons/calendar-plus";
   import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
   import ErrorMessage, { ErrorGravity } from "../../Shared/ErrorMessage.svelte";
-  import { t } from "../../../l10n/l10n";
+  import { gt, t } from "../../../l10n/l10n";
   import { catchErrors, logError } from "../../Util/error";
   import { onKeyEnter } from "../../Util/util";
-  import { sleep } from "../../../logic/util/util";
+  import { sleep, UserError } from "../../../logic/util/util";
   import { mergeColls } from "svelte-collections";
   import { faker } from "@faker-js/faker";
+  import { MeetAccount } from "../../../logic/Meet/MeetAccount";
 
   const allEvents = mergeColls(appGlobal.calendars.map(calendar => calendar.events));
   const now = new Date();
@@ -71,8 +72,16 @@
   const upcomingMeetings = allEvents.filter(event => event.startTime > now && event.startTime < maxUpcoming);
   const previousMeetings = allEvents.filter(event => event.startTime < now && event.startTime > maxPrevious);
 
+  function getAccount(): MeetAccount {
+    let account = appGlobal.meetAccounts.find(acc => acc.canVideo && acc.canMultipleParticipants);
+    if (!account) {
+      throw new UserError(gt`Please configure a matching meeting account first`);
+    }
+    return account;
+  }
+
   async function startAdHocMeeting() {
-    let meeting = await M3Conf.createAdhoc();
+    let meeting = await getAccount().createMeeting();
     appGlobal.meetings.add(meeting);
   }
 
@@ -87,7 +96,7 @@
     let caller = new MeetingParticipant();
     caller.name = $selectedPerson.name;
     caller.picture = $selectedPerson.picture;
-    let meeting = await VideoConfMeeting.createAdhoc();
+    let meeting = new VideoConfMeeting();
     meeting.state = MeetingState.IncomingCall;
     meeting.participants.add(caller);
     appGlobal.meetings.add(meeting);
@@ -112,7 +121,8 @@
       </ol>
     </p>`;
 
-    let meeting = await VideoConfMeeting.createAdhoc();
+    // TODO Figure out the best account to call this person
+    let meeting = await getAccount().createMeeting();
     meeting.state = MeetingState.OutgoingCallPrepare;
     meeting.event = event;
     meeting.participants.add(callee);

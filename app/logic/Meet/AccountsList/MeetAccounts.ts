@@ -1,5 +1,6 @@
 import { MeetAccount } from '../MeetAccount';
 import { M3Account } from '../M3/M3Account';
+import { LiveKitAccount } from '../LiveKit/LiveKitAccount';
 // #if [!WEBMAIL]
 import { SQLMeetStorage } from '../SQL/SQLMeetStorage';
 // #else
@@ -23,6 +24,8 @@ function _newMeetAccountForProtocol(protocol: string): MeetAccount {
     return new MeetAccount();
   } else if (protocol == "m3") {
     return new M3Account();
+  } else if (protocol == "livekit") {
+    return new LiveKitAccount();
   }
   throw new NotReached(`Unknown meet account type ${protocol}`);
 }

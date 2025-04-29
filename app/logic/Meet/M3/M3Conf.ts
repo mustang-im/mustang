@@ -4,8 +4,8 @@ import { MeetingParticipant as Participant, ParticipantRole } from "../Participa
 import { M3Account } from "./M3Account";
 import { appGlobal } from "../../app";
 import { notifyChangedProperty } from "../../util/Observable";
-import { assert, sleep, UserError, type URLString } from "../../util/util";
-import { getUILocale, gt } from "../../../l10n/l10n";
+import { assert, sleep, type URLString } from "../../util/util";
+import { getUILocale } from "../../../l10n/l10n";
 
 export class M3Conf extends VideoConfMeeting {
   controllerBaseURL: string;
@@ -31,6 +31,11 @@ export class M3Conf extends VideoConfMeeting {
   @notifyChangedProperty
   protected screenShare: MediaStream | null = null;
 
+  constructor(account: M3Account) {
+    super();
+    this.account = account;
+  }
+
   /**
    * Login using OAuth2
    * If already logged in, does nothing.
@@ -40,9 +45,6 @@ export class M3Conf extends VideoConfMeeting {
   async login(interactive: boolean, relogin = false): Promise<void> {
     // TODO Multi-account
     this.account = appGlobal.meetAccounts.find(acc => acc instanceof M3Account) as M3Account;
-    if (!this.account) {
-      throw new UserError(gt`Please configure a matching meeting account first`);
-    }
     assert(this.account.controllerBaseURL, "Need controller URL");
     this.controllerBaseURL = this.account.controllerBaseURL;
     this.controllerWebSocketURL = this.account.controllerWebSocketURL;
@@ -364,12 +366,6 @@ export class M3Conf extends VideoConfMeeting {
     }
     await this.closeWebSocket();
     await super.hangup();
-  }
-
-  static async createAdhoc(): Promise<M3Conf> {
-    let meet = new M3Conf();
-    await meet.createNewConference();
-    return meet;
   }
 
   ///////////////////////

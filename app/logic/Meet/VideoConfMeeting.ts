@@ -16,11 +16,15 @@ export class VideoConfMeeting extends Observable {
   started: Date;
   @notifyChangedProperty
   ended: Date;
+  @notifyChangedProperty
+  title: string;
   readonly participants = new SetColl<Participant>();
   readonly videos = new SetColl<VideoStream>();
   /** myParticipant.role: If I'm a moderator, I can manage other users */
   @notifyChangedProperty
   myParticipant: Participant;
+  /** Who is currently speaking at the moment */
+  speaker: Participant | null = null;
 
   errorCallback = (ex) => {
     console.error(ex);
@@ -91,12 +95,6 @@ export class VideoConfMeeting extends Observable {
 
   get selfVideo(): SelfVideo | null {
     return this.videos.find(v => v instanceof SelfVideo) ?? null;
-  }
-
-  /** You still need to `.start()` the conference */
-  static async createAdhoc(opts?: any): Promise<VideoConfMeeting> {
-    let meet = new VideoConfMeeting();
-    return meet;
   }
 }
 

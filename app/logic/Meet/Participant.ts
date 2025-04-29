@@ -12,6 +12,10 @@ export class MeetingParticipant extends Person {
   cameraOn = false;
   @notifyChangedProperty
   screenSharing = false;
+  /** This person is currently speaking.
+   * Multiple participants can be speaking at the same time */
+  @notifyChangedProperty
+  isSpeaking = false;
 
   peerConnection: RTCPeerConnection;  // prevent garbage collection
   screenPeerConnection: RTCPeerConnection; // ditto
@@ -21,4 +25,5 @@ export enum ParticipantRole {
   Moderator = "moderator",
   User = "user",
   Guest = "guest",
+  Agent = "agent",
 }

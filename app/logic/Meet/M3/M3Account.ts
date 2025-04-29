@@ -1,4 +1,5 @@
 import { MeetAccount } from "../MeetAccount";
+import { M3Conf } from "./M3Conf";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { UserError, assert } from "../../util/util";
 import { OAuth2URLs } from "../../Auth/OAuth2URLs";
@@ -46,5 +47,11 @@ export class M3Account extends MeetAccount {
 
   get isLoggedIn(): boolean {
     return this.oauth2?.isLoggedIn ?? false;
+  }
+
+  async createMeeting(): Promise<M3Conf> {
+    let meet = new M3Conf(this);
+    await meet.createNewConference();
+    return meet;
   }
 }
