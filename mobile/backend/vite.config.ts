@@ -27,12 +27,12 @@ export default defineConfig({
       targets: [
         {
           src: 'dist/index.js',
-          dest: '../../android/app/src/main/assets/public/nodejs',
+          dest: '../../../app/dist/nodejs',
           rename: 'index.mjs',
         },
         {
           src: 'package-deploy.json',
-          dest: '../../android/app/src/main/assets/public/nodejs',
+          dest: '../../../app/dist/nodejs',
           rename: 'package.json',
         },
       ]
