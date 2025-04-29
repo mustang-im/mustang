@@ -258,7 +258,7 @@ export class Event extends Observable {
   }
 
   async saveToServer(): Promise<void> {
-    if (this.myParticipation == InvitationResponse.Organizer && this.participants.hasItems) {
+    if (!this.isIncomingMeeting && this.participants.hasItems) {
       this.calUID ??= crypto.randomUUID();
       await this.outgoingInvitation.sendInvitations();
     }
@@ -266,6 +266,15 @@ export class Event extends Observable {
 
   get isNew(): boolean {
     return !this.dbID;
+  }
+
+  get isIncomingMeeting(): boolean {
+    switch (this.myParticipation) {
+    case InvitationResponse.Unknown:
+    case InvitationResponse.Organizer:
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -328,7 +337,7 @@ export class Event extends Observable {
 
   // TODO Move code to `IncomingInvitation` class
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.myParticipation > InvitationResponse.Organizer, "Only invitations can be responded to");
+    assert(this.isIncomingMeeting, "Only invitations can be responded to");
     let accounts = appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations && this.participants.some(participant => participant.response != InvitationResponse.Organizer && participant.emailAddress == account.emailAddress));
     assert(accounts.length == 1, "Failed to find matching account for invitation");
     let participant = this.participants.find(participant => participant.emailAddress == accounts[0].emailAddress);

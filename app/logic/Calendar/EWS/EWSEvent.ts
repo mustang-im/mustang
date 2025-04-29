@@ -309,7 +309,7 @@ export class EWSEvent extends Event {
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.myParticipation > InvitationResponse.Organizer, "Only invitations can be responded to");
+    assert(this.isIncomingMeeting, "Only invitations can be responded to");
     let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.itemID });
     await this.calendar.account.callEWS(request);
