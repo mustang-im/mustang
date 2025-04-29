@@ -18,13 +18,6 @@ test.each(testFiles)("Parse %s", async name => {
   const json = JSON.parse(await fs.readFile(new URL(name + ".json", dataDir, { encoding: 'utf-8' })));
   json.addressbookID = true;
   json.popularity = 0;
-  // TODO
-  json.chatAccounts ||= [];
-  json.custom ||= [];
-  json.emailAddresses ||= [];
-  json.phoneNumbers ||= [];
-  json.streetAddresses ||= [];
-  json.urls ||= [];
   const person = new Person();
   VCard.updatePerson(card, person);
   expect(toJSON(person)).toEqual(json);
