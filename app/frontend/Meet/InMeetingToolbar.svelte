@@ -106,8 +106,8 @@
     appGlobal.meetings.remove(meeting);
   }
 
-  function toggleHand() {
-    handRaised = !handRaised;
+  async function toggleHand() {
+    await meeting.setHandRaised(!meeting.handRaised);
   }
 
   function toggleMic() {

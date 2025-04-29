@@ -4,7 +4,7 @@ import { MeetingParticipant, ParticipantRole } from "../Participant";
 import type { LiveKitAccount } from "./LiveKitAccount";
 import { appGlobal } from "../../app";
 import { assert, type URLString, NotImplemented } from "../../util/util";
-import { getUILocale } from "../../../l10n/l10n";
+import { getUILocale, gt } from "../../../l10n/l10n";
 import { Room, RemoteParticipant, RoomEvent } from "livekit-client";
 import { LiveKitRemoteParticipant } from "./LiveKitRemoteParticipant";
 import { catchErrors } from "../../../frontend/Util/error";
@@ -39,6 +39,7 @@ export class LiveKitConf extends VideoConfMeeting {
     assert(this.account.controllerBaseURL, "Need controller URL");
     const headers: any = {
       "Content-Type": "application/json",
+      "Origin": this.account.webFrontendBaseURL, // Controller uses this to find the room
     };
     return appGlobal.remoteApp.kyCreate({
       prefixUrl: this.account.controllerBaseURL,
@@ -63,26 +64,27 @@ export class LiveKitConf extends VideoConfMeeting {
     let time = new Date().toLocaleString(getUILocale(), { hour: "numeric", minute: "numeric" });
     this.title = `Meeting ${time}`;
     this.id = crypto.randomUUID();
+    this.state = MeetingState.Init;
+  }
+
+  async createInvitationURL(): Promise<URLString> {
+    assert(this.id && this.room?.name, "Need to create the conference first");
+    return `${this.account.webFrontendBaseURL}/rooms/${this.room.name}`;
   }
 
   /**
    * Received invite URL out-of-band (using other communication methods)
    * from conference owner, who did `getInvitationURL()`.
-   * URL form: https://<web-frontend-host>/invite/<invite-code>
+   * URL form: https://<web-frontend-host>/rooms/<room-name>
    */
   async join(url: URLString) {
     let urlParsed = new URL(url);
     // Data comes from user. All error messages in this function are user visible. TODO Translate error messages.
-    assert(urlParsed.pathname.startsWith("/rooms/"), "Protocol not supported");
+    assert(this.account.isMeetingURL(urlParsed), gt`This meeting URL is not supported`);
     let roomID = urlParsed.pathname.replace("/rooms/", "");
-    assert(roomID.match(/^[a-f0-9\-]*$/), "Not a valid invitation URL");
+    assert(roomID.match(/^[a-f0-9\-]*$/), gt`Not a valid meeting invitation URL`);
     this.id = roomID;
-  }
-
-  async getInvitationURL(): Promise<URLString> {
-    assert(this.id, "Need to create the conference first");
-    throw new NotImplemented();
-    return `${this.account.controllerBaseURL}/rooms/${this.id}`;
+    this.state = MeetingState.JoinConference;
   }
 
   async start() {
@@ -95,8 +97,6 @@ export class LiveKitConf extends VideoConfMeeting {
     this.webSocketURL = response.serverUrl;
     this.token = response.participantToken;
     this.controllerWebSocketURL = `wss://${this.webSocketURL}/rtc?access_token=${e(this.token)}&auto_subscribe=1&protocol=15&adaptive_stream=1`;
-    this.state = MeetingState.JoinConference;
-
     await this.joinAfterStart();
   }
 
@@ -162,14 +162,32 @@ export class LiveKitConf extends VideoConfMeeting {
     await this.room?.localParticipant.setScreenShareEnabled(true);
   }
 
+  readonly canRaiseHand = true;
+  async setHandRaised(handRaised: boolean) {
+    await super.setHandRaised(handRaised);
+    this.setMyAttribute("handRaised", handRaised);
+  }
+
+  protected setMyAttribute(name: string, value: any) {
+    if (value == null) {
+      // Per docs: To delete an attribute key, set its value to an empty string ('').
+      // <https://docs.livekit.io/home/client/state/participant-attributes/>
+      value = "";
+    }
+    let attributes = {};
+    Object.assign(attributes, this.room.localParticipant.attributes);
+    attributes[name] = value;
+    this.room.localParticipant.setAttributes(attributes);
+  }
+
   async answer() {
     await super.answer();
   }
 
   async hangup() {
     assert(this.room, "Didn't join yet");
-    await this.room.disconnect();
     await super.hangup();
+    await this.room.disconnect();
   }
 }
 

@@ -1,13 +1,16 @@
 import { SelfVideo, type VideoStream } from "./VideoStream";
+import type { MeetAccount } from "./MeetAccount";
 import type { MeetingParticipant as Participant } from "./Participant";
 import type { Event } from "../Calendar/Event";
 import { appGlobal } from "../app";
 import { SetColl } from 'svelte-collections';
 import { Observable, notifyChangedProperty } from "../util/Observable";
-import { assert, type URLString, AbstractFunction } from "../util/util";
+import { assert, type URLString, AbstractFunction, NotSupported } from "../util/util";
+import { gt } from "../../l10n/l10n";
 
 export class VideoConfMeeting extends Observable {
   id: string;
+  account: MeetAccount;
   @notifyChangedProperty
   event: Event;
   @notifyChangedProperty
@@ -25,6 +28,8 @@ export class VideoConfMeeting extends Observable {
   myParticipant: Participant;
   /** Who is currently speaking at the moment */
   speaker: Participant | null = null;
+  @notifyChangedProperty
+  _handRaised: boolean = false;
 
   errorCallback = (ex) => {
     console.error(ex);
@@ -32,6 +37,21 @@ export class VideoConfMeeting extends Observable {
   endCallback = () => {
     console.log("Call ended");
   };
+
+  async createNewConference() {
+    throw new AbstractFunction();
+  }
+
+  /** Creates a URL that leads to a webpage that allows people
+   * outside the organization to join this meeting using only
+   * a webbrowser.
+   * Mustang should normally recognize this kind of URL
+   * (in certain situations, e.g. in an event as onlineMeetingURL)
+   * and allow to join within Mustnag using the Meet feature.
+   * Only works if `account.canCreateURL`. */
+  createInvitationURL(): Promise<URLString> {
+    throw new NotSupported(gt`Cannot invite others using a link to this kind of meeting`);
+  }
 
   /**
    * The user received invitation URL out-of-band (using other communication methods)
@@ -70,6 +90,21 @@ export class VideoConfMeeting extends Observable {
   /** Same as `setCamera()`, but for sharing screen */
   async setScreenShare(mediaStream: MediaStream | null) {
     throw new AbstractFunction();
+  }
+
+  readonly canRaiseHand: boolean = false;
+  /** Signal to other participants that our user wants to say something */
+  get handRaised(): boolean {
+    return this._handRaised;
+  }
+  set handRaised(val: boolean) {
+    this.setHandRaised(val)
+      .catch(this.account.errorCallback);
+  }
+  /** Signal to other participants that our user wants to say something */
+  async setHandRaised(handRaised: boolean) {
+    // Do *not* this.handRaised, because it would create an infinite loop
+    this._handRaised = handRaised;
   }
 
   async call() {

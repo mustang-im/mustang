@@ -69,7 +69,7 @@ export class MatrixVideoConf extends VideoConfMeeting {
   /**
    * @param client Logged in, and the initial sync has already finished.
    */
-  static async createMeeting(client: MatrixClient): Promise<MatrixVideoConf> {
+  static async createNewConference(client: MatrixClient): Promise<MatrixVideoConf> {
     let chatRoom = new Chat();
     // TODO create room using MatrixClient
     return await this.call(chatRoom, client);

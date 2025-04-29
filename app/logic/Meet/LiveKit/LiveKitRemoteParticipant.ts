@@ -1,9 +1,10 @@
+import { MeetingParticipant, ParticipantRole } from "../Participant";
+import { ParticipantVideo, ScreenShare } from "../VideoStream";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { catchErrors } from "../../../frontend/Util/error";
 import { gt } from "../../../l10n/l10n";
 import { assert } from "../../util/util";
-import { MeetingParticipant, ParticipantRole } from "../Participant";
-import { ParticipantVideo, ScreenShare } from "../VideoStream";
-import { LiveKitConf } from "./LiveKitConf";
+import type { LiveKitConf } from "./LiveKitConf";
 import { ParticipantEvent, RemoteParticipant, Track, TrackPublication } from "livekit-client";
 
 export class LiveKitRemoteParticipant extends MeetingParticipant {
@@ -16,24 +17,26 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
     this.conf = conf;
     this.id = rp.identity;
     this.role = rp.isAgent ? ParticipantRole.Agent : ParticipantRole.User;
-    this.updateName();
-    this.updateAttributes();
-    rp.on(ParticipantEvent.ParticipantNameChanged, () => catchErrors(() => this.updateName(), this.conf.errorCallback));
-    rp.on(ParticipantEvent.AttributesChanged, () => catchErrors(() => this.updateAttributes(), this.conf.errorCallback));
-    rp.on(ParticipantEvent.ParticipantMetadataChanged, () => catchErrors(() => this.updateAttributes(), this.conf.errorCallback));
+    this.updateProps();
+    rp.on(ParticipantEvent.ParticipantNameChanged, () => catchErrors(() => this.updateProps(), this.conf.errorCallback));
+    rp.on(ParticipantEvent.AttributesChanged, () => catchErrors(() => this.updateProps(), this.conf.errorCallback));
+    rp.on(ParticipantEvent.ParticipantMetadataChanged, () => catchErrors(() => this.updateProps(), this.conf.errorCallback));
+    rp.on(ParticipantEvent.TrackPublished, () => catchErrors(() => this.updateProps(), this.conf.errorCallback));
+    rp.on(ParticipantEvent.TrackUnpublished, () => catchErrors(() => this.updateProps(), this.conf.errorCallback));
+    rp.on(ParticipantEvent.TrackMuted, () => catchErrors(() => this.updateProps(), this.conf.errorCallback));
+    rp.on(ParticipantEvent.TrackUnmuted, () => catchErrors(() => this.updateProps(), this.conf.errorCallback));
     rp.on(ParticipantEvent.TrackSubscribed, track => catchErrors(() => this.addTrack(track), this.conf.errorCallback));
     rp.on(ParticipantEvent.TrackUnsubscribed, track => catchErrors(() => this.removeTrack(track), this.conf.errorCallback));
-    rp.on(ParticipantEvent.IsSpeakingChanged, track => catchErrors(() => this.speakingChanged(), this.conf.errorCallback));
+    rp.on(ParticipantEvent.IsSpeakingChanged, () => catchErrors(() => this.speakingChanged(), this.conf.errorCallback));
   }
-  protected updateName() {
+  protected updateProps() {
     let rp = this.rp;
-    this.name = rp.name ?? gt`Participant` + " " + rp.identity.substring(rp.identity.length - 2);
-  }
-  protected updateAttributes() {
-    let rp = this.rp;
+    console.log("other participant", rp);
+    this.name = rp.name || rp.identity;
     this.cameraOn = rp.isCameraEnabled;
     this.micOn = rp.isMicrophoneEnabled;
     this.screenSharing = rp.isScreenShareEnabled;
+    this.handUp = sanitize.boolean(rp.attributes.handRaised);
   }
   protected speakingChanged() {
     this.isSpeaking = this.rp.isSpeaking;

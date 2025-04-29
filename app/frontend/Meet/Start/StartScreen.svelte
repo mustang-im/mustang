@@ -81,7 +81,8 @@
   }
 
   async function startAdHocMeeting() {
-    let meeting = await getAccount().createMeeting();
+    let meeting = getAccount().newMeeting();
+    await meeting.createNewConference();
     appGlobal.meetings.add(meeting);
   }
 
@@ -122,7 +123,8 @@
     </p>`;
 
     // TODO Figure out the best account to call this person
-    let meeting = await getAccount().createMeeting();
+    let meeting = getAccount().newMeeting();
+    await meeting.createNewConference();
     meeting.state = MeetingState.OutgoingCallPrepare;
     meeting.event = event;
     meeting.participants.add(callee);

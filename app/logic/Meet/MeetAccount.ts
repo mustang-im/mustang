@@ -28,7 +28,11 @@ export class MeetAccount extends Account {
   }
 
   /** You still need to `.start()` the conference */
-  async createMeeting(): Promise<VideoConfMeeting> {
+  newMeeting(): VideoConfMeeting {
+    throw new AbstractFunction();
+  }
+
+  isMeetingURL(url: URL): boolean {
     throw new AbstractFunction();
   }
 

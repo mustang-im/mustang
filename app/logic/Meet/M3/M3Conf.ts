@@ -4,7 +4,7 @@ import { MeetingParticipant as Participant, ParticipantRole } from "../Participa
 import { M3Account } from "./M3Account";
 import { appGlobal } from "../../app";
 import { notifyChangedProperty } from "../../util/Observable";
-import { assert, sleep, type URLString } from "../../util/util";
+import { assert, NotImplemented, sleep, type URLString } from "../../util/util";
 import { getUILocale } from "../../../l10n/l10n";
 
 export class M3Conf extends VideoConfMeeting {
@@ -111,7 +111,7 @@ export class M3Conf extends VideoConfMeeting {
 
     let urlParsed = new URL(url);
     // Data comes from user. All error messages in this function are user visible. TODO Translate error messages.
-    assert(urlParsed.pathname.startsWith("/invite/"), "Protocol not supported");
+    assert(this.account.isMeetingURL(urlParsed), gt`This meeting URL is not supported`);
     let inviteCode = urlParsed.pathname.replace("/invite/", "");
     assert(inviteCode.match(/^[a-f0-9\-]*$/), "Not a valid invitation URL");
     let roomID: string;
@@ -134,7 +134,7 @@ export class M3Conf extends VideoConfMeeting {
     this.state = MeetingState.JoinConference;
   }
 
-  async getInvitationURL(): Promise<URLString> {
+  async createInvitationURL(): Promise<URLString> {
     assert(this.roomID, "Need to create the conference first");
     let response = await this.httpPost(`rooms/${this.roomID}/invites`, {});
     return `${this.account.webFrontendBaseURL}/invite/${response.invite_code}`;
@@ -204,6 +204,12 @@ export class M3Conf extends VideoConfMeeting {
     if (this.myParticipant) {
       await this.sendVideo(this.screenShare, true);
     }
+  }
+
+  readonly canRaiseHand = true;
+  async setHandRaised(handRaised: boolean) {
+    await super.setHandRaised(handRaised);
+    //throw new NotImplemented();
   }
 
   async start() {

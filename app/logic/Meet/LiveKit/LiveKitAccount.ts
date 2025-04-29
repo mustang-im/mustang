@@ -11,6 +11,7 @@ export class LiveKitAccount extends MeetAccount {
   oauth2: OAuth2;
   /** To create a new meeting */
   controllerBaseURL = "https://cloud-api.livekit.io/api/sandbox/";
+  webFrontendBaseURL = "https://real-time-quantum-1hmq5n.sandbox.livekit.io";
 
   canVideo = true;
   canAudio = true;
@@ -31,9 +32,12 @@ export class LiveKitAccount extends MeetAccount {
     return true;
   }
 
-  async createMeeting(): Promise<LiveKitConf> {
-    let meet = new LiveKitConf(this);
-    await meet.createNewConference();
-    return meet;
+  newMeeting(): LiveKitConf {
+    return new LiveKitConf(this);
+  }
+
+  isMeetingURL(url: URL): boolean {
+    return url.origin == this.webFrontendBaseURL &&
+      url.pathname.startsWith("/rooms/");
   }
 }

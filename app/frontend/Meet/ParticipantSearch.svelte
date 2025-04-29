@@ -11,6 +11,7 @@
       label={$t`Copy invitation link`}
       classes="invite-participant"
       onClick={inviteParticipant}
+      disabled={!meeting.account.canCreateURL}
       icon={InviteUserIcon}
       iconSize="16px"
       />
@@ -27,7 +28,7 @@
   import NewContactIcon from "lucide-svelte/icons/plus";
   import InviteUserIcon from "lucide-svelte/icons/link";
   import { assert } from "../../logic/util/util";
-  import { t } from "../../l10n/l10n";
+  import { gt, t } from "../../l10n/l10n";
 
   export let meeting: VideoConfMeeting;
   export let selected: MeetingParticipant;
@@ -48,12 +49,9 @@
   }
 
   async function inviteParticipant() {
-    if (meeting instanceof M3Conf) {
-      let invitationURL = await meeting.getInvitationURL();
-      navigator.clipboard.writeText(invitationURL);
-      return;
-    }
-    throw new Error("I cannot invite to this kind of meeting");
+    assert(meeting.account.canCreateURL, gt`I cannot invite using a link to this kind of meeting`);
+    let invitationURL = await meeting.createInvitationURL();
+    navigator.clipboard.writeText(invitationURL);
   }
 
   function addTestParticipant() {
