@@ -36,7 +36,7 @@ export default {
     }
     if (vcard.entries.tel) {
       for (let entry of vcard.entries.tel) {
-        person.phoneNumbers.add(makeContactEntry(entry, "tel", entry.properties.value == "uri"));
+        person.phoneNumbers.add(makeContactEntry(entry, "tel", entry.properties.value == "uri", true));
       }
     }
     if (vcard.entries.impp) {
@@ -76,13 +76,20 @@ export default {
   },
 };
 
-function makeContactEntry(entry: ICalEntry, protocol?: string, isURI = true) {
+function makeContactEntry(entry: ICalEntry, protocol?: string, isURI = true, stripProtocol = false) {
+  let value = entry.value;
+  if (isURI && /^(\w+):/.test(value)) {
+    protocol = RegExp.$1.toLowerCase();
+    if (stripProtocol) {
+      value = value.slice(protocol.length + 1);
+    }
+  }
   // An entry's type property can contain multiple tokens; in particular
   // vCard 3.0 supports the token pref for the preferred entry,
   // which is superseded by the pref property in vCard 4.0.
   return new ContactEntry(
-    entry.value,
+    value,
     /work/i.test(entry.properties.type) ? "work" : /home/i.test(entry.properties.type) ? "home" : "other",
-    isURI && /^(\w+):/.test(entry.value) ? RegExp.$1 : protocol,
+    protocol,
     sanitize.integer(entry.properties.pref, +/pref/i.test(entry.properties.type)));
 }
