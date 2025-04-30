@@ -1,6 +1,7 @@
 import { MeetingState, VideoConfMeeting } from "../VideoConfMeeting";
 import { ParticipantVideo, SelfVideo } from "../VideoStream";
 import { MeetingParticipant } from "../Participant";
+import { LocalMediaDeviceStreams } from "../LocalMediaDeviceStreams";
 import { Chat } from "../../Chat/Chat";
 import { assert } from "../../util/util";
 import type { MatrixCall, MatrixClient } from "matrix-js-sdk";
@@ -24,6 +25,7 @@ export class MatrixVideoConf extends VideoConfMeeting {
    */
   protected constructor(client: MatrixClient, call: MatrixCall) {
     super();
+    this.mediaDeviceStreams = new LocalMediaDeviceStreams();
     this.client = client;
     this._call = call;
     this._call.on("error", ex => this.errorCallback(ex));

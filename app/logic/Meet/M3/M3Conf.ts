@@ -2,9 +2,10 @@ import { VideoConfMeeting, MeetingState } from "../VideoConfMeeting";
 import { ParticipantVideo, ScreenShare, SelfVideo } from "../VideoStream";
 import { MeetingParticipant as Participant, ParticipantRole } from "../Participant";
 import { M3Account } from "./M3Account";
+import { LocalMediaDeviceStreams } from "../LocalMediaDeviceStreams";
 import { appGlobal } from "../../app";
 import { notifyChangedProperty } from "../../util/Observable";
-import { assert, NotImplemented, sleep, type URLString } from "../../util/util";
+import { assert, sleep, type URLString } from "../../util/util";
 import { getUILocale } from "../../../l10n/l10n";
 
 export class M3Conf extends VideoConfMeeting {
@@ -33,6 +34,8 @@ export class M3Conf extends VideoConfMeeting {
 
   constructor(account: M3Account) {
     super();
+    this.mediaDeviceStreams = new LocalMediaDeviceStreams();
+    this.listenStreamChanges();
     this.account = account;
   }
 
@@ -162,48 +165,30 @@ export class M3Conf extends VideoConfMeeting {
     }
   }
 
-  async setCamera(mediaStream: MediaStream | null): Promise<void> {
-    if (!mediaStream) {
-      if (!this.camera) {
-        return;
-      }
-      let old = this.camera;
-      this.camera = null;
-      this.videos.remove(this.videos.find(v => v instanceof SelfVideo && v.stream == old));
-      await this.removeMyVideo(old, false);
-      return;
-    }
-    assert(mediaStream instanceof MediaStream, "Need a media stream for the camera");
-    if (this.camera) {
-      await this.setCamera(null); // Remove previous
-    }
-    this.camera = mediaStream;
-    this.videos.add(new SelfVideo(mediaStream));
+  async startCameraMic(mediaStream: MediaStream, oldStream?: MediaStream) {
+    await super.startCameraMic(mediaStream, oldStream);
     if (this.myParticipant) {
-      await this.sendVideo(this.camera, false);
+      await this.sendVideo(mediaStream, false);
     }
   }
 
-  async setScreenShare(mediaStream: MediaStream | null): Promise<void> {
-    if (!mediaStream) {
-      if (!this.screenShare) {
-        return;
-      }
-      let old = this.screenShare;
-      this.screenShare = null;
-      this.videos.remove(this.videos.find(v => v instanceof ScreenShare && v.stream == old));
-      await this.removeMyVideo(old, true);
-      return;
-    }
-    assert(mediaStream instanceof MediaStream, "Need a media stream for the screen");
-    if (this.screenShare) {
-      await this.setScreenShare(null); // Remove previous
-    }
-    this.screenShare = mediaStream;
-    this.videos.add(new ScreenShare(mediaStream, this.myParticipant));
+  async stopCameraMic(oldStream?: MediaStream) {
+    await super.stopCameraMic(oldStream);
+    await this.removeMyVideo(oldStream, false);
+  }
+
+  /** Same as `setCamera()`, but for sharing screen */
+  async startScreenShare(mediaStream: MediaStream, oldStream?: MediaStream) {
+    await super.startScreenShare(mediaStream, oldStream);
     if (this.myParticipant) {
-      await this.sendVideo(this.screenShare, true);
+      await this.sendVideo(mediaStream, true);
     }
+  }
+
+  /** Same as `setCamera()`, but for sharing screen */
+  async stopScreenShare(oldStream?: MediaStream) {
+    await super.stopScreenShare(oldStream);
+    await this.removeMyVideo(oldStream, true);
   }
 
   readonly canHandUp = true;

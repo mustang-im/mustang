@@ -2,8 +2,9 @@ import { VideoConfMeeting, MeetingState } from "../VideoConfMeeting";
 import { ParticipantVideo, ScreenShare, SelfVideo } from "../VideoStream";
 import { MeetingParticipant, ParticipantRole } from "../Participant";
 import type { LiveKitAccount } from "./LiveKitAccount";
+import { LiveKitMediaDeviceStreams } from "./LiveKitMediaDeviceStreams";
 import { appGlobal } from "../../app";
-import { assert, type URLString, NotImplemented } from "../../util/util";
+import { assert, type URLString } from "../../util/util";
 import { getUILocale, gt } from "../../../l10n/l10n";
 import { Room, RemoteParticipant, RoomEvent } from "livekit-client";
 import { LiveKitRemoteParticipant } from "./LiveKitRemoteParticipant";
@@ -18,9 +19,12 @@ export class LiveKitConf extends VideoConfMeeting {
   webSocketURL: URLString;
   token: string;
   room: Room | null = null;
+  mediaDeviceStreams: LiveKitMediaDeviceStreams;
 
   constructor(account: LiveKitAccount) {
     super();
+    this.mediaDeviceStreams = new LiveKitMediaDeviceStreams();
+    this.listenStreamChanges();
     this.account = account;
     this.id = crypto.randomUUID();
   }
@@ -104,6 +108,7 @@ export class LiveKitConf extends VideoConfMeeting {
     this.room = new Room();
     await this.room.connect(this.webSocketURL, this.token);
     this.title = this.room.name;
+    this.mediaDeviceStreams.localParticipant = this.room.localParticipant;
 
     this.myParticipant = new MeetingParticipant();
     this.myParticipant.id = this.room.localParticipant.sid;
@@ -139,7 +144,7 @@ export class LiveKitConf extends VideoConfMeeting {
     this.participants.remove(participant);
   }
 
-  async setCamera(mediaStream: MediaStream | null): Promise<void> {
+  async startCameraMic(mediaStream: MediaStream | null): Promise<void> {
     if (!mediaStream) {
       this.videos.remove(this.videos.find(v => v instanceof SelfVideo));
       // TODO set mediaStream
@@ -151,7 +156,7 @@ export class LiveKitConf extends VideoConfMeeting {
     this.videos.add(new SelfVideo(mediaStream));
   }
 
-  async setScreenShare(mediaStream: MediaStream | null): Promise<void> {
+  async startScreenShare(mediaStream: MediaStream | null): Promise<void> {
     if (!mediaStream) {
       this.videos.remove(this.videos.find(v => v instanceof ScreenShare && v.participant == this.myParticipant));
       // TODO set mediaStream
@@ -170,12 +175,12 @@ export class LiveKitConf extends VideoConfMeeting {
     if (propName == "handUp") {
       this.setMyAttribute("handUp", this.myParticipant.handUp);
     }
-    if (propName == "cameraOn") {
+    /*if (propName == "cameraOn") {
       this.room.localParticipant.setCameraEnabled(this.myParticipant.cameraOn);
     }
     if (propName == "micOn") {
       this.room.localParticipant.setMicrophoneEnabled(this.myParticipant.micOn);
-    }
+    }*/
   }
 
   protected setMyAttribute(name: string, value: any) {

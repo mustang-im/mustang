@@ -75,6 +75,7 @@
 <script lang="ts">
   import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
   import { meetMustangApp } from "./MeetMustangApp";
+  import { selectedCamera, selectedMic } from "./Setup/selectedDevices";
   import { openApp } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import RoundButton from "../Shared/RoundButton.svelte";
@@ -97,14 +98,13 @@
   export let showSidebar = false; /* in/out */
 
   $: me = $meeting.myParticipant;
-
-  let cameraStream: MediaStream = null;
-  let screenStream: MediaStream = null;
+  $: stream = $meeting.mediaDeviceStreams;
 
   async function leave() {
     await meeting.hangup();
-    await stopCamera();
-    await stopScreenShare();
+    await stream.setScreenShare(false);
+    await stream.setMicOn(false);
+    await stream.setCameraOn(false);
     appGlobal.meetings.remove(meeting);
   }
 
@@ -112,82 +112,19 @@
     me.handUp = !me.handUp;
   }
 
-  function toggleMic() {
+  async function toggleMic() {
     me.micOn = !me.micOn;
-    mute(me.micOn);
-  }
-
-  function mute(mute: boolean) {
-    let audioTracks = cameraStream?.getAudioTracks() ?? [];
-    for (let audioTrack of audioTracks) {
-      audioTrack.enabled = mute;
-    }
+    await stream.setMicOn(me.micOn, $selectedMic);
   }
 
   async function toggleCamera() {
     me.cameraOn = !me.cameraOn;
-
-    if (me.cameraOn && !cameraStream) {
-      await startCamera();
-    }
-    if (!me.cameraOn && cameraStream) {
-      await stopCamera();
-    }
+    await stream.setCameraOn(me.cameraOn, $selectedCamera);
   }
 
   async function toggleScreenShare() {
     me.screenSharing = !me.screenSharing;
-
-    if (me.screenSharing && !screenStream) {
-      await startScreenShare();
-    }
-    if (!me.screenSharing && screenStream) {
-      await stopScreenShare();
-    }
-  }
-
-  async function startCamera() {
-    cameraStream = await navigator.mediaDevices.getUserMedia({ video: me.cameraOn, audio: true });
-    if (!cameraStream) {
-      return;
-    }
-    mute(me.micOn);
-    await meeting.setCamera(cameraStream);
-    // setCamera() also creates `SelfVideo` in `meeting.videos`
-  }
-
-  async function stopCamera() {
-    if (!cameraStream) {
-      return;
-    }
-    for (let track of cameraStream.getTracks()) {
-      track.stop();
-    }
-    await meeting.setCamera(null);
-    // setCamera(null) also removes `SelfVideo` from `meeting.videos`
-    cameraStream = null;
-  }
-
-  async function startScreenShare() {
-    // <https://developer.mozilla.org/en-US/docs/Web/API/Screen_Capture_API/Using_Screen_Capture>
-    screenStream = await navigator.mediaDevices.getDisplayMedia();
-    if (!screenStream) {
-      return;
-    }
-    await meeting.setScreenShare(screenStream);
-    // setScreenShare() also creates `ScreenShare` in `meeting.videos`
-  }
-
-  async function stopScreenShare() {
-    if (!screenStream) {
-      return;
-    }
-    for (let track of screenStream.getTracks()) {
-      track.stop();
-    }
-    await meeting.setScreenShare(null);
-    // setScreenShare(null) also removes `ScreenShare` from `meeting.videos`
-    screenStream = null;
+    await stream.setScreenShare(me.screenSharing);
   }
 </script>
 

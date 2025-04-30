@@ -1,6 +1,7 @@
-import { SelfVideo, type VideoStream } from "./VideoStream";
+import { ScreenShare, SelfVideo, type VideoStream } from "./VideoStream";
 import type { MeetAccount } from "./MeetAccount";
 import type { MeetingParticipant as Participant } from "./Participant";
+import type { MediaDeviceStreams } from "./MediaDeviceStreams";
 import type { Event } from "../Calendar/Event";
 import { appGlobal } from "../app";
 import { SetColl } from 'svelte-collections';
@@ -28,8 +29,22 @@ export class VideoConfMeeting extends Observable {
   myParticipant: Participant;
   /** Who is currently speaking at the moment */
   speaker: Participant | null = null;
+  /**
+   * Where to get cam, mic and screenshare of the user from.
+   * The UI uses this class to turn on/off cam, mic etc., and
+   * to specifc which hardware devices to use.
+   *
+   * Set in constructor by implementation subclass, and call
+   * `listenStreamChanges()` after.
+   * Usually `LocalMediaDeviceStreams` or a protocol-specific impl. */
+  mediaDeviceStreams: MediaDeviceStreams;
 
-  errorCallback = (ex) => {
+  /** Subclass constructor must set `this.mediaDeviceStreams` and then call this function. */
+  protected listenStreamChanges() {
+    this.mediaDeviceStreams.subscribe((_obj, propName: string, oldValue: any) => this.streamsChanged(propName, oldValue));
+  }
+
+  errorCallback = (ex: Error) => {
     console.error(ex);
   };
   endCallback = () => {
@@ -67,6 +82,25 @@ export class VideoConfMeeting extends Observable {
     this.state = MeetingState.Ongoing;
     this.started = new Date();
   }
+  protected async streamsChanged(propName: string, oldValue: MediaStream) {
+    console.log("Stream changed", propName, "from", oldValue, "to", this.mediaDeviceStreams[propName]);
+    if (propName == "cameraMicStream") {
+      let stream = this.mediaDeviceStreams.cameraMicStream;
+      if (stream) {
+        await this.startCameraMic(stream, oldValue);
+      } else {
+        await this.stopCameraMic(oldValue);
+      }
+    }
+    if (propName == "screenStream") {
+      let stream = this.mediaDeviceStreams.screenStream;
+      if (stream) {
+        await this.startScreenShare(stream, oldValue);
+      } else {
+        await this.stopScreenShare(oldValue);
+      }
+    }
+  }
 
   /**
    * After opening our user's camera and microphone
@@ -79,15 +113,31 @@ export class VideoConfMeeting extends Observable {
    * in `.videos`, so showing all `.videos` is enough to show self.
    *
    * @param MediaStream from getUserMedia()
-   *   If null, the current stream will be removed.
    */
-  async setCamera(mediaStream: MediaStream | null) {
-    throw new AbstractFunction();
+  async startCameraMic(mediaStream: MediaStream, oldStream?: MediaStream) {
+    if (oldStream) {
+      await this.stopCameraMic(oldStream);
+    }
+    this.videos.add(new SelfVideo(mediaStream));
   }
 
-  /** Same as `setCamera()`, but for sharing screen */
-  async setScreenShare(mediaStream: MediaStream | null) {
-    throw new AbstractFunction();
+  async stopCameraMic(oldStream?: MediaStream) {
+    assert(oldStream, "want old stream to remove");
+    this.videos.remove(this.videos.find(v => v instanceof SelfVideo &&
+      (v.stream == oldStream || !oldStream)));
+  }
+
+  async startScreenShare(mediaStream: MediaStream, oldStream?: MediaStream) {
+    if (oldStream) {
+      await this.stopScreenShare(oldStream);
+    }
+    this.videos.add(new ScreenShare(mediaStream, this.myParticipant));
+  }
+
+  async stopScreenShare(oldStream?: MediaStream) {
+    assert(oldStream, "want old stream to remove");
+    this.videos.remove(this.videos.find(v => v instanceof ScreenShare &&
+      (oldStream ? v.stream == oldStream : v.participant == this.myParticipant)));
   }
 
   readonly canHandUp: boolean = false;
