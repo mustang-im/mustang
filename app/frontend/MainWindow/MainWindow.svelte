@@ -8,7 +8,7 @@
   <hbox flex>
     <AppBar bind:selectedApp={$selectedApp} showApps={mustangApps} />
     <vbox flex>
-      <NotificationBar />
+      <NotificationBar notifications={$notifications} />
       {#if !$selectedApp}
         {$t`Loading apps...`}
       {:else if sidebar}
@@ -37,6 +37,7 @@
   // @ts-ignore ts2300
   import { getStartObjects, loginOnStartup } from "../../logic/WebMail/startup";
   // #endif
+  import { notifications } from "./Notification";
   import { selectedAccount } from "../Mail/Selected";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { loadMustangApps } from "../AppsBar/loadMustangApps";
