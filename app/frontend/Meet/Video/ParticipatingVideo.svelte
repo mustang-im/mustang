@@ -1,14 +1,16 @@
 {#if video instanceof ParticipantVideo}
-  <VideoWithLabel {video}
-    label={video.participant?.name}
-    classes="participant" />
+  <vbox class="participant-box" class:speaking={$participant?.isSpeaking}>
+    <VideoWithLabel {video}
+      label={$participant?.name}
+      classes="participant" />
+  </vbox>
 {:else if video instanceof SelfVideo && showSelf}
   <VideoWithLabel {video}
     label={$t`You`}
     classes="self" />
 {:else if video instanceof ScreenShare}
   <VideoWithLabel {video}
-    label={video.participant ? $t`Screen of ${video.participant.name}` : $t`Screen`}
+    label={participant ? $t`Screen of ${$participant.name}` : $t`Screen`}
     classes="screen" />
 {/if}
 
@@ -19,4 +21,15 @@
 
   export let video: VideoStream;
   export let showSelf: boolean;
+
+  $: participant = (video as ParticipantVideo | ScreenShare).participant;
 </script>
+
+<style>
+  .participant-box {
+    width: max-content;
+  }
+  .speaking {
+    outline: 1px solid var(--selected-bg);
+  }
+</style>
