@@ -87,7 +87,10 @@ export class VideoConfMeeting extends Observable {
     if (propName == "cameraMicStream") {
       let stream = this.mediaDeviceStreams.cameraMicStream;
       if (stream) {
-        await this.startCameraMic(stream, oldValue);
+        if (oldValue) {
+          await this.stopCameraMic(oldValue);
+        }
+        await this.startCameraMic(stream);
       } else {
         await this.stopCameraMic(oldValue);
       }
@@ -95,7 +98,10 @@ export class VideoConfMeeting extends Observable {
     if (propName == "screenStream") {
       let stream = this.mediaDeviceStreams.screenStream;
       if (stream) {
-        await this.startScreenShare(stream, oldValue);
+        if (oldValue) {
+          await this.stopScreenShare(oldValue);
+        }
+        await this.startScreenShare(stream);
       } else {
         await this.stopScreenShare(oldValue);
       }
@@ -114,10 +120,7 @@ export class VideoConfMeeting extends Observable {
    *
    * @param MediaStream from getUserMedia()
    */
-  async startCameraMic(mediaStream: MediaStream, oldStream?: MediaStream) {
-    if (oldStream) {
-      await this.stopCameraMic(oldStream);
-    }
+  async startCameraMic(mediaStream: MediaStream) {
     this.videos.add(new SelfVideo(mediaStream));
   }
 
@@ -127,10 +130,7 @@ export class VideoConfMeeting extends Observable {
       (v.stream == oldStream || !oldStream)));
   }
 
-  async startScreenShare(mediaStream: MediaStream, oldStream?: MediaStream) {
-    if (oldStream) {
-      await this.stopScreenShare(oldStream);
-    }
+  async startScreenShare(mediaStream: MediaStream) {
     this.videos.add(new ScreenShare(mediaStream, this.myParticipant));
   }
 

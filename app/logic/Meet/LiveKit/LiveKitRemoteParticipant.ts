@@ -4,7 +4,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { catchErrors } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
 import type { LiveKitConf } from "./LiveKitConf";
-import { ParticipantEvent, RemoteParticipant, Track, TrackPublication } from "livekit-client";
+import { ParticipantEvent, RemoteParticipant, Track } from "livekit-client";
 
 export class LiveKitRemoteParticipant extends MeetingParticipant {
   rp: RemoteParticipant;

@@ -122,12 +122,12 @@ export class LiveKitConf extends VideoConfMeeting {
     this.room.on(RoomEvent.ParticipantConnected, rp => catchErrors(() => this.participantJoined(rp), this.errorCallback));
     this.room.on(RoomEvent.ParticipantDisconnected, rp => catchErrors(() => this.participantLeft(rp), this.errorCallback));
 
-    if (this.myParticipant.cameraOn) {
+    /*if (this.myParticipant.cameraOn) {
       this.room.localParticipant.setCameraEnabled(true);
     }
     if (this.myParticipant.micOn) {
       this.room.localParticipant.setMicrophoneEnabled(true);
-    }
+    }*/
   }
 
   protected async participantJoined(remoteParticipant: RemoteParticipant): Promise<void> {
@@ -144,30 +144,6 @@ export class LiveKitConf extends VideoConfMeeting {
     this.participants.remove(participant);
   }
 
-  async startCameraMic(mediaStream: MediaStream | null): Promise<void> {
-    if (!mediaStream) {
-      this.videos.remove(this.videos.find(v => v instanceof SelfVideo));
-      // TODO set mediaStream
-      await this.room?.localParticipant.setCameraEnabled(false);
-      return;
-    }
-    assert(mediaStream instanceof MediaStream, "Need a media stream for the camera");
-    await this.room?.localParticipant.setCameraEnabled(true);
-    this.videos.add(new SelfVideo(mediaStream));
-  }
-
-  async startScreenShare(mediaStream: MediaStream | null): Promise<void> {
-    if (!mediaStream) {
-      this.videos.remove(this.videos.find(v => v instanceof ScreenShare && v.participant == this.myParticipant));
-      // TODO set mediaStream
-      await this.room?.localParticipant.setScreenShareEnabled(false);
-      return;
-    }
-    assert(mediaStream instanceof MediaStream, "Need a media stream for the screen");
-    this.videos.add(new ScreenShare(mediaStream, this.myParticipant));
-    await this.room?.localParticipant.setScreenShareEnabled(true);
-  }
-
   readonly canHandUp = true;
 
   protected myUserChanged(propName: string) {
@@ -175,12 +151,6 @@ export class LiveKitConf extends VideoConfMeeting {
     if (propName == "handUp") {
       this.setMyAttribute("handUp", this.myParticipant.handUp);
     }
-    /*if (propName == "cameraOn") {
-      this.room.localParticipant.setCameraEnabled(this.myParticipant.cameraOn);
-    }
-    if (propName == "micOn") {
-      this.room.localParticipant.setMicrophoneEnabled(this.myParticipant.micOn);
-    }*/
   }
 
   protected setMyAttribute(name: string, value: any) {

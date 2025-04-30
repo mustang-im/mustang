@@ -6,7 +6,7 @@ import { LocalMediaDeviceStreams } from "../LocalMediaDeviceStreams";
 import { appGlobal } from "../../app";
 import { notifyChangedProperty } from "../../util/Observable";
 import { assert, sleep, type URLString } from "../../util/util";
-import { getUILocale } from "../../../l10n/l10n";
+import { gt, getUILocale } from "../../../l10n/l10n";
 
 export class M3Conf extends VideoConfMeeting {
   controllerBaseURL: string;
@@ -165,8 +165,8 @@ export class M3Conf extends VideoConfMeeting {
     }
   }
 
-  async startCameraMic(mediaStream: MediaStream, oldStream?: MediaStream) {
-    await super.startCameraMic(mediaStream, oldStream);
+  async startCameraMic(mediaStream: MediaStream) {
+    await super.startCameraMic(mediaStream);
     if (this.myParticipant) {
       await this.sendVideo(mediaStream, false);
     }
@@ -178,8 +178,8 @@ export class M3Conf extends VideoConfMeeting {
   }
 
   /** Same as `setCamera()`, but for sharing screen */
-  async startScreenShare(mediaStream: MediaStream, oldStream?: MediaStream) {
-    await super.startScreenShare(mediaStream, oldStream);
+  async startScreenShare(mediaStream: MediaStream) {
+    await super.startScreenShare(mediaStream);
     if (this.myParticipant) {
       await this.sendVideo(mediaStream, true);
     }
