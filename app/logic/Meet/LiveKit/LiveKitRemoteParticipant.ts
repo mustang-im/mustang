@@ -24,13 +24,20 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
     rp.on(ParticipantEvent.TrackUnpublished, () => catchErrors(() => this.updateProps(), this.conf.errorCallback));
     rp.on(ParticipantEvent.TrackMuted, () => catchErrors(() => this.updateProps(), this.conf.errorCallback));
     rp.on(ParticipantEvent.TrackUnmuted, () => catchErrors(() => this.updateProps(), this.conf.errorCallback));
+    rp.on(ParticipantEvent.IsSpeakingChanged, () => catchErrors(() => this.speakingChanged(), this.conf.errorCallback));
     rp.on(ParticipantEvent.TrackSubscribed, track => catchErrors(() => this.addTrack(track), this.conf.errorCallback));
     rp.on(ParticipantEvent.TrackUnsubscribed, track => catchErrors(() => this.removeTrack(track), this.conf.errorCallback));
-    rp.on(ParticipantEvent.IsSpeakingChanged, () => catchErrors(() => this.speakingChanged(), this.conf.errorCallback));
+
+    for (let trackPub of rp.trackPublications.values()) {
+      if (!trackPub.isSubscribed || !trackPub.track) {
+        continue;
+      }
+      this.addTrack(trackPub.track);
+    }
   }
   protected updateProps() {
     let rp = this.rp;
-    console.log("other participant", rp);
+    console.log("Participant", rp.identity, rp);
     this.name = rp.name || rp.identity;
     this.cameraOn = rp.isCameraEnabled;
     this.micOn = rp.isMicrophoneEnabled;
@@ -47,6 +54,7 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
   }
 
   async addTrack(track: Track) {
+    console.log("Participant", this.rp.identity, "added a track", track.mediaStream);
     assert(track.mediaStream, "Need mediaStream for Track");
     let isScreen = track.source == Track.Source.ScreenShare || track.source == Track.Source.ScreenShareAudio;
     let video = isScreen
@@ -55,6 +63,7 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
     this.conf.videos.add(video);
   }
   async removeTrack(track: Track) {
+    console.log("Participant", this.rp.identity, "removed a track");
     let isScreen = track.source == Track.Source.ScreenShare || track.source == Track.Source.ScreenShareAudio;
     let video = this.conf.videos.find(v =>
       (!isScreen && v instanceof ParticipantVideo ||
