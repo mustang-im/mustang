@@ -1,9 +1,7 @@
 import { MeetAccount } from "../MeetAccount";
 import { LiveKitConf } from "./LiveKitConf";
 import type { OAuth2 } from "../../Auth/OAuth2";
-import { UserError, assert } from "../../util/util";
-import { OAuth2URLs } from "../../Auth/OAuth2URLs";
-import { gt } from "../../../l10n/l10n";
+import type { URLString } from "../../util/util";
 
 export class LiveKitAccount extends MeetAccount {
   readonly protocol: string = "livekit";
@@ -11,13 +9,17 @@ export class LiveKitAccount extends MeetAccount {
   oauth2: OAuth2;
   /** To create a new meeting */
   controllerBaseURL = "https://cloud-api.livekit.io/api/sandbox/";
-  webFrontendBaseURL = "https://real-time-quantum-1hmq5n.sandbox.livekit.io";
 
   canVideo = true;
   canAudio = true;
   canScreenShare = true;
   canMultipleParticipants = true;
   canCreateURL = true;
+
+  /** Meeting URL, and meeting link for invitees */
+  get webFrontendBaseURL(): URLString {
+    return this.url;
+  }
 
   /**
    * Login using OAuth2

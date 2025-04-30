@@ -5,7 +5,7 @@
 <vbox flex class="account">
   <grid>
     <label for="username">{$t`Your ${appName} email address`}</label>
-    <input type="text" bind:value={config.username} name="username"
+    <input type="email" bind:value={config.username} name="username"
       placeholder="fred@example.com" autofocus />
     <label for="password">{$t`Password`}</label>
     <Password bind:password={config.password} />
@@ -26,6 +26,8 @@
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
   import { appName } from "../../../logic/build";
+  import { getDomainForEmailAddress } from "../../../logic/util/netUtil";
+  import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
   import { t } from "../../../l10n/l10n";
 
   /** in/out */
@@ -36,6 +38,9 @@
 
   async function onContinue() {
     config.name = config.username;
+    sanitize.emailAddress(config.username);
+    let hostname = getDomainForEmailAddress(config.username);
+    config.url = "https://" + hostname;
     config.realname = appGlobal.me.name;
     await config.login(true);
     await config.save();
