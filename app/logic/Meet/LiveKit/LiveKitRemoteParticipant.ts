@@ -2,7 +2,6 @@ import { MeetingParticipant, ParticipantRole } from "../Participant";
 import { ParticipantVideo, ScreenShare } from "../VideoStream";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { catchErrors } from "../../../frontend/Util/error";
-import { gt } from "../../../l10n/l10n";
 import { assert } from "../../util/util";
 import type { LiveKitConf } from "./LiveKitConf";
 import { ParticipantEvent, RemoteParticipant, Track, TrackPublication } from "livekit-client";
@@ -36,7 +35,7 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
     this.cameraOn = rp.isCameraEnabled;
     this.micOn = rp.isMicrophoneEnabled;
     this.screenSharing = rp.isScreenShareEnabled;
-    this.handUp = sanitize.boolean(rp.attributes.handRaised);
+    this.handUp = sanitize.boolean(rp.attributes.handUp);
   }
   protected speakingChanged() {
     this.isSpeaking = this.rp.isSpeaking;

@@ -13,40 +13,42 @@
   <RoundButton
     label={$t`Screen share`}
     classes="screen-share large"
-    selected={$screenShareOn}
+    selected={$me?.screenSharing}
     onClick={toggleScreenShare}
-    icon={$screenShareOn ? ScreenShareIcon : ScreenShareOffIcon}
+    icon={$me?.screenSharing ? ScreenShareIcon : ScreenShareOffIcon}
     iconSize="24px"
     border={false}
     />
   <RoundButton
     label={$t`Camera`}
     classes="camera large"
-    selected={$cameraOn}
+    selected={$me?.cameraOn}
     onClick={toggleCamera}
-    icon={$cameraOn ? CameraIcon : CameraOffIcon}
+    icon={$me?.cameraOn ? CameraIcon : CameraOffIcon}
     iconSize="24px"
     border={false}
     />
-    <RoundButton
+  <RoundButton
     label={$t`Mute`}
     classes="mic large"
-    selected={$micOn}
+    selected={$me?.micOn}
     onClick={toggleMic}
-    icon={$micOn ? MicrophoneIcon : MicrophoneOffIcon}
+    icon={$me?.micOn ? MicrophoneIcon : MicrophoneOffIcon}
     iconSize="24px"
     border={false}
     />
   <hbox flex />
-  <RoundButton
-    label={handRaised ? $t`Hand raised` : $t`Raise hand`}
-    classes="hand large"
-    selected={handRaised}
-    onClick={toggleHand}
-    icon={handRaised ? HandIcon : HandDownIcon}
-    iconSize="24px"
-    border={false}
-    />
+  {#if meeting.canHandUp}
+    <RoundButton
+      label={$me?.handUp ? $t`Hand raised` : $t`Raise hand`}
+      classes="hand large"
+      selected={$me?.handUp}
+      onClick={toggleHand}
+      icon={$me?.handUp ? HandIcon : HandDownIcon}
+      iconSize="24px"
+      border={false}
+      />
+  {/if}
   {#if !isSidebar}
     <RoundButton
       label={$t`Leave`}
@@ -72,7 +74,6 @@
 
 <script lang="ts">
   import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
-  import { cameraOn, micOn, screenShareOn } from "./Setup/selectedDevices";
   import { meetMustangApp } from "./MeetMustangApp";
   import { openApp } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
@@ -95,7 +96,8 @@
   export let isSidebar = false;
   export let showSidebar = false; /* in/out */
 
-  let handRaised = false;
+  $: me = $meeting.myParticipant;
+
   let cameraStream: MediaStream = null;
   let screenStream: MediaStream = null;
 
@@ -107,40 +109,49 @@
   }
 
   async function toggleHand() {
-    await meeting.setHandRaised(!meeting.handRaised);
+    me.handUp = !me.handUp;
   }
 
   function toggleMic() {
-    $micOn = !$micOn;
+    me.micOn = !me.micOn;
+    mute(me.micOn);
+  }
+
+  function mute(mute: boolean) {
+    let audioTracks = cameraStream?.getAudioTracks() ?? [];
+    for (let audioTrack of audioTracks) {
+      audioTrack.enabled = mute;
+    }
   }
 
   async function toggleCamera() {
-    $cameraOn = !$cameraOn;
+    me.cameraOn = !me.cameraOn;
 
-    if ($cameraOn && !cameraStream) {
+    if (me.cameraOn && !cameraStream) {
       await startCamera();
     }
-    if (!$cameraOn && cameraStream) {
+    if (!me.cameraOn && cameraStream) {
       await stopCamera();
     }
   }
 
   async function toggleScreenShare() {
-    $screenShareOn = !$screenShareOn;
+    me.screenSharing = !me.screenSharing;
 
-    if ($screenShareOn && !screenStream) {
+    if (me.screenSharing && !screenStream) {
       await startScreenShare();
     }
-    if (!$screenShareOn && screenStream) {
+    if (!me.screenSharing && screenStream) {
       await stopScreenShare();
     }
   }
 
   async function startCamera() {
-    cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    cameraStream = await navigator.mediaDevices.getUserMedia({ video: me.cameraOn, audio: true });
     if (!cameraStream) {
       return;
     }
+    mute(me.micOn);
     await meeting.setCamera(cameraStream);
     // setCamera() also creates `SelfVideo` in `meeting.videos`
   }

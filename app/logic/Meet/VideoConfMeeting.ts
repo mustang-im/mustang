@@ -28,8 +28,6 @@ export class VideoConfMeeting extends Observable {
   myParticipant: Participant;
   /** Who is currently speaking at the moment */
   speaker: Participant | null = null;
-  @notifyChangedProperty
-  _handRaised: boolean = false;
 
   errorCallback = (ex) => {
     console.error(ex);
@@ -92,20 +90,7 @@ export class VideoConfMeeting extends Observable {
     throw new AbstractFunction();
   }
 
-  readonly canRaiseHand: boolean = false;
-  /** Signal to other participants that our user wants to say something */
-  get handRaised(): boolean {
-    return this._handRaised;
-  }
-  set handRaised(val: boolean) {
-    this.setHandRaised(val)
-      .catch(this.account.errorCallback);
-  }
-  /** Signal to other participants that our user wants to say something */
-  async setHandRaised(handRaised: boolean) {
-    // Do *not* this.handRaised, because it would create an infinite loop
-    this._handRaised = handRaised;
-  }
+  readonly canHandUp: boolean = false;
 
   async call() {
     assert(this.state == MeetingState.OutgoingCallPrepare, "Must be an outgoing call");

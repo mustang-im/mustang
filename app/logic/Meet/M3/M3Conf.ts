@@ -206,11 +206,7 @@ export class M3Conf extends VideoConfMeeting {
     }
   }
 
-  readonly canRaiseHand = true;
-  async setHandRaised(handRaised: boolean) {
-    await super.setHandRaised(handRaised);
-    //throw new NotImplemented();
-  }
+  readonly canHandUp = true;
 
   async start() {
     assert(this.roomID, "Need to create the conference first");

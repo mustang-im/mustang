@@ -109,6 +109,7 @@ export class LiveKitConf extends VideoConfMeeting {
     this.myParticipant.id = this.room.localParticipant.sid;
     this.myParticipant.name = this.room.localParticipant.name ?? appGlobal.me.name;
     this.myParticipant.role = ParticipantRole.User;
+    this.myParticipant.subscribe((_obj, propName) => this.myUserChanged(propName));
 
     for (let remoteParticipant of this.room.remoteParticipants.values()) {
       this.participantJoined(remoteParticipant);
@@ -162,10 +163,19 @@ export class LiveKitConf extends VideoConfMeeting {
     await this.room?.localParticipant.setScreenShareEnabled(true);
   }
 
-  readonly canRaiseHand = true;
-  async setHandRaised(handRaised: boolean) {
-    await super.setHandRaised(handRaised);
-    this.setMyAttribute("handRaised", handRaised);
+  readonly canHandUp = true;
+
+  protected myUserChanged(propName: string) {
+    console.log("My participant changed", propName, "to", this.myParticipant[propName]);
+    if (propName == "handUp") {
+      this.setMyAttribute("handUp", this.myParticipant.handUp);
+    }
+    if (propName == "cameraOn") {
+      this.room.localParticipant.setCameraEnabled(this.myParticipant.cameraOn);
+    }
+    if (propName == "micOn") {
+      this.room.localParticipant.setMicrophoneEnabled(this.myParticipant.micOn);
+    }
   }
 
   protected setMyAttribute(name: string, value: any) {

@@ -5,8 +5,6 @@ export class MeetingParticipant extends Person {
   @notifyChangedProperty
   role: ParticipantRole;
   @notifyChangedProperty
-  handUp = false;
-  @notifyChangedProperty
   micOn = false;
   @notifyChangedProperty
   cameraOn = false;
@@ -16,6 +14,9 @@ export class MeetingParticipant extends Person {
    * Multiple participants can be speaking at the same time */
   @notifyChangedProperty
   isSpeaking = false;
+  /** Signal to other participants that this participant wants to say something */
+  @notifyChangedProperty
+  handUp = false;
 
   peerConnection: RTCPeerConnection;  // prevent garbage collection
   screenPeerConnection: RTCPeerConnection; // ditto
