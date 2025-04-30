@@ -1,12 +1,10 @@
-<hbox class="buttons">
-  {#if event.isIncomingMeeting}
-    <Button label={$t`Accept`} onClick={onAccept} />
-    <hbox class="spacer" />
-    <Button label={$t`Reject`} onClick={onDecline} />
-    <hbox class="spacer" />
-    <Button label={$t`Maybe`} onClick={onTentative} />
-  {/if}
-</hbox>
+{#if event.isIncomingMeeting}
+  <Button label={$t`Accept`} onClick={onAccept} />
+  <hbox class="spacer" />
+  <Button label={$t`Reject`} onClick={onDecline} />
+  <hbox class="spacer" />
+  <Button label={$t`Maybe`} onClick={onTentative} />
+{/if}
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
