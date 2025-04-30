@@ -16,7 +16,7 @@
         disabled={!userIsModerator}
         iconOnly />
     {/if}
-    <hbox class="more-actions">
+    <hbox class="more-actions" class:speaking={$participant.isSpeaking}>
       <Button plain
         classes="toggle-mic"
         label={$t`Mute`}
@@ -112,6 +112,9 @@
   }
   .actions :global(.svelteui-ActionIcon-root svg) {
     stroke-width: 1px;
+  }
+  .speaking :global(.toggle-mic svg path:first-of-type) {
+    fill: white;
   }
   .more-actions :global(.svelteui-ActionIcon-root:hover) {
     background-color: rgba(32, 174, 158, 50%); /* #20AE9E */
