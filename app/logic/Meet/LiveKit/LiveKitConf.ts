@@ -82,7 +82,7 @@ export class LiveKitConf extends VideoConfMeeting {
     // Data comes from user. All error messages in this function are user visible. TODO Translate error messages.
     assert(this.account.isMeetingURL(urlParsed), gt`This meeting URL is not supported`);
     let roomID = urlParsed.pathname.replace("/rooms/", "");
-    assert(roomID.match(/^[a-f0-9\-]*$/), gt`Not a valid meeting invitation URL`);
+    assert(roomID.match(/^[a-zA-Z0-9\-]*$/), gt`Not a valid meeting invitation URL`);
     this.id = roomID;
     this.state = MeetingState.JoinConference;
   }
