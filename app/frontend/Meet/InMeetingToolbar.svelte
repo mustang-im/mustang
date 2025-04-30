@@ -2,7 +2,7 @@
   {#if isSidebar}
     <RoundButton
       label={$t`Go back to meeting`}
-      classes="back-to-meet secondary"
+      classes="back-to-meet"
       on:click={() => openApp(meetMustangApp)}
       icon={OpenToLeftIcon}
       iconSize="16px"
@@ -61,7 +61,7 @@
   {#if !isSidebar}
     <RoundButton
       label={showSidebar ? $t`Close participants list` : $t`Open participants list`}
-      classes="sidebar secondary large"
+      classes="sidebar large"
       onClick={() => showSidebar = !showSidebar}
       icon={showSidebar ? CloseSidebarIcon : OpenSidebarIcon}
       iconSize="24px"
@@ -186,6 +186,10 @@
   }
   .actions :global(> *) {
     margin-inline-end: 8px;
+  }
+  .actions :global(> button) {
+    background-color: inherit;
+    color: inherit;
   }
   .actions :global(.leave svg) {
     transform: rotate(135deg);
