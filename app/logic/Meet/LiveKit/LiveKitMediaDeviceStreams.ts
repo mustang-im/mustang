@@ -1,7 +1,8 @@
 import { MediaDeviceStreams } from "../MediaDeviceStreams";
 import { notifyChangedAccessor } from "../../util/Observable";
-import { NotSupported } from "../../util/util";
+import { NotSupported, assert } from "../../util/util";
 import { Track, type LocalParticipant } from "livekit-client";
+import { gt } from "../../../l10n/l10n";
 
 /** Grabs the user's camera, mic or screen, and
  * returns the WebRTC `MediaStream` */
@@ -22,12 +23,14 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
   }
 
   async setCameraOn(on: boolean, device?: string) {
+    assert(this.localParticipant, gt`Cannot send yet, because we're still connecting`);
     await this.localParticipant.setCameraEnabled(on, {
       deviceId: device,
     });
     this.cameraMicStream = this.getCameraMicStream();
   }
   async setMicOn(on: boolean, device?: string) {
+    assert(this.localParticipant, gt`Cannot send yet, because we're still connecting`);
     await this.localParticipant.setMicrophoneEnabled(on, {
       deviceId: device,
     });
@@ -35,7 +38,12 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
   }
 
   async setScreenShare(on: boolean) {
-    throw new NotSupported("Not supported by LiveKit yet");
+    if (on) {
+      throw new NotSupported("Not supported by LiveKit yet");
+    } else {
+      return;
+    }
+    assert(this.localParticipant, gt`Cannot send yet, because we're still connecting`);
     await this.localParticipant.setScreenShareEnabled(on);
     this.screenStream = this.getScreenStream();
   }

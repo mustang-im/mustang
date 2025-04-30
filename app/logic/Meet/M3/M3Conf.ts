@@ -236,6 +236,7 @@ export class M3Conf extends VideoConfMeeting {
     this.myParticipant.name = name;
     this.myParticipant.role = info.role;
     await Promise.all(info.participants.map(p => this.participantJoined(p)));
+    this.state = MeetingState.Ongoing;
 
     if (this.camera && this.camera.active) {
       await this.sendVideo(this.camera, false);

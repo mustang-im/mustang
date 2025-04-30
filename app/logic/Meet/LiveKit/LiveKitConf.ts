@@ -94,6 +94,7 @@ export class LiveKitConf extends VideoConfMeeting {
   async start() {
     assert(this.id, "Need to create the conference first");
     await super.start();
+    this.state = MeetingState.JoinConference;
 
     let myName = appGlobal.me.name;
     const e = encodeURIComponent;
@@ -115,6 +116,7 @@ export class LiveKitConf extends VideoConfMeeting {
     this.myParticipant.name = this.room.localParticipant.name ?? appGlobal.me.name;
     this.myParticipant.role = ParticipantRole.User;
     this.myParticipant.subscribe((_obj, propName) => this.myUserChanged(propName));
+    this.state = MeetingState.Ongoing;
 
     for (let remoteParticipant of this.room.remoteParticipants.values()) {
       this.participantJoined(remoteParticipant);

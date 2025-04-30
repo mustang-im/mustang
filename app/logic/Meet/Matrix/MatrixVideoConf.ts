@@ -44,7 +44,8 @@ export class MatrixVideoConf extends VideoConfMeeting {
         }
       }
     });
-    this._call.placeVideoCall();
+    await this._call.placeVideoCall();
+    this.state = MeetingState.Ongoing;
   }
 
   async answer() {

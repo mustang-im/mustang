@@ -79,7 +79,6 @@ export class VideoConfMeeting extends Observable {
   }
 
   async start() {
-    this.state = MeetingState.Ongoing;
     this.started = new Date();
   }
   protected async streamsChanged(propName: string, oldValue: MediaStream) {
