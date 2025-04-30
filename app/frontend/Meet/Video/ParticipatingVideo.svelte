@@ -1,5 +1,5 @@
 {#if video instanceof ParticipantVideo}
-  <vbox class="participant-box" class:speaking={$participant?.isSpeaking}>
+  <vbox class:speaking={$participant?.isSpeaking}>
     <VideoWithLabel {video}
       label={$participant?.name}
       classes="participant" />
@@ -26,9 +26,6 @@
 </script>
 
 <style>
-  .participant-box {
-    width: max-content;
-  }
   .speaking {
     outline: 1px solid var(--selected-bg);
   }

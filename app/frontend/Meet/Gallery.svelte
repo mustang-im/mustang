@@ -27,20 +27,21 @@
       return "";
     }
     const min = 256; /** minimum width per video */
+    let columnCount = 1;
     if (count <= 2 && $videos.find(video => video instanceof SelfVideo) ||
         width < min * 2) {
-      return "auto";
+      columnCount = 1;
+    } else if (count <= 4 || width < min * 3) {
+      columnCount = 2;
+    } else if (count <= 9 || width < min * 4) {
+      columnCount = 3;
+    } else if (count <= 16 || width < min * 5) {
+      columnCount = 4;
+    } else {
+      columnCount = 5;
     }
-    if (count <= 4 || width < min * 3) {
-      return "auto auto";
-    }
-    if (count <= 9 || width < min * 4) {
-      return "auto auto auto";
-    }
-    if (count <= 16 || width < min * 5) {
-      return "auto auto auto auto";
-    }
-    return "auto auto auto auto auto";
+    return `repeat(${columnCount}, 1fr)`;
+    //return `repeat(${columnCount}, ${Math.floor(100/columnCount)}%)`;
   }
 </script>
 

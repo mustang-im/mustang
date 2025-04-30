@@ -1,5 +1,4 @@
 <vbox flex class="participant {classes}">
-  <!-- <Stack> size not working
   <Stack>
     <vbox class="video" title={label}>
       <Video {video} />
@@ -8,7 +7,6 @@
       <hbox class="name">{label}</hbox>
     </vbox>
   </Stack>
-  -->
   <vbox class="video" title={label}>
     <Video {video} />
   </vbox>
@@ -16,6 +14,7 @@
 
 <script lang="ts">
   import type { VideoStream } from "../../../logic/Meet/VideoStream";
+  import Stack from "../../Shared/Stack.svelte";
   import Video from "./Video.svelte";
 
   export let video: VideoStream;

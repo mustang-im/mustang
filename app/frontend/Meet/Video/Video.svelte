@@ -36,7 +36,6 @@
 <style>
   img,
   video {
-    aspect-ratio: 16/9;
     object-fit: cover;
     max-width: 100%;
     max-height: 100%;
