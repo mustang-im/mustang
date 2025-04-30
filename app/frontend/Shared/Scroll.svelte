@@ -1,5 +1,7 @@
 <vbox class="scroll" bind:this={containerE}>
-  <slot />
+  <vbox class="inside">
+    <slot />
+  </vbox>
 </vbox>
 
 <script lang="ts">
@@ -18,5 +20,12 @@
     position: relative;
     overflow: auto;
     overflow-wrap: anywhere;
+  }
+  .inside {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
   }
 </style>
