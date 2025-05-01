@@ -1,9 +1,13 @@
 <vbox flex class="participants-sidebar">
   <Time {meeting} />
   <!--MeetingNotes {meeting} /-->
-  <vbox class="participants-header">
+  <hbox class="participants-header">
+    <hbox flex />
     <hbox class="number">{$participants.length} {$t`Participants`}</hbox>
-  </vbox>
+    <hbox flex class="right">
+      <ShowSpeaker bind:selected />
+    </hbox>
+  </hbox>
   <ParticipantsList {participants} bind:selected {userIsModerator} />
   <ParticipantSearch {meeting} bind:selected />
 </vbox>
@@ -13,6 +17,7 @@
   import type { VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
   import type { Collection } from "svelte-collections";
   import ParticipantsList from "./ParticipantsList.svelte";
+  import ShowSpeaker from "./ShowSpeaker.svelte";
   import ParticipantSearch from "./ParticipantSearch.svelte";
   import Time from "./Time.svelte";
   import { t } from "../../../l10n/l10n";
@@ -32,5 +37,9 @@
   .participants-header {
     align-items: center;
     margin-block-start: 12px;
+  }
+  .participants-header .right {
+    align-items: center;
+    justify-content: center;
   }
 </style>
