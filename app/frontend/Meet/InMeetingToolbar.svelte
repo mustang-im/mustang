@@ -101,7 +101,7 @@
 </hbox>
 
 <Popup bind:popupOpen={showViewSelector} {popupAnchor} placement="top-end" boundaryElSel=".main">
-  <ViewSelectorPopup bind:show={showViewSelector} />
+  <ViewSelectorPopup bind:show={showViewSelector} videoCount={meeting.videos?.length ?? 0} />
 </Popup>
 
 <script lang="ts">
@@ -179,7 +179,6 @@
     selectedView == View.Gallery4x4View ||
     selectedView == View.Gallery5x5View ? ViewGallery2x2Icon :
     ViewGallery2x2Icon;
-  $: console.log("show view selector", showViewSelector);
 
   function onShowViewSelector(event: Event) {
     event.stopPropagation();

@@ -23,5 +23,4 @@
   let viewSetting = getLocalStorage("meet.videoView", MeetVideoView.GalleryAutoView);
   $: selectedView = $viewSetting.value;
   $: showSelf = getLocalStorage("meet.showSelf", true).value;
-  $: console.log("view", selectedView);
 </script>

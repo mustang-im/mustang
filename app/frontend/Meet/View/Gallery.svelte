@@ -23,20 +23,25 @@
 
   let width: number;
 
-  $: columns = calculateColumns($videos.length, width);
-  function calculateColumns(count: number, width: number) {
+  $: columns = calculateColumns($videos.length, width, view);
+  function calculateColumns(count: number, width: number, view: MeetVideoView) {
     if (!width) {
       return "";
     }
-    const min = 256; /** minimum width per video */
+    const min = 100; /** minimum width per video, for manual view */
+    const autoMin = 256; /** minimum width per video, for auto view */
     let columnCount = 1;
-    if (count < 2 && showSelf || width < min * 2) {
+    if (count < 2 && showSelf || width < min * 2 ||
+      width < autoMin * 2 && view == MeetVideoView.GalleryAutoView) {
       columnCount = 1;
-    } else if (count <= 4 || width < min * 3) {
+    } else if (count <= 4 || width < min * 3 || view == MeetVideoView.Gallery2x2View ||
+      width < autoMin * 3 && view == MeetVideoView.GalleryAutoView) {
       columnCount = 2;
-    } else if (count <= 9 || width < min * 4) {
+    } else if (count <= 9 || width < min * 4 || view == MeetVideoView.Gallery3x3View ||
+      width < autoMin * 4 && view == MeetVideoView.GalleryAutoView) {
       columnCount = 3;
-    } else if (count <= 16 || width < min * 5) {
+    } else if (count <= 16 || width < min * 5 || view == MeetVideoView.Gallery4x4View ||
+      width < autoMin * 5 && view == MeetVideoView.GalleryAutoView) {
       columnCount = 4;
     } else {
       columnCount = 5;

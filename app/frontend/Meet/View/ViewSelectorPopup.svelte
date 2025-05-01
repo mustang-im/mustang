@@ -33,6 +33,7 @@
         icon={ViewGallery2x2Icon}
         onClick={() => selectView(View.Gallery2x2View)}
         selected={selectedView == View.Gallery2x2View}
+        disabled={videoCount <= 2}
         iconSize="24px"
         plain={true}
         />
@@ -41,6 +42,7 @@
         icon={ViewGallery3x3Icon}
         onClick={() => selectView(View.Gallery3x3View)}
         selected={selectedView == View.Gallery3x3View}
+        disabled={videoCount <= 4}
         iconSize="24px"
         plain={true}
         />
@@ -49,6 +51,7 @@
         icon={ViewGallery3x3Icon}
         onClick={() => selectView(View.Gallery4x4View)}
         selected={selectedView == View.Gallery4x4View}
+        disabled={videoCount <= 9}
         iconSize="24px"
         plain={true}
         />
@@ -57,6 +60,7 @@
         icon={ViewGallery3x3Icon}
         onClick={() => selectView(View.Gallery5x5View)}
         selected={selectedView == View.Gallery5x5View}
+        disabled={videoCount <= 16}
         iconSize="24px"
         plain={true}
         />
@@ -98,6 +102,7 @@
   import { t } from "../../../l10n/l10n";
 
   export let show: boolean;
+  export let videoCount: number;
 
   const View = MeetVideoView;
   let viewSetting = getLocalStorage("meet.videoView", View.GalleryAutoView);
