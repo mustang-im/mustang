@@ -11,8 +11,6 @@ export default defineConfig({
       formats: ['es'],
       entry: './index.ts'
     },
-    //outDir: '../android/app/src/main/assets/public/nodejs',
-    //emptyOutDir: false,
     outDir: 'dist',
     emptyOutDir: true,
     minify: false,
