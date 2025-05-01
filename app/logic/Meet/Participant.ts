@@ -1,7 +1,8 @@
-import { Person } from "../Abstract/Person";
+import { PersonUID } from "../Abstract/PersonUID";
 import { notifyChangedProperty } from "../util/Observable";
 
-export class MeetingParticipant extends Person {
+export class MeetingParticipant extends PersonUID {
+  id: string;
   @notifyChangedProperty
   role: ParticipantRole;
   @notifyChangedProperty
@@ -17,6 +18,10 @@ export class MeetingParticipant extends Person {
   /** Signal to other participants that this participant wants to say something */
   @notifyChangedProperty
   handUp = false;
+  /** true for people who are currently in the meeting
+   * false for people who have been invited, but they are not in the meeting */
+  @notifyChangedProperty
+  joined = true;
 
   peerConnection: RTCPeerConnection;  // prevent garbage collection
   screenPeerConnection: RTCPeerConnection; // ditto
@@ -27,4 +32,5 @@ export enum ParticipantRole {
   User = "user",
   Guest = "guest",
   Agent = "agent",
+  Invited = "invited",
 }

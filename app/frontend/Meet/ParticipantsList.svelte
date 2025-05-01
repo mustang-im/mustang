@@ -1,5 +1,9 @@
 <vbox flex class="participants-list font-normal">
-  <PersonsList persons={$participantsSorted} bind:selected pictureSize={24}>
+  <PersonsList
+    persons={$participantsSorted}
+    bind:selected
+    showSearch={false}
+    pictureSize={24}>
     <ParticipantListItem
       slot="top-right"
       let:person participant={person instanceof MeetingParticipant ? person : null}

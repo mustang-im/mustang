@@ -1,34 +1,47 @@
+<NotificationBar {notifications} />
 <hbox class="persons-toolbar">
-  <input type="search" bind:value={searchText} placeholder={$t`Add or search a participant`} />
+  <PersonAutocomplete
+    bind:typedText={searchText}
+    placeholder={$t`Add or search a participant`}
+    on:addPerson={event => catchErrors(() => addPerson(event.detail), showError)}
+    autofocus={false}
+    />
   <hbox class="buttons">
+    <!--
     <RoundButton
-      label={$t`New contact`}
+      label={$t`Invite person to the meeting`}
       onClick={addPerson}
-      icon={NewContactIcon}
+      icon={AddIcon}
       iconSize="16px"
       />
+    -->
     <RoundButton
       label={$t`Copy invitation link`}
       classes="invite-participant"
-      onClick={inviteParticipant}
+      onClick={copyInvitationLink}
       disabled={!meeting.account.canCreateURL}
       icon={InviteUserIcon}
       iconSize="16px"
+      padding="6px"
       />
   </hbox>
 </hbox>
 
 <script lang="ts">
   import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
-  import { M3Conf } from "../../logic/Meet/M3/M3Conf";
   import { MeetingParticipant } from "../../logic/Meet/Participant";
-  import { ParticipantVideo } from "../../logic/Meet/VideoStream";
-  import { appGlobal } from "../../logic/app";
+  import { invitePerson } from "../../logic/Meet/Invite";
+  import { Notification, showNotificationError, showNotificationToast } from "../MainWindow/Notification";
+  import PersonAutocomplete from "../Contacts/PersonAutocomplete/PersonAutocomplete.svelte";
+  import NotificationBar from "../MainWindow/NotificationBar.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
-  import NewContactIcon from "lucide-svelte/icons/plus";
+  import AddIcon from "lucide-svelte/icons/plus";
   import InviteUserIcon from "lucide-svelte/icons/link";
   import { assert } from "../../logic/util/util";
   import { gt, t } from "../../l10n/l10n";
+  import { catchErrors, logError } from "../Util/error";
+  import { PersonUID } from "../../logic/Abstract/PersonUID";
+  import { ArrayColl } from "svelte-collections";
 
   export let meeting: VideoConfMeeting;
   export let selected: MeetingParticipant;
@@ -36,34 +49,56 @@
   $: participants = meeting.participants;
   let searchText: string;
 
-  function addPerson() {
-    if (!searchText) {
-      addTestParticipant();
+  $: searchParticipant(searchText)
+  function searchParticipant(searchText: string) {
+    if (!searchText || searchText.length < 2) {
       return;
     }
-    // TODO Notify person
-    let person = new MeetingParticipant();
-    person.name = searchText;
-    participants.add(person);
-    selected = person;
+    let searchLower = searchText.toLowerCase()
+    let match = participants.find(p => p.name?.toLowerCase().startsWith(searchLower));
+    if (!match) {
+      match = participants.find(p => p.name?.toLowerCase().includes(searchLower));
+    }
+    if (!match) {
+      return;
+    }
+    selected = match;
   }
 
-  async function inviteParticipant() {
+  async function addPerson(person: PersonUID) {
+    let participant = new MeetingParticipant();
+    participant.joined = false;
+    participant.name = person.name;
+    participants.add(participant);
+    selected = participant;
+
+    await invitePerson(person, meeting);
+
+    showNotificationToast(gt`We've sent an invitation to ${person.name}`, notifications);
+  }
+
+  async function copyInvitationLink() {
     assert(meeting.account.canCreateURL, gt`I cannot invite using a link to this kind of meeting`);
     let invitationURL = await meeting.createInvitationURL();
     navigator.clipboard.writeText(invitationURL);
   }
 
-  function addTestParticipant() {
-    // TODO remove test data
-    let chatAccount = appGlobal.chatAccounts.first;
-    assert(chatAccount.persons.hasItems, $t`No persons in this chat account`);
-    let person = chatAccount.persons.at(Math.floor(chatAccount.persons.length) * Math.random());
-    let participant = new MeetingParticipant();
-    participant.name = person.name;
-    participant.picture = person.picture;
-    meeting.participants.add(participant);
-    meeting.videos.add(new ParticipantVideo(new MediaStream(), participant));
+  $: $participants, removeJoinedParticipant()
+  function removeJoinedParticipant() {
+    let all = $participants.contents;
+    let allJoined = all.filter(p => p.joined);
+    let allNotJoined = all.filter(p => !p.joined);
+    for (let notJoined of allNotJoined) {
+      if (allJoined.some(p => p.name == notJoined.name)) {
+        participants.remove(notJoined);
+      }
+    }
+  }
+
+  let notifications = new ArrayColl<Notification>();
+
+  function showError(ex: Error) {
+    showNotificationError(ex, notifications);
   }
 </script>
 
@@ -71,19 +106,26 @@
   .persons-toolbar {
     margin: 16px;
     align-items: center;
+    color-scheme: dark;
   }
-  input[type="search"] {
-    width: 100%;
-    margin-inline-end: 12px;
-    height: 32px;
-    padding: 0px 16px;
+  .persons-toolbar :global(.person-autocomplete) {
+    height: 30px;
+  }
+  .persons-toolbar :global(input) {
+    padding: 0px 16px !important;
     border: 1px solid #8D8995;
     border-radius: 16px;
     background-color: #5C5768;
     color: white;
   }
-  input::placeholder {
+  .persons-toolbar :global(input::placeholder) {
     color: white;
+  }
+  .persons-toolbar :global(.autocomplete-list) {
+    color-scheme: dark;
+  }
+  .buttons {
+    margin-inline-start: 12px;
   }
   .buttons :global(button) {
     margin-inline-end: 4px;

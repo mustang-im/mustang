@@ -1,5 +1,7 @@
 <vbox flex class="persons" {size}>
-  <SearchField bind:searchTerm placeholder={$t`Search for a person or group`} />
+  {#if showSearch}
+    <SearchField bind:searchTerm placeholder={$t`Search for a person or group`} />
+  {/if}
   <FastList items={filteredPersons} columns="auto">
     <vbox class="person" slot="row" let:item={person} on:click={() => selected = person}>
       <PersonLine {person} isSelected={person == selected} {pictureSize} {size}>
@@ -26,6 +28,7 @@
   export let pictureSize = size == "large" ? 56 : 20;
   /** in/out */
   export let searchTerm: string | null = null;
+  export let showSearch = true;
 
   $: filteredPersons = searchTerm
     ? persons.filter(p =>
