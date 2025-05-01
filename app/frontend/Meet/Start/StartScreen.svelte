@@ -9,6 +9,7 @@
       {/if}
       <Button label={$t`Plan a meeting`} icon={AddToCalendarIcon} classes="secondary" iconSize="14px" />
       <Button label={$t`Start an ad-hoc meeting`} icon={VideoIcon} onClick={startAdHocMeeting} errorCallback={showError} classes="secondary" />
+      <Button label={$t`Start a fake meeting`} icon={VideoIcon} onClick={startFakeMeeting} errorCallback={showError} classes="secondary" />
       <hbox>
         <input class="meeting-link" type="url" bind:value={conferenceURL}
           placeholder={$t`Enter meeting link to join`}
@@ -46,7 +47,7 @@
   import { MeetingState, VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
   import { ParticipantVideo, SelfVideo } from "../../../logic/Meet/VideoStream";
   import { MeetingParticipant } from "../../../logic/Meet/Participant";
-  import { M3Conf } from "../../../logic/Meet/M3/M3Conf";
+  import { FakeMeeting } from "../../../logic/Meet/FakeMeeting";
   import { Event } from "../../../logic/Calendar/Event";
   import { joinConferenceByURL } from "../../../logic/Meet/StartCall";
   import { selectedPerson } from "../../Contacts/Person/Selected";
@@ -82,6 +83,12 @@
 
   async function startAdHocMeeting() {
     let meeting = getAccount().newMeeting();
+    await meeting.createNewConference();
+    appGlobal.meetings.add(meeting);
+  }
+
+  async function startFakeMeeting() {
+    let meeting = new FakeMeeting();
     await meeting.createNewConference();
     appGlobal.meetings.add(meeting);
   }

@@ -49,6 +49,24 @@
       border={false}
       />
   {/if}
+  {#if meeting instanceof FakeMeeting}
+    <RoundButton
+      label={$t`Add participant`}
+      classes="large"
+      onClick={() => meeting.addParticipant()}
+      icon={AddIcon}
+      iconSize="24px"
+      border={false}
+      />
+    <RoundButton
+      label={$t`Add participant`}
+      classes="large"
+      onClick={() => meeting.removeParticipant()}
+      icon={RemoveIcon}
+      iconSize="24px"
+      border={false}
+      />
+  {/if}
   {#if !isSidebar}
     <RoundButton
       label={$t`Leave`}
@@ -78,6 +96,7 @@
   import { selectedCamera, selectedMic } from "./Setup/selectedDevices";
   import { openApp } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
+  import { FakeMeeting } from "../../logic/Meet/FakeMeeting";
   import RoundButton from "../Shared/RoundButton.svelte";
   import HandIcon from '../asset/icon/meet/hand.svg?raw';
   import HandDownIcon from "lucide-svelte/icons/grab";
@@ -91,6 +110,8 @@
   import OpenSidebarIcon from "lucide-svelte/icons/users-round";
   import OpenToLeftIcon from "lucide-svelte/icons/arrow-left-from-line";
   import CloseSidebarIcon from "lucide-svelte/icons/arrow-right-from-line";
+  import AddIcon from "lucide-svelte/icons/plus";
+  import RemoveIcon from "lucide-svelte/icons/minus";
   import { t } from "../../l10n/l10n";
 
   export let meeting: VideoConfMeeting;
