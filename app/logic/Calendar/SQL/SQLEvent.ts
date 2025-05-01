@@ -24,7 +24,7 @@ export class SQLEvent extends Event {
             recurrenceRule, recurrenceMasterEventID,
             recurrenceStartTime, recurrenceIsException
           ) VALUES (
-            ${event.title}, ${event.descriptionText}, ${event.descriptionHTML},
+            ${event.title}, ${event.rawText}, ${event.rawHTMLDangerous},
             ${event.startTime.toISOString()}, ${event.endTime.toISOString()}, ${event.allDay ? 1 : 0}, ${event.timezone},
             ${event.calUID}, ${event.myParticipation}, ${event.pID}, ${event.calendar?.dbID},
             ${event.recurrenceRule?.getCalString(event.allDay)}, ${event.parentEvent?.dbID},
@@ -36,8 +36,8 @@ export class SQLEvent extends Event {
         await (await getDatabase()).run(sql`
           UPDATE event SET
             title = ${event.title},
-            descriptionText = ${event.descriptionText},
-            descriptionHTML = ${event.descriptionHTML},
+            descriptionText = ${event.rawText},
+            descriptionHTML = ${event.rawHTMLDangerous},
             startTime = ${event.startTime.toISOString()},
             endTime = ${event.endTime.toISOString()},
             allDay = ${event.allDay ? 1 : 0},
@@ -130,10 +130,10 @@ export class SQLEvent extends Event {
     }
     event.dbID = sanitize.integer(dbID);
     event.title = sanitize.label(row.title, "Meeting");
-    event.descriptionText = sanitize.label(row.descriptionText, "");
+    event.rawText = sanitize.label(row.descriptionText, "");
     let html = sanitize.string(row.descriptionHTML, null);
     if (html) {
-      event.descriptionHTML = html;
+      event.rawHTMLDangerous = html;
     }
     event.startTime = sanitize.date(row.startTime);
     event.endTime = sanitize.date(row.endTime, event.startTime);

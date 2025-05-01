@@ -225,7 +225,6 @@ export function fakeCalendar(persons: Collection<Person>, eventCount = 50): Cale
     event.endTime = faker.date.between({ from: event.startTime, to: endTimeMax });
     event.title = faker.company.buzzPhrase();
     event.descriptionText = faker.hacker.phrase() + "\n" + faker.hacker.phrase();
-    event.descriptionHTML = event.descriptionText.replace("\n", "<br>");
     event.location = faker.datatype.boolean ? faker.location.streetAddress() : faker.location.nearbyGPSCoordinate().join(", ");
     let participantsCount = Math.random() * 5;
     for (let i = 1; i < participantsCount; i++) {
