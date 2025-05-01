@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import nodeExternals from 'rollup-plugin-node-externals';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import esmShim from '@rollup/plugin-esm-shim';
+import native from 'vite-plugin-native';
 
 export default defineConfig({
   ssr: { noExternal: true },
@@ -23,6 +24,7 @@ export default defineConfig({
       devDeps: true, // Use node.js internal modules
     }),
     esmShim(),
+    native({}),
     viteStaticCopy({
       targets: [
         {
