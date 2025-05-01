@@ -49,6 +49,7 @@
     display: grid;
     /* grid-template-columns/rows: see code above */
   }
+  /*
   .one-to-one :global(.participant-box.self),
   .one-to-one :global(.participant.self) {
     justify-self: end;
@@ -56,4 +57,5 @@
   .one-to-one :global(.participant.self) {
     width: 256px;
   }
+  */
 </style>
