@@ -12,11 +12,13 @@
 
 <script lang="ts">
   import type { VideoStream } from "../../../logic/Meet/VideoStream";
-  import type { Collection } from "svelte-collections";
+  import { MeetVideoView } from "./ViewSelectorPopup.svelte";
   import ParticipatingVideo from "./Video/ParticipatingVideo.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
+  import type { Collection } from "svelte-collections";
 
   export let videos: Collection<VideoStream>;
+  export let view: MeetVideoView;
   export let showSelf: boolean;
 
   let width: number;

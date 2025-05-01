@@ -1,6 +1,6 @@
 <hbox flex>
   <vbox flex class="main">
-    <Gallery videos={meeting.videos} {showSelf}  />
+    <VideoView videos={meeting.videos} {me} showParticipant={selectedParticipant} />
     <InMeetingToolbar {meeting} {isSidebar} bind:showSidebar />
   </vbox>
   {#if showSidebar && !isSidebar}
@@ -9,7 +9,7 @@
         {meeting}
         participants={meeting.participants}
         bind:selected={selectedParticipant}
-        userIsModerator={$myParticipant?.role == ParticipantRole.Moderator}
+        userIsModerator={$me?.role == ParticipantRole.Moderator}
         />
     </vbox>
   {/if}
@@ -18,17 +18,16 @@
 <script lang="ts">
   import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
   import { ParticipantRole, type MeetingParticipant } from "../../logic/Meet/Participant";
-  import Gallery from "./View/Gallery.svelte";
+  import VideoView from "./View/VideoView.svelte";
   import InMeetingToolbar from "./InMeetingToolbar.svelte";
   import ParticipantsSidebar from "./ParticipantsBar/Sidebar.svelte";
 
   export let meeting: VideoConfMeeting;
   export let isSidebar = false;
 
-  let showSelf = true;
   let selectedParticipant: MeetingParticipant = null;
   let showSidebar = meeting.participants.length != 1;
-  $: myParticipant = meeting.myParticipant;
+  $: me = meeting.myParticipant;
 </script>
 
 <style>

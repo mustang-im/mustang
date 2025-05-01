@@ -108,12 +108,7 @@
     selectedView == View.Gallery5x5View
     ? ViewGallery3x3Icon
     : ViewGallery2x2Icon;
-  $: selectedGallery =
-    selectedView == View.Gallery2x2View ||
-    selectedView == View.Gallery3x3View ||
-    selectedView == View.Gallery4x4View ||
-    selectedView == View.Gallery5x5View ||
-    selectedView == View.GalleryAutoView;
+  $: selectedGallery = meetGalleryViews.includes(selectedView);
   $: showGalleryOptions = selectedGallery;
 
   function selectView(view: MeetVideoView) {
@@ -132,6 +127,14 @@
     Thumbnails = "thumbnails",
     SpeakerOnly = "speaker-only",
   }
+
+  export const meetGalleryViews = [
+    MeetVideoView.Gallery2x2View,
+    MeetVideoView.Gallery3x3View,
+    MeetVideoView.Gallery4x4View,
+    MeetVideoView.Gallery5x5View,
+    MeetVideoView.GalleryAutoView,
+  ];
 </script>
 
 <style>
@@ -140,6 +143,8 @@
     box-shadow: 2.281px 1.14px 9.123px 0px rgba(var(--shadow-color), 20%);
     padding: 12px;
     padding-inline-start: 16px;
+    background-color: var(--appbar-bg);
+    color: var(--appbar-fg);
   }
   .gallery-options {
     margin: 8px;

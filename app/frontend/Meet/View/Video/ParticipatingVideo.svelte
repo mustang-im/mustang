@@ -22,7 +22,7 @@
   export let video: VideoStream;
   export let showSelf: boolean;
 
-  $: participant = (video as ParticipantVideo | ScreenShare).participant;
+  $: participant = (video as ParticipantVideo | ScreenShare)?.participant;
 </script>
 
 <style>
