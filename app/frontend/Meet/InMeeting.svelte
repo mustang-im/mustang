@@ -18,9 +18,9 @@
 <script lang="ts">
   import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
   import { ParticipantRole, type MeetingParticipant } from "../../logic/Meet/Participant";
-  import Gallery from "./Gallery.svelte";
+  import Gallery from "./View/Gallery.svelte";
   import InMeetingToolbar from "./InMeetingToolbar.svelte";
-  import ParticipantsSidebar from "./Sidebar.svelte";
+  import ParticipantsSidebar from "./ParticipantsBar/Sidebar.svelte";
 
   export let meeting: VideoConfMeeting;
   export let isSidebar = false;

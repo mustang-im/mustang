@@ -14,8 +14,8 @@
 {/if}
 
 <script lang="ts">
-  import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
-  import { getUILocale } from "../../l10n/l10n";
+  import type { VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
+  import { getUILocale } from "../../../l10n/l10n";
 
   export let meeting: VideoConfMeeting;
 

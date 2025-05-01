@@ -52,11 +52,11 @@
 </hbox>
 
 <script lang="ts">
-  import { MeetingParticipant } from "../../logic/Meet/Participant";
-  import Button from "../Shared/Button.svelte";
-  import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
-  import MenuItem from "../Shared/Menu/MenuItem.svelte";
-  import HandIcon from '../asset/icon/meet/hand.svg?raw';
+  import { MeetingParticipant } from "../../../logic/Meet/Participant";
+  import Button from "../../Shared/Button.svelte";
+  import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import HandIcon from '../../asset/icon/meet/hand.svg?raw';
   import HandDownIcon from "lucide-svelte/icons/grab";
   import CameraIcon from "lucide-svelte/icons/video";
   import CameraOffIcon from "lucide-svelte/icons/video-off";
@@ -65,8 +65,8 @@
   import ChatIcon from "lucide-svelte/icons/message-square";
   import UserIcon from "lucide-svelte/icons/user-round";
   import ScreenSharingIcon from "lucide-svelte/icons/monitor";
-  import { assert, NotImplemented } from "../../logic/util/util";
-  import { t } from "../../l10n/l10n";
+  import { assert, NotImplemented } from "../../../logic/util/util";
+  import { t } from "../../../l10n/l10n";
 
   export let participant: MeetingParticipant;
   export let userIsModerator = false;

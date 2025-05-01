@@ -1,6 +1,6 @@
 <script lang="ts">
   import { MeetingState } from "../../logic/Meet/VideoConfMeeting";
-  import { openApp, selectedApp, sidebarApp } from "../AppsBar/selectedApp";
+  import { openApp, selectedApp } from "../AppsBar/selectedApp";
   import { meetMustangApp } from "./MeetMustangApp";
   import { appGlobal } from "../../logic/app";
 

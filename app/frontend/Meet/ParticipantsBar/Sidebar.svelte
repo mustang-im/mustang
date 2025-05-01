@@ -9,13 +9,13 @@
 </vbox>
 
 <script lang="ts">
-  import type { MeetingParticipant } from "../../logic/Meet/Participant";
-  import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
+  import type { MeetingParticipant } from "../../../logic/Meet/Participant";
+  import type { VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
   import type { Collection } from "svelte-collections";
   import ParticipantsList from "./ParticipantsList.svelte";
   import ParticipantSearch from "./ParticipantSearch.svelte";
   import Time from "./Time.svelte";
-  import { t } from "../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let meeting: VideoConfMeeting;
   export let participants: Collection<MeetingParticipant>;

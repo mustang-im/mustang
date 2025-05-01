@@ -111,7 +111,7 @@
   import { openApp } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import { FakeMeeting } from "../../logic/Meet/FakeMeeting";
-  import ViewSelectorPopup, { MeetVideoView as View } from "./ViewSelectorPopup.svelte";
+  import ViewSelectorPopup, { MeetVideoView as View } from "./View/ViewSelectorPopup.svelte";
   import Popup from "../Shared/Popup.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import HandIcon from '../asset/icon/meet/hand.svg?raw';

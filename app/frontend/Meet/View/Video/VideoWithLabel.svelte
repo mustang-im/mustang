@@ -15,7 +15,7 @@
 </vbox>
 
 <script lang="ts">
-  import type { VideoStream } from "../../../logic/Meet/VideoStream";
+  import type { VideoStream } from "../../../../logic/Meet/VideoStream";
   import Video from "./Video.svelte";
 
   export let video: VideoStream;

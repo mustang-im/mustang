@@ -81,8 +81,8 @@
 </vbox>
 
 <script lang="ts">
-  import { getLocalStorage } from "../Util/LocalStorage";
-  import Button from "../Shared/Button.svelte";
+  import { getLocalStorage } from "../../Util/LocalStorage";
+  import Button from "../../Shared/Button.svelte";
   import ViewGallery2VerticalIcon from "lucide-svelte/icons/rows-2";
   import ViewGallery2HorizontalIcon from "lucide-svelte/icons/columns-2";
   import ViewGallery2x2Icon from "lucide-svelte/icons/grid-2x2";
@@ -95,7 +95,7 @@
   import ViewScreenshareIcon from "lucide-svelte/icons/tv-minimal";
   import ExpandIcon from "lucide-svelte/icons/chevron-down";
   import CollapseIcon from "lucide-svelte/icons/chevron-up";
-  import { t } from "../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let show: boolean;
 

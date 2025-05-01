@@ -28,19 +28,19 @@
 </hbox>
 
 <script lang="ts">
-  import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
-  import { MeetingParticipant } from "../../logic/Meet/Participant";
-  import { invitePerson } from "../../logic/Meet/Invite";
-  import { Notification, showNotificationError, showNotificationToast } from "../MainWindow/Notification";
-  import PersonAutocomplete from "../Contacts/PersonAutocomplete/PersonAutocomplete.svelte";
-  import NotificationBar from "../MainWindow/NotificationBar.svelte";
-  import RoundButton from "../Shared/RoundButton.svelte";
+  import type { VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
+  import { MeetingParticipant } from "../../../logic/Meet/Participant";
+  import { invitePerson } from "../../../logic/Meet/Invite";
+  import { Notification, showNotificationError, showNotificationToast } from "../../MainWindow/Notification";
+  import PersonAutocomplete from "../../Contacts/PersonAutocomplete/PersonAutocomplete.svelte";
+  import NotificationBar from "../../MainWindow/NotificationBar.svelte";
+  import RoundButton from "../../Shared/RoundButton.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
   import InviteUserIcon from "lucide-svelte/icons/link";
-  import { assert } from "../../logic/util/util";
-  import { gt, t } from "../../l10n/l10n";
-  import { catchErrors, logError } from "../Util/error";
-  import { PersonUID } from "../../logic/Abstract/PersonUID";
+  import { assert } from "../../../logic/util/util";
+  import { gt, t } from "../../../l10n/l10n";
+  import { catchErrors } from "../../Util/error";
+  import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { ArrayColl } from "svelte-collections";
 
   export let meeting: VideoConfMeeting;

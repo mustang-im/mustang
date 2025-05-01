@@ -30,12 +30,12 @@
 {/if}
 
 <script lang="ts">
-  import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
-  import Scroll from "../Shared/Scroll.svelte";
-  import Button from "../Shared/Button.svelte";
+  import type { VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
+  import Scroll from "../../Shared/Scroll.svelte";
+  import Button from "../../Shared/Button.svelte";
   import ExpandIcon from "lucide-svelte/icons/chevron-down";
   import CollapseIcon from "lucide-svelte/icons/chevron-up";
-  import { t } from "../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let meeting: VideoConfMeeting;
 

@@ -9,10 +9,10 @@
 {/if}
 
 <script lang="ts">
-  import { VideoStream, SelfVideo, ParticipantVideo, videoStreamClassName } from "../../../logic/Meet/VideoStream";
-  import { appGlobal } from "../../../logic/app";
+  import { VideoStream, SelfVideo, ParticipantVideo, videoStreamClassName } from "../../../../logic/Meet/VideoStream";
+  import { appGlobal } from "../../../../logic/app";
   import { onDestroy } from "svelte";
-  import { t } from "../../../l10n/l10n";
+  import { t } from "../../../../l10n/l10n";
 
   export let video: VideoStream;
 

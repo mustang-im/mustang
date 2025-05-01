@@ -11,10 +11,10 @@
 </Scroll>
 
 <script lang="ts">
-  import { SelfVideo, type VideoStream } from "../../logic/Meet/VideoStream";
+  import type { VideoStream } from "../../../logic/Meet/VideoStream";
   import type { Collection } from "svelte-collections";
   import ParticipatingVideo from "./Video/ParticipatingVideo.svelte";
-  import Scroll from "../Shared/Scroll.svelte";
+  import Scroll from "../../Shared/Scroll.svelte";
 
   export let videos: Collection<VideoStream>;
   export let showSelf: boolean;
