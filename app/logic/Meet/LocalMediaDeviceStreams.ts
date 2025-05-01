@@ -80,6 +80,9 @@ export class LocalMediaDeviceStreams extends MediaDeviceStreams {
       } : false,
       audio: {
         deviceId: this._micDevice,
+        echoCancellation: "system",
+        noiseSuppression: true,
+        autoGainControl: true,
       },
     };
     this.cameraMicStream = await navigator.mediaDevices.getUserMedia(setup);
