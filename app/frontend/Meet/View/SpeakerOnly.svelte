@@ -7,7 +7,7 @@
   import type { MeetingParticipant } from "../../../logic/Meet/Participant";
   import ParticipatingVideo from "./Video/ParticipatingVideo.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
-  import type { Collection } from "svelte-collections";
+  import { ArrayColl, type Collection } from "svelte-collections";
 
   export let videos: Collection<VideoStream>;
   export let showParticipant: MeetingParticipant;
@@ -58,5 +58,24 @@
     }
 
     // otherwise, keep the last speaker on screen
+  }
+
+  function onParticipantPropsChanged() {
+    selectVideo();
+  }
+
+  // Have to manually subscribe to all participants that have a video,
+  // so that we're informed when `video.participant.isSpeaker` changes.
+  $: $videos, subscribeParticipants()
+  let subscriptions = new ArrayColl<() => void>();
+  function subscribeParticipants() {
+    for (let unsubscribe of subscriptions) {
+      unsubscribe();
+    }
+    for (let video of videos) {
+      if (video instanceof ParticipantVideo) {
+        subscriptions.add(video.participant.subscribe(onParticipantPropsChanged));
+      }
+    }
   }
 </script>

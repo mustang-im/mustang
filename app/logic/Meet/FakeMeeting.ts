@@ -43,6 +43,7 @@ export class FakeMeeting extends VideoConfMeeting {
     for (let i = 0; i < 5; i++) {
       await this.addParticipant();
     }
+    this.setSpeakerRandomly();
   }
 
   async addParticipant(person?: PersonUID) {
@@ -50,6 +51,8 @@ export class FakeMeeting extends VideoConfMeeting {
     p.id = crypto.randomUUID();
     p.name = person?.name ?? "User " + p.id.substring(0, 3);
     p.role = ParticipantRole.User;
+    p.cameraOn = true;
+    p.micOn = true;
 
     /*
     let video = document.createElement('video');
@@ -67,6 +70,14 @@ export class FakeMeeting extends VideoConfMeeting {
     participant ??= this.participants.first;
     this.videos.removeAll(this.videos.filter(v => v instanceof ParticipantVideo && v.participant == participant));
     this.participants.remove(participant);
+  }
+
+  setSpeakerRandomly() {
+    let speaker = this.participants.contents[Math.floor(Math.random() * this.participants.length)];
+    speaker.isSpeaking = true;
+    let nextTime = Math.random() * 10 * 1000;
+    setTimeout(() => this.setSpeakerRandomly(), nextTime);
+    setTimeout(() => speaker.isSpeaking = false, nextTime + Math.random() * 2 * 1000 - 1000);
   }
 
   readonly canHandUp = true;

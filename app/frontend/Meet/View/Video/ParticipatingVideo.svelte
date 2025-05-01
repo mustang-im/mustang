@@ -27,6 +27,6 @@
 
 <style>
   .speaking {
-    outline: 1px solid var(--selected-bg);
+    outline: 2px solid var(--selected-bg);
   }
 </style>
