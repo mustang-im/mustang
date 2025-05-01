@@ -78,6 +78,16 @@
       />
   {/if}
   <hbox flex />
+  <RoundButton
+    label={`Change view of participant videos`}
+    classes="view-selector large"
+    onClick={onShowViewSelector}
+    selected={showViewSelector}
+    icon={viewSelectorIcon}
+    iconSize="24px"
+    border={false}
+    />
+  <hbox bind:this={popupAnchor} />
   {#if !isSidebar}
     <RoundButton
       label={showSidebar ? $t`Close participants list` : $t`Open participants list`}
@@ -90,6 +100,10 @@
   {/if}
 </hbox>
 
+<Popup bind:popupOpen={showViewSelector} {popupAnchor} placement="top-end" boundaryElSel=".main">
+  <ViewSelectorPopup bind:show={showViewSelector} />
+</Popup>
+
 <script lang="ts">
   import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
   import { meetMustangApp } from "./MeetMustangApp";
@@ -97,6 +111,8 @@
   import { openApp } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import { FakeMeeting } from "../../logic/Meet/FakeMeeting";
+  import ViewSelectorPopup, { MeetVideoView as View } from "./ViewSelectorPopup.svelte";
+  import Popup from "../Shared/Popup.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import HandIcon from '../asset/icon/meet/hand.svg?raw';
   import HandDownIcon from "lucide-svelte/icons/grab";
@@ -110,8 +126,12 @@
   import OpenSidebarIcon from "lucide-svelte/icons/users-round";
   import OpenToLeftIcon from "lucide-svelte/icons/arrow-left-from-line";
   import CloseSidebarIcon from "lucide-svelte/icons/arrow-right-from-line";
+  import ViewGallery2x2Icon from "lucide-svelte/icons/grid-2x2";
+  import ViewThumbnailsRightIcon from "lucide-svelte/icons/panel-right";
+  import ViewSpeakerOnlyIcon from "lucide-svelte/icons/square-user-round";
   import AddIcon from "lucide-svelte/icons/plus";
   import RemoveIcon from "lucide-svelte/icons/minus";
+  import { getLocalStorage } from "../Util/LocalStorage";
   import { t } from "../../l10n/l10n";
 
   export let meeting: VideoConfMeeting;
@@ -146,6 +166,24 @@
   async function toggleScreenShare() {
     me.screenSharing = !me.screenSharing;
     await stream.setScreenShare(me.screenSharing);
+  }
+
+  let showViewSelector = false;
+  let popupAnchor: HTMLElement;
+  let viewSetting = getLocalStorage("meet.videoView", View.GalleryAutoView);
+  $: selectedView = $viewSetting.value;
+  $: viewSelectorIcon =
+    selectedView == View.SpeakerOnly ? ViewSpeakerOnlyIcon :
+    selectedView == View.Thumbnails ? ViewThumbnailsRightIcon :
+    selectedView == View.Gallery3x3View ||
+    selectedView == View.Gallery4x4View ||
+    selectedView == View.Gallery5x5View ? ViewGallery2x2Icon :
+    ViewGallery2x2Icon;
+  $: console.log("show view selector", showViewSelector);
+
+  function onShowViewSelector(event: Event) {
+    event.stopPropagation();
+    showViewSelector = !showViewSelector;
   }
 </script>
 
@@ -184,9 +222,5 @@
     to {
       background-color: #A3E5DD;
     }
-  }
-  .actions :global(button.secondary:not(:hover)) {
-    background-color: transparent;
-    color: white;
   }
 </style>

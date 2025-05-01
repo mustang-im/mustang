@@ -14,7 +14,7 @@
   import { onDestroy } from 'svelte';
 
   /** in/out */
-  export let popupOpen = false;
+  export let popupOpen: boolean;
   /** Under/above which element the popup window should appear.
    * The popup will not cover this element, but be just above/below it.
    * in */
