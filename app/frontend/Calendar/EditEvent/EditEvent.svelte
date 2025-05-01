@@ -103,6 +103,7 @@
   let repeatBox: RepeatBox;
 
   function expandRepeat(): void {
+    // `showRepeat = true` set by `<ExpanderButton>` click handler
   }
 
   const kDefaultReminderMins = 5;

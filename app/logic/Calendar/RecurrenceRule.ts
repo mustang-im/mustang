@@ -190,7 +190,13 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     let allWeekdays = [0, 1, 2, 3, 4, 5, 6];
     let thisWeekdays = this.weekdays || allWeekdays;
     let ruleWeekdays = rule.weekdays || allWeekdays;
-    return rule.startDate.getTime() == this.startDate.getTime() && rule.frequency == this.frequency && rule.interval == this.interval && rule.week == this.week && rule.first == this.first && allWeekdays.every(weekday => ruleWeekdays.includes(weekday) == thisWeekdays.includes(weekday));
+    return rule.startDate.getTime() == this.startDate.getTime() &&
+      rule.frequency == this.frequency &&
+      rule.interval == this.interval &&
+      rule.week == this.week &&
+      rule.first == this.first &&
+      allWeekdays.every(weekday =>
+        ruleWeekdays.includes(weekday) == thisWeekdays.includes(weekday));
   }
 
   getOccurrencesByDate(endDate: Date, startDate: Date = this.startDate): Date[] {
