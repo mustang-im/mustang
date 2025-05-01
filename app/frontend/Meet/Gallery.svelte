@@ -11,13 +11,13 @@
 </Scroll>
 
 <script lang="ts">
-  import { SelfVideo, videoStreamClassName, type VideoStream } from "../../logic/Meet/VideoStream";
+  import { SelfVideo, type VideoStream } from "../../logic/Meet/VideoStream";
   import type { Collection } from "svelte-collections";
   import ParticipatingVideo from "./Video/ParticipatingVideo.svelte";
   import Scroll from "../Shared/Scroll.svelte";
 
   export let videos: Collection<VideoStream>;
-  export let showSelf;
+  export let showSelf: boolean;
 
   let width: number;
 
@@ -28,8 +28,7 @@
     }
     const min = 256; /** minimum width per video */
     let columnCount = 1;
-    if (count <= 2 && $videos.find(video => video instanceof SelfVideo) ||
-        width < min * 2) {
+    if (count < 2 && showSelf || width < min * 2) {
       columnCount = 1;
     } else if (count <= 4 || width < min * 3) {
       columnCount = 2;
