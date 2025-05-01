@@ -1,6 +1,6 @@
 import type { Calendar } from "./Calendar";
 import { Participant } from "./Participant";
-import type { RecurrenceRule } from "./RecurrenceRule";
+import { RecurrenceRule } from "./RecurrenceRule";
 import OutgoingInvitation from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
@@ -166,16 +166,29 @@ export class Event extends Observable {
   }
 
   /** Create a new instance of the same event.
-   * Copy all data of the `original` event into this new Event object */
+   * Copy all data of the `original` event into this new Event object.
+   * Not sure why anyone would need this; editing code can use
+   * copyEditableFieldsFrom and recurring events need extra care. */
   copyFrom(original: Event) {
-    this.copyFromRecurrenceMaster(original);
-    this.startTime = original.startTime ? new Date(original.startTime) : null;
-    this.endTime = original.endTime ? new Date(original.endTime) : null;
-    this.alarm = original.alarm ? new Date(original.alarm) : null;
+    this.copyEditableFieldsFrom(original);
     this.recurrenceStartTime = original.recurrenceStartTime ? new Date(original.recurrenceStartTime) : null;
     this.recurrenceCase = original.recurrenceCase;
     this.recurrenceRule = original.recurrenceRule;
     this.parentEvent = original.parentEvent;
+  }
+
+  /**
+   * Copy editable data between events. Can be used to make temporary copies
+   * to see how they have been changed by editing, or in case you actually
+   * end up wanting to change a different event, e.g. by applying changes
+   * to the rest of the series. Does not copy recurrence data; use
+   * `confirmAndChangeRecurrenceRule` to update edited recurrence data.
+   */
+  copyEditableFieldsFrom(original: Event) {
+    this.copyFromRecurrenceMaster(original);
+    this.startTime = original.startTime ? new Date(original.startTime) : null;
+    this.endTime = original.endTime ? new Date(original.endTime) : null;
+    this.alarm = original.alarm ? new Date(original.alarm) : null;
   }
 
   /**
@@ -278,6 +291,33 @@ export class Event extends Observable {
   }
 
   /**
+   * Calculates the position of this instance in a recurring series.
+   * "none" - event isn't an instance or exception
+   * "only" - event is the only instance or exception remaining
+   * "first" - event is the earliest instance or exception remaining
+   * "last" - event is the last instance, but there may be more exceptions
+   * "middle" - event is an instance, but none of the above apply
+   * In particular:
+   * "only" - don't delete the event, delete the master instead
+   * "first" - offer to edit the whole series
+   * "middle" - offer to edit the remainder of the series
+   */
+  get seriesStatus(): "none" | "only" | "first" | "last" | "middle" {
+    // Normally the parent of an instance would always have a
+    // recurrence rule, but this might get removed during saving,
+    // and would cause Svelte to crash if we didn't handle it.
+    let rule = this.parentEvent?.recurrenceRule;
+    if (!rule) {
+      return "none";
+    }
+    let pos = this.parentEvent.instances.indexOf(this);
+    let slice = this.parentEvent.instances.contents.slice(pos + 1);
+    let isFirst = this.parentEvent.instances.getIndexRange(0, pos).every(instance => instance === null);
+    let isLast = (rule.count != Infinity || rule.endDate) && slice.every(instance => instance === null || instance?.dbID) && !rule.getOccurrenceByIndex(this.parentEvent.instances.length + 1);
+    return isLast ? isFirst && slice.every(instance => instance === null) ? "only" : "last" : isFirst ? "first" : "middle";
+  }
+
+  /**
    * Deletes the event locally from the database.
    */
   async deleteIt() {
@@ -309,6 +349,24 @@ export class Event extends Observable {
         if (participant.response == InvitationResponse.Organizer) {
           await this.respondToInvitation(InvitationResponse.Decline);
         }
+      }
+    }
+  }
+
+  /** Delete multiple instances */
+  async makeExclusions(indices: number[]) {
+    let exclusions = [];
+    for (let index of indices) {
+      let previous = this.instances.get(index);
+      this.instances.set(index, null);
+      if (previous) {
+        exclusions.push(previous);
+      }
+    }
+    this.calendar.events.removeAll(exclusions);
+    for (let exclusion of exclusions) {
+      if (!exclusion.isNew()) {
+        await this.calendar.storage.deleteEvent(exclusion);
       }
     }
   }
@@ -418,6 +476,35 @@ export class Event extends Observable {
     if (previous.dbID) {
       this.calendar.storage.deleteEvent(previous).catch(this.calendar.errorCallback);
     }
+  }
+
+  /**
+   * Deletes the event and any subsequent instances that are not exceptions.
+   */
+  async truncateRecurrence() {
+    let master = this.parentEvent;
+    let pos = master.instances.indexOf(this);
+    let count = master.instances.contents.slice(pos + 1).findLastIndex(event => event?.dbID) + pos + 1;
+    this.calendar.events.removeAll(master.instances.splice(count).contents.filter(Boolean));
+    if (master.recurrenceRule.getOccurrenceByIndex(count + 1)) {
+      let { startDate, frequency, interval, weekdays, week, first } = master.recurrenceRule;
+      master.recurrenceRule = new RecurrenceRule({ startDate, count, frequency, interval, weekdays, week, first });
+      await master.saveToServer();
+    }
+    let exclusions = [];
+    for (let i = pos; i < count; i++) {
+      let instance = master.instances.get(i);
+      // Always delete this event, unless it got truncated above
+      if (instance == this || instance === undefined || instance?.isNew) {
+        exclusions.push(i);
+      }
+    }
+    if (exclusions.length) {
+      await master.makeExclusions(exclusions);
+    } else if (!this.isNew) {
+      await this.calendar.storage.deleteEvent(this);
+    }
+    await master.save();
   }
 }
 

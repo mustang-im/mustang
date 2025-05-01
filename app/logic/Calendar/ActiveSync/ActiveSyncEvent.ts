@@ -80,12 +80,12 @@ export class ActiveSyncEvent extends Event {
     let frequency = kRecurrenceTypes[wbxmljs.Type];
     let interval = sanitize.integer(wbxmljs.Interval, 1);
     let weekdays = extractWeekdays(wbxmljs.DayOfWeek);
-    let week = sanitize.integer(wbxmljs.DayOfWeek, 0);
+    let week = sanitize.integer(wbxmljs.WeekOfMonth, 0);
     let first = sanitize.integer(wbxmljs.FirstDayOfWeek, Weekday.Monday);
     return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
   }
 
-  toFields(exception?: any) {
+  toFields(exceptions: { Exception: any } | { Exception: any }[] = []) {
     return {
       ExceptionStartTime: toCompact(this.recurrenceStartTime) || [],
       Timezone: this.recurrenceStartTime ? [] : getTimeZoneActiveSync(this.timezone),
@@ -111,7 +111,7 @@ export class ActiveSyncEvent extends Event {
       } : [],
       Subject: this.title,
       Body: this.descriptionHTML ? { Type: "2", Data: this.descriptionHTML } : { Type: "1", Data: [this.descriptionText || ""] },
-      Exceptions: exception ? { Exception: exception } : [],
+      Exceptions: exceptions,
     };
   }
 
@@ -122,7 +122,7 @@ export class ActiveSyncEvent extends Event {
   async saveToServer(): Promise<void> {
     // Not supporting tasks for now.
     if (this.parentEvent) {
-      this.parentEvent.saveFields(this.parentEvent.toFields(this.toFields()));
+      this.parentEvent.saveFields(this.parentEvent.toFields({ Exception: this.toFields() }));
     } else {
       await this.saveFields(this.toFields());
       if (!this.calUID) {
@@ -169,8 +169,10 @@ export class ActiveSyncEvent extends Event {
   async deleteFromServer(): Promise<void> {
     if (this.parentEvent) {
       await this.parentEvent.saveFields(this.parentEvent.toFields({
-        Deleted: "1",
-        ExceptionStartTime: toCompact(this.recurrenceStartTime),
+        Exception: {
+          Deleted: "1",
+          ExceptionStartTime: toCompact(this.recurrenceStartTime),
+        }
       }));
     } else {
       let data = {
@@ -188,6 +190,15 @@ export class ActiveSyncEvent extends Event {
       }
     }
     await super.deleteFromServer();
+  }
+
+  async makeExclusions(indices: number[]) {
+    await this.saveFields(this.toFields(indices.map(index => ({
+      Exception: {
+        Deleted: "1",
+        ExceptionStartTime: toCompact(this.recurrenceRule.getOccurrenceByIndex(index + 1) as Date),
+      },
+    }))));
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {

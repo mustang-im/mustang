@@ -182,6 +182,23 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     return 'RRULE:' + Object.entries(rule).map(entry => entry.join("=")).join(";");
   }
 
+  /**
+   * Checks whether this rule will invalidate existing occurrences.
+   * We don't check the series length though, as the UI never sets one.
+   */
+  isCompatible(rule: RecurrenceRule) {
+    let allWeekdays = [0, 1, 2, 3, 4, 5, 6];
+    let thisWeekdays = this.weekdays || allWeekdays;
+    let ruleWeekdays = rule.weekdays || allWeekdays;
+    return rule.startDate.getTime() == this.startDate.getTime() &&
+      rule.frequency == this.frequency &&
+      rule.interval == this.interval &&
+      rule.week == this.week &&
+      rule.first == this.first &&
+      allWeekdays.every(weekday =>
+        ruleWeekdays.includes(weekday) == thisWeekdays.includes(weekday));
+  }
+
   getOccurrencesByDate(endDate: Date, startDate: Date = this.startDate): Date[] {
     if (this.endDate && this.endDate < endDate) {
       endDate = this.endDate;

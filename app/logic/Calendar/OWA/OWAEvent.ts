@@ -13,7 +13,7 @@ import OWAUpdateOffice365OccurrenceRequest from "./Request/OWAUpdateOffice365Occ
 import OWACreateItemRequest from "../../Mail/OWA/Request/OWACreateItemRequest";
 import OWADeleteItemRequest from "../../Mail/OWA/Request/OWADeleteItemRequest";
 import OWAUpdateItemRequest from "../../Mail/OWA/Request/OWAUpdateItemRequest";
-import { owaCreateExclusionRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest } from "./Request/OWAEventRequests";
+import { owaCreateExclusionRequest, owaCreateMultipleExclusionsRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest } from "./Request/OWAEventRequests";
 import type { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, NotReached } from "../../util/util";
@@ -324,6 +324,11 @@ export class OWAEvent extends Event {
     } else if (this.parentEvent) {
       await this.calendar.account.callOWA(owaCreateExclusionRequest(this, this.parentEvent));
     }
+  }
+
+  async makeExclusions(indices: number[]) {
+    await this.calendar.account.callOWA(owaCreateMultipleExclusionsRequest(indices, this));
+    await super.makeExclusions(indices);
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {

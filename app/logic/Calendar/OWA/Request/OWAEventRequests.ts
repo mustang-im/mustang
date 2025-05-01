@@ -166,13 +166,17 @@ export function owaGetEventUIDsRequest(eventIDs: string[]): OWARequest {
 }
 
 export function owaCreateExclusionRequest(excludeEvent: OWAEvent, parentEvent: OWAEvent): OWARequest {
+  return owaCreateMultipleExclusionsRequest([parentEvent.instances.indexOf(excludeEvent)], parentEvent);
+}
+
+export function owaCreateMultipleExclusionsRequest(indices: number[], parentEvent: OWAEvent): OWARequest {
   return new OWARequest("DeleteItem", {
     __type: "DeleteItemRequest:#Exchange",
-    ItemIds: [{
+    ItemIds: indices.map(index => ({
       __type: "OccurrenceItemId:#Exchange",
       RecurringMasterId: parentEvent.itemID,
-      InstanceIndex: parentEvent.instances.indexOf(excludeEvent) + 1,
-    }],
+      InstanceIndex: index + 1,
+    })),
     DeleteType: "MoveToDeletedItems",
     SendMeetingCancellations: "SendToAllAndSaveCopy",
   });
