@@ -1,4 +1,4 @@
-{#if meetGalleryViews.includes(selectedView)}
+{#if meetGalleryViews.includes(selectedView) || isSidebar}
   <Gallery {videos} view={selectedView} {showSelf} />
 {:else if selectedView == MeetVideoView.Thumbnails}
   <Thumbnails {videos} {showParticipant} {me} {showSelf} />
@@ -19,6 +19,7 @@
   export let videos: Collection<VideoStream>;
   export let me: MeetingParticipant;
   export let showParticipant: MeetingParticipant;
+  export let isSidebar = false;
 
   let viewSetting = getLocalStorage("meet.videoView", MeetVideoView.GalleryAutoView);
   $: selectedView = $viewSetting.value;

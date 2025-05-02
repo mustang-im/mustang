@@ -1,6 +1,6 @@
 <hbox flex>
   <vbox flex class="main">
-    <VideoView {videos} {me} showParticipant={selectedParticipant} />
+    <VideoView {videos} {me} showParticipant={selectedParticipant} {isSidebar} />
     <AudioPlayStreams {audioOnlyStreams} />
     <InMeetingToolbar {meeting} {isSidebar} bind:showSidebar />
   </vbox>
