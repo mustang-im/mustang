@@ -36,7 +36,7 @@
             <RoundButton
              label={$t`Delete remainder of series`}
              icon={DeleteIcon}
-             onClick={onDeleteForward}
+             onClick={onDeleteRemainder}
              classes="plain delete"
              border={false}
              iconSize="16px"
@@ -81,7 +81,7 @@
             <RoundButton
              label={$t`Change remainder of series`}
              icon={SaveIcon}
-             onClick={onChangeForward}
+             onClick={onChangeRemainder}
              classes="plain save-or-close"
              filled={true}
              iconSize="16px"
@@ -217,7 +217,7 @@
     onClose();
   }
 
-  async function onChangeForward() {
+  async function onChangeRemainder() {
     let master = event.calendar.newEvent();
     master.copyEditableFieldsFrom(event);
     master.calUID = null;
@@ -251,7 +251,7 @@
     onClose();
   }
 
-  async function onDeleteForward() {
+  async function onDeleteRemainder() {
     await event.truncateRecurrence();
     onClose();
   }
