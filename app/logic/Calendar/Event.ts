@@ -355,7 +355,7 @@ export class Event extends Observable {
 
   /** Delete multiple instances */
   async makeExclusions(indices: number[]) {
-    let exclusions = [];
+    let exclusions: Event[] = [];
     for (let index of indices) {
       let previous = this.instances.get(index);
       this.instances.set(index, null);
@@ -365,7 +365,7 @@ export class Event extends Observable {
     }
     this.calendar.events.removeAll(exclusions);
     for (let exclusion of exclusions) {
-      if (!exclusion.isNew()) {
+      if (!exclusion.isNew) {
         await this.calendar.storage.deleteEvent(exclusion);
       }
     }
