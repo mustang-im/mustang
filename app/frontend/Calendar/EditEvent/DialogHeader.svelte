@@ -189,6 +189,10 @@
   }
 
   async function onSave() {
+    await saveEvent(event);
+  }
+
+  async function saveEvent(event) {
     // Turning a single event into a series.
     // (The reverse is done in `onChangeAll`.)
     if (repeatBox) {
@@ -221,11 +225,7 @@
     let master = event.calendar.newEvent();
     master.copyEditableFieldsFrom(event);
     master.calUID = null;
-    master.recurrenceRule = repeatBox.newRecurrenceRule();
-    master.recurrenceCase = RecurrenceCase.Master;
-    master.fillRecurrences(new Date(Date.now() + 1e11));
-    await master.saveToServer();
-    await master.save();
+    await saveEvent(master);
     await event.truncateRecurrence();
     onClose();
   }
