@@ -28,11 +28,23 @@
   export let isSidebar = false;
 
   let selectedParticipant: MeetingParticipant = null;
-  let showSidebar = meeting.participants.length == 0;
   $: me = meeting.myParticipant;
   $: allStreams = meeting.videos;
   $: videos = $allStreams.filter(video => video.hasVideo);
   $: audioOnlyStreams = $allStreams.filter(video => !video.hasVideo);
+
+  // Show sidebar only when there are no participants, and
+  // close it when the first person joins
+  let showSidebar = meeting.participants.length == 0;
+  $: participants = meeting.participants;
+  let previousParticipantCount = 0;
+  $: participantsCountChanged($participants.contents.filter(p => p.joined).length);
+  function participantsCountChanged(newCount: number) {
+    if (previousParticipantCount == 0 && newCount > 0) {
+      showSidebar = false;
+    }
+    previousParticipantCount = newCount;
+  }
 </script>
 
 <style>
