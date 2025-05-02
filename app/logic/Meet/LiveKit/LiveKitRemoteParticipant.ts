@@ -73,6 +73,9 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
       }
       video = this.video;
     }
+    if (track.kind == Track.Kind.Video) {
+      video.hasVideo = true;
+    }
 
     video.stream.addTrack(track.mediaStreamTrack);
   }
@@ -86,7 +89,9 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
 
     video.stream.removeTrack(track.mediaStreamTrack);
 
-    if (!video.stream.getTracks().length) {
+    let remainingTracks = video.stream.getTracks();
+    video.hasVideo = remainingTracks.some(t => t.kind == "video");
+    if (!remainingTracks.length) {
       this.conf.videos.remove(video);
       if (isScreen) {
         this.screenShare = null;

@@ -4,6 +4,8 @@ import type { MeetingParticipant } from "./Participant";
 /** One incoming or outgoing video in a video conference */
 export class VideoStream {
   readonly stream: MediaStream;
+  hasVideo = false;
+
   constructor(stream: MediaStream) {
     this.stream = stream;
   }

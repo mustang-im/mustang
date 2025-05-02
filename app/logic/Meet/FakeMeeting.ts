@@ -40,7 +40,7 @@ export class FakeMeeting extends VideoConfMeeting {
     this.myParticipant.role = ParticipantRole.Moderator;
     this.state = MeetingState.Ongoing;
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 8; i++) {
       await this.addParticipant();
     }
     this.setSpeakerRandomly();
@@ -63,7 +63,9 @@ export class FakeMeeting extends VideoConfMeeting {
     */
     let stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
     this.participants.add(p);
-    this.videos.add(new ParticipantVideo(stream, p));
+    let video = new ParticipantVideo(stream, p);
+    video.hasVideo = Math.random() > 0.2;
+    this.videos.add(video);
   }
 
   async removeParticipant(participant?: MeetingParticipant) {
@@ -75,9 +77,9 @@ export class FakeMeeting extends VideoConfMeeting {
   setSpeakerRandomly() {
     let speaker = this.participants.contents[Math.floor(Math.random() * this.participants.length)];
     speaker.isSpeaking = true;
-    let nextTime = Math.random() * 10 * 1000;
+    let nextTime = Math.random() * 5 * 1000;
     setTimeout(() => this.setSpeakerRandomly(), nextTime);
-    setTimeout(() => speaker.isSpeaking = false, nextTime + Math.random() * 2 * 1000 - 1000);
+    setTimeout(() => speaker.isSpeaking = false, nextTime + Math.random() * 3 * 1000 - 500);
   }
 
   readonly canHandUp = true;
