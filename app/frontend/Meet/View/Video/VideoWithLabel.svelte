@@ -1,21 +1,15 @@
-<vbox flex class="participant {classes}">
-  <!-- <Stack> size not working
-  <Stack>
-    <vbox class="video" title={label}>
-      <Video {video} />
-    </vbox>
-    <vbox flex class="name-container">
-      <hbox class="name">{label}</hbox>
-    </vbox>
-  </Stack>
-  -->
-  <vbox class="video" title={label}>
-    <Video {video} />
-  </vbox>
+<vbox class="participant video {classes}" title={label}>
+  <Video {video} />
+  {#if video instanceof ParticipantVideo}
+    <hbox class="participant-name">
+      <ParticipantItem participant={video.participant} style="video" />
+    </hbox>
+  {/if}
 </vbox>
 
 <script lang="ts">
-  import type { VideoStream } from "../../../../logic/Meet/VideoStream";
+  import { VideoStream, ParticipantVideo } from "../../../../logic/Meet/VideoStream";
+  import ParticipantItem from "../../ParticipantsList/ParticipantItem.svelte";
   import Video from "./Video.svelte";
 
   export let video: VideoStream;
@@ -24,18 +18,12 @@
 </script>
 
 <style>
-  .name-container {
-    align-items: end;
-    justify-content: end;
-    align-self: end;
-    justify-items: end;
+  .participant {
+    position: relative;
   }
-  .name {
-    color: white;
-    text-shadow: 1px;
-    align-items: end;
-    justify-content: end;
-    align-self: end;
-    justify-items: end;
+  .participant-name {
+    position: absolute;
+    bottom: 0;
+    left: 0;
   }
 </style>

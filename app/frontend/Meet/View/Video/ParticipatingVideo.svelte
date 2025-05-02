@@ -1,9 +1,7 @@
 {#if video instanceof ParticipantVideo}
-  <vbox class:speaking={$participant?.isSpeaking}>
-    <VideoWithLabel {video}
-      label={$participant?.name}
-      classes="participant" />
-  </vbox>
+  <VideoWithLabel {video}
+    label={$participant?.name}
+    classes="participant" />
 {:else if video instanceof SelfVideo && showSelf}
   <VideoWithLabel {video}
     label={$t`You`}
@@ -24,9 +22,3 @@
 
   $: participant = (video as ParticipantVideo | ScreenShare)?.participant;
 </script>
-
-<style>
-  .speaking {
-    outline: 2px solid var(--selected-bg);
-  }
-</style>

@@ -1,6 +1,6 @@
 <hbox class="participants">
   {#each $participants.each as participant (participant.id)}
-    <ParticipantItem participant={participant} />
+    <ParticipantItem participant={participant} style="list" />
   {/each}
 </hbox>
 

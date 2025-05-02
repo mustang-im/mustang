@@ -1,19 +1,20 @@
-<hbox class="participant" class:speaking={$participant.isSpeaking}>
+<hbox class="participant {style}" class:speaking={$participant.isSpeaking}>
   <hbox class="name">
     {participant?.name?.substring(0, 50) ?? ""}
   </hbox>
   {#if $participant.handUp}
     <Button plain
-      classes={"hand-up"}
+      classes="hand-up"
       label={$t`Hand up`}
       icon={HandIcon}
       iconOnly />
   {/if}
   <Button plain
-    classes="toggle-mic"
+    classes="mic"
     label={$t`Mute`}
     onClick={() => toggleMic(participant)}
     icon={$participant.micOn ? MicrophoneIcon : MicrophoneOffIcon}
+    iconSize="14px"
     disabled={!userIsModerator}
     iconOnly />
 </hbox>
@@ -28,6 +29,9 @@
   import { t } from "../../../l10n/l10n";
 
   export let participant: MeetingParticipant;
+  /** "video" = overlay over the video, bottom left
+   * "list" = Part of ParticipantsList, e.g. the non-video participants at the bottom */
+  export let style: "video" | "list";
   export let userIsModerator = false;
 
   function toggleMic(participant: MeetingParticipant) {
@@ -38,25 +42,41 @@
 
 <style>
   .participant {
-    max-height: 32px;
+    max-height: 24px;
+  }
+  .video {
+    background-color: #00000035;
+    color: white;
+    padding: 0px 0px 0px 6px;
+    border-top-right-radius: 3px;
+  }
+  .video :global(button.plain) {
+    color: #FFFFFF70;
+    max-width: 22px;
+    margin-inline-start: 1px;
+  }
+  .list {
     max-width: 200px;
     background-color: #00000020;
     color: white;
     padding: 0px 2px 0px 8px;
     border-radius: 3px;
   }
+  .list :global(button.plain) {
+    color: #A0A0A0;
+  }
   .name {
     overflow: hidden;
     text-overflow: ellipsis;
+    margin: -2px 0px;
   }
   .participant :global(button.plain) {
-    color: #A0A0A0;
     border-radius: 0px;
   }
   .participant.speaking :global(button.plain) {
     color: white;
   }
-  .speaking :global(.toggle-mic svg path:first-of-type) {
+  .speaking :global(.mic svg path:first-of-type) {
     fill: white;
   }
   .participant :global(button.disabled) {
