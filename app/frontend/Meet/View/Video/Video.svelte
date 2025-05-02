@@ -41,6 +41,7 @@
   img,
   video {
     object-fit: cover;
+    transition: width 200ms ease, height 200ms ease;
   }
   video.screen {
     object-fit: contain;
