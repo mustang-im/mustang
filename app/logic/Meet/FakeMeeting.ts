@@ -6,6 +6,7 @@ import { LocalMediaDeviceStreams } from "./LocalMediaDeviceStreams";
 import { PersonUID } from "../Abstract/PersonUID";
 import { assert } from "../util/util";
 import { getUILocale } from "../../l10n/l10n";
+import { faker } from '@faker-js/faker';
 
 export class FakeMeeting extends VideoConfMeeting {
 
@@ -49,7 +50,7 @@ export class FakeMeeting extends VideoConfMeeting {
   async addParticipant(person?: PersonUID) {
     let p = new MeetingParticipant();
     p.id = crypto.randomUUID();
-    p.name = person?.name ?? "User " + p.id.substring(0, 3);
+    p.name = person?.name ?? faker.person.fullName();
     p.role = ParticipantRole.User;
     p.cameraOn = true;
     p.micOn = true;
