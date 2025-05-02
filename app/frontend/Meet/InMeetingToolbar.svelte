@@ -8,17 +8,18 @@
       iconSize="16px"
       border={false}
       />
-      <hbox flex />
+    <hbox flex />
+  {:else}
+    <RoundButton
+      label={$t`Screen share`}
+      classes="screen-share large"
+      selected={$me?.screenSharing}
+      onClick={toggleScreenShare}
+      icon={$me?.screenSharing ? ScreenShareIcon : ScreenShareOffIcon}
+      iconSize="24px"
+      border={false}
+      />
   {/if}
-  <RoundButton
-    label={$t`Screen share`}
-    classes="screen-share large"
-    selected={$me?.screenSharing}
-    onClick={toggleScreenShare}
-    icon={$me?.screenSharing ? ScreenShareIcon : ScreenShareOffIcon}
-    iconSize="24px"
-    border={false}
-    />
   <RoundButton
     label={$t`Camera`}
     classes="camera large"
@@ -37,12 +38,12 @@
     iconSize="24px"
     border={false}
     />
-  <hbox class="participants" flex>
-    <Scroll>
-      <ParticipantsList participants={participantsWithoutVideo} />
-    </Scroll>
-  </hbox>
   {#if !isSidebar}
+    <hbox class="participants" flex>
+      <Scroll>
+        <ParticipantsList participants={participantsWithoutVideo} />
+      </Scroll>
+    </hbox>
     <RoundButton
       label={$t`Leave`}
       classes="leave large"
@@ -51,47 +52,45 @@
       iconSize="24px"
       border={false}
       />
-  {/if}
-  {#if meeting.canHandUp}
+    {#if meeting.canHandUp}
+      <RoundButton
+        label={$me?.handUp ? $t`Hand raised` : $t`Raise hand`}
+        classes="hand large"
+        selected={$me?.handUp}
+        onClick={toggleHand}
+        icon={$me?.handUp ? HandIcon : HandDownIcon}
+        iconSize="24px"
+        border={false}
+        />
+    {/if}
+    {#if meeting instanceof FakeMeeting}
+      <RoundButton
+        label={$t`Add participant`}
+        classes="large"
+        onClick={() => meeting.addParticipant()}
+        icon={AddIcon}
+        iconSize="24px"
+        border={false}
+        />
+      <RoundButton
+        label={$t`Add participant`}
+        classes="large"
+        onClick={() => meeting.removeParticipant()}
+        icon={RemoveIcon}
+        iconSize="24px"
+        border={false}
+        />
+    {/if}
     <RoundButton
-      label={$me?.handUp ? $t`Hand raised` : $t`Raise hand`}
-      classes="hand large"
-      selected={$me?.handUp}
-      onClick={toggleHand}
-      icon={$me?.handUp ? HandIcon : HandDownIcon}
+      label={`Change view of participant videos`}
+      classes="view-selector large"
+      onClick={onShowViewSelector}
+      selected={showViewSelector}
+      icon={viewSelectorIcon}
       iconSize="24px"
       border={false}
       />
-  {/if}
-  {#if meeting instanceof FakeMeeting}
-    <RoundButton
-      label={$t`Add participant`}
-      classes="large"
-      onClick={() => meeting.addParticipant()}
-      icon={AddIcon}
-      iconSize="24px"
-      border={false}
-      />
-    <RoundButton
-      label={$t`Add participant`}
-      classes="large"
-      onClick={() => meeting.removeParticipant()}
-      icon={RemoveIcon}
-      iconSize="24px"
-      border={false}
-      />
-  {/if}
-  <RoundButton
-    label={`Change view of participant videos`}
-    classes="view-selector large"
-    onClick={onShowViewSelector}
-    selected={showViewSelector}
-    icon={viewSelectorIcon}
-    iconSize="24px"
-    border={false}
-    />
-  <hbox bind:this={popupAnchor} />
-  {#if !isSidebar}
+    <hbox bind:this={popupAnchor} />
     <RoundButton
       label={showSidebar ? $t`Close participants list` : $t`Open participants list`}
       classes="sidebar large"
