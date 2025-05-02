@@ -52,7 +52,7 @@ export class FakeMeeting extends VideoConfMeeting {
     p.id = crypto.randomUUID();
     p.name = person?.name ?? faker.person.fullName();
     p.role = ParticipantRole.User;
-    p.cameraOn = true;
+    p.cameraOn = Math.random() > 0.2;
     p.micOn = true;
 
     /*
@@ -65,7 +65,7 @@ export class FakeMeeting extends VideoConfMeeting {
     let stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
     this.participants.add(p);
     let video = new VideoStream(stream, p);
-    video.hasVideo = Math.random() > 0.2;
+    video.hasVideo = p.cameraOn;
     this.videos.add(video);
   }
 
