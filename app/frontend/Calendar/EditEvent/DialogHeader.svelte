@@ -88,7 +88,7 @@
              />
           {/if}
         {/if}
-        {#if canSave && !(event.parentEvent && repeatBox)}
+        {#if canSave && ($event.hasChanged() || repeatBox && !event.parentEvent)}
           <RoundButton
             label={$t`Revert`}
             icon={RevertIcon}
@@ -149,7 +149,7 @@
 
   $: event.startEditing(); // not `$event`
   $: canSave = event && $event.title && $event.startTime && $event.endTime &&
-      event.startTime.getTime() <= event.endTime.getTime() && (repeatBox || $event.hasChanged());
+      event.startTime.getTime() <= event.endTime.getTime();
   $: seriesStatus = event.seriesStatus;
 
   function confirmAndChangeRecurrenceRule(): boolean {
