@@ -92,11 +92,6 @@
       />
     <hbox bind:this={popupAnchor} />
     <hbox class="sidebar-button">
-      {#if !showSidebar}
-        <hbox class="participants-count font-small">
-          {$participants.contents.filter(p => p.joined).length}
-        </hbox>
-      {/if}
       <RoundButton
         label={showSidebar ? $t`Close participants list` : $t`Open participants list`}
         classes="sidebar large"
@@ -105,6 +100,11 @@
         iconSize="24px"
         border={false}
         />
+      {#if !showSidebar}
+        <hbox class="participants-count">
+          {$participants.contents.filter(p => p.joined).length}
+        </hbox>
+      {/if}
     </hbox>
   {/if}
 </hbox>
@@ -226,18 +226,13 @@
   .actions :global(.leave:hover) {
     background-color: #F34949;
   }
-  .sidebar-button {
-    position: relative;
-  }
   .participants-count {
-    position: absolute;
-    bottom: -6px;
-    left: 0px;
-    width: 100%;
-    justify-content: center;
+    align-items: center;
+    margin-inline-start: -6px;
+    min-width: 20px;
   }
   .sidebar-button:hover .participants-count {
-    display: none;
+    visibility: hidden;
   }
   .actions :global(.hand svg) {
     fill: none;
