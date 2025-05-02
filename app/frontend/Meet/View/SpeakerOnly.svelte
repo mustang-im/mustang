@@ -1,8 +1,8 @@
-<Scroll>
-  {#if video}
+  <Scroll>
+    {#if video}
     <ParticipatingVideo {video} showSelf={false} />
-  {/if}
-</Scroll>
+    {/if}
+  </Scroll>
 
 <script lang="ts">
   import { VideoStream } from "../../../logic/Meet/VideoStream";
@@ -26,7 +26,7 @@
       let v =
         videos.find(video => video.isScreenShare && video.participant == showParticipant) ??
         videos.find(video => video.participant == showParticipant);
-      if (v) {
+      if (v && v != video) {
         video = v;
         return;
       }
@@ -36,15 +36,18 @@
       // prefer screen share
       videos.find(video => video.isScreenShare && video.participant != me) ??
       // if somebody is speaking, show him
-      videos.find(video => video.participant.isSpeaking);
-    if (v) {
+      videos.find(video => video.participant?.isSpeaking);
+    if (v && v != video) {
       video = v;
       return;
     }
 
     // if we don't have any video, show the other participant, even if no audio from him
     if (!video || video.isMe) {
-      video = videos.find(video => !!video.participant && !video.isMe);
+      let v = videos.find(video => !!video.participant && !video.isMe);
+      if (v && v != video) {
+        video = v;
+      }
     }
     // if I'm the only one with a video, show self
     if (!video) {
