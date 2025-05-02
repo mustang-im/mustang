@@ -143,11 +143,21 @@
 
 # Meet
 ## UI
-* Open/close cam and mic
+* Close participants sidebar once first participant joins
+* Show self
+  * Remove VideoStream subclasses
+  * Show self in cam button
+* Gallery: Set video size first, before rendering
+* Gallery: Adapt video to available space
 * UI before joining conference
 
 ## Protocol
+* LiveKit
+  * Reconnect
+  * Server
+  * Login
 * M3 server
+  * Open/close cam and mic
   * Participant opening/closing cam is delayed
   * Mute/unmute without destroying stream
   * TURN server
