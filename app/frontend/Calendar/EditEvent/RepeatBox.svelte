@@ -81,13 +81,14 @@
   export let event: Event;
   export let showRepeat: boolean;
 
-  let frequency = event.recurrenceRule?.frequency || Frequency.Daily;
-  let interval = event.recurrenceRule?.interval || 1;
-  let count = Number.isFinite(event.recurrenceRule?.count) ? event.recurrenceRule.count : 1;
-  let weekdays = event.recurrenceRule?.weekdays || [event.startTime.getDay()];
-  let week = event.recurrenceRule?.week || 0;
-  let end = event.recurrenceRule?.endDate ? "date" : Number.isFinite(event.recurrenceRule?.count) ? "count" : "none";
-  let endDate = event.recurrenceRule?.endDate || event.startTime;
+  let master = event.parentEvent || event;
+  let frequency = master.recurrenceRule?.frequency || Frequency.Daily;
+  let interval = master.recurrenceRule?.interval || 1;
+  // end // let count = Number.isFinite(event.recurrenceRule?.count) ? event.recurrenceRule.count : 1;
+  let weekdays = master.recurrenceRule?.weekdays || [event.startTime.getDay()];
+  let week = master.recurrenceRule?.week || 0;
+  // end // let end = event.recurrenceRule?.endDate ? "date" : Number.isFinite(event.recurrenceRule?.count) ? "count" : "none";
+  // end // let endDate = master.recurrenceRule?.endDate || event.startTime;
   let minDate = event.startTime;
   let daily = "everyday";
   let dailyOptions: RadioOption[] = [
@@ -101,7 +102,7 @@
   $: $event.startTime, updateDateUI();
   function updateDateUI() {
     yearWeekOptions = [{ label: $t`On ${event.startTime.toLocaleDateString(getUILocale(), { day: "numeric", month: "long" })}`, value: 0 }];
-    monthWeekOptions = [{ label: $t`On ${event.startTime.toLocaleDateString(getUILocale(), { day: "numeric" })}. of every month`, value: 0 }];
+    monthWeekOptions = [{ label: $t`On day ${event.startTime.toLocaleDateString(getUILocale(), { day: "numeric" })} of every month`, value: 0 }];
 
     let weekday = event.startTime.toLocaleDateString(getUILocale(), { weekday: "long" });
     let weekno = Math.ceil(event.startTime.getDate() / 7);
@@ -120,18 +121,26 @@
       week = weekno;
     }
 
+    if (!weekdays.includes(event.startTime.getDay())) {
+      if (weekdays.length == 1) {
+        weekdays[0] = event.startTime.getDay();
+      } else {
+        weekdays.push(event.startTime.getDay());
+      }
+    }
     weekdayOptions = [1, 2, 3, 4, 5, 6, 7].map(day => new Date(2010, 2, day)).map(date => ({
       value: date.getDay(),
       disabled: date.getDay() == event.startTime.getDay(),
       label: date.toLocaleDateString(getUILocale(), { weekday: "narrow" }),
     }));
 
+    /* end
     if (endDate <= event.startTime) {
       endDate = new Date(event.startTime);
       endDate.setHours(23, 59, 59, 0);
     }
+    */
     minDate = event.startTime;
-    event.endTime.setFullYear(event.startTime.getFullYear(), event.startTime.getMonth(), event.startTime.getDate());
     event.notifyObservers();
   }
 
@@ -169,11 +178,13 @@
 
   export function newRecurrenceRule(): RecurrenceRule {
     let init: RecurrenceInit = { startDate: event.startTime, frequency, interval };
+    /* end
     if (end == "count") {
       init.count = count;
     } else if (end == "date") {
       init.endDate = endDate;
     }
+    */
     if (frequency == Frequency.Weekly) {
       init.weekdays = weekdays;
     } else if (frequency == Frequency.Monthly || frequency == Frequency.Yearly) {
