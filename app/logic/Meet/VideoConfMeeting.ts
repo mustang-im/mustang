@@ -4,7 +4,7 @@ import type { MeetingParticipant as Participant } from "./Participant";
 import type { MediaDeviceStreams } from "./MediaDeviceStreams";
 import type { Event } from "../Calendar/Event";
 import { appGlobal } from "../app";
-import { SetColl } from 'svelte-collections';
+import { SetColl, ArrayColl } from 'svelte-collections';
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { assert, type URLString, AbstractFunction, NotSupported } from "../util/util";
 import { gt } from "../../l10n/l10n";
@@ -24,6 +24,8 @@ export class VideoConfMeeting extends Observable {
   title: string;
   readonly participants = new SetColl<Participant>();
   readonly videos = new SetColl<VideoStream>();
+  /** People who were asked to join, but are not yet connected */
+  readonly invited = new ArrayColl<Participant>();
   /** myParticipant.role: If I'm a moderator, I can manage other users */
   @notifyChangedProperty
   myParticipant: Participant;

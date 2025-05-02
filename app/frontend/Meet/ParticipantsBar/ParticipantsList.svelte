@@ -4,28 +4,35 @@
     bind:selected
     showSearch={false}
     pictureSize={24}>
-    <ParticipantListItem
-      slot="top-right"
-      let:person participant={person instanceof MeetingParticipant ? person : null}
-      {userIsModerator}
-      />
+    <hbox slot="top-right" let:person>
+      {#if person instanceof MeetingParticipant}
+        {#if invited.includes(person)}
+          <InviteeListItem participant={person} {userIsModerator} />
+        {:else}
+          <ParticipantListItem participant={person} {userIsModerator} />
+        {/if}
+      {/if}
+    </hbox>
   </PersonsList>
 </vbox>
 
 <script lang="ts">
   import { MeetingParticipant } from "../../../logic/Meet/Participant";
   import ParticipantListItem from "./ParticipantListItem.svelte";
+  import InviteeListItem from "./InviteeListItem.svelte";
   import PersonsList from "../../Contacts/Person/PersonsList.svelte";
   import type { Collection } from "svelte-collections";
 
   export let participants: Collection<MeetingParticipant>;
+  export let invited: Collection<MeetingParticipant>;
   export let selected: MeetingParticipant;
   export let userIsModerator = false;
 
   $: participantsSorted = $participants
     .sortBy(person => person.role)
     .sortBy(person => person.handUp)
-    .sortBy(person => person.screenSharing);
+    .sortBy(person => person.screenSharing)
+    .concat(invited);
 </script>
 
 <style>

@@ -67,10 +67,8 @@
 
   async function addPerson(person: PersonUID) {
     let participant = new MeetingParticipant();
-    participant.joined = false;
     participant.name = person.name;
-    participants.add(participant);
-    selected = participant;
+    meeting.invited.add(participant);
 
     await invitePerson(person, meeting);
 
@@ -85,12 +83,9 @@
 
   $: $participants, removeJoinedParticipant()
   function removeJoinedParticipant() {
-    let all = $participants.contents;
-    let allJoined = all.filter(p => p.joined);
-    let allNotJoined = all.filter(p => !p.joined);
-    for (let notJoined of allNotJoined) {
-      if (allJoined.some(p => p.name == notJoined.name)) {
-        participants.remove(notJoined);
+    for (let invited of meeting.invited) {
+      if (participants.find(p => p.name == invited.name)) {
+        meeting.invited.remove(invited);
       }
     }
   }

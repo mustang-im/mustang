@@ -102,7 +102,7 @@
         />
       {#if !showSidebar}
         <hbox class="participants-count">
-          {$participants.contents.filter(p => p.joined).length}
+          {$participants.length}
         </hbox>
       {/if}
     </hbox>

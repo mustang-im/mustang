@@ -8,7 +8,7 @@
       <ShowSpeaker bind:selected />
     </hbox>
   </hbox>
-  <ParticipantsList {participants} bind:selected {userIsModerator} />
+  <ParticipantsList {participants} invited={meeting.invited} bind:selected {userIsModerator} />
   <ParticipantSearch {meeting} bind:selected />
 </vbox>
 

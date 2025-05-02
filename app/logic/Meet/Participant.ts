@@ -2,7 +2,7 @@ import { PersonUID } from "../Abstract/PersonUID";
 import { notifyChangedProperty } from "../util/Observable";
 
 export class MeetingParticipant extends PersonUID {
-  id: string;
+  id: string = crypto.randomUUID();
   @notifyChangedProperty
   role: ParticipantRole;
   @notifyChangedProperty
@@ -18,10 +18,6 @@ export class MeetingParticipant extends PersonUID {
   /** Signal to other participants that this participant wants to say something */
   @notifyChangedProperty
   handUp = false;
-  /** true for people who are currently in the meeting
-   * false for people who have been invited, but they are not in the meeting */
-  @notifyChangedProperty
-  joined = true;
 
   peerConnection: RTCPeerConnection;  // prevent garbage collection
   screenPeerConnection: RTCPeerConnection; // ditto

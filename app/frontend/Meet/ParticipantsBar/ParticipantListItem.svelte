@@ -1,54 +1,43 @@
 <hbox class="actions">
-  {#if participant instanceof MeetingParticipant}
-    {#if participant.joined}
-      {#if $participant.screenSharing}
-        <Button plain
-          classes="screen-sharing"
-          icon={ScreenSharingIcon}
-          disabled={true}
-          iconOnly />
-      {/if}
-      {#if $participant.handUp}
-        <Button plain
-          classes={$participant.handUp ? "hand-up" : "hand-down"}
-          label={$participant.handUp ? $t`Take hand down` : ""}
-          onClick={() => toggleHand(participant)}
-          icon={$participant.handUp ? HandIcon : HandDownIcon}
-          disabled={!userIsModerator}
-          iconOnly />
-      {/if}
-      <hbox class="more-actions" class:speaking={$participant.isSpeaking}>
-        <Button plain
-          classes="toggle-mic"
-          label={$t`Mute`}
-          onClick={() => toggleMic(participant)}
-          icon={$participant.micOn ? MicrophoneIcon : MicrophoneOffIcon}
-          disabled={!userIsModerator}
-          iconOnly />
-        <Button plain
-          classes="toggle-camera"
-          label={$t`Camera`}
-          onClick={() => toggleCamera(participant)}
-          icon={$participant.cameraOn ? CameraIcon : CameraOffIcon}
-          disabled={!userIsModerator}
-          iconOnly />
-        <ButtonMenu>
-          <MenuItem
-            onClick={() => startPrivateChat(participant)}
-            label={$t`Private chat`}
-            tooltip={$t`Start a chat with only this person`}
-            icon={ChatIcon} />
-        </ButtonMenu>
-      </hbox>
-    {:else}
-      <Button plain
-        classes="not-joined"
-        label={$t`Not in meeting`}
-        icon={UserIcon}
-        disabled={true}
-        iconOnly />
-    {/if}
+  {#if $participant.screenSharing}
+    <Button plain
+      classes="screen-sharing"
+      icon={ScreenSharingIcon}
+      disabled={true}
+      iconOnly />
   {/if}
+  {#if $participant.handUp}
+    <Button plain
+      classes={$participant.handUp ? "hand-up" : "hand-down"}
+      label={$participant.handUp ? $t`Take hand down` : ""}
+      onClick={() => toggleHand(participant)}
+      icon={$participant.handUp ? HandIcon : HandDownIcon}
+      disabled={!userIsModerator}
+      iconOnly />
+  {/if}
+  <hbox class="more-actions" class:speaking={$participant.isSpeaking}>
+    <Button plain
+      classes="toggle-mic"
+      label={$t`Mute`}
+      onClick={() => toggleMic(participant)}
+      icon={$participant.micOn ? MicrophoneIcon : MicrophoneOffIcon}
+      disabled={!userIsModerator}
+      iconOnly />
+    <Button plain
+      classes="toggle-camera"
+      label={$t`Camera`}
+      onClick={() => toggleCamera(participant)}
+      icon={$participant.cameraOn ? CameraIcon : CameraOffIcon}
+      disabled={!userIsModerator}
+      iconOnly />
+    <ButtonMenu>
+      <MenuItem
+        onClick={() => startPrivateChat(participant)}
+        label={$t`Private chat`}
+        tooltip={$t`Start a chat with only this person`}
+        icon={ChatIcon} />
+    </ButtonMenu>
+  </hbox>
 </hbox>
 
 <script lang="ts">
@@ -122,11 +111,6 @@
   }
   .actions :global(.svelteui-ActionIcon-root svg) {
     stroke-width: 1px;
-  }
-  .actions :global(.not-joined svg) {
-    stroke-opacity: 75%;
-    stroke-dasharray: 2;
-    stroke-width: 1.5px !important;
   }
   .speaking :global(.toggle-mic svg path:first-of-type) {
     fill: white;
