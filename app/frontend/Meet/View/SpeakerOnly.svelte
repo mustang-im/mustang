@@ -1,8 +1,10 @@
+<vbox bind:clientWidth={videoWidth} bind:clientHeight={videoHeight} flex>
   <Scroll>
     {#if video}
-    <ParticipatingVideo {video} showSelf={false} />
+      <ParticipatingVideo {video} showSelf={false} width={videoWidth - xMargin} height={videoHeight - yMargin} />
     {/if}
   </Scroll>
+</vbox>
 
 <script lang="ts">
   import { VideoStream } from "../../../logic/Meet/VideoStream";
@@ -16,6 +18,10 @@
   export let me: MeetingParticipant;
 
   let video: VideoStream;
+  let videoWidth: number;
+  let videoHeight: number;
+  const xMargin = 2;
+  const yMargin = 2;
 
   $: $videos, showParticipant, selectVideo();
   function selectVideo() {

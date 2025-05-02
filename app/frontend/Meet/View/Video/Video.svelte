@@ -1,6 +1,8 @@
 <!-- svelte-ignore a11y-media-has-caption -->
-{#if video.stream}
-  <video bind:this={videoEl} muted={video.isMe}
+{#if video.stream && width && height}
+  <video bind:this={videoEl}
+    muted={video.isMe}
+    {width} {height}
     class={videoStreamClassName(video)} />
 {:else if video.isMe}
   <img src={appGlobal.me.picture} alt={$t`me`} />
@@ -15,6 +17,8 @@
   import { t } from "../../../../l10n/l10n";
 
   export let video: VideoStream;
+  export let width: number;
+  export let height: number;
 
   let videoEl: HTMLVideoElement;
   $: videoEl && video.stream ? startVideo() : stopVideo();
@@ -37,10 +41,6 @@
   img,
   video {
     object-fit: cover;
-    max-width: 100%;
-    max-height: 100%;
-    width: 100%;
-    height: 100%;
   }
   video.screen {
     object-fit: contain;

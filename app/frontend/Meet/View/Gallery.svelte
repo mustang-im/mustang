@@ -1,14 +1,15 @@
-<Scroll>
-  <grid class="participants"
-    style="grid-template-columns: {columns}"
-    bind:clientWidth={width}
-    class:one-to-one={$videos.length <= 2}
-    >
-    {#each $videos.each as video (video.id)}
-      <ParticipatingVideo {video} {showSelf} />
-    {/each}
-  </grid>
-</Scroll>
+<vbox bind:clientWidth={gridWidth} bind:clientHeight={gridHeight} flex>
+  <Scroll>
+    <grid class="participants"
+      style="grid-template-columns: {gridColumns}"
+      class:one-to-one={$videos.length <= 1 || showSelf && $videos.length <= 2}
+      >
+      {#each $videos.each as video (video.id)}
+        <ParticipatingVideo {video} {showSelf} width={videoWidth} height={videoHeight} />
+      {/each}
+    </grid>
+  </Scroll>
+</vbox>
 
 <script lang="ts">
   import type { VideoStream } from "../../../logic/Meet/VideoStream";
@@ -21,10 +22,13 @@
   export let view: MeetVideoView;
   export let showSelf: boolean;
 
-  let width: number;
+  let gridWidth: number;
+  let gridHeight: number;
+  let videoWidth: number;
+  let videoHeight: number;
 
-  $: columns = calculateColumns($videos.length, width, view);
-  function calculateColumns(count: number, width: number, view: MeetVideoView) {
+  $: gridColumns = calculateColumns($videos.length, gridWidth, gridHeight, view);
+  function calculateColumns(count: number, width: number, height: number, view: MeetVideoView) {
     if (!width) {
       return "";
     }
@@ -46,6 +50,15 @@
     } else {
       columnCount = 5;
     }
+
+    const xMargin = 4;
+    const yMargin = 1;
+    videoWidth = Math.floor(width / columnCount) - xMargin;
+    let idealVideoHeight = videoWidth / 16 * 9;
+    let rows = Math.round(height / idealVideoHeight);
+    videoHeight = Math.floor(height / rows) - yMargin;
+    // console.log("gallery", "columns", columnCount, "rows", rows, "grid", width, "x", height, "video", videoWidth, "x", videoHeight, "ideal height", idealVideoHeight);
+
     return `repeat(${columnCount}, 1fr)`;
     //return `repeat(${columnCount}, ${Math.floor(100/columnCount)}%)`;
   }

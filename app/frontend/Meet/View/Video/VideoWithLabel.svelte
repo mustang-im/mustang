@@ -1,5 +1,5 @@
 <vbox class="participant video {classes}" title={label}>
-  <Video {video} />
+  <Video {video} {width} {height} />
   {#if video.participant}
     <hbox class="participant-name">
       <ParticipantItem participant={video.participant} style="video" />
@@ -15,6 +15,8 @@
   export let video: VideoStream;
   export let label: string;
   export let classes = "";
+  export let width: number;
+  export let height: number;
 </script>
 
 <style>

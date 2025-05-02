@@ -1,9 +1,9 @@
 <Splitter initialRightRatio={0.25} rightMinWidth={60}>
   <SpeakerOnly {videos} {showParticipant} {me} slot="left" />
   <Scroll slot="right">
-    <vbox class="participants">
+    <vbox class="participants" bind:clientWidth={videoWidth}>
       {#each $videos.each as video (video.id)}
-        <ParticipatingVideo {video} {showSelf} />
+        <ParticipatingVideo {video} {showSelf} width={videoWidth} height={videoHeight} />
       {/each}
     </vbox>
   </Scroll>
@@ -22,6 +22,9 @@
   export let showParticipant: MeetingParticipant;
   export let me: MeetingParticipant;
   export let showSelf: boolean;
+
+  let videoWidth: number;
+  $: videoHeight = videoWidth ? videoWidth / 16 * 9 : undefined;
 </script>
 
 <style>
