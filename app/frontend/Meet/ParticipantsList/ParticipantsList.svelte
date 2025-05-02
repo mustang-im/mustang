@@ -1,5 +1,5 @@
 <hbox class="participants" flex>
-  {#each $participants.each as participant (participant.id)}
+  {#each $participants.each as participant}
     <ParticipantItem participant={participant} style="list" />
   {/each}
 </hbox>
