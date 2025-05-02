@@ -115,7 +115,6 @@
 
 <script lang="ts">
   import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
-  import { ParticipantVideo } from "../../logic/Meet/VideoStream";
   import { meetMustangApp } from "./MeetMustangApp";
   import { selectedCamera, selectedMic } from "./Setup/selectedDevices";
   import { openApp } from "../AppsBar/selectedApp";
@@ -155,7 +154,7 @@
   $: participants = meeting.participants;
   $: participantsWithoutVideo = selectedView == View.SpeakerOnly ? participants :
       $participants.filter(p => !meeting.videos.find(video =>
-        video.hasVideo && video instanceof ParticipantVideo && video.participant == p));
+        video.hasVideo && !video.isScreenShare && video.participant == p));
 
   async function leave() {
     await meeting.hangup();

@@ -1,5 +1,4 @@
 import { VideoConfMeeting, MeetingState } from "../VideoConfMeeting";
-import { ParticipantVideo, ScreenShare, SelfVideo } from "../VideoStream";
 import { MeetingParticipant, ParticipantRole } from "../Participant";
 import type { LiveKitAccount } from "./LiveKitAccount";
 import { LiveKitMediaDeviceStreams } from "./LiveKitMediaDeviceStreams";
@@ -140,9 +139,7 @@ export class LiveKitConf extends VideoConfMeeting {
   protected async participantLeft(remoteParticipant: RemoteParticipant) {
     let participant = this.participants.find(p => p.id == remoteParticipant.identity) as LiveKitRemoteParticipant | null;
     assert(participant, "Participant left, but we didn't know about him.");
-    this.videos.removeAll(this.videos.filter(v =>
-      (v instanceof ParticipantVideo || v instanceof ScreenShare) &&
-      v.participant == participant));
+    this.videos.removeAll(this.videos.filter(v => v.participant == participant));
     this.participants.remove(participant);
   }
 

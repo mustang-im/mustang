@@ -1,5 +1,4 @@
 import { VideoConfMeeting, MeetingState } from "../VideoConfMeeting";
-import { ParticipantVideo, ScreenShare, SelfVideo } from "../VideoStream";
 import { MeetingParticipant as Participant, ParticipantRole } from "../Participant";
 import { M3Account } from "./M3Account";
 import { LocalMediaDeviceStreams } from "../LocalMediaDeviceStreams";
@@ -7,6 +6,7 @@ import { appGlobal } from "../../app";
 import { notifyChangedProperty } from "../../util/Observable";
 import { assert, sleep, type URLString } from "../../util/util";
 import { gt, getUILocale } from "../../../l10n/l10n";
+import { VideoStream } from "../VideoStream";
 
 export class M3Conf extends VideoConfMeeting {
   controllerBaseURL: string;
@@ -268,8 +268,8 @@ export class M3Conf extends VideoConfMeeting {
     let participantId = json.source;
     let isScreen = json.media_session_type == "screen";
     let video = this.videos.find(v =>
-      (!isScreen && v instanceof ParticipantVideo ||
-        isScreen && v instanceof ScreenShare) &&
+      (!isScreen && !v.isScreenShare ||
+        isScreen && v.isScreenShare) &&
       v.participant?.id == participantId);
     if (video) {
       this.videos.remove(video);
@@ -284,14 +284,14 @@ export class M3Conf extends VideoConfMeeting {
     this.setParticipateInfo(participant, json);
 
     let incomingMedia = participant.cameraOn || participant.micOn;
-    let video = this.videos.find(v => v instanceof ParticipantVideo && v.participant?.id == participantID);
+    let video = this.videos.find(v => !v.isScreenShare && v.participant?.id == participantID);
     if (!video && incomingMedia) {
       await this.getVideoFromParticipant(participant, false);
     } else if (video && !incomingMedia) {
       await this.stopVideoFromParticipant(video);
     }
 
-    let screen = this.videos.find(v => v instanceof ScreenShare && v.participant?.id == participantID);
+    let screen = this.videos.find(v => v.isScreenShare && v.participant?.id == participantID);
     if (!screen && participant.screenSharing) {
       await this.getVideoFromParticipant(participant, true);
     } else if (screen && !participant.screenSharing) {
@@ -315,7 +315,6 @@ export class M3Conf extends VideoConfMeeting {
     assert(participant, "Participant left, but we didn't know about him.");
     this.participants.remove(participant);
     let videos = this.videos.filter(v =>
-      (v instanceof ParticipantVideo || v instanceof ScreenShare) &&
       v.participant == participant);
     for (let video of videos) {
       await this.stopVideoFromParticipant(video);
@@ -427,9 +426,8 @@ export class M3Conf extends VideoConfMeeting {
       target: participant.id,
       media_session_type: sessionType,
     });
-    let videoStream = isScreen
-      ? new ScreenShare(new MediaStream(), participant)
-      : new ParticipantVideo(new MediaStream(), participant);
+    let videoStream = new VideoStream(new MediaStream(), participant);
+    videoStream.isScreenShare = isScreen;
     // https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling
     // https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Perfect_negotiation
     let peerConnection = new RTCPeerConnection(this.getPeerConnectionConfig());
@@ -470,8 +468,8 @@ export class M3Conf extends VideoConfMeeting {
     this.videos.add(videoStream);
   }
 
-  async stopVideoFromParticipant(video: ParticipantVideo | ScreenShare): Promise<void> {
-    this.closePeerConnection(video.participant, video instanceof ScreenShare);
+  async stopVideoFromParticipant(video: VideoStream): Promise<void> {
+    this.closePeerConnection(video.participant, video.isScreenShare);
     this.videos.remove(video);
   }
 

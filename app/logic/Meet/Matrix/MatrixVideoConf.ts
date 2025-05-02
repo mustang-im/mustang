@@ -1,5 +1,5 @@
 import { MeetingState, VideoConfMeeting } from "../VideoConfMeeting";
-import { ParticipantVideo, SelfVideo } from "../VideoStream";
+import { VideoStream } from "../VideoStream";
 import { MeetingParticipant } from "../Participant";
 import { LocalMediaDeviceStreams } from "../LocalMediaDeviceStreams";
 import { Chat } from "../../Chat/Chat";
@@ -37,10 +37,12 @@ export class MatrixVideoConf extends VideoConfMeeting {
     this._call.on("feeds_changed", (feeds) => {
       for (let feed of feeds) {
         if (feed.isLocal()) {
-          this.videos.add(new SelfVideo(feed.stream));
+          let self = new VideoStream(feed.stream);
+          self.isMe = true;
+          this.videos.add(self);
         } else {
           let participant = new MeetingParticipant(); // TODO
-          this.videos.add(new ParticipantVideo(feed.stream, participant));
+          this.videos.add(new VideoStream(feed.stream, participant));
         }
       }
     });

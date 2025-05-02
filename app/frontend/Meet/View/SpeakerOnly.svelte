@@ -1,9 +1,11 @@
 <Scroll>
-  <ParticipatingVideo {video} showSelf={false} />
+  {#if video}
+    <ParticipatingVideo {video} showSelf={false} />
+  {/if}
 </Scroll>
 
 <script lang="ts">
-  import { ParticipantVideo, ScreenShare, SelfVideo, type VideoStream } from "../../../logic/Meet/VideoStream";
+  import { VideoStream } from "../../../logic/Meet/VideoStream";
   import type { MeetingParticipant } from "../../../logic/Meet/Participant";
   import ParticipatingVideo from "./Video/ParticipatingVideo.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
@@ -18,16 +20,12 @@
   $: $videos, showParticipant, selectVideo();
   function selectVideo() {
     if (showParticipant) {
-      if (video instanceof ParticipantVideo && video.participant == showParticipant) {
+      if (video?.participant == showParticipant) {
         return;
       }
       let v =
-        videos.find(video =>
-          video instanceof ScreenShare &&
-          video.participant == showParticipant) ??
-        videos.find(video =>
-          video instanceof ParticipantVideo &&
-          video.participant == showParticipant);
+        videos.find(video => video.isScreenShare && video.participant == showParticipant) ??
+        videos.find(video => video.participant == showParticipant);
       if (v) {
         video = v;
         return;
@@ -36,25 +34,21 @@
 
     let v =
       // prefer screen share
-      videos.find(video =>
-        video instanceof ScreenShare &&
-        video.participant != me) ??
+      videos.find(video => video.isScreenShare && video.participant != me) ??
       // if somebody is speaking, show him
-      videos.find(video =>
-        video instanceof ParticipantVideo &&
-        video.participant.isSpeaking);
+      videos.find(video => video.participant.isSpeaking);
     if (v) {
       video = v;
       return;
     }
 
     // if we don't have any video, show the other participant, even if no audio from him
-    if (!video || video instanceof SelfVideo) {
-      video = videos.find(video => video instanceof ParticipantVideo);
+    if (!video || video.isMe) {
+      video = videos.find(video => !!video.participant && !video.isMe);
     }
     // if I'm the only one with a video, show self
     if (!video) {
-      video = videos.find(video => video instanceof SelfVideo);
+      video = videos.find(video => video.isMe);
     }
 
     // otherwise, keep the last speaker on screen
@@ -73,7 +67,7 @@
       unsubscribe();
     }
     for (let video of videos) {
-      if (video instanceof ParticipantVideo) {
+      if (video.participant && !video.isScreenShare) {
         subscriptions.add(video.participant.subscribe(onParticipantPropsChanged));
       }
     }

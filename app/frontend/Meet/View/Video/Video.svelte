@@ -1,15 +1,15 @@
 <!-- svelte-ignore a11y-media-has-caption -->
 {#if video.stream}
-  <video bind:this={videoEl} muted={video instanceof SelfVideo}
+  <video bind:this={videoEl} muted={video.isMe}
     class={videoStreamClassName(video)} />
-{:else if video instanceof ParticipantVideo}
-  <img src={video.participant.picture} alt={video.participant.name} />
-{:else if video instanceof SelfVideo}
+{:else if video.isMe}
   <img src={appGlobal.me.picture} alt={$t`me`} />
+{:else if video.participant}
+  <img src={video.participant.picture} alt={video.participant.name} />
 {/if}
 
 <script lang="ts">
-  import { VideoStream, SelfVideo, ParticipantVideo, videoStreamClassName } from "../../../../logic/Meet/VideoStream";
+  import { VideoStream, videoStreamClassName } from "../../../../logic/Meet/VideoStream";
   import { appGlobal } from "../../../../logic/app";
   import { onDestroy } from "svelte";
   import { t } from "../../../../l10n/l10n";

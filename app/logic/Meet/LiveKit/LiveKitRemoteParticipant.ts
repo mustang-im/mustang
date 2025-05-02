@@ -1,5 +1,5 @@
 import { MeetingParticipant, ParticipantRole } from "../Participant";
-import { ParticipantVideo, ScreenShare, VideoStream } from "../VideoStream";
+import { VideoStream } from "../VideoStream";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { catchErrors } from "../../../frontend/Util/error";
 import { assert } from "../../util/util";
@@ -9,8 +9,8 @@ import { ParticipantEvent, RemoteParticipant, Track, TrackPublication } from "li
 export class LiveKitRemoteParticipant extends MeetingParticipant {
   rp: RemoteParticipant;
   conf: LiveKitConf;
-  video: ParticipantVideo;
-  screenShare: ScreenShare;
+  video: VideoStream;
+  screenShare: VideoStream;
 
   constructor(rp: RemoteParticipant, conf: LiveKitConf) {
     super();
@@ -62,13 +62,14 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
     let video: VideoStream;
     if (isScreen) {
       if (!this.screenShare) {
-        this.screenShare = new ScreenShare(new MediaStream(), this);
+        this.screenShare = new VideoStream(new MediaStream(), this);
+        this.screenShare.isScreenShare = true;
         this.conf.videos.add(this.screenShare);
       }
       video = this.screenShare;
     } else {
       if (!this.video) {
-        this.video = new ParticipantVideo(new MediaStream(), this);
+        this.video = new VideoStream(new MediaStream(), this);
         this.conf.videos.add(this.video);
       }
       video = this.video;

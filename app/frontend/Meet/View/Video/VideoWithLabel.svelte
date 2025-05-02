@@ -1,6 +1,6 @@
 <vbox class="participant video {classes}" title={label}>
   <Video {video} />
-  {#if video instanceof ParticipantVideo}
+  {#if video.participant}
     <hbox class="participant-name">
       <ParticipantItem participant={video.participant} style="video" />
     </hbox>
@@ -8,7 +8,7 @@
 </vbox>
 
 <script lang="ts">
-  import { VideoStream, ParticipantVideo } from "../../../../logic/Meet/VideoStream";
+  import { VideoStream } from "../../../../logic/Meet/VideoStream";
   import ParticipantItem from "../../ParticipantsList/ParticipantItem.svelte";
   import Video from "./Video.svelte";
 

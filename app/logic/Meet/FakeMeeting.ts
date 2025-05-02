@@ -1,6 +1,6 @@
 import { VideoConfMeeting, MeetingState } from "./VideoConfMeeting";
 import { MeetingParticipant, ParticipantRole } from "./Participant";
-import { ParticipantVideo } from "./VideoStream";
+import { VideoStream } from "./VideoStream";
 import { MeetAccount } from "./MeetAccount";
 import { LocalMediaDeviceStreams } from "./LocalMediaDeviceStreams";
 import { PersonUID } from "../Abstract/PersonUID";
@@ -64,14 +64,14 @@ export class FakeMeeting extends VideoConfMeeting {
     */
     let stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
     this.participants.add(p);
-    let video = new ParticipantVideo(stream, p);
+    let video = new VideoStream(stream, p);
     video.hasVideo = Math.random() > 0.2;
     this.videos.add(video);
   }
 
   async removeParticipant(participant?: MeetingParticipant) {
     participant ??= this.participants.first;
-    this.videos.removeAll(this.videos.filter(v => v instanceof ParticipantVideo && v.participant == participant));
+    this.videos.removeAll(this.videos.filter(v => v.participant == participant));
     this.participants.remove(participant);
   }
 

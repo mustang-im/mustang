@@ -143,9 +143,7 @@
 
 # Meet
 ## UI
-* Close participants sidebar once first participant joins
 * Show self
-  * Remove VideoStream subclasses
   * Show self in cam button
 * Gallery: Set video size first, before rendering
 * Gallery: Adapt video to available space

@@ -45,7 +45,7 @@
 
 <script lang="ts">
   import { MeetingState, VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
-  import { ParticipantVideo, SelfVideo } from "../../../logic/Meet/VideoStream";
+  import { VideoStream } from "../../../logic/Meet/VideoStream";
   import { MeetingParticipant } from "../../../logic/Meet/Participant";
   import { FakeMeeting } from "../../../logic/Meet/FakeMeeting";
   import { Event } from "../../../logic/Calendar/Event";
@@ -136,8 +136,10 @@
     meeting.event = event;
     meeting.participants.add(callee);
     appGlobal.meetings.add(meeting);
-    meeting.videos.add(new ParticipantVideo(new MediaStream(), callee));
-    meeting.videos.add(new SelfVideo(new MediaStream()));
+    meeting.videos.add(new VideoStream(new MediaStream(), callee));
+    let self = new VideoStream(new MediaStream());
+    self.isMe = true;
+    meeting.videos.add(self);
     // meeting.myParticipant.role = ParticipantRole.Moderator;
   }
 

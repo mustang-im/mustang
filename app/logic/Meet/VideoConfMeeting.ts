@@ -1,4 +1,4 @@
-import { ScreenShare, SelfVideo, type VideoStream } from "./VideoStream";
+import { VideoStream } from "./VideoStream";
 import type { MeetAccount } from "./MeetAccount";
 import type { MeetingParticipant as Participant } from "./Participant";
 import type { MediaDeviceStreams } from "./MediaDeviceStreams";
@@ -116,29 +116,34 @@ export class VideoConfMeeting extends Observable {
    * You should preferably do that before `start()`ing the conference,
    * but you can do it at any time.
    *
-   * This function will also add or remove the `SelfVideo` instance
+   * This function will also add or remove the `VideoStream` instance
    * in `.videos`, so showing all `.videos` is enough to show self.
    *
    * @param MediaStream from getUserMedia()
    */
   async startCameraMic(mediaStream: MediaStream) {
-    this.videos.add(new SelfVideo(mediaStream));
+    let self = new VideoStream(mediaStream, this.myParticipant);
+    self.isMe = true;
+    this.videos.add(self);
   }
 
   async stopCameraMic(oldStream?: MediaStream) {
     assert(oldStream, "want old stream to remove");
-    this.videos.remove(this.videos.find(v => v instanceof SelfVideo &&
+    this.videos.remove(this.videos.find(v => v.isMe &&
       (v.stream == oldStream || !oldStream)));
   }
 
   async startScreenShare(mediaStream: MediaStream) {
-    this.videos.add(new ScreenShare(mediaStream, this.myParticipant));
+    let screenShare = new VideoStream(mediaStream, this.myParticipant);
+    screenShare.isScreenShare = true;
+    screenShare.isMe = true;
+    this.videos.add(screenShare);
   }
 
   async stopScreenShare(oldStream?: MediaStream) {
     assert(oldStream, "want old stream to remove");
-    this.videos.remove(this.videos.find(v => v instanceof ScreenShare &&
-      (oldStream ? v.stream == oldStream : v.participant == this.myParticipant)));
+    this.videos.remove(this.videos.find(v => v.isScreenShare && v.isMe &&
+      (v.stream == oldStream || !oldStream)));
   }
 
   readonly canHandUp: boolean = false;
@@ -164,8 +169,8 @@ export class VideoConfMeeting extends Observable {
     appGlobal.meetings.remove(this);
   }
 
-  get selfVideo(): SelfVideo | null {
-    return this.videos.find(v => v instanceof SelfVideo) ?? null;
+  get selfVideo(): VideoStream | null {
+    return this.videos.find(v => v.isMe && !v.isScreenShare) ?? null;
   }
 }
 
