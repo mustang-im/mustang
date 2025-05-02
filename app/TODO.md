@@ -143,8 +143,11 @@
 
 # Meet
 ## UI
+* LiveKit: No video when other is joining with both video and audio (works otherwise)
+* Video still image remains after participant left
 * Show self
   * Show self in cam button
+  * UI toggle
 * Gallery: Set video size first, before rendering
 * Gallery: Adapt video to available space
 * UI before joining conference
