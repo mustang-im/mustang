@@ -1,4 +1,4 @@
-<vbox bind:clientWidth={gridWidth} bind:clientHeight={gridHeight} flex>
+<vbox class="gallery" bind:clientWidth={gridWidth} bind:clientHeight={gridHeight} flex>
   <Scroll>
     <grid class="participants"
       style="grid-template-columns: {gridColumns}"
@@ -76,5 +76,11 @@
   .participants {
     display: grid;
     /* grid-template-columns/rows: see code above */
+  }
+  .gallery :global(.scroll) {
+    scroll-snap-type: y mandatory;
+  }
+  .participants :global(.participant) {
+    scroll-snap-align: start;
   }
 </style>
