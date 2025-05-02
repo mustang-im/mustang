@@ -37,7 +37,21 @@
     iconSize="24px"
     border={false}
     />
-  <hbox flex />
+  <hbox class="participants" flex>
+    <Scroll>
+      <ParticipantsList participants={participantsWithoutVideo} />
+    </Scroll>
+  </hbox>
+  {#if !isSidebar}
+    <RoundButton
+      label={$t`Leave`}
+      classes="leave large"
+      onClick={leave}
+      icon={LeaveIcon}
+      iconSize="24px"
+      border={false}
+      />
+  {/if}
   {#if meeting.canHandUp}
     <RoundButton
       label={$me?.handUp ? $t`Hand raised` : $t`Raise hand`}
@@ -67,17 +81,6 @@
       border={false}
       />
   {/if}
-  {#if !isSidebar}
-    <RoundButton
-      label={$t`Leave`}
-      classes="leave large"
-      onClick={leave}
-      icon={LeaveIcon}
-      iconSize="24px"
-      border={false}
-      />
-  {/if}
-  <hbox flex />
   <RoundButton
     label={`Change view of participant videos`}
     classes="view-selector large"
@@ -106,14 +109,17 @@
 
 <script lang="ts">
   import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
+  import { ParticipantVideo } from "../../logic/Meet/VideoStream";
   import { meetMustangApp } from "./MeetMustangApp";
   import { selectedCamera, selectedMic } from "./Setup/selectedDevices";
   import { openApp } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import { FakeMeeting } from "../../logic/Meet/FakeMeeting";
+  import ParticipantsList from "./ParticipantsList/ParticipantsList.svelte";
   import ViewSelectorPopup, { MeetVideoView as View } from "./View/ViewSelectorPopup.svelte";
   import Popup from "../Shared/Popup.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
+  import Scroll from "../Shared/Scroll.svelte";
   import HandIcon from '../asset/icon/meet/hand.svg?raw';
   import HandDownIcon from "lucide-svelte/icons/grab";
   import CameraIcon from "lucide-svelte/icons/video";
@@ -140,6 +146,10 @@
 
   $: me = $meeting.myParticipant;
   $: stream = $meeting.mediaDeviceStreams;
+  $: participants = meeting.participants;
+  $: participantsWithoutVideo = selectedView == View.SpeakerOnly ? participants :
+      $participants.filter(p => !meeting.videos.find(video =>
+        video.hasVideo && video instanceof ParticipantVideo && video.participant == p));
 
   async function leave() {
     await meeting.hangup();
@@ -196,6 +206,13 @@
   .actions :global(> button) {
     background-color: inherit;
     color: inherit;
+  }
+  .participants {
+    margin-block: -1px;
+  }
+  .actions :global(.leave svg) {
+    margin-top: 3px;
+    margin-bottom: -3px;
   }
   .actions :global(.leave svg) {
     transform: rotate(135deg);

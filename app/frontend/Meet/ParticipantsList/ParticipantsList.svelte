@@ -1,4 +1,4 @@
-<hbox class="participants">
+<hbox class="participants" flex>
   {#each $participants.each as participant (participant.id)}
     <ParticipantItem participant={participant} style="list" />
   {/each}
@@ -14,10 +14,9 @@
 
 <style>
   .participants {
-    max-height: 96px; /* 3*32px = 96px = 3 wrapping rows */
     flex-wrap: wrap;
-    margin: 12px 16px 0px 16px;
-    overflow: auto;
+    margin: 0px 16px 0px 16px;
     justify-content: center;
+    align-items: center;
   }
 </style>

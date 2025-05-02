@@ -10,7 +10,7 @@
       iconOnly />
   {/if}
   <Button plain
-    classes="mic"
+    classes="mic {$participant.micOn ? "on" : "off"}"
     label={$t`Mute`}
     onClick={() => toggleMic(participant)}
     icon={$participant.micOn ? MicrophoneIcon : MicrophoneOffIcon}
@@ -42,13 +42,16 @@
 
 <style>
   .participant {
-    max-height: 24px;
+    max-height: 23px;
   }
   .video {
     background-color: #00000035;
     color: white;
     padding: 0px 0px 0px 6px;
     border-top-right-radius: 3px;
+  }
+  .video .name {
+    margin: -2px 0px;
   }
   .video :global(button.plain) {
     color: #FFFFFF70;
@@ -68,7 +71,6 @@
   .name {
     overflow: hidden;
     text-overflow: ellipsis;
-    margin: -2px 0px;
   }
   .participant :global(button.plain) {
     border-radius: 0px;
@@ -76,7 +78,10 @@
   .participant.speaking :global(button.plain) {
     color: white;
   }
-  .speaking :global(.mic svg path:first-of-type) {
+  .list:not(.speaking) :global(button.mic) {
+    opacity: 60%;
+  }
+  .speaking :global(button.mic svg path:first-of-type) {
     fill: white;
   }
   .participant :global(button.disabled) {
