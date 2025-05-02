@@ -3,12 +3,12 @@
     <slot name="top-left" slot="top-left" />
     <slot name="top-right" slot="top-right" />
   </ListView>
-{:else if dateInterval == 1}
+{:else if dateInterval == 1 && start}
   <WeekView bind:start {events} showDays={1}>
     <slot name="top-left" slot="top-left" />
     <slot name="top-right" slot="top-right" />
   </WeekView>
-{:else if dateInterval == 7}
+{:else if dateInterval == 7 && start}
   <WeekView bind:start {events}>
     <slot name="top-left" slot="top-left" />
     <slot name="top-right" slot="top-right" />
@@ -28,11 +28,15 @@
     <slot name="top-left" slot="top-left" />
     <slot name="top-right" slot="top-right" />
   </DualView>
-{:else}
+{:else if start}
   <WeekView bind:start {events}>
     <slot name="top-left" slot="top-left" />
     <slot name="top-right" slot="top-right" />
   </WeekView>
+{:else}
+  None
+  start: {start}
+  dateInterval: {dateInterval}
 {/if}
 
 <script lang="ts">

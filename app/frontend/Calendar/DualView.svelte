@@ -1,7 +1,9 @@
 <hbox flex class="dual-view">
-  <WeekView bind:start={$selectedDate} {events} showDays={2}>
-    <slot name="top-left" slot="top-left" />
-  </WeekView>
+  {#if $selectedDate}
+    <WeekView bind:start={$selectedDate} {events} showDays={2}>
+      <slot name="top-left" slot="top-left" />
+    </WeekView>
+  {/if}
   <MonthView {start} {events} showDays={35}>
     <slot name="top-right" slot="top-right" />
   </MonthView>
