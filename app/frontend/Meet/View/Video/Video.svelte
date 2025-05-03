@@ -9,9 +9,9 @@
   import { onDestroy } from "svelte";
 
   export let stream: MediaStream;
-  export let width: number;
-  export let height: number;
   export let muted: boolean;
+  export let width: number = undefined;
+  export let height: number = undefined;
   export let classes: string | undefined = undefined;
 
   let videoEl: HTMLVideoElement;

@@ -25,6 +25,7 @@
     selectedID={$selectedCameraSetting.value}
     on:changeOn={event => catchErrors(() => changeCameraOn(event.detail))}
     on:changeDevice={event => catchErrors(() => changeCameraSelected(event.detail))}
+    cameraStream={$stream.cameraMicStream}
     />
   <DeviceButton video={false} {devices}
     on={$me?.micOn}

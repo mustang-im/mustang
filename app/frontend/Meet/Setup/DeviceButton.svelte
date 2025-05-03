@@ -3,10 +3,18 @@
     label={video ? (on ? $t`Turn camera off` : $t`Turn camera on`) : (on ? $t`Mute` : $t`Unmute`)}
     classes="toggle"
     onClick={onToggleDevice}
-    icon={video ? (on ? CameraIcon : CameraOffIcon) : (on ? MicrophoneIcon : MicrophoneOffIcon)}
     selected={on}
-    iconSize="24px"
-    />
+    padding={cameraStream && on ? "0px" : "8px"}
+    border={false}
+    >
+    <svelte:fragment slot="icon">
+      {#if cameraStream && on}
+        <Video stream={cameraStream} muted={true} width={40} height={40} />
+      {:else}
+        <svelte:component this={icon} size="24px" />
+      {/if}
+    </svelte:fragment>
+  </RoundButton>
   <ButtonMenu bind:isMenuOpen>
     <RoundButton
       slot="control"
@@ -37,6 +45,7 @@
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuLabel from "../../Shared/Menu/MenuLabel.svelte";
+  import Video from "../View/Video/Video.svelte";
   import CameraIcon from "lucide-svelte/icons/video";
   import CameraOffIcon from "lucide-svelte/icons/video-off";
   import MicrophoneIcon from "lucide-svelte/icons/mic";
@@ -51,7 +60,10 @@
   export let selectedID: string; /** in/out */
   export let video: boolean; /** video = true, mic = false */
   export let devices: MediaDeviceInfo[]; /** in */
+  /** If you want to show the camera picture inside the cam on/off button, set this */
+  export let cameraStream: MediaStream | null = null;
 
+  $: icon = video ? (on ? CameraIcon : CameraOffIcon) : (on ? MicrophoneIcon : MicrophoneOffIcon)
   $: availableDevices = devices?.filter(d => d.kind == (video ? "videoinput" : "audioinput")) ?? [];
 
   async function onToggleDevice() {
@@ -80,6 +92,7 @@
     margin-inline-start: -14px;
     margin-block-start: 20px;
     padding: 2px;
+    z-index: 1;
   }
   .device-button :global(button.select-device:not(:hover)) {
     background-color: var(--bg);
@@ -87,5 +100,8 @@
   }
   .device-button :global(button.select-device.disabled) {
     visibility: hidden;
+  }
+  .device-button :global(video) {
+    border-radius: 100px;
   }
 </style>

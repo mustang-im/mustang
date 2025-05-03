@@ -144,7 +144,7 @@
 # Meet
 ## UI
 * Show self
-  * Show self in cam button
+  * In Gallery: VideoStream for local
   * UI toggle
 * UI before joining conference
 
