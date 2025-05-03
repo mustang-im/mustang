@@ -82,6 +82,7 @@
     iconSize="24px"
     plain={true}
     />
+  <hbox class="line" />
   <Button
     label={$t`Show my camera`}
     icon={CameraIcon}
@@ -135,6 +136,7 @@
 
   function toggleShowSelf() {
     showSelfSetting.value = !showSelf;
+    show = false;
   }
 </script>
 
@@ -181,5 +183,11 @@
   .gallery-options :global(button) {
     padding-block: 2px;
     padding-inline-start: 4px;
+  }
+  .line {
+    border: 1px solid #505050;
+    width: calc(100% + 25px);
+    margin-block: 8px;
+    margin-inline: -15px;
   }
 </style>

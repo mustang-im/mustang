@@ -6,7 +6,7 @@
 {:else if video.isMe}
   {#if showSelf}
     <VideoWithLabel {video}
-    {width} {height}
+      {width} {height}
       label={$t`You`}
       classes="self" />
   {/if}

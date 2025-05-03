@@ -143,10 +143,7 @@
 
 # Meet
 ## UI
-* Show self
-  * In Gallery: VideoStream for local
-  * UI toggle
-* UI before joining conference
+* Meeting pic in UI before joining conference
 
 ## Protocol
 * LiveKit
