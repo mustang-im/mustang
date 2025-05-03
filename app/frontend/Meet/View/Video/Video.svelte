@@ -1,32 +1,35 @@
 <!-- svelte-ignore a11y-media-has-caption -->
-{#if video.stream && width && height}
-  <video bind:this={videoEl}
-    muted={video.isMe}
-    {width} {height}
-    class={videoStreamClassName(video)} />
-{:else if video.isMe}
-  <img src={appGlobal.me.picture} alt={$t`me`} />
-{:else if video.participant}
-  <img src={video.participant.picture} alt={video.participant.name} />
-{/if}
+<video bind:this={videoEl}
+  {muted}
+  {width} {height}
+  class={classes} />
 
 <script lang="ts">
-  import { VideoStream, videoStreamClassName } from "../../../../logic/Meet/VideoStream";
-  import { appGlobal } from "../../../../logic/app";
+  import { catchErrors } from "../../../Util/error";
   import { onDestroy } from "svelte";
-  import { t } from "../../../../l10n/l10n";
 
-  export let video: VideoStream;
+  export let stream: MediaStream;
   export let width: number;
   export let height: number;
+  export let muted: boolean;
+  export let classes: string | undefined = undefined;
 
   let videoEl: HTMLVideoElement;
-  $: videoEl && video.stream ? startVideo() : stopVideo();
-  function startVideo() {
-    videoEl.srcObject = video.stream;
-    videoEl.play();
+  $: videoEl && stream ? catchErrors(startVideo) : catchErrors(stopVideo);
+  async function startVideo() {
+    videoEl.srcObject = stream;
+    try {
+      await videoEl.play();
+    } catch (ex) {
+      if (ex?.message?.includes("https://goo.gl/LdLk22")) {
+        console.error(ex);
+        // ignore
+      } else {
+        throw ex;
+      }
+    }
   }
-  function stopVideo() {
+  async function stopVideo() {
     if (!videoEl) {
       return;
     }
@@ -38,7 +41,6 @@
 </script>
 
 <style>
-  img,
   video {
     object-fit: cover;
     transition: width 200ms ease, height 200ms ease;
