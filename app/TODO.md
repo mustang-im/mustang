@@ -144,7 +144,6 @@
 # Meet
 ## UI
 * Gallery
-  * No y scrollbar, and remove yMargin
   * Only half screen, if self video and alone
 * Mic level meter
 * Self: Black after turning off cam

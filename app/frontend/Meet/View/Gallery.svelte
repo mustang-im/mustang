@@ -1,4 +1,4 @@
-<vbox bind:clientWidth={gridWidth} bind:clientHeight={gridHeight} flex>
+<vbox class="gallery" bind:clientWidth={gridWidth} bind:clientHeight={gridHeight} flex>
   <Scroll>
     <grid class="participants"
       style="grid-template-columns: {gridColumns}"
@@ -57,7 +57,7 @@
       columnCount = 5;
     }
 
-    const xMargin = 4;
+    const xMargin = 0;
     const yMargin = 2;
     videoWidth = Math.floor(width / columnCount) - xMargin;
     let idealVideoHeight = videoWidth / 16 * 9;
@@ -73,6 +73,9 @@
 </script>
 
 <style>
+  .gallery :global(.scroll) {
+    overflow-x: hidden;
+  }
   .participants {
     display: grid;
     /* grid-template-columns/rows: see code above */
