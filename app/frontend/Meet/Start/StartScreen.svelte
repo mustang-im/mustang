@@ -52,6 +52,8 @@
   import { joinConferenceByURL } from "../../../logic/Meet/StartCall";
   import { selectedPerson } from "../../Contacts/Person/Selected";
   import { appGlobal } from "../../../logic/app";
+  import { MeetAccount } from "../../../logic/Meet/MeetAccount";
+  import { LocalMediaDeviceStreams } from "../../../logic/Meet/LocalMediaDeviceStreams";
   import MeetingList from "./MeetingList.svelte";
   import Button from "../../Shared/Button.svelte";
   import VideoIcon from 'lucide-svelte/icons/video';
@@ -64,7 +66,6 @@
   import { sleep, UserError } from "../../../logic/util/util";
   import { mergeColls } from "svelte-collections";
   import { faker } from "@faker-js/faker";
-  import { MeetAccount } from "../../../logic/Meet/MeetAccount";
 
   const allEvents = mergeColls(appGlobal.calendars.map(calendar => calendar.events));
   const now = new Date();
@@ -93,6 +94,21 @@
     appGlobal.meetings.add(meeting);
   }
 
+  class FakeIncomingCall extends VideoConfMeeting {
+    constructor() {
+      super();
+      this.account = new MeetAccount();
+      this.mediaDeviceStreams = new LocalMediaDeviceStreams();
+      this.listenStreamChanges();
+      this.state = MeetingState.IncomingCall;
+    }
+    async answer(): Promise<void> {
+      super.answer();
+      this.myParticipant = new MeetingParticipant();
+      this.state = MeetingState.Ongoing;
+    }
+  }
+
   async function testIncoming() {
     let fakeMeeting = new Event();
     fakeMeeting.startTime = faker.date.soon({ days: 1/24/4 });
@@ -104,8 +120,7 @@
     let caller = new MeetingParticipant();
     caller.name = $selectedPerson.name;
     caller.picture = $selectedPerson.picture;
-    let meeting = new VideoConfMeeting();
-    meeting.state = MeetingState.IncomingCall;
+    let meeting = new FakeIncomingCall();
     meeting.participants.add(caller);
     appGlobal.meetings.add(meeting);
   }
