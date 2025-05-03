@@ -12,7 +12,6 @@ import { catchErrors } from "../../../frontend/Util/error";
 export class LiveKitConf extends VideoConfMeeting {
   /* Authentication */
   account: LiveKitAccount;
-  controllerWebSocketURL: string;
   /* Live connection with the controller, during a conference */
   protected webSocket: WebSocket;
   webSocketURL: URLString;
@@ -100,7 +99,7 @@ export class LiveKitConf extends VideoConfMeeting {
     let response = await this.httpGet(`connection-details?roomName=${e(this.id)}&participantName=${e(myName)}`);
     this.webSocketURL = response.serverUrl;
     this.token = response.participantToken;
-    this.controllerWebSocketURL = `wss://${this.webSocketURL}/rtc?access_token=${e(this.token)}&auto_subscribe=1&protocol=15&adaptive_stream=1`;
+    // this.controllerWebSocketURL = `wss://${this.webSocketURL}/rtc?access_token=${e(this.token)}&auto_subscribe=1&protocol=15&adaptive_stream=1`;
     await this.joinAfterStart();
   }
 
@@ -169,9 +168,10 @@ export class LiveKitConf extends VideoConfMeeting {
   }
 
   async hangup() {
-    assert(this.room, "Didn't join yet");
     await super.hangup();
-    await this.room.disconnect();
+    if (this.room) {
+      await this.room.disconnect();
+    }
   }
 }
 
