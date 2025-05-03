@@ -84,6 +84,7 @@
       return;
     }
     await tick();
+    // Real device names appear only after the cam delivers an actual picture
     let allDevices = await navigator.mediaDevices.enumerateDevices();
     devices = allDevices.filter(d => !d.label.startsWith("Monitor of"));
   }

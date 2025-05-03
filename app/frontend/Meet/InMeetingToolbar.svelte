@@ -20,23 +20,17 @@
       border={false}
       />
   {/if}
-  <RoundButton
-    label={$t`Camera`}
-    classes="camera large"
-    selected={$me?.cameraOn}
-    onClick={toggleCamera}
-    icon={$me?.cameraOn ? CameraIcon : CameraOffIcon}
-    iconSize="24px"
-    border={false}
+  <DeviceButton video={true} {devices}
+    on={$me?.cameraOn}
+    selectedID={$selectedCameraSetting.value}
+    on:changeOn={event => catchErrors(() => changeCameraOn(event.detail))}
+    on:changeDevice={event => catchErrors(() => changeCameraSelected(event.detail))}
     />
-  <RoundButton
-    label={$t`Mute`}
-    classes="mic large"
-    selected={$me?.micOn}
-    onClick={toggleMic}
-    icon={$me?.micOn ? MicrophoneIcon : MicrophoneOffIcon}
-    iconSize="24px"
-    border={false}
+  <DeviceButton video={false} {devices}
+    on={$me?.micOn}
+    selectedID={$selectedMicSetting.value}
+    on:changeOn={event => catchErrors(() => changeMicOn(event.detail))}
+    on:changeDevice={event => catchErrors(() => changeMicSelected(event.detail))}
     />
   {#if !isSidebar}
     <hbox class="participants" flex>
@@ -121,6 +115,7 @@
   import { appGlobal } from "../../logic/app";
   import { FakeMeeting } from "../../logic/Meet/FakeMeeting";
   import ParticipantsList from "./ParticipantsList/ParticipantsList.svelte";
+  import DeviceButton from "./Setup/DeviceButton.svelte";
   import ViewSelectorPopup, { MeetVideoView as View } from "./View/ViewSelectorPopup.svelte";
   import Popup from "../Shared/Popup.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
@@ -145,6 +140,7 @@
   import { getLocalStorage } from "../Util/LocalStorage";
   import { catchErrors } from "../Util/error";
   import { t } from "../../l10n/l10n";
+  import { tick } from "svelte";
 
   export let meeting: VideoConfMeeting;
   export let isSidebar = false;
@@ -168,6 +164,18 @@
     me.micOn = micOnSetting.value;
     await stream.setMicOn(me.micOn, selectedMicSetting.value);
     await stream.setCameraOn(me.cameraOn, selectedCameraSetting.value);
+    await getDevices();
+  }
+
+  let devices: MediaDeviceInfo[];
+  async function getDevices() {
+    if (devices) {
+      return;
+    }
+    await tick();
+    // Real device names appear only after the cam delivers an actual picture
+    let allDevices = await navigator.mediaDevices.enumerateDevices();
+    devices = allDevices.filter(d => !d.label.startsWith("Monitor of"));
   }
 
   async function leave() {
@@ -182,16 +190,26 @@
     me.handUp = !me.handUp;
   }
 
-  async function toggleMic() {
-    me.micOn = !me.micOn;
+  async function changeMicOn(on: boolean) {
+    me.micOn = on;
     await stream.setMicOn(me.micOn, selectedMicSetting.value);
     micOnSetting.value = me.micOn;
   }
 
-  async function toggleCamera() {
-    me.cameraOn = !me.cameraOn;
+  async function changeMicSelected(deviceID: string) {
+    selectedMicSetting.value = deviceID;
+    await stream.setMicOn(me.micOn, deviceID);
+  }
+
+  async function changeCameraOn(on: boolean) {
+    me.cameraOn = on;
     await stream.setCameraOn(me.cameraOn, selectedCameraSetting.value);
     cameraOnSetting.value = me.cameraOn;
+  }
+
+  async function changeCameraSelected(deviceID: string) {
+    selectedCameraSetting.value = deviceID;
+    await stream.setCameraOn(me.cameraOn, deviceID);
   }
 
   async function toggleScreenShare() {
@@ -227,6 +245,9 @@
   .actions :global(button) {
     background-color: inherit;
     color: inherit;
+  }
+  .actions :global(.device-button button.button.border) {
+    border: 2px solid transparent;
   }
   .participants {
     margin-block: -1px;

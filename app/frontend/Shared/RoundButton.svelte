@@ -108,10 +108,10 @@
   .disabled {
     opacity: 50%;
   }
-  button:hover:not(.disabled) {
+  button.button:hover:not(.disabled) {
     background-color: var(--hover-bg);
     color: var(--hover-fg);
-    border: 1px solid transparent !important;
+    border: 1px solid transparent;
   }
   .selected:not(.disabled) {
     background-color: var(--selected-bg);

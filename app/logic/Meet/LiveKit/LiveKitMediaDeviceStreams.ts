@@ -1,13 +1,15 @@
 import { MediaDeviceStreams } from "../MediaDeviceStreams";
 import { notifyChangedAccessor } from "../../util/Observable";
 import { NotSupported, assert } from "../../util/util";
-import { Track, type LocalParticipant } from "livekit-client";
+import { Track, type LocalParticipant, LocalTrack } from "livekit-client";
 import { gt } from "../../../l10n/l10n";
 
 /** Grabs the user's camera, mic or screen, and
  * returns the WebRTC `MediaStream` */
 export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
   localParticipant: LocalParticipant;
+  currentCameraID: string;
+  currentMicID: string;
 
   @notifyChangedAccessor
   get cameraOn(): boolean {
@@ -24,16 +26,40 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
 
   async setCameraOn(on: boolean, device?: string) {
     assert(this.localParticipant, gt`Cannot send yet, because we're still connecting`);
+    if (device && device != this.currentCameraID && this.cameraMicStream) {
+      /* `setCameraEnabled(false)` doesn't actually stop the stream, but just mutes/unmutes it.
+       * So, the device is accepted initially, but device *changes* are ignored in
+       * `setCameraEnabled(true, { deviceId: ... })`.
+       * Source code: <https://github.com/livekit/client-sdk-js/blob/ff0de417aeaa71d9fcd07772facbb5ebdcdaf7f0/src/room/participant/LocalParticipant.ts#L482> */
+      for (let trackPub of this.localParticipant.getTrackPublications()) {
+        if (trackPub.source == Track.Source.Camera) {
+          this.localParticipant.unpublishTrack(trackPub.track as LocalTrack);
+        }
+      }
+    }
     await this.localParticipant.setCameraEnabled(on, {
       deviceId: device,
     });
+    this.currentCameraID = device;
     this.cameraMicStream = this.getCameraMicStream();
   }
   async setMicOn(on: boolean, device?: string) {
     assert(this.localParticipant, gt`Cannot send yet, because we're still connecting`);
+    if (device && device != this.currentMicID && this.cameraMicStream) {
+      for (let trackPub of this.localParticipant.getTrackPublications()) {
+        if (trackPub.source == Track.Source.Microphone) {
+          this.localParticipant.unpublishTrack(trackPub.track as LocalTrack);
+        }
+      }
+    }
     await this.localParticipant.setMicrophoneEnabled(on, {
       deviceId: device,
+      noiseSuppression: true,
+      echoCancellation: true,
+      voiceIsolation: true,
+      autoGainControl: true,
     });
+    this.currentMicID = device;
     this.cameraMicStream = this.getCameraMicStream();
   }
 

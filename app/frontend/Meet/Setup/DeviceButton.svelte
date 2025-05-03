@@ -73,6 +73,9 @@
 </script>
 
 <style>
+  .device-button {
+    align-items: center;
+  }
   .device-button :global(button.select-device) {
     margin-inline-start: -14px;
     margin-block-start: 20px;

@@ -84,7 +84,7 @@ export class VideoConfMeeting extends Observable {
     this.started = new Date();
   }
   protected async streamsChanged(propName: string, oldValue: MediaStream) {
-    console.log("Stream changed", propName, "from", oldValue, "to", this.mediaDeviceStreams[propName]);
+    console.log("Stream changed", propName, "from", oldValue?.getTracks(), "to", this.mediaDeviceStreams[propName]?.getTracks());
     if (propName == "cameraMicStream") {
       let stream = this.mediaDeviceStreams.cameraMicStream;
       if (stream) {
