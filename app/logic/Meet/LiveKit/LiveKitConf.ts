@@ -92,7 +92,6 @@ export class LiveKitConf extends VideoConfMeeting {
   async start() {
     assert(this.id, "Need to create the conference first");
     await super.start();
-    this.state = MeetingState.JoinConference;
 
     let myName = appGlobal.me.name;
     const e = encodeURIComponent;
