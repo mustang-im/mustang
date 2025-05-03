@@ -20,6 +20,7 @@ export default defineConfig({
     nodeExternals({
       deps: false,
       devDeps: true, // Use node.js internal modules
+      include: ['better-sqlite3', 'bufferutil'],
     }),
     viteStaticCopy({
       targets: [
