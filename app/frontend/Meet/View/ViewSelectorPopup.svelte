@@ -82,6 +82,14 @@
     iconSize="24px"
     plain={true}
     />
+  <Button
+    label={$t`Show my camera`}
+    icon={CameraIcon}
+    onClick={toggleShowSelf}
+    selected={showSelf}
+    iconSize="24px"
+    plain={true}
+    />
 </vbox>
 
 <script lang="ts">
@@ -97,6 +105,7 @@
   import ViewThumbnailsRightIcon from "lucide-svelte/icons/panel-right";
   import ViewSpeakerOnlyIcon from "lucide-svelte/icons/square-user-round";
   import ViewScreenshareIcon from "lucide-svelte/icons/tv-minimal";
+  import CameraIcon from "lucide-svelte/icons/video";
   import ExpandIcon from "lucide-svelte/icons/chevron-down";
   import CollapseIcon from "lucide-svelte/icons/chevron-up";
   import { t } from "../../../l10n/l10n";
@@ -119,6 +128,13 @@
   function selectView(view: MeetVideoView) {
     viewSetting.value = view;
     show = false;
+  }
+
+  $: showSelfSetting = getLocalStorage("meet.showSelf", true);
+  $: showSelf = $showSelfSetting.value
+
+  function toggleShowSelf() {
+    showSelfSetting.value = !showSelf;
   }
 </script>
 
