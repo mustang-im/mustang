@@ -62,6 +62,9 @@
     videoWidth = Math.floor(width / columnCount) - xMargin;
     let idealVideoHeight = videoWidth / 16 * 9;
     let rows = Math.round(height / idealVideoHeight);
+    if (count == 2 && columnCount == 2) {
+      rows = 1;
+    }
     videoHeight = Math.floor(height / rows) - yMargin;
     // console.log("gallery", "columns", columnCount, "rows", rows, "grid", width, "x", height, "video", videoWidth, "x", videoHeight, "ideal height", idealVideoHeight);
 
