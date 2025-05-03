@@ -55,7 +55,7 @@
     }
 
     const xMargin = 4;
-    const yMargin = 1;
+    const yMargin = 2;
     videoWidth = Math.floor(width / columnCount) - xMargin;
     let idealVideoHeight = videoWidth / 16 * 9;
     let rows = Math.round(height / idealVideoHeight);
