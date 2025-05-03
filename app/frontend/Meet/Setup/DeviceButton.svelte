@@ -4,6 +4,7 @@
     classes="toggle"
     onClick={onToggleDevice}
     icon={video ? (on ? CameraIcon : CameraOffIcon) : (on ? MicrophoneIcon : MicrophoneOffIcon)}
+    selected={on}
     iconSize="24px"
     />
   <ButtonMenu bind:isMenuOpen>
@@ -14,6 +15,7 @@
       label={video ? $t`Select camera` : $t`Select microphone`}
       icon={DownIcon}
       iconSize="16px"
+      selected={on}
       disabled={!on}
       />
     <MenuLabel label={video ? $t`Your cameras` : $t`Your microphones`} />
@@ -23,7 +25,7 @@
           onClick={() => selectDevice(device)}
           icon={video ? CameraIcon : MicrophoneIcon}
           label={device.label}
-          selected={device.deviceId == selectedId}
+          selected={device.deviceId == selectedID}
           />
       {/each}
     {/if}
@@ -42,9 +44,11 @@
   import DownIcon from "lucide-svelte/icons/chevron-down";
   import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
+  import { createEventDispatcher } from 'svelte';
+  const dispatchEvent = createEventDispatcher<{ changeOn: boolean, changeDevice: string }>();
 
   export let on: boolean; /** in/out */
-  export let selectedId: string; /** in/out */
+  export let selectedID: string; /** in/out */
   export let video: boolean; /** video = true, mic = false */
   export let devices: MediaDeviceInfo[]; /** in */
 
@@ -52,11 +56,13 @@
 
   async function onToggleDevice() {
     on = !on;
+    dispatchEvent("changeOn", on);
   }
 
   async function selectDevice(device: MediaDeviceInfo) {
     assert(device?.kind == (video ? "videoinput" : "audioinput"), "Need camera/mic");
-    selectedId = device.deviceId;
+    selectedID = device.deviceId;
+    dispatchEvent("changeDevice", selectedID);
   }
 
   let isMenuOpen: boolean;
@@ -74,6 +80,7 @@
   }
   .device-button :global(button.select-device:not(:hover)) {
     background-color: var(--bg);
+    color: var(--fg);
   }
   .device-button :global(button.select-device.disabled) {
     visibility: hidden;

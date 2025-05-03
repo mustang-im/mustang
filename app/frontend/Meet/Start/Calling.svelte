@@ -216,8 +216,8 @@
   .device-setup :global(button.border svg path) {
     stroke-width: 1.5px;
   }
-  .device-setup :global(button.button) {
-    background-color: #CBCACA;
+  .device-setup :global(.self-video video) {
+    width: 350px;
   }
 
   .bottom-bar {

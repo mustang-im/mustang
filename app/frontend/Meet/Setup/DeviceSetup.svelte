@@ -5,14 +5,22 @@
   </vbox>
   <hbox class="buttons">
     <DeviceButton video={false} {devices}
-      bind:on={$micOn} bind:selectedId={$selectedMic} />
+      on={$micOnSetting.value}
+      selectedID={$selectedMicSetting.value}
+      on:changeOn={event => micOnSetting.value = event.detail}
+      on:changeDevice={event => selectedMicSetting.value = event.detail}
+      />
     <DeviceButton video={true} {devices}
-      bind:on={$cameraOn} bind:selectedId={$selectedCamera} />
+      on={$cameraOnSetting.value}
+      selectedID={$selectedCameraSetting.value}
+      on:changeOn={event => cameraOnSetting.value = event.detail}
+      on:changeDevice={event => selectedCameraSetting.value = event.detail}
+      />
   </hbox>
 </vbox>
 
 <script lang="ts">
-  import { cameraOn, micOn, selectedCamera, selectedMic } from "./selectedDevices";
+  import { cameraOnSetting, micOnSetting, selectedCameraSetting, selectedMicSetting } from "./selectedDevices";
   import { catchErrors } from "../../Util/error";
   import { onDestroy, onMount, tick } from "svelte";
   import DeviceButton from "./DeviceButton.svelte";
@@ -21,32 +29,40 @@
   let videoEl: HTMLVideoElement;
   let devices: MediaDeviceInfo[];
 
-  // $: $cameraOn, $micOn, $selectedCamera, $selectedMic, () => catchErrors(restartCamMic);
-  $: restartCamMic($cameraOn, $micOn, $selectedCamera, $selectedMic);
-
-  async function restartCamMic(...dummy: any[]) {
+  //$: $cameraOn, $micOn, $selectedCamera, $selectedMic, () => catchErrors(restartCamMic);
+  $: catchErrors(() => restartCamMic($cameraOnSetting, $micOnSetting, $selectedCameraSetting, $selectedMicSetting));
+  async function restartCamMic(..._dummy: any[]) {
     console.log("restart camera");
     await stopCamMic();
     await startCamMic();
   }
 
   async function startCamMic() {
-    if (!$cameraOn && !$micOn) {
+    if (!cameraOnSetting.value && !micOnSetting.value) {
       return;
     }
     cameraStream = await navigator.mediaDevices.getUserMedia({
-      video: $cameraOn ? {
-        deviceId: $selectedCamera,
-      } : undefined,
-      audio: $micOn ? {
-        deviceId: $selectedMic,
-      } : undefined,
+      video: cameraOnSetting.value ? {
+        deviceId: selectedCameraSetting.value,
+      } : false,
+      audio: micOnSetting.value ? {
+        deviceId: selectedMicSetting.value,
+      } : false,
     });
     if (!cameraStream || !videoEl) {
       return;
     }
     videoEl.srcObject = cameraStream;
-    await videoEl.play();
+    try {
+      await videoEl.play();
+    } catch (ex) {
+      if (ex?.message?.includes("https://goo.gl/LdLk22")) {
+        console.error(ex);
+        // ignore
+      } else {
+        throw ex;
+      }
+    }
 
     await getDevices();
   }
@@ -78,14 +94,18 @@
 
 <style>
   .self-video video {
+    align-items: center;
+    justify-content: center;
+  }
+  .self-video video {
     width: 100%;
     height: 100%;
-    aspect-ratio: 16/9;
     object-fit: contain;
   }
   .buttons {
     margin-block-start: -22px;
     justify-content: center;
+    z-index: 1;
   }
   .buttons :global(> *) {
     margin-inline-start: 4px;

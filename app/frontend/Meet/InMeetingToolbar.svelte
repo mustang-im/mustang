@@ -116,7 +116,7 @@
 <script lang="ts">
   import type { VideoConfMeeting } from "../../logic/Meet/VideoConfMeeting";
   import { meetMustangApp } from "./MeetMustangApp";
-  import { selectedCamera, selectedMic } from "./Setup/selectedDevices";
+  import { selectedCameraSetting, selectedMicSetting, cameraOnSetting, micOnSetting } from "./Setup/selectedDevices";
   import { openApp } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import { FakeMeeting } from "../../logic/Meet/FakeMeeting";
@@ -143,6 +143,7 @@
   import AddIcon from "lucide-svelte/icons/plus";
   import RemoveIcon from "lucide-svelte/icons/minus";
   import { getLocalStorage } from "../Util/LocalStorage";
+  import { catchErrors } from "../Util/error";
   import { t } from "../../l10n/l10n";
 
   export let meeting: VideoConfMeeting;
@@ -155,6 +156,19 @@
   $: participantsWithoutVideo = selectedView == View.SpeakerOnly ? participants :
       $participants.filter(p => !meeting.videos.find(video =>
         video.hasVideo && !video.isScreenShare && video.participant == p));
+
+  let meInited = false;
+  $: me && stream && catchErrors(() => meInit())
+  async function meInit() {
+    if (meInited) {
+      return;
+    }
+    meInited = true;
+    me.cameraOn = cameraOnSetting.value;
+    me.micOn = micOnSetting.value;
+    await stream.setMicOn(me.micOn, selectedMicSetting.value);
+    await stream.setCameraOn(me.cameraOn, selectedCameraSetting.value);
+  }
 
   async function leave() {
     await meeting.hangup();
@@ -170,12 +184,14 @@
 
   async function toggleMic() {
     me.micOn = !me.micOn;
-    await stream.setMicOn(me.micOn, $selectedMic);
+    await stream.setMicOn(me.micOn, selectedMicSetting.value);
+    micOnSetting.value = me.micOn;
   }
 
   async function toggleCamera() {
     me.cameraOn = !me.cameraOn;
-    await stream.setCameraOn(me.cameraOn, $selectedCamera);
+    await stream.setCameraOn(me.cameraOn, selectedCameraSetting.value);
+    cameraOnSetting.value = me.cameraOn;
   }
 
   async function toggleScreenShare() {
