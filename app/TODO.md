@@ -143,10 +143,18 @@
 
 # Meet
 ## UI
+* Gallery
+  * No y scrollbar, and remove yMargin
+  * Only half screen, if self video and alone
+* Mic level meter
+* Self: Black after turning off cam
+* Ring tone regressed
+* Close camera
 * Meeting pic in UI before joining conference
 
 ## Protocol
 * LiveKit
+  * Hand up
   * Reconnect
   * Server
   * Login
