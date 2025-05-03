@@ -30,15 +30,18 @@
 
   let gridColumns: string;
   const calculateColumnsDebounced = useDebounce(() => calculateColumns($videos.length, gridWidth, gridHeight, view), 100);
-  $: $videos, gridWidth, gridHeight, view, calculateColumnsDebounced();
+  $: $videos, showSelf, gridWidth, gridHeight, view, calculateColumnsDebounced();
   function calculateColumns(count: number, width: number, height: number, view: MeetVideoView) {
     if (!width) {
       return "";
     }
+    if (!showSelf && videos.find(v => v.isMe)) {
+      count--;
+    }
     const min = 100; /** minimum width per video, for manual view */
     const autoMin = 256; /** minimum width per video, for auto view */
     let columnCount = 1;
-    if (count < 2 && showSelf || width < min * 2 ||
+    if (count < 2 || width < min * 2 ||
       width < autoMin * 2 && view == MeetVideoView.GalleryAutoView) {
       columnCount = 1;
     } else if (count <= 4 || width < min * 3 || view == MeetVideoView.Gallery2x2View ||
