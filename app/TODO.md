@@ -143,7 +143,6 @@
 
 # Meet
 ## UI
-* Video still image remains after participant left
 * Show self
   * Show self in cam button
   * UI toggle
@@ -151,7 +150,6 @@
 
 ## Protocol
 * LiveKit
-  * No video when other is joining with both video and audio (works otherwise)
   * Reconnect
   * Server
   * Login

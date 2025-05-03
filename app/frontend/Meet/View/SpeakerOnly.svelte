@@ -25,6 +25,10 @@
 
   $: $videos, showParticipant, selectVideo();
   function selectVideo() {
+    if (!videos.contains(video)) {
+      video = null;
+    }
+
     if (showParticipant) {
       if (video?.participant == showParticipant) {
         return;
