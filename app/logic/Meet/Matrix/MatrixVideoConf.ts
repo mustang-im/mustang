@@ -68,7 +68,7 @@ export class MatrixVideoConf extends VideoConfMeeting {
     let call = createNewMatrixCall(client, chatRoom.id);
     assert(call, "Matrix failed to start the call");
     let meet = new MatrixVideoConf(client, call);
-    meet.state = MeetingState.OutgoingCallPrepare;
+    meet.state = MeetingState.OutgoingCallConfirm;
     return meet;
   }
 

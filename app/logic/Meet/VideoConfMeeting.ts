@@ -149,7 +149,7 @@ export class VideoConfMeeting extends Observable {
   readonly canHandUp: boolean = false;
 
   async call() {
-    assert(this.state == MeetingState.OutgoingCallPrepare, "Must be an outgoing call");
+    assert(this.state == MeetingState.OutgoingCallConfirm, "Must be an outgoing call");
     this.state = MeetingState.OutgoingCall;
   }
 
@@ -177,10 +177,13 @@ export class VideoConfMeeting extends Observable {
 export enum MeetingState {
   /** Initial state, before setting up. */
   Init = "init",
-  /** We're about to join a conference room, with a flexible number of attendants, but we didn't connect to the conference server yet. */
+  /** We're about to join a conference room, with a flexible number of attendants,
+   * but we didn't connect to the conference server yet.
+   * We are letting the user confirm that he really wants to join. */
   JoinConference = "join-conference",
-  /** User is about to call 1 or more people directly, but didn't start ringing yet. */
-  OutgoingCallPrepare = "outgoing-prepare",
+  /** User is about to call 1 or more people directly, but we didn't start ringing yet.
+   * Let the user confirm that he really wants to call out. */
+  OutgoingCallConfirm = "outgoing-confirm",
   /** We are calling others, and ringing them on their end. */
   OutgoingCall = "outgoing",
   /** Others are calling us. It's ringing on our end. */

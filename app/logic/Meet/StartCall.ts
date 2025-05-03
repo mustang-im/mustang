@@ -20,7 +20,7 @@ export async function startVideoCall(to: Person | Group): Promise<VideoConfMeeti
   callee.name = to.name;
   callee.picture = to.picture;
   call.participants.add(callee);
-  call.state = MeetingState.OutgoingCallPrepare;
+  call.state = MeetingState.OutgoingCallConfirm;
   appGlobal.meetings.add(call);
   return;
 

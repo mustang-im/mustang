@@ -14,7 +14,7 @@
   $: meeting = $meetings.first;
   $: meeting && openMeet();
   function openMeet() {
-    if (meeting.state == MeetingState.OutgoingCallPrepare ||
+    if (meeting.state == MeetingState.OutgoingCallConfirm ||
         meeting.state == MeetingState.OutgoingCall ||
         meeting.state == MeetingState.IncomingCall) {
       openApp(meetMustangApp);

@@ -132,7 +132,7 @@
     // TODO Figure out the best account to call this person
     let meeting = getAccount().newMeeting();
     await meeting.createNewConference();
-    meeting.state = MeetingState.OutgoingCallPrepare;
+    meeting.state = MeetingState.OutgoingCallConfirm;
     meeting.event = event;
     meeting.participants.add(callee);
     appGlobal.meetings.add(meeting);

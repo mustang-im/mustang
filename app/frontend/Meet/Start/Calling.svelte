@@ -5,7 +5,7 @@
     <vbox class="box">
       <vbox class="text">
         <hbox class="what">
-          {#if $meeting.state == MeetingState.OutgoingCallPrepare}
+          {#if $meeting.state == MeetingState.OutgoingCallConfirm}
             {$t`Do you want to call?`}
           {:else if $meeting.state == MeetingState.OutgoingCall}
             {$t`You're calling...`}
@@ -25,7 +25,7 @@
           {/if}
         </hbox>
         <hbox class="what">
-          {#if $meeting.state == MeetingState.OutgoingCallPrepare}
+          {#if $meeting.state == MeetingState.OutgoingCallConfirm}
           {:else if $meeting.state == MeetingState.OutgoingCall}
           {:else if $meeting.state == MeetingState.IncomingCall}
             {$t`is calling you...`}
@@ -40,7 +40,7 @@
         {/if}
       </vbox>
       <hbox class="actions">
-        {#if $meeting.state == MeetingState.Init || $meeting.state == MeetingState.OutgoingCallPrepare}
+        {#if $meeting.state == MeetingState.Init || $meeting.state == MeetingState.OutgoingCallConfirm}
           <RoundButton classes="cancel"
             label={$t`Cancel`}
             icon={XIcon}
@@ -58,7 +58,7 @@
         <hbox flex />
         {#if $meeting.state != MeetingState.OutgoingCall}
           <RoundButton classes="accept"
-            label={$meeting.state == MeetingState.Init ? $t`Start conference` : $meeting.state == MeetingState.OutgoingCallPrepare ? $t`Call` : $t`Accept call`}
+            label={$meeting.state == MeetingState.Init ? $t`Start conference` : $meeting.state == MeetingState.OutgoingCallConfirm ? $t`Call` : $t`Accept call`}
             icon={$meeting.state == MeetingState.Init ? OpenIcon : CallIcon}
             iconSize="24px"
             onClick={accept}
@@ -128,7 +128,7 @@
   async function accept() {
     if (meeting.state == MeetingState.IncomingCall) {
       await meeting.answer();
-    } else if (meeting.state == MeetingState.OutgoingCallPrepare) {
+    } else if (meeting.state == MeetingState.OutgoingCallConfirm) {
       await meeting.call();
     } else if (meeting.state == MeetingState.Init || meeting.state == MeetingState.JoinConference) {
       await meeting.start();
@@ -138,6 +138,7 @@
   }
 
   async function hangup() {
+    appGlobal.meetings.remove(meeting);
     await meeting.hangup();
   }
 </script>
