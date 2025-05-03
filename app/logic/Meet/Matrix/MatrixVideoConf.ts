@@ -45,6 +45,7 @@ export class MatrixVideoConf extends VideoConfMeeting {
           this.videos.add(new VideoStream(feed.stream, participant));
         }
       }
+      this.participants._notifySvelteOfChanges();
     });
     await this._call.placeVideoCall();
     this.state = MeetingState.Ongoing;

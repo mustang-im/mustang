@@ -273,6 +273,7 @@ export class M3Conf extends VideoConfMeeting {
       v.participant?.id == participantId);
     if (video) {
       this.videos.remove(video);
+      this.participants._notifySvelteOfChanges();
     }
   }
 
@@ -466,11 +467,13 @@ export class M3Conf extends VideoConfMeeting {
       }
     });
     this.videos.add(videoStream);
+    this.participants._notifySvelteOfChanges();
   }
 
   async stopVideoFromParticipant(video: VideoStream): Promise<void> {
     this.closePeerConnection(video.participant, video.isScreenShare);
     this.videos.remove(video);
+    this.participants._notifySvelteOfChanges();
   }
 
   protected closePeerConnection(participant: Participant, isScreen: boolean) {

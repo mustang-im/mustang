@@ -79,6 +79,9 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
     }
 
     video.stream.addTrack(track.mediaStreamTrack);
+
+    this.conf.videos._notifySvelteOfChanges(); // HACK InMeeting.svelte .filter() not observing items
+    this.conf.participants._notifySvelteOfChanges();
   }
   async removeTrack(track: Track) {
     console.log("Participant", this.rp.identity, "removed a track");
@@ -100,6 +103,8 @@ export class LiveKitRemoteParticipant extends MeetingParticipant {
         this.video = null;
       }
     }
+    this.conf.videos._notifySvelteOfChanges(); // HACK InMeeting.svelte .filter() not observing items
+    this.conf.participants._notifySvelteOfChanges();
   }
   async trackMuted(trackPub: TrackPublication) {
     this.updateProps();
