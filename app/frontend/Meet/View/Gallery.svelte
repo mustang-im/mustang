@@ -29,7 +29,7 @@
   let videoHeight: number;
 
   let gridColumns: string;
-  const calculateColumnsDebounced = useDebounce(() => calculateColumns($videos.length, gridWidth, gridHeight, view), 100);
+  const calculateColumnsDebounced = useDebounce(() => calculateColumns($videos.length, gridWidth, gridHeight, view), 20);
   $: $videos, showSelf, gridWidth, gridHeight, view, calculateColumnsDebounced();
   function calculateColumns(count: number, width: number, height: number, view: MeetVideoView) {
     if (!width) {
