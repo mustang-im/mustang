@@ -58,16 +58,15 @@
 
   let scrollE: Scroll;
   let visibleHeight = 0;
-  let focusHour: number;
   $: pxPerHour =  visibleHeight / showHours;
   $: scrollHeight = pxPerHour * (endHour - startHour);
-  $: if (start) focusHour = start.toDateString() == new Date().toDateString()
+  $: focusHour = start.toDateString() == new Date().toDateString()
     ? new Date().getHours()
     : defaultFocusHour;
   $: if (scrollE) scrollE.scrollTo((focusHour - 0.5) * pxPerHour);
 
   let startTimes: Date[] = [];
-  $: if (start) setStartTimes();
+  $: start, setStartTimes();
   function setStartTimes() {
     let startTime = new Date(start);
     startTime.setMinutes(0);
@@ -81,7 +80,7 @@
   }
 
   let days: Date[] = [];
-  $: if (start) setDays();
+  $: start, setDays();
   function setDays() {
     let startTime = new Date(start);
     if (showDays > 3) {
@@ -99,7 +98,7 @@
   }
 
   let allDayEvents: Collection<Event>;
-  $: if (!!start && $events) setAllDayEvents();
+  $: start, $events, setAllDayEvents();
   function setAllDayEvents() {
     let end = new Date(start.getTime() + showDays * k1DayMS);
     allDayEvents = events.filter(ev => ev.allDay && ev.startTime < end && start < ev.endTime);
