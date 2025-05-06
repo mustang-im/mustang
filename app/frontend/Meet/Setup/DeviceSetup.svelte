@@ -7,6 +7,7 @@
     <DeviceButton video={false} {devices}
       on={$micOnSetting.value}
       selectedID={$selectedMicSetting.value}
+      stream={cameraStream}
       on:changeOn={event => micOnSetting.value = event.detail}
       on:changeDevice={event => selectedMicSetting.value = event.detail}
       />
