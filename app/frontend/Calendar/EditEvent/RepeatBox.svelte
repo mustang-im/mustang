@@ -85,7 +85,7 @@
   let frequency = master.recurrenceRule?.frequency || Frequency.Daily;
   let interval = master.recurrenceRule?.interval || 1;
   // end // let count = Number.isFinite(event.recurrenceRule?.count) ? event.recurrenceRule.count : 1;
-  let weekdays = master.recurrenceRule?.weekdays || [event.startTime.getDay()];
+  let weekdays = master.recurrenceRule?.weekdays.slice() || [event.startTime.getDay()];
   let week = master.recurrenceRule?.week || 0;
   // end // let end = event.recurrenceRule?.endDate ? "date" : Number.isFinite(event.recurrenceRule?.count) ? "count" : "none";
   // end // let endDate = master.recurrenceRule?.endDate || event.startTime;
