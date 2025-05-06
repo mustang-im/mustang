@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite-node index.ts",
-    "build": "vite build"
+    "build": "vite build",
+    "build:android:arm64": "npm run build && cd ../../backend/node_modules/better-sqlite3 && npx prebuild-for-nodejs-mobile android-arm64"
   },
   "dependencies": {
     "vite-plugin-static-copy": "^2.3.1",
