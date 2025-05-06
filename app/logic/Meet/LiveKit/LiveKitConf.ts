@@ -2,12 +2,13 @@ import { VideoConfMeeting, MeetingState } from "../VideoConfMeeting";
 import { MeetingParticipant, ParticipantRole } from "../Participant";
 import type { LiveKitAccount } from "./LiveKitAccount";
 import { LiveKitMediaDeviceStreams } from "./LiveKitMediaDeviceStreams";
+import { LiveKitRemoteParticipant } from "./LiveKitRemoteParticipant";
 import { appGlobal } from "../../app";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { catchErrors } from "../../../frontend/Util/error";
 import { assert, type URLString } from "../../util/util";
 import { getUILocale, gt } from "../../../l10n/l10n";
-import { Room, RemoteParticipant, RoomEvent } from "livekit-client";
-import { LiveKitRemoteParticipant } from "./LiveKitRemoteParticipant";
-import { catchErrors } from "../../../frontend/Util/error";
+import { Room, RemoteParticipant, RoomEvent, type RpcInvocationData } from "livekit-client";
 
 export class LiveKitConf extends VideoConfMeeting {
   /* Authentication */
@@ -115,6 +116,15 @@ export class LiveKitConf extends VideoConfMeeting {
     this.myParticipant.subscribe((_obj, propName) => this.myUserChanged(propName));
     this.state = MeetingState.Ongoing;
 
+    this.room.localParticipant.registerRpcMethod("handUp", async (data: RpcInvocationData) => {
+      let remoteParticipant = this.participants.find((p: LiveKitRemoteParticipant) => p.rp.identity == data.callerIdentity);
+      assert(remoteParticipant, "LiveKit: Remote participant not found");
+      let up = sanitize.translate(data.payload, { "up": true, "down": false });
+      console.log(remoteParticipant.name, "has put hand", up ? "up" : "down");
+      remoteParticipant.handUp = up;
+      return "";
+    });
+
     for (let remoteParticipant of this.room.remoteParticipants.values()) {
       this.participantJoined(remoteParticipant);
     }
@@ -146,11 +156,21 @@ export class LiveKitConf extends VideoConfMeeting {
   protected myUserChanged(propName: string) {
     console.log("My participant changed", propName, "to", this.myParticipant[propName]);
     if (propName == "handUp") {
-      this.setMyAttribute("handUp", this.myParticipant.handUp);
+      this.setMyHandUp(this.myParticipant.handUp);
     }
   }
 
-  protected setMyAttribute(name: string, value: any) {
+  protected async setMyHandUp(up: boolean) {
+    for (let otherParticipant of this.participants) {
+      await this.room.localParticipant.performRpc({
+        destinationIdentity: (otherParticipant as LiveKitRemoteParticipant).rp.identity,
+        method: "handUp",
+        payload: up ? "up" : "down",
+      });
+    }
+  }
+
+  /*protected setMyAttribute(name: string, value: any) {
     if (value == null) {
       // Per docs: To delete an attribute key, set its value to an empty string ('').
       // <https://docs.livekit.io/home/client/state/participant-attributes/>
@@ -160,7 +180,7 @@ export class LiveKitConf extends VideoConfMeeting {
     Object.assign(attributes, this.room.localParticipant.attributes);
     attributes[name] = value;
     this.room.localParticipant.setAttributes(attributes);
-  }
+  }*/
 
   async answer() {
     await super.answer();
