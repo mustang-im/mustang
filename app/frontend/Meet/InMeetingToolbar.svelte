@@ -25,13 +25,14 @@
     selectedID={$selectedCameraSetting.value}
     on:changeOn={event => catchErrors(() => changeCameraOn(event.detail))}
     on:changeDevice={event => catchErrors(() => changeCameraSelected(event.detail))}
-    cameraStream={$stream.cameraMicStream}
+    stream={$stream.cameraMicStream}
     />
   <DeviceButton video={false} {devices}
     on={$me?.micOn}
     selectedID={$selectedMicSetting.value}
     on:changeOn={event => catchErrors(() => changeMicOn(event.detail))}
     on:changeDevice={event => catchErrors(() => changeMicSelected(event.detail))}
+    stream={$stream.cameraMicStream}
     />
   {#if !isSidebar}
     <hbox class="participants" flex>

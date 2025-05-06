@@ -4,12 +4,14 @@
     classes="toggle"
     onClick={onToggleDevice}
     selected={on}
-    padding={cameraStream && on ? "0px" : "8px"}
+    padding={stream && on ? "0px" : "8px"}
     border={false}
     >
     <svelte:fragment slot="icon">
-      {#if cameraStream && on}
-        <Video stream={cameraStream} muted={true} width={40} height={40} />
+      {#if stream && video && on}
+        <Video stream={stream} muted={true} width={40} height={40} />
+      {:else if stream && !video && on}
+        <AudioLevelMeter stream={stream} width={40} height={40} />
       {:else}
         <svelte:component this={icon} size="24px" />
       {/if}
@@ -54,6 +56,7 @@
   import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
   import { createEventDispatcher } from 'svelte';
+  import AudioLevelMeter from "./AudioLevelMeter.svelte";
   const dispatchEvent = createEventDispatcher<{ changeOn: boolean, changeDevice: string }>();
 
   export let on: boolean; /** in/out */
@@ -61,7 +64,7 @@
   export let video: boolean; /** video = true, mic = false */
   export let devices: MediaDeviceInfo[]; /** in */
   /** If you want to show the camera picture inside the cam on/off button, set this */
-  export let cameraStream: MediaStream | null = null;
+  export let stream: MediaStream | null = null;
 
   $: icon = video ? (on ? CameraIcon : CameraOffIcon) : (on ? MicrophoneIcon : MicrophoneOffIcon)
   $: availableDevices = devices?.filter(d => d.kind == (video ? "videoinput" : "audioinput")) ?? [];

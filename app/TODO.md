@@ -143,10 +143,8 @@
 
 # Meet
 ## UI
-* Mic level meter
-* Self: Black after turning off cam
-* Ring tone regressed
 * Close camera
+* Self: Black after turning off cam
 * Meeting pic in UI before joining conference
 
 ## Protocol
