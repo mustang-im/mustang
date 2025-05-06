@@ -51,10 +51,11 @@
     config.username = jid;
     config.name = jid;
     config.realname = appGlobal.me.name ?? config.username;
+    /* If `config.url` is not set, finds the URL using `/.well-known/host-meta.json`
     config.hostname = getDomainForEmailAddress(jid);
     config.port = 5281;
     config.tls = TLSSocketType.TLS;
-    config.url = `wss://${config.hostname}:${config.port}/xmpp-websocket`;
+    config.url = `wss://${config.hostname}/...`; */
   }
 
   async function onContinue() {
@@ -66,10 +67,9 @@
 
   let errorMessage: string | null = null;
   function showError(ex: Error) {
-    console.log("show error 1");
     console.error(ex);
-    errorMessage = ex.message ?? ex + "";
     logError(ex);
+    errorMessage = ex.message ?? ex + "";
   }
 </script>
 

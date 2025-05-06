@@ -39,14 +39,15 @@ export class XMPPAccount extends ChatAccount {
       // credentials: { token: ... }, TODO OAuth2
 
       // If you have a .well-known/host-meta.json file for your
-      // domain, the connection transport config can be skipped.
+      // domain, the connection transports can be set to `true`.
       transports: {
-        websocket: this.url?.startsWith("wss:") ? this.url : undefined,
-        // bosh: this.url.startsWith("https:") ? this.url : undefined,
-      }
+        websocket: this.url?.startsWith("wss:") ? this.url : !this.url,
+        bosh: this.url?.startsWith("https:") ? this.url : !this.url,
+      },
     });
     this.addListeners();
     await this.client.connect();
+    console.log("client", this.client.config);
     if (!this.client.jid) {
       throw new ConnectError(new Error(), gt`Failed to connect to chat account ${this.name}`);
     }
