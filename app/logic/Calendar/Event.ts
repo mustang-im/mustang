@@ -27,14 +27,8 @@ export class Event extends Observable {
 
   @notifyChangedProperty
   startTime: Date;
-  _endTime: Date;
-  @notifyChangedAccessor
-  set endTime(val) {
-    this._endTime = val;
-  }
-  get endTime() {
-    return this._endTime;
-  }
+@notifyChangedProperty
+  endTime: Date;
   @notifyChangedProperty
   allDay = false;
   /** IANA timezone name, e.g. "Europe/Berlin" */
