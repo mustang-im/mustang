@@ -58,7 +58,7 @@
     }
 
     const xMargin = 0;
-    const yMargin = 2;
+    const yMargin = 0;
     videoWidth = Math.floor(width / columnCount) - xMargin;
     let idealVideoHeight = videoWidth / 16 * 9;
     let rows = Math.round(height / idealVideoHeight);
@@ -79,5 +79,11 @@
   .participants {
     display: grid;
     /* grid-template-columns/rows: see code above */
+  }
+  .gallery :global(.scroll) {
+    scroll-snap-type: y mandatory;
+  }
+  .participants > :global(.participant) {
+    scroll-snap-align: start;
   }
 </style>
