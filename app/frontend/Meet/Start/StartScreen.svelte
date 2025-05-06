@@ -29,13 +29,13 @@
     <vbox flex class="upcoming">
       <hbox class="title font-small">{$t`Today's next meetings`}</hbox>
       <MeetingList meetings={upcomingMeetings}>
-        <div slot="emptyMsg" class="emptyMsg font-smallest">{$t`No meetings coming up`}</div>
+        <div slot="emptyMsg" class="emptyMsg font-small">{$t`No meetings coming up`}</div>
       </MeetingList>
     </vbox>
     <vbox flex class="previous">
       <hbox class="title font-small">{$t`Previous meetings`}</hbox>
       <MeetingList meetings={previousMeetings}>
-        <div slot="emptyMsg" class="emptyMsg font-smallest">{$t`No recent meetings`}</div>
+        <div slot="emptyMsg" class="emptyMsg font-small">{$t`No recent meetings`}</div>
       </MeetingList>
     </vbox>
     <hbox class="test">
