@@ -36,7 +36,7 @@
             <RoundButton
              label={$t`Delete remainder of series`}
              icon={DeleteIcon}
-             onClick={onDeleteForward}
+             onClick={onDeleteRemainder}
              classes="plain delete"
              border={false}
              iconSize="16px"
@@ -81,14 +81,14 @@
             <RoundButton
              label={$t`Change remainder of series`}
              icon={SaveIcon}
-             onClick={onChangeForward}
+             onClick={onChangeRemainder}
              classes="plain save-or-close"
              filled={true}
              iconSize="16px"
              />
           {/if}
         {/if}
-        {#if canSave && !(event.parentEvent && repeatBox)}
+        {#if canSave && ($event.hasChanged() || repeatBox && !event.parentEvent)}
           <RoundButton
             label={$t`Revert`}
             icon={RevertIcon}
@@ -149,7 +149,7 @@
 
   $: event.startEditing(); // not `$event`
   $: canSave = event && $event.title && $event.startTime && $event.endTime &&
-      event.startTime.getTime() <= event.endTime.getTime() && (repeatBox || $event.hasChanged());
+      event.startTime.getTime() <= event.endTime.getTime();
   $: seriesStatus = event.seriesStatus;
 
   function confirmAndChangeRecurrenceRule(): boolean {
@@ -167,7 +167,7 @@
     } else {
       let rule = repeatBox.newRecurrenceRule();
       if (master.recurrenceRule) {
-        if (rule.isCompatible(master.recurrenceRule)) {
+        if (rule.isCompatible(master.recurrenceRule) && event.duration == master.duration) {
           return true;
         }
         if (!confirm($t`This change will reset all of your series to default values.`)) {
@@ -189,6 +189,10 @@
   }
 
   async function onSave() {
+    await saveEvent(event);
+  }
+
+  async function saveEvent(event) {
     // Turning a single event into a series.
     // (The reverse is done in `onChangeAll`.)
     if (repeatBox) {
@@ -217,15 +221,11 @@
     onClose();
   }
 
-  async function onChangeForward() {
+  async function onChangeRemainder() {
     let master = event.calendar.newEvent();
     master.copyEditableFieldsFrom(event);
     master.calUID = null;
-    master.recurrenceRule = repeatBox.newRecurrenceRule();
-    master.recurrenceCase = RecurrenceCase.Master;
-    master.fillRecurrences(new Date(Date.now() + 1e11));
-    await master.saveToServer();
-    await master.save();
+    await saveEvent(master);
     await event.truncateRecurrence();
     onClose();
   }
@@ -251,7 +251,7 @@
     onClose();
   }
 
-  async function onDeleteForward() {
+  async function onDeleteRemainder() {
     await event.truncateRecurrence();
     onClose();
   }

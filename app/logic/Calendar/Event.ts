@@ -27,7 +27,7 @@ export class Event extends Observable {
 
   @notifyChangedProperty
   startTime: Date;
-  @notifyChangedProperty
+@notifyChangedProperty
   endTime: Date;
   @notifyChangedProperty
   allDay = false;
@@ -294,15 +294,16 @@ export class Event extends Observable {
    * Calculates the position of this instance in a recurring series.
    * "none" - event isn't an instance or exception
    * "only" - event is the only instance or exception remaining
-   * "first" - event is the earliest instance or exception remaining
    * "last" - event is the last instance, but there may be more exceptions
+   * "exception" - event is an exception and there are further instances
+   * "first" - event is the first instance after exclusions
    * "middle" - event is an instance, but none of the above apply
    * In particular:
    * "only" - don't delete the event, delete the master instead
    * "first" - offer to edit the whole series
    * "middle" - offer to edit the remainder of the series
    */
-  get seriesStatus(): "none" | "only" | "first" | "last" | "middle" {
+  get seriesStatus(): "none" | "only" | "last" | "exception" | "first" | "middle" {
     // Normally the parent of an instance would always have a
     // recurrence rule, but this might get removed during saving,
     // and would cause Svelte to crash if we didn't handle it.
@@ -314,7 +315,7 @@ export class Event extends Observable {
     let slice = this.parentEvent.instances.contents.slice(pos + 1);
     let isFirst = this.parentEvent.instances.getIndexRange(0, pos).every(instance => instance === null);
     let isLast = (rule.count != Infinity || rule.endDate) && slice.every(instance => instance === null || instance?.dbID) && !rule.getOccurrenceByIndex(this.parentEvent.instances.length + 1);
-    return isLast ? isFirst && slice.every(instance => instance === null) ? "only" : "last" : isFirst ? "first" : "middle";
+    return isLast ? isFirst && slice.every(instance => instance === null) ? "only" : "last" : this.isNew ? isFirst ? "first" : "middle" : "exception";
   }
 
   /**
@@ -355,7 +356,7 @@ export class Event extends Observable {
 
   /** Delete multiple instances */
   async makeExclusions(indices: number[]) {
-    let exclusions = [];
+    let exclusions: Event[] = [];
     for (let index of indices) {
       let previous = this.instances.get(index);
       this.instances.set(index, null);
@@ -365,7 +366,7 @@ export class Event extends Observable {
     }
     this.calendar.events.removeAll(exclusions);
     for (let exclusion of exclusions) {
-      if (!exclusion.isNew()) {
+      if (!exclusion.isNew) {
         await this.calendar.storage.deleteEvent(exclusion);
       }
     }

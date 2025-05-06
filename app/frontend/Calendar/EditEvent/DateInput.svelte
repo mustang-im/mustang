@@ -29,7 +29,7 @@
   function onChange() {
     let [fullYear, month, day] = value.split("-");
     date.setFullYear(parseInt(fullYear), parseInt(month) - 1, parseInt(day));
-    date = date;
+    date = new Date(date);
   }
 </script>
 

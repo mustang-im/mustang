@@ -92,8 +92,8 @@
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
+  let showRepeat = event.recurrenceRule || event.parentEvent && event.isNew;
 
-  $: showRepeat = false;
   $: showReminder = !!$event.alarm;
   $: showParticipants = $event.participants.hasItems;
   $: showLocation = !!$event.location;

@@ -93,6 +93,7 @@
   export let event: Event;
 
   $: showTimezone = $event.timezone != myTimezone();
+  $: $event.endTime, checkEndTime();
   $: isMultipleDays = $event.startTime && $event.endTime && $event.endTime.toLocaleDateString() != $event.startTime.toLocaleDateString();
   let durationUnit: DurationUnit;
   let durationInUnit: number;
@@ -138,7 +139,6 @@
     event.notifyObservers();
   }
 
-  $: $event.endTime, checkEndTime()
   function checkEndTime() {
     if (event.endTime.getTime() <= event.startTime.getTime()) {
       event.endTime.setTime(event.startTime.getTime() + 1);
