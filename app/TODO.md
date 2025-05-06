@@ -143,8 +143,6 @@
 
 # Meet
 ## UI
-* Gallery
-  * Only half screen, if self video and alone
 * Mic level meter
 * Self: Black after turning off cam
 * Ring tone regressed

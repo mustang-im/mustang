@@ -57,15 +57,13 @@
       columnCount = 5;
     }
 
-    const xMargin = 0;
-    const yMargin = 0;
-    videoWidth = Math.floor(width / columnCount) - xMargin;
+    videoWidth = Math.floor(width / columnCount);
     let idealVideoHeight = videoWidth / 16 * 9;
     let rows = Math.round(height / idealVideoHeight);
     if (count <= 2 && columnCount <= 2) {
       rows = 1;
     }
-    videoHeight = Math.floor(height / rows) - yMargin;
+    videoHeight = Math.floor(height / rows);
     // console.log("gallery", "columns", columnCount, "rows", rows, "grid", width, "x", height, "video", videoWidth, "x", videoHeight, "ideal height", idealVideoHeight);
 
     gridColumns = `repeat(${columnCount}, 1fr)`;
