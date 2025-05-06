@@ -183,8 +183,10 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
   }
 
   /**
-   * Checks whether this rule will invalidate existing occurrences.
-   * We don't check the series length though, as the UI never sets one.
+   * When you change the entire series, that could include changing when it
+   * recurs. The UI uses this function to tell whether the recurrence was
+   * edited, as this will cause all exceptions and exclusions to be reset.
+   * But we can't check the series length though, as the UI never sets one.
    */
   isCompatible(rule: RecurrenceRule) {
     let allWeekdays = [0, 1, 2, 3, 4, 5, 6];
