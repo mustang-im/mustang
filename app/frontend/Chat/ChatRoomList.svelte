@@ -13,9 +13,9 @@
 
 <script lang="ts">
   import { Chat } from "../../logic/Chat/Chat";
-  import type { Collection } from "svelte-collections";
   import PersonsList from "../Contacts/Person/PersonsList.svelte";
   import { getDateTimeString } from "../Util/date";
+  import type { Collection } from "svelte-collections";
 
   export let chatRooms: Collection<Chat>;
   export let selectedChat: Chat;
