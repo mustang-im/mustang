@@ -102,7 +102,7 @@
   $: $event.startTime, updateDateUI();
   function updateDateUI() {
     yearWeekOptions = [{ label: $t`On ${event.startTime.toLocaleDateString(getUILocale(), { day: "numeric", month: "long" })}`, value: 0 }];
-    monthWeekOptions = [{ label: $t`On day ${event.startTime.toLocaleDateString(getUILocale(), { day: "numeric" })} of every month`, value: 0 }];
+    monthWeekOptions = [{ label: $t`On ${event.startTime.toLocaleDateString(getUILocale(), { day: "numeric" })}. of every month`, value: 0 }];
 
     let weekday = event.startTime.toLocaleDateString(getUILocale(), { weekday: "long" });
     let weekno = Math.ceil(event.startTime.getDate() / 7);
