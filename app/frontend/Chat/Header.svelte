@@ -2,8 +2,24 @@
   <AccountSelectorRound bind:selectedAccount {accounts} iconDefault={ChatIcon} />
   <hbox flex />
   <hbox class="buttons">
+    {#if !$selectedAccount?.isLoggedIn}
+      <RoundButton
+        label={$t`Login`}
+        icon={LoginIcon}
+        classes="small"
+        iconSize="12px"
+        onClick={() => $selectedAccount.login(true)}
+        />
+    {/if}
     <!--
-    <RoundButton label={$t`New group`} icon={NewGroupIcon} iconSize="22px" padding="9px" classes="large create" on:click={() => catchErrors(addGroup)} />
+    <RoundButton
+      label={$t`New group`}
+      icon={NewGroupIcon}
+      iconSize="22px"
+      padding="9px
+      classes="large create"
+      on:click={() => catchErrors(addGroup)}
+      />
     -->
   </hbox>
 </hbox>
@@ -14,6 +30,7 @@
   import RoundButton from "../Shared/RoundButton.svelte";
   import NewGroupIcon from "lucide-svelte/icons/plus";
   import ChatIcon from "lucide-svelte/icons/message-square-text";
+  import LoginIcon from "lucide-svelte/icons/key-round";
   import { catchErrors } from "../Util/error";
   import { NotImplemented } from "../../logic/util/util";
   import { Collection } from "svelte-collections";
