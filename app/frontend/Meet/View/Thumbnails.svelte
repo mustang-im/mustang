@@ -1,12 +1,14 @@
 <Splitter initialRightRatio={0.25} rightMinWidth={60}>
   <SpeakerOnly {videos} {showParticipant} {me} slot="left" />
-  <Scroll slot="right">
-    <vbox class="participants" bind:clientWidth={videoWidth}>
-      {#each $videos.each as video (video.id)}
-        <ParticipatingVideo {video} {showSelf} width={videoWidth} height={videoHeight} />
-      {/each}
-    </vbox>
-  </Scroll>
+  <vbox class="thumbnails" slot="right">
+    <Scroll>
+      <vbox class="participants" bind:clientWidth={videoWidth}>
+        {#each $videos.each as video (video.id)}
+          <ParticipatingVideo {video} {showSelf} width={videoWidth} height={videoHeight} />
+        {/each}
+      </vbox>
+    </Scroll>
+  </vbox>
 </Splitter>
 
 <script lang="ts">
@@ -28,4 +30,7 @@
 </script>
 
 <style>
+  .thumbnails :global(.scroll) {
+    overflow-x: hidden;
+  }
 </style>
