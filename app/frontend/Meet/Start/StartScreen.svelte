@@ -5,11 +5,9 @@
         <Button label={$t`Call ${$selectedPerson.name}`} onClick={callSelected} errorCallback={showError} classes="call-person secondary">
           <PersonPicture slot="icon" person={$selectedPerson} size={24} />
         </Button>
-        <Button label={$t`Test incoming call`} icon={VideoIcon} onClick={testIncoming} errorCallback={showError} classes="secondary" />
       {/if}
-      <Button label={$t`Plan a meeting`} icon={AddToCalendarIcon} classes="secondary" iconSize="14px" />
       <Button label={$t`Start an ad-hoc meeting`} icon={VideoIcon} onClick={startAdHocMeeting} errorCallback={showError} classes="secondary" />
-      <Button label={$t`Start a fake meeting`} icon={VideoIcon} onClick={startFakeMeeting} errorCallback={showError} classes="secondary" />
+      <Button label={$t`Plan a meeting`} icon={AddToCalendarIcon} classes="secondary" iconSize="14px" />
       <hbox>
         <input class="meeting-link" type="url" bind:value={conferenceURL}
           placeholder={$t`Enter meeting link to join`}
@@ -40,6 +38,16 @@
         <div slot="emptyMsg" class="emptyMsg font-smallest">{$t`No recent meetings`}</div>
       </MeetingList>
     </vbox>
+    <hbox class="test">
+      <ExpandSection>
+        <vbox class="buttons">
+          {#if $selectedPerson}
+            <Button label={$t`Test incoming call`} icon={VideoIcon} onClick={testIncoming} errorCallback={showError} classes="secondary" />
+          {/if}
+          <Button label={$t`Start a fake meeting`} icon={VideoIcon} onClick={startFakeMeeting} errorCallback={showError} classes="secondary" />
+        </vbox>
+      </ExpandSection>
+    </hbox>
   </vbox>
 </hbox>
 
@@ -66,6 +74,7 @@
   import { sleep, UserError } from "../../../logic/util/util";
   import { mergeColls } from "svelte-collections";
   import { faker } from "@faker-js/faker";
+  import ExpandSection from "../../Shared/ExpandSection.svelte";
 
   const allEvents = mergeColls(appGlobal.calendars.map(calendar => calendar.events));
   const now = new Date();
@@ -193,6 +202,18 @@
   .actions-container .error {
     position: absolute;
     bottom: 100px;
+  }
+  .test {
+    align-self: end;
+  }
+  .test:not(:hover) :global(.buttons.top-right) {
+    visibility: hidden;
+  }
+  .test .buttons {
+    margin-block-end: 12px;
+  }
+  .test .buttons :global(> *) {
+    margin-block-end: 12px;
   }
   .meeting-link {
     margin-inline-end: 4px;
