@@ -167,7 +167,7 @@
     } else {
       let rule = repeatBox.newRecurrenceRule();
       if (master.recurrenceRule) {
-        if (rule.isCompatible(master.recurrenceRule)) {
+        if (rule.isCompatible(master.recurrenceRule) && event.duration == master.duration) {
           return true;
         }
         if (!confirm($t`This change will reset all of your series to default values.`)) {
