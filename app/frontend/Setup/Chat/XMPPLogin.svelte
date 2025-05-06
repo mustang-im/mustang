@@ -2,6 +2,10 @@
   title={$t`Set up your existing XMPP account`}
   subtitle={$t`Import your existing XMPP or Jabber account`}
 />
+{#if errorMessage}
+  <ErrorMessage {errorMessage} errorGravity={ErrorGravity.Error}
+    on:continue={() => errorMessage = null} />
+{/if}
 <vbox flex class="account">
   <grid>
     <label for="username">{$t`Your JID`}</label>
@@ -17,6 +21,7 @@
   canContinue={!!config.username && !!config.password}
   canCancel={true}
   onCancel={onCancel}
+  errorCallback={showError}
   />
 
 <script lang="ts">
@@ -28,6 +33,8 @@
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
   import { t } from "../../../l10n/l10n";
+  import ErrorMessage, { ErrorGravity } from "../../Shared/ErrorMessage.svelte";
+  import { logError } from "../../Util/error";
 
   /** in/out */
   export let config: XMPPAccount;
@@ -55,6 +62,14 @@
     await config.save();
     appGlobal.chatAccounts.add(config);
     showPage = null;
+  }
+
+  let errorMessage: string | null = null;
+  function showError(ex: Error) {
+    console.log("show error 1");
+    console.error(ex);
+    errorMessage = ex.message ?? ex + "";
+    logError(ex);
   }
 </script>
 
