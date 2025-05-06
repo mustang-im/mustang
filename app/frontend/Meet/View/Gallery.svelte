@@ -80,7 +80,7 @@
   .gallery :global(.scroll) {
     scroll-snap-type: y mandatory;
   }
-  .participants :global(.participant) {
+  .participants > :global(.participant) {
     scroll-snap-align: start;
   }
 </style>
