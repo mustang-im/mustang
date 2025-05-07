@@ -398,7 +398,8 @@ function directory(type: string): string {
  * Mac OS: /Users/USER/Library/Application Support/Mustang
  */
 function getConfigDir(): string {
-  return os.homedir();
+  let dir = path.join(os.homedir(), "data", "im.mustang.capa");
+  return dir;
 }
 
 /**
