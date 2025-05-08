@@ -2,6 +2,8 @@ import { defineConfig } from 'vite';
 import nodeExternals from 'rollup-plugin-node-externals';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import esmShim from '@rollup/plugin-esm-shim';
+import execute from 'rollup-plugin-execute';
+import { arch } from './build';
 
 export default defineConfig({
   ssr: { noExternal: true },
@@ -22,29 +24,34 @@ export default defineConfig({
     }
   },
   plugins: [
+    { enforce: 'pre',
+      ...execute(`cd ../../backend/node_modules/better-sqlite3 && npx prebuild-for-nodejs-mobile ${arch}`)
+    },
     nodeExternals({
       deps: false,
       devDeps: true, // Use node.js internal modules
     }),
     // Required for proper error messages
     esmShim(),
-    viteStaticCopy({
-      targets: [
-        {
-          src: 'dist/index.js',
-          dest: '../../../app/dist/nodejs',
-          rename: 'index.mjs',
-        },
-        {
-          src: 'package-deploy.json',
-          dest: '../../../app/dist/nodejs',
-          rename: 'package.json',
-        },
-        {
-          src: '../../backend/node_modules/better-sqlite3/prebuilds/android-arm64/better_sqlite3.node',
-          dest: '../../../app/dist/nodejs/build'
-        }
-      ]
-    }),
+    { enforce: 'post',
+      ...viteStaticCopy({
+        targets: [
+          {
+            src: 'dist/index.js',
+            dest: '../../../app/dist/nodejs',
+            rename: 'index.mjs',
+          },
+          {
+            src: 'package-deploy.json',
+            dest: '../../../app/dist/nodejs',
+            rename: 'package.json',
+          },
+          {
+            src: `../../backend/node_modules/better-sqlite3/prebuilds/${arch}/better_sqlite3.node`,
+            dest: '../../../app/dist/nodejs/build'
+          }
+        ]
+      }),
+    }
   ],
 });
