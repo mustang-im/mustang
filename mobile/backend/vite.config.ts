@@ -25,12 +25,12 @@ export default defineConfig({
       targets: [
         {
           src: 'dist/index.js',
-          dest: '../../../app/dist/nodejs',
+          dest: '../../dist/nodejs',
           rename: 'index.mjs',
         },
         {
           src: 'package-deploy.json',
-          dest: '../../../app/dist/nodejs',
+          dest: '../../dist/nodejs',
           rename: 'package.json',
         },
       ]
