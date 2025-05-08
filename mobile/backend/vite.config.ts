@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import nodeExternals from 'rollup-plugin-node-externals';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import esmShim from '@rollup/plugin-esm-shim';
 
 export default defineConfig({
   ssr: { noExternal: true },
@@ -15,12 +16,18 @@ export default defineConfig({
     emptyOutDir: true,
     minify: false,
     ssr: true,
+    commonjsOptions: {
+      // To load better-sqlite3
+      ignoreDynamicRequires: true,
+    },
   },
   plugins: [
     nodeExternals({
       deps: false,
       devDeps: true, // Use node.js internal modules
     }),
+    // Required for proper error messages
+    esmShim(),
     viteStaticCopy({
       targets: [
         {
@@ -33,6 +40,10 @@ export default defineConfig({
           dest: '../../dist/nodejs',
           rename: 'package.json',
         },
+        {
+          src: `node_modules/better-sqlite3/prebuilds/${process.env.MOBILE_ARCH}/better_sqlite3.node`,
+          dest: '../../dist/nodejs/build'
+        }
       ]
     }),
   ],

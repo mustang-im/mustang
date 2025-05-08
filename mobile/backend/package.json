@@ -4,7 +4,12 @@
   "description": "Mustang Mobile Backend",
   "main": "./index.ts",
   "type": "module",
+  "scripts": {
+    "prebuild": "cd node_modules/better-sqlite3 && npx prebuild-for-nodejs-mobile $MOBILE_ARCH",
+    "build": "vite build"
+  },
   "dependencies": {
+    "better-sqlite3": "^11.10.0",
     "vite-plugin-static-copy": "^2.3.1",
     "ws": "^8.16.0"
   },
@@ -12,6 +17,7 @@
     "**/iconv-lite": "^0.6.3"
   },
   "devDependencies": {
+    "@rollup/plugin-esm-shim": "^0.1.8",
     "rollup-plugin-node-externals": "^8.0.0",
     "vite": "^5.4.2"
   },
