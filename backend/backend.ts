@@ -398,10 +398,14 @@ function directory(type: string): string {
  * Mac OS: /Users/USER/Library/Application Support/Mustang
  */
 function getConfigDir(): string {
+  let dir: string = os.homedir();
   if (os.platform() == "android") {
-    return path.join(os.homedir(), "data", "im.mustang.capa", "config");
+    dir = path.join(os.homedir(), "data", "im.mustang.capa", "config");
   }
-  return os.homedir();
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir);
+  }
+  return dir;
 }
 
 /**
@@ -417,10 +421,14 @@ function getConfigDir(): string {
  * Mac OS: /Users/USER/Library/Mustang
  */
 function getFilesDir(): string {
+  let dir: string = os.homedir();
   if (os.platform() == "android") {
-    return path.join(os.homedir(), "data", "im.mustang.capa", "files");
+    dir = path.join(os.homedir(), "data", "im.mustang.capa", "files");
   }
-  return os.homedir();
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir);
+  }
+  return dir;
 }
 
 function assert(test, errorMessage): asserts test {
