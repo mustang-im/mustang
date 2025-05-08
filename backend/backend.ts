@@ -398,6 +398,9 @@ function directory(type: string): string {
  * Mac OS: /Users/USER/Library/Application Support/Mustang
  */
 function getConfigDir(): string {
+  if (os.platform() == "android") {
+    return path.join(os.homedir(), "data", "im.mustang.capa", "config");
+  }
   return os.homedir();
 }
 
@@ -414,6 +417,9 @@ function getConfigDir(): string {
  * Mac OS: /Users/USER/Library/Mustang
  */
 function getFilesDir(): string {
+  if (os.platform() == "android") {
+    return path.join(os.homedir(), "data", "im.mustang.capa", "files");
+  }
   return os.homedir();
 }
 
