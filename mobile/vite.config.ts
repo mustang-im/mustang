@@ -7,7 +7,7 @@ import { includeProprietary, production, webMail } from '../app/logic/build';
 
 export default defineConfig({
   root: './src',
-  publicDir: '../app/public',
+  publicDir: '../../app/public',
   build: {
     outDir: '../dist',
     minify: false,
@@ -23,7 +23,7 @@ export default defineConfig({
         PROPRIETARY: includeProprietary ? true : undefined,
       },
     }),
-    nodePolyfills({include: ['buffer'], globals: {global: false, process: false}}),
+    nodePolyfills({ include: ['buffer'], globals: { global: true, process: webMail } }),
     svelte({configFile: '../svelte.config.mjs'}),
     sentryVitePlugin({
       org: "mustang-jq",
