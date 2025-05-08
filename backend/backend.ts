@@ -398,7 +398,7 @@ function directory(type: string): string {
  * Mac OS: /Users/USER/Library/Application Support/Mustang
  */
 function getConfigDir(): string {
-  let dir = path.join(os.homedir(), "data", "im.mustang.capa");
+  let dir = path.join(os.homedir(), "data", "im.mustang.capa", "config");
   return dir;
 }
 
@@ -415,7 +415,8 @@ function getConfigDir(): string {
  * Mac OS: /Users/USER/Library/Mustang
  */
 function getFilesDir(): string {
-  return os.homedir();
+  let dir = path.join(os.homedir(), "data", "im.mustang.capa", "files");
+  return dir;
 }
 
 function assert(test, errorMessage): asserts test {
