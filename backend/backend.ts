@@ -385,6 +385,8 @@ function directory(type: string): string {
   return os.homedir();
 }
 
+let homeDir: string = os.homedir();
+let configDir: string;
 /**
  * Get the user config directory on disk.
  *
@@ -398,9 +400,20 @@ function directory(type: string): string {
  * Mac OS: /Users/USER/Library/Application Support/Mustang
  */
 function getConfigDir(): string {
-  return os.homedir();
+  if (!configDir) {
+    if (os.platform() == "android") {
+      configDir = path.join(homeDir, "data", "im.mustang.capa", "config");
+    } else {
+      configDir = homeDir;
+    }
+    if (!fs.existsSync(configDir)) {
+      fs.mkdirSync(configDir);
+    }
+  }
+  return configDir;
 }
 
+let filesDir: string;
 /**
  * Get the directory on disk where we store the files that our user exchanged with others.
  * E.g. file sharing, email attachments, chat transfer files, and email backups.
@@ -414,7 +427,17 @@ function getConfigDir(): string {
  * Mac OS: /Users/USER/Library/Mustang
  */
 function getFilesDir(): string {
-  return os.homedir();
+  if (!filesDir) {
+    if (os.platform() == "android") {
+      filesDir = path.join(homeDir, "data", "im.mustang.capa", "config");
+    } else {
+      filesDir = homeDir;
+    }
+    if (!fs.existsSync(filesDir)) {
+      fs.mkdirSync(filesDir);
+    }
+  }
+  return filesDir;
 }
 
 function assert(test, errorMessage): asserts test {
