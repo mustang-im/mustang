@@ -14,22 +14,4 @@ export default defineConfig({
     emptyOutDir: true,
     sourcemap: production,
   },
-  plugins: [
-    conditionalCompile({
-      // <https://github.com/LZS911/vite-plugin-conditional-compile/blob/master/README.md>
-      env: {
-        // For conditional `// #if [FOO]` statements in the code
-        WEBMAIL: webMail && includeProprietary ? webMail : undefined,
-        PROPRIETARY: includeProprietary ? true : undefined,
-      },
-    }),
-    nodePolyfills({ include: ['buffer'], globals: { global: true, process: webMail } }),
-    svelte({configFile: '../svelte.config.mjs'}),
-    sentryVitePlugin({
-      org: "mustang-jq",
-      project: "mustang",
-      authToken: process.env.SENTRY_AUTH_TOKEN,
-      disable: !production,
-    }),
-  ],
 });
