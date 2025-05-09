@@ -1,7 +1,7 @@
 {
   "appId": "im.mustang.capa",
   "appName": "Mustang",
-  "webDir": "../app/dist",
+  "webDir": "./dist",
   "bundleWebRuntime": false,
   "plugins": {
     "CapacitorNodeJS": {
