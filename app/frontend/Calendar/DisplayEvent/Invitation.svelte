@@ -1,7 +1,7 @@
 <vbox class="invitation">
   {#if $message.event}
     <InvitationDisplay event={message.event} />
-  {:else if message.scheduling}
+  {:else if message.invitationMessage}
     {#await message.loadEvent()}
       {$t`Loading event...`}
     {:then}
@@ -14,7 +14,7 @@
       {ex?.message ?? ex}
     {/await}
   {/if}
-  {#if message.scheduling == InvitationMessage.Invitation}
+  {#if message.invitationMessage == InvitationMessage.Invitation}
     <hbox class="buttons">
       <Button
         label={$t`Confirm *=> Confirm to attend the meeting`}
