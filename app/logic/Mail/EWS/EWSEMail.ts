@@ -1,17 +1,18 @@
 import { EMail } from "../EMail";
 import { type EWSFolder, getEWSItem } from "./EWSFolder";
-import type { EWSCalendar } from "../../Calendar/EWS/EWSCalendar";
 import { EWSEvent } from "../../Calendar/EWS/EWSEvent";
 import { type Tag, getTagByName } from "../Tag";
 import { Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import EWSCreateItemRequest from "./Request/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "./Request/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "./Request/EWSUpdateItemRequest";
+import type { Calendar } from "../../Calendar/Calendar";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { InvitationMessage } from "../../Calendar/Invitation/InvitationStatus";
+import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { base64ToArrayBuffer, assert, ensureArray } from "../../util/util";
-import { type Collection, ArrayColl } from "svelte-collections";
+import type { Collection, ArrayColl } from "svelte-collections";
 
 const ExchangeScheduling: Record<string, number> = {
   "IPM.Schedule.Meeting.Resp.Pos": InvitationMessage.ParticipantReply,
@@ -194,12 +195,13 @@ export class EWSEMail extends EMail {
     await this.folder.account.callEWS(request);
   }
 
-  getUpdateCalendars(): Collection<EWSCalendar> {
+  getUpdateCalendars(): Collection<Calendar> {
     assert(this.invitationMessage && this.event, "Must have event to find calendar");
-    if (this.folder.account.calendar && (this.invitationMessage == InvitationMessage.Invitation || this.folder.account.calendar.events.some(event => event.calUID == this.event.calUID))) {
-      return new ArrayColl([this.folder.account.calendar]);
+    if (this.invitationMessage == InvitationMessage.Invitation) {
+      // EWS always puts invitations in the default calendar.
+      return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account).slice(0, 1);
     }
-    return new ArrayColl();
+    return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && calendar.events.some(event => event.calUID == this.event.calUID));
   }
 
   /** EWS only provides event data for invitations,
