@@ -204,7 +204,7 @@ export class EMail extends Message {
 
   getUpdateCalendars(): Collection<Calendar> {
     assert(this.invitationMessage && this.event, "Must have event to find calendar");
-    let validCalendars = appGlobal.calendars.filter(calendar => !calendar.mainAccount);
+    let validCalendars = appGlobal.calendars.filter(calendar => calendar.canAcceptAnyInvitation);
     if (this.invitationMessage == InvitationMessage.Invitation) {
       // Allow the user to move the local invitation event to another calendar
       return validCalendars;

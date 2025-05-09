@@ -13,6 +13,7 @@ import { ArrayColl } from "svelte-collections";
 export class OWACalendar extends Calendar {
   readonly protocol: string = "calendar-owa";
   readonly events: ArrayColl<OWAEvent>;
+  readonly canAcceptAnyInvitation = false;
 
   get account(): OWAAccount {
     return this.mainAccount as OWAAccount;
