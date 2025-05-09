@@ -57,13 +57,16 @@
   import { catchErrors, backgroundError } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { onMount } from "svelte";
+  import { useDebounce } from "@svelteuidev/composables";
   import { getUILocale, t } from "../../l10n/l10n";
   import { rtlLocales } from "../../l10n/list";
   import { appName } from "../../logic/build";
 
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;
-  $: sidebar = $sidebarApp?.sidebar;
+  let sidebar;
+  const setSidebarDebounced = useDebounce(() => sidebar = $sidebarApp?.sidebar);
+  $: $sidebarApp?.sidebar, setSidebarDebounced();
   $: rtl = rtlLocales.includes(getUILocale()) ? 'rtl' : null;
 
   onMount(() => catchErrors(startup));
