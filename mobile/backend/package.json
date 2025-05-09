@@ -5,11 +5,11 @@
   "main": "./index.ts",
   "type": "module",
   "scripts": {
-    "prebuild": "cd node_modules/better-sqlite3 && npx prebuild-for-nodejs-mobile $MOBILE_ARCH",
     "build": "vite build"
   },
   "dependencies": {
     "better-sqlite3": "^11.10.0",
+    "bufferutil": "^4.0.9",
     "vite-plugin-static-copy": "^2.3.1",
     "ws": "^8.16.0"
   },

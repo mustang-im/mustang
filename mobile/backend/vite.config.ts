@@ -42,7 +42,11 @@ export default defineConfig({
         },
         {
           src: `node_modules/better-sqlite3/prebuilds/${process.env.MOBILE_ARCH}/better_sqlite3.node`,
-          dest: '../../dist/nodejs/build'
+          dest: '../../dist/nodejs/build',
+        },
+        {
+          src: `node_modules/bufferutil/prebuilds/${process.env.MOBILE_ARCH}/bufferutil.node`,
+          dest: `../../dist/nodejs/prebuilds/${process.env.MOBILE_ARCH}`,
         }
       ]
     }),
