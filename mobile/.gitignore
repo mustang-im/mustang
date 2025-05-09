@@ -6,3 +6,4 @@ node_modules/
 .sourcemaps
 dist/
 !backend/prebuild.sh
+!build.sh
