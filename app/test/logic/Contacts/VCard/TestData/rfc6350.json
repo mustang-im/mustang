@@ -1,5 +1,6 @@
 {
   "name": "Simon Perreault",
+  "picture": null,
   "lastName": "Perreault",
   "firstName": "Simon",
   "emailAddresses": [{
@@ -34,5 +35,7 @@
   }],
   "notes": "",
   "company": "Viagenie",
+  "department": "",
+  "position": "",
   "custom": []
 }
