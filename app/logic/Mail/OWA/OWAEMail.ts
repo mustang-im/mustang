@@ -1,6 +1,5 @@
 import { EMail } from "../EMail";
 import type { OWAFolder } from "./OWAFolder";
-import type { OWACalendar } from "../../Calendar/OWA/OWACalendar";
 import { OWAEvent } from "../../Calendar/OWA/OWAEvent";
 import { Tag, getTagByName } from "../Tag";
 import OWACreateItemRequest from "./Request/OWACreateItemRequest";
@@ -9,10 +8,12 @@ import OWAUpdateItemRequest from "./Request/OWAUpdateItemRequest";
 import { owaDownloadMsgsRequest } from "./Request/OWAFolderRequests";
 import { owaGetEventsRequest } from "../../Calendar/OWA/Request/OWAEventRequests";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
+import type { Calendar } from "../../Calendar/Calendar";
 import { InvitationMessage } from "../../Calendar/Invitation/InvitationStatus";
+import { appGlobal } from "../../app";
 import { base64ToArrayBuffer, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { type Collection, ArrayColl } from "svelte-collections";
+import type { Collection, ArrayColl } from "svelte-collections";
 
 export class OWAEMail extends EMail {
   folder: OWAFolder;
@@ -132,12 +133,13 @@ export class OWAEMail extends EMail {
     await this.folder.account.callOWA(request);
   }
 
-  getUpdateCalendars(): Collection<OWACalendar> {
+  getUpdateCalendars(): Collection<Calendar> {
     assert(this.invitationMessage && this.event, "Must have event to find calendar");
-    if (this.folder.account.calendar && (this.invitationMessage == InvitationMessage.Invitation || this.folder.account.calendar.events.some(event => event.calUID == this.event.calUID))) {
-      return new ArrayColl([this.folder.account.calendar]);
+    if (this.invitationMessage == InvitationMessage.Invitation) {
+      // OWA always puts invitations in the default calendar.
+      return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account).slice(0, 1);
     }
-    return new ArrayColl();
+    return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && calendar.events.some(event => event.calUID == this.event.calUID));
   }
 
   /** OWA only provides event data for invitations,
