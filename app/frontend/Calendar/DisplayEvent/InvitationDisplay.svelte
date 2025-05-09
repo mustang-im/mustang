@@ -6,6 +6,16 @@
       {/if}
     </hbox>
     <hbox flex />
+    {#if selectedCalendar}
+      <AccountDropDown
+        selectedAccount={selectedCalendar}
+        accounts={calendars}
+        filterByWorkspace={false}
+        withIcon={true} withLabel={false}
+        disabled={calendars.length < 2}
+        on:Select={selectCalendar}
+        />
+    {/if}
   </hbox>
   <vbox class="details-grid">
     <DetailsGrid {event} />
@@ -13,10 +23,16 @@
 </vbox>
 
 <script lang="ts">
-  import { Event } from "../../../logic/Calendar/Event";
+  import type { Calendar } from "../../../logic/Calendar/Calendar";
+  import type { Event } from "../../../logic/Calendar/Event";
+  import type { Collection } from "svelte-collections";
   import DetailsGrid from "./DetailsGrid.svelte";
+  import AccountDropDown from "../../Shared/AccountDropDown.svelte";
 
   export let event: Event;
+  export let calendars: Collection<Calendar>;
+  export let selectedCalendar: Calendar | undefined;
+  export let selectCalendar: () => void;
 </script>
 
 <style>
