@@ -5,3 +5,5 @@ node_modules/
 .DS_Store
 .sourcemaps
 dist/
+!backend/prebuild.sh
+!build.sh
