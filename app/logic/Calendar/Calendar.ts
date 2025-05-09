@@ -10,6 +10,7 @@ import { ICalEMailProcessor } from "./ICal/ICalEMailProcessor";
 export class Calendar extends Account {
   readonly protocol: string = "calendar-local";
   readonly events = new ArrayColl<Event>();
+  readonly canAcceptAnyInvitation: boolean = true;
   storage: CalendarStorage | null = null;
   syncState: string | null = null;
 

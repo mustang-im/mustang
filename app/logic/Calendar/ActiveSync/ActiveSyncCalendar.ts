@@ -16,6 +16,7 @@ const kHalfHour = 30 * 60 * 1000; // milliseconds
 export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
   readonly protocol: string = "calendar-activesync";
   readonly events: ArrayColl<ActiveSyncEvent>;
+  readonly canAcceptAnyInvitation = false;
   readonly folderClass = "Calendar";
   protected requestLock = new Lock();
 
