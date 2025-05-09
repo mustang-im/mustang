@@ -1,12 +1,12 @@
 <vbox class="invitation">
   {#if $message.event}
-    <InvitationDisplay event={message.event} />
+    <InvitationDisplay event={message.event} {calendars} {selectCalendar} bind:selectedCalendar />
   {:else if message.invitationMessage}
     {#await loadEvent()}
       {$t`Loading event...`}
     {:then}
       {#if message.event}
-        <InvitationDisplay event={message.event} />
+        <InvitationDisplay event={message.event} {calendars} {selectCalendar} bind:selectedCalendar />
       {:else}
         No event found
       {/if}
@@ -15,9 +15,6 @@
     {/await}
   {/if}
   <hbox class="buttons">
-    {#if selectedCalendar}
-      <AccountDropDown selectedAccount={selectedCalendar} accounts={calendars} withIcon={true} withLabel={true} disabled={calendars.length < 2} on:Select={selectCalendar} />
-    {/if}
     {#if message.invitationMessage == InvitationMessage.Invitation}
       {#if myParticipation == InvitationResponse.Accept}
         <Button
@@ -87,7 +84,6 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import InvitationDisplay from "./InvitationDisplay.svelte";
-  import AccountDropDown from "../../Shared/AccountDropDown.svelte";
   import Button from "../../Shared/Button.svelte";
   import AcceptIcon from "lucide-svelte/icons/check-check";
   import DeclineIcon from "lucide-svelte/icons/x";
@@ -96,6 +92,7 @@
   import { gt, t } from "../../../l10n/l10n";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import type { Collection } from "svelte-collections";
 
   export let message: EMail;
   let calendars: Collection<Calendar>;
