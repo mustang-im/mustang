@@ -84,6 +84,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
+  import type { Event } from "../../../logic/Calendar/Event";
   import type { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
   import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import InvitationDisplay from "./InvitationDisplay.svelte";
@@ -103,6 +104,7 @@
   let myParticipation: InvitationResponse = InvitationResponse.NoResponseReceived;
   let updateDisabled: boolean | string = false;
   let incomingInvitation: IncomingInvitation;
+  let event: Event | undefined;
 
   $: if (message.event) {
     loadCalendars();
@@ -110,17 +112,21 @@
 
   async function loadEvent() {
     await message.loadEvent();
-    loadCalendars();
+    await loadCalendars();
   }
-  function loadCalendars() {
+  async function loadCalendars() {
     calendars = message.getUpdateCalendars();
-    selectedCalendar = calendars.first;
+    selectedCalendar = calendars.find(calendar => calendar.events.some(event => event.calUID == message.event.calUID)) || calendars.first;
     updateDisabled = calendars.length ? false : gt`This event is not in your calendar`;
     if (selectedCalendar) {
-      selectCalendar();
+      await selectCalendar();
     }
   }
-  function selectCalendar() {
+  async function selectCalendar() {
+    if (event && !selectedCalendar.events.some(event => event.calUID == message.event.calUID)) {
+      await event.moveToCalendar(selectedCalendar);
+    }
+    event = selectedCalendar.events.find(event => event.calUID == message.event.calUID);
     incomingInvitation = selectedCalendar.getIncomingInvitationFor(message);
     myParticipation = incomingInvitation.myParticipation;
   }
@@ -128,6 +134,9 @@
   async function respond(response: InvitationResponseInMessage) {
     await incomingInvitation.respondToInvitation(response);
     myParticipation = response;
+    if (!event) {
+      event = selectedCalendar.events.find(event => event.calUID == message.event.calUID);
+    }
   }
   async function onAccept() {
     await respond(InvitationResponse.Accept);
