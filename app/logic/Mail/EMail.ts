@@ -6,8 +6,9 @@ import type { Tag } from "./Tag";
 import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import type { MailIdentity } from "./MailIdentity";
+import type { Calendar } from "../Calendar/Calendar";
 import { Event } from "../Calendar/Event";
-import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
+import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { EMailProcessorList, ProcessingStartOn } from "./EMailProccessor";
 import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
 import { gt } from "../../l10n/l10n";
@@ -201,36 +202,15 @@ export class EMail extends Message {
   async removeTagOnServer(tag: Tag) {
   }
 
-  async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.invitationMessage == InvitationMessage.Invitation, "Only invitations can be responded to");
-    let event: Event;
-    for (let calendar of appGlobal.calendars) {
-      event = calendar.events.find(event => event.calUID == this.event.calUID);
-      if (event) {
-        break;
-      }
+  getUpdateCalendars(): Collection<Calendar> {
+    assert(this.invitationMessage && this.event, "Must have event to find calendar");
+    let validCalendars = appGlobal.calendars.filter(calendar => calendar.canAcceptAnyInvitation);
+    if (this.invitationMessage == InvitationMessage.Invitation) {
+      // Allow the user to move the local invitation event to another calendar
+      return validCalendars;
     }
-    if (!event) {
-      let calendar = appGlobal.calendars.first;
-      event = calendar.newEvent();
-      event.copyFrom(this.event);
-      event.myParticipation = InvitationResponse.NoResponseReceived;
-      calendar.events.add(event);
-      if (event.recurrenceRule) {
-        event.fillRecurrences(new Date(Date.now() + 1e11));
-      }
-    }
-    let participant = event.participants.find(participant => participant.emailAddress == this.folder.account.emailAddress);
-    if (participant) {
-      event.myParticipation = participant.response = response;
-      await event.save();
-      await this.sendInvitationResponse(response);
-    }
-    /* else add participant? */
-  }
-
-  protected async sendInvitationResponse(response: InvitationResponseInMessage): Promise<void> {
-    return this.event.sendInvitationResponse(response, this.folder.account);
+    let foundCalendars = validCalendars.filter(calendar => calendar.events.some(event => event.calUID == this.event.calUID));
+    return foundCalendars;
   }
 
   async loadEvent() {

@@ -4,7 +4,7 @@
       <AccountIcon />
     </hbox>
   {/if}
-  <select bind:value={selectedAccount} class:withLabel on:change={onSelect}>
+  <select bind:value={selectedAccount} class:withLabel on:change={onSelect} disabled={disabled}>
     {#each $accounts.each as account }
       <option value={account}>
         {account.name}
@@ -24,6 +24,7 @@
   export let accounts: Collection<Account>;
   export let withIcon: boolean = false;
   export let withLabel: boolean = true;
+  export let disabled: boolean = false;
 
   $: defaultSelection(selectedAccount);
   function defaultSelection(_dummy: any) {

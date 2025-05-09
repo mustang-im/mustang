@@ -89,7 +89,9 @@
       clearTimeout(loadTimeout);
       loading = false;
     }
-    disabled = previousDisabled;
+    if (disabled === true) {
+      disabled = previousDisabled;
+    }
   }
 </script>
 

@@ -6,7 +6,9 @@
       {/if}
     </hbox>
     <hbox flex />
-    <AccountDropDown selectedAccount={calendar} accounts={appGlobal.calendars} withIcon={true} withLabel={false} />
+    {#if selectedCalendar}
+      <AccountDropDown selectedAccount={selectedCalendar} accounts={calendars} withIcon={true} withLabel={true} disabled={calendars.length < 2} on:Select={selectCalendar} />
+    {/if}
   </hbox>
   <vbox class="details-grid">
     <DetailsGrid {event} />
@@ -14,14 +16,16 @@
 </vbox>
 
 <script lang="ts">
-  import { Event } from "../../../logic/Calendar/Event";
-  import { Calendar } from "../../../logic/Calendar/Calendar";
-  import AccountDropDown from "../../Shared/AccountDropDown.svelte";
+  import type { Calendar } from "../../../logic/Calendar/Calendar";
+  import type { Event } from "../../../logic/Calendar/Event";
+  import type { Collection } from "svelte-collections";
   import DetailsGrid from "./DetailsGrid.svelte";
-  import { appGlobal } from "../../../logic/app";
+  import AccountDropDown from "../../Shared/AccountDropDown.svelte";
 
   export let event: Event;
-  export let calendar: Calendar = event?.calendar ?? appGlobal.calendars.first;
+  export let calendars: Collection<Calendar>;
+  export let selectedCalendar: Calendar | undefined;
+  export let selectCalendar: () => void;
 </script>
 
 <style>

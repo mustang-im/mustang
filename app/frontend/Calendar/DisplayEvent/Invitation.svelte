@@ -1,12 +1,12 @@
 <vbox class="invitation">
   {#if $message.event}
-    <InvitationDisplay event={message.event} />
-  {:else if message.scheduling}
-    {#await message.loadEvent()}
+    <InvitationDisplay event={message.event} {calendars} {selectCalendar} bind:selectedCalendar />
+  {:else if message.invitationMessage}
+    {#await loadEvent()}
       {$t`Loading event...`}
     {:then}
       {#if message.event}
-        <InvitationDisplay event={message.event} />
+        <InvitationDisplay event={message.event} {calendars} {selectCalendar} bind:selectedCalendar />
       {:else}
         No event found
       {/if}
@@ -14,73 +14,74 @@
       {ex?.message ?? ex}
     {/await}
   {/if}
-  {#if message.scheduling == InvitationMessage.Invitation}
-    <hbox class="buttons">
-      <Button
-        label={$t`Confirm *=> Confirm to attend the meeting`}
-        onClick={onAccept}
-        icon={AcceptIcon}
-        classes="accept font-normal" />
-      <Button
-        label={$t`Reject *=> Decline to attend the meeting`}
-        onClick={onDecline}
-        icon={DeclineIcon}
-        classes="decline secondary font-normal" />
-      <ButtonMenu buttonIcon={ChevronDownIcon}>
-        <MenuItem
-          label={$t`Maybe *=> Maybe attend the meeting`}
-          onClick={onTentative}
-          icon={MaybeIcon}
-          classes="maybe font-normal" />
-      </ButtonMenu>
-    </hbox>
-  {:else if false}
-    <hbox class="buttons">
-      <Button
-        label={$t`Confirmed *=> A meeting request has been confirmed by you`}
-        icon={AcceptIcon}
-        selected={true}
-        disabled={true}
-        classes="accept done font-normal" />
-      <ButtonMenu buttonIcon={ChevronDownIcon}>
-        <MenuItem
-          label={$t`Change to Reject *=> not attend the meeting`}
-          onClick={onDecline}
+  <hbox class="buttons">
+    {#if message.invitationMessage == InvitationMessage.Invitation}
+      {#if myParticipation == InvitationResponse.Accept}
+        <Button
+          label={$t`Confirmed *=> A meeting request has been confirmed by you`}
+          icon={AcceptIcon}
+          selected={true}
+          disabled={true}
+          classes="accept done font-normal" />
+        <ButtonMenu buttonIcon={ChevronDownIcon}>
+          <MenuItem
+            label={$t`Change to Reject *=> not attend the meeting`}
+            onClick={onDecline}
+            icon={DeclineIcon}
+            classes="decline font-normal" />
+          <MenuItem
+            label={$t`Change to Maybe *=> Maybe attend the meeting`}
+            onClick={onTentative}
+            icon={MaybeIcon}
+            classes="maybe font-normal" />
+        </ButtonMenu>
+      {:else if myParticipation == InvitationResponse.Decline}
+        <Button
+          label={$t`Rejected *=> A meeting request has been declined by you`}
           icon={DeclineIcon}
-          classes="decline font-normal" />
-        <MenuItem
-          label={$t`Change to Maybe *=> Maybe attend the meeting`}
-          onClick={onTentative}
-          icon={MaybeIcon}
-          classes="maybe font-normal" />
-      </ButtonMenu>
-    </hbox>
-  {:else if false}
-    <hbox class="buttons">
-      <Button
-        label={$t`Rejected *=> A meeting request has been declined by you`}
-        icon={DeclineIcon}
-        selected={true}
-        disabled={true}
-        classes="decline done font-normal" />
-      <ButtonMenu buttonIcon={ChevronDownIcon}>
-        <MenuItem
-          label={$t`Change to Accept *=> attend the meeting`}
+          selected={true}
+          disabled={true}
+          classes="decline done font-normal" />
+        <ButtonMenu buttonIcon={ChevronDownIcon}>
+          <MenuItem
+            label={$t`Change to Accept *=> attend the meeting`}
+            onClick={onAccept}
+            icon={AcceptIcon}
+            classes="accept font-normal" />
+          <MenuItem
+            label={$t`Change to Maybe *=> Maybe attend the meeting`}
+            onClick={onTentative}
+            icon={MaybeIcon}
+            classes="maybe font-normal" />
+        </ButtonMenu>
+      {:else}
+        <Button
+          label={$t`Confirm *=> Confirm to attend the meeting`}
           onClick={onAccept}
           icon={AcceptIcon}
           classes="accept font-normal" />
-        <MenuItem
-          label={$t`Change to Maybe *=> Maybe attend the meeting`}
-          onClick={onTentative}
-          icon={MaybeIcon}
-          classes="maybe font-normal" />
-      </ButtonMenu>
-    </hbox>
-  {/if}
+        <Button
+          label={$t`Reject *=> Decline to attend the meeting`}
+          onClick={onDecline}
+          icon={DeclineIcon}
+          classes="decline secondary font-normal" />
+        <ButtonMenu buttonIcon={ChevronDownIcon}>
+          <MenuItem
+            label={$t`Maybe *=> Maybe attend the meeting`}
+            onClick={onTentative}
+            icon={MaybeIcon}
+            classes="maybe font-normal" />
+        </ButtonMenu>
+      {/if}
+    {:else if message.invitationMessage}
+      <Button label={$t`Update calendar`} disabled={updateDisabled} onClick={onUpdate} classes="font-normal" />
+    {/if}
+  </hbox>
 </vbox>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
+  import type { Event } from "../../../logic/Calendar/Event";
   import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import InvitationDisplay from "./InvitationDisplay.svelte";
   import Button from "../../Shared/Button.svelte";
@@ -88,14 +89,50 @@
   import DeclineIcon from "lucide-svelte/icons/x";
   import MaybeIcon from "lucide-svelte/icons/circle-help";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
-  import { t } from "../../../l10n/l10n";
+  import { gt, t } from "../../../l10n/l10n";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import type { Collection } from "svelte-collections";
 
   export let message: EMail;
+  let calendars: Collection<Calendar>;
+  let selectedCalendar: Calendar | undefined;
+  let myParticipation: InvitationResponse = InvitationResponse.NoResponseReceived;
+  let updateDisabled: boolean | string = false;
+  let incomingInvitation;
+  let event: Event | undefined;
+
+  $: if (message.event) {
+    loadCalendars();
+  }
+
+  async function loadEvent() {
+    await message.loadEvent();
+    await loadCalendars();
+  }
+  async function loadCalendars() {
+    calendars = message.getUpdateCalendars();
+    selectedCalendar = calendars.find(calendar => calendar.events.some(event => event.calUID == this.event.calUID)) || calendars.first;
+    updateDisabled = calendars.length ? false : gt`This event is not in your calendar`;
+    if (selectedCalendar) {
+      await selectCalendar();
+    }
+  }
+  async function selectCalendar() {
+    if (event && !selectedCalendar.events.some(event => event.calUID == message.event.calUID)) {
+      await event.moveToCalendar(selectedCalendar);
+    }
+    event = selectedCalendar.events.some(event => event.calUID == message.event.calUID);
+    incomingInvitation = selectedCalendar.getIncomingInvitationFor(message);
+    myParticipation = incomingInvitation.myParticipation;
+  }
 
   async function respond(response: InvitationResponseInMessage) {
-    await message.respondToInvitation(response);
+    await incomingInvitation.respondToInvitation(response);
+    myParticipation = response;
+    if (!event) {
+      event = selectedCalendar.events.some(event => event.calUID == message.event.calUID);
+    }
   }
   async function onAccept() {
     await respond(InvitationResponse.Accept);
@@ -105,6 +142,10 @@
   }
   async function onDecline() {
     await respond(InvitationResponse.Decline);
+  }
+  async function onUpdate() {
+    await incomingInvitation.updateFromOtherInvitationMessage();
+    updateDisabled = gt`This update has already been processed`;
   }
 </script>
 
