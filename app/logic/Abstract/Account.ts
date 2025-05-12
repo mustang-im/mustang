@@ -179,14 +179,16 @@ export enum AuthMethod {
 }
 
 let lastID = 0;
+let usedIDs = new Set<string>();
 function findFreeAccountID(): string {
   let allAccounts = getAllAccounts();
 
   for (let i = ++lastID; true; i++) {
     let id = "account" + i;
-    if (allAccounts.contents.some(acc => acc.id == id)) {
+    if (allAccounts.find(acc => acc.id == id) || usedIDs.has(id)) {
       continue;
     }
+    usedIDs.add(id);
     return id;
   }
 }
