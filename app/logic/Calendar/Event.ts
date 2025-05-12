@@ -241,9 +241,11 @@ export class Event extends Observable {
   }
 
   /**
-   * Starts editing an event, if it hasn't already started being edited.
-   * This can happen when switching between the event editor and another
-   * screen, or certain updates within editing events can also trigger it.
+   * Starts editing an event.
+   *
+   * If it is already being edited, this is a no-op. This can happen when switching
+   * between the event editor and another screen, or certain updates within
+   * editing events can also trigger it.
    */
   startEditing() {
     if (this.unedited) {
