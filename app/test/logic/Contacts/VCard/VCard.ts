@@ -15,7 +15,7 @@ export default {
       throw new Error("No vCard found");
     }
     let vcard = card.containers.vcard[0];
-    person.name = vcard.entries.fn?.[0].value || "";
+    person.name = vcard.entries.fn?.[0].value ?? "";
     if (vcard.entries.photo) {
       let photo = vcard.entries.photo[0];
       if (/^b$/i.test(photo.properties.encoding)) { // vCard 3.0
@@ -26,8 +26,8 @@ export default {
     } else {
       person.picture = null;
     }
-    person.lastName = vcard.entries.n?.[0].values[0] || "";
-    person.firstName = vcard.entries.n?.[0].values[1] || "";
+    person.lastName = vcard.entries.n?.[0].values[0] ?? "";
+    person.firstName = vcard.entries.n?.[0].values[1] ?? "";
     person.emailAddresses.clear();
     if (vcard.entries.email) {
       for (let entry of vcard.entries.email) {
@@ -62,9 +62,9 @@ export default {
         person.streetAddresses.add(makeContactEntry(entry));
       }
     }
-    person.notes = vcard.entries.note?.[0].value || "";
-    person.company = vcard.entries.org?.[0].values[0] || "";
-    person.department = vcard.entries.org?.[0].values[1] || "";
+    person.notes = vcard.entries.note?.[0].value ?? "";
+    person.company = vcard.entries.org?.[0].values[0] ?? "";
+    person.department = vcard.entries.org?.[0].values[1] ?? "";
     if (vcard.entries.title) {
       person.position = vcard.entries.title[0].values[0];
     } else if (vcard.entries.role) {
@@ -89,17 +89,17 @@ export default {
         container[key] = vcard.entries[key].map(entry => entry.line);
       }
     }
-    setValue(container, "fn", person.name || "");
-    setValue(container, "photo", person.picture || "", { value: "uri" });
+    setValue(container, "fn", person.name ?? "");
+    setValue(container, "photo", person.picture ?? "", { value: "uri" });
     setValue(container, "n", [person.lastName, person.firstName, "", "", ""]);
     setValues(container, "email", person.emailAddresses);
     setValues(container, "tel", person.phoneNumbers, { value: "text" });
     setValues(container, "impp", person.chatAccounts);
     setValues(container, "url", person.urls);
     setAdrs(container, person.streetAddresses);
-    setValue(container, "note", person.notes || "");
+    setValue(container, "note", person.notes ?? "");
     setValue(container, "org", [person.company, person.department]);
-    setValue(container, "title", person.position || "");
+    setValue(container, "title", person.position ?? "");
     setValue(container, "role", "");
     for (let i = 0; i < person.custom.length; i++) {
       setValue(container, "x-custom" + (i + 1), person.custom.getIndex(i).value);
@@ -183,7 +183,7 @@ function setAdrs(container: Record<string, string[]>, values: ArrayColl<ContactE
     line += ":";
     let values = `\n\n${entry.value}`.split("\n");
     // Mustang has to be different...
-    values = [0, 1, 2, 3, 5, 4, 6].map(index => values[index] || "");
+    values = [0, 1, 2, 3, 5, 4, 6].map(index => values[index] ?? "");
     line += values.map(value => escaped(value, false)).join(";");
     return line;
   });
