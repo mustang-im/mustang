@@ -1,5 +1,6 @@
 {
   "name": "Proton John Doe",
+  "picture": null,
   "lastName": "Doe",
   "firstName": "John",
   "emailAddresses": [{
@@ -29,6 +30,7 @@
   }],
   "notes": "Some notes",
   "company": "Mustang",
+  "department": "",
   "position": "CEO",
   "custom": []
 }
