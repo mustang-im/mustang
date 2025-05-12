@@ -13,6 +13,8 @@ import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 
+// TODO Remove backend OWA.* entirely and
+// use standard HTTP requests and Auth window.
 const OWA = {
   fetchSessionData() {
     return null;
