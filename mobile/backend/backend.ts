@@ -1,20 +1,23 @@
-import { HTTPServer } from './HTTPServer';
-import JPCWebSocket from '../lib/jpc-ws';
-import * as OWA from './owa';
-import { appName, production } from '../app/logic/build';
-import { WebContents } from './WebContents';
+import { HTTPServer } from '../../backend/HTTPServer';
+import JPCWebSocket from '../../lib/jpc-ws';
+import { appName, production } from '../../app/logic/build';
 import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard } from "electron";
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
-import { createType1Message, decodeType2Message, createType3Message } from "./ntlm";
+import { createType1Message, decodeType2Message, createType3Message } from "../../backend/ntlm";
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
+
+const OWA = {
+  fetchSessionData() {
+    return null;
+  }
+};
 
 let jpc: JPCWebSocket | null = null;
 
@@ -93,31 +96,6 @@ async function writeFile(path: string, permissions: number, contents: Uint8Array
   await fileHandle.write(contents);
   await fileHandle.close();
 }
-/**
- * E.g. ```
- * let contents = new Blob(["test\n"], { type: "text/plain" });
- * let configDir = await appGlobal.remoteApp.configDir();
- * let testFile = await appGlobal.remoteApp.openFile(configDir + "test.txt", true);
- * await testFile.write(new Uint8Array(await contents.arrayBuffer()));
- * await appGlobal.remoteApp.closeFile(testFile);
- * ```
- * /
-async function openFile(path: string, write: boolean, mode?: string | number): Promise<FileHandle> {
-  return await fsPromises.open(path, write ? "w" : "r", mode);
-}
-async function closeFile(handle: FileHandle): Promise<void> {
-  await handle.close(); // for some reason, only this function doesn't appear on FileHandle in JPC client
-}*/
-/*
-async function openFileInExternalApp(filepath: string, appEXE: string): Promise<void> {
-  let launcher = appEXE ??
-    os.platform() == "win32" ? "explorer.exe" :
-    os.platform() == "darwin" ? "open" :
-    "xdg-open";
-  //console.log("Launching", launcher, filepath);
-  childProcess.spawn(launcher, [ filepath ], { shell: false });
-}
-*/
 
 /**
  * @param defaultOptions
@@ -263,48 +241,37 @@ function newHTTPServer() {
   return new HTTPServer();
 }
 
-/** <https://www.electronjs.org/docs/latest/api/tray> */
-function newTrayIcon(imgDataURL: string): Tray {
-  return new Tray(nativeImage.createFromDataURL(imgDataURL));
+function newTrayIcon(imgDataURL: string): null {
 }
 
-/** <https://www.electronjs.org/docs/latest/api/notification> */
 function newOSNotification(options: any): Notification {
-  return new Notification(options);
+  throw new Error("Not implemented yet")
 }
 
 function isOSNotificationSupported(): boolean {
-  return Notification.isSupported();
+  return false; // TODO implement native notifications
 }
 
-function restartApp() {
-  app.relaunch();
-  app.quit();
+function restartApp() { // TODO
 }
 
-function setTheme(theme: "system" | "light" | "dark") {
+function setTheme(theme: "system" | "light" | "dark") { // TODO
   if (!["system", "light", "dark"].includes(theme)) {
     throw new Error("Bad theme name " + theme);
   }
-  nativeTheme.themeSource = theme;
 }
 
-function openExternalURL(url: string) {
-  shell.openExternal(url);
+function openExternalURL(url: string) { // TODO
 }
 
-function openFileInNativeApp(filePath: string) {
-  shell.openPath(filePath);
+function openFileInNativeApp(filePath: string) { // TODO
 }
 
-function showFileInFolder(filePath: string) {
-  shell.showItemInFolder(filePath);
+function showFileInFolder(filePath: string) { // TODO
 }
 
 
-function openMenu(menuItems: MenuItemConstructorOptions[]): void {
-  let menu = Menu.buildFromTemplate(menuItems);
-  menu.popup();
+function openMenu(menuItems: MenuItemConstructorOptions[]): void { // TODO
 }
 
 function createIMAPFlowConnection(...args): ImapFlow {
@@ -351,36 +318,27 @@ function newAdmZIP(filepath: string) {
   }
 }
 
-let mainWindow: BrowserWindow;
-
-export function setMainWindow(mainWin: BrowserWindow) {
-  mainWindow = mainWin;
+export function setMainWindow(mainWin) {
 }
 
 function minimizeMainWindow() {
-  mainWindow.minimize();
+  throw new Error("Not supported");
 }
 
 function unminimizeMainWindow() {
-  mainWindow.restore();
+  throw new Error("Not supported");
 }
 
 function maximizeMainWindow() {
-  mainWindow.maximize();
+  throw new Error("Not supported");
 }
 
 function addEventListenerWebContents(webContentsID: number, webviewEvent: string, eventHandler: (event: Event) => void) {
-  const win = webContents.fromId(webContentsID);
-  assert(win, `WebContents ID ${webContentsID} not found`);
-  win.on(webviewEvent as any, (_: any, event: Event) => {
-    eventHandler(event);
-  });
+  throw new Error("Not supported");
 }
 
 function getWebContents(webContentsID: number) {
-  const win = webContents.fromId(webContentsID);
-  assert(win, `WebContents ID ${webContentsID} not found`);
-  return new WebContents(win);
+  throw new Error("Not supported");
 }
 
 /**
@@ -388,12 +346,10 @@ function getWebContents(webContentsID: number) {
  * Don't expose reading the clipboard because the user may have sensitive data
  * on their system clipboard e.g. passwords
  */
-function writeTextToClipboard(text: string) {
-  clipboard.writeText(text);
+function writeTextToClipboard(text: string) { // TODO
 }
 
-function setBadgeCount(count: number) {
-  app.setBadgeCount(count);
+function setBadgeCount(count: number) { // TODO
 }
 
 function platform(): string {
@@ -404,11 +360,10 @@ function platform(): string {
  *   e.g. "home", "appData" (`.config` and `%APPDATA%`), "userData" (app config)
  *   @see <https://www.electronjs.org/docs/latest/api/app#appgetpathname> */
 function directory(type: string): string {
-  return app.getPath(type as any);
+  return os.homedir();
 }
 
-const kAppDir = production ? appName : appName + "Dev"; // e.g. "Mustang" or "Parula"
-
+let configDir: string;
 /**
  * Get the user config directory on disk.
  *
@@ -422,20 +377,22 @@ const kAppDir = production ? appName : appName + "Dev"; // e.g. "Mustang" or "Pa
  * Mac OS: /Users/USER/Library/Application Support/Mustang
  */
 function getConfigDir(): string {
-  let platform = os.platform();
-  let datadir = platform == "win32" || platform == "darwin"
-    ? app.getPath("appData")
-    : app.getPath("home");
-  let dirname = platform == "win32" || platform == "darwin"
-    ? kAppDir
-    : "." + kAppDir.toLowerCase();
-  let dir = path.join(datadir, dirname);
-  fs.mkdirSync(dir, { recursive: true });
-  return dir;
+  if (configDir) {
+    return configDir;
+  }
+  let homeDir: string = os.homedir();
+  if (os.platform() == "android") {
+    configDir = path.join(homeDir, "data", "im.mustang.capa", "config");
+  } else {
+    configDir = homeDir;
+  }
+  if (!fs.existsSync(configDir)) {
+    fs.mkdirSync(configDir);
+  }
+  return configDir;
 }
 
-let filesDirCreated = false;
-
+let filesDir: string;
 /**
  * Get the directory on disk where we store the files that our user exchanged with others.
  * E.g. file sharing, email attachments, chat transfer files, and email backups.
@@ -449,21 +406,17 @@ let filesDirCreated = false;
  * Mac OS: /Users/USER/Library/Mustang
  */
 function getFilesDir(): string {
-  let platform = os.platform();
-  let dirname =
-    platform == "win32" ? kAppDir :
-    platform == "darwin" ? "Library/" + kAppDir :
-    "." + kAppDir.toLowerCase();
-  let dir = path.join(os.homedir(), dirname);
-  if (!filesDirCreated) {
-    fs.mkdirSync(dir, { recursive: true });
-    filesDirCreated = true;
+  if (filesDir) {
+    return filesDir;
   }
-  return dir;
-}
-
-function assert(test, errorMessage): asserts test {
-  if (!test) {
-    throw new Error(errorMessage);
+  let homeDir: string = os.homedir();
+  if (os.platform() == "android") {
+    filesDir = path.join(homeDir, "data", "im.mustang.capa", "config");
+  } else {
+    filesDir = homeDir;
   }
+  if (!fs.existsSync(filesDir)) {
+    fs.mkdirSync(filesDir);
+  }
+  return filesDir;
 }
