@@ -1,4 +1,4 @@
-import { startupBackend, shutdownBackend } from '../../backend/backend';
+import { startupBackend, shutdownBackend } from './backend';
 
 async function startup(): Promise<void> {
   try {
@@ -9,7 +9,7 @@ async function startup(): Promise<void> {
   }
 }
 
-async function shutdown(): Promise<void> {
+async function shutdown(): Promise<void> { // TODO call
   try {
     await shutdownBackend();
   } catch (ex) {
