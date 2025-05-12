@@ -6,6 +6,7 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { getFavIcon } from "../Shared/favicon";
   import { getDomainForEmailAddress } from "../../../logic/util/netUtil";
+  import { appGlobal } from "../../../logic/app";
   import StatusMessage from "../Shared/StatusMessage.svelte";
   import { t } from "../../../l10n/l10n";
   import { assert } from "../../../logic/util/util";
@@ -27,6 +28,10 @@
   onMount(async () => {
     try {
       altConfigs = await findConfig(emailAddress, password, exchangeConfirmCallback, abort);
+      // Mobile does not support OWA yet, see mobile/backend/backend.ts OWA.*
+      if (/* appGlobal.isMobile && */ false && altConfigs.find(acc => acc.protocol == "owa")) {
+        altConfigs.removeAll(altConfigs.contents.filter(acc => acc.protocol == "owa"));
+      }
       let domain = getDomainForEmailAddress(emailAddress);
       assert(altConfigs?.length, $t`We could not find a configuration for ${domain}`);
       config = altConfigs.slice().shift();
