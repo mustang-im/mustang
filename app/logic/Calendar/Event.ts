@@ -240,7 +240,15 @@ export class Event extends Observable {
     );
   }
 
+  /**
+   * Starts editing an event, if it hasn't already started being edited.
+   * This can happen when switching between the event editor and another
+   * screen, or certain updates within editing events can also trigger it.
+   */
   startEditing() {
+    if (this.unedited) {
+      return;
+    }
     this.timezone ||= Intl.DateTimeFormat().resolvedOptions().timeZone;
     this.unedited = this.calendar.newEvent();
     this.unedited.copyFrom(this);
