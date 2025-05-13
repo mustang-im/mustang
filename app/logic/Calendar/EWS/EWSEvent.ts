@@ -9,6 +9,7 @@ import EWSOutgoingInvitation from "./EWSOutgoingInvitation";
 import EWSCreateItemRequest from "../../Mail/EWS/Request/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "../../Mail/EWS/Request/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/Request/EWSUpdateItemRequest";
+import { k1MinuteMS } from "../../../frontend/Util/date";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray, NotReached } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
@@ -91,7 +92,7 @@ export class EWSEvent extends Event {
       this.clearExceptions();
     }
     if (xmljs.ReminderIsSet == "true") {
-      this.alarm = new Date(this.startTime.getTime() - 60 * sanitize.integer(xmljs.ReminderMinutesBeforeStart));
+      this.alarm = new Date(this.startTime.getTime() - k1MinuteMS * sanitize.integer(xmljs.ReminderMinutesBeforeStart));
     } else {
       this.alarm = null;
     }
@@ -158,6 +159,12 @@ export class EWSEvent extends Event {
       this.parentEvent ?
       new EWSUpdateOccurrenceRequest(this, {SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
       new EWSCreateItemRequest({SendMeetingInvitations: "SendToAllAndSaveCopy"});
+    if (this.isIncomingMeeting) {
+      request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
+      request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
+      await this.calendar.account.callEWS(request);
+      return;
+    }
     request.addField("CalendarItem", "Subject", this.title, "item:Subject");
     request.addField("CalendarItem", "Body", this.descriptionHTML ? { BodyType: "HTML", _TextContent_: this.descriptionHTML } : this.descriptionText ? { BodyType: "Text", _TextContent_: this.descriptionText } : "", "item:Body");
     request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
@@ -237,7 +244,7 @@ export class EWSEvent extends Event {
       // It uses a separate flag for whether the alarm is set.
       return 0;
     }
-    return (this.alarm.getTime() - this.startTime.getTime()) / -60 | 0;
+    return (this.alarm.getTime() - this.startTime.getTime()) / -k1MinuteMS | 0;
   }
 
   saveRule(rule: RecurrenceRule) {
