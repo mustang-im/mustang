@@ -216,7 +216,8 @@ export class IMAPAccount extends MailAccount {
     this.connections.set(purpose, null);
     this.notifyObservers();
 
-    if (!this.oAuth2?.isLoggedIn) {
+    if (this.authMethod == AuthMethod.OAuth2 && this.oAuth2 &&
+        !this.oAuth2?.isLoggedIn) {
       await this.oAuth2.login(false);
     }
     if (!(this.password || this.oAuth2?.isLoggedIn)) {
