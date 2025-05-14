@@ -10,7 +10,6 @@
   import { t } from "../../../l10n/l10n";
   import { createEventDispatcher } from 'svelte';
   import { k1DayS, k1HourS, k1MinuteS } from "../../Util/date";
-  const dispatch = createEventDispatcher<{ change: number }>();
 
   export let durationInSeconds: number; /* in/out */
   export let durationInUnit: number; /* in/out */
@@ -46,11 +45,7 @@
   }
 
   $: durationInSeconds, onDurationChanged()
-  export function onDurationChanged() {
-    if (durationInSeconds <= 0) {
-      durationInSeconds = 60;
-    }
-
+  function onDurationChanged() {
     // Adapt unit
     if (durationInSeconds % k1DayS == 0) {
       newUnit(k1DayS);
@@ -59,7 +54,6 @@
     } else if (unitInSeconds != k1MinuteS) {
       newUnit(k1MinuteS);
     }
-    dispatch("change", durationInSeconds);
   }
 
   function newUnit(aUnitInSeconds: number) {
