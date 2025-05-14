@@ -3,17 +3,18 @@ import { MeetingParticipant, ParticipantRole } from "./Participant";
 import { VideoStream } from "./VideoStream";
 import { MeetAccount } from "./MeetAccount";
 import { LocalMediaDeviceStreams } from "./LocalMediaDeviceStreams";
+import { DummyMeetStorage } from "./SQL/DummyMeetStorage";
 import { PersonUID } from "../Abstract/PersonUID";
-import { assert } from "../util/util";
+import { assert, type URLString } from "../util/util";
 import { getUILocale } from "../../l10n/l10n";
 import { faker } from '@faker-js/faker';
 
 export class FakeMeeting extends VideoConfMeeting {
 
-  constructor() {
+  constructor(account = new FakeMeetAccount()) {
     super();
     this.id = crypto.randomUUID();
-    this.account = new MeetAccount();
+    this.account = account;
     this.mediaDeviceStreams = new LocalMediaDeviceStreams();
   }
 
@@ -83,5 +84,32 @@ export class FakeMeeting extends VideoConfMeeting {
     setTimeout(() => speaker.isSpeaking = false, nextTime + Math.random() * 3 * 1000 - 500);
   }
 
+  async createInvitationURL(): Promise<URLString> {
+    return "https://meet.example.com/room/" + this.id;
+  }
+
   readonly canHandUp = true;
+}
+
+
+export class FakeMeetAccount extends MeetAccount {
+  constructor() {
+    super();
+    this.name = faker.company.name();
+    this.url = faker.internet.url();
+    this.username = faker.internet.username();
+    this.storage = new DummyMeetStorage();
+    this.canAudio = true;
+    this.canVideo = true;
+    this.canScreenShare = true;
+    this.canCreateURL = true;
+    this.canMultipleParticipants = true;
+  }
+  newMeeting(): FakeMeeting {
+    return new FakeMeeting(this);
+  }
+
+  isMeetingURL(url: URL): boolean {
+    return url.hostname == "meet.example.com";
+  }
 }

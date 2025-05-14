@@ -64,7 +64,7 @@ export class VideoConfMeeting extends Observable {
    * (in certain situations, e.g. in an event as onlineMeetingURL)
    * and allow to join within Mustnag using the Meet feature.
    * Only works if `account.canCreateURL`. */
-  createInvitationURL(): Promise<URLString> {
+  async createInvitationURL(): Promise<URLString> {
     throw new NotSupported(gt`Cannot invite others using a link to this kind of meeting`);
   }
 

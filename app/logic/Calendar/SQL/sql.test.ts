@@ -1,7 +1,7 @@
 import { makeTestDatabase } from './SQLDatabase';
 import { SQLCalendar } from './SQLCalendar';
 import { SQLEvent } from './SQLEvent';
-import { fakeAddressbook, fakeCalendar, fakePersons, fakeChatPerson } from '../../testData';
+import { FakeAddressbook, FakeCalendar, FakeChatPerson, fakePersons } from '../../testData';
 import { appGlobal } from '../../app';
 import JPCWebSocket from '../../../../lib/jpc-ws/protocol';
 import { expect, test } from 'vitest';
@@ -12,17 +12,17 @@ test("Save and read calendars from SQL database", { timeout: 10000 }, async () =
   await makeTestDatabase(); // Let SQLFoo classes use the test database
 
   // Fake data
-  appGlobal.me = fakeChatPerson();
-  let addressbook = fakeAddressbook();
+  appGlobal.me = new FakeChatPerson();
+  let addressbook = new FakeAddressbook();
   fakePersons(50, addressbook);
   appGlobal.addressbooks.add(addressbook);
-  let originalCalendar = fakeCalendar(addressbook.persons);
+  let originalCalendar = new FakeCalendar(addressbook.persons);
   expect(originalCalendar).toBeDefined();
   for (let event of originalCalendar.events) {
     if (Math.random() < 0.3) {
       let participantCount = Math.ceil(Math.random() * 8);
       for (let i = 0; i < participantCount; i++) {
-        let person = appGlobal.persons.getIndex(Math.floor(Math.random() * appGlobal.persons.length));
+        let person = addressbook.persons.getIndex(Math.floor(Math.random() * addressbook.persons.length));
         event.participants.add(person);
       }
     }
