@@ -12,7 +12,7 @@
 
     <hbox class="date-input end" title={$t`End date`}>
       {#if isMultipleDays}
-        <DateInput bind:date={event.endTime} />
+        <DateInput bind:date={event.endTime} min={event.startTime} />
       {:else}
         <hbox class="buttons">
           <RoundButton
@@ -62,6 +62,7 @@
         <RoundButton
           label={$t`Timezone`}
           icon={GlobeIcon}
+          disabled={event.allDay}
           onClick={onTimezoneToggle}
           classes="plain smallest"
           border={false}
@@ -94,7 +95,7 @@
 
   $: showTimezone = $event.timezone != myTimezone();
   $: $event.endTime, checkEndTime();
-  $: isMultipleDays = $event.startTime && $event.endTime && $event.endTime.toLocaleDateString() != $event.startTime.toLocaleDateString();
+  $: isMultipleDays = $event.startTime && $event.endTime && new Date($event.endTime.getTime() - event.allDay).toDateString() != $event.startTime.toDateString();
   let durationUnit: DurationUnit;
   let durationInUnit: number;
   let previousTimezone: string = null;
@@ -123,16 +124,21 @@
       previousEndTime = new Date(event.endTime);
       clearTime(event.startTime);
       clearTime(event.endTime);
-      event.endTime.setHours(23)
-      event.endTime.setMinutes(59);
-      event.endTime.setSeconds(59);
-      event.endTime.setMilliseconds(0);
+      // Advance to next midnight if the time is not already midnight.
+      if (event.endTime.getTime() < previousEndTime.getTime()) {
+        event.endTime.setDate(event.endTime.getDate() + 1);
+      }
     } else {
       if (previousStartTime && previousEndTime) {
         copyTimeOnly(event.startTime, previousStartTime);
+        let endTime = event.endTime.getTime();
         copyTimeOnly(event.endTime, previousEndTime);
+        // Rewind to the previous day unless the time was midnight.
+        if (event.endTime.getTime() > endTime) {
+          event.endTime.setDate(event.endTime.getDate() - 1);
+        }
       }
-      if (previousTimezone && !event.timezone) {
+      if (previousTimezone) {
         event.timezone = previousTimezone;
       }
     }
@@ -141,7 +147,7 @@
 
   function checkEndTime() {
     if (event.endTime.getTime() <= event.startTime.getTime()) {
-      event.endTime.setTime(event.startTime.getTime() + 1);
+      event.endTime.setTime(event.startTime.getTime());
       if (event.allDay) {
         event.durationDays += 1;
       } else {

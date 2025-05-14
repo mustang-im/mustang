@@ -136,9 +136,11 @@ export class Event extends Observable {
   set duration(seconds: number) {
     assert(seconds >= 0, "Duration must be >= 0");
     if (this.allDay) {
-      seconds = Math.round(Math.ceil(seconds / k1DayS) * k1DayS) - 1; // set to 23:59:59
+      this.endTime.setTime(this.startTime.getTime());
+      this.endTime.setDate(this.endTime.getDate() + Math.round(seconds / k1DayS));
+    } else {
+      this.endTime.setTime(this.startTime.getTime() + seconds * 1000);
     }
-    this.endTime.setTime(this.startTime.getTime() + seconds * 1000);
   }
 
   /** in minutes */
