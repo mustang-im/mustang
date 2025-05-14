@@ -5,10 +5,9 @@
         <Button label={$t`Call ${$selectedPerson.name}`} onClick={callSelected} errorCallback={showError} classes="call-person secondary">
           <PersonPicture slot="icon" person={$selectedPerson} size={24} />
         </Button>
-        <Button label={$t`Test incoming call`} icon={VideoIcon} onClick={testIncoming} errorCallback={showError} classes="secondary" />
       {/if}
-      <Button label={$t`Plan a meeting`} icon={AddToCalendarIcon} classes="secondary" iconSize="14px" />
       <Button label={$t`Start an ad-hoc meeting`} icon={VideoIcon} onClick={startAdHocMeeting} errorCallback={showError} classes="secondary" />
+      <Button label={$t`Plan a meeting`} icon={AddToCalendarIcon} classes="secondary" iconSize="14px" />
       <hbox>
         <input class="meeting-link" type="url" bind:value={conferenceURL}
           placeholder={$t`Enter meeting link to join`}
@@ -30,39 +29,52 @@
     <vbox flex class="upcoming">
       <hbox class="title font-small">{$t`Today's next meetings`}</hbox>
       <MeetingList meetings={upcomingMeetings}>
-        <div slot="emptyMsg" class="emptyMsg font-smallest">{$t`No meetings coming up`}</div>
+        <div slot="emptyMsg" class="emptyMsg font-small">{$t`No meetings coming up`}</div>
       </MeetingList>
     </vbox>
     <vbox flex class="previous">
       <hbox class="title font-small">{$t`Previous meetings`}</hbox>
       <MeetingList meetings={previousMeetings}>
-        <div slot="emptyMsg" class="emptyMsg font-smallest">{$t`No recent meetings`}</div>
+        <div slot="emptyMsg" class="emptyMsg font-small">{$t`No recent meetings`}</div>
       </MeetingList>
     </vbox>
+    <hbox class="test">
+      <ExpandSection>
+        <vbox class="buttons">
+          {#if $selectedPerson}
+            <Button label={$t`Test incoming call`} icon={VideoIcon} onClick={testIncoming} errorCallback={showError} classes="secondary" />
+          {/if}
+          <Button label={$t`Start a fake meeting`} icon={VideoIcon} onClick={startFakeMeeting} errorCallback={showError} classes="secondary" />
+        </vbox>
+      </ExpandSection>
+    </hbox>
   </vbox>
 </hbox>
 
 <script lang="ts">
   import { MeetingState, VideoConfMeeting } from "../../../logic/Meet/VideoConfMeeting";
-  import { ParticipantVideo, SelfVideo } from "../../../logic/Meet/VideoStream";
+  import { VideoStream } from "../../../logic/Meet/VideoStream";
   import { MeetingParticipant } from "../../../logic/Meet/Participant";
-  import { M3Conf } from "../../../logic/Meet/M3/M3Conf";
+  import { FakeMeeting } from "../../../logic/Meet/FakeMeeting";
   import { Event } from "../../../logic/Calendar/Event";
   import { joinConferenceByURL } from "../../../logic/Meet/StartCall";
   import { selectedPerson } from "../../Contacts/Person/Selected";
   import { appGlobal } from "../../../logic/app";
+  import { MeetAccount } from "../../../logic/Meet/MeetAccount";
+  import { LocalMediaDeviceStreams } from "../../../logic/Meet/LocalMediaDeviceStreams";
   import MeetingList from "./MeetingList.svelte";
   import Button from "../../Shared/Button.svelte";
   import VideoIcon from 'lucide-svelte/icons/video';
   import AddToCalendarIcon from "lucide-svelte/icons/calendar-plus";
   import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
   import ErrorMessage, { ErrorGravity } from "../../Shared/ErrorMessage.svelte";
-  import { t } from "../../../l10n/l10n";
+  import { gt, t } from "../../../l10n/l10n";
   import { catchErrors, logError } from "../../Util/error";
   import { onKeyEnter } from "../../Util/util";
-  import { sleep } from "../../../logic/util/util";
+  import { sleep, UserError } from "../../../logic/util/util";
   import { mergeColls } from "svelte-collections";
   import { faker } from "@faker-js/faker";
+  import ExpandSection from "../../Shared/ExpandSection.svelte";
 
   const allEvents = mergeColls(appGlobal.calendars.map(calendar => calendar.events));
   const now = new Date();
@@ -71,9 +83,39 @@
   const upcomingMeetings = allEvents.filter(event => event.startTime > now && event.startTime < maxUpcoming);
   const previousMeetings = allEvents.filter(event => event.startTime < now && event.startTime > maxPrevious);
 
+  function getAccount(): MeetAccount {
+    let account = appGlobal.meetAccounts.find(acc => acc.canVideo && acc.canMultipleParticipants);
+    if (!account) {
+      throw new UserError(gt`Please configure a matching meeting account first`);
+    }
+    return account;
+  }
+
   async function startAdHocMeeting() {
-    let meeting = await M3Conf.createAdhoc();
+    let meeting = getAccount().newMeeting();
+    await meeting.createNewConference();
     appGlobal.meetings.add(meeting);
+  }
+
+  async function startFakeMeeting() {
+    let meeting = new FakeMeeting();
+    await meeting.createNewConference();
+    appGlobal.meetings.add(meeting);
+  }
+
+  class FakeIncomingCall extends VideoConfMeeting {
+    constructor() {
+      super();
+      this.account = new MeetAccount();
+      this.mediaDeviceStreams = new LocalMediaDeviceStreams();
+      this.listenStreamChanges();
+      this.state = MeetingState.IncomingCall;
+    }
+    async answer(): Promise<void> {
+      super.answer();
+      this.myParticipant = new MeetingParticipant();
+      this.state = MeetingState.Ongoing;
+    }
   }
 
   async function testIncoming() {
@@ -87,8 +129,7 @@
     let caller = new MeetingParticipant();
     caller.name = $selectedPerson.name;
     caller.picture = $selectedPerson.picture;
-    let meeting = await VideoConfMeeting.createAdhoc();
-    meeting.state = MeetingState.IncomingCall;
+    let meeting = new FakeIncomingCall();
     meeting.participants.add(caller);
     appGlobal.meetings.add(meeting);
   }
@@ -112,13 +153,17 @@
       </ol>
     </p>`;
 
-    let meeting = await VideoConfMeeting.createAdhoc();
-    meeting.state = MeetingState.OutgoingCallPrepare;
+    // TODO Figure out the best account to call this person
+    let meeting = getAccount().newMeeting();
+    await meeting.createNewConference();
+    meeting.state = MeetingState.OutgoingCallConfirm;
     meeting.event = event;
     meeting.participants.add(callee);
     appGlobal.meetings.add(meeting);
-    meeting.videos.add(new ParticipantVideo(new MediaStream(), callee));
-    meeting.videos.add(new SelfVideo(new MediaStream()));
+    meeting.videos.add(new VideoStream(new MediaStream(), callee));
+    let self = new VideoStream(new MediaStream());
+    self.isMe = true;
+    meeting.videos.add(self);
     // meeting.myParticipant.role = ParticipantRole.Moderator;
   }
 
@@ -157,6 +202,18 @@
   .actions-container .error {
     position: absolute;
     bottom: 100px;
+  }
+  .test {
+    align-self: end;
+  }
+  .test:not(:hover) :global(.buttons.top-right) {
+    visibility: hidden;
+  }
+  .test .buttons {
+    margin-block-end: 12px;
+  }
+  .test .buttons :global(> *) {
+    margin-block-end: 12px;
   }
   .meeting-link {
     margin-inline-end: 4px;

@@ -1,7 +1,7 @@
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox class="left-pane" slot="left">
     <Header bind:selectedAccount={$selectedAccount} {accounts} />
-    <PersonsList {chatRooms} bind:selectedChat={$selectedChat} />
+    <ChatRoomList {chatRooms} bind:selectedChat={$selectedChat} />
   </vbox>
   <vbox class="right-pane" slot="right">
     {#if messages && $selectedChat }
@@ -39,7 +39,7 @@
   import MsgEditor from "./MsgEditor.svelte";
   import Header from "./Header.svelte";
   import PersonHeader from "./PersonHeader.svelte";
-  import PersonsList from "./PersonsList.svelte";
+  import ChatRoomList from "./ChatRoomList.svelte";
   import Splitter from "../Shared/Splitter.svelte";
   import { catchErrors } from "../Util/error";
   import { mergeColls } from "svelte-collections";

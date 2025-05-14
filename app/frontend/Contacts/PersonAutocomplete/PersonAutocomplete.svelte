@@ -48,6 +48,7 @@
   export let placeholder = $t`Add person`;
   export let tabindex = null;
   export let autofocus = false;
+  export let typedText: string; /* in/out, optional */
 
   export async function search(inputStr: string): Promise<PersonUID[]> {
     if (!inputStr || inputStr.length < 2) {
@@ -111,18 +112,11 @@
     }
     sanitize.emailAddress(emailAddress);
 
-    /* TODO
-    let person = new Person(appGlobal.collectedAddressbook);
-    person.name = name;
-    person.emailAddresses.add(new ContactEntry(emailAddress, "mail"));
-    appGlobal.persons.add(person);
-    */
     let personUID = new PersonUID(emailAddress, name);
     onAddPerson(personUID);
     return personUID;
   }
 
-  let typedText: string;
   function canCreate(typedText: string) {
     // email address is substring, e.g. "Fred <fred@example.com>"
     return typedText && sanitize.emailAddress(typedText, "");

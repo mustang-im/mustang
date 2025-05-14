@@ -1,0 +1,15 @@
+BEGIN:VCARD
+VERSION:4.0
+FN;PREF=1:Proton John Doe
+N:Doe;John;;;
+TEL;PREF=1:0123456789
+ADR;PREF=1:;;My Street;My City;My Region;00000;Germany
+BDAY:20250421
+NOTE:Some notes
+LANG:English
+ROLE:CEO
+ORG:Mustang
+URL:https://www.mustang.im/
+ITEM1.EMAIL;PREF=1:myemailaddress@example.com
+UID:proton-web-b0327e6c-d410-7c5e-14e1-f1f94cd0db5e
+END:VCARD

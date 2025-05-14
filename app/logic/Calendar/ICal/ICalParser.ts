@@ -4,21 +4,24 @@ function unescaped(value: string): string {
   return value.replace(/\\n|\\(.)/gi, (_, c) => c || "\n");
 }
 
-class ICalEntry {
+export class ICalEntry {
   properties: Record<string, string> = Object.create(null);
   name: string;
   value: string;
+  values: string[];
   line: string;
   constructor(line: string) {
     this.line = line;
     let pos = line.search(/[;:]/);
-    this.name = line.slice(0, pos).toLowerCase();
+    this.name = line.slice(0, pos).replace(/.+\./, "").toLowerCase();
     line = line.slice(pos);
     while (/^;([-\w]+)=("?)((\\?.)*?)\2(?=[;:])/.test(line)) {
-      this.properties[RegExp.$1.toLowerCase()] = unescaped(RegExp.$3);
+      let value = this.properties[RegExp.$1.toLowerCase()];
+      this.properties[RegExp.$1.toLowerCase()] = (value ? value + "," : "") + unescaped(RegExp.$3);
       line = RegExp.rightContext;
     }
     this.value = unescaped(line.slice(1));
+    this.values = line.match(/(^:|;)(\\?.)*?(?=;|$)/g).map(value => unescaped(value.slice(1)));
   }
 }
 

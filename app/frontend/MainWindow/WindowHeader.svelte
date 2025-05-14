@@ -6,7 +6,7 @@
   <hbox class="workspace">
     <WorkspaceHeader {selectedApp} />
   </hbox>
-  <hbox class="app-title">
+  <hbox class="app-title value">
     {$titleStore ?? selectedApp?.name ?? appName}
   </hbox>
   <vbox flex class="free" />

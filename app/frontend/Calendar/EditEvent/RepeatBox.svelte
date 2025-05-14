@@ -79,14 +79,16 @@
   import { arrayRemove } from '../../../logic/util/util';
 
   export let event: Event;
+  export let showRepeat: boolean;
 
-  let frequency = event.recurrenceRule?.frequency || Frequency.Daily;
-  let interval = event.recurrenceRule?.interval || 1;
-  let count = Number.isFinite(event.recurrenceRule?.count) ? event.recurrenceRule.count : 1;
-  let weekdays = event.recurrenceRule?.weekdays || [event.startTime.getDay()];
-  let week = event.recurrenceRule?.week || 0;
-  let end = event.recurrenceRule?.endDate ? "date" : Number.isFinite(event.recurrenceRule?.count) ? "count" : "none";
-  let endDate = event.recurrenceRule?.endDate || event.startTime;
+  let master = event.parentEvent || event;
+  let frequency = master.recurrenceRule?.frequency || Frequency.Daily;
+  let interval = master.recurrenceRule?.interval || 1;
+  // end // let count = Number.isFinite(event.recurrenceRule?.count) ? event.recurrenceRule.count : 1;
+  let weekdays = master.recurrenceRule?.weekdays?.slice() || [event.startTime.getDay()];
+  let week = master.recurrenceRule?.week || 0;
+  // end // let end = event.recurrenceRule?.endDate ? "date" : Number.isFinite(event.recurrenceRule?.count) ? "count" : "none";
+  // end // let endDate = master.recurrenceRule?.endDate || event.startTime;
   let minDate = event.startTime;
   let daily = "everyday";
   let dailyOptions: RadioOption[] = [
@@ -119,18 +121,26 @@
       week = weekno;
     }
 
+    if (!weekdays.includes(event.startTime.getDay())) {
+      if (weekdays.length == 1) {
+        weekdays[0] = event.startTime.getDay();
+      } else {
+        weekdays.push(event.startTime.getDay());
+      }
+    }
     weekdayOptions = [1, 2, 3, 4, 5, 6, 7].map(day => new Date(2010, 2, day)).map(date => ({
       value: date.getDay(),
       disabled: date.getDay() == event.startTime.getDay(),
       label: date.toLocaleDateString(getUILocale(), { weekday: "narrow" }),
     }));
 
+    /* end
     if (endDate <= event.startTime) {
       endDate = new Date(event.startTime);
       endDate.setHours(23, 59, 59, 0);
     }
+    */
     minDate = event.startTime;
-    event.endTime.setFullYear(event.startTime.getFullYear(), event.startTime.getMonth(), event.startTime.getDate());
     event.notifyObservers();
   }
 
@@ -162,24 +172,21 @@
 
   function onFrequencyChanged() {
     if (frequency == Frequency.None) {
-      event.recurrenceCase = RecurrenceCase.Normal;
-      event.recurrenceRule = null;
-    } else if (event.recurrenceCase == RecurrenceCase.Normal) {
-      event.recurrenceCase = RecurrenceCase.Master;
-    } // else: leave unchanged
+      showRepeat = false;
+    }
   }
 
-  function newRecurrenceRule(): RecurrenceRule {
+  export function newRecurrenceRule(): RecurrenceRule {
     let init: RecurrenceInit = { startDate: event.startTime, frequency, interval };
+    /* end
     if (end == "count") {
       init.count = count;
     } else if (end == "date") {
       init.endDate = endDate;
     }
+    */
     if (frequency == Frequency.Weekly) {
-      if (weekdays.length > 1) {
-        init.weekdays = weekdays;
-      }
+      init.weekdays = weekdays;
     } else if (frequency == Frequency.Monthly || frequency == Frequency.Yearly) {
       init.week = week;
       if (week) {
@@ -187,35 +194,6 @@
       }
     }
     return new RecurrenceRule(init);
-  }
-
-  // TODO Call from save()
-  export function confirmAndChangeRule(): boolean {
-    if (event.recurrenceCase == RecurrenceCase.Normal) {
-      if (!event.recurrenceRule) {
-        // Never a recurring event.
-        return true;
-      }
-      if (!confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
-        return false;
-      }
-      event.recurrenceRule = null;
-    } else {
-      let rule = newRecurrenceRule();
-      if (event.recurrenceRule) {
-        if (event.startTime.getTime() == event.recurrenceRule.startDate.getTime() &&
-            rule.getCalString() == event.recurrenceRule.getCalString()) {
-          // Rule hasn't actually changed.
-          return true;
-        }
-        if (!confirm($t`This change will reset all of your series to default values.`)) {
-          return false;
-        }
-      }
-      event.recurrenceRule = rule;
-    }
-    event.clearExceptions();
-    return true;
   }
 </script>
 

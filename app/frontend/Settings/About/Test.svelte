@@ -13,6 +13,7 @@
   import { openApp } from "../../AppsBar/selectedApp";
   import { chatMustangApp } from "../../Chat/ChatMustangApp";
   import { appGlobal } from "../../../logic/app";
+  import { selectedAccount, selectedFolder } from "../../Mail/Selected";
   import { sleep } from "../../../logic/util/util";
   import Button from "../../Shared/Button.svelte";
   import { t } from "../../../l10n/l10n";
@@ -26,10 +27,13 @@
     appGlobal.meetAccounts.clear();
     appGlobal.calendars.clear();
     appGlobal.addressbooks.clear();
-    appGlobal.personalAddressbook = null;
-    appGlobal.collectedAddressbook = null;
+    appGlobal.files.clear();
     await sleep(0.1);
     await getTestObjects();
+    appGlobal.personalAddressbook = appGlobal.addressbooks.first;
+    appGlobal.collectedAddressbook = null;
+    $selectedAccount = appGlobal.emailAccounts.first;
+    $selectedFolder = $selectedAccount.rootFolders.first;
     isLoading = false;
     openApp(chatMustangApp);
   }

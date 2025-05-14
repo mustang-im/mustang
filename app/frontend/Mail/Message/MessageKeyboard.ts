@@ -8,8 +8,8 @@ export async function onKeyOnList(event: KeyboardEvent) {
   /** Important to use normal static array here. If were were to use `selectedMessages` Collection,
    * it would observe changes to selection even in the future and keep triggering
    * the action for all future selections. */
-  let messages = selectedMessagesColl.contents;
-  if (!messages.length) {
+  let messages = selectedMessagesColl?.contents;
+  if (!messages?.length) {
     return;
   }
   let message = get(selectedMessage) ?? messages[0];

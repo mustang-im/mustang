@@ -13,7 +13,7 @@
             iconSize="16px"
             />
         {/if}
-        {#if event.response == InvitationResponse.Unknown || event.response == InvitationResponse.Organizer}
+        {#if !event.isIncomingMeeting}
           <RoundButton
             label={$t`Delete Event`}
             icon={DeleteIcon}
@@ -23,6 +23,25 @@
             border={false}
             iconSize="16px"
             />
+          {#if seriesStatus == "first"}
+            <RoundButton
+             label={$t`Delete entire series`}
+             icon={DeleteIcon}
+             onClick={onDeleteAll}
+             classes="plain delete"
+             border={false}
+             iconSize="16px"
+             />
+          {:else if seriesStatus == "middle"}
+            <RoundButton
+             label={$t`Delete remainder of series`}
+             icon={DeleteIcon}
+             onClick={onDeleteRemainder}
+             classes="plain delete"
+             border={false}
+             iconSize="16px"
+             />
+          {/if}
         {/if}
       </hbox>
       <hbox class="account-icon">
@@ -34,6 +53,7 @@
         <AccountDropDown
           bind:selectedAccount={$selectedCalendar}
           accounts={appGlobal.calendars}
+          filterByWorkspace={false}
           on:select={(event) => catchErrors(() => onChangeCalendar(event.detail))} />
       </hbox>
       <hbox flex class="spacer" />
@@ -49,6 +69,27 @@
             />
         {/if}
         {#if canSave}
+          {#if seriesStatus == "first"}
+            <RoundButton
+             label={$t`Change entire series`}
+             icon={SaveIcon}
+             onClick={onChangeAll}
+             classes="plain save-or-close"
+             filled={true}
+             iconSize="16px"
+             />
+          {:else if seriesStatus == "middle"}
+            <RoundButton
+             label={$t`Change remainder of series`}
+             icon={SaveIcon}
+             onClick={onChangeRemainder}
+             classes="plain save-or-close"
+             filled={true}
+             iconSize="16px"
+             />
+          {/if}
+        {/if}
+        {#if canSave && ($event.hasChanged() || repeatBox && !event.parentEvent)}
           <RoundButton
             label={$t`Revert`}
             icon={RevertIcon}
@@ -79,11 +120,11 @@
 </vbox>
 
 <script lang="ts">
-  import type { Event } from "../../../logic/Calendar/Event";
+  import { type Event, RecurrenceCase } from "../../../logic/Calendar/Event";
   import { Calendar } from "../../../logic/Calendar/Calendar";
   import { Account } from "../../../logic/Abstract/Account";
   import { EventEditMustangApp, calendarMustangApp } from "../CalendarMustangApp";
-  import { InvitationResponse } from "../../../logic/Calendar/Invitation";
+  import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { selectedCalendar } from "../selected";
   import { appGlobal } from "../../../logic/app";
   import Stack from "../../Shared/Stack.svelte";
@@ -109,8 +150,37 @@
 
   $: event.startEditing(); // not `$event`
   $: canSave = event && $event.title && $event.startTime && $event.endTime &&
-      event.startTime.getTime() <= event.endTime.getTime() && $event.hasChanged();
-  $: oldTitle = event?.title || $t`Event`;
+      event.startTime.getTime() <= event.endTime.getTime();
+  $: seriesStatus = event.seriesStatus;
+
+  function confirmAndChangeRecurrenceRule(): boolean {
+    let master = event.parentEvent || event;
+    if (!repeatBox) {
+      if (!master.recurrenceRule) {
+        // Event had never been a recurring event.
+        return true;
+      }
+      if (!confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
+        return false;
+      }
+      master.recurrenceRule = null;
+      master.recurrenceCase = RecurrenceCase.Normal;
+    } else {
+      let rule = repeatBox.newRecurrenceRule();
+      if (master.recurrenceRule) {
+        if (rule.isCompatible(master.recurrenceRule) && event.duration == master.duration) {
+          return true;
+        }
+        if (!confirm($t`This change will reset all of your series to default values.`)) {
+          return false;
+        }
+      }
+      master.recurrenceRule = rule;
+      master.recurrenceCase = RecurrenceCase.Master;
+    }
+    master.clearExceptions();
+    return true;
+  }
 
   function onCancel() {
     assert(event.unedited, "need unedited state");
@@ -120,8 +190,15 @@
   }
 
   async function onSave() {
-    if (repeatBox && !repeatBox.confirmAndChangeRule()) {
-      return;
+    await saveEvent(event);
+  }
+
+  async function saveEvent(event) {
+    // Turning a single event into a series.
+    // (The reverse is done in `onChangeAll`.)
+    if (repeatBox) {
+      event.recurrenceRule = repeatBox.newRecurrenceRule();
+      event.recurrenceCase = RecurrenceCase.Master;
     }
     await event.saveToServer();
     await event.save();
@@ -134,14 +211,49 @@
     onClose();
   }
 
-  async function onDelete() {
-    if (event.recurrenceRule) {
-      if (!confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
-        return;
-      }
+  async function onChangeAll() {
+    if (!confirmAndChangeRecurrenceRule()) {
+      return;
     }
-    await event.deleteFromServer();
-    await event.deleteIt();
+    let master = event.parentEvent;
+    master.copyEditableFieldsFrom(event);
+    await master.saveToServer();
+    await master.save();
+    onClose();
+  }
+
+  async function onChangeRemainder() {
+    let master = event.calendar.newEvent();
+    master.copyEditableFieldsFrom(event);
+    master.calUID = null;
+    await saveEvent(master);
+    await event.truncateRecurrence();
+    onClose();
+  }
+
+  async function onDelete() {
+    if (seriesStatus == "only") {
+      await event.parentEvent.deleteFromServer();
+      await event.parentEvent.deleteIt();
+    } else {
+      await event.deleteFromServer();
+      await event.deleteIt();
+    }
+    onClose();
+  }
+
+  async function onDeleteAll() {
+    if (!confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
+      return;
+    }
+    let master = event.parentEvent;
+    await master.deleteFromServer();
+    await master.deleteIt();
+    onClose();
+  }
+
+  async function onDeleteRemainder() {
+    await event.truncateRecurrence();
     onClose();
   }
 
@@ -162,7 +274,6 @@
 
   function onClose() {
     event.finishEditing();
-    event.title ||= oldTitle;
     let me = calendarMustangApp.subApps.find(app => app instanceof EventEditMustangApp && app.mainWindowProperties.event == event);
     calendarMustangApp.subApps.remove(me);
   }

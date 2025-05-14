@@ -1,6 +1,7 @@
 import { MeetingState, VideoConfMeeting } from "../VideoConfMeeting";
-import { ParticipantVideo, SelfVideo } from "../VideoStream";
+import { VideoStream } from "../VideoStream";
 import { MeetingParticipant } from "../Participant";
+import { LocalMediaDeviceStreams } from "../LocalMediaDeviceStreams";
 import { Chat } from "../../Chat/Chat";
 import { assert } from "../../util/util";
 import type { MatrixCall, MatrixClient } from "matrix-js-sdk";
@@ -24,6 +25,7 @@ export class MatrixVideoConf extends VideoConfMeeting {
    */
   protected constructor(client: MatrixClient, call: MatrixCall) {
     super();
+    this.mediaDeviceStreams = new LocalMediaDeviceStreams();
     this.client = client;
     this._call = call;
     this._call.on("error", ex => this.errorCallback(ex));
@@ -35,14 +37,18 @@ export class MatrixVideoConf extends VideoConfMeeting {
     this._call.on("feeds_changed", (feeds) => {
       for (let feed of feeds) {
         if (feed.isLocal()) {
-          this.videos.add(new SelfVideo(feed.stream));
+          let self = new VideoStream(feed.stream);
+          self.isMe = true;
+          this.videos.add(self);
         } else {
           let participant = new MeetingParticipant(); // TODO
-          this.videos.add(new ParticipantVideo(feed.stream, participant));
+          this.videos.add(new VideoStream(feed.stream, participant));
         }
       }
+      this.participants._notifySvelteOfChanges();
     });
-    this._call.placeVideoCall();
+    await this._call.placeVideoCall();
+    this.state = MeetingState.Ongoing;
   }
 
   async answer() {
@@ -62,14 +68,14 @@ export class MatrixVideoConf extends VideoConfMeeting {
     let call = createNewMatrixCall(client, chatRoom.id);
     assert(call, "Matrix failed to start the call");
     let meet = new MatrixVideoConf(client, call);
-    meet.state = MeetingState.OutgoingCallPrepare;
+    meet.state = MeetingState.OutgoingCallConfirm;
     return meet;
   }
 
   /**
    * @param client Logged in, and the initial sync has already finished.
    */
-  static async createAdhoc(client: MatrixClient): Promise<MatrixVideoConf> {
+  static async createNewConference(client: MatrixClient): Promise<MatrixVideoConf> {
     let chatRoom = new Chat();
     // TODO create room using MatrixClient
     return await this.call(chatRoom, client);

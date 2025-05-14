@@ -1,0 +1,19 @@
+BEGIN:VCARD
+VERSION:4.0
+N:Doe;John;;;
+FN:John Doe - TB
+NICKNAME:Nick
+EMAIL;PREF=1:myemailaddress@example.com
+X-CUSTOM1;VALUE=TEXT:Custom prop
+URL:https://website.com
+ADR:;;My Street;My City;My State;00000;Germany
+TEL;TYPE=cell;VALUE=TEXT:0123456789
+TZ:America/Los_Angeles
+IMPP:matrix:u/john:example.org
+NOTE:Some notes
+BDAY;VALUE=DATE:19900408
+TITLE:CEO
+ROLE:Executive
+ORG:Mustang;Admin
+UID:7b6d6580-201c-4911-812e-fc5ce5ef6a91
+END:VCARD

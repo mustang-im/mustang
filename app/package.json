@@ -2,7 +2,7 @@
   "name": "mustang-frontend",
   "description": "Mustang UI",
   "private": true,
-  "version": "0.8.18-dev",
+  "version": "0.8.21-dev",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -44,6 +44,7 @@
     "ini": "^4.1.2",
     "js-sha256": "^0.11.0",
     "ky": "^1.7.4",
+    "livekit-client": "^2.11.4",
     "lodash": "^4.17.21",
     "lowlight": "^3.1.0",
     "lucide-svelte": "^0.475.0",
@@ -60,6 +61,7 @@
     "svelte-icon": "^2.0.0",
     "timezone-picker-svelte": "^1.0.2",
     "tiptap-extension-resize-image": "^1.2.1",
+    "volume-meter": "^2.0.1",
     "ws": "^8.16.0"
   },
   "devDependencies": {
@@ -72,7 +74,7 @@
     "glob": "^11.0.1",
     "happy-dom": "^16.0.0",
     "html-formatter": "^0.1.9",
-    "mustang-autotranslate": "^1.15.0",
+    "mustang-autotranslate": "^1.15.3",
     "simple-svelte-autocomplete": "^2.5.2",
     "svelte": "^3.55.1",
     "svelte-check": "^2.10.3",
@@ -92,7 +94,7 @@
   "bugs": {
     "url": "https://github.com/mustang-im/mustang/issues"
   },
-  "author": "Ben Bucksch and  Mustang GmbH (https://mustang.im)",
+  "author": "Ben Bucksch and Mustang GmbH (https://mustang.im)",
   "copyright": "Ben Bucksch",
   "homepage": "https://mustang.im",
   "license": "EUPL-1.2",

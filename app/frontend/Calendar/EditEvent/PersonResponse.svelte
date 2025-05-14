@@ -14,7 +14,7 @@
 
 <script lang="ts">
   import type { Participant } from "../../../logic/Calendar/Participant";
-  import { InvitationResponse } from "../../../logic/Calendar/Invitation";
+  import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { t } from "../../../l10n/l10n";
 
   export let person: Participant;

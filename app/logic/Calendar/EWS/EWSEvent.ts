@@ -1,15 +1,17 @@
 import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
-import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation";
+import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import IANAToWindowsTimezone from "../ICal/IANAToWindowsTimezone";
 import WindowsToIANATimezone from "../ICal/WindowsToIANATimezone";
 import type { EWSCalendar } from "./EWSCalendar";
+import EWSOutgoingInvitation from "./EWSOutgoingInvitation";
 import EWSCreateItemRequest from "../../Mail/EWS/Request/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "../../Mail/EWS/Request/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/Request/EWSUpdateItemRequest";
+import { k1MinuteMS } from "../../../frontend/Util/date";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, ensureArray } from "../../util/util";
+import { assert, ensureArray, NotReached } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 const ResponseTypes: Record<InvitationResponseInMessage, string> = {
@@ -93,7 +95,7 @@ export class EWSEvent extends Event {
       this.clearExceptions();
     }
     if (xmljs.ReminderIsSet == "true") {
-      this.alarm = new Date(this.startTime.getTime() - 60 * sanitize.integer(xmljs.ReminderMinutesBeforeStart));
+      this.alarm = new Date(this.startTime.getTime() - k1MinuteMS * sanitize.integer(xmljs.ReminderMinutesBeforeStart));
     } else {
       this.alarm = null;
     }
@@ -107,7 +109,7 @@ export class EWSEvent extends Event {
     }
     this.participants.replaceAll(participants);
     if (xmljs.MyResponseType) {
-      this.response = sanitize.integer(InvitationResponse[xmljs.MyResponseType], InvitationResponse.Unknown);
+      this.myParticipation = sanitize.integer(InvitationResponse[xmljs.MyResponseType], InvitationResponse.Unknown);
     }
     if (xmljs.LastModifiedTime) {
       this.lastMod = sanitize.date(xmljs.LastModifiedTime);
@@ -138,6 +140,10 @@ export class EWSEvent extends Event {
     return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
   }
 
+  get outgoingInvitation() {
+    return new EWSOutgoingInvitation(this);
+  }
+
   async saveToServer() {
     /* Disabling tasks for now.
     if (this.startTime) {
@@ -156,6 +162,12 @@ export class EWSEvent extends Event {
       this.parentEvent ?
       new EWSUpdateOccurrenceRequest(this, {SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy"}) :
       new EWSCreateItemRequest({SendMeetingInvitations: "SendToAllAndSaveCopy"});
+    if (this.isIncomingMeeting) {
+      request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
+      request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
+      await this.calendar.account.callEWS(request);
+      return;
+    }
     request.addField("CalendarItem", "Subject", this.title, "item:Subject");
     request.addField("CalendarItem", "Body", this.rawHTMLDangerous ? { BodyType: "HTML", _TextContent_: this.rawHTMLDangerous } : { BodyType: "Text", _TextContent_: this.descriptionText }, "item:Body");
     request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
@@ -235,7 +247,7 @@ export class EWSEvent extends Event {
       // It uses a separate flag for whether the alarm is set.
       return 0;
     }
-    return (this.alarm.getTime() - this.startTime.getTime()) / -60 | 0;
+    return (this.alarm.getTime() - this.startTime.getTime()) / -k1MinuteMS | 0;
   }
 
   saveRule(rule: RecurrenceRule) {
@@ -306,8 +318,25 @@ export class EWSEvent extends Event {
     }
   }
 
+  async makeExclusions(indices: number[]) {
+    let request = {
+      m$DeleteItem: {
+        m$ItemIds: indices.map(index => ({
+          t$OccurrenceItemId: {
+            RecurringMasterId: this.parentEvent.itemID,
+            InstanceIndex: index + 1,
+          },
+        })),
+        DeleteType: "MoveToDeletedItems",
+        SendMeetingCancellations: "SendToAllAndSaveCopy",
+      },
+    };
+    await this.calendar.account.callEWS(request);
+    await super.makeExclusions(indices);
+  }
+
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.response > InvitationResponse.Organizer, "Only invitations can be responded to");
+    assert(this.isIncomingMeeting, "Only invitations can be responded to");
     let request = new EWSCreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.itemID });
     await this.calendar.account.callEWS(request);

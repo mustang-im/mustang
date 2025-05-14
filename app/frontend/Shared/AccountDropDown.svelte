@@ -5,7 +5,12 @@
     </hbox>
   {/if}
   <select bind:value={selectedAccount} class:withLabel on:change={onSelect}>
-    {#each $accounts.each as account }
+    {#if showAllOption}
+      <option value={null}>
+        {$t`All`}
+      </option>
+    {/if}
+    {#each $showAccounts.each as account }
       <option value={account}>
         {account.name}
       </option>
@@ -15,27 +20,39 @@
 
 <script lang="ts">
   import type { Account } from "../../logic/Abstract/Account";
-  import type { Collection } from "svelte-collections";
+  import { selectedWorkspace } from "../MainWindow/Selected";
   import AccountIcon from "lucide-svelte/icons/rabbit";
+  import { t } from "../../l10n/l10n";
+  import type { Collection } from "svelte-collections";
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher<{ select: Account }>();
 
   export let selectedAccount: Account; /* in/out */
   export let accounts: Collection<Account>;
+  export let filterByWorkspace: boolean;
+  export let showAllOption: boolean = false;
   export let withIcon: boolean = false;
   export let withLabel: boolean = true;
 
-  $: defaultSelection(selectedAccount);
-  function defaultSelection(_dummy: any) {
+  $: showAccounts = filterByWorkspace && $selectedWorkspace
+    ? accounts.filter(acc => acc.workspace == $selectedWorkspace)
+    : accounts;
+
+  $: selectedAccount, defaultSelection();
+  function defaultSelection() {
     if (!selectedAccount) {
-      selectedAccount = accounts.first;
+      selectedAccount = showAllOption ? null : showAccounts.first;
     }
   }
 
-  $: accounts, onAccountsListChanged();
+  $: showAccounts, onAccountsListChanged();
   function onAccountsListChanged() {
-    if (!accounts.includes(selectedAccount)) {
-      selectedAccount = accounts.first;
+    if (selectedAccount === null && showAllOption) {
+      return;
+    }
+    if (!showAccounts.includes(selectedAccount)) {
+      selectedAccount = null;
+      defaultSelection();
     }
   }
 
@@ -59,5 +76,10 @@
   }
   .account-selector .icon {
     color: var(--account-color);
+  }
+  select {
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    max-width: 10em;
   }
 </style>

@@ -3,7 +3,7 @@ import { ChatMessage } from '../Message';
 import { SQLChatAccount } from './SQLChatAccount';
 import { SQLChat } from './SQLChat';
 import { SQLChatMessage } from './SQLChatMessage';
-import { fakeChatPerson, fakeChatAccount, fakePersons } from '../../testData';
+import { FakeChatAccount, FakeChatPerson, FakeAddressbook, fakePersons } from '../../testData';
 import { SQLPerson } from '../../Contacts/SQL/SQLPerson';
 import { appGlobal } from '../../app';
 import JPCWebSocket from '../../../../lib/jpc-ws/protocol';
@@ -15,9 +15,10 @@ test("Save and read chats from SQL database", { timeout: 10000 }, async () => {
   await makeTestDatabase(); // Let SQLFoo classes use the test database
 
   // Fake data
-  appGlobal.me = fakeChatPerson();
-  appGlobal.persons.addAll(fakePersons(50));
-  let originalAccount = fakeChatAccount(appGlobal.persons, appGlobal.me, 30);
+  appGlobal.me = new FakeChatPerson();
+  let addressbook = new FakeAddressbook();
+  fakePersons(50, addressbook);
+  let originalAccount = new FakeChatAccount(addressbook.persons, appGlobal.me, 30);
   expect(originalAccount).toBeDefined();
   appGlobal.chatAccounts.add(originalAccount);
   let originalChats = originalAccount.chats;

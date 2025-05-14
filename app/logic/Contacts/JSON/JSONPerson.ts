@@ -14,25 +14,29 @@ export class JSONPerson {
     json.lastName = person.lastName;
     json.picture = person.picture;
     json.notes = person.notes;
+    json.company = person.company;
+    json.department = person.department;
+    json.position = person.position;
     json.popularity = person.popularity;
     json.addressbookID = person.addressbook?.id;
     return json;
   }
 
-  protected saveContacts(person: Person, json: any): any {
+  static saveContacts(person: Person, json: any): any {
     json.emailAddresses = this.saveContactsOfType(person.emailAddresses);
     json.chatAccounts = this.saveContactsOfType(person.chatAccounts);
     json.phoneNumbers = this.saveContactsOfType(person.phoneNumbers);
     json.streetAddresses = this.saveContactsOfType(person.streetAddresses);
     json.urls = this.saveContactsOfType(person.urls);
     json.custom = this.saveContactsOfType(person.custom);
+    return json;
   }
 
-  protected saveContactsOfType(contacts: Collection<ContactEntry>): any[] {
+  static saveContactsOfType(contacts: Collection<ContactEntry>): any[] {
     return contacts.contents.map(c => this.saveContact(c));
   }
 
-  protected saveContact(contact: ContactEntry): any {
+  static saveContact(contact: ContactEntry): any {
     let json: any = {};
     json.value = contact.value;
     json.protocol = contact.protocol;
@@ -48,7 +52,10 @@ export class JSONPerson {
     person.lastName = sanitize.string(json.lastName, null);
     person.picture = sanitize.url(json.picture, null);
     person.notes = sanitize.string(json.notes, null);
-    person.popularity = sanitize.integer(json.popularity, null);
+    person.company = sanitize.string(person.company, null);
+    person.department = sanitize.string(person.department, null);
+    person.position = sanitize.string(person.position, null);
+    person.popularity = sanitize.integer(json.popularity, 0);
     if (json.addressbookID) {
       let addressbookID = sanitize.nonemptystring(json.addressbookID);
       if (person.addressbook) {

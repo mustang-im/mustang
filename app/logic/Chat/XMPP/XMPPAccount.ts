@@ -2,10 +2,12 @@ import { ChatAccount } from '../ChatAccount';
 import type { XMPPChat } from './XMPPChat';
 import { XMPP1to1Chat } from './XMPP1to1Chat';
 import { XMPPGroupChat } from './XMPPGroupChat';
-import { Group } from '../../Abstract/Group';
+import type { Group } from '../../Abstract/Group';
 import { ChatPerson } from '../Person';
 import { ContactEntry } from '../../Abstract/Person';
 import { appGlobal } from '../../app';
+import { ConnectError } from '../../Abstract/Account';
+import { gt } from '../../../l10n/l10n';
 import { MapColl } from 'svelte-collections';
 import * as XMPP from 'stanza';
 
@@ -21,7 +23,7 @@ export class XMPPAccount extends ChatAccount {
    * You must call this after creating the object and having set its properties.
    * This will populate `persons` and `chats`. */
   async login(interactive: boolean) {
-    super.login(interactive);
+    await super.login(interactive);
     await this.connect();
     await this.getRoster();
     await this.client.sendPresence();
@@ -37,14 +39,18 @@ export class XMPPAccount extends ChatAccount {
       // credentials: { token: ... }, TODO OAuth2
 
       // If you have a .well-known/host-meta.json file for your
-      // domain, the connection transport config can be skipped.
+      // domain, the connection transports can be set to `true`.
       transports: {
-        websocket: this.url?.startsWith("wss:") ? this.url : undefined,
-        // bosh: this.url.startsWith("https:") ? this.url : undefined,
-      }
+        websocket: this.url?.startsWith("wss:") ? this.url : !this.url,
+        bosh: this.url?.startsWith("https:") ? this.url : !this.url,
+      },
     });
     this.addListeners();
     await this.client.connect();
+    console.log("client", this.client.config);
+    if (!this.client.jid) {
+      throw new ConnectError(new Error(), gt`Failed to connect to chat account ${this.name}`);
+    }
     await this.waitForEvent("session:started");
   }
   async waitForEvent(eventName: keyof XMPP.AgentEvents) {
@@ -54,6 +60,7 @@ export class XMPPAccount extends ChatAccount {
   }
   /** For setup only. Test that the login works. */
   async verifyLogin(): Promise<void> {
+    await super.login(true);
     await this.connect();
   }
   async getRoster() {

@@ -205,6 +205,10 @@ value,
 .selectable {
   user-select: text;
 }
+value,
+.value {
+  overflow-wrap: anywhere;
+}
 
 .font-smallest {
   font-size: 12px;

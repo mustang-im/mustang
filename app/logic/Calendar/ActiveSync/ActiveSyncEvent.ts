@@ -1,11 +1,13 @@
 import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
-import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation";
+import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import IANAToWindowsTimezone from "../ICal/IANAToWindowsTimezone";
 import WindowsToIANATimezone from "../ICal/WindowsToIANATimezone";
 import type { ActiveSyncCalendar } from "./ActiveSyncCalendar";
+import ActiveSyncOutgoingInvitation from "./ActiveSyncOutgoingInvitation";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
+import { k1MinuteMS } from "../../../frontend/Util/date";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
@@ -68,10 +70,10 @@ export class ActiveSyncEvent extends Event {
       this.recurrenceRule = null;
       this.clearExceptions();
     }
-    this.alarm = wbxmljs.Reminder ? new Date(this.startTime.getTime() - 60 * sanitize.integer(wbxmljs.Reminder)) : null;
+    this.alarm = wbxmljs.Reminder ? new Date(this.startTime.getTime() - k1MinuteMS * sanitize.integer(wbxmljs.Reminder)) : null;
     this.location = sanitize.nonemptystring(wbxmljs.Location, "");
     this.participants.replaceAll(ensureArray(wbxmljs.Attendees?.Attendee).map(attendee => new Participant(sanitize.emailAddress(attendee.Email), sanitize.nonemptystring(attendee.Name, null), sanitize.integer(attendee.AttendeeStatus, InvitationResponse.Unknown))));
-    this.response = sanitize.integer(wbxmljs.ResponseType, InvitationResponse.Unknown);
+    this.myParticipation = sanitize.integer(wbxmljs.ResponseType, InvitationResponse.Unknown);
   }
 
   newRecurrenceRule(wbxmljs: any): RecurrenceRule {
@@ -81,12 +83,12 @@ export class ActiveSyncEvent extends Event {
     let frequency = kRecurrenceTypes[wbxmljs.Type];
     let interval = sanitize.integer(wbxmljs.Interval, 1);
     let weekdays = extractWeekdays(wbxmljs.DayOfWeek);
-    let week = sanitize.integer(wbxmljs.DayOfWeek, 0);
+    let week = sanitize.integer(wbxmljs.WeekOfMonth, 0);
     let first = sanitize.integer(wbxmljs.FirstDayOfWeek, Weekday.Monday);
     return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
   }
 
-  toFields(exception?: any) {
+  toFields(exceptions: { Exception: any } | { Exception: any }[] = []) {
     return {
       ExceptionStartTime: toCompact(this.recurrenceStartTime) || [],
       Timezone: this.recurrenceStartTime ? [] : getTimeZoneActiveSync(this.timezone),
@@ -96,7 +98,7 @@ export class ActiveSyncEvent extends Event {
       } : [],
       EndTime: toCompact(this.endTime),
       Location: this.location || {}, // Allows exception to have no location
-      Reminder: this.alarm ? ((this.alarm.getTime() - this.startTime.getTime()) / -60 | 0) : [],
+      Reminder: this.alarm ? String((this.alarm.getTime() - this.startTime.getTime()) / -k1MinuteMS | 0) : [],
       StartTime: toCompact(this.startTime),
       UID: !this.parentEvent && this.calUID || [],
       Recurrence: this.recurrenceRule ? {
@@ -111,18 +113,28 @@ export class ActiveSyncEvent extends Event {
         FirstDayOfWeek: this.recurrenceRule.frequency == Frequency.Weekly ? String(this.recurrenceRule.first) : [],
       } : [],
       Subject: this.title,
-      Body: this.rawHTMLDangerous ? { Type: "2", Data: this.rawHTMLDangerous } : { Type: "1", Data: [this.descriptionText] },
-      Exceptions: exception ? { Exception: exception } : [],
+      Body: this.rawHTMLDangerous ? { Type: "2", Data: this.rawHTMLDangerous } : { Type: "1", Data: [this.descriptionText ?? ""] },
+      Exceptions: exceptions,
     };
+  }
+
+  get outgoingInvitation() {
+    return new ActiveSyncOutgoingInvitation(this);
   }
 
   async saveToServer(): Promise<void> {
     // Not supporting tasks for now.
     if (this.parentEvent) {
-      this.parentEvent.saveFields(this.parentEvent.toFields(this.toFields()));
+      this.parentEvent.saveFields(this.parentEvent.toFields({ Exception: this.toFields() }));
     } else {
       await this.saveFields(this.toFields());
+      if (!this.calUID) {
+        // If we haven't set a UID yet, Exchange will auto-generate one,
+        // so sync up (and match using `serverID`) to find out what `calUID` is.
+        await this.calendar.listEvents();
+      }
     }
+    super.saveToServer();
   }
 
   async saveFields(fields: any): Promise<void> {
@@ -160,8 +172,10 @@ export class ActiveSyncEvent extends Event {
   async deleteFromServer(): Promise<void> {
     if (this.parentEvent) {
       await this.parentEvent.saveFields(this.parentEvent.toFields({
-        Deleted: "1",
-        ExceptionStartTime: toCompact(this.recurrenceStartTime),
+        Exception: {
+          Deleted: "1",
+          ExceptionStartTime: toCompact(this.recurrenceStartTime),
+        }
       }));
     } else {
       let data = {
@@ -178,10 +192,20 @@ export class ActiveSyncEvent extends Event {
         throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.calendar);
       }
     }
+    await super.deleteFromServer();
+  }
+
+  async makeExclusions(indices: number[]) {
+    await this.saveFields(this.toFields(indices.map(index => ({
+      Exception: {
+        Deleted: "1",
+        ExceptionStartTime: toCompact(this.recurrenceRule.getOccurrenceByIndex(index + 1) as Date),
+      },
+    }))));
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.response > InvitationResponse.Organizer, "Only invitations can be responded to");
+    assert(this.isIncomingMeeting, "Only invitations can be responded to");
     let request = {
       Request: {
         UserResponse: ActiveSyncResponse[response],
@@ -190,7 +214,7 @@ export class ActiveSyncEvent extends Event {
       },
     };
     await this.calendar.account.callEAS("MeetingResponse", request);
-    await this.calendar.account.sendInvitationResponse(this, response); // needs 16.x to do this automatically
+    await this.sendInvitationResponse(response, this.calendar.account); // needs 16.x to do this automatically
   }
 }
 

@@ -1,7 +1,12 @@
 <hbox class="persons-toolbar">
-  <Scroll>
-    <AddressbookSelector bind:selectedAddressbook />
-  </Scroll>
+  <vbox class="scroll">
+    <AccountDropDown
+      bind:selectedAccount={selectedAddressbook}
+      accounts={appGlobal.addressbooks}
+      showAllOption={true}
+      filterByWorkspace={true}
+      />
+  </vbox>
   <hbox class="buttons">
     <RoundButton
       label={$t`New contact`}
@@ -17,9 +22,9 @@
   import type { Person } from "../../logic/Abstract/Person";
   import { selectedPerson } from "./Person/Selected";
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
-  import AddressbookSelector from "./AddressbookSelector.svelte";
+  import { appGlobal } from "../../logic/app";
+  import AccountDropDown from "../Shared/AccountDropDown.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
-  import Scroll from "../Shared/Scroll.svelte";
   import NewContactIcon from "lucide-svelte/icons/plus";
   import type { Collection } from "svelte-collections";
   import { t } from "../../l10n/l10n";

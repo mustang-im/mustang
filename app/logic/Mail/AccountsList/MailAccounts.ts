@@ -17,7 +17,8 @@ import { ActiveSyncAccount } from '../ActiveSync/ActiveSyncAccount';
 import { GraphAccount } from '../Graph/GraphAccount';
 // #endif
 import { setStorage } from '../Store/setStorage';
-import { NotReached } from '../../util/util';
+import { appGlobal } from '../../app';
+import { NotReached, NotSupported } from '../../util/util';
 import type { Collection } from 'svelte-collections';
 
 export function newAccountForProtocol(protocol: string): MailAccount {
@@ -48,6 +49,9 @@ function _newAccountForProtocol(protocol: string): MailAccount {
   // #endif
   // #if [!WEBMAIL && PROPRIETARY]
   if (protocol == "owa") {
+    if (/*appGlobal.isMobile*/ false) {
+      throw new NotSupported("OWA is not supported on mobile");
+    }
     return new OWAAccount();
   } else if (protocol == "activesync") {
     return new ActiveSyncAccount();
@@ -81,7 +85,8 @@ const kProtocolLabel = {
 }
 
 export function listMailProtocols(): string[] {
-  return Object.keys(kProtocolLabel).filter(p => p != "smtp");
+  return Object.keys(kProtocolLabel).filter(p => p != "smtp" &&
+    (/*!appGlobal.isMobile*/ true || p != "owa"));
 }
 
 export function labelForMailProtocol(protocol: string): string {

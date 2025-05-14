@@ -1,16 +1,14 @@
-<hbox class="buttons">
-  {#if event.response == InvitationResponse.Unknown || event.response == InvitationResponse.Organizer}
-    <Button label={$t`Accept`} onClick={onAccept} />
-    <hbox class="spacer" />
-    <Button label={$t`Reject`} onClick={onDecline} />
-    <hbox class="spacer" />
-    <Button label={$t`Maybe`} onClick={onTentative} />
-  {/if}
-</hbox>
+{#if event.isIncomingMeeting}
+  <Button label={$t`Accept`} onClick={onAccept} />
+  <hbox class="spacer" />
+  <Button label={$t`Reject`} onClick={onDecline} />
+  <hbox class="spacer" />
+  <Button label={$t`Maybe`} onClick={onTentative} />
+{/if}
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation";
+  import { InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import Button from "../../Shared/Button.svelte";
   import { t } from "../../../l10n/l10n";
 

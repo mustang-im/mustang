@@ -110,6 +110,12 @@ export class Account extends Observable {
   /** Saves the config in this account to disk.
    * Does not save the contents, e.g. messages. */
   async save(): Promise<void> {
+    throw new AbstractFunction();
+  }
+
+  /** Saves the config in this account and its dependent accounts to disk. */
+  async saveAll(): Promise<void> {
+    await this.save(); // must be first, because of foreign key constraint
     for (let dependent of this.dependentAccounts()) {
       await dependent.save();
     }
@@ -173,14 +179,16 @@ export enum AuthMethod {
 }
 
 let lastID = 0;
+let usedIDs = new Set<string>();
 function findFreeAccountID(): string {
   let allAccounts = getAllAccounts();
 
   for (let i = ++lastID; true; i++) {
     let id = "account" + i;
-    if (allAccounts.contents.some(acc => acc.id == id)) {
+    if (allAccounts.find(acc => acc.id == id) || usedIDs.has(id)) {
       continue;
     }
+    usedIDs.add(id);
     return id;
   }
 }

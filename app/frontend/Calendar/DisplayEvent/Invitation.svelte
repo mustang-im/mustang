@@ -1,7 +1,7 @@
 <vbox class="invitation">
   {#if $message.event}
     <InvitationDisplay event={message.event} />
-  {:else if message.scheduling}
+  {:else if message.invitationMessage}
     {#await message.loadEvent()}
       {$t`Loading event...`}
     {:then}
@@ -14,7 +14,7 @@
       {ex?.message ?? ex}
     {/await}
   {/if}
-  {#if message.scheduling == InvitationMessage.Invitation}
+  {#if message.invitationMessage == InvitationMessage.Invitation}
     <hbox class="buttons">
       <Button
         label={$t`Confirm *=> Confirm to attend the meeting`}
@@ -81,7 +81,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation";
+  import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import InvitationDisplay from "./InvitationDisplay.svelte";
   import Button from "../../Shared/Button.svelte";
   import AcceptIcon from "lucide-svelte/icons/check-check";

@@ -99,6 +99,8 @@ export class OAuth2 extends Observable {
         return await this.getAccessTokenFromRefreshToken(refreshToken);
       } catch (ex) {
         console.error(ex);
+        this.refreshToken = null;
+        await this.deleteRefreshTokenFromStorage();
       }
     }
     if (this.account.password && this.tokenURLPasswordAuth) {

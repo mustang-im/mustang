@@ -143,11 +143,18 @@
 
 # Meet
 ## UI
-* Open/close cam and mic
-* UI before joining conference
+* Close camera
+* Self: Black after turning off cam
+* Meeting pic in UI before joining conference
 
 ## Protocol
+* LiveKit
+  * Hand up
+  * Reconnect
+  * Server
+  * Login
 * M3 server
+  * Open/close cam and mic
   * Participant opening/closing cam is delayed
   * Mute/unmute without destroying stream
   * TURN server

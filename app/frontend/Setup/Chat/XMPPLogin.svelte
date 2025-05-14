@@ -2,6 +2,10 @@
   title={$t`Set up your existing XMPP account`}
   subtitle={$t`Import your existing XMPP or Jabber account`}
 />
+{#if errorMessage}
+  <ErrorMessage {errorMessage} errorGravity={ErrorGravity.Error}
+    on:continue={() => errorMessage = null} />
+{/if}
 <vbox flex class="account">
   <grid>
     <label for="username">{$t`Your JID`}</label>
@@ -17,6 +21,7 @@
   canContinue={!!config.username && !!config.password}
   canCancel={true}
   onCancel={onCancel}
+  errorCallback={showError}
   />
 
 <script lang="ts">
@@ -28,6 +33,8 @@
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
   import { t } from "../../../l10n/l10n";
+  import ErrorMessage, { ErrorGravity } from "../../Shared/ErrorMessage.svelte";
+  import { logError } from "../../Util/error";
 
   /** in/out */
   export let config: XMPPAccount;
@@ -44,10 +51,11 @@
     config.username = jid;
     config.name = jid;
     config.realname = appGlobal.me.name ?? config.username;
+    /* If `config.url` is not set, finds the URL using `/.well-known/host-meta.json`
     config.hostname = getDomainForEmailAddress(jid);
     config.port = 5281;
     config.tls = TLSSocketType.TLS;
-    config.url = `wss://${config.hostname}:${config.port}/xmpp-websocket`;
+    config.url = `wss://${config.hostname}/...`; */
   }
 
   async function onContinue() {
@@ -55,6 +63,13 @@
     await config.save();
     appGlobal.chatAccounts.add(config);
     showPage = null;
+  }
+
+  let errorMessage: string | null = null;
+  function showError(ex: Error) {
+    console.error(ex);
+    logError(ex);
+    errorMessage = ex.message ?? ex + "";
   }
 </script>
 

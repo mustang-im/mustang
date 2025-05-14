@@ -26,7 +26,7 @@ export class SQLEvent extends Event {
           ) VALUES (
             ${event.title}, ${event.rawText}, ${event.rawHTMLDangerous},
             ${event.startTime.toISOString()}, ${event.endTime.toISOString()}, ${event.allDay ? 1 : 0}, ${event.timezone},
-            ${event.calUID}, ${event.response}, ${event.pID}, ${event.calendar?.dbID},
+            ${event.calUID}, ${event.myParticipation}, ${event.pID}, ${event.calendar?.dbID},
             ${event.recurrenceRule?.getCalString(event.allDay)}, ${event.parentEvent?.dbID},
             ${event.recurrenceStartTime?.toISOString()},
             ${+!!event.parentEvent?.dbID}
@@ -43,7 +43,7 @@ export class SQLEvent extends Event {
             allDay = ${event.allDay ? 1 : 0},
             startTimeTZ = ${event.timezone},
             calUID = ${event.calUID},
-            responseToOrganizer = ${event.response},
+            responseToOrganizer = ${event.myParticipation},
             pID = ${event.pID},
             calendarID = ${event.calendar?.dbID},
             recurrenceRule = ${event.recurrenceRule?.getCalString(event.allDay)},
@@ -140,7 +140,7 @@ export class SQLEvent extends Event {
     event.allDay = sanitize.boolean(row.allDay, false);
     event.timezone = sanitize.string(row.startTimeTZ, null);
     event.calUID = row.calUID;
-    event.response = sanitize.integerRange(row.responseToOrganizer, 0, 5);
+    event.myParticipation = sanitize.integerRange(row.responseToOrganizer, 0, 5);
     event.pID = row.pID;
     if (row.calendarID) {
       let calendarID = sanitize.integer(row.calendarID, null);

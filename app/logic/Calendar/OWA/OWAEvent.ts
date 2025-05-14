@@ -1,10 +1,11 @@
 import { Event, RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
-import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation";
+import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
 import IANAToWindowsTimezone from "../ICal/IANAToWindowsTimezone";
 import WindowsToIANATimezone from "../ICal/WindowsToIANATimezone";
 import type { OWACalendar } from "./OWACalendar";
+import OWAOutgoingInvitation from "./OWAOutgoingInvitation";
 import OWACreateOffice365EventRequest from "./Request/OWACreateOffice365EventRequest";
 import OWAUpdateOffice365EventRequest from "./Request/OWAUpdateOffice365EventRequest";
 import OWAUpdateOccurrenceRequest from "./Request/OWAUpdateOccurrenceRequest";
@@ -12,10 +13,11 @@ import OWAUpdateOffice365OccurrenceRequest from "./Request/OWAUpdateOffice365Occ
 import OWACreateItemRequest from "../../Mail/OWA/Request/OWACreateItemRequest";
 import OWADeleteItemRequest from "../../Mail/OWA/Request/OWADeleteItemRequest";
 import OWAUpdateItemRequest from "../../Mail/OWA/Request/OWAUpdateItemRequest";
-import { owaCreateExclusionRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest } from "./Request/OWAEventRequests";
+import { owaCreateExclusionRequest, owaCreateMultipleExclusionsRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest } from "./Request/OWAEventRequests";
+import { k1MinuteMS } from "../../../frontend/Util/date";
 import type { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert } from "../../util/util";
+import { assert, NotReached } from "../../util/util";
 
 const ResponseTypes: Record<InvitationResponseInMessage, string> = {
   [InvitationResponse.Accept]: "AcceptItem",
@@ -89,7 +91,7 @@ export class OWAEvent extends Event {
       this.clearExceptions();
     }
     if (json.ReminderIsSet) {
-      this.alarm = new Date(this.startTime.getTime() - 60 * sanitize.integer(json.ReminderMinutesBeforeStart));
+      this.alarm = new Date(this.startTime.getTime() - k1MinuteMS * sanitize.integer(json.ReminderMinutesBeforeStart));
     } else {
       this.alarm = null;
     }
@@ -105,7 +107,7 @@ export class OWAEvent extends Event {
     }
     this.participants.replaceAll(participants);
     if (json.ResponseType) {
-      this.response = sanitize.integer(InvitationResponse[json.ResponseType], InvitationResponse.Unknown);
+      this.myParticipation = sanitize.integer(InvitationResponse[json.ResponseType], InvitationResponse.Unknown);
     }
     if (json.LastModifiedTime) {
       this.lastMod = sanitize.date(json.LastModifiedTime);
@@ -133,6 +135,10 @@ export class OWAEvent extends Event {
     let week = sanitize.integer(WeekOfMonth[pattern.DayOfWeekIndex], 0);
     let first = sanitize.integer(Weekday[pattern.FirstDayOfWeek], Weekday.Monday);
     return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
+  }
+
+  get outgoingInvitation() {
+    return new OWAOutgoingInvitation(this);
   }
 
   async saveToServer() {
@@ -166,6 +172,12 @@ export class OWAEvent extends Event {
 
   async saveCalendarItem() {
     let request = this.calendar.account.isOffice365() ? this.getOffice365SaveRequest() : this.getExchangeSaveRequest();
+    if (this.isIncomingMeeting) {
+      request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
+      request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
+      await this.calendar.account.callOWA(request);
+      return;
+    }
     request.addField("CalendarItem", "Subject", this.title, "item:Subject");
     request.addField("CalendarItem", "Body", this.rawHTMLDangerous ? { __type: "BodyContentType:#Exchange", BodyType: "HTML", Value: this.rawHTMLDangerous } : { __type: "BodyContentType:#Exchange", BodyType: "Text", Value: this.descriptionText }, "item:Body");
     request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
@@ -267,7 +279,7 @@ export class OWAEvent extends Event {
       // It uses a separate flag for whether the alarm is set.
       return 0;
     }
-    return (this.alarm.getTime() - this.startTime.getTime()) / -60 | 0;
+    return (this.alarm.getTime() - this.startTime.getTime()) / -k1MinuteMS | 0;
   }
 
   protected saveRule(rule: RecurrenceRule) {
@@ -324,8 +336,13 @@ export class OWAEvent extends Event {
     }
   }
 
+  async makeExclusions(indices: number[]) {
+    await this.calendar.account.callOWA(owaCreateMultipleExclusionsRequest(indices, this));
+    await super.makeExclusions(indices);
+  }
+
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.response > InvitationResponse.Organizer, "Only invitations can be responded to");
+    assert(this.isIncomingMeeting, "Only invitations can be responded to");
     let request = new OWACreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
     request.addField(ResponseTypes[response], "ReferenceItemId", {
       __type: "ItemId:#Exchange",

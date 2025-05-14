@@ -4,7 +4,7 @@
   >
   <MessageHeader {message} />
   <MessageAttachments {message} />
-  {#if $message.event || $message.scheduling}
+  {#if $message.event || $message.invitationMessage}
     <Invitation {message} />
   {/if}
   <vbox class="body" flex>

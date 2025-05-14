@@ -26,15 +26,15 @@
   import Button from "../../Shared/Button.svelte";
   import { t } from "../../../l10n/l10n";
 
-  export let onContinue = (event: Event) => undefined;
-  export let onCancel = (event: Event) => undefined;
-  export let onReset = (event: Event) => undefined;
+  export let onContinue: (ex: Event) => void = undefined;
+  export let onCancel: (ex: Event) => void = undefined;
+  export let onReset: (ex: Event) => void = undefined;
+  export let errorCallback: (ex: Error) => void = undefined;
   export let canContinue: boolean;
   export let canCancel = false;
   export let showReset = false;
   export let showContinue = true;
   export let labelContinue: string | null = null;
-  export let errorCallback = (ex: Error) => undefined;
 </script>
 
 <style>
