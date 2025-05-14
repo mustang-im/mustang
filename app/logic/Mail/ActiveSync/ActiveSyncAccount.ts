@@ -242,7 +242,7 @@ export class ActiveSyncAccount extends MailAccount {
         "MS-ASProtocolVersion": this.protocolVersion == "16.1" && !aOptions.allowV16 ? "14.1" : this.protocolVersion,
         Cookie: `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for 14.0
       },
-      timeout: heartbeat * 1000 + 10000, // extra timeout for Ping commands
+      timeout: heartbeat * 1000 + 25000, // extra timeout for Ping commands
     };
     if (this.oAuth2) {
       options.headers.Authorization = this.oAuth2.authorizationHeader;
@@ -311,6 +311,9 @@ export class ActiveSyncAccount extends MailAccount {
       }
     }
     this.throttle.waitForSecond(1);
+    if (response.RetryAfter) {
+      throw new Error(`The server is overloaded. Please try again after ${response.RetryAfter} seconds.`);
+    }
     throw new Error(`HTTP ${response.status} ${response.statusText}`);
   }
 
