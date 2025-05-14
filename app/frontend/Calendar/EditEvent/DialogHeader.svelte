@@ -53,6 +53,7 @@
         <AccountDropDown
           bind:selectedAccount={$selectedCalendar}
           accounts={appGlobal.calendars}
+          filterByWorkspace={false}
           on:select={(event) => catchErrors(() => onChangeCalendar(event.detail))} />
       </hbox>
       <hbox flex class="spacer" />

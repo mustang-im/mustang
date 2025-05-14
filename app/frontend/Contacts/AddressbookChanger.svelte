@@ -1,8 +1,9 @@
 <AccountDropDown
   bind:selectedAccount={selectedAddressbook}
   accounts={addressbooks}
-  on:select={() => catchErrors(() => onChangeAddressbook(selectedAddressbook))}
+  filterByWorkspace={false}
   withLabel={false} withIcon={true}
+  on:select={() => catchErrors(() => onChangeAddressbook(selectedAddressbook))}
   />
 
 <script lang="ts">

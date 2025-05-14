@@ -1,7 +1,11 @@
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox class="left-pane" slot="left">
     <hbox class="buttons">
-      <AccountDropDown bind:selectedAccount={$selectedAccount} accounts={accounts} />
+      <AccountDropDown
+        bind:selectedAccount={$selectedAccount}
+        accounts={accounts}
+        filterByWorkspace={true}
+        />
       <hbox flex class="spacer" />
       <WriteButton selectedAccount={$selectedAccount} />
     </hbox>

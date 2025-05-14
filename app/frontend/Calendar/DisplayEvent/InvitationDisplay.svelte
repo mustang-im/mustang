@@ -6,7 +6,12 @@
       {/if}
     </hbox>
     <hbox flex />
-    <AccountDropDown selectedAccount={calendar} accounts={appGlobal.calendars} withIcon={true} withLabel={false} />
+    <AccountDropDown
+      selectedAccount={calendar}
+      accounts={appGlobal.calendars}
+      filterByWorkspace={false}
+      withIcon={true} withLabel={false}
+      />
   </hbox>
   <vbox class="details-grid">
     <DetailsGrid {event} />
