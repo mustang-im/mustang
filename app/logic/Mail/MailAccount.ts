@@ -40,10 +40,6 @@ export class MailAccount extends TCPAccount {
   setupInstructions: SetupInstruction[] | null = null;
 
   readonly rootFolders: Collection<Folder> = new ArrayColl<Folder>();
-  /** List of all messages in all folders,
-   * filtered based on the person.
-   * TODO move up, across all accounts? */
-  readonly messages = new MapColl<Person, EMail>();
 
   async listFolders(): Promise<void> {
     throw new AbstractFunction();

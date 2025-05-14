@@ -112,12 +112,6 @@
     }
     sanitize.emailAddress(emailAddress);
 
-    /* TODO
-    let person = new Person(appGlobal.collectedAddressbook);
-    person.name = name;
-    person.emailAddresses.add(new ContactEntry(emailAddress, "mail"));
-    appGlobal.persons.add(person);
-    */
     let personUID = new PersonUID(emailAddress, name);
     onAddPerson(personUID);
     return personUID;
