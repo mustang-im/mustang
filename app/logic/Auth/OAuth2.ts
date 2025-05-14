@@ -8,6 +8,7 @@ import { Observable, notifyChangedProperty } from "../util/Observable";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { assert, type URLString } from "../util/util";
 import pkceChallenge from "pkce-challenge";
+import { production } from "../build";
 
 /**
  * Implements login via OAuth2
@@ -30,7 +31,7 @@ export class OAuth2 extends Observable {
   tokenURL: URLString;
   tokenURLPasswordAuth?: URLString;
   authURL: URLString;
-  authDoneURL: URLString = "http://localhost:5455/login-success";
+  authDoneURL: URLString = `http://localhost:${production ? 5455 : 5453}/login-success`;
   scope: string;
   clientID = "open";
   clientSecret: string | null = null;
