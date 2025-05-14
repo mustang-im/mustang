@@ -357,7 +357,6 @@ class FakeEvent extends Event {
     super(calendar, parentEvent);
     this.title = faker.company.buzzPhrase();
     this.descriptionText = faker.hacker.phrase() + "\n" + faker.hacker.phrase();
-    this.descriptionHTML = this.descriptionText.replace("\n", "<br>");
     this.location = faker.datatype.boolean() ? faker.location.streetAddress() : faker.location.nearbyGPSCoordinate().join(", ");
     let participantsCount = Math.random() * 5;
     for (let i = 1; i < participantsCount; i++) {

@@ -12,8 +12,8 @@ export class JSONEvent {
     let json: any = {};
     json.id = event.id;
     json.title = event.title;
-    json.descriptionText = event.descriptionText;
-    json.descriptionHTML = event.descriptionHTML;
+    json.descriptionText = event.rawText;
+    json.descriptionHTML = event.rawHTMLDangerous;
     json.startTime = event.startTime.toISOString();
     json.endTime = event.endTime.toISOString();
     json.allDay = event.allDay;
@@ -59,10 +59,10 @@ export class JSONEvent {
   static read(event: Event, json: any, events?: Collection<Event>): Event {
     event.id = json.id;
     event.title = sanitize.label(json.title, "Meeting");
-    event.descriptionText = sanitize.label(json.descriptionText, "");
+    event.rawText = sanitize.label(json.descriptionText, "");
     let html = sanitize.string(json.descriptionHTML, null);
     if (html) {
-      event.descriptionHTML = html;
+      event.rawHTMLDangerous = html;
     }
     event.startTime = sanitize.date(json.startTime);
     event.endTime = sanitize.date(json.endTime, event.startTime);

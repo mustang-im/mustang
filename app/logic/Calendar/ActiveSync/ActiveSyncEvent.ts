@@ -37,9 +37,11 @@ export class ActiveSyncEvent extends Event {
     this.calUID = sanitize.nonemptystring(wbxmljs.UID, null);
     this.title = sanitize.nonemptystring(wbxmljs.Subject, "");
     if (wbxmljs.Body?.Type == "2") {
-      this.descriptionHTML = sanitize.nonemptystring(wbxmljs.Body.Data, "");
+      this.rawHTMLDangerous = sanitize.nonemptystring(wbxmljs.Body.Data, "");
+      this.rawText = null;
     } else {
-      this.descriptionText = sanitize.nonemptystring(wbxmljs.Body?.Data, "");
+      this.rawText = sanitize.nonemptystring(wbxmljs.Body?.Data, "");
+      this.rawHTMLDangerous = null;
     }
     if (wbxmljs.ExceptionStartTime) {
       this.recurrenceStartTime = fromCompact(wbxmljs.ExceptionStartTime);
@@ -111,7 +113,7 @@ export class ActiveSyncEvent extends Event {
         FirstDayOfWeek: this.recurrenceRule.frequency == Frequency.Weekly ? String(this.recurrenceRule.first) : [],
       } : [],
       Subject: this.title,
-      Body: this.descriptionHTML ? { Type: "2", Data: this.descriptionHTML } : { Type: "1", Data: [this.descriptionText || ""] },
+      Body: this.rawHTMLDangerous ? { Type: "2", Data: this.rawHTMLDangerous } : { Type: "1", Data: [this.descriptionText ?? ""] },
       Exceptions: exceptions,
     };
   }

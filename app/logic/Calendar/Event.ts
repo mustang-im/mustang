@@ -6,9 +6,11 @@ import { InvitationResponse, type InvitationResponseInMessage } from "./Invitati
 import type { MailAccount } from "../Mail/MailAccount";
 import { appGlobal } from "../app";
 import { k1DayS, k1HourS, k1MinuteS } from "../../frontend/Util/date";
+import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
 import { Observable, notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/Lock";
 import { assert, randomID } from "../util/util";
+import { backgroundError } from "../../frontend/Util/error";
 import { ArrayColl } from "svelte-collections";
 
 export class Event extends Observable {
@@ -21,9 +23,77 @@ export class Event extends Observable {
   @notifyChangedProperty
   title: string;
   @notifyChangedProperty
-  descriptionText: string;
+  protected _text: string | null = null;
+  /** Plaintext version of the description */
+  get descriptionText(): string {
+    if (this._text != null) {
+      return this._text;
+    }
+    try {
+      if (this._rawHTML != null) {
+        return this._text = convertHTMLToText(this._rawHTML);
+      }
+    } catch (ex) {
+      backgroundError(ex);
+    }
+    return "";
+  }
+  set descriptionText(val: string | null) {
+    this._text = val;
+    this._rawHTML = null;
+    this._sanitizedHTML = null;
+  }
+  get rawText(): string | null {
+    return this._text;
+  }
+  /* Only use in combination with setting `.rawHTMLDangerous` */
+  set rawText(val: string | null) {
+    this._text = val;
+  }
+  /**
+   * HTML version of the description.
+   * Directly from the network.
+   * Attention: Untrusted. MUST be sanitized before using it.
+   * This is the version that will be saved on disk.
+   * @see _sanitizedHTML
+   */
   @notifyChangedProperty
-  descriptionHTML: string;
+  protected _rawHTML: string | null = null;
+  /** HTML version of the description.
+   * Sanitized.
+   * This is only cached here in RAM, but not saved on disk,
+   * so that we can change the sanitization. */
+  protected _sanitizedHTML: string | null = null;
+  /** Sanitized HTML version of the description. */
+  get descriptionHTML(): string {
+    if (this._sanitizedHTML != null) {
+      return this._sanitizedHTML;
+    }
+    try {
+      if (this._rawHTML != null) {
+        return this._sanitizedHTML = sanitizeHTML(this._rawHTML);
+      }
+      if (this._text != null) {
+        return this._sanitizedHTML = convertTextToHTML(this._text);
+      }
+    } catch (ex) {
+      backgroundError(ex);
+    }
+    return "";
+  }
+  set descriptionHTML(val: string | null) {
+    this._rawHTML = val;
+    this._sanitizedHTML = null;
+    this._text = null;
+  }
+  get rawHTMLDangerous(): string | null {
+    return this._rawHTML;
+  }
+  /* Only use in combination with setting `.rawText` */
+  set rawHTMLDangerous(val: string | null) {
+    this._rawHTML = val;
+    this._sanitizedHTML = null;
+  }
 
   @notifyChangedProperty
   startTime: Date;
@@ -198,8 +268,8 @@ export class Event extends Observable {
   protected copyFromRecurrenceMaster(original: Event) {
     this.calUID = original.calUID;
     this.title = original.title;
-    this.descriptionText = original.descriptionText;
-    this.descriptionHTML = original.descriptionHTML;
+    this.rawText = original.rawText;
+    this.rawHTMLDangerous = original.rawHTMLDangerous;
     this.timezone = original.timezone;
     this.allDay = original.allDay;
     this.location = original.location;
@@ -224,8 +294,8 @@ export class Event extends Observable {
       this.timezone != this.unedited.timezone ||
       this.allDay != this.unedited.allDay ||
       this.title != this.unedited.title ||
-      this.descriptionText != this.unedited.descriptionText ||
-      this.descriptionHTML != this.unedited.descriptionHTML ||
+      this.rawText != this.unedited.rawText ||
+      this.rawHTMLDangerous != this.unedited.rawHTMLDangerous ||
       this.location != this.unedited.location ||
       this.isOnline != this.unedited.isOnline ||
       this.onlineMeetingURL != this.unedited.onlineMeetingURL ||
