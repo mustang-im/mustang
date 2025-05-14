@@ -1,5 +1,7 @@
 # Next
 * Mail
+  * Bug: Emails not sorted (only FakeMailAccount?)
+  * Bug: appGlobal.persons is empty
   * Beta banner
   * Search
     * Results miss From - Include from/to (both content of messages, and name of recipients/sender)
@@ -13,9 +15,9 @@
       * Sidebar
     * List view: FastList missing scrollbar
     * Invitations
-    * Free/Busy
-  * Files
-    * Files (attachments) don't open
+    * Free/Busy: Availability UI
+  * Download new emails (and only new)
+  * Attachments don't open when not yet loaded
   * Bug: Thunderbird AB import misses ABs and fields
   * Import Outlook PST
   * OAuth2 login UI with browser/URL options
