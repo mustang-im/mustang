@@ -14,6 +14,7 @@ import OWACreateItemRequest from "../../Mail/OWA/Request/OWACreateItemRequest";
 import OWADeleteItemRequest from "../../Mail/OWA/Request/OWADeleteItemRequest";
 import OWAUpdateItemRequest from "../../Mail/OWA/Request/OWAUpdateItemRequest";
 import { owaCreateExclusionRequest, owaCreateMultipleExclusionsRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest } from "./Request/OWAEventRequests";
+import { k1MinuteMS } from "../../../frontend/Util/date";
 import type { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, NotReached } from "../../util/util";
@@ -87,7 +88,7 @@ export class OWAEvent extends Event {
       this.clearExceptions();
     }
     if (json.ReminderIsSet) {
-      this.alarm = new Date(this.startTime.getTime() - 60 * sanitize.integer(json.ReminderMinutesBeforeStart));
+      this.alarm = new Date(this.startTime.getTime() - k1MinuteMS * sanitize.integer(json.ReminderMinutesBeforeStart));
     } else {
       this.alarm = null;
     }
@@ -168,6 +169,12 @@ export class OWAEvent extends Event {
 
   async saveCalendarItem() {
     let request = this.calendar.account.isOffice365() ? this.getOffice365SaveRequest() : this.getExchangeSaveRequest();
+    if (this.isIncomingMeeting) {
+      request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
+      request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
+      await this.calendar.account.callOWA(request);
+      return;
+    }
     request.addField("CalendarItem", "Subject", this.title, "item:Subject");
     request.addField("CalendarItem", "Body", this.descriptionHTML ? { __type: "BodyContentType:#Exchange", BodyType: "HTML", Value: this.descriptionHTML } : { __type: "BodyContentType:#Exchange", BodyType: "Text", Value: this.descriptionText ?? "" }, "item:Body");
     request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
@@ -269,7 +276,7 @@ export class OWAEvent extends Event {
       // It uses a separate flag for whether the alarm is set.
       return 0;
     }
-    return (this.alarm.getTime() - this.startTime.getTime()) / -60 | 0;
+    return (this.alarm.getTime() - this.startTime.getTime()) / -k1MinuteMS | 0;
   }
 
   protected saveRule(rule: RecurrenceRule) {

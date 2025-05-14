@@ -7,6 +7,7 @@ import WindowsToIANATimezone from "../ICal/WindowsToIANATimezone";
 import type { ActiveSyncCalendar } from "./ActiveSyncCalendar";
 import ActiveSyncOutgoingInvitation from "./ActiveSyncOutgoingInvitation";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
+import { k1MinuteMS } from "../../../frontend/Util/date";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
@@ -67,7 +68,7 @@ export class ActiveSyncEvent extends Event {
       this.recurrenceRule = null;
       this.clearExceptions();
     }
-    this.alarm = wbxmljs.Reminder ? new Date(this.startTime.getTime() - 60 * sanitize.integer(wbxmljs.Reminder)) : null;
+    this.alarm = wbxmljs.Reminder ? new Date(this.startTime.getTime() - k1MinuteMS * sanitize.integer(wbxmljs.Reminder)) : null;
     this.location = sanitize.nonemptystring(wbxmljs.Location, "");
     this.participants.replaceAll(ensureArray(wbxmljs.Attendees?.Attendee).map(attendee => new Participant(sanitize.emailAddress(attendee.Email), sanitize.nonemptystring(attendee.Name, null), sanitize.integer(attendee.AttendeeStatus, InvitationResponse.Unknown))));
     this.myParticipation = sanitize.integer(wbxmljs.ResponseType, InvitationResponse.Unknown);
@@ -95,7 +96,7 @@ export class ActiveSyncEvent extends Event {
       } : [],
       EndTime: toCompact(this.endTime),
       Location: this.location || {}, // Allows exception to have no location
-      Reminder: this.alarm ? ((this.alarm.getTime() - this.startTime.getTime()) / -60 | 0) : [],
+      Reminder: this.alarm ? String((this.alarm.getTime() - this.startTime.getTime()) / -k1MinuteMS | 0) : [],
       StartTime: toCompact(this.startTime),
       UID: !this.parentEvent && this.calUID || [],
       Recurrence: this.recurrenceRule ? {
