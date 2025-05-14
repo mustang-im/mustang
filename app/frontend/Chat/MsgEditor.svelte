@@ -18,7 +18,7 @@
     {/if}
     <vbox class="send-buttons">
       <RoundButton classes="send-button"
-        on:click={send}
+        onClick={send}
         icon={SendIcon}
         iconSize="24px"
         padding="6px"
@@ -51,7 +51,7 @@
   let attachments = new ArrayColl<Attachment>();
   $: to && attachments.clear(); // TODO save as draft
 
-  function send() {
+  async function send() {
     if (!to.draftMessage) {
       return;
     }
@@ -61,7 +61,7 @@
     msg.text; // Generate to keep in sync
     msg.contact = to.contact;
     msg.sent = new Date();
-    to.sendMessage(msg);
+    await to.sendMessage(msg);
     reset();
   }
 
