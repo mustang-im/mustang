@@ -1,6 +1,8 @@
 import { OAuth2UI } from "./OAuth2UI";
 import { appGlobal } from "../../app";
-import { assert, type URLString } from "../../util/util";
+import { k1MinuteMS } from "../../../frontend/Util/date";
+import { assert, UserError, type URLString } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 
 /**
  * Starts a local web server on http://localhost with a random port,
@@ -21,15 +23,17 @@ export class OAuth2Localhost extends OAuth2UI {
     let port = 1024 + Math.ceil(Math.random() * 64000);
     let server = await appGlobal.remoteApp.newHTTPServer();
     await server.start(port);
-    // Close after 15 mins no result
-    let killTimeout = setTimeout(() => {
-      server.close();
-    }, 15 * 60 * 1000);
     let doneURL = `http://localhost:${port}/login-success`;
     let url = await this.oAuth2.getAuthURL(doneURL);
     // console.log("OAuth2: Localhost: Load URL", url, "and done URL", doneURL);
     await this.loginURLCallback(url);
     return new Promise((resolve, reject) => {
+      // Close after 15 mins no result
+      const minutes = 15;
+      let killTimeout = setTimeout(() => {
+        server.close();
+        reject(new UserError(gt`Authentication page timed out after ${minutes} minutes`));
+      }, minutes * k1MinuteMS);
       server.get("/login-success", (urlPath: URLString) => {
         try {
           // console.log("OAuth2: Login finished", url);
