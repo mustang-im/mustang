@@ -385,10 +385,10 @@ class EWSUpdateOccurrenceRequest {
       field.t$FieldURI = { FieldURI };
     }
     if (value == null) {
-      this.itemChange.t$Updates.t$DeleteItemField.push(field);
+      this.itemChange.t$Updates.t$DeleteItemField.unshift(field);
     } else {
       field["t$" + type] = { ["t$" + key]: value };
-      this.itemChange.t$Updates.t$SetItemField.push(field);
+      this.itemChange.t$Updates.t$SetItemField.unshift(field); // reverse order for Event time zone
     }
   }
 }

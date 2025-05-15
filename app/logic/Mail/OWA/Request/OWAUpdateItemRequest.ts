@@ -38,6 +38,6 @@ export default class OWAUpdateItemRequest extends OWARequest {
       };
       field.Item[key] = value;
     }
-    this.itemChange.Updates.push(field);
+    this.itemChange.Updates.unshift(field); // reverse order for Event time zone
   }
 }
