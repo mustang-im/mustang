@@ -126,7 +126,7 @@
       previousEndTime = new Date(event.endTime);
       clearTime(event.startTime);
       clearTime(event.endTime);
-      // Advance to next midnight if the time is not already midnight.
+      // Advance to next midnight if the time is not already midnight. RFC 5545 section 3.6.1
       if (event.endTime.getTime() < previousEndTime.getTime()) {
         event.endTime.setDate(event.endTime.getDate() + 1);
       }
