@@ -95,7 +95,9 @@
 
   $: showTimezone = $event.timezone != myTimezone();
   $: $event.endTime, checkEndTime();
-  $: isMultipleDays = $event.startTime && $event.endTime && new Date($event.endTime.getTime() - event.allDay).toDateString() != $event.startTime.toDateString();
+  $: isMultipleDays = $event.startTime && $event.endTime &&
+    // all day events have the non-inclusive next day as end
+    new Date($event.endTime.getTime() - ($event.allDay ? 80000 : 0)).toDateString() != $event.startTime.toDateString();
   let durationUnit: DurationUnit;
   let durationInUnit: number;
   let previousTimezone: string = null;
