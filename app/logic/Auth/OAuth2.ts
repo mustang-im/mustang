@@ -268,6 +268,7 @@ export class OAuth2 extends Observable {
 
   /** Helper for auth Done URL */
   isAuthDoneURL(url: URLString): boolean {
+    console.log("OAuth2 page change to", url, "doneURL is", this.authDoneURL, "matches", this.authDoneURL == url, "is auth done", this.isAuthDoneURL(url));
     let urlParams = Object.fromEntries(new URL(url).searchParams);
     return url.startsWith(this.authDoneURL) &&
       this.verificationToken && urlParams.state == this.verificationToken;

@@ -26,7 +26,6 @@ export class OAuth2Embed extends OAuth2UI {
     });
   }
   urlChanged(url: URLString) {
-    console.log("OAuth2 page change to", url, "doneURL is", this.oAuth2.authDoneURL);
     if (this.oAuth2.isAuthDoneURL(url)) {
       this.success(url);
     }
