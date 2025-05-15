@@ -137,6 +137,7 @@ export class Event extends Observable {
     assert(seconds >= 0, "Duration must be >= 0");
     if (this.allDay) {
       this.endTime.setTime(this.startTime.getTime());
+      // End date is non-inclusive next day. RFC 5545 section 3.6.1
       this.endTime.setDate(this.endTime.getDate() + Math.round(seconds / k1DayS));
     } else {
       this.endTime.setTime(this.startTime.getTime() + seconds * 1000);
