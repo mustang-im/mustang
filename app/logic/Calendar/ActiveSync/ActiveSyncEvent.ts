@@ -129,12 +129,11 @@ export class ActiveSyncEvent extends Event {
     } else {
       await this.saveFields(this.toFields());
       if (!this.calUID) {
-        // If we haven't set a UID yet, Exchange will auto-generate one,
-        // so sync up (and match using `serverID`) to find out what `calUID` is.
-        await this.calendar.listEvents();
+        let event = await this.queryServer();
+        this.calUID = event.calUID;
       }
     }
-    super.saveToServer();
+    await super.saveToServer();
   }
 
   async saveFields(fields: any): Promise<void> {
@@ -193,6 +192,31 @@ export class ActiveSyncEvent extends Event {
       }
     }
     await super.deleteFromServer();
+  }
+
+  /** Returns a copy of the event as read from the server, except the body */
+  async queryServer(): Promise<ActiveSyncEvent> {
+    assert(this.serverID, "can't query unsaved event");
+    let request = {
+      Fetch: {
+        Store: "Mailbox",
+        ServerId: this.serverID,
+        CollectionId: this.calendar.serverID,
+        Options: {
+          BodyPreference: {
+            Type: "1",
+            TruncationSize: "0",
+          },
+        },
+      },
+    };
+    let result = await this.calendar.account.callEAS("ItemOperations", request);
+    if (result.Response.Fetch.Status != "1") {
+      throw new ActiveSyncError("ItemOperations", result.Response.Fetch.Status, this.calendar.account);
+    }
+    let event = this.calendar.newEvent(this.parentEvent);
+    event.fromWBXML(result.Response.Fetch.Properties);
+    return event;
   }
 
   async makeExclusions(indices: number[]) {
