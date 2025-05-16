@@ -1,19 +1,17 @@
 <vbox class="invitation-display">
   <hbox class="title-row">
     <hbox class="title selectable">
-      {#if event.title}
-        {event.title}
-      {/if}
+      {event.title ?? ""}
     </hbox>
     <hbox flex />
     {#if selectedCalendar}
       <AccountDropDown
-        selectedAccount={selectedCalendar}
         accounts={calendars}
+        selectedAccount={selectedCalendar}
+        on:select
         filterByWorkspace={false}
         withIcon={true} withLabel={false}
         disabled={calendars.length < 2}
-        on:Select={selectCalendar}
         />
     {/if}
   </hbox>
@@ -31,8 +29,8 @@
 
   export let event: Event;
   export let calendars: Collection<Calendar>;
+  /** in/out */
   export let selectedCalendar: Calendar | undefined;
-  export let selectCalendar: () => void;
 </script>
 
 <style>

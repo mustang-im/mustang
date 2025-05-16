@@ -1,12 +1,12 @@
 <vbox class="invitation">
   {#if $message.event}
-    <InvitationDisplay event={message.event} {calendars} {selectCalendar} bind:selectedCalendar />
-  {:else if message.invitationMessage}
+    <InvitationDisplay event={message.event} {calendars} bind:selectedCalendar on:select={selectCalendar} />
+  {:else if $message.invitationMessage}
     {#await loadEvent()}
       {$t`Loading event...`}
     {:then}
-      {#if message.event}
-        <InvitationDisplay event={message.event} {calendars} {selectCalendar} bind:selectedCalendar />
+      {#if $message.event}
+        <InvitationDisplay event={$message.event} {calendars} bind:selectedCalendar on:select={selectCalendar} />
       {:else}
         No event found
       {/if}
@@ -15,7 +15,7 @@
     {/await}
   {/if}
   <hbox class="buttons">
-    {#if message.invitationMessage == InvitationMessage.Invitation}
+    {#if $message.invitationMessage == InvitationMessage.Invitation}
       {#if myParticipation == InvitationResponse.Accept}
         <Button
           label={$t`Confirmed *=> A meeting request has been confirmed by you`}
@@ -73,7 +73,7 @@
             classes="maybe font-normal" />
         </ButtonMenu>
       {/if}
-    {:else if message.invitationMessage}
+    {:else if $message.invitationMessage}
       <Button label={$t`Update calendar`} disabled={updateDisabled} onClick={onUpdate} classes="font-normal" />
     {/if}
   </hbox>
@@ -86,14 +86,14 @@
   import type { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
   import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import InvitationDisplay from "./InvitationDisplay.svelte";
+  import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import Button from "../../Shared/Button.svelte";
   import AcceptIcon from "lucide-svelte/icons/check-check";
   import DeclineIcon from "lucide-svelte/icons/x";
   import MaybeIcon from "lucide-svelte/icons/circle-help";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
   import { gt, t } from "../../../l10n/l10n";
-  import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
-  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import type { Collection } from "svelte-collections";
 
   export let message: EMail;
@@ -132,9 +132,7 @@
   async function respond(response: InvitationResponseInMessage) {
     await incomingInvitation.respondToInvitation(response);
     myParticipation = response;
-    if (!event) {
-      event = selectedCalendar.events.find(event => event.calUID == message.event.calUID);
-    }
+    event ??= selectedCalendar.events.find(event => event.calUID == message.event.calUID);
   }
   async function onAccept() {
     await respond(InvitationResponse.Accept);
