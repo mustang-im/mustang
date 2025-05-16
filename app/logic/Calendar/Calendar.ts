@@ -30,7 +30,7 @@ export class Calendar extends Account {
    * Ensures that instances for all recurring events in the calendar exist
    * up to the provided date. Returns all events as a convenience.
    */
-  fillRecurrences(endDate: Date): Collection<Event> {
+  fillRecurrences(endDate: Date = new Date(Date.now() + 1e11)): Collection<Event> {
     for (let event of this.events.contents.filter(event => event.recurrenceRule)) {
       event.fillRecurrences(endDate);
     }

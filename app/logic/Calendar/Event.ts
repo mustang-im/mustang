@@ -509,7 +509,7 @@ export class Event extends Observable {
    * Ensures that all recurring instances exist up to the provided date.
    * Must only be called on recurring master events.
    */
-  fillRecurrences(endDate: Date) {
+  fillRecurrences(endDate: Date = new Date(Date.now() + 1e11)) {
     let newOccurrences: Event[] = [];
     let occurrences = this.recurrenceRule.getOccurrencesByDate(endDate);
     for (let i = 0; i < occurrences.length; i++) {

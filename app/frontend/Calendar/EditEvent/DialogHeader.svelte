@@ -206,7 +206,7 @@
       event.calendar.events.add(event);
     }
     if (event.recurrenceRule) {
-      event.fillRecurrences(new Date(Date.now() + 1e11));
+      event.fillRecurrences();
     }
     onClose();
   }
