@@ -4,14 +4,13 @@
       {event.title ?? ""}
     </hbox>
     <hbox flex />
-    {#if selectedCalendar}
+    {#if calendars && calendars.length > 2}
       <AccountDropDown
         accounts={calendars}
         selectedAccount={selectedCalendar}
         on:select
         filterByWorkspace={false}
         withIcon={true} withLabel={false}
-        disabled={calendars.length < 2}
         />
     {/if}
   </hbox>

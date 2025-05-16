@@ -4,7 +4,7 @@
       <AccountIcon />
     </hbox>
   {/if}
-  <select bind:value={selectedAccount} class:withLabel on:change={onSelect} disabled={disabled}>
+  <select bind:value={selectedAccount} class:withLabel on:change={onSelect}>
     {#if showAllOption}
       <option value={null}>
         {$t`All`}
@@ -33,7 +33,6 @@
   export let showAllOption: boolean = false;
   export let withIcon: boolean = false;
   export let withLabel: boolean = true;
-  export let disabled: boolean = false;
 
   $: showAccounts = filterByWorkspace && $selectedWorkspace
     ? accounts.filter(acc => acc.workspace == $selectedWorkspace)
