@@ -9,6 +9,7 @@ import EWSOutgoingInvitation from "./EWSOutgoingInvitation";
 import EWSCreateItemRequest from "../../Mail/EWS/Request/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "../../Mail/EWS/Request/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/Request/EWSUpdateItemRequest";
+import { appGlobal } from "../../app";
 import { k1MinuteMS } from "../../../frontend/Util/date";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray, NotReached } from "../../util/util";
@@ -154,6 +155,19 @@ export class EWSEvent extends Event {
       await this.saveTask();
     }
     */
+    if (appGlobal.remoteApp.isDev) {
+      let event = await this.queryServer();
+      // hasChanged compares myParticipation, which we don't save to the server
+      event.myParticipation = this.myParticipation;
+      // Exchange converts our HTML to rich text and back,
+      // so we don't even bother querying it
+      event.rawText = this.rawText;
+      event.rawHTMLDangerous = this.rawHTMLDangerous;
+      event.unedited = this;
+      if (event.hasChanged()) {
+        console.log("Event did not round-trip", this, event);
+      }
+    }
   }
 
   async saveCalendarItemToServer() {
@@ -316,6 +330,59 @@ export class EWSEvent extends Event {
       };
       await this.calendar.account.callEWS(request);
     }
+  }
+
+  /** For test purposes, returns a copy of the event as read from the server, except the body */
+  async queryServer(): Promise<EWSEvent> {
+    assert(this.itemID, "can't query unsaved event");
+    let request = {
+      m$GetItem: {
+        m$ItemShape: {
+          t$BaseShape: "Default",
+          t$BodyType: "Best",
+          t$AdditionalProperties: {
+            t$FieldURI: [{
+              FieldURI: "item:ReminderIsSet",
+            }, {
+              FieldURI: "item:ReminderMinutesBeforeStart",
+            }, {
+              FieldURI: "item:LastModifiedTime",
+            }, {
+              FieldURI: "calendar:StartTimeZoneId",
+            }, {
+              FieldURI: "calendar:IsAllDayEvent",
+            }, {
+              FieldURI: "calendar:MyResponseType",
+            }, {
+              FieldURI: "calendar:RequiredAttendees",
+            }, {
+              FieldURI: "calendar:OptionalAttendees",
+            }, {
+              FieldURI: "calendar:Recurrence",
+            }, {
+              FieldURI: "calendar:ModifiedOccurrences",
+            }, {
+              FieldURI: "calendar:DeletedOccurrences",
+            }, {
+              FieldURI: "calendar:UID",
+            }, {
+              FieldURI: "calendar:RecurrenceId",
+            }, {
+              FieldURI: "task:Recurrence",
+            }],
+          },
+        },
+        m$ItemIds: {
+          t$ItemId: {
+            Id: this.itemID,
+          },
+        },
+      },
+    };
+    let result = await this.calendar.account.callEWS(request);
+    let event = this.calendar.newEvent(this.parentEvent);
+    event.fromXML(result.Items.CalendarItem);
+    return event;
   }
 
   async makeExclusions(indices: number[]) {

@@ -8,6 +8,7 @@ import { Database } from "@radically-straightforward/sqlite"; // formerly @leafa
 import Zip from "adm-zip";
 import ky from 'ky';
 import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard } from "electron";
+import { is } from '@electron-toolkit/utils'
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
 import { createType1Message, decodeType2Message, createType3Message } from "./ntlm";
@@ -75,6 +76,7 @@ async function createSharedAppObject() {
       dirname: path.dirname,
       join: path.join,
     },
+    isDev: is.dev,
   };
 }
 

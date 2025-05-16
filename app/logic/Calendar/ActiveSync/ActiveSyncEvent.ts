@@ -7,6 +7,7 @@ import WindowsToIANATimezone from "../ICal/WindowsToIANATimezone";
 import type { ActiveSyncCalendar } from "./ActiveSyncCalendar";
 import ActiveSyncOutgoingInvitation from "./ActiveSyncOutgoingInvitation";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
+import { appGlobal } from "../../app";
 import { k1MinuteMS } from "../../../frontend/Util/date";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
@@ -124,16 +125,30 @@ export class ActiveSyncEvent extends Event {
 
   async saveToServer(): Promise<void> {
     // Not supporting tasks for now.
+    let event;
     if (this.parentEvent) {
       this.parentEvent.saveFields(this.parentEvent.toFields({ Exception: this.toFields() }));
     } else {
       await this.saveFields(this.toFields());
       if (!this.calUID) {
-        let event = await this.queryServer();
+        event = await this.queryServer();
         this.calUID = event.calUID;
       }
     }
     await super.saveToServer();
+    if (appGlobal.remoteApp.isDev) {
+      event ??= await this.queryServer();
+      // hasChanged compares myParticipation, which we don't save to the server
+      event.myParticipation = this.myParticipation;
+      // Exchange converts our HTML to rich text and back,
+      // so we don't even bother querying it
+      event.rawText = this.rawText;
+      event.rawHTMLDangerous = this.rawHTMLDangerous;
+      event.unedited = this;
+      if (event.hasChanged()) {
+        console.log("Event did not round-trip", this, event);
+      }
+    }
   }
 
   async saveFields(fields: any): Promise<void> {

@@ -13,7 +13,8 @@ import OWAUpdateOffice365OccurrenceRequest from "./Request/OWAUpdateOffice365Occ
 import OWACreateItemRequest from "../../Mail/OWA/Request/OWACreateItemRequest";
 import OWADeleteItemRequest from "../../Mail/OWA/Request/OWADeleteItemRequest";
 import OWAUpdateItemRequest from "../../Mail/OWA/Request/OWAUpdateItemRequest";
-import { owaCreateExclusionRequest, owaCreateMultipleExclusionsRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest } from "./Request/OWAEventRequests";
+import { owaCreateExclusionRequest, owaCreateMultipleExclusionsRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest, owaGetCalendarEventsRequest, owaGetEventsRequest } from "./Request/OWAEventRequests";
+import { appGlobal } from "../../app";
 import { k1MinuteMS } from "../../../frontend/Util/date";
 import type { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -151,6 +152,18 @@ export class OWAEvent extends Event {
       await this.saveTask();
     }
     */
+    if (appGlobal.remoteApp.isDev) {
+      let event = await this.queryServer();
+      // hasChanged compares myParticipation, which we don't save to the server
+      event.myParticipation = this.myParticipation;
+      // Exchange converts our HTML to rich text and back
+      event.rawText = this.rawText;
+      event.rawHTMLDangerous = this.rawHTMLDangerous;
+      event.unedited = this;
+      if (event.hasChanged()) {
+        console.log("Event did not round-trip", this, event);
+      }
+    }
   }
 
   protected getExchangeSaveRequest() {
@@ -334,6 +347,20 @@ export class OWAEvent extends Event {
     } else if (this.parentEvent) {
       await this.calendar.account.callOWA(owaCreateExclusionRequest(this, this.parentEvent));
     }
+  }
+
+  /** For test purposes, returns a copy of the event as read from the server */
+  async queryServer(): Promise<OWAEvent> {
+    assert(this.itemID, "can't query unsaved event");
+    let result = await this.calendar.account.callOWA(owaGetEventsRequest([this.itemID]));
+    let item = result.Items[0];
+    if (item.IsOnlineMeeting) {
+      let result = await this.calendar.account.callOWA(owaGetCalendarEventsRequest([this.itemID]));
+      item.OnlineMeetingJoinUrl = result.Items[0].OnlineMeetingJoinUrl;
+    }
+    let event = this.calendar.newEvent(this.parentEvent);
+    event.fromJSON(item);
+    return event;
   }
 
   async makeExclusions(indices: number[]) {
