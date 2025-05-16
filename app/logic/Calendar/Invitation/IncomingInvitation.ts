@@ -27,18 +27,15 @@ export class IncomingInvitation {
       event = this.calendar.newEvent();
       event.copyFrom(this.event);
       event.recurrenceRule = this.event.recurrenceRule;
-      event.myParticipation = InvitationResponse.NoResponseReceived;
       this.calendar.events.add(event);
       if (event.recurrenceRule) {
         event.fillRecurrences();
       }
     }
-    let participant = event.participants.find(participant => participant.emailAddress == this.message.folder.account.emailAddress);
-    if (participant) {
-      event.myParticipation = participant.response = response;
-      await event.save();
-      await this.event.sendInvitationResponse(response, this.message.folder.account);
-    }
+    let { myParticipant } = event.participantMe(this.message.folder.account);
+    event.myParticipation = myParticipant.response = response;
+    await event.save();
+    await event.sendInvitationResponse(myParticipant, this.message.folder.account);
     /* else add participant? */
   }
 

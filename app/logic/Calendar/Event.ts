@@ -1,9 +1,10 @@
 import type { Calendar } from "./Calendar";
-import { Participant } from "./Participant";
+import type { Participant } from "./Participant";
 import { RecurrenceRule } from "./RecurrenceRule";
 import OutgoingInvitation from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
+import type { MailIdentity } from "../Mail/MailIdentity";
 import { appGlobal } from "../app";
 import { k1DayS, k1HourS, k1MinuteS } from "../../frontend/Util/date";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
@@ -286,6 +287,22 @@ export class Event extends Observable {
     return new OutgoingInvitation(this);
   }
 
+  participantMe(mailAccount?: MailAccount): { identity: MailIdentity, myParticipant: Participant } {
+    let results = [];
+    let accounts = mailAccount ? [mailAccount] : appGlobal.emailAccounts.contents.filter(account => !account.canSendInvitations);
+    for (let account of accounts) {
+      for (let identity of account.identities) {
+        for (let myParticipant of this.participants) {
+          if (identity.isEMailAddress(myParticipant.emailAddress)) {
+            results.push({ identity, myParticipant });
+          }
+        }
+      }
+    }
+    assert(results.length == 1, "Failed to find unique identity for meeting");
+    return results[0];
+  }
+
   /**
    * Assumes that the `original` property was set before
    */
@@ -478,26 +495,26 @@ export class Event extends Observable {
   }
 
   // TODO Move code to `IncomingInvitation` class
-  async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
+  async respondToInvitation(response: InvitationResponseInMessage, mailAccount?: MailAccount): Promise<void> {
     assert(this.isIncomingMeeting, "Only invitations can be responded to");
-    let accounts = appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations && this.participants.some(participant => participant.response != InvitationResponse.Organizer && participant.emailAddress == account.emailAddress));
-    assert(accounts.length == 1, "Failed to find matching account for invitation");
-    let participant = this.participants.find(participant => participant.emailAddress == accounts[0].emailAddress);
-    participant.response = response;
+    let { identity, myParticipant } = this.participantMe(mailAccount);
+    myParticipant.response = response;
     await this.save();
-    await this.sendInvitationResponse(response, accounts[0]);
+    await this.sendInvitationResponse(myParticipant, identity.account);
   }
 
   // TODO Move code to `IncomingInvitation` class
-  async sendInvitationResponse(response: InvitationResponseInMessage, account: MailAccount) {
+  async sendInvitationResponse(myParticipant: Participant, account: MailAccount) {
     let organizer = this.participants.find(participant => participant.response == InvitationResponse.Organizer);
     assert(organizer, "Invitation should have an organizer");
     let email = account.newEMailFrom();
+    email.from.emailAddress = myParticipant.emailAddress;
+    email.from.name = myParticipant.name || email.from.name;
     email.to.add(organizer);
     email.iCalMethod = "REPLY";
     email.event = new Event();
     email.event.copyFrom(this);
-    email.event.participants.replaceAll([new Participant(account.emailAddress, null, response)]);
+    email.event.participants.replaceAll([myParticipant]);
     if (email.event.descriptionText) {
       email.text = email.event.descriptionText;
       email.html = email.event.descriptionHTML;

@@ -36,7 +36,8 @@ export class ActiveSyncIncomingInvitation {
       },
     };
     await this.calendar.account.callEAS("MeetingResponse", request);
-    await this.event.sendInvitationResponse(response, this.calendar.account); // needs 16.x to do this automatically
+    this.event.myParticipation = response;
+    await this.event.respondToInvitation(response, this.calendar.account); // needs 16.x to do this automatically
     await this.message.deleteMessageLocally(); // Exchange deletes the message from the inbox
   }
 
