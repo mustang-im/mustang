@@ -22,6 +22,9 @@ export class Event extends Observable {
   pID: string | null = null;
   @notifyChangedProperty
   title: string;
+  /** HTML hex color string without # */
+  @notifyChangedProperty
+  color: string | null = null;
   @notifyChangedProperty
   protected _text: string | null = null;
   /** Plaintext version of the description */
@@ -97,7 +100,7 @@ export class Event extends Observable {
 
   @notifyChangedProperty
   startTime: Date;
-@notifyChangedProperty
+  @notifyChangedProperty
   endTime: Date;
   @notifyChangedProperty
   allDay = false;

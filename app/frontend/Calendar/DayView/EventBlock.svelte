@@ -5,7 +5,7 @@
     left: {conflicts.indexOf(event) / conflicts.length * 100}%;
     height: {heightInPercent}%;
     width: {100 / conflicts.length}%;
-    --account-color: {event.calendar?.color}"
+    --color: {event.color ?? event.calendar?.color}"
   class:conflict={conflicts.length > 1}
   class:selected={$selectedEvent == event}>
   {#if showTime}
@@ -61,13 +61,13 @@
     white-space: nowrap;
     text-overflow: ellipsis;
 
-    background-color: var(--account-color);
-    color: lch(from var(--account-color) calc((49.44 - l) * infinity) 0 0);
+    background-color: var(--color);
+    color: lch(from var(--color) calc((49.44 - l) * infinity) 0 0);
   }
   @media (prefers-color-scheme: dark) {
     .event {
       background-image:
-        linear-gradient(var(--account-color), var(--account-color)),
+        linear-gradient(var(--color), var(--color)),
         linear-gradient(#000000BB, #000000BB);
       background-blend-mode: overlay;
       background-color: unset;
