@@ -39,8 +39,9 @@ export class IncomingInvitation {
     /* else add participant? */
   }
 
-  /** Handle the other two InvitationMessage values, as
-   *  respondToInvitation only handles InvitationMessage.Invitation */
+  /** Handle the other two InvitationMessage cases:
+   *  CancelledEvent: the organiser cancelled an incoming meeting
+   *  ParticpantReply: an invitee replied to your outgoing invitation */
   async updateFromOtherInvitationMessage() {
     assert(this.invitationMessage && this.invitationMessage != InvitationMessage.Invitation, "can't update from an invitation");
     let event = this.calendar.events.find(p => p.calUID == this.event.calUID);
