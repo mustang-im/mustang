@@ -129,7 +129,7 @@ export class ActiveSyncEvent extends Event {
     } else {
       await this.saveFields(this.toFields());
       if (!this.calUID) {
-        let event = await this.queryServer();
+        let event = await this.fetchFromServer();
         this.calUID = event.calUID;
       }
     }
@@ -194,8 +194,8 @@ export class ActiveSyncEvent extends Event {
     await super.deleteFromServer();
   }
 
-  /** Returns a copy of the event as read from the server, except the body */
-  async queryServer(): Promise<ActiveSyncEvent> {
+  /** Returns a copy of the event as read from the server */
+  async fetchFromServer(): Promise<ActiveSyncEvent> {
     assert(this.serverID, "can't query unsaved event");
     let request = {
       Fetch: {
@@ -204,8 +204,7 @@ export class ActiveSyncEvent extends Event {
         CollectionId: this.calendar.serverID,
         Options: {
           BodyPreference: {
-            Type: "1",
-            TruncationSize: "0",
+            Type: "2",
           },
         },
       },

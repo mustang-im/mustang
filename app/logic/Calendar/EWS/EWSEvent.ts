@@ -318,6 +318,63 @@ export class EWSEvent extends Event {
     }
   }
 
+  /** Returns a copy of the event as read from the server */
+  async fetchFromServer(): Promise<EWSEvent> {
+    assert(this.itemID, "can't query unsaved event");
+    let request = {
+      m$GetItem: {
+        m$ItemShape: {
+          t$BaseShape: "Default",
+          t$BodyType: "Best",
+          t$AdditionalProperties: {
+            t$FieldURI: [{
+              FieldURI: "item:Body",
+            }, {
+              FieldURI: "item:ReminderIsSet",
+            }, {
+              FieldURI: "item:ReminderMinutesBeforeStart",
+            }, {
+              FieldURI: "item:LastModifiedTime",
+            }, {
+              FieldURI: "item:TextBody",
+            }, {
+              FieldURI: "calendar:StartTimeZoneId",
+            }, {
+              FieldURI: "calendar:IsAllDayEvent",
+            }, {
+              FieldURI: "calendar:MyResponseType",
+            }, {
+              FieldURI: "calendar:RequiredAttendees",
+            }, {
+              FieldURI: "calendar:OptionalAttendees",
+            }, {
+              FieldURI: "calendar:Recurrence",
+            }, {
+              FieldURI: "calendar:ModifiedOccurrences",
+            }, {
+              FieldURI: "calendar:DeletedOccurrences",
+            }, {
+              FieldURI: "calendar:UID",
+            }, {
+              FieldURI: "calendar:RecurrenceId",
+            }, {
+              FieldURI: "task:Recurrence",
+            }],
+          },
+        },
+        m$ItemIds: {
+          t$ItemId: {
+            Id: this.itemID,
+          },
+        },
+      },
+    };
+    let result = await this.calendar.account.callEWS(request);
+    let event = this.calendar.newEvent(this.parentEvent);
+    event.fromXML(result.Items.CalendarItem);
+    return event;
+  }
+
   async makeExclusions(indices: number[]) {
     let request = {
       m$DeleteItem: {

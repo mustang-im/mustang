@@ -13,7 +13,7 @@ import OWAUpdateOffice365OccurrenceRequest from "./Request/OWAUpdateOffice365Occ
 import OWACreateItemRequest from "../../Mail/OWA/Request/OWACreateItemRequest";
 import OWADeleteItemRequest from "../../Mail/OWA/Request/OWADeleteItemRequest";
 import OWAUpdateItemRequest from "../../Mail/OWA/Request/OWAUpdateItemRequest";
-import { owaCreateExclusionRequest, owaCreateMultipleExclusionsRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest } from "./Request/OWAEventRequests";
+import { owaCreateExclusionRequest, owaCreateMultipleExclusionsRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest, owaGetCalendarEventsRequest, owaGetEventsRequest } from "./Request/OWAEventRequests";
 import { k1MinuteMS } from "../../../frontend/Util/date";
 import type { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -334,6 +334,20 @@ export class OWAEvent extends Event {
     } else if (this.parentEvent) {
       await this.calendar.account.callOWA(owaCreateExclusionRequest(this, this.parentEvent));
     }
+  }
+
+  /** Returns a copy of the event as read from the server */
+  async fetchFromServer(): Promise<OWAEvent> {
+    assert(this.itemID, "can't query unsaved event");
+    let result = await this.calendar.account.callOWA(owaGetEventsRequest([this.itemID]));
+    let item = result.Items[0];
+    if (item.IsOnlineMeeting) {
+      let result = await this.calendar.account.callOWA(owaGetCalendarEventsRequest([this.itemID]));
+      item.OnlineMeetingJoinUrl = result.Items[0].OnlineMeetingJoinUrl;
+    }
+    let event = this.calendar.newEvent(this.parentEvent);
+    event.fromJSON(item);
+    return event;
   }
 
   async makeExclusions(indices: number[]) {
