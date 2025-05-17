@@ -95,18 +95,20 @@
         let isBusy = busyQuota > 0.4;
         console.log("free ", Math.round(freeQuota * 100), "%", "busy", Math.round(busyQuota * 100), "%", "at", event.startTime.toLocaleTimeString());
 
+        let statusSymbol =
+          (isFree ? "✅" :
+           isBusy ? "❌" :
+           busyQuota > 0 ? "🙾" :
+           "❓");
+        let participantsStatus =
+          (busyParticipants.length ? gt`Busy` + ": " + busyParticipants.map(p => p.name).join(", ") + "\n" : "") +
+          (freeParticipants.length ? gt`Free` + ": " + freeParticipants.map(p => p.name).join(", ") + "\n" : "") +
+          (unknownParticipants ? gt`Unknown` + ": " + unknownParticipants.map(p => p.name).join(", ") : "");
         event.color =
           isFree ? "#CBF3E1" : // green
           isBusy ? "#FF7676" : // red
           "#F9F791"; // yellow
-        event.title =
-          (isFree ? "✅" :
-           isBusy ? "❌" :
-           busyQuota > 0 ? "🙾" :
-           "❓") + "       \n\n" +
-          (busyParticipants.length ? gt`Busy` + ": " + busyParticipants.map(p => p.name).join(", ") + "\n" : "") +
-          (freeParticipants.length ? gt`Free` + ": " + freeParticipants.map(p => p.name).join(", ") + "\n" : "") +
-          (unknownParticipants ? gt`Unknown` + ": " + unknownParticipants.map(p => p.name).join(", ") : "");
+        event.title = /*statusSymbol +*/ "       \n\n" + participantsStatus;
         freeBusy.add(event);
       }
     }
