@@ -19,7 +19,7 @@
         </Section>
         {#if showRepeat}
           <Section label={$t`Repeat`} icon={RepeatIcon}>
-            <RepeatBox {event} bind:this={repeatBox} bind:showRepeat/>
+            <RepeatBox {event} bind:this={repeatBox} bind:showRepeat />
           </Section>
         {/if}
         {#if showReminder}
@@ -66,7 +66,7 @@
 </vbox>
 
 <script lang="ts">
-  import { type Event, RecurrenceCase } from "../../../logic/Calendar/Event";
+  import type { Event } from "../../../logic/Calendar/Event";
   import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import TitleBox from "./TitleBox.svelte";
   import TimeBox from "./TimeBox.svelte";
@@ -112,6 +112,9 @@
   }
 
   function expandParticipants(): void {
+    if (event.myParticipation == InvitationResponse.Organizer) {
+      return;
+    }
     event.createMeeting();
   }
 
