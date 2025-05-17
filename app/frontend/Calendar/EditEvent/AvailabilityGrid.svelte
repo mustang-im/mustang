@@ -90,16 +90,23 @@
           continue;
         }
         let freeQuota = freeParticipants.length / participantsInfo.length;
-        console.log("free ", Math.round(freeQuota * 100), "%", "at", event.startTime.toLocaleTimeString());
+        let busyQuota = busyParticipants.length / participantsInfo.length;
+        let isFree = freeQuota == 1;
+        let isBusy = busyQuota > 0.4;
+        console.log("free ", Math.round(freeQuota * 100), "%", "busy", Math.round(busyQuota * 100), "%", "at", event.startTime.toLocaleTimeString());
 
         event.color =
-          freeQuota == 1 ? "00FF00" : // green
-          freeQuota < 0.6 ? "FF0000" : // red
-          "FFFF00"; // yellow
+          isFree ? "#CBF3E1" : // green
+          isBusy ? "#FF7676" : // red
+          "#F9F791"; // yellow
         event.title =
-          gt`Busy` + ": " + busyParticipants.map(p => p.name).join(", ") + "\n" +
-          gt`Free` + ": " + freeParticipants.map(p => p.name).join(", ") + "\n" +
-          gt`Unknown` + ": " + unknownParticipants.map(p => p.name).join(", ");
+          (isFree ? "✅" :
+           isBusy ? "❌" :
+           busyQuota > 0 ? "🙾" :
+           "❓") + "       \n\n" +
+          (busyParticipants.length ? gt`Busy` + ": " + busyParticipants.map(p => p.name).join(", ") + "\n" : "") +
+          (freeParticipants.length ? gt`Free` + ": " + freeParticipants.map(p => p.name).join(", ") + "\n" : "") +
+          (unknownParticipants ? gt`Unknown` + ": " + unknownParticipants.map(p => p.name).join(", ") : "");
         freeBusy.add(event);
       }
     }
@@ -119,6 +126,9 @@
   }
   .availability-grid :global(.event .time) {
     display: none;
+  }
+  .availability-grid :global(.event .title) {
+    white-space-collapse: preserve;
   }
   .availability-grid :global(.day-header) {
     padding: 4px 8px;

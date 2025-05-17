@@ -23,7 +23,7 @@ export class Event extends Observable {
   pID: string | null = null;
   @notifyChangedProperty
   title: string;
-  /** HTML hex color string without # */
+  /** HTML hex color string with # */
   @notifyChangedProperty
   color: string | null = null;
   @notifyChangedProperty
