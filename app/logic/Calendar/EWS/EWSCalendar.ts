@@ -1,7 +1,9 @@
 import { Calendar } from "../Calendar";
 import type { Participant } from "../Participant";
 import { EWSEvent } from "./EWSEvent";
+import { EWSIncomingInvitation } from "./EWSIncomingInvitation";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
+import type { EWSEMail } from "../../Mail/EWS/EWSEMail";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -10,6 +12,8 @@ import type { ArrayColl } from "svelte-collections";
 export class EWSCalendar extends Calendar {
   readonly protocol: string = "calendar-ews";
   readonly events: ArrayColl<EWSEvent>;
+  /** Exchange's calendar can only accept incoming invitations from its inbox */
+  readonly canAcceptAnyInvitation = false;
 
   get account(): EWSAccount {
     return this.mainAccount as EWSAccount;
@@ -17,6 +21,10 @@ export class EWSCalendar extends Calendar {
 
   newEvent(parentEvent?: EWSEvent): EWSEvent {
     return new EWSEvent(this, parentEvent);
+  }
+
+  getIncomingInvitationFor(message: EWSEMail) {
+    return new EWSIncomingInvitation(this, message);
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {

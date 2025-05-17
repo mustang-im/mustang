@@ -1,8 +1,10 @@
 import { Calendar } from "../Calendar";
 import type { Participant } from "../Participant";
 import { OWAEvent } from "./OWAEvent";
+import { OWAIncomingInvitation } from "./OWAIncomingInvitation";
 import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
 import OWAGetUserAvailabilityRequest from "./Request/OWAGetUserAvailabilityRequest";
+import type { OWAEMail } from "../../Mail/OWA/OWAEMail";
 import { owaFindEventsRequest, owaGetCalendarEventsRequest, owaGetEventsRequest } from "./Request/OWAEventRequests";
 import { ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -11,6 +13,8 @@ import { ArrayColl } from "svelte-collections";
 export class OWACalendar extends Calendar {
   readonly protocol: string = "calendar-owa";
   readonly events: ArrayColl<OWAEvent>;
+  /** Exchange's calendar can only accept incoming invitations from its inbox */
+  readonly canAcceptAnyInvitation = false;
 
   get account(): OWAAccount {
     return this.mainAccount as OWAAccount;
@@ -18,6 +22,10 @@ export class OWACalendar extends Calendar {
 
   newEvent(parentEvent?: OWAEvent): OWAEvent {
     return new OWAEvent(this, parentEvent);
+  }
+
+  getIncomingInvitationFor(message: OWAEMail) {
+    return new OWAIncomingInvitation(this, message);
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
@@ -68,7 +76,7 @@ export class OWACalendar extends Calendar {
     }
   }
 
-  protected async getEvents(eventIDs: string[], events: ArrayColl<OWAEvent>, parentEvent?: OWAEvent) {
+  async getEvents(eventIDs: string[], events: ArrayColl<OWAEvent>, parentEvent?: OWAEvent) {
     if (!eventIDs.length) {
       return;
     }

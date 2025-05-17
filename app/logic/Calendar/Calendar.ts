@@ -1,6 +1,8 @@
 import { Account } from "../Abstract/Account";
 import { Event } from "./Event";
 import type { Participant } from "./Participant";
+import { IncomingInvitation } from "./Invitation/IncomingInvitation";
+import type { EMail } from "../Mail/EMail";
 import { appGlobal } from "../app";
 import { Collection, ArrayColl } from "svelte-collections";
 import { ICalEMailProcessor } from "./ICal/ICalEMailProcessor";
@@ -8,11 +10,17 @@ import { ICalEMailProcessor } from "./ICal/ICalEMailProcessor";
 export class Calendar extends Account {
   readonly protocol: string = "calendar-local";
   readonly events = new ArrayColl<Event>();
+  /** Can this calendar accept incoming invitations from inboxes in other accounts? */
+  readonly canAcceptAnyInvitation: boolean = true;
   storage: CalendarStorage | null = null;
   syncState: string | null = null;
 
   newEvent(parentEvent?: Event): Event {
     return new Event(this, parentEvent);
+  }
+
+  getIncomingInvitationFor(message: EMail) {
+    return new IncomingInvitation(this, message);
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
@@ -23,7 +31,7 @@ export class Calendar extends Account {
    * Ensures that instances for all recurring events in the calendar exist
    * up to the provided date. Returns all events as a convenience.
    */
-  fillRecurrences(endDate: Date): Collection<Event> {
+  fillRecurrences(endDate: Date = new Date(Date.now() + 1e11)): Collection<Event> {
     for (let event of this.events.contents.filter(event => event.recurrenceRule)) {
       event.fillRecurrences(endDate);
     }

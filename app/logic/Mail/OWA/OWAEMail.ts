@@ -8,10 +8,12 @@ import OWAUpdateItemRequest from "./Request/OWAUpdateItemRequest";
 import { owaDownloadMsgsRequest } from "./Request/OWAFolderRequests";
 import { owaGetEventsRequest } from "../../Calendar/OWA/Request/OWAEventRequests";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
-import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../Calendar/Invitation/InvitationStatus";
+import type { Calendar } from "../../Calendar/Calendar";
+import { InvitationMessage } from "../../Calendar/Invitation/InvitationStatus";
+import { appGlobal } from "../../app";
 import { base64ToArrayBuffer, assert } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import type { ArrayColl } from "svelte-collections";
+import type { Collection, ArrayColl } from "svelte-collections";
 
 export class OWAEMail extends EMail {
   folder: OWAFolder;
@@ -131,15 +133,13 @@ export class OWAEMail extends EMail {
     await this.folder.account.callOWA(request);
   }
 
-  async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.invitationMessage == InvitationMessage.Invitation, "Only invitations can be responded to");
-    let request = new OWACreateItemRequest({MessageDisposition: "SendAndSaveCopy"});
-    request.addField(ResponseTypes[response], "ReferenceItemId", {
-      __type: "ItemId:#Exchange",
-      Id: this.itemID,
-    });
-    await this.folder.account.callOWA(request);
-    await this.deleteMessageLocally(); // Exchange deletes the message from the inbox
+  getUpdateCalendars(): Collection<Calendar> {
+    assert(this.invitationMessage && this.event, "Must have event to find calendar");
+    if (this.invitationMessage == InvitationMessage.Invitation) {
+      // OWA always puts invitations in the default calendar.
+      return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account).slice(0, 1);
+    }
+    return appGlobal.calendars.filter(calendar => calendar.mainAccount == this.folder.account && calendar.events.some(event => event.calUID == this.event.calUID));
   }
 
   /** OWA only provides event data for invitations,
@@ -165,12 +165,6 @@ const ExchangeScheduling: Record<string, number> = {
   "IPM.Schedule.Meeting.Resp.Neg": InvitationMessage.ParticipantReply,
   "IPM.Schedule.Meeting.Request": InvitationMessage.Invitation,
   "IPM.Schedule.Meeting.Canceled": InvitationMessage.CancelledEvent,
-};
-
-const ResponseTypes: Record<InvitationResponseInMessage, string> = {
-  [InvitationResponse.Accept]: "AcceptItem",
-  [InvitationResponse.Tentative]: "TentativelyAcceptItem",
-  [InvitationResponse.Decline]: "DeclineItem",
 };
 
 function setPersons(targetList: ArrayColl<PersonUID>, mailboxes: any): void {

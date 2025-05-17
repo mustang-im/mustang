@@ -233,11 +233,11 @@ export class ActiveSyncEvent extends Event {
       Request: {
         UserResponse: ActiveSyncResponse[response],
         CollectionId: this.calendar.serverID,
-        ReqeustId: this.serverID,
+        RequestId: this.serverID,
       },
     };
     await this.calendar.account.callEAS("MeetingResponse", request);
-    await this.sendInvitationResponse(response, this.calendar.account); // needs 16.x to do this automatically
+    await super.respondToInvitation(response, this.calendar.account); // needs 16.x to do this automatically
   }
 }
 
