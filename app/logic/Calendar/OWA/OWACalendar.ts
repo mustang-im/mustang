@@ -22,7 +22,14 @@ export class OWACalendar extends Calendar {
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
     let results = await this.account.callOWA(new OWAGetUserAvailabilityRequest(participants, from, to));
-    return participants.map((participant, i) => ({ participant, availability: ensureArray(results.Responses[i].CalendarView.Items).map(event => ({ from: new Date(event.Start + "Z"), to: new Date(event.End + "Z"), free: event.FreeBusyType == "Free" })) }));
+    return participants.map((participant, i) => ({
+      participant,
+      availability: ensureArray(results.Responses[i].CalendarView.Items).map(event => ({
+        from: new Date(event.Start + "Z"),
+        to: new Date(event.End + "Z"),
+        free: event.FreeBusyType == "Free",
+      })),
+    }));
   }
 
   protected getEventByItemID(id: string): OWAEvent | void {

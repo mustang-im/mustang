@@ -40,7 +40,14 @@ export class EWSCalendar extends Calendar {
       },
     };
     let results = await this.account.callEWS(request);
-    return participants.map((participant, i) => ({ participant, availability: ensureArray(results[i].FreeBusyView.CalendarEventArray?.CalendarEvent).map(event => ({ from: new Date(event.StartTime + "Z"), to: new Date(event.EndTime + "Z"), free: event.BusyType == "Free" })) }));
+    return participants.map((participant, i) => ({
+      participant,
+      availability: ensureArray(results[i].FreeBusyView.CalendarEventArray?.CalendarEvent).map(event => ({
+        from: new Date(event.StartTime + "Z"),
+        to: new Date(event.EndTime + "Z"),
+        free: event.BusyType == "Free",
+      })),
+    }));
   }
 
   async listEvents() {

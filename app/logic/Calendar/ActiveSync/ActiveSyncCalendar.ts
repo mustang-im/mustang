@@ -49,7 +49,7 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
         throw new ActiveSyncError("ResolveRecipients", result.Response.Status, this);
       }
       let freebusy = result.Response.Recipient.Availability.MergedFreeBusy || "";
-      let availability = freebusy.split("").map((c, i) => ({
+      let availability = freebusy.split("").map((c: string, i: number) => ({
         from: new Date(from.getTime() + i * kHalfHour),
         to: new Date(from.getTime() + (i + 1) * kHalfHour),
         free: c == "0",
