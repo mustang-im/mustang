@@ -34,6 +34,8 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { getToday, k1DayMS } from "../../Util/date";
+  import { selectedCalendar, selectedDate } from "../selected";
+  import { calendarMustangApp } from "../CalendarMustangApp";
   import TimeLabel from "./TimeLabel.svelte";
   import TimeDayRow from "./TimeDayRow.svelte";
   import AllDayEvent from "./AllDayEvent.svelte";
@@ -41,8 +43,9 @@
   import Button from "../../Shared/Button.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import TodayIcon from "lucide-svelte/icons/home";
-  import type { Collection } from "svelte-collections";
+  import { assert } from "../../../logic/util/util";
   import { getUILocale, t } from "../../../l10n/l10n";
+  import type { Collection } from "svelte-collections";
 
   export let start: Date;
   export let events: Collection<Event>;
@@ -51,6 +54,8 @@
    * Other hours are available on scroll. */
   export let showHours = 10;
   export let defaultFocusHour = 8;
+  export let onDayClicked = selectDay;
+  export let onDayDblClicked = addEvent;
 
   let startHour = 0;
   let endHour = 24;
@@ -107,7 +112,18 @@
   function goToToday() {
     start = getToday();
   }
-</script>
+
+  function selectDay(day: Date) {
+    $selectedDate = day;
+  }
+
+  function addEvent(day: Date) {
+    assert($selectedCalendar, $t`Please select a calendar first`);
+    let event = $selectedCalendar.newEvent();
+    event.startTime = new Date(day);
+    event.endTime = new Date(day);
+    calendarMustangApp.editEvent(event);
+  }</script>
 
 <style>
   .week {

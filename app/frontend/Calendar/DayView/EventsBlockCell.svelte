@@ -1,4 +1,4 @@
-<vbox flex class="events" on:click={selectDay} on:dblclick={addEvent}>
+<vbox flex class="events" on:click={onClick} on:dblclick={onDlbClick}>
   {#if displayEvents && !displayEvents.isEmpty}
     {#each displayEvents.each as event (event.id)}
       <EventBlock {event} {start} {end} otherEvents={events} />
@@ -8,12 +8,10 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { selectedCalendar, selectedDate } from "../selected";
-  import { calendarMustangApp } from "../CalendarMustangApp";
   import EventBlock from "./EventBlock.svelte";
-  import { assert } from "../../../logic/util/util";
-  import { t } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
+  import { createEventDispatcher } from 'svelte';
+  const dispatchEvent = createEventDispatcher<{ dayClicked: Date, dayDblClicked: Date }>();
 
   export let start: Date;
   export let intervalInHours: number;
@@ -28,16 +26,12 @@
     displayEvents = events.filter(ev => ev.startTime < end && ev.endTime > start && !ev.allDay);
   }
 
-  function selectDay() {
-    $selectedDate = start;
+  function onClick() {
+    dispatchEvent("dayClicked", start);
   }
 
-  function addEvent() {
-    assert($selectedCalendar, $t`Please select a calendar first`);
-    let event = $selectedCalendar.newEvent();
-    event.startTime = new Date(start);
-    event.endTime = new Date(start);
-    calendarMustangApp.editEvent(event);
+  function onDlbClick() {
+    dispatchEvent("dayDblClicked", start);
   }
 </script>
 
