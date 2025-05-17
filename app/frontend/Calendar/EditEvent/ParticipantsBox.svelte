@@ -22,11 +22,24 @@
   </hbox>
 </PersonsAutocomplete>
 
+<vbox class="availability-grid">
+  <ExpandSection>
+    <hbox slot="header" class="header">{$t`Availability of participants`}</hbox>
+    <AvailabilityGrid
+      participants={event.participants}
+      start={$event.startTime}
+      calendar={$event.calendar}
+      />
+  </ExpandSection>
+</vbox>
+
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import PersonsAutocomplete from "../../Contacts/PersonAutocomplete/PersonsAutocomplete.svelte";
   import PersonAvailability from "./PersonAvailability.svelte";
   import PersonResponse from "./PersonResponse.svelte";
+  import ExpandSection from "../../Shared/ExpandSection.svelte";
+  import AvailabilityGrid from "./AvailabilityGrid.svelte";
   import SectionTitle from "./SectionTitle.svelte";
   // import RoundButton from "../../Shared/RoundButton.svelte";
   // import OptionalParticipantsIcon from "lucide-svelte/icons/circle-dashed";
@@ -40,4 +53,12 @@
     align-items: center;
     padding: 8px;
   }*/
+  .availability-grid {
+    max-height: 350px;
+    max-width: 400px;
+    margin-block-start: 18px;
+  }
+  .availability-grid .header {
+    opacity: 50%;
+  }
 </style>
