@@ -33,6 +33,7 @@ export class EWSIncomingInvitation {
     request.addField(ResponseTypes[response], "ReferenceItemId", { Id: this.message.itemID });
     await this.calendar.account.callEWS(request);
     await this.message.deleteMessageLocally(); // Exchange deletes the message from the inbox
+    await this.calendar.listEvents(); // Exchange will have created a calendar item if there wasn't one already
   }
 
   async updateFromOtherInvitationMessage() {
