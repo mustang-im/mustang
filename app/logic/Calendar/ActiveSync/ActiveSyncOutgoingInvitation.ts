@@ -10,7 +10,7 @@ export default class ActiveSyncOutgoingInvitation extends OutgoingInvitation {
     return this.event.calendar.account.identities.first;
   }
 
-  protected newEmailFrom(): EMail {
+  protected newEMailFrom(): EMail {
     return this.event.calendar.account.newEMailFrom();
   }
 }
