@@ -9,7 +9,7 @@
       <hbox flex class="spacer" />
       <WriteButton selectedAccount={$selectedAccount} />
     </hbox>
-    <PersonsList persons={appGlobal.persons} bind:selected={selectedPerson} />
+    <PersonsList {persons} bind:selected={selectedPerson} size="small" />
     <ViewSwitcher />
   </vbox>
   <vbox class="right-pane" slot="right">
@@ -18,14 +18,12 @@
       <vbox flex class="messages">
         <MessageList messages={filteredMessages}>
           <svelte:fragment slot="message" let:message let:previousMessage>
-            {#if message instanceof EMail }
-              <MailMessage {message} {previousMessage} />
-            {/if}
+            <MailMessage {message} {previousMessage} />
           </svelte:fragment>
         </MessageList>
       </vbox>
       <vbox class="editor">
-        <MsgEditor to={dummyChat} />
+        <MsgEditor to={chat} />
       </vbox>
     {/if}
   </vbox>
@@ -34,10 +32,10 @@
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import type { Folder } from "../../../logic/Mail/Folder";
-  import { EMail } from "../../../logic/Mail/EMail";
-  import type { Person } from "../../../logic/Abstract/Person";
+  import type { EMail } from "../../../logic/Mail/EMail";
+  import type { UserChatMessage } from "../../../logic/Chat/Message";
+  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { Chat } from "../../../logic/Chat/Chat";
-  import { appGlobal } from "../../../logic/app";
   import { selectedAccount } from "../Selected";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import PersonsList from "../../Contacts/Person/PersonsList.svelte";
@@ -54,21 +52,30 @@
 
   export let accounts: Collection<MailAccount>; /** in */
 
-  let selectedPerson: Person;
-  $: rootFolders = mergeColls<Folder>(accounts.map(account => account.rootFolders));
-  $: allMessages = mergeColls<EMail>(rootFolders.map(folder => folder.messages));
-  $: personMessages = allMessages.filter(msg => msg.contact == selectedPerson).sortBy(msg => msg.sent);
+  let selectedPerson: PersonUID;
+  $: folders = mergeColls<Folder>($accounts.map(account => account.rootFolders));
+  // $: folders = $accounts.map(account => account.inbox);
+  $: allMessages = mergeColls<EMail>($folders.map(folder => folder.messages)).sortBy(msg => -msg.sent.getTime());
+  $: persons = $allMessages.map(msg => msg.contact as PersonUID).unique();
+  $: personMessages = $allMessages.filterObservable(msg => msg.contact == selectedPerson);
   $: filteredMessages = $globalSearchTerm
-    ? personMessages.filter(msg => msg.text?.toLowerCase().includes($globalSearchTerm))
+    ? personMessages.filterObservable(msg => msg.text?.toLowerCase().includes($globalSearchTerm))
     : personMessages;
-  $: dummyChat = createDummyChat(selectedPerson);
-  function createDummyChat(person: Person): Chat {
-    let chat = new Chat(accounts.first);
-    chat.id = faker.string.uuid();
-    chat.contact = person;
-    chat.messages.addAll(personMessages);
-    chat.lastMessage = personMessages.last;
-    return chat;
+  $: chat = new MailChatRoom(selectedPerson);
+
+  class MailChatRoom extends Chat {
+    declare account: MailAccount;
+    constructor(person: PersonUID) {
+      let account = personMessages.first?.folder.account ?? accounts.first;
+      super(account);
+      this.id = faker.string.uuid();
+      this.contact = person;
+      this.messages.addAll(personMessages);
+      this.lastMessage = personMessages.last;
+    }
+    async sendMessage(message: UserChatMessage): Promise<void> {
+      this.account.send(message);
+    }
   }
 </script>
 

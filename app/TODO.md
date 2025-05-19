@@ -286,6 +286,9 @@
 * SIP
   * Voice call to phone system
   * Incoming calls
+  * jssip
+* AI
+  * mcp-framework
 
 ## App logic
 * init

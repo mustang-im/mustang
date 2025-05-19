@@ -63,14 +63,22 @@ export class PersonUID extends Observable {
   }
 }
 
+const cachedPersonUIDs = new Map<string, WeakRef<PersonUID>>();
+
 export function findOrCreatePersonUID(emailAddress: string, realname: string): PersonUID {
-  /* TODO what if the person or email address is later added to the personal address book?
-    How to replace the existing Person object references? */
+  let cached = cachedPersonUIDs.get(emailAddress + "|" + realname)?.deref();
+  if (cached) {
+    return cached;
+  }
+  /* TODO If the person or email address is later added to the personal address book,
+    add the `Person` to the cached `PersonUID` entry.
+    We currently search all address books on every call to `personUID.findPerson()` */
   let existing = findPerson(emailAddress);
   let uid = new PersonUID(emailAddress, realname ?? existing?.name ?? emailAddress);
   if (existing) {
     uid.person = existing;
   }
+  cachedPersonUIDs.set(emailAddress + "|" + realname, new WeakRef(uid));
   return uid;
 }
 
