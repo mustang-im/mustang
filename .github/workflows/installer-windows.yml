@@ -26,6 +26,8 @@ jobs:
     - run: cd e2; yarn run build:release:win
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        CSC_LINK: ${{ secrets.CSC_LINK_WIN_MUSTANG }}
+        CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD_WIN_MUSTANG }}
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         # For Sentry source maps. Otherwise, vite build is out of memory
         NODE_OPTIONS: '--max-old-space-size=32768'
