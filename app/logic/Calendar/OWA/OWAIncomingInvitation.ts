@@ -38,8 +38,18 @@ export class OWAIncomingInvitation {
       __type: "ItemId:#Exchange",
       Id: this.message.itemID,
     });
-    await this.calendar.account.callOWA(request);
+    let result = await this.calendar.account.callOWA(request);
     await this.message.deleteMessageLocally(); // Exchange deletes the message from the inbox
+    let itemID = result.Items.find(item => item?.__type == "CalendarItem:#Exchange")?.ItemId?.Id;
+    if (itemID) {
+      let events = new ArrayColl<OWAEvent>();
+      await this.calendar.getEvents([itemID], events);
+      for (let event of events) {
+        if (!this.calendar.events.contains(event)) {
+          this.calendar.events.add(event);
+        }
+      }
+    }
   }
 
   async updateFromOtherInvitationMessage() {
