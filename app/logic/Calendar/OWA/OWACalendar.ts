@@ -113,4 +113,14 @@ export class OWACalendar extends Calendar {
       }
     }
   }
+
+  async createOrUpdateEventFromServerByID(itemID: string) {
+    let events = new ArrayColl<OWAEvent>();
+    await this.getEvents([itemID], events);
+    for (let event of events) {
+      if (!this.events.contains(event)) {
+        this.events.add(event);
+      }
+    }
+  }
 }
