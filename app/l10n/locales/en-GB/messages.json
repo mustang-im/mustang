@@ -722,5 +722,11 @@
   "AvRKb/": "You can find the source code of {0} core at # under an #.",
   "xBXbIy": "You don't have an email address for {0}. You can copy the invitation link and send it in another way.",
   "sOC8m6": "Your license has expired on {0}",
-  "30zBRl": "Your license is valid until {0}."
+  "30zBRl": "Your license is valid until {0}.",
+  "ecHyk4": "Authentication page timed out after {0} minutes",
+  "c09W5f": "Availability of participants",
+  "RLe7Vk": "Checking…",
+  "BtkWVq": "Failed to connect to chat account {0}",
+  "iLSDdh": "Show my camera",
+  "vuKRbC": "Update calendar"
 }
