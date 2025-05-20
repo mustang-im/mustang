@@ -14,13 +14,14 @@ import { appName, appVersion, siteRoot } from "../../build";
 import { ArrayColl, MapColl, type Collection } from "svelte-collections";
 import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
 import { gt } from "../../../l10n/l10n";
+import { notifyChangedProperty } from "../../util/Observable";
 
 export class IMAPAccount extends MailAccount {
   readonly protocol: string = "imap";
   acceptOldTLS = false;
   /** Whether to get a new access token on reconnect.
    * Gmail requires a new token on reconnecting */
-  alwaysNewToken = this.hostname.endsWith("gmail.com");
+  alwaysNewToken = false;
   pathDelimiter: string; /** Separator in folder path. E.g. '.' or '/', depending on server */
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   /** if polling is enabled, how often to poll.
@@ -54,6 +55,8 @@ export class IMAPAccount extends MailAccount {
     await this.listFolders();
     this.notifyObservers();
     (this.inbox as IMAPFolder).startPolling();
+
+    this.alwaysNewToken = this.hostname.endsWith("gmail.com");
   }
 
   async verifyLogin(): Promise<void> {
