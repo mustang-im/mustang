@@ -14,7 +14,6 @@ import { appName, appVersion, siteRoot } from "../../build";
 import { ArrayColl, MapColl, type Collection } from "svelte-collections";
 import type { ImapFlow } from "../../../../backend/node_modules/imapflow";
 import { gt } from "../../../l10n/l10n";
-import { notifyChangedProperty } from "../../util/Observable";
 
 export class IMAPAccount extends MailAccount {
   readonly protocol: string = "imap";
@@ -56,6 +55,8 @@ export class IMAPAccount extends MailAccount {
     this.notifyObservers();
     (this.inbox as IMAPFolder).startPolling();
 
+    // Gmail access tokens are only valid for a single continuous connection
+    // <https://developers.google.com/workspace/gmail/imap/imap-smtp#session_length_limits>
     this.alwaysNewToken = this.hostname.endsWith("gmail.com");
   }
 
