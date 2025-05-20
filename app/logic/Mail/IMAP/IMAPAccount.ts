@@ -18,6 +18,9 @@ import { gt } from "../../../l10n/l10n";
 export class IMAPAccount extends MailAccount {
   readonly protocol: string = "imap";
   acceptOldTLS = false;
+  /** Whether to get a new access token on reconnect.
+   * Gmail requires a new token on reconnecting */
+  alwaysNewToken = this.hostname.endsWith("gmail.com");
   pathDelimiter: string; /** Separator in folder path. E.g. '.' or '/', depending on server */
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   /** if polling is enabled, how often to poll.
@@ -217,7 +220,7 @@ export class IMAPAccount extends MailAccount {
     this.notifyObservers();
 
     if (this.authMethod == AuthMethod.OAuth2 && this.oAuth2 &&
-        !this.oAuth2?.isLoggedIn) {
+        !this.oAuth2?.isLoggedIn || this.alwaysNewToken) {
       await this.oAuth2.login(false);
     }
     if (!(this.password || this.oAuth2?.isLoggedIn)) {
