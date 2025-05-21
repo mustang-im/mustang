@@ -18,7 +18,7 @@
     "l10n:sync:translations": "cd l10n && crowdin pull"
   },
   "dependencies": {
-    "@faker-js/faker": "^9.0.0",
+    "@faker-js/faker": "^9.8.0",
     "@popperjs/core": "^2.11.8",
     "@sentry/svelte": "^8.15.0",
     "@sentry/vite-plugin": "^2.22.6",
