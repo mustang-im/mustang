@@ -16,7 +16,7 @@
             <hbox class="date">{day.toLocaleDateString(getUILocale(), { day: "numeric" })}</hbox>
             <hbox class="weekday">{day.toLocaleDateString(getUILocale(), { weekday: "long" })}</hbox>
             <vbox class="all-day-events">
-              {#each allDayEvents.contents.filter(ev => ev.startTime <= day && day <= ev.endTime) as event (event.id)}
+              {#each allDayEvents.contents.filter(ev => ev.startTime <= day && day < ev.endTime) as event (event.id)}
                 <AllDayEvent {event} {start} />
               {/each}
             </vbox>
