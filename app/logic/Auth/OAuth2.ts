@@ -293,9 +293,6 @@ export class OAuth2 extends Observable {
   }
 
   async refreshImmediately() {
-    if (this.expiryTimout) {
-      clearTimeout(this.expiryTimout);
-    }
     if (this.refreshToken) {
       await this.getAccessTokenFromRefreshToken(this.refreshToken);
     }

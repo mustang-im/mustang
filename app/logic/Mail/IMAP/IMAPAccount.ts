@@ -18,9 +18,6 @@ import { gt } from "../../../l10n/l10n";
 export class IMAPAccount extends MailAccount {
   readonly protocol: string = "imap";
   acceptOldTLS = false;
-  /** Whether to get a new access token on reconnect.
-   * Gmail requires a new token on reconnecting */
-  alwaysNewOAuth2AccessToken = false;
   pathDelimiter: string; /** Separator in folder path. E.g. '.' or '/', depending on server */
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   /** if polling is enabled, how often to poll.
@@ -54,10 +51,6 @@ export class IMAPAccount extends MailAccount {
     await this.listFolders();
     this.notifyObservers();
     (this.inbox as IMAPFolder).startPolling();
-
-    // Gmail access tokens are only valid for a single continuous connection
-    // <https://developers.google.com/workspace/gmail/imap/imap-smtp#session_length_limits>
-    this.alwaysNewOAuth2AccessToken = this.isGMail();
   }
 
   isGMail(): boolean {
@@ -230,9 +223,12 @@ export class IMAPAccount extends MailAccount {
     if (this.authMethod == AuthMethod.OAuth2 && this.oAuth2 &&
         !this.oAuth2?.isLoggedIn) {
       await this.oAuth2.login(false);
-    }
-    if (this.alwaysNewOAuth2AccessToken) {
-      await this.oAuth2.refreshImmediately();
+
+      if (this.isGMail()) {
+        // Gmail access tokens are only valid for a single continuous connection
+        // <https://developers.google.com/workspace/gmail/imap/imap-smtp#session_length_limits>
+        await this.oAuth2.refreshImmediately();
+      }
     }
     if (!(this.password || this.oAuth2?.isLoggedIn)) {
       throw new LoginError(new Error(), "Reconnect failed due to missing login");
