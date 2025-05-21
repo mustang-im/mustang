@@ -296,12 +296,8 @@ export class OAuth2 extends Observable {
     if (this.expiryTimout) {
       clearTimeout(this.expiryTimout);
     }
-    try {
-      if (this.refreshToken) {
-        await this.getAccessTokenFromRefreshToken(this.refreshToken);
-      }
-    } catch (ex) {
-      this.refreshErrorCallback(ex);
+    if (this.refreshToken) {
+      await this.getAccessTokenFromRefreshToken(this.refreshToken);
     }
   }
 
