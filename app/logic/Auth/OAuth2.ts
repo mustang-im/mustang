@@ -210,6 +210,7 @@ export class OAuth2 extends Observable {
       throwHttpErrors: false,
     });
     let data = response.data;
+    console.log(new Date().toLocaleTimeString(), this.account.name, "got access token", data);
     if (data.error) {
       throw new OAuth2ServerError(data);
     }
@@ -230,11 +231,13 @@ export class OAuth2 extends Observable {
     }
     if (data.expires_in) {
       let seconds = parseInt(data.expires_in);
+      console.log(new Date().toLocaleTimeString(), this.account.name, "should expire in", seconds, "seconds");
       if (seconds) {
         this.refreshInSeconds(seconds - 5);
         let expiresAt = new Date();
         expiresAt.setSeconds(expiresAt.getSeconds() + seconds);
         this.expiresAt = expiresAt;
+        console.log(new Date().toLocaleTimeString(), this.account.name, "expires at", this.expiresAt.toLocaleTimeString());
       }
     }
     return this.accessToken;
@@ -293,11 +296,15 @@ export class OAuth2 extends Observable {
   }
 
   refreshInSeconds(seconds: number): void {
+    let rTime = new Date();
+    rTime.setSeconds(rTime.getSeconds() + seconds);
+    console.log(new Date().toLocaleTimeString(), this.account.name, "will refresh in", seconds, "seconds =", rTime.toLocaleTimeString());
     if (this.expiryTimout) {
       clearTimeout(this.expiryTimout);
     }
     this.expiryTimout = setTimeout(async () => {
       try {
+        console.log(new Date().toLocaleTimeString(), this.account.name, "refreshing", !!this.refreshToken);
         if (this.refreshToken) {
           await this.getAccessTokenFromRefreshToken(this.refreshToken);
         }

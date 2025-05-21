@@ -204,6 +204,7 @@ export class IMAPAccount extends MailAccount {
   }
 
   async reconnect(connection: ImapFlow): Promise<ImapFlow> {
+    console.log(new Date().toLocaleTimeString(), this.name, "reconnect", "connection purpose", this.connections.getKeyForValue(connection), "connection", connection, "connections", this.connections);
     // Note: Do not stop polling
     try {
       connection?.close();
@@ -220,6 +221,7 @@ export class IMAPAccount extends MailAccount {
         !this.oAuth2?.isLoggedIn) {
       await this.oAuth2.login(false);
     }
+    console.log(new Date().toLocaleTimeString(), this.name, "oauth2", "have access token", !!this.oAuth2.accessToken, "expires at", this.oAuth2.expiresAt.toLocaleTimeString());
     if (!(this.password || this.oAuth2?.isLoggedIn)) {
       throw new LoginError(new Error(), "Reconnect failed due to missing login");
     }
