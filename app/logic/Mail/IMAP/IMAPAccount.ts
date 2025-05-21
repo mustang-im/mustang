@@ -231,7 +231,7 @@ export class IMAPAccount extends MailAccount {
         !this.oAuth2?.isLoggedIn) {
       await this.oAuth2.login(false);
     }
-    if (this.isGMail()) {
+    if (this.alwaysNewOAuth2AccessToken) {
       await this.oAuth2.refreshImmediately();
     }
     if (!(this.password || this.oAuth2?.isLoggedIn)) {
