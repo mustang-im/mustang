@@ -372,9 +372,6 @@ export class EMail extends Message {
   }
 
   async loadBody() {
-    if (this._sanitizedHTML) {
-      return;
-    }
     if (!this._rawHTML && !this._text) {
       if (this.dbID) {
         await this.storage.readMessageBody(this);
