@@ -231,6 +231,9 @@ export class IMAPAccount extends MailAccount {
         !this.oAuth2?.isLoggedIn) {
       await this.oAuth2.login(false);
     }
+    if (this.isGMail()) {
+      this.oAuth2.refreshInSeconds(0);
+    }
     if (!(this.password || this.oAuth2?.isLoggedIn)) {
       throw new LoginError(new Error(), "Reconnect failed due to missing login");
     }
