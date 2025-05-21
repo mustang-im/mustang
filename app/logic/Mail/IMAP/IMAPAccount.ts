@@ -20,7 +20,7 @@ export class IMAPAccount extends MailAccount {
   acceptOldTLS = false;
   /** Whether to get a new access token on reconnect.
    * Gmail requires a new token on reconnecting */
-  alwaysNewToken = false;
+  alwaysNewOAuth2AccessToken = false;
   pathDelimiter: string; /** Separator in folder path. E.g. '.' or '/', depending on server */
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   /** if polling is enabled, how often to poll.
@@ -57,7 +57,11 @@ export class IMAPAccount extends MailAccount {
 
     // Gmail access tokens are only valid for a single continuous connection
     // <https://developers.google.com/workspace/gmail/imap/imap-smtp#session_length_limits>
-    this.alwaysNewToken = this.hostname.endsWith("gmail.com");
+    this.alwaysNewOAuth2AccessToken = this.isGMail();
+  }
+
+  isGMail(): boolean {
+    return this.hostname.endsWith("gmail.com");
   }
 
   async verifyLogin(): Promise<void> {
@@ -224,7 +228,7 @@ export class IMAPAccount extends MailAccount {
     this.notifyObservers();
 
     if (this.authMethod == AuthMethod.OAuth2 && this.oAuth2 &&
-        !this.oAuth2?.isLoggedIn || this.alwaysNewToken) {
+        !this.oAuth2?.isLoggedIn) {
       await this.oAuth2.login(false);
     }
     if (!(this.password || this.oAuth2?.isLoggedIn)) {
