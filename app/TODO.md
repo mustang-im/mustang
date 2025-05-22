@@ -1,7 +1,6 @@
 # Next
   * Calendar
     * Edit Event:
-      * Account selector
       * Buttons: Recurring
       * Sidebar
   * Beta banner
@@ -22,7 +21,6 @@
   * FastTree
     * Drag&Drop: Open on drag over - for: Move messages to deep subfolders -> Rewrite FastTree
   * Bug: FastList doesn't update some rows #66
-  * Bug: FastList misses last row (off-by-1)
   * Threads
     * Search all folders
     * Hide quotes

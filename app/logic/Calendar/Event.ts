@@ -475,26 +475,34 @@ export class Event extends Observable {
     }
   }
 
-  /** Person class needs to match account class, so need to clone.
-   * @returns the new Person object */
-  async moveToCalendar(newCalendar: Calendar): Promise<void> {
+  /**
+   * Remove the event from the current calendar and
+   * add it to the `newCalendar`.
+   * If the Calendar Events have different implementations,
+   * re-create the event in the correct Event subclass
+   * for the new calendar.
+   *
+   * Saves the changes to disk.
+   *
+   * @returns the new (or same) Event object */
+  async moveToCalendar(newCalendar: Calendar): Promise<Event> {
     if (this.calendar == newCalendar || !newCalendar) {
-      return;
+      return this;
     }
+    this.calendar?.events.remove(this);
     let newEvent = newCalendar.newEvent();
     if (Object.getPrototypeOf(this) == Object.getPrototypeOf(newEvent)) {
-      this.calendar?.events.remove(this);
       this.calendar = newCalendar;
       newCalendar.events.add(this);
       await this.save();
-      return;
+      return this;
     }
     newEvent.copyFrom(this);
     newEvent.calendar = newCalendar;
-    this.calendar?.events.remove(this);
     newCalendar.events.add(newEvent);
-    await this.deleteIt();
     await newEvent.save();
+    await this.deleteIt();
+    return newEvent;
   }
 
   // TODO Move code to `IncomingInvitation` class

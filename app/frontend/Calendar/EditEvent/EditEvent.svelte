@@ -1,5 +1,5 @@
 <vbox flex class="event-edit-window">
-  <DialogHeader {event} {repeatBox} />
+  <DialogHeader bind:event {repeatBox} />
   <Scroll>
     <vbox class="columns" flex class:show-description={showDescription}>
       <vbox class="column1">

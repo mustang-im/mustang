@@ -1,6 +1,6 @@
 <vbox flex class="header">
   <Stack>
-    <hbox class="title-background" style="--header-color: {$selectedCalendar.color}" />
+    <hbox class="title-background" style="--header-color: {calendar.color}" />
     <hbox class="window-title-bar">
       <hbox class="buttons">
         {#if !isFullWindow}
@@ -51,7 +51,7 @@
       </hbox>
       <hbox class="account-selector">
         <AccountDropDown
-          bind:selectedAccount={$selectedCalendar}
+          bind:selectedAccount={calendar}
           accounts={appGlobal.calendars}
           filterByWorkspace={false}
           on:select={(event) => catchErrors(() => onChangeCalendar(event.detail))} />
@@ -68,7 +68,7 @@
             iconSize="16px"
             />
         {/if}
-        {#if canSave}
+        {#if canSaveSeries}
           {#if seriesStatus == "first"}
             <RoundButton
              label={$t`Change entire series`}
@@ -89,7 +89,7 @@
              />
           {/if}
         {/if}
-        {#if canSave && ($event.hasChanged() || repeatBox && !event.parentEvent)}
+        {#if canSave}
           <RoundButton
             label={$t`Revert`}
             icon={RevertIcon}
@@ -124,7 +124,6 @@
   import { Calendar } from "../../../logic/Calendar/Calendar";
   import { Account } from "../../../logic/Abstract/Account";
   import { EventEditMustangApp, calendarMustangApp } from "../CalendarMustangApp";
-  import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { selectedCalendar } from "../selected";
   import { appGlobal } from "../../../logic/app";
   import Stack from "../../Shared/Stack.svelte";
@@ -147,10 +146,15 @@
   export let repeatBox: RepeatBox;
 
   let isFullWindow = false;
+  let calendar = event.calendar;
 
   $: event.startEditing(); // not `$event`
-  $: canSave = event && $event.title && $event.startTime && $event.endTime &&
+  $: canSaveSeries = event && $event.title && $event.startTime && $event.endTime &&
       event.startTime.getTime() <= event.endTime.getTime();
+  $: canSave = canSaveSeries && (
+    $event.hasChanged() ||
+    repeatBox && !event.parentEvent ||
+    calendar != event.calendar);
   $: seriesStatus = event.seriesStatus;
 
   function confirmAndChangeRecurrenceRule(): boolean {
@@ -191,24 +195,28 @@
 
   async function onSave() {
     await saveEvent(event);
+    onClose();
   }
 
-  async function saveEvent(event) {
-    // Turning a single event into a series.
-    // (The reverse is done in `onChangeAll`.)
+  async function saveEvent(event: Event) {
     if (repeatBox) {
+      // Turning a single event into a series. (The reverse is done in `onChangeAll()`.)
       event.recurrenceRule = repeatBox.newRecurrenceRule();
       event.recurrenceCase = RecurrenceCase.Master;
     }
-    await event.saveToServer();
-    await event.save();
-    if (!event.calendar.events.contains(event)) {
-      event.calendar.events.add(event);
+    if (event.calendar != calendar && calendar) {
+      // `moveToCalendar()` does the save and delete as well
+      event = await event.moveToCalendar(calendar);
+    } else {
+      if (!event.calendar.events.contains(event)) {
+        event.calendar.events.add(event);
+      }
+      await event.saveToServer();
+      await event.save();
     }
     if (event.recurrenceRule) {
       event.fillRecurrences();
     }
-    onClose();
   }
 
   async function onChangeAll() {
@@ -258,8 +266,9 @@
   }
 
   function onChangeCalendar(newCalendar: Account) {
-    console.log("new calendar", newCalendar?.name, "old", event?.calendar?.name);
-    event.moveToCalendar(newCalendar as Calendar);
+    calendar = newCalendar as Calendar;
+    $selectedCalendar = calendar;
+    // Will be applied during save
   }
 
   function onExpandToWindow() {
