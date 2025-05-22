@@ -4,7 +4,6 @@
       * Account selector
       * Buttons: Recurring
       * Sidebar
-    * List view: FastList missing scrollbar
   * Beta banner
   * License notification bar
   * Search

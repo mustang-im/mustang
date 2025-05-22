@@ -42,7 +42,7 @@
   import WeekView from "./DayView/WeekView.svelte";
   import MonthView from "./MonthView/MonthView.svelte";
   import DualView from "./DualView.svelte";
-  import ListView from "./ListView.svelte";
+  import ListView from "./ListView/ListView.svelte";
   import type { Collection } from "svelte-collections";
 
   export let start: Date;

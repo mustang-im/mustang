@@ -15,26 +15,27 @@
 
 <vbox flex class="list-view">
   <FastList items={filteredEvents}
-    columns="auto 1fr">
-    <EventLine slot="row" let:item event={item} />
+    columns="5em 3.5em 1fr">
+    <ListViewLine {event} slot="row" let:item={event} />
   </FastList>
 </vbox>
 
 <script lang="ts">
-  import type { Event } from "../../logic/Calendar/Event";
-  import EventLine from "./MonthView/EventLine.svelte";
-  import FastList from "../Shared/FastList.svelte";
-  import SearchField from "../Shared/SearchField.svelte";
+  import type { Event } from "../../../logic/Calendar/Event";
+  import ListViewLine from "./ListViewLine.svelte";
+  import FastList from "../../Shared/FastList.svelte";
+  import SearchField from "../../Shared/SearchField.svelte";
   import type { Collection } from "svelte-collections";
-  import { globalSearchTerm } from "../AppsBar/selectedApp";
-  import { t } from "../../l10n/l10n";
+  import { globalSearchTerm } from "../../AppsBar/selectedApp";
+  import { t } from "../../../l10n/l10n";
 
   export let events: Collection<Event>;
 
-  $: filteredEvents = globalSearchTerm
-    ? events.filter(ev => ev.title?.toLowerCase().includes($globalSearchTerm) ||
-      ev.descriptionText?.toLowerCase().includes($globalSearchTerm))
-    : events;
+  $: filteredEvents = $globalSearchTerm
+    ? events.filterObservable(ev => ev.startTime.getTime() > Date.now() &&
+      (ev.title?.toLowerCase().includes($globalSearchTerm) ||
+       ev.descriptionText?.toLowerCase().includes($globalSearchTerm)))
+    : events.filterObservable(ev => ev.startTime.getTime() > Date.now());
 </script>
 
 <style>
@@ -50,11 +51,12 @@
   }
   .list-view {
     margin-inline-start: 12px;
+    max-width: 30em;
   }
-  .list-view :global(.event) {
-    display: contents;
+  .list-view :global(.time) {
+    color: var(--fg);
   }
   .list-view :global(.title) {
-    margin-inline-start: 12px;
+    padding-inline-start: 12px;
   }
 </style>
