@@ -1,23 +1,32 @@
-<hbox
-  class="splitter"
-  bind:clientWidth={containerWidth}
-  >
-	<hbox class="left"
-		bind:clientWidth={currentLeftWidth}
-		>
-		<slot name="left" />
-  </hbox>
+{#if showLeft && showRight}
 	<hbox
-    class="splitter-bar"
-    on:pointerdown={onMouseDown}
-    style="width: {barWidth}px;"
-  	/>
-	<hbox class="right"
-	  style="flex: {rightRatio} 0 0;"
+		class="splitter"
+		bind:clientWidth={containerWidth}
 		>
-		<slot name="right" />
-  </hbox>
-</hbox>
+		<hbox class="left"
+			bind:clientWidth={currentLeftWidth}
+			>
+			<slot name="left" />
+		</hbox>
+		<hbox
+			class="splitter-bar"
+			on:pointerdown={onMouseDown}
+			style="width: {barWidth}px;"
+			/>
+		<hbox class="right"
+			style="flex: {rightRatio} 0 0;"
+			>
+			<slot name="right" />
+		</hbox>
+	</hbox>
+{:else if showLeft}
+	<slot name="left" />
+{:else if showRight}
+	<slot name="right" />
+{:else}
+	None
+{/if}
+
 <svelte:window
 	on:pointermove={onMouseMove}
 	on:pointerup={onMouseUp}
@@ -34,6 +43,10 @@
 	export let rightMinWidth = 30;
 	/** Initial size of right pane compared to left pane */
   export let initialRightRatio = 1;
+	/** If false, the splitter will be disabled and only the right side will show */
+	export let showLeft = true;
+	/** If false, the splitter will be disabled and only the left side will show */
+	export let showRight = true;
 	/** If set, will save the ratio in localStorage as preference and restore it */
 	export let name: string = null;
 

@@ -3,7 +3,7 @@
     <hbox class="title-background" style="--header-color: {calendar.color}" />
     <hbox class="window-title-bar">
       <hbox class="buttons">
-        {#if !isFullWindow}
+        {#if !$showEditFullWindow}
           <RoundButton
             label={$t`Expand dialog size to full window`}
             icon={ExpandDialogIcon}
@@ -58,7 +58,7 @@
       </hbox>
       <hbox flex class="spacer" />
       <hbox class="buttons">
-        {#if isFullWindow}
+        {#if $showEditFullWindow}
           <RoundButton
             label={$t`Shrink dialog to sidebar`}
             icon={ShrinkDialogIcon}
@@ -123,7 +123,7 @@
   import { type Event, RecurrenceCase } from "../../../logic/Calendar/Event";
   import { Calendar } from "../../../logic/Calendar/Calendar";
   import { Account } from "../../../logic/Abstract/Account";
-  import { EventEditMustangApp, calendarMustangApp } from "../CalendarMustangApp";
+  import { EventEditMustangApp, calendarMustangApp, showEditFullWindow } from "../CalendarMustangApp";
   import { selectedCalendar } from "../selected";
   import { appGlobal } from "../../../logic/app";
   import Stack from "../../Shared/Stack.svelte";
@@ -145,7 +145,6 @@
   export let event: Event;
   export let repeatBox: RepeatBox;
 
-  let isFullWindow = false;
   let calendar = event.calendar;
 
   $: event.startEditing(); // not `$event`
@@ -272,13 +271,11 @@
   }
 
   function onExpandToWindow() {
-    isFullWindow = true;
-    throw new NotImplemented("Cannot expand the dialog to full window yet");
+    $showEditFullWindow = true;
   }
 
   function onShrink() {
-    isFullWindow = false;
-    throw new NotImplemented("Cannot shrink the dialog to side bar yet");
+    $showEditFullWindow = false;
   }
 
   function onClose() {
