@@ -372,7 +372,11 @@ function maximizeMainWindow() {
 
 function addEventListenerWebContents(webContentsID: number, webviewEvent: string, eventHandler: (event: Event) => void) {
   const win = webContents.fromId(webContentsID);
-  assert(win, `WebContents ID ${webContentsID} not found`);
+  if (!win) {
+    // race?
+    console.error(`WebContents ID ${webContentsID} not found`);
+    return;
+  }
   win.on(webviewEvent as any, (_: any, event: Event) => {
     eventHandler(event);
   });
