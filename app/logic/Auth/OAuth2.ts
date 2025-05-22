@@ -94,10 +94,10 @@ export class OAuth2 extends Observable {
     if (this.accessToken) {
       return this.accessToken;
     }
-    let refreshToken = this.refreshToken ?? await this.getRefreshTokenFromStorage();
-    if (refreshToken) {
+    this.refreshToken ??= await this.getRefreshTokenFromStorage();
+    if (this.refreshToken) {
       try {
-        return await this.getAccessTokenFromRefreshToken(refreshToken);
+        return await this.getAccessTokenFromRefreshToken(this.refreshToken);
       } catch (ex) {
         console.error(ex);
         this.refreshToken = null;
