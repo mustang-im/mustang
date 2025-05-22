@@ -1,4 +1,4 @@
-<vbox class="scroll" bind:this={containerE}>
+<vbox class="scroll" bind:this={containerE} on:mousewheel={onScrollWheel}>
   <vbox class="inside">
     <slot />
   </vbox>
@@ -11,6 +11,10 @@
   }
   export function scrollTo(y: number) {
     containerE.scrollTop = y;
+  }
+
+  function onScrollWheel(event: MouseEvent) {
+    event.stopPropagation();
   }
 </script>
 
