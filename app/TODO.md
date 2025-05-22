@@ -1,17 +1,19 @@
 # Next
-* Mail
+  * Mail: set selectedPerson
+  * Calendar
+    * Edit Event:
+      * Account selector
+      * Buttons: Recurring
+      * Sidebar
+    * List view: FastList missing scrollbar
   * Beta banner
+  * License notification bar
   * Search
     * Results miss From - Include from/to (both content of messages, and name of recipients/sender)
       * Email
       * Chat
-  * Actions (Filters)
-    * Run
+  * Actions (Filters): Run
   * Calendar
-    * Edit Event:
-      * Buttons: Recurring
-      * Sidebar
-    * List view: FastList missing scrollbar
     * Invitations
     * Free/Busy
   * Files
@@ -35,9 +37,6 @@
   * Setup mail
     * After account delete: remove general panel
     * Scroll inside dialog, not whole window
-
-# Initial release
-* License notification bar
 
 # Feedback
 ## Elena
