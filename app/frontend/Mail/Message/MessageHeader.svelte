@@ -70,7 +70,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { Person } from "../../../logic/Abstract/Person";
   import type { PersonOrGroup } from "../../Contacts/Person/PersonOrGroup";
   import { selectedPerson } from "../../Contacts/Person/Selected";
@@ -123,6 +123,9 @@
 
   $: selectPerson(message?.contact);
   function selectPerson(contact: PersonOrGroup | PersonUID) {
+    if (contact instanceof PersonUID) {
+      contact = contact.findPerson();
+    }
     if (!(contact instanceof Person)) {
       return;
     }

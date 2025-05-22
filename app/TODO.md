@@ -1,5 +1,4 @@
 # Next
-  * Mail: set selectedPerson
   * Calendar
     * Edit Event:
       * Account selector

@@ -23,6 +23,7 @@
   import MailChat from "./MailChat/MailChat.svelte";
   import FolderPropertiesPage, { openFolderProperties } from "./FolderPropertiesPage.svelte";
   import { ArrayColl } from "svelte-collections";
+  import { PersonUID } from "../../logic/Abstract/PersonUID";
 
   $: accounts = showAccounts.filter(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace); // || acc == allAccountsAccount
   $: folders = $selectedAccount?.rootFolders ?? new ArrayColl<Folder>();
@@ -59,8 +60,10 @@
       $selectedPerson = message.contact;
       return;
     }
-    let personUID = message.outgoing ? message.to.first : message.from;
-    let person = personUID?.findPerson();
+    if (!(message.contact instanceof PersonUID)) {
+      return;
+    }
+    let person = message.contact?.findPerson();
     if (!person) {
       return;
     }
