@@ -1,0 +1,22 @@
+BEGIN:VCARD
+VERSION:3.0
+PRODID:-//Sabre//Sabre VObject 4.5.4//EN
+UID:74dc32a2-edcf-4926-bb3a-3f647a1dfcd3
+FN:Fred Flintstone
+ADR;TYPE=HOME:;;Steingasse 3;Geröllheim / Bedrock;;;
+EMAIL;TYPE=HOME:fred@example.org
+EMAIL;TYPE=WORK:fred@example.com
+EMAIL;TYPE=HOME:fred@example.net
+TEL;TYPE=HOME,VOICE:+1-800-1000000
+ORG:ACME
+TITLE:Father
+CATEGORIES:Test
+NOTE:Our favorite test person
+X-SOCIALPROFILE;TYPE=LINKEDIN:https://linkedin.com/fredflintstone
+RELATIONSHIP:FRIEND
+RELATED;TYPE=SPOUSE:Wilma
+RELATED;TYPE=CHILD:Pebbles
+RELATED;TYPE=FRIEND:Barney
+IMPP;TYPE=IRC:fred:irc.eunet.net
+REV;VALUE=DATE-AND-OR-TIME:20250523T215205Z
+END:VCARD
