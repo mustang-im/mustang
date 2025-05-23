@@ -10,7 +10,7 @@ TEL;TYPE=CELL:+49 5678 90123
 TEL;TYPE=MAIN:+49 0349443423
 ADR:123456;;Somerset Close;Mönchengladbach;;41179;DE;Somerset Close\n123456
  \n41179 Mönchengladbach\nDE
-ORG:Mustang
+ORG:Mustang;Technical Dept.
 TITLE:CEO
 item1.URL:https\://www.mustang.im/
 item1.X-ABLabel:_$!<HomePage>!$_
