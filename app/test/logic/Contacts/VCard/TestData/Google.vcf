@@ -3,19 +3,24 @@ VERSION:3.0
 FN:John Doe
 N:Doe;John;;;
 EMAIL;TYPE=INTERNET;TYPE=WORK:myemailaddress@example.org
-TEL;TYPE=WORK;TYPE=FAX:+49123456789
+EMAIL;TYPE=INTERNET;TYPE=HOME:anotheremail@mustang.im
+EMAIL;TYPE=INTERNET:thirdemail@example.com
+TEL;TYPE=HOME:+49 5456 56565
+TEL;TYPE=CELL:+49 5678 90123
+TEL;TYPE=MAIN:+49 0349443423
 ADR:123456;;Somerset Close;Mönchengladbach;;41179;DE;Somerset Close\n123456
  \n41179 Mönchengladbach\nDE
 ORG:Mustang
 TITLE:CEO
-BDAY:19900523
 item1.URL:https\://www.mustang.im/
 item1.X-ABLabel:_$!<HomePage>!$_
-item2.X-ABDATE:14000305
-item2.X-ABLabel:_$!<Anniversary>!$_
+item2.URL:https\://parula.beonex.com/
+item2.X-ABLabel:PROFILE
 item3.X-ABRELATEDNAMES:Jane Doe
-item3.X-ABLabel:_$!<Sister>!$_
-NOTE:Some notes\nA Label: Some custom field
+item3.X-ABLabel:_$!<Mother>!$_
+item4.X-ABRELATEDNAMES:Jake Lopez
+item4.X-ABLabel:_$!<Brother>!$_
+NOTE:Some notes\nCustom: Some custom field
 PHOTO:https://lh3.googleusercontent.com/contacts/AG6tpzFRvQdmBEZXbo8vE9Ju7d
  eDp5FMyDWU9M_6FqtzqU1gWVOFyxci
 CATEGORIES:Label,myContacts
