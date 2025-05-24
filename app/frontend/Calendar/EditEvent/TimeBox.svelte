@@ -12,7 +12,9 @@
 
     <hbox class="date-input end" title={$t`End date`}>
       {#if isMultipleDays}
-        <DateInput bind:date={event.endTime} min={event.startTime} />
+        <DateInput bind:date={event.endTime}
+          min={event.startTime}
+          deltaInDays={event.allDay ? -1 : null} />
       {:else}
         <hbox class="buttons">
           <RoundButton
