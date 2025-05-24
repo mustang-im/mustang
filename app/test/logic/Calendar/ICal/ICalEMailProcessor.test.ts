@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { appGlobal } from "../../../../logic/app.ts"; // defeats circular import
+import type { Event } from "../../../../logic/Calendar/Event.ts";
 import { ICalEMailProcessor } from "../../../../logic/Calendar/ICal/ICalEMailProcessor";
 import * as fs from "node:fs/promises";
 
