@@ -1,9 +1,8 @@
 import { expect, test } from "vitest";
 import { appGlobal } from "../../../../logic/app.ts"; // defeats circular import
 import { Person } from "../../../../logic/Abstract/Person";
-import { ContactEntry } from "../../../../logic/Abstract/Person";
 import { JSONPerson } from "../../../../logic/Contacts/JSON/JSONPerson";
-import VCard from "./VCard";
+import * as vCard from "../../../../logic/Contacts/VCard/VCard";
 import * as fs from "node:fs/promises";
 
 const replacement = `BEGIN:VCARD
@@ -40,17 +39,17 @@ const testFiles = allFiles.filter(name => name.endsWith(".vcf")).map(name => nam
 test.each(testFiles)("Parse %s", async name => {
   // Read the test cases from disk
   const vcf = await fs.readFile(new URL(name + ".vcf", dataDir), { encoding: 'utf-8' });
-  const card = VCard.parse(vcf);
+  const card = vCard.parse(vcf);
   const json = JSON.parse(await fs.readFile(new URL(name + ".json", dataDir, { encoding: 'utf-8' })));
   json.addressbookID = true;
   json.popularity = 0;
   const person = new Person();
-  VCard.updatePerson(card, person);
+  vCard.updatePerson(card, person);
   expect(toJSON(person)).toEqual(json);
 
   // Replace the test data with new data and serialise the result
-  VCard.updatePerson(VCard.parse(replacement), person);
-  const serialised = VCard.updateCard(person, card);
+  vCard.updatePerson(vCard.parse(replacement), person);
+  const serialised = vCard.updateCard(person, card);
 
   // Check that the serialisation contains the new data
   for (let line of replacement.match(/^\w.+/gm)) {
@@ -67,6 +66,6 @@ test.each(testFiles)("Parse %s", async name => {
 
   // Check that parsing the new serialisation returns the same result
   const updated = new Person();
-  VCard.updatePerson(VCard.parse(serialised), updated);
+  vCard.updatePerson(vCard.parse(serialised), updated);
   expect(toJSON(updated)).toEqual(toJSON(person));
 });
