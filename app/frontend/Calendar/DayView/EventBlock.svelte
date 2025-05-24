@@ -44,11 +44,13 @@
   $: showTime = start <= event.startTime && event.startTime < end || start.getHours() == 0;
   $: showTitle = showTime || conflicts.length > 1;
 
-  function onSelect() {
+  function onSelect(ev: MouseEvent) {
+    ev.stopPropagation();
     $selectedEvent = event;
   }
 
-  function onOpen() {
+  function onOpen(ev: MouseEvent) {
+    ev.stopPropagation();
     $selectedEvent = event;
     calendarMustangApp.editEvent(event);
   }

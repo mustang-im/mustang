@@ -1,4 +1,4 @@
-<vbox flex class="events" on:click={selectDay} on:dblclick={addEvent}>
+<vbox flex class="events" on:dblclick={addEvent}>
   {#if displayEvents && !displayEvents.isEmpty}
     {#each displayEvents.each as event (event.id)}
       <EventBlock {event} {start} {end} otherEvents={events} />
@@ -26,10 +26,6 @@
     end = new Date(start);
     end.setHours(end.getHours() + intervalInHours);
     displayEvents = events.filter(ev => ev.startTime < end && ev.endTime > start && !ev.allDay);
-  }
-
-  function selectDay() {
-    $selectedDate = start;
   }
 
   function addEvent() {
