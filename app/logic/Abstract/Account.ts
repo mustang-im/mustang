@@ -133,7 +133,7 @@ export class Account extends Observable {
   fromConfigJSON(json: any) {
     assert(typeof (json) == "object", "Config must be a JSON object");
     (this.id as any) = sanitize.alphanumdash(json.id);
-    assert(this.protocol == sanitize.alphanumdash(json.protocol), "MailAccount object of wrong type passed in");
+    assert(this.protocol == sanitize.alphanumdash(json.protocol), `Account object of wrong type passed in: data ${json.protocol} != class ${this.protocol}`);
     this.username = sanitize.string(json.username, null);
     this.authMethod = sanitize.integerRange(json.authMethod, 0, 20);
     this.url = sanitize.url(json.url, null);

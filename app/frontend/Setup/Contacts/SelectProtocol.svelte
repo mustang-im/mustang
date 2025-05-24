@@ -15,7 +15,8 @@
 <script lang="ts">
   import type { Addressbook } from "../../../logic/Contacts/Addressbook";
   import { newAddressbookForProtocol } from "../../../logic/Contacts/AccountsList/Addressbooks";
-  import LocalAddressbook from "./LocalAddressbook.svelte";
+  import LocalAddressbookSetup from "./LocalAddressbookSetup.svelte";
+  import CardDAVSetup from "./CardDAVSetup.svelte";
   import ProtocolSelector, { ProtocolDescription } from "../Shared/ProtocolSelector.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
@@ -32,12 +33,15 @@
 
   const protocols: ProtocolDescription[] = [
     { label: $t`New local addressbook`, protocolID: "addressbook-local" },
+    { label: $t`New CardDAV addressbook`, protocolID: "carddav" },
   ];
 
   function onContinue() {
     config = newAddressbookForProtocol(selectedProtocol);
     if (selectedProtocol == "addressbook-local") {
-      showPage = LocalAddressbook;
+      showPage = LocalAddressbookSetup;
+    } else if (selectedProtocol == "carddav") {
+      showPage = CardDAVSetup;
     } else {
       throw new NotReached();
     }

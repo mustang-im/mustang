@@ -20,6 +20,9 @@ export class Addressbook extends Account {
     return new Group(this);
   }
 
+  async listContacts() {
+  }
+
   async save(): Promise<void> {
     await this.storage?.saveAddressbook(this);
   }

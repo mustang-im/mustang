@@ -15,7 +15,8 @@
 <script lang="ts">
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import { newCalendarForProtocol } from "../../../logic/Calendar/AccountsList/Calendars";
-  import LocalCalendar from "./LocalCalendar.svelte";
+  import LocalCalendarSetup from "./LocalCalendarSetup.svelte";
+  import CalDAVSetup from "./CalDAVSetup.svelte";
   import ProtocolSelector, { ProtocolDescription } from "../Shared/ProtocolSelector.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
@@ -32,12 +33,15 @@
 
   const protocols: ProtocolDescription[] = [
     { label: $t`New local calendar`, protocolID: "calendar-local" },
+    { label: $t`New CalDAV calendar`, protocolID: "caldav" },
   ];
 
   function onContinue() {
     config = newCalendarForProtocol(selectedProtocol);
     if (selectedProtocol == "calendar-local") {
-      showPage = LocalCalendar;
+      showPage = LocalCalendarSetup;
+    } else if (selectedProtocol == "caldav") {
+      showPage = CalDAVSetup;
     } else {
       throw new NotReached();
     }

@@ -8,6 +8,8 @@ import { readSavedSearches } from './Mail/Virtual/SavedSearchFolder';
 import { loadWorkspaces } from './Abstract/Workspace';
 import { loadTagsList } from './Mail/Tag';
 import type { MailAccount } from './Mail/MailAccount';
+import type { Addressbook } from './Contacts/Addressbook';
+import type { Calendar } from './Calendar/Calendar';
 import { type Account, setMainAccounts } from './Abstract/Account';
 import JPCWebSocket from '../../lib/jpc-ws';
 import { production } from './build';
@@ -60,12 +62,42 @@ export async function loginOnStartup(startupErrorCallback: (ex: Error) => void, 
         .catch(errorWithAccountName(account, startupErrorCallback));
     }
   }
+
+  for (let account of appGlobal.addressbooks) {
+    account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
+    if (account.loginOnStartup) {
+      addressbookLogin(account)
+        .catch(errorWithAccountName(account, startupErrorCallback));
+    }
+  }
+
+  for (let account of appGlobal.calendars) {
+    account.errorCallback = (ex) => backgroundErrorInAccount(ex, account);
+    if (account.loginOnStartup) {
+      calendarLogin(account)
+        .catch(errorWithAccountName(account, startupErrorCallback));
+    }
+  }
 }
 
 async function emailAccountLogin(account: MailAccount) {
   await account.login(false);
   if (account.isLoggedIn) {
     await account.inbox.getNewMessages();
+  }
+}
+
+async function addressbookLogin(account: Addressbook) {
+  await account.login(false);
+  if (account.isLoggedIn) {
+    await account.listContacts()
+  }
+}
+
+async function calendarLogin(account: Calendar) {
+  await account.login(false);
+  if (account.isLoggedIn) {
+    await account.listEvents();
   }
 }
 

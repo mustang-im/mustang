@@ -23,6 +23,9 @@ export class Calendar extends Account {
     return new IncomingInvitation(this, message);
   }
 
+  async listEvents() {
+  }
+
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability: { from: Date, to: Date, free: boolean }[] }[]> {
     return participants.map(participant => ({ participant, availability: [] }));
   }

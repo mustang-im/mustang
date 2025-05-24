@@ -10,6 +10,7 @@ import ky from 'ky';
 import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard } from "electron";
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
+import { DAVClient } from "tsdav";
 import { createType1Message, decodeType2Message, createType3Message } from "./ntlm";
 import path from "node:path";
 import os from "node:os";
@@ -62,6 +63,7 @@ async function createSharedAppObject() {
     sendMailNodemailer,
     verifyServerNodemailer,
     getMIMENodemailer,
+    createWebDAVClient,
     createType1Message,
     createType3MessageFromType2Message,
     newAdmZIP,
@@ -333,6 +335,10 @@ async function getMIMENodemailer(mail): Promise<Uint8Array> {
   let composer = new MailComposer(mail);
   let buffer = await composer.compile().build();
   return buffer;
+}
+
+function createWebDAVClient(options: any) {
+  return new DAVClient(options);
 }
 
 function newAdmZIP(filepath: string) {
