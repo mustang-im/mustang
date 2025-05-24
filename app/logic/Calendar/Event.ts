@@ -184,6 +184,8 @@ export class Event extends Observable {
   @notifyChangedProperty
   lastMod = new Date();
   @notifyChangedProperty
+  syncState: number | string | undefined;
+  @notifyChangedProperty
   calendar: Calendar;
   storageLock = new Lock();
 
@@ -284,6 +286,16 @@ export class Event extends Observable {
     this.onlineMeetingURL = original.onlineMeetingURL;
     this.participants.replaceAll(original.participants);
     this.myParticipation = original.myParticipation;
+  }
+
+  fromExtraJSON(json: any) {
+    assert(typeof (json) == "object", "Must be a JSON object");
+    this.syncState = json.syncState;
+  }
+  toExtraJSON(): any {
+    let json: any = {};
+    json.syncState = this.syncState;
+    return json;
   }
 
   get outgoingInvitation() {
