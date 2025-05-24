@@ -31,6 +31,8 @@ export enum FolderType {
 export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
   account: ActiveSyncAccount;
   messages: EMailCollection<ActiveSyncEMail>;
+  /** Callbacks that are called when new messages arrive in this folder.
+   * If the callback returns true, it will be removed and not be called anymore. */
   readonly newMessageCallbacks = new ArrayColl<{(message: ActiveSyncEMail): boolean}>();
   readonly folderClass = "Email";
 
@@ -177,7 +179,8 @@ export class ActiveSyncFolder extends Folder implements ActiveSyncPingable {
     this.account.addPingable(this);
     for (let email of newMsgs) {
       for (let callback of this.newMessageCallbacks) {
-        if (callback(email)) {
+        let done = callback(email);
+        if (done) {
           this.newMessageCallbacks.remove(callback);
           break; // out of inner loop only
         }
