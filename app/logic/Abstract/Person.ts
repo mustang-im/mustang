@@ -2,6 +2,7 @@ import { ContactBase } from './Contact';
 import type { Addressbook } from '../Contacts/Addressbook';
 import { notifyChangedProperty, Observable } from '../util/Observable';
 import { ArrayColl } from 'svelte-collections';
+import { assert } from '../util/util';
 
 export class Person extends ContactBase {
   id: string;
@@ -33,6 +34,8 @@ export class Person extends ContactBase {
    * Higher is more popular. */
   @notifyChangedProperty
   popularity: number = 0;
+  @notifyChangedProperty
+  syncState: number | string | undefined;
 
   /**
    * Saves the contact locally to the database.
@@ -69,6 +72,16 @@ export class Person extends ContactBase {
 
   async deleteFromServer(): Promise<void> {
     // nothing to do for local persons
+  }
+
+  fromExtraJSON(json: any) {
+    assert(typeof (json) == "object", "Must be a JSON object");
+    this.syncState = json.syncState;
+  }
+  toExtraJSON(): any {
+    let json: any = {};
+    json.syncState = this.syncState;
+    return json;
   }
 
   toString() {

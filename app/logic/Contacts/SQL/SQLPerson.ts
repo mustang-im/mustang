@@ -10,6 +10,7 @@ import sql from "../../../../lib/rs-sqlite";
 export class SQLPerson {
   static async save(person: Person) {
     assert(person.addressbook?.dbID, "Need address book ID to save the person");
+    let jsonStr = JSON.stringify(person.toExtraJSON(), null, 2);
     let lock = await person.storageLock.lock();
     try {
       if (!person.dbID) {
@@ -17,11 +18,11 @@ export class SQLPerson {
           INSERT INTO person (
             name, firstName, lastName,
             picture, notes, popularity,
-            pID, addressbookID
+            pID, addressbookID, json
           ) VALUES (
             ${person.name}, ${person.firstName}, ${person.lastName},
             ${person.picture}, ${person.notes}, ${person.popularity},
-            ${person.id}, ${person.addressbook?.dbID}
+            ${person.id}, ${person.addressbook?.dbID}, ${jsonStr}
           )`);
         person.dbID = insert.lastInsertRowid;
       } else {
@@ -34,7 +35,8 @@ export class SQLPerson {
             notes = ${person.notes},
             popularity = ${person.popularity},
             pID = ${person.id},
-            addressbookID = ${person.addressbook?.dbID}
+            addressbookID = ${person.addressbook?.dbID},
+            json = ${jsonStr}
           WHERE id = ${person.dbID}
           `);
       }
@@ -97,7 +99,7 @@ export class SQLPerson {
       row = await (await getDatabase()).get(sql`
         SELECT
           name, firstName, lastName,
-          picture, notes, popularity, addressbookID, pID
+          picture, notes, popularity, addressbookID, pID, json
         FROM person
         WHERE id = ${dbID}
         `) as any;
@@ -110,6 +112,7 @@ export class SQLPerson {
     person.notes = sanitize.string(row.notes, null);
     person.popularity = sanitize.integer(row.popularity, null);
     person.id = sanitize.string(row.pID, null);
+    person.fromExtraJSON(sanitize.json(row.json, {}));
     if (row.addressbookID) {
       let addressbookID = sanitize.integer(row.addressbookID);
       if (person.addressbook) {
@@ -160,7 +163,7 @@ export class SQLPerson {
     let rows = await (await getDatabase()).all(sql`
       SELECT
         id, name, firstName, lastName,
-        picture, notes, popularity, pID
+        picture, notes, popularity, pID, json
       FROM person
       WHERE addressbookID = ${addressbook.dbID}
       `) as any;
