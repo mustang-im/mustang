@@ -5,7 +5,7 @@ import type { Account } from '../Abstract/Account';
 import { createCollectedAddressbook } from '../Contacts/AccountsList/Addressbooks';
 import { createPersonalCalendar } from '../Calendar/AccountsList/Calendars';
 import { readSavedSearches } from '../Mail/Virtual/SavedSearchFolder';
-import { loadTagsList } from '../Mail/Tag';
+import { loadTagsList } from '../Abstract/Tag';
 import { assert } from '../util/util';
 import { logError } from '../../frontend/Util/error';
 

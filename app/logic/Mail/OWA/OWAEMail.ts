@@ -1,7 +1,7 @@
 import { EMail } from "../EMail";
 import type { OWAFolder } from "./OWAFolder";
 import { OWAEvent } from "../../Calendar/OWA/OWAEvent";
-import { Tag, getTagByName } from "../Tag";
+import { Tag, getTagByName } from "../../Abstract/Tag";
 import OWACreateItemRequest from "./Request/OWACreateItemRequest";
 import OWADeleteItemRequest from "./Request/OWADeleteItemRequest";
 import OWAUpdateItemRequest from "./Request/OWAUpdateItemRequest";

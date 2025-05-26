@@ -2,7 +2,7 @@ import { EMail } from "../EMail";
 import type { ActiveSyncFolder } from "./ActiveSyncFolder";
 import { ActiveSyncError } from "./ActiveSyncError";
 import { ActiveSyncEvent } from "../../Calendar/ActiveSync/ActiveSyncEvent";
-import { type Tag, getTagByName } from "../Tag";
+import { type Tag, getTagByName } from "../../Abstract/Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import type { Calendar } from "../../Calendar/Calendar";
 import { InvitationMessage  } from "../../Calendar/Invitation/InvitationStatus";

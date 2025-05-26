@@ -38,7 +38,7 @@
       <hbox>
         {#if $tags.hasItems}
           <hbox class="tags">
-            <TagSelector tags={$tags} {message} canAdd={false}>
+            <TagSelector tags={$tags} object={message} canAdd={false}>
               <RoundButton
                 slot="tag-button"
                 let:tag
@@ -74,13 +74,13 @@
   import { Person } from "../../../logic/Abstract/Person";
   import type { PersonOrGroup } from "../../Contacts/Person/PersonOrGroup";
   import { selectedPerson } from "../../Contacts/Person/Selected";
-  import type { Tag } from "../../../logic/Mail/Tag";
+  import type { Tag } from "../../../logic/Abstract/Tag";
   import MessageToolbar from "./MessageToolbar.svelte";
   import RecipientList from "./RecipientList.svelte";
   import Recipient from "./Recipient.svelte";
   import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
   import DisplayModeSwitcher from "./DisplayModeSwitcher.svelte";
-  import TagSelector from "../Tag/TagSelector.svelte";
+  import TagSelector from "../../Shared/Tag/TagSelector.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import RemoveIcon from "lucide-svelte/icons/x";
   import { getLocalStorage } from "../../Util/LocalStorage";

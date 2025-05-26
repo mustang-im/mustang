@@ -30,7 +30,7 @@
 
 <script lang="ts">
   import { getLocalStorage } from "../../Util/LocalStorage";
-  import IslandSwitcher from "./IslandSwitcher.svelte";
+  import IslandSwitcher from "../../Shared/IslandSwitcher.svelte";
   import Button from "../../Shared/Button.svelte";
   import ChatIcon from "lucide-svelte/icons/message-square";
   import VerticalIcon from "lucide-svelte/icons/columns-3";

@@ -23,7 +23,7 @@
 </hbox>
 
 <script lang="ts">
-  import { Tag } from "../../../logic/Mail/Tag";
+  import { Tag } from "../../../logic/Abstract/Tag";
   import SaveIcon from "lucide-svelte/icons/check";
   import CancelIcon from "lucide-svelte/icons/x";
   import { createEventDispatcher } from "svelte";

@@ -12,7 +12,7 @@
 </hbox>
 
 <script lang="ts">
-  import type { Tag } from "../../../logic/Mail/Tag";
+  import type { Tag } from "../../../logic/Abstract/Tag";
 
   export let tag: Tag;
   export let selected: boolean | undefined = undefined;

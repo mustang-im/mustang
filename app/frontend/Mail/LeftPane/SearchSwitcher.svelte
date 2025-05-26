@@ -35,7 +35,7 @@
 </script>
 
 <script lang="ts">
-  import IslandSwitcher from "./IslandSwitcher.svelte";
+  import IslandSwitcher from "../../Shared/IslandSwitcher.svelte";
   import Button from "../../Shared/Button.svelte";
   import FolderIcon from "lucide-svelte/icons/folder";
   import PersonIcon from "lucide-svelte/icons/user";

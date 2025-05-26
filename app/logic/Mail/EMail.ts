@@ -2,7 +2,7 @@ import { Message } from "../Abstract/Message";
 import { SpecialFolder, type Folder } from "./Folder";
 import { ComposeActions } from "./ComposeActions";
 import { Attachment, ContentDisposition } from "../Abstract/Attachment";
-import type { Tag } from "./Tag";
+import type { Tag } from "../Abstract/Tag";
 import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import type { MailIdentity } from "./MailIdentity";

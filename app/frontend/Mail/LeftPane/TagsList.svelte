@@ -9,11 +9,11 @@
 </vbox>
 
 <script lang="ts">
-  import { availableTags, type Tag } from '../../../logic/Mail/Tag';
+  import { availableTags, type Tag } from '../../../logic/Abstract/Tag';
   import type { Folder } from '../../../logic/Mail/Folder';
   import type { EMail } from '../../../logic/Mail/EMail';
   import { newSearchEMail } from '../../../logic/Mail/Store/setStorage';
-  import TagSelector from '../Tag/TagSelector.svelte';
+  import TagSelector from '../../Shared/Tag/TagSelector.svelte';
   import { catchErrors } from '../../Util/error';
   import { ArrayColl, SetColl } from 'svelte-collections';
   import { t } from '../../../l10n/l10n';

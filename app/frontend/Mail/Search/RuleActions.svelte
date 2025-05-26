@@ -52,9 +52,9 @@
 <script lang="ts">
   import { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
   import { Folder } from "../../../logic/Mail/Folder";
-  import { availableTags } from "../../../logic/Mail/Tag";
+  import { availableTags } from "../../../logic/Abstract/Tag";
   import FolderList from "../LeftPane/FolderList.svelte";
-  import TagSelector from "../Tag/TagSelector.svelte";
+  import TagSelector from "../../Shared/Tag/TagSelector.svelte";
   import Checkbox from "../../Shared/Checkbox.svelte";
   import StarIcon from "lucide-svelte/icons/star";
   import CircleIcon from "lucide-svelte/icons/circle";

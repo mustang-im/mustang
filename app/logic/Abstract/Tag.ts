@@ -52,3 +52,9 @@ export async function saveTagsList() {
   }));
   localStorage.setItem("tags", JSON.stringify(json));
 }
+
+export interface TaggableObject {
+  readonly tags: SetColl<Tag>;
+  addTag(tag: Tag): Promise<void>;
+  removeTag(tag: Tag): Promise<void>;
+}

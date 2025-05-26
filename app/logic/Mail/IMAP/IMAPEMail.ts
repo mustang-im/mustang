@@ -2,7 +2,7 @@ import { EMail, setPersons } from "../EMail";
 import type { IMAPFolder } from "./IMAPFolder";
 import { SpecialFolder } from "../Folder";
 import { DeleteStrategy } from "../MailAccount";
-import { getTagByName, type Tag } from "../Tag";
+import { getTagByName, type Tag } from "../../Abstract/Tag";
 import { findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";

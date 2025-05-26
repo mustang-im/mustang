@@ -95,7 +95,7 @@
 
 <script lang="ts">
   import { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
-  import { availableTags } from "../../../logic/Mail/Tag";
+  import { availableTags } from "../../../logic/Abstract/Tag";
   import { personsInEMails } from "../../../logic/Mail/Person";
   import { Folder } from "../../../logic/Mail/Folder";
   import { EMail } from "../../../logic/Mail/EMail";
@@ -106,7 +106,7 @@
   import PersonsList from "../../Contacts/Person/PersonsList.svelte";
   import AccountList from "../LeftPane/AccountList.svelte";
   import FolderList from "../LeftPane/FolderList.svelte";
-  import TagSelector from "../Tag/TagSelector.svelte";
+  import TagSelector from "../../Shared/Tag/TagSelector.svelte";
   import Checkbox from "../../Shared/Checkbox.svelte";
   import OutgoingIcon from "lucide-svelte/icons/arrow-big-left";
   import StarIcon from "lucide-svelte/icons/star";

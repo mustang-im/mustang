@@ -2,7 +2,7 @@ import type { EMail } from "../EMail";
 import type { Person } from "../../Abstract/Person";
 import type { MailAccount } from "../MailAccount";
 import type { Folder } from "../Folder";
-import { getTagByName, type Tag } from "../Tag";
+import { getTagByName, type Tag } from "../../Abstract/Tag";
 import { findPerson } from "../../Abstract/PersonUID";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";

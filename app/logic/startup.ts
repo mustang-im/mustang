@@ -6,7 +6,7 @@ import { readCalendars } from './Calendar/AccountsList/Calendars';
 import { readMeetAccounts } from './Meet/AccountsList/MeetAccounts';
 import { readSavedSearches } from './Mail/Virtual/SavedSearchFolder';
 import { loadWorkspaces } from './Abstract/Workspace';
-import { loadTagsList } from './Mail/Tag';
+import { loadTagsList } from './Abstract/Tag';
 import type { MailAccount } from './Mail/MailAccount';
 import type { Addressbook } from './Contacts/Addressbook';
 import type { Calendar } from './Calendar/Calendar';

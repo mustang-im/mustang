@@ -42,7 +42,7 @@
   >{$message.subject}</hbox>
 <hbox class="tags">
   {#if $tags.hasItems}
-    <TagSelector tags={$tags} {message} canAdd={false} />
+    <TagSelector tags={$tags} object={message} canAdd={false} />
   {/if}
 </hbox>
 <hbox class="date"
@@ -102,8 +102,8 @@
   import { onDragStartMail } from "../Message/drag";
   import { selectedMessages } from "../Selected";
   import MessageMenu from "../Message/MessageMenu.svelte";
-  import TagSelector from "../Tag/TagSelector.svelte";
   import MessageMovePopup from "../Message/MessageMovePopup.svelte";
+  import TagSelector from "../../Shared/Tag/TagSelector.svelte";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import Popup from "../../Shared/Popup.svelte";
   import Button from "../../Shared/Button.svelte";

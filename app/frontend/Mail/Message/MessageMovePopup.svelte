@@ -33,7 +33,7 @@
       <TagSelector
         tags={availableTags}
         selectedTags={messages.first.tags}
-        message={messages.first}
+        object={messages.first}
         on:select={onClose}
         on:unselect={onClose}
         />
@@ -84,9 +84,9 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { Folder } from "../../../logic/Mail/Folder";
-  import { availableTags } from "../../../logic/Mail/Tag";
+  import { availableTags } from "../../../logic/Abstract/Tag";
   import { appGlobal } from "../../../logic/app";
-  import TagSelector from "../Tag/TagSelector.svelte";
+  import TagSelector from "../../Shared/Tag/TagSelector.svelte";
   import AccountList from "../LeftPane/AccountList.svelte";
   import FolderList from "../LeftPane/FolderList.svelte";
   import Button from "../../Shared/Button.svelte";

@@ -24,8 +24,8 @@
 </vbox>
 
 <script lang="ts">
-  import { Tag, availableTags } from "../../../logic/Mail/Tag";
-  import TagSelector from "../../Mail/Tag/TagSelector.svelte";
+  import { Tag, availableTags } from "../../../logic/Abstract/Tag";
+  import TagSelector from "../../Shared/Tag/TagSelector.svelte";
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import DeleteIcon from "lucide-svelte/icons/trash-2";

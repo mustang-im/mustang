@@ -47,7 +47,7 @@
   import { getLocalStorage } from "../../Util/LocalStorage";
   import { selectedMessage } from "../Selected";
   import { DisplayMode } from "./MessageBody.svelte";
-  import IslandSwitcher from "../LeftPane/IslandSwitcher.svelte";
+  import IslandSwitcher from "../../Shared/IslandSwitcher.svelte";
   import Button from "../../Shared/Button.svelte";
   import ThreadIcon from "lucide-svelte/icons/message-square-text";
   import HTMLIcon from "lucide-svelte/icons/mail";

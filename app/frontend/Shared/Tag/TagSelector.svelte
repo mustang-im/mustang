@@ -31,8 +31,7 @@
 </vbox>
 
 <script lang="ts">
-  import { saveTagsList, type Tag } from "../../../logic/Mail/Tag";
-  import type { EMail } from "../../../logic/Mail/EMail";
+  import { saveTagsList, type Tag, type TaggableObject } from "../../../logic/Abstract/Tag";
   import TagBubble from "./TagBubble.svelte";
   import TagAdd from "./TagAdd.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
@@ -45,7 +44,7 @@
 
   export let tags: SetColl<Tag>;
   export let selectedTags: SetColl<Tag> = undefined;
-  export let message: EMail | undefined = undefined;
+  export let object: TaggableObject | undefined = undefined;
   export let canAdd = true;
 
   async function onSelectToggle(tag: Tag) {
@@ -53,15 +52,15 @@
       return;
     }
     if (selectedTags.contains(tag)) {
-      if (message) {
-        await message.removeTag(tag);
+      if (object) {
+        await object.removeTag(tag);
       } else {
         selectedTags.remove(tag);
       }
       dispatch("unselect", tag);
     } else {
-      if (message) {
-        await message.addTag(tag);
+      if (object) {
+        await object.addTag(tag);
       } else {
         selectedTags.add(tag);
       }

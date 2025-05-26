@@ -14,7 +14,7 @@
     <hbox flex />
     {#if $tags.hasItems}
       <hbox class="tags">
-        <TagSelector tags={$tags} {message} canAdd={false} />
+        <TagSelector tags={$tags} object={message} canAdd={false} />
       </hbox>
     {/if}
     <hbox class="date">{getDateTimeString($message.sent)}</hbox>
@@ -100,7 +100,7 @@
   import { personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { onDragStartMail } from "../Message/drag";
   import { selectedMessages } from "../Selected";
-  import TagSelector from "../Tag/TagSelector.svelte";
+  import TagSelector from "../../Shared/Tag/TagSelector.svelte";
   import MessageMenu from "../Message/MessageMenu.svelte";
   import MessageMovePopup from "../Message/MessageMovePopup.svelte";
   import Popup from "../../Shared/Popup.svelte";

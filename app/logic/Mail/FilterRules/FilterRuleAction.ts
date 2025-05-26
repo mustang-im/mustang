@@ -3,7 +3,7 @@ import { FilterMoment } from "./FilterMoments";
 import { SearchEMail } from "../Store/SearchEMail";
 import type { MailAccount } from "../MailAccount";
 import type { Folder } from "../Folder";
-import { getTagByName, type Tag } from "../Tag";
+import { getTagByName, type Tag } from "../../Abstract/Tag";
 import { notifyChangedProperty, Observable } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { SetColl } from "svelte-collections";
