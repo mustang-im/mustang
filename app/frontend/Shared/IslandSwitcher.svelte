@@ -1,4 +1,4 @@
-<hbox class="island" class:large class:border>
+<hbox class="island" class:large class:border class:faint>
   <slot />
 </hbox>
 
@@ -11,6 +11,8 @@
 
   export let large = false;
   export let border = true;
+  /** Show the selected button not in a strong color */
+  export let faint = true;
 </script>
 
 <style>
@@ -24,7 +26,7 @@
   .island :global(button:not(:last-of-type)) {
     margin-inline-end: -6px;
   }
-  .island :global(button.selected:not(.hover)) {
+  .island.faint :global(button.selected:not(.hover)) {
     background-color: var(--main-pattern-bg);
     color: var(--main-pattern-fg);
     border: none;
@@ -35,6 +37,9 @@
   }
   .island :global(button:hover) {
     z-index: 1;
+  }
+  .island :global(button .label) {
+    margin-inline-end: 4px;
   }
   .island :global(svg) {
     fill: transparent;
