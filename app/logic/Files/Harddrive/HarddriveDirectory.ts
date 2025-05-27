@@ -2,11 +2,13 @@ import { Directory } from "../Directory";
 import type { File } from "../File";
 import type { HarddriveAccount } from "./HarddriveAccount";
 import { AbstractFunction, assert } from "../../util/util";
-import type { Collection } from "svelte-collections";
+import type { ArrayColl, Collection } from "svelte-collections";
 import { appGlobal } from "../../app";
 
 export class HarddriveDirectory extends Directory {
   declare account: HarddriveAccount;
+  readonly files: ArrayColl<File>;
+  readonly subDirs: ArrayColl<HarddriveDirectory>;
 
   newDirectory(name: string): HarddriveDirectory {
     let dir = new HarddriveDirectory();

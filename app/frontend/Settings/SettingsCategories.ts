@@ -1,9 +1,11 @@
 import { SettingsCategory, AccountSettingsCategory as AccSetting } from "./Window/SettingsCategory";
+import { ChatAccount } from "../../logic/Chat/ChatAccount";
 import { mailMustangApp } from "../Mail/MailMustangApp";
 import { webAppsMustangApp } from "../WebApps/WebAppsMustangApp";
 import { contactsMustangApp } from "../Contacts/ContactsMustangApp";
 import { calendarMustangApp } from "../Calendar/CalendarMustangApp";
 import { chatMustangApp } from "../Chat/ChatMustangApp";
+import { filesMustangApp } from "../Files/FilesMustangApp";
 import { appGlobal } from "../../logic/app";
 import GlobalAppearance from "./Global/Appearance.svelte";
 import GlobalWorkspaces from "./Global/Workspaces.svelte";
@@ -23,12 +25,12 @@ import ChatNotifications from "./Chat/Notifications.svelte";
 import About from "./About/About.svelte";
 import Billing from "./About/Billing.svelte";
 import OpenSource from "./About/OpenSource.svelte";
-import Test from "./About/Test.svelte";
 // #if [!WEBMAIL]
 import SetupMail from "../Setup/Mail/SetupMail.svelte";
 import SetupChat from "../Setup/Chat/SetupChat.svelte";
 import SetupCalendar from "../Setup/Calendar/SetupCalendar.svelte";
 import SetupContacts from "../Setup/Contacts/SetupContacts.svelte";
+import SetupFiles from "../Setup/Files/SetupFiles.svelte";
 // #endif
 import { Account } from "../../logic/Abstract/Account";
 import { MailAccount } from "../../logic/Mail/MailAccount";
@@ -43,7 +45,6 @@ import { M3Account } from "../../logic/Meet/M3/M3Account";
 import Devices from "./Meet/Devices.svelte";
 // #endif
 import { ArrayColl } from "svelte-collections";
-import { ChatAccount } from "../../logic/Chat/ChatAccount";
 import { gt } from "../../l10n/l10n";
 
 export const settingsCategories = new ArrayColl<SettingsCategory>();
@@ -134,6 +135,16 @@ settingsCategories.add(meetSettings);
 // #endif
 
 accountSettings.add(new AccSetting(M3Account, "m3-server", gt`Server`, AccountURLServer, true));
+
+const filesSettings = new SettingsCategory("files", gt`Files`, null, true);
+filesSettings.subCategories.addAll([
+]);
+filesSettings.accounts = appGlobal.fileSharingAccounts;
+// #if [!WEBMAIL]
+filesSettings.newAccountUI = SetupFiles;
+// #endif
+filesSettings.forApp = filesMustangApp;
+settingsCategories.add(filesSettings);
 
 const appSettings = new SettingsCategory("app", gt`App integration`, null, true);
 appSettings.subCategories.addAll([

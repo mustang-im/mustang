@@ -1,4 +1,4 @@
-<vbox flex class="setup-contacts-window">
+<vbox flex class="setup-filesharing-window">
   <hbox flex />
   <vbox class="page-box">
     <svelte:component this={showPage} bind:showPage bind:config
@@ -10,17 +10,17 @@
 </vbox>
 
 <script lang="ts">
-  import { Addressbook } from "../../../logic/Contacts/Addressbook";
+  import { FileSharingAccount } from "../../../logic/Files/FileSharingAccount";
   import { openApp, selectedApp } from "../../AppsBar/selectedApp";
   import { selectedCategory } from "../../Settings/Window/selected";
   import { getSettingsCategoryForApp } from "../../Settings/Window/CategoriesUtils";
   import { settingsMustangApp } from "../../Settings/Window/SettingsMustangApp";
-  import { contactsMustangApp } from "../../Contacts/ContactsMustangApp";
+  import { filesMustangApp } from "../../Files/FilesMustangApp";
   import { SetupMustangApp } from "../SetupMustangApp";
   import SelectProtocol from "./SelectProtocol.svelte";
   import BackgroundVideo from "../Shared/BackgroundVideo.svelte";
 
-  let config: Addressbook;
+  let config: FileSharingAccount;
   let showPage: ConstructorOfATypedSvelteComponent | null = SelectProtocol;
 
   $: checkClose(showPage);
@@ -35,14 +35,14 @@
     if ($selectedApp instanceof SetupMustangApp && typeof($selectedApp.onBack) == "function") {
       $selectedApp.onBack();
     } else {
-      $selectedCategory = getSettingsCategoryForApp(contactsMustangApp);
+      $selectedCategory = getSettingsCategoryForApp(filesMustangApp);
       openApp(settingsMustangApp);
     }
   }
 </script>
 
 <style>
-  .setup-contacts-window {
+  .setup-filesharing-window {
     justify-content: center;
     align-items: center;
   }
@@ -52,10 +52,10 @@
     background-color: var(--main-bg);
     color: var(--main-fg);
   }
-  .setup-contacts-window :global(input) {
+  .setup-filesharing-window :global(input) {
     font-size: 16px;
   }
-  .setup-contacts-window :global(input::placeholder) {
+  .setup-filesharing-window :global(input::placeholder) {
     font-weight: 300;
   }
 </style>

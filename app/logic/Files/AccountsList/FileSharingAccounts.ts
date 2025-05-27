@@ -1,4 +1,5 @@
 import type { FileSharingAccount } from '../FileSharingAccount';
+import { WebDAVAccount } from '../WebDAV/WebDAVAccount';
 import { DummyFileStorage } from '../Store/DummyFileStorage';
 import { NotReached } from '../../util/util';
 import { ArrayColl, type Collection } from 'svelte-collections';
@@ -11,6 +12,9 @@ export function newFileSharingAccountForProtocol(protocol: string): FileSharingA
 }
 
 function _newFileSharingAccountForProtocol(protocol: string): FileSharingAccount {
+  if (protocol == "webdav") {
+    return new WebDAVAccount();
+  }
   throw new NotReached(`Unknown file sharing account type ${protocol}`);
 }
 
