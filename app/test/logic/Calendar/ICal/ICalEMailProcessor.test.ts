@@ -42,5 +42,5 @@ test.each(testFiles)("Parse %s", async name => {
   };
   await processor.process(email, null);
   expect(email.invitationMessage).toEqual(invitationMessage);
-  expect(toJSON(email.event)).toEqual(event);
+  expect(toJSON(email.event as Event)).toEqual(event);
 });
