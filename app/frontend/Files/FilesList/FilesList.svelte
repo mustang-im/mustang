@@ -14,10 +14,10 @@
 </Scroll>
 
 <script lang="ts">
-  import type { FileOrDirectory } from "../../logic/Files/File";
+  import type { FileOrDirectory } from "../../../logic/Files/File";
   import type { Collection } from "svelte-collections";
   import FileOrDirectoryLine from "./FileOrDirectoryLine.svelte";
-  import Scroll from "../Shared/Scroll.svelte";
+  import Scroll from "../../Shared/Scroll.svelte";
 
   export let files: Collection<FileOrDirectory>;
 </script>

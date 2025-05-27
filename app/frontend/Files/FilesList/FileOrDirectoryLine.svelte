@@ -38,7 +38,7 @@
   </hbox>
   <hbox class="size">
     {#if file instanceof File}
-      {fileSize(file.length)}
+      {fileSize(file.size)}
     {:else if file instanceof Directory}
       {file.files.length} {$t`entries`}
     {/if}
@@ -57,16 +57,18 @@
 {/if}
 
 <script lang="ts">
-  import { File, Directory, FileOrDirectory } from "../../logic/Files/File";
-  import { fileSize } from "./fileSize";
-  import { selectedFile } from "./selected";
-  import { getDateTimeString } from "../Util/date";
-  import FileIcon from "./FileIcon.svelte";
+  import { File } from "../../../logic/Files/File";
+  import { Directory } from "../../../logic/Files/Directory";
+  import { FileOrDirectory } from "../../../logic/Files/FileOrDirectory";
+  import { fileSize } from "../fileSize";
+  import { selectedFile } from "../selected";
+  import { getDateTimeString } from "../../Util/date";
+  import FileIcon from "../FileIcon.svelte";
   import FolderClosedIcon from "lucide-svelte/icons/folder";
   import FolderOpenIcon from "lucide-svelte/icons/folder-open";
-  import { catchErrors } from "../Util/error";
-  import { assert } from "../../logic/util/util";
-  import { t } from "../../l10n/l10n";
+  import { catchErrors } from "../../Util/error";
+  import { assert } from "../../../logic/util/util";
+  import { t } from "../../../l10n/l10n";
 
   export let file: FileOrDirectory;
   export let indent = 0;

@@ -7,7 +7,9 @@ import { PersonUID } from './Abstract/PersonUID';
 import { ContactEntry, Person } from './Abstract/Person';
 import { Group } from './Abstract/Group';
 import { Chat } from './Chat/Chat';
-import { Directory, File } from './Files/File';
+import { FileSharingAccount } from './Files/FileSharingAccount';
+import { File } from './Files/File';
+import { Directory } from './Files/Directory';
 import { Calendar } from './Calendar/Calendar';
 import { Addressbook } from './Contacts/Addressbook';
 import { Event } from './Calendar/Event';
@@ -31,7 +33,7 @@ export async function getTestObjects(): Promise<void> {
   appGlobal.chatAccounts.add(new FakeChatAccount(persons, appGlobal.me));
   appGlobal.calendars.add(new FakeCalendar(persons));
   appGlobal.meetAccounts.add(new FakeMeetAccount());
-  appGlobal.files.addAll(fakeSharedDir(persons));
+  appGlobal.fileSharingAccounts.add(new FakeFileSharingAccount());
   await appGlobal.emailAccounts.first.login(false);
   await appGlobal.chatAccounts.first.login(false);
 }
@@ -374,6 +376,17 @@ class FakeEvent extends Event {
   }
 }
 
+export class FakeFileSharingAccount extends FileSharingAccount {
+  constructor() {
+    super();
+    this.name = "Dropbox";
+    let dirCount = Math.random() * 10;
+    for (let i = 0; i < dirCount; i++) {
+      fakeDir(null);
+    }
+  }
+}
+
 export function fakeSharedDir(persons: Collection<Person>): Collection<Directory> {
   let directories = new ArrayColl<Directory>();
   let sharedDirectory = new Directory();
@@ -418,7 +431,7 @@ export class FakeFile extends File {
     let parts = this.name.split(".");
     this.ext = parts.pop()!;
     this.nameWithoutExt = parts.join(".");
-    this.length = faker.number.int({ max: 40000000 });
+    this.size = faker.number.int({ max: 40000000 });
     this.lastMod = faker.date.past();
     this.setParent(parentDir);
   }

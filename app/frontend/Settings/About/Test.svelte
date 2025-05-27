@@ -27,7 +27,7 @@
     appGlobal.meetAccounts.clear();
     appGlobal.calendars.clear();
     appGlobal.addressbooks.clear();
-    appGlobal.files.clear();
+    appGlobal.fileSharingAccounts.clear();
     await sleep(0.1);
     await getTestObjects();
     appGlobal.personalAddressbook = appGlobal.addressbooks.first;
