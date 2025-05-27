@@ -23,12 +23,12 @@ export class HarddriveDirectory extends Directory {
     for (let entry of entries) {
       if (await entry.isDirectory) {
         let dir = this.newDirectory(entry.name);
-        dir.path = entry.path;
+        dir.path = dir.filepathLocal = entry.path;
         dir.lastMod = entry.lastMod;
         this.subDirs.add(dir);
       } else {
         let file = this.newFile(entry.name);
-        file.path = entry.path;
+        file.path = file.filepathLocal = entry.path;
         file.size = entry.size;
         file.lastMod = entry.lastMod;
         this.files.add(file);
