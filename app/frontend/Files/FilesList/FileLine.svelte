@@ -1,93 +1,45 @@
 <hbox class="file line"
   class:selected={file == $selectedFile}
-  on:click={file instanceof File ? selectThis : toggleOpen}
+  on:click={() => catchErrors(openFile)}
   >
   <hbox class="firstColumn">
     {#each {length: indent} as _}
       <hbox class="indention" />
     {/each}
-    <button class="icon"
-      on:click={file instanceof File ? () => catchErrors(openFile) : () => null}
-      >
-      {#if file instanceof File}
-        <FileIcon ext={file.ext} />
-      {:else if file instanceof Directory}
-        {#if open}
-          <FolderOpenIcon size="16" />
-        {:else}
-          <FolderClosedIcon size="16" />
-        {/if}
-      {/if}
+    <button class="icon">
+      <FileIcon ext={file.ext} />
     </button>
-    <hbox class="name"
-      on:click={file instanceof File ? () => catchErrors(openFile) : () => null}
-      >
-      {#if file instanceof File}
-        {file.nameWithoutExt}
-      {:else if file instanceof Directory}
-        {file.name}
-      {/if}
+    <hbox class="name">
+      {file.nameWithoutExt}
     </hbox>
   </hbox>
   <hbox class="type">
-    {#if file instanceof File}
-      {file.ext}
-    {:else if file instanceof Directory}
-      {$t`Folder`}
-    {/if}
+    {file.ext}
   </hbox>
   <hbox class="size">
-    {#if file instanceof File}
-      {fileSize(file.size)}
-    {:else if file instanceof Directory}
-      {file.files.length} {$t`entries`}
-    {/if}
+    {fileSize(file.size)}
   </hbox>
   <hbox class="time">
     {getDateTimeString(file.lastMod)}
   </hbox>
 </hbox>
 
-{#if file instanceof Directory}
-  {#if open}
-    {#each file.files.each as subFile (subFile.id) }
-      <svelte:self file={subFile} indent={indent + 1} />
-    {/each}
-  {/if}
-{/if}
-
 <script lang="ts">
   import { File } from "../../../logic/Files/File";
-  import { Directory } from "../../../logic/Files/Directory";
-  import { FileOrDirectory } from "../../../logic/Files/FileOrDirectory";
   import { fileSize } from "../fileSize";
   import { selectedFile } from "../selected";
   import { getDateTimeString } from "../../Util/date";
   import FileIcon from "../FileIcon.svelte";
-  import FolderClosedIcon from "lucide-svelte/icons/folder";
-  import FolderOpenIcon from "lucide-svelte/icons/folder-open";
   import { catchErrors } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
-  import { t } from "../../../l10n/l10n";
 
-  export let file: FileOrDirectory;
+  export let file: File;
   export let indent = 0;
-
-  function selectThis() {
-    $selectedFile = file;
-  }
 
   async function openFile() {
     assert(file instanceof File, "Need file");
     console.log("open", file.filepathLocal);
     await file.openOSApp();
-  }
-
-  let open = false;
-
-  function toggleOpen() {
-    open = !open;
-    selectThis();
   }
 </script>
 

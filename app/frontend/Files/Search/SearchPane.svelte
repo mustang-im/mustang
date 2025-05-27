@@ -67,7 +67,7 @@
         searchFiles = null;
         return;
       }
-      searchFiles = new ArrayColl<File>();
+      searchFiles = new ArrayColl<FileOrDirectory>();
 
       search.contentText = searchTerm;
       let result = await search.startSearch(kLimit + 1);

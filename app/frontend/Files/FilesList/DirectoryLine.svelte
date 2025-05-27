@@ -1,0 +1,107 @@
+<hbox class="file line"
+  class:selected={dir == $selectedFile}
+  on:click={toggleOpen}
+  >
+  <hbox class="firstColumn">
+    {#each {length: indent} as _}
+      <hbox class="indention" />
+    {/each}
+    <button class="icon">
+      {#if open}
+        <FolderOpenIcon size="16" />
+      {:else}
+        <FolderClosedIcon size="16" />
+      {/if}
+    </button>
+    <hbox class="name">
+      {dir.name}
+    </hbox>
+  </hbox>
+  <hbox class="type">
+    {$t`Folder`}
+  </hbox>
+  <hbox class="size">
+    {dir.subDirs.length + dir.files.length} {$t`entries`}
+  </hbox>
+  <hbox class="time">
+    {getDateTimeString(dir.lastMod)}
+  </hbox>
+</hbox>
+
+{#if open}
+  {#each dir.files.each as subFile (subFile.id) }
+    <svelte:self file={subFile} indent={indent + 1} />
+  {/each}
+{/if}
+
+<script lang="ts">
+  import { Directory } from "../../../logic/Files/Directory";
+  import { selectedFile } from "../selected";
+  import { getDateTimeString } from "../../Util/date";
+  import FolderClosedIcon from "lucide-svelte/icons/folder";
+  import FolderOpenIcon from "lucide-svelte/icons/folder-open";
+  import { t } from "../../../l10n/l10n";
+
+  export let dir: Directory;
+  export let indent = 0;
+
+  let open = false;
+
+  function toggleOpen() {
+    open = !open;
+    $selectedFile = dir;
+  }
+</script>
+
+<style>
+  .line {
+    display: contents;
+  }
+  .line:hover:not(.selected) > * {
+    background-color: var(--hover-bg);
+    color: var(--hover-fg);
+  }
+  .line.selected > * {
+    background-color: var(--selected-bg);
+    color: var(--selected-fg);
+  }
+  .name, .type, .size, .time {
+    padding-inline-start: 8px;
+    padding-inline-end: 8px;
+  }
+  .icon {
+    padding-inline-start: 16px;
+    padding-inline-end: 0px;
+    margin-block-start: 2px;
+  }
+  .icon :global(svg) {
+    stroke-width: 1.5px;
+  }
+  .time {
+    padding-inline-end: 16px;
+  }
+  .icon {
+    align-self: center;
+    border: none;
+    background-color: transparent;
+  }
+  .indention {
+    margin-inline-start: 16px;
+  }
+  .type {
+    min-width: 3.5em;
+  }
+  .size {
+    justify-content: end;
+    min-width: 8em;
+  }
+  .time {
+    justify-content: end;
+    min-width: 5em;
+  }
+  .type, .size, .time {
+    color: #91939D;
+    font-size: 90%;
+    font-weight: 300;
+  }
+</style>

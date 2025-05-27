@@ -13,12 +13,12 @@
   {:else if activeTab == FilesView.Project}
     <!---->
   {:else if activeTab == FilesView.Search}
-    <SearchPane searchFiles={listFiles} on:clear={endSearchMode} />
+    <SearchPane {searchFiles} on:clear={endSearchMode} />
   {:else if activeTab == FilesView.CloudStorage || activeTab == FilesView.Harddrive}
     {#if activeTab == FilesView.CloudStorage}
-      <AccountList accounts={appGlobal.fileSharingAccounts} bind:selectedAccount />
+      <AccountList {accounts} bind:selectedAccount />
     {/if}
-    <FolderList {folders} bind:selectedFolder bind:selectedFolders />
+    <FolderList folders={rootDirs} bind:selectedFolder bind:selectedFolders />
     {#if selectedFolder}
       <TagsList folder={selectedFolder} bind:searchFiles />
     {/if}
@@ -30,6 +30,7 @@
   import { Directory } from "../../../logic/Files/Directory";
   import { FileOrDirectory } from "../../../logic/Files/FileOrDirectory";
   import { FileSharingAccount } from "../../../logic/Files/FileSharingAccount";
+  import { myHarddrive } from "../../../logic/Files/Harddrive/HarddriveAccount";
   import type { Person } from "../../../logic/Abstract/Person";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
@@ -45,20 +46,23 @@
   import { ArrayColl, Collection } from 'svelte-collections';
 
   /** The list of files and folders to show on the right pane
-   * in only. May `clear()`. */
-  export let listFiles: ArrayColl<FileOrDirectory>;
+   * in/out only */
+  export let listFiles: Collection<File>;
+  export let listDirs: Collection<Directory>;
   /** out only */
   export let viewFile: File | null = null;
 
-  let selectedAccount: FileSharingAccount;
+  let accounts = appGlobal.fileSharingAccounts.filterObservable(acc => acc != myHarddrive);
+  let selectedAccount: FileSharingAccount = myHarddrive;
   let selectedFolder: Directory;
   let selectedFolders: ArrayColl<Directory>;
   let selectedPerson: Person;
   let persons = appGlobal.persons;
-  let folders = new ArrayColl<Directory>(); // TODO
-  let searchFiles: Collection<FileOrDirectory> | null;
+  let searchFiles: ArrayColl<FileOrDirectory> | null;
 
-  // $: personFolders = appGlobal.files.filter(file => file.sentToFrom == selectedPerson);
+  $: rootDirs = selectedAccount?.rootDirs ?? new ArrayColl<Directory>();
+
+ // $: personFolders = appGlobal.files.filter(file => file.sentToFrom == selectedPerson);
   // $: displayFiles = personFolders?.first?.files;
 
   let activeTab = FilesView.Harddrive;
@@ -74,8 +78,14 @@
         $globalSearchTerm = "";
       }
     } else {
-      listFiles.clear();
+      listDirs = selectedAccount?.rootDirs ?? new ArrayColl<Directory>();
+      listFiles = new ArrayColl<File>();
     }
+  }
+  $: searchFiles && setSearchResult();
+  function setSearchResult() {
+    listDirs = searchFiles.filterObservable(f => f instanceof Directory) as any as Collection<Directory>;
+    listFiles = searchFiles.filterObservable(f => f instanceof File) as any as Collection<File>;
   }
 
   // Search.svelte is removed here above, and therefore cannot react anymore, so have to do it here.
@@ -111,7 +121,7 @@
         listFiles.add(file);
       }
     }
-    console.log("found", listFiles.length, "files from", selectedPerson.name);
+    console.log("found", listFiles.length, "files and", listDirs.length, "dirs from/to", selectedPerson.name);
   }
 </script>
 

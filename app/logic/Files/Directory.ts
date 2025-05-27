@@ -6,9 +6,14 @@ import { AbstractFunction, assert } from "../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 
 export class Directory extends FileOrDirectory {
-  readonly files = new ArrayColl<FileOrDirectory>();
+  readonly files = new ArrayColl<File>();
+  readonly subDirs = new ArrayColl<Directory>();
   account: FileSharingAccount;
   sentToFrom: Person;
+
+  get children(): Collection<Directory> {
+    return this.subDirs;
+  }
 
   newFile(): File {
     let file = new File();

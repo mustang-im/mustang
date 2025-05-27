@@ -1,25 +1,30 @@
 <Scroll>
   <grid class="files-list">
-    <!--
-    <hbox class="name">Name</hbox>
-    <hbox class="type">Type</hbox>
-    <hbox class="size">Size</hbox>
-    <hbox class="time">Last Mod</hbox>
-    -->
+    <hbox class="name">{$t`File name`}</hbox>
+    <hbox class="type">{$t`File type`}</hbox>
+    <hbox class="size">{$t`Size`}</hbox>
+    <hbox class="time">{$t`Last mod`}</hbox>
 
+    {#each $dirs.each as file }
+      <DirectoryLine dir={file} />
+    {/each}
     {#each $files.each as file }
-      <FileOrDirectoryLine {file} />
+      <FileLine {file} />
     {/each}
   </grid>
 </Scroll>
 
 <script lang="ts">
-  import type { FileOrDirectory } from "../../../logic/Files/File";
+  import { File } from "../../../logic/Files/File";
+  import { Directory } from "../../../logic/Files/Directory";
   import type { Collection } from "svelte-collections";
-  import FileOrDirectoryLine from "./FileOrDirectoryLine.svelte";
+  import DirectoryLine from "./DirectoryLine.svelte";
+  import FileLine from "./FileLine.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
+  import { t } from "../../../l10n/l10n";
 
-  export let files: Collection<FileOrDirectory>;
+  export let files: Collection<File>;
+  export let dirs: Collection<Directory>;
 </script>
 
 <style>
