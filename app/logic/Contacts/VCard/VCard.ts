@@ -82,6 +82,11 @@ export function updatePerson(card: ICalParser, person: Person) {
   }
 }
 
+export function convertPersonToVCard(person: Person) {
+  let card = new ICalParser("BEGIN:VCARD\r\nEND:VCARD\r\n");
+  return updateCard(person, card);
+}
+
 export function updateCard(person: Person, card: ICalParser): string {
   if (!card.containers.vcard) {
     throw new Error("No vCard found");
