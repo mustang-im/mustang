@@ -21,16 +21,17 @@
   </Scroll>
 
   <hbox class="results-count">
-    {#if searchFiles?.length > kLimit}
-      {$t`More than ${kLimit} mails`}
-    {:else if searchFiles}
-      {$t`${searchFiles?.length} mails`}
+    {#if listAll?.length > kLimit}
+      {$t`More than ${kLimit} files`}
+    {:else if listAll}
+      {$t`${listAll?.length} files`}
     {/if}
   </hbox>
 </vbox>
 
 <script lang="ts">
-  import type { File } from "../../../logic/Files/File";
+  import { File } from "../../../logic/Files/File";
+  import { Directory } from "../../../logic/Files/Directory";
   import type { FileOrDirectory } from "../../../logic/Files/FileOrDirectory";
   import { newSearchFile } from "../../../logic/Files/Store/setStorage";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
@@ -41,7 +42,7 @@
   import RoundButton from "../../Shared/RoundButton.svelte";
   import XIcon from "lucide-svelte/icons/x";
   import { showError } from "../../Util/error";
-  import { ArrayColl } from "svelte-collections";
+  import { ArrayColl, Collection } from "svelte-collections";
   import { useDebounce } from '@svelteuidev/composables';
   import { t } from "../../../l10n/l10n";
   import { createEventDispatcher, onMount } from 'svelte';
@@ -49,33 +50,38 @@
 
   /** The search result
    * in/out */
-  export let searchFiles: ArrayColl<FileOrDirectory> | null = null;
+  export let listFiles: Collection<File> | null = null;
+  export let listDirs: Collection<Directory> | null = null;
 
+  let listAll: Collection<FileOrDirectory> | null = null;
   let isOpen = true;
   const kLimit = 200;
   let search = newSearchFile();
   let tags = search.tags;
   let attachmentTypes = search.hasMIMETypes;
 
-  $: isOpen && $globalSearchTerm, $search, $tags, $attachmentTypes, startSearchDebounced();
+  if ($globalSearchTerm == null) {
+    $globalSearchTerm = "";
+  }
+
+  $: isOpen, $globalSearchTerm, $search, $tags, $attachmentTypes, startSearchDebounced();
   const startSearchDebounced = useDebounce(() => startSearch(), 300);
   async function startSearch() {
     try {
       let searchTerm = $globalSearchTerm;
       $selectedFile = null;
-      if (searchTerm == null) {
-        searchFiles = null;
-        return;
-      }
-      searchFiles = new ArrayColl<FileOrDirectory>();
+      listFiles = new ArrayColl<File>();
+      listDirs = new ArrayColl<Directory>();
 
       search.contentText = searchTerm;
       let result = await search.startSearch(kLimit + 1);
       if (!isOpen) {
         return;
       }
-      searchFiles = result;
-      $selectedFile = searchFiles.first;
+      listAll = result;
+      listDirs = result.filterObservable(f => f instanceof Directory) as any as Collection<Directory>;
+      listFiles = result.filterObservable(f => f instanceof File) as any as Collection<File>;
+      $selectedFile = listDirs.first ?? listFiles.first;
     } catch (ex) {
       showError(ex);
     }
@@ -84,7 +90,8 @@
   function onClear() {
     isOpen = false;
     $globalSearchTerm = null;
-    searchFiles = null;
+    listFiles = null;
+    listDirs = null;
     dispatchEvent("clear");
   }
 

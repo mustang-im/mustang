@@ -28,6 +28,9 @@ export class Directory extends FileOrDirectory {
     return dir;
   }
 
+  async listContents() {
+  }
+
   async moveFileHere(file: File) {
     await this.moveFilesHere(new ArrayColl([file]));
   }

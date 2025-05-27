@@ -1,6 +1,6 @@
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox class="left-pane" slot="left">
-    <LeftPane {listFiles} {listDirs} bind:viewFile />
+    <LeftPane bind:listFiles bind:listDirs bind:viewFile />
   </vbox>
   <vbox class="right-pane" slot="right">
     {#if viewFile}
@@ -18,16 +18,23 @@
   import FilesList from "./FilesList/FilesList.svelte";
   import FileViewer from "./FileViewer.svelte";
   import Splitter from "../Shared/Splitter.svelte";
-  import { ArrayColl, Collection } from "svelte-collections";
+  import type { Collection } from "svelte-collections";
+  import { catchErrors } from "../Util/error";
 
   /** The list of files to show on the right pane */
-  let listFiles: Collection<File> = new ArrayColl<File>();
+  let listFiles: Collection<File>;
   /** The list of folders to show on the right pane.
    * Must be in the same logical list (e.g. container) as `listFiles`. */
-  let listDirs: Collection<Directory> = new ArrayColl<Directory>();
+  let listDirs: Collection<Directory>;
   /** If set, this file will be display on the right pane, full page
    * For viewing images and PDFs. Most other file types are not supported. */
   let viewFile: File | null = null;
+
+  $: listDirs && catchErrors(ls)
+  async function ls() {
+    await Promise.all(listDirs.contents.map(dir =>
+      dir.listContents));
+  }
 </script>
 
 <style>

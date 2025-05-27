@@ -1,14 +1,14 @@
 <Scroll>
   <grid class="files-list">
-    <hbox class="name">{$t`File name`}</hbox>
-    <hbox class="type">{$t`File type`}</hbox>
-    <hbox class="size">{$t`Size`}</hbox>
-    <hbox class="time">{$t`Last mod`}</hbox>
+    <hbox class="name header">{$t`File name`}</hbox>
+    <hbox class="type header">{$t`File type`}</hbox>
+    <hbox class="size header">{$t`Size`}</hbox>
+    <hbox class="time header">{$t`Last mod`}</hbox>
 
-    {#each $dirs.each as file }
+    {#each $dirs?.each as file }
       <DirectoryLine dir={file} />
     {/each}
-    {#each $files.each as file }
+    {#each $files?.each as file }
       <FileLine {file} />
     {/each}
   </grid>
@@ -31,14 +31,12 @@
   .files-list {
     display: grid;
     grid-template-columns: auto max-content max-content max-content;
-    margin-block-start: 8px;
   }
-  /*
-  .name, .type, .size, .time {
+  .header {
     padding-inline-start: 8px;
     padding-inline-end: 8px;
-    border-bottom: 1px dotted grey;
-    border-right: 1px dotted grey;
+    border-bottom: 1px dotted var(--border);
+    border-right: 1px dotted var(--border);
   }
   .name {
     padding-inline-start: 16px;
@@ -46,5 +44,4 @@
   .time {
     padding-inline-end: 16px;
   }
-  */
 </style>

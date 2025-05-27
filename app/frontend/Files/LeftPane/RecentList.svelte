@@ -1,4 +1,4 @@
-<vbox class="account-list">
+<vbox class="recent-files-list">
   <FastList items={recentFiles} bind:selectedItem={viewFile} columns="1fr">
     <svelte:fragment slot="header">
       <hbox class="header">

@@ -74,14 +74,15 @@
 </vbox>
 
 <script lang="ts">
+  import { Directory } from "../../../logic/Files/Directory";
   import { SearchFile } from "../../../logic/Files/Store/SearchFile";
   import { availableTags } from "../../../logic/Abstract/Tag";
   import { selectedAccount, selectedDirectory } from "../selected";
   import { appGlobal } from "../../../logic/app";
   import SearchField from "../../Shared/SearchField.svelte";
   import GenericFileTypesList from "../../Files/GenericFileTypesList.svelte";
-  import AccountList from "../LeftPane/AccountList.svelte";
-  import FolderList from "../LeftPane/FolderList.svelte";
+  import AccountList from "../FolderLeftPane/AccountList.svelte";
+  import FolderList from "../FolderLeftPane/FolderList.svelte";
   import TagSelector from "../../Shared/Tag/TagSelector.svelte";
   import Checkbox from "../../Shared/Checkbox.svelte";
   import StarIcon from "lucide-svelte/icons/star";
@@ -91,7 +92,6 @@
   import TagIcon from "lucide-svelte/icons/tag";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
-  import { Directory } from "../../../logic/Files/Directory";
 
   /** The search criteria
    * in/out */
