@@ -8,7 +8,7 @@ import { ContactEntry, Person } from './Abstract/Person';
 import { Group } from './Abstract/Group';
 import { Chat } from './Chat/Chat';
 import { FileSharingAccount } from './Files/FileSharingAccount';
-import { File } from './Files/File';
+import type { File } from './Files/File';
 import { Directory } from './Files/Directory';
 import { Calendar } from './Calendar/Calendar';
 import { Addressbook } from './Contacts/Addressbook';
@@ -387,31 +387,27 @@ export class FakeFileSharingAccount extends FileSharingAccount {
   }
 }
 
-export function fakeSharedDir(persons: Collection<Person>): Collection<Directory> {
-  let directories = new ArrayColl<Directory>();
+export function fakeSharedDir(persons: Collection<Person>): Directory {
   let sharedDirectory = new Directory();
   sharedDirectory.name = "shared";
   sharedDirectory.id = "/shared";
   for (let person of persons) {
-    let personDirectory = new Directory();
-    personDirectory.name = person.name;
+    let personDirectory = sharedDirectory.newDirectory(person.name);
     personDirectory.sentToFrom = person;
     personDirectory.lastMod = faker.date.past();
-    personDirectory.setParent(sharedDirectory);
-    directories.add(personDirectory);
+    sharedDirectory.subDirs.add(personDirectory);
     let dirCount = 2 + Math.random() * 10;
     for (let i = 0; i < dirCount; i++) {
       fakeDir(personDirectory).sentToFrom = person;
     }
   }
-  return directories;
+  return sharedDirectory;
 }
 
 export function fakeDir(parentDir: Directory): Directory {
-  let directory = new Directory();
-  directory.name = unique(() => faker.system.fileName({ extensionCount: 0 }));
+  let name = unique(() => faker.system.fileName({ extensionCount: 0 }));
+  let directory = parentDir.newDirectory(name);
   directory.lastMod = faker.date.past();
-  directory.setParent(parentDir);
   let dirCount = Math.random() * 6;
   dirCount -= 4;
   for (let i = 0; i < dirCount; i++) {
@@ -419,22 +415,22 @@ export function fakeDir(parentDir: Directory): Directory {
   }
   let fileCount = 2 + Math.random() * 20;
   for (let i = 0; i < fileCount; i++) {
-    new FakeFile(directory);
+    fakeFile(directory);
   }
+  parentDir.subDirs.add(directory);
   return directory;
 }
 
-export class FakeFile extends File {
-  constructor(parentDir: Directory) {
-    super();
-    this.name = unique(faker.system.commonFileName);
-    let parts = this.name.split(".");
-    this.ext = parts.pop()!;
-    this.nameWithoutExt = parts.join(".");
-    this.size = faker.number.int({ max: 40000000 });
-    this.lastMod = faker.date.past();
-    this.setParent(parentDir);
-  }
+export function fakeFile(parentDir: Directory): File {
+  let name = unique(faker.system.commonFileName)
+  let file = parentDir.newFile(name);
+  let parts = file.name.split(".");
+  file.ext = parts.pop()!;
+  file.nameWithoutExt = parts.join(".");
+  file.size = faker.number.int({ max: 40000000 });
+  file.lastMod = faker.date.past();
+  parentDir.files.add(file);
+  return file;
 }
 
 function avatar(male: boolean): string {

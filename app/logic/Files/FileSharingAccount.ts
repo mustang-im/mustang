@@ -8,9 +8,11 @@ export class FileSharingAccount extends Account {
   readonly rootDirs = new ArrayColl<Directory>;
   storage: FileStorage;
 
-  newDirectory(): Directory {
+  newDirectory(name: string): Directory {
     let dir = new Directory();
+    dir.name = name;
     dir.account = this;
+    dir.parent = null;
     return dir;
   }
 

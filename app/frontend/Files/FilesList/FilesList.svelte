@@ -33,10 +33,15 @@
     grid-template-columns: auto max-content max-content max-content;
   }
   .header {
+    opacity: 50%;
+    font-weight: 300;
     padding-inline-start: 8px;
     padding-inline-end: 8px;
     border-bottom: 1px dotted var(--border);
     border-right: 1px dotted var(--border);
+  }
+  .time, .size {
+    justify-content: end;
   }
   .name {
     padding-inline-start: 16px;

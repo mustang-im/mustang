@@ -42,18 +42,17 @@
   let searchFiles: ArrayColl<FileOrDirectory> | null;
 
   $: rootDirs = selectedAccount?.rootDirs ?? new ArrayColl<Directory>();
-  $: rootDirs && catchErrors(initRoot)
-  async function initRoot() {
+
+  $: selectedFolder, catchErrors(changeDir)
+  async function changeDir() {
     listDirs = null;
     listFiles = null;
-    await Promise.all(rootDirs.map(dir =>
-      dir.listContents));
-  }
-
-  $: selectedFolder && catchErrors(changeDir)
-  async function changeDir() {
-    listDirs = selectedFolder?.subDirs;
-    listFiles = selectedFolder?.files;
+    if (!selectedFolder) {
+      return;
+    }
+    await selectedFolder.listContents();
+    listDirs = selectedFolder.subDirs;
+    listFiles = selectedFolder.files;
   }
 </script>
 

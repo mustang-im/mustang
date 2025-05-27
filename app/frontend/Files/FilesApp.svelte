@@ -32,8 +32,9 @@
 
   $: listDirs && catchErrors(ls)
   async function ls() {
+    return;
     await Promise.all(listDirs.contents.map(dir =>
-      dir.listContents));
+      dir.listContents()));
   }
 </script>
 

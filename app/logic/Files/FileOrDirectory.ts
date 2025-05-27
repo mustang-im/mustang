@@ -23,12 +23,6 @@ export class FileOrDirectory extends Observable implements TaggableObject {
     this.path = id;
   }
 
-  setParent(directory: Directory) {
-    assert(this.name, "Please set the name first");
-    this.id = directory.id + "/" + this.name;
-    directory.files.add(this);
-  }
-
   canDelete: boolean;
   async deleteIt() {
     throw new AbstractFunction();

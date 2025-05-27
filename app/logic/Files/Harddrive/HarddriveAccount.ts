@@ -1,6 +1,7 @@
-import { gt } from "../../../l10n/l10n";
-import { appGlobal } from "../../app";
 import { FileSharingAccount } from "../FileSharingAccount";
+import { HarddriveDirectory } from "./HarddriveDirectory";
+import { appGlobal } from "../../app";
+import { gt } from "../../../l10n/l10n";
 
 export class HarddriveAccount extends FileSharingAccount {
   readonly protocol: string = "harddrive";
@@ -8,6 +9,14 @@ export class HarddriveAccount extends FileSharingAccount {
 
   get isLoggedIn(): boolean {
     return true;
+  }
+
+  newDirectory(name: string): HarddriveDirectory {
+    let dir = new HarddriveDirectory();
+    dir.name = name;
+    dir.account = this;
+    dir.parent = null;
+    return dir;
   }
 
   async sync() {
@@ -39,15 +48,19 @@ export class HarddriveAccount extends FileSharingAccount {
   }
 
   protected addRootDir(label: string, path: string) {
-    let dir = this.newDirectory();
-    dir.name = label;
+    let dir = this.newDirectory(label);
     dir.path = dir.filepathLocal = path;
     this.rootDirs.add(dir);
   }
 
   protected async addSpecialDir(label: string, dirname: string) {
     try {
-      this.addRootDir(label, await appGlobal.remoteApp.directory(dirname));
+      let path = await appGlobal.remoteApp.directory(dirname);
+      let entries = await appGlobal.remoteApp.listDirectoryContents(path, false);
+      if (!entries?.length) {
+        return;
+      }
+      this.addRootDir(label, path);
     } catch (ex) {
       this.errorCallback(ex);
     }

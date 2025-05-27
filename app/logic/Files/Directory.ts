@@ -15,17 +15,19 @@ export class Directory extends FileOrDirectory {
     return this.subDirs;
   }
 
-  newFile(): File {
-    let file = new File();
-    file.setParent(this);
-    return file;
+  newDirectory(name: string): Directory {
+    let dir = new Directory();
+    dir.name = name;
+    dir.account = this.account;
+    dir.parent = this;
+    return dir;
   }
 
-  newDirectory(): Directory {
-    let dir = new Directory();
-    dir.account = this.account;
-    dir.setParent(this);
-    return dir;
+  newFile(name: string): File {
+    let file = new File();
+    file.setFileName(name);
+    file.parent = this;
+    return file;
   }
 
   async listContents() {
@@ -71,5 +73,10 @@ export class Directory extends FileOrDirectory {
     }
     // Both folders need refresh
     return false;
+  }
+
+  async addFile(file: File) {
+    await file.download();
+    throw new AbstractFunction();
   }
 }
