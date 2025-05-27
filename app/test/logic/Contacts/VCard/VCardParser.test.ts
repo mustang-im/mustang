@@ -69,3 +69,11 @@ test.each(testFiles)("Parse %s", async name => {
   vCard.updatePerson(vCard.parse(serialised), updated);
   expect(toJSON(updated)).toEqual(toJSON(person));
 });
+
+test("Write new VCard", async () => {
+  const person = new Person();
+  vCard.convertVCardToPerson(replacement, person);
+  const serialised = vCard.convertPersonToVCard(person);
+  const expectedSerialised = await fs.readFile(new URL("expectedSerialised.txt", dataDir), { encoding: 'utf-8' });
+  expect(serialised).toBe(expectedSerialised);
+});

@@ -1,0 +1,21 @@
+BEGIN:VCARD
+VERSION:4.0
+PRODID:-//Beonex//appName//EN
+FN:Joe Bloggs
+PHOTO;VALUE=uri:data:image/gif;base64\,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAAB
+ AAEAAAICTAEAOw==
+N:Bloggs;Joe;;;
+EMAIL;TYPE=WORK,PREF;PREF=1:joe@example.org
+EMAIL;TYPE=WORK:bloggs@example.org
+EMAIL;TYPE=HOME:joe.bloggs@example.com
+TEL;VALUE=text;TYPE=WORK,PREF;PREF=1:0123456789
+TEL;VALUE=text;TYPE=HOME:0987654321
+IMPP;TYPE=HOME,PREF;PREF=1:aim:joebloggs
+URL;TYPE=WORK,PREF;PREF=1:https://example.org/joe.bloggs/
+URL;TYPE=HOME:https://example.com/joe.bloggs/
+ADR;TYPE=WORK:;;Street;City;Region;Postal Code;Country
+NOTE:Do Re Mi Fa So La Ti Do
+ORG:Example;Management
+TITLE:Manager
+X-CUSTOM1:Custom
+END:VCARD
