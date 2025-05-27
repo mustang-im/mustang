@@ -56,7 +56,10 @@ export class HarddriveAccount extends FileSharingAccount {
   protected async addSpecialDir(label: string, dirname: string) {
     try {
       let path = await appGlobal.remoteApp.directory(dirname);
-      let entries = await appGlobal.remoteApp.listDirectoryContents(path, false);
+      if (this.rootDirs.find(dir => dir.path == path)) {
+        return;
+      }
+      let entries = await appGlobal.remoteApp.listDirectoryContents(path, false, false);
       if (!entries?.length) {
         return;
       }

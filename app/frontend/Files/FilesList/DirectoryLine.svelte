@@ -14,30 +14,29 @@
       {/if}
     </button>
     <hbox class="name">
-      {dir.name}
+      {dir?.name}
     </hbox>
   </hbox>
   <hbox class="type">
     {$t`Folder`}
   </hbox>
   <hbox class="size">
-    {dir.subDirs.length + dir.files.length} {$t`entries`}
+    {$t`${$subDirs?.length + $files?.length} entries`}
   </hbox>
   <hbox class="time">
-    {getDateTimeString(dir.lastMod)}
+    {dir?.lastMod ? getDateTimeString(dir.lastMod) : ""}
   </hbox>
 </hbox>
 
 {#if open}
-  {#each dir.files.each as subFile (subFile.id) }
-    <svelte:self file={subFile} indent={indent + 1} />
-  {/each}
+  <FileOrDirLines {files} dirs={subDirs} indent={indent + 1} />
 {/if}
 
 <script lang="ts">
   import { Directory } from "../../../logic/Files/Directory";
   import { selectedFile } from "../selected";
   import { getDateTimeString } from "../../Util/date";
+  import FileOrDirLines from "./FileOrDirLines.svelte";
   import FolderClosedIcon from "lucide-svelte/icons/folder";
   import FolderOpenIcon from "lucide-svelte/icons/folder-open";
   import { t } from "../../../l10n/l10n";
@@ -46,11 +45,22 @@
   export let indent = 0;
 
   let open = false;
+  $: subDirs = dir?.subDirs;
+  $: files = dir?.files;
 
   function toggleOpen() {
     open = !open;
-    $selectedFile = dir;
+    if (open) {
+      $selectedFile = dir;
+      dir.listContents()
+        .catch(console.error);
+    }
   }
+  /*async function listContents(dir: Directory) {
+    await dir.listContents();
+    await Promise.all(dir.subDirs.contents.map(subDir =>
+      subDir.listContents)); // TODO doesn't update the UI
+  }*/
 </script>
 
 <style>

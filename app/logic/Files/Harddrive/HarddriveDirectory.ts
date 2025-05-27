@@ -20,7 +20,6 @@ export class HarddriveDirectory extends Directory {
     this.files.clear();
     this.subDirs.clear();
     let entries = await appGlobal.remoteApp.listDirectoryContents(this.path, true, false);
-    console.log("entries for", this.path, ":", entries);
     for (let entry of entries) {
       if (await entry.isDirectory) {
         let dir = this.newDirectory(entry.name);

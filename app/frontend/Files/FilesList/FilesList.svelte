@@ -5,12 +5,7 @@
     <hbox class="size header">{$t`Size`}</hbox>
     <hbox class="time header">{$t`Last mod`}</hbox>
 
-    {#each $dirs?.each as file }
-      <DirectoryLine dir={file} />
-    {/each}
-    {#each $files?.each as file }
-      <FileLine {file} />
-    {/each}
+    <FileOrDirLines {files} {dirs} />
   </grid>
 </Scroll>
 
@@ -18,8 +13,7 @@
   import { File } from "../../../logic/Files/File";
   import { Directory } from "../../../logic/Files/Directory";
   import type { Collection } from "svelte-collections";
-  import DirectoryLine from "./DirectoryLine.svelte";
-  import FileLine from "./FileLine.svelte";
+  import FileOrDirLines from "./FileOrDirLines.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import { t } from "../../../l10n/l10n";
 

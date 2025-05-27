@@ -18,6 +18,7 @@
   import { FileOrDirectory } from "../../../logic/Files/FileOrDirectory";
   import { FileSharingAccount } from "../../../logic/Files/FileSharingAccount";
   import { myHarddrive } from "../../../logic/Files/Harddrive/HarddriveAccount";
+  import { selectedFile } from "../selected";
   import { appGlobal } from "../../../logic/app";
   import AccountList from "./AccountList.svelte";
   import FolderList from "./FolderList.svelte";
@@ -53,6 +54,11 @@
     await selectedFolder.listContents();
     listDirs = selectedFolder.subDirs;
     listFiles = selectedFolder.files;
+  }
+
+  $: $selectedFile instanceof Directory && changeToDir($selectedFile)
+  function changeToDir(folder: Directory) {
+    selectedFolder = folder;
   }
 </script>
 
