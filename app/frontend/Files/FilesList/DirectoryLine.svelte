@@ -21,7 +21,9 @@
     {$t`Folder`}
   </hbox>
   <hbox class="size">
-    {$t`${$subDirs?.length + $files?.length} entries`}
+    {#if $subDirs.hasItems || $files.hasItems}
+      {$t`${$subDirs?.length + $files?.length} entries`}
+    {/if}
   </hbox>
   <hbox class="time">
     {dir?.lastMod ? getDateTimeString(dir.lastMod) : ""}
