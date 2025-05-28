@@ -2,7 +2,7 @@
   <vbox flex class="main">
     <MainView {events} bind:start={$startDate} dateInterval={$selectedDateInterval}>
       <TitleBarLeft on:addEvent={() => catchErrors(addEvent)} slot="top-left" />
-      <ViewSelector bind:dateInterval={$selectedDateInterval} slot="top-right" />
+      <TitleBarRight bind:dateInterval={$selectedDateInterval} slot="top-right" />
     </MainView>
   </vbox>
 </vbox>
@@ -13,8 +13,8 @@
   import { calendarMustangApp } from "./CalendarMustangApp";
   import { appGlobal } from "../../logic/app";
   import MainView from "./MainView.svelte";
-  import ViewSelector from "./ViewSelector.svelte";
   import TitleBarLeft from "./TitleBarLeft.svelte";
+  import TitleBarRight from "./TitleBarRight.svelte";
   import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { mergeColls } from "svelte-collections";
