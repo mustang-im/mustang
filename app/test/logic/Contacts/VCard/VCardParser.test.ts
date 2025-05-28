@@ -40,7 +40,7 @@ test.each(testFiles)("Parse %s", async name => {
   // Read the test cases from disk
   const vcf = await fs.readFile(new URL(name + ".vcf", dataDir), { encoding: 'utf-8' });
   const card = vCard.parse(vcf);
-  const json = JSON.parse(await fs.readFile(new URL(name + ".json", dataDir, { encoding: 'utf-8' })));
+  const json = JSON.parse(await fs.readFile(new URL(name + ".json", dataDir), { encoding: 'utf-8' }));
   json.addressbookID = true;
   json.popularity = 0;
   const person = new Person();
@@ -68,4 +68,12 @@ test.each(testFiles)("Parse %s", async name => {
   const updated = new Person();
   vCard.updatePerson(vCard.parse(serialised), updated);
   expect(toJSON(updated)).toEqual(toJSON(person));
+});
+
+test("Write new VCard", async () => {
+  const person = new Person();
+  vCard.convertVCardToPerson(replacement, person);
+  const serialised = vCard.convertPersonToVCard(person);
+  const expectedSerialised = await fs.readFile(new URL("expectedSerialised.txt", dataDir), { encoding: 'utf-8' });
+  expect(serialised).toBe(expectedSerialised);
 });
