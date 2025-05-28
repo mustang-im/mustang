@@ -4,14 +4,17 @@ import { CalDAVEvent } from "./CalDAVEvent";
 import { AuthMethod } from "../../Abstract/Account";
 import { convertICalToEvent } from "../ICal/ICalToEvent";
 import { appGlobal } from "../../app";
-import { NotReached, assert } from "../../util/util";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { NotReached, assert, type URLString } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { ArrayColl } from "svelte-collections";
-import type { DAVClient } from "tsdav";
+import { ArrayColl, Collection } from "svelte-collections";
+import type { DAVClient, DAVCalendar } from "tsdav";
 
 export class CalDAVCalendar extends Calendar {
   readonly protocol: string = "caldav";
   declare readonly events: ArrayColl<CalDAVEvent>;
+  /** URL of the specific calendar - a CalDAV account can contain multiple calendars */
+  calendarURL: URLString;
   client: DAVClient;
 
   newEvent(parentEvent?: CalDAVEvent): CalDAVEvent {
@@ -57,15 +60,20 @@ export class CalDAVCalendar extends Calendar {
     return [];
   }
 
+  async listCalendars(): Promise<Collection<DAVCalendar>> {
+    return new ArrayColl(await this.client.fetchCalendars());
+  }
+
   async listEvents() {
     if (!this.dbID) {
       await this.save();
     }
 
-    let calendars = new ArrayColl(await this.client.fetchCalendars());
+    let calendars = await this.listCalendars();
     assert(calendars.hasItems, "No CalDAV calendars found");
-    let calendar = calendars.get(1);
-    console.log("Found CalDAV calendars", calendars.contents);
+    let calendar = calendars.find(cal => cal.url == this.calendarURL);
+    assert(calendar, "Selected CalDAV calendar URL not found");
+    console.log("Found CalDAV calendars", calendars.contents, "picked", calendar.displayName);
     this.events.clear();
     let iCalEntries = await this.client.fetchCalendarObjects({ calendar });
     for (let iCalEntry of iCalEntries) {
@@ -83,5 +91,15 @@ export class CalDAVCalendar extends Calendar {
 
   getEventByItemID(id: string): CalDAVEvent | void {
     return this.events.find(p => p.itemID == id);
+  }
+
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    this.calendarURL = sanitize.url(json.calendarURL);
+  }
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.calendarURL = this.calendarURL;
+    return json;
   }
 }

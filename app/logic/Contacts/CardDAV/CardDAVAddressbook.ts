@@ -4,15 +4,18 @@ import { CardDAVGroup } from "./CardDAVGroup";
 import { convertVCardToPerson } from "../VCard/VCard";
 import { AuthMethod } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
-import { NotReached, assert } from "../../util/util";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { NotReached, assert, type URLString } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { ArrayColl } from "svelte-collections";
-import type { DAVClient } from "tsdav";
+import { ArrayColl, Collection } from "svelte-collections";
+import type { DAVClient, DAVAddressBook } from "tsdav";
 
 export class CardDAVAddressbook extends Addressbook {
   readonly protocol: string = "carddav";
   declare readonly persons: ArrayColl<CardDAVPerson>;
   declare readonly groups: ArrayColl<CardDAVGroup>;
+  /** URL of the specific addressbook - a CalDAV account can contain multiple addressbooks. */
+  addressbookURL: URLString;
   client: DAVClient;
 
   newPerson(): CardDAVPerson {
@@ -57,18 +60,25 @@ export class CardDAVAddressbook extends Addressbook {
     }
   }
 
+  async listAddressbooks(): Promise<Collection<DAVAddressBook>> {
+    return new ArrayColl(await this.client.fetchAddressBooks());
+  }
+
   async listContacts() {
     if (!this.dbID) {
       await this.save();
     }
 
-    let addressbooks = new ArrayColl(await this.client.fetchAddressBooks());
+    let addressbooks = await this.listAddressbooks();
     assert(addressbooks.hasItems, "No CardDAV addressbooks found");
     console.log("Found CardDAV address books", addressbooks.contents);
-    let addressBook = addressbooks.first;
+    let addressbook = addressbooks.find(ab => ab.url == this.addressbookURL);
+    assert(addressbook, "Selected CardDAV addressbook URL not found");
+    console.log("Found CalDAV calendars", addressbooks.contents, "picked", addressbook.displayName);
+
     this.persons.clear();
     this.groups.clear();
-    let entries = await this.client.fetchVCards({ addressBook });
+    let entries = await this.client.fetchVCards({ addressBook: addressbook });
     for (let entry of entries) {
       let person = this.newPerson();
       try {
@@ -90,5 +100,15 @@ export class CardDAVAddressbook extends Addressbook {
 
   protected getGroupByItemID(id: string): CardDAVGroup | void {
     return this.groups.find(p => p.itemID == id);
+  }
+
+  fromConfigJSON(json: any) {
+    super.fromConfigJSON(json);
+    this.addressbookURL = sanitize.url(json.addressbookURL);
+  }
+  toConfigJSON(): any {
+    let json = super.toConfigJSON();
+    json.addressbookURL = this.addressbookURL;
+    return json;
   }
 }

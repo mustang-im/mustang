@@ -28,7 +28,7 @@
 <script lang="ts">
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import { AuthMethod } from "../../../logic/Abstract/Account";
-  import { appGlobal } from "../../../logic/app";
+  import CalDavSelectCalendar from "./CalDAVSelectCalendar.svelte";
   import Password from "../Shared/Password.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
@@ -43,9 +43,7 @@
   async function onContinue() {
     config.authMethod = AuthMethod.Password;
     await config.verifyLogin();
-    await config.save();
-    appGlobal.calendars.add(config);
-    showPage = null;
+    showPage = CalDavSelectCalendar;
   }
 </script>
 
