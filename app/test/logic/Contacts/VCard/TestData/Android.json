@@ -76,14 +76,7 @@
       "value": "https://example.org with space"
     }
   ],
-  "chatAccounts": [
-    {
-      "value": "fred@jabber.example.com",
-      "purpose": "other",
-      "protocol": "xmpp",
-      "preference": 0
-    }
-  ],
+  "chatAccounts": [],
   "company": "Redwood",
   "position": "Driver",
   "department": "",
