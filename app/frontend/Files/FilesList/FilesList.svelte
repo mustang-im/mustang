@@ -19,7 +19,7 @@
         iconSize="14px" border={false} classes="sort smallest" />
     </hbox>
     <hbox class="size header">
-      {$t`Size`}
+      {$t`Size *=> Size of the file`}
       <RoundButton
         label={$t`Sort by size, descending`}
         selected={sortBy == SortCriteria.Size}
@@ -28,7 +28,7 @@
         iconSize="14px" border={false} classes="sort smallest" />
     </hbox>
     <hbox class="time header">
-      {$t`Last mod`}
+      {$t`Last mod *=> Last modification time for the file`}
       <RoundButton
         label={$t`Sort by last modification, descending`}
         selected={sortBy == SortCriteria.LastMod}

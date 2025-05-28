@@ -5,7 +5,7 @@ import { gt } from "../../../l10n/l10n";
 
 export class HarddriveAccount extends FileSharingAccount {
   readonly protocol: string = "harddrive";
-  name = gt`My computer`;
+  name = gt`My computer *=> My local harddrives`;
 
   get isLoggedIn(): boolean {
     return true;
@@ -34,14 +34,14 @@ export class HarddriveAccount extends FileSharingAccount {
 
     if (isDesktop) {
       if (isUnix) {
-        this.addRootDir(gt`Root`, "/");
+        this.addRootDir(gt`Root *=> Highest level of the file system on the Linux computer`, "/");
       }
-      await this.addSpecialDir(gt`Home`, "home");
-      await this.addSpecialDir(gt`Documents`, "documents");
-      await this.addSpecialDir(gt`Downloads`, "downloads");
+      await this.addSpecialDir(gt`Home *=> User directory for his personal files`, "home");
+      await this.addSpecialDir(gt`Documents *=> Directory where the user document files are`, "documents");
+      await this.addSpecialDir(gt`Downloads *=> Directory where the download files are`, "downloads");
       await this.addSpecialDir(gt`Pictures`, "pictures");
       if (isWindows) {
-        await this.addSpecialDir(gt`Recent`, "recent");
+        await this.addSpecialDir(gt`Recent *=> Recently opened files`, "recent");
       }
       // TODO list drives, e.g. C: etc. - npm drivelist?
     }
