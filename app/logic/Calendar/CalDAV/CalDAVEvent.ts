@@ -21,13 +21,14 @@ export class CalDAVEvent extends Event {
     this.pID = val;
   }
 
-  fromDAVObject(entry: DAVObject): false {
+  fromDAVObject(entry: DAVObject): boolean {
     let isEvent = convertICalToEvent(entry.data, this);
     if (!isEvent) {
       return false;
     }
     this.url = entry.url;
     this.syncState = entry.etag;
+    return true;
   }
 
   getDAVObject(iCal?: string): DAVObject {
