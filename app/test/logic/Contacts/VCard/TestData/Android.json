@@ -1,0 +1,93 @@
+{
+  "name": "Fred Flintstone",
+  "firstName": "Fred",
+  "lastName": "Flintstone",
+  "emailAddresses": [
+    {
+      "preference": 0,
+      "protocol": "mailto",
+      "purpose": "work",
+      "value": "fred@example.com"
+    },
+    {
+      "preference": 0,
+      "protocol": "mailto",
+      "purpose": "work",
+      "value": "fred@example.org"
+    }
+  ],
+  "phoneNumbers": [
+    {
+      "preference": 0,
+      "protocol": "tel",
+      "purpose": "other",
+      "value": "+1-555-111-111"
+    },
+    {
+      "preference": 0,
+      "protocol": "tel",
+      "purpose": "other",
+      "value": "+1-555-888-888"
+    },
+    {
+      "preference": 0,
+      "protocol": "tel",
+      "purpose": "work",
+      "value": "+1-555-536-45"
+    },
+    {
+      "preference": 0,
+      "protocol": "tel",
+      "purpose": "home",
+      "value": "+1-555-555-555"
+    },
+    {
+      "preference": 1,
+      "protocol": "tel",
+      "purpose": "other",
+      "value": "+1-555-555-55555"
+    },
+    {
+      "preference": 0,
+      "protocol": "tel",
+      "purpose": "other",
+      "value": "+1-555-555-5555"
+    }
+  ],
+  "streetAddresses": [
+    {
+      "preference": 0,
+      "protocol": null,
+      "purpose": "work",
+      "value": "Steingasse 1, Geröllheim\n\n\n\n"
+    }
+  ],
+  "urls": [
+    {
+      "preference": 0,
+      "protocol": "https",
+      "purpose": "other",
+      "value": "https://example.com/fred"
+    },
+    {
+      "preference": 0,
+      "protocol": "https",
+      "purpose": "other",
+      "value": "https://example.org with space"
+    }
+  ],
+  "chatAccounts": [
+    {
+      "value": "fred@jabber.example.com",
+      "purpose": "other",
+      "protocol": "xmpp",
+      "preference": 0
+    }
+  ],
+  "company": "Redwood",
+  "position": "Driver",
+  "department": "",
+  "notes": "Really funny guy",
+  "picture": null,
+  "custom": []
+}
