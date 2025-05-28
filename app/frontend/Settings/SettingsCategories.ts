@@ -6,6 +6,7 @@ import { contactsMustangApp } from "../Contacts/ContactsMustangApp";
 import { calendarMustangApp } from "../Calendar/CalendarMustangApp";
 import { chatMustangApp } from "../Chat/ChatMustangApp";
 import { filesMustangApp } from "../Files/FilesMustangApp";
+import { myHarddrive } from "../../logic/Files/Harddrive/HarddriveAccount";
 import { appGlobal } from "../../logic/app";
 import GlobalAppearance from "./Global/Appearance.svelte";
 import GlobalWorkspaces from "./Global/Workspaces.svelte";
@@ -139,7 +140,7 @@ accountSettings.add(new AccSetting(M3Account, "m3-server", gt`Server`, AccountUR
 const filesSettings = new SettingsCategory("files", gt`Files`, null, true);
 filesSettings.subCategories.addAll([
 ]);
-filesSettings.accounts = appGlobal.fileSharingAccounts;
+filesSettings.accounts = appGlobal.fileSharingAccounts.filterObservable(acc => acc != myHarddrive);
 // #if [!WEBMAIL]
 filesSettings.newAccountUI = SetupFiles;
 // #endif
