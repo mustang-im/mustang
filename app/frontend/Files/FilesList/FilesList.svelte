@@ -1,24 +1,81 @@
 <Scroll>
   <grid class="files-list">
-    <hbox class="name header">{$t`File name`}</hbox>
-    <hbox class="type header">{$t`File type`}</hbox>
-    <hbox class="size header">{$t`Size`}</hbox>
-    <hbox class="time header">{$t`Last mod`}</hbox>
+    <hbox class="name header">
+      {$t`File name`}
+      <RoundButton
+        label={$t`Sort by file name, ascending`}
+        selected={sortBy == SortCriteria.Name}
+        onClick={() => sortSetting.value = SortCriteria.Name}
+        icon={AZDownIcon}
+        iconSize="14px" border={false} classes="sort smallest" />
+    </hbox>
+    <hbox class="type header">
+      {$t`File type`}
+      <RoundButton
+        label={$t`Sort by file type, ascending`}
+        selected={sortBy == SortCriteria.Type}
+        onClick={() => sortSetting.value = SortCriteria.Type}
+        icon={DownIcon}
+        iconSize="14px" border={false} classes="sort smallest" />
+    </hbox>
+    <hbox class="size header">
+      {$t`Size`}
+      <RoundButton
+        label={$t`Sort by size, descending`}
+        selected={sortBy == SortCriteria.Size}
+        onClick={() => sortSetting.value = SortCriteria.Size}
+        icon={SizeUpIcon}
+        iconSize="14px" border={false} classes="sort smallest" />
+    </hbox>
+    <hbox class="time header">
+      {$t`Last mod`}
+      <RoundButton
+        label={$t`Sort by last modification, descending`}
+        selected={sortBy == SortCriteria.LastMod}
+        onClick={() => sortSetting.value = SortCriteria.LastMod}
+        icon={NumUpIcon}
+        iconSize="14px" border={false} classes="sort smallest" />
+    </hbox>
 
-    <FileOrDirLines {files} {dirs} />
+    <FileOrDirLines files={filesSorted} dirs={dirsSorted} />
   </grid>
 </Scroll>
 
 <script lang="ts">
   import { File } from "../../../logic/Files/File";
   import { Directory } from "../../../logic/Files/Directory";
-  import type { Collection } from "svelte-collections";
   import FileOrDirLines from "./FileOrDirLines.svelte";
+  import RoundButton from "../../Shared/RoundButton.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
+  import AZDownIcon from "lucide-svelte/icons/arrow-down-a-z";
+  import DownIcon from "lucide-svelte/icons/move-down";
+  import NumUpIcon from "lucide-svelte/icons/arrow-up-1-0";
+  import SizeUpIcon from "lucide-svelte/icons/arrow-up-wide-narrow";
+  import { getLocalStorage } from "../../Util/LocalStorage";
   import { t } from "../../../l10n/l10n";
+  import type { Collection } from "svelte-collections";
 
   export let files: Collection<File>;
   export let dirs: Collection<Directory>;
+
+  enum SortCriteria {
+    Name = "name",
+    Type = "type",
+    Size = "size",
+    LastMod = "last-mod",
+  }
+
+  let sortSetting = getLocalStorage("files.sort", SortCriteria.Name);
+  $: sortBy = $sortSetting.value;
+  $: filesSorted =
+    sortBy == SortCriteria.Size ? files.sortBy(file => -file.size) :
+    sortBy == SortCriteria.LastMod ? files.sortBy(file => -file.lastMod.getTime()) :
+    sortBy == SortCriteria.Type ? files.sortBy(file => file.mimetype ?? file.ext) :
+    files.sortBy(file => file.name);
+  $: dirsSorted =
+    sortBy == SortCriteria.Size ? dirs.sortBy(dir => -(dir.subDirs.length + dir.files.length)) :
+    sortBy == SortCriteria.LastMod ? dirs.sortBy(dir => -dir.lastMod.getTime()) :
+    dirs.sortBy(dir => dir.name);
 </script>
 
 <style>
@@ -27,10 +84,10 @@
     grid-template-columns: auto max-content max-content max-content;
   }
   .header {
+    align-items: center;
     opacity: 50%;
     font-weight: 300;
     padding-inline-start: 8px;
-    padding-inline-end: 8px;
     border-bottom: 1px dotted var(--border);
     border-right: 1px dotted var(--border);
   }
@@ -42,5 +99,15 @@
   }
   .time {
     padding-inline-end: 16px;
+  }
+  .header :global(button.sort) {
+    margin-inline-start: 4px;
+  }
+  .header :global(button.sort.selected) {
+    background-color: unset;
+    color: unset
+  }
+  .header:not(:hover) :global(.button.sort:not(.selected)) {
+    visibility: hidden;
   }
 </style>
