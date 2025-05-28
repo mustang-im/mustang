@@ -2,7 +2,6 @@ import { Calendar } from "../Calendar";
 import type { Participant } from "../Participant";
 import { CalDAVEvent } from "./CalDAVEvent";
 import { AuthMethod } from "../../Abstract/Account";
-import { convertICalToEvent } from "../ICal/ICalToEvent";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotReached, assert, type URLString } from "../../util/util";
@@ -15,6 +14,7 @@ export class CalDAVCalendar extends Calendar {
   declare readonly events: ArrayColl<CalDAVEvent>;
   /** URL of the specific calendar - a CalDAV account can contain multiple calendars */
   calendarURL: URLString;
+  davCalendar: DAVCalendar | null = null;
   client: DAVClient;
 
   newEvent(parentEvent?: CalDAVEvent): CalDAVEvent {
@@ -71,18 +71,17 @@ export class CalDAVCalendar extends Calendar {
 
     let calendars = await this.listCalendars();
     assert(calendars.hasItems, "No CalDAV calendars found");
-    let calendar = calendars.find(cal => cal.url == this.calendarURL);
+    let calendar = this.davCalendar = calendars.find(cal => cal.url == this.calendarURL);
     assert(calendar, "Selected CalDAV calendar URL not found");
-    console.log("Found CalDAV calendars", calendars.contents, "picked", calendar.displayName);
+    // console.log("Found CalDAV calendars", calendars.contents, "picked", calendar.displayName);
     this.events.clear();
     let iCalEntries = await this.client.fetchCalendarObjects({ calendar });
     for (let iCalEntry of iCalEntries) {
       let event = this.newEvent();
-      let isEvent = convertICalToEvent(iCalEntry.data, event);
+      let isEvent = event.fromDAVObject(iCalEntry);
       if (!isEvent) {
         continue;
       }
-      event.syncState = iCalEntry.etag;
       this.events.add(event);
     }
 

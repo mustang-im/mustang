@@ -29,7 +29,10 @@ export class CreateMIME {
       bcc: CreateMIME.getRecipients(email.bcc),
       text: email.text,
       html: doHTML ? email.html : null,
-      icalEvent: getICal(email.event, email.iCalMethod),
+      icalEvent: email.event ? {
+        content: getICal(email.event, email.iCalMethod),
+        method: email.iCalMethod,
+      } : undefined,
       attachDataUrls: true,
       attachments: await CreateMIME.getAttachments(email),
       headers: email.headers.contentKeyValues(),

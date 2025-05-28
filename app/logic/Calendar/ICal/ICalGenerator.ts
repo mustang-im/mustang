@@ -1,16 +1,17 @@
 import type { Event } from "../Event";
 import { InvitationResponse, ParticipationStatus, type iCalMethod } from "../Invitation/InvitationStatus";
 import { appName } from "../../build";
+import { assert } from "../../util/util";
 
-export function getICal(event: Event, method?: iCalMethod): { method: iCalMethod, content: string } | null {
-  if (!event || !method) {
-    return null;
-  }
+export function getICal(event: Event, method?: iCalMethod): string | null {
+  assert(event, "Need event");
   /* We have to special-case RRULE as it contains ";"s
    * which must not be escaped as normal text values would */
   const lines: (string | string[])[] = [];
   lines.push(["BEGIN", "VCALENDAR"]);
-  lines.push(["METHOD", method]);
+  if (method) {
+    lines.push(["METHOD", method]);
+  }
   lines.push(["VERSION", "2.0"]);
   lines.push(["PRODID", `-//Beonex//${appName}//EN`]);
   lines.push(["BEGIN", "VEVENT"]);
@@ -52,8 +53,7 @@ export function getICal(event: Event, method?: iCalMethod): { method: iCalMethod
   }
   lines.push(["END", "VEVENT"]);
   lines.push(["END", "VCALENDAR"]);
-  const content = lines.map(line2ical).join("");
-  return { method, content };
+  return lines.map(line2ical).join("");
 }
 
 function line2ical(line: string | string[]): string {
