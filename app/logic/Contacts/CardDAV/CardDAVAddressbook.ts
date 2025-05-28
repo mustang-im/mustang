@@ -16,6 +16,7 @@ export class CardDAVAddressbook extends Addressbook {
   declare readonly groups: ArrayColl<CardDAVGroup>;
   /** URL of the specific addressbook - a CalDAV account can contain multiple addressbooks. */
   addressbookURL: URLString;
+  davAddressbook: DAVAddressBook;
   client: DAVClient;
 
   newPerson(): CardDAVPerson {
@@ -71,23 +72,21 @@ export class CardDAVAddressbook extends Addressbook {
 
     let addressbooks = await this.listAddressbooks();
     assert(addressbooks.hasItems, "No CardDAV addressbooks found");
-    console.log("Found CardDAV address books", addressbooks.contents);
-    let addressbook = addressbooks.find(ab => ab.url == this.addressbookURL);
-    assert(addressbook, "Selected CardDAV addressbook URL not found");
-    console.log("Found CalDAV calendars", addressbooks.contents, "picked", addressbook.displayName);
+    // console.log("Found CardDAV address books", addressbooks.contents);
+    this.davAddressbook = addressbooks.find(ab => ab.url == this.addressbookURL);
+    assert(this.davAddressbook, "Selected CardDAV addressbook URL not found");
 
     this.persons.clear();
     this.groups.clear();
-    let entries = await this.client.fetchVCards({ addressBook: addressbook });
+    let entries = await this.client.fetchVCards({ addressBook: this.davAddressbook });
     for (let entry of entries) {
       let person = this.newPerson();
       try {
-        convertVCardToPerson(entry.data, person);
+        person.fromDAVObject(entry);
       } catch (ex) {
         console.warn(ex);
         continue;
       }
-      person.syncState = entry.etag;
       this.persons.add(person);
     }
 

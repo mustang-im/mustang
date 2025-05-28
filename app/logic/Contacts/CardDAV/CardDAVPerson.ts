@@ -1,10 +1,13 @@
-import { Person, ContactEntry } from '../../Abstract/Person';
+import { Person } from '../../Abstract/Person';
 import type { CardDAVAddressbook } from './CardDAVAddressbook';
+import { convertPersonToVCard, convertVCardToPerson } from '../VCard/VCard';
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { ensureArray, assert } from "../../util/util";
+import type { URLString } from "../../util/util";
+import type { DAVObject } from "tsdav";
 
 export class CardDAVPerson extends Person {
   declare addressbook: CardDAVAddressbook | null;
+  url: URLString | null = null;
 
   get itemID() {
     return this.id;
@@ -13,12 +16,62 @@ export class CardDAVPerson extends Person {
     this.id = val;
   }
 
-  fromVCard(vCard: string) {
+  fromDAVObject(entry: DAVObject) {
+    convertVCardToPerson(entry.data, this);
+    this.url = entry.url;
+    this.syncState = entry.etag;
+  }
+
+  getDAVObject(vCard?: string): DAVObject {
+    return {
+      url: this.url,
+      etag: this.syncState as string,
+      data: vCard,
+    };
   }
 
   async saveToServer() {
+    let vCard = convertPersonToVCard(this);
+    if (this.url) {
+      console.log("updating", this.url, "with vCard", vCard);
+      await this.addressbook.client.updateVCard({
+        vCard: this.getDAVObject(vCard),
+      });
+    } else {
+      console.log("creating with vCard", vCard);
+      let filename = this.id + ".vcf"
+      await this.addressbook.client.createVCard({
+        addressBook: this.addressbook.davAddressbook,
+        vCardString: vCard,
+        filename,
+      });
+      this.url = this.addressbook.addressbookURL + "/" + filename;
+    }
+    await super.saveToServer();
+  }
+
+  async saveTask() {
+  }
+
+  fromExtraJSON(json: any) {
+    super.fromExtraJSON(json);
+    this.url = sanitize.url(json.url, null);
+  }
+  toExtraJSON(): any {
+    let json = super.toExtraJSON();
+    json.url = this.url;
+    return json;
   }
 
   async deleteFromServer() {
+    console.log("Delete contact", this.url, {
+      calendarObject: this.getDAVObject(),
+    });
+    if (!this.url) {
+      return;
+    }
+    await this.addressbook.client.deleteVCard({
+      vCard: this.getDAVObject(),
+    });
   }
 }

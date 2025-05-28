@@ -71,15 +71,20 @@ export class CalDAVCalendar extends Calendar {
 
     let calendars = await this.listCalendars();
     assert(calendars.hasItems, "No CalDAV calendars found");
-    let calendar = this.davCalendar = calendars.find(cal => cal.url == this.calendarURL);
-    assert(calendar, "Selected CalDAV calendar URL not found");
+    this.davCalendar = calendars.find(cal => cal.url == this.calendarURL);
+    assert(this.davCalendar, "Selected CalDAV calendar URL not found");
     // console.log("Found CalDAV calendars", calendars.contents, "picked", calendar.displayName);
     this.events.clear();
-    let iCalEntries = await this.client.fetchCalendarObjects({ calendar });
+    let iCalEntries = await this.client.fetchCalendarObjects({ calendar: this.davCalendar });
     for (let iCalEntry of iCalEntries) {
       let event = this.newEvent();
-      let isEvent = event.fromDAVObject(iCalEntry);
-      if (!isEvent) {
+      try {
+        let isEvent = event.fromDAVObject(iCalEntry);
+        if (!isEvent) {
+          continue;
+        }
+      } catch (ex) {
+        console.warn(ex);
         continue;
       }
       this.events.add(event);

@@ -49,12 +49,13 @@ export class CalDAVEvent extends Event {
       });
     } else {
       console.log("creating with ICS", iCal);
+      let filename = this.calUID + ".ics"
       await this.calendar.client.createCalendarObject({
         calendar: this.calendar.davCalendar,
         iCalString: iCal,
-        filename: this.calUID + ".ics",
+        filename,
       });
-      this.url = this.calendar.calendarURL + "/" + this.calUID + ".ics";
+      this.url = this.calendar.calendarURL + "/" + filename;
     }
     await super.saveToServer();
   }
