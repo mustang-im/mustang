@@ -136,6 +136,9 @@
       }
       await tick();
       let contentRow = contentE.firstChild?.firstChild as HTMLElement;
+      if (!contentRow) {
+        return;
+      }
       rowHeight = contentRow.offsetHeight;
       let availableHeight = listE.offsetHeight - headerE.offsetHeight;
 
