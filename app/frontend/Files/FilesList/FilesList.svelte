@@ -3,25 +3,25 @@
     <hbox class="name header">
       {$t`File name`}
       <RoundButton
-        label={$t`Sort by file name, ascending`}
+        label={$t`Sort by file name`}
         selected={sortBy == SortCriteria.Name}
         onClick={() => sortSetting.value = SortCriteria.Name}
-        icon={AZDownIcon}
+        icon={SortDownIcon}
         iconSize="14px" border={false} classes="sort smallest" />
     </hbox>
     <hbox class="type header">
       {$t`File type`}
       <RoundButton
-        label={$t`Sort by file type, ascending`}
+        label={$t`Sort by file type`}
         selected={sortBy == SortCriteria.Type}
         onClick={() => sortSetting.value = SortCriteria.Type}
-        icon={DownIcon}
+        icon={SortDownIcon}
         iconSize="14px" border={false} classes="sort smallest" />
     </hbox>
     <hbox class="size header">
       {$t`Size *=> Size of the file`}
       <RoundButton
-        label={$t`Sort by size, descending`}
+        label={$t`Sort by size, largest first`}
         selected={sortBy == SortCriteria.Size}
         onClick={() => sortSetting.value = SortCriteria.Size}
         icon={SizeUpIcon}
@@ -30,10 +30,10 @@
     <hbox class="time header">
       {$t`Last mod *=> Last modification time for the file`}
       <RoundButton
-        label={$t`Sort by last modification, descending`}
+        label={$t`Sort by last modification time, latest first`}
         selected={sortBy == SortCriteria.LastMod}
         onClick={() => sortSetting.value = SortCriteria.LastMod}
-        icon={NumUpIcon}
+        icon={SortUpIcon}
         iconSize="14px" border={false} classes="sort smallest" />
     </hbox>
 
@@ -47,9 +47,8 @@
   import FileOrDirLines from "./FileOrDirLines.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
-  import AZDownIcon from "lucide-svelte/icons/arrow-down-a-z";
-  import DownIcon from "lucide-svelte/icons/move-down";
-  import NumUpIcon from "lucide-svelte/icons/arrow-up-1-0";
+  import SortDownIcon from "lucide-svelte/icons/arrow-down";
+  import SortUpIcon from "lucide-svelte/icons/arrow-up";
   import SizeUpIcon from "lucide-svelte/icons/arrow-up-wide-narrow";
   import { getLocalStorage } from "../../Util/LocalStorage";
   import { t } from "../../../l10n/l10n";

@@ -1,6 +1,10 @@
 {#each $dirs?.each as dir }
   <DirectoryLine {dir} {indent} />
 {/each}
+<hbox class="separator" />
+<hbox class="separator" />
+<hbox class="separator" />
+<hbox class="separator" />
 {#each $files?.each as file }
   <FileLine {file} {indent} />
 {/each}
@@ -16,3 +20,9 @@
   export let dirs: Collection<Directory>;
   export let indent = 0;
 </script>
+
+<style>
+  .separator {
+    min-height: 8px;
+  }
+</style>
