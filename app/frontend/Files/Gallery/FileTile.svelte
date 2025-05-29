@@ -1,4 +1,4 @@
-<vbox class="directory box"
+<vbox class="file box"
   class:selected={file == $selectedFile}
   on:click={() => catchErrors(openFile)}
   >
@@ -14,7 +14,7 @@
     <hbox class="second">
       <hbox flex />
       <hbox class="time font-smallest">
-        {getDateTimeString(file.lastMod)}
+        {file?.lastMod ? getDateTimeString(file.lastMod) : ""}
       </hbox>
     </hbox>
   </vbox>
@@ -62,9 +62,9 @@
     stroke-width: 1.5px;
   }
   .info {
-    max-width: 192px;
-    margin-block: 4px;
-    margin-inline: 8px;
+    max-width: 176px;
+    padding-block: 4px;
+    padding-inline: 8px;
   }
   .name, .second {
     max-height: 20px;

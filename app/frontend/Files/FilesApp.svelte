@@ -6,6 +6,7 @@
     {#if viewFile}
       <FileViewer file={viewFile} />
     {:else if listFiles}
+      <FilesHeader dir={$selectedFolder} />
       {#if view == "table"}
         <FilesList files={listFiles} dirs={listDirs} />
       {:else if view == "gallery"}
@@ -22,10 +23,12 @@
   import LeftPane from "./LeftPane/LeftPane.svelte";
   import FilesList from "./FilesList/FilesList.svelte";
   import Gallery from "./Gallery/Gallery.svelte";
+  import FilesHeader from "./RightPane/FilesHeader.svelte";
   import FileViewer from "./FileViewer.svelte";
   import Splitter from "../Shared/Splitter.svelte";
   import type { Collection } from "svelte-collections";
   import { catchErrors } from "../Util/error";
+  import { selectedFolder } from "./selected";
 
   /** The list of files to show on the right pane */
   let listFiles: Collection<File>;

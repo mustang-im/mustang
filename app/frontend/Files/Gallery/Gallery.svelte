@@ -19,5 +19,6 @@
   .gallery {
     display: flex;
     flex-wrap: wrap;
+    margin-inline-start: 12px;
   }
 </style>

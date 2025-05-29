@@ -17,7 +17,6 @@
   {:else if activeTab == FilesView.CloudStorage || activeTab == FilesView.Harddrive}
     <FolderPane bind:listFiles bind:listDirs {activeTab} bind:selectedFolder={$selectedFolder} />
   {/if}
-  <RightViewSwitcher />
 </vbox>
 
 <script lang="ts">
@@ -30,7 +29,6 @@
   import RecentList from "./RecentList.svelte";
   import PersonsPane from "./PersonsPane.svelte";
   import PaneViewSwitcher, { FilesView } from "./PaneViewSwitcher.svelte";
-  import RightViewSwitcher from "../RightViewSwitcher.svelte";
   import { Collection } from 'svelte-collections';
 
   /** The list of files and folders to show on the right pane
@@ -59,6 +57,7 @@
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%);
     background-color: var(--leftbar-bg);
     color: var(--leftbar-fg);
+    padding-block-end: 16px;
   }
 
   .left-pane :global(.persons) {

@@ -20,12 +20,12 @@
 </hbox>
 
 <script lang="ts">
-  import { getLocalStorage } from "../Util/LocalStorage";
-  import IslandSwitcher from "../Shared/IslandSwitcher.svelte";
-  import Button from "../Shared/Button.svelte";
+  import { getLocalStorage } from "../../Util/LocalStorage";
+  import IslandSwitcher from "../../Shared/IslandSwitcher.svelte";
+  import Button from "../../Shared/Button.svelte";
   import TableIcon from "lucide-svelte/icons/table-of-contents";
   import GalleryIcon from "lucide-svelte/icons/grid-3x3";
-  import { t } from "../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let large = false;
 

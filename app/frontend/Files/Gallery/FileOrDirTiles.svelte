@@ -1,9 +1,9 @@
 {#each $dirs?.each as dir }
-  <DirectoryTile {dir} {indent} />
+  <DirectoryTile {dir} />
 {/each}
 <hbox class="linebreak" />
 {#each $files?.each as file }
-  <FileTile {file} {indent} />
+  <FileTile {file} />
 {/each}
 
 <script lang="ts">
@@ -15,12 +15,12 @@
 
   export let files: Collection<File>;
   export let dirs: Collection<Directory>;
-  export let indent = 0;
 </script>
 
 <style>
   .linebreak {
     width: 100%;
     height: 0;
+    margin-top: 48px;
   }
 </style>

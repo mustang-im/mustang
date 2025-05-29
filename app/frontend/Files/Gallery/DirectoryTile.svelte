@@ -18,7 +18,7 @@
     <hbox class="second">
       <hbox flex />
       <hbox class="time font-smallest">
-        {getDateTimeString(dir.lastMod)}
+        {dir?.lastMod ? getDateTimeString(dir.lastMod) : ""}
       </hbox>
     </hbox>
   </vbox>
@@ -65,14 +65,13 @@
     stroke-width: 1.5px;
   }
   .info {
-    max-width: 192px;
-    margin-block: 4px;
-    margin-inline: 8px;
+    max-width: 176px;
+    padding-block: 4px;
+    padding-inline: 8px;
   }
   .name, .second {
     max-height: 20px;
     overflow: hidden;
-    overflow-wrap: anywhere;
   }
   .time {
     padding-inline-end: 16px;
