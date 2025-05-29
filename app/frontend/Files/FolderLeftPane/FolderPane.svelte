@@ -23,7 +23,7 @@
   import AccountList from "./AccountList.svelte";
   import FolderList from "./FolderList.svelte";
   import TagsList from "./TagsList.svelte";
-  import { FilesView } from "../LeftPane/ViewSwitcher.svelte";
+  import { FilesView } from "../LeftPane/PaneViewSwitcher.svelte";
   import { ArrayColl, Collection } from 'svelte-collections';
   import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
@@ -32,13 +32,13 @@
    * in/out only */
   export let listFiles: Collection<File>;
   export let listDirs: Collection<Directory>;
+  export let selectedFolder: Directory;
   export let activeTab: FilesView;
 
   $: accounts = activeTab == FilesView.CloudStorage
     ? appGlobal.fileSharingAccounts.filterObservable(acc => acc != myHarddrive)
     : new ArrayColl([myHarddrive]);
   let selectedAccount: FileSharingAccount = myHarddrive;
-  let selectedFolder: Directory;
   let selectedFolders: ArrayColl<Directory>;
   let searchFiles: ArrayColl<FileOrDirectory> | null;
 

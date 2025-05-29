@@ -1,7 +1,7 @@
 <vbox flex class="left-pane">
   <hbox class="top">
     <vbox class="island">
-      <ViewSwitcher bind:active={activeTab} />
+      <PaneViewSwitcher bind:active={activeTab} />
     </vbox>
     <hbox flex />
   </hbox>
@@ -15,19 +15,22 @@
   {:else if activeTab == FilesView.Search}
     <SearchPane bind:listFiles bind:listDirs on:clear={endSearchMode} />
   {:else if activeTab == FilesView.CloudStorage || activeTab == FilesView.Harddrive}
-    <FolderPane bind:listFiles bind:listDirs {activeTab} />
+    <FolderPane bind:listFiles bind:listDirs {activeTab} bind:selectedFolder={$selectedFolder} />
   {/if}
+  <RightViewSwitcher />
 </vbox>
 
 <script lang="ts">
   import { File } from "../../../logic/Files/File";
   import { Directory } from "../../../logic/Files/Directory";
+  import { selectedFolder } from "../selected";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import FolderPane from "../FolderLeftPane/FolderPane.svelte";
   import SearchPane from "../Search/SearchPane.svelte";
   import RecentList from "./RecentList.svelte";
   import PersonsPane from "./PersonsPane.svelte";
-  import ViewSwitcher, { FilesView } from "./ViewSwitcher.svelte";
+  import PaneViewSwitcher, { FilesView } from "./PaneViewSwitcher.svelte";
+  import RightViewSwitcher from "../RightViewSwitcher.svelte";
   import { Collection } from 'svelte-collections';
 
   /** The list of files and folders to show on the right pane

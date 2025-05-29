@@ -6,5 +6,5 @@ import { ArrayColl } from "svelte-collections";
 
 export let selectedFile: Writable<FileOrDirectory> = writable(null);
 export let selectedFiles = new ArrayColl<FileOrDirectory>();
-export let selectedDirectory: Writable<Directory> = writable(null);
+export let selectedFolder: Writable<Directory> = writable(null);
 export let selectedAccount: Writable<FileSharingAccount> = writable(null);

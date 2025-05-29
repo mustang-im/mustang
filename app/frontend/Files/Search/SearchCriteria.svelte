@@ -77,7 +77,7 @@
   import { Directory } from "../../../logic/Files/Directory";
   import { SearchFile } from "../../../logic/Files/Store/SearchFile";
   import { availableTags } from "../../../logic/Abstract/Tag";
-  import { selectedAccount, selectedDirectory } from "../selected";
+  import { selectedAccount, selectedFolder } from "../selected";
   import { appGlobal } from "../../../logic/app";
   import SearchField from "../../Shared/SearchField.svelte";
   import GenericFileTypesList from "../../Files/GenericFileTypesList.svelte";
@@ -143,7 +143,7 @@
     }
   }
   function updateFolder() {
-    search.directory = hasFolder ? $selectedDirectory : null;
+    search.directory = hasFolder ? $selectedFolder : null;
   }
   function updateTag() {
     if (!hasTag) {

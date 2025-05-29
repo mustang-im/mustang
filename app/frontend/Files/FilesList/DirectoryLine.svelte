@@ -1,6 +1,6 @@
-<hbox class="file line"
+<hbox class="directory line"
   class:selected={dir == $selectedFile}
-  on:click={toggleOpen}
+  on:click={() => catchErrors(toggleOpen)}
   >
   <hbox class="firstColumn">
     {#each {length: indent} as _}
@@ -41,6 +41,7 @@
   import FileOrDirLines from "./FileOrDirLines.svelte";
   import FolderClosedIcon from "lucide-svelte/icons/folder";
   import FolderOpenIcon from "lucide-svelte/icons/folder-open";
+  import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
   export let dir: Directory;
@@ -53,7 +54,6 @@
   function toggleOpen() {
     open = !open;
     if (open) {
-      $selectedFile = dir;
       dir.listContents()
         .catch(console.error);
     }
