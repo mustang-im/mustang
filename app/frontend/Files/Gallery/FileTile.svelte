@@ -5,6 +5,17 @@
   <vbox class="tile">
     <button class="icon">
       <FileIcon ext={file.ext} size={48} />
+      <!--
+      {#if $file.isDownloaded}
+        <Thumbnail {file} size={48} />
+      {:else}
+        {#await $file.download()}
+          <FileIcon ext={file.ext} size={48} />
+        {:catch ex}
+          {ex?.message + ex + ""}
+        {/await}
+      {/if}
+      -->
     </button>
   </vbox>
   <vbox class="info">
@@ -23,10 +34,11 @@
 <script lang="ts">
   import { File } from "../../../logic/Files/File";
   import { selectedFile } from "../selected";
-  import FileIcon from "../FileIcon.svelte";
+  import Thumbnail from "../Thumbnail/Thumbnail.svelte";
   import { getDateTimeString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
+  import FileIcon from "../Thumbnail/FileIcon.svelte";
 
   export let file: File;
 

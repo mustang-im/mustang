@@ -13,6 +13,7 @@ export class FileOrDirectory extends Observable implements TaggableObject {
   @notifyChangedProperty
   name: string;
   parent: Directory;
+  @notifyChangedProperty
   lastMod = new Date();
   readonly tags = new SetColl<Tag>();
 

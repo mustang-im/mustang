@@ -20,7 +20,7 @@
 
 <script lang="ts">
   import { File } from "../../../logic/Files/File";
-  import FileIcon from "../FileIcon.svelte";
+  import FileIcon from "../Thumbnail/FileIcon.svelte";
   import FileMenu from "./FileMenu.svelte";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import Button from "../../Shared/Button.svelte";

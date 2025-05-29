@@ -26,7 +26,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { assert } from "../../../logic/util/util";
   import AttachmentMenu from "./AttachmentMenu.svelte";
-  import FileIcon from "../../Files/FileIcon.svelte";
+  import FileIcon from "../../Files/Thumbnail/FileIcon.svelte";
   import { fileSize } from "../../Files/fileSize";
   import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";

@@ -1,12 +1,24 @@
 import { FileOrDirectory } from "./FileOrDirectory";
 import { appGlobal } from "../app";
+import { Lock } from "../util/Lock";
+import { notifyChangedProperty } from "../util/Observable";
+import { NotImplemented, blobToDataURL, type URLString } from "../util/util";
 
 export class File extends FileOrDirectory {
-  nameWithoutExt: string; /** substring of `name`, excluding `fileExt` and dot */
-  ext: string; /** substring of `name`, just the part after the last dot */
+  /** substring of `name`, excluding `fileExt` and dot */
+  nameWithoutExt: string;
+  /** substring of `name`, just the part after the last dot */
+  ext: string;
   mimetype: string;
-  size: number; /* in bytes */
-  contents: Blob; /** may be undefined = not loaded. Does not mean that the file is empty. */
+  /** in bytes */
+  @notifyChangedProperty
+  size: number;
+  url: URLString;
+  /** null/undefined = not loaded. Does not mean that the file is empty. */
+  @notifyChangedProperty
+  contents: Blob;
+  protected downloadLock = new Lock();
+  protected dataURLLock = new Lock();
 
   setFileName(val: string) {
     this.name = val;
@@ -20,7 +32,48 @@ export class File extends FileOrDirectory {
     this.ext = val.substring(pos + 1);
   }
 
+  get isDownloaded(): boolean {
+    return !!this.contents;
+  }
+
   async download() {
+    if (this.contents) {
+      return;
+    } else if (this.filepathLocal) {
+      let wasLocked = this.downloadLock.haveWaiting;
+      let lock = await this.downloadLock.lock();
+      if (wasLocked) {
+        lock.release();
+        return;
+      }
+      try {
+        this.contents = await appGlobal.remoteApp.fs.readFile(this.filepathLocal);
+        console.log("got content of file", this.filepathLocal);
+      } finally {
+        lock.release();
+      }
+    } else {
+      throw new NotImplemented("Download of remote file not yet implemented");
+    }
+  }
+
+  async getURL(): Promise<URLString> {
+    if (this.url) {
+      return this.url;
+    } else if (this.filepathLocal) {
+      await this.download();
+      let wasLocked = this.dataURLLock.haveWaiting;
+      let lock = await this.dataURLLock.lock();
+      if (wasLocked) {
+        lock.release();
+        return;
+      }
+      try {
+        return this.url = await blobToDataURL(this.contents);
+      } finally {
+        lock.release();
+      }
+    }
   }
 
   /** Open the native desktop app with this file */

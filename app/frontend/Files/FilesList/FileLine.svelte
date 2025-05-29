@@ -29,7 +29,7 @@
   import { fileSize } from "../fileSize";
   import { selectedFile } from "../selected";
   import { getDateTimeString } from "../../Util/date";
-  import FileIcon from "../FileIcon.svelte";
+  import FileIcon from "../Thumbnail/FileIcon.svelte";
   import { catchErrors } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
 
