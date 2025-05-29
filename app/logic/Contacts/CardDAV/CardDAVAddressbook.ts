@@ -4,6 +4,7 @@ import { CardDAVGroup } from "./CardDAVGroup";
 import { AuthMethod } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { Lock } from "../../util/Lock";
 import { NotReached, assert, type URLString } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -18,6 +19,7 @@ export class CardDAVAddressbook extends Addressbook {
   davAddressbook: DAVAddressBook;
   ctag: string | null = null;
   client: DAVClient;
+  protected syncLock = new Lock();
 
   newPerson(): CardDAVPerson {
     return new CardDAVPerson(this);
@@ -62,7 +64,12 @@ export class CardDAVAddressbook extends Addressbook {
   }
 
   async listAddressbooks(): Promise<Collection<DAVAddressBook>> {
-    return new ArrayColl(await this.client.fetchAddressBooks());
+    let lock = await this.syncLock.lock();
+    try {
+      return new ArrayColl(await this.client.fetchAddressBooks());
+    } finally {
+      lock.release();
+    }
   }
 
   async listContacts() {
@@ -84,54 +91,64 @@ export class CardDAVAddressbook extends Addressbook {
   }
 
   protected async fetchAll() {
-    this.persons.clear();
-    this.groups.clear();
-    let vCardEntries = await this.client.fetchVCards({ addressBook: this.davAddressbook });
-    for (let vCardEntry of vCardEntries) {
-      this.addPerson(vCardEntry);
+    let lock = await this.syncLock.lock();
+    try {
+      this.persons.clear();
+      this.groups.clear();
+      let vCardEntries = await this.client.fetchVCards({ addressBook: this.davAddressbook });
+      for (let vCardEntry of vCardEntries) {
+        this.addPerson(vCardEntry);
+      }
+    } finally {
+      lock.release();
     }
   }
 
   protected async sync() {
-    let localObjects = this.persons.contents.map(e => ({
-      url: e.url,
-      etag: e.etag,
-      data: undefined, // unused by function, and expensive to calculate
-      id: undefined, // unused by function, and not passed by iCalEntry
-    }));
-    let syncResponse = await this.client.smartCollectionSync({
-      collection: {
-        url: this.addressbookURL,
-        ctag: this.ctag,
-        syncToken: this.syncState,
-        objects: localObjects,
-        objectMultiGet: (...args) => this.client.addressBookMultiGet(...args),
-      },
-      method: 'webdav',
-      detailedResult: true,
-    });
-    let { created, updated, deleted } = syncResponse.objects;
-    for (let vCardEntry of created) {
-      this.addPerson(vCardEntry);
-    }
-    for (let vCardEntry of updated) {
-      let existing = this.getPersonByURL(vCardEntry.url);
-      if (existing) {
-        existing.fromDAVObject(vCardEntry);
-        await existing.save();
-      } else {
+    let lock = await this.syncLock.lock();
+    try {
+      let localObjects = this.persons.contents.map(e => ({
+        url: e.url,
+        etag: e.etag,
+        data: undefined, // unused by function, and expensive to calculate
+        id: undefined, // unused by function, and not passed by iCalEntry
+      }));
+      let syncResponse = await this.client.smartCollectionSync({
+        collection: {
+          url: this.addressbookURL,
+          ctag: this.ctag,
+          syncToken: this.syncState,
+          objects: localObjects,
+          objectMultiGet: (...args) => this.client.addressBookMultiGet(...args),
+        },
+        method: 'webdav',
+        detailedResult: true,
+      });
+      let { created, updated, deleted } = syncResponse.objects;
+      for (let vCardEntry of created) {
         this.addPerson(vCardEntry);
       }
-    }
-    for (let vCardEntry of deleted) {
-      let existing = this.getPersonByURL(vCardEntry.url);
-      if (existing) {
-        await existing.deleteIt();
+      for (let vCardEntry of updated) {
+        let existing = this.getPersonByURL(vCardEntry.url);
+        if (existing) {
+          existing.fromDAVObject(vCardEntry);
+          await existing.save();
+        } else {
+          this.addPerson(vCardEntry);
+        }
       }
-    }
+      for (let vCardEntry of deleted) {
+        let existing = this.getPersonByURL(vCardEntry.url);
+        if (existing) {
+          await existing.deleteIt();
+        }
+      }
 
-    this.ctag = syncResponse.ctag;
-    this.syncState = syncResponse.syncToken;
+      this.ctag = syncResponse.ctag;
+      this.syncState = syncResponse.syncToken;
+    } finally {
+      lock.release();
+    }
   }
 
   protected addPerson(vCardEntry: DAVObject) {
