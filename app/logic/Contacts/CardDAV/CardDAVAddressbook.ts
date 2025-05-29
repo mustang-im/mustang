@@ -97,7 +97,7 @@ export class CardDAVAddressbook extends Addressbook {
       this.groups.clear();
       let vCardEntries = await this.client.fetchVCards({ addressBook: this.davAddressbook });
       for (let vCardEntry of vCardEntries) {
-        this.addPerson(vCardEntry);
+        await this.addPerson(vCardEntry);
       }
     } finally {
       lock.release();
@@ -126,7 +126,7 @@ export class CardDAVAddressbook extends Addressbook {
       });
       let { created, updated, deleted } = syncResponse.objects;
       for (let vCardEntry of created) {
-        this.addPerson(vCardEntry);
+        await this.addPerson(vCardEntry);
       }
       for (let vCardEntry of updated) {
         let existing = this.getPersonByURL(vCardEntry.url);
@@ -134,7 +134,7 @@ export class CardDAVAddressbook extends Addressbook {
           existing.fromDAVObject(vCardEntry);
           await existing.save();
         } else {
-          this.addPerson(vCardEntry);
+          await this.addPerson(vCardEntry);
         }
       }
       for (let vCardEntry of deleted) {
@@ -151,11 +151,12 @@ export class CardDAVAddressbook extends Addressbook {
     }
   }
 
-  protected addPerson(vCardEntry: DAVObject) {
+  protected async addPerson(vCardEntry: DAVObject) {
     try {
       let person = this.newPerson();
       person.fromDAVObject(vCardEntry);
       this.persons.add(person);
+      await person.save();
     } catch (ex) {
       console.warn(ex);
     }

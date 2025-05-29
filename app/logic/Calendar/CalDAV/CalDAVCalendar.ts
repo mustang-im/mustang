@@ -96,7 +96,7 @@ export class CalDAVCalendar extends Calendar {
       this.events.clear();
       let iCalEntries = await this.client.fetchCalendarObjects({ calendar: this.davCalendar });
       for (let iCalEntry of iCalEntries) {
-        this.addEvent(iCalEntry);
+        await this.addEvent(iCalEntry);
       }
     } finally {
       lock.release();
@@ -133,7 +133,7 @@ export class CalDAVCalendar extends Calendar {
       });
       let { created, updated, deleted } = syncResponse.objects;
       for (let iCalEntry of created) {
-        this.addEvent(iCalEntry);
+        await this.addEvent(iCalEntry);
       }
       for (let iCalEntry of updated) {
         let existing = this.getEventByURL(iCalEntry.url);
@@ -141,7 +141,7 @@ export class CalDAVCalendar extends Calendar {
           existing.fromDAVObject(iCalEntry);
           await existing.save();
         } else {
-          this.addEvent(iCalEntry);
+          await this.addEvent(iCalEntry);
         }
       }
       for (let iCalEntry of deleted) {
@@ -158,7 +158,7 @@ export class CalDAVCalendar extends Calendar {
     }
   }
 
-  protected addEvent(iCalEntry: DAVObject) {
+  protected async addEvent(iCalEntry: DAVObject) {
     try {
       let event = this.newEvent();
       let isEvent = event.fromDAVObject(iCalEntry);
@@ -166,6 +166,7 @@ export class CalDAVCalendar extends Calendar {
         return;
       }
       this.events.add(event);
+      await event.save();
     } catch (ex) {
       console.warn(ex);
     }
