@@ -65,6 +65,7 @@
   /** e.g. to `.focus()`
    * out */
   export let buttonEl: HTMLButtonElement = null;
+  export let loadDelayMS = 500; // ms before showing the spinner
 
   $: hasIcon = !!icon || $$slots.icon || loading;
   $: hasLabel = (!!label || $$slots.label) && !iconOnly;
@@ -80,7 +81,7 @@
     disabled = true;
     let loadTimeout = setTimeout(() => {
       loading = true;
-    }, 500);
+    }, loadDelayMS);
     try {
       await onClick(event);
     } catch (ex) {

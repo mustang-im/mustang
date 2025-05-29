@@ -4,6 +4,7 @@
     label={$t`Sync all calendars`}
     icon={SyncIcon}
     onClick={sync}
+    loadDelayMS={0}
     iconSize="14px"
     padding="6px"
     border={false}

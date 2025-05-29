@@ -49,6 +49,7 @@
   export let tabindex = null;
   export let onClick: (event: Event) => void = null;
   export let errorCallback = showError;
+  export let loadDelayMS = 500; // ms before showing the spinner
 
   let loading = false;
   async function myOnClick(event: Event) {
@@ -59,7 +60,7 @@
     disabled = true;
     let loadTimeout = setTimeout(() => {
       loading = true;
-    }, 500);
+    }, loadDelayMS);
     try {
       await onClick(event);
     } catch (ex) {
