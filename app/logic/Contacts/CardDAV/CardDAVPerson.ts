@@ -24,7 +24,7 @@ export class CardDAVPerson extends Person {
 
   fromDAVObject(entry: DAVObject) {
     convertVCardToPerson(entry.data, this);
-    this.url = entry.url;
+    this.url = new URL(entry.url, this.addressbook.addressbookURL).href;
     this.syncState = entry.etag;
   }
 
@@ -37,6 +37,7 @@ export class CardDAVPerson extends Person {
   }
 
   async saveToServer() {
+    this.id ??= crypto.randomUUID();
     let vCard = convertPersonToVCard(this);
     if (this.url) {
       console.log("updating", this.url, "with vCard", vCard);
@@ -45,13 +46,13 @@ export class CardDAVPerson extends Person {
       });
     } else {
       console.log("creating with vCard", vCard);
-      let filename = this.id + ".vcf"
+      let filename = this.id + ".vcf";
       await this.addressbook.client.createVCard({
         addressBook: this.addressbook.davAddressbook,
         vCardString: vCard,
         filename,
       });
-      this.url = this.addressbook.addressbookURL + "/" + filename;
+      this.url = this.addressbook.addressbookURL + filename;
     }
     await super.saveToServer();
   }

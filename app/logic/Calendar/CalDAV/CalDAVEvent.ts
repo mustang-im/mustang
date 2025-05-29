@@ -32,7 +32,7 @@ export class CalDAVEvent extends Event {
     if (!isEvent) {
       return false;
     }
-    this.url = entry.url;
+    this.url = new URL(entry.url, this.calendar.calendarURL).href;
     this.etag = entry.etag;
     return true;
   }
@@ -55,13 +55,13 @@ export class CalDAVEvent extends Event {
       });
     } else {
       console.log("creating", this, "with ICS", iCal);
-      let filename = this.calUID + ".ics"
+      let filename = this.calUID + ".ics";
       await this.calendar.client.createCalendarObject({
         calendar: this.calendar.davCalendar,
         iCalString: iCal,
         filename,
       });
-      this.url = this.calendar.calendarURL + "/" + filename;
+      this.url = this.calendar.calendarURL + filename;
     }
     await super.saveToServer();
   }
