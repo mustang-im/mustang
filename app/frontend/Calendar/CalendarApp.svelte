@@ -10,6 +10,7 @@
 <script lang="ts">
   import { selectedCalendar, selectedDate, selectedDateInterval, startDate } from "./selected";
   import { getLocalStorage } from "../Util/LocalStorage";
+  import { RecurrenceColl } from "../../logic/Calendar/RecurrenceColl";
   import { calendarMustangApp } from "./CalendarMustangApp";
   import { appGlobal } from "../../logic/app";
   import MainView from "./MainView.svelte";
@@ -20,7 +21,7 @@
   import { mergeColls } from "svelte-collections";
   import { t } from "../../l10n/l10n";
 
-  $: events = mergeColls(appGlobal.calendars.map(cal => cal.fillRecurrences())).filter(ev => !ev.recurrenceRule).sortBy(ev => ev.startTime);
+  $: events = new RecurrenceColl(mergeColls(appGlobal.calendars.map(cal => cal.events))).sortBy(ev => ev.startTime);
   $: if (!$selectedCalendar) { $selectedCalendar = appGlobal.calendars.first; }
 
   let defaultLengthInMinutes = Math.max(getLocalStorage("calendar.defaultEventLengthInMinutes", 60).value, 1);

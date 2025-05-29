@@ -12,7 +12,7 @@ import { Observable, notifyChangedAccessor, notifyChangedProperty } from "../uti
 import { Lock } from "../util/Lock";
 import { assert, randomID } from "../util/util";
 import { backgroundError } from "../../frontend/Util/error";
-import { ArrayColl } from "svelte-collections";
+import { ArrayColl, Collection } from "svelte-collections";
 
 export class Event extends Observable {
   id: string;
@@ -549,7 +549,7 @@ export class Event extends Observable {
    * Ensures that all recurring instances exist up to the provided date.
    * Must only be called on recurring master events.
    */
-  fillRecurrences(endDate: Date = new Date(Date.now() + 1e11)) {
+  fillRecurrences(endDate: Date = new Date(Date.now() + 1e11)): Collection<Event> {
     let newOccurrences: Event[] = [];
     let occurrences = this.recurrenceRule.getOccurrencesByDate(endDate);
     for (let i = 0; i < occurrences.length; i++) {
@@ -567,6 +567,7 @@ export class Event extends Observable {
       }
     }
     this.calendar.events.addAll(newOccurrences);
+    return this.instances;
   }
 
   clearExceptions() {
