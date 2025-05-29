@@ -7,7 +7,7 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotReached, assert, type URLString } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
-import type { DAVClient, DAVCalendar } from "tsdav";
+import type { DAVClient, DAVCalendar, DAVObject } from "tsdav";
 
 export class CalDAVCalendar extends Calendar {
   readonly protocol: string = "caldav";
@@ -15,6 +15,7 @@ export class CalDAVCalendar extends Calendar {
   /** URL of the specific calendar - a CalDAV account can contain multiple calendars */
   calendarURL: URLString;
   davCalendar: DAVCalendar | null = null;
+  ctag: string | null = null;
   client: DAVClient;
 
   newEvent(parentEvent?: CalDAVEvent): CalDAVEvent {
@@ -69,41 +70,103 @@ export class CalDAVCalendar extends Calendar {
       await this.save();
     }
 
-    let calendars = await this.listCalendars();
-    assert(calendars.hasItems, "No CalDAV calendars found");
-    this.davCalendar = calendars.find(cal => cal.url == this.calendarURL);
-    assert(this.davCalendar, "Selected CalDAV calendar URL not found");
-    // console.log("Found CalDAV calendars", calendars.contents, "picked", calendar.displayName);
-    this.events.clear();
-    let iCalEntries = await this.client.fetchCalendarObjects({ calendar: this.davCalendar });
-    for (let iCalEntry of iCalEntries) {
-      let event = this.newEvent();
-      try {
-        let isEvent = event.fromDAVObject(iCalEntry);
-        if (!isEvent) {
-          continue;
-        }
-      } catch (ex) {
-        console.warn(ex);
-        continue;
-      }
-      this.events.add(event);
+    if (!this.davCalendar) {
+      let calendars = await this.listCalendars();
+      assert(calendars.hasItems, "No CalDAV calendars found");
+      this.davCalendar = calendars.find(cal => cal.url == this.calendarURL);
+      assert(this.davCalendar, "Selected CalDAV calendar URL not found");
+      // console.log("Found CalDAV calendars", calendars.contents, "picked", calendar.displayName);
     }
+
+    await this.sync();
 
     await this.save();
   }
 
-  getEventByItemID(id: string): CalDAVEvent | void {
-    return this.events.find(p => p.itemID == id);
+  protected async fetchAll() {
+    this.events.clear();
+    let iCalEntries = await this.client.fetchCalendarObjects({ calendar: this.davCalendar });
+    for (let iCalEntry of iCalEntries) {
+      this.addEvent(iCalEntry);
+    }
+  }
+
+  protected async sync() {
+    /* For multiple calendars:
+    let { created, updated, deleted } = await this.client.syncCalendars({
+      oldCalendars: [this.davCalendar],
+      detailedResult: true,
+    });
+    if (!updated?.length || !updated.includes(this.davCalendar)) {
+      return;
+    }*/
+    let localObjects = this.events.contents.map(e => ({
+      url: e.url,
+      etag: e.etag,
+      data: undefined, // unused by function, and expensive to calculate
+      id: undefined, // unused by function, and not passed by iCalEntry
+    }));
+    let syncResponse = await this.client.smartCollectionSync({
+      collection: {
+        url: this.calendarURL,
+        ctag: this.ctag,
+        syncToken: this.syncState,
+        objects: localObjects,
+        objectMultiGet: (...args) => this.client.calendarMultiGet(...args),
+      },
+      method: 'webdav',
+      detailedResult: true,
+    });
+    let { created, updated, deleted } = syncResponse.objects;
+    for (let iCalEntry of created) {
+      this.addEvent(iCalEntry);
+    }
+    for (let iCalEntry of updated) {
+      let existing = this.getEventByURL(iCalEntry.url);
+      if (existing) {
+        existing.fromDAVObject(iCalEntry);
+        await existing.save();
+      } else {
+        this.addEvent(iCalEntry);
+      }
+    }
+    for (let iCalEntry of deleted) {
+      let existing = this.getEventByURL(iCalEntry.url);
+      if (existing) {
+        await existing.deleteIt();
+      }
+    }
+
+    this.ctag = syncResponse.ctag;
+    this.syncState = syncResponse.syncToken;
+  }
+
+  protected addEvent(iCalEntry: DAVObject) {
+    try {
+      let event = this.newEvent();
+      let isEvent = event.fromDAVObject(iCalEntry);
+      if (!isEvent) {
+        return;
+      }
+      this.events.add(event);
+    } catch (ex) {
+      console.warn(ex);
+    }
+  }
+
+  getEventByURL(url: URLString): CalDAVEvent | void {
+    return this.events.find(e => e.url == url);
   }
 
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.calendarURL = sanitize.url(json.calendarURL);
+    this.ctag = sanitize.string(json.ctag, null);
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.calendarURL = this.calendarURL;
+    json.ctag = this.ctag;
     return json;
   }
 }

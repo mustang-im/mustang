@@ -9,11 +9,17 @@ export class CardDAVPerson extends Person {
   declare addressbook: CardDAVAddressbook | null;
   url: URLString | null = null;
 
-  get itemID() {
+  get itemID(): string | null {
     return this.id;
   }
-  set itemID(val) {
+  set itemID(val: string | null) {
     this.id = val;
+  }
+  get etag(): string | null {
+    return this.syncState as string;
+  }
+  set etag(val: string | null) {
+    this.syncState = val;
   }
 
   fromDAVObject(entry: DAVObject) {

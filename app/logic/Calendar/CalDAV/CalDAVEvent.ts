@@ -20,6 +20,12 @@ export class CalDAVEvent extends Event {
   set itemID(val: string | null) {
     this.pID = val;
   }
+  get etag(): string | null {
+    return this.syncState as string;
+  }
+  set etag(val: string | null) {
+    this.syncState = val;
+  }
 
   fromDAVObject(entry: DAVObject): boolean {
     let isEvent = convertICalToEvent(entry.data, this);
@@ -27,14 +33,14 @@ export class CalDAVEvent extends Event {
       return false;
     }
     this.url = entry.url;
-    this.syncState = entry.etag;
+    this.etag = entry.etag;
     return true;
   }
 
   getDAVObject(iCal?: string): DAVObject {
     return {
       url: this.url,
-      etag: this.syncState as string,
+      etag: this.etag,
       data: iCal,
     };
   }
@@ -43,12 +49,12 @@ export class CalDAVEvent extends Event {
     this.calUID ??= crypto.randomUUID();
     let iCal = getICal(this);
     if (this.url) {
-      console.log("updating", this.url, "with ICS", iCal);
+      console.log("updating", this, this.url, "with ICS", iCal);
       await this.calendar.client.updateCalendarObject({
         calendarObject: this.getDAVObject(iCal),
       });
     } else {
-      console.log("creating with ICS", iCal);
+      console.log("creating", this, "with ICS", iCal);
       let filename = this.calUID + ".ics"
       await this.calendar.client.createCalendarObject({
         calendar: this.calendar.davCalendar,
@@ -74,7 +80,7 @@ export class CalDAVEvent extends Event {
   }
 
   async deleteFromServer() {
-    console.log("Delete event", this.url, {
+    console.log("Delete event", this, this.url, {
       calendarObject: this.getDAVObject(),
     });
     if (!this.url) {

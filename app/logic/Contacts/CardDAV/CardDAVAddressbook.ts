@@ -1,14 +1,13 @@
 import { Addressbook } from "../Addressbook";
 import { CardDAVPerson } from "./CardDAVPerson";
 import { CardDAVGroup } from "./CardDAVGroup";
-import { convertVCardToPerson } from "../VCard/VCard";
 import { AuthMethod } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotReached, assert, type URLString } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
-import type { DAVClient, DAVAddressBook } from "tsdav";
+import type { DAVClient, DAVAddressBook, DAVObject } from "tsdav";
 
 export class CardDAVAddressbook extends Addressbook {
   readonly protocol: string = "carddav";
@@ -17,6 +16,7 @@ export class CardDAVAddressbook extends Addressbook {
   /** URL of the specific addressbook - a CalDAV account can contain multiple addressbooks. */
   addressbookURL: URLString;
   davAddressbook: DAVAddressBook;
+  ctag: string | null = null;
   client: DAVClient;
 
   newPerson(): CardDAVPerson {
@@ -70,44 +70,93 @@ export class CardDAVAddressbook extends Addressbook {
       await this.save();
     }
 
-    let addressbooks = await this.listAddressbooks();
-    assert(addressbooks.hasItems, "No CardDAV addressbooks found");
-    // console.log("Found CardDAV address books", addressbooks.contents);
-    this.davAddressbook = addressbooks.find(ab => ab.url == this.addressbookURL);
-    assert(this.davAddressbook, "Selected CardDAV addressbook URL not found");
-
-    this.persons.clear();
-    this.groups.clear();
-    let entries = await this.client.fetchVCards({ addressBook: this.davAddressbook });
-    for (let entry of entries) {
-      let person = this.newPerson();
-      try {
-        person.fromDAVObject(entry);
-      } catch (ex) {
-        console.warn(ex);
-        continue;
-      }
-      this.persons.add(person);
+    if (!this.davAddressbook) {
+      let addressbooks = await this.listAddressbooks();
+      assert(addressbooks.hasItems, "No CardDAV addressbooks found");
+      // console.log("Found CardDAV address books", addressbooks.contents);
+      this.davAddressbook = addressbooks.find(ab => ab.url == this.addressbookURL);
+      assert(this.davAddressbook, "Selected CardDAV addressbook URL not found");
     }
+
+    await this.sync();
 
     await this.save();
   }
 
-  protected getPersonByItemID(id: string): CardDAVPerson | void {
-    return this.persons.find(p => p.itemID == id);
+  protected async fetchAll() {
+    this.persons.clear();
+    this.groups.clear();
+    let vCardEntries = await this.client.fetchVCards({ addressBook: this.davAddressbook });
+    for (let vCardEntry of vCardEntries) {
+      this.addPerson(vCardEntry);
+    }
   }
 
-  protected getGroupByItemID(id: string): CardDAVGroup | void {
-    return this.groups.find(p => p.itemID == id);
+  protected async sync() {
+    let localObjects = this.persons.contents.map(e => ({
+      url: e.url,
+      etag: e.etag,
+      data: undefined, // unused by function, and expensive to calculate
+      id: undefined, // unused by function, and not passed by iCalEntry
+    }));
+    let syncResponse = await this.client.smartCollectionSync({
+      collection: {
+        url: this.addressbookURL,
+        ctag: this.ctag,
+        syncToken: this.syncState,
+        objects: localObjects,
+        objectMultiGet: (...args) => this.client.addressBookMultiGet(...args),
+      },
+      method: 'webdav',
+      detailedResult: true,
+    });
+    let { created, updated, deleted } = syncResponse.objects;
+    for (let vCardEntry of created) {
+      this.addPerson(vCardEntry);
+    }
+    for (let vCardEntry of updated) {
+      let existing = this.getPersonByURL(vCardEntry.url);
+      if (existing) {
+        existing.fromDAVObject(vCardEntry);
+        await existing.save();
+      } else {
+        this.addPerson(vCardEntry);
+      }
+    }
+    for (let vCardEntry of deleted) {
+      let existing = this.getPersonByURL(vCardEntry.url);
+      if (existing) {
+        await existing.deleteIt();
+      }
+    }
+
+    this.ctag = syncResponse.ctag;
+    this.syncState = syncResponse.syncToken;
+  }
+
+  protected addPerson(vCardEntry: DAVObject) {
+    try {
+      let person = this.newPerson();
+      person.fromDAVObject(vCardEntry);
+      this.persons.add(person);
+    } catch (ex) {
+      console.warn(ex);
+    }
+  }
+
+  getPersonByURL(url: URLString): CardDAVPerson | void {
+    return this.persons.find(p => p.url == url);
   }
 
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.addressbookURL = sanitize.url(json.addressbookURL);
+    this.ctag = sanitize.string(json.ctag, null);
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.addressbookURL = this.addressbookURL;
+    json.ctag = this.ctag;
     return json;
   }
 }
