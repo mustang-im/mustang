@@ -13,8 +13,6 @@
   * Calendar
     * Invitations
     * Free/Busy
-  * Files
-    * Files (attachments) don't open
   * Bug: Thunderbird AB import misses ABs and fields
   * Import Outlook PST
   * OAuth2 login UI with browser/URL options
