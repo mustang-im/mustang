@@ -306,6 +306,7 @@
   }
 
   async function onSave() {
+    mail.folder = fromIdentity.account.getSpecialFolder(SpecialFolder.Drafts);
     await mail.compose.saveAsDraft();
     onClose();
   }
