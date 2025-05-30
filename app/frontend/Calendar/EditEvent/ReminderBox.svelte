@@ -29,7 +29,7 @@
   let durationInUnit: number;
   let beforeInSec = $event.alarm ? ($event.startTime.getTime() - $event.alarm.getTime()) / 1000 : 0;
 
-  $: event.alarm = new Date(event.startTime.getTime() - beforeInSec * 1000);
+  $: if (event.alarm) event.alarm = new Date(event.startTime.getTime() - beforeInSec * 1000);
 
   function onRemove() {
     event.alarm = null;
