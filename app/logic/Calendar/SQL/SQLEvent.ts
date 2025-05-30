@@ -171,6 +171,7 @@ export class SQLEvent extends Event {
       event.recurrenceCase = RecurrenceCase.Master;
       event.recurrenceRule = RecurrenceRule.fromCalString(event.startTime, row.recurrenceRule);
       await SQLEvent.readExclusions(event);
+      event.fillRecurrences();
     }
 
     await SQLEvent.readParticipants(event);

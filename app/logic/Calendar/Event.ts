@@ -12,7 +12,7 @@ import { Observable, notifyChangedAccessor, notifyChangedProperty } from "../uti
 import { Lock } from "../util/Lock";
 import { assert, randomID } from "../util/util";
 import { backgroundError } from "../../frontend/Util/error";
-import { ArrayColl } from "svelte-collections";
+import { ArrayColl, Collection } from "svelte-collections";
 
 export class Event extends Observable {
   id: string;
@@ -148,7 +148,6 @@ export class Event extends Observable {
    * Only for RecurrenceCase == Master
    *
    * Holds child instances of a recurring event:
-   * - undefined means that a recurring instance hasn't been generated yet
    * - null means that that the instance was excluded
    * - otherwise, it's an instance or exception
    *
@@ -158,7 +157,7 @@ export class Event extends Observable {
    * - The array here may not be complete, but `fillRecurrences()`
    *   will auto-generate additional instances if necessary.
    */
-  readonly instances = new ArrayColl<Event | null | undefined>;
+  readonly instances = new ArrayColl<Event | null>;
 
   @notifyChangedProperty
   alarm: Date | null = null;
@@ -375,12 +374,9 @@ export class Event extends Observable {
     assert(this.calendar, "To save an event, it needs to be in a calendar first");
     assert(this.calendar.storage, "To save an event, the calendar needs to be saved first");
     await this.calendar.storage.saveEvent(this);
-    for (let occurrence of this.instances) {
-      if (occurrence && !occurrence.dbID) {
-        occurrence.copyFromRecurrenceMaster(this);
-      }
-    }
-    if (this.recurrenceCase == RecurrenceCase.Instance) {
+    if (this.recurrenceCase == RecurrenceCase.Master) {
+      this.regenerateRecurrences();
+    } else if (this.recurrenceCase == RecurrenceCase.Instance) {
       this.recurrenceCase = RecurrenceCase.Exception;
     }
   }
@@ -545,28 +541,40 @@ export class Event extends Observable {
     await account.send(email);
   }
 
+  regenerateRecurrences() {
+    if (this.recurrenceCase != RecurrenceCase.Master) {
+      return;
+    }
+    if (this.instances.hasItems) {
+      this.calendar.events.removeAll(this.instances);
+    }
+    this.instances.clear();
+    this.fillRecurrences();
+  }
+
   /**
    * Ensures that all recurring instances exist up to the provided date.
    * Must only be called on recurring master events.
    */
-  fillRecurrences(endDate: Date = new Date(Date.now() + 1e11)) {
-    let newOccurrences: Event[] = [];
+  fillRecurrences(endDate: Date = new Date(Date.now() + 1e11)): Collection<Event> {
+    assert(this.recurrenceCase == RecurrenceCase.Master, "Not a recurrence master");
+    if (this.instances.hasItems) {
+      return this.instances;
+    }
     let occurrences = this.recurrenceRule.getOccurrencesByDate(endDate);
     for (let i = 0; i < occurrences.length; i++) {
-      if (this.instances.get(i) === undefined) {
-        let occurrence = this.calendar.newEvent(this);
-        occurrence.recurrenceCase = RecurrenceCase.Instance;
-        occurrence.recurrenceStartTime = occurrences[i];
-        occurrence.startTime = new Date(occurrences[i]); // Clone in case of exception
-        occurrence.endTime = new Date(this.endTime.getTime() + occurrence.startTime.getTime() - this.startTime.getTime());
-        if (this.alarm) {
-          occurrence.alarm = new Date(this.alarm.getTime() + occurrence.startTime.getTime() - this.startTime.getTime());
-        }
-        this.instances.set(i, occurrence);
-        newOccurrences.push(occurrence);
+      let occurrence = occurrences[i];
+      let instance = this.calendar.newEvent(this);
+      instance.recurrenceCase = RecurrenceCase.Instance;
+      instance.recurrenceStartTime = occurrence;
+      instance.startTime = new Date(occurrence); // Clone in case of exception
+      instance.endTime = new Date(this.endTime.getTime() + instance.startTime.getTime() - this.startTime.getTime());
+      if (this.alarm) {
+        instance.alarm = new Date(this.alarm.getTime() + instance.startTime.getTime() - this.startTime.getTime());
       }
+      this.instances.set(i, instance);
     }
-    this.calendar.events.addAll(newOccurrences);
+    return this.instances;
   }
 
   clearExceptions() {
@@ -576,7 +584,7 @@ export class Event extends Observable {
         this.calendar.storage.deleteEvent(event).catch(this.calendar.errorCallback);
       }
     }
-    this.instances.clear();
+    this.regenerateRecurrences();
   }
 
   /**
@@ -607,6 +615,7 @@ export class Event extends Observable {
    */
   async truncateRecurrence() {
     let master = this.parentEvent;
+    assert(master.recurrenceCase == RecurrenceCase.Master, "parentEvent must a Recurrence.Master");
     let pos = master.instances.indexOf(this);
     let count = master.instances.contents.slice(pos + 1).findLastIndex(event => event?.dbID) + pos + 1;
     this.calendar.events.removeAll(master.instances.splice(count).contents.filter(Boolean));
