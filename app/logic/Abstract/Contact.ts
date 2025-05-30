@@ -16,7 +16,7 @@ export class ContactBase extends Observable {
   name: string;
   @notifyChangedProperty
   picture: URLString | null; /** URL */
-  storageLock = new Lock();
+  readonly storageLock = new Lock();
 
   constructor(addressbook: Addressbook | null = null) {
     super();

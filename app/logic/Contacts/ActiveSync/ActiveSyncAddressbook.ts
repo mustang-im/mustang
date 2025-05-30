@@ -12,7 +12,7 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
   readonly protocol: string = "addressbook-activesync";
   readonly persons: ArrayColl<ActiveSyncPerson>;
   readonly folderClass = "Contacts";
-  protected requestLock = new Lock();
+  protected readonly requestLock = new Lock();
 
   get account(): ActiveSyncAccount {
     return this.mainAccount as ActiveSyncAccount;

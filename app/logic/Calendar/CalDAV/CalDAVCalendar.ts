@@ -18,7 +18,7 @@ export class CalDAVCalendar extends Calendar {
   davCalendar: DAVCalendar | null = null;
   ctag: string | null = null;
   client: DAVClient;
-  protected syncLock = new Lock();
+  protected readonly syncLock = new Lock();
 
   newEvent(parentEvent?: CalDAVEvent): CalDAVEvent {
     return new CalDAVEvent(this, parentEvent);

@@ -239,7 +239,7 @@ export class SQLEMail {
       )`);
   }
 
-  protected static transactionLock = new Lock();
+  protected static readonly transactionLock = new Lock();
 
   static async saveMultiple(emails: Collection<EMail>) {
     let lock = await SQLEMail.transactionLock.lock();

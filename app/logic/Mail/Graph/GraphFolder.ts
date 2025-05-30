@@ -18,7 +18,7 @@ export class GraphFolder extends Folder {
   sortOrder: number = Infinity;
   protected poller: ReturnType<typeof setInterval>;
   readonly deletions = new Set<string>();
-  syncLock = new Lock(); /** Protects syncState */
+  protected readonly syncLock = new Lock(); /** Protects syncState */
 
   constructor(account: GraphAccount) {
     super(account);

@@ -17,8 +17,8 @@ export class File extends FileOrDirectory {
   /** null/undefined = not loaded. Does not mean that the file is empty. */
   @notifyChangedProperty
   contents: Blob;
-  protected downloadLock = new Lock();
-  protected dataURLLock = new Lock();
+  protected readonly downloadLock = new Lock();
+  protected readonly dataURLLock = new Lock();
 
   setFileName(val: string) {
     this.name = val;

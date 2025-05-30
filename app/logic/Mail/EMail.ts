@@ -79,7 +79,7 @@ export class EMail extends Message {
   @notifyChangedProperty
   needToLoadBody = true;
   /** For SQLEMail and alternatives only */
-  storageLock = new Lock();
+  readonly storageLock = new Lock();
   /** For composer only. Optional. */
   identity: MailIdentity;
   /* Only used when constructing iMIP outgoing messages */

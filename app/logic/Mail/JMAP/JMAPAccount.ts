@@ -27,7 +27,7 @@ export class JMAPAccount extends MailAccount {
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
   syncState = new MapColl<TJMAPObjectType, string>(); /** JMAP state is account-global. Use stateLock. */
-  stateLock = new Lock(); /** Protects syncState */
+  readonly stateLock = new Lock(); /** Protects syncState */
   logging = true;
 
   constructor() {

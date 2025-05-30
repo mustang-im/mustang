@@ -3,7 +3,7 @@ import { sleep } from './util';
 import { expect, test } from 'vitest';
 
 class WithLock {
-  _runnerLock = new Lock();
+  protected readonly _runnerLock = new Lock();
   ran = 0;
   async run() {
     let lock = await this._runnerLock.lock();

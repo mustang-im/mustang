@@ -19,7 +19,7 @@ export class CardDAVAddressbook extends Addressbook {
   davAddressbook: DAVAddressBook;
   ctag: string | null = null;
   client: DAVClient;
-  protected syncLock = new Lock();
+  protected readonly syncLock = new Lock();
 
   newPerson(): CardDAVPerson {
     return new CardDAVPerson(this);

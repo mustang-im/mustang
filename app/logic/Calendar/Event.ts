@@ -187,7 +187,7 @@ export class Event extends Observable {
   syncState: number | string | undefined;
   @notifyChangedProperty
   calendar: Calendar;
-  storageLock = new Lock();
+  readonly storageLock = new Lock();
 
   constructor(calendar?: Calendar, parentEvent?: Event) {
     super();

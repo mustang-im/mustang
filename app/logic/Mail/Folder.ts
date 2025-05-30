@@ -32,9 +32,9 @@ export class Folder extends Observable implements TreeItem<Folder> {
    * EWS: Sync state, as string
    */
   syncState: number | string | null = null;
-  storageLock = new Lock();
-  protected readFolderLock = new Lock();
-  protected listMessagesLock = new Lock();
+  readonly storageLock = new Lock();
+  protected readonly readFolderLock = new Lock();
+  protected readonly listMessagesLock = new Lock();
 
   constructor(account: MailAccount) {
     super();

@@ -19,7 +19,7 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
   /** Exchange's calendar can only accept incoming invitations from its inbox */
   readonly canAcceptAnyInvitation = false;
   readonly folderClass = "Calendar";
-  protected requestLock = new Lock();
+  protected readonly requestLock = new Lock();
 
   get account(): ActiveSyncAccount {
     return this.mainAccount as ActiveSyncAccount;
