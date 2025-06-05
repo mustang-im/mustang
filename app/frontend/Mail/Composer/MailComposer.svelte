@@ -238,7 +238,7 @@
   $: fromIdentity && setAuthor()
   function setAuthor() {
     mail.identity = fromIdentity;
-    mail.folder = fromIdentity.account.getSpecialFolder(SpecialFolder.Sent)
+    mail.folder ??= fromIdentity.account.getSpecialFolder(SpecialFolder.Sent)
       ?? fromIdentity.account.inbox;
     if (fromIdentity == mail.identity) {
       return; // don't overwrite concrete email address for catch-all identity
