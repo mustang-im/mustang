@@ -15,7 +15,7 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
   lines.push(["VERSION", "2.0"]);
   lines.push(["PRODID", `-//Beonex//${appName}//EN`]);
   lines.push(["BEGIN", "VEVENT"]);
-  lines.push(["DTSTAMP", date2ical(new Date(), false)]);
+  lines.push(["DTSTAMP", utc2ical(new Date())]);
   lines.push(["UID", event.calUID]);
   if (event.title) {
     lines.push(["SUMMARY", event.title]);
@@ -23,9 +23,19 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
   if (event.descriptionText) {
     lines.push(["DESCRIPTION", event.descriptionText]);
   }
-  const dateParts = ["VALUE", event.allDay ? "DATE" : "DATE-TIME", "TZID", Intl.DateTimeFormat().resolvedOptions().timeZone];
-  lines.push(["DTSTART", ...dateParts, date2ical(event.startTime, event.allDay)]);
-  lines.push(["DTEND", ...dateParts, date2ical(event.endTime, event.allDay)]);
+  if (event.allDay) {
+    lines.push(["DTSTART", "VALUE", "DATE", date2ical(event.startTime)]);
+    lines.push(["DTEND", "VALUE", "DATE", date2ical(event.endTime)]);
+  } else {
+    let timezone = event.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (timezone == "UTC") {
+      lines.push(["DTSTART", "VALUE", "DATE-TIME", utc2ical(event.startTime)]);
+      lines.push(["DTEND", "VALUE", "DATE-TIME", utc2ical(event.endTime)]);
+    } else {
+      lines.push(["DTSTART", "VALUE", "DATE-TIME", "TZID", timezone, datetime2ical(event.startTime, timezone)]);
+      lines.push(["DTEND", "VALUE", "DATE-TIME", "TZID", timezone, datetime2ical(event.endTime, timezone)]);
+    }
+  }
   if (event.location) {
     lines.push(["LOCATION", event.location]);
   }
@@ -71,11 +81,18 @@ function line2ical(line: string | string[]): string {
   return text.match(/.{1,75}/gu).join("\r\n ") + "\r\n";
 }
 
-function date2ical(date: Date, allDay: boolean): string {
-  if (!allDay) {
-    return date.toISOString().replace(/-|:|\..../g, "");
-  }
+function utc2ical(date: Date): string {
+  return date.toISOString().replace(/-|:|\..../g, "");
+}
+
+function date2ical(date: Date): string {
   return String(date.getFullYear()) + String(date.getMonth() + 1).padStart(2, "0") + String(date.getDate()).padStart(2, "0");
+}
+
+function datetime2ical(date: Date, timeZone: string): string {
+  // "lt" locale has date format YYYY-MM-DD hh:mm:ss,
+  // which we can easily convert into iCal format.
+  return date.toLocaleString("lt", { timeZone }).replace(" ", "T").replace(/-|:/g, "");
 }
 
 function escaped(s: string, quote: boolean): string {
