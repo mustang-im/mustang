@@ -381,9 +381,12 @@ export class FakeFileSharingAccount extends FileSharingAccount {
     super();
     this.name = "Dropbox";
     let dirCount = Math.random() * 10;
+    let dirs: Directory[] = [];
     for (let i = 0; i < dirCount; i++) {
-      fakeDir(null);
+      let parentDir = this.newDirectory(faker.system.fileName({ extensionCount: 0 }));
+      dirs.push(fakeDir(parentDir));
     }
+    this.rootDirs.addAll(dirs);
   }
 }
 
