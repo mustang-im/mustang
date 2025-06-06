@@ -201,6 +201,17 @@ class FakeFolder extends Folder {
   newEMail(): FakeEMail {
     return new FakeEMail(this);
   }
+  async addMessage(message: EMail): Promise<void> {
+    this.messages.add(message);
+  }
+  async moveMessagesHere(messages: Collection<EMail>) {
+    let sourceFolder = messages.first.folder;
+    sourceFolder.messages.removeAll(messages);
+    this.messages.addAll(messages);
+  }
+  async copyMessagesHere(messages: Collection<EMail>) {
+    this.messages.addAll(messages);
+  }
 }
 
 class FakeEMail extends EMail {
