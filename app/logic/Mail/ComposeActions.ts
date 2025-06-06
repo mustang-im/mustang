@@ -246,7 +246,7 @@ export class ComposeActions {
   }
 
   async saveAsDraft(): Promise<void> {
-    let account = this.email.folder?.account ?? this.email.identity?.account;
+    let account = this.email.identity.account;
     assert(account, "Need mail account to save draft");
     let draftFolder = account.getSpecialFolder(SpecialFolder.Drafts);
     if (!draftFolder) {
