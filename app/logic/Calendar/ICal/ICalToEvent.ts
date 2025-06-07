@@ -89,9 +89,11 @@ function parseDate(icalDate: { value: string, properties: { tzid?: string } }): 
   }
   // Convert to regular Date string format.
   value = value.replace(icalDateRegex, "$1-$2-$3:$4:$5");
-  if (value.endsWith("Z") || !tzid) {
-    // Either UTC or floating.
-    return [new Date(value), tzid];
+  if (value.endsWith("Z")) { // UTC
+    return [new Date(value), tzid || "UTC"];
+  }
+  if (!tzid) { // floating
+    return [new Date(value), null];
   }
   if (tzid in WindowsToIANATimezone) {
     tzid = WindowsToIANATimezone[tzid];
