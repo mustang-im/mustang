@@ -23,6 +23,7 @@ import { DummyAddressbookStorage } from './Contacts/SQL/DummyAddressbookStorage'
 import { notifyChangedProperty } from './util/Observable';
 import { ArrayColl, type Collection } from 'svelte-collections';
 import { faker } from '@faker-js/faker';
+import { ComposeActions } from './Mail/ComposeActions';
 
 export async function getTestObjects(): Promise<void> {
   appGlobal.me = new FakeChatPerson();
@@ -248,6 +249,16 @@ class FakeEMail extends EMail {
     if (Math.random() > 0.3) {
       this.html = `<p>${paragraphs.join("</p><p>")}</p>`;
     }
+  }
+  get compose() {
+    return new FakeComposeActions(this);
+  }
+}
+
+class FakeComposeActions extends ComposeActions {
+  async saveAsDraft(): Promise<void> {
+    this.email.sent = new Date();
+    await super.saveAsDraft();
   }
 }
 
