@@ -253,12 +253,19 @@ class FakeEMail extends EMail {
   get compose() {
     return new FakeComposeActions(this);
   }
+  async download() {}
 }
 
 class FakeComposeActions extends ComposeActions {
+  declare email: FakeEMail;
   async saveAsDraft(): Promise<void> {
     this.email.sent = new Date();
     await super.saveAsDraft();
+  }
+  async send() {
+    this.email.sent = new Date();
+    await this.email.identity.account.send(this.email);
+    await this.deleteDrafts();
   }
 }
 
