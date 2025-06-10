@@ -8,6 +8,7 @@
             <EditableSimpleText bind:value={person.name}
               on:save={save}
               bind:isEditing={isEditingName}
+              isName={true}
               placeholder={$t`First name Last name`} />
           </hbox>
           {#if isEditingName}

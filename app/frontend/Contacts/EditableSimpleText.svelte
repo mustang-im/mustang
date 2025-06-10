@@ -29,8 +29,11 @@
   export let placeholder = "";
   /** out only */
   export let isEditing = false;
+  export let isName = false;
 
   let inputEl: HTMLInputElement;
+
+  $: !value && isName && startEditing();
 
   async function startEditing() {
     isEditing = true;

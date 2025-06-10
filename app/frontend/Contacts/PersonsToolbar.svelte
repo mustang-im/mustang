@@ -47,7 +47,7 @@
   function addPerson() {
     //assert(persons instanceof ArrayColl, "Please exit the search before adding a person");
     let person = selectedAddressbook.newPerson();
-    person.name = "New person";
+    person.name = "";
     persons.add(person);
     $selectedPerson = person;
   }
