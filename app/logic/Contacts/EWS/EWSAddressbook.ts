@@ -9,6 +9,7 @@ import type { ArrayColl } from "svelte-collections";
 
 export class EWSAddressbook extends Addressbook {
   readonly protocol: string = "addressbook-ews";
+  canSync: boolean = true;
   readonly persons: ArrayColl<EWSPerson>;
   readonly groups: ArrayColl<EWSGroup>;
 

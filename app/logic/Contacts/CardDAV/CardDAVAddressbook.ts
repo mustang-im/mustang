@@ -12,6 +12,7 @@ import type { DAVClient, DAVAddressBook, DAVObject } from "tsdav";
 
 export class CardDAVAddressbook extends Addressbook {
   readonly protocol: string = "carddav";
+  canSync: boolean = true;
   declare readonly persons: ArrayColl<CardDAVPerson>;
   declare readonly groups: ArrayColl<CardDAVGroup>;
   /** URL of the specific addressbook - a CalDAV account can contain multiple addressbooks. */

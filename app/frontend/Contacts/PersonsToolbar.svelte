@@ -7,7 +7,15 @@
       filterByWorkspace={true}
       />
   </vbox>
+  <hbox flex />
   <hbox class="buttons">
+    <RoundButton
+      label={$t`Sync from server`}
+      icon={SyncIcon}
+      iconSize="12px" padding="4px" classes="sync small" border={false}
+      onClick={sync}
+      disabled={!$selectedAddressbook?.canSync}
+      />
     <RoundButton
       label={$t`New contact`}
       icon={NewContactIcon}
@@ -26,6 +34,8 @@
   import AccountDropDown from "../Shared/AccountDropDown.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import NewContactIcon from "lucide-svelte/icons/plus";
+  import SyncIcon from "lucide-svelte/icons/refresh-cw";
+  import { assert } from "../../logic/util/util";
   import type { Collection } from "svelte-collections";
   import { t } from "../../l10n/l10n";
 
@@ -41,11 +51,25 @@
     persons.add(person);
     $selectedPerson = person;
   }
+
+  async function sync() {
+    assert($selectedAddressbook?.canSync, "Cannot sync " + $selectedAddressbook.protocol);
+    await $selectedAddressbook.listContacts();
+  }
 </script>
 
 <style>
   .persons-toolbar {
     margin: 10px 12px 10px 16px;
     align-items: end;
+  }
+  .buttons {
+    align-items: end;
+  }
+  .buttons :global(.button) {
+    margin-left: 6px;
+  }
+  .buttons :global(.button.disabled) {
+    opacity: 10%;
   }
 </style>

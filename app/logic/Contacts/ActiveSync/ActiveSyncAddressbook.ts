@@ -10,6 +10,7 @@ import type { ArrayColl } from "svelte-collections";
 
 export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPingable {
   readonly protocol: string = "addressbook-activesync";
+  canSync: boolean = true;
   readonly persons: ArrayColl<ActiveSyncPerson>;
   readonly folderClass = "Contacts";
   protected readonly requestLock = new Lock();

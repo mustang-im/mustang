@@ -7,6 +7,7 @@ import type { ArrayColl } from "svelte-collections";
 
 export class OWAAddressbook extends Addressbook {
   readonly protocol: string = "addressbook-owa";
+  canSync: boolean = true;
   readonly persons: ArrayColl<OWAPerson>;
   readonly groups: ArrayColl<OWAGroup>;
 
