@@ -469,7 +469,9 @@ async function getIconForFileType(ext: string, mimetype: string): Promise<string
 
 /** @returns data: URL */
 async function getIconForLocalFile(fullPath: string): Promise<string> {
-  let image = await app.getFileIcon(fullPath, { size: 'large' });
+  let platform = os.platform();
+  // size `large` not supported on MacOS, it causes the app to crash
+  let image = await app.getFileIcon(fullPath, { size: platform == 'darwin' ? 'normal' : 'large' });
   return image.toDataURL();
 }
 
