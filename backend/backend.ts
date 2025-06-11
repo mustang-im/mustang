@@ -70,6 +70,9 @@ async function createSharedAppObject() {
     newHTTPServer,
     readFile,
     writeFile,
+    getIconForLocalFile,
+    getIconForFileType,
+    listDirectoryContents,
     fs: fsPromises,
     directory,
     platform,
@@ -77,7 +80,6 @@ async function createSharedAppObject() {
       dirname: path.dirname,
       join: path.join,
     },
-    listDirectoryContents,
   };
 }
 
@@ -453,6 +455,19 @@ async function listDirectoryContents(dirPath: string, withStats = true, includeH
     files.push(file);
   }
   return files;
+}
+
+async function getIconForFileType(ext: string, mimetype: string): Promise<string> {
+  let dummy = path.join(app.getPath("temp"), "foo." + ext);
+  await fsPromises.writeFile(dummy, "");
+  const image = await app.getFileIcon(dummy);
+  await fsPromises.unlink(dummy);
+  return image.toDataURL();
+}
+
+async function getIconForLocalFile(fullPath: string): Promise<string> {
+  let nativeImage = await app.getFileIcon(fullPath, { size: 'large' });
+  return nativeImage.toDataURL();
 }
 
 function platform(): string {

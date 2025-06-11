@@ -73,6 +73,9 @@ async function createSharedAppObject() {
     newHTTPServer,
     readFile,
     writeFile,
+    getIconForLocalFile,
+    getIconForFileType,
+    listDirectoryContents,
     fs: fsPromises,
     directory,
     platform,
@@ -352,6 +355,61 @@ function writeTextToClipboard(text: string) { // TODO
 }
 
 function setBadgeCount(count: number) { // TODO
+}
+
+export interface FileStat {
+  /** Filename */
+  name: string;
+  /** File path, including file name */
+  path: string;
+  /** true: is a directory, false: is a file */
+  isDirectory: boolean;
+  /** File size, in bytes */
+  size: number | undefined;
+  /** Time of last modification */
+  lastMod: Date | undefined;
+}
+
+/**
+ * Get the files and directories within a directory on the harddrive
+ * @param dirPath path of the directory for which you want to see the contents
+ * @param withStats includes size and last modification time (slower, extra work)
+ * @param includeHidden include dotfiles (on Unix: name starting with ".")
+ * @returns list of files and directories in the directory
+ */
+async function listDirectoryContents(dirPath: string, withStats = true, includeHidden = false): FileStat[] {
+  let files = [] as FileStat[];
+  let entries = await fsPromises.readdir(dirPath, { withFileTypes: true });
+  for (let entry of entries) {
+    if (!includeHidden && entry.name[0] == ".") {
+      continue;
+    }
+    let file = {} as FileStat;
+    file.name = entry.name;
+    file.path = path.join(entry.parentPath, entry.name);
+    if (entry.isDirectory()) {
+      file.isDirectory = true;
+    } else if (entry.isFile()) {
+      file.isDirectory = false;
+    } else {
+      continue;
+    }
+    if (withStats) {
+      let stat = await fsPromises.stat(file.path);
+      file.size = stat.size;
+      file.lastMod = stat.mtime;
+    }
+    files.push(file);
+  }
+  return files;
+}
+
+async function getIconForFileType(ext: string, mimetype: string): Promise<string> {
+  return "";
+}
+
+async function getIconForLocalFile(fullPath: string): Promise<string> {
+  return "";
 }
 
 function platform(): string {
