@@ -202,7 +202,7 @@ class FakeFolder extends Folder {
   newEMail(): FakeEMail {
     return new FakeEMail(this);
   }
-  async addMessage(message: EMail): Promise<void> {
+  async addMessage(message: EMail) {
     this.messages.add(message);
   }
   async moveMessagesHere(messages: Collection<EMail>) {
