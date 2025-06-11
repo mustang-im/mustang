@@ -75,6 +75,7 @@ async function createSharedAppObject() {
     writeFile,
     getIconForLocalFile,
     getIconForFileType,
+    getThumbnailForLocalFile,
     listDirectoryContents,
     fs: fsPromises,
     directory,
@@ -409,6 +410,10 @@ async function getIconForFileType(ext: string, mimetype: string): Promise<string
 }
 
 async function getIconForLocalFile(fullPath: string): Promise<string> {
+  return "";
+}
+
+async function getThumbnailForLocalFile(fullPath: string): Promise<string> {
   return "";
 }
 

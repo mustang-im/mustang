@@ -7,7 +7,7 @@ import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard } from "electron";
+import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard, nativeImage, NativeImage } from "electron";
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
 import { DAVClient } from "tsdav";
@@ -72,6 +72,7 @@ async function createSharedAppObject() {
     writeFile,
     getIconForLocalFile,
     getIconForFileType,
+    getThumbnailForLocalFile,
     listDirectoryContents,
     fs: fsPromises,
     directory,
@@ -457,6 +458,7 @@ async function listDirectoryContents(dirPath: string, withStats = true, includeH
   return files;
 }
 
+/** @returns data: URL */
 async function getIconForFileType(ext: string, mimetype: string): Promise<string> {
   let dummy = path.join(app.getPath("temp"), "foo." + ext);
   await fsPromises.writeFile(dummy, "");
@@ -465,9 +467,33 @@ async function getIconForFileType(ext: string, mimetype: string): Promise<string
   return image.toDataURL();
 }
 
+/** @returns data: URL */
 async function getIconForLocalFile(fullPath: string): Promise<string> {
-  let nativeImage = await app.getFileIcon(fullPath, { size: 'large' });
-  return nativeImage.toDataURL();
+  let image = await app.getFileIcon(fullPath, { size: 'large' });
+  return image.toDataURL();
+}
+
+/** @returns data: URL */
+async function getThumbnailForLocalFile(fullPath: string, width: number, height: number): Promise<string | null> {
+  if (!fullPath) {
+    return null;
+  }
+  let platform = os.platform();
+  let haveOS = platform == "win32" || platform == "darwin"
+  let image: NativeImage;
+  if (haveOS) {
+    image = await nativeImage.createThumbnailFromPath(fullPath, { width, height });
+  } else { // electron doesn't implement createThumbnailFromPath() on Linux
+    let ext = fullPath.split(".").pop();
+    if (ext == "png" || ext == "jpg" || ext == "jpeg" || ext == "gif" || ext == "bmp") {
+      // TODO check `~/.thumbnails/normal/` ?
+      image = nativeImage.createFromPath(fullPath);
+      image = image.resize({ width, quality: "good" }); // no height, to keep aspect ratio
+    } else {
+      return null;
+    }
+  }
+  return image.toDataURL();
 }
 
 function platform(): string {
