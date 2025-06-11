@@ -73,8 +73,15 @@
       </hbox>
     {/if}
     <hbox class="duration" title={$t`Duration`}>
-      <input type="number" bind:value={durationInUnit} on:input={durationUnit.onDurationInUnitChanged} min={1} max={2000} />
-      <DurationUnit bind:durationInSeconds={event.duration} bind:durationInUnit bind:this={durationUnit} onlyDays={$event.allDay} />
+      <input type="number"
+          min={1} max={2000}
+          bind:value={durationInUnit}
+          on:input={durationUnit.onDurationInUnitChanged} />
+      <DurationUnit
+        bind:durationInSeconds={event.duration}
+        bind:durationInUnit
+        bind:this={durationUnit}
+        onlyDays={$event.allDay} />
     </hbox>
   </grid>
 </vbox>
@@ -243,15 +250,12 @@
   :global(.inline) {
     display: inline-flex !important;
   }
-  @container (max-width: 1000px) {
+  @container (max-width: 370px) {
     .time-box {
       padding: 8px 12px;
     }
     grid.time {
       grid-template-columns: max-content;
-      justify-items: start;
-      align-items: center;
-      margin-block-end: 12px;
     }
     .date-input.start {
       order: 1;
@@ -270,6 +274,11 @@
     }
     .timezone {
       order: 6;
+    }
+  }
+  @container (max-width: 200px) {
+    .duration {
+      flex-wrap: wrap;
     }
   }
 </style>
