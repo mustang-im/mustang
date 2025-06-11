@@ -367,27 +367,6 @@ export class Event extends Observable {
     this.outgoingInvitation.createOrganizer();
   }
 
-  /**
-   * Saves the event locally to the database.
-   */
-  async save() {
-    assert(this.calendar, "To save an event, it needs to be in a calendar first");
-    assert(this.calendar.storage, "To save an event, the calendar needs to be saved first");
-    await this.calendar.storage.saveEvent(this);
-    if (this.recurrenceCase == RecurrenceCase.Master) {
-      this.regenerateRecurrences();
-    } else if (this.recurrenceCase == RecurrenceCase.Instance) {
-      this.recurrenceCase = RecurrenceCase.Exception;
-    }
-  }
-
-  async saveToServer(): Promise<void> {
-    if (!this.isIncomingMeeting && this.participants.hasItems && this.hasChanged()) {
-      this.calUID ??= crypto.randomUUID();
-      await this.outgoingInvitation.sendInvitations();
-    }
-  }
-
   get isNew(): boolean {
     return !this.dbID;
   }
@@ -430,16 +409,54 @@ export class Event extends Observable {
   }
 
   /**
-   * Deletes the event locally from the database.
+   * Saves the event to the server and to the database.
+   */
+  async save() {
+    await this.saveLocally();
+    await this.saveToServer();
+  }
+
+  /**
+   * Saves the event locally to the database.
+   */
+  async saveLocally() {
+    assert(this.calendar, "To save an event, it needs to be in a calendar first");
+    assert(this.calendar.storage, "To save an event, the calendar needs to be saved first");
+    await this.calendar.storage.saveEvent(this);
+    if (this.recurrenceCase == RecurrenceCase.Master) {
+      this.regenerateRecurrences();
+    } else if (this.recurrenceCase == RecurrenceCase.Instance) {
+      this.recurrenceCase = RecurrenceCase.Exception;
+    }
+  }
+
+  async saveToServer(): Promise<void> {
+    if (!this.isIncomingMeeting && this.participants.hasItems && this.hasChanged()) {
+      this.calUID ??= crypto.randomUUID();
+      await this.outgoingInvitation.sendInvitations();
+    }
+  }
+
+  /**
+   * Deletes the event on the server and from the database.
    */
   async deleteIt() {
+    await this.deleteLocally();
+    await this.deleteFromServer();
+  }
+
+  /**
+   * Deletes the event locally from the database.
+   */
+  async deleteLocally() {
     assert(this.calendar, "To delete an event, it needs to be in a calendar first");
     assert(this.calendar.storage, "To delete an event, the calendar needs to be saved first");
+    this.calendar.events.remove(this);
+    this.calendar.events.removeAll(this.instances);
+    // TODO If this is a master, also delete the exceptions?
     if (this.dbID) {
       await this.calendar.storage.deleteEvent(this);
     }
-    this.calendar.events.remove(this);
-    this.calendar.events.removeAll(this.instances);
     if (this.parentEvent) {
       let pos = this.parentEvent.instances.indexOf(this);
       if (pos >= 0) {

@@ -211,7 +211,6 @@
       if (!event.calendar.events.contains(event)) {
         event.calendar.events.add(event);
       }
-      await event.saveToServer();
       await event.save();
     }
     if (event.recurrenceRule) {
@@ -225,7 +224,6 @@
     }
     let master = event.parentEvent;
     master.copyEditableFieldsFrom(event);
-    await master.saveToServer();
     await master.save();
     onClose();
   }
@@ -241,10 +239,8 @@
 
   async function onDelete() {
     if (seriesStatus == "only") {
-      await event.parentEvent.deleteFromServer();
       await event.parentEvent.deleteIt();
     } else {
-      await event.deleteFromServer();
       await event.deleteIt();
     }
     onClose();
@@ -255,7 +251,6 @@
       return;
     }
     let master = event.parentEvent;
-    await master.deleteFromServer();
     await master.deleteIt();
     onClose();
   }

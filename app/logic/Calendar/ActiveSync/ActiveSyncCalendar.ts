@@ -134,12 +134,12 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
           let event = this.getEventByServerID(item.ServerId);
           if (event) {
             event.fromWBXML(item.ApplicationData);
-            await event.save();
+            await event.saveLocally();
           } else {
             event = this.newEvent();
             event.serverID = item.ServerId;
             event.fromWBXML(item.ApplicationData);
-            await event.save();
+            await event.saveLocally();
             this.events.add(event);
           }
           // Exceptions must be handled after the master event has been saved.
@@ -149,11 +149,11 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
               let instance = event.instances.get(occurrences.length - 1);
               if (instance) {
                 instance.fromWBXML(exception);
-                await instance.save();
+                await instance.saveLocally();
               } else {
                 instance = this.newEvent(event);
                 instance.fromWBXML(exception);
-                await instance.save();
+                await instance.saveLocally();
                 event.replaceInstance(occurrences.length - 1, instance);
                 this.events.add(event);
               }
@@ -169,7 +169,7 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
           if (event) {
             this.events.remove(event);
             this.events.removeAll(event.instances);
-            await event.deleteIt();
+            await event.deleteLocally();
           }
         } catch (ex) {
           this.account.errorCallback(ex);

@@ -119,9 +119,7 @@ export class EWSCalendar extends Calendar {
         for (let deletion of ensureArray(result.Changes.Delete)) {
           let event = this.getEventByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
           if (event) {
-            this.events.remove(event);
-            this.events.removeAll(event.instances);
-            await event.deleteIt();
+            await event.deleteLocally();
           }
         }
       }
@@ -243,11 +241,11 @@ export class EWSCalendar extends Calendar {
         if (event) {
           event.parentEvent = parentEvent; // should already be correct
           event.fromXML(item);
-          await event.save();
+          await event.saveLocally();
         } else {
           event = this.newEvent(parentEvent);
           event.fromXML(item);
-          await event.save();
+          await event.saveLocally();
           events.push(event);
         }
         if (parentEvent && event.recurrenceStartTime) {
