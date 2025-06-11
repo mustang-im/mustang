@@ -4,13 +4,13 @@
   >
   <vbox class="tile">
     <button class="icon">
-      <DynamicFileIcon ext={file.ext} localFilePath={file.path} size={48} />
+      <FileIcon ext={file.ext} localFilePath={file.path} size={48} />
       <!--
       {#if $file.isDownloaded}
         <Thumbnail {file} size={48} />
       {:else}
         {#await $file.download()}
-          <FileIcon ext={file.ext} size={48} />
+          <FileIcon ext={file.ext} localFilePath={file.path} size={48} />
         {:catch ex}
           {ex?.message + ex + ""}
         {/await}
@@ -34,12 +34,11 @@
 <script lang="ts">
   import { File } from "../../../logic/Files/File";
   import { selectedFile } from "../selected";
+  import FileIcon from "../Thumbnail/FileIcon.svelte";
   import Thumbnail from "../Thumbnail/Thumbnail.svelte";
   import { getDateTimeString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
-  import FileIcon from "../Thumbnail/FileIcon.svelte";
-  import DynamicFileIcon from "../Thumbnail/DynamicFileIcon.svelte";
 
   export let file: File;
 

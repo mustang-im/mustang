@@ -7,7 +7,7 @@
       <hbox class="indention" />
     {/each}
     <button class="icon">
-      <DynamicFileIcon ext={file.ext} localFilePath={file.path} />
+      <FileIcon ext={file.ext} localFilePath={file.path} />
     </button>
     <hbox class="name">
       {file.nameWithoutExt}
@@ -29,7 +29,7 @@
   import { fileSize } from "../fileSize";
   import { selectedFile } from "../selected";
   import { getDateTimeString } from "../../Util/date";
-  import DynamicFileIcon from "../Thumbnail/DynamicFileIcon.svelte";
+  import FileIcon from "../Thumbnail/FileIcon.svelte";
   import { catchErrors } from "../../Util/error";
   import { assert } from "../../../logic/util/util";
 

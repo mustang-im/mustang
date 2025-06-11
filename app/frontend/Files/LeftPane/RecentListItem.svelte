@@ -1,7 +1,7 @@
 <hbox class="account"
   on:contextmenu={contextMenu.onContextMenu}>
   <hbox class="icon">
-    <FileIcon ext={file.ext} size={16} />
+    <FileIcon ext={file.ext} localFilePath={file.path} size={16} />
   </hbox>
   <hbox class="label">{$file.nameWithoutExt}</hbox>
     <hbox flex class="buttons">

@@ -4,7 +4,7 @@
   >
   <hbox bind:this={iconEl}>
     <hbox class="icon" on:click={() => catchErrors(onOpen)}>
-      <FileIcon {ext} size={24} />
+      <FileIcon {ext} localFilePath={attachment.filename} size={24} />
     </hbox>
     <vbox class="info">
       <hbox title={$attachment.filename} class="filename top-row font-normal">

@@ -1,5 +1,5 @@
 {#if !file.isDownloaded}
-  <FileIcon {ext} {size} />
+  <FileIcon {ext} localFilePath={file.path} {size} />
 {:else if ext == "html" || ext == "htm" || ext == "shtml" || ext == "txt" || ext == "pdf"}
   <HTMLThumbnail {file} {size} />
 {:else if ext == "mp3" || ext == "mp2" || ext == "mp2a" || ext == "m2a" || ext == "m3a" || ext == "mpga" || ext == "wav"}
@@ -9,7 +9,7 @@
 {:else if ext == "png" || ext == "gif" || ext == "jpg" || ext == "jpeg" || ext == "svg" || ext == "jpe"}
   <ImageThumbnail {file} {size} />
 {:else}
-  <FileIcon {ext} {size} />
+  <FileIcon {ext} localFilePath={file.path} {size} />
 {/if}
 
 <script lang="ts">

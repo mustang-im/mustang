@@ -1,6 +1,6 @@
 <hbox class="attachment">
   <hbox class="icon">
-    <FileIcon ext={$attachment.filename?.split(".").pop()} size={32} />
+    <FileIcon {ext} localFilePath={$attachment.filename} size={32} />
   </hbox>
   <vbox flex class="right">
     <hbox class="name font-small">
@@ -27,6 +27,8 @@
 
   export let attachment: Attachment;
   export let attachments: Collection<Attachment>;
+
+  $: ext = attachment.filename.split(".").pop();
 
   async function onDelete() {
     attachments.remove(attachment);
