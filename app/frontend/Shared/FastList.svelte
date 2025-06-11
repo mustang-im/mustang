@@ -158,6 +158,7 @@
     if (selectedItem) {
       selectedItems.add(selectedItem);
     }
+    previousSelectedItem = selectedItem;
 
     const updateSizeDebounced = debounce(updateSize, 30);
     const resizeObserver = new ResizeObserver(updateSizeDebounced);
@@ -324,7 +325,18 @@
   const singleSelectionObserver = new SingleSelectionObserver<T>();
   singleSelectionObserver.onSelectedItem = item => {
     selectedItem = item;
+    previousSelectedItem = selectedItem;
   };
+
+  let previousSelectedItem: T; // set this when you change selectedItem internally here in this component.
+  $: selectedItem, setSelectedItem()
+  function setSelectedItem() {
+    if (selectedItem == previousSelectedItem) {
+      return; // changed internally
+    }
+    selectedItems.clear();
+    selectedItems.add(selectedItem);
+  }
 </script>
 
 <style>
