@@ -29,7 +29,6 @@
       person.addressbook = appGlobal.personalAddressbook;
       person.addressbook.persons.add(person);
     }
-    await person.saveToServer();
     await person.save();
   }
   async function deleteIt() {

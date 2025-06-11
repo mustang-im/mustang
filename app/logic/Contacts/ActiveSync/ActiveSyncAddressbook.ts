@@ -102,12 +102,12 @@ export class ActiveSyncAddressbook extends Addressbook implements ActiveSyncPing
           let person = this.getPersonByServerID(item.ServerId);
           if (person) {
             person.fromWBXML(item.ApplicationData);
-            await person.save();
+            await person.saveLocally();
           } else {
             person = this.newPerson();
             person.serverID = item.ServerId;
             person.fromWBXML(item.ApplicationData);
-            await person.save();
+            await person.saveLocally();
             this.persons.add(person);
           }
         } catch (ex) {

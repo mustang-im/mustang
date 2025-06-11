@@ -73,11 +73,11 @@ export class OWAAddressbook extends Addressbook {
         let person = this.getPersonByPersonaID(result.PersonaId.Id);
         if (person) {
           person.fromJSON(result);
-          await person.save();
+          await person.saveLocally();
         } else {
           person = this.newPerson();
           person.fromJSON(result);
-          await person.save();
+          await person.saveLocally();
           this.persons.add(person);
         }
       } catch (ex) {
@@ -102,11 +102,11 @@ export class OWAAddressbook extends Addressbook {
         let group = this.getGroupByPersonaID(result.PersonaId.Id);
         if (group) {
           group.fromJSON(result);
-          await group.save();
+          await group.saveLocally();
         } else {
           group = this.newGroup();
           group.fromJSON(result);
-          await group.save();
+          await group.saveLocally();
           this.groups.add(group);
         }
       } catch (ex) {

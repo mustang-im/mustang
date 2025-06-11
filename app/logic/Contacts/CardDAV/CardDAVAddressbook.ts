@@ -133,7 +133,7 @@ export class CardDAVAddressbook extends Addressbook {
         let existing = this.getPersonByURL(vCardEntry.url);
         if (existing) {
           existing.fromDAVObject(vCardEntry);
-          await existing.save();
+          await existing.saveLocally();
         } else {
           await this.addPerson(vCardEntry);
         }
@@ -157,7 +157,7 @@ export class CardDAVAddressbook extends Addressbook {
       let person = this.newPerson();
       person.fromDAVObject(vCardEntry);
       this.persons.add(person);
-      await person.save();
+      await person.saveLocally();
     } catch (ex) {
       console.warn(ex);
     }

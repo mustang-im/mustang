@@ -130,6 +130,6 @@ async function populateCollectedAddresses(sentFolder: Folder, config: MailAccoun
     contact.protocol = "email";
     person.emailAddresses.add(contact);
     collected.add(person);
-    await person.save();
+    await person.saveLocally();
   }
 }

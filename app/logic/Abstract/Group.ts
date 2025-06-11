@@ -10,10 +10,18 @@ export class Group extends ContactBase {
   readonly participants = new SetColl<Person>();
 
   /**
-   * Saves group locally to the database.
+   * Saves group to the server and to the database.
    */
   async save() {
     await super.save();
+    await this.saveLocally();
+    await this.saveToServer();
+  }
+
+  /**
+   * Saves group locally to the database.
+   */
+  async saveLocally() {
     await this.addressbook.storage.saveGroup(this);
   }
 
@@ -22,14 +30,24 @@ export class Group extends ContactBase {
   }
 
   /**
-   * Deletes the group locally from the database.
+   * Deletes the group on the server and from the database.
    */
   async deleteIt() {
+    await this.deleteLocally();
+    await this.deleteFromServer();
+  }
+
+  /**
+   * Deletes the group locally from the database.
+   */
+  async deleteLocally() {
     if (!this.addressbook) {
       return;
     }
     this.addressbook.groups.remove(this);
-    await this.addressbook.storage.deleteGroup(this);
+    if (this.dbID) {
+      await this.addressbook.storage.deleteGroup(this);
+    }
   }
 
   async deleteFromServer(): Promise<void> {

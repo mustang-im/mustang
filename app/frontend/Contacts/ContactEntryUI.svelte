@@ -74,8 +74,8 @@
   }
 
   function remove() {
-    stopEditing();
     coll.remove(entry);
+    stopEditing();
   }
 
   const purposes = {

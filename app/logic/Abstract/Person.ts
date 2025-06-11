@@ -38,10 +38,18 @@ export class Person extends ContactBase {
   syncState: number | string | undefined;
 
   /**
-   * Saves the contact locally to the database.
+   * Saves the contact to the server and to the database.
     */
   async save() {
     await super.save();
+    await this.saveLocally();
+    await this.saveToServer();
+  }
+
+  /**
+   * Saves the contact locally to the database.
+    */
+  async saveLocally() {
     await this.addressbook.storage.savePerson(this);
   }
 
@@ -50,11 +58,11 @@ export class Person extends ContactBase {
   }
 
   /**
-   * Deletes the contact from our database and on the server.
+   * Deletes the contact on the server and from our database.
     */
   async deleteIt() {
-    await this.deleteFromServer();
     await this.deleteLocally();
+    await this.deleteFromServer();
   }
 
   /**
