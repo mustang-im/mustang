@@ -21,6 +21,6 @@ export function filterUnique<T>(source: Collection<T>, compareFunc: (a: T, b: T)
 export function getNext<T>(list: ArrayColl<T>, curObject: T): T | null {
   let position = list.indexOf(curObject);
   return list.getIndex(position + 1)
-    ?? list.first
+    ?? list.last
     ?? null;
 }
