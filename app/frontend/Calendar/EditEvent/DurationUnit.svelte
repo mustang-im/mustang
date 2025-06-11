@@ -7,9 +7,8 @@
 </select>
 
 <script lang="ts">
-  import { t } from "../../../l10n/l10n";
-  import { createEventDispatcher } from 'svelte';
   import { k1DayS, k1HourS, k1MinuteS } from "../../Util/date";
+  import { t } from "../../../l10n/l10n";
 
   export let durationInSeconds: number; /* in/out */
   export let durationInUnit: number; /* in/out */
@@ -25,7 +24,8 @@
 
   $: durationInUnit = durationInSeconds / unitInSeconds;
 
-  $: unitInSeconds, onUnitChanged()
+  const onlyRoundNumbers = false;
+  $: unitInSeconds, onlyRoundNumbers && onUnitChanged()
   function onUnitChanged() {
     if (!durationInUnit) { // startup
       return;
