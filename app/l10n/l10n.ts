@@ -33,25 +33,25 @@ let messages: Record<string, string>;
  * <https://github.com/ultraq/icu-message-formatter/blob/main/source/MessageFormatter.js#L78>
  */
 function createLocale(defaultLocale = 'en-US', defaultMessages = {}) {
-	const { subscribe, set } = writable(defaultLocale);
+  const { subscribe, set } = writable(defaultLocale);
 
-	// Necessary for plural to work; it expects a locale to be set.
+  // Necessary for plural to work; it expects a locale to be set.
   formatter = new MessageFormatter(defaultLocale, handlers);
   messages = defaultMessages;
 
-	return {
-		subscribe,
+  return {
+    subscribe,
     /**
      * Sets the locale and loads the messages
-     * @param locale 
-     * @param msgs 
+     * @param locale
+     * @param msgs
      */
-		set: (locale: string, msgs: Record<string, string>) => {
+    set: (locale: string, msgs: Record<string, string>) => {
       formatter = new MessageFormatter(locale, handlers);
       messages = msgs;
-			set(locale);
-		},
-	};
+      set(locale);
+    },
+  };
 }
 export const locale = createLocale();
 
@@ -140,10 +140,10 @@ export const plural = derived(locale, () => gPlural);
 
 /**
  * Translates a plural message based on a number and variations
- * 
+ *
  * We need this to generate and match the variation according
  * to the number provided, we could just manually write ICU format
- * manually `{num, plural, variations}` but we're using this 
+ * manually `{num, plural, variations}` but we're using this
  * to avoid changing the entire code and also the manually written
  * on would be `{0, plural, variations}` because the placeholders
  * are numbers and that also changes the hashID and would require
@@ -168,14 +168,14 @@ export function gPlural(num: number, variations: Record<string, string>) {
 
 /**
  * Translates based on a message descriptor and values
- * 
+ *
  * This default translation function that does the translation
  * and fallback handling for `t()` and `plural()`. Without
  * it the other function would not work. Since it is the entry point
  * for all translation functions, the `initLocale()` function is
  * called here instead
  * @param descriptor
- * @param values 
+ * @param values
  * @returns translated string
  */
 export function translateString(descriptor: MessageDescriptor, values: FormatValues): string {
