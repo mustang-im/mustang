@@ -60,7 +60,7 @@
         </hbox>
       </hbox>
     {:else}
-      <hbox class="buttons">
+      <hbox class="timezone buttons">
         <RoundButton
           label={$t`Timezone`}
           icon={GlobeIcon}
@@ -72,8 +72,8 @@
           />
       </hbox>
     {/if}
-    <hbox title={$t`Duration`}>
-      <input class="duration" type="number" bind:value={durationInUnit} on:input={durationUnit.onDurationInUnitChanged} min={1} max={2000} />
+    <hbox class="duration" title={$t`Duration`}>
+      <input type="number" bind:value={durationInUnit} on:input={durationUnit.onDurationInUnitChanged} min={1} max={2000} />
       <DurationUnit bind:durationInSeconds={event.duration} bind:durationInUnit bind:this={durationUnit} onlyDays={$event.allDay} />
     </hbox>
   </grid>
@@ -88,7 +88,7 @@
   import AllDayIcon from '../../asset/icon/calendar/24h.svg?raw';
   import ClockIcon from "lucide-svelte/icons/clock";
   import GlobeIcon from "lucide-svelte/icons/globe";
-  import MultipleDaysIcon from "lucide-svelte/icons/circle-plus";
+  import MultipleDaysIcon from "lucide-svelte/icons/calendar-plus";
   import XIcon from "lucide-svelte/icons/x";
   import TimezonePicker from "timezone-picker-svelte";
   import { t } from "../../../l10n/l10n";
@@ -232,7 +232,7 @@
   .time-input :global(input) {
     font-size: 16px;
   }
-  .duration {
+  .duration input {
     margin-inline-end: 6px;
   }
   .timezone {
@@ -242,5 +242,34 @@
   }
   :global(.inline) {
     display: inline-flex !important;
+  }
+  @container (max-width: 1000px) {
+    .time-box {
+      padding: 8px 12px;
+    }
+    grid.time {
+      grid-template-columns: max-content;
+      justify-items: start;
+      align-items: center;
+      margin-block-end: 12px;
+    }
+    .date-input.start {
+      order: 1;
+    }
+    .date-input.end {
+      order: 2;
+    }
+    .time-input.start {
+      order: 3;
+    }
+    .time-input.end {
+      order: 4;
+    }
+    .duration {
+      order: 5;
+    }
+    .timezone {
+      order: 6;
+    }
   }
 </style>

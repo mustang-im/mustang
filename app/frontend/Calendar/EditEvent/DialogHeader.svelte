@@ -8,7 +8,7 @@
             label={$t`Expand dialog size to full window`}
             icon={ExpandDialogIcon}
             onClick={onExpandToWindow}
-            classes="plain"
+            classes="plain expand"
             border={false}
             iconSize="16px"
             />
@@ -124,7 +124,8 @@
   import { Calendar } from "../../../logic/Calendar/Calendar";
   import { Account } from "../../../logic/Abstract/Account";
   import { EventEditMustangApp, calendarMustangApp } from "../CalendarMustangApp";
-  import { selectedCalendar } from "../selected";
+  import { selectedEvent, selectedCalendar } from "../selected";
+  import { openApp, selectedApp } from "../../AppsBar/selectedApp";
   import { appGlobal } from "../../../logic/app";
   import Stack from "../../Shared/Stack.svelte";
   import AccountDropDown from "../../Shared/AccountDropDown.svelte";
@@ -139,15 +140,13 @@
   import CloseIcon from "lucide-svelte/icons/x";
   import RevertIcon from "lucide-svelte/icons/undo-2";
   import { catchErrors } from "../../Util/error";
-  import { assert, NotImplemented } from "../../../logic/util/util";
+  import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
   export let repeatBox: RepeatBox;
 
-  let isFullWindow = false;
   let calendar = event.calendar;
-
   $: event.startEditing(); // not `$event`
   $: canSaveSeries = event && $event.title && $event.startTime && $event.endTime &&
       event.startTime.getTime() <= event.endTime.getTime();
@@ -156,6 +155,7 @@
     repeatBox && !event.parentEvent ||
     calendar != event.calendar);
   $: seriesStatus = event.seriesStatus;
+  $: isFullWindow = $selectedApp instanceof EventEditMustangApp;
 
   function confirmAndChangeRecurrenceRule(): boolean {
     let master = event.parentEvent || event;
@@ -267,19 +267,22 @@
   }
 
   function onExpandToWindow() {
-    isFullWindow = true;
-    throw new NotImplemented("Cannot expand the dialog to full window yet");
+    calendarMustangApp.editEvent(event);
   }
 
   function onShrink() {
-    isFullWindow = false;
-    throw new NotImplemented("Cannot shrink the dialog to side bar yet");
+    $selectedEvent = event;
+    openApp(calendarMustangApp);
   }
 
   function onClose() {
     event.finishEditing();
     let me = calendarMustangApp.subApps.find(app => app instanceof EventEditMustangApp && app.mainWindowProperties.event == event);
     calendarMustangApp.subApps.remove(me);
+    if (!isFullWindow) {
+      // Make sidebar disappear, see CalendarApp.svelte
+      $selectedEvent = null;
+    }
   }
 </script>
 
@@ -326,6 +329,17 @@
     width: 24px;
     align-items: center;
     justify-content: center;
+  }
+  @container (max-width: 400px) {
+    .account-icon {
+      display: none;
+    }
+    .account-selector {
+      max-width: 10px;
+    }
+    .buttons :global(.expand) {
+      margin-inline-start: -4px;
+    }
   }
   .buttons {
     align-items: center;

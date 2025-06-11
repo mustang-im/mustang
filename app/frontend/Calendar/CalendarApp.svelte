@@ -1,21 +1,32 @@
 <vbox flex class="calendar-app">
-  <vbox flex class="main">
-    <MainView {events} bind:start={$startDate} dateInterval={$selectedDateInterval}>
-      <TitleBarLeft on:addEvent={() => catchErrors(addEvent)} slot="top-left" />
-      <TitleBarRight bind:dateInterval={$selectedDateInterval} slot="top-right" />
-    </MainView>
-  </vbox>
+  <Splitter
+    hasRight={!!$selectedEvent}
+    initialRightRatio={0.25}
+    rightMinWidth={350}
+    >
+    <vbox flex class="main" slot="left">
+      <MainView {events} bind:start={$startDate} dateInterval={$selectedDateInterval}>
+        <TitleBarLeft on:addEvent={() => catchErrors(addEvent)} slot="top-left" />
+        <TitleBarRight bind:dateInterval={$selectedDateInterval} slot="top-right" />
+      </MainView>
+    </vbox>
+    <vbox flex class="sidebar" slot="right">
+      <EditEvent event={$selectedEvent} />
+    </vbox>
+  </Splitter>
 </vbox>
 
 <script lang="ts">
   import { RecurrenceColl } from "../../logic/Calendar/RecurrenceColl";
   import { calendarMustangApp } from "./CalendarMustangApp";
   import { appGlobal } from "../../logic/app";
-  import { selectedCalendar, selectedDate, selectedDateInterval, startDate } from "./selected";
+  import { selectedCalendar, selectedDate, selectedDateInterval, selectedEvent, startDate } from "./selected";
   import { getLocalStorage } from "../Util/LocalStorage";
   import MainView from "./MainView.svelte";
   import TitleBarLeft from "./TitleBarLeft.svelte";
   import TitleBarRight from "./TitleBarRight.svelte";
+  import EditEvent from "./EditEvent/EditEvent.svelte";
+  import Splitter from "../Shared/Splitter.svelte";
   import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { mergeColls } from "svelte-collections";

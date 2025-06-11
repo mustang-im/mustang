@@ -49,7 +49,7 @@
           </Section>
         {/if}
       </vbox>
-      <vbox class="column2" flex>
+      <vbox class="column2 description" flex>
         {#if showDescription}
           <Section label={$t`Description`} icon={DescriptionIcon} flex>
             <DescriptionBox {event} />
@@ -92,8 +92,8 @@
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
-  let showRepeat = event.recurrenceRule || event.parentEvent && event.isNew;
 
+  let showRepeat = event.recurrenceRule || event.parentEvent && event.isNew;
   $: showReminder = !!$event.alarm;
   $: showParticipants = $event.participants.hasItems;
   $: showLocation = !!$event.location;
@@ -133,19 +133,22 @@
 </script>
 
 <style>
+  .event-edit-window {
+    container-type: inline-size;
+  }
   .columns {
     padding: 12px 16px 4px 16px;
   }
-  @media screen and (min-width: 1000px) {
+  .description :global(.section > .icon) {
+    display: none;
+  }
+  @container (min-width: 1000px) {
     .columns.show-description {
       flex-direction: row;
     }
     .column2 {
       margin-block-start: -8px;
       margin-inline-start: 24px;
-    }
-    .column2 :global(.section > .icon) {
-      display: none;
     }
     /*.columns.show-description .column1 {
       order: 2;
