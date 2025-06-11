@@ -14,6 +14,7 @@ import { Calendar } from './Calendar/Calendar';
 import { Addressbook } from './Contacts/Addressbook';
 import { Event } from './Calendar/Event';
 import { EMail } from './Mail/EMail';
+import { ComposeActions } from './Mail/ComposeActions';
 import { MailIdentity } from './Mail/MailIdentity';
 import { FakeMeetAccount } from './Meet/FakeMeeting';
 import { DummyMailStorage } from './Mail/Store/DummyMailStorage';
@@ -23,7 +24,6 @@ import { DummyAddressbookStorage } from './Contacts/SQL/DummyAddressbookStorage'
 import { notifyChangedProperty } from './util/Observable';
 import { ArrayColl, type Collection } from 'svelte-collections';
 import { faker } from '@faker-js/faker';
-import { ComposeActions } from './Mail/ComposeActions';
 
 export async function getTestObjects(): Promise<void> {
   appGlobal.me = new FakeChatPerson();
