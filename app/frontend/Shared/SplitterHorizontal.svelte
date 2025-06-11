@@ -1,23 +1,25 @@
-<vbox
-  class="splitter"
-  bind:clientHeight={containerHeight}
-  >
-	<hbox class="top"
-		bind:clientHeight={currentTopHeight}
-		>
-		<slot name="top" />
-  </hbox>
-	<hbox
-    class="splitter-bar"
-    on:pointerdown={onMouseDown}
-    style="height: {barHeight}px;"
-  	/>
-	<hbox class="bottom"
-	  style="flex: {bottomRatio} 0 0;"
-		>
-		<slot name="bottom" />
-  </hbox>
-</vbox>
+{#if hasTop && hasBottom}
+	<vbox class="splitter" bind:clientHeight={containerHeight}>
+		<hbox class="top" bind:clientHeight={currentTopHeight}>
+			<slot name="top" />
+		</hbox>
+		<hbox
+			class="splitter-bar"
+			on:pointerdown={onMouseDown}
+			style="height: {barHeight}px;"
+			/>
+		<hbox class="bottom" style="flex: {bottomRatio} 0 0;">
+			<slot name="bottom" />
+		</hbox>
+	</vbox>
+{:else if hasTop}
+	<slot name="top" />
+{:else if hasBottom}
+	<slot name="bottom" />
+{:else}
+  <vbox class="splitter" />
+{/if}
+
 <svelte:window
 	on:pointermove={onMouseMove}
 	on:pointerup={onMouseUp}
@@ -36,6 +38,10 @@
 	export let bottomMinWidth = 30;
 	/** Initial size of right pane compared to left pane */
   export let initialBottomRatio = 1;
+	/** If false, will hide the top part and remove the splitter */
+	export let hasTop = true;
+	/** If false, will hide the bottom part and remove the splitter */
+	export let hasBottom = true;
 	/** If set, will save the ratio in localStorage as preference and restore it */
 	export let name: string = null;
 
