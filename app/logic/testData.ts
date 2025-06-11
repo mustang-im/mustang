@@ -384,7 +384,7 @@ export class FakeCalendar extends Calendar {
 
 class FakeEvent extends Event {
   declare calendar: FakeCalendar;
-  constructor(calendar: FakeCalendar, parentEvent?: Event) {
+  constructor(calendar: FakeCalendar, parentEvent?: FakeEvent) {
     super(calendar, parentEvent);
     this.title = faker.company.buzzPhrase();
     this.descriptionText = faker.hacker.phrase() + "\n" + faker.hacker.phrase();
