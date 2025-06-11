@@ -20,18 +20,20 @@
     {:else if frequency == Frequency.Weekly }
       <hbox class="weekdays">
         <hbox class="label">{$t`On days`}</hbox>
-        {#each weekdayOptions as weekday}
-          <RoundButton
-            label={weekday.label}
-            selected={weekdays.includes(weekday.value)}
-            onClick={() => onWeekdayChanged(weekday.value)}
-            disabled={weekday.disabled}
-            border={false}
-            classes="plain weekday"
-            >
-            <hbox class="weekday-content" slot="icon">{weekday.label}</hbox>
-          </RoundButton>
-        {/each}
+        <hbox class="options">
+          {#each weekdayOptions as weekday}
+            <RoundButton
+              label={weekday.label}
+              selected={weekdays.includes(weekday.value)}
+              onClick={() => onWeekdayChanged(weekday.value)}
+              disabled={weekday.disabled}
+              border={false}
+              classes="plain weekday"
+              >
+              <hbox class="weekday-content" slot="icon">{weekday.label}</hbox>
+            </RoundButton>
+          {/each}
+        </hbox>
       </hbox>
     {:else if frequency == Frequency.Monthly }
       <RadioGroup bind:group={week} items={monthWeekOptions} vertical={true} />
@@ -215,6 +217,12 @@
   input.auto {
     width: auto;
   }
+  .weekdays {
+    flex-wrap: wrap;
+  }
+  .weekdays .options {
+    flex-wrap: wrap;
+  }
   .weekdays .label {
     margin-inline-end: 12px;
   }
@@ -231,6 +239,9 @@
   }
   .weekdays :global(.weekday.disabled) {
     opacity: inherit;
+  }
+  .every {
+    flex-wrap: wrap;
   }
   :global(.inline) {
     display: inline-flex !important;
