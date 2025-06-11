@@ -1,5 +1,5 @@
 <vbox class="time-box">
-  <grid class="time">
+  <grid class="time" class:isMultipleDays class:allDay={$event.allDay}>
     <!--{$t`When`} {$t`Start`} import ClockMainIcon from "lucide-svelte/icons/clock-8"; -->
     <hbox class="date-input start" title={$t`Start date`}>
       <DateInput bind:date={event.startTime} />
@@ -7,14 +7,27 @@
     <hbox class="time-input start" title={$t`Start time`}>
       {#if !$event.allDay}
         <TimeInput bind:time={event.startTime} />
+        {#if !showTimezone}
+          <hbox class="buttons">
+            <RoundButton
+              label={$t`Timezone`}
+              icon={GlobeIcon}
+              disabled={$event.allDay}
+              onClick={onTimezoneToggle}
+              classes="plain smallest"
+              border={false}
+              iconSize="16px"
+              />
+          </hbox>
+        {/if}
       {/if}
     </hbox>
 
     <hbox class="date-input end" title={$t`End date`}>
       {#if isMultipleDays}
         <DateInput bind:date={event.endTime}
-          min={event.startTime}
-          deltaInDays={event.allDay ? -1 : null} />
+          min={$event.startTime}
+          deltaInDays={$event.allDay ? -1 : null} />
       {:else}
         <hbox class="buttons">
           <RoundButton
@@ -59,18 +72,8 @@
             />
         </hbox>
       </hbox>
-    {:else}
-      <hbox class="timezone buttons">
-        <RoundButton
-          label={$t`Timezone`}
-          icon={GlobeIcon}
-          disabled={event.allDay}
-          onClick={onTimezoneToggle}
-          classes="plain smallest"
-          border={false}
-          iconSize="16px"
-          />
-      </hbox>
+    {:else if !$event.allDay}
+      <hbox class="timezone" />
     {/if}
     <hbox class="duration" title={$t`Duration`}>
       <input type="number"
