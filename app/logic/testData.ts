@@ -14,6 +14,7 @@ import { Calendar } from './Calendar/Calendar';
 import { Addressbook } from './Contacts/Addressbook';
 import { Event } from './Calendar/Event';
 import { EMail } from './Mail/EMail';
+import { ComposeActions } from './Mail/ComposeActions';
 import { MailIdentity } from './Mail/MailIdentity';
 import { FakeMeetAccount } from './Meet/FakeMeeting';
 import { DummyMailStorage } from './Mail/Store/DummyMailStorage';
@@ -201,6 +202,17 @@ class FakeFolder extends Folder {
   newEMail(): FakeEMail {
     return new FakeEMail(this);
   }
+  async addMessage(message: EMail) {
+    this.messages.add(message);
+  }
+  async moveMessagesHere(messages: Collection<EMail>) {
+    let sourceFolder = messages.first.folder;
+    sourceFolder.messages.removeAll(messages);
+    this.messages.addAll(messages);
+  }
+  async copyMessagesHere(messages: Collection<EMail>) {
+    this.messages.addAll(messages);
+  }
 }
 
 class FakeEMail extends EMail {
@@ -237,6 +249,23 @@ class FakeEMail extends EMail {
     if (Math.random() > 0.3) {
       this.html = `<p>${paragraphs.join("</p><p>")}</p>`;
     }
+  }
+  get compose() {
+    return new FakeComposeActions(this);
+  }
+  async download() {}
+}
+
+class FakeComposeActions extends ComposeActions {
+  declare email: FakeEMail;
+  async saveAsDraft(): Promise<void> {
+    this.email.sent = new Date();
+    await super.saveAsDraft();
+  }
+  async send() {
+    this.email.sent = new Date();
+    await this.email.identity.account.send(this.email);
+    await this.deleteDrafts();
   }
 }
 
@@ -355,7 +384,7 @@ export class FakeCalendar extends Calendar {
 
 class FakeEvent extends Event {
   declare calendar: FakeCalendar;
-  constructor(calendar: FakeCalendar, parentEvent?: Event) {
+  constructor(calendar: FakeCalendar, parentEvent?: FakeEvent) {
     super(calendar, parentEvent);
     this.title = faker.company.buzzPhrase();
     this.descriptionText = faker.hacker.phrase() + "\n" + faker.hacker.phrase();
@@ -381,9 +410,12 @@ export class FakeFileSharingAccount extends FileSharingAccount {
     super();
     this.name = "Dropbox";
     let dirCount = Math.random() * 10;
+    let dirs: Directory[] = [];
     for (let i = 0; i < dirCount; i++) {
-      fakeDir(null);
+      let parentDir = this.newDirectory(faker.system.fileName({ extensionCount: 0 }));
+      dirs.push(fakeDir(parentDir));
     }
+    this.rootDirs.addAll(dirs);
   }
 }
 
