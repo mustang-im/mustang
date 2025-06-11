@@ -131,7 +131,7 @@ function makeContactEntry(entry: ICalEntry, protocol?: string, isURI = true, str
     value,
     /work/i.test(entry.properties.type) ? "work" : /home/i.test(entry.properties.type) ? "home" : "other",
     protocol,
-    sanitize.integer(entry.properties.pref, +/pref/i.test(entry.properties.type)));
+    sanitize.integer(entry.properties.pref, ContactEntry.defaultPreference));
 }
 
 function setValue(container: Record<string, string[]>, key: string, value: string | string[] | null, parameters: Record<string, string> = {}) {
@@ -166,7 +166,7 @@ function setValues(container: Record<string, string[]>, key: string, values: Arr
     if (type) {
       line += ";TYPE=" + type.toUpperCase();
     }
-    if (entry.preference) {
+    if (entry.preference && entry.preference != ContactEntry.defaultPreference) {
       line += `;PREF=${entry.preference}`;
     }
     line += ":";
@@ -185,7 +185,7 @@ function setAdrs(container: Record<string, string[]>, values: ArrayColl<ContactE
     if (type) {
       line += ";TYPE=" + type.toUpperCase();
     }
-    if (entry.preference) {
+    if (entry.preference && entry.preference != ContactEntry.defaultPreference) {
       line += `;PREF=${entry.preference}`;
     }
     line += ":";

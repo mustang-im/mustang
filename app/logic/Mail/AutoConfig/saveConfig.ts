@@ -126,7 +126,6 @@ async function populateCollectedAddresses(sentFolder: Folder, config: MailAccoun
     let person = new Person();
     person.name = recipient.name;
     let contact = new ContactEntry(recipient.emailAddress, "collected");
-    contact.preference = 100;
     contact.protocol = "email";
     person.emailAddresses.add(contact);
     collected.add(person);

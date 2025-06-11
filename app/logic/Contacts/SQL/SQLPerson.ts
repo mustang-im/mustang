@@ -137,7 +137,7 @@ export class SQLPerson {
     for (let row of rows) {
       let purpose = sanitize.label(row.purpose, null);
       let contactEntry = new ContactEntry(sanitize.string(row.value), purpose);
-      contactEntry.preference = sanitize.integer(row.preference, 100);
+      contactEntry.preference = sanitize.integer(row.preference, ContactEntry.defaultPreference);
       contactEntry.protocol = sanitize.string(row.protocol, null);
       let type = row.type;
       if (type == ContactType.EMailAddress) {

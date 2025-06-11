@@ -191,11 +191,13 @@ export class ContactEntry extends Observable {
   protocol: string | null; // "email", "tel", "fax", "matrix", "xmpp" etc.
   @notifyChangedProperty
   purpose: string | null; // "work", "home", "mobile", "other", "Teams", "WhatsApp", or any other text
+  /** Least preferred, per RFC 6350 5.3 @see <https://www.rfc-editor.org/rfc/rfc6350#section-5.3> */
+  static defaultPreference = 100;
   /** Lower is more preferred */
   @notifyChangedProperty
-  preference: number;
+  preference: number = ContactEntry.defaultPreference;
 
-  constructor(value: string, purpose: string | null = null, protocol: string | null = null, preference = 0) {
+  constructor(value: string, purpose: string | null = null, protocol: string | null = null, preference: number = ContactEntry.defaultPreference) {
     super();
     this.value = value;
     this.purpose = purpose;

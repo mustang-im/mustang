@@ -40,6 +40,7 @@ export class CardDAVPerson extends Person {
     this.id ??= crypto.randomUUID();
     let vCard = convertPersonToVCard(this);
     if (this.url) {
+      // TODO Update doesn't work, if the contact was deleted on the server
       console.log("updating", this.url, "with vCard", vCard);
       await this.addressbook.client.updateVCard({
         vCard: this.getDAVObject(vCard),
