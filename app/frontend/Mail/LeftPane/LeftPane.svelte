@@ -15,7 +15,7 @@
     </hbox>
 
   {#if activeTab == SearchView.Person}
-    <PersonsList persons={appGlobal.persons}  bind:selected={$selectedPerson} size="small" bind:searchTerm={$globalSearchTerm} />
+    <PersonsList persons={appGlobal.persons} bind:selected={$selectedPerson} size="small" />
     <ViewSwitcher />
   {:else if activeTab == SearchView.Search}
     <SearchPane bind:searchMessages on:clear={endSearchMode} />
