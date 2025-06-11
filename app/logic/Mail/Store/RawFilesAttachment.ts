@@ -79,12 +79,12 @@ export class RawFilesAttachment implements MailContentStorage {
     let id = email.attachments.getKeyForValue(attachment) ?? Math.floor(Math.random() * 100) + 100;
     let fileparts = attachment.filename.split(".");
     let ext = fileparts.length > 1 ? fileparts.pop() : fileExtensionForMIMEType(attachment.mimeType);
-    let filename = fileparts.join(".") + "-" + id + "." + ext;
+    let filename = fileparts.join(".").substring(0, 40) + "-" + id + "." + ext;
     return `${dir}/${sanitize.filename(filename, "unknownAttachment")}`;
   }
 
   static async getDirPath(email: EMail): Promise<string> {
     filesDir ??= await appGlobal.remoteApp.getFilesDir();
-    return `${filesDir}/files/email/${sanitize.filename(email.from?.emailAddress?.replace("@", "-"), "unknownPerson")}/${email.dbID}-${sanitize.filename(email.subject, "unknownSubject")}`;
+    return `${filesDir}/files/email/${sanitize.filename(email.from?.emailAddress?.replace("@", "-").substring(0, 30), "unknownPerson")}/${email.dbID}-${sanitize.filename(email.baseSubject.substring(0, 30), "unknownSubject")}`;
   }
 }
