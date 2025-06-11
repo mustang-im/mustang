@@ -1,3 +1,12 @@
 {
-  "recommendations": ["svelte.svelte-vscode"]
+  "recommendations": [
+    "svelte.svelte-vscode",
+    "yoavbls.pretty-ts-errors",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "tobermory.es6-string-html",
+    "kodetech.electron-debug",
+    "vitest.explorer",
+    "idleberg.electron-builder",
+  ]
 }
