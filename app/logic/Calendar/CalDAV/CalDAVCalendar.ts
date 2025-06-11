@@ -172,7 +172,8 @@ export class CalDAVCalendar extends Calendar {
     }
   }
 
-  getEventByURL(url: URLString): CalDAVEvent | void {
+  getEventByURL(relativeURL: URLString): CalDAVEvent | void {
+    let url = new URL(relativeURL, this.calendarURL).href;
     return this.events.find(e => e.url == url);
   }
 
