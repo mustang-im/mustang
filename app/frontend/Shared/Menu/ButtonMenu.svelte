@@ -1,9 +1,7 @@
-{#if $$slots.control}
-  <hbox class="menu button" bind:this={menuAnchorE}>
+<hbox class="menu button" bind:this={menuAnchorE}>
+  {#if $$slots.control}
     <slot name="control" />
-  </hbox>
-{:else}
-  <hbox class="menu button" bind:this={menuAnchorE}>
+  {:else}
     <Button
       icon={buttonIcon}
       iconSize="16px"
@@ -13,8 +11,8 @@
       plain
       classes="menu-button"
       />
-  </hbox>
-{/if}
+  {/if}
+</hbox>
 <Menu bind:isMenuOpen anchor={menuAnchorE} {boundaryElSel}>
   <slot />
 </Menu>
@@ -40,8 +38,9 @@
   export let buttonIcon = MenuIcon;
 
   let menuAnchorE: HTMLElement;
-  function onMenuToggle() {
+  function onMenuToggle(event: MouseEvent) {
     isMenuOpen = !isMenuOpen;
+    event.stopPropagation();
   }
 </script>
 
