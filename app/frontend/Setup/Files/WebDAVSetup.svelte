@@ -9,7 +9,7 @@
       placeholder={$t`Private`} autofocus />
     <label for="name">{$t`Server URL`}</label>
     <input type="text" bind:value={config.url} name="url"
-      placeholder={$t`https://dav.yourcompany.com/files/`} />
+      placeholder="https://dav.yourcompany.com/files/" />
     <label for="name">{$t`Username`}</label>
     <input type="text" bind:value={config.username} name="username"
       placeholder={$t`fred`} />
