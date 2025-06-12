@@ -1,8 +1,4 @@
 # Next
-  * Calendar
-    * Edit Event:
-      * Buttons: Recurring
-      * Sidebar
   * Beta banner
   * License notification bar
   * Search
@@ -11,6 +7,7 @@
       * Chat
   * Actions (Filters): Run
   * Calendar
+    * Recurring - Fix commit f71507fc
     * Invitations
     * Free/Busy
   * Meet

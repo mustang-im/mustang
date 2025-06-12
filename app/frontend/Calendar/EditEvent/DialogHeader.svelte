@@ -14,33 +14,43 @@
             />
         {/if}
         {#if !event.isIncomingMeeting}
-          <RoundButton
-            label={$t`Delete Event`}
-            icon={DeleteIcon}
-            onClick={onDelete}
-            disabled={!event.dbID && !event.parentEvent}
-            classes="plain delete"
-            border={false}
-            iconSize="16px"
-            />
-          {#if seriesStatus == "first"}
+          {#if $event.seriesStatus == "first" || $event.seriesStatus == "middle"}
+            <ButtonMenu bind:isMenuOpen={isDeleteSeriesOpen}>
+              <RoundButton
+                slot="control"
+                label={$t`Delete event`}
+                icon={DeleteIcon}
+                onClick={event => { isDeleteSeriesOpen = !isDeleteSeriesOpen; event.stopPropagation(); }}
+                classes="plain delete"
+                border={false}
+                iconSize="16px"
+                />
+
+              <MenuItem
+                label={$t`Delete only this instance`}
+                onClick={onDelete}
+                classes="font-normal" />
+              {#if $event.seriesStatus == "middle"}
+                <MenuItem
+                  label={$t`Delete remainder of series`}
+                  onClick={onDeleteRemainder}
+                  classes="font-normal" />
+              {/if}
+              <MenuItem
+                label={$t`Delete entire series`}
+                onClick={onDeleteAll}
+                classes="font-normal" />
+            </ButtonMenu>
+          {:else}
             <RoundButton
-             label={$t`Delete entire series`}
-             icon={DeleteIcon}
-             onClick={onDeleteAll}
-             classes="plain delete"
-             border={false}
-             iconSize="16px"
-             />
-          {:else if seriesStatus == "middle"}
-            <RoundButton
-             label={$t`Delete remainder of series`}
-             icon={DeleteIcon}
-             onClick={onDeleteRemainder}
-             classes="plain delete"
-             border={false}
-             iconSize="16px"
-             />
+              label={$t`Delete event`}
+              icon={DeleteIcon}
+              onClick={onDelete}
+              disabled={!event.dbID && !event.parentEvent}
+              classes="plain delete"
+              border={false}
+              iconSize="16px"
+              />
           {/if}
         {/if}
       </hbox>
@@ -68,27 +78,6 @@
             iconSize="16px"
             />
         {/if}
-        {#if canSaveSeries}
-          {#if seriesStatus == "first"}
-            <RoundButton
-             label={$t`Change entire series`}
-             icon={SaveIcon}
-             onClick={onChangeAll}
-             classes="plain save-or-close"
-             filled={true}
-             iconSize="16px"
-             />
-          {:else if seriesStatus == "middle"}
-            <RoundButton
-             label={$t`Change remainder of series`}
-             icon={SaveIcon}
-             onClick={onChangeRemainder}
-             classes="plain save-or-close"
-             filled={true}
-             iconSize="16px"
-             />
-          {/if}
-        {/if}
         {#if canSave}
           <RoundButton
             label={$t`Revert`}
@@ -97,14 +86,43 @@
             classes="plain save-or-close"
             iconSize="16px"
             />
-          <RoundButton
-            label={$t`Save`}
-            icon={SaveIcon}
-            onClick={onSave}
-            classes="plain save-or-close"
-            filled={true}
-            iconSize="16px"
-            />
+          {#if $event.seriesStatus == "first" || $event.seriesStatus == "middle"}
+            <ButtonMenu bind:isMenuOpen={isSaveSeriesOpen}>
+              <RoundButton
+                slot="control"
+                label={$t`Save`}
+                icon={SaveIcon}
+                onClick={event => { isSaveSeriesOpen = !isSaveSeriesOpen; event.stopPropagation(); }}
+                classes="plain save-or-close"
+                filled={true}
+                iconSize="16px"
+                />
+
+              <MenuItem
+                label={$t`Change only this instance`}
+                onClick={onSave}
+                classes="font-normal" />
+              {#if $event.seriesStatus == "middle"}
+                <MenuItem
+                  label={$t`Change remainder of series`}
+                  onClick={onChangeRemainder}
+                  classes="font-normal" />
+              {/if}
+              <MenuItem
+                label={$t`Change entire series`}
+                onClick={onChangeAll}
+                classes="font-normal" />
+            </ButtonMenu>
+          {:else}
+            <RoundButton
+              label={$t`Save`}
+              icon={SaveIcon}
+              onClick={onSave}
+              classes="plain save-or-close"
+              filled={true}
+              iconSize="16px"
+              />
+          {/if}
         {:else}
           <RoundButton
             label={$t`Cancel`}
@@ -128,10 +146,12 @@
   import { openApp, selectedApp } from "../../AppsBar/selectedApp";
   import { appGlobal } from "../../../logic/app";
   import Stack from "../../Shared/Stack.svelte";
+  import type RepeatBox from "./RepeatBox.svelte";
   import AccountDropDown from "../../Shared/AccountDropDown.svelte";
+  import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
-  import type RepeatBox from "./RepeatBox.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import AccountIcon from "lucide-svelte/icons/user-round";
   import ExpandDialogIcon from "lucide-svelte/icons/chevrons-left";
   import ShrinkDialogIcon from "lucide-svelte/icons/chevrons-right";
@@ -154,8 +174,9 @@
     $event.hasChanged() ||
     repeatBox && !event.parentEvent ||
     calendar != event.calendar);
-  $: seriesStatus = event.seriesStatus;
   $: isFullWindow = $selectedApp instanceof EventEditMustangApp;
+  let isSaveSeriesOpen = false;
+  let isDeleteSeriesOpen = false;
 
   function confirmAndChangeRecurrenceRule(): boolean {
     let master = event.parentEvent || event;
@@ -238,7 +259,7 @@
   }
 
   async function onDelete() {
-    if (seriesStatus == "only") {
+    if (event.seriesStatus == "only") {
       await event.parentEvent.deleteIt();
     } else {
       await event.deleteIt();
@@ -302,13 +323,13 @@
     background-repeat: repeat-x;
   }
   /*  background-image: url("../../asset/header-background.jpeg");*/
-  .window-title-bar .buttons :global(button) {
+  .buttons :global(button) {
     color: white;
   }
-  .window-title-bar .buttons :global(button.save-or-close) {
+  .buttons :global(button.save-or-close) {
     border-color: white;
   }
-  .window-title-bar .buttons :global(.save-or-close path) {
+  .buttons :global(.save-or-close path) {
     stroke-width: 3px;
   }
 
@@ -335,7 +356,7 @@
       display: none;
     }
     .account-selector {
-      max-width: 10px;
+      max-width: 50px;
     }
     .buttons :global(.expand) {
       margin-inline-start: -4px;
@@ -350,5 +371,9 @@
   }
   .buttons :global(button.delete) {
     background-color: lightsalmon;
+  }
+  .buttons :global(.menu .menuitem),
+  .buttons :global(.menu .label) {
+    color: unset;
   }
 </style>
