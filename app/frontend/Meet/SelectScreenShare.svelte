@@ -7,18 +7,20 @@
       </hbox>
     {:else if $screens.hasItems}
 
-      <hbox class="screens">
-        {#each $screens.each as screen}
-          <vbox class="screen" on:click={() => onSelect(screen)}>
-            <img src={screen.thumbnailURL}
-              width={kThumbnailWidth} height={kThumbnailHeight}
-              alt="" />
-            <hbox class="name" style="--thumbnail-width: {kThumbnailWidth}px">
-              {screen.name}
-            </hbox>
-          </vbox>
-        {/each}
-      </hbox>
+      <Scroll>
+        <hbox class="screens">
+          {#each $screens.each as screen}
+            <vbox class="screen" on:click={() => onSelect(screen)}>
+              <img src={screen.thumbnailURL}
+                width={kThumbnailWidth} height={kThumbnailHeight}
+                alt="" />
+              <hbox class="name" style="--thumbnail-width: {kThumbnailWidth}px">
+                {screen.name}
+              </hbox>
+            </vbox>
+          {/each}
+        </hbox>
+      </Scroll>
 
     {:else}
       {$t`Looking for your screens and windows…`}
@@ -41,6 +43,7 @@
 <script lang="ts">
   import { appGlobal } from "../../logic/app";
   import Popup from "../Shared/Popup.svelte";
+  import Scroll from "../Shared/Scroll.svelte";
   import Button from "../Shared/Button.svelte";
   import { UserError } from "../../logic/util/util";
   import { t } from "../../l10n/l10n";
@@ -53,8 +56,8 @@
   let popupAnchor: HTMLElement;
   let errorMessage: string | null = null;
 
-  const kThumbnailHeight = 150; // desktopCapturer.getSources() default
-  const kThumbnailWidth = 150;
+  const kThumbnailWidth = 200;
+  const kThumbnailHeight = 160;
 
   type Screen = {
     name: string;
@@ -107,7 +110,8 @@
 
   export async function onOpen() {
     isListening = true;
-    await appGlobal.remoteApp.onScreenSharingSelect(onScreensRequested);
+    await appGlobal.remoteApp.onScreenSharingSelect(onScreensRequested,
+    kThumbnailWidth, kThumbnailHeight);
   }
 
   async function onClose() {
@@ -127,11 +131,11 @@
   .dialog {
     width: 60vw;
     height: 60vh;
-    background-color: var(--leftbar-bg);
-    color: var(--leftbar-fg);
+    background-color: var(--appbar-bg);
+    color: var(--appbar-fg);
     padding: 32px;
     border-radius: 5px;
-    box-shadow: 2.281px 1.14px 9.123px 0px rgba(var(--shadow-color), 20%);
+    box-shadow: 2.281px 1.14px 9.123px 0px rgba(200, 200, 200, 30%);
   }
   .screens {
     flex-wrap: wrap;
@@ -143,6 +147,11 @@
   .screen:hover {
     background-color: var(--hover-bg);
     color: var(--hover-fg);
+    border-radius: 2px;
+  }
+  .screen img {
+    box-shadow: 2.281px 1.14px 9.123px 0px rgba(var(--shadow-color), 20%);
+    border-radius: 1px;
   }
   .screen .name {
     max-width: var(--thumbnail-width);
