@@ -75,7 +75,7 @@
     "glob": "^11.0.1",
     "happy-dom": "^16.0.0",
     "html-formatter": "^0.1.9",
-    "mustang-autotranslate": "^1.15.3",
+    "mustang-autotranslate": "^1.16.2",
     "simple-svelte-autocomplete": "^2.5.2",
     "svelte": "^3.55.1",
     "svelte-check": "^2.10.3",
