@@ -10,7 +10,7 @@
       <FolderHeader folder={selectedFolder} {searchMessages} />
       <TableMessageList {messages} bind:selectedMessage bind:selectedMessages />
       {#if !horizontal}
-        <FolderFooter folder={selectedFolder} {searchMessages} />
+        <FolderFooter folder={selectedFolder} bind:searchMessages />
       {/if}
     </vbox>
     <vbox flex class="message-display-pane" slot="second">
