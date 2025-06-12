@@ -2,19 +2,25 @@
   <LeftPane {accounts} bind:selectedAccount
     {folders} bind:selectedFolder bind:selectedFolders bind:searchMessages
     slot="left" />
-  <SplitterHorizontal slot="right" name="mail.3pane.msgs" initialBottomRatio={2}>
-    <vbox flex class="message-list-pane" slot="top">
+  <SplitterBidirectional {horizontal}
+    name={horizontal ? "mail.3pane.msgs" : "mail.widetable.msgs"}
+    initialSecondRatio={horizontal ? 2 : 1}
+    slot="right">
+    <vbox flex class="message-list-pane" slot="first">
       <FolderHeader folder={selectedFolder} {searchMessages} />
       <TableMessageList {messages} bind:selectedMessage bind:selectedMessages />
+      {#if !horizontal}
+        <FolderFooter folder={selectedFolder} {searchMessages} />
+      {/if}
     </vbox>
-    <vbox flex class="message-display-pane" slot="bottom">
+    <vbox flex class="message-display-pane" slot="second">
       {#if selectedMessage}
         <MessageDisplay message={selectedMessage} />
       {:else}
         <StartPage />
       {/if}
     </vbox>
-  </SplitterHorizontal>
+  </SplitterBidirectional>
 </Splitter>
 
 <script lang="ts">
@@ -29,9 +35,10 @@
   import MessageDisplay from "../Message/MessageDisplay.svelte";
   import StartPage from "../StartPage.svelte";
   import Splitter from "../../Shared/Splitter.svelte";
-  import SplitterHorizontal from "../../Shared/SplitterHorizontal.svelte";
+  import SplitterBidirectional from "../../Shared/SplitterBidirectional.svelte";
   import type { ArrayColl, Collection } from 'svelte-collections';
 
+  export let horizontal: boolean = true;
   export let accounts: Collection<MailAccount>; /** in */
   export let messages: ArrayColl<EMail>; /** in */
   export let folders: Collection<Folder>; /** in */

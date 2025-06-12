@@ -25,6 +25,14 @@
       onClick={() => switchTo('3pane')}
       selected={view == "3pane"}
       />
+    <Button
+      label={$t`Wide table view`}
+      icon={WideTableIcon}
+      iconOnly={!large}
+      iconSize="16px"
+      onClick={() => switchTo('widetable')}
+      selected={view == "widetable"}
+      />
   </IslandSwitcher>
 </hbox>
 
@@ -35,6 +43,7 @@
   import ChatIcon from "lucide-svelte/icons/message-square";
   import VerticalIcon from "lucide-svelte/icons/columns-3";
   import ThreePaneIcon from "lucide-svelte/icons/layout-panel-left";
+  import WideTableIcon from "lucide-svelte/icons/columns-4";
   import { t } from "../../../l10n/l10n";
 
   export let large = false;
