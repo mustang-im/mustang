@@ -19,6 +19,7 @@
       iconSize="24px"
       border={false}
       />
+    <SelectScreenShare bind:this={selectScreenShare} />
   {/if}
   <DeviceButton video={true} {devices}
     on={$me?.cameraOn}
@@ -118,6 +119,7 @@
   import { FakeMeeting } from "../../logic/Meet/FakeMeeting";
   import ParticipantsList from "./ParticipantsList/ParticipantsList.svelte";
   import DeviceButton from "./Setup/DeviceButton.svelte";
+  import SelectScreenShare from "./SelectScreenShare.svelte";
   import ViewSelectorPopup, { MeetVideoView as View } from "./View/ViewSelectorPopup.svelte";
   import Popup from "../Shared/Popup.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
@@ -214,9 +216,27 @@
     await stream.setCameraOn(me.cameraOn, deviceID);
   }
 
+  let selectScreenShare: SelectScreenShare;
   async function toggleScreenShare() {
     me.screenSharing = !me.screenSharing;
-    await stream.setScreenShare(me.screenSharing);
+    if (me.screenSharing) {
+      startScreenSharing()
+        .catch(onScreenSharingError);
+    } else {
+      await stream.setScreenShare(false);
+    }
+  }
+
+  async function startScreenSharing() {
+    await selectScreenShare.openSelector(onScreenSharingError);
+    await stream.setScreenShare(true);
+    await selectScreenShare.closeSelector();
+  }
+
+  async function onScreenSharingError(ex: Error) {
+    console.error(ex);
+    await selectScreenShare.closeSelector();
+    await stream.setScreenShare(false);
   }
 
   let showViewSelector = false;

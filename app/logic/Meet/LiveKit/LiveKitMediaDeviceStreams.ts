@@ -64,11 +64,6 @@ export class LiveKitMediaDeviceStreams extends MediaDeviceStreams {
   }
 
   async setScreenShare(on: boolean) {
-    if (on) {
-      throw new NotSupported("Not supported by LiveKit yet");
-    } else {
-      return;
-    }
     assert(this.localParticipant, gt`Cannot send yet, because we're still connecting`);
     await this.localParticipant.setScreenShareEnabled(on);
     this.screenStream = this.getScreenStream();

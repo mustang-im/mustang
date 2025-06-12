@@ -7,7 +7,7 @@ import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
 import ky from 'ky';
-import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard, nativeImage, NativeImage } from "electron";
+import { shell, nativeTheme, Notification, Tray, nativeImage, app, BrowserWindow, webContents, Menu, MenuItemConstructorOptions, clipboard, NativeImage, session, desktopCapturer, type DesktopCapturerSource } from "electron";
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
 import { DAVClient } from "tsdav";
@@ -52,6 +52,7 @@ async function createSharedAppObject() {
     openExternalURL,
     openFileInNativeApp,
     showFileInFolder,
+    onScreenSharingSelect,
     restartApp,
     setTheme,
     openMenu,
@@ -306,6 +307,30 @@ function openFileInNativeApp(filePath: string) {
 
 function showFileInFolder(filePath: string) {
   shell.showItemInFolder(filePath);
+}
+
+function onScreenSharingSelect(onSelect: (screens: DesktopCapturerSource[]) => Promise<DesktopCapturerSource>) {
+  console.log("Screen sharing dialog", !!onSelect ? "shown" : "closed");
+  if (!onSelect || typeof(onSelect) != "function") {
+    session.defaultSession.setDisplayMediaRequestHandler(null);
+    return;
+  }
+  session.defaultSession.setDisplayMediaRequestHandler(
+    async (request, callback) => {
+      // Security
+      let url = new URL(request.securityOrigin);
+      // TODO Prod URL?
+      assert(url.protocol == "file" || url.hostname == "localhost", `Screen share not allowed from URL ${url.href}`);
+      assert(request.userGesture, `Screen share must be initiated by the user`);
+      let screens = await desktopCapturer.getSources({ types: ["screen", "window"] });
+      let screen = await onSelect(screens);
+      callback({ video: screen, audio: 'loopback' });
+    },
+    // If true, use the system picker if available.
+    // Note: this is currently experimental. If the system picker
+    // is available, it will be used and the media request handler
+    // will not be invoked.
+    { useSystemPicker: os.platform() == "darwin" });
 }
 
 

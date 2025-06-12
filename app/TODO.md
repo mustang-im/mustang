@@ -12,7 +12,6 @@
     * Free/Busy
   * Meet
     * Close camera
-    * Screen share
   * Bug: Thunderbird AB import misses ABs and fields
   * Import Outlook PST
   * OAuth2 login UI with browser/URL options
