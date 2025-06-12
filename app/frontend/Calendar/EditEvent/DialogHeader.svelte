@@ -1,6 +1,6 @@
 <vbox flex class="header">
   <Stack>
-    <hbox class="title-background" style="--header-color: {calendar.color}" />
+    <hbox class="title-background" style="--header-color: {newCalendar.color}" />
     <hbox class="window-title-bar">
       <hbox class="buttons">
         {#if !isFullWindow}
@@ -61,7 +61,7 @@
       </hbox>
       <hbox class="account-selector">
         <AccountDropDown
-          bind:selectedAccount={calendar}
+          selectedAccount={newCalendar}
           accounts={appGlobal.calendars}
           filterByWorkspace={false}
           on:select={(event) => catchErrors(() => onChangeCalendar(event.detail))} />
@@ -166,14 +166,14 @@
   export let event: Event;
   export let repeatBox: RepeatBox;
 
-  let calendar = event.calendar;
   $: event.startEditing(); // not `$event`
+  $: newCalendar = event.calendar; // not `$event`
   $: canSaveSeries = event && $event.title && $event.startTime && $event.endTime &&
       event.startTime.getTime() <= event.endTime.getTime();
   $: canSave = canSaveSeries && (
     $event.hasChanged() ||
     repeatBox && !event.parentEvent ||
-    calendar != event.calendar);
+    newCalendar != event.calendar);
   $: isFullWindow = $selectedApp instanceof EventEditMustangApp;
   let isSaveSeriesOpen = false;
   let isDeleteSeriesOpen = false;
@@ -225,9 +225,9 @@
       event.recurrenceRule = repeatBox.newRecurrenceRule();
       event.recurrenceCase = RecurrenceCase.Master;
     }
-    if (event.calendar != calendar && calendar) {
+    if (event.calendar != newCalendar && newCalendar) {
       // `moveToCalendar()` does the save and delete as well
-      event = await event.moveToCalendar(calendar);
+      event = await event.moveToCalendar(newCalendar);
     } else {
       if (!event.calendar.events.contains(event)) {
         event.calendar.events.add(event);
@@ -281,9 +281,9 @@
     onClose();
   }
 
-  function onChangeCalendar(newCalendar: Account) {
-    calendar = newCalendar as Calendar;
-    $selectedCalendar = calendar;
+  function onChangeCalendar(aCalendar: Account) {
+    newCalendar = aCalendar as Calendar
+    $selectedCalendar = newCalendar;
     // Will be applied during save
   }
 
