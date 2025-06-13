@@ -5,15 +5,39 @@ import { ContactEntry } from "../../Abstract/Person";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from 'svelte-collections';
 
+// This file contains various functions that map between VCard formats:
+// `parse` converts from string to a rich intermediate object.
+// `VCardToContainer` converts from the rich intermediate object to a record.
+// `containerToVCard` converts from the record to a string.
+//
+// Additionally, there are functions to import from and export to Person:
+// `updatePerson` imports from the rich intermediate object to Person.
+// `updateContainerFromPerson` imports from Person to a record.
+// `personToVCard` exports from Person to a string, optionally preserving
+// unrecognised properties previously extracted from `VCardToContainer`.
+//
+// There are then some convenience methods:
+// `convertVCardToPerson` combines `parse` and `updatePerson`.
+// `getUpdatedVCard` combines `VCardToContainer` and `personToVCard`.
+
+/**
+ * Takes a VCard as a string of text and write its data to the Person object.
+ */
 export function convertVCardToPerson(vCard: string, person: Person) {
   let parsed = new ICalParser(vCard);
   updatePerson(parsed, person);
 }
 
+/**
+ * Parses a VCard to a rich intermediate VCard object.
+ */
 export function parse(text: string): ICalParser {
   return new ICalParser(text);
 }
 
+/**
+ * Writes a rich intermediate VCard object to a Person object.
+ */
 export function updatePerson(card: ICalParser, person: Person) {
   if (!card.containers.vcard) {
     throw new Error("No vCard found");
@@ -82,22 +106,46 @@ export function updatePerson(card: ICalParser, person: Person) {
   }
 }
 
-export function convertPersonToVCard(person: Person) {
-  let card = new ICalParser("BEGIN:VCARD\r\nEND:VCARD\r\n");
-  return updateCard(person, card);
+/**
+ * Generates a VCard as a string of text from a Person object, with an optional
+ * record object to carry over unrecognised properties.
+ */
+export function personToVCard(person: Person, container: Record<string, string[]> = Object.create(null)): string {
+  updateContainerFromPerson(person, container);
+  return containerToVCard(container);
 }
 
-export function updateCard(person: Person, card: ICalParser): string {
+/**
+ * Generates a VCard as a string of text from a Person object, carrying over
+ * unrecognised properites from a rich intermediate VCard object.
+ */
+export function getUpdatedVCard(person: Person, card: ICalParser): string {
+  let container = VCardToContainer(card);
+  updateContainerFromPerson(person, container);
+  return containerToVCard(container);
+}
+
+/**
+ * Creates a record object from properties of a rich intermediate VCard object.
+ */
+export function VCardToContainer(card: ICalParser): Record<string, string[]> {
   if (!card.containers.vcard) {
     throw new Error("No vCard found");
   }
   let vcard = card.containers.vcard[0];
   let container: Record<string, string[]> = Object.create(null);
   for (let key in vcard.entries) {
-    if (key != "version" && key != "prodid" && !/^x-custom\d+$/.test(key)) {
+    if (key != "version" && key != "prodid") {
       container[key] = vcard.entries[key].map(entry => entry.line);
     }
   }
+  return container;
+}
+
+/**
+ * Updates a record object from a Person object.
+ */
+export function updateContainerFromPerson(person: Person, container: Record<string, string[]>) {
   setValue(container, "fn", person.name ?? "");
   setValue(container, "photo", person.picture ?? "", { value: "uri" });
   setValue(container, "n", [person.lastName, person.firstName, "", "", ""]);
@@ -110,9 +158,18 @@ export function updateCard(person: Person, card: ICalParser): string {
   setValue(container, "org", [person.company, person.department]);
   setValue(container, "title", person.position ?? "");
   setValue(container, "role", "");
-  for (let i = 0; i < person.custom.length; i++) {
+  for (var i = 0; i < person.custom.length; i++) {
     setValue(container, "x-custom" + (i + 1), person.custom.getIndex(i).value);
   }
+  while (("x-custom" + ++i) in container) {
+    delete container["x-custom" + i];
+  }
+}
+
+/**
+ * Generates a VCard as a string of text from a record object.
+ */
+function containerToVCard(container: Record<string, string[]>): string {
   return "BEGIN:VCARD\r\nVERSION:4.0\r\nPRODID:-//Beonex//appName//EN\r\n" + Object.values(container).flat().map(line => line.match(/.{1,75}/gu).join("\r\n ")).join("\r\n") + "\r\nEND:VCARD\r\n";
 }
 

@@ -49,7 +49,7 @@ test.each(testFiles)("Parse %s", async name => {
 
   // Replace the test data with new data and serialise the result
   vCard.updatePerson(vCard.parse(replacement), person);
-  const serialised = vCard.updateCard(person, card);
+  const serialised = vCard.getUpdatedVCard(person, card);
 
   // Check that the serialisation contains the new data
   for (let line of replacement.match(/^\w.+/gm)) {
@@ -73,7 +73,7 @@ test.each(testFiles)("Parse %s", async name => {
 test("Write new VCard", async () => {
   const person = new Person();
   vCard.convertVCardToPerson(replacement, person);
-  const serialised = vCard.convertPersonToVCard(person);
+  const serialised = vCard.personToVCard(person);
   const expectedSerialised = await fs.readFile(new URL("expectedSerialised.txt", dataDir), { encoding: 'utf-8' });
   expect(serialised).toBe(expectedSerialised);
 });
