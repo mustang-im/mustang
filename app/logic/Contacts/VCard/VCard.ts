@@ -5,20 +5,21 @@ import { ContactEntry } from "../../Abstract/Person";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from 'svelte-collections';
 
-// This file contains various functions that map between VCard formats:
-// `parse` converts from string to a rich intermediate object.
-// `VCardToContainer` converts from the rich intermediate object to a record.
-// `containerToVCard` converts from the record to a string.
-//
-// Additionally, there are functions to import from and export to Person:
-// `updatePerson` imports from the rich intermediate object to Person.
-// `updateContainerFromPerson` imports from Person to a record.
-// `personToVCard` exports from Person to a string, optionally preserving
-// unrecognised properties previously extracted from `VCardToContainer`.
-//
-// There are then some convenience methods:
-// `convertVCardToPerson` combines `parse` and `updatePerson`.
-// `getUpdatedVCard` combines `VCardToContainer` and `personToVCard`.
+/** This file contains various functions that map between VCard formats:
+ * - `parse()` converts from string to a rich intermediate object.
+ * - `vCardToContainer()` converts from the rich intermediate object to a record.
+ * - `containerToVCard()` converts from the record to a string.
+ *
+ * Additionally, there are functions to import from and export to Person:
+ * - `updatePerson()` imports from the rich intermediate object to Person.
+ * - `updateContainerFromPerson()` imports from Person to a record.
+ * - `personToVCard()` exports from Person to a string, optionally preserving
+ *   unrecognised properties previously extracted from `vCardToContainer()`.
+ *
+ * The higher level convenience functions are:
+ * - `convertVCardToPerson()` combines `parse()` and `updatePerson()`.
+ * - `getUpdatedVCard()` combines `vCardToContainer()` and `personToVCard()`.
+ */
 
 /**
  * Takes a VCard as a string of text and write its data to the Person object.
@@ -120,7 +121,7 @@ export function personToVCard(person: Person, container: Record<string, string[]
  * unrecognised properites from a rich intermediate VCard object.
  */
 export function getUpdatedVCard(person: Person, card: ICalParser): string {
-  let container = VCardToContainer(card);
+  let container = vCardToContainer(card);
   updateContainerFromPerson(person, container);
   return containerToVCard(container);
 }
@@ -128,7 +129,7 @@ export function getUpdatedVCard(person: Person, card: ICalParser): string {
 /**
  * Creates a record object from properties of a rich intermediate VCard object.
  */
-export function VCardToContainer(card: ICalParser): Record<string, string[]> {
+export function vCardToContainer(card: ICalParser): Record<string, string[]> {
   if (!card.containers.vcard) {
     throw new Error("No vCard found");
   }
@@ -158,7 +159,8 @@ export function updateContainerFromPerson(person: Person, container: Record<stri
   setValue(container, "org", [person.company, person.department]);
   setValue(container, "title", person.position ?? "");
   setValue(container, "role", "");
-  for (var i = 0; i < person.custom.length; i++) {
+  let i = 0;
+  for (; i < person.custom.length; i++) {
     setValue(container, "x-custom" + (i + 1), person.custom.getIndex(i).value);
   }
   while (("x-custom" + ++i) in container) {
