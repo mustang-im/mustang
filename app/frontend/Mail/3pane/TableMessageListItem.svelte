@@ -1,18 +1,3 @@
-<hbox class="attachment">
-  {#if $attachments.hasItems}
-    <AttachmentIcon size="12px" />
-  {/if}
-</hbox>
-<hbox class="star button" class:starred={$message.isStarred}>
-  <Button
-    icon={StarIcon}
-    iconSize="16px"
-    iconOnly
-    label={$t`Remember this message`}
-    onClick={toggleStar}
-    plain
-    />
-</hbox>
 <hbox class="unread-dot button" class:unread={!$message.isRead}>
   <Button
     icon={CircleIcon}
@@ -22,6 +7,11 @@
     onClick={toggleRead}
     plain
     />
+</hbox>
+<hbox class="attachment">
+  {#if $attachments.hasItems}
+    <AttachmentIcon size="12px" />
+  {/if}
 </hbox>
 <hbox class="direction">
   {#if $message.outgoing}
@@ -44,6 +34,16 @@
   {#if $tags.hasItems}
     <TagSelector tags={$tags} object={message} canAdd={false} />
   {/if}
+</hbox>
+<hbox class="star button" class:starred={$message.isStarred}>
+  <Button
+    icon={StarIcon}
+    iconSize="16px"
+    iconOnly
+    label={$t`Remember this message`}
+    onClick={toggleStar}
+    plain
+    />
 </hbox>
 <hbox class="date"
   class:unread={!$message.isRead}
@@ -155,18 +155,20 @@
   .correspondent,
   .subject,
   .date {
+    align-self: center;
     white-space: nowrap;
     font-weight: 300;
+  }
+  .date {
+    align-self: center;
+    justify-content: start;
+    min-width: 8em;
+    font-size: 12px !important;
+    font-family: Helvetica, Arial, sans-serif;
   }
   .date,
   .buttons.hover {
     padding-inline-end: 16px;
-  }
-  .date {
-    min-width: 8em;
-    justify-content: start;
-    font-size: 12px !important;
-    font-family: Helvetica, Arial, sans-serif;
   }
   .correspondent.unread,
   .subject.unread,
