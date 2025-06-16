@@ -126,8 +126,40 @@ export class Event extends Observable {
   recurrenceCase = RecurrenceCase.Normal;
   /** Describes the recurrence pattern.
    * Only for RecurrenceCase == Master */
-  @notifyChangedProperty
-  recurrenceRule: RecurrenceRule | null = null;
+  private _recurrenceRule: RecurrenceRule | null = null;
+  get recurrenceRule(): RecurrenceRule | null {
+    return this._recurrenceRule!;
+  }
+  set recurrenceRule(rule: RecurrenceRule | null) {
+    if (rule) {
+      this.setRecurrenceRule(rule);
+    } else {
+      this.clearRecurrenceRule();
+    }
+  }
+  /**
+   * Removes a recurrence pattern and all instances and exceptions.
+   */
+  private clearRecurrenceRule() {
+    if (this._recurrenceRule) {
+      this.clearExceptions();
+      this._recurrenceRule = null;
+      this.recurrenceCase = RecurrenceCase.Normal; // notifies
+    }
+  }
+  /**
+   * Updates a recurrence pattern.
+   * Instances and exceptions are regenerated if necessary.
+   */
+  private setRecurrenceRule(rule: RecurrenceRule) {
+    assert(this.recurrenceCase == RecurrenceCase.Normal || this.recurrenceCase == RecurrenceCase.Master, "Instances can't themselves recur");
+    if (!this._recurrenceRule?.isCompatible(rule)) {
+      this.clearExceptions();
+    }
+    this._recurrenceRule = rule;
+    this.recurrenceCase = RecurrenceCase.Master; // notifies
+    this.fillRecurrences();
+  }
   /** Links back to the recurring master.
    * Only for RecurrenceCase == Instance or Exception */
   @notifyChangedProperty
@@ -423,9 +455,7 @@ export class Event extends Observable {
     assert(this.calendar, "To save an event, it needs to be in a calendar first");
     assert(this.calendar.storage, "To save an event, the calendar needs to be saved first");
     await this.calendar.storage.saveEvent(this);
-    if (this.recurrenceCase == RecurrenceCase.Master) {
-      this.regenerateRecurrences();
-    } else if (this.recurrenceCase == RecurrenceCase.Instance) {
+    if (this.recurrenceCase == RecurrenceCase.Instance) {
       this.recurrenceCase = RecurrenceCase.Exception;
     }
   }
@@ -558,17 +588,6 @@ export class Event extends Observable {
     await account.send(email);
   }
 
-  regenerateRecurrences() {
-    if (this.recurrenceCase != RecurrenceCase.Master) {
-      return;
-    }
-    if (this.instances.hasItems) {
-      this.calendar.events.removeAll(this.instances);
-    }
-    this.instances.clear();
-    this.fillRecurrences();
-  }
-
   /**
    * Ensures that all recurring instances exist up to the provided date.
    * Must only be called on recurring master events.
@@ -594,6 +613,9 @@ export class Event extends Observable {
     return this.instances;
   }
 
+  /**
+   * Used when a master recurrence rule is removed or changed incompatibly.
+   */
   clearExceptions() {
     this.calendar.events.removeAll(this.instances.contents.filter(Boolean));
     for (let event of this.instances) {
@@ -601,7 +623,7 @@ export class Event extends Observable {
         this.calendar.storage.deleteEvent(event).catch(this.calendar.errorCallback);
       }
     }
-    this.regenerateRecurrences();
+    this.instances.clear();
   }
 
   /**
@@ -637,8 +659,8 @@ export class Event extends Observable {
     let count = master.instances.contents.slice(pos + 1).findLastIndex(event => event?.dbID) + pos + 1;
     this.calendar.events.removeAll(master.instances.splice(count).contents.filter(Boolean));
     if (master.recurrenceRule.getOccurrenceByIndex(count + 1)) {
-      let { seriesStartTime, frequency, interval, weekdays, week, first } = master.recurrenceRule;
-      master.recurrenceRule = new RecurrenceRule({ seriesStartTime, count, frequency, interval, weekdays, week, first });
+      let { duration, seriesStartTime, frequency, interval, weekdays, week, first } = master.recurrenceRule;
+      master.recurrenceRule = new RecurrenceRule({ duration, seriesStartTime, count, frequency, interval, weekdays, week, first }); // (rule is always compatible)
       await master.saveToServer();
     }
     let exclusions = [];

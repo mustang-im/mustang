@@ -190,11 +190,10 @@
         return false;
       }
       master.recurrenceRule = null;
-      master.recurrenceCase = RecurrenceCase.Normal;
     } else {
       let rule = repeatBox.newRecurrenceRule();
       if (master.recurrenceRule) {
-        if (rule.isCompatible(master.recurrenceRule) && event.duration == master.duration) {
+        if (rule.isCompatible(master.recurrenceRule)) {
           return true;
         }
         if (!confirm($t`This change will remove all exceptions and exclusions for this series.`)) {
@@ -202,9 +201,7 @@
         }
       }
       master.recurrenceRule = rule;
-      master.recurrenceCase = RecurrenceCase.Master;
     }
-    master.clearExceptions();
     return true;
   }
 
@@ -221,10 +218,9 @@
   }
 
   async function saveEvent(event: Event) {
-    if (repeatBox) {
+    if (repeatBox && !event.parentEvent) {
       // Turning a single event into a series. (The reverse is done in `onChangeAll()`.)
       event.recurrenceRule = repeatBox.newRecurrenceRule();
-      event.recurrenceCase = RecurrenceCase.Master;
     }
     if (event.calendar != newCalendar && newCalendar) {
       // `moveToCalendar()` does the save and delete as well
@@ -234,9 +230,6 @@
         event.calendar.events.add(event);
       }
       await event.save();
-    }
-    if (event.recurrenceRule) {
-      event.fillRecurrences();
     }
   }
 

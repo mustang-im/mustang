@@ -179,7 +179,7 @@
   }
 
   export function newRecurrenceRule(): RecurrenceRule {
-    let init: RecurrenceInit = { seriesStartTime: event.startTime, frequency, interval };
+    let init: RecurrenceInit = { duration: event.duration, seriesStartTime: event.startTime, frequency, interval };
     /* end
     if (end == "count") {
       init.count = count;

@@ -1,4 +1,4 @@
-import { Event, RecurrenceCase } from "../Event";
+import type { Event } from "../Event";
 import { Participant } from "../Participant";
 import { RecurrenceRule } from "../RecurrenceRule";
 import { ParticipationStatus, InvitationResponse } from "../Invitation/InvitationStatus";
@@ -19,6 +19,7 @@ export function convertICalToEvent(ics: string, event: Event): boolean {
  * @param ics iCal / ICS, already parsed
  * @param event Output: Put the ics data into this object
  * @returns whether ics indeed contained an event
+ * TODO need to handle more removed properties
  */
 export function convertICalParserToEvent(ics: ICalParser, event: Event): boolean {
   if (!ics.containers.vevent) {
@@ -44,8 +45,9 @@ export function convertICalParserToEvent(ics: ICalParser, event: Event): boolean
     event.allDay = true;
   }
   if (vevent.entries.rrule) {
-    event.recurrenceCase = RecurrenceCase.Master;
-    event.recurrenceRule = RecurrenceRule.fromCalString(event.startTime, vevent.entries.rrule[0].line);
+    event.recurrenceRule = RecurrenceRule.fromCalString(event.duration, event.startTime, vevent.entries.rrule[0].line);
+  } else {
+    event.recurrenceRule = null;
   }
   if (vevent.entries.location) {
     event.location = vevent.entries.location[0].value;

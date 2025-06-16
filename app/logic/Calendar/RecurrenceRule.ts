@@ -34,6 +34,7 @@ export enum iCalWeekday {
 }
 
 export interface RecurrenceInit {
+  duration: number;
   seriesStartTime: Date;
   seriesEndTime?: Date;
   count?: number;
@@ -54,6 +55,11 @@ export interface RecurrenceInit {
  * but this is just a weekly recurrence with an interval of 1.
  */
 export class RecurrenceRule implements Readonly<RecurrenceInit> {
+  /**
+   * The duration of the master event.
+   * Used to determine whether a recurrence rule changed incompatibly.
+   */
+  duration: number;
   /**
    * The time of the first occurrence in the series.
    * The same as the master event date.
@@ -122,7 +128,7 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     // this.fillOccurrences(this.count, this.seriesEndTime || new Date(Date.now() + 1e11));
   }
 
-  static fromCalString(seriesStartTime: Date, calString: string): RecurrenceRule {
+  static fromCalString(duration: number, seriesStartTime: Date, calString: string): RecurrenceRule {
     if (!/^RRULE:/i.test(sanitize.string(calString))) {
       throw new Error("Malformed recurrence rule string missing RRULE:");
     }
@@ -130,7 +136,7 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     if (!Object.values(Frequency).includes(frequency)) {
       throw new Error(`Malformed ${frequency} frequency recurrence rule string`);
     }
-    let data: RecurrenceInit = { seriesStartTime, frequency };
+    let data: RecurrenceInit = { duration, seriesStartTime, frequency };
     if (seriesEndTime) {
       data.seriesEndTime = sanitizeCalDate(seriesEndTime);
       if (data.seriesEndTime < data.seriesStartTime) {
@@ -193,7 +199,8 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     let allWeekdays = [0, 1, 2, 3, 4, 5, 6];
     let thisWeekdays = this.weekdays || allWeekdays;
     let ruleWeekdays = rule.weekdays || allWeekdays;
-    return rule.seriesStartTime.getTime() == this.seriesStartTime.getTime() &&
+    return rule.duration == this.duration &&
+      rule.seriesStartTime.getTime() == this.seriesStartTime.getTime() &&
       rule.frequency == this.frequency &&
       rule.interval == this.interval &&
       rule.week == this.week &&

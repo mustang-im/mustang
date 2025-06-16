@@ -1,5 +1,5 @@
 import type { Calendar } from "../Calendar";
-import { RecurrenceCase, type Event } from "../Event";
+import type { Event } from "../Event";
 import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import type { EMail } from "../../Mail/EMail";
 import { assert } from "../../util/util";
@@ -26,12 +26,7 @@ export class IncomingInvitation {
     if (!event) {
       event = this.calendar.newEvent();
       event.copyFrom(this.event);
-      event.recurrenceRule = this.event.recurrenceRule;
-      event.recurrenceCase = RecurrenceCase.Master;
       this.calendar.events.add(event);
-      if (event.recurrenceRule) {
-        event.fillRecurrences();
-      }
     }
     let { myParticipant } = event.participantMe(this.message.folder.account);
     event.myParticipation = myParticipant.response = response;
