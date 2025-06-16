@@ -1,6 +1,6 @@
 import { Person } from '../../Abstract/Person';
 import type { CardDAVAddressbook } from './CardDAVAddressbook';
-import { convertPersonToVCard, convertVCardToPerson } from '../VCard/VCard';
+import { personToVCard, convertVCardToPerson } from '../VCard/VCard';
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { URLString } from "../../util/util";
 import type { DAVObject } from "tsdav";
@@ -38,7 +38,7 @@ export class CardDAVPerson extends Person {
 
   async saveToServer() {
     this.id ??= crypto.randomUUID();
-    let vCard = convertPersonToVCard(this);
+    let vCard = personToVCard(this);
     if (this.url) {
       // TODO Update doesn't work, if the contact was deleted on the server
       console.log("updating", this.url, "with vCard", vCard);
