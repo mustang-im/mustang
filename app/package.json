@@ -57,7 +57,7 @@
     "pretty-bytes": "^6.1.1",
     "psl": "https://github.com/lupomontero/psl",
     "stanza": "^12.21.0",
-    "svelte-collections": "^1.2.8",
+    "svelte-collections": "^1.2.9",
     "svelte-icon": "^2.0.0",
     "timezone-picker-svelte": "^1.0.2",
     "tiptap-extension-resize-image": "^1.2.1",
