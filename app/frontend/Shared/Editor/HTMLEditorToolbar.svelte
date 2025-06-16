@@ -41,22 +41,20 @@
       iconSize="16px"
       iconOnly
       />
-    <!--
     <Button
       label="Code block with multiple lines"
       shortCutInfo="
 ```
 code
 block
-```"
-      on:click={() => editor.chain().focus().toggleCode().run()}
-      disabled={!editor.can().chain().focus().toggleCode().run()}
-      selected={editor.isActive('code')}
+3xENTER"
+      on:click={() => editor.chain().focus().toggleCodeBlock().run()}
+      disabled={!editor.can().chain().focus().toggleCodeBlock().run()}
+      selected={editor.isActive('codeBlock')}
       icon={CodeBlockIcon}
       iconSize="16px"
       iconOnly
       />
-    -->
     <Button
       label={$t`Quote of the original email`}
       shortCutInfo={$t`> Quote`}
