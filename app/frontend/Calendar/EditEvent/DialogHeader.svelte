@@ -196,7 +196,7 @@
         if (rule.isCompatible(master.recurrenceRule) && event.duration == master.duration) {
           return true;
         }
-        if (!confirm($t`This change will reset all of your series to default values.`)) {
+        if (!confirm($t`This change will remove all exceptions and exclusions for this series.`)) {
           return false;
         }
       }
