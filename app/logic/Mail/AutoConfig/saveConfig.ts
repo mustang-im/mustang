@@ -3,7 +3,6 @@ import { ContactEntry, Person } from "../../Abstract/Person";
 import { Folder, SpecialFolder } from "../../Mail/Folder";
 import { MailIdentity } from "../MailIdentity";
 import { type PersonUID, nameFromEmailAddress } from "../../Abstract/PersonUID";
-import { setStorage } from "../Store/setStorage";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -12,7 +11,6 @@ import { SetColl } from "svelte-collections";
 
 export async function saveAndInitConfig(config: MailAccount, emailAddress: string, password: string): Promise<void> {
   await saveConfig(config, emailAddress, password);
-  await config.login(true);
   getFirstMessages(config).catch(backgroundError);
 }
 
@@ -80,6 +78,7 @@ function replaceVar(str: string, emailAddress: string): string {
  * 2. Sets the realname of the user based on the From in messages in Sent
  * 3. Pre-populates the Collected Addresses. */
 export async function getFirstMessages(config: MailAccount) {
+  await config.login(true);
   let sent = config.getSpecialFolder(SpecialFolder.Sent);
   let inbox = config.getSpecialFolder(SpecialFolder.Inbox);
   if (sent) {
