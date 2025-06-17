@@ -1,5 +1,5 @@
 import { Event, RecurrenceCase } from "./Event";
-import { ArrayColl, Collection } from "svelte-collections";
+import { ArrayColl, Collection, MapColl } from "svelte-collections";
 
 export class RecurrenceColl extends ArrayColl<Event> {
   protected source: Collection<Event>;
@@ -14,8 +14,14 @@ export class RecurrenceColl extends ArrayColl<Event> {
   }
 }
 
+type Ob = {
+  unsubscribe: () => void,
+  generatedRecurrences: Collection<Event>,
+};
+
 class RecurrenceCollectionObserver { // implements CollectionObserver
   resultColl: RecurrenceColl;
+  masterObservers = new MapColl<Event, Ob>();
 
   constructor(resultColl: RecurrenceColl) {
     this.resultColl = resultColl;
@@ -24,9 +30,18 @@ class RecurrenceCollectionObserver { // implements CollectionObserver
   added(events: Event[]) {
     for (let event of events) {
       if (event.recurrenceCase == RecurrenceCase.Master) {
-        let recurrences = event.fillRecurrences()
-          .filterOnce(ev => !!ev); // Exceptions are null here
-        this.resultColl.addAll(recurrences);
+        let ob = {} as Ob;
+        function fill(event: Event) {
+          ob.generatedRecurrences = event.fillRecurrences()
+            .filterOnce(ev => !!ev); // Exceptions are null here
+          this.resultColl.addAll(ob.generatedRecurrences);
+        }
+        fill(event);
+        ob.unsubscribe = event.subscribe(() => {
+          this.resultColl.removeAll(ob.generatedRecurrences);
+          fill(event);
+        });
+        this.masterObservers.set(event, ob);
       } else {
         this.resultColl.add(event)
       }
@@ -36,8 +51,11 @@ class RecurrenceCollectionObserver { // implements CollectionObserver
   removed(events: Event[]) {
     for (let event of events) {
       if (event.recurrenceCase == RecurrenceCase.Master) {
-        let recurrences = event.fillRecurrences();
-        this.resultColl.removeAll(recurrences);
+        let ob = this.masterObservers.get(event);
+        if (ob) {
+          this.resultColl.removeAll(ob.generatedRecurrences);
+          ob.unsubscribe();
+        }
       } else {
         this.resultColl.remove(event)
       }

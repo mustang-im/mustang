@@ -32,7 +32,7 @@
   import { mergeColls } from "svelte-collections";
   import { t } from "../../l10n/l10n";
 
-  $: events = new RecurrenceColl(mergeColls(appGlobal.calendars.map(cal => cal.events))).unique().sortBy(ev => ev.startTime);
+  $: events = mergeColls(appGlobal.calendars.map(cal => cal.eventsWithRecurrences)).unique().sortBy(ev => ev.startTime);
   $: if (!$selectedCalendar) { $selectedCalendar = appGlobal.calendars.first; }
 
   let defaultLengthInMinutes = Math.max(getLocalStorage("calendar.defaultEventLengthInMinutes", 60).value, 1);
