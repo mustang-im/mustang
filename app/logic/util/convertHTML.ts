@@ -42,6 +42,10 @@ export function convertTextToHTML(plaintext: string): string {
   return sanitizeHTML(html);
 }
 
+export function fixNewlines(text: string): string {
+  return text.replace(/\r?\n/g, "\r\n");
+}
+
 export function sanitizeHTML(html: string): string {
   if (!html) {
     return null;
