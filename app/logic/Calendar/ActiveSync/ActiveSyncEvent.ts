@@ -57,7 +57,6 @@ export class ActiveSyncEvent extends Event {
     this.timezone = fromActiveSyncZone(wbxmljs.Timezone);
     this.allDay = sanitize.boolean(wbxmljs.AllDayEvent, false);
     if (wbxmljs.Recurrence) {
-      this.recurrenceCase = RecurrenceCase.Master;
       this.recurrenceRule = this.newRecurrenceRule(wbxmljs.Recurrence);
       for (let exception of ensureArray(wbxmljs.Exceptions?.Exception)) {
         if (exception.Deleted == "1") {
@@ -65,10 +64,8 @@ export class ActiveSyncEvent extends Event {
           this.replaceInstance(occurrences.length - 1, null);
         }
       }
-    } else if (this.recurrenceRule) {
-      this.recurrenceCase = RecurrenceCase.Normal;
+    } else {
       this.recurrenceRule = null;
-      this.clearExceptions();
     }
     this.alarm = wbxmljs.Reminder ? new Date(this.startTime.getTime() - k1MinuteMS * sanitize.integer(wbxmljs.Reminder)) : null;
     this.location = sanitize.nonemptystring(wbxmljs.Location, "");
@@ -77,6 +74,7 @@ export class ActiveSyncEvent extends Event {
   }
 
   newRecurrenceRule(wbxmljs: any): RecurrenceRule {
+    let masterDuration = this.duration;
     let seriesStartTime = this.startTime;
     let seriesEndTime = wbxmljs.Until ? fromCompact(wbxmljs.Until) : null;
     let count = sanitize.integer(wbxmljs.Occurrences, Infinity);
@@ -85,7 +83,7 @@ export class ActiveSyncEvent extends Event {
     let weekdays = extractWeekdays(wbxmljs.DayOfWeek);
     let week = sanitize.integer(wbxmljs.WeekOfMonth, 0);
     let first = sanitize.integer(wbxmljs.FirstDayOfWeek, Weekday.Monday);
-    return new RecurrenceRule({ seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
+    return new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
   }
 
   toFields(exceptions: { Exception: any } | { Exception: any }[] = []) {

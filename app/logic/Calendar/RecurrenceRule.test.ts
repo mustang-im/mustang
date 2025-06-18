@@ -2,10 +2,11 @@ import { expect, test } from 'vitest';
 import { Frequency, Weekday, RecurrenceInit, RecurrenceRule } from './RecurrenceRule';
 
 function check(calString: string, data: RecurrenceInit, expected: [number, number, number][]) {
+  data.masterDuration = 36e5;
   let rule = new RecurrenceRule(data);
   if (calString) {
     expect(rule.getCalString()).toEqual(calString);
-    let ruleFromString = RecurrenceRule.fromCalString(data.seriesStartTime, calString);
+    let ruleFromString = RecurrenceRule.fromCalString(36e5, data.seriesStartTime, calString);
     expect(rule).toEqual(ruleFromString);
   }
   expect(rule.getOccurrenceByIndex(2)).toEqual(new Date(...expected[1]));

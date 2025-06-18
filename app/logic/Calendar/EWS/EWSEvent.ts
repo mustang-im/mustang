@@ -81,7 +81,6 @@ export class EWSEvent extends Event {
     this.timezone = fromWindowsZone(xmljs.StartTimeZoneId);
     this.allDay = sanitize.boolean(xmljs.IsAllDayEvent, false);
     if (xmljs.Recurrence) {
-      this.recurrenceCase = RecurrenceCase.Master;
       this.recurrenceRule = this.newRecurrenceRule(xmljs.Recurrence);
       if (xmljs.DeletedOccurrences?.DeletedOccurrence) {
         for (let deletion of ensureArray(xmljs.DeletedOccurrences.DeletedOccurrence)) {
@@ -89,10 +88,8 @@ export class EWSEvent extends Event {
           this.replaceInstance(occurrences.length - 1, null);
         }
       }
-    } else if (this.recurrenceRule) {
-      this.recurrenceCase = RecurrenceCase.Normal;
+    } else {
       this.recurrenceRule = null;
-      this.clearExceptions();
     }
     if (xmljs.ReminderIsSet == "true") {
       this.alarm = new Date(this.startTime.getTime() - k1MinuteMS * sanitize.integer(xmljs.ReminderMinutesBeforeStart));
@@ -117,6 +114,7 @@ export class EWSEvent extends Event {
   }
 
   newRecurrenceRule(xmljs: any): RecurrenceRule {
+    let masterDuration = this.duration;
     let seriesStartTime = this.startTime;
     let seriesEndTime: Date | null = null;
     if (xmljs.EndDateRecurrence) {
@@ -137,7 +135,7 @@ export class EWSEvent extends Event {
     let weekdays = extractWeekdays(pattern.DaysOfWeek);
     let week = sanitize.integer(WeekOfMonth[pattern.DayOfWeekIndex], 0);
     let first = sanitize.integer(Weekday[pattern.FirstDayOfWeek], Weekday.Monday);
-    return new RecurrenceRule({ seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
+    return new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
   }
 
   get outgoingInvitation() {

@@ -168,10 +168,8 @@ export class SQLEvent extends Event {
       }
     }
     if (row.recurrenceRule) {
-      event.recurrenceCase = RecurrenceCase.Master;
-      event.recurrenceRule = RecurrenceRule.fromCalString(event.startTime, row.recurrenceRule);
+      event.recurrenceRule = RecurrenceRule.fromCalString(event.duration, event.startTime, row.recurrenceRule);
       await SQLEvent.readExclusions(event);
-      event.fillRecurrences();
     }
 
     await SQLEvent.readParticipants(event);

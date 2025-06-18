@@ -34,6 +34,7 @@ export enum iCalWeekday {
 }
 
 export interface RecurrenceInit {
+  masterDuration: number;
   seriesStartTime: Date;
   seriesEndTime?: Date;
   count?: number;
@@ -54,6 +55,15 @@ export interface RecurrenceInit {
  * but this is just a weekly recurrence with an interval of 1.
  */
 export class RecurrenceRule implements Readonly<RecurrenceInit> {
+  /**
+   * The duration of the master event.
+   *
+   * Used by `timesMatch()` to see whether the time changes.
+   * Given that master.startTime == seriesStartTime and
+   * the master.endTime == masterStartTime + masterDuration,
+   * we can detect changes in the master start and end time.
+   */
+  masterDuration: number;
   /**
    * The time of the first occurrence in the series.
    * The same as the master event date.
@@ -122,7 +132,7 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     // this.fillOccurrences(this.count, this.seriesEndTime || new Date(Date.now() + 1e11));
   }
 
-  static fromCalString(seriesStartTime: Date, calString: string): RecurrenceRule {
+  static fromCalString(masterDuration: number, seriesStartTime: Date, calString: string): RecurrenceRule {
     if (!/^RRULE:/i.test(sanitize.string(calString))) {
       throw new Error("Malformed recurrence rule string missing RRULE:");
     }
@@ -130,7 +140,7 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     if (!Object.values(Frequency).includes(frequency)) {
       throw new Error(`Malformed ${frequency} frequency recurrence rule string`);
     }
-    let data: RecurrenceInit = { seriesStartTime, frequency };
+    let data: RecurrenceInit = { masterDuration, seriesStartTime, frequency };
     if (seriesEndTime) {
       data.seriesEndTime = sanitizeCalDate(seriesEndTime);
       if (data.seriesEndTime < data.seriesStartTime) {
@@ -188,12 +198,16 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
    * recurs. The UI uses this function to tell whether the recurrence was
    * edited, as this will cause all exceptions and exclusions to be reset.
    * But we can't check the series length though, as the UI never sets one.
+   *
+   * Caveat: If you change from weekly to 7-day repetition,
+   * this still (intentionally) returns false.
    */
-  isCompatible(rule: RecurrenceRule) {
+  timesMatch(rule: RecurrenceRule) {
     let allWeekdays = [0, 1, 2, 3, 4, 5, 6];
     let thisWeekdays = this.weekdays || allWeekdays;
     let ruleWeekdays = rule.weekdays || allWeekdays;
-    return rule.seriesStartTime.getTime() == this.seriesStartTime.getTime() &&
+    return rule.masterDuration == this.masterDuration &&
+      rule.seriesStartTime.getTime() == this.seriesStartTime.getTime() &&
       rule.frequency == this.frequency &&
       rule.interval == this.interval &&
       rule.week == this.week &&
