@@ -227,16 +227,14 @@
     if (index >= scrollPos && index < scrollPos + showRows - 1) {
       return;
     }
-    scrollPos = Math.min(index, Math.max(0, items.length - showRows));
+    scrollPos = Math.min(Math.max(scrollPos, 0), items.length - showRows);
   }
 
   function onScrollWheel(event: WheelEvent) {
-    let scrollRows = Math.round(Math.abs(event.deltaY * 0.1)); // How many rows to scroll each time
-    if (event.deltaY > 0) {
-      scrollPos = Math.min(scrollPos + scrollRows, items.length - showRows);
-    } else if (event.deltaY < 0) {
-      scrollPos = Math.max(scrollPos - scrollRows, 0);
-    }
+    // How many rows to scroll each time
+    let scrollRows = Math.round(event.deltaY / (rowHeight || 20)); // 3 rows
+    scrollPos += scrollRows;
+    scrollPos = Math.min(Math.max(scrollPos, 0), items.length - showRows);
   }
 
   let scrollPosByScrollBar: NodeJS.Timeout = null;
