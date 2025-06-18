@@ -4,13 +4,13 @@ import { convertICalToEvent } from "../ICal/ICalToEvent";
 import { getICal } from "../ICal/ICalGenerator";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { URLString } from "../../util/util";
-import type { ArrayColl } from "svelte-collections";
 import type { DAVObject } from "tsdav";
+import { ArrayColl } from "svelte-collections";
 
 export class CalDAVEvent extends Event {
   declare calendar: CalDAVCalendar;
   declare parentEvent: CalDAVEvent;
-  declare readonly instancesTODOReplace: ArrayColl<CalDAVEvent | null | undefined>;
+  declare readonly exceptions: ArrayColl<CalDAVEvent>;
   /** URL of this specific Event on the server. null, if not yet saved on server. */
   url: URLString | null = null;
 

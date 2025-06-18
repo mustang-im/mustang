@@ -38,9 +38,9 @@ const RecurrenceType = {
 };
 
 export class EWSEvent extends Event {
-  calendar: EWSCalendar;
-  parentEvent: EWSEvent;
-  readonly instancesTODOReplace: ArrayColl<EWSEvent | null | undefined>;
+  declare calendar: EWSCalendar;
+  declare parentEvent: EWSEvent;
+  declare readonly exceptions: ArrayColl<EWSEvent>;
 
   get itemID(): string | null {
     return this.pID;

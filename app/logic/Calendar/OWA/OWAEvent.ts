@@ -34,9 +34,9 @@ enum WeekOfMonth {
 };
 
 export class OWAEvent extends Event {
-  calendar: OWACalendar;
-  parentEvent: OWAEvent;
-  readonly instancesTODOReplace: ArrayColl<OWAEvent | null | undefined>;
+  declare calendar: OWACalendar;
+  declare parentEvent: OWAEvent;
+  declare readonly exceptions: ArrayColl<OWAEvent>;
 
   get itemID(): string | null {
     return this.pID;

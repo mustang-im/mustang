@@ -179,8 +179,11 @@ export class Event extends Observable {
    * Contains exclusions, i.e. where there would normally
    * be an recurrence instance, but exceptionally, there is none
    * on that specific day/time.
+   *
+   * @param normalTime: When the event does *not* happen
+   * @param index: This would normally be the n-th instance, whereas `index` = n.
    */
-  exclusions: ArrayColl<Date>;
+  exclusions: ArrayColl<{ normalTime: Date, index: number }>;
   /**
    * Only for RecurrenceCase == Master
    *
