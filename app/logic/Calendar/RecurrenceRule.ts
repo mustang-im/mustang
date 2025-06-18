@@ -222,7 +222,7 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     return this.occurrences[index - 1];
   }
 
-  getIndexOfOccurance(date: Date): number | null {
+  getIndexOfOccurrence(date: Date): number | null {
     if (!this.occurrences || this.occurrences[this.occurrences.length - 1]) {
       this.fillOccurrences(1000, date);
     }

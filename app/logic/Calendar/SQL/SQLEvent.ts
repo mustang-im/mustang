@@ -71,7 +71,7 @@ export class SQLEvent extends Event {
       `);
 
     for (let exclusion of event.exclusions) {
-      let index = event.recurrenceRule.getIndexOfOccurance(exclusion);
+      let index = event.recurrenceRule.getIndexOfOccurrence(exclusion);
       await (await getDatabase()).run(sql`
         INSERT INTO eventExclusion (
           recurrenceMasterEventID, recurrenceIndex,
@@ -189,7 +189,7 @@ export class SQLEvent extends Event {
       let normalTime = event.recurrenceRule.getOccurrenceByIndex(index);
       if (!normalTime) {
         // TODO fillOccurences()?
-        event.calendar.errorCallback(new Error("Occurance not filled"));
+        event.calendar.errorCallback(new Error("Occurrence not filled"));
         continue;
       }
       event.exclusions.add(normalTime);

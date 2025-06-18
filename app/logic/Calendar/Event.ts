@@ -625,7 +625,7 @@ export class Event extends Observable {
 
   /**
    * Ensures that all recurring instances exist up to the provided date.
-   * Only for recurranceCase == Master
+   * Only for recurrenceCase == Master
    */
   fillRecurrences(endDate: Date = new Date(Date.now() + 1e11)): Collection<Event> {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Not a recurrence master");
