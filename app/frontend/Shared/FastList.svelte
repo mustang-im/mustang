@@ -1,5 +1,5 @@
 <hbox class="fast-list"
-  on:wheel={event => onScrollWheel(event)}
+  on:wheel={event => onScrollWheelDebounced(event)}
   on:keydown={event => onKey(event)}
   tabindex={0}
   bind:this={listE}>
@@ -230,7 +230,12 @@
     scrollPos = Math.min(index, Math.max(0, items.length - showRows));
   }
 
-  function onScrollWheel(event: WheelEvent) {
+  // Throttle should not be more than 30ms, otherwise the UI is sluggish
+  const onScrollWheelDebounced = throttleReduce(onScrollWheel, 30, wheelReduce, { deltaY: 0 });
+  function wheelReduce(event: WheelEvent, accumulated: Partial<WheelEvent>) {
+    return { deltaY: event.deltaY + accumulated.deltaY };
+  }
+  function onScrollWheel(event: Partial<WheelEvent>) {
     let scrollRows = 3; // How many rows to scroll each time
     if (event.deltaY > 0) {
       scrollPos = Math.min(scrollPos + scrollRows, items.length - showRows);
@@ -325,6 +330,38 @@
   singleSelectionObserver.onSelectedItem = (item: T) => {
     selectedItem = item;
   };
+
+  function throttleReduce<OriginalArg, Accumulated>(
+    callback: (accumulated: Accumulated) => void,
+    waitInMS: number,
+    reducer: (acc: Accumulated, value: OriginalArg) => Accumulated,
+    initialValue: Accumulated,
+  ) {
+    let lastCall = 0;
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    let accumulated = initialValue;
+
+    const invoke = () => {
+      callback(accumulated);
+      accumulated = initialValue;
+      lastCall = Date.now();
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+      }
+    };
+
+    return (arg: OriginalArg) => {
+      accumulated = reducer(accumulated, arg);
+
+      const now = Date.now();
+      if (now - lastCall >= waitInMS) {
+        invoke();
+      } else if (!timeout) {
+        timeout = setTimeout(invoke, waitInMS - (now - lastCall));
+      }
+    };
+  }
 </script>
 
 <style>
