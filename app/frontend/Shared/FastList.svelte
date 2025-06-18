@@ -1,5 +1,5 @@
 <hbox class="fast-list"
-  on:wheel={event => onScrollWheel(event)}
+  on:wheel={event => onScrollWheelDebounced(event)}
   on:keydown={event => onKey(event)}
   tabindex={0}
   bind:this={listE}>
@@ -230,7 +230,11 @@
     scrollPos = Math.min(index, Math.max(0, items.length - showRows));
   }
 
-  function onScrollWheel(event: WheelEvent) {
+  const onScrollWheelDebounced = debounceReduce(onScrollWheel, 30, wheelReduce);
+  function wheelReduce(event: WheelEvent, accumulated: Partial<WheelEvent>) {
+    return { deltaY: event.deltaY + (accumulated?.deltaY ?? 0) };
+  }
+  function onScrollWheel(event: Partial<WheelEvent>) {
     let scrollRows = 3; // How many rows to scroll each time
     if (event.deltaY > 0) {
       scrollPos = Math.min(scrollPos + scrollRows, items.length - showRows);
@@ -325,6 +329,27 @@
   singleSelectionObserver.onSelectedItem = (item: T) => {
     selectedItem = item;
   };
+
+  function debounceReduce<OriginalArg, Accumulated>(
+    callback: (accumulated: Accumulated) => void,
+    minWaitInMS: number,
+    reducer: (arg: OriginalArg, acc: Accumulated | undefined) => Accumulated
+  ) {
+    let timeoutID: ReturnType<typeof setTimeout> | undefined;
+    let accumulated: Accumulated | undefined;
+
+    return (arg: OriginalArg) => {
+      accumulated = reducer(arg, accumulated);
+
+      if (timeoutID) {
+        clearTimeout(timeoutID);
+      }
+      timeoutID = setTimeout(() => {
+        callback(accumulated);
+        accumulated = undefined;
+      }, minWaitInMS);
+    };
+  }
 </script>
 
 <style>
