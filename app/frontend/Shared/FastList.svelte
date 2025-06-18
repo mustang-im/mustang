@@ -230,7 +230,6 @@
     scrollPos = Math.min(index, Math.max(0, items.length - showRows));
   }
 
-  // Throttle scroll speed for trackpad scrolling
   function onScrollWheel(event: WheelEvent) {
     let scrollRows = Math.round(Math.abs(event.deltaY * 0.1)); // How many rows to scroll each time
     if (event.deltaY > 0) {
