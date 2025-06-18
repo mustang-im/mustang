@@ -1,8 +1,8 @@
 import { Event, RecurrenceCase } from "./Event";
-import { Collection, concatColls } from "svelte-collections";
+import type { Collection } from "svelte-collections";
 
 export function recurrenceColl(events: Collection<Event>) {
-  return concatColls(events.map(mapToEvents));
+  return events.flatMap(mapToEvents);
 }
 
 function mapToEvents(event: Event): Event | Collection<Event> | null {

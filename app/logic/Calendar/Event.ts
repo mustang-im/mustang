@@ -183,7 +183,7 @@ export class Event extends Observable {
    * @param normalTime: When the event does *not* happen
    * @param index: This would normally be the n-th instance, whereas `index` = n.
    */
-  exclusions: ArrayColl<{ normalTime: Date, index: number }>;
+  exclusions: ArrayColl<Date>;
   /**
    * Only for RecurrenceCase == Master
    *
@@ -496,7 +496,7 @@ export class Event extends Observable {
     assert(this.calendar.storage, "To save an event, the calendar needs to be saved first");
     await this.calendar.storage.saveEvent(this);
     if (this.recurrenceCase == RecurrenceCase.Master) {
-      this.regenerateRecurrences();
+      this.generateRecurringInstances();
     } else if (this.recurrenceCase == RecurrenceCase.Instance) {
       this.recurrenceCase = RecurrenceCase.Exception;
     }

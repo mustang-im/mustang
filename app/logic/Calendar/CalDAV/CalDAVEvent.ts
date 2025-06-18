@@ -5,7 +5,7 @@ import { getICal } from "../ICal/ICalGenerator";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { URLString } from "../../util/util";
 import type { DAVObject } from "tsdav";
-import { ArrayColl } from "svelte-collections";
+import type { ArrayColl } from "svelte-collections";
 
 export class CalDAVEvent extends Event {
   declare calendar: CalDAVCalendar;
