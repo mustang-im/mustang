@@ -14,7 +14,7 @@
             />
         {/if}
         {#if !event.isIncomingMeeting}
-          {#if $event.seriesStatus == "first" || $event.seriesStatus == "middle"}
+          {#if $event.recurrenceCase == RecurrenceCase.Instance}
             <ButtonMenu bind:isMenuOpen={isDeleteSeriesOpen}>
               <RoundButton
                 slot="control"
@@ -168,11 +168,12 @@
 
   $: event.startEditing(); // not `$event`
   $: newCalendar = event.calendar; // not `$event`
-  $: canSaveSeries = event && $event.title && $event.startTime && $event.endTime &&
+  $: hasMinimalProps = event && $event.title && $event.startTime && $event.endTime &&
       event.startTime.getTime() <= event.endTime.getTime();
-  $: canSave = canSaveSeries && (
+  $: canSaveSeries = hasMinimalProps;
+  $: canSave = hasMinimalProps && (
     $event.hasChanged() ||
-    repeatBox && !event.parentEvent ||
+    repeatBox && !event.parentEvent || // Change single event into series
     newCalendar != event.calendar);
   $: isFullWindow = $selectedApp instanceof EventEditMustangApp;
   let isSaveSeriesOpen = false;
