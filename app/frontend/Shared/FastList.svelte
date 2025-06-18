@@ -250,7 +250,7 @@
     scrollPos = Math.round(scrollbarE.scrollTop / rowHeight); // TODO ceil()?
   }
 
-  function onSelectElement(clickedItem, event: MouseEvent) {
+  function onSelectElement(clickedItem: T, event: MouseEvent) {
     if (event.shiftKey) { // select whole range
       let firstItem = selectedItems.first;
       let lastItem = clickedItem;
@@ -285,7 +285,7 @@
     if (selectedItems.isEmpty) {
       return;
     }
-    selectedItems.removeAll(selectedItems.filter(a => !items.includes(a)));
+    selectedItems.removeAll(selectedItems.filterOnce(a => !items.includes(a)));
     if (selectedItems.isEmpty) {
       let newItem = items.getIndex(lastSelectedIndex) ?? items.first;
       if (!newItem) {
@@ -320,7 +320,7 @@
   }
 
   const singleSelectionObserver = new SingleSelectionObserver<T>();
-  singleSelectionObserver.onSelectedItem = item => {
+  singleSelectionObserver.onSelectedItem = (item: T) => {
     selectedItem = item;
   };
 </script>
