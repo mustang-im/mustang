@@ -153,7 +153,7 @@ export class Event extends Observable {
    */
   private setRecurrenceRule(rule: RecurrenceRule) {
     assert(this.recurrenceCase == RecurrenceCase.Normal || this.recurrenceCase == RecurrenceCase.Master, "Instances can't themselves recur");
-    if (!this._recurrenceRule?.isCompatible(rule)) {
+    if (!this._recurrenceRule?.timesMatch(rule)) {
       this.clearExceptions();
     }
     this._recurrenceRule = rule;
@@ -659,8 +659,8 @@ export class Event extends Observable {
     let count = master.instances.contents.slice(pos + 1).findLastIndex(event => event?.dbID) + pos + 1;
     this.calendar.events.removeAll(master.instances.splice(count).contents.filter(Boolean));
     if (master.recurrenceRule.getOccurrenceByIndex(count + 1)) {
-      let { duration, seriesStartTime, frequency, interval, weekdays, week, first } = master.recurrenceRule;
-      master.recurrenceRule = new RecurrenceRule({ duration, seriesStartTime, count, frequency, interval, weekdays, week, first }); // (rule is always compatible)
+      let { masterDuration: duration, seriesStartTime, frequency, interval, weekdays, week, first } = master.recurrenceRule;
+      master.recurrenceRule = new RecurrenceRule({ masterDuration: duration, seriesStartTime, count, frequency, interval, weekdays, week, first }); // (rule is always compatible)
       await master.saveToServer();
     }
     let exclusions = [];

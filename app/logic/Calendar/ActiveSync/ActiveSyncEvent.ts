@@ -83,7 +83,7 @@ export class ActiveSyncEvent extends Event {
     let weekdays = extractWeekdays(wbxmljs.DayOfWeek);
     let week = sanitize.integer(wbxmljs.WeekOfMonth, 0);
     let first = sanitize.integer(wbxmljs.FirstDayOfWeek, Weekday.Monday);
-    return new RecurrenceRule({ duration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
+    return new RecurrenceRule({ masterDuration: duration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
   }
 
   toFields(exceptions: { Exception: any } | { Exception: any }[] = []) {

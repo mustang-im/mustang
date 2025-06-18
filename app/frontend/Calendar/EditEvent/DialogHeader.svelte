@@ -193,7 +193,7 @@
     } else {
       let rule = repeatBox.newRecurrenceRule();
       if (master.recurrenceRule) {
-        if (rule.isCompatible(master.recurrenceRule)) {
+        if (rule.timesMatch(master.recurrenceRule)) {
           return true;
         }
         if (!confirm($t`This change will remove all exceptions and exclusions for this series.`)) {
