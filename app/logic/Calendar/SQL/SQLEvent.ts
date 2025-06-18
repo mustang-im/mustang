@@ -161,9 +161,7 @@ export class SQLEvent extends Event {
         event.recurrenceCase = RecurrenceCase.Exception;
         event.parentEvent = parentEvent;
         event.recurrenceStartTime = sanitize.date(row.recurrenceStartTime);
-        // TODO Expensive
-        let occurrences = event.parentEvent.recurrenceRule.getOccurrencesByDate(event.recurrenceStartTime);
-        event.parentEvent.instancesTODOReplace.set(occurrences.length - 1, event);
+        parentEvent.exceptions.add(event);
       }
     }
     if (row.recurrenceRule) {

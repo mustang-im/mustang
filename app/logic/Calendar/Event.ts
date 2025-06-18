@@ -467,17 +467,12 @@ export class Event extends Observable {
     if (!rule) {
       return "none";
     }
-    let isFirst = this.parentEvent.instances.first == this;
-    let isLast = this.parentEvent.instances.last == this;
-    return isLast
-      ? isFirst
-        ? "only"
-        : "last"
-      : this.isNew
-        ? isFirst
-          ? "first"
-          : "middle"
-        : "exception";
+    if (rule.countIs(this.parentEvent.exclusions.length + 1)) {
+      return "only";
+    }
+    // Not supporting "last" any more; fortunately nobody needs it
+    // (it's prohibitively expensive to compute these days)
+    return this.isNew ? this == this.parentEvent.instances.first ? "first" : "middle" : "exception";
   }
 
   /**
@@ -528,6 +523,12 @@ export class Event extends Observable {
     this.calendar.events.remove(this);
     if (this.dbID) {
       await this.calendar.storage.deleteEvent(this);
+    }
+    if (this.parentEvent) {
+      this.parentEvent.instances.remove(this);
+      this.parentEvent.exceptions.remove(this);
+      this.parentEvent.exclusions.add(this.recurrenceStartTime);
+      await this.calendar.storage.saveEvent(this.parentEvent);
     }
   }
 
@@ -630,10 +631,17 @@ export class Event extends Observable {
   fillRecurrences(endDate: Date = new Date(Date.now() + 1e11)): Collection<Event> {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Not a recurrence master");
     if (this.instances.hasItems) {
+      // XXX what if we need to fill more recurrences when the user scrolls?
       return this.instances;
     }
     let occurrences = this.recurrenceRule.getOccurrencesByDate(endDate);
     for (let occurrence of occurrences) {
+      if (this.exceptions.some(exception => exception.recurrenceStartTime.getTime() == occurrence.getTime())) {
+        continue;
+      }
+      if (this.exclusions.some(exclusion => exclusion.getTime() == occurrence.getTime())) {
+        continue;
+      }
       let instance = this.calendar.newEvent(this);
       instance.recurrenceCase = RecurrenceCase.Instance;
       instance.recurrenceStartTime = occurrence;
@@ -648,11 +656,13 @@ export class Event extends Observable {
   }
 
   clearExceptions() {
-    let exceptions = this.calendar.events.filterOnce(ev => ev.parentEvent == this);
-    this.calendar.events.removeAll(exceptions);
-    for (let exception of exceptions) {
-      exception.deleteLocally(); // TODO server?
+    this.calendar.events.removeAll(this.exceptions);
+    for (let exception of this.exceptions) {
+      // Not using deleteLocally because that's for creating an exclusion
+      this.calendar.storage.deleteEvent(exception).catch(this.calendar.errorCallback); // TODO server? No, server will delete when it sees the rule change.
     }
+    this.exceptions.clear();
+    this.exclusions.clear();
   }
 
   /**

@@ -143,6 +143,7 @@ export class EWSCalendar extends Calendar {
     /* Disabling tasks for now.
     await this.listFolder("tasks", events);
     */
+    this.events.replaceAll(events);
   }
 
   async listFolder(folder: string, events: EWSEvent[]) {

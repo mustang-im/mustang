@@ -201,6 +201,14 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
         ruleWeekdays.includes(weekday) == thisWeekdays.includes(weekday));
   }
 
+  countIs(count: number): boolean {
+    if (!this.endDate) {
+      return count == this.count;
+    }
+    this.fillOccurrences(Math.min(count + 1, this.count));
+    return this.occurrences[count - 1] != null && this.occurrences[count] == null;
+  }
+
   getOccurrencesByDate(endDate: Date, startDate: Date = this.startDate): Date[] {
     if (this.endDate && this.endDate < endDate) {
       endDate = this.endDate;
@@ -223,8 +231,11 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
   }
 
   getIndexOfOccurrence(date: Date): number | null {
-    if (!this.occurrences || this.occurrences[this.occurrences.length - 1]) {
-      this.fillOccurrences(1000, date);
+    if (this.endDate && this.endDate < date) {
+      return null;
+    }
+    if (this.occurrences.length < this.count && this.occurrences.at(-1)! < date) {
+      this.fillOccurrences(this.count, date);
     }
     return this.occurrences.findIndex(d => d.getTime() == date.getTime());
   }
