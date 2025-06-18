@@ -78,7 +78,7 @@
             iconSize="16px"
             />
         {/if}
-        {#if canSave}
+        {#if canSave || canSaveSeries}
           <RoundButton
             label={$t`Revert`}
             icon={RevertIcon}
@@ -86,7 +86,7 @@
             classes="plain save-or-close"
             iconSize="16px"
             />
-          {#if $event.seriesStatus == "first" || $event.seriesStatus == "middle"}
+          {#if canSaveSeries}
             <ButtonMenu bind:isMenuOpen={isSaveSeriesOpen}>
               <RoundButton
                 slot="control"
@@ -98,10 +98,12 @@
                 iconSize="16px"
                 />
 
-              <MenuItem
-                label={$t`Change only this instance`}
-                onClick={onSave}
-                classes="font-normal" />
+              {#if canSave}
+                <MenuItem
+                  label={$t`Change only this instance`}
+                  onClick={onSave}
+                  classes="font-normal" />
+              {/if}
               {#if $event.seriesStatus == "middle"}
                 <MenuItem
                   label={$t`Change remainder of series`}
@@ -170,7 +172,7 @@
   $: newCalendar = event.calendar; // not `$event`
   $: hasMinimalProps = event && $event.title && $event.startTime && $event.endTime &&
       event.startTime.getTime() <= event.endTime.getTime();
-  $: canSaveSeries = hasMinimalProps;
+  $: canSaveSeries = hasMinimalProps && $event.recurrenceCase == RecurrenceCase.Instance;
   $: canSave = hasMinimalProps && (
     $event.hasChanged() ||
     repeatBox && !event.parentEvent || // Change single event into series
