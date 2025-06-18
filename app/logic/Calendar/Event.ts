@@ -573,12 +573,12 @@ export class Event extends Observable {
    * Ensures that all recurring instances exist up to the provided date.
    * Must only be called on recurring master events.
    */
-  fillRecurrences(endDate: Date = new Date(Date.now() + 1e11)): Collection<Event> {
+  fillRecurrences(seriesEndTime: Date = new Date(Date.now() + 1e11)): Collection<Event> {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Not a recurrence master");
     if (this.instances.hasItems) {
       return this.instances;
     }
-    let occurrences = this.recurrenceRule.getOccurrencesByDate(endDate);
+    let occurrences = this.recurrenceRule.getOccurrencesByDate(seriesEndTime);
     for (let i = 0; i < occurrences.length; i++) {
       let occurrence = occurrences[i];
       let instance = this.calendar.newEvent(this);
@@ -637,8 +637,8 @@ export class Event extends Observable {
     let count = master.instances.contents.slice(pos + 1).findLastIndex(event => event?.dbID) + pos + 1;
     this.calendar.events.removeAll(master.instances.splice(count).contents.filter(Boolean));
     if (master.recurrenceRule.getOccurrenceByIndex(count + 1)) {
-      let { seriesStartTime: startDate, frequency, interval, weekdays, week, first } = master.recurrenceRule;
-      master.recurrenceRule = new RecurrenceRule({ startDate, count, frequency, interval, weekdays, week, first });
+      let { seriesStartTime, frequency, interval, weekdays, week, first } = master.recurrenceRule;
+      master.recurrenceRule = new RecurrenceRule({ seriesStartTime, count, frequency, interval, weekdays, week, first });
       await master.saveToServer();
     }
     let exclusions = [];

@@ -77,15 +77,15 @@ export class ActiveSyncEvent extends Event {
   }
 
   newRecurrenceRule(wbxmljs: any): RecurrenceRule {
-    let startDate = this.startTime;
-    let endDate = wbxmljs.Until ? fromCompact(wbxmljs.Until) : null;
+    let seriesStartTime = this.startTime;
+    let seriesEndTime = wbxmljs.Until ? fromCompact(wbxmljs.Until) : null;
     let count = sanitize.integer(wbxmljs.Occurrences, Infinity);
     let frequency = kRecurrenceTypes[wbxmljs.Type];
     let interval = sanitize.integer(wbxmljs.Interval, 1);
     let weekdays = extractWeekdays(wbxmljs.DayOfWeek);
     let week = sanitize.integer(wbxmljs.WeekOfMonth, 0);
     let first = sanitize.integer(wbxmljs.FirstDayOfWeek, Weekday.Monday);
-    return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
+    return new RecurrenceRule({ seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
   }
 
   toFields(exceptions: { Exception: any } | { Exception: any }[] = []) {
