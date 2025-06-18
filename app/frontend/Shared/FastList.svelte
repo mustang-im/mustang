@@ -231,7 +231,7 @@
   }
 
   function onScrollWheel(event: WheelEvent) {
-    // How many rows to scroll each time
+    // How many rows to scroll each time, in either direction (+/-)
     let scrollRows = Math.round(event.deltaY / (rowHeight || 20)); // 3 rows
     scrollPos += scrollRows;
     scrollPos = Math.min(Math.max(scrollPos, 0), items.length - showRows);
