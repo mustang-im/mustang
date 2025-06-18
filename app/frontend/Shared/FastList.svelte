@@ -1,5 +1,5 @@
 <hbox class="fast-list"
-  on:wheel={event => onScrollWheelThrottled(event)}
+  on:wheel={event => onScrollWheel(event)}
   on:keydown={event => onKey(event)}
   tabindex={0}
   bind:this={listE}>
@@ -57,7 +57,6 @@
   import { Collection, CollectionObserver, ArrayColl } from "svelte-collections"
   import { onMount, tick } from "svelte";
   import debounce from "lodash/debounce";
-  import { useThrottle } from "@svelteuidev/composables";
 
   type T = $$Generic;
 
@@ -232,7 +231,6 @@
   }
 
   // Throttle scroll speed for trackpad scrolling
-  const onScrollWheelThrottled = useThrottle(onScrollWheel, 30);
   function onScrollWheel(event: WheelEvent) {
     let scrollRows = Math.round(Math.abs(event.deltaY * 0.1)); // How many rows to scroll each time
     if (event.deltaY > 0) {
