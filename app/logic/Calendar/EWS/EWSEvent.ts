@@ -307,7 +307,7 @@ export class EWSEvent extends Event {
           m$ItemIds: {
             t$OccurrenceItemId: {
               RecurringMasterId: this.parentEvent.itemID,
-              InstanceIndex: this.parentEvent.instancesTODOReplace.indexOf(this) + 1,
+              InstanceIndex: this.parentEvent.recurrenceRule.getIndexOfOccurance(this.startTime) + 1,
             },
           },
           DeleteType: "MoveToDeletedItems",
@@ -426,7 +426,7 @@ class EWSUpdateOccurrenceRequest {
 
   constructor(event: EWSEvent, attributes?: {[key: string]: string | boolean}) {
     this.itemChange.t$OccurrenceItemId.RecurringMasterId = event.parentEvent.itemID;
-    this.itemChange.t$OccurrenceItemId.InstanceIndex = event.parentEvent.instancesTODOReplace.indexOf(event) + 1;
+    this.itemChange.t$OccurrenceItemId.InstanceIndex = event.parentEvent.recurrenceRule.getIndexOfOccurance(event.startTime) + 1;
     Object.assign(this.m$UpdateItem, attributes);
   }
 

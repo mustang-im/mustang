@@ -102,10 +102,6 @@ export class OWACalendar extends Calendar {
         if (item.ModifiedOccurrences?.length && event.recurrenceRule) {
           await this.getEvents(item.ModifiedOccurrences.map(item => item.ItemId.Id), events, event);
         }
-        if (event.recurrenceRule) {
-          // Also include any filled occurrences we happen to have.
-          events.addAll(event.instancesTODOReplace.contents.filter(instance => instance && !instance.dbID));
-        }
       } catch (ex) {
         this.account.errorCallback(ex);
       }

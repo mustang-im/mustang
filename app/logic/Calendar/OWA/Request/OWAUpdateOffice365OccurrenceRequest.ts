@@ -21,7 +21,7 @@ export default class OWAUpdateOffice365OccurrenceRequest {
 
   constructor(event: OWAEvent, attributes?: { [key: string]: string | boolean }) {
     this.itemChange.ItemId.RecurringMasterId = event.parentEvent.itemID;
-    this.itemChange.ItemId.InstanceIndex = event.parentEvent.instancesTODOReplace.indexOf(event) + 1;
+    this.itemChange.ItemId.InstanceIndex = event.parentEvent.recurrenceRule.getIndexOfOccurance(event.startTime) + 1;
     this.Body.EventId = this.itemChange.ItemId;
     // XXX Support for attributes is unknown at this time.
   }

@@ -211,7 +211,7 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     return this.occurrences.filter(date => date >= startDate && date <= endDate);
   }
 
-  /** 1-indexed */
+  /** 1-indexed TODO really? Check callers */
   getOccurrenceByIndex(index: number): Date | void {
     if (index > this.count) {
       return;
@@ -220,6 +220,13 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
       this.fillOccurrences(index);
     }
     return this.occurrences[index - 1];
+  }
+
+  getIndexOfOccurance(date: Date): number | null {
+    if (!this.occurrences || this.occurrences[this.occurrences.length - 1]) {
+      this.fillOccurrences(1000, date);
+    }
+    return this.occurrences.findIndex(d => d.getTime() == date.getTime());
   }
 
   fillOccurrences(count: number, endDate?: Date) {

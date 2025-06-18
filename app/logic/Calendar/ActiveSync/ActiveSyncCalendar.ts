@@ -168,7 +168,7 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
           let event = this.getEventByServerID(item.ServerId);
           if (event) {
             this.events.remove(event);
-            this.events.removeAll(event.instancesTODOReplace);
+            this.events.removeAll(event.exceptions);
             await event.deleteLocally();
           }
         } catch (ex) {

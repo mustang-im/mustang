@@ -467,11 +467,17 @@ export class Event extends Observable {
     if (!rule) {
       return "none";
     }
-    let pos = this.parentEvent.instancesTODOReplace.indexOf(this);
-    let slice = this.parentEvent.instancesTODOReplace.contents.slice(pos + 1);
-    let isFirst = this.parentEvent.instancesTODOReplace.getIndexRange(0, pos).every(instance => instance === null);
-    let isLast = (rule.count != Infinity || rule.endDate) && slice.every(instance => instance === null || instance?.dbID) && !rule.getOccurrenceByIndex(this.parentEvent.instancesTODOReplace.length + 1);
-    return isLast ? isFirst && slice.every(instance => instance === null) ? "only" : "last" : this.isNew ? isFirst ? "first" : "middle" : "exception";
+    let isFirst = this.parentEvent.instances.first == this;
+    let isLast = this.parentEvent.instances.last == this;
+    return isLast
+      ? isFirst
+        ? "only"
+        : "last"
+      : this.isNew
+        ? isFirst
+          ? "first"
+          : "middle"
+        : "exception";
   }
 
   /**
@@ -617,29 +623,17 @@ export class Event extends Observable {
     await account.send(email);
   }
 
-  regenerateRecurrences() {
-    if (this.recurrenceCase != RecurrenceCase.Master) {
-      return;
-    }
-    if (this.instancesTODOReplace.hasItems) {
-      this.calendar.events.removeAll(this.instancesTODOReplace);
-    }
-    this.instancesTODOReplace.clear();
-    this.fillRecurrences();
-  }
-
   /**
    * Ensures that all recurring instances exist up to the provided date.
-   * Must only be called on recurring master events.
+   * Only for recurranceCase == Master
    */
   fillRecurrences(endDate: Date = new Date(Date.now() + 1e11)): Collection<Event> {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Not a recurrence master");
-    if (this.instancesTODOReplace.hasItems) {
-      return this.instancesTODOReplace;
+    if (this.instances.hasItems) {
+      return this.instances;
     }
     let occurrences = this.recurrenceRule.getOccurrencesByDate(endDate);
-    for (let i = 0; i < occurrences.length; i++) {
-      let occurrence = occurrences[i];
+    for (let occurrence of occurrences) {
       let instance = this.calendar.newEvent(this);
       instance.recurrenceCase = RecurrenceCase.Instance;
       instance.recurrenceStartTime = occurrence;
@@ -648,9 +642,9 @@ export class Event extends Observable {
       if (this.alarm) {
         instance.alarm = new Date(this.alarm.getTime() + instance.startTime.getTime() - this.startTime.getTime());
       }
-      this.instancesTODOReplace.set(i, instance);
+      this.instances.add(instance);
     }
-    return this.instancesTODOReplace;
+    return this.instances;
   }
 
   clearExceptions() {

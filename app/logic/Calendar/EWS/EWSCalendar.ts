@@ -143,15 +143,6 @@ export class EWSCalendar extends Calendar {
     /* Disabling tasks for now.
     await this.listFolder("tasks", events);
     */
-    // Keep any filled instances we already generated.
-    for (let event of events) {
-      for (let instance of event.instancesTODOReplace) {
-        if (!events.includes(instance)) {
-          events.push(instance);
-        }
-      }
-    }
-    this.events.replaceAll(events);
   }
 
   async listFolder(folder: string, events: EWSEvent[]) {

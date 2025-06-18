@@ -70,15 +70,13 @@ export class SQLEvent extends Event {
       WHERE recurrenceMasterEventID = ${event.dbID}
       `);
 
-    for (let i = 0; i < event.instancesTODOReplace.length; i++) {
-      if (event.instancesTODOReplace.get(i) === null) {
-        await (await getDatabase()).run(sql`
-          INSERT INTO eventExclusion (
-            recurrenceMasterEventID, recurrenceIndex
-          ) VALUES (
-            ${event.dbID}, ${i}
-          )`);
-      }
+    for (let exclusion of event.exclusions) {
+      await (await getDatabase()).run(sql`
+        INSERT INTO eventExclusion (
+          recurrenceMasterEventID, recurrenceIndex,
+        ) VALUES (
+          ${event.dbID}, ${exclusion.index}
+        )`);
     }
   }
 
@@ -156,6 +154,7 @@ export class SQLEvent extends Event {
     }
     if (row.recurrenceMasterEventID && row.recurrenceStartTime) {
       let masterID = sanitize.integer(row.recurrenceMasterEventID);
+      // TODO assumes that the master is read before the exception
       let parentEvent = events?.find(event => event.dbID == masterID);
       if (parentEvent?.recurrenceRule) {
         event.recurrenceCase = RecurrenceCase.Exception;
@@ -163,7 +162,6 @@ export class SQLEvent extends Event {
         event.recurrenceStartTime = sanitize.date(row.recurrenceStartTime);
         // TODO Expensive
         let occurrences = event.parentEvent.recurrenceRule.getOccurrencesByDate(event.recurrenceStartTime);
-        // TODO assumes that the master is read before the exception
         event.parentEvent.instancesTODOReplace.set(occurrences.length - 1, event);
       }
     }
@@ -186,7 +184,14 @@ export class SQLEvent extends Event {
       WHERE recurrenceMasterEventID = ${event.dbID}
       `) as any;
     for (let row of rows) {
-      event.instancesTODOReplace.set(row.recurrenceIndex, null);
+      let index = row.recurrenceIndex;
+      let normalTime = event.recurrenceRule.getOccurrenceByIndex(index);
+      if (!normalTime) {
+        // TODO fillOccurences()?
+        event.calendar.errorCallback(new Error("Occurance not filled"));
+        continue;
+      }
+      event.exclusions.add({ normalTime, index });
     }
   }
 
