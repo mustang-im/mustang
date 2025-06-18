@@ -218,11 +218,11 @@ export class ActiveSyncEvent extends Event {
     return event;
   }
 
-  async makeExclusions(indices: number[]) {
-    await this.saveFields(this.toFields(indices.map(index => ({
+  async makeExclusions(exclusions: ActiveSyncEvent[]) {
+    await this.saveFields(this.toFields(exclusions.map(event => ({
       Exception: {
         Deleted: "1",
-        ExceptionStartTime: toCompact(this.recurrenceRule.getOccurrenceByIndex(index + 1) as Date),
+        ExceptionStartTime: toCompact(event.recurrenceStartTime),
       },
     }))));
   }

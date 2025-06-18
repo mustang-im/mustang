@@ -350,9 +350,9 @@ export class OWAEvent extends Event {
     return event;
   }
 
-  async makeExclusions(indices: number[]) {
-    await this.calendar.account.callOWA(owaCreateMultipleExclusionsRequest(indices, this));
-    await super.makeExclusions(indices);
+  async makeExclusions(exclusions: OWAEvent[]) {
+    await this.calendar.account.callOWA(owaCreateMultipleExclusionsRequest(exclusions, this));
+    await super.makeExclusions(exclusions);
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {

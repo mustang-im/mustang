@@ -549,16 +549,11 @@ export class Event extends Observable {
   }
 
   /** Delete multiple instances */
-  async makeExclusions(indices: number[]) {
-    let exclusions: Event[] = [];
-    for (let index of indices) {
-      let previous = this.instancesTODOReplace.get(index);
-      this.instancesTODOReplace.set(index, null);
-      if (previous) {
-        exclusions.push(previous);
-      }
-    }
+  async makeExclusions(exclusions: Event[]) {
     this.calendar.events.removeAll(exclusions);
+    this.instances.removeAll(exclusions);
+    this.exceptions.removeAll(exclusions);
+    this.exclusions.addAll(exclusions.map(event => event.recurrenceStartTime));
     for (let exclusion of exclusions) {
       if (!exclusion.isNew) {
         await this.calendar.storage.deleteEvent(exclusion);
@@ -683,8 +678,8 @@ export class Event extends Observable {
     for (let i = pos; i < count; i++) {
       let instance = master.instancesTODOReplace.get(i);
       // Always delete this event, unless it got truncated above
-      if (instance == this || instance === undefined || instance?.isNew) {
-        exclusions.push(i);
+      if (instance == this || /* instance === undefined - handles when recurrences haven't been completely filled || */ instance?.isNew) {
+        exclusions.push(instance);
       }
     }
     if (exclusions.length) {

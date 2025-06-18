@@ -375,13 +375,13 @@ export class EWSEvent extends Event {
     return event;
   }
 
-  async makeExclusions(indices: number[]) {
+  async makeExclusions(exclusions: EWSEvent[]) {
     let request = {
       m$DeleteItem: {
-        m$ItemIds: indices.map(index => ({
+        m$ItemIds: exclusions.map(event => ({
           t$OccurrenceItemId: {
-            RecurringMasterId: this.parentEvent.itemID,
-            InstanceIndex: index + 1,
+            RecurringMasterId: this.itemID,
+            InstanceIndex: this.recurrenceRule.getIndexOfOccurrence(event.recurrenceStartTime) + 1,
           },
         })),
         DeleteType: "MoveToDeletedItems",
@@ -389,7 +389,7 @@ export class EWSEvent extends Event {
       },
     };
     await this.calendar.account.callEWS(request);
-    await super.makeExclusions(indices);
+    await super.makeExclusions(exclusions);
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
