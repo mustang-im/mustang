@@ -18,7 +18,7 @@
     "value": "0123456789",
     "purpose": "other",
     "protocol": "tel",
-    "preference": 0
+    "preference": 100
   }],
   "chatAccounts": [{
     "value": "xmpp:jabber@jabber.com",

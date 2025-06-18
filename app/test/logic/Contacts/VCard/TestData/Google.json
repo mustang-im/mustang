@@ -8,19 +8,19 @@
       "value": "myemailaddress@example.org",
       "protocol": "mailto",
       "purpose": "work",
-      "preference": 0
+      "preference": 100
     },
     {
       "value": "anotheremail@mustang.im",
       "protocol": "mailto",
       "purpose": "home",
-      "preference": 0
+      "preference": 100
     },
     {
       "value": "thirdemail@example.com",
       "protocol": "mailto",
       "purpose": "other",
-      "preference": 0
+      "preference": 100
     }
   ],
   "phoneNumbers": [
@@ -28,19 +28,19 @@
       "value": "+49 5456 56565",
       "protocol": "tel",
       "purpose": "home",
-      "preference": 0
+      "preference": 100
     },
     {
       "value": "+49 5678 90123",
       "protocol": "tel",
       "purpose": "other",
-      "preference": 0
+      "preference": 100
     },
     {
       "value": "+49 0349443423",
       "protocol": "tel",
       "purpose": "other",
-      "preference": 0
+      "preference": 100
     }
   ],
   "chatAccounts": [],
@@ -49,7 +49,7 @@
       "value": "123456, Somerset Close\nMönchengladbach\n41179\n\nDE",
       "purpose": "other",
       "protocol": null,
-      "preference": 0
+      "preference": 100
     }
   ],
   "urls": [
@@ -57,13 +57,13 @@
       "value": "https://www.mustang.im/",
       "purpose": "other",
       "protocol": "https",
-      "preference": 0
+      "preference": 100
     },
         {
       "value": "https://parula.beonex.com/",
       "purpose": "other",
       "protocol": "https",
-      "preference": 0
+      "preference": 100
     }
   ],
   "notes": "Some notes\nCustom: Some custom field",
