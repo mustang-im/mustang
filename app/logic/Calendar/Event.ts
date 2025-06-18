@@ -404,7 +404,7 @@ export class Event extends Observable {
     let pos = this.parentEvent.instances.indexOf(this);
     let slice = this.parentEvent.instances.contents.slice(pos + 1);
     let isFirst = this.parentEvent.instances.getIndexRange(0, pos).every(instance => instance === null);
-    let isLast = (rule.count != Infinity || rule.endDate) && slice.every(instance => instance === null || instance?.dbID) && !rule.getOccurrenceByIndex(this.parentEvent.instances.length + 1);
+    let isLast = (rule.count != Infinity || rule.seriesEndTime) && slice.every(instance => instance === null || instance?.dbID) && !rule.getOccurrenceByIndex(this.parentEvent.instances.length + 1);
     return isLast ? isFirst && slice.every(instance => instance === null) ? "only" : "last" : this.isNew ? isFirst ? "first" : "middle" : "exception";
   }
 
@@ -637,7 +637,7 @@ export class Event extends Observable {
     let count = master.instances.contents.slice(pos + 1).findLastIndex(event => event?.dbID) + pos + 1;
     this.calendar.events.removeAll(master.instances.splice(count).contents.filter(Boolean));
     if (master.recurrenceRule.getOccurrenceByIndex(count + 1)) {
-      let { startDate, frequency, interval, weekdays, week, first } = master.recurrenceRule;
+      let { seriesStartTime: startDate, frequency, interval, weekdays, week, first } = master.recurrenceRule;
       master.recurrenceRule = new RecurrenceRule({ startDate, count, frequency, interval, weekdays, week, first });
       await master.saveToServer();
     }

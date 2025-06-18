@@ -55,14 +55,15 @@ export interface RecurrenceInit {
  */
 export class RecurrenceRule {
   /**
-   * The date of the first occurrence; the same as the master event date.
+   * The time of the first occurrence in the series.
+   * The same as the master event date.
    */
-  readonly startDate!: Date;
+  readonly seriesStartTime!: Date;
   /**
    * The date beyond which the recurrence stops.
    * If you also provide the count, the earlier is used.
    */
-  readonly endDate: Date | null = null;
+  readonly seriesEndTime: Date | null = null;
   /**
    * The number of occurrences beyond which the recurrence stops.
    * If also provide the end date, the earlier is used.
@@ -109,15 +110,15 @@ export class RecurrenceRule {
   constructor(data: RecurrenceInit) {
     Object.assign(this, data);
     // EditEvent mutates the start time, so clone it to be safe.
-    let startDate = this.startDate = new Date(this.startDate);
-    this.occurrences.push(startDate);
-    this.weekday = startDate.getDay();
-    this.year = startDate.getFullYear();
-    this.month = startDate.getMonth();
-    this.day = startDate.getDate();
-    this.hours = startDate.getHours();
-    this.minutes = startDate.getMinutes();
-    this.seconds = startDate.getSeconds();
+    let start = this.seriesStartTime = new Date(this.seriesStartTime);
+    this.occurrences.push(start);
+    this.weekday = start.getDay();
+    this.year = start.getFullYear();
+    this.month = start.getMonth();
+    this.day = start.getDate();
+    this.hours = start.getHours();
+    this.minutes = start.getMinutes();
+    this.seconds = start.getSeconds();
     // this.fillOccurrences(this.count, this.endDate || new Date(Date.now() + 1e11));
   }
 
@@ -163,8 +164,8 @@ export class RecurrenceRule {
 
   getCalString(allDay: boolean): string {
     let rule: { FREQ: string, UNTIL?: string, COUNT?: number, INTERVAL?: number, BYDAY?: string, WKST?: string } = { FREQ: this.frequency };
-    if (this.endDate) {
-      rule.UNTIL = this.endDate.toISOString().replace(/-|:|\..../g, "").slice(0, allDay ? 8 : 16);
+    if (this.seriesEndTime) {
+      rule.UNTIL = this.seriesEndTime.toISOString().replace(/-|:|\..../g, "").slice(0, allDay ? 8 : 16);
     }
     if (this.count != Infinity) {
       rule.COUNT = this.count;
@@ -192,7 +193,7 @@ export class RecurrenceRule {
     let allWeekdays = [0, 1, 2, 3, 4, 5, 6];
     let thisWeekdays = this.weekdays || allWeekdays;
     let ruleWeekdays = rule.weekdays || allWeekdays;
-    return rule.startDate.getTime() == this.startDate.getTime() &&
+    return rule.seriesStartTime.getTime() == this.seriesStartTime.getTime() &&
       rule.frequency == this.frequency &&
       rule.interval == this.interval &&
       rule.week == this.week &&
@@ -201,9 +202,9 @@ export class RecurrenceRule {
         ruleWeekdays.includes(weekday) == thisWeekdays.includes(weekday));
   }
 
-  getOccurrencesByDate(endDate: Date, startDate: Date = this.startDate): Date[] {
-    if (this.endDate && this.endDate < endDate) {
-      endDate = this.endDate;
+  getOccurrencesByDate(endDate: Date, startDate: Date = this.seriesStartTime): Date[] {
+    if (this.seriesEndTime && this.seriesEndTime < endDate) {
+      endDate = this.seriesEndTime;
     }
     if (this.occurrences.length < this.count && this.occurrences.at(-1)! < endDate) {
       this.fillOccurrences(this.count, endDate);

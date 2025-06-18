@@ -114,8 +114,8 @@
   let count = Number.isFinite(event.recurrenceRule?.count) ? event.recurrenceRule.count : 1;
   let weekdays = event.recurrenceRule?.weekdays || [event.startTime.getDay()];
   let week = event.recurrenceRule?.week || 0;
-  let end = event.recurrenceRule?.endDate ? "date" : Number.isFinite(event.recurrenceRule?.count) ? "count" : "none";
-  let endDate = event.recurrenceRule?.endDate || event.startTime;
+  let end = event.recurrenceRule?.seriesEndTime ? "date" : Number.isFinite(event.recurrenceRule?.count) ? "count" : "none";
+  let endDate = event.recurrenceRule?.seriesEndTime || event.startTime;
   let minDate = event.startTime;
   let yearWeekOptions, monthWeekOptions, weekdayOptions;
 

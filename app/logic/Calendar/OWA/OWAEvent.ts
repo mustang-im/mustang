@@ -300,7 +300,7 @@ export class OWAEvent extends Event {
       recurrence.RecurrencePattern.Interval = rule.interval;
     }
     if (/^Relative|^Weekly/.test(recurrenceType)) {
-      let weekdays = rule.weekdays || [rule.startDate.getDay()];
+      let weekdays = rule.weekdays || [rule.seriesStartTime.getDay()];
       recurrence.RecurrencePattern.DaysOfWeek = rule.weekdays.map(day => Weekday[day]).join(" ");
     }
     if (rule.frequency == Frequency.Weekly) {
@@ -310,18 +310,18 @@ export class OWAEvent extends Event {
       recurrence.RecurrencePattern.DayOfWeekIndex = WeekOfMonth[rule.week];
     }
     if (/Absolute/.test(recurrenceType)) {
-      recurrence.RecurrencePattern.DayOfMonth = rule.startDate.getDate();
+      recurrence.RecurrencePattern.DayOfMonth = rule.seriesStartTime.getDate();
     }
     if (rule.frequency == Frequency.Yearly) {
-      recurrence.RecurrencePattern.Month = rule.startDate.toLocaleDateString("en", { month: "long" });
+      recurrence.RecurrencePattern.Month = rule.seriesStartTime.toLocaleDateString("en", { month: "long" });
     }
-    recurrence.RecurrenceRange.StartDate = this.dateString(rule.startDate, true);
+    recurrence.RecurrenceRange.StartDate = this.dateString(rule.seriesStartTime, true);
     if (rule.count < Infinity) {
       recurrence.RecurrenceRange.__type = "NumberedRecurrence:#Exchange";
       recurrence.RecurrenceRange.NumberOfOccurrences = rule.count;
-    } else if (rule.endDate) {
+    } else if (rule.seriesEndTime) {
       recurrence.RecurrenceRange.__type = "EndDateRecurrence:#Exchange";
-      recurrence.RecurrenceRange.EndDate = this.dateString(rule.endDate, true);
+      recurrence.RecurrenceRange.EndDate = this.dateString(rule.seriesEndTime, true);
     }
     return recurrence;
   }

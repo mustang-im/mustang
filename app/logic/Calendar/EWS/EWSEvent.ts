@@ -260,7 +260,7 @@ export class EWSEvent extends Event {
       pattern.t$Interval = rule.interval;
     }
     if (/^Relative|^Weekly/.test(recurrenceType)) {
-      let weekdays = rule.weekdays || [rule.startDate.getDay()];
+      let weekdays = rule.weekdays || [rule.seriesStartTime.getDay()];
       pattern.t$DaysOfWeek = rule.weekdays.map(day => Weekday[day]).join(" ");
     }
     if (rule.frequency == Frequency.Weekly) {
@@ -270,26 +270,26 @@ export class EWSEvent extends Event {
       pattern.t$DayOfWeekIndex = WeekOfMonth[rule.week];
     }
     if (/Absolute/.test(recurrenceType)) {
-      pattern.t$DayOfMonth = rule.startDate.getDate();
+      pattern.t$DayOfMonth = rule.seriesStartTime.getDate();
     }
     if (rule.frequency == Frequency.Yearly) {
-      pattern.t$Month = rule.startDate.toLocaleDateString("en", { month: "long" });
+      pattern.t$Month = rule.seriesStartTime.toLocaleDateString("en", { month: "long" });
     }
     let recurrence: any = {};
     recurrence[`t$${recurrenceType}Recurrence`] = pattern;
     if (rule.count < Infinity) {
       recurrence.t$NumberedRecurrence = {
-        t$StartDate: this.dateString(rule.startDate, true),
+        t$StartDate: this.dateString(rule.seriesStartTime, true),
         t$NumberOfOccurrences: rule.count,
       };
-    } else if (rule.endDate) {
+    } else if (rule.seriesEndTime) {
       recurrence.t$EndDateRecurrence = {
-        t$StartDate: this.dateString(rule.startDate, true),
-        t$EndDate: this.dateString(rule.endDate, true),
+        t$StartDate: this.dateString(rule.seriesStartTime, true),
+        t$EndDate: this.dateString(rule.seriesEndTime, true),
       };
     } else {
       recurrence.t$NoEndRecurrence = {
-        t$StartDate: this.dateString(rule.startDate, true),
+        t$StartDate: this.dateString(rule.seriesStartTime, true),
       };
     }
     return recurrence;
