@@ -141,11 +141,14 @@ export class Event extends Observable {
    * This allows us to work out the instance index of an exception,
    * even if its actual start time has been modified.
    *
-   * For RecurrenceCase == Instance, it's identical to `startTime`. TODO Remove it in this case?
+   * For RecurrenceCase == Instance, it's identical to `startTime`.
    */
   recurrenceStartTime: Date | null = null;
   /**
    * Only for RecurrenceCase == Master
+   *
+   * TODO Remove this, in favor of the more specific properties
+   * this.exclusions, this.exceptions, and this.instances.
    *
    * Holds child instances of a recurring event:
    * - null means that that the instance was excluded
@@ -157,7 +160,41 @@ export class Event extends Observable {
    * - The array here may not be complete, but `fillRecurrences()`
    *   will auto-generate additional instances if necessary.
    */
-  readonly instances = new ArrayColl<Event | null>;
+  readonly instancesTODOReplace = new ArrayColl<Event | null>;
+  /** Only for recurringCase == Master.
+   *
+   * Contains all Instances generated from the master.
+   * Does *not* contain:
+   * - The master itself
+   * - Exceptions
+   * - Exclusions
+   *
+   * This is a dynamic collection, and will be updated automatically
+   * when the master changes or the recurrence rule changes.
+   */
+  instances: ArrayColl<Event>;
+  /**
+   * Only for RecurrenceCase == Master
+   *
+   * Contains exclusions, i.e. where there would normally
+   * be an recurrence instance, but exceptionally, there is none
+   * on that specific day/time.
+   */
+  exclusions: ArrayColl<Date>;
+  /**
+   * Only for RecurrenceCase == Master
+   *
+   * Contains exceptions, i.e. where there would normally
+   * be an recurrence instance, but exceptionally, this one
+   * is different, e.g. on a different time, or different
+   * location or other property.
+   *
+   * `exceptions.get().recurrenceStartTime` contains the time of the
+   * normal instance that this exception replaces.
+   */
+  exceptions: ArrayColl<Event>;
+  /** Only for RecurrenceCase == Master */
+  protected unsubscribeMaster: () => void;
 
   @notifyChangedProperty
   alarm: Date | null = null;
@@ -380,6 +417,32 @@ export class Event extends Observable {
     return true;
   }
 
+  /** TODO move into recurrenceRule setter */
+  protected observeMaster() {
+    if (this.recurrenceCase == RecurrenceCase.Master) {
+      this.instances = new ArrayColl<Event>();
+      this.exclusions = new ArrayColl<Date>();
+      this.exceptions = new ArrayColl<Event>();
+      this.unsubscribeMaster = this.subscribe(() =>
+        this.generateRecurringInstances());
+    } else if (this.unsubscribeMaster) {
+      this.instances.clear();
+      this.exclusions.clear();
+      this.exceptions.clear();
+      this.instances = null;
+      this.exclusions = null;
+      this.exceptions = null;
+      this.unsubscribeMaster();
+    }
+  }
+
+  /** Call this whenever the master changes */
+  protected generateRecurringInstances() {
+    assert(this.recurrenceCase == RecurrenceCase.Master, "Only for master");
+    this.instances.clear();
+    this.instances.addAll(this.fillRecurrences());
+  }
+
   /**
    * Calculates the position of this instance in a recurring series.
    * "none" - event isn't an instance or exception
@@ -401,10 +464,10 @@ export class Event extends Observable {
     if (!rule) {
       return "none";
     }
-    let pos = this.parentEvent.instances.indexOf(this);
-    let slice = this.parentEvent.instances.contents.slice(pos + 1);
-    let isFirst = this.parentEvent.instances.getIndexRange(0, pos).every(instance => instance === null);
-    let isLast = (rule.count != Infinity || rule.endDate) && slice.every(instance => instance === null || instance?.dbID) && !rule.getOccurrenceByIndex(this.parentEvent.instances.length + 1);
+    let pos = this.parentEvent.instancesTODOReplace.indexOf(this);
+    let slice = this.parentEvent.instancesTODOReplace.contents.slice(pos + 1);
+    let isFirst = this.parentEvent.instancesTODOReplace.getIndexRange(0, pos).every(instance => instance === null);
+    let isLast = (rule.count != Infinity || rule.endDate) && slice.every(instance => instance === null || instance?.dbID) && !rule.getOccurrenceByIndex(this.parentEvent.instancesTODOReplace.length + 1);
     return isLast ? isFirst && slice.every(instance => instance === null) ? "only" : "last" : this.isNew ? isFirst ? "first" : "middle" : "exception";
   }
 
@@ -451,18 +514,11 @@ export class Event extends Observable {
   async deleteLocally() {
     assert(this.calendar, "To delete an event, it needs to be in a calendar first");
     assert(this.calendar.storage, "To delete an event, the calendar needs to be saved first");
+    // Removes instances
+    this.recurrenceRule = null;
     this.calendar.events.remove(this);
-    this.calendar.events.removeAll(this.instances);
-    // TODO If this is a master, also delete the exceptions?
     if (this.dbID) {
       await this.calendar.storage.deleteEvent(this);
-    }
-    if (this.parentEvent) {
-      let pos = this.parentEvent.instances.indexOf(this);
-      if (pos >= 0) {
-        this.parentEvent.instances.set(pos, null);
-        await this.calendar.storage.saveEvent(this.parentEvent);
-      }
     }
   }
 
@@ -486,8 +542,8 @@ export class Event extends Observable {
   async makeExclusions(indices: number[]) {
     let exclusions: Event[] = [];
     for (let index of indices) {
-      let previous = this.instances.get(index);
-      this.instances.set(index, null);
+      let previous = this.instancesTODOReplace.get(index);
+      this.instancesTODOReplace.set(index, null);
       if (previous) {
         exclusions.push(previous);
       }
@@ -562,10 +618,10 @@ export class Event extends Observable {
     if (this.recurrenceCase != RecurrenceCase.Master) {
       return;
     }
-    if (this.instances.hasItems) {
-      this.calendar.events.removeAll(this.instances);
+    if (this.instancesTODOReplace.hasItems) {
+      this.calendar.events.removeAll(this.instancesTODOReplace);
     }
-    this.instances.clear();
+    this.instancesTODOReplace.clear();
     this.fillRecurrences();
   }
 
@@ -575,8 +631,8 @@ export class Event extends Observable {
    */
   fillRecurrences(endDate: Date = new Date(Date.now() + 1e11)): Collection<Event> {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Not a recurrence master");
-    if (this.instances.hasItems) {
-      return this.instances;
+    if (this.instancesTODOReplace.hasItems) {
+      return this.instancesTODOReplace;
     }
     let occurrences = this.recurrenceRule.getOccurrencesByDate(endDate);
     for (let i = 0; i < occurrences.length; i++) {
@@ -589,19 +645,17 @@ export class Event extends Observable {
       if (this.alarm) {
         instance.alarm = new Date(this.alarm.getTime() + instance.startTime.getTime() - this.startTime.getTime());
       }
-      this.instances.set(i, instance);
+      this.instancesTODOReplace.set(i, instance);
     }
-    return this.instances;
+    return this.instancesTODOReplace;
   }
 
   clearExceptions() {
-    this.calendar.events.removeAll(this.instances.contents.filter(Boolean));
-    for (let event of this.instances) {
-      if (event?.dbID) {
-        this.calendar.storage.deleteEvent(event).catch(this.calendar.errorCallback);
-      }
+    let exceptions = this.calendar.events.filterOnce(ev => ev.parentEvent == this);
+    this.calendar.events.removeAll(exceptions);
+    for (let exception of exceptions) {
+      exception.deleteLocally(); // TODO server?
     }
-    this.regenerateRecurrences();
   }
 
   /**
@@ -609,8 +663,8 @@ export class Event extends Observable {
    * (and also database when an exception subsequently becomes an exclusion).
    */
   replaceInstance(index: number, occurrence: Event) {
-    let previous = this.instances.get(index);
-    this.instances.set(index, occurrence);
+    let previous = this.instancesTODOReplace.get(index);
+    this.instancesTODOReplace.set(index, occurrence);
     // There won't be a previous instance if this is a new recurring event
     // and we haven't filled its occurrences yet. Or, this might be an update
     // to a known existing exception.
@@ -633,9 +687,9 @@ export class Event extends Observable {
   async truncateRecurrence() {
     let master = this.parentEvent;
     assert(master.recurrenceCase == RecurrenceCase.Master, "parentEvent must a Recurrence.Master");
-    let pos = master.instances.indexOf(this);
-    let count = master.instances.contents.slice(pos + 1).findLastIndex(event => event?.dbID) + pos + 1;
-    this.calendar.events.removeAll(master.instances.splice(count).contents.filter(Boolean));
+    let pos = master.instancesTODOReplace.indexOf(this);
+    let count = master.instancesTODOReplace.contents.slice(pos + 1).findLastIndex(event => event?.dbID) + pos + 1;
+    this.calendar.events.removeAll(master.instancesTODOReplace.splice(count).contents.filter(Boolean));
     if (master.recurrenceRule.getOccurrenceByIndex(count + 1)) {
       let { startDate, frequency, interval, weekdays, week, first } = master.recurrenceRule;
       master.recurrenceRule = new RecurrenceRule({ startDate, count, frequency, interval, weekdays, week, first });
@@ -643,7 +697,7 @@ export class Event extends Observable {
     }
     let exclusions = [];
     for (let i = pos; i < count; i++) {
-      let instance = master.instances.get(i);
+      let instance = master.instancesTODOReplace.get(i);
       // Always delete this event, unless it got truncated above
       if (instance == this || instance === undefined || instance?.isNew) {
         exclusions.push(i);

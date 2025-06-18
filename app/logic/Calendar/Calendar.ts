@@ -4,9 +4,9 @@ import type { Participant } from "./Participant";
 import { IncomingInvitation } from "./Invitation/IncomingInvitation";
 import type { EMail } from "../Mail/EMail";
 import { appGlobal } from "../app";
-import { Collection, ArrayColl } from "svelte-collections";
+import { ArrayColl } from "svelte-collections";
 import { ICalEMailProcessor } from "./ICal/ICalEMailProcessor";
-import { RecurrenceColl } from "./RecurrenceColl";
+import { recurrenceColl } from "./RecurrenceColl";
 
 export class Calendar extends Account {
   readonly protocol: string = "calendar-local";
@@ -34,7 +34,7 @@ export class Calendar extends Account {
    * the cache needs to be invalidated when
    * recurring event masters change.
    */
-  eventsWithRecurrences = new RecurrenceColl(this.events);
+  eventsWithRecurrences: ArrayColl<Event> = recurrenceColl(this.events);
 
   protected invalidateRecurringCache() {
   }

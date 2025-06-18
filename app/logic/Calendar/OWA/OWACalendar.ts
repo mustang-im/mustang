@@ -104,7 +104,7 @@ export class OWACalendar extends Calendar {
         }
         if (event.recurrenceRule) {
           // Also include any filled occurrences we happen to have.
-          events.addAll(event.instances.contents.filter(instance => instance && !instance.dbID));
+          events.addAll(event.instancesTODOReplace.contents.filter(instance => instance && !instance.dbID));
         }
       } catch (ex) {
         this.account.errorCallback(ex);

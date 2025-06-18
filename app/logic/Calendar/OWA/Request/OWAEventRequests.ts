@@ -166,7 +166,7 @@ export function owaGetEventUIDsRequest(eventIDs: string[]): OWARequest {
 }
 
 export function owaCreateExclusionRequest(excludeEvent: OWAEvent, parentEvent: OWAEvent): OWARequest {
-  return owaCreateMultipleExclusionsRequest([parentEvent.instances.indexOf(excludeEvent)], parentEvent);
+  return owaCreateMultipleExclusionsRequest([parentEvent.instancesTODOReplace.indexOf(excludeEvent)], parentEvent);
 }
 
 export function owaCreateMultipleExclusionsRequest(indices: number[], parentEvent: OWAEvent): OWARequest {

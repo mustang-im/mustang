@@ -24,7 +24,7 @@ const ActiveSyncResponse: Record<InvitationResponseInMessage, number> = {
 export class ActiveSyncEvent extends Event {
   calendar: ActiveSyncCalendar;
   parentEvent: ActiveSyncEvent;
-  readonly instances: ArrayColl<ActiveSyncEvent | null | undefined>;
+  readonly instancesTODOReplace: ArrayColl<ActiveSyncEvent | null | undefined>;
 
   get serverID(): string | null {
     return this.pID;

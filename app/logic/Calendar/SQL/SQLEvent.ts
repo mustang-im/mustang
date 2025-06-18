@@ -70,8 +70,8 @@ export class SQLEvent extends Event {
       WHERE recurrenceMasterEventID = ${event.dbID}
       `);
 
-    for (let i = 0; i < event.instances.length; i++) {
-      if (event.instances.get(i) === null) {
+    for (let i = 0; i < event.instancesTODOReplace.length; i++) {
+      if (event.instancesTODOReplace.get(i) === null) {
         await (await getDatabase()).run(sql`
           INSERT INTO eventExclusion (
             recurrenceMasterEventID, recurrenceIndex
@@ -164,7 +164,7 @@ export class SQLEvent extends Event {
         // TODO Expensive
         let occurrences = event.parentEvent.recurrenceRule.getOccurrencesByDate(event.recurrenceStartTime);
         // TODO assumes that the master is read before the exception
-        event.parentEvent.instances.set(occurrences.length - 1, event);
+        event.parentEvent.instancesTODOReplace.set(occurrences.length - 1, event);
       }
     }
     if (row.recurrenceRule) {
@@ -186,7 +186,7 @@ export class SQLEvent extends Event {
       WHERE recurrenceMasterEventID = ${event.dbID}
       `) as any;
     for (let row of rows) {
-      event.instances.set(row.recurrenceIndex, null);
+      event.instancesTODOReplace.set(row.recurrenceIndex, null);
     }
   }
 

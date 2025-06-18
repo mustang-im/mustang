@@ -145,7 +145,7 @@ export class EWSCalendar extends Calendar {
     */
     // Keep any filled instances we already generated.
     for (let event of events) {
-      for (let instance of event.instances) {
+      for (let instance of event.instancesTODOReplace) {
         if (!events.includes(instance)) {
           events.push(instance);
         }

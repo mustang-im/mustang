@@ -40,7 +40,7 @@ const RecurrenceType = {
 export class EWSEvent extends Event {
   calendar: EWSCalendar;
   parentEvent: EWSEvent;
-  readonly instances: ArrayColl<EWSEvent | null | undefined>;
+  readonly instancesTODOReplace: ArrayColl<EWSEvent | null | undefined>;
 
   get itemID(): string | null {
     return this.pID;
@@ -307,7 +307,7 @@ export class EWSEvent extends Event {
           m$ItemIds: {
             t$OccurrenceItemId: {
               RecurringMasterId: this.parentEvent.itemID,
-              InstanceIndex: this.parentEvent.instances.indexOf(this) + 1,
+              InstanceIndex: this.parentEvent.instancesTODOReplace.indexOf(this) + 1,
             },
           },
           DeleteType: "MoveToDeletedItems",
@@ -426,7 +426,7 @@ class EWSUpdateOccurrenceRequest {
 
   constructor(event: EWSEvent, attributes?: {[key: string]: string | boolean}) {
     this.itemChange.t$OccurrenceItemId.RecurringMasterId = event.parentEvent.itemID;
-    this.itemChange.t$OccurrenceItemId.InstanceIndex = event.parentEvent.instances.indexOf(event) + 1;
+    this.itemChange.t$OccurrenceItemId.InstanceIndex = event.parentEvent.instancesTODOReplace.indexOf(event) + 1;
     Object.assign(this.m$UpdateItem, attributes);
   }
 

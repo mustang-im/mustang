@@ -10,7 +10,7 @@ import type { DAVObject } from "tsdav";
 export class CalDAVEvent extends Event {
   declare calendar: CalDAVCalendar;
   declare parentEvent: CalDAVEvent;
-  declare readonly instances: ArrayColl<CalDAVEvent | null | undefined>;
+  declare readonly instancesTODOReplace: ArrayColl<CalDAVEvent | null | undefined>;
   /** URL of this specific Event on the server. null, if not yet saved on server. */
   url: URLString | null = null;
 
