@@ -13,7 +13,7 @@ function check(calString: string, data: RecurrenceInit, expected: [number, numbe
 }
 
 test("Daily with interval and end date", () => {
-  check("RRULE:FREQ=DAILY;UNTIL=20000105T000000;INTERVAL=2", {
+  check("RRULE:FREQ=DAILY;UNTIL=20000105T000000Z;INTERVAL=2", {
     seriesStartTime: new Date(2000, 0, 1),
     seriesEndTime: new Date(2000, 0, 5),
     frequency: Frequency.Daily,
@@ -31,7 +31,7 @@ test("Daily with interval and count", () => {
 });
 
 test("Daily with days and end date", () => {
-  check("RRULE:FREQ=DAILY;UNTIL=20000105T000000;BYDAY=SA,MO,WE", {
+  check("RRULE:FREQ=DAILY;UNTIL=20000105T000000Z;BYDAY=SA,MO,WE", {
     seriesStartTime: new Date(2000, 0, 1),
     seriesEndTime: new Date(2000, 0, 5),
     frequency: Frequency.Daily,
@@ -49,7 +49,7 @@ test("Daily with days and count", () => {
 });
 
 test("Weekly with interval and end date", () => {
-  check("RRULE:FREQ=WEEKLY;UNTIL=20000131T000000;INTERVAL=2", {
+  check("RRULE:FREQ=WEEKLY;UNTIL=20000131T000000Z;INTERVAL=2", {
     seriesStartTime: new Date(2000, 0, 1),
     seriesEndTime: new Date(2000, 0, 31),
     frequency: Frequency.Weekly,
@@ -67,7 +67,7 @@ test("Weekly with interval and count", () => {
 });
 
 test("Weekly with days and end date", () => {
-  check("RRULE:FREQ=WEEKLY;UNTIL=20000131T000000;INTERVAL=3;BYDAY=SA,SU", {
+  check("RRULE:FREQ=WEEKLY;UNTIL=20000131T000000Z;INTERVAL=3;BYDAY=SA,SU", {
     seriesStartTime: new Date(2000, 0, 1),
     seriesEndTime: new Date(2000, 0, 31),
     frequency: Frequency.Weekly,
@@ -87,7 +87,7 @@ test("Weekly with days and count", () => {
 });
 
 test("Monthly with date and end date", () => {
-  check("RRULE:FREQ=MONTHLY;UNTIL=20001230T000000;INTERVAL=3", {
+  check("RRULE:FREQ=MONTHLY;UNTIL=20001230T000000Z;INTERVAL=3", {
     seriesStartTime: new Date(2000, 0, 31),
     seriesEndTime: new Date(2000, 11, 30),
     frequency: Frequency.Monthly,
@@ -105,7 +105,7 @@ test("Monthly with date and count", () => {
 });
 
 test("Monthly with day of week of month and end date", () => {
-  check("RRULE:FREQ=MONTHLY;UNTIL=20001201T000000;INTERVAL=3;BYDAY=2SU", {
+  check("RRULE:FREQ=MONTHLY;UNTIL=20001201T000000Z;INTERVAL=3;BYDAY=2SU", {
     seriesStartTime: new Date(2000, 0, 9),
     seriesEndTime: new Date(2000, 11, 1),
     frequency: Frequency.Monthly,
@@ -127,7 +127,7 @@ test("Monthly with day of week of month and count", () => {
 });
 
 test("Monthly with day of last week of month and end date", () => {
-  check("RRULE:FREQ=MONTHLY;UNTIL=20001201T000000;INTERVAL=3;BYDAY=-1SU", {
+  check("RRULE:FREQ=MONTHLY;UNTIL=20001201T000000Z;INTERVAL=3;BYDAY=-1SU", {
     seriesStartTime: new Date(2000, 0, 30),
     seriesEndTime: new Date(2000, 11, 1),
     frequency: Frequency.Monthly,
@@ -149,7 +149,7 @@ test("Monthly with day of last week of month and count", () => {
 });
 
 test("Yearly with date and end date", () => {
-  check("RRULE:FREQ=YEARLY;UNTIL=20021201T000000", {
+  check("RRULE:FREQ=YEARLY;UNTIL=20021201T000000Z", {
     seriesStartTime: new Date(2000, 1, 29),
     seriesEndTime: new Date(2002, 11, 1),
     frequency: Frequency.Yearly,
@@ -165,7 +165,7 @@ test("Yearly with date and count", () => {
 });
 
 test("Yearly with day of week of month and end date", () => {
-  check("RRULE:FREQ=YEARLY;UNTIL=20021201T000000;BYDAY=2SU", {
+  check("RRULE:FREQ=YEARLY;UNTIL=20021201T000000Z;BYDAY=2SU", {
     seriesStartTime: new Date(2000, 0, 9),
     seriesEndTime: new Date(2002, 11, 1),
     frequency: Frequency.Yearly,
@@ -185,7 +185,7 @@ test("Yearly with day of week of month and count", () => {
 });
 
 test("Yearly with day of last week of month and end date", () => {
-  check("RRULE:FREQ=YEARLY;UNTIL=20021201T000000;BYDAY=-1SU", {
+  check("RRULE:FREQ=YEARLY;UNTIL=20021201T000000Z;BYDAY=-1SU", {
     seriesStartTime: new Date(2000, 0, 30),
     seriesEndTime: new Date(2002, 11, 1),
     frequency: Frequency.Yearly,
