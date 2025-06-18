@@ -33,6 +33,17 @@ export enum iCalWeekday {
   SA = 6,
 }
 
+export interface RecurrenceInit {
+  startDate: Date;
+  endDate?: Date;
+  count?: number;
+  frequency: Frequency;
+  interval?: number;
+  weekdays?: Weekday[];
+  week?: number;
+  first?: Weekday;
+}
+
 /**
  * This class does not support all RFC 5545 recurrence rule parts, only
  * FREQ UNTIL COUNT INTERVAL and BYDAY.
@@ -42,55 +53,44 @@ export enum iCalWeekday {
  * The Outlook Web Access UI does allow a daily recurrence on specific weekdays,
  * but this is just a weekly recurrence with an interval of 1.
  */
-export interface RecurrenceInit {
+export class RecurrenceRule {
   /**
    * The date of the first occurrence; the same as the master event date.
    */
-  startDate: Date;
+  readonly startDate!: Date;
   /**
    * The date beyond which the recurrence stops.
    * If you also provide the count, the earlier is used.
    */
-  endDate?: Date;
+  readonly endDate: Date | null = null;
   /**
    * The number of occurrences beyond which the recurrence stops.
    * If also provide the end date, the earlier is used.
    */
-  count?: number;
+  readonly count: number = Infinity;
   /**
    * The base time period of the pattern.
    */
-  frequency: Frequency;
+  readonly frequency!: Frequency;
   /**
    * The interval between occurrences.
    * Note that in the case of occurrences that can happen multiple times in
    * a given week, this is the interval between each set of occurrences.
    */
-  interval?: number;
+  readonly interval: number = 1;
   /**
    * Limits occurrences to those that happen on these days of the week.
    */
-  weekdays?: Weekday[];
+  readonly weekdays: Weekday[] | null = null;
   /**
    * The week of the month; 5 means the last week in the month.
    * Applies to monthly and yearly repeating rules.
    */
-  week?: number;
+  readonly week: number = 0;
   /**
    * The first day of the week. Only affects weekly recurrences with multiple
    * days of the week and an interval. Defaults to Monday.
    */
-  first?: Weekday;
-}
-
-export class RecurrenceRule implements Readonly<RecurrenceInit> {
-  readonly startDate!: Date;
-  readonly endDate: Date | null = null;
-  readonly count: number = Infinity;
-  readonly frequency!: Frequency;
-  readonly interval: number = 1;
-  readonly weekdays: Weekday[] | null = null;
-  readonly week: number = 0;
   readonly first: Weekday = Weekday.Monday;
   /** The occurrences that have already been calculated. */
   readonly occurrences: Date[] = [];
