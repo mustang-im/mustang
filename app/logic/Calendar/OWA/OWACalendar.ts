@@ -96,8 +96,8 @@ export class OWACalendar extends Calendar {
         events.add(event);
         if (parentEvent && event.recurrenceStartTime) {
           event.parentEvent = parentEvent; // should already be correct
-          let occurrences = parentEvent.recurrenceRule.getOccurrencesByDate(event.recurrenceStartTime);
-          parentEvent.replaceInstance(occurrences.length - 1, event);
+          parentEvent.exceptions.add(event);
+          // how to remove original instance for this date?
         }
         if (item.ModifiedOccurrences?.length && event.recurrenceRule) {
           await this.getEvents(item.ModifiedOccurrences.map(item => item.ItemId.Id), events, event);

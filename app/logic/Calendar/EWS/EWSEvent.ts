@@ -85,8 +85,8 @@ export class EWSEvent extends Event {
       this.recurrenceRule = this.newRecurrenceRule(xmljs.Recurrence);
       if (xmljs.DeletedOccurrences?.DeletedOccurrence) {
         for (let deletion of ensureArray(xmljs.DeletedOccurrences.DeletedOccurrence)) {
-          let occurrences = this.recurrenceRule.getOccurrencesByDate(sanitize.date(deletion.Start));
-          this.replaceInstance(occurrences.length - 1, null);
+          this.exclusions.add(sanitize.date(deletion.Start));
+          // how to remove original instance or exception for this date?
         }
       }
     } else if (this.recurrenceRule) {

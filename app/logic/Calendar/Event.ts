@@ -666,29 +666,6 @@ export class Event extends Observable {
   }
 
   /**
-   * Removes any previous instance at that position from the calendar
-   * (and also database when an exception subsequently becomes an exclusion).
-   */
-  replaceInstance(index: number, occurrence: Event) {
-    let previous = this.instancesTODOReplace.get(index);
-    this.instancesTODOReplace.set(index, occurrence);
-    // There won't be a previous instance if this is a new recurring event
-    // and we haven't filled its occurrences yet. Or, this might be an update
-    // to a known existing exception.
-    if (!previous || previous == occurrence) {
-      return;
-    }
-    // Three cases remain:
-    // 1. Deleting a filled instance.
-    // 2. Replacing a filled instance with an exception.
-    // 3. Deleting an exception. In this case, also need to delete from db.
-    this.calendar.events.remove(previous);
-    if (previous.dbID) {
-      this.calendar.storage.deleteEvent(previous).catch(this.calendar.errorCallback);
-    }
-  }
-
-  /**
    * Deletes the event and any subsequent instances that are not exceptions.
    */
   async truncateRecurrence() {

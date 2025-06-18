@@ -241,8 +241,8 @@ export class EWSCalendar extends Calendar {
           events.push(event);
         }
         if (parentEvent && event.recurrenceStartTime) {
-          let occurrences = parentEvent.recurrenceRule.getOccurrencesByDate(event.recurrenceStartTime);
-          parentEvent.replaceInstance(occurrences.length - 1, event)
+          parentEvent.exceptions.add(event);
+          // how to remove original instance for this date?
         }
         if (item.ModifiedOccurrences?.Occurrence && event.recurrenceRule) {
           await this.getEvents(ensureArray(item.ModifiedOccurrences.Occurrence).map(item => item.ItemId), events, event);
