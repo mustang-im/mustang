@@ -60,7 +60,7 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
    *
    * Used by `timesMatch()` to see whether the time changes.
    * Given that master.startTime == seriesStartTime and
-   * the master.endTime = masterStartTime + masterDuration,
+   * the master.endTime == masterStartTime + masterDuration,
    * we can detect changes in the master start and end time.
    */
   masterDuration: number;
@@ -200,7 +200,7 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
    * But we can't check the series length though, as the UI never sets one.
    *
    * Caveat: If you change from weekly to 7-day repetition,
-   * this still (intentionally) returns true.
+   * this still (intentionally) returns false.
    */
   timesMatch(rule: RecurrenceRule) {
     let allWeekdays = [0, 1, 2, 3, 4, 5, 6];

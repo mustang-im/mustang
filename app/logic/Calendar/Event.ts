@@ -659,8 +659,8 @@ export class Event extends Observable {
     let count = master.instances.contents.slice(pos + 1).findLastIndex(event => event?.dbID) + pos + 1;
     this.calendar.events.removeAll(master.instances.splice(count).contents.filter(Boolean));
     if (master.recurrenceRule.getOccurrenceByIndex(count + 1)) {
-      let { masterDuration: duration, seriesStartTime, frequency, interval, weekdays, week, first } = master.recurrenceRule;
-      master.recurrenceRule = new RecurrenceRule({ masterDuration: duration, seriesStartTime, count, frequency, interval, weekdays, week, first }); // (rule is always compatible)
+      let { masterDuration, seriesStartTime, frequency, interval, weekdays, week, first } = master.recurrenceRule;
+      master.recurrenceRule = new RecurrenceRule({ masterDuration, seriesStartTime, count, frequency, interval, weekdays, week, first }); // (rule is always compatible)
       await master.saveToServer();
     }
     let exclusions = [];

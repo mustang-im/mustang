@@ -112,7 +112,7 @@ export class OWAEvent extends Event {
   }
 
   protected newRecurrenceRule(json: any): RecurrenceRule {
-    let duration = this.duration;
+    let masterDuration = this.duration;
     let seriesStartTime = this.startTime;
     let seriesEndTime: Date | null = null;
     if (json.RecurrenceRange.EndDate) {
@@ -132,7 +132,7 @@ export class OWAEvent extends Event {
     let weekdays = extractWeekdays(pattern.DaysOfWeek);
     let week = sanitize.integer(WeekOfMonth[pattern.DayOfWeekIndex], 0);
     let first = sanitize.integer(Weekday[pattern.FirstDayOfWeek], Weekday.Monday);
-    return new RecurrenceRule({ masterDuration: duration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
+    return new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
   }
 
   get outgoingInvitation() {

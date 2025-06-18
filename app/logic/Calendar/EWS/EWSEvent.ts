@@ -114,7 +114,7 @@ export class EWSEvent extends Event {
   }
 
   newRecurrenceRule(xmljs: any): RecurrenceRule {
-    let duration = this.duration;
+    let masterDuration = this.duration;
     let seriesStartTime = this.startTime;
     let seriesEndTime: Date | null = null;
     if (xmljs.EndDateRecurrence) {
@@ -135,7 +135,7 @@ export class EWSEvent extends Event {
     let weekdays = extractWeekdays(pattern.DaysOfWeek);
     let week = sanitize.integer(WeekOfMonth[pattern.DayOfWeekIndex], 0);
     let first = sanitize.integer(Weekday[pattern.FirstDayOfWeek], Weekday.Monday);
-    return new RecurrenceRule({ masterDuration: duration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
+    return new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
   }
 
   get outgoingInvitation() {
