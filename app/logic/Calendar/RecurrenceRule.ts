@@ -34,8 +34,8 @@ export enum iCalWeekday {
 }
 
 export interface RecurrenceInit {
-  startDate: Date;
-  endDate?: Date;
+  seriesStartTime: Date;
+  seriesEndTime?: Date;
   count?: number;
   frequency: Frequency;
   interval?: number;
@@ -53,7 +53,7 @@ export interface RecurrenceInit {
  * The Outlook Web Access UI does allow a daily recurrence on specific weekdays,
  * but this is just a weekly recurrence with an interval of 1.
  */
-export class RecurrenceRule {
+export class RecurrenceRule implements Readonly<RecurrenceInit> {
   /**
    * The time of the first occurrence in the series.
    * The same as the master event date.
@@ -119,21 +119,21 @@ export class RecurrenceRule {
     this.hours = start.getHours();
     this.minutes = start.getMinutes();
     this.seconds = start.getSeconds();
-    // this.fillOccurrences(this.count, this.endDate || new Date(Date.now() + 1e11));
+    // this.fillOccurrences(this.count, this.seriesEndTime || new Date(Date.now() + 1e11));
   }
 
-  static fromCalString(startDate: Date, calString: string): RecurrenceRule {
+  static fromCalString(seriesStartTime: Date, calString: string): RecurrenceRule {
     if (!/^RRULE:/i.test(sanitize.string(calString))) {
       throw new Error("Malformed recurrence rule string missing RRULE:");
     }
-    let { FREQ: frequency, UNTIL: endDate, COUNT: count, INTERVAL: interval, BYDAY: byday, WKST: first } = Object.fromEntries(calString.slice(6).toUpperCase().split(";").map(part => part.split("=")));
+    let { FREQ: frequency, UNTIL: seriesEndTime, COUNT: count, INTERVAL: interval, BYDAY: byday, WKST: first } = Object.fromEntries(calString.slice(6).toUpperCase().split(";").map(part => part.split("=")));
     if (!Object.values(Frequency).includes(frequency)) {
       throw new Error(`Malformed ${frequency} frequency recurrence rule string`);
     }
-    let data: RecurrenceInit = { startDate, frequency };
-    if (endDate) {
-      data.endDate = sanitizeCalDate(endDate);
-      if (data.endDate < data.startDate) {
+    let data: RecurrenceInit = { seriesStartTime, frequency };
+    if (seriesEndTime) {
+      data.seriesEndTime = sanitizeCalDate(seriesEndTime);
+      if (data.seriesEndTime < data.seriesStartTime) {
         throw new Error("Malformed end date in recurrence rule string");
       }
     }
@@ -202,14 +202,14 @@ export class RecurrenceRule {
         ruleWeekdays.includes(weekday) == thisWeekdays.includes(weekday));
   }
 
-  getOccurrencesByDate(endDate: Date, startDate: Date = this.seriesStartTime): Date[] {
-    if (this.seriesEndTime && this.seriesEndTime < endDate) {
-      endDate = this.seriesEndTime;
+  getOccurrencesByDate(seriesEndTime: Date, seriesStartTime: Date = this.seriesStartTime): Date[] {
+    if (this.seriesEndTime && this.seriesEndTime < seriesEndTime) {
+      seriesEndTime = this.seriesEndTime;
     }
-    if (this.occurrences.length < this.count && this.occurrences.at(-1)! < endDate) {
-      this.fillOccurrences(this.count, endDate);
+    if (this.occurrences.length < this.count && this.occurrences.at(-1)! < seriesEndTime) {
+      this.fillOccurrences(this.count, seriesEndTime);
     }
-    return this.occurrences.filter(date => date >= startDate && date <= endDate);
+    return this.occurrences.filter(date => date >= seriesStartTime && date <= seriesEndTime);
   }
 
   /** 1-indexed */
@@ -223,7 +223,7 @@ export class RecurrenceRule {
     return this.occurrences[index - 1];
   }
 
-  fillOccurrences(count: number, endDate?: Date) {
+  fillOccurrences(count: number, seriesEndTime?: Date) {
     while (this.occurrences.length < count) {
       switch (this.frequency) {
       case Frequency.Daily:
@@ -280,7 +280,7 @@ export class RecurrenceRule {
         occurrence.setDate(-6);
         this.day = occurrence.getDate();
       }
-      if (endDate && occurrence > endDate) {
+      if (seriesEndTime && occurrence > seriesEndTime) {
         break;
       }
       if (this.weekdays && !this.weekdays.includes(occurrence.getDay())) {

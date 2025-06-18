@@ -117,17 +117,17 @@ export class EWSEvent extends Event {
   }
 
   newRecurrenceRule(xmljs: any): RecurrenceRule {
-    let startDate = this.startTime;
-    let endDate: Date | null = null;
+    let seriesStartTime = this.startTime;
+    let seriesEndTime: Date | null = null;
     if (xmljs.EndDateRecurrence) {
       // These dates don't have a time, but they do have a time zone suffixed.
-      if (!startDate) {
-        this.startTime = startDate = sanitize.date(xmljs.EndDateRecurrence.StartDate.slice(0, 10));
+      if (!seriesStartTime) {
+        this.startTime = seriesStartTime = sanitize.date(xmljs.EndDateRecurrence.StartDate.slice(0, 10));
       }
-      endDate = sanitize.date(xmljs.EndDateRecurrence.EndDate.slice(0, 10));
+      seriesEndTime = sanitize.date(xmljs.EndDateRecurrence.EndDate.slice(0, 10));
       // RecurrenceRule wants this to be at least the same time as the endTime
-      endDate.setDate(endDate.getDate() + 1);
-      endDate.setTime(endDate.getTime() - 1000);
+      seriesEndTime.setDate(seriesEndTime.getDate() + 1);
+      seriesEndTime.setTime(seriesEndTime.getTime() - 1000);
     }
     let count = sanitize.integer(xmljs.NumberedRecurrence?.NumberOfOccurrences, Infinity);
     let key = Object.keys(RecurrenceType).find(key => key in xmljs);
@@ -137,7 +137,7 @@ export class EWSEvent extends Event {
     let weekdays = extractWeekdays(pattern.DaysOfWeek);
     let week = sanitize.integer(WeekOfMonth[pattern.DayOfWeekIndex], 0);
     let first = sanitize.integer(Weekday[pattern.FirstDayOfWeek], Weekday.Monday);
-    return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
+    return new RecurrenceRule({ seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
   }
 
   get outgoingInvitation() {

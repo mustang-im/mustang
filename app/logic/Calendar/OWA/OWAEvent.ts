@@ -115,17 +115,17 @@ export class OWAEvent extends Event {
   }
 
   protected newRecurrenceRule(json: any): RecurrenceRule {
-    let startDate = this.startTime;
-    let endDate: Date | null = null;
+    let seriesStartTime = this.startTime;
+    let seriesEndTime: Date | null = null;
     if (json.RecurrenceRange.EndDate) {
       // These dates don't have a time, but they do have a time zone suffixed.
-      if (!startDate) {
-        this.startTime = startDate = sanitize.date(json.RecurrenceRange.StartDate.slice(0, 10));
+      if (!seriesStartTime) {
+        this.startTime = seriesStartTime = sanitize.date(json.RecurrenceRange.StartDate.slice(0, 10));
       }
-      endDate = sanitize.date(json.RecurrenceRange.EndDate.slice(0, 10));
+      seriesEndTime = sanitize.date(json.RecurrenceRange.EndDate.slice(0, 10));
       // RecurrenceRule wants this to be at least the same time as the endTime
-      endDate.setDate(endDate.getDate() + 1);
-      endDate.setTime(endDate.getTime() - 1000);
+      seriesEndTime.setDate(seriesEndTime.getDate() + 1);
+      seriesEndTime.setTime(seriesEndTime.getTime() - 1000);
     }
     let count = sanitize.integer(json.RecurrenceRange.NumberOfOccurrences, Infinity);
     let pattern = json.RecurrencePattern;
@@ -134,7 +134,7 @@ export class OWAEvent extends Event {
     let weekdays = extractWeekdays(pattern.DaysOfWeek);
     let week = sanitize.integer(WeekOfMonth[pattern.DayOfWeekIndex], 0);
     let first = sanitize.integer(Weekday[pattern.FirstDayOfWeek], Weekday.Monday);
-    return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
+    return new RecurrenceRule({ seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
   }
 
   get outgoingInvitation() {
