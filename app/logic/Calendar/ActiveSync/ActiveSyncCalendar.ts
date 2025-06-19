@@ -146,7 +146,7 @@ export class ActiveSyncCalendar extends Calendar implements ActiveSyncPingable {
           for (let exception of ensureArray(item.ApplicationData.Exceptions?.Exception)) {
             if (exception.Deleted != "1") {
               let exceptionTime = fromCompact(exception.ExceptionStartTime);
-              let existing = event.exceptions.find(event => event.recurrenceStartTime.getDate() == exceptionTime.getTime());
+              let existing = event.exceptions.find(event => event.recurrenceStartTime.getTime() == exceptionTime.getTime());
               if (existing) {
                 existing.fromWBXML(exception);
                 await existing.saveLocally();
