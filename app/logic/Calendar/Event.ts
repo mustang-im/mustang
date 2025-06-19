@@ -153,12 +153,14 @@ export class Event extends Observable {
    */
   private setRecurrenceRule(rule: RecurrenceRule) {
     assert(this.recurrenceCase == RecurrenceCase.Normal || this.recurrenceCase == RecurrenceCase.Master, "Instances can't themselves recur");
-    if (!this._recurrenceRule?.timesMatch(rule)) {
+    if (this.calendar && !this._recurrenceRule?.timesMatch(rule)) {
       this.clearExceptions();
     }
     this._recurrenceRule = rule;
     this.recurrenceCase = RecurrenceCase.Master; // notifies
-    this.fillRecurrences();
+    if (this.calendar) {
+      this.fillRecurrences();
+    }
   }
   /** Links back to the recurring master.
    * Only for RecurrenceCase == Instance or Exception */
@@ -233,7 +235,7 @@ export class Event extends Observable {
 
   /** in seconds */
   get duration(): number {
-    let seconds = Math.round((this.endTime.getTime() - this.startTime.getTime()) / 1000);
+    let seconds = Math.round((this.endTime?.getTime() - this.startTime?.getTime()) / 1000);
     if (this.allDay) {
       return Math.round(Math.ceil(seconds / k1DayS) * k1DayS); // return entire days, not 1 second less
     }
