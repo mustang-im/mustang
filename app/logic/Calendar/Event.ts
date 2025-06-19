@@ -153,12 +153,12 @@ export class Event extends Observable {
    */
   private setRecurrenceRule(rule: RecurrenceRule) {
     assert(this.recurrenceCase == RecurrenceCase.Normal || this.recurrenceCase == RecurrenceCase.Master, "Instances can't themselves recur");
+    this._recurrenceRule = rule;
+    this.recurrenceCase = RecurrenceCase.Master; // notifies
     if (!this._recurrenceRule?.timesMatch(rule)) {
       this.clearExceptions();
     }
-    this._recurrenceRule = rule;
-    this.recurrenceCase = RecurrenceCase.Master; // notifies
-    this.instances.clear();
+    this.generateRecurringInstances();
   }
   /** Links back to the recurring master.
    * Only for RecurrenceCase == Instance or Exception */
@@ -444,7 +444,7 @@ export class Event extends Observable {
   }
 
   /** Call this whenever the master changes */
-  protected generateRecurringInstances(endDate?: Date) {
+  generateRecurringInstances(endDate?: Date) {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Only for master");
     this.instances.clear();
     this.fillRecurrences(endDate);
@@ -653,11 +653,13 @@ export class Event extends Observable {
   /**
    * Ensures that all recurring instances exist up to the provided date.
    * Only for recurrenceCase == Master
+   *
+   * TODO Call this when the user scrolls further than the default fill date.
    */
   fillRecurrences(seriesEndTime: Date = new Date(Date.now() + 1e11)): Collection<Event> {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Not a recurrence master");
     if (this.instances.hasItems) {
-      // XXX what if we need to fill more recurrences when the user scrolls?
+      // TODO Fill more, if seriesEndTime >> last.startTime
       return this.instances;
     }
     let occurrences = this.recurrenceRule.getOccurrencesByDate(seriesEndTime);
@@ -693,9 +695,9 @@ export class Event extends Observable {
           .catch(this.calendar.errorCallback); // TODO server? No, server will delete when it sees the rule change.
       }
     }
-    this.instances.clear();
     this.exceptions.clear();
     this.exclusions.clear();
+    this.generateRecurringInstances();
   }
 
   /**

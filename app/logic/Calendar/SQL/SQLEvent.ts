@@ -162,13 +162,13 @@ export class SQLEvent extends Event {
         event.parentEvent = parentEvent;
         event.recurrenceStartTime = sanitize.date(row.recurrenceStartTime);
         parentEvent.exceptions.add(event);
-        parentEvent.instances.clear();
-        parentEvent.fillRecurrences();
+        parentEvent.generateRecurringInstances(); // TODO the exception should keep the parent in sync automatically
       }
     }
     if (row.recurrenceRule) {
       event.recurrenceRule = RecurrenceRule.fromCalString(event.duration, event.startTime, row.recurrenceRule);
       await SQLEvent.readExclusions(event);
+      event.generateRecurringInstances(); // TODO the exclusion should keep the parent in sync automatically
     }
 
     await SQLEvent.readParticipants(event);
