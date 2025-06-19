@@ -26,14 +26,23 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
   if (event.allDay) {
     lines.push(["DTSTART", "VALUE", "DATE", date2ical(event.startTime)]);
     lines.push(["DTEND", "VALUE", "DATE", date2ical(event.endTime)]);
+    if (event.recurrenceStartTime) {
+      lines.push(["RECURRENCE-ID", "VALUE", "DATE", date2ical(event.recurrenceStartTime)]);
+    }
   } else {
     let timezone = event.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (timezone == "UTC") {
       lines.push(["DTSTART", "VALUE", "DATE-TIME", utc2ical(event.startTime)]);
       lines.push(["DTEND", "VALUE", "DATE-TIME", utc2ical(event.endTime)]);
+      if (event.recurrenceStartTime) {
+        lines.push(["RECURRENCE-ID", "VALUE", "DATE-TIME", utc2ical(event.recurrenceStartTime)]);
+      }
     } else {
       lines.push(["DTSTART", "VALUE", "DATE-TIME", "TZID", timezone, datetime2ical(event.startTime, timezone)]);
       lines.push(["DTEND", "VALUE", "DATE-TIME", "TZID", timezone, datetime2ical(event.endTime, timezone)]);
+      if (event.recurrenceStartTime) {
+        lines.push(["RECURRENCE-ID", "VALUE", "DATE-TIME", "TZID", timezone, datetime2ical(event.recurrenceStartTime, timezone)]);
+      }
     }
   }
   if (event.location) {

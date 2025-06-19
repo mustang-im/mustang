@@ -13,7 +13,7 @@ export class ICalEntry {
   constructor(line: string) {
     this.line = line;
     let pos = line.search(/[;:]/);
-    this.name = line.slice(0, pos).replace(/.+\./, "").toLowerCase();
+    this.name = line.slice(0, pos).replace(/.+\.|-/g, "").toLowerCase();
     line = line.slice(pos);
     while (/^;([-\w]+)=("?)((\\?.)*?)\2(?=[;:])/.test(line)) {
       let value = this.properties[RegExp.$1.toLowerCase()];
