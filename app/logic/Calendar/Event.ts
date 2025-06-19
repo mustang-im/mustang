@@ -249,6 +249,19 @@ export class Event extends Observable {
       this.copyFromRecurrenceMaster(parentEvent);
       this.recurrenceCase = RecurrenceCase.Instance;
     }
+    this.instances.subscribe(() => {
+      if (this.instances.hasItems) {
+        console.log("master event", this.title, "instance count", this.instances.length);
+      }
+    })
+    this.instances.registerObserver({
+      added(events) {
+        console.log("master event", this.title, "added instances", events);
+      },
+      removed(events) {
+        console.log("master event", this.title, "removed instances", events);
+      },
+    });
   }
 
   /** in seconds */

@@ -21,10 +21,6 @@ export class Calendar extends Account {
   storage: CalendarStorage | null = null;
   syncState: string | null = null;
 
-  newEvent(parentEvent?: Event): Event {
-    return new Event(this, parentEvent);
-  }
-
   /** Calculated from `events`. Returns
    * - Single events
    * - Recurring instances generated
@@ -36,7 +32,24 @@ export class Calendar extends Account {
    */
   eventsWithRecurrences: Collection<Event> = recurrenceColl(this.events);
 
-  protected invalidateRecurringCache() {
+  constructor() {
+    super();
+    let calendar = this;
+    this.eventsWithRecurrences.subscribe(() => {
+      console.log(calendar.name, "events count", this.eventsWithRecurrences.length);
+    });
+    this.eventsWithRecurrences.registerObserver({
+      added(events) {
+        console.log(calendar.name, "events added", events);
+      },
+      removed(events) {
+        console.log(calendar.name, "events removed", events);
+      }
+    })
+  }
+
+  newEvent(parentEvent?: Event): Event {
+    return new Event(this, parentEvent);
   }
 
   getIncomingInvitationFor(message: EMail) {

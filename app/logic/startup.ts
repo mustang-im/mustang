@@ -38,6 +38,15 @@ export async function getStartObjects(): Promise<void> {
   appGlobal.collectedAddressbook = appGlobal.addressbooks.get(1);
   readSavedSearches();
   await loadTagsList();
+
+  appGlobal.calendarEvents.registerObserver({
+    added(events) {
+      console.log("global events added", events);
+    },
+    removed(events) {
+      console.log("global events removed", events);
+    },
+  })
 }
 
 /**
