@@ -242,7 +242,7 @@ export class ComposeActions {
     await account.send(this.email);
 
     this.email.folder = previousFolder;
-    await EMailProcessorList.runProcessors(ProcessingStartOn.Sent, this.email);
+    // await EMailProcessorList.runProcessors(ProcessingStartOn.Sent, this.email);
     this.deleteDrafts(previousDrafts)
       .catch(backgroundError);
   }

@@ -7,10 +7,8 @@ export class EMailProcessorList {
   static processors = new ArrayColl<EMailProcessor>();
 
   static async runProcessors(step: ProcessingStartOn, email: EMail, mime?: PostalMime) {
-    for (let processor of EMailProcessorList.processors) {
-      if (processor.runOn != step) {
-        continue;
-      }
+    let processors = EMailProcessorList.processors.filterOnce(p => p.runOn == step);
+    for (let processor of processors) {
       await processor.process(email, mime);
     }
   }

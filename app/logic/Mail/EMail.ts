@@ -185,13 +185,17 @@ export class EMail extends Message {
 
   async addTag(tag: Tag) {
     this.tags.add(tag);
-    await this.storage.saveMessageTags(this);
+    if (this.dbID) {
+      await this.storage.saveMessageTags(this);
+    }
     await this.addTagOnServer(tag);
   }
 
   async removeTag(tag: Tag) {
     this.tags.remove(tag);
-    await this.storage.saveMessageTags(this);
+    if (this.dbID) {
+      await this.storage.saveMessageTags(this);
+    }
     await this.removeTagOnServer(tag);
   }
 
