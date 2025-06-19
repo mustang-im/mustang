@@ -155,7 +155,7 @@ export class Event extends Observable {
    * This is a dynamic collection, and will be updated automatically
    * when the master changes or the recurrence rule changes.
    */
-  instances: ArrayColl<Event>;
+  readonly instances = new ArrayColl<Event>;
   /**
    * Only for RecurrenceCase == Master
    *
@@ -163,7 +163,7 @@ export class Event extends Observable {
    * be an recurrence instance, but exceptionally, there is none
    * on that specific day/time.
    */
-  exclusions: ArrayColl<Date>;
+  readonly exclusions = new ArrayColl<Date>;
   /**
    * Only for RecurrenceCase == Master
    *
@@ -175,9 +175,7 @@ export class Event extends Observable {
    * `exceptions.get().recurrenceStartTime` contains the time of the
    * normal instance that this exception replaces.
    */
-  exceptions: ArrayColl<Event>;
-  /** Only for RecurrenceCase == Master */
-  protected unsubscribeMaster: () => void;
+  readonly exceptions = new ArrayColl<Event>;
 
   @notifyChangedProperty
   alarm: Date | null = null;
@@ -400,25 +398,6 @@ export class Event extends Observable {
     return true;
   }
 
-  /** TODO move into recurrenceRule setter */
-  protected observeMaster() {
-    if (this.recurrenceCase == RecurrenceCase.Master) {
-      this.instances = new ArrayColl<Event>();
-      this.exclusions = new ArrayColl<Date>();
-      this.exceptions = new ArrayColl<Event>();
-      this.unsubscribeMaster = this.subscribe(() =>
-        this.generateRecurringInstances());
-    } else if (this.unsubscribeMaster) {
-      this.instances.clear();
-      this.exclusions.clear();
-      this.exceptions.clear();
-      this.instances = null;
-      this.exclusions = null;
-      this.exceptions = null;
-      this.unsubscribeMaster();
-    }
-  }
-
   /** Call this whenever the master changes */
   protected generateRecurringInstances(endDate?: Date) {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Only for master");
@@ -525,8 +504,8 @@ export class Event extends Observable {
   async deleteLocally() {
     assert(this.calendar, "To delete an event, it needs to be in a calendar first");
     assert(this.calendar.storage, "To delete an event, the calendar needs to be saved first");
-    // Removes instances
-    this.recurrenceRule = null;
+    // this.recurrenceRule = null; is overkill for removing exceptions; the database already cascades the delete
+    this.calendar.events.remove(this.exceptions);
     this.calendar.events.remove(this);
     if (this.dbID) {
       await this.calendar.storage.deleteEvent(this);

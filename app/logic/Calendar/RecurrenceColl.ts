@@ -1,16 +1,14 @@
 import { Event, RecurrenceCase } from "./Event";
-import type { Collection } from "svelte-collections";
+import { mergeColls, ArrayColl } from "svelte-collections";
 
-export function recurrenceColl(events: Collection<Event>) {
-  return events.flatMap(mapToEvents);
+export function recurrenceColl(events: ArrayColl<Event>) {
+  return mergeColls(events.map(mapToEvents));
 }
 
-function mapToEvents(event: Event): Event | Collection<Event> | null {
-  if (event == null) {
-    return null;
-  } else if (event.recurrenceCase == RecurrenceCase.Master) {
+function mapToEvents(event: Event): ArrayColl<Event> {
+  if (event.recurrenceCase == RecurrenceCase.Master) {
     return event.instances;
   } else {
-    return event;
+    return new ArrayColl([event]);
   }
 }

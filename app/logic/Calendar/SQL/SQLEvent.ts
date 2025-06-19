@@ -74,7 +74,7 @@ export class SQLEvent extends Event {
       let index = event.recurrenceRule.getIndexOfOccurrence(exclusion);
       await (await getDatabase()).run(sql`
         INSERT INTO eventExclusion (
-          recurrenceMasterEventID, recurrenceIndex,
+          recurrenceMasterEventID, recurrenceIndex
         ) VALUES (
           ${event.dbID}, ${index}
         )`);
@@ -162,6 +162,8 @@ export class SQLEvent extends Event {
         event.parentEvent = parentEvent;
         event.recurrenceStartTime = sanitize.date(row.recurrenceStartTime);
         parentEvent.exceptions.add(event);
+        parentEvent.instances.clear();
+        parentEvent.fillRecurrences();
       }
     }
     if (row.recurrenceRule) {
