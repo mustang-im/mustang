@@ -1,11 +1,12 @@
 import { expect, test } from 'vitest';
 import { Frequency, Weekday, RecurrenceInit, RecurrenceRule } from './RecurrenceRule';
 
-function check(calString: string, data: RecurrenceInit, expected: [number, number, number][]) {
-  let rule = new RecurrenceRule(data);
+function check(calString: string, data: Partial<RecurrenceInit>, expected: [number, number, number][]) {
+  data.masterDuration = 36e5;
+  let rule = new RecurrenceRule(data as RecurrenceInit);
   if (calString) {
     expect(rule.getCalString()).toEqual(calString);
-    let ruleFromString = RecurrenceRule.fromCalString(data.startDate, calString);
+    let ruleFromString = RecurrenceRule.fromCalString(36e5, data.seriesStartTime as Date, calString);
     expect(rule).toEqual(ruleFromString);
   }
   expect(rule.getOccurrenceByIndex(1)).toEqual(new Date(...expected[1]));
@@ -13,9 +14,9 @@ function check(calString: string, data: RecurrenceInit, expected: [number, numbe
 }
 
 test("Daily with interval and end date", () => {
-  check("RRULE:FREQ=DAILY;UNTIL=20000105T000000;INTERVAL=2", {
-    startDate: new Date(2000, 0, 1),
-    endDate: new Date(2000, 0, 5),
+  check("RRULE:FREQ=DAILY;UNTIL=20000105T000000Z;INTERVAL=2", {
+    seriesStartTime: new Date(2000, 0, 1),
+    seriesEndTime: new Date(2000, 0, 5),
     frequency: Frequency.Daily,
     interval: 2,
   }, [[2000, 0, 1], [2000, 0, 3], [2000, 0, 5]]);
@@ -23,7 +24,7 @@ test("Daily with interval and end date", () => {
 
 test("Daily with interval and count", () => {
   check("RRULE:FREQ=DAILY;COUNT=3;INTERVAL=2", {
-    startDate: new Date(2000, 0, 1),
+    seriesStartTime: new Date(2000, 0, 1),
     count: 3,
     frequency: Frequency.Daily,
     interval: 2,
@@ -31,9 +32,9 @@ test("Daily with interval and count", () => {
 });
 
 test("Daily with days and end date", () => {
-  check("RRULE:FREQ=DAILY;UNTIL=20000105T000000;BYDAY=SA,MO,WE", {
-    startDate: new Date(2000, 0, 1),
-    endDate: new Date(2000, 0, 5),
+  check("RRULE:FREQ=DAILY;UNTIL=20000105T000000Z;BYDAY=SA,MO,WE", {
+    seriesStartTime: new Date(2000, 0, 1),
+    seriesEndTime: new Date(2000, 0, 5),
     frequency: Frequency.Daily,
     weekdays: [Weekday.Saturday, Weekday.Monday, Weekday.Wednesday],
   }, [[2000, 0, 1], [2000, 0, 3], [2000, 0, 5]]);
@@ -41,7 +42,7 @@ test("Daily with days and end date", () => {
 
 test("Daily with days and count", () => {
   check("RRULE:FREQ=DAILY;COUNT=3;BYDAY=SA,SU", {
-    startDate: new Date(2000, 0, 1),
+    seriesStartTime: new Date(2000, 0, 1),
     count: 3,
     frequency: Frequency.Daily,
     weekdays: [Weekday.Saturday, Weekday.Sunday],
@@ -49,9 +50,9 @@ test("Daily with days and count", () => {
 });
 
 test("Weekly with interval and end date", () => {
-  check("RRULE:FREQ=WEEKLY;UNTIL=20000131T000000;INTERVAL=2", {
-    startDate: new Date(2000, 0, 1),
-    endDate: new Date(2000, 0, 31),
+  check("RRULE:FREQ=WEEKLY;UNTIL=20000131T000000Z;INTERVAL=2", {
+    seriesStartTime: new Date(2000, 0, 1),
+    seriesEndTime: new Date(2000, 0, 31),
     frequency: Frequency.Weekly,
     interval: 2,
   }, [[2000, 0, 1], [2000, 0, 15], [2000, 0, 29]]);
@@ -59,7 +60,7 @@ test("Weekly with interval and end date", () => {
 
 test("Weekly with interval and count", () => {
   check("RRULE:FREQ=WEEKLY;COUNT=3;INTERVAL=2", {
-    startDate: new Date(2000, 0, 1),
+    seriesStartTime: new Date(2000, 0, 1),
     count: 3,
     frequency: Frequency.Weekly,
     interval: 2,
@@ -67,9 +68,9 @@ test("Weekly with interval and count", () => {
 });
 
 test("Weekly with days and end date", () => {
-  check("RRULE:FREQ=WEEKLY;UNTIL=20000131T000000;INTERVAL=3;BYDAY=SA,SU", {
-    startDate: new Date(2000, 0, 1),
-    endDate: new Date(2000, 0, 31),
+  check("RRULE:FREQ=WEEKLY;UNTIL=20000131T000000Z;INTERVAL=3;BYDAY=SA,SU", {
+    seriesStartTime: new Date(2000, 0, 1),
+    seriesEndTime: new Date(2000, 0, 31),
     frequency: Frequency.Weekly,
     interval: 3,
     weekdays: [Weekday.Saturday, Weekday.Sunday],
@@ -78,7 +79,7 @@ test("Weekly with days and end date", () => {
 
 test("Weekly with days and count", () => {
   check("RRULE:FREQ=WEEKLY;COUNT=3;INTERVAL=3;BYDAY=SA,SU", {
-    startDate: new Date(2000, 0, 1),
+    seriesStartTime: new Date(2000, 0, 1),
     count: 3,
     frequency: Frequency.Weekly,
     interval: 3,
@@ -87,9 +88,9 @@ test("Weekly with days and count", () => {
 });
 
 test("Monthly with date and end date", () => {
-  check("RRULE:FREQ=MONTHLY;UNTIL=20001230T000000;INTERVAL=3", {
-    startDate: new Date(2000, 0, 31),
-    endDate: new Date(2000, 11, 30),
+  check("RRULE:FREQ=MONTHLY;UNTIL=20001230T000000Z;INTERVAL=3", {
+    seriesStartTime: new Date(2000, 0, 31),
+    seriesEndTime: new Date(2000, 11, 30),
     frequency: Frequency.Monthly,
     interval: 3,
   }, [[2000, 0, 31], [2000, 3, 30], [2000, 6, 31], [2000, 9, 31]]);
@@ -97,7 +98,7 @@ test("Monthly with date and end date", () => {
 
 test("Monthly with date and count", () => {
   check("RRULE:FREQ=MONTHLY;COUNT=3;INTERVAL=3", {
-    startDate: new Date(2000, 0, 31),
+    seriesStartTime: new Date(2000, 0, 31),
     count: 3,
     frequency: Frequency.Monthly,
     interval: 3,
@@ -105,9 +106,9 @@ test("Monthly with date and count", () => {
 });
 
 test("Monthly with day of week of month and end date", () => {
-  check("RRULE:FREQ=MONTHLY;UNTIL=20001201T000000;INTERVAL=3;BYDAY=2SU", {
-    startDate: new Date(2000, 0, 9),
-    endDate: new Date(2000, 11, 1),
+  check("RRULE:FREQ=MONTHLY;UNTIL=20001201T000000Z;INTERVAL=3;BYDAY=2SU", {
+    seriesStartTime: new Date(2000, 0, 9),
+    seriesEndTime: new Date(2000, 11, 1),
     frequency: Frequency.Monthly,
     interval: 3,
     weekdays: [Weekday.Sunday],
@@ -117,7 +118,7 @@ test("Monthly with day of week of month and end date", () => {
 
 test("Monthly with day of week of month and count", () => {
   check("RRULE:FREQ=MONTHLY;COUNT=3;INTERVAL=3;BYDAY=2SU", {
-    startDate: new Date(2000, 0, 9),
+    seriesStartTime: new Date(2000, 0, 9),
     count: 3,
     frequency: Frequency.Monthly,
     interval: 3,
@@ -127,9 +128,9 @@ test("Monthly with day of week of month and count", () => {
 });
 
 test("Monthly with day of last week of month and end date", () => {
-  check("RRULE:FREQ=MONTHLY;UNTIL=20001201T000000;INTERVAL=3;BYDAY=-1SU", {
-    startDate: new Date(2000, 0, 30),
-    endDate: new Date(2000, 11, 1),
+  check("RRULE:FREQ=MONTHLY;UNTIL=20001201T000000Z;INTERVAL=3;BYDAY=-1SU", {
+    seriesStartTime: new Date(2000, 0, 30),
+    seriesEndTime: new Date(2000, 11, 1),
     frequency: Frequency.Monthly,
     interval: 3,
     weekdays: [Weekday.Sunday],
@@ -139,7 +140,7 @@ test("Monthly with day of last week of month and end date", () => {
 
 test("Monthly with day of last week of month and count", () => {
   check("RRULE:FREQ=MONTHLY;COUNT=3;INTERVAL=3;BYDAY=-1SU", {
-    startDate: new Date(2000, 0, 30),
+    seriesStartTime: new Date(2000, 0, 30),
     count: 3,
     frequency: Frequency.Monthly,
     interval: 3,
@@ -149,25 +150,25 @@ test("Monthly with day of last week of month and count", () => {
 });
 
 test("Yearly with date and end date", () => {
-  check("RRULE:FREQ=YEARLY;UNTIL=20021201T000000", {
-    startDate: new Date(2000, 1, 29),
-    endDate: new Date(2002, 11, 1),
+  check("RRULE:FREQ=YEARLY;UNTIL=20021201T000000Z", {
+    seriesStartTime: new Date(2000, 1, 29),
+    seriesEndTime: new Date(2002, 11, 1),
     frequency: Frequency.Yearly,
   }, [[2000, 1, 29], [2001, 1, 28], [2002, 1, 28]]);
 });
 
 test("Yearly with date and count", () => {
   check("RRULE:FREQ=YEARLY;COUNT=3", {
-    startDate: new Date(2000, 1, 29),
+    seriesStartTime: new Date(2000, 1, 29),
     count: 3,
     frequency: Frequency.Yearly,
   }, [[2000, 1, 29], [2001, 1, 28], [2002, 1, 28]]);
 });
 
 test("Yearly with day of week of month and end date", () => {
-  check("RRULE:FREQ=YEARLY;UNTIL=20021201T000000;BYDAY=2SU", {
-    startDate: new Date(2000, 0, 9),
-    endDate: new Date(2002, 11, 1),
+  check("RRULE:FREQ=YEARLY;UNTIL=20021201T000000Z;BYDAY=2SU", {
+    seriesStartTime: new Date(2000, 0, 9),
+    seriesEndTime: new Date(2002, 11, 1),
     frequency: Frequency.Yearly,
     weekdays: [Weekday.Sunday],
     week: 2,
@@ -176,7 +177,7 @@ test("Yearly with day of week of month and end date", () => {
 
 test("Yearly with day of week of month and count", () => {
   check("RRULE:FREQ=YEARLY;COUNT=3;BYDAY=2SU", {
-    startDate: new Date(2000, 0, 9),
+    seriesStartTime: new Date(2000, 0, 9),
     count: 3,
     frequency: Frequency.Yearly,
     weekdays: [Weekday.Sunday],
@@ -185,9 +186,9 @@ test("Yearly with day of week of month and count", () => {
 });
 
 test("Yearly with day of last week of month and end date", () => {
-  check("RRULE:FREQ=YEARLY;UNTIL=20021201T000000;BYDAY=-1SU", {
-    startDate: new Date(2000, 0, 30),
-    endDate: new Date(2002, 11, 1),
+  check("RRULE:FREQ=YEARLY;UNTIL=20021201T000000Z;BYDAY=-1SU", {
+    seriesStartTime: new Date(2000, 0, 30),
+    seriesEndTime: new Date(2002, 11, 1),
     frequency: Frequency.Yearly,
     weekdays: [Weekday.Sunday],
     week: 5,
@@ -196,7 +197,7 @@ test("Yearly with day of last week of month and end date", () => {
 
 test("Yearly with day of last week of month and count", () => {
   check("RRULE:FREQ=YEARLY;COUNT=3;BYDAY=-1SU", {
-    startDate: new Date(2000, 0, 30),
+    seriesStartTime: new Date(2000, 0, 30),
     count: 3,
     frequency: Frequency.Yearly,
     weekdays: [Weekday.Sunday],

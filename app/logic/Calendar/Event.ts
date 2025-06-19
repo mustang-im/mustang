@@ -126,8 +126,40 @@ export class Event extends Observable {
   recurrenceCase = RecurrenceCase.Normal;
   /** Describes the recurrence pattern.
    * Only for RecurrenceCase == Master */
-  @notifyChangedProperty
-  recurrenceRule: RecurrenceRule | null = null;
+  private _recurrenceRule: RecurrenceRule | null = null;
+  get recurrenceRule(): RecurrenceRule | null {
+    return this._recurrenceRule!;
+  }
+  set recurrenceRule(rule: RecurrenceRule | null) {
+    if (rule) {
+      this.setRecurrenceRule(rule);
+    } else {
+      this.clearRecurrenceRule();
+    }
+  }
+  /**
+   * Removes a recurrence pattern and all instances and exceptions.
+   */
+  private clearRecurrenceRule() {
+    if (this._recurrenceRule) {
+      this.clearExceptions();
+      this._recurrenceRule = null;
+      this.recurrenceCase = RecurrenceCase.Normal; // notifies
+    }
+  }
+  /**
+   * Updates a recurrence pattern.
+   * Instances and exceptions are regenerated if necessary.
+   */
+  private setRecurrenceRule(rule: RecurrenceRule) {
+    assert(this.recurrenceCase == RecurrenceCase.Normal || this.recurrenceCase == RecurrenceCase.Master, "Instances can't themselves recur");
+    if (!this._recurrenceRule?.timesMatch(rule)) {
+      this.clearExceptions();
+    }
+    this._recurrenceRule = rule;
+    this.recurrenceCase = RecurrenceCase.Master; // notifies
+    this.fillRecurrences();
+  }
   /** Links back to the recurring master.
    * Only for RecurrenceCase == Instance or Exception */
   @notifyChangedProperty
@@ -609,13 +641,13 @@ export class Event extends Observable {
    * Ensures that all recurring instances exist up to the provided date.
    * Only for recurrenceCase == Master
    */
-  fillRecurrences(endDate: Date = new Date(Date.now() + 1e11)): Collection<Event> {
+  fillRecurrences(seriesEndTime: Date = new Date(Date.now() + 1e11)): Collection<Event> {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Not a recurrence master");
     if (this.instances.hasItems) {
       // XXX what if we need to fill more recurrences when the user scrolls?
       return this.instances;
     }
-    let occurrences = this.recurrenceRule.getOccurrencesByDate(endDate);
+    let occurrences = this.recurrenceRule.getOccurrencesByDate(seriesEndTime);
     for (let occurrence of occurrences) {
       if (this.exceptions.some(exception => exception.recurrenceStartTime.getTime() == occurrence.getTime())) {
         continue;
@@ -636,6 +668,9 @@ export class Event extends Observable {
     return this.instances;
   }
 
+  /**
+   * Used when a master recurrence rule is removed or changed incompatibly.
+   */
   clearExceptions() {
     this.calendar.events.removeAll(this.exceptions);
     for (let exception of this.exceptions) {
@@ -666,8 +701,8 @@ export class Event extends Observable {
     }
     let count = master.recurrenceRule.getIndexOfOccurrence(lastException) + (lastException > this.recurrenceStartTime ? 1 : 0);
     if (master.recurrenceRule.getOccurrenceByIndex(count)) {
-      let { startDate, frequency, interval, weekdays, week, first } = master.recurrenceRule;
-      master.recurrenceRule = new RecurrenceRule({ startDate, count, frequency, interval, weekdays, week, first });
+      let { masterDuration, seriesStartTime, frequency, interval, weekdays, week, first } = master.recurrenceRule;
+      master.recurrenceRule = new RecurrenceRule({ masterDuration, seriesStartTime, count, frequency, interval, weekdays, week, first });
       await master.saveToServer();
     }
     if (exclusions.length) {

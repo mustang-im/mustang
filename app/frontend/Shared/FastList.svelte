@@ -227,16 +227,14 @@
     if (index >= scrollPos && index < scrollPos + showRows - 1) {
       return;
     }
-    scrollPos = Math.min(index, Math.max(0, items.length - showRows));
+    scrollPos = Math.min(Math.max(scrollPos, 0), items.length - showRows);
   }
 
   function onScrollWheel(event: WheelEvent) {
-    let scrollRows = 3; // How many rows to scroll each time
-    if (event.deltaY > 0) {
-      scrollPos = Math.min(scrollPos + scrollRows, items.length - showRows);
-    } else if (event.deltaY < 0) {
-      scrollPos = Math.max(scrollPos - scrollRows, 0);
-    }
+    // How many rows to scroll each time, in either direction (+/-)
+    let scrollRows = Math.round(event.deltaY / (rowHeight || 20)); // 3 rows
+    scrollPos += scrollRows;
+    scrollPos = Math.min(Math.max(scrollPos, 0), items.length - showRows);
   }
 
   let scrollPosByScrollBar: NodeJS.Timeout = null;
@@ -252,7 +250,7 @@
     scrollPos = Math.round(scrollbarE.scrollTop / rowHeight); // TODO ceil()?
   }
 
-  function onSelectElement(clickedItem, event: MouseEvent) {
+  function onSelectElement(clickedItem: T, event: MouseEvent) {
     if (event.shiftKey) { // select whole range
       let firstItem = selectedItems.first;
       let lastItem = clickedItem;
@@ -287,7 +285,7 @@
     if (selectedItems.isEmpty) {
       return;
     }
-    selectedItems.removeAll(selectedItems.filter(a => !items.includes(a)));
+    selectedItems.removeAll(selectedItems.filterOnce(a => !items.includes(a)));
     if (selectedItems.isEmpty) {
       let newItem = items.getIndex(lastSelectedIndex) ?? items.first;
       if (!newItem) {
@@ -322,7 +320,7 @@
   }
 
   const singleSelectionObserver = new SingleSelectionObserver<T>();
-  singleSelectionObserver.onSelectedItem = item => {
+  singleSelectionObserver.onSelectedItem = (item: T) => {
     selectedItem = item;
   };
 </script>

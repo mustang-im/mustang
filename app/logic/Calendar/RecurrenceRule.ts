@@ -33,6 +33,18 @@ export enum iCalWeekday {
   SA = 6,
 }
 
+export interface RecurrenceInit {
+  masterDuration: number;
+  seriesStartTime: Date;
+  seriesEndTime?: Date;
+  count?: number;
+  frequency: Frequency;
+  interval?: number;
+  weekdays?: Weekday[];
+  week?: number;
+  first?: Weekday;
+}
+
 /**
  * This class does not support all RFC 5545 recurrence rule parts, only
  * FREQ UNTIL COUNT INTERVAL and BYDAY.
@@ -42,55 +54,54 @@ export enum iCalWeekday {
  * The Outlook Web Access UI does allow a daily recurrence on specific weekdays,
  * but this is just a weekly recurrence with an interval of 1.
  */
-export interface RecurrenceInit {
+export class RecurrenceRule implements Readonly<RecurrenceInit> {
   /**
-   * The date of the first occurrence; the same as the master event date.
+   * The duration of the master event.
+   *
+   * Used by `timesMatch()` to see whether the time changes.
+   * Given that master.startTime == seriesStartTime and
+   * the master.endTime == masterStartTime + masterDuration,
+   * we can detect changes in the master start and end time.
    */
-  startDate: Date;
+  masterDuration: number;
+  /**
+   * The time of the first occurrence in the series.
+   * The same as the master event date.
+   */
+  readonly seriesStartTime!: Date;
   /**
    * The date beyond which the recurrence stops.
    * If you also provide the count, the earlier is used.
    */
-  endDate?: Date;
+  readonly seriesEndTime: Date | null = null;
   /**
    * The number of occurrences beyond which the recurrence stops.
    * If also provide the end date, the earlier is used.
    */
-  count?: number;
+  readonly count: number = Infinity;
   /**
    * The base time period of the pattern.
    */
-  frequency: Frequency;
+  readonly frequency!: Frequency;
   /**
    * The interval between occurrences.
    * Note that in the case of occurrences that can happen multiple times in
    * a given week, this is the interval between each set of occurrences.
    */
-  interval?: number;
+  readonly interval: number = 1;
   /**
    * Limits occurrences to those that happen on these days of the week.
    */
-  weekdays?: Weekday[];
+  readonly weekdays: Weekday[] | null = null;
   /**
    * The week of the month; 5 means the last week in the month.
    * Applies to monthly and yearly repeating rules.
    */
-  week?: number;
+  readonly week: number = 0;
   /**
    * The first day of the week. Only affects weekly recurrences with multiple
    * days of the week and an interval. Defaults to Monday.
    */
-  first?: Weekday;
-}
-
-export class RecurrenceRule implements Readonly<RecurrenceInit> {
-  readonly startDate!: Date;
-  readonly endDate: Date | null = null;
-  readonly count: number = Infinity;
-  readonly frequency!: Frequency;
-  readonly interval: number = 1;
-  readonly weekdays: Weekday[] | null = null;
-  readonly week: number = 0;
   readonly first: Weekday = Weekday.Monday;
   /** The occurrences that have already been calculated. */
   readonly occurrences: Date[] = [];
@@ -109,30 +120,30 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
   constructor(data: RecurrenceInit) {
     Object.assign(this, data);
     // EditEvent mutates the start time, so clone it to be safe.
-    let startDate = this.startDate = new Date(this.startDate);
-    this.occurrences.push(startDate);
-    this.weekday = startDate.getDay();
-    this.year = startDate.getFullYear();
-    this.month = startDate.getMonth();
-    this.day = startDate.getDate();
-    this.hours = startDate.getHours();
-    this.minutes = startDate.getMinutes();
-    this.seconds = startDate.getSeconds();
-    // this.fillOccurrences(this.count, this.endDate || new Date(Date.now() + 1e11));
+    let start = this.seriesStartTime = new Date(this.seriesStartTime);
+    this.occurrences.push(start);
+    this.weekday = start.getDay();
+    this.year = start.getFullYear();
+    this.month = start.getMonth();
+    this.day = start.getDate();
+    this.hours = start.getHours();
+    this.minutes = start.getMinutes();
+    this.seconds = start.getSeconds();
+    // this.fillOccurrences(this.count, this.seriesEndTime || new Date(Date.now() + 1e11));
   }
 
-  static fromCalString(startDate: Date, calString: string): RecurrenceRule {
+  static fromCalString(masterDuration: number, seriesStartTime: Date, calString: string): RecurrenceRule {
     if (!/^RRULE:/i.test(sanitize.string(calString))) {
       throw new Error("Malformed recurrence rule string missing RRULE:");
     }
-    let { FREQ: frequency, UNTIL: endDate, COUNT: count, INTERVAL: interval, BYDAY: byday, WKST: first } = Object.fromEntries(calString.slice(6).toUpperCase().split(";").map(part => part.split("=")));
+    let { FREQ: frequency, UNTIL: seriesEndTime, COUNT: count, INTERVAL: interval, BYDAY: byday, WKST: first } = Object.fromEntries(calString.slice(6).toUpperCase().split(";").map(part => part.split("=")));
     if (!Object.values(Frequency).includes(frequency)) {
       throw new Error(`Malformed ${frequency} frequency recurrence rule string`);
     }
-    let data: RecurrenceInit = { startDate, frequency };
-    if (endDate) {
-      data.endDate = sanitizeCalDate(endDate);
-      if (data.endDate < data.startDate) {
+    let data: RecurrenceInit = { masterDuration, seriesStartTime, frequency };
+    if (seriesEndTime) {
+      data.seriesEndTime = sanitizeCalDate(seriesEndTime);
+      if (data.seriesEndTime < data.seriesStartTime) {
         throw new Error("Malformed end date in recurrence rule string");
       }
     }
@@ -163,8 +174,8 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
 
   getCalString(allDay: boolean): string {
     let rule: { FREQ: string, UNTIL?: string, COUNT?: number, INTERVAL?: number, BYDAY?: string, WKST?: string } = { FREQ: this.frequency };
-    if (this.endDate) {
-      rule.UNTIL = this.endDate.toISOString().replace(/-|:|\..../g, "").slice(0, allDay ? 8 : 16);
+    if (this.seriesEndTime) {
+      rule.UNTIL = this.seriesEndTime.toISOString().replace(/-|:|\..../g, "").slice(0, allDay ? 8 : 16);
     }
     if (this.count != Infinity) {
       rule.COUNT = this.count;
@@ -187,12 +198,16 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
    * recurs. The UI uses this function to tell whether the recurrence was
    * edited, as this will cause all exceptions and exclusions to be reset.
    * But we can't check the series length though, as the UI never sets one.
+   *
+   * Caveat: If you change from weekly to 7-day repetition,
+   * this still (intentionally) returns false.
    */
-  isCompatible(rule: RecurrenceRule) {
+  timesMatch(rule: RecurrenceRule) {
     let allWeekdays = [0, 1, 2, 3, 4, 5, 6];
     let thisWeekdays = this.weekdays || allWeekdays;
     let ruleWeekdays = rule.weekdays || allWeekdays;
-    return rule.startDate.getTime() == this.startDate.getTime() &&
+    return rule.masterDuration == this.masterDuration &&
+      rule.seriesStartTime.getTime() == this.seriesStartTime.getTime() &&
       rule.frequency == this.frequency &&
       rule.interval == this.interval &&
       rule.week == this.week &&
@@ -202,21 +217,21 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
   }
 
   countIs(count: number): boolean {
-    if (!this.endDate) {
+    if (!this.seriesEndTime) {
       return count == this.count;
     }
     this.fillOccurrences(Math.min(count + 1, this.count));
     return this.occurrences[count - 1] != null && this.occurrences[count] == null;
   }
 
-  getOccurrencesByDate(endDate: Date, startDate: Date = this.startDate): Date[] {
-    if (this.endDate && this.endDate < endDate) {
-      endDate = this.endDate;
+  getOccurrencesByDate(seriesEndTime: Date, seriesStartTime: Date = this.seriesStartTime): Date[] {
+    if (this.seriesEndTime && this.seriesEndTime < seriesEndTime) {
+      seriesEndTime = this.seriesEndTime;
     }
-    if (this.occurrences.length < this.count && this.occurrences.at(-1)! < endDate) {
-      this.fillOccurrences(this.count, endDate);
+    if (this.occurrences.length < this.count && this.occurrences.at(-1)! < seriesEndTime) {
+      this.fillOccurrences(this.count, seriesEndTime);
     }
-    return this.occurrences.filter(date => date >= startDate && date <= endDate);
+    return this.occurrences.filter(date => date >= seriesStartTime && date <= seriesEndTime);
   }
 
   getOccurrenceByIndex(index: number): Date | void {
@@ -227,7 +242,7 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
   }
 
   getIndexOfOccurrence(date: Date): number {
-    if (this.endDate && this.endDate < date) {
+    if (this.seriesEndTime && this.seriesEndTime < date) {
       return -1;
     }
     if (this.occurrences.length < this.count && this.occurrences.at(-1)! < date) {
@@ -236,7 +251,7 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     return this.occurrences.findIndex(d => d.getTime() == date.getTime());
   }
 
-  fillOccurrences(count: number, endDate?: Date) {
+  fillOccurrences(count: number, seriesEndTime?: Date) {
     while (this.occurrences.length < count) {
       switch (this.frequency) {
       case Frequency.Daily:
@@ -293,7 +308,7 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
         occurrence.setDate(-6);
         this.day = occurrence.getDate();
       }
-      if (endDate && occurrence > endDate) {
+      if (seriesEndTime && occurrence > seriesEndTime) {
         break;
       }
       if (this.weekdays && !this.weekdays.includes(occurrence.getDay())) {

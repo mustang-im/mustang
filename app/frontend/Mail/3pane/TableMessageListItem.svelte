@@ -1,3 +1,4 @@
+<!-- If you change the columns here, also change the `FastList.columns` in TableMessageList.svelte -->
 <hbox class="unread-dot button" class:unread={!$message.isRead}>
   <Button
     icon={CircleIcon}
@@ -30,7 +31,7 @@
   on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
   on:contextmenu={contextMenu.onContextMenu}
   >{$message.subject}</hbox>
-<hbox class="tags">
+<hbox class="tags" class:tagged={$tags.hasItems}>
   {#if $tags.hasItems}
     <TagSelector tags={$tags} object={message} canAdd={false} />
   {/if}
@@ -170,6 +171,9 @@
   .buttons.hover {
     padding-inline-end: 16px;
   }
+  .tags:not(.tagged) {
+    padding: 0px;
+  }
   .correspondent.unread,
   .subject.unread,
   .date.unread {
@@ -189,13 +193,16 @@
     padding: 0px 4px 0px 0px;
     align-items: center;
   }
+  .unread-dot.button {
+    padding-inline-start: 8px;
+  }
   .attachment {
     width: 16px;
-    padding: 4px 0px 0px 8px;
+    padding: 4px 0px 0px 2px;
   }
   .direction {
     width: 16px;
-    padding: 0px 0px 0px 0px;
+    padding: 0px;
   }
 
   /* <copied to="VerticalMessageListItem.svelte"> */

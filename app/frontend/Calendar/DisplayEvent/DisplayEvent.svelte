@@ -81,7 +81,7 @@
       <Radio class="inline" label="{$t`For `}" bind:group={end} value="count" disabled />&nbsp;<input class="auto" type="number" min={1} max={99} bind:value={count} disabled> end = "count"}>&nbsp;{$plural(count, { one: 'time', other: 'times' })}
     </hbox>
     <hbox>
-      <Radio class="inline" label="{$t`Until`}" bind:group={end} value="date" disabled />&nbsp;<DateInput date={endDate} disabled />
+      <Radio class="inline" label="{$t`Until`}" bind:group={end} value="date" disabled />&nbsp;<DateInput date={seriesEndTime} disabled />
     </hbox>
   {/if}
   <Checkbox label={$t`Alarm`} checked={!!event.alarm} disabled />
@@ -114,8 +114,8 @@
   let count = Number.isFinite(event.recurrenceRule?.count) ? event.recurrenceRule.count : 1;
   let weekdays = event.recurrenceRule?.weekdays || [event.startTime.getDay()];
   let week = event.recurrenceRule?.week || 0;
-  let end = event.recurrenceRule?.endDate ? "date" : Number.isFinite(event.recurrenceRule?.count) ? "count" : "none";
-  let endDate = event.recurrenceRule?.endDate || event.startTime;
+  let end = event.recurrenceRule?.seriesEndTime ? "date" : Number.isFinite(event.recurrenceRule?.count) ? "count" : "none";
+  let seriesEndTime = event.recurrenceRule?.seriesEndTime || event.startTime;
   let minDate = event.startTime;
   let yearWeekOptions, monthWeekOptions, weekdayOptions;
 
@@ -148,9 +148,9 @@
       label: date.toLocaleDateString(getUILocale(), { weekday: "narrow" }),
     }));
 
-    if (endDate <= event.startTime) {
-      endDate = new Date(event.startTime);
-      endDate.setHours(23, 59, 59, 0);
+    if (seriesEndTime <= event.startTime) {
+      seriesEndTime = new Date(event.startTime);
+      seriesEndTime.setHours(23, 59, 59, 0);
     }
     minDate = event.startTime;
     event.endTime.setFullYear(event.startTime.getFullYear(), event.startTime.getMonth(), event.startTime.getDate());

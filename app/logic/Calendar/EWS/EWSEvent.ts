@@ -81,17 +81,14 @@ export class EWSEvent extends Event {
     this.timezone = fromWindowsZone(xmljs.StartTimeZoneId);
     this.allDay = sanitize.boolean(xmljs.IsAllDayEvent, false);
     if (xmljs.Recurrence) {
-      this.recurrenceCase = RecurrenceCase.Master;
       this.recurrenceRule = this.newRecurrenceRule(xmljs.Recurrence);
       if (xmljs.DeletedOccurrences?.DeletedOccurrence) {
         for (let deletion of ensureArray(xmljs.DeletedOccurrences.DeletedOccurrence)) {
           this.makeExclusionLocally(sanitize.date(deletion.Start));
         }
       }
-    } else if (this.recurrenceRule) {
-      this.recurrenceCase = RecurrenceCase.Normal;
+    } else {
       this.recurrenceRule = null;
-      this.clearExceptions();
     }
     if (xmljs.ReminderIsSet == "true") {
       this.alarm = new Date(this.startTime.getTime() - k1MinuteMS * sanitize.integer(xmljs.ReminderMinutesBeforeStart));
@@ -116,17 +113,18 @@ export class EWSEvent extends Event {
   }
 
   newRecurrenceRule(xmljs: any): RecurrenceRule {
-    let startDate = this.startTime;
-    let endDate: Date | null = null;
+    let masterDuration = this.duration;
+    let seriesStartTime = this.startTime;
+    let seriesEndTime: Date | null = null;
     if (xmljs.EndDateRecurrence) {
       // These dates don't have a time, but they do have a time zone suffixed.
-      if (!startDate) {
-        this.startTime = startDate = sanitize.date(xmljs.EndDateRecurrence.StartDate.slice(0, 10));
+      if (!seriesStartTime) {
+        this.startTime = seriesStartTime = sanitize.date(xmljs.EndDateRecurrence.StartDate.slice(0, 10));
       }
-      endDate = sanitize.date(xmljs.EndDateRecurrence.EndDate.slice(0, 10));
+      seriesEndTime = sanitize.date(xmljs.EndDateRecurrence.EndDate.slice(0, 10));
       // RecurrenceRule wants this to be at least the same time as the endTime
-      endDate.setDate(endDate.getDate() + 1);
-      endDate.setTime(endDate.getTime() - 1000);
+      seriesEndTime.setDate(seriesEndTime.getDate() + 1);
+      seriesEndTime.setTime(seriesEndTime.getTime() - 1000);
     }
     let count = sanitize.integer(xmljs.NumberedRecurrence?.NumberOfOccurrences, Infinity);
     let key = Object.keys(RecurrenceType).find(key => key in xmljs);
@@ -136,7 +134,7 @@ export class EWSEvent extends Event {
     let weekdays = extractWeekdays(pattern.DaysOfWeek);
     let week = sanitize.integer(WeekOfMonth[pattern.DayOfWeekIndex], 0);
     let first = sanitize.integer(Weekday[pattern.FirstDayOfWeek], Weekday.Monday);
-    return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
+    return new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
   }
 
   get outgoingInvitation() {
@@ -259,7 +257,7 @@ export class EWSEvent extends Event {
       pattern.t$Interval = rule.interval;
     }
     if (/^Relative|^Weekly/.test(recurrenceType)) {
-      let weekdays = rule.weekdays || [rule.startDate.getDay()];
+      let weekdays = rule.weekdays || [rule.seriesStartTime.getDay()];
       pattern.t$DaysOfWeek = rule.weekdays.map(day => Weekday[day]).join(" ");
     }
     if (rule.frequency == Frequency.Weekly) {
@@ -269,26 +267,26 @@ export class EWSEvent extends Event {
       pattern.t$DayOfWeekIndex = WeekOfMonth[rule.week];
     }
     if (/Absolute/.test(recurrenceType)) {
-      pattern.t$DayOfMonth = rule.startDate.getDate();
+      pattern.t$DayOfMonth = rule.seriesStartTime.getDate();
     }
     if (rule.frequency == Frequency.Yearly) {
-      pattern.t$Month = rule.startDate.toLocaleDateString("en", { month: "long" });
+      pattern.t$Month = rule.seriesStartTime.toLocaleDateString("en", { month: "long" });
     }
     let recurrence: any = {};
     recurrence[`t$${recurrenceType}Recurrence`] = pattern;
     if (rule.count < Infinity) {
       recurrence.t$NumberedRecurrence = {
-        t$StartDate: this.dateString(rule.startDate, true),
+        t$StartDate: this.dateString(rule.seriesStartTime, true),
         t$NumberOfOccurrences: rule.count,
       };
-    } else if (rule.endDate) {
+    } else if (rule.seriesEndTime) {
       recurrence.t$EndDateRecurrence = {
-        t$StartDate: this.dateString(rule.startDate, true),
-        t$EndDate: this.dateString(rule.endDate, true),
+        t$StartDate: this.dateString(rule.seriesStartTime, true),
+        t$EndDate: this.dateString(rule.seriesEndTime, true),
       };
     } else {
       recurrence.t$NoEndRecurrence = {
-        t$StartDate: this.dateString(rule.startDate, true),
+        t$StartDate: this.dateString(rule.seriesStartTime, true),
       };
     }
     return recurrence;

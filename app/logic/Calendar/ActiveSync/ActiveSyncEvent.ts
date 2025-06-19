@@ -57,17 +57,14 @@ export class ActiveSyncEvent extends Event {
     this.timezone = fromActiveSyncZone(wbxmljs.Timezone);
     this.allDay = sanitize.boolean(wbxmljs.AllDayEvent, false);
     if (wbxmljs.Recurrence) {
-      this.recurrenceCase = RecurrenceCase.Master;
       this.recurrenceRule = this.newRecurrenceRule(wbxmljs.Recurrence);
       for (let exception of ensureArray(wbxmljs.Exceptions?.Exception)) {
         if (exception.Deleted == "1") {
           this.makeExclusionLocally(fromCompact(exception.ExceptionStartTime));
         }
       }
-    } else if (this.recurrenceRule) {
-      this.recurrenceCase = RecurrenceCase.Normal;
+    } else {
       this.recurrenceRule = null;
-      this.clearExceptions();
     }
     this.alarm = wbxmljs.Reminder ? new Date(this.startTime.getTime() - k1MinuteMS * sanitize.integer(wbxmljs.Reminder)) : null;
     this.location = sanitize.nonemptystring(wbxmljs.Location, "");
@@ -76,15 +73,16 @@ export class ActiveSyncEvent extends Event {
   }
 
   newRecurrenceRule(wbxmljs: any): RecurrenceRule {
-    let startDate = this.startTime;
-    let endDate = wbxmljs.Until ? fromCompact(wbxmljs.Until) : null;
+    let masterDuration = this.duration;
+    let seriesStartTime = this.startTime;
+    let seriesEndTime = wbxmljs.Until ? fromCompact(wbxmljs.Until) : null;
     let count = sanitize.integer(wbxmljs.Occurrences, Infinity);
     let frequency = kRecurrenceTypes[wbxmljs.Type];
     let interval = sanitize.integer(wbxmljs.Interval, 1);
     let weekdays = extractWeekdays(wbxmljs.DayOfWeek);
     let week = sanitize.integer(wbxmljs.WeekOfMonth, 0);
     let first = sanitize.integer(wbxmljs.FirstDayOfWeek, Weekday.Monday);
-    return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
+    return new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
   }
 
   toFields(exceptions: { Exception: any } | { Exception: any }[] = []) {
@@ -105,10 +103,10 @@ export class ActiveSyncEvent extends Event {
         Occurrences: this.recurrenceRule.count < Infinity ? String(this.recurrenceRule.count) : [],
         Interval: String(this.recurrenceRule.interval),
         WeekOfMonth: this.recurrenceRule.week ? String(this.recurrenceRule.week) : [],
-        DayOfWeek: this.recurrenceRule.weekdays ? String(this.recurrenceRule.weekdays.reduce((bitmask, day) => bitmask | 1 << day, 0)) : this.recurrenceRule.week ? String(1 << this.recurrenceRule.startDate.getDay()) : [],
-        MonthOfYear: this.recurrenceRule.frequency == Frequency.Yearly ? String(this.recurrenceRule.startDate.getMonth() + 1) : [],
-        Until: toCompact(this.recurrenceRule.endDate) || [],
-        DayOfMonth: [Frequency.Monthly, Frequency.Yearly].includes(this.recurrenceRule.frequency) && !this.recurrenceRule.week ? String(this.recurrenceRule.startDate.getDate()) : [],
+        DayOfWeek: this.recurrenceRule.weekdays ? String(this.recurrenceRule.weekdays.reduce((bitmask, day) => bitmask | 1 << day, 0)) : this.recurrenceRule.week ? String(1 << this.recurrenceRule.seriesStartTime.getDay()) : [],
+        MonthOfYear: this.recurrenceRule.frequency == Frequency.Yearly ? String(this.recurrenceRule.seriesStartTime.getMonth() + 1) : [],
+        Until: toCompact(this.recurrenceRule.seriesEndTime) || [],
+        DayOfMonth: [Frequency.Monthly, Frequency.Yearly].includes(this.recurrenceRule.frequency) && !this.recurrenceRule.week ? String(this.recurrenceRule.seriesStartTime.getDate()) : [],
         FirstDayOfWeek: this.recurrenceRule.frequency == Frequency.Weekly ? String(this.recurrenceRule.first) : [],
       } : [],
       Subject: this.title,

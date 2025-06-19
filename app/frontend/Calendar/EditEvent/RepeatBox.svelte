@@ -65,7 +65,7 @@
 </hbox>
 <hbox>
   <Radio class="inline" label="{$t`Until`}" bind:group={end} value="date" />
-  <DateInput date={endDate} min={minDate} on:change={() => end = "date"} />
+  <DateInput date={seriesEndTime} min={minDate} on:change={() => end = "date"} />
 </hbox>
   // import DateInput from "./DateInput.svelte";
   // import { Radio } from "@svelteuidev/core";
@@ -89,8 +89,8 @@
   // end // let count = Number.isFinite(event.recurrenceRule?.count) ? event.recurrenceRule.count : 1;
   let weekdays = master.recurrenceRule?.weekdays?.slice() || [event.startTime.getDay()];
   let week = master.recurrenceRule?.week || 0;
-  // end // let end = event.recurrenceRule?.endDate ? "date" : Number.isFinite(event.recurrenceRule?.count) ? "count" : "none";
-  // end // let endDate = master.recurrenceRule?.endDate || event.startTime;
+  // end // let end = event.recurrenceRule?.seriesEndTime ? "date" : Number.isFinite(event.recurrenceRule?.count) ? "count" : "none";
+  // end // let seriesEndTime = master.recurrenceRule?.seriesEndTime || event.startTime;
   let minDate = event.startTime;
   let daily = "everyday";
   let dailyOptions: RadioOption[] = [
@@ -137,9 +137,9 @@
     }));
 
     /* end
-    if (endDate <= event.startTime) {
-      endDate = new Date(event.startTime);
-      endDate.setHours(23, 59, 59, 0);
+    if (seriesEndTime <= event.startTime) {
+      seriesEndTime = new Date(event.startTime);
+      seriesEndTime.setHours(23, 59, 59, 0);
     }
     */
     minDate = event.startTime;
@@ -179,12 +179,12 @@
   }
 
   export function newRecurrenceRule(): RecurrenceRule {
-    let init: RecurrenceInit = { startDate: event.startTime, frequency, interval };
+    let init: RecurrenceInit = { masterDuration: event.duration, seriesStartTime: event.startTime, frequency, interval };
     /* end
     if (end == "count") {
       init.count = count;
     } else if (end == "date") {
-      init.endDate = endDate;
+      init.seriesEndTime = seriesEndTime;
     }
     */
     if (frequency == Frequency.Weekly) {

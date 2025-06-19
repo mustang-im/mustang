@@ -14,7 +14,7 @@
             />
         {/if}
         {#if !event.isIncomingMeeting}
-          {#if $event.seriesStatus == "first" || $event.seriesStatus == "middle"}
+          {#if $event.recurrenceCase == RecurrenceCase.Instance}
             <ButtonMenu bind:isMenuOpen={isDeleteSeriesOpen}>
               <RoundButton
                 slot="control"
@@ -78,7 +78,7 @@
             iconSize="16px"
             />
         {/if}
-        {#if canSave}
+        {#if canSave || canSaveSeries}
           <RoundButton
             label={$t`Revert`}
             icon={RevertIcon}
@@ -86,7 +86,7 @@
             classes="plain save-or-close"
             iconSize="16px"
             />
-          {#if $event.seriesStatus == "first" || $event.seriesStatus == "middle"}
+          {#if canSaveSeries}
             <ButtonMenu bind:isMenuOpen={isSaveSeriesOpen}>
               <RoundButton
                 slot="control"
@@ -98,10 +98,12 @@
                 iconSize="16px"
                 />
 
-              <MenuItem
-                label={$t`Change only this instance`}
-                onClick={onSave}
-                classes="font-normal" />
+              {#if canSave}
+                <MenuItem
+                  label={$t`Change only this instance`}
+                  onClick={onSave}
+                  classes="font-normal" />
+              {/if}
               {#if $event.seriesStatus == "middle"}
                 <MenuItem
                   label={$t`Change remainder of series`}
@@ -168,11 +170,12 @@
 
   $: event.startEditing(); // not `$event`
   $: newCalendar = event.calendar; // not `$event`
-  $: canSaveSeries = event && $event.title && $event.startTime && $event.endTime &&
+  $: hasMinimalProps = event && $event.title && $event.startTime && $event.endTime &&
       event.startTime.getTime() <= event.endTime.getTime();
-  $: canSave = canSaveSeries && (
+  $: canSaveSeries = hasMinimalProps && $event.recurrenceCase == RecurrenceCase.Instance;
+  $: canSave = hasMinimalProps && (
     $event.hasChanged() ||
-    repeatBox && !event.parentEvent ||
+    repeatBox && !event.parentEvent || // Change single event into series
     newCalendar != event.calendar);
   $: isFullWindow = $selectedApp instanceof EventEditMustangApp;
   let isSaveSeriesOpen = false;
@@ -189,11 +192,10 @@
         return false;
       }
       master.recurrenceRule = null;
-      master.recurrenceCase = RecurrenceCase.Normal;
     } else {
       let rule = repeatBox.newRecurrenceRule();
       if (master.recurrenceRule) {
-        if (rule.isCompatible(master.recurrenceRule) && event.duration == master.duration) {
+        if (rule.timesMatch(master.recurrenceRule)) {
           return true;
         }
         if (!confirm($t`This change will remove all exceptions and exclusions for this series.`)) {
@@ -201,9 +203,7 @@
         }
       }
       master.recurrenceRule = rule;
-      master.recurrenceCase = RecurrenceCase.Master;
     }
-    master.clearExceptions();
     return true;
   }
 
@@ -220,10 +220,9 @@
   }
 
   async function saveEvent(event: Event) {
-    if (repeatBox) {
+    if (repeatBox && !event.parentEvent) {
       // Turning a single event into a series. (The reverse is done in `onChangeAll()`.)
       event.recurrenceRule = repeatBox.newRecurrenceRule();
-      event.recurrenceCase = RecurrenceCase.Master;
     }
     if (event.calendar != newCalendar && newCalendar) {
       // `moveToCalendar()` does the save and delete as well
@@ -233,9 +232,6 @@
         event.calendar.events.add(event);
       }
       await event.save();
-    }
-    if (event.recurrenceRule) {
-      event.fillRecurrences();
     }
   }
 

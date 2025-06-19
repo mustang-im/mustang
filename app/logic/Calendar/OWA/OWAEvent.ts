@@ -77,17 +77,14 @@ export class OWAEvent extends Event {
     this.timezone = fromWindowsZone(json.StartTimeZoneId);
     this.allDay = sanitize.boolean(json.IsAllDayEvent, false);
     if (json.Recurrence) {
-      this.recurrenceCase = RecurrenceCase.Master;
       this.recurrenceRule = this.newRecurrenceRule(json.Recurrence);
       if (json.DeletedOccurrences) {
         for (let deletion of json.DeletedOccurrences) {
           this.makeExclusionLocally(sanitize.date(deletion.Start));
         }
       }
-    } else if (this.recurrenceRule) {
-      this.recurrenceCase = RecurrenceCase.Normal;
+    } else {
       this.recurrenceRule = null;
-      this.clearExceptions();
     }
     if (json.ReminderIsSet) {
       this.alarm = new Date(this.startTime.getTime() - k1MinuteMS * sanitize.integer(json.ReminderMinutesBeforeStart));
@@ -114,17 +111,18 @@ export class OWAEvent extends Event {
   }
 
   protected newRecurrenceRule(json: any): RecurrenceRule {
-    let startDate = this.startTime;
-    let endDate: Date | null = null;
+    let masterDuration = this.duration;
+    let seriesStartTime = this.startTime;
+    let seriesEndTime: Date | null = null;
     if (json.RecurrenceRange.EndDate) {
       // These dates don't have a time, but they do have a time zone suffixed.
-      if (!startDate) {
-        this.startTime = startDate = sanitize.date(json.RecurrenceRange.StartDate.slice(0, 10));
+      if (!seriesStartTime) {
+        this.startTime = seriesStartTime = sanitize.date(json.RecurrenceRange.StartDate.slice(0, 10));
       }
-      endDate = sanitize.date(json.RecurrenceRange.EndDate.slice(0, 10));
+      seriesEndTime = sanitize.date(json.RecurrenceRange.EndDate.slice(0, 10));
       // RecurrenceRule wants this to be at least the same time as the endTime
-      endDate.setDate(endDate.getDate() + 1);
-      endDate.setTime(endDate.getTime() - 1000);
+      seriesEndTime.setDate(seriesEndTime.getDate() + 1);
+      seriesEndTime.setTime(seriesEndTime.getTime() - 1000);
     }
     let count = sanitize.integer(json.RecurrenceRange.NumberOfOccurrences, Infinity);
     let pattern = json.RecurrencePattern;
@@ -133,7 +131,7 @@ export class OWAEvent extends Event {
     let weekdays = extractWeekdays(pattern.DaysOfWeek);
     let week = sanitize.integer(WeekOfMonth[pattern.DayOfWeekIndex], 0);
     let first = sanitize.integer(Weekday[pattern.FirstDayOfWeek], Weekday.Monday);
-    return new RecurrenceRule({ startDate, endDate, count, frequency, interval, weekdays, week, first });
+    return new RecurrenceRule({ masterDuration, seriesStartTime, seriesEndTime, count, frequency, interval, weekdays, week, first });
   }
 
   get outgoingInvitation() {
@@ -299,7 +297,7 @@ export class OWAEvent extends Event {
       recurrence.RecurrencePattern.Interval = rule.interval;
     }
     if (/^Relative|^Weekly/.test(recurrenceType)) {
-      let weekdays = rule.weekdays || [rule.startDate.getDay()];
+      let weekdays = rule.weekdays || [rule.seriesStartTime.getDay()];
       recurrence.RecurrencePattern.DaysOfWeek = rule.weekdays.map(day => Weekday[day]).join(" ");
     }
     if (rule.frequency == Frequency.Weekly) {
@@ -309,18 +307,18 @@ export class OWAEvent extends Event {
       recurrence.RecurrencePattern.DayOfWeekIndex = WeekOfMonth[rule.week];
     }
     if (/Absolute/.test(recurrenceType)) {
-      recurrence.RecurrencePattern.DayOfMonth = rule.startDate.getDate();
+      recurrence.RecurrencePattern.DayOfMonth = rule.seriesStartTime.getDate();
     }
     if (rule.frequency == Frequency.Yearly) {
-      recurrence.RecurrencePattern.Month = rule.startDate.toLocaleDateString("en", { month: "long" });
+      recurrence.RecurrencePattern.Month = rule.seriesStartTime.toLocaleDateString("en", { month: "long" });
     }
-    recurrence.RecurrenceRange.StartDate = this.dateString(rule.startDate, true);
+    recurrence.RecurrenceRange.StartDate = this.dateString(rule.seriesStartTime, true);
     if (rule.count < Infinity) {
       recurrence.RecurrenceRange.__type = "NumberedRecurrence:#Exchange";
       recurrence.RecurrenceRange.NumberOfOccurrences = rule.count;
-    } else if (rule.endDate) {
+    } else if (rule.seriesEndTime) {
       recurrence.RecurrenceRange.__type = "EndDateRecurrence:#Exchange";
-      recurrence.RecurrenceRange.EndDate = this.dateString(rule.endDate, true);
+      recurrence.RecurrenceRange.EndDate = this.dateString(rule.seriesEndTime, true);
     }
     return recurrence;
   }

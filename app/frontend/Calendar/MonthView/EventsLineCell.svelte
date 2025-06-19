@@ -1,7 +1,7 @@
 <vbox flex class="events" on:click={selectDay} on:dblclick={addEvent}>
-  {#if displayEvents && !displayEvents.isEmpty}
+  {#if $displayEvents && !$displayEvents.isEmpty}
     <Scroll>
-      {#each displayEvents.each as event (event.id)}
+      {#each $displayEvents.each as event (event.id)}
         <EventLine {event} {start} />
       {/each}
     </Scroll>
