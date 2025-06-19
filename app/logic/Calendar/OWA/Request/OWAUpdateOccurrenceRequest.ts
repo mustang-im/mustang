@@ -19,7 +19,7 @@ export default class OWAUpdateOccurrenceRequest extends OWARequest {
   constructor(event: OWAEvent, attributes?: { [key: string]: string | boolean }) {
     super("UpdateItem");
     this.itemChange.ItemId.RecurringMasterId = event.parentEvent.itemID;
-    this.itemChange.ItemId.InstanceIndex = event.parentEvent.instances.indexOf(event) + 1;
+    this.itemChange.ItemId.InstanceIndex = event.parentEvent.recurrenceRule.getIndexOfOccurrence(event.recurrenceStartTime) + 1;
     Object.assign(this.Body, attributes);
   }
 

@@ -38,9 +38,9 @@ const RecurrenceType = {
 };
 
 export class EWSEvent extends Event {
-  calendar: EWSCalendar;
-  parentEvent: EWSEvent;
-  readonly instances: ArrayColl<EWSEvent | null | undefined>;
+  declare calendar: EWSCalendar;
+  declare parentEvent: EWSEvent;
+  declare readonly exceptions: ArrayColl<EWSEvent>;
 
   get itemID(): string | null {
     return this.pID;
@@ -84,8 +84,7 @@ export class EWSEvent extends Event {
       this.recurrenceRule = this.newRecurrenceRule(xmljs.Recurrence);
       if (xmljs.DeletedOccurrences?.DeletedOccurrence) {
         for (let deletion of ensureArray(xmljs.DeletedOccurrences.DeletedOccurrence)) {
-          let occurrences = this.recurrenceRule.getOccurrencesByDate(sanitize.date(deletion.Start));
-          this.replaceInstance(occurrences.length - 1, null);
+          this.makeExclusionLocally(sanitize.date(deletion.Start));
         }
       }
     } else {
@@ -305,7 +304,7 @@ export class EWSEvent extends Event {
           m$ItemIds: {
             t$OccurrenceItemId: {
               RecurringMasterId: this.parentEvent.itemID,
-              InstanceIndex: this.parentEvent.instances.indexOf(this) + 1,
+              InstanceIndex: this.parentEvent.recurrenceRule.getIndexOfOccurrence(this.recurrenceStartTime) + 1,
             },
           },
           DeleteType: "MoveToDeletedItems",
@@ -373,13 +372,13 @@ export class EWSEvent extends Event {
     return event;
   }
 
-  async makeExclusions(indices: number[]) {
+  async makeExclusions(exclusions: EWSEvent[]) {
     let request = {
       m$DeleteItem: {
-        m$ItemIds: indices.map(index => ({
+        m$ItemIds: exclusions.map(event => ({
           t$OccurrenceItemId: {
-            RecurringMasterId: this.parentEvent.itemID,
-            InstanceIndex: index + 1,
+            RecurringMasterId: this.itemID,
+            InstanceIndex: this.recurrenceRule.getIndexOfOccurrence(event.recurrenceStartTime) + 1,
           },
         })),
         DeleteType: "MoveToDeletedItems",
@@ -387,7 +386,7 @@ export class EWSEvent extends Event {
       },
     };
     await this.calendar.account.callEWS(request);
-    await super.makeExclusions(indices);
+    await super.makeExclusions(exclusions);
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
@@ -424,7 +423,7 @@ class EWSUpdateOccurrenceRequest {
 
   constructor(event: EWSEvent, attributes?: {[key: string]: string | boolean}) {
     this.itemChange.t$OccurrenceItemId.RecurringMasterId = event.parentEvent.itemID;
-    this.itemChange.t$OccurrenceItemId.InstanceIndex = event.parentEvent.instances.indexOf(event) + 1;
+    this.itemChange.t$OccurrenceItemId.InstanceIndex = event.parentEvent.recurrenceRule.getIndexOfOccurrence(event.recurrenceStartTime) + 1;
     Object.assign(this.m$UpdateItem, attributes);
   }
 

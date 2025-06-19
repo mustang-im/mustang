@@ -7,7 +7,7 @@
       * Chat
   * Actions (Filters): Run
   * Calendar
-    * Recurring - Fix commit f71507fc
+    * Recurring #654
     * Invitations
     * Free/Busy
   * Meet

@@ -143,14 +143,6 @@ export class EWSCalendar extends Calendar {
     /* Disabling tasks for now.
     await this.listFolder("tasks", events);
     */
-    // Keep any filled instances we already generated.
-    for (let event of events) {
-      for (let instance of event.instances) {
-        if (!events.includes(instance)) {
-          events.push(instance);
-        }
-      }
-    }
     this.events.replaceAll(events);
   }
 
@@ -243,14 +235,10 @@ export class EWSCalendar extends Calendar {
           event.fromXML(item);
           await event.saveLocally();
         } else {
-          event = this.newEvent(parentEvent);
+          event = parentEvent?.getOccurrenceByDate(sanitize.date(item.RecurrenceId)) as EWSEvent || this.newEvent();
           event.fromXML(item);
           await event.saveLocally();
           events.push(event);
-        }
-        if (parentEvent && event.recurrenceStartTime) {
-          let occurrences = parentEvent.recurrenceRule.getOccurrencesByDate(event.recurrenceStartTime);
-          parentEvent.replaceInstance(occurrences.length - 1, event)
         }
         if (item.ModifiedOccurrences?.Occurrence && event.recurrenceRule) {
           await this.getEvents(ensureArray(item.ModifiedOccurrences.Occurrence).map(item => item.ItemId), events, event);

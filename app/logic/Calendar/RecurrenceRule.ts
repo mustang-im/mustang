@@ -216,6 +216,14 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
         ruleWeekdays.includes(weekday) == thisWeekdays.includes(weekday));
   }
 
+  countIs(count: number): boolean {
+    if (!this.seriesEndTime) {
+      return count == this.count;
+    }
+    this.fillOccurrences(Math.min(count + 1, this.count));
+    return this.occurrences[count - 1] != null && this.occurrences[count] == null;
+  }
+
   getOccurrencesByDate(seriesEndTime: Date, seriesStartTime: Date = this.seriesStartTime): Date[] {
     if (this.seriesEndTime && this.seriesEndTime < seriesEndTime) {
       seriesEndTime = this.seriesEndTime;
@@ -226,15 +234,21 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     return this.occurrences.filter(date => date >= seriesStartTime && date <= seriesEndTime);
   }
 
-  /** 1-indexed */
   getOccurrenceByIndex(index: number): Date | void {
-    if (index > this.count) {
-      return;
+    if (!this.occurrences[index] && index < this.count) {
+      this.fillOccurrences(index + 1);
     }
-    if (this.occurrences.length < index) {
-      this.fillOccurrences(index);
+    return this.occurrences[index];
+  }
+
+  getIndexOfOccurrence(date: Date): number {
+    if (this.seriesEndTime && this.seriesEndTime < date) {
+      return -1;
     }
-    return this.occurrences[index - 1];
+    if (this.occurrences.length < this.count && this.occurrences.at(-1)! < date) {
+      this.fillOccurrences(this.count, date);
+    }
+    return this.occurrences.findIndex(d => d.getTime() == date.getTime());
   }
 
   fillOccurrences(count: number, seriesEndTime?: Date) {

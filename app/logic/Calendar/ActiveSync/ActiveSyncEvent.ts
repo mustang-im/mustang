@@ -22,9 +22,9 @@ const ActiveSyncResponse: Record<InvitationResponseInMessage, number> = {
 };
 
 export class ActiveSyncEvent extends Event {
-  calendar: ActiveSyncCalendar;
-  parentEvent: ActiveSyncEvent;
-  readonly instances: ArrayColl<ActiveSyncEvent | null | undefined>;
+  declare calendar: ActiveSyncCalendar;
+  declare parentEvent: ActiveSyncEvent;
+  declare readonly exceptions: ArrayColl<ActiveSyncEvent>;
 
   get serverID(): string | null {
     return this.pID;
@@ -60,8 +60,7 @@ export class ActiveSyncEvent extends Event {
       this.recurrenceRule = this.newRecurrenceRule(wbxmljs.Recurrence);
       for (let exception of ensureArray(wbxmljs.Exceptions?.Exception)) {
         if (exception.Deleted == "1") {
-          let occurrences = this.recurrenceRule.getOccurrencesByDate(fromCompact(exception.ExceptionStartTime));
-          this.replaceInstance(occurrences.length - 1, null);
+          this.makeExclusionLocally(fromCompact(exception.ExceptionStartTime));
         }
       }
     } else {
@@ -216,11 +215,11 @@ export class ActiveSyncEvent extends Event {
     return event;
   }
 
-  async makeExclusions(indices: number[]) {
-    await this.saveFields(this.toFields(indices.map(index => ({
+  async makeExclusions(exclusions: ActiveSyncEvent[]) {
+    await this.saveFields(this.toFields(exclusions.map(event => ({
       Exception: {
         Deleted: "1",
-        ExceptionStartTime: toCompact(this.recurrenceRule.getOccurrenceByIndex(index + 1) as Date),
+        ExceptionStartTime: toCompact(event.recurrenceStartTime),
       },
     }))));
   }

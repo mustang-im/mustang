@@ -90,21 +90,12 @@ export class OWACalendar extends Calendar {
     }
     for (let item of items) {
       try {
-        let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id)) || this.newEvent(parentEvent);
+        let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id)) || parentEvent?.getOccurrenceByDate(sanitize.date(item.RecurrenceId)) as OWAEvent || this.newEvent();
         event.fromJSON(item);
         await event.saveLocally();
         events.add(event);
-        if (parentEvent && event.recurrenceStartTime) {
-          event.parentEvent = parentEvent; // should already be correct
-          let occurrences = parentEvent.recurrenceRule.getOccurrencesByDate(event.recurrenceStartTime);
-          parentEvent.replaceInstance(occurrences.length - 1, event);
-        }
         if (item.ModifiedOccurrences?.length && event.recurrenceRule) {
           await this.getEvents(item.ModifiedOccurrences.map(item => item.ItemId.Id), events, event);
-        }
-        if (event.recurrenceRule) {
-          // Also include any filled occurrences we happen to have.
-          events.addAll(event.instances.contents.filter(instance => instance && !instance.dbID));
         }
       } catch (ex) {
         this.account.errorCallback(ex);

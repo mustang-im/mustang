@@ -5,7 +5,7 @@
     rightMinWidth={350}
     >
     <vbox flex class="main" slot="left">
-      <MainView {events} bind:start={$startDate} dateInterval={$selectedDateInterval}>
+      <MainView events={appGlobal.calendarEvents} bind:start={$startDate} dateInterval={$selectedDateInterval}>
         <TitleBarLeft on:addEvent={() => catchErrors(addEvent)} slot="top-left" />
         <TitleBarRight bind:dateInterval={$selectedDateInterval} slot="top-right" />
       </MainView>
@@ -17,7 +17,6 @@
 </vbox>
 
 <script lang="ts">
-  import { RecurrenceColl } from "../../logic/Calendar/RecurrenceColl";
   import { calendarMustangApp } from "./CalendarMustangApp";
   import { appGlobal } from "../../logic/app";
   import { selectedCalendar, selectedDate, selectedDateInterval, selectedEvent, startDate } from "./selected";
@@ -29,10 +28,9 @@
   import Splitter from "../Shared/Splitter.svelte";
   import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
-  import { mergeColls } from "svelte-collections";
   import { t } from "../../l10n/l10n";
+  import { mergeColls } from "svelte-collections";
 
-  $: events = new RecurrenceColl(mergeColls(appGlobal.calendars.map(cal => cal.events))).unique().sortBy(ev => ev.startTime);
   $: if (!$selectedCalendar) { $selectedCalendar = appGlobal.calendars.first; }
 
   let defaultLengthInMinutes = Math.max(getLocalStorage("calendar.defaultEventLengthInMinutes", 60).value, 1);

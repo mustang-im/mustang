@@ -4,11 +4,17 @@ import type { Participant } from "./Participant";
 import { IncomingInvitation } from "./Invitation/IncomingInvitation";
 import type { EMail } from "../Mail/EMail";
 import { appGlobal } from "../app";
-import { Collection, ArrayColl } from "svelte-collections";
+import { ArrayColl, type Collection } from "svelte-collections";
 import { ICalEMailProcessor } from "./ICal/ICalEMailProcessor";
+import { recurrenceColl } from "./RecurrenceColl";
 
 export class Calendar extends Account {
   readonly protocol: string = "calendar-local";
+  /** Contains
+   * - single events
+   * - recurring masters
+   * - recurring exceptions
+   * If you want events to display @see eventWithRecurrences() */
   readonly events = new ArrayColl<Event>();
   /** Can this calendar accept incoming invitations from inboxes in other accounts? */
   readonly canAcceptAnyInvitation: boolean = true;
@@ -17,6 +23,20 @@ export class Calendar extends Account {
 
   newEvent(parentEvent?: Event): Event {
     return new Event(this, parentEvent);
+  }
+
+  /** Calculated from `events`. Returns
+   * - Single events
+   * - Recurring instances generated
+   * - Recurring exceptions
+   *
+   * This is cached. It will observe changes to `events`, but
+   * the cache needs to be invalidated when
+   * recurring event masters change.
+   */
+  eventsWithRecurrences: Collection<Event> = recurrenceColl(this.events);
+
+  protected invalidateRecurringCache() {
   }
 
   getIncomingInvitationFor(message: EMail) {

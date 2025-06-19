@@ -34,9 +34,9 @@ enum WeekOfMonth {
 };
 
 export class OWAEvent extends Event {
-  calendar: OWACalendar;
-  parentEvent: OWAEvent;
-  readonly instances: ArrayColl<OWAEvent | null | undefined>;
+  declare calendar: OWACalendar;
+  declare parentEvent: OWAEvent;
+  declare readonly exceptions: ArrayColl<OWAEvent>;
 
   get itemID(): string | null {
     return this.pID;
@@ -80,8 +80,7 @@ export class OWAEvent extends Event {
       this.recurrenceRule = this.newRecurrenceRule(json.Recurrence);
       if (json.DeletedOccurrences) {
         for (let deletion of json.DeletedOccurrences) {
-          let occurrences = this.recurrenceRule.getOccurrencesByDate(sanitize.date(deletion.Start));
-          this.replaceInstance(occurrences.length - 1, null);
+          this.makeExclusionLocally(sanitize.date(deletion.Start));
         }
       }
     } else {
@@ -350,9 +349,9 @@ export class OWAEvent extends Event {
     return event;
   }
 
-  async makeExclusions(indices: number[]) {
-    await this.calendar.account.callOWA(owaCreateMultipleExclusionsRequest(indices, this));
-    await super.makeExclusions(indices);
+  async makeExclusions(exclusions: OWAEvent[]) {
+    await this.calendar.account.callOWA(owaCreateMultipleExclusionsRequest(exclusions, this));
+    await super.makeExclusions(exclusions);
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {

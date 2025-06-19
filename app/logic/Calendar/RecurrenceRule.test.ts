@@ -9,7 +9,7 @@ function check(calString: string, data: Partial<RecurrenceInit>, expected: [numb
     let ruleFromString = RecurrenceRule.fromCalString(36e5, data.seriesStartTime as Date, calString);
     expect(rule).toEqual(ruleFromString);
   }
-  expect(rule.getOccurrenceByIndex(2)).toEqual(new Date(...expected[1]));
+  expect(rule.getOccurrenceByIndex(1)).toEqual(new Date(...expected[1]));
   expect(rule.getOccurrencesByDate(new Date(2010, 10, 10))).toEqual(expected.map(args => new Date(...args)));
 }
 
