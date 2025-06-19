@@ -61,8 +61,7 @@ export class ActiveSyncEvent extends Event {
       this.recurrenceRule = this.newRecurrenceRule(wbxmljs.Recurrence);
       for (let exception of ensureArray(wbxmljs.Exceptions?.Exception)) {
         if (exception.Deleted == "1") {
-          this.exclusions.add(fromCompact(exception.ExceptionStartTime));
-          // how to remove original instance or exception for this date?
+          this.makeExclusionLocally(fromCompact(exception.ExceptionStartTime));
         }
       }
     } else if (this.recurrenceRule) {

@@ -90,15 +90,10 @@ export class OWACalendar extends Calendar {
     }
     for (let item of items) {
       try {
-        let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id)) || this.newEvent(parentEvent);
+        let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id)) || parentEvent?.getOccurrenceByDate(sanitize.date(item.RecurrenceId)) as OWAEvent || this.newEvent();
         event.fromJSON(item);
         await event.saveLocally();
         events.add(event);
-        if (parentEvent && event.recurrenceStartTime) {
-          event.parentEvent = parentEvent; // should already be correct
-          parentEvent.exceptions.add(event);
-          // how to remove original instance for this date?
-        }
         if (item.ModifiedOccurrences?.length && event.recurrenceRule) {
           await this.getEvents(item.ModifiedOccurrences.map(item => item.ItemId.Id), events, event);
         }

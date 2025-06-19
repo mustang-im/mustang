@@ -230,9 +230,9 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     return this.occurrences[index - 1];
   }
 
-  getIndexOfOccurrence(date: Date): number | null {
+  getIndexOfOccurrence(date: Date): number {
     if (this.endDate && this.endDate < date) {
-      return null;
+      return -1;
     }
     if (this.occurrences.length < this.count && this.occurrences.at(-1)! < date) {
       this.fillOccurrences(this.count, date);

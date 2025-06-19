@@ -440,10 +440,35 @@ export class Event extends Observable {
   }
 
   /** Call this whenever the master changes */
-  protected generateRecurringInstances() {
+  protected generateRecurringInstances(endDate?: Date) {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Only for master");
     this.instances.clear();
-    this.instances.addAll(this.fillRecurrences());
+    this.fillRecurrences(endDate);
+  }
+
+  getOccurrenceByDate(recurrenceStartTime: Date): Event {
+    assert(this.recurrenceCase == RecurrenceCase.Master, "Only for master");
+    assert(!this.exclusions.find(date => date.getTime() == recurrenceStartTime.getTime()), "occurrence was already excluded");
+    let event = this.exceptions.find(event => event.recurrenceStartTime.getTime() == recurrenceStartTime.getTime());
+    if (event) {
+      return event;
+    }
+    event = this.instances.find(event => event.recurrenceStartTime.getTime() == recurrenceStartTime.getTime());
+    if (event) {
+      return event;
+    }
+    let index = this.recurrenceRule.getIndexOfOccurrence(recurrenceStartTime);
+    assert(index != -1, "occurrence date not in recurrence");
+    this.generateRecurringInstances(recurrenceStartTime);
+    return this.instances.last;
+  }
+
+  protected makeExclusionLocally(recurrenceStartTime: Date) {
+    assert(this.recurrenceCase == RecurrenceCase.Master, "Only for master");
+    if (this.exclusions.some(date => date.getTime() == recurrenceStartTime.getTime())) {
+      return; // already excluded
+    }
+    this.getOccurrenceByDate(recurrenceStartTime).deleteLocally().catch(this.calendar.errorCallback);
   }
 
   /**
@@ -494,6 +519,8 @@ export class Event extends Observable {
       this.generateRecurringInstances();
     } else if (this.recurrenceCase == RecurrenceCase.Instance) {
       this.recurrenceCase = RecurrenceCase.Exception;
+      this.parentEvent.instances.remove(this);
+      this.parentEvent.exceptions.add(this);
     }
   }
 

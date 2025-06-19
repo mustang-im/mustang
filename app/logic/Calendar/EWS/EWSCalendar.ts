@@ -235,14 +235,10 @@ export class EWSCalendar extends Calendar {
           event.fromXML(item);
           await event.saveLocally();
         } else {
-          event = this.newEvent(parentEvent);
+          event = parentEvent?.getOccurrenceByDate(sanitize.date(item.RecurrenceId)) as EWSEvent || this.newEvent();
           event.fromXML(item);
           await event.saveLocally();
           events.push(event);
-        }
-        if (parentEvent && event.recurrenceStartTime) {
-          parentEvent.exceptions.add(event);
-          // how to remove original instance for this date?
         }
         if (item.ModifiedOccurrences?.Occurrence && event.recurrenceRule) {
           await this.getEvents(ensureArray(item.ModifiedOccurrences.Occurrence).map(item => item.ItemId), events, event);
