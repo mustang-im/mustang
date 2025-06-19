@@ -153,14 +153,12 @@ export class Event extends Observable {
    */
   private setRecurrenceRule(rule: RecurrenceRule) {
     assert(this.recurrenceCase == RecurrenceCase.Normal || this.recurrenceCase == RecurrenceCase.Master, "Instances can't themselves recur");
-    if (this.calendar && !this._recurrenceRule?.timesMatch(rule)) {
+    if (!this._recurrenceRule?.timesMatch(rule)) {
       this.clearExceptions();
     }
     this._recurrenceRule = rule;
     this.recurrenceCase = RecurrenceCase.Master; // notifies
-    if (this.calendar) {
-      this.fillRecurrences();
-    }
+    this.instances.clear();
   }
   /** Links back to the recurring master.
    * Only for RecurrenceCase == Instance or Exception */
@@ -552,7 +550,7 @@ export class Event extends Observable {
     assert(this.calendar, "To delete an event, it needs to be in a calendar first");
     assert(this.calendar.storage, "To delete an event, the calendar needs to be saved first");
     // this.recurrenceRule = null; is overkill for removing exceptions; the database already cascades the delete
-    this.calendar.events.remove(this.exceptions);
+    this.calendar.events.removeAll(this.exceptions);
     this.calendar.events.remove(this);
     if (this.dbID) {
       await this.calendar.storage.deleteEvent(this);
@@ -687,11 +685,15 @@ export class Event extends Observable {
    * Used when a master recurrence rule is removed or changed incompatibly.
    */
   clearExceptions() {
-    this.calendar.events.removeAll(this.exceptions);
-    for (let exception of this.exceptions) {
-      // Not using deleteLocally because that's for creating an exclusion
-      this.calendar.storage.deleteEvent(exception).catch(this.calendar.errorCallback); // TODO server? No, server will delete when it sees the rule change.
+    if (this.calendar) {
+      this.calendar.events.removeAll(this.exceptions);
+      for (let exception of this.exceptions) {
+        // Not using deleteLocally because that's for creating an exclusion
+        this.calendar.storage.deleteEvent(exception)
+          .catch(this.calendar.errorCallback); // TODO server? No, server will delete when it sees the rule change.
+      }
     }
+    this.instances.clear();
     this.exceptions.clear();
     this.exclusions.clear();
   }
