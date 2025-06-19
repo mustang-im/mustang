@@ -61,6 +61,7 @@ export class FilterRuleAction extends Observable {
     if (!this.criteria.matches(email)) {
       return;
     }
+    console.log("Running filter rule", this.name, "for email", email.subject);
     await this.doAction(email);
   }
 
@@ -75,6 +76,7 @@ export class FilterRuleAction extends Observable {
     }
     if (this.addTags.hasItems) {
       for (let tag of this.addTags) {
+        console.log("add tag", tag.name);
         await email.addTag(tag);
       }
     }
@@ -89,6 +91,7 @@ export class FilterRuleAction extends Observable {
       return;
     }
     if (this.toFolder) {
+      console.log(this.copy ? "copy" : "move", "to folder", this.toFolder.name);
       if (this.copy) {
         await this.toFolder.copyMessageHere(email);
       } else {
