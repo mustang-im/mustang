@@ -8,7 +8,7 @@ function check(calString: string, data: RecurrenceInit, expected: [number, numbe
     let ruleFromString = RecurrenceRule.fromCalString(data.startDate, calString);
     expect(rule).toEqual(ruleFromString);
   }
-  expect(rule.getOccurrenceByIndex(2)).toEqual(new Date(...expected[1]));
+  expect(rule.getOccurrenceByIndex(1)).toEqual(new Date(...expected[1]));
   expect(rule.getOccurrencesByDate(new Date(2010, 10, 10))).toEqual(expected.map(args => new Date(...args)));
 }
 

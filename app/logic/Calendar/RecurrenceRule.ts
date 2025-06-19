@@ -219,15 +219,11 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
     return this.occurrences.filter(date => date >= startDate && date <= endDate);
   }
 
-  /** 1-indexed TODO really? Check callers */
   getOccurrenceByIndex(index: number): Date | void {
-    if (index > this.count) {
-      return;
+    if (!this.occurrences[index] && index < this.count) {
+      this.fillOccurrences(index + 1);
     }
-    if (this.occurrences.length < index) {
-      this.fillOccurrences(index);
-    }
-    return this.occurrences[index - 1];
+    return this.occurrences[index];
   }
 
   getIndexOfOccurrence(date: Date): number {

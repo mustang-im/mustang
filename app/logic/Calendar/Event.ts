@@ -696,7 +696,7 @@ export class Event extends Observable {
     let pos = master.instancesTODOReplace.indexOf(this);
     let count = master.instancesTODOReplace.contents.slice(pos + 1).findLastIndex(event => event?.dbID) + pos + 1;
     this.calendar.events.removeAll(master.instancesTODOReplace.splice(count).contents.filter(Boolean));
-    if (master.recurrenceRule.getOccurrenceByIndex(count + 1)) {
+    if (master.recurrenceRule.getOccurrenceByIndex(count)) {
       let { startDate, frequency, interval, weekdays, week, first } = master.recurrenceRule;
       master.recurrenceRule = new RecurrenceRule({ startDate, count, frequency, interval, weekdays, week, first });
       await master.saveToServer();
