@@ -7,7 +7,7 @@ import { convertICalParserToEvent } from "./ICalToEvent";
 
 export class ICalEMailProcessor extends EMailProcessor {
   runOn = ProcessingStartOn.Parse;
-  async process(email: EMail, postalMIME: any) {
+  async process(email: EMail) {
     let invitationBlob = email.attachments.find(a => a.mimeType == "text/calendar")?.content;
     if (!invitationBlob) {
       return;

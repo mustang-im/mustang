@@ -1,5 +1,6 @@
 import type { EMail } from "../EMail";
-import { FilterMoment } from "./FilterMoments";
+import { ProcessingStartOn } from "../EMailProccessor";
+import { addFilterProcessors } from "../FilterRules/FilterProcessor";
 import { SearchEMail } from "../Store/SearchEMail";
 import type { MailAccount } from "../MailAccount";
 import type { Folder } from "../Folder";
@@ -16,7 +17,7 @@ export class FilterRuleAction extends Observable {
   name: string = "";
   /** For which email and at which moment the filter should be run */
   @notifyChangedProperty
-  when: FilterMoment = FilterMoment.IncomingBeforeSpam;
+  when: ProcessingStartOn = ProcessingStartOn.Incoming;
   /** For which subset of emails the filter should run */
   readonly criteria = new SearchEMail();
 
@@ -99,7 +100,7 @@ export class FilterRuleAction extends Observable {
 
   fromJSON(json: any) {
     this.name = sanitize.nonemptystring(json.name, "-");
-    this.when = sanitize.enum<FilterMoment>(json.when, Object.values(FilterMoment));
+    this.when = sanitize.enum<ProcessingStartOn>(json.when, Object.values(ProcessingStartOn));
     this.criteria.fromJSON(json.criteria);
     function boolean(value: boolean | undefined): boolean | undefined {
       return typeof (value) == "boolean" ? value : undefined;
@@ -142,3 +143,5 @@ export class FilterRuleAction extends Observable {
 function booleanHasValue(value: boolean | null | undefined): boolean {
   return value === true || value === false;
 }
+
+addFilterProcessors();

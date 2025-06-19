@@ -43,9 +43,9 @@
 
                   <label for="when">{$t`When`}</label>
                   <select bind:value={rule.when}>
-                    <option value={FilterMoment.IncomingBeforeSpam}>{$t`New mail arrives`}</option>
-                    <option value={FilterMoment.IncomingAfterSpam}>{$t`New mail arrives, after spam filtering`}</option>
-                    <option value={FilterMoment.Outgoing}>{$t`I send mail`}</option>
+                    <option value={ProcessingStartOn.BeforeSpamFilter}>{$t`New mail arrives`}</option>
+                    <option value={ProcessingStartOn.Incoming}>{$t`New mail arrives, after spam filtering`}</option>
+                    <option value={ProcessingStartOn.Sent}>{$t`I send mail`}</option>
                   </select>
                 </grid>
               </vbox>
@@ -81,7 +81,7 @@
 <script lang="ts">
   import { MailAccount } from "../../../logic/Mail/MailAccount";
   import { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
-  import { FilterMoment } from "../../../logic/Mail/FilterRules/FilterMoments";
+  import { ProcessingStartOn } from "../../../logic/Mail/EMailProccessor";
   import SearchCriteria from "../../Mail/Search/SearchCriteria.svelte";
   import RuleActions from "../../Mail/Search/RuleActions.svelte";
   import RulesListItem from "./RulesListItem.svelte";

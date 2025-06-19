@@ -10,6 +10,7 @@ import { backgroundError } from "../../frontend/Util/error";
 import { UserError, assert, type URLString } from "../util/util";
 import { getUILocale, gt } from "../../l10n/l10n";
 import type { Collection } from "svelte-collections";
+import { EMailProcessorList, ProcessingStartOn } from "./EMailProccessor";
 
 /** Functions based on the email, which are either
  * not changing the email itself, but are based on the email,
@@ -241,6 +242,7 @@ export class ComposeActions {
     await account.send(this.email);
 
     this.email.folder = previousFolder;
+    await EMailProcessorList.runProcessors(ProcessingStartOn.Sent, this.email);
     this.deleteDrafts(previousDrafts)
       .catch(backgroundError);
   }

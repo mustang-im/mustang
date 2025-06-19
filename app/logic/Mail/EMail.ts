@@ -9,7 +9,7 @@ import type { MailIdentity } from "./MailIdentity";
 import type { Calendar } from "../Calendar/Calendar";
 import { Event } from "../Calendar/Event";
 import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
-import { EMailProcessorList, ProcessingStartOn } from "./EMailProccessor";
+import { EMailProcessor, EMailProcessorList, ProcessingStartOn } from "./EMailProccessor";
 import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
 import { gt } from "../../l10n/l10n";
 import { appGlobal } from "../app";
@@ -19,7 +19,6 @@ import { notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/Lock";
 import { Collection, ArrayColl, MapColl, SetColl } from "svelte-collections";
 import PostalMIME from "postal-mime";
-import { FilterMoment } from "./FilterRules/FilterMoments";
 
 export class EMail extends Message {
   @notifyChangedProperty
@@ -294,13 +293,8 @@ export class EMail extends Message {
       }
     }).filter(attachment => !!attachment));
 
-    // Run processors, filters, calendar invitations, SML, etc.
-    for (let processor of EMailProcessorList.processors) {
-      if (processor.runOn != ProcessingStartOn.Parse) {
-        continue;
-      }
-      await processor.process(this, postalMIME);
-    }
+    // Run processors: filters, calendar invitations, SML, etc.
+    EMailProcessorList.runProcessors(ProcessingStartOn.Parse, this, postalMIME);
   }
 
   /**
@@ -315,7 +309,12 @@ export class EMail extends Message {
     if (this.isDeleted || !this.mime || await this.isDownloadCompleteDoublecheck()) {
       return;
     }
-    await this.processMessage();
+
+    EMailProcessorList.runProcessors(ProcessingStartOn.BeforeSpamFilter, this);
+    EMailProcessorList.runProcessors(ProcessingStartOn.SpamFilter, this);
+    EMailProcessorList.runProcessors(ProcessingStartOn.FilterRules, this);
+    EMailProcessorList.runProcessors(ProcessingStartOn.Incoming, this);
+
     await this.storage.saveMessage(this);
     let contentSaves = new PromiseAllDone();
     for (let contentStorage of this.folder.account.contentStorage) {
@@ -407,20 +406,6 @@ export class EMail extends Message {
   async download() {
     throw new AbstractFunction();
     //this.mime = await SMTPAccount.getMIME(this);
-  }
-
-  /**
-   * Runs filters, spam filter, and content interpreters on the message.
-   *
-   * Should be called after the entire message has been downloaded,
-   * and before it is stored.
-   */
-  async processMessage() {
-    let rules = this.folder?.account?.filterRuleActions.contents;
-    rules = rules?.filter(rule => rule.when == FilterMoment.IncomingBeforeSpam || rule.when == FilterMoment.IncomingAfterSpam);
-    for (let rule of rules) {
-      await rule.run(this);
-    }
   }
 
   async findThread(messages: Collection<EMail>): Promise<string | null>{
