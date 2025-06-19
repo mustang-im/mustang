@@ -5,7 +5,7 @@
     rightMinWidth={350}
     >
     <vbox flex class="main" slot="left">
-      <MainView events={appGlobal.calendarEvents} bind:start={$startDate} dateInterval={$selectedDateInterval}>
+      <MainView events={events} bind:start={$startDate} dateInterval={$selectedDateInterval}>
         <TitleBarLeft on:addEvent={() => catchErrors(addEvent)} slot="top-left" />
         <TitleBarRight bind:dateInterval={$selectedDateInterval} slot="top-right" />
       </MainView>
@@ -29,7 +29,10 @@
   import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { t } from "../../l10n/l10n";
+  import { mergeColls } from "svelte-collections";
 
+  // TODO use appGlobal.calendarEvents
+  $: events = mergeColls(appGlobal.calendars.map(cal => cal.eventsWithRecurrences)).sortBy(ev => ev.startTime);
   $: if (!$selectedCalendar) { $selectedCalendar = appGlobal.calendars.first; }
 
   let defaultLengthInMinutes = Math.max(getLocalStorage("calendar.defaultEventLengthInMinutes", 60).value, 1);
