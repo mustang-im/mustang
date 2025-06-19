@@ -143,10 +143,15 @@ export class MailAccount extends TCPAccount {
       MailIdentity.fromConfigJSON(json, this)));
     this.filterRuleActions.clear();
     this.filterRuleActions.addAll(sanitize.array(json.filterRuleActions, []).map(json => {
-      let rule = new FilterRuleAction(this);
-      rule.fromJSON(json);
-      return rule;
-    }));
+      try {
+        let rule = new FilterRuleAction(this);
+        rule.fromJSON(json);
+        return rule;
+      } catch (ex) {
+        this.errorCallback(ex);
+        return null;
+      }
+    }).filter(rule => !!rule));
     if (json.oAuth2) {
       this.oAuth2 = OAuth2.fromConfigJSON(json.oAuth2, this);
       this.oAuth2.subscribe(() => this.notifyObservers());
