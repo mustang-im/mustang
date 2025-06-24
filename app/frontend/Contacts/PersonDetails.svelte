@@ -87,143 +87,148 @@
     </hbox>
   </GroupBox>
 
-  <grid class="boxes">
-    {#if showEmail}
-      <GroupBox classes="email">
-        <svelte:fragment slot="header">
-          <Icon data={MailIcon} size="16px" />
-          <h3 class="font-small">{$t`Mail`}</h3>
-          <hbox flex class="actions">
-            <Button on:click={addEmail} icon={AddIcon} iconOnly plain classes="add" />
-          </hbox>
-        </svelte:fragment>
-        <grid class="items" slot="content">
-          {#each $emailAddresses.each as entry}
-            <ContactEntryUI {entry} coll={emailAddresses} on:save={save}>
-              <EmailAddressDisplay slot="display" value={entry.value} />
-              <EmailAddressEdit slot="edit" bind:value={entry.value} />
-            </ContactEntryUI>
-          {/each}
-        </grid>
-      </GroupBox>
-    {/if}
+  <Splitter initialRightRatio={1} name="contact-history">
+    <vbox class="boxes" slot="left">
+      {#if showEmail}
+        <GroupBox classes="email">
+          <svelte:fragment slot="header">
+            <Icon data={MailIcon} size="16px" />
+            <h3 class="font-small">{$t`Mail`}</h3>
+            <hbox flex class="actions">
+              <Button on:click={addEmail} icon={AddIcon} iconOnly plain classes="add" />
+            </hbox>
+          </svelte:fragment>
+          <grid class="items" slot="content">
+            {#each $emailAddresses.each as entry}
+              <ContactEntryUI {entry} coll={emailAddresses} on:save={save}>
+                <EmailAddressDisplay slot="display" value={entry.value} />
+                <EmailAddressEdit slot="edit" bind:value={entry.value} />
+              </ContactEntryUI>
+            {/each}
+          </grid>
+        </GroupBox>
+      {/if}
 
-    {#if showChat}
-      <GroupBox classes="chat">
+      {#if showChat}
+        <GroupBox classes="chat">
+          <svelte:fragment slot="header">
+            <Icon data={ChatIcon} size="16px" />
+            <h3 class="font-small">{$t`Chat`}</h3>
+            <hbox flex class="actions">
+              <Button on:click={addChatAccount} icon={AddIcon} iconOnly plain classes="add" />
+            </hbox>
+          </svelte:fragment>
+          <grid class="items" slot="content">
+            {#each $chatAccounts.each as entry}
+              <ContactEntryUI {entry} coll={chatAccounts} on:save={save}>
+                <EmailAddressDisplay slot="display" value={entry.value} /><!-- TODO chat link -->
+                <EmailAddressEdit slot="edit" bind:value={entry.value} /><!-- TODO chat editor -->
+              </ContactEntryUI>
+            {/each}
+          </grid>
+        </GroupBox>
+      {/if}
+
+      {#if showPhone}
+        <GroupBox classes="phone">
+          <svelte:fragment slot="header">
+            <hbox class="phone">
+              <Icon data={PhoneIcon} size="16px" />
+            </hbox>
+            <h3 class="font-small">{$t`Phone numbers`}</h3>
+            <hbox flex class="actions">
+              <Button on:click={addPhoneNumber} icon={AddIcon} iconOnly plain classes="add" />
+            </hbox>
+          </svelte:fragment>
+          <grid class="items" slot="content">
+            {#each $phoneNumbers.each as entry}
+              <ContactEntryUI {entry} coll={phoneNumbers} on:save={save}>
+                <PhoneNumberDisplay slot="display" value={entry.value} />
+                <PhoneNumberEdit slot="edit" bind:value={entry.value} />
+              </ContactEntryUI>
+            {/each}
+          </grid>
+        </GroupBox>
+      {/if}
+
+      {#if showStreet}
+        <GroupBox classes="street-addresses">
+          <svelte:fragment slot="header">
+            <Icon data={MailIcon} size="16px" />
+            <h3 class="font-small">{$t`Street addresses`}</h3>
+            <hbox flex class="actions">
+              <Button on:click={addStreetAddress} icon={AddIcon} iconOnly plain classes="add" />
+            </hbox>
+          </svelte:fragment>
+          <grid class="items" slot="content">
+            {#each $streetAddresses.each as entry}
+              <ContactEntryUI {entry} coll={streetAddresses} on:save={save}>
+                <StreetAddressDisplay slot="display" value={entry.value} />
+                <StreetAddressEdit slot="edit" bind:value={entry.value} />
+              </ContactEntryUI>
+            {/each}
+          </grid>
+        </GroupBox>
+      {/if}
+
+      {#if showGroups}
+        <GroupBox classes="categories">
+          <svelte:fragment slot="header">
+            <Icon data={ContactsIcon} size="16px" />
+            <h3 class="font-small">{$t`Groups`}</h3>
+            <hbox flex class="actions">
+              <!--
+              <Button on:click={addEmail} icon={AddIcon} iconOnly plain classes="add" />
+              -->
+            </hbox>
+          </svelte:fragment>
+          <grid class="items" slot="content">
+            {#each $groups.each as entry}
+              <ContactEntryUI {entry} coll={groups} on:save={save}>
+                <hbox slot="display">{entry.value}</hbox>
+              </ContactEntryUI>
+            {/each}
+          </grid>
+        </GroupBox>
+      {/if}
+
+      <!--
+      <GroupBox classes="preferences">
         <svelte:fragment slot="header">
           <Icon data={ChatIcon} size="16px" />
-          <h3 class="font-small">{$t`Chat`}</h3>
-          <hbox flex class="actions">
-            <Button on:click={addChatAccount} icon={AddIcon} iconOnly plain classes="add" />
-          </hbox>
+          <h3 class="font-small">Preferences</h3>
         </svelte:fragment>
-        <grid class="items" slot="content">
-          {#each $chatAccounts.each as entry}
-            <ContactEntryUI {entry} coll={chatAccounts} on:save={save}>
-              <EmailAddressDisplay slot="display" value={entry.value} /><!-- TODO chat link -->
-              <EmailAddressEdit slot="edit" bind:value={entry.value} /><!-- TODO chat editor -->
-            </ContactEntryUI>
-          {/each}
-        </grid>
+        <vbox class="preferred" slot="content">
+          <hbox>Preferred communication tool</hbox>
+          <hbox>WhatsApp</hbox>
+          <hbox>[o] Notifications</hbox>
+        </vbox>
       </GroupBox>
-    {/if}
+      -->
 
-    {#if showPhone}
-      <GroupBox classes="phone">
-        <svelte:fragment slot="header">
-          <hbox class="phone">
-            <Icon data={PhoneIcon} size="16px" />
-          </hbox>
-          <h3 class="font-small">{$t`Phone numbers`}</h3>
-          <hbox flex class="actions">
-            <Button on:click={addPhoneNumber} icon={AddIcon} iconOnly plain classes="add" />
-          </hbox>
-        </svelte:fragment>
-        <grid class="items" slot="content">
-          {#each $phoneNumbers.each as entry}
-            <ContactEntryUI {entry} coll={phoneNumbers} on:save={save}>
-              <PhoneNumberDisplay slot="display" value={entry.value} />
-              <PhoneNumberEdit slot="edit" bind:value={entry.value} />
-            </ContactEntryUI>
-          {/each}
-        </grid>
-      </GroupBox>
-    {/if}
+      <SameName bind:person />
 
-    {#if showStreet}
-      <GroupBox classes="street-addresses">
-        <svelte:fragment slot="header">
-          <Icon data={MailIcon} size="16px" />
-          <h3 class="font-small">{$t`Street addresses`}</h3>
-          <hbox flex class="actions">
-            <Button on:click={addStreetAddress} icon={AddIcon} iconOnly plain classes="add" />
-          </hbox>
-        </svelte:fragment>
-        <grid class="items" slot="content">
-          {#each $streetAddresses.each as entry}
-            <ContactEntryUI {entry} coll={streetAddresses} on:save={save}>
-              <StreetAddressDisplay slot="display" value={entry.value} />
-              <StreetAddressEdit slot="edit" bind:value={entry.value} />
-            </ContactEntryUI>
-          {/each}
-        </grid>
-      </GroupBox>
-    {/if}
-
-    {#if showGroups}
-      <GroupBox classes="categories">
-        <svelte:fragment slot="header">
-          <Icon data={ContactsIcon} size="16px" />
-          <h3 class="font-small">{$t`Groups`}</h3>
-          <hbox flex class="actions">
-            <!--
-            <Button on:click={addEmail} icon={AddIcon} iconOnly plain classes="add" />
-            -->
-          </hbox>
-        </svelte:fragment>
-        <grid class="items" slot="content">
-          {#each $groups.each as entry}
-            <ContactEntryUI {entry} coll={groups} on:save={save}>
-              <hbox slot="display">{entry.value}</hbox>
-            </ContactEntryUI>
-          {/each}
-        </grid>
-      </GroupBox>
-    {/if}
-
-    <!--
-    <GroupBox classes="preferences">
-      <svelte:fragment slot="header">
-        <Icon data={ChatIcon} size="16px" />
-        <h3 class="font-small">Preferences</h3>
-      </svelte:fragment>
-      <vbox class="preferred" slot="content">
-        <hbox>Preferred communication tool</hbox>
-        <hbox>WhatsApp</hbox>
-        <hbox>[o] Notifications</hbox>
+      <vbox class="expanders">
+        <ExpanderButtons>
+          <ExpanderButton bind:expanded={showEmail} label={$t`Mail`} on:expand={addEmail} />
+          <ExpanderButton bind:expanded={showChat} label={$t`Chat`} on:expand={addChatAccount} />
+          <ExpanderButton bind:expanded={showPhone} label={$t`Phone`} on:expand={addPhoneNumber} />
+          <ExpanderButton bind:expanded={showStreet} label={$t`Street address`} on:expand={addStreetAddress} />
+          <!--<ExpanderButton bind:expanded={showGroups} label="Groups" on:expand={addGroup} />-->
+          <ExpanderButton bind:expanded={showNotes} label={$t`Notes`} on:expand={addNotes} />
+        </ExpanderButtons>
       </vbox>
-    </GroupBox>
-    -->
 
-    <SameName bind:person />
-  </grid>
-
-  <vbox class="expanders">
-    <ExpanderButtons>
-      <ExpanderButton bind:expanded={showEmail} label={$t`Mail`} on:expand={addEmail} />
-      <ExpanderButton bind:expanded={showChat} label={$t`Chat`} on:expand={addChatAccount} />
-      <ExpanderButton bind:expanded={showPhone} label={$t`Phone`} on:expand={addPhoneNumber} />
-      <ExpanderButton bind:expanded={showStreet} label={$t`Street address`} on:expand={addStreetAddress} />
-      <!--<ExpanderButton bind:expanded={showGroups} label="Groups" on:expand={addGroup} />-->
-      <ExpanderButton bind:expanded={showNotes} label={$t`Notes`} on:expand={addNotes} />
-    </ExpanderButtons>
-  </vbox>
-
-  {#if showNotes}
-    <vbox flex class="notes">
-      <textarea bind:value={person.notes} placeholder={$t`Personal notes`} autofocus={person.notes == " "} class="font-small" />
+      {#if showNotes}
+        <vbox flex class="notes">
+          <textarea bind:value={person.notes} placeholder={$t`Personal notes`} autofocus={person.notes == " "} class="font-small" />
+        </vbox>
+      {/if}
     </vbox>
-  {/if}
+
+    <vbox class="history" slot="right" />
+
+  </Splitter>
 </vbox>
 
 <script lang="ts">
@@ -257,6 +262,7 @@
   import { NotImplemented } from "../../logic/util/util";
   import { showError } from "../Util/error";
   import { getUILocale, t } from "../../l10n/l10n";
+  import Splitter from "../Shared/Splitter.svelte";
 
   export let person: Person;
 
@@ -381,8 +387,7 @@
     /* because the icon is 1px smaller */
     margin: 1px;
   }
-  grid.boxes {
-    grid-template-columns: 1fr 1fr;
+  .boxes {
   }
   h3,
   .person-page :global(.group .header h3) {
@@ -412,16 +417,6 @@
   .notes textarea:focus {
     outline: 2px solid var(--input-focus);
   }
-  grid.boxes {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-  @container right-page (max-width: 600px) {
-    grid.boxes {
-      display: grid;
-      grid-template-columns: 1fr;
-    }
-  }
   grid.items {
     display: grid;
     grid-template-columns: auto 1fr auto;
@@ -446,5 +441,8 @@
   .phone :global(path) {
     fill: transparent;
     stroke: #27c1aa;
+  }
+  .notes {
+    margin-block-start: 16px;
   }
 </style>
