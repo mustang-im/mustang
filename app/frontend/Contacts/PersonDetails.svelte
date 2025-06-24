@@ -100,7 +100,8 @@
           </svelte:fragment>
           <grid class="items" slot="content">
             {#each $emailAddresses.each as entry}
-              <ContactEntryUI {entry} coll={emailAddresses} on:save={save}>
+              <ContactEntryUI {entry} coll={emailAddresses}
+                on:save={save} bind:isEditing={isEditingContacts}>
                 <EmailAddressDisplay slot="display" value={entry.value} />
                 <EmailAddressEdit slot="edit" bind:value={entry.value} />
               </ContactEntryUI>
@@ -120,7 +121,8 @@
           </svelte:fragment>
           <grid class="items" slot="content">
             {#each $chatAccounts.each as entry}
-              <ContactEntryUI {entry} coll={chatAccounts} on:save={save}>
+              <ContactEntryUI {entry} coll={chatAccounts}
+                on:save={save} bind:isEditing={isEditingContacts}>
                 <EmailAddressDisplay slot="display" value={entry.value} /><!-- TODO chat link -->
                 <EmailAddressEdit slot="edit" bind:value={entry.value} /><!-- TODO chat editor -->
               </ContactEntryUI>
@@ -142,7 +144,8 @@
           </svelte:fragment>
           <grid class="items" slot="content">
             {#each $phoneNumbers.each as entry}
-              <ContactEntryUI {entry} coll={phoneNumbers} on:save={save}>
+              <ContactEntryUI {entry} coll={phoneNumbers}
+                on:save={save} bind:isEditing={isEditingContacts}>
                 <PhoneNumberDisplay slot="display" value={entry.value} />
                 <PhoneNumberEdit slot="edit" bind:value={entry.value} />
               </ContactEntryUI>
@@ -162,7 +165,8 @@
           </svelte:fragment>
           <grid class="items" slot="content">
             {#each $streetAddresses.each as entry}
-              <ContactEntryUI {entry} coll={streetAddresses} on:save={save}>
+              <ContactEntryUI {entry} coll={streetAddresses}
+                on:save={save} bind:isEditing={isEditingContacts}>
                 <StreetAddressDisplay slot="display" value={entry.value} />
                 <StreetAddressEdit slot="edit" bind:value={entry.value} />
               </ContactEntryUI>
@@ -184,7 +188,8 @@
           </svelte:fragment>
           <grid class="items" slot="content">
             {#each $groups.each as entry}
-              <ContactEntryUI {entry} coll={groups} on:save={save}>
+              <ContactEntryUI {entry} coll={groups}
+                on:save={save} bind:isEditing={isEditingContacts}>
                 <hbox slot="display">{entry.value}</hbox>
               </ContactEntryUI>
             {/each}
@@ -283,6 +288,7 @@
       chatAccounts.first.value;
 
   let isEditingName: boolean;
+  let isEditingContacts: boolean;
   $: showEmail = $emailAddresses.hasItems;
   $: showChat = $chatAccounts.hasItems;
   $: showPhone = $phoneNumbers.hasItems;

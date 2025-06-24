@@ -46,8 +46,8 @@
 
   export let entry: ContactEntry;
   export let coll: Collection<ContactEntry>;
+  export let isEditing = !entry.value;
 
-  let isEditing = !entry.value;
   let inputWrapperEl: HTMLDivElement;
   let copied = false;
 
