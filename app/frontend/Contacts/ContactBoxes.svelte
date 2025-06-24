@@ -136,7 +136,11 @@
 
   {#if showNotes}
     <vbox flex class="notes">
-      <textarea bind:value={person.notes} placeholder={$t`Personal notes`} autofocus={person.notes == " "} class="font-small" />
+      <textarea
+        bind:value={person.notes}
+        placeholder={$t`Personal notes`}
+        autofocus={person.notes == " "}
+        class="font-small" />
     </vbox>
   {/if}
 </vbox>
@@ -163,6 +167,7 @@
   import AddIcon from "lucide-svelte/icons/plus";
   import { showError } from "../Util/error";
   import { t } from "../../l10n/l10n";
+  import { selectedContactEntry } from "./Person/Selected";
 
   export let person: Person;
 
@@ -181,24 +186,33 @@
   $: showNotes = !!$person.notes;
 
   function addEmail() {
-    person.emailAddresses.push(new ContactEntry("", "work"));
+    let entry = new ContactEntry("", "work");
+    person.emailAddresses.push(entry);
     isEditingContacts = true;
+    $selectedContactEntry = entry;
   }
   function addChatAccount() {
-    person.chatAccounts.push(new ContactEntry("", "matrix"));
+    let entry = new ContactEntry("", "xmpp");
+    person.chatAccounts.push(entry);
     isEditingContacts = true;
+    $selectedContactEntry = entry;
   }
   function addPhoneNumber() {
-    person.phoneNumbers.push(new ContactEntry("", "work"));
+    let entry = new ContactEntry("", "work");
+    person.phoneNumbers.push(entry);
     isEditingContacts = true;
+    $selectedContactEntry = entry;
   }
   function addStreetAddress() {
-    person.streetAddresses.push(new ContactEntry("", "work"));
+    let entry = new ContactEntry("", "work");
+    person.streetAddresses.push(entry);
     isEditingContacts = true;
+    $selectedContactEntry = entry;
   }
   function addNotes() {
     person.notes = " ";
   }
+  $: $selectedContactEntry && console.log("contact", $selectedContactEntry.value);
 
   async function save() {
     try {

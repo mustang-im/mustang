@@ -24,7 +24,9 @@
       label={$t`Delete this information`} />
   </hbox>
 {:else}
-  <hbox class="purpose display font-small" on:click={startEditing}>{displayPurpose(entry.purpose)}</hbox>
+  <hbox class="purpose display font-small" on:click={startEditing}>
+    {displayPurpose(entry.purpose)}
+  </hbox>
   <hbox class="value font-small" on:click={startEditing}>
     <slot name="display" />
   </hbox>
@@ -49,6 +51,7 @@
 <script lang="ts">
   import type { Collection } from "svelte-collections";
   import type { ContactEntry } from "../../logic/Abstract/Person";
+  import { selectedContactEntry } from "./Person/Selected";
   import Button from "../Shared/Button.svelte";
   import PencilIcon from "lucide-svelte/icons/pencil";
   import CopyIcon from "lucide-svelte/icons/copy";
@@ -69,8 +72,7 @@
 
   async function startEditing() {
     isEditing = true;
-    await tick();
-    inputWrapperEl.querySelector("input")?.focus();
+    $selectedContactEntry == entry;
   }
 
   function stopEditing() {
@@ -82,6 +84,14 @@
     stopEditing();
   }
 
+  $: $selectedContactEntry == entry && focus()
+  async function focus() {
+    await tick();
+    let inputE = inputWrapperEl.querySelector("input")
+      ?? inputWrapperEl.querySelector("textarea");
+    inputE?.focus();
+  }
+
   async function copyValue() {
     navigator.clipboard.writeText(entry.value);
     copied = true;
@@ -91,7 +101,7 @@
 
   function remove() {
     coll.remove(entry);
-    stopEditing();
+    dispatch("save");
   }
 
   const purposes = {
