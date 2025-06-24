@@ -6,6 +6,13 @@
       * Email
       * Chat
   * Actions (Filters): Run
+  * Contacts
+    * catch mailto:
+    * Add buttons for creating mail, chat etc.
+    * (+) in group header has tooltip "null"
+    * Remove entries with no value
+    * Add new line with no value when editing (if we can do it without moving the other boxes)
+    * Street address
   * Calendar
     * Recurring #654
     * Invitations
