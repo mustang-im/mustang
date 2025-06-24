@@ -12,8 +12,16 @@
     <slot name="edit" />
   </hbox>
   <hbox class="actions font-small">
-    <Button on:click={stopEditing} icon={OKIcon} iconOnly plain iconSize="14px" label={$t`Finish editing and save`} />
-    <Button on:click={remove} icon={DeleteIcon} iconOnly plain iconSize="14px" label={$t`Delete this information`} />
+    <Button
+      on:click={stopEditing}
+      icon={OKIcon}
+      iconOnly plain iconSize="14px"
+      label={$t`Finish editing and save`} />
+    <Button
+      on:click={remove}
+      icon={DeleteIcon}
+      iconOnly plain iconSize="14px"
+      label={$t`Delete this information`} />
   </hbox>
 {:else}
   <hbox class="purpose display font-small" on:click={startEditing}>{displayPurpose(entry.purpose)}</hbox>
@@ -21,11 +29,19 @@
     <slot name="display" />
   </hbox>
   <hbox class="actions contact-entry font-small">
-    <Button on:click={startEditing} icon={PencilIcon} iconOnly plain iconSize="12px" label={$t`Edit`} />
-    <Button on:click={copyValue} icon={CopyIcon} iconOnly plain iconSize="12px" label={$t`Copy info to clipboard`} />
     {#if copied}
-      <hbox>{$t`Copied to clipboard ✓`}</hbox>
+      <hbox class="copied">{$t`✓ Copied to clipboard`}</hbox>
     {/if}
+    <Button
+      on:click={copyValue}
+      icon={CopyIcon}
+      iconOnly plain iconSize="14px"
+      label={$t`Copy info to clipboard`} />
+    <Button
+      on:click={startEditing}
+      icon={PencilIcon}
+      iconOnly plain iconSize="14px"
+      label={$t`Edit`} />
     <slot name="actions" />
   </hbox>
 {/if}
@@ -94,8 +110,8 @@
 </script>
 
 <style>
-  .purpose, .value, .actions {
-    margin-block-start: 8px;
+  .purpose, .value {
+    margin-block: 4px;
   }
 
   .purpose {
@@ -105,13 +121,24 @@
   }
 
   .actions {
-    margin-inline-start: 12px;
+    align-items: center;
+    justify-content: end;
+    margin-inline-start: 16px;
+    height: 100%;
   }
-  .actions > :global(*) {
+  .actions > :global(button) {
     min-width: 20px;
+    height: 100%;
+    margin-right: 8px;
   }
   :global(.group:not(:hover)) .actions {
     visibility: hidden;
+  }
+  .actions :global(button) {
+    color: #9894A0;
+  }
+  .copied {
+    margin-inline-end: 8px;
   }
 
   .value {

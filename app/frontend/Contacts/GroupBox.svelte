@@ -30,6 +30,6 @@
   .content {
     background-color: var(--main-bg);
     color: var(--main-fg);
-    padding: 8px 16px 16px 20px;
+    padding: 8px 16px 10px 20px;
   }
 </style>

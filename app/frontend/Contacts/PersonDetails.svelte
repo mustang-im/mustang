@@ -439,9 +439,6 @@
   :global(.group:not(:hover)) .actions {
     visibility: hidden;
   }
-  .person-page :global(.group .actions.contact-entry button) {
-    color: #9894A0;
-  }
   .person-page :global(.group button.add),
   .preferred {
     color: grey;
