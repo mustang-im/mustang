@@ -96,6 +96,16 @@
   .splitter-bar {
     cursor: col-resize;
     z-index: 100;
+    /*background: linear-gradient(
+      to bottom,
+      transparent 48%,
+      var(--border) 48%,
+      var(--border) 52%,
+      transparent 52%
+    );*/
+  }
+  .splitter-bar:hover {
+    background-color: var(--hover-bg);
   }
 
   .left {

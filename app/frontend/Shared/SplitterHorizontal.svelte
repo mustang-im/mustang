@@ -97,6 +97,9 @@
     cursor: row-resize;
     z-index: 100;
   }
+  .splitter-bar:hover {
+    background-color: var(--hover-bg);
+  }
 
   .top {
     flex: 1 0 0; /* by definition, see topRatio above */
