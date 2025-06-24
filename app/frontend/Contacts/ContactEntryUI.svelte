@@ -32,6 +32,7 @@
     {#if copied}
       <hbox class="copied">{$t`✓ Copied to clipboard`}</hbox>
     {/if}
+    <slot name="actions" />
     <Button
       on:click={copyValue}
       icon={CopyIcon}
@@ -42,7 +43,6 @@
       icon={PencilIcon}
       iconOnly plain iconSize="14px"
       label={$t`Edit`} />
-    <slot name="actions" />
   </hbox>
 {/if}
 
