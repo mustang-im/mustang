@@ -12,27 +12,47 @@
               placeholder={$t`First name Last name`} />
           </hbox>
           {#if isEditingName}
-            <vbox class="names">
-              <input type="text" bind:value={person.firstName}
-                class="firstname" placeholder={$t`First name`} />
-              <input type="text" bind:value={person.lastName}
-                class="lastname" placeholder={$t`Last name`} />
-            </vbox>
+            <hbox class="names firstname">
+              <EditableSimpleText
+                bind:value={person.firstName}
+                on:save={save}
+                bind:isEditing={isEditingName}
+                placeholder={$t`First name`} />
+            </hbox>
+            <hbox class="names lastname">
+              <EditableSimpleText
+                bind:value={person.lastName}
+                on:save={save}
+                bind:isEditing={isEditingName}
+                placeholder={$t`Last name`} />
+            </hbox>
           {/if}
           <vbox class="job-company">
             {#if $person.position || isEditingName}
               <hbox class="position">
-                <EditableSimpleText bind:value={person.position} on:save={save} placeholder={$t`Position`} />
+                <EditableSimpleText
+                  bind:value={person.position}
+                  on:save={save}
+                  bind:isEditing={isEditingName}
+                  placeholder={$t`Position`} />
               </hbox>
             {/if}
             {#if $person.department || isEditingName}
               <hbox class="department">
-                <EditableSimpleText bind:value={person.department} on:save={save} placeholder={$t`Department`} />
+                <EditableSimpleText
+                  bind:value={person.department}
+                  on:save={save}
+                  bind:isEditing={isEditingName}
+                  placeholder={$t`Department`} />
               </hbox>
             {/if}
             {#if $person.company || isEditingName}
               <hbox class="company">
-                <EditableSimpleText bind:value={person.company} on:save={save} placeholder={$t`First name Last name`} />
+                <EditableSimpleText
+                  bind:value={person.company}
+                  on:save={save}
+                  bind:isEditing={isEditingName}
+                  placeholder={$t`Company`} />
               </hbox>
             {/if}
           </vbox>
@@ -311,20 +331,21 @@
     margin-block-start: 16px;
     margin-block-end: 16px;
   }
-  .name :global(input),
-  .name {
+  .name,
+  .name :global(input) {
     font-size: 18px;
     font-weight: bold;
     margin-block-end: 8px;
     color: inherit;
   }
-  .names {
-    margin-inline-end: 42px;
+  .name :global(input) {
+    width: 20em;
   }
-  .names input {
-    margin-block-end: 4px;
+  .names :global(button.save),
+  .job-company :global(button.save) {
+    visibility: hidden;
   }
-  .person-page[language="fr"] .names input.lastname {
+  .person-page[language="fr"] .names.lastname {
     text-transform: uppercase;
   }
   .job-company {
