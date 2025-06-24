@@ -1,5 +1,5 @@
 <hbox class="persons-toolbar">
-  <vbox class="scroll">
+  <vbox class="dropdown">
     <AccountDropDown
       bind:selectedAccount={selectedAddressbook}
       accounts={appGlobal.addressbooks}
@@ -62,6 +62,10 @@
   .persons-toolbar {
     margin: 10px 12px 10px 16px;
     align-items: end;
+  }
+  .dropdown {
+    margin-block: auto; /* v-center */
+    margin-inline-start: 4px;
   }
   .buttons {
     align-items: end;
