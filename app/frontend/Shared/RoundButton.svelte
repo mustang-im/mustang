@@ -122,7 +122,7 @@
     background-color: var(--selected-hover-bg);
     color: var(--selected-hover-fg);
   }
-  button.secondary {
+  button.border.secondary {
     border-color: var(--button-secondary-line);
   }
   button.plain {

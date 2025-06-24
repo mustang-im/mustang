@@ -60,20 +60,37 @@
     <hbox flex class="main-right">
       <hbox class="main-call">
         {#if preferredVideoCall}
-          <RoundButton label={$t`Video call`} icon={CameraIcon} classes="large secondary action"
+          <RoundButton
+            label={$t`Video call`}
+            icon={CameraIcon}
+            classes="large secondary plain action"
+            border={false}
             onClick={() => startVideoCall(person)} />
         {/if}
         {#if preferredPhoneNumber}
           <a href="tel:{preferredPhoneNumber}" class="phone-call">
-            <RoundButton label={$t`Call`} icon={CallIcon} iconSize="19px" classes="large secondary action" />
+            <RoundButton
+              label={$t`Call`}
+              icon={CallIcon}
+              iconSize="19px"
+              border={false}
+              classes="large secondary plain action" />
           </a>
         {/if}
         {#if preferredChatAccount}
-          <RoundButton label={$t`Message`} icon={ChatIcon} classes="large secondary action" />
+          <RoundButton
+            label={$t`Message`}
+            icon={ChatIcon}
+            border={false}
+            classes="large secondary plain action" />
         {/if}
         {#if preferredEmailAddress}
           <a href="mailto:{preferredEmailAddress}">
-            <RoundButton label={$t`Send mail`} icon={MailIcon} classes="large secondary action" />
+            <RoundButton
+              label={$t`Send mail`}
+              icon={MailIcon}
+              border={false}
+              classes="large secondary plain action" />
           </a>
         {/if}
       </hbox>
