@@ -10,7 +10,8 @@
         selectedAccount={selectedCalendar}
         on:select
         filterByWorkspace={false}
-        withIcon={true} withLabel={false}
+        icon={AccountIcon}
+        withLabel={false}
         />
     {/if}
   </hbox>
@@ -22,9 +23,10 @@
 <script lang="ts">
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import type { Event } from "../../../logic/Calendar/Event";
-  import type { Collection } from "svelte-collections";
   import DetailsGrid from "./DetailsGrid.svelte";
   import AccountDropDown from "../../Shared/AccountDropDown.svelte";
+  import AccountIcon from "lucide-svelte/icons/book-user";
+  import type { Collection } from "svelte-collections";
 
   export let event: Event;
   export let calendars: Collection<Calendar>;

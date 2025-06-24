@@ -384,6 +384,10 @@
     align-items: start;
     margin-block-start: px;
   }
+  .main-right-top :global(.account-selector .icon) {
+    width: 20px;
+    height: 20px;
+  }
   .preferred {
     margin-block-start: 8px;
     margin-block-end: 8px;
@@ -392,8 +396,6 @@
   .phone-call :global(.icon) {
     /* because the icon is 1px smaller */
     margin: 1px;
-  }
-  .boxes {
   }
   h3,
   .person-page :global(.group .header h3) {

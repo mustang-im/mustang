@@ -5,6 +5,7 @@
       accounts={appGlobal.addressbooks}
       showAllOption={true}
       filterByWorkspace={true}
+      icon={AccountIcon}
       />
   </vbox>
   <hbox flex />
@@ -35,6 +36,7 @@
   import RoundButton from "../Shared/RoundButton.svelte";
   import NewContactIcon from "lucide-svelte/icons/plus";
   import SyncIcon from "lucide-svelte/icons/refresh-cw";
+  import AccountIcon from "lucide-svelte/icons/book-user";
   import { assert } from "../../logic/util/util";
   import type { Collection } from "svelte-collections";
   import { t } from "../../l10n/l10n";
@@ -66,6 +68,13 @@
   .dropdown {
     margin-block: auto; /* v-center */
     margin-inline-start: 4px;
+  }
+  .dropdown :global(.icon) {
+    margin-inline-end: 4px;
+  }
+  .dropdown :global(.icon svg) {
+    width: 20px;
+    height: 20px;
   }
   .buttons {
     align-items: end;

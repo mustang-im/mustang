@@ -2,7 +2,8 @@
   bind:selectedAccount={selectedAddressbook}
   accounts={addressbooks}
   filterByWorkspace={false}
-  withLabel={false} withIcon={true}
+  icon={AccountIcon}
+  withLabel={false}
   on:select={() => catchErrors(() => onChangeAddressbook(selectedAddressbook))}
   />
 
@@ -12,11 +13,12 @@
   import { appGlobal } from "../../logic/app";
   import { selectedWorkspace } from "../MainWindow/Selected";
   import AccountDropDown from "../Shared/AccountDropDown.svelte";
+  import AccountIcon from "lucide-svelte/icons/book-user";
   import { catchErrors } from "../Util/error";
 
   export let person: Person;
 
-  let selectedAddressbook;
+  let selectedAddressbook: Addressbook;
   //$: selectedAddressbook = person?.addressbook;
   $: addressbooks = appGlobal.addressbooks.filter(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace);
 
