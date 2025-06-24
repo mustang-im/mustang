@@ -13,6 +13,8 @@
     * Remove entries with no value
     * Add new line with no value when editing (if we can do it without moving the other boxes)
     * Street address
+    * Same name: shrink address book name, not email address
+    * Same name: Checkboxes
   * Calendar
     * Recurring #654
     * Invitations
