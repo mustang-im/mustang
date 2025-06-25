@@ -108,9 +108,6 @@
     "work": $t`Work *=> Business address or phone number`,
     "home": $t`Home *=> Private address or phone number`,
     "mobile": $t`Mobile *=> Cell phone number`,
-    "whatsapp": "WhatsApp",
-    "teams": "Microsoft Teams",
-    "matrix": "Matrix",
     "other": $t`Other *=> Email address or phone number that is not home or work`,
   }
 

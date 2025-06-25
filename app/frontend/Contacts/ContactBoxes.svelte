@@ -245,7 +245,7 @@
     $selectedContactEntry = entry;
   }
   function addChatAccount() {
-    let entry = new ContactEntry("", "xmpp");
+    let entry = new ContactEntry("", "work");
     person.chatAccounts.push(entry);
     isEditingContacts = true;
     $selectedContactEntry = entry;
