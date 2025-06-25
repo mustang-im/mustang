@@ -5,7 +5,11 @@
         <Icon data={MailIcon} size="16px" />
         <h3 class="font-small">{$t`Mail`}</h3>
         <hbox flex class="header actions">
-          <Button on:click={addEmail} icon={AddIcon} iconOnly plain classes="add" />
+          <Button
+            on:click={addEmail}
+            icon={AddIcon}
+            label={$t`Add mail address`}
+            iconOnly plain classes="add" />
         </hbox>
       </svelte:fragment>
       <grid class="items" slot="content">
@@ -26,7 +30,11 @@
         <Icon data={ChatIcon} size="16px" />
         <h3 class="font-small">{$t`Chat`}</h3>
         <hbox flex class="header actions">
-          <Button on:click={addChatAccount} icon={AddIcon} iconOnly plain classes="add" />
+          <Button
+            on:click={addChatAccount}
+            icon={AddIcon}
+            label={$t`Add chat contact`}
+            iconOnly plain classes="add" />
         </hbox>
       </svelte:fragment>
       <grid class="items" slot="content">
@@ -49,7 +57,11 @@
         </hbox>
         <h3 class="font-small">{$t`Phone numbers`}</h3>
         <hbox flex class="header actions">
-          <Button on:click={addPhoneNumber} icon={AddIcon} iconOnly plain classes="add" />
+          <Button
+            on:click={addPhoneNumber}
+            icon={AddIcon}
+            label={$t`Add phone number`}
+            iconOnly plain classes="add" />
         </hbox>
       </svelte:fragment>
       <grid class="items" slot="content">
@@ -70,7 +82,11 @@
         <Icon data={MailIcon} size="16px" />
         <h3 class="font-small">{$t`Street addresses`}</h3>
         <hbox flex class="header actions">
-          <Button on:click={addStreetAddress} icon={AddIcon} iconOnly plain classes="add" />
+          <Button
+            on:click={addStreetAddress}
+            label={$t`Add street address`}
+            icon={AddIcon}
+            iconOnly plain classes="add" />
         </hbox>
       </svelte:fragment>
       <grid class="items" slot="content">
@@ -93,7 +109,11 @@
         </hbox>
         <h3 class="font-small">{$t`Website`}</h3>
         <hbox flex class="header actions">
-          <Button on:click={addURL} icon={AddIcon} iconOnly plain classes="add" />
+          <Button
+            on:click={addURL}
+            icon={AddIcon}
+            label={$t`Add website link`}
+            iconOnly plain classes="add" />
         </hbox>
       </svelte:fragment>
       <grid class="items" slot="content">
@@ -115,7 +135,11 @@
         <h3 class="font-small">{$t`Groups`}</h3>
         <hbox flex class="header actions">
           <!--
-          <Button on:click={addEmail} icon={AddIcon} iconOnly plain classes="add" />
+          <Button
+            on:click={addEmail}
+            icon={AddIcon}
+            label={$t`Add to group`}
+            iconOnly plain classes="add" />
           -->
         </hbox>
       </svelte:fragment>
