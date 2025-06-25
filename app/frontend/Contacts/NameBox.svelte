@@ -125,15 +125,12 @@
   $: phoneNumbers = person.phoneNumbers;
   $: chatAccounts = person.chatAccounts;
   $: preferredPhoneNumber = $phoneNumbers.isEmpty ? null :
-      phoneNumbers.sortBy(p => p.preference).first?.value ??
-      phoneNumbers.first.value;
+      $phoneNumbers.sortBy(p => p.preference).first?.value;
   $: preferredEmailAddress = $emailAddresses.isEmpty ? null :
-      emailAddresses.sortBy(p => p.preference).first?.value ??
-      emailAddresses.first.value;
+      $emailAddresses.sortBy(p => p.preference).first?.value;
   $: preferredVideoCall = null;
   $: preferredChatAccount = $chatAccounts.isEmpty ? null :
-      chatAccounts.sortBy(p => p.preference).first?.value ??
-      chatAccounts.first.value;
+      $chatAccounts.sortBy(p => p.preference).first?.value;
 
   let isEditingName: boolean;
 
