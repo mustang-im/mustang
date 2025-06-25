@@ -10,10 +10,10 @@ export class Person extends ContactBase {
   firstName: string | null;
   @notifyChangedProperty
   lastName: string | null;
-  readonly emailAddresses = new ArrayColl<ContactEntry>();
-  readonly phoneNumbers = new ArrayColl<ContactEntry>();
-  readonly chatAccounts = new ArrayColl<ContactEntry>();
   readonly groups = new ArrayColl<ContactEntry>();
+  readonly emailAddresses = new ArrayColl<ContactEntry>();
+  readonly chatAccounts = new ArrayColl<ContactEntry>();
+  readonly phoneNumbers = new ArrayColl<ContactEntry>();
   readonly streetAddresses = new ArrayColl<ContactEntry>();
   /** Webpages about the person */
   readonly urls = new ArrayColl<ContactEntry>();
@@ -41,6 +41,15 @@ export class Person extends ContactBase {
    * Saves the contact to the server and to the database.
     */
   async save() {
+    this.removeEmptyContactEntriesFrom([
+      this.groups,
+      this.emailAddresses,
+      this.chatAccounts,
+      this.phoneNumbers,
+      this.streetAddresses,
+      this.urls,
+      this.custom,
+    ]);
     await super.save();
     await this.saveLocally();
     await this.saveToServer();
@@ -55,6 +64,12 @@ export class Person extends ContactBase {
 
   async saveToServer(): Promise<void> {
     // nothing to do for local persons
+  }
+
+  protected removeEmptyContactEntriesFrom(colls: ArrayColl<ContactEntry>[]) {
+    for (let coll of colls) {
+      coll.removeAll(coll.filterOnce(entry => !entry.value));
+    }
   }
 
   /**
@@ -133,13 +148,13 @@ export class Person extends ContactBase {
     this.department = this.department ?? other.department;
     this.position = this.position ?? other.position;
     this.notes = ((this.notes || "") + (other.notes || "")) || null;
-    this.emailAddresses.addAll(other.emailAddresses.filter(o => !this.emailAddresses.find(t => t.value == o.value)));
-    this.chatAccounts.addAll(other.chatAccounts.filter(o => !this.chatAccounts.find(t => t.value == o.value)));
-    this.phoneNumbers.addAll(other.phoneNumbers.filter(o => !this.phoneNumbers.find(t => t.value == o.value)));
-    this.streetAddresses.addAll(other.streetAddresses.filter(o => !this.streetAddresses.find(t => t.value == o.value)));
-    this.urls.addAll(other.urls.filter(o => !this.urls.find(t => t.value == o.value)));
-    this.groups.addAll(other.groups.filter(o => !this.groups.find(t => t.value == o.value)));
-    this.custom.addAll(other.custom.filter(o => !this.custom.find(t => t.value == o.value)));
+    this.emailAddresses.addAll(other.emailAddresses.filterOnce(o => !this.emailAddresses.find(t => t.value == o.value)));
+    this.chatAccounts.addAll(other.chatAccounts.filterOnce(o => !this.chatAccounts.find(t => t.value == o.value)));
+    this.phoneNumbers.addAll(other.phoneNumbers.filterOnce(o => !this.phoneNumbers.find(t => t.value == o.value)));
+    this.streetAddresses.addAll(other.streetAddresses.filterOnce(o => !this.streetAddresses.find(t => t.value == o.value)));
+    this.urls.addAll(other.urls.filterOnce(o => !this.urls.find(t => t.value == o.value)));
+    this.groups.addAll(other.groups.filterOnce(o => !this.groups.find(t => t.value == o.value)));
+    this.custom.addAll(other.custom.filterOnce(o => !this.custom.find(t => t.value == o.value)));
     await other.deleteIt();
   }
 
