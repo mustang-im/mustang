@@ -33,7 +33,7 @@
   }
   async function deleteIt() {
     if (person == $selectedPerson) {
-      $selectedPerson = getNext(person.addressbook.persons, person);
+      $selectedPerson = getNext(person.addressbook?.persons, person);
     }
 
     await person.deleteIt();
