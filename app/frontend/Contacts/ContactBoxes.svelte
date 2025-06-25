@@ -259,6 +259,9 @@
 </script>
 
 <style>
+  .boxes {
+    height: 100%;
+  }
   .boxes :global(.group .header h3) {
     margin-inline-start: 10px;
     margin-block-start: 0px;

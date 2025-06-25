@@ -2,17 +2,20 @@
   <NameBox {person} />
 
   <Splitter initialRightRatio={1} name="contact-history">
-    <ContactBoxes {person} slot="left" />
+    <Scroll hideHorizontalScrollbar={true} slot="left">
+      <ContactBoxes {person} />
+    </Scroll>
     <ContactHistory {person} slot="right" />
   </Splitter>
 </vbox>
 
 <script lang="ts">
   import type { Person } from "../../logic/Abstract/Person";
-  import Splitter from "../Shared/Splitter.svelte";
   import NameBox from "./NameBox.svelte";
   import ContactBoxes from "./ContactBoxes.svelte";
   import ContactHistory from "./History/ContactHistory.svelte";
+  import Splitter from "../Shared/Splitter.svelte";
+  import Scroll from "../Shared/Scroll.svelte";
 
   export let person: Person;
 </script>

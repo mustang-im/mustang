@@ -1,10 +1,15 @@
-<vbox class="scroll" bind:this={containerE} on:mousewheel={onScrollWheel}>
+<vbox class="scroll"
+  bind:this={containerE}
+  on:mousewheel={onScrollWheel}
+  class:hideHorizontalScrollbar>
   <vbox class="inside">
     <slot />
   </vbox>
 </vbox>
 
 <script lang="ts">
+  export let hideHorizontalScrollbar = false;
+
   let containerE: HTMLDivElement;
   export function scrollDown() {
     containerE.scrollTop = containerE.scrollHeight;
@@ -24,6 +29,10 @@
     position: relative;
     overflow: auto;
     overflow-wrap: anywhere;
+  }
+  .scroll.hideHorizontalScrollbar {
+    overflow-y: auto;
+    overflow-x: hidden;
   }
   .inside {
     position: absolute;
