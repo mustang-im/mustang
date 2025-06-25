@@ -41,7 +41,7 @@ export class SQLSearchEMail extends SearchEMail {
         $${typeof (this.messageID) == "string" ? sql` AND messageID = ${this.messageID} ` : sql``}
         $${this.sizeMin ? sql` AND size >= ${this.sizeMin} ` : sql``}
         $${this.sizeMax ? sql` AND size <= ${this.sizeMax} ` : sql``}
-        $${this.includesPerson?.emailAddresses.hasItems ? sql` AND emailPerson.emailAddress IN ${this.includesPerson.emailAddresses.contents.map(c => c.value)} ` : sql``}
+        $${this.includesPerson ? (this.includesPerson?.emailAddresses.hasItems ? sql` AND emailPerson.emailAddress IN ${this.includesPerson.emailAddresses.contents.map(c => c.value)} ` : sql` AND FALSE`) : sql``}
         $${this.hasAttachment === true ? sql` AND emailAttachment.disposition = 'attachment' ` : sql``}
         $${this.hasAttachment === false ? sql` AND emailAttachment.id IS NULL ` : sql``}
         $${this.hasAttachmentMIMETypes?.hasItems ? sql` AND emailAttachment.mimeType IN ${this.hasAttachmentMIMETypes.contents} ` : sql``}
