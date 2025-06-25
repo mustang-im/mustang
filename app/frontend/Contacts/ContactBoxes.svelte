@@ -42,15 +42,15 @@
   {/if}
 
   {#if showPhone}
-  <GroupBox classes="phone">
-    <svelte:fragment slot="header">
-      <hbox class="phone">
-        <Icon data={PhoneIcon} size="16px" />
-      </hbox>
-      <h3 class="font-small">{$t`Phone numbers`}</h3>
-      <hbox flex class="header actions">
-        <Button on:click={addPhoneNumber} icon={AddIcon} iconOnly plain classes="add" />
-      </hbox>
+    <GroupBox classes="phone">
+      <svelte:fragment slot="header">
+        <hbox class="phone">
+          <Icon data={PhoneIcon} size="16px" />
+        </hbox>
+        <h3 class="font-small">{$t`Phone numbers`}</h3>
+        <hbox flex class="header actions">
+          <Button on:click={addPhoneNumber} icon={AddIcon} iconOnly plain classes="add" />
+        </hbox>
       </svelte:fragment>
       <grid class="items" slot="content">
         {#each $phoneNumbers.each as entry}
@@ -79,6 +79,29 @@
             on:save={save} bind:isEditing={isEditingContacts}>
             <StreetAddressDisplay slot="display" value={entry.value} />
             <StreetAddressEdit slot="edit" bind:value={entry.value} />
+          </ContactEntryUI>
+        {/each}
+      </grid>
+    </GroupBox>
+  {/if}
+
+  {#if showURLs}
+    <GroupBox classes="url">
+      <svelte:fragment slot="header">
+        <hbox class="url">
+          <WebsiteIcon size="16px" />
+        </hbox>
+        <h3 class="font-small">{$t`Website`}</h3>
+        <hbox flex class="header actions">
+          <Button on:click={addURL} icon={AddIcon} iconOnly plain classes="add" />
+        </hbox>
+      </svelte:fragment>
+      <grid class="items" slot="content">
+        {#each $urls.each as entry}
+          <ContactEntryUI {entry} coll={urls}
+            on:save={save} bind:isEditing={isEditingContacts}>
+            <URLDisplay slot="display" value={entry.value} />
+            <URLEdit slot="edit" bind:value={entry.value} />
           </ContactEntryUI>
         {/each}
       </grid>
@@ -129,6 +152,7 @@
       <ExpanderButton bind:expanded={showChat} label={$t`Chat`} on:expand={addChatAccount} />
       <ExpanderButton bind:expanded={showPhone} label={$t`Phone`} on:expand={addPhoneNumber} />
       <ExpanderButton bind:expanded={showStreet} label={$t`Street address`} on:expand={addStreetAddress} />
+      <ExpanderButton bind:expanded={showURLs} label={$t`Website`} on:expand={addURL} />
       <!--<ExpanderButton bind:expanded={showGroups} label="Groups" on:expand={addGroup} />-->
       <ExpanderButton bind:expanded={showNotes} label={$t`Notes`} on:expand={addNotes} />
     </ExpanderButtons>
@@ -153,6 +177,8 @@
   import GroupBox from "./GroupBox.svelte";
   import PhoneNumberDisplay from "./PhoneNumberDisplay.svelte";
   import PhoneNumberEdit from "./PhoneNumberEdit.svelte";
+  import URLDisplay from "./URLDisplay.svelte";
+  import URLEdit from "./URLEdit.svelte";
   import StreetAddressDisplay from "./StreetAddressDisplay.svelte";
   import StreetAddressEdit from "./StreetAddressEdit.svelte";
   import SameName from "./SameName.svelte";
@@ -164,6 +190,7 @@
   import ChatIcon from '../asset/icon/appBar/chat.svg?raw';
   import ContactsIcon from '../asset/icon/appBar/contacts.svg?raw';
   import PhoneIcon from '../asset/icon/meet/call.svg?raw';
+  import WebsiteIcon from "lucide-svelte/icons/globe";
   import AddIcon from "lucide-svelte/icons/plus";
   import { showError } from "../Util/error";
   import { t } from "../../l10n/l10n";
@@ -175,6 +202,7 @@
   $: phoneNumbers = person.phoneNumbers;
   $: chatAccounts = person.chatAccounts;
   $: streetAddresses = person.streetAddresses;
+  $: urls = person.urls;
   $: groups = person.groups;
 
   let isEditingContacts: boolean;
@@ -182,6 +210,7 @@
   $: showChat = $chatAccounts.hasItems;
   $: showPhone = $phoneNumbers.hasItems;
   $: showStreet = $streetAddresses.hasItems;
+  $: showURLs = $urls.hasItems;
   $: showGroups = $groups.hasItems;
   $: showNotes = !!$person.notes;
 
@@ -206,6 +235,12 @@
   function addStreetAddress() {
     let entry = new ContactEntry("", "work");
     person.streetAddresses.push(entry);
+    isEditingContacts = true;
+    $selectedContactEntry = entry;
+  }
+  function addURL() {
+    let entry = new ContactEntry("", "work");
+    person.urls.push(entry);
     isEditingContacts = true;
     $selectedContactEntry = entry;
   }
