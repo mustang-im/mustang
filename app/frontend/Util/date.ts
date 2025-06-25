@@ -10,7 +10,10 @@ import { getUILocale, gPlural, gt } from "../../l10n/l10n";
 * See also <https://momentjs.com> for relative time
 */
 export function getDateTimeString(date: Date): string {
-  var dateDetails = null;
+  if (!date) {
+    return "";
+  }
+  let dateDetails = null;
   let today = new Date();
   if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < k1DayMS) { // today
     dateDetails = { hour: "numeric", minute: "numeric" };
@@ -35,7 +38,10 @@ export function getDateTimeString(date: Date): string {
 * See also <https://momentjs.com> for relative time
 */
 export function getDateString(date: Date): string {
-  var dateDetails = null;
+  if (!date) {
+    return "";
+  }
+  let dateDetails = null;
   let today = new Date();
   if (date.getDate() == today.getDate() && today.getTime() - date.getTime() < k1DayMS) { // today
     return gt`Today`;
