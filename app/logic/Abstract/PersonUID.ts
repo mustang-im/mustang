@@ -49,7 +49,10 @@ export class PersonUID extends Observable {
   }
 
   matchesPerson(person: Person): boolean {
-    return person && !!person.emailAddresses.find(e => e.value == this.emailAddress);
+    return person && (
+      !!person.emailAddresses.find(e => e.value == this.emailAddress) ||
+      !!person.chatAccounts.find(e => e.value == this.emailAddress)
+    );
   }
 
   /** The email address does not belong to the end user,
