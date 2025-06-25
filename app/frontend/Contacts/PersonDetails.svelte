@@ -3,7 +3,7 @@
 
   <Splitter initialRightRatio={1} name="contact-history">
     <ContactBoxes {person} slot="left" />
-    <vbox class="history" slot="right" />
+    <ContactHistory {person} slot="right" />
   </Splitter>
 </vbox>
 
@@ -12,6 +12,7 @@
   import Splitter from "../Shared/Splitter.svelte";
   import NameBox from "./NameBox.svelte";
   import ContactBoxes from "./ContactBoxes.svelte";
+  import ContactHistory from "./History/ContactHistory.svelte";
 
   export let person: Person;
 </script>
