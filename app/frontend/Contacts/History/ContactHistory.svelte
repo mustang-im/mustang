@@ -5,25 +5,23 @@
         {$t`Contact history`}
       </hbox>
       <vbox class="log" flex slot="content">
-        <Scroll>
-          {#each $messages.each as message}
-            <LogBox {message} {person} />
-          {/each}
+        <FastList items={messages}>
+          <LogBox {message} {person} let:item={message} slot="row" />
+        </FastList>
 
-          {#if $messages.length >= limit}
-            <hbox class="show-more">
-              <hbox class="count">
-                {$t`Showing ${limit} results`}
-              </hbox>
-              <Button
-                label={$t`Show more`}
-                onClick={showMore}
-                classes="secondary"
-                icon={ShowMoreIcon}
-                />
-              </hbox>
-          {/if}
-        </Scroll>
+        {#if $messages.length >= limit}
+          <hbox class="show-more">
+            <hbox class="count">
+              {$t`Showing ${limit} results`}
+            </hbox>
+            <Button
+              label={$t`Show more`}
+              onClick={showMore}
+              classes="secondary"
+              icon={ShowMoreIcon}
+              />
+            </hbox>
+        {/if}
       </vbox>
     </GroupBox>
   </vbox>
@@ -34,7 +32,7 @@
   import { searchLog } from "../../../logic/Contacts/History/History";
   import LogBox from "./LogBox.svelte";
   import GroupBox from "../GroupBox.svelte";
-  import Scroll from "../../Shared/Scroll.svelte";
+  import FastList from "../../Shared/FastList.svelte";
   import Button from "../../Shared/Button.svelte";
   import ShowMoreIcon from "lucide-svelte/icons/chevron-down";
   import { t } from "../../../l10n/l10n";
@@ -58,12 +56,13 @@
     flex: 1 0 0;
   }
   .history > :global(.group > .content) {
+    padding-top: 16px;
     padding-right: 0px;
   }
   .show-more {
     align-items: center;
     justify-content: center;
-    margin: 16px;
+    margin: 2px 16px;
   }
   .count {
     margin-inline-end: 8px;

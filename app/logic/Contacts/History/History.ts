@@ -17,12 +17,15 @@ export function searchLog(person: Person, limit: number): Collection<LogEntry> {
   addColl(colls, getEMails(person, limit));
   addColl(colls, getChatMessages(person, limit));
   addColl(colls, getCalendarEvents(person, limit));
+  const old = new Date(0);
   return mergeColls(colls).sortBy((entry: LogEntry) => {
-    return (entry as any).time =
+    let time =
       entry instanceof Message ? entry.sent :
         entry instanceof Event ? entry.startTime :
           entry instanceof VideoConfMeeting ? entry.started ?? entry.event?.startTime :
-            0;
+            old;
+    (entry as any).time = time;
+    return -time.getTime();
   });
 }
 
