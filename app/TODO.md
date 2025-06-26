@@ -6,17 +6,16 @@
       * Email
       * Chat
   * Actions (Filters): Run
-  * Contacts
-    * catch mailto:
-    * Add buttons for creating mail, chat etc.
-    * Add new line with no value when editing (if we can do it without moving the other boxes)
-    * Street address
-    * Same name: shrink address book name, not email address
-    * Same name: Checkboxes
   * Calendar
     * Recurring #654
     * Invitations
     * Free/Busy
+  * Contacts
+    * catch mailto:
+    * Add buttons for creating mail, chat etc.
+    * Add new line with no value when editing
+      (if we can do it without moving the other boxes)
+    * Same name: Checkboxes
   * Meet
     * Close camera
   * Bug: Thunderbird AB import misses ABs and fields

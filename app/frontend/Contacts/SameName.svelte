@@ -100,14 +100,13 @@
     color: var(--link-hover-fg);
     text-decoration: underline;
   }
-  .email-address {
-    margin-inline-start: 16px;
-  }
   grid.other-person {
-    grid-template-columns: auto auto auto auto 1fr;
+    grid-template-columns: auto auto auto auto;
+    column-gap: 8px
   }
   .other-person,
-  .email-address {
+  .email-address,
+  .addressbook {
     white-space: nowrap;
     overflow: hidden;
   }
@@ -117,13 +116,13 @@
   }
   .addressbook {
     align-items: start;
-    margin-inline-start: 4px;
     opacity: 50%;
+    max-width: 5em;
+    display: none;
   }
   .addressbook-icon,
   .buttons {
     align-items: start;
-    margin-inline-start: 16px;
   }
   .other-person:not(:hover) .buttons {
     visibility: hidden;
