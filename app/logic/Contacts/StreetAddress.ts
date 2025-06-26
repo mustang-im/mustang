@@ -24,6 +24,9 @@ export class StreetAddress extends Observable {
   }
 
   toString(): string {
+    if (!(this.instructions || this.street || this.city || this.postalCode || this.state || this.country)) {
+      return "";
+    }
     return JSON.stringify(this.toJSON(), null, 2);
   }
   fromString(val: string) {

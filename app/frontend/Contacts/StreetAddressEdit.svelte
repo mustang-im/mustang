@@ -4,26 +4,26 @@
     placeholder={$t`Delivery instructions (optional)`}
     class="instructions"
     maxlength={200}
-    on:change={onChange}
+    on:input={onChange}
     />
   <input type="text"
     bind:value={streetAddress.street}
     placeholder={$t`Street and house number`}
     class="street"
     maxlength={60}
-    on:change={onChange}
+    on:input={onChange}
     />
   <input type="text"
     bind:value={streetAddress.city}
     placeholder={$t`City`}
     class="city"
     maxlength={60}
-    on:change={onChange}
+    on:input={onChange}
     />
   <input type="text"
     bind:value={streetAddress.postalCode}
     placeholder={$t`Post code`}
-    on:change={onChange}
+    on:input={onChange}
     class="postcode"
     maxlength={10}
     />
@@ -32,14 +32,14 @@
     placeholder={$t`State (optional)`}
     class="state"
     maxlength={30}
-    on:change={onChange}
+    on:input={onChange}
     />
   <input type="text"
     bind:value={streetAddress.country}
     placeholder={$t`Country`}
     class="country"
     maxlength={30}
-    on:change={onChange}
+    on:input={onChange}
     />
 </vbox>
 
