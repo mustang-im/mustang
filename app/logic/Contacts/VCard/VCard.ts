@@ -108,8 +108,8 @@ export function updatePerson(card: ICalParser, person: Person) {
     person.position = "";
   }
   person.custom.clear();
-  for (let i = 1; vcard.entries["x-custom" + i]; i++) {
-    person.custom.add(new ContactEntry(vcard.entries["x-custom" + i][0].value));
+  for (let i = 1; vcard.entries["xcustom" + i]; i++) {
+    person.custom.add(new ContactEntry(vcard.entries["xcustom" + i][0].value));
   }
 }
 
@@ -169,8 +169,8 @@ export function updateContainerFromPerson(person: Person, container: Record<stri
   for (; i < person.custom.length; i++) {
     setValue(container, "x-custom" + (i + 1), person.custom.getIndex(i).value);
   }
-  while (("x-custom" + ++i) in container) {
-    delete container["x-custom" + i];
+  while (("xcustom" + ++i) in container) {
+    delete container["xcustom" + i];
   }
 }
 
@@ -214,7 +214,7 @@ function setValue(container: Record<string, string[]>, key: string, value: strin
   }
   line += ":";
   line += value.map(value => escaped(value, false)).join(";");
-  container[key] = [line];
+  container[key.replace("-", "")] = [line];
 }
 
 function setValues(container: Record<string, string[]>, key: string, values: ArrayColl<ContactEntry>, parameters: Record<string, string> = {}) {
