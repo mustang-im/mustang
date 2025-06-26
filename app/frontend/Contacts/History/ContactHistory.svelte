@@ -2,7 +2,7 @@
   <vbox class="history" flex>
     <GroupBox>
       <hbox class="title" slot="header">
-        {$t`Contact history`}
+        {$t`Contact history *=> The log of previous interactions with this person`}
       </hbox>
       <vbox class="log" flex slot="content">
         <FastList items={messages} columns="12px 48px 48px 1fr">
