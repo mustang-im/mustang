@@ -5,7 +5,7 @@
         {$t`Contact history`}
       </hbox>
       <vbox class="log" flex slot="content">
-        <FastList items={messages} columns="48px 48px 1fr">
+        <FastList items={messages} columns="12px 48px 48px 1fr">
           <LogBox {message} {person} let:item={message} slot="row" />
         </FastList>
 
@@ -56,8 +56,7 @@
     flex: 1 0 0;
   }
   .history > :global(.group > .content) {
-    padding-top: 16px;
-    padding-right: 0px;
+    padding: 16px 0px;
   }
   .show-more {
     align-items: center;

@@ -1,3 +1,4 @@
+<hbox class="left" />
 <LogTime {message} />
 <LogIconByType {message} />
 <vbox class="content">
@@ -18,5 +19,8 @@
 <style>
   .content {
     padding: 4px 12px;
+  }
+  .left {
+    padding-inline-start: 12px;
   }
 </style>
