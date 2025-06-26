@@ -39,14 +39,16 @@
 
   export let person: Person;
 
-  let limit = 200;
+  const kDefaultLimit = 200;
+  const kAddMore = 1000;
+  let limit = kDefaultLimit;
   $: messages = searchLog(person, limit);
 
   function showMore() {
-    if (limit == 200) {
-      limit = 1000;
+    if (limit == kDefaultLimit) {
+      limit = kAddMore;
     } else {
-      limit += 1000;
+      limit += kAddMore;
     }
   }
 </script>
