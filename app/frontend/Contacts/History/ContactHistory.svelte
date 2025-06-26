@@ -5,7 +5,7 @@
         {$t`Contact history`}
       </hbox>
       <vbox class="log" flex slot="content">
-        <FastList items={messages}>
+        <FastList items={messages} columns="48px 48px 1fr">
           <LogBox {message} {person} let:item={message} slot="row" />
         </FastList>
 

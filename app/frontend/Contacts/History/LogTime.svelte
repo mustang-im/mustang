@@ -1,4 +1,4 @@
-<hbox class="time font-smallest">
+<hbox class="time font-smallest" flex>
   {getDateTimeString(time)}
 </hbox>
 
@@ -15,7 +15,6 @@
   .time {
     min-width: 48px;
     max-width: 48px;
-    max-height: 32px;
     overflow: hidden;
     border-top: 1px solid var(--border);
     padding: 4px;

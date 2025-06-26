@@ -31,16 +31,16 @@
     border-top: 1px solid var(--border);
   }
   .email {
-    background-color: #0080fd;
+    background-color: #0080fd !important;
   }
   .chat {
-    background-color: #2ab116;
+    background-color: #2ab116 !important;
   }
   .event {
-    background-color: #f4c81d;
+    background-color: #f4c81d !important;
   }
   .call {
-    background-color: #ff4747;
+    background-color: #ff4747 !important;
   }
   .icon :global(.dummy) {
     background-color: #2ab116;

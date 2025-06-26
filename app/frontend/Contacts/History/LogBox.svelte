@@ -1,10 +1,8 @@
-<hbox class="log" flex>
-  <LogTime {message} />
-  <LogIconByType {message} />
-  <vbox class="content">
-    <LogContentByType {message} />
-  </vbox>
-</hbox>
+<LogTime {message} />
+<LogIconByType {message} />
+<vbox class="content">
+  <LogContentByType {message} />
+</vbox>
 
 <script lang="ts">
   import type { LogEntry } from "../../../logic/Contacts/History/History";
