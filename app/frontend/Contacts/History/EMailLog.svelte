@@ -1,4 +1,5 @@
-<vbox class="email">
+<vbox class="email" flex
+  on:click={() => catchErrors(onOpen)}>
   <div class="subject">
     {message.subject}
   </div>
@@ -9,8 +10,26 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
+  import { selectedAccount, selectedFolder, selectedMessage } from "../../Mail/Selected";
+  import { openApp } from "../../AppsBar/selectedApp";
+  import { mailMustangApp } from "../../Mail/MailMustangApp";
+  import { assert } from "../../../logic/util/util";
+  import { catchErrors } from "../../Util/error";
+  import { tick } from "svelte";
 
   export let message: EMail;
+
+  async function onOpen() {
+    assert(message.folder?.account, "no account for email");
+    $selectedAccount = message.folder?.account;
+    $selectedFolder = message.folder;
+    $selectedMessage = message;
+    openApp(mailMustangApp);
+    await tick();
+    $selectedAccount = message.folder?.account;
+    $selectedFolder = message.folder;
+    $selectedMessage = message;
+  }
 </script>
 
 <style>

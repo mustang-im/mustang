@@ -1,4 +1,4 @@
-<hbox class="log">
+<hbox class="log" flex>
   <LogTime {message} />
   <LogIconByType {message} />
   <vbox class="content">

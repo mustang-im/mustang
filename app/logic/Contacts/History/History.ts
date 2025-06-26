@@ -24,7 +24,7 @@ export function searchLog(person: Person, limit: number): Collection<LogEntry> {
         entry instanceof Event ? entry.startTime :
           entry instanceof VideoConfMeeting ? entry.started ?? entry.event?.startTime :
             old;
-    (entry as any).time = time;
+    (entry as any)._history_time = time;
     return -time.getTime();
   });
 }

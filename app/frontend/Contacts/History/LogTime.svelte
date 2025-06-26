@@ -8,7 +8,7 @@
 
   export let message: LogEntry;
 
-  $: time = (message as any).time; // set in `searchLog()` `.sortBy()`
+  $: time = (message as any)._history_time; // set in `searchLog()` `.sortBy()`
 </script>
 
 <style>
