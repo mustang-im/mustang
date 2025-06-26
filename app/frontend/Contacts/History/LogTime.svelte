@@ -13,6 +13,7 @@
 
 <style>
   .time {
+    max-height: 32px;
     overflow: hidden;
     border-top: 1px solid var(--border);
     padding: 4px;
