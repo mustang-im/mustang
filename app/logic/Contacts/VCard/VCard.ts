@@ -196,7 +196,7 @@ function makeContactEntry(entry: ICalEntry, protocol?: string, isURI = true, str
     value,
     /work/i.test(entry.properties.type) ? "work" : /home/i.test(entry.properties.type) ? "home" : "other",
     protocol,
-    sanitize.integer(entry.properties.pref, ContactEntry.defaultPreference));
+    sanitize.integer(entry.properties.pref, /pref/i.test(entry.properties.type) ? 1 : ContactEntry.defaultPreference));
 }
 
 function setValue(container: Record<string, string[]>, key: string, value: string | string[] | null, parameters: Record<string, string> = {}) {

@@ -13,25 +13,25 @@
     "value": "0123456789",
     "purpose": "other",
     "protocol": "tel",
-    "preference": 0
+    "preference": 100
   }],
   "chatAccounts": [{
     "value": "matrix:u/john:example.org",
     "purpose": "other",
     "protocol": "matrix",
-    "preference": 0
+    "preference": 100
   }],
   "urls": [{
     "value": "https://website.com",
     "purpose": "other",
     "protocol": "https",
-    "preference": 0
+    "preference": 100
   }],
   "streetAddresses": [{
     "value": "My Street\nMy City\n00000\nMy State\nGermany",
     "purpose": "other",
     "protocol": null,
-    "preference": 0
+    "preference": 100
   }],
   "notes": "Some notes",
   "company": "Mustang",
@@ -41,6 +41,6 @@
     "value": "Custom prop",
     "purpose": null,
     "protocol": null,
-    "preference": 0
+    "preference": 100
   }]
 }
