@@ -1,21 +1,11 @@
 import { Person, ContactEntry } from '../../Abstract/Person';
+import { StreetAddress } from '../StreetAddress';
 import type { EWSAddressbook } from './EWSAddressbook';
 import EWSCreateItemRequest from "../../Mail/EWS/Request/EWSCreateItemRequest";
 import EWSDeleteItemRequest from "../../Mail/EWS/Request/EWSDeleteItemRequest";
 import EWSUpdateItemRequest from "../../Mail/EWS/Request/EWSUpdateItemRequest";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { ensureArray, assert } from "../../util/util";
-
-const PhysicalAddressElements = ["Street", "City", "PostalCode", "State", "CountryOrRegion"];
-const PhysicalAddressPurposes = { Business: "work", Home: "home", Other: "other" };
-const PhoneMapping: [string, string, number, string][] = [
-  ["home", "tel", 2, "HomePhone"],
-  ["work", "tel", 2, "BusinessPhone"],
-  ["home", "fax", 1, "HomeFax"],
-  ["work", "fax", 1, "BusinessFax"],
-  ["other", "fax", 1, "OtherFax"],
-  ["mobile", "tel", 1, "MobilePhone"],
-];
+import { ensureArray } from "../../util/util";
 
 export class EWSPerson extends Person {
   addressbook: EWSAddressbook | null;
@@ -66,12 +56,22 @@ export class EWSPerson extends Person {
       this.chatAccounts.replaceAll(ensureArray(xmljs.ImAddresses.Entry).filter(entry => entry.Value).map(entry => new ContactEntry(sanitize.nonemptystring(entry.Value), "other")));
     }
     if (xmljs.PhysicalAddresses?.Entry) {
-      this.streetAddresses.replaceAll(ensureArray(xmljs.PhysicalAddresses.Entry).map(entry => new ContactEntry(PhysicalAddressElements.map(element => sanitize.nonemptystring(entry[element], "")).join("\n"), PhysicalAddressPurposes[entry.Key])));
+      this.streetAddresses.replaceAll(ensureArray(xmljs.PhysicalAddresses.Entry).map(entry =>
+        new ContactEntry(EWSPerson.ewsToStreetAddress(entry).toString(), PhysicalAddressPurposes[entry.Key])));
     }
     this.notes = sanitize.nonemptystring(xmljs.Body?.Value, "");
     this.company = sanitize.nonemptystring(xmljs.CompanyName, "");
     this.department = sanitize.nonemptystring(xmljs.Department, "");
     this.position = sanitize.nonemptystring(xmljs.JobTitle, "");
+  }
+
+  protected static ewsToStreetAddress(entry: any): StreetAddress {
+    let streetAddress = new StreetAddress();
+    for (let ourProp in PhysicalAddressElements) {
+      let ewsProp = PhysicalAddressElements[ourProp];
+      streetAddress[ourProp] = sanitize.nonemptystring(entry[ewsProp], null);
+    }
+    return streetAddress;
   }
 
   async saveToServer() {
@@ -91,20 +91,16 @@ export class EWSPerson extends Person {
     }
     for (let key in PhysicalAddressPurposes) {
       let entry = this.streetAddresses.find(entry => entry.purpose == PhysicalAddressPurposes[key]);
-      if (entry) {
-        let value: string | string[] = entry.value;
-        if (value) {
-          value = value.split("\n");
-          assert(value.length == 5, "Street address must have exactly 5 lines: Street and house, City, ZIP Code, State, Country");
-        }
-        for (let i = 0; i < 5; i++) {
-          request.addField("Contact", "PhysicalAddresses", value && {
-            t$Entry: {
-              Key: key,
-              ["t$" + PhysicalAddressElements[i]]: value[i],
-            },
-          }, "contacts:PhysicalAddress:" + PhysicalAddressElements[i], key);
-        }
+      let streetAddress = new StreetAddress(entry?.value);
+      for (let ourProp in PhysicalAddressElements) {
+        let ewsProp = PhysicalAddressElements[ourProp];
+        let value = streetAddress[ourProp];
+        request.addField("Contact", "PhysicalAddresses", value ? {
+          t$Entry: {
+            Key: key,
+            ["t$" + ewsProp]: value,
+          },
+        } : null, "contacts:PhysicalAddress:" + ewsProp, key);
       }
     }
     for (let [purpose, protocol, count, key] of PhoneMapping) {
@@ -131,6 +127,7 @@ export class EWSPerson extends Person {
     }
     request.addField("Contact", "JobTitle", this.position, "contacts:JobTitle");
     request.addField("Contact", "Surname", this.lastName, "contacts:Surname");
+    // console.log("EWSPerson.save()", request);
     let response = await this.addressbook.account.callEWS(request);
     this.itemID = sanitize.nonemptystring(response.Items.Contact.ItemId.Id);
   }
@@ -140,3 +137,20 @@ export class EWSPerson extends Person {
     await this.addressbook.account.callEWS(request);
   }
 }
+
+const PhysicalAddressElements = {
+  street: "Street",
+  city: "City",
+  postCode: "PostalCode",
+  state: "State",
+  country: "CountryOrRegion",
+};
+const PhysicalAddressPurposes = { Business: "work", Home: "home", Other: "other" };
+const PhoneMapping: [string, string, number, string][] = [
+  ["home", "tel", 2, "HomePhone"],
+  ["work", "tel", 2, "BusinessPhone"],
+  ["home", "fax", 1, "HomeFax"],
+  ["work", "fax", 1, "BusinessFax"],
+  ["other", "fax", 1, "OtherFax"],
+  ["mobile", "tel", 1, "MobilePhone"],
+];

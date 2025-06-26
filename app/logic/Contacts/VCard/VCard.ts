@@ -2,6 +2,7 @@ import ICalParser from "../../Calendar/ICal/ICalParser";
 import type { ICalEntry } from "../../Calendar/ICal/ICalParser";
 import type { Person } from "../../Abstract/Person";
 import { ContactEntry } from "../../Abstract/Person";
+import { StreetAddress } from "../StreetAddress";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from 'svelte-collections';
 
@@ -84,10 +85,15 @@ export function updatePerson(card: ICalParser, person: Person) {
   person.streetAddresses.clear();
   if (vcard.entries.adr) {
     for (let entry of vcard.entries.adr) {
-      // If provided, fold PO Box and Suite into street address
-      entry.values.unshift(entry.values.splice(0, 3).filter(Boolean).join(", "));
-      // Mustang has to be different...
-      entry.value = [0, 1, 3, 2, 4].map(index => entry.values[index] || "").join("\n");
+      let [ poBox, extra, street, city, state, postalCode, country ] = entry.values;
+      let address = new StreetAddress();
+      address.street = street;
+      address.instructions = poBox || extra ? [extra ?? "", poBox].join("\n") : null;
+      address.city = city;
+      address.postalCode = postalCode;
+      address.state = state;
+      address.country = country;
+      entry.value = address.toString();
       person.streetAddresses.add(makeContactEntry(entry));
     }
   }
@@ -234,24 +240,37 @@ function setValues(container: Record<string, string[]>, key: string, values: Arr
   });
 }
 
-function setAdrs(container: Record<string, string[]>, values: ArrayColl<ContactEntry>) {
-  container.adr = values.contents.map(entry => {
+function setAdrs(container: Record<string, string[]>, contactEntries: ArrayColl<ContactEntry>) {
+  container.adr = contactEntries.contents.map(ce => {
     let line = "ADR";
-    let type = entry.purpose == "work" || entry.purpose == "home" ? entry.purpose : "";
-    if (entry.preference == 1) {
+    let type = ce.purpose == "work" || ce.purpose == "home" ? ce.purpose : "";
+    if (ce.preference == 1) {
       type = type ? type + ",pref" : "pref";
     }
     if (type) {
       line += ";TYPE=" + type.toUpperCase();
     }
-    if (entry.preference && entry.preference != ContactEntry.defaultPreference) {
-      line += `;PREF=${entry.preference}`;
+    if (ce.preference && ce.preference != ContactEntry.defaultPreference) {
+      line += `;PREF=${ce.preference}`;
     }
     line += ":";
-    let values = `\n\n${entry.value}`.split("\n");
-    // Mustang has to be different...
-    values = [0, 1, 2, 3, 5, 4, 6].map(index => values[index] ?? "");
-    line += values.map(value => escaped(value, false)).join(";");
+    let address = new StreetAddress(ce.value);
+    let extra = address.instructions;
+    let poBox = "";
+    let spl = address.instructions?.split("\n");
+    if (spl?.length == 2) {
+      [extra, poBox] = spl;
+    }
+    let ordered = [
+      poBox,
+      extra,
+      address.street,
+      address.city,
+      address.state,
+      address.postalCode,
+      address.country,
+    ];
+    line += ordered.map(value => escaped(value ?? "", false)).join(";");
     return line;
   });
 }

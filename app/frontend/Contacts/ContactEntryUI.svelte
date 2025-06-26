@@ -131,11 +131,10 @@
     align-items: center;
     justify-content: end;
     margin-inline-start: 16px;
-    height: 100%;
   }
   .actions > :global(button) {
     min-width: 20px;
-    height: 100%;
+    height: 24px;
     margin-right: 8px;
   }
   :global(.group:not(:hover)) .actions {

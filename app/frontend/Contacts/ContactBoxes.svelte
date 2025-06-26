@@ -76,31 +76,6 @@
     </GroupBox>
   {/if}
 
-  {#if showStreet}
-    <GroupBox classes="street-addresses">
-      <svelte:fragment slot="header">
-        <Icon data={MailIcon} size="16px" />
-        <h3 class="font-small">{$t`Street addresses`}</h3>
-        <hbox flex class="header actions">
-          <Button
-            on:click={addStreetAddress}
-            label={$t`Add street address`}
-            icon={AddIcon}
-            iconOnly plain classes="add" />
-        </hbox>
-      </svelte:fragment>
-      <grid class="items" slot="content">
-        {#each $streetAddresses.each as entry}
-          <ContactEntryUI {entry} coll={streetAddresses}
-            on:save={save} bind:isEditing={isEditingContacts}>
-            <StreetAddressDisplay slot="display" value={entry.value} />
-            <StreetAddressEdit slot="edit" bind:value={entry.value} />
-          </ContactEntryUI>
-        {/each}
-      </grid>
-    </GroupBox>
-  {/if}
-
   {#if showURLs}
     <GroupBox classes="url">
       <svelte:fragment slot="header">
@@ -122,6 +97,31 @@
             on:save={save} bind:isEditing={isEditingContacts}>
             <URLDisplay slot="display" value={entry.value} />
             <URLEdit slot="edit" bind:value={entry.value} />
+          </ContactEntryUI>
+        {/each}
+      </grid>
+    </GroupBox>
+  {/if}
+
+  {#if showStreet}
+    <GroupBox classes="street-addresses">
+      <svelte:fragment slot="header">
+        <Icon data={MailIcon} size="16px" />
+        <h3 class="font-small">{$t`Street address`}</h3>
+        <hbox flex class="header actions">
+          <Button
+            on:click={addStreetAddress}
+            label={$t`Add street address`}
+            icon={AddIcon}
+            iconOnly plain classes="add" />
+        </hbox>
+      </svelte:fragment>
+      <grid class="items" slot="content">
+        {#each $streetAddresses.each as entry}
+          <ContactEntryUI {entry} coll={streetAddresses}
+            on:save={save} bind:isEditing={isEditingContacts}>
+            <StreetAddressDisplay slot="display" value={entry.value} />
+            <StreetAddressEdit slot="edit" bind:value={entry.value} />
           </ContactEntryUI>
         {/each}
       </grid>
@@ -195,6 +195,8 @@
 
 <script lang="ts">
   import { ContactEntry, type Person } from "../../logic/Abstract/Person";
+  import { StreetAddress } from "../../logic/Contacts/StreetAddress";
+  import { selectedContactEntry } from "./Person/Selected";
   import ContactEntryUI from "./ContactEntryUI.svelte";
   import EmailAddressDisplay from "./EmailAddressDisplay.svelte";
   import EmailAddressEdit from "./EmailAddressEdit.svelte";
@@ -218,7 +220,6 @@
   import AddIcon from "lucide-svelte/icons/plus";
   import { showError } from "../Util/error";
   import { t } from "../../l10n/l10n";
-  import { selectedContactEntry } from "./Person/Selected";
 
   export let person: Person;
 
@@ -257,7 +258,7 @@
     $selectedContactEntry = entry;
   }
   function addStreetAddress() {
-    let entry = new ContactEntry("", "work");
+    let entry = new ContactEntry(new StreetAddress().toString(), "work");
     person.streetAddresses.push(entry);
     isEditingContacts = true;
     $selectedContactEntry = entry;
@@ -271,7 +272,6 @@
   function addNotes() {
     person.notes = " ";
   }
-  $: $selectedContactEntry && console.log("contact", $selectedContactEntry.value);
 
   async function save() {
     try {

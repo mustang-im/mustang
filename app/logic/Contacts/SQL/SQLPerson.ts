@@ -1,4 +1,5 @@
 import { ContactEntry, Person } from "../../Abstract/Person";
+import { StreetAddress } from "../StreetAddress";
 import type { Addressbook } from "../Addressbook";
 import { getDatabase } from "./SQLDatabase";
 import { appGlobal } from "../../app";
@@ -135,26 +136,31 @@ export class SQLPerson {
       WHERE personID = ${person.dbID}
       `) as any;
     for (let row of rows) {
-      let purpose = sanitize.label(row.purpose, null);
-      let contactEntry = new ContactEntry(sanitize.string(row.value), purpose);
-      contactEntry.preference = sanitize.integer(row.preference, ContactEntry.defaultPreference);
-      contactEntry.protocol = sanitize.string(row.protocol, null);
-      let type = row.type;
-      if (type == ContactType.EMailAddress) {
-        person.emailAddresses.add(contactEntry);
-      } else if (type == ContactType.Chat) {
-        person.chatAccounts.add(contactEntry);
-      } else if (type == ContactType.Phone) {
-        person.phoneNumbers.add(contactEntry);
-      } else if (type == ContactType.StreetAddress) {
-        person.streetAddresses.add(contactEntry);
-      } else if (type == ContactType.URL) {
-        person.urls.add(contactEntry);
-      } else if (type == ContactType.Custom) {
-        person.custom.add(contactEntry);
-      } else {
-        console.log("Unknown contact detail type", type, row);
-        return; // Forward compatibility. Do not throw.
+      try {
+        let purpose = sanitize.label(row.purpose, null);
+        let contactEntry = new ContactEntry(sanitize.string(row.value), purpose);
+        contactEntry.preference = sanitize.integer(row.preference, ContactEntry.defaultPreference);
+        contactEntry.protocol = sanitize.string(row.protocol, null);
+        let type = row.type;
+        if (type == ContactType.EMailAddress) {
+          person.emailAddresses.add(contactEntry);
+        } else if (type == ContactType.Chat) {
+          person.chatAccounts.add(contactEntry);
+        } else if (type == ContactType.Phone) {
+          person.phoneNumbers.add(contactEntry);
+        } else if (type == ContactType.StreetAddress) {
+          new StreetAddress(contactEntry.value); // throws when malformatted
+          person.streetAddresses.add(contactEntry);
+        } else if (type == ContactType.URL) {
+          person.urls.add(contactEntry);
+        } else if (type == ContactType.Custom) {
+          person.custom.add(contactEntry);
+        } else {
+          console.log("Unknown contact detail type", type, row);
+          return; // Forward compatibility. Do not throw.
+        }
+      } catch (ex) {
+        person.addressbook.errorCallback(ex);
       }
     }
   }

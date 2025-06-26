@@ -14,6 +14,7 @@ export class Person extends ContactBase {
   readonly emailAddresses = new ArrayColl<ContactEntry>();
   readonly chatAccounts = new ArrayColl<ContactEntry>();
   readonly phoneNumbers = new ArrayColl<ContactEntry>();
+  /** `StreetAddress` */
   readonly streetAddresses = new ArrayColl<ContactEntry>();
   /** Webpages about the person */
   readonly urls = new ArrayColl<ContactEntry>();

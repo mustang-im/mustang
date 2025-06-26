@@ -6,6 +6,7 @@ import { DeliveryStatus, UserChatMessage } from './Chat/Message';
 import { PersonUID } from './Abstract/PersonUID';
 import { ContactEntry, Person } from './Abstract/Person';
 import { Group } from './Abstract/Group';
+import { StreetAddress } from './Contacts/StreetAddress';
 import { Chat } from './Chat/Chat';
 import { FileSharingAccount } from './Files/FileSharingAccount';
 import type { File } from './Files/File';
@@ -102,10 +103,11 @@ export class FakeChatPerson extends Person {
     this.groups.add(new ContactEntry(faker.company.name(), "Mustang"));
     this.groups.add(new ContactEntry(faker.company.name(), "WhatsApp"));
     this.groups.add(new ContactEntry(faker.company.name(), "Teams"));
-    let address = faker.location.streetAddress() + "\n" +
-      faker.location.zipCode() + " " +
-      faker.location.city();
-    this.streetAddresses.add(new ContactEntry(address, "home"));
+    let address = new StreetAddress();
+    address.street = faker.location.streetAddress();
+    address.postalCode = faker.location.zipCode();
+    address.city = faker.location.city();
+    this.streetAddresses.add(new ContactEntry(address.toString(), "home"));
     this.picture = avatar(male);
     this.company = faker.company.name();
     this.department = faker.commerce.department();
