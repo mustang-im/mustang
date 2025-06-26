@@ -59,7 +59,12 @@
       "preference": 100,
       "protocol": null,
       "purpose": "work",
-      "value": "Steingasse 1, Geröllheim\n\n\n\n"
+      "instructions": null,
+      "street": "Steingasse 1, Geröllheim",
+      "city": "",
+      "state": "",
+      "postCode": "",
+      "country": ""
     }
   ],
   "urls": [

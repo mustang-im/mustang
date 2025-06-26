@@ -28,7 +28,12 @@
     "preference": 100
   }],
   "streetAddresses": [{
-    "value": "My Street\nMy City\n00000\nMy State\nGermany",
+    "instructions": null,
+    "street": "My Street",
+    "city": "My City",
+    "state": "My State",
+    "postCode": "00000",
+    "country": "Germany",
     "purpose": "other",
     "protocol": null,
     "preference": 100

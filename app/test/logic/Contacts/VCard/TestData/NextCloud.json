@@ -47,7 +47,12 @@
   ],
   "streetAddresses": [
     {
-      "value": "Steingasse 3\nGeröllheim / Bedrock\n\n\n",
+      "instructions": null,
+      "street": "Steingasse 3",
+      "city": "Geröllheim / Bedrock",
+      "state": "",
+      "postCode": "",
+      "country": "",
       "protocol": null,
       "purpose": "home",
       "preference": 100

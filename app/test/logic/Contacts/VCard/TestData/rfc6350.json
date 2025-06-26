@@ -28,7 +28,12 @@
     "preference": 100
   }],
   "streetAddresses": [{
-    "value": "Suite D2-630, 2875 Laurier\nQuebec\nG1V 2M2\nQC\nCanada",
+    "instructions": "Suite D2-630\n",
+    "street": "2875 Laurier",
+    "city": "Quebec",
+    "state": "QC",
+    "postCode": "G1V 2M2",
+    "country": "Canada",
     "purpose": "work",
     "protocol": null,
     "preference": 100

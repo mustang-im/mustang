@@ -46,7 +46,12 @@
   "chatAccounts": [],
   "streetAddresses": [
     {
-      "value": "123456, Somerset Close\nMönchengladbach\n41179\n\nDE",
+      "instructions": "\n123456",
+      "street": "Somerset Close",
+      "city": "Mönchengladbach",
+      "state": "",
+      "postCode": "41179",
+      "country": "DE",
       "purpose": "other",
       "protocol": null,
       "preference": 100
