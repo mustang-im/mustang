@@ -16,9 +16,9 @@
 
   function onOpen() {
     $selectedEvent = event;
-    //calendarMustangApp.editEvent(event);
-    $selectedDate = event.startTime;
-    $startDate = event.startTime;
+    // if full screen: calendarMustangApp.editEvent(event);
+    $selectedDate = new Date(event.startTime);
+    $startDate = new Date(event.startTime);
     openApp(calendarMustangApp);
   }
 </script>
