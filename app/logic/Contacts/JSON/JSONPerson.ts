@@ -51,7 +51,8 @@ export class JSONPerson {
   }
 
   static saveAddress(contact: ContactEntry): any {
-    let json: any = new StreetAddress(contact.value).toJSON();
+    let json: any = {};
+    json.value = new StreetAddress(contact.value).toJSON();
     json.protocol = contact.protocol;
     json.purpose = contact.purpose;
     json.preference = contact.preference;
@@ -110,7 +111,7 @@ export class JSONPerson {
   protected static readContact(json: any): ContactEntry {
     let purpose = sanitize.label(json.purpose);
     let contact = new ContactEntry(sanitize.string(json.value), purpose);
-    contact.preference = sanitize.integer(json.preference, 100);
+    contact.preference = sanitize.integer(json.preference, ContactEntry.defaultPreference);
     contact.protocol = sanitize.string(json.protocol, null);
     return contact;
   }
@@ -122,9 +123,9 @@ export class JSONPerson {
   protected static readAddress(json: any): ContactEntry {
     let purpose = sanitize.label(json.purpose);
     let address = new StreetAddress();
-    address.fromJSON(json);
+    address.fromJSON(json.value);
     let contact = new ContactEntry(address.toString(), purpose);
-    contact.preference = sanitize.integer(json.preference, 100);
+    contact.preference = sanitize.integer(json.preference, ContactEntry.defaultPreference);
     contact.protocol = sanitize.string(json.protocol, null);
     return contact;
   }

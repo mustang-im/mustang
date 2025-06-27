@@ -59,12 +59,14 @@
       "preference": 100,
       "protocol": null,
       "purpose": "work",
-      "instructions": null,
-      "street": "Steingasse 1, Geröllheim",
-      "city": "",
-      "state": "",
-      "postCode": "",
-      "country": ""
+      "value": {
+        "instructions": null,
+        "street": "Steingasse 1, Geröllheim",
+        "city": "",
+        "state": "",
+        "postalCode": "",
+        "country": ""
+      }
     }
   ],
   "urls": [

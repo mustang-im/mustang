@@ -37,7 +37,7 @@ export class StreetAddress extends Observable {
     this.instructions = sanitize.string(json.instructions, null) ?? null;
     this.street = sanitize.string(json.street, null) ?? null;
     this.city = sanitize.string(json.city, null) ?? null;
-    this.postalCode = sanitize.string(json.postCode, null) ?? null;
+    this.postalCode = sanitize.string(json.postalCode, null) ?? null;
     this.state = sanitize.string(json.state, null) ?? null;
     this.country = sanitize.string(json.country, null) ?? null;
   }
@@ -46,7 +46,7 @@ export class StreetAddress extends Observable {
       instructions: this.instructions,
       street: this.street,
       city: this.city,
-      postCode: this.postalCode,
+      postalCode: this.postalCode,
       state: this.state,
       country: this.country,
     };

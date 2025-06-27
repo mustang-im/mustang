@@ -28,12 +28,14 @@
     "preference": 100
   }],
   "streetAddresses": [{
-    "instructions": "Suite D2-630\n",
-    "street": "2875 Laurier",
-    "city": "Quebec",
-    "state": "QC",
-    "postCode": "G1V 2M2",
-    "country": "Canada",
+    "value": {
+      "instructions": "Suite D2-630\n",
+      "street": "2875 Laurier",
+      "city": "Quebec",
+      "state": "QC",
+      "postalCode": "G1V 2M2",
+      "country": "Canada"
+    },
     "purpose": "work",
     "protocol": null,
     "preference": 100

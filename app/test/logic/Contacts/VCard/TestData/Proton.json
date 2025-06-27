@@ -23,12 +23,14 @@
     "preference": 100
   }],
   "streetAddresses": [{
-    "instructions": null,
-    "street": "My Street",
-    "city": "My City",
-    "state": "My Region",
-    "postCode": "00000",
-    "country": "Germany",
+    "value": {
+      "instructions": null,
+      "street": "My Street",
+      "city": "My City",
+      "state": "My Region",
+      "postalCode": "00000",
+      "country": "Germany"
+    },
     "purpose": "other",
     "protocol": null,
     "preference": 1
