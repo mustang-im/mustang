@@ -141,7 +141,7 @@ export class EWSPerson extends Person {
 const PhysicalAddressElements = {
   street: "Street",
   city: "City",
-  postCode: "PostalCode",
+  postalCode: "PostalCode",
   state: "State",
   country: "CountryOrRegion",
 };
