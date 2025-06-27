@@ -12,7 +12,6 @@ FN:Joe Bloggs
 PHOTO;VALUE=uri:data:image/gif;base64\\,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAAB
  AAEAAAICTAEAOw==
 N:Bloggs;Joe;;;
-ORG:Example;Management
 EMAIL;TYPE=WORK,PREF;PREF=1:joe@example.org
 EMAIL;TYPE=WORK:bloggs@example.org
 EMAIL;TYPE=HOME:joe.bloggs@example.com
@@ -21,12 +20,13 @@ TEL;VALUE=text;TYPE=HOME:0987654321
 IMPP;TYPE=HOME,PREF;PREF=1:aim:joebloggs
 URL;TYPE=WORK,PREF;PREF=1:https://example.org/joe.bloggs/
 URL;TYPE=HOME:https://example.com/joe.bloggs/
-ADR;TYPE=WORK:;;Street;City;Region;Postal Code;Country
+ADR;TYPE=WORK:PO Box;Suite;Street;City;Region;Postal Code;Country
 NOTE:Do Re Mi Fa So La Ti Do
+ORG:Example;Management
 TITLE:Manager
 X-CUSTOM1:Custom
 END:VCARD
-`;
+`.replace(/\n/g, "\r\n");
 
 function toJSON(person: Person) {
   person.addressbook = { id: true };
@@ -74,6 +74,5 @@ test("Write new VCard", async () => {
   const person = new Person();
   vCard.convertVCardToPerson(replacement, person);
   const serialised = vCard.personToVCard(person);
-  const expectedSerialised = await fs.readFile(new URL("expectedSerialised.txt", dataDir), { encoding: 'utf-8' });
-  expect(serialised).toBe(expectedSerialised);
+  expect(serialised).toBe(replacement);
 });

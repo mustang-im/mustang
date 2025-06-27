@@ -14,19 +14,19 @@
       "value": "fred@example.org",
       "protocol": "mailto",
       "purpose": "home",
-      "preference": 0
+      "preference": 100
     },
     {
       "value": "fred@example.com",
       "protocol": "mailto",
       "purpose": "work",
-      "preference": 0
+      "preference": 100
     },
     {
       "value": "fred@example.net",
       "protocol": "mailto",
       "purpose": "home",
-      "preference": 0
+      "preference": 100
     }
   ],
   "chatAccounts": [
@@ -34,7 +34,7 @@
       "value": "fred:irc.eunet.net",
       "protocol": "fred",
       "purpose": "other",
-      "preference": 0
+      "preference": 100
     }
   ],
   "phoneNumbers": [
@@ -42,15 +42,22 @@
       "value": "+1-800-1000000",
       "protocol": "tel",
       "purpose": "home",
-      "preference": 0
+      "preference": 100
     }
   ],
   "streetAddresses": [
     {
-      "value": "Steingasse 3\nGeröllheim / Bedrock\n\n\n",
+      "value": {
+        "instructions": null,
+        "street": "Steingasse 3",
+        "city": "Geröllheim / Bedrock",
+        "state": "",
+        "postalCode": "",
+        "country": ""
+      },
       "protocol": null,
       "purpose": "home",
-      "preference": 0
+      "preference": 100
     }
   ],
   "urls": [],

@@ -18,7 +18,7 @@
     "value": "0123456789",
     "purpose": "other",
     "protocol": "tel",
-    "preference": 0
+    "preference": 100
   }],
   "chatAccounts": [{
     "value": "xmpp:jabber@jabber.com",
@@ -33,7 +33,14 @@
     "preference": 1
   }],
   "streetAddresses": [{
-    "value": "My Street\nMy city\n\nMy State\nGermany",
+    "value": {
+      "instructions": null,
+      "street": "My Street",
+      "city": "My city",
+      "state": "My State",
+      "postalCode": "",
+      "country": "Germany"
+    },
     "purpose": "home",
     "protocol": null,
     "preference": 1

@@ -4,13 +4,13 @@
   "lastName": "Flintstone",
   "emailAddresses": [
     {
-      "preference": 0,
+      "preference": 100,
       "protocol": "mailto",
       "purpose": "work",
       "value": "fred@example.com"
     },
     {
-      "preference": 0,
+      "preference": 100,
       "protocol": "mailto",
       "purpose": "work",
       "value": "fred@example.org"
@@ -18,25 +18,25 @@
   ],
   "phoneNumbers": [
     {
-      "preference": 0,
+      "preference": 100,
       "protocol": "tel",
       "purpose": "other",
       "value": "+1-555-111-111"
     },
     {
-      "preference": 0,
+      "preference": 100,
       "protocol": "tel",
       "purpose": "other",
       "value": "+1-555-888-888"
     },
     {
-      "preference": 0,
+      "preference": 100,
       "protocol": "tel",
       "purpose": "work",
       "value": "+1-555-536-45"
     },
     {
-      "preference": 0,
+      "preference": 100,
       "protocol": "tel",
       "purpose": "home",
       "value": "+1-555-555-555"
@@ -48,7 +48,7 @@
       "value": "+1-555-555-55555"
     },
     {
-      "preference": 0,
+      "preference": 100,
       "protocol": "tel",
       "purpose": "other",
       "value": "+1-555-555-5555"
@@ -56,21 +56,28 @@
   ],
   "streetAddresses": [
     {
-      "preference": 0,
+      "preference": 100,
       "protocol": null,
       "purpose": "work",
-      "value": "Steingasse 1, Geröllheim\n\n\n\n"
+      "value": {
+        "instructions": null,
+        "street": "Steingasse 1, Geröllheim",
+        "city": "",
+        "state": "",
+        "postalCode": "",
+        "country": ""
+      }
     }
   ],
   "urls": [
     {
-      "preference": 0,
+      "preference": 100,
       "protocol": "https",
       "purpose": "other",
       "value": "https://example.com/fred"
     },
     {
-      "preference": 0,
+      "preference": 100,
       "protocol": "https",
       "purpose": "other",
       "value": "https://example.org with space"

@@ -20,10 +20,17 @@
     "value": "https://www.mustang.im/",
     "purpose": "other",
     "protocol": "https",
-    "preference": 0
+    "preference": 100
   }],
   "streetAddresses": [{
-    "value": "My Street\nMy City\n00000\nMy Region\nGermany",
+    "value": {
+      "instructions": null,
+      "street": "My Street",
+      "city": "My City",
+      "state": "My Region",
+      "postalCode": "00000",
+      "country": "Germany"
+    },
     "purpose": "other",
     "protocol": null,
     "preference": 1
