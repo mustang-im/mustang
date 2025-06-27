@@ -153,12 +153,14 @@ export class Event extends Observable {
    */
   private setRecurrenceRule(rule: RecurrenceRule) {
     assert(this.recurrenceCase == RecurrenceCase.Normal || this.recurrenceCase == RecurrenceCase.Master, "Instances can't themselves recur");
+    let timesMatch = this._recurrenceRule?.timesMatch(rule);
     this._recurrenceRule = rule;
     this.recurrenceCase = RecurrenceCase.Master; // notifies
-    if (!this._recurrenceRule?.timesMatch(rule)) {
+    if (timesMatch) {
+      this.generateRecurringInstances();
+    } else {
       this.clearExceptions();
     }
-    this.generateRecurringInstances();
   }
   /** Links back to the recurring master.
    * Only for RecurrenceCase == Instance or Exception */
