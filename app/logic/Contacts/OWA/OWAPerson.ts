@@ -102,10 +102,10 @@ export class OWAPerson extends Person {
 
   protected static streetAddressToOWA(str: string): string {
     if (!str) {
-      return "";
+      return "$#$$#$$#$$#$";
     }
     let address = new StreetAddress(str);
-    let values = [ address.street, address.city, address.postalCode, address.state, address.country ];
+    let values = [ address.street, address.city, address.state, address.postalCode, address.country ];
     return values.map(value => value ?? "").join("$#$");
   }
 
