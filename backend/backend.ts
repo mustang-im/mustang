@@ -54,6 +54,8 @@ async function createSharedAppObject() {
     showFileInFolder,
     onScreenSharingSelect,
     restartApp,
+    setAsDefaultMailClient,
+    listenForURL,
     setTheme,
     openMenu,
     getConfigDir,
@@ -288,6 +290,14 @@ function isOSNotificationSupported(): boolean {
 function restartApp() {
   app.relaunch();
   app.quit();
+}
+
+function setAsDefaultMailClient() {
+  return app.setAsDefaultProtocolClient('mailto');
+}
+
+function listenForURL(callback: (event: Event, url: string) => void) {
+  app.on('open-url', callback);
 }
 
 function setTheme(theme: "system" | "light" | "dark") {

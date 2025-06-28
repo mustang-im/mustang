@@ -7,12 +7,14 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.png?asset'
 const { autoUpdater } = electronUpdater;
 
+let mainWindow: BrowserWindow;
+
 function createWindow(): void {
   try {
     startupBackend();
 
     // Create the browser window.
-    const mainWindow = new BrowserWindow({
+    mainWindow = new BrowserWindow({
       width: 1700,
       height: 950,
       show: false,
@@ -33,7 +35,11 @@ function createWindow(): void {
       mainWindow.show()
     })
 
-    mainWindow.on('closed', shutdownBackend);
+    mainWindow.on('closed', () => {
+      shutdownBackend(),
+      // @ts-ignore
+      mainWindow = null;
+    });
 
     /** Ensure that new web windows are opened in the browser, not inside our app.
      *
@@ -70,6 +76,17 @@ function createWindow(): void {
       ipcMain.on('oauth2-close', () => {
         child.close();
       });
+    });
+
+    mainWindow.webContents.on('did-finish-load', () => {
+      if (deeplinkUrl) {
+        // Requires a delay after onload is emitted otherwise listener
+        // doesn't get the message
+        setTimeout(() => {
+          mainWindow.webContents.send('deeplink', deeplinkUrl);
+          deeplinkUrl = null; // Reset after handling
+        }, 1000);
+      }
     });
 
     // HMR for renderer base on electron-vite cli.
@@ -125,6 +142,41 @@ app.whenReady().then(async () => {
     console.error(ex);
   }
 })
+
+let deeplinkUrl: string | null = null;
+
+recordDeepLink();
+
+function recordDeepLink() {
+  // macOS: Capture URL during launch
+  app.on('open-url', (event, url) => {
+    event.preventDefault();
+    deeplinkUrl = url;
+    if (!mainWindow) {
+      createWindow();
+    }
+  });
+
+  // Windows/Linux: Capture from command line
+  if (process.platform !== 'darwin') {
+    app.setAsDefaultProtocolClient('mailto');
+    const gotLock = app.requestSingleInstanceLock();
+
+    if (!gotLock) app.quit();
+    else {
+      app.on('second-instance', (_, argv) => {
+        deeplinkUrl = argv.find(arg => arg.startsWith('mailto:')) as string;
+        // Someone tried to run a second instance, we should focus our window.
+        if (mainWindow) {
+          if (mainWindow.isMinimized()) mainWindow.restore()
+          mainWindow.focus()
+        }
+      });
+      createWindow();
+    }
+  }
+}
+
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits

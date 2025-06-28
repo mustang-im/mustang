@@ -16,6 +16,8 @@ import { type Account, setMainAccounts } from './Abstract/Account';
 import JPCWebSocket from '../../lib/jpc-ws';
 import { production } from './build';
 import { logError } from '../frontend/Util/error';
+import { mailMustangApp } from '../frontend/Mail/MailMustangApp';
+import { findOrCreatePersonUID } from './Abstract/PersonUID';
 
 const kSecret = 'eyache5C'; // TODO generate, and communicate to client, or save in config files.
 
@@ -38,6 +40,9 @@ export async function getStartObjects(): Promise<void> {
   appGlobal.collectedAddressbook = appGlobal.addressbooks.get(1);
   readSavedSearches();
   await loadTagsList();
+
+  await appGlobal.remoteApp.setAsDefaultMailClient();
+  await listenForURL();
 }
 
 /**
@@ -117,6 +122,27 @@ async function fileShareLogin(account: FileSharingAccount) {
   if (account.isLoggedIn) {
     await account.sync();
   }
+}
+
+async function listenForURL() {
+  let ipcRenderer = (window as any).electron.ipcRenderer; // TODO use JPC, or remove window
+  ipcRenderer.on('deeplink', (_, url: string) => {
+    console.log(url, "deeplink");
+    writeMail(url);
+  });
+  console.log(ipcRenderer);
+  await appGlobal.remoteApp.listenForURL((_, url) => writeMail(url));
+}
+
+function writeMail(url: string) {
+  let selectedAccount = appGlobal.emailAccounts.find((acc) => acc.isLoggedIn);
+  if (!selectedAccount) {
+    return setTimeout(() => writeMail(url), 1000);
+  }
+  let email = selectedAccount.newEMailFrom();
+  let emailAddress = url.split(':')[1];
+  email.to.add(findOrCreatePersonUID(emailAddress, emailAddress));
+  mailMustangApp.writeMail(email);
 }
 
 function errorWithAccountName(account: Account, errorCallback: (ex: Error) => void) {
