@@ -4,7 +4,6 @@ import { ContactEntry, Person } from "./Person";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { ArrayColl } from "svelte-collections";
-import { gt } from "../../l10n/l10n";
 
 export class PersonUID extends Observable {
   @notifyChangedProperty
@@ -144,4 +143,4 @@ export function nameFromEmailAddress(emailAddress: string): string {
   return name;
 }
 
-export const kDummyPerson = new PersonUID("unknown@invalid", gt`Unknown *=> Specific person whose name is not known`);
+export const kDummyPerson = new PersonUID("unknown@invalid", "");
