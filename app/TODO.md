@@ -205,7 +205,7 @@
 * Thread pane sort
 * Threading in Thread pane
 * Save/Load mail as .eml file
-* OS mailto: and send file as email
+* OS send file as email (dangerous) #315
 * Format/flowed
 * Encryption
   * PGP

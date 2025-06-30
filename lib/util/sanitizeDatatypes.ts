@@ -158,6 +158,7 @@ class Sanitize {
     if (filename.length < 5 && kDeviceNames.includes(filename)) {
       return haveError("Filename cannot be a Windows device name", unchecked, fallback);
     }
+    // TODO Unix `/dev/`, `/proc/`, `/sys/` etc.
     return filename;
   }
 

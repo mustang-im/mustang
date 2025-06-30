@@ -12,7 +12,6 @@
   $: startupArgs = $emailAccounts.hasItems ? appGlobal.remoteApp?.startupArgs : null;
   $: catchErrors(() => startupArgs ? runStartupURL($startupArgs.url) : null);
   async function runStartupURL(url: URLString) {
-    console.log("url handler", url);
     if (!url) {
       return;
     }
@@ -22,6 +21,7 @@
     }
   }
   async function onMailto(url: URLString) {
+    console.log("mailto: handler", url);
     let account = emailAccounts.first;
     assert(account, $t`Please set up an email account before sending mail`);
     let mail = account.newEMailFrom();

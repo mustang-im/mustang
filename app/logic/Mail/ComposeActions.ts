@@ -219,6 +219,24 @@ export class ComposeActions {
     this.email.subject = sanitize.label(args.get("subject"), null);
     this.email.text = sanitize.label(args.get("body"), null);
     this.email.html; // Generate HTML from plaintext TODO doesn't work
+
+    /* Attachments
+      SECURITY DANGER The URL came come from the web, is untrusted, and may be an attack.
+      While we only attach the file into the composer and don't send it immediately,
+      a) the user might not check that it's the file he intended to send
+      b) simply *reading* the file might trigger OS actions, like printing (`LPT:`),
+          `/dev/`, `/proc/`, `/sys/` etc.
+      Therefore, not doing this for now.
+      Event if you do implement the checks, keep this warning comment.
+    for (let filepath of args.getAll("attach")) {
+      try {
+        sanitize.filename(filepath)
+        let file = new File(...);
+        this.email.attachments.add(Attachment.fromFile(file));
+      } catch (ex) {
+        console.error(ex);
+      }
+    }*/
   }
 
   /**

@@ -160,7 +160,7 @@ function registerURLOpen() {
   });
 
   // Remove exec path
-  handleCommandline(process.argv.splice(0));
+  handleCommandline(process.argv.splice(1));
 }
 
 function handleCommandline(args: string[]) {
