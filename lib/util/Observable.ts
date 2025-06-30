@@ -81,6 +81,44 @@ export function notifyChangedProperty<T extends Observable>(obj: T, propertyName
   Object.defineProperty(obj, propertyName, descriptor);
 }
 
+/** Decorator for object properties.
+ * Propagates notifications. */
+export function notifyChangedObservable<T extends Observable>(obj: T, propertyName: string) {
+  if (!obj._properties) {
+    obj._properties = {};
+  }
+  let descriptor = Object.getOwnPropertyDescriptor(obj, propertyName);
+  if (descriptor) {
+    assert(descriptor.configurable, `Cannot attach property decorator to .${propertyName}, it's not configurable.`);
+    assert(!descriptor.set && !descriptor.get, `.${propertyName} has a getter/setter. Use notifyChangedAccessor() instead.`);
+    descriptor.enumerable = true;
+    obj._properties[propertyName] = descriptor?.value;
+    delete descriptor.value;
+    delete descriptor.writable;
+  } else {
+    descriptor = {
+      configurable: true,
+      enumerable: true,
+    };
+  }
+  descriptor.set = function (this: T, val: IObservable | undefined): void {
+    let oldValue: IObservable | undefined = this._properties[propertyName];
+    if (oldValue === val) {
+      return;
+    }
+    this._properties["_unsubscribe_" + propertyName]?.();
+    this._properties[propertyName] = val;
+    // subscribe() calls the subscriber once immediately at subscription time,
+    // so notifyObservers() is called immediately, and we need that.
+    this._properties["_unsubscribe_" + propertyName] = val?.subscribe(() =>
+      this.notifyObservers(propertyName));
+  }
+  descriptor.get = function (this: T) {
+    return this._properties[propertyName];
+  }
+  Object.defineProperty(obj, propertyName, descriptor);
+}
+
 
 export function assert(test, errorMessage): asserts test {
   if (!test) {
