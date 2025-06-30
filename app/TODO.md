@@ -1,21 +1,17 @@
 # Next
   * Beta banner
   * License notification bar
-  * Search
-    * Results miss From - Include from/to (both content of messages, and name of recipients/sender)
-      * Email
-      * Chat
   * Actions (Filters): Run
   * Calendar
     * Recurring #654
     * Invitations
     * Free/Busy
+  * Meet
+    * Close camera
   * Contacts
     * Add new line with no value when editing
       (if we can do it without moving the other boxes)
     * Same name: Checkboxes
-  * Meet
-    * Close camera
   * Bug: Thunderbird AB import misses ABs and fields
   * Import Outlook PST
   * OAuth2 login UI with browser/URL options

@@ -335,6 +335,10 @@ export class EMail extends Message {
     return check.downloadComplete;
   }
 
+  async loadForDisplay() {
+    await this.loadMIME();
+  }
+
   async loadMIME() {
     if (this.mime) {
       return;

@@ -4,10 +4,17 @@
       <PersonPicture person={$message.contact} />
     {/if}
     <vbox>
+      {#if message.to.isEmpty}
+        {#await message.loadForDisplay()}
+          <!-- Subject etc. are loaded by search,
+            and body is loaded by MessageBody calling message.loadBody(),
+            but not to/from etc. -->
+        {/await}
+      {/if}
       <hbox class="from">
         {#if $message.outgoing}
           <value class="from" title={$message.from.emailAddress}>
-            {from}
+            {$t`me *=> myself as sender of the email`}
           </value>
         {:else}
           <Recipient recipient={$message.from} />
@@ -91,10 +98,6 @@
 
   export let message: EMail;
 
-  $: from = message.outgoing
-    ? "me"
-    : message.contact?.name
-      ?? message.from.emailAddress;
   $: tags = message.tags;
 
   let readDelaySetting = getLocalStorage("mail.read.after", 0); // 0 = Immediately; -1 = Manually; 1 to 20 = delay in seconds
