@@ -109,7 +109,7 @@ export function notifyChangedObservable<T extends Observable>(obj: T, propertyNa
     this._properties["_unsubscribe_" + propertyName]?.();
     this._properties[propertyName] = val;
     this.notifyObservers(propertyName, oldValue);
-    this._properties["_unsubscribe_" + propertyName] = val?.subscribe(() => this.notifyObservers(propertyName, oldValue));
+    this._properties["_unsubscribe_" + propertyName] = val?.subscribe(() => this.notifyObservers(propertyName));
   }
   descriptor.get = function (this: T) {
     return this._properties[propertyName];
