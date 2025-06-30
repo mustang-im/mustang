@@ -66,7 +66,7 @@
       <DisplayModeSwitcher />
     </vbox>
   </hbox>
-  {#if message.to.isEmpty}
+  {#if message.to.isEmpty || message.from.emailAddress == kDummyPerson.emailAddress}
   {#await message.loadForDisplay()}
     <!-- Subject etc. are loaded by search,
       and body is loaded by MessageBody calling message.loadBody(),
@@ -79,7 +79,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import { PersonUID, kDummyPerson } from "../../../logic/Abstract/PersonUID";
   import { Person } from "../../../logic/Abstract/Person";
   import type { PersonOrGroup } from "../../Contacts/Person/PersonOrGroup";
   import { selectedPerson } from "../../Contacts/Person/Selected";

@@ -241,10 +241,10 @@ export class EMail extends Message {
       }
     }*/
 
-    if (!this.id || !this.subject || !this.sent || !this.from || this.from.emailAddress == kDummyPerson.emailAddress) {
-      this.id = sanitize.string(mail.messageId, this.id ?? "");
-      this.subject = sanitize.string(mail.subject, this.subject ?? "");
-      this.sent = sanitize.date(mail.date, this.sent ?? new Date());
+    this.id ??= sanitize.string(mail.messageId, this.id ?? "");
+    this.subject ??= sanitize.string(mail.subject, this.subject ?? "");
+    this.sent ??= sanitize.date(mail.date, this.sent ?? new Date());
+    if (!this.from || this.from.emailAddress == kDummyPerson.emailAddress) {
       this.from = mail.from?.address
         ? findOrCreatePersonUID(sanitize.nonemptystring(mail.from.address), sanitize.label(mail.from.name, null))
         : kDummyPerson;
