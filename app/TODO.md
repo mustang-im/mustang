@@ -24,9 +24,6 @@
     * Message list: Threaded view?
     * Mail Chat view: Open thread
   * Tags: Shrink tag list when not enough space
-  * All accounts
-    * Use search folder
-    * Fix mergeColls() #72
   * Setup mail
     * After account delete: remove general panel
     * Scroll inside dialog, not whole window
