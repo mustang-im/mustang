@@ -1,7 +1,9 @@
 <svelte:head>
   <title>{ appName }</title>
 </svelte:head>
-<svelte:window on:visibilitychange={() => catchErrors(saveWindowSettings)} />
+<svelte:window
+  on:visibilitychange={() => catchErrors(saveWindowSettings)}
+  on:click|capture={(event) => catchErrors(() => onClickTopLevel(event))} />
 
 <vbox flex class="main-window" dir={rtl}>
   <WindowHeader selectedApp={$selectedApp} />
@@ -38,6 +40,7 @@
   import { getStartObjects, loginOnStartup } from "../../logic/WebMail/startup";
   // #endif
   import { notifications } from "./Notification";
+  import { linkClickURL } from "./Selected";
   import { selectedAccount, selectedFolder } from "../Mail/Selected";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { loadMustangApps } from "../AppsBar/loadMustangApps";
@@ -109,6 +112,29 @@
     let windowPosition = getLocalStorage("window.position", [ window.screenX, window.screenY ]);
     windowSize.value = [ window.outerWidth, window.outerHeight ];
     windowPosition.value = [ window.screenX, window.screenY ];
+  }
+
+  async function onClickTopLevel(event: MouseEvent) {
+    let targetE = event.target as HTMLElement;
+    let linkE = targetE.closest && targetE.closest("a[href]");
+    let url = linkE?.getAttribute("href");
+    if (!url) {
+      return;
+    }
+    let urlObj = new URL(url); // throws
+    console.log("url", url, urlObj, linkE.getAttribute("target"));
+    if (urlObj.protocol == "https:" || urlObj.protocol == "http:") {
+      if (linkE.getAttribute("target") == "_blank") {
+        return; // Let default handler open in external browser
+      } else {
+        // fallback, to avoid replacing the app window with webpage
+        appGlobal.remoteApp.openExternalURL(url);
+        return;
+      }
+    }
+    $linkClickURL = url;
+    event.stopPropagation();
+    event.preventDefault();
   }
 </script>
 

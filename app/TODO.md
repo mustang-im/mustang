@@ -11,7 +11,6 @@
     * Invitations
     * Free/Busy
   * Contacts
-    * catch mailto:
     * Add buttons for creating mail, chat etc.
     * Add new line with no value when editing
       (if we can do it without moving the other boxes)
