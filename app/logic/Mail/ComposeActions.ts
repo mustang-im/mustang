@@ -1,13 +1,14 @@
 import type { EMail } from "./EMail";
 import { SpecialFolder } from "./Folder";
 import { Attachment, ContentDisposition } from "../Abstract/Attachment";
-import { PersonUID } from "../Abstract/PersonUID";
+import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { MailIdentity, findIdentityForEMailAddress } from "./MailIdentity";
 import { appName, appVersion, siteRoot } from "../build";
 import { gLicense } from "../util/License";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { backgroundError } from "../../frontend/Util/error";
-import { UserError, assert, type URLString } from "../util/util";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+import { UserError, assert, type URLString, ensureArray } from "../util/util";
 import { getUILocale, gt } from "../../l10n/l10n";
 import type { Collection } from "svelte-collections";
 
@@ -198,6 +199,26 @@ export class ComposeActions {
 
     attachment.contentID ??= crypto.randomUUID();
     return "cid:" + attachment.contentID;
+  }
+
+  /** Handles mailto: URLs.
+   * Takes the arguments given in the URL, checks them, and
+   * set them on this.email.
+   * @throws when the input is invalid */
+  populateFromMailtoURL(mailtoURL: URLString) {
+    let urlObj = new URL(mailtoURL);
+    let args = new URLSearchParams(urlObj.search);
+    let tos = ensureArray(urlObj.pathname.split(","));
+    for (let to of tos) {
+      this.email.to.add(findOrCreatePersonUID(sanitize.emailAddress(to), null));
+    }
+    let ccs = ensureArray(args.get("cc")?.split(","));
+    for (let cc of ccs) {
+      this.email.cc.add(findOrCreatePersonUID(sanitize.emailAddress(cc), null));
+    }
+    this.email.subject = sanitize.label(args.get("subject"), null);
+    this.email.text = sanitize.label(args.get("body"), null);
+    this.email.html; // Generate HTML from plaintext TODO doesn't work
   }
 
   /**

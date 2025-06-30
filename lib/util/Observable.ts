@@ -1,4 +1,4 @@
-import { arrayRemove, assert } from "./util";
+// <copied from="../../app/logic/util/Observable.ts" />
 
 export class Observable {
   _observers: Array<observerFunc<any>> = [];
@@ -81,4 +81,16 @@ export function notifyChangedProperty<T extends Observable>(obj: T, propertyName
   Object.defineProperty(obj, propertyName, descriptor);
 }
 
-// <copied to="../../lib/util/Observable.ts" />
+
+export function assert(test, errorMessage): asserts test {
+  if (!test) {
+    throw new Error(errorMessage);
+  }
+}
+
+export function arrayRemove(array, item) {
+  let pos = array.indexOf(item);
+  if (pos > -1) {
+    array.splice(pos, 1);
+  }
+}

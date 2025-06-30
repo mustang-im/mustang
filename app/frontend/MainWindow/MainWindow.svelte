@@ -38,7 +38,7 @@
   import { getStartObjects, loginOnStartup } from "../../logic/WebMail/startup";
   // #endif
   import { notifications } from "./Notification";
-  import { selectedAccount } from "../Mail/Selected";
+  import { selectedAccount, selectedFolder } from "../Mail/Selected";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { loadMustangApps } from "../AppsBar/loadMustangApps";
   import { mailMustangApp } from "../Mail/MailMustangApp";
@@ -73,15 +73,16 @@
 
   async function startup() {
     loadMustangApps();
+    $selectedApp = mailMustangApp;
     await getStartObjects();
     changeTheme($themeSetting.value);
     if (appGlobal.emailAccounts.isEmpty && appGlobal.chatAccounts.isEmpty) {
       setup();
     } else {
-      $selectedApp = mailMustangApp;
-      $selectedAccount = appGlobal.emailAccounts.first;
       await loginOnStartup(console.error, backgroundError);
-      // $selectedFolder = $selectedAccount.inbox;
+      // Setting $selectedApp late would overwrite commandline/URL handlers
+      $selectedAccount = appGlobal.emailAccounts.first;
+      $selectedFolder = $selectedAccount.inbox;
     }
   }
 

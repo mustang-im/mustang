@@ -51,6 +51,10 @@ appImage:
   artifactName: ${name}-${version}.${ext}
 deb:
   packageName: mustang-mail
+protocols:
+  name: Send mail
+  schemes:
+    - mailto
 npmRebuild: true
 publish:
   - provider: github

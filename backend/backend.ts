@@ -3,6 +3,7 @@ import JPCWebSocket from '../lib/jpc-ws';
 import * as OWA from './owa';
 import { appName, production } from '../app/logic/build';
 import { WebContents } from './WebContents';
+import { Observable, notifyChangedProperty } from '../lib/util/Observable';
 import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
 import Zip from "adm-zip";
@@ -52,6 +53,8 @@ async function createSharedAppObject() {
     openExternalURL,
     openFileInNativeApp,
     showFileInFolder,
+    startupArgs,
+    setAsDefaultApp,
     onScreenSharingSelect,
     restartApp,
     setTheme,
@@ -303,6 +306,26 @@ function openExternalURL(url: string) {
 
 function openFileInNativeApp(filePath: string) {
   shell.openPath(filePath);
+}
+
+class StartupArgs extends Observable {
+  /** URL that our app should open, e.g. mailto: URL */
+  @notifyChangedProperty
+  url: string | null = null;
+  /** All OS commandline arguments.
+   * Note: First argument is typically the app itself. */
+  @notifyChangedProperty
+  commandline: string[] | null = null;
+  /** Clear parameters when a specific handler has understood and handled them */
+  handled() {
+    this.url = null;
+    this.commandline = null;
+  }
+}
+export const startupArgs = new StartupArgs();
+
+function setAsDefaultApp() {
+  return app.setAsDefaultProtocolClient("mailto");
 }
 
 function showFileInFolder(filePath: string) {
