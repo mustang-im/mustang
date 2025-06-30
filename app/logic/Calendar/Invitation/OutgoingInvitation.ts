@@ -29,7 +29,7 @@ export default class OutgoingInvitation {
     return account.identities.first;
   }
 
-  async sendInvitations(participants: Collection<Participant>) {
+  async sendInvitationsTo(participants: Collection<Participant>) {
     for (let participant of participants) {
       if (participant.response != InvitationResponse.Organizer) {
         participant.response ||= InvitationResponse.NoResponseReceived;
@@ -38,11 +38,32 @@ export default class OutgoingInvitation {
     }
   }
 
-  async sendCancellations(participants: Collection<Participant>) {
+  async sendCancellationsTo(participants: Collection<Participant>) {
     for (let participant of participants) {
       if (participant.response > InvitationResponse.Organizer) {
         await this.send("CANCEL", participant);
       }
+    }
+  }
+
+  async sendInvitations() {
+    let event = this.event;
+    let unedited = this.event.unedited;
+    let removed = unedited.participants.subtract(event.participants);
+    // Use the original event when sending cancellations
+    unedited.outgoingInvitation.sendCancellationsTo(removed);
+    let notify = this.changesNeedToNotify()
+      ? event.participants
+      : event.participants.subtract(unedited.participants);
+    await this.sendInvitationsTo(notify);
+  }
+
+  async sendCancellations() {
+    let unedited = this.event.unedited;
+    if (unedited) {
+      await unedited.outgoingInvitation.sendCancellationsTo(unedited.participants);
+    } else {
+      await this.sendCancellationsTo(this.event.participants);
     }
   }
 
@@ -64,5 +85,27 @@ export default class OutgoingInvitation {
     let email = identity.account.newEMailFrom();
     email.from = organizer;
     return email;
+  }
+
+  /**
+   * Has a property changed that we should notify invitees about?
+   */
+  changesNeedToNotify(): boolean {
+    let event = this.event;
+    let unedited = this.event.unedited;
+    return !!event.unedited && (
+      event.startTime?.getTime() != unedited.startTime?.getTime() ||
+      event.endTime?.getTime() != unedited.endTime?.getTime() ||
+      event.timezone != unedited.timezone ||
+      event.allDay != unedited.allDay ||
+      event.title != unedited.title ||
+      event.rawText != unedited.rawText ||
+      event.rawHTMLDangerous != unedited.rawHTMLDangerous ||
+      event.location != unedited.location ||
+      event.isOnline != unedited.isOnline ||
+      event.onlineMeetingURL != unedited.onlineMeetingURL ||
+      event.recurrenceCase != unedited.recurrenceCase ||
+      event.recurrenceRule != unedited.recurrenceRule
+    );
   }
 }
