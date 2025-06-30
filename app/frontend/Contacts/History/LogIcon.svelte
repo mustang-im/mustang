@@ -1,4 +1,4 @@
-<vbox class="icon {type}">
+<vbox class="icon {type}" title={tooltip}>
   <slot name="icon" />
   {#if outgoing === true}
     <hbox class="outgoing">
@@ -19,6 +19,7 @@
 
   export let type: "email" | "chat" | "event" | "call";
   export let outgoing: boolean | null;
+  export let tooltip: string | null = null;
 </script>
 
 <style>

@@ -1,4 +1,5 @@
 <vbox class="email" flex
+  title={message.subject + "\n\n" + (message.text?.substring(0, 300) ?? "")}
   on:click={() => catchErrors(onOpen)}>
   <div class="subject">
     {message.subject}

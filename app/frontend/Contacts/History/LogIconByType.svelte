@@ -1,9 +1,11 @@
 {#if message instanceof EMail}
-  <LogIcon type="email" outgoing={message.outgoing}>
+  <LogIcon type="email" outgoing={message.outgoing}
+    tooltip={(message.outgoing ? $t`To *=> email to a person` : $t`From *=> email to a person`) + " " + (message.contact?.name ?? "")}>
     <MailIcon size="24px" slot="icon" />
   </LogIcon>
 {:else if message instanceof ChatMessage}
-  <LogIcon type="chat" outgoing={message.outgoing}>
+  <LogIcon type="chat" outgoing={message.outgoing}
+    tooltip={(message.outgoing ? $t`To *=> email to a person` : $t`From *=> email to a person`) + " " + (message.contact?.name ?? "")}>
     <ChatIcon size="24px" slot="icon" />
   </LogIcon>
 {:else if message instanceof Event}
@@ -27,6 +29,7 @@
   import ChatIcon from "lucide-svelte/icons/message-square";
   import EventIcon from "lucide-svelte/icons/calendar";
   import CallIcon from "lucide-svelte/icons/phone";
+  import { t } from "../../../l10n/l10n";
 
   export let message: LogEntry;
 </script>
