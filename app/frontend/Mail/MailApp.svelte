@@ -25,7 +25,7 @@
   import { ArrayColl } from "svelte-collections";
   import { PersonUID } from "../../logic/Abstract/PersonUID";
 
-  $: accounts = showAccounts.filter(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace); // || acc == allAccountsAccount
+  $: accounts = showAccounts.filterObservable(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace); // || acc == allAccountsAccount
   $: folders = $selectedAccount?.rootFolders ?? new ArrayColl<Folder>();
   $: messages = searchMessages ?? $selectedFolder?.messages ?? new ArrayColl<EMail>();
 

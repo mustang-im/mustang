@@ -1,6 +1,7 @@
 <Splitter name="mail.vertical.folders" initialRightRatio={4}>
-  <LeftPane {accounts} bind:selectedAccount
-    {folders} bind:selectedFolder bind:selectedFolders bind:searchMessages
+  <LeftPane {accounts} {folders}
+    bind:selectedAccount bind:selectedFolder bind:selectedFolders bind:searchMessages
+    bind:activeTab={$selectedSearchTab}
     slot="left" />
   <Splitter slot="right" name="mail.vertical.msgs" initialRightRatio={2}>
     <vbox flex class="message-list-pane" slot="left">
@@ -22,7 +23,7 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { EMail } from "../../../logic/Mail/EMail";
-
+  import { selectedSearchTab } from "../Selected";
   import VerticalMessageList from "./VerticalMessageList.svelte";
   import LeftPane from "../LeftPane/LeftPane.svelte";
   import MessageDisplay from "../Message/MessageDisplay.svelte";

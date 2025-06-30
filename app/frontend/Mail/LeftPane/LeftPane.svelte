@@ -1,23 +1,23 @@
 <vbox flex class="folder-pane">
     <hbox class="top">
       <vbox class="island">
-        <SearchSwitcher bind:active={$selectedSearchTab} />
+        <SearchSwitcher bind:active={activeTab} />
       </vbox>
       <hbox flex />
       <hbox class="buttons">
-        {#if $selectedSearchTab == SearchView.Folder}
+        {#if activeTab == SearchView.Folder}
           <GetMailButton folder={selectedFolder ?? selectedAccount?.inbox} />
         {/if}
-        {#if $selectedSearchTab == SearchView.Folder || $selectedSearchTab == SearchView.Person}
+        {#if activeTab == SearchView.Folder || activeTab == SearchView.Person}
           <WriteButton {selectedAccount} />
         {/if}
       </hbox>
     </hbox>
 
-  {#if $selectedSearchTab == SearchView.Person}
+  {#if activeTab == SearchView.Person}
     <PersonsList persons={appGlobal.persons} bind:selected={$selectedPerson} size="small" />
     <ViewSwitcher />
-  {:else if $selectedSearchTab == SearchView.Search}
+  {:else if activeTab == SearchView.Search}
     <SearchPane bind:searchMessages on:clear={endSearchMode} />
   {:else}
     <AccountList {accounts} bind:selectedAccount />
@@ -41,7 +41,6 @@
   import { type Folder } from "../../../logic/Mail/Folder";
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { Person } from "../../../logic/Abstract/Person";
-  import { selectedSearchTab } from "../Selected";
   import { selectedPerson } from "../../Contacts/Person/Selected";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
@@ -69,15 +68,16 @@
   export let selectedAccount: MailAccount; /** in/out */
   export let selectedFolder: Folder; /** in/out */
   export let selectedFolders: ArrayColl<Folder>;
+  export let activeTab: SearchView;
 
   $: if (!!$globalSearchTerm) openSearchPane();
   function openSearchPane() {
-    $selectedSearchTab = SearchView.Search;
+    activeTab = SearchView.Search;
   }
-  $: $selectedSearchTab, changeTab();
+  $: activeTab, changeTab();
   function changeTab() {
     lastPerson = null;
-    if ($selectedSearchTab == SearchView.Search) {
+    if (activeTab == SearchView.Search) {
       if ($globalSearchTerm == null) {
         $globalSearchTerm = "";
       }
@@ -85,16 +85,12 @@
       searchMessages = null;
     }
   }
-
-  // Search.svelte is removed here above, and therefore cannot react anymore, so have to do it here.
-  // Reproduction: window title | search field | (x) button
-  $: if ($globalSearchTerm == null) endSearchMode();
   function endSearchMode() {
-    $selectedSearchTab = SearchView.Folder;
+    activeTab = SearchView.Folder;
   }
 
   let lastPerson: Person;
-  $: $selectedSearchTab == SearchView.Person && $selectedPerson && catchErrors(() => showPerson($selectedPerson))
+  $: activeTab == SearchView.Person && $selectedPerson && catchErrors(() => showPerson($selectedPerson))
   async function showPerson(person: Person) {
     if (lastPerson == person) {
       return;

@@ -1,6 +1,7 @@
 <Splitter name="mail.3pane.folders" initialRightRatio={4}>
-  <LeftPane {accounts} bind:selectedAccount
-    {folders} bind:selectedFolder bind:selectedFolders bind:searchMessages
+  <LeftPane {accounts} {folders}
+    bind:selectedAccount bind:selectedFolder bind:selectedFolders bind:searchMessages
+    bind:activeTab={$selectedSearchTab}
     slot="left" />
   <SplitterBidirectional {horizontal}
     name={horizontal ? "mail.3pane.msgs" : "mail.widetable.msgs"}
@@ -27,7 +28,7 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { EMail } from "../../../logic/Mail/EMail";
-
+  import { selectedSearchTab } from "../Selected";
   import TableMessageList from "./TableMessageList.svelte";
   import LeftPane from "../LeftPane/LeftPane.svelte";
   import FolderFooter from "../LeftPane/FolderFooter.svelte";
