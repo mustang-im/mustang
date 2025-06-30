@@ -11,7 +11,6 @@
     * Invitations
     * Free/Busy
   * Contacts
-    * Add buttons for creating mail, chat etc.
     * Add new line with no value when editing
       (if we can do it without moving the other boxes)
     * Same name: Checkboxes

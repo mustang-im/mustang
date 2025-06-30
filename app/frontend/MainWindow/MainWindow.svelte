@@ -40,7 +40,6 @@
   import { getStartObjects, loginOnStartup } from "../../logic/WebMail/startup";
   // #endif
   import { notifications } from "./Notification";
-  import { linkClickURL } from "./Selected";
   import { selectedAccount, selectedFolder } from "../Mail/Selected";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { loadMustangApps } from "../AppsBar/loadMustangApps";
@@ -118,21 +117,15 @@
     let targetE = event.target as HTMLElement;
     let linkE = targetE.closest && targetE.closest("a[href]");
     let url = linkE?.getAttribute("href");
-    if (!url) {
+    if (!url ||
+        // Let default handler open in external browser
+        linkE.getAttribute("target") == "_blank") {
       return;
     }
     let urlObj = new URL(url); // throws
-    console.log("url", url, urlObj, linkE.getAttribute("target"));
-    if (urlObj.protocol == "https:" || urlObj.protocol == "http:") {
-      if (linkE.getAttribute("target") == "_blank") {
-        return; // Let default handler open in external browser
-      } else {
-        // fallback, to avoid replacing the app window with webpage
-        appGlobal.remoteApp.openExternalURL(url);
-        return;
-      }
-    }
-    $linkClickURL = url;
+    let urlEvent = new Event("url-" + urlObj.protocol.replace(":", "")); // e.g. "url-mailto"
+    (urlEvent as any).url = url;
+    targetE.dispatchEvent(urlEvent);
     event.stopPropagation();
     event.preventDefault();
   }

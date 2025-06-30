@@ -18,6 +18,11 @@
             on:save={save} bind:isEditing={isEditingContacts}>
             <EmailAddressDisplay slot="display" value={entry.value} />
             <EmailAddressEdit slot="edit" bind:value={entry.value} />
+            <a href="mailto:{entry.value}" slot="actions">
+              <Button icon={MailIcon}
+                label={$t`Write mail`}
+                iconOnly plain classes="write" />
+            </a>
           </ContactEntryUI>
         {/each}
       </grid>
