@@ -10,7 +10,6 @@
 
   <Scroll>
     <hbox class="term font-normal">
-      {$t`Search for`}
       <SearchField bind:searchTerm={$globalSearchTerm}
         placeholder={$t`Mail content or subject`}
         bind:this={searchFieldEl} />
