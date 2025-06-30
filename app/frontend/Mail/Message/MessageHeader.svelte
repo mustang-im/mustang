@@ -9,6 +9,8 @@
           <!-- Subject etc. are loaded by search,
             and body is loaded by MessageBody calling message.loadBody(),
             but not to/from etc. -->
+        {:catch ex}
+          {ex?.message ?? ex + ""}
         {/await}
       {/if}
       <hbox class="from">
