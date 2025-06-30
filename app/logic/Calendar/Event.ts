@@ -647,7 +647,7 @@ export class Event extends Observable {
    */
   fillRecurrences(seriesEndTime: Date = new Date(Date.now() + 1e11)): Collection<Event> {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Not a recurrence master");
-    if (this.instances.hasItems) {
+    if (!this.calendar || this.instances.hasItems) {
       // TODO Fill more, if seriesEndTime >> last.startTime
       return this.instances;
     }
