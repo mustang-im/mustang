@@ -1,4 +1,4 @@
-<hbox class="island" class:large class:border class:faint>
+<hbox class="island specific" class:large class:border class:faint>
   <slot />
 </hbox>
 
@@ -31,7 +31,7 @@
     color: var(--main-pattern-fg);
     border: none;
   }
-  .island :global(button:not(.selected)) {
+  .island.specific :global(button:not(.selected)) {
     background-color: transparent;
     border: none;
   }

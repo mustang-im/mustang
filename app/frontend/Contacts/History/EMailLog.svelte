@@ -11,7 +11,8 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { selectedAccount, selectedFolder, selectedMessage } from "../../Mail/Selected";
+  import { selectedAccount, selectedFolder, selectedMessage, selectedSearchTab } from "../../Mail/Selected";
+  import { SearchView } from "../../Mail/LeftPane/SearchSwitcher.svelte";
   import { openApp } from "../../AppsBar/selectedApp";
   import { mailMustangApp } from "../../Mail/MailMustangApp";
   import { assert } from "../../../logic/util/util";
@@ -25,6 +26,7 @@
     $selectedAccount = message.folder?.account;
     $selectedFolder = message.folder;
     $selectedMessage = message;
+    $selectedSearchTab = SearchView.Person;
     openApp(mailMustangApp);
     await tick();
     $selectedAccount = message.folder?.account;
