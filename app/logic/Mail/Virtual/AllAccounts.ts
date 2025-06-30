@@ -24,7 +24,6 @@ export class AllAccounts extends MailAccount {
     this.name = gt`All accounts`;
     this.accounts = accounts;
     this.allRootFolders = mergeColls(this.accounts.map(account => account.rootFolders));
-    return; // TODO Disable All Inbox for now
 
     let all = new AllFolders(this);
     all.name = gt`All messages`;
