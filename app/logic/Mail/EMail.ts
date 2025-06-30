@@ -4,7 +4,7 @@ import { ComposeActions } from "./ComposeActions";
 import { Attachment, ContentDisposition } from "../Abstract/Attachment";
 import type { Tag } from "../Abstract/Tag";
 import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
-import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
+import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../Abstract/PersonUID";
 import type { MailIdentity } from "./MailIdentity";
 import type { Calendar } from "../Calendar/Calendar";
 import { Event } from "../Calendar/Event";
@@ -241,15 +241,13 @@ export class EMail extends Message {
       }
     }*/
 
-    if (!this.id || !this.subject || !this.from || !this.sent) {
+    if (!this.id || !this.subject || !this.sent || !this.from || this.from.emailAddress == kDummyPerson.emailAddress) {
       this.id = sanitize.string(mail.messageId, this.id ?? "");
       this.subject = sanitize.string(mail.subject, this.subject ?? "");
       this.sent = sanitize.date(mail.date, this.sent ?? new Date());
-      if (mail.from?.address) {
-        this.from = findOrCreatePersonUID(sanitize.nonemptystring(mail.from.address), sanitize.label(mail.from.name, null));
-      } else {
-        this.from = findOrCreatePersonUID("unknown@invalid", "Unknown");
-      }
+      this.from = mail.from?.address
+        ? findOrCreatePersonUID(sanitize.nonemptystring(mail.from.address), sanitize.label(mail.from.name, null))
+        : kDummyPerson;
     }
     setPersons(this.to, mail.to);
     setPersons(this.cc, mail.cc);
