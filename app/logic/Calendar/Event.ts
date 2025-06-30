@@ -557,7 +557,7 @@ export class Event extends Observable {
       return;
     }
     if (this.myParticipation == InvitationResponse.Organizer) {
-      await this.unedited.outgoingInvitation.sendCancellations();
+      await this.outgoingInvitation.sendCancellations();
     } else if (this.myParticipation) {
       // TODO Move code to `IncomingInvitation` class
       for (let participant of this.participants) {
