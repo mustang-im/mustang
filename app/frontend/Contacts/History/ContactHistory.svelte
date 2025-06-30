@@ -5,8 +5,9 @@
         {$t`Contact history *=> The log of previous interactions with this person`}
       </hbox>
       <vbox class="log" flex slot="content">
-        <FastList items={messages} columns="12px 48px 48px 1fr">
-          <LogBox {message} {person} let:item={message} slot="row" />
+        <FastList items={messages} columns="12px 60px 48px 1fr">
+          <LogBox {message} {person} let:item={message} slot="row"
+            previousMessage={messages.getIndex(messages.indexOf(message) - 1)} />
         </FastList>
 
         {#if $messages.length >= limit}
@@ -29,12 +30,13 @@
 
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
-  import { searchLog } from "../../../logic/Contacts/History/History";
+  import { searchLog, type LogEntry } from "../../../logic/Contacts/History/History";
   import LogBox from "./LogBox.svelte";
   import GroupBox from "../GroupBox.svelte";
   import FastList from "../../Shared/FastList.svelte";
   import Button from "../../Shared/Button.svelte";
   import ShowMoreIcon from "lucide-svelte/icons/chevron-down";
+  import type { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
   export let person: Person;
@@ -42,7 +44,7 @@
   const kDefaultLimit = 200;
   const kAddMore = 1000;
   let limit = kDefaultLimit;
-  $: messages = searchLog(person, limit);
+  $: messages = searchLog(person, limit) as ArrayColl<LogEntry>;
 
   function showMore() {
     if (limit == kDefaultLimit) {

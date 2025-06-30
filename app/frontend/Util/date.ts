@@ -1,7 +1,7 @@
 import { getUILocale, gPlural, gt } from "../../l10n/l10n";
 
 /**
-* Returns:
+* @returns
 * For today: Time, e.g. "15:23"
 * This week: Weekday, Time, e.g. "Wed 15:23"
 * Other this year: Date without year and time, e.g. "23.11. 15:23"
@@ -29,7 +29,7 @@ export function getDateTimeString(date: Date): string {
 }
 
 /**
-* Returns:
+* @returns
 * For today: "Today"
 * This week: Weekday, long, e.g. "Wednesday"
 * Other this year: Date, without year, e.g. "23.11."
@@ -54,6 +54,14 @@ export function getDateString(date: Date): string {
     dateDetails = { year: "numeric", month: "2-digit", day: "2-digit" };
   }
   return date.toLocaleString(getUILocale(), dateDetails);
+}
+
+/** @returns Time, e.g. "15:23" */
+export function getTimeString(date: Date): string {
+  if (!date) {
+    return "";
+  }
+  return date.toLocaleString(getUILocale(), { hour: "numeric", minute: "numeric" });
 }
 
 export function getToday() {
