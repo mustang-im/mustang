@@ -743,7 +743,6 @@
   "5Ljrei": "New WebDAV account",
   "RX2uJz": "No file sharing accounts configured",
   "HXVbcL": "Pictures",
-  "+0B+ue": "Projects",
   "CCTop/": "Recent",
   "HAkEqR": "Recent files",
   "p4UKdi": "Select the addressbook you want to use",
@@ -792,5 +791,11 @@
   "L84UY4": "Street and house number",
   "vZHrCq": "This change will remove all exceptions and exclusions for this series.",
   "6jfS51": "Welcome",
-  "+ct8J5": "Contact history"
+  "+ct8J5": "Contact history",
+  "n4hwUb": "Please set up an email account before sending mail",
+  "pGU++M": "Write mail",
+  "eXXpUe": "From",
+  "chWcG4": "me",
+  "XyNE9I": "To",
+  "2nQi9h": "Unknown"
 }
