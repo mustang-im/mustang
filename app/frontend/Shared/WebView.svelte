@@ -128,6 +128,9 @@
 
   // #if [!WEBMAIL]
   async function addInputListener() {
+    if (!webviewE) {
+      return;
+    }
     let id = (webviewE as any).getWebContentsId();
     await appGlobal.remoteApp.addEventListenerWebContents(id, "input-event", (event) => {
       if (event.type == "mouseDown") {
@@ -139,6 +142,9 @@
   }
 
   async function addLinkListener() {
+    if (!webviewE) {
+      return;
+    }
     let id = (webviewE as any).getWebContentsId();
     let url: string;
     await appGlobal.remoteApp.addEventListenerWebContents(id, "update-target-url", (eventURL) => {
