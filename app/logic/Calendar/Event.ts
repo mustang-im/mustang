@@ -8,7 +8,7 @@ import type { MailIdentity } from "../Mail/MailIdentity";
 import { appGlobal } from "../app";
 import { k1DayS, k1HourS, k1MinuteS } from "../../frontend/Util/date";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
-import { Observable, notifyChangedAccessor, notifyChangedProperty } from "../util/Observable";
+import { Observable, notifyChangedAccessor, notifyChangedProperty, notifyChangedObservable } from "../util/Observable";
 import { Lock } from "../util/Lock";
 import { assert, randomID } from "../util/util";
 import { backgroundError } from "../../frontend/Util/error";
@@ -220,7 +220,7 @@ export class Event extends Observable {
   onlineMeetingURL: string;
   @notifyChangedProperty
   isOnline = false;
-  @notifyChangedProperty
+  @notifyChangedObservable
   readonly participants = new ArrayColl<Participant>();
   @notifyChangedProperty
   myParticipation = InvitationResponse.Unknown;

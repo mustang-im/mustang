@@ -81,4 +81,40 @@ export function notifyChangedProperty<T extends Observable>(obj: T, propertyName
   Object.defineProperty(obj, propertyName, descriptor);
 }
 
-// <copied to="../../lib/util/Observable.ts" />
+/** Decorator for object properties.
+ * Propagates notifications. */
+export function notifyChangedObservable<T extends Observable>(obj: T, propertyName: string) {
+  if (!obj._properties) {
+    obj._properties = {};
+  }
+  let descriptor = Object.getOwnPropertyDescriptor(obj, propertyName);
+  if (descriptor) {
+    assert(descriptor.configurable, `Cannot attach property decorator to .${propertyName}, it's not configurable.`);
+    assert(!descriptor.set && !descriptor.get, `.${propertyName} has a getter/setter. Use notifyChangedAccessor() instead.`);
+    descriptor.enumerable = true;
+    obj._properties[propertyName] = descriptor?.value;
+    delete descriptor.value;
+    delete descriptor.writable;
+  } else {
+    descriptor = {
+      configurable: true,
+      enumerable: true,
+    };
+  }
+  descriptor.set = function (this: T, val: IObservable | undefined): void {
+    let oldValue: IObservable | undefined = this._properties[propertyName];
+    if (oldValue === val) {
+      return;
+    }
+    this._properties["_unsubscribe_" + propertyName]?.();
+    this._properties[propertyName] = val;
+    this.notifyObservers(propertyName, oldValue);
+    this._properties["_unsubscribe_" + propertyName] = val?.subscribe(() => this.notifyObservers(propertyName, oldValue));
+  }
+  descriptor.get = function (this: T) {
+    return this._properties[propertyName];
+  }
+  Object.defineProperty(obj, propertyName, descriptor);
+}
+
+// <copied to="../../../lib/util/Observable.ts" />
