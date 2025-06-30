@@ -33,15 +33,18 @@
   }
   .email {
     background-color: #0080fd !important;
+    color: white !important;
   }
   .chat {
     background-color: #2ab116 !important;
+    color: white !important;
   }
   .event {
     background-color: #f4c81d !important;
   }
   .call {
     background-color: #ff4747 !important;
+    color: white !important;
   }
   .icon :global(.dummy) {
     background-color: #2ab116;
