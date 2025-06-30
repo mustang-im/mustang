@@ -518,7 +518,7 @@ export class Event extends Observable {
   }
 
   async saveToServer(): Promise<void> {
-    if (!this.isIncomingMeeting && this.outgoingInvitation && this.participants.hasItems && this.hasChanged()) {
+    if (!this.isIncomingMeeting && this.participants.hasItems && this.hasChanged()) {
       this.calUID ??= crypto.randomUUID();
       await this.outgoingInvitation.sendInvitations();
     }
