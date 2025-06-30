@@ -28,7 +28,6 @@
   import TitleBarLeft from "./TitleBarLeft.svelte";
   import TitleBarRight from "./TitleBarRight.svelte";
   import EditEvent from "./EditEvent/EditEvent.svelte";
-  import TaskList from "./TaskList.svelte";
   import Splitter from "../Shared/Splitter.svelte";
   import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
