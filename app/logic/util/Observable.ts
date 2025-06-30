@@ -82,7 +82,7 @@ export function notifyChangedProperty<T extends Observable>(obj: T, propertyName
 }
 
 /** Decorator for object properties.
- * Propagates notifications. */
+ * Subscribes to the property and propagates its notifications. */
 export function notifyChangedObservable<T extends Observable>(obj: T, propertyName: string) {
   if (!obj._properties) {
     obj._properties = {};
