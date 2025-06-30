@@ -6,6 +6,7 @@ import type { EMail } from "../../Mail/EMail";
 import { appGlobal } from "../../app";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
+import type { Collection } from "svelte-collections";
 
 export default class OutgoingInvitation {
   event: Event;
@@ -28,8 +29,8 @@ export default class OutgoingInvitation {
     return account.identities.first;
   }
 
-  async sendInvitations() {
-    for (let participant of this.event.participants) {
+  async sendInvitations(participants: Collection<Participant>) {
+    for (let participant of participants) {
       if (participant.response != InvitationResponse.Organizer) {
         participant.response ||= InvitationResponse.NoResponseReceived;
         await this.send("REQUEST", participant);
@@ -37,8 +38,8 @@ export default class OutgoingInvitation {
     }
   }
 
-  async sendCancellations() {
-    for (let participant of this.event.participants) {
+  async sendCancellations(participants: Collection<Participant>) {
+    for (let participant of participants) {
       if (participant.response > InvitationResponse.Organizer) {
         await this.send("CANCEL", participant);
       }

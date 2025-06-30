@@ -397,6 +397,26 @@ export class Event extends Observable {
   }
 
   /**
+   * Has a property changed that we should notify invitees about?
+   */
+  hasChangedInvitation(): boolean {
+    return !!this.unedited && (
+      this.startTime?.getTime() != this.unedited.startTime?.getTime() ||
+      this.endTime?.getTime() != this.unedited.endTime?.getTime() ||
+      this.timezone != this.unedited.timezone ||
+      this.allDay != this.unedited.allDay ||
+      this.title != this.unedited.title ||
+      this.rawText != this.unedited.rawText ||
+      this.rawHTMLDangerous != this.unedited.rawHTMLDangerous ||
+      this.location != this.unedited.location ||
+      this.isOnline != this.unedited.isOnline ||
+      this.onlineMeetingURL != this.unedited.onlineMeetingURL ||
+      this.recurrenceCase != this.unedited.recurrenceCase ||
+      this.recurrenceRule != this.unedited.recurrenceRule
+    );
+  }
+
+  /**
    * Starts editing an event.
    *
    * If it is already being edited, this is a no-op. This can happen when switching
@@ -518,10 +538,15 @@ export class Event extends Observable {
   }
 
   async saveToServer(): Promise<void> {
-    if (!this.isIncomingMeeting && this.participants.hasItems && this.hasChanged()) {
-      this.calUID ??= crypto.randomUUID();
-      await this.outgoingInvitation.sendInvitations();
+    if (this.isIncomingMeeting || !this.unedited) {
+      return;
     }
+    this.calUID ??= crypto.randomUUID();
+    let removed = this.unedited.participants.subtract(this.participants);
+    // Use the original event when sending cancellations
+    this.unedited.outgoingInvitation.sendCancellations(removed);
+    let notify = this.hasChangedInvitation() ? this.participants : this.participants.subtract(this.unedited.participants);
+    await this.outgoingInvitation.sendInvitations(notify);
   }
 
   /**
@@ -557,7 +582,11 @@ export class Event extends Observable {
       return;
     }
     if (this.myParticipation == InvitationResponse.Organizer) {
-      await this.outgoingInvitation.sendCancellations();
+      if (this.unedited) {
+        await this.unedited.outgoingInvitation.sendCancellations(this.unedited.participants);
+      } else {
+        await this.outgoingInvitation.sendCancellations(this.participants);
+      }
     } else if (this.myParticipation) {
       // TODO Move code to `IncomingInvitation` class
       for (let participant of this.participants) {
