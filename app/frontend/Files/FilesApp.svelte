@@ -6,7 +6,9 @@
     {#if viewFile}
       <FileViewer file={viewFile} />
     {:else if listFiles}
-      <FilesHeader dir={$selectedFolder} />
+      {#if $selectedFolder}
+        <FilesHeader dir={$selectedFolder} />
+      {/if}
       {#if view == "table"}
         <FilesList files={listFiles} dirs={listDirs} />
       {:else if view == "gallery"}
