@@ -4,15 +4,6 @@
       <PersonPicture person={$message.contact} />
     {/if}
     <vbox>
-      {#if message.to.isEmpty}
-        {#await message.loadForDisplay()}
-          <!-- Subject etc. are loaded by search,
-            and body is loaded by MessageBody calling message.loadBody(),
-            but not to/from etc. -->
-        {:catch ex}
-          {ex?.message ?? ex + ""}
-        {/await}
-      {/if}
       <hbox class="from">
         {#if $message.outgoing}
           <value class="from" title={$message.from.emailAddress}>
@@ -75,6 +66,15 @@
       <DisplayModeSwitcher />
     </vbox>
   </hbox>
+  {#if message.to.isEmpty}
+  {#await message.loadForDisplay()}
+    <!-- Subject etc. are loaded by search,
+      and body is loaded by MessageBody calling message.loadBody(),
+      but not to/from etc. -->
+  {:catch ex}
+    <ErrorMessageInline {ex} />
+  {/await}
+{/if}
 </vbox>
 
 <script lang="ts">
@@ -90,6 +90,7 @@
   import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
   import DisplayModeSwitcher from "./DisplayModeSwitcher.svelte";
   import TagSelector from "../../Shared/Tag/TagSelector.svelte";
+  import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import RemoveIcon from "lucide-svelte/icons/x";
   import { getLocalStorage } from "../../Util/LocalStorage";
@@ -190,5 +191,8 @@
   }
   .display-mode {
     justify-content: end;
+  }
+  .message-header :global(.error) {
+    margin-inline: -4px -12px;
   }
 </style>

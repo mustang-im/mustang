@@ -7,8 +7,7 @@
         {$t`Loading...`}
       {/await}
     {:catch ex}
-      {console.error(ex), logError(ex), ""}
-      {ex.message ?? ex + ""}
+      <ErrorMessage {ex} />
     {/await}
   {:else if mode == DisplayMode.HTML}
     <HTMLDisplay html={$message.html} allowExternalImages={false} />
@@ -36,7 +35,7 @@
   import HTMLDisplay from "./HTMLDisplay.svelte";
   import PlaintextDisplay from "./PlaintextDisplay.svelte";
   import ThreadDisplay from "./ThreadDisplay.svelte";
-  import { logError } from "../../Util/error";
+  import ErrorMessage from "../../Shared/ErrorMessageInline.svelte";
   import { sleep } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
 
