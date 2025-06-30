@@ -32,6 +32,7 @@
     $selectedAccount = message.folder?.account;
     $selectedFolder = message.folder;
     $selectedMessage = message;
+    $selectedSearchTab = SearchView.Person;
   }
 </script>
 
