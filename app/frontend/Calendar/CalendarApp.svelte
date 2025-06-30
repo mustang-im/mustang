@@ -1,6 +1,5 @@
 <vbox flex class="calendar-app">
   <Splitter
-    hasRight={!!$selectedEvent}
     initialRightRatio={0.25}
     rightMinWidth={350}
     >
@@ -11,7 +10,11 @@
       </MainView>
     </vbox>
     <vbox flex class="sidebar" slot="right">
-      <EditEvent event={$selectedEvent} />
+      {#if $selectedEvent}
+        <EditEvent event={$selectedEvent} />
+      {:else}
+        <!--<TaskList />-->
+      {/if}
     </vbox>
   </Splitter>
 </vbox>
@@ -25,11 +28,11 @@
   import TitleBarLeft from "./TitleBarLeft.svelte";
   import TitleBarRight from "./TitleBarRight.svelte";
   import EditEvent from "./EditEvent/EditEvent.svelte";
+  import TaskList from "./TaskList.svelte";
   import Splitter from "../Shared/Splitter.svelte";
   import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import { t } from "../../l10n/l10n";
-  import { mergeColls } from "svelte-collections";
 
   $: if (!$selectedCalendar) { $selectedCalendar = appGlobal.calendars.first; }
 

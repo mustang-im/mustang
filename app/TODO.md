@@ -6,6 +6,7 @@
     * Recurring #654
     * Invitations
     * Free/Busy
+    * Tasks
   * Meet
     * Close camera
   * Contacts
@@ -23,6 +24,7 @@
     * Hide quotes
     * Message list: Threaded view?
     * Mail Chat view: Open thread
+  * Tags: Table view: Make it part of subject column
   * Tags: Shrink tag list when not enough space
   * Setup mail
     * After account delete: remove general panel
