@@ -1,6 +1,7 @@
 import type { FileOrDirectory } from "../../logic/Files/FileOrDirectory";
 import type { Directory } from "../../logic/Files/Directory";
 import type { FileSharingAccount } from "../../logic/Files/FileSharingAccount";
+import { FilesView } from "./LeftPane/PaneViewSwitcher.svelte";
 import { writable, type Writable } from "svelte/store";
 import { ArrayColl } from "svelte-collections";
 
@@ -8,3 +9,4 @@ export let selectedFile: Writable<FileOrDirectory> = writable(null);
 export let selectedFiles = new ArrayColl<FileOrDirectory>();
 export let selectedFolder: Writable<Directory> = writable(null);
 export let selectedAccount: Writable<FileSharingAccount> = writable(null);
+export let selectedSearchTab: Writable<FilesView> = writable(FilesView.Harddrive);

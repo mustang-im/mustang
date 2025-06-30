@@ -95,6 +95,9 @@
     dispatchEvent("clear");
   }
 
+  // window title | search field | (x) button
+  $: if ($globalSearchTerm == null) dispatchEvent("clear");
+
   let searchFieldEl: SearchField;
   onMount(() => {
     if (!$globalSearchTerm) {

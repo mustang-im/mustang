@@ -37,16 +37,12 @@
   export let listDirs: Collection<Directory>;
   /** out only */
   export let viewFile: File | null = null;
-
-  let activeTab = FilesView.Harddrive;
+  export let activeTab: FilesView = FilesView.Harddrive;
 
   $: if (!!$globalSearchTerm) openSearchPane();
   function openSearchPane() {
     activeTab = FilesView.Search;
   }
-  // Search.svelte is removed here above, and therefore cannot react anymore, so have to do it here.
-  // Reproduction: window title | search field | (x) button
-  $: if ($globalSearchTerm == null) endSearchMode();
   function endSearchMode() {
     activeTab = FilesView.Harddrive;
   }

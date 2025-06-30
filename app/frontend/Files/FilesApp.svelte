@@ -1,6 +1,6 @@
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox class="left-pane" slot="left">
-    <LeftPane bind:listFiles bind:listDirs bind:viewFile />
+    <LeftPane bind:listFiles bind:listDirs bind:viewFile bind:activeTab={$selectedSearchTab} />
   </vbox>
   <vbox class="right-pane" slot="right">
     {#if viewFile}
@@ -22,6 +22,7 @@
   import { File } from "../../logic/Files/File";
   import { Directory } from "../../logic/Files/Directory";
   import { getLocalStorage } from "../Util/LocalStorage";
+  import { selectedFolder, selectedSearchTab } from "./selected";
   import LeftPane from "./LeftPane/LeftPane.svelte";
   import FilesList from "./FilesList/FilesList.svelte";
   import Gallery from "./Gallery/Gallery.svelte";
@@ -30,7 +31,6 @@
   import Splitter from "../Shared/Splitter.svelte";
   import type { Collection } from "svelte-collections";
   import { catchErrors } from "../Util/error";
-  import { selectedFolder } from "./selected";
 
   /** The list of files to show on the right pane */
   let listFiles: Collection<File>;

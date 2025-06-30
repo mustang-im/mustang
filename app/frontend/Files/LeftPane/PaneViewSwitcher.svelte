@@ -25,6 +25,7 @@
       onClick={() => active = FilesView.Person}
       selected={active == FilesView.Person}
       />
+      <!--
       <Button
       label={$t`Projects`}
       icon={ProjectIcon}
@@ -34,6 +35,7 @@
       onClick={() => active = FilesView.Project}
       selected={active == FilesView.Project}
       />
+      -->
       <Button
       label={$t`Recent`}
       icon={RecentIcon}
