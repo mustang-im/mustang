@@ -95,7 +95,7 @@ export class MailAccount extends TCPAccount {
   }
 
   newEMailFrom(): EMail {
-    let folder = this.getSpecialFolder(SpecialFolder.Drafts);
+    let folder = this.getSpecialFolder(SpecialFolder.Sent);
     let email = folder.newEMail();
     email.compose.generateMessageID();
     email.needToLoadBody = false;
