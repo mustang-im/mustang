@@ -108,10 +108,14 @@ export function notifyChangedObservable<T extends Observable>(obj: T, propertyNa
     }
     this._properties["_unsubscribe_" + propertyName]?.();
     this._properties[propertyName] = val;
+    let unsubscribe = this._properties["_unsubscribe_" + propertyName] = val?.subscribe(() =>
+      this.notifyObservers(propertyName));
     // subscribe() calls the subscriber once immediately at subscription time,
     // so notifyObservers() is called immediately, and we need that.
-    this._properties["_unsubscribe_" + propertyName] = val?.subscribe(() =>
-      this.notifyObservers(propertyName));
+    // But if the new value is not subscribable (or null), call the observers manually
+    if (!unsubscribe) {
+      this.notifyObservers(propertyName, oldValue);
+    }
   }
   descriptor.get = function (this: T) {
     return this._properties[propertyName];
