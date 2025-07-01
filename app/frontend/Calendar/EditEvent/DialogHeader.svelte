@@ -90,8 +90,8 @@
             <ButtonMenu bind:isMenuOpen={isSaveSeriesOpen}>
               <RoundButton
                 slot="control"
-                label={$t`Save`}
-                icon={SaveIcon}
+                label={willSend ? $t`Send invitation` : $t`Save`}
+                icon={willSend ? SendIcon : SaveIcon}
                 onClick={event => { isSaveSeriesOpen = !isSaveSeriesOpen; event.stopPropagation(); }}
                 classes="plain save-or-close"
                 filled={true}
@@ -117,8 +117,8 @@
             </ButtonMenu>
           {:else}
             <RoundButton
-              label={$t`Save`}
-              icon={SaveIcon}
+              label={willSend ? $t`Send invitation` : $t`Save`}
+              icon={willSend ? SendIcon : SaveIcon}
               onClick={onSave}
               classes="plain save-or-close"
               filled={true}
@@ -159,6 +159,7 @@
   import ShrinkDialogIcon from "lucide-svelte/icons/chevrons-right";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import SaveIcon from "lucide-svelte/icons/check";
+  import SendIcon from "lucide-svelte/icons/send";
   import CloseIcon from "lucide-svelte/icons/x";
   import RevertIcon from "lucide-svelte/icons/undo-2";
   import { catchErrors } from "../../Util/error";
@@ -177,6 +178,8 @@
     $event.hasChanged() ||
     repeatBox && !event.parentEvent || // Change single event into series
     newCalendar != event.calendar);
+  $: participants = event.participants;
+  $: willSend = $participants.hasItems && !$event.isIncomingMeeting;
   $: isFullWindow = $selectedApp instanceof EventEditMustangApp;
   let isSaveSeriesOpen = false;
   let isDeleteSeriesOpen = false;
