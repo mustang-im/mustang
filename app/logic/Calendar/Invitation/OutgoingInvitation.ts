@@ -4,7 +4,7 @@ import { InvitationResponse, type iCalMethod } from "./InvitationStatus";
 import { type MailIdentity, findIdentityForEMailAddress } from "../../Mail/MailIdentity";
 import type { EMail } from "../../Mail/EMail";
 import { appGlobal } from "../../app";
-import { assert } from "../../util/util";
+import { NotReached, assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import type { Collection } from "svelte-collections";
 
@@ -72,7 +72,15 @@ export default class OutgoingInvitation {
     email.to.add(participant);
     email.iCalMethod = method;
     email.event = this.event;
-    email.subject = gt`Invitation *=> Suggestion to join a business meeting` + ": " + this.event.title;
+    let subject = "";
+    if (method == "REQUEST") {
+      subject = gt`Invitation *=> Suggestion to join the business meeting`
+    } else if (method == "CANCEL") {
+      subject = gt`Cancelled *=> The business meeting is no longer happening`
+    } else {
+      throw new NotReached(`You cannot ${method} to this invitation, because you're the organizer`);
+    }
+    email.subject = subject + ": " + this.event.title;
     if (this.event.descriptionText) {
       email.text = this.event.descriptionText;
       email.html = this.event.descriptionHTML;
