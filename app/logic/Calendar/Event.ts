@@ -513,6 +513,7 @@ export class Event extends Observable {
   async saveLocally() {
     assert(this.calendar, "To save an event, it needs to be in a calendar first");
     assert(this.calendar.storage, "To save an event, the calendar needs to be saved first");
+    this.calUID ??= crypto.randomUUID();
     await this.calendar.storage.saveEvent(this);
     if (this.recurrenceCase == RecurrenceCase.Master) {
       this.generateRecurringInstances();
@@ -524,8 +525,8 @@ export class Event extends Observable {
   }
 
   async saveToServer(): Promise<void> {
+    this.calUID ??= crypto.randomUUID();
     if (!this.isIncomingMeeting && this.participants.hasItems && this.hasChanged()) {
-      this.calUID ??= crypto.randomUUID();
       await this.outgoingInvitation.sendInvitations();
     }
   }
