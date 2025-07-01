@@ -21,7 +21,11 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
     lines.push(["SUMMARY", event.title]);
   }
   if (event.descriptionText) {
-    lines.push(["DESCRIPTION", event.descriptionText]);
+    if (event.rawHTMLDangerous) { // Testing for HTML without conversion
+      lines.push(["DESCRIPTION", "ALTREP", "data:text/html," + encodeURIComponent(event.descriptionHTML), event.descriptionText]);
+    } else {
+      lines.push(["DESCRIPTION", event.descriptionText]);
+    }
   }
   if (event.allDay) {
     lines.push(["DTSTART", "VALUE", "DATE", date2ical(event.startTime)]);

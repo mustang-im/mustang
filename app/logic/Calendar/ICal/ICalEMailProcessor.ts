@@ -21,7 +21,7 @@ export class ICalEMailProcessor extends EMailProcessor {
       return;
     }
     if (email.html) {
-      event.rawHTMLDangerous = email.html;
+      event.rawHTMLDangerous = email.rawHTMLDangerous;
     }
     email.event = event;
   }

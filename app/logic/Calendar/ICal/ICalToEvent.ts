@@ -34,6 +34,16 @@ export function convertICalParserToEvent(ics: ICalParser, event: Event): boolean
   }
   if (vevent.entries.description) {
     event.descriptionText = vevent.entries.description[0].value;
+    let altrep = vevent.entries.description[0].properties.altrep;
+    if (altrep?.toLowerCase().startsWith("data:text/html,")) {
+      event.rawHTMLDangerous = decodeURIComponent(altrep.slice(15));
+    }
+  }
+  if (vevent.entries.xaltdesc) {
+    let fmttype = vevent.entries.xaltdesc[0].properties.fmttype;
+    if (fmttype?.toLowerCase() == "text/html") {
+      event.rawHTMLDangerous = vevent.entries.xaltdesc[0].value;
+    }
   }
   if (vevent.entries.dtstart) {
     [event.startTime, event.timezone] = parseDate(vevent.entries.dtstart[0]);
