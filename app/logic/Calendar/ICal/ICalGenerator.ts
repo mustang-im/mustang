@@ -21,9 +21,15 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
     lines.push(["SUMMARY", event.title]);
   }
   if (event.descriptionText) {
-    if (event.rawHTMLDangerous) { // Testing for HTML without conversion
+    if (event.hasHTML) {
+      // Plaintext, HTML Thunderbird
       lines.push(["DESCRIPTION", "ALTREP", "data:text/html," + encodeURIComponent(event.descriptionHTML), event.descriptionText]);
+      // HTML RFC 9073 6.5 <https://www.rfc-editor.org/rfc/rfc9073.html#name-styled-description>
+      lines.push(["STYLED-DESCRIPTION", "VALUE", "TEXT", "FMTTYPE", "text/html", event.descriptionHTML]);
+      // HTML Outlook
+      lines.push(["X-ALT-DESC", "FMTTYPE", "text/html", event.descriptionHTML]);
     } else {
+      // Plaintext
       lines.push(["DESCRIPTION", event.descriptionText]);
     }
   }
