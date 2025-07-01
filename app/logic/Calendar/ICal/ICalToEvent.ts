@@ -36,12 +36,14 @@ export function convertICalParserToEvent(ics: ICalParser, event: Event): boolean
   if (vevent.entries.description) {
     // Plaintext
     event.descriptionText = vevent.entries.description[0].value;
-    // HTML Thunderbird
+    // HTML RFC 2445 4.2.1, 4.2, RFC 5545 3.2.1 and Thunderbird
+    // <https://datatracker.ietf.org/doc/html/rfc2445#section-4.2.1>
+    // <https://bugzilla.mozilla.org/show_bug.cgi?id=1607834>
     let altrep = vevent.entries.description[0].properties.altrep;
     event.rawHTMLDangerous = stringFromDataURL(altrep, "text/html");
   }
   // HTML RFC 9073 6.5 <https://www.rfc-editor.org/rfc/rfc9073.html#name-styled-description>
-  // Preference order: 1. RFC, 2. Thunderbird, 3. Outlook
+  // Preference order: 1. RFC 9075, 2. Thunderbird, 3. Outlook
   if (vevent.entries.styleddescription) {
     let entry = vevent.entries.styleddescription.find(entry =>
       (!entry.properties.fmttype || entry.properties.fmttype.toLowerCase() == "text/html") &&
