@@ -146,6 +146,7 @@ export class Event extends Observable {
       this.clearExceptions();
       this._recurrenceRule = null;
       this.recurrenceCase = RecurrenceCase.Normal; // notifies
+      this.instances.replaceAll([this]);
     }
   }
   /**
@@ -157,11 +158,10 @@ export class Event extends Observable {
     let timesMatch = this._recurrenceRule?.timesMatch(rule);
     this._recurrenceRule = rule;
     this.recurrenceCase = RecurrenceCase.Master; // notifies
-    if (timesMatch) {
-      this.generateRecurringInstances();
-    } else {
+    if (!timesMatch) {
       this.clearExceptions();
     }
+    this.generateRecurringInstances();
   }
   /** Links back to the recurring master.
    * Only for RecurrenceCase == Instance or Exception */
@@ -179,7 +179,9 @@ export class Event extends Observable {
    * For RecurrenceCase == Instance, it's identical to `startTime`.
    */
   recurrenceStartTime: Date | null = null;
-  /** Only for recurringCase == Master.
+  /** Contains all instances that should be displayed for this event.
+   *
+   * For master events only:
    *
    * Contains all Instances generated from the master.
    * Does *not* contain:
@@ -187,10 +189,13 @@ export class Event extends Observable {
    * - Exceptions
    * - Exclusions
    *
+   * For other events:
+   *   Contains the event itself.
+   *
    * This is a dynamic collection, and will be updated automatically
    * when the master changes or the recurrence rule changes.
    */
-  readonly instances = new ArrayColl<Event>;
+  readonly instances = new ArrayColl<Event>([this]);
   /**
    * Only for RecurrenceCase == Master
    *
@@ -702,7 +707,6 @@ export class Event extends Observable {
     }
     this.exceptions.clear();
     this.exclusions.clear();
-    this.generateRecurringInstances();
   }
 
   /**
