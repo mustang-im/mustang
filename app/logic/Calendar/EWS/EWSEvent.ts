@@ -197,27 +197,27 @@ export class EWSEvent extends Event {
     request.addField("CalendarItem", "EndTimeZone", { Id: timezone }, "calendar:EndTimeZone");
     let response = await this.calendar.account.callEWS(request);
     this.itemID = sanitize.nonemptystring(response.Items.CalendarItem.ItemId.Id);
-    if (this.calUID) {
-      return;
-    }
-    // Need an extra server roundtrip to get the UID
-    request = {
-      m$GetItem: {
-        m$ItemShape: {
-          t$BaseShape: "IdOnly",
-          t$AdditionalProperties: {
-            t$FieldURI: [{
-              FieldURI: "calendar:UID",
-            }],
+
+    if (!this.calUID) {
+      // Need an extra server roundtrip to get the UID
+      request = {
+        m$GetItem: {
+          m$ItemShape: {
+            t$BaseShape: "IdOnly",
+            t$AdditionalProperties: {
+              t$FieldURI: [{
+                FieldURI: "calendar:UID",
+              }],
+            },
+          },
+          m$ItemIds: {
+            t$ItemId: response.Items.CalendarItem.ItemId,
           },
         },
-        m$ItemIds: {
-          t$ItemId: response.Items.CalendarItem.ItemId,
-        },
-      },
-    };
-    response = await this.calendar.account.callEWS(request);
-    this.calUID = sanitize.nonemptystring(response.Items.CalendarItem.UID);
+      };
+      response = await this.calendar.account.callEWS(request);
+      this.calUID = sanitize.nonemptystring(response.Items.CalendarItem.UID);
+    }
   }
 
   async saveTask() {
