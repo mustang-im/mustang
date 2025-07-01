@@ -12,6 +12,7 @@ import { Observable, notifyChangedAccessor, notifyChangedProperty, notifyChanged
 import { Lock } from "../util/Lock";
 import { assert, randomID } from "../util/util";
 import { backgroundError } from "../../frontend/Util/error";
+import { gt } from "../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
 
 export class Event extends Observable {
@@ -636,6 +637,20 @@ export class Event extends Observable {
       email.text = email.event.descriptionText;
       email.html = email.event.descriptionHTML;
     }
+
+    let subject = "";
+    if (myParticipant.response == InvitationResponse.Accept) {
+      subject = gt`Confirmed *=> I accept to join this business meeting`;
+    } else if (myParticipant.response == InvitationResponse.Decline) {
+      subject = gt`Declined *=> I refuse to join this business meeting`;
+    } else if (myParticipant.response == InvitationResponse.Tentative) {
+      subject = gt`Tentative *=> I am not sure that I will join this business meeting`;
+    }
+    if (subject) {
+      subject += ": ";
+    }
+    email.subject = subject + email.event.title;
+
     await account.send(email);
   }
 

@@ -72,6 +72,7 @@ export default class OutgoingInvitation {
     email.to.add(participant);
     email.iCalMethod = method;
     email.event = this.event;
+    email.subject = gt`Invitation *=> Suggestion to join a business meeting` + ": " + this.event.title;
     if (this.event.descriptionText) {
       email.text = this.event.descriptionText;
       email.html = this.event.descriptionHTML;
