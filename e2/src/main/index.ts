@@ -164,7 +164,7 @@ registerURLOpen();
 function registerURLOpen() {
   // macOS: Capture URL during launch
   app.on("open-url", (_event, url) => {
-    if (BrowserWindow.getAllWindows().length === 0) {
+    if (BrowserWindow.getAllWindows().length === 0 && app.isReady()) {
       createWindow();
     }
     startupArgs.url = url;
