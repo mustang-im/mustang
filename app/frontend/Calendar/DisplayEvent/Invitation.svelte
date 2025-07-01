@@ -15,7 +15,7 @@
     {/await}
   {/if}
   <hbox class="buttons">
-    {#if $message.invitationMessage == InvitationMessage.Invitation}
+    {#if $message.invitationMessage == InvitationMessage.Invitation && incomingInvitation}
       {#if myParticipation == InvitationResponse.Accept}
         <Button
           label={$t`Confirmed *=> A meeting request has been confirmed by you`}
@@ -73,7 +73,7 @@
             classes="maybe font-normal" />
         </ButtonMenu>
       {/if}
-    {:else if $message.invitationMessage}
+    {:else if $message.invitationMessage && incomingInvitation}
       <Button label={$t`Update calendar`} disabled={updateDisabled} onClick={onUpdate} classes="font-normal" />
     {/if}
   </hbox>
