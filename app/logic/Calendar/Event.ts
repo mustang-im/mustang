@@ -181,7 +181,7 @@ export class Event extends Observable {
   recurrenceStartTime: Date | null = null;
   /** Contains all instances that should be displayed for this event.
    *
-   * For master events only:
+   * For recurringCase == Master:
    *
    * Contains all Instances generated from the master.
    * Does *not* contain:
@@ -189,7 +189,7 @@ export class Event extends Observable {
    * - Exceptions
    * - Exclusions
    *
-   * For other events:
+   * For recurringCase == Normal and Exception:
    *   Contains the event itself.
    *
    * This is a dynamic collection, and will be updated automatically
