@@ -10,6 +10,7 @@ import { myHarddrive } from "../../logic/Files/Harddrive/HarddriveAccount";
 import { appGlobal } from "../../logic/app";
 import GlobalAppearance from "./Global/Appearance.svelte";
 import GlobalWorkspaces from "./Global/Workspaces.svelte";
+import GlobalDefaultApp from "./Global/DefaultApp.svelte";
 import MailAppearance from "./Mail/Appearance.svelte";
 import MailNotifications from "./Mail/Notifications.svelte";
 import MailRead from "./Mail/Read.svelte";
@@ -57,6 +58,7 @@ const globalSettings = new SettingsCategory("global", gt`General`, null, true);
 globalSettings.subCategories.addAll([
   new SettingsCategory("global-appearance", gt`Appearance`, GlobalAppearance),
   new SettingsCategory("global-workspaces", gt`Workspaces`, GlobalWorkspaces),
+  new SettingsCategory("global-default-app", gt`Default App`, GlobalDefaultApp)
 ]);
 settingsCategories.add(globalSettings);
 
