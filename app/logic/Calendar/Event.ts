@@ -10,6 +10,7 @@ import { k1DayS, k1HourS, k1MinuteS } from "../../frontend/Util/date";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
 import { Observable, notifyChangedAccessor, notifyChangedProperty, notifyChangedObservable } from "../util/Observable";
 import { Lock } from "../util/Lock";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { assert, randomID } from "../util/util";
 import { backgroundError } from "../../frontend/Util/error";
 import { gt } from "../../l10n/l10n";
@@ -358,10 +359,12 @@ export class Event extends Observable {
   fromExtraJSON(json: any) {
     assert(typeof (json) == "object", "Must be a JSON object");
     this.syncState = json.syncState;
+    this.lastUpdateTime = sanitize.date(json.lastUpdateTime, null);
   }
   toExtraJSON(): any {
     let json: any = {};
     json.syncState = this.syncState;
+    json.lastUpdateTime = this.lastUpdateTime;
     return json;
   }
 
