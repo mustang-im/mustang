@@ -7,6 +7,7 @@
       {disabled}
       >
       <slot name="person-context-menu" slot="context-menu" {person} />
+      <slot name="person-popup-bottom" slot="person-popup-bottom" {person} />
       <slot name="person-popup-buttons" slot="person-popup-buttons" {person} />
     </PersonEntry>
   {/each}

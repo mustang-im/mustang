@@ -1,6 +1,7 @@
 <hbox class="person"
   class:selected={popupOpen}
   class:no-pic={!$person.person?.picture}
+  title={person.name}
   bind:this={popupAnchor}
   on:click={onPopupToggle}>
   {#if $person.person?.picture}
@@ -16,6 +17,7 @@
     on:close={onPopupClose}
     {disabled}
     >
+    <slot name="person-popup-bottom" slot="bottom" personUID={person} />
     <slot name="person-popup-buttons" slot="buttons" personUID={person} />
   </PersonPopup>
 </Popup>

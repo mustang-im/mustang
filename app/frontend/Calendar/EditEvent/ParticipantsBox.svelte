@@ -14,7 +14,7 @@
   -->
 </SectionTitle>
 <PersonsAutocomplete persons={event.participants} placeholder={$t`Add participants`}>
-  <hbox slot="person-popup-buttons" let:person>
+  <hbox slot="person-popup-bottom" let:person>
     <PersonResponse {person} />
   </hbox>
   <hbox slot="result-bottom-row" let:person>
