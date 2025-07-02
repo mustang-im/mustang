@@ -6,9 +6,11 @@
       on:focusNext={onFocusNext}
       {disabled}
       >
-      <slot name="person-context-menu" slot="context-menu" {person} />
+      <slot name="person-pill-before-avatar" slot="before-avatar" {person} />
+      <slot name="person-pill-after-name" slot="after-name" {person} />
       <slot name="person-popup-bottom" slot="person-popup-bottom" {person} />
       <slot name="person-popup-buttons" slot="person-popup-buttons" {person} />
+      <slot name="person-context-menu" slot="context-menu" {person} />
     </PersonEntry>
   {/each}
   {#if !disabled}

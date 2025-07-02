@@ -5,7 +5,7 @@
   <vbox class="participants">
     <PersonsAutocomplete persons={event.participants} disabled>
     <hbox slot="person-popup-buttons" let:person>
-      <PersonResponse {person} />
+      <ParticipantConfirmText participant={person} />
     </hbox>
       <hbox slot="result-bottom-row" let:person>
         <PersonAvailability {person} />
@@ -93,7 +93,7 @@
   import { appGlobal } from "../../../logic/app";
   import PersonsAutocomplete from "../../Contacts/PersonAutocomplete/PersonsAutocomplete.svelte";
   import PersonAvailability from "../EditEvent/PersonAvailability.svelte";
-  import PersonResponse from "../EditEvent/PersonResponse.svelte";
+  import ParticipantConfirmText from "../EditEvent/ParticipantConfirmText.svelte";
   import DateInput from "../EditEvent/DateInput.svelte";
   import TimeInput from "../EditEvent/TimeInput.svelte";
   import DurationUnit from "../EditEvent/DurationUnit.svelte";

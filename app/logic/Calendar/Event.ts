@@ -661,11 +661,11 @@ export class Event extends Observable {
 
     let subject = "";
     if (myParticipant.response == InvitationResponse.Accept) {
-      subject = gt`Confirmed *=> I accept to join this business meeting`;
+      subject = gt`Confirmed *=> Accepted to join this business meeting`;
     } else if (myParticipant.response == InvitationResponse.Decline) {
-      subject = gt`Declined *=> I refuse to join this business meeting`;
+      subject = gt`Declined *=> Refused to join this business meeting`;
     } else if (myParticipant.response == InvitationResponse.Tentative) {
-      subject = gt`Tentative *=> I am not sure that I will join this business meeting`;
+      subject = gt`Tentative *=> Not sure to join this business meeting`;
     }
     if (subject) {
       subject += ": ";

@@ -48,7 +48,7 @@
   export let placeholder = $t`Add person`;
   export let tabindex = null;
   export let autofocus = false;
-  export let typedText: string; /* in/out, optional */
+  export let typedText: string = ""; /* in/out */
 
   export async function search(inputStr: string): Promise<PersonUID[]> {
     if (!inputStr || inputStr.length < 2) {

@@ -4,12 +4,14 @@
   title={person.name}
   bind:this={popupAnchor}
   on:click={onPopupToggle}>
+  <slot name="before-avatar" />
   {#if $person.person?.picture}
     <PersonPicture person={$person.person} size={24} />
   {/if}
   <vbox flex class="right">
     <hbox flex class="name">{$person.name || $person.emailAddress}</hbox>
   </vbox>
+  <slot name="after-name" />
 </hbox>
 <Popup bind:popupOpen {popupAnchor} placement="bottom-start" boundaryElSel=".mail-composer-window">
   <PersonPopup personUID={person}
