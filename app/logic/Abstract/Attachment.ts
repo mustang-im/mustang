@@ -71,6 +71,12 @@ export class Attachment extends Observable {
   async deleteFile() {
     throw new NotImplemented();
   }
+
+  /** Should not show to end user. This is true for auto-processing attachments
+   * like calendar invitations (ICS), vCards, encryption signatures etc. */
+  get hidden(): boolean {
+    return kHiddenMIMETypes.includes(this.mimeType);
+  }
 }
 
 export enum ContentDisposition {
@@ -78,3 +84,13 @@ export enum ContentDisposition {
   inline = "inline",
   attachment = "attachment",
 }
+
+const kHiddenMIMETypes = [
+  "application/ics", // calendar invitation
+  "text/vcard", // vCard
+  "application/pkcs7-signature", // S/MIME signature
+  "application/pgp-signature", // PGP signature
+  "application/pgp-keys", // Sender announcing his PGP keys
+  // "application/pkcs7-mime", // S/MIME encrypted
+  // "application/pgp-encrypted", // PGP encrypted
+];
