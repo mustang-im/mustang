@@ -116,11 +116,7 @@ async function whenReady() {
     optimizer.watchWindowShortcuts(window)
   })
 
-<<<<<<< HEAD
   createWindow();
-=======
-  createWindow()
->>>>>>> 544f37ca (Move registerURLOpen to be called as soon as app runs)
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
@@ -152,25 +148,10 @@ app.on('window-all-closed', () => {
   }
 })
 
-<<<<<<< HEAD
 // macOS: Capture URL during launch
 app.on("open-url", (_event, url) => {
   startupArgs.url = url;
   startupArgs.notifyObservers();
-=======
-// Listener must be registered as soon
-// as app run for MacOS
-registerURLOpen();
-function registerURLOpen() {
-  // macOS: Capture URL during launch
-  app.on("open-url", (_event, url) => {
-    if (BrowserWindow.getAllWindows().length === 0 && app.isReady()) {
-      createWindow();
-    }
-    startupArgs.url = url;
-    startupArgs.notifyObservers();
-  });
->>>>>>> 544f37ca (Move registerURLOpen to be called as soon as app runs)
 
   if (BrowserWindow.getAllWindows().length == 0 && app.isReady()) {
     createWindow();
