@@ -54,6 +54,7 @@ async function createSharedAppObject() {
     openFileInNativeApp,
     showFileInFolder,
     startupArgs,
+    isDefaultApp,
     setAsDefaultApp,
     onScreenSharingSelect,
     restartApp,
@@ -324,8 +325,14 @@ class StartupArgs extends Observable {
 }
 export const startupArgs = new StartupArgs();
 
-function setAsDefaultApp() {
-  return app.setAsDefaultProtocolClient("mailto");
+/** @param protocol E.g. "mailto" */
+function isDefaultApp(protocol: string) {
+  return app.isDefaultProtocolClient(protocol);
+}
+
+/** @param protocol E.g. "mailto" */
+function setAsDefaultApp(protocol: string) {
+  return app.setAsDefaultProtocolClient(protocol);
 }
 
 function showFileInFolder(filePath: string) {
