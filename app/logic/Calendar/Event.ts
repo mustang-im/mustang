@@ -130,42 +130,7 @@ export class Event extends Observable {
   recurrenceCase = RecurrenceCase.Normal;
   /** Describes the recurrence pattern.
    * Only for RecurrenceCase == Master */
-  private _recurrenceRule: RecurrenceRule | null = null;
-  get recurrenceRule(): RecurrenceRule | null {
-    return this._recurrenceRule!;
-  }
-  set recurrenceRule(rule: RecurrenceRule | null) {
-    if (rule) {
-      this.setRecurrenceRule(rule);
-    } else {
-      this.clearRecurrenceRule();
-    }
-  }
-  /**
-   * Removes a recurrence pattern and all instances and exceptions.
-   */
-  private clearRecurrenceRule() {
-    if (this._recurrenceRule) {
-      this.clearExceptions();
-      this._recurrenceRule = null;
-      this.recurrenceCase = RecurrenceCase.Normal; // notifies
-      this.instances.replaceAll([this]);
-    }
-  }
-  /**
-   * Updates a recurrence pattern.
-   * Instances and exceptions are regenerated if necessary.
-   */
-  private setRecurrenceRule(rule: RecurrenceRule) {
-    assert(this.recurrenceCase == RecurrenceCase.Normal || this.recurrenceCase == RecurrenceCase.Master, "Instances can't themselves recur");
-    let timesMatch = this._recurrenceRule?.timesMatch(rule);
-    this._recurrenceRule = rule;
-    this.recurrenceCase = RecurrenceCase.Master; // notifies
-    if (!timesMatch) {
-      this.clearExceptions();
-    }
-    this.generateRecurringInstances();
-  }
+  protected _recurrenceRule: RecurrenceRule | null = null;
   /** Links back to the recurring master.
    * Only for RecurrenceCase == Instance or Exception */
   @notifyChangedProperty
@@ -184,7 +149,7 @@ export class Event extends Observable {
   recurrenceStartTime: Date | null = null;
   /** Contains all instances that should be displayed for this event.
    *
-   * For recurringCase == Master:
+   * For recurrenceCase == Master:
    *
    * Contains all Instances generated from the master.
    * Does *not* contain:
@@ -192,7 +157,7 @@ export class Event extends Observable {
    * - Exceptions
    * - Exclusions
    *
-   * For recurringCase == Normal and Exception:
+   * For recurrenceCase == Normal and Exception:
    *   Contains the event itself.
    *
    * This is a dynamic collection, and will be updated automatically
@@ -302,6 +267,42 @@ export class Event extends Observable {
   }
   set durationDays(days: number) {
     this.duration = days * k1DayS;
+  }
+
+  get recurrenceRule(): RecurrenceRule | null {
+    return this._recurrenceRule!;
+  }
+  set recurrenceRule(rule: RecurrenceRule | null) {
+    if (rule) {
+      this.setRecurrenceRule(rule);
+    } else {
+      this.clearRecurrenceRule();
+    }
+  }
+  /**
+   * Removes a recurrence pattern and all instances and exceptions.
+   */
+  protected clearRecurrenceRule() {
+    if (this._recurrenceRule) {
+      this.clearExceptions();
+      this._recurrenceRule = null;
+      this.recurrenceCase = RecurrenceCase.Normal; // notifies
+      this.instances.replaceAll([this]);
+    }
+  }
+  /**
+   * Updates a recurrence pattern.
+   * Instances and exceptions are regenerated if necessary.
+   */
+  protected setRecurrenceRule(rule: RecurrenceRule) {
+    assert(this.recurrenceCase == RecurrenceCase.Normal || this.recurrenceCase == RecurrenceCase.Master, "Instances can't themselves recur");
+    let timesMatch = this._recurrenceRule?.timesMatch(rule);
+    this._recurrenceRule = rule;
+    this.recurrenceCase = RecurrenceCase.Master; // notifies
+    if (!timesMatch) {
+      this.clearExceptions();
+    }
+    this.generateRecurringInstances();
   }
 
   /** Create a new instance of the same event.
@@ -641,6 +642,7 @@ export class Event extends Observable {
     email.iCalMethod = "REPLY";
     email.event = new Event();
     email.event.copyFrom(this);
+    // Only myself in reply: RFC 5546 3.2.3
     email.event.participants.replaceAll([myParticipant]);
     if (email.event.descriptionText) {
       email.text = email.event.descriptionText;
@@ -700,7 +702,7 @@ export class Event extends Observable {
   /**
    * Used when a master recurrence rule is removed or changed incompatibly.
    */
-  clearExceptions() {
+  protected clearExceptions() {
     if (this.calendar) {
       this.calendar.events.removeAll(this.exceptions);
       for (let exception of this.exceptions) {
