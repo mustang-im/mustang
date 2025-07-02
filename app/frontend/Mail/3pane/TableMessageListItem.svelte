@@ -159,6 +159,7 @@
     align-self: center;
     white-space: nowrap;
     font-weight: 300;
+    height: 100%;
   }
   .date {
     justify-content: start;
