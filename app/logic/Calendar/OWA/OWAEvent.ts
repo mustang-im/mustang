@@ -60,6 +60,9 @@ export class OWAEvent extends Event {
         this.rawHTMLDangerous = null;
       }
     }
+    if (json.DateTimeStamp) {
+      this.lastUpdateTime = sanitize.date(json.DateTimeStamp);
+    }
     if (json.RecurrenceId) {
       this.recurrenceStartTime = sanitize.date(json.RecurrenceId);
       // In case it's not otherwise provided to us.

@@ -58,6 +58,9 @@ export function owaGetEventsRequest(eventIDs: string[]): OWARequest {
         FieldURI: "calendar:RecurrenceId",
       }, {
         __type: "PropertyUri:#Exchange",
+        FieldURI: "calendar:DateTimeStamp",
+      }, {
+        __type: "PropertyUri:#Exchange",
         FieldURI: "calendar:IsOnlineMeeting",
       }, {
         __type: "PropertyUri:#Exchange",
