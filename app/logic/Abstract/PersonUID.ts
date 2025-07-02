@@ -3,7 +3,6 @@ import { Group } from "./Group";
 import { ContactEntry, Person } from "./Person";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
-import { NotReached } from "../util/util";
 import { ArrayColl } from "svelte-collections";
 
 export class PersonUID extends Observable {
@@ -14,6 +13,10 @@ export class PersonUID extends Observable {
   emailAddress: string;
   @notifyChangedProperty
   person?: Person;
+  // Used so that autocompleted meeting participants have a default value.
+  // They should really be Participant objects, but I'm cheating for now.
+  @notifyChangedProperty
+  protected response = 0;
 
   constructor(emailAddress?: string, name?: string) {
     super();
@@ -56,15 +59,6 @@ export class PersonUID extends Observable {
    * but a mailling list or messaging system */
   get isProxyAddress(): boolean {
     return this.name?.includes(" via ") || this.name?.endsWith("@invalid");
-  }
-
-  /** Used so that autocompleted meeting participants have a default value.
-   * They should really be Participant objects, but I'm cheating for now. */
-  get response() {
-    return 0;
-  }
-  set response(val: any) {
-    throw new NotReached("Only valid on Participant class, not PersonUID");
   }
 
   toString() {

@@ -75,7 +75,7 @@
             classes="maybe font-normal" />
         </ButtonMenu>
       {/if}
-    {:else if $message.invitationMessage && incomingInvitation}
+    {:else if ($message.invitationMessage == InvitationMessage.ParticipantReply || $message.invitationMessage == InvitationMessage.CancelledEvent) && incomingInvitation}
       {#await onUpdate()}
         <!-- Update processing -->
       {:then}
@@ -109,7 +109,6 @@
   let calendars: Collection<Calendar>;
   let selectedCalendar: Calendar | undefined;
   let myParticipation: InvitationResponse = InvitationResponse.NoResponseReceived;
-  let updateDisabled: boolean | string = false;
   let incomingInvitation: IncomingInvitation;
   let event: Event | undefined;
 
@@ -124,7 +123,6 @@
   async function loadCalendars() {
     calendars = message.getUpdateCalendars();
     selectedCalendar = calendars.find(calendar => calendar.events.some(event => event.calUID == message.event.calUID)) || calendars.first;
-    updateDisabled = calendars.length ? false : gt`This event is not in your calendar`;
     if (selectedCalendar) {
       await selectCalendar();
     }
@@ -153,7 +151,11 @@
     await respond(InvitationResponse.Decline);
   }
   async function onUpdate() {
-    await incomingInvitation.updateFromOtherInvitationMessage();
+    let foundEventInCalendars = message.getUpdateCalendars();
+    for (let calendar of foundEventInCalendars) {
+      let incomingInvitation = calendar.getIncomingInvitationFor(message);
+      await incomingInvitation.updateFromOtherInvitationMessage();
+    }
   }
 </script>
 

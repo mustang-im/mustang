@@ -25,9 +25,14 @@ export class ICalEMailProcessor extends EMailProcessor {
     }
     email.event = event;
 
-    // TODO Call IncomingInvitation.update()
-    // let incomingInvitation = selectedCalendar.getIncomingInvitationFor(message);
-    // incomingInvitation.updateFromOtherInvitationMessage();
+    if (email.invitationMessage == InvitationMessage.ParticipantReply ||
+        email.invitationMessage == InvitationMessage.CancelledEvent) {
+      let foundEventInCalendars = email.getUpdateCalendars();
+      for (let calendar of foundEventInCalendars) {
+        let incomingInvitation = calendar.getIncomingInvitationFor(email);
+        await incomingInvitation.updateFromOtherInvitationMessage();
+      }
+    }
   }
 }
 

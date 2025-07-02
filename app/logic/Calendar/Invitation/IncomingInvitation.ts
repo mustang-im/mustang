@@ -44,6 +44,10 @@ export class IncomingInvitation {
   async updateCancelled() {
     assert(this.invitationMessage && this.invitationMessage != InvitationMessage.Invitation, "Can't update from an invitation");
     let event = this.calEvent();
+    assert(event, "Cannot process invitation update: The event was not found in your calendar");
+    if (this.event?.lastUpdateTime <= event?.lastUpdateTime) {
+      return;
+    }
     // Is this action reversible? If so, need to check timestamp.
     let organizer = event.participants.find(participant => participant.response == InvitationResponse.Organizer);
     if (organizer) {
@@ -56,6 +60,7 @@ export class IncomingInvitation {
   async updateParticipantReply() {
     assert(this.invitationMessage && this.invitationMessage != InvitationMessage.Invitation, "Can't update from an invitation");
     let event = this.calEvent();
+    assert(event, "Cannot process invitation update: The event was not found in your calendar");
     let invitee = this.event.participants.find(participant => participant.response != InvitationResponse.Organizer);
     let participant = event.participants.find(participant => participant.emailAddress == invitee.emailAddress);
     let timestamp = this.message.sent; // TODO Use DTSTAMP from ICS
