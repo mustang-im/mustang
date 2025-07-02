@@ -30,20 +30,16 @@ export default class OutgoingInvitation {
   }
 
   async sendInvitationsTo(participants: Collection<Participant>) {
-    for (let participant of participants) {
-      if (participant.response != InvitationResponse.Organizer) {
-        participant.response ||= InvitationResponse.NoResponseReceived;
-        await this.send("REQUEST", participant);
-      }
+    let sendTo = participants.filterOnce(participant => participant.response != InvitationResponse.Organizer);
+    for (let participant of sendTo) {
+      participant.response ||= InvitationResponse.NoResponseReceived;
     }
+    await this.send("REQUEST", sendTo);
   }
 
   async sendCancellationsTo(participants: Collection<Participant>) {
-    for (let participant of participants) {
-      if (participant.response > InvitationResponse.Organizer) {
-        await this.send("CANCEL", participant);
-      }
-    }
+    let sendTo = participants.filterOnce(participant => participant.response > InvitationResponse.Organizer);
+    await this.send("CANCEL", sendTo);
   }
 
   async sendInvitations() {
@@ -67,9 +63,9 @@ export default class OutgoingInvitation {
     }
   }
 
-  protected async send(method: iCalMethod, participant: Participant) {
+  protected async send(method: iCalMethod, participants: Collection<Participant>) {
     let email = this.newEMailFrom();
-    email.to.add(participant);
+    email.to.addAll(participants);
     email.iCalMethod = method;
     email.event = this.event;
     let subject = "";
