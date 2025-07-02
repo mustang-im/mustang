@@ -209,7 +209,7 @@ export class Event extends Observable {
   unedited: Event | null = null;
   /** DTSTAMP when the status was sent that is captured in this object.
    * Used during auto-update to avoid overwriting with older info.
-  * We don't need to track local changes, only those sent by others.
+   * We don't need to track local changes, only those sent by others.
    * Local changes sent to others will always get the current timestamp in `ICalGenerator` */
   lastUpdateTime: Date | null;
   /** Includes changes to `alarm`, lastUpdateTime does not consider to be a change */
@@ -354,6 +354,7 @@ export class Event extends Observable {
     this.onlineMeetingURL = original.onlineMeetingURL;
     this.participants.replaceAll(original.participants);
     this.myParticipation = original.myParticipation;
+    this.lastUpdateTime = original.lastUpdateTime;
   }
 
   fromExtraJSON(json: any) {
