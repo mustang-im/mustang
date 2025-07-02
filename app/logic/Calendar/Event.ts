@@ -10,6 +10,7 @@ import { k1DayS, k1HourS, k1MinuteS } from "../../frontend/Util/date";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
 import { Observable, notifyChangedAccessor, notifyChangedProperty, notifyChangedObservable } from "../util/Observable";
 import { Lock } from "../util/Lock";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { assert, randomID } from "../util/util";
 import { backgroundError } from "../../frontend/Util/error";
 import { gt } from "../../l10n/l10n";
@@ -206,6 +207,12 @@ export class Event extends Observable {
    * Set be `startEditing()` and `stopEditing()` */
   @notifyChangedProperty
   unedited: Event | null = null;
+  /** DTSTAMP when the status was sent that is captured in this object.
+   * Used during auto-update to avoid overwriting with older info.
+   * We don't need to track local changes, only those sent by others.
+   * Local changes sent to others will always get the current timestamp in `ICalGenerator` */
+  lastUpdateTime: Date | null;
+  /** Includes changes to `alarm`, lastUpdateTime does not consider to be a change */
   @notifyChangedProperty
   lastMod = new Date();
   @notifyChangedProperty
@@ -347,15 +354,18 @@ export class Event extends Observable {
     this.onlineMeetingURL = original.onlineMeetingURL;
     this.participants.replaceAll(original.participants);
     this.myParticipation = original.myParticipation;
+    this.lastUpdateTime = original.lastUpdateTime;
   }
 
   fromExtraJSON(json: any) {
     assert(typeof (json) == "object", "Must be a JSON object");
     this.syncState = json.syncState;
+    this.lastUpdateTime = sanitize.date(json.lastUpdateTime, null);
   }
   toExtraJSON(): any {
     let json: any = {};
     json.syncState = this.syncState;
+    json.lastUpdateTime = this.lastUpdateTime;
     return json;
   }
 

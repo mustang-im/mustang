@@ -24,6 +24,15 @@ export class ICalEMailProcessor extends EMailProcessor {
       event.rawHTMLDangerous = email.rawHTMLDangerous;
     }
     email.event = event;
+
+    if (email.invitationMessage == InvitationMessage.ParticipantReply ||
+        email.invitationMessage == InvitationMessage.CancelledEvent) {
+      let foundEventInCalendars = email.getUpdateCalendars();
+      for (let calendar of foundEventInCalendars) {
+        let incomingInvitation = calendar.getIncomingInvitationFor(email);
+        await incomingInvitation.updateFromOtherInvitationMessage();
+      }
+    }
   }
 }
 

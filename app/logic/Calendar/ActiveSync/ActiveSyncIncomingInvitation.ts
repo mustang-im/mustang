@@ -42,6 +42,13 @@ export class ActiveSyncIncomingInvitation {
     await this.calendar.listEvents(); // Exchange will have created a calendar item if there wasn't one already
   }
 
+  async updateCancelled() {
+    await this.updateFromOtherInvitationMessage();
+  }
+  async updateParticipantReply() {
+    await this.updateFromOtherInvitationMessage();
+  }
+  /** Exchange server auto-processes these */
   async updateFromOtherInvitationMessage() {
     await this.calendar.listEvents();
   }

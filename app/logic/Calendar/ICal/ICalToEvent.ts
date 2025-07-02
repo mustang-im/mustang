@@ -69,6 +69,9 @@ export function convertICalParserToEvent(ics: ICalParser, event: Event): boolean
   if (vevent.entries.recurrenceid) {
     [event.recurrenceStartTime] = parseDate(vevent.entries.recurrenceid[0]);
   }
+  if (vevent.entries.dtstamp) {
+    [event.lastUpdateTime] = parseDate(vevent.entries.dtstamp[0]);
+  }
   if (vevent.entries.dtstart?.[0].properties.value?.toLowerCase() == "date") {
     event.allDay = true;
   }

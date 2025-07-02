@@ -47,6 +47,13 @@ export class OWAIncomingInvitation {
     }
   }
 
+  async updateCancelled() {
+    await this.updateFromOtherInvitationMessage();
+  }
+  async updateParticipantReply() {
+    await this.updateFromOtherInvitationMessage();
+  }
+  /** Exchange server auto-processes these */
   async updateFromOtherInvitationMessage() {
     assert(this.itemID, "UI should have been disabled");
     await this.calendar.getEvents([this.itemID], new ArrayColl<OWAEvent>());

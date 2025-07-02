@@ -75,8 +75,14 @@
             classes="maybe font-normal" />
         </ButtonMenu>
       {/if}
-    {:else if $message.invitationMessage && incomingInvitation}
-      <Button label={$t`Update calendar`} disabled={updateDisabled} onClick={onUpdate} classes="font-normal" />
+    {:else if ($message.invitationMessage == InvitationMessage.ParticipantReply || $message.invitationMessage == InvitationMessage.CancelledEvent) && incomingInvitation}
+      {#await onUpdate()}
+        <!-- Update processing -->
+      {:then}
+        <!-- Update processed -->
+      {:catch ex}
+        <ErrorMessageInline {ex} />
+      {/await}
     {/if}
   </hbox>
 </vbox>
@@ -88,6 +94,7 @@
   import type { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
   import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import InvitationDisplay from "./InvitationDisplay.svelte";
+  import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import Button from "../../Shared/Button.svelte";
@@ -102,7 +109,6 @@
   let calendars: Collection<Calendar>;
   let selectedCalendar: Calendar | undefined;
   let myParticipation: InvitationResponse = InvitationResponse.NoResponseReceived;
-  let updateDisabled: boolean | string = false;
   let incomingInvitation: IncomingInvitation;
   let event: Event | undefined;
 
@@ -117,7 +123,6 @@
   async function loadCalendars() {
     calendars = message.getUpdateCalendars();
     selectedCalendar = calendars.find(calendar => calendar.events.some(event => event.calUID == message.event.calUID)) || calendars.first;
-    updateDisabled = calendars.length ? false : gt`This event is not in your calendar`;
     if (selectedCalendar) {
       await selectCalendar();
     }
@@ -146,8 +151,11 @@
     await respond(InvitationResponse.Decline);
   }
   async function onUpdate() {
-    await incomingInvitation.updateFromOtherInvitationMessage();
-    updateDisabled = gt`This update has already been processed`;
+    let foundEventInCalendars = message.getUpdateCalendars();
+    for (let calendar of foundEventInCalendars) {
+      let incomingInvitation = calendar.getIncomingInvitationFor(message);
+      await incomingInvitation.updateFromOtherInvitationMessage();
+    }
   }
 </script>
 
