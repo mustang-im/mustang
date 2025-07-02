@@ -76,7 +76,13 @@
         </ButtonMenu>
       {/if}
     {:else if $message.invitationMessage && incomingInvitation}
-      <Button label={$t`Update calendar`} disabled={updateDisabled} onClick={onUpdate} classes="font-normal" />
+      {#await onUpdate()}
+        <!-- Update processing -->
+      {:then}
+        <!-- Update processed -->
+      {:catch ex}
+        <ErrorMessageInline {ex} />
+      {/await}
     {/if}
   </hbox>
 </vbox>
@@ -88,6 +94,7 @@
   import type { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
   import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import InvitationDisplay from "./InvitationDisplay.svelte";
+  import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import Button from "../../Shared/Button.svelte";
@@ -147,7 +154,6 @@
   }
   async function onUpdate() {
     await incomingInvitation.updateFromOtherInvitationMessage();
-    updateDisabled = gt`This update has already been processed`;
   }
 </script>
 

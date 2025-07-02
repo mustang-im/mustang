@@ -24,6 +24,10 @@ export class ICalEMailProcessor extends EMailProcessor {
       event.rawHTMLDangerous = email.rawHTMLDangerous;
     }
     email.event = event;
+
+    // TODO Call IncomingInvitation.update()
+    // let incomingInvitation = selectedCalendar.getIncomingInvitationFor(message);
+    // incomingInvitation.updateFromOtherInvitationMessage();
   }
 }
 

@@ -93,11 +93,14 @@ export class SQLEvent extends Event {
   }
 
   protected static async saveParticipant(event: Event, participant: Participant) {
+    let json = {} as any;
+    json.lastUpdateTime = participant.lastUpdateTime;
     await (await getDatabase()).run(sql`
       INSERT INTO eventParticipant (
-        eventID, emailAddress, name, confirmed
+        eventID, emailAddress, name, confirmed, json
       ) VALUES (
-        ${event.dbID}, ${participant.emailAddress}, ${participant.name}, ${participant.response}
+        ${event.dbID}, ${participant.emailAddress}, ${participant.name}, ${participant.response},
+        ${JSON.stringify(json, null, 2)}
       )`);
   }
 
@@ -197,13 +200,16 @@ export class SQLEvent extends Event {
   protected static async readParticipants(event: Event) {
     let rows = await (await getDatabase()).all(sql`
       SELECT
-        emailAddress, name, confirmed
+        emailAddress, name, confirmed, json
       FROM eventParticipant
       WHERE eventID = ${event.dbID}
       `) as any;
     for (let row of rows) {
       try {
-        event.participants.add(new Participant(row.emailAddress, row.name, row.confirmed));
+        let participant = new Participant(row.emailAddress, row.name, row.confirmed);
+        let json = sanitize.json(row.json, {});
+        participant.lastUpdateTime = sanitize.date(json.lastUpdateTime, null);
+        event.participants.add(participant);
       } catch (ex) {
         backgroundError(ex);
       }
