@@ -20,7 +20,7 @@ export class ICalEMailProcessor extends EMailProcessor {
     if (!isEvent) {
       return;
     }
-    if (email.html) {
+    if (email.hasHTML) {
       event.rawHTMLDangerous = email.rawHTMLDangerous;
     }
     email.event = event;
