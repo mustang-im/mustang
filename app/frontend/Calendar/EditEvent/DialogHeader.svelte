@@ -263,6 +263,7 @@
     } else {
       await event.deleteIt();
     }
+    $selectedEvent = null;
     onClose();
   }
 
@@ -272,11 +273,13 @@
     }
     let master = event.parentEvent;
     await master.deleteIt();
+    $selectedEvent = null;
     onClose();
   }
 
   async function onDeleteRemainder() {
     await event.truncateRecurrence();
+    $selectedEvent = null;
     onClose();
   }
 
