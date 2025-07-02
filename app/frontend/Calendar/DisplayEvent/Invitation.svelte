@@ -16,7 +16,9 @@
   {/if}
   <hbox class="buttons">
     {#if $message.invitationMessage == InvitationMessage.Invitation && incomingInvitation}
-      {#if myParticipation == InvitationResponse.Accept}
+      {#if myParticipation == InvitationResponse.Organizer}
+        {$t`You sent this invitation`}
+      {:else if myParticipation == InvitationResponse.Accept}
         <Button
           label={$t`Confirmed *=> A meeting request has been confirmed by you`}
           icon={AcceptIcon}
