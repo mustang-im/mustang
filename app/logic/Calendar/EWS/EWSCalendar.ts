@@ -216,6 +216,8 @@ export class EWSCalendar extends Calendar {
             }, {
               FieldURI: "calendar:RecurrenceId",
             }, {
+              FieldURI: "calendar:DateTimeStamp",
+            }, {
               FieldURI: "task:Recurrence",
             }],
           },

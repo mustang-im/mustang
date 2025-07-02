@@ -43,6 +43,9 @@ export class ActiveSyncEvent extends Event {
       this.rawText = sanitize.nonemptystring(wbxmljs.Body?.Data, "");
       this.rawHTMLDangerous = null;
     }
+    if (wbxmljs.DtStamp) {
+      this.lastUpdateTime = fromCompact(wbxmljs.DtStamp);
+    }
     if (wbxmljs.ExceptionStartTime) {
       this.recurrenceStartTime = fromCompact(wbxmljs.ExceptionStartTime);
       // In case it's not otherwise provided to us.

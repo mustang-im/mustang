@@ -64,6 +64,9 @@ export class EWSEvent extends Event {
         this.rawHTMLDangerous = null;
       }
     }
+    if (xmljs.DateTimeStamp) {
+      this.lastUpdateTime = sanitize.date(xmljs.DateTimeStamp);
+    }
     if (xmljs.RecurrenceId) {
       this.recurrenceStartTime = sanitize.date(xmljs.RecurrenceId);
       // In case it's not otherwise provided to us.
