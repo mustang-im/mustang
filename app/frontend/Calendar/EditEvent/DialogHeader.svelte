@@ -243,16 +243,20 @@
       return;
     }
     let master = event.parentEvent;
+    master.startEditing();
     master.copyEditableFieldsFrom(event);
     await master.save();
+    master.finishEditing();
     onClose();
   }
 
   async function onChangeRemainder() {
     let master = event.calendar.newEvent();
+    master.startEditing();
     master.copyEditableFieldsFrom(event);
     master.calUID = null;
     await saveEvent(master);
+    master.finishEditing();
     await event.truncateRecurrence();
     onClose();
   }
