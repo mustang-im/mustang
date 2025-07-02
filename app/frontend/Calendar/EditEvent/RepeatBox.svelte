@@ -84,7 +84,7 @@
   export let showRepeat: boolean;
 
   let master = event.parentEvent || event;
-  let frequency = master.recurrenceRule?.frequency || Frequency.Daily;
+  let frequency = master.recurrenceRule?.frequency || Frequency.Weekly;
   let interval = master.recurrenceRule?.interval || 1;
   // end // let count = Number.isFinite(event.recurrenceRule?.count) ? event.recurrenceRule.count : 1;
   let weekdays = master.recurrenceRule?.weekdays?.slice() || [event.startTime.getDay()];
