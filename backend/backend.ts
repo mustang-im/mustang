@@ -325,12 +325,14 @@ class StartupArgs extends Observable {
 }
 export const startupArgs = new StartupArgs();
 
-function isDefaultApp() {
-  return app.isDefaultProtocolClient("mailto");
+/** @param protocol E.g. "mailto" */
+function isDefaultApp(protocol: string) {
+  return app.isDefaultProtocolClient(protocol);
 }
 
-function setAsDefaultApp() {
-  return app.setAsDefaultProtocolClient("mailto");
+/** @param protocol E.g. "mailto" */
+function setAsDefaultApp(protocol: string) {
+  return app.setAsDefaultProtocolClient(protocol);
 }
 
 function showFileInFolder(filePath: string) {
