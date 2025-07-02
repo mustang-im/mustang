@@ -99,6 +99,9 @@ export class Event extends Observable {
     this._rawHTML = val;
     this._sanitizedHTML = null;
   }
+  get hasHTML(): boolean {
+    return !!this.rawHTMLDangerous;
+  }
 
   @notifyChangedProperty
   startTime: Date;

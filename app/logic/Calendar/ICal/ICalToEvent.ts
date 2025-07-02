@@ -5,6 +5,7 @@ import { ParticipationStatus, InvitationResponse } from "../Invitation/Invitatio
 import ICalParser from "./ICalParser";
 import WindowsToIANATimezone from "./WindowsToIANATimezone";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { stringFromDataURL } from "../../../frontend/Util/util";
 
 /**
  * @param ics iCal / ICS contents to be parsed
@@ -33,7 +34,31 @@ export function convertICalParserToEvent(ics: ICalParser, event: Event): boolean
     event.title = vevent.entries.summary[0].value;
   }
   if (vevent.entries.description) {
+    // Plaintext
     event.descriptionText = vevent.entries.description[0].value;
+    // HTML RFC 2445 4.2.1, 4.2, RFC 5545 3.2.1 and Thunderbird
+    // <https://datatracker.ietf.org/doc/html/rfc2445#section-4.2.1>
+    // <https://bugzilla.mozilla.org/show_bug.cgi?id=1607834>
+    let altrep = vevent.entries.description[0].properties.altrep;
+    event.rawHTMLDangerous = stringFromDataURL(altrep, "text/html");
+  }
+  // HTML RFC 9073 6.5 <https://www.rfc-editor.org/rfc/rfc9073.html#name-styled-description>
+  // Preference order: 1. RFC 9075, 2. Thunderbird, 3. Outlook
+  if (vevent.entries.styleddescription) {
+    let entry = vevent.entries.styleddescription.find(entry =>
+      (!entry.properties.fmttype || entry.properties.fmttype.toLowerCase() == "text/html") &&
+      entry.properties.value.toUpperCase() == "TEXT");
+    if (entry) {
+      event.rawHTMLDangerous = entry.value;
+    }
+  }
+  // HTML Outlook
+  if (vevent.entries.xaltdesc && !event.hasHTML) {
+    let entry = vevent.entries.xaltdesc.find(entry =>
+      (!entry.properties.fmttype || entry.properties.fmttype.toLowerCase() == "text/html"));
+    if (entry) {
+      event.rawHTMLDangerous = entry.value;
+    }
   }
   if (vevent.entries.dtstart) {
     [event.startTime, event.timezone] = parseDate(vevent.entries.dtstart[0]);

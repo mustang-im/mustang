@@ -21,7 +21,19 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
     lines.push(["SUMMARY", event.title]);
   }
   if (event.descriptionText) {
-    lines.push(["DESCRIPTION", event.descriptionText]);
+    if (event.hasHTML) {
+      // Plaintext, and HTML RFC 2445 4.2.1, 4.2, RFC 5545 3.2.1 and Thunderbird
+      // <https://datatracker.ietf.org/doc/html/rfc2445#section-4.2.1>
+      // <https://bugzilla.mozilla.org/show_bug.cgi?id=1607834>
+    lines.push(["DESCRIPTION", "ALTREP", "data:text/html," + encodeURIComponent(event.descriptionHTML), event.descriptionText]);
+      // HTML RFC 9073 6.5 <https://www.rfc-editor.org/rfc/rfc9073.html#name-styled-description>
+      lines.push(["STYLED-DESCRIPTION", "VALUE", "TEXT", "FMTTYPE", "text/html", event.descriptionHTML]);
+      // HTML Outlook
+      lines.push(["X-ALT-DESC", "FMTTYPE", "text/html", event.descriptionHTML]);
+    } else {
+      // Plaintext
+      lines.push(["DESCRIPTION", event.descriptionText]);
+    }
   }
   if (event.allDay) {
     lines.push(["DTSTART", "VALUE", "DATE", date2ical(event.startTime)]);
