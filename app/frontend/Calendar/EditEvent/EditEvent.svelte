@@ -58,7 +58,7 @@
       </vbox>
     </vbox>
   </Scroll>
-  {#if event.isIncomingMeeting}
+  {#if event.isIncomingMeeting && !event.isCancelled}
     <hbox class="buttons">
       <InvitationResponseButtons {event} />
     </hbox>
