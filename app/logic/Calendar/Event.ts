@@ -375,7 +375,7 @@ export class Event extends Observable {
 
   participantMe(mailAccount?: MailAccount): { identity: MailIdentity, myParticipant: Participant } {
     let results = [];
-    let accounts = mailAccount ? [mailAccount] : appGlobal.emailAccounts.contents.filter(account => !account.canSendInvitations);
+    let accounts = mailAccount ? [mailAccount] : appGlobal.emailAccounts.contents.filter(account => account.canSendInvitations);
     for (let account of accounts) {
       for (let identity of account.identities) {
         for (let myParticipant of this.participants) {
