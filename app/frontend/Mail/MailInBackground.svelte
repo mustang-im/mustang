@@ -3,6 +3,7 @@
 <script lang="ts">
   import { newMailListener } from "./NotifyNewMail";
   import { mailMustangApp } from "./MailMustangApp";
+  import { bringAppToFront } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import { catchErrors } from "../Util/error";
   import { assert, type URLString } from "../../logic/util/util";
@@ -30,7 +31,6 @@
     let mail = account.newEMailFrom();
     mail.compose.populateFromMailtoURL(url);
     mailMustangApp.writeMail(mail);
-    window.focus();
-    appGlobal.remoteApp.unminimizeMainWindow();
+    bringAppToFront();
   }
 </script>

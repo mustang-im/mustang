@@ -18,6 +18,7 @@
     </vbox>
   </Splitter>
 </vbox>
+<CalendarInBackground />
 
 <script lang="ts">
   import { calendarMustangApp } from "./CalendarMustangApp";
@@ -28,6 +29,7 @@
   import TitleBarLeft from "./TitleBarLeft.svelte";
   import TitleBarRight from "./TitleBarRight.svelte";
   import EditEvent from "./EditEvent/EditEvent.svelte";
+  import CalendarInBackground from "./CalendarInBackground.svelte";
   import Splitter from "../Shared/Splitter.svelte";
   import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";

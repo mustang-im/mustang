@@ -1,4 +1,6 @@
 import type { MustangApp } from "./MustangApp";
+import { appGlobal } from "../../logic/app";
+import { backgroundError } from "../Util/error";
 import { ArrayColl } from "svelte-collections";
 import { writable, type Writable } from "svelte/store";
 
@@ -11,4 +13,10 @@ export const globalSearchTerm: Writable<string> = writable(null);
 
 export function openApp(app: MustangApp) {
   selectedApp.set(app);
+}
+
+export function bringAppToFront() {
+  window.focus();
+  appGlobal.remoteApp.unminimizeMainWindow()
+    .catch(backgroundError);
 }
