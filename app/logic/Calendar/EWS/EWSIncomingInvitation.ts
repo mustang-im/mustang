@@ -1,6 +1,5 @@
 import { IncomingInvitation } from "../Invitation/IncomingInvitation";
 import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
-import type { EWSEvent } from "./EWSEvent";
 import type { EWSCalendar } from "./EWSCalendar";
 import type { EWSEMail } from "../../Mail/EWS/EWSEMail";
 import EWSCreateItemRequest from "../../Mail/EWS/Request/EWSCreateItemRequest";
@@ -13,10 +12,8 @@ const ResponseTypes: Record<InvitationResponseInMessage, string> = {
 };
 
 export class EWSIncomingInvitation extends IncomingInvitation {
-  declare calendar: EWSCalendar;
-  declare message: EWSEMail;
-  declare event: EWSEvent;
-  myParticipation: InvitationResponse;
+  declare readonly calendar: EWSCalendar;
+  declare readonly message: EWSEMail;
 
   async respondToInvitation(response: InvitationResponseInMessage) {
     assert(this.invitationMessage == InvitationMessage.Invitation, "Only invitations can be responded to");

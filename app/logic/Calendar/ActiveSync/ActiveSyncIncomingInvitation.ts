@@ -1,6 +1,5 @@
 import { IncomingInvitation } from "../Invitation/IncomingInvitation";
 import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
-import { ActiveSyncEvent } from "./ActiveSyncEvent";
 import type { ActiveSyncCalendar } from "./ActiveSyncCalendar";
 import type { ActiveSyncEMail } from "../../Mail/ActiveSync/ActiveSyncEMail";
 import { assert } from "../../util/util";
@@ -12,9 +11,8 @@ const ActiveSyncResponse: Record<InvitationResponseInMessage, number> = {
 };
 
 export class ActiveSyncIncomingInvitation extends IncomingInvitation {
-  declare calendar: ActiveSyncCalendar;
-  declare message: ActiveSyncEMail;
-  declare event: ActiveSyncEvent;
+  declare readonly calendar: ActiveSyncCalendar;
+  declare readonly message: ActiveSyncEMail;
 
   async respondToInvitation(response: InvitationResponseInMessage) {
     assert(this.invitationMessage == InvitationMessage.Invitation, "Only invitations can be responded to");
@@ -27,8 +25,7 @@ export class ActiveSyncIncomingInvitation extends IncomingInvitation {
     };
     await this.calendar.account.callEAS("MeetingResponse", request);
     this.event.myParticipation = response;
-    await this.event.respondToInvitation(response); // needs 16.x to do this automatically
-    await this.event.save();
+    await this.event.respondToInvitation(response, this.calendar.account); // needs 16.x to do this automatically
     await this.message.deleteMessageLocally(); // Exchange deletes the message from the inbox
     await this.calendar.listEvents(); // Exchange will have created a calendar item if there wasn't one already
   }
