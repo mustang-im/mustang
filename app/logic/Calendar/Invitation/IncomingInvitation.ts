@@ -27,10 +27,9 @@ export class IncomingInvitation {
 
   async respondToInvitation(response: InvitationResponseInMessage) {
     assert(this.invitationMessage == InvitationMessage.Invitation, "Only invitations can be responded to");
-    let event = this.calEvent();
-    if (!event) {
-      event = this.calendar.newEvent();
-      event.copyFrom(this.event);
+    let event = this.calEvent() || this.calendar.newEvent();
+    event.copyFrom(this.event);
+    if (!this.calendar.events.contains(event)) {
       this.calendar.events.add(event);
     }
     let { myParticipant } = event.participantMe(this.message.folder.account);
