@@ -99,12 +99,18 @@ export class EWSEvent extends Event {
       this.alarm = null;
     }
     this.location = sanitize.nonemptystring(xmljs.Location, "");
+    let organizer: string | undefined;
     let participants: Participant[] = [];
+    if (xmljs.Organizer) {
+      organizer = xmljs.Organizer.Mailbox.EmailAddress;
+      xmljs.Organizer.ResponseType = sanitize.boolean(xmljs.IsCancelled) ? "Decline" : "Organizer";
+      addParticipants(xmljs.Organizer, participants);
+    }
     if (xmljs.RequiredAttendees?.Attendee) {
-      addParticipants(xmljs.RequiredAttendees.Attendee, participants);
+      addParticipants(xmljs.RequiredAttendees.Attendee, participants, organizer);
     }
     if (xmljs.OptionalAttendees?.Attendee) {
-      addParticipants(xmljs.OptionalAttendees.Attendee, participants);
+      addParticipants(xmljs.OptionalAttendees.Attendee, participants, organizer);
     }
     this.participants.replaceAll(participants);
     if (xmljs.MyResponseType) {
@@ -400,9 +406,12 @@ export class EWSEvent extends Event {
   }
 }
 
-function addParticipants(attendees, participants: Participant[]) {
+function addParticipants(attendees, participants: Participant[], organizer?: string) {
   for (let attendee of ensureArray(attendees)) {
-    participants.push(new Participant(sanitize.emailAddress(attendee.Mailbox.EmailAddress), sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType], InvitationResponse.Unknown)));
+    let emailAddress = sanitize.emailAddress(attendee.Mailbox.EmailAddress);
+    if (emailAddress != organizer) {
+      participants.push(new Participant(emailAddress, sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType], InvitationResponse.Unknown)));
+    }
   }
 }
 

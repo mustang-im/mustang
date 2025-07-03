@@ -97,12 +97,18 @@ export class OWAEvent extends Event {
     this.location = sanitize.nonemptystring(json.Location?.DisplayName, "");
     this.onlineMeetingURL = sanitize.url(json.OnlineMeetingJoinUrl, null);
     this.isOnline = sanitize.boolean(json.IsOnlineMeeting, false);
+    let organizer: string | undefined;
     let participants: Participant[] = [];
+    if (json.Organizer) {
+      organizer = json.Organizer.Mailbox.EmailAddress;
+      json.Organizer.ResponseType = json.IsCancelled ? "Decline" : "Organizer";
+      addParticipants([json.Organizer], participants);
+    }
     if (json.RequiredAttendees) {
-      addParticipants(json.RequiredAttendees, participants);
+      addParticipants(json.RequiredAttendees, participants, organizer);
     }
     if (json.OptionalAttendees) {
-      addParticipants(json.OptionalAttendees, participants);
+      addParticipants(json.OptionalAttendees, participants, organizer);
     }
     this.participants.replaceAll(participants);
     if (json.ResponseType) {
@@ -369,9 +375,12 @@ export class OWAEvent extends Event {
 }
 
 
-function addParticipants(attendees, participants: Participant[]) {
+function addParticipants(attendees, participants: Participant[], organizer?: string) {
   for (let attendee of attendees) {
-    participants.push(new Participant(sanitize.emailAddress(attendee.Mailbox.EmailAddress), sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType], InvitationResponse.Unknown)));
+    let emailAddress = sanitize.emailAddress(attendee.Mailbox.EmailAddress);
+    if (emailAddress != organizer) {
+      participants.push(new Participant(emailAddress, sanitize.nonemptystring(attendee.Mailbox.Name, null), sanitize.integer(InvitationResponse[attendee.ResponseType], InvitationResponse.Unknown)));
+    }
   }
 }
 
