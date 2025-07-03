@@ -9,6 +9,7 @@ export class IncomingInvitation {
   readonly message: EMail;
   readonly invitationMessage: InvitationMessage;
   readonly event: Event;
+  readonly calEvent: Event;
   myParticipation: InvitationResponse;
 
   constructor(calendar: Calendar, message: EMail) {
@@ -16,18 +17,13 @@ export class IncomingInvitation {
     this.message = message;
     this.invitationMessage = message.invitationMessage;
     this.event = message.event;
-    let event = calendar.events.find(event => event.calUID == this.event.calUID);
-    this.myParticipation = event?.myParticipation || InvitationResponse.NoResponseReceived;
-  }
-
-  /** `this.event` is from the invitation email, but `calEvent` is the event in the calendar */
-  calEvent(): Event | null {
-    return this.calendar.events.find(event => event.calUID == this.event.calUID);
+    this.calEvent = calendar.events.find(event => event.calUID == this.event.calUID);
+    this.myParticipation = this.calEvent?.myParticipation || InvitationResponse.NoResponseReceived;
   }
 
   async respondToInvitation(response: InvitationResponseInMessage) {
     assert(this.invitationMessage == InvitationMessage.Invitation, "Only invitations can be responded to");
-    let event = this.calEvent();
+    let event = this.calEvent;
     if (!event) {
       event = this.calendar.newEvent();
       event.copyFrom(this.event);
@@ -43,7 +39,7 @@ export class IncomingInvitation {
   /** CancelledEvent: the organiser cancelled an incoming meeting */
   async updateCancelled() {
     assert(this.invitationMessage && this.invitationMessage != InvitationMessage.Invitation, "Can't update from an invitation");
-    let event = this.calEvent();
+    let event = this.calEvent;
     assert(event, "Cannot process invitation update: The event was not found in your calendar");
     if (this.event?.lastUpdateTime <= event?.lastUpdateTime) {
       return;
@@ -60,7 +56,7 @@ export class IncomingInvitation {
   /** ParticpantReply: an invitee replied to your outgoing invitation */
   async updateParticipantReply() {
     assert(this.invitationMessage && this.invitationMessage != InvitationMessage.Invitation, "Can't update from an invitation");
-    let event = this.calEvent();
+    let event = this.calEvent;
     assert(event, "Cannot process invitation update: The event was not found in your calendar");
     let invitee = this.event.participants.find(participant => participant.response != InvitationResponse.Organizer);
     let participant = event.participants.find(participant => participant.emailAddress == invitee.emailAddress);

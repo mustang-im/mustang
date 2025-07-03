@@ -18,6 +18,7 @@ export class OWAIncomingInvitation {
   readonly message: OWAEMail;
   readonly invitationMessage: InvitationMessage;
   readonly event: Event;
+  readonly calEvent: OWAEvent;
   readonly itemID: string | void;
   myParticipation: InvitationResponse;
 
@@ -26,9 +27,9 @@ export class OWAIncomingInvitation {
     this.message = message;
     this.invitationMessage = message.invitationMessage;
     this.event = message.event;
-    let event = calendar.events.find(event => event.calUID == this.event.calUID);
-    this.itemID = event?.itemID;
-    this.myParticipation = event?.myParticipation || InvitationResponse.NoResponseReceived;
+    this.calEvent = calendar.events.find(event => event.calUID == this.event.calUID);
+    this.itemID = this.calEvent?.itemID;
+    this.myParticipation = this.calEvent?.myParticipation || InvitationResponse.NoResponseReceived;
   }
 
   async respondToInvitation(response: InvitationResponseInMessage) {
