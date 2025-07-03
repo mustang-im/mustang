@@ -583,7 +583,12 @@ export class Event extends Observable {
       // TODO Move code to `IncomingInvitation` class
       for (let participant of this.participants) {
         if (participant.response == InvitationResponse.Organizer) {
-          await this.respondToInvitation(InvitationResponse.Decline);
+          // Can't use `respondToInvitation` because that wants to save
+          let { identity, myParticipant } = this.participantMe();
+          if (myParticipant.response != InvitationResponse.Decline) {
+            myParticipant.response = InvitationResponse.Decline;
+            await this.sendInvitationResponse(myParticipant, identity.account);
+          }
         }
       }
     }

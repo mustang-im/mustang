@@ -13,19 +13,19 @@
             iconSize="16px"
             />
         {/if}
-        {#if !event.isIncomingMeeting}
-          {#if $event.recurrenceCase == RecurrenceCase.Instance}
-            <ButtonMenu bind:isMenuOpen={isDeleteSeriesOpen}>
-              <RoundButton
-                slot="control"
-                label={$t`Delete event`}
-                icon={DeleteIcon}
-                onClick={event => { isDeleteSeriesOpen = !isDeleteSeriesOpen; event.stopPropagation(); }}
-                classes="plain delete"
-                border={false}
-                iconSize="16px"
-                />
+        {#if $event.recurrenceCase == RecurrenceCase.Instance}
+          <ButtonMenu bind:isMenuOpen={isDeleteSeriesOpen}>
+            <RoundButton
+              slot="control"
+              label={$t`Delete event`}
+              icon={DeleteIcon}
+              onClick={event => { isDeleteSeriesOpen = !isDeleteSeriesOpen; event.stopPropagation(); }}
+              classes="plain delete"
+              border={false}
+              iconSize="16px"
+              />
 
+            {#if !event.isIncomingMeeting}
               <MenuItem
                 label={$t`Delete only this instance`}
                 onClick={onDelete}
@@ -36,22 +36,22 @@
                   onClick={onDeleteRemainder}
                   classes="font-normal" />
               {/if}
-              <MenuItem
-                label={$t`Delete entire series`}
-                onClick={onDeleteAll}
-                classes="font-normal" />
-            </ButtonMenu>
-          {:else}
-            <RoundButton
-              label={$t`Delete event`}
-              icon={DeleteIcon}
-              onClick={onDelete}
-              disabled={!event.dbID && !event.parentEvent}
-              classes="plain delete"
-              border={false}
-              iconSize="16px"
-              />
-          {/if}
+            {/if}
+            <MenuItem
+              label={$t`Delete entire series`}
+              onClick={onDeleteAll}
+              classes="font-normal" />
+          </ButtonMenu>
+        {:else}
+          <RoundButton
+            label={$t`Delete event`}
+            icon={DeleteIcon}
+            onClick={onDelete}
+            disabled={!event.dbID && !event.parentEvent}
+            classes="plain delete"
+            border={false}
+            iconSize="16px"
+            />
         {/if}
       </hbox>
       <hbox class="account-icon">
