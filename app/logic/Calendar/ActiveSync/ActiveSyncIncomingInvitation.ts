@@ -1,6 +1,7 @@
 import type { Event } from "../Event";
 import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import type { ActiveSyncCalendar } from "./ActiveSyncCalendar";
+import type { ActiveSyncEvent } from "./ActiveSyncEvent";
 import type { ActiveSyncEMail } from "../../Mail/ActiveSync/ActiveSyncEMail";
 import { assert } from "../../util/util";
 
@@ -15,6 +16,7 @@ export class ActiveSyncIncomingInvitation {
   readonly message: ActiveSyncEMail;
   readonly invitationMessage: InvitationMessage;
   readonly event: Event;
+  readonly calEvent: ActiveSyncEvent;
   myParticipation: InvitationResponse;
 
   constructor(calendar: ActiveSyncCalendar, message: ActiveSyncEMail) {
@@ -22,8 +24,8 @@ export class ActiveSyncIncomingInvitation {
     this.message = message;
     this.invitationMessage = message.invitationMessage;
     this.event = message.event;
-    let event = calendar.events.find(event => event.calUID == this.event.calUID);
-    this.myParticipation = event?.myParticipation || InvitationResponse.NoResponseReceived;
+    this.calEvent = calendar.events.find(event => event.calUID == this.event.calUID);
+    this.myParticipation = this.calEvent?.myParticipation || InvitationResponse.NoResponseReceived;
   }
 
   async respondToInvitation(response: InvitationResponseInMessage) {

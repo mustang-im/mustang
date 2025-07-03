@@ -1,4 +1,4 @@
-import { Event, RecurrenceCase } from "./Event";
+import type { Event } from "./Event";
 import { mergeColls, ArrayColl } from "svelte-collections";
 
 export function recurrenceColl(events: ArrayColl<Event>) {
