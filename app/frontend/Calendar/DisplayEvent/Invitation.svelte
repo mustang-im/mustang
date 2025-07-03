@@ -23,7 +23,7 @@
           label={$t`Confirmed *=> A meeting request has been confirmed by you`}
           icon={AcceptIcon}
           selected={true}
-          disabled={true}
+          onClick={onOpenInCalendar}
           classes="accept done font-normal" />
         <ButtonMenu buttonIcon={ChevronDownIcon}>
           <MenuItem
@@ -42,7 +42,7 @@
           label={$t`Rejected *=> A meeting request has been declined by you`}
           icon={DeclineIcon}
           selected={true}
-          disabled={true}
+          onClick={onOpenInCalendar}
           classes="decline done font-normal" />
         <ButtonMenu buttonIcon={ChevronDownIcon}>
           <MenuItem
@@ -93,6 +93,7 @@
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import type { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
   import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
+  import { openEventFromOtherApp } from "../open";
   import InvitationDisplay from "./InvitationDisplay.svelte";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
@@ -102,7 +103,7 @@
   import DeclineIcon from "lucide-svelte/icons/x";
   import MaybeIcon from "lucide-svelte/icons/circle-help";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
 
   export let message: EMail;
@@ -150,12 +151,21 @@
   async function onDecline() {
     await respond(InvitationResponse.Decline);
   }
+
   async function onUpdate() {
     let foundEventInCalendars = message.getUpdateCalendars();
     for (let calendar of foundEventInCalendars) {
       let incomingInvitation = calendar.getIncomingInvitationFor(message);
       await incomingInvitation.updateFromOtherInvitationMessage();
     }
+  }
+
+  async function onOpenInCalendar() {
+    let calEvent = incomingInvitation.calEvent();
+    if (!calEvent) {
+      return;
+    }
+    openEventFromOtherApp(calEvent);
   }
 </script>
 

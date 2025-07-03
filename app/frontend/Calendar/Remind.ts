@@ -1,7 +1,6 @@
 import type { Event } from "../../logic/Calendar/Event";
-import { selectedEvent } from "./selected";
-import { calendarMustangApp } from "./CalendarMustangApp";
-import { openApp, bringAppToFront } from "../AppsBar/selectedApp";
+import { openEventFromOtherApp } from "./open";
+import { bringAppToFront } from "../AppsBar/selectedApp";
 import { appGlobal } from "../../logic/app";
 import { getLocalStorage } from "../Util/LocalStorage";
 import CalendarIcon from '../asset/icon/appBar/calendar.svg?raw';
@@ -134,8 +133,7 @@ export async function showReminder() {
 
 async function openEvent(event: Event) {
   try {
-    selectedEvent.set(event);
-    openApp(calendarMustangApp);
+    openEventFromOtherApp(event);
     bringAppToFront();
   } catch (ex) {
     console.error(ex);

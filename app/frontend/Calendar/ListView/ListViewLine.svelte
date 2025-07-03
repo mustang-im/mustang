@@ -20,8 +20,8 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { calendarMustangApp } from "../CalendarMustangApp";
   import { selectedEvent } from "../selected";
+  import { openEventFromOtherApp } from "../open";
   import { getDurationString } from "../../Util/date";
   import { getUILocale } from "../../../l10n/l10n";
 
@@ -38,8 +38,7 @@
   }
 
   function onOpen() {
-    $selectedEvent = event;
-    calendarMustangApp.editEvent(event);
+    openEventFromOtherApp(event);
   }
 </script>
 
