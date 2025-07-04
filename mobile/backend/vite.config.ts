@@ -30,6 +30,7 @@ export default defineConfig({
     esmShim(),
     viteStaticCopy({
       targets: [
+        // Android bundle
         {
           src: 'dist/index.js',
           dest: '../../dist/nodejs',
@@ -47,7 +48,27 @@ export default defineConfig({
         {
           src: `node_modules/bufferutil/prebuilds/${process.env.MOBILE_ARCH}/bufferutil.node`,
           dest: `../../dist/nodejs/prebuilds/${process.env.MOBILE_ARCH}`,
-        }
+        },
+
+        // iOS bundle
+        {
+          src: 'dist/index.js',
+          dest: '../../ios/App/App/nodejs-project',
+          rename: 'index.mjs',
+        },
+        {
+          src: 'package-deploy.json',
+          dest: '../../ios/App/App/nodejs-project',
+          rename: 'package.json',
+        },
+        {
+          src: `node_modules/better-sqlite3/prebuilds/${process.env.MOBILE_ARCH}/better_sqlite3.node`,
+          dest: '../../ios/App/App/nodejs-project/build',
+        },
+        {
+          src: `node_modules/bufferutil/prebuilds/${process.env.MOBILE_ARCH}/bufferutil.node`,
+          dest: '../../ios/App/App/nodejs-project/build',
+        },
       ]
     }),
   ],
