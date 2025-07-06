@@ -4,7 +4,7 @@
 />
 <vbox flex class="account">
   <grid>
-    <label for="name">{$t`Name of the filesharing account`}</label>
+    <label for="name">{$t`Account name`}</label>
     <input type="text" bind:value={config.name} name="name"
       placeholder={$t`Private`} autofocus />
     <label for="name">{$t`Server URL`}</label>
