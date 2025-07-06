@@ -31,7 +31,12 @@
   let selectedProtocol: string;
 
   const protocols: ProtocolDescription[] = [
-    { label: $t`New WebDAV account` + ` (openCloud, NextCloud, OneDrive, SharePoint, GMX)`, protocolID: "webdav" },
+    { label: `openCloud, ownCloud`, protocolID: "webdav" },
+    { label: `NextCloud`, protocolID: "webdav" },
+    { label: `OneDrive`, protocolID: "webdav" },
+    { label: `SharePoint`, protocolID: "webdav" },
+    { label: `GMX, web.de, 1&1`, protocolID: "webdav" },
+    { label: $t`WebDAV` },
   ];
 
   function onContinue() {
