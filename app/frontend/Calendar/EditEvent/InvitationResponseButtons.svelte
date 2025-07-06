@@ -16,6 +16,7 @@
 
   async function respond(response: InvitationResponseInMessage) {
     await event.respondToInvitation(response);
+    await event.save();
   }
   async function onAccept() {
     await respond(InvitationResponse.Accept);

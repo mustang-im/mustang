@@ -579,24 +579,14 @@ export class Event extends Observable {
   }
 
   async deleteFromServer(): Promise<void> {
-    if (!this.participants.length) {
-      return;
-    }
     try {
-      if (this.myParticipation == InvitationResponse.Organizer) {
+      if (!this.participants.length) {
+        return;
+      }
+        if (this.myParticipation == InvitationResponse.Organizer) {
         await this.outgoingInvitation.sendCancellations();
       } else if (this.myParticipation) {
-        // TODO Move code to `IncomingInvitation` class
-        for (let participant of this.participants) {
-          if (participant.response == InvitationResponse.Organizer) {
-            // Can't use `respondToInvitation` because that wants to save
-            let { identity, myParticipant } = this.participantMe();
-            if (myParticipant.response != InvitationResponse.Decline) {
-              myParticipant.response = InvitationResponse.Decline;
-              await this.sendInvitationResponse(myParticipant, identity.account);
-            }
-          }
-        }
+        await this.respondToInvitation(InvitationResponse.Decline);
       }
     } catch (ex) {
       this.calendar.errorCallback(ex);
@@ -650,9 +640,11 @@ export class Event extends Observable {
   async respondToInvitation(response: InvitationResponseInMessage, mailAccount?: MailAccount): Promise<void> {
     assert(this.isIncomingMeeting, "Only invitations can be responded to");
     let { identity, myParticipant } = this.participantMe(mailAccount);
+    let hasChanged = myParticipant.response != response;
     myParticipant.response = response;
-    await this.save();
-    await this.sendInvitationResponse(myParticipant, identity.account);
+    if (hasChanged) {
+      await this.sendInvitationResponse(myParticipant, identity.account);
+    }
   }
 
   // TODO Move code to `IncomingInvitation` class
