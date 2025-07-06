@@ -1,5 +1,6 @@
-import type { Event } from "../Event";
+import { IncomingInvitation } from "../Invitation/IncomingInvitation";
 import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
+import type { EWSEvent } from "./EWSEvent";
 import type { EWSCalendar } from "./EWSCalendar";
 import type { EWSEMail } from "../../Mail/EWS/EWSEMail";
 import EWSCreateItemRequest from "../../Mail/EWS/Request/EWSCreateItemRequest";
@@ -11,21 +12,11 @@ const ResponseTypes: Record<InvitationResponseInMessage, string> = {
   [InvitationResponse.Decline]: "DeclineItem",
 };
 
-export class EWSIncomingInvitation {
-  readonly calendar: EWSCalendar;
-  readonly message: EWSEMail;
-  readonly invitationMessage: InvitationMessage;
-  readonly event: Event;
+export class EWSIncomingInvitation extends IncomingInvitation {
+  declare calendar: EWSCalendar;
+  declare message: EWSEMail;
+  declare event: EWSEvent;
   myParticipation: InvitationResponse;
-
-  constructor(calendar: EWSCalendar, message: EWSEMail) {
-    this.calendar = calendar;
-    this.message = message;
-    this.invitationMessage = message.invitationMessage;
-    this.event = message.event;
-    let event = calendar.events.find(event => event.calUID == this.event.calUID);
-    this.myParticipation = event?.myParticipation || InvitationResponse.NoResponseReceived;
-  }
 
   async respondToInvitation(response: InvitationResponseInMessage) {
     assert(this.invitationMessage == InvitationMessage.Invitation, "Only invitations can be responded to");

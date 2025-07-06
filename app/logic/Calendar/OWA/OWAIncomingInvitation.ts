@@ -1,7 +1,7 @@
-import type { Event } from "../Event";
+import { IncomingInvitation } from "../Invitation/IncomingInvitation";
 import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
-import type { OWACalendar } from "./OWACalendar";
 import type { OWAEvent } from "./OWAEvent";
+import type { OWACalendar } from "./OWACalendar";
 import type { OWAEMail } from "../../Mail/OWA/OWAEMail";
 import OWACreateItemRequest from "../../Mail/OWA/Request/OWACreateItemRequest";
 import { assert } from "../../util/util";
@@ -13,22 +13,15 @@ const ResponseTypes: Record<InvitationResponseInMessage, string> = {
   [InvitationResponse.Decline]: "DeclineItem",
 };
 
-export class OWAIncomingInvitation {
-  readonly calendar: OWACalendar;
-  readonly message: OWAEMail;
-  readonly invitationMessage: InvitationMessage;
-  readonly event: Event;
+export class OWAIncomingInvitation extends IncomingInvitation {
+  declare calendar: OWACalendar;
+  declare message: OWAEMail;
+  declare event: OWAEvent;
   readonly itemID: string | void;
-  myParticipation: InvitationResponse;
 
   constructor(calendar: OWACalendar, message: OWAEMail) {
-    this.calendar = calendar;
-    this.message = message;
-    this.invitationMessage = message.invitationMessage;
-    this.event = message.event;
-    let event = calendar.events.find(event => event.calUID == this.event.calUID);
-    this.itemID = event?.itemID;
-    this.myParticipation = event?.myParticipation || InvitationResponse.NoResponseReceived;
+    super(calendar, message);
+    this.itemID = this.event?.itemID;
   }
 
   async respondToInvitation(response: InvitationResponseInMessage) {
