@@ -32,6 +32,8 @@ export class IncomingInvitation {
       event = this.calendar.newEvent();
       event.copyFrom(this.event);
       this.calendar.events.add(event);
+    } else if (this.event.lastUpdateTime >= event.lastUpdateTime) {
+      event.copyFrom(this.event);
     }
     let { myParticipant } = event.participantMe(this.message.folder.account);
     event.myParticipation = myParticipant.response = response;
