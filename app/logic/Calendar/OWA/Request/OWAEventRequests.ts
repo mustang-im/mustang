@@ -34,6 +34,9 @@ export function owaGetEventsRequest(eventIDs: string[]): OWARequest {
         FieldURI: "calendar:EnhancedLocation",
       }, {
         __type: "PropertyUri:#Exchange",
+        FieldURI: "calendar:IsCancelled",
+      }, {
+        __type: "PropertyUri:#Exchange",
         FieldURI: "calendar:MyResponseType",
       }, {
         __type: "PropertyUri:#Exchange",
