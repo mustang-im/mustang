@@ -15,7 +15,7 @@ export type LogEntry = Message | Event | VideoConfMeeting; // & { time: Date }
 export function searchLog(person: Person, limit: number): Collection<LogEntry> {
   let colls = new ArrayColl<Collection<LogEntry>>();
   addColl(colls, getEMails(person, limit));
-  addColl(colls, getChatMessages(person, limit));
+  // addColl(colls, getChatMessages(person, limit));
   addColl(colls, getCalendarEvents(person, limit));
   const old = new Date(0);
   return mergeColls(colls).sortBy((entry: LogEntry) => {
