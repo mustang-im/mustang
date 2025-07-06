@@ -452,6 +452,11 @@ export class Event extends Observable {
     return true;
   }
 
+  /** Only for incoming meetings */
+  get isCancelled(): boolean {
+    return !this.participants.some(participant => participant.response == InvitationResponse.Organizer);
+  }
+
   /** Call this whenever the master changes */
   generateRecurringInstances(endDate?: Date) {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Only for master");
