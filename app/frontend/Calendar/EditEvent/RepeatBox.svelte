@@ -72,7 +72,7 @@
 -->
 
 <script lang="ts">
-  import { RecurrenceCase, type Event } from "../../../logic/Calendar/Event";
+  import type { Event } from "../../../logic/Calendar/Event";
   import { Frequency, RecurrenceRule, type RecurrenceInit } from "../../../logic/Calendar/RecurrenceRule";
   import SectionTitle from './SectionTitle.svelte';
   import RadioGroup, { type RadioOption } from "./RadioGroup.svelte";
@@ -83,15 +83,15 @@
   export let event: Event;
   export let showRepeat: boolean;
 
-  let master = event.parentEvent || event;
-  let frequency = master.recurrenceRule?.frequency || Frequency.Weekly;
-  let interval = master.recurrenceRule?.interval || 1;
+  $: master = $event.parentEvent || event;
+  $: frequency = $master.recurrenceRule?.frequency || Frequency.Weekly;
+  $: interval = $master.recurrenceRule?.interval || 1;
   // end // let count = Number.isFinite(event.recurrenceRule?.count) ? event.recurrenceRule.count : 1;
-  let weekdays = master.recurrenceRule?.weekdays?.slice() || [event.startTime.getDay()];
-  let week = master.recurrenceRule?.week || 0;
+  $: weekdays = $master.recurrenceRule?.weekdays?.slice() || [$event.startTime.getDay()];
+  $: week = $master.recurrenceRule?.week || 0;
   // end // let end = event.recurrenceRule?.seriesEndTime ? "date" : Number.isFinite(event.recurrenceRule?.count) ? "count" : "none";
   // end // let seriesEndTime = master.recurrenceRule?.seriesEndTime || event.startTime;
-  let minDate = event.startTime;
+  $: minDate = $event.startTime;
   let daily = "everyday";
   let dailyOptions: RadioOption[] = [
     { label: $t`Every day`, value: "everyday" },
