@@ -8,9 +8,7 @@
       <vbox flex class="editor-scroll-wrapper">
         <Scroll>
           <vbox flex class="editor">
-            {#key to}
-              <HTMLEditor bind:html={to.draftMessage} bind:editor />
-            {/key}
+            <HTMLEditor bind:html={to.draftMessage} bind:editor />
           </vbox>
         </Scroll>
       </vbox>

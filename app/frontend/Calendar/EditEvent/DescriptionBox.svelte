@@ -4,9 +4,7 @@
     <Paper>
       <Scroll>
         <vbox flex class="editor">
-          {#key event}
-            <HTMLEditor bind:html={event.descriptionHTML} bind:editor />
-          {/key}
+          <HTMLEditor bind:html={event.descriptionHTML} bind:editor />
         </vbox>
       </Scroll>
     </Paper>
