@@ -52,8 +52,7 @@
         throw new Error($t`Minute must be less than 59`);
       }
       time.setHours(hour, minute, 0, 0);
-      time = time; // force refresh
-      return;
+      time = time; // force refresh - TODO Doesn't work on `event.startTime` to trigger `event` notifications
     } catch (ex) {
       inputE.setCustomValidity(ex.message);
     }

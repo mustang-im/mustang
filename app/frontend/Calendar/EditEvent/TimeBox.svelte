@@ -6,7 +6,7 @@
     </hbox>
     <hbox class="time-input start" title={$t`Start time`}>
       {#if !$event.allDay}
-        <TimeInput bind:time={event.startTime} />
+        <TimeInput bind:time={event.startTime} on:change={onTimeChanged} />
         {#if !showTimezone}
           <hbox class="buttons">
             <RoundButton
@@ -43,7 +43,7 @@
     </hbox>
     <hbox class="time-input end" title={$t`End time`}>
       {#if !$event.allDay}
-        <TimeInput bind:time={event.endTime} />
+        <TimeInput bind:time={event.endTime} on:change={onTimeChanged} />
       {/if}
       <hbox class="buttons">
         <RoundButton
@@ -156,6 +156,12 @@
         event.timezone = previousTimezone;
       }
     }
+    event.notifyObservers();
+  }
+
+  function onTimeChanged() {
+    // `<TimeInput>` sets only the properties of the `Date` object,
+    // so we need to manually trigger change notifications
     event.notifyObservers();
   }
 
