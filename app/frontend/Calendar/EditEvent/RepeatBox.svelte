@@ -1,6 +1,10 @@
 <SectionTitle label={$t`Repeat`}>
   <hbox>
+<<<<<<< HEAD
     <select bind:value={frequency} class="selector" on:change={ev => catchErrors(() => onFrequencyChanged(ev.currentTarget.value))}>
+=======
+    <select value={frequency} class="selector" on:change={(ev) => catchErrors(() => onFrequencyChanged(ev.currentTarget?.value))}>
+>>>>>>> 9a189dfd (Propagate UI changes to event)
       <option value={Frequency.None}>{$t`none`}</option>
       <option value={Frequency.Daily}>{$t`daily`}</option>
       <option value={Frequency.Weekly}>{$t`weekly`}</option>
@@ -72,23 +76,24 @@
 -->
 
 <script lang="ts">
-  import { RecurrenceCase, type Event } from "../../../logic/Calendar/Event";
-  import { Frequency, RecurrenceRule, type RecurrenceInit } from "../../../logic/Calendar/RecurrenceRule";
+  import type { Event } from "../../../logic/Calendar/Event";
+  import { Frequency } from "../../../logic/Calendar/RecurrenceRule";
   import SectionTitle from './SectionTitle.svelte';
   import RadioGroup, { type RadioOption } from "./RadioGroup.svelte";
   import RoundButton from '../../Shared/RoundButton.svelte';
   import { catchErrors } from "../../Util/error";
   import { arrayRemove } from '../../../logic/util/util';
-  import { getUILocale, t, plural } from "../../../l10n/l10n";
+  import { catchErrors } from "../../Util/error";
 
   export let event: Event;
 
-  let master = event.parentEvent || event;
-  let frequency = master.recurrenceRule?.frequency || Frequency.Weekly;
-  let interval = master.recurrenceRule?.interval || 1;
+  $: master = $event.parentEvent ?? event;
+  $: frequency = $master.recurrenceRule?.frequency ?? Frequency.Weekly;
+  $: console.log("frequency", frequency, "master freq", $master.recurrenceRule?.frequency);
+  $: interval = $master.recurrenceRule?.interval ?? 1;
   // end // let count = Number.isFinite(event.recurrenceRule?.count) ? event.recurrenceRule.count : 1;
-  let weekdays = master.recurrenceRule?.weekdays?.slice() || [event.startTime.getDay()];
-  let week = master.recurrenceRule?.week || 0;
+  $: weekdays = $master.recurrenceRule?.weekdays?.slice() ?? [$event.startTime.getDay()];
+  $: week = $master.recurrenceRule?.week ?? 0;
   // end // let end = event.recurrenceRule?.seriesEndTime ? "date" : Number.isFinite(event.recurrenceRule?.count) ? "count" : "none";
   // end // let seriesEndTime = master.recurrenceRule?.seriesEndTime || event.startTime;
   let minDate = event.startTime;
@@ -160,23 +165,26 @@
     interval = 1;
     frequency = Frequency.Weekly;
     daily = "everyday";
+    onFrequencyChanged(frequency);
   }
 
   function onWeekdayChanged(weekday: number) {
-    console.log("weekdays changed", weekday, weekdays);
     if (weekdays.includes(weekday)) {
       arrayRemove(weekdays, weekday);
     } else {
       weekdays.push(weekday);
     }
-    weekdayOptions = weekdayOptions; // force UI update
+    console.log("weekdays changed", weekday, weekdays);
+    master.newRecurrenceRule(frequency, interval, weekdays, week);
   }
 
-  function onFrequencyChanged(_newValue: string) {
-    if (frequency == Frequency.None) {
+  function onFrequencyChanged(newValue: string) {
+    console.log("frequency changed cur", frequency, "to", newValue);
+    let newFrequency = newValue as Frequency;
+    if (newFrequency == Frequency.None || !newFrequency) {
       event.recurrenceRule = null;
-    } else if (frequency != master.recurrenceRule.frequency) {
-      event.newRecurrenceRule(master.recurrenceRule.frequency);
+    } else if (newFrequency != master.recurrenceRule.frequency) {
+      master.newRecurrenceRule(newFrequency, interval, weekdays, week);
     }
   }
 </script>

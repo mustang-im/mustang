@@ -186,11 +186,11 @@
 
   function confirmAndChangeRecurrenceRule(): boolean {
     let master = event.parentEvent || event;
-    if (!master.recurrenceRule && master.unedited.recurrenceRule) {
+    if (!master.recurrenceRule && master.unedited?.recurrenceRule) {
       if (!confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
         return false;
       }
-    } else if (master.recurrenceRule && master.unedited.recurrenceRule &&
+    } else if (master.recurrenceRule && master.unedited?.recurrenceRule &&
         !master.unedited.recurrenceRule.timesMatch(master.recurrenceRule)) {
       if (!confirm($t`This change will remove all exceptions and exclusions for this series.`)) {
         return false;

@@ -131,6 +131,7 @@ export class Event extends Observable {
   recurrenceCase = RecurrenceCase.Normal;
   /** Describes the recurrence pattern.
    * Only for RecurrenceCase == Master */
+  @notifyChangedProperty
   protected _recurrenceRule: RecurrenceRule | null = null;
   /** Links back to the recurring master.
    * Only for RecurrenceCase == Instance or Exception */
@@ -312,17 +313,17 @@ export class Event extends Observable {
     this.generateRecurringInstances();
   }
 
-  newRecurrenceRule(frequency: Frequency): void {
+  newRecurrenceRule(frequency: Frequency, interval = 1, weekdays?: number[], week?: number): void {
     let init: RecurrenceInit = {
       masterDuration: this.duration,
       seriesStartTime: this.startTime,
       frequency,
-      interval: 1
+      interval,
     };
     if (frequency == Frequency.Weekly) {
-      init.weekdays = [this.startTime.getDay()];
+      init.weekdays = weekdays ?? [this.startTime.getDay()];
     } else if (frequency == Frequency.Monthly || frequency == Frequency.Yearly) {
-      init.week = 0;
+      init.week = week ?? 0;
     }
     this.recurrenceRule = new RecurrenceRule(init);
   }
