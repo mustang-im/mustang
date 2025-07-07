@@ -5,7 +5,7 @@
     {message.subject}
   </div>
   <div class="body">
-    {message.text?.substring(0, 120) ?? ""}
+    {message.text?.substring(0, 240) ?? ""}
   </div>
 </vbox>
 
@@ -37,13 +37,20 @@
 </script>
 
 <style>
-  .subject {
-    font-weight: bold;
-  }
   .subject,
   .body {
-    max-height: 1.5em;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  .subject {
+    max-height: 1.4em;
+    margin-block-start: -1px;
+    margin-block-end: 3px;
+    font-weight: bold;
+  }
+  .body {
+    max-height: 2.4em;
+    line-height: 1.2em;
+    font-weight: 300;
   }
 </style>

@@ -16,13 +16,20 @@
 </script>
 
 <style>
-  .subject {
-    font-weight: bold;
-  }
   .subject,
   .body {
-    max-height: 1.5em;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  .subject {
+    max-height: 1.2em;
+    margin-block-start: -1px;
+    margin-block-end: 6px;
+    font-weight: bold;
+  }
+  .body {
+    max-height: 2.4em;
+    font-weight: 300;
+    line-height: 1.2em;
   }
 </style>

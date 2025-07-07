@@ -1,5 +1,5 @@
 <vbox class="time-box font-smallest" flex
-  title={time.toLocaleDateString(getUILocale()) + "\n" + time.toLocaleTimeString(getUILocale())}>
+  title={time?.toLocaleDateString(getUILocale()) + "\n" + time?.toLocaleTimeString(getUILocale())}>
   {#if !sameDay}
     <hbox class="date">
       {getDateString(time)}
@@ -19,17 +19,13 @@
   export let previousMessage: LogEntry | null;
 
   $: time = (message as any)._history_time as Date; // set in `searchLog()` `.sortBy()`
-  $: sameDay = time.toLocaleDateString() == (previousMessage as any)?._history_time.toLocaleDateString();
+  $: sameDay = time?.toLocaleDateString() == (previousMessage as any)?._history_time.toLocaleDateString();
 </script>
 
 <style>
   .time-box {
-    max-height: 40px;
     overflow: hidden;
     padding: 6px 4px 4px 0px;
-  }
-  :global(.row:not(.selected)) .time-box {
-    border-top: 1px solid var(--border);
   }
   .date {
     background-color: var(--headerbar-bg);

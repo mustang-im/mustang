@@ -60,7 +60,7 @@
     flex: 1 0 0;
   }
   .history > :global(.group > .content) {
-    padding: 16px 0px;
+    padding: 16px 0px 0px 0px;
   }
   .show-more {
     align-items: center;

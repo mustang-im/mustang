@@ -1,6 +1,6 @@
 <hbox class="left" />
 <LogTime {message} {previousMessage} />
-<LogIconByType {message} />
+<LogIconByType {message} {previousMessage} />
 <vbox class="content">
   <LogContentByType {message} />
 </vbox>
@@ -20,6 +20,7 @@
 <style>
   .content {
     padding: 4px 12px;
+    height: 56px;
   }
   .left {
     padding-inline-start: 12px;
