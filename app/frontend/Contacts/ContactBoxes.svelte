@@ -111,7 +111,7 @@
   {#if showStreet}
     <GroupBox classes="street-addresses">
       <svelte:fragment slot="header">
-        <Icon data={MailIcon} size="16px" />
+        <StreetIcon size="16px" />
         <h3 class="font-small">{$t`Street address`}</h3>
         <hbox flex class="header actions">
           <Button
@@ -177,13 +177,20 @@
 
   <vbox class="expanders">
     <ExpanderButtons>
-      <ExpanderButton bind:expanded={showEmail} label={$t`Mail`} on:expand={addEmail} />
-      <ExpanderButton bind:expanded={showChat} label={$t`Chat`} on:expand={addChatAccount} />
-      <ExpanderButton bind:expanded={showPhone} label={$t`Phone`} on:expand={addPhoneNumber} />
-      <ExpanderButton bind:expanded={showStreet} label={$t`Street address`} on:expand={addStreetAddress} />
-      <ExpanderButton bind:expanded={showURLs} label={$t`Website`} on:expand={addURL} />
-      <!--<ExpanderButton bind:expanded={showGroups} label="Groups" on:expand={addGroup} />-->
-      <ExpanderButton bind:expanded={showNotes} label={$t`Notes`} on:expand={addNotes} />
+      <ExpanderButton bind:expanded={showEmail} on:expand={addEmail}
+        label={$t`Mail`} icon={MailIcon} iconSize="16px" classes="mail" />
+      <ExpanderButton bind:expanded={showChat} on:expand={addChatAccount}
+        label={$t`Chat`} icon={ChatIcon} iconSize="16px" classes="chat" />
+      <ExpanderButton bind:expanded={showPhone} on:expand={addPhoneNumber}
+        label={$t`Phone`} icon={PhoneIcon} iconSize="16px" classes="phone" />
+      <ExpanderButton bind:expanded={showStreet} on:expand={addStreetAddress}
+        label={$t`Street address`} icon={StreetIcon} iconSize="16px" classes="street" />
+      <ExpanderButton bind:expanded={showURLs} on:expand={addURL}
+        label={$t`Website`} icon={WebsiteIcon} iconSize="16px" classes="website" />
+      <!--<ExpanderButton bind:expanded={showGroups} on:expand={addGroup}
+        label="Groups" icon={GroupIcon} iconSize="16px" classes="group" />-->
+      <ExpanderButton bind:expanded={showNotes} on:expand={addNotes}
+        label={$t`Notes`} icon={NotesIcon} iconSize="16px" classes="notes" />
     </ExpanderButtons>
   </vbox>
 
@@ -221,7 +228,10 @@
   import ChatIcon from '../asset/icon/appBar/chat.svg?raw';
   import ContactsIcon from '../asset/icon/appBar/contacts.svg?raw';
   import PhoneIcon from '../asset/icon/meet/call.svg?raw';
+  import StreetIcon from "lucide-svelte/icons/house";
   import WebsiteIcon from "lucide-svelte/icons/globe";
+  import GroupIcon from "lucide-svelte/icons/users-round";
+  import NotesIcon from "lucide-svelte/icons/notebook-pen";
   import AddIcon from "lucide-svelte/icons/plus";
   import { showError } from "../Util/error";
   import { t } from "../../l10n/l10n";
@@ -312,9 +322,13 @@
   :global(.group:not(:hover)) .header.actions {
     visibility: hidden;
   }
-  .phone :global(path) {
+  .phone :global(path),
+  .expanders :global(.phone .icon path) {
     fill: transparent;
     stroke: #27c1aa;
+  }
+  .expanders :global(.phone .icon path) {
+    stroke-width: 1.5px;
   }
   .notes {
     margin: 6px;
@@ -341,6 +355,6 @@
     margin-block-start: 12px;
   }
   .expanders :global(.content) {
-    padding: 4px 8px 4px 12px;
+    padding: 4px 8px 4px 4px;
   }
 </style>

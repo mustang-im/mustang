@@ -1,11 +1,17 @@
 {#if !expanded}
-  <hbox class="expander-button">
+  <hbox class="expander-button {classes}">
     <Button plain onClick={onExpand} tooltip={label}>
       <hbox class="content" slot="label">
-        {#if icon}
+        {#if typeof(icon) == "string" }
           <hbox class="icon">
-            <svelte:component this={icon} size="20px" />
+            <Icon data={icon} size={iconSize} />
           </hbox>
+        {:else if icon}
+          <hbox class="icon">
+            <svelte:component this={icon} size={iconSize} />
+          </hbox>
+        {:else}
+          <slot name="icon" />
         {/if}
         {label}
         <AddIcon size="16px" />
@@ -16,6 +22,7 @@
 
 <script lang="ts">
   import Button from "./Button.svelte";
+  import Icon from "./Icon.svelte";
   import AddIcon from "lucide-svelte/icons/circle-plus";
   import type { ComponentType } from "svelte";
   import { createEventDispatcher } from 'svelte';
@@ -28,7 +35,9 @@
   /** in/out */
   export let expanded = false;
   export let label: string;
-  export let icon: ComponentType = null;
+  export let icon: ComponentType | string | null = null;
+  export let iconSize = "20px";
+  export let classes = "";
 
   function onExpand() {
     expanded = true;
