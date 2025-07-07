@@ -84,7 +84,7 @@ export class EWSEvent extends Event {
     this.timezone = fromWindowsZone(xmljs.StartTimeZoneId);
     this.allDay = sanitize.boolean(xmljs.IsAllDayEvent, false);
     if (xmljs.Recurrence) {
-      this.recurrenceRule = this.newRecurrenceRule(xmljs.Recurrence);
+      this.recurrenceRule = this.newRecurrenceRuleFromXML(xmljs.Recurrence);
       if (xmljs.DeletedOccurrences?.DeletedOccurrence) {
         for (let deletion of ensureArray(xmljs.DeletedOccurrences.DeletedOccurrence)) {
           this.makeExclusionLocally(sanitize.date(deletion.Start));
@@ -121,7 +121,7 @@ export class EWSEvent extends Event {
     }
   }
 
-  newRecurrenceRule(xmljs: any): RecurrenceRule {
+  protected newRecurrenceRuleFromXML(xmljs: any): RecurrenceRule {
     let masterDuration = this.duration;
     let seriesStartTime = this.startTime;
     let seriesEndTime: Date | null = null;

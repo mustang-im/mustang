@@ -60,7 +60,7 @@ export class ActiveSyncEvent extends Event {
     this.timezone = fromActiveSyncZone(wbxmljs.Timezone);
     this.allDay = sanitize.boolean(wbxmljs.AllDayEvent, false);
     if (wbxmljs.Recurrence) {
-      this.recurrenceRule = this.newRecurrenceRule(wbxmljs.Recurrence);
+      this.recurrenceRule = this.newRecurrenceRuleFromWBXML(wbxmljs.Recurrence);
       for (let exception of ensureArray(wbxmljs.Exceptions?.Exception)) {
         if (exception.Deleted == "1") {
           this.makeExclusionLocally(fromCompact(exception.ExceptionStartTime));
@@ -85,7 +85,7 @@ export class ActiveSyncEvent extends Event {
     this.myParticipation = sanitize.integer(wbxmljs.ResponseType, InvitationResponse.Unknown);
   }
 
-  newRecurrenceRule(wbxmljs: any): RecurrenceRule {
+  protected newRecurrenceRuleFromWBXML(wbxmljs: any): RecurrenceRule {
     let masterDuration = this.duration;
     let seriesStartTime = this.startTime;
     let seriesEndTime = wbxmljs.Until ? fromCompact(wbxmljs.Until) : null;

@@ -80,7 +80,7 @@ export class OWAEvent extends Event {
     this.timezone = fromWindowsZone(json.StartTimeZoneId);
     this.allDay = sanitize.boolean(json.IsAllDayEvent, false);
     if (json.Recurrence) {
-      this.recurrenceRule = this.newRecurrenceRule(json.Recurrence);
+      this.recurrenceRule = this.newRecurrenceRuleFromJSON(json.Recurrence);
       if (json.DeletedOccurrences) {
         for (let deletion of json.DeletedOccurrences) {
           this.makeExclusionLocally(sanitize.date(deletion.Start));
@@ -119,7 +119,7 @@ export class OWAEvent extends Event {
     }
   }
 
-  protected newRecurrenceRule(json: any): RecurrenceRule {
+  protected newRecurrenceRuleFromJSON(json: any): RecurrenceRule {
     let masterDuration = this.duration;
     let seriesStartTime = this.startTime;
     let seriesEndTime: Date | null = null;
