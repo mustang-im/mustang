@@ -64,6 +64,19 @@ export function getTimeString(date: Date): string {
   return date.toLocaleString(getUILocale(), { hour: "numeric", minute: "numeric" });
 }
 
+/**
+ * @param ianaTimezone IANA timezone, e.g. "Europe/Berlin"
+ * @returns the city in English, for most timezones */
+export function getTimezoneDisplay(ianaTimezone: string): string {
+  return ianaTimezone.split("/").pop();
+}
+export function myTimezone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+export function isMyTimezone(ianaTimezone: string) {
+  return ianaTimezone == myTimezone();
+}
+
 export function getToday() {
   const today = new Date();
   today.setHours(0);
