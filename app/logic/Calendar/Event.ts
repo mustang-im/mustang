@@ -582,20 +582,24 @@ export class Event extends Observable {
     if (!this.participants.length) {
       return;
     }
-    if (this.myParticipation == InvitationResponse.Organizer) {
-      await this.outgoingInvitation.sendCancellations();
-    } else if (this.myParticipation) {
-      // TODO Move code to `IncomingInvitation` class
-      for (let participant of this.participants) {
-        if (participant.response == InvitationResponse.Organizer) {
-          // Can't use `respondToInvitation` because that wants to save
-          let { identity, myParticipant } = this.participantMe();
-          if (myParticipant.response != InvitationResponse.Decline) {
-            myParticipant.response = InvitationResponse.Decline;
-            await this.sendInvitationResponse(myParticipant, identity.account);
+    try {
+      if (this.myParticipation == InvitationResponse.Organizer) {
+        await this.outgoingInvitation.sendCancellations();
+      } else if (this.myParticipation) {
+        // TODO Move code to `IncomingInvitation` class
+        for (let participant of this.participants) {
+          if (participant.response == InvitationResponse.Organizer) {
+            // Can't use `respondToInvitation` because that wants to save
+            let { identity, myParticipant } = this.participantMe();
+            if (myParticipant.response != InvitationResponse.Decline) {
+              myParticipant.response = InvitationResponse.Decline;
+              await this.sendInvitationResponse(myParticipant, identity.account);
+            }
           }
         }
       }
+    } catch (ex) {
+      this.calendar.errorCallback(ex);
     }
   }
 
