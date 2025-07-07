@@ -25,7 +25,7 @@
   function setEnd() {
     end = new Date(start);
     end.setHours(end.getHours() + intervalInHours);
-    displayEvents = events.filter(ev => ev.startTime < end && ev.endTime > start && !ev.allDay);
+    displayEvents = events.filterObservable(ev => ev.startTime < end && ev.endTime > start && !ev.allDay);
   }
 
   function addEvent() {

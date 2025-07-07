@@ -37,7 +37,7 @@
   function setEnd() {
     end = new Date(start);
     end.setHours(end.getHours() + intervalInHours);
-    displayEvents = events.filter(ev => ev.startTime < end && ev.endTime > start);
+    displayEvents = events.filterObservable(ev => ev.startTime < end && ev.endTime > start);
   }
 
   function selectDay() {

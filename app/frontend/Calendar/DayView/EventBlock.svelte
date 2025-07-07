@@ -13,7 +13,7 @@
     <hbox class="time">{startTime}</hbox>
   {/if}
   {#if showTitle}
-    <hbox class="title">{event.title}</hbox>
+    <hbox class="title">{$event.title}</hbox>
   {/if}
 </hbox>
 
@@ -32,16 +32,16 @@
   export let end: Date;
   export let otherEvents: Collection<Event>;
 
-  $: startTime = event.startTime.toLocaleString(getUILocale(), { hour: "2-digit", minute: "2-digit" });
-  $: eventAsText = (event.allDay ? "" : `${startTime} – ${getDurationString(event.endTime.getTime() - event.startTime.getTime())}\n`) +
+  $: startTime = $event.startTime.toLocaleString(getUILocale(), { hour: "2-digit", minute: "2-digit" });
+  $: eventAsText = ($event.allDay ? "" : `${startTime} – ${getDurationString(event.endTime.getTime() - event.startTime.getTime())}\n`) +
      event.title +
      (event.participants.isEmpty ? "" : "\n" + event.participants.getIndexRange(0, 4).map(person => person.name).join(", "));
   $: blockHeightInMS = end.getTime() - start.getTime();
-  $: startPosInPercent = Math.max(0, (event.startTime.getTime() - start.getTime()) / blockHeightInMS * 100);
-  $: heightInPercent = Math.min(100, (event.endTime.getTime() - start.getTime()) / blockHeightInMS * 100 - startPosInPercent);
+  $: startPosInPercent = Math.max(0, ($event.startTime.getTime() - start.getTime()) / blockHeightInMS * 100);
+  $: heightInPercent = Math.min(100, ($event.endTime.getTime() - start.getTime()) / blockHeightInMS * 100 - startPosInPercent);
   /** Other events that run at the same time. Includes this event */
-  $: conflicts = otherEvents.filter(ev => ev.startTime < end && ev.endTime > start && !ev.allDay);
-  $: showTime = start <= event.startTime && event.startTime < end || start.getHours() == 0;
+  $: conflicts = otherEvents.filterObservable(ev => ev.startTime < end && ev.endTime > start && !ev.allDay);
+  $: showTime = start <= $event.startTime && event.startTime < end || start.getHours() == 0;
   $: showTitle = showTime || conflicts.length > 1;
 
   function onSelect(ev: MouseEvent) {
