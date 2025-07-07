@@ -58,20 +58,33 @@
     </hbox>
 
     {#if showTimezone}
-      <hbox class="timezone">
-        <TimezonePicker bind:timezone={event.timezone} />
-        <hbox class="buttons">
-          <RoundButton
-            label={$t`Back to local timezone`}
-            icon={XIcon}
-            onClick={onResetTimezone}
-            classes="plain smallest"
-            border={false}
-            iconSize="16px"
-            padding="2px"
-            />
+      <vbox class="timezone">
+        <hbox class="timezone-selector">
+          <TimezonePicker bind:timezone={event.timezone} />
+          <hbox class="buttons">
+            <RoundButton
+              label={$t`Back to local timezone`}
+              icon={XIcon}
+              onClick={onResetTimezone}
+              classes="plain smallest"
+              border={false}
+              iconSize="16px"
+              padding="2px"
+              />
+          </hbox>
         </hbox>
+        <hbox class="time-in-timezone">
+          {$event.startTime?.toLocaleString(getUILocale(), {
+              hour: "numeric", minute: "numeric",
+              timeZone: event.timezone,
+           })}
+          -
+          {$event.endTime?.toLocaleString(getUILocale(), {
+            hour: "numeric", minute: "numeric",
+            timeZone: event.timezone,
+         })}
       </hbox>
+      </vbox>
     {:else if !$event.allDay}
       <hbox class="timezone" />
     {/if}
@@ -101,7 +114,7 @@
   import MultipleDaysIcon from "lucide-svelte/icons/calendar-plus";
   import XIcon from "lucide-svelte/icons/x";
   import TimezonePicker from "timezone-picker-svelte";
-  import { t } from "../../../l10n/l10n";
+  import { getUILocale, t } from "../../../l10n/l10n";
 
   export let event: Event;
 
