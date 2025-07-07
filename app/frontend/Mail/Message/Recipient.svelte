@@ -1,12 +1,12 @@
-<hbox on:click={(event) => catchErrors(() => onOpen(event))} bind:this={anchor}>
-  <value class="name" title={recipient.name + "\n" + recipient.emailAddress}>
+<hbox class="recipient" on:click={(event) => catchErrors(() => onOpen(event))} bind:this={anchor}>
+  <div class="name" title={recipient.name + "\n" + recipient.emailAddress}>
     {personDisplayName(recipient)}
-  </value>
+  </div>
   {#if !recipient.findPerson()}
     {#if recipient.emailAddress}
-      <value class="domain" title={recipient.emailAddress}>
+      <div class="domain" title={recipient.emailAddress}>
         @{getBaseDomainFromHost(getDomainForEmailAddress(recipient.emailAddress))}
-      </value>
+      </div>
     {:else}
       <hbox>{$t`Invalid address`}</hbox>
     {/if}
@@ -80,6 +80,12 @@
 <style>
   :global(.app-object):has(.name) {
     display: block;
+  }
+  .recipient {
+    cursor: pointer;
+  }
+  .recipient:hover {
+    color: var(--link-hover-fg);
   }
   .name {
     display: inline;

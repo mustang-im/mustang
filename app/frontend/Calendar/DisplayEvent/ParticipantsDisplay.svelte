@@ -57,9 +57,10 @@
   .participants .separator {
     margin-inline-end: 0.3em;
   }
+  .participant-name {
+    cursor: pointer;
+  }
   .participant-name:hover {
-    /*background-color: var(--hover-bg);
-    color: var(--hover-fg);*/
     color: var(--link-hover-fg);
   }
   .participants .buttons {
