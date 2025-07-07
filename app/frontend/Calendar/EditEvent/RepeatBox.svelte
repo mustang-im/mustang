@@ -1,11 +1,11 @@
 <SectionTitle label={$t`Repeat`}>
   <hbox>
-    <select bind:value={frequency} class="selector" on:change={onFrequencyChanged}>
-      <option value="{Frequency.None}">{$t`none`}</option>
-      <option value="{Frequency.Daily}">{$t`daily`}</option>
-      <option value="{Frequency.Weekly}">{$t`weekly`}</option>
-      <option value="{Frequency.Monthly}">{$t`monthly`}</option>
-      <option value="{Frequency.Yearly}">{$t`yearly`}</option>
+    <select bind:value={frequency} class="selector" on:change={ev => catchErrors(() => onFrequencyChanged(ev.currentTarget.value))}>
+      <option value={Frequency.None}>{$t`none`}</option>
+      <option value={Frequency.Daily}>{$t`daily`}</option>
+      <option value={Frequency.Weekly}>{$t`weekly`}</option>
+      <option value={Frequency.Monthly}>{$t`monthly`}</option>
+      <option value={Frequency.Yearly}>{$t`yearly`}</option>
     </select>
   </hbox>
 </SectionTitle>
@@ -76,9 +76,10 @@
   import { Frequency, RecurrenceRule, type RecurrenceInit } from "../../../logic/Calendar/RecurrenceRule";
   import SectionTitle from './SectionTitle.svelte';
   import RadioGroup, { type RadioOption } from "./RadioGroup.svelte";
-  import { getUILocale, t, plural } from "../../../l10n/l10n";
   import RoundButton from '../../Shared/RoundButton.svelte';
+  import { catchErrors } from "../../Util/error";
   import { arrayRemove } from '../../../logic/util/util';
+  import { getUILocale, t, plural } from "../../../l10n/l10n";
 
   export let event: Event;
   export let showRepeat: boolean;
@@ -172,7 +173,7 @@
     weekdayOptions = weekdayOptions; // force UI update
   }
 
-  function onFrequencyChanged() {
+  function onFrequencyChanged(_newValue: string) {
     if (frequency == Frequency.None) {
       showRepeat = false;
     }
