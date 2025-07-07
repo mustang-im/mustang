@@ -5,7 +5,7 @@
         <hbox class="separator">,</hbox>
       {/if}
       <hbox class="participant-name"
-        on:click={() => onOpenParticipant(participant)}>
+        on:click={() => catchErrors(() => onOpenParticipant(participant))}>
         {participant.name}
       </hbox>
     {/if}
@@ -33,6 +33,8 @@
   import MoreBubble from "./MoreBubble.svelte";
   import Button from "../../Shared/Button.svelte";
   import ChevronUpIcon from "lucide-svelte/icons/chevron-up";
+  import { openUIFor } from "../../AppsBar/changeTo";
+  import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
@@ -43,7 +45,7 @@
 
   function onOpenParticipant(personUID: PersonUID) {
     let person = personUID.findPerson();
-    alert("Open " + person.name);
+    openUIFor(person);
   }
 </script>
 
