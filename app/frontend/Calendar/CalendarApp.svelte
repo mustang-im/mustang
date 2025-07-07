@@ -11,9 +11,7 @@
     </vbox>
     <vbox flex class="sidebar" slot="right">
       {#if $selectedEvent}
-        {#key $selectedEvent}
-          <EditEvent event={$selectedEvent} />
-        {/key}
+        <EditEvent event={$selectedEvent} />
       {:else}
         <!--<TaskList />-->
       {/if}
