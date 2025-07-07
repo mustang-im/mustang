@@ -45,6 +45,9 @@
 
   function onOpenParticipant(personUID: PersonUID) {
     let person = personUID.findPerson();
+    if (!person) {
+      return;
+    }
     openUIFor(person);
   }
 </script>
