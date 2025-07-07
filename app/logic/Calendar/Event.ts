@@ -242,7 +242,7 @@ export class Event extends Observable {
   }
   @notifyChangedAccessor
   set duration(seconds: number) {
-    assert(seconds >= 0, "Duration must be >= 0");
+    assert(seconds >= 0, `Duration must be >= 0, but is ${seconds}, starttime ${this.startTime?.toLocaleTimeString()}, endtime ${this.endTime?.toLocaleTimeString()}`);
     if (this.allDay) {
       this.endTime.setTime(this.startTime.getTime());
       // End date is non-inclusive next day. RFC 5545 section 3.6.1
