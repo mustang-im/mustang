@@ -452,6 +452,10 @@ export class Event extends Observable {
     return true;
   }
 
+  get isOutgoingMeeting(): boolean {
+    return this.myParticipation == InvitationResponse.Organizer;
+  }
+
   /** Only for incoming meetings */
   get isCancelled(): boolean {
     return !this.participants.some(participant => participant.response == InvitationResponse.Organizer);
@@ -583,9 +587,9 @@ export class Event extends Observable {
       if (!this.participants.length) {
         return;
       }
-        if (this.myParticipation == InvitationResponse.Organizer) {
+      if (this.isOutgoingMeeting) {
         await this.outgoingInvitation.sendCancellations();
-      } else if (this.myParticipation) {
+      } else if (this.isIncomingMeeting) {
         await this.respondToInvitation(InvitationResponse.Decline);
       }
     } catch (ex) {
