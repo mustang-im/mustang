@@ -38,7 +38,7 @@ export class IncomingInvitation {
     let { myParticipant } = event.participantMe(this.message.folder.account);
     /* else add participant? */
     let hasChanged = event.myParticipation != response;
-    event.myParticipation = myParticipant.response = response;
+    event.myParticipation = this.myParticipation = myParticipant.response = response;
     await event.save();
     if (hasChanged) {
       await event.sendInvitationResponse(myParticipant, this.message.folder.account);
