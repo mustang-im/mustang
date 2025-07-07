@@ -29,18 +29,18 @@ import NodeMobile
                     print("❌ nodejs-project folder not found in bundle")
                 }
 
-                // —— attempt to find index.js ——
+                // —— attempt to find index.mjs ——
                 guard let scriptPath = Bundle.main.path(
                         forResource: "index",
-                        ofType: "js",
+                        ofType: "mjs",
                         inDirectory: "nodejs-project"
                       ) else {
-                    print("❌ NodeRunner: could not find index.js in nodejs-project")
+                    print("❌ NodeRunner: could not find index.mjs in nodejs-project")
                     return
                 }
 
 
-            // Prepare argv: ["node", "<full-path-to-index.js>"]
+            // Prepare argv: ["node", "<full-path-to-index.mjs>"]
             let args = ["node", "--experimental-wasm-modules", scriptPath]
             let argc = Int32(args.count)
             let argv = UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>.allocate(capacity: Int(argc))
