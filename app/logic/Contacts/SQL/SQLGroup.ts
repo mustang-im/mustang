@@ -127,7 +127,7 @@ export class SQLGroup extends Group {
           }
         }
         if (!person) {
-          person = new Person();
+          person = group.addressbook?.newPerson() ?? new Person();
           await SQLPerson.read(personID, person);
         }
         group.participants.add(person);

@@ -30,7 +30,7 @@ export class ThunderbirdAddressbook extends Addressbook {
       try {
         id = sanitize.alphanumdash(id);
         let personRows = rows.filter(row => row.cardID == id);
-        let person = this.readCard(id, personRows);
+        let person = this.readCard(id, personRows, ab);
         ab.persons.add(person);
       } catch (ex) {
         entryErrorCallback(ex);
@@ -43,7 +43,7 @@ export class ThunderbirdAddressbook extends Addressbook {
     return ab;
   }
 
-  protected static readCard(id: string, rows: any[]): Person {
+  protected static readCard(id: string, rows: any[], addressbook: Addressbook): Person {
     function getRow(name: string): string | null {
       return rows.find(row => row.name == name)?.value;
     }
@@ -58,7 +58,7 @@ export class ThunderbirdAddressbook extends Addressbook {
       addTo.add(entry);
     }
 
-    let person = new Person();
+    let person = addressbook.newPerson();
     person.id = id;
     let emailAddress = sanitize.emailAddress(getRow("PrimaryEmail"), null);
 
