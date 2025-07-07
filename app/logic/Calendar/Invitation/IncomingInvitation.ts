@@ -36,10 +36,13 @@ export class IncomingInvitation {
       event.copyFrom(this.event);
     }
     let { myParticipant } = event.participantMe(this.message.folder.account);
+    /* else add participant? */
+    let hasChanged = event.myParticipation != response;
     event.myParticipation = myParticipant.response = response;
     await event.save();
-    await event.sendInvitationResponse(myParticipant, this.message.folder.account);
-    /* else add participant? */
+    if (hasChanged) {
+      await event.sendInvitationResponse(myParticipant, this.message.folder.account);
+    }
   }
 
   /** CancelledEvent: the organiser cancelled an incoming meeting */
