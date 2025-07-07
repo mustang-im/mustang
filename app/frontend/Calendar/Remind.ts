@@ -11,6 +11,7 @@ import type { Collection } from "svelte-collections";
 let eventsWithAlarms: Collection<Event>;
 
 export async function reminderListener() {
+  return;
   await sleep(3);
   waitForNextAlarm();
 }
