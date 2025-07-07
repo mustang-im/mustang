@@ -1,5 +1,5 @@
 <vbox flex class="event-edit-window">
-  <DialogHeader bind:event {repeatBox} />
+  <DialogHeader bind:event />
   <Scroll>
     <vbox class="columns" flex class:show-description={showDescription}>
       <vbox class="column1">
@@ -19,7 +19,7 @@
         </Section>
         {#if showRepeat}
           <Section label={$t`Repeat`} icon={RepeatIcon}>
-            <RepeatBox {event} bind:this={repeatBox} bind:showRepeat />
+            <RepeatBox {event} bind:this={repeatBox} />
           </Section>
         {/if}
         {#if showReminder}
@@ -90,10 +90,11 @@
   import LocationIcon from "lucide-svelte/icons/map-pin";
   import DescriptionIcon from "lucide-svelte/icons/notebook-pen";
   import { t } from "../../../l10n/l10n";
+  import { Frequency } from "../../../logic/Calendar/RecurrenceRule";
 
   export let event: Event;
 
-  let showRepeat = event.recurrenceRule || event.parentEvent && event.isNew;
+  $: showRepeat = !!event.recurrenceRule || event.parentEvent && event.isNew;
   $: showReminder = !!$event.alarm;
   $: showParticipants = $event.participants.hasItems;
   $: showLocation = !!$event.location;
@@ -103,7 +104,7 @@
   let repeatBox: RepeatBox;
 
   function expandRepeat(): void {
-    // `showRepeat = true` set by `<ExpanderButton>` click handler
+    event.newRecurrenceRule(Frequency.Weekly);
   }
 
   const kDefaultReminderMins = 5;

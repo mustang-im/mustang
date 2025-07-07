@@ -82,7 +82,6 @@
   import { getUILocale, t, plural } from "../../../l10n/l10n";
 
   export let event: Event;
-  export let showRepeat: boolean;
 
   let master = event.parentEvent || event;
   let frequency = master.recurrenceRule?.frequency || Frequency.Weekly;
@@ -175,28 +174,10 @@
 
   function onFrequencyChanged(_newValue: string) {
     if (frequency == Frequency.None) {
-      showRepeat = false;
+      event.recurrenceRule = null;
+    } else if (frequency != master.recurrenceRule.frequency) {
+      event.newRecurrenceRule(master.recurrenceRule.frequency);
     }
-  }
-
-  export function newRecurrenceRule(): RecurrenceRule {
-    let init: RecurrenceInit = { masterDuration: event.duration, seriesStartTime: event.startTime, frequency, interval };
-    /* end
-    if (end == "count") {
-      init.count = count;
-    } else if (end == "date") {
-      init.seriesEndTime = seriesEndTime;
-    }
-    */
-    if (frequency == Frequency.Weekly) {
-      init.weekdays = weekdays;
-    } else if (frequency == Frequency.Monthly || frequency == Frequency.Yearly) {
-      init.week = week;
-      if (week) {
-        init.weekdays = [event.startTime.getDay()];
-      }
-    }
-    return new RecurrenceRule(init);
   }
 </script>
 

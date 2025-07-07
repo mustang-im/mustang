@@ -1,6 +1,6 @@
 import type { Calendar } from "./Calendar";
 import type { Participant } from "./Participant";
-import { RecurrenceRule } from "./RecurrenceRule";
+import { RecurrenceRule, type RecurrenceInit, Frequency } from "./RecurrenceRule";
 import OutgoingInvitation from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
@@ -310,6 +310,21 @@ export class Event extends Observable {
       this.clearExceptions();
     }
     this.generateRecurringInstances();
+  }
+
+  newRecurrenceRule(frequency: Frequency): void {
+    let init: RecurrenceInit = {
+      masterDuration: this.duration,
+      seriesStartTime: this.startTime,
+      frequency,
+      interval: 1
+    };
+    if (frequency == Frequency.Weekly) {
+      init.weekdays = [this.startTime.getDay()];
+    } else if (frequency == Frequency.Monthly || frequency == Frequency.Yearly) {
+      init.week = 0;
+    }
+    this.recurrenceRule = new RecurrenceRule(init);
   }
 
   /** Create a new instance of the same event.

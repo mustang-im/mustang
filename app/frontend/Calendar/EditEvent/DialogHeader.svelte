@@ -78,7 +78,7 @@
             iconSize="16px"
             />
         {/if}
-        {#if canSave || canSaveSeries}
+        {#if canSaveSingle || canSaveSeries}
           <RoundButton
             label={$t`Revert`}
             icon={RevertIcon}
@@ -98,7 +98,7 @@
                 iconSize="16px"
                 />
 
-              {#if canSave}
+              {#if canSaveSingle}
                 <MenuItem
                   label={$t`Change only this instance`}
                   onClick={onSave}
@@ -167,7 +167,6 @@
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
-  export let repeatBox: RepeatBox;
 
   $: event.startEditing(); // not `$event`
   $: newCalendar = event.calendar; // not `$event`
@@ -175,9 +174,9 @@
       event.startTime.getTime() <= event.endTime.getTime();
   $: hasMinimalPropsChanged = hasMinimalProps && $event.hasChanged;
   $: canSaveSeries = hasMinimalProps && $event.recurrenceCase == RecurrenceCase.Instance;
-  $: canSave = hasMinimalProps && (
+  $: canSaveSingle = hasMinimalProps && (
     $event.hasChanged() ||
-    repeatBox && !event.parentEvent || // Change single event into series
+    event.recurrenceRule && !event.parentEvent || // Change single event into series
     newCalendar != event.calendar);
   $: participants = event.participants;
   $: willSend = $participants.hasItems && !$event.isIncomingMeeting;
@@ -187,26 +186,15 @@
 
   function confirmAndChangeRecurrenceRule(): boolean {
     let master = event.parentEvent || event;
-    if (!repeatBox) {
-      if (!master.recurrenceRule) {
-        // Event had never been a recurring event.
-        return true;
-      }
+    if (!master.recurrenceRule && master.unedited.recurrenceRule) {
       if (!confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
         return false;
       }
-      master.recurrenceRule = null;
-    } else {
-      let rule = repeatBox.newRecurrenceRule();
-      if (master.recurrenceRule) {
-        if (rule.timesMatch(master.recurrenceRule)) {
-          return true;
-        }
-        if (!confirm($t`This change will remove all exceptions and exclusions for this series.`)) {
-          return false;
-        }
+    } else if (master.recurrenceRule && master.unedited.recurrenceRule &&
+        !master.unedited.recurrenceRule.timesMatch(master.recurrenceRule)) {
+      if (!confirm($t`This change will remove all exceptions and exclusions for this series.`)) {
+        return false;
       }
-      master.recurrenceRule = rule;
     }
     return true;
   }
@@ -224,10 +212,6 @@
   }
 
   async function saveEvent(event: Event) {
-    if (repeatBox && !event.parentEvent) {
-      // Turning a single event into a series. (The reverse is done in `onChangeAll()`.)
-      event.recurrenceRule = repeatBox.newRecurrenceRule();
-    }
     if (event.calendar != newCalendar && newCalendar) {
       // `moveToCalendar()` does the save and delete as well
       event = await event.moveToCalendar(newCalendar);
