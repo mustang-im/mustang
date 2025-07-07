@@ -109,10 +109,9 @@
   export let message: EMail;
   let calendars: Collection<Calendar>;
   let selectedCalendar: Calendar | undefined;
+  let myParticipation: InvitationResponse = InvitationResponse.NoResponseReceived;
   let incomingInvitation: IncomingInvitation;
   let event: Event | undefined;
-
-  $: myParticipation = incomingInvitation?.myParticipation ?? InvitationResponse.NoResponseReceived;
 
   $: if (message.event) {
     loadCalendars();
@@ -135,10 +134,12 @@
     }
     event = selectedCalendar.events.find(event => event.calUID == message.event.calUID);
     incomingInvitation = selectedCalendar.getIncomingInvitationFor(message);
+    myParticipation = incomingInvitation.myParticipation;
   }
 
   async function respond(response: InvitationResponseInMessage) {
     await incomingInvitation.respondToInvitation(response);
+    myParticipation = response;
     event ??= selectedCalendar.events.find(event => event.calUID == message.event.calUID);
   }
   async function onAccept() {
