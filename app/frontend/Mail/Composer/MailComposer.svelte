@@ -109,7 +109,9 @@
             <vbox flex class="editor" spellcheck={$spellcheckEnabled.value}>
               <!-- The html in the mail passed in MUST already be sanitized HTML.
               Using `rawHTMLDangerous` avoids that we're sanitizing on every keypress. -->
-              <HTMLEditor bind:html={mail.rawHTMLDangerous} bind:editor tabindex={1} />
+              {#key mail}
+                <HTMLEditor bind:html={mail.rawHTMLDangerous} bind:editor tabindex={1} />
+              {/key}
             </vbox>
           </Scroll>
           <hbox class="footer">
