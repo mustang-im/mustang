@@ -1,6 +1,6 @@
 <Header
   title={$t`Set up your file sharing account`}
-  subtitle=""
+  subtitle={$t`Access your cloud files in your existing account`}
 />
 
 <ProtocolSelector {protocols} bind:selectedProtocol={selectedProtocol} />
@@ -36,7 +36,7 @@
     { label: `OneDrive`, protocolID: "webdav" },
     { label: `SharePoint`, protocolID: "webdav" },
     { label: `GMX, web.de, 1&1`, protocolID: "webdav" },
-    { label: $t`WebDAV` },
+    { label: $t`WebDAV`, protocolID: "webdav" },
   ];
 
   function onContinue() {
