@@ -6,7 +6,7 @@
     </hbox>
     <hbox class="time-input start" title={$t`Start time`}>
       {#if !$event.allDay}
-        <TimeInput bind:time={event.startTime} on:change={onTimeChanged} />
+        <TimeInputInTimezone bind:time={event.startTime} on:change={onTimeChanged} timezone={$event.timezone} />
         {#if !showTimezone}
           <hbox class="buttons">
             <RoundButton
@@ -43,7 +43,7 @@
     </hbox>
     <hbox class="time-input end" title={$t`End time`}>
       {#if !$event.allDay}
-        <TimeInput bind:time={event.endTime} on:change={onTimeChanged} />
+        <TimeInputInTimezone bind:time={event.endTime} timezone={$event.timezone} on:change={onTimeChanged} />
       {/if}
       <hbox class="buttons">
         <RoundButton
@@ -74,16 +74,21 @@
           </hbox>
         </hbox>
         <hbox class="time-in-timezone">
-          {$event.startTime?.toLocaleString(getUILocale(), {
+          <hbox class="label">
+            {$t`Local time` + ":"}
+          </hbox>
+          <hbox class="start-time-local">
+            {$event.startTime?.toLocaleString(getUILocale(), {
               hour: "numeric", minute: "numeric",
-              timeZone: event.timezone,
            })}
-          -
-          {$event.endTime?.toLocaleString(getUILocale(), {
-            hour: "numeric", minute: "numeric",
-            timeZone: event.timezone,
-         })}
-      </hbox>
+          </hbox>
+          <hbox class="separator">-</hbox>
+          <hbox class="end-time-local">
+            {$event.endTime?.toLocaleString(getUILocale(), {
+              hour: "numeric", minute: "numeric",
+           })}
+          </hbox>
+        </hbox>
       </vbox>
     {:else if !$event.allDay}
       <hbox class="timezone" />
@@ -116,6 +121,7 @@
   import TimezonePicker from "timezone-picker-svelte";
   import { myTimezone, isMyTimezone } from "../../Util/date";
   import { getUILocale, t } from "../../../l10n/l10n";
+  import TimeInputInTimezone from "./TimeInputInTimezone.svelte";
 
   export let event: Event;
 
@@ -259,6 +265,9 @@
   .time-input :global(input) {
     font-size: 16px;
   }
+  .duration {
+    align-self: start;
+  }
   .duration input {
     margin-inline-end: 6px;
   }
@@ -266,6 +275,14 @@
     align-items: center;
     margin-inline-start: 6px;
     margin-block-start: 6px;
+  }
+  .time-in-timezone {
+    flex-wrap: wrap;
+    margin: 4px 8px;
+    max-width: 120px;
+  }
+  .time-in-timezone > *{
+    margin-inline-end: 4px;
   }
   :global(.inline) {
     display: inline-flex !important;
