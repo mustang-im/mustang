@@ -451,6 +451,12 @@ export class Event extends Observable {
   finishEditing() {
     this.unedited = null;
   }
+  cancelEditing() {
+    if (this.unedited) {
+      this.copyFrom(this.unedited);
+    }
+    this.finishEditing();
+  }
 
   createMeeting() {
     this.outgoingInvitation.createOrganizer();

@@ -1,6 +1,7 @@
 <SectionTitle label={$t`Repeat`}>
   <hbox>
-    <select value={frequency} class="selector" on:change={(ev) => catchErrors(() => onFrequencyChanged(ev.currentTarget?.value))}>
+    <select value={frequency} class="selector"
+      on:change={(ev) => catchErrors(() => onFrequencyChanged(ev.currentTarget?.value))}>
       <option value={Frequency.None}>{$t`none`}</option>
       <option value={Frequency.Daily}>{$t`daily`}</option>
       <option value={Frequency.Weekly}>{$t`weekly`}</option>
@@ -14,7 +15,7 @@
   <vbox class="frequency">
     {#if frequency == Frequency.Daily }
       <RadioGroup bind:group={daily} items={dailyOptions} vertical={true}
-        on:change={onDailyOptionChanged}
+        on:change={() => catchErrors(onDailyOptionChanged)}
         disabled={$event.startTime.getDay() == 0 || $event.startTime.getDay() == 6}
         />
     {:else if frequency == Frequency.Weekly }
@@ -25,7 +26,7 @@
             <RoundButton
               label={weekday.label}
               selected={weekdays.includes(weekday.value)}
-              onClick={() => onWeekdayChanged(weekday.value)}
+              onClick={() => catchErrors(() => onWeekdayChanged(weekday.value))}
               disabled={weekday.disabled}
               border={false}
               classes="plain weekday"
@@ -44,12 +45,14 @@
 
   <hbox class="every">
     <label for="every">{$t`Every`}</label>
-    <input class="auto" type="number" min={1} max={99} bind:value={interval} id="every" />
-    <select bind:value={frequency} class="selector">
-      <option value="{Frequency.Daily}">{$plural(interval, { one: 'day', other: 'days' })}</option>
-      <option value="{Frequency.Weekly}">{$plural(interval, { one: 'week', other: 'weeks' })}</option>
-      <option value="{Frequency.Monthly}">{$plural(interval, { one: 'month', other: 'months' })}</option>
-      <option value="{Frequency.Yearly}">{$plural(interval, { one: 'year', other: 'years' })}</option>
+    <input class="auto" type="number" min={1} max={99} bind:value={interval} id="every"
+      on:change={() => catchErrors(() => onIntervalChanged)} />
+    <select value={frequency} class="selector"
+      on:change={(ev) => catchErrors(() => onFrequencyChanged(ev.currentTarget?.value))}>
+      <option value={Frequency.Daily}>{$plural(interval, { one: 'day', other: 'days' })}</option>
+      <option value={Frequency.Weekly}>{$plural(interval, { one: 'week', other: 'weeks' })}</option>
+      <option value={Frequency.Monthly}>{$plural(interval, { one: 'month', other: 'months' })}</option>
+      <option value={Frequency.Yearly}>{$plural(interval, { one: 'year', other: 'years' })}</option>
     </select>
   </hbox>
 {/if}
@@ -161,7 +164,8 @@
     interval = 1;
     frequency = Frequency.Weekly;
     daily = "everyday";
-    onFrequencyChanged(frequency);
+    master.startEditing();
+    master.newRecurrenceRule(frequency, interval, weekdays, week);
   }
 
   function onWeekdayChanged(weekday: number) {
@@ -171,15 +175,22 @@
       weekdays.push(weekday);
     }
     console.log("weekdays changed", weekday, weekdays);
+    master.startEditing();
     master.newRecurrenceRule(frequency, interval, weekdays, week);
   }
 
-  function onFrequencyChanged(newValue: string) {
+  function onIntervalChanged() {
+    master.startEditing();
+    master.newRecurrenceRule(frequency, interval, weekdays, week);
+  }
+
+  async function onFrequencyChanged(newValue: string) {
     console.log("frequency changed cur", frequency, "to", newValue);
     let newFrequency = newValue as Frequency;
     if (newFrequency == Frequency.None || !newFrequency) {
-      event.recurrenceRule = null;
-    } else if (newFrequency != master.recurrenceRule.frequency) {
+      master.recurrenceRule = null;
+    } else if (newFrequency != master.recurrenceRule?.frequency) {
+      master.startEditing();
       master.newRecurrenceRule(newFrequency, interval, weekdays, week);
     }
   }

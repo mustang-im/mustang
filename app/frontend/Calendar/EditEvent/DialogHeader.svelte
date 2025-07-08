@@ -148,7 +148,6 @@
   import { openApp, selectedApp } from "../../AppsBar/selectedApp";
   import { appGlobal } from "../../../logic/app";
   import Stack from "../../Shared/Stack.svelte";
-  import type RepeatBox from "./RepeatBox.svelte";
   import AccountDropDown from "../../Shared/AccountDropDown.svelte";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
@@ -200,9 +199,9 @@
   }
 
   function onCancel() {
-    assert(event.unedited, "need unedited state");
-    event.copyFrom(event.unedited);
-    event.finishEditing();
+    // assert(event.unedited, "need unedited state");
+    event.cancelEditing();
+    event.parentEvent?.cancelEditing(); // master, when recurrence was changed
     onClose();
   }
 
