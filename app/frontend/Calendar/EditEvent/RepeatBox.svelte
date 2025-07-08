@@ -1,10 +1,6 @@
 <SectionTitle label={$t`Repeat`}>
   <hbox>
-<<<<<<< HEAD
-    <select bind:value={frequency} class="selector" on:change={ev => catchErrors(() => onFrequencyChanged(ev.currentTarget.value))}>
-=======
     <select value={frequency} class="selector" on:change={(ev) => catchErrors(() => onFrequencyChanged(ev.currentTarget?.value))}>
->>>>>>> 9a189dfd (Propagate UI changes to event)
       <option value={Frequency.None}>{$t`none`}</option>
       <option value={Frequency.Daily}>{$t`daily`}</option>
       <option value={Frequency.Weekly}>{$t`weekly`}</option>
@@ -83,7 +79,7 @@
   import RoundButton from '../../Shared/RoundButton.svelte';
   import { catchErrors } from "../../Util/error";
   import { arrayRemove } from '../../../logic/util/util';
-  import { catchErrors } from "../../Util/error";
+  import { getUILocale, t, plural } from "../../../l10n/l10n";
 
   export let event: Event;
 
