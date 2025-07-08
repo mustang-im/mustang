@@ -41,7 +41,7 @@ import NodeMobile
 
 
             // Prepare argv: ["node", "<full-path-to-index.mjs>"]
-            let args = ["node", "--experimental-wasm-modules", scriptPath]
+            let args = ["node", "--no-experimental-fetch", scriptPath]
             let argc = Int32(args.count)
             let argv = UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>.allocate(capacity: Int(argc))
             for (i, arg) in args.enumerated() {
