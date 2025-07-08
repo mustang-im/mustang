@@ -732,10 +732,8 @@
   "299i1G": "Op zoek naar je horren en ramen...",
   "q1scfY": "Meer dan {0} bestanden",
   "37AEgW": "Mijn computer",
-  "Ye0FAJ": "Naam van de account voor het delen van bestanden",
   "brQzgm": "Nieuwe CalDAV kalender",
   "QD9aQc": "Nieuw CardDAV-adresboek",
-  "5Ljrei": "Nieuw WebDAV account",
   "RX2uJz": "Geen accounts voor bestandsdeling geconfigureerd",
   "HXVbcL": "Foto's",
   "CCTop/": "Recent",
@@ -800,5 +798,6 @@
   "HlJV9H": "Afgewezen",
   "dnC/xs": "Uitnodiging",
   "Q7Qbxi": "Organisator",
-  "/tmE06": "Voorlopig"
+  "/tmE06": "Voorlopig",
+  "Z6QE5q": "WebDAV"
 }

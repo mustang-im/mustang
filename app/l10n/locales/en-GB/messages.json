@@ -732,10 +732,8 @@
   "299i1G": "Looking for your screens and windows…",
   "q1scfY": "More than {0} files",
   "37AEgW": "My computer",
-  "Ye0FAJ": "Name of the filesharing account",
   "brQzgm": "New CalDAV calendar",
   "QD9aQc": "New CardDAV addressbook",
-  "5Ljrei": "New WebDAV account",
   "RX2uJz": "No file sharing accounts configured",
   "HXVbcL": "Pictures",
   "CCTop/": "Recent",
@@ -800,5 +798,6 @@
   "HlJV9H": "Declined",
   "dnC/xs": "Invitation",
   "Q7Qbxi": "Organizer",
-  "/tmE06": "Tentative"
+  "/tmE06": "Tentative",
+  "Z6QE5q": "WebDAV"
 }

@@ -732,10 +732,8 @@
   "299i1G": "Mencari layar dan jendela Anda...",
   "q1scfY": "Lebih dari {0} file",
   "37AEgW": "Komputer saya",
-  "Ye0FAJ": "Nama akun berbagi file",
   "brQzgm": "Kalender CalDAV baru",
   "QD9aQc": "Buku alamat CardDAV baru",
-  "5Ljrei": "Akun WebDAV baru",
   "RX2uJz": "Tidak ada akun berbagi file yang dikonfigurasi",
   "HXVbcL": "Gambar",
   "CCTop/": "Terbaru",
@@ -800,5 +798,6 @@
   "HlJV9H": "Ditolak",
   "dnC/xs": "Undangan",
   "Q7Qbxi": "Penyelenggara",
-  "/tmE06": "Tentatif"
+  "/tmE06": "Tentatif",
+  "Z6QE5q": "WebDAV"
 }

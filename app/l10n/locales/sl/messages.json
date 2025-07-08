@@ -732,10 +732,8 @@
   "299i1G": "Iščete zaslone in okna...",
   "q1scfY": "Več kot {0} datotek",
   "37AEgW": "Moj računalnik",
-  "Ye0FAJ": "Ime računa za skupno rabo datotek",
   "brQzgm": "Nov koledar CalDAV",
   "QD9aQc": "Nov imenik CardDAV",
-  "5Ljrei": "Nov račun WebDAV",
   "RX2uJz": "Računi za skupno rabo datotek niso konfigurirani",
   "HXVbcL": "Slike",
   "CCTop/": "Nedavno",
@@ -800,5 +798,6 @@
   "HlJV9H": "Zavrnil",
   "dnC/xs": "Vabilo",
   "Q7Qbxi": "Organizator",
-  "/tmE06": "Okvirna spletna stran"
+  "/tmE06": "Okvirna spletna stran",
+  "Z6QE5q": "WebDAV"
 }

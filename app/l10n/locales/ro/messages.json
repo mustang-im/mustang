@@ -732,10 +732,8 @@
   "299i1G": "Căutați ecrane și ferestre...",
   "q1scfY": "Mai mult de {0} fișiere",
   "37AEgW": "Computerul meu",
-  "Ye0FAJ": "Numele contului de partajare a fișierelor",
   "brQzgm": "Noul calendar CalDAV",
   "QD9aQc": "Carnet de adrese CardDAV nou",
-  "5Ljrei": "Cont WebDAV nou",
   "RX2uJz": "Nu sunt configurate conturi de partajare a fișierelor",
   "HXVbcL": "Imagini",
   "CCTop/": "Recent",
@@ -800,5 +798,6 @@
   "HlJV9H": "Refuzat",
   "dnC/xs": "Invitație",
   "Q7Qbxi": "Organizator",
-  "/tmE06": "Tentativă"
+  "/tmE06": "Tentativă",
+  "Z6QE5q": "WebDAV"
 }

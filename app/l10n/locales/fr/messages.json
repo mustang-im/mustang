@@ -732,10 +732,8 @@
   "299i1G": "A la recherche de vos écrans et fenêtres...",
   "q1scfY": "Plus de {0} fichiers",
   "37AEgW": "Mon ordinateur",
-  "Ye0FAJ": "Nom du compte de partage de fichiers",
   "brQzgm": "Nouveau calendrier CalDAV",
   "QD9aQc": "Nouveau carnet d'adresses CardDAV",
-  "5Ljrei": "Nouveau compte WebDAV",
   "RX2uJz": "Aucun compte de partage de fichiers n'est configuré",
   "HXVbcL": "Photos",
   "CCTop/": "Récents",
@@ -800,5 +798,6 @@
   "HlJV9H": "Refusé",
   "dnC/xs": "Invitation",
   "Q7Qbxi": "Organisateur",
-  "/tmE06": "Provisoire"
+  "/tmE06": "Provisoire",
+  "Z6QE5q": "WebDAV"
 }

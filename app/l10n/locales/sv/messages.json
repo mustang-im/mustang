@@ -732,10 +732,8 @@
   "299i1G": "Letar du efter dina skärmar och fönster...",
   "q1scfY": "Mer än {0} filer",
   "37AEgW": "Min dator",
-  "Ye0FAJ": "Namnet på fildelningskontot",
   "brQzgm": "Ny CalDAV-kalender",
   "QD9aQc": "Nytt kortDAV-adressbok",
-  "5Ljrei": "Nytt WebDAV-konto",
   "RX2uJz": "Inga fildelningskonton konfigurerade",
   "HXVbcL": "Bilder",
   "CCTop/": "Nyligen",
@@ -800,5 +798,6 @@
   "HlJV9H": "Avböjde",
   "dnC/xs": "Inbjudan",
   "Q7Qbxi": "Arrangör",
-  "/tmE06": "Tentativ"
+  "/tmE06": "Tentativ",
+  "Z6QE5q": "WebDAV"
 }

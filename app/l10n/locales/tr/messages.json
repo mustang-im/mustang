@@ -732,10 +732,8 @@
   "299i1G": "Ekranlarınızı ve pencerelerinizi arıyorum...",
   "q1scfY": "{0} dosyalarından daha fazlası",
   "37AEgW": "Bilgisayarım",
-  "Ye0FAJ": "Dosya paylaşım hesabının adı",
   "brQzgm": "Yeni CalDAV takvimi",
   "QD9aQc": "Yeni CardDAV adres defteri",
-  "5Ljrei": "Yeni WebDAV hesabı",
   "RX2uJz": "Yapılandırılmış dosya paylaşım hesabı yok",
   "HXVbcL": "Resimler",
   "CCTop/": "Yakın zamanda",
@@ -800,5 +798,6 @@
   "HlJV9H": "Reddedildi",
   "dnC/xs": "Davetiye",
   "Q7Qbxi": "Organizatör",
-  "/tmE06": "Geçici"
+  "/tmE06": "Geçici",
+  "Z6QE5q": "WebDAV"
 }

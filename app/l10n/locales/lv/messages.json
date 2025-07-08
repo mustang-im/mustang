@@ -732,10 +732,8 @@
   "299i1G": "Meklējat ekrānus un logus...",
   "q1scfY": "Vairāk nekā {0} faili",
   "37AEgW": "Mans dators",
-  "Ye0FAJ": "Failu koplietošanas konta nosaukums",
   "brQzgm": "Jauns CalDAV kalendārs",
   "QD9aQc": "Jauna CardDAV adrešu grāmata",
-  "5Ljrei": "Jauns WebDAV konts",
   "RX2uJz": "Nav konfigurēti failu kopīgošanas konti",
   "HXVbcL": "Attēli",
   "CCTop/": "Nesen",
@@ -800,5 +798,6 @@
   "HlJV9H": "Atteica",
   "dnC/xs": "Ielūgums",
   "Q7Qbxi": "Organizators",
-  "/tmE06": "Provizoriski"
+  "/tmE06": "Provizoriski",
+  "Z6QE5q": "WebDAV"
 }

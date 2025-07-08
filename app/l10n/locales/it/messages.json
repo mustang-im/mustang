@@ -732,10 +732,8 @@
   "299i1G": "Alla ricerca di schermi e finestre...",
   "q1scfY": "Più di {0} file",
   "37AEgW": "Il mio computer",
-  "Ye0FAJ": "Nome dell'account di filesharing",
   "brQzgm": "Nuovo calendario CalDAV",
   "QD9aQc": "Nuova rubrica CardDAV",
-  "5Ljrei": "Nuovo account WebDAV",
   "RX2uJz": "Nessun account di condivisione file configurato",
   "HXVbcL": "Immagini",
   "CCTop/": "Recente",
@@ -800,5 +798,6 @@
   "HlJV9H": "Rifiutato",
   "dnC/xs": "Invito",
   "Q7Qbxi": "Organizzatore",
-  "/tmE06": "Tentativo"
+  "/tmE06": "Tentativo",
+  "Z6QE5q": "WebDAV"
 }

@@ -732,10 +732,8 @@
   "299i1G": "Hledáte obrazovky a okna...",
   "q1scfY": "Více než {0} souborů",
   "37AEgW": "Můj počítač",
-  "Ye0FAJ": "Název účtu pro sdílení souborů",
   "brQzgm": "Nový kalendář CalDAV",
   "QD9aQc": "Nový adresář CardDAV",
-  "5Ljrei": "Nový účet WebDAV",
   "RX2uJz": "Nejsou nakonfigurovány žádné účty pro sdílení souborů",
   "HXVbcL": "Obrázky",
   "CCTop/": "Nedávné",
@@ -800,5 +798,6 @@
   "HlJV9H": "Odmítl",
   "dnC/xs": "Pozvánka",
   "Q7Qbxi": "Organizátor",
-  "/tmE06": "Předběžný"
+  "/tmE06": "Předběžný",
+  "Z6QE5q": "WebDAV"
 }

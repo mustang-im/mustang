@@ -732,10 +732,8 @@
   "299i1G": "Otsid oma ekraanid ja aknad...",
   "q1scfY": "Rohkem kui {0} faile",
   "37AEgW": "Minu arvuti",
-  "Ye0FAJ": "Failijagamiskonto nimi",
   "brQzgm": "Uus CalDAV kalender",
   "QD9aQc": "Uus CardDAV aadressiraamat",
-  "5Ljrei": "Uus WebDAV konto",
   "RX2uJz": "Ei ole konfigureeritud failijagamiskontosid",
   "HXVbcL": "Pildid",
   "CCTop/": "Hiljutine",
@@ -800,5 +798,6 @@
   "HlJV9H": "Loobus",
   "dnC/xs": "Kutse",
   "Q7Qbxi": "Korraldaja",
-  "/tmE06": "Esialgne"
+  "/tmE06": "Esialgne",
+  "Z6QE5q": "WebDAV"
 }

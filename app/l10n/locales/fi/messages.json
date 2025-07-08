@@ -732,10 +732,8 @@
   "299i1G": "Etsitään näyttöjä ja ikkunoita...",
   "q1scfY": "Yli {0} tiedostot",
   "37AEgW": "Tietokoneeni",
-  "Ye0FAJ": "Tiedostonjakotilin nimi",
   "brQzgm": "Uusi CalDAV-kalenteri",
   "QD9aQc": "Uusi CardDAV-osoitekirja",
-  "5Ljrei": "Uusi WebDAV-tili",
   "RX2uJz": "Tiedostonjakotilejä ei ole määritetty",
   "HXVbcL": "Kuvat",
   "CCTop/": "Viimeisimmät",
@@ -800,5 +798,6 @@
   "HlJV9H": "Kieltäytyi",
   "dnC/xs": "Kutsu",
   "Q7Qbxi": "Järjestäjä",
-  "/tmE06": "Alustava"
+  "/tmE06": "Alustava",
+  "Z6QE5q": "WebDAV"
 }

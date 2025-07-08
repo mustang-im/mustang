@@ -732,10 +732,8 @@
   "299i1G": "寻找您的纱窗",
   "q1scfY": "超过{0} 文件",
   "37AEgW": "我的电脑",
-  "Ye0FAJ": "文件共享账户名称",
   "brQzgm": "新 CalDAV 日历",
   "QD9aQc": "新的 CardDAV 地址簿",
-  "5Ljrei": "新 WebDAV 账户",
   "RX2uJz": "未配置文件共享账户",
   "HXVbcL": "图片",
   "CCTop/": "最近",
@@ -800,5 +798,6 @@
   "HlJV9H": "拒绝",
   "dnC/xs": "邀请",
   "Q7Qbxi": "组织者",
-  "/tmE06": "暂定"
+  "/tmE06": "暂定",
+  "Z6QE5q": "WebDAV"
 }

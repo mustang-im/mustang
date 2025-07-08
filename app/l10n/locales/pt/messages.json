@@ -732,10 +732,8 @@
   "299i1G": "À procura dos seus ecrãs e janelas...",
   "q1scfY": "Mais de {0} ficheiros",
   "37AEgW": "O meu computador",
-  "Ye0FAJ": "Nome da conta de partilha de ficheiros",
   "brQzgm": "Novo calendário CalDAV",
   "QD9aQc": "Novo livro de endereços CardDAV",
-  "5Ljrei": "Nova conta WebDAV",
   "RX2uJz": "Nenhuma conta de partilha de ficheiros configurada",
   "HXVbcL": "Imagens",
   "CCTop/": "Recentes",
@@ -800,5 +798,6 @@
   "HlJV9H": "Recusou",
   "dnC/xs": "Convite",
   "Q7Qbxi": "Organizador",
-  "/tmE06": "Tentativa"
+  "/tmE06": "Tentativa",
+  "Z6QE5q": "WebDAV"
 }

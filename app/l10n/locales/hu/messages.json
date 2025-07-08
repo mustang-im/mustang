@@ -732,10 +732,8 @@
   "299i1G": "Keresi a képernyőket és az ablakokat...",
   "q1scfY": "Több mint {0} fájlok",
   "37AEgW": "A számítógépem",
-  "Ye0FAJ": "A fájlmegosztó fiók neve",
   "brQzgm": "Új CalDAV naptár",
   "QD9aQc": "Új CardDAV címjegyzék",
-  "5Ljrei": "Új WebDAV fiók",
   "RX2uJz": "Nincs beállítva fájlmegosztó fiók",
   "HXVbcL": "Képek",
   "CCTop/": "Legutóbbi",
@@ -800,5 +798,6 @@
   "HlJV9H": "Visszautasította",
   "dnC/xs": "Meghívó",
   "Q7Qbxi": "Szervező",
-  "/tmE06": "Tentatív"
+  "/tmE06": "Tentatív",
+  "Z6QE5q": "WebDAV"
 }

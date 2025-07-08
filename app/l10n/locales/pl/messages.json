@@ -732,10 +732,8 @@
   "299i1G": "Szukanie ekranów i okien...",
   "q1scfY": "Więcej niż {0} plików",
   "37AEgW": "Mój komputer",
-  "Ye0FAJ": "Nazwa konta udostępniania plików",
   "brQzgm": "Nowy kalendarz CalDAV",
   "QD9aQc": "Nowa książka adresowa CardDAV",
-  "5Ljrei": "Nowe konto WebDAV",
   "RX2uJz": "Brak skonfigurowanych kont udostępniania plików",
   "HXVbcL": "Zdjęcia",
   "CCTop/": "Najnowsze",
@@ -800,5 +798,6 @@
   "HlJV9H": "Odmówił",
   "dnC/xs": "Zaproszenie",
   "Q7Qbxi": "Organizator",
-  "/tmE06": "Wstępnie"
+  "/tmE06": "Wstępnie",
+  "Z6QE5q": "WebDAV"
 }

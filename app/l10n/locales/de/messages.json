@@ -732,10 +732,8 @@
   "299i1G": "Auf der Suche nach Ihren Bildschirmen und Fenstern...",
   "q1scfY": "Mehr als {0} Dateien",
   "37AEgW": "Mein Computer",
-  "Ye0FAJ": "Name des Tauschbörsenkontos",
   "brQzgm": "Neuer CalDAV-Kalender",
   "QD9aQc": "Neues CardDAV-Adressbuch",
-  "5Ljrei": "Neues WebDAV-Konto",
   "RX2uJz": "Keine Dateifreigabekonten konfiguriert",
   "HXVbcL": "Bilder",
   "CCTop/": "Neueste",
@@ -800,5 +798,6 @@
   "HlJV9H": "Abgelehnt",
   "dnC/xs": "Einladung",
   "Q7Qbxi": "Organisator",
-  "/tmE06": "Vorläufige"
+  "/tmE06": "Vorläufige",
+  "Z6QE5q": "WebDAV"
 }

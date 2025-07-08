@@ -732,10 +732,8 @@
   "299i1G": "Buscando sus mosquiteras y ventanas...",
   "q1scfY": "Más de {0} archivos",
   "37AEgW": "Mi ordenador",
-  "Ye0FAJ": "Nombre de la cuenta de intercambio de archivos",
   "brQzgm": "Nuevo calendario CalDAV",
   "QD9aQc": "Nueva libreta de direcciones CardDAV",
-  "5Ljrei": "Nueva cuenta WebDAV",
   "RX2uJz": "No hay cuentas de compartición de archivos configuradas",
   "HXVbcL": "Fotos",
   "CCTop/": "Recientes",
@@ -800,5 +798,6 @@
   "HlJV9H": "Declinado",
   "dnC/xs": "Invitación",
   "Q7Qbxi": "Organizador",
-  "/tmE06": "Tentativa"
+  "/tmE06": "Tentativa",
+  "Z6QE5q": "WebDAV"
 }

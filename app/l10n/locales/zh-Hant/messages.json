@@ -732,10 +732,8 @@
   "299i1G": "尋找您的紗窗...",
   "q1scfY": "超過{0} 檔案",
   "37AEgW": "我的電腦",
-  "Ye0FAJ": "檔案分享帳戶的名稱",
   "brQzgm": "新 CalDAV 日曆",
   "QD9aQc": "新的 CardDAV 通訊錄",
-  "5Ljrei": "新的 WebDAV 帳戶",
   "RX2uJz": "未設定檔案分享帳戶",
   "HXVbcL": "圖片",
   "CCTop/": "最近",
@@ -800,5 +798,6 @@
   "HlJV9H": "拒絕",
   "dnC/xs": "邀請",
   "Q7Qbxi": "主辦單位",
-  "/tmE06": "暫定"
+  "/tmE06": "暫定",
+  "Z6QE5q": "WebDAV"
 }

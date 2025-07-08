@@ -732,10 +732,8 @@
   "299i1G": "Ieškote ekranų ir langų...",
   "q1scfY": "Daugiau nei {0} failų",
   "37AEgW": "Mano kompiuteris",
-  "Ye0FAJ": "Dalijimosi failais paskyros pavadinimas",
   "brQzgm": "Naujas CalDAV kalendorius",
   "QD9aQc": "Nauja CardDAV adresų knygelė",
-  "5Ljrei": "Nauja \"WebDAV\" paskyra",
   "RX2uJz": "Nėra sukonfigūruotų failų bendrinimo paskyrų",
   "HXVbcL": "Nuotraukos",
   "CCTop/": "Naujausia",
@@ -800,5 +798,6 @@
   "HlJV9H": "Atsisakė",
   "dnC/xs": "Kvietimas",
   "Q7Qbxi": "Organizatorius",
-  "/tmE06": "Preliminarus"
+  "/tmE06": "Preliminarus",
+  "Z6QE5q": "WebDAV"
 }

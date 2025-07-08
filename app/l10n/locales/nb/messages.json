@@ -732,10 +732,8 @@
   "299i1G": "Leter du etter skjermer og vinduer...",
   "q1scfY": "Mer enn {0} filer",
   "37AEgW": "Datamaskinen min",
-  "Ye0FAJ": "Navnet på fildelingskontoen",
   "brQzgm": "Ny CalDAV-kalender",
   "QD9aQc": "Ny CardDAV-adressebok",
-  "5Ljrei": "Ny WebDAV-konto",
   "RX2uJz": "Ingen fildelingskontoer konfigurert",
   "HXVbcL": "Bilder",
   "CCTop/": "Nylig",
@@ -800,5 +798,6 @@
   "HlJV9H": "Avslått",
   "dnC/xs": "Invitasjon",
   "Q7Qbxi": "Arrangør",
-  "/tmE06": "Foreløpig"
+  "/tmE06": "Foreløpig",
+  "Z6QE5q": "WebDAV"
 }
