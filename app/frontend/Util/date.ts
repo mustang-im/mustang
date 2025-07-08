@@ -74,7 +74,7 @@ export function myTimezone(): string {
   return Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
 export function isMyTimezone(ianaTimezone: string) {
-  return !ianaTimezone && ianaTimezone == myTimezone();
+  return !ianaTimezone || ianaTimezone == myTimezone();
 }
 
 export function getToday() {

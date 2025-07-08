@@ -120,6 +120,7 @@
   export let event: Event;
 
   $: showTimezone = !isMyTimezone($event.timezone);
+  $: console.log("show timezonee", showTimezone, "event timezone", $event.timezone, "is my", isMyTimezone($event.timezone), "my timezone", myTimezone());
   $: $event.endTime, checkEndTime();
   $: isMultipleDays = $event.startTime && $event.endTime &&
     // all day events have the non-inclusive next day as end
