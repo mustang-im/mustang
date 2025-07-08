@@ -55,6 +55,7 @@ export class MailZIP implements MailContentStorage {
     let lock = await MailZIP.lockForFile(filename);
     try {
       await zip.writeZip();
+      await appGlobal.remoteApp.fs.chmod(filename, 0o600);
     } finally {
       haveZips.removeKey(filename);
       lock.release();
