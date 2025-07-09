@@ -291,12 +291,15 @@ export class Event extends Observable {
    * Removes a recurrence pattern and all instances and exceptions.
    */
   protected clearRecurrenceRule() {
-    if (this._recurrenceRule) {
-      // this.clearExceptions(); in finishEditing()
-      this._recurrenceRule = null; // notifies
-      this.recurrenceCase = RecurrenceCase.Normal;
-      this.instances.replaceAll([this]);
+    if (!this._recurrenceRule) {
+      return;
     }
+    // clearExceptions() in finishEditing()
+    this._muteObservers = true;
+    this.recurrenceCase = RecurrenceCase.Normal;
+    this._muteObservers = false;
+    this._recurrenceRule = null; // notifies
+    this.instances.replaceAll([this]);
   }
   /**
    * Updates a recurrence pattern.
@@ -304,10 +307,10 @@ export class Event extends Observable {
    */
   protected setRecurrenceRule(rule: RecurrenceRule) {
     assert(this.recurrenceCase == RecurrenceCase.Normal || this.recurrenceCase == RecurrenceCase.Master, "Instances can't themselves recur");
-    this._recurrenceRule = rule; // notifies
     this._muteObservers = true;
     this.recurrenceCase = RecurrenceCase.Master;
     this._muteObservers = false;
+    this._recurrenceRule = rule; // notifies
     // clearExceptions() as necessary in finishEditing()
     this.generateRecurringInstances();
   }
