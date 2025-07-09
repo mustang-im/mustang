@@ -170,12 +170,13 @@
   $: newCalendar = event.calendar; // not `$event`
   $: hasMinimalProps = event && $event.title && $event.startTime && $event.endTime &&
       event.startTime.getTime() <= event.endTime.getTime();
-  $: hasMinimalPropsChanged = hasMinimalProps && $event.hasChanged;
-  $: canSaveSeries = hasMinimalProps && $event.recurrenceCase == RecurrenceCase.Instance;
-  $: canSaveSingle = hasMinimalProps && (
-    $event.hasChanged() ||
-    event.recurrenceRule && !event.parentEvent || // Change single event into series
-    newCalendar != event.calendar);
+  $: hasMinimalPropsChanged = hasMinimalProps && $event.hasChanged();
+  $: parentEvent = $event.parentEvent;
+  $: canSaveSeries = hasMinimalPropsChanged && $event.recurrenceCase == RecurrenceCase.Instance ||
+    $parentEvent?.hasChanged();
+  $: canSaveSingle = hasMinimalPropsChanged || // Single changed
+    hasMinimalProps && event.recurrenceRule && !event.parentEvent || // Change single event into series
+    newCalendar != event.calendar;
   $: participants = event.participants;
   $: willSend = $participants.hasItems && !$event.isIncomingMeeting;
   $: isFullWindow = $selectedApp instanceof EventEditMustangApp;
