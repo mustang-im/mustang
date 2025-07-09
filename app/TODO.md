@@ -6,8 +6,6 @@
     * Save/load folder and tag
     * Move on server fails, works locally
   * Calendar
-    * Recurring #654
-    * Timezone: Show time fields in timezone, not local time
     * Invitations
     * Free/Busy
     * Tasks
