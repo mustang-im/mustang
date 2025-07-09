@@ -327,7 +327,7 @@ export class Event extends Observable {
     } else if (frequency == Frequency.Monthly || frequency == Frequency.Yearly) {
       init.week = week;
       if (week) {
-        init.weekdays = weekdays ?? [this.startTime.getDay()]; // TODO Workaround @see RecurrenceRule.fillOccurrences()
+        init.weekdays = [this.startTime.getDay()];
       }
     }
     this.recurrenceRule = new RecurrenceRule(init);
