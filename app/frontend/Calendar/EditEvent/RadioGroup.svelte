@@ -24,8 +24,6 @@
   export let disabled = false;
   export let vertical = false;
 
-  $: console.log("radiogroup", value, "items", items);
-
   function onChanged(item: any) {
     value = item.value;
     dispatchEvent("change", item);

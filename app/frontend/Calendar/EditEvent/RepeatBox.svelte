@@ -90,7 +90,6 @@
 
   $: master = $event.parentEvent ?? event;
   $: frequency = $master.recurrenceRule?.frequency ?? Frequency.Weekly;
-  $: console.log("frequency", frequency, "master freq", $master.recurrenceRule?.frequency);
   $: interval = $master.recurrenceRule?.interval ?? 1;
   // end // let count = Number.isFinite(event.recurrenceRule?.count) ? event.recurrenceRule.count : 1;
   $: weekdays = $master.recurrenceRule?.weekdays?.slice() ?? [$event.startTime.getDay()];
@@ -172,11 +171,9 @@
   }
 
   function onWeekChanged(item: RadioOption) {
-    console.log("on week changed", item, "before", week, "set to", item.value);
     let newWeek = item.value;
     master.startEditing();
     master.newRecurrenceRule(frequency, interval, newWeek, weekdays);
-    console.log("week is now", master.recurrenceRule.week, master.recurrenceRule.frequency);
   }
 
   function onWeekdayChanged(weekday: number) {
@@ -185,20 +182,17 @@
     } else {
       weekdays.push(weekday);
     }
-    console.log("weekdays changed", weekday, weekdays);
     master.startEditing();
     master.newRecurrenceRule(frequency, interval, week, weekdays);
   }
 
   function onIntervalChanged(newValue: string) {
-    console.log("new interval", newValue, typeof newValue);
     interval = Number(newValue);
     master.startEditing();
     master.newRecurrenceRule(frequency, interval, week, weekdays);
   }
 
   async function onFrequencyChanged(newValue: string) {
-    console.log("frequency changed cur", frequency, "to", newValue);
     frequency = newValue as Frequency;
     assert(frequency, "Need frequency");
     if (frequency == Frequency.None) {
