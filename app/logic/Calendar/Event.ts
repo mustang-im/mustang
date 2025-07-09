@@ -323,11 +323,11 @@ export class Event extends Observable {
       interval,
     };
     if (frequency == Frequency.Weekly) {
-      init.weekdays = weekdays ?? [this.startTime.getDay()];
+      init.weekdays = weekdays ?? [this.startTime.getDay()]; // e.g. Monday and Thursday
     } else if (frequency == Frequency.Monthly || frequency == Frequency.Yearly) {
       init.week = week;
       if (week) {
-        init.weekdays = [this.startTime.getDay()];
+        init.weekdays = [this.startTime.getDay()]; // e.g. 3rd Wednesday of month
       }
     }
     this.recurrenceRule = new RecurrenceRule(init);
