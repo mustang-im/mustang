@@ -211,7 +211,7 @@
   }
 
   async function saveEvent(event: Event) {
-    if (event.calendar != newCalendar && newCalendar) {
+    if (event.calendar != newCalendar && event.calendar && newCalendar) {
       // `moveToCalendar()` does the save and delete as well
       event = await event.moveToCalendar(newCalendar);
     } else {
