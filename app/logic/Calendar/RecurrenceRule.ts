@@ -277,7 +277,7 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
         };
         break;
       case Frequency.Monthly:
-        if (!this.weekdays) {
+        if (!this.weekdays) { // TODO Why weekdays?
           this.month += this.interval;
         } else {
           this.day++;
@@ -288,7 +288,7 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
         }
         break;
       case Frequency.Yearly:
-        if (!this.weekdays) {
+        if (!this.weekdays) { // TODO Why weekdays?
           this.year += this.interval;
         } else {
           this.day++;
