@@ -389,30 +389,31 @@ export class Event extends Observable {
     return results[0];
   }
 
-  /**
-   * Assumes that the `original` property was set before
-   */
+  /** Assumes that `startEditing()` was called before */
   hasChanged(): boolean {
-    return !!this.unedited && (
-      this.calUID != this.unedited.calUID ||
-      this.startTime?.getTime() != this.unedited.startTime?.getTime() ||
-      this.endTime?.getTime() != this.unedited.endTime?.getTime() ||
-      this.timezone != this.unedited.timezone ||
-      this.allDay != this.unedited.allDay ||
-      this.title != this.unedited.title ||
-      this.rawText != this.unedited.rawText ||
-      this.rawHTMLDangerous != this.unedited.rawHTMLDangerous ||
-      this.location != this.unedited.location ||
-      this.isOnline != this.unedited.isOnline ||
-      this.onlineMeetingURL != this.unedited.onlineMeetingURL ||
-      this.myParticipation != this.unedited.myParticipation ||
-      this.participants.hasItems && (
-        this.participants.length != this.unedited.participants.length ||
-        this.participants.contents.some((pThis, i) =>
-          pThis.emailAddress != this.unedited.participants.get(i).emailAddress)) ||
-      this.recurrenceCase != this.unedited.recurrenceCase ||
-      this.recurrenceRule != this.unedited.recurrenceRule ||
-      this.alarm?.getTime() != this.unedited.alarm?.getTime()
+    return !!this.unedited && !this.matches(this.unedited);
+  }
+
+  matches(other: Event): boolean {
+    return (
+      this.calUID == other.calUID &&
+      this.startTime?.getTime() == other.startTime?.getTime() &&
+      this.endTime?.getTime() == other.endTime?.getTime() &&
+      this.timezone == other.timezone &&
+      this.allDay == other.allDay &&
+      this.title == other.title &&
+      this.rawText == other.rawText &&
+      this.rawHTMLDangerous == other.rawHTMLDangerous &&
+      this.location == other.location &&
+      this.isOnline == other.isOnline &&
+      this.onlineMeetingURL == other.onlineMeetingURL &&
+      this.myParticipation == other.myParticipation &&
+      this.participants.length == other.participants.length &&
+      (this.participants.isEmpty || this.participants.contents.every((pThis, i) =>
+        pThis.emailAddress == other.participants.get(i).emailAddress)) &&
+      !this.recurrenceRule == !other.recurrenceRule &&
+      (!this.recurrenceRule || this.recurrenceRule.matches(other.recurrenceRule)) &&
+      this.alarm?.getTime() == other.alarm?.getTime()
     );
   }
 

@@ -173,6 +173,7 @@
   $: newCalendar = event.calendar; // not `$event`
   $: hasMinimalProps = event && $event.title && $event.startTime && $event.endTime &&
       event.startTime.getTime() <= event.endTime.getTime();
+  $: hasMinimalPropsChanged = hasMinimalProps && $event.hasChanged;
   $: canSaveSeries = hasMinimalProps && $event.recurrenceCase == RecurrenceCase.Instance;
   $: canSave = hasMinimalProps && (
     $event.hasChanged() ||

@@ -203,7 +203,8 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
    * this still (intentionally) returns false.
    */
   timesMatch(rule: RecurrenceRule) {
-    let allWeekdays = [0, 1, 2, 3, 4, 5, 6];
+    // Must be fast, because it's used by `event.hasChanged()`
+    const allWeekdays = [0, 1, 2, 3, 4, 5, 6];
     let thisWeekdays = this.weekdays || allWeekdays;
     let ruleWeekdays = rule.weekdays || allWeekdays;
     return rule.masterDuration == this.masterDuration &&
@@ -214,6 +215,11 @@ export class RecurrenceRule implements Readonly<RecurrenceInit> {
       rule.first == this.first &&
       allWeekdays.every(weekday =>
         ruleWeekdays.includes(weekday) == thisWeekdays.includes(weekday));
+  }
+
+  matches(rule: RecurrenceRule) {
+    // Must be fast, because it's used by `event.hasChanged()`
+    return this.timesMatch(rule);
   }
 
   countIs(count: number): boolean {
